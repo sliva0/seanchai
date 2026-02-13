@@ -11,6 +11,8 @@ ABNF_START_RE = re.compile(r"::=")
 RULE_LINE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*\s*(=|/)\s*.+")
 QUALIFIED_REP_RE = re.compile(r"^\d*\*\d*\s+[\[{<].+")
 SPACED_LETTERS_RE = re.compile(r"\b(?:[A-Za-z]\s+){2,}[A-Za-z]\b")
+BOLD_FONT_RE = re.compile(r"bold", re.IGNORECASE)
+AVP_NAME_RE = re.compile(r"[\{\[]\s*([A-Za-z][A-Za-z0-9-]*)\s*[\}\]]")
 
 
 @dataclass(frozen=True)
@@ -85,14 +87,65 @@ def is_continuation_line(line: str) -> bool:
     return False
 
 
-def format_block(lines: list[str]) -> list[str]:
+def extract_avp_names(line: str) -> list[str]:
+    """Extract AVP names referenced in [] or {} from one ABNF line."""
+    return AVP_NAME_RE.findall(line)
+
+
+def extract_page_lines_with_bold(page: object) -> list[tuple[str, bool]]:
+    """Extract page lines and whether the line contains bold AVP text."""
+    page_lines: list[tuple[str, bool]] = []
+    current_parts: list[str] = []
+    current_has_bold_avp = False
+
+    def flush_current_line() -> None:
+        nonlocal current_has_bold_avp
+        if not current_parts:
+            page_lines.append(("", False))
+            return
+
+        joined = normalize_line(" ".join(part for part in current_parts if part))
+        page_lines.append((joined, current_has_bold_avp))
+        current_parts.clear()
+        current_has_bold_avp = False
+
+    def visitor_text(
+        text: str, cm: object, tm: object, font_dict: dict | None, font_size: float
+    ) -> None:
+        nonlocal current_has_bold_avp
+        del cm, tm, font_size
+        base_font = str((font_dict or {}).get("/BaseFont", ""))
+        is_bold_font = bool(BOLD_FONT_RE.search(base_font))
+
+        chunks = text.split("\n")
+        for index, chunk in enumerate(chunks):
+            normalized_chunk = normalize_line(chunk)
+            if normalized_chunk:
+                current_parts.append(normalized_chunk)
+                if is_bold_font and extract_avp_names(normalize_tokens(normalized_chunk)):
+                    current_has_bold_avp = True
+
+            if index < len(chunks) - 1:
+                flush_current_line()
+
+    page.extract_text(visitor_text=visitor_text)
+    if current_parts:
+        flush_current_line()
+
+    return page_lines
+
+
+def format_block(lines: list[tuple[str, bool]]) -> list[str]:
     """Format an ABNF block with normalized lines and stable indentation."""
     formatted: list[str] = []
-    for index, raw in enumerate(lines):
+    for index, (raw, has_bold_avp) in enumerate(lines):
         if not raw.strip():
             continue
 
         normalized = normalize_tokens(raw)
+        if has_bold_avp:
+            normalized = f"{normalized} ; bold"
+
         if index == 0:
             formatted.append(normalized)
         else:
@@ -105,10 +158,13 @@ def extract_abnf_blocks(pdf_path: Path) -> list[AbnfDefinition]:
     """Extract ABNF definitions and description text from a 3GPP PDF."""
     reader = PdfReader(str(pdf_path))
 
-    stream: list[tuple[int, str]] = []
+    stream: list[tuple[int, str, bool]] = []
     for page_index, page in enumerate(reader.pages, start=1):
-        text = page.extract_text(extraction_mode="layout") or ""
-        stream.extend((page_index, normalize_line(line)) for line in text.splitlines())
+        page_lines = extract_page_lines_with_bold(page)
+        stream.extend(
+            (page_index, normalize_line(line_text), has_bold_avp)
+            for line_text, has_bold_avp in page_lines
+        )
 
     blocks: list[AbnfDefinition] = []
     seen: set[tuple[str, ...]] = set()
@@ -116,7 +172,7 @@ def extract_abnf_blocks(pdf_path: Path) -> list[AbnfDefinition]:
 
     i = 0
     while i < len(stream):
-        page_index, line = stream[i]
+        page_index, line, _ = stream[i]
         if is_section_heading(line):
             current_section = normalize_section_heading(line)
 
@@ -124,13 +180,13 @@ def extract_abnf_blocks(pdf_path: Path) -> list[AbnfDefinition]:
             i += 1
             continue
 
-        block_lines = [line.strip()]
+        block_lines: list[tuple[str, bool]] = [(line.strip(), False)]
         i += 1
 
         while i < len(stream):
-            _, candidate = stream[i]
+            _, candidate, candidate_has_bold_avp = stream[i]
             if not candidate.strip():
-                block_lines.append("")
+                block_lines.append(("", False))
                 i += 1
                 continue
 
@@ -141,7 +197,7 @@ def extract_abnf_blocks(pdf_path: Path) -> list[AbnfDefinition]:
             if not is_continuation_line(candidate):
                 break
 
-            block_lines.append(candidate)
+            block_lines.append((candidate, candidate_has_bold_avp))
             i += 1
 
         formatted = format_block(block_lines)
@@ -150,6 +206,7 @@ def extract_abnf_blocks(pdf_path: Path) -> list[AbnfDefinition]:
 
         key = tuple(formatted)
         if key in seen:
+            breakpoint()
             continue
         seen.add(key)
 
