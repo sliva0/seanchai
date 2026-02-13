@@ -1,0 +1,4 @@
+- check if fields are in bold and highlight them
+- format descriptions better (contain all info to find definition in spec)
+- add rfc parser
+- review internal tgpp_pdf structure and overwhelming amounts of uncommented regexes
