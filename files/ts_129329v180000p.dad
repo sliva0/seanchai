@@ -145,7 +145,7 @@
       * [ Identity-Set ]                   ; bold
         [ Expiry-Time ]                    ; bold
       * [ DSAI-Tag ]                       ; bold
-        [One-Time-Notification]            ; bold
+        [ One-Time-Notification ]          ; bold
         [ User-Name ]
         [ OC-Supported-Features ]
       * [ AVP ]
@@ -224,7 +224,7 @@
       * [ Route-Record ]
 
 
-; Type: AVP
+; Type: Grouped AVP
 ; Name: User-Identity
 ; Section: 6.3.1
 ; Page: 18
@@ -278,7 +278,7 @@ Subs-Req-Type ::= < Enumerated AVP header: 705 10415 >
 
 
 ; Type: Enumerated AVP
-; Name: Subs-Req-Type
+; Name: Requested-Domain
 ; Section: 6.3.7
 ; Page: 20
 Requested-Domain ::= < Enumerated AVP header: 706 10415 >
@@ -286,7 +286,7 @@ Requested-Domain ::= < Enumerated AVP header: 706 10415 >
         PS-Domain = 1 ; The requested data apply to the PS domain
 
 
-; Type: AVP
+; Type: Grouped AVP
 ; AVP Name: Repository-Data-ID
 ; Section: 6.3.24
 ; Page: 22
@@ -296,7 +296,7 @@ Repository-Data-ID ::= < AVP header: 715 10415 >
       * [ AVP ]
 
 
-; Type: AVP
+; Type: Grouped AVP
 ; Name: Call-Reference-Info
 ; Section: 6.3.29
 ; Page: 23
