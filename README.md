@@ -47,17 +47,22 @@ Key properties:
 - Message and grouped-AVP rules keep the spec's ABNF syntax
   (`<>`/`{}`/`[]`/`*` qualifiers, `::=`, `< Diameter Header: … >`).
 - Extended with definition kinds the raw ABNF lacks: enumerated AVPs with their
-  named values, and plain (non-grouped) AVPs with code, vendor, base data type and
-  flag (M/V) information.
+  named values, and AVP tables mirroring each spec's own AVP table — one AVP per
+  whitespace-aligned row with code, section, base data type and flag (M/V)
+  information.
+- A file is a sequence of sections, each starting with a `; Type: X` header block
+  and separated by two blank lines.
 - **Directive comments**: lines/suffixes starting with `;` in defined positions are
   semantic, JSDoc-style — `; Key: value` header blocks above each definition
   (type, name, section, page) and at the top of the file (spec, version, link), plus
   inline markers such as `; bold` (bold in 3GPP ABNF marks AVPs defined/modified in
   that spec). These are grammar productions, not free text: a malformed directive is
   a parse error, never silently degraded to a comment. Free-text comments use `;;`.
-- **Cross-references**: AVPs imported from other specs carry a parseable origin
-  reference (spec/RFC identifier), which also disambiguates AVPs sharing a name but
-  differing in `(vendor-id, code)` — the true identity key.
+- **Reused AVPs**: AVPs defined in another spec/RFC are listed by name in a
+  dedicated section, mirroring the "re-used AVPs" tables of 3GPP specs (names are
+  unique within one specification's scope); resolving such a reference yields the
+  AVP's `(vendor-id, code)` — the true identity key — which disambiguates AVPs
+  sharing a name across specs.
 - A canonical formatter accompanies the parser: parse → pretty-print is idempotent,
   so hand edits get normalized and the patch-based review workflow keeps stable
   diffs across extractor re-runs.

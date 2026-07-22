@@ -12,14 +12,32 @@ the overall architecture; this file is the working list of what has to exist.
 - Directive comments (`; Key: value` headers, inline `; bold`-style markers) are
   part of the grammar with fixed positions; malformed directives are parse errors.
   `;;` introduces free-text comments the parser ignores.
-- Replace/augment the `; bold` marker with explicit parseable origin references:
-  every AVP either is defined in the current spec or carries/inherits a reference to
-  the spec/RFC it comes from. References must be resolvable to `(vendor-id, code)`
-  to disambiguate same-name AVPs.
-- Add a definition kind for plain (non-grouped, non-enumerated) AVPs: code, vendor,
-  base data type, M/V flags. Sources: each spec's own AVP table for flags;
-  TS 29.230 as the one-big-table source/cross-check for all 3GPP AVP names, codes
-  and data types; RFC 6733 §4.5 for base-protocol AVPs.
+- A file is a sequence of sections, each opened by a `; Type: X` header block
+  (Message, Grouped AVP, Enumerated AVP, AVP Table, Reused AVPs, …) and separated by
+  two blank lines; the parser dispatches on `Type:`.
+- Keep the inline `; bold` marker as-is: it mirrors information present in the
+  original document at the place where it's written, and inline is the wrong spot
+  for origin references. Instead, a **Reused AVPs** section lists AVPs defined in
+  another spec/RFC by name (names are unique within one specification's scope —
+  they have to be, or the source documents themselves couldn't distinguish them),
+  with the origin spec and any local overrides (e.g. the M-bit column of 3GPP
+  "re-used AVPs" tables). Resolving an import yields the AVP's
+  `(vendor-id, code)`, which disambiguates same-name AVPs across specs.
+- Trivial AVP definitions use an **AVP Table** section mirroring each spec's own
+  AVP table (whitespace-aligned columns, one AVP per row: name, code, section,
+  type, flag columns). Rules: every cell is a single token, rows split on
+  whitespace, `-` is the explicit empty-cell placeholder, column order is fixed
+  by the grammar (the `;;` column-header line is cosmetic formatter output, never
+  parsed). Canonical formatting uses at least 3 spaces between columns; column
+  widths are computed from data cells only (minimum width 3) — the `;;` header
+  line is excluded, so wide labels may overflow into the gaps. Per-row section references point at each AVP's own subsection; the
+  semantics prose there is referenced, not copied. TS 29.230's one-big-table and
+  RFC 6733 §4.5 serve as cross-check sources. See the AVP Table / Reused AVPs
+  sections in the hand-made example.
+- Inside enumerated AVP bodies, `; RESERVED = <n>` is a reserved-value directive
+  (a grammar production, present in the AST — validators must treat assigning a
+  reserved value as an error distinct from an unknown one). Decide range syntax
+  (`; RESERVED = 34-99`) now, since specs reserve spans of values.
 
 ## Extractor
 
