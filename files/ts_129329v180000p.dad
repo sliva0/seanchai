@@ -205,7 +205,7 @@
 
 
 ; Type: Message
-; Name: Push-Notifications-Answer, PNA
+; Name: Push-Notification-Answer, PNA
 ; Section: 6.1.8
 ; Page: 14
 <Push-Notification-Answer> ::= < Diameter Header: 309, PXY, 16777217 >
