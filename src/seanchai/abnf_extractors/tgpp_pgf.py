@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from pypdf import PdfReader
+from pypdf import PdfReader, PageObject
 
 SECTION_RE = re.compile(r"^\d+(?:\.\d+)*\.?\s+[A-Za-z].+")
 ABNF_START_RE = re.compile(r"::=")
@@ -92,7 +92,7 @@ def extract_avp_names(line: str) -> list[str]:
     return AVP_NAME_RE.findall(line)
 
 
-def extract_page_lines_with_bold(page: object) -> list[tuple[str, bool]]:
+def extract_page_lines_with_bold(page: PageObject) -> list[tuple[str, bool]]:
     """Extract page lines and whether the line contains bold AVP text."""
     page_lines: list[tuple[str, bool]] = []
     current_parts: list[str] = []
