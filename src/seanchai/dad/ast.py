@@ -103,10 +103,12 @@ class GroupedAvp(Node):
 
 
 class EnumValue(Node):
-    """`SomeName = 7` line of an enumerated AVP body."""
+    """`SomeName = 7` line of an enumerated AVP body, optionally annotated
+    with the spec's one-line description: `Subscribe = 0 ; This value ...`."""
 
     name: EnumValueName
     value: Unsigned32
+    description: str | None = None
 
 
 class ReservedValues(Node):

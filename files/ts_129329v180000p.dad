@@ -343,7 +343,7 @@ Requested-Domain ::= < Enumerated AVP header: 706 10415 >
 
 
 ; Type: Grouped AVP
-; AVP Name: Repository-Data-ID
+; Name: Repository-Data-ID
 ; Section: 6.3.24
 ; Page: 22
 Repository-Data-ID ::= < AVP header: 715 10415 >
@@ -360,4 +360,3 @@ Call-Reference-Info ::= < AVP header: 720 10415 >
         { Call-Reference-Number }
         { AS-Number }
       * [ AVP ]
-
