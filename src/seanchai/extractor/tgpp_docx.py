@@ -35,7 +35,9 @@ import pypdf
 from ..dad import ast
 
 _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+[A-Z]*)*)\t(?P<title>.+)$")
-_COMMAND_TITLE_RE = re.compile(r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Command$")
+_COMMAND_TITLE_RE = re.compile(
+    r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Command$"
+)
 # The " AVP" suffix is spec-dependent: 29.329 titles are "MSISDN AVP",
 # 29.272 mostly bare "Subscription-Data". Bare titles like "General" also
 # match — harmless, since a section only becomes a definition when its body
@@ -70,13 +72,17 @@ _NOTE_RFC_RE = re.compile(
 _ORIGIN_TS_RE = re.compile(r"3GPP\s+TS\s+(?P<number>\d{2}\.\d{3})")
 _ORIGIN_RFC_RE = re.compile(r"IETF\s+RFC\s+(?P<number>\d+)")
 
-_BRACKETS = {("<", ">"): ast.Presence.FIXED,
-             ("{", "}"): ast.Presence.REQUIRED,
-             ("[", "]"): ast.Presence.OPTIONAL}
+_BRACKETS = {
+    ("<", ">"): ast.Presence.FIXED,
+    ("{", "}"): ast.Presence.REQUIRED,
+    ("[", "]"): ast.Presence.OPTIONAL,
+}
 
-_M_BIT_OVERRIDES = {"": None,
-                    "Must set": ast.MBitOverride.MUST,
-                    "Must not set": ast.MBitOverride.MUST_NOT}
+_M_BIT_OVERRIDES = {
+    "": None,
+    "Must set": ast.MBitOverride.MUST,
+    "Must not set": ast.MBitOverride.MUST_NOT,
+}
 
 
 class ExtractionError(ValueError):
@@ -91,8 +97,11 @@ def _is_bold(paragraph: docx.text.paragraph.Paragraph) -> bool:
     # Word applies bold erratically to brackets/whitespace runs; only the runs
     # spelling the AVP name itself are trusted (`*{ `=True, `Data-Reference`=None,
     # ` }`=True occurs in real documents for a non-bold AVP).
-    flags = {bool(run.bold) for run in paragraph.runs
-             if any(char.isalnum() for char in run.text)}
+    flags = {
+        bool(run.bold)
+        for run in paragraph.runs
+        if any(char.isalnum() for char in run.text)
+    }
     if len(flags) > 1:
         raise ExtractionError(f"mixed bold in ABNF line: {paragraph.text!r}")
     return flags.pop() if flags else False
@@ -122,7 +131,9 @@ def _sections(document: docx.document.Document) -> list[_Section]:
         if style.startswith("Heading"):
             match = _HEADING_RE.match(item.text.strip())
             if match:
-                current = _Section(number=match["number"], title=_normalize(match["title"]))
+                current = _Section(
+                    number=match["number"], title=_normalize(match["title"])
+                )
                 sections.append(current)
                 continue
         if match := _TABLE_CAPTION_RE.match(_normalize(item.text)):
@@ -149,29 +160,37 @@ def _abnf_body(paragraphs, start: int) -> tuple[tuple[ast.AvpRule, ...], int]:
         else:
             min_occurs = int(match["min"] or 0)
             max_occurs = int(match["max"]) if match["max"] else None
-        rules.append(ast.AvpRule(
-            name=match["name"], presence=presence,
-            min_occurs=min_occurs, max_occurs=max_occurs,
-            bold=_is_bold(paragraph),
-        ))
+        rules.append(
+            ast.AvpRule(
+                name=match["name"],
+                presence=presence,
+                min_occurs=min_occurs,
+                max_occurs=max_occurs,
+                bold=_is_bold(paragraph),
+            )
+        )
         index += 1
     return tuple(rules), index
 
 
-def _find_rule_header(section: _Section, pattern: re.Pattern) -> tuple[re.Match, int] | None:
+def _find_rule_header(
+    section: _Section, pattern: re.Pattern
+) -> tuple[re.Match, int] | None:
     for index, paragraph in enumerate(section.paragraphs):
         text = _normalize(paragraph.text)
         if "::=" in text:
             match = pattern.match(text)
             if match is None:
                 raise ExtractionError(
-                    f"{section.number}: malformed rule header {text!r}")
+                    f"{section.number}: malformed rule header {text!r}"
+                )
             return match, index + 1
     return None
 
 
-def _extract_messages(section: _Section, title: re.Match,
-                      warnings: list[str]) -> list[ast.Message]:
+def _extract_messages(
+    section: _Section, title: re.Match, warnings: list[str]
+) -> list[ast.Message]:
     """A command section usually holds one ABNF, but can hold several — the
     same command under different application ids (TS 29.272 defines IDR/DSR/RSR
     once for S6a and once for S7a in one section)."""
@@ -190,43 +209,53 @@ def _extract_messages(section: _Section, title: re.Match,
             # A real occurrence: TS 29.329 §6.1.8 heading says
             # "Push-Notifications-Answer", the rule "Push-Notification-Answer".
             # The rule name wins; the discrepancy is reported, not fatal.
-            warnings.append(f"{section.number}: heading name {title['name']!r}"
-                            f" != rule name {rule_name!r}, using the rule name")
+            warnings.append(
+                f"{section.number}: heading name {title['name']!r}"
+                f" != rule name {rule_name!r}, using the rule name"
+            )
         items = [item.strip() for item in header["items"].split(",") if item.strip()]
-        application_id = (int(items[-1])
-                          if len(items) > 1 and items[-1].isdigit() else None)
+        application_id = (
+            int(items[-1]) if len(items) > 1 and items[-1].isdigit() else None
+        )
         if application_id is None:
-            warnings.append(f"{section.number}: {rule_name} header omits the"
-                            " application id")
+            warnings.append(
+                f"{section.number}: {rule_name} header omits the application id"
+            )
         flags = items[1:-1] if application_id is not None else items[1:]
         avps, index = _abnf_body(section.paragraphs, index)
-        messages.append(ast.Message(
-            name=rule_name, abbreviation=title["abbr"],
-            source=ast.SourceRef(section=section.number),
-            command_code=int(items[0]),
-            flags=frozenset(ast.CommandFlag(flag) for flag in flags),
-            application_id=application_id,
-            avps=avps,
-        ))
+        messages.append(
+            ast.Message(
+                name=rule_name,
+                abbreviation=title["abbr"],
+                source=ast.SourceRef(section=section.number),
+                command_code=int(items[0]),
+                flags=frozenset(ast.CommandFlag(flag) for flag in flags),
+                application_id=application_id,
+                avps=avps,
+            )
+        )
     if not messages:
         raise ExtractionError(f"{section.number}: command section without ABNF")
     return messages
 
 
-def _extract_grouped(section: _Section, header: re.Match,
-                     body_start: int, name: str) -> ast.GroupedAvp:
+def _extract_grouped(
+    section: _Section, header: re.Match, body_start: int, name: str
+) -> ast.GroupedAvp:
     vendor = header["vendor"]
     avps, _ = _abnf_body(section.paragraphs, body_start)
     return ast.GroupedAvp(
-        name=name, source=ast.SourceRef(section=section.number),
+        name=name,
+        source=ast.SourceRef(section=section.number),
         code=int(header["code"]),
         vendor_id=None if vendor is None else int(vendor),
         avps=avps,
     )
 
 
-def _extract_enumerated(section: _Section, name: str, code: int,
-                        vendor_id: int | None) -> ast.EnumeratedAvp:
+def _extract_enumerated(
+    section: _Section, name: str, code: int, vendor_id: int | None
+) -> ast.EnumeratedAvp:
     values: list[ast.EnumValue] = []
     reserved: list[ast.ReservedValues] = []
     # Classified by content, not paragraph style: the usual convention is
@@ -242,17 +271,25 @@ def _extract_enumerated(section: _Section, name: str, code: int,
         elif style == "NO":
             if match := _RESERVED_NOTE_RE.search(text):
                 first = int(match["first"])
-                reserved.append(ast.ReservedValues(
-                    first=first, last=int(match["last"] or first)))
+                reserved.append(
+                    ast.ReservedValues(first=first, last=int(match["last"] or first))
+                )
         elif style in ("B1", "B2") and values:
             previous = values[-1].description
-            values[-1] = values[-1].model_copy(update={
-                "description": f"{previous} {text}" if previous else text})
-    merged = sorted([*values, *reserved],
-                    key=lambda item: item.value if isinstance(item, ast.EnumValue)
-                    else item.first)
-    return ast.EnumeratedAvp(name=name, source=ast.SourceRef(section=section.number),
-                             code=code, vendor_id=vendor_id, values=tuple(merged))
+            values[-1] = values[-1].model_copy(
+                update={"description": f"{previous} {text}" if previous else text}
+            )
+    merged = sorted(
+        [*values, *reserved],
+        key=lambda item: item.value if isinstance(item, ast.EnumValue) else item.first,
+    )
+    return ast.EnumeratedAvp(
+        name=name,
+        source=ast.SourceRef(section=section.number),
+        code=code,
+        vendor_id=vendor_id,
+        values=tuple(merged),
+    )
 
 
 def _cell_texts(row) -> list[str]:
@@ -263,7 +300,7 @@ def _strip_note_ref(text: str) -> tuple[str, str | None]:
     match = _NOTE_REF_RE.search(text)
     if match is None:
         return text, None
-    return (text[:match.start()] + text[match.end():]).strip(), match["number"]
+    return (text[: match.start()] + text[match.end() :]).strip(), match["number"]
 
 
 def _flags_cell(text: str, warnings: list[str]) -> frozenset[ast.AvpFlag]:
@@ -273,13 +310,17 @@ def _flags_cell(text: str, warnings: list[str]) -> frozenset[ast.AvpFlag]:
         warnings.append(f"flags cell {text!r} uses '.' as separator")
     if text != text.upper():  # another one: lowercase "v"
         warnings.append(f"flags cell {text!r} is not uppercase")
-    return frozenset(ast.AvpFlag(flag.strip().upper())
-                     for flag in re.split(r"[.,]", text))
+    return frozenset(
+        ast.AvpFlag(flag.strip().upper()) for flag in re.split(r"[.,]", text)
+    )
 
 
-def _extract_avp_table(caption: str | None, table: docx.table.Table,
-                       section_number: str, warnings: list[str],
-                       ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
+def _extract_avp_table(
+    caption: str | None,
+    table: docx.table.Table,
+    section_number: str,
+    warnings: list[str],
+) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
@@ -299,29 +340,39 @@ def _extract_avp_table(caption: str | None, table: docx.table.Table,
             # AVP names never contain spaces: a space in the cell is a line-wrap
             # artifact eating a hyphen (TS 29.272: "MME-Location Information").
             repaired = name.replace("- ", "-").replace(" ", "-")
-            warnings.append(f"AVP table name cell {name!r} contains spaces,"
-                            f" repaired to {repaired!r}")
+            warnings.append(
+                f"AVP table name cell {name!r} contains spaces,"
+                f" repaired to {repaired!r}"
+            )
             name = repaired
         code, code_note = _strip_note_ref(cells[1])
         if note := name_note or code_note:
             note_refs.append((name, note))
-        rows.append(ast.AvpTableRow(
-            name=name, code=int(code) if code else None,
-            section=cells[2] or None, data_type=cells[3],
-            flag_rules=ast.AvpFlagRules(
-                must=_flags_cell(cells[4], warnings),
-                may=_flags_cell(cells[5], warnings),
-                should_not=_flags_cell(cells[6], warnings),
-                must_not=_flags_cell(cells[7], warnings),
-            ),
-            may_encrypt={"Yes": True, "No": False}[cells[8]],
-        ))
+        rows.append(
+            ast.AvpTableRow(
+                name=name,
+                code=int(code) if code else None,
+                section=cells[2] or None,
+                data_type=cells[3],
+                flag_rules=ast.AvpFlagRules(
+                    must=_flags_cell(cells[4], warnings),
+                    may=_flags_cell(cells[5], warnings),
+                    should_not=_flags_cell(cells[6], warnings),
+                    must_not=_flags_cell(cells[7], warnings),
+                ),
+                may_encrypt={"Yes": True, "No": False}[cells[8]],
+            )
+        )
     if caption is None:
         raise ExtractionError("AVP table without a caption")
-    reused = [ast.ReusedAvpRow(name=name, origin=f"RFC{note_rfcs[note]}")
-              for name, note in note_refs if note in note_rfcs]
-    avp_table = ast.AvpTable(table=caption, rows=tuple(rows),
-                             source=ast.SourceRef(section=section_number))
+    reused = [
+        ast.ReusedAvpRow(name=name, origin=f"RFC{note_rfcs[note]}")
+        for name, note in note_refs
+        if note in note_rfcs
+    ]
+    avp_table = ast.AvpTable(
+        table=caption, rows=tuple(rows), source=ast.SourceRef(section=section_number)
+    )
     return avp_table, reused
 
 
@@ -333,8 +384,9 @@ def _origin(reference: str) -> str:
     raise ExtractionError(f"unrecognized origin reference {reference!r}")
 
 
-def _extract_reused_table(table: docx.table.Table,
-                          warnings: list[str]) -> list[ast.ReusedAvpRow]:
+def _extract_reused_table(
+    table: docx.table.Table, warnings: list[str]
+) -> list[ast.ReusedAvpRow]:
     rows = []
     for row in table.rows:
         cells = _cell_texts(row)
@@ -345,11 +397,15 @@ def _extract_reused_table(table: docx.table.Table,
         if m_bit_cell == cells[0]:
             # Horizontally merged row: python-docx repeats the first cell's
             # text in the missing position (TS 29.272 Battery-Indicator row).
-            warnings.append(f"re-used AVPs row {name!r} has a merged M-bit"
-                            " cell, treating as empty")
+            warnings.append(
+                f"re-used AVPs row {name!r} has a merged M-bit cell, treating as empty"
+            )
             m_bit_cell = ""
-        rows.append(ast.ReusedAvpRow(name=name, origin=_origin(cells[1]),
-                                     m_bit=_M_BIT_OVERRIDES[m_bit_cell]))
+        rows.append(
+            ast.ReusedAvpRow(
+                name=name, origin=_origin(cells[1]), m_bit=_M_BIT_OVERRIDES[m_bit_cell]
+            )
+        )
     return rows
 
 
@@ -364,8 +420,9 @@ def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
     raise ExtractionError("cannot find spec number/version on the cover page")
 
 
-def extract(docx_path, link: str | None = None,
-            warnings: list[str] | None = None) -> ast.Specification:
+def extract(
+    docx_path, link: str | None = None, warnings: list[str] | None = None
+) -> ast.Specification:
     """Extract a `Specification` from a 3GPP docx. Non-fatal source-document
     inconsistencies are appended to `warnings` when a list is given."""
     warnings = warnings if warnings is not None else []
@@ -390,7 +447,8 @@ def extract(docx_path, link: str | None = None,
             header = _cell_texts(table.rows[0])
             if "AVP Flag rules" in header:
                 avp_table, note_reused = _extract_avp_table(
-                    caption, table, section.number, warnings)
+                    caption, table, section.number, warnings
+                )
                 tables_section = section.number
             elif "Reference" in header and "M-bit" in header:
                 if caption is None:
@@ -404,17 +462,23 @@ def extract(docx_path, link: str | None = None,
                 rule_name = header["name"]
                 if " " in rule_name:
                     repaired = rule_name.replace("- ", "-").replace(" ", "-")
-                    warnings.append(f"{section.number}: rule name {rule_name!r}"
-                                    f" contains spaces, repaired to {repaired!r}")
+                    warnings.append(
+                        f"{section.number}: rule name {rule_name!r}"
+                        f" contains spaces, repaired to {repaired!r}"
+                    )
                     rule_name = repaired
                 if rule_name != title["name"]:
-                    warnings.append(f"{section.number}: heading name"
-                                    f" {title['name']!r} != rule name {rule_name!r},"
-                                    " using the rule name")
-                grouped.append(_extract_grouped(section, header, body_start,
-                                                name=rule_name))
+                    warnings.append(
+                        f"{section.number}: heading name"
+                        f" {title['name']!r} != rule name {rule_name!r},"
+                        " using the rule name"
+                    )
+                grouped.append(
+                    _extract_grouped(section, header, body_start, name=rule_name)
+                )
             elif section.paragraphs and "type Enumerated" in _normalize(
-                    section.paragraphs[0].text):
+                section.paragraphs[0].text
+            ):
                 pending_enums.append((section, title["name"]))
 
     if avp_table is None:
@@ -431,19 +495,23 @@ def extract(docx_path, link: str | None = None,
             continue
         code = codes.get(name)
         if code is None:
-            raise ExtractionError(f"{section.number}: enumerated AVP {name!r}"
-                                  " has no code in the AVP table")
+            raise ExtractionError(
+                f"{section.number}: enumerated AVP {name!r}"
+                " has no code in the AVP table"
+            )
         enumerated.append(_extract_enumerated(section, name, code, vendor_id))
 
     sections: list = [*messages]
     if avp_table is not None:
         sections.append(avp_table)
     if reused_rows or note_reused:
-        sections.append(ast.ReusedAvps(
-            table=reused_table_label or avp_table.table,
-            source=ast.SourceRef(section=tables_section),
-            rows=tuple([*reused_rows, *note_reused]),
-        ))
+        sections.append(
+            ast.ReusedAvps(
+                table=reused_table_label or avp_table.table,
+                source=ast.SourceRef(section=tables_section),
+                rows=tuple([*reused_rows, *note_reused]),
+            )
+        )
     definitions = sorted(
         [*grouped, *enumerated],
         key=lambda definition: [
@@ -453,8 +521,12 @@ def extract(docx_path, link: str | None = None,
         ],
     )
     sections.extend(definitions)
-    return ast.Specification(specification=specification, version=version,
-                             link=link, sections=tuple(sections))
+    return ast.Specification(
+        specification=specification,
+        version=version,
+        link=link,
+        sections=tuple(sections),
+    )
 
 
 def attach_pages(spec: ast.Specification, pdf_path) -> ast.Specification:
@@ -471,8 +543,9 @@ def attach_pages(spec: ast.Specification, pdf_path) -> ast.Specification:
                 continue
             match = re.match(r"^(\d+(?:\.\d+[A-Z]*)*)\s", entry.title)
             if match:
-                pages[match.group(1)] = reader.get_page_number(
-                    entry.page or reader.pages[0]) + 1
+                pages[match.group(1)] = (
+                    reader.get_page_number(entry.page or reader.pages[0]) + 1
+                )
 
     walk(reader.outline)
 
@@ -481,7 +554,9 @@ def attach_pages(spec: ast.Specification, pdf_path) -> ast.Specification:
         if page is None:
             return section
         return section.model_copy(
-            update={"source": ast.SourceRef(section=section.source.section, page=page)})
+            update={"source": ast.SourceRef(section=section.source.section, page=page)}
+        )
 
     return spec.model_copy(
-        update={"sections": tuple(with_page(section) for section in spec.sections)})
+        update={"sections": tuple(with_page(section) for section in spec.sections)}
+    )

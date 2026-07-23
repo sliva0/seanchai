@@ -9,6 +9,9 @@
 Those ZIPs normally contain the editable DOC or DOCX specification source.
 RFCs are downloaded as canonical plain text from the RFC Editor. Official
 3GPP/ETSI PDF renditions can also be downloaded with ``--pdfs``.
+
+The curated specification catalog lives in ``specs.toml`` next to this script;
+downloads land in the repository's ``output/`` directory by default.
 """
 
 from __future__ import annotations
@@ -24,6 +27,7 @@ import shutil
 import sys
 import tempfile
 import time
+import tomllib
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -61,130 +65,20 @@ class RfcSpec:
     title: str
 
 
-# This is deliberately broader than a title search. Several protocols (for
-# example SLg, EPS AAA, ProSe, V2X, and MB2) are Diameter applications without
-# saying "Diameter" in their specification titles.
-THREE_GPP_SPECS = (
-    ThreeGppSpec(
-        "29.061",
-        "PLMN interworking with packet data networks",
-        "Defines Diameter NASREQ/accounting command formats and 3GPP AVPs for Gi/SGi.",
-    ),
-    ThreeGppSpec("29.109", "GAA; Zh and Zn interfaces based on Diameter"),
-    ThreeGppSpec("29.128", "MME/SGSN interfaces to packet data networks and applications"),
-    ThreeGppSpec("29.172", "EPC LCS Protocol (ELP) over the SLg interface"),
-    ThreeGppSpec("29.173", "Diameter-based SLh interface for Control Plane LCS"),
-    ThreeGppSpec(
-        "29.201",
-        "REST reference point between AF and Protocol Converter",
-        "Defines mappings between Diameter AVP base formats and XML/REST representations.",
-    ),
-    ThreeGppSpec("29.212", "Policy and Charging Control (PCC) reference points"),
-    ThreeGppSpec(
-        "29.213",
-        "PCC signalling flows and QoS parameter mapping",
-        "Companion PCC specification containing Diameter AVP usage and parameter mappings.",
-    ),
-    ThreeGppSpec("29.214", "Policy and charging control over Rx"),
-    ThreeGppSpec("29.215", "Policy and Charging Control over S9"),
-    ThreeGppSpec("29.217", "PCC congestion reporting over Np"),
-    ThreeGppSpec("29.219", "PCC spending-limit reporting over Sy"),
-    ThreeGppSpec(
-        "29.228",
-        "Cx/Dx signalling flows and message contents",
-        "Defines application-level AVP presence rules that override the protocol ABNF.",
-    ),
-    ThreeGppSpec("29.229", "Cx and Dx interfaces based on Diameter"),
-    ThreeGppSpec(
-        "29.230",
-        "Diameter applications; 3GPP-specific codes and identifiers",
-        "Registry of 3GPP Diameter application IDs, command codes, and AVP codes.",
-    ),
-    ThreeGppSpec("29.272", "EPS MME/SGSN interfaces based on Diameter"),
-    ThreeGppSpec("29.273", "EPS 3GPP AAA interfaces"),
-    ThreeGppSpec("29.283", "Diameter data-management applications"),
-    ThreeGppSpec(
-        "29.305",
-        "Interworking between MAP- and Diameter-based interfaces",
-        "Contains mappings between MAP parameters and Diameter AVPs.",
-    ),
-    ThreeGppSpec(
-        "29.328",
-        "Sh signalling flows and message contents",
-        "Companion Sh specification containing Diameter message and AVP content rules.",
-    ),
-    ThreeGppSpec("29.329", "Sh interface based on Diameter"),
-    ThreeGppSpec("29.330", "IMS Sc interface based on Diameter"),
-    ThreeGppSpec("29.336", "HSS Diameter interfaces for packet data networks/applications"),
-    ThreeGppSpec("29.337", "Diameter-based T4 interface"),
-    ThreeGppSpec("29.338", "Diameter protocols supporting SMS-capable MMEs"),
-    ThreeGppSpec("29.343", "ProSe function to ProSe application server over PC2"),
-    ThreeGppSpec("29.344", "ProSe function to HSS aspects"),
-    ThreeGppSpec("29.345", "Inter-ProSe function signalling"),
-    ThreeGppSpec("29.368", "Tsp interface between MTC-IWF and SCS"),
-    ThreeGppSpec("29.388", "V2X Control Function to HSS aspects (V4)"),
-    ThreeGppSpec("29.389", "Inter-V2X Control Function signalling (V6)"),
-    ThreeGppSpec("29.468", "GCSE_LTE MB2 reference point"),
-    ThreeGppSpec(
-        "29.909",
-        "Diameter-based protocol usage and recommendations in 3GPP",
-        "Cross-specification guidance for 3GPP Diameter applications.",
-        "TR",
-    ),
-    ThreeGppSpec("32.299", "Diameter charging applications"),
-)
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_OUTPUT = SCRIPT_DIR.parent / "output"
 
 
-# Diameter-titled RFCs plus RFCs referenced by IANA's Diameter AVP registries
-# whose titles do not contain the word "Diameter". Obsoleted RFCs are retained:
-# they are useful input when extracting historical ABNF and AVP definitions.
-RFC_SPECS = (
-    RfcSpec(3588, "Diameter Base Protocol (obsoleted by RFC 6733)"),
-    RfcSpec(3589, "Diameter command codes for 3GPP Release 5"),
-    RfcSpec(4004, "Diameter Mobile IPv4 Application"),
-    RfcSpec(4005, "Diameter NAS Application (obsoleted by RFC 7155)"),
-    RfcSpec(4006, "Diameter Credit-Control Application (obsoleted by RFC 8506)"),
-    RfcSpec(4072, "Diameter EAP Application"),
-    RfcSpec(4740, "Diameter SIP Application"),
-    RfcSpec(4849, "RADIUS Filter Rule Attribute (includes Diameter NAS-Filter-Rule)"),
-    RfcSpec(5224, "Diameter Policy Processing Application"),
-    RfcSpec(5431, "Diameter ITU-T Rw Policy Enforcement Interface Application"),
-    RfcSpec(5447, "Diameter Mobile IPv6 NAS-to-server interaction"),
-    RfcSpec(5516, "Diameter command-code registration for 3GPP EPS"),
-    RfcSpec(5580, "Carrying Location Objects in RADIUS and Diameter"),
-    RfcSpec(5624, "QoS parameters for use with Diameter"),
-    RfcSpec(5719, "Updated IANA considerations for Diameter command codes"),
-    RfcSpec(5729, "Diameter request routing by username and realm"),
-    RfcSpec(5777, "Traffic classification and QoS attributes for Diameter"),
-    RfcSpec(5778, "Diameter Mobile IPv6 home-agent interaction"),
-    RfcSpec(5779, "Diameter Proxy Mobile IPv6 MAG/LMA interaction"),
-    RfcSpec(5866, "Diameter QoS Application"),
-    RfcSpec(6159, "Session-specific explicit Diameter request routing"),
-    RfcSpec(6408, "Diameter S-NAPTR usage"),
-    RfcSpec(6572, "RADIUS support for PMIPv6 (includes Diameter AVP mapping)"),
-    RfcSpec(6733, "Diameter Base Protocol"),
-    RfcSpec(6734, "Diameter AVPs for cryptographic-key transport"),
-    RfcSpec(6735, "Diameter priority AVPs"),
-    RfcSpec(6736, "Diameter NAT Control Application"),
-    RfcSpec(6737, "Diameter Capabilities Update Application"),
-    RfcSpec(6738, "Diameter IKEv2 shared-key application"),
-    RfcSpec(6942, "Diameter support for EAP Re-authentication Protocol"),
-    RfcSpec(7068, "Diameter overload-control requirements"),
-    RfcSpec(7075, "Realm-based redirection in Diameter"),
-    RfcSpec(7155, "Diameter NAS Application"),
-    RfcSpec(7156, "Diameter support for PMIPv6 localized routing"),
-    RfcSpec(7423, "Diameter application design guidelines"),
-    RfcSpec(7660, "Diameter congestion and filter attributes"),
-    RfcSpec(7678, "AVPs for IPv4-over-IPv6 transition provisioning"),
-    RfcSpec(7683, "Diameter overload indication conveyance"),
-    RfcSpec(7944, "Diameter routing-message priority"),
-    RfcSpec(7966, "AVP-level security scenarios and requirements"),
-    RfcSpec(8506, "Diameter Credit-Control Application"),
-    RfcSpec(8581, "Diameter agent and peer overload reports"),
-    RfcSpec(8582, "Diameter overload rate control"),
-    RfcSpec(8583, "Diameter load-information conveyance"),
-    RfcSpec(9390, "Diameter group signaling"),
-)
+def load_catalog(path: Path) -> tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]]:
+    """Read the curated specification catalog from specs.toml."""
+    with path.open("rb") as stream:
+        data = tomllib.load(stream)
+    tgpp = tuple(ThreeGppSpec(**entry) for entry in data["tgpp"])
+    rfc = tuple(RfcSpec(**entry) for entry in data["rfc"])
+    return tgpp, rfc
+
+
+THREE_GPP_SPECS, RFC_SPECS = load_catalog(SCRIPT_DIR / "specs.toml")
 
 
 @dataclass
@@ -224,7 +118,9 @@ def request_bytes(url: str, retries: int = 4) -> bytes:
                 return response.read()
         except urllib.error.HTTPError as error:
             if error.code not in {408, 429, 500, 502, 503, 504}:
-                raise RuntimeError(f"failed to fetch {url}: HTTP {error.code}") from error
+                raise RuntimeError(
+                    f"failed to fetch {url}: HTTP {error.code}"
+                ) from error
             if attempt + 1 == retries:
                 raise RuntimeError(f"failed to fetch {url}: {error}") from error
             time.sleep(2**attempt)
@@ -244,8 +140,8 @@ def discover_3gpp_urls(release: int) -> dict[str, str]:
         for spec in (item for item in THREE_GPP_SPECS if item.series == series):
             # The first filename character after '-' encodes the 3GPP release.
             pattern = re.compile(
-                rf'''href=["']([^"']*/?{re.escape(spec.archive_stem)}-'''
-                rf'''{re.escape(marker)}[0-9a-z]{{2}}\.zip)["']''',
+                rf"""href=["']([^"']*/?{re.escape(spec.archive_stem)}-"""
+                rf"""{re.escape(marker)}[0-9a-z]{{2}}\.zip)["']""",
                 re.IGNORECASE,
             )
             matches = pattern.findall(html.unescape(page))
@@ -264,7 +160,9 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def atomic_download(url: str, destination: Path, expected_prefix: bytes | None = None) -> None:
+def atomic_download(
+    url: str, destination: Path, expected_prefix: bytes | None = None
+) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     if destination.is_file() and destination.stat().st_size:
         if expected_prefix is None:
@@ -274,9 +172,15 @@ def atomic_download(url: str, destination: Path, expected_prefix: bytes | None =
                 return
     data = request_bytes(url)
     if expected_prefix is not None and not data.startswith(expected_prefix):
-        raise RuntimeError(f"downloaded content from {url} is not the expected file type")
+        raise RuntimeError(
+            f"downloaded content from {url} is not the expected file type"
+        )
     with tempfile.NamedTemporaryFile(
-        mode="wb", dir=destination.parent, prefix=destination.name, suffix=".part", delete=False
+        mode="wb",
+        dir=destination.parent,
+        prefix=destination.name,
+        suffix=".part",
+        delete=False,
     ) as stream:
         temporary = Path(stream.name)
         stream.write(data)
@@ -370,7 +274,9 @@ def download_3gpp(
     atomic_download(url, archive)
     files = [archive]
     if extract:
-        spec_dir = output / "3gpp" / f"Rel-{release}" / f"{spec.document_type}_{spec.number}"
+        spec_dir = (
+            output / "3gpp" / f"Rel-{release}" / f"{spec.document_type}_{spec.number}"
+        )
         files.extend(safe_extract(archive, spec_dir))
     pdf_url = None
     pdf_sha256 = None
@@ -388,7 +294,9 @@ def download_3gpp(
         except RuntimeError as exact_error:
             fallback_versions = discover_etsi_pdf_versions(spec, source_version_tuple)
             fallback_versions = [
-                version for version in fallback_versions if version != source_version_tuple
+                version
+                for version in fallback_versions
+                if version != source_version_tuple
             ]
             if not fallback_versions:
                 raise RuntimeError(
@@ -446,21 +354,29 @@ def print_catalog() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--release", type=int, default=18, help="3GPP release (default: 18)")
+    parser.add_argument(
+        "--release", type=int, default=18, help="3GPP release (default: 18)"
+    )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("specifications"),
-        help="corpus directory (default: specifications)",
+        default=DEFAULT_OUTPUT,
+        help="corpus directory (default: <repo>/output)",
     )
-    parser.add_argument("--workers", type=int, default=6, help="parallel downloads (default: 6)")
     parser.add_argument(
-        "--no-extract", action="store_true", help="keep 3GPP ZIPs without extracting DOC/DOCX files"
+        "--workers", type=int, default=6, help="parallel downloads (default: 6)"
+    )
+    parser.add_argument(
+        "--no-extract",
+        action="store_true",
+        help="keep 3GPP ZIPs without extracting DOC/DOCX files",
     )
     parser.add_argument(
         "--pdfs", action="store_true", help="also download official 3GPP/ETSI PDFs"
     )
-    parser.add_argument("--list", action="store_true", help="print the curated catalog and exit")
+    parser.add_argument(
+        "--list", action="store_true", help="print the curated catalog and exit"
+    )
     return parser.parse_args()
 
 
@@ -535,7 +451,12 @@ def main() -> int:
     }
     manifest_path = output / "manifest.json"
     with tempfile.NamedTemporaryFile(
-        mode="w", encoding="utf-8", dir=output, prefix="manifest", suffix=".part", delete=False
+        mode="w",
+        encoding="utf-8",
+        dir=output,
+        prefix="manifest",
+        suffix=".part",
+        delete=False,
     ) as stream:
         temporary = Path(stream.name)
         json.dump(manifest, stream, indent=2, sort_keys=True)

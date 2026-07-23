@@ -15,12 +15,17 @@ depends on stable diffs. Canonical rules:
 
 from . import ast
 
-_PRESENCE_BRACKETS = {ast.Presence.FIXED: "<>",
-                      ast.Presence.REQUIRED: "{}",
-                      ast.Presence.OPTIONAL: "[]"}
+_PRESENCE_BRACKETS = {
+    ast.Presence.FIXED: "<>",
+    ast.Presence.REQUIRED: "{}",
+    ast.Presence.OPTIONAL: "[]",
+}
 # Canonical command-flag order in a Diameter header line.
-_COMMAND_FLAG_ORDER = [ast.CommandFlag.REQUEST, ast.CommandFlag.PROXIABLE,
-                       ast.CommandFlag.ERROR]
+_COMMAND_FLAG_ORDER = [
+    ast.CommandFlag.REQUEST,
+    ast.CommandFlag.PROXIABLE,
+    ast.CommandFlag.ERROR,
+]
 _MIN_COLUMN_WIDTH = 3
 _COLUMN_GAP = 3
 
@@ -60,8 +65,10 @@ def _flags_cell(flags: frozenset[ast.AvpFlag]) -> str:
 
 
 def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
-    widths = [max(_MIN_COLUMN_WIDTH, max(len(row[i]) for row in rows))
-              for i in range(len(headers))]
+    widths = [
+        max(_MIN_COLUMN_WIDTH, max(len(row[i]) for row in rows))
+        for i in range(len(headers))
+    ]
     starts = [0]
     for width in widths[:-1]:
         starts.append(starts[-1] + width + _COLUMN_GAP)
@@ -80,8 +87,9 @@ def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
 
 def _format_message(message: ast.Message, bold_column: int) -> list[str]:
     flags = [flag.value for flag in _COMMAND_FLAG_ORDER if flag in message.flags]
-    application = ([] if message.application_id is None
-                   else [str(message.application_id)])
+    application = (
+        [] if message.application_id is None else [str(message.application_id)]
+    )
     header_items = ", ".join([str(message.command_code), *flags, *application])
     return [
         "; Type: Message",
@@ -106,16 +114,27 @@ def _format_grouped(avp: ast.GroupedAvp, bold_column: int) -> list[str]:
 
 def _format_enumerated(avp: ast.EnumeratedAvp, bold_column: int) -> list[str]:
     del bold_column
-    width = max((len(value.name) if isinstance(value, ast.EnumValue) else len("RESERVED")
-                 for value in avp.values), default=0)
+    width = max(
+        (
+            len(value.name) if isinstance(value, ast.EnumValue) else len("RESERVED")
+            for value in avp.values
+        ),
+        default=0,
+    )
     lines = [
         "; Type: Enumerated AVP",
         *_header_directives(avp.name, avp.source),
         f"{avp.name} ::= < Enumerated AVP header:"
         f" {_avp_header_items(avp.code, avp.vendor_id)} >",
     ]
-    value_width = max((len(str(value.value)) for value in avp.values
-                       if isinstance(value, ast.EnumValue)), default=0)
+    value_width = max(
+        (
+            len(str(value.value))
+            for value in avp.values
+            if isinstance(value, ast.EnumValue)
+        ),
+        default=0,
+    )
     for value in avp.values:
         if isinstance(value, ast.EnumValue):
             line = f"        {value.name:<{width}} = {value.value:<{value_width}}"
@@ -123,35 +142,59 @@ def _format_enumerated(avp: ast.EnumeratedAvp, bold_column: int) -> list[str]:
                 line += f" ; {value.description}"
             lines.append(line.rstrip())
         else:
-            numbers = (str(value.first) if value.first == value.last
-                       else f"{value.first}-{value.last}")
+            numbers = (
+                str(value.first)
+                if value.first == value.last
+                else f"{value.first}-{value.last}"
+            )
             lines.append(f"      ; {'RESERVED':<{width}} = {numbers}")
     return lines
 
 
 def _format_avp_table(table: ast.AvpTable, bold_column: int) -> list[str]:
     del bold_column
-    rows = [[row.name, "-" if row.code is None else str(row.code),
-             row.section if row.section is not None else "-",
-             row.data_type,
-             _flags_cell(row.flag_rules.must), _flags_cell(row.flag_rules.may),
-             _flags_cell(row.flag_rules.should_not), _flags_cell(row.flag_rules.must_not),
-             "Yes" if row.may_encrypt else "No"]
-            for row in table.rows]
+    rows = [
+        [
+            row.name,
+            "-" if row.code is None else str(row.code),
+            row.section if row.section is not None else "-",
+            row.data_type,
+            _flags_cell(row.flag_rules.must),
+            _flags_cell(row.flag_rules.may),
+            _flags_cell(row.flag_rules.should_not),
+            _flags_cell(row.flag_rules.must_not),
+            "Yes" if row.may_encrypt else "No",
+        ]
+        for row in table.rows
+    ]
     return [
         "; Type: AVP Table",
         f"; Section: {table.source.section}",
         f"; Table: {table.table}",
         *([f"; Page: {table.source.page}"] if table.source.page is not None else []),
-        *_table(["Name", "Code", "Section", "Type",
-                 "Must", "May", "S.not", "M.not", "Encrypt"], rows),
+        *_table(
+            [
+                "Name",
+                "Code",
+                "Section",
+                "Type",
+                "Must",
+                "May",
+                "S.not",
+                "M.not",
+                "Encrypt",
+            ],
+            rows,
+        ),
     ]
 
 
 def _format_reused(reused: ast.ReusedAvps, bold_column: int) -> list[str]:
     del bold_column
-    rows = [[row.name, row.origin, row.m_bit.value if row.m_bit else "-"]
-            for row in reused.rows]
+    rows = [
+        [row.name, row.origin, row.m_bit.value if row.m_bit else "-"]
+        for row in reused.rows
+    ]
     return [
         "; Type: Reused AVPs",
         f"; Section: {reused.source.section}",
@@ -171,10 +214,12 @@ _SECTION_FORMATTERS = {
 
 
 def _bold_column(spec: ast.Specification) -> int:
-    lengths = [len(_avp_line(rule))
-               for section in spec.sections
-               if isinstance(section, (ast.Message, ast.GroupedAvp))
-               for rule in section.avps]
+    lengths = [
+        len(_avp_line(rule))
+        for section in spec.sections
+        if isinstance(section, (ast.Message, ast.GroupedAvp))
+        for rule in section.avps
+    ]
     return max(lengths, default=0) + 1
 
 
@@ -185,6 +230,8 @@ def format(spec: ast.Specification) -> str:
 
     bold_column = _bold_column(spec)
     parts = [header]
-    parts.extend(_SECTION_FORMATTERS[type(section)](section, bold_column)
-                 for section in spec.sections)
+    parts.extend(
+        _SECTION_FORMATTERS[type(section)](section, bold_column)
+        for section in spec.sections
+    )
     return "\n\n\n".join("\n".join(part) for part in parts) + "\n"

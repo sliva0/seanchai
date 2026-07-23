@@ -40,7 +40,7 @@ The pipeline has three stages:
 
 A plain-text format that stays as close as possible to the ABNF found in the source
 documents, so a definition can be reviewed as a near-diff against the spec. See
-`files/ts_129329v180000p.dad` for a hand-made example based on 3GPP TS 29.329.
+`examples/ts_129329v180000p.dad` for a hand-made example based on 3GPP TS 29.329.
 
 Key properties:
 
@@ -69,7 +69,12 @@ Key properties:
 
 ## Repository layout
 
-- `src/` — extractor and (eventually) parser/formatter packages.
-- `specifications/` — source documents, fetched by `download_diameter_specs.py`
-  (3GPP releases and RFCs that need conversion).
-- `files/` — examples and scratch material, including the hand-made `.dad` example.
+- `src/seanchai/` — the `dad` package (AST, parser, canonical formatter), the
+  `extractor` package, and the `seanchai` CLI.
+- `downloader/` — `download_diameter_specs.py` plus `specs.toml`, the curated
+  catalog of 3GPP specs and RFCs to fetch.
+- `output/` — downloaded source documents (git-ignored; recreate with the
+  downloader).
+- `examples/` — committed `.dad` files: the hand-made reference and raw
+  extractor outputs.
+- `tests/` — pytest suite (`uv run pytest`).

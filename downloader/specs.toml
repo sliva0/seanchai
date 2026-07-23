@@ -1,0 +1,335 @@
+# Curated corpus of Diameter-related specifications.
+# Read by download_diameter_specs.py; add entries here, not in the script.
+
+# The 3GPP list is deliberately broader than a title search. Several protocols
+# (for example SLg, EPS AAA, ProSe, V2X, and MB2) are Diameter applications
+# without saying "Diameter" in their specification titles.
+
+[[tgpp]]
+number = "29.061"
+title = "PLMN interworking with packet data networks"
+reason = "Defines Diameter NASREQ/accounting command formats and 3GPP AVPs for Gi/SGi."
+
+[[tgpp]]
+number = "29.109"
+title = "GAA; Zh and Zn interfaces based on Diameter"
+
+[[tgpp]]
+number = "29.128"
+title = "MME/SGSN interfaces to packet data networks and applications"
+
+[[tgpp]]
+number = "29.172"
+title = "EPC LCS Protocol (ELP) over the SLg interface"
+
+[[tgpp]]
+number = "29.173"
+title = "Diameter-based SLh interface for Control Plane LCS"
+
+[[tgpp]]
+number = "29.201"
+title = "REST reference point between AF and Protocol Converter"
+reason = "Defines mappings between Diameter AVP base formats and XML/REST representations."
+
+[[tgpp]]
+number = "29.212"
+title = "Policy and Charging Control (PCC) reference points"
+
+[[tgpp]]
+number = "29.213"
+title = "PCC signalling flows and QoS parameter mapping"
+reason = "Companion PCC specification containing Diameter AVP usage and parameter mappings."
+
+[[tgpp]]
+number = "29.214"
+title = "Policy and charging control over Rx"
+
+[[tgpp]]
+number = "29.215"
+title = "Policy and Charging Control over S9"
+
+[[tgpp]]
+number = "29.217"
+title = "PCC congestion reporting over Np"
+
+[[tgpp]]
+number = "29.219"
+title = "PCC spending-limit reporting over Sy"
+
+[[tgpp]]
+number = "29.228"
+title = "Cx/Dx signalling flows and message contents"
+reason = "Defines application-level AVP presence rules that override the protocol ABNF."
+
+[[tgpp]]
+number = "29.229"
+title = "Cx and Dx interfaces based on Diameter"
+
+[[tgpp]]
+number = "29.230"
+title = "Diameter applications; 3GPP-specific codes and identifiers"
+reason = "Registry of 3GPP Diameter application IDs, command codes, and AVP codes."
+
+[[tgpp]]
+number = "29.272"
+title = "EPS MME/SGSN interfaces based on Diameter"
+
+[[tgpp]]
+number = "29.273"
+title = "EPS 3GPP AAA interfaces"
+
+[[tgpp]]
+number = "29.283"
+title = "Diameter data-management applications"
+
+[[tgpp]]
+number = "29.305"
+title = "Interworking between MAP- and Diameter-based interfaces"
+reason = "Contains mappings between MAP parameters and Diameter AVPs."
+
+[[tgpp]]
+number = "29.328"
+title = "Sh signalling flows and message contents"
+reason = "Companion Sh specification containing Diameter message and AVP content rules."
+
+[[tgpp]]
+number = "29.329"
+title = "Sh interface based on Diameter"
+
+[[tgpp]]
+number = "29.330"
+title = "IMS Sc interface based on Diameter"
+
+[[tgpp]]
+number = "29.336"
+title = "HSS Diameter interfaces for packet data networks/applications"
+
+[[tgpp]]
+number = "29.337"
+title = "Diameter-based T4 interface"
+
+[[tgpp]]
+number = "29.338"
+title = "Diameter protocols supporting SMS-capable MMEs"
+
+[[tgpp]]
+number = "29.343"
+title = "ProSe function to ProSe application server over PC2"
+
+[[tgpp]]
+number = "29.344"
+title = "ProSe function to HSS aspects"
+
+[[tgpp]]
+number = "29.345"
+title = "Inter-ProSe function signalling"
+
+[[tgpp]]
+number = "29.368"
+title = "Tsp interface between MTC-IWF and SCS"
+
+[[tgpp]]
+number = "29.388"
+title = "V2X Control Function to HSS aspects (V4)"
+
+[[tgpp]]
+number = "29.389"
+title = "Inter-V2X Control Function signalling (V6)"
+
+[[tgpp]]
+number = "29.468"
+title = "GCSE_LTE MB2 reference point"
+
+[[tgpp]]
+number = "29.909"
+title = "Diameter-based protocol usage and recommendations in 3GPP"
+reason = "Cross-specification guidance for 3GPP Diameter applications."
+document_type = "TR"
+
+[[tgpp]]
+number = "32.299"
+title = "Diameter charging applications"
+
+# Diameter-titled RFCs plus RFCs referenced by IANA's Diameter AVP registries
+# whose titles do not contain the word "Diameter". Obsoleted RFCs are retained:
+# they are useful input when extracting historical ABNF and AVP definitions.
+
+[[rfc]]
+number = 3588
+title = "Diameter Base Protocol (obsoleted by RFC 6733)"
+
+[[rfc]]
+number = 3589
+title = "Diameter command codes for 3GPP Release 5"
+
+[[rfc]]
+number = 4004
+title = "Diameter Mobile IPv4 Application"
+
+[[rfc]]
+number = 4005
+title = "Diameter NAS Application (obsoleted by RFC 7155)"
+
+[[rfc]]
+number = 4006
+title = "Diameter Credit-Control Application (obsoleted by RFC 8506)"
+
+[[rfc]]
+number = 4072
+title = "Diameter EAP Application"
+
+[[rfc]]
+number = 4740
+title = "Diameter SIP Application"
+
+[[rfc]]
+number = 4849
+title = "RADIUS Filter Rule Attribute (includes Diameter NAS-Filter-Rule)"
+
+[[rfc]]
+number = 5224
+title = "Diameter Policy Processing Application"
+
+[[rfc]]
+number = 5431
+title = "Diameter ITU-T Rw Policy Enforcement Interface Application"
+
+[[rfc]]
+number = 5447
+title = "Diameter Mobile IPv6 NAS-to-server interaction"
+
+[[rfc]]
+number = 5516
+title = "Diameter command-code registration for 3GPP EPS"
+
+[[rfc]]
+number = 5580
+title = "Carrying Location Objects in RADIUS and Diameter"
+
+[[rfc]]
+number = 5624
+title = "QoS parameters for use with Diameter"
+
+[[rfc]]
+number = 5719
+title = "Updated IANA considerations for Diameter command codes"
+
+[[rfc]]
+number = 5729
+title = "Diameter request routing by username and realm"
+
+[[rfc]]
+number = 5777
+title = "Traffic classification and QoS attributes for Diameter"
+
+[[rfc]]
+number = 5778
+title = "Diameter Mobile IPv6 home-agent interaction"
+
+[[rfc]]
+number = 5779
+title = "Diameter Proxy Mobile IPv6 MAG/LMA interaction"
+
+[[rfc]]
+number = 5866
+title = "Diameter QoS Application"
+
+[[rfc]]
+number = 6159
+title = "Session-specific explicit Diameter request routing"
+
+[[rfc]]
+number = 6408
+title = "Diameter S-NAPTR usage"
+
+[[rfc]]
+number = 6572
+title = "RADIUS support for PMIPv6 (includes Diameter AVP mapping)"
+
+[[rfc]]
+number = 6733
+title = "Diameter Base Protocol"
+
+[[rfc]]
+number = 6734
+title = "Diameter AVPs for cryptographic-key transport"
+
+[[rfc]]
+number = 6735
+title = "Diameter priority AVPs"
+
+[[rfc]]
+number = 6736
+title = "Diameter NAT Control Application"
+
+[[rfc]]
+number = 6737
+title = "Diameter Capabilities Update Application"
+
+[[rfc]]
+number = 6738
+title = "Diameter IKEv2 shared-key application"
+
+[[rfc]]
+number = 6942
+title = "Diameter support for EAP Re-authentication Protocol"
+
+[[rfc]]
+number = 7068
+title = "Diameter overload-control requirements"
+
+[[rfc]]
+number = 7075
+title = "Realm-based redirection in Diameter"
+
+[[rfc]]
+number = 7155
+title = "Diameter NAS Application"
+
+[[rfc]]
+number = 7156
+title = "Diameter support for PMIPv6 localized routing"
+
+[[rfc]]
+number = 7423
+title = "Diameter application design guidelines"
+
+[[rfc]]
+number = 7660
+title = "Diameter congestion and filter attributes"
+
+[[rfc]]
+number = 7678
+title = "AVPs for IPv4-over-IPv6 transition provisioning"
+
+[[rfc]]
+number = 7683
+title = "Diameter overload indication conveyance"
+
+[[rfc]]
+number = 7944
+title = "Diameter routing-message priority"
+
+[[rfc]]
+number = 7966
+title = "AVP-level security scenarios and requirements"
+
+[[rfc]]
+number = 8506
+title = "Diameter Credit-Control Application"
+
+[[rfc]]
+number = 8581
+title = "Diameter agent and peer overload reports"
+
+[[rfc]]
+number = 8582
+title = "Diameter overload rate control"
+
+[[rfc]]
+number = 8583
+title = "Diameter load-information conveyance"
+
+[[rfc]]
+number = 9390
+title = "Diameter group signaling"

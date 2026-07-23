@@ -15,14 +15,19 @@ Implemented so far, so a fresh reader knows what already exists:
 - `.dad` format: pydantic AST (`seanchai/dad/ast.py`), strict line-oriented
   parser (`parser.py`), canonical formatter (`formatter.py`). Round-trip is
   exact and idempotent; the hand-verified reference file is
-  `files/ts_129329v180000p.dad`. All section kinds are in: Message,
+  `examples/ts_129329v180000p.dad`. All section kinds are in: Message,
   Grouped AVP, Enumerated AVP (with `; RESERVED = n` / `= n-m` directives and
   per-value descriptions), AVP Table, Reused AVPs.
 - 3GPP docx extractor (`seanchai/extractor/tgpp_docx.py`): `extract()` plus the
   `attach_pages()` ETSI-PDF-outline pass. Verified against the hand-made 29.329
-  file; also produces `files/29229-i10.raw.dad` and `files/29272-i60.raw.dad`.
+  file; also produces `examples/29229-i10.raw.dad` and `examples/29272-i60.raw.dad`.
 - Test scaffolding: `uv run pytest`, fixtures in `tests/conftest.py`, two
   shape-defining tests in `tests/test_dad_format.py`.
+- CLI: `uv run seanchai extract DOCX [--pdf PDF] [--link URL] [-o OUT]` —
+  warnings go to stderr; the committed `examples/*.raw.dad` are regenerated
+  through it. Downloader: `downloader/download_diameter_specs.py` (uv script)
+  with the curated catalog split into `downloader/specs.toml`; downloads land
+  in git-ignored `output/` (`output/manual/` holds hand-fetched docx/PDFs).
 
 ## `.dad` format
 
@@ -48,9 +53,6 @@ Implemented so far, so a fresh reader knows what already exists:
   document quirks; keep the acceptance loop "extract → format → parse →
   eyeball diff". 29.230's registry tables need their own path: they lack the
   "AVP Flag rules" header the table dispatch keys on.
-- Wire a `click` CLI entry point: docx + pdf in, `.dad` out, warnings to
-  stderr. Then regenerate the committed `files/*.raw.dad` through it so their
-  provenance is reproducible (they currently come from ad-hoc scripts).
 - Extend `download_diameter_specs.py` (or the extractor CLI) to fetch the docx
   zips from the 3GPP archive (`.../Specs/archive/<series>_series/<spec>/`,
   version encoded base-36: 18.0.0 → `i00`). Prefer `Specs/archive/` over the
@@ -152,8 +154,12 @@ failure tests mutate it and assert `DadParseError` with a message match):
 
 ## Housekeeping
 
-- Reorganize the folder/package layout (current structure is provisional).
-  While at it, delete `seanchai/abnf_extractors/tgpp_pgf.py` — the obsolete
-  PDF-based prototype superseded by `seanchai/extractor/tgpp_docx.py` — and
-  decide where downloaded docx/pdf sources live vs. committed `.dad` outputs
-  (`files/` currently mixes both).
+- Fill in the `pyproject.toml` description (still the uv placeholder).
+- Optional: split `downloader/download_diameter_specs.py` (~550 lines) into
+  modules if it grows further; the catalog is already external in
+  `specs.toml`. Review notes for whoever touches it next: 3GPP index pages are
+  scraped with regexes over raw HTML (fine for the FTP listing format, but
+  brittle if 3gpp.org changes markup); a failed download cancels remaining
+  jobs but already-running ones finish; `manifest.json` records sha256/size
+  per artifact — keep that when restructuring, the extractor pipeline can use
+  it for change detection.

@@ -9,4 +9,5 @@ wheels/
 # Virtual environments
 .venv
 
-specifications/
+# Downloaded specification corpus (recreate with downloader/download_diameter_specs.py)
+output/
