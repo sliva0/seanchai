@@ -80,8 +80,9 @@ def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
 
 def _format_message(message: ast.Message, bold_column: int) -> list[str]:
     flags = [flag.value for flag in _COMMAND_FLAG_ORDER if flag in message.flags]
-    header_items = ", ".join([str(message.command_code), *flags,
-                              str(message.application_id)])
+    application = ([] if message.application_id is None
+                   else [str(message.application_id)])
+    header_items = ", ".join([str(message.command_code), *flags, *application])
     return [
         "; Type: Message",
         *_header_directives(f"{message.name}, {message.abbreviation}", message.source),
@@ -130,7 +131,8 @@ def _format_enumerated(avp: ast.EnumeratedAvp, bold_column: int) -> list[str]:
 
 def _format_avp_table(table: ast.AvpTable, bold_column: int) -> list[str]:
     del bold_column
-    rows = [[row.name, "-" if row.code is None else str(row.code), row.section,
+    rows = [[row.name, "-" if row.code is None else str(row.code),
+             row.section if row.section is not None else "-",
              row.data_type,
              _flags_cell(row.flag_rules.must), _flags_cell(row.flag_rules.may),
              _flags_cell(row.flag_rules.should_not), _flags_cell(row.flag_rules.must_not),
@@ -138,8 +140,8 @@ def _format_avp_table(table: ast.AvpTable, bold_column: int) -> list[str]:
             for row in table.rows]
     return [
         "; Type: AVP Table",
-        f"; Table: {table.table}",
         f"; Section: {table.source.section}",
+        f"; Table: {table.table}",
         *([f"; Page: {table.source.page}"] if table.source.page is not None else []),
         *_table(["Name", "Code", "Section", "Type",
                  "Must", "May", "S.not", "M.not", "Encrypt"], rows),
@@ -152,8 +154,8 @@ def _format_reused(reused: ast.ReusedAvps, bold_column: int) -> list[str]:
             for row in reused.rows]
     return [
         "; Type: Reused AVPs",
-        f"; Table: {reused.table}",
         f"; Section: {reused.source.section}",
+        f"; Table: {reused.table}",
         *([f"; Page: {reused.source.page}"] if reused.source.page is not None else []),
         *_table(["Name", "From", "M-bit"], rows),
     ]

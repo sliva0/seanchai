@@ -225,8 +225,8 @@
 
 
 ; Type: AVP Table
-; Table: 6.3.1
 ; Section: 6.3
+; Table: 6.3.1
 ; Page: 17
 ;; Name                      Code  Section  Type          Must  May   S.not M.not Encrypt
 User-Identity                700   6.3.1    Grouped       M,V   -     -     -     No
@@ -268,8 +268,8 @@ Load                         -     6.3.35   Grouped       -     -     -     M,V 
 
 
 ; Type: Reused AVPs
-; Table: 6.3/2
 ; Section: 6.3
+; Table: 6.3/2
 ; Page: 18
 ;; Name                 From       M-bit
 External-Identifier     TS29.336   MUST

@@ -21,8 +21,8 @@ from pydantic import Field
 
 # AVP and message names as they appear in specs: "User-Data", "3GPP-Charging-Id".
 # Enum value names are the same minus the leading-character restriction.
-AvpName = Annotated[str, Field(pattern=r"^[A-Za-z][A-Za-z0-9-]*$")]
-EnumValueName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9-]*$")]
+AvpName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9-]*$")]
+EnumValueName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
 
 # Single-token reference to a defining document: "TS29.336", "RFC7683".
 SpecRef = Annotated[str, Field(pattern=r"^(TS\d{2}\.\d{3}|RFC\d+)$")]
@@ -87,7 +87,9 @@ class Message(Node):
     source: SourceRef
     command_code: Unsigned24
     flags: frozenset[CommandFlag]
-    application_id: Unsigned32
+    # None when the source document itself omits it (TS 29.272 VCSG commands
+    # print "< Diameter Header: 8388638, REQ, PXY, >") — to be fixed by patches.
+    application_id: Unsigned32 | None
     avps: tuple[AvpRule, ...]
 
 
@@ -158,7 +160,9 @@ class AvpTableRow(Node):
 
     name: AvpName
     code: Unsigned32 | None
-    section: SectionNumber
+    # None when the table has no local clause for the AVP (TS 29.272's
+    # 3GPP2-MEID is defined in a 3GPP2 spec and its clause cell is empty).
+    section: SectionNumber | None
     # Base data type name as printed ("OctetString", "Time", "Grouped").
     # TODO(format): restrict to the closed set of Diameter base/derived types.
     data_type: Annotated[str, Field(pattern=r"^[A-Za-z][A-Za-z0-9]*$")]

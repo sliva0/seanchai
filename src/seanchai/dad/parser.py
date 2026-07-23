@@ -13,21 +13,21 @@ from . import ast
 
 _DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z]+): (?P<value>.*)$")
 _MESSAGE_HEADER_RE = re.compile(
-    r"^<(?P<name>[A-Za-z][A-Za-z0-9-]*)> ::= "
+    r"^<(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)> ::= "
     r"< Diameter Header: (?P<items>[0-9A-Z, ]+) >$"
 )
 _AVP_HEADER_RE = re.compile(
-    r"^(?P<name>[A-Za-z][A-Za-z0-9-]*) ::= "
+    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9-]*) ::= "
     r"< (?P<kind>AVP|Enumerated AVP) header: (?P<code>\d+)(?: (?P<vendor>\d+))? >$"
 )
 _AVP_RULE_RE = re.compile(
     r"^\s*(?:(?P<min>\d*)\*(?P<max>\d*)\s*)?"
-    r"(?P<open>[<{\[]) (?P<name>[A-Za-z][A-Za-z0-9-]*) (?P<close>[>}\]])"
+    r"(?P<open>[<{\[]) (?P<name>[A-Za-z0-9][A-Za-z0-9-]*) (?P<close>[>}\]])"
     r"(?P<bold>\s*; bold)?\s*$"
 )
 _ENUM_VALUE_RE = re.compile(
-    r"^\s*(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)\s*= (?P<value>\d+)"
-    r"(?: ; (?P<description>\S.*))?$"
+    r"^\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)\s*= (?P<value>\d+)"
+    r"(?:\s+; (?P<description>\S.*))?$"
 )
 _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")
 
@@ -146,13 +146,15 @@ def _parse_message(directives: dict[str, str], body: list[tuple[int, str]],
     if match is None:
         raise DadParseError(header_lineno, f"malformed Diameter header: {header!r}")
     items = [item.strip() for item in match["items"].split(",")]
-    if len(items) < 2 or not items[0].isdigit() or not items[-1].isdigit():
-        raise DadParseError(header_lineno, "Diameter header needs code and application id")
+    if not items[0].isdigit():
+        raise DadParseError(header_lineno, "Diameter header needs a command code")
+    application_id = int(items[-1]) if len(items) > 1 and items[-1].isdigit() else None
+    flags = items[1:-1] if application_id is not None else items[1:]
     return ast.Message(
         name=name, abbreviation=abbreviation, source=source,
         command_code=int(items[0]),
-        flags=frozenset(ast.CommandFlag(flag) for flag in items[1:-1]),
-        application_id=int(items[-1]),
+        flags=frozenset(ast.CommandFlag(flag) for flag in flags),
+        application_id=application_id,
         avps=_avp_rules(body[1:]),
     )
 
@@ -233,7 +235,7 @@ def _parse_avp_table(directives: dict[str, str], body: list[tuple[int, str]],
             raise DadParseError(row_lineno, f"malformed Encrypt cell {encrypt!r}")
         rows.append(ast.AvpTableRow(
             name=name, code=None if code == "-" else int(code),
-            section=section, data_type=data_type,
+            section=None if section == "-" else section, data_type=data_type,
             flag_rules=ast.AvpFlagRules(
                 must=_flags(must, row_lineno), may=_flags(may, row_lineno),
                 should_not=_flags(should_not, row_lineno),
