@@ -1,7 +1,6 @@
 # TODO
 
-Requirements from the design discussion, in no particular order. See README.md for
-the overall architecture; this file is the working list of what has to exist.
+Open work, in no particular order. See README.md for the overall architecture.
 
 This file is also the place for notes to future implementors: when you learn
 something non-obvious while working (a source-document quirk, a workflow gotcha,
@@ -9,132 +8,116 @@ a convention that isn't visible in the code), record it here next to the
 relevant item — see the "implementor notes" and "collected weirdness" blocks
 below for the intended shape. Cheap to write now, expensive to rediscover later.
 
+## Status
+
+Implemented so far, so a fresh reader knows what already exists:
+
+- `.dad` format: pydantic AST (`seanchai/dad/ast.py`), strict line-oriented
+  parser (`parser.py`), canonical formatter (`formatter.py`). Round-trip is
+  exact and idempotent; the hand-verified reference file is
+  `files/ts_129329v180000p.dad`. All section kinds are in: Message,
+  Grouped AVP, Enumerated AVP (with `; RESERVED = n` / `= n-m` directives and
+  per-value descriptions), AVP Table, Reused AVPs.
+- 3GPP docx extractor (`seanchai/extractor/tgpp_docx.py`): `extract()` plus the
+  `attach_pages()` ETSI-PDF-outline pass. Verified against the hand-made 29.329
+  file; also produces `files/29229-i10.raw.dad` and `files/29272-i60.raw.dad`.
+- Test scaffolding: `uv run pytest`, fixtures in `tests/conftest.py`, two
+  shape-defining tests in `tests/test_dad_format.py`.
+
 ## `.dad` format
 
-- Write a formal grammar for the format. The hand-made example in
-  `files/ts_129329v180000p.dad` is the reference for look-and-feel. The linter
-  should catch the kinds of mistakes hand transcription produces (mismatched
-  header/rule names, inconsistent spacing, etc.).
-- Directive comments (`; Key: value` headers, inline `; bold`-style markers) are
-  part of the grammar with fixed positions; malformed directives are parse errors.
-  `;;` introduces free-text comments the parser ignores.
-- A file is a sequence of sections, each opened by a `; Type: X` header block
-  (Message, Grouped AVP, Enumerated AVP, AVP Table, Reused AVPs, …) and separated by
-  two blank lines; the parser dispatches on `Type:`.
-- Keep the inline `; bold` marker as-is: it mirrors information present in the
-  original document at the place where it's written, and inline is the wrong spot
-  for origin references. Instead, a **Reused AVPs** section lists AVPs defined in
-  another spec/RFC by name (names are unique within one specification's scope —
-  they have to be, or the source documents themselves couldn't distinguish them),
-  with the origin spec and any local overrides (e.g. the M-bit column of 3GPP
-  "re-used AVPs" tables). Resolving an import yields the AVP's
-  `(vendor-id, code)`, which disambiguates same-name AVPs across specs.
-- Trivial AVP definitions use an **AVP Table** section mirroring each spec's own
-  AVP table (whitespace-aligned columns, one AVP per row: name, code, section,
-  type, flag columns). Rules: every cell is a single token, rows split on
-  whitespace, `-` is the explicit empty-cell placeholder, column order is fixed
-  by the grammar (the `;;` column-header line is cosmetic formatter output, never
-  parsed). Canonical formatting uses at least 3 spaces between columns; column
-  widths are computed from data cells only (minimum width 3) — the `;;` header
-  line is excluded, so wide labels may overflow into the gaps. Per-row section references point at each AVP's own subsection; the
-  semantics prose there is referenced, not copied. TS 29.230's one-big-table and
-  RFC 6733 §4.5 serve as cross-check sources. See the AVP Table / Reused AVPs
-  sections in the hand-made example.
-- Inside enumerated AVP bodies, `; RESERVED = <n>` is a reserved-value directive
-  (a grammar production, present in the AST — validators must treat assigning a
-  reserved value as an error distinct from an unknown one). Decide range syntax
-  (`; RESERVED = 34-99`) now, since specs reserve spans of values.
+- Write a formal grammar document — currently the parser source is the spec.
+  Design intent to preserve: directive comments are grammar with fixed
+  positions (malformed = parse error), `;;` is ignorable free text, `; bold`
+  stays inline because it mirrors the source document, table cells are single
+  whitespace-separated tokens with `-` as the empty placeholder, column order
+  fixed by the grammar, `;;` column headers cosmetic-only.
+- Parser leniency: the design says "parser lenient about spacing, writer emits
+  canonical form", but the parser is currently stricter than intended (exact
+  single spaces in several places). Loosen it; the formatter defines canonical.
+- Restrict `AvpTableRow.data_type` to the closed set of Diameter base/derived
+  types (see `TODO(format)` in `ast.py`).
+- Linter with cross-section checks: every AVP referenced in a message/grouped
+  body resolves to a local definition, an AVP-table row, or a reused-AVPs
+  entry; duplicate definitions; duplicate enum values; AVP-table row vs.
+  grouped/enumerated definition consistency (code, type).
 
 ## Extractor
 
-Implemented for 3GPP docx in `seanchai/extractor/tgpp_docx.py` (`extract()` +
-`attach_pages()` PDF-outline pass), developed against TS 29.329 18.0.0
-(`files/29329-i00.docx`, raw output in `files/29329-i00.raw.dad`) and diffed
-against the hand-made `.dad` — remaining diffs are hand-file gaps, not extractor
-bugs. Conventions learned: `Page:` is where the section starts per the PDF
-bookmark outline (table sections get their parent section's page, which can be
-one page before the table itself); AVPs listed in the reused table or in AVP
-table NOTE references get no local definition even if their section reads like
-one (DRMP). Source quirks handled: stray spaces inside rule names, bold applied
-to bracket runs but not the name (only name runs are trusted), heading/rule name
-mismatch (§6.1.8 "Push-Notifications-Answer") extracted with a warning.
-
-Remaining:
-
-- The source documents are human-written, so the extractor's strictness will
-  eventually meet weirdness that neither code nor output-patches handle well
-  (typos in numbers are fine to fix as `.dad` patches; structural oddities —
-  a missing caption, a differently shaped table, a section that breaks the
-  layout conventions — are not). Idea to keep in mind: a small per-spec
-  override/instruction file the extractor reads (e.g. "treat table N as the
-  AVP table", "ignore section X"). Don't build it speculatively — collect the
-  actual weirdness from other documents here first, then design for it.
-  Collected so far (all currently handled by generic leniency + warnings, none
-  needed an override yet): heading/rule name mismatches (29.329 §6.1.8);
-  rule names with spaces for hyphens (29.272 §7.3.196 "Monitoring Event
-  Report"); AVP-table name cells line-wrapped losing a hyphen (29.272
-  "MME-Location Information"); flags cells "M. V" and lowercase "v" (29.272);
-  Diameter headers omitting the application id (29.272 VCSG commands →
-  `application_id` is now optional in the AST); one command section holding two
-  ABNFs for two application ids (29.272 IDR/DSR/RSR: S6a + S7a); empty clause
-  cell (29.272 3GPP2-MEID → `AvpTableRow.section` now optional); merged table
-  row duplicating cell text (29.272 Battery-Indicator M-bit); enum value/
-  description styles inverted (29.229 §6.3.34); "x.y.z Name" headings without
-  the " AVP" suffix (29.272); `<AVP header: 632, 10415>` comma separator
-  (29.229). Also: 29.328 is a stage-2 data spec with no Diameter AVP table at
-  all — "no AVP table found" is correct there, not a bug.
-- Run the extractor over the other 3GPP Diameter specs (29.229, 29.328, 29.230's
-  big table, …) — expect new document quirks; keep the acceptance loop
-  "extract → format → parse → eyeball diff".
+- Run the extractor over the remaining 3GPP Diameter specs — expect new
+  document quirks; keep the acceptance loop "extract → format → parse →
+  eyeball diff". 29.230's registry tables need their own path: they lack the
+  "AVP Flag rules" header the table dispatch keys on.
+- Wire a `click` CLI entry point: docx + pdf in, `.dad` out, warnings to
+  stderr. Then regenerate the committed `files/*.raw.dad` through it so their
+  provenance is reproducible (they currently come from ad-hoc scripts).
 - Extend `download_diameter_specs.py` (or the extractor CLI) to fetch the docx
   zips from the 3GPP archive (`.../Specs/archive/<series>_series/<spec>/`,
   version encoded base-36: 18.0.0 → `i00`). Prefer `Specs/archive/` over the
   script's current `Specs/latest/Rel-N/` index: archive keeps every old
   version, which the raw-vs-raw diff workflow needs on version bumps.
-- Implementor notes from the first three extractions:
-  - Only 29.329 has a hand-verified reference `.dad`; the 29.229/29.272 raw
-    outputs round-trip and were spot-checked but are otherwise unverified —
-    the Wireshark-oracle cross-check is what makes them trustworthy at scale.
-  - The `files/*.raw.dad` files were produced by ad-hoc scripts; once the CLI
-    exists, regenerate them through it so the provenance is reproducible.
-  - ETSI PDF filenames encode versions as two digits per component
-    (18.1.0 → `v180100`); `etsi_pdf_url()` in the download script already does
-    this correctly — don't hand-build these URLs.
-  - Keep the docx and PDF versions matched exactly (i10 ↔ 18.01.00) or
-    `attach_pages` will attach subtly wrong pages without any error.
-  - TS 29.230's registry tables are a different shape from per-application AVP
-    tables (no "AVP Flag rules" header) — the table-dispatch logic in
-    `tgpp_docx.py` keys on that header and will need a separate path for it.
-  - `seanchai/abnf_extractors/tgpp_pgf.py` is the obsolete PDF-based prototype,
-    superseded by `seanchai/extractor/tgpp_docx.py` — delete it during the
-    layout reorganization.
-- Wire a `click` CLI entry point: docx + pdf in, `.dad` out, warnings to stderr.
-- Add an RFC (plain text) extractor for the base protocol and IETF applications.
-- The ETSI `Link:` URL is currently passed in by the caller; derive it (needs
-  the ETSI edition suffix, e.g. `18.00.00_60`, which is not in the docx).
+- Derive the ETSI `Link:` URL instead of taking it from the caller (needs the
+  ETSI edition suffix, e.g. `18.00.00_60`, which is not in the docx — probably
+  requires listing the ETSI deliver directory).
+- Add an RFC (plain text) extractor for the base protocol and IETF
+  applications. RFC AVP tables (RFC 6733 §4.5) will need plain-AVP rows like
+  the 3GPP ones.
+- Possible future mechanism: per-spec override/instruction files for
+  *structural* source weirdness the generic code can't absorb ("treat table N
+  as the AVP table", "ignore section X"). Content typos stay in `.dad`
+  patches. Don't build it speculatively — collect cases below first. If built:
+  key overrides to spec+version with an error on mismatch, and error on
+  overrides that matched nothing, so they can't silently rot.
 
-## Parser / formatter
+Implementor notes:
 
-- Python parser producing the shared AST; this is the public library surface that
-  downstream generator/validator scripts build on.
-- Canonical formatter: parse → pretty-print must be idempotent (stable diffs are
-  what makes the patch-based review workflow survive extractor re-runs and spec
-  version bumps). Parser is lenient about spacing; writer always emits the aligned
-  canonical form.
-- Formatter/linter should flag internal inconsistencies (header name vs. rule name,
-  duplicate definitions, unresolved references).
+- Only 29.329 has a hand-verified reference `.dad`; the 29.229/29.272 raw
+  outputs round-trip and were spot-checked but are otherwise unverified — the
+  Wireshark-oracle cross-check is what makes them trustworthy at scale.
+- Conventions baked into the extractor: `Page:` is where the section starts
+  per the PDF bookmark outline (table sections get their parent section's
+  page, which can be one page before the table itself); AVPs listed in the
+  reused table or in AVP-table NOTE references get no local definition even if
+  their section reads like one (DRMP); enumerated AVPs take their code from
+  the AVP table and the vendor-id from the spec's grouped-AVP headers.
+- ETSI PDF filenames encode versions as two digits per component (18.1.0 →
+  `v180100`); `etsi_pdf_url()` in the download script already does this
+  correctly — don't hand-build these URLs.
+- Keep the docx and PDF versions matched exactly (i10 ↔ 18.01.00) or
+  `attach_pages` will attach subtly wrong pages without any error.
+- 29.328 is a stage-2 data spec with no Diameter AVP table at all — "no AVP
+  table found" is correct there, not a bug.
+
+Collected source-document weirdness (all handled by generic leniency +
+warnings so far; none needed an override yet):
+
+- heading/rule name mismatches (29.329 §6.1.8 "Push-Notifications-Answer");
+- rule names with spaces for hyphens (29.272 §7.3.196 "Monitoring Event
+  Report");
+- AVP-table name cells line-wrapped losing a hyphen (29.272 "MME-Location
+  Information");
+- flags cells "M. V" and lowercase "v" (29.272);
+- Diameter headers omitting the application id (29.272 VCSG commands →
+  `application_id` is optional in the AST);
+- one command section holding two ABNFs for two application ids (29.272
+  IDR/DSR/RSR: S6a + S7a);
+- empty clause cell (29.272 3GPP2-MEID → `AvpTableRow.section` is optional);
+- merged table row duplicating cell text (29.272 Battery-Indicator M-bit);
+- enum value/description paragraph styles inverted (29.229 §6.3.34);
+- "x.y.z Name" headings without the " AVP" suffix (29.272);
+- `<AVP header: 632, 10415>` comma separator (29.229);
+- bold applied to bracket runs but not the AVP name (only name runs are
+  trusted for the `; bold` marker).
 
 ## Tests
 
-Scaffolding exists (`pytest` via `uv run pytest`, fixtures in `tests/conftest.py`,
-two example tests in `tests/test_dad_format.py` showing the intended shape:
-success tests build on the canonical example file, failure tests mutate it and
-assert `DadParseError` with a message match). Tests worth writing:
+Tests worth writing (shape: success tests build on the canonical example file,
+failure tests mutate it and assert `DadParseError` with a message match):
 
 - Round-trip: idempotence on a synthetic spec exercising every AST field the
   canonical file doesn't (no-vendor AVP header, `2*4`-style repetition
   qualifiers, RESERVED ranges, `Yes` in Encrypt, MUST-NOT M-bit override,
-  missing `Page:`/`Link:`).
+  missing `Page:`/`Link:`/application id).
 - Formatter alignment rules as unit tests: bold column = longest ABNF line + 1;
   enum `=` alignment including RESERVED and description padding; table column
   minimum width 3 and 3-space gaps; header labels excluded from widths.
@@ -149,23 +132,28 @@ assert `DadParseError` with a message match). Tests worth writing:
   spec refs (`TS 29.336` with a space), section numbers, out-of-range codes;
   JSON dump/load round-trip preserves equality.
 - Parser leniency: extra spaces between ABNF tokens and unaligned table columns
-  parse to the same AST as the canonical form (once leniency is implemented —
-  currently the parser is stricter than the design intends).
+  parse to the same AST as the canonical form (once leniency is implemented).
+- Extractor: run against the committed docx files and compare to the committed
+  `.raw.dad` outputs (regression pin); assert the known warnings are emitted.
 
 ## Workflow & validation
 
 - Commit raw extractor output per spec version; store reviewed corrections as
-  diffs against it; corrected `.dad` files are the source of truth. Version upgrade
-  = re-extract, diff raw-vs-raw, re-apply patch.
-- Build patched `.dad` sets around the latest release with published PDFs (Rel-19
-  currently); tooling itself must be version-agnostic.
+  diffs against it; corrected `.dad` files are the source of truth. Version
+  upgrade = re-extract, diff raw-vs-raw, re-apply patch.
+- Build patched `.dad` sets around the latest release with published PDFs
+  (Rel-19 currently); tooling itself must be version-agnostic.
 - Cross-check extracted codes/vendors/types against Wireshark's Diameter
   `dictionary.xml` as an independent oracle in CI; optionally borrow its
   disambiguated AVP names for conflicting names across specs.
 - First downstream consumers should be **validators** for existing hand-written
-  dictionaries — they deliver CI value before any generator is adopted. Generators
-  for implementations' native dictionary formats come after.
+  dictionaries — they deliver CI value before any generator is adopted.
+  Generators for implementations' native dictionary formats come after.
 
 ## Housekeeping
 
 - Reorganize the folder/package layout (current structure is provisional).
+  While at it, delete `seanchai/abnf_extractors/tgpp_pgf.py` — the obsolete
+  PDF-based prototype superseded by `seanchai/extractor/tgpp_docx.py` — and
+  decide where downloaded docx/pdf sources live vs. committed `.dad` outputs
+  (`files/` currently mixes both).
