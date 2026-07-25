@@ -25,6 +25,20 @@ per artifact.
 - **Known wart**: when a cached file fails the content-type check and the
   re-download also fails validation, `atomic_download` leaves the corrupt
   cached file in place instead of deleting it.
+- **Only PDFs are validated.** ZIP archives and RFC text are fetched with
+  `atomic_download(url, path)` and no `expected_prefix`, and the cache
+  early-return accepts any non-empty file. A truncated archive stays cached
+  forever. Each artifact family wants a real check (ZIP integrity, PDF header,
+  plausible RFC text), applied to cached bytes as well as fresh ones.
+- **A fallback ETSI PDF must never reach `attach_pages`.** When the exact
+  version isn't published, `download_3gpp` falls back to an earlier one and
+  records it in `pdf_version`. That file is still useful, but its page numbers
+  belong to a different document — and nothing currently stops it being passed
+  to `--pdf`, where it produces silently wrong `; Page:` directives. The
+  manifest should say outright whether a PDF is page-attachment compatible.
+- **`safe_extract` reuses its destination directory.** `output/3gpp/Rel-N/
+  TS_29.272/` is never cleared, so extracting a second archive version leaves
+  members of the first behind and the directory then represents neither.
 
 ## Planned changes
 

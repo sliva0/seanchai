@@ -69,3 +69,38 @@ worth adding.
   "simplifying" it back into a bug.
 - Public functions carry docstrings; module docstrings explain the module's
   role in the pipeline.
+
+## Working on these documents
+
+`docs/` describes what exists, plus a small amount of scheduled work in
+[roadmap.md](roadmap.md) and [plan-code-quality.md](plan-code-quality.md), plus
+explicitly labelled proposals. Keeping those three registers apart is the point
+of the split — a reader must be able to tell "this is how it works" from "this
+is what we intend to do" without checking the code.
+
+Some decisions here are settled, and a review that reopens them costs more than
+it returns. If you disagree, argue the decision on its merits; don't
+reintroduce it as an incidental edit:
+
+- **No CI, on any platform.** Run the tools locally before committing. This is
+  a deliberate choice, not an oversight waiting to be corrected.
+- **Version ranges are advisory.** Both for input patches and for the proposed
+  corrections, a recorded range describes where a fix is known to be needed and
+  sharpens the warning. It never gates whether the fix is applied. Gating it
+  means silently dropping a fix on the next release — the exact failure the
+  accounting exists to catch.
+- **Don't design ahead of collected cases.** The extractor has repeatedly not
+  grown override files, structural-instruction formats or generalised table
+  handling, because no real document has needed them yet. The same restraint
+  applies to corpus layouts, manifests, provenance schemas, format-version
+  negotiation and public API contracts: write them down when a second consumer
+  or a real failure asks for them, not before. A note in `roadmap.md` is the
+  right size for a good idea whose time hasn't come.
+- **Prose over process.** No status tables, dependency graphs, ticket IDs or
+  acceptance-criteria blocks. This is a small repository; the docs should read
+  like an experienced colleague explaining the system, which is also what makes
+  the *why* survive.
+- **Match the register.** Explanatory and specific, with real spec clauses and
+  file references as evidence. Not a compliance checklist — sentences that
+  start "must" three times a paragraph are a sign the content has drifted from
+  describing this project to describing projects in general.

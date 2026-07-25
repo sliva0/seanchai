@@ -35,6 +35,10 @@ function that mutates the tree. That gives imports of the real enums, type
 checking, and loops when twenty rows need the same fix — without giving up
 per-correction accounting or reviewability.
 
+Python is the notation, not the validation: a string `field="code"` is not
+statically checked against the target node, so the implementation still has to
+verify that the field exists on the matched node and rebuild through pydantic.
+
 ## The file
 
 `corrections/TS29.272.py`:
@@ -78,7 +82,17 @@ CORRECTIONS = [
   the event worth being told about.
 - **A target matching zero nodes is an error too.** `versions` downgrades both to
   a warning when the parsed version falls outside the declared range, so a
-  correction can stay in the file across a bump where it no longer applies.
+  correction can stay in the file across a bump where it no longer applies. The
+  range is advisory, exactly as for input patches: a correction outside its
+  recorded range is still attempted, because skipping it would silently ship an
+  uncorrected file the first time a version moves.
+- **Applying corrections is deterministic but not idempotent.** Run twice
+  against the same raw AST you get identical output; run against
+  already-corrected input and every `expect` fails. That is deliberate —
+  treating a matched `replace` as a no-op would make "already corrected"
+  indistinguishable from "fixed upstream", which is the one thing `expect`
+  exists to tell apart. So the layer consumes raw files and refuses to correct
+  in place.
 - **Selectors address identity, never position**: `definition(name)`,
   `table_row(name)`, `reused_row(name)`, `enum_value(avp, name)`,
   `avp_rule(parent, name)`. Indices are what make a text diff brittle in the
@@ -96,11 +110,16 @@ lines in `dad/corrections.py`, plus one small dataclass per selector kind.
 It belongs in `dad/`, not `extractor/`: corrections operate on the format, and a
 downstream consumer may want to apply them without going near the docx path.
 
-Escape hatch for anything the field model cannot express (deleting a bogus row,
-splitting a section): `Correction(target=..., edit=lambda node: ...)`, under the
-same `expect` and accounting contract. Don't build more than that until a case
-demands it — the same instinct that has so far kept structural override files
-out of the extractor.
+Rebuild through validation, not `model_copy(update=...)` — pydantic does not
+validate update values, so a correction could otherwise write a code of
+`"oops"` into a validated tree and only fail at format time, if at all.
+
+No arbitrary `edit=lambda node: ...` escape hatch: it would sidestep both the
+field validation above and the accounting that justifies the whole design, and
+a correction that can't be described can't be reviewed. When a structural case
+actually appears (deleting a bogus row, splitting a section), add a named
+operation for it with the same `expect` contract — the same instinct that has
+so far kept override files out of the extractor.
 
 ## Pipeline
 
@@ -126,10 +145,13 @@ directories, so which layer a fix belongs to is visible from the path.
 
 ## Testing
 
-- `apply(apply(spec)) == apply(spec)` — idempotency.
+- Determinism: applying the same corrections to the same raw AST twice gives
+  byte-identical output. (Not idempotency — see the semantics above; feeding
+  corrected output back in must error.)
 - Rot detection: an `expect` that no longer matches errors; outside its
   `versions` range it warns instead.
-- An ambiguous selector errors.
+- An ambiguous selector errors, as does a field the target node doesn't have
+  and a replacement value the model rejects.
 - Once the linter exists: `raw.dad` may fail it, the corrected file must pass.
   That is the real acceptance criterion for this layer — corrections are what
   take a specification from "parses" to "internally consistent".

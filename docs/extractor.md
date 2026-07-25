@@ -60,7 +60,16 @@ last_version = "18.6.0"    # newest version known to need this patch
 
 A patch that applies more or fewer times than `count` produces a warning that
 includes the known-needed version range, so patches cannot silently rot when
-the source document changes between versions.
+the source document changes between versions. The warning is currently the only
+consequence: a patch that was required and did not apply still leaves `extract`
+exiting zero. Treat any patch warning as a failed run until that is fixed (see
+[plan-code-quality.md](plan-code-quality.md)).
+
+`first_version`/`last_version` are advisory: they describe where the patch is
+known to be needed and make the warning message useful. They do **not** gate
+application — a patch outside its recorded range still applies, because the
+alternative is silently dropping a fix on the next release, which is exactly
+the rot the accounting exists to catch.
 
 **Division of labor**, deliberately kept sharp:
 
@@ -74,6 +83,11 @@ The correction layer is [proposed but not implemented](proposal-corrections.md).
 
 Structural damage (missing captions, split tables) has no collected case yet;
 revisit override-style instructions only if one appears.
+
+One accumulator limitation to know about: `extract()` keeps a single
+`avp_table` and a single reused table, so a spec with two matching tables gets
+the last one and the earlier one disappears without a warning. No collected
+spec does this yet; the planned `extract()` split is where to fix it.
 
 ## Strictness
 
@@ -110,10 +124,13 @@ fixture for it in `tests/conftest.py` too.
 
 ## Gotchas
 
-- **Keep the docx and PDF versions matched exactly** (i10 ↔ 18.01.00).
-  `attach_pages` currently trusts the caller and will attach subtly wrong pages
-  without any error if they differ. Making it verify the PDF's own version is
-  planned — see [plan-code-quality.md](plan-code-quality.md).
+- **Keep the docx and PDF matched exactly** — same specification *and* same
+  version (29.329 i10 ↔ TS 29.329 V18.1.0). `attach_pages` trusts the caller
+  and will attach subtly wrong pages without any error if either differs.
+  Making it verify both is planned — see
+  [plan-code-quality.md](plan-code-quality.md). Note that the downloader will
+  fall back to an earlier ETSI version when the exact one isn't published; that
+  file is not valid input here.
 - ETSI PDF filenames encode versions as two digits per component (18.1.0 →
   `v180100`). `etsi_pdf_url()` in the download script already does this
   correctly; don't hand-build these URLs.

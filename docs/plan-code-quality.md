@@ -29,18 +29,25 @@ section-number sort key with `_section_sort_key()` (which also removed a latent
 **Documentation.** README split into working-today and planned; `TODO.md`
 replaced by this `docs/` directory.
 
-## 1. Fix the two data-integrity bugs
+## 1. Fix the data-integrity bugs
 
 These corrupt data that then gets committed and reviewed as if it were correct,
 so they come first.
 
-**1.1 `attach_pages` silently attaches wrong pages on a version mismatch.**
-Today it trusts the caller to pass a PDF of exactly the same version as the
-docx; if they differ, every `; Page:` directive is quietly wrong. The ETSI PDF
-cover page carries `3GPP TS 29.272 V18.6.0`, in the same form the extractor
-already parses from the docx cover table. Extract it, compare, and raise on
-mismatch. Add a test with a deliberately mismatched pair, and drop the
-corresponding warning from [extractor.md](extractor.md).
+**1.1 `attach_pages` silently attaches wrong pages on a source mismatch.**
+Today it trusts the caller to pass a PDF of exactly the same specification and
+version as the docx; if either differs, every `; Page:` directive is quietly
+wrong. The ETSI PDF cover page carries `3GPP TS 29.272 V18.6.0`, in the same
+form the extractor already parses from the docx cover table. Extract it,
+compare **both** the spec number and the version, and raise on mismatch. Test
+the wrong spec at the right version as well as the right spec at the wrong
+version. Return a bookmark-coverage count too, so an outline that matched
+nothing can't look like success. Then drop the corresponding warning from
+[extractor.md](extractor.md).
+
+The downloader falls back to an earlier ETSI PDF when the exact version isn't
+published, which makes this reachable in normal use rather than only through
+operator error — see [downloader.md](downloader.md).
 
 **1.2 `_bold_column` is computed across the whole file.** One long AVP rule
 anywhere in a specification reflows the `; bold` column of every rule in the
@@ -48,6 +55,13 @@ file. On a version bump that adds a single AVP, the raw-vs-raw diff — the core
 of the review workflow — goes from three lines to the whole file. Make the
 column per-section (or fix its width), regenerate the committed
 `examples/*.dad`, and confirm the round-trip tests still pin exactly.
+
+**1.3 Input-patch accounting is warning-only.** A patch that was required and
+applied zero times still leaves `extract` exiting zero, so a corpus run can
+lose a fix without anyone noticing. Make a count mismatch an extraction error.
+Keep `first_version`/`last_version` advisory — they belong in the message, not
+in a gate; a patch that stops applying because the version moved is the failure
+mode this is meant to prevent.
 
 ## 2. De-duplicate the format semantics
 
@@ -79,6 +93,11 @@ result type. The win beyond readability is testability: the enum-resolution
 step (skip AVPs that are external, error when a pending enum has no code in the
 AVP table) becomes unit-testable without building a docx.
 
+While in there, keep every matching table instead of the current
+last-one-wins `avp_table`/reused accumulators, and reject unexpected
+multiplicity with a source location. No collected spec has two AVP tables yet,
+but the current code would drop one silently.
+
 ## 4. Tidy the formatter dispatch
 
 Three of the five `_format_*` functions open with `del bold_column`, because the
@@ -105,6 +124,9 @@ already claims to handle.
   NOTE naming an RFC into a `ReusedAvps` row.
 - **Enum ordering** — RESERVED ranges interleaved with values by numeric sort.
 - **`patch_file_name`** — untested.
+- **Parser integer paths** — `; Page: abc` and a non-numeric table `code` cell
+  escape as a bare `ValueError` with no line number, straight past the
+  `DadParseError` contract every other malformed input honours.
 
 ## 6. Implement output corrections
 

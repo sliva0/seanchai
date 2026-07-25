@@ -11,6 +11,10 @@ the document it belongs to ([extractor.md](extractor.md),
 [downloader.md](downloader.md)). Cheap to write now, expensive to rediscover
 later.
 
+Before adding items here, read the conventions in
+[development.md](development.md#working-on-these-documents) — several
+tempting additions are settled decisions, not gaps.
+
 ## Format
 
 - **Write a formal grammar document.** The parser source is currently the
@@ -40,6 +44,14 @@ A cross-section linter over a parsed `.dad` file:
 
 This is what makes an extracted corpus trustworthy, and it should land before
 extracting more specs — otherwise every new spec multiplies unverified data.
+
+The rules above are single-file, but the interesting one isn't: resolving a
+reused AVP to its `(vendor-id, code)` means reading the origin spec's `.dad`,
+so the linter needs to load several files at once and needs an answer to a
+question the format currently ducks — `ReusedAvpRow.origin` names a
+specification but not a version. Decide how a run picks which version of an
+origin spec to resolve against before writing the cross-file rules; "whatever
+happens to be on disk" is not a decision.
 
 ## Validation against an independent oracle
 
