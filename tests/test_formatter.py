@@ -13,8 +13,8 @@ from seanchai.dad import ast, formatter, parser
 def test_committed_examples_round_trip_exactly(path):
     text = path.read_text()
     spec = parser.parse(text)
-    assert formatter.format(spec) == text
-    assert parser.parse(formatter.format(spec)) == spec
+    assert formatter.format_spec(spec) == text
+    assert parser.parse(formatter.format_spec(spec)) == spec
 
 
 def test_formats_every_section_and_optional_field_canonically():
@@ -87,7 +87,7 @@ def test_formats_every_section_and_optional_field_canonically():
         ),
     )
 
-    text = formatter.format(spec)
+    text = formatter.format_spec(spec)
 
     assert text.startswith(
         "; Specification: Test Specification\n; Version: 1.2.3\n\n\n"
@@ -131,11 +131,20 @@ def test_bold_markers_share_the_column_after_the_longest_rule():
     )
 
     bold_lines = [
-        line for line in formatter.format(spec).splitlines() if line.endswith("; bold")
+        line
+        for line in formatter.format_spec(spec).splitlines()
+        if line.endswith("; bold")
     ]
 
     assert len({line.index("; bold") for line in bold_lines}) == 1
     assert bold_lines[1].index("; bold") == len(bold_lines[1].removesuffix("; bold"))
+
+
+def test_an_unregistered_section_type_fails_loudly():
+    # The dispatch is by type; a new section kind without a formatter must not
+    # slip through as a silently missing block.
+    with pytest.raises(TypeError, match="no formatter for object"):
+        formatter._format_section(object())  # type: ignore[arg-type]
 
 
 def _group(name, section, avps):
@@ -173,7 +182,7 @@ def test_a_long_rule_cannot_reflow_another_sections_bold_column():
     )
 
     def first_section(spec):
-        return formatter.format(spec).split("\n\n\n")[1].rstrip("\n")
+        return formatter.format_spec(spec).split("\n\n\n")[1].rstrip("\n")
 
     assert first_section(grown) == first_section(spec)
 
@@ -191,7 +200,7 @@ def test_enum_equals_signs_are_aligned_and_values_are_not_zero_padded():
     )
     spec = ast.Specification(specification="Test", version="1", sections=(enum,))
 
-    value_lines = formatter.format(spec).splitlines()[-3:]
+    value_lines = formatter.format_spec(spec).splitlines()[-3:]
 
     assert len({line.index("=") for line in value_lines}) == 1
     assert value_lines[0].rstrip().endswith("1   ; one")

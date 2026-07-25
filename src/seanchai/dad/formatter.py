@@ -1,6 +1,6 @@
 """Canonical formatter: AST → `.dad` text.
 
-`format(parse(text))` must be idempotent — the patch-based review workflow
+`format_spec(parse(text))` must be idempotent — the patch-based review workflow
 depends on stable diffs. Canonical rules:
 
 - sections separated by two blank lines; file ends with one newline;
@@ -13,8 +13,7 @@ depends on stable diffs. Canonical rules:
   overflowing into gaps when wider than the column.
 """
 
-from collections.abc import Callable
-from typing import Any
+import functools
 
 from . import abnf, ast
 
@@ -28,14 +27,15 @@ def _avp_line(rule: ast.AvpRule) -> str:
     return f"{qualifier:>7} {open_bracket} {rule.name} {close_bracket}"
 
 
-def _abnf_body(avps: tuple[ast.AvpRule, ...], bold_column: int) -> list[str]:
-    lines = []
-    for rule in avps:
-        line = _avp_line(rule)
-        if rule.bold:
-            line = f"{line:<{bold_column}}; bold"
-        lines.append(line)
-    return lines
+def _abnf_body(avps: tuple[ast.AvpRule, ...]) -> list[str]:
+    """`; bold` markers sit one column past the longest rule *of this section*.
+    A file-wide column would make one added AVP reflow every marker in the
+    file, and the review workflow lives on raw-vs-raw diffs."""
+    rules = [(rule, _avp_line(rule)) for rule in avps]
+    bold_column = max((len(line) for _, line in rules), default=0) + 1
+    return [
+        f"{line:<{bold_column}}; bold" if rule.bold else line for rule, line in rules
+    ]
 
 
 def _header_directives(name: str, source: ast.SourceRef) -> list[str]:
@@ -66,7 +66,13 @@ def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
     return lines
 
 
-def _format_message(message: ast.Message, bold_column: int) -> list[str]:
+@functools.singledispatch
+def _format_section(section: ast.Section) -> list[str]:
+    raise TypeError(f"no formatter for {type(section).__name__}")
+
+
+@_format_section.register
+def _format_message(message: ast.Message) -> list[str]:
     header_items = abnf.diameter_header_items(
         message.command_code, message.flags, message.application_id
     )
@@ -74,7 +80,7 @@ def _format_message(message: ast.Message, bold_column: int) -> list[str]:
         "; Type: Message",
         *_header_directives(f"{message.name}, {message.abbreviation}", message.source),
         f"<{message.name}> ::= < Diameter Header: {header_items} >",
-        *_abnf_body(message.avps, bold_column),
+        *_abnf_body(message.avps),
     ]
 
 
@@ -82,17 +88,18 @@ def _avp_header_items(code: int, vendor_id: int | None) -> str:
     return str(code) if vendor_id is None else f"{code} {vendor_id}"
 
 
-def _format_grouped(avp: ast.GroupedAvp, bold_column: int) -> list[str]:
+@_format_section.register
+def _format_grouped(avp: ast.GroupedAvp) -> list[str]:
     return [
         "; Type: Grouped AVP",
         *_header_directives(avp.name, avp.source),
         f"{avp.name} ::= < AVP header: {_avp_header_items(avp.code, avp.vendor_id)} >",
-        *_abnf_body(avp.avps, bold_column),
+        *_abnf_body(avp.avps),
     ]
 
 
-def _format_enumerated(avp: ast.EnumeratedAvp, bold_column: int) -> list[str]:
-    del bold_column
+@_format_section.register
+def _format_enumerated(avp: ast.EnumeratedAvp) -> list[str]:
     width = max(
         (
             len(value.name) if isinstance(value, ast.EnumValue) else len("RESERVED")
@@ -130,8 +137,8 @@ def _format_enumerated(avp: ast.EnumeratedAvp, bold_column: int) -> list[str]:
     return lines
 
 
-def _format_avp_table(table: ast.AvpTable, bold_column: int) -> list[str]:
-    del bold_column
+@_format_section.register
+def _format_avp_table(table: ast.AvpTable) -> list[str]:
     rows = [
         [
             row.name,
@@ -168,8 +175,8 @@ def _format_avp_table(table: ast.AvpTable, bold_column: int) -> list[str]:
     ]
 
 
-def _format_reused(reused: ast.ReusedAvps, bold_column: int) -> list[str]:
-    del bold_column
+@_format_section.register
+def _format_reused(reused: ast.ReusedAvps) -> list[str]:
     rows = [
         [row.name, row.origin, row.m_bit.value if row.m_bit else "-"]
         for row in reused.rows
@@ -183,34 +190,10 @@ def _format_reused(reused: ast.ReusedAvps, bold_column: int) -> list[str]:
     ]
 
 
-# Each formatter takes its own section type; the dispatch is keyed by that same
-# type, which no type checker can express as a mapping — hence the `Any`.
-_SECTION_FORMATTERS: dict[type[ast.Section], Callable[[Any, int], list[str]]] = {
-    ast.Message: _format_message,
-    ast.GroupedAvp: _format_grouped,
-    ast.EnumeratedAvp: _format_enumerated,
-    ast.AvpTable: _format_avp_table,
-    ast.ReusedAvps: _format_reused,
-}
-
-
-def _bold_column(section: ast.Section) -> int:
-    """Where `; bold` markers sit, one column past the longest ABNF line — of
-    this section only. A file-wide column would make one added AVP reflow every
-    marker in the file, and the review workflow lives on raw-vs-raw diffs."""
-    if not isinstance(section, ast.Message | ast.GroupedAvp):
-        return 0
-    return max((len(_avp_line(rule)) for rule in section.avps), default=0) + 1
-
-
-def format(spec: ast.Specification) -> str:
+def format_spec(spec: ast.Specification) -> str:
     header = [f"; Specification: {spec.specification}", f"; Version: {spec.version}"]
     if spec.link is not None:
         header.append(f"; Link: {spec.link}")
 
-    parts = [header]
-    parts.extend(
-        _SECTION_FORMATTERS[type(section)](section, _bold_column(section))
-        for section in spec.sections
-    )
+    parts = [header, *(_format_section(section) for section in spec.sections)]
     return "\n\n\n".join("\n".join(part) for part in parts) + "\n"

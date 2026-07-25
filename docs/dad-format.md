@@ -70,9 +70,9 @@ These are the decisions the format rests on. Preserve them when changing it.
   design note called for a lenient parser; that idea was dropped. Hand edits are
   normalised by running the formatter, not by the parser guessing intent.
   Strictness is what keeps re-extraction diffs meaningful.
-- **Round-trip is exact and idempotent.** `format(parse(text)) == text` for every
-  canonical file, which is what makes the patch-based review workflow produce
-  stable diffs across extractor re-runs.
+- **Round-trip is exact and idempotent.** `format_spec(parse(text)) == text` for
+  every canonical file, which is what makes the patch-based review workflow
+  produce stable diffs across extractor re-runs.
 
 ## AST and shared semantics
 

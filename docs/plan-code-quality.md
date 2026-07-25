@@ -2,7 +2,7 @@
 
 A review of the whole project (July 2026) turned up three categories worth
 acting on: data-integrity bugs, a set of mechanical cleanups, and duplication
-between the parser and the extractor. Sections 1–3 are done; what is left keeps
+between the parser and the extractor. Sections 1–4 are done; what is left keeps
 its original numbering. Feature work is in [roadmap.md](roadmap.md).
 
 Tests pass and all three tools are clean at every step; that is the acceptance
@@ -14,8 +14,8 @@ criterion for each one.
 page and refuses a PDF whose specification *or* version differs from the
 extracted docx — the case the downloader's fallback made reachable in normal
 use — and reports how many sections the bookmark outline actually covered, with
-an empty outline now an error. `_bold_column` is per-section, so one added AVP
-can no longer reflow every `; bold` marker in the file; `examples/*.dad` were
+an empty outline now an error. The `; bold` column is per-section, so one added
+AVP can no longer reflow every marker in the file; `examples/*.dad` were
 regenerated (only 29.229 changed). Input-patch count mismatches raise
 `PatchError` instead of adding to a warning list that nothing acts on; version
 ranges stay advisory.
@@ -36,6 +36,15 @@ AVP or re-used table is now an error naming the sections, replacing the
 accumulator that silently kept the last one. Output for all three real specs is
 byte-identical across the refactor.
 
+**Formatter dispatch (§4).** `functools.singledispatch` on the section type
+replaced the dict of same-shaped callables, which also removed the `Any`
+annotation the dict needed to type-check. The `bold_column` parameter is gone
+rather than relocated: since §1.2 made the column per-section, `_abnf_body()`
+derives it from the rules it is already formatting, so the three formatters
+that opened with `del bold_column` no longer take an argument they ignore. An
+unregistered section type now raises instead of silently formatting nothing.
+`formatter.format` is `format_spec`, so nothing shadows the builtin.
+
 **Tooling.** uv dev group with ruff, ty and basedpyright (`standard` mode);
 ruff (`E`, `F`, `I`, `UP`, `B`, `SIM`, `RUF`) and pytest configured in
 `pyproject.toml`; all three run clean. Policy in
@@ -55,15 +64,6 @@ section-number sort key with `_section_sort_key()` (which also removed a latent
 **Documentation.** README split into working-today and planned; `TODO.md`
 replaced by this `docs/` directory.
 
-## 4. Tidy the formatter dispatch
-
-Three of the five `_format_*` functions open with `del bold_column`, because the
-dispatch table forces a uniform signature — and that same table is why the
-dispatch needs an `Any` annotation to type-check. Replace it with
-`functools.singledispatch`, or pass a small context object. Rename
-`formatter.format` while there: it shadows the builtin, and every call site
-already spells it `formatter.format(...)`, so `format_spec` costs nothing.
-
 ## 5. Close the test gaps
 
 The suite is in good shape; these are the holes. All of them are cases the code
@@ -71,8 +71,8 @@ already claims to handle.
 
 - **Idempotency over generated ASTs.** Today only the committed examples are
   round-trip-pinned. Add a test that constructs specs directly and asserts
-  `format(parse(format(spec))) == format(spec)` — the invariant the whole review
-  workflow rests on.
+  `format_spec(parse(format_spec(spec)))` equals `format_spec(spec)` — the
+  invariant the whole review workflow rests on.
 - **`_is_bold` mixed-bold rejection** — the `ExtractionError` is unreachable
   from the current fixture.
 - **Multi-ABNF command sections** — one section, two application ids (the

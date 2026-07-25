@@ -74,7 +74,7 @@ def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
         ast.EnumValue(name="Enabled", value=3),
     )
     assert warnings == []
-    assert parser.parse(formatter.format(spec)) == spec
+    assert parser.parse(formatter.format_spec(spec)) == spec
 
 
 def test_extract_requires_cover_metadata_and_an_avp_table(tmp_path):

@@ -55,7 +55,7 @@ def extract(
         # extraction warnings are worth reading.
         for warning in warnings:
             click.echo(f"warning: {warning}", err=True)
-    text = formatter.format(spec)
+    text = formatter.format_spec(spec)
     if output is None:
         click.echo(text, nl=False)
     else:
