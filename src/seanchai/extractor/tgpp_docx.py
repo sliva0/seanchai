@@ -36,6 +36,7 @@ import docx
 import docx.document
 import docx.table
 import docx.text.paragraph
+import pydantic
 import pypdf
 
 from ..dad import ast
@@ -159,7 +160,7 @@ def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Secti
                 rows = []
                 for row in item.rows:
                     # Merged cells appear repeatedly in row.cells (a full-width
-                    # note row repeats one cell 9×); count each physical cell
+                    # note row repeats one cell nine times); count each physical cell
                     # once. Per-line views of the first cell are duplicates of
                     # already-counted text, so they don't record either.
                     seen: dict[int, str] = {}
@@ -181,7 +182,7 @@ def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Secti
                 current.tables.append(_Table(caption=caption, rows=rows))
             caption = None
             continue
-        style = item.style.name if item.style else ""
+        style = (item.style.name or "") if item.style else ""
         if style.startswith("Heading"):
             match = _HEADING_RE.match(item.text.strip())
             if match:
@@ -367,7 +368,7 @@ def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
 
 
 def _extract_avp_table(
-    table: _Table, section_number: str, warnings: list[str]
+    table: _Table, section_number: str
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
@@ -463,6 +464,18 @@ def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
     raise ExtractionError("cannot find spec number/version on the cover page")
 
 
+def _section_sort_key(section: str) -> list[tuple[int, str]]:
+    """Document order for section numbers: "6.3.10" sorts after "6.3.4", and
+    "6.3.7A" after "6.3.7"."""
+    key = []
+    for part in section.split("."):
+        digits = re.match(r"\d+", part)
+        # `SectionNumber` guarantees every part starts with digits.
+        assert digits is not None, f"malformed section number {section!r}"
+        key.append((int(digits[0]), part))
+    return key
+
+
 def patch_file_name(specification: str) -> str:
     """Patch file name for a cover-page spec title: "3GPP TS 29.272" →
     "TS29.272.toml" (matching the `.dad` SpecRef form)."""
@@ -470,7 +483,7 @@ def patch_file_name(specification: str) -> str:
 
 
 def extract(
-    docx_path,
+    docx_path: Path | str,
     link: str | None = None,
     warnings: list[str] | None = None,
     patches_dir: Path | None = None,
@@ -506,9 +519,7 @@ def extract(
         for table in section.tables:
             header = table.rows[0].cells
             if "AVP Flag rules" in header:
-                avp_table, note_reused = _extract_avp_table(
-                    table, section.number, warnings
-                )
+                avp_table, note_reused = _extract_avp_table(table, section.number)
                 tables_section = section.number
             elif "Reference" in header and "M-bit" in header:
                 if table.caption is None:
@@ -538,7 +549,7 @@ def extract(
             elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
                 pending_enums.append((section, title["name"]))
 
-    if avp_table is None:
+    if avp_table is None or tables_section is None:
         raise ExtractionError("no AVP table found")
     codes = {row.name: row.code for row in avp_table.rows}
     vendors = {avp.vendor_id for avp in grouped if avp.vendor_id is not None}
@@ -558,9 +569,7 @@ def extract(
             )
         enumerated.append(_extract_enumerated(section, name, code, vendor_id))
 
-    sections: list = [*messages]
-    if avp_table is not None:
-        sections.append(avp_table)
+    sections: list[ast.Section] = [*messages, avp_table]
     if reused_rows or note_reused:
         sections.append(
             ast.ReusedAvps(
@@ -571,39 +580,39 @@ def extract(
         )
     definitions = sorted(
         [*grouped, *enumerated],
-        key=lambda definition: [
-            # "6.3.10" must sort after "6.3.4", and "6.3.7A" after "6.3.7"
-            (int(re.match(r"\d+", part)[0]), part)
-            for part in definition.source.section.split(".")
-        ],
+        key=lambda definition: _section_sort_key(definition.source.section),
     )
     sections.extend(definitions)
     patcher.finish(warnings)
     return ast.Specification(
         specification=specification,
         version=version,
-        link=link,
+        link=None if link is None else pydantic.HttpUrl(link),
         sections=tuple(sections),
     )
 
 
-def attach_pages(spec: ast.Specification, pdf_path) -> ast.Specification:
+def attach_pages(spec: ast.Specification, pdf_path: Path | str) -> ast.Specification:
     """Attach PDF page numbers to every section, from the ETSI PDF bookmark
     outline (section number → 1-based page of the first outline entry that
     starts with it)."""
     reader = pypdf.PdfReader(str(pdf_path))
     pages: dict[str, int] = {}
 
-    def walk(entries):
+    def walk(entries) -> None:
         for entry in entries:
             if isinstance(entry, list):
                 walk(entry)
                 continue
             match = re.match(r"^(\d+(?:\.\d+[A-Z]*)*)\s", entry.title)
-            if match:
-                pages[match.group(1)] = (
-                    reader.get_page_number(entry.page or reader.pages[0]) + 1
-                )
+            if match is None:
+                continue
+            # pypdf types an outline destination as `IndirectObject` and
+            # `get_page_number` as optional; both resolve for a real outline.
+            destination = entry.page or reader.pages[0]
+            number = reader.get_page_number(destination)  # pyright: ignore[reportArgumentType]
+            if number is not None:
+                pages[match.group(1)] = number + 1
 
     walk(reader.outline)
 

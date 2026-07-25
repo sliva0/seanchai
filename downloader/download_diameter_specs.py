@@ -32,10 +32,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
-from typing import Iterable
-
 
 THREE_GPP_INDEX = "https://www.3gpp.org/ftp/Specs/latest/Rel-{release}/{series}_series/"
 ETSI_DELIVER = "https://www.etsi.org/deliver"
@@ -218,7 +217,8 @@ def decode_3gpp_version(archive_url: str) -> tuple[int, int, int]:
     match = re.search(r"-([0-9a-z]{3})\.zip$", name, re.IGNORECASE)
     if not match:
         raise RuntimeError(f"cannot determine 3GPP version from {archive_url}")
-    return tuple(int(character, 36) for character in match.group(1).lower())
+    major, minor, patch = (int(character, 36) for character in match.group(1).lower())
+    return major, minor, patch
 
 
 def version_string(version: tuple[int, int, int]) -> str:
@@ -247,9 +247,11 @@ def discover_etsi_pdf_versions(
 ) -> list[tuple[int, int, int]]:
     _, _, base_url = etsi_pdf_location(spec)
     page = request_bytes(f"{base_url}/").decode("utf-8", errors="replace")
-    versions = {
-        tuple(int(part) for part in match)
-        for match in re.findall(r"([0-9]{2})\.([0-9]{2})\.([0-9]{2})_60/?", page)
+    versions: set[tuple[int, int, int]] = {
+        (int(major), int(minor), int(patch))
+        for major, minor, patch in re.findall(
+            r"([0-9]{2})\.([0-9]{2})\.([0-9]{2})_60/?", page
+        )
     }
     return sorted(
         (
@@ -300,8 +302,9 @@ def download_3gpp(
             ]
             if not fallback_versions:
                 raise RuntimeError(
-                    f"no Release {release} ETSI PDF is published for {spec.document_type} "
-                    f"{spec.number} (source {source_version}): {exact_error}"
+                    f"no Release {release} ETSI PDF is published for"
+                    f" {spec.document_type} {spec.number}"
+                    f" (source {source_version}): {exact_error}"
                 ) from exact_error
             fallback_version = fallback_versions[0]
             pdf_url = etsi_pdf_url(spec, fallback_version)

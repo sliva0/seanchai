@@ -8,7 +8,7 @@ from docx.enum.style import WD_STYLE_TYPE
 
 
 def _set_cells(row, values):
-    for cell, value in zip(row.cells, values):
+    for cell, value in zip(row.cells, values, strict=True):
         cell.text = value
 
 

@@ -52,10 +52,12 @@ def test_reserved_range_must_be_ordered():
 def test_nodes_are_frozen_and_forbid_extra_fields():
     source = ast.SourceRef(section="1.2")
 
+    # Both statements are rejected statically as well as at runtime; the whole
+    # point of the test is that the runtime rejects them too.
     with pytest.raises(pydantic.ValidationError, match="frozen"):
-        source.section = "2.1"
+        source.section = "2.1"  # type: ignore
     with pytest.raises(pydantic.ValidationError, match="Extra inputs"):
-        ast.SourceRef(section="1.2", unknown=True)
+        ast.SourceRef(section="1.2", unknown=True)  # type: ignore
 
 
 def test_json_round_trip_preserves_discriminated_section_types():

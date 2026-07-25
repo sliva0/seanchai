@@ -14,7 +14,7 @@ Not-yet-final corners of the format are marked with `TODO(format)`.
 """
 
 import enum
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 import pydantic
 from pydantic import Field
@@ -122,7 +122,7 @@ class ReservedValues(Node):
     last: Unsigned32
 
     @pydantic.model_validator(mode="after")
-    def _ordered(self) -> "ReservedValues":
+    def _ordered(self) -> ReservedValues:
         if self.last < self.first:
             raise ValueError(f"reserved range {self.first}-{self.last} is inverted")
         return self
@@ -208,7 +208,7 @@ class ReusedAvps(Node):
 
 
 Section = Annotated[
-    Union[Message, GroupedAvp, EnumeratedAvp, AvpTable, ReusedAvps],
+    Message | GroupedAvp | EnumeratedAvp | AvpTable | ReusedAvps,
     Field(discriminator="type"),
 ]
 

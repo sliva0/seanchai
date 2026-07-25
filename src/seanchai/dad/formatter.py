@@ -13,6 +13,9 @@ depends on stable diffs. Canonical rules:
   overflowing into gaps when wider than the column.
 """
 
+from collections.abc import Callable
+from typing import Any
+
 from . import ast
 
 _PRESENCE_BRACKETS = {
@@ -74,12 +77,12 @@ def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
         starts.append(starts[-1] + width + _COLUMN_GAP)
 
     header_line = ";;"
-    for header, start in zip(headers, starts):
+    for header, start in zip(headers, starts, strict=True):
         header_line += " " * max(start - len(header_line), 1) + header
     lines = [header_line]
     for row in rows:
         line = ""
-        for cell, start in zip(row, starts):
+        for cell, start in zip(row, starts, strict=True):
             line += " " * (start - len(line)) + cell
         lines.append(line)
     return lines
@@ -204,7 +207,9 @@ def _format_reused(reused: ast.ReusedAvps, bold_column: int) -> list[str]:
     ]
 
 
-_SECTION_FORMATTERS = {
+# Each formatter takes its own section type; the dispatch is keyed by that same
+# type, which no type checker can express as a mapping — hence the `Any`.
+_SECTION_FORMATTERS: dict[type[ast.Section], Callable[[Any, int], list[str]]] = {
     ast.Message: _format_message,
     ast.GroupedAvp: _format_grouped,
     ast.EnumeratedAvp: _format_enumerated,

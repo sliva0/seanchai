@@ -92,9 +92,7 @@ last_version = "1.1.0"
     )
     warnings: list[str] = []
 
-    spec = tgpp_docx.extract(
-        malformed, warnings=warnings, patches_dir=patches_dir
-    )
+    spec = tgpp_docx.extract(malformed, warnings=warnings, patches_dir=patches_dir)
 
     table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
     assert table.rows[1].flag_rules.must == {ast.AvpFlag.VENDOR}

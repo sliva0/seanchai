@@ -9,6 +9,8 @@ free-text comment lines are discarded.
 
 import re
 
+import pydantic
+
 from . import ast
 
 _DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z]+): (?P<value>.*)$")
@@ -346,6 +348,6 @@ def parse(text: str) -> ast.Specification:
     return ast.Specification(
         specification=specification,
         version=version,
-        link=link,
+        link=None if link is None else pydantic.HttpUrl(link),
         sections=tuple(sections),
     )

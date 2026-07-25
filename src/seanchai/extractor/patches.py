@@ -74,7 +74,7 @@ class Patcher:
         self.version = version
 
     @classmethod
-    def load(cls, path: Path | None, version: str) -> "Patcher":
+    def load(cls, path: Path | None, version: str) -> Patcher:
         if path is None or not path.is_file():
             return cls([], version)
         with path.open("rb") as stream:

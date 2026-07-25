@@ -1,3 +1,5 @@
+import re
+
 import docx
 import pytest
 
@@ -17,20 +19,17 @@ def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
     assert spec.specification == "3GPP TS 29.999"
     assert spec.version == "1.2.3"
     assert str(spec.link) == "https://example.com/spec.pdf"
-    assert [type(section) for section in spec.sections] == [
-        ast.Message,
-        ast.AvpTable,
-        ast.ReusedAvps,
-        ast.GroupedAvp,
-        ast.EnumeratedAvp,
-    ]
+    message, table, reused, grouped, enumerated = spec.sections
+    assert isinstance(message, ast.Message)
+    assert isinstance(table, ast.AvpTable)
+    assert isinstance(reused, ast.ReusedAvps)
+    assert isinstance(grouped, ast.GroupedAvp)
+    assert isinstance(enumerated, ast.EnumeratedAvp)
 
-    message = spec.sections[0]
     assert message.command_code == 321
     assert message.application_id == 42
     assert message.avps[1].bold is True
 
-    table = spec.sections[1]
     source_table = docx.Document(synthetic_spec_docx).tables[1]
     merged_header = [cell.text for cell in source_table.rows[0].cells]
     assert merged_header[0] == merged_header[1] == "AVP"
@@ -39,7 +38,6 @@ def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
     assert table.rows[1].may_encrypt is True
     assert table.rows[1].flag_rules.must == {ast.AvpFlag.VENDOR}
 
-    reused = spec.sections[2]
     assert reused.rows == (
         ast.ReusedAvpRow(
             name="Other-AVP",
@@ -48,11 +46,9 @@ def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
         ),
     )
 
-    grouped = spec.sections[3]
     assert grouped.vendor_id == 10415
     assert grouped.avps[0].presence is ast.Presence.REQUIRED
 
-    enumerated = spec.sections[4]
     assert enumerated.vendor_id == 10415
     assert enumerated.values == (
         ast.EnumValue(
@@ -139,7 +135,7 @@ def test_extract_rejects_spaces_in_grouped_avp_rule_names(
 
     with pytest.raises(
         tgpp_docx.ExtractionError,
-        match="6.3.1: rule name 'Example Group' contains spaces",
+        match=re.escape("6.3.1: rule name 'Example Group' contains spaces"),
     ):
         tgpp_docx.extract(malformed)
 
