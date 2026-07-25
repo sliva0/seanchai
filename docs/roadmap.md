@@ -20,6 +20,14 @@ later.
 - **Restrict `AvpTableRow.data_type`** to the closed set of Diameter
   base/derived types (see `TODO(format)` in `ast.py`).
 
+## Output corrections
+
+The second half of the two-layer patch design: fixes for data that extracts and
+parses fine but is semantically wrong. Designed in
+[proposal-corrections.md](proposal-corrections.md), scheduled in
+[plan-code-quality.md](plan-code-quality.md). Pairs with the linter below —
+corrections are what make a corrected `.dad` pass it.
+
 ## Linter
 
 A cross-section linter over a parsed `.dad` file:

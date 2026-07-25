@@ -25,9 +25,9 @@ The pipeline has three stages:
    docx → intermediate document model → `.dad` AST. A separate pass reads the
    bookmark outline of the matching ETSI **PDF** to attach page numbers.
 2. **Review** — raw extractor output is committed per spec version; corrections
-   live as diffs against it, and the corrected `.dad` files are the source of
+   are kept alongside it, and the corrected `.dad` files are the source of
    truth. A version upgrade is re-extract, diff raw-vs-raw, re-apply the
-   correction patch — not a re-review from scratch.
+   corrections — not a re-review from scratch.
 3. **Consumption** — the parser turns `.dad` files back into the AST, and
    downstream scripts emit an implementation's native dictionary format or
    validate an existing hand-written one against the spec.
@@ -53,6 +53,9 @@ The pipeline has three stages:
 
 - A formal `.dad` grammar document, and a cross-section linter (unresolved AVP
   references, duplicate definitions, table-vs-definition consistency).
+- The second patch layer: corrections for data that parses fine but is
+  semantically wrong, designed in
+  [docs/proposal-corrections.md](docs/proposal-corrections.md).
 - Cross-checking extracted codes/vendors/types against Wireshark's Diameter
   `dictionary.xml` as an independent oracle.
 - Extraction of the remaining 3GPP Diameter specs, and an RFC (plain-text)
@@ -70,7 +73,8 @@ code-quality work is planned in
   `extractor` package, and the `seanchai` CLI.
 - `downloader/` — `download_diameter_specs.py` plus `specs.toml`, the curated
   catalog of 3GPP specs and RFCs to fetch.
-- `patches/` — per-spec input patches (`<SpecRef>.toml`) for source typos.
+- `patches/` — per-spec input patches (`<SpecRef>.toml`) for source typos that
+  would break extraction.
 - `output/` — downloaded source documents (git-ignored; recreate with the
   downloader).
 - `examples/` — committed `.dad` files: the hand-made reference and raw

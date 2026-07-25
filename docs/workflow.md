@@ -12,15 +12,16 @@
    extract → format → parse → eyeball; the `.dad` format is designed to read as
    a near-diff of the source ABNF so this stays cheap.
 4. **Commit the raw output** per spec version (`examples/29272-i60.raw.dad`).
-5. **Correct** it. Reviewed corrections are kept as diffs against the raw
-   output; the corrected `.dad` file is the source of truth.
+5. **Correct** it. The corrected `.dad` file is the source of truth. The
+   mechanism for expressing corrections is **not implemented yet** — see
+   [proposal-corrections.md](proposal-corrections.md); today this step means
+   editing the file by hand.
 
 ## Version upgrades
 
-Re-extract the new version, diff raw-vs-raw, re-apply the correction patch.
-That is the whole point of committing raw output: an upgrade reviews only what
-actually changed in the specification, instead of re-reviewing the file from
-scratch.
+Re-extract the new version, diff raw-vs-raw, re-apply the corrections. That is
+the whole point of committing raw output: an upgrade reviews only what actually
+changed in the specification, instead of re-reviewing the file from scratch.
 
 Two things this depends on, and which therefore must not regress:
 
@@ -32,10 +33,12 @@ Two things this depends on, and which therefore must not regress:
 
 ## Which layer fixes what
 
-- **Input patches** (`patches/<SpecRef>.toml`) — genuine typos in the source
-  document. See [extractor.md](extractor.md).
+- **Input patches** (`patches/<SpecRef>.toml`) — typos in the source document
+  that break extraction. See [extractor.md](extractor.md).
 - **Extractor code** — recurring conventions that carry information.
-- **Output `.dad` patches** — semantic corrections to extracted data.
+- **Corrections** — data that extracts and parses fine but is semantically
+  wrong. *Proposed, not implemented:*
+  [proposal-corrections.md](proposal-corrections.md).
 
 ## Validation
 

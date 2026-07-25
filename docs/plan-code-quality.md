@@ -106,7 +106,24 @@ already claims to handle.
 - **Enum ordering** — RESERVED ranges interleaved with values by numeric sort.
 - **`patch_file_name`** — untested.
 
-## 6. Move the downloader into the package
+## 6. Implement output corrections
+
+The pipeline is designed around two patch layers, and only the first exists.
+Input patches fix source typos that break extraction; corrections fix data that
+extracts and parses fine but is semantically wrong — a misprinted AVP code, a
+clause reference pointing at the wrong section, an omitted application id.
+
+The design is in [proposal-corrections.md](proposal-corrections.md): a
+per-spec Python file holding a declarative list of `Correction` entries, each
+naming its target by identity, the value it expects to find, and the
+replacement. `expect` is checked, so a correction that the spec has fixed
+upstream fails loudly instead of silently doing nothing.
+
+This is the layer that turns "the extractor ran" into "the data is right", so it
+gates the linter being useful (§ [roadmap](roadmap.md)) — `raw.dad` may fail the
+linter, the corrected file must pass.
+
+## 7. Move the downloader into the package
 
 `downloader/download_diameter_specs.py` is a standalone stdlib-only uv script,
 but the planned archive fetching means it and the extractor will need to share
