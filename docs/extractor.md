@@ -58,12 +58,11 @@ first_version = "18.6.0"   # oldest version known to need this patch
 last_version = "18.6.0"    # newest version known to need this patch
 ```
 
-A patch that applies more or fewer times than `count` produces a warning that
-includes the known-needed version range, so patches cannot silently rot when
-the source document changes between versions. The warning is currently the only
-consequence: a patch that was required and did not apply still leaves `extract`
-exiting zero. Treat any patch warning as a failed run until that is fixed (see
-[plan-code-quality.md](plan-code-quality.md)).
+A patch that applies more or fewer times than `count` fails the extraction with
+a `PatchError` naming the known-needed version range, so patches cannot silently
+rot when the source document changes between versions. A patch that stops
+matching is a fix dropped from the output, which is too easy to miss in a
+stderr warning.
 
 `first_version`/`last_version` are advisory: they describe where the patch is
 known to be needed and make the warning message useful. They do **not** gate
@@ -84,10 +83,10 @@ The correction layer is [proposed but not implemented](proposal-corrections.md).
 Structural damage (missing captions, split tables) has no collected case yet;
 revisit override-style instructions only if one appears.
 
-One accumulator limitation to know about: `extract()` keeps a single
-`avp_table` and a single reused table, so a spec with two matching tables gets
-the last one and the earlier one disappears without a warning. No collected
-spec does this yet; the planned `extract()` split is where to fix it.
+A document with two AVP tables or two re-used tables is rejected, naming the
+sections involved. No collected spec does this yet, and the shape of a
+multi-table policy would depend on the case that forces it — but it must not
+pass silently, which is what the old single-accumulator code did.
 
 ## Strictness
 
@@ -124,13 +123,12 @@ fixture for it in `tests/conftest.py` too.
 
 ## Gotchas
 
-- **Keep the docx and PDF matched exactly** — same specification *and* same
-  version (29.329 i10 ↔ TS 29.329 V18.1.0). `attach_pages` trusts the caller
-  and will attach subtly wrong pages without any error if either differs.
-  Making it verify both is planned — see
-  [plan-code-quality.md](plan-code-quality.md). Note that the downloader will
-  fall back to an earlier ETSI version when the exact one isn't published; that
-  file is not valid input here.
+- **The docx and the PDF must be the same specification and version** (29.329
+  i10 ↔ TS 29.329 V18.1.0). `attach_pages` reads the PDF's own cover title and
+  refuses a mismatch, so this is now an error rather than silently wrong page
+  numbers — which matters because the downloader falls back to an earlier ETSI
+  rendering when the exact version isn't published yet. It also warns when the
+  bookmark outline covers only some sections, and errors when it covers none.
 - ETSI PDF filenames encode versions as two digits per component (18.1.0 →
   `v180100`). `etsi_pdf_url()` in the download script already does this
   correctly; don't hand-build these URLs.

@@ -45,7 +45,7 @@ def extract(
     warnings: list[str] = []
     spec = tgpp_docx.extract(docx, link=link, warnings=warnings, patches_dir=patches)
     if pdf is not None:
-        spec = tgpp_docx.attach_pages(spec, pdf)
+        spec = tgpp_docx.attach_pages(spec, pdf, warnings=warnings)
     for warning in warnings:
         click.echo(f"warning: {warning}", err=True)
     text = formatter.format(spec)

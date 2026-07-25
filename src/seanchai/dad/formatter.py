@@ -6,7 +6,7 @@ depends on stable diffs. Canonical rules:
 - sections separated by two blank lines; file ends with one newline;
 - ABNF bodies: 8-space indent with the repetition qualifier right-aligned in
   front of it; `; bold` markers aligned one column past the longest ABNF body
-  line in the whole file;
+  line of their own section;
 - enum bodies: `=` aligned per section (RESERVED counts as a name);
 - tables: columns split by 3 spaces, widths from data cells only (minimum 3);
   the `;;` column-header line is cosmetic — labels sit at column starts,
@@ -16,34 +16,16 @@ depends on stable diffs. Canonical rules:
 from collections.abc import Callable
 from typing import Any
 
-from . import ast
+from . import abnf, ast
 
-_PRESENCE_BRACKETS = {
-    ast.Presence.FIXED: "<>",
-    ast.Presence.REQUIRED: "{}",
-    ast.Presence.OPTIONAL: "[]",
-}
-# Canonical command-flag order in a Diameter header line.
-_COMMAND_FLAG_ORDER = [
-    ast.CommandFlag.REQUEST,
-    ast.CommandFlag.PROXIABLE,
-    ast.CommandFlag.ERROR,
-]
 _MIN_COLUMN_WIDTH = 3
 _COLUMN_GAP = 3
 
 
-def _qualifier(rule: ast.AvpRule) -> str:
-    if (rule.min_occurs, rule.max_occurs) == (1, 1):
-        return ""
-    minimum = str(rule.min_occurs) if rule.min_occurs else ""
-    maximum = str(rule.max_occurs) if rule.max_occurs is not None else ""
-    return f"{minimum}*{maximum}"
-
-
 def _avp_line(rule: ast.AvpRule) -> str:
-    open_bracket, close_bracket = _PRESENCE_BRACKETS[rule.presence]
-    return f"{_qualifier(rule):>7} {open_bracket} {rule.name} {close_bracket}"
+    open_bracket, close_bracket = abnf.brackets(rule.presence)
+    qualifier = abnf.qualifier(rule.min_occurs, rule.max_occurs)
+    return f"{qualifier:>7} {open_bracket} {rule.name} {close_bracket}"
 
 
 def _abnf_body(avps: tuple[ast.AvpRule, ...], bold_column: int) -> list[str]:
@@ -61,10 +43,6 @@ def _header_directives(name: str, source: ast.SourceRef) -> list[str]:
     if source.page is not None:
         lines.append(f"; Page: {source.page}")
     return lines
-
-
-def _flags_cell(flags: frozenset[ast.AvpFlag]) -> str:
-    return ",".join(flag.value for flag in ast.AvpFlag if flag in flags) or "-"
 
 
 def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
@@ -89,11 +67,9 @@ def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
 
 
 def _format_message(message: ast.Message, bold_column: int) -> list[str]:
-    flags = [flag.value for flag in _COMMAND_FLAG_ORDER if flag in message.flags]
-    application = (
-        [] if message.application_id is None else [str(message.application_id)]
+    header_items = abnf.diameter_header_items(
+        message.command_code, message.flags, message.application_id
     )
-    header_items = ", ".join([str(message.command_code), *flags, *application])
     return [
         "; Type: Message",
         *_header_directives(f"{message.name}, {message.abbreviation}", message.source),
@@ -162,10 +138,10 @@ def _format_avp_table(table: ast.AvpTable, bold_column: int) -> list[str]:
             "-" if row.code is None else str(row.code),
             row.section if row.section is not None else "-",
             row.data_type,
-            _flags_cell(row.flag_rules.must),
-            _flags_cell(row.flag_rules.may),
-            _flags_cell(row.flag_rules.should_not),
-            _flags_cell(row.flag_rules.must_not),
+            abnf.avp_flags_cell(row.flag_rules.must),
+            abnf.avp_flags_cell(row.flag_rules.may),
+            abnf.avp_flags_cell(row.flag_rules.should_not),
+            abnf.avp_flags_cell(row.flag_rules.must_not),
             "Yes" if row.may_encrypt else "No",
         ]
         for row in table.rows
@@ -218,14 +194,13 @@ _SECTION_FORMATTERS: dict[type[ast.Section], Callable[[Any, int], list[str]]] = 
 }
 
 
-def _bold_column(spec: ast.Specification) -> int:
-    lengths = [
-        len(_avp_line(rule))
-        for section in spec.sections
-        if isinstance(section, (ast.Message, ast.GroupedAvp))
-        for rule in section.avps
-    ]
-    return max(lengths, default=0) + 1
+def _bold_column(section: ast.Section) -> int:
+    """Where `; bold` markers sit, one column past the longest ABNF line — of
+    this section only. A file-wide column would make one added AVP reflow every
+    marker in the file, and the review workflow lives on raw-vs-raw diffs."""
+    if not isinstance(section, ast.Message | ast.GroupedAvp):
+        return 0
+    return max((len(_avp_line(rule)) for rule in section.avps), default=0) + 1
 
 
 def format(spec: ast.Specification) -> str:
@@ -233,10 +208,9 @@ def format(spec: ast.Specification) -> str:
     if spec.link is not None:
         header.append(f"; Link: {spec.link}")
 
-    bold_column = _bold_column(spec)
     parts = [header]
     parts.extend(
-        _SECTION_FORMATTERS[type(section)](section, bold_column)
+        _SECTION_FORMATTERS[type(section)](section, _bold_column(section))
         for section in spec.sections
     )
     return "\n\n\n".join("\n".join(part) for part in parts) + "\n"

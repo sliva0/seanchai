@@ -1,14 +1,40 @@
 # Plan: code quality pass
 
 A review of the whole project (July 2026) turned up three categories worth
-acting on: two real correctness bugs, a set of mechanical cleanups, and
-duplication between the parser and the extractor. This plan captures the
-remaining work. Feature work is in [roadmap.md](roadmap.md).
+acting on: data-integrity bugs, a set of mechanical cleanups, and duplication
+between the parser and the extractor. Sections 1–3 are done; what is left keeps
+its original numbering. Feature work is in [roadmap.md](roadmap.md).
 
 Tests pass and all three tools are clean at every step; that is the acceptance
 criterion for each one.
 
 ## Done
+
+**Data-integrity bugs (§1).** `attach_pages` now reads the ETSI PDF's own cover
+page and refuses a PDF whose specification *or* version differs from the
+extracted docx — the case the downloader's fallback made reachable in normal
+use — and reports how many sections the bookmark outline actually covered, with
+an empty outline now an error. `_bold_column` is per-section, so one added AVP
+can no longer reflow every `; bold` marker in the file; `examples/*.dad` were
+regenerated (only 29.229 changed). Input-patch count mismatches raise
+`PatchError` instead of adding to a warning list that nothing acts on; version
+ranges stay advisory.
+
+**Shared ABNF semantics (§2).** `dad/abnf.py` now owns the meaning both the
+parser and the extractor were implementing separately: bracket↔presence,
+`min*max`↔occurrences, Diameter-header items, and the M/V flag vocabulary. Both
+dialects' regexes use the same group names, so `abnf.avp_rule()` takes either
+match; `tests/test_abnf.py` pins the two dialects to the same AST for the same
+rule. Errors surface as `AbnfError` and each caller adds its own context (line
+number or document section).
+
+**`extract()` split (§3).** Now collect → resolve → assemble with `_Collected`
+and `_Resolved` between them. Resolution — external-AVP skipping, code and
+vendor-id lookup for enumerated AVPs — is unit-tested without building a docx
+(`tests/test_extract_phases.py`). Tables are collected as lists and a second
+AVP or re-used table is now an error naming the sections, replacing the
+accumulator that silently kept the last one. Output for all three real specs is
+byte-identical across the refactor.
 
 **Tooling.** uv dev group with ruff, ty and basedpyright (`standard` mode);
 ruff (`E`, `F`, `I`, `UP`, `B`, `SIM`, `RUF`) and pytest configured in
@@ -28,75 +54,6 @@ section-number sort key with `_section_sort_key()` (which also removed a latent
 
 **Documentation.** README split into working-today and planned; `TODO.md`
 replaced by this `docs/` directory.
-
-## 1. Fix the data-integrity bugs
-
-These corrupt data that then gets committed and reviewed as if it were correct,
-so they come first.
-
-**1.1 `attach_pages` silently attaches wrong pages on a source mismatch.**
-Today it trusts the caller to pass a PDF of exactly the same specification and
-version as the docx; if either differs, every `; Page:` directive is quietly
-wrong. The ETSI PDF cover page carries `3GPP TS 29.272 V18.6.0`, in the same
-form the extractor already parses from the docx cover table. Extract it,
-compare **both** the spec number and the version, and raise on mismatch. Test
-the wrong spec at the right version as well as the right spec at the wrong
-version. Return a bookmark-coverage count too, so an outline that matched
-nothing can't look like success. Then drop the corresponding warning from
-[extractor.md](extractor.md).
-
-The downloader falls back to an earlier ETSI PDF when the exact version isn't
-published, which makes this reachable in normal use rather than only through
-operator error — see [downloader.md](downloader.md).
-
-**1.2 `_bold_column` is computed across the whole file.** One long AVP rule
-anywhere in a specification reflows the `; bold` column of every rule in the
-file. On a version bump that adds a single AVP, the raw-vs-raw diff — the core
-of the review workflow — goes from three lines to the whole file. Make the
-column per-section (or fix its width), regenerate the committed
-`examples/*.dad`, and confirm the round-trip tests still pin exactly.
-
-**1.3 Input-patch accounting is warning-only.** A patch that was required and
-applied zero times still leaves `extract` exiting zero, so a corpus run can
-lose a fix without anyone noticing. Make a count mismatch an extraction error.
-Keep `first_version`/`last_version` advisory — they belong in the message, not
-in a gate; a patch that stops applying because the version moved is the failure
-mode this is meant to prevent.
-
-## 2. De-duplicate the format semantics
-
-The parser and the extractor independently implement the same `.dad` semantics:
-
-- `_BRACKETS` — verbatim in both;
-- the AVP-rule regex, in two dialects (canonical vs. lenient-about-source);
-- the `min*max` → `(min_occurs, max_occurs)` conversion — verbatim in both;
-- the Diameter-header item split, including the `items[-1].isdigit()`
-  application-id heuristic — near-verbatim in both;
-- the M/V flag vocabulary, encoded three times (`parser._flags`,
-  `extractor._flags_cell`, `formatter._flags_cell`).
-
-These are properties of the format, not of either consumer. Move them into a
-new `dad/abnf.py`: brackets, the occurrence qualifier in both directions, the
-Diameter-header item parse, and the flag-set/cell conversion. The two source
-dialects stay separate where they genuinely differ (the extractor tolerates
-spacing that the canonical format never emits), but the *semantics* are shared.
-
-Add a test asserting that the parser and the extractor agree on the same rule
-text — right now nothing pins the two implementations together, and a format
-change needs two coordinated edits with no failing test if you forget one.
-
-## 3. Split `extract()`
-
-`extract()` is ~115 lines with ten accumulator locals, doing three phases at
-once. Split it into collect → resolve → assemble with an explicit intermediate
-result type. The win beyond readability is testability: the enum-resolution
-step (skip AVPs that are external, error when a pending enum has no code in the
-AVP table) becomes unit-testable without building a docx.
-
-While in there, keep every matching table instead of the current
-last-one-wins `avp_table`/reused accumulators, and reject unexpected
-multiplicity with a source location. No collected spec has two AVP tables yet,
-but the current code would drop one silently.
 
 ## 4. Tidy the formatter dispatch
 

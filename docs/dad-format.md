@@ -74,7 +74,7 @@ These are the decisions the format rests on. Preserve them when changing it.
   canonical file, which is what makes the patch-based review workflow produce
   stable diffs across extractor re-runs.
 
-## AST
+## AST and shared semantics
 
 `src/seanchai/dad/ast.py` mirrors the file structure one-to-one. All nodes are
 frozen pydantic models: extractor output and hand patches are exactly the kind
@@ -87,3 +87,11 @@ marked as such in the model docstrings — `Message.application_id` (some TS
 spec), `AvpTableRow.section` (no local clause).
 
 Corners of the format that are not final are marked `TODO(format)` in the AST.
+
+`dad/abnf.py` holds the semantics that both the parser and the source
+extractors need: which bracket pair is which presence, how `min*max` maps to
+occurrence counts, how Diameter-header items split into command code, flags and
+application id, and how M/V flag cells are spelled. The two read different
+*dialects* — canonical `.dad` text versus whatever Word produced — so their
+regexes stay in their own modules, but a change to what the syntax means is one
+edit, and `tests/test_abnf.py` pins the dialects to the same result.

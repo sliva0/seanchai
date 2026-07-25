@@ -20,14 +20,20 @@ Patch files are TOML, one per specification, named by its reference
     first_version = "18.6.0"   # oldest version known to need this patch
     last_version = "18.6.0"    # newest version known to need this patch
 
-A patch that applies more or fewer times than `count` produces a warning
-including the known-needed version range, so patches cannot silently rot when
-the source document changes between versions.
+A patch that applies more or fewer times than `count` fails the extraction,
+with a message including the known-needed version range, so patches cannot
+silently rot when the source document changes between versions. The version
+range is advisory: it explains where the patch is known to be needed, and does
+not gate whether the patch is applied.
 """
 
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+
+
+class PatchError(ValueError):
+    pass
 
 
 @dataclass
@@ -89,8 +95,17 @@ class Patcher:
             text = patch.apply(text, section, record)
         return text
 
-    def finish(self, warnings: list[str]) -> None:
-        """Report every patch that did not apply exactly `count` times."""
+    def finish(self) -> None:
+        """Fail if any patch did not apply exactly `count` times.
+
+        A patch that silently stops matching is a fix quietly dropped from the
+        output, which is precisely what this accounting exists to prevent — so
+        it aborts the extraction rather than adding to the warning list nobody
+        has to act on. `first_version`/`last_version` only sharpen the message:
+        they say where the patch is known to be needed, and never gate whether
+        it is applied.
+        """
+        problems = []
         for patch in self.patches:
             if patch.applied == patch.count:
                 continue
@@ -106,4 +121,6 @@ class Patcher:
                     f"; it was needed on version {known}, currently parsing"
                     f" {self.version} — the source may have changed"
                 )
-            warnings.append(message)
+            problems.append(message)
+        if problems:
+            raise PatchError("; ".join(problems))

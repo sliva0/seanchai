@@ -39,7 +39,7 @@ import docx.text.paragraph
 import pydantic
 import pypdf
 
-from ..dad import ast
+from ..dad import abnf, ast
 from .patches import Patcher
 
 _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+[A-Z]*)*)\t(?P<title>.+)$")
@@ -77,14 +77,14 @@ _NOTE_RFC_RE = re.compile(
     r"^NOTE\s*(?P<number>\d+):\s*The values? of th(?:is|ese) attributes? "
     r"is defined in IETF\s+RFC\s+(?P<rfc>\d+)"
 )
+_DOCX_COVER_RE = re.compile(
+    r"3GPP (?P<spec>TS \d{2}\.\d{3}) V(?P<version>\d+(?:\.\d+)*)"
+)
+_PDF_COVER_RE = re.compile(
+    r"3GPP (?P<spec>TS \d{2}\.\d{3}) version (?P<version>\d+(?:\.\d+)*)"
+)
 _ORIGIN_TS_RE = re.compile(r"3GPP\s+TS\s+(?P<number>\d{2}\.\d{3})")
 _ORIGIN_RFC_RE = re.compile(r"IETF\s+RFC\s+(?P<number>\d+)")
-
-_BRACKETS = {
-    ("<", ">"): ast.Presence.FIXED,
-    ("{", "}"): ast.Presence.REQUIRED,
-    ("[", "]"): ast.Presence.OPTIONAL,
-}
 
 _M_BIT_OVERRIDES = {
     "": None,
@@ -211,23 +211,10 @@ def _abnf_body(
         match = _ABNF_LINE_RE.match(paragraph.text)
         if match is None:
             break
-        presence = _BRACKETS.get((match["open"], match["close"]))
-        if presence is None:
-            raise ExtractionError(f"mismatched brackets: {paragraph.text!r}")
-        if match["min"] is None and match["max"] is None:
-            min_occurs, max_occurs = 1, 1
-        else:
-            min_occurs = int(match["min"] or 0)
-            max_occurs = int(match["max"]) if match["max"] else None
-        rules.append(
-            ast.AvpRule(
-                name=match["name"],
-                presence=presence,
-                min_occurs=min_occurs,
-                max_occurs=max_occurs,
-                bold=_is_bold(paragraph.source),
-            )
-        )
+        try:
+            rules.append(abnf.avp_rule(match, bold=_is_bold(paragraph.source)))
+        except abnf.AbnfError as error:
+            raise ExtractionError(f"{error} in {paragraph.text!r}") from None
         index += 1
     return tuple(rules), index
 
@@ -271,23 +258,22 @@ def _extract_messages(
                 f"{section.number}: heading name {title['name']!r}"
                 f" != rule name {rule_name!r}, using the rule name"
             )
-        items = [item.strip() for item in header["items"].split(",") if item.strip()]
-        application_id = (
-            int(items[-1]) if len(items) > 1 and items[-1].isdigit() else None
-        )
+        try:
+            command_code, flags, application_id = abnf.diameter_header(header["items"])
+        except abnf.AbnfError as error:
+            raise ExtractionError(f"{section.number}: {error}") from None
         if application_id is None:
             warnings.append(
                 f"{section.number}: {rule_name} header omits the application id"
             )
-        flags = items[1:-1] if application_id is not None else items[1:]
         avps, index = _abnf_body(section.paragraphs, index)
         messages.append(
             ast.Message(
                 name=rule_name,
                 abbreviation=title["abbr"],
                 source=ast.SourceRef(section=section.number),
-                command_code=int(items[0]),
-                flags=frozenset(ast.CommandFlag(flag) for flag in flags),
+                command_code=command_code,
+                flags=flags,
                 application_id=application_id,
                 avps=avps,
             )
@@ -359,12 +345,12 @@ def _strip_note_ref(text: str) -> tuple[str, str | None]:
 def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
     # Strict: typos like "M. V" or lowercase "v" are fixed by input patches,
     # not tolerated here.
-    if not text:
+    if not text:  # an empty table cell
         return frozenset()
     try:
-        return frozenset(ast.AvpFlag(flag.strip()) for flag in text.split(","))
-    except ValueError:
-        raise ExtractionError(f"malformed flags cell {text!r}") from None
+        return abnf.avp_flags(text)
+    except abnf.AbnfError as error:
+        raise ExtractionError(str(error)) from None
 
 
 def _extract_avp_table(
@@ -454,14 +440,172 @@ def _extract_reused_table(table: _Table, warnings: list[str]) -> list[ast.Reused
 
 
 def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
-    pattern = re.compile(r"3GPP (?P<spec>TS \d{2}\.\d{3}) V(?P<version>\d+(?:\.\d+)*)")
     for item in document.iter_inner_content():
         if isinstance(item, docx.table.Table):
             for row in item.rows:
                 for cell in row.cells:
-                    if match := pattern.search(_normalize(cell.text)):
+                    if match := _DOCX_COVER_RE.search(_normalize(cell.text)):
                         return f"3GPP {match['spec']}", match["version"]
     raise ExtractionError("cannot find spec number/version on the cover page")
+
+
+def _pdf_spec_and_version(reader: pypdf.PdfReader) -> tuple[str, str]:
+    """An ETSI rendering prints its own title on the cover, with the 3GPP
+    original in parentheses: "(3GPP TS 29.272 version 18.6.0 Release 18)"."""
+    cover = _normalize(reader.pages[0].extract_text())
+    match = _PDF_COVER_RE.search(cover)
+    if match is None:
+        raise ExtractionError("cannot find spec number/version on the PDF cover page")
+    return f"3GPP {match['spec']}", match["version"]
+
+
+@dataclass
+class _Collected:
+    """What one pass over the document found, before anything is cross-checked.
+
+    Tables are kept as lists rather than as a single winner: a document with two
+    AVP tables is not something any collected spec does, and quietly keeping the
+    last one would hide it.
+    """
+
+    messages: list[ast.Message] = field(default_factory=list)
+    grouped: list[ast.GroupedAvp] = field(default_factory=list)
+    # Sections that read like an enumerated AVP, with the name from the
+    # heading. They cannot become definitions until the AVP table is known —
+    # that is where their code comes from.
+    pending_enums: list[tuple[_Section, str]] = field(default_factory=list)
+    avp_tables: list[tuple[ast.AvpTable, str]] = field(default_factory=list)
+    reused_tables: list[list[ast.ReusedAvpRow]] = field(default_factory=list)
+    reused_labels: list[str] = field(default_factory=list)
+    # Reused rows derived from AVP-table NOTEs rather than from a reused table.
+    note_reused: list[ast.ReusedAvpRow] = field(default_factory=list)
+
+
+@dataclass
+class _Resolved:
+    """Definitions after cross-section resolution: every enumerated AVP has a
+    code and a vendor-id, and external AVPs have been dropped."""
+
+    messages: list[ast.Message]
+    avp_table: ast.AvpTable
+    tables_section: str
+    reused: list[ast.ReusedAvpRow]
+    reused_label: str
+    definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
+
+
+def _collect(sections: list[_Section], warnings: list[str]) -> _Collected:
+    """Walk the document once, classifying sections. Source-shaped work only:
+    nothing here needs to know about another section."""
+    collected = _Collected()
+    for section in sections:
+        if title := _COMMAND_TITLE_RE.match(section.title):
+            collected.messages.extend(_extract_messages(section, title, warnings))
+            continue
+        for table in section.tables:
+            header = table.rows[0].cells
+            if "AVP Flag rules" in header:
+                avp_table, note_reused = _extract_avp_table(table, section.number)
+                collected.avp_tables.append((avp_table, section.number))
+                collected.note_reused.extend(note_reused)
+            elif "Reference" in header and "M-bit" in header:
+                if table.caption is None:
+                    raise ExtractionError("re-used AVPs table without a caption")
+                collected.reused_tables.append(_extract_reused_table(table, warnings))
+                collected.reused_labels.append(table.caption)
+        if title := _AVP_TITLE_RE.match(section.title):
+            found = _find_rule_header(section, _AVP_HEADER_RE)
+            if found is not None:
+                header, body_start = found
+                rule_name = header["name"]
+                if " " in rule_name:
+                    # Spaces-for-hyphens rule names (29.272 §7.3.196
+                    # "Monitoring Event Report") are input-patched.
+                    raise ExtractionError(
+                        f"{section.number}: rule name {rule_name!r} contains spaces"
+                    )
+                if rule_name != title["name"]:
+                    warnings.append(
+                        f"{section.number}: heading name"
+                        f" {title['name']!r} != rule name {rule_name!r},"
+                        " using the rule name"
+                    )
+                collected.grouped.append(
+                    _extract_grouped(section, header, body_start, name=rule_name)
+                )
+            elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
+                collected.pending_enums.append((section, title["name"]))
+    return collected
+
+
+def _resolve(collected: _Collected) -> _Resolved:
+    """Cross-section work: pick the tables, then turn pending enumerated
+    sections into definitions using codes from the AVP table."""
+    if not collected.avp_tables:
+        raise ExtractionError("no AVP table found")
+    if len(collected.avp_tables) > 1:
+        found = ", ".join(number for _, number in collected.avp_tables)
+        raise ExtractionError(f"more than one AVP table found, in sections {found}")
+    if len(collected.reused_tables) > 1:
+        raise ExtractionError(
+            f"more than one re-used AVPs table found: {collected.reused_labels}"
+        )
+    avp_table, tables_section = collected.avp_tables[0]
+    reused_rows = collected.reused_tables[0] if collected.reused_tables else []
+
+    codes = {row.name: row.code for row in avp_table.rows}
+    # Enumerated sections never print the vendor-id, so it comes from the
+    # spec's grouped-AVP headers — one value per 3GPP spec (10415).
+    vendors = {avp.vendor_id for avp in collected.grouped if avp.vendor_id is not None}
+    vendor_id = vendors.pop() if len(vendors) == 1 else None
+    # AVPs originating in other specs get no local definition, even when their
+    # section is worded like one (e.g. DRMP: "is of type Enumerated" but the
+    # values are defined in RFC 7944).
+    external = {row.name for row in [*reused_rows, *collected.note_reused]}
+
+    enumerated = []
+    for section, name in collected.pending_enums:
+        if name in external:
+            continue
+        code = codes.get(name)
+        if code is None:
+            raise ExtractionError(
+                f"{section.number}: enumerated AVP {name!r}"
+                " has no code in the AVP table"
+            )
+        enumerated.append(_extract_enumerated(section, name, code, vendor_id))
+
+    return _Resolved(
+        messages=collected.messages,
+        avp_table=avp_table,
+        tables_section=tables_section,
+        reused=[*reused_rows, *collected.note_reused],
+        reused_label=(
+            collected.reused_labels[0] if collected.reused_labels else avp_table.table
+        ),
+        definitions=[*collected.grouped, *enumerated],
+    )
+
+
+def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
+    """File order: messages, the AVP table, the reused table, then every
+    definition in document order."""
+    sections: list[ast.Section] = [*resolved.messages, resolved.avp_table]
+    if resolved.reused:
+        sections.append(
+            ast.ReusedAvps(
+                table=resolved.reused_label,
+                source=ast.SourceRef(section=resolved.tables_section),
+                rows=tuple(resolved.reused),
+            )
+        )
+    sections.extend(
+        sorted(
+            resolved.definitions,
+            key=lambda definition: _section_sort_key(definition.source.section),
+        )
+    )
+    return tuple(sections)
 
 
 def _section_sort_key(section: str) -> list[tuple[int, str]]:
@@ -502,101 +646,40 @@ def extract(
     )
     patcher = Patcher.load(patch_path, version)
 
-    messages: list[ast.Message] = []
-    grouped: list[ast.GroupedAvp] = []
-    enumerated: list[ast.EnumeratedAvp] = []
-    avp_table: ast.AvpTable | None = None
-    reused_rows: list[ast.ReusedAvpRow] = []
-    reused_table_label: str | None = None
-    note_reused: list[ast.ReusedAvpRow] = []
-    tables_section: str | None = None
-    pending_enums: list[tuple[_Section, str]] = []
-
-    for section in _sections(document, patcher):
-        if title := _COMMAND_TITLE_RE.match(section.title):
-            messages.extend(_extract_messages(section, title, warnings))
-            continue
-        for table in section.tables:
-            header = table.rows[0].cells
-            if "AVP Flag rules" in header:
-                avp_table, note_reused = _extract_avp_table(table, section.number)
-                tables_section = section.number
-            elif "Reference" in header and "M-bit" in header:
-                if table.caption is None:
-                    raise ExtractionError("re-used AVPs table without a caption")
-                reused_rows = _extract_reused_table(table, warnings)
-                reused_table_label = table.caption
-        if title := _AVP_TITLE_RE.match(section.title):
-            found = _find_rule_header(section, _AVP_HEADER_RE)
-            if found is not None:
-                header, body_start = found
-                rule_name = header["name"]
-                if " " in rule_name:
-                    # Spaces-for-hyphens rule names (29.272 §7.3.196
-                    # "Monitoring Event Report") are input-patched.
-                    raise ExtractionError(
-                        f"{section.number}: rule name {rule_name!r} contains spaces"
-                    )
-                if rule_name != title["name"]:
-                    warnings.append(
-                        f"{section.number}: heading name"
-                        f" {title['name']!r} != rule name {rule_name!r},"
-                        " using the rule name"
-                    )
-                grouped.append(
-                    _extract_grouped(section, header, body_start, name=rule_name)
-                )
-            elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
-                pending_enums.append((section, title["name"]))
-
-    if avp_table is None or tables_section is None:
-        raise ExtractionError("no AVP table found")
-    codes = {row.name: row.code for row in avp_table.rows}
-    vendors = {avp.vendor_id for avp in grouped if avp.vendor_id is not None}
-    vendor_id = vendors.pop() if len(vendors) == 1 else None
-    # AVPs originating in other specs get no local definition, even when their
-    # section is worded like one (e.g. DRMP: "is of type Enumerated" but the
-    # values are defined in RFC 7944).
-    external = {row.name for row in [*reused_rows, *note_reused]}
-    for section, name in pending_enums:
-        if name in external:
-            continue
-        code = codes.get(name)
-        if code is None:
-            raise ExtractionError(
-                f"{section.number}: enumerated AVP {name!r}"
-                " has no code in the AVP table"
-            )
-        enumerated.append(_extract_enumerated(section, name, code, vendor_id))
-
-    sections: list[ast.Section] = [*messages, avp_table]
-    if reused_rows or note_reused:
-        sections.append(
-            ast.ReusedAvps(
-                table=reused_table_label or avp_table.table,
-                source=ast.SourceRef(section=tables_section),
-                rows=tuple([*reused_rows, *note_reused]),
-            )
-        )
-    definitions = sorted(
-        [*grouped, *enumerated],
-        key=lambda definition: _section_sort_key(definition.source.section),
-    )
-    sections.extend(definitions)
-    patcher.finish(warnings)
+    collected = _collect(_sections(document, patcher), warnings)
+    patcher.finish()
+    sections = _assemble(_resolve(collected))
     return ast.Specification(
         specification=specification,
         version=version,
         link=None if link is None else pydantic.HttpUrl(link),
-        sections=tuple(sections),
+        sections=sections,
     )
 
 
-def attach_pages(spec: ast.Specification, pdf_path: Path | str) -> ast.Specification:
+def attach_pages(
+    spec: ast.Specification,
+    pdf_path: Path | str,
+    warnings: list[str] | None = None,
+) -> ast.Specification:
     """Attach PDF page numbers to every section, from the ETSI PDF bookmark
     outline (section number → 1-based page of the first outline entry that
-    starts with it)."""
+    starts with it).
+
+    The PDF must render the same specification and version as `spec`: page
+    numbers from a neighbouring version are wrong in a way nothing downstream
+    can detect, and the downloader will happily fetch an earlier ETSI rendering
+    when the exact one is not published yet.
+    """
+    warnings = warnings if warnings is not None else []
     reader = pypdf.PdfReader(str(pdf_path))
+    specification, version = _pdf_spec_and_version(reader)
+    if (specification, version) != (spec.specification, spec.version):
+        raise ExtractionError(
+            f"PDF renders {specification} V{version}, but the extracted"
+            f" specification is {spec.specification} V{spec.version}"
+            " — its page numbers do not apply"
+        )
     pages: dict[str, int] = {}
 
     def walk(entries) -> None:
@@ -615,6 +698,11 @@ def attach_pages(spec: ast.Specification, pdf_path: Path | str) -> ast.Specifica
                 pages[match.group(1)] = number + 1
 
     walk(reader.outline)
+    if not pages:
+        raise ExtractionError(
+            "PDF bookmark outline has no numbered sections — wrong file, or a"
+            " rendering without an outline"
+        )
 
     def with_page(section):
         page = pages.get(section.source.section)
@@ -624,6 +712,11 @@ def attach_pages(spec: ast.Specification, pdf_path: Path | str) -> ast.Specifica
             update={"source": ast.SourceRef(section=section.source.section, page=page)}
         )
 
-    return spec.model_copy(
-        update={"sections": tuple(with_page(section) for section in spec.sections)}
-    )
+    attached = tuple(with_page(section) for section in spec.sections)
+    covered = sum(1 for section in attached if section.source.page is not None)
+    if covered < len(attached):
+        # Not fatal on its own — some sections legitimately have no bookmark —
+        # but a low count means the outline and the docx disagree about section
+        # numbering, which is worth seeing before the file gets committed.
+        warnings.append(f"bookmark outline covered {covered}/{len(attached)} sections")
+    return spec.model_copy(update={"sections": attached})

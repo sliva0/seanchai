@@ -18,11 +18,11 @@
         { Destination-Realm }
         { User-Name }
         [ OC-Supported-Features ]
-      * [ Supported-Features ]                   ; bold
-        { Public-Identity }                      ; bold
-        { Visited-Network-Identifier }           ; bold
-        [ User-Authorization-Type ]              ; bold
-        [ UAR-Flags ]                            ; bold
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        { Visited-Network-Identifier }     ; bold
+        [ User-Authorization-Type ]        ; bold
+        [ UAR-Flags ]                      ; bold
       * [ AVP ]
       * [ Proxy-Info ]
       * [ Route-Record ]
@@ -44,9 +44,9 @@
         [ OC-Supported-Features ]
         [ OC-OLR ]
       * [ Load ]
-      * [ Supported-Features ]                   ; bold
-        [ Server-Name ]                          ; bold
-        [ Server-Capabilities ]                  ; bold
+      * [ Supported-Features ]             ; bold
+        [ Server-Name ]                    ; bold
+        [ Server-Capabilities ]            ; bold
       * [ AVP ]
         [ Failed-AVP ]
       * [ Proxy-Info ]
@@ -68,17 +68,17 @@
         { Destination-Realm }
         [ User-Name ]
         [ OC-Supported-Features ]
-      * [ Supported-Features ]                   ; bold
-      * [ Public-Identity ]                      ; bold
-        [ Wildcarded-Public-Identity ]           ; bold
-        { Server-Name }                          ; bold
-        { Server-Assignment-Type }               ; bold
-        { User-Data-Already-Available }          ; bold
-        [ SCSCF-Restoration-Info ]               ; bold
-        [ Multiple-Registration-Indication ]     ; bold
-        [ Session-Priority ]                     ; bold
-        [ SAR-Flags ]                            ; bold
-        [ Failed-PCSCF ]                         ; bold
+      * [ Supported-Features ]               ; bold
+      * [ Public-Identity ]                  ; bold
+        [ Wildcarded-Public-Identity ]       ; bold
+        { Server-Name }                      ; bold
+        { Server-Assignment-Type }           ; bold
+        { User-Data-Already-Available }      ; bold
+        [ SCSCF-Restoration-Info ]           ; bold
+        [ Multiple-Registration-Indication ] ; bold
+        [ Session-Priority ]                 ; bold
+        [ SAR-Flags ]                        ; bold
+        [ Failed-PCSCF ]                     ; bold
       * [ AVP ]
       * [ Proxy-Info ]
       * [ Route-Record ]
@@ -101,17 +101,17 @@
         [ OC-Supported-Features ]
         [ OC-OLR ]
       * [ Load ]
-      * [ Supported-Features ]                   ; bold
-        [ User-Data ]                            ; bold
-        [ Charging-Information ]                 ; bold
-        [ Associated-Identities ]                ; bold
-        [ Loose-Route-Indication ]               ; bold
-      * [ SCSCF-Restoration-Info ]               ; bold
-        [ Associated-Registered-Identities ]     ; bold
-        [ Server-Name ]                          ; bold
-        [ Wildcarded-Public-Identity ]           ; bold
-        [ Priviledged-Sender-Indication ]        ; bold
-        [ Allowed-WAF-WWSF-Identities ]          ; bold
+      * [ Supported-Features ]               ; bold
+        [ User-Data ]                        ; bold
+        [ Charging-Information ]             ; bold
+        [ Associated-Identities ]            ; bold
+        [ Loose-Route-Indication ]           ; bold
+      * [ SCSCF-Restoration-Info ]           ; bold
+        [ Associated-Registered-Identities ] ; bold
+        [ Server-Name ]                      ; bold
+        [ Wildcarded-Public-Identity ]       ; bold
+        [ Priviledged-Sender-Indication ]    ; bold
+        [ Allowed-WAF-WWSF-Identities ]      ; bold
       * [ AVP ]
         [ Failed-AVP ]
       * [ Proxy-Info ]
@@ -133,10 +133,10 @@
         { Destination-Realm }
         [ Originating-Request ]
         [ OC-Supported-Features ]
-      * [ Supported-Features ]                   ; bold
-        { Public-Identity }                      ; bold
-        [ User-Authorization-Type ]              ; bold
-        [ Session-Priority ]                     ; bold
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        [ User-Authorization-Type ]        ; bold
+        [ Session-Priority ]               ; bold
       * [ AVP ]
       * [ Proxy-Info ]
       * [ Route-Record ]
@@ -158,11 +158,11 @@
         [ OC-Supported-Features ]
         [ OC-OLR ]
       * [ Load ]
-      * [ Supported-Features ]                   ; bold
-        [ Server-Name ]                          ; bold
-        [ Server-Capabilities ]                  ; bold
-        [ Wildcarded-Public-Identity ]           ; bold
-        [ LIA-Flags ]                            ; bold
+      * [ Supported-Features ]             ; bold
+        [ Server-Name ]                    ; bold
+        [ Server-Capabilities ]            ; bold
+        [ Wildcarded-Public-Identity ]     ; bold
+        [ LIA-Flags ]                      ; bold
       * [ AVP ]
         [ Failed-AVP ]
       * [ Proxy-Info ]
@@ -184,11 +184,11 @@
         [ Destination-Host ]
         { User-Name }
         [ OC-Supported-Features ]
-      * [ Supported-Features ]                   ; bold
-        { Public-Identity }                      ; bold
-        { SIP-Auth-Data-Item }                   ; bold
-        { SIP-Number-Auth-Items }                ; bold
-        { Server-Name }                          ; bold
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        { SIP-Auth-Data-Item }             ; bold
+        { SIP-Number-Auth-Items }          ; bold
+        { Server-Name }                    ; bold
       * [ AVP ]
       * [ Proxy-Info ]
       * [ Route-Record ]
@@ -211,9 +211,9 @@
         [ OC-Supported-Features ]
         [ OC-OLR ]
       * [ Load ]
-      * [ Supported-Features ]                   ; bold
-        [ Public-Identity ]                      ; bold
-        [ SIP-Number-Auth-Items ]                ; bold
+      * [ Supported-Features ]             ; bold
+        [ Public-Identity ]                ; bold
+        [ SIP-Number-Auth-Items ]          ; bold
       * [ SIP-Auth-Data-Item ]
       * [ AVP ]
         [ Failed-AVP ]
@@ -234,10 +234,10 @@
         { Origin-Realm }
         { Destination-Realm }
         { User-Name }
-        [ Associated-Identities ]                ; bold
-      * [ Supported-Features ]                   ; bold
-      * [ Public-Identity ]                      ; bold
-        { Deregistration-Reason }                ; bold
+        [ Associated-Identities ]          ; bold
+      * [ Supported-Features ]             ; bold
+      * [ Public-Identity ]                ; bold
+        { Deregistration-Reason }          ; bold
 
 
 ; Type: Message
@@ -277,9 +277,9 @@
         { Destination-Host }
         { Destination-Realm }
         { User-Name }
-      * [ Supported-Features ]                   ; bold
-        [ User-Data ]                            ; bold
-        [ Charging-Information ]                 ; bold
+      * [ Supported-Features ]             ; bold
+        [ User-Data ]                      ; bold
+        [ Charging-Information ]           ; bold
         [ SIP-Auth-Data-Item ]
         [ Allowed-WAF-WWSF-Identities ]
       * [ AVP ]
@@ -300,7 +300,7 @@
         { Auth-Session-State }
         { Origin-Host }
         { Origin-Realm }
-      * [ Supported-Features ]                   ; bold
+      * [ Supported-Features ]             ; bold
       * [ AVP ]
         [ Failed-AVP ]
       * [ Proxy-Info ]

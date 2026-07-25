@@ -33,9 +33,9 @@ per artifact.
 - **A fallback ETSI PDF must never reach `attach_pages`.** When the exact
   version isn't published, `download_3gpp` falls back to an earlier one and
   records it in `pdf_version`. That file is still useful, but its page numbers
-  belong to a different document — and nothing currently stops it being passed
-  to `--pdf`, where it produces silently wrong `; Page:` directives. The
-  manifest should say outright whether a PDF is page-attachment compatible.
+  belong to a different document. `attach_pages` now checks the PDF's cover and
+  refuses, so this fails loudly; the manifest would still be a better place to
+  say outright whether a PDF is page-attachment compatible.
 - **`safe_extract` reuses its destination directory.** `output/3gpp/Rel-N/
   TS_29.272/` is never cleared, so extracting a second archive version leaves
   members of the first behind and the directory then represents neither.

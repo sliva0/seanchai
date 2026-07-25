@@ -7,6 +7,22 @@ from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
 
 
+def _two_section_spec():
+    """Matches the `outlined_pdf` fixture's cover; only 6.3.1 is bookmarked."""
+    return ast.Specification(
+        specification="3GPP TS 29.999",
+        version="1.2.3",
+        sections=(
+            ast.GroupedAvp(
+                name="One", source=ast.SourceRef(section="6.3.1"), code=1, avps=()
+            ),
+            ast.GroupedAvp(
+                name="Two", source=ast.SourceRef(section="2"), code=2, avps=()
+            ),
+        ),
+    )
+
+
 def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
     warnings = []
 
@@ -143,27 +159,43 @@ def test_extract_rejects_spaces_in_grouped_avp_rule_names(
 def test_attach_pages_reads_real_nested_pdf_outline_and_preserves_missing_sections(
     outlined_pdf,
 ):
-    spec = ast.Specification(
-        specification="Test",
-        version="1",
-        sections=(
-            ast.GroupedAvp(
-                name="One",
-                source=ast.SourceRef(section="6.3.1"),
-                code=1,
-                avps=(),
-            ),
-            ast.GroupedAvp(
-                name="Two",
-                source=ast.SourceRef(section="2"),
-                code=2,
-                avps=(),
-            ),
-        ),
-    )
+    spec = _two_section_spec()
+    warnings = []
 
-    attached = tgpp_docx.attach_pages(spec, outlined_pdf)
+    attached = tgpp_docx.attach_pages(spec, outlined_pdf, warnings=warnings)
 
     assert attached.sections[0].source.page == 4
     assert attached.sections[1].source.page is None
     assert spec.sections[0].source.page is None
+    assert warnings == ["bookmark outline covered 1/2 sections"]
+
+
+@pytest.mark.parametrize(
+    ("specification", "version", "expected"),
+    [
+        ("TS 29.998", "1.2.3", "PDF renders 3GPP TS 29.998 V1.2.3"),
+        ("TS 29.999", "1.2.4", "PDF renders 3GPP TS 29.999 V1.2.4"),
+    ],
+    ids=["wrong-spec-right-version", "right-spec-wrong-version"],
+)
+def test_attach_pages_rejects_a_pdf_of_another_document(
+    make_outlined_pdf, specification, version, expected
+):
+    # A neighbouring version renders the same sections at different pages, so
+    # the result would be wrong in a way nothing downstream can detect.
+    pdf = make_outlined_pdf("other.pdf", specification=specification, version=version)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match=re.escape(expected)):
+        tgpp_docx.attach_pages(_two_section_spec(), pdf)
+
+
+def test_attach_pages_rejects_a_pdf_without_a_usable_outline(make_bare_pdf):
+    pdf = make_bare_pdf("no-outline.pdf", "3GPP TS 29.999 version 1.2.3 Release 18")
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="no numbered sections"):
+        tgpp_docx.attach_pages(_two_section_spec(), pdf)
+
+
+def test_attach_pages_rejects_a_pdf_without_cover_metadata(make_bare_pdf):
+    with pytest.raises(tgpp_docx.ExtractionError, match="PDF cover page"):
+        tgpp_docx.attach_pages(_two_section_spec(), make_bare_pdf("blank.pdf"))

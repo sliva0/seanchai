@@ -5,6 +5,7 @@ import docx
 import pypdf
 import pytest
 from docx.enum.style import WD_STYLE_TYPE
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 
 def _set_cells(row, values):
@@ -111,12 +112,31 @@ def synthetic_spec_docx(tmp_path):
     return path
 
 
-@pytest.fixture
-def outlined_pdf(tmp_path):
-    path = tmp_path / "rendering.pdf"
+def _write_cover(writer, text):
+    """Put one line of extractable text on page 1, the way an ETSI rendering
+    prints its cover title. `add_blank_page` gives a page with no content
+    stream at all, so both the stream and a font resource are added here."""
+    page = writer.pages[0]
+    stream = DecodedStreamObject()
+    stream.set_data(f"BT /F1 12 Tf 72 720 Td ({text}) Tj ET".encode())
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }
+    )
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+    )
+
+
+def _outlined_pdf(path, cover):
     writer = pypdf.PdfWriter()
     for _ in range(5):
         writer.add_blank_page(width=612, height=792)
+    _write_cover(writer, cover)
     writer.add_outline_item("6.1 Messages", 1)
     parent = writer.add_outline_item("6.3 AVP definitions", 2)
     writer.add_outline_item("6.3.1 Example-Group", 3, parent=parent)
@@ -124,6 +144,43 @@ def outlined_pdf(tmp_path):
     with path.open("wb") as stream:
         writer.write(stream)
     return path
+
+
+@pytest.fixture
+def outlined_pdf(tmp_path):
+    """Matches `synthetic_spec_docx`: same specification, same version."""
+    return _outlined_pdf(
+        tmp_path / "rendering.pdf", "3GPP TS 29.999 version 1.2.3 Release 18"
+    )
+
+
+@pytest.fixture
+def make_outlined_pdf(tmp_path):
+    """Same outline under a caller-chosen cover, for mismatch tests."""
+
+    def make(name, specification="TS 29.999", version="1.2.3"):
+        return _outlined_pdf(
+            tmp_path / name, f"3GPP {specification} version {version} Release 18"
+        )
+
+    return make
+
+
+@pytest.fixture
+def make_bare_pdf(tmp_path):
+    """One page, no outline, with or without the cover title."""
+
+    def make(name, cover=None):
+        path = tmp_path / name
+        writer = pypdf.PdfWriter()
+        writer.add_blank_page(width=612, height=792)
+        if cover is not None:
+            _write_cover(writer, cover)
+        with path.open("wb") as stream:
+            writer.write(stream)
+        return path
+
+    return make
 
 
 @pytest.fixture

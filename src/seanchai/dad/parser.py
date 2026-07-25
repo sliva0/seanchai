@@ -11,7 +11,7 @@ import re
 
 import pydantic
 
-from . import ast
+from . import abnf, ast
 
 _DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z]+): (?P<value>.*)$")
 _MESSAGE_HEADER_RE = re.compile(
@@ -32,12 +32,6 @@ _ENUM_VALUE_RE = re.compile(
     r"(?:\s+; (?P<description>\S.*))?$"
 )
 _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")
-
-_BRACKETS = {
-    ("<", ">"): ast.Presence.FIXED,
-    ("{", "}"): ast.Presence.REQUIRED,
-    ("[", "]"): ast.Presence.OPTIONAL,
-}
 
 
 class DadParseError(ValueError):
@@ -118,23 +112,10 @@ def _avp_rules(body: list[tuple[int, str]]) -> tuple[ast.AvpRule, ...]:
         match = _AVP_RULE_RE.match(line)
         if match is None:
             raise DadParseError(lineno, f"malformed AVP rule: {line.strip()!r}")
-        presence = _BRACKETS.get((match["open"], match["close"]))
-        if presence is None:
-            raise DadParseError(lineno, "mismatched brackets")
-        if match["min"] is None and match["max"] is None:
-            min_occurs, max_occurs = 1, 1
-        else:
-            min_occurs = int(match["min"] or 0)
-            max_occurs = int(match["max"]) if match["max"] else None
-        rules.append(
-            ast.AvpRule(
-                name=match["name"],
-                presence=presence,
-                min_occurs=min_occurs,
-                max_occurs=max_occurs,
-                bold=match["bold"] is not None,
-            )
-        )
+        try:
+            rules.append(abnf.avp_rule(match, bold=match["bold"] is not None))
+        except abnf.AbnfError as error:
+            raise DadParseError(lineno, str(error)) from None
     return tuple(rules)
 
 
@@ -159,25 +140,16 @@ def _parse_message(
             header_lineno,
             f"Name directive {name!r} != rule name {match['name']!r}",
         )
-    items = [item.strip() for item in match["items"].split(",")]
-    if items[-1] == "":
-        items.pop()
-    if not items[0].isdigit():
-        raise DadParseError(header_lineno, "Diameter header needs a command code")
-    application_id = int(items[-1]) if len(items) > 1 and items[-1].isdigit() else None
-    flags = items[1:-1] if application_id is not None else items[1:]
     try:
-        command_flags = frozenset(ast.CommandFlag(flag) for flag in flags)
-    except ValueError:
-        raise DadParseError(
-            header_lineno, f"malformed Diameter flags: {flags!r}"
-        ) from None
+        command_code, flags, application_id = abnf.diameter_header(match["items"])
+    except abnf.AbnfError as error:
+        raise DadParseError(header_lineno, str(error)) from None
     return ast.Message(
         name=name,
         abbreviation=abbreviation,
         source=source,
-        command_code=int(items[0]),
-        flags=command_flags,
+        command_code=command_code,
+        flags=flags,
         application_id=application_id,
         avps=_avp_rules(body[1:]),
     )
@@ -259,12 +231,12 @@ def _cells(body: list[tuple[int, str]], count: int):
 
 
 def _flags(cell: str, lineno: int) -> frozenset[ast.AvpFlag]:
-    if cell == "-":
+    if cell == "-":  # the canonical empty cell
         return frozenset()
     try:
-        return frozenset(ast.AvpFlag(flag) for flag in cell.split(","))
-    except ValueError:
-        raise DadParseError(lineno, f"malformed flags cell {cell!r}") from None
+        return abnf.avp_flags(cell)
+    except abnf.AbnfError as error:
+        raise DadParseError(lineno, str(error)) from None
 
 
 def _parse_avp_table(

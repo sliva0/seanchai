@@ -138,6 +138,46 @@ def test_bold_markers_share_the_column_after_the_longest_rule():
     assert bold_lines[1].index("; bold") == len(bold_lines[1].removesuffix("; bold"))
 
 
+def _group(name, section, avps):
+    return ast.GroupedAvp(
+        name=name, source=ast.SourceRef(section=section), code=1, avps=avps
+    )
+
+
+def test_a_long_rule_cannot_reflow_another_sections_bold_column():
+    # The review workflow diffs re-extracted raw files against each other, so
+    # adding one AVP must not rewrite every `; bold` line in the file.
+    short = _group(
+        "Group",
+        "1",
+        (ast.AvpRule(name="Short", presence=ast.Presence.OPTIONAL, bold=True),),
+    )
+    spec = ast.Specification(specification="Test", version="1", sections=(short,))
+    grown = ast.Specification(
+        specification="Test",
+        version="1",
+        sections=(
+            short,
+            _group(
+                "Other",
+                "2",
+                (
+                    ast.AvpRule(
+                        name="A-Very-Much-Longer-Name",
+                        presence=ast.Presence.REQUIRED,
+                        bold=True,
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    def first_section(spec):
+        return formatter.format(spec).split("\n\n\n")[1].rstrip("\n")
+
+    assert first_section(grown) == first_section(spec)
+
+
 def test_enum_equals_signs_are_aligned_and_values_are_not_zero_padded():
     enum = ast.EnumeratedAvp(
         name="Mode",

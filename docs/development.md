@@ -50,6 +50,13 @@ try to interpret.
   fixture itself is valid.
 - The downloader is exercised against a local HTTP server fixture, including
   retry, caching, path-traversal rejection and the ETSI fallback path.
+- The synthetic PDF fixtures carry a real cover title (`_write_cover` in
+  `tests/conftest.py`), because `attach_pages` reads it to verify that the
+  rendering matches the docx.
+- Two thin seams are unit-tested directly rather than through a document:
+  `tests/test_abnf.py` (the shared ABNF semantics, including that the parser
+  and extractor dialects agree) and `tests/test_extract_phases.py` (the
+  extractor's resolve phase).
 
 When you add generic handling for a new source-document quirk, reproduce the
 case in the synthetic docx fixture so the handling stays covered. The fixture

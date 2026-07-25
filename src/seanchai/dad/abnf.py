@@ -1,0 +1,125 @@
+"""ABNF semantics shared by the `.dad` parser and the source extractors.
+
+The parser reads canonical `.dad` text and the 3GPP extractor reads Word
+paragraphs, so their *syntax* differs — the extractor tolerates spacing the
+canonical form never emits, and neither dialect's regex belongs here. What they
+must not disagree about is what that syntax *means*: which bracket pair is which
+presence, how `min*max` maps to occurrence counts, how the items of a Diameter
+header line split into command code, flags and application id, and how M/V flag
+cells are spelled. Those live here, so a format change is one edit instead of
+two that a test cannot catch drifting apart.
+
+Both dialects' rule regexes use the same group names (`min`, `max`, `open`,
+`close`, `name`), which is what lets `avp_rule()` accept either.
+
+Errors are raised as `AbnfError` and translated by the caller, which is the
+side that knows whether the context is a line number or a document section.
+"""
+
+import re
+
+from . import ast
+
+_PRESENCE_BY_BRACKETS = {
+    ("<", ">"): ast.Presence.FIXED,
+    ("{", "}"): ast.Presence.REQUIRED,
+    ("[", "]"): ast.Presence.OPTIONAL,
+}
+_BRACKETS_BY_PRESENCE = {
+    ast.Presence.FIXED: "<>",
+    ast.Presence.REQUIRED: "{}",
+    ast.Presence.OPTIONAL: "[]",
+}
+# Canonical order of the flags in a Diameter header line.
+_COMMAND_FLAG_ORDER = [
+    ast.CommandFlag.REQUEST,
+    ast.CommandFlag.PROXIABLE,
+    ast.CommandFlag.ERROR,
+]
+
+
+class AbnfError(ValueError):
+    pass
+
+
+def presence(open_bracket: str, close_bracket: str) -> ast.Presence:
+    found = _PRESENCE_BY_BRACKETS.get((open_bracket, close_bracket))
+    if found is None:
+        raise AbnfError("mismatched brackets")
+    return found
+
+
+def brackets(presence: ast.Presence) -> tuple[str, str]:
+    open_bracket, close_bracket = _BRACKETS_BY_PRESENCE[presence]
+    return open_bracket, close_bracket
+
+
+def occurrences(minimum: str | None, maximum: str | None) -> tuple[int, int | None]:
+    """`min*max` groups → `(min_occurs, max_occurs)`. Both groups absent means
+    no qualifier at all, i.e. exactly once; a bare `*` is (0, None)."""
+    if minimum is None and maximum is None:
+        return 1, 1
+    return int(minimum or 0), int(maximum) if maximum else None
+
+
+def qualifier(min_occurs: int, max_occurs: int | None) -> str:
+    """The inverse of `occurrences`: exactly-once prints nothing."""
+    if (min_occurs, max_occurs) == (1, 1):
+        return ""
+    minimum = str(min_occurs) if min_occurs else ""
+    maximum = str(max_occurs) if max_occurs is not None else ""
+    return f"{minimum}*{maximum}"
+
+
+def avp_rule(match: re.Match, bold: bool = False) -> ast.AvpRule:
+    """One body line of a message or grouped AVP, from either dialect's match."""
+    min_occurs, max_occurs = occurrences(match["min"], match["max"])
+    return ast.AvpRule(
+        name=match["name"],
+        presence=presence(match["open"], match["close"]),
+        min_occurs=min_occurs,
+        max_occurs=max_occurs,
+        bold=bold,
+    )
+
+
+def diameter_header(items: str) -> tuple[int, frozenset[ast.CommandFlag], int | None]:
+    """The inside of `< Diameter Header: 306, REQ, PXY, 16777217 >`.
+
+    The application id is optional because some source documents omit it (TS
+    29.272 prints `< Diameter Header: 8388638, REQ, PXY, >`), so it is
+    recognised by being a trailing number rather than by position.
+    """
+    parts = [item.strip() for item in items.split(",") if item.strip()]
+    if not parts or not parts[0].isdigit():
+        raise AbnfError("Diameter header needs a command code")
+    application_id = int(parts[-1]) if len(parts) > 1 and parts[-1].isdigit() else None
+    names = parts[1:-1] if application_id is not None else parts[1:]
+    try:
+        flags = frozenset(ast.CommandFlag(name) for name in names)
+    except ValueError:
+        raise AbnfError(f"malformed Diameter flags: {names!r}") from None
+    return int(parts[0]), flags, application_id
+
+
+def diameter_header_items(
+    command_code: int, flags: frozenset[ast.CommandFlag], application_id: int | None
+) -> str:
+    ordered = [flag.value for flag in _COMMAND_FLAG_ORDER if flag in flags]
+    application = [] if application_id is None else [str(application_id)]
+    return ", ".join([str(command_code), *ordered, *application])
+
+
+def avp_flags(cell: str) -> frozenset[ast.AvpFlag]:
+    """An AVP-table flags cell: `M`, `M, V`, `M,V`. The empty spelling differs
+    between dialects (`-` in `.dad`, an empty cell in a docx table), so callers
+    handle that themselves."""
+    try:
+        return frozenset(ast.AvpFlag(flag.strip()) for flag in cell.split(","))
+    except ValueError:
+        raise AbnfError(f"malformed flags cell {cell!r}") from None
+
+
+def avp_flags_cell(flags: frozenset[ast.AvpFlag]) -> str:
+    """Canonical `.dad` spelling, with `-` for the empty set."""
+    return ",".join(flag.value for flag in ast.AvpFlag if flag in flags) or "-"
