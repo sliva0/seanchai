@@ -16,7 +16,7 @@ A file is a sequence of blocks separated by blank lines: the file header first,
 then one block per section. Each section block starts with a `; Type: X`
 directive.
 
-```
+```dad
 ; Specification: 3GPP TS 29.329
 ; Version: 18.0.0
 ; Link: https://www.etsi.org/deliver/...
@@ -34,12 +34,12 @@ directive.
 
 ## Section kinds
 
-| `; Type:`        | Holds                                                          |
-| ---------------- | -------------------------------------------------------------- |
-| `Message`        | a command-code ABNF rule with its Diameter header               |
-| `Grouped AVP`    | `Name ::= < AVP header: code vendor-id >` plus its body         |
-| `Enumerated AVP` | the header rule plus named values and reserved ranges           |
-| `AVP Table`      | the spec's own AVP table, one AVP per row                       |
+| `; Type:`        | Holds                                                            |
+|------------------|------------------------------------------------------------------|
+| `Message`        | a command-code ABNF rule with its Diameter header                |
+| `Grouped AVP`    | `Name ::= < AVP header: code vendor-id >` plus its body          |
+| `Enumerated AVP` | the header rule plus named values and reserved ranges            |
+| `AVP Table`      | the spec's own AVP table, one AVP per row                        |
 | `Reused AVPs`    | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
 
 Messages and grouped AVPs keep the spec's ABNF syntax verbatim: `<>`/`{}`/`[]`

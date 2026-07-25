@@ -64,11 +64,11 @@ the source document changes between versions.
 
 **Division of labor**, deliberately kept sharp:
 
-| Layer                | Fixes                                                      |
-| -------------------- | ---------------------------------------------------------- |
-| input patches        | genuine typos in the source document                       |
-| extractor code       | recurring conventions that carry information               |
-| output `.dad` patches | semantic corrections to extracted data                    |
+| Layer                 | Fixes                                        |
+|-----------------------|----------------------------------------------|
+| input patches         | genuine typos in the source document         |
+| extractor code        | recurring conventions that carry information |
+| output `.dad` patches | semantic corrections to extracted data       |
 
 Structural damage (missing captions, split tables) has no collected case yet;
 revisit override-style instructions only if one appears.
