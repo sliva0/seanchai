@@ -355,16 +355,15 @@ def _strip_note_ref(text: str) -> tuple[str, str | None]:
     return (text[: match.start()] + text[match.end() :]).strip(), match["number"]
 
 
-def _flags_cell(text: str, warnings: list[str]) -> frozenset[ast.AvpFlag]:
+def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
+    # Strict: typos like "M. V" or lowercase "v" are fixed by input patches,
+    # not tolerated here.
     if not text:
         return frozenset()
-    if "." in text:  # real typo in TS 29.272 table 7.3.1/1: "M. V"
-        warnings.append(f"flags cell {text!r} uses '.' as separator")
-    if text != text.upper():  # another one: lowercase "v"
-        warnings.append(f"flags cell {text!r} is not uppercase")
-    return frozenset(
-        ast.AvpFlag(flag.strip().upper()) for flag in re.split(r"[.,]", text)
-    )
+    try:
+        return frozenset(ast.AvpFlag(flag.strip()) for flag in text.split(","))
+    except ValueError:
+        raise ExtractionError(f"malformed flags cell {text!r}") from None
 
 
 def _extract_avp_table(
@@ -386,14 +385,9 @@ def _extract_avp_table(
             raise ExtractionError(f"AVP table row with {len(cells)} cells: {cells!r}")
         name, name_note = _strip_note_ref(cells[0])
         if " " in name:
-            # AVP names never contain spaces: a space in the cell is a line-wrap
-            # artifact eating a hyphen (TS 29.272: "MME-Location Information").
-            repaired = name.replace("- ", "-").replace(" ", "-")
-            warnings.append(
-                f"AVP table name cell {name!r} contains spaces,"
-                f" repaired to {repaired!r}"
-            )
-            name = repaired
+            # AVP names never contain spaces; line-wrap artifacts eating a
+            # hyphen (29.272 "MME-Location Information") are input-patched.
+            raise ExtractionError(f"AVP table name cell {name!r} contains spaces")
         code, code_note = _strip_note_ref(cells[1])
         if note := name_note or code_note:
             note_refs.append((name, note))
@@ -404,10 +398,10 @@ def _extract_avp_table(
                 section=cells[2] or None,
                 data_type=cells[3],
                 flag_rules=ast.AvpFlagRules(
-                    must=_flags_cell(cells[4], warnings),
-                    may=_flags_cell(cells[5], warnings),
-                    should_not=_flags_cell(cells[6], warnings),
-                    must_not=_flags_cell(cells[7], warnings),
+                    must=_flags_cell(cells[4]),
+                    may=_flags_cell(cells[5]),
+                    should_not=_flags_cell(cells[6]),
+                    must_not=_flags_cell(cells[7]),
                 ),
                 may_encrypt={"Yes": True, "No": False}[cells[8]],
             )
@@ -527,12 +521,11 @@ def extract(
                 header, body_start = found
                 rule_name = header["name"]
                 if " " in rule_name:
-                    repaired = rule_name.replace("- ", "-").replace(" ", "-")
-                    warnings.append(
-                        f"{section.number}: rule name {rule_name!r}"
-                        f" contains spaces, repaired to {repaired!r}"
+                    # Spaces-for-hyphens rule names (29.272 §7.3.196
+                    # "Monitoring Event Report") are input-patched.
+                    raise ExtractionError(
+                        f"{section.number}: rule name {rule_name!r} contains spaces"
                     )
-                    rule_name = repaired
                 if rule_name != title["name"]:
                     warnings.append(
                         f"{section.number}: heading name"

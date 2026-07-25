@@ -61,7 +61,7 @@ def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
         ast.ReservedValues(first=1, last=2),
         ast.EnumValue(name="Enabled", value=3),
     )
-    assert warnings == ["flags cell 'v' is not uppercase"]
+    assert warnings == []
     assert parser.parse(formatter.format(spec)) == spec
 
 
@@ -97,16 +97,51 @@ def test_origin_rejects_unknown_references():
         tgpp_docx._origin("some other document")
 
 
-def test_flags_cell_repairs_known_source_typos_with_warnings():
-    warnings = []
+def test_flags_cell_accepts_only_comma_separated_uppercase_flags():
+    assert tgpp_docx._flags_cell("M, V") == {
+        ast.AvpFlag.MANDATORY,
+        ast.AvpFlag.VENDOR,
+    }
 
-    flags = tgpp_docx._flags_cell("M. v", warnings)
 
-    assert flags == {ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}
-    assert warnings == [
-        "flags cell 'M. v' uses '.' as separator",
-        "flags cell 'M. v' is not uppercase",
-    ]
+@pytest.mark.parametrize("cell", ["M. V", "M, v", "v"])
+def test_flags_cell_rejects_known_source_typos(cell):
+    with pytest.raises(
+        tgpp_docx.ExtractionError,
+        match=f"malformed flags cell {cell!r}",
+    ):
+        tgpp_docx._flags_cell(cell)
+
+
+def test_extract_rejects_spaces_in_avp_table_names(tmp_path, synthetic_spec_docx):
+    malformed = tmp_path / "space-in-table-name.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[1].cell(2, 0).text = "Example Group"
+    document.save(malformed)
+
+    with pytest.raises(
+        tgpp_docx.ExtractionError,
+        match="AVP table name cell 'Example Group' contains spaces",
+    ):
+        tgpp_docx.extract(malformed)
+
+
+def test_extract_rejects_spaces_in_grouped_avp_rule_names(
+    tmp_path, synthetic_spec_docx
+):
+    malformed = tmp_path / "space-in-rule-name.docx"
+    document = docx.Document(synthetic_spec_docx)
+    for paragraph in document.paragraphs:
+        if paragraph.text.startswith("Example-Group ::="):
+            paragraph.text = paragraph.text.replace("Example-Group", "Example Group")
+            break
+    document.save(malformed)
+
+    with pytest.raises(
+        tgpp_docx.ExtractionError,
+        match="6.3.1: rule name 'Example Group' contains spaces",
+    ):
+        tgpp_docx.extract(malformed)
 
 
 def test_attach_pages_reads_real_nested_pdf_outline_and_preserves_missing_sections(

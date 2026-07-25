@@ -1,3 +1,6 @@
+import docx
+import pytest
+
 from seanchai.dad import ast
 from seanchai.extractor import tgpp_docx
 from seanchai.extractor.patches import Patch, Patcher
@@ -64,6 +67,11 @@ def test_unrecorded_application_still_replaces_without_counting():
 
 
 def test_extract_applies_input_patches_before_parsing(tmp_path, synthetic_spec_docx):
+    malformed = tmp_path / "lowercase-flag.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[1].cell(3, 4).text = "v"
+    document.save(malformed)
+
     patches_dir = tmp_path / "patches"
     patches_dir.mkdir()
     (patches_dir / "TS29.999.toml").write_text(
@@ -85,7 +93,7 @@ last_version = "1.1.0"
     warnings: list[str] = []
 
     spec = tgpp_docx.extract(
-        synthetic_spec_docx, warnings=warnings, patches_dir=patches_dir
+        malformed, warnings=warnings, patches_dir=patches_dir
     )
 
     table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
@@ -97,11 +105,16 @@ last_version = "1.1.0"
     ]
 
 
-def test_extract_without_patch_file_falls_back_to_repair_heuristics(
+def test_extract_without_patch_file_rejects_malformed_input(
     tmp_path, synthetic_spec_docx
 ):
-    warnings: list[str] = []
+    malformed = tmp_path / "lowercase-flag.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[1].cell(3, 4).text = "v"
+    document.save(malformed)
 
-    tgpp_docx.extract(synthetic_spec_docx, warnings=warnings, patches_dir=tmp_path)
-
-    assert warnings == ["flags cell 'v' is not uppercase"]
+    with pytest.raises(
+        tgpp_docx.ExtractionError,
+        match="malformed flags cell 'v'",
+    ):
+        tgpp_docx.extract(malformed, patches_dir=tmp_path)

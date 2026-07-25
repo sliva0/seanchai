@@ -74,7 +74,7 @@ def synthetic_spec_docx(tmp_path):
             "11",
             "6.3.2",
             "Enumerated",
-            "v",
+            "V",
             "",
             "",
             "M",

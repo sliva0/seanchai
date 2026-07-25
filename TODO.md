@@ -72,12 +72,13 @@ Implemented so far, so a fresh reader knows what already exists:
   text while building the section model; a patch applying more or fewer times
   than `count` warns, including the `first_version`/`last_version` range so
   the message can say "needed on X..Y, currently parsing Z". The four
-  collected typo cases in 29.272/29.329 are covered; extractor output is
-  byte-identical with heuristics vs. patches). Remaining:
-  - Demote the now-redundant typo repair heuristics (flags-cell
-    `.`/lowercase, space→hyphen name repairs) and let the extractor be
-    strict again — needs the tests that pin those heuristics updated to
-    expect errors (or patches) instead.
+  collected typo cases in 29.272/29.329 are covered). The extractor is strict
+  again: the old typo repair heuristics (flags-cell `.`/lowercase,
+  space→hyphen name repairs) now raise `ExtractionError` and the typos are
+  fixed by input patches instead — an unpatched 29.272 fails on
+  "malformed flags cell 'M. V'". The synthetic fixture is valid by default;
+  strict-error and pre-parse patching tests create malformed copies explicitly.
+  Remaining:
   - Stretch goal: a CLI flag that auto-expands a patch's
     `first_version`/`last_version` range when a newer/older version is parsed
     and the patch still applied cleanly (needs comment-preserving TOML
