@@ -19,20 +19,31 @@ def main() -> None:
 )
 @click.option("--link", help="ETSI PDF URL for the file's `; Link:` header.")
 @click.option(
+    "--patches",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with input-patch TOML files (default: ./patches if present).",
+)
+@click.option(
     "-o",
     "--output",
     type=click.Path(dir_okay=False, path_type=Path),
     help="Output .dad path (default: stdout).",
 )
 def extract(
-    docx: Path, pdf: Path | None, link: str | None, output: Path | None
+    docx: Path,
+    pdf: Path | None,
+    link: str | None,
+    patches: Path | None,
+    output: Path | None,
 ) -> None:
     """Extract a canonical `.dad` file from a 3GPP specification docx."""
     from .dad import formatter
     from .extractor import tgpp_docx
 
+    if patches is None and Path("patches").is_dir():
+        patches = Path("patches")
     warnings: list[str] = []
-    spec = tgpp_docx.extract(docx, link=link, warnings=warnings)
+    spec = tgpp_docx.extract(docx, link=link, warnings=warnings, patches_dir=patches)
     if pdf is not None:
         spec = tgpp_docx.attach_pages(spec, pdf)
     for warning in warnings:

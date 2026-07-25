@@ -23,6 +23,9 @@ Implemented so far, so a fresh reader knows what already exists:
   file; also produces `examples/29229-i10.raw.dad` and `examples/29272-i60.raw.dad`.
 - Test scaffolding: `uv run pytest`, fixtures in `tests/conftest.py`, two
   shape-defining tests in `tests/test_dad_format.py`.
+- Input patches: `patches/<SpecRef>.toml` find/replace fixes for source typos,
+  applied to normalized text before parsing with exact application counting
+  and known-version-range warnings (`seanchai/extractor/patches.py`).
 - CLI: `uv run seanchai extract DOCX [--pdf PDF] [--link URL] [-o OUT]` —
   warnings go to stderr; the committed `examples/*.raw.dad` are regenerated
   through it. Downloader: `downloader/download_diameter_specs.py` (uv script)
@@ -64,12 +67,27 @@ Implemented so far, so a fresh reader knows what already exists:
 - Add an RFC (plain text) extractor for the base protocol and IETF
   applications. RFC AVP tables (RFC 6733 §4.5) will need plain-AVP rows like
   the 3GPP ones.
-- Possible future mechanism: per-spec override/instruction files for
-  *structural* source weirdness the generic code can't absorb ("treat table N
-  as the AVP table", "ignore section X"). Content typos stay in `.dad`
-  patches. Don't build it speculatively — collect cases below first. If built:
-  key overrides to spec+version with an error on mismatch, and error on
-  overrides that matched nothing, so they can't silently rot.
+- Input patches (implemented — `seanchai/extractor/patches.py`, files in
+  `patches/<SpecRef>.toml`, applied to the normalized paragraph/cell/title
+  text while building the section model; a patch applying more or fewer times
+  than `count` warns, including the `first_version`/`last_version` range so
+  the message can say "needed on X..Y, currently parsing Z". The four
+  collected typo cases in 29.272/29.329 are covered; extractor output is
+  byte-identical with heuristics vs. patches). Remaining:
+  - Demote the now-redundant typo repair heuristics (flags-cell
+    `.`/lowercase, space→hyphen name repairs) and let the extractor be
+    strict again — needs the tests that pin those heuristics updated to
+    expect errors (or patches) instead.
+  - Stretch goal: a CLI flag that auto-expands a patch's
+    `first_version`/`last_version` range when a newer/older version is parsed
+    and the patch still applied cleanly (needs comment-preserving TOML
+    rewriting, e.g. tomlkit).
+  - Division of labor stays: input patches = genuine typos; extractor code =
+    recurring conventions that carry information (dual-application ABNFs,
+    merged note rows, missing app ids); output `.dad` patches = semantic
+    corrections. Structural damage (missing captions, split tables) has no
+    collected case yet — revisit override-style instructions only if one
+    appears.
 
 Implementor notes:
 
@@ -113,30 +131,20 @@ warnings so far; none needed an override yet):
 
 ## Tests
 
-Tests worth writing (shape: success tests build on the canonical example file,
-failure tests mutate it and assert `DadParseError` with a message match):
+The suite exists and is integration-leaning: committed `examples/*.dad` are
+round-trip-pinned by glob (new committed files are covered automatically), the
+extractor and CLI run end-to-end against a synthetic docx + real-outline PDF
+built in `tests/conftest.py` fixtures, and the downloader is exercised against
+a local HTTP server fixture. Still worth writing:
 
-- Round-trip: idempotence on a synthetic spec exercising every AST field the
-  canonical file doesn't (no-vendor AVP header, `2*4`-style repetition
-  qualifiers, RESERVED ranges, `Yes` in Encrypt, MUST-NOT M-bit override,
-  missing `Page:`/`Link:`/application id).
-- Formatter alignment rules as unit tests: bold column = longest ABNF line + 1;
-  enum `=` alignment including RESERVED and description padding; table column
-  minimum width 3 and 3-space gaps; header labels excluded from widths.
-- Parser error cases, one test each: unknown section `Type:`; duplicate
-  directive; unexpected directive; trailing whitespace; mismatched ABNF
-  brackets (`[ X }`); malformed Diameter/AVP header line; `Name:` directive vs.
-  rule-name mismatch; message `Name:` without abbreviation; wrong table column
-  count; bad flags cell (`X,V`); bad Encrypt cell; bad M-bit cell; inverted
-  RESERVED range; malformed enum value line; content before first directive
-  block; empty file.
-- AST validation (no parser involved): field constraints reject bad AVP names,
-  spec refs (`TS 29.336` with a space), section numbers, out-of-range codes;
-  JSON dump/load round-trip preserves equality.
 - Parser leniency: extra spaces between ABNF tokens and unaligned table columns
   parse to the same AST as the canonical form (once leniency is implemented).
-- Extractor: run against the committed docx files and compare to the committed
-  `.raw.dad` outputs (regression pin); assert the known warnings are emitted.
+- Optional regression pin against the real docx sources, skipped unless
+  `output/manual/` is present (the docx/PDF binaries are git-ignored, so this
+  can't run unconditionally).
+- As new source-document weirdness gets generic handling in the extractor,
+  reproduce each case in the synthetic docx fixture so the handling stays
+  covered (the fixture currently covers only a few of the collected cases).
 
 ## Workflow & validation
 
@@ -162,4 +170,7 @@ failure tests mutate it and assert `DadParseError` with a message match):
   brittle if 3gpp.org changes markup); a failed download cancels remaining
   jobs but already-running ones finish; `manifest.json` records sha256/size
   per artifact — keep that when restructuring, the extractor pipeline can use
-  it for change detection.
+  it for change detection. Known wart: when a cached file fails the
+  content-type check and the re-download also fails validation,
+  `atomic_download` leaves the corrupt cached file in place instead of
+  deleting it.

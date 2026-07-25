@@ -1,0 +1,38 @@
+# Input patches for 3GPP TS 29.272 (EPS MME/SGSN interfaces based on Diameter).
+# Applied to normalized source text before parsing; see
+# src/seanchai/extractor/patches.py for the format.
+
+[[patch]]
+find = "M. V"
+replace = "M, V"
+exact = true
+section = "7.3.1"
+reason = "AVP-table flags cell uses '.' instead of ',' as separator"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "v"
+replace = "V"
+exact = true
+section = "7.3.1"
+reason = "AVP-table flags cell written in lowercase"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "MME-Location Information"
+replace = "MME-Location-Information"
+exact = true
+section = "7.3.1"
+reason = "AVP-table name cell line-wrapped, losing a hyphen"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "Monitoring Event Report::="
+replace = "Monitoring-Event-Report ::="
+section = "7.3.196"
+reason = "grouped-AVP rule name written with spaces instead of hyphens"
+first_version = "18.6.0"
+last_version = "18.6.0"

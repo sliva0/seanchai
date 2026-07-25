@@ -152,17 +152,30 @@ def _parse_message(
     match = _MESSAGE_HEADER_RE.match(header)
     if match is None:
         raise DadParseError(header_lineno, f"malformed Diameter header: {header!r}")
+    if match["name"] != name:
+        raise DadParseError(
+            header_lineno,
+            f"Name directive {name!r} != rule name {match['name']!r}",
+        )
     items = [item.strip() for item in match["items"].split(",")]
+    if items[-1] == "":
+        items.pop()
     if not items[0].isdigit():
         raise DadParseError(header_lineno, "Diameter header needs a command code")
     application_id = int(items[-1]) if len(items) > 1 and items[-1].isdigit() else None
     flags = items[1:-1] if application_id is not None else items[1:]
+    try:
+        command_flags = frozenset(ast.CommandFlag(flag) for flag in flags)
+    except ValueError:
+        raise DadParseError(
+            header_lineno, f"malformed Diameter flags: {flags!r}"
+        ) from None
     return ast.Message(
         name=name,
         abbreviation=abbreviation,
         source=source,
         command_code=int(items[0]),
-        flags=frozenset(ast.CommandFlag(flag) for flag in flags),
+        flags=command_flags,
         application_id=application_id,
         avps=_avp_rules(body[1:]),
     )

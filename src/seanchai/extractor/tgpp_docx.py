@@ -5,6 +5,11 @@ tables in document order, grouped under numbered headings) and produces a
 `Specification`. Pages are attached afterwards by `attach_pages`, which reads
 only the bookmark outline of the matching ETSI PDF rendering.
 
+All source text is normalized exactly once, while building the section model,
+and input patches (see `patches.py`) are applied at that same point — so
+patch application counting is exact, and every later parsing step sees
+patched text.
+
 What maps to what in a 3GPP Diameter spec docx:
 
 - `x.y.z Name (ABBR) Command` headings with a `::= < Diameter Header: ... >`
@@ -25,6 +30,7 @@ sections, so it is taken from the spec's grouped-AVP headers (3GPP: 10415).
 
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import docx
 import docx.document
@@ -33,6 +39,7 @@ import docx.text.paragraph
 import pypdf
 
 from ..dad import ast
+from .patches import Patcher
 
 _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+[A-Z]*)*)\t(?P<title>.+)$")
 _COMMAND_TITLE_RE = re.compile(
@@ -93,6 +100,40 @@ def _normalize(text: str) -> str:
     return " ".join(text.replace("\xa0", " ").split())
 
 
+@dataclass
+class _Para:
+    """A body paragraph: normalized+patched text, style name, and the docx
+    paragraph (kept for run-level bold inspection)."""
+
+    text: str
+    style: str
+    source: docx.text.paragraph.Paragraph
+
+
+@dataclass
+class _Row:
+    cells: list[str]
+    # The first cell's individual lines (normalized+patched) — merged
+    # full-width NOTE rows hold one note per line.
+    first_cell_lines: list[str]
+
+
+@dataclass
+class _Table:
+    caption: str | None
+    rows: list[_Row]
+
+
+@dataclass
+class _Section:
+    """One numbered heading with the body content up to the next heading."""
+
+    number: str
+    title: str
+    paragraphs: list[_Para] = field(default_factory=list)
+    tables: list[_Table] = field(default_factory=list)
+
+
 def _is_bold(paragraph: docx.text.paragraph.Paragraph) -> bool:
     # Word applies bold erratically to brackets/whitespace runs; only the runs
     # spelling the AVP name itself are trusted (`*{ `=True, `Data-Reference`=None,
@@ -107,24 +148,37 @@ def _is_bold(paragraph: docx.text.paragraph.Paragraph) -> bool:
     return flags.pop() if flags else False
 
 
-@dataclass
-class _Section:
-    """One numbered heading with the body content up to the next heading."""
-
-    number: str
-    title: str
-    paragraphs: list[docx.text.paragraph.Paragraph] = field(default_factory=list)
-    tables: list[tuple[str | None, docx.table.Table]] = field(default_factory=list)
-
-
-def _sections(document: docx.document.Document) -> list[_Section]:
+def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Section]:
     sections: list[_Section] = []
     current: _Section | None = None
     caption: str | None = None
     for item in document.iter_inner_content():
+        number = current.number if current is not None else None
         if isinstance(item, docx.table.Table):
             if current is not None:
-                current.tables.append((caption, item))
+                rows = []
+                for row in item.rows:
+                    # Merged cells appear repeatedly in row.cells (a full-width
+                    # note row repeats one cell 9×); count each physical cell
+                    # once. Per-line views of the first cell are duplicates of
+                    # already-counted text, so they don't record either.
+                    seen: dict[int, str] = {}
+                    cells = []
+                    for cell in row.cells:
+                        key = id(cell._tc)
+                        if key not in seen:
+                            seen[key] = patcher.apply(_normalize(cell.text), number)
+                        cells.append(seen[key])
+                    rows.append(
+                        _Row(
+                            cells=cells,
+                            first_cell_lines=[
+                                patcher.apply(_normalize(line), number, record=False)
+                                for line in row.cells[0].text.splitlines()
+                            ],
+                        )
+                    )
+                current.tables.append(_Table(caption=caption, rows=rows))
             caption = None
             continue
         style = item.style.name if item.style else ""
@@ -132,24 +186,28 @@ def _sections(document: docx.document.Document) -> list[_Section]:
             match = _HEADING_RE.match(item.text.strip())
             if match:
                 current = _Section(
-                    number=match["number"], title=_normalize(match["title"])
+                    number=match["number"],
+                    title=patcher.apply(_normalize(match["title"]), match["number"]),
                 )
                 sections.append(current)
                 continue
-        if match := _TABLE_CAPTION_RE.match(_normalize(item.text)):
+        text = patcher.apply(_normalize(item.text), number)
+        if match := _TABLE_CAPTION_RE.match(text):
             caption = match["label"]
         if current is not None:
-            current.paragraphs.append(item)
+            current.paragraphs.append(_Para(text=text, style=style, source=item))
     return sections
 
 
-def _abnf_body(paragraphs, start: int) -> tuple[tuple[ast.AvpRule, ...], int]:
+def _abnf_body(
+    paragraphs: list[_Para], start: int
+) -> tuple[tuple[ast.AvpRule, ...], int]:
     """Parse `[qual] bracket Name bracket` lines starting at `start`."""
     rules = []
     index = start
     while index < len(paragraphs):
         paragraph = paragraphs[index]
-        match = _ABNF_LINE_RE.match(_normalize(paragraph.text))
+        match = _ABNF_LINE_RE.match(paragraph.text)
         if match is None:
             break
         presence = _BRACKETS.get((match["open"], match["close"]))
@@ -166,7 +224,7 @@ def _abnf_body(paragraphs, start: int) -> tuple[tuple[ast.AvpRule, ...], int]:
                 presence=presence,
                 min_occurs=min_occurs,
                 max_occurs=max_occurs,
-                bold=_is_bold(paragraph),
+                bold=_is_bold(paragraph.source),
             )
         )
         index += 1
@@ -177,12 +235,11 @@ def _find_rule_header(
     section: _Section, pattern: re.Pattern
 ) -> tuple[re.Match, int] | None:
     for index, paragraph in enumerate(section.paragraphs):
-        text = _normalize(paragraph.text)
-        if "::=" in text:
-            match = pattern.match(text)
+        if "::=" in paragraph.text:
+            match = pattern.match(paragraph.text)
             if match is None:
                 raise ExtractionError(
-                    f"{section.number}: malformed rule header {text!r}"
+                    f"{section.number}: malformed rule header {paragraph.text!r}"
                 )
             return match, index + 1
     return None
@@ -197,7 +254,7 @@ def _extract_messages(
     messages = []
     index = 0
     while index < len(section.paragraphs):
-        text = _normalize(section.paragraphs[index].text)
+        text = section.paragraphs[index].text
         index += 1
         if "::=" not in text:
             continue
@@ -262,19 +319,18 @@ def _extract_enumerated(
     # value=B1/description=B2, but human-written specs invert it (29.229
     # §6.3.34 has the value in Normal and the description in B1).
     for paragraph in section.paragraphs:
-        style = paragraph.style.name if paragraph.style else ""
-        text = _normalize(paragraph.text)
+        text = paragraph.text
         if not text:
             continue
         if match := _ENUM_VALUE_RE.fullmatch(text):
             values.append(ast.EnumValue(name=match["name"], value=int(match["value"])))
-        elif style == "NO":
+        elif paragraph.style == "NO":
             if match := _RESERVED_NOTE_RE.search(text):
                 first = int(match["first"])
                 reserved.append(
                     ast.ReservedValues(first=first, last=int(match["last"] or first))
                 )
-        elif style in ("B1", "B2") and values:
+        elif paragraph.style in ("B1", "B2") and values:
             previous = values[-1].description
             values[-1] = values[-1].model_copy(
                 update={"description": f"{previous} {text}" if previous else text}
@@ -290,10 +346,6 @@ def _extract_enumerated(
         vendor_id=vendor_id,
         values=tuple(merged),
     )
-
-
-def _cell_texts(row) -> list[str]:
-    return [_normalize(cell.text) for cell in row.cells]
 
 
 def _strip_note_ref(text: str) -> tuple[str, str | None]:
@@ -316,19 +368,16 @@ def _flags_cell(text: str, warnings: list[str]) -> frozenset[ast.AvpFlag]:
 
 
 def _extract_avp_table(
-    caption: str | None,
-    table: docx.table.Table,
-    section_number: str,
-    warnings: list[str],
+    table: _Table, section_number: str, warnings: list[str]
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
     for row in table.rows:
-        cells = _cell_texts(row)
+        cells = row.cells
         if cells[0].startswith("NOTE"):  # merged full-width row, one note per line
-            for line in row.cells[0].text.splitlines():
-                if match := _NOTE_RFC_RE.match(_normalize(line)):
+            for line in row.first_cell_lines:
+                if match := _NOTE_RFC_RE.match(line):
                     note_rfcs[match["number"]] = match["rfc"]
             continue
         if cells[0] in ("", "Attribute Name") or cells[0] == cells[1]:
@@ -363,7 +412,7 @@ def _extract_avp_table(
                 may_encrypt={"Yes": True, "No": False}[cells[8]],
             )
         )
-    if caption is None:
+    if table.caption is None:
         raise ExtractionError("AVP table without a caption")
     reused = [
         ast.ReusedAvpRow(name=name, origin=f"RFC{note_rfcs[note]}")
@@ -371,7 +420,9 @@ def _extract_avp_table(
         if note in note_rfcs
     ]
     avp_table = ast.AvpTable(
-        table=caption, rows=tuple(rows), source=ast.SourceRef(section=section_number)
+        table=table.caption,
+        rows=tuple(rows),
+        source=ast.SourceRef(section=section_number),
     )
     return avp_table, reused
 
@@ -384,12 +435,10 @@ def _origin(reference: str) -> str:
     raise ExtractionError(f"unrecognized origin reference {reference!r}")
 
 
-def _extract_reused_table(
-    table: docx.table.Table, warnings: list[str]
-) -> list[ast.ReusedAvpRow]:
+def _extract_reused_table(table: _Table, warnings: list[str]) -> list[ast.ReusedAvpRow]:
     rows = []
     for row in table.rows:
-        cells = _cell_texts(row)
+        cells = row.cells
         if cells[0] in ("", "Attribute Name") or cells[0].startswith("NOTE"):
             continue
         name, _ = _strip_note_ref(cells[0])
@@ -414,20 +463,37 @@ def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
     for item in document.iter_inner_content():
         if isinstance(item, docx.table.Table):
             for row in item.rows:
-                for text in _cell_texts(row):
-                    if match := pattern.search(text):
+                for cell in row.cells:
+                    if match := pattern.search(_normalize(cell.text)):
                         return f"3GPP {match['spec']}", match["version"]
     raise ExtractionError("cannot find spec number/version on the cover page")
 
 
+def patch_file_name(specification: str) -> str:
+    """Patch file name for a cover-page spec title: "3GPP TS 29.272" →
+    "TS29.272.toml" (matching the `.dad` SpecRef form)."""
+    return specification.removeprefix("3GPP ").replace(" ", "") + ".toml"
+
+
 def extract(
-    docx_path, link: str | None = None, warnings: list[str] | None = None
+    docx_path,
+    link: str | None = None,
+    warnings: list[str] | None = None,
+    patches_dir: Path | None = None,
 ) -> ast.Specification:
     """Extract a `Specification` from a 3GPP docx. Non-fatal source-document
-    inconsistencies are appended to `warnings` when a list is given."""
+    inconsistencies are appended to `warnings` when a list is given. When
+    `patches_dir` is given, input patches from `<patches_dir>/<SpecRef>.toml`
+    (if present) are applied to the normalized source text before parsing."""
     warnings = warnings if warnings is not None else []
     document = docx.Document(str(docx_path))
     specification, version = _spec_and_version(document)
+    patch_path = (
+        patches_dir / patch_file_name(specification)
+        if patches_dir is not None
+        else None
+    )
+    patcher = Patcher.load(patch_path, version)
 
     messages: list[ast.Message] = []
     grouped: list[ast.GroupedAvp] = []
@@ -439,22 +505,22 @@ def extract(
     tables_section: str | None = None
     pending_enums: list[tuple[_Section, str]] = []
 
-    for section in _sections(document):
+    for section in _sections(document, patcher):
         if title := _COMMAND_TITLE_RE.match(section.title):
             messages.extend(_extract_messages(section, title, warnings))
             continue
-        for caption, table in section.tables:
-            header = _cell_texts(table.rows[0])
+        for table in section.tables:
+            header = table.rows[0].cells
             if "AVP Flag rules" in header:
                 avp_table, note_reused = _extract_avp_table(
-                    caption, table, section.number, warnings
+                    table, section.number, warnings
                 )
                 tables_section = section.number
             elif "Reference" in header and "M-bit" in header:
-                if caption is None:
+                if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
                 reused_rows = _extract_reused_table(table, warnings)
-                reused_table_label = caption
+                reused_table_label = table.caption
         if title := _AVP_TITLE_RE.match(section.title):
             found = _find_rule_header(section, _AVP_HEADER_RE)
             if found is not None:
@@ -476,9 +542,7 @@ def extract(
                 grouped.append(
                     _extract_grouped(section, header, body_start, name=rule_name)
                 )
-            elif section.paragraphs and "type Enumerated" in _normalize(
-                section.paragraphs[0].text
-            ):
+            elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
                 pending_enums.append((section, title["name"]))
 
     if avp_table is None:
@@ -521,6 +585,7 @@ def extract(
         ],
     )
     sections.extend(definitions)
+    patcher.finish(warnings)
     return ast.Specification(
         specification=specification,
         version=version,
