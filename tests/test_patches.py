@@ -51,12 +51,18 @@ def test_unapplied_and_overapplied_patches_fail_with_the_version_range():
     with pytest.raises(PatchError) as failure:
         patcher.finish()
 
-    assert str(failure.value) == (
+    assert str(failure.value).splitlines() == [
         "input patch 'gone' -> 'fixed' applied 0 times, expected 1;"
         " it was needed on version 18.0.0..18.2.0, currently parsing 18.6.0"
-        " — the source may have changed;"
-        " input patch 'common' -> 'rare' applied 2 times, expected 1"
-    )
+        " — the source may have changed",
+        "input patch 'common' -> 'rare' applied 2 times, expected 1",
+    ]
+
+
+def test_patch_failures_are_extraction_failures():
+    # A batch over a corpus asks one question — did this document fail? — and a
+    # rotted patch is the same answer as a malformed table.
+    assert issubclass(PatchError, tgpp_docx.ExtractionError)
 
 
 def test_unrecorded_application_still_replaces_without_counting():

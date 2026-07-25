@@ -95,7 +95,14 @@ The extractor is strict. Typo-repair heuristics that used to be built in
 now raise `ExtractionError`, and the typos are fixed by input patches instead —
 so an unpatched TS 29.272 fails loudly on `malformed flags cell 'M. V'` rather
 than quietly guessing. Non-fatal inconsistencies are appended to a `warnings`
-list that the CLI prints to stderr.
+list that the CLI prints to stderr — including when a later stage fails, since
+a run that aborts on a mismatched PDF is exactly when the source-document
+warnings are worth reading.
+
+Everything that can fail an extraction derives from `ExtractionError`
+(`extractor/errors.py`), including `PatchError`: a batch over a corpus asks one
+question — did this document fail? — and a rotted input patch is the same
+answer as a malformed table.
 
 ## Collected source-document weirdness
 

@@ -43,11 +43,18 @@ def extract(
     if patches is None and Path("patches").is_dir():
         patches = Path("patches")
     warnings: list[str] = []
-    spec = tgpp_docx.extract(docx, link=link, warnings=warnings, patches_dir=patches)
-    if pdf is not None:
-        spec = tgpp_docx.attach_pages(spec, pdf, warnings=warnings)
-    for warning in warnings:
-        click.echo(f"warning: {warning}", err=True)
+    try:
+        spec = tgpp_docx.extract(
+            docx, link=link, warnings=warnings, patches_dir=patches
+        )
+        if pdf is not None:
+            spec = tgpp_docx.attach_pages(spec, pdf, warnings=warnings)
+    finally:
+        # Report what the source document did even when a later stage fails —
+        # a mismatched PDF aborts the run, and that is exactly when the
+        # extraction warnings are worth reading.
+        for warning in warnings:
+            click.echo(f"warning: {warning}", err=True)
     text = formatter.format(spec)
     if output is None:
         click.echo(text, nl=False)

@@ -31,8 +31,10 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+from .errors import ExtractionError
 
-class PatchError(ValueError):
+
+class PatchError(ExtractionError):
     pass
 
 
@@ -123,4 +125,6 @@ class Patcher:
                 )
             problems.append(message)
         if problems:
-            raise PatchError("; ".join(problems))
+            # One per line: each message already contains a semicolon, so
+            # joining with another one reads as four clauses at two levels.
+            raise PatchError("\n".join(problems))

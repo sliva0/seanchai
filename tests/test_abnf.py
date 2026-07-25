@@ -50,6 +50,14 @@ def test_diameter_header_items_round_trip(items, expected):
     assert abnf.diameter_header(canonical) == (command_code, flags, application_id)
 
 
+def test_diameter_header_rejects_an_interior_empty_item():
+    # The trailing comma of "8388638, REQ, PXY," is a real source-document
+    # convention; `, ,` in the middle is not, and accepting it would let
+    # canonical `.dad` parse text the formatter can never emit.
+    with pytest.raises(abnf.AbnfError, match="empty item"):
+        abnf.diameter_header("306, , REQ, 16777217")
+
+
 def test_diameter_header_rejects_a_missing_command_code():
     with pytest.raises(abnf.AbnfError, match="needs a command code"):
         abnf.diameter_header("REQ, PXY, 4")

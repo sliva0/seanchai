@@ -23,7 +23,7 @@ _COLUMN_GAP = 3
 
 
 def _avp_line(rule: ast.AvpRule) -> str:
-    open_bracket, close_bracket = abnf.brackets(rule.presence)
+    open_bracket, close_bracket = abnf.brackets_for(rule.presence)
     qualifier = abnf.qualifier(rule.min_occurs, rule.max_occurs)
     return f"{qualifier:>7} {open_bracket} {rule.name} {close_bracket}"
 

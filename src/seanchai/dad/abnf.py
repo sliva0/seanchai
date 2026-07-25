@@ -42,14 +42,14 @@ class AbnfError(ValueError):
     pass
 
 
-def presence(open_bracket: str, close_bracket: str) -> ast.Presence:
+def presence_of(open_bracket: str, close_bracket: str) -> ast.Presence:
     found = _PRESENCE_BY_BRACKETS.get((open_bracket, close_bracket))
     if found is None:
         raise AbnfError("mismatched brackets")
     return found
 
 
-def brackets(presence: ast.Presence) -> tuple[str, str]:
+def brackets_for(presence: ast.Presence) -> tuple[str, str]:
     open_bracket, close_bracket = _BRACKETS_BY_PRESENCE[presence]
     return open_bracket, close_bracket
 
@@ -76,7 +76,7 @@ def avp_rule(match: re.Match, bold: bool = False) -> ast.AvpRule:
     min_occurs, max_occurs = occurrences(match["min"], match["max"])
     return ast.AvpRule(
         name=match["name"],
-        presence=presence(match["open"], match["close"]),
+        presence=presence_of(match["open"], match["close"]),
         min_occurs=min_occurs,
         max_occurs=max_occurs,
         bold=bold,
@@ -88,11 +88,18 @@ def diameter_header(items: str) -> tuple[int, frozenset[ast.CommandFlag], int | 
 
     The application id is optional because some source documents omit it (TS
     29.272 prints `< Diameter Header: 8388638, REQ, PXY, >`), so it is
-    recognised by being a trailing number rather than by position.
+    recognised by being a trailing number rather than by position. That one
+    trailing comma is the only empty item tolerated: an interior `, ,` is a
+    malformed header in either dialect, and letting it through here would mean
+    canonical `.dad` accepting text the formatter can never produce.
     """
-    parts = [item.strip() for item in items.split(",") if item.strip()]
+    parts = [item.strip() for item in items.split(",")]
+    if parts and parts[-1] == "":
+        parts.pop()
     if not parts or not parts[0].isdigit():
         raise AbnfError("Diameter header needs a command code")
+    if "" in parts:
+        raise AbnfError(f"empty item in Diameter header: {items!r}")
     application_id = int(parts[-1]) if len(parts) > 1 and parts[-1].isdigit() else None
     names = parts[1:-1] if application_id is not None else parts[1:]
     try:

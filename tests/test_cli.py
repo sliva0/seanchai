@@ -1,3 +1,4 @@
+import docx
 from click.testing import CliRunner
 
 from seanchai import main
@@ -45,6 +46,28 @@ def test_extract_command_prints_parseable_output_to_stdout(synthetic_spec_docx):
     assert isinstance(spec.sections[0], ast.Message)
     assert all(section.source.page is None for section in spec.sections)
     assert result.stderr == ""
+
+
+def test_extract_command_reports_source_warnings_even_when_the_pdf_is_rejected(
+    tmp_path, synthetic_spec_docx, make_outlined_pdf
+):
+    # A mismatched PDF aborts the run — which is exactly when the warnings
+    # collected while reading the docx are worth seeing.
+    malformed = tmp_path / "heading-mismatch.docx"
+    document = docx.Document(synthetic_spec_docx)
+    for paragraph in document.paragraphs:
+        if paragraph.text.startswith("6.1\t"):
+            paragraph.text = "6.1\tExample-Requests (EXR) Command"
+            break
+    document.save(malformed)
+    other_version = make_outlined_pdf("other.pdf", version="9.9.9")
+
+    result = CliRunner().invoke(
+        main, ["extract", str(malformed), "--pdf", str(other_version)]
+    )
+
+    assert result.exit_code == 1
+    assert "warning: 6.1: heading name 'Example-Requests'" in result.stderr
 
 
 def test_extract_command_rejects_a_missing_input_file():

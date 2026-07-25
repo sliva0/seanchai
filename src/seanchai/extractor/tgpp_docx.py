@@ -40,6 +40,7 @@ import pydantic
 import pypdf
 
 from ..dad import abnf, ast
+from .errors import ExtractionError
 from .patches import Patcher
 
 _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+[A-Z]*)*)\t(?P<title>.+)$")
@@ -91,10 +92,6 @@ _M_BIT_OVERRIDES = {
     "Must set": ast.MBitOverride.MUST,
     "Must not set": ast.MBitOverride.MUST_NOT,
 }
-
-
-class ExtractionError(ValueError):
-    pass
 
 
 def _normalize(text: str) -> str:
@@ -452,6 +449,8 @@ def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
 def _pdf_spec_and_version(reader: pypdf.PdfReader) -> tuple[str, str]:
     """An ETSI rendering prints its own title on the cover, with the 3GPP
     original in parentheses: "(3GPP TS 29.272 version 18.6.0 Release 18)"."""
+    if not reader.pages:
+        raise ExtractionError("PDF has no pages")
     cover = _normalize(reader.pages[0].extract_text())
     match = _PDF_COVER_RE.search(cover)
     if match is None:
@@ -474,9 +473,12 @@ class _Collected:
     # heading. They cannot become definitions until the AVP table is known —
     # that is where their code comes from.
     pending_enums: list[tuple[_Section, str]] = field(default_factory=list)
+    # Each table is paired with what identifies it: the section it was found
+    # in for AVP tables, the caption label for re-used tables.
     avp_tables: list[tuple[ast.AvpTable, str]] = field(default_factory=list)
-    reused_tables: list[list[ast.ReusedAvpRow]] = field(default_factory=list)
-    reused_labels: list[str] = field(default_factory=list)
+    reused_tables: list[tuple[list[ast.ReusedAvpRow], str]] = field(
+        default_factory=list
+    )
     # Reused rows derived from AVP-table NOTEs rather than from a reused table.
     note_reused: list[ast.ReusedAvpRow] = field(default_factory=list)
 
@@ -511,8 +513,9 @@ def _collect(sections: list[_Section], warnings: list[str]) -> _Collected:
             elif "Reference" in header and "M-bit" in header:
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
-                collected.reused_tables.append(_extract_reused_table(table, warnings))
-                collected.reused_labels.append(table.caption)
+                collected.reused_tables.append(
+                    (_extract_reused_table(table, warnings), table.caption)
+                )
         if title := _AVP_TITLE_RE.match(section.title):
             found = _find_rule_header(section, _AVP_HEADER_RE)
             if found is not None:
@@ -547,11 +550,12 @@ def _resolve(collected: _Collected) -> _Resolved:
         found = ", ".join(number for _, number in collected.avp_tables)
         raise ExtractionError(f"more than one AVP table found, in sections {found}")
     if len(collected.reused_tables) > 1:
-        raise ExtractionError(
-            f"more than one re-used AVPs table found: {collected.reused_labels}"
-        )
+        found = ", ".join(label for _, label in collected.reused_tables)
+        raise ExtractionError(f"more than one re-used AVPs table found: {found}")
     avp_table, tables_section = collected.avp_tables[0]
-    reused_rows = collected.reused_tables[0] if collected.reused_tables else []
+    reused_rows, reused_label = (
+        collected.reused_tables[0] if collected.reused_tables else ([], avp_table.table)
+    )
 
     codes = {row.name: row.code for row in avp_table.rows}
     # Enumerated sections never print the vendor-id, so it comes from the
@@ -580,9 +584,7 @@ def _resolve(collected: _Collected) -> _Resolved:
         avp_table=avp_table,
         tables_section=tables_section,
         reused=[*reused_rows, *collected.note_reused],
-        reused_label=(
-            collected.reused_labels[0] if collected.reused_labels else avp_table.table
-        ),
+        reused_label=reused_label,
         definitions=[*collected.grouped, *enumerated],
     )
 

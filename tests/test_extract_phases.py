@@ -85,8 +85,7 @@ def test_resolve_skips_enums_defined_in_another_specification(document):
     collected = tgpp_docx._Collected(
         pending_enums=[(_enum_section("6.3.2", "DRMP", document), "DRMP")],
         avp_tables=[_avp_table(_row("DRMP", None))],
-        reused_tables=[[ast.ReusedAvpRow(name="DRMP", origin="RFC7944")]],
-        reused_labels=["6.3.2"],
+        reused_tables=[([ast.ReusedAvpRow(name="DRMP", origin="RFC7944")], "6.3.2")],
     )
 
     resolved = tgpp_docx._resolve(collected)
@@ -124,8 +123,7 @@ def test_resolve_rejects_a_document_with_two_avp_tables():
 def test_resolve_rejects_a_document_with_two_reused_tables():
     collected = tgpp_docx._Collected(
         avp_tables=[_avp_table(_row("One", 1))],
-        reused_tables=[[], []],
-        reused_labels=["6.3.2", "7.4.1"],
+        reused_tables=[([], "6.3.2"), ([], "7.4.1")],
     )
 
     with pytest.raises(tgpp_docx.ExtractionError, match="more than one re-used"):

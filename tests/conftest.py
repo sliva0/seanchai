@@ -115,7 +115,15 @@ def synthetic_spec_docx(tmp_path):
 def _write_cover(writer, text):
     """Put one line of extractable text on page 1, the way an ETSI rendering
     prints its cover title. `add_blank_page` gives a page with no content
-    stream at all, so both the stream and a font resource are added here."""
+    stream at all, so both the stream and a font resource are added here.
+
+    `_add_object` is private, but the PDF spec requires stream objects to be
+    indirect and pypdf exposes no public equivalent. Assigning the stream
+    directly does work — pypdf reads it back — but it produces a file only
+    pypdf would accept, and this fixture stands in for a real ETSI rendering.
+    If a pypdf upgrade breaks this, the symptom will be a fixture whose cover
+    text has vanished.
+    """
     page = writer.pages[0]
     stream = DecodedStreamObject()
     stream.set_data(f"BT /F1 12 Tf 72 720 Td ({text}) Tj ET".encode())
