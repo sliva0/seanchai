@@ -141,10 +141,30 @@ def test_bold_markers_share_the_column_after_the_longest_rule():
 
 
 def test_an_unregistered_section_type_fails_loudly():
-    # The dispatch is by type; a new section kind without a formatter must not
-    # slip through as a silently missing block.
+    # A new section kind without a formatter must not slip through as a
+    # silently missing block.
     with pytest.raises(TypeError, match="no formatter for object"):
-        formatter._format_section(object())  # type: ignore[arg-type]
+        formatter._format_section(object())  # type: ignore
+
+
+def test_a_subclass_is_not_formatted_as_its_base():
+    # Dispatch is by exact type: `singledispatch` on its own would walk the MRO
+    # and format this as a plain Message, dropping `extra` without a word.
+    class ExtendedMessage(ast.Message):
+        extra: str = "lost"
+
+    section = ExtendedMessage(
+        name="Example-Request",
+        abbreviation="EXR",
+        source=ast.SourceRef(section="1"),
+        command_code=1,
+        flags=frozenset(),
+        application_id=None,
+        avps=(),
+    )
+
+    with pytest.raises(TypeError, match="no formatter for ExtendedMessage"):
+        formatter._format_section(section)
 
 
 def _group(name, section, avps):

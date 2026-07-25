@@ -41,8 +41,10 @@ replaced the dict of same-shaped callables, which also removed the `Any`
 annotation the dict needed to type-check. The `bold_column` parameter is gone
 rather than relocated: since §1.2 made the column per-section, `_abnf_body()`
 derives it from the rules it is already formatting, so the three formatters
-that opened with `del bold_column` no longer take an argument they ignore. An
-unregistered section type now raises instead of silently formatting nothing.
+that opened with `del bold_column` no longer take an argument they ignore.
+Dispatch is on the *exact* type — `singledispatch` alone walks the MRO, which
+would format a `Message` subclass as a `Message` and drop its extra fields
+silently — and an unregistered type raises instead of formatting nothing.
 `formatter.format` is `format_spec`, so nothing shadows the builtin.
 
 **Tooling.** uv dev group with ruff, ty and basedpyright (`standard` mode);

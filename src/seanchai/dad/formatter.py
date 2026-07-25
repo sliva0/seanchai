@@ -67,11 +67,11 @@ def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
 
 
 @functools.singledispatch
-def _format_section(section: ast.Section) -> list[str]:
+def _format_by_type(section: ast.Section) -> list[str]:
     raise TypeError(f"no formatter for {type(section).__name__}")
 
 
-@_format_section.register
+@_format_by_type.register
 def _format_message(message: ast.Message) -> list[str]:
     header_items = abnf.diameter_header_items(
         message.command_code, message.flags, message.application_id
@@ -88,7 +88,7 @@ def _avp_header_items(code: int, vendor_id: int | None) -> str:
     return str(code) if vendor_id is None else f"{code} {vendor_id}"
 
 
-@_format_section.register
+@_format_by_type.register
 def _format_grouped(avp: ast.GroupedAvp) -> list[str]:
     return [
         "; Type: Grouped AVP",
@@ -98,7 +98,7 @@ def _format_grouped(avp: ast.GroupedAvp) -> list[str]:
     ]
 
 
-@_format_section.register
+@_format_by_type.register
 def _format_enumerated(avp: ast.EnumeratedAvp) -> list[str]:
     width = max(
         (
@@ -137,7 +137,7 @@ def _format_enumerated(avp: ast.EnumeratedAvp) -> list[str]:
     return lines
 
 
-@_format_section.register
+@_format_by_type.register
 def _format_avp_table(table: ast.AvpTable) -> list[str]:
     rows = [
         [
@@ -175,7 +175,7 @@ def _format_avp_table(table: ast.AvpTable) -> list[str]:
     ]
 
 
-@_format_section.register
+@_format_by_type.register
 def _format_reused(reused: ast.ReusedAvps) -> list[str]:
     rows = [
         [row.name, row.origin, row.m_bit.value if row.m_bit else "-"]
@@ -188,6 +188,20 @@ def _format_reused(reused: ast.ReusedAvps) -> list[str]:
         *([f"; Page: {reused.source.page}"] if reused.source.page is not None else []),
         *_table(["Name", "From", "M-bit"], rows),
     ]
+
+
+def _format_section(section: ast.Section) -> list[str]:
+    """Dispatch on the *exact* section type.
+
+    `singledispatch` alone walks the MRO, so a subclass of `Message` would be
+    formatted as a `Message` and silently lose whatever the subclass added.
+    `.dad` output has to be exact, so the registration decorators are used for
+    what they are good at — keeping each formatter next to its section kind —
+    and the exactness is enforced here.
+    """
+    if type(section) not in _format_by_type.registry:
+        raise TypeError(f"no formatter for {type(section).__name__}")
+    return _format_by_type(section)
 
 
 def format_spec(spec: ast.Specification) -> str:
