@@ -224,14 +224,6 @@ def test_a_row_may_not_carry_a_value_for_a_column_the_table_lacks():
         )
 
 
-def test_free_cells_are_counted_against_the_free_columns():
-    with pytest.raises(pydantic.ValidationError, match="1 free cells for 2 free"):
-        _table(
-            (ast.AvpColumn.NAME, ast.FreeColumn(label="A"), ast.FreeColumn(label="B")),
-            (ast.AvpTableRow(name="Example", extras=("only-one",)),),
-        )
-
-
 def test_a_table_needs_a_name_column_and_no_duplicates():
     with pytest.raises(pydantic.ValidationError, match="no Name column"):
         _table((ast.AvpColumn.CODE,), (ast.AvpTableRow(name="Example", code=1),))
@@ -240,10 +232,3 @@ def test_a_table_needs_a_name_column_and_no_duplicates():
             (ast.AvpColumn.NAME, ast.AvpColumn.NAME),
             (ast.AvpTableRow(name="Example"),),
         )
-
-
-def test_a_free_column_may_not_shadow_a_modelled_one():
-    """A quoted "Code" would print as a second Code column and nothing
-    downstream could tell which one was meant."""
-    with pytest.raises(pydantic.ValidationError, match="is a modelled column name"):
-        ast.FreeColumn(label="Code")

@@ -882,7 +882,7 @@ Trace-Reporting-Consumer-Uri                        1727   7.3.252   DiameterURI
 ; Section: 7.3.1
 ; Table: 7.3.1/2
 ; Page: 86
-;; Name                                 From       M-bit
+; Columns: Name                         From       M-bit
 Service-Selection                       RFC5778    -
 3GPP-Charging-Characteristics           TS29.061   -
 Supported-Features                      TS29.229   -

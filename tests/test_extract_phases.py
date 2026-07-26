@@ -25,7 +25,12 @@ def _avp_table(*rows, section="6.3", table="6.3.1"):
 
 
 def _reused_table(*rows, label="6.3.2", section="6.3"):
-    return tgpp_docx._ReusedTable(rows=list(rows), label=label, section=section)
+    return tgpp_docx._ReusedTable(
+        rows=list(rows),
+        columns=ast.REUSED_COLUMNS,
+        label=label,
+        section=section,
+    )
 
 
 def _grouped(vendor_id=10415, name="Group"):

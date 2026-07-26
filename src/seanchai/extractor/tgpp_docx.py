@@ -343,6 +343,19 @@ def _strip_note_ref(text: str) -> tuple[str, str | None]:
     return (text[: match.start()] + text[match.end() :]).strip(), match["number"]
 
 
+# Both spellings of the Encrypt column, normalized to one on the way in. This
+# is a document convention rather than a typo — TS 29.061, 29.212 and 29.214
+# write "Y"/"N" throughout, the rest write "Yes"/"No" — and a convention is
+# extractor code, not several hundred input patches.
+_ENCRYPT_CELLS = {"Yes": True, "Y": True, "No": False, "N": False, "": None}
+
+
+def _encrypt_cell(text: str) -> bool | None:
+    if text not in _ENCRYPT_CELLS:
+        raise ExtractionError(f"AVP table Encrypt cell {text!r}")
+    return _ENCRYPT_CELLS[text]
+
+
 def _data_type(text: str | None) -> ast.DataType | None:
     """Strict, like the flags cells: a type outside RFC 6733's closed set is a
     source typo ("Enumerate" in TS 29.272, "Enumarated" in TS 29.212), and
@@ -389,34 +402,52 @@ _AVP_TABLE_COLUMNS = {
 _COLUMN_NOTE_RE = re.compile(r"\s*\((?:NOTE|Note|note)S?s?[^)]*\)$")
 
 
-def _avp_table_columns(labels: list[str]) -> tuple[ast.Column, ...]:
-    """The table's own columns, in its own order.
+# Source columns the format has no counterpart for and does not want one for:
+# they hold prose about how an AVP is used, which `.dad` does not carry.
+# Dropping them silently is the point; anything *else* unmodelled gets a
+# warning, because a column with machine-readable values is a reason to model
+# it (see `ast._check_columns`).
+_PROSE_COLUMNS = frozenset({"Comments", "Comment", "Description"})
 
-    Column *order* has been identical in every 3GPP specification examined, but
-    the set has not: TS 29.273's table has no Encrypt column, TS 29.212's has
-    two extra ones. Reading the labels rather than assuming nine positions is
-    what lets those be extracted at all, and what lets a missing column stay
-    distinguishable from an empty cell.
+
+def _map_columns[T](
+    labels: list[str], known: dict[str, T], kind: str, warnings: list[str]
+) -> tuple[tuple[T, ...], list[int]]:
+    """Modelled columns in source order, plus the cell indices they sit at.
+
+    A row is read positionally against the *source* table, so the indices are
+    what lets unmodelled columns be skipped without disturbing the rest.
     """
-    columns: list[ast.Column] = []
-    for label in labels:
+    columns: list[T] = []
+    positions: list[int] = []
+    for index, label in enumerate(labels):
         stripped = _COLUMN_NOTE_RE.sub("", label).strip()
         if not stripped:
-            raise ExtractionError(f"AVP table column with no label in {labels!r}")
-        if known := _AVP_TABLE_COLUMNS.get(stripped):
-            columns.append(known)
-        else:
-            columns.append(ast.FreeColumn(label=stripped))
-    return tuple(columns)
+            raise ExtractionError(f"{kind} column with no label in {labels!r}")
+        if (column := known.get(stripped)) is not None:
+            columns.append(column)
+            positions.append(index)
+        elif stripped not in _PROSE_COLUMNS:
+            warnings.append(
+                f"{kind} column {stripped!r} is not modelled and was dropped"
+            )
+    return tuple(columns), positions
 
 
 def _extract_avp_table(
-    table: _Table, section_number: str
+    table: _Table, section_number: str, warnings: list[str]
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
+    """Column *order* has been identical in every 3GPP specification examined,
+    but the set has not: TS 29.273's table has no Encrypt column, TS 29.212's
+    has two the format does not model. Reading the labels rather than assuming
+    nine positions is what lets those be extracted at all, and what keeps a
+    missing column distinguishable from an empty cell."""
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
     columns: tuple[ast.Column, ...] | None = None
+    positions: list[int] = []
+    width = 0
     for row in table.rows:
         cells = row.cells
         if not cells:
@@ -427,7 +458,10 @@ def _extract_avp_table(
                     note_rfcs[match["number"]] = match["rfc"]
             continue
         if cells[0] == "Attribute Name":  # the label row defines the columns
-            columns = _avp_table_columns(cells)
+            columns, positions = _map_columns(
+                cells, _AVP_TABLE_COLUMNS, "AVP table", warnings
+            )
+            width = len(cells)
             continue
         if cells[0] == "" or cells[0] == cells[1]:
             continue  # spanning header rows (merged cells repeat the same text)
@@ -435,10 +469,10 @@ def _extract_avp_table(
             raise ExtractionError("AVP table row before its column labels")
         # The width check comes before every other cell is read: a malformed
         # table must report its width, not an IndexError from column two.
-        if len(cells) != len(columns):
+        if len(cells) != width:
             raise ExtractionError(
                 f"AVP table row with {len(cells)} cells for"
-                f" {len(columns)} columns: {cells!r}"
+                f" {width} source columns: {cells!r}"
             )
         name = ""
         code_value: int | None = None
@@ -446,12 +480,9 @@ def _extract_avp_table(
         type_value: str | None = None
         encrypt: bool | None = None
         must = may = should_not = must_not = frozenset[ast.AvpFlag]()
-        extras: list[str] = []
         note: str | None = None
-        for column, text in zip(columns, cells, strict=True):
-            if isinstance(column, ast.FreeColumn):
-                extras.append(text)
-                continue
+        for column, position in zip(columns, positions, strict=True):
+            text = cells[position]
             match column:
                 case ast.AvpColumn.NAME:
                     name, name_note = _strip_note_ref(text)
@@ -474,9 +505,7 @@ def _extract_avp_table(
                 case ast.AvpColumn.TYPE:
                     type_value = text or None
                 case ast.AvpColumn.ENCRYPT:
-                    if text not in ("Yes", "No", ""):
-                        raise ExtractionError(f"AVP table Encrypt cell {text!r}")
-                    encrypt = None if text == "" else text == "Yes"
+                    encrypt = _encrypt_cell(text)
                 case ast.AvpColumn.MUST:
                     must = _flags_cell(text)
                 case ast.AvpColumn.MAY:
@@ -497,7 +526,6 @@ def _extract_avp_table(
                     must=must, may=may, should_not=should_not, must_not=must_not
                 ),
                 may_encrypt=encrypt,
-                extras=tuple(extras),
             )
         )
     if columns is None:
@@ -526,37 +554,71 @@ def _origin(reference: str) -> str:
     raise ExtractionError(f"unrecognized origin reference {reference!r}")
 
 
-def _extract_reused_table(table: _Table, warnings: list[str]) -> list[ast.ReusedAvpRow]:
+_REUSED_TABLE_COLUMNS = {
+    "Attribute Name": ast.ReusedColumn.NAME,
+    "Reference": ast.ReusedColumn.FROM,
+    "M-bit": ast.ReusedColumn.M_BIT,
+}
+
+
+def _extract_reused_table(
+    table: _Table, warnings: list[str]
+) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedTableColumn, ...]]:
     rows = []
+    columns: tuple[ast.ReusedTableColumn, ...] | None = None
+    positions: list[int] = []
+    width = 0
     for row in table.rows:
         cells = row.cells
         if not cells:
             raise ExtractionError("re-used AVPs row with no cells")
-        if cells[0] in ("", "Attribute Name") or cells[0].startswith("NOTE"):
+        if cells[0] == "Attribute Name":
+            columns, positions = _map_columns(
+                cells, _REUSED_TABLE_COLUMNS, "re-used table", warnings
+            )
+            width = len(cells)
             continue
-        if len(cells) < 4:
+        if cells[0] == "" or cells[0].startswith("NOTE"):
+            continue
+        if columns is None:
+            raise ExtractionError("re-used AVPs row before its column labels")
+        if len(cells) != width:
             raise ExtractionError(
-                f"re-used AVPs row with {len(cells)} cells: {cells!r}"
+                f"re-used AVPs row with {len(cells)} cells for"
+                f" {width} source columns: {cells!r}"
             )
         name, _ = _strip_note_ref(cells[0])
-        m_bit_cell = cells[3]
-        if m_bit_cell == cells[0]:
-            # Horizontally merged row: python-docx repeats the first cell's
-            # text in the missing position (TS 29.272 Battery-Indicator row).
-            warnings.append(
-                f"re-used AVPs row {name!r} has a merged M-bit cell, treating as empty"
-            )
-            m_bit_cell = ""
-        if m_bit_cell not in _M_BIT_OVERRIDES:
-            raise ExtractionError(
-                f"re-used AVPs row {name!r}: unrecognized M-bit cell {m_bit_cell!r}"
-            )
-        rows.append(
-            ast.ReusedAvpRow(
-                name=name, origin=_origin(cells[1]), m_bit=_M_BIT_OVERRIDES[m_bit_cell]
-            )
-        )
-    return rows
+        origin: str | None = None
+        m_bit: ast.MBitOverride | None = None
+        for column, position in zip(columns, positions, strict=True):
+            text = cells[position]
+            match column:
+                case ast.ReusedColumn.NAME:
+                    pass  # already read, so that the M-bit check can name it
+                case ast.ReusedColumn.FROM:
+                    origin = _origin(text)
+                case ast.ReusedColumn.M_BIT:
+                    if text == cells[0]:
+                        # Horizontally merged row: python-docx repeats the first
+                        # cell's text in the missing position (TS 29.272
+                        # Battery-Indicator row).
+                        warnings.append(
+                            f"re-used AVPs row {name!r} has a merged M-bit cell,"
+                            " treating as empty"
+                        )
+                        text = ""
+                    if text not in _M_BIT_OVERRIDES:
+                        raise ExtractionError(
+                            f"re-used AVPs row {name!r}:"
+                            f" unrecognized M-bit cell {text!r}"
+                        )
+                    m_bit = _M_BIT_OVERRIDES[text]
+        if origin is None:
+            raise ExtractionError(f"re-used AVPs row {name!r} has no Reference column")
+        rows.append(ast.ReusedAvpRow(name=name, origin=origin, m_bit=m_bit))
+    if columns is None:
+        raise ExtractionError("re-used AVPs table without column labels")
+    return rows, columns
 
 
 def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
@@ -587,6 +649,7 @@ class _ReusedTable:
     caption and its own clause, which is not necessarily the AVP table's."""
 
     rows: list[ast.ReusedAvpRow]
+    columns: tuple[ast.ReusedTableColumn, ...]
     label: str
     section: str
 
@@ -623,6 +686,7 @@ class _Resolved:
     messages: list[ast.Message]
     avp_table: ast.AvpTable
     reused: list[ast.ReusedAvpRow]
+    reused_columns: tuple[ast.ReusedTableColumn, ...]
     reused_label: str
     reused_section: str
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
@@ -639,15 +703,21 @@ def _collect(sections: list[_Section], warnings: list[str]) -> _Collected:
         for table in section.tables:
             header = table.rows[0].cells
             if "AVP Flag rules" in header:
-                avp_table, note_reused = _extract_avp_table(table, section.number)
+                avp_table, note_reused = _extract_avp_table(
+                    table, section.number, warnings
+                )
                 collected.avp_tables.append((avp_table, section.number))
                 collected.note_reused.extend(note_reused)
-            elif "Reference" in header and "M-bit" in header:
+            elif "Attribute Name" in header and "Reference" in header:
+                # Keyed on Reference rather than on M-bit: TS 29.128, 29.173
+                # and 29.336 print a re-used table with no M-bit column at all.
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
+                reused_rows, reused_columns = _extract_reused_table(table, warnings)
                 collected.reused_tables.append(
                     _ReusedTable(
-                        rows=_extract_reused_table(table, warnings),
+                        rows=reused_rows,
+                        columns=reused_columns,
                         label=table.caption,
                         section=section.number,
                     )
@@ -694,7 +764,12 @@ def _resolve(collected: _Collected) -> _Resolved:
         if collected.reused_tables
         # Only NOTE-derived rows: they come from the AVP table, so that is
         # honestly where the block was found.
-        else _ReusedTable(rows=[], label=avp_table.table, section=tables_section)
+        else _ReusedTable(
+            rows=[],
+            columns=ast.REUSED_COLUMNS,
+            label=avp_table.table,
+            section=tables_section,
+        )
     )
 
     codes = {row.name: row.code for row in avp_table.rows}
@@ -731,6 +806,7 @@ def _resolve(collected: _Collected) -> _Resolved:
         messages=collected.messages,
         avp_table=avp_table,
         reused=[*reused_table.rows, *collected.note_reused],
+        reused_columns=reused_table.columns,
         reused_label=reused_table.label,
         reused_section=reused_table.section,
         definitions=[*collected.grouped, *enumerated],
@@ -765,6 +841,7 @@ def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
             ast.ReusedAvps(
                 table=resolved.reused_label,
                 source=ast.SourceRef(section=resolved.reused_section),
+                columns=resolved.reused_columns,
                 rows=tuple(resolved.reused),
             )
         )

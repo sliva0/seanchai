@@ -9,6 +9,14 @@ This document describes the format as it exists, and
 [grammar.md](grammar.md) states it formally. Where the two disagree, the
 grammar is the one to fix.
 
+The format is **not stable and carries no compatibility promise** until the
+project is finished and published. Change it whenever the work in hand needs
+it, including in ways that invalidate every committed `.dad` file: those files
+are extractor output, regenerated from the sources, and the hand-made reference
+is a single file to re-edit. Weighing a format change against imagined existing
+users is weighing it against nobody. The design intent below is what to
+preserve; the spelling is not.
+
 ## Shape of a file
 
 A file is a sequence of blocks separated by blank lines: the file header first,
@@ -59,23 +67,32 @@ These are the decisions the format rests on. Preserve them when changing it.
 - **`; bold` stays inline** because it mirrors the source document: bold in
   3GPP ABNF marks AVPs defined or modified in that spec.
 - **Table cells are single whitespace-separated tokens**, with `-` as the empty
-  placeholder — except in an AVP table's free columns, whose cells are quoted
-  because the source text they carry contains spaces and commas.
-- **An AVP table declares its own columns.** `; Columns:` is a directive, not a
-  cosmetic label line, and it states the source table's columns in the source
-  table's order. 3GPP AVP tables do not all have the same columns: TS 29.273's
-  has no Encrypt column, TS 29.212's has two extra ones, and RFC 6733 §4.5 has
-  neither MAY nor SHOULD NOT nor Encrypt. Declaring them is what keeps "the
-  table had no such column" distinct from "the cell was empty", which were the
-  same `False` before.
+  placeholder.
+- **A table declares its own columns.** `; Columns:` is a directive, not a
+  cosmetic label line, and it states which columns the source table had, in the
+  source table's order. Tables do not all have the same ones: TS 29.273's AVP
+  table has no Encrypt column, RFC 6733 §4.5 has neither MAY nor SHOULD NOT nor
+  Encrypt, and TS 29.128, 29.173 and 29.336 print re-used tables with no M-bit
+  column. Declaring them is what keeps "the table had no such column" distinct
+  from "the cell was empty", which were the same `False` before.
 
-  A column the format does not model is carried verbatim under a quoted label
-  rather than dropped, because a `.dad` file records what its source document
-  says. What those columns mean across specifications is not decided here — see
-  [extractor.md](extractor.md#per-specification-avp-table-columns).
+- **Only modelled columns are recorded; the rest are dropped.** Every source
+  column without a modelled counterpart so far has been prose — "Comments",
+  "Description", "Comment" — holding a sentence or a whole paragraph about how
+  an AVP is used. `.dad` carries definitions, not narrative, and `; Section:`
+  already points at the clause that holds the prose undamaged, so quoting it
+  into a table cell bought nothing a reader could not get better from the
+  specification. That was tried and removed.
 
-  The re-used table's `;;` line is still cosmetic. That asymmetry is not a
-  decision, just unfinished work.
+  This is a statement about what has turned up, not a rule that unmodelled
+  means unimportant. A source column carrying *machine-readable* values is a
+  reason to add a modelled column for it, named, with a cell grammar of its
+  own. TS 29.212's "Acc. Type" (`3GPP-EPS`, `3GPP-GPRS`, `All`) and
+  "Applicability" (`CC`/`PC`/`Both` plus feature names) are the standing
+  candidates, and TS 29.172's re-used table prints AVP Code and Value Type
+  columns. The extractor warns about every unmodelled column that is not one of
+  the known prose labels, which is how such a case gets noticed rather than
+  quietly lost.
 - **Reused AVPs are listed by name.** Names are unique within one
   specification's scope; resolving a row against the origin spec's `.dad`
   yields the AVP's `(vendor-id, code)` — the true identity key, which

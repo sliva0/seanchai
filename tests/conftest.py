@@ -90,7 +90,7 @@ def synthetic_spec_docx(tmp_path):
     reused_table = document.add_table(rows=1, cols=4)
     _set_cells(
         reused_table.rows[0],
-        ["Attribute Name", "Reference", "Notes", "M-bit"],
+        ["Attribute Name", "Reference", "Comments", "M-bit"],
     )
     _set_cells(
         reused_table.add_row(),

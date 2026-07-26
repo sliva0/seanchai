@@ -8,6 +8,7 @@ free-text comment lines are discarded.
 """
 
 import contextlib
+import enum
 import re
 from typing import NamedTuple
 
@@ -302,48 +303,18 @@ def _cells(body: list[tuple[int, str]], count: int):
         yield lineno, cells
 
 
-# A modelled cell is a bare token; a free cell is quoted, because the source
-# text it carries contains spaces and commas.
-_TABLE_CELL_RE = re.compile(r'"(?P<quoted>[^"\r\n]*)"|(?P<bare>\S+)')
-
-
-class _Cell(NamedTuple):
-    text: str
-    quoted: bool
-
-
-def _split_cells(line: str, lineno: int) -> list[_Cell]:
-    cells: list[_Cell] = []
-    position = 0
-    while position < len(line):
-        if line[position] == " ":
-            position += 1
-            continue
-        match = _TABLE_CELL_RE.match(line, position)
-        if match is None:  # an unpaired quote is the only way to get here
-            raise DadParseError(lineno, f"unterminated quoted cell: {line.strip()!r}")
-        if match["quoted"] is None:
-            cells.append(_Cell(match["bare"], quoted=False))
-        else:
-            cells.append(_Cell(match["quoted"], quoted=True))
-        position = match.end()
-    return cells
-
-
-def _columns(directive: _Directive) -> tuple[ast.Column, ...]:
-    columns: list[ast.Column] = []
-    for cell in _split_cells(directive.value, directive.lineno):
-        if cell.quoted:
-            with _validated(directive.lineno):
-                columns.append(ast.FreeColumn(label=cell.text))
-            continue
+def _columns[T: enum.StrEnum](directive: _Directive, known: type[T]) -> tuple[T, ...]:
+    """The `; Columns:` directive: which columns the source table had, and in
+    which order. Only modelled columns appear — see `ast._check_columns`."""
+    columns: list[T] = []
+    for token in directive.value.split():
         try:
-            columns.append(ast.AvpColumn(cell.text))
+            columns.append(known(token))
         except ValueError:
+            known_names = ", ".join(member.value for member in known)
             raise DadParseError(
                 directive.lineno,
-                f"unknown column {cell.text!r}"
-                " (quote the label to carry it as a free column)",
+                f"unknown column {token!r} (expected one of {known_names})",
             ) from None
     return tuple(columns)
 
@@ -376,7 +347,7 @@ def _encrypt(cell: str, lineno: int) -> bool | None:
 
 
 def _avp_table_row(
-    columns: tuple[ast.Column, ...], cells: list[_Cell], lineno: int
+    columns: tuple[ast.Column, ...], cells: list[str], lineno: int
 ) -> ast.AvpTableRow:
     name: str | None = None
     code: int | None = None
@@ -384,20 +355,7 @@ def _avp_table_row(
     data_type: ast.DataType | None = None
     may_encrypt: bool | None = None
     must = may = should_not = must_not = frozenset[ast.AvpFlag]()
-    extras: list[str] = []
-    for column, cell in zip(columns, cells, strict=True):
-        if isinstance(column, ast.FreeColumn):
-            if not cell.quoted:
-                raise DadParseError(
-                    lineno, f"free column {column.label!r} needs a quoted cell"
-                )
-            extras.append(cell.text)
-            continue
-        if cell.quoted:
-            raise DadParseError(
-                lineno, f"column {column.value} takes a bare cell, got a quoted one"
-            )
-        text = cell.text
+    for column, text in zip(columns, cells, strict=True):
         match column:
             case ast.AvpColumn.NAME:
                 name = text
@@ -429,7 +387,6 @@ def _avp_table_row(
                 must=must, may=may, should_not=should_not, must_not=must_not
             ),
             may_encrypt=may_encrypt,
-            extras=tuple(extras),
         )
 
 
@@ -437,16 +394,11 @@ def _parse_avp_table(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.AvpTable:
     table = _pop(directives, "Table", lineno)
-    columns = _columns(_pop(directives, "Columns", lineno))
+    columns = _columns(_pop(directives, "Columns", lineno), ast.AvpColumn)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
     rows = []
-    for row_lineno, line in body:
-        cells = _split_cells(line, row_lineno)
-        if len(cells) != len(columns):
-            raise DadParseError(
-                row_lineno, f"expected {len(columns)} columns, got {len(cells)}"
-            )
+    for row_lineno, cells in _cells(body, len(columns)):
         rows.append(_avp_table_row(columns, cells, row_lineno))
     # Anchored on the block, not on `; Table:`: what is left to check here is
     # the section as a whole (an AVP table with no rows, rows disagreeing with
@@ -457,23 +409,46 @@ def _parse_avp_table(
         )
 
 
+def _reused_row(
+    columns: tuple[ast.ReusedTableColumn, ...], cells: list[str], lineno: int
+) -> ast.ReusedAvpRow:
+    name: str | None = None
+    origin: str | None = None
+    m_bit: ast.MBitOverride | None = None
+    for column, text in zip(columns, cells, strict=True):
+        match column:
+            case ast.ReusedColumn.NAME:
+                name = text
+            case ast.ReusedColumn.FROM:
+                origin = text
+            case ast.ReusedColumn.M_BIT:
+                if text != "-":
+                    try:
+                        m_bit = ast.MBitOverride(text)
+                    except ValueError:
+                        raise DadParseError(
+                            lineno, f"malformed M-bit cell {text!r}"
+                        ) from None
+    if name is None or origin is None:  # both columns are required by the model
+        raise DadParseError(lineno, "re-used row is missing a Name or From cell")
+    with _validated(lineno):
+        return ast.ReusedAvpRow(name=name, origin=origin, m_bit=m_bit)
+
+
 def _parse_reused(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.ReusedAvps:
     table = _pop(directives, "Table", lineno)
+    columns = _columns(_pop(directives, "Columns", lineno), ast.ReusedColumn)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
     rows = []
-    for row_lineno, cells in _cells(body, 3):
-        name, origin, m_bit = cells
-        try:
-            override = None if m_bit == "-" else ast.MBitOverride(m_bit)
-        except ValueError:
-            raise DadParseError(row_lineno, f"malformed M-bit cell {m_bit!r}") from None
-        with _validated(row_lineno):
-            rows.append(ast.ReusedAvpRow(name=name, origin=origin, m_bit=override))
+    for row_lineno, cells in _cells(body, len(columns)):
+        rows.append(_reused_row(columns, cells, row_lineno))
     with _validated(lineno):
-        return ast.ReusedAvps(table=table.value, source=source, rows=tuple(rows))
+        return ast.ReusedAvps(
+            table=table.value, source=source, columns=columns, rows=tuple(rows)
+        )
 
 
 _SECTION_PARSERS = {

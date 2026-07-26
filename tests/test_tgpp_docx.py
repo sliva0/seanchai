@@ -54,6 +54,13 @@ def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
     assert table.rows[1].may_encrypt is True
     assert table.rows[1].flag_rules.must == {ast.AvpFlag.VENDOR}
 
+    # The fixture's re-used table has a Comments column, which the format does
+    # not model and does not want to: it holds prose.
+    assert reused.columns == (
+        ast.ReusedColumn.NAME,
+        ast.ReusedColumn.FROM,
+        ast.ReusedColumn.M_BIT,
+    )
     assert reused.rows == (
         ast.ReusedAvpRow(
             name="Other-AVP",
@@ -254,8 +261,10 @@ def _avp_table_docx(tmp_path, labels, rows):
 
 
 def test_extract_reads_the_columns_off_the_label_row(tmp_path):
-    """TS 29.212's table has two columns beyond the shared nine, and the
-    format carries them rather than dropping data the source printed."""
+    """TS 29.212's table has two columns beyond the shared nine. They are
+    dropped, and warned about, because a column with machine-readable values
+    is a reason to model it rather than to carry it anonymously."""
+    warnings = []
     path = _avp_table_docx(
         tmp_path,
         [
@@ -271,7 +280,7 @@ def test_extract_reads_the_columns_off_the_label_row(tmp_path):
         [["Local-AVP", "10", "6.3.1", "Unsigned32", "M, V", "Yes", "All", "Both Rel8"]],
     )
 
-    spec = tgpp_docx.extract(path, warnings=[])
+    spec = tgpp_docx.extract(path, warnings=warnings)
 
     (table,) = spec.sections
     assert isinstance(table, ast.AvpTable)
@@ -284,12 +293,17 @@ def test_extract_reads_the_columns_off_the_label_row(tmp_path):
         ast.AvpColumn.TYPE,
         ast.AvpColumn.MUST,
         ast.AvpColumn.ENCRYPT,
-        ast.FreeColumn(label="Acc. Type"),
-        ast.FreeColumn(label="Applicability"),
     )
+    assert warnings == [
+        "AVP table column 'Acc. Type' is not modelled and was dropped",
+        "AVP table column 'Applicability' is not modelled and was dropped",
+    ]
+    # Cells are still read positionally against the source table, so dropping
+    # a column in the middle must not shift the ones after it.
     (row,) = table.rows
-    assert row.extras == ("All", "Both Rel8")
-    # Declared columns are absent, not empty: this table never had a May column.
+    assert (row.code, row.data_type) == (10, ast.DataType.UNSIGNED32)
+    assert row.may_encrypt is True
+    # An undeclared column is absent, not empty: this table had no May column.
     assert row.flag_rules.may == frozenset()
 
     text = formatter.format_spec(spec)
@@ -321,3 +335,74 @@ def test_extract_distinguishes_an_absent_encrypt_column_from_an_empty_cell(tmp_p
     assert empty_table.rows[0].may_encrypt is None
     assert ast.AvpColumn.ENCRYPT not in absent_table.columns
     assert ast.AvpColumn.ENCRYPT in empty_table.columns
+
+
+def _reused_docx(tmp_path, labels, rows):
+    """A spec with a minimal AVP table plus a re-used table with `labels`."""
+    document = docx.Document()
+    document.add_table(rows=1, cols=1).cell(0, 0).text = "3GPP TS 29.999 V1.2.3"
+    document.add_paragraph(style="Heading 1").add_run("6.3\tAVP Definitions")
+    document.add_paragraph("Table 6.3.1: AVP definitions")
+    avp = document.add_table(rows=2, cols=3)
+    avp.cell(0, 0).merge(avp.cell(0, 2)).text = "AVP Flag rules"
+    for cell, label in zip(
+        avp.rows[1].cells, ["Attribute Name", "AVP Code", "Value Type"], strict=True
+    ):
+        cell.text = label
+    for cell, value in zip(
+        avp.add_row().cells, ["Local-AVP", "10", "Unsigned32"], strict=True
+    ):
+        cell.text = value
+
+    document.add_paragraph("Table 6.3.2: Re-used AVPs")
+    reused = document.add_table(rows=1, cols=len(labels))
+    for cell, label in zip(reused.rows[0].cells, labels, strict=True):
+        cell.text = label
+    for values in rows:
+        for cell, value in zip(reused.add_row().cells, values, strict=True):
+            cell.text = value
+    path = tmp_path / "reused.docx"
+    document.save(path)
+    return path
+
+
+def test_extract_reads_a_reused_table_with_no_m_bit_column(tmp_path):
+    """TS 29.128, 29.173 and 29.336 print no M-bit column. The Comments column
+    they do print is prose, so it is dropped without a warning."""
+    warnings = []
+    path = _reused_docx(
+        tmp_path,
+        ["Attribute Name", "Reference", "Comments"],
+        [["Other-AVP", "IETF RFC 6733", "See clause 6.4.2"]],
+    )
+
+    spec = tgpp_docx.extract(path, warnings=warnings)
+
+    reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
+    assert reused.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
+    assert reused.rows[0].m_bit is None
+    assert warnings == []
+
+    text = formatter.format_spec(spec)
+    assert parser.parse(text) == spec
+    assert formatter.format_spec(parser.parse(text)) == text
+
+
+def test_a_prose_column_is_dropped_without_a_warning(tmp_path):
+    """Comments, Description and Comment are known to hold narrative — up to
+    1657 characters of it — which `.dad` does not carry. Dropping them is the
+    intent, so they are not warned about; anything else unmodelled is."""
+    warnings = []
+    path = _reused_docx(
+        tmp_path,
+        ["Attribute Name", "Reference", "Description", "Acc. Type"],
+        [["Other-AVP", "IETF RFC 6733", "a paragraph " * 40, "3GPP-EPS"]],
+    )
+
+    spec = tgpp_docx.extract(path, warnings=warnings)
+
+    reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
+    assert reused.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
+    assert warnings == [
+        "re-used table column 'Acc. Type' is not modelled and was dropped"
+    ]

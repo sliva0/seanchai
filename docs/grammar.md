@@ -5,6 +5,16 @@ the pieces are for and why they are shaped this way; this document says only
 what is and is not a well-formed file, in enough detail to write a second
 implementation without reading `src/seanchai/dad/parser.py`.
 
+> **The grammar is not stable yet.** Until the project is finished and
+> published, any part of it may change whenever the work in hand needs it —
+> including in ways that invalidate every existing `.dad` file. There is no
+> deprecation path, no format version and no compatibility promise, because
+> there is nothing published to be compatible with. Committed files are
+> regenerated when the format moves, which is exactly why the extractor and the
+> formatter are the only things that produce them. Write tooling against this
+> document by all means, but expect to follow it. A stable grammar is something
+> to declare on publication, not before.
+
 Two things this grammar deliberately does not cover, because they are not
 syntax:
 
@@ -164,21 +174,21 @@ avp-table     = "; Type: AVP Table" NL
                 "; Columns: " *SP columns NL
                 1*(table-row NL)
 columns       = column *(1*SP column)
-column        = known-column / free-column
-known-column  = "Name" / "Code" / "Section" / "Type"
+column        = "Name" / "Code" / "Section" / "Type"
               / "Must" / "May" / "S.not" / "M.not" / "Encrypt"
-free-column   = DQUOTE free-label DQUOTE
-free-label    = 1*(%x20-21 / %x23-10FFFF)     ; no quote, no newline
 table-row     = cell *(1*SP cell)
-cell          = bare-cell / quoted-cell
-bare-cell     = 1*(%x21-10FFFF)
-quoted-cell   = DQUOTE *(%x20-21 / %x23-10FFFF) DQUOTE
+cell          = 1*(%x21-10FFFF)
 ```
 
-`; Columns:` states the source table's columns **in the source table's order**,
-and a row has exactly one cell per declared column, positionally matched. A
-column the table does not declare is a column the source table did not have,
-which is not the same as one whose cell is empty.
+`; Columns:` states which columns the source table had, in the source table's
+order, and a row has exactly one cell per declared column, positionally
+matched. A column the table does not declare is a column the source table did
+not have, which is not the same as one whose cell is empty.
+
+Only columns this format models can be named. A source column with no modelled
+counterpart is dropped by the extractor rather than carried under its own
+label — see [extractor.md](extractor.md#columns-the-format-does-not-model) for
+which ones and why.
 
 The cell vocabulary depends on the column:
 
@@ -188,7 +198,7 @@ code-cell     = 1*DIGIT / "-"
 section-cell  = section-number / "-"
 type-cell     = data-type / "-"
 flags-cell    = avp-flag *("," [SP] avp-flag) / "-"
-avp-flag      = "M" / "V"
+avp-flag      = "M" / "V" / "P"   ; P is RFC 3588's deprecated protected bit
 encrypt-cell  = "Yes" / "No" / "-"
 data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
               / "Unsigned64" / "Float32" / "Float64" / "Grouped"
@@ -196,10 +206,9 @@ data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
               / "DiameterURI" / "Enumerated" / "IPFilterRule"
 ```
 
-A cell under a known column is bare; a cell under a free column is quoted, and
-`""` is the empty one. `-` is the canonical empty for every known column that
-permits it. `data-type` is closed: the basic formats of RFC 6733 §4.2 and the
-common derived formats of §4.3.1, and nothing else.
+`-` is the canonical empty cell for every column that permits one.
+`data-type` is closed: the basic formats of RFC 6733 §4.2 and the common
+derived formats of §4.3.1, and nothing else.
 
 ### Re-used AVPs
 
@@ -208,16 +217,18 @@ reused-avps   = "; Type: Reused AVPs" NL
                 "; Section: " section-number NL
                 "; Table: " inline-text NL
                 ["; Page: " 1*DIGIT NL]
-                1*(reused-row NL)
-reused-row    = avp-name 1*SP spec-ref 1*SP m-bit
+                "; Columns: " *SP reused-columns NL
+                1*(table-row NL)
+reused-columns = reused-column *(1*SP reused-column)
+reused-column = "Name" / "From" / "M-bit"
 spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)
 m-bit         = "MUST" / "MUST-NOT" / "-"
 ```
 
-Unlike an AVP table, this table's columns are fixed by the grammar and its
-`;;` label line is cosmetic. That is a known asymmetry, not a decision: source
-re-used tables vary in shape too, and giving them a `; Columns:` directive is
-open work (see [roadmap.md](roadmap.md)).
+Rows follow the same `table-row` production as an AVP table's, with the cell
+vocabulary selected by column: `avp-name` under Name, `spec-ref` under From,
+`m-bit` under M-bit. Name and From are required; M-bit is not, because
+TS 29.128, 29.173 and 29.336 print no such column.
 
 ## Text values
 
@@ -243,8 +254,8 @@ grammatically well-formed and still invalid.
   S.not, M.not. A table asserting that a flag is both required and forbidden is
   a source or extraction error, not a state a consumer should resolve.
 - **A table's rows agree with its columns.** Exactly one cell per declared
-  column; no value for an undeclared column; a Name column is mandatory; no
-  duplicate column, and a free label may not shadow a known column name.
+  column; no value for an undeclared column; a Name column is mandatory (Name
+  and From, for a re-used table); no duplicate column.
 - **Names match their rules.** `; Name:` must equal the name in the block's
   header rule.
 - **Numeric ranges.** Command codes are 24-bit; codes, vendor ids, application
@@ -254,11 +265,16 @@ grammatically well-formed and still invalid.
 
 ## Extending the format
 
-The two mechanisms already in the grammar are the ones to reach for first: a
-free column carries a table column the format does not model, and `;;` carries
-a note for a human. Both are deliberate, and neither requires a format change.
+A source column this format does not model is dropped, not carried
+anonymously. If one turns up holding *machine-readable* values — TS 29.212's
+"Acc. Type" and "Applicability" are the standing examples — the answer is to
+add a column to the relevant `column` production, with a name and a cell
+grammar of its own, rather than to reintroduce a general escape hatch. An
+anonymous column is only as useful as a consumer's guess about what it means,
+and the extractor already warns about every unmodelled column that is not known
+prose, so these do not pass unnoticed.
 
-A new `; Type:` or a new directive key is a format change, and the bar is a
-source document that cannot otherwise be recorded — not a consumer that would
-find it convenient. Consumer convenience belongs in the consumer model, which
-is a separate layer built from this one.
+A new `; Type:` or a new directive key is a format change too, and the bar is
+the same: a source document that cannot otherwise be recorded — not a consumer
+that would find it convenient. Consumer convenience belongs in the consumer
+model, which is a separate layer built from this one.

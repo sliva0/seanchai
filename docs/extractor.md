@@ -201,52 +201,74 @@ fixture for it in `tests/conftest.py` too.
 - bold applied to bracket runs but not to the AVP name (only name runs are
   trusted for the `; bold` marker);
 - Value Type cells naming a type that does not exist: "Enumerate" (29.272
-  clause 7.3.83, Alert-Reason) and "Enumarated" (29.212) — input-patched. Both
-  were invisible until `AvpTableRow.data_type` became a closed set.
+  clause 7.3.83, Alert-Reason), "Enumarated" (29.212), "OctedString" (29.109)
+  and "OctetSstring" (29.128) — input-patched. All four were invisible until
+  `AvpTableRow.data_type` became a closed set, and three of them turned up in
+  the first corpus-wide run after it;
+- flags cells naming the RFC 3588 `P` bit (29.061, 29.212, 29.214, 29.273).
+  RFC 6733 deprecated it; the specifications kept printing it, so `AvpFlag`
+  carries it;
+- Encrypt cells spelled "Y"/"N" rather than "Yes"/"No" (29.061, 29.212,
+  29.214). A document convention, so it is normalized here rather than
+  input-patched several hundred times.
 
-## Per-specification AVP-table columns
+## Columns the format does not model
 
-The extractor reads an AVP table's columns off its label row rather than
-assuming nine positions, because the label row is the only thing that says what
-the table actually holds.
+Both table kinds are read by matching the label row, not by counting positions,
+and a label with no modelled counterpart is **dropped**. Rows are still read
+positionally against the source table, so dropping a column in the middle does
+not disturb the ones after it.
 
-Column *order* has been identical in all 20 specifications examined:
-Attribute Name, AVP Code, Clause/Section defined, Value Type, Must, May, Should
-not, Must not, then any extras. The column *set* has not:
+What gets dropped, in every table examined, is prose: a column headed
+"Comments" (13 specifications), "Description" (29.061, 29.212) or "Comment"
+(29.172), holding anything from "See clause 7.3.36" to a whole paragraph — 209
+non-empty cells in the corpus, averaging 96 characters and reaching 1657.
+Carrying them was tried and removed: `.dad` records definitions, not narrative,
+and `; Section:` already points at the clause that holds the prose undamaged.
+
+Those three labels are dropped silently. **Anything else unmodelled produces a
+warning**, because a column with machine-readable values is a reason to model
+it — to give it a name, a cell grammar and a place in `; Columns:` — rather
+than to carry it anonymously or lose it. The standing candidates, if the work
+ever calls for them:
+
+- 29.212 table 5.3.0.1, "Acc. Type" — access network type: `All`, `3GPP-EPS`,
+  `3GPP-GPRS`, `Non-3GPP-EPS`, `3GPP2`, `FBA`, freely combined;
+- 29.212 table 5.3.0.1, "Applicability" — two things in one cell: a functional
+  domain (`CC` charging control, `PC` policy control, `Both`, `ADC`) followed
+  by zero or more supported-feature names, as in `Both Rel8`;
+- 29.214 table 5.3.0.1, "Applicability" — supported-feature names only, no
+  domain tag, empty for 31 of its rows;
+- 29.061 table 9a, "Applicable Reference Points" — `Gi, Sgi`, `Sgi`, `Gi`;
+- 29.172's re-used table — "AVP Code" and "Value Type", which the AVP-table
+  side already models.
+
+Note that the two columns both labelled "Applicability" do not carry the same
+thing, and "Acc. Type" and "Applicable Reference Points" are both "where does
+this apply" on different axes. Three axes under four labels: modelling them
+means deciding what they actually mean, which is why none of it was invented
+while merely carrying the text.
+
+## Column labels
+
+The same column is spelled differently across specifications, and the
+differences are typographic rather than semantic: "Clause defined" and "Section
+defined", "May Encr." and "May Encrypt", "Clause  defined" with a double space.
+`_AVP_TABLE_COLUMNS` and `_REUSED_TABLE_COLUMNS` map the spellings onto one
+column each. A label may also carry a note reference ("Value Type (NOTE 2)",
+"Applicability (notes 3, 9)"), which is stripped — it points at prose the
+format does not carry.
+
+Column *order* has been identical in all 20 AVP tables examined: Attribute
+Name, AVP Code, Clause/Section defined, Value Type, Must, May, Should not, Must
+not, then any extras. The column *set* has not:
 
 - **29.273** has 8 — no "May Encr." column at all;
-- **29.061** and **29.214** have 10 — one extra trailing column;
-- **29.212** has 11 — two extra;
+- **29.061** and **29.214** have 10, **29.212** has 11;
+- re-used tables in **29.128**, **29.173** and **29.336** have no M-bit column,
+  so the dispatch keys on "Reference" rather than on "M-bit";
 - and RFC 6733 §4.5, for the future RFC extractor, has neither MAY nor
   SHOULD NOT nor an encrypt column.
-
-Labels vary typographically without varying in meaning: "Clause defined" and
-"Section defined", "May Encr." and "May Encrypt", "Clause  defined" with a
-double space. `_AVP_TABLE_COLUMNS` maps the spellings onto one column each. A
-label may also carry a note reference ("Value Type (NOTE 2)"), which is
-stripped — it points at prose the format does not carry.
-
-The extra columns are kept as free columns under their source labels. They are
-*not* canonicalized across specifications, because they do not mean the same
-thing:
-
-- 29.061 table 9a, "Applicable Reference Points" — which of this spec's own
-  reference points the AVP applies to: "Gi, Sgi", "Sgi", "Gi";
-- 29.212 table 5.3.0.1, "Acc. Type" — access network type: "All", "3GPP-EPS",
-  "3GPP-GPRS", "Non-3GPP-EPS", "3GPP2", "FBA", freely combined;
-- 29.212 table 5.3.0.1, "Applicability" — two things in one cell: a functional
-  domain ("CC" charging control, "PC" policy control, "Both", "ADC") followed
-  by zero or more supported-feature names, as in "Both Rel8" or "Both
-  CondPolicyInfo, CondPolicyInfo-DefaultQoS";
-- 29.214 table 5.3.0.1, "Applicability" — supported-feature names only, with no
-  domain tag, and empty for 31 of its rows.
-
-Three axes under four labels. The two columns sharing the name "Applicability"
-overlap on the supported-feature dimension and differ on the domain tag; "Acc.
-Type" and "Applicable Reference Points" are both "where does this apply" but on
-different axes. Collapsing them would be inventing a claim no specification
-makes, so the extractor records the label and leaves the judgement to a
-consumer.
 
 ## Gotchas
 

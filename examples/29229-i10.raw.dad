@@ -391,7 +391,7 @@ PCSCF-IP-Address                              666   6.3.76     Address          
 ; Section: 6.3.0
 ; Table: 6.3.0.1
 ; Page: 21
-;; Name                 From      M-bit
+; Columns: Name         From      M-bit
 Digest-Realm            RFC4590   -
 Digest-Algorithm        RFC4590   -
 Digest-QoP              RFC4590   -

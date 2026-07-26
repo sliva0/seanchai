@@ -163,6 +163,7 @@ def test_parses_reused_avp_m_bit_overrides():
             "; Type: Reused AVPs",
             "; Section: 6.3",
             "; Table: 6.3/2",
+            "; Columns: Name From M-bit",
             "Default-AVP RFC7683 -",
             "Required-AVP TS29.336 MUST",
             "Forbidden-AVP RFC7944 MUST-NOT",
@@ -261,9 +262,10 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Type: Reused AVPs",
                 "; Section: 1",
                 "; Table: 1",
+                "; Columns: Name From M-bit",
                 "Example RFC7683 SOMETIMES",
             ),
-            7,
+            8,
             "malformed M-bit cell 'SOMETIMES'",
         ),
         (
@@ -378,56 +380,13 @@ def test_parses_a_table_whose_columns_are_a_subset_in_source_order():
     assert row.flag_rules.may == frozenset()
 
 
-def test_parses_free_columns_with_quoted_cells():
-    """TS 29.212 table 5.3.0.1 carries "Acc. Type" and "Applicability", whose
-    cells hold spaces and commas the bare-token grammar could not."""
-    spec = parser.parse(
-        _dad(
-            "; Type: AVP Table",
-            "; Section: 5.3.0",
-            "; Table: 5.3.0.1",
-            '; Columns: Name Code Type "Acc. Type" "Applicability"',
-            'Local-AVP 10 Unsigned32 "3GPP-EPS, Non-3GPP-EPS" "Both NBIFOM"',
-            'Other-AVP 11 Unsigned32 "All" ""',
-        )
-    )
-
-    table = spec.sections[0]
-    assert isinstance(table, ast.AvpTable)
-    assert [column.label for column in table.free_columns] == [
-        "Acc. Type",
-        "Applicability",
-    ]
-    local, other = table.rows
-    assert local.extras == ("3GPP-EPS, Non-3GPP-EPS", "Both NBIFOM")
-    assert other.extras == ("All", "")  # an empty source cell round-trips as ""
-
-
-def test_a_free_column_cell_must_be_quoted_and_a_modelled_one_must_not():
-    with pytest.raises(parser.DadParseError, match="needs a quoted cell"):
-        parser.parse(
-            _dad(
-                "; Type: AVP Table",
-                "; Section: 1",
-                "; Table: 1",
-                '; Columns: Name "Applicability"',
-                "Local-AVP Both",
-            )
-        )
-    with pytest.raises(parser.DadParseError, match="takes a bare cell"):
-        parser.parse(
-            _dad(
-                "; Type: AVP Table",
-                "; Section: 1",
-                "; Table: 1",
-                "; Columns: Name Code",
-                'Local-AVP "10"',
-            )
-        )
-
-
-def test_an_unknown_bare_column_is_rejected_with_the_way_to_carry_it():
-    with pytest.raises(parser.DadParseError, match="unknown column 'Applicability'"):
+def test_an_unknown_column_is_rejected_with_the_ones_that_exist():
+    """A source column the format does not model is dropped by the extractor,
+    not carried under its own label, so a `.dad` file can only name modelled
+    ones."""
+    with pytest.raises(
+        parser.DadParseError, match=r"unknown column 'Applicability'.*expected one of"
+    ):
         parser.parse(
             _dad(
                 "; Type: AVP Table",
@@ -465,3 +424,21 @@ def test_a_data_type_outside_the_closed_set_is_rejected():
                 "Local-AVP 10 6.2 Enumerate M,V - - - Yes",
             )
         )
+
+
+def test_parses_a_reused_table_without_an_m_bit_column():
+    """TS 29.128, 29.173 and 29.336 print no M-bit column at all."""
+    spec = parser.parse(
+        _dad(
+            "; Type: Reused AVPs",
+            "; Section: 6.3",
+            "; Table: 6.3/2",
+            "; Columns: Name From",
+            "Default-AVP RFC7683",
+        )
+    )
+
+    reused = spec.sections[0]
+    assert isinstance(reused, ast.ReusedAvps)
+    assert reused.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
+    assert reused.rows[0].m_bit is None

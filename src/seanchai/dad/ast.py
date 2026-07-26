@@ -170,8 +170,21 @@ class EnumeratedAvp(Node):
 
 
 class AvpFlag(enum.StrEnum):
+    """AVP header bits an AVP table's flag-rule columns can name.
+
+    `P` is RFC 3588's "protected" bit. RFC 6733 deprecated it, but the
+    specifications did not stop printing it — TS 29.061, 29.212, 29.214 and
+    29.273 all write flags cells like `V, P` — and a file that records what its
+    source document says has to be able to hold it.
+
+    Declaration order is the canonical spelling order of a flags cell, so `P`
+    goes last: putting it anywhere else would rewrite every committed file for
+    no gain.
+    """
+
     MANDATORY = "M"
     VENDOR = "V"
+    PROTECTED = "P"
 
 
 class DataType(enum.StrEnum):
@@ -253,40 +266,43 @@ class AvpColumn(enum.StrEnum):
     ENCRYPT = "Encrypt"
 
 
-# A free column's cell: free text, and unlike `InlineText` allowed to be empty,
-# because the source cell often is (31 rows of TS 29.214 table 5.3.0.1).
-FreeCell = Annotated[str, Field(pattern=r"^(\S([^\r\n]*\S)?)?$")]
+class ReusedColumn(enum.StrEnum):
+    """Columns of a re-used AVPs table that the format models."""
+
+    NAME = "Name"
+    FROM = "From"
+    M_BIT = "M-bit"
 
 
-class FreeColumn(Node):
-    """A column the format does not model, written with its label in quotes and
-    its cells carried verbatim.
+Column = AvpColumn
+ReusedTableColumn = ReusedColumn
 
-    3GPP AVP tables carry per-specification columns beyond the shared nine:
-    TS 29.061 table 9a has "Applicable Reference Points" (Gi, Sgi), TS 29.212
-    table 5.3.0.1 has "Acc. Type" (3GPP-EPS, 3GPP-GPRS, All) and
-    "Applicability" (CC/PC/Both plus supported-feature names), TS 29.214's
-    table of the same number has an "Applicability" carrying feature names
-    only. Three axes under four labels, with only partial overlap — so the
-    label is kept as the source prints it and no cross-spec meaning is
-    invented here. Deciding what they have in common is the consumer's job.
+REUSED_COLUMNS: tuple[ReusedTableColumn, ...] = tuple(ReusedColumn)
+
+
+def _check_columns(columns: tuple[Column | ReusedTableColumn, ...]) -> None:
+    """`; Columns:` records which columns the source table had, and in which
+    order — not every column, only the ones this format models.
+
+    A source column with no modelled counterpart is dropped rather than carried
+    verbatim. In every table examined those are prose: "Comments",
+    "Description", "Comment", holding a sentence or a whole paragraph about how
+    the AVP is used. `.dad` carries definitions, not narrative, and
+    `; Section:` already points at the clause that holds the prose undamaged —
+    so quoting it into a table cell bought nothing a reader could not get
+    better from the specification.
+
+    That is a statement about what has turned up so far, not a rule that
+    unmodelled means unimportant. A source column carrying machine-readable
+    values — TS 29.212's "Acc. Type" (3GPP-EPS, 3GPP-GPRS, All) and
+    "Applicability" (CC/PC/Both plus feature names) are the standing examples —
+    is a reason to add a *modelled* column for it, with a name and a cell
+    grammar of its own. The extractor warns about any unmodelled column that is
+    not one of the known prose ones, which is how such a case gets noticed.
     """
-
-    # Quoted in the file, so a label may not contain a quote; the surrounding
-    # grammar is whitespace-separated, so it may not be empty either.
-    label: Annotated[str, Field(pattern=r'^[^"\r\n]+$')]
-
-    @pydantic.model_validator(mode="after")
-    def _not_a_modelled_column(self) -> FreeColumn:
-        """A free column named "Code" would print as a quoted duplicate of a
-        column that already has meaning, and nothing downstream could tell
-        which one it meant."""
-        if self.label in tuple(AvpColumn):
-            raise ValueError(f"free column {self.label!r} is a modelled column name")
-        return self
-
-
-Column = AvpColumn | FreeColumn
+    labels = [column.value for column in columns]
+    if len(set(labels)) != len(labels):
+        raise ValueError(f"duplicate column in {labels}")
 
 
 class AvpTableRow(Node):
@@ -311,8 +327,6 @@ class AvpTableRow(Node):
     data_type: DataType | None = None
     flag_rules: AvpFlagRules = AvpFlagRules()
     may_encrypt: bool | None = None
-    # Values of the table's free columns, in the order the columns appear.
-    extras: tuple[FreeCell, ...] = ()
 
 
 class AvpTable(Node):
@@ -334,20 +348,9 @@ class AvpTable(Node):
     # extractor found a caption but lost its contents.
     rows: Annotated[tuple[AvpTableRow, ...], Field(min_length=1)]
 
-    @property
-    def free_columns(self) -> tuple[FreeColumn, ...]:
-        return tuple(
-            column for column in self.columns if isinstance(column, FreeColumn)
-        )
-
     @pydantic.model_validator(mode="after")
     def _rows_match_columns(self) -> AvpTable:
-        labels = [
-            column.value if isinstance(column, AvpColumn) else column.label
-            for column in self.columns
-        ]
-        if len(set(labels)) != len(labels):
-            raise ValueError(f"duplicate column in {labels}")
+        _check_columns(self.columns)
         if AvpColumn.NAME not in self.columns:
             raise ValueError("AVP table has no Name column")
 
@@ -365,7 +368,6 @@ class AvpTable(Node):
             AvpColumn.SHOULD_NOT: "should_not",
             AvpColumn.MUST_NOT: "must_not",
         }
-        free_count = len(self.free_columns)
         for row in self.rows:
             for column, field in absent.items():
                 if column not in self.columns and getattr(row, field) is not None:
@@ -379,11 +381,6 @@ class AvpTable(Node):
                         f"{row.name}: {field} flags set but the table has no"
                         f" {column.value} column"
                     )
-            if len(row.extras) != free_count:
-                raise ValueError(
-                    f"{row.name}: {len(row.extras)} free cells for"
-                    f" {free_count} free columns"
-                )
         return self
 
 
@@ -398,6 +395,8 @@ class MBitOverride(enum.StrEnum):
 class ReusedAvpRow(Node):
     name: AvpName
     origin: SpecRef
+    # None when the table has no M-bit column (TS 29.128, 29.173, 29.336) or
+    # when it has one and this row's cell is empty.
     m_bit: MBitOverride | None = None
 
 
@@ -405,12 +404,34 @@ class ReusedAvps(Node):
     """`; Type: Reused AVPs` — AVPs this spec takes from other specs/RFCs by
     name, mirroring 3GPP "re-used Diameter AVPs" tables. Names are unique
     within one specification's scope; resolving a row against the origin
-    spec's `.dad` yields the AVP's (vendor-id, code)."""
+    spec's `.dad` yields the AVP's (vendor-id, code).
+
+    Like `AvpTable`, the table declares its own columns: these vary too, and
+    by more. TS 29.128, 29.173 and 29.336 print no M-bit column; TS 29.172
+    prints AVP Code and Value Type ones; TS 29.212 and 29.214 add the same
+    per-specification columns their AVP tables carry.
+    """
 
     type: Literal["Reused AVPs"] = "Reused AVPs"
     table: TableLabel
     source: SourceRef
+    columns: Annotated[tuple[ReusedTableColumn, ...], Field(min_length=1)] = (
+        REUSED_COLUMNS
+    )
     rows: Annotated[tuple[ReusedAvpRow, ...], Field(min_length=1)]
+
+    @pydantic.model_validator(mode="after")
+    def _rows_match_columns(self) -> ReusedAvps:
+        _check_columns(self.columns)
+        for required in (ReusedColumn.NAME, ReusedColumn.FROM):
+            if required not in self.columns:
+                raise ValueError(f"re-used table has no {required.value} column")
+        for row in self.rows:
+            if ReusedColumn.M_BIT not in self.columns and row.m_bit is not None:
+                raise ValueError(
+                    f"{row.name}: m_bit set but the table has no M-bit column"
+                )
+        return self
 
 
 Section = Annotated[

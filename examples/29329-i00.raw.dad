@@ -271,7 +271,7 @@ Load                         -     6.3.35   Grouped       -     -     -     M,V 
 ; Section: 6.3
 ; Table: 6.3/2
 ; Page: 17
-;; Name                 From       M-bit
+; Columns: Name         From       M-bit
 External-Identifier     TS29.336   MUST
 OC-Supported-Features   RFC7683    -
 OC-OLR                  RFC7683    -

@@ -10,10 +10,9 @@ depends on stable diffs. Canonical rules:
 - enum bodies: `=` aligned per section (RESERVED counts as a name);
 - tables: columns split by 3 spaces, widths from data cells only (minimum 3);
   labels sit at column starts, overflowing into gaps when wider than the
-  column. An AVP table's labels are the `; Columns:` directive and are
-  grammar; the re-used table's `;;` line is still cosmetic. Both are written
-  the same way, so the first label follows its prefix and every later one
-  lines up with its data.
+  column. Both table kinds write their labels as a `; Columns:` directive, so
+  the first label follows the directive and every later one lines up with its
+  data.
 """
 
 from collections.abc import Callable
@@ -160,24 +159,10 @@ def _avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
 
 
 def _format_avp_table(table: ast.AvpTable) -> list[str]:
-    # Free cells are quoted because they hold source text with spaces and
-    # commas ("Gi, Sgi", "3GPP-EPS, Non-3GPP-EPS (NOTE 11)"), which the
-    # whitespace-separated table grammar could not otherwise carry.
-    headers = [
-        column.value if isinstance(column, ast.AvpColumn) else f'"{column.label}"'
-        for column in table.columns
+    headers = [column.value for column in table.columns]
+    rows = [
+        [_avp_table_cell(row, column) for column in table.columns] for row in table.rows
     ]
-    rows = []
-    for row in table.rows:
-        extras = iter(row.extras)
-        rows.append(
-            [
-                _avp_table_cell(row, column)
-                if isinstance(column, ast.AvpColumn)
-                else f'"{next(extras)}"'
-                for column in table.columns
-            ]
-        )
     return [
         "; Type: AVP Table",
         f"; Section: {table.source.section}",
@@ -187,17 +172,26 @@ def _format_avp_table(table: ast.AvpTable) -> list[str]:
     ]
 
 
+def _reused_cell(row: ast.ReusedAvpRow, column: ast.ReusedColumn) -> str:
+    match column:
+        case ast.ReusedColumn.NAME:
+            return row.name
+        case ast.ReusedColumn.FROM:
+            return row.origin
+        case ast.ReusedColumn.M_BIT:
+            return row.m_bit.value if row.m_bit else "-"
+
+
 def _format_reused(reused: ast.ReusedAvps) -> list[str]:
     rows = [
-        [row.name, row.origin, row.m_bit.value if row.m_bit else "-"]
-        for row in reused.rows
+        [_reused_cell(row, column) for column in reused.columns] for row in reused.rows
     ]
     return [
         "; Type: Reused AVPs",
         f"; Section: {reused.source.section}",
         f"; Table: {reused.table}",
         *([f"; Page: {reused.source.page}"] if reused.source.page is not None else []),
-        *_table(["Name", "From", "M-bit"], rows, prefix=";;"),
+        *_table([column.value for column in reused.columns], rows, prefix="; Columns:"),
     ]
 
 

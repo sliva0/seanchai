@@ -100,35 +100,6 @@ def _boundary_specs():
                 ),
             ),
         ),
-        # A table shaped like TS 29.212's: free columns whose cells hold
-        # spaces and commas, an empty free cell, and no Encrypt column.
-        "free-columns": _spec(
-            ast.AvpTable(
-                table="5.3.0.1",
-                columns=(
-                    ast.AvpColumn.NAME,
-                    ast.AvpColumn.CODE,
-                    ast.AvpColumn.TYPE,
-                    ast.FreeColumn(label="Acc. Type"),
-                    ast.FreeColumn(label="Applicability"),
-                ),
-                source=ast.SourceRef(section="5.3.0"),
-                rows=(
-                    ast.AvpTableRow(
-                        name="Local-AVP",
-                        code=10,
-                        data_type=ast.DataType.UNSIGNED32,
-                        extras=("3GPP-EPS, Non-3GPP-EPS (NOTE 11)", "Both NBIFOM"),
-                    ),
-                    ast.AvpTableRow(
-                        name="Other-AVP",
-                        code=None,
-                        data_type=ast.DataType.GROUPED,
-                        extras=("All", ""),
-                    ),
-                ),
-            )
-        ),
         "long-names": _spec(
             ast.AvpTable(
                 table="1/1",
