@@ -136,7 +136,7 @@ def test_parses_avp_table_nulls_flags_and_encryption():
             "; Type: AVP Table",
             "; Section: 6.1",
             "; Table: 6.1/1",
-            "Local-AVP 10 6.2 Unsigned32 M,V - V M Yes",
+            "Local-AVP 10 6.2 Unsigned32 M,V - - - Yes",
             "Remote-AVP - - OctetString - M - V No",
         )
     )
@@ -147,7 +147,7 @@ def test_parses_avp_table_nulls_flags_and_encryption():
     assert local.code == 10
     assert local.section == "6.2"
     assert local.flag_rules.must == {ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}
-    assert local.flag_rules.should_not == {ast.AvpFlag.VENDOR}
+    assert local.flag_rules.should_not == frozenset()
     assert local.may_encrypt is True
     assert remote.code is None
     assert remote.section is None
@@ -276,7 +276,8 @@ def test_parses_reused_avp_m_bit_overrides():
         ),
         # Values that reach an `int()` or a model field rather than a regex
         # still have to report as parse errors with a line, not as whatever
-        # the last layer happened to raise.
+        # the last layer happened to raise — and at the line holding the value,
+        # not at the start of the block it belongs to.
         (
             _dad(
                 "; Type: Grouped AVP",
@@ -285,7 +286,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Page: eleven",
                 "Example ::= < AVP header: 1 >",
             ),
-            4,
+            7,
             "Page must be a number, got 'eleven'",
         ),
         (
@@ -306,7 +307,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Page: 99999999999",
                 "Example ::= < AVP header: 1 >",
             ),
-            4,
+            7,
             "page: Input should be less than",
         ),
         (
@@ -316,9 +317,11 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Table: 1",
                 "Example 1 1.2.not-a-section Unsigned32 - - - - No",
             ),
-            4,
+            7,
             "section: String should match pattern",
         ),
+        # A whole-section problem, unlike the rows above, so it stays anchored
+        # on the block rather than on any one directive.
         (
             _dad("; Type: AVP Table", "; Section: 1", "; Table: 1"),
             4,

@@ -14,6 +14,7 @@ Not-yet-final corners of the format are marked with `TODO(format)`.
 """
 
 import enum
+import re
 from typing import Annotated, Literal
 
 import pydantic
@@ -24,11 +25,25 @@ from pydantic import Field
 AvpName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9-]*$")]
 EnumValueName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
 
+# Free text that the line-oriented format writes onto a single line. An
+# embedded newline would produce a file that does not parse back — worse, a
+# newline in a header value can inject another directive.
+SingleLine = Annotated[str, Field(pattern=r"^[^\r\n]*$")]
+
 # Single-token reference to a defining document: "TS29.336", "RFC7683".
-SpecRef = Annotated[str, Field(pattern=r"^(TS\d{2}\.\d{3}|RFC\d+)$")]
+SPEC_REF_PATTERN = r"^(TS\d{2}\.\d{3}|RFC\d+)$"
+SpecRef = Annotated[str, Field(pattern=SPEC_REF_PATTERN)]
+
+# Table label as printed in the spec, carried by `; Table:`: "6.3.1", "6.3/2".
+# Not a `SectionNumber`: labels use "/" separators and suffixes freely. Only
+# the shape the directive can round-trip is enforced — one line, no padding.
+TableLabel = Annotated[str, Field(pattern=r"^\S([^\r\n]*\S)?$")]
 
 # Section numbers as printed in the spec: "6.3", "6.3.7A".
 SectionNumber = Annotated[str, Field(pattern=r"^\d+(\.\d+[A-Z]*)*$")]
+
+# A document's own version numbering: "18.6.0".
+Version = Annotated[str, Field(pattern=r"^\d+(\.\d+)*$")]
 
 Unsigned32 = Annotated[int, Field(ge=0, lt=2**32)]
 Unsigned24 = Annotated[int, Field(ge=0, lt=2**24)]
@@ -65,6 +80,14 @@ class AvpRule(Node):
     max_occurs: Unsigned32 | None = 1
     # `; bold` — bold in 3GPP ABNF marks AVPs defined/modified in this spec.
     bold: bool = False
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> AvpRule:
+        if self.max_occurs is not None and self.max_occurs < self.min_occurs:
+            raise ValueError(
+                f"occurrence range {self.min_occurs}*{self.max_occurs} is inverted"
+            )
+        return self
 
 
 class CommandFlag(enum.StrEnum):
@@ -110,7 +133,7 @@ class EnumValue(Node):
 
     name: EnumValueName
     value: Unsigned32
-    description: str | None = None
+    description: SingleLine | None = None
 
 
 class ReservedValues(Node):
@@ -152,6 +175,23 @@ class AvpFlagRules(Node):
     should_not: frozenset[AvpFlag] = frozenset()
     must_not: frozenset[AvpFlag] = frozenset()
 
+    @pydantic.model_validator(mode="after")
+    def _disjoint(self) -> AvpFlagRules:
+        """The four columns partition the flags: one flag cannot be both
+        required and optional, and a table saying so is a source or extraction
+        error rather than a state a consumer has to resolve."""
+        columns = ("must", "may", "should_not", "must_not")
+        seen: dict[AvpFlag, str] = {}
+        for column in columns:
+            for flag in getattr(self, column):
+                if flag in seen:
+                    raise ValueError(
+                        f"AVP flag {flag.value!r} appears in both"
+                        f" {seen[flag]} and {column}"
+                    )
+                seen[flag] = column
+        return self
+
 
 class AvpTableRow(Node):
     """One row of an AVP table. `code` is None when the source table itself
@@ -176,7 +216,7 @@ class AvpTable(Node):
     directive, as printed in the spec ("6.3.1", "6.3/2")."""
 
     type: Literal["AVP Table"] = "AVP Table"
-    table: str
+    table: TableLabel
     source: SourceRef
     # A table section with no rows carries no information, and would mean the
     # extractor found a caption but lost its contents.
@@ -204,7 +244,7 @@ class ReusedAvps(Node):
     spec's `.dad` yields the AVP's (vendor-id, code)."""
 
     type: Literal["Reused AVPs"] = "Reused AVPs"
-    table: str
+    table: TableLabel
     source: SourceRef
     rows: Annotated[tuple[ReusedAvpRow, ...], Field(min_length=1)]
 
@@ -215,19 +255,36 @@ Section = Annotated[
 ]
 
 
+class SpecRefError(ValueError):
+    """A specification title that names no supported document."""
+
+
+_SPEC_REF_RE = re.compile(SPEC_REF_PATTERN)
+
+
 def spec_ref(specification: str) -> str:
     """The `SpecRef` form of a cover-page title: "3GPP TS 29.272" → "TS29.272".
 
     Per-spec side files — input patches, corrections — are named by it, so the
-    rule lives here rather than in whichever loader needed it first.
+    rule lives here rather than in whichever loader needed it first. Because
+    the result becomes a file name in a directory the user named, this
+    validates rather than merely cleans up: only the canonical forms are
+    accepted, so no title can produce a path separator, a `..` component or an
+    absolute path.
     """
-    return specification.removeprefix("3GPP ").replace(" ", "")
+    reference = specification.removeprefix("3GPP ").replace(" ", "")
+    if not _SPEC_REF_RE.match(reference):
+        raise SpecRefError(
+            f"specification {specification!r} does not name a supported document"
+            " (expected e.g. '3GPP TS 29.272' or 'RFC 6733')"
+        )
+    return reference
 
 
 class Specification(Node):
     """One `.dad` file: the top-of-file directive header plus its sections."""
 
-    specification: str  # "3GPP TS 29.329"
-    version: Annotated[str, Field(pattern=r"^\d+(\.\d+)*$")]
+    specification: SingleLine  # "3GPP TS 29.329"
+    version: Version
     link: pydantic.HttpUrl | None = None
     sections: tuple[Section, ...]

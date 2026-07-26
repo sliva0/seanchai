@@ -9,6 +9,7 @@ free-text comment lines are discarded.
 
 import contextlib
 import re
+from typing import NamedTuple
 
 import pydantic
 
@@ -33,6 +34,10 @@ _ENUM_VALUE_RE = re.compile(
     r"(?:\s+; (?P<description>\S.*))?$"
 )
 _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")
+
+# The file header's fields belong to three separate lines, so they are checked
+# one directive at a time rather than by constructing the model.
+_VERSION = pydantic.TypeAdapter(ast.Version)
 
 
 class DadParseError(ValueError):
@@ -70,9 +75,24 @@ def _blocks(text: str) -> list[_Block]:
     return blocks
 
 
-def _split_directives(block: _Block) -> tuple[dict[str, str], list[tuple[int, str]]]:
+class _Directive(NamedTuple):
+    """A directive's value with the line it was written on.
+
+    The line travels with the value rather than being reduced away, so a value
+    the AST rejects is reported at the line holding it: strict errors are only
+    useful when they point at what has to be edited.
+    """
+
+    lineno: int
+    value: str
+
+
+_Directives = dict[str, _Directive]
+
+
+def _split_directives(block: _Block) -> tuple[_Directives, list[tuple[int, str]]]:
     """Leading `; Key: value` lines of a block, then the remaining body lines."""
-    directives: dict[str, str] = {}
+    directives: _Directives = {}
     body = list(block.lines)
     while body:
         lineno, line = body[0]
@@ -84,19 +104,19 @@ def _split_directives(block: _Block) -> tuple[dict[str, str], list[tuple[int, st
             break
         if key in directives:
             raise DadParseError(lineno, f"duplicate directive {key!r}")
-        directives[key] = match["value"]
+        directives[key] = _Directive(lineno, match["value"])
         body.pop(0)
     return directives, body
 
 
-def _pop(directives: dict[str, str], key: str, lineno: int) -> str:
+def _pop(directives: _Directives, key: str, lineno: int) -> _Directive:
     try:
         return directives.pop(key)
     except KeyError:
         raise DadParseError(lineno, f"missing directive {key!r}") from None
 
 
-def _no_leftovers(directives: dict[str, str], lineno: int) -> None:
+def _no_leftovers(directives: _Directives, lineno: int) -> None:
     if directives:
         raise DadParseError(lineno, f"unexpected directives: {sorted(directives)}")
 
@@ -127,13 +147,20 @@ def _number(text: str, lineno: int, label: str) -> int:
         raise DadParseError(lineno, f"{label} must be a number, got {text!r}") from None
 
 
-def _source_ref(directives: dict[str, str], lineno: int) -> ast.SourceRef:
+def _source_ref(directives: _Directives, lineno: int) -> ast.SourceRef:
     section = _pop(directives, "Section", lineno)
     page = directives.pop("Page", None)
-    return ast.SourceRef(
-        section=section,
-        page=None if page is None else _number(page, lineno, "Page"),
-    )
+    # Two constructions rather than one, so each directive's own line reports
+    # its own value: with `; Section:` already known good, anything the second
+    # rejects came from `; Page:`.
+    with _validated(section.lineno):
+        reference = ast.SourceRef(section=section.value)
+    if page is None:
+        return reference
+    with _validated(page.lineno):
+        return ast.SourceRef(
+            section=section.value, page=_number(page.value, page.lineno, "Page")
+        )
 
 
 def _avp_rules(body: list[tuple[int, str]]) -> tuple[ast.AvpRule, ...]:
@@ -143,22 +170,25 @@ def _avp_rules(body: list[tuple[int, str]]) -> tuple[ast.AvpRule, ...]:
         if match is None:
             raise DadParseError(lineno, f"malformed AVP rule: {line.strip()!r}")
         try:
-            rules.append(abnf.avp_rule(match, bold=match["bold"] is not None))
+            with _validated(lineno):
+                rules.append(abnf.avp_rule(match, bold=match["bold"] is not None))
         except abnf.AbnfError as error:
             raise DadParseError(lineno, str(error)) from None
     return tuple(rules)
 
 
 def _parse_message(
-    directives: dict[str, str], body: list[tuple[int, str]], lineno: int
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.Message:
     name_directive = _pop(directives, "Name", lineno)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
     try:
-        name, abbreviation = (part.strip() for part in name_directive.split(","))
+        name, abbreviation = (part.strip() for part in name_directive.value.split(","))
     except ValueError:
-        raise DadParseError(lineno, "message Name must be 'Long-Name, ABBR'") from None
+        raise DadParseError(
+            name_directive.lineno, "message Name must be 'Long-Name, ABBR'"
+        ) from None
     if not body:
         raise DadParseError(lineno, "message has no body")
     header_lineno, header = body[0]
@@ -174,15 +204,17 @@ def _parse_message(
         command_code, flags, application_id = abnf.diameter_header(match["items"])
     except abnf.AbnfError as error:
         raise DadParseError(header_lineno, str(error)) from None
-    return ast.Message(
-        name=name,
-        abbreviation=abbreviation,
-        source=source,
-        command_code=command_code,
-        flags=flags,
-        application_id=application_id,
-        avps=_avp_rules(body[1:]),
-    )
+    avps = _avp_rules(body[1:])
+    with _validated(name_directive.lineno):
+        return ast.Message(
+            name=name,
+            abbreviation=abbreviation,
+            source=source,
+            command_code=command_code,
+            flags=flags,
+            application_id=application_id,
+            avps=avps,
+        )
 
 
 def _avp_header(
@@ -201,55 +233,65 @@ def _avp_header(
 
 
 def _parse_grouped(
-    directives: dict[str, str], body: list[tuple[int, str]], lineno: int
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.GroupedAvp:
     name = _pop(directives, "Name", lineno)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
     header_name, code, vendor_id = _avp_header(body, "AVP", lineno)
-    if header_name != name:
+    if header_name != name.value:
         raise DadParseError(
-            body[0][0], f"Name directive {name!r} != rule name {header_name!r}"
+            body[0][0], f"Name directive {name.value!r} != rule name {header_name!r}"
         )
-    return ast.GroupedAvp(
-        name=name,
-        source=source,
-        code=code,
-        vendor_id=vendor_id,
-        avps=_avp_rules(body[1:]),
-    )
+    avps = _avp_rules(body[1:])
+    with _validated(name.lineno):
+        return ast.GroupedAvp(
+            name=name.value,
+            source=source,
+            code=code,
+            vendor_id=vendor_id,
+            avps=avps,
+        )
 
 
 def _parse_enumerated(
-    directives: dict[str, str], body: list[tuple[int, str]], lineno: int
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.EnumeratedAvp:
     name = _pop(directives, "Name", lineno)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
     header_name, code, vendor_id = _avp_header(body, "Enumerated AVP", lineno)
-    if header_name != name:
+    if header_name != name.value:
         raise DadParseError(
-            body[0][0], f"Name directive {name!r} != rule name {header_name!r}"
+            body[0][0], f"Name directive {name.value!r} != rule name {header_name!r}"
         )
     values: list[ast.EnumValue | ast.ReservedValues] = []
     for value_lineno, line in body[1:]:
-        if match := _RESERVED_RE.match(line):
-            first = int(match["first"])
-            last = int(match["last"]) if match["last"] else first
-            values.append(ast.ReservedValues(first=first, last=last))
-        elif match := _ENUM_VALUE_RE.match(line):
-            values.append(
-                ast.EnumValue(
-                    name=match["name"],
-                    value=int(match["value"]),
-                    description=match["description"],
+        with _validated(value_lineno):
+            if match := _RESERVED_RE.match(line):
+                first = int(match["first"])
+                last = int(match["last"]) if match["last"] else first
+                values.append(ast.ReservedValues(first=first, last=last))
+            elif match := _ENUM_VALUE_RE.match(line):
+                values.append(
+                    ast.EnumValue(
+                        name=match["name"],
+                        value=int(match["value"]),
+                        description=match["description"],
+                    )
                 )
-            )
-        else:
-            raise DadParseError(value_lineno, f"malformed enum value: {line.strip()!r}")
-    return ast.EnumeratedAvp(
-        name=name, source=source, code=code, vendor_id=vendor_id, values=tuple(values)
-    )
+            else:
+                raise DadParseError(
+                    value_lineno, f"malformed enum value: {line.strip()!r}"
+                )
+    with _validated(name.lineno):
+        return ast.EnumeratedAvp(
+            name=name.value,
+            source=source,
+            code=code,
+            vendor_id=vendor_id,
+            values=tuple(values),
+        )
 
 
 def _cells(body: list[tuple[int, str]], count: int):
@@ -270,7 +312,7 @@ def _flags(cell: str, lineno: int) -> frozenset[ast.AvpFlag]:
 
 
 def _parse_avp_table(
-    directives: dict[str, str], body: list[tuple[int, str]], lineno: int
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.AvpTable:
     table = _pop(directives, "Table", lineno)
     source = _source_ref(directives, lineno)
@@ -280,26 +322,33 @@ def _parse_avp_table(
         name, code, section, data_type, must, may, should_not, must_not, encrypt = cells
         if encrypt not in ("Yes", "No"):
             raise DadParseError(row_lineno, f"malformed Encrypt cell {encrypt!r}")
-        rows.append(
-            ast.AvpTableRow(
-                name=name,
-                code=None if code == "-" else _number(code, row_lineno, "Code cell"),
-                section=None if section == "-" else section,
-                data_type=data_type,
-                flag_rules=ast.AvpFlagRules(
-                    must=_flags(must, row_lineno),
-                    may=_flags(may, row_lineno),
-                    should_not=_flags(should_not, row_lineno),
-                    must_not=_flags(must_not, row_lineno),
-                ),
-                may_encrypt=encrypt == "Yes",
+        with _validated(row_lineno):
+            rows.append(
+                ast.AvpTableRow(
+                    name=name,
+                    code=None
+                    if code == "-"
+                    else _number(code, row_lineno, "Code cell"),
+                    section=None if section == "-" else section,
+                    data_type=data_type,
+                    flag_rules=ast.AvpFlagRules(
+                        must=_flags(must, row_lineno),
+                        may=_flags(may, row_lineno),
+                        should_not=_flags(should_not, row_lineno),
+                        must_not=_flags(must_not, row_lineno),
+                    ),
+                    may_encrypt=encrypt == "Yes",
+                )
             )
-        )
-    return ast.AvpTable(table=table, source=source, rows=tuple(rows))
+    # Anchored on the block, not on `; Table:`: what is left to check here is
+    # the section as a whole (an AVP table with no rows), and the label's own
+    # line has nothing to do with that.
+    with _validated(lineno):
+        return ast.AvpTable(table=table.value, source=source, rows=tuple(rows))
 
 
 def _parse_reused(
-    directives: dict[str, str], body: list[tuple[int, str]], lineno: int
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.ReusedAvps:
     table = _pop(directives, "Table", lineno)
     source = _source_ref(directives, lineno)
@@ -311,8 +360,10 @@ def _parse_reused(
             override = None if m_bit == "-" else ast.MBitOverride(m_bit)
         except ValueError:
             raise DadParseError(row_lineno, f"malformed M-bit cell {m_bit!r}") from None
-        rows.append(ast.ReusedAvpRow(name=name, origin=origin, m_bit=override))
-    return ast.ReusedAvps(table=table, source=source, rows=tuple(rows))
+        with _validated(row_lineno):
+            rows.append(ast.ReusedAvpRow(name=name, origin=origin, m_bit=override))
+    with _validated(lineno):
+        return ast.ReusedAvps(table=table.value, source=source, rows=tuple(rows))
 
 
 _SECTION_PARSERS = {
@@ -342,16 +393,26 @@ def parse(text: str) -> ast.Specification:
     for block in blocks[1:]:
         directives, body = _split_directives(block)
         section_type = _pop(directives, "Type", block.start)
-        parser = _SECTION_PARSERS.get(section_type)
+        parser = _SECTION_PARSERS.get(section_type.value)
         if parser is None:
-            raise DadParseError(block.start, f"unknown section type {section_type!r}")
+            raise DadParseError(
+                section_type.lineno, f"unknown section type {section_type.value!r}"
+            )
         with _validated(block.start):
             sections.append(parser(directives, body, block.start))
 
-    with _validated(header.start):
+    # The three header directives are checked one at a time so each reports its
+    # own line, then assembled — by then only the whole-model rules are left.
+    with _validated(version.lineno):
+        _VERSION.validate_python(version.value)
+    parsed_link = None
+    if link is not None:
+        with _validated(link.lineno):
+            parsed_link = pydantic.HttpUrl(link.value)
+    with _validated(specification.lineno):
         return ast.Specification(
-            specification=specification,
-            version=version,
-            link=None if link is None else pydantic.HttpUrl(link),
+            specification=specification.value,
+            version=version.value,
+            link=parsed_link,
             sections=tuple(sections),
         )

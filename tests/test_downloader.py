@@ -1,9 +1,13 @@
+import io
 import json
 import zipfile
 
+import pypdf
 import pytest
 
-from seanchai import downloader
+# The implementation, not the package's public surface: these tests exercise
+# the HTTP, cache and archive helpers behind `download_corpus`.
+from seanchai.downloader import core as downloader
 
 
 @pytest.mark.parametrize(
@@ -16,8 +20,30 @@ def test_release_marker_uses_3gpp_base36_encoding(release, marker):
 
 @pytest.mark.parametrize("release", [3, 36])
 def test_release_marker_rejects_unsupported_releases(release):
-    with pytest.raises(ValueError, match="between 4 and 35"):
+    with pytest.raises(downloader.DownloadError, match="between 4 and 35"):
         downloader.release_marker(release)
+
+
+def _zip_bytes(**members: bytes) -> bytes:
+    """A real ZIP archive: the downloader opens what it fetches, so a fixture
+    that only looks like an archive is no longer a usable stand-in."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zipped:
+        for name, content in members.items():
+            zipped.writestr(name.replace("__", "/"), content)
+    return buffer.getvalue()
+
+
+def _pdf_bytes() -> bytes:
+    """A real one-page PDF, for the same reason `_zip_bytes` builds a real ZIP."""
+    writer = pypdf.PdfWriter()
+    writer.add_blank_page(width=612, height=792)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    return buffer.getvalue()
+
+
+RFC_TEXT = b"Internet Engineering Task Force\nRequest for Comments: 9999\n\nBody.\n"
 
 
 def test_catalog_loading_and_spec_derived_properties(tmp_path):
@@ -71,19 +97,75 @@ def test_request_bytes_does_not_retry_permanent_http_errors(local_http_server):
     assert local_http_server.counts["/missing"] == 1
 
 
-def test_atomic_download_is_atomic_cached_and_type_checked(tmp_path, local_http_server):
-    destination = tmp_path / "nested" / "file.pdf"
-    url = local_http_server.route("/file.pdf", b"%PDF-first", b"not a pdf")
+def test_atomic_download_is_atomic_cached_and_validated(tmp_path, local_http_server):
+    destination = tmp_path / "nested" / "archive.zip"
+    url = local_http_server.route(
+        "/archive.zip", _zip_bytes(spec=b"body"), b"truncated"
+    )
 
-    downloader.atomic_download(url, destination, expected_prefix=b"%PDF-")
-    downloader.atomic_download(url, destination, expected_prefix=b"%PDF-")
+    downloader.atomic_download(url, destination, validate=downloader.validate_zip)
+    downloader.atomic_download(url, destination, validate=downloader.validate_zip)
+
+    # A valid cached file is served from disk, so only one request so far.
+    assert local_http_server.counts["/archive.zip"] == 1
+
     destination.write_bytes(b"invalid cache")
 
-    with pytest.raises(RuntimeError, match="not the expected file type"):
-        downloader.atomic_download(url, destination, expected_prefix=b"%PDF-")
+    with pytest.raises(downloader.DownloadError, match="not a readable ZIP"):
+        downloader.atomic_download(url, destination, validate=downloader.validate_zip)
 
-    assert local_http_server.counts["/file.pdf"] == 2
+    # The nonempty-but-broken cache was re-fetched rather than trusted, and the
+    # file that failed both checks is gone rather than left to be found again.
+    assert local_http_server.counts["/archive.zip"] == 2
+    assert not destination.exists()
     assert not list(destination.parent.glob("*.part"))
+
+
+def test_atomic_download_keeps_a_valid_cached_file_when_the_server_is_down(
+    tmp_path, local_http_server
+):
+    destination = tmp_path / "archive.zip"
+    url = local_http_server.route("/archive.zip", _zip_bytes(spec=b"body"))
+    downloader.atomic_download(url, destination, validate=downloader.validate_zip)
+    before = destination.read_bytes()
+
+    downloader.atomic_download(url, destination, validate=downloader.validate_zip)
+
+    assert destination.read_bytes() == before
+
+
+@pytest.mark.parametrize(
+    ("validator", "content", "message"),
+    [
+        ("validate_zip", b"not an archive", "not a readable ZIP"),
+        ("validate_pdf", b"%PDF-but truncated", "not a readable PDF"),
+        ("validate_rfc_text", b"<html>404</html>", "does not look like an RFC"),
+    ],
+    ids=["zip", "pdf", "rfc"],
+)
+def test_artifact_validators_reject_plausible_looking_files(
+    tmp_path, validator, content, message
+):
+    # Each of these is nonempty, and the PDF even carries the right prefix.
+    path = tmp_path / "artifact"
+    path.write_bytes(content)
+
+    with pytest.raises(downloader.DownloadError, match=message):
+        getattr(downloader, validator)(path)
+
+
+def test_replace_extracted_removes_the_previous_versions_files(tmp_path):
+    destination = tmp_path / "TS_29.999"
+    destination.mkdir()
+    (destination / "dropped-in-this-version.docx").write_bytes(b"old")
+    archive = tmp_path / "new.zip"
+    archive.write_bytes(_zip_bytes(spec_docx=b"new"))
+
+    extracted = downloader.replace_extracted(archive, destination)
+
+    assert extracted == [destination / "spec_docx"]
+    assert not (destination / "dropped-in-this-version.docx").exists()
+    assert not list(tmp_path.glob(".*staging"))
 
 
 def test_safe_extract_returns_files_and_creates_directories(tmp_path):
@@ -104,7 +186,7 @@ def test_safe_extract_rejects_path_traversal(tmp_path, member):
     with zipfile.ZipFile(archive, "w") as zipped:
         zipped.writestr(member, b"bad")
 
-    with pytest.raises(RuntimeError, match="unsafe ZIP member"):
+    with pytest.raises(downloader.DownloadError, match="unsafe ZIP member"):
         downloader.safe_extract(archive, tmp_path / "output")
 
 
@@ -115,9 +197,11 @@ def test_discover_3gpp_urls_matches_release_and_resolves_relative_links(
         downloader.ThreeGppSpec("29.999", "First"),
         downloader.ThreeGppSpec("32.123", "Second"),
     )
+    # The newest archive is listed *first*: selection is by decoded version,
+    # not by where the index happens to put the link.
     local_http_server.route(
         "/Rel-18/29_series/",
-        b'<a href="../files/29999-i00.zip">old</a><a href="29999-i10.zip">new</a>',
+        b'<a href="29999-i10.zip">new</a><a href="../files/29999-i00.zip">old</a>',
     )
     local_http_server.route(
         "/Rel-18/32_series/",
@@ -150,7 +234,7 @@ def test_decodes_3gpp_archive_versions(url, version):
 
 
 def test_decode_3gpp_version_rejects_unknown_names():
-    with pytest.raises(RuntimeError, match="cannot determine"):
+    with pytest.raises(downloader.DownloadError, match="cannot determine"):
         downloader.decode_3gpp_version("https://example.test/spec.zip")
 
 
@@ -189,13 +273,13 @@ def test_download_rfc_records_hash_size_and_relative_path(
         "RFC_TEXT_URL",
         f"{local_http_server.base_url}/rfc{{number}}.txt",
     )
-    local_http_server.route("/rfc9999.txt", b"RFC text")
+    local_http_server.route("/rfc9999.txt", RFC_TEXT)
 
     record = downloader.download_rfc(downloader.RfcSpec(9999, "Test RFC"), tmp_path)
 
     assert record.identifier == "RFC 9999"
     assert record.files == ["rfc/rfc9999.txt"]
-    assert record.size == 8
+    assert record.size == len(RFC_TEXT)
     assert record.sha256 == downloader.sha256_file(tmp_path / record.files[0])
 
 
@@ -203,7 +287,7 @@ def test_download_3gpp_falls_back_to_latest_earlier_etsi_pdf(
     tmp_path, local_http_server, monkeypatch
 ):
     monkeypatch.setattr(downloader, "ETSI_DELIVER", local_http_server.base_url)
-    archive_url = local_http_server.route("/29329-i10.zip", b"archive")
+    archive_url = local_http_server.route("/29329-i10.zip", _zip_bytes(spec=b"body"))
     local_http_server.route(
         "/etsi_ts/129300_129399/129329/18.01.00_60/ts_129329v180100p.pdf",
         (404, b"not published"),
@@ -214,7 +298,7 @@ def test_download_3gpp_falls_back_to_latest_earlier_etsi_pdf(
     )
     local_http_server.route(
         "/etsi_ts/129300_129399/129329/18.00.00_60/ts_129329v180000p.pdf",
-        b"%PDF-fallback",
+        _pdf_bytes(),
     )
 
     record = downloader.download_3gpp(
@@ -258,11 +342,9 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
         "/Rel-18/29_series/",
         b'<a href="29999-i00.zip">source</a>',
     )
-    local_http_server.route(
-        "/Rel-18/29_series/29999-i00.zip",
-        b"3GPP archive",
-    )
-    local_http_server.route("/rfc9999.txt", b"RFC body")
+    archive = _zip_bytes(spec=b"body")
+    local_http_server.route("/Rel-18/29_series/29999-i00.zip", archive)
+    local_http_server.route("/rfc9999.txt", RFC_TEXT)
 
     monkeypatch.setattr(
         downloader,
@@ -298,8 +380,8 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     ]
     assert (
         output / "archives" / "3gpp-rel-18" / "29999-i00.zip"
-    ).read_bytes() == b"3GPP archive"
-    assert (output / "rfc" / "rfc9999.txt").read_bytes() == b"RFC body"
+    ).read_bytes() == archive
+    assert (output / "rfc" / "rfc9999.txt").read_bytes() == RFC_TEXT
     assert not list(output.glob("*.part"))
 
 

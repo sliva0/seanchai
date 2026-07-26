@@ -1,4 +1,4 @@
-"""Corrections for 3GPP TS 29.272 — see docs/proposal-corrections.md."""
+"""Corrections for 3GPP TS 29.272 — see docs/corrections.md."""
 
 from seanchai.dad.corrections import Correction, definition
 

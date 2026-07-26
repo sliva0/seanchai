@@ -24,23 +24,28 @@ per artifact.
   use its hashes for change detection.
 - ETSI PDF filenames encode versions as two digits per component (18.1.0 →
   `v180100`); `etsi_pdf_url()` handles this. Don't hand-build these URLs.
-- **Known wart**: when a cached file fails the content-type check and the
-  re-download also fails validation, `atomic_download` leaves the corrupt
-  cached file in place instead of deleting it.
-- **Only PDFs are validated.** ZIP archives and RFC text are fetched with
-  `atomic_download(url, path)` and no `expected_prefix`, and the cache
-  early-return accepts any non-empty file. A truncated archive stays cached
-  forever. Each artifact family wants a real check (ZIP integrity, PDF header,
-  plausible RFC text), applied to cached bytes as well as fresh ones.
+- **Every artifact is validated by opening it**, fresh or cached:
+  `validate_zip` checks each member's CRC, `validate_pdf` reads the page tree,
+  `validate_rfc_text` looks for the "Request for Comments:" header line. A
+  `%PDF-` prefix is deliberately not enough — that is exactly what a truncated
+  download has. A replacement is validated in its temporary file before it is
+  put in place, and a cached file that fails validation is deleted even when
+  its replacement fails too, so the same broken file is not rediscovered on
+  every run.
+- **Version selection does not depend on listing order.** `discover_3gpp_urls`
+  picks the archive with the highest decoded version, not the last matching
+  link on the index page.
 - **A fallback ETSI PDF must never reach `attach_pages`.** When the exact
   version isn't published, `download_3gpp` falls back to an earlier one and
   records it in `pdf_version`. That file is still useful, but its page numbers
   belong to a different document. `attach_pages` now checks the PDF's cover and
   refuses, so this fails loudly; the manifest would still be a better place to
   say outright whether a PDF is page-attachment compatible.
-- **`safe_extract` reuses its destination directory.** `output/3gpp/Rel-N/
-  TS_29.272/` is never cleared, so extracting a second archive version leaves
-  members of the first behind and the directory then represents neither.
+- **Extraction replaces the specification directory, it does not merge into
+  it.** `replace_extracted` stages the new contents in a sibling directory and
+  swaps them in, so `output/3gpp/Rel-N/TS_29.272/` never holds members of two
+  archive versions at once. `safe_extract` is the raw primitive underneath and
+  does merge; call it directly only when that is what you want.
 
 ## Planned changes
 

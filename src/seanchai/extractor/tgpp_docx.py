@@ -40,7 +40,7 @@ import pydantic
 import pypdf
 
 from ..dad import abnf, ast
-from .errors import ExtractionError
+from .errors import ExtractionError, boundary
 from .patches import Patcher
 
 _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+[A-Z]*)*)\t(?P<title>.+)$")
@@ -358,21 +358,29 @@ def _extract_avp_table(
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
     for row in table.rows:
         cells = row.cells
+        if not cells:
+            raise ExtractionError("AVP table row with no cells")
         if cells[0].startswith("NOTE"):  # merged full-width row, one note per line
             for line in row.first_cell_lines:
                 if match := _NOTE_RFC_RE.match(line):
                     note_rfcs[match["number"]] = match["rfc"]
             continue
-        if cells[0] in ("", "Attribute Name") or cells[0] == cells[1]:
-            continue  # header rows (merged cells repeat the same text)
+        # The width check comes before every other cell is read: a malformed
+        # table must report its width, not an IndexError from column two.
         if len(cells) != 9:
             raise ExtractionError(f"AVP table row with {len(cells)} cells: {cells!r}")
+        if cells[0] in ("", "Attribute Name") or cells[0] == cells[1]:
+            continue  # header rows (merged cells repeat the same text)
         name, name_note = _strip_note_ref(cells[0])
         if " " in name:
             # AVP names never contain spaces; line-wrap artifacts eating a
             # hyphen (29.272 "MME-Location Information") are input-patched.
             raise ExtractionError(f"AVP table name cell {name!r} contains spaces")
         code, code_note = _strip_note_ref(cells[1])
+        if code and not code.isdigit():
+            raise ExtractionError(f"AVP table code cell {code!r} for {name!r}")
+        if cells[8] not in ("Yes", "No"):
+            raise ExtractionError(f"AVP table Encrypt cell {cells[8]!r} for {name!r}")
         if note := name_note or code_note:
             note_refs.append((name, note))
         rows.append(
@@ -387,7 +395,7 @@ def _extract_avp_table(
                     should_not=_flags_cell(cells[6]),
                     must_not=_flags_cell(cells[7]),
                 ),
-                may_encrypt={"Yes": True, "No": False}[cells[8]],
+                may_encrypt=cells[8] == "Yes",
             )
         )
     if table.caption is None:
@@ -417,8 +425,14 @@ def _extract_reused_table(table: _Table, warnings: list[str]) -> list[ast.Reused
     rows = []
     for row in table.rows:
         cells = row.cells
+        if not cells:
+            raise ExtractionError("re-used AVPs row with no cells")
         if cells[0] in ("", "Attribute Name") or cells[0].startswith("NOTE"):
             continue
+        if len(cells) < 4:
+            raise ExtractionError(
+                f"re-used AVPs row with {len(cells)} cells: {cells!r}"
+            )
         name, _ = _strip_note_ref(cells[0])
         m_bit_cell = cells[3]
         if m_bit_cell == cells[0]:
@@ -428,6 +442,10 @@ def _extract_reused_table(table: _Table, warnings: list[str]) -> list[ast.Reused
                 f"re-used AVPs row {name!r} has a merged M-bit cell, treating as empty"
             )
             m_bit_cell = ""
+        if m_bit_cell not in _M_BIT_OVERRIDES:
+            raise ExtractionError(
+                f"re-used AVPs row {name!r}: unrecognized M-bit cell {m_bit_cell!r}"
+            )
         rows.append(
             ast.ReusedAvpRow(
                 name=name, origin=_origin(cells[1]), m_bit=_M_BIT_OVERRIDES[m_bit_cell]
@@ -458,6 +476,16 @@ def _pdf_spec_and_version(reader: pypdf.PdfReader) -> tuple[str, str]:
     return f"3GPP {match['spec']}", match["version"]
 
 
+@dataclass(frozen=True)
+class _ReusedTable:
+    """A re-used AVPs table with the provenance the output block needs: its own
+    caption and its own clause, which is not necessarily the AVP table's."""
+
+    rows: list[ast.ReusedAvpRow]
+    label: str
+    section: str
+
+
 @dataclass
 class _Collected:
     """What one pass over the document found, before anything is cross-checked.
@@ -474,11 +502,10 @@ class _Collected:
     # that is where their code comes from.
     pending_enums: list[tuple[_Section, str]] = field(default_factory=list)
     # Each table is paired with what identifies it: the section it was found
-    # in for AVP tables, the caption label for re-used tables.
+    # in for AVP tables, the caption label and its own section for re-used
+    # tables (the two tables are not always in the same clause).
     avp_tables: list[tuple[ast.AvpTable, str]] = field(default_factory=list)
-    reused_tables: list[tuple[list[ast.ReusedAvpRow], str]] = field(
-        default_factory=list
-    )
+    reused_tables: list[_ReusedTable] = field(default_factory=list)
     # Reused rows derived from AVP-table NOTEs rather than from a reused table.
     note_reused: list[ast.ReusedAvpRow] = field(default_factory=list)
 
@@ -490,9 +517,9 @@ class _Resolved:
 
     messages: list[ast.Message]
     avp_table: ast.AvpTable
-    tables_section: str
     reused: list[ast.ReusedAvpRow]
     reused_label: str
+    reused_section: str
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
 
 
@@ -514,7 +541,11 @@ def _collect(sections: list[_Section], warnings: list[str]) -> _Collected:
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
                 collected.reused_tables.append(
-                    (_extract_reused_table(table, warnings), table.caption)
+                    _ReusedTable(
+                        rows=_extract_reused_table(table, warnings),
+                        label=table.caption,
+                        section=section.number,
+                    )
                 )
         if title := _AVP_TITLE_RE.match(section.title):
             found = _find_rule_header(section, _AVP_HEADER_RE)
@@ -550,27 +581,31 @@ def _resolve(collected: _Collected) -> _Resolved:
         found = ", ".join(number for _, number in collected.avp_tables)
         raise ExtractionError(f"more than one AVP table found, in sections {found}")
     if len(collected.reused_tables) > 1:
-        found = ", ".join(label for _, label in collected.reused_tables)
+        found = ", ".join(table.label for table in collected.reused_tables)
         raise ExtractionError(f"more than one re-used AVPs table found: {found}")
     avp_table, tables_section = collected.avp_tables[0]
-    reused_rows, reused_label = (
-        collected.reused_tables[0] if collected.reused_tables else ([], avp_table.table)
+    reused_table = (
+        collected.reused_tables[0]
+        if collected.reused_tables
+        # Only NOTE-derived rows: they come from the AVP table, so that is
+        # honestly where the block was found.
+        else _ReusedTable(rows=[], label=avp_table.table, section=tables_section)
     )
 
     codes = {row.name: row.code for row in avp_table.rows}
-    # Enumerated sections never print the vendor-id, so it comes from the
-    # spec's grouped-AVP headers — one value per 3GPP spec (10415).
-    vendors = {avp.vendor_id for avp in collected.grouped if avp.vendor_id is not None}
-    vendor_id = vendors.pop() if len(vendors) == 1 else None
     # AVPs originating in other specs get no local definition, even when their
     # section is worded like one (e.g. DRMP: "is of type Enumerated" but the
     # values are defined in RFC 7944).
-    external = {row.name for row in [*reused_rows, *collected.note_reused]}
+    external = {row.name for row in [*reused_table.rows, *collected.note_reused]}
+    local_enums = [
+        (section, name)
+        for section, name in collected.pending_enums
+        if name not in external
+    ]
+    vendor_id = _enum_vendor_id(collected.grouped) if local_enums else None
 
     enumerated = []
-    for section, name in collected.pending_enums:
-        if name in external:
-            continue
+    for section, name in local_enums:
         code = codes.get(name)
         if code is None:
             raise ExtractionError(
@@ -582,11 +617,30 @@ def _resolve(collected: _Collected) -> _Resolved:
     return _Resolved(
         messages=collected.messages,
         avp_table=avp_table,
-        tables_section=tables_section,
-        reused=[*reused_rows, *collected.note_reused],
-        reused_label=reused_label,
+        reused=[*reused_table.rows, *collected.note_reused],
+        reused_label=reused_table.label,
+        reused_section=reused_table.section,
         definitions=[*collected.grouped, *enumerated],
     )
+
+
+def _enum_vendor_id(grouped: list[ast.GroupedAvp]) -> int:
+    """The vendor id shared by this spec's locally defined AVPs.
+
+    Enumerated-AVP sections never print it, so it is read off the grouped-AVP
+    headers, which do — one value per 3GPP spec (10415). Zero or several
+    candidates is a resolution failure, not a vendor-less enumerated AVP:
+    emitting `None` there would publish an AVP under the IETF vendor space that
+    the spec places in 3GPP's.
+    """
+    vendors = sorted({avp.vendor_id for avp in grouped if avp.vendor_id is not None})
+    if len(vendors) != 1:
+        found = ", ".join(str(vendor) for vendor in vendors) or "none"
+        raise ExtractionError(
+            "cannot resolve the vendor id of this spec's enumerated AVPs:"
+            f" its grouped-AVP headers give {found}"
+        )
+    return vendors[0]
 
 
 def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
@@ -597,7 +651,7 @@ def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
         sections.append(
             ast.ReusedAvps(
                 table=resolved.reused_label,
-                source=ast.SourceRef(section=resolved.tables_section),
+                source=ast.SourceRef(section=resolved.reused_section),
                 rows=tuple(resolved.reused),
             )
         )
@@ -639,24 +693,25 @@ def extract(
     `patches_dir` is given, input patches from `<patches_dir>/<SpecRef>.toml`
     (if present) are applied to the normalized source text before parsing."""
     warnings = warnings if warnings is not None else []
-    document = docx.Document(str(docx_path))
-    specification, version = _spec_and_version(document)
-    patch_path = (
-        patches_dir / patch_file_name(specification)
-        if patches_dir is not None
-        else None
-    )
-    patcher = Patcher.load(patch_path, version)
+    with boundary(f"extracting {docx_path}"):
+        document = docx.Document(str(docx_path))
+        specification, version = _spec_and_version(document)
+        patch_path = (
+            patches_dir / patch_file_name(specification)
+            if patches_dir is not None
+            else None
+        )
+        patcher = Patcher.load(patch_path, version)
 
-    collected = _collect(_sections(document, patcher), warnings)
-    patcher.finish()
-    sections = _assemble(_resolve(collected))
-    return ast.Specification(
-        specification=specification,
-        version=version,
-        link=None if link is None else pydantic.HttpUrl(link),
-        sections=sections,
-    )
+        collected = _collect(_sections(document, patcher), warnings)
+        patcher.finish()
+        sections = _assemble(_resolve(collected))
+        return ast.Specification(
+            specification=specification,
+            version=version,
+            link=None if link is None else pydantic.HttpUrl(link),
+            sections=sections,
+        )
 
 
 def attach_pages(
@@ -674,51 +729,59 @@ def attach_pages(
     when the exact one is not published yet.
     """
     warnings = warnings if warnings is not None else []
-    reader = pypdf.PdfReader(str(pdf_path))
-    specification, version = _pdf_spec_and_version(reader)
-    if (specification, version) != (spec.specification, spec.version):
-        raise ExtractionError(
-            f"PDF renders {specification} V{version}, but the extracted"
-            f" specification is {spec.specification} V{spec.version}"
-            " — its page numbers do not apply"
-        )
-    pages: dict[str, int] = {}
+    with boundary(f"attaching pages from {pdf_path}"):
+        reader = pypdf.PdfReader(str(pdf_path))
+        specification, version = _pdf_spec_and_version(reader)
+        if (specification, version) != (spec.specification, spec.version):
+            raise ExtractionError(
+                f"PDF renders {specification} V{version}, but the extracted"
+                f" specification is {spec.specification} V{spec.version}"
+                " — its page numbers do not apply"
+            )
+        pages: dict[str, int] = {}
 
-    def walk(entries) -> None:
-        for entry in entries:
-            if isinstance(entry, list):
-                walk(entry)
-                continue
-            match = re.match(r"^(\d+(?:\.\d+[A-Z]*)*)\s", entry.title)
-            if match is None:
-                continue
-            # pypdf types an outline destination as `IndirectObject` and
-            # `get_page_number` as optional; both resolve for a real outline.
-            destination = entry.page or reader.pages[0]
-            number = reader.get_page_number(destination)  # pyright: ignore[reportArgumentType]
-            if number is not None:
-                pages[match.group(1)] = number + 1
+        def walk(entries) -> None:
+            for entry in entries:
+                if isinstance(entry, list):
+                    walk(entry)
+                    continue
+                match = re.match(r"^(\d+(?:\.\d+[A-Z]*)*)\s", entry.title)
+                if match is None:
+                    continue
+                # pypdf types an outline destination as `IndirectObject` and
+                # `get_page_number` as optional; both resolve for a real outline.
+                destination = entry.page or reader.pages[0]
+                number = reader.get_page_number(destination)  # pyright: ignore[reportArgumentType]
+                if number is not None:
+                    # `setdefault`, not assignment: a section number bookmarked
+                    # twice (a "6.3.1" continued after a page break) should keep
+                    # the first entry, as documented, not the last.
+                    pages.setdefault(match.group(1), number + 1)
 
-    walk(reader.outline)
-    if not pages:
-        raise ExtractionError(
-            "PDF bookmark outline has no numbered sections — wrong file, or a"
-            " rendering without an outline"
-        )
+        walk(reader.outline)
+        if not pages:
+            raise ExtractionError(
+                "PDF bookmark outline has no numbered sections — wrong file, or a"
+                " rendering without an outline"
+            )
 
-    def with_page(section):
-        page = pages.get(section.source.section)
-        if page is None:
-            return section
-        return section.model_copy(
-            update={"source": ast.SourceRef(section=section.source.section, page=page)}
-        )
+        def with_page(section):
+            page = pages.get(section.source.section)
+            if page is None:
+                return section
+            return section.model_copy(
+                update={
+                    "source": ast.SourceRef(section=section.source.section, page=page)
+                }
+            )
 
-    attached = tuple(with_page(section) for section in spec.sections)
-    covered = sum(1 for section in attached if section.source.page is not None)
-    if covered < len(attached):
-        # Not fatal on its own — some sections legitimately have no bookmark —
-        # but a low count means the outline and the docx disagree about section
-        # numbering, which is worth seeing before the file gets committed.
-        warnings.append(f"bookmark outline covered {covered}/{len(attached)} sections")
-    return spec.model_copy(update={"sections": attached})
+        attached = tuple(with_page(section) for section in spec.sections)
+        covered = sum(1 for section in attached if section.source.page is not None)
+        if covered < len(attached):
+            # Not fatal on its own — some sections legitimately have no bookmark —
+            # but a low count means the outline and the docx disagree about section
+            # numbering, which is worth seeing before the file gets committed.
+            warnings.append(
+                f"bookmark outline covered {covered}/{len(attached)} sections"
+            )
+        return spec.model_copy(update={"sections": attached})

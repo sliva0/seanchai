@@ -23,6 +23,20 @@ def _avp_table(*rows, section="6.3", table="6.3.1"):
     )
 
 
+def _reused_table(*rows, label="6.3.2", section="6.3"):
+    return tgpp_docx._ReusedTable(rows=list(rows), label=label, section=section)
+
+
+def _grouped(vendor_id=10415):
+    return ast.GroupedAvp(
+        name="Group",
+        source=ast.SourceRef(section="6.3.1"),
+        code=10,
+        vendor_id=vendor_id,
+        avps=(),
+    )
+
+
 def _row(name, code):
     return ast.AvpTableRow(
         name=name,
@@ -56,15 +70,7 @@ def document():
 
 def test_resolve_gives_pending_enums_their_code_and_the_specs_vendor_id(document):
     collected = tgpp_docx._Collected(
-        grouped=[
-            ast.GroupedAvp(
-                name="Group",
-                source=ast.SourceRef(section="6.3.1"),
-                code=10,
-                vendor_id=10415,
-                avps=(),
-            )
-        ],
+        grouped=[_grouped()],
         pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
         avp_tables=[_avp_table(_row("Mode", 11))],
     )
@@ -85,7 +91,7 @@ def test_resolve_skips_enums_defined_in_another_specification(document):
     collected = tgpp_docx._Collected(
         pending_enums=[(_enum_section("6.3.2", "DRMP", document), "DRMP")],
         avp_tables=[_avp_table(_row("DRMP", None))],
-        reused_tables=[([ast.ReusedAvpRow(name="DRMP", origin="RFC7944")], "6.3.2")],
+        reused_tables=[_reused_table(ast.ReusedAvpRow(name="DRMP", origin="RFC7944"))],
     )
 
     resolved = tgpp_docx._resolve(collected)
@@ -96,6 +102,7 @@ def test_resolve_skips_enums_defined_in_another_specification(document):
 
 def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table(document):
     collected = tgpp_docx._Collected(
+        grouped=[_grouped()],
         pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
         avp_tables=[_avp_table(_row("Other", 1))],
     )
@@ -123,7 +130,7 @@ def test_resolve_rejects_a_document_with_two_avp_tables():
 def test_resolve_rejects_a_document_with_two_reused_tables():
     collected = tgpp_docx._Collected(
         avp_tables=[_avp_table(_row("One", 1))],
-        reused_tables=[([], "6.3.2"), ([], "7.4.1")],
+        reused_tables=[_reused_table(label="6.3.2"), _reused_table(label="7.4.1")],
     )
 
     with pytest.raises(tgpp_docx.ExtractionError, match="more than one re-used"):
@@ -159,6 +166,66 @@ def test_reserved_notes_are_placed_by_value_not_by_document_order(document):
         ast.ReservedValues(first=4, last=6),
         ast.EnumValue(name="On", value=8),
     )
+
+
+@pytest.mark.parametrize(
+    "grouped",
+    [[], [_grouped(10415), _grouped(vendor_id=13019)]],
+    ids=["no-candidates", "two-candidates"],
+)
+def test_resolve_refuses_to_guess_the_enumerated_vendor_id(document, grouped):
+    # A vendor-less enumerated AVP is not a meaningful result: it would publish
+    # the AVP in the IETF vendor space the spec does not put it in.
+    collected = tgpp_docx._Collected(
+        grouped=list(grouped),
+        pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
+        avp_tables=[_avp_table(_row("Mode", 11))],
+    )
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="cannot resolve the vendor id"):
+        tgpp_docx._resolve(collected)
+
+
+def test_resolve_does_not_need_a_vendor_id_when_there_is_no_local_enum():
+    resolved = tgpp_docx._resolve(
+        tgpp_docx._Collected(avp_tables=[_avp_table(_row("One", 1))])
+    )
+
+    assert resolved.definitions == []
+
+
+def test_a_reused_table_keeps_its_own_clause_not_the_avp_tables():
+    # The two tables sit under one parent clause in the current fixtures, which
+    # is exactly what hid this.
+    collected = tgpp_docx._Collected(
+        avp_tables=[_avp_table(_row("One", 1), section="6.3")],
+        reused_tables=[
+            _reused_table(
+                ast.ReusedAvpRow(name="Load", origin="RFC7683"),
+                label="7.4/1",
+                section="7.4",
+            )
+        ],
+    )
+
+    sections = tgpp_docx._assemble(tgpp_docx._resolve(collected))
+
+    reused = next(s for s in sections if isinstance(s, ast.ReusedAvps))
+    assert (reused.table, reused.source.section) == ("7.4/1", "7.4")
+
+
+def test_note_derived_reused_rows_are_attributed_to_the_avp_table():
+    # With no re-used table in the document, the rows really did come from the
+    # AVP table's NOTEs, so that is where the block is recorded.
+    collected = tgpp_docx._Collected(
+        avp_tables=[_avp_table(_row("One", 1), section="6.3", table="6.3.1")],
+        note_reused=[ast.ReusedAvpRow(name="One", origin="RFC7683")],
+    )
+
+    sections = tgpp_docx._assemble(tgpp_docx._resolve(collected))
+
+    reused = next(s for s in sections if isinstance(s, ast.ReusedAvps))
+    assert (reused.table, reused.source.section) == ("6.3.1", "6.3")
 
 
 def test_resolve_requires_an_avp_table():

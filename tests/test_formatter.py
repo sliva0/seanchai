@@ -90,10 +90,9 @@ def _boundary_specs():
                         code=None,
                         section=None,
                         data_type="OctetString",
-                        flag_rules=ast.AvpFlagRules(
-                            must=frozenset(ast.AvpFlag),
-                            must_not=frozenset({ast.AvpFlag.VENDOR}),
-                        ),
+                        # The widest flag cell the columns can hold; the four
+                        # rules are disjoint, so every flag it names is in one.
+                        flag_rules=ast.AvpFlagRules(must=frozenset(ast.AvpFlag)),
                         may_encrypt=True,
                     ),
                 ),
@@ -241,8 +240,8 @@ def test_an_unregistered_section_type_fails_loudly():
 
 
 def test_a_subclass_is_not_formatted_as_its_base():
-    # Dispatch is by exact type: `singledispatch` on its own would walk the MRO
-    # and format this as a plain Message, dropping `extra` without a word.
+    # Dispatch is by exact type: anything that matched by isinstance would
+    # format this as a plain Message, dropping `extra` without a word.
     class ExtendedMessage(ast.Message):
         extra: str = "lost"
 

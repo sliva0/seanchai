@@ -24,10 +24,11 @@ The pipeline has three stages:
    format; bold runs, tables and section structure are explicit there), going
    docx → intermediate document model → `.dad` AST. A separate pass reads the
    bookmark outline of the matching ETSI **PDF** to attach page numbers.
-2. **Review** — raw extractor output is committed per spec version; corrections
-   are kept alongside it, and the corrected `.dad` files are the source of
-   truth. A version upgrade is re-extract, diff raw-vs-raw, re-apply the
-   corrections — not a re-review from scratch.
+2. **Review** — the durable pair is what gets committed: raw extractor output
+   per spec version, plus the corrections declared against it. The corrected
+   `.dad` file is generated from those two and is what downstream consumes. A
+   version upgrade is re-extract, diff raw-vs-raw, re-apply the corrections —
+   not a re-review from scratch.
 3. **Consumption** — the parser turns `.dad` files back into the AST, and
    downstream scripts emit an implementation's native dictionary format or
    validate an existing hand-written one against the spec.
@@ -45,7 +46,7 @@ The pipeline has three stages:
   [docs/extractor.md](docs/extractor.md).
 - **Corrections**: the second patch layer, for data that parses fine but is
   semantically wrong. See
-  [docs/proposal-corrections.md](docs/proposal-corrections.md).
+  [docs/corrections.md](docs/corrections.md).
 - **CLI**: `seanchai extract` (docx → `.dad`), `seanchai correct` (raw `.dad` →
   corrected), `seanchai download` (fetch the corpus).
 - **Downloader**: `uv run seanchai download`, with the curated catalog in
@@ -64,9 +65,9 @@ The pipeline has three stages:
 - Downstream consumers: validators for existing hand-written dictionaries
   first, generators for native dictionary formats after.
 
-Open work is tracked in [docs/roadmap.md](docs/roadmap.md); the current
-code-quality work is planned in
-[docs/plan-code-quality.md](docs/plan-code-quality.md).
+Open work is tracked in [docs/roadmap.md](docs/roadmap.md). Completed review
+rounds and the reasoning behind them are kept in
+[docs/history/](docs/history/).
 
 ## Repository layout
 
@@ -81,7 +82,8 @@ code-quality work is planned in
 - `examples/` — committed `.dad` files: the hand-made reference and raw
   extractor outputs.
 - `tests/` — pytest suite.
-- `docs/` — format, extractor, workflow, development and roadmap documents.
+- `docs/` — format, extractor, workflow, development and roadmap documents,
+  plus `docs/history/` for completed review rounds.
 
 ## Development
 

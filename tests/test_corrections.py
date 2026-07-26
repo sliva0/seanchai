@@ -212,6 +212,205 @@ def test_a_correction_that_replaces_a_value_with_itself_is_rejected():
         _correction(corrections.table_row("Example-Mode"), "code", 1600, 1600)
 
 
+@pytest.mark.parametrize(
+    "reversed_order", [False, True], ids=["parent-first", "child-first"]
+)
+def test_a_definition_and_one_of_its_avp_rules_are_both_applied(reversed_order):
+    # Rebuilding used to stop at the first replaced node it met, so whichever
+    # of these was the ancestor swallowed the other without a word — two
+    # successful results, one of them absent from the returned tree.
+    declared = [
+        _correction(
+            corrections.definition("Example-Request"), "application_id", None, 16777308
+        ),
+        _correction(
+            corrections.avp_rule("Example-Request", "Session-Id"),
+            "presence",
+            ast.Presence.FIXED,
+            ast.Presence.REQUIRED,
+        ),
+    ]
+
+    corrected, results = corrections.apply(
+        _spec(), list(reversed(declared)) if reversed_order else declared
+    )
+
+    message = _message(corrected)
+    assert len(results) == 2
+    assert message.application_id == 16777308
+    assert message.avps[0].presence is ast.Presence.REQUIRED
+
+
+def test_an_enumerated_avp_and_one_of_its_values_are_both_applied():
+    corrected, results = corrections.apply(
+        _spec(),
+        [
+            _correction(corrections.definition("Example-Mode"), "code", 1600, 1602),
+            _correction(corrections.enum_value("Example-Mode", "Off"), "value", 0, 7),
+        ],
+    )
+
+    enumerated = corrected.sections[2]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert len(results) == 2
+    assert enumerated.code == 1602
+    assert enumerated.values == (ast.EnumValue(name="Off", value=7),)
+
+
+def test_replacing_a_structural_field_is_rejected_rather_than_given_semantics():
+    # A whole-subtree replacement would have to say what happens to a
+    # correction aimed at one of the children it discards; correcting the child
+    # is the operation that exists.
+    with pytest.raises(corrections.CorrectionError, match="holds child nodes"):
+        corrections.apply(
+            _spec(),
+            [_correction(corrections.definition("Example-Request"), "avps", None, ())],
+        )
+
+
+def test_the_rebuilt_tree_is_validated_as_a_whole():
+    # `min_occurs`/`max_occurs` are each valid on their own; only the rule
+    # they belong to knows the range is now inverted.
+    with pytest.raises(corrections.CorrectionError, match="not valid"):
+        corrections.apply(
+            _spec(),
+            [
+                _correction(
+                    corrections.avp_rule("Example-Request", "Session-Id"),
+                    "min_occurs",
+                    1,
+                    5,
+                ),
+                _correction(
+                    corrections.avp_rule("Example-Request", "Session-Id"),
+                    "max_occurs",
+                    1,
+                    2,
+                ),
+            ],
+        )
+
+
+def _two_applications() -> ast.Specification:
+    """One command name defined for two applications, as TS 29.272 does for
+    IDR/DSR/RSR across S6a and S7a."""
+    spec = _spec()
+    message = _message(spec)
+    # Spelled out rather than `model_copy`d: a copy would share the one
+    # `AvpRule` object between both messages, which is not what parsing a file
+    # produces and not what the identity-keyed rebuild is meant to handle.
+    s7a = ast.Message(
+        name=message.name,
+        abbreviation=message.abbreviation,
+        source=message.source,
+        command_code=message.command_code,
+        flags=message.flags,
+        application_id=16777308,
+        avps=(ast.AvpRule(name="Session-Id", presence=ast.Presence.FIXED),),
+    )
+    return spec.model_copy(update={"sections": (message, s7a, *spec.sections[1:])})
+
+
+def test_an_explicit_none_application_id_selects_the_definition_that_omits_it():
+    corrected, _ = corrections.apply(
+        _two_applications(),
+        [
+            _correction(
+                corrections.definition("Example-Request", application_id=None),
+                "application_id",
+                None,
+                16777251,
+            )
+        ],
+    )
+
+    assert [
+        section.application_id
+        for section in corrected.sections
+        if isinstance(section, ast.Message)
+    ] == [16777251, 16777308]
+
+
+def test_an_unspecified_application_id_does_not_filter_and_stays_ambiguous():
+    with pytest.raises(corrections.CorrectionError, match="2 matches, narrow"):
+        corrections.apply(
+            _two_applications(),
+            [
+                _correction(
+                    corrections.definition("Example-Request"), "command_code", 321, 322
+                )
+            ],
+        )
+
+
+def test_an_avp_rule_can_be_narrowed_by_its_parents_application():
+    target = corrections.avp_rule(
+        parent=corrections.definition("Example-Request", application_id=16777308),
+        name="Session-Id",
+    )
+
+    corrected, results = corrections.apply(
+        _two_applications(),
+        [_correction(target, "presence", ast.Presence.FIXED, ast.Presence.REQUIRED)],
+    )
+
+    messages = [s for s in corrected.sections if isinstance(s, ast.Message)]
+    assert results[0].node == (
+        "AVP rule 'Session-Id' in definition 'Example-Request' (application 16777308)"
+    )
+    assert messages[0].avps[0].presence is ast.Presence.FIXED
+    assert messages[1].avps[0].presence is ast.Presence.REQUIRED
+
+
+def test_a_node_shared_by_two_places_is_refused_rather_than_corrected_twice():
+    # Identity is what maps a resolved node back into the tree, so a caller
+    # that hands the same object to two parents would otherwise get one
+    # reported correction and two applied ones.
+    spec = _spec()
+    message = _message(spec)
+    shared = message.model_copy(update={"application_id": 16777308})
+
+    with pytest.raises(corrections.CorrectionError, match="more than once in the tree"):
+        corrections.apply(
+            spec.model_copy(update={"sections": (message, shared, *spec.sections[1:])}),
+            [
+                _correction(
+                    # Narrowed, so the selector reports exactly one match — the
+                    # object it found is nevertheless in both messages.
+                    corrections.avp_rule(
+                        parent=corrections.definition(
+                            "Example-Request", application_id=16777308
+                        ),
+                        name="Session-Id",
+                    ),
+                    "bold",
+                    False,
+                    True,
+                )
+            ],
+        )
+
+
+def test_the_reused_row_selector_reaches_a_reused_avps_row():
+    spec = _spec()
+    reused = ast.ReusedAvps(
+        table="6.4",
+        source=ast.SourceRef(section="6.4"),
+        rows=(ast.ReusedAvpRow(name="Load", origin="RFC7683"),),
+    )
+    with_reused = spec.model_copy(update={"sections": (*spec.sections, reused)})
+
+    corrected, results = corrections.apply(
+        with_reused,
+        [_correction(corrections.reused_row("Load"), "origin", "RFC7683", "RFC8583")],
+    )
+
+    row = corrected.sections[3]
+    assert isinstance(row, ast.ReusedAvps)
+    assert row.rows[0].origin == "RFC8583"
+    assert results[0].node == "re-used AVPs row 'Load'"
+
+
 def test_loading_finds_the_module_named_after_the_specification(tmp_path):
     (tmp_path / "TS29.999.py").write_text(
         "from seanchai.dad.corrections import Correction, table_row\n"
@@ -243,6 +442,58 @@ def test_committed_corrections_still_apply_to_committed_raw_output(raw):
     assert parser.parse(formatter.format_spec(corrected)) == corrected
 
 
+def _fields(spec: ast.Specification) -> dict[tuple, object]:
+    """Every leaf field of every node, keyed by its path through the tree."""
+    flat: dict[tuple, object] = {}
+
+    def walk(node, path):
+        if isinstance(node, ast.Node):
+            key = getattr(node, "name", None) or getattr(node, "table", None)
+            for field in type(node).model_fields:
+                walk(getattr(node, field), (*path, key, field))
+        elif isinstance(node, tuple):
+            for index, item in enumerate(node):
+                walk(item, (*path, index))
+        else:
+            flat[path] = node
+
+    walk(spec, ())
+    return flat
+
+
+def test_the_ts29272_corrections_change_exactly_the_four_vcsg_application_ids():
+    """The intended semantic diff, pinned independently of the correction file.
+
+    The rot check above reads its expectation out of the correction it is
+    testing, so a wrong `expect`/`replace`/reason changed together stays green.
+    This one names the outcome — four application ids, nothing else — so
+    changing what the corrections do has to be a deliberate edit here too.
+    """
+    raw = _ROOT / "examples" / "29272-i60.raw.dad"
+    spec = parser.parse(raw.read_text())
+    declared = corrections.load(_ROOT / "corrections", spec.specification)
+
+    corrected, _ = corrections.apply(spec, declared)
+
+    before, after = _fields(spec), _fields(corrected)
+    changed = {
+        path: (before[path], after[path])
+        for path in before
+        if before[path] != after[path]
+    }
+    assert set(before) == set(after)  # no node added, removed or renamed
+    # path[-2] is the node's own name, path[-1] the field.
+    assert {(*path[-2:], *value) for path, value in changed.items()} == {
+        (name, "application_id", None, 16777308)
+        for name in (
+            "Update-VCSG-Location-Request",
+            "Update-VCSG-Location-Answer",
+            "Cancel-VCSG-Location-Request",
+            "Cancel-VCSG-Location-Answer",
+        )
+    }
+
+
 def test_loading_rejects_a_module_without_corrections(tmp_path):
     (tmp_path / "TS29.999.py").write_text("SOMETHING_ELSE = []\n")
 
@@ -255,3 +506,69 @@ def test_loading_rejects_corrections_of_the_wrong_type(tmp_path):
 
     with pytest.raises(corrections.CorrectionError, match="must hold Correction"):
         corrections.load(tmp_path, "3GPP TS 29.999")
+
+
+def test_loading_rejects_a_generator_rather_than_silently_consuming_it(tmp_path):
+    # `all(...)` over a generator leaves it exhausted, so the list built after
+    # it used to come out empty — a spec silently corrected by nothing.
+    (tmp_path / "TS29.999.py").write_text(
+        "from seanchai.dad.corrections import Correction, table_row\n"
+        "CORRECTIONS = (c for c in [Correction(target=table_row('Example-Mode'),"
+        " field='code', expect=1600, replace=1602, reason='typo')])\n"
+    )
+
+    with pytest.raises(corrections.CorrectionError, match="must be a list"):
+        corrections.load(tmp_path, "3GPP TS 29.999")
+
+
+def test_loading_reports_a_module_that_fails_to_import(tmp_path):
+    (tmp_path / "TS29.999.py").write_text("import nonexistent_module_for_tests\n")
+
+    with pytest.raises(corrections.CorrectionError, match="failed to import"):
+        corrections.load(tmp_path, "3GPP TS 29.999")
+
+
+@pytest.mark.parametrize(
+    "specification",
+    [
+        "3GPP TS ../outside",
+        "/etc/passwd",
+        r"..\outside",
+        "3GPP TS 29.9999",
+        "",
+    ],
+    ids=["relative", "absolute", "windows-separator", "malformed", "empty"],
+)
+def test_a_specification_header_cannot_name_a_module_outside_the_directory(
+    tmp_path, specification
+):
+    # `; Specification:` comes from a parsed file, and loading its module runs
+    # Python. Nothing but a canonical document reference may name that file.
+    (tmp_path.parent / "outside.py").write_text("CORRECTIONS = []\n")
+    directory = tmp_path / "corrections"
+    directory.mkdir()
+
+    with pytest.raises(corrections.CorrectionError, match="supported document"):
+        corrections.load(directory, specification)
+
+
+def test_a_valid_reference_still_resolves_inside_the_directory(tmp_path):
+    (tmp_path / "TS29.272.py").write_text("CORRECTIONS = []\n")
+
+    assert corrections.load(tmp_path, "3GPP TS 29.272") == []
+
+
+def test_a_required_load_fails_when_the_module_is_missing_or_empty(tmp_path):
+    # `seanchai correct` asked for this specification's corrections; producing
+    # an uncorrected file and calling it a success is the failure mode.
+    with pytest.raises(corrections.CorrectionError, match="no corrections module"):
+        corrections.load(tmp_path, "3GPP TS 29.999", required=True)
+
+    (tmp_path / "TS29.999.py").write_text("CORRECTIONS = []\n")
+
+    with pytest.raises(corrections.CorrectionError, match="declares no corrections"):
+        corrections.load(tmp_path, "3GPP TS 29.999", required=True)
+
+    # The same two states are ordinary results for a corpus-wide extraction.
+    assert corrections.load(tmp_path, "3GPP TS 29.999") == []
+    assert corrections.load(tmp_path, "3GPP TS 29.998") == []

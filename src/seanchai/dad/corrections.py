@@ -1,6 +1,6 @@
 """Output corrections: typed find/replace on a parsed `.dad` tree.
 
-The second of the two patch layers (see docs/proposal-corrections.md). Input
+The second of the two patch layers (see docs/corrections.md). Input
 patches fix source typos that would break extraction; corrections fix data that
 extracts and parses perfectly well but is *wrong* — an AVP code the spec's own
 table misprints, a clause reference pointing at the wrong section, an
@@ -16,11 +16,12 @@ Corrections are declared per specification, as data:
 
     CORRECTIONS = [
         Correction(
-            target=table_row("MME-Location-Information"),
-            field="code",
-            expect=1600,
-            replace=1602,
-            reason="table 7.3.1/1 prints the Trace-Data code by mistake",
+            target=definition("Update-VCSG-Location-Request"),
+            field="application_id",
+            expect=None,
+            replace=16777308,
+            reason="clause 7.2.2 assigns the VCSG commands to S7a/S7d;"
+            " the command header omits the id",
             versions="18.6.0",
         ),
     ]
@@ -47,6 +48,22 @@ class CorrectionError(ValueError):
 
 
 @dataclass(frozen=True)
+class _Unspecified:
+    """Sentinel for "this selector field does not filter".
+
+    `None` cannot serve: it is a real `application_id` value — precisely the
+    one the TS 29.272 VCSG headers carry — so overloading it would make the
+    omitted-id definition unselectable.
+    """
+
+    def __repr__(self) -> str:
+        return "<unspecified>"
+
+
+UNSPECIFIED = _Unspecified()
+
+
+@dataclass(frozen=True)
 class Selector:
     """Base for the ways a correction names its target. Subclasses yield the
     nodes they match, in document order, from a whole specification.
@@ -65,11 +82,15 @@ class Selector:
 
 @dataclass(frozen=True)
 class definition(Selector):
-    """A message, grouped AVP or enumerated AVP, by name. `application_id`
-    narrows the TS 29.272 case of one command defined for two applications."""
+    """A message, grouped AVP or enumerated AVP, by name.
+
+    `application_id` narrows the TS 29.272 case of one command defined for two
+    applications. Left out it does not filter at all; given explicitly — including
+    as `None` — it selects only messages carrying exactly that id.
+    """
 
     name: str
-    application_id: int | None = None
+    application_id: int | _Unspecified | None = UNSPECIFIED
 
     def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
         for section in spec.sections:
@@ -79,7 +100,7 @@ class definition(Selector):
                 continue
             if section.name != self.name:
                 continue
-            if self.application_id is not None and (
+            if not isinstance(self.application_id, _Unspecified) and (
                 not isinstance(section, ast.Message)
                 or section.application_id != self.application_id
             ):
@@ -87,7 +108,7 @@ class definition(Selector):
             yield section
 
     def describe(self) -> str:
-        if self.application_id is None:
+        if isinstance(self.application_id, _Unspecified):
             return f"definition {self.name!r}"
         return f"definition {self.name!r} (application {self.application_id})"
 
@@ -144,21 +165,31 @@ class enum_value(Selector):
 
 @dataclass(frozen=True)
 class avp_rule(Selector):
-    """One AVP reference inside a message or grouped-AVP body."""
+    """One AVP reference inside a message or grouped-AVP body.
 
-    parent: str
+    `parent` is a whole `definition` selector rather than a duplicated name, so
+    a rule inside one of two same-named commands is reachable by the same
+    discriminator that reaches the command itself. A bare string is shorthand
+    for `definition(name)`.
+    """
+
+    parent: str | definition
     name: str
 
+    @property
+    def _parent(self) -> definition:
+        if isinstance(self.parent, str):
+            return definition(self.parent)
+        return self.parent
+
     def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
-        for section in spec.sections:
-            if not isinstance(section, ast.Message | ast.GroupedAvp):
-                continue
-            if section.name != self.parent:
-                continue
-            yield from (rule for rule in section.avps if rule.name == self.name)
+        for section in self._parent.find(spec):
+            # An enumerated AVP matches `definition` but has no ABNF body.
+            if isinstance(section, ast.Message | ast.GroupedAvp):
+                yield from (rule for rule in section.avps if rule.name == self.name)
 
     def describe(self) -> str:
-        return f"AVP rule {self.name!r} in {self.parent!r}"
+        return f"AVP rule {self.name!r} in {self._parent.describe()}"
 
 
 @dataclass(frozen=True)
@@ -196,6 +227,14 @@ class Result:
     new: Any
 
 
+def _holds_nodes(value: Any) -> bool:
+    if isinstance(value, ast.Node):
+        return True
+    return isinstance(value, tuple) and any(
+        isinstance(item, ast.Node) for item in value
+    )
+
+
 def _corrected(node: ast.Node, correction: Correction) -> ast.Node:
     """Rebuild one node with the field replaced, through validation.
 
@@ -208,6 +247,15 @@ def _corrected(node: ast.Node, correction: Correction) -> ast.Node:
             f" {correction.field!r}"
         )
     found = getattr(node, correction.field)
+    if _holds_nodes(found):
+        # Replacing a whole subtree wholesale would have to define what happens
+        # to a correction aimed at one of the children it discards. Correcting
+        # the child directly is the operation that actually exists.
+        raise CorrectionError(
+            f"{correction.target.describe()}: {correction.field!r} holds child"
+            " nodes; correct the child directly rather than replacing the"
+            " structure"
+        )
     if found != correction.expect:
         raise CorrectionError(
             f"{correction.target.describe()}: expected {correction.field}"
@@ -235,19 +283,39 @@ def _resolve(spec: ast.Specification, correction: Correction) -> ast.Node:
     return found[0]
 
 
-def _replaced(node: Any, edits: dict[int, ast.Node]) -> Any:
-    """Rebuild the tree, swapping in every corrected node by identity."""
+def _replaced(node: Any, edits: dict[int, ast.Node], applied: dict[int, int]) -> Any:
+    """Rebuild the tree, swapping in every corrected node by identity.
+
+    A chosen replacement is descended into rather than returned whole: a
+    correction to a message and a correction to one of its AVP rules are both
+    legal, and stopping at the message would silently drop the second. Because
+    `_corrected` rebuilds through pydantic, which keeps already-valid submodels
+    as they are, the replacement's children still carry the identities the
+    remaining edits are keyed by.
+
+    The rebuild goes through validation for the same reason `_corrected` does:
+    a correction that satisfies its own field's rules can still break a
+    cross-field invariant of an ancestor, and that has to fail here rather than
+    downstream.
+    """
     if isinstance(node, ast.Node):
         replacement = edits.get(id(node))
         if replacement is not None:
-            return replacement
+            applied[id(node)] = applied.get(id(node), 0) + 1
+            node = replacement
         values = {
-            name: _replaced(getattr(node, name), edits)
+            name: _replaced(getattr(node, name), edits, applied)
             for name in type(node).model_fields
         }
-        return type(node).model_construct(**values)
+        try:
+            return type(node)(**values)
+        except pydantic.ValidationError as error:
+            raise CorrectionError(
+                f"corrected {type(node).__name__} is not valid:"
+                f" {error.errors()[0]['msg']}"
+            ) from None
     if isinstance(node, tuple):
-        return tuple(_replaced(item, edits) for item in node)
+        return tuple(_replaced(item, edits, applied) for item in node)
     return node
 
 
@@ -261,10 +329,12 @@ def apply(
     file behind.
     """
     edits: dict[int, ast.Node] = {}
+    targets: dict[int, str] = {}  # node id -> the selector that reached it
     claimed: set[tuple[int, str]] = set()
     results = []
     for correction in corrections:
         node = _resolve(spec, correction)
+        targets[id(node)] = correction.target.describe()
         claim = (id(node), correction.field)
         if claim in claimed:
             raise CorrectionError(
@@ -284,30 +354,101 @@ def apply(
             )
         )
         edits[id(node)] = corrected
-    return _replaced(spec, edits), results
+    applied: dict[int, int] = {}
+    rebuilt = _replaced(spec, edits, applied)
+    # Identity is what maps a resolved node back to its place in the tree, so a
+    # node object appearing in two places would be corrected in both while the
+    # selector reported one match. Trees from `parse` and the extractor build
+    # every node separately; a caller that shares one gets told, not surprised.
+    for node_id, description in targets.items():
+        if applied.get(node_id, 0) != 1:
+            raise CorrectionError(
+                f"{description}: the selected node appears more than once in the"
+                " tree; corrections address one place, not a shared object"
+            )
+    return rebuilt, results
 
 
-def load(directory: Path | None, specification: str) -> list[Correction]:
+def _module_path(directory: Path, specification: str) -> Path:
+    """The corrections module for `specification`, inside `directory`.
+
+    Two independent boundaries, because loading this path executes its Python:
+    `ast.spec_ref` accepts only canonical document references, so no cover-page
+    title can spell a separator or a `..`; and the resolved candidate must sit
+    directly in the resolved corrections directory, so neither a symlink nor a
+    future spelling of the first rule can reach outside the directory the user
+    named.
+    """
+    try:
+        reference = ast.spec_ref(specification)
+    except ast.SpecRefError as error:
+        raise CorrectionError(str(error)) from None
+    root = directory.resolve()
+    path = (root / f"{reference}.py").resolve()
+    if path.parent != root:
+        raise CorrectionError(
+            f"corrections for {specification!r} would resolve to {path}, outside {root}"
+        )
+    return path
+
+
+def load(
+    directory: Path | None, specification: str, required: bool = False
+) -> list[Correction]:
     """Read `<directory>/<SpecRef>.py` and return its `CORRECTIONS` list.
 
     The file name is derived from the specification, so a corrections file
     cannot be applied to the wrong document. Importing it executes Python from
     `directory`, which is why the CLI requires the path to be given explicitly
     rather than discovering it.
+
+    `required` distinguishes the two callers. Extraction over a corpus may pass
+    a directory that holds modules for some of its specifications, so a missing
+    module is an ordinary empty result. `seanchai correct` was asked for exactly
+    one specification's corrections, so a missing or empty module there means a
+    typo silently produced an uncorrected file, and it fails instead.
     """
     if directory is None:
+        if required:
+            raise CorrectionError("no corrections directory was given")
         return []
-    path = directory / f"{ast.spec_ref(specification)}.py"
+    path = _module_path(directory, specification)
     if not path.is_file():
+        if required:
+            raise CorrectionError(
+                f"no corrections module for {specification!r}: {path}"
+            )
         return []
+    corrections = _corrections_of(path)
+    if required and not corrections:
+        raise CorrectionError(f"{path} declares no corrections")
+    return corrections
+
+
+def _corrections_of(path: Path) -> list[Correction]:
     module_spec = importlib.util.spec_from_file_location(path.stem, path)
     if module_spec is None or module_spec.loader is None:
         raise CorrectionError(f"cannot load corrections from {path}")
     module = importlib.util.module_from_spec(module_spec)
-    module_spec.loader.exec_module(module)
+    try:
+        module_spec.loader.exec_module(module)
+    except CorrectionError:
+        # A `Correction(...)` the module itself declares wrongly; its message
+        # already names the target, and the path is added by the caller's report.
+        raise
+    except Exception as error:
+        raise CorrectionError(
+            f"{path} failed to import: {type(error).__name__}: {error}"
+        ) from error
     corrections = getattr(module, "CORRECTIONS", None)
     if corrections is None:
         raise CorrectionError(f"{path} defines no CORRECTIONS list")
+    # Not any iterable: a generator would be consumed by the type check below
+    # and leave an empty, silently uncorrected result.
+    if not isinstance(corrections, list | tuple):
+        raise CorrectionError(
+            f"{path}: CORRECTIONS must be a list, not a {type(corrections).__name__}"
+        )
     if not all(isinstance(item, Correction) for item in corrections):
         raise CorrectionError(f"{path}: CORRECTIONS must hold Correction objects")
     return list(corrections)

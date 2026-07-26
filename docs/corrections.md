@@ -92,7 +92,17 @@ command codes belong to. The full set is in `corrections/TS29.272.py`.
   first place; don't reintroduce them here.
 - **Ambiguity is an error.** A selector matching two nodes must be narrowed —
   `definition("Update-Location-Request", application_id=16777251)` for the
-  dual-application sections of TS 29.272.
+  dual-application sections of TS 29.272. `avp_rule` takes a whole `definition`
+  as its parent (a bare name is shorthand), so a rule inside one of two
+  same-named commands is reachable by the same discriminator.
+- **"Not specified" is a sentinel, not `None`.** `application_id=None` is a
+  real value — it is exactly what the VCSG headers carry — so omitting the
+  argument, not passing `None`, is what means "do not filter".
+- **A correction addresses one field of one node, never a subtree.** Replacing
+  a structural field such as `avps` is rejected: it would have to define what
+  happens to a correction aimed at one of the children it discards, and
+  correcting the child directly is the operation that exists. Ancestor and
+  descendant corrections in the same set are legal and both applied.
 
 ## Implementation
 
@@ -137,6 +147,21 @@ CLI: `seanchai extract … --corrections DIR`, explicit rather than the
 imports Python from the given directory. Plus `seanchai correct IN.dad -o
 OUT.dad`, so the layer can be re-run without a docx.
 
+The two commands want different answers to "this specification has no module":
+
+- `extract --corrections` allows it. A corpus run passes one directory for
+  every specification, and most of them have nothing to correct.
+- `correct --corrections` requires a module with at least one correction.
+  Correction is the whole point of the invocation, so a mistyped path that
+  produced a cheerfully uncorrected file would be indistinguishable from
+  success.
+
+Because the module path is derived from the parsed `; Specification:` header
+and importing it runs its Python, the derivation validates rather than cleans
+up: `ast.spec_ref` accepts only canonical document references, and the resolved
+candidate must sit directly in the resolved corrections directory. A file
+claiming `; Specification: ../outside` gets an error, not `../outside.py`.
+
 Input patches stay in `patches/`; corrections go in `corrections/`. Two
 directories, so which layer a fix belongs to is visible from the path.
 
@@ -148,6 +173,11 @@ directories, so which layer a fix belongs to is visible from the path.
 - Rot detection: an `expect` that no longer matches errors — including a test
   that re-applies every committed correction to the committed raw output, so a
   re-extraction that invalidates one fails the suite.
+- The intended semantic diff, pinned separately from the corrections that
+  produce it. The rot check reads its expectation out of the file it is
+  testing, so a wrong `expect`/`replace`/reason changed together stays green;
+  a second test asserts that TS 29.272 changes exactly four application ids
+  from `None` to `16777308` and no other field anywhere in the tree.
 - An ambiguous selector errors, as does a field the target node doesn't have
   and a replacement value the model rejects.
 - Once the linter exists: `raw.dad` may fail it, the corrected file must pass.

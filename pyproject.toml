@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-seanchai = "seanchai:main"
+seanchai = "seanchai.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.10.2,<0.12.0"]
@@ -44,10 +44,10 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 python = ".venv"
 
 [tool.ty.src]
-include = ["src", "tests", "downloader"]
+include = ["src", "tests"]
 
 [tool.basedpyright]
 typeCheckingMode = "standard"
-include = ["src", "tests", "downloader"]
+include = ["src", "tests"]
 venvPath = "."
 venv = ".venv"

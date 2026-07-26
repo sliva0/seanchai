@@ -83,10 +83,11 @@ worth adding.
 ## Working on these documents
 
 `docs/` describes what exists, plus a small amount of scheduled work in
-[roadmap.md](roadmap.md) and [plan-code-quality.md](plan-code-quality.md), plus
-explicitly labelled proposals. Keeping those three registers apart is the point
-of the split — a reader must be able to tell "this is how it works" from "this
-is what we intend to do" without checking the code.
+[roadmap.md](roadmap.md), plus explicitly labelled proposals. Completed review
+rounds move to [history/](history/), which is a record and never a schedule.
+Keeping those registers apart is the point of the split — a reader must be able
+to tell "this is how it works" from "this is what we intend to do" without
+checking the code.
 
 Some decisions here are settled, and a review that reopens them costs more than
 it returns. If you disagree, argue the decision on its merits; don't

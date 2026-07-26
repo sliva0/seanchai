@@ -1,8 +1,8 @@
 # Roadmap
 
 Open work, roughly in the order it delivers value. What already exists is in
-the README's status section; the current code-quality work has its own plan in
-[plan-code-quality.md](plan-code-quality.md).
+the README's status section; completed review rounds are recorded in
+[history/](history/) and are not outstanding work.
 
 When you learn something non-obvious while working — a source-document quirk, a
 workflow gotcha, a convention that isn't visible in the code — write it down in

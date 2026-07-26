@@ -78,7 +78,7 @@ the rot the accounting exists to catch.
 | extractor code | recurring conventions that carry information           |
 | corrections    | data that parses fine but is semantically wrong        |
 
-The correction layer is documented in [corrections](proposal-corrections.md).
+The correction layer is documented in [corrections](corrections.md).
 
 Structural damage (missing captions, split tables) has no collected case yet;
 revisit override-style instructions only if one appears.

@@ -13,10 +13,12 @@
    a near-diff of the source ABNF so this stays cheap.
 4. **Commit the raw output** per spec version (`examples/29272-i60.raw.dad`).
 5. **Correct** it: declare each fix in `corrections/<SpecRef>.py` and run
-   `uv run seanchai correct RAW.dad --corrections corrections -o OUT.dad`. The
-   corrected file is the source of truth, and it is generated — never
-   hand-edited, or the corrections can no longer be re-applied to the next
-   version. See [corrections](proposal-corrections.md).
+   `uv run seanchai correct RAW.dad --corrections corrections -o OUT.dad`.
+   The source of truth is the committed pair — raw file plus correction module.
+   The corrected file is generated output: never hand-edited, or the
+   corrections can no longer be re-applied to the next version. Where corrected
+   files should live is part of the still-undecided corpus layout, so none are
+   committed yet. See [corrections](corrections.md).
 
 ## Version upgrades
 
@@ -39,7 +41,7 @@ Two things this depends on, and which therefore must not regress:
 - **Extractor code** — recurring conventions that carry information.
 - **Corrections** (`corrections/<SpecRef>.py`) — data that extracts and parses
   fine but is semantically wrong. See
-  [corrections](proposal-corrections.md).
+  [corrections](corrections.md).
 
 ## Validation
 

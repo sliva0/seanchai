@@ -1,0 +1,563 @@
+"""Corpus downloader implementation. See the package docstring for what it is.
+
+Two rules hold throughout this module.
+
+Every failure is a `DownloadError`. An HTTP error, an unreadable catalog, a
+truncated ZIP and a PDF that is only the first few bytes of one are all the
+same answer to "did the corpus download?", and a caller should not have to
+know which layer noticed.
+
+Nothing is trusted because it exists. A file left by an interrupted run is a
+plausible-looking, wrong artifact; so is a proxy's error page saved under a
+`.zip` name. Both fresh downloads and cached files are therefore opened and
+checked by the format they claim to be, and a replacement is validated in a
+temporary file *before* it is put in place.
+"""
+
+from __future__ import annotations
+
+import concurrent.futures
+import hashlib
+import html
+import json
+import os
+import re
+import shutil
+import tempfile
+import time
+import tomllib
+import urllib.error
+import urllib.parse
+import urllib.request
+import zipfile
+from collections.abc import Callable, Iterable
+from dataclasses import asdict, dataclass
+from pathlib import Path, PurePosixPath
+
+import pypdf
+
+THREE_GPP_INDEX = "https://www.3gpp.org/ftp/Specs/latest/Rel-{release}/{series}_series/"
+ETSI_DELIVER = "https://www.etsi.org/deliver"
+RFC_TEXT_URL = "https://www.rfc-editor.org/rfc/rfc{number}.txt"
+USER_AGENT = "diameter-spec-corpus-downloader/1.0"
+
+
+@dataclass(frozen=True)
+class ThreeGppSpec:
+    number: str
+    title: str
+    reason: str = "Defines Diameter commands, command ABNF, AVPs, or AVP mappings."
+    document_type: str = "TS"
+
+    @property
+    def series(self) -> int:
+        return int(self.number.split(".", 1)[0])
+
+    @property
+    def archive_stem(self) -> str:
+        return self.number.replace(".", "").replace("-", "")
+
+
+@dataclass(frozen=True)
+class RfcSpec:
+    number: int
+    title: str
+
+
+CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
+
+
+class DownloadError(RuntimeError):
+    """Anything that stops the corpus being fetched as asked."""
+
+
+def load_catalog(
+    path: Path | None = None,
+) -> tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]]:
+    """Read the curated specification catalog from specs.toml.
+
+    Called on demand rather than at import: reading a file as a side effect of
+    importing makes the module hard to use from anything but the CLI.
+    """
+    path = path or CATALOG_PATH
+    try:
+        with path.open("rb") as stream:
+            data = tomllib.load(stream)
+        tgpp = tuple(ThreeGppSpec(**entry) for entry in data["tgpp"])
+        rfc = tuple(RfcSpec(**entry) for entry in data["rfc"])
+    except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError) as error:
+        raise DownloadError(
+            f"cannot read the specification catalog {path}:"
+            f" {type(error).__name__}: {error}"
+        ) from error
+    return tgpp, rfc
+
+
+@dataclass
+class DownloadRecord:
+    family: str
+    identifier: str
+    title: str
+    url: str
+    sha256: str
+    size: int
+    files: list[str]
+    reason: str | None = None
+    pdf_url: str | None = None
+    pdf_sha256: str | None = None
+    pdf_size: int | None = None
+    source_version: str | None = None
+    pdf_version: str | None = None
+
+
+def release_marker(release: int) -> str:
+    """Return the first version-code character used in 3GPP ZIP names."""
+    if 4 <= release <= 9:
+        return str(release)
+    if 10 <= release <= 35:
+        return chr(ord("a") + release - 10)
+    raise DownloadError("3GPP release must be between 4 and 35")
+
+
+def request_bytes(url: str, retries: int = 4) -> bytes:
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": USER_AGENT, "Accept": "*/*"},
+    )
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                return response.read()
+        except urllib.error.HTTPError as error:
+            if error.code not in {408, 429, 500, 502, 503, 504}:
+                raise DownloadError(
+                    f"failed to fetch {url}: HTTP {error.code}"
+                ) from error
+            if attempt + 1 == retries:
+                raise DownloadError(f"failed to fetch {url}: {error}") from error
+            time.sleep(2**attempt)
+        except (urllib.error.URLError, TimeoutError, OSError) as error:
+            if attempt + 1 == retries:
+                raise DownloadError(f"failed to fetch {url}: {error}") from error
+            time.sleep(2**attempt)
+    raise AssertionError("unreachable")
+
+
+def discover_3gpp_urls(
+    release: int, specs: tuple[ThreeGppSpec, ...] | None = None
+) -> dict[str, str]:
+    marker = release_marker(release)
+    specs = load_catalog()[0] if specs is None else specs
+    by_number: dict[str, str] = {}
+    for series in sorted({spec.series for spec in specs}):
+        index_url = THREE_GPP_INDEX.format(release=release, series=series)
+        page = request_bytes(index_url).decode("utf-8", errors="replace")
+        for spec in (item for item in specs if item.series == series):
+            # The first filename character after '-' encodes the 3GPP release.
+            pattern = re.compile(
+                rf"""href=["']([^"']*/?{re.escape(spec.archive_stem)}-"""
+                rf"""{re.escape(marker)}[0-9a-z]{{2}}\.zip)["']""",
+                re.IGNORECASE,
+            )
+            matches = pattern.findall(html.unescape(page))
+            if not matches:
+                continue
+            # The highest version, decoded from the file name — not the last
+            # link on the page. An index that lists 18.5.0 after 18.6.0 is a
+            # presentation detail; picking by it silently downloads the older
+            # specification.
+            href = max(matches, key=decode_3gpp_version)
+            by_number[spec.number] = urllib.parse.urljoin(index_url, href)
+    return by_number
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+Validator = Callable[[Path], None]
+
+
+def validate_zip(path: Path) -> None:
+    """Open the archive and check every member's CRC.
+
+    A nonempty file is not an archive: an interrupted download and a proxy
+    error page both leave one, and both survive to the extraction step as a
+    confusing failure somewhere else.
+    """
+    try:
+        with zipfile.ZipFile(path) as zipped:
+            corrupt = zipped.testzip()
+    except (OSError, zipfile.BadZipFile) as error:
+        raise DownloadError(f"{path} is not a readable ZIP archive: {error}") from error
+    if corrupt is not None:
+        raise DownloadError(f"{path} has a corrupt member: {corrupt}")
+
+
+def validate_pdf(path: Path) -> None:
+    """Open the PDF and require at least one page.
+
+    A `%PDF-` prefix says only that the first five bytes arrived, which is
+    exactly what a truncated download has.
+    """
+    try:
+        pages = len(pypdf.PdfReader(str(path)).pages)
+    except Exception as error:
+        raise DownloadError(f"{path} is not a readable PDF: {error}") from error
+    if not pages:
+        raise DownloadError(f"{path} is a PDF with no pages")
+
+
+def validate_rfc_text(path: Path) -> None:
+    """Check that the file is the RFC Editor's plain text, not an error page.
+
+    Every RFC's text rendering carries the "Request for Comments:" header line,
+    which no HTML error body does.
+    """
+    try:
+        head = path.read_bytes()[:4096].decode("utf-8", errors="replace")
+    except OSError as error:
+        raise DownloadError(f"cannot read {path}: {error}") from error
+    if "Request for Comments:" not in head:
+        raise DownloadError(f"{path} does not look like an RFC text rendering")
+
+
+def atomic_download(
+    url: str, destination: Path, validate: Validator | None = None
+) -> None:
+    """Fetch `url` to `destination` unless a valid file is already there.
+
+    The replacement is written to a temporary file and validated there, so a
+    bad download never becomes the cached artifact. A cached file that fails
+    validation is removed even when its replacement also fails: leaving it
+    would mean the next run finds the same broken file and reports the same
+    error, having quietly rejected it twice.
+    """
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    stale = False
+    if destination.is_file() and destination.stat().st_size:
+        if validate is None:
+            return
+        try:
+            validate(destination)
+        except DownloadError:
+            stale = True
+        else:
+            return
+    try:
+        data = request_bytes(url)
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=destination.parent,
+            prefix=destination.name,
+            suffix=".part",
+            delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            stream.write(data)
+        try:
+            if validate is not None:
+                validate(temporary)
+            os.replace(temporary, destination)
+        finally:
+            temporary.unlink(missing_ok=True)
+    except DownloadError:
+        if stale:
+            destination.unlink(missing_ok=True)
+        raise
+
+
+def safe_extract(archive: Path, destination: Path) -> list[Path]:
+    destination.mkdir(parents=True, exist_ok=True)
+    extracted: list[Path] = []
+    try:
+        with zipfile.ZipFile(archive) as zipped:
+            for member in zipped.infolist():
+                member_path = PurePosixPath(member.filename)
+                if member_path.is_absolute() or ".." in member_path.parts:
+                    raise DownloadError(
+                        f"unsafe ZIP member in {archive}: {member.filename}"
+                    )
+                target = destination.joinpath(*member_path.parts)
+                if member.is_dir():
+                    target.mkdir(parents=True, exist_ok=True)
+                    continue
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with zipped.open(member) as source, target.open("wb") as output:
+                    shutil.copyfileobj(source, output)
+                extracted.append(target)
+    except (OSError, zipfile.BadZipFile) as error:
+        raise DownloadError(f"cannot extract {archive}: {error}") from error
+    return extracted
+
+
+def replace_extracted(archive: Path, destination: Path) -> list[Path]:
+    """Extract `archive` so that `destination` holds its contents and nothing else.
+
+    Extracting in place would leave the previous version's files behind
+    whenever a specification renames or drops one, and a directory holding two
+    versions at once is a corpus that silently extracts the wrong document.
+    The new contents are staged in a sibling directory and swapped in, so an
+    interrupted run leaves either the old version or the new one.
+    """
+    staging = destination.parent / f".{destination.name}.staging"
+    shutil.rmtree(staging, ignore_errors=True)
+    try:
+        safe_extract(archive, staging)
+        shutil.rmtree(destination, ignore_errors=True)
+        try:
+            staging.replace(destination)
+        except OSError as error:
+            raise DownloadError(
+                f"cannot install {archive} into {destination}: {error}"
+            ) from error
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+    return sorted(path for path in destination.rglob("*") if path.is_file())
+
+
+def relative_paths(paths: Iterable[Path], root: Path) -> list[str]:
+    return [str(path.relative_to(root)) for path in paths]
+
+
+def decode_3gpp_version(archive_url: str) -> tuple[int, int, int]:
+    name = Path(urllib.parse.urlparse(archive_url).path).name
+    match = re.search(r"-([0-9a-z]{3})\.zip$", name, re.IGNORECASE)
+    if not match:
+        raise DownloadError(f"cannot determine 3GPP version from {archive_url}")
+    major, minor, patch = (int(character, 36) for character in match.group(1).lower())
+    return major, minor, patch
+
+
+def version_string(version: tuple[int, int, int]) -> str:
+    return ".".join(str(part) for part in version)
+
+
+def etsi_pdf_location(spec: ThreeGppSpec) -> tuple[str, str, str]:
+    etsi_number = f"1{spec.archive_stem}"
+    range_start = int(etsi_number) // 100 * 100
+    number_range = f"{range_start:06d}_{range_start + 99:06d}"
+    kind = spec.document_type.lower()
+    base_url = f"{ETSI_DELIVER}/etsi_{kind}/{number_range}/{etsi_number}"
+    return kind, etsi_number, base_url
+
+
+def etsi_pdf_url(spec: ThreeGppSpec, version: tuple[int, int, int]) -> str:
+    major, minor, patch = version
+    kind, etsi_number, base_url = etsi_pdf_location(spec)
+    version_directory = f"{major:02d}.{minor:02d}.{patch:02d}_60"
+    filename = f"{kind}_{etsi_number}v{major:02d}{minor:02d}{patch:02d}p.pdf"
+    return f"{base_url}/{version_directory}/{filename}"
+
+
+def discover_etsi_pdf_versions(
+    spec: ThreeGppSpec, source_version: tuple[int, int, int]
+) -> list[tuple[int, int, int]]:
+    _, _, base_url = etsi_pdf_location(spec)
+    page = request_bytes(f"{base_url}/").decode("utf-8", errors="replace")
+    versions: set[tuple[int, int, int]] = {
+        (int(major), int(minor), int(patch))
+        for major, minor, patch in re.findall(
+            r"([0-9]{2})\.([0-9]{2})\.([0-9]{2})_60/?", page
+        )
+    }
+    return sorted(
+        (
+            version
+            for version in versions
+            if version[0] == source_version[0] and version <= source_version
+        ),
+        reverse=True,
+    )
+
+
+def download_3gpp(
+    spec: ThreeGppSpec,
+    url: str,
+    release: int,
+    output: Path,
+    extract: bool,
+    pdfs: bool,
+) -> DownloadRecord:
+    archive_name = Path(urllib.parse.urlparse(url).path).name
+    archive = output / "archives" / f"3gpp-rel-{release}" / archive_name
+    atomic_download(url, archive, validate=validate_zip)
+    files = [archive]
+    if extract:
+        spec_dir = (
+            output / "3gpp" / f"Rel-{release}" / f"{spec.document_type}_{spec.number}"
+        )
+        files.extend(replace_extracted(archive, spec_dir))
+    pdf_url = None
+    pdf_sha256 = None
+    pdf_size = None
+    source_version_tuple = decode_3gpp_version(url)
+    source_version = version_string(source_version_tuple)
+    pdf_version = None
+    if pdfs:
+        exact_pdf_url = etsi_pdf_url(spec, source_version_tuple)
+        pdf = output / "3gpp" / f"Rel-{release}" / "PDF" / Path(exact_pdf_url).name
+        try:
+            atomic_download(exact_pdf_url, pdf, validate=validate_pdf)
+            pdf_url = exact_pdf_url
+            pdf_version = source_version
+        except DownloadError as exact_error:
+            fallback_versions = discover_etsi_pdf_versions(spec, source_version_tuple)
+            fallback_versions = [
+                version
+                for version in fallback_versions
+                if version != source_version_tuple
+            ]
+            if not fallback_versions:
+                raise DownloadError(
+                    f"no Release {release} ETSI PDF is published for"
+                    f" {spec.document_type} {spec.number}"
+                    f" (source {source_version}): {exact_error}"
+                ) from exact_error
+            fallback_version = fallback_versions[0]
+            pdf_url = etsi_pdf_url(spec, fallback_version)
+            pdf = output / "3gpp" / f"Rel-{release}" / "PDF" / Path(pdf_url).name
+            atomic_download(pdf_url, pdf, validate=validate_pdf)
+            pdf_version = version_string(fallback_version)
+        files.append(pdf)
+        pdf_sha256 = sha256_file(pdf)
+        pdf_size = pdf.stat().st_size
+    return DownloadRecord(
+        family="3GPP",
+        identifier=f"{spec.document_type} {spec.number}",
+        title=spec.title,
+        url=url,
+        sha256=sha256_file(archive),
+        size=archive.stat().st_size,
+        files=relative_paths(files, output),
+        reason=spec.reason,
+        pdf_url=pdf_url,
+        pdf_sha256=pdf_sha256,
+        pdf_size=pdf_size,
+        source_version=source_version,
+        pdf_version=pdf_version,
+    )
+
+
+def download_rfc(spec: RfcSpec, output: Path) -> DownloadRecord:
+    url = RFC_TEXT_URL.format(number=spec.number)
+    destination = output / "rfc" / f"rfc{spec.number}.txt"
+    atomic_download(url, destination, validate=validate_rfc_text)
+    return DownloadRecord(
+        family="IETF",
+        identifier=f"RFC {spec.number}",
+        title=spec.title,
+        url=url,
+        sha256=sha256_file(destination),
+        size=destination.stat().st_size,
+        files=relative_paths([destination], output),
+    )
+
+
+def download_corpus(
+    output: Path,
+    release: int = 18,
+    workers: int = 6,
+    extract: bool = True,
+    pdfs: bool = False,
+    catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]] | None = None,
+    report: Callable[[str], None] = lambda message: None,
+) -> Path:
+    """Download the catalog into `output` and write `manifest.json`.
+
+    Returns the manifest path. Progress goes to `report`, so the caller
+    decides what printing means; anything that stops the download raises
+    `DownloadError`.
+    """
+    if workers < 1:
+        raise DownloadError("workers must be at least 1")
+    release_marker(release)
+
+    tgpp_specs, rfc_specs = catalog if catalog is not None else load_catalog()
+    try:
+        output = output.resolve()
+        output.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        raise DownloadError(f"cannot create the corpus directory: {error}") from error
+    report(f"Resolving 3GPP Release {release} artifacts...")
+    # Discovery is inside the boundary too: it runs before the worker pool, so
+    # nothing else would translate a failure here.
+    urls = discover_3gpp_urls(release, tgpp_specs)
+    missing = [spec.number for spec in tgpp_specs if spec.number not in urls]
+    if missing:
+        raise DownloadError(
+            f"No Release {release} artifact found for: {', '.join(missing)}. "
+            "The release may not contain every catalogued specification."
+        )
+
+    jobs = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        for spec in tgpp_specs:
+            jobs.append(
+                executor.submit(
+                    download_3gpp,
+                    spec,
+                    urls[spec.number],
+                    release,
+                    output,
+                    extract,
+                    pdfs,
+                )
+            )
+        for spec in rfc_specs:
+            jobs.append(executor.submit(download_rfc, spec, output))
+
+        records: list[DownloadRecord] = []
+        for future in concurrent.futures.as_completed(jobs):
+            try:
+                record = future.result()
+            except Exception as error:
+                for job in jobs:
+                    job.cancel()
+                raise DownloadError(str(error)) from error
+            records.append(record)
+            version_note = ""
+            if (
+                record.source_version is not None
+                and record.pdf_version is not None
+                and record.source_version != record.pdf_version
+            ):
+                version_note = (
+                    f" (PDF {record.pdf_version}; source {record.source_version}, "
+                    "ETSI publication lag)"
+                )
+            report(f"Downloaded {record.identifier}{version_note}")
+
+    records.sort(key=lambda item: (item.family, item.identifier))
+    manifest = {
+        "3gpp_release": release,
+        "generated_at_epoch": int(time.time()),
+        "include_pdfs": pdfs,
+        "artifact_count": len(records),
+        "artifacts": [asdict(record) for record in records],
+    }
+    manifest_path = output / "manifest.json"
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=output,
+            prefix="manifest",
+            suffix=".part",
+            delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            json.dump(manifest, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+        try:
+            os.replace(temporary, manifest_path)
+        finally:
+            temporary.unlink(missing_ok=True)
+    except OSError as error:
+        raise DownloadError(f"cannot write {manifest_path}: {error}") from error
+    report(f"Wrote {len(records)} artifacts and {manifest_path}")
+    return manifest_path

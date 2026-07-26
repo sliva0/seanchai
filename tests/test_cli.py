@@ -1,7 +1,7 @@
 import docx
 from click.testing import CliRunner
 
-from seanchai import main
+from seanchai.cli import main
 from seanchai.dad import ast, formatter, parser
 
 
@@ -160,3 +160,66 @@ def test_extract_command_rejects_a_missing_input_file():
 
     assert result.exit_code == 2
     assert "File 'missing.docx' does not exist" in result.stderr
+
+
+def test_correct_command_reports_a_malformed_dad_as_an_error_not_a_traceback(
+    tmp_path,
+):
+    broken = tmp_path / "broken.dad"
+    broken.write_text("; Specification: 3GPP TS 29.999\n; Version: not a version\n")
+
+    result = CliRunner().invoke(
+        main, ["correct", str(broken), "--corrections", str(_corrections_dir(tmp_path))]
+    )
+
+    assert result.exit_code == 1
+    # A Click error handled by the CLI, not a library exception that escaped.
+    assert isinstance(result.exception, SystemExit)
+    assert "Error: line 2:" in result.stderr
+
+
+def test_correct_command_fails_when_the_specification_has_no_corrections_module(
+    tmp_path, synthetic_spec_docx
+):
+    # Correction is what was asked for here, so a directory without this
+    # specification's module must not produce a cheerful uncorrected file.
+    from seanchai.extractor import tgpp_docx
+
+    raw = tmp_path / "raw.dad"
+    raw.write_text(formatter.format_spec(tgpp_docx.extract(synthetic_spec_docx)))
+    empty = tmp_path / "empty"
+    empty.mkdir()
+
+    result = CliRunner().invoke(
+        main, ["correct", str(raw), "--corrections", str(empty)]
+    )
+
+    assert result.exit_code == 1
+    assert "Error: no corrections module for '3GPP TS 29.999'" in result.stderr
+
+
+def test_extract_command_tolerates_a_corrections_directory_without_this_spec(
+    tmp_path, synthetic_spec_docx
+):
+    # The other side of the same choice: a corpus run passes one directory for
+    # every specification, and most of them have no module.
+    empty = tmp_path / "empty"
+    empty.mkdir()
+
+    result = CliRunner().invoke(
+        main, ["extract", str(synthetic_spec_docx), "--corrections", str(empty)]
+    )
+
+    assert result.exit_code == 0
+    assert parser.parse(result.stdout).specification == "3GPP TS 29.999"
+
+
+def test_extract_command_reports_a_source_document_failure_as_an_error(tmp_path):
+    not_a_docx = tmp_path / "not-really.docx"
+    not_a_docx.write_bytes(b"this is not a Word document")
+
+    result = CliRunner().invoke(main, ["extract", str(not_a_docx)])
+
+    assert result.exit_code == 1
+    assert isinstance(result.exception, SystemExit)
+    assert "Error: extracting" in result.stderr
