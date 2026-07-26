@@ -136,6 +136,7 @@ def test_parses_avp_table_nulls_flags_and_encryption():
             "; Type: AVP Table",
             "; Section: 6.1",
             "; Table: 6.1/1",
+            "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
             "Local-AVP 10 6.2 Unsigned32 M,V - - - Yes",
             "Remote-AVP - - OctetString - M - V No",
         )
@@ -238,9 +239,10 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Type: AVP Table",
                 "; Section: 1",
                 "; Table: 1",
+                "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "too few columns",
             ),
-            7,
+            8,
             "expected 9 columns, got 3",
         ),
         (
@@ -248,9 +250,10 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Type: AVP Table",
                 "; Section: 1",
                 "; Table: 1",
+                "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "Example 1 1 Unsigned32 - - - - Maybe",
             ),
-            7,
+            8,
             "malformed Encrypt cell 'Maybe'",
         ),
         (
@@ -294,9 +297,10 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Type: AVP Table",
                 "; Section: 1",
                 "; Table: 1",
+                "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "Example twelve 1 Unsigned32 - - - - No",
             ),
-            7,
+            8,
             "Code cell must be a number, got 'twelve'",
         ),
         (
@@ -315,15 +319,21 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Type: AVP Table",
                 "; Section: 1",
                 "; Table: 1",
+                "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "Example 1 1.2.not-a-section Unsigned32 - - - - No",
             ),
-            7,
+            8,
             "section: String should match pattern",
         ),
         # A whole-section problem, unlike the rows above, so it stays anchored
         # on the block rather than on any one directive.
         (
-            _dad("; Type: AVP Table", "; Section: 1", "; Table: 1"),
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
+            ),
             4,
             "rows: Tuple should have at least 1 item",
         ),
@@ -334,3 +344,124 @@ def test_parse_errors_include_the_source_line(text, lineno, message):
         parser.parse(text)
 
     assert exc_info.value.lineno == lineno
+
+
+_COLUMNS = "; Columns: Name Code Section Type Must May S.not M.not Encrypt"
+
+
+def test_parses_a_table_whose_columns_are_a_subset_in_source_order():
+    """TS 29.273's AVP table has no Encrypt column, and RFC 6733 §4.5 has
+    neither MAY nor SHOULD NOT. An absent column is not an empty one."""
+    spec = parser.parse(
+        _dad(
+            "; Type: AVP Table",
+            "; Section: 6.1",
+            "; Table: 6.1/1",
+            "; Columns: Name Code Type Must M.not",
+            "Local-AVP 10 Unsigned32 M,V -",
+        )
+    )
+
+    table = spec.sections[0]
+    assert isinstance(table, ast.AvpTable)
+    assert table.columns == (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.TYPE,
+        ast.AvpColumn.MUST,
+        ast.AvpColumn.MUST_NOT,
+    )
+    (row,) = table.rows
+    # Absent columns, not empty cells: the table never spoke about either.
+    assert row.may_encrypt is None
+    assert row.section is None
+    assert row.flag_rules.may == frozenset()
+
+
+def test_parses_free_columns_with_quoted_cells():
+    """TS 29.212 table 5.3.0.1 carries "Acc. Type" and "Applicability", whose
+    cells hold spaces and commas the bare-token grammar could not."""
+    spec = parser.parse(
+        _dad(
+            "; Type: AVP Table",
+            "; Section: 5.3.0",
+            "; Table: 5.3.0.1",
+            '; Columns: Name Code Type "Acc. Type" "Applicability"',
+            'Local-AVP 10 Unsigned32 "3GPP-EPS, Non-3GPP-EPS" "Both NBIFOM"',
+            'Other-AVP 11 Unsigned32 "All" ""',
+        )
+    )
+
+    table = spec.sections[0]
+    assert isinstance(table, ast.AvpTable)
+    assert [column.label for column in table.free_columns] == [
+        "Acc. Type",
+        "Applicability",
+    ]
+    local, other = table.rows
+    assert local.extras == ("3GPP-EPS, Non-3GPP-EPS", "Both NBIFOM")
+    assert other.extras == ("All", "")  # an empty source cell round-trips as ""
+
+
+def test_a_free_column_cell_must_be_quoted_and_a_modelled_one_must_not():
+    with pytest.raises(parser.DadParseError, match="needs a quoted cell"):
+        parser.parse(
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                '; Columns: Name "Applicability"',
+                "Local-AVP Both",
+            )
+        )
+    with pytest.raises(parser.DadParseError, match="takes a bare cell"):
+        parser.parse(
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                "; Columns: Name Code",
+                'Local-AVP "10"',
+            )
+        )
+
+
+def test_an_unknown_bare_column_is_rejected_with_the_way_to_carry_it():
+    with pytest.raises(parser.DadParseError, match="unknown column 'Applicability'"):
+        parser.parse(
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                "; Columns: Name Applicability",
+                "Local-AVP Both",
+            )
+        )
+
+
+def test_a_table_row_must_have_one_cell_per_declared_column():
+    with pytest.raises(parser.DadParseError, match="expected 5 columns, got 6"):
+        parser.parse(
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                "; Columns: Name Code Type Must M.not",
+                "Local-AVP 10 Unsigned32 M,V - -",
+            )
+        )
+
+
+def test_a_data_type_outside_the_closed_set_is_rejected():
+    """TS 29.272 table 7.3.1/1 printed "Enumerate" and TS 29.212's prints
+    "Enumarated"; both are typos no free-text field would have caught."""
+    with pytest.raises(parser.DadParseError, match="data_type"):
+        parser.parse(
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                _COLUMNS,
+                "Local-AVP 10 6.2 Enumerate M,V - - - Yes",
+            )
+        )

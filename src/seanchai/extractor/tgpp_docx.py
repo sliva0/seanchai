@@ -343,6 +343,18 @@ def _strip_note_ref(text: str) -> tuple[str, str | None]:
     return (text[: match.start()] + text[match.end() :]).strip(), match["number"]
 
 
+def _data_type(text: str | None) -> ast.DataType | None:
+    """Strict, like the flags cells: a type outside RFC 6733's closed set is a
+    source typo ("Enumerate" in TS 29.272, "Enumarated" in TS 29.212), and
+    typos are the input-patch layer's job."""
+    if text is None:
+        return None
+    try:
+        return ast.DataType(text)
+    except ValueError:
+        raise ExtractionError(f"AVP table Value Type cell {text!r}") from None
+
+
 def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
     # Strict: typos like "M. V" or lowercase "v" are fixed by input patches,
     # not tolerated here.
@@ -354,12 +366,57 @@ def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
         raise ExtractionError(str(error)) from None
 
 
+# The nine columns 3GPP AVP tables share, keyed by the label they print. The
+# same column is spelled differently across specifications — "Clause defined"
+# and "Section defined", "May Encr." and "May Encrypt" — and the differences
+# are typographic, not semantic.
+_AVP_TABLE_COLUMNS = {
+    "Attribute Name": ast.AvpColumn.NAME,
+    "AVP Code": ast.AvpColumn.CODE,
+    "Clause defined": ast.AvpColumn.SECTION,
+    "Section defined": ast.AvpColumn.SECTION,
+    "Value Type": ast.AvpColumn.TYPE,
+    "Must": ast.AvpColumn.MUST,
+    "May": ast.AvpColumn.MAY,
+    "Should not": ast.AvpColumn.SHOULD_NOT,
+    "Must not": ast.AvpColumn.MUST_NOT,
+    "May Encr.": ast.AvpColumn.ENCRYPT,
+    "May Encrypt": ast.AvpColumn.ENCRYPT,
+}
+# A column label may carry a note reference ("Value Type (NOTE 2)",
+# "Applicability (notes 3, 9)"). The reference points at prose this format does
+# not carry, so it is not part of the label.
+_COLUMN_NOTE_RE = re.compile(r"\s*\((?:NOTE|Note|note)S?s?[^)]*\)$")
+
+
+def _avp_table_columns(labels: list[str]) -> tuple[ast.Column, ...]:
+    """The table's own columns, in its own order.
+
+    Column *order* has been identical in every 3GPP specification examined, but
+    the set has not: TS 29.273's table has no Encrypt column, TS 29.212's has
+    two extra ones. Reading the labels rather than assuming nine positions is
+    what lets those be extracted at all, and what lets a missing column stay
+    distinguishable from an empty cell.
+    """
+    columns: list[ast.Column] = []
+    for label in labels:
+        stripped = _COLUMN_NOTE_RE.sub("", label).strip()
+        if not stripped:
+            raise ExtractionError(f"AVP table column with no label in {labels!r}")
+        if known := _AVP_TABLE_COLUMNS.get(stripped):
+            columns.append(known)
+        else:
+            columns.append(ast.FreeColumn(label=stripped))
+    return tuple(columns)
+
+
 def _extract_avp_table(
     table: _Table, section_number: str
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
+    columns: tuple[ast.Column, ...] | None = None
     for row in table.rows:
         cells = row.cells
         if not cells:
@@ -369,39 +426,82 @@ def _extract_avp_table(
                 if match := _NOTE_RFC_RE.match(line):
                     note_rfcs[match["number"]] = match["rfc"]
             continue
+        if cells[0] == "Attribute Name":  # the label row defines the columns
+            columns = _avp_table_columns(cells)
+            continue
+        if cells[0] == "" or cells[0] == cells[1]:
+            continue  # spanning header rows (merged cells repeat the same text)
+        if columns is None:
+            raise ExtractionError("AVP table row before its column labels")
         # The width check comes before every other cell is read: a malformed
         # table must report its width, not an IndexError from column two.
-        if len(cells) != 9:
-            raise ExtractionError(f"AVP table row with {len(cells)} cells: {cells!r}")
-        if cells[0] in ("", "Attribute Name") or cells[0] == cells[1]:
-            continue  # header rows (merged cells repeat the same text)
-        name, name_note = _strip_note_ref(cells[0])
-        if " " in name:
-            # AVP names never contain spaces; line-wrap artifacts eating a
-            # hyphen (29.272 "MME-Location Information") are input-patched.
-            raise ExtractionError(f"AVP table name cell {name!r} contains spaces")
-        code, code_note = _strip_note_ref(cells[1])
-        if code and not code.isdigit():
-            raise ExtractionError(f"AVP table code cell {code!r} for {name!r}")
-        if cells[8] not in ("Yes", "No"):
-            raise ExtractionError(f"AVP table Encrypt cell {cells[8]!r} for {name!r}")
-        if note := name_note or code_note:
+        if len(cells) != len(columns):
+            raise ExtractionError(
+                f"AVP table row with {len(cells)} cells for"
+                f" {len(columns)} columns: {cells!r}"
+            )
+        name = ""
+        code_value: int | None = None
+        section_value: str | None = None
+        type_value: str | None = None
+        encrypt: bool | None = None
+        must = may = should_not = must_not = frozenset[ast.AvpFlag]()
+        extras: list[str] = []
+        note: str | None = None
+        for column, text in zip(columns, cells, strict=True):
+            if isinstance(column, ast.FreeColumn):
+                extras.append(text)
+                continue
+            match column:
+                case ast.AvpColumn.NAME:
+                    name, name_note = _strip_note_ref(text)
+                    if " " in name:
+                        # AVP names never contain spaces; line-wrap artifacts
+                        # eating a hyphen (29.272 "MME-Location Information")
+                        # are input-patched.
+                        raise ExtractionError(
+                            f"AVP table name cell {name!r} contains spaces"
+                        )
+                    note = name_note or note
+                case ast.AvpColumn.CODE:
+                    code, code_note = _strip_note_ref(text)
+                    if code and not code.isdigit():
+                        raise ExtractionError(f"AVP table code cell {code!r}")
+                    code_value = int(code) if code else None
+                    note = note or code_note
+                case ast.AvpColumn.SECTION:
+                    section_value = text or None
+                case ast.AvpColumn.TYPE:
+                    type_value = text or None
+                case ast.AvpColumn.ENCRYPT:
+                    if text not in ("Yes", "No", ""):
+                        raise ExtractionError(f"AVP table Encrypt cell {text!r}")
+                    encrypt = None if text == "" else text == "Yes"
+                case ast.AvpColumn.MUST:
+                    must = _flags_cell(text)
+                case ast.AvpColumn.MAY:
+                    may = _flags_cell(text)
+                case ast.AvpColumn.SHOULD_NOT:
+                    should_not = _flags_cell(text)
+                case ast.AvpColumn.MUST_NOT:
+                    must_not = _flags_cell(text)
+        if note is not None:
             note_refs.append((name, note))
         rows.append(
             ast.AvpTableRow(
                 name=name,
-                code=int(code) if code else None,
-                section=cells[2] or None,
-                data_type=cells[3],
+                code=code_value,
+                section=section_value,
+                data_type=_data_type(type_value),
                 flag_rules=ast.AvpFlagRules(
-                    must=_flags_cell(cells[4]),
-                    may=_flags_cell(cells[5]),
-                    should_not=_flags_cell(cells[6]),
-                    must_not=_flags_cell(cells[7]),
+                    must=must, may=may, should_not=should_not, must_not=must_not
                 ),
-                may_encrypt=cells[8] == "Yes",
+                may_encrypt=encrypt,
+                extras=tuple(extras),
             )
         )
+    if columns is None:
+        raise ExtractionError("AVP table without column labels")
     if table.caption is None:
         raise ExtractionError("AVP table without a caption")
     reused = [
@@ -411,6 +511,7 @@ def _extract_avp_table(
     ]
     avp_table = ast.AvpTable(
         table=table.caption,
+        columns=columns,
         rows=tuple(rows),
         source=ast.SourceRef(section=section_number),
     )

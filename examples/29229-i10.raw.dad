@@ -311,7 +311,7 @@
 ; Section: 6.3.0
 ; Table: 6.3.0.1
 ; Page: 21
-;; Name                                       Code  Section    Type               Must  May   S.not M.not Encrypt
+; Columns: Name                               Code  Section    Type               Must  May   S.not M.not Encrypt
 Visited-Network-Identifier                    600   6.3.1      OctetString        M,V   -     -     -     No
 Public-Identity                               601   6.3.2      UTF8String         M,V   -     -     -     No
 Server-Name                                   602   6.3.3      UTF8String         M,V   -     -     -     No

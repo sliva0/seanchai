@@ -53,3 +53,12 @@ section = "7.3.196"
 reason = "grouped-AVP rule name written with spaces instead of hyphens"
 first_version = "18.6.0"
 last_version = "18.6.0"
+
+[[patch]]
+find = "Enumerate"
+replace = "Enumerated"
+exact = true
+section = "7.3.1"
+reason = "table 7.3.1/1 misspells Alert-Reason's type as 'Enumerate', which is not a Diameter data type; clause 7.3.83 defines it as Enumerated, as does the TS 29.230 registry"
+first_version = "18.6.0"
+last_version = "18.6.0"

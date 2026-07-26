@@ -9,8 +9,11 @@ depends on stable diffs. Canonical rules:
   line of their own section;
 - enum bodies: `=` aligned per section (RESERVED counts as a name);
 - tables: columns split by 3 spaces, widths from data cells only (minimum 3);
-  the `;;` column-header line is cosmetic — labels sit at column starts,
-  overflowing into gaps when wider than the column.
+  labels sit at column starts, overflowing into gaps when wider than the
+  column. An AVP table's labels are the `; Columns:` directive and are
+  grammar; the re-used table's `;;` line is still cosmetic. Both are written
+  the same way, so the first label follows its prefix and every later one
+  lines up with its data.
 """
 
 from collections.abc import Callable
@@ -46,7 +49,7 @@ def _header_directives(name: str, source: ast.SourceRef) -> list[str]:
     return lines
 
 
-def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
+def _table(headers: list[str], rows: list[list[str]], prefix: str) -> list[str]:
     widths = [
         max(_MIN_COLUMN_WIDTH, max(len(row[i]) for row in rows))
         for i in range(len(headers))
@@ -55,7 +58,7 @@ def _table(headers: list[str], rows: list[list[str]]) -> list[str]:
     for width in widths[:-1]:
         starts.append(starts[-1] + width + _COLUMN_GAP)
 
-    header_line = ";;"
+    header_line = prefix
     for header, start in zip(headers, starts, strict=True):
         header_line += " " * max(start - len(header_line), 1) + header
     lines = [header_line]
@@ -130,40 +133,57 @@ def _format_enumerated(avp: ast.EnumeratedAvp) -> list[str]:
     return lines
 
 
+def _avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
+    """One modelled cell, with `-` as the canonical empty. Only reached for
+    columns the table declares, so a None here is an empty source cell."""
+    match column:
+        case ast.AvpColumn.NAME:
+            return row.name
+        case ast.AvpColumn.CODE:
+            return "-" if row.code is None else str(row.code)
+        case ast.AvpColumn.SECTION:
+            return "-" if row.section is None else row.section
+        case ast.AvpColumn.TYPE:
+            return "-" if row.data_type is None else row.data_type.value
+        case ast.AvpColumn.MUST:
+            return abnf.avp_flags_cell(row.flag_rules.must)
+        case ast.AvpColumn.MAY:
+            return abnf.avp_flags_cell(row.flag_rules.may)
+        case ast.AvpColumn.SHOULD_NOT:
+            return abnf.avp_flags_cell(row.flag_rules.should_not)
+        case ast.AvpColumn.MUST_NOT:
+            return abnf.avp_flags_cell(row.flag_rules.must_not)
+        case ast.AvpColumn.ENCRYPT:
+            return (
+                "-" if row.may_encrypt is None else "Yes" if row.may_encrypt else "No"
+            )
+
+
 def _format_avp_table(table: ast.AvpTable) -> list[str]:
-    rows = [
-        [
-            row.name,
-            "-" if row.code is None else str(row.code),
-            row.section if row.section is not None else "-",
-            row.data_type,
-            abnf.avp_flags_cell(row.flag_rules.must),
-            abnf.avp_flags_cell(row.flag_rules.may),
-            abnf.avp_flags_cell(row.flag_rules.should_not),
-            abnf.avp_flags_cell(row.flag_rules.must_not),
-            "Yes" if row.may_encrypt else "No",
-        ]
-        for row in table.rows
+    # Free cells are quoted because they hold source text with spaces and
+    # commas ("Gi, Sgi", "3GPP-EPS, Non-3GPP-EPS (NOTE 11)"), which the
+    # whitespace-separated table grammar could not otherwise carry.
+    headers = [
+        column.value if isinstance(column, ast.AvpColumn) else f'"{column.label}"'
+        for column in table.columns
     ]
+    rows = []
+    for row in table.rows:
+        extras = iter(row.extras)
+        rows.append(
+            [
+                _avp_table_cell(row, column)
+                if isinstance(column, ast.AvpColumn)
+                else f'"{next(extras)}"'
+                for column in table.columns
+            ]
+        )
     return [
         "; Type: AVP Table",
         f"; Section: {table.source.section}",
         f"; Table: {table.table}",
         *([f"; Page: {table.source.page}"] if table.source.page is not None else []),
-        *_table(
-            [
-                "Name",
-                "Code",
-                "Section",
-                "Type",
-                "Must",
-                "May",
-                "S.not",
-                "M.not",
-                "Encrypt",
-            ],
-            rows,
-        ),
+        *_table(headers, rows, prefix="; Columns:"),
     ]
 
 
@@ -177,7 +197,7 @@ def _format_reused(reused: ast.ReusedAvps) -> list[str]:
         f"; Section: {reused.source.section}",
         f"; Table: {reused.table}",
         *([f"; Page: {reused.source.page}"] if reused.source.page is not None else []),
-        *_table(["Name", "From", "M-bit"], rows),
+        *_table(["Name", "From", "M-bit"], rows, prefix=";;"),
     ]
 
 

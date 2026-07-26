@@ -21,21 +21,24 @@ follows, and nothing outside this file should cite one.
 
 ## Format
 
-1. **Write a formal grammar document.** The parser source is currently the
-   specification. [dad-format.md](dad-format.md) records the design intent; the
-   grammar itself is still missing, and it is the main blocker for a second
-   implementation or an automated reviewer.
-2. **Restrict `AvpTableRow.data_type`** to the closed set of Diameter
-   base/derived types (see `TODO(format)` in `ast.py`).
-3. **Decide what `AvpTableRow.may_encrypt` means when the source has no such
-   column.** It is a required `bool` today because every 3GPP AVP table prints
-   an Encrypt column, and RFC 3588 §4.5 printed an `Encr` one too. RFC 6733
-   removed it — its §4.5 table has only MUST and MUST NOT — so a base-protocol
-   row has nothing to read the field from. The same table drops the MAY and
-   SHOULD NOT columns, which the row already defaults to empty; after RFC
-   extraction "empty" would mean both "the table said none" and "the table had
-   no such column", and the linter is the thing that would have to tell them
-   apart.
+The grammar ([grammar.md](grammar.md)), the closed `data_type` set and the
+`; Columns:` directive are done. What they left open:
+
+1. **Give re-used tables a `; Columns:` directive too.** Their columns vary the
+   same way AVP tables' do — 29.128's re-used table has no M-bit column, and
+   29.172's has AVP Code and Value Type columns the format does not model —
+   and every re-used table's Comments column is dropped today, which is the
+   same faithful-capture problem `; Columns:` was built to fix. The mechanism
+   now exists; this is applying it.
+2. **Model the RFC 3588 `P` flag.** `AvpFlag` has only M and V, so 29.061,
+   29.212, 29.214 and 29.273 cannot be extracted: their flags cells say `V, P`.
+   RFC 6733 deprecated the P bit, but these specifications still print it, and
+   an extractor that records what the document says has to be able to hold it.
+   This is now the single most common blocker after the missing-caption class.
+3. **Decide whether `Yes`/`No` is the only Encrypt spelling.** 29.061, 29.212
+   and 29.214 write `Y` and `N`. That is a document convention rather than a
+   typo, so it probably belongs in extractor code next to the other
+   conventions, not in 200 input patches.
 
 ## Linter
 
@@ -133,6 +136,15 @@ re-declares them, because every Diameter application is assumed to have them.
     borrow Wireshark's disambiguated names for AVPs whose names clash across
     specs.
 
+    Use it as an oracle for values, not for the type vocabulary: its
+    `typedefn`s include `IPAddress`, `VendorId`, `AppId`, `OctetStringOrUTF8`
+    and `MIPRegistrationRequest`, which are dissector conveniences rather than
+    Diameter types. A comparison has to map those onto RFC 6733's fifteen
+    before it can report a disagreement — and mensonen/diameter collapses in
+    the opposite direction, folding `DiameterIdentity` and `DiameterURI` into
+    `OctetString`/`UTF8String`. Two consumers, two different reductions, which
+    is why `.dad` keeps every distinction the specification draws.
+
 ## More sources
 
 Run the extractor over the remaining 3GPP Diameter specs. Expect new document
@@ -161,20 +173,22 @@ the classes matter more than the individual specs.
     they lack the "AVP Flag rules" header the current table dispatch keys on.
     29.305 is unexamined. Related, and also a shape assumption: 29.273 has a
     command section with no ABNF.
-18. **Five trip deliberate strictness on a single cell** — a space inside a
-    name cell in 29.336 and 29.338, `M. V` for flags in 29.345, an empty
-    Encrypt cell in 29.389, a pattern violation in 29.109. This is the
-    input-patch layer working as designed, so these are patches to write rather
-    than code to change.
+18. **Four trip deliberate strictness on a single cell** — a space inside a
+    name cell in 29.336 and 29.338, `M. V` for flags in 29.345, a pattern
+    violation in 29.109. This is the input-patch layer working as designed, so
+    these are patches to write rather than code to change. 29.389's empty
+    Encrypt cell used to be in this list and is not any more: with the column
+    declared, an empty cell is a representable value rather than an error.
 19. **Add an RFC (plain-text) extractor** for the base protocol and IETF
     applications. This is a new input path rather than a new format: RFC 6733
     §4.5 is the same kind of table as a 3GPP AVP table, and its Attribute Name,
     AVP Code, Section Defined and Data Type columns map onto `AvpTableRow` as
     it already stands, plain scalar AVPs included. `vendor_id` is already
     optional on the definition nodes, so IETF-space AVPs need no change there.
-    The two real costs are the `may_encrypt` question (3) and the fixed-width
-    layout itself, where a long name wraps across physical lines (`Acct-` /
-    `Interim-Interval`).
+    Its narrower flag columns are already representable — `; Columns:` lets a
+    table declare that it has only MUST and MUST NOT — so the one real cost
+    left is the fixed-width layout itself, where a long name wraps across
+    physical lines (`Acct-` / `Interim-Interval`).
 20. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).
 

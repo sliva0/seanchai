@@ -199,7 +199,54 @@ fixture for it in `tests/conftest.py` too.
 - "x.y.z Name" headings without the " AVP" suffix (29.272);
 - `<AVP header: 632, 10415>` comma separator (29.229);
 - bold applied to bracket runs but not to the AVP name (only name runs are
-  trusted for the `; bold` marker).
+  trusted for the `; bold` marker);
+- Value Type cells naming a type that does not exist: "Enumerate" (29.272
+  clause 7.3.83, Alert-Reason) and "Enumarated" (29.212) — input-patched. Both
+  were invisible until `AvpTableRow.data_type` became a closed set.
+
+## Per-specification AVP-table columns
+
+The extractor reads an AVP table's columns off its label row rather than
+assuming nine positions, because the label row is the only thing that says what
+the table actually holds.
+
+Column *order* has been identical in all 20 specifications examined:
+Attribute Name, AVP Code, Clause/Section defined, Value Type, Must, May, Should
+not, Must not, then any extras. The column *set* has not:
+
+- **29.273** has 8 — no "May Encr." column at all;
+- **29.061** and **29.214** have 10 — one extra trailing column;
+- **29.212** has 11 — two extra;
+- and RFC 6733 §4.5, for the future RFC extractor, has neither MAY nor
+  SHOULD NOT nor an encrypt column.
+
+Labels vary typographically without varying in meaning: "Clause defined" and
+"Section defined", "May Encr." and "May Encrypt", "Clause  defined" with a
+double space. `_AVP_TABLE_COLUMNS` maps the spellings onto one column each. A
+label may also carry a note reference ("Value Type (NOTE 2)"), which is
+stripped — it points at prose the format does not carry.
+
+The extra columns are kept as free columns under their source labels. They are
+*not* canonicalized across specifications, because they do not mean the same
+thing:
+
+- 29.061 table 9a, "Applicable Reference Points" — which of this spec's own
+  reference points the AVP applies to: "Gi, Sgi", "Sgi", "Gi";
+- 29.212 table 5.3.0.1, "Acc. Type" — access network type: "All", "3GPP-EPS",
+  "3GPP-GPRS", "Non-3GPP-EPS", "3GPP2", "FBA", freely combined;
+- 29.212 table 5.3.0.1, "Applicability" — two things in one cell: a functional
+  domain ("CC" charging control, "PC" policy control, "Both", "ADC") followed
+  by zero or more supported-feature names, as in "Both Rel8" or "Both
+  CondPolicyInfo, CondPolicyInfo-DefaultQoS";
+- 29.214 table 5.3.0.1, "Applicability" — supported-feature names only, with no
+  domain tag, and empty for 31 of its rows.
+
+Three axes under four labels. The two columns sharing the name "Applicability"
+overlap on the supported-feature dimension and differ on the domain tag; "Acc.
+Type" and "Applicable Reference Points" are both "where does this apply" but on
+different axes. Collapsing them would be inventing a claim no specification
+makes, so the extractor records the label and leaves the judgement to a
+consumer.
 
 ## Gotchas
 

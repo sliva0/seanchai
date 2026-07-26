@@ -100,16 +100,46 @@ def _boundary_specs():
                 ),
             ),
         ),
+        # A table shaped like TS 29.212's: free columns whose cells hold
+        # spaces and commas, an empty free cell, and no Encrypt column.
+        "free-columns": _spec(
+            ast.AvpTable(
+                table="5.3.0.1",
+                columns=(
+                    ast.AvpColumn.NAME,
+                    ast.AvpColumn.CODE,
+                    ast.AvpColumn.TYPE,
+                    ast.FreeColumn(label="Acc. Type"),
+                    ast.FreeColumn(label="Applicability"),
+                ),
+                source=ast.SourceRef(section="5.3.0"),
+                rows=(
+                    ast.AvpTableRow(
+                        name="Local-AVP",
+                        code=10,
+                        data_type=ast.DataType.UNSIGNED32,
+                        extras=("3GPP-EPS, Non-3GPP-EPS (NOTE 11)", "Both NBIFOM"),
+                    ),
+                    ast.AvpTableRow(
+                        name="Other-AVP",
+                        code=None,
+                        data_type=ast.DataType.GROUPED,
+                        extras=("All", ""),
+                    ),
+                ),
+            )
+        ),
         "long-names": _spec(
             ast.AvpTable(
                 table="1/1",
+                columns=tuple(ast.AvpColumn),
                 source=ast.SourceRef(section="1.2.3A", page=2**32 - 1),
                 rows=(
                     ast.AvpTableRow(
                         name="A-Very-Long-Attribute-Name-3GPP-Style",
                         code=None,
                         section=None,
-                        data_type="OctetString",
+                        data_type=ast.DataType.OCTET_STRING,
                         # The widest flag cell the columns can hold; the four
                         # rules are disjoint, so every flag it names is in one.
                         flag_rules=ast.AvpFlagRules(must=frozenset(ast.AvpFlag)),
@@ -171,13 +201,14 @@ def test_formats_every_section_and_optional_field_canonically():
             ),
             ast.AvpTable(
                 table="4/1",
+                columns=tuple(ast.AvpColumn),
                 source=ast.SourceRef(section="4"),
                 rows=(
                     ast.AvpTableRow(
                         name="A",
                         code=None,
                         section=None,
-                        data_type="Time",
+                        data_type=ast.DataType.TIME,
                         flag_rules=ast.AvpFlagRules(
                             must=frozenset({ast.AvpFlag.VENDOR, ast.AvpFlag.MANDATORY})
                         ),

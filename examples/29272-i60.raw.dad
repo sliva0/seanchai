@@ -657,7 +657,7 @@
 ; Section: 7.3.1
 ; Table: 7.3.1/1
 ; Page: 86
-;; Name                                             Code   Section   Type               Must  May   S.not M.not Encrypt
+; Columns: Name                                     Code   Section   Type               Must  May   S.not M.not Encrypt
 Subscription-Data                                   1400   7.3.2     Grouped            M,V   -     -     -     No
 Terminal-Information                                1401   7.3.3     Grouped            M,V   -     -     -     No
 IMEI                                                1402   7.3.4     UTF8String         M,V   -     -     -     No
@@ -692,7 +692,7 @@ APN-Configuration                                   1430   7.3.35    Grouped    
 EPS-Subscribed-QoS-Profile                          1431   7.3.37    Grouped            M,V   -     -     -     No
 VPLMN-Dynamic-Address-Allowed                       1432   7.3.38    Enumerated         M,V   -     -     -     No
 STN-SR                                              1433   7.3.39    OctetString        M,V   -     -     -     No
-Alert-Reason                                        1434   7.3.83    Enumerate          M,V   -     -     -     No
+Alert-Reason                                        1434   7.3.83    Enumerated         M,V   -     -     -     No
 AMBR                                                1435   7.3.41    Grouped            M,V   -     -     -     No
 CSG-Subscription-Data                               1436   7.3.78    Grouped            M,V   -     -     -     No
 CSG-Id                                              1437   7.3.79    Unsigned32         M,V   -     -     -     No

@@ -302,6 +302,52 @@ def _cells(body: list[tuple[int, str]], count: int):
         yield lineno, cells
 
 
+# A modelled cell is a bare token; a free cell is quoted, because the source
+# text it carries contains spaces and commas.
+_TABLE_CELL_RE = re.compile(r'"(?P<quoted>[^"\r\n]*)"|(?P<bare>\S+)')
+
+
+class _Cell(NamedTuple):
+    text: str
+    quoted: bool
+
+
+def _split_cells(line: str, lineno: int) -> list[_Cell]:
+    cells: list[_Cell] = []
+    position = 0
+    while position < len(line):
+        if line[position] == " ":
+            position += 1
+            continue
+        match = _TABLE_CELL_RE.match(line, position)
+        if match is None:  # an unpaired quote is the only way to get here
+            raise DadParseError(lineno, f"unterminated quoted cell: {line.strip()!r}")
+        if match["quoted"] is None:
+            cells.append(_Cell(match["bare"], quoted=False))
+        else:
+            cells.append(_Cell(match["quoted"], quoted=True))
+        position = match.end()
+    return cells
+
+
+def _columns(directive: _Directive) -> tuple[ast.Column, ...]:
+    columns: list[ast.Column] = []
+    for cell in _split_cells(directive.value, directive.lineno):
+        if cell.quoted:
+            with _validated(directive.lineno):
+                columns.append(ast.FreeColumn(label=cell.text))
+            continue
+        try:
+            columns.append(ast.AvpColumn(cell.text))
+        except ValueError:
+            raise DadParseError(
+                directive.lineno,
+                f"unknown column {cell.text!r}"
+                " (quote the label to carry it as a free column)",
+            ) from None
+    return tuple(columns)
+
+
 def _flags(cell: str, lineno: int) -> frozenset[ast.AvpFlag]:
     if cell == "-":  # the canonical empty cell
         return frozenset()
@@ -311,40 +357,104 @@ def _flags(cell: str, lineno: int) -> frozenset[ast.AvpFlag]:
         raise DadParseError(lineno, str(error)) from None
 
 
+def _data_type(cell: str, lineno: int) -> ast.DataType:
+    try:
+        return ast.DataType(cell)
+    except ValueError:
+        known = ", ".join(member.value for member in ast.DataType)
+        raise DadParseError(
+            lineno, f"data_type: unknown Diameter data type {cell!r} (expected {known})"
+        ) from None
+
+
+def _encrypt(cell: str, lineno: int) -> bool | None:
+    if cell == "-":
+        return None
+    if cell not in ("Yes", "No"):
+        raise DadParseError(lineno, f"malformed Encrypt cell {cell!r}")
+    return cell == "Yes"
+
+
+def _avp_table_row(
+    columns: tuple[ast.Column, ...], cells: list[_Cell], lineno: int
+) -> ast.AvpTableRow:
+    name: str | None = None
+    code: int | None = None
+    section: str | None = None
+    data_type: ast.DataType | None = None
+    may_encrypt: bool | None = None
+    must = may = should_not = must_not = frozenset[ast.AvpFlag]()
+    extras: list[str] = []
+    for column, cell in zip(columns, cells, strict=True):
+        if isinstance(column, ast.FreeColumn):
+            if not cell.quoted:
+                raise DadParseError(
+                    lineno, f"free column {column.label!r} needs a quoted cell"
+                )
+            extras.append(cell.text)
+            continue
+        if cell.quoted:
+            raise DadParseError(
+                lineno, f"column {column.value} takes a bare cell, got a quoted one"
+            )
+        text = cell.text
+        match column:
+            case ast.AvpColumn.NAME:
+                name = text
+            case ast.AvpColumn.CODE:
+                code = None if text == "-" else _number(text, lineno, "Code cell")
+            case ast.AvpColumn.SECTION:
+                section = None if text == "-" else text
+            case ast.AvpColumn.TYPE:
+                data_type = None if text == "-" else _data_type(text, lineno)
+            case ast.AvpColumn.ENCRYPT:
+                may_encrypt = _encrypt(text, lineno)
+            case ast.AvpColumn.MUST:
+                must = _flags(text, lineno)
+            case ast.AvpColumn.MAY:
+                may = _flags(text, lineno)
+            case ast.AvpColumn.SHOULD_NOT:
+                should_not = _flags(text, lineno)
+            case ast.AvpColumn.MUST_NOT:
+                must_not = _flags(text, lineno)
+    if name is None:  # `AvpTable` requires a Name column, so this is unreachable
+        raise DadParseError(lineno, "table row has no Name cell")
+    with _validated(lineno):
+        return ast.AvpTableRow(
+            name=name,
+            code=code,
+            section=section,
+            data_type=data_type,
+            flag_rules=ast.AvpFlagRules(
+                must=must, may=may, should_not=should_not, must_not=must_not
+            ),
+            may_encrypt=may_encrypt,
+            extras=tuple(extras),
+        )
+
+
 def _parse_avp_table(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.AvpTable:
     table = _pop(directives, "Table", lineno)
+    columns = _columns(_pop(directives, "Columns", lineno))
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
     rows = []
-    for row_lineno, cells in _cells(body, 9):
-        name, code, section, data_type, must, may, should_not, must_not, encrypt = cells
-        if encrypt not in ("Yes", "No"):
-            raise DadParseError(row_lineno, f"malformed Encrypt cell {encrypt!r}")
-        with _validated(row_lineno):
-            rows.append(
-                ast.AvpTableRow(
-                    name=name,
-                    code=None
-                    if code == "-"
-                    else _number(code, row_lineno, "Code cell"),
-                    section=None if section == "-" else section,
-                    data_type=data_type,
-                    flag_rules=ast.AvpFlagRules(
-                        must=_flags(must, row_lineno),
-                        may=_flags(may, row_lineno),
-                        should_not=_flags(should_not, row_lineno),
-                        must_not=_flags(must_not, row_lineno),
-                    ),
-                    may_encrypt=encrypt == "Yes",
-                )
+    for row_lineno, line in body:
+        cells = _split_cells(line, row_lineno)
+        if len(cells) != len(columns):
+            raise DadParseError(
+                row_lineno, f"expected {len(columns)} columns, got {len(cells)}"
             )
+        rows.append(_avp_table_row(columns, cells, row_lineno))
     # Anchored on the block, not on `; Table:`: what is left to check here is
-    # the section as a whole (an AVP table with no rows), and the label's own
-    # line has nothing to do with that.
+    # the section as a whole (an AVP table with no rows, rows disagreeing with
+    # the declared columns), and the label's own line has nothing to do with it.
     with _validated(lineno):
-        return ast.AvpTable(table=table.value, source=source, rows=tuple(rows))
+        return ast.AvpTable(
+            table=table.value, source=source, columns=columns, rows=tuple(rows)
+        )
 
 
 def _parse_reused(

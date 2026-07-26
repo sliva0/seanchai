@@ -86,13 +86,14 @@ def _with_enum_description(text):
 def _with_table_label(text):
     return ast.AvpTable(
         table=text,
+        columns=tuple(ast.AvpColumn),
         source=ast.SourceRef(section="1"),
         rows=(
             ast.AvpTableRow(
                 name="Example",
                 code=1,
                 section=None,
-                data_type="Unsigned32",
+                data_type=ast.DataType.UNSIGNED32,
                 flag_rules=ast.AvpFlagRules(),
                 may_encrypt=False,
             ),
@@ -196,3 +197,53 @@ def test_json_round_trip_preserves_discriminated_section_types():
     assert restored == spec
     assert isinstance(restored.sections[0], ast.Message)
     assert isinstance(restored.sections[1], ast.EnumeratedAvp)
+
+
+def _table(columns, rows):
+    return ast.AvpTable(
+        table="1/1", columns=columns, source=ast.SourceRef(section="1"), rows=rows
+    )
+
+
+def test_a_row_may_not_carry_a_value_for_a_column_the_table_lacks():
+    """Unattributable data cannot be written out, so it cannot round-trip."""
+    with pytest.raises(pydantic.ValidationError, match="table has no Encrypt column"):
+        _table(
+            (ast.AvpColumn.NAME,),
+            (ast.AvpTableRow(name="Example", may_encrypt=False),),
+        )
+    with pytest.raises(pydantic.ValidationError, match="table has no Must column"):
+        _table(
+            (ast.AvpColumn.NAME,),
+            (
+                ast.AvpTableRow(
+                    name="Example",
+                    flag_rules=ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR})),
+                ),
+            ),
+        )
+
+
+def test_free_cells_are_counted_against_the_free_columns():
+    with pytest.raises(pydantic.ValidationError, match="1 free cells for 2 free"):
+        _table(
+            (ast.AvpColumn.NAME, ast.FreeColumn(label="A"), ast.FreeColumn(label="B")),
+            (ast.AvpTableRow(name="Example", extras=("only-one",)),),
+        )
+
+
+def test_a_table_needs_a_name_column_and_no_duplicates():
+    with pytest.raises(pydantic.ValidationError, match="no Name column"):
+        _table((ast.AvpColumn.CODE,), (ast.AvpTableRow(name="Example", code=1),))
+    with pytest.raises(pydantic.ValidationError, match="duplicate column"):
+        _table(
+            (ast.AvpColumn.NAME, ast.AvpColumn.NAME),
+            (ast.AvpTableRow(name="Example"),),
+        )
+
+
+def test_a_free_column_may_not_shadow_a_modelled_one():
+    """A quoted "Code" would print as a second Code column and nothing
+    downstream could tell which one was meant."""
+    with pytest.raises(pydantic.ValidationError, match="is a modelled column name"):
+        ast.FreeColumn(label="Code")

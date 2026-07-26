@@ -174,6 +174,44 @@ class AvpFlag(enum.StrEnum):
     VENDOR = "V"
 
 
+class DataType(enum.StrEnum):
+    """The closed set of Diameter AVP data types: the basic formats of
+    RFC 6733 §4.2 and the common derived formats of §4.3.1, spelled as the
+    specifications print them.
+
+    Closed rather than free text because the alternative silently accepts
+    typos: TS 29.272 clause 7.3.83 gives `Alert-Reason` the type "Enumerate",
+    which no reader would defend and nothing else would have caught. A source
+    typo is what the input-patch layer is for.
+
+    RFC 3588 additionally defined `QoSFilterRule`, which RFC 6733 dropped and
+    no specification in the corpus uses; it is left out until one does.
+    RFC 6733 §4.3 also lets an application define *new* derived formats, so a
+    specification may eventually print a type that belongs here and is not a
+    mistake. That case has not appeared yet, and it — not convenience — is what
+    would justify opening this set.
+    """
+
+    # §4.2 basic formats.
+    OCTET_STRING = "OctetString"
+    INTEGER32 = "Integer32"
+    INTEGER64 = "Integer64"
+    UNSIGNED32 = "Unsigned32"
+    UNSIGNED64 = "Unsigned64"
+    FLOAT32 = "Float32"
+    FLOAT64 = "Float64"
+    GROUPED = "Grouped"
+
+    # §4.3.1 common derived formats.
+    ADDRESS = "Address"
+    TIME = "Time"
+    UTF8_STRING = "UTF8String"
+    DIAMETER_IDENTITY = "DiameterIdentity"
+    DIAMETER_URI = "DiameterURI"
+    ENUMERATED = "Enumerated"
+    IP_FILTER_RULE = "IPFilterRule"
+
+
 class AvpFlagRules(Node):
     """The four "AVP Flag rules" columns of a spec AVP table."""
 
@@ -200,34 +238,153 @@ class AvpFlagRules(Node):
         return self
 
 
+class AvpColumn(enum.StrEnum):
+    """Columns of an AVP table that the format models, spelled as the
+    `; Columns:` directive writes them."""
+
+    NAME = "Name"
+    CODE = "Code"
+    SECTION = "Section"
+    TYPE = "Type"
+    MUST = "Must"
+    MAY = "May"
+    SHOULD_NOT = "S.not"
+    MUST_NOT = "M.not"
+    ENCRYPT = "Encrypt"
+
+
+# A free column's cell: free text, and unlike `InlineText` allowed to be empty,
+# because the source cell often is (31 rows of TS 29.214 table 5.3.0.1).
+FreeCell = Annotated[str, Field(pattern=r"^(\S([^\r\n]*\S)?)?$")]
+
+
+class FreeColumn(Node):
+    """A column the format does not model, written with its label in quotes and
+    its cells carried verbatim.
+
+    3GPP AVP tables carry per-specification columns beyond the shared nine:
+    TS 29.061 table 9a has "Applicable Reference Points" (Gi, Sgi), TS 29.212
+    table 5.3.0.1 has "Acc. Type" (3GPP-EPS, 3GPP-GPRS, All) and
+    "Applicability" (CC/PC/Both plus supported-feature names), TS 29.214's
+    table of the same number has an "Applicability" carrying feature names
+    only. Three axes under four labels, with only partial overlap — so the
+    label is kept as the source prints it and no cross-spec meaning is
+    invented here. Deciding what they have in common is the consumer's job.
+    """
+
+    # Quoted in the file, so a label may not contain a quote; the surrounding
+    # grammar is whitespace-separated, so it may not be empty either.
+    label: Annotated[str, Field(pattern=r'^[^"\r\n]+$')]
+
+    @pydantic.model_validator(mode="after")
+    def _not_a_modelled_column(self) -> FreeColumn:
+        """A free column named "Code" would print as a quoted duplicate of a
+        column that already has meaning, and nothing downstream could tell
+        which one it meant."""
+        if self.label in tuple(AvpColumn):
+            raise ValueError(f"free column {self.label!r} is a modelled column name")
+        return self
+
+
+Column = AvpColumn | FreeColumn
+
+
 class AvpTableRow(Node):
-    """One row of an AVP table. `code` is None when the source table itself
-    omits it (AVPs whose definition is deferred to another spec, e.g. Load in
-    TS 29.329 table 6.3.1 — resolved via the Reused AVPs section)."""
+    """One row of an AVP table.
+
+    Every modelled field is optional, because AVP tables do not all have the
+    same columns — TS 29.273's has no Encrypt column at all, and RFC 6733 §4.5
+    has neither MAY nor SHOULD NOT nor Encrypt. Which columns a table has is
+    recorded once on `AvpTable.columns` rather than per row, and the two are
+    checked against each other there.
+
+    A field is None when its column is absent *or* when the column is present
+    and the cell is empty: `code` is None both ways — TS 29.329's Load row
+    defers its definition to another spec — and `section` likewise (TS 29.272's
+    3GPP2-MEID is defined in a 3GPP2 document, so its clause cell is blank).
+    Telling the two apart is what `columns` is for.
+    """
 
     name: AvpName
-    code: Unsigned32 | None
-    # None when the table has no local clause for the AVP (TS 29.272's
-    # 3GPP2-MEID is defined in a 3GPP2 spec and its clause cell is empty).
-    section: SectionNumber | None
-    # Base data type name as printed ("OctetString", "Time", "Grouped").
-    # TODO(format): restrict to the closed set of Diameter base/derived types.
-    data_type: Annotated[str, Field(pattern=r"^[A-Za-z][A-Za-z0-9]*$")]
-    flag_rules: AvpFlagRules
-    may_encrypt: bool
+    code: Unsigned32 | None = None
+    section: SectionNumber | None = None
+    data_type: DataType | None = None
+    flag_rules: AvpFlagRules = AvpFlagRules()
+    may_encrypt: bool | None = None
+    # Values of the table's free columns, in the order the columns appear.
+    extras: tuple[FreeCell, ...] = ()
 
 
 class AvpTable(Node):
     """`; Type: AVP Table` — mirrors the spec's own per-application AVP table
     (e.g. TS 29.329 table 6.3.1). `table` is the label from the `; Table:`
-    directive, as printed in the spec ("6.3.1", "6.3/2")."""
+    directive, as printed in the spec ("6.3.1", "6.3/2").
+
+    `columns` records the source table's columns in the source table's order,
+    and is the file's own statement of its shape: an absent Encrypt column and
+    an Encrypt column reading "No" are different claims, and before this
+    existed they were the same `False`.
+    """
 
     type: Literal["AVP Table"] = "AVP Table"
     table: TableLabel
     source: SourceRef
+    columns: Annotated[tuple[Column, ...], Field(min_length=1)]
     # A table section with no rows carries no information, and would mean the
     # extractor found a caption but lost its contents.
     rows: Annotated[tuple[AvpTableRow, ...], Field(min_length=1)]
+
+    @property
+    def free_columns(self) -> tuple[FreeColumn, ...]:
+        return tuple(
+            column for column in self.columns if isinstance(column, FreeColumn)
+        )
+
+    @pydantic.model_validator(mode="after")
+    def _rows_match_columns(self) -> AvpTable:
+        labels = [
+            column.value if isinstance(column, AvpColumn) else column.label
+            for column in self.columns
+        ]
+        if len(set(labels)) != len(labels):
+            raise ValueError(f"duplicate column in {labels}")
+        if AvpColumn.NAME not in self.columns:
+            raise ValueError("AVP table has no Name column")
+
+        # A value under a column the table does not have is unattributable: it
+        # cannot be written out, so it cannot survive a round-trip.
+        absent = {
+            AvpColumn.CODE: "code",
+            AvpColumn.SECTION: "section",
+            AvpColumn.TYPE: "data_type",
+            AvpColumn.ENCRYPT: "may_encrypt",
+        }
+        flags = {
+            AvpColumn.MUST: "must",
+            AvpColumn.MAY: "may",
+            AvpColumn.SHOULD_NOT: "should_not",
+            AvpColumn.MUST_NOT: "must_not",
+        }
+        free_count = len(self.free_columns)
+        for row in self.rows:
+            for column, field in absent.items():
+                if column not in self.columns and getattr(row, field) is not None:
+                    raise ValueError(
+                        f"{row.name}: {field} set but the table has no"
+                        f" {column.value} column"
+                    )
+            for column, field in flags.items():
+                if column not in self.columns and getattr(row.flag_rules, field):
+                    raise ValueError(
+                        f"{row.name}: {field} flags set but the table has no"
+                        f" {column.value} column"
+                    )
+            if len(row.extras) != free_count:
+                raise ValueError(
+                    f"{row.name}: {len(row.extras)} free cells for"
+                    f" {free_count} free columns"
+                )
+        return self
 
 
 class MBitOverride(enum.StrEnum):

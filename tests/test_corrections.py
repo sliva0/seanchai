@@ -23,13 +23,14 @@ def _spec():
             ),
             ast.AvpTable(
                 table="6.3.1",
+                columns=tuple(ast.AvpColumn),
                 source=ast.SourceRef(section="6.3"),
                 rows=(
                     ast.AvpTableRow(
                         name="Example-Mode",
                         code=1600,
                         section="6.3.2",
-                        data_type="Enumerated",
+                        data_type=ast.DataType.ENUMERATED,
                         flag_rules=ast.AvpFlagRules(),
                         may_encrypt=False,
                     ),
@@ -493,7 +494,9 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
             "Cancel-VCSG-Location-Answer",
         )
     } | {
-        ("Alert-Reason", "data_type", "Enumerate", "Enumerated"),
+        # Alert-Reason's misspelled type is an input patch, not a correction:
+        # a closed `data_type` means the raw file cannot carry "Enumerate" as
+        # far as this layer.
         ("Area-Scope", "code", 1623, 1624),
     }
 

@@ -229,3 +229,95 @@ def test_attach_pages_rejects_a_pdf_without_a_usable_outline(make_bare_pdf):
 def test_attach_pages_rejects_a_pdf_without_cover_metadata(make_bare_pdf):
     with pytest.raises(tgpp_docx.ExtractionError, match="PDF cover page"):
         tgpp_docx.attach_pages(_two_section_spec(), make_bare_pdf("blank.pdf"))
+
+
+def _avp_table_docx(tmp_path, labels, rows):
+    """A minimal spec whose only content is an AVP table with `labels`."""
+    document = docx.Document()
+    cover = document.add_table(rows=1, cols=1)
+    cover.cell(0, 0).text = "3GPP TS 29.999 V1.2.3"
+    heading = document.add_paragraph(style="Heading 1")
+    heading.add_run("6.3\tAVP Definitions")
+    document.add_paragraph("Table 6.3.1: AVP definitions")
+    table = document.add_table(rows=2, cols=len(labels))
+    # The dispatch keys on this merged banner, as the real tables do.
+    table.cell(0, 0).merge(table.cell(0, len(labels) - 1)).text = "AVP Flag rules"
+    for cell, label in zip(table.rows[1].cells, labels, strict=True):
+        cell.text = label
+    for values in rows:
+        for cell, value in zip(table.add_row().cells, values, strict=True):
+            cell.text = value
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    path = tmp_path / "table.docx"
+    document.save(path)
+    return path
+
+
+def test_extract_reads_the_columns_off_the_label_row(tmp_path):
+    """TS 29.212's table has two columns beyond the shared nine, and the
+    format carries them rather than dropping data the source printed."""
+    path = _avp_table_docx(
+        tmp_path,
+        [
+            "Attribute Name",
+            "AVP Code",
+            "Clause defined",
+            "Value Type (NOTE 2)",
+            "Must",
+            "May Encr.",
+            "Acc. Type",
+            "Applicability (notes 3, 9)",
+        ],
+        [["Local-AVP", "10", "6.3.1", "Unsigned32", "M, V", "Yes", "All", "Both Rel8"]],
+    )
+
+    spec = tgpp_docx.extract(path, warnings=[])
+
+    (table,) = spec.sections
+    assert isinstance(table, ast.AvpTable)
+    assert table.columns == (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+        # The note reference points at prose the format does not carry, so it
+        # is not part of the label — and "Value Type (NOTE 2)" is still Type.
+        ast.AvpColumn.TYPE,
+        ast.AvpColumn.MUST,
+        ast.AvpColumn.ENCRYPT,
+        ast.FreeColumn(label="Acc. Type"),
+        ast.FreeColumn(label="Applicability"),
+    )
+    (row,) = table.rows
+    assert row.extras == ("All", "Both Rel8")
+    # Declared columns are absent, not empty: this table never had a May column.
+    assert row.flag_rules.may == frozenset()
+
+    text = formatter.format_spec(spec)
+    assert formatter.format_spec(parser.parse(text)) == text
+    assert parser.parse(text) == spec
+
+
+def test_extract_distinguishes_an_absent_encrypt_column_from_an_empty_cell(tmp_path):
+    """TS 29.273's AVP table has no Encrypt column at all, while TS 29.389's
+    has one with an empty cell. Both used to be `False`."""
+    labels = ["Attribute Name", "AVP Code", "Value Type"]
+    absent = tgpp_docx.extract(
+        _avp_table_docx(tmp_path / "a", labels, [["Local-AVP", "10", "Unsigned32"]]),
+        warnings=[],
+    )
+    empty = tgpp_docx.extract(
+        _avp_table_docx(
+            tmp_path / "b",
+            [*labels, "May Encr."],
+            [["Local-AVP", "10", "Unsigned32", ""]],
+        ),
+        warnings=[],
+    )
+
+    absent_table, empty_table = (spec.sections[0] for spec in (absent, empty))
+    assert isinstance(absent_table, ast.AvpTable)
+    assert isinstance(empty_table, ast.AvpTable)
+    assert absent_table.rows[0].may_encrypt is None
+    assert empty_table.rows[0].may_encrypt is None
+    assert ast.AvpColumn.ENCRYPT not in absent_table.columns
+    assert ast.AvpColumn.ENCRYPT in empty_table.columns

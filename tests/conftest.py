@@ -43,10 +43,13 @@ def synthetic_spec_docx(tmp_path):
     _set_cells(
         avp_table.rows[1],
         [
+            # The labels a real 3GPP AVP table prints: the extractor reads the
+            # columns off this row, so abbreviating them here would test a
+            # header shape no specification uses.
             "Attribute Name",
-            "Code",
-            "Section",
-            "Type",
+            "AVP Code",
+            "Clause defined",
+            "Value Type",
             "Must",
             "May",
             "Should not",

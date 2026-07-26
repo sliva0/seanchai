@@ -109,7 +109,10 @@ never recover what the extractor threw away.
 - **The `.dad` format**: pydantic AST, strict line-oriented parser, canonical
   formatter. Round-trip is exact and idempotent. All five section kinds are
   implemented (Message, Grouped AVP, Enumerated AVP, AVP Table, Reused AVPs).
-  See [docs/dad-format.md](docs/dad-format.md).
+  AVP tables declare their own columns, so a table can carry the extra columns
+  a given specification prints and an absent column stays distinct from an
+  empty cell. See [docs/dad-format.md](docs/dad-format.md), and
+  [docs/grammar.md](docs/grammar.md) for the formal grammar.
 - **3GPP docx extractor**, plus the ETSI-PDF page-attachment pass and
   per-spec input patches for source typos. See
   [docs/extractor.md](docs/extractor.md).
@@ -125,8 +128,7 @@ never recover what the extractor threw away.
 
 ### Planned
 
-- A formal `.dad` grammar document, and a linter (duplicate definitions and
-  duplicate `(vendor-id, code)` identities, local-vs-re-used conflicts,
+- A linter (duplicate definitions and duplicate `(vendor-id, code)` identities, local-vs-re-used conflicts,
   table-vs-definition consistency, and — once a base-protocol `.dad` exists —
   unresolved AVP references). The linter is where a source inconsistency gets
   reported, since the extractor's job is to record it rather than resolve it.

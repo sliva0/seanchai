@@ -228,7 +228,7 @@
 ; Section: 6.3
 ; Table: 6.3.1
 ; Page: 17
-;; Name                      Code  Section  Type          Must  May   S.not M.not Encrypt
+; Columns: Name              Code  Section  Type          Must  May   S.not M.not Encrypt
 User-Identity                700   6.3.1    Grouped       M,V   -     -     -     No
 MSISDN                       701   6.3.2    OctetString   M,V   -     -     -     No
 User-Data                    702   6.3.3    OctetString   M,V   -     -     -     No

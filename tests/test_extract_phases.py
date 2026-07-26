@@ -16,6 +16,7 @@ def _avp_table(*rows, section="6.3", table="6.3.1"):
     return (
         ast.AvpTable(
             table=table,
+            columns=tuple(ast.AvpColumn),
             source=ast.SourceRef(section=section),
             rows=tuple(rows),
         ),
@@ -42,7 +43,7 @@ def _row(name, code):
         name=name,
         code=code,
         section="6.3.1",
-        data_type="Enumerated",
+        data_type=ast.DataType.ENUMERATED,
         flag_rules=ast.AvpFlagRules(),
         may_encrypt=False,
     )

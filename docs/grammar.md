@@ -1,0 +1,264 @@
+# The `.dad` grammar
+
+A formal statement of the format. [dad-format.md](dad-format.md) explains what
+the pieces are for and why they are shaped this way; this document says only
+what is and is not a well-formed file, in enough detail to write a second
+implementation without reading `src/seanchai/dad/parser.py`.
+
+Two things this grammar deliberately does not cover, because they are not
+syntax:
+
+- **Semantic constraints carried by the AST.** A file can be grammatically
+  perfect and still be rejected — an inverted `RESERVED` range, a flag in two
+  flag columns at once, a row with a value under a column the table does not
+  declare. These are listed under [Semantic constraints](#semantic-constraints)
+  rather than encoded in the productions, because writing them into the grammar
+  would make it unreadable without making it more precise.
+- **Canonical layout.** Alignment, column widths and blank-line counts are the
+  formatter's business ([formatter.py](../src/seanchai/dad/formatter.py)). The
+  grammar accepts any spacing the productions allow; the formatter produces
+  exactly one spelling of it. A file that parses is valid, but only a file the
+  formatter would have written is canonical, and the review workflow assumes
+  canonical files.
+
+## Notation
+
+ABNF as in RFC 5234, with `%x` for literal code points. Two conventions:
+
+- `SP` is a single space (`%x20`), `NL` a single line feed (`%x0A`). The format
+  is line-oriented and has no other whitespace: no tabs, no carriage returns,
+  and no trailing spaces on any line.
+- Productions ending in `-text` are free text with a shape constraint stated
+  next to them, not full character classes.
+
+## File
+
+```abnf
+file          = header 2*NL section *(2*NL section) NL
+header        = spec-line NL version-line [NL link-line]
+spec-line     = "; Specification: " inline-text
+version-line  = "; Version: " version
+link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
+version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
+
+section       = message / grouped-avp / enumerated-avp / avp-table / reused-avps
+```
+
+A file is a header block followed by one or more section blocks. Blocks are
+separated by blank lines; a block is a run of consecutive non-blank lines. The
+file ends with exactly one newline.
+
+Free-text comment lines begin with `;;` and may appear anywhere. They are
+discarded on parse and never written back, so they do not survive a round-trip
+and must not carry meaning.
+
+```abnf
+comment       = ";;" *(%x20-10FFFF) NL
+```
+
+Anything else beginning with a single `;` in a defined position is a
+**directive**, and directives are grammar: a malformed one is an error, never
+degraded to a comment.
+
+```abnf
+directive     = "; " key ": " value NL
+key           = 1*ALPHA
+```
+
+Within one block, a directive key may appear at most once, and all directives
+precede the block's body lines. Their *order* is not significant — the parser
+accepts a block's directives in any order — but the productions below are
+written in the order the formatter emits, and only that order is canonical.
+
+## Sections
+
+Every section block opens with `; Type:`, which selects the production. The
+`; Name:`, `; Section:`, `; Page:` directives are the block's own header;
+`; Page:` is optional everywhere it appears and counts printed pages of the
+ETSI PDF rendering from 1.
+
+```abnf
+source-ref    = "; Section: " section-number NL ["; Page: " 1*DIGIT NL]
+section-number = 1*DIGIT *("." 1*DIGIT *(%x41-5A))   ; "6.3", "6.3.7A"
+avp-name      = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-")
+```
+
+### Message
+
+```abnf
+message       = "; Type: Message" NL
+                "; Name: " avp-name ", " abbreviation NL
+                source-ref
+                message-rule NL
+                *(avp-rule NL)
+abbreviation  = 2*5(%x41-5A)
+message-rule  = "<" avp-name "> ::= < Diameter Header: " header-items " >"
+header-items  = command-code *(", " command-flag) [", " application-id]
+command-code  = 1*DIGIT                 ; < 2^24
+command-flag  = "REQ" / "PXY" / "ERR"
+application-id = 1*DIGIT                ; < 2^32
+```
+
+The name in `; Name:` must equal the name in the rule. Command flags appear in
+the order above, each at most once. The application id is optional *only*
+because some source documents omit it (TS 29.272's VCSG commands print
+`< Diameter Header: 8388638, REQ, PXY, >`).
+
+### Grouped AVP
+
+```abnf
+grouped-avp   = "; Type: Grouped AVP" NL
+                "; Name: " avp-name NL
+                source-ref
+                avp-header-rule NL
+                *(avp-rule NL)
+avp-header-rule = avp-name " ::= < AVP header: " code [SP vendor-id] " >"
+code          = 1*DIGIT                 ; < 2^32
+vendor-id     = 1*DIGIT                 ; < 2^32; absent for IETF-space AVPs
+```
+
+### AVP rule
+
+The body line shared by messages and grouped AVPs.
+
+```abnf
+avp-rule      = *SP [occurrences *SP] bracket-open SP avp-name SP bracket-close
+                [*SP "; bold"]
+occurrences   = [1*DIGIT] "*" [1*DIGIT]
+bracket-open  = "<" / "{" / "["
+bracket-close = ">" / "}" / "]"
+```
+
+Brackets must match as a pair, and the pair carries the presence: `<>` fixed,
+`{}` required, `[]` optional. An absent `occurrences` means exactly once; a
+bare `*` means zero-or-more. `; bold` mirrors the source document, where bold
+marks AVPs the specification defines or modifies.
+
+### Enumerated AVP
+
+```abnf
+enumerated-avp = "; Type: Enumerated AVP" NL
+                 "; Name: " avp-name NL
+                 source-ref
+                 enum-header-rule NL
+                 *((enum-value / reserved) NL)
+enum-header-rule = avp-name " ::= < Enumerated AVP header: " code
+                   [SP vendor-id] " >"
+enum-value    = *SP enum-name *SP "= " 1*DIGIT [1*SP "; " inline-text]
+enum-name     = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-" / "_")
+reserved      = *SP "; RESERVED" *SP "= " 1*DIGIT ["-" 1*DIGIT]
+```
+
+`; RESERVED` is an inline directive rather than a block header, so it is the one
+`; Key:` line that may appear in a body. A value the specification reserves is
+distinct from one it merely leaves unassigned: a validator must reject a
+dictionary that assigns a reserved value.
+
+### AVP table
+
+```abnf
+avp-table     = "; Type: AVP Table" NL
+                "; Section: " section-number NL
+                "; Table: " inline-text NL
+                ["; Page: " 1*DIGIT NL]
+                "; Columns: " *SP columns NL
+                1*(table-row NL)
+columns       = column *(1*SP column)
+column        = known-column / free-column
+known-column  = "Name" / "Code" / "Section" / "Type"
+              / "Must" / "May" / "S.not" / "M.not" / "Encrypt"
+free-column   = DQUOTE free-label DQUOTE
+free-label    = 1*(%x20-21 / %x23-10FFFF)     ; no quote, no newline
+table-row     = cell *(1*SP cell)
+cell          = bare-cell / quoted-cell
+bare-cell     = 1*(%x21-10FFFF)
+quoted-cell   = DQUOTE *(%x20-21 / %x23-10FFFF) DQUOTE
+```
+
+`; Columns:` states the source table's columns **in the source table's order**,
+and a row has exactly one cell per declared column, positionally matched. A
+column the table does not declare is a column the source table did not have,
+which is not the same as one whose cell is empty.
+
+The cell vocabulary depends on the column:
+
+```abnf
+name-cell     = avp-name
+code-cell     = 1*DIGIT / "-"
+section-cell  = section-number / "-"
+type-cell     = data-type / "-"
+flags-cell    = avp-flag *("," [SP] avp-flag) / "-"
+avp-flag      = "M" / "V"
+encrypt-cell  = "Yes" / "No" / "-"
+data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
+              / "Unsigned64" / "Float32" / "Float64" / "Grouped"
+              / "Address" / "Time" / "UTF8String" / "DiameterIdentity"
+              / "DiameterURI" / "Enumerated" / "IPFilterRule"
+```
+
+A cell under a known column is bare; a cell under a free column is quoted, and
+`""` is the empty one. `-` is the canonical empty for every known column that
+permits it. `data-type` is closed: the basic formats of RFC 6733 §4.2 and the
+common derived formats of §4.3.1, and nothing else.
+
+### Re-used AVPs
+
+```abnf
+reused-avps   = "; Type: Reused AVPs" NL
+                "; Section: " section-number NL
+                "; Table: " inline-text NL
+                ["; Page: " 1*DIGIT NL]
+                1*(reused-row NL)
+reused-row    = avp-name 1*SP spec-ref 1*SP m-bit
+spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)
+m-bit         = "MUST" / "MUST-NOT" / "-"
+```
+
+Unlike an AVP table, this table's columns are fixed by the grammar and its
+`;;` label line is cosmetic. That is a known asymmetry, not a decision: source
+re-used tables vary in shape too, and giving them a `; Columns:` directive is
+open work (see [roadmap.md](roadmap.md)).
+
+## Text values
+
+```abnf
+inline-text   = VCHAR *(%x20-10FFFF) VCHAR / VCHAR
+```
+
+A single-line value that begins and ends with a non-space character. The
+constraint exists to protect the round-trip rather than to police content: an
+embedded newline would split the value across lines and, in a header, inject a
+second directive; leading or trailing spaces would write a line the parser then
+rejects for trailing whitespace. Anything a specification prints on one line
+must survive, including values that look like directives.
+
+## Semantic constraints
+
+Checked after parsing, by the AST models. A file that violates one of these is
+grammatically well-formed and still invalid.
+
+- **Ranges are ordered.** `RESERVED first-last` requires `last >= first`;
+  `min*max` requires `max >= min` when `max` is bounded.
+- **Flag columns are disjoint.** A flag may appear in at most one of Must, May,
+  S.not, M.not. A table asserting that a flag is both required and forbidden is
+  a source or extraction error, not a state a consumer should resolve.
+- **A table's rows agree with its columns.** Exactly one cell per declared
+  column; no value for an undeclared column; a Name column is mandatory; no
+  duplicate column, and a free label may not shadow a known column name.
+- **Names match their rules.** `; Name:` must equal the name in the block's
+  header rule.
+- **Numeric ranges.** Command codes are 24-bit; codes, vendor ids, application
+  ids and enum values are 32-bit; page numbers are 32-bit and at least 1.
+- **Tables are non-empty.** An AVP table or re-used table with no rows would
+  mean the extractor found a caption and lost its contents.
+
+## Extending the format
+
+The two mechanisms already in the grammar are the ones to reach for first: a
+free column carries a table column the format does not model, and `;;` carries
+a note for a human. Both are deliberate, and neither requires a format change.
+
+A new `; Type:` or a new directive key is a format change, and the bar is a
+source document that cannot otherwise be recorded — not a consumer that would
+find it convenient. Consumer convenience belongs in the consumer model, which
+is a separate layer built from this one.
