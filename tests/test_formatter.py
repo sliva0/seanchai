@@ -80,6 +80,26 @@ def _boundary_specs():
                 values=(ast.ReservedValues(first=0, last=2**32 - 1),),
             )
         ),
+        # Inline free text at the edge of what the constraint allows: one
+        # character, an internal run of spaces the formatter must not collapse,
+        # and text shaped like a directive, which is only safe because it never
+        # starts a line.
+        "awkward-inline-text": ast.Specification(
+            specification="X",
+            version="1",
+            sections=(
+                ast.EnumeratedAvp(
+                    name="Mode",
+                    source=source,
+                    code=1,
+                    values=(
+                        ast.EnumValue(name="A", value=0, description="x"),
+                        ast.EnumValue(name="B", value=1, description="two  spaces"),
+                        ast.EnumValue(name="C", value=2, description="; Version: 9"),
+                    ),
+                ),
+            ),
+        ),
         "long-names": _spec(
             ast.AvpTable(
                 table="1/1",

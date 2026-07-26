@@ -33,6 +33,28 @@ The pipeline has three stages:
    downstream scripts emit an implementation's native dictionary format or
    validate an existing hand-written one against the spec.
 
+### The rule that holds the pipeline together
+
+**A `.dad` file records everything its source document says.** Specifications
+are redundant, occasionally self-contradictory and sometimes plainly wrong; a
+`.dad` file records that faithfully rather than tidying it up. The extractor
+translates, it does not curate — it never drops a block for being redundant,
+contradicted by another block, or not useful to any consumer anyone has written
+yet.
+
+The only edits are the two declared patch layers, and both exist to keep that
+property rather than to weaken it. Input patches fix honest typos in the source
+*text*, so that a document with a flags cell reading `M. V` can be read at all.
+Corrections fix data that parses fine but is wrong, and they produce a
+*separate* file — the committed raw one still says what the document said.
+Every edit is declared, reasoned and reviewable, and none of them are the
+extractor quietly deciding what a specification meant to say.
+
+Interpreting the result — resolving references, choosing between a local
+definition and a re-used row, filtering to what one implementation needs — is
+the consumer's job. A consumer can ignore anything the file carries; it can
+never recover what the extractor threw away.
+
 ## Status
 
 ### Working today
@@ -56,8 +78,11 @@ The pipeline has three stages:
 
 ### Planned
 
-- A formal `.dad` grammar document, and a cross-section linter (unresolved AVP
-  references, duplicate definitions, table-vs-definition consistency).
+- A formal `.dad` grammar document, and a linter (duplicate definitions and
+  duplicate `(vendor-id, code)` identities, local-vs-re-used conflicts,
+  table-vs-definition consistency, and — once a base-protocol `.dad` exists —
+  unresolved AVP references). The linter is where a source inconsistency gets
+  reported, since the extractor's job is to record it rather than resolve it.
 - Cross-checking extracted codes/vendors/types against Wireshark's Diameter
   `dictionary.xml` as an independent oracle.
 - Extraction of the remaining 3GPP Diameter specs, and an RFC (plain-text)

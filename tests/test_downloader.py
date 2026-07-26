@@ -1,6 +1,7 @@
 import io
 import json
 import zipfile
+from pathlib import Path
 
 import pypdf
 import pytest
@@ -166,6 +167,85 @@ def test_replace_extracted_removes_the_previous_versions_files(tmp_path):
     assert extracted == [destination / "spec_docx"]
     assert not (destination / "dropped-in-this-version.docx").exists()
     assert not list(tmp_path.glob(".*staging"))
+    assert not list(tmp_path.glob(".*previous"))
+
+
+def _replace_failing_on(*suffixes):
+    """`Path.replace` that fails for directories named by suffix, so one leg of
+    the swap can be broken while the rollback still works."""
+    original = Path.replace
+
+    def replace(self, target):
+        if self.name.endswith(suffixes):
+            raise OSError("cross-device link")
+        return original(self, target)
+
+    return replace
+
+
+def test_a_failed_install_leaves_the_previous_version_in_place(tmp_path, monkeypatch):
+    # The docstring promises "either the old version or the new one". Removing
+    # the old directory before the swap broke that for the one failure it
+    # exists to survive: an install that fails after the delete left neither.
+    destination = tmp_path / "TS_29.999"
+    destination.mkdir()
+    (destination / "spec_docx").write_bytes(b"old")
+    archive = tmp_path / "new.zip"
+    archive.write_bytes(_zip_bytes(spec_docx=b"new"))
+
+    monkeypatch.setattr(Path, "replace", _replace_failing_on(".staging"))
+
+    with pytest.raises(downloader.DownloadError, match="cannot install"):
+        downloader.replace_extracted(archive, destination)
+
+    assert (destination / "spec_docx").read_bytes() == b"old"
+    assert not list(tmp_path.glob(".*staging"))
+
+
+def test_a_failed_rollback_keeps_the_previous_version_beside_the_destination(
+    tmp_path, monkeypatch
+):
+    # Nothing can be done about a rename that fails in both directions, but the
+    # old corpus must still exist somewhere afterwards rather than be deleted.
+    destination = tmp_path / "TS_29.999"
+    destination.mkdir()
+    (destination / "spec_docx").write_bytes(b"old")
+    archive = tmp_path / "new.zip"
+    archive.write_bytes(_zip_bytes(spec_docx=b"new"))
+
+    monkeypatch.setattr(Path, "replace", _replace_failing_on(".staging", ".previous"))
+
+    with pytest.raises(downloader.DownloadError, match="cannot install"):
+        downloader.replace_extracted(archive, destination)
+
+    backup = tmp_path / ".TS_29.999.previous"
+    assert (backup / "spec_docx").read_bytes() == b"old"
+
+
+def test_a_failed_extraction_leaves_the_previous_version_untouched(tmp_path):
+    destination = tmp_path / "TS_29.999"
+    destination.mkdir()
+    (destination / "spec_docx").write_bytes(b"old")
+    archive = tmp_path / "truncated.zip"
+    archive.write_bytes(b"PK\x03\x04 not really a zip")
+
+    with pytest.raises(downloader.DownloadError, match="cannot extract"):
+        downloader.replace_extracted(archive, destination)
+
+    assert (destination / "spec_docx").read_bytes() == b"old"
+    assert not list(tmp_path.glob(".*staging"))
+    assert not list(tmp_path.glob(".*previous"))
+
+
+def test_replace_extracted_installs_into_a_missing_destination(tmp_path):
+    destination = tmp_path / "TS_29.999"
+    archive = tmp_path / "new.zip"
+    archive.write_bytes(_zip_bytes(spec_docx=b"new"))
+
+    extracted = downloader.replace_extracted(archive, destination)
+
+    assert extracted == [destination / "spec_docx"]
+    assert not list(tmp_path.glob(".*previous"))
 
 
 def test_safe_extract_returns_files_and_creates_directories(tmp_path):
@@ -383,6 +463,30 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     ).read_bytes() == archive
     assert (output / "rfc" / "rfc9999.txt").read_bytes() == RFC_TEXT
     assert not list(output.glob("*.part"))
+
+
+def test_a_failed_run_does_not_leave_the_previous_manifest_behind(
+    tmp_path, local_http_server, monkeypatch
+):
+    # The manifest is what downstream reads to learn what the corpus holds. A
+    # run that fails partway has already replaced some artifacts, so the old
+    # manifest now describes something that is no longer on disk.
+    output = tmp_path / "corpus"
+    output.mkdir()
+    (output / "manifest.json").write_text('{"artifact_count": 99}')
+    local_http_server.route("/Rel-18/29_series/", b"<a>no artifacts here</a>")
+    monkeypatch.setattr(
+        downloader,
+        "THREE_GPP_INDEX",
+        f"{local_http_server.base_url}/Rel-{{release}}/{{series}}_series/",
+    )
+
+    with pytest.raises(downloader.DownloadError, match="No Release 18 artifact"):
+        downloader.download_corpus(
+            output, catalog=((downloader.ThreeGppSpec("29.999", "Test TS"),), ())
+        )
+
+    assert not (output / "manifest.json").exists()
 
 
 def test_download_corpus_validates_its_arguments_before_downloading(tmp_path):

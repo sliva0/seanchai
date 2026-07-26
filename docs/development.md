@@ -60,15 +60,17 @@ try to interpret.
 - `tests/test_corrections.py` re-applies every committed correction module to
   the committed raw output, so a re-extraction that invalidates one fails here
   rather than in a review months later.
+- `tests/test_real_sources.py` re-extracts every committed raw file from the
+  real docx and its ETSI PDF and compares byte-for-byte. It skips unless the
+  hand-fetched sources are under `output/manual/` (they are git-ignored), so a
+  fresh clone sees three skips — but on a machine that has them, it is the test
+  that catches an extractor change which is fine on the synthetic fixture and
+  wrong on the documents the fixture was abstracted from.
 
 When you add generic handling for a new source-document quirk, reproduce the
 case in the synthetic docx fixture so the handling stays covered. The fixture
 currently covers only a few of the cases collected in
 [extractor.md](extractor.md).
-
-An optional regression pin against the real docx sources — skipped unless
-`output/manual/` is present, since those binaries are git-ignored — is still
-worth adding.
 
 ## Conventions
 

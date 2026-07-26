@@ -75,43 +75,60 @@ def test_the_four_avp_flag_rule_columns_must_be_disjoint():
     )
 
 
+def _with_specification(text):
+    return ast.Specification(specification=text, version="1.0", sections=())
+
+
+def _with_enum_description(text):
+    return ast.EnumValue(name="Example", value=1, description=text)
+
+
+def _with_table_label(text):
+    return ast.AvpTable(
+        table=text,
+        source=ast.SourceRef(section="1"),
+        rows=(
+            ast.AvpTableRow(
+                name="Example",
+                code=1,
+                section=None,
+                data_type="Unsigned32",
+                flag_rules=ast.AvpFlagRules(),
+                may_encrypt=False,
+            ),
+        ),
+    )
+
+
 @pytest.mark.parametrize(
-    ("model", "kwargs"),
-    [
-        (
-            ast.Specification,
-            {
-                "specification": "3GPP TS 29.272\n; Version: 0.0.0",
-                "version": "1.0",
-                "sections": (),
-            },
-        ),
-        (ast.EnumValue, {"name": "Example", "value": 1, "description": "one\ntwo"}),
-        (
-            ast.AvpTable,
-            {
-                "table": "6.3\n; Section: 9",
-                "source": ast.SourceRef(section="1"),
-                "rows": (
-                    ast.AvpTableRow(
-                        name="Example",
-                        code=1,
-                        section=None,
-                        data_type="Unsigned32",
-                        flag_rules=ast.AvpFlagRules(),
-                        may_encrypt=False,
-                    ),
-                ),
-            },
-        ),
-    ],
+    "build",
+    [_with_specification, _with_enum_description, _with_table_label],
     ids=["specification", "enum-description", "table-label"],
 )
-def test_fields_written_onto_one_line_reject_embedded_newlines(model, kwargs):
-    # The format is line-oriented: such a value formats to text that does not
-    # parse back, and in a header it injects a second directive.
+@pytest.mark.parametrize(
+    "text",
+    ["one\ntwo", "one\rtwo", "", " leading", "trailing ", "\tleading", "trailing\t"],
+    ids=["newline", "carriage-return", "empty", *["padded"] * 4],
+)
+def test_inline_text_fields_reject_values_that_cannot_round_trip(build, text):
+    # The format is line-oriented, and every one of these formats to text the
+    # parser reads back as something else: a newline splits the value in two
+    # and, in a header, injects a second directive; an empty or space-padded
+    # value writes a line with trailing whitespace, which the parser rejects.
     with pytest.raises(pydantic.ValidationError):
-        model(**kwargs)
+        build(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["x", "two  spaces", "; Version: 9", "ends in a period.", "-"],
+    ids=["single-char", "internal-run", "directive-shaped", "period", "punctuation"],
+)
+def test_inline_text_fields_accept_awkward_but_representable_values(text):
+    # The constraint exists to protect the round-trip, not to police prose:
+    # anything a spec might actually print on one line has to survive.
+    assert _with_enum_description(text).description == text
+    assert _with_table_label(text).table == text
 
 
 @pytest.mark.parametrize(

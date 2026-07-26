@@ -4,7 +4,7 @@ A review of the whole project (July 2026) turned up three categories worth
 acting on: data-integrity bugs, a set of mechanical cleanups, and duplication
 between the parser and the extractor. All seven sections are now done; this
 file is kept as the record of what changed and why. Feature work is in
-[roadmap.md](roadmap.md).
+[roadmap.md](../roadmap.md).
 
 Tests pass and all three tools are clean at every step; that is the acceptance
 criterion for each one.
@@ -86,7 +86,7 @@ been hiding.
 **Tooling.** uv dev group with ruff, ty and basedpyright (`standard` mode);
 ruff (`E`, `F`, `I`, `UP`, `B`, `SIM`, `RUF`) and pytest configured in
 `pyproject.toml`; all three run clean. Policy in
-[development.md](development.md). Fixing the diagnostics surfaced a few genuine
+[development.md](../development.md). Fixing the diagnostics surfaced a few genuine
 issues: an `Optional[int]` PDF page number used in arithmetic, two functions
 returning a wider tuple than their annotation promised, and `zip()` calls that
 silently truncate.
@@ -106,5 +106,5 @@ replaced by this `docs/` directory.
 
 - Parser leniency. An earlier design note called for it; the decision since is
   that the parser stays strict and the formatter defines canonical form. See
-  [dad-format.md](dad-format.md).
+  [dad-format.md](../dad-format.md).
 - CI. Deliberately not set up yet — run the tools locally.

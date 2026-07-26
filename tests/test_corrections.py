@@ -461,13 +461,14 @@ def _fields(spec: ast.Specification) -> dict[tuple, object]:
     return flat
 
 
-def test_the_ts29272_corrections_change_exactly_the_four_vcsg_application_ids():
+def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     """The intended semantic diff, pinned independently of the correction file.
 
     The rot check above reads its expectation out of the correction it is
     testing, so a wrong `expect`/`replace`/reason changed together stays green.
-    This one names the outcome — four application ids, nothing else — so
-    changing what the corrections do has to be a deliberate edit here too.
+    This one names the outcome — four application ids, one misspelled table
+    type and one AVP code, nothing else — so changing what the corrections do
+    has to be a deliberate edit here too.
     """
     raw = _ROOT / "examples" / "29272-i60.raw.dad"
     spec = parser.parse(raw.read_text())
@@ -491,6 +492,9 @@ def test_the_ts29272_corrections_change_exactly_the_four_vcsg_application_ids():
             "Cancel-VCSG-Location-Request",
             "Cancel-VCSG-Location-Answer",
         )
+    } | {
+        ("Alert-Reason", "data_type", "Enumerate", "Enumerated"),
+        ("Area-Scope", "code", 1623, 1624),
     }
 
 

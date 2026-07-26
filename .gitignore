@@ -13,5 +13,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Downloaded specification corpus (recreate with downloader/download_diameter_specs.py)
+# Downloaded specification corpus (recreate with `seanchai download`)
 output/

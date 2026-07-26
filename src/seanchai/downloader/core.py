@@ -17,6 +17,7 @@ temporary file *before* it is put in place.
 from __future__ import annotations
 
 import concurrent.futures
+import contextlib
 import hashlib
 import html
 import json
@@ -302,21 +303,43 @@ def replace_extracted(archive: Path, destination: Path) -> list[Path]:
     whenever a specification renames or drops one, and a directory holding two
     versions at once is a corpus that silently extracts the wrong document.
     The new contents are staged in a sibling directory and swapped in, so an
-    interrupted run leaves either the old version or the new one.
+    interrupted run leaves either the old version or the new one. Deleting the
+    old directory before the swap would break that promise for the one failure
+    it exists to survive — a failed install would leave no version at all — so
+    the old directory is renamed aside first and moved back if the swap fails.
     """
     staging = destination.parent / f".{destination.name}.staging"
+    backup = destination.parent / f".{destination.name}.previous"
     shutil.rmtree(staging, ignore_errors=True)
+    shutil.rmtree(backup, ignore_errors=True)
     try:
         safe_extract(archive, staging)
-        shutil.rmtree(destination, ignore_errors=True)
+        replaced = destination.exists()
+        if replaced:
+            destination.replace(backup)
         try:
             staging.replace(destination)
         except OSError as error:
+            if replaced:
+                # Best effort: the rollback can only fail for the same reason
+                # the install did, and the original error is the one worth
+                # reporting. The backup directory is left behind either way.
+                with contextlib.suppress(OSError):
+                    backup.replace(destination)
             raise DownloadError(
                 f"cannot install {archive} into {destination}: {error}"
             ) from error
+    except OSError as error:
+        raise DownloadError(
+            f"cannot install {archive} into {destination}: {error}"
+        ) from error
     finally:
         shutil.rmtree(staging, ignore_errors=True)
+        if destination.exists():
+            # Only once the new version is in place: a surviving backup is the
+            # old corpus, and deleting it after a failed install is the whole
+            # thing this function promises not to do.
+            shutil.rmtree(backup, ignore_errors=True)
     return sorted(path for path in destination.rglob("*") if path.is_file())
 
 
@@ -481,6 +504,12 @@ def download_corpus(
     try:
         output = output.resolve()
         output.mkdir(parents=True, exist_ok=True)
+        # A run that fails partway leaves some artifacts replaced and others
+        # not, so the previous manifest now describes a corpus that no longer
+        # exists — and it is the file everything downstream reads to find out
+        # what is here. Removing it first makes a failed run look like what it
+        # is rather than like the state it interrupted.
+        (output / "manifest.json").unlink(missing_ok=True)
     except OSError as error:
         raise DownloadError(f"cannot create the corpus directory: {error}") from error
     report(f"Resolving 3GPP Release {release} artifacts...")
@@ -540,7 +569,7 @@ def download_corpus(
         "artifact_count": len(records),
         "artifacts": [asdict(record) for record in records],
     }
-    manifest_path = output / "manifest.json"
+    manifest_path = output / "manifest.json"  # `output` is resolved by now
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",

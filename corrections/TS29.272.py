@@ -1,6 +1,6 @@
 """Corrections for 3GPP TS 29.272 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, definition
+from seanchai.dad.corrections import Correction, definition, table_row
 
 # The VCSG command headers print "< Diameter Header: 8388638, REQ, PXY, >" with
 # the application id left empty. Clause 7.2.2 assigns these command codes to
@@ -25,4 +25,25 @@ CORRECTIONS = [
         "Cancel-VCSG-Location-Request",
         "Cancel-VCSG-Location-Answer",
     )
+]
+
+CORRECTIONS += [
+    Correction(
+        target=table_row("Alert-Reason"),
+        field="data_type",
+        expect="Enumerate",
+        replace="Enumerated",
+        reason="table 7.3.1/1 misspells the type; clause 7.3.83 defines"
+        " Alert-Reason as Enumerated, as does the TS 29.230 registry",
+        versions="18.6.0",
+    ),
+    Correction(
+        target=definition("Area-Scope"),
+        field="code",
+        expect=1623,
+        replace=1624,
+        reason="clause 7.3.138's AVP header prints Job-Type's code; table"
+        " 7.3.1/1 and the TS 29.230 registry both assign Area-Scope 1624",
+        versions="18.6.0",
+    ),
 ]

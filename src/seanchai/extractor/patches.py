@@ -16,9 +16,14 @@ Patch files are TOML, one per specification, named by its reference
     exact = true            # match the whole text unit, not a substring
     count = 1               # must apply exactly this many times (default 1)
     section = "7.3"         # optional: only inside this section (prefix)
-    reason = "flags cell typo in table 7.3.1/1"
+    reason = "flags cell typo in table 7.3.1/1"   # required
     first_version = "18.6.0"   # oldest version known to need this patch
     last_version = "18.6.0"    # newest version known to need this patch
+
+`find`, `replace` and `reason` are required, `find` must be non-empty and
+`count` positive: those are the declarations a patch cannot mean, and a patch
+whose `find` is empty would rewrite every gap between characters while still
+satisfying its own accounting.
 
 A patch that applies more or fewer times than `count` fails the extraction,
 with a message including the known-needed version range, so patches cannot
@@ -49,6 +54,33 @@ class Patch:
     first_version: str | None = None
     last_version: str | None = None
     applied: int = 0
+
+    def __post_init__(self) -> None:
+        """Reject declarations that cannot mean what a patch means.
+
+        An empty `find` is the dangerous one: `str.count("")` and
+        `str.replace("", x)` both work on the gaps between characters, so
+        `find = ""` rewrites "abc" into "XaXbXcX" and can still satisfy its
+        `count`. The accounting that is supposed to catch a rotten patch would
+        confirm it instead.
+        """
+        if not self.find:
+            raise PatchError("input patch has an empty `find`")
+        if self.count < 1:
+            raise PatchError(
+                f"input patch {self.find!r} -> {self.replace!r} expects"
+                f" {self.count} applications; a patch that is not applied"
+                " should be deleted, not declared"
+            )
+        if self.find == self.replace:
+            raise PatchError(f"input patch {self.find!r} replaces the text with itself")
+        if not self.reason:
+            # A patch asserts that the source document is wrong. Without the
+            # reason, the next reader cannot check that claim against the spec,
+            # and the patch becomes unreviewable the moment its author forgets.
+            raise PatchError(
+                f"input patch {self.find!r} -> {self.replace!r} has no `reason`"
+            )
 
     def _in_scope(self, section: str | None) -> bool:
         if self.section is None:
@@ -87,7 +119,13 @@ class Patcher:
             return cls([], version)
         with path.open("rb") as stream:
             data = tomllib.load(stream)
-        return cls([Patch(**entry) for entry in data.get("patch", ())], version)
+        try:
+            patches = [Patch(**entry) for entry in data.get("patch", ())]
+        except TypeError as error:
+            # A misspelled or missing key in the TOML is the user's file being
+            # wrong, not this program: report it like every other patch problem.
+            raise PatchError(f"{path}: {error}") from None
+        return cls(patches, version)
 
     def apply(self, text: str, section: str | None = None, record: bool = True) -> str:
         """Apply all patches to one text unit. `record=False` applies without

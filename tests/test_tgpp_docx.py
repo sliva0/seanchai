@@ -170,6 +170,35 @@ def test_attach_pages_reads_real_nested_pdf_outline_and_preserves_missing_sectio
     assert warnings == ["bookmark outline covered 1/2 sections"]
 
 
+def test_attach_pages_clears_a_page_this_pdf_does_not_bookmark(outlined_pdf):
+    # Attaching twice must leave the pages this PDF asserts and nothing else. A
+    # section whose page survived from an earlier call would make the file
+    # claim a page that the PDF it names does not put the section on — the same
+    # wrong-rendering failure the version check rejects, through another door.
+    stale = ast.Specification(
+        specification="3GPP TS 29.999",
+        version="1.2.3",
+        sections=(
+            ast.GroupedAvp(
+                name="Two",
+                source=ast.SourceRef(section="2", page=99),
+                code=2,
+                avps=(),
+            ),
+        ),
+    )
+
+    attached = tgpp_docx.attach_pages(stale, outlined_pdf)
+
+    assert attached.sections[0].source.page is None
+
+
+def test_attach_pages_is_idempotent(outlined_pdf):
+    once = tgpp_docx.attach_pages(_two_section_spec(), outlined_pdf)
+
+    assert tgpp_docx.attach_pages(once, outlined_pdf) == once
+
+
 @pytest.mark.parametrize(
     ("specification", "version", "expected"),
     [

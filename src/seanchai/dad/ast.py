@@ -25,19 +25,22 @@ from pydantic import Field
 AvpName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9-]*$")]
 EnumValueName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
 
-# Free text that the line-oriented format writes onto a single line. An
-# embedded newline would produce a file that does not parse back — worse, a
-# newline in a header value can inject another directive.
-SingleLine = Annotated[str, Field(pattern=r"^[^\r\n]*$")]
+# Free text the line-oriented format writes onto a single line, next to a
+# directive keyword or after a `;`. Only what survives a round-trip is
+# accepted: an embedded newline produces a file that does not parse back — and
+# in a header value can inject another directive — while empty or
+# space-padded text is written out as a line the parser then reads back
+# differently, or rejects as trailing whitespace.
+InlineText = Annotated[str, Field(pattern=r"^\S([^\r\n]*\S)?$")]
 
 # Single-token reference to a defining document: "TS29.336", "RFC7683".
 SPEC_REF_PATTERN = r"^(TS\d{2}\.\d{3}|RFC\d+)$"
 SpecRef = Annotated[str, Field(pattern=SPEC_REF_PATTERN)]
 
 # Table label as printed in the spec, carried by `; Table:`: "6.3.1", "6.3/2".
-# Not a `SectionNumber`: labels use "/" separators and suffixes freely. Only
-# the shape the directive can round-trip is enforced — one line, no padding.
-TableLabel = Annotated[str, Field(pattern=r"^\S([^\r\n]*\S)?$")]
+# Not a `SectionNumber`: labels use "/" separators and suffixes freely, so only
+# the shape the directive can round-trip is enforced.
+TableLabel = InlineText
 
 # Section numbers as printed in the spec: "6.3", "6.3.7A".
 SectionNumber = Annotated[str, Field(pattern=r"^\d+(\.\d+[A-Z]*)*$")]
@@ -47,6 +50,10 @@ Version = Annotated[str, Field(pattern=r"^\d+(\.\d+)*$")]
 
 Unsigned32 = Annotated[int, Field(ge=0, lt=2**32)]
 Unsigned24 = Annotated[int, Field(ge=0, lt=2**24)]
+
+# `; Page:` counts printed pages of the PDF rendering, from 1. Page 0 is not a
+# small page number, it is an off-by-one in whatever produced it.
+PageNumber = Annotated[int, Field(ge=1, lt=2**32)]
 
 
 class Node(pydantic.BaseModel):
@@ -58,7 +65,7 @@ class SourceRef(Node):
     document. Pages are PDF page numbers of the ETSI rendering."""
 
     section: SectionNumber
-    page: Unsigned32 | None = None
+    page: PageNumber | None = None
 
 
 class Presence(enum.StrEnum):
@@ -133,7 +140,7 @@ class EnumValue(Node):
 
     name: EnumValueName
     value: Unsigned32
-    description: SingleLine | None = None
+    description: InlineText | None = None
 
 
 class ReservedValues(Node):
@@ -284,7 +291,7 @@ def spec_ref(specification: str) -> str:
 class Specification(Node):
     """One `.dad` file: the top-of-file directive header plus its sections."""
 
-    specification: SingleLine  # "3GPP TS 29.329"
+    specification: InlineText  # "3GPP TS 29.329"
     version: Version
     link: pydantic.HttpUrl | None = None
     sections: tuple[Section, ...]

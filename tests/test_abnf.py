@@ -90,6 +90,24 @@ def test_occurrence_qualifiers_round_trip(min_occurs, max_occurs, text):
         assert abnf.occurrences(None, None) == (1, 1)
 
 
+@pytest.mark.parametrize(
+    ("call", "message"),
+    [
+        (lambda: abnf.diameter_header("306, REQ, REQ, 16777217"), "repeats REQ"),
+        (lambda: abnf.diameter_header("306, REQ, PXY, PXY"), "repeats PXY"),
+        (lambda: abnf.avp_flags("M,M"), "repeats M"),
+        (lambda: abnf.avp_flags("M, V, M"), "repeats M"),
+    ],
+    ids=["header-req", "header-pxy", "cell-adjacent", "cell-separated"],
+)
+def test_a_flag_named_twice_is_rejected_rather_than_collapsed(call, message):
+    # A frozenset would swallow the repeat, so the file would format back as
+    # the single flag and silently disagree with the document. Failing sends
+    # the fix through an input patch, where it is declared and reviewed.
+    with pytest.raises(abnf.AbnfError, match=message):
+        call()
+
+
 def test_mismatched_brackets_are_rejected_by_the_shared_layer():
     match = tgpp_docx._ABNF_LINE_RE.match("< Session-Id ]")
     assert match is not None

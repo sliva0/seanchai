@@ -128,7 +128,10 @@ def correct(source: Path, corrections: Path, output: Path | None) -> None:
     if output is not None and output.resolve() == source.resolve():
         raise click.ClickException("refusing to correct a file in place")
     with reported():
-        spec = parser.parse(source.read_text())
+        # Explicit encoding both ways: `.dad` files are UTF-8 wherever they were
+        # written, and the platform default would otherwise decide whether a
+        # spec title with a non-ASCII character survives the round trip.
+        spec = parser.parse(source.read_text(encoding="utf-8"))
         corrected = _correct(spec, corrections, required=True)
     _write(corrected, output)
 
@@ -205,5 +208,5 @@ def _write(spec, output: Path | None) -> None:
     if output is None:
         click.echo(text, nl=False)
     else:
-        output.write_text(text)
+        output.write_text(text, encoding="utf-8")
         click.echo(f"wrote {output} ({len(spec.sections)} sections)", err=True)

@@ -27,9 +27,9 @@ def _reused_table(*rows, label="6.3.2", section="6.3"):
     return tgpp_docx._ReusedTable(rows=list(rows), label=label, section=section)
 
 
-def _grouped(vendor_id=10415):
+def _grouped(vendor_id=10415, name="Group"):
     return ast.GroupedAvp(
-        name="Group",
+        name=name,
         source=ast.SourceRef(section="6.3.1"),
         code=10,
         vendor_id=vendor_id,
@@ -98,6 +98,28 @@ def test_resolve_skips_enums_defined_in_another_specification(document):
 
     assert resolved.definitions == []
     assert resolved.reused == [ast.ReusedAvpRow(name="DRMP", origin="RFC7944")]
+
+
+def test_a_grouped_avp_is_kept_even_when_it_is_also_listed_as_re_used():
+    # The asymmetry with the enum case above is deliberate. TS 29.272 §7.3.40
+    # re-prints TS 29.212's Allocation-Retention-Priority in full while listing
+    # it as re-used; the document printed a body, so the file records it. The
+    # resulting local/re-used conflict is a real inconsistency in the source
+    # and belongs in a linter report, not in a silent deletion here.
+    reused = ast.ReusedAvpRow(name="Foreign", origin="TS29.212")
+    collected = tgpp_docx._Collected(
+        grouped=[_grouped(name="Foreign"), _grouped(name="Local")],
+        avp_tables=[_avp_table(_row("Local", 1))],
+        reused_tables=[_reused_table(reused)],
+    )
+
+    resolved = tgpp_docx._resolve(collected)
+
+    assert [definition.name for definition in resolved.definitions] == [
+        "Foreign",
+        "Local",
+    ]
+    assert resolved.reused == [reused]
 
 
 def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table(document):

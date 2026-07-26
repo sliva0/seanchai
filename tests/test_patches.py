@@ -11,11 +11,12 @@ from seanchai.extractor.patches import Patch, Patcher, PatchError
 def test_patches_apply_by_substring_exact_match_and_section_scope():
     patcher = Patcher(
         [
-            Patch(find="M. V", replace="M, V", exact=True),
+            Patch(find="M. V", replace="M, V", exact=True, reason="flags cell"),
             Patch(
                 find="Name With Spaces::=",
                 replace="Name-With-Spaces ::=",
                 section="7.3",
+                reason="rule name with spaces",
             ),
         ],
         version="18.6.0",
@@ -39,10 +40,11 @@ def test_unapplied_and_overapplied_patches_fail_with_the_version_range():
             Patch(
                 find="gone",
                 replace="fixed",
+                reason="a fix the source no longer needs",
                 first_version="18.0.0",
                 last_version="18.2.0",
             ),
-            Patch(find="common", replace="rare", count=1),
+            Patch(find="common", replace="rare", count=1, reason="too common"),
         ],
         version="18.6.0",
     )
@@ -59,6 +61,51 @@ def test_unapplied_and_overapplied_patches_fail_with_the_version_range():
     ]
 
 
+def test_an_empty_find_cannot_be_declared():
+    # `"abc".replace("", "X")` is "XaXbXcX" and `"abc".count("")` is 4, so an
+    # empty `find` rewrites every gap between characters *and* satisfies its own
+    # accounting — the one way a patch can rot without `finish()` noticing.
+    with pytest.raises(PatchError, match="empty `find`"):
+        Patch(find="", replace="X", count=4, reason="wrecks the text")
+
+
+_WRONG = "the source is wrong"
+
+
+@pytest.mark.parametrize(
+    ("declare", "message"),
+    [
+        (lambda: Patch("old", "new", count=0, reason=_WRONG), "is not applied"),
+        (lambda: Patch("old", "new", count=-1, reason=_WRONG), "is not applied"),
+        (lambda: Patch("old", "old", reason=_WRONG), "the text with itself"),
+        (lambda: Patch("old", "new"), "has no `reason`"),
+        (lambda: Patch("old", "new", reason=""), "has no `reason`"),
+    ],
+    ids=["zero-count", "negative-count", "no-op", "no-reason", "empty-reason"],
+)
+def test_patch_declarations_that_cannot_mean_anything_are_rejected(declare, message):
+    with pytest.raises(PatchError, match=message):
+        declare()
+
+
+def test_a_malformed_patch_file_is_a_patch_error_not_a_traceback(tmp_path):
+    # A misspelled key is the user's TOML being wrong, and has to arrive at the
+    # CLI's error boundary like every other patch problem.
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(
+        """
+[[patch]]
+find = "old"
+replace = "new"
+reason = "the source is wrong"
+sektion = "6.1"
+"""
+    )
+
+    with pytest.raises(PatchError, match="sektion"):
+        Patcher.load(path, version="1.2.3")
+
+
 def test_patch_failures_are_extraction_failures():
     # A batch over a corpus asks one question — did this document fail? — and a
     # rotted patch is the same answer as a malformed table.
@@ -66,7 +113,7 @@ def test_patch_failures_are_extraction_failures():
 
 
 def test_unrecorded_application_still_replaces_without_counting():
-    patch = Patch(find="a", replace="b")
+    patch = Patch(find="a", replace="b", reason="a is wrong")
 
     assert patch.apply("a a", None, record=False) == "b b"
     assert patch.applied == 0
@@ -107,6 +154,7 @@ def test_extract_fails_when_a_patch_no_longer_applies(tmp_path, synthetic_spec_d
 [[patch]]
 find = "no longer present"
 replace = "irrelevant"
+reason = "a fix the source no longer needs"
 first_version = "1.0.0"
 last_version = "1.1.0"
 """

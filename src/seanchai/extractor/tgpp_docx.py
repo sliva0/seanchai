@@ -316,8 +316,14 @@ def _extract_enumerated(
                 )
         elif paragraph.style in ("B1", "B2") and values:
             previous = values[-1].description
-            values[-1] = values[-1].model_copy(
-                update={"description": f"{previous} {text}" if previous else text}
+            # Rebuilt rather than `model_copy(update=...)`, which does not
+            # validate: a description that cannot round-trip has to fail here,
+            # where the section that produced it is still in hand, instead of
+            # surviving into a file that no longer parses back.
+            values[-1] = ast.EnumValue(
+                name=values[-1].name,
+                value=values[-1].value,
+                description=f"{previous} {text}" if previous else text,
             )
     merged = sorted(
         [*values, *reserved],
@@ -593,9 +599,17 @@ def _resolve(collected: _Collected) -> _Resolved:
     )
 
     codes = {row.name: row.code for row in avp_table.rows}
-    # AVPs originating in other specs get no local definition, even when their
-    # section is worded like one (e.g. DRMP: "is of type Enumerated" but the
-    # values are defined in RFC 7944).
+    # An enumerated section whose values live in another spec has nothing to
+    # emit: DRMP says "is of type Enumerated" and then prints no values,
+    # because RFC 7944 defines them. Skipping it drops no information.
+    #
+    # Note the deliberate asymmetry with grouped AVPs. TS 29.272 §7.3.40
+    # re-prints TS 29.212's Allocation-Retention-Priority in full while listing
+    # it as re-used, and nine of its clauses do this. Those definitions are
+    # kept: the document printed a body, so the file records it. That an AVP is
+    # both defined locally and listed as re-used is a real inconsistency in the
+    # source, and reporting it is the linter's job — resolving it by deleting
+    # what the specification says is not this layer's call to make.
     external = {row.name for row in [*reused_table.rows, *collected.note_reused]}
     local_enums = [
         (section, name)
@@ -766,12 +780,19 @@ def attach_pages(
             )
 
         def with_page(section):
-            page = pages.get(section.source.section)
-            if page is None:
-                return section
+            # Unconditionally, including when this PDF has no bookmark for the
+            # section: returning it untouched would leave a page number from an
+            # earlier `attach_pages` call in place, and the file would then
+            # assert a page that the PDF it names does not put the section on.
+            # That is the same wrong-rendering failure the version check above
+            # exists to prevent, arriving through a second call instead of a
+            # mismatched file.
             return section.model_copy(
                 update={
-                    "source": ast.SourceRef(section=section.source.section, page=page)
+                    "source": ast.SourceRef(
+                        section=section.source.section,
+                        page=pages.get(section.source.section),
+                    )
                 }
             )
 

@@ -1,5 +1,5 @@
 # Curated corpus of Diameter-related specifications.
-# Read by download_diameter_specs.py; add entries here, not in the script.
+# Read by `seanchai download`; add entries here, not in the downloader code.
 
 # The 3GPP list is deliberately broader than a title search. Several protocols
 # (for example SLg, EPS AAA, ProSe, V2X, and MB2) are Diameter applications

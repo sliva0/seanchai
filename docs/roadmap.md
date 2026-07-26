@@ -26,24 +26,66 @@ tempting additions are settled decisions, not gaps.
 
 ## Linter
 
-A cross-section linter over a parsed `.dad` file:
+A linter over a parsed `.dad` file. This is what makes an extracted corpus
+trustworthy, and phase one should land before extracting more specs —
+otherwise every new spec multiplies unverified data.
 
-- every AVP referenced in a message or grouped body resolves to a local
-  definition, an AVP-table row, or a reused-AVPs entry;
+### Phase one: single-file structural rules
+
 - no duplicate definitions, no duplicate enum values;
+- no duplicate `(vendor-id, code)` identity, which is not the same rule as no
+  duplicate names. TS 29.272's `Area-Scope` was the case: clause 7.3.138
+  printed `Job-Type`'s code, giving two differently-named AVPs the same
+  identity while every name in the file stayed unique. It is corrected now, but
+  only because a reviewer read the file;
+- no AVP both defined locally and listed as re-used. TS 29.272 does this nine
+  times, re-printing another spec's grouped AVP in full while listing it as
+  re-used. The extractor deliberately keeps both — see [what the extractor does
+  not decide](extractor.md#what-the-extractor-does-not-decide) — so this rule
+  is what turns those nine into a report instead of a surprise;
 - AVP-table rows agree with the corresponding grouped/enumerated definition on
   code and type.
 
-This is what makes an extracted corpus trustworthy, and it should land before
-extracting more specs — otherwise every new spec multiplies unverified data.
+Everything above is decided inside one file, and every rule already has a real
+case in the committed corpus. That is the point: these are not hypothetical
+invariants, they are the inconsistencies three specifications actually contain.
 
-The rules above are single-file, but the interesting one isn't: resolving a
-reused AVP to its `(vendor-id, code)` means reading the origin spec's `.dad`,
-so the linter needs to load several files at once and needs an answer to a
-question the format currently ducks — `ReusedAvpRow.origin` names a
-specification but not a version. Decide how a run picks which version of an
-origin spec to resolve against before writing the cross-file rules; "whatever
-happens to be on disk" is not a decision.
+Two things the linter will need that the current design leaves open. Some
+findings are the source document's fault and will never be fixed upstream, so a
+report that cannot be acknowledged becomes noise everyone learns to ignore —
+there should be a way to record "known, explained, not a regression", and it
+should look like the `reason` a patch or correction carries. And a linter that
+loads several files needs the version question from phase two answered anyway.
+
+### Phase two: reference resolution
+
+"Every AVP referenced in a message or grouped body resolves to a local
+definition, an AVP-table row, or a re-used entry" cannot be enforced as
+written. Each committed file references 14–17 AVPs that appear in no table —
+hundreds of occurrences — and almost all of them are RFC 6733's: `Session-Id`,
+`Origin-Host`, `Proxy-Info`, the trailing `* [ AVP ]`. No 3GPP spec
+re-declares them, because every Diameter application is assumed to have them.
+
+So this rule needs a base-protocol import rule first — either an implicit
+RFC 6733 dependency or an explicit dependency/import directive in the format.
+The RFC extractor under [More sources](#more-sources) is what makes either one
+checkable, since neither means anything until a base `.dad` exists.
+
+Once the base AVPs are subtracted, the residue is small and interesting: two
+references in TS 29.272 (`Additional-Context-Identifier` in clause 7.3.35 and
+`Re-synchronization-Info` in clause 7.3.11) and none in 29.229 or 29.329.
+Neither is a base AVP and neither appears in 29.272's own AVP table or re-used
+table, so the document really does reference AVPs it never introduces. Adding
+them is a *row*, which the correction layer cannot express — it replaces
+fields, it does not insert nodes — so this is also the case that decides
+whether corrections need an insert operation.
+
+Resolving a re-used AVP to its `(vendor-id, code)` also means reading the
+origin spec's `.dad`, so the linter must load several files at once — and that
+needs an answer to a question the format currently ducks: `ReusedAvpRow.origin`
+names a specification but not a version. Decide how a run picks which version
+of an origin spec to resolve against before writing the cross-file rules;
+"whatever happens to be on disk" is not a decision.
 
 ## Validation against an independent oracle
 
@@ -79,7 +121,10 @@ implementations' native dictionary formats after.
   range when a newer or older version is parsed and the patch still applied
   cleanly. Needs comment-preserving TOML rewriting (e.g. tomlkit), and the
   shared version type above.
-- An optional regression pin of the extractor against the real docx sources,
-  skipped unless `output/manual/` is present.
 - Fix the `atomic_download` corrupt-cache wart described in
   [downloader.md](downloader.md).
+- Stage a whole corpus version before publishing it. `replace_extracted` now
+  rolls back a failed directory swap, and a failed run no longer leaves a stale
+  `manifest.json` behind, so no single artifact is corrupted — but a run that
+  fails halfway still leaves a corpus where some specs are the new version and
+  some are the old one. Only staging the whole thing fixes that.

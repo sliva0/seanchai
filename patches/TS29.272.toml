@@ -30,6 +30,15 @@ first_version = "18.6.0"
 last_version = "18.6.0"
 
 [[patch]]
+find = "Communication-Pattern-set"
+replace = "Communication-Pattern-Set"
+exact = true
+section = "7.3.1"
+reason = "re-used AVPs table spells the AVP with a lowercase 's', against both TS 29.336 and this document's own clause 7.3.194"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
 find = "Monitoring Event Report::="
 replace = "Monitoring-Event-Report ::="
 section = "7.3.196"

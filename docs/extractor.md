@@ -23,16 +23,64 @@ counting is exact and every later parsing step sees patched text.
   defining RFC additionally produce `ReusedAvps` rows.
 - The "re-used Diameter AVPs" table → `ReusedAvps` rows with M-bit overrides.
 
+## What the extractor does not decide
+
+**A `.dad` file records everything the source document says.** The extractor
+translates the document into the format; it does not curate it. Where a
+specification is redundant, self-contradictory or plainly wrong, that is what
+the file records, because the file's job is to be a reviewable, diffable record
+of the document — and because the next version's diff is only trustworthy if
+this version wrote down everything that could change.
+
+Three things follow, and they are worth stating because each one is tempting to
+get wrong in the same direction:
+
+- **Do not drop a block because another block contradicts it.** An AVP defined
+  locally *and* listed as re-used is a real inconsistency in the specification.
+  Deleting either side makes the file agree with itself by making it disagree
+  with the document. Report it in the linter instead.
+- **Do not drop a block because it looks redundant.** A clause that re-prints
+  another specification's AVP is still a clause this document printed, and its
+  body can change between versions.
+- **Do not normalize a value into what it "should" be.** That is what the two
+  patch layers are for, and they are separate precisely so the unedited reading
+  stays on disk: [input patches](#input-patches) fix honest typos in the source
+  text — a flags cell reading `M. V`, a rule name written with spaces — and
+  only where the document is typographically wrong, never where it is
+  semantically wrong. [Corrections](corrections.md) fix data that extracts and
+  parses fine but is wrong, and they apply to a *separate* output file, so the
+  committed raw file always still says what the document said.
+
+Making sense of the result — resolving references, choosing between a local
+definition and a re-used row, filtering to what a particular consumer needs —
+is the job of whatever reads `.dad` files, not of what writes them. A consumer
+can always ignore information the file carries; it can never recover
+information the extractor threw away.
+
 ## Conventions baked into the extractor
 
 - `Page:` is where the *section* starts per the PDF bookmark outline. Table
   sections inherit their parent section's page, which can be one page before
   the table itself.
-- AVPs listed in the reused table, or referenced from an AVP-table NOTE, get no
-  local definition even when their section reads like one (DRMP is the case
-  that forced this: "is of type Enumerated", but the values live in RFC 7944).
+- An enumerated AVP listed in the reused table, or referenced from an AVP-table
+  NOTE, gets no local definition even when its section reads like one. This is
+  not a filtering rule — such a section has nothing to emit. DRMP is the case
+  that forced it: "is of type Enumerated", and then no values, because RFC 7944
+  defines them.
+- Grouped AVPs are *not* treated the same way, deliberately. TS 29.272 §7.3.40
+  re-prints TS 29.212's `Allocation-Retention-Priority` in full, code and all,
+  while listing it as re-used one clause later; nine of its clauses do this.
+  Those definitions are kept, because the document printed a body. The
+  local/re-used conflict that results is a real inconsistency in the source,
+  and reporting it is the linter's job — see
+  [what the extractor does not decide](#what-the-extractor-does-not-decide).
 - Enumerated AVPs take their code from the AVP table and their vendor-id from
   the spec's grouped-AVP headers, because enumerated sections print neither.
+- A flag named twice (`REQ, REQ`, `M,M`) fails rather than collapsing into the
+  single flag a `frozenset` would leave. The repeat means nothing the one flag
+  does not, so it cannot be recorded faithfully — and collapsing it would make
+  the file quietly disagree with the document. Failing routes the fix through
+  an input patch, where it is declared and reviewed.
 - Enum values and descriptions are classified by content, not by paragraph
   style: the usual convention is value=`B1`/description=`B2`, but human-written
   specs invert it.
@@ -53,10 +101,16 @@ replace = "M, V"
 exact = true               # match the whole text unit, not a substring
 count = 1                  # must apply exactly this many times
 section = "7.3"            # optional: only inside this section (prefix)
-reason = "flags cell typo in table 7.3.1/1"
+reason = "flags cell typo in table 7.3.1/1"   # required
 first_version = "18.6.0"   # oldest version known to need this patch
 last_version = "18.6.0"    # newest version known to need this patch
 ```
+
+`find`, `replace` and `reason` are required, `find` must be non-empty and
+`count` positive. An empty `find` is the one declaration that defeats the
+accounting below rather than being caught by it: `str.replace` and `str.count`
+both work on the gaps between characters, so `find = ""` turns `"abc"` into
+`"XaXbXcX"` and still applies exactly as many times as it claimed it would.
 
 A patch that applies more or fewer times than `count` fails the extraction with
 a `PatchError` naming the known-needed version range, so patches cannot silently

@@ -915,7 +915,7 @@ OC-OLR                                  RFC7683    MUST-NOT
 SCEF-Reference-ID                       TS29.336   MUST-NOT
 SCEF-ID                                 TS29.336   MUST-NOT
 AESE-Communication-Pattern              TS29.336   MUST-NOT
-Communication-Pattern-set               TS29.336   MUST-NOT
+Communication-Pattern-Set               TS29.336   MUST-NOT
 Monitoring-Event-Configuration          TS29.336   MUST-NOT
 Monitoring-Event-Report                 TS29.336   MUST-NOT
 UE-Reachability-Configuration           TS29.336   MUST-NOT

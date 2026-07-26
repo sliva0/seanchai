@@ -103,10 +103,11 @@ def diameter_header(items: str) -> tuple[int, frozenset[ast.CommandFlag], int | 
     application_id = int(parts[-1]) if len(parts) > 1 and parts[-1].isdigit() else None
     names = parts[1:-1] if application_id is not None else parts[1:]
     try:
-        flags = frozenset(ast.CommandFlag(name) for name in names)
+        parsed = [ast.CommandFlag(name) for name in names]
     except ValueError:
         raise AbnfError(f"malformed Diameter flags: {names!r}") from None
-    return int(parts[0]), flags, application_id
+    _reject_repeats(parsed, f"Diameter header: {items!r}")
+    return int(parts[0]), frozenset(parsed), application_id
 
 
 def diameter_header_items(
@@ -122,9 +123,26 @@ def avp_flags(cell: str) -> frozenset[ast.AvpFlag]:
     between dialects (`-` in `.dad`, an empty cell in a docx table), so callers
     handle that themselves."""
     try:
-        return frozenset(ast.AvpFlag(flag.strip()) for flag in cell.split(","))
+        parsed = [ast.AvpFlag(flag.strip()) for flag in cell.split(",")]
     except ValueError:
         raise AbnfError(f"malformed flags cell {cell!r}") from None
+    _reject_repeats(parsed, f"flags cell {cell!r}")
+    return frozenset(parsed)
+
+
+def _reject_repeats(flags: list, where: str) -> None:
+    """A flag named twice is a source typo, and a `frozenset` would swallow it.
+
+    Swallowing it is the objectionable part: `REQ, REQ` would format back as
+    `REQ`, so the file would silently disagree with the document instead of
+    recording it. There is nothing a repeat could mean that the single flag
+    does not already mean, so it cannot be recorded faithfully either — which
+    leaves failing, and letting an input patch make the fix an explicit,
+    reviewed edit.
+    """
+    if len(set(flags)) != len(flags):
+        repeated = sorted({flag.value for flag in flags if flags.count(flag) > 1})
+        raise AbnfError(f"{where} repeats {', '.join(repeated)}")
 
 
 def avp_flags_cell(flags: frozenset[ast.AvpFlag]) -> str:
