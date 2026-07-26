@@ -70,6 +70,15 @@ These are the decisions the format rests on. Preserve them when changing it.
   design note called for a lenient parser; that idea was dropped. Hand edits are
   normalised by running the formatter, not by the parser guessing intent.
   Strictness is what keeps re-extraction diffs meaningful.
+- **A hand-authored file is a first-class input.** The format is written as
+  well as read: someone with a proprietary Diameter extension, or a
+  specification Seanchaí has no extractor for, should be able to write a `.dad`
+  file directly and have the parser, linter and consumers treat it like an
+  extracted one. Nothing is being built for that case yet — 3GPP and RFC
+  sources come first — but it is why the format has to stay writable by hand,
+  which in turn is why it looks like the source ABNF instead of like a
+  serialisation format. A change that makes files easier to generate and harder
+  to type is a change in the wrong direction.
 - **Round-trip is exact and idempotent.** `format_spec(parse(text)) == text` for
   every canonical file, which is what makes the patch-based review workflow
   produce stable diffs across extractor re-runs.
@@ -80,6 +89,14 @@ These are the decisions the format rests on. Preserve them when changing it.
 frozen pydantic models: extractor output and hand patches are exactly the kind
 of data worth validating eagerly, and `model_dump_json()` gives downstream
 generator and validator scripts a serialized form for free.
+
+The AST is not the type a schema generator should ultimately want to consume,
+and it should not be bent into one. Its references are unresolved strings
+because that is what the file holds, and it has to be able to represent a
+specification that contradicts itself. The resolved, cross-referenced view with
+convenience methods is a separate consumer model built *from* the AST — see
+[roadmap.md](roadmap.md). Requests to make these nodes friendlier to generators
+usually belong to that layer instead.
 
 Fields that are optional because the *source documents* are inconsistent are
 marked as such in the model docstrings — `Message.application_id` (some TS

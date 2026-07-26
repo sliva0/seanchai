@@ -8,12 +8,34 @@ dictionary format.
 
 ## Motivation
 
-Diameter implementations each maintain their own hand-transcribed dictionary of
-command ABNFs, grouped AVP rules, and AVP tables, copied out of spec PDFs.
-Hand transcription is slow and error-prone, and useful for exactly one
-implementation at a time. Seanchaí replaces that with one reviewed source of
-truth: transcribe (mostly automatically) once, review once, then generate or
-verify every implementation's dictionary from it.
+5G's 3GPP protocols have OpenAPI and JSON Schema: a machine-readable
+description of the wire format, published alongside the prose, that anyone can
+generate code from. Diameter has nothing equivalent. Its definitions exist as
+ABNF blocks and tables inside Word documents and RFC text, so every
+implementation hand-transcribes them into a dictionary format of its own
+invention — command ABNFs, grouped AVP rules and AVP tables, copied out of spec
+PDFs. That work is slow, error-prone, and useful for exactly one implementation
+at a time.
+
+Seanchaí replaces it with one reviewed source of truth: transcribe (mostly
+automatically) once, review once, then generate or verify every
+implementation's dictionary from it. The intended end state is a Python library
+you point at the `.dad` corpus and query — every message in a given
+specification, every grouped AVP, every plain AVP — so that emitting
+definitions *in your own format* is a short script rather than a transcription
+project. That might be Python class definitions for a library like
+[mensonen/diameter](https://github.com/mensonen/diameter), or a JSON schema
+shaped like the 5G ones, or whatever a particular consumer already uses.
+Seanchaí does not pick the output format; it makes the input to that choice
+machine-readable and reviewed.
+
+Generating a dictionary is only one of the two things that buys. If you have
+already hand-written your format, you do not want it regenerated — you want to
+know whether it is right. The same library and the same corpus let you write a
+script that walks your existing dictionary and reports what disagrees with the
+specifications: a wrong code, a stale type, a definition that changed two
+releases ago. That costs nothing to adopt and does not ask you to move to
+anyone else's format.
 
 ## Architecture
 
@@ -29,9 +51,28 @@ The pipeline has three stages:
    `.dad` file is generated from those two and is what downstream consumes. A
    version upgrade is re-extract, diff raw-vs-raw, re-apply the corrections —
    not a re-review from scratch.
-3. **Consumption** — the parser turns `.dad` files back into the AST, and
-   downstream scripts emit an implementation's native dictionary format or
-   validate an existing hand-written one against the spec.
+3. **Consumption** — the parser turns `.dad` files back into the AST, and a
+   consumer model built from that AST lets downstream scripts emit an
+   implementation's native dictionary format or validate an existing
+   hand-written one against the spec. The parser is the half that exists
+   today.
+
+   The AST and the consumer model are deliberately different types. The AST
+   mirrors a `.dad` file one-to-one, keeps references as unresolved strings,
+   and must be able to represent a specification that contradicts itself —
+   fidelity is its whole job. The consumer model is the resolved view: AVP
+   references followed into real objects across files, identities and types
+   attached, methods where they help. Making the AST convenient would make it
+   less faithful, which is why the convenience lives one layer up.
+
+Extraction is the stage that happens to be hardest, but it is not the only way
+a `.dad` file can come to exist. The format is written, not just read: a vendor
+with a proprietary Diameter extension, or anyone with a spec Seanchaí does not
+cover, can hand-author a `.dad` file and have it slot into the same parser,
+linter and consumers as an extracted one. That is a deliberate goal rather than
+an accident of the design, though 3GPP and RFC sources come first in practice
+— the near-term obligation is only to keep hand-authoring viable, not to build
+anything specifically for it.
 
 ### The rule that holds the pipeline together
 
@@ -93,8 +134,15 @@ never recover what the extractor threw away.
   `dictionary.xml` as an independent oracle.
 - Extraction of the remaining 3GPP Diameter specs, and an RFC (plain-text)
   extractor for the base protocol and IETF applications.
-- Downstream consumers: validators for existing hand-written dictionaries
-  first, generators for native dictionary formats after.
+- A consumer model over a parsed corpus, separate from the `.dad` AST, with
+  cross-references resolved and a thin set of pre-built queries — every message
+  in a spec, every grouped AVP, every plain AVP, look up an AVP by name or
+  `(vendor-id, code)`. The AST stays public underneath for anything it does not
+  cover.
+- Downstream consumers in both directions: validating an existing hand-written
+  dictionary against the corpus, and generating one in an implementation's
+  native format. Validation comes first — it needs no opinion about output
+  syntax.
 
 Open work is tracked in [docs/roadmap.md](docs/roadmap.md). Completed review
 rounds and the reasoning behind them are kept in

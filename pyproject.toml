@@ -1,7 +1,7 @@
 [project]
 name = "seanchai"
 version = "0.1.0"
-description = "Missing machine-readable schema for Diameter protocol"
+description = "Missing machine-readable schema (generator) for Diameter protocol"
 readme = "README.md"
 authors = [
     { name = "sliva0", email = "sliva0mk@gmail.com" }
