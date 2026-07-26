@@ -428,14 +428,14 @@ def test_loading_finds_the_module_named_after_the_specification(tmp_path):
 
 @pytest.mark.parametrize(
     "raw",
-    sorted((_ROOT / "examples").glob("*.raw.dad")),
+    sorted((_ROOT / "dad").rglob("*.raw.dad")),
     ids=lambda path: path.name,
 )
 def test_committed_corrections_still_apply_to_committed_raw_output(raw):
     """The rot check that makes the layer worth having: if a re-extraction or a
     spec bump changes what a correction expects, this fails."""
     spec = parser.parse(raw.read_text())
-    declared = corrections.load(_ROOT / "corrections", spec.specification)
+    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
     corrected, results = corrections.apply(spec, declared)
 
@@ -471,9 +471,9 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     type and one AVP code, nothing else — so changing what the corrections do
     has to be a deliberate edit here too.
     """
-    raw = _ROOT / "examples" / "29272-i60.raw.dad"
+    raw = _ROOT / "dad" / "3gpp" / "rel-18" / "29272-i60.raw.dad"
     spec = parser.parse(raw.read_text())
-    declared = corrections.load(_ROOT / "corrections", spec.specification)
+    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
     corrected, _ = corrections.apply(spec, declared)
 

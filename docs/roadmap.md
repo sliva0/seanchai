@@ -95,7 +95,7 @@ re-declares them, because every Diameter application is assumed to have them.
 
 7. **A base-protocol import rule** — either an implicit RFC 6733 dependency or
    an explicit dependency/import directive in the format. The RFC extractor
-   below (17) is what makes either one checkable, since neither means anything
+   below (18) is what makes either one checkable, since neither means anything
    until a base `.dad` exists.
 8. **Decide whether corrections need an insert operation.** Once the base AVPs
     are subtracted, the residue is small and interesting: two references in
@@ -128,7 +128,7 @@ re-declares them, because every Diameter application is assumed to have them.
     `OC-OLR`, `DRMP` and `Load` from RFCs 6733, 7683, 7944 and 8583. So one
     added specification closes every 3GPP edge, and the residue is exactly the
     base-protocol problem above. 29.388 is a small spec and currently fails on
-    the missing-caption class (13).
+    the missing-caption class (14).
 
     Afterwards, in rough order of what each adds: 29.344 (PC4a) reaches 29.173,
     which extracts today, and 29.061, which does not; 29.330 (Sc) needs 29.336;
@@ -137,7 +137,18 @@ re-declares them, because every Diameter application is assumed to have them.
 
 ## Validation against an independent oracle
 
-11. **Cross-check extracted codes, vendor-ids and types against Wireshark's
+11. **Fetch Wireshark's Diameter dictionary through the downloader.** It is
+    the oracle the next item compares against, and it needs to arrive pinned
+    and reproducible like every other source. Not a git submodule: a submodule
+    is always a whole repository, and Wireshark's history is 1.2 GB for the
+    824 KB of `resources/protocols/diameter/` (32 files) that matter — the
+    dictionary is split across per-vendor XML entity files, so the whole
+    directory is needed, not just `dictionary.xml`. A catalog entry fetching
+    that directory at a pinned tag is the shape; it needs a third family
+    alongside `tgpp` and `rfc` in `specs.toml` and its own download function,
+    which is why it is an item rather than a config edit.
+
+12. **Cross-check extracted codes, vendor-ids and types against Wireshark's
     Diameter `dictionary.xml`.** Only 29.329 is hand-verified today; this is
     what would let the other extracted specs be trusted at scale. Optionally
     borrow Wireshark's disambiguated names for AVPs whose names clash across
@@ -161,18 +172,18 @@ specifications the downloader fetches, five extract cleanly today — 29.173,
 29.229, 29.272, 29.329 and 29.337. The rest fail in a handful of classes, and
 the classes matter more than the individual specs.
 
-12. **Nine specifications never reach the extractor at all**, because 3GPP
+13. **Nine specifications never reach the extractor at all**, because 3GPP
     ships them as legacy binary `.doc` rather than `.docx`: 29.201, 29.215,
     29.217, 29.219, 29.343, 29.368, 29.468, 32.299 and TR 29.909. Among them
     32.299, which 29.272 and 29.389 both re-use from, and 29.368, which 29.337
     does. Reading that format, or finding a source that offers those nine as
     `.docx`, is a prerequisite the corpus does not currently admit to having.
-13. **Six stop at "AVP table without a caption"**: 29.172, 29.283, 29.330,
+14. **Six stop at "AVP table without a caption"**: 29.172, 29.283, 29.330,
     29.344, 29.388 and 29.389. This is the highest-value single fix, because it
     is what stands between the corpus and the first cross-file linter tree (10).
-14. **Four cannot find the spec number on the cover page**: 29.061, 29.212,
+15. **Four cannot find the spec number on the cover page**: 29.061, 29.212,
     29.213 and 29.214.
-15. **Four report no AVP table, in three different senses.** For 29.228 and
+16. **Four report no AVP table, in three different senses.** For 29.228 and
     29.328 the extractor is right and the assumption is wrong: those
     specifications hold the Cx and Sh *messages* while 29.229 and 29.329 hold
     their AVPs, so a message-only document is a shape the extractor should
@@ -180,14 +191,14 @@ the classes matter more than the individual specs.
     they lack the "AVP Flag rules" header the current table dispatch keys on.
     29.305 is unexamined. Related, and also a shape assumption: 29.273 has a
     command section with no ABNF.
-16. **Five trip deliberate strictness on a single cell** — a space inside a
+17. **Five trip deliberate strictness on a single cell** — a space inside a
     name cell in 29.336 and 29.338, `M. V` for flags in 29.345, and a
     misspelled data type in 29.109 ("OctedString") and 29.128 ("OctetSstring").
     This is the input-patch layer working as designed, so these are patches to
     write rather than code to change. Two things left this list rather than
     joining it: 29.389's empty Encrypt cell is now a representable value, and
     the four specs blocked on the `P` flag are no longer blocked on it.
-17. **Add an RFC (plain-text) extractor** for the base protocol and IETF
+18. **Add an RFC (plain-text) extractor** for the base protocol and IETF
     applications. This is a new input path rather than a new format: RFC 6733
     §4.5 is the same kind of table as a 3GPP AVP table, and its Attribute Name,
     AVP Code, Section Defined and Data Type columns map onto `AvpTableRow` as
@@ -197,7 +208,7 @@ the classes matter more than the individual specs.
     table declare that it has only MUST and MUST NOT — so the one real cost
     left is the fixed-width layout itself, where a long name wraps across
     physical lines (`Acct-` / `Interim-Interval`).
-18. **Downloader changes** for archive fetching and link derivation — see
+19. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).
 
 ## Downstream consumers
@@ -208,7 +219,7 @@ have OpenAPI, so every implementation invents its own dictionary format. The
 deliverable is not a format everyone adopts — it is that generating *your*
 format becomes a short script over a reviewed corpus.
 
-19. **A consumer model, distinct from the `.dad` AST.** These are two type
+20. **A consumer model, distinct from the `.dad` AST.** These are two type
     hierarchies with opposite jobs, and collapsing them into one would damage
     both.
 
@@ -252,7 +263,7 @@ format becomes a short script over a reviewed corpus.
     (`e9856a9`). A message carries its ABNF, name, code, flags and its
     `; Section:` pointer; narrative stays in the specification the pointer
     names.
-20. **Two consumer directions, both first-class**, over the same model (19):
+21. **Two consumer directions, both first-class**, over the same model (20):
 
     *Generate* a dictionary in a format the consumer chooses — Python class
     definitions for a library like
@@ -274,7 +285,7 @@ format becomes a short script over a reviewed corpus.
     needs — resolve by name, resolve by identity, enumerate a spec's messages —
     while being judged against an artifact that already exists, so the model is
     tested before any code-generation design has to be right.
-21. **Keep hand-authored `.dad` files viable**, so a proprietary Diameter
+22. **Keep hand-authored `.dad` files viable**, so a proprietary Diameter
     extension or an uncovered specification can be written directly and slot
     into the same parser, linter and consumers. Nothing needs building for this
     now, and it should not grow features ahead of a real case; it is here
@@ -283,17 +294,17 @@ format becomes a short script over a reviewed corpus.
 
 ## Smaller items
 
-22. A version type shared by input patches and corrections, so a recorded range
+23. A version type shared by input patches and corrections, so a recorded range
     can be compared against the parsed version and *warn* when it no longer
     covers it. Both layers currently record ranges without comparing them, and
     both must keep applying regardless — the range explains, it never gates.
-23. A CLI flag that auto-expands an input patch's `first_version`/`last_version`
+24. A CLI flag that auto-expands an input patch's `first_version`/`last_version`
     range when a newer or older version is parsed and the patch still applied
     cleanly. Needs comment-preserving TOML rewriting (e.g. tomlkit), and the
-    shared version type above (22).
-24. Fix the `atomic_download` corrupt-cache wart described in
+    shared version type above (23).
+25. Fix the `atomic_download` corrupt-cache wart described in
     [downloader.md](downloader.md).
-25. Stage a whole corpus version before publishing it. `replace_extracted` now
+26. Stage a whole corpus version before publishing it. `replace_extracted` now
     rolls back a failed directory swap, and a failed run no longer leaves a
     stale `manifest.json` behind, so no single artifact is corrupted — but a
     run that fails halfway still leaves a corpus where some specs are the new

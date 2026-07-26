@@ -14,6 +14,11 @@ from pathlib import Path
 
 import click
 
+# The two declared edit layers live side by side; only the input patches are
+# discovered automatically, because loading a correction module executes
+# Python from that directory.
+_DEFAULT_PATCHES = Path("edits") / "patches"
+
 
 @contextlib.contextmanager
 def reported() -> Iterator[None]:
@@ -47,7 +52,7 @@ def main() -> None:
 @click.option(
     "--patches",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with input-patch TOML files (default: ./patches if present).",
+    help="Directory with input-patch TOML files (default: ./edits/patches if present).",
 )
 @click.option(
     "--corrections",
@@ -73,8 +78,8 @@ def extract(
     """Extract a canonical `.dad` file from a 3GPP specification docx."""
     from .extractor import tgpp_docx
 
-    if patches is None and Path("patches").is_dir():
-        patches = Path("patches")
+    if patches is None and _DEFAULT_PATCHES.is_dir():
+        patches = _DEFAULT_PATCHES
     warnings: list[str] = []
     with reported():
         try:
@@ -156,8 +161,8 @@ def _correct(spec, directory: Path, required: bool):
     "-o",
     "--output",
     type=click.Path(file_okay=False, path_type=Path),
-    default=Path("output"),
-    help="Corpus directory (default: ./output).",
+    default=Path("specifications"),
+    help="Directory for downloaded sources (default: ./specifications).",
 )
 @click.option("--workers", type=int, default=6, help="Parallel downloads (default: 6).")
 @click.option(

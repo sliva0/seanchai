@@ -42,7 +42,8 @@ try to interpret.
 
 `uv run pytest`. The suite is integration-leaning by design:
 
-- Committed `examples/*.dad` are round-trip-pinned **by glob**, so a newly
+- Every committed `.dad` file — the corpus under `dad/` and the hand-made
+  reference in `examples/` — is round-trip-pinned **by glob**, so a newly
   committed file is covered automatically.
 - The extractor and the CLI run end-to-end against a synthetic docx and a real
   PDF outline, both built in `tests/conftest.py` fixtures. Tests that need
@@ -62,7 +63,7 @@ try to interpret.
   rather than in a review months later.
 - `tests/test_real_sources.py` re-extracts every committed raw file from the
   real docx and its ETSI PDF and compares byte-for-byte. It skips unless the
-  hand-fetched sources are under `output/manual/` (they are git-ignored), so a
+  hand-fetched sources are under `specifications/manual/` (they are git-ignored), so a
   fresh clone sees three skips — but on a machine that has them, it is the test
   that catches an extractor change which is fine on the synthetic fixture and
   wrong on the documents the fixture was abstracted from.
@@ -105,10 +106,15 @@ reintroduce it as an incidental edit:
 - **Don't design ahead of collected cases.** The extractor has repeatedly not
   grown override files, structural-instruction formats or generalised table
   handling, because no real document has needed them yet. The same restraint
-  applies to corpus layouts, manifests, provenance schemas, format-version
-  negotiation and public API contracts: write them down when a second consumer
-  or a real failure asks for them, not before. A note in `roadmap.md` is the
-  right size for a good idea whose time hasn't come.
+  applies to manifests, provenance schemas, format-version negotiation and
+  public API contracts: write them down when a second consumer or a real
+  failure asks for them, not before. A note in `roadmap.md` is the right size
+  for a good idea whose time hasn't come.
+
+  The corpus layout used to be on that list and no longer is: `dad/3gpp/rel-N/`
+  and `dad/rfc/` are settled, described in [dad/README.md](../dad/README.md).
+  What stays undecided is where *corrected* files live, because nothing
+  generates them into the tree yet.
 - **Prose over process.** No status tables, dependency graphs, ticket IDs or
   acceptance-criteria blocks. This is a small repository; the docs should read
   like an experienced colleague explaining the system, which is also what makes

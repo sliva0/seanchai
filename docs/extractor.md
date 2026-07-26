@@ -111,7 +111,7 @@ normalized paragraph, cell and title text — not the raw docx XML, which has
 arbitrary run splits and is hopeless as a patch target.
 
 Patch files are TOML, one per specification, named by its reference
-(`patches/TS29.272.toml`):
+(`edits/patches/TS29.272.toml`):
 
 ```toml
 [[patch]]

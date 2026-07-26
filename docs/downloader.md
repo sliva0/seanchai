@@ -1,7 +1,7 @@
 # The downloader
 
 `src/seanchai/downloader/` fetches the curated catalog in its `specs.toml`
-into the git-ignored `output/`. It uses only the standard library, and keeps
+into the git-ignored `specifications/`. It uses only the standard library, and keeps
 its printing and exit codes in the CLI: the module returns records, reports
 progress through a callback, and raises `DownloadError`.
 
@@ -12,7 +12,7 @@ uv run seanchai download --pdfs     # include the ETSI PDF renderings
 ```
 
 It downloads 3GPP archives and their matching ETSI PDF renderings, plus the
-plain-text RFCs, and writes `output/manifest.json` recording sha256 and size
+plain-text RFCs, and writes `specifications/manifest.json` recording sha256 and size
 per artifact.
 
 ## Notes for whoever touches it next
@@ -43,7 +43,7 @@ per artifact.
   say outright whether a PDF is page-attachment compatible.
 - **Extraction replaces the specification directory, it does not merge into
   it.** `replace_extracted` stages the new contents in a sibling directory and
-  swaps them in, so `output/3gpp/Rel-N/TS_29.272/` never holds members of two
+  swaps them in, so `specifications/3gpp/Rel-N/TS_29.272/` never holds members of two
   archive versions at once. `safe_extract` is the raw primitive underneath and
   does merge; call it directly only when that is what you want.
 

@@ -4,13 +4,15 @@ import pytest
 
 from seanchai.dad import ast, formatter, parser
 
+_ROOT = Path(__file__).parent.parent
+
 
 @pytest.mark.parametrize(
     "path",
-    sorted((Path(__file__).parent.parent / "examples").glob("*.dad")),
+    sorted([*(_ROOT / "dad").rglob("*.dad"), *(_ROOT / "examples").glob("*.dad")]),
     ids=lambda path: path.name,
 )
-def test_committed_examples_round_trip_exactly(path):
+def test_every_committed_dad_file_round_trips_exactly(path):
     text = path.read_text()
     spec = parser.parse(text)
     assert formatter.format_spec(spec) == text

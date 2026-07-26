@@ -43,7 +43,7 @@ verify that the field exists on the matched node and rebuild through pydantic.
 
 ## The file
 
-`corrections/TS29.272.py`:
+`edits/corrections/TS29.272.py`:
 
 ```python
 from seanchai.dad.corrections import Correction, definition
@@ -63,7 +63,8 @@ CORRECTIONS = [
 
 That one is real: TS 29.272 prints `< Diameter Header: 8388638, REQ, PXY, >`
 for the four VCSG commands, and clause 7.2.2 states the application id those
-command codes belong to. The full set is in `corrections/TS29.272.py`.
+command codes belong to. The full set is in
+`edits/corrections/TS29.272.py`.
 
 ## Semantics
 
@@ -132,18 +133,19 @@ so far kept override files out of the extractor.
 ```text
 docx ──input patches──► extract ──► 29272-i60.raw.dad (committed)
                                               │
-                                    corrections/TS29.272.py
+                                 edits/corrections/TS29.272.py
                                               ▼
                                        corrected .dad
 ```
 
-The raw file and the correction module are both committed, so the corrected
-file is reproducible from them and the diff between raw and corrected is
-generated rather than stored. Where the corrected files themselves should live
-is part of the undecided corpus layout, so nothing commits them yet.
+The raw file and the correction module are both committed — the raw file under
+`dad/`, the module under `edits/corrections/` — so the corrected file is
+reproducible from them and the diff between raw and corrected is generated
+rather than stored. Corrected files are not committed; see
+[dad/README.md](../dad/README.md) for the corpus layout.
 
 CLI: `seanchai extract … --corrections DIR`, explicit rather than the
-`./patches`-if-present auto-discovery the input patches use, because this
+`./edits/patches`-if-present auto-discovery the input patches use, because this
 imports Python from the given directory. Plus `seanchai correct IN.dad -o
 OUT.dad`, so the layer can be re-run without a docx.
 
@@ -162,8 +164,10 @@ up: `ast.spec_ref` accepts only canonical document references, and the resolved
 candidate must sit directly in the resolved corrections directory. A file
 claiming `; Specification: ../outside` gets an error, not `../outside.py`.
 
-Input patches stay in `patches/`; corrections go in `corrections/`. Two
-directories, so which layer a fix belongs to is visible from the path.
+Input patches stay in `edits/patches/`; corrections go in
+`edits/corrections/`. Two directories side by side, so which layer a fix
+belongs to is visible from the path, and both are visibly *edits* rather than
+source.
 
 ## Testing
 

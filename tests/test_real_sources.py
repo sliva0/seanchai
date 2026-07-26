@@ -19,15 +19,15 @@ from seanchai.dad import formatter, parser
 from seanchai.extractor import tgpp_docx
 
 _ROOT = Path(__file__).parent.parent
-_MANUAL = _ROOT / "output" / "manual"
-_PATCHES = _ROOT / "patches"
+_MANUAL = _ROOT / "specifications" / "manual"
+_PATCHES = _ROOT / "edits" / "patches"
 
 
 def _cases():
     """One case per committed raw file, paired with the sources that produced
     it: the docx by file name, the PDF by the `; Link:` header the file
     already carries."""
-    for raw in sorted((_ROOT / "examples").glob("*.raw.dad")):
+    for raw in sorted((_ROOT / "dad").rglob("*.raw.dad")):
         spec = parser.parse(raw.read_text(encoding="utf-8"))
         assert spec.link is not None, f"{raw.name} has no ; Link: to find its PDF by"
         docx = _MANUAL / f"{raw.name.removesuffix('.raw.dad')}.docx"

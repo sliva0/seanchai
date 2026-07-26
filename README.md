@@ -154,17 +154,20 @@ rounds and the reasoning behind them are kept in
 
 - `src/seanchai/` — the `dad` package (AST, parser, formatter, corrections),
   the `extractor` and `downloader` packages, and the `seanchai` CLI.
-- `patches/` — per-spec input patches (`<SpecRef>.toml`) for source typos that
-  would break extraction.
-- `corrections/` — per-spec correction modules (`<SpecRef>.py`) for extracted
-  data that is semantically wrong.
-- `output/` — downloaded source documents (git-ignored; recreate with the
-  downloader).
-- `examples/` — committed `.dad` files: the hand-made reference and raw
-  extractor outputs.
+- `dad/` — the committed `.dad` corpus: `dad/3gpp/rel-18/` per 3GPP release,
+  `dad/rfc/` flat. See [dad/README.md](dad/README.md).
+- `edits/` — the two declared edit layers, side by side:
+  `edits/patches/<SpecRef>.toml` for source typos that would break extraction,
+  and `edits/corrections/<SpecRef>.py` for extracted data that parses but is
+  wrong.
+- `specifications/` — downloaded source documents (git-ignored; recreate with
+  `seanchai download`). Output of the downloader, not of the project.
+- `examples/` — the hand-made reference `.dad` file the format is described
+  against. Not part of the corpus.
+- `external/` — third-party checkouts kept while working (git-ignored).
 - `tests/` — pytest suite.
-- `docs/` — format, extractor, workflow, development and roadmap documents,
-  plus `docs/history/` for completed review rounds.
+- `docs/` — format, grammar, extractor, workflow, development and roadmap
+  documents, plus `docs/history/` for completed review rounds.
 
 ## Development
 
