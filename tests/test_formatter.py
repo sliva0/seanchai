@@ -17,6 +17,99 @@ def test_committed_examples_round_trip_exactly(path):
     assert parser.parse(formatter.format_spec(spec)) == spec
 
 
+def _spec(*sections):
+    return ast.Specification(specification="Test", version="1", sections=sections)
+
+
+def _boundary_specs():
+    """Shapes the committed examples don't happen to contain. The round-trip
+    invariant has to hold for the whole format, not just for what 29.229,
+    29.272 and 29.329 print."""
+    source = ast.SourceRef(section="1")
+    return {
+        "empty-file": _spec(),
+        "message-without-avps": _spec(
+            ast.Message(
+                name="Bare-Request",
+                abbreviation="BR",
+                source=source,
+                command_code=0,
+                flags=frozenset(),
+                application_id=0,
+                avps=(),
+            )
+        ),
+        "every-command-flag": _spec(
+            ast.Message(
+                name="Full-Request",
+                abbreviation="FULL",
+                source=source,
+                command_code=2**24 - 1,
+                flags=frozenset(ast.CommandFlag),
+                application_id=2**32 - 1,
+                avps=(),
+            )
+        ),
+        "occurrence-extremes": _spec(
+            ast.GroupedAvp(
+                name="Group",
+                source=source,
+                code=1,
+                avps=(
+                    ast.AvpRule(
+                        name="Unbounded",
+                        presence=ast.Presence.OPTIONAL,
+                        min_occurs=0,
+                        max_occurs=None,
+                    ),
+                    ast.AvpRule(
+                        name="Wide",
+                        presence=ast.Presence.FIXED,
+                        min_occurs=2**32 - 1,
+                        max_occurs=2**32 - 1,
+                    ),
+                    ast.AvpRule(name="Bold", presence=ast.Presence.REQUIRED, bold=True),
+                ),
+            )
+        ),
+        "enum-with-only-reserved": _spec(
+            ast.EnumeratedAvp(
+                name="Mode",
+                source=source,
+                code=1,
+                values=(ast.ReservedValues(first=0, last=2**32 - 1),),
+            )
+        ),
+        "long-names": _spec(
+            ast.AvpTable(
+                table="1/1",
+                source=ast.SourceRef(section="1.2.3A", page=2**32 - 1),
+                rows=(
+                    ast.AvpTableRow(
+                        name="A-Very-Long-Attribute-Name-3GPP-Style",
+                        code=None,
+                        section=None,
+                        data_type="OctetString",
+                        flag_rules=ast.AvpFlagRules(
+                            must=frozenset(ast.AvpFlag),
+                            must_not=frozenset({ast.AvpFlag.VENDOR}),
+                        ),
+                        may_encrypt=True,
+                    ),
+                ),
+            )
+        ),
+    }
+
+
+@pytest.mark.parametrize("spec", _boundary_specs().values(), ids=_boundary_specs())
+def test_formatting_is_idempotent_and_survives_a_round_trip(spec):
+    once = formatter.format_spec(spec)
+
+    assert parser.parse(once) == spec
+    assert formatter.format_spec(parser.parse(once)) == once
+
+
 def test_formats_every_section_and_optional_field_canonically():
     spec = ast.Specification(
         specification="Test Specification",

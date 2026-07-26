@@ -43,9 +43,13 @@ The pipeline has three stages:
 - **3GPP docx extractor**, plus the ETSI-PDF page-attachment pass and
   per-spec input patches for source typos. See
   [docs/extractor.md](docs/extractor.md).
-- **CLI**: `uv run seanchai extract DOCX [--pdf PDF] [--link URL] [-o OUT]`.
-- **Downloader**: `downloader/download_diameter_specs.py` with the curated
-  catalog in `downloader/specs.toml`.
+- **Corrections**: the second patch layer, for data that parses fine but is
+  semantically wrong. See
+  [docs/proposal-corrections.md](docs/proposal-corrections.md).
+- **CLI**: `seanchai extract` (docx → `.dad`), `seanchai correct` (raw `.dad` →
+  corrected), `seanchai download` (fetch the corpus).
+- **Downloader**: `uv run seanchai download`, with the curated catalog in
+  `src/seanchai/downloader/specs.toml`.
 - **Extracted specs**: TS 29.329 (hand-verified reference), TS 29.229 and
   TS 29.272 (raw, round-tripped and spot-checked).
 
@@ -53,9 +57,6 @@ The pipeline has three stages:
 
 - A formal `.dad` grammar document, and a cross-section linter (unresolved AVP
   references, duplicate definitions, table-vs-definition consistency).
-- The second patch layer: corrections for data that parses fine but is
-  semantically wrong, designed in
-  [docs/proposal-corrections.md](docs/proposal-corrections.md).
 - Cross-checking extracted codes/vendors/types against Wireshark's Diameter
   `dictionary.xml` as an independent oracle.
 - Extraction of the remaining 3GPP Diameter specs, and an RFC (plain-text)
@@ -69,12 +70,12 @@ code-quality work is planned in
 
 ## Repository layout
 
-- `src/seanchai/` — the `dad` package (AST, parser, canonical formatter), the
-  `extractor` package, and the `seanchai` CLI.
-- `downloader/` — `download_diameter_specs.py` plus `specs.toml`, the curated
-  catalog of 3GPP specs and RFCs to fetch.
+- `src/seanchai/` — the `dad` package (AST, parser, formatter, corrections),
+  the `extractor` and `downloader` packages, and the `seanchai` CLI.
 - `patches/` — per-spec input patches (`<SpecRef>.toml`) for source typos that
   would break extraction.
+- `corrections/` — per-spec correction modules (`<SpecRef>.py`) for extracted
+  data that is semantically wrong.
 - `output/` — downloaded source documents (git-ignored; recreate with the
   downloader).
 - `examples/` — committed `.dad` files: the hand-made reference and raw

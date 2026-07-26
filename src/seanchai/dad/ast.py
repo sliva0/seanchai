@@ -178,7 +178,9 @@ class AvpTable(Node):
     type: Literal["AVP Table"] = "AVP Table"
     table: str
     source: SourceRef
-    rows: tuple[AvpTableRow, ...]
+    # A table section with no rows carries no information, and would mean the
+    # extractor found a caption but lost its contents.
+    rows: Annotated[tuple[AvpTableRow, ...], Field(min_length=1)]
 
 
 class MBitOverride(enum.StrEnum):
@@ -204,13 +206,22 @@ class ReusedAvps(Node):
     type: Literal["Reused AVPs"] = "Reused AVPs"
     table: str
     source: SourceRef
-    rows: tuple[ReusedAvpRow, ...]
+    rows: Annotated[tuple[ReusedAvpRow, ...], Field(min_length=1)]
 
 
 Section = Annotated[
     Message | GroupedAvp | EnumeratedAvp | AvpTable | ReusedAvps,
     Field(discriminator="type"),
 ]
+
+
+def spec_ref(specification: str) -> str:
+    """The `SpecRef` form of a cover-page title: "3GPP TS 29.272" → "TS29.272".
+
+    Per-spec side files — input patches, corrections — are named by it, so the
+    rule lives here rather than in whichever loader needed it first.
+    """
+    return specification.removeprefix("3GPP ").replace(" ", "")
 
 
 class Specification(Node):

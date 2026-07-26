@@ -7,6 +7,7 @@ a malformed `; ...` line is a parse error, never silently skipped. `;;`
 free-text comment lines are discarded.
 """
 
+import contextlib
 import re
 
 import pydantic
@@ -100,10 +101,39 @@ def _no_leftovers(directives: dict[str, str], lineno: int) -> None:
         raise DadParseError(lineno, f"unexpected directives: {sorted(directives)}")
 
 
+@contextlib.contextmanager
+def _validated(lineno: int):
+    """Turn the AST's own validation failures into parse errors.
+
+    The models carry the field-level rules — section-number shape, AVP name
+    charset, unsigned ranges — so a bad value surfaces as a pydantic error
+    from deep inside a constructor. Every malformed `.dad` file should report
+    as `DadParseError` with a line, not as whatever the last layer raised.
+    """
+    try:
+        yield
+    except pydantic.ValidationError as error:
+        problems = "; ".join(
+            f"{'.'.join(str(part) for part in problem['loc'])}: {problem['msg']}"
+            for problem in error.errors()
+        )
+        raise DadParseError(lineno, problems) from None
+
+
+def _number(text: str, lineno: int, label: str) -> int:
+    try:
+        return int(text)
+    except ValueError:
+        raise DadParseError(lineno, f"{label} must be a number, got {text!r}") from None
+
+
 def _source_ref(directives: dict[str, str], lineno: int) -> ast.SourceRef:
     section = _pop(directives, "Section", lineno)
     page = directives.pop("Page", None)
-    return ast.SourceRef(section=section, page=None if page is None else int(page))
+    return ast.SourceRef(
+        section=section,
+        page=None if page is None else _number(page, lineno, "Page"),
+    )
 
 
 def _avp_rules(body: list[tuple[int, str]]) -> tuple[ast.AvpRule, ...]:
@@ -253,7 +283,7 @@ def _parse_avp_table(
         rows.append(
             ast.AvpTableRow(
                 name=name,
-                code=None if code == "-" else int(code),
+                code=None if code == "-" else _number(code, row_lineno, "Code cell"),
                 section=None if section == "-" else section,
                 data_type=data_type,
                 flag_rules=ast.AvpFlagRules(
@@ -315,11 +345,13 @@ def parse(text: str) -> ast.Specification:
         parser = _SECTION_PARSERS.get(section_type)
         if parser is None:
             raise DadParseError(block.start, f"unknown section type {section_type!r}")
-        sections.append(parser(directives, body, block.start))
+        with _validated(block.start):
+            sections.append(parser(directives, body, block.start))
 
-    return ast.Specification(
-        specification=specification,
-        version=version,
-        link=None if link is None else pydantic.HttpUrl(link),
-        sections=tuple(sections),
-    )
+    with _validated(header.start):
+        return ast.Specification(
+            specification=specification,
+            version=version,
+            link=None if link is None else pydantic.HttpUrl(link),
+            sections=tuple(sections),
+        )

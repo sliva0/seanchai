@@ -57,6 +57,9 @@ try to interpret.
   `tests/test_abnf.py` (the shared ABNF semantics, including that the parser
   and extractor dialects agree) and `tests/test_extract_phases.py` (the
   extractor's resolve phase).
+- `tests/test_corrections.py` re-applies every committed correction module to
+  the committed raw output, so a re-extraction that invalidates one fails here
+  rather than in a review months later.
 
 When you add generic handling for a new source-document quirk, reproduce the
 case in the synthetic docx fixture so the handling stays covered. The fixture
@@ -91,11 +94,11 @@ reintroduce it as an incidental edit:
 
 - **No CI, on any platform.** Run the tools locally before committing. This is
   a deliberate choice, not an oversight waiting to be corrected.
-- **Version ranges are advisory.** Both for input patches and for the proposed
-  corrections, a recorded range describes where a fix is known to be needed and
-  sharpens the warning. It never gates whether the fix is applied. Gating it
-  means silently dropping a fix on the next release — the exact failure the
-  accounting exists to catch.
+- **Version ranges are advisory.** For both input patches and corrections, a
+  recorded range describes where a fix is known to be needed and sharpens the
+  message. It never gates whether the fix is applied: gating means silently
+  dropping a fix on the next release, the exact failure the accounting exists
+  to catch.
 - **Don't design ahead of collected cases.** The extractor has repeatedly not
   grown override files, structural-instruction formats or generalised table
   handling, because no real document has needed them yet. The same restraint

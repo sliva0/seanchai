@@ -624,8 +624,8 @@ def _section_sort_key(section: str) -> list[tuple[int, str]]:
 
 def patch_file_name(specification: str) -> str:
     """Patch file name for a cover-page spec title: "3GPP TS 29.272" →
-    "TS29.272.toml" (matching the `.dad` SpecRef form)."""
-    return specification.removeprefix("3GPP ").replace(" ", "") + ".toml"
+    "TS29.272.toml"."""
+    return f"{ast.spec_ref(specification)}.toml"
 
 
 def extract(

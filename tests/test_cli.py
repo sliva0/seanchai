@@ -2,7 +2,7 @@ import docx
 from click.testing import CliRunner
 
 from seanchai import main
-from seanchai.dad import ast, parser
+from seanchai.dad import ast, formatter, parser
 
 
 def test_extract_command_runs_docx_pdf_formatter_and_parser_end_to_end(
@@ -68,6 +68,91 @@ def test_extract_command_reports_source_warnings_even_when_the_pdf_is_rejected(
 
     assert result.exit_code == 1
     assert "warning: 6.1: heading name 'Example-Requests'" in result.stderr
+
+
+def _first_message(spec: ast.Specification) -> ast.Message:
+    section = spec.sections[0]
+    assert isinstance(section, ast.Message)
+    return section
+
+
+def _corrections_dir(tmp_path):
+    directory = tmp_path / "corrections"
+    directory.mkdir()
+    (directory / "TS29.999.py").write_text(
+        "from seanchai.dad.corrections import Correction, definition\n"
+        "CORRECTIONS = [Correction(target=definition('Example-Request'),"
+        " field='application_id', expect=42, replace=16777308,"
+        " reason='the header prints the wrong application')]\n"
+    )
+    return directory
+
+
+def test_extract_command_applies_corrections_when_a_directory_is_given(
+    tmp_path, synthetic_spec_docx
+):
+    result = CliRunner().invoke(
+        main,
+        [
+            "extract",
+            str(synthetic_spec_docx),
+            "--corrections",
+            str(_corrections_dir(tmp_path)),
+        ],
+    )
+
+    assert result.exit_code == 0
+    spec = parser.parse(result.stdout)
+    assert _first_message(spec).application_id == 16777308
+    assert "corrected: definition 'Example-Request' application_id" in result.stderr
+
+
+def test_correct_command_reads_a_raw_dad_file(tmp_path, synthetic_spec_docx):
+    from seanchai.extractor import tgpp_docx
+
+    raw = tmp_path / "raw.dad"
+    raw.write_text(formatter.format_spec(tgpp_docx.extract(synthetic_spec_docx)))
+    corrected = tmp_path / "corrected.dad"
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "correct",
+            str(raw),
+            "--corrections",
+            str(_corrections_dir(tmp_path)),
+            "-o",
+            str(corrected),
+        ],
+    )
+
+    assert result.exit_code == 0
+    corrected_spec = parser.parse(corrected.read_text())
+    assert _first_message(corrected_spec).application_id == 16777308
+
+
+def test_correct_command_refuses_to_overwrite_its_input(tmp_path, synthetic_spec_docx):
+    # Correcting in place would produce a file whose corrections can never be
+    # re-applied or reviewed against the raw output.
+    from seanchai.extractor import tgpp_docx
+
+    raw = tmp_path / "raw.dad"
+    raw.write_text(formatter.format_spec(tgpp_docx.extract(synthetic_spec_docx)))
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "correct",
+            str(raw),
+            "--corrections",
+            str(_corrections_dir(tmp_path)),
+            "-o",
+            str(raw),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "refusing to correct a file in place" in result.stderr
 
 
 def test_extract_command_rejects_a_missing_input_file():

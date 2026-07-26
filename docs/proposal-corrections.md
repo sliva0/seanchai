@@ -1,6 +1,8 @@
-# Proposal: output corrections
+# Output corrections
 
-**Status: proposed, not implemented.**
+**Status: implemented in `src/seanchai/dad/corrections.py`.** This document is
+the design and the reasoning behind it; the semantics below are what the code
+does.
 
 The pipeline has two patch layers by design. The first,
 [input patches](extractor.md#input-patches), fixes typos in the source document
@@ -10,7 +12,7 @@ perfectly well but is *wrong*: an AVP code that the spec's own table misprints, 
 clause reference pointing at the wrong section, an application id the header
 omits.
 
-Only the first exists today. This document proposes the second.
+This document describes the second.
 
 ## Framing
 
@@ -44,35 +46,24 @@ verify that the field exists on the matched node and rebuild through pydantic.
 `corrections/TS29.272.py`:
 
 ```python
-from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
+from seanchai.dad.corrections import Correction, definition
 
 CORRECTIONS = [
     Correction(
-        target=table_row(name="MME-Location-Information"),
-        field="code",
-        expect=1600,
-        replace=1602,
-        reason="table 7.3.1/1 prints the Trace-Data code by mistake",
-        versions="18.6.0",
-    ),
-    Correction(
-        target=definition("Update-Location-Request"),
+        target=definition("Update-VCSG-Location-Request"),
         field="application_id",
         expect=None,
-        replace=16777251,
-        reason="VCSG command headers omit the application id",
-        versions="18.0.0..18.6.0",
-    ),
-    Correction(
-        target=avp_rule(parent="Subscription-Data", name="Roaming-Restricted"),
-        field="max_occurs",
-        expect=None,
-        replace=1,
-        reason="§7.3.2 body prints a bare * on a non-repeating AVP",
+        replace=16777308,
+        reason="clause 7.2.2 assigns the VCSG commands to S7a/S7d (16777308);"
+        " the command header omits the id",
+        versions="18.6.0",
     ),
 ]
 ```
+
+That one is real: TS 29.272 prints `< Diameter Header: 8388638, REQ, PXY, >`
+for the four VCSG commands, and clause 7.2.2 states the application id those
+command codes belong to. The full set is in `corrections/TS29.272.py`.
 
 ## Semantics
 
@@ -80,12 +71,14 @@ CORRECTIONS = [
   the same posture as the strict extractor. If 3GPP fixes the typo upstream, the
   next extraction fails loudly and the correction gets deleted; that is exactly
   the event worth being told about.
-- **A target matching zero nodes is an error too.** `versions` downgrades both to
-  a warning when the parsed version falls outside the declared range, so a
-  correction can stay in the file across a bump where it no longer applies. The
-  range is advisory, exactly as for input patches: a correction outside its
-  recorded range is still attempted, because skipping it would silently ship an
-  uncorrected file the first time a version moves.
+- **A target matching zero nodes is an error too**, as is a selector that
+  matches more than one.
+- **`versions` is advisory and, for now, only recorded.** It documents where a
+  correction is known to be needed, exactly as `first_version`/`last_version`
+  do for input patches: it must never gate whether a correction is applied,
+  because skipping one would silently ship an uncorrected file the first time a
+  version moves. Comparing it against the parsed version — to warn, never to
+  skip — needs a version type both layers can share, which neither has yet.
 - **Applying corrections is deterministic but not idempotent.** Run twice
   against the same raw AST you get identical output; run against
   already-corrected input and every `expect` fails. That is deliberate —
@@ -103,9 +96,12 @@ CORRECTIONS = [
 
 ## Implementation
 
-A generic walk that rebuilds the frozen tree:
-`apply(spec, corrections) -> tuple[Specification, list[str]]`, roughly 60–80
-lines in `dad/corrections.py`, plus one small dataclass per selector kind.
+`apply(spec, corrections) -> tuple[Specification, list[Result]]` in
+`dad/corrections.py`, with one frozen dataclass per selector kind. Every
+correction is resolved and checked against the original tree before anything is
+rebuilt, so a failure part-way through a set cannot leave a half-corrected
+file. Two corrections may touch two fields of the same node; two corrections to
+the *same* field are rejected rather than silently ordered.
 
 It belongs in `dad/`, not `extractor/`: corrections operate on the format, and a
 downstream consumer may want to apply them without going near the docx path.
@@ -126,14 +122,15 @@ so far kept override files out of the extractor.
 ```text
 docx ──input patches──► extract ──► 29272-i60.raw.dad (committed)
                                               │
-                                        corrections
+                                    corrections/TS29.272.py
                                               ▼
-                                    TS29.272.dad (committed)
+                                       corrected .dad
 ```
 
-Both files are committed, so the diff between them is generated and reviewable —
-semantic corrections stay readable as a diff without being *stored* as one, and
-the correction file is the reproducible recipe.
+The raw file and the correction module are both committed, so the corrected
+file is reproducible from them and the diff between raw and corrected is
+generated rather than stored. Where the corrected files themselves should live
+is part of the undecided corpus layout, so nothing commits them yet.
 
 CLI: `seanchai extract … --corrections DIR`, explicit rather than the
 `./patches`-if-present auto-discovery the input patches use, because this
@@ -148,8 +145,9 @@ directories, so which layer a fix belongs to is visible from the path.
 - Determinism: applying the same corrections to the same raw AST twice gives
   byte-identical output. (Not idempotency — see the semantics above; feeding
   corrected output back in must error.)
-- Rot detection: an `expect` that no longer matches errors; outside its
-  `versions` range it warns instead.
+- Rot detection: an `expect` that no longer matches errors — including a test
+  that re-applies every committed correction to the committed raw output, so a
+  re-extraction that invalidates one fails the suite.
 - An ambiguous selector errors, as does a field the target node doesn't have
   and a replacement value the model rejects.
 - Once the linter exists: `raw.dad` may fail it, the corrected file must pass.

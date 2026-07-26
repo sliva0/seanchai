@@ -274,6 +274,56 @@ def test_parses_reused_avp_m_bit_overrides():
             8,
             "malformed enum value",
         ),
+        # Values that reach an `int()` or a model field rather than a regex
+        # still have to report as parse errors with a line, not as whatever
+        # the last layer happened to raise.
+        (
+            _dad(
+                "; Type: Grouped AVP",
+                "; Name: Example",
+                "; Section: 1",
+                "; Page: eleven",
+                "Example ::= < AVP header: 1 >",
+            ),
+            4,
+            "Page must be a number, got 'eleven'",
+        ),
+        (
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                "Example twelve 1 Unsigned32 - - - - No",
+            ),
+            7,
+            "Code cell must be a number, got 'twelve'",
+        ),
+        (
+            _dad(
+                "; Type: Grouped AVP",
+                "; Name: Example",
+                "; Section: 1",
+                "; Page: 99999999999",
+                "Example ::= < AVP header: 1 >",
+            ),
+            4,
+            "page: Input should be less than",
+        ),
+        (
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 1",
+                "; Table: 1",
+                "Example 1 1.2.not-a-section Unsigned32 - - - - No",
+            ),
+            4,
+            "section: String should match pattern",
+        ),
+        (
+            _dad("; Type: AVP Table", "; Section: 1", "; Table: 1"),
+            4,
+            "rows: Tuple should have at least 1 item",
+        ),
     ],
 )
 def test_parse_errors_include_the_source_line(text, lineno, message):

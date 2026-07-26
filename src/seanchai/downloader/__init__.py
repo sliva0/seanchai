@@ -1,8 +1,3 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.11"
-# dependencies = []
-# ///
 """Download the 3GPP and IETF Diameter specification corpus.
 
 3GPP publishes the latest version belonging to each release as a ZIP file.
@@ -10,13 +5,15 @@ Those ZIPs normally contain the editable DOC or DOCX specification source.
 RFCs are downloaded as canonical plain text from the RFC Editor. Official
 3GPP/ETSI PDF renditions can also be downloaded with ``--pdfs``.
 
-The curated specification catalog lives in ``specs.toml`` next to this script;
+The curated specification catalog lives in ``specs.toml`` next to this module;
 downloads land in the repository's ``output/`` directory by default.
+
+This module is a library: it returns records and raises `DownloadError`, and
+the `seanchai download` command owns the printing and the exit status.
 """
 
 from __future__ import annotations
 
-import argparse
 import concurrent.futures
 import hashlib
 import html
@@ -24,7 +21,6 @@ import json
 import os
 import re
 import shutil
-import sys
 import tempfile
 import time
 import tomllib
@@ -32,7 +28,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 
@@ -64,20 +60,26 @@ class RfcSpec:
     title: str
 
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_OUTPUT = SCRIPT_DIR.parent / "output"
+CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
 
 
-def load_catalog(path: Path) -> tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]]:
-    """Read the curated specification catalog from specs.toml."""
-    with path.open("rb") as stream:
+class DownloadError(RuntimeError):
+    """Anything that stops the corpus being fetched as asked."""
+
+
+def load_catalog(
+    path: Path | None = None,
+) -> tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]]:
+    """Read the curated specification catalog from specs.toml.
+
+    Called on demand rather than at import: reading a file as a side effect of
+    importing makes the module hard to use from anything but the CLI.
+    """
+    with (path or CATALOG_PATH).open("rb") as stream:
         data = tomllib.load(stream)
     tgpp = tuple(ThreeGppSpec(**entry) for entry in data["tgpp"])
     rfc = tuple(RfcSpec(**entry) for entry in data["rfc"])
     return tgpp, rfc
-
-
-THREE_GPP_SPECS, RFC_SPECS = load_catalog(SCRIPT_DIR / "specs.toml")
 
 
 @dataclass
@@ -130,13 +132,16 @@ def request_bytes(url: str, retries: int = 4) -> bytes:
     raise AssertionError("unreachable")
 
 
-def discover_3gpp_urls(release: int) -> dict[str, str]:
+def discover_3gpp_urls(
+    release: int, specs: tuple[ThreeGppSpec, ...] | None = None
+) -> dict[str, str]:
     marker = release_marker(release)
+    specs = load_catalog()[0] if specs is None else specs
     by_number: dict[str, str] = {}
-    for series in sorted({spec.series for spec in THREE_GPP_SPECS}):
+    for series in sorted({spec.series for spec in specs}):
         index_url = THREE_GPP_INDEX.format(release=release, series=series)
         page = request_bytes(index_url).decode("utf-8", errors="replace")
-        for spec in (item for item in THREE_GPP_SPECS if item.series == series):
+        for spec in (item for item in specs if item.series == series):
             # The first filename character after '-' encodes the 3GPP release.
             pattern = re.compile(
                 rf"""href=["']([^"']*/?{re.escape(spec.archive_stem)}-"""
@@ -346,81 +351,55 @@ def download_rfc(spec: RfcSpec, output: Path) -> DownloadRecord:
     )
 
 
-def print_catalog() -> None:
-    print(f"3GPP specifications ({len(THREE_GPP_SPECS)}):")
-    for spec in THREE_GPP_SPECS:
-        print(f"  {spec.document_type} {spec.number}: {spec.title}")
-    print(f"\nRFCs ({len(RFC_SPECS)}):")
-    for spec in RFC_SPECS:
-        print(f"  RFC {spec.number}: {spec.title}")
+def download_corpus(
+    output: Path,
+    release: int = 18,
+    workers: int = 6,
+    extract: bool = True,
+    pdfs: bool = False,
+    catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]] | None = None,
+    report: Callable[[str], None] = lambda message: None,
+) -> Path:
+    """Download the catalog into `output` and write `manifest.json`.
 
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--release", type=int, default=18, help="3GPP release (default: 18)"
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=DEFAULT_OUTPUT,
-        help="corpus directory (default: <repo>/output)",
-    )
-    parser.add_argument(
-        "--workers", type=int, default=6, help="parallel downloads (default: 6)"
-    )
-    parser.add_argument(
-        "--no-extract",
-        action="store_true",
-        help="keep 3GPP ZIPs without extracting DOC/DOCX files",
-    )
-    parser.add_argument(
-        "--pdfs", action="store_true", help="also download official 3GPP/ETSI PDFs"
-    )
-    parser.add_argument(
-        "--list", action="store_true", help="print the curated catalog and exit"
-    )
-    return parser.parse_args()
-
-
-def main() -> int:
-    args = parse_args()
-    if args.list:
-        print_catalog()
-        return 0
-    if args.workers < 1:
-        raise SystemExit("--workers must be at least 1")
+    Returns the manifest path. Progress goes to `report`, so the caller
+    decides what printing means; anything that stops the download raises
+    `DownloadError`.
+    """
+    if workers < 1:
+        raise DownloadError("workers must be at least 1")
     try:
-        release_marker(args.release)
+        release_marker(release)
     except ValueError as error:
-        raise SystemExit(str(error)) from error
+        raise DownloadError(str(error)) from error
 
-    output = args.output.resolve()
+    tgpp_specs, rfc_specs = catalog if catalog is not None else load_catalog()
+    output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    print(f"Resolving 3GPP Release {args.release} artifacts...", flush=True)
-    urls = discover_3gpp_urls(args.release)
-    missing = [spec.number for spec in THREE_GPP_SPECS if spec.number not in urls]
+    report(f"Resolving 3GPP Release {release} artifacts...")
+    urls = discover_3gpp_urls(release, tgpp_specs)
+    missing = [spec.number for spec in tgpp_specs if spec.number not in urls]
     if missing:
-        raise SystemExit(
-            f"No Release {args.release} artifact found for: {', '.join(missing)}. "
+        raise DownloadError(
+            f"No Release {release} artifact found for: {', '.join(missing)}. "
             "The release may not contain every catalogued specification."
         )
 
     jobs = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as executor:
-        for spec in THREE_GPP_SPECS:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        for spec in tgpp_specs:
             jobs.append(
                 executor.submit(
                     download_3gpp,
                     spec,
                     urls[spec.number],
-                    args.release,
+                    release,
                     output,
-                    not args.no_extract,
-                    args.pdfs,
+                    extract,
+                    pdfs,
                 )
             )
-        for spec in RFC_SPECS:
+        for spec in rfc_specs:
             jobs.append(executor.submit(download_rfc, spec, output))
 
         records: list[DownloadRecord] = []
@@ -430,7 +409,7 @@ def main() -> int:
             except Exception as error:
                 for job in jobs:
                     job.cancel()
-                raise SystemExit(str(error)) from error
+                raise DownloadError(str(error)) from error
             records.append(record)
             version_note = ""
             if (
@@ -442,13 +421,13 @@ def main() -> int:
                     f" (PDF {record.pdf_version}; source {record.source_version}, "
                     "ETSI publication lag)"
                 )
-            print(f"Downloaded {record.identifier}{version_note}", flush=True)
+            report(f"Downloaded {record.identifier}{version_note}")
 
     records.sort(key=lambda item: (item.family, item.identifier))
     manifest = {
-        "3gpp_release": args.release,
+        "3gpp_release": release,
         "generated_at_epoch": int(time.time()),
-        "include_pdfs": args.pdfs,
+        "include_pdfs": pdfs,
         "artifact_count": len(records),
         "artifacts": [asdict(record) for record in records],
     }
@@ -468,10 +447,5 @@ def main() -> int:
         os.replace(temporary, manifest_path)
     finally:
         temporary.unlink(missing_ok=True)
-
-    print(f"\nWrote {len(records)} artifacts and {manifest_path}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    report(f"Wrote {len(records)} artifacts and {manifest_path}")
+    return manifest_path

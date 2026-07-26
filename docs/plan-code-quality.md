@@ -2,8 +2,9 @@
 
 A review of the whole project (July 2026) turned up three categories worth
 acting on: data-integrity bugs, a set of mechanical cleanups, and duplication
-between the parser and the extractor. Sections 1–4 are done; what is left keeps
-its original numbering. Feature work is in [roadmap.md](roadmap.md).
+between the parser and the extractor. All seven sections are now done; this
+file is kept as the record of what changed and why. Feature work is in
+[roadmap.md](roadmap.md).
 
 Tests pass and all three tools are clean at every step; that is the acceptance
 criterion for each one.
@@ -47,6 +48,41 @@ would format a `Message` subclass as a `Message` and drop its extra fields
 silently — and an unregistered type raises instead of formatting nothing.
 `formatter.format` is `format_spec`, so nothing shadows the builtin.
 
+**Test gaps (§5).** Round-trip idempotency now runs over constructed ASTs
+covering shapes the committed examples don't contain (no AVPs, every command
+flag, unbounded and maximal occurrences, reserved-only enums). Extractor cases
+that were documented but unpinned have fixtures: mixed bold in one ABNF line,
+two ABNFs under one command heading, an AVP-table NOTE that names a defining
+RFC, reserved notes interleaved by value rather than document order. Two code
+fixes fell out: values reaching `int()` or a model field (a `; Page:` value, a
+table `code` cell) escaped as bare `ValueError`s with no line, and an empty
+table section crashed the formatter — tables now require at least one row,
+since a table with none means the extractor found a caption and lost its
+contents.
+
+**Output corrections (§6).** `dad/corrections.py` implements the second patch
+layer as designed: `Correction(target, field, expect, replace, reason)` over
+five identity selectors, resolved and checked against the original tree before
+anything is rebuilt, so a failure leaves no partially corrected file. Nodes are
+rebuilt through validation rather than `model_copy(update=...)`. `seanchai
+extract --corrections DIR` and `seanchai correct FILE --corrections DIR` expose
+it; neither discovers the directory automatically, because loading one executes
+its Python, and `correct` refuses to write over its input.
+`corrections/TS29.272.py` is the first real correction set — the four VCSG
+commands whose headers omit the application id clause 7.2.2 assigns them — and
+a test re-applies every committed correction to the committed raw output, which
+is the rot check the layer exists for.
+
+**Downloader move (§7).** Now `src/seanchai/downloader/` behind `seanchai
+download`, with `specs.toml` packaged alongside it (verified present in the
+built wheel). The catalog is read on demand instead of at import, the module
+raises `DownloadError` and reports progress through an injected callback
+instead of printing and calling `SystemExit`, and `discover_3gpp_urls` takes
+the specs it should look for rather than reading a module global — which let
+the tests drop their `monkeypatch`ing of module state. Type checking found a
+latent `None` dereference in the tests that the dynamically-loaded module had
+been hiding.
+
 **Tooling.** uv dev group with ruff, ty and basedpyright (`standard` mode);
 ruff (`E`, `F`, `I`, `UP`, `B`, `SIM`, `RUF`) and pytest configured in
 `pyproject.toml`; all three run clean. Policy in
@@ -65,53 +101,6 @@ section-number sort key with `_section_sort_key()` (which also removed a latent
 
 **Documentation.** README split into working-today and planned; `TODO.md`
 replaced by this `docs/` directory.
-
-## 5. Close the test gaps
-
-The suite is in good shape; these are the holes. All of them are cases the code
-already claims to handle.
-
-- **Idempotency over generated ASTs.** Today only the committed examples are
-  round-trip-pinned. Add a test that constructs specs directly and asserts
-  `format_spec(parse(format_spec(spec)))` equals `format_spec(spec)` — the
-  invariant the whole review workflow rests on.
-- **`_is_bold` mixed-bold rejection** — the `ExtractionError` is unreachable
-  from the current fixture.
-- **Multi-ABNF command sections** — one section, two application ids (the
-  29.272 IDR/DSR/RSR case). A documented real convention with no fixture.
-- **NOTE-derived reused rows** — the `note_rfcs` path that turns an AVP-table
-  NOTE naming an RFC into a `ReusedAvps` row.
-- **Enum ordering** — RESERVED ranges interleaved with values by numeric sort.
-- **`patch_file_name`** — untested.
-- **Parser integer paths** — `; Page: abc` and a non-numeric table `code` cell
-  escape as a bare `ValueError` with no line number, straight past the
-  `DadParseError` contract every other malformed input honours.
-
-## 6. Implement output corrections
-
-The pipeline is designed around two patch layers, and only the first exists.
-Input patches fix source typos that break extraction; corrections fix data that
-extracts and parses fine but is semantically wrong — a misprinted AVP code, a
-clause reference pointing at the wrong section, an omitted application id.
-
-The design is in [proposal-corrections.md](proposal-corrections.md): a
-per-spec Python file holding a declarative list of `Correction` entries, each
-naming its target by identity, the value it expects to find, and the
-replacement. `expect` is checked, so a correction that the spec has fixed
-upstream fails loudly instead of silently doing nothing.
-
-This is the layer that turns "the extractor ran" into "the data is right", so it
-gates the linter being useful (§ [roadmap](roadmap.md)) — `raw.dad` may fail the
-linter, the corrected file must pass.
-
-## 7. Move the downloader into the package
-
-`downloader/download_diameter_specs.py` is a standalone stdlib-only uv script,
-but the planned archive fetching means it and the extractor will need to share
-version decoding and the manifest. Move it to `src/seanchai/downloader/` behind
-a `seanchai download` command, keeping a thin script shim if the standalone
-form is still wanted. See [downloader.md](downloader.md) for the notes and the
-known wart to preserve or fix while restructuring.
 
 ## Not in this plan
 

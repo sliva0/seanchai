@@ -1,12 +1,14 @@
 # The downloader
 
-`downloader/download_diameter_specs.py` is a standalone uv script (no
-dependencies outside the standard library) that fetches the curated catalog in
-`downloader/specs.toml` into the git-ignored `output/`.
+`src/seanchai/downloader/` fetches the curated catalog in its `specs.toml`
+into the git-ignored `output/`. It uses only the standard library, and keeps
+its printing and exit codes in the CLI: the module returns records, reports
+progress through a callback, and raises `DownloadError`.
 
 ```sh
-downloader/download_diameter_specs.py --list     # show the catalog
-downloader/download_diameter_specs.py            # fetch it
+uv run seanchai download --list     # show the catalog
+uv run seanchai download            # fetch it
+uv run seanchai download --pdfs     # include the ETSI PDF renderings
 ```
 
 It downloads 3GPP archives and their matching ETSI PDF renderings, plus the
@@ -50,7 +52,3 @@ per artifact.
 - Derive the ETSI `Link:` URL instead of taking it from the caller. This needs
   the ETSI edition suffix (e.g. `18.00.00_60`), which is not in the docx —
   probably requires listing the ETSI deliver directory.
-- Move the script into the package as `src/seanchai/downloader/` behind a
-  `seanchai download` command, once it needs to share version decoding and the
-  manifest with the extractor. See
-  [plan-code-quality.md](plan-code-quality.md).

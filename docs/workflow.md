@@ -2,9 +2,9 @@
 
 ## The loop
 
-1. **Download** the source documents: `downloader/download_diameter_specs.py`
-   fetches the curated catalog in `downloader/specs.toml` into the git-ignored
-   `output/`. Hand-fetched docx/PDF pairs live in `output/manual/`.
+1. **Download** the source documents: `uv run seanchai download` fetches the
+   curated catalog into the git-ignored `output/`. Hand-fetched docx/PDF pairs
+   live in `output/manual/`.
 2. **Extract**: `uv run seanchai extract DOCX --pdf PDF --link URL -o OUT.dad`.
    Warnings go to stderr; read them, they are the extractor telling you the
    source document did something unusual.
@@ -12,10 +12,11 @@
    extract → format → parse → eyeball; the `.dad` format is designed to read as
    a near-diff of the source ABNF so this stays cheap.
 4. **Commit the raw output** per spec version (`examples/29272-i60.raw.dad`).
-5. **Correct** it. The corrected `.dad` file is the source of truth. The
-   mechanism for expressing corrections is **not implemented yet** — see
-   [proposal-corrections.md](proposal-corrections.md); today this step means
-   editing the file by hand.
+5. **Correct** it: declare each fix in `corrections/<SpecRef>.py` and run
+   `uv run seanchai correct RAW.dad --corrections corrections -o OUT.dad`. The
+   corrected file is the source of truth, and it is generated — never
+   hand-edited, or the corrections can no longer be re-applied to the next
+   version. See [corrections](proposal-corrections.md).
 
 ## Version upgrades
 
@@ -36,9 +37,9 @@ Two things this depends on, and which therefore must not regress:
 - **Input patches** (`patches/<SpecRef>.toml`) — typos in the source document
   that break extraction. See [extractor.md](extractor.md).
 - **Extractor code** — recurring conventions that carry information.
-- **Corrections** — data that extracts and parses fine but is semantically
-  wrong. *Proposed, not implemented:*
-  [proposal-corrections.md](proposal-corrections.md).
+- **Corrections** (`corrections/<SpecRef>.py`) — data that extracts and parses
+  fine but is semantically wrong. See
+  [corrections](proposal-corrections.md).
 
 ## Validation
 

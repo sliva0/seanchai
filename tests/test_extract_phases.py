@@ -130,6 +130,37 @@ def test_resolve_rejects_a_document_with_two_reused_tables():
         tgpp_docx._resolve(collected)
 
 
+def test_reserved_notes_are_placed_by_value_not_by_document_order(document):
+    # "Values 4 to 6 are reserved" is written wherever the editor felt like it;
+    # the `.dad` value list is ordered by number.
+    paragraphs = [
+        ("The Mode AVP is of type Enumerated.", ""),
+        ("Values 4 to 6 are reserved.", "NO"),
+        ("Off (0)", "B1"),
+        ("Value 2 is reserved.", "NO"),
+        ("On (8)", "B1"),
+    ]
+    section = tgpp_docx._Section(
+        number="6.3.2",
+        title="Mode",
+        paragraphs=[
+            tgpp_docx._Para(
+                text=text, style=style, source=document.add_paragraph(text, style=None)
+            )
+            for text, style in paragraphs
+        ],
+    )
+
+    enumerated = tgpp_docx._extract_enumerated(section, "Mode", code=11, vendor_id=None)
+
+    assert enumerated.values == (
+        ast.EnumValue(name="Off", value=0),
+        ast.ReservedValues(first=2, last=2),
+        ast.ReservedValues(first=4, last=6),
+        ast.EnumValue(name="On", value=8),
+    )
+
+
 def test_resolve_requires_an_avp_table():
     with pytest.raises(tgpp_docx.ExtractionError, match="no AVP table found"):
         tgpp_docx._resolve(tgpp_docx._Collected())

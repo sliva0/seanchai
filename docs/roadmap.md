@@ -24,14 +24,6 @@ tempting additions are settled decisions, not gaps.
 - **Restrict `AvpTableRow.data_type`** to the closed set of Diameter
   base/derived types (see `TODO(format)` in `ast.py`).
 
-## Output corrections
-
-The second half of the two-layer patch design: fixes for data that extracts and
-parses fine but is semantically wrong. Designed in
-[proposal-corrections.md](proposal-corrections.md), scheduled in
-[plan-code-quality.md](plan-code-quality.md). Pairs with the linter below —
-corrections are what make a corrected `.dad` pass it.
-
 ## Linter
 
 A cross-section linter over a parsed `.dad` file:
@@ -79,9 +71,14 @@ implementations' native dictionary formats after.
 
 ## Smaller items
 
+- A version type shared by input patches and corrections, so a recorded range
+  can be compared against the parsed version and *warn* when it no longer
+  covers it. Both layers currently record ranges without comparing them, and
+  both must keep applying regardless — the range explains, it never gates.
 - A CLI flag that auto-expands an input patch's `first_version`/`last_version`
   range when a newer or older version is parsed and the patch still applied
-  cleanly. Needs comment-preserving TOML rewriting (e.g. tomlkit).
+  cleanly. Needs comment-preserving TOML rewriting (e.g. tomlkit), and the
+  shared version type above.
 - An optional regression pin of the extractor against the real docx sources,
   skipped unless `output/manual/` is present.
 - Fix the `atomic_download` corrupt-cache wart described in

@@ -1,22 +1,9 @@
-import importlib.util
 import json
-import sys
 import zipfile
-from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
-DOWNLOADER_PATH = (
-    Path(__file__).parent.parent / "downloader" / "download_diameter_specs.py"
-)
-SPEC = importlib.util.spec_from_file_location(
-    "download_diameter_specs", DOWNLOADER_PATH
-)
-assert SPEC is not None and SPEC.loader is not None
-downloader = importlib.util.module_from_spec(SPEC)
-sys.modules[SPEC.name] = downloader
-SPEC.loader.exec_module(downloader)
+from seanchai import downloader
 
 
 @pytest.mark.parametrize(
@@ -137,14 +124,13 @@ def test_discover_3gpp_urls_matches_release_and_resolves_relative_links(
         b'<a href="/files/32123-h99.zip">wrong release</a>',
     )
 
-    monkeypatch.setattr(downloader, "THREE_GPP_SPECS", specs)
     monkeypatch.setattr(
         downloader,
         "THREE_GPP_INDEX",
         f"{local_http_server.base_url}/Rel-{{release}}/{{series}}_series/",
     )
 
-    urls = downloader.discover_3gpp_urls(18)
+    urls = downloader.discover_3gpp_urls(18, specs)
 
     assert urls == {
         "29.999": (f"{local_http_server.base_url}/Rel-18/29_series/29999-i10.zip")
@@ -242,6 +228,7 @@ def test_download_3gpp_falls_back_to_latest_earlier_etsi_pdf(
 
     assert record.source_version == "18.1.0"
     assert record.pdf_version == "18.0.0"
+    assert record.pdf_url is not None
     assert record.pdf_url.endswith("18.00.00_60/ts_129329v180000p.pdf")
     assert record.files == [
         "archives/3gpp-rel-18/29329-i10.zip",
@@ -261,20 +248,12 @@ def test_download_3gpp_falls_back_to_latest_earlier_etsi_pdf(
     )
 
 
-def test_main_downloads_catalog_and_writes_sorted_manifest_end_to_end(
+def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     tmp_path, local_http_server, monkeypatch
 ):
     tgpp = downloader.ThreeGppSpec("29.999", "Test TS")
     rfc = downloader.RfcSpec(9999, "Test RFC")
     output = tmp_path / "corpus"
-    args = SimpleNamespace(
-        release=18,
-        output=output,
-        workers=2,
-        no_extract=True,
-        pdfs=False,
-        list=False,
-    )
     local_http_server.route(
         "/Rel-18/29_series/",
         b'<a href="29999-i00.zip">source</a>',
@@ -285,9 +264,6 @@ def test_main_downloads_catalog_and_writes_sorted_manifest_end_to_end(
     )
     local_http_server.route("/rfc9999.txt", b"RFC body")
 
-    monkeypatch.setattr(downloader, "parse_args", lambda: args)
-    monkeypatch.setattr(downloader, "THREE_GPP_SPECS", (tgpp,))
-    monkeypatch.setattr(downloader, "RFC_SPECS", (rfc,))
     monkeypatch.setattr(
         downloader,
         "THREE_GPP_INDEX",
@@ -299,8 +275,18 @@ def test_main_downloads_catalog_and_writes_sorted_manifest_end_to_end(
         f"{local_http_server.base_url}/rfc{{number}}.txt",
     )
     monkeypatch.setattr(downloader.time, "time", lambda: 1234.9)
+    progress = []
 
-    assert downloader.main() == 0
+    manifest_path = downloader.download_corpus(
+        output,
+        workers=2,
+        extract=False,
+        catalog=((tgpp,), (rfc,)),
+        report=progress.append,
+    )
+
+    assert manifest_path == output / "manifest.json"
+    assert any("Downloaded TS 29.999" in line for line in progress)
 
     manifest = json.loads((output / "manifest.json").read_text())
     assert manifest["3gpp_release"] == 18
@@ -317,12 +303,11 @@ def test_main_downloads_catalog_and_writes_sorted_manifest_end_to_end(
     assert not list(output.glob("*.part"))
 
 
-def test_main_validates_worker_count_before_downloading(monkeypatch):
-    monkeypatch.setattr(
-        downloader,
-        "parse_args",
-        lambda: SimpleNamespace(list=False, workers=0),
-    )
+def test_download_corpus_validates_its_arguments_before_downloading(tmp_path):
+    with pytest.raises(downloader.DownloadError, match="workers must be at least 1"):
+        downloader.download_corpus(tmp_path, workers=0)
 
-    with pytest.raises(SystemExit, match="workers must be at least 1"):
-        downloader.main()
+    with pytest.raises(downloader.DownloadError, match="release must be between"):
+        downloader.download_corpus(tmp_path, release=99)
+
+    assert not list(tmp_path.iterdir())
