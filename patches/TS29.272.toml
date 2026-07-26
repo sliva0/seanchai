@@ -30,6 +30,14 @@ first_version = "18.6.0"
 last_version = "18.6.0"
 
 [[patch]]
+find = "MODIFIED_ADDED_PDP CONTEXTS_INCLUDED"
+replace = "MODIFIED_ADDED_PDP_CONTEXTS_INCLUDED"
+section = "7.3.73"
+reason = "enumerated value name written with a space instead of an underscore, which stops it being recognised as a value at all"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
 find = "Communication-Pattern-set"
 replace = "Communication-Pattern-Set"
 exact = true

@@ -1098,7 +1098,7 @@ Network-Access-Mode ::= < Enumerated AVP header: 1417 10415 >
 Cancellation-Type ::= < Enumerated AVP header: 1420 10415 >
         MME_UPDATE_PROCEDURE     = 0
         SGSN_UPDATE_PROCEDURE    = 1
-        SUBSCRIPTION_WITHDRAWAL  = 2 ; - when the Cancel Location is sent by the HSS to the current MME or SGSN due to withdrawal of the user's subscription by the HSS operator; - when the Cancel VCSG Location is sent by the CSS to the current MME or SGSN due to withdrawal of the user's VPLMN CSG subscription by the CSS operator.
+        SUBSCRIPTION_WITHDRAWAL  = 2
         UPDATE_PROCEDURE_IWF     = 3
         INITIAL_ATTACH_PROCEDURE = 4
 
@@ -1264,7 +1264,8 @@ GPRS-Subscription-Data ::= < AVP header: 1467 10415 >
 ; Section: 7.3.73
 ; Page: 136
 Complete-Data-List-Included-Indicator ::= < Enumerated AVP header: 1468 10415 >
-        All_PDP_CONTEXTS_INCLUDED = 0 ; MODIFIED_ADDED_PDP CONTEXTS_INCLUDED (1)
+        All_PDP_CONTEXTS_INCLUDED            = 0
+        MODIFIED_ADDED_PDP_CONTEXTS_INCLUDED = 1
 
 
 ; Type: Grouped AVP
@@ -1452,8 +1453,8 @@ ICS-Indicator ::= < Enumerated AVP header: 1491 10415 >
 ; Section: 7.3.106
 ; Page: 143
 IMS-Voice-Over-PS-Sessions-Supported ::= < Enumerated AVP header: 1492 10415 >
-        NOT_SUPPORTED = 0 ; This value indicates that "IMS Voice over PS Sessions" is not supported by the UE's most recently used TA or RA in the serving node.
-        SUPPORTED     = 1 ; This value indicates that "IMS Voice over PS Sessions" is supported by the UE's most recently used TA or RA in the serving node.
+        NOT_SUPPORTED = 0
+        SUPPORTED     = 1
 
 
 ; Type: Enumerated AVP
@@ -1461,8 +1462,8 @@ IMS-Voice-Over-PS-Sessions-Supported ::= < Enumerated AVP header: 1492 10415 >
 ; Section: 7.3.107
 ; Page: 143
 Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ::= < Enumerated AVP header: 1493 10415 >
-        NOT_SUPPORTED = 0 ; This value indicates that "IMS Voice over PS Sessions" is not supported, homogeneously, in any of the TAs or RAs associated to the serving node for the served subscribers including consideration on roaming relationship for IMS Voice over PS.
-        SUPPORTED     = 1 ; This value indicates that "IMS Voice over PS Sessions" is supported, homogeneously, in all of the TAs or RAs associated to the serving node for the served subscriber including consideration on roaming relationship for IMS Voice over PS.
+        NOT_SUPPORTED = 0
+        SUPPORTED     = 1
 
 
 ; Type: Grouped AVP
@@ -1508,12 +1509,12 @@ SGSN-User-State ::= < AVP header: 1498 10415 >
 ; Section: 7.3.114
 ; Page: 144
 User-State ::= < Enumerated AVP header: 1499 10415 >
-        DETACHED                           = 0 ; The UE is in EMM_DEREGISTERED state.
-        ATTACHED_NOT_REACHABLE_FOR_PAGING  = 1 ; The SGSN has determined from its internal data that the UE is attached to the network, but there is no EPS bearer active, and the UE is not reachable for paging. This value is only applicable to S4-SGSN.
-        ATTACHED_REACHABLE_FOR_PAGING      = 2 ; The SGSN has determined from its internal data that the UE is attached to the network, but there is no EPS bearer active; the SGSN has not determined from its internal data that the UE is not reachable for paging. This value is only applicable to S4-SGSN.
-        CONNECTED_NOT_REACHABLE_FOR_PAGING = 3 ; The SGSN or MME has determined from its internal data that the UE is attached to the network, there is at least one EPS bearer active, and the UE is not reachable for paging.
-        CONNECTED_REACHABLE_FOR_PAGING     = 4 ; The SGSN or MME has determined from its internal data that the UE is attached to the network, there is at least one EPS bearer active, and the SGSN or MME has not determined from its internal data that the UE is not reachable for paging.
-        RESERVED                           = 5 ; This value should not be used by MME or SGSN over S6a/S6d. If this value is received by the HSS from pre-rel-12 MME/SGSNs, the HSS shall consider that the UE is not reachable and use the "Network determined not reachable" state when reporting the User State to other network entities, e.g. over Sh.
+        DETACHED                           = 0
+        ATTACHED_NOT_REACHABLE_FOR_PAGING  = 1
+        ATTACHED_REACHABLE_FOR_PAGING      = 2
+        CONNECTED_NOT_REACHABLE_FOR_PAGING = 3
+        CONNECTED_REACHABLE_FOR_PAGING     = 4
+        RESERVED                           = 5
 
 
 ; Type: Grouped AVP
@@ -1593,7 +1594,7 @@ UE-SRVCC-Capability ::= < Enumerated AVP header: 1615 10415 >
 ; Page: 148
 VPLMN-LIPA-Allowed ::= < Enumerated AVP header: 1617 10415 >
         LIPA_NOTALLOWED = 0
-        LIPA_ALLOWED    = 1 ; This value indicates that the UE is allowed to use LIPA in the VPLMN where the UE is roaming.
+        LIPA_ALLOWED    = 1
 
 
 ; Type: Enumerated AVP
@@ -1601,9 +1602,9 @@ VPLMN-LIPA-Allowed ::= < Enumerated AVP header: 1617 10415 >
 ; Section: 7.3.133
 ; Page: 148
 LIPA-Permission ::= < Enumerated AVP header: 1618 10415 >
-        LIPA_PROHIBITED  = 0 ; This value indicates that this APN is prohibited to be accessed via LIPA.
+        LIPA_PROHIBITED  = 0
         LIPA_ONLY        = 1
-        LIPA_CONDITIONAL = 2 ; This value indicates that this APN can be accessed via both non LIPA and LIPA.
+        LIPA_CONDITIONAL = 2
 
 
 ; Type: Enumerated AVP
@@ -1686,8 +1687,8 @@ Logging-Duration ::= < Enumerated AVP header: 1632 10415 >
 ; Section: 7.3.147
 ; Page: 151
 Relay-Node-Indicator ::= < Enumerated AVP header: 1633 10415 >
-        NOT_RELAY_NODE = 0 ; This value indicates that the subscription data does not belong to a Relay Node.
-        RELAY_NODE     = 1 ; This value indicates that the subscription data belongs to a Relay Node.
+        NOT_RELAY_NODE = 0
+        RELAY_NODE     = 1
 
 
 ; Type: Enumerated AVP

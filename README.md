@@ -35,12 +35,18 @@ The pipeline has three stages:
 
 ### The rule that holds the pipeline together
 
-**A `.dad` file records everything its source document says.** Specifications
-are redundant, occasionally self-contradictory and sometimes plainly wrong; a
-`.dad` file records that faithfully rather than tidying it up. The extractor
-translates, it does not curate — it never drops a block for being redundant,
-contradicted by another block, or not useful to any consumer anyone has written
-yet.
+**A `.dad` file records everything its source document says about a
+definition.** Specifications are redundant, occasionally self-contradictory and
+sometimes plainly wrong; a `.dad` file records that faithfully rather than
+tidying it up. The extractor translates, it does not curate — it never drops a
+definition for being redundant, contradicted by another one, or not useful to
+any consumer anyone has written yet.
+
+The scope is definitions — names, codes, vendor-ids, types, flag rules, value
+lists, ABNF bodies — not the specification's narrative. `.dad` has nowhere to
+put a clause's paragraphs and nested bullet lists without mangling them, so it
+does not try; `; Section:` points at the clause for anyone who wants to read
+it. Inside that boundary, nothing is dropped for being inconvenient.
 
 The only edits are the two declared patch layers, and both exist to keep that
 property rather than to weaken it. Input patches fix honest typos in the source

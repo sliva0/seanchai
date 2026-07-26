@@ -66,10 +66,11 @@ def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
     assert grouped.avps[0].presence is ast.Presence.REQUIRED
 
     assert enumerated.vendor_id == 10415
+    # The clause prose between the two values is not captured: a `.dad`
+    # description is a one-line gloss, and a 3GPP clause has paragraphs.
+    # `; Section:` is what points a reader at the prose.
     assert enumerated.values == (
-        ast.EnumValue(
-            name="Disabled", value=0, description="first description continued"
-        ),
+        ast.EnumValue(name="Disabled", value=0),
         ast.ReservedValues(first=1, last=2),
         ast.EnumValue(name="Enabled", value=3),
     )

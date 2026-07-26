@@ -103,8 +103,11 @@ def synthetic_spec_docx(tmp_path):
     heading.add_run("6.3.2\tExample-Mode AVP")
     document.add_paragraph("The Example-Mode AVP is of type Enumerated.")
     document.add_paragraph("Disabled (0)")
-    document.add_paragraph("first description", style="B1")
-    document.add_paragraph("continued", style="B2")
+    # Clause prose in the styles that value lines also use, shaped like
+    # 29.272 §7.3.24: a lead-in and its bullet. Neither is a value, and neither
+    # becomes a description — see `_extract_enumerated`.
+    document.add_paragraph("This value is used:", style="B1")
+    document.add_paragraph("- when the fixture needs prose to ignore.", style="B2")
     document.add_paragraph("Values 1 to 2 are reserved.", style="NO")
     document.add_paragraph("Enabled (3)")
 

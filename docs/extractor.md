@@ -25,12 +25,20 @@ counting is exact and every later parsing step sees patched text.
 
 ## What the extractor does not decide
 
-**A `.dad` file records everything the source document says.** The extractor
-translates the document into the format; it does not curate it. Where a
-specification is redundant, self-contradictory or plainly wrong, that is what
-the file records, because the file's job is to be a reviewable, diffable record
-of the document — and because the next version's diff is only trustworthy if
-this version wrote down everything that could change.
+**A `.dad` file records everything the source document says about a
+definition.** The extractor translates the document into the format; it does
+not curate it. Where a specification is redundant, self-contradictory or
+plainly wrong, that is what the file records, because the file's job is to be a
+reviewable, diffable record of the document — and because the next version's
+diff is only trustworthy if this version wrote down everything that could
+change.
+
+The scope is *definitions*: names, codes, vendor-ids, types, flag rules, value
+lists, ABNF bodies, and where each came from. Not the document's narrative. A
+specification is mostly prose, and `.dad` has nowhere to put a clause's
+paragraphs, bullet lists and `NOTE:`s without mangling them — so it does not
+try, and `; Section:` points at the clause instead. That is a boundary, not a
+licence: inside it, nothing gets dropped for being inconvenient.
 
 Three things follow, and they are worth stating because each one is tempting to
 get wrong in the same direction:
@@ -54,8 +62,8 @@ get wrong in the same direction:
 Making sense of the result — resolving references, choosing between a local
 definition and a re-used row, filtering to what a particular consumer needs —
 is the job of whatever reads `.dad` files, not of what writes them. A consumer
-can always ignore information the file carries; it can never recover
-information the extractor threw away.
+can always ignore information the file carries; it can never recover a
+definition the extractor threw away.
 
 ## Conventions baked into the extractor
 
@@ -81,7 +89,18 @@ information the extractor threw away.
   does not, so it cannot be recorded faithfully — and collapsing it would make
   the file quietly disagree with the document. Failing routes the fix through
   an input patch, where it is declared and reviewed.
-- Enum values and descriptions are classified by content, not by paragraph
+- A clause's explanatory prose is not captured. `EnumValue.description` is a
+  one-line gloss, and a 3GPP clause does not contain one — it contains
+  paragraphs, with lead-ins ("This value is used:"), nested bullet lists,
+  `NOTE:`s, and caveats about the AVP rather than about any one value. Any rule
+  for flattening that onto a `;` comment picks an arbitrary subset. The rule
+  that used to be here took paragraphs styled `B1` or `B2`, which in 29.272
+  §7.3.24 kept two bullets and dropped the sentence introducing them, and in
+  29.229 §6.3.15 kept "The request is generated in the following cases:" and
+  dropped the cases. `; Section:` is the pointer; a reader who wants the prose
+  reads it in the specification, undamaged. The field stays in the format for
+  hand-written files, where a human can write an actual one-line gloss.
+- Enum values are classified by content, not by paragraph
   style: the usual convention is value=`B1`/description=`B2`, but human-written
   specs invert it.
 

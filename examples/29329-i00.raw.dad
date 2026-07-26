@@ -299,7 +299,7 @@ Data-Reference ::= < Enumerated AVP header: 703 10415 >
         IMSPublicIdentity                 = 10
         IMSUserState                      = 11
         S-CSCFName                        = 12
-        InitialFilterCriteria             = 13 ; This value is used to request initial filter criteria relevant to the requesting AS
+        InitialFilterCriteria             = 13
         LocationInformation               = 14
         UserState                         = 15
         ChargingInformation               = 16
@@ -329,8 +329,8 @@ Data-Reference ::= < Enumerated AVP header: 703 10415 >
 ; Section: 6.3.6
 ; Page: 19
 Subs-Req-Type ::= < Enumerated AVP header: 705 10415 >
-        Subscribe   = 0 ; This value is used by an AS to subscribe to notifications of changes in data.
-        Unsubscribe = 1 ; This value is used by an AS to unsubscribe to notifications of changes in data.
+        Subscribe   = 0
+        Unsubscribe = 1
 
 
 ; Type: Enumerated AVP
@@ -338,8 +338,8 @@ Subs-Req-Type ::= < Enumerated AVP header: 705 10415 >
 ; Section: 6.3.7
 ; Page: 20
 Requested-Domain ::= < Enumerated AVP header: 706 10415 >
-        CS-Domain = 0 ; The requested data apply to the CS domain.
-        PS-Domain = 1 ; The requested data apply to the PS domain.
+        CS-Domain = 0
+        PS-Domain = 1
 
 
 ; Type: Enumerated AVP
@@ -347,8 +347,8 @@ Requested-Domain ::= < Enumerated AVP header: 706 10415 >
 ; Section: 6.3.8
 ; Page: 20
 Current-Location ::= < Enumerated AVP header: 707 10415 >
-        DoNotNeedInitiateActiveLocationRetrieval = 0 ; The request indicates that the initiation of an active location retrieval is not required.
-        InitiateActiveLocationRetrieval          = 1 ; It is requested that an active location retrieval is initiated.
+        DoNotNeedInitiateActiveLocationRetrieval = 0
+        InitiateActiveLocationRetrieval          = 1
 
 
 ; Type: Enumerated AVP

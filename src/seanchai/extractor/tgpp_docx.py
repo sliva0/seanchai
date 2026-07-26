@@ -299,31 +299,29 @@ def _extract_enumerated(
 ) -> ast.EnumeratedAvp:
     values: list[ast.EnumValue] = []
     reserved: list[ast.ReservedValues] = []
-    # Classified by content, not paragraph style: the usual convention is
-    # value=B1/description=B2, but human-written specs invert it (29.229
-    # §6.3.34 has the value in Normal and the description in B1).
+    # A clause's explanatory prose is not captured as a value description; only
+    # the value lines and the reserved-value notes are read.
+    #
+    # `EnumValue.description` is a one-line gloss, and a 3GPP clause does not
+    # contain one. It contains paragraphs, with lead-ins ("This value is
+    # used:"), nested bullet lists, NOTEs and caveats about the AVP rather than
+    # about any one value. Any rule for flattening that onto a `;` comment
+    # picks an arbitrary subset: the rule that used to live here took
+    # paragraphs styled B1 or B2, which meant 29.272 §7.3.24 kept two bullets
+    # while dropping the "This value is used:" that introduced them, and
+    # 29.229 §6.3.15 kept "The request is generated in the following cases:"
+    # and dropped the cases. `; Section:` points at the clause; a reader who
+    # wants the prose reads it there, undamaged.
     for paragraph in section.paragraphs:
         text = paragraph.text
         if not text:
             continue
         if match := _ENUM_VALUE_RE.fullmatch(text):
             values.append(ast.EnumValue(name=match["name"], value=int(match["value"])))
-        elif paragraph.style == "NO":
-            if match := _RESERVED_NOTE_RE.search(text):
-                first = int(match["first"])
-                reserved.append(
-                    ast.ReservedValues(first=first, last=int(match["last"] or first))
-                )
-        elif paragraph.style in ("B1", "B2") and values:
-            previous = values[-1].description
-            # Rebuilt rather than `model_copy(update=...)`, which does not
-            # validate: a description that cannot round-trip has to fail here,
-            # where the section that produced it is still in hand, instead of
-            # surviving into a file that no longer parses back.
-            values[-1] = ast.EnumValue(
-                name=values[-1].name,
-                value=values[-1].value,
-                description=f"{previous} {text}" if previous else text,
+        elif paragraph.style == "NO" and (match := _RESERVED_NOTE_RE.search(text)):
+            first = int(match["first"])
+            reserved.append(
+                ast.ReservedValues(first=first, last=int(match["last"] or first))
             )
     merged = sorted(
         [*values, *reserved],
