@@ -11,28 +11,36 @@
 3. **Eyeball** the diff against the spec. The acceptance loop is
    extract → format → parse → eyeball; the `.dad` format is designed to read as
    a near-diff of the source ABNF so this stays cheap.
-4. **Commit the raw output** into the corpus, under the release it belongs to:
-   `dad/3gpp/rel-18/29272-i60.raw.dad`. See [dad/README.md](../dad/README.md).
-5. **Correct** it: declare each fix in `edits/corrections/<SpecRef>.py` and run
-   `uv run seanchai correct RAW.dad --corrections edits/corrections -o OUT.dad`.
-   The source of truth is the committed pair — raw file plus correction module.
-   The corrected file is generated output: never hand-edited, or the
-   corrections can no longer be re-applied to the next version, and it is not
-   committed. See [corrections](corrections.md).
+4. **Lint** the raw output: `uv run seanchai lint RAW.dad`. What it reports is
+   the list of things to correct. See [linter](linter.md).
+5. **Correct** it: declare each fix in `edits/corrections/<SpecRef>.py`, then
+   re-extract with both layers at once:
+   `uv run seanchai extract DOCX --pdf PDF --link URL --corrections edits/corrections -o dad/3gpp/rel-18/NAME.dad`.
+   Every corrected line gets a `;;` note citing the declaration's `file:line`.
+   See [corrections](corrections.md).
+6. **Commit both files** into the corpus, under the release they belong to:
+   `dad/3gpp/rel-18/29272-i60.raw.dad` and `29272-i60.dad`. The corrected one
+   should lint clean; the raw one may not, and that is what it is for.
+   See [dad/README.md](../dad/README.md).
 
 ## Version upgrades
 
-Re-extract the new version, diff raw-vs-raw, re-apply the corrections. That is
-the whole point of committing raw output: an upgrade reviews only what actually
-changed in the specification, instead of re-reviewing the file from scratch.
+Re-extract the new version and diff raw-vs-raw. That is what committing the
+raw file buys: the diff shows what actually changed in the *specification*,
+with the correction layer held still, instead of re-reviewing the file from
+scratch. Then re-apply the corrections — a correction whose `expect` no longer
+matches *fails*, so a fix the specification adopted upstream stops the run
+instead of passing silently — and diff the corrected files too.
 
-Two things this depends on, and which therefore must not regress:
+Three things this depends on, and which therefore must not regress:
 
 - **Canonical formatting must be stable.** An unrelated edit must not reflow
-  unrelated lines, or the raw-vs-raw diff drowns in noise.
+  unrelated lines, or the diff drowns in noise.
 - **The 3GPP archive, not the "latest" index.** `Specs/archive/<series>_series/`
-  keeps every old version; `Specs/latest/Rel-N/` does not, and the raw-vs-raw
-  diff needs the old one.
+  keeps every old version; `Specs/latest/Rel-N/` does not, and comparing
+  against the old one needs it.
+- **Corrections must keep failing loudly.** They are what makes a corrected
+  corpus safe to commit: nothing else notices when a correction goes stale.
 
 ## Which layer fixes what
 

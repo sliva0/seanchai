@@ -131,18 +131,43 @@ so far kept override files out of the extractor.
 ## Pipeline
 
 ```text
-docx ──input patches──► extract ──► 29272-i60.raw.dad (committed)
+docx ──input patches──► extract ──► 29272-i60.raw.dad  (committed)
                                               │
-                                 edits/corrections/TS29.272.py
+                                 edits/corrections/TS29.272.py  (committed)
                                               ▼
-                                       corrected .dad
+                                     29272-i60.dad  (committed)
 ```
 
-The raw file and the correction module are both committed — the raw file under
-`dad/`, the module under `edits/corrections/` — so the corrected file is
-reproducible from them and the diff between raw and corrected is generated
-rather than stored. Corrected files are not committed; see
-[dad/README.md](../dad/README.md) for the corpus layout.
+All three are committed: the raw file, the correction module, and the corrected
+file the two produce. The corrected one is what any real use consumes — a
+corpus of files that are knowingly wrong is a corpus nobody can use directly —
+and the raw one is what makes the layer checkable, because `apply` needs raw
+input and is deliberately non-idempotent. Storing only the corrected file would
+mean re-downloading the sources to re-check a single correction. See
+[dad/README.md](../dad/README.md).
+
+The corrected file is the one anyone doing real work uses, so it says which of
+its values a human overrode:
+
+```dad
+;; corrected: code 1623 -> 1624 [edits/corrections/TS29.272.py:31]
+; Type: Grouped AVP
+; Name: Area-Scope
+```
+
+The note carries what changed and where the declaration is, and no more — the
+`reason` is a sentence, and it belongs next to the correction rather than
+copied into a format that carries definitions. `Correction` captures its own
+`file:line` at construction, by walking out to the first frame outside the
+corrections module, so a correction built inside a helper or a comprehension
+still cites the corrections file.
+
+These are `;;` lines, which the parser discards. An annotated file is therefore
+*exactly* canonical output plus notes: parsing it gives the same tree, and
+reformatting it gives back the canonical text without them. That is the
+intended relation rather than a wart — a note is a reader's aid, not data — but
+it does mean a corrected file that gets reformatted loses its marks, which is
+harmless because corrected files are regenerated rather than edited.
 
 CLI: `seanchai extract … --corrections DIR`, explicit rather than the
 `./edits/patches`-if-present auto-discovery the input patches use, because this
@@ -174,9 +199,10 @@ source.
 - Determinism: applying the same corrections to the same raw AST twice gives
   byte-identical output. (Not idempotency — see the semantics above; feeding
   corrected output back in must error.)
-- Rot detection: an `expect` that no longer matches errors — including a test
-  that re-applies every committed correction to the committed raw output, so a
-  re-extraction that invalidates one fails the suite.
+- Rot detection: every committed correction is re-applied to the committed raw
+  output, so a re-extraction that invalidates one fails the suite — offline,
+  without the source documents. The corrected file is checked to already hold
+  every `replace`, so the committed pair cannot drift apart.
 - The intended semantic diff, pinned separately from the corrections that
   produce it. The rot check reads its expectation out of the file it is
   testing, so a wrong `expect`/`replace`/reason changed together stays green;
@@ -184,9 +210,9 @@ source.
   from `None` to `16777308` and no other field anywhere in the tree.
 - An ambiguous selector errors, as does a field the target node doesn't have
   and a replacement value the model rejects.
-- Once the linter exists: `raw.dad` may fail it, the corrected file must pass.
-  That is the real acceptance criterion for this layer — corrections are what
-  take a specification from "parses" to "internally consistent".
+- Raw output may fail the linter; the committed corrected file must pass. That
+  is the real acceptance criterion for this layer — corrections are what take a
+  specification from "parses" to "internally consistent".
 
 ## Deliberately out of scope
 

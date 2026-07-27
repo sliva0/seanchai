@@ -12,6 +12,7 @@ def _two_section_spec():
     return ast.Specification(
         specification="3GPP TS 29.999",
         version="1.2.3",
+        vendor_id=10415,
         sections=(
             ast.GroupedAvp(
                 name="One", source=ast.SourceRef(section="6.3.1"), code=1, avps=()
@@ -186,6 +187,7 @@ def test_attach_pages_clears_a_page_this_pdf_does_not_bookmark(outlined_pdf):
     stale = ast.Specification(
         specification="3GPP TS 29.999",
         version="1.2.3",
+        vendor_id=10415,
         sections=(
             ast.GroupedAvp(
                 name="Two",

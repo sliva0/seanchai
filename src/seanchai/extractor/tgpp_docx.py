@@ -87,6 +87,12 @@ _PDF_COVER_RE = re.compile(
 _ORIGIN_TS_RE = re.compile(r"3GPP\s+TS\s+(?P<number>\d{2}\.\d{3})")
 _ORIGIN_RFC_RE = re.compile(r"IETF\s+RFC\s+(?P<number>\d+)")
 
+# Every AVP a 3GPP specification defines is in 3GPP's vendor space. That is a
+# fact about the publisher, not about any one document, so this extractor
+# states it rather than reading it out of the text — the same way an RFC
+# extractor will state the IETF's 0.
+TGPP_VENDOR = 10415
+
 _M_BIT_OVERRIDES = {
     "": None,
     "Must set": ast.MBitOverride.MUST,
@@ -899,6 +905,7 @@ def extract(
         return ast.Specification(
             specification=specification,
             version=version,
+            vendor_id=TGPP_VENDOR,
             link=None if link is None else pydantic.HttpUrl(link),
             sections=sections,
         )

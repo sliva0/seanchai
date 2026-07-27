@@ -60,9 +60,11 @@ try to interpret.
   extractor's resolve phase).
 - `tests/test_corrections.py` re-applies every committed correction module to
   the committed raw output, so a re-extraction that invalidates one fails here
-  rather than in a review months later.
-- `tests/test_real_sources.py` re-extracts every committed raw file from the
-  real docx and its ETSI PDF and compares byte-for-byte. It skips unless the
+  rather than in a review months later — and checks that the corrected file
+  already holds every `replace`, so the committed pair cannot drift apart.
+- `tests/test_real_sources.py` re-extracts every committed file from the real
+  docx and its ETSI PDF and compares byte-for-byte: the raw files against the
+  extractor alone, the corrected ones against both layers. It skips unless the
   hand-fetched sources are under `specifications/manual/` (they are git-ignored), so a
   fresh clone sees three skips — but on a machine that has them, it is the test
   that catches an extractor change which is fine on the synthetic fixture and

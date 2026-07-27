@@ -4,7 +4,7 @@ from seanchai.dad import ast, parser
 
 
 def _dad(*section_lines: str) -> str:
-    header = "; Specification: Test Specification\n; Version: 1.2.3"
+    header = "; Specification: Test Specification\n; Version: 1.2.3\n; Vendor-ID: 10415"
     body = "\n".join(section_lines)
     return f"{header}\n\n{body}\n"
 
@@ -16,6 +16,7 @@ def test_comments_are_ignored_without_changing_reported_line_numbers():
             "; Specification: Test Specification",
             ";; header comment",
             "; Version: 1.2.3",
+            "; Vendor-ID: 10415",
             "",
             "; Type: Mystery",
         ]
@@ -24,7 +25,7 @@ def test_comments_are_ignored_without_changing_reported_line_numbers():
     with pytest.raises(parser.DadParseError, match="unknown section type") as exc_info:
         parser.parse(text)
 
-    assert exc_info.value.lineno == 6
+    assert exc_info.value.lineno == 7
 
 
 def test_parses_message_header_and_avp_rule_variants():
@@ -182,16 +183,21 @@ def test_parses_reused_avp_m_bit_overrides():
 @pytest.mark.parametrize(
     ("text", "lineno", "message"),
     [
-        ("; Specification: Test \n; Version: 1.0\n", 1, "trailing whitespace"),
+        (
+            "; Specification: Test \n; Version: 1.0\n; Vendor-ID: 0\n",
+            1,
+            "trailing whitespace",
+        ),
         ("", 1, "empty file"),
         (
-            "; Specification: Test\n; Specification: Again\n; Version: 1.0\n",
+            "; Specification: Test\n; Specification: Again\n"
+            "; Version: 1.0\n; Vendor-ID: 0\n",
             2,
             "duplicate directive 'Specification'",
         ),
         (
             _dad("; Type: Unsupported", "; Section: 1"),
-            4,
+            5,
             "unknown section type 'Unsupported'",
         ),
         (
@@ -201,7 +207,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Section: 1",
                 "Rule-Name ::= < AVP header: 1 >",
             ),
-            7,
+            8,
             "Name directive 'Directive-Name' != rule name 'Rule-Name'",
         ),
         (
@@ -211,7 +217,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Section: 1",
                 "<Rule-Name> ::= < Diameter Header: 1, REQ >",
             ),
-            7,
+            8,
             "Name directive 'Directive-Name' != rule name 'Rule-Name'",
         ),
         (
@@ -222,7 +228,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "Example ::= < AVP header: 1 >",
                 "        [ Mismatched-AVP }",
             ),
-            8,
+            9,
             "mismatched brackets",
         ),
         (
@@ -232,7 +238,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Section: 1",
                 "<Example> ::= < Diameter Header: 1, UNKNOWN >",
             ),
-            7,
+            8,
             "malformed Diameter flags",
         ),
         (
@@ -243,7 +249,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "too few columns",
             ),
-            8,
+            9,
             "expected 9 columns, got 3",
         ),
         (
@@ -254,7 +260,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "Example 1 1 Unsigned32 - - - - Maybe",
             ),
-            8,
+            9,
             "malformed Encrypt cell 'Maybe'",
         ),
         (
@@ -265,7 +271,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Columns: Name From M-bit",
                 "Example RFC7683 SOMETIMES",
             ),
-            8,
+            9,
             "malformed M-bit cell 'SOMETIMES'",
         ),
         (
@@ -276,7 +282,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "Example ::= < Enumerated AVP header: 1 >",
                 "not = valid!",
             ),
-            8,
+            9,
             "malformed enum value",
         ),
         # Values that reach an `int()` or a model field rather than a regex
@@ -291,7 +297,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Page: eleven",
                 "Example ::= < AVP header: 1 >",
             ),
-            7,
+            8,
             "Page must be a number, got 'eleven'",
         ),
         (
@@ -302,7 +308,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "Example twelve 1 Unsigned32 - - - - No",
             ),
-            8,
+            9,
             "Code cell must be a number, got 'twelve'",
         ),
         (
@@ -313,7 +319,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Page: 99999999999",
                 "Example ::= < AVP header: 1 >",
             ),
-            7,
+            8,
             "page: Input should be less than",
         ),
         (
@@ -324,7 +330,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
                 "Example 1 1.2.not-a-section Unsigned32 - - - - No",
             ),
-            8,
+            9,
             "section: String should match pattern",
         ),
         # A whole-section problem, unlike the rows above, so it stays anchored
@@ -336,7 +342,7 @@ def test_parses_reused_avp_m_bit_overrides():
                 "; Table: 1",
                 "; Columns: Name Code Section Type Must May S.not M.not Encrypt",
             ),
-            4,
+            5,
             "rows: Tuple should have at least 1 item",
         ),
     ],

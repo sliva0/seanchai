@@ -13,14 +13,22 @@ _ROOT = Path(__file__).parent.parent
     ids=lambda path: path.name,
 )
 def test_every_committed_dad_file_round_trips_exactly(path):
+    """A corrected file is canonical output *plus* `;;` notes, which the parser
+    discards — so the invariant is against the file with its notes stripped."""
     text = path.read_text()
+    canonical = "\n".join(
+        line for line in text.splitlines() if not line.lstrip().startswith(";;")
+    )
     spec = parser.parse(text)
-    assert formatter.format_spec(spec) == text
+
+    assert formatter.format_spec(spec) == canonical + "\n"
     assert parser.parse(formatter.format_spec(spec)) == spec
 
 
 def _spec(*sections):
-    return ast.Specification(specification="Test", version="1", sections=sections)
+    return ast.Specification(
+        specification="Test", version="1", vendor_id=10415, sections=sections
+    )
 
 
 def _boundary_specs():
@@ -89,6 +97,7 @@ def _boundary_specs():
         "awkward-inline-text": ast.Specification(
             specification="X",
             version="1",
+            vendor_id=10415,
             sections=(
                 ast.EnumeratedAvp(
                     name="Mode",
@@ -136,6 +145,7 @@ def test_formats_every_section_and_optional_field_canonically():
     spec = ast.Specification(
         specification="Test Specification",
         version="1.2.3",
+        vendor_id=10415,
         sections=(
             ast.Message(
                 name="Example-Request",
@@ -206,7 +216,8 @@ def test_formats_every_section_and_optional_field_canonically():
     text = formatter.format_spec(spec)
 
     assert text.startswith(
-        "; Specification: Test Specification\n; Version: 1.2.3\n\n\n"
+        "; Specification: Test Specification\n"
+        "; Version: 1.2.3\n; Vendor-ID: 10415\n\n\n"
     )
     assert "<Example-Request> ::= < Diameter Header: 123, REQ, ERR >" in text
     repeated_line = next(line for line in text.splitlines() if "Repeated" in line)
@@ -225,6 +236,7 @@ def test_bold_markers_share_the_column_after_the_longest_rule():
     spec = ast.Specification(
         specification="Test",
         version="1",
+        vendor_id=10415,
         sections=(
             ast.GroupedAvp(
                 name="Group",
@@ -260,7 +272,7 @@ def test_an_unregistered_section_type_fails_loudly():
     # A new section kind without a formatter must not slip through as a
     # silently missing block.
     with pytest.raises(TypeError, match="no formatter for object"):
-        formatter._format_section(object())  # type: ignore
+        formatter._format_section(object(), {})  # type: ignore
 
 
 def test_a_subclass_is_not_formatted_as_its_base():
@@ -280,7 +292,7 @@ def test_a_subclass_is_not_formatted_as_its_base():
     )
 
     with pytest.raises(TypeError, match="no formatter for ExtendedMessage"):
-        formatter._format_section(section)
+        formatter._format_section(section, {})
 
 
 def _group(name, section, avps):
@@ -297,10 +309,13 @@ def test_a_long_rule_cannot_reflow_another_sections_bold_column():
         "1",
         (ast.AvpRule(name="Short", presence=ast.Presence.OPTIONAL, bold=True),),
     )
-    spec = ast.Specification(specification="Test", version="1", sections=(short,))
+    spec = ast.Specification(
+        specification="Test", version="1", vendor_id=10415, sections=(short,)
+    )
     grown = ast.Specification(
         specification="Test",
         version="1",
+        vendor_id=10415,
         sections=(
             short,
             _group(
@@ -334,7 +349,9 @@ def test_enum_equals_signs_are_aligned_and_values_are_not_zero_padded():
             ast.ReservedValues(first=3, last=3),
         ),
     )
-    spec = ast.Specification(specification="Test", version="1", sections=(enum,))
+    spec = ast.Specification(
+        specification="Test", version="1", vendor_id=10415, sections=(enum,)
+    )
 
     value_lines = formatter.format_spec(spec).splitlines()[-3:]
 
@@ -342,3 +359,59 @@ def test_enum_equals_signs_are_aligned_and_values_are_not_zero_padded():
     assert value_lines[0].rstrip().endswith("1   ; one")
     assert value_lines[1].endswith("200")
     assert value_lines[2].endswith("3")
+
+
+def _annotated(spec, node, note=";; corrected: code 1 -> 2 [f.py:3]"):
+    return formatter.format_spec(spec, {id(node): [note.removeprefix(";; ")]})
+
+
+def test_notes_mark_a_table_row_without_reflowing_the_table():
+    """Notes are interleaved after the column widths are computed, so
+    annotating a row cannot move the columns of the rows around it."""
+    table = ast.AvpTable(
+        table="6.3.1",
+        columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE),
+        source=ast.SourceRef(section="6.3"),
+        rows=(
+            ast.AvpTableRow(name="Alpha", code=700),
+            ast.AvpTableRow(name="Beta", code=701),
+        ),
+    )
+    spec = _spec(table)
+
+    plain = formatter.format_spec(spec).splitlines()
+    annotated = _annotated(spec, table.rows[1]).splitlines()
+
+    assert ";; corrected: code 1 -> 2 [f.py:3]" in annotated
+    assert [line for line in annotated if not line.lstrip().startswith(";;")] == plain
+
+
+def test_notes_on_an_enum_value_are_indented_with_the_value():
+    enumerated = ast.EnumeratedAvp(
+        name="Mode",
+        source=ast.SourceRef(section="6.3.2"),
+        code=702,
+        values=(ast.EnumValue(name="Off", value=0), ast.EnumValue(name="On", value=1)),
+    )
+
+    lines = _annotated(_spec(enumerated), enumerated.values[1]).splitlines()
+
+    note = next(line for line in lines if ";; corrected" in line)
+    assert note.startswith("        ;;")
+
+
+def test_notes_do_not_survive_a_round_trip_and_that_is_the_relation():
+    """An annotated file is canonical output plus `;;` lines: the parser
+    discards them, so reformatting gives back exactly the canonical text."""
+    grouped = ast.GroupedAvp(
+        name="Example", source=ast.SourceRef(section="6.3.1"), code=700, avps=()
+    )
+    spec = _spec(grouped)
+
+    annotated = _annotated(spec, grouped)
+    stripped = "\n".join(
+        line for line in annotated.splitlines() if not line.lstrip().startswith(";;")
+    )
+
+    assert parser.parse(annotated) == spec
+    assert formatter.format_spec(parser.parse(annotated)) == stripped + "\n"

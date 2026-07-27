@@ -16,7 +16,9 @@ import pydantic
 
 from . import abnf, ast
 
-_DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z]+): (?P<value>.*)$")
+# Keys carry hyphens (`; Vendor-ID:`), so the charset is wider than letters.
+# `; RESERVED = n` uses `=` rather than `:` and so is not a match either way.
+_DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z][A-Za-z-]*): (?P<value>.*)$")
 _MESSAGE_HEADER_RE = re.compile(
     r"^<(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)> ::= "
     r"< Diameter Header: (?P<items>[0-9A-Z, ]+) >$"
@@ -471,6 +473,7 @@ def parse(text: str) -> ast.Specification:
         raise DadParseError(body[0][0], "unexpected content in file header")
     specification = _pop(directives, "Specification", header.start)
     version = _pop(directives, "Version", header.start)
+    vendor = _pop(directives, "Vendor-ID", header.start)
     link = directives.pop("Link", None)
     _no_leftovers(directives, header.start)
 
@@ -494,10 +497,13 @@ def parse(text: str) -> ast.Specification:
     if link is not None:
         with _validated(link.lineno):
             parsed_link = pydantic.HttpUrl(link.value)
+    with _validated(vendor.lineno):
+        vendor_id = _number(vendor.value, vendor.lineno, "Vendor-ID")
     with _validated(specification.lineno):
         return ast.Specification(
             specification=specification.value,
             version=version.value,
+            vendor_id=vendor_id,
             link=parsed_link,
             sections=tuple(sections),
         )

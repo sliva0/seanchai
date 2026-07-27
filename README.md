@@ -46,11 +46,13 @@ The pipeline has three stages:
    format; bold runs, tables and section structure are explicit there), going
    docx → intermediate document model → `.dad` AST. A separate pass reads the
    bookmark outline of the matching ETSI **PDF** to attach page numbers.
-2. **Review** — the durable pair is what gets committed: raw extractor output
-   per spec version, plus the corrections declared against it. The corrected
-   `.dad` file is generated from those two and is what downstream consumes. A
-   version upgrade is re-extract, diff raw-vs-raw, re-apply the corrections —
-   not a re-review from scratch.
+2. **Review** — three things get committed: raw extractor output per spec
+   version, the corrections declared against it, and the corrected file the two
+   produce. The corrected one is what any real use consumes, and every line a
+   correction touched carries a `;;` note citing the declaration it came from.
+   A version upgrade is re-extract, diff raw-vs-raw to see the document's own
+   change, then re-apply the corrections and let a stale one fail loudly — not
+   a re-review from scratch.
 3. **Consumption** — the parser turns `.dad` files back into the AST, and a
    consumer model built from that AST lets downstream scripts emit an
    implementation's native dictionary format or validate an existing
@@ -93,7 +95,8 @@ The only edits are the two declared patch layers, and both exist to keep that
 property rather than to weaken it. Input patches fix honest typos in the source
 *text*, so that a document with a flags cell reading `M. V` can be read at all.
 Corrections fix data that parses fine but is wrong, and they produce a
-*separate* file — the committed raw one still says what the document said.
+*separate* file — the committed raw one still says what the document said,
+and the corrected one marks every line they touched.
 Every edit is declared, reasoned and reviewable, and none of them are the
 extractor quietly deciding what a specification meant to say.
 
@@ -119,19 +122,28 @@ never recover what the extractor threw away.
 - **Corrections**: the second patch layer, for data that parses fine but is
   semantically wrong. See
   [docs/corrections.md](docs/corrections.md).
+- **Linter**: single-file structural rules — duplicate definitions and enum
+  values, duplicate `(vendor-id, code)` identities, table-vs-definition
+  disagreements, and a note where an AVP is both defined locally and re-used.
+  See [docs/linter.md](docs/linter.md).
+- **`; Vendor-ID:`**: every file states the vendor-id its own AVPs are defined
+  in — the half of an AVP's identity nothing else in the file supplies. The
+  extractor writes 10415 for 3GPP documents; an RFC extractor will write 0, and
+  a hand-authored vendor extension states its own.
 - **CLI**: `seanchai extract` (docx → `.dad`), `seanchai correct` (raw `.dad` →
-  corrected), `seanchai download` (fetch the corpus).
+  corrected), `seanchai lint` (report inconsistencies), `seanchai download`
+  (fetch the sources).
 - **Downloader**: `uv run seanchai download`, with the curated catalog in
   `src/seanchai/downloader/specs.toml`.
 - **Extracted specs**: TS 29.329 (hand-verified reference), TS 29.229 and
-  TS 29.272 (raw, round-tripped and spot-checked).
+  TS 29.272, committed raw and corrected under `dad/3gpp/rel-18/`; the
+  corrected files lint clean.
 
 ### Planned
 
-- A linter (duplicate definitions and duplicate `(vendor-id, code)` identities, local-vs-re-used conflicts,
-  table-vs-definition consistency, and — once a base-protocol `.dad` exists —
-  unresolved AVP references). The linter is where a source inconsistency gets
-  reported, since the extractor's job is to record it rather than resolve it.
+- Cross-file linter rules: resolving a re-used AVP against the origin
+  specification, and — once a base-protocol `.dad` exists — unresolved AVP
+  references.
 - Cross-checking extracted codes/vendors/types against Wireshark's Diameter
   `dictionary.xml` as an independent oracle.
 - Extraction of the remaining 3GPP Diameter specs, and an RFC (plain-text)
@@ -154,8 +166,9 @@ rounds and the reasoning behind them are kept in
 
 - `src/seanchai/` — the `dad` package (AST, parser, formatter, corrections),
   the `extractor` and `downloader` packages, and the `seanchai` CLI.
-- `dad/` — the committed `.dad` corpus: `dad/3gpp/rel-18/` per 3GPP release,
-  `dad/rfc/` flat. See [dad/README.md](dad/README.md).
+- `dad/` — the committed `.dad` corpus, raw and corrected side by side:
+  `dad/3gpp/rel-18/` per 3GPP release, `dad/rfc/` flat.
+  See [dad/README.md](dad/README.md).
 - `edits/` — the two declared edit layers, side by side:
   `edits/patches/<SpecRef>.toml` for source typos that would break extraction,
   and `edits/corrections/<SpecRef>.py` for extracted data that parses but is
@@ -166,8 +179,8 @@ rounds and the reasoning behind them are kept in
   against. Not part of the corpus.
 - `external/` — third-party checkouts kept while working (git-ignored).
 - `tests/` — pytest suite.
-- `docs/` — format, grammar, extractor, workflow, development and roadmap
-  documents, plus `docs/history/` for completed review rounds.
+- `docs/` — format, grammar, extractor, linter, workflow, development and
+  roadmap documents, plus `docs/history/` for completed review rounds.
 
 ## Development
 

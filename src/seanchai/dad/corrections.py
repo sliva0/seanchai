@@ -33,6 +33,7 @@ correction as a no-op would make "already corrected" indistinguishable from
 """
 
 import importlib.util
+import sys
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -208,6 +209,11 @@ class Correction:
     replace: Any
     reason: str
     versions: str | None = None
+    # Where this correction is written, as "<file>:<line>", captured at
+    # construction. A corrected `.dad` file marks the lines an edit reached and
+    # cites this, so a reader who does not believe a value can go straight to
+    # the declaration and its `reason` instead of grepping the corpus.
+    origin: str = ""
 
     def __post_init__(self) -> None:
         if self.expect == self.replace:
@@ -215,6 +221,28 @@ class Correction:
                 f"{self.target.describe()}: {self.field} correction replaces"
                 " a value with itself"
             )
+        if not self.origin:
+            object.__setattr__(self, "origin", _declared_at())
+
+
+def _declared_at() -> str:
+    """The first frame outside this module: the corrections file's own line.
+
+    Walked rather than taken at a fixed depth because a `Correction` may be
+    built inside a comprehension or a helper, and a fixed depth would then cite
+    this file.
+    """
+    frame = sys._getframe(1)
+    while frame is not None and frame.f_globals.get("__name__") == __name__:
+        frame = frame.f_back
+    if frame is None:  # pragma: no cover — only reachable if this module calls itself
+        return ""
+    path = Path(frame.f_code.co_filename)
+    try:
+        path = path.relative_to(Path.cwd())
+    except ValueError:
+        path = Path(path.name)
+    return f"{path}:{frame.f_lineno}"
 
 
 @dataclass
@@ -225,6 +253,11 @@ class Result:
     node: str
     old: Any
     new: Any
+    # Identity of the corrected node *in the returned tree*, so a formatter can
+    # mark the lines it produced. Set after the rebuild, because rebuilding
+    # constructs new objects: the identity a correction was resolved by belongs
+    # to the input tree and is gone by then.
+    node_id: int = 0
 
 
 def _holds_nodes(value: Any) -> bool:
@@ -283,7 +316,12 @@ def _resolve(spec: ast.Specification, correction: Correction) -> ast.Node:
     return found[0]
 
 
-def _replaced(node: Any, edits: dict[int, ast.Node], applied: dict[int, int]) -> Any:
+def _replaced(
+    node: Any,
+    edits: dict[int, ast.Node],
+    applied: dict[int, int],
+    rebuilt: dict[int, int],
+) -> Any:
     """Rebuild the tree, swapping in every corrected node by identity.
 
     A chosen replacement is descended into rather than returned whole: a
@@ -299,23 +337,27 @@ def _replaced(node: Any, edits: dict[int, ast.Node], applied: dict[int, int]) ->
     downstream.
     """
     if isinstance(node, ast.Node):
-        replacement = edits.get(id(node))
+        original_id = id(node)
+        replacement = edits.get(original_id)
         if replacement is not None:
-            applied[id(node)] = applied.get(id(node), 0) + 1
+            applied[original_id] = applied.get(original_id, 0) + 1
             node = replacement
         values = {
-            name: _replaced(getattr(node, name), edits, applied)
+            name: _replaced(getattr(node, name), edits, applied, rebuilt)
             for name in type(node).model_fields
         }
         try:
-            return type(node)(**values)
+            result = type(node)(**values)
         except pydantic.ValidationError as error:
             raise CorrectionError(
                 f"corrected {type(node).__name__} is not valid:"
                 f" {error.errors()[0]['msg']}"
             ) from None
+        if replacement is not None:
+            rebuilt[original_id] = id(result)
+        return result
     if isinstance(node, tuple):
-        return tuple(_replaced(item, edits, applied) for item in node)
+        return tuple(_replaced(item, edits, applied, rebuilt) for item in node)
     return node
 
 
@@ -355,7 +397,8 @@ def apply(
         )
         edits[id(node)] = corrected
     applied: dict[int, int] = {}
-    rebuilt = _replaced(spec, edits, applied)
+    rebuilt_ids: dict[int, int] = {}
+    rebuilt = _replaced(spec, edits, applied, rebuilt_ids)
     # Identity is what maps a resolved node back to its place in the tree, so a
     # node object appearing in two places would be corrected in both while the
     # selector reported one match. Trees from `parse` and the extractor build
@@ -366,6 +409,8 @@ def apply(
                 f"{description}: the selected node appears more than once in the"
                 " tree; corrections address one place, not a shared object"
             )
+    for result in results:
+        result.node_id = rebuilt_ids.get(id(_resolve(spec, result.correction)), 0)
     return rebuilt, results
 
 

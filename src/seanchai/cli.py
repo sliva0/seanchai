@@ -9,7 +9,7 @@ user's document.
 """
 
 import contextlib
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping, Sequence
 from pathlib import Path
 
 import click
@@ -94,11 +94,12 @@ def extract(
             # extraction warnings are worth reading.
             for warning in warnings:
                 click.echo(f"warning: {warning}", err=True)
+        notes: dict[int, list[str]] = {}
         if corrections is not None:
             # A corpus run may pass a directory holding modules for only some
             # of its specifications, so a spec without one is not an error.
-            spec = _correct(spec, corrections, required=False)
-    _write(spec, output)
+            spec, notes = _correct(spec, corrections, required=False)
+    _write(spec, output, notes)
 
 
 @main.command()
@@ -137,22 +138,67 @@ def correct(source: Path, corrections: Path, output: Path | None) -> None:
         # written, and the platform default would otherwise decide whether a
         # spec title with a non-ASCII character survives the round trip.
         spec = parser.parse(source.read_text(encoding="utf-8"))
-        corrected = _correct(spec, corrections, required=True)
-    _write(corrected, output)
+        corrected, notes = _correct(spec, corrections, required=True)
+    _write(corrected, output, notes)
 
 
 def _correct(spec, directory: Path, required: bool):
+    """Returns the corrected tree and the notes marking what was touched."""
     from .dad import corrections as corrections_module
 
     declared = corrections_module.load(directory, spec.specification, required=required)
     corrected, results = corrections_module.apply(spec, declared)
+    notes: dict[int, list[str]] = {}
     for result in results:
         click.echo(
             f"corrected: {result.node} {result.correction.field}"
             f" {result.old!r} -> {result.new!r} ({result.correction.reason})",
             err=True,
         )
-    return corrected
+        # The note says what changed and where to read why, and no more: a
+        # `.dad` file carries definitions, and the correction's `reason` is a
+        # sentence that belongs next to the correction.
+        notes.setdefault(result.node_id, []).append(
+            f"corrected: {result.correction.field} {result.old!r} -> {result.new!r}"
+            f" [{result.correction.origin}]"
+        )
+    return corrected, notes
+
+
+@main.command()
+@click.argument(
+    "sources",
+    nargs=-1,
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
+@click.option(
+    "--notes/--no-notes",
+    default=True,
+    help="Report findings a single file cannot judge (default: report them).",
+)
+def lint(sources: tuple[Path, ...], notes: bool) -> None:
+    """Report structural inconsistencies in `.dad` files.
+
+    Exits non-zero when any error is found; notes alone do not fail, because
+    they are things a single file cannot decide rather than defects.
+    """
+    from .dad import parser
+    from .linter import Severity
+    from .linter import lint as lint_spec
+
+    total_errors = 0
+    with reported():
+        for source in sources:
+            spec = parser.parse(source.read_text(encoding="utf-8"))
+            findings = lint_spec(spec)
+            if not notes:
+                findings = [f for f in findings if f.severity is Severity.ERROR]
+            for finding in findings:
+                click.echo(f"{source}: {finding}")
+            total_errors += sum(1 for f in findings if f.severity is Severity.ERROR)
+    if total_errors:
+        raise SystemExit(1)
 
 
 @main.command()
@@ -206,10 +252,12 @@ def download(
         )
 
 
-def _write(spec, output: Path | None) -> None:
+def _write(
+    spec, output: Path | None, notes: Mapping[int, Sequence[str]] | None = None
+) -> None:
     from .dad import formatter
 
-    text = formatter.format_spec(spec)
+    text = formatter.format_spec(spec, notes or {})
     if output is None:
         click.echo(text, nl=False)
     else:

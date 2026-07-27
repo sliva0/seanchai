@@ -76,7 +76,9 @@ def test_the_four_avp_flag_rule_columns_must_be_disjoint():
 
 
 def _with_specification(text):
-    return ast.Specification(specification=text, version="1.0", sections=())
+    return ast.Specification(
+        specification=text, version="1.0", vendor_id=10415, sections=()
+    )
 
 
 def _with_enum_description(text):
@@ -169,6 +171,7 @@ def test_json_round_trip_preserves_discriminated_section_types():
     spec = ast.Specification(
         specification="Test",
         version="1.0",
+        vendor_id=10415,
         sections=(
             ast.Message(
                 name="Example-Request",

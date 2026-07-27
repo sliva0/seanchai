@@ -48,6 +48,11 @@ SectionNumber = Annotated[str, Field(pattern=r"^\d+(\.\d+[A-Z]*)*$")]
 # A document's own version numbering: "18.6.0".
 Version = Annotated[str, Field(pattern=r"^\d+(\.\d+)*$")]
 
+# RFC 6733 §4.1: an AVP without the V bit belongs to the IETF, whose vendor-id
+# is 0. `.dad` spells that as no vendor in a header rule, so the two spellings
+# have to be reconciled before any identity is compared.
+IETF_VENDOR = 0
+
 Unsigned32 = Annotated[int, Field(ge=0, lt=2**32)]
 Unsigned24 = Annotated[int, Field(ge=0, lt=2**24)]
 
@@ -444,7 +449,7 @@ class SpecRefError(ValueError):
     """A specification title that names no supported document."""
 
 
-_SPEC_REF_RE = re.compile(SPEC_REF_PATTERN)
+SPEC_REF_RE = re.compile(SPEC_REF_PATTERN)
 
 
 def spec_ref(specification: str) -> str:
@@ -458,7 +463,7 @@ def spec_ref(specification: str) -> str:
     absolute path.
     """
     reference = specification.removeprefix("3GPP ").replace(" ", "")
-    if not _SPEC_REF_RE.match(reference):
+    if not SPEC_REF_RE.match(reference):
         raise SpecRefError(
             f"specification {specification!r} does not name a supported document"
             " (expected e.g. '3GPP TS 29.272' or 'RFC 6733')"
@@ -471,5 +476,18 @@ class Specification(Node):
 
     specification: InlineText  # "3GPP TS 29.329"
     version: Version
+    # `; Vendor-ID:` — the vendor-id this document's own AVPs are defined in.
+    #
+    # It has to be stated, because an AVP's identity is `(vendor-id, code)` and
+    # nothing else in the file supplies the first half: AVP tables have no
+    # vendor column, and a clause header omits the vendor both when the AVP
+    # really is IETF-space and when the document forgot. TS 29.229 gives 621 to
+    # `Primary-Charging-Collection-Function-Name` while RFC 7683 gives 621 to
+    # `OC-Supported-Features`, and 29.229's table lists both.
+    #
+    # One value per document: a specification defines its AVPs in one vendor's
+    # space. An AVP it merely re-uses belongs to the origin's space, which is
+    # that document's `; Vendor-ID:` to state, not this one's to guess.
+    vendor_id: Unsigned32
     link: pydantic.HttpUrl | None = None
     sections: tuple[Section, ...]

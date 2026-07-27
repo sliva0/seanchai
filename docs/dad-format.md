@@ -26,6 +26,7 @@ directive.
 ```dad
 ; Specification: 3GPP TS 29.329
 ; Version: 18.0.0
+; Vendor-ID: 10415
 ; Link: https://www.etsi.org/deliver/...
 
 
@@ -64,6 +65,16 @@ These are the decisions the format rests on. Preserve them when changing it.
   the top of the file (specification, version, link), plus inline markers such
   as `; bold`. A malformed directive is a parse error, never silently degraded
   to a comment. Free-text comments use `;;` and are discarded by the parser.
+- **The file states its own vendor-id.** `; Vendor-ID:` is the vendor space this
+  document's AVPs are defined in, and it has to be stated because nothing else
+  in the file does: AVP tables have no vendor column, and a clause header omits
+  the vendor both for a genuinely IETF-space AVP and when the document forgot.
+  TS 29.229 gives code 621 to `Primary-Charging-Collection-Function-Name` while
+  RFC 7683 gives 621 to `OC-Supported-Features`, and 29.229's table lists both.
+
+  Extractors state it rather than deriving it: 3GPP documents are 10415, RFCs
+  are 0. A hand-authored file states its own, which is the whole mechanism a
+  vendor extension needs — nothing else has to learn about that vendor.
 - **`; bold` stays inline** because it mirrors the source document: bold in
   3GPP ABNF marks AVPs defined or modified in that spec.
 - **Table cells are single whitespace-separated tokens**, with `-` as the empty

@@ -56,8 +56,8 @@ get wrong in the same direction:
   text — a flags cell reading `M. V`, a rule name written with spaces — and
   only where the document is typographically wrong, never where it is
   semantically wrong. [Corrections](corrections.md) fix data that extracts and
-  parses fine but is wrong, and they apply to a *separate* output file, so the
-  committed raw file always still says what the document said.
+  parses fine but is wrong, and they are declared as data, so re-extracting
+  without them always shows what the document said.
 
 Making sense of the result — resolving references, choosing between a local
 definition and a re-used row, filtering to what a particular consumer needs —

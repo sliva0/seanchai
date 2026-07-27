@@ -45,14 +45,22 @@ ABNF as in RFC 5234, with `%x` for literal code points. Two conventions:
 
 ```abnf
 file          = header 2*NL section *(2*NL section) NL
-header        = spec-line NL version-line [NL link-line]
+header        = spec-line NL version-line NL vendor-line [NL link-line]
 spec-line     = "; Specification: " inline-text
 version-line  = "; Version: " version
+vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
 section       = message / grouped-avp / enumerated-avp / avp-table / reused-avps
 ```
+
+`; Vendor-ID:` is the vendor-id this document's own AVPs are defined in, and it
+is required because nothing else in the file supplies it: AVP tables have no
+vendor column, and a clause header omits the vendor both for a genuinely
+IETF-space AVP and when the document forgot. An AVP the file merely re-uses
+belongs to the origin's vendor space, which is that document's `; Vendor-ID:` to
+state.
 
 A file is a header block followed by one or more section blocks. Blocks are
 separated by blank lines; a block is a run of consecutive non-blank lines. The
@@ -72,7 +80,7 @@ degraded to a comment.
 
 ```abnf
 directive     = "; " key ": " value NL
-key           = 1*ALPHA
+key           = ALPHA *(ALPHA / "-")
 ```
 
 Within one block, a directive key may appear at most once, and all directives
@@ -258,8 +266,9 @@ grammatically well-formed and still invalid.
   and From, for a re-used table); no duplicate column.
 - **Names match their rules.** `; Name:` must equal the name in the block's
   header rule.
-- **Numeric ranges.** Command codes are 24-bit; codes, vendor ids, application
-  ids and enum values are 32-bit; page numbers are 32-bit and at least 1.
+- **Numeric ranges.** Command codes are 24-bit; codes, vendor ids (both the
+  file's `; Vendor-ID:` and a header rule's), application ids and enum values are
+  32-bit; page numbers are 32-bit and at least 1.
 - **Tables are non-empty.** An AVP table or re-used table with no rows would
   mean the extractor found a caption and lost its contents.
 

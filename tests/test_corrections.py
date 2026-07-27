@@ -11,6 +11,7 @@ def _spec():
     return ast.Specification(
         specification="3GPP TS 29.999",
         version="1.2.3",
+        vendor_id=10415,
         sections=(
             ast.Message(
                 name="Example-Request",
@@ -426,21 +427,48 @@ def test_loading_finds_the_module_named_after_the_specification(tmp_path):
     assert corrections.load(None, "3GPP TS 29.999") == []
 
 
-@pytest.mark.parametrize(
-    "raw",
-    sorted((_ROOT / "dad").rglob("*.raw.dad")),
-    ids=lambda path: path.name,
-)
+def _corpus(*, raw: bool):
+    """Committed files of one kind. `rglob("*.dad")` matches `.raw.dad` too,
+    so the two are told apart by suffix rather than by glob."""
+    paths = [
+        path
+        for path in sorted((_ROOT / "dad").rglob("*.dad"))
+        if path.name.endswith(".raw.dad") == raw
+    ]
+    assert paths, "no committed .dad files found — these tests would pass vacuously"
+    return paths
+
+
+@pytest.mark.parametrize("raw", _corpus(raw=True), ids=lambda path: path.name)
 def test_committed_corrections_still_apply_to_committed_raw_output(raw):
     """The rot check that makes the layer worth having: if a re-extraction or a
-    spec bump changes what a correction expects, this fails."""
-    spec = parser.parse(raw.read_text())
+    spec bump changes what a correction expects, this fails. Committing the raw
+    file is what lets it run without the source documents."""
+    spec = parser.parse(raw.read_text(encoding="utf-8"))
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
     corrected, results = corrections.apply(spec, declared)
 
     assert len(results) == len(declared)
     assert parser.parse(formatter.format_spec(corrected)) == corrected
+
+
+@pytest.mark.parametrize("path", _corpus(raw=False), ids=lambda path: path.name)
+def test_every_corrected_file_already_carries_its_corrections(path):
+    """The committed pair has to agree: the corrected file is what the raw file
+    plus the module produces, so every `replace` is already the value in it and
+    correcting it again must fail."""
+    spec = parser.parse(path.read_text(encoding="utf-8"))
+    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+
+    for correction in declared:
+        matches = list(correction.target.find(spec))
+        assert len(matches) == 1, f"{correction.target.describe()} in {path.name}"
+        assert getattr(matches[0], correction.field) == correction.replace
+
+    if declared:
+        with pytest.raises(corrections.CorrectionError):
+            corrections.apply(spec, declared)
 
 
 def _fields(spec: ast.Specification) -> dict[tuple, object]:
@@ -472,7 +500,7 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     has to be a deliberate edit here too.
     """
     raw = _ROOT / "dad" / "3gpp" / "rel-18" / "29272-i60.raw.dad"
-    spec = parser.parse(raw.read_text())
+    spec = parser.parse(raw.read_text(encoding="utf-8"))
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
     corrected, _ = corrections.apply(spec, declared)
@@ -579,3 +607,36 @@ def test_a_required_load_fails_when_the_module_is_missing_or_empty(tmp_path):
     # The same two states are ordinary results for a corpus-wide extraction.
     assert corrections.load(tmp_path, "3GPP TS 29.999") == []
     assert corrections.load(tmp_path, "3GPP TS 29.998") == []
+
+
+def test_a_correction_records_where_it_was_declared():
+    """So a corrected file can cite the declaration rather than making a reader
+    grep the corpus for the value they do not believe."""
+    correction = _correction(corrections.table_row("Example-Mode"), "code", 1600, 1602)
+
+    path, _, line = correction.origin.rpartition(":")
+
+    assert path.endswith("test_corrections.py")
+    assert line.isdigit()
+
+
+def test_origin_is_the_declaration_site_not_this_module():
+    """A `Correction` built inside a helper or a comprehension must still cite
+    the corrections file, which is why the frame is walked rather than taken at
+    a fixed depth."""
+    declared = corrections.load(_ROOT / "edits" / "corrections", "3GPP TS 29.272")
+
+    assert all(c.origin.startswith("edits/corrections/TS29.272.py:") for c in declared)
+
+
+def test_apply_reports_the_corrected_node_in_the_returned_tree():
+    """`node_id` has to name a node of the *rebuilt* tree: rebuilding
+    constructs new objects, so the identity a correction was resolved by is
+    gone by the time a formatter could use it."""
+    spec = _spec()
+    corrected, (result,) = corrections.apply(
+        spec, [_correction(corrections.table_row("Example-Mode"), "code", 1600, 1602)]
+    )
+
+    assert result.node_id == id(_table(corrected).rows[0])
+    assert result.node_id != id(_table(spec).rows[0])
