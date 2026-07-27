@@ -37,4 +37,14 @@ CORRECTIONS += [
         " 7.3.1/1 and the TS 29.230 registry both assign Area-Scope 1624",
         versions="18.6.0",
     ),
+    Correction(
+        target=definition("WLAN-offloadability"),
+        field="vendor_id",
+        expect=None,
+        replace=10415,
+        reason="clause 7.3.181's AVP header omits the vendor-id; table 7.3.1/1"
+        " marks the V flag mandatory for it, as for every other AVP the"
+        " specification defines",
+        versions="18.6.0",
+    ),
 ]

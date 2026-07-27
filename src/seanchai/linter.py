@@ -223,6 +223,53 @@ def _table_agrees_with_definitions(index: _Index) -> list[Finding]:
     return findings
 
 
+def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Finding]:
+    """A definition's vendor-id agrees with the file's `; Vendor-ID:`.
+
+    A clause header writes no vendor-id for an IETF-space AVP, and writes no
+    vendor-id when the document simply forgot — the two look identical. What
+    tells them apart is the rest of the file. TS 29.272 defines
+    `WLAN-offloadability` (clause 7.3.181) with a bare `< AVP header: 1667 >`
+    while its own AVP table marks the `V` flag mandatory for that row: the
+    document says in one place that the AVP carries a vendor-id and in another
+    that it has none. `MIP6-Agent-Info` in the same file is equally vendor-less
+    and entirely correct, because it is RFC 5447's and listed as re-used.
+    """
+    rows = {row.name: row for row in index.rows}
+    findings = []
+    for definition in index.definitions:
+        if definition.name in index.reused:
+            # Vendor-less because it belongs to the origin's space, which this
+            # file does not state. The cross-document rules settle these.
+            continue
+        clause = definition.source.section
+        if definition.vendor_id is None:
+            row = rows.get(definition.name)
+            if row is None or ast.AvpFlag.VENDOR not in row.flag_rules.must:
+                continue
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "vendor-id-mismatch",
+                    f"{definition.name} is defined with no vendor-id, but the AVP"
+                    f" table requires its V flag; the file is vendor {own_vendor}",
+                    clause,
+                )
+            )
+        elif definition.vendor_id != own_vendor:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "vendor-id-mismatch",
+                    f"{definition.name} is defined with vendor"
+                    f" {definition.vendor_id}, but the file states vendor"
+                    f" {own_vendor}",
+                    clause,
+                )
+            )
+    return findings
+
+
 def _local_and_reused(index: _Index) -> list[Finding]:
     """An AVP both defined here and listed as re-used from elsewhere.
 
@@ -259,6 +306,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_duplicate_enum_values(index),
         *_duplicate_identities(index, spec.vendor_id),
         *_table_agrees_with_definitions(index),
+        *_vendor_id_agrees_with_header(index, spec.vendor_id),
         *_local_and_reused(index),
     ]
     return sorted(findings, key=lambda f: (f.severity != Severity.ERROR, f.rule))

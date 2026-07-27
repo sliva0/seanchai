@@ -495,9 +495,9 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
 
     The rot check above reads its expectation out of the correction it is
     testing, so a wrong `expect`/`replace`/reason changed together stays green.
-    This one names the outcome — four application ids, one misspelled table
-    type and one AVP code, nothing else — so changing what the corrections do
-    has to be a deliberate edit here too.
+    This one names the outcome — four application ids, one AVP code and one
+    missing vendor-id, nothing else — so changing what the corrections do has
+    to be a deliberate edit here too.
     """
     raw = _ROOT / "dad" / "3gpp" / "rel-18" / "29272-i60.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
@@ -526,6 +526,7 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
         # a closed `data_type` means the raw file cannot carry "Enumerate" as
         # far as this layer.
         ("Area-Scope", "code", 1623, 1624),
+        ("WLAN-offloadability", "vendor_id", None, 10415),
     }
 
 

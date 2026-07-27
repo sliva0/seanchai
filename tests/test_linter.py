@@ -213,6 +213,70 @@ def test_local_and_reused_is_a_note_because_one_file_cannot_judge_it():
     assert "needs TS29.212" in finding.message
 
 
+def _flagged_table(name, code, must=frozenset({ast.AvpFlag.VENDOR})):
+    """An AVP table that has a Must column, which is what makes a missing
+    vendor-id contradictable."""
+    return ast.AvpTable(
+        table="6.3.1",
+        columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE, ast.AvpColumn.MUST),
+        source=ast.SourceRef(section="6.3"),
+        rows=(
+            ast.AvpTableRow(
+                name=name, code=code, flag_rules=ast.AvpFlagRules(must=must)
+            ),
+        ),
+    )
+
+
+def test_a_vendor_less_definition_whose_table_row_requires_v():
+    """TS 29.272 clause 7.3.181 defines WLAN-offloadability with a bare
+    `< AVP header: 1667 >` while table 7.3.1/1 marks its V flag mandatory."""
+    spec = _spec(
+        _grouped("Example", 700, vendor_id=None), _flagged_table("Example", 700)
+    )
+
+    (finding,) = [f for f in linter.lint(spec) if f.rule == "vendor-id-mismatch"]
+
+    assert finding.severity is linter.Severity.ERROR
+    assert finding.section == "6.3.1"
+    assert "vendor 10415" in finding.message
+
+
+def test_a_vendor_less_definition_is_only_suspect_when_the_table_says_so():
+    """Nothing else in the file contradicts it, so nothing here can call it
+    wrong: a genuinely IETF-space AVP looks exactly like this."""
+    spec = _spec(
+        _grouped("Example", 700, vendor_id=None),
+        _flagged_table("Example", 700, must=frozenset()),
+    )
+
+    assert _rules(linter.lint(spec)) == []
+
+    # And an AVP with no table row at all is not compared either.
+    assert linter.lint(_spec(_grouped("Example", 700, vendor_id=None))) == []
+
+
+def test_a_re_used_avp_may_be_vendor_less():
+    """MIP6-Agent-Info is RFC 5447's, correctly vendor-less in TS 29.272, and
+    listed as re-used — which is what tells it apart from the case above."""
+    spec = _spec(
+        _grouped("Borrowed", 700, vendor_id=None),
+        _flagged_table("Borrowed", 700),
+        _reused(ast.ReusedAvpRow(name="Borrowed", origin="RFC5447")),
+    )
+
+    assert "vendor-id-mismatch" not in _rules(linter.lint(spec))
+
+
+def test_a_definition_claiming_another_vendors_space():
+    spec = _spec(_grouped("Example", 700, vendor_id=13019))
+
+    (finding,) = [f for f in linter.lint(spec) if f.rule == "vendor-id-mismatch"]
+
+    assert "vendor 13019" in finding.message
+    assert "states vendor 10415" in finding.message
+
+
 def test_errors_sort_before_notes():
     spec = _spec(
         _grouped("First", 700),
@@ -258,8 +322,15 @@ def test_the_raw_corpus_reports_exactly_what_the_documents_say(path):
     errors = [f for f in findings if f.severity is linter.Severity.ERROR]
 
     if path.name == "29272-i60.raw.dad":
-        assert _rules(errors) == ["duplicate-identity", "table-definition-mismatch"]
-        assert all("Area-Scope" in f.message for f in errors)
+        assert _rules(errors) == [
+            "duplicate-identity",
+            "table-definition-mismatch",
+            "vendor-id-mismatch",
+        ]
+        assert all(
+            "Area-Scope" in f.message for f in errors if f.rule != "vendor-id-mismatch"
+        )
+        assert errors[-1].section == "7.3.181"  # WLAN-offloadability
     else:
         assert errors == []
 

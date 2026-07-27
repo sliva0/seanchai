@@ -42,6 +42,10 @@ only reports that the situation exists.
   that defines the same AVP, on code or on type. A row with no local clause is
   not compared: most rows are AVPs defined elsewhere, and comparing against
   nothing would report every one of them.
+- `vendor-id-mismatch` — a definition whose vendor-id disagrees with the file's
+  `; Vendor-ID:`, either by naming a different vendor or by naming none while
+  the AVP table requires the `V` flag. See below for why the second half needs
+  the table.
 - `local-and-reused` — the note above.
 
 ## Vendor spaces
@@ -74,21 +78,44 @@ Skipping is the honest answer rather than a limitation worked around: within
 one file, two re-used AVPs sharing a code may or may not collide, and nothing
 present can decide it.
 
+`vendor-id-mismatch` reads the same directive from the other side. A clause
+header that names a vendor-id and disagrees with `; Vendor-ID:` is
+straightforward. A clause header that names *no* vendor-id is not: RFC 5447's
+`MIP6-Agent-Info` and 3GPP's `WLAN-offloadability` are both written
+`< AVP header: nnn >` in TS 29.272, and one of them is right. Two other things
+in the file tell them apart. `MIP6-Agent-Info` is listed as re-used, so its
+vendor belongs to RFC 5447 and this file is not asserting anything about it.
+`WLAN-offloadability` is not, and clause 7.3.181 defines it while table 7.3.1/1
+marks its `V` flag mandatory — the document says in one place that the AVP
+carries a vendor-id and in another that it has none. That contradiction is the
+finding; a vendor-less definition with no such row is left alone, because a
+genuinely IETF-space AVP looks exactly like it.
+
 ## What the corpus reports today
 
 The corpus commits both kinds, which is what makes this answerable.
-`29272-i60.raw.dad` reports two errors, both the `Area-Scope` case;
-`29272-i60.dad` reports none, because correcting a file is what clears them.
-Both are pinned — a corrected corpus that is clean because the rules never
-match anything would look identical otherwise.
+`29272-i60.raw.dad` reports three errors — two are the `Area-Scope` case, the
+third is `WLAN-offloadability`'s missing vendor-id — and `29272-i60.dad`
+reports none, because correcting a file is what clears them. Both are pinned —
+a corrected corpus that is clean because the rules never match anything would
+look identical otherwise.
 
 What remains is nine `local-and-reused` notes on 29.272 — the nine AVPs it both
 defines and lists as re-used, which no single file can judge.
 `tests/test_linter.py` pins exactly that, so a rule that starts firing on
 something else fails the suite instead of adding noise to a report.
 
-Worth being plain about: none of these four rules has yet found something a
-reviewer had not already found. They were written *from* cases reviewers
-caught, on a corpus of three files, so agreeing with those reviewers is the
-correct outcome. Their value is in the specifications not yet extracted — which
-is the argument for landing them before extracting more.
+Worth being plain about: none of these rules found something a reviewer had not
+already found. They were written *from* cases reviewers caught, on a corpus of
+three files, so agreeing with those reviewers is the correct outcome —
+`vendor-id-mismatch` included, since `WLAN-offloadability` was noticed while
+working out where vendor-ids come from and the rule was written afterwards.
+Their value is in the specifications not yet extracted, which is the argument
+for landing them before extracting more.
+
+The nine `local-and-reused` notes stay unsuppressed, and there is deliberately
+no way to acknowledge one. Silencing them individually would be work thrown
+away: the cross-document rules resolve each note into an answer — re-print or
+extension — by loading the origin and comparing, which is a better outcome than
+a reviewer recording that they looked. Revisit if they are still noise once the
+cross-file linter exists.

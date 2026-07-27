@@ -15,9 +15,12 @@ Before adding items here, read the conventions in
 [development.md](development.md#working-on-these-documents) — several
 tempting additions are settled decisions, not gaps.
 
-Items are numbered so they can be referred to in a conversation. A number is a
-position in this document, not an identity: inserting work renumbers what
-follows, and nothing outside this file should cite one.
+Items are numbered so they can be referred to in a conversation. Finishing one
+leaves a gap rather than renumbering what follows, so a number keeps meaning the
+same item for as long as that item is open — which is the point of having them.
+New work takes the next unused number. Nothing outside this file should cite
+one, because the numbers do not survive a reorganisation of the document
+itself.
 
 ## Format
 
@@ -70,7 +73,7 @@ not prose.
 
 ## Linter
 
-Phase one is done — four single-file rules, described in
+Phase one is done — five single-file rules, described in
 [linter.md](linter.md).
 
 The raw/corrected question is settled: the corpus commits both. The corrected
@@ -78,24 +81,18 @@ file is what any real use consumes and what must lint clean; the raw file keeps
 saying what the document said, which is what makes a version upgrade a
 raw-vs-raw diff and lets the corrections be rot-checked offline. Corrections
 mark the lines they touch with a `;;` note citing their own declaration, so a
-corrected value is never anonymous. What phase one left open:
+corrected value is never anonymous.
 
-3. **A way to acknowledge a finding.** Some are the source document's fault and
-   will never be fixed upstream, so a report that cannot be acknowledged
-   becomes noise everyone learns to ignore — there should be a way to record
-   "known, explained, not a regression", and it should look like the `reason` a
-   patch or correction carries. Deferred deliberately until a report was on
-   screen; it now is, and nine `local-and-reused` notes on 29.272 are the first
-   thing anyone will want to silence.
+The `vendor-id-mismatch` rule landed after the other four, once `; Vendor-ID:`
+gave it something to compare against, and `WLAN-offloadability`'s missing
+vendor-id in TS 29.272 clause 7.3.181 is now a correction rather than a defect
+the corpus carries silently.
 
-4. **Check a definition's vendor-id against the file's `; Vendor-ID:`.** Found
-   while working out where vendor-ids come from, and not yet a rule: TS 29.272
-   clause 7.3.181 defines `WLAN-offloadability` with no vendor-id at all, while
-   the same file's AVP table marks its `V` flag mandatory — the clause header
-   simply omits it. `MIP6-Agent-Info` in the same file is *correctly*
-   vendor-less, because it is RFC 5447's and listed as re-used. The `; Vendor-ID:`
-   directive plus the re-used table tell those two apart, so the rule is cheap;
-   it is separate only because it was not among the four asked for.
+Acknowledging a finding was considered and deliberately not built. The nine
+`local-and-reused` notes on 29.272 are the only standing noise, and the
+cross-document rules below resolve each of them into an answer — re-print or
+extension — instead of recording that a reviewer looked at it. Reopen this if
+they are still noise once the cross-file linter exists.
 
 A linter that loads several files also needs the version question below (7)
 answered anyway.

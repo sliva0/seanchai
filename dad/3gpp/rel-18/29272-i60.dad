@@ -1800,11 +1800,12 @@ ProSe-Subscription-Data ::= < AVP header: 3701 10415 >
       * [ AVP ]
 
 
+;; corrected: vendor_id None -> 10415 [edits/corrections/TS29.272.py:40]
 ; Type: Grouped AVP
 ; Name: WLAN-offloadability
 ; Section: 7.3.181
 ; Page: 157
-WLAN-offloadability ::= < AVP header: 1667 >
+WLAN-offloadability ::= < AVP header: 1667 10415 >
         [ WLAN-offloadability-EUTRAN ]
         [ WLAN-offloadability-UTRAN ]
       * [ AVP ]
