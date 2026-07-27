@@ -30,11 +30,13 @@ the single-file findings they supersede.
 The distinction exists because one of the rules is genuinely not a defect. An
 AVP both defined locally *and* listed as re-used may be a specification
 re-printing another's AVP so a reader need not fetch the other document, or
-*extending* it with fields of its own. TS 29.272 does this nine times, and
-`ProSe-Subscription-Data` really is extended. Which case a given one is cannot
-be decided from this file — it needs the origin's definition to compare
-against, so the comparison belongs to the cross-document rules and this layer
-only reports that the situation exists.
+*extending* it with fields of its own. TS 29.272 does this nine times. Which
+case a given one is cannot be decided from that file alone — it needs the
+origin's definition to compare against — so the single-file layer only reports
+that the situation exists and the [cross-file rules](#cross-file-rules) say
+which it is. When 29.344 joined the corpus the answer for
+`ProSe-Subscription-Data` turned out to be neither: 29.272's copy is *missing*
+two of the members 29.344 lists.
 
 ## Single-file rules
 
@@ -195,15 +197,89 @@ argument for them:
   29.272's: it adds `V2X-PC5-Allowed-PLMN` and omits `UE-PC5-AMBR` and
   `V2X-Permission`. Reported as exactly that, and left to a reader.
 
-`Feature-Id` has no correction, because removing a re-used row is an operation
-the correction layer does not have — it replaces fields, it does not delete
-nodes. So `lint --corpus dad dad/**/*.dad` exits non-zero today, on a real
-defect with no expressible fix. That is the linter working; see the roadmap
-item on insert and delete operations.
+## Standing findings, and why each one stays
 
-Nine `local-and-reused` notes on 29.272 are now eight: `ProSe-Subscription-Data`
-resolved into a `reused-body-differs` answer the moment 29.344 joined the
-corpus. The remaining eight cite documents the corpus does not hold yet, and
-each will resolve the same way as it grows — which is why acknowledging a
-finding was never built. Silencing them individually would have been work
-thrown away.
+A finding nobody can act on is worse than no finding, so every one the corpus
+still reports is written down here with what it would take to clear it. Nothing
+in this list is an oversight.
+
+### `Feature-Id` — the one outstanding error
+
+```
+29283-i00.dad: error: [reused-avp-not-in-origin] Feature-Id is listed as
+re-used from TS29.229, but 3GPP TS 29.229 18.1.0 neither defines, tabulates
+nor re-uses it
+```
+
+TS 29.283 table 7.3.1-2 lists four AVPs from TS 29.229: `Supported-Features`,
+`Feature-List-ID`, `Feature-List` and `Feature-Id`. The first three are real.
+The fourth is not an AVP 29.229 has ever defined, and it appears in no ABNF in
+29.283 either, so nothing references it — it is an inert row that should not be
+there.
+
+**Why it is not trivially fixable: the repair is deleting a row, and neither
+edit layer can delete anything.** Corrections replace a field on a node that
+exists; there is no node to point at once the answer is "this row should not
+exist". Input patches are find/replace over source text, so the nearest thing
+they could do is blank the name cell — which produces a row with no name, which
+the extractor rejects. Both layers are shaped around *changing* a value, and
+neither has an opinion about a value that should be absent.
+
+Guessing a replacement would be worse than the row. `Feature-Id` is not a
+misspelling of `Feature-List-ID` — that AVP is already in the same table, so
+"fixing" the name would produce a duplicate rather than a correction, and there
+is no fourth AVP in 29.229 the row could plausibly have meant.
+
+So `lint --corpus` over the corrected corpus exits non-zero. That is the linter
+working, not a corpus that needs tidying, and it is the concrete case behind
+the roadmap item on insert and delete operations. The design question that item
+has to answer is that both operations break `expect`: a correction states the
+value it expects to find, which is what makes it fail loudly when a document is
+fixed upstream, and a deletion has no such value to state.
+
+### `Service-Selection` — deliberately not corrected
+
+```
+29172-i10.dad: note: [reused-origin-indirect] Service-Selection is listed as
+re-used from TS29.272, which re-uses it from RFC5778 rather than defining it
+```
+
+Unlike the above this *is* expressible — `reused_row("Service-Selection")` with
+`field="origin"` and `replace="RFC5778"` is three lines. It is not written
+because it is not clear that 29.172 is wrong. 29.272 genuinely carries the AVP,
+a reader following the citation finds it, and "where I got this from" and "who
+defined this" are different claims that the `From` column does not distinguish.
+Rewriting it would make the `.dad` file say something the specification does
+not, which is the one thing the correction layer is not for. The note records
+the indirection and leaves the chain visible.
+
+### `reused-body-differs` — a fact, not a defect
+
+```
+29388-i10.dad: note: [reused-body-differs] V2X-Subscription-Data's body,
+against TS29.272's definition: adds V2X-PC5-Allowed-PLMN, missing
+UE-PC5-AMBR, V2X-Permission (clause 6.3.2)
+29272-i60.dad: note: [reused-body-differs] ProSe-Subscription-Data's body,
+against TS29.344's definition: missing 3GPP-Charging-Characteristics,
+ProSe-Allowed-PLMN (clause 7.3.180)
+```
+
+Two documents describe one AVP differently. There is no way to tell from either
+which is current — the two are separately maintained and either may be the one
+lagging — and correcting one to match the other would invent an agreement that
+does not exist in the specifications. These are notes so that a consumer
+choosing between the two definitions knows there is a choice to make.
+
+### Notes waiting on corpus growth
+
+Eight `local-and-reused` notes on 29.272 and one each on 29.283 and 29.388 name
+documents not yet extracted, and every file reports an `origin-not-in-corpus`
+note listing what could not be resolved. These clear themselves: nine
+`local-and-reused` notes became eight the moment 29.344 joined the corpus, and
+`ProSe-Subscription-Data` turned into the concrete `reused-body-differs` answer
+above. The RFC-shaped half of the unresolved origins needs the RFC extractor;
+until then no file resolves a single RFC citation.
+
+This is why acknowledging a finding was never built. Suppressing these one by
+one would have been work thrown away against a corpus that answers them by
+growing.
