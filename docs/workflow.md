@@ -12,7 +12,10 @@
    extract → format → parse → eyeball; the `.dad` format is designed to read as
    a near-diff of the source ABNF so this stays cheap.
 4. **Lint** the raw output: `uv run seanchai lint RAW.dad`. What it reports is
-   the list of things to correct. See [linter](linter.md).
+   the list of things to correct. Once the corrected file is in the corpus,
+   lint it again with `--corpus dad` — the cross-file rules check what the
+   document says about *other* documents, which is a class of defect no amount
+   of reading this one can find. See [linter](linter.md).
 5. **Correct** it: declare each fix in `edits/corrections/<SpecRef>.py`, then
    re-extract with both layers at once:
    `uv run seanchai extract DOCX --pdf PDF --link URL --corrections edits/corrections -o dad/3gpp/rel-18/NAME.dad`.

@@ -38,6 +38,12 @@ be re-applied and rot-checked without re-downloading the sources; and the
 linter has something to fire on, so "the corrected corpus is clean" stays
 distinguishable from "the rules never match anything".
 
+A file without a `; Link:` header has no ETSI PDF of its own version, so it
+also carries no `; Page:` directives. TS 29.388 is the case: 3GPP publishes the
+docx at V18.1.0 while ETSI's rendering is still V18.0.0, and page numbers taken
+from the wrong version point at the wrong pages, which is worse than having
+none. The extractor refuses the mismatched pair rather than guessing.
+
 See [workflow.md](../docs/workflow.md).
 
 `examples/` is not part of this corpus. It holds the hand-made reference file

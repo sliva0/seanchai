@@ -122,10 +122,13 @@ never recover what the extractor threw away.
 - **Corrections**: the second patch layer, for data that parses fine but is
   semantically wrong. See
   [docs/corrections.md](docs/corrections.md).
-- **Linter**: single-file structural rules — duplicate definitions and enum
-  values, duplicate `(vendor-id, code)` identities, table-vs-definition
-  disagreements, and a note where an AVP is both defined locally and re-used.
-  See [docs/linter.md](docs/linter.md).
+- **Linter**, in two layers. Single-file rules — duplicate definitions and enum
+  values, duplicate `(vendor-id, code)` identities, one command name with two
+  codes, table-vs-definition and vendor-id disagreements. Cross-file rules,
+  with `--corpus` — resolving each re-used AVP against the document it is
+  borrowed from, to say whether a local copy re-prints or extends it, and to
+  catch citations the origin cannot support. See
+  [docs/linter.md](docs/linter.md).
 - **`; Vendor-ID:`**: every file states the vendor-id its own AVPs are defined
   in — the half of an AVP's identity nothing else in the file supplies. The
   extractor writes 10415 for 3GPP documents; an RFC extractor will write 0, and
@@ -135,15 +138,15 @@ never recover what the extractor threw away.
   (fetch the sources).
 - **Downloader**: `uv run seanchai download`, with the curated catalog in
   `src/seanchai/downloader/specs.toml`.
-- **Extracted specs**: TS 29.329 (hand-verified reference), TS 29.229 and
-  TS 29.272, committed raw and corrected under `dad/3gpp/rel-18/`; the
-  corrected files lint clean.
+- **Extracted specs**: eight, committed raw and corrected under
+  `dad/3gpp/rel-18/` — TS 29.329 (hand-verified reference), 29.229, 29.272,
+  29.172, 29.283, 29.344, 29.388 and 29.389. The corrected files carry no
+  single-file findings.
 
 ### Planned
 
-- Cross-file linter rules: resolving a re-used AVP against the origin
-  specification, and — once a base-protocol `.dad` exists — unresolved AVP
-  references.
+- Unresolved AVP references, once a base-protocol `.dad` exists: almost every
+  name a message body cites without a table row is RFC 6733's.
 - Cross-checking extracted codes/vendors/types against Wireshark's Diameter
   `dictionary.xml` as an independent oracle.
 - Extraction of the remaining 3GPP Diameter specs, and an RFC (plain-text)

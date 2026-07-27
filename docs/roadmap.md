@@ -94,8 +94,17 @@ cross-document rules below resolve each of them into an answer — re-print or
 extension — instead of recording that a reviewer looked at it. Reopen this if
 they are still noise once the cross-file linter exists.
 
-A linter that loads several files also needs the version question below (7)
-answered anyway.
+**Which version an origin resolves to is settled.** `ReusedAvpRow.origin` names
+a specification and not a version, so a run that loads several files has to
+choose. The rule: **match the major version, and among candidates that match,
+take the newest.** A file whose own version is 18.x resolves `TS29.272` against
+the 18.x copies of 29.272 in the corpus, and if both 18.1.0 and 18.2.0 are
+present it reads 18.2.0. Nothing resolves across a major version, because a
+release boundary is where 3GPP is entitled to change what an AVP means, and
+silently reading a Rel-19 definition to check a Rel-18 document would report
+differences that are not errors. This is why the corpus is laid out one
+directory per release: the version rule and the directory structure say the
+same thing. It is recorded in [linter.md](linter.md#resolving-an-origin).
 
 ### Phase two: reference resolution
 
@@ -110,43 +119,40 @@ re-declares them, because every Diameter application is assumed to have them.
    an explicit dependency/import directive in the format. The RFC extractor
    below (16) is what makes either one checkable, since neither means anything
    until a base `.dad` exists.
-6. **Decide whether corrections need an insert operation.** Once the base AVPs
-    are subtracted, the residue is small and interesting: two references in
-    TS 29.272 (`Additional-Context-Identifier` in clause 7.3.35 and
-    `Re-synchronization-Info` in clause 7.3.11) and none in 29.229 or 29.329.
-    Neither is a base AVP and neither appears in 29.272's own AVP table or
-    re-used table, so the document really does reference AVPs it never
+6. **Decide whether corrections need insert and delete operations.** Once the
+    base AVPs are subtracted, the residue is small and interesting: two
+    references in TS 29.272 (`Additional-Context-Identifier` in clause 7.3.35
+    and `Re-synchronization-Info` in clause 7.3.11) and none in 29.229 or
+    29.329. Neither is a base AVP and neither appears in 29.272's own AVP table
+    or re-used table, so the document really does reference AVPs it never
     introduces. Adding them is a *row*, which the correction layer cannot
     express — it replaces fields, it does not insert nodes.
-7. **Decide which version of an origin spec a run resolves against.**
-    Resolving a re-used AVP to its `(vendor-id, code)` means reading the origin
-    spec's `.dad`, so the linter must load several files at once — and
-    `ReusedAvpRow.origin` names a specification but not a version. Settle this
-    before writing the cross-file rules; "whatever happens to be on disk" is
-    not a decision.
-8. **Build the first resolvable tree.** The corpus needed for these rules is
-    smaller than it looks, because closure is per-AVP rather than
-    per-specification. A re-used row resolves as soon as the spec it names
-    defines that AVP locally; it does not matter that the origin re-uses two
-    dozen AVPs of its own from elsewhere. TS 29.272 re-uses from nineteen
-    specifications, but a file re-using `V2X-Subscription-Data` *from* 29.272
-    resolves in one hop, because 29.272 defines it.
 
-    That makes **TS 29.388 (V4)** the cheapest first cross-file tree. Its
-    entire re-used table cites four origins: `V2X-Subscription-Data`,
-    `Visited-PLMN-Id`, `User-Id` and `Reset-ID` from 29.272; `MSISDN` from
-    29.329; `Supported-Features`, `Feature-List-ID` and `Feature-List` from
-    29.229 — all three already extracted, and all seven AVPs verified as
-    locally defined there — plus `User-Name`, `OC-Supported-Features`,
-    `OC-OLR`, `DRMP` and `Load` from RFCs 6733, 7683, 7944 and 8583. So one
-    added specification closes every 3GPP edge, and the residue is exactly the
-    base-protocol problem above. 29.388 is a small spec and now extracts
-    cleanly, so nothing stands between here and the tree but committing it.
+    The cross-file rules have since supplied the mirror case, and it is the one
+    actually blocking something: TS 29.283's re-used table lists `Feature-Id`
+    from TS 29.229, which has no such AVP and never did. The fix is to delete a
+    row, which the layer cannot express either, so `lint --corpus` over the
+    corrected corpus exits non-zero on a defect with no available repair. Both
+    operations raise the same design question — a correction that inserts or
+    deletes a node cannot state an `expect` the way a field replacement does,
+    and `expect` is what makes corrections fail loudly when a document is fixed
+    upstream. Whatever replaces it has to keep that property.
+**The first resolvable tree is built.** TS 29.388, 29.344, 29.172, 29.283 and
+29.389 are committed alongside the original three, and `seanchai lint --corpus`
+resolves re-used AVPs across them — see [linter.md](linter.md#cross-file-rules).
+The rules found three things no single file could: a re-used AVP TS 29.229 has
+never heard of (`Feature-Id`, cited by 29.283), a citation naming a middleman
+rather than the definer (`Service-Selection`, 29.172 → 29.272 → RFC 5778), and
+`V2X-Subscription-Data`'s body in 29.388 diverging from 29.272's in both
+directions.
 
-    Afterwards, in rough order of what each adds: 29.344 (PC4a) reaches 29.173,
-    which extracts today, and 29.061, which does not; 29.330 (Sc) needs 29.336;
-    29.389 (V6) depends on 29.388 itself, which is what would first exercise a
-    two-hop chain and therefore the version question.
+What is left is the reach of the corpus rather than the rules. Every remaining
+`local-and-reused` note names a document not yet extracted, and every file's
+unresolved origins are dominated by RFCs, which need the extractor below (16).
+In rough order of what each adds: 29.336 closes eight of 29.272's notes and
+both of 29.283's and 29.329's; 29.212 closes another; 29.173 and 29.061 are
+what 29.344 reaches for. 29.389 already depends on 29.388, so a two-hop chain
+is available to exercise as soon as anything needs one.
 
 ## Validation against an independent oracle
 
@@ -260,8 +266,9 @@ format becomes a short script over a reviewed corpus.
     sections lands, which is the useful consequence of naming the split: you
     cannot resolve a reference into an object without deciding what an
     unresolved base AVP means (5), which version of an origin spec to follow
-    (7), or which of two conflicting definitions wins — the last being exactly
-    what the `local-and-reused` note declines to decide. The consumer
+    (settled above, and implemented in `corpus.py`), or which of two
+    conflicting definitions wins — the last being exactly what
+    `reused-body-differs` reports without deciding. The consumer
     model is therefore downstream of phase two, not a parallel effort — and the
     linter is the tool that reports those conflicts instead of the model having
     to silently pick.

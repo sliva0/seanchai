@@ -88,10 +88,19 @@ class definition(Selector):
     `application_id` narrows the TS 29.272 case of one command defined for two
     applications. Left out it does not filter at all; given explicitly — including
     as `None` — it selects only messages carrying exactly that id.
+
+    `section` narrows by the clause a definition was read from, which is what a
+    name alone cannot do when the name itself is the error. TS 29.388 clause
+    6.3.10 heads `PLMN-Allowed-PC5-RATs` and then prints 6.3.3's rule name, so
+    two clauses claim one name and the correction that fixes it has to say
+    which. A clause is also the stable way to point at a definition here: it is
+    what the heading says and what `; Section:` records, and unlike the name it
+    is not the thing under repair.
     """
 
     name: str
     application_id: int | _Unspecified | None = UNSPECIFIED
+    section: str | None = None
 
     def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
         for section in spec.sections:
@@ -101,6 +110,8 @@ class definition(Selector):
                 continue
             if section.name != self.name:
                 continue
+            if self.section is not None and section.source.section != self.section:
+                continue
             if not isinstance(self.application_id, _Unspecified) and (
                 not isinstance(section, ast.Message)
                 or section.application_id != self.application_id
@@ -109,9 +120,12 @@ class definition(Selector):
             yield section
 
     def describe(self) -> str:
-        if isinstance(self.application_id, _Unspecified):
-            return f"definition {self.name!r}"
-        return f"definition {self.name!r} (application {self.application_id})"
+        described = f"definition {self.name!r}"
+        if not isinstance(self.application_id, _Unspecified):
+            described += f" (application {self.application_id})"
+        if self.section is not None:
+            described += f" (clause {self.section})"
+        return described
 
 
 @dataclass(frozen=True)

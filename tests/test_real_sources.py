@@ -30,29 +30,35 @@ def _cases():
     Both kinds are covered. `.raw.dad` pins the extractor alone; `.dad` pins
     the extractor plus the correction layer, which is also what re-checks that
     every `expect` still matches freshly extracted output.
+
+    A file with no `; Link:` is pinned without pages: TS 29.388's docx is
+    18.1.0 while ETSI publishes only an 18.0.0 PDF, and page numbers from the
+    wrong version are worse than none, so that file carries neither.
     """
     committed = sorted((_ROOT / "dad").rglob("*.dad"))
     assert committed, "no committed .dad files found — this test would pass vacuously"
     for path in committed:
         spec = parser.parse(path.read_text(encoding="utf-8"))
-        assert spec.link is not None, f"{path.name} has no ; Link: to find its PDF by"
         raw = path.name.endswith(".raw.dad")
         stem = path.name.removesuffix(".raw.dad" if raw else ".dad")
         docx = _MANUAL / f"{stem}.docx"
-        pdf = _MANUAL / Path(str(spec.link)).name
-        yield pytest.param(path, docx, pdf, str(spec.link), raw, id=path.name)
+        link = str(spec.link) if spec.link is not None else None
+        pdf = _MANUAL / Path(link).name if link is not None else None
+        yield pytest.param(path, docx, pdf, link, raw, id=path.name)
 
 
 @pytest.mark.parametrize(("committed", "docx", "pdf", "link", "raw"), list(_cases()))
 def test_the_real_sources_still_produce_the_committed_output(
     committed, docx, pdf, link, raw
 ):
-    missing = [path.name for path in (docx, pdf) if not path.is_file()]
+    sources = [docx] if pdf is None else [docx, pdf]
+    missing = [path.name for path in sources if not path.is_file()]
     if missing:
         pytest.skip(f"hand-fetched sources not present: {', '.join(missing)}")
 
     spec = tgpp_docx.extract(docx, link=link, patches_dir=_PATCHES)
-    spec = tgpp_docx.attach_pages(spec, pdf)
+    if pdf is not None:
+        spec = tgpp_docx.attach_pages(spec, pdf)
     notes: dict[int, list[str]] = {}
     if not raw:
         declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)

@@ -34,6 +34,7 @@ import enum
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from . import corpus
 from .dad import ast
 
 
@@ -72,6 +73,7 @@ class _Index:
     """The one pass over the file that every rule reads from."""
 
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = field(default_factory=list)
+    messages: list[ast.Message] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
 
@@ -85,6 +87,8 @@ def _index(spec: ast.Specification) -> _Index:
     for section in spec.sections:
         if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
             index.definitions.append(section)
+        elif isinstance(section, ast.Message):
+            index.messages.append(section)
         elif isinstance(section, ast.AvpTable):
             index.tables.append(section)
         elif isinstance(section, ast.ReusedAvps):
@@ -112,6 +116,37 @@ def _duplicate_definitions(index: _Index) -> list[Finding]:
                     Severity.ERROR,
                     "duplicate-definition",
                     f"{name} is defined {len(group)} times, in clauses {clauses}",
+                )
+            )
+    return findings
+
+
+def _one_name_two_commands(index: _Index) -> list[Finding]:
+    """One command name used for two command codes.
+
+    Not folded into `_duplicate_definitions`, because a repeated *message* name
+    is normal: TS 29.272 defines IDR/DSR/RSR once for S6a and once for S7a,
+    same name, same code, two application ids. What cannot be true is one name
+    naming two codes, and TS 29.344 does exactly that — clauses 6.2.11/6.2.12
+    print clauses 6.2.3/6.2.4's rule names above command 8388713, so
+    `ProSe-Subscriber-Information-Request` appeared to be both 8388664 and
+    8388713.
+    """
+    by_name: dict[str, dict[int, list[str]]] = defaultdict(lambda: defaultdict(list))
+    for message in index.messages:
+        by_name[message.name][message.command_code].append(message.source.section)
+    findings = []
+    for name, codes in sorted(by_name.items()):
+        if len(codes) > 1:
+            spelled = ", ".join(
+                f"{code} (clause{'s' if len(where) > 1 else ''} {', '.join(where)})"
+                for code, where in sorted(codes.items())
+            )
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "one-name-two-commands",
+                    f"{name} is defined with {len(codes)} command codes: {spelled}",
                 )
             )
     return findings
@@ -303,10 +338,261 @@ def lint(spec: ast.Specification) -> list[Finding]:
     index = _index(spec)
     findings = [
         *_duplicate_definitions(index),
+        *_one_name_two_commands(index),
         *_duplicate_enum_values(index),
         *_duplicate_identities(index, spec.vendor_id),
         *_table_agrees_with_definitions(index),
         *_vendor_id_agrees_with_header(index, spec.vendor_id),
         *_local_and_reused(index),
     ]
+    return _ordered(findings)
+
+
+def _ordered(findings: list[Finding]) -> list[Finding]:
     return sorted(findings, key=lambda f: (f.severity != Severity.ERROR, f.rule))
+
+
+# --- cross-file rules -------------------------------------------------------
+#
+# Everything below needs a second document. The single-file rules above decline
+# to guess where a name or a vendor space belongs to another specification;
+# these are what actually go and look.
+
+
+def _defined_in(entry: corpus.Entry) -> dict[str, ast.GroupedAvp | ast.EnumeratedAvp]:
+    index = _index(entry.spec)
+    return {definition.name: definition for definition in index.definitions}
+
+
+def _tabled_in(entry: corpus.Entry) -> dict[str, ast.AvpTableRow]:
+    return {row.name: row for row in _index(entry.spec).rows}
+
+
+def _unresolved_origins(
+    spec: ast.Specification, index: _Index, books: corpus.Corpus
+) -> list[Finding]:
+    """A re-used row citing a document the corpus does not hold.
+
+    A note, not an error: the document is fine, the corpus is incomplete. It is
+    still worth saying, because every other cross-file rule silently does
+    nothing for such a row, and a rule that is quiet because it had nothing to
+    read looks exactly like a rule that found nothing wrong.
+
+    One note per file rather than per origin. A Rel-18 corpus without an RFC
+    extractor cannot resolve a single RFC, and 29.272 alone cites eighteen
+    origins — reported individually they would bury every real finding, and
+    they all say the same thing.
+    """
+    missing = []
+    for origin in sorted(set(index.reused.values())):
+        if books.resolve(origin, like=spec) is not None:
+            continue
+        held = books.versions(origin)
+        missing.append(f"{origin} (corpus has {', '.join(held)})" if held else origin)
+    if not missing:
+        return []
+    return [
+        Finding(
+            Severity.NOTE,
+            "origin-not-in-corpus",
+            f"{len(missing)} of {len(set(index.reused.values()))} cited origins"
+            f" could not be resolved for a {spec.version} document, and the rules"
+            f" needing them were skipped: {', '.join(missing)}",
+        )
+    ]
+
+
+def _reused_avp_exists(
+    spec: ast.Specification, index: _Index, books: corpus.Corpus
+) -> list[Finding]:
+    """Every re-used AVP is something the origin actually has.
+
+    Two outcomes, because "the origin never heard of this AVP" and "the origin
+    borrows it too" are different sizes of wrong. TS 29.283 cites `Feature-Id`
+    from TS 29.229, which has no such AVP — 29.229 defines `Feature-List-ID`,
+    and no dictionary anywhere carries a `Feature-Id`. TS 29.172 cites
+    `Service-Selection` from TS 29.272, which does carry it but as a re-used
+    AVP of RFC 5778's; the AVP is real and the citation names a middleman.
+    """
+    findings = []
+    for name, origin in sorted(index.reused.items()):
+        entry = books.resolve(origin, like=spec)
+        if entry is None:
+            continue
+        if name in _defined_in(entry) or name in _tabled_in(entry):
+            continue
+        theirs = _index(entry.spec).reused.get(name)
+        if theirs is not None:
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "reused-origin-indirect",
+                    f"{name} is listed as re-used from {origin}, which re-uses it"
+                    f" from {theirs} rather than defining it",
+                )
+            )
+            continue
+        findings.append(
+            Finding(
+                Severity.ERROR,
+                "reused-avp-not-in-origin",
+                f"{name} is listed as re-used from {origin}, but"
+                f" {entry.spec.specification} {entry.spec.version} neither"
+                f" defines, tabulates nor re-uses it",
+            )
+        )
+    return findings
+
+
+def _reprint_or_extension(
+    spec: ast.Specification, index: _Index, books: corpus.Corpus
+) -> list[Finding]:
+    """Decide what a local-and-re-used AVP is actually doing.
+
+    This is the answer the single-file `local-and-reused` note declines to
+    give. The one thing that is unambiguously wrong is disagreeing on the
+    *code*: an AVP is its `(vendor-id, code)`, so two codes are two AVPs and
+    one of the documents is mistaken. Everything else is reported as what it
+    is — identical, a superset, or neither — and left to a reader, because a
+    body that differs is a fact about two documents rather than a defect in
+    this one, and only the origin's editor knows which is current.
+    """
+    findings = []
+    for definition in sorted(index.definitions, key=lambda d: d.name):
+        origin = index.reused.get(definition.name)
+        if origin is None:
+            continue
+        entry = books.resolve(origin, like=spec)
+        if entry is None:
+            continue
+        theirs = _defined_in(entry).get(definition.name)
+        if theirs is None:
+            # The origin has it only as a table row, so there is no body to
+            # compare; `_reused_avp_exists` has already accepted it.
+            continue
+        where = definition.source.section
+        if definition.code != theirs.code:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "reused-code-conflict",
+                    f"{definition.name} is code {definition.code} here and"
+                    f" {theirs.code} in {origin} clause {theirs.source.section}",
+                    where,
+                )
+            )
+            continue
+        rule, message = _compare(definition, theirs, origin)
+        findings.append(Finding(Severity.NOTE, rule, message, where))
+    return findings
+
+
+def _members(definition: ast.GroupedAvp | ast.EnumeratedAvp) -> frozenset[str]:
+    """What a definition's body lists: member AVPs, or enumerated value names.
+    Comparing these compares the two documents' idea of the AVP's contents."""
+    if isinstance(definition, ast.GroupedAvp):
+        return frozenset(rule.name for rule in definition.avps)
+    return frozenset(
+        value.name for value in definition.values if isinstance(value, ast.EnumValue)
+    )
+
+
+def _compare(mine, theirs, origin: str) -> tuple[str, str]:
+    """The rule name and the finished message, as a pair."""
+    subject = f"{mine.name}'s body, against {origin}'s definition:"
+    if type(mine) is not type(theirs):
+        return "reused-body-differs", f"{subject} a different kind of AVP entirely"
+    ours, base = _members(mine), _members(theirs)
+    if ours == base:
+        return "reused-reprint", f"{subject} identical, so this re-prints it"
+    added = ", ".join(sorted(ours - base))
+    dropped = ", ".join(sorted(base - ours))
+    if base < ours:
+        return "reused-extension", f"{subject} extended, adding {added}"
+    if ours < base:
+        return "reused-body-differs", f"{subject} missing {dropped}"
+    return "reused-body-differs", f"{subject} adds {added}, missing {dropped}"
+
+
+def _reused_identities(
+    spec: ast.Specification, index: _Index, books: corpus.Corpus
+) -> list[Finding]:
+    """Two AVPs in one file claiming one `(vendor-id, code)`, re-used rows
+    included.
+
+    The single-file rule skips re-used rows on purpose: their vendor space is
+    the origin's to state, and TS 29.229's two 621s are 3GPP's and RFC 7683's.
+    Once the origins are readable that objection is gone, and the check can be
+    made over every row in the file rather than the local ones only.
+    """
+    holders: dict[AvpIdentity, list[str]] = defaultdict(list)
+    for definition in index.definitions:
+        holders[_identity(definition.code, definition.vendor_id)].append(
+            f"{definition.name} (clause {definition.source.section})"
+        )
+    for row in index.rows:
+        if row.code is None:
+            continue
+        origin = index.reused.get(row.name)
+        if origin is None:
+            identity = AvpIdentity(spec.vendor_id, row.code)
+        else:
+            entry = books.resolve(origin, like=spec)
+            if entry is None:
+                continue
+            identity = AvpIdentity(entry.spec.vendor_id, row.code)
+        claim = f"{row.name} (AVP table"
+        claim += f", re-used from {origin})" if origin else ")"
+        if any(name.startswith(f"{row.name} (") for name in holders[identity]):
+            continue
+        holders[identity].append(claim)
+
+    findings = []
+    for identity, names in sorted(holders.items(), key=lambda item: item[0].code):
+        if len(names) > 1:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "duplicate-identity",
+                    f"{identity} is claimed by {len(names)} AVPs: {', '.join(names)}",
+                )
+            )
+    return findings
+
+
+def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Finding]:
+    """Every finding for `spec`, single-file and cross-file together.
+
+    The single-file rules that a second document supersedes are dropped rather
+    than reported alongside their own answers: `local-and-reused` becomes
+    `reused-reprint` or `reused-definition-conflict`, and `duplicate-identity`
+    is re-run over re-used rows too. A row whose origin is missing from the
+    corpus keeps the single-file behaviour, which is why the superseded
+    findings are filtered by what actually resolved.
+    """
+    index = _index(spec)
+    resolved = {
+        origin
+        for origin in set(index.reused.values())
+        if books.resolve(origin, like=spec) is not None
+    }
+    superseded = {"local-and-reused", "duplicate-identity"}
+    findings = [
+        finding
+        for finding in lint(spec)
+        if finding.rule not in superseded
+        or (finding.rule == "local-and-reused" and _origin_of(finding) not in resolved)
+    ]
+    findings += [
+        *_unresolved_origins(spec, index, books),
+        *_reused_avp_exists(spec, index, books),
+        *_reprint_or_extension(spec, index, books),
+        *_reused_identities(spec, index, books),
+    ]
+    return _ordered(findings)
+
+
+def _origin_of(finding: Finding) -> str:
+    """The origin a `local-and-reused` note names, read back out of its own
+    message — the notes are built one per origin, so this stays exact."""
+    return finding.message.rsplit(" ", 1)[-1]

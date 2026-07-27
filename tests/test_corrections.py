@@ -1,3 +1,4 @@
+import dataclasses
 from pathlib import Path
 
 import pytest
@@ -462,8 +463,15 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
     for correction in declared:
-        matches = list(correction.target.find(spec))
-        assert len(matches) == 1, f"{correction.target.describe()} in {path.name}"
+        target = correction.target
+        if correction.field == "name":
+            # A correction that rewrites a name also rewrites what the selector
+            # matches on, so in the corrected file the node answers to the
+            # replacement. 29.172, 29.344 and 29.388 all fix a copied-in rule
+            # name this way.
+            target = dataclasses.replace(target, name=correction.replace)
+        matches = list(target.find(spec))
+        assert len(matches) == 1, f"{target.describe()} in {path.name}"
         assert getattr(matches[0], correction.field) == correction.replace
 
     if declared:

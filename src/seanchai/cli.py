@@ -177,21 +177,40 @@ def _correct(spec, directory: Path, required: bool):
     default=True,
     help="Report findings a single file cannot judge (default: report them).",
 )
-def lint(sources: tuple[Path, ...], notes: bool) -> None:
+@click.option(
+    "--corpus",
+    "corpus_paths",
+    multiple=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="Directory or file to resolve re-used AVPs against. Enables the"
+    " cross-file rules; repeatable.",
+)
+def lint(
+    sources: tuple[Path, ...], notes: bool, corpus_paths: tuple[Path, ...]
+) -> None:
     """Report structural inconsistencies in `.dad` files.
 
     Exits non-zero when any error is found; notes alone do not fail, because
     they are things a single file cannot decide rather than defects.
+
+    With `--corpus`, re-used AVPs are resolved against the other files it names
+    and the cross-file rules run too. An origin the corpus does not hold is
+    reported as a note and its rules are skipped, so a partial corpus is
+    useful rather than an error.
     """
+    from .corpus import Corpus
     from .dad import parser
-    from .linter import Severity
+    from .linter import Severity, lint_with_corpus
     from .linter import lint as lint_spec
 
     total_errors = 0
     with reported():
+        books = Corpus.load(corpus_paths) if corpus_paths else None
         for source in sources:
             spec = parser.parse(source.read_text(encoding="utf-8"))
-            findings = lint_spec(spec)
+            findings = (
+                lint_spec(spec) if books is None else lint_with_corpus(spec, books)
+            )
             if not notes:
                 findings = [f for f in findings if f.severity is Severity.ERROR]
             for finding in findings:
