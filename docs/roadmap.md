@@ -64,47 +64,35 @@ not prose.
    vendor extension and annotating it loses the annotation the first time they
    format.
 
-   How comments attach is the open question, not whether. A comment above a
-   section block has an obvious owner; one above a table row or an ABNF line
-   does too; one floating between blocks does not, and answering that badly
-   makes canonical form ambiguous. Worth settling before hand-authored files
-   exist rather than after, because it is much easier to add preservation than
-   to change where a comment is understood to belong.
+   How comments attach is settled as a proposal: **a comment belongs to the
+   node whose line follows it.** The grammar only has full-line `;;` comments,
+   and every non-comment line of a block maps one-to-one onto an AST node — a
+   directive, a rule line, a table row, an enum value — so the parser can
+   return `(spec, comments)` where `comments` is exactly the `Notes` mapping
+   `format_spec` already accepts, and `seanchai format` becomes
+   `format_spec(*parse_with_comments(text))` with almost no new formatter code.
+   Comments between blocks attach to the following section; comments in the
+   file header attach to the `Specification`; the one genuinely new piece is a
+   trailing bucket for comments after the last line of the file.
+
+   Anchoring by line offset within a section was considered and rejected:
+   offsets make comments drift when a section's line count changes, and they
+   attach to nothing when a correction rewrites the line they counted from.
+   Node anchoring survives both, because it is the same mechanism correction
+   notes already use.
 
 ## Linter
 
-Phase one is done — five single-file rules, described in
-[linter.md](linter.md).
+Phase one is done — the single-file rules are described in
+[linter.md](linter.md), the raw/corrected committed pair in
+[dad/README.md](../dad/README.md), and every finding the corpus still reports
+in [linter.md's standing-findings section](linter.md#standing-findings-and-why-each-one-stays),
+which is also where the decision not to build finding acknowledgement is
+recorded.
 
-The raw/corrected question is settled: the corpus commits both. The corrected
-file is what any real use consumes and what must lint clean; the raw file keeps
-saying what the document said, which is what makes a version upgrade a
-raw-vs-raw diff and lets the corrections be rot-checked offline. Corrections
-mark the lines they touch with a `;;` note citing their own declaration, so a
-corrected value is never anonymous.
-
-The `vendor-id-mismatch` rule landed after the other four, once `; Vendor-ID:`
-gave it something to compare against, and `WLAN-offloadability`'s missing
-vendor-id in TS 29.272 clause 7.3.181 is now a correction rather than a defect
-the corpus carries silently.
-
-Acknowledging a finding was considered and deliberately not built. The nine
-`local-and-reused` notes on 29.272 are the only standing noise, and the
-cross-document rules below resolve each of them into an answer — re-print or
-extension — instead of recording that a reviewer looked at it. Reopen this if
-they are still noise once the cross-file linter exists.
-
-**Which version an origin resolves to is settled.** `ReusedAvpRow.origin` names
-a specification and not a version, so a run that loads several files has to
-choose. The rule: **match the major version, and among candidates that match,
-take the newest.** A file whose own version is 18.x resolves `TS29.272` against
-the 18.x copies of 29.272 in the corpus, and if both 18.1.0 and 18.2.0 are
-present it reads 18.2.0. Nothing resolves across a major version, because a
-release boundary is where 3GPP is entitled to change what an AVP means, and
-silently reading a Rel-19 definition to check a Rel-18 document would report
-differences that are not errors. This is why the corpus is laid out one
-directory per release: the version rule and the directory structure say the
-same thing. It is recorded in [linter.md](linter.md#resolving-an-origin).
+**Which version an origin resolves to is settled**: match the major version,
+then take the newest — the rule, and the reasoning behind it, are recorded in
+[linter.md](linter.md#resolving-an-origin) and implemented in `corpus.py`.
 
 ### Phase two: reference resolution
 
@@ -119,7 +107,12 @@ re-declares them, because every Diameter application is assumed to have them.
    an explicit dependency/import directive in the format. The RFC extractor
    below (16) is what makes either one checkable, since neither means anything
    until a base `.dad` exists.
-6. **Decide whether corrections need insert and delete operations.** Once the
+6. **Extend corrections with insert, delete and supply operations.** The
+    design is written up as a labelled proposal in
+    [corrections.md](corrections.md#proposal-structural-edits--insert-delete-supply);
+    what follows is the evidence that forced it. This is the highest-priority
+    open item: the corrected corpus currently carries a defect with no
+    available repair, so `lint --corpus` cannot be made clean. Once the
     base AVPs are subtracted, the residue is small and interesting: two
     references in TS 29.272 (`Additional-Context-Identifier` in clause 7.3.35
     and `Re-synchronization-Info` in clause 7.3.11) and none in 29.229 or
@@ -133,10 +126,10 @@ re-declares them, because every Diameter application is assumed to have them.
     from TS 29.229, which has no such AVP and never did. The fix is to delete a
     row, which the layer cannot express either, so `lint --corpus` over the
     corrected corpus exits non-zero on a defect with no available repair. Both
-    operations raise the same design question — a correction that inserts or
-    deletes a node cannot state an `expect` the way a field replacement does,
-    and `expect` is what makes corrections fail loudly when a document is fixed
-    upstream. Whatever replaces it has to keep that property.
+    operations raise the same design question — how an edit that is not a field
+    replacement states an `expect`, so it still fails loudly when the document
+    is fixed upstream — and the proposal answers it per operation: delete
+    expects the full node, insert and supply expect absence.
 **The first resolvable tree is built.** TS 29.388, 29.344, 29.172, 29.283 and
 29.389 are committed alongside the original three, and `seanchai lint --corpus`
 resolves re-used AVPs across them — see [linter.md](linter.md#cross-file-rules).
@@ -153,34 +146,6 @@ In rough order of what each adds: 29.336 closes eight of 29.272's notes and
 both of 29.283's and 29.329's; 29.212 closes another; 29.173 and 29.061 are
 what 29.344 reaches for. 29.389 already depends on 29.388, so a two-hop chain
 is available to exercise as soon as anything needs one.
-
-## Validation against an independent oracle
-
-9. **Fetch Wireshark's Diameter dictionary through the downloader.** It is
-    the oracle the next item compares against, and it needs to arrive pinned
-    and reproducible like every other source. Not a git submodule: a submodule
-    is always a whole repository, and Wireshark's history is 1.2 GB for the
-    824 KB of `resources/protocols/diameter/` (32 files) that matter — the
-    dictionary is split across per-vendor XML entity files, so the whole
-    directory is needed, not just `dictionary.xml`. A catalog entry fetching
-    that directory at a pinned tag is the shape; it needs a third family
-    alongside `tgpp` and `rfc` in `specs.toml` and its own download function,
-    which is why it is an item rather than a config edit.
-
-10. **Cross-check extracted codes, vendor-ids and types against Wireshark's
-    Diameter `dictionary.xml`.** Only 29.329 is hand-verified today; this is
-    what would let the other extracted specs be trusted at scale. Optionally
-    borrow Wireshark's disambiguated names for AVPs whose names clash across
-    specs.
-
-    Use it as an oracle for values, not for the type vocabulary: its
-    `typedefn`s include `IPAddress`, `VendorId`, `AppId`, `OctetStringOrUTF8`
-    and `MIPRegistrationRequest`, which are dissector conveniences rather than
-    Diameter types. A comparison has to map those onto RFC 6733's fifteen
-    before it can report a disagreement — and mensonen/diameter collapses in
-    the opposite direction, folding `DiameterIdentity` and `DiameterURI` into
-    `OctetString`/`UTF8String`. Two consumers, two different reductions, which
-    is why `.dad` keeps every distinction the specification draws.
 
 ## More sources
 
@@ -233,6 +198,39 @@ individual specs.
     physical lines (`Acct-` / `Interim-Interval`).
 17. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).
+
+## Validation against an independent oracle
+
+This section deliberately sits after the RFC extractor (16): the extractor
+unblocks reference resolution (5), the base-protocol import rule, and most
+`origin-not-in-corpus` noise at once, while the oracle only adds confidence to
+values already extracted.
+
+9. **Fetch Wireshark's Diameter dictionary through the downloader.** It is
+    the oracle the next item compares against, and it needs to arrive pinned
+    and reproducible like every other source. Not a git submodule: a submodule
+    is always a whole repository, and Wireshark's history is 1.2 GB for the
+    824 KB of `resources/protocols/diameter/` (32 files) that matter — the
+    dictionary is split across per-vendor XML entity files, so the whole
+    directory is needed, not just `dictionary.xml`. A catalog entry fetching
+    that directory at a pinned tag is the shape; it needs a third family
+    alongside `tgpp` and `rfc` in `specs.toml` and its own download function,
+    which is why it is an item rather than a config edit.
+
+10. **Cross-check extracted codes, vendor-ids and types against Wireshark's
+    Diameter `dictionary.xml`.** Only 29.329 is hand-verified today; this is
+    what would let the other extracted specs be trusted at scale. Optionally
+    borrow Wireshark's disambiguated names for AVPs whose names clash across
+    specs.
+
+    Use it as an oracle for values, not for the type vocabulary: its
+    `typedefn`s include `IPAddress`, `VendorId`, `AppId`, `OctetStringOrUTF8`
+    and `MIPRegistrationRequest`, which are dissector conveniences rather than
+    Diameter types. A comparison has to map those onto RFC 6733's fifteen
+    before it can report a disagreement — and mensonen/diameter collapses in
+    the opposite direction, folding `DiameterIdentity` and `DiameterURI` into
+    `OctetString`/`UTF8String`. Two consumers, two different reductions, which
+    is why `.dad` keeps every distinction the specification draws.
 
 ## Downstream consumers
 
@@ -334,3 +332,18 @@ format becomes a short script over a reviewed corpus.
     stale `manifest.json` behind, so no single artifact is corrupted — but a
     run that fails halfway still leaves a corpus where some specs are the new
     version and some are the old one. Only staging the whole thing fixes that.
+25. Factor the shared table-walk scaffolding out of `_extract_avp_table` and
+    `_extract_reused_table` in `tgpp_docx.py` — both hand-roll the same
+    label-row detection, width check and column/position zip. Worth doing as
+    part of, or just before, 29.230's registry-table path (14), which would
+    otherwise become a third copy.
+26. Formatter notes and correction edits are keyed by `id(node)`, which works
+    because the tree outlives every use but is an invariant nothing enforces —
+    a caller that let the original tree be collected between `apply()` and
+    `format_spec()` could see ids reused. Keying both by tree *path* instead
+    would make the contract explicit; the same mechanism is what comment
+    preservation (2) wants, so do them together.
+27. `test_formats_every_section_and_optional_field_canonically` pins the
+    canonical layout with space-counted string literals inside assertions. One
+    committed golden `.dad` fixture compared whole would say the same thing and
+    be reviewable as a file.

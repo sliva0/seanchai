@@ -56,12 +56,7 @@ Three things this depends on, and which therefore must not regress:
 
 ## Validation
 
-- Build patched `.dad` sets around the latest release with published PDFs
-  (Rel-19 at the time of writing). The tooling itself stays version-agnostic.
-- Cross-check extracted codes, vendor-ids and types against Wireshark's
-  Diameter `dictionary.xml` as an independent oracle. Wireshark's disambiguated
-  names for AVPs that clash across specs may be worth borrowing too. *(Planned.)*
-- The first downstream consumers should be **validators** for existing
-  hand-written dictionaries — they deliver value before any generator is
-  adopted. Generators for implementations' native dictionary formats come
-  after. *(Planned.)*
+Build patched `.dad` sets around the latest release with published PDFs
+(Rel-19 at the time of writing); the tooling itself stays version-agnostic.
+The planned validation work — the Wireshark oracle and dictionary validators
+as the first downstream consumers — lives in [roadmap.md](roadmap.md).

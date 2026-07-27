@@ -466,7 +466,7 @@ def _extract_avp_table(
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
-    columns: tuple[ast.Column, ...] | None = None
+    columns: tuple[ast.AvpColumn, ...] | None = None
     positions: list[int] = []
     width = 0
     for row in table.rows:
@@ -584,9 +584,9 @@ _REUSED_TABLE_COLUMNS = {
 
 def _extract_reused_table(
     table: _Table, warnings: list[str]
-) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedTableColumn, ...]]:
+) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedColumn, ...]]:
     rows = []
-    columns: tuple[ast.ReusedTableColumn, ...] | None = None
+    columns: tuple[ast.ReusedColumn, ...] | None = None
     positions: list[int] = []
     width = 0
     for row in table.rows:
@@ -670,7 +670,7 @@ class _ReusedTable:
     caption and its own clause, which is not necessarily the AVP table's."""
 
     rows: list[ast.ReusedAvpRow]
-    columns: tuple[ast.ReusedTableColumn, ...]
+    columns: tuple[ast.ReusedColumn, ...]
     label: str
     section: str
 
@@ -707,7 +707,7 @@ class _Resolved:
     messages: list[ast.Message]
     avp_table: ast.AvpTable
     reused: list[ast.ReusedAvpRow]
-    reused_columns: tuple[ast.ReusedTableColumn, ...]
+    reused_columns: tuple[ast.ReusedColumn, ...]
     reused_label: str
     reused_section: str
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]

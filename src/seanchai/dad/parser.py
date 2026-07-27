@@ -349,7 +349,7 @@ def _encrypt(cell: str, lineno: int) -> bool | None:
 
 
 def _avp_table_row(
-    columns: tuple[ast.Column, ...], cells: list[str], lineno: int
+    columns: tuple[ast.AvpColumn, ...], cells: list[str], lineno: int
 ) -> ast.AvpTableRow:
     name: str | None = None
     code: int | None = None
@@ -412,7 +412,7 @@ def _parse_avp_table(
 
 
 def _reused_row(
-    columns: tuple[ast.ReusedTableColumn, ...], cells: list[str], lineno: int
+    columns: tuple[ast.ReusedColumn, ...], cells: list[str], lineno: int
 ) -> ast.ReusedAvpRow:
     name: str | None = None
     origin: str | None = None

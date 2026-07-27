@@ -279,32 +279,14 @@ class ReusedColumn(enum.StrEnum):
     M_BIT = "M-bit"
 
 
-Column = AvpColumn
-ReusedTableColumn = ReusedColumn
-
-REUSED_COLUMNS: tuple[ReusedTableColumn, ...] = tuple(ReusedColumn)
+REUSED_COLUMNS: tuple[ReusedColumn, ...] = tuple(ReusedColumn)
 
 
-def _check_columns(columns: tuple[Column | ReusedTableColumn, ...]) -> None:
-    """`; Columns:` records which columns the source table had, and in which
-    order — not every column, only the ones this format models.
-
-    A source column with no modelled counterpart is dropped rather than carried
-    verbatim. In every table examined those are prose: "Comments",
-    "Description", "Comment", holding a sentence or a whole paragraph about how
-    the AVP is used. `.dad` carries definitions, not narrative, and
-    `; Section:` already points at the clause that holds the prose undamaged —
-    so quoting it into a table cell bought nothing a reader could not get
-    better from the specification.
-
-    That is a statement about what has turned up so far, not a rule that
-    unmodelled means unimportant. A source column carrying machine-readable
-    values — TS 29.212's "Acc. Type" (3GPP-EPS, 3GPP-GPRS, All) and
-    "Applicability" (CC/PC/Both plus feature names) are the standing examples —
-    is a reason to add a *modelled* column for it, with a name and a cell
-    grammar of its own. The extractor warns about any unmodelled column that is
-    not one of the known prose ones, which is how such a case gets noticed.
-    """
+def _check_columns(columns: tuple[AvpColumn | ReusedColumn, ...]) -> None:
+    """`; Columns:` records which of the source table's columns the format
+    models, in source order. Unmodelled source columns are dropped — why, and
+    when one deserves modelling instead, is covered in
+    docs/extractor.md#columns-the-format-does-not-model."""
     labels = [column.value for column in columns]
     if len(set(labels)) != len(labels):
         raise ValueError(f"duplicate column in {labels}")
@@ -348,7 +330,7 @@ class AvpTable(Node):
     type: Literal["AVP Table"] = "AVP Table"
     table: TableLabel
     source: SourceRef
-    columns: Annotated[tuple[Column, ...], Field(min_length=1)]
+    columns: Annotated[tuple[AvpColumn, ...], Field(min_length=1)]
     # A table section with no rows carries no information, and would mean the
     # extractor found a caption but lost its contents.
     rows: Annotated[tuple[AvpTableRow, ...], Field(min_length=1)]
@@ -420,9 +402,7 @@ class ReusedAvps(Node):
     type: Literal["Reused AVPs"] = "Reused AVPs"
     table: TableLabel
     source: SourceRef
-    columns: Annotated[tuple[ReusedTableColumn, ...], Field(min_length=1)] = (
-        REUSED_COLUMNS
-    )
+    columns: Annotated[tuple[ReusedColumn, ...], Field(min_length=1)] = REUSED_COLUMNS
     rows: Annotated[tuple[ReusedAvpRow, ...], Field(min_length=1)]
 
     @pydantic.model_validator(mode="after")

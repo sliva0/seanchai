@@ -1,20 +1,12 @@
 """A set of parsed `.dad` files, and the rules for resolving between them.
 
 A single file names the documents it borrows from but not the versions:
-`ReusedAvpRow.origin` is `TS29.272`, never `TS29.272 V18.6.0`. Something has to
-turn that into an actual file, and "whatever happens to be on disk" is not an
-answer — it makes a run's result depend on what was downloaded last.
-
-The rule this module implements: **match the major version, and among the
-candidates that match, take the newest.** A Rel-18 document resolves `TS29.272`
-against 18.x copies of 29.272 and, given both 18.1.0 and 18.2.0, reads 18.2.0.
-Nothing resolves across a major version, because a release boundary is exactly
-where 3GPP is entitled to change what an AVP means — checking a Rel-18 document
-against a Rel-19 definition would report differences that are not errors. The
-corpus is laid out one directory per release for the same reason.
-
-RFCs have no such axis: an RFC number identifies one immutable document, so
-`RFC6733` resolves to whatever the corpus has under that number.
+`ReusedAvpRow.origin` is `TS29.272`, never `TS29.272 V18.6.0`. The rule this
+module implements: **match the major version, and among the candidates that
+match, take the newest**; RFC numbers name immutable documents and resolve to
+whatever the corpus holds. The reasoning — why nothing resolves across a major
+version, and why the corpus layout mirrors the rule — is in
+docs/linter.md#resolving-an-origin.
 """
 
 from __future__ import annotations

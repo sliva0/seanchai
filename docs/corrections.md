@@ -214,6 +214,87 @@ source.
   is the real acceptance criterion for this layer — corrections are what take a
   specification from "parses" to "internally consistent".
 
+## Proposal: structural edits — insert, delete, supply
+
+**Status: proposal, not implemented.** This is the design for roadmap item 6.
+The field-replace layer above stays exactly as it is; these are new named
+operations beside it, in the same `CORRECTIONS` list, with the same
+declare-expect-fail-loudly contract.
+
+The driving cases are already in the corpus. TS 29.283's re-used table cites
+`Feature-Id` from TS 29.229, which has no such AVP — the fix is deleting a row,
+which field replacement cannot express, so `lint --corpus` exits non-zero on a
+defect with no available repair. TS 29.272 references
+`Additional-Context-Identifier` and `Re-synchronization-Info` without ever
+introducing them — the fix is inserting a row. And some enumerated AVPs state
+that their values are defined in a non-Diameter document entirely, so the only
+way they become machine-readable is a hand-notated section.
+
+The design question `expect` answers for replacement — "how does this edit fail
+loudly when the document is fixed upstream?" — has a per-operation answer:
+
+- **`Replace`** (today's `Correction`): expects the old field value. Fails when
+  upstream fixes the value.
+- **`Delete(target=<row selector>, expect=<the full node>, reason=...)`**:
+  expects the matched node to equal `expect` in every field, not just to exist.
+  Fails when upstream removes the row (no match) *or* changes it (a changed row
+  may no longer deserve deletion, and the declaration should be re-reviewed
+  either way).
+- **`Insert(into=<section selector>, node=<AST node>, after=<name | None>,
+  reason=...)`**: expects no node with the same key to be present — name for
+  table rows and enum values, `(name, origin)` for re-used rows. Fails when
+  upstream adds the definition itself. `after` addresses by identity, never by
+  index; `None` appends.
+- **`Supply(section=<full section node>, reason=...)`**: a whole hand-notated
+  section — the enumerated-AVP-with-external-values case. `reason` must cite
+  the external document and clause the values were transcribed from, since
+  that citation is the only provenance the corpus has.
+
+  This one has two shapes, and the extractor is part of the design. Where the
+  document does not even print a clause for the AVP, `Supply` creates the
+  section from nothing and expects none of that type and name to exist. But
+  the commoner case is a clause that *does* exist and says "the values are
+  defined in [other spec]" without printing any — the extractor should record
+  that fact rather than emit a body that is merely empty, with a body marker
+  in the `; RESERVED` family:
+
+  ```dad
+  Alert-Reason ::= < Enumerated AVP header: 1144 10415 >
+        ; EXTERNALLY-DEFINED
+  ```
+
+  An `; EXTERNALLY-DEFINED` marker keeps the faithful-record rule intact (the
+  document really does say the values live elsewhere, which is different from
+  defining none) and gives `Supply` a sharp `expect` for the fill case: the
+  section exists, is marked externally defined, and has no values of its own.
+  Either way the assertion flips to an error the day the document starts
+  printing the values itself, so the supplied copy fails instead of shadowing
+  them.
+
+All four use the same selector vocabulary; `Insert`/`Supply` need section-level
+selectors (`avp_table(label)`, `reused_table(label)`) that `find` does not have
+yet. Notation stays the same: nodes are written as the real pydantic AST types,
+so a supplied section is validated at declaration time like everything else.
+`; EXTERNALLY-DEFINED` is the one piece that is a format change rather than a
+corrections change — grammar, AST and both extractors — and lands with the
+usual format-instability licence from [grammar.md](grammar.md).
+
+Two consequences to hold onto in implementation:
+
+- The corrected file must keep marking what a human did. `Replace` notes stay
+  `;; corrected:`; inserted and supplied content should carry `;; supplied:`
+  (or `;; inserted:`) on *every* line it produced, so machine-extracted and
+  hand-notated definitions are never confusable in a diff.
+- `apply`'s rebuild is keyed by node identity, which works because every edit
+  so far maps an existing node to a replacement. Insert and supply create nodes
+  the input tree does not contain, so the rebuild needs an "extend this field
+  of this matched parent" edit kind — worth doing as its own small refactor
+  first.
+
+This deliberately does not add `move`, `split` or arbitrary tree surgery. The
+rule from the section below still holds: add a named operation when a real
+document forces it, with an `expect` contract designed at the same time.
+
 ## Deliberately out of scope
 
 Auto-generating a corrections file by diffing a hand-edited `.dad` against the

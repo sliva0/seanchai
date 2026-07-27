@@ -232,10 +232,9 @@ is no fourth AVP in 29.229 the row could plausibly have meant.
 
 So `lint --corpus` over the corrected corpus exits non-zero. That is the linter
 working, not a corpus that needs tidying, and it is the concrete case behind
-the roadmap item on insert and delete operations. The design question that item
-has to answer is that both operations break `expect`: a correction states the
-value it expects to find, which is what makes it fail loudly when a document is
-fixed upstream, and a deletion has no such value to state.
+the structural-edits design in
+[corrections.md](corrections.md#proposal-structural-edits--insert-delete-supply)
+(roadmap item 6), whose `Delete` operation is what will clear it.
 
 ### `Service-Selection` — deliberately not corrected
 

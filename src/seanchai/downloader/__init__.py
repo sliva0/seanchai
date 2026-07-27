@@ -6,7 +6,7 @@ RFCs are downloaded as canonical plain text from the RFC Editor. Official
 3GPP/ETSI PDF renditions can also be downloaded with ``--pdfs``.
 
 The curated specification catalog lives in ``specs.toml`` next to this package;
-downloads land in the repository's ``output/`` directory by default.
+the CLI downloads into the git-ignored ``specifications/`` directory by default.
 
 This package is a library: it returns records and raises `DownloadError`, and
 the `seanchai download` command owns the printing and the exit status. The

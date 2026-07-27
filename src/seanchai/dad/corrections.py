@@ -1,16 +1,11 @@
 """Output corrections: typed find/replace on a parsed `.dad` tree.
 
-The second of the two patch layers (see docs/corrections.md). Input
-patches fix source typos that would break extraction; corrections fix data that
-extracts and parses perfectly well but is *wrong* — an AVP code the spec's own
-table misprints, a clause reference pointing at the wrong section, an
-application id the header omits.
-
-The two layers are the same operation at different altitudes: input patches are
-find/replace on text, corrections are find/replace on typed fields. That is why
-`expect` is mandatory here as well. A correction that no longer matches has
-either been fixed upstream or been broken by a re-extraction, and both are
-events worth failing on rather than silently skipping.
+The second of the two patch layers — input patches fix source typos that would
+break extraction, corrections fix data that extracts and parses fine but is
+*wrong*. The framing and full semantics live in docs/corrections.md; the short
+version is that `expect` is mandatory, because a correction that no longer
+matches has either been fixed upstream or been broken by a re-extraction, and
+both are events worth failing on rather than silently skipping.
 
 Corrections are declared per specification, as data:
 
@@ -388,6 +383,7 @@ def apply(
     targets: dict[int, str] = {}  # node id -> the selector that reached it
     claimed: set[tuple[int, str]] = set()
     results = []
+    resolved_ids = []  # per result: the id its node had in the input tree
     for correction in corrections:
         node = _resolve(spec, correction)
         targets[id(node)] = correction.target.describe()
@@ -409,6 +405,7 @@ def apply(
                 new=correction.replace,
             )
         )
+        resolved_ids.append(id(node))
         edits[id(node)] = corrected
     applied: dict[int, int] = {}
     rebuilt_ids: dict[int, int] = {}
@@ -423,8 +420,8 @@ def apply(
                 f"{description}: the selected node appears more than once in the"
                 " tree; corrections address one place, not a shared object"
             )
-    for result in results:
-        result.node_id = rebuilt_ids.get(id(_resolve(spec, result.correction)), 0)
+    for result, resolved_id in zip(results, resolved_ids, strict=True):
+        result.node_id = rebuilt_ids.get(resolved_id, 0)
     return rebuilt, results
 
 

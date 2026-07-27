@@ -122,22 +122,15 @@ never recover what the extractor threw away.
 - **Corrections**: the second patch layer, for data that parses fine but is
   semantically wrong. See
   [docs/corrections.md](docs/corrections.md).
-- **Linter**, in two layers. Single-file rules — duplicate definitions and enum
-  values, duplicate `(vendor-id, code)` identities, one command name with two
-  codes, table-vs-definition and vendor-id disagreements. Cross-file rules,
-  with `--corpus` — resolving each re-used AVP against the document it is
-  borrowed from, to say whether a local copy re-prints or extends it, and to
-  catch citations the origin cannot support. See
-  [docs/linter.md](docs/linter.md).
-- **`; Vendor-ID:`**: every file states the vendor-id its own AVPs are defined
-  in — the half of an AVP's identity nothing else in the file supplies. The
-  extractor writes 10415 for 3GPP documents; an RFC extractor will write 0, and
-  a hand-authored vendor extension states its own.
+- **Linter**, in two layers: single-file rules for what one document gets
+  wrong about itself, and cross-file rules (`--corpus`) that resolve each
+  re-used AVP against the document it is borrowed from. Every file states its
+  own `; Vendor-ID:` — the half of an AVP's `(vendor-id, code)` identity
+  nothing else in the file supplies. See [docs/linter.md](docs/linter.md).
 - **CLI**: `seanchai extract` (docx → `.dad`), `seanchai correct` (raw `.dad` →
   corrected), `seanchai lint` (report inconsistencies), `seanchai download`
-  (fetch the sources).
-- **Downloader**: `uv run seanchai download`, with the curated catalog in
-  `src/seanchai/downloader/specs.toml`.
+  (fetch the sources, from the curated catalog in
+  `src/seanchai/downloader/specs.toml`).
 - **Extracted specs**: eight, committed raw and corrected under
   `dad/3gpp/rel-18/` — TS 29.329 (hand-verified reference), 29.229, 29.272,
   29.172, 29.283, 29.344, 29.388 and 29.389. The corrected files carry no
@@ -145,25 +138,12 @@ never recover what the extractor threw away.
 
 ### Planned
 
-- Unresolved AVP references, once a base-protocol `.dad` exists: almost every
-  name a message body cites without a table row is RFC 6733's.
-- Cross-checking extracted codes/vendors/types against Wireshark's Diameter
-  `dictionary.xml` as an independent oracle.
-- Extraction of the remaining 3GPP Diameter specs, and an RFC (plain-text)
-  extractor for the base protocol and IETF applications.
-- A consumer model over a parsed corpus, separate from the `.dad` AST, with
-  cross-references resolved and a thin set of pre-built queries — every message
-  in a spec, every grouped AVP, every plain AVP, look up an AVP by name or
-  `(vendor-id, code)`. The AST stays public underneath for anything it does not
-  cover.
-- Downstream consumers in both directions: validating an existing hand-written
-  dictionary against the corpus, and generating one in an implementation's
-  native format. Validation comes first — it needs no opinion about output
-  syntax.
-
-Open work is tracked in [docs/roadmap.md](docs/roadmap.md). Completed review
-rounds and the reasoning behind them are kept in
-[docs/history/](docs/history/).
+Open work is tracked in [docs/roadmap.md](docs/roadmap.md): structural
+correction operations, the RFC extractor and the remaining 3GPP specs,
+cross-checking against Wireshark's dictionary as an independent oracle, and —
+the point of the whole thing — a consumer model with resolved cross-references,
+feeding dictionary validators first and generators second. Completed review
+rounds and the reasoning behind them are kept in [docs/history/](docs/history/).
 
 ## Repository layout
 
