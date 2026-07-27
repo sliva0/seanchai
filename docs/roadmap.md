@@ -140,8 +140,8 @@ re-declares them, because every Diameter application is assumed to have them.
     locally defined there — plus `User-Name`, `OC-Supported-Features`,
     `OC-OLR`, `DRMP` and `Load` from RFCs 6733, 7683, 7944 and 8583. So one
     added specification closes every 3GPP edge, and the residue is exactly the
-    base-protocol problem above. 29.388 is a small spec and currently fails on
-    the missing-caption class (12).
+    base-protocol problem above. 29.388 is a small spec and now extracts
+    cleanly, so nothing stands between here and the tree but committing it.
 
     Afterwards, in rough order of what each adds: 29.344 (PC4a) reaches 29.173,
     which extracts today, and 29.061, which does not; 29.330 (Sc) needs 29.336;
@@ -181,9 +181,10 @@ re-declares them, because every Diameter application is assumed to have them.
 Run the extractor over the remaining 3GPP Diameter specs. Expect new document
 quirks; keep the acceptance loop from [workflow.md](workflow.md). Running it
 over the whole downloaded corpus is cheap and says where the work is: of the 34
-specifications the downloader fetches, five extract cleanly today — 29.173,
-29.229, 29.272, 29.329 and 29.337. The rest fail in a handful of classes, and
-the classes matter more than the individual specs.
+specifications the downloader fetches, ten extract cleanly today — 29.172,
+29.173, 29.229, 29.272, 29.283, 29.329, 29.337, 29.344, 29.388 and 29.389. The
+rest fail in a handful of classes, and the classes matter more than the
+individual specs.
 
 11. **Nine specifications never reach the extractor at all**, because 3GPP
     ships them as legacy binary `.doc` rather than `.docx`: 29.201, 29.215,
@@ -191,19 +192,22 @@ the classes matter more than the individual specs.
     32.299, which 29.272 and 29.389 both re-use from, and 29.368, which 29.337
     does. Reading that format, or finding a source that offers those nine as
     `.docx`, is a prerequisite the corpus does not currently admit to having.
-12. **Six stop at "AVP table without a caption"**: 29.172, 29.283, 29.330,
-    29.344, 29.388 and 29.389. This is the highest-value single fix, because it
-    is what stands between the corpus and the first cross-file linter tree (8).
 13. **Four cannot find the spec number on the cover page**: 29.061, 29.212,
     29.213 and 29.214.
-14. **Four report no AVP table, in three different senses.** For 29.228 and
+14. **Five report no AVP table, in four different senses.** For 29.228 and
     29.328 the extractor is right and the assumption is wrong: those
     specifications hold the Cx and Sh *messages* while 29.229 and 29.329 hold
     their AVPs, so a message-only document is a shape the extractor should
-    model rather than reject. 29.230's registry tables need their own path —
-    they lack the "AVP Flag rules" header the current table dispatch keys on.
-    29.305 is unexamined. Related, and also a shape assumption: 29.273 has a
-    command section with no ABNF.
+    model rather than reject. 29.330 is the same shape arrived at differently:
+    its table 6.3.1-1 exists but holds a header row and one blank row, because
+    the Sc interface defines no AVPs of its own. It currently fails the AST's
+    "tables are non-empty" invariant, which should stay — an empty table
+    otherwise means the extractor found a caption and lost the contents — so
+    the fix is to drop an all-blank table and then handle the message-only
+    document it leaves. 29.230's registry tables need their own path — they
+    lack the "AVP Flag rules" header the current table dispatch keys on. 29.305
+    is unexamined. Related, and also a shape assumption: 29.273 has a command
+    section with no ABNF.
 15. **Five trip deliberate strictness on a single cell** — a space inside a
     name cell in 29.336 and 29.338, `M. V` for flags in 29.345, and a
     misspelled data type in 29.109 ("OctedString") and 29.128 ("OctetSstring").

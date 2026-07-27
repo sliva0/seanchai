@@ -84,5 +84,45 @@ def test_extract_turns_an_avp_table_note_into_a_reused_row(
     assert ast.ReusedAvpRow(name="Noted-AVP", origin="RFC6733") in reused.rows
 
 
+@pytest.mark.parametrize(
+    "label",
+    ["6.3.1/1", "6.3.1-1", "B.1.1", "9A.2.1.1.1/1", "2a.1.1.1"],
+    ids=["slash", "hyphen", "annex", "upper-letter", "lower-letter"],
+)
+def test_extract_accepts_every_table_numbering_style_3gpp_uses(
+    tmp_path, synthetic_spec_docx, label
+):
+    # 3GPP numbers tables at least five ways and the corpus contains all of
+    # them: the slash form is 29.229's and 29.272's, the hyphen form is what
+    # 29.172, 29.283, 29.388 and 29.389 use, and the rest turn up in annexes.
+    # A caption the extractor does not recognise is not a cosmetic loss — the
+    # table it introduces is rejected outright for having no caption.
+    renumbered = tmp_path / "caption.docx"
+    document = docx.Document(synthetic_spec_docx)
+    _paragraph(
+        document, "Table 6.3.1: AVP definitions"
+    ).text = f"Table {label}: AVP definitions"
+    document.save(renumbered)
+
+    spec = tgpp_docx.extract(renumbered)
+
+    table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
+    assert table.table == label
+
+
+def test_extract_rejects_an_avp_table_whose_caption_it_cannot_read(
+    tmp_path, synthetic_spec_docx
+):
+    """The caption is where `; Table:` comes from, and a table with no label a
+    reader can look up is worse than no extraction at all."""
+    uncaptioned = tmp_path / "uncaptioned.docx"
+    document = docx.Document(synthetic_spec_docx)
+    _paragraph(document, "Table 6.3.1: AVP definitions").text = "Table  : definitions"
+    document.save(uncaptioned)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="AVP table without a caption"):
+        tgpp_docx.extract(uncaptioned)
+
+
 def test_patch_file_name_matches_the_dad_spec_reference():
     assert tgpp_docx.patch_file_name("3GPP TS 29.272") == "TS29.272.toml"

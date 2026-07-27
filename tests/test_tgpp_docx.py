@@ -107,6 +107,10 @@ def test_extract_requires_cover_metadata_and_an_avp_table(tmp_path):
     [
         ("Defined by 3GPP TS 29.336 clause 6", "TS29.336"),
         ("See IETF RFC 6733", "RFC6733"),
+        # The publisher prefix is conventional, not reliable: 29.344 and 29.388
+        # write their From cells with the bibliography number instead.
+        ("TS 29.272 [10]", "TS29.272"),
+        ("RFC 6733 [5]", "RFC6733"),
     ],
 )
 def test_origin_normalizes_supported_references(reference, expected):

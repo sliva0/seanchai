@@ -103,6 +103,20 @@ definition the extractor threw away.
 - Enum values are classified by content, not by paragraph
   style: the usual convention is value=`B1`/description=`B2`, but human-written
   specs invert it.
+- A table caption's *label* is matched as a general dotted token rather than as
+  a numbering scheme. 3GPP has no single one: `Table 7.3.1/1` in 29.229 and
+  29.272, `Table 6.3.1-1` in 29.172, 29.283, 29.388 and 29.389, `Table B.1.1`
+  in annexes, and clause components carrying a letter in either case (`9A.2.1`,
+  `2a.1.1.1`). Across the Rel-18 corpus a pattern written for the slash form
+  alone misses 208 of 500 captions. The label reaches `; Table:` and nothing
+  parses it further, so recognising *that* a paragraph is a caption is the
+  whole job — and getting it wrong is not cosmetic, because a table whose
+  caption went unrecognised is rejected for having none.
+- The publisher prefix on a re-used table's origin reference is optional.
+  "3GPP TS 29.336" and "IETF RFC 6733" are the convention, but From cells are
+  hand-written and 29.344 and 29.388 both spell it `TS 29.272 [10]` — the
+  document's own bibliography number, no publisher. The spec number identifies
+  the origin; the prefix is decoration.
 
 ## Input patches
 

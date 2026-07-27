@@ -72,7 +72,17 @@ _ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
 _RESERVED_NOTE_RE = re.compile(
     r"[Vv]alues? (?P<first>\d+)(?:\s*(?:-|to)\s*(?P<last>\d+))?\s+(?:is|are) reserved"
 )
-_TABLE_CAPTION_RE = re.compile(r"^Table (?P<label>[\d.]+(?:/\d+)?[A-Z]?):")
+# 3GPP numbers its tables in at least five styles, and the corpus contains all
+# of them: "Table 7.3.1/1" (29.229, 29.272, 29.329), "Table 6.3.1-1" (29.172,
+# 29.283, 29.388, 29.389), "Table B.1.1" in annexes, and clause components that
+# carry a letter, upper ("9A.2.1") or lower ("2a.1.1.1"). The label is inline
+# text that only ever reaches `; Table:`, never anything that parses it, so
+# this pattern's job is to recognise *that* a paragraph is a caption rather
+# than to encode a numbering scheme — hence a general dotted token instead of a
+# branch per style.
+_TABLE_CAPTION_RE = re.compile(
+    r"^Table (?P<label>[A-Za-z0-9]+(?:[.\-/][A-Za-z0-9]+)*):"
+)
 _NOTE_REF_RE = re.compile(r"\s*NOTE\s*(?P<number>\d+)\s*")
 _NOTE_RFC_RE = re.compile(
     r"^NOTE\s*(?P<number>\d+):\s*The values? of th(?:is|ese) attributes? "
@@ -84,8 +94,13 @@ _DOCX_COVER_RE = re.compile(
 _PDF_COVER_RE = re.compile(
     r"3GPP (?P<spec>TS \d{2}\.\d{3}) version (?P<version>\d+(?:\.\d+)*)"
 )
-_ORIGIN_TS_RE = re.compile(r"3GPP\s+TS\s+(?P<number>\d{2}\.\d{3})")
-_ORIGIN_RFC_RE = re.compile(r"IETF\s+RFC\s+(?P<number>\d+)")
+# The "3GPP" and "IETF" prefixes are conventional, not reliable: a re-used
+# table's From cell is written by hand and 29.344 and 29.388 both spell it
+# "TS 29.272 [10]", with the document's own bibliography number and no
+# publisher. The number is what identifies the origin, so that is what these
+# require.
+_ORIGIN_TS_RE = re.compile(r"TS\s+(?P<number>\d{2}\.\d{3})")
+_ORIGIN_RFC_RE = re.compile(r"RFC\s+(?P<number>\d+)")
 
 # Every AVP a 3GPP specification defines is in 3GPP's vendor space. That is a
 # fact about the publisher, not about any one document, so this extractor
