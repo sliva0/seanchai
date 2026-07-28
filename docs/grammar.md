@@ -66,13 +66,20 @@ A file is a header block followed by one or more section blocks. Blocks are
 separated by blank lines; a block is a run of consecutive non-blank lines. The
 file ends with exactly one newline.
 
-Free-text comment lines begin with `;;` and may appear anywhere. They are
-discarded on parse and never written back, so they do not survive a round-trip
-and must not carry meaning.
+Free-text comments begin with `;;` and may appear anywhere: standing alone as
+a whole line, or ending one — everything from the first `;;` on a line to the
+end of the line is comment. They are discarded on parse and never written
+back, so they do not survive a round-trip and must not carry meaning.
 
 ```abnf
-comment       = ";;" *(%x20-10FFFF) NL
+comment       = ";;" *(%x20-10FFFF)
+; a comment fills the rest of any line, or a whole line of its own
 ```
+
+Two consequences keep this unambiguous. A line left empty by removing its
+comment is skipped entirely — it does not separate blocks the way a genuinely
+blank line does. And no inline value may contain `;;`: the AST rejects it,
+because a value the formatter wrote out would come back different.
 
 Anything else beginning with a single `;` in a defined position is a
 **directive**, and directives are grammar: a malformed one is an error, never

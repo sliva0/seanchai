@@ -414,6 +414,143 @@ def test_the_reused_row_selector_reaches_a_reused_avps_row():
     assert results[0].node == "re-used AVPs row 'Load'"
 
 
+def _with_reused(spec: ast.Specification) -> ast.Specification:
+    reused = ast.ReusedAvps(
+        table="6.4",
+        source=ast.SourceRef(section="6.4"),
+        rows=(
+            ast.ReusedAvpRow(name="Load", origin="RFC8583"),
+            ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229"),
+        ),
+    )
+    return spec.model_copy(update={"sections": (*spec.sections, reused)})
+
+
+def _delete(target, expect):
+    return corrections.Delete(target=target, expect=expect, reason="test")
+
+
+def test_a_delete_removes_the_node_and_reports_the_parent_it_left():
+    spec = _with_reused(_spec())
+    doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
+
+    corrected, (result,) = corrections.apply(
+        spec, [_delete(corrections.reused_row("Feature-Id"), doomed)]
+    )
+
+    table = corrected.sections[3]
+    assert isinstance(table, ast.ReusedAvps)
+    assert [row.name for row in table.rows] == ["Load"]
+    assert corrected.sections[:3] == spec.sections[:3]
+    assert result.node == "re-used AVPs row 'Feature-Id'"
+    # The deleted row produces no lines, so the note anchor is the parent
+    # section in the rebuilt tree.
+    assert result.node_id == id(table)
+
+
+def test_a_delete_whose_expect_differs_reports_the_changed_fields():
+    with pytest.raises(corrections.CorrectionError, match=r"has changed.*origin"):
+        corrections.apply(
+            _with_reused(_spec()),
+            [
+                _delete(
+                    corrections.reused_row("Feature-Id"),
+                    ast.ReusedAvpRow(name="Feature-Id", origin="TS29.999"),
+                )
+            ],
+        )
+
+
+def test_a_delete_whose_expect_is_the_wrong_kind_of_node_is_an_error():
+    with pytest.raises(corrections.CorrectionError, match="expected a AvpTableRow"):
+        corrections.apply(
+            _with_reused(_spec()),
+            [
+                _delete(
+                    corrections.reused_row("Feature-Id"),
+                    ast.AvpTableRow(name="Feature-Id"),
+                )
+            ],
+        )
+
+
+def test_deleting_and_correcting_the_same_node_is_refused():
+    spec = _with_reused(_spec())
+    doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
+    edits = [
+        _correction(
+            corrections.reused_row("Feature-Id"), "origin", "TS29.229", "TS29.999"
+        ),
+        _delete(corrections.reused_row("Feature-Id"), doomed),
+    ]
+
+    for ordering in (edits, list(reversed(edits))):
+        with pytest.raises(
+            corrections.CorrectionError, match="both corrected and deleted"
+        ):
+            corrections.apply(spec, ordering)
+
+
+def test_deleting_the_same_node_twice_is_refused():
+    doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
+    delete = _delete(corrections.reused_row("Feature-Id"), doomed)
+
+    with pytest.raises(corrections.CorrectionError, match="deleted more than once"):
+        corrections.apply(_with_reused(_spec()), [delete, delete])
+
+
+def test_deleting_a_tables_last_row_fails_its_own_invariant():
+    # An empty table means the extractor found a caption and lost the
+    # contents; a deletion may not manufacture that state.
+    with pytest.raises(corrections.CorrectionError, match="not valid"):
+        corrections.apply(
+            _spec(),
+            [
+                _delete(
+                    corrections.table_row("Example-Mode"),
+                    ast.AvpTableRow(
+                        name="Example-Mode",
+                        code=1600,
+                        section="6.3.2",
+                        data_type=ast.DataType.ENUMERATED,
+                        may_encrypt=False,
+                    ),
+                )
+            ],
+        )
+
+
+def test_correcting_a_node_inside_a_deleted_subtree_is_refused():
+    spec = _spec()
+    message = _message(spec)
+
+    with pytest.raises(corrections.CorrectionError, match="another edit deleted"):
+        corrections.apply(
+            spec,
+            [
+                _delete(corrections.definition("Example-Request"), message),
+                _correction(
+                    corrections.avp_rule("Example-Request", "Session-Id"),
+                    "bold",
+                    False,
+                    True,
+                ),
+            ],
+        )
+
+
+def test_a_delete_records_where_it_was_declared():
+    delete = _delete(
+        corrections.reused_row("Feature-Id"),
+        ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229"),
+    )
+
+    path, _, line = delete.origin.rpartition(":")
+
+    assert path.endswith("test_corrections.py")
+    assert line.isdigit()
+
+
 def test_loading_finds_the_module_named_after_the_specification(tmp_path):
     (tmp_path / "TS29.999.py").write_text(
         "from seanchai.dad.corrections import Correction, table_row\n"
@@ -423,7 +560,9 @@ def test_loading_finds_the_module_named_after_the_specification(tmp_path):
 
     declared = corrections.load(tmp_path, "3GPP TS 29.999")
 
-    assert [c.replace for c in declared] == [1602]
+    assert [c.replace for c in declared if isinstance(c, corrections.Correction)] == [
+        1602
+    ]
     assert corrections.load(tmp_path, "3GPP TS 29.998") == []
     assert corrections.load(None, "3GPP TS 29.999") == []
 
@@ -464,6 +603,10 @@ def test_every_corrected_file_already_carries_its_corrections(path):
 
     for correction in declared:
         target = correction.target
+        if isinstance(correction, corrections.Delete):
+            # A deleted node's mark of success is its absence.
+            assert list(target.find(spec)) == [], f"{target.describe()} in {path.name}"
+            continue
         if correction.field == "name":
             # A correction that rewrites a name also rewrites what the selector
             # matches on, so in the corrected file the node answers to the
@@ -479,15 +622,18 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             corrections.apply(spec, declared)
 
 
-def _fields(spec: ast.Specification) -> dict[tuple, object]:
-    """Every leaf field of every node, keyed by its path through the tree."""
+def _fields(spec: ast.Specification) -> tuple[dict[tuple, object], dict[tuple, object]]:
+    """Every leaf field of every node, keyed by its structural path — indices
+    and field names only, so a corrected `name` moves a value rather than the
+    key — plus each node's human label for reporting."""
     flat: dict[tuple, object] = {}
+    labels: dict[tuple, object] = {}
 
     def walk(node, path):
         if isinstance(node, ast.Node):
-            key = getattr(node, "name", None) or getattr(node, "table", None)
+            labels[path] = getattr(node, "name", None) or getattr(node, "table", None)
             for field in type(node).model_fields:
-                walk(getattr(node, field), (*path, key, field))
+                walk(getattr(node, field), (*path, field))
         elif isinstance(node, tuple):
             for index, item in enumerate(node):
                 walk(item, (*path, index))
@@ -495,7 +641,7 @@ def _fields(spec: ast.Specification) -> dict[tuple, object]:
             flat[path] = node
 
     walk(spec, ())
-    return flat
+    return flat, labels
 
 
 def test_the_ts29272_corrections_change_exactly_the_declared_fields():
@@ -503,9 +649,9 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
 
     The rot check above reads its expectation out of the correction it is
     testing, so a wrong `expect`/`replace`/reason changed together stays green.
-    This one names the outcome — four application ids, one AVP code and one
-    missing vendor-id, nothing else — so changing what the corrections do has
-    to be a deliberate edit here too.
+    This one names the outcome — four application ids, one AVP code, one
+    missing vendor-id and two respelled names, nothing else — so changing what
+    the corrections do has to be a deliberate edit here too.
     """
     raw = _ROOT / "dad" / "3gpp" / "rel-18" / "29272-i60.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
@@ -513,15 +659,19 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
 
     corrected, _ = corrections.apply(spec, declared)
 
-    before, after = _fields(spec), _fields(corrected)
+    before, labels = _fields(spec)
+    after, _ = _fields(corrected)
     changed = {
         path: (before[path], after[path])
         for path in before
         if before[path] != after[path]
     }
-    assert set(before) == set(after)  # no node added, removed or renamed
-    # path[-2] is the node's own name, path[-1] the field.
-    assert {(*path[-2:], *value) for path, value in changed.items()} == {
+    assert set(before) == set(after)  # no node added or removed
+    # path[:-1] is the node's own path, path[-1] the field; labels come from
+    # the raw tree, so a renamed node reports under its misprinted name.
+    assert {
+        (labels[path[:-1]], path[-1], *value) for path, value in changed.items()
+    } == {
         (name, "application_id", None, 16777308)
         for name in (
             "Update-VCSG-Location-Request",
@@ -535,6 +685,18 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
         # far as this layer.
         ("Area-Scope", "code", 1623, 1624),
         ("WLAN-offloadability", "vendor_id", None, 10415),
+        (
+            "Additional-Context-ID",
+            "name",
+            "Additional-Context-ID",
+            "Additional-Context-Identifier",
+        ),
+        (
+            "Re-synchronization-Info",
+            "name",
+            "Re-synchronization-Info",
+            "Re-Synchronization-Info",
+        ),
     }
 
 
@@ -635,7 +797,7 @@ def test_origin_is_the_declaration_site_not_this_module():
     a fixed depth."""
     declared = corrections.load(_ROOT / "edits" / "corrections", "3GPP TS 29.272")
 
-    assert all(c.origin.startswith("edits/corrections/TS29.272.py:") for c in declared)
+    assert all(c.origin.startswith("TS29.272.py:") for c in declared)
 
 
 def test_apply_reports_the_corrected_node_in_the_returned_tree():

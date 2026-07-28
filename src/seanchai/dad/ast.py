@@ -30,8 +30,23 @@ EnumValueName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
 # accepted: an embedded newline produces a file that does not parse back — and
 # in a header value can inject another directive — while empty or
 # space-padded text is written out as a line the parser then reads back
-# differently, or rejects as trailing whitespace.
-InlineText = Annotated[str, Field(pattern=r"^\S([^\r\n]*\S)?$")]
+# differently, or rejects as trailing whitespace. `;;` is excluded for the
+# same reason: it starts a trailing comment, so everything from it onward
+# would be discarded on the way back in. (A validator rather than a lookahead
+# in the pattern — pydantic's regex engine supports no lookaround.)
+
+
+def _no_comment_start(value: str) -> str:
+    if ";;" in value:
+        raise ValueError("';;' starts a comment and cannot appear in a value")
+    return value
+
+
+InlineText = Annotated[
+    str,
+    Field(pattern=r"^\S([^\r\n]*\S)?$"),
+    pydantic.AfterValidator(_no_comment_start),
+]
 
 # Single-token reference to a defining document: "TS29.336", "RFC7683".
 SPEC_REF_PATTERN = r"^(TS\d{2}\.\d{3}|RFC\d+)$"

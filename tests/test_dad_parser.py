@@ -28,6 +28,28 @@ def test_comments_are_ignored_without_changing_reported_line_numbers():
     assert exc_info.value.lineno == 7
 
 
+def test_trailing_comments_are_stripped_from_any_kind_of_line():
+    plain = _dad(
+        "; Type: Enumerated AVP",
+        "; Name: Mode",
+        "; Section: 6.3.2",
+        "Mode ::= < Enumerated AVP header: 702 10415 >",
+        "        Off = 0 ; stays off",
+        "        On  = 1",
+    )
+    commented = _dad(
+        "; Type: Enumerated AVP ;; even a directive line",
+        "; Name: Mode",
+        "; Section: 6.3.2",
+        "Mode ::= < Enumerated AVP header: 702 10415 > ;; corrected: code",
+        "        Off = 0 ; stays off ;; the description ends before the comment",
+        "   ;; a comment-only line does not separate blocks",
+        "        On  = 1 ;; note",
+    )
+
+    assert parser.parse(commented) == parser.parse(plain)
+
+
 def test_parses_message_header_and_avp_rule_variants():
     spec = parser.parse(
         _dad(

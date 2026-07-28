@@ -567,12 +567,11 @@
       * [ Route-Record ]
 
 
-;; corrected: application_id None -> 16777308 [edits/corrections/TS29.272.py:13]
 ; Type: Message
 ; Name: Update-VCSG-Location-Request, UVR
 ; Section: 7.2.21
 ; Page: 84
-<Update-VCSG-Location-Request> ::= < Diameter Header: 8388638, REQ, PXY, 16777308 >
+<Update-VCSG-Location-Request> ::= < Diameter Header: 8388638, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -591,12 +590,11 @@
       * [ Route-Record ]
 
 
-;; corrected: application_id None -> 16777308 [edits/corrections/TS29.272.py:13]
 ; Type: Message
 ; Name: Update-VCSG-Location-Answer, UVA
 ; Section: 7.2.22
 ; Page: 84
-<Update-VCSG-Location-Answer> ::= < Diameter Header: 8388638, PXY, 16777308 >
+<Update-VCSG-Location-Answer> ::= < Diameter Header: 8388638, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -615,12 +613,11 @@
       * [ Route-Record ]
 
 
-;; corrected: application_id None -> 16777308 [edits/corrections/TS29.272.py:13]
 ; Type: Message
 ; Name: Cancel-VCSG-Location-Request, CVR
 ; Section: 7.2.23
 ; Page: 84
-<Cancel-VCSG-Location-Request> ::= < Diameter Header: 8388642, REQ, PXY, 16777308 >
+<Cancel-VCSG-Location-Request> ::= < Diameter Header: 8388642, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -637,12 +634,11 @@
       * [ Route-Record ]
 
 
-;; corrected: application_id None -> 16777308 [edits/corrections/TS29.272.py:13]
 ; Type: Message
 ; Name: Cancel-VCSG-Location-Answer, CVA
 ; Section: 7.2.24
 ; Page: 85
-<Cancel-VCSG-Location-Answer> ::= < Diameter Header: 8388642, PXY, 16777308 >
+<Cancel-VCSG-Location-Answer> ::= < Diameter Header: 8388642, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -836,7 +832,7 @@ AIR-Flags                                           1679   7.3.201   Unsigned32 
 UE-Usage-Type                                       1680   7.3.202   Unsigned32         V     -     -     M     No
 Non-IP-PDN-Type-Indicator                           1681   7.3.204   Enumerated         V     -     -     M     No
 Non-IP-Data-Delivery-Mechanism                      1682   7.3.205   Unsigned32         V     -     -     M     No
-Additional-Context-ID                               1683   7.3.206   Unsigned32         V     -     -     M     No
+Additional-Context-Identifier                       1683   7.3.206   Unsigned32         V     -     -     M     No ;; corrected: (TS29.272.py:54)
 SCEF-Realm                                          1684   7.3.207   DiameterIdentity   V     -     -     M     No
 Subscription-Data-Deletion                          1685   7.3.208   Grouped            V     -     -     M     No
 Preferred-Data-Mode                                 1686   7.3.209   Unsigned32         V     -     -     M     No
@@ -1032,7 +1028,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
 Requested-EUTRAN-Authentication-Info ::= < AVP header: 1408 10415 >
         [ Number-Of-Requested-Vectors ]
         [ Immediate-Response-Preferred ]
-        [ Re-synchronization-Info ]
+        [ Re-Synchronization-Info ] ;; corrected: (TS29.272.py:64)
       * [ AVP ]
 
 
@@ -1645,12 +1641,11 @@ MDT-Configuration ::= < AVP header: 1622 10415 >
 Job-Type ::= < Enumerated AVP header: 1623 10415 >
 
 
-;; corrected: code 1623 -> 1624 [edits/corrections/TS29.272.py:31]
 ; Type: Grouped AVP
 ; Name: Area-Scope
 ; Section: 7.3.138
 ; Page: 150
-Area-Scope ::= < AVP header: 1624 10415 >
+Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py:31)
       * [ Cell-Global-Identity ]
       * [ E-UTRAN-Cell-Global-Identity ]
       * [ Routing-Area-Identity ]
@@ -1800,12 +1795,11 @@ ProSe-Subscription-Data ::= < AVP header: 3701 10415 >
       * [ AVP ]
 
 
-;; corrected: vendor_id None -> 10415 [edits/corrections/TS29.272.py:40]
 ; Type: Grouped AVP
 ; Name: WLAN-offloadability
 ; Section: 7.3.181
 ; Page: 157
-WLAN-offloadability ::= < AVP header: 1667 10415 >
+WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py:40)
         [ WLAN-offloadability-EUTRAN ]
         [ WLAN-offloadability-UTRAN ]
       * [ AVP ]

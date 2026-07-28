@@ -21,15 +21,18 @@ Each specification is committed twice, and the pair is the point:
 - `29272-i60.raw.dad` — unedited extractor output, saying exactly what the
   document said, mistakes included.
 
-Every line a correction touched carries a `;;` note in the corrected file,
-naming the change and the declaration it came from, so a corrected value is
-never anonymous:
+Every line a correction touched carries a trailing `;;` note in the corrected
+file, citing the declaration in `edits/corrections/` it came from, so a
+corrected value is never anonymous. What changed and why live at the cited
+line — and the old value in the raw file — rather than being repeated in every
+note:
 
 ```dad
-;; corrected: code 1623 -> 1624 [edits/corrections/TS29.272.py:31]
-; Type: Grouped AVP
-; Name: Area-Scope
+Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py:31)
 ```
+
+A deleted node produces no line to mark, so its note stands alone before the
+section that lost it (`;; deleted: (TS29.283.py:7)` in 29.283).
 
 Keeping the raw file costs a second copy and buys three things that are
 awkward to get otherwise: a version upgrade can diff raw-vs-raw and see the

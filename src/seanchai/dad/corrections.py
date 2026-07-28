@@ -25,11 +25,16 @@ Applying is deterministic but deliberately not idempotent: feeding corrected
 output back in makes every `expect` fail, because treating an already-applied
 correction as a no-op would make "already corrected" indistinguishable from
 "fixed upstream".
+
+Beside field replacement there is one structural operation, `Delete`, for a
+node that should not exist at all; its `expect` is the whole node, checked
+field-for-field, so it too fails loudly the day upstream changes or removes
+what it deletes.
 """
 
 import importlib.util
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -234,6 +239,39 @@ class Correction:
             object.__setattr__(self, "origin", _declared_at())
 
 
+@dataclass(frozen=True)
+class Delete:
+    """Remove one node — a table row, an enum value, an AVP rule — entirely.
+
+    The one structural edit a document has forced so far: TS 29.283's re-used
+    table cites `Feature-Id` from TS 29.229, which has no such AVP and never
+    did, and no field replacement can make that row true.
+
+    `expect` is the full node, checked field-for-field, not merely "the
+    selector matched". A row that upstream has since changed may no longer
+    deserve deletion, and a row upstream has removed makes the declaration
+    stale; both fail loudly, which is the same contract `Correction.expect`
+    carries for a single field.
+    """
+
+    target: Selector
+    expect: ast.Node
+    reason: str
+    versions: str | None = None
+    origin: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.origin:
+            object.__setattr__(self, "origin", _declared_at())
+
+
+# What a corrections module may declare. `Insert` and `Supply` are designed
+# (docs/corrections.md) but deliberately unimplemented: the documents that
+# seemed to force them turned out to hold spelling mismatches a `Correction`
+# fixes, and a named operation is added when a real document forces it.
+Edit = Correction | Delete
+
+
 def _declared_at() -> str:
     """The first frame outside this module: the corrections file's own line.
 
@@ -246,26 +284,27 @@ def _declared_at() -> str:
         frame = frame.f_back
     if frame is None:  # pragma: no cover — only reachable if this module calls itself
         return ""
-    path = Path(frame.f_code.co_filename)
-    try:
-        path = path.relative_to(Path.cwd())
-    except ValueError:
-        path = Path(path.name)
-    return f"{path}:{frame.f_lineno}"
+    # The file name alone: correction modules always sit directly in the
+    # corrections directory, so a longer path adds length to every note in a
+    # corrected file without distinguishing anything.
+    return f"{Path(frame.f_code.co_filename).name}:{frame.f_lineno}"
 
 
 @dataclass
 class Result:
-    """What `apply()` did, one entry per correction, in declaration order."""
+    """What `apply()` did, one entry per edit, in declaration order."""
 
-    correction: Correction
+    correction: Edit
     node: str
+    # For a `Correction`, the field's values; for a `Delete`, the removed node
+    # and None.
     old: Any
     new: Any
-    # Identity of the corrected node *in the returned tree*, so a formatter can
-    # mark the lines it produced. Set after the rebuild, because rebuilding
-    # constructs new objects: the identity a correction was resolved by belongs
-    # to the input tree and is gone by then.
+    # Identity of the corrected node *in the returned tree* — for a `Delete`,
+    # of the parent that lost the node, since the node itself produces no lines
+    # — so a formatter can mark what an edit reached. Set after the rebuild,
+    # because rebuilding constructs new objects: the identity an edit was
+    # resolved by belongs to the input tree and is gone by then.
     node_id: int = 0
 
 
@@ -314,24 +353,48 @@ def _corrected(node: ast.Node, correction: Correction) -> ast.Node:
         ) from None
 
 
-def _resolve(spec: ast.Specification, correction: Correction) -> ast.Node:
-    found = list(correction.target.find(spec))
+def _resolve(spec: ast.Specification, edit: Edit) -> ast.Node:
+    found = list(edit.target.find(spec))
     if not found:
-        raise CorrectionError(f"{correction.target.describe()}: no match")
+        raise CorrectionError(f"{edit.target.describe()}: no match")
     if len(found) > 1:
         raise CorrectionError(
-            f"{correction.target.describe()}: {len(found)} matches, narrow the selector"
+            f"{edit.target.describe()}: {len(found)} matches, narrow the selector"
         )
     return found[0]
+
+
+def _checked_deletion(node: ast.Node, delete: Delete) -> None:
+    """`expect` names the whole node: a changed row may no longer deserve
+    deletion, so any difference means the declaration wants re-review."""
+    if node == delete.expect:
+        return
+    described = delete.target.describe()
+    if type(node) is not type(delete.expect):
+        raise CorrectionError(
+            f"{described}: expected a {type(delete.expect).__name__},"
+            f" matched a {type(node).__name__}"
+        )
+    differing = [
+        f"{name}: expected {getattr(delete.expect, name)!r},"
+        f" found {getattr(node, name)!r}"
+        for name in type(node).model_fields
+        if getattr(node, name) != getattr(delete.expect, name)
+    ]
+    raise CorrectionError(
+        f"{described}: the node to delete has changed — " + "; ".join(differing)
+    )
 
 
 def _replaced(
     node: Any,
     edits: dict[int, ast.Node],
+    deletions: set[int],
     applied: dict[int, int],
     rebuilt: dict[int, int],
 ) -> Any:
-    """Rebuild the tree, swapping in every corrected node by identity.
+    """Rebuild the tree, swapping in every corrected node — and dropping every
+    deleted one — by identity.
 
     A chosen replacement is descended into rather than returned whole: a
     correction to a message and a correction to one of its AVP rules are both
@@ -343,7 +406,8 @@ def _replaced(
     The rebuild goes through validation for the same reason `_corrected` does:
     a correction that satisfies its own field's rules can still break a
     cross-field invariant of an ancestor, and that has to fail here rather than
-    downstream.
+    downstream. Deleting a table's last row fails the same way, on the table's
+    own non-empty invariant.
     """
     if isinstance(node, ast.Node):
         original_id = id(node)
@@ -351,10 +415,21 @@ def _replaced(
         if replacement is not None:
             applied[original_id] = applied.get(original_id, 0) + 1
             node = replacement
-        values = {
-            name: _replaced(getattr(node, name), edits, applied, rebuilt)
-            for name in type(node).model_fields
-        }
+        deleted_here: list[int] = []
+        values = {}
+        for name in type(node).model_fields:
+            value = getattr(node, name)
+            if isinstance(value, tuple):
+                kept = []
+                for item in value:
+                    if isinstance(item, ast.Node) and id(item) in deletions:
+                        applied[id(item)] = applied.get(id(item), 0) + 1
+                        deleted_here.append(id(item))
+                        continue
+                    kept.append(_replaced(item, edits, deletions, applied, rebuilt))
+                values[name] = tuple(kept)
+            else:
+                values[name] = _replaced(value, edits, deletions, applied, rebuilt)
         try:
             result = type(node)(**values)
         except pydantic.ValidationError as error:
@@ -364,33 +439,58 @@ def _replaced(
             ) from None
         if replacement is not None:
             rebuilt[original_id] = id(result)
+        # A deleted node produces no lines, so what a formatter can mark — and
+        # what its Result reports — is the parent it disappeared from.
+        for deleted_id in deleted_here:
+            rebuilt[deleted_id] = id(result)
         return result
     if isinstance(node, tuple):
-        return tuple(_replaced(item, edits, applied, rebuilt) for item in node)
+        return tuple(
+            _replaced(item, edits, deletions, applied, rebuilt) for item in node
+        )
     return node
 
 
 def apply(
-    spec: ast.Specification, corrections: list[Correction]
+    spec: ast.Specification, corrections: Sequence[Edit]
 ) -> tuple[ast.Specification, list[Result]]:
-    """Apply every correction, or none of them.
+    """Apply every edit, or none of them.
 
-    Each correction is resolved and checked against the original tree before
-    anything is rebuilt, so a failing correction cannot leave a half-corrected
+    Each edit is resolved and checked against the original tree before
+    anything is rebuilt, so a failing one cannot leave a half-corrected
     file behind.
     """
     edits: dict[int, ast.Node] = {}
+    deletions: set[int] = set()
     targets: dict[int, str] = {}  # node id -> the selector that reached it
     claimed: set[tuple[int, str]] = set()
     results = []
     resolved_ids = []  # per result: the id its node had in the input tree
     for correction in corrections:
         node = _resolve(spec, correction)
-        targets[id(node)] = correction.target.describe()
+        described = correction.target.describe()
+        if isinstance(correction, Delete) and id(node) in deletions:
+            raise CorrectionError(f"{described}: deleted more than once")
+        if id(node) in deletions or (
+            isinstance(correction, Delete) and id(node) in edits
+        ):
+            raise CorrectionError(
+                f"{described}: the node is both corrected and deleted;"
+                " a deleted node has no fields worth fixing"
+            )
+        targets[id(node)] = described
+        if isinstance(correction, Delete):
+            _checked_deletion(node, correction)
+            deletions.add(id(node))
+            results.append(
+                Result(correction=correction, node=described, old=node, new=None)
+            )
+            resolved_ids.append(id(node))
+            continue
         claim = (id(node), correction.field)
         if claim in claimed:
             raise CorrectionError(
-                f"{correction.target.describe()}: {correction.field} is corrected"
+                f"{described}: {correction.field} is corrected"
                 " more than once; combine the corrections"
             )
         claimed.add(claim)
@@ -400,7 +500,7 @@ def apply(
         results.append(
             Result(
                 correction=correction,
-                node=correction.target.describe(),
+                node=described,
                 old=getattr(node, correction.field),
                 new=correction.replace,
             )
@@ -409,20 +509,44 @@ def apply(
         edits[id(node)] = corrected
     applied: dict[int, int] = {}
     rebuilt_ids: dict[int, int] = {}
-    rebuilt = _replaced(spec, edits, applied, rebuilt_ids)
+    rebuilt = _replaced(spec, edits, deletions, applied, rebuilt_ids)
     # Identity is what maps a resolved node back to its place in the tree, so a
     # node object appearing in two places would be corrected in both while the
     # selector reported one match. Trees from `parse` and the extractor build
     # every node separately; a caller that shares one gets told, not surprised.
     for node_id, description in targets.items():
-        if applied.get(node_id, 0) != 1:
+        count = applied.get(node_id, 0)
+        if count > 1:
             raise CorrectionError(
                 f"{description}: the selected node appears more than once in the"
                 " tree; corrections address one place, not a shared object"
             )
+        if count == 0:
+            raise CorrectionError(
+                f"{description}: the selected node sits inside a subtree another"
+                " edit deleted"
+            )
     for result, resolved_id in zip(results, resolved_ids, strict=True):
         result.node_id = rebuilt_ids.get(resolved_id, 0)
     return rebuilt, results
+
+
+def notes(results: list[Result]) -> dict[int, list[str]]:
+    """`;;` note lines marking what `apply` touched, keyed by node id in the
+    rebuilt tree, in the shape `format_spec` takes.
+
+    A note says only that an edit reached the line, and where the declaration
+    is: the declaration carries the change and its `reason`, and the raw file
+    carries the old value, so repeating either here would only lengthen every
+    corrected file. A deleted node produces no lines, so its note sits on the
+    section it disappeared from.
+    """
+    lines: dict[int, list[str]] = {}
+    for result in results:
+        edit = result.correction
+        kind = "deleted" if isinstance(edit, Delete) else "corrected"
+        lines.setdefault(result.node_id, []).append(f"{kind}: ({edit.origin})")
+    return lines
 
 
 def _module_path(directory: Path, specification: str) -> Path:
@@ -450,7 +574,7 @@ def _module_path(directory: Path, specification: str) -> Path:
 
 def load(
     directory: Path | None, specification: str, required: bool = False
-) -> list[Correction]:
+) -> list[Edit]:
     """Read `<directory>/<SpecRef>.py` and return its `CORRECTIONS` list.
 
     The file name is derived from the specification, so a corrections file
@@ -481,7 +605,7 @@ def load(
     return corrections
 
 
-def _corrections_of(path: Path) -> list[Correction]:
+def _corrections_of(path: Path) -> list[Edit]:
     module_spec = importlib.util.spec_from_file_location(path.stem, path)
     if module_spec is None or module_spec.loader is None:
         raise CorrectionError(f"cannot load corrections from {path}")
@@ -505,6 +629,8 @@ def _corrections_of(path: Path) -> list[Correction]:
         raise CorrectionError(
             f"{path}: CORRECTIONS must be a list, not a {type(corrections).__name__}"
         )
-    if not all(isinstance(item, Correction) for item in corrections):
-        raise CorrectionError(f"{path}: CORRECTIONS must hold Correction objects")
+    if not all(isinstance(item, Correction | Delete) for item in corrections):
+        raise CorrectionError(
+            f"{path}: CORRECTIONS must hold Correction or Delete objects"
+        )
     return list(corrections)

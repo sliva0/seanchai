@@ -440,12 +440,11 @@ Occurrence-Info ::= < Enumerated AVP header: 2538 10415 >
         MULTIPLE_TIME_EVENT = 1
 
 
-;; corrected: name 'Periodic-LDR-Info' -> 'Periodic-LDR-Information' [edits/corrections/TS29.172.py:6]
 ; Type: Grouped AVP
 ; Name: Periodic-LDR-Information
 ; Section: 7.4.45
 ; Page: 40
-Periodic-LDR-Information ::= < AVP header: 2540 10415 >
+Periodic-LDR-Information ::= < AVP header: 2540 10415 > ;; corrected: (TS29.172.py:6)
         { Reporting-Amount }
         { Reporting-Interval }
       * [ AVP ]

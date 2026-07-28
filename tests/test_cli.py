@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import docx
@@ -342,11 +343,13 @@ def test_correct_command_marks_the_lines_it_changed(tmp_path):
 
     assert result.exit_code == 0
     text = output.read_text()
-    (note,) = [line for line in text.splitlines() if line.lstrip().startswith(";;")]
-    assert note.startswith(";; corrected: code 700 -> 701 [")
-    assert "TS29.329.py:" in note
+    # The note trails the corrected line itself.
+    (noted,) = [line for line in text.splitlines() if ";;" in line]
+    header, _, note = noted.partition(" ;; ")
+    assert header == "Example ::= < AVP header: 701 10415 >"
+    # Only the declaration's location: the change and its reason live at the
+    # cited line, and the old value in the raw file.
+    assert re.fullmatch(r"corrected: \(TS29\.329\.py:\d+\)", note)
     # Still a `.dad` file, and still exactly the canonical text plus the note.
-    stripped = "\n".join(
-        line for line in text.splitlines() if not line.lstrip().startswith(";;")
-    )
+    stripped = "\n".join(line.split(" ;; ")[0] for line in text.splitlines())
     assert formatter.format_spec(parser.parse(text)) == stripped + "\n"

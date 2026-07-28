@@ -4,7 +4,7 @@ The format is deliberately line-based, so this is hand-rolled: one pass
 splitting the file into contiguous-line blocks (file header first, then one
 block per section), then per-`; Type:` body parsers. Directives are grammar:
 a malformed `; ...` line is a parse error, never silently skipped. `;;`
-free-text comment lines are discarded.
+free-text comments — whole lines or the tail of a line — are discarded.
 """
 
 import contextlib
@@ -66,8 +66,15 @@ def _blocks(text: str) -> list[_Block]:
     for lineno, line in enumerate(text.splitlines(), start=1):
         if line.rstrip() != line:
             raise DadParseError(lineno, "trailing whitespace")
-        if line.startswith(";;"):
-            continue
+        # Everything from the first `;;` to the end of the line is comment;
+        # inline values cannot contain `;;` (the AST rejects it), so nothing
+        # meaningful is ever cut. A line left empty by its comment is skipped
+        # rather than treated as the blank line that separates blocks.
+        comment = line.find(";;")
+        if comment != -1:
+            line = line[:comment].rstrip()
+            if not line:
+                continue
         if line:
             current.append((lineno, line))
         elif current:

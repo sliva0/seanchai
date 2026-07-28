@@ -64,16 +64,17 @@ not prose.
    vendor extension and annotating it loses the annotation the first time they
    format.
 
-   How comments attach is settled as a proposal: **a comment belongs to the
-   node whose line follows it.** The grammar only has full-line `;;` comments,
-   and every non-comment line of a block maps one-to-one onto an AST node — a
-   directive, a rule line, a table row, an enum value — so the parser can
-   return `(spec, comments)` where `comments` is exactly the `Notes` mapping
-   `format_spec` already accepts, and `seanchai format` becomes
-   `format_spec(*parse_with_comments(text))` with almost no new formatter code.
-   Comments between blocks attach to the following section; comments in the
-   file header attach to the `Specification`; the one genuinely new piece is a
-   trailing bucket for comments after the last line of the file.
+   How comments attach is settled as a proposal: **a trailing comment belongs
+   to the node whose line carries it, and a whole-line comment to the node
+   whose line follows it.** Every non-comment line of a block maps one-to-one
+   onto an AST node — a directive, a rule line, a table row, an enum value —
+   so the parser can return `(spec, comments)` where `comments` is exactly the
+   `Notes` mapping `format_spec` already accepts (trailing for line-carried
+   notes, the whole-line form for the rest), and `seanchai format` becomes
+   `format_spec(*parse_with_comments(text))` with almost no new formatter
+   code. Comments between blocks attach to the following section; comments in
+   the file header attach to the `Specification`; the one genuinely new piece
+   is a trailing bucket for comments after the last line of the file.
 
    Anchoring by line offset within a section was considered and rejected:
    offsets make comments drift when a section's line count changes, and they
@@ -107,29 +108,19 @@ re-declares them, because every Diameter application is assumed to have them.
    an explicit dependency/import directive in the format. The RFC extractor
    below (16) is what makes either one checkable, since neither means anything
    until a base `.dad` exists.
-6. **Extend corrections with insert, delete and supply operations.** The
-    design is written up as a labelled proposal in
-    [corrections.md](corrections.md#proposal-structural-edits--insert-delete-supply);
-    what follows is the evidence that forced it. This is the highest-priority
-    open item: the corrected corpus currently carries a defect with no
-    available repair, so `lint --corpus` cannot be made clean. Once the
-    base AVPs are subtracted, the residue is small and interesting: two
-    references in TS 29.272 (`Additional-Context-Identifier` in clause 7.3.35
-    and `Re-synchronization-Info` in clause 7.3.11) and none in 29.229 or
-    29.329. Neither is a base AVP and neither appears in 29.272's own AVP table
-    or re-used table, so the document really does reference AVPs it never
-    introduces. Adding them is a *row*, which the correction layer cannot
-    express — it replaces fields, it does not insert nodes.
+**Structural edits (item 6) are done in the part a document actually
+forced.** `Delete` is implemented
+([corrections.md](corrections.md#structural-edits)), the bogus `Feature-Id`
+row in TS 29.283 is deleted by `edits/corrections/TS29.283.py`, and
+`lint --corpus` over the corrected corpus exits zero. The two TS 29.272
+references that seemed to need `Insert` turned out to be spelling mismatches
+against table 7.3.1/1 (`Additional-Context-ID` vs the clause heading's
+`Additional-Context-Identifier`; `Re-synchronization-Info` vs
+`Re-Synchronization-Info`) and are ordinary name corrections now. `Insert` and
+`Supply` stay designed-but-unimplemented until a document forces one — the
+designs, including their `expect` contracts, are in the same section of
+corrections.md.
 
-    The cross-file rules have since supplied the mirror case, and it is the one
-    actually blocking something: TS 29.283's re-used table lists `Feature-Id`
-    from TS 29.229, which has no such AVP and never did. The fix is to delete a
-    row, which the layer cannot express either, so `lint --corpus` over the
-    corrected corpus exits non-zero on a defect with no available repair. Both
-    operations raise the same design question — how an edit that is not a field
-    replacement states an `expect`, so it still fails loudly when the document
-    is fixed upstream — and the proposal answers it per operation: delete
-    expects the full node, insert and supply expect absence.
 **The first resolvable tree is built.** TS 29.388, 29.344, 29.172, 29.283 and
 29.389 are committed alongside the original three, and `seanchai lint --corpus`
 resolves re-used AVPs across them — see [linter.md](linter.md#cross-file-rules).

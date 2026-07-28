@@ -176,12 +176,11 @@
       * [ Route-Record ]
 
 
-;; corrected: name 'ProSe-Subscriber-Information-Request' -> 'ProSe-Initial-Location-Information-Request' [edits/corrections/TS29.344.py:18]
 ; Type: Message
 ; Name: ProSe-Initial-Location-Information-Request, PSR
 ; Section: 6.2.11
 ; Page: 22
-<ProSe-Initial-Location-Information-Request> ::= < Diameter Header: 8388713, REQ, PXY, 16777336 >
+<ProSe-Initial-Location-Information-Request> ::= < Diameter Header: 8388713, REQ, PXY, 16777336 > ;; corrected: (TS29.344.py:18)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -197,12 +196,11 @@
       * [ Route-Record ]
 
 
-;; corrected: name 'ProSe-Subscriber-Information-Answer' -> 'ProSe-Initial-Location-Information-Answer' [edits/corrections/TS29.344.py:18]
 ; Type: Message
 ; Name: ProSe-Initial-Location-Information-Answer, PSA
 ; Section: 6.2.12
 ; Page: 22
-<ProSe-Initial-Location-Information-Answer> ::= < Diameter Header: 8388713, PXY, 16777336 >
+<ProSe-Initial-Location-Information-Answer> ::= < Diameter Header: 8388713, PXY, 16777336 > ;; corrected: (TS29.344.py:18)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]

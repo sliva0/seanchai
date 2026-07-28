@@ -220,11 +220,10 @@ V2X-PC5-Allowed-PLMN ::= < AVP header: 4600 10415 >
       * [ AVP ]
 
 
-;; corrected: name 'V2X-PC5-Allowed-PLMN' -> 'PLMN-Allowed-PC5-RATs' [edits/corrections/TS29.388.py:6]
 ; Type: Grouped AVP
 ; Name: PLMN-Allowed-PC5-RATs
 ; Section: 6.3.10
-PLMN-Allowed-PC5-RATs ::= < AVP header: 4603 10415 >
+PLMN-Allowed-PC5-RATs ::= < AVP header: 4603 10415 > ;; corrected: (TS29.388.py:6)
         { Visited-PLMN-Id }
      1* { PC5-RAT-Type }
       * [ AVP ]

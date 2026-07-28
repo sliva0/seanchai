@@ -147,27 +147,30 @@ mean re-downloading the sources to re-check a single correction. See
 [dad/README.md](../dad/README.md).
 
 The corrected file is the one anyone doing real work uses, so it says which of
-its values a human overrode:
+its values a human overrode — as a trailing comment on the very line the
+correction changed:
 
 ```dad
-;; corrected: code 1623 -> 1624 [edits/corrections/TS29.272.py:31]
-; Type: Grouped AVP
-; Name: Area-Scope
+Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py:31)
 ```
 
-The note carries what changed and where the declaration is, and no more — the
-`reason` is a sentence, and it belongs next to the correction rather than
-copied into a format that carries definitions. `Correction` captures its own
-`file:line` at construction, by walking out to the first frame outside the
-corrections module, so a correction built inside a helper or a comprehension
-still cites the corrections file.
+The note carries only where the declaration is — the change and its `reason`
+live at the cited line, the old value in the raw file, and repeating either
+would lengthen every corrected line for information one hop away. The path is
+relative to the corrections directory, since a module always sits directly in
+it. `Correction` captures its own `file:line` at construction, by walking out
+to the first frame outside the corrections module, so a correction built
+inside a helper or a comprehension still cites the corrections file.
 
-These are `;;` lines, which the parser discards. An annotated file is therefore
-*exactly* canonical output plus notes: parsing it gives the same tree, and
-reformatting it gives back the canonical text without them. That is the
-intended relation rather than a wart — a note is a reader's aid, not data — but
-it does mean a corrected file that gets reformatted loses its marks, which is
-harmless because corrected files are regenerated rather than edited.
+These are `;;` comments, which the parser discards — everything from the first
+`;;` on a line to its end, or a whole line of its own, which is the form a
+deletion's note takes since a deleted node leaves no line to trail. An
+annotated file is therefore *exactly* canonical output plus notes: parsing it
+gives the same tree, and reformatting it gives back the canonical text without
+them. That is the intended relation rather than a wart — a note is a reader's
+aid, not data — but it does mean a corrected file that gets reformatted loses
+its marks, which is harmless because corrected files are regenerated rather
+than edited.
 
 CLI: `seanchai extract … --corrections DIR`, explicit rather than the
 `./edits/patches`-if-present auto-discovery the input patches use, because this
@@ -214,32 +217,44 @@ source.
   is the real acceptance criterion for this layer — corrections are what take a
   specification from "parses" to "internally consistent".
 
-## Proposal: structural edits — insert, delete, supply
+## Structural edits
 
-**Status: proposal, not implemented.** This is the design for roadmap item 6.
-The field-replace layer above stays exactly as it is; these are new named
-operations beside it, in the same `CORRECTIONS` list, with the same
-declare-expect-fail-loudly contract.
+**Status: `Delete` is implemented (roadmap item 6); `Insert` and `Supply`
+remain proposals.** The field-replace layer above stays exactly as it is;
+these are new named operations beside it, in the same `CORRECTIONS` list, with
+the same declare-expect-fail-loudly contract.
 
-The driving cases are already in the corpus. TS 29.283's re-used table cites
-`Feature-Id` from TS 29.229, which has no such AVP — the fix is deleting a row,
-which field replacement cannot express, so `lint --corpus` exits non-zero on a
-defect with no available repair. TS 29.272 references
-`Additional-Context-Identifier` and `Re-synchronization-Info` without ever
-introducing them — the fix is inserting a row. And some enumerated AVPs state
-that their values are defined in a non-Diameter document entirely, so the only
-way they become machine-readable is a hand-notated section.
+One driving case survived contact with the documents. TS 29.283's re-used
+table cites `Feature-Id` from TS 29.229, which has no such AVP — the fix is
+deleting a row, which field replacement cannot express, and until `Delete`
+existed `lint --corpus` exited non-zero on a defect with no available repair.
+`edits/corrections/TS29.283.py` now carries that deletion.
+
+The two cases that seemed to force `Insert` dissolved on inspection: TS 29.272
+appeared to reference `Additional-Context-Identifier` and
+`Re-synchronization-Info` without introducing them, but its table 7.3.1/1
+holds both AVPs under variant spellings (`Additional-Context-ID`;
+`Re-Synchronization-Info` against the ABNF's lower-cased `s`), and the clause
+headings say which side is right. Both are ordinary name `Correction`s in
+`edits/corrections/TS29.272.py`, so `Insert` stays unimplemented until a
+document actually forces it — the rule at the end of this section working as
+intended. `Supply`'s case (enumerated AVPs whose values live in a non-Diameter
+document) likewise still awaits a consumer who needs those values.
 
 The design question `expect` answers for replacement — "how does this edit fail
 loudly when the document is fixed upstream?" — has a per-operation answer:
 
 - **`Replace`** (today's `Correction`): expects the old field value. Fails when
   upstream fixes the value.
-- **`Delete(target=<row selector>, expect=<the full node>, reason=...)`**:
-  expects the matched node to equal `expect` in every field, not just to exist.
-  Fails when upstream removes the row (no match) *or* changes it (a changed row
-  may no longer deserve deletion, and the declaration should be re-reviewed
-  either way).
+- **`Delete(target=<row selector>, expect=<the full node>, reason=...)`**
+  (implemented): expects the matched node to equal `expect` in every field, not
+  just to exist. Fails when upstream removes the row (no match) *or* changes it
+  (a changed row may no longer deserve deletion, and the declaration should be
+  re-reviewed either way). The corrected file marks the section that lost the
+  node with a `;; deleted:` note, since the node itself no longer produces
+  lines to mark. Deleting a node while also correcting one of its fields, or a
+  field of anything inside it, is refused — a deleted node has no fields worth
+  fixing.
 - **`Insert(into=<section selector>, node=<AST node>, after=<name | None>,
   reason=...)`**: expects no node with the same key to be present — name for
   table rows and enum values, `(name, origin)` for re-used rows. Fails when
@@ -279,17 +294,18 @@ so a supplied section is validated at declaration time like everything else.
 corrections change — grammar, AST and both extractors — and lands with the
 usual format-instability licence from [grammar.md](grammar.md).
 
-Two consequences to hold onto in implementation:
+Two consequences to hold onto when implementing the remaining two:
 
 - The corrected file must keep marking what a human did. `Replace` notes stay
-  `;; corrected:`; inserted and supplied content should carry `;; supplied:`
+  `;; corrected:` and deletions carry `;; deleted:` on the section that lost
+  the node; inserted and supplied content should carry `;; supplied:`
   (or `;; inserted:`) on *every* line it produced, so machine-extracted and
   hand-notated definitions are never confusable in a diff.
 - `apply`'s rebuild is keyed by node identity, which works because every edit
-  so far maps an existing node to a replacement. Insert and supply create nodes
-  the input tree does not contain, so the rebuild needs an "extend this field
-  of this matched parent" edit kind — worth doing as its own small refactor
-  first.
+  so far maps an existing node to a replacement or removes one. Insert and
+  supply create nodes the input tree does not contain, so the rebuild needs an
+  "extend this field of this matched parent" edit kind — worth doing as its
+  own small refactor first.
 
 This deliberately does not add `move`, `split` or arbitrary tree surgery. The
 rule from the section below still holds: add a named operation when a real

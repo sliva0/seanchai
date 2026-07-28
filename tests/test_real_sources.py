@@ -64,11 +64,7 @@ def test_the_real_sources_still_produce_the_committed_output(
         declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
         if declared:
             spec, results = corrections.apply(spec, declared)
-            for result in results:
-                notes.setdefault(result.node_id, []).append(
-                    f"corrected: {result.correction.field}"
-                    f" {result.old!r} -> {result.new!r} [{result.correction.origin}]"
-                )
+            notes = corrections.notes(results)
 
     # Byte-for-byte, not tree equality: the committed file is what a version
     # upgrade diffs against, so formatting is part of what must not drift.

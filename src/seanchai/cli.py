@@ -148,21 +148,17 @@ def _correct(spec, directory: Path, required: bool):
 
     declared = corrections_module.load(directory, spec.specification, required=required)
     corrected, results = corrections_module.apply(spec, declared)
-    notes: dict[int, list[str]] = {}
     for result in results:
-        click.echo(
-            f"corrected: {result.node} {result.correction.field}"
-            f" {result.old!r} -> {result.new!r} ({result.correction.reason})",
-            err=True,
-        )
-        # The note says what changed and where to read why, and no more: a
-        # `.dad` file carries definitions, and the correction's `reason` is a
-        # sentence that belongs next to the correction.
-        notes.setdefault(result.node_id, []).append(
-            f"corrected: {result.correction.field} {result.old!r} -> {result.new!r}"
-            f" [{result.correction.origin}]"
-        )
-    return corrected, notes
+        edit = result.correction
+        if isinstance(edit, corrections_module.Delete):
+            click.echo(f"deleted: {result.node} ({edit.reason})", err=True)
+        else:
+            click.echo(
+                f"corrected: {result.node} {edit.field}"
+                f" {result.old!r} -> {result.new!r} ({edit.reason})",
+                err=True,
+            )
+    return corrected, corrections_module.notes(results)
 
 
 @main.command()

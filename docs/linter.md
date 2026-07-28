@@ -203,7 +203,10 @@ A finding nobody can act on is worse than no finding, so every one the corpus
 still reports is written down here with what it would take to clear it. Nothing
 in this list is an oversight.
 
-### `Feature-Id` — the one outstanding error
+### `Feature-Id` — cleared by the corrections layer's `Delete`
+
+This used to be the one outstanding error, reported against the corrected
+corpus:
 
 ```
 29283-i00.dad: error: [reused-avp-not-in-origin] Feature-Id is listed as
@@ -214,27 +217,18 @@ nor re-uses it
 TS 29.283 table 7.3.1-2 lists four AVPs from TS 29.229: `Supported-Features`,
 `Feature-List-ID`, `Feature-List` and `Feature-Id`. The first three are real.
 The fourth is not an AVP 29.229 has ever defined, and it appears in no ABNF in
-29.283 either, so nothing references it — it is an inert row that should not be
-there.
+29.283 either, so nothing referenced it — an inert row that should not be
+there. Guessing a replacement would have been worse than the row: `Feature-Id`
+is not a misspelling of `Feature-List-ID`, which is already in the same table,
+and there is no fourth AVP in 29.229 the row could plausibly have meant.
 
-**Why it is not trivially fixable: the repair is deleting a row, and neither
-edit layer can delete anything.** Corrections replace a field on a node that
-exists; there is no node to point at once the answer is "this row should not
-exist". Input patches are find/replace over source text, so the nearest thing
-they could do is blank the name cell — which produces a row with no name, which
-the extractor rejects. Both layers are shaped around *changing* a value, and
-neither has an opinion about a value that should be absent.
-
-Guessing a replacement would be worse than the row. `Feature-Id` is not a
-misspelling of `Feature-List-ID` — that AVP is already in the same table, so
-"fixing" the name would produce a duplicate rather than a correction, and there
-is no fourth AVP in 29.229 the row could plausibly have meant.
-
-So `lint --corpus` over the corrected corpus exits non-zero. That is the linter
-working, not a corpus that needs tidying, and it is the concrete case behind
-the structural-edits design in
-[corrections.md](corrections.md#proposal-structural-edits--insert-delete-supply)
-(roadmap item 6), whose `Delete` operation is what will clear it.
+The repair is deleting the row, which no field replacement can express — this
+was the concrete case that forced the `Delete` operation
+([corrections.md](corrections.md#structural-edits)). The row is now removed by
+`edits/corrections/TS29.283.py`, the corrected file carries a `;; deleted:`
+note on the table it left, and the raw file still reports the error — which is
+the committed pair doing its job. `lint --corpus` over the corrected corpus
+exits zero.
 
 ### `Service-Selection` — deliberately not corrected
 

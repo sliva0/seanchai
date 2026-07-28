@@ -21,14 +21,21 @@ from typing import Any
 from . import abnf, ast
 
 # Free-text notes to attach to the lines particular nodes produce, keyed by
-# `id(node)`. Used to mark what the correction layer touched; `;;` lines are
-# discarded on parse, so a note is a reader's aid and never data.
+# `id(node)`. Used to mark what the correction layer touched; `;;` comments
+# are discarded on parse, so a note is a reader's aid and never data.
 Notes = Mapping[int, Sequence[str]]
 _NO_NOTES: Notes = {}
 
 
-def _notes_before(node: Any, notes: Notes, indent: str = "") -> list[str]:
-    return [f"{indent};; {note}" for note in notes.get(id(node), ())]
+def _noted(line: str, node: Any, notes: Notes) -> str:
+    """The node's notes appended as a trailing comment, on the line it marks."""
+    return line + "".join(f" ;; {note}" for note in notes.get(id(node), ()))
+
+
+def _notes_before(node: Any, notes: Notes) -> list[str]:
+    """Whole-line notes, for a node whose edit left no line to append to — a
+    deletion's note goes before the section the node disappeared from."""
+    return [f";; {note}" for note in notes.get(id(node), ())]
 
 
 _MIN_COLUMN_WIDTH = 3
@@ -49,8 +56,9 @@ def _abnf_body(avps: tuple[ast.AvpRule, ...], notes: Notes = _NO_NOTES) -> list[
     bold_column = max((len(line) for _, line in rules), default=0) + 1
     lines = []
     for rule, line in rules:
-        lines.extend(_notes_before(rule, notes, " " * (len(line) - len(line.lstrip()))))
-        lines.append(f"{line:<{bold_column}}; bold" if rule.bold else line)
+        if rule.bold:
+            line = f"{line:<{bold_column}}; bold"
+        lines.append(_noted(line, rule, notes))
     return lines
 
 
@@ -67,7 +75,7 @@ def _table(
     prefix: str,
     row_notes: Sequence[Sequence[str]] | None = None,
 ) -> list[str]:
-    """`row_notes` is parallel to `rows`. Notes are interleaved *after* the
+    """`row_notes` is parallel to `rows`. Notes are appended *after* the
     column widths are computed, so annotating a row cannot reflow the table."""
     widths = [
         max(_MIN_COLUMN_WIDTH, max(len(row[i]) for row in rows))
@@ -83,11 +91,10 @@ def _table(
     lines = [header_line]
     notes = row_notes if row_notes is not None else [()] * len(rows)
     for row, row_note in zip(rows, notes, strict=True):
-        lines.extend(f";; {note}" for note in row_note)
         line = ""
         for cell, start in zip(row, starts, strict=True):
             line += " " * (start - len(line)) + cell
-        lines.append(line)
+        lines.append(line + "".join(f" ;; {note}" for note in row_note))
     return lines
 
 
@@ -98,7 +105,13 @@ def _format_message(message: ast.Message, notes: Notes = _NO_NOTES) -> list[str]
     return [
         "; Type: Message",
         *_header_directives(f"{message.name}, {message.abbreviation}", message.source),
-        f"<{message.name}> ::= < Diameter Header: {header_items} >",
+        # Section-level notes trail the header rule: it is the line that
+        # carries the fields a correction to the section itself can touch.
+        _noted(
+            f"<{message.name}> ::= < Diameter Header: {header_items} >",
+            message,
+            notes,
+        ),
         *_abnf_body(message.avps, notes),
     ]
 
@@ -111,7 +124,12 @@ def _format_grouped(avp: ast.GroupedAvp, notes: Notes = _NO_NOTES) -> list[str]:
     return [
         "; Type: Grouped AVP",
         *_header_directives(avp.name, avp.source),
-        f"{avp.name} ::= < AVP header: {_avp_header_items(avp.code, avp.vendor_id)} >",
+        _noted(
+            f"{avp.name} ::= < AVP header:"
+            f" {_avp_header_items(avp.code, avp.vendor_id)} >",
+            avp,
+            notes,
+        ),
         *_abnf_body(avp.avps, notes),
     ]
 
@@ -127,8 +145,12 @@ def _format_enumerated(avp: ast.EnumeratedAvp, notes: Notes = _NO_NOTES) -> list
     lines = [
         "; Type: Enumerated AVP",
         *_header_directives(avp.name, avp.source),
-        f"{avp.name} ::= < Enumerated AVP header:"
-        f" {_avp_header_items(avp.code, avp.vendor_id)} >",
+        _noted(
+            f"{avp.name} ::= < Enumerated AVP header:"
+            f" {_avp_header_items(avp.code, avp.vendor_id)} >",
+            avp,
+            notes,
+        ),
     ]
     value_width = max(
         (
@@ -139,19 +161,19 @@ def _format_enumerated(avp: ast.EnumeratedAvp, notes: Notes = _NO_NOTES) -> list
         default=0,
     )
     for value in avp.values:
-        lines.extend(_notes_before(value, notes, "        "))
         if isinstance(value, ast.EnumValue):
             line = f"        {value.name:<{width}} = {value.value:<{value_width}}"
             if value.description is not None:
                 line += f" ; {value.description}"
-            lines.append(line.rstrip())
+            line = line.rstrip()
         else:
             numbers = (
                 str(value.first)
                 if value.first == value.last
                 else f"{value.first}-{value.last}"
             )
-            lines.append(f"      ; {'RESERVED':<{width}} = {numbers}")
+            line = f"      ; {'RESERVED':<{width}} = {numbers}"
+        lines.append(_noted(line, value, notes))
     return lines
 
 
@@ -187,6 +209,9 @@ def _format_avp_table(table: ast.AvpTable, notes: Notes = _NO_NOTES) -> list[str
         [_avp_table_cell(row, column) for column in table.columns] for row in table.rows
     ]
     return [
+        # A note on the table itself marks an edit that left no line of its
+        # own — a deleted row — so it stands before the section.
+        *_notes_before(table, notes),
         "; Type: AVP Table",
         f"; Section: {table.source.section}",
         f"; Table: {table.table}",
@@ -215,6 +240,7 @@ def _format_reused(reused: ast.ReusedAvps, notes: Notes = _NO_NOTES) -> list[str
         [_reused_cell(row, column) for column in reused.columns] for row in reused.rows
     ]
     return [
+        *_notes_before(reused, notes),
         "; Type: Reused AVPs",
         f"; Section: {reused.source.section}",
         f"; Table: {reused.table}",
@@ -244,17 +270,19 @@ def _format_section(section: ast.Section, notes: Notes) -> list[str]:
     formatter = _FORMATTERS.get(type(section))
     if formatter is None:
         raise TypeError(f"no formatter for {type(section).__name__}")
-    return [*_notes_before(section, notes), *formatter(section, notes)]
+    return formatter(section, notes)
 
 
 def format_spec(spec: ast.Specification, notes: Notes = _NO_NOTES) -> str:
     """Canonical text, optionally with `;;` notes marking particular nodes.
 
+    A note trails the line its node produced; only a note for an edit that
+    left no line (a deletion) stands as a whole line before its section.
     Notes are the one thing here that does not round-trip: the parser discards
-    `;;` lines, so `format_spec(parse(annotated))` gives the same file without
-    them. That is the intended relation — an annotated file is canonical output
-    plus a reader's aid — and it is why notes are a caller's choice rather than
-    part of the canonical form.
+    `;;` comments, so `format_spec(parse(annotated))` gives the same file
+    without them. That is the intended relation — an annotated file is
+    canonical output plus a reader's aid — and it is why notes are a caller's
+    choice rather than part of the canonical form.
     """
     header = [
         f"; Specification: {spec.specification}",

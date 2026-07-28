@@ -17,7 +17,9 @@ def test_every_committed_dad_file_round_trips_exactly(path):
     discards — so the invariant is against the file with its notes stripped."""
     text = path.read_text()
     canonical = "\n".join(
-        line for line in text.splitlines() if not line.lstrip().startswith(";;")
+        line.split(" ;; ")[0]
+        for line in text.splitlines()
+        if not line.lstrip().startswith(";;")
     )
     spec = parser.parse(text)
 
@@ -361,7 +363,7 @@ def test_enum_equals_signs_are_aligned_and_values_are_not_zero_padded():
     assert value_lines[2].endswith("3")
 
 
-def _annotated(spec, node, note=";; corrected: code 1 -> 2 [f.py:3]"):
+def _annotated(spec, node, note=";; corrected: (f.py:3)"):
     return formatter.format_spec(spec, {id(node): [note.removeprefix(";; ")]})
 
 
@@ -382,26 +384,46 @@ def test_notes_mark_a_table_row_without_reflowing_the_table():
     plain = formatter.format_spec(spec).splitlines()
     annotated = _annotated(spec, table.rows[1]).splitlines()
 
-    assert ";; corrected: code 1 -> 2 [f.py:3]" in annotated
-    assert [line for line in annotated if not line.lstrip().startswith(";;")] == plain
+    marked = [line for line in annotated if ";; corrected" in line]
+    assert marked == ["Beta    701 ;; corrected: (f.py:3)"]
+    assert [line.split(" ;; ")[0] for line in annotated] == plain
 
 
-def test_notes_on_an_enum_value_are_indented_with_the_value():
+def test_notes_trail_the_line_of_the_node_they_mark_and_the_file_still_parses():
     enumerated = ast.EnumeratedAvp(
         name="Mode",
         source=ast.SourceRef(section="6.3.2"),
         code=702,
         values=(ast.EnumValue(name="Off", value=0), ast.EnumValue(name="On", value=1)),
     )
+    spec = _spec(enumerated)
 
-    lines = _annotated(_spec(enumerated), enumerated.values[1]).splitlines()
+    annotated = _annotated(spec, enumerated.values[1])
 
-    note = next(line for line in lines if ";; corrected" in line)
-    assert note.startswith("        ;;")
+    note = next(line for line in annotated.splitlines() if ";; corrected" in line)
+    assert note == "        On  = 1 ;; corrected: (f.py:3)"
+    assert parser.parse(annotated) == spec
+
+
+def test_a_deletions_note_stands_alone_before_the_section_it_marks():
+    # A deleted row leaves no line to trail, so its note — keyed by the table
+    # that lost it — is the one whole-line comment the formatter still writes.
+    table = ast.ReusedAvps(
+        table="6.4",
+        source=ast.SourceRef(section="6.4"),
+        rows=(ast.ReusedAvpRow(name="Load", origin="RFC8583"),),
+    )
+    spec = _spec(table)
+
+    annotated = _annotated(spec, table, note=";; deleted: (f.py:9)")
+    lines = annotated.splitlines()
+
+    marker = lines.index(";; deleted: (f.py:9)")
+    assert lines[marker + 1] == "; Type: Reused AVPs"
 
 
 def test_notes_do_not_survive_a_round_trip_and_that_is_the_relation():
-    """An annotated file is canonical output plus `;;` lines: the parser
+    """An annotated file is canonical output plus `;;` comments: the parser
     discards them, so reformatting gives back exactly the canonical text."""
     grouped = ast.GroupedAvp(
         name="Example", source=ast.SourceRef(section="6.3.1"), code=700, avps=()
@@ -409,9 +431,7 @@ def test_notes_do_not_survive_a_round_trip_and_that_is_the_relation():
     spec = _spec(grouped)
 
     annotated = _annotated(spec, grouped)
-    stripped = "\n".join(
-        line for line in annotated.splitlines() if not line.lstrip().startswith(";;")
-    )
+    stripped = "\n".join(line.split(" ;; ")[0] for line in annotated.splitlines())
 
     assert parser.parse(annotated) == spec
     assert formatter.format_spec(parser.parse(annotated)) == stripped + "\n"
