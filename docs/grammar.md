@@ -246,11 +246,13 @@ data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
               / "Unsigned64" / "Float32" / "Float64" / "Grouped"
               / "Address" / "Time" / "UTF8String" / "DiameterIdentity"
               / "DiameterURI" / "Enumerated" / "IPFilterRule"
+              / "QoSFilterRule"
 ```
 
 `-` is the canonical empty cell for every column that permits one.
-`data-type` is closed: the basic formats of RFC 6733 §4.2 and the common
-derived formats of §4.3.1, and nothing else.
+`data-type` is closed: the basic formats of RFC 6733 §4.2, the common
+derived formats of §4.3.1, and RFC 3588's historical `QoSFilterRule` type
+used by RFC 4005.
 
 ### Re-used AVPs
 

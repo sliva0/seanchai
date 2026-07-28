@@ -1,0 +1,567 @@
+; Specification: RFC 7155
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc7155.txt
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 3.1
+; Page: 11
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+        [ Port-Limit ]
+        [ User-Name ]
+        [ User-Password ]
+        [ Service-Type ]
+        [ State ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Callback-Number ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Connect-Info ]
+        [ CHAP-Auth ]
+        [ CHAP-Challenge ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IP-Netmask ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ ARAP-Password ]
+        [ ARAP-Security ]
+      * [ ARAP-Security-Data ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 3.2
+; Page: 13
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Service-Type ]
+      * [ Class ]
+      * [ Configuration-Token ]
+        [ Acct-Interim-Interval ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Re-Auth-Request-Type ]
+        [ Multi-Round-Time-Out ]
+        [ Session-Timeout ]
+        [ State ]
+      * [ Reply-Message ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+      * [ Filter-Id ]
+        [ Password-Retry ]
+        [ Port-Limit ]
+        [ Prompt ]
+        [ ARAP-Challenge-Response ]
+        [ ARAP-Features ]
+        [ ARAP-Security ]
+      * [ ARAP-Security-Data ]
+        [ ARAP-Zone-Access ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+        [ Framed-Appletalk-Link ]
+      * [ Framed-Appletalk-Network ]
+        [ Framed-Appletalk-Zone ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-Route ]
+        [ Framed-Pool ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ Framed-Routing ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+        [ Login-Service ]
+        [ Login-TCP-Port ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+      * [ Tunneling ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 3.3
+; Page: 15
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ User-Name ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Service-Type ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ State ]
+      * [ Class ]
+        [ Reply-Message ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 3.4
+; Page: 16
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Host-Cache-Time ]
+        [ Service-Type ]
+      * [ Configuration-Token ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Re-Auth-Request-Type ]
+        [ State ]
+      * [ Class ]
+      * [ Reply-Message ]
+        [ Prompt ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Request, STR
+; Section: 3.5
+; Page: 17
+<Session-Termination-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ User-Name ]
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Answer, STA
+; Section: 3.6
+; Page: 17
+<Session-Termination-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 3.7
+; Page: 18
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ User-Name ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Service-Type ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ State ]
+      * [ Class ]
+      * [ Reply-Message ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 3.8
+; Page: 19
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+        [ State ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Accounting-Request, ACR
+; Section: 3.9
+; Page: 20
+<Accounting-Request> ::= < Diameter Header: 271, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        { Acct-Application-Id }
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+        [ Destination-Host ]
+        [ Event-Timestamp ]
+        [ Acct-Delay-Time ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+      * [ Class ]
+        [ Service-Type ]
+        [ Termination-Cause ]
+        [ Accounting-Input-Octets ]
+        [ Accounting-Input-Packets ]
+        [ Accounting-Output-Octets ]
+        [ Accounting-Output-Packets ]
+        [ Acct-Authentic ]
+        [ Accounting-Auth-Method ]
+        [ Acct-Link-Count ]
+        [ Acct-Session-Time ]
+        [ Acct-Tunnel-Connection ]
+        [ Acct-Tunnel-Packets-Lost ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+      * [ Connection-Info ]
+        [ Originating-Line-Info ]
+        [ Authorization-Lifetime ]
+        [ Session-Timeout ]
+        [ Idle-Timeout ]
+        [ Port-Limit ]
+        [ Accounting-Realtime-Required ]
+        [ Acct-Interim-Interval ]
+      * [ Filter-Id ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+        [ Framed-Appletalk-Link ]
+        [ Framed-Appletalk-Network ]
+        [ Framed-Appletalk-Zone ]
+        [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Pool ]
+        [ Framed-Protocol ]
+      * [ Framed-Route ]
+        [ Framed-Routing ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+        [ Login-Service ]
+        [ Login-TCP-Port ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Accounting-Answer, ACA
+; Section: 3.10
+; Page: 22
+<Accounting-Answer> ::= < Diameter Header: 271, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        { Acct-Application-Id }
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Event-Timestamp ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-AAA-Protocol ]
+        [ Origin-State-Id ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Service-Type ]
+        [ Termination-Cause ]
+        [ Accounting-Realtime-Required ]
+        [ Acct-Interim-Interval ]
+      * [ Class ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 4.2.1
+; Page: 24
+; Columns: Name         Section Must  M.not
+NAS-Port                4.2.2   M     V
+NAS-Port-Id             4.2.3   M     V
+NAS-Port-Type           4.2.4   M     V
+Called-Station-Id       4.2.5   M     V
+Calling-Station-Id      4.2.6   M     V
+Connect-Info            4.2.7   M     V
+Originating-Line-Info   4.2.8   M     V
+Reply-Message           4.2.9   M     V
+
+
+; Type: AVP Table
+; Section: 4.3
+; Page: 28
+; Columns: Name           Section  Must  M.not
+User-Password             4.3.1    M     V
+Password-Retry            4.3.2    M     V
+Prompt                    4.3.3    M     V
+CHAP-Auth                 4.3.4    M     V
+CHAP-Algorithm            4.3.5    M     V
+CHAP-Ident                4.3.6    M     V
+CHAP-Response             4.3.7    M     V
+CHAP-Challenge            4.3.8    M     V
+ARAP-Password             4.3.9    M     V
+ARAP-Challenge-Response   4.3.10   M     V
+ARAP-Security             4.3.11   M     V
+ARAP-Security-Data        4.3.12   M     V
+
+
+; Type: AVP Table
+; Section: 4.4
+; Page: 31
+; Columns: Name            Section      Must  M.not
+Service-Type               4.4.1        M     V
+Callback-Number            4.4.2        M     V
+Callback-Id                4.4.3        M     V
+Idle-Timeout               4.4.4        M     V
+Port-Limit                 4.4.5        M     V
+NAS-Filter-Rule            4.4.6        M     V
+Filter-Id                  4.4.7        M     V
+Configuration-Token        4.4.8        M     V
+QoS-Filter-Rule            4.4.9        -     -
+Framed-Protocol            4.4.10.1     M     V
+Framed-Routing             4.4.10.2     M     V
+Framed-MTU                 4.4.10.3     M     V
+Framed-Compression         4.4.10.4     M     V
+Framed-IP-Address          4.4.10.5.1   M     V
+Framed-IP-Netmask          4.4.10.5.2   M     V
+Framed-Route               4.4.10.5.3   M     V
+Framed-Pool                4.4.10.5.4   M     V
+Framed-Interface-Id        4.4.10.5.5   M     V
+Framed-IPv6-Prefix         4.4.10.5.6   M     V
+Framed-IPv6-Route          4.4.10.5.7   M     V
+Framed-IPv6-Pool           4.4.10.5.8   M     V
+Framed-IPX-Network         4.4.10.6.1   M     V
+Framed-Appletalk-Link      4.4.10.7.1   M     V
+Framed-Appletalk-Network   4.4.10.7.2   M     V
+Framed-Appletalk-Zone      4.4.10.7.3   M     V
+ARAP-Features              4.4.10.8.1   M     V
+ARAP-Zone-Access           4.4.10.8.2   M     V
+Login-IP-Host              4.4.11.1     M     V
+Login-IPv6-Host            4.4.11.2     M     V
+Login-Service              4.4.11.3     M     V
+Login-TCP-Port             4.4.11.4.1   M     V
+Login-LAT-Service          4.4.11.5.1   M     V
+Login-LAT-Node             4.4.11.5.2   M     V
+Login-LAT-Group            4.4.11.5.3   M     V
+Login-LAT-Port             4.4.11.5.4   M     V
+
+
+; Type: AVP Table
+; Section: 4.5
+; Page: 45
+; Columns: Name           Section  Must  M.not
+Tunneling                 4.5.1    M     V
+Tunnel-Type               4.5.2    M     V
+Tunnel-Medium-Type        4.5.3    M     V
+Tunnel-Client-Endpoint    4.5.4    M     V
+Tunnel-Server-Endpoint    4.5.5    M     V
+Tunnel-Password           4.5.6    M     V
+Tunnel-Private-Group-Id   4.5.7    M     V
+Tunnel-Assignment-Id      4.5.8    M     V
+Tunnel-Preference         4.5.9    M     V
+Tunnel-Client-Auth-Id     4.5.10   M     V
+Tunnel-Server-Auth-Id     4.5.11   M     V
+
+
+; Type: AVP Table
+; Section: 4.6
+; Page: 51
+; Columns: Name             Section  Must  M.not
+Accounting-Input-Octets     4.6.1    M     V
+Accounting-Output-Octets    4.6.2    M     V
+Accounting-Input-Packets    4.6.3    M     V
+Accounting-Output-Packets   4.6.4    M     V
+Acct-Session-Time           4.6.5    M     V
+Acct-Authentic              4.6.6    M     V
+Accounting-Auth-Method      4.6.7    M     V
+Acct-Delay-Time             4.6.8    M     V
+Acct-Link-Count             4.6.9    M     V
+Acct-Tunnel-Connection      4.6.10   M     V
+Acct-Tunnel-Packets-Lost    4.6.11   M     V
+
+
+; Type: Grouped AVP
+; Name: CHAP-Auth
+; Section: 4.3.4
+; Page: 29
+CHAP-Auth ::= < AVP header: 402 >
+        { CHAP-Algorithm }
+        { CHAP-Ident }
+        [ CHAP-Response ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Tunneling
+; Section: 4.5.1
+; Page: 45
+Tunneling ::= < AVP header: 401 >
+        { Tunnel-Type }
+        { Tunnel-Medium-Type }
+        { Tunnel-Client-Endpoint }
+        { Tunnel-Server-Endpoint }
+        [ Tunnel-Preference ]
+        [ Tunnel-Client-Auth-Id ]
+        [ Tunnel-Server-Auth-Id ]
+        [ Tunnel-Assignment-Id ]
+        [ Tunnel-Password ]
+        [ Tunnel-Private-Group-Id ]

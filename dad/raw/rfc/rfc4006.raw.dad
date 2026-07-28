@@ -1,0 +1,419 @@
+; Specification: RFC 4006
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc4006.txt
+
+
+; Type: Message
+; Name: Credit-Control-Request, CCR
+; Section: 3.1
+; Page: 9
+<Credit-Control-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Service-Context-Id }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ User-Name ]
+        [ CC-Sub-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Subscription-Id ]
+        [ Service-Identifier ]
+        [ Termination-Cause ]
+        [ Requested-Service-Unit ]
+        [ Requested-Action ]
+      * [ Used-Service-Unit ]
+        [ Multiple-Services-Indicator ]
+      * [ Multiple-Services-Credit-Control ]
+      * [ Service-Parameter-Info ]
+        [ CC-Correlation-Id ]
+        [ User-Equipment-Info ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Credit-Control-Answer, CCA
+; Section: 3.2
+; Page: 11
+<Credit-Control-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Auth-Application-Id }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ User-Name ]
+        [ CC-Session-Failover ]
+        [ CC-Sub-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+        [ Granted-Service-Unit ]
+      * [ Multiple-Services-Credit-Control ]
+        [ Cost-Information ]
+        [ Final-Unit-Indication ]
+        [ Check-Balance-Result ]
+        [ Credit-Control-Failure-Handling ]
+        [ Direct-Debiting-Failure-Handling ]
+        [ Validity-Time ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Failed-AVP ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 8
+; Page: 55
+; Columns: Name                    Code  Section Type          Must  May   S.not M.not Encrypt
+CC-Correlation-Id                  411   8.1    OctetString    -     M,P   -     V     Yes
+CC-Input-Octets                    412   8.24   Unsigned64     M     P     -     V     Yes
+CC-Money                           413   8.22   Grouped        M     P     -     V     Yes
+CC-Output-Octets                   414   8.25   Unsigned64     M     P     -     V     Yes
+CC-Request-Number                  415   8.2    Unsigned32     M     P     -     V     Yes
+CC-Request-Type                    416   8.3    Enumerated     M     P     -     V     Yes
+CC-Service-Specific-Units          417   8.26   Unsigned64     M     P     -     V     Yes
+CC-Session-Failover                418   8.4    Enumerated     M     P     -     V     Yes
+CC-Sub-Session-Id                  419   8.5    Unsigned64     M     P     -     V     Yes
+CC-Time                            420   8.21   Unsigned32     M     P     -     V     Yes
+CC-Total-Octets                    421   8.23   Unsigned64     M     P     -     V     Yes
+CC-Unit-Type                       454   8.32   Enumerated     M     P     -     V     Yes
+Check-Balance-Result               422   8.6    Enumerated     M     P     -     V     Yes
+Cost-Information                   423   8.7    Grouped        M     P     -     V     Yes
+Cost-Unit                          424   8.12   UTF8String     M     P     -     V     Yes
+Credit-Control                     426   8.13   Enumerated     M     P     -     V     Yes
+Credit-Control-Failure-Handling    427   8.14   Enumerated     M     P     -     V     Yes
+Currency-Code                      425   8.11   Unsigned32     M     P     -     V     Yes
+Direct-Debiting-Failure-Handling   428   8.15   Enumerated     M     P     -     V     Yes
+Exponent                           429   8.9    Integer32      M     P     -     V     Yes
+Final-Unit-Action                  449   8.35   Enumerated     M     P     -     V     Yes
+Final-Unit-Indication              430   8.34   Grouped        M     P     -     V     Yes
+Granted-Service-Unit               431   8.17   Grouped        M     P     -     V     Yes
+G-S-U-Pool-Identifier              453   8.31   Unsigned32     M     P     -     V     Yes
+G-S-U-Pool-Reference               457   8.30   Grouped        M     P     -     V     Yes
+Multiple-Services-Credit-Control   456   8.16   Grouped        M     P     -     V     Yes
+Multiple-Services-Indicator        455   8.40   Enumerated     M     P     -     V     Yes
+Rating-Group                       432   8.29   Unsigned32     M     P     -     V     Yes
+Redirect-Address-Type              433   8.38   Enumerated     M     P     -     V     Yes
+Redirect-Server                    434   8.37   Grouped        M     P     -     V     Yes
+Redirect-Server-Address            435   8.39   UTF8String     M     P     -     V     Yes
+Requested-Action                   436   8.41   Enumerated     M     P     -     V     Yes
+Requested-Service-Unit             437   8.18   Grouped        M     P     -     V     Yes
+Restriction-Filter-Rule            438   8.36   IPFilterRule   M     P     -     V     Yes
+Service-Context-Id                 461   8.42   UTF8String     M     P     -     V     Yes
+Service-Identifier                 439   8.28   Unsigned32     M     P     -     V     Yes
+Service-Parameter-Info             440   8.43   Grouped        -     M,P   -     V     Yes
+Service-Parameter-Type             441   8.44   Unsigned32     -     M,P   -     V     Yes
+Service-Parameter-Value            442   8.45   OctetString    -     M,P   -     V     Yes
+Subscription-Id                    443   8.46   Grouped        M     P     -     V     Yes
+Subscription-Id-Data               444   8.48   UTF8String     M     P     -     V     Yes
+Subscription-Id-Type               450   8.47   Enumerated     M     P     -     V     Yes
+Tariff-Change-Usage                452   8.27   Enumerated     M     P     -     V     Yes
+Tariff-Time-Change                 451   8.20   Time           M     P     -     V     Yes
+Unit-Value                         445   8.8    Grouped        M     P     -     V     Yes
+Used-Service-Unit                  446   8.19   Grouped        M     P     -     V     Yes
+User-Equipment-Info                458   8.49   Grouped        -     M,P   -     V     Yes
+User-Equipment-Info-Type           459   8.50   Enumerated     -     M,P   -     V     Yes
+User-Equipment-Info-Value          460   8.51   OctetString    -     M,P   -     V     Yes
+Value-Digits                       447   8.10   Integer64      M     P     -     V     Yes
+Validity-Time                      448   8.33   Unsigned32     M     P     -     V     Yes
+
+
+; Type: Enumerated AVP
+; Name: CC-Request-Type
+; Section: 8.3
+; Page: 58
+CC-Request-Type ::= < Enumerated AVP header: 416 >
+        INITIAL_REQUEST     = 1
+        UPDATE_REQUEST      = 2
+        TERMINATION_REQUEST = 3
+        EVENT_REQUEST       = 4
+
+
+; Type: Enumerated AVP
+; Name: CC-Session-Failover
+; Section: 8.4
+; Page: 59
+CC-Session-Failover ::= < Enumerated AVP header: 418 >
+        FAILOVER_NOT_SUPPORTED = 0
+        FAILOVER_SUPPORTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: Check-Balance-Result
+; Section: 8.6
+; Page: 60
+Check-Balance-Result ::= < Enumerated AVP header: 422 >
+        ENOUGH_CREDIT = 0
+        NO_CREDIT     = 1
+
+
+; Type: Grouped AVP
+; Name: Cost-Information
+; Section: 8.7
+; Page: 60
+Cost-Information ::= < AVP header: 423 >
+        { Unit-Value }
+        { Currency-Code }
+        [ Cost-Unit ]
+
+
+; Type: Grouped AVP
+; Name: Unit-Value
+; Section: 8.8
+; Page: 61
+Unit-Value ::= < AVP header: 445 >
+        { Value-Digits }
+        [ Exponent ]
+
+
+; Type: Enumerated AVP
+; Name: Credit-Control
+; Section: 8.13
+; Page: 62
+Credit-Control ::= < Enumerated AVP header: 426 >
+        CREDIT_AUTHORIZATION = 0
+        RE_AUTHORIZATION     = 1
+
+
+; Type: Enumerated AVP
+; Name: Credit-Control-Failure-Handling
+; Section: 8.14
+; Page: 62
+Credit-Control-Failure-Handling ::= < Enumerated AVP header: 427 >
+        TERMINATE           = 0
+        CONTINUE            = 1
+        RETRY_AND_TERMINATE = 2
+
+
+; Type: Enumerated AVP
+; Name: Direct-Debiting-Failure-Handling
+; Section: 8.15
+; Page: 63
+Direct-Debiting-Failure-Handling ::= < Enumerated AVP header: 428 >
+        TERMINATE_OR_BUFFER = 0
+        CONTINUE            = 1
+
+
+; Type: Grouped AVP
+; Name: Multiple-Services-Credit-Control
+; Section: 8.16
+; Page: 64
+Multiple-Services-Credit-Control ::= < AVP header: 456 >
+        [ Granted-Service-Unit ]
+        [ Requested-Service-Unit ]
+      * [ Used-Service-Unit ]
+        [ Tariff-Change-Usage ]
+      * [ Service-Identifier ]
+        [ Rating-Group ]
+      * [ G-S-U-Pool-Reference ]
+        [ Validity-Time ]
+        [ Result-Code ]
+        [ Final-Unit-Indication ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Granted-Service-Unit
+; Section: 8.17
+; Page: 65
+Granted-Service-Unit ::= < AVP header: 431 >
+        [ Tariff-Time-Change ]
+        [ CC-Time ]
+        [ CC-Money ]
+        [ CC-Total-Octets ]
+        [ CC-Input-Octets ]
+        [ CC-Output-Octets ]
+        [ CC-Service-Specific-Units ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Requested-Service-Unit
+; Section: 8.18
+; Page: 66
+Requested-Service-Unit ::= < AVP header: 437 >
+        [ CC-Time ]
+        [ CC-Money ]
+        [ CC-Total-Octets ]
+        [ CC-Input-Octets ]
+        [ CC-Output-Octets ]
+        [ CC-Service-Specific-Units ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Used-Service-Unit
+; Section: 8.19
+; Page: 66
+Used-Service-Unit ::= < AVP header: 446 >
+        [ Tariff-Change-Usage ]
+        [ CC-Time ]
+        [ CC-Money ]
+        [ CC-Total-Octets ]
+        [ CC-Input-Octets ]
+        [ CC-Output-Octets ]
+        [ CC-Service-Specific-Units ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: CC-Money
+; Section: 8.22
+; Page: 67
+CC-Money ::= < AVP header: 413 >
+        { Unit-Value }
+        [ Currency-Code ]
+
+
+; Type: Enumerated AVP
+; Name: Tariff-Change-Usage
+; Section: 8.27
+; Page: 68
+Tariff-Change-Usage ::= < Enumerated AVP header: 452 >
+        UNIT_BEFORE_TARIFF_CHANGE = 0
+        UNIT_AFTER_TARIFF_CHANGE  = 1
+        UNIT_INDETERMINATE        = 2
+
+
+; Type: Grouped AVP
+; Name: G-S-U-Pool-Reference
+; Section: 8.30
+; Page: 69
+G-S-U-Pool-Reference ::= < AVP header: 457 >
+        { G-S-U-Pool-Identifier }
+        { CC-Unit-Type }
+        { Unit-Value }
+
+
+; Type: Enumerated AVP
+; Name: CC-Unit-Type
+; Section: 8.32
+; Page: 70
+CC-Unit-Type ::= < Enumerated AVP header: 454 >
+        TIME                   = 0
+        MONEY                  = 1
+        TOTAL-OCTETS           = 2
+        INPUT-OCTETS           = 3
+        OUTPUT-OCTETS          = 4
+        SERVICE-SPECIFIC-UNITS = 5
+
+
+; Type: Grouped AVP
+; Name: Final-Unit-Indication
+; Section: 8.34
+; Page: 71
+Final-Unit-Indication ::= < AVP header: 430 >
+        { Final-Unit-Action }
+      * [ Restriction-Filter-Rule ]
+      * [ Filter-Id ]
+        [ Redirect-Server ]
+
+
+; Type: Enumerated AVP
+; Name: Final-Unit-Action
+; Section: 8.35
+; Page: 72
+Final-Unit-Action ::= < Enumerated AVP header: 449 >
+        TERMINATE       = 0
+        REDIRECT        = 1
+        RESTRICT_ACCESS = 2
+
+
+; Type: Grouped AVP
+; Name: Redirect-Server
+; Section: 8.37
+; Page: 73
+Redirect-Server ::= < AVP header: 434 >
+        { Redirect-Address-Type }
+        { Redirect-Server-Address }
+
+
+; Type: Enumerated AVP
+; Name: Redirect-Address-Type
+; Section: 8.38
+; Page: 73
+Redirect-Address-Type ::= < Enumerated AVP header: 433 >
+        URL = 2
+
+
+; Type: Enumerated AVP
+; Name: Multiple-Services-Indicator
+; Section: 8.40
+; Page: 74
+Multiple-Services-Indicator ::= < Enumerated AVP header: 455 >
+        MULTIPLE_SERVICES_NOT_SUPPORTED = 0
+        MULTIPLE_SERVICES_SUPPORTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: Requested-Action
+; Section: 8.41
+; Page: 74
+Requested-Action ::= < Enumerated AVP header: 436 >
+        DIRECT_DEBITING = 0
+        REFUND_ACCOUNT  = 1
+        CHECK_BALANCE   = 2
+        PRICE_ENQUIRY   = 3
+
+
+; Type: Grouped AVP
+; Name: Service-Parameter-Info
+; Section: 8.43
+; Page: 76
+Service-Parameter-Info ::= < AVP header: 440 >
+        { Service-Parameter-Type }
+        { Service-Parameter-Value }
+
+
+; Type: Grouped AVP
+; Name: Subscription-Id
+; Section: 8.46
+; Page: 77
+Subscription-Id ::= < AVP header: 443 >
+        { Subscription-Id-Type }
+        { Subscription-Id-Data }
+
+
+; Type: Enumerated AVP
+; Name: Subscription-Id-Type
+; Section: 8.47
+; Page: 77
+Subscription-Id-Type ::= < Enumerated AVP header: 450 >
+        END_USER_E164    = 0
+        END_USER_IMSI    = 1
+        END_USER_SIP_URI = 2
+        END_USER_NAI     = 3
+        END_USER_PRIVATE = 4
+
+
+; Type: Grouped AVP
+; Name: User-Equipment-Info
+; Section: 8.49
+; Page: 78
+User-Equipment-Info ::= < AVP header: 458 >
+        { User-Equipment-Info-Type }
+        { User-Equipment-Info-Value }
+
+
+; Type: Enumerated AVP
+; Name: User-Equipment-Info-Type
+; Section: 8.50
+; Page: 78
+User-Equipment-Info-Type ::= < Enumerated AVP header: 459 >
+        IMEISV         = 0
+        MAC            = 1
+        EUI64          = 2
+        MODIFIED_EUI64 = 3

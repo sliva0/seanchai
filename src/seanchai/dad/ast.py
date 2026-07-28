@@ -232,12 +232,12 @@ class DataType(enum.StrEnum):
     which no reader would defend and nothing else would have caught. A source
     typo is what the input-patch layer is for.
 
-    RFC 3588 additionally defined `QoSFilterRule`, which RFC 6733 dropped and
-    no specification in the corpus uses; it is left out until one does.
+    RFC 3588 additionally defined `QoSFilterRule`, which RFC 4005 uses. RFC
+    6733 later dropped it, but the historical source still needs to round-trip.
     RFC 6733 §4.3 also lets an application define *new* derived formats, so a
-    specification may eventually print a type that belongs here and is not a
-    mistake. That case has not appeared yet, and it — not convenience — is what
-    would justify opening this set.
+    specification may eventually print another type that belongs here and is
+    not a mistake. That case has not appeared yet, and it — not convenience —
+    is what would justify opening this set.
     """
 
     # §4.2 basic formats.
@@ -258,6 +258,7 @@ class DataType(enum.StrEnum):
     DIAMETER_URI = "DiameterURI"
     ENUMERATED = "Enumerated"
     IP_FILTER_RULE = "IPFilterRule"
+    QOS_FILTER_RULE = "QoSFilterRule"
 
 
 class AvpFlagRules(Node):

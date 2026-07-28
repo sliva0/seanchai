@@ -69,3 +69,37 @@ CORRECTIONS = [
     )
     for parent, section, wrong in _IPV6_RULES
 ]
+
+CORRECTIONS += [
+    Correction(
+        target=reused_row("Framed-Ipv6-Prefix", section=section),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason=f"the clause {section} re-used table lower-cases the 'v';"
+        " RFC 4005, which defines the AVP, spells 'IPv6'",
+        versions="18.2.0",
+    )
+    for section in ("5.4.0", "5a.4.0", "5b.4.0", "5c.4.1")
+]
+
+CORRECTIONS += [
+    Correction(
+        target=avp_rule(definition(parent, section=section), "Framed-Ipv6-Prefix"),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason=f"clause {section}'s ABNF repeats the document's 'Ipv6'"
+        " spelling; RFC 4005, which defines the AVP, spells 'IPv6'",
+        versions="18.2.0",
+    )
+    for parent, section in (
+        ("CC-Request", "5.6.2"),
+        ("CC-Request", "5a.6.2"),
+        ("CC-Answer", "5a.6.3"),
+        ("TS-Request", "5b.6.2"),
+        ("CC-Request", "5b.6.4"),
+        ("CC-Answer", "5b.6.5"),
+        ("TS-Request", "5c.6.2"),
+    )
+]

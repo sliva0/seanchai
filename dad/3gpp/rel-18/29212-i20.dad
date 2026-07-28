@@ -34,7 +34,7 @@
         [ Dynamic-Address-Flag-Extension ]
         [ PDN-Connection-Charging-ID ]
         [ Framed-IP-Address ]
-        [ Framed-Ipv6-Prefix ]
+        [ Framed-IPv6-Prefix ] ;; corrected: (TS29.212.py:87)
         [ IP-CAN-Type ]
         [ 3GPP-RAT-Type ]
         [ AN-Trusted ]
@@ -252,7 +252,7 @@
       * [ Packet-Filter-Information ]     ; bold
         [ Packet-Filter-Operation ]       ; bold
         [ Framed-IP-Address ]             ; bold
-        [ Framed-Ipv6-Prefix ]            ; bold
+        [ Framed-IPv6-Prefix ]            ; bold ;; corrected: (TS29.212.py:87)
         [ IP-CAN-Type ]                   ; bold
         [ RAT-Type ]                      ; bold
         [ Termination-Cause ]             ; bold
@@ -302,7 +302,7 @@
       * [ Supported-Features ]      ; bold
         [ Bearer-Control-Mode ]     ; bold
       * [ Event-Trigger ]           ; bold
-        [ Framed-Ipv6-Prefix ]      ; bold
+        [ Framed-IPv6-Prefix ]      ; bold ;; corrected: (TS29.212.py:87)
         [ Origin-State-Id ]
       * [ Redirect-Host ]
         [ Redirect-Host-Usage ]
@@ -394,7 +394,7 @@
       * [ Subscription-Id ]
       * [ Supported-Features ]                  ; bold
         [ Framed-IP-Address ]                   ; bold
-        [ Framed-Ipv6-Prefix ]                  ; bold
+        [ Framed-IPv6-Prefix ]                  ; bold ;; corrected: (TS29.212.py:87)
         [ IP-CAN-Type ]                         ; bold
         [ RAT-Type ]                            ; bold
         [ AN-Trusted ]                          ; bold
@@ -481,7 +481,7 @@
         [ Destination-Host ]
         [ Origin-State-Id ]
         [ Framed-IP-Address ]                 ; bold
-        [ Framed-Ipv6-Prefix ]                ; bold
+        [ Framed-IPv6-Prefix ]                ; bold ;; corrected: (TS29.212.py:87)
       * [ ADC-Rule-Report ]                   ; bold
       * [ Application-Detection-Information ] ; bold
       * [ Event-Trigger ]                     ; bold
@@ -509,7 +509,7 @@
         { CC-Request-Number }
         [ OC-Supported-Features ]
         [ OC-OLR ]
-        [ Framed-Ipv6-Prefix ]           ; bold
+        [ Framed-IPv6-Prefix ]           ; bold ;; corrected: (TS29.212.py:87)
         [ QoS-Information ]              ; bold
       * [ Event-Trigger ]                ; bold
       * [ CSG-Information-Reporting ]    ; bold
@@ -602,7 +602,7 @@
         [ OC-Supported-Features ]          ; bold
         [ Event-Report-Indication ]        ; bold
         [ Framed-IP-Address ]              ; bold
-        [ Framed-Ipv6-Prefix ]             ; bold
+        [ Framed-IPv6-Prefix ]             ; bold ;; corrected: (TS29.212.py:87)
         [ Called-Station-Id ]              ; bold
       * [ ADC-Rule-Install ]               ; bold
       * [ ADC-Rule-Remove ]                ; bold
@@ -951,7 +951,7 @@ Flow-Description                           TS29.214
 Flows                                      TS29.214
 Flow-Status                                TS29.214
 Framed-IP-Address                          RFC4005
-Framed-Ipv6-Prefix                         RFC4005
+Framed-IPv6-Prefix                         RFC4005 ;; corrected: (TS29.212.py:74)
 Granted-Service-Unit                       RFC8506
 Load                                       RFC8583
 Logical-Access-ID                          TS283.034
@@ -1031,7 +1031,7 @@ Flow-Description                           TS29.214
 Flow-Information                           TS29.212
 Flow-Label                                 TS29.212
 Framed-IP-Address                          RFC4005
-Framed-Ipv6-Prefix                         RFC4005
+Framed-IPv6-Prefix                         RFC4005 ;; corrected: (TS29.212.py:74)
 Guaranteed-Bitrate-DL                      TS29.212
 Guaranteed-Bitrate-UL                      TS29.212
 HeNB-Local-IP-Address                      TS29.212
@@ -1124,7 +1124,7 @@ Flow-Direction                          TS29.212
 Flow-Information                        TS29.212
 Flow-Status                             TS29.214
 Framed-IP-Address                       RFC4005
-Framed-Ipv6-Prefix                      RFC4005
+Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py:74)
 Granted-Service-Unit                    RFC8506
 IP-CAN-Type                             TS29.212
 Load                                    RFC8583
@@ -1219,7 +1219,7 @@ Flow-Description                        TS29.214
 Flow-Direction                          TS29.212
 Flow-Information                        TS29.212
 Framed-IP-Address                       RFC4005
-Framed-Ipv6-Prefix                      RFC4005
+Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py:74)
 Load                                    RFC8583
 OC-OLR                                  RFC7863
 OC-Supported-Features                   RFC7863

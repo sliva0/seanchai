@@ -232,6 +232,81 @@ def test_extracts_later_rfc_fully_boxed_value_type_table(tmp_path):
     assert row.flag_rules.must_not == {ast.AvpFlag.VENDOR}
 
 
+def test_extracts_command_titles_and_clause_indexed_avps_without_a_table(tmp_path):
+    body = _rfc(
+        "3.1.  Diameter-EAP-Request (DER) Command\n\n"
+        "   <Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY >\n"
+        "                              < Session-Id >\n"
+        "                            * [ AVP ]\n\n"
+        "4.1.  EAP-Payload AVP\n\n"
+        "   The EAP-Payload AVP (AVP Code 462) is of type OctetString.\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
+
+    spec = rfc_text.extract(path)
+
+    message, table = spec.sections
+    assert isinstance(message, ast.Message)
+    assert (message.name, message.abbreviation) == ("Diameter-EAP-Request", "DER")
+    assert isinstance(table, ast.AvpTable)
+    assert table.columns == (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+        ast.AvpColumn.TYPE,
+    )
+    assert table.rows == (
+        ast.AvpTableRow(
+            name="EAP-Payload",
+            code=462,
+            section="4.1",
+            data_type=ast.DataType.OCTET_STRING,
+        ),
+    )
+
+
+def test_extracts_an_iana_avp_allocation_table_without_flag_columns(tmp_path):
+    body = _rfc(
+        "10.1.  AVP Codes\n\n"
+        "   +---------------------------------------------------------+\n"
+        "   |                    AVP  Section                         |\n"
+        "   | Attribute Name     Code Defined     Data Type           |\n"
+        "   +---------------------------------------------------------+\n"
+        "   |QoS-Resources       508  3.1         Grouped             |\n"
+        "   +---------------------------------------------------------+\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
+
+    spec = rfc_text.extract(path)
+
+    (table,) = spec.sections
+    assert isinstance(table, ast.AvpTable)
+    assert table.rows[0].name == "QoS-Resources"
+    assert table.rows[0].code == 508
+
+
+def test_indexes_radius_attributes_with_diameter_compatible_codes(tmp_path):
+    body = _rfc(
+        "3.1.  Digest-Realm Attribute\n\n   Type\n         104 for Digest-Realm\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
+
+    spec = rfc_text.extract(path)
+
+    (table,) = spec.sections
+    assert isinstance(table, ast.AvpTable)
+    assert table.columns == (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+    )
+    assert table.rows[0].name == "Digest-Realm"
+    assert table.rows[0].code == 104
+
+
 def test_extracts_the_command(synthetic_rfc):
     """Name from the heading, abbreviation from the rule — the reverse of a
     3GPP heading — and a body read across a page break."""
@@ -304,14 +379,14 @@ def test_output_round_trips(synthetic_rfc):
     assert formatter.format_spec(parser.parse(text)) == text
 
 
-def test_no_avp_table_is_an_error(tmp_path):
+def test_an_rfc_without_an_avp_table_can_still_be_a_corpus_node(tmp_path):
     path = tmp_path / "rfc9999.txt"
     path.write_text(_rfc("1.  Introduction\n\n   No tables here.\n"), encoding="utf-8")
-    with pytest.raises(ExtractionError, match="no AVP table found"):
-        rfc_text.extract(path)
+    spec = rfc_text.extract(path)
+    assert spec.sections == ()
 
 
-def test_a_second_avp_table_is_an_error(tmp_path):
+def test_extracts_multiple_avp_tables(tmp_path):
     chunk = (
         "4.5.  First\n\n"
         + _HEADER_BOX
@@ -325,8 +400,9 @@ def test_a_second_avp_table_is_an_error(tmp_path):
     )
     path = tmp_path / "rfc9999.txt"
     path.write_text(_rfc(chunk), encoding="utf-8")
-    with pytest.raises(ExtractionError, match="more than one AVP table"):
-        rfc_text.extract(path)
+    spec = rfc_text.extract(path)
+    tables = [section for section in spec.sections if isinstance(section, ast.AvpTable)]
+    assert [table.source.section for table in tables] == ["4.5", "9.9"]
 
 
 def test_an_unrecognized_header_spelling_is_an_error(tmp_path):

@@ -1,0 +1,7 @@
+# Input patches for RFC 4005 (Diameter NAS Application).
+
+[[patch]]
+find = "Acounting-Auth-"
+replace = "Accounting-Auth-"
+section = "8"
+reason = "the AVP table drops the first 'c' from Accounting-Auth-Method; the clause heading, prose, occurrence tables, and IANA section use the correct spelling"

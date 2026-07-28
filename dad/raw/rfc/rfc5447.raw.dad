@@ -1,0 +1,24 @@
+; Specification: RFC 5447
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc5447.txt
+
+
+; Type: AVP Table
+; Section: 4.2.1
+; Page: 6
+; Columns: Name         Code  Section Type
+MIP6-Agent-Info         486   4.2.1   Grouped
+MIP6-Home-Link-Prefix   125   4.2.4   OctetString
+MIP6-Feature-Vector     124   4.2.5   Unsigned64
+
+
+; Type: Grouped AVP
+; Name: MIP6-Agent-Info
+; Section: 4.2.1
+; Page: 6
+MIP6-Agent-Info ::= < AVP header: 486 >
+     *2 [ MIP-Home-Agent-Address ]
+        [ MIP-Home-Agent-Host ]
+        [ MIP6-Home-Link-Prefix ]
+      * [ AVP ]

@@ -179,6 +179,10 @@ number = 4072
 title = "Diameter EAP Application"
 
 [[rfc]]
+number = 4590
+title = "RADIUS Extension for Digest Authentication"
+
+[[rfc]]
 number = 4740
 title = "Diameter SIP Application"
 

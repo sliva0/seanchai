@@ -386,6 +386,7 @@ _RAW_ERRORS = {
         "table-definition-mismatch",
         "table-definition-mismatch",
     ],
+    "rfc4004.raw.dad": ["table-definition-mismatch"],
 }
 
 

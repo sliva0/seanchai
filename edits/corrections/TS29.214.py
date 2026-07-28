@@ -1,7 +1,13 @@
 """Corrections for 3GPP TS 29.214 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Delete, definition, enum_value
+from seanchai.dad.corrections import (
+    Correction,
+    Delete,
+    definition,
+    enum_value,
+    reused_row,
+)
 
 # Ten grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
 # table 5.3.0.1 marks the V flag mandatory for every one of them, exactly the
@@ -41,4 +47,16 @@ CORRECTIONS = [
         versions="18.4.0",
     )
     for value in (0, 5)
+]
+
+CORRECTIONS += [
+    Correction(
+        target=reused_row("Framed-Ipv6-Prefix", section="5.4.0"),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason="table 5.4.0.1 lower-cases the 'v'; RFC 4005, which defines"
+        " the AVP, spells 'IPv6'",
+        versions="18.4.0",
+    )
 ]

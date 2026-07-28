@@ -136,10 +136,9 @@ never recover what the extractor threw away.
   (RFC text → `.dad`), `seanchai correct` (raw `.dad` → corrected),
   `seanchai lint` (report inconsistencies), `seanchai download` (fetch the
   sources, from the curated catalog in `src/seanchai/downloader/specs.toml`).
-- **Extracted specs**: nine, committed raw and corrected — under
-  `dad/3gpp/rel-18/`, TS 29.329 (hand-verified reference), 29.229, 29.272,
-  29.172, 29.283, 29.344, 29.388 and 29.389; under `dad/rfc/`, RFC 6733's
-  base-protocol AVP table. The corrected files carry no single-file findings.
+- **Extracted specs**: 34, committed raw and corrected — eighteen 3GPP
+  specifications under `dad/3gpp/rel-18/` and sixteen RFCs under `dad/rfc/`.
+  The corrected files carry no single-file findings.
 
 ### Planned
 

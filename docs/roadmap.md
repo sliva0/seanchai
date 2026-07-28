@@ -145,19 +145,19 @@ bodies in 29.337 against their definitions in 29.173.
 
 What is left is the reach of the corpus rather than the rules. Committing
 TS 29.336 and 29.338 (via the multiple-table shape, item 28) and then 29.061,
-29.212 and 29.214 (via the cover-page fix, item 13) resolved all but one
-`local-and-reused` note — 29.272's `MIP6-Agent-Info`, awaiting RFC 5447 —
-and caught three citation defects no single file could see (29.128's
+29.212 and 29.214 (via the cover-page fix, item 13) left one
+`local-and-reused` note — 29.272's `MIP6-Agent-Info` — which the RFC 5447
+extraction has now resolved. The same work caught three citation defects no
+single file could see (29.128's
 `Bearer-Identity` for `Bearer-Identifier`, 29.212's `Ipv6` for 29.061's
 `IPv6` spelling, twice), all three now name corrections.
 
 The cheapest next wins, ordered by cost:
 
-- **The absent RFC origins** are the cheapest of all — the RFC extractor
-  costs at most a header spelling per document. Cited and unextracted today:
-  RFC 4004, 4590, 5447, 5777, 7155, 7844 and 8506 (one or two citing files
-  each), RFC 4005 and 4072 (two each), RFC 4006 (29.212 and 29.337) and
-  RFC 5778 (29.128, 29.272 and 29.336).
+- **The absent RFC origins are extracted.** The corpus now includes RFC 4004,
+  4005, 4006, 4072, 4590, 5447, 5777, 5778, 7155 and 8506. The apparent RFC
+  7844 dependency was a source typo: that RFC is about DHCP anonymity, while
+  RFC 7944 defines DRMP; the corrected TS 29.283 row now names RFC 7944.
 - **TS 32.299** is cited unresolved by six files (29.128, 29.172, 29.272,
   29.336, 29.345, 29.389), but it is one of the legacy `.doc` specs
   (item 11), so it is gated on that whole prerequisite.
@@ -231,11 +231,10 @@ enumerated values, from their prose-embedded RFC forms, so an RFC's `.dad` is
 as complete as a 3GPP one's. What it deliberately does not read is an
 extension to another document's enum (RFC 8581 adding `PEER_REPORT` to 7683's
 `OC-Report-Type`) — that needs format design, not extraction, and is dropped
-with a warning. Each further RFC costs at most its own header spelling, which
-is what let the backlog close in one pass: `dad/rfc/` now holds 6733, 7683,
-7944, 8581, 8582 and 8583, and the corpus's unresolved origins are dominated
-by 3GPP specifications from here on (phase two above lists the handful of
-RFCs left).
+with a warning. `dad/rfc/` now also holds 4004, 4005, 4006, 4072, 4590, 5447,
+5777, 5778, 7155 and 8506. These added multi-table flag layouts, IANA tables
+without flag columns, regular clause-derived AVP indexes, and
+Diameter-compatible RADIUS attributes.
 
 17. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).

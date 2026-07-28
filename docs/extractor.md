@@ -372,6 +372,9 @@ that:
   first. A physical line starting a new logical row is the one whose name
   fragment sits at the Attribute Name column; anything deeper continues the
   row above, and every cell must arrive on exactly one of a row's lines.
+- **More than one table.** Older application RFCs split their AVPs into
+  several category tables. A repeated header after a page break continues the
+  current table; a header after table-closing prose starts another one.
 - **Border styles.** RFC 6733 boxes only the flag columns; RFCs 7683, 7944 and
   the 8581–8583 family box the complete table. The latter adds a structural
   leading border to every row and uses `+` at column intersections. Both
@@ -389,9 +392,16 @@ that:
   RFC 7155 already print different spellings, so extending the table is the
   expected cost of each new RFC.
 - **Declared short forms.** §4.5 says "the short form DiamIdent is used to
-  represent DiameterIdentity", and then also writes DiamURI. A document
+  represent DiameterIdentity", and then also writes DiamURI. RFCs 4004 and
+  4005 likewise use `IPFiltrRule`/`IPFltrRule` and `QoSFltrRule`. A document
   convention carrying information, so it is extractor code rather than an
   input patch per row.
+- **Tables without flag columns, and clauses without tables.** RFC 5777's
+  IANA allocation table carries Name, Code, Section, and Data Type and maps
+  directly onto those four columns. RFCs 4072 and 5447 publish the same facts
+  only in regular per-AVP definition sentences, so those clauses form the
+  document's AVP index. RFC 4590's Diameter-compatible RADIUS attributes
+  contribute Name, Code, and Section; no Diameter data type is fabricated.
 - **Stated facts.** Every AVP an RFC defines is in the IETF vendor space, so
   `; Vendor-ID: 0`; and an RFC number names one immutable document, so the
   file carries no `; Version:` line and its table — introduced by prose, with
@@ -400,7 +410,8 @@ that:
 
 Beyond the table, the extractor reads the same definitions the docx one does,
 from their prose-embedded RFC forms. The committed RFC corpus currently covers
-6733, 7683, 7944, 8581, 8582 and 8583.
+4004, 4005, 4006, 4072, 4590, 5447, 5777, 5778, 6733, 7155, 7683, 7944,
+8506, 8581, 8582 and 8583.
 
 - **Definitions anchor on section titles.** A section titled with a bare name
   (`Capabilities-Exchange-Request`) or `Name AVP` (`Proxy-Info AVP`) is a
@@ -411,7 +422,9 @@ from their prose-embedded RFC forms. The committed RFC corpus currently covers
 - **Commands.** `<CER> ::= < Diameter Header: 257, REQ >` under a
   name-titled section becomes a `Message` — the heading carries the long
   name and the rule the abbreviation, the reverse of a 3GPP heading, which
-  prints both. RFC 6733's base commands print no application id, and the
+  prints both. Older RFC headings such as `AA-Request (AAR) Command` carry
+  both directly; later application RFCs put `(DER)` or `(MIR)` in the prose.
+  RFC 6733's base commands print no application id, and the
   file records that as its absence rather than fabricating the base
   protocol's 0. Blank lines inside a body are page-break residue and are
   skipped; the first non-blank non-rule line closes it.
@@ -428,6 +441,7 @@ from their prose-embedded RFC forms. The committed RFC corpus currently covers
   layouts are read — the value alone on its line with the description
   indented below (RFC 6733), and the description starting on the value's own
   line and wrapping (RFC 7944, 8583, with 8581's trailing-colon variant).
+  Older RFCs' `2 HMAC-SHA-1` and `0 | IN - ...` forms are also read.
   Value names are all-caps in every collected RFC, and requiring that is
   what keeps prose lines out. Descriptions are dropped for the same reason
   as the docx extractor's: they are wrapped prose, not a one-line gloss.

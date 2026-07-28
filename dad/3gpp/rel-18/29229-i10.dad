@@ -396,7 +396,7 @@ PCSCF-IP-Address                              666   6.3.76     Address          
 ; Columns: Name         From      M-bit
 Digest-Realm            RFC4590   -
 Digest-Algorithm        RFC4590   -
-Digest-QoP              RFC4590   -
+Digest-Qop              RFC4590   - ;; corrected: (TS29.229.py:6)
 Digest-HA1              RFC4590   -
 OC-Supported-Features   RFC7683   -
 OC-OLR                  RFC7683   -

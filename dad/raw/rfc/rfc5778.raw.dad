@@ -1,0 +1,165 @@
+; Specification: RFC 5778
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc5778.txt
+
+
+; Type: Message
+; Name: Diameter-EAP-Request, DER
+; Section: 5.1.1
+; Page: 13
+<Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port-Type ]
+        [ User-Name ]
+
+
+; Type: Message
+; Name: Diameter-EAP-Answer, DEA
+; Section: 5.1.2
+; Page: 14
+<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ EAP-Payload ]
+        [ EAP-Reissued-Payload ]
+        [ EAP-Master-Session-Key ]
+        [ EAP-Key-Name ]
+        [ Multi-Round-Time ]
+
+
+; Type: Message
+; Name: MIP6-Request, MIR
+; Section: 5.2.1
+; Page: 16
+<MIP6-Request> ::= < Diameter Header: 325, REQ, PXY >
+        < Session-ID >
+        { Auth-Application-Id }
+        { User-Name }
+        { Destination-Realm }
+        { Origin-Host }
+        { Origin-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port-Type ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ MIP6-Feature-Vector ]
+        { MIP6-Auth-Mode }
+        [ MIP-MN-AAA-SPI ]
+        [ MIP-MN-HA-SPI ]
+    1*2 { MIP-Mobile-Node-Address }
+        { MIP6-Agent-Info }
+        { MIP-Careof-Address }
+        [ MIP-Authenticator ]
+        [ MIP-MAC-Mobility-Data ]
+        [ MIP-Timestamp ]
+        [ QoS-Capability ]
+      * [ QoS-Resources ]
+        [ Chargeable-User-Identity ]
+        [ Service-Selection ]
+        [ Authorization-Lifetime ]
+        [ Auth-Session-State ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: MIP6-Answer, MIA
+; Section: 5.2.2
+; Page: 17
+<MIP6-Answer> ::= < Diameter Header: 325, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Auth-Request-Type }
+        [ User-Name ]
+        [ Authorization-Lifetime ]
+        [ Auth-Session-State ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Re-Auth-Request-Type ]
+        [ MIP6-Feature-Vector ]
+        [ MIP-Agent-Info ]
+     *2 [ MIP-Mobile-Node-Address ]
+        [ MIP-MN-HA-MSA ]
+      * [ QoS-Resources ]
+        [ Chargeable-User-Identity ]
+        [ Service-Selection ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Failed-AVP ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 6
+; Page: 18
+; Columns: Name            Code  Section Type         Must  May   S.not M.not Encrypt
+Service-Selection          493   6.2    UTF8String    M     P     -     V     Yes
+MIP-MN-HA-MSA              492   6.12   Grouped       M     P     -     V     Yes
+Chargeable-User-Identity   89    6.19   OctetString   M     P     -     V     Yes
+
+
+; Type: AVP Table
+; Section: 6
+; Page: 18
+; Columns: Name            Code  Section Type         Must  May   S.not M.not Encrypt
+Service-Selection          493   6.2    UTF8String    M     P     -     V     Yes
+MIP-MN-HA-SPI              491   6.4    Unsigned32    M     P     -     V     Yes
+MIP-Careof-Address         487   6.7    Address       M     P     -     V     Yes
+MIP-Authenticator          488   6.8    OctetString   M     P     -     V     Yes
+MIP-MAC-Mobility-Data      489   6.9    OctetString   M     P     -     V     Yes
+MIP-Session-Key            343   6.10   OctetString   M     P     -     V     Yes
+MIP-MN-HA-MSA              492   6.12   Grouped       M     P     -     V     Yes
+MIP-Algorithm-Type         345   6.13   Enumerated    M     P     -     V     Yes
+MIP-Replay-Mode            346   6.14   Enumerated    M     P     -     V     Yes
+MIP-Timestamp              490   6.16   OctetString   M     P     -     V     Yes
+Chargeable-User-Identity   89    6.19   OctetString   M     P     -     V     Yes
+MIP6-Auth-Mode             494   6.20   Enumerated    M     P     -     V     Yes
+
+
+; Type: Grouped AVP
+; Name: MIP-MN-HA-MSA
+; Section: 6.12
+; Page: 24
+MIP-MN-HA-MSA ::= < AVP header: 492 >
+        { MIP-Session-Key }
+        { MIP-MSA-Lifetime }
+        [ MIP-MN-HA-SPI ]
+        [ MIP-Algorithm-Type ]
+        [ MIP-Replay-Mode ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: MIP-Replay-Mode
+; Section: 6.14
+; Page: 24
+MIP-Replay-Mode ::= < Enumerated AVP header: 346 >
+        None      = 1
+        Timestamp = 2

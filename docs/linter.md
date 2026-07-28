@@ -180,7 +180,7 @@ genuinely IETF-space AVP looks exactly like it.
 
 ## What the corpus reports today
 
-Eighteen 3GPP specifications and six RFCs, each committed raw and corrected.
+Eighteen 3GPP specifications and sixteen RFCs, each committed raw and corrected.
 The raw files carry their documents' own mistakes and the corrected files clear
 them, which is what makes "the corrected corpus is clean" mean anything at all
 — a corpus that were clean because the rules never matched would look identical
