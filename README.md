@@ -132,9 +132,14 @@ never recover what the extractor threw away.
   re-used AVP against the document it is borrowed from. Every file states its
   own `; Vendor-ID:` — the half of an AVP's `(vendor-id, code)` identity
   nothing else in the file supplies. See [docs/linter.md](docs/linter.md).
+- **Wireshark oracle**: `seanchai crosscheck` compares every extracted
+  code, vendor-id and type against Wireshark's independently maintained
+  Diameter dictionary, fetched pinned through the downloader. See
+  [docs/oracle.md](docs/oracle.md).
 - **CLI**: `seanchai extract` (docx → `.dad`), `seanchai extract-rfc`
   (RFC text → `.dad`), `seanchai correct` (raw `.dad` → corrected),
-  `seanchai lint` (report inconsistencies), `seanchai download` (fetch the
+  `seanchai lint` (report inconsistencies), `seanchai crosscheck` (compare
+  against Wireshark's dictionary), `seanchai download` (fetch the
   sources, from the curated catalog in `src/seanchai/downloader/specs.toml`).
 - **Extracted specs**: 34, committed raw and corrected — eighteen 3GPP
   specifications under `dad/3gpp/rel-18/` and sixteen RFCs under `dad/rfc/`.

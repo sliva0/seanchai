@@ -41,6 +41,16 @@ THREE_GPP_INDEX = "https://www.3gpp.org/ftp/Specs/latest/Rel-{release}/{series}_
 THREE_GPP_ARCHIVE = "https://www.3gpp.org/ftp/Specs/archive/{series}_series/{number}/"
 ETSI_DELIVER = "https://www.etsi.org/deliver"
 RFC_TEXT_URL = "https://www.rfc-editor.org/rfc/rfc{number}.txt"
+# Wireshark's repository, via GitLab's API: the tree listing enumerates the
+# dictionary directory at the pinned tag, and the raw endpoint serves each
+# file. The API is what makes "fetch that directory" expressible at all —
+# git offers no shallow single-directory fetch, and the repository is 1.2 GB
+# for the 824 KB that matter.
+WIRESHARK_TREE_URL = (
+    "https://gitlab.com/api/v4/projects/wireshark%2Fwireshark/repository/tree"
+    "?path={path}&ref={tag}&per_page=100"
+)
+WIRESHARK_RAW_URL = "https://gitlab.com/wireshark/wireshark/-/raw/{tag}/{path}/{name}"
 USER_AGENT = "diameter-spec-corpus-downloader/1.0"
 
 
@@ -66,6 +76,14 @@ class RfcSpec:
     title: str
 
 
+@dataclass(frozen=True)
+class WiresharkDictionary:
+    """The pinned Wireshark Diameter dictionary directory."""
+
+    tag: str
+    path: str
+
+
 CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
 
 
@@ -75,7 +93,7 @@ class DownloadError(RuntimeError):
 
 def load_catalog(
     path: Path | None = None,
-) -> tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]]:
+) -> tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]:
     """Read the curated specification catalog from specs.toml.
 
     Called on demand rather than at import: reading a file as a side effect of
@@ -87,12 +105,13 @@ def load_catalog(
             data = tomllib.load(stream)
         tgpp = tuple(ThreeGppSpec(**entry) for entry in data["tgpp"])
         rfc = tuple(RfcSpec(**entry) for entry in data["rfc"])
+        wireshark = WiresharkDictionary(**data["wireshark"])
     except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError) as error:
         raise DownloadError(
             f"cannot read the specification catalog {path}:"
             f" {type(error).__name__}: {error}"
         ) from error
-    return tgpp, rfc
+    return tgpp, rfc, wireshark
 
 
 @dataclass
@@ -530,13 +549,78 @@ def download_rfc(spec: RfcSpec, output: Path) -> DownloadRecord:
     )
 
 
+def validate_wireshark_file(path: Path) -> None:
+    """The dictionary files are XML documents and XML entity fragments; an
+    entity fragment has no prolog, so well-formedness cannot be required.
+    What every one of them has is markup."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise DownloadError(f"{path.name} is not readable text: {error}") from error
+    if "<" not in text:
+        raise DownloadError(f"{path.name} contains no markup")
+
+
+def download_wireshark(
+    dictionary: WiresharkDictionary, output: Path
+) -> DownloadRecord:
+    """Fetch every file of the pinned dictionary directory.
+
+    One record for the whole directory: the files only mean anything
+    together (dictionary.xml includes the vendor files as XML entities), so
+    the manifest treats them as one artifact whose hash is the hash of the
+    per-file hashes in name order.
+    """
+    tree_url = WIRESHARK_TREE_URL.format(
+        path=urllib.parse.quote(dictionary.path, safe=""), tag=dictionary.tag
+    )
+    try:
+        entries = json.loads(request_bytes(tree_url).decode("utf-8"))
+        names = sorted(
+            entry["name"] for entry in entries if entry.get("type") == "blob"
+        )
+    except (ValueError, KeyError, TypeError) as error:
+        raise DownloadError(
+            f"cannot read the Wireshark dictionary listing: {error}"
+        ) from error
+    if not names:
+        raise DownloadError(
+            f"the Wireshark dictionary listing at {dictionary.tag} is empty"
+        )
+    files = []
+    digest = hashlib.sha256()
+    total = 0
+    for name in names:
+        url = WIRESHARK_RAW_URL.format(
+            tag=dictionary.tag, path=dictionary.path, name=name
+        )
+        destination = output / "wireshark" / name
+        atomic_download(url, destination, validate=validate_wireshark_file)
+        digest.update(f"{name}\n{sha256_file(destination)}\n".encode())
+        total += destination.stat().st_size
+        files.append(destination)
+    return DownloadRecord(
+        family="Wireshark",
+        identifier=f"Wireshark {dictionary.tag}",
+        title="Wireshark Diameter dictionary",
+        url=tree_url,
+        sha256=digest.hexdigest(),
+        size=total,
+        files=relative_paths(files, output),
+        reason="Independent oracle for extracted codes, vendor-ids and types.",
+    )
+
+
 def download_corpus(
     output: Path,
     release: int = 18,
     workers: int = 6,
     extract: bool = True,
     pdfs: bool = False,
-    catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...]] | None = None,
+    catalog: tuple[
+        tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary
+    ]
+    | None = None,
     report: Callable[[str], None] = lambda message: None,
 ) -> Path:
     """Download the catalog into `output` and write `manifest.json`.
@@ -549,7 +633,9 @@ def download_corpus(
         raise DownloadError("workers must be at least 1")
     release_marker(release)
 
-    tgpp_specs, rfc_specs = catalog if catalog is not None else load_catalog()
+    tgpp_specs, rfc_specs, wireshark = (
+        catalog if catalog is not None else load_catalog()
+    )
     try:
         output = output.resolve()
         output.mkdir(parents=True, exist_ok=True)
@@ -588,6 +674,7 @@ def download_corpus(
             )
         for spec in rfc_specs:
             jobs.append(executor.submit(download_rfc, spec, output))
+        jobs.append(executor.submit(download_wireshark, wireshark, output))
 
         records: list[DownloadRecord] = []
         for future in concurrent.futures.as_completed(jobs):

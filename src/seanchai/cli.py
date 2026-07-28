@@ -414,7 +414,7 @@ def download(
     # Catalog loading is inside the boundary too: an unreadable or malformed
     # specs.toml is a user-facing error, not a traceback.
     with reported():
-        tgpp_specs, rfc_specs = load_catalog()
+        tgpp_specs, rfc_specs, wireshark = load_catalog()
         if list_only:
             click.echo(f"3GPP specifications ({len(tgpp_specs)}):")
             for spec in tgpp_specs:
@@ -422,6 +422,10 @@ def download(
             click.echo(f"\nRFCs ({len(rfc_specs)}):")
             for spec in rfc_specs:
                 click.echo(f"  RFC {spec.number}: {spec.title}")
+            click.echo(
+                f"\nWireshark Diameter dictionary: {wireshark.path}"
+                f" at {wireshark.tag}"
+            )
             return
         download_corpus(
             output,
@@ -429,9 +433,55 @@ def download(
             workers=workers,
             extract=not no_extract,
             pdfs=pdfs,
-            catalog=(tgpp_specs, rfc_specs),
+            catalog=(tgpp_specs, rfc_specs, wireshark),
             report=lambda message: click.echo(message, err=True),
         )
+
+
+@main.command()
+@click.argument(
+    "sources",
+    nargs=-1,
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
+@click.option(
+    "--dictionary",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    default=Path("specifications") / "wireshark",
+    show_default=True,
+    help="Directory holding Wireshark's Diameter dictionary files.",
+)
+def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
+    """Cross-check `.dad` files against Wireshark's Diameter dictionary.
+
+    Reports where the two projects read the specifications differently:
+    an AVP's code resolving to a different name, a type that disagrees
+    after Wireshark's dissector conveniences are mapped onto RFC 6733's
+    vocabulary, and AVPs the pinned dictionary does not carry at all.
+    Disagreement is a report for a reader with the documents open, not a
+    verdict — so findings never fail the run.
+    """
+    from .dad import parser
+    from .oracle import Oracle, OracleError, crosscheck as check
+
+    try:
+        oracle = Oracle.load(dictionary)
+    except OracleError as error:
+        raise click.ClickException(str(error)) from None
+    total = 0
+    with reported():
+        for source in sources:
+            spec = parser.parse(source.read_text(encoding="utf-8"))
+            findings = check(spec, oracle)
+            total += len(findings)
+            for finding in findings:
+                click.echo(f"{source}: {finding}")
+    click.echo(
+        f"checked {len(sources)} files against the dictionary:"
+        f" {total} findings",
+        err=True,
+    )
 
 
 def _write(

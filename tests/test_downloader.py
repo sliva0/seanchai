@@ -60,10 +60,14 @@ reason = "For tests"
 [[rfc]]
 number = 9999
 title = "Test RFC"
+
+[wireshark]
+tag = "v9.9.9"
+path = "resources/protocols/diameter"
 """.strip()
     )
 
-    tgpp, rfcs = downloader.load_catalog(catalog)
+    tgpp, rfcs, wireshark = downloader.load_catalog(catalog)
 
     assert tgpp == (
         downloader.ThreeGppSpec(
@@ -76,6 +80,9 @@ title = "Test RFC"
     assert tgpp[0].series == 29
     assert tgpp[0].archive_stem == "29999"
     assert rfcs == (downloader.RfcSpec(number=9999, title="Test RFC"),)
+    assert wireshark == downloader.WiresharkDictionary(
+        tag="v9.9.9", path="resources/protocols/diameter"
+    )
 
 
 def test_request_bytes_retries_transient_http_errors(local_http_server, monkeypatch):
@@ -417,6 +424,7 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
 ):
     tgpp = downloader.ThreeGppSpec("29.999", "Test TS")
     rfc = downloader.RfcSpec(9999, "Test RFC")
+    shark = downloader.WiresharkDictionary(tag="v9.9.9", path="protocols/diameter")
     output = tmp_path / "corpus"
     local_http_server.route(
         "/Rel-18/29_series/",
@@ -425,6 +433,24 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     archive = _zip_bytes(spec=b"body")
     local_http_server.route("/Rel-18/29_series/29999-i00.zip", archive)
     local_http_server.route("/rfc9999.txt", RFC_TEXT)
+    local_http_server.route(
+        "/tree/protocols%2Fdiameter/v9.9.9",
+        b'[{"name": "dictionary.xml", "type": "blob"}]',
+    )
+    local_http_server.route(
+        "/raw/v9.9.9/protocols/diameter/dictionary.xml",
+        b"<dictionary/>",
+    )
+    monkeypatch.setattr(
+        downloader,
+        "WIRESHARK_TREE_URL",
+        f"{local_http_server.base_url}/tree/{{path}}/{{tag}}",
+    )
+    monkeypatch.setattr(
+        downloader,
+        "WIRESHARK_RAW_URL",
+        f"{local_http_server.base_url}/raw/{{tag}}/{{path}}/{{name}}",
+    )
 
     monkeypatch.setattr(
         downloader,
@@ -443,7 +469,7 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
         output,
         workers=2,
         extract=False,
-        catalog=((tgpp,), (rfc,)),
+        catalog=((tgpp,), (rfc,), shark),
         report=progress.append,
     )
 
@@ -453,11 +479,13 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     manifest = json.loads((output / "manifest.json").read_text())
     assert manifest["3gpp_release"] == 18
     assert manifest["generated_at_epoch"] == 1234
-    assert manifest["artifact_count"] == 2
+    assert manifest["artifact_count"] == 3
     assert [artifact["identifier"] for artifact in manifest["artifacts"]] == [
         "TS 29.999",
         "RFC 9999",
+        "Wireshark v9.9.9",
     ]
+    assert (output / "wireshark" / "dictionary.xml").read_bytes() == b"<dictionary/>"
     assert (
         output / "archives" / "3gpp-rel-18" / "29999-i00.zip"
     ).read_bytes() == archive
@@ -483,7 +511,12 @@ def test_a_failed_run_does_not_leave_the_previous_manifest_behind(
 
     with pytest.raises(downloader.DownloadError, match="No Release 18 artifact"):
         downloader.download_corpus(
-            output, catalog=((downloader.ThreeGppSpec("29.999", "Test TS"),), ())
+            output,
+            catalog=(
+                (downloader.ThreeGppSpec("29.999", "Test TS"),),
+                (),
+                downloader.WiresharkDictionary(tag="v9.9.9", path="p"),
+            ),
         )
 
     assert not (output / "manifest.json").exists()

@@ -266,31 +266,23 @@ once, while the oracle only adds confidence to values already extracted. With
 eighteen specs committed and only 29.329 hand-verified, its moment is
 closer than it was.
 
-9. **Fetch Wireshark's Diameter dictionary through the downloader.** It is
-    the oracle the next item compares against, and it needs to arrive pinned
-    and reproducible like every other source. Not a git submodule: a submodule
-    is always a whole repository, and Wireshark's history is 1.2 GB for the
-    824 KB of `resources/protocols/diameter/` (32 files) that matter — the
-    dictionary is split across per-vendor XML entity files, so the whole
-    directory is needed, not just `dictionary.xml`. A catalog entry fetching
-    that directory at a pinned tag is the shape; it needs a third family
-    alongside `tgpp` and `rfc` in `specs.toml` and its own download function,
-    which is why it is an item rather than a config edit.
-
-10. **Cross-check extracted codes, vendor-ids and types against Wireshark's
-    Diameter `dictionary.xml`.** Only 29.329 is hand-verified today; this is
-    what would let the other extracted specs be trusted at scale. Optionally
-    borrow Wireshark's disambiguated names for AVPs whose names clash across
-    specs.
-
-    Use it as an oracle for values, not for the type vocabulary: its
-    `typedefn`s include `IPAddress`, `VendorId`, `AppId`, `OctetStringOrUTF8`
-    and `MIPRegistrationRequest`, which are dissector conveniences rather than
-    Diameter types. A comparison has to map those onto RFC 6733's fifteen
-    before it can report a disagreement — and mensonen/diameter collapses in
-    the opposite direction, folding `DiameterIdentity` and `DiameterURI` into
-    `OctetString`/`UTF8String`. Two consumers, two different reductions, which
-    is why `.dad` keeps every distinction the specification draws.
+**Both oracle items (9 and 10) are done** — see [oracle.md](oracle.md).
+The dictionary arrives pinned through the downloader as the third catalog
+family (`[wireshark]` in `specs.toml`, tag v4.7.2, the whole 32-file
+directory fetched via GitLab's tree and raw endpoints, one manifest artifact
+hashed over the per-file hashes), and `seanchai crosscheck` compares every
+defined AVP's `(vendor-id, code)`, name and type against it, with the
+dissector conveniences (`IPAddress`, `Enumerated`-for-display, `VendorId`,
+`AppId`, `OctetStringOrUTF8`, `MIPRegistrationRequest`) mapped onto RFC
+6733's vocabulary before anything may count as a disagreement. The first run
+produced 57 findings: mostly Wireshark's deliberate disambiguations, but
+also independent corroboration of two entries already on the linter's
+standing-findings list (29.336's `Periodic-time`, RFC 5777's
+`IP-Bit-Mask-Width`), a genuine new catch (RFC 5777's allocation table
+typing `Treatment-Action` Grouped where its clause 5.1 says Enumerated), and
+a handful of Wireshark-side defects. The corrections those findings justify
+are standing work, catalogued in oracle.md; borrowing Wireshark's
+disambiguated names stays optional and undone.
 
 ## Downstream consumers
 

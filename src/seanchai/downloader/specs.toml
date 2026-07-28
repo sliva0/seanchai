@@ -337,3 +337,13 @@ title = "Diameter load-information conveyance"
 [[rfc]]
 number = 9390
 title = "Diameter group signaling"
+
+# Wireshark's Diameter dictionary — the independent oracle `seanchai
+# crosscheck` compares extracted codes, vendor-ids and types against. The
+# whole directory is needed, not just dictionary.xml: the dictionary is split
+# across per-vendor XML entity files it includes. Pinned to a release tag so
+# the corpus stays reproducible; not a git submodule, because a submodule is
+# a whole repository and Wireshark's history is 1.2 GB for these 32 files.
+[wireshark]
+tag = "v4.7.2"
+path = "resources/protocols/diameter"

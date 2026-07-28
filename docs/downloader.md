@@ -19,9 +19,12 @@ ETSI PDF is unpublished (this happened to 29.388 before PDFs became the
 default). `--no-pdfs` exists for quick catalog experiments, not for
 refreshing the corpus.
 
-It downloads 3GPP archives and their matching ETSI PDF renderings, plus the
-plain-text RFCs, and writes `specifications/manifest.json` recording sha256 and size
-per artifact.
+It downloads 3GPP archives and their matching ETSI PDF renderings, the
+plain-text RFCs, and Wireshark's Diameter dictionary (the `[wireshark]`
+catalog entry pins a release tag; the whole 32-file directory is fetched via
+GitLab's tree and raw endpoints and recorded as one artifact — see
+[oracle.md](oracle.md)), and writes `specifications/manifest.json` recording
+sha256 and size per artifact.
 
 ## Notes for whoever touches it next
 
