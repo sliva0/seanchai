@@ -193,7 +193,7 @@ otherwise. Between them the raw files exercise every single-file rule:
 | `29272-i60.raw.dad` | `duplicate-identity`, `table-definition-mismatch` (the `Area-Scope` case) and `vendor-id-mismatch` (`WLAN-offloadability`) |
 | `29344-i10.raw.dad` | `one-name-two-commands`, twice — clauses 6.2.11/6.2.12 print 6.2.3/6.2.4's rule names above command 8388713 |
 | `29345-i00.raw.dad` | two `duplicate-identity` and six `table-definition-mismatch` findings — one capitalization mismatch, three copied AVP codes and three AVPs whose table type contradicts their grouped rules |
-| `29388-i10.raw.dad` | `duplicate-definition`, `duplicate-identity` and `table-definition-mismatch`, all from clause 6.3.10 re-printing 6.3.3's rule name |
+| `29388-i00.raw.dad` | `duplicate-definition`, `duplicate-identity` and `table-definition-mismatch`, all from clause 6.3.10 re-printing 6.3.3's rule name |
 
 `tests/test_linter.py` pins that table exactly, so a rule that starts firing on
 something else fails the suite instead of adding noise to a report.
@@ -268,7 +268,7 @@ the indirection and leaves the chain visible.
 ### `reused-body-differs` — a fact, not a defect
 
 ```
-29388-i10.dad: note: [reused-body-differs] V2X-Subscription-Data's body,
+29388-i00.dad: note: [reused-body-differs] V2X-Subscription-Data's body,
 against TS29.272's definition: adds V2X-PC5-Allowed-PLMN, missing
 UE-PC5-AMBR, V2X-Permission (clause 6.3.2)
 29337-i00.dad: note: [reused-body-differs] Additional-Serving-Node's body,

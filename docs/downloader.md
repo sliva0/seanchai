@@ -35,12 +35,20 @@ per artifact.
 - **Version selection does not depend on listing order.** `discover_3gpp_urls`
   picks the archive with the highest decoded version, not the last matching
   link on the index page.
-- **A fallback ETSI PDF must never reach `attach_pages`.** When the exact
-  version isn't published, `download_3gpp` falls back to an earlier one and
-  records it in `pdf_version`. That file is still useful, but its page numbers
-  belong to a different document. `attach_pages` now checks the PDF's cover and
-  refuses, so this fails loudly; the manifest would still be a better place to
-  say outright whether a PDF is page-attachment compatible.
+- **With `--pdfs`, version selection prefers page-attachment over newness.**
+  When the newest archive version's exact ETSI rendering is unpublished,
+  `download_3gpp` walks back to the highest version whose PDF exists — listed
+  from `Specs/archive/`, since `Specs/latest/` holds only one zip per spec —
+  and records the version it passed over in `newer_source_version`, so the
+  manifest says outright that a newer source exists. Only when no version of
+  the release has a published PDF does the old behaviour remain: newest
+  archive, earlier-version fallback PDF, the mismatch recorded in
+  `pdf_version`.
+- **A fallback ETSI PDF must never reach `attach_pages`.** When no version of
+  the release has a published PDF, `download_3gpp` falls back to an earlier
+  rendering and records it in `pdf_version`. That file is still useful, but
+  its page numbers belong to a different document. `attach_pages` checks the
+  PDF's cover and refuses, so this fails loudly.
 - **Extraction replaces the specification directory, it does not merge into
   it.** `replace_extracted` stages the new contents in a sibling directory and
   swaps them in, so `specifications/3gpp/Rel-N/TS_29.272/` never holds members of two
@@ -49,11 +57,13 @@ per artifact.
 
 ## Planned changes
 
-- Fetch the docx zips from the 3GPP archive
+- Fetch *all* docx zips from the 3GPP archive
   (`.../Specs/archive/<series>_series/<spec>/`, version encoded base-36:
-  18.0.0 → `i00`). Prefer `Specs/archive/` over the current
-  `Specs/latest/Rel-N/` index: the archive keeps every old version, which the
-  raw-vs-raw diff workflow needs on version bumps.
+  18.0.0 → `i00`). `discover_3gpp_archive_urls` now lists it, but only the
+  PDF-matched version selection reads the listing; the default path still
+  takes `Specs/latest/Rel-N/`. Preferring the archive throughout would keep
+  every old version available, which the raw-vs-raw diff workflow needs on
+  version bumps.
 - Derive the ETSI `Link:` URL instead of taking it from the caller. This needs
   the ETSI edition suffix (e.g. `18.00.00_60`), which is not in the docx —
   probably requires listing the ETSI deliver directory.

@@ -363,7 +363,7 @@ _RAW_ERRORS = {
         "vendor-id-mismatch",
     ],
     "29344-i10.raw.dad": ["one-name-two-commands", "one-name-two-commands"],
-    "29388-i10.raw.dad": [
+    "29388-i00.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
         "table-definition-mismatch",
@@ -411,7 +411,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29272-i60": 9,
         "29283-i00": 1,
         "29337-i00": 2,
-        "29388-i10": 1,
+        "29388-i00": 1,
     }
     stem = path.name.removesuffix(".dad").removesuffix(".raw")
 

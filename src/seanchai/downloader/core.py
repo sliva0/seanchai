@@ -38,6 +38,7 @@ from pathlib import Path, PurePosixPath
 import pypdf
 
 THREE_GPP_INDEX = "https://www.3gpp.org/ftp/Specs/latest/Rel-{release}/{series}_series/"
+THREE_GPP_ARCHIVE = "https://www.3gpp.org/ftp/Specs/archive/{series}_series/{number}/"
 ETSI_DELIVER = "https://www.etsi.org/deliver"
 RFC_TEXT_URL = "https://www.rfc-editor.org/rfc/rfc{number}.txt"
 USER_AGENT = "diameter-spec-corpus-downloader/1.0"
@@ -109,6 +110,9 @@ class DownloadRecord:
     pdf_size: int | None = None
     source_version: str | None = None
     pdf_version: str | None = None
+    # The newer archive version that was passed over because ETSI has not
+    # published its PDF rendering; None when the newest version was taken.
+    newer_source_version: str | None = None
 
 
 def release_marker(release: int) -> str:
@@ -170,6 +174,29 @@ def discover_3gpp_urls(
             href = max(matches, key=decode_3gpp_version)
             by_number[spec.number] = urllib.parse.urljoin(index_url, href)
     return by_number
+
+
+def discover_3gpp_archive_urls(
+    spec: ThreeGppSpec, release: int
+) -> dict[tuple[int, int, int], str]:
+    """Every archived version of `spec` in `release`, from `Specs/archive/`.
+
+    The `Specs/latest/Rel-N/` index lists exactly one zip per specification,
+    so choosing any version other than the newest needs the archive, which
+    keeps them all.
+    """
+    marker = release_marker(release)
+    index_url = THREE_GPP_ARCHIVE.format(series=spec.series, number=spec.number)
+    page = request_bytes(index_url).decode("utf-8", errors="replace")
+    pattern = re.compile(
+        rf"""href=["']([^"']*/?{re.escape(spec.archive_stem)}-"""
+        rf"""{re.escape(marker)}[0-9a-z]{{2}}\.zip)["']""",
+        re.IGNORECASE,
+    )
+    return {
+        decode_3gpp_version(href): urllib.parse.urljoin(index_url, href)
+        for href in pattern.findall(html.unescape(page))
+    }
 
 
 def sha256_file(path: Path) -> str:
@@ -406,6 +433,28 @@ def download_3gpp(
     extract: bool,
     pdfs: bool,
 ) -> DownloadRecord:
+    source_version_tuple = decode_3gpp_version(url)
+    newer_source_version = None
+    if pdfs:
+        # Page attachment needs the exact-version ETSI PDF, so when the newest
+        # archive version's rendering is not published yet, prefer the highest
+        # version whose PDF exists over the newest version with a mismatched
+        # fallback PDF. Only when no version of this release has a PDF at all
+        # does the newest archive plus a fallback rendering remain the answer.
+        # Degrade to the newest-version-plus-fallback-PDF path rather than
+        # fail: either listing being unreachable is the situation the existing
+        # fallback already handles, with its own error message.
+        try:
+            published = set(discover_etsi_pdf_versions(spec, source_version_tuple))
+            if source_version_tuple not in published:
+                archived = discover_3gpp_archive_urls(spec, release)
+                matched = max((v for v in archived if v in published), default=None)
+                if matched is not None:
+                    newer_source_version = version_string(source_version_tuple)
+                    url = archived[matched]
+                    source_version_tuple = matched
+        except DownloadError:
+            pass
     archive_name = Path(urllib.parse.urlparse(url).path).name
     archive = output / "archives" / f"3gpp-rel-{release}" / archive_name
     atomic_download(url, archive, validate=validate_zip)
@@ -418,7 +467,6 @@ def download_3gpp(
     pdf_url = None
     pdf_sha256 = None
     pdf_size = None
-    source_version_tuple = decode_3gpp_version(url)
     source_version = version_string(source_version_tuple)
     pdf_version = None
     if pdfs:
@@ -463,6 +511,7 @@ def download_3gpp(
         pdf_size=pdf_size,
         source_version=source_version,
         pdf_version=pdf_version,
+        newer_source_version=newer_source_version,
     )
 
 
@@ -558,6 +607,12 @@ def download_corpus(
                 version_note = (
                     f" (PDF {record.pdf_version}; source {record.source_version}, "
                     "ETSI publication lag)"
+                )
+            elif record.newer_source_version is not None:
+                version_note = (
+                    f" (source {record.source_version}; newer"
+                    f" {record.newer_source_version} skipped, its ETSI PDF is"
+                    " unpublished)"
                 )
             report(f"Downloaded {record.identifier}{version_note}")
 

@@ -1,12 +1,14 @@
 ; Specification: 3GPP TS 29.388
-; Version: 18.1.0
+; Version: 18.0.0
 ; Vendor-ID: 10415
 ; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129388/18.00.00_60/ts_129388v180000p.pdf
 
 
 ; Type: Message
 ; Name: ProSe-Subscriber-Information-Request, PIR
 ; Section: 6.2.3
+; Page: 18
 <ProSe-Subscriber-Information-Request> ::= < Diameter Header: 8388664, REQ, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -27,6 +29,7 @@
 ; Type: Message
 ; Name: ProSe-Subscriber-Information-Answer, PIA
 ; Section: 6.2.4
+; Page: 19
 <ProSe-Subscriber-Information-Answer> ::= < Diameter Header: 8388664, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -53,6 +56,7 @@
 ; Type: Message
 ; Name: Update-ProSe-Subscriber-Data-Request, UPR
 ; Section: 6.2.5
+; Page: 19
 <Update-ProSe-Subscriber-Data-Request> ::= < Diameter Header: 8388665, REQ, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -76,6 +80,7 @@
 ; Type: Message
 ; Name: Update-ProSe-Subscriber-Data-Answer, UPA
 ; Section: 6.2.6
+; Page: 20
 <Update-ProSe-Subscriber-Data-Answer> ::= < Diameter Header: 8388665, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -95,6 +100,7 @@
 ; Type: Message
 ; Name: ProSe-Notify-Request, PNR
 ; Section: 6.2.7
+; Page: 20
 <ProSe-Notify-Request> ::= < Diameter Header: 8388666, REQ, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -117,6 +123,7 @@
 ; Type: Message
 ; Name: ProSe-Notify-Answer, PNA
 ; Section: 6.2.8
+; Page: 20
 <ProSe-Notify-Answer> ::= < Diameter Header: 8388666, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -139,6 +146,7 @@
 ; Type: Message
 ; Name: Reset-Request, RSR
 ; Section: 6.2.9
+; Page: 21
 <Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -158,6 +166,7 @@
 ; Type: Message
 ; Name: Reset-Answer, RSA
 ; Section: 6.2.10
+; Page: 21
 <Reset-Answer> ::= < Diameter Header: 322, PXY, 16777355 >
         < Session-Id >
         [ DRMP ]
@@ -177,6 +186,7 @@
 ; Type: AVP Table
 ; Section: 6.3.1
 ; Table: 6.3.1-1
+; Page: 22
 ; Columns: Name         Code   Section  Type         Must  May   S.not M.not Encrypt
 V2X-PC5-Allowed-PLMN    4600   6.3.3    Grouped      M,V   -     -     -     No
 V2X-Update-Flags        4601   6.3.4    Unsigned32   M,V   -     -     -     No
@@ -188,6 +198,7 @@ PC5-RAT-Type            4604   6.3.11   Enumerated   V     -     -     M     No
 ; Type: Reused AVPs
 ; Section: 6.3.1
 ; Table: 6.3.1-2
+; Page: 22
 ; Columns: Name         From       M-bit
 V2X-Subscription-Data   TS29.272   -
 Visited-PLMN-Id         TS29.272   -
@@ -207,6 +218,7 @@ Load                    RFC8583    MUST-NOT
 ; Type: Grouped AVP
 ; Name: V2X-Subscription-Data
 ; Section: 6.3.2
+; Page: 23
 V2X-Subscription-Data ::= < AVP header: 1688 10415 >
         [ V2X-PC5-Allowed-PLMN ]
       * [ AVP ]
@@ -215,6 +227,7 @@ V2X-Subscription-Data ::= < AVP header: 1688 10415 >
 ; Type: Grouped AVP
 ; Name: V2X-PC5-Allowed-PLMN
 ; Section: 6.3.3
+; Page: 23
 V2X-PC5-Allowed-PLMN ::= < AVP header: 4600 10415 >
       * [ Visited-PLMN-Id ]
       * [ PLMN-Allowed-PC5-RATs ]
@@ -224,6 +237,7 @@ V2X-PC5-Allowed-PLMN ::= < AVP header: 4600 10415 >
 ; Type: Grouped AVP
 ; Name: V2X-PC5-Allowed-PLMN
 ; Section: 6.3.10
+; Page: 24
 V2X-PC5-Allowed-PLMN ::= < AVP header: 4603 10415 >
         { Visited-PLMN-Id }
      1* { PC5-RAT-Type }
@@ -233,6 +247,7 @@ V2X-PC5-Allowed-PLMN ::= < AVP header: 4603 10415 >
 ; Type: Enumerated AVP
 ; Name: PC5-RAT-Type
 ; Section: 6.3.11
+; Page: 24
 PC5-RAT-Type ::= < Enumerated AVP header: 4604 10415 >
         LTE = 0
         NR  = 1

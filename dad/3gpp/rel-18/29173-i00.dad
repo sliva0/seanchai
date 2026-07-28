@@ -2,11 +2,13 @@
 ; Version: 18.0.0
 ; Vendor-ID: 10415
 ; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129100_129199/129173/18.00.00_60/ts_129173v180000p.pdf
 
 
 ; Type: Message
 ; Name: LCS-Routing-Info-Request, RIR
 ; Section: 6.2.3
+; Page: 14
 <LCS-Routing-Info-Request> ::= < Diameter Header: 8388622, REQ, PXY, 16777291 >
         < Session-Id >
         [ Vendor-Specific-Application-Id ]
@@ -27,6 +29,7 @@
 ; Type: Message
 ; Name: LCS-Routing-Info-Answer, RIA
 ; Section: 6.2.4
+; Page: 15
 <LCS-Routing-Info-Answer> ::= < Diameter Header: 8388622, PXY, 16777291 >
         < Session-Id >
         [ Vendor-Specific-Application-Id ]
@@ -53,6 +56,7 @@
 ; Type: AVP Table
 ; Section: 6.4.1
 ; Table: 6.4.1/1
+; Page: 16
 ; Columns: Name           Code   Section  Type               Must  May   S.not M.not Encrypt
 LMSI                      2400   6.4.2    OctetString        M,V   -     -     -     No
 Serving-Node              2401   6.4.3    Grouped            M,V   -     -     -     No
@@ -71,6 +75,7 @@ RIA-Flags                 2411   6.4.15   Unsigned32         V     -     -     M
 ; Type: Reused AVPs
 ; Section: 6.4.1
 ; Table: 6.4.1/2
+; Page: 16
 ; Columns: Name        From
 MSISDN                 TS29.329
 SGSN-Number            TS29.272
@@ -84,6 +89,7 @@ GMLC-Number            TS29.272
 ; Type: Grouped AVP
 ; Name: Serving-Node
 ; Section: 6.4.3
+; Page: 17
 Serving-Node ::= < AVP header: 2401 10415 >
         [ SGSN-Number ]
         [ SGSN-Name ]
@@ -100,6 +106,7 @@ Serving-Node ::= < AVP header: 2401 10415 >
 ; Type: Grouped AVP
 ; Name: Additional-Serving-Node
 ; Section: 6.4.8
+; Page: 18
 Additional-Serving-Node ::= < AVP header: 2406 10415 >
         [ SGSN-Number ]
         [ MME-Name ]

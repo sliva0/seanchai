@@ -497,3 +497,51 @@ def test_download_corpus_validates_its_arguments_before_downloading(tmp_path):
         downloader.download_corpus(tmp_path, release=99)
 
     assert not list(tmp_path.iterdir())
+
+
+def test_download_3gpp_prefers_the_highest_version_with_a_published_pdf(
+    tmp_path, local_http_server, monkeypatch
+):
+    """Page attachment needs the exact-version ETSI PDF, so when the newest
+    archive version's rendering is unpublished, the downloader walks back to
+    the highest archived version whose PDF exists rather than pairing the
+    newest source with a mismatched fallback PDF."""
+    monkeypatch.setattr(downloader, "ETSI_DELIVER", local_http_server.base_url)
+    monkeypatch.setattr(
+        downloader,
+        "THREE_GPP_ARCHIVE",
+        f"{local_http_server.base_url}/archive/{{series}}_series/{{number}}/",
+    )
+    latest_url = local_http_server.route("/29388-i10.zip", _zip_bytes(spec=b"new"))
+    # ETSI has published only the 18.0.0 rendering.
+    local_http_server.route("/etsi_ts/129300_129399/129388/", b"18.00.00_60/")
+    local_http_server.route(
+        "/etsi_ts/129300_129399/129388/18.00.00_60/ts_129388v180000p.pdf",
+        _pdf_bytes(),
+    )
+    local_http_server.route(
+        "/archive/29_series/29.388/",
+        b'<a href="29388-i10.zip">new</a><a href="29388-i00.zip">old</a>',
+    )
+    archive = _zip_bytes(spec=b"old")
+    local_http_server.route("/archive/29_series/29.388/29388-i00.zip", archive)
+
+    record = downloader.download_3gpp(
+        downloader.ThreeGppSpec("29.388", "V2X"),
+        latest_url,
+        release=18,
+        output=tmp_path,
+        extract=False,
+        pdfs=True,
+    )
+
+    assert record.source_version == "18.0.0"
+    assert record.pdf_version == "18.0.0"
+    assert record.newer_source_version == "18.1.0"
+    assert record.url.endswith("/archive/29_series/29.388/29388-i00.zip")
+    assert record.files == [
+        "archives/3gpp-rel-18/29388-i00.zip",
+        "3gpp/Rel-18/PDF/ts_129388v180000p.pdf",
+    ]
+    # The newest archive was never fetched.
+    assert local_http_server.counts.get("/29388-i10.zip", 0) == 0

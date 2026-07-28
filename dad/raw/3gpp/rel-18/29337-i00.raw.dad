@@ -2,11 +2,13 @@
 ; Version: 18.0.0
 ; Vendor-ID: 10415
 ; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129337/18.00.00_60/ts_129337v180000p.pdf
 
 
 ; Type: Message
 ; Name: Device-Trigger-Request, DTR
 ; Section: 6.2.3
+; Page: 17
 <Device-Trigger-Request> ::= < Diameter Header: 8388643, REQ, PXY, 16777311 >
         < Session-Id >
         [ DRMP ]
@@ -35,6 +37,7 @@
 ; Type: Message
 ; Name: Device-Trigger-Answer, DTA
 ; Section: 6.2.4
+; Page: 18
 <Device-Trigger-Answer> ::= < Diameter Header: 8388643, PXY, 16777311 >
         < Session-Id >
         [ DRMP ]
@@ -57,6 +60,7 @@
 ; Type: Message
 ; Name: Delivery-Report-Request, DRR
 ; Section: 6.2.5
+; Page: 18
 <Delivery-Report-Request> ::= < Diameter Header: 8388644, REQ, PXY, 16777311 >
         < Session-Id >
         [ DRMP ]
@@ -79,6 +83,7 @@
 ; Type: Message
 ; Name: Delivery-Report-Answer, DRA
 ; Section: 6.2.6
+; Page: 18
 <Delivery-Report-Answer> ::= < Diameter Header: 8388644, PXY, 16777311 >
         < Session-Id >
         [ DRMP ]
@@ -98,6 +103,7 @@
 ; Type: AVP Table
 ; Section: 6.3
 ; Table: 6.3.1/1
+; Page: 19
 ; Columns: Name                   Code   Section Type         Must  May   S.not M.not Encrypt
 SM-Delivery-Outcome-T4            3200   6.3.1   Enumerated   M,V   -     -     -     No
 Absent-Subscriber-Diagnostic-T4   3201   6.3.2   Enumerated   M,V   -     -     -     No
@@ -108,6 +114,7 @@ MTC-Error-Diagnostic              3203   6.3.7   Unsigned32   V     -     -     
 ; Type: Reused AVPs
 ; Section: 6.3
 ; Table: 6.3.1/2
+; Page: 19
 ; Columns: Name           From       M-bit
 User-Identifier           TS29.336   -
 SM-RP-SMEA                TS29.338   -
@@ -138,6 +145,7 @@ SMSF-Non-3GPP-Realm       TS29.338   -
 ; Type: Enumerated AVP
 ; Name: SM-Delivery-Outcome-T4
 ; Section: 6.3.1
+; Page: 20
 SM-Delivery-Outcome-T4 ::= < Enumerated AVP header: 3200 10415 >
         ABSENT_SUBSCRIBER           = 0
         UE_MEMORY_CAPACITY_EXCEEDED = 1
@@ -148,6 +156,7 @@ SM-Delivery-Outcome-T4 ::= < Enumerated AVP header: 3200 10415 >
 ; Type: Enumerated AVP
 ; Name: Absent-Subscriber-Diagnostic-T4
 ; Section: 6.3.2
+; Page: 20
 Absent-Subscriber-Diagnostic-T4 ::= < Enumerated AVP header: 3201 10415 >
         NO_PAGING_RESPONSE      = 0
         UE_DETACHED             = 1
@@ -160,6 +169,7 @@ Absent-Subscriber-Diagnostic-T4 ::= < Enumerated AVP header: 3201 10415 >
 ; Type: Grouped AVP
 ; Name: Serving-Node
 ; Section: 6.3.3
+; Page: 21
 Serving-Node ::= < AVP header: 2401 10415 >
         [ SMSF-3GPP-Name ]
         [ SMSF-3GPP-Realm ]
@@ -183,6 +193,7 @@ Serving-Node ::= < AVP header: 2401 10415 >
 ; Type: Grouped AVP
 ; Name: Additional-Serving-Node
 ; Section: 6.3.4
+; Page: 22
 Additional-Serving-Node ::= < AVP header: 2406 10415 >
         [ SMSF-3GPP-Name ]
         [ SMSF-3GPP-Realm ]
