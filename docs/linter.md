@@ -180,7 +180,7 @@ genuinely IETF-space AVP looks exactly like it.
 
 ## What the corpus reports today
 
-Fifteen 3GPP specifications and six RFCs, each committed raw and corrected.
+Eighteen 3GPP specifications and six RFCs, each committed raw and corrected.
 The raw files carry their documents' own mistakes and the corrected files clear
 them, which is what makes "the corrected corpus is clean" mean anything at all
 — a corpus that were clean because the rules never matched would look identical
@@ -196,6 +196,8 @@ otherwise. Between them the raw files exercise every single-file rule:
 | `29388-i00.raw.dad` | `duplicate-definition`, `duplicate-identity` and `table-definition-mismatch`, all from clause 6.3.10 re-printing 6.3.3's rule name |
 | `29336-i20.raw.dad` | `duplicate-definition` and two `duplicate-identity` findings — clause 8.4.36 prints a second, S6t-specific body for 6.4.2's `User-Identifier` at the same code, and clause 8.4.30 lowercases `Scheduled-Communication-Time` against its own table |
 | `29338-i20.raw.dad` | `duplicate-identity` — clause 6.3.3.13's AVP format misprints both the name (`SMS-MI-Correlation-ID` for `SMSMI-Correlation-ID`) and the code (SM-RP-MTI's 3308 for 3324) |
+| `29212-i20.raw.dad` | eight `vendor-id-mismatch` findings — grouped-AVP clauses printing `<AVP header: nnn>` with no vendor-id while the table marks V mandatory |
+| `29214-i40.raw.dad` | `duplicate-enum-value` (Specific-Action labels values 0 and 5 both "Void") and ten `vendor-id-mismatch` findings of the same vendor-less-header shape |
 
 `tests/test_linter.py` pins that table exactly, so a rule that starts firing on
 something else fails the suite instead of adding noise to a report.
@@ -298,11 +300,16 @@ between the definitions knows there is a choice to make.
 
 ### Notes waiting on corpus growth
 
-Two `local-and-reused` notes still await an origin, both in 29.272, citing
-TS 29.212 and RFC 5447. Committing TS 29.336 resolved the nine notes that
-cited it — two in 29.128, six more in 29.272 and one in 29.283 — the same way
-adding 29.173 had earlier resolved 29.337's two into concrete
-`reused-body-differs` findings.
+One `local-and-reused` note still awaits an origin: 29.272's
+`MIP6-Agent-Info`, citing RFC 5447. Committing TS 29.336 resolved the nine
+notes that cited it, and TS 29.212 the note for 29.272's
+`Allocation-Retention-Priority` — the same way adding 29.173 had earlier
+resolved 29.337's two into concrete `reused-body-differs` findings.
+
+The cross-file rules also caught three citation defects the moment 29.061 and
+29.212 joined: 29.128's re-used table citing `Bearer-Identity` for 29.212's
+`Bearer-Identifier`, and 29.212's Gx and Sd tables spelling two of 29.061's
+AVPs `Ipv6` where the origin spells `IPv6` — all three now name corrections.
 
 A fresh whole-corpus run leaves `origin-not-in-corpus` notes in eleven files.
 The two new ones are specific and intentional: 29.173 awaits TS 29.273, while

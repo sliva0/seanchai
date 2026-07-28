@@ -256,6 +256,31 @@ fixture for it in `tests/conftest.py` too.
 - one clause misprinting both the name and the code of its AVP-header line
   (29.338 §6.3.3.13 writes `SMS-MI-Correlation-ID`/3308 — SM-RP-MTI's code —
   for `SMSMI-Correlation-ID`/3324) — two corrections on one node;
+- the cover title printed as a plain paragraph rather than in the cover-page
+  table (29.061, 29.212, 29.213, 29.214) — `_spec_and_version` reads both;
+- flags cells separated by periods with no space, "M.V" (29.061 eleven times,
+  29.212 seven) — a separator convention, normalized like Y/N Encrypt cells;
+- clause cells annotated "16.4.7 (see Note)" in both casings (29.061, 37
+  times) — normalized off;
+- parenthesized note references on name cells, "(NOTE 3)"/"(Note 2)", and two
+  stacked on one cell (29.212, 29.214) — stripped whole, or the remainder
+  would be the non-name "3GPP-RAT-Type ()";
+- annex clause numbers leading with the annex letter ("E.6.3.6", 29.212) —
+  the section-number lexicon admits them, and they sort after every numbered
+  clause;
+- a re-used table with a fourth, label-less column of empty cells (29.212) —
+  dropped with a warning like an unmodelled column;
+- table name cells line-wrapped with a space after a hyphen, four in 29.212
+  alone — input-patched;
+- headings that hyphenate the " AVP" suffix onto the name
+  ("Service-Info-Status-AVP", 29.214 twice) — input-patched, because a
+  blanket strip would eat genuine names like RFC 6733's `Failed-AVP`;
+- "Void" printed as the label of two enumerated values (29.214's
+  Specific-Action, values 0 and 5) — deleted by corrections; `enum_value`
+  grew a `value` discriminator so each deletion can name its target;
+- origins outside the TS/RFC lexicon: ETSI documents spelled "3GPP TS 283
+  034" and "3GPP TS 183.017" (three-digit series, either separator) and
+  3GPP2's "X.S0057", which keeps its publisher's numbering in `SpecRef`;
 - one AVP printed with two different bodies in one document (29.336 defines
   `User-Identifier` in §6.4.2 and prints an S6t-specific variant in §8.4.36
   at the same code, swapping LMSI for Type-Of-External-Identifier). The

@@ -368,6 +368,8 @@ _RAW_ERRORS = {
         "duplicate-identity",
         "table-definition-mismatch",
     ],
+    "29212-i20.raw.dad": ["vendor-id-mismatch"] * 8,
+    "29214-i40.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 10,
     "29336-i20.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
@@ -417,6 +419,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     # AVPs each document both defines and lists as re-used.
     expected = {
         "29128-i00": 3,
+        "29212-i20": 9,
         "29272-i60": 9,
         "29283-i00": 1,
         "29336-i20.raw": 7,

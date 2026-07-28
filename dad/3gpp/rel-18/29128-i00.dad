@@ -273,7 +273,7 @@ OC-OLR                                RFC7683
 Monitoring-Event-Config-Status        TS29.336
 DRMP                                  RFC7944
 User-Identifier                       TS29.336
-Bearer-Identity                       TS29.212
+Bearer-Identifier                     TS29.212 ;; corrected: (TS29.128.py:24)
 Monitoring-Type                       TS29.336
 Loss-Of-Connectivity-Reason           TS29.336
 Maximum-Number-of-Reports             TS29.336

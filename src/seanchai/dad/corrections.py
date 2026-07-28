@@ -163,25 +163,42 @@ class avp_table(Selector):
 
 @dataclass(frozen=True)
 class reused_row(Selector):
-    """One row of the re-used AVPs table, by AVP name."""
+    """One row of a re-used AVPs table, by AVP name.
+
+    `section` names the table's own clause when a document holds several
+    re-used tables listing the same AVP — 29.212's Gx (5.4.0) and Sd (5b.4.0)
+    tables both carry `3GPP-SGSN-Ipv6-Address`.
+    """
 
     name: str
+    section: str | None = None
 
     def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
         for section in spec.sections:
-            if isinstance(section, ast.ReusedAvps):
+            if isinstance(section, ast.ReusedAvps) and (
+                self.section is None or section.source.section == self.section
+            ):
                 yield from (row for row in section.rows if row.name == self.name)
 
     def describe(self) -> str:
-        return f"re-used AVPs row {self.name!r}"
+        described = f"re-used AVPs row {self.name!r}"
+        if self.section is not None:
+            described += f" (clause {self.section})"
+        return described
 
 
 @dataclass(frozen=True)
 class enum_value(Selector):
-    """One named value of an enumerated AVP."""
+    """One named value of an enumerated AVP.
+
+    `value` disambiguates when one name labels several values — 29.214's
+    Specific-Action prints "Void" at both 0 and 5, and a deletion has to name
+    which one it dooms.
+    """
 
     avp: str
     name: str
+    value: int | None = None
 
     def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
         for section in spec.sections:
@@ -189,11 +206,16 @@ class enum_value(Selector):
                 yield from (
                     value
                     for value in section.values
-                    if isinstance(value, ast.EnumValue) and value.name == self.name
+                    if isinstance(value, ast.EnumValue)
+                    and value.name == self.name
+                    and (self.value is None or value.value == self.value)
                 )
 
     def describe(self) -> str:
-        return f"value {self.name!r} of {self.avp!r}"
+        described = f"value {self.name!r} of {self.avp!r}"
+        if self.value is not None:
+            described += f" (= {self.value})"
+        return described
 
 
 @dataclass(frozen=True)

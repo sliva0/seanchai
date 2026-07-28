@@ -51,7 +51,8 @@ spec-line     = "; Specification: " inline-text
 version-line  = "; Version: " version
 vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
 bases-line    = "; Bases: " spec-ref *(", " spec-ref)
-spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)   ; "RFC6733"
+spec-ref      = ("TS" 2*3DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)
+                / (ALPHA "." ALPHA 4DIGIT)   ; "RFC6733", "TS29.272", "X.S0057"
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
@@ -120,7 +121,8 @@ ETSI PDF rendering from 1.
 
 ```abnf
 source-ref    = "; Section: " section-number NL ["; Page: " 1*DIGIT NL]
-section-number = 1*DIGIT *("." 1*DIGIT *(%x41-5A))   ; "6.3", "6.3.7A"
+section-number = (1*ALPHA / 1*DIGIT *ALPHA) *("." 1*DIGIT *ALPHA)
+                ; "6.3", "6.3.7A", "5b.3.1", annex "E.6.3.6"
 avp-name      = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-" / "_")
 ```
 

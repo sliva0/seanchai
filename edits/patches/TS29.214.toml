@@ -1,0 +1,21 @@
+# Input patches for 3GPP TS 29.214 (Policy and charging control over Rx
+# reference point). Applied to normalized source text before parsing; see
+# src/seanchai/extractor/patches.py for the format.
+
+[[patch]]
+find = "Service-Info-Status-AVP"
+replace = "Service-Info-Status AVP"
+exact = true
+section = "5.3.25"
+reason = "the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table 5.3.0.1 and the Rx ABNF call the AVP 'Service-Info-Status'"
+first_version = "18.4.0"
+last_version = "18.4.0"
+
+[[patch]]
+find = "AF-Signalling-Protocol-AVP"
+replace = "AF-Signalling-Protocol AVP"
+exact = true
+section = "5.3.26"
+reason = "the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; table 5.3.0.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'"
+first_version = "18.4.0"
+last_version = "18.4.0"

@@ -1,0 +1,393 @@
+; Specification: 3GPP TS 29.214
+; Version: 18.4.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129214/18.04.00_60/ts_129214v180400p.pdf
+
+
+; Type: AVP Table
+; Section: 5.3.0
+; Table: 5.3.0.1
+; Page: 33
+; Columns: Name                            Code  Section   Type           Must  May   S.not M.not Encrypt
+5GMM-Cause                                 573   5.3.70    Unsigned32     V     P     -     M     Yes
+5GS-RAN-NAS-Release-Cause                  572   5.3.69    Grouped        V     P     -     M     Yes
+5GSM-Cause                                 574   5.3.71    Unsigned32     V     P     -     M     Yes
+Abort-Cause                                500   -         Enumerated     M,V   P     -     -     Yes
+Access-Network-Charging-Address            501   -         Address        M,V   P     -     -     Yes
+Access-Network-Charging-Identifier         502   -         Grouped        M,V   P     -     -     Yes
+Access-Network-Charging-Identifier-Value   503   -         OctetString    M,V   P     -     -     Yes
+Acceptable-Service-Info                    526   -         Grouped        M,V   P     -     -     Yes
+AF-Application-Identifier                  504   -         OctetString    M,V   P     -     -     Yes
+AF-Charging-Identifier                     505   -         OctetString    M,V   P     -     -     Yes
+AF-Requested-Data                          551   5.3.50    Unsigned32     V     P     -     M     Yes
+AF-Signalling-Protocol                     529   -         Enumerated     V     P     -     M     Yes
+Application-Service-Provider-Identity      532   -         UTF8String     V     P     -     M     Yes
+Callee-Information                         565   5.3.62    Grouped        V     P     -     M     Yes
+Codec-Data                                 524   -         OctetString    M,V   P     -     -     Yes
+Content-Version                            552   5.3.49    Unsigned64     V     P     -     M     Yes
+Desired-Max-Latency                        567   5.3.64    Float32        V     P     -     M     Yes
+Desired-Max-Loss                           568   5.3.65    Float32        V     P     -     M     Yes
+Extended-Max-Requested-BW-DL               554   5.3.52    Unsigned32     V     P     -     M     Yes
+Extended-Max-Requested-BW-UL               555   5.3.53    Unsigned32     V     P     -     M     Yes
+Extended-Max-Supported-BW-DL               556   5.3.54    Unsigned32     V     P     -     M     Yes
+Extended-Max-Supported-BW-UL               557   5.3.55    Unsigned32     V     P     -     M     Yes
+Extended-Min-Desired-BW-DL                 558   5.3.56    Unsigned32     V     P     -     M     Yes
+Extended-Min-Desired-BW-UL                 559   5.3.57    Unsigned32     V     P     -     M     Yes
+Extended-Min-Requested-BW-DL               560   5.3.58    Unsigned32     V     P     -     M     Yes
+Extended-Min-Requested-BW-UL               561   5.3.59    Unsigned32     V     P     -     M     Yes
+Flow-Description                           507   -         IPFilterRule   M,V   P     -     -     Yes
+Flow-Number                                509   -         Unsigned32     M,V   P     -     -     Yes
+Flows                                      510   -         Grouped        M,V   P     -     -     Yes
+Flow-Status                                511   -         Enumerated     M,V   P     -     -     Yes
+Flow-Usage                                 512   -         Enumerated     M,V   P     -     -     Yes
+FLUS-Identifier                            566   5.3.63    OctetString    V     P     -     M     Yes
+GCS-Identifier                             538   5.3.36    OctetString    V     P     -     M     Yes
+GLI-Identifier                             580   5.3.77    OctetString    V     P     -     M     Yes
+HFC-Node-Identifier                        579   5.3.76    OctetString    V     P     -     M     Yes
+IMS-Content-Identifier                     563   5.3.60    OctetString    V     P     -     -     Yes
+IMS-Content-Type                           564   5.3.61    Enumerated     V     P     -     -     Yes
+IP-Domain-Id                               537   5.3.35    OctetString    V     P     -     M     Yes
+Line-Type                                  581   5.3.78    Unsigned32     V     P     -     M     Yes
+MA-Information                             570   5.3.66    Grouped        V     P     -     M     Yes
+MA-Information-Action                      571   5.3.67    Unsigned32     V     P     -     M     Yes
+Max-Requested-Bandwidth-DL                 515   -         Unsigned32     M,V   P     -     -     Yes
+Max-Requested-Bandwidth-UL                 516   -         Unsigned32     M,V   P     -     -     Yes
+Max-Supported-Bandwidth-DL                 543   5.3.41    Unsigned32     V     P     -     M     Yes
+Max-Supported-Bandwidth-UL                 544   5.3.42    Unsigned32     V     P     -     M     Yes
+MCPTT-Identifier                           547   5.3.45    OctetString    V     P     -     M     Yes
+MCVideo-Identifier                         562   5.3.45A   OctetString    V     P     -     M     Yes
+Media-Component-Description                517   -         Grouped        M,V   P     -     -     Yes
+Media-Component-Number                     518   -         Unsigned32     M,V   P     -     -     Yes
+Media-Component-Status                     549   5.3.48    Unsigned32     V     P     -     M     Yes
+Media-Sub-Component                        519   -         Grouped        M,V   P     -     -     Yes
+Media-Type                                 520   -         Enumerated     M,V   P     -     -     Yes
+MPS-Identifier                             528   5.3.30    OctetString    V     P     -     M     Yes
+Min-Desired-Bandwidth-DL                   545   5.3.43    Unsigned32     V     P     -     M     -
+Min-Desired-Bandwidth-UL                   546   5.3.44    Unsigned32     V     P     -     M     -
+Min-Requested-Bandwidth-DL                 534   5.3.32    Unsigned32     V     P     -     M     Yes
+Min-Requested-Bandwidth-UL                 535   5.3.33    Unsigned32     V     P     -     M     Yes
+MPS-Action                                 582   5.3.79    Enumerated     V     P     -     M     Yes
+NGAP-Cause                                 575   5.3.72    Grouped        V     P     -     M     Yes
+NGAP-Group                                 576   5.3.73    Unsigned32     V     P     -     M     Yes
+NGAP-Value                                 577   5.3.74    Unsigned32     V     P     -     M     Yes
+NID                                        569   5.3.68    OctetString    V     P     -     M     Yes
+Priority-Sharing-Indicator                 550   5.3.47    Enumerated     V     P     -     M     Yes
+Pre-emption-Control-Info                   553   5.3.51    Unsigned32     V     P     -     M     Yes
+Required-Access-Info                       536   5.3.34    Enumerated     V     P     -     M     Yes
+Retry-Interval                             541   5.3.39    Unsigned32     V     P     -     M     Yes
+Rx-Request-Type                            533   5.3.31    Enumerated     V     P     -     M     Yes
+RR-Bandwidth                               521   -         Unsigned32     M,V   P     -     -     Yes
+RS-Bandwidth                               522   -         Unsigned32     M,V   P     -     -     Yes
+Service-Authorization-Info                 548   5.3.46    Unsigned32     V     P     -     M     Yes
+Service-URN                                525   -         OctetString    M,V   P     -     -     Yes
+Service-Info-Status                        527   -         Enumerated     M,V   P     -     -     Yes
+Sharing-Key-DL                             539   5.3.37    Unsigned32     V     P     -     M     Yes
+Sharing-Key-UL                             540   5.3.38    Unsigned32     V     P     -     M     Yes
+Specific-Action                            513   -         Enumerated     M,V   P     -     -     Yes
+SIP-Forking-Indication                     523   -         Enumerated     M,V   P     -     -     Yes
+Sponsor-Identity                           531   -         UTF8String     V     P     -     M     Yes
+Sponsored-Connectivity-Data                530   -         Grouped        V     P     -     M     Yes
+Sponsoring-Action                          542   5.3.40    Enumerated     V     P     -     M     Yes
+Wireline-User-Location-Info                578   5.3.75    Grouped        V     P     -     M     Yes
+
+
+; Type: Reused AVPs
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Page: 59
+; Columns: Name                 From
+3GPP-MS-TimeZone                TS29.061
+3GPP-SGSN-MCC-MNC               TS29.061
+3GPP-User-Location-Info         TS29.061
+AN-GW-Address                   TS29.212
+AN-Trusted                      TS29.273
+Called-Asserted-Identity        TS32.299
+Called-Party-Address            TS32.299
+Called-Station-Id               RFC4005
+Calling-Party-Address           TS32.299
+DRMP                            RFC7944
+Final-Unit-Action               RFC8506
+Framed-IP-Address               RFC4005
+Framed-Ipv6-Prefix              RFC4005
+Granted-Service-Unit            RFC8506
+IP-CAN-Type                     TS29.212
+Load                            RFC8583
+Max-PLR-DL                      TS29.212
+Max-PLR-UL                      TS29.212
+NetLoc-Access-Support           TS29.212
+OC-OLR                          RFC7683
+OC-Supported-Features           RFC7683
+Pre-emption-Capability          TS29.212
+Pre-emption-Vulnerability       TS29.212
+RAN-NAS-Release-Cause           TS29.212
+RAT-Type                        TS29.212
+Requested-Party-Address         TS32.299
+Reference-Id                    TS29.154
+Reservation-Priority            TS183.017
+Subscription-Id                 RFC8506
+Supported-Features              TS29.229
+TCP-Source-Port                 TS29.212
+TWAN-Identifier                 TS29.061
+ToS-Traffic-Class               TS29.212
+UDP-Source-Port                 TS29.212
+UE-Local-IP-Address             TS29.212
+Used-Service-Unit               RFC8506
+User-Equipment-Info             RFC8506
+User-Equipment-Info-Extension   RFC8506
+User-Location-Info-Time         TS29.212
+
+
+; Type: Enumerated AVP
+; Name: Abort-Cause
+; Section: 5.3.1
+; Page: 36
+Abort-Cause ::= < Enumerated AVP header: 500 10415 >
+        BEARER_RELEASED               = 0
+        INSUFFICIENT_SERVER_RESOURCES = 1
+        INSUFFICIENT_BEARER_RESOURCES = 2
+        PS_TO_CS_HANDOVER             = 3
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Charging-Identifier
+; Section: 5.3.3
+; Page: 37
+Access-Network-Charging-Identifier ::= < AVP header: 502 >
+        { Access-Network-Charging-Identifier-Value }
+      * [ Flows ]
+
+
+; Type: Grouped AVP
+; Name: Flows
+; Section: 5.3.10
+; Page: 39
+Flows ::= < AVP header: 510 >
+        { Media-Component-Number }
+      * [ Flow-Number ]
+      * [ Content-Version ]
+        [ Final-Unit-Action ]
+        [ Media-Component-Status ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Flow-Status
+; Section: 5.3.11
+; Page: 39
+Flow-Status ::= < Enumerated AVP header: 511 10415 >
+        ENABLED-UPLINK   = 0
+        ENABLED-DOWNLINK = 1
+        ENABLED          = 2
+        DISABLED         = 3
+        REMOVED          = 4
+
+
+; Type: Enumerated AVP
+; Name: Flow-Usage
+; Section: 5.3.12
+; Page: 40
+Flow-Usage ::= < Enumerated AVP header: 512 10415 >
+        NO_INFORMATION = 0
+        RTCP           = 1
+        AF_SIGNALLING  = 2
+
+
+; Type: Enumerated AVP
+; Name: Specific-Action
+; Section: 5.3.13
+; Page: 40
+Specific-Action ::= < Enumerated AVP header: 513 10415 >
+        Void                                                = 0
+        CHARGING_CORRELATION_EXCHANGE                       = 1
+        INDICATION_OF_LOSS_OF_BEARER                        = 2
+        INDICATION_OF_RECOVERY_OF_BEARER                    = 3
+        INDICATION_OF_RELEASE_OF_BEARER                     = 4
+        Void                                                = 5
+        IP-CAN_CHANGE                                       = 6
+        INDICATION_OF_OUT_OF_CREDIT                         = 7
+        INDICATION_OF_SUCCESSFUL_RESOURCES_ALLOCATION       = 8
+        INDICATION_OF_FAILED_RESOURCES_ALLOCATION           = 9
+        INDICATION_OF_LIMITED_PCC_DEPLOYMENT                = 10
+        USAGE_REPORT                                        = 11
+        ACCESS_NETWORK_INFO_REPORT                          = 12
+        INDICATION_OF_RECOVERY_FROM_LIMITED_PCC_DEPLOYMENT  = 13
+        INDICATION_OF_ACCESS_NETWORK_INFO_REPORTING_FAILURE = 14
+        INDICATION_OF_TRANSFER_POLICY_EXPIRED               = 15
+        PLMN_CHANGE                                         = 16
+        EPS_FALLBACK                                        = 17
+        INDICATION_OF_REALLOCATION_OF_CREDIT                = 18
+        SUCCESSFUL_QOS_UPDATE                               = 19
+        FAILED_QOS_UPDATE                                   = 20
+
+
+; Type: Grouped AVP
+; Name: Media-Component-Description
+; Section: 5.3.16
+; Page: 44
+Media-Component-Description ::= < AVP header: 517 >
+
+
+; Type: Grouped AVP
+; Name: Media-Sub-Component
+; Section: 5.3.18
+; Page: 46
+Media-Sub-Component ::= < AVP header: 519 >
+
+
+; Type: Enumerated AVP
+; Name: Media-Type
+; Section: 5.3.19
+; Page: 47
+Media-Type ::= < Enumerated AVP header: 520 10415 >
+
+
+; Type: Enumerated AVP
+; Name: SIP-Forking-Indication
+; Section: 5.3.22
+; Page: 47
+SIP-Forking-Indication ::= < Enumerated AVP header: 523 10415 >
+        SINGLE_DIALOGUE   = 0
+        SEVERAL_DIALOGUES = 1
+
+
+; Type: Grouped AVP
+; Name: Acceptable-Service-Info
+; Section: 5.3.24
+; Page: 48
+Acceptable-Service-Info ::= < AVP header: 526 >
+      * [ Media-Component-Description ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Extended-Max-Requested-BW-DL ]
+        [ Extended-Max-Requested-BW-UL ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Service-Info-Status
+; Section: 5.3.25
+; Page: 48
+Service-Info-Status ::= < Enumerated AVP header: 527 10415 >
+
+
+; Type: Enumerated AVP
+; Name: AF-Signalling-Protocol
+; Section: 5.3.26
+; Page: 48
+AF-Signalling-Protocol ::= < Enumerated AVP header: 529 10415 >
+        NO_INFORMATION = 0
+        SIP            = 1
+
+
+; Type: Grouped AVP
+; Name: Sponsored-Connectivity-Data
+; Section: 5.3.27
+; Page: 49
+Sponsored-Connectivity-Data ::= < AVP header: 530 >
+        [ Sponsor-Identity ]
+        [ Application-Service-Provider-Identity ]
+        [ Granted-Service-Unit ]
+        [ Used-Service-Unit ]
+        [ Sponsoring-Action ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Rx-Request-Type
+; Section: 5.3.31
+; Page: 49
+Rx-Request-Type ::= < Enumerated AVP header: 533 10415 >
+        INITIAL_REQUEST   = 0
+        UPDATE_REQUEST    = 1
+        PCSCF_RESTORATION = 2
+
+
+; Type: Enumerated AVP
+; Name: Required-Access-Info
+; Section: 5.3.34
+; Page: 50
+Required-Access-Info ::= < Enumerated AVP header: 536 10415 >
+        USER_LOCATION = 0
+        MS_TIME_ZONE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Sponsoring-Action
+; Section: 5.3.40
+; Page: 51
+Sponsoring-Action ::= < Enumerated AVP header: 542 10415 >
+        DISABLE_SPONSORING = 0
+        ENABLE_SPONSORING  = 1
+
+
+; Type: Enumerated AVP
+; Name: Priority-Sharing-Indicator
+; Section: 5.3.47
+; Page: 52
+Priority-Sharing-Indicator ::= < Enumerated AVP header: 550 10415 >
+        PRIORITY_SHARING_ENABLED  = 0
+        PRIORITY_SHARING_DISABLED = 1
+
+
+; Type: Enumerated AVP
+; Name: IMS-Content-Type
+; Section: 5.3.61
+; Page: 55
+IMS-Content-Type ::= < Enumerated AVP header: 564 10415 >
+        NO_CONTENT_DETAIL = 0
+        CAT               = 1
+        CONFERENCE        = 2
+
+
+; Type: Grouped AVP
+; Name: Callee-Information
+; Section: 5.3.62
+; Page: 55
+Callee-Information ::= < AVP header: 565 >
+        [ Called-Party-Address ]
+      * [ Requested-Party-Address ]
+      * [ Called-Asserted-Identity ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: MA-Information
+; Section: 5.3.66
+; Page: 56
+MA-Information ::= < AVP header: 570 >
+        [ IP-CAN-Type ]
+        [ RAT-Type ]
+        [ MA-Information-Action ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: NGAP-Cause
+; Section: 5.3.72
+; Page: 57
+NGAP-Cause ::= < AVP header: 575 >
+        { NGAP-Group }
+        { NGAP-Value }
+
+
+; Type: Grouped AVP
+; Name: Wireline-User-Location-Info
+; Section: 5.3.75
+; Page: 57
+Wireline-User-Location-Info ::= < AVP header: 578 >
+        [ HFC-Node-Identifier ]
+        [ GLI-Identifier ]
+        [ Line-Type ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: MPS-Action
+; Section: 5.3.79
+; Page: 58
+MPS-Action ::= < Enumerated AVP header: 582 10415 >
+        DISABLE_MPS_FOR_DTS                        = 0
+        ENABLE_MPS_FOR_DTS                         = 1
+        AUTHORIZE_AND_ENABLE_MPS_FOR_DTS           = 2
+        AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING = 3

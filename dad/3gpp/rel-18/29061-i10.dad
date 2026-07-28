@@ -1,0 +1,191 @@
+; Specification: 3GPP TS 29.061
+; Version: 18.1.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129000_129099/129061/18.01.00_60/ts_129061v180100p.pdf
+
+
+; Type: AVP Table
+; Section: 16a.5
+; Table: 9a
+; Page: 129
+; Columns: Name                    Code  Section  Type          Must  May   S.not M.not Encrypt
+3GPP-IMSI                          1     16.4.7   UTF8String    V     P     -     M     Yes
+3GPP-Charging-Id                   2     16.4.7   OctetString   V     P     -     M     Yes
+3GPP-PDP-Type                      3     16.4.7   Enumerated    V     P     -     M     Yes
+3GPP-CG-Address                    4     16.4.7   OctetString   V     P     -     M     Yes
+3GPP-GPRS-Negotiated-QoS-Profile   5     16.4.7   UTF8String    V     P     -     M     Yes
+3GPP-SGSN-Address                  6     16.4.7   OctetString   V     P     -     M     Yes
+3GPP-GGSN-Address                  7     16.4.7   OctetString   V     P     -     M     Yes
+3GPP-IMSI-MCC-MNC                  8     16.4.7   UTF8String    V     P     -     M     Yes
+3GPP-GGSN-MCC-MNC                  9     16.4.7   UTF8String    V     P     -     M     Yes
+3GPP-NSAPI                         10    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-Selection-Mode                12    16.4.7   UTF8String    V     P     -     M     Yes
+3GPP-Charging-Characteristics      13    16.4.7   UTF8String    V     P     -     M     Yes
+3GPP-CG-IPv6-Address               14    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-SGSN-IPv6-Address             15    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-GGSN-IPv6-Address             16    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-IPv6-DNS-Servers              17    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-SGSN-MCC-MNC                  18    16.4.7   UTF8String    V     P     -     M     Yes
+3GPP-IMEISV                        20    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-RAT-Type                      21    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-User-Location-Info            22    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-MS-TimeZone                   23    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-CAMEL-Charging-Info           24    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-Packet-Filter                 25    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-Negotiated-DSCP               26    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-Allocate-IP-Type              27    16.4.7   OctetString   V     P     -     M     Yes
+TWAN-Identifier                    29    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-User-Location-Info-Time       30    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-Secondary-RAT-Usage           31    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-UE-Local-IP-Address           32    16.4.7   OctetString   V     P     -     M     Yes
+3GPP-UE-Source-Port                33    16.4.7   OctetString   V     P     -     M     Yes
+
+
+; Type: Reused AVPs
+; Section: 16a.7
+; Table: 9b
+; Page: 132
+; Columns: Name       From
+External-Identifier   TS29.336
+
+
+; Type: AVP Table
+; Section: 17.7.0
+; Table: 10
+; Page: 148
+; Columns: Name                     Code  Section   Type          Must  May   S.not M.not Encrypt
+TMGI                                900   17.7.2    OctetString   M,V   P     -     -     Yes
+Required-MBMS-Bearer-Capabilities   901   17.7.3    UTF8String    M,V   P     -     -     Yes
+MBMS-StartStop-Indication           902   17.7.5    Enumerated    M,V   P     -     -     Yes
+MBMS-Service-Area                   903   17.7.6    OctetString   M,V   P     -     -     Yes
+MBMS-Session-Duration               904   17.7.7    OctetString   M,V   P     -     -     Yes
+3GPP-IMSI                           1     16.4.7    UTF8String    M,V   P     -     -     Yes
+Alternative-APN                     905   17.7.8    UTF8String    M,V   P     -     -     Yes
+MBMS-Service-Type                   906   17.7.9    Enumerated    M,V   P     -     -     Yes
+3GPP-SGSN-Address                   6     16.4.7    OctetString   M,V   P     -     -     Yes
+3GPP-SGSN-IPv6-Address              15    16.4.7    OctetString   M,V   P     -     -     Yes
+MBMS-2G-3G-Indicator                907   17.7.10   Enumerated    M,V   P     -     -     Yes
+MBMS-Session-Identity               908   17.7.11   OctetString   M,V   P     -     -     Yes
+RAI                                 909   17.7.12   UTF8String    M,V   P     -     -     Yes
+3GPP-IMEISV                         20    16.4.7    OctetString   M,V   P     -     -     Yes
+3GPP-RAT-Type                       21    16.4.7    OctetString   M,V   P     -     -     Yes
+3GPP-User-Location-Info             22    16.4.7    OctetString   M,V   P     -     -     Yes
+3GPP-MS-TimeZone                    23    16.4.7    OctetString   M,V   P     -     -     Yes
+Additional-MBMS-Trace-Info          910   17.7.13   OctetString   M,V   P     -     -     Yes
+MBMS-Time-To-Data-Transfer          911   17.7.14   OctetString   M,V   P     -     -     Yes
+MBMS-Session-Repetition-Number      912   17.7.15   OctetString   M,V   P     -     -     Yes
+MBMS-Required-QoS                   913   17.7.16   UTF8String    M,V   P     -     -     Yes
+MBMS-Counting-Information           914   17.7.17   Enumerated    M,V   P     -     -     Yes
+MBMS-User-Data-Mode-Indication      915   17.7.18   Enumerated    M,V   P     -     -     Yes
+MBMS-GGSN-Address                   916   17.7.19   OctetString   M,V   P     -     -     Yes
+MBMS-GGSN-IPv6-Address              917   17.7.20   OctetString   M,V   P     -     -     Yes
+MBMS-BMSC-SSM-IP-Address            918   17.7.21   OctetString   M,V   P     -     -     Yes
+MBMS-BMSC-SSM-IPv6-Address          919   17.7.22   OctetString   M,V   P     -     -     Yes
+MBMS-Flow-Identifier                920   17.7.23   OctetString   M,V   P     -     -     Yes
+CN-IP-Multicast-Distribution        921   17.7.24   Enumerated    M,V   P     -     -     Yes
+MBMS-HC-Indicator                   922   17.7.25   Enumerated    M,V   P     -     -     Yes
+
+
+; Type: Reused AVPs
+; Section: 17.7a
+; Table: 17.7a.1
+; Page: 154
+; Columns: Name    From
+MBMS-GW-UDP-Port   TS29.061
+
+
+; Type: AVP Table
+; Section: 20.5a
+; Table: 20.5a.1
+; Page: 175
+; Columns: Name              Code  Section    Type          Must  May   S.not M.not Encrypt
+MBMS-Access-Indicator        923   20.5a.1    Enumerated    M,V   P     -     -     Yes
+MBMS-GW-SSM-IP-Address       924   20.5a.2    OctetString   V     P     -     M     Yes
+MBMS-GW-SSM-IPv6-Address     925   20.5a.3    OctetString   V     P     -     M     Yes
+MBMS-BMSC-SSM-UDP-Port       926   20.5a.4    OctetString   V     P     -     M     Yes
+MBMS-GW-UDP-Port             927   20.5a.5    OctetString   V     P     -     M     Yes
+MBMS-GW-UDP-Port-Indicator   928   20.5a.6    Enumerated    V     P     -     M     Yes
+MBMS-Data-Transfer-Start     929   20.5a.7    Unsigned64    V     P     -     M     Yes
+MBMS-Data-Transfer-Stop      930   20.5a.8    Unsigned64    V     P     -     M     Yes
+MBMS-Flag                    931   20.5a.9    Unsigned32    V     P     -     M     Yes
+Restart-Counter              932   20.5a.10   Unsigned32    V     P     -     M     Yes
+Diagnostic-Info              933   20.5a.11   Unsigned32    V     P     -     M     Yes
+MBMS-Cell-List               934   20.5a.12   OctetString   V     P     -     M     Yes
+
+
+; Type: Reused AVPs
+; Section: 20.5
+; Table: 20.5.1
+; Page: 172
+; Columns: Name                  From
+TMGI                             TS29.061
+MBMS-StartStop-Indication        TS29.061
+MBMS-Service-Area                TS29.061
+MBMS-Session-Duration            TS29.061
+MBMS-Session-Identity            TS29.061
+MBMS-Time-To-Data-Transfer       TS29.061
+MBMS-Session-Repetition-Number   TS29.061
+MBMS-User-Data-Mode-Indication   TS29.061
+MBMS-GGSN-Address                TS29.061
+MBMS-GGSN-IPv6-Address           TS29.061
+MBMS-BMSC-SSM-IP-Address         TS29.061
+MBMS-BMSC-SSM-IPv6-Address       TS29.061
+MBMS-Flow-Identifier             TS29.061
+CN-IP-Multicast-Distribution     TS29.061
+MBMS-HC-Indicator                TS29.061
+3GPP-SGSN-Address                TS29.061
+3GPP-SGSN-IPv6-Address           TS29.061
+Called-Station-Id                RFC7155
+Framed-Interface-Id              RFC7155
+Framed-IP-Address                RFC7155
+Framed-IPv6-Prefix               RFC7155
+Local-M1-Information             TS29.468
+QoS-Information                  TS29.212
+Supported-Features               TS29.229
+
+
+; Type: Enumerated AVP
+; Name: MBMS-Service-Type
+; Section: 17.7.9
+; Page: 151
+MBMS-Service-Type ::= < Enumerated AVP header: 906 10415 >
+        MULTICAST = 0
+        BROADCAST = 1
+
+
+; Type: Enumerated AVP
+; Name: MBMS-2G-3G-Indicator
+; Section: 17.7.10
+; Page: 152
+MBMS-2G-3G-Indicator ::= < Enumerated AVP header: 907 10415 >
+        2G        = 0
+        3G        = 1
+        2G-AND-3G = 2
+
+
+; Type: Enumerated AVP
+; Name: MBMS-Counting-Information
+; Section: 17.7.17
+; Page: 153
+MBMS-Counting-Information ::= < Enumerated AVP header: 914 10415 >
+        COUNTING-NOT-APPLICABLE = 0
+        COUNTING-APPLICABLE     = 1
+
+
+; Type: Enumerated AVP
+; Name: MBMS-Access-Indicator
+; Section: 20.5a.1
+; Page: 175
+MBMS-Access-Indicator ::= < Enumerated AVP header: 923 10415 >
+        UTRAN             = 0
+        E-UTRAN           = 1
+        UTRAN-AND-E-UTRAN = 2
+
+
+; Type: Enumerated AVP
+; Name: MBMS-GW-UDP-Port-Indicator
+; Section: 20.5a.6
+; Page: 176
+MBMS-GW-UDP-Port-Indicator ::= < Enumerated AVP header: 928 10415 >
+        UDP-PORT-REQUIRED = 1

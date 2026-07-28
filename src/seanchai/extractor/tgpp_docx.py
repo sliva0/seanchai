@@ -44,7 +44,9 @@ from ..dad import abnf, ast
 from .errors import ExtractionError, boundary
 from .patches import Patcher
 
-_HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+[A-Z]*)*)\t(?P<title>.+)$")
+_HEADING_RE = re.compile(
+    r"^(?P<number>(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*)\t(?P<title>.+)$"
+)
 _COMMAND_TITLE_RE = re.compile(
     r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Command$"
 )
@@ -81,10 +83,19 @@ _RESERVED_NOTE_RE = re.compile(
 # this pattern's job is to recognise *that* a paragraph is a caption rather
 # than to encode a numbering scheme — hence a general dotted token instead of a
 # branch per style.
+# The optional space before the colon is 29.061's "Table 20.5.1 : SGmb ...".
 _TABLE_CAPTION_RE = re.compile(
-    r"^Table (?P<label>[A-Za-z0-9]+(?:[.\-/][A-Za-z0-9]+)*):"
+    r"^Table (?P<label>[A-Za-z0-9]+(?:[.\-/][A-Za-z0-9]+)*) ?:"
 )
-_NOTE_REF_RE = re.compile(r"\s*NOTE\s*(?P<number>\d+)\s*")
+# The spellings a table cell uses to point at a note below the table: bare
+# "NOTE 1" (29.272 and most others) and parenthesized "(NOTE 3)" / "(Note 2)"
+# (29.212, 29.214 name cells — 29.212 mixes both casings). The parenthesized
+# form must strip as a whole, or "3GPP-RAT-Type (NOTE 3)" would be left as
+# the non-name "3GPP-RAT-Type ()".
+_NOTE_REF_RE = re.compile(
+    r"\s*\(\s*(?:NOTE|Note)\s*(?P<number>\d+)\s*\)\s*"
+    r"|\s*(?:NOTE|Note)\s*(?P<bare>\d+)\s*"
+)
 _NOTE_RFC_RE = re.compile(
     r"^NOTE\s*(?P<number>\d+):\s*The values? of th(?:is|ese) attributes? "
     r"is defined in IETF\s+RFC\s+(?P<rfc>\d+)"
@@ -100,11 +111,15 @@ _PDF_COVER_RE = re.compile(
 # "TS 29.272 [10]", with the document's own bibliography number and no
 # publisher. The number is what identifies the origin, so that is what these
 # require.
-_ORIGIN_TS_RE = re.compile(r"TS\s+(?P<number>\d{2}\.\d{3})")
+# The series may be three digits with either separator: 29.212 spells an ETSI
+# TISPAN document "3GPP TS 283 034", 29.214 spells one "3GPP TS 183.017".
+_ORIGIN_TS_RE = re.compile(r"TS\s+(?P<series>\d{2,3})[. ](?P<number>\d{3})(?!\d)")
 _ORIGIN_RFC_RE = re.compile(r"RFC\s+(?P<number>\d+)")
+# 3GPP2 documents keep their publisher's numbering: "3GPP2 X.S0057 [24]".
+_ORIGIN_3GPP2_RE = re.compile(r"3GPP2\s+(?P<number>[A-Z]\.[A-Z]\d{4})")
 # A re-used table's From cell citing a clause of the same document
 # ("6.4.2" in 29.336's S6t table, whose AVPs the S6m set defines).
-_SECTION_REF_RE = re.compile(r"^\d+(?:\.\d+[A-Z]*)*$")
+_SECTION_REF_RE = re.compile(r"^(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*$")
 
 # Every AVP a 3GPP specification defines is in 3GPP's vendor space. That is a
 # fact about the publisher, not about any one document, so this extractor
@@ -389,10 +404,25 @@ def _extract_enumerated(
 
 
 def _strip_note_ref(text: str) -> tuple[str, str | None]:
-    match = _NOTE_REF_RE.search(text)
-    if match is None:
-        return text, None
-    return (text[: match.start()] + text[match.end() :]).strip(), match["number"]
+    """Remove every note reference from a cell, keeping the first number —
+    29.212 stacks two on one name cell ("Granted-Service-Unit (NOTE 5)
+    (NOTE 7)")."""
+    first: str | None = None
+    while match := _NOTE_REF_RE.search(text):
+        if first is None:
+            first = match["number"] if match["number"] is not None else match["bare"]
+        text = (text[: match.start()] + text[match.end() :]).strip()
+    return text, first
+
+
+# Clause cells in 29.061's tables annotate the number: "16.4.7 (see Note)",
+# 37 times across two clauses in both spellings — a document convention like
+# the Y/N Encrypt cells, so it is normalized here rather than input-patched.
+_SEE_NOTE_RE = re.compile(r"\s*\(see [Nn]ote\)\s*$")
+
+
+def _strip_see_note(text: str) -> str:
+    return _SEE_NOTE_RE.sub("", text)
 
 
 # Both spellings of the Encrypt column, normalized to one on the way in. This
@@ -422,11 +452,13 @@ def _data_type(text: str | None) -> ast.DataType | None:
 
 def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
     # Strict: typos like "M. V" or lowercase "v" are fixed by input patches,
-    # not tolerated here.
+    # not tolerated here. Space-less "M.V" is different — 29.061 writes it 11
+    # times and 29.212 seven, so the period is those documents' separator
+    # convention and is normalized like the Y/N Encrypt cells.
     if not text:  # an empty table cell
         return frozenset()
     try:
-        return abnf.avp_flags(text)
+        return abnf.avp_flags(text.replace(".", ",") if "." in text and " " not in text else text)
     except abnf.AbnfError as error:
         raise ExtractionError(str(error)) from None
 
@@ -475,7 +507,11 @@ def _map_columns[T](
     for index, label in enumerate(labels):
         stripped = _COLUMN_NOTE_RE.sub("", label).strip()
         if not stripped:
-            raise ExtractionError(f"{kind} column with no label in {labels!r}")
+            # 29.212 prints one re-used table with a fourth, label-less
+            # column whose cells are empty. Dropped like an unmodelled
+            # column: visible in the warning, not fatal.
+            warnings.append(f"{kind} column {index + 1} has no label and was dropped")
+            continue
         if (column := known.get(stripped)) is not None:
             columns.append(column)
             positions.append(index)
@@ -582,7 +618,7 @@ def _extract_avp_table(
                     code_value = int(code) if code else None
                     note = note or code_note
                 case ast.AvpColumn.SECTION:
-                    section_value = text or None
+                    section_value = _strip_see_note(text) or None
                 case ast.AvpColumn.TYPE:
                     type_value = text or None
                 case ast.AvpColumn.ENCRYPT:
@@ -627,15 +663,18 @@ def _extract_avp_table(
 
 def _origin(reference: str, own_reference: str) -> str:
     if match := _ORIGIN_TS_RE.search(reference):
-        return f"TS{match['number']}"
+        return f"TS{match['series']}.{match['number']}"
     if match := _ORIGIN_RFC_RE.search(reference):
         return f"RFC{match['number']}"
+    if match := _ORIGIN_3GPP2_RE.search(reference):
+        return match["number"]
     # A bare clause number cites this document itself: 29.336's S6t re-used
     # table lists AVPs its own S6m set defines, with cells like "6.4.2". The
     # faithful origin is the document's own reference, not a parse failure —
     # the linter's origin-resolution rules treat a self-reference like any
     # other, so nothing downstream needs a special case.
-    if _SECTION_REF_RE.match(reference):
+    # 29.061 writes one self-reference as "Clause 20.5a.5".
+    if _SECTION_REF_RE.match(reference.removeprefix("Clause ")):
         return own_reference
     raise ExtractionError(f"unrecognized origin reference {reference!r}")
 
@@ -692,12 +731,17 @@ def _extract_reused_table(
 
 
 def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
+    """The cover title, "3GPP TS 29.272 V18.6.0", read from wherever the
+    template of the day put it: most specs print it in a cover-page table,
+    but 29.061, 29.212, 29.213 and 29.214 print it as a plain paragraph."""
     for item in document.iter_inner_content():
         if isinstance(item, docx.table.Table):
             for row in item.rows:
                 for cell in row.cells:
                     if match := _DOCX_COVER_RE.search(_normalize(cell.text)):
                         return f"3GPP {match['spec']}", match["version"]
+        elif match := _DOCX_COVER_RE.search(_normalize(item.text)):
+            return f"3GPP {match['spec']}", match["version"]
     raise ExtractionError("cannot find spec number/version on the cover page")
 
 
@@ -779,7 +823,9 @@ def _collect(
             continue
         for table in section.tables:
             header = table.rows[0].cells
-            if "AVP Flag rules" in header:
+            # Substring, not membership: 29.214 titles the column group
+            # "AVP Flag rules (Note 1)".
+            if any("AVP Flag rules" in cell for cell in header):
                 avp_table, note_reused = _extract_avp_table(
                     table, section.number, warnings
                 )
@@ -974,15 +1020,17 @@ def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
     return tuple(sections)
 
 
-def _section_sort_key(section: str) -> list[tuple[int, str]]:
-    """Document order for section numbers: "6.3.10" sorts after "6.3.4", and
-    "6.3.7A" after "6.3.7"."""
+def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
+    """Document order for section numbers: "6.3.10" sorts after "6.3.4",
+    "6.3.7A" after "6.3.7", and annex clauses ("E.6.3.6") after every
+    numbered clause, in annex-letter order."""
     key = []
     for part in section.split("."):
         digits = re.match(r"\d+", part)
-        # `SectionNumber` guarantees every part starts with digits.
-        assert digits is not None, f"malformed section number {section!r}"
-        key.append((int(digits[0]), part))
+        if digits is None:  # an annex letter — sorts after all numbers
+            key.append((1, 0, part))
+        else:
+            key.append((0, int(digits[0]), part))
     return key
 
 
@@ -1059,7 +1107,7 @@ def attach_pages(
                 if isinstance(entry, list):
                     walk(entry)
                     continue
-                match = re.match(r"^(\d+(?:\.\d+[A-Z]*)*)\s", entry.title)
+                match = re.match(r"^(\d+[A-Za-z]*(?:\.\d+[A-Za-z]*)*)\s", entry.title)
                 if match is None:
                     continue
                 # pypdf types an outline destination as `IndirectObject` and

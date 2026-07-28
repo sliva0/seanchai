@@ -52,7 +52,10 @@ InlineText = Annotated[
 ]
 
 # Single-token reference to a defining document: "TS29.336", "RFC7683".
-SPEC_REF_PATTERN = r"^(TS\d{2}\.\d{3}|RFC\d+)$"
+# The TS series may be three digits — 29.212 cites ETSI TISPAN documents it
+# spells "3GPP TS 283 034", 29.214 "3GPP TS 183.017" — and 29.212 also cites
+# 3GPP2's "X.S0057", which keeps its publisher's letter-dot-letter shape.
+SPEC_REF_PATTERN = r"^(TS\d{2,3}\.\d{3}|RFC\d+|[A-Z]\.[A-Z]\d{4})$"
 SpecRef = Annotated[str, Field(pattern=SPEC_REF_PATTERN)]
 
 # Table label as printed in the spec, carried by `; Table:`: "6.3.1", "6.3/2".
@@ -61,7 +64,12 @@ SpecRef = Annotated[str, Field(pattern=SPEC_REF_PATTERN)]
 TableLabel = InlineText
 
 # Section numbers as printed in the spec: "6.3", "6.3.7A".
-SectionNumber = Annotated[str, Field(pattern=r"^\d+(\.\d+[A-Z]*)*$")]
+# Components are digits with an optional letter suffix, either case: 3GPP
+# numbers clauses "6.3.7A" (29.272), "5b.3.1" (29.212) and "20.5a.5" (29.061).
+# An annex clause leads with the annex letter instead: "E.6.3.6" (29.212).
+SectionNumber = Annotated[
+    str, Field(pattern=r"^([A-Za-z]+|\d+[A-Za-z]*)(\.\d+[A-Za-z]*)*$")
+]
 
 # A document's own version numbering: "18.6.0".
 Version = Annotated[str, Field(pattern=r"^\d+(\.\d+)*$")]

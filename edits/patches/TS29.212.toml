@@ -1,0 +1,42 @@
+# Input patches for 3GPP TS 29.212 (Policy and charging control over Gx/Sd/St
+# reference points). Applied to normalized source text before parsing; see
+# src/seanchai/extractor/patches.py for the format.
+
+[[patch]]
+find = "Enumarated"
+replace = "Enumerated"
+reason = "one Value Type cell misspells 'Enumerated'"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "Allocation- Retention-Priority"
+replace = "Allocation-Retention-Priority"
+exact = true
+reason = "one table name cell line-wraps with a space after the first hyphen; every other occurrence spells 'Allocation-Retention-Priority'"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "Monitoring- Flags"
+replace = "Monitoring-Flags"
+exact = true
+reason = "one table name cell line-wraps with a space after the hyphen; the defining clause 5.3.115 and the ABNF spell 'Monitoring-Flags'"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "Redirect- Address-Type"
+replace = "Redirect-Address-Type"
+exact = true
+reason = "one table name cell line-wraps with a space after the first hyphen; RFC 4006 and the rest of the document spell 'Redirect-Address-Type'"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "Resource-Allocation- Notification"
+replace = "Resource-Allocation-Notification"
+exact = true
+reason = "one table name cell line-wraps with a space after the second hyphen; the defining clause 5.3.50 and the ABNF spell 'Resource-Allocation-Notification'"
+first_version = "18.2.0"
+last_version = "18.2.0"

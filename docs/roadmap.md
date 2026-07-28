@@ -144,29 +144,28 @@ bodies that differ from their cited origins — including both T4 serving-node
 bodies in 29.337 against their definitions in 29.173.
 
 What is left is the reach of the corpus rather than the rules. Committing
-TS 29.336 and TS 29.338 (via the multiple-table shape, item 28) resolved the
-nine `local-and-reused` notes that cited 29.336 and turned them into concrete
-`reused-reprint`/`reused-body-differs` findings; two such notes remain, both
-in 29.272, citing TS 29.212 and RFC 5447. Six RFCs are committed and
-resolving (6733, 7683, 7944, 8581, 8582, 8583); the RFC origins still absent
-are RFC 4004, 4006, 4072, 4590, 5447, 5777 and 7844 (one citing file each),
-plus RFC 5778 (cited by 29.128, 29.272 and 29.336).
+TS 29.336 and 29.338 (via the multiple-table shape, item 28) and then 29.061,
+29.212 and 29.214 (via the cover-page fix, item 13) resolved all but one
+`local-and-reused` note — 29.272's `MIP6-Agent-Info`, awaiting RFC 5447 —
+and caught three citation defects no single file could see (29.128's
+`Bearer-Identity` for `Bearer-Identifier`, 29.212's `Ipv6` for 29.061's
+`IPv6` spelling, twice), all three now name corrections.
 
-The cheapest next wins, ordered by how many citing files each unblocks:
+The cheapest next wins, ordered by cost:
 
-- **TS 32.299** is cited unresolved by 29.128, 29.172, 29.272, 29.336,
-  29.345 and 29.389, but it is one of the legacy `.doc` specs (item 11), so
-  it is gated on that whole prerequisite rather than on anything small.
-- **TS 29.061**, **TS 29.273** and **TS 29.217** are each unresolved in two
-  or three files. 29.061 is cited by 29.128, 29.272 and 29.344 and fails
-  cover-page spec-number detection (item 13); 29.273 is cited by 29.173,
-  29.272 and 29.345 and has a command section with no ABNF (item 14); 29.217
-  is cited by 29.272 and 29.336 and is a legacy `.doc` spec (item 11).
-- **TS 29.212** is unresolved in 29.128 and 29.272 and also fails cover-page
-  spec-number detection (item 13).
-- **TS 29.368** is an unresolved origin in 29.337 (which draws five reused
-  AVPs from it) and 29.336. It is a legacy `.doc` specification gated on
-  item 11.
+- **The absent RFC origins** are the cheapest of all — the RFC extractor
+  costs at most a header spelling per document. Cited and unextracted today:
+  RFC 4004, 4590, 5447, 5777, 7155, 7844 and 8506 (one or two citing files
+  each), RFC 4005 and 4072 (two each), RFC 4006 (29.212 and 29.337) and
+  RFC 5778 (29.128, 29.272 and 29.336).
+- **TS 32.299** is cited unresolved by six files (29.128, 29.172, 29.272,
+  29.336, 29.345, 29.389), but it is one of the legacy `.doc` specs
+  (item 11), so it is gated on that whole prerequisite.
+- **TS 29.273** is cited by 29.173, 29.212, 29.214, 29.272 and 29.345 and
+  has a command section with no ABNF (item 14).
+- **TS 29.368** (29.336, 29.337 — the latter draws five reused AVPs from
+  it), **TS 29.217** (29.272, 29.336) and **TS 29.154** (29.214, 29.336) are
+  legacy `.doc` specifications gated on item 11.
 
 29.389 already depends on 29.388, so a two-hop chain is available to exercise
 as soon as anything needs one — and 29.172 → 29.272 → RFC 5778 already
@@ -177,12 +176,13 @@ exercises citation *indirection* across two hops.
 Run the extractor over the remaining 3GPP Diameter specs. Expect new document
 quirks; keep the acceptance loop from [workflow.md](workflow.md). Running it
 over the whole downloaded corpus is cheap and says where the work is: of the 34
-specifications the downloader fetches, fifteen extract cleanly today, and all
-fifteen are now committed. The rest fail in a handful of classes, and the
+specifications the downloader fetches, eighteen extract cleanly today, and
+all eighteen are now committed. The rest fail in a handful of classes, and the
 classes matter more than the individual specs: the legacy `.doc` format (11),
 the cover page (13), documents with no AVP table of their own (14), and
-documents with no AVP table of their own (14) — the multiple-table-pair shape
-(28) is done, and it is what brought 29.336 and 29.338 in.
+documents with no AVP table of their own (14) — the multiple-table-pair
+shape (28) and the cover page (13) are done, and between them they brought
+29.336, 29.338, 29.061, 29.212 and 29.214 in.
 
 11. **Nine specifications never reach the extractor at all**, because 3GPP
     ships them as legacy binary `.doc` rather than `.docx`: 29.201, 29.215,
@@ -191,8 +191,19 @@ documents with no AVP table of their own (14) — the multiple-table-pair shape
     29.368, which supplies five reused AVPs to 29.337. Reading that format, or
     finding a source that offers those nine as `.docx`, is a prerequisite the
     corpus does not currently admit to having.
-13. **Four cannot find the spec number on the cover page**: 29.061, 29.212,
-    29.213 and 29.214.
+**The cover page (item 13) is fixed, and 29.061, 29.212 and 29.214 are
+committed.** The four failing specs print the cover title as a plain
+paragraph where every other spec puts it in a table; `_spec_and_version`
+reads both. Behind it lay a trail of firsts, all recorded in
+[extractor.md](extractor.md#collected-source-document-weirdness): annex
+clause numbers ("E.6.3.6"), period-separated flags cells, parenthesized and
+stacked note references, a label-less re-used-table column, vendor-less AVP
+headers corrected en masse, 29.214's "Void" enum placeholders (deleted via
+`enum_value`'s new `value` discriminator), and origins outside the TS/RFC
+lexicon — ETSI's "TS 283 034"/"TS 183.017" and 3GPP2's "X.S0057", which
+`SpecRef` now admits. The fourth spec, 29.213, contains no ABNF and no AVP
+tables at all — a signalling-flows document with no dictionary content, so
+"no AVP table found" is the extractor being right about it.
 14. **Five report no AVP table, in four different senses.** For 29.228 and
     29.328 the extractor is right and the assumption is wrong: those
     specifications hold the Cx and Sh *messages* while 29.229 and 29.329 hold
@@ -252,8 +263,8 @@ This section deliberately sat after the RFC extractor (16, now done, with the
 cited RFC backlog extracted): those unblocked reference resolution (5), the
 base-protocol import rule, and cleared most `origin-not-in-corpus` noise at
 once, while the oracle only adds confidence to values already extracted. With
-fifteen specs committed and only 29.329 hand-verified, its moment is closer
-than it was.
+eighteen specs committed and only 29.329 hand-verified, its moment is
+closer than it was.
 
 9. **Fetch Wireshark's Diameter dictionary through the downloader.** It is
     the oracle the next item compares against, and it needs to arrive pinned
