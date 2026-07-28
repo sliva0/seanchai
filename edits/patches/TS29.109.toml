@@ -1,0 +1,13 @@
+# Input patches for 3GPP TS 29.109 (GAA; Zh and Zn interfaces based on Diameter).
+# Applied to normalized source text before parsing; see
+# src/seanchai/extractor/patches.py for the format.
+
+[[patch]]
+find = "OctedString"
+replace = "OctetString"
+count = 6
+exact = true
+section = "6.3"
+reason = "table 6.1 misspells OctetString for six AVPs; their defining clauses describe octet strings and OctedString is not a Diameter data type"
+first_version = "18.1.0"
+last_version = "18.1.0"

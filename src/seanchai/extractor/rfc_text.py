@@ -70,22 +70,22 @@ _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+)*)\.?\s+(?P<title>\S.*)$")
 # A definition heading: the defined name, with or without the " AVP" suffix
 # ("6.7.2.  Proxy-Info AVP", "5.3.1.  Capabilities-Exchange-Request"). Prose
 # titles do not match, which is what excludes the CCF grammar's own examples.
-_TITLE_RE = re.compile(r"^(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)(?P<avp_suffix> AVP)?$")
+_TITLE_RE = re.compile(r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)(?P<avp_suffix> AVP)?$")
 # The RFC dialect of the three rule forms. Same group names as the docx
 # dialect's, which is what lets `abnf.avp_rule` read either.
 _DIAMETER_HEADER_RE = re.compile(
-    r"^<\s*(?P<name>[A-Za-z][A-Za-z0-9-]*)\s*>\s*::=\s*"
+    r"^<\s*(?P<name>[A-Za-z][A-Za-z0-9_-]*)\s*>\s*::=\s*"
     r"<\s*Diameter Header:\s*(?P<items>[^>]*?)\s*>$"
 )
 _AVP_HEADER_RE = re.compile(
     # The rule name is angle-bracketed in some clauses and bare in others —
     # RFC 6733 writes both `<Failed-AVP> ::=` and `Proxy-Info ::=`.
-    r"^<?\s*(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)\s*>?\s*::=\s*"
+    r"^<?\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)\s*>?\s*::=\s*"
     r"<\s*AVP [Hh]eader:\s*(?P<code>\d+)(?:\s*,?\s+(?P<vendor>\d+))?\s*>$"
 )
 _ABNF_LINE_RE = re.compile(
     r"^(?:(?P<min>\d*)\*(?P<max>\d*))?\s*"
-    r"(?P<open>[<{\[])\s*(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)\s*(?P<close>[>}\]])$"
+    r"(?P<open>[<{\[])\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)\s*(?P<close>[>}\]])$"
 )
 # One enumerated value line, stripped: `REBOOTING    0` (RFC 6733, description
 # indented below) or `PRIORITY_15 15  PRIORITY_15 is the lowest...` (RFC 7944,
@@ -93,7 +93,9 @@ _ABNF_LINE_RE = re.compile(
 # Names are all-caps in every collected RFC, and requiring that is what keeps
 # prose lines out; a wrapped description line never has digits as its second
 # token, so continuations cannot match.
-_ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Z][A-Z0-9_-]*)\s+(?P<value>\d+):?(?:\s+\S.*)?$")
+_ENUM_VALUE_RE = re.compile(
+    r"^(?P<name>[A-Z][A-Z0-9_-]*)\s+(?P<value>\d+):?(?:\s+\S.*)?$"
+)
 # The fixed-width labels cannot be tokenized: RFC 6733 prints "Code Defined"
 # (two columns) and "Attribute Name" (one label) with the same single space,
 # so only knowing the vocabulary tells them apart. Each entry maps the
@@ -549,9 +551,7 @@ def _extract_definitions(
     messages: list[ast.Message] = []
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = []
     enum_rows = {
-        row.name: row
-        for row in table.rows
-        if row.data_type is ast.DataType.ENUMERATED
+        row.name: row for row in table.rows if row.data_type is ast.DataType.ENUMERATED
     }
     defined_enums: set[str] = set()
     for section in sections:
@@ -574,9 +574,7 @@ def _extract_definitions(
                         f"{section.number}: malformed rule header {text!r}"
                     )
                 try:
-                    code, flags, application_id = abnf.diameter_header(
-                        header["items"]
-                    )
+                    code, flags, application_id = abnf.diameter_header(header["items"])
                 except abnf.AbnfError as error:
                     raise ExtractionError(f"{section.number}: {error}") from None
                 avps, index = _abnf_body(section.texts, index)
@@ -714,7 +712,9 @@ def extract(
         )
         # File order matches the docx extractor's: messages in document order,
         # the AVP table, then every definition in document order.
-        definitions.sort(key=lambda definition: _section_sort_key(definition.source.section))
+        definitions.sort(
+            key=lambda definition: _section_sort_key(definition.source.section)
+        )
         return ast.Specification(
             specification=specification,
             version=None,

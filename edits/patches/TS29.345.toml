@@ -1,0 +1,22 @@
+# Input patches for 3GPP TS 29.345 (Inter-ProSe function signalling).
+# Applied to normalized source text before parsing; see
+# src/seanchai/extractor/patches.py for the format.
+
+[[patch]]
+find = "M. V"
+replace = "M, V"
+count = 2
+exact = true
+section = "6.3.1"
+reason = "table 6.3.1-1 uses '.' instead of ',' as the flag separator for ProSe-App-Code-Info and UTC-based-Counter"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Group"
+replace = "Grouped"
+exact = true
+section = "6.3.1"
+reason = "table 6.3.1-1 calls App-Identifier's type Group; clause 6.3.61 defines it as Grouped and Group is not a Diameter data type"
+first_version = "18.0.0"
+last_version = "18.0.0"

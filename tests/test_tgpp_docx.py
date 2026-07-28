@@ -394,6 +394,27 @@ def test_extract_reads_a_reused_table_with_no_m_bit_column(tmp_path):
     assert formatter.format_spec(parser.parse(text)) == text
 
 
+def test_reused_table_accepts_short_m_bit_spellings(tmp_path):
+    """TS 29.338 writes "Must"/"Must not", while its table note documents the
+    usual "Must set"/"Must not set"; both spellings carry the same override."""
+    path = _reused_docx(
+        tmp_path,
+        ["Attribute Name", "Reference", "M-bit"],
+        [
+            ["Required-AVP", "IETF RFC 6733", "Must"],
+            ["Optional-AVP", "IETF RFC 6733", "Must not"],
+        ],
+    )
+
+    spec = tgpp_docx.extract(path)
+
+    reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
+    assert [row.m_bit for row in reused.rows] == [
+        ast.MBitOverride.MUST,
+        ast.MBitOverride.MUST_NOT,
+    ]
+
+
 def test_a_prose_column_is_dropped_without_a_warning(tmp_path):
     """Comments, Description and Comment are known to hold narrative — up to
     1657 characters of it — which `.dad` does not carry. Dropping them is the

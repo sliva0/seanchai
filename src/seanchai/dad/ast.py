@@ -21,8 +21,11 @@ import pydantic
 from pydantic import Field
 
 # AVP and message names as they appear in specs: "User-Data", "3GPP-Charging-Id".
+# RFC 6733's name-fmt excludes "_", but TS 29.109 consistently publishes
+# GBA_U-Awareness-Indicator in its heading, ABNF, table and defining prose.
+# The source-fidelity AST must represent what a specification actually names.
 # Enum value names are the same minus the leading-character restriction.
-AvpName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9-]*$")]
+AvpName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
 EnumValueName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
 
 # Free text the line-oriented format writes onto a single line, next to a

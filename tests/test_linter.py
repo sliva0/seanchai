@@ -356,6 +356,7 @@ def test_the_corrected_corpus_has_no_errors(path):
 # before it was written down; a file absent from here must lint clean raw.
 _RAW_ERRORS = {
     "29172-i10.raw.dad": ["duplicate-identity"],
+    "29128-i00.raw.dad": ["duplicate-identity", "duplicate-identity"],
     "29272-i60.raw.dad": [
         "duplicate-identity",
         "table-definition-mismatch",
@@ -365,6 +366,16 @@ _RAW_ERRORS = {
     "29388-i10.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
+        "table-definition-mismatch",
+    ],
+    "29345-i00.raw.dad": [
+        "duplicate-identity",
+        "duplicate-identity",
+        "table-definition-mismatch",
+        "table-definition-mismatch",
+        "table-definition-mismatch",
+        "table-definition-mismatch",
+        "table-definition-mismatch",
         "table-definition-mismatch",
     ],
 }
@@ -396,7 +407,12 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
 
     # AVPs each document both defines and lists as re-used: nine in 29.272,
     # one each in 29.283 (User-Identifier) and 29.388 (V2X-Subscription-Data).
-    expected = {"29272-i60": 9, "29283-i00": 1, "29388-i10": 1}
+    expected = {
+        "29128-i00": 3,
+        "29272-i60": 9,
+        "29283-i00": 1,
+        "29388-i10": 1,
+    }
     stem = path.name.removesuffix(".dad").removesuffix(".raw")
 
     assert len(notes) == expected.get(stem, 0)

@@ -51,7 +51,7 @@ _COMMAND_TITLE_RE = re.compile(
 # 29.272 mostly bare "Subscription-Data". Bare titles like "General" also
 # match — harmless, since a section only becomes a definition when its body
 # holds an AVP-header rule or an Enumerated intro with a known code.
-_AVP_TITLE_RE = re.compile(r"^(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)( AVP)?$")
+_AVP_TITLE_RE = re.compile(r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)( AVP)?$")
 _DIAMETER_HEADER_RE = re.compile(
     # The rule name is normalized separately: source docx sometimes carries
     # stray spaces inside it ("< User-Data -Request>").
@@ -61,12 +61,12 @@ _DIAMETER_HEADER_RE = re.compile(
 _AVP_HEADER_RE = re.compile(
     # code/vendor separator varies between specs: "700 10415" and "632, 10415";
     # rule names can carry spaces for hyphens ("Monitoring Event Report::=")
-    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9 -]*?)\s*::=\s*<\s*AVP [Hh]eader:\s*(?P<code>\d+)"
+    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9 _-]*?)\s*::=\s*<\s*AVP [Hh]eader:\s*(?P<code>\d+)"
     r"(?:\s*,?\s+(?P<vendor>\d+))?\s*>$"
 )
 _ABNF_LINE_RE = re.compile(
     r"^(?:(?P<min>\d*)\*(?P<max>\d*))?\s*"
-    r"(?P<open>[<{\[])\s*(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)\s*(?P<close>[>}\]])$"
+    r"(?P<open>[<{\[])\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)\s*(?P<close>[>}\]])$"
 )
 _ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
 _RESERVED_NOTE_RE = re.compile(
@@ -110,7 +110,11 @@ TGPP_VENDOR = 10415
 
 _M_BIT_OVERRIDES = {
     "": None,
+    # TS 29.338 uses the shorter forms in its re-used tables even though the
+    # notes below those tables document only "Must set" and "Must not set".
+    "Must": ast.MBitOverride.MUST,
     "Must set": ast.MBitOverride.MUST,
+    "Must not": ast.MBitOverride.MUST_NOT,
     "Must not set": ast.MBitOverride.MUST_NOT,
 }
 
@@ -841,14 +845,16 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp]) -> int:
     """The vendor id shared by this spec's locally defined AVPs.
 
     Enumerated-AVP sections never print it, so it is read off the grouped-AVP
-    headers, which do — one value per 3GPP spec (10415). Zero or several
-    candidates is a resolution failure, not a vendor-less enumerated AVP:
-    emitting `None` there would publish an AVP under the IETF vendor space that
-    the spec places in 3GPP's.
+    headers, which normally do — one value per 3GPP spec (10415). TS 29.109
+    defines enumerated AVPs but no grouped ones, so no header supplies the
+    otherwise implicit value; in that case the publisher's vendor space is the
+    only candidate. Several distinct header values remain a resolution error.
     """
     vendors = sorted({avp.vendor_id for avp in grouped if avp.vendor_id is not None})
+    if not vendors:
+        return TGPP_VENDOR
     if len(vendors) != 1:
-        found = ", ".join(str(vendor) for vendor in vendors) or "none"
+        found = ", ".join(str(vendor) for vendor in vendors)
         raise ExtractionError(
             "cannot resolve the vendor id of this spec's enumerated AVPs:"
             f" its grouped-AVP headers give {found}"

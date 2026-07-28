@@ -20,16 +20,16 @@ from . import abnf, ast
 # `; RESERVED = n` uses `=` rather than `:` and so is not a match either way.
 _DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z][A-Za-z-]*): (?P<value>.*)$")
 _MESSAGE_HEADER_RE = re.compile(
-    r"^<(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)> ::= "
+    r"^<(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)> ::= "
     r"< Diameter Header: (?P<items>[0-9A-Z, ]+) >$"
 )
 _AVP_HEADER_RE = re.compile(
-    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9-]*) ::= "
+    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) ::= "
     r"< (?P<kind>AVP|Enumerated AVP) header: (?P<code>\d+)(?: (?P<vendor>\d+))? >$"
 )
 _AVP_RULE_RE = re.compile(
     r"^\s*(?:(?P<min>\d*)\*(?P<max>\d*)\s*)?"
-    r"(?P<open>[<{\[]) (?P<name>[A-Za-z0-9][A-Za-z0-9-]*) (?P<close>[>}\]])"
+    r"(?P<open>[<{\[]) (?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) (?P<close>[>}\]])"
     r"(?P<bold>\s*; bold)?\s*$"
 )
 _ENUM_VALUE_RE = re.compile(

@@ -1,6 +1,7 @@
 """Corrections for 3GPP TS 29.344 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, definition
+from seanchai.dad import ast
+from seanchai.dad.corrections import Correction, Insert, avp_table, definition
 
 # Clauses 6.2.11 and 6.2.12 head "ProSe-Initial-Location-Information-Request"
 # and "-Answer" and carry command code 8388713 with the abbreviations PSR/PSA,
@@ -24,4 +25,25 @@ CORRECTIONS = [
         versions="18.1.0",
     )
     for kind, section in (("Request", "6.2.11"), ("Answer", "6.2.12"))
+]
+
+CORRECTIONS += [
+    Insert(
+        into=avp_table("6.3.1-1"),
+        node=ast.AvpTableRow(
+            name="Authorized-Discovery-Range",
+            code=3708,
+            section="6.3.13",
+            data_type=ast.DataType.UNSIGNED32,
+            flag_rules=ast.AvpFlagRules(
+                must=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR})
+            ),
+            may_encrypt=False,
+        ),
+        after="ProSe-Initial-Location-Information",
+        reason="clause 6.3.13 defines this Unsigned32 AVP and TS 29.230 assigns"
+        " it code 3708, but table 6.3.1-1 accidentally omits the row; its flag"
+        " rules follow every locally defined PC4a AVP in the table",
+        versions="18.1.0",
+    )
 ]

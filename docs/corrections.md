@@ -219,10 +219,10 @@ source.
 
 ## Structural edits
 
-**Status: `Delete` is implemented (roadmap item 6); `Insert` and `Supply`
-remain proposals.** The field-replace layer above stays exactly as it is;
-these are new named operations beside it, in the same `CORRECTIONS` list, with
-the same declare-expect-fail-loudly contract.
+**Status: `Delete` and AVP-table-row `Insert` are implemented;
+`Supply` remains a proposal.** The field-replace layer above stays exactly as
+it is; these are named operations beside it, in the same `CORRECTIONS` list,
+with the same declare-expect-fail-loudly contract.
 
 One driving case survived contact with the documents. TS 29.283's re-used
 table cites `Feature-Id` from TS 29.229, which has no such AVP — the fix is
@@ -230,16 +230,22 @@ deleting a row, which field replacement cannot express, and until `Delete`
 existed `lint --corpus` exited non-zero on a defect with no available repair.
 `edits/corrections/TS29.283.py` now carries that deletion.
 
-The two cases that seemed to force `Insert` dissolved on inspection: TS 29.272
+The first two cases that seemed to force `Insert` dissolved on inspection:
+TS 29.272
 appeared to reference `Additional-Context-Identifier` and
 `Re-synchronization-Info` without introducing them, but its table 7.3.1/1
 holds both AVPs under variant spellings (`Additional-Context-ID`;
 `Re-Synchronization-Info` against the ABNF's lower-cased `s`), and the clause
 headings say which side is right. Both are ordinary name `Correction`s in
-`edits/corrections/TS29.272.py`, so `Insert` stays unimplemented until a
-document actually forces it — the rule at the end of this section working as
-intended. `Supply`'s case (enumerated AVPs whose values live in a non-Diameter
-document) likewise still awaits a consumer who needs those values.
+`edits/corrections/TS29.272.py`.
+
+TS 29.344 finally forced the real operation. Clause 6.3.13 defines
+`Authorized-Discovery-Range` as Unsigned32 and TS 29.230 assigns it code 3708,
+but table 6.3.1-1 omits the row. TS 29.345 then legitimately lists the AVP as
+re-used from 29.344, making the omission visible to the cross-file linter.
+`edits/corrections/TS29.344.py` inserts the missing row in the corrected table.
+`Supply`'s case (enumerated AVPs whose values live in a non-Diameter document)
+still awaits a consumer who needs those values.
 
 The design question `expect` answers for replacement — "how does this edit fail
 loudly when the document is fixed upstream?" — has a per-operation answer:
@@ -255,11 +261,11 @@ loudly when the document is fixed upstream?" — has a per-operation answer:
   lines to mark. Deleting a node while also correcting one of its fields, or a
   field of anything inside it, is refused — a deleted node has no fields worth
   fixing.
-- **`Insert(into=<section selector>, node=<AST node>, after=<name | None>,
-  reason=...)`**: expects no node with the same key to be present — name for
-  table rows and enum values, `(name, origin)` for re-used rows. Fails when
-  upstream adds the definition itself. `after` addresses by identity, never by
-  index; `None` appends.
+- **`Insert(into=avp_table(<label>), node=<AvpTableRow>,
+  after=<name | None>, reason=...)`** (implemented): expects no row with the
+  same name to be present and fails when upstream adds it itself. `after`
+  addresses an existing row by name, never by index; `None` appends. The
+  corrected file marks the inserted row with `;; inserted:`.
 - **`Supply(section=<full section node>, reason=...)`**: a whole hand-notated
   section — the enumerated-AVP-with-external-values case. `reason` must cite
   the external document and clause the values were transcribed from, since
@@ -286,26 +292,25 @@ loudly when the document is fixed upstream?" — has a per-operation answer:
   printing the values itself, so the supplied copy fails instead of shadowing
   them.
 
-All four use the same selector vocabulary; `Insert`/`Supply` need section-level
-selectors (`avp_table(label)`, `reused_table(label)`) that `find` does not have
-yet. Notation stays the same: nodes are written as the real pydantic AST types,
-so a supplied section is validated at declaration time like everything else.
+All three use the same selector vocabulary. `Insert` adds the
+`avp_table(label)` section selector; `Supply` would additionally need selectors
+for the other section kinds it can fill. Notation stays the same: nodes are
+written as the real pydantic AST types, so inserted content is validated at
+declaration time like everything else.
 `; EXTERNALLY-DEFINED` is the one piece that is a format change rather than a
 corrections change — grammar, AST and both extractors — and lands with the
 usual format-instability licence from [grammar.md](grammar.md).
 
-Two consequences to hold onto when implementing the remaining two:
+Two consequences govern `Insert` now and must also hold for a future `Supply`:
 
 - The corrected file must keep marking what a human did. `Replace` notes stay
   `;; corrected:` and deletions carry `;; deleted:` on the section that lost
   the node; inserted and supplied content should carry `;; supplied:`
   (or `;; inserted:`) on *every* line it produced, so machine-extracted and
   hand-notated definitions are never confusable in a diff.
-- `apply`'s rebuild is keyed by node identity, which works because every edit
-  so far maps an existing node to a replacement or removes one. Insert and
-  supply create nodes the input tree does not contain, so the rebuild needs an
-  "extend this field of this matched parent" edit kind — worth doing as its
-  own small refactor first.
+- `apply`'s rebuild tracks the identity of inserted nodes as well as replaced
+  and deleted input nodes, so notes attach to the new row rather than merely
+  to its parent table. A future `Supply` needs the same explicit tracking.
 
 This deliberately does not add `move`, `split` or arbitrary tree surgery. The
 rule from the section below still holds: add a named operation when a real

@@ -209,8 +209,16 @@ fixture for it in `tests/conftest.py` too.
   IDR/DSR/RSR: S6a + S7a);
 - empty clause cell (29.272 3GPP2-MEID → `AvpTableRow.section` is optional);
 - merged table row duplicating cell text (29.272 Battery-Indicator M-bit);
+- re-used-table M-bit overrides shortened from "Must set"/"Must not set" to
+  "Must"/"Must not" (29.338);
 - enum value/description paragraph styles inverted (29.229 §6.3.34);
 - "x.y.z Name" headings without the " AVP" suffix (29.272);
+- an AVP name containing the underscore RFC 6733's `name-fmt` excludes
+  (`GBA_U-Awareness-Indicator`, used consistently throughout 29.109), which
+  the source-fidelity AST and `.dad` grammar preserve;
+- enumerated AVPs in a specification with no grouped-AVP header from which to
+  read their implicit vendor-id (29.109); the extractor uses 3GPP's publisher
+  vendor space, 10415, rather than emitting them as IETF AVPs;
 - `<AVP header: 632, 10415>` comma separator (29.229);
 - bold applied to bracket runs but not to the AVP name (only name runs are
   trusted for the `; bold` marker);

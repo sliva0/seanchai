@@ -1,0 +1,716 @@
+; Specification: 3GPP TS 29.345
+; Version: 18.0.0
+; Vendor-ID: 10415
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129345/18.00.00_60/ts_129345v180000p.pdf
+
+
+; Type: Message
+; Name: ProSe-Authorization-Request, PAR
+; Section: 6.2.3
+; Page: 33
+<ProSe-Authorization-Request> ::= < Diameter Header: 8388668, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { User-Identity }
+        { Visited-PLMN-Id }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Authorization-Answer, PAA
+; Section: 6.2.4
+; Page: 34
+<ProSe-Authorization-Answer> ::= < Diameter Header: 8388668, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+        [ ProSe-Direct-Allowed ]
+        [ Validity-Time-Announce ]
+        [ Validity-Time-Monitor ]
+        [ Validity-Time-Communication ]
+        [ Authorized-Discovery-Range ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Discovery-Request, PDR
+; Section: 6.2.5
+; Page: 34
+<ProSe-Discovery-Request> ::= < Diameter Header: 8388669, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { Discovery-Auth-Request }
+        [ Discovery-Entry-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Discovery-Answer, PDA
+; Section: 6.2.6
+; Page: 35
+<ProSe-Discovery-Answer> ::= < Diameter Header: 8388669, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+        [ Discovery-Auth-Response ]
+        [ Discovery-Entry-ID ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Match-Request, PMR
+; Section: 6.2.7
+; Page: 35
+<ProSe-Match-Request> ::= < Diameter Header: 8388670, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { Match-Request }
+        [ PMR-Flags ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Match-Answer, PMA
+; Section: 6.2.8
+; Page: 35
+<ProSe-Match-Answer> ::= < Diameter Header: 8388670, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Match-Report ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Match-Report-Info-Request, PIR
+; Section: 6.2.9
+; Page: 36
+<ProSe-Match-Report-Info-Request> ::= < Diameter Header: 8388671, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { Match-Report-Info }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Match-Report-Info-Answer, PIA
+; Section: 6.2.10
+; Page: 36
+<ProSe-Match-Report-Info-Answer> ::= < Diameter Header: 8388671, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Proximity-Request, PRR
+; Section: 6.2.11
+; Page: 37
+<ProSe-Proximity-Request> ::= < Diameter Header: 8388672, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { PRR-Flags }
+        { Requesting-EPUID }
+        { Targeted-EPUID }
+        { Time-Window }
+        { Location-Estimate }
+        [ Location-Update-Trigger ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Proximity-Answer, PRA
+; Section: 6.2.12
+; Page: 37
+<ProSe-Proximity-Answer> ::= < Diameter Header: 8388672, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+        [ Location-Estimate ]
+        [ WLAN-Link-Layer-Id ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Location-Update-Request, PLR
+; Section: 6.2.13
+; Page: 38
+<ProSe-Location-Update-Request> ::= < Diameter Header: 8388673, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { Targeted-EPUID }
+        { Location-Estimate }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Location-Update-Answer, PLA
+; Section: 6.2.14
+; Page: 38
+<ProSe-Location-Update-Answer> ::= < Diameter Header: 8388673, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Alert-Request, ALR
+; Section: 6.2.15
+; Page: 39
+<ProSe-Alert-Request> ::= < Diameter Header: 8388674, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { App-Layer-User-Id }
+        { Targeted-EPUID }
+        [ Assistance-Info ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Alert-Answer, ALA
+; Section: 6.2.16
+; Page: 39
+<ProSe-Alert-Answer> ::= < Diameter Header: 8388674, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Cancellation-Request, PCR
+; Section: 6.2.17
+; Page: 39
+<ProSe-Cancellation-Request> ::= < Diameter Header: 8388675, REQ, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { Requesting-EPUID }
+        { Targeted-EPUID }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Cancellation-Answer, PCA
+; Section: 6.2.18
+; Page: 40
+<ProSe-Cancellation-Answer> ::= < Diameter Header: 8388675, PXY, 16777340 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.3.1
+; Table: 6.3.1-1
+; Page: 40
+; Columns: Name                      Code   Section  Type          Must  May   S.not M.not Encrypt
+App-Layer-User-Id                    3801   6.3.2    UTF8String    M,V   -     -     -     No
+Assistance-Info                      3802   6.3.3    Grouped       M,V   -     -     -     No ;; corrected: (TS29.345.py:7)
+Assistance-Info-Validity-Timer       3803   6.3.4    Unsigned32    M,V   -     -     -     No
+Discovery-Type                       3804   6.3.5    Unsigned32    M,V   -     -     -     No
+Filter-Id                            3805   6.3.9    OctetString   M,V   -     -     -     No
+MAC-Address                          3806   6.3.11   UTF8String    M,V   -     -     -     No
+Match-Report                         3807   6.3.12   Grouped       M,V   -     -     -     No
+Operating-Channel                    3808   6.3.14   Unsigned32    M,V   -     -     -     No
+P2P-Features                         3809   6.3.15   Unsigned32    M,V   -     -     -     No
+ProSe-App-Code                       3810   6.3.16   OctetString   M,V   -     -     -     No
+ProSe-App-Id                         3811   6.3.17   UTF8String    M,V   -     -     -     No
+ProSe-App-Mask                       3812   6.3.18   OctetString   M,V   -     -     -     No
+ProSe-Discovery-Filter               3813   6.3.20   Grouped       M,V   -     -     -     No
+PRR-Flags                            3814   6.3.21   Unsigned32    M,V   -     -     -     No
+ProSe-Validity-Timer                 3815   6.3.22   Unsigned32    M,V   -     -     -     No
+Requesting-EPUID                     3816   6.3.23   UTF8String    M,V   -     -     -     No
+Targeted-EPUID                       3817   6.3.26   UTF8String    M,V   -     -     -     No
+Time-Window                          3818   6.3.27   Unsigned32    M,V   -     -     -     No
+WiFi-P2P-Assistance-Info             3819   6.3.30   Grouped       M,V   -     -     -     No
+WLAN-Assistance-Info                 3820   6.3.31   Grouped       M,V   -     -     -     No
+WLAN-Link-Layer-Id                   3821   6.3.32   Grouped       M,V   -     -     -     No ;; corrected: (TS29.345.py:16)
+WLAN-Link-Layer-Id-List              3822   6.3.33   Grouped       M,V   -     -     -     No
+Location-Update-Trigger              3823   6.3.42   Grouped       M,V   -     -     -     No
+Location-Update-Event-Type           3824   6.3.43   Unsigned32    M,V   -     -     -     No
+Change-Of-Area-Type                  3825   6.3.44   Grouped       M,V   -     -     -     No
+Location-Update-Event-Trigger        3826   6.3.45   Unsigned32    M,V   -     -     -     No
+Report-Cardinality                   3827   6.3.46   Enumerated    M,V   -     -     -     No
+Minimum-Interval-Time                3828   6.3.47   Unsigned32    M,V   -     -     -     No
+Periodic-Location-Type               3829   6.3.48   Grouped       M,V   -     -     -     No
+Location-Report-Interval-Time        3830   6.3.49   Unsigned32    M,V   -     -     -     No
+Total-Number-Of-Reports              3831   6.3.50   Unsigned32    M,V   -     -     -     No
+Validity-Time-Announce               3832   6.3.36   Unsigned32    M,V   -     -     -     No
+Validity-Time-Monitor                3833   6.3.37   Unsigned32    M,V   -     -     -     No
+Validity-Time-Communication          3834   6.3.38   Unsigned32    M,V   -     -     -     No
+ProSe-App-Code-Info                  3835   6.3.39   Grouped       M,V   -     -     -     No
+MIC                                  3836   6.3.40   OctetString   M,V   -     -     -     No
+UTC-based-Counter                    3837   6.3.41   Unsigned32    M,V   -     -     -     No
+ProSe-Match-Refresh-Timer            3838   6.3.52   Unsigned32    M,V   -     -     -     No
+ProSe-Metadata-Index-Mask            3839   6.3.60   OctetString   V     -     -     M     No
+App-Identifier                       3840   6.3.61   Grouped       V     -     -     M     No
+OS-ID                                3841   6.3.62   OctetString   V     -     -     M     No
+OS-App-ID                            3842   6.3.63   UTF8String    V     -     -     M     No
+Requesting-RPAUID                    3843   6.3.64   UTF8String    V     -     -     M     No
+Target-RPAUID                        3844   6.3.65   UTF8String    V     -     -     M     No
+Target-PDUID                         3845   6.3.66   OctetString   V     -     -     M     No
+ProSe-Restricted-Code                3846   6.3.67   OctetString   V     -     -     M     No
+ProSe-Restricted-Code-Suffix-Range   3847   6.3.68   Grouped       V     -     -     M     No ;; corrected: (TS29.345.py:25)
+Beginning-Suffix                     3848   6.3.69   OctetString   V     -     -     M     No
+Ending-Suffix                        3849   6.3.70   OctetString   V     -     -     M     No
+Discovery-Entry-ID                   3850   6.3.59   Unsigned32    V     -     -     M     No
+Match-Timestamp                      3851   6.3.71   Time          V     -     -     M     No
+PMR-Flags                            3852   6.3.57   Unsigned32    M,V   -     -     -     No
+ProSe-Application-Metadata           3853   6.3.58   UTF8String    M,V   -     -     -     No
+Discovery-Auth-Request               3854   6.3.53   Grouped       M,V   -     -     -     No
+Discovery-Auth-Response              3855   6.3.54   Grouped       M,V   -     -     -     No
+Match-Request                        3856   6.3.55   Grouped       M,V   -     -     -     No
+Match-Report-Info                    3857   6.3.56   Grouped       M,V   -     -     -     No
+Banned-RPAUID                        3858   6.3.73   UTF8String    V     -     -     M     No
+Banned-PDUID                         3859   6.3.74   OctetString   V     -     -     M     No
+Code-Receiving-Security-Material     3860   6.3.75   Grouped       V     -     -     M     No
+Code-Sending-Security-Material       3861   6.3.76   Grouped       V     -     -     M     No
+DUSK                                 3862   6.3.77   OctetString   V     -     -     M     No
+DUIK                                 3863   6.3.78   OctetString   V     -     -     M     No
+DUCK                                 3864   6.3.79   OctetString   V     -     -     M     No
+MIC-Check-indicator                  3865   6.3.80   Unsigned32    V     -     -     M     No
+Encrypted-Bitmask                    3866   6.3.81   OctetString   V     -     -     M     No
+ProSe-App-Code-Suffix-Range          3867   6.3.82   Grouped       V     -     -     M     No ;; corrected: (TS29.345.py:61)
+PC5-tech                             3868   6.3.84   OctetString   V     -     -     M     No
+
+
+; Type: Reused AVPs
+; Section: 6.3.1
+; Table: 6.3.1-2
+; Page: 40
+; Columns: Name              From       M-bit
+Supported-Features           TS29.229   -
+EAP-Master-Session-Key       RFC4072    -
+Feature-List-ID              TS29.229   -
+Feature-List                 TS29.229   -
+MSISDN                       TS29.329   -
+User-Name                    RFC6733    -
+Location-Estimate            TS32.299   -
+ProSe-Direct-Allowed         TS29.344   -
+Authorized-Discovery-Range   TS29.344   -
+SSID                         TS29.273   -
+Visited-PLMN-Id              TS29.272   -
+User-Identifier              TS29.336   -
+OC-Supported-Features        RFC7683    MUST
+OC-OLR                       RFC7683    MUST
+DRMP                         RFC7944    MUST-NOT
+Service-Result               TS29.336   -
+Load                         RFC8583    MUST-NOT
+
+
+; Type: Grouped AVP
+; Name: Assistance-Info
+; Section: 6.3.3
+; Page: 44
+Assistance-Info ::= < AVP header: 3802 10415 >
+        [ WLAN-Assistance-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Match-Report
+; Section: 6.3.12
+; Page: 46
+Match-Report ::= < AVP header: 3807 10415 >
+        { Discovery-Type }
+        [ ProSe-App-Code ]
+        [ ProSe-Metadata-Index-Mask ]
+        [ ProSe-App-Id ]
+        [ ProSe-Validity-Timer ]
+        [ ProSe-Match-Refresh-Timer ]
+        [ ProSe-Application-Metadata ]
+        [ PC5-tech ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ProSe-Discovery-Filter
+; Section: 6.3.20
+; Page: 47
+ProSe-Discovery-Filter ::= < AVP header: 3813 10415 >
+        { Filter-Id }
+        { ProSe-App-Id }
+        { ProSe-Validity-Timer }
+        { ProSe-App-Code }
+      * [ ProSe-App-Mask ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: WiFi-P2P-Assistance-Info
+; Section: 6.3.30
+; Page: 49
+WiFi-P2P-Assistance-Info ::= < AVP header: 3819 10415 >
+        [ SSID ]
+        [ EAP-Master-Session-Key ]
+        [ P2P-Features ]
+        [ WLAN-Link-Layer-Id-List ]
+        [ WLAN-Link-Layer-Id-List ]
+        [ Operating-Channel ]
+        [ Assistance-Info-Validity-Timer ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: WLAN-Assistance-Info
+; Section: 6.3.31
+; Page: 49
+WLAN-Assistance-Info ::= < AVP header: 3820 10415 >
+        [ WiFi-P2P-Assistance-Iinfo ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: WLAN-Link-Layer-Id
+; Section: 6.3.32
+; Page: 49
+WLAN-Link-Layer-Id ::= < AVP header: 3821 10415 >
+        [ MAC-Address ]
+
+
+; Type: Grouped AVP
+; Name: WLAN-Link-Layer-Id-List
+; Section: 6.3.33
+; Page: 50
+WLAN-Link-Layer-Id-List ::= < AVP header: 3822 10415 >
+      * [ WLAN-Link-Layer-Id ]
+
+
+; Type: Grouped AVP
+; Name: ProSe-App-Code-Info
+; Section: 6.3.39
+; Page: 50
+ProSe-App-Code-Info ::= < AVP header: 3835 10415 >
+        { ProSe-App-Code }
+        { MIC }
+        { UTC-based-Counter }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Location-Update-Trigger
+; Section: 6.3.42
+; Page: 51
+Location-Update-Trigger ::= < AVP header: 3823 10415 >
+        { Location-Update-Event-Type }
+        [ Change-Of-Area-Type ]
+        [ Periodic-Location-Type ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Change-Of-Area-Type
+; Section: 6.3.44
+; Page: 51
+Change-Of-Area-Type ::= < AVP header: 3825 10415 >
+        { Location-Update-Event-Trigger }
+        { Report-Cardinality }
+        [ Minimum-Interval-Time ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Report-Cardinality
+; Section: 6.3.46
+; Page: 52
+Report-Cardinality ::= < Enumerated AVP header: 3827 10415 >
+        SINGLE   = 0
+        MULTIPLE = 1
+
+
+; Type: Grouped AVP
+; Name: Periodic-Location-Type
+; Section: 6.3.48
+; Page: 52
+Periodic-Location-Type ::= < AVP header: 3829 10415 >
+        { Location-Report-Interval-Time }
+        { Total-Number-Of-Reports }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Discovery-Auth-Request
+; Section: 6.3.53
+; Page: 53
+Discovery-Auth-Request ::= < AVP header: 3854 10415 >
+        { Discovery-Type }
+        [ User-Identity ]
+        [ ProSe-App-ID ]
+        [ ProSe-App-Code ]
+        [ ProSe-App-Code-Suffix-Range ]
+        [ ProSe-Validity-Timer ]
+        [ App-Identifier ]
+        [ Requesting-RPAUID ]
+        [ Target-RPAUID ]
+        [ Target-PDUID ]
+        [ ProSe-Restricted-Code ]
+        [ ProSe-Query-Code ]
+        [ ProSe-Response-Code ]
+      * [ ProSe-Restricted-Code-Suffix-Range ]
+        [ Banned-RPAUID ]
+        [ Banned-PDUID ]
+        [ Service-Result ]
+        [ PC5-tech ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Discovery-Auth-Response
+; Section: 6.3.54
+; Page: 54
+Discovery-Auth-Response ::= < AVP header: 3855 10415 >
+        { Discovery-Type }
+      * [ ProSe-Discovery-Filter ]
+        [ Visited-PLMN-Id ]
+        [ ProSe-Restricted-Code ]
+        [ ProSe-Query-Code ]
+        [ ProSe-Response-Code ]
+
+
+; Type: Grouped AVP
+; Name: Match-Request
+; Section: 6.3.55
+; Page: 55
+Match-Request ::= < AVP header: 3856 10415 >
+        { Discovery-Type }
+
+
+; Type: Grouped AVP
+; Name: Match-Report-Info
+; Section: 6.3.56
+; Page: 56
+Match-Report-Info ::= < AVP header: 3857 10415 >
+        { Discovery-Type }
+        [ User-Identity ]
+      * [ ProSe-App-ID ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: App-Identifier
+; Section: 6.3.61
+; Page: 56
+App-Identifier ::= < AVP header: 3840 10415 >
+        { OS-ID }
+        { OS-App-ID }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ProSe-Restricted-Code-Suffix-Range
+; Section: 6.3.68
+; Page: 57
+ProSe-Restricted-Code-Suffix-Range ::= < AVP header: 3847 10415 >
+        { Beginning-Suffix }
+
+
+; Type: Grouped AVP
+; Name: Code-Receiving-Security-Material
+; Section: 6.3.75
+; Page: 58
+Code-Receiving-Security-Material ::= < AVP header: 3860 10415 > ;; corrected: (TS29.345.py:34)
+        [ DUSK ]
+        [ DUIK ]
+        [ MIC-Check-Indicator ]
+        [ DUCK ]
+        [ Encrypted-Bitmask ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Code-Sending-Security-Material
+; Section: 6.3.76
+; Page: 58
+Code-Sending-Security-Material ::= < AVP header: 3861 10415 > ;; corrected: (TS29.345.py:43)
+        [ DUSK ]
+        [ DUIK ]
+        [ DUCK ]
+        [ Encrypted-Bitmask ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ProSe-App-Code-Suffix-Range
+; Section: 6.3.82
+; Page: 59
+ProSe-App-Code-Suffix-Range ::= < AVP header: 3867 10415 > ;; corrected: (TS29.345.py:52)
+        { Beginning-Suffix }

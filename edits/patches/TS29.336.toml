@@ -1,0 +1,30 @@
+# Input patches for 3GPP TS 29.336 (HSS Diameter interfaces for packet data
+# networks and applications). Applied to normalized source text before parsing;
+# see src/seanchai/extractor/patches.py for the format.
+
+[[patch]]
+find = "Maximum Latency"
+replace = "Maximum-Latency"
+exact = true
+section = "8.4.1"
+reason = "table 8.4.1-1 loses the hyphen in Maximum-Latency; clause 8.4.13 and the UE-Reachability-Configuration ABNF use the hyphenated AVP name"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "Maximum Response Time"
+replace = "Maximum-Response-Time"
+exact = true
+section = "8.4.1"
+reason = "table 8.4.1-1 loses both hyphens in Maximum-Response-Time; clause 8.4.14 and the UE-Reachability-Configuration ABNF use the hyphenated AVP name"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "Visited PLMN Id"
+replace = "Visited-PLMN-Id"
+exact = true
+section = "8.4.1"
+reason = "table 8.4.1-2 loses both hyphens in Visited-PLMN-Id; the grouped-AVP bodies in this specification and TS 29.272 use the hyphenated AVP name"
+first_version = "18.2.0"
+last_version = "18.2.0"

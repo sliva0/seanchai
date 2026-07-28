@@ -430,6 +430,68 @@ def _delete(target, expect):
     return corrections.Delete(target=target, expect=expect, reason="test")
 
 
+def _insert(node, after=None):
+    return corrections.Insert(
+        into=corrections.avp_table("6.3.1"),
+        node=node,
+        after=after,
+        reason="test",
+    )
+
+
+def test_an_insert_adds_a_row_after_a_named_row_and_marks_the_new_row():
+    inserted = ast.AvpTableRow(
+        name="Inserted-AVP",
+        code=1601,
+        section="6.3.3",
+        data_type=ast.DataType.UNSIGNED32,
+        may_encrypt=False,
+    )
+
+    corrected, (result,) = corrections.apply(
+        _spec(), [_insert(inserted, after="Example-Mode")]
+    )
+
+    table = _table(corrected)
+    assert [row.name for row in table.rows] == ["Example-Mode", "Inserted-AVP"]
+    assert result.node_id == id(table.rows[1])
+    assert corrections.notes([result])[result.node_id] == [
+        f"inserted: ({result.correction.origin})"
+    ]
+
+
+def test_an_insert_with_no_after_appends():
+    inserted = ast.AvpTableRow(
+        name="Inserted-AVP",
+        code=1601,
+        section="6.3.3",
+        data_type=ast.DataType.UNSIGNED32,
+        may_encrypt=False,
+    )
+
+    corrected, _ = corrections.apply(_spec(), [_insert(inserted)])
+
+    assert _table(corrected).rows[-1].name == "Inserted-AVP"
+
+
+def test_an_insert_fails_when_upstream_already_has_the_row():
+    with pytest.raises(corrections.CorrectionError, match="already present"):
+        corrections.apply(_spec(), [_insert(_table(_spec()).rows[0])])
+
+
+def test_an_insert_fails_when_its_after_row_is_missing():
+    inserted = ast.AvpTableRow(
+        name="Inserted-AVP",
+        code=1601,
+        section="6.3.3",
+        data_type=ast.DataType.UNSIGNED32,
+        may_encrypt=False,
+    )
+
+    with pytest.raises(corrections.CorrectionError, match="is not present"):
+        corrections.apply(_spec(), [_insert(inserted, after="Missing-AVP")])
+
+
 def test_a_delete_removes_the_node_and_reports_the_parent_it_left():
     spec = _with_reused(_spec())
     doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
@@ -602,6 +664,11 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
     for correction in declared:
+        if isinstance(correction, corrections.Insert):
+            (table,) = correction.into.find(spec)
+            assert isinstance(table, ast.AvpTable)
+            assert correction.node in table.rows
+            continue
         target = correction.target
         if isinstance(correction, corrections.Delete):
             # A deleted node's mark of success is its absence.

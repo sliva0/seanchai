@@ -1,0 +1,21 @@
+# Input patches for 3GPP TS 29.338 (Diameter protocols supporting SMS-capable
+# MMEs). Applied to normalized source text before parsing; see
+# src/seanchai/extractor/patches.py for the format.
+
+[[patch]]
+find = "SGSN-Absent-User-Diagnostic SM"
+replace = "SGSN-Absent-User-Diagnostic-SM"
+exact = true
+section = "5.3.3.1"
+reason = "table 5.3.3.1/1 loses the final hyphen in SGSN-Absent-User-Diagnostic-SM; clause 5.3.3.11 and the SM-Delivery-Outcome ABNF use the hyphenated AVP name"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "10415>>"
+replace = "10415>"
+count = 3
+section = "5.3.3"
+reason = "three grouped-AVP headers close with two angle brackets; the AVP header grammar and every neighbouring definition use one"
+first_version = "18.2.0"
+last_version = "18.2.0"

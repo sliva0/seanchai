@@ -204,6 +204,8 @@ def _correct(spec, directory: Path, required: bool):
         edit = result.correction
         if isinstance(edit, corrections_module.Delete):
             click.echo(f"deleted: {result.node} ({edit.reason})", err=True)
+        elif isinstance(edit, corrections_module.Insert):
+            click.echo(f"inserted: {result.node} ({edit.reason})", err=True)
         else:
             click.echo(
                 f"corrected: {result.node} {edit.field}"

@@ -285,15 +285,15 @@ def test_extracts_enumerated_avps_in_both_layouts(synthetic_rfc):
     disconnect = enums["Disconnect-Cause"]
     assert disconnect.code == 273  # from the AVP table, as in the docx extractor
     assert disconnect.vendor_id is None
-    assert [(v.name, v.value) for v in disconnect.values] == [
-        ("REBOOTING", 0),
-        ("BUSY", 1),
-    ]
+    assert disconnect.values == (
+        ast.EnumValue(name="REBOOTING", value=0),
+        ast.EnumValue(name="BUSY", value=1),
+    )
     # RFC 7944/8583 layout: the description starts on the value's own line.
-    assert [(v.name, v.value) for v in enums["Load-Type"].values] == [
-        ("HOST", 0),
-        ("PEER", 1),
-    ]
+    assert enums["Load-Type"].values == (
+        ast.EnumValue(name="HOST", value=0),
+        ast.EnumValue(name="PEER", value=1),
+    )
     # A value list for an AVP the local table does not type as Enumerated —
     # an extension to another RFC's enum — is dropped with a warning.
     assert any("Extension-Type" in warning for warning in warnings)

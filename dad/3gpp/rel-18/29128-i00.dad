@@ -1,0 +1,424 @@
+; Specification: 3GPP TS 29.128
+; Version: 18.0.0
+; Vendor-ID: 10415
+; Link: https://www.etsi.org/deliver/etsi_ts/129100_129199/129128/18.00.00_60/ts_129128v180000p.pdf
+
+
+; Type: Message
+; Name: Configuration-Information-Answer, CIA
+; Section: 6.2.4
+; Page: 33
+<Configuration-Information-Answer> ::= < Diameter Header: 8388718, PXY, 16777346 >
+        < Session-Id >
+        [ DRMP ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+      * [ Monitoring-Event-Report ]
+      * [ Monitoring-Event-Config-Status ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Reporting-Information-Request, RIR
+; Section: 6.2.5
+; Page: 33
+<Reporting-Information-Request> ::= < Diameter Header: 8388719, REQ, PXY, 16777346 >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        [ User-Identifier ]
+      * [ Monitoring-Event-Report ]
+
+
+; Type: Message
+; Name: Reporting-Information-Answer, RIA
+; Section: 6.2.6
+; Page: 34
+<Reporting-Information-Answer> ::= < Diameter Header: 8388719, PXY, 16777346 >
+        < Session-Id >
+        [ DRMP ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+      * [ Monitoring-Event-Report-Status ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Connection-Management-Request, CMR
+; Section: 6.2.7
+; Page: 35
+<Connection-Management-Request> ::= < Diameter Header: 8388732, REQ, PXY, 16777346 >
+        < Session-Id >
+        < User-Identifier >
+        < Bearer-Identifier >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ OC-Supported-Features ]
+        [ CMR-Flags ]
+        [ Maximum-UE-Availability-Time ]
+      * [ Supported-Features ]
+        [ Connection-Action ]
+        [ Service-Selection ]
+        [ Serving-PLMN-Rate-Control ]
+        [ Extended-PCO ]
+        [ 3GPP-Charging-Characteristics ]
+        [ RAT-Type ]
+        [ Terminal-Information ]
+        [ Visited-PLMN-Id ]
+        [ APN-Rate-Control-Status ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Connection-Management-Answer, CMA
+; Section: 6.2.8
+; Page: 35
+<Connection-Management-Answer> ::= < Diameter Header: 8388732, PXY, 16777346 >
+        < Session-Id >
+        [ DRMP ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+        [ PDN-Connection-Charging-Id ]
+        [ Extended-PCO ]
+        [ APN-Rate-Control-Status ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: MO-Data-Request, ODR
+; Section: 6.2.9
+; Page: 36
+<MO-Data-Request> ::= < Diameter Header: 8388733, REQ, PXY, 16777346 >
+        < Session-Id >
+        < User-Identifier >
+        < Bearer-Identifier >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        [ Non-IP-Data ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ RRC-Cause-Counter ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: MO-Data-Answer, ODA
+; Section: 6.2.10
+; Page: 36
+<MO-Data-Answer> ::= < Diameter Header: 8388733, PXY, 16777346 >
+        < Session-Id >
+        [ DRMP ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: MT-Data-Request, TDR
+; Section: 6.2.11
+; Page: 37
+<MT-Data-Request> ::= < Diameter Header: 8388734, REQ, PXY, 16777346 >
+        < Session-Id >
+        < User-Identifier >
+        < Bearer-Identifier >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        [ Non-IP-Data ]
+        [ SCEF-Wait-Time ]
+        [ Maximum-Retransmission-Time ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: MT-Data-Answer, TDA
+; Section: 6.2.12
+; Page: 37
+<MT-Data-Answer> ::= < Diameter Header: 8388734, PXY, 16777346 >
+        < Session-Id >
+        [ DRMP ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+        [ Requested-Retransmission-Time ]
+      * [ Supported-Features ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ TDA-Flags ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 6.4.1
+; Table: 6.4.1-1
+; Page: 39
+; Columns: Name                           Code   Section  Type          Must  May   S.not M.not Encrypt
+Communication-Failure-Information         4300   6.4.4    Grouped       M,V   -     -     -     No
+Cause-Type                                4301   6.4.5    Unsigned32    M,V   -     -     -     No
+S1AP-Cause                                4302   6.4.6    Unsigned32    M,V   -     -     -     No
+RANAP-Cause                               4303   6.4.7    Unsigned32    M,V   -     -     -     No
+BSSGP-Cause                               4309   6.4.8    Unsigned32    M,V   -     -     -     No
+GMM-Cause                                 4304   6.4.9    Unsigned32    M,V   -     -     -     No
+SM-Cause                                  4305   6.4.10   Unsigned32    M,V   -     -     -     No
+Number-Of-UE-Per-Location-Configuration   4306   6.4.11   Grouped       M,V   -     -     -     No
+Number-Of-UE-Per-Location-Report          4307   6.4.12   Grouped       M,V   -     -     -     No
+UE-Count                                  4308   6.4.13   Unsigned32    M,V   -     -     -     No
+Connection-Action                         4314   6.4.18   Unsigned32    M,V   -     -     -     No
+Non-IP-Data                               4315   6.4.19   OctetString   M,V   -     -     -     No
+Serving-PLMN-Rate-Control                 4310   6.4.21   Grouped       M,V   -     -     -     No
+Uplink-Rate-Limit                         4311   6.4.23   Unsigned32    M,V   -     -     -     No
+Downlink-Rate-Limit                       4312   6.4.22   Unsigned32    M,V   -     -     -     No
+Extended-PCO                              4313   6.4.26   OctetString   M,V   -     -     -     No
+SCEF-Wait-Time                            4316   6.4.24   Time          M,V   -     -     -     No
+CMR-Flags                                 4317   6.4.25   Unsigned32    M,V   -     -     -     No
+RRC-Cause-Counter                         4318   6.4.27   Grouped       M,V   -     -     -     No
+Counter-Value                             4319   6.4.28   Unsigned32    M,V   -     -     -     No
+RRC-Counter-Timestamp                     4320   6.4.29   Time          M,V   -     -     -     No
+TDA-Flags                                 4321   6.4.31   Unsigned32    V     -     -     M     No
+Idle-Status-Indication                    4322   6.4.32   Grouped       V     -     -     M     No
+Idle-Status-Timestamp                     4323   6.4.33   Time          V     -     -     M     No
+Active-Time                               4324   6.4.34   Unsigned32    V     -     -     M     No
+Reachability-Cause                        4325   6.4.35   Unsigned32    V     -     -     M     No
+APN-Rate-Control-Status                   4326   6.4.36   Grouped       V     -     -     M     No
+Uplink-Number-Of-Packets-Allowed          4327   6.4.37   Unsigned32    V     -     -     M     No
+Number-Of-Additional-Exception-Reports    4328   6.4.38   Unsigned32    V     -     -     M     No
+Downlink-Number-Of-Packets-Allowed        4329   6.4.39   Unsigned32    V     -     -     M     No
+APN-Rate-Control-Status-Validity-Time     4330   6.4.40   Unsigned64    V     -     -     M     No
+
+
+; Type: Reused AVPs
+; Section: 6.4.1
+; Table: 6.4.1-2
+; Page: 39
+; Columns: Name                       From
+Monitoring-Event-Configuration        TS29.336
+Monitoring-Event-Report               TS29.336
+SCEF-Reference-ID                     TS29.336
+SCEF-ID                               TS29.336
+SCEF-Reference-ID-for-Deletion        TS29.336
+Supported-Features                    TS29.229
+Feature-List-ID                       TS29.229
+Feature-List                          TS29.229
+OC-Supported-Features                 RFC7683
+OC-OLR                                RFC7683
+Monitoring-Event-Config-Status        TS29.336
+DRMP                                  RFC7944
+User-Identifier                       TS29.336
+Bearer-Identity                       TS29.212
+Monitoring-Type                       TS29.336
+Loss-Of-Connectivity-Reason           TS29.336
+Maximum-Number-of-Reports             TS29.336
+Monitoring-Duration                   TS29.336
+Charged-Party                         TS32.299
+UE-Reachability-Configuration         TS29.336
+Location-Information-Configuration    TS29.336
+Reachability-Information              TS29.336
+EPS-Location-Information              TS29.272
+Service-Selection                     RFC5778
+PDN-Connection-Charging-Id            TS32.299
+Maximum-Retransmission-Time           TS29.338
+Requested-Retransmission-Time         TS29.338
+Maximum-UE-Availability-Time          TS29.338
+3GPP-Charging-Characteristics         TS29.061
+RAT-Type                              TS29.212
+Terminal-Information                  TS29.272
+Visited-PLMN-Id                       TS29.272
+Load                                  RFC8583
+Subscribed-Periodic-RAU-TAU-Timer     TS29.272
+Monitoring-Event-Report-Status        TS29.336
+IMSI-Group-Id                         TS29.272
+Reporting-Time-Stamp                  TS29.336
+eDRX-Cycle-Length                     TS29.272
+DL-Buffering-Suggested-Packet-Count   TS29.272
+PDN-Connectivity-Status-Report        TS29.336
+SCEF-Reference-ID-Ext                 TS29.336
+SCEF-Reference-ID-for-Deletion-Ext    TS29.336
+
+
+; Type: Grouped AVP
+; Name: Monitoring-Event-Configuration
+; Section: 6.4.2
+; Page: 43
+Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
+        [ SCEF-Reference-ID ]
+        [ SCEF-Reference-ID-Ext ]
+        { SCEF-ID }
+        { Monitoring-Type }
+      * [ SCEF-Reference-ID-for-Deletion ]
+      * [ SCEF-Reference-ID-for-Deletion-Ext ]
+        [ Maximum-Number-of-Reports ]
+        [ Monitoring-Duration ]
+        [ Charged-Party ]
+        [ UE-Reachability-Configuration ]
+        [ Location-Information-Configuration ]
+      * [ Number-Of-UE-Per-Location-Configuration ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Monitoring-Event-Report
+; Section: 6.4.3
+; Page: 43
+Monitoring-Event-Report ::= < AVP header: 3123 10415 >
+        { SCEF-Reference-ID }
+        [ SCEF-Reference-ID-Ext ]
+        [ SCEF-ID ]
+        [ Monitoring-Type ]
+        [ Reachability-Information ]
+        [ EPS-Location-Information ]
+        [ Communication-Failure-Information ]
+      * [ Number-Of-UE-Per-Location-Report ]
+        [ Loss-Of-Connectivity-Reason ]
+        [ Visited-PLMN-Id ]
+        [ Idle-Status-Indication ]
+        [ Reporting-Time-Stamp ]
+        [ Maximum-UE-Availability-Time ]
+      * [ PDN-Connectivity-Status-Report ]
+        [ Reachability-Cause ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Communication-Failure-Information
+; Section: 6.4.4
+; Page: 44
+Communication-Failure-Information ::= < AVP header: 4300 10415 >
+        [ Cause-Type ]
+        [ S1AP-Cause ]
+        [ RANAP-Cause ]
+        [ BSSGP-Cause ]
+        [ GMM-Cause ]
+        [ SM-Cause ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Number-Of-UE-Per-Location-Configuration
+; Section: 6.4.11
+; Page: 45
+Number-Of-UE-Per-Location-Configuration ::= < AVP header: 4306 10415 > ;; corrected: (TS29.128.py:6)
+        { EPS-Location-Information }
+        [ IMSI-Group-Id ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Number-Of-UE-Per-Location-Report
+; Section: 6.4.12
+; Page: 45
+Number-Of-UE-Per-Location-Report ::= < AVP header: 4307 10415 > ;; corrected: (TS29.128.py:15)
+        { EPS-Location-Information }
+        { UE-Count }
+        [ IMSI-Group-Id ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Serving-PLMN-Rate-Control
+; Section: 6.4.21
+; Page: 47
+Serving-PLMN-Rate-Control ::= < AVP header: 4310 10415 >
+        [ Uplink-Rate-Limit ]
+        [ Downlink-Rate-Limit ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: RRC-Cause-Counter
+; Section: 6.4.27
+; Page: 48
+RRC-Cause-Counter ::= < AVP header: 4318 10415 >
+        [ Counter-Value ]
+        [ RRC-Counter-Timestamp ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Terminal-Information
+; Section: 6.4.30
+; Page: 49
+Terminal-Information ::= < AVP header: 1401 10415 >
+        [ IMEI ]
+        [ Software-Version ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Idle-Status-Indication
+; Section: 6.4.32
+; Page: 49
+Idle-Status-Indication ::= < AVP header: 4322 10415 >
+        [ Idle-Status-Timestamp ]
+        [ Active-Time ]
+        [ Subscribed-Periodic-RAU-TAU-Timer ]
+        [ eDRX-Cycle-Length ]
+        [ DL-Buffering-Suggested-Packet-Count ]
+      * [ AVP ]

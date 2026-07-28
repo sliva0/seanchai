@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import docx
 import pytest
@@ -6,6 +7,8 @@ import pytest
 from seanchai.dad import ast
 from seanchai.extractor import tgpp_docx
 from seanchai.extractor.patches import Patch, Patcher, PatchError
+
+_PATCHES = Path(__file__).parent.parent / "edits" / "patches"
 
 
 def test_patches_apply_by_substring_exact_match_and_section_scope():
@@ -177,3 +180,59 @@ def test_extract_without_patch_file_rejects_malformed_input(
         match="malformed flags cell 'v'",
     ):
         tgpp_docx.extract(malformed, patches_dir=tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("reference", "version", "units"),
+    [
+        (
+            "TS29.109",
+            "18.1.0",
+            [("OctedString", "6.3")] * 6,
+        ),
+        (
+            "TS29.128",
+            "18.0.0",
+            [("OctetSstring", "6.4.1")],
+        ),
+        (
+            "TS29.336",
+            "18.2.0",
+            [
+                ("Maximum Latency", "8.4.1"),
+                ("Maximum Response Time", "8.4.1"),
+                ("Visited PLMN Id", "8.4.1"),
+            ],
+        ),
+        (
+            "TS29.338",
+            "18.2.0",
+            # The header-line units carry only the substring the patch targets;
+            # the full rule lines around it belong to the source document, and
+            # transcribing them here would pin text the patch never asserts.
+            [
+                ("SGSN-Absent-User-Diagnostic SM", "5.3.3.1"),
+                ("10415>>", "5.3.3.15"),
+                ("10415>>", "5.3.3.27"),
+                ("10415>>", "5.3.3.28"),
+            ],
+        ),
+        (
+            "TS29.345",
+            "18.0.0",
+            [
+                ("M. V", "6.3.1"),
+                ("M. V", "6.3.1"),
+                ("Group", "6.3.1"),
+            ],
+        ),
+    ],
+)
+def test_real_source_patches_are_fully_accounted(reference, version, units):
+    """Pin every application count even when the ignored real docx is absent."""
+    patcher = Patcher.load(_PATCHES / f"{reference}.toml", version)
+
+    outputs = [patcher.apply(text, section) for text, section in units]
+
+    patcher.finish()
+    assert all(output != text for output, (text, _) in zip(outputs, units, strict=True))

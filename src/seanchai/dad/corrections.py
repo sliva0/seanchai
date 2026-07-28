@@ -26,10 +26,11 @@ output back in makes every `expect` fail, because treating an already-applied
 correction as a no-op would make "already corrected" indistinguishable from
 "fixed upstream".
 
-Beside field replacement there is one structural operation, `Delete`, for a
-node that should not exist at all; its `expect` is the whole node, checked
-field-for-field, so it too fails loudly the day upstream changes or removes
-what it deletes.
+Beside field replacement there are two narrow structural operations: `Delete`
+for a node that should not exist at all, and `Insert` for an AVP-table row the
+source defines but omits from the table. Both fail loudly when upstream changes
+the state that justified them: `Delete` expects the doomed node field-for-field,
+and `Insert` expects the row to be absent, so it fails the day upstream adds it.
 """
 
 import importlib.util
@@ -144,6 +145,23 @@ class table_row(Selector):
 
 
 @dataclass(frozen=True)
+class avp_table(Selector):
+    """An AVP-table section, by its printed label."""
+
+    label: str
+
+    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
+        yield from (
+            section
+            for section in spec.sections
+            if isinstance(section, ast.AvpTable) and section.table == self.label
+        )
+
+    def describe(self) -> str:
+        return f"AVP table {self.label!r}"
+
+
+@dataclass(frozen=True)
 class reused_row(Selector):
     """One row of the re-used AVPs table, by AVP name."""
 
@@ -243,9 +261,8 @@ class Correction:
 class Delete:
     """Remove one node — a table row, an enum value, an AVP rule — entirely.
 
-    The one structural edit a document has forced so far: TS 29.283's re-used
-    table cites `Feature-Id` from TS 29.229, which has no such AVP and never
-    did, and no field replacement can make that row true.
+    TS 29.283's re-used table cites `Feature-Id` from TS 29.229, which has no
+    such AVP and never did, and no field replacement can make that row true.
 
     `expect` is the full node, checked field-for-field, not merely "the
     selector matched". A row that upstream has since changed may no longer
@@ -265,11 +282,31 @@ class Delete:
             object.__setattr__(self, "origin", _declared_at())
 
 
-# What a corrections module may declare. `Insert` and `Supply` are designed
-# (docs/corrections.md) but deliberately unimplemented: the documents that
-# seemed to force them turned out to hold spelling mismatches a `Correction`
-# fixes, and a named operation is added when a real document forces it.
-Edit = Correction | Delete
+@dataclass(frozen=True)
+class Insert:
+    """Insert one AVP-table row that the source defines but omits from its table.
+
+    `after` addresses an existing row by name, never position; `None` appends.
+    The operation expects no row with the inserted node's name, so it fails the
+    day upstream adds the missing row itself.
+    """
+
+    into: avp_table
+    node: ast.AvpTableRow
+    after: str | None
+    reason: str
+    versions: str | None = None
+    origin: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.origin:
+            object.__setattr__(self, "origin", _declared_at())
+
+
+# What a corrections module may declare. `Supply` remains designed
+# (docs/corrections.md) but deliberately unimplemented until a document forces
+# its externally-defined-enum shape.
+Edit = Correction | Delete | Insert
 
 
 def _declared_at() -> str:
@@ -297,14 +334,14 @@ class Result:
     correction: Edit
     node: str
     # For a `Correction`, the field's values; for a `Delete`, the removed node
-    # and None.
+    # and None; for an `Insert`, None and the new node.
     old: Any
     new: Any
-    # Identity of the corrected node *in the returned tree* — for a `Delete`,
-    # of the parent that lost the node, since the node itself produces no lines
-    # — so a formatter can mark what an edit reached. Set after the rebuild,
-    # because rebuilding constructs new objects: the identity an edit was
-    # resolved by belongs to the input tree and is gone by then.
+    # Identity of the edited node *in the returned tree* — the new node for an
+    # `Insert`; for a `Delete`, the parent that lost the node, since the node
+    # itself produces no lines — so a formatter can mark what an edit reached.
+    # Set after the rebuild, because rebuilding constructs new objects: the
+    # identity an edit was resolved by belongs to the input tree and is gone.
     node_id: int = 0
 
 
@@ -354,12 +391,13 @@ def _corrected(node: ast.Node, correction: Correction) -> ast.Node:
 
 
 def _resolve(spec: ast.Specification, edit: Edit) -> ast.Node:
-    found = list(edit.target.find(spec))
+    target = edit.into if isinstance(edit, Insert) else edit.target
+    found = list(target.find(spec))
     if not found:
-        raise CorrectionError(f"{edit.target.describe()}: no match")
+        raise CorrectionError(f"{target.describe()}: no match")
     if len(found) > 1:
         raise CorrectionError(
-            f"{edit.target.describe()}: {len(found)} matches, narrow the selector"
+            f"{target.describe()}: {len(found)} matches, narrow the selector"
         )
     return found[0]
 
@@ -386,15 +424,53 @@ def _checked_deletion(node: ast.Node, delete: Delete) -> None:
     )
 
 
+def _inserted(parent: ast.Node, insert: Insert) -> ast.Node:
+    """Return an AVP table with the declared row inserted and validated."""
+    described = insert.into.describe()
+    if not isinstance(parent, ast.AvpTable):
+        raise CorrectionError(
+            f"{described}: Insert requires an AvpTable, matched {type(parent).__name__}"
+        )
+    if any(row.name == insert.node.name for row in parent.rows):
+        raise CorrectionError(
+            f"{described}: row {insert.node.name!r} is already present"
+        )
+    rows = list(parent.rows)
+    if insert.after is None:
+        rows.append(insert.node)
+    else:
+        positions = [
+            index for index, row in enumerate(rows) if row.name == insert.after
+        ]
+        if not positions:
+            raise CorrectionError(
+                f"{described}: after row {insert.after!r} is not present"
+            )
+        if len(positions) > 1:
+            raise CorrectionError(
+                f"{described}: after row {insert.after!r} is ambiguous"
+            )
+        rows.insert(positions[0] + 1, insert.node)
+    values = {name: getattr(parent, name) for name in type(parent).model_fields}
+    values["rows"] = tuple(rows)
+    try:
+        return type(parent)(**values)
+    except pydantic.ValidationError as error:
+        raise CorrectionError(
+            f"{described}: inserted row is not valid: {error.errors()[0]['msg']}"
+        ) from None
+
+
 def _replaced(
     node: Any,
     edits: dict[int, ast.Node],
     deletions: set[int],
+    tracked: set[int],
     applied: dict[int, int],
     rebuilt: dict[int, int],
 ) -> Any:
-    """Rebuild the tree, swapping in every corrected node — and dropping every
-    deleted one — by identity.
+    """Rebuild the tree, swapping in corrected parents (including those
+    extended by `Insert`) and dropping deleted nodes, by identity.
 
     A chosen replacement is descended into rather than returned whole: a
     correction to a message and a correction to one of its AVP rules are both
@@ -426,10 +502,14 @@ def _replaced(
                         applied[id(item)] = applied.get(id(item), 0) + 1
                         deleted_here.append(id(item))
                         continue
-                    kept.append(_replaced(item, edits, deletions, applied, rebuilt))
+                    kept.append(
+                        _replaced(item, edits, deletions, tracked, applied, rebuilt)
+                    )
                 values[name] = tuple(kept)
             else:
-                values[name] = _replaced(value, edits, deletions, applied, rebuilt)
+                values[name] = _replaced(
+                    value, edits, deletions, tracked, applied, rebuilt
+                )
         try:
             result = type(node)(**values)
         except pydantic.ValidationError as error:
@@ -437,7 +517,7 @@ def _replaced(
                 f"corrected {type(node).__name__} is not valid:"
                 f" {error.errors()[0]['msg']}"
             ) from None
-        if replacement is not None:
+        if replacement is not None or original_id in tracked:
             rebuilt[original_id] = id(result)
         # A deleted node produces no lines, so what a formatter can mark — and
         # what its Result reports — is the parent it disappeared from.
@@ -446,7 +526,8 @@ def _replaced(
         return result
     if isinstance(node, tuple):
         return tuple(
-            _replaced(item, edits, deletions, applied, rebuilt) for item in node
+            _replaced(item, edits, deletions, tracked, applied, rebuilt)
+            for item in node
         )
     return node
 
@@ -464,11 +545,15 @@ def apply(
     deletions: set[int] = set()
     targets: dict[int, str] = {}  # node id -> the selector that reached it
     claimed: set[tuple[int, str]] = set()
+    tracked: set[int] = set()  # newly inserted nodes whose rebuilt ids we need
     results = []
     resolved_ids = []  # per result: the id its node had in the input tree
     for correction in corrections:
         node = _resolve(spec, correction)
-        described = correction.target.describe()
+        target = (
+            correction.into if isinstance(correction, Insert) else correction.target
+        )
+        described = target.describe()
         if isinstance(correction, Delete) and id(node) in deletions:
             raise CorrectionError(f"{described}: deleted more than once")
         if id(node) in deletions or (
@@ -486,6 +571,20 @@ def apply(
                 Result(correction=correction, node=described, old=node, new=None)
             )
             resolved_ids.append(id(node))
+            continue
+        if isinstance(correction, Insert):
+            inserted = _inserted(edits.get(id(node), node), correction)
+            edits[id(node)] = inserted
+            tracked.add(id(correction.node))
+            results.append(
+                Result(
+                    correction=correction,
+                    node=f"{described}, row {correction.node.name!r}",
+                    old=None,
+                    new=correction.node,
+                )
+            )
+            resolved_ids.append(id(correction.node))
             continue
         claim = (id(node), correction.field)
         if claim in claimed:
@@ -509,7 +608,7 @@ def apply(
         edits[id(node)] = corrected
     applied: dict[int, int] = {}
     rebuilt_ids: dict[int, int] = {}
-    rebuilt = _replaced(spec, edits, deletions, applied, rebuilt_ids)
+    rebuilt = _replaced(spec, edits, deletions, tracked, applied, rebuilt_ids)
     # Identity is what maps a resolved node back to its place in the tree, so a
     # node object appearing in two places would be corrected in both while the
     # selector reported one match. Trees from `parse` and the extractor build
@@ -544,7 +643,13 @@ def notes(results: list[Result]) -> dict[int, list[str]]:
     lines: dict[int, list[str]] = {}
     for result in results:
         edit = result.correction
-        kind = "deleted" if isinstance(edit, Delete) else "corrected"
+        kind = (
+            "deleted"
+            if isinstance(edit, Delete)
+            else "inserted"
+            if isinstance(edit, Insert)
+            else "corrected"
+        )
         lines.setdefault(result.node_id, []).append(f"{kind}: ({edit.origin})")
     return lines
 
@@ -629,8 +734,8 @@ def _corrections_of(path: Path) -> list[Edit]:
         raise CorrectionError(
             f"{path}: CORRECTIONS must be a list, not a {type(corrections).__name__}"
         )
-    if not all(isinstance(item, Correction | Delete) for item in corrections):
+    if not all(isinstance(item, Correction | Delete | Insert) for item in corrections):
         raise CorrectionError(
-            f"{path}: CORRECTIONS must hold Correction or Delete objects"
+            f"{path}: CORRECTIONS must hold Correction, Delete or Insert objects"
         )
     return list(corrections)

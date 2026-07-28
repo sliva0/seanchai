@@ -109,6 +109,23 @@ def test_parses_grouped_avp_without_vendor_or_page():
     assert grouped.avps[0].name == "Child-AVP"
 
 
+def test_avp_names_can_preserve_a_published_underscore():
+    spec = parser.parse(
+        _dad(
+            "; Type: Enumerated AVP",
+            "; Name: GBA_U-Awareness-Indicator",
+            "; Section: 6.3.1.8",
+            "GBA_U-Awareness-Indicator ::= < Enumerated AVP header: 407 10415 >",
+            "        NO  = 0",
+            "        YES = 1",
+        )
+    )
+
+    avp = spec.sections[0]
+    assert isinstance(avp, ast.EnumeratedAvp)
+    assert avp.name == "GBA_U-Awareness-Indicator"
+
+
 def test_parses_message_with_omitted_application_id_and_trailing_comma():
     spec = parser.parse(
         _dad(

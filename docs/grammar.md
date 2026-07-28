@@ -110,8 +110,13 @@ ETSI PDF rendering from 1.
 ```abnf
 source-ref    = "; Section: " section-number NL ["; Page: " 1*DIGIT NL]
 section-number = 1*DIGIT *("." 1*DIGIT *(%x41-5A))   ; "6.3", "6.3.7A"
-avp-name      = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-")
+avp-name      = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-" / "_")
 ```
+
+The underscore is a source-fidelity extension to RFC 6733's `name-fmt`.
+TS 29.109 consistently names `GBA_U-Awareness-Indicator` with one in its
+heading, ABNF, AVP table and defining prose, so excluding it would make the
+format unable to record a published AVP name.
 
 ### Message
 

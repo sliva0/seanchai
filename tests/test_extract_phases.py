@@ -196,16 +196,26 @@ def test_reserved_notes_are_placed_by_value_not_by_document_order(document):
     )
 
 
-@pytest.mark.parametrize(
-    "grouped",
-    [[], [_grouped(10415), _grouped(vendor_id=13019)]],
-    ids=["no-candidates", "two-candidates"],
-)
-def test_resolve_refuses_to_guess_the_enumerated_vendor_id(document, grouped):
-    # A vendor-less enumerated AVP is not a meaningful result: it would publish
-    # the AVP in the IETF vendor space the spec does not put it in.
+def test_resolve_uses_the_3gpp_vendor_when_no_grouped_header_supplies_it(document):
+    # TS 29.109 has local enumerated AVPs but no grouped definitions. The
+    # publisher fixes their vendor space just as surely as a header would.
     collected = tgpp_docx._Collected(
-        grouped=list(grouped),
+        pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
+        avp_tables=[_avp_table(_row("Mode", 11))],
+    )
+
+    resolved = tgpp_docx._resolve(collected)
+
+    enumerated = resolved.definitions[0]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert enumerated.vendor_id == tgpp_docx.TGPP_VENDOR
+
+
+def test_resolve_refuses_conflicting_enumerated_vendor_ids(document):
+    # Two different explicit vendor ids cannot both be this document's
+    # implicit vendor for enumerated definitions.
+    collected = tgpp_docx._Collected(
+        grouped=[_grouped(10415), _grouped(vendor_id=13019)],
         pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
         avp_tables=[_avp_table(_row("Mode", 11))],
     )
