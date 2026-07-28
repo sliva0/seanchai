@@ -281,8 +281,59 @@ not, then any extras. The column *set* has not:
 - **29.061** and **29.214** have 10, **29.212** has 11;
 - re-used tables in **29.128**, **29.173** and **29.336** have no M-bit column,
   so the dispatch keys on "Reference" rather than on "M-bit";
-- and RFC 6733 §4.5, for the future RFC extractor, has neither MAY nor
-  SHOULD NOT nor an encrypt column.
+- and RFC 6733 §4.5, read by [the RFC extractor](#the-rfc-plain-text-extractor),
+  has neither MAY nor SHOULD NOT nor an encrypt column.
+
+## The RFC plain-text extractor
+
+`src/seanchai/extractor/rfc_text.py` is the second input path into the same
+format: RFC 6733 §4.5 is the same kind of table as a 3GPP AVP table, and its
+Attribute Name / AVP Code / Section Defined / Data Type columns map onto
+`AvpTableRow` as it stands. `seanchai extract-rfc rfc6733.txt` drives it; the
+downloader already fetches the catalog's RFCs as `specifications/rfc/*.txt`.
+The same input-patch layer applies (`edits/patches/RFC6733.toml`), patched
+per content line after page furniture is stripped.
+
+What is different is the carrier, and everything this extractor knows is about
+that:
+
+- **Page furniture.** Footer lines ending `[Page N]`, a form feed, then a
+  running header. The running header is recognised as the first non-blank line
+  after a page break — not by its text, so a content line starting "RFC" is
+  never eaten. `; Page:` numbers are the RFC's own printed pages (the text is
+  the RFC's sole rendering, so there is no PDF step), and point at where the
+  *section* starts, same convention as the docx extractor.
+- **Wrapped rows.** A long name wraps across physical lines
+  (`Acct-` / `Interim-Interval`, concatenated back without a joiner), and once
+  the wrap goes the other way: `Inband-Security` / `-Id  299 6.10 Unsigned32`
+  puts the *data* cells on the continuation line and the flag cells on the
+  first. A physical line starting a new logical row is the one whose name
+  fragment sits at the Attribute Name column; anything deeper continues the
+  row above, and every cell must arrive on exactly one of a row's lines.
+- **Header labels are matched as whole spellings, not tokenized.** The label
+  rows print `Code Defined` (two columns) and `Attribute Name` (one label)
+  with the same single space, so only vocabulary tells them apart —
+  `_LEFT_HEADERS` maps each collected header spelling onto its columns, the
+  same collected-cases discipline as the docx column maps. The vertically
+  stacked flag labels (`MUST` over `NOT`) are unambiguous and read
+  generically. An unrecognised header fails loudly and earns its own entry;
+  RFC 4006/8506 and RFC 7155 already print different spellings, so extending
+  the table is the expected cost of each new RFC.
+- **Declared short forms.** §4.5 says "the short form DiamIdent is used to
+  represent DiameterIdentity", and then also writes DiamURI. A document
+  convention carrying information, so it is extractor code rather than an
+  input patch per row.
+- **Stated facts.** Every AVP an RFC defines is in the IETF vendor space, so
+  `; Vendor-ID: 0`; and an RFC number names one immutable document, so the
+  file carries no `; Version:` line and its table — introduced by prose, with
+  no "Table N" caption — no `; Table:` either. Both directives became optional
+  for exactly this.
+
+The scope is deliberately the AVP-flags table and nothing else yet: reference
+resolution needs the base protocol's AVPs to resolve to table rows
+(`Session-Id`, `Origin-Host`, `Proxy-Info`), and that is what the corpus asks
+of an RFC today. Commands and grouped bodies are printed as the same ABNF the
+docx extractor reads and can be added when a consumer needs them.
 
 ## Gotchas
 

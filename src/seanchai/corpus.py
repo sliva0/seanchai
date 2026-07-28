@@ -22,10 +22,14 @@ class CorpusError(ValueError):
     pass
 
 
-def _version_key(version: str) -> tuple[int, ...]:
+def _version_key(version: str | None) -> tuple[int, ...]:
     """`"18.6.0"` → `(18, 6, 0)`, for ordering. Non-numeric parts sort as 0
     rather than raising: the grammar already restricts a version to digits and
-    dots, so this only ever softens a hand-edited file."""
+    dots, so this only ever softens a hand-edited file. A version-less file
+    (an RFC) sorts as the empty key; RFC resolution never compares versions
+    anyway, because one number names one immutable document."""
+    if version is None:
+        return ()
     parts = []
     for part in version.split("."):
         parts.append(int(part) if part.isdigit() else 0)
@@ -95,7 +99,11 @@ class Corpus:
         return sum(len(c) for c in self._by_reference.values())
 
     def versions(self, reference: str) -> list[str]:
-        return [entry.spec.version for entry in self._by_reference.get(reference, ())]
+        return [
+            entry.spec.version
+            for entry in self._by_reference.get(reference, ())
+            if entry.spec.version is not None
+        ]
 
     def resolve(self, reference: str, *, like: ast.Specification) -> Entry | None:
         """The file `reference` names, read as the specification `like` would.
@@ -109,8 +117,15 @@ class Corpus:
             # An RFC number names one immutable document; there is no release
             # axis to match against.
             return candidates[0] if candidates else None
-        wanted = _major(like.version)
+        version = like.version
+        if version is None:
+            # A version-less document (an RFC) citing a versioned one has no
+            # release of its own to match, so the newest copy is the answer.
+            return candidates[0] if candidates else None
+        wanted = _major(version)
         for entry in candidates:  # newest first
-            if _major(entry.spec.version) == wanted:
+            # A version-less candidate has no major version to match; only an
+            # RFC is version-less, and RFC references never reach this branch.
+            if entry.spec.version is not None and _major(entry.spec.version) == wanted:
                 return entry
         return None

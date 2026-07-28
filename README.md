@@ -45,7 +45,9 @@ The pipeline has three stages:
    from their **.docx** sources (3GPP publishes Word as the authoritative
    format; bold runs, tables and section structure are explicit there), going
    docx → intermediate document model → `.dad` AST. A separate pass reads the
-   bookmark outline of the matching ETSI **PDF** to attach page numbers.
+   bookmark outline of the matching ETSI **PDF** to attach page numbers. RFCs
+   are parsed from their plain-text renderings, which carry their own page
+   numbers.
 2. **Review** — three things get committed: raw extractor output per spec
    version, the corrections declared against it, and the corrected file the two
    produce. The corrected one is what any real use consumes, and every line a
@@ -119,6 +121,9 @@ never recover what the extractor threw away.
 - **3GPP docx extractor**, plus the ETSI-PDF page-attachment pass and
   per-spec input patches for source typos. See
   [docs/extractor.md](docs/extractor.md).
+- **RFC plain-text extractor** for the fixed-width AVP tables IETF documents
+  print — the second input path into the same format. See
+  [docs/extractor.md](docs/extractor.md#the-rfc-plain-text-extractor).
 - **Corrections**: the second patch layer, for data that parses fine but is
   semantically wrong. See
   [docs/corrections.md](docs/corrections.md).
@@ -127,19 +132,19 @@ never recover what the extractor threw away.
   re-used AVP against the document it is borrowed from. Every file states its
   own `; Vendor-ID:` — the half of an AVP's `(vendor-id, code)` identity
   nothing else in the file supplies. See [docs/linter.md](docs/linter.md).
-- **CLI**: `seanchai extract` (docx → `.dad`), `seanchai correct` (raw `.dad` →
-  corrected), `seanchai lint` (report inconsistencies), `seanchai download`
-  (fetch the sources, from the curated catalog in
-  `src/seanchai/downloader/specs.toml`).
-- **Extracted specs**: eight, committed raw and corrected under
-  `dad/3gpp/rel-18/` — TS 29.329 (hand-verified reference), 29.229, 29.272,
-  29.172, 29.283, 29.344, 29.388 and 29.389. The corrected files carry no
-  single-file findings.
+- **CLI**: `seanchai extract` (docx → `.dad`), `seanchai extract-rfc`
+  (RFC text → `.dad`), `seanchai correct` (raw `.dad` → corrected),
+  `seanchai lint` (report inconsistencies), `seanchai download` (fetch the
+  sources, from the curated catalog in `src/seanchai/downloader/specs.toml`).
+- **Extracted specs**: nine, committed raw and corrected — under
+  `dad/3gpp/rel-18/`, TS 29.329 (hand-verified reference), 29.229, 29.272,
+  29.172, 29.283, 29.344, 29.388 and 29.389; under `dad/rfc/`, RFC 6733's
+  base-protocol AVP table. The corrected files carry no single-file findings.
 
 ### Planned
 
 Open work is tracked in [docs/roadmap.md](docs/roadmap.md): structural
-correction operations, the RFC extractor and the remaining 3GPP specs,
+correction operations, the remaining RFCs and 3GPP specs,
 cross-checking against Wireshark's dictionary as an independent oracle, and —
 the point of the whole thing — a consumer model with resolved cross-references,
 feeding dictionary validators first and generators second. Completed review

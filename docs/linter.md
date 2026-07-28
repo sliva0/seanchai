@@ -270,8 +270,11 @@ documents not yet extracted, and every file reports an `origin-not-in-corpus`
 note listing what could not be resolved. These clear themselves: nine
 `local-and-reused` notes became eight the moment 29.344 joined the corpus, and
 `ProSe-Subscription-Data` turned into the concrete `reused-body-differs` answer
-above. The RFC-shaped half of the unresolved origins needs the RFC extractor;
-until then no file resolves a single RFC citation.
+above. The RFC-shaped half of the unresolved origins needs the RFC extractor
+to be run over more of the catalog: RFC 6733 is in the corpus (the first
+output of that extractor), so base-protocol citations resolve, and the RFCs
+still listed — 7683, 7944, 8583 and the rest — are the same extraction work
+repeated per document.
 
 This is why acknowledging a finding was never built. Suppressing these one by
 one would have been work thrown away against a corpus that answers them by

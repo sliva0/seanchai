@@ -109,12 +109,14 @@ class Patch:
 class Patcher:
     """Applies one spec's input patches and accounts for every application."""
 
-    def __init__(self, patches: list[Patch], version: str):
+    def __init__(self, patches: list[Patch], version: str | None):
+        # `version` is only for messages; None for a version-less document
+        # (an RFC), whose patches have no version range to compare against.
         self.patches = patches
         self.version = version
 
     @classmethod
-    def load(cls, path: Path | None, version: str) -> Patcher:
+    def load(cls, path: Path | None, version: str | None) -> Patcher:
         if path is None or not path.is_file():
             return cls([], version)
         with path.open("rb") as stream:
@@ -153,7 +155,7 @@ class Patcher:
                 f"input patch {patch.find!r} -> {patch.replace!r} applied"
                 f" {patch.applied} times, expected {patch.count}"
             )
-            if patch.first_version is not None:
+            if patch.first_version is not None and self.version is not None:
                 known = patch.first_version
                 if patch.last_version not in (None, patch.first_version):
                     known += f"..{patch.last_version}"

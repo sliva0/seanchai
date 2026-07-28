@@ -105,9 +105,12 @@ hundreds of occurrences — and almost all of them are RFC 6733's: `Session-Id`,
 re-declares them, because every Diameter application is assumed to have them.
 
 5. **A base-protocol import rule** — either an implicit RFC 6733 dependency or
-   an explicit dependency/import directive in the format. The RFC extractor
-   below (16) is what makes either one checkable, since neither means anything
-   until a base `.dad` exists.
+   an explicit dependency/import directive in the format. The base `.dad`
+   this needed now exists — `dad/rfc/rfc6733.dad`, the RFC extractor's first
+   output — so what is left is the design choice itself, and it can be tested
+   against real resolution: the 14–17 per-file references to `Session-Id`,
+   `Origin-Host` and the rest resolve to that file's table rows the moment
+   either rule names it.
 **Structural edits (item 6) are done in the part a document actually
 forced.** `Delete` is implemented
 ([corrections.md](corrections.md#structural-edits)), the bogus `Feature-Id`
@@ -132,8 +135,11 @@ directions.
 
 What is left is the reach of the corpus rather than the rules. Every remaining
 `local-and-reused` note names a document not yet extracted, and every file's
-unresolved origins are dominated by RFCs, which need the extractor below (16).
-In rough order of what each adds: 29.336 closes eight of 29.272's notes and
+unresolved origins are dominated by RFCs, which the RFC extractor (below) now
+reaches one document at a time — RFC 6733 is committed and resolving; RFC
+7683, 7944 and 8583 are cited by nearly every file and are the cheapest next
+wins, each costing at most a new header spelling in `_LEFT_HEADERS`. In rough
+order of what each adds: 29.336 closes eight of 29.272's notes and
 both of 29.283's and 29.329's; 29.212 closes another; 29.173 and 29.061 are
 what 29.344 reaches for. 29.389 already depends on 29.388, so a two-hop chain
 is available to exercise as soon as anything needs one.
@@ -177,25 +183,27 @@ individual specs.
     write rather than code to change. Two things left this list rather than
     joining it: 29.389's empty Encrypt cell is now a representable value, and
     the four specs blocked on the `P` flag are no longer blocked on it.
-16. **Add an RFC (plain-text) extractor** for the base protocol and IETF
-    applications. This is a new input path rather than a new format: RFC 6733
-    §4.5 is the same kind of table as a 3GPP AVP table, and its Attribute Name,
-    AVP Code, Section Defined and Data Type columns map onto `AvpTableRow` as
-    it already stands, plain scalar AVPs included. `vendor_id` is already
-    optional on the definition nodes, so IETF-space AVPs need no change there.
-    Its narrower flag columns are already representable — `; Columns:` lets a
-    table declare that it has only MUST and MUST NOT — so the one real cost
-    left is the fixed-width layout itself, where a long name wraps across
-    physical lines (`Acct-` / `Interim-Interval`).
+**The RFC (plain-text) extractor (item 16) is built.** `seanchai extract-rfc`
+reads an RFC's fixed-width AVP-flags table into the same format —
+`dad/rfc/rfc6733.dad` holds all 49 base-protocol AVPs and lints clean against
+the corpus — and the two facts an RFC states differently from a 3GPP spec
+became optional directives (`; Version:`, `; Table:`) rather than fabricated
+values. How it reads the layout, and why header labels are matched as whole
+collected spellings rather than parsed, is in
+[extractor.md](extractor.md#the-rfc-plain-text-extractor). Scope is the AVP
+table only — commands and grouped bodies wait for a consumer that needs them —
+and each further RFC (7683, 7944, 8583 first, per the note counts) costs at
+most its own header spelling.
+
 17. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).
 
 ## Validation against an independent oracle
 
-This section deliberately sits after the RFC extractor (16): the extractor
-unblocks reference resolution (5), the base-protocol import rule, and most
-`origin-not-in-corpus` noise at once, while the oracle only adds confidence to
-values already extracted.
+This section deliberately sat after the RFC extractor (16, now done): running
+that extractor over more RFCs unblocks reference resolution (5), the
+base-protocol import rule, and most `origin-not-in-corpus` noise at once,
+while the oracle only adds confidence to values already extracted.
 
 9. **Fetch Wireshark's Diameter dictionary through the downloader.** It is
     the oracle the next item compares against, and it needs to arrive pinned

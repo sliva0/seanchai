@@ -343,7 +343,10 @@ class AvpTable(Node):
     """
 
     type: Literal["AVP Table"] = "AVP Table"
-    table: TableLabel
+    # None when the source prints no label at all: RFC 6733 §4.5 introduces
+    # its table with prose, not a "Table N" caption, so there is nothing for
+    # `; Table:` to record.
+    table: TableLabel | None = None
     source: SourceRef
     columns: Annotated[tuple[AvpColumn, ...], Field(min_length=1)]
     # A table section with no rows carries no information, and would mean the
@@ -470,7 +473,10 @@ class Specification(Node):
     """One `.dad` file: the top-of-file directive header plus its sections."""
 
     specification: InlineText  # "3GPP TS 29.329"
-    version: Version
+    # None for a document that has no version axis: an RFC number names one
+    # immutable document, so an RFC `.dad` carries no `; Version:` line rather
+    # than a fabricated one.
+    version: Version | None = None
     # `; Vendor-ID:` — the vendor-id this document's own AVPs are defined in.
     #
     # It has to be stated, because an AVP's identity is `(vendor-id, code)` and

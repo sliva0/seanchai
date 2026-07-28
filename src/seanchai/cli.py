@@ -102,6 +102,51 @@ def extract(
     _write(spec, output, notes)
 
 
+@main.command(name="extract-rfc")
+@click.argument("text", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--link", help="Canonical URL for the file's `; Link:` header.")
+@click.option(
+    "--patches",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with input-patch TOML files (default: ./edits/patches if present).",
+)
+@click.option(
+    "--corrections",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with per-spec correction modules (<SpecRef>.py)."
+    " Loading one executes Python from that directory, so it is never"
+    " discovered automatically.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="Output .dad path (default: stdout).",
+)
+def extract_rfc(
+    text: Path,
+    link: str | None,
+    patches: Path | None,
+    corrections: Path | None,
+    output: Path | None,
+) -> None:
+    """Extract a canonical `.dad` file from an RFC's plain-text rendering.
+
+    `; Page:` directives come from the text's own printed page numbers — the
+    text is the RFC's sole rendering, so there is no separate PDF step.
+    """
+    from .extractor import rfc_text
+
+    if patches is None and _DEFAULT_PATCHES.is_dir():
+        patches = _DEFAULT_PATCHES
+    with reported():
+        spec = rfc_text.extract(text, link=link, patches_dir=patches)
+        notes: dict[int, list[str]] = {}
+        if corrections is not None:
+            spec, notes = _correct(spec, corrections, required=False)
+    _write(spec, output, notes)
+
+
 @main.command()
 @click.argument("source", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option(

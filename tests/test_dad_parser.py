@@ -470,3 +470,24 @@ def test_parses_a_reused_table_without_an_m_bit_column():
     assert isinstance(reused, ast.ReusedAvps)
     assert reused.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
     assert reused.rows[0].m_bit is None
+
+
+def test_parses_a_version_less_header_and_a_label_less_avp_table():
+    """An RFC `.dad`: an RFC number names one immutable document, so there is
+    no `; Version:` line, and RFC 6733 §4.5 prints no table caption, so its
+    AVP table carries no `; Table:` either."""
+    spec = parser.parse(
+        "; Specification: RFC 6733\n"
+        "; Vendor-ID: 0\n"
+        "\n"
+        "; Type: AVP Table\n"
+        "; Section: 4.5\n"
+        "; Columns: Name Code Section Type Must M.not\n"
+        "Session-Id 263 8.8 UTF8String M V\n"
+    )
+
+    assert spec.version is None
+    table = spec.sections[0]
+    assert isinstance(table, ast.AvpTable)
+    assert table.table is None
+    assert table.rows[0].name == "Session-Id"

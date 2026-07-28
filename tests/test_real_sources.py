@@ -16,10 +16,11 @@ from pathlib import Path
 import pytest
 
 from seanchai.dad import corrections, formatter, parser
-from seanchai.extractor import tgpp_docx
+from seanchai.extractor import rfc_text, tgpp_docx
 
 _ROOT = Path(__file__).parent.parent
 _MANUAL = _ROOT / "specifications" / "manual"
+_RFC_TEXTS = _ROOT / "specifications" / "rfc"
 _PATCHES = _ROOT / "edits" / "patches"
 
 
@@ -41,22 +42,32 @@ def _cases():
         spec = parser.parse(path.read_text(encoding="utf-8"))
         raw = path.name.endswith(".raw.dad")
         stem = path.name.removesuffix(".raw.dad" if raw else ".dad")
-        docx = _MANUAL / f"{stem}.docx"
         link = str(spec.link) if spec.link is not None else None
-        pdf = _MANUAL / Path(link).name if link is not None else None
-        yield pytest.param(path, docx, pdf, link, raw, id=path.name)
+        if path.parent.name == "rfc":
+            # RFC files re-extract from the downloader's own text output —
+            # `seanchai download` fetches rfc-editor.org renderings, so there
+            # is nothing to hand-fetch.
+            source = _RFC_TEXTS / f"{stem}.txt"
+            pdf = None
+        else:
+            source = _MANUAL / f"{stem}.docx"
+            pdf = _MANUAL / Path(link).name if link is not None else None
+        yield pytest.param(path, source, pdf, link, raw, id=path.name)
 
 
-@pytest.mark.parametrize(("committed", "docx", "pdf", "link", "raw"), list(_cases()))
+@pytest.mark.parametrize(("committed", "source", "pdf", "link", "raw"), list(_cases()))
 def test_the_real_sources_still_produce_the_committed_output(
-    committed, docx, pdf, link, raw
+    committed, source, pdf, link, raw
 ):
-    sources = [docx] if pdf is None else [docx, pdf]
+    sources = [source] if pdf is None else [source, pdf]
     missing = [path.name for path in sources if not path.is_file()]
     if missing:
-        pytest.skip(f"hand-fetched sources not present: {', '.join(missing)}")
+        pytest.skip(f"sources not present locally: {', '.join(missing)}")
 
-    spec = tgpp_docx.extract(docx, link=link, patches_dir=_PATCHES)
+    if source.suffix == ".txt":
+        spec = rfc_text.extract(source, link=link, patches_dir=_PATCHES)
+    else:
+        spec = tgpp_docx.extract(source, link=link, patches_dir=_PATCHES)
     if pdf is not None:
         spec = tgpp_docx.attach_pages(spec, pdf)
     notes: dict[int, list[str]] = {}

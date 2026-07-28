@@ -7,7 +7,9 @@
    docx/PDF pairs live in `specifications/manual/`.
 2. **Extract**: `uv run seanchai extract DOCX --pdf PDF --link URL -o OUT.dad`.
    Warnings go to stderr; read them, they are the extractor telling you the
-   source document did something unusual.
+   source document did something unusual. RFCs are one step shorter — the text
+   is the RFC's only rendering, so there is no PDF:
+   `uv run seanchai extract-rfc specifications/rfc/rfc6733.txt --link URL -o OUT.dad`.
 3. **Eyeball** the diff against the spec. The acceptance loop is
    extract → format → parse → eyeball; the `.dad` format is designed to read as
    a near-diff of the source ABNF so this stays cheap.

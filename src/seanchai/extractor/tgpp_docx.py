@@ -780,6 +780,9 @@ def _resolve(collected: _Collected) -> _Resolved:
         found = ", ".join(table.label for table in collected.reused_tables)
         raise ExtractionError(f"more than one re-used AVPs table found: {found}")
     avp_table, tables_section = collected.avp_tables[0]
+    # `AvpTable.table` is optional only for label-less RFC tables; this
+    # extractor rejects a docx AVP table without a caption before it gets here.
+    assert avp_table.table is not None
     reused_table = (
         collected.reused_tables[0]
         if collected.reused_tables

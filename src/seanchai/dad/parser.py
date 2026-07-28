@@ -402,7 +402,9 @@ def _avp_table_row(
 def _parse_avp_table(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.AvpTable:
-    table = _pop(directives, "Table", lineno)
+    # Optional: RFC 6733 §4.5 prints no "Table N" caption, so an RFC file has
+    # no label for `; Table:` to carry.
+    table = directives.pop("Table", None)
     columns = _columns(_pop(directives, "Columns", lineno), ast.AvpColumn)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
@@ -414,7 +416,10 @@ def _parse_avp_table(
     # the declared columns), and the label's own line has nothing to do with it.
     with _validated(lineno):
         return ast.AvpTable(
-            table=table.value, source=source, columns=columns, rows=tuple(rows)
+            table=None if table is None else table.value,
+            source=source,
+            columns=columns,
+            rows=tuple(rows),
         )
 
 
@@ -479,7 +484,9 @@ def parse(text: str) -> ast.Specification:
     if body:
         raise DadParseError(body[0][0], "unexpected content in file header")
     specification = _pop(directives, "Specification", header.start)
-    version = _pop(directives, "Version", header.start)
+    # Optional: an RFC names one immutable document and has no version axis,
+    # so its file carries no `; Version:` line.
+    version = directives.pop("Version", None)
     vendor = _pop(directives, "Vendor-ID", header.start)
     link = directives.pop("Link", None)
     _no_leftovers(directives, header.start)
@@ -496,10 +503,11 @@ def parse(text: str) -> ast.Specification:
         with _validated(block.start):
             sections.append(parser(directives, body, block.start))
 
-    # The three header directives are checked one at a time so each reports its
+    # The header directives are checked one at a time so each reports its
     # own line, then assembled — by then only the whole-model rules are left.
-    with _validated(version.lineno):
-        _VERSION.validate_python(version.value)
+    if version is not None:
+        with _validated(version.lineno):
+            _VERSION.validate_python(version.value)
     parsed_link = None
     if link is not None:
         with _validated(link.lineno):
@@ -509,7 +517,7 @@ def parse(text: str) -> ast.Specification:
     with _validated(specification.lineno):
         return ast.Specification(
             specification=specification.value,
-            version=version.value,
+            version=None if version is None else version.value,
             vendor_id=vendor_id,
             link=parsed_link,
             sections=tuple(sections),

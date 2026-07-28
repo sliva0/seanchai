@@ -214,7 +214,7 @@ def _format_avp_table(table: ast.AvpTable, notes: Notes = _NO_NOTES) -> list[str
         *_notes_before(table, notes),
         "; Type: AVP Table",
         f"; Section: {table.source.section}",
-        f"; Table: {table.table}",
+        *([] if table.table is None else [f"; Table: {table.table}"]),
         *([f"; Page: {table.source.page}"] if table.source.page is not None else []),
         *_table(
             headers,
@@ -284,11 +284,10 @@ def format_spec(spec: ast.Specification, notes: Notes = _NO_NOTES) -> str:
     canonical output plus a reader's aid — and it is why notes are a caller's
     choice rather than part of the canonical form.
     """
-    header = [
-        f"; Specification: {spec.specification}",
-        f"; Version: {spec.version}",
-        f"; Vendor-ID: {spec.vendor_id}",
-    ]
+    header = [f"; Specification: {spec.specification}"]
+    if spec.version is not None:
+        header.append(f"; Version: {spec.version}")
+    header.append(f"; Vendor-ID: {spec.vendor_id}")
     if spec.link is not None:
         header.append(f"; Link: {spec.link}")
 

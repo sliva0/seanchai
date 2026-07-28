@@ -1,0 +1,58 @@
+; Specification: RFC 6733
+; Vendor-ID: 0
+; Link: https://www.rfc-editor.org/rfc/rfc6733.txt
+
+
+; Type: AVP Table
+; Section: 4.5
+; Page: 55
+; Columns: Name                  Code  Section Type               Must  M.not
+Acct-Interim-Interval            85    9.8.2   Unsigned32         M     V
+Accounting-Realtime-Required     483   9.8.7   Enumerated         M     V
+Acct-Multi-Session-Id            50    9.8.5   UTF8String         M     V
+Accounting-Record-Number         485   9.8.3   Unsigned32         M     V
+Accounting-Record-Type           480   9.8.1   Enumerated         M     V
+Acct-Session-Id                  44    9.8.4   OctetString        M     V
+Accounting-Sub-Session-Id        287   9.8.6   Unsigned64         M     V
+Acct-Application-Id              259   6.9     Unsigned32         M     V
+Auth-Application-Id              258   6.8     Unsigned32         M     V
+Auth-Request-Type                274   8.7     Enumerated         M     V
+Authorization-Lifetime           291   8.9     Unsigned32         M     V
+Auth-Grace-Period                276   8.10    Unsigned32         M     V
+Auth-Session-State               277   8.11    Enumerated         M     V
+Re-Auth-Request-Type             285   8.12    Enumerated         M     V
+Class                            25    8.20    OctetString        M     V
+Destination-Host                 293   6.5     DiameterIdentity   M     V
+Destination-Realm                283   6.6     DiameterIdentity   M     V
+Disconnect-Cause                 273   5.4.3   Enumerated         M     V
+Error-Message                    281   7.3     UTF8String         -     M,V
+Error-Reporting-Host             294   7.4     DiameterIdentity   -     M,V
+Event-Timestamp                  55    8.21    Time               M     V
+Experimental-Result              297   7.6     Grouped            M     V
+Experimental-Result-Code         298   7.7     Unsigned32         M     V
+Failed-AVP                       279   7.5     Grouped            M     V
+Firmware-Revision                267   5.3.4   Unsigned32         -     M,V
+Host-IP-Address                  257   5.3.5   Address            M     V
+Inband-Security-Id               299   6.10    Unsigned32         M     V
+Multi-Round-Time-Out             272   8.19    Unsigned32         M     V
+Origin-Host                      264   6.3     DiameterIdentity   M     V
+Origin-Realm                     296   6.4     DiameterIdentity   M     V
+Origin-State-Id                  278   8.16    Unsigned32         M     V
+Product-Name                     269   5.3.7   UTF8String         -     M,V
+Proxy-Host                       280   6.7.3   DiameterIdentity   M     V
+Proxy-Info                       284   6.7.2   Grouped            M     V
+Proxy-State                      33    6.7.4   OctetString        M     V
+Redirect-Host                    292   6.12    DiameterURI        M     V
+Redirect-Host-Usage              261   6.13    Enumerated         M     V
+Redirect-Max-Cache-Time          262   6.14    Unsigned32         M     V
+Result-Code                      268   7.1     Unsigned32         M     V
+Route-Record                     282   6.7.1   DiameterIdentity   M     V
+Session-Id                       263   8.8     UTF8String         M     V
+Session-Timeout                  27    8.13    Unsigned32         M     V
+Session-Binding                  270   8.17    Unsigned32         M     V
+Session-Server-Failover          271   8.18    Enumerated         M     V
+Supported-Vendor-Id              265   5.3.6   Unsigned32         M     V
+Termination-Cause                295   8.15    Enumerated         M     V
+User-Name                        1     8.14    UTF8String         M     V
+Vendor-Id                        266   5.3.3   Unsigned32         M     V
+Vendor-Specific-Application-Id   260   6.11    Grouped            M     V

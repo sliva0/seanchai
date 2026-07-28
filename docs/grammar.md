@@ -45,7 +45,7 @@ ABNF as in RFC 5234, with `%x` for literal code points. Two conventions:
 
 ```abnf
 file          = header 2*NL section *(2*NL section) NL
-header        = spec-line NL version-line NL vendor-line [NL link-line]
+header        = spec-line NL [version-line NL] vendor-line [NL link-line]
 spec-line     = "; Specification: " inline-text
 version-line  = "; Version: " version
 vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
@@ -61,6 +61,11 @@ vendor column, and a clause header omits the vendor both for a genuinely
 IETF-space AVP and when the document forgot. An AVP the file merely re-uses
 belongs to the origin's vendor space, which is that document's `; Vendor-ID:` to
 state.
+
+`; Version:` is present when the source document has a version axis, which a
+3GPP specification does and an RFC does not: an RFC number names one immutable
+document, so an RFC `.dad` carries no version line rather than a fabricated
+one.
 
 A file is a header block followed by one or more section blocks. Blocks are
 separated by blank lines; a block is a run of consecutive non-blank lines. The
@@ -184,7 +189,7 @@ dictionary that assigns a reserved value.
 ```abnf
 avp-table     = "; Type: AVP Table" NL
                 "; Section: " section-number NL
-                "; Table: " inline-text NL
+                ["; Table: " inline-text NL]
                 ["; Page: " 1*DIGIT NL]
                 "; Columns: " *SP columns NL
                 1*(table-row NL)
@@ -199,6 +204,10 @@ cell          = 1*(%x21-10FFFF)
 order, and a row has exactly one cell per declared column, positionally
 matched. A column the table does not declare is a column the source table did
 not have, which is not the same as one whose cell is empty.
+
+`; Table:` is present when the source table prints a label. RFC 6733 §4.5
+introduces its table with prose and no "Table N" caption, so an RFC AVP table
+has no label to record.
 
 Only columns this format models can be named. A source column with no modelled
 counterpart is dropped by the extractor rather than carried under its own

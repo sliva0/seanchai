@@ -444,7 +444,8 @@ def _unresolved_origins(
             Severity.NOTE,
             "origin-not-in-corpus",
             f"{len(missing)} of {len(set(index.reused.values()))} cited origins"
-            f" could not be resolved for a {spec.version} document, and the rules"
+            f" could not be resolved for a {spec.version or 'version-less'} document,"
+            f" and the rules"
             f" needing them were skipped: {', '.join(missing)}",
         )
     ]
@@ -478,13 +479,17 @@ def _reused_avp_exists(index: _Index, origins: dict[str, _Origin]) -> list[Findi
                 )
             )
             continue
+        # An RFC entry has no version to name; the specification string alone
+        # already names the immutable document.
+        origin_doc = resolved.spec.specification
+        if resolved.spec.version is not None:
+            origin_doc += f" {resolved.spec.version}"
         findings.append(
             Finding(
                 Severity.ERROR,
                 "reused-avp-not-in-origin",
-                f"{name} is listed as re-used from {origin}, but"
-                f" {resolved.spec.specification} {resolved.spec.version} neither"
-                f" defines, tabulates nor re-uses it",
+                f"{name} is listed as re-used from {origin}, but {origin_doc}"
+                " neither defines, tabulates nor re-uses it",
             )
         )
     return findings
