@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: docker
+    container:
+      # actions/checkout is a Node action, so the job image has to ship node.
+      # uv is installed by script instead and brings its own Python 3.14.
+      image: code.forgejo.org/oci/node:22-bookworm
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+      # The wheel cache and the managed CPython, keyed by the lockfile; a
+      # restore-key means a lockfile bump still starts from the old cache
+      # rather than from nothing. Falls back to a plain miss if the runner
+      # has no cache server configured.
+      - uses: https://code.forgejo.org/actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.local/share/uv/python
+          key: uv-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-
+      - run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - run: ~/.local/bin/uv sync --locked
+      # The tests that re-extract from real source documents skip themselves
+      # when specifications/ is absent, so the suite runs without downloads.
+      - run: ~/.local/bin/uv run pytest
+      - run: ~/.local/bin/uv run ruff check .
+      - run: ~/.local/bin/uv run ruff format --check .
+      # Drop anything sync no longer references, so the saved cache tracks
+      # the lockfile instead of accreting every wheel ever downloaded.
+      - run: ~/.local/bin/uv cache prune --ci

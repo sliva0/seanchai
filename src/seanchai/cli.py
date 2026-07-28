@@ -3,7 +3,7 @@
 Every library operation this drives promises exactly one exception type —
 `DadParseError`, `ExtractionError`, `CorrectionError`, `DownloadError` — so
 the whole of the CLI's error handling is `reported()`: turn those four into
-Click's own `Error: ...`, and let anything else through as a traceback,
+the styled `error: ...` line, and let anything else through as a traceback,
 because anything else is a bug in this program rather than a problem with the
 user's document.
 """
@@ -137,7 +137,8 @@ def extract(
             # a mismatched PDF aborts the run, and that is exactly when the
             # extraction warnings are worth reading.
             for warning in warnings:
-                click.echo(f"{click.style('warning', fg='yellow')}: {warning}", err=True)
+                prefix = click.style("warning", fg="yellow")
+                click.echo(f"{prefix}: {warning}", err=True)
         notes: dict[int, list[str]] = {}
         if corrections is not None:
             # A corpus run may pass a directory holding modules for only some
@@ -191,7 +192,8 @@ def extract_rfc(
             )
         finally:
             for warning in warnings:
-                click.echo(f"{click.style('warning', fg='yellow')}: {warning}", err=True)
+                prefix = click.style("warning", fg="yellow")
+                click.echo(f"{prefix}: {warning}", err=True)
         notes: dict[int, list[str]] = {}
         if corrections is not None:
             spec, notes = _correct(spec, corrections, required=False)

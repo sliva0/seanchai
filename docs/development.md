@@ -11,7 +11,10 @@ uv run ty check        # type check — fast, alpha
 uv run basedpyright    # type check — thorough, standard mode
 ```
 
-There is no CI yet. Run the four commands before committing.
+CI (`.forgejo/workflows/ci.yml`) runs the tests and ruff on every push, but
+only the part that needs no source documents — the real-source tests skip
+themselves when `specifications/` is absent, and the type checkers stay
+local. Run all five commands before committing anyway.
 
 ## How strictly to take the tools
 
@@ -98,8 +101,10 @@ Some decisions here are settled, and a review that reopens them costs more than
 it returns. If you disagree, argue the decision on its merits; don't
 reintroduce it as an incidental edit:
 
-- **No CI, on any platform.** Run the tools locally before committing. This is
-  a deliberate choice, not an oversight waiting to be corrected.
+- **CI is a backstop, not the gate.** The Forgejo job runs what a bare
+  container can (tests minus real sources, ruff); the full battery — both
+  type checkers, the real-source re-extractions — runs locally before
+  committing, and CI passing does not excuse skipping it.
 - **Version ranges are advisory.** For both input patches and corrections, a
   recorded range describes where a fix is known to be needed and sharpens the
   message. It never gates whether the fix is applied: gating means silently
