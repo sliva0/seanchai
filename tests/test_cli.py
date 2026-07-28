@@ -183,7 +183,7 @@ def test_correct_command_reports_a_malformed_dad_as_an_error_not_a_traceback(
     assert result.exit_code == 1
     # A Click error handled by the CLI, not a library exception that escaped.
     assert isinstance(result.exception, SystemExit)
-    assert "Error: line 2:" in result.stderr
+    assert "error: line 2:" in result.stderr
 
 
 def test_correct_command_fails_when_the_specification_has_no_corrections_module(
@@ -203,7 +203,7 @@ def test_correct_command_fails_when_the_specification_has_no_corrections_module(
     )
 
     assert result.exit_code == 1
-    assert "Error: no corrections module for '3GPP TS 29.999'" in result.stderr
+    assert "error: no corrections module for '3GPP TS 29.999'" in result.stderr
 
 
 def test_extract_command_tolerates_a_corrections_directory_without_this_spec(
@@ -230,7 +230,7 @@ def test_extract_command_reports_a_source_document_failure_as_an_error(tmp_path)
 
     assert result.exit_code == 1
     assert isinstance(result.exception, SystemExit)
-    assert "Error: extracting" in result.stderr
+    assert "error: extracting" in result.stderr
 
 
 def _dad_with(*lines: str) -> str:
@@ -303,6 +303,57 @@ def test_lint_notes_do_not_fail_the_run_and_can_be_silenced(tmp_path):
     assert "local-and-reused" in reported.output
     assert silenced.exit_code == 0
     assert silenced.output == ""
+
+
+def test_lint_default_output_groups_findings_under_the_file_with_a_summary(tmp_path):
+    source = tmp_path / "clash.dad"
+    source.write_text(
+        _dad_with(
+            "; Type: Grouped AVP",
+            "; Name: First",
+            "; Section: 6.3.1",
+            "First ::= < AVP header: 700 10415 >",
+            "",
+            "",
+            "; Type: Grouped AVP",
+            "; Name: Second",
+            "; Section: 6.3.2",
+            "Second ::= < AVP header: 700 10415 >",
+        )
+    )
+
+    result = CliRunner().invoke(main, ["lint", str(source)])
+
+    lines = result.output.splitlines()
+    assert lines[0] == str(source)
+    assert lines[1].startswith("  error[duplicate-identity]")
+    assert lines[-1] == "found 1 error in 1 file"
+
+
+def test_lint_concise_output_keeps_the_one_line_per_finding_shape(tmp_path):
+    source = tmp_path / "clash.dad"
+    source.write_text(
+        _dad_with(
+            "; Type: Grouped AVP",
+            "; Name: First",
+            "; Section: 6.3.1",
+            "First ::= < AVP header: 700 10415 >",
+            "",
+            "",
+            "; Type: Grouped AVP",
+            "; Name: Second",
+            "; Section: 6.3.2",
+            "Second ::= < AVP header: 700 10415 >",
+        )
+    )
+
+    result = CliRunner().invoke(
+        main, ["lint", "--output-format", "concise", str(source)]
+    )
+
+    (line,) = result.output.splitlines()
+    assert line.startswith(f"{source}: error: [duplicate-identity]")
+    assert "found" not in result.output  # no summary line to trip a parser
 
 
 def test_correct_command_marks_the_lines_it_changed(tmp_path):

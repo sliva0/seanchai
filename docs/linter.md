@@ -10,9 +10,13 @@ resolving it silently.
 uv run seanchai lint dad/3gpp/rel-18/*.dad
 uv run seanchai lint --no-notes FILE.dad          # errors only
 uv run seanchai lint --corpus dad FILE.dad        # also the cross-file rules
+uv run seanchai lint --output-format concise ...  # one greppable line per finding
 ```
 
-Errors exit non-zero; notes do not.
+Errors exit non-zero; notes do not. The default output groups findings under
+their file with colored severities and ends with a summary line; `concise`
+prints the older `file: severity: [rule] message` lines, one per finding, for
+grep and scripts — the finding quotes later in this document use that shape.
 
 There are two layers. Without `--corpus` only the single-file rules run, and
 they are careful to decline anything that needs a second document. With

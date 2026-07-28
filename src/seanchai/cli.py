@@ -20,6 +20,50 @@ import click
 _DEFAULT_PATCHES = Path("edits") / "patches"
 
 
+class _HelpFormatter(click.HelpFormatter):
+    """Cargo-style help: `Usage:` and section headings in bold green.
+
+    `term_len` strips ANSI codes before measuring, so the styled prefix does
+    not disturb wrapping or alignment, and `click.echo` strips the codes
+    themselves whenever output is not a terminal.
+    """
+
+    def write_usage(self, prog: str, args: str = "", prefix: str | None = None) -> None:
+        if prefix is None:
+            prefix = click.style("Usage", fg="green", bold=True) + ": "
+        super().write_usage(prog, args, prefix=prefix)
+
+    def write_heading(self, heading: str) -> None:
+        super().write_heading(click.style(heading, fg="green", bold=True))
+
+
+def _show_error(self: click.ClickException, file=None) -> None:
+    prefix = click.style("error", fg="red", bold=True)
+    click.echo(f"{prefix}: {self.format_message()}", file=file, err=file is None)
+
+
+def _show_usage_error(self: click.UsageError, file=None) -> None:
+    if self.ctx is not None:
+        hint = ""
+        if self.ctx.command.get_help_option(self.ctx) is not None:
+            option = max(self.ctx.command.get_help_option_names(self.ctx), key=len)
+            hint = click.style(
+                f"Try '{self.ctx.command_path} {option}' for help.", dim=True
+            )
+            hint = f"{hint}\n"
+        click.echo(f"{self.ctx.get_usage()}\n{hint}", file=file, err=file is None)
+    _show_error(self, file)
+
+
+# Click renders help through `Context.formatter_class` — a documented hook —
+# but gives no equivalent for its exception rendering, so the two `show`
+# methods are replaced directly. Both keep Click's structure (usage block,
+# help hint, message) and change only the styling, cargo-style.
+click.Context.formatter_class = _HelpFormatter
+click.ClickException.show = _show_error  # type: ignore[method-assign]
+click.exceptions.UsageError.show = _show_usage_error  # type: ignore[method-assign]
+
+
 @contextlib.contextmanager
 def reported() -> Iterator[None]:
     """Present a library failure as a CLI error, not as a traceback."""
@@ -93,7 +137,7 @@ def extract(
             # a mismatched PDF aborts the run, and that is exactly when the
             # extraction warnings are worth reading.
             for warning in warnings:
-                click.echo(f"warning: {warning}", err=True)
+                click.echo(f"{click.style('warning', fg='yellow')}: {warning}", err=True)
         notes: dict[int, list[str]] = {}
         if corrections is not None:
             # A corpus run may pass a directory holding modules for only some
@@ -147,7 +191,7 @@ def extract_rfc(
             )
         finally:
             for warning in warnings:
-                click.echo(f"warning: {warning}", err=True)
+                click.echo(f"{click.style('warning', fg='yellow')}: {warning}", err=True)
         notes: dict[int, list[str]] = {}
         if corrections is not None:
             spec, notes = _correct(spec, corrections, required=False)
@@ -202,14 +246,18 @@ def _correct(spec, directory: Path, required: bool):
     corrected, results = corrections_module.apply(spec, declared)
     for result in results:
         edit = result.correction
+        reason = click.style(f"({edit.reason})", dim=True)
         if isinstance(edit, corrections_module.Delete):
-            click.echo(f"deleted: {result.node} ({edit.reason})", err=True)
+            verb = click.style("deleted", fg="red")
+            click.echo(f"{verb}: {result.node} {reason}", err=True)
         elif isinstance(edit, corrections_module.Insert):
-            click.echo(f"inserted: {result.node} ({edit.reason})", err=True)
+            verb = click.style("inserted", fg="green")
+            click.echo(f"{verb}: {result.node} {reason}", err=True)
         else:
+            verb = click.style("corrected", fg="green")
             click.echo(
-                f"corrected: {result.node} {edit.field}"
-                f" {result.old!r} -> {result.new!r} ({edit.reason})",
+                f"{verb}: {result.node} {edit.field}"
+                f" {result.old!r} -> {result.new!r} {reason}",
                 err=True,
             )
     return corrected, corrections_module.notes(results)
@@ -235,8 +283,19 @@ def _correct(spec, directory: Path, required: bool):
     help="Directory or file to resolve re-used AVPs against. Enables the"
     " cross-file rules; repeatable.",
 )
+@click.option(
+    "--output-format",
+    type=click.Choice(["full", "concise"]),
+    default="full",
+    help="`full` groups findings under their file with a summary (default);"
+    " `concise` prints one greppable `file: severity: [rule] ...` line per"
+    " finding.",
+)
 def lint(
-    sources: tuple[Path, ...], notes: bool, corpus_paths: tuple[Path, ...]
+    sources: tuple[Path, ...],
+    notes: bool,
+    corpus_paths: tuple[Path, ...],
+    output_format: str,
 ) -> None:
     """Report structural inconsistencies in `.dad` files.
 
@@ -253,7 +312,8 @@ def lint(
     from .linter import Severity, lint_with_corpus
     from .linter import lint as lint_spec
 
-    total_errors = 0
+    counts = {Severity.ERROR: 0, Severity.NOTE: 0}
+    checked = 0
     with reported():
         books = Corpus.load(corpus_paths) if corpus_paths else None
         for source in sources:
@@ -263,11 +323,54 @@ def lint(
             )
             if not notes:
                 findings = [f for f in findings if f.severity is Severity.ERROR]
+            checked += 1
             for finding in findings:
-                click.echo(f"{source}: {finding}")
-            total_errors += sum(1 for f in findings if f.severity is Severity.ERROR)
-    if total_errors:
+                counts[finding.severity] += 1
+            if output_format == "concise":
+                for finding in findings:
+                    click.echo(f"{source}: {finding}")
+            elif findings:
+                _echo_findings(source, findings)
+    if output_format == "full" and any(counts.values()):
+        click.echo(_summary(counts, checked))
+    if counts[Severity.ERROR]:
         raise SystemExit(1)
+
+
+def _echo_findings(source: Path, findings) -> None:
+    """One file's findings, grouped under its path, errors first."""
+    from .linter import Severity
+
+    click.secho(str(source), bold=True)
+    color = {Severity.ERROR: "red", Severity.NOTE: "cyan"}
+    for finding in sorted(findings, key=lambda f: f.severity is not Severity.ERROR):
+        severity = click.style(finding.severity.value, fg=color[finding.severity])
+        rule = click.style(f"[{finding.rule}]", dim=True)
+        where = (
+            click.style(f" (clause {finding.section})", dim=True)
+            if finding.section
+            else ""
+        )
+        click.echo(f"  {severity}{rule} {finding.message}{where}")
+    click.echo()
+
+
+def _summary(counts, checked: int) -> str:
+    from .linter import Severity
+
+    def plural(count: int, noun: str) -> str:
+        return f"{count} {noun}{'' if count == 1 else 's'}"
+
+    found = ", ".join(
+        click.style(
+            plural(count, severity.value),
+            fg="red" if severity is Severity.ERROR else "cyan",
+            bold=severity is Severity.ERROR,
+        )
+        for severity, count in counts.items()
+        if count
+    )
+    return f"found {found} in {plural(checked, 'file')}"
 
 
 @main.command()
@@ -331,4 +434,5 @@ def _write(
         click.echo(text, nl=False)
     else:
         output.write_text(text, encoding="utf-8")
-        click.echo(f"wrote {output} ({len(spec.sections)} sections)", err=True)
+        sections = click.style(f"({len(spec.sections)} sections)", dim=True)
+        click.echo(f"wrote {click.style(str(output), bold=True)} {sections}", err=True)
