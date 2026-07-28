@@ -405,12 +405,12 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         if f.severity is linter.Severity.NOTE
     ]
 
-    # AVPs each document both defines and lists as re-used: nine in 29.272,
-    # one each in 29.283 (User-Identifier) and 29.388 (V2X-Subscription-Data).
+    # AVPs each document both defines and lists as re-used.
     expected = {
         "29128-i00": 3,
         "29272-i60": 9,
         "29283-i00": 1,
+        "29337-i00": 2,
         "29388-i10": 1,
     }
     stem = path.name.removesuffix(".dad").removesuffix(".raw")

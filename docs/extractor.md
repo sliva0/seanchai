@@ -200,6 +200,9 @@ fixture for it in `tests/conftest.py` too.
 - heading/rule name mismatches (29.329 §6.1.8 "Push-Notifications-Answer");
 - rule names with spaces for hyphens (29.272 §7.3.196 "Monitoring Event
   Report") — input-patched;
+- an AVP reference dropping one letter (`Old-Rference-Number` in 29.337
+  §6.2.3, while §6.2.4 and table 6.3.1/2 spell
+  `Old-Reference-Number`) — input-patched;
 - AVP-table name cells line-wrapped losing a hyphen (29.272 "MME-Location
   Information") — input-patched;
 - flags cells "M. V" and lowercase "v" (29.272) — input-patched;

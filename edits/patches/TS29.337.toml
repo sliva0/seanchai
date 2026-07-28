@@ -1,0 +1,8 @@
+[[patch]]
+find = "Old-Rference-Number"
+replace = "Old-Reference-Number"
+count = 1
+section = "6.2.3"
+reason = "clause 6.2.3's DTR rule drops the 'e'; clause 6.2.4 and table 6.3.1/2 both spell the reused AVP Old-Reference-Number"
+first_version = "18.0.0"
+last_version = "18.0.0"

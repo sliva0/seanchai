@@ -205,6 +205,11 @@ def test_extract_without_patch_file_rejects_malformed_input(
             ],
         ),
         (
+            "TS29.337",
+            "18.0.0",
+            [("Old-Rference-Number", "6.2.3")],
+        ),
+        (
             "TS29.338",
             "18.2.0",
             # The header-line units carry only the substring the patch targets;

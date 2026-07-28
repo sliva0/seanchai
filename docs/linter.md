@@ -163,11 +163,11 @@ genuinely IETF-space AVP looks exactly like it.
 
 ## What the corpus reports today
 
-Eight specifications, each committed raw and corrected. The raw files carry
-their documents' own mistakes and the corrected files clear them, which is what
-makes "the corrected corpus is clean" mean anything at all — a corpus that were
-clean because the rules never matched would look identical otherwise. Between
-them the raw files exercise every single-file rule:
+Thirteen 3GPP specifications and six RFCs, each committed raw and corrected.
+The raw files carry their documents' own mistakes and the corrected files clear
+them, which is what makes "the corrected corpus is clean" mean anything at all
+— a corpus that were clean because the rules never matched would look identical
+otherwise. Between them the raw files exercise every single-file rule:
 
 | file | reports |
 |------|---------|
@@ -254,6 +254,16 @@ the indirection and leaves the chain visible.
 29388-i10.dad: note: [reused-body-differs] V2X-Subscription-Data's body,
 against TS29.272's definition: adds V2X-PC5-Allowed-PLMN, missing
 UE-PC5-AMBR, V2X-Permission (clause 6.3.2)
+29337-i00.dad: note: [reused-body-differs] Additional-Serving-Node's body,
+against TS29.173's definition: adds the SMSF members and
+MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address and
+LCS-Capabilities-Sets (clause 6.3.4)
+29337-i00.dad: note: [reused-body-differs] Serving-Node's body, against
+TS29.173's definition: adds the SMSF, IP-SM-GW and
+MME-Number-for-MT-SMS members, missing 3GPP-AAA-Server-Name, GMLC-Address
+and LCS-Capabilities-Sets (clause 6.3.3)
+29128-i00.dad: note: [reused-body-differs] Terminal-Information's body,
+against TS29.272's definition: missing 3GPP2-MEID (clause 6.4.30)
 29272-i60.dad: note: [reused-body-differs] ProSe-Subscription-Data's body,
 against TS29.344's definition: missing 3GPP-Charging-Characteristics,
 ProSe-Allowed-PLMN (clause 7.3.180)
@@ -262,22 +272,26 @@ ProSe-Allowed-PLMN (clause 7.3.180)
 Two documents describe one AVP differently. There is no way to tell from either
 which is current — the two are separately maintained and either may be the one
 lagging — and correcting one to match the other would invent an agreement that
-does not exist in the specifications. These are notes so that a consumer
-choosing between the two definitions knows there is a choice to make.
+does not exist in the specifications. TS 29.337 is especially explicit:
+clauses 6.3.3 and 6.3.4 say the two AVPs originate in TS 29.173 and then print
+the T4-specific bodies above. These are notes so that a consumer choosing
+between the definitions knows there is a choice to make.
 
 ### Notes waiting on corpus growth
 
-Eight `local-and-reused` notes on 29.272 and one each on 29.283 and 29.388 name
-documents not yet extracted, and every file reports an `origin-not-in-corpus`
-note listing what could not be resolved. These clear themselves: nine
-`local-and-reused` notes became eight the moment 29.344 joined the corpus, and
-`ProSe-Subscription-Data` turned into the concrete `reused-body-differs` answer
-above. The RFC-shaped half of the unresolved origins needs the RFC extractor
-to be run over more of the catalog: RFC 6733 is in the corpus (the first
-output of that extractor), so base-protocol citations resolve, and the RFCs
-still listed — 7683, 7944, 8583 and the rest — are the same extraction work
-repeated per document.
+Eleven `local-and-reused` notes still await an origin: two in 29.128, eight in
+29.272 and one in 29.283. Nine of those cite TS 29.336; the other two cite
+TS 29.212 and RFC 5447. Adding 29.173 resolved 29.337's two such notes into the
+concrete `reused-body-differs` findings above.
 
-This is why acknowledging a finding was never built. Suppressing these one by
-one would have been work thrown away against a corpus that answers them by
-growing.
+A fresh whole-corpus run leaves `origin-not-in-corpus` notes in eleven files.
+The two new ones are specific and intentional: 29.173 awaits TS 29.273, while
+29.337 awaits RFC 4006 and TS 29.336, 29.338 and 29.368. TS 29.368 is published
+as a legacy binary `.doc`, so it cannot enter this extractor path yet. The
+other unresolved origins are listed in the roadmap's current corpus-growth
+priorities rather than duplicated here.
+
+These notes clear themselves as the corpus grows. This is why acknowledging a
+finding was never built: suppressing them one by one would hide which
+cross-file rules were skipped and turn into discarded work when the missing
+origin arrives.

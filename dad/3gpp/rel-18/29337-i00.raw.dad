@@ -1,0 +1,199 @@
+; Specification: 3GPP TS 29.337
+; Version: 18.0.0
+; Vendor-ID: 10415
+
+
+; Type: Message
+; Name: Device-Trigger-Request, DTR
+; Section: 6.2.3
+<Device-Trigger-Request> ::= < Diameter Header: 8388643, REQ, PXY, 16777311 >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Identifier }
+        { SM-RP-SMEA }
+        { Payload }
+        [ Serving-Node ]
+      * [ Additional-Serving-Node ]
+        [ Reference-Number ]
+        [ Validity-Time ]
+        [ Priority-Indication ]
+        [ SMS-Application-Port-ID ]
+        [ Old-Reference-Number ]
+        [ Trigger-Action ]
+      * [ Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Device-Trigger-Answer, DTA
+; Section: 6.2.4
+<Device-Trigger-Answer> ::= < Diameter Header: 8388643, PXY, 16777311 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ MTC-Error-Diagnostic ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Old-Reference-Number ]
+        [ Trigger-Action ]
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Delivery-Report-Request, DRR
+; Section: 6.2.5
+<Delivery-Report-Request> ::= < Diameter Header: 8388644, REQ, PXY, 16777311 >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Identifier }
+        { SM-RP-SMEA }
+        { SM-Delivery-Outcome-T4 }
+        [ Absent-Subscriber-Diagnostic-T4 ]
+        [ Reference-Number ]
+      * [ Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Delivery-Report-Answer, DRA
+; Section: 6.2.6
+<Delivery-Report-Answer> ::= < Diameter Header: 8388644, PXY, 16777311 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.3
+; Table: 6.3.1/1
+; Columns: Name                   Code   Section Type         Must  May   S.not M.not Encrypt
+SM-Delivery-Outcome-T4            3200   6.3.1   Enumerated   M,V   -     -     -     No
+Absent-Subscriber-Diagnostic-T4   3201   6.3.2   Enumerated   M,V   -     -     -     No
+Trigger-Action                    3202   6.3.6   Unsigned32   V     -     -     M     No
+MTC-Error-Diagnostic              3203   6.3.7   Unsigned32   V     -     -     M     No
+
+
+; Type: Reused AVPs
+; Section: 6.3
+; Table: 6.3.1/2
+; Columns: Name           From       M-bit
+User-Identifier           TS29.336   -
+SM-RP-SMEA                TS29.338   -
+Payload                   TS29.368   -
+Serving-Node              TS29.173   -
+Additional-Serving-Node   TS29.173   -
+Reference-Number          TS29.368   -
+Old-Reference-Number      TS29.368   -
+Validity-Time             RFC4006    -
+Priority-Indication       TS29.368   -
+SMS-Application-Port-ID   TS29.368   -
+Supported-Features        TS29.229   -
+Feature-List-ID           TS29.229   -
+Feature-List              TS29.229   -
+IP-SM-GW-Name             TS29.336   -
+IP-SM-GW-Realm            TS29.336   -
+IP-SM-GW-Number           TS29.336   -
+MME-Number-for-MT-SMS     TS29.272   -
+DRMP                      RFC7944    MUST-NOT
+SMSF-3GPP-Number          TS29.338   -
+SMSF-Non-3GPP-Number      TS29.338   -
+SMSF-3GPP-Name            TS29.338   -
+SMSF-Non-3GPP-Name        TS29.338   -
+SMSF-3GPP-Realm           TS29.338   -
+SMSF-Non-3GPP-Realm       TS29.338   -
+
+
+; Type: Enumerated AVP
+; Name: SM-Delivery-Outcome-T4
+; Section: 6.3.1
+SM-Delivery-Outcome-T4 ::= < Enumerated AVP header: 3200 10415 >
+        ABSENT_SUBSCRIBER           = 0
+        UE_MEMORY_CAPACITY_EXCEEDED = 1
+        SUCCESSFUL_TRANSFER         = 2
+        VALIDITY_TIME_EXPIRED       = 3
+
+
+; Type: Enumerated AVP
+; Name: Absent-Subscriber-Diagnostic-T4
+; Section: 6.3.2
+Absent-Subscriber-Diagnostic-T4 ::= < Enumerated AVP header: 3201 10415 >
+        NO_PAGING_RESPONSE      = 0
+        UE_DETACHED             = 1
+        UE_DEREGISTERED         = 2
+        UE_PURGED               = 3
+        ROAMING_RESTRICTION     = 4
+        UNIDENTIFIED_SUBSCRIBER = 5
+
+
+; Type: Grouped AVP
+; Name: Serving-Node
+; Section: 6.3.3
+Serving-Node ::= < AVP header: 2401 10415 >
+        [ SMSF-3GPP-Name ]
+        [ SMSF-3GPP-Realm ]
+        [ SMSF-3GPP-Number ]
+        [ SMSF-Non-3GPP-Name ]
+        [ SMSF-Non-3GPP-Realm ]
+        [ SMSF-Non-3GPP-Number ]
+        [ SGSN-Name ]
+        [ SGSN-Realm ]
+        [ SGSN-Number ]
+        [ MME-Name ]
+        [ MME-Realm ]
+        [ MME-Number-for-MT-SMS ]
+        [ MSC-Number ]
+        [ IP-SM-GW-Number ]
+        [ IP-SM-GW-Name ]
+        [ IP-SM-GW-Realm ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Additional-Serving-Node
+; Section: 6.3.4
+Additional-Serving-Node ::= < AVP header: 2406 10415 >
+        [ SMSF-3GPP-Name ]
+        [ SMSF-3GPP-Realm ]
+        [ SMSF-3GPP-Number ]
+        [ SMSF-Non-3GPP-Name ]
+        [ SMSF-Non-3GPP-Realm ]
+        [ SMSF-Non-3GPP-Number ]
+        [ SGSN-Name ]
+        [ SGSN-Realm ]
+        [ SGSN-Number ]
+        [ MME-Name ]
+        [ MME-Realm ]
+        [ MME-Number-for-MT-SMS ]
+        [ MSC-Number ]
+      * [ AVP ]
