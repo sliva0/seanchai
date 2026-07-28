@@ -7,7 +7,15 @@ dad/
   3gpp/
     rel-18/     one directory per 3GPP release
   rfc/          RFCs have no release axis, so they sit flat
+  raw/          unedited extractor output, mirroring the two trees above
+    3gpp/
+      rel-18/
+    rfc/
 ```
+
+The corrected trees are the ones to read and to point tools at; `raw/` mirrors
+their structure file-for-file and exists for diffing and rot-checking, which
+is why it sits out of the way rather than doubling every directory listing.
 
 3GPP files are named as 3GPP names its archives — specification number and
 version code, `29272-i60` for TS 29.272 V18.6.0 — because that is what pairs a
@@ -20,8 +28,10 @@ Each specification is committed twice, and the pair is the point:
 - `29272-i60.dad` — the **corrected** file. This is the one to use. A generator
   or a validator wants the AVP code that is right, not the one the document
   misprinted.
-- `29272-i60.raw.dad` — unedited extractor output, saying exactly what the
-  document said, mistakes included.
+- `raw/3gpp/rel-18/29272-i60.raw.dad` — unedited extractor output, saying
+  exactly what the document said, mistakes included. The `.raw.dad` suffix is
+  what tools key on — the corpus loader and the tests tell the kinds apart by
+  name, so a raw file stays self-identifying outside its directory.
 
 Every line a correction touched carries a trailing `;;` note in the corrected
 file, citing the declaration in `edits/corrections/` it came from, so a

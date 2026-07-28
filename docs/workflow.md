@@ -23,9 +23,10 @@
    `uv run seanchai extract DOCX --pdf PDF --link URL --corrections edits/corrections -o dad/3gpp/rel-18/NAME.dad`.
    Every corrected line gets a `;;` note citing the declaration's `file:line`.
    See [corrections](corrections.md).
-6. **Commit both files** into the corpus, under the release they belong to:
-   `dad/3gpp/rel-18/29272-i60.raw.dad` and `29272-i60.dad`. The corrected one
-   should lint clean; the raw one may not, and that is what it is for.
+6. **Commit both files** into the corpus: the corrected one under the release
+   it belongs to (`dad/3gpp/rel-18/29272-i60.dad`) and the raw one in the
+   mirrored raw tree (`dad/raw/3gpp/rel-18/29272-i60.raw.dad`). The corrected
+   one should lint clean; the raw one may not, and that is what it is for.
    See [dad/README.md](../dad/README.md).
 
 ## Version upgrades

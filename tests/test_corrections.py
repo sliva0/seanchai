@@ -720,7 +720,7 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     missing vendor-id and two respelled names, nothing else — so changing what
     the corrections do has to be a deliberate edit here too.
     """
-    raw = _ROOT / "dad" / "3gpp" / "rel-18" / "29272-i60.raw.dad"
+    raw = _ROOT / "dad" / "raw" / "3gpp" / "rel-18" / "29272-i60.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
