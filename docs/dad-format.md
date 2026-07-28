@@ -95,10 +95,10 @@ These are the decisions the format rests on. Preserve them when changing it.
   placeholder.
 - **A table declares its own columns.** `; Columns:` is a directive, not a
   cosmetic label line, and it states which columns the source table had, in the
-  source table's order. Tables do not all have the same ones: TS 29.273's AVP
-  table has no Encrypt column, RFC 6733 §4.5 has neither MAY nor SHOULD NOT nor
-  Encrypt, and TS 29.128, 29.173 and 29.336 print re-used tables with no M-bit
-  column. Declaring them is what keeps "the table had no such column" distinct
+  source table's order. Tables do not all have the same ones: TS 29.273's
+  AVP table has no Encrypt column (examined, not yet committed), RFC 6733
+  §4.5 has neither MAY nor SHOULD NOT nor Encrypt, and TS 29.128, 29.173 and
+  29.336 print re-used tables with no M-bit column. Declaring them is what keeps "the table had no such column" distinct
   from "the cell was empty", which were the same `False` before.
 
 - **Only modelled columns are recorded; the rest are dropped.** Every source
@@ -112,12 +112,9 @@ These are the decisions the format rests on. Preserve them when changing it.
   This is a statement about what has turned up, not a rule that unmodelled
   means unimportant. A source column carrying *machine-readable* values is a
   reason to add a modelled column for it, named, with a cell grammar of its
-  own. TS 29.212's "Acc. Type" (`3GPP-EPS`, `3GPP-GPRS`, `All`) and
-  "Applicability" (`CC`/`PC`/`Both` plus feature names) are the standing
-  candidates, and TS 29.172's re-used table prints AVP Code and Value Type
-  columns. The extractor warns about every unmodelled column that is not one of
-  the known prose labels, which is how such a case gets noticed rather than
-  quietly lost.
+  own; the extractor warns about every unmodelled column that is not a known
+  prose label, and the standing candidates are catalogued in
+  [extractor.md](extractor.md#columns-the-format-does-not-model).
 - **Reused AVPs are listed by name.** Names are unique within one
   specification's scope; resolving a row against the origin spec's `.dad`
   yields the AVP's `(vendor-id, code)` — the true identity key, which

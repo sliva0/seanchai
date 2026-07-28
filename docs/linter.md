@@ -300,23 +300,14 @@ between the definitions knows there is a choice to make.
 
 ### Notes waiting on corpus growth
 
-One `local-and-reused` note still awaits an origin: 29.272's
-`MIP6-Agent-Info`, citing RFC 5447. Committing TS 29.336 resolved the nine
-notes that cited it, and TS 29.212 the note for 29.272's
-`Allocation-Retention-Priority` — the same way adding 29.173 had earlier
-resolved 29.337's two into concrete `reused-body-differs` findings.
-
-The cross-file rules also caught three citation defects the moment 29.061 and
-29.212 joined: 29.128's re-used table citing `Bearer-Identity` for 29.212's
-`Bearer-Identifier`, and 29.212's Gx and Sd tables spelling two of 29.061's
-AVPs `Ipv6` where the origin spells `IPv6` — all three now name corrections.
-
-A fresh whole-corpus run leaves `origin-not-in-corpus` notes in eleven files.
-The two new ones are specific and intentional: 29.173 awaits TS 29.273, while
-29.337 awaits RFC 4006 and TS 29.336, 29.338 and 29.368. TS 29.368 is published
-as a legacy binary `.doc`, so it cannot enter this extractor path yet. The
-other unresolved origins are listed in the roadmap's current corpus-growth
-priorities rather than duplicated here.
+Every `local-and-reused` note has an origin now — the last one, 29.272's
+`MIP6-Agent-Info`, resolved when RFC 5447 was extracted — so what remains in
+this class is `origin-not-in-corpus`, in twelve files. Every unresolved
+origin is either a legacy `.doc` specification (TS 32.299, cited by six
+files; TS 29.368, 29.217, 29.468; TS 29.154 is not even in the catalog yet),
+TS 29.273 (a `.docx` with a command section the extractor cannot read yet),
+or a document outside 3GPP and IETF entirely (ETSI's TS 283 034 and
+TS 183 017, 3GPP2's X.S0057, and TS 23.329, which 29.338 cites).
 
 These notes clear themselves as the corpus grows. This is why acknowledging a
 finding was never built: suppressing them one by one would hide which
@@ -325,13 +316,9 @@ origin arrives.
 
 ### `unresolved-reference` — references awaiting triage
 
-The rule stays a note until its standing findings are worked through. The
-first run left 34 notes; corpus growth has both closed and opened them since
-(29.212 arriving resolved 29.128's `Bearer-Identifier`; the application RFCs
-arriving initially added ninety, until multi-entry `; Bases:` corrections —
-RFC 4072 building on NASREQ the way everything builds on RFC 6733 — absorbed
-all that actually were base-document references). Fifty-five remain, in
-three shapes:
+The rule stays a note until its standing findings are worked through; it
+promotes to an error when every entry below is corrected away or explained.
+Fifty-five findings stand, in three shapes:
 
 - **In-document spelling defects in the application RFCs** (26). The RFC
   ABNFs misspell their own or their bases' AVPs: RFC 4005 and 7155 write
@@ -342,9 +329,9 @@ three shapes:
   RFC 5778 writes `MIP-Agent-Info` for `MIP6-Agent-Info` and
   `Multi-Round-Time` for `Multi-Round-Time-Out`, RFC 4005 heads
   `Framed-Appletalk-*` in its table but `Framed-AppleTalk-*` in ABNF, and
-  RFC 5777 writes `IP-Bit-Mask-Width` for its own
-  `IP-Mask-Bit-Mask-Width`. Each is an ordinary name correction waiting on
-  a verification pass against the RFC text.
+  RFC 5777's table and ABNF disagree (`IP-Mask-Bit-Mask-Width` vs
+  `IP-Bit-Mask-Width` — Wireshark sides with the ABNF). Each is an ordinary
+  name correction waiting on a verification pass against the RFC text.
 - **References to another document's AVPs that a 3GPP re-used table omits.**
   29.337's message bodies use `MME-Name`, `SGSN-Number` and four siblings
   from TS 29.336 without listing them as re-used; 29.272's clause 7.3.194
@@ -357,5 +344,6 @@ three shapes:
   and 29.345's ProSe discovery AVPs have not yet been checked against their
   source clauses.
 
-Once every note is either corrected away or explained here, the rule should
-promote to an error so `lint --corpus` guards it from then on.
+Several of these carry a second, independent witness from Wireshark's
+dictionary — see [oracle.md](oracle.md#what-the-first-run-found) — which is
+the evidence order the triage should follow.

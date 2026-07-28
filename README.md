@@ -147,12 +147,12 @@ never recover what the extractor threw away.
 
 ### Planned
 
-Open work is tracked in [docs/roadmap.md](docs/roadmap.md): structural
-correction operations, the remaining RFCs and 3GPP specs,
-cross-checking against Wireshark's dictionary as an independent oracle, and —
-the point of the whole thing — a consumer model with resolved cross-references,
-feeding dictionary validators first and generators second. Completed review
-rounds and the reasoning behind them are kept in [docs/history/](docs/history/).
+Open work is tracked in [docs/roadmap.md](docs/roadmap.md): working the
+standing linter and oracle findings off, the remaining 3GPP document shapes
+and the legacy `.doc` specs, and — the point of the whole thing — a consumer
+model with resolved cross-references, feeding dictionary validators first
+and generators second. Completed review rounds and the reasoning behind them
+are kept in [docs/history/](docs/history/).
 
 ## Repository layout
 
@@ -171,8 +171,13 @@ rounds and the reasoning behind them are kept in [docs/history/](docs/history/).
   against. Not part of the corpus.
 - `external/` — third-party checkouts kept while working (git-ignored).
 - `tests/` — pytest suite.
-- `docs/` — format, grammar, extractor, linter, workflow, development and
-  roadmap documents, plus `docs/history/` for completed review rounds.
+- `docs/` — the format ([dad-format](docs/dad-format.md),
+  [grammar](docs/grammar.md)), the pipeline ([extractor](docs/extractor.md),
+  [corrections](docs/corrections.md), [downloader](docs/downloader.md)),
+  the checks ([linter](docs/linter.md), [oracle](docs/oracle.md)), and the
+  [workflow](docs/workflow.md), [development](docs/development.md) and
+  [roadmap](docs/roadmap.md) documents, plus `docs/history/` for completed
+  review rounds.
 
 ## Development
 

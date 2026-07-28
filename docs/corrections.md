@@ -88,9 +88,12 @@ command codes belong to. The full set is in
   exists to tell apart. So the layer consumes raw files and refuses to correct
   in place.
 - **Selectors address identity, never position**: `definition(name)`,
-  `table_row(name)`, `reused_row(name)`, `enum_value(avp, name)`,
-  `avp_rule(parent, name)`. Indices are what make a text diff brittle in the
-  first place; don't reintroduce them here.
+  `table_row(name)`, `reused_row(name, section=)`,
+  `enum_value(avp, name, value=)`, `avp_rule(parent, name)`,
+  `avp_table(label)` for a whole table section, and `header()` for the
+  file-level directive header (what a `bases` correction targets). Indices
+  are what make a text diff brittle in the first place; don't reintroduce
+  them here.
 - **Ambiguity is an error.** A selector matching two nodes must be narrowed —
   `definition("Update-Location-Request", application_id=16777251)` for the
   dual-application sections of TS 29.272. `avp_rule` takes a whole `definition`
@@ -230,22 +233,16 @@ deleting a row, which field replacement cannot express, and until `Delete`
 existed `lint --corpus` exited non-zero on a defect with no available repair.
 `edits/corrections/TS29.283.py` now carries that deletion.
 
-The first two cases that seemed to force `Insert` dissolved on inspection:
-TS 29.272
-appeared to reference `Additional-Context-Identifier` and
-`Re-synchronization-Info` without introducing them, but its table 7.3.1/1
-holds both AVPs under variant spellings (`Additional-Context-ID`;
-`Re-Synchronization-Info` against the ABNF's lower-cased `s`), and the clause
-headings say which side is right. Both are ordinary name `Correction`s in
-`edits/corrections/TS29.272.py`.
-
-TS 29.344 finally forced the real operation. Clause 6.3.13 defines
-`Authorized-Discovery-Range` as Unsigned32 and TS 29.230 assigns it code 3708,
-but table 6.3.1-1 omits the row. TS 29.345 then legitimately lists the AVP as
-re-used from 29.344, making the omission visible to the cross-file linter.
-`edits/corrections/TS29.344.py` inserts the missing row in the corrected table.
-`Supply`'s case (enumerated AVPs whose values live in a non-Diameter document)
-still awaits a consumer who needs those values.
+`Insert`'s forcing case is TS 29.344: clause 6.3.13 defines
+`Authorized-Discovery-Range` (code 3708 per TS 29.230) but table 6.3.1-1
+omits the row, and TS 29.345 legitimately lists the AVP as re-used — so the
+omission is visible to the cross-file linter and nothing but adding the row
+can repair it. `edits/corrections/TS29.344.py` inserts it. Worth remembering
+before reaching for `Insert`: the two earlier candidates dissolved into
+ordinary name `Correction`s once the table was read carefully (29.272's
+`Additional-Context-ID` and `Re-Synchronization-Info` spelling variants).
+`Supply`'s case (enumerated AVPs whose values live in a non-Diameter
+document) still awaits a consumer who needs those values.
 
 The design question `expect` answers for replacement — "how does this edit fail
 loudly when the document is fixed upstream?" — has a per-operation answer:
@@ -297,9 +294,10 @@ All three use the same selector vocabulary. `Insert` adds the
 for the other section kinds it can fill. Notation stays the same: nodes are
 written as the real pydantic AST types, so inserted content is validated at
 declaration time like everything else.
-`; EXTERNALLY-DEFINED` is the one piece that is a format change rather than a
-corrections change — grammar, AST and both extractors — and lands with the
-usual format-instability licence from [grammar.md](grammar.md).
+`; EXTERNALLY-DEFINED` is the one piece that is a format change rather than
+a corrections change — a new inline directive beside `; RESERVED` in the
+grammar, plus AST and both extractors — and lands under the
+format-instability notice both format documents carry.
 
 Two consequences govern `Insert` now and must also hold for a future `Supply`:
 
@@ -312,8 +310,8 @@ Two consequences govern `Insert` now and must also hold for a future `Supply`:
   and deleted input nodes, so notes attach to the new row rather than merely
   to its parent table. A future `Supply` needs the same explicit tracking.
 
-This deliberately does not add `move`, `split` or arbitrary tree surgery. The
-rule from the section below still holds: add a named operation when a real
+This deliberately does not add `move`, `split` or arbitrary tree surgery.
+The implementation rule above still holds: add a named operation when a real
 document forces it, with an `expect` contract designed at the same time.
 
 ## Deliberately out of scope

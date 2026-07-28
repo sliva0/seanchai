@@ -339,7 +339,8 @@ Column *order* has been identical in all 20 AVP tables examined: Attribute
 Name, AVP Code, Clause/Section defined, Value Type, Must, May, Should not, Must
 not, then any extras. The column *set* has not:
 
-- **29.273** has 8 — no "May Encr." column at all;
+- **29.273** (examined, not yet committed) has 8 — no "May Encr." column
+  at all;
 - **29.061** and **29.214** have 10, **29.212** has 11;
 - re-used tables in **29.128**, **29.173** and **29.336** have no M-bit column,
   so the dispatch keys on "Reference" rather than on "M-bit";
@@ -468,11 +469,10 @@ extraction.
   numbers — which matters because the downloader falls back to an earlier ETSI
   rendering when the exact version isn't published yet. It also warns when the
   bookmark outline covers only some sections, and errors when it covers none.
-- ETSI PDF filenames encode versions as two digits per component (18.1.0 →
-  `v180100`). `etsi_pdf_url()` in the download script already does this
-  correctly; don't hand-build these URLs.
-- 29.328 is a stage-2 data spec with no Diameter AVP table at all — "no AVP
-  table found" is correct there, not a bug.
-- Only 29.329 has a hand-verified reference `.dad`. The 29.229 and 29.272 raw
-  outputs round-trip and were spot-checked, but are otherwise unverified; the
-  planned Wireshark cross-check is what will make them trustworthy at scale.
+- ETSI PDF filename and URL derivation belongs to the downloader — see
+  [downloader.md](downloader.md); don't hand-build those URLs.
+- 29.328 holds the Sh *messages* while 29.329 holds the AVPs, so "no AVP
+  table found" is correct today; modelling the message-only document shape
+  is roadmap work.
+- Only 29.329 has a hand-verified reference `.dad`; the Wireshark
+  cross-check ([oracle.md](oracle.md)) is what checks the rest at scale.

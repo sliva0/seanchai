@@ -46,7 +46,8 @@ sha256 and size per artifact.
 - **Version selection does not depend on listing order.** `discover_3gpp_urls`
   picks the archive with the highest decoded version, not the last matching
   link on the index page.
-- **With `--pdfs`, version selection prefers page-attachment over newness.**
+- **Version selection prefers page-attachment over newness** (the default;
+  `--no-pdfs` disables it along with the renderings).
   When the newest archive version's exact ETSI rendering is unpublished,
   `download_3gpp` walks back to the highest version whose PDF exists — listed
   from `Specs/archive/`, since `Specs/latest/` holds only one zip per spec —
@@ -70,11 +71,12 @@ sha256 and size per artifact.
 
 - Fetch *all* docx zips from the 3GPP archive
   (`.../Specs/archive/<series>_series/<spec>/`, version encoded base-36:
-  18.0.0 → `i00`). `discover_3gpp_archive_urls` now lists it, but only the
-  PDF-matched version selection reads the listing; the default path still
-  takes `Specs/latest/Rel-N/`. Preferring the archive throughout would keep
-  every old version available, which the raw-vs-raw diff workflow needs on
-  version bumps.
+  18.0.0 → `i00`). `discover_3gpp_archive_urls` lists it, and the
+  PDF-matched selection (the default) reads the listing whenever the newest
+  version's PDF is unpublished; discovery of the newest version itself
+  still goes through `Specs/latest/Rel-N/`. Preferring the archive
+  throughout would keep every old version available, which the raw-vs-raw
+  diff workflow needs on version bumps.
 - Derive the ETSI `Link:` URL instead of taking it from the caller. This needs
   the ETSI edition suffix (e.g. `18.00.00_60`), which is not in the docx —
   probably requires listing the ETSI deliver directory.

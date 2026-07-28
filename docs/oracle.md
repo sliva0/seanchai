@@ -5,8 +5,8 @@ Diameter dictionary — an independently maintained reading of the same
 specifications, which is what makes it an oracle. The corpus's corrections
 are otherwise justified by internal consistency alone (a clause checked
 against the same document's own table), and only 29.329 has been verified by
-hand; this is what lets the other 33 files' codes, vendor-ids and types be
-checked at scale.
+hand; this is what lets the rest of the corpus's codes, vendor-ids and types
+be checked at scale.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
@@ -70,7 +70,18 @@ Fifty-seven findings over the 34-file corpus, in three shapes:
   disambiguations (`Cx-User-Data`/`Sh-User-Data` for the two `User-Data`s,
   the `3GPP-SIP-*` prefixes, `Termination-Cause-3GPP`, `Wildcarded-PSI`) or
   XML-imposed spellings (`OnexRTT-RCID` for `1xRTT-RCID`, which cannot start
-  an XML name). The rest are one project or the other misreading: the
+  an XML name). Those names are non-standard by construction — invented to
+  keep one flat namespace unambiguous — and the corpus **always prefers the
+  specification's own name**: `.dad` never adopts a Wireshark spelling, and
+  a name correction may cite the dictionary as a witness but must justify
+  itself from the specification. Disambiguation in the corpus is what
+  `(vendor-id, code)` identity and the per-file scope are for. The place
+  Wireshark's spellings *do* belong is the consumer-facing layer: where the
+  dictionary's name differs, consumer output should carry it as an extra
+  piece of information alongside the specification's, so tooling built on
+  Wireshark-derived dictionaries can map between the two — the consumer-model
+  item in [roadmap.md](roadmap.md) records this. The rest are one project or
+  the other misreading: the
   dictionary corroborates 29.336's `Periodic-time` casing typo and
   RFC 4005's `Framed-Appletalk-*` (its ABNF and Wireshark both write
   `AppleTalk`), agrees with RFC 5777's ABNF against its own allocation table

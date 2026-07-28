@@ -68,8 +68,9 @@ try to interpret.
 - `tests/test_real_sources.py` re-extracts every committed file from the real
   docx and its ETSI PDF and compares byte-for-byte: the raw files against the
   extractor alone, the corrected ones against both layers. It skips unless the
-  hand-fetched sources are under `specifications/manual/` (they are git-ignored), so a
-  fresh clone sees three skips — but on a machine that has them, it is the test
+  sources are present under the git-ignored `specifications/` tree, so a
+  fresh clone skips one case per committed file — but on a machine that has
+  them, it is the test
   that catches an extractor change which is fine on the synthetic fixture and
   wrong on the documents the fixture was abstracted from.
 
@@ -118,10 +119,10 @@ reintroduce it as an incidental edit:
   failure asks for them, not before. A note in `roadmap.md` is the right size
   for a good idea whose time hasn't come.
 
-  The corpus layout used to be on that list and no longer is: `dad/3gpp/rel-N/`
-  and `dad/rfc/` are settled, described in [dad/README.md](../dad/README.md).
-  What stays undecided is where *corrected* files live, because nothing
-  generates them into the tree yet.
+  The corpus layout used to be on that list and no longer is:
+  `dad/3gpp/rel-N/` and `dad/rfc/` for corrected files, with the raw mirror
+  under `dad/raw/`, are settled and described in
+  [dad/README.md](../dad/README.md).
 - **Prose over process.** No status tables, dependency graphs, ticket IDs or
   acceptance-criteria blocks. This is a small repository; the docs should read
   like an experienced colleague explaining the system, which is also what makes

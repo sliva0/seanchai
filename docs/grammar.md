@@ -268,8 +268,8 @@ reused-avps   = "; Type: Reused AVPs" NL
                 1*(table-row NL)
 reused-columns = reused-column *(1*SP reused-column)
 reused-column = "Name" / "From" / "M-bit"
-spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)
 m-bit         = "MUST" / "MUST-NOT" / "-"
+; a From cell holds a spec-ref, defined once under the File header
 ```
 
 Rows follow the same `table-row` production as an AVP table's, with the cell

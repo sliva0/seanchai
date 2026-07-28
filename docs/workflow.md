@@ -3,13 +3,10 @@
 ## The loop
 
 1. **Download** the source documents: `uv run seanchai download` fetches
-   the curated catalog into the git-ignored `specifications/`. PDFs are on by
-   default — they enable the PDF-matched version selection, and a `--no-pdfs`
-   run once overwrote a committed spec's docx with a newer version whose ETSI
-   PDF was unpublished (29.388) and stripped every `pdf_url` from
-   `manifest.json`, which re-extraction scripts read for `; Link:` values —
-   so pass `--no-pdfs` only for catalog experiments. Hand-fetched docx/PDF
-   pairs live in `specifications/manual/`.
+   the curated catalog into the git-ignored `specifications/`. PDFs are on
+   by default, and `--no-pdfs` is for catalog experiments only —
+   [downloader.md](downloader.md) records what a PDF-less run breaks.
+   Hand-fetched docx/PDF pairs live in `specifications/manual/`.
 2. **Extract**: `uv run seanchai extract DOCX --pdf PDF --link URL -o OUT.dad`.
    Warnings go to stderr; read them, they are the extractor telling you the
    source document did something unusual. RFCs are one step shorter — the text
@@ -65,6 +62,8 @@ Three things this depends on, and which therefore must not regress:
 ## Validation
 
 Build patched `.dad` sets around the latest release with published PDFs
-(Rel-19 at the time of writing); the tooling itself stays version-agnostic.
-The planned validation work — the Wireshark oracle and dictionary validators
-as the first downstream consumers — lives in [roadmap.md](roadmap.md).
+(Rel-18 today); the tooling itself stays version-agnostic. `seanchai
+crosscheck` compares extracted values against Wireshark's dictionary — see
+[oracle.md](oracle.md), including why its findings are leads to investigate
+rather than verdicts. Dictionary validators as the first downstream
+consumers remain planned work in [roadmap.md](roadmap.md).
