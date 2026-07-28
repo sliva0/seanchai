@@ -1,8 +1,18 @@
 """Corrections for 3GPP TS 29.338 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, definition
+from seanchai.dad import ast
+from seanchai.dad.corrections import Correction, Insert, definition, reused_avps
 
 CORRECTIONS = [
+    Insert(
+        into=reused_avps("5.3.3.1/2"),
+        node=ast.ReusedAvpRow(name="IP-SM-GW-Realm", origin="TS29.336"),
+        after="IP-SM-GW-Number",
+        reason="the Serving-Node body (clause 5.3.3.6) uses IP-SM-GW-Realm"
+        " but table 5.3.3.1/2 lists only IP-SM-GW-Name and IP-SM-GW-Number;"
+        " TS 29.336 clause 6.4.18 defines it beside the two listed ones",
+        versions="18.2.0",
+    ),
     Correction(
         target=definition("SMS-MI-Correlation-ID", section="6.3.3.13"),
         field="name",

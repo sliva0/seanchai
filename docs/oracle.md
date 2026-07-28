@@ -99,9 +99,38 @@ Fifty-seven findings over the 34-file corpus, in three shapes:
   AVPs of 29.283, 29.272's NR trace parameters). Absence is dictionary lag,
   not disagreement, and is reported as one grouped note per file.
 
-The fixes these findings justify are standing work; each needs the source
-clause read before anything is declared, the same discipline as every other
-correction — and per the note above, the destination of a fix is a decision
-per finding: some become corpus corrections, some become Wireshark merge
-requests, and some (the deliberate disambiguations) are correct on both
-sides and stay findings.
+## The triage, and what stands after it
+
+The first run's findings were triaged in July 2026, each against the
+specification clause both projects read. The corpus-side fixes landed as
+corrections: RFC 5777's `Treatment-Action` (Grouped in the allocation table,
+Enumerated per clause 5.1) and `IP-Bit-Mask-Width` (clause heading and table
+vs the clause body, ABNF and example), 29.336's `Periodic-time` casing,
+RFC 4005's `Framed-Appletalk-*` table casing, 29.172's `Area-Identification`
+(Grouped in the table, OctetString with a laid-out octet format in clause
+7.4.42) and 29.061's `MBMS-Flag` (only the table cell drops the s of clause
+20.5a.9's `MBMS-Flags`).
+
+What still reports, and why each class stays:
+
+- **Deliberate disambiguations and XML-imposed spellings** (the bulk of the
+  name findings): `Cx-User-Data`/`Sh-User-Data`, the `3GPP-SIP-*` and
+  `3GPP-Service-Type`/`3GPP-TWAN-Identifier`/`3GPP-PS-Data-Off-Status-Gx`
+  prefixes, `Termination-Cause-3GPP`, `Wildcarded-PSI`, `S6-Service-ID`,
+  `OnexRTT-RCID`, `CUI`, `Tunnel-Connection-ID`, `NAF-Hostname`. Correct on
+  both sides; the consumer model is where the mapping belongs.
+- **Wireshark-side defects**, merge-request candidates: `Call-Barring-
+  Infor-List`, `Accounting-Multi-Session-Id`, `Authorization-Lifetime`
+  typed Integer32 against RFC 6733 §8.9's Unsigned32, `3GPP-IPv6-DNS-Server`
+  for 29.061's plural, `Slg-Location-Type` against 29.172's `SLg`,
+  `PSR-Address` for 29.173's `PPR-Address`, `MBMS-Flag` (fixed in the
+  corpus, the dictionary agrees with the clause).
+- **Display conveniences the mapping does not tolerate**, correct in the
+  corpus: `3GPP-NSAPI`, `Codec-Data`, `Framed-Pool` and `EAP-Key-Name`
+  typed UTF8String where the specifications say OctetString, and
+  `Cell-Portion-ID` typed OctetString against 29.172's Unsigned32.
+- **Absences** — dictionary lag, unchanged.
+
+Per the note above, none of the Wireshark-side defects patches the corpus;
+each is a per-finding candidate for a merge request into Wireshark, which is
+work this repository can only stage, not land.

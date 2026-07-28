@@ -677,7 +677,7 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     for correction in declared:
         if isinstance(correction, corrections.Insert):
             (table,) = correction.into.find(spec)
-            assert isinstance(table, ast.AvpTable)
+            assert isinstance(table, ast.AvpTable | ast.ReusedAvps)
             assert correction.node in table.rows
             continue
         target = correction.target
@@ -742,6 +742,11 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     spec = parser.parse(raw.read_text(encoding="utf-8"))
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
+    # Inserted rows shift every row index after them, which would drown the
+    # field-level pin below in artifacts of renumbering; they are pinned
+    # separately, by content, at the end.
+    inserted = [c for c in declared if isinstance(c, corrections.Insert)]
+    declared = [c for c in declared if not isinstance(c, corrections.Insert)]
     corrected, _ = corrections.apply(spec, declared)
 
     before, labels = _fields(spec)
@@ -782,6 +787,17 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
             "Re-synchronization-Info",
             "Re-Synchronization-Info",
         ),
+    }
+    assert {
+        (c.into.label, c.node.name, c.node.origin) for c in inserted
+    } == {
+        ("7.3.1/2", "MIP6-Home-Link-Prefix", "RFC5447"),
+        ("7.3.1/2", "ProSe-Permission", "TS29.344"),
+        ("7.3.1/2", "Periodic-Communication-Indicator", "TS29.336"),
+        ("7.3.1/2", "Communication-Duration-Time", "TS29.336"),
+        ("7.3.1/2", "Periodic-Time", "TS29.336"),
+        ("7.3.1/2", "Scheduled-Communication-Time", "TS29.336"),
+        ("7.3.1/2", "Stationary-Indication", "TS29.336"),
     }
 
 

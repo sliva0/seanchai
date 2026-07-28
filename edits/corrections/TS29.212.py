@@ -1,6 +1,6 @@
 """Corrections for 3GPP TS 29.212 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, avp_rule, definition, reused_row
+from seanchai.dad.corrections import Correction, avp_rule, definition, reused_row, table_row
 
 # Eight grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
 # table 5.3.0.1 marks the V flag mandatory for every one of them, exactly the
@@ -102,4 +102,16 @@ CORRECTIONS += [
         ("CC-Answer", "5b.6.5"),
         ("TS-Request", "5c.6.2"),
     )
+] + [
+    Correction(
+        target=table_row("CS-Service-Qos-Request-Identifier"),
+        field="name",
+        expect="CS-Service-Qos-Request-Identifier",
+        replace="CS-Service-QoS-Request-Identifier",
+        reason="only the table E.6.3.1 cell lowercases the S; clause"
+        " E.6.3.2's heading and prose, and the E.6.6.2/E.6.3.6 ABNFs, all"
+        " write CS-Service-QoS-Request-Identifier, matching every sibling"
+        " CS-Service-QoS-* AVP in the same table",
+        versions="18.2.0",
+    ),
 ]

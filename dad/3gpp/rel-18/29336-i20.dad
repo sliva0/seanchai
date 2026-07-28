@@ -185,6 +185,12 @@ MSISDN                        TS29.329
 LMSI                          TS29.173
 Serving-Node                  TS29.173
 Additional-Serving-Node       TS29.173
+MME-Name                      TS29.173 ;; inserted: (TS29.336.py:78)
+MME-Realm                     TS29.173 ;; inserted: (TS29.336.py:78)
+MSC-Number                    TS29.173 ;; inserted: (TS29.336.py:78)
+SGSN-Name                     TS29.173 ;; inserted: (TS29.336.py:78)
+SGSN-Realm                    TS29.173 ;; inserted: (TS29.336.py:78)
+SGSN-Number                   TS29.272 ;; inserted: (TS29.336.py:78)
 Supported-Features            TS29.229
 Feature-List-ID               TS29.229
 Feature-List                  TS29.229
@@ -207,7 +213,7 @@ AESE-Communication-Pattern                 3113   8.4.25   Grouped            M,
 Communication-Pattern-Set                  3114   8.4.26   Grouped            M,V   -     -     -     No
 Periodic-Communication-Indicator           3115   8.4.27   Unsigned32         M,V   -     -     -     No
 Communication-Duration-Time                3116   8.4.28   Unsigned32         M,V   -     -     -     No
-Periodic-time                              3117   8.4.29   Unsigned32         M,V   -     -     -     No
+Periodic-Time                              3117   8.4.29   Unsigned32         M,V   -     -     -     No ;; corrected: (TS29.336.py:57)
 Scheduled-Communication-Time               3118   8.4.30   Grouped            M,V   -     -     -     No
 Stationary-Indication                      3119   8.4.31   Unsigned32         M,V   -     -     -     No
 AESE-Communication-Pattern-Config-Status   3120   8.4.32   Grouped            M,V   -     -     -     No
@@ -561,7 +567,7 @@ Communication-Pattern-Set ::= < AVP header: 3114 10415 >
 ; Name: Scheduled-Communication-Time
 ; Section: 8.4.30
 ; Page: 64
-Scheduled-Communication-Time ::= < AVP header: 3118 10415 > ;; corrected: (TS29.336.py:40)
+Scheduled-Communication-Time ::= < AVP header: 3118 10415 > ;; corrected: (TS29.336.py:47)
         [ Day-Of-Week-Mask ]
         [ Time-Of-Day-Start ]
         [ Time-Of-Day-End ]

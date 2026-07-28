@@ -88,9 +88,9 @@
         [ Port-Limit ]
         [ Callback-Id ]
         [ Callback-Number ]
-        [ Framed-Appletalk-Link ]
-      * [ Framed-Appletalk-Network ]
-        [ Framed-Appletalk-Zone ]
+        [ Framed-AppleTalk-Link ] ;; corrected: (RFC4072.py:7)
+      * [ Framed-AppleTalk-Network ] ;; corrected: (RFC4072.py:7)
+        [ Framed-AppleTalk-Zone ] ;; corrected: (RFC4072.py:7)
       * [ Framed-Compression ]
         [ Framed-Interface-Id ]
         [ Framed-IP-Address ]

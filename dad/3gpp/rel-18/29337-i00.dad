@@ -121,6 +121,12 @@ SM-RP-SMEA                TS29.338   -
 Payload                   TS29.368   -
 Serving-Node              TS29.173   -
 Additional-Serving-Node   TS29.173   -
+MME-Name                  TS29.173   - ;; inserted: (TS29.337.py:23)
+MME-Realm                 TS29.173   - ;; inserted: (TS29.337.py:23)
+MSC-Number                TS29.173   - ;; inserted: (TS29.337.py:23)
+SGSN-Name                 TS29.173   - ;; inserted: (TS29.337.py:23)
+SGSN-Realm                TS29.173   - ;; inserted: (TS29.337.py:23)
+SGSN-Number               TS29.272   - ;; inserted: (TS29.337.py:23)
 Reference-Number          TS29.368   -
 Old-Reference-Number      TS29.368   -
 Validity-Time             RFC4006    -

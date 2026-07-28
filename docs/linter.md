@@ -103,7 +103,8 @@ explicitly refuses to guess at.
   entry, or a base document. The trailing `* [ AVP ]` is RFC 6733's any-AVP
   wildcard — grammar, not a reference — and is skipped rather than resolved to
   an AVP named `AVP`. A note rather than an error for now: the corrected
-  corpus still carries 55 of them (see
+  corpus still carries 5 of them, every one a reference to an AVP no document
+  defines, which no correction can repair (see
   [standing findings](#standing-findings-and-why-each-one-stays)).
 - `base-not-in-corpus` — a `; Bases:` document the corpus could not supply.
   Reference resolution is skipped entirely for that file rather than reporting
@@ -314,36 +315,43 @@ finding was never built: suppressing them one by one would hide which
 cross-file rules were skipped and turn into discarded work when the missing
 origin arrives.
 
-### `unresolved-reference` — references awaiting triage
+### `unresolved-reference` — five references to AVPs that do not exist
 
-The rule stays a note until its standing findings are worked through; it
-promotes to an error when every entry below is corrected away or explained.
-Fifty-five findings stand, in three shapes:
+The 55 findings this rule stood at were triaged in July 2026, each against
+its primary specification clause. Fifty resolved into corrections — RFC ABNF
+misspellings (the `Redirected-*` family in RFC 4005/7155, RFC 4004's
+`Session-ID` and `MIP-nonce`, RFC 5778's `MIP-Agent-Info` and
+`Multi-Round-Time`, the `Framed-Appletalk-*` casing in RFC 4005/4072, all
+confirmed by verified RFC errata where any exist: 5993/5994/5995 for 7155,
+3035 for 5778), re-used rows the 3GPP tables omit (the `MME-Name` family in
+29.336/29.337, 29.272's `Communication-Pattern-Set` members,
+`MIP6-Home-Link-Prefix` and `ProSe-Permission`, 29.338's `IP-SM-GW-Realm`,
+29.128's `IMEI`/`Software-Version` — inserted by the re-used-row `Insert`),
+and 3GPP name typos (29.345's `WiFi-P2P-Assistance-Iinfo`, `ProSe-App-ID`
+and `User-Identity`-for-`User-Identifier`, 29.172's
+`LCS-Supported-GAD-Shapes`, 29.212's `CS-Service-Qos-Request-Identifier`
+table cell).
 
-- **In-document spelling defects in the application RFCs** (26). The RFC
-  ABNFs misspell their own or their bases' AVPs: RFC 4005 and 7155 write
-  `Redirected-Host`/`Redirected-Host-Usage`/`Redirected-Max-Cache-Time` for
-  RFC 6733's `Redirect-*` family (plus 4005's `Redirect-Host-Usase` and
-  `Qos-Filter-Rule`), RFC 4004 writes `Session-ID`, `MIP-nonce` and swapped
-  SPI names (`MIP-HA-to-MN-SPI` for the table's `MIP-HA-to-FA-SPI` family),
-  RFC 5778 writes `MIP-Agent-Info` for `MIP6-Agent-Info` and
-  `Multi-Round-Time` for `Multi-Round-Time-Out`, RFC 4005 heads
-  `Framed-Appletalk-*` in its table but `Framed-AppleTalk-*` in ABNF, and
-  RFC 5777's table and ABNF disagree (`IP-Mask-Bit-Mask-Width` vs
-  `IP-Bit-Mask-Width` — Wireshark sides with the ABNF). Each is an ordinary
-  name correction waiting on a verification pass against the RFC text.
-- **References to another document's AVPs that a 3GPP re-used table omits.**
-  29.337's message bodies use `MME-Name`, `SGSN-Number` and four siblings
-  from TS 29.336 without listing them as re-used; 29.272's clause 7.3.194
-  and 29.336's monitoring clauses do the same for the monitoring AVPs. Each
-  wants either a correction inserting the missing rows or a second
-  `; Bases:` entry — a per-document decision.
-- **Source typos and unexamined 3GPP names.** 29.345's
-  `WiFi-P2P-Assistance-Iinfo` (clause 6.3.31) is an obvious misspelling;
-  29.128's `IMEI`/`Software-Version`, 29.172's `LCS-Supported-GAD-Shapes`
-  and 29.345's ProSe discovery AVPs have not yet been checked against their
-  source clauses.
+Five stand, and they share one shape: the ABNF references an AVP that no
+document defines, tabulates or allocates, so there is nothing a correction
+could truthfully point the name at.
 
-Several of these carry a second, independent witness from Wireshark's
-dictionary — see [oracle.md](oracle.md#what-the-first-run-found) — which is
-the evidence order the triage should follow.
+- **RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI`**
+  (clauses 9.4, 9.5, 9.6). The RFC defines exactly three SPI AVPs —
+  `MIP-FA-to-MN-SPI` (319), `MIP-FA-to-HA-SPI` (318), `MIP-HA-to-FA-SPI`
+  (323) — and the three MSA ABNFs reference three others that have no
+  definition and no code. Verified erratum 1462 renames 9.6's to
+  `MIP-MN-to-HA-SPI`, which is *also* undefined and unallocated, so even
+  the erratum does not make the reference resolve. Wireshark corroborates
+  the dead end from the other side: its `MIP-HA-to-MN-MSA` silently drops
+  the SPI member and its `MIP-MN-to-HA-MSA` carries a dangling
+  `MIP-MN-HA-SPI` reference of its own.
+- **TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`** (clauses
+  6.3.53, 6.3.54). The Discovery-Auth ABNFs carry them and the prose
+  discusses the ProSe Query/Response Code at length, but no clause, no
+  table row and no cited document defines an AVP by either name; neither
+  does Wireshark or any 3GPP AVP-code registry entry in the corpus.
+
+The rule promotes to an error when these five are gone, which now requires
+the upstream documents to move (or a decision to represent
+irreparably-dangling references some other way) rather than more triage.

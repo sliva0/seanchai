@@ -1,6 +1,14 @@
 """Corrections for 3GPP TS 29.272 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
+from seanchai.dad import ast
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    avp_rule,
+    definition,
+    reused_avps,
+    table_row,
+)
 
 # The VCSG command headers print "< Diameter Header: 8388638, REQ, PXY, >" with
 # the application id left empty. Clause 7.2.2 assigns these command codes to
@@ -71,5 +79,38 @@ CORRECTIONS += [
         reason="clause 7.3.15's heading and table 7.3.1/1 both spell it"
         " Re-Synchronization-Info; clause 7.3.11's ABNF lower-cases the S",
         versions="18.6.0",
+    ),
+    # Three re-printed grouped bodies use member AVPs that table 7.3.1/2
+    # omits while listing the grouped AVPs themselves and, for
+    # Communication-Pattern-Set, three of its eight members
+    # (Reference-ID-Validity-Time, Traffic-Profile, Battery-Indicator).
+    *(
+        Insert(
+            into=reused_avps("7.3.1/2"),
+            node=ast.ReusedAvpRow(name=name, origin=origin),
+            after=after,
+            reason=f"the {parent} body (clause {clause}) uses {name} but"
+            f" table 7.3.1/2 omits the row; {origin} defines the AVP",
+            versions="18.6.0",
+        )
+        for name, origin, after, parent, clause in (
+            ("MIP6-Home-Link-Prefix", "RFC5447", "MIP6-Agent-Info",
+             "MIP6-Agent-Info", "7.3.45"),
+            ("ProSe-Permission", "TS29.344", "ProSe-Subscription-Data",
+             "ProSe-Subscription-Data", "7.3.180"),
+            ("Periodic-Communication-Indicator", "TS29.336",
+             "Communication-Pattern-Set", "Communication-Pattern-Set",
+             "7.3.194"),
+            ("Communication-Duration-Time", "TS29.336",
+             "Periodic-Communication-Indicator", "Communication-Pattern-Set",
+             "7.3.194"),
+            ("Periodic-Time", "TS29.336", "Communication-Duration-Time",
+             "Communication-Pattern-Set", "7.3.194"),
+            ("Scheduled-Communication-Time", "TS29.336", "Periodic-Time",
+             "Communication-Pattern-Set", "7.3.194"),
+            ("Stationary-Indication", "TS29.336",
+             "Scheduled-Communication-Time", "Communication-Pattern-Set",
+             "7.3.194"),
+        )
     ),
 ]

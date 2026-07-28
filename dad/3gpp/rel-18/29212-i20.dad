@@ -1238,7 +1238,7 @@ Traffic-Steering-Policy-Identifier-UL   TS29.212
 ; Section: E.6.3.1
 ; Table: E.6.3.1.1
 ; Columns: Name                        Code   Section   Type          Must  May   S.not M.not Encrypt
-CS-Service-Qos-Request-Identifier      2807   E.6.3.2   OctetString   M,V   P     -     -     Yes
+CS-Service-QoS-Request-Identifier      2807   E.6.3.2   OctetString   M,V   P     -     -     Yes ;; corrected: (TS29.212.py:106)
 CS-Service-QoS-Request-Operation       2808   E.6.3.3   Enumerated    M,V   P     -     -     Yes
 CS-Service-Resource-Report             2813   E.6.3.6   Grouped       M,V   P     -     -     Yes
 CS-Service-Resource-Failure-Cause      2814   E.6.3.5   Enumerated    M,V   P     -     -     Yes

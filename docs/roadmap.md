@@ -77,23 +77,19 @@ oracle are built — [linter.md](linter.md) and [oracle.md](oracle.md) describe
 the rules and what the corpus reports today. What remains is working the
 standing findings off.
 
-3. **Triage every standing finding, then promote `unresolved-reference` to
-   an error.** The two lists are
-   [linter.md's](linter.md#standing-findings-and-why-each-one-stays) and
-   [oracle.md's](oracle.md#what-the-first-run-found); several entries appear
-   on both, which is the strongest evidence available. Each finding needs
-   the primary specification clause read, and then lands in exactly one of
-   three buckets: a corpus correction (extractor or the document's own
-   table wrong), a merge request into Wireshark (the dictionary wrong), or
-   "correct on both sides, stays a finding" (Wireshark's deliberate
-   disambiguations). Strength-of-evidence order: the double-witnessed
-   defects first (RFC 5777's `IP-Bit-Mask-Width` and `Treatment-Action`,
-   29.336's `Periodic-time`, RFC 4005's `Framed-Appletalk-*` casing), then
-   the remaining RFC ABNF misspellings, then the 3GPP re-used-table
-   omissions (row `Insert` or a second `; Bases:` entry, per document),
-   then the unexamined tail. When the list is empty or explained, the rule
-   flips to `ERROR` and `lint --corpus` permanently proves every reference
-   in the corpus resolves.
+3. **Stage the Wireshark merge requests the triage identified.** The triage
+   itself is done (July 2026): every standing linter and oracle finding was
+   read against its primary clause, fifty of the fifty-five unresolved
+   references became corrections, and what remains is documented in
+   [linter.md](linter.md#standing-findings-and-why-each-one-stays) (five
+   references to AVPs no document defines — unrepairable until upstream
+   moves, and the reason `unresolved-reference` stays a note) and
+   [oracle.md](oracle.md#the-triage-and-what-stands-after-it). The open
+   work this leaves is the Wireshark-side defect list in oracle.md —
+   `Call-Barring-Infor-List`, `Accounting-Multi-Session-Id`,
+   `Authorization-Lifetime`'s Integer32 and the rest — each a candidate
+   merge request into Wireshark's `resources/protocols/diameter/`
+   dictionary, with the evidence already written down per finding.
 
 ## More sources
 

@@ -1,8 +1,20 @@
 """Corrections for RFC 4072 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, header
+from seanchai.dad.corrections import Correction, avp_rule, header
 
 CORRECTIONS = [
+    *(
+        Correction(
+            target=avp_rule("Diameter-EAP-Answer", f"Framed-Appletalk-{suffix}"),
+            field="name",
+            expect=f"Framed-Appletalk-{suffix}",
+            replace=f"Framed-AppleTalk-{suffix}",
+            reason="the DEA ABNF and the section 4.1 occupancy table lowercase"
+            " the T of NASREQ's AVP; RFC 4005 clauses 6.13.1-6.13.3 define the"
+            " three as Framed-AppleTalk-*, corrected the same way there",
+        )
+        for suffix in ("Link", "Network", "Zone")
+    ),
     Correction(
         target=header(),
         field="bases",

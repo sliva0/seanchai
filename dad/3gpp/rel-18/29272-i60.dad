@@ -572,7 +572,7 @@
 ; Name: Update-VCSG-Location-Request, UVR
 ; Section: 7.2.21
 ; Page: 84
-<Update-VCSG-Location-Request> ::= < Diameter Header: 8388638, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
+<Update-VCSG-Location-Request> ::= < Diameter Header: 8388638, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py:21)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -595,7 +595,7 @@
 ; Name: Update-VCSG-Location-Answer, UVA
 ; Section: 7.2.22
 ; Page: 84
-<Update-VCSG-Location-Answer> ::= < Diameter Header: 8388638, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
+<Update-VCSG-Location-Answer> ::= < Diameter Header: 8388638, PXY, 16777308 > ;; corrected: (TS29.272.py:21)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -618,7 +618,7 @@
 ; Name: Cancel-VCSG-Location-Request, CVR
 ; Section: 7.2.23
 ; Page: 84
-<Cancel-VCSG-Location-Request> ::= < Diameter Header: 8388642, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
+<Cancel-VCSG-Location-Request> ::= < Diameter Header: 8388642, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py:21)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -639,7 +639,7 @@
 ; Name: Cancel-VCSG-Location-Answer, CVA
 ; Section: 7.2.24
 ; Page: 85
-<Cancel-VCSG-Location-Answer> ::= < Diameter Header: 8388642, PXY, 16777308 > ;; corrected: (TS29.272.py:13)
+<Cancel-VCSG-Location-Answer> ::= < Diameter Header: 8388642, PXY, 16777308 > ;; corrected: (TS29.272.py:21)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -833,7 +833,7 @@ AIR-Flags                                           1679   7.3.201   Unsigned32 
 UE-Usage-Type                                       1680   7.3.202   Unsigned32         V     -     -     M     No
 Non-IP-PDN-Type-Indicator                           1681   7.3.204   Enumerated         V     -     -     M     No
 Non-IP-Data-Delivery-Mechanism                      1682   7.3.205   Unsigned32         V     -     -     M     No
-Additional-Context-Identifier                       1683   7.3.206   Unsigned32         V     -     -     M     No ;; corrected: (TS29.272.py:54)
+Additional-Context-Identifier                       1683   7.3.206   Unsigned32         V     -     -     M     No ;; corrected: (TS29.272.py:62)
 SCEF-Realm                                          1684   7.3.207   DiameterIdentity   V     -     -     M     No
 Subscription-Data-Deletion                          1685   7.3.208   Grouped            V     -     -     M     No
 Preferred-Data-Mode                                 1686   7.3.209   Unsigned32         V     -     -     M     No
@@ -903,6 +903,7 @@ Extended-Max-Requested-BW-UL            TS29.214   -
 RAT-Type                                TS29.212   MUST
 MSISDN                                  TS29.329   -
 MIP6-Agent-Info                         RFC5447    -
+MIP6-Home-Link-Prefix                   RFC5447    - ;; inserted: (TS29.272.py:88)
 MIP-Home-Agent-Address                  RFC4004    -
 MIP-Home-Agent-Host                     RFC4004    -
 PDP-Address                             TS32.299   -
@@ -912,12 +913,18 @@ Visited-Network-Identifier              TS29.229   MUST-NOT
 GMLC-Address                            TS29.173   MUST-NOT
 User-CSG-Information                    TS32.299   MUST-NOT
 ProSe-Subscription-Data                 TS29.344   MUST-NOT
+ProSe-Permission                        TS29.344   - ;; inserted: (TS29.272.py:88)
 OC-Supported-Features                   RFC7683    MUST-NOT
 OC-OLR                                  RFC7683    MUST-NOT
 SCEF-Reference-ID                       TS29.336   MUST-NOT
 SCEF-ID                                 TS29.336   MUST-NOT
 AESE-Communication-Pattern              TS29.336   MUST-NOT
 Communication-Pattern-Set               TS29.336   MUST-NOT
+Periodic-Communication-Indicator        TS29.336   - ;; inserted: (TS29.272.py:88)
+Communication-Duration-Time             TS29.336   - ;; inserted: (TS29.272.py:88)
+Periodic-Time                           TS29.336   - ;; inserted: (TS29.272.py:88)
+Scheduled-Communication-Time            TS29.336   - ;; inserted: (TS29.272.py:88)
+Stationary-Indication                   TS29.336   - ;; inserted: (TS29.272.py:88)
 Monitoring-Event-Configuration          TS29.336   MUST-NOT
 Monitoring-Event-Report                 TS29.336   MUST-NOT
 UE-Reachability-Configuration           TS29.336   MUST-NOT
@@ -1029,7 +1036,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
 Requested-EUTRAN-Authentication-Info ::= < AVP header: 1408 10415 >
         [ Number-Of-Requested-Vectors ]
         [ Immediate-Response-Preferred ]
-        [ Re-Synchronization-Info ] ;; corrected: (TS29.272.py:64)
+        [ Re-Synchronization-Info ] ;; corrected: (TS29.272.py:72)
       * [ AVP ]
 
 
@@ -1646,7 +1653,7 @@ Job-Type ::= < Enumerated AVP header: 1623 10415 >
 ; Name: Area-Scope
 ; Section: 7.3.138
 ; Page: 150
-Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py:31)
+Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py:39)
       * [ Cell-Global-Identity ]
       * [ E-UTRAN-Cell-Global-Identity ]
       * [ Routing-Area-Identity ]
@@ -1800,7 +1807,7 @@ ProSe-Subscription-Data ::= < AVP header: 3701 10415 >
 ; Name: WLAN-offloadability
 ; Section: 7.3.181
 ; Page: 157
-WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py:40)
+WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py:48)
         [ WLAN-offloadability-EUTRAN ]
         [ WLAN-offloadability-UTRAN ]
       * [ AVP ]

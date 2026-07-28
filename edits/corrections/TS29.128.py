@@ -1,6 +1,7 @@
 """Corrections for 3GPP TS 29.128 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, definition, reused_row
+from seanchai.dad import ast
+from seanchai.dad.corrections import Correction, Insert, definition, reused_avps, reused_row
 
 CORRECTIONS = [
     Correction(
@@ -31,5 +32,23 @@ CORRECTIONS = [
         " command ABNFs (clauses 6.2.3, 6.2.6, 6.2.7) spell it"
         " 'Bearer-Identifier' (code 1020)",
         versions="18.0.0",
+    ),
+    # The Terminal-Information body (clause 6.4.30) re-prints TS 29.272's
+    # grouped AVP; its members IMEI and Software-Version are TS 29.272's too
+    # (codes 1402, 1403), but table 6.4.1-2 omits their rows.
+    *(
+        Insert(
+            into=reused_avps("6.4.1-2"),
+            node=ast.ReusedAvpRow(name=name, origin="TS29.272"),
+            after=after,
+            reason=f"the Terminal-Information body (clause 6.4.30) uses"
+            f" {name} but table 6.4.1-2 omits the row; TS 29.272 defines"
+            " the AVP",
+            versions="18.0.0",
+        )
+        for name, after in (
+            ("IMEI", "Terminal-Information"),
+            ("Software-Version", "IMEI"),
+        )
     ),
 ]

@@ -23,7 +23,7 @@ IP-Address-Range                    519   4.1.7.3    Grouped
 IP-Address-Start                    520   4.1.7.4    Address
 IP-Address-End                      521   4.1.7.5    Address
 IP-Address-Mask                     522   4.1.7.6    Grouped
-IP-Mask-Bit-Mask-Width              523   4.1.7.7    Unsigned32
+IP-Bit-Mask-Width                   523   4.1.7.7    Unsigned32 ;; corrected: (RFC5777.py:7)
 MAC-Address                         524   4.1.7.8    OctetString
 MAC-Address-Mask                    525   4.1.7.9    Grouped
 MAC-Address-Mask-Pattern            526   4.1.7.10   OctetString
@@ -72,7 +72,7 @@ Absolute-End-Time                   568   4.2.9      Time
 Absolute-End-Fractional-Seconds     569   4.2.10     Unsigned32
 Timezone-Flag                       570   4.2.11     Enumerated
 Timezone-Offset                     571   4.2.12     Integer32
-Treatment-Action                    572   5.1        Grouped
+Treatment-Action                    572   5.1        Enumerated ;; corrected: (RFC5777.py:18)
 QoS-Profile-Id                      573   5.2        Unsigned32
 QoS-Profile-Template                574   5.3        Grouped
 QoS-Semantics                       575   5.4        Enumerated

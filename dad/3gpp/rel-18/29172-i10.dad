@@ -28,7 +28,7 @@
         [ LCS-Priority ]
         [ LCS-QoS ]
         [ Velocity-Requested ]
-        [ LCS-Supported-GAD-Shapes ]
+        [ Supported-GAD-Shapes ] ;; corrected: (TS29.172.py:18)
         [ LCS-Service-Type-ID ]
         [ LCS-Codeword ]
         [ LCS-Privacy-Check-Non-Session ]
@@ -190,7 +190,7 @@ Area-Event-Info                       2533   7.4.38   Grouped       V     -     
 Area-Definition                       2534   7.4.39   Grouped       V     -     -     M     No
 Area                                  2535   7.4.40   Grouped       V     -     -     M     No
 Area-Type                             2536   7.4.41   Unsigned32    V     -     -     M     No
-Area-Identification                   2537   7.4.42   Grouped       V     -     -     M     No
+Area-Identification                   2537   7.4.42   OctetString   V     -     -     M     No ;; corrected: (TS29.172.py:29)
 Occurrence-Info                       2538   7.4.43   Enumerated    V     -     -     M     No
 Interval-Time                         2539   7.4.44   Unsigned32    V     -     -     M     No
 Periodic-LDR-Information              2540   7.4.45   Grouped       V     -     -     M     No
@@ -445,7 +445,7 @@ Occurrence-Info ::= < Enumerated AVP header: 2538 10415 >
 ; Name: Periodic-LDR-Information
 ; Section: 7.4.45
 ; Page: 40
-Periodic-LDR-Information ::= < AVP header: 2540 10415 > ;; corrected: (TS29.172.py:6)
+Periodic-LDR-Information ::= < AVP header: 2540 10415 > ;; corrected: (TS29.172.py:7)
         { Reporting-Amount }
         { Reporting-Interval }
       * [ AVP ]

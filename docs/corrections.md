@@ -222,8 +222,8 @@ source.
 
 ## Structural edits
 
-**Status: `Delete` and AVP-table-row `Insert` are implemented;
-`Supply` remains a proposal.** The field-replace layer above stays exactly as
+**Status: `Delete` and `Insert` (into AVP tables and re-used tables) are
+implemented; `Supply` remains a proposal.** The field-replace layer above stays exactly as
 it is; these are named operations beside it, in the same `CORRECTIONS` list,
 with the same declare-expect-fail-loudly contract.
 
@@ -258,11 +258,16 @@ loudly when the document is fixed upstream?" — has a per-operation answer:
   lines to mark. Deleting a node while also correcting one of its fields, or a
   field of anything inside it, is refused — a deleted node has no fields worth
   fixing.
-- **`Insert(into=avp_table(<label>), node=<AvpTableRow>,
-  after=<name | None>, reason=...)`** (implemented): expects no row with the
-  same name to be present and fails when upstream adds it itself. `after`
-  addresses an existing row by name, never by index; `None` appends. The
-  corrected file marks the inserted row with `;; inserted:`.
+- **`Insert(into=avp_table(<label>) | reused_avps(<label>),
+  node=<AvpTableRow | ReusedAvpRow>, after=<name | None>, reason=...)`**
+  (implemented): expects no row with the same name to be present and fails
+  when upstream adds it itself; the node's type must match the table's.
+  `after` addresses an existing row by name, never by index; `None` appends.
+  The corrected file marks the inserted row with `;; inserted:`. The
+  re-used-table half's forcing case was the July 2026 reference triage:
+  TS 29.337's Serving-Node bodies use six member AVPs its table 6.3.1/2
+  omits while listing every other member, and five documents carried the
+  same shape.
 - **`Supply(section=<full section node>, reason=...)`**: a whole hand-notated
   section — the enumerated-AVP-with-external-values case. `reason` must cite
   the external document and clause the values were transcribed from, since

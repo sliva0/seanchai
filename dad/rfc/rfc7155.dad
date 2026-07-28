@@ -189,9 +189,9 @@
         [ Error-Message ]
         [ Error-Reporting-Host ]
       * [ Failed-AVP ]
-      * [ Redirected-Host ]
-        [ Redirected-Host-Usage ]
-        [ Redirected-Host-Cache-Time ]
+      * [ Redirect-Host ] ;; corrected: (RFC7155.py:10)
+        [ Redirect-Host-Usage ] ;; corrected: (RFC7155.py:10)
+        [ Redirect-Max-Cache-Time ] ;; corrected: (RFC7155.py:10)
         [ Service-Type ]
       * [ Configuration-Token ]
         [ Idle-Timeout ]
@@ -303,9 +303,9 @@
         [ Error-Message ]
         [ Error-Reporting-Host ]
       * [ Failed-AVP ]
-      * [ Redirected-Host ]
-        [ Redirected-Host-Usage ]
-        [ Redirected-Max-Cache-Time ]
+      * [ Redirect-Host ] ;; corrected: (RFC7155.py:10)
+        [ Redirect-Host-Usage ] ;; corrected: (RFC7155.py:10)
+        [ Redirect-Max-Cache-Time ] ;; corrected: (RFC7155.py:10)
       * [ Proxy-Info ]
       * [ AVP ]
 
@@ -354,7 +354,7 @@
         [ Callback-Number ]
         [ Called-Station-Id ]
         [ Calling-Station-Id ]
-      * [ Connection-Info ]
+      * [ Connect-Info ] ;; corrected: (RFC7155.py:28)
         [ Originating-Line-Info ]
         [ Authorization-Lifetime ]
         [ Session-Timeout ]

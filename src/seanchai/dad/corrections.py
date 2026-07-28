@@ -182,6 +182,28 @@ class avp_table(Selector):
 
 
 @dataclass(frozen=True)
+class reused_avps(Selector):
+    """A re-used AVPs section, by its printed label.
+
+    What a re-used-row `Insert` targets: TS 29.337's table 6.3.1/2 lists
+    every member its Serving-Node bodies use except six, and nothing but
+    adding the rows can make those references resolve.
+    """
+
+    label: str
+
+    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
+        yield from (
+            section
+            for section in spec.sections
+            if isinstance(section, ast.ReusedAvps) and section.table == self.label
+        )
+
+    def describe(self) -> str:
+        return f"re-used AVPs table {self.label!r}"
+
+
+@dataclass(frozen=True)
 class reused_row(Selector):
     """One row of a re-used AVPs table, by AVP name.
 
@@ -326,15 +348,19 @@ class Delete:
 
 @dataclass(frozen=True)
 class Insert:
-    """Insert one AVP-table row that the source defines but omits from its table.
+    """Insert one table row the source omits: an AVP-table row the document
+    defines but does not tabulate, or a re-used row for an AVP its ABNFs use
+    without citing.
 
+    `into` names which table, and the node's type must match it — an
+    `AvpTableRow` into an `avp_table`, a `ReusedAvpRow` into `reused_avps`.
     `after` addresses an existing row by name, never position; `None` appends.
-    The operation expects no row with the inserted node's name, so it fails the
-    day upstream adds the missing row itself.
+    The operation expects no row with the inserted node's name, so it fails
+    the day upstream adds the missing row itself.
     """
 
-    into: avp_table
-    node: ast.AvpTableRow
+    into: avp_table | reused_avps
+    node: ast.AvpTableRow | ast.ReusedAvpRow
     after: str | None
     reason: str
     versions: str | None = None
@@ -467,11 +493,19 @@ def _checked_deletion(node: ast.Node, delete: Delete) -> None:
 
 
 def _inserted(parent: ast.Node, insert: Insert) -> ast.Node:
-    """Return an AVP table with the declared row inserted and validated."""
+    """Return the table with the declared row inserted and validated."""
     described = insert.into.describe()
-    if not isinstance(parent, ast.AvpTable):
+    row_type = (
+        ast.AvpTableRow if isinstance(insert.into, avp_table) else ast.ReusedAvpRow
+    )
+    if not isinstance(parent, ast.AvpTable | ast.ReusedAvps):
         raise CorrectionError(
-            f"{described}: Insert requires an AvpTable, matched {type(parent).__name__}"
+            f"{described}: Insert requires a table, matched {type(parent).__name__}"
+        )
+    if not isinstance(insert.node, row_type):
+        raise CorrectionError(
+            f"{described}: the inserted node must be a {row_type.__name__},"
+            f" not a {type(insert.node).__name__}"
         )
     if any(row.name == insert.node.name for row in parent.rows):
         raise CorrectionError(
