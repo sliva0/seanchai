@@ -8,12 +8,37 @@ running headers, where a long name wraps across physical lines
 (`Acct-` / `Interim-Interval`) and, once, the wrap carries the *data* cells
 on the continuation line instead (`Inband-Security` / `-Id  299 …`).
 
-The document model is deliberately smaller than the docx extractor's: what an
-RFC contributes to the corpus today is its AVP-flags table, which is what
-reference resolution needs (`Session-Id`, `Origin-Host` and the rest of the
-base protocol resolve to AVP-table rows). Commands and grouped bodies are
-also printed as ABNF and could be extracted later; nothing downstream asks
-for them yet.
+Beyond the table, an RFC prints the same definitions a 3GPP spec does, in
+prose-embedded forms this module also reads:
+
+- a section titled with the command's long name whose body holds
+  `<CER> ::= < Diameter Header: 257, REQ >` → `Message` — the heading carries
+  the long name, the rule carries the abbreviation, the reverse of a 3GPP
+  heading, which prints both;
+- a section titled `Name AVP` holding `Name ::= < AVP Header: 284 >` (the
+  name is sometimes itself angle-bracketed: `<Failed-AVP> ::=`) →
+  `GroupedAvp`;
+- a section titled `Name AVP` where the AVP table types `Name` as Enumerated,
+  holding `VALUE_NAME  n` lines → `EnumeratedAvp`. Both printed layouts are
+  read: the value alone on its line with the description indented below it
+  (RFC 6733), and the description starting on the value's own line and
+  wrapping (RFC 7944, 8583). Descriptions are dropped either way, for the
+  docx extractor's reason: they are wrapped prose, not a one-line gloss, and
+  `; Section:` points at the clause that holds them undamaged.
+
+Anchoring every definition on its *section title* is what keeps the grammar
+specification's own illustrations out: `Example-Request`, `Example-AVP` and
+`<answer-message>` all sit in sections titled with prose ("Command Code
+Format Specification", "Error Bit"), which no definition heading is.
+
+Bodies an RFC prints for another document's AVPs are kept, the same
+deliberate call as the docx extractor's: RFC 8581 and 8582 both reprint RFC
+7683's `OC-OLR` with their own extension member added, and the file records
+what the document printed — cross-file divergence is the linter's to report.
+The one shape that is dropped, with a warning, is a value list for an AVP the
+local table does not type as Enumerated (RFC 8581 §7.2.1 adds `PEER_REPORT 2`
+to 7683's `OC-Report-Type`): `.dad` has no way to extend another document's
+enum, so the warning is the honest form.
 
 Two facts this extractor states rather than reads, both facts about the
 publisher: every AVP an RFC defines is in the IETF's vendor space (0), and an
@@ -41,7 +66,34 @@ from .patches import Patcher
 _FOOTER_RE = re.compile(r"\[Page (?P<page>\d+)\]$")
 _RFC_NUMBER_RE = re.compile(r"^Request for Comments:\s*(?P<number>\d+)")
 # Section headings sit at column 0: "4.5.  Diameter Base Protocol AVPs".
-_HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+)*)\.?\s+\S")
+_HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+)*)\.?\s+(?P<title>\S.*)$")
+# A definition heading: the defined name, with or without the " AVP" suffix
+# ("6.7.2.  Proxy-Info AVP", "5.3.1.  Capabilities-Exchange-Request"). Prose
+# titles do not match, which is what excludes the CCF grammar's own examples.
+_TITLE_RE = re.compile(r"^(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)(?P<avp_suffix> AVP)?$")
+# The RFC dialect of the three rule forms. Same group names as the docx
+# dialect's, which is what lets `abnf.avp_rule` read either.
+_DIAMETER_HEADER_RE = re.compile(
+    r"^<\s*(?P<name>[A-Za-z][A-Za-z0-9-]*)\s*>\s*::=\s*"
+    r"<\s*Diameter Header:\s*(?P<items>[^>]*?)\s*>$"
+)
+_AVP_HEADER_RE = re.compile(
+    # The rule name is angle-bracketed in some clauses and bare in others —
+    # RFC 6733 writes both `<Failed-AVP> ::=` and `Proxy-Info ::=`.
+    r"^<?\s*(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)\s*>?\s*::=\s*"
+    r"<\s*AVP [Hh]eader:\s*(?P<code>\d+)(?:\s*,?\s+(?P<vendor>\d+))?\s*>$"
+)
+_ABNF_LINE_RE = re.compile(
+    r"^(?:(?P<min>\d*)\*(?P<max>\d*))?\s*"
+    r"(?P<open>[<{\[])\s*(?P<name>[A-Za-z0-9][A-Za-z0-9-]*)\s*(?P<close>[>}\]])$"
+)
+# One enumerated value line, stripped: `REBOOTING    0` (RFC 6733, description
+# indented below) or `PRIORITY_15 15  PRIORITY_15 is the lowest...` (RFC 7944,
+# description on the value's own line; RFC 8581 writes `PEER_REPORT 2:`).
+# Names are all-caps in every collected RFC, and requiring that is what keeps
+# prose lines out; a wrapped description line never has digits as its second
+# token, so continuations cannot match.
+_ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Z][A-Z0-9_-]*)\s+(?P<value>\d+):?(?:\s+\S.*)?$")
 # The fixed-width labels cannot be tokenized: RFC 6733 prints "Code Defined"
 # (two columns) and "Attribute Name" (one label) with the same single space,
 # so only knowing the vocabulary tells them apart. Each entry maps the
@@ -52,6 +104,14 @@ _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+)*)\.?\s+\S")
 _LEFT_HEADERS: dict[tuple[str, ...], tuple[ast.AvpColumn, ...]] = {
     # RFC 6733 §4.5: "AVP" over "Code", "Section" over "Defined".
     ("AVP Section", "Attribute Name Code Defined Data Type"): (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+        ast.AvpColumn.TYPE,
+    ),
+    # Diameter extension RFCs use "Value Type" and draw a box around the
+    # complete table rather than only around the flag columns.
+    ("AVP Section", "Attribute Name Code Defined Value Type"): (
         ast.AvpColumn.NAME,
         ast.AvpColumn.CODE,
         ast.AvpColumn.SECTION,
@@ -74,8 +134,30 @@ def _is_separator(text: str) -> bool:
     that area alone, because the boxed caption's own `|----+-----|` line is
     all dashes too once the pipes are ignored — but prints nothing left of
     its first pipe."""
-    left = text.split("|", 1)[0].strip()
+    # RFC 8583 has one stray space inside a horizontal rule.  It is still
+    # unambiguously box drawing (the field contains no character but dashes
+    # and whitespace), so tolerate that publisher artefact here.
+    left = "".join(text.split("|", 1)[0].split())
     return len(left) >= 3 and set(left) == {"-"}
+
+
+def _table_text(text: str) -> str:
+    """Normalize the two fixed-width table border styles used by RFCs.
+
+    RFC 6733 leaves the name/code/type area open and boxes only the flag
+    columns.  Later Diameter RFCs box the complete table, adding a leading
+    ``|`` to label and data rows and using ``+`` at every separator
+    intersection.  Replacing only that structural leading border, and the
+    intersections on separator lines, presents both styles to the same row
+    reader without changing any cell text or indentation.
+    """
+    indent = len(text) - len(text.lstrip())
+    stripped = text[indent:]
+    if stripped.startswith("|") and text.count("|") >= 4:
+        return text[:indent] + " " + stripped[1:]
+    if stripped.startswith("+") and stripped.count("+") >= 3:
+        return text[:indent] + " " + stripped[1:].replace("+", "|")
+    return text
 
 
 # "Due to space constraints, the short form DiamIdent is used to represent
@@ -337,16 +419,17 @@ class _TableReader:
             self.source = (line.section, page)
 
     def read(self, line: _Line) -> None:
-        text = line.text
+        text = _table_text(line.text)
         if self.header_lines is not None:
             if _is_separator(text):
-                shape = _read_header(self.header_lines)
-                if self.shape is not None and shape != self.shape:
-                    raise ExtractionError(
-                        "AVP table continuation declares different columns"
-                    )
-                self.shape = shape
-                self.header_lines = None
+                if self.header_lines:
+                    shape = _read_header(self.header_lines)
+                    if self.shape is not None and shape != self.shape:
+                        raise ExtractionError(
+                            "AVP table continuation declares different columns"
+                        )
+                    self.shape = shape
+                    self.header_lines = None
             elif "|" in text and text.split("|", 1)[0].strip():
                 self.header_lines.append(text)
             # Box-drawing lines ("+----+", "| AVP Flag |") carry no labels.
@@ -398,6 +481,179 @@ class _TableReader:
         )
 
 
+@dataclass
+class _DocSection:
+    """One numbered heading with the content lines up to the next heading."""
+
+    number: str
+    title: str
+    page: int | None
+    texts: list[str] = field(default_factory=list)
+
+
+def _doc_sections(lines: list[_Line], headings: dict[str, _Line]) -> list[_DocSection]:
+    """The document as a flat list of numbered sections. Built after the
+    furniture pass is complete, so every heading's page is final."""
+    sections: list[_DocSection] = []
+    for line in lines:
+        heading = _HEADING_RE.match(line.text)
+        if heading is not None and headings.get(heading["number"]) is line:
+            sections.append(
+                _DocSection(
+                    number=heading["number"],
+                    title=" ".join(heading["title"].split()),
+                    page=line.page,
+                )
+            )
+        elif sections:
+            sections[-1].texts.append(line.text)
+    return sections
+
+
+def _abnf_body(texts: list[str], start: int) -> tuple[tuple[ast.AvpRule, ...], int]:
+    """Parse `[qual] bracket Name bracket` lines starting at `start`. Blank
+    lines inside the body are page-break residue and are skipped; the first
+    non-blank line that is not a rule closes the body."""
+    rules = []
+    index = start
+    while index < len(texts):
+        text = texts[index].strip()
+        if not text:
+            index += 1
+            continue
+        match = _ABNF_LINE_RE.match(text)
+        if match is None:
+            break
+        try:
+            rules.append(abnf.avp_rule(match))
+        except abnf.AbnfError as error:
+            raise ExtractionError(f"{error} in {text!r}") from None
+        index += 1
+    return tuple(rules), index
+
+
+def _extract_definitions(
+    sections: list[_DocSection],
+    table: ast.AvpTable,
+    warnings: list[str],
+) -> tuple[list[ast.Message], list[ast.GroupedAvp | ast.EnumeratedAvp]]:
+    """Messages, grouped and enumerated AVPs from the definition sections.
+
+    Enumerated codes come from the AVP table, as in the docx extractor — a
+    value list is only a definition when the table types its section's AVP as
+    Enumerated. A value list under any other ` AVP`-titled section is dropped
+    with a warning (RFC 8581 extending RFC 7683's `OC-Report-Type`); one
+    under a plain prose-named section is not even that (RFC 6733 §7.1.x list
+    Result-Code's values, and Result-Code is Unsigned32 by design).
+    """
+    messages: list[ast.Message] = []
+    definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = []
+    enum_rows = {
+        row.name: row
+        for row in table.rows
+        if row.data_type is ast.DataType.ENUMERATED
+    }
+    defined_enums: set[str] = set()
+    for section in sections:
+        title = _TITLE_RE.match(section.title)
+        if title is None:
+            continue
+        source = ast.SourceRef(section=section.number, page=section.page)
+        found_rule = False
+        index = 0
+        while index < len(section.texts):
+            text = section.texts[index].strip()
+            index += 1
+            if "::=" not in text:
+                continue
+            found_rule = True
+            if "Diameter Header" in text:
+                header = _DIAMETER_HEADER_RE.match(text)
+                if header is None:
+                    raise ExtractionError(
+                        f"{section.number}: malformed rule header {text!r}"
+                    )
+                try:
+                    code, flags, application_id = abnf.diameter_header(
+                        header["items"]
+                    )
+                except abnf.AbnfError as error:
+                    raise ExtractionError(f"{section.number}: {error}") from None
+                avps, index = _abnf_body(section.texts, index)
+                messages.append(
+                    ast.Message(
+                        # The heading holds the long name, the rule the
+                        # abbreviation — the reverse of a 3GPP heading, which
+                        # prints both in "Name (ABBR) Command" form.
+                        name=title["name"],
+                        abbreviation=header["name"],
+                        source=source,
+                        command_code=code,
+                        flags=flags,
+                        application_id=application_id,
+                        avps=avps,
+                    )
+                )
+            else:
+                header = _AVP_HEADER_RE.match(text)
+                if header is None:
+                    raise ExtractionError(
+                        f"{section.number}: malformed rule header {text!r}"
+                    )
+                if header["name"] != title["name"]:
+                    warnings.append(
+                        f"{section.number}: heading name {title['name']!r}"
+                        f" != rule name {header['name']!r}, using the rule name"
+                    )
+                vendor = header["vendor"]
+                avps, index = _abnf_body(section.texts, index)
+                definitions.append(
+                    ast.GroupedAvp(
+                        name=header["name"],
+                        source=source,
+                        code=int(header["code"]),
+                        vendor_id=None if vendor is None else int(vendor),
+                        avps=avps,
+                    )
+                )
+        if found_rule:
+            continue
+        values = [
+            ast.EnumValue(name=match["name"], value=int(match["value"]))
+            for text in section.texts
+            if (match := _ENUM_VALUE_RE.match(text.strip()))
+        ]
+        if not values:
+            continue
+        row = enum_rows.get(title["name"])
+        if row is None or row.code is None:
+            if title["avp_suffix"]:
+                warnings.append(
+                    f"{section.number}: {title['name']!r} lists enumerated"
+                    " values but is not an Enumerated row of this RFC's AVP"
+                    " table — values dropped"
+                )
+            continue
+        defined_enums.add(title["name"])
+        definitions.append(
+            ast.EnumeratedAvp(
+                name=title["name"],
+                source=source,
+                code=row.code,
+                vendor_id=None,
+                values=tuple(values),
+            )
+        )
+    for name in sorted(enum_rows.keys() - defined_enums):
+        warnings.append(f"enumerated AVP {name!r}: no value list found in its clause")
+    return messages, definitions
+
+
+def _section_sort_key(section: str) -> list[int]:
+    """Document order for section numbers: "9.8.10" sorts after "9.8.4"."""
+    return [int(part) for part in section.split(".")]
+
+
 def _specification(raw: list[str]) -> str:
     """ "RFC 6733", from the "Request for Comments: 6733" line of the first
     page's header block."""
@@ -423,9 +679,10 @@ def extract(
     `; Page:` numbers are the RFC's own printed pages — the text is its sole
     rendering, so there is no separate PDF step. When `patches_dir` is given,
     input patches from `<patches_dir>/<SpecRef>.toml` (if present) are applied
-    to every content line before parsing. `warnings` is accepted for symmetry
-    with the docx extractor; no non-fatal inconsistency is reported yet.
+    to every content line before parsing. Non-fatal source inconsistencies are
+    appended to `warnings` when a list is given.
     """
+    warnings = warnings if warnings is not None else []
     with boundary(f"extracting {text_path}"):
         raw = Path(text_path).read_text(encoding="utf-8").splitlines()
         specification = _specification(raw)
@@ -439,7 +696,7 @@ def extract(
         reader = _TableReader()
         lines, headings = _content_lines(raw, patcher)
         for line in lines:
-            if "AVP Flag" in line.text and "|" in line.text:
+            if "avp flag" in line.text.casefold() and "|" in line.text:
                 # `; Page:` is where the section starts, not where the table
                 # does — the two differ when a table opens on the next page.
                 heading = headings.get(line.section or "")
@@ -451,10 +708,17 @@ def extract(
                 else:
                     reader.read(line)
         patcher.finish()
+        table = reader.result()
+        messages, definitions = _extract_definitions(
+            _doc_sections(lines, headings), table, warnings
+        )
+        # File order matches the docx extractor's: messages in document order,
+        # the AVP table, then every definition in document order.
+        definitions.sort(key=lambda definition: _section_sort_key(definition.source.section))
         return ast.Specification(
             specification=specification,
             version=None,
             vendor_id=IETF_VENDOR,
             link=None if link is None else pydantic.HttpUrl(link),
-            sections=(reader.result(),),
+            sections=(*messages, table, *definitions),
         )

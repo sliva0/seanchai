@@ -1,0 +1,35 @@
+; Specification: RFC 8581
+; Vendor-ID: 0
+; Link: https://www.rfc-editor.org/rfc/rfc8581.txt
+
+
+; Type: AVP Table
+; Section: 7.4
+; Page: 16
+; Columns: Name Code Section Type               Must  M.not
+OC-Peer-Algo   648   7.1.2   Unsigned64         -     V
+SourceID       649   7.3     DiameterIdentity   -     V
+
+
+; Type: Grouped AVP
+; Name: OC-Supported-Features
+; Section: 7.1
+; Page: 14
+OC-Supported-Features ::= < AVP header: 621 >
+        [ OC-Feature-Vector ]
+        [ SourceID ]
+        [ OC-Peer-Algo ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: OC-OLR
+; Section: 7.2
+; Page: 15
+OC-OLR ::= < AVP header: 623 >
+        < OC-Sequence-Number >
+        < OC-Report-Type >
+        [ OC-Reduction-Percentage ]
+        [ OC-Validity-Duration ]
+        [ SourceID ]
+      * [ AVP ]

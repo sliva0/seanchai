@@ -287,12 +287,12 @@ not, then any extras. The column *set* has not:
 ## The RFC plain-text extractor
 
 `src/seanchai/extractor/rfc_text.py` is the second input path into the same
-format: RFC 6733 §4.5 is the same kind of table as a 3GPP AVP table, and its
-Attribute Name / AVP Code / Section Defined / Data Type columns map onto
-`AvpTableRow` as it stands. `seanchai extract-rfc rfc6733.txt` drives it; the
-downloader already fetches the catalog's RFCs as `specifications/rfc/*.txt`.
-The same input-patch layer applies (`edits/patches/RFC6733.toml`), patched
-per content line after page furniture is stripped.
+format: the Attribute Name / AVP Code / Section Defined / Data Type (or Value
+Type) columns in RFC AVP tables map onto `AvpTableRow` as it stands.
+`seanchai extract-rfc rfc6733.txt` drives it; the downloader already fetches
+the catalog's RFCs as `specifications/rfc/*.txt`. The same input-patch layer
+applies (`edits/patches/RFC6733.toml`), patched per content line after page
+furniture is stripped.
 
 What is different is the carrier, and everything this extractor knows is about
 that:
@@ -310,15 +310,22 @@ that:
   first. A physical line starting a new logical row is the one whose name
   fragment sits at the Attribute Name column; anything deeper continues the
   row above, and every cell must arrive on exactly one of a row's lines.
+- **Border styles.** RFC 6733 boxes only the flag columns; RFCs 7683, 7944 and
+  the 8581–8583 family box the complete table. The latter adds a structural
+  leading border to every row and uses `+` at column intersections. Both
+  normalize into the same fixed-width row reader. A stray space in RFC 8583's
+  closing rule is accepted only because a field containing nothing but dashes
+  and whitespace is unambiguously box drawing.
 - **Header labels are matched as whole spellings, not tokenized.** The label
   rows print `Code Defined` (two columns) and `Attribute Name` (one label)
   with the same single space, so only vocabulary tells them apart —
   `_LEFT_HEADERS` maps each collected header spelling onto its columns, the
   same collected-cases discipline as the docx column maps. The vertically
   stacked flag labels (`MUST` over `NOT`) are unambiguous and read
-  generically. An unrecognised header fails loudly and earns its own entry;
-  RFC 4006/8506 and RFC 7155 already print different spellings, so extending
-  the table is the expected cost of each new RFC.
+  generically, including the later RFCs' lowercase `AVP flag` caption. An
+  unrecognised header fails loudly and earns its own entry; RFC 4006/8506 and
+  RFC 7155 already print different spellings, so extending the table is the
+  expected cost of each new RFC.
 - **Declared short forms.** §4.5 says "the short form DiamIdent is used to
   represent DiameterIdentity", and then also writes DiamURI. A document
   convention carrying information, so it is extractor code rather than an
@@ -329,11 +336,53 @@ that:
   no "Table N" caption — no `; Table:` either. Both directives became optional
   for exactly this.
 
-The scope is deliberately the AVP-flags table and nothing else yet: reference
-resolution needs the base protocol's AVPs to resolve to table rows
-(`Session-Id`, `Origin-Host`, `Proxy-Info`), and that is what the corpus asks
-of an RFC today. Commands and grouped bodies are printed as the same ABNF the
-docx extractor reads and can be added when a consumer needs them.
+Beyond the table, the extractor reads the same definitions the docx one does,
+from their prose-embedded RFC forms. The committed RFC corpus currently covers
+6733, 7683, 7944, 8581, 8582 and 8583.
+
+- **Definitions anchor on section titles.** A section titled with a bare name
+  (`Capabilities-Exchange-Request`) or `Name AVP` (`Proxy-Info AVP`) is a
+  definition candidate; a prose title is not. That distinction is what keeps
+  the CCF grammar's own illustrations out of the output — `Example-Request`,
+  `Example-AVP` and `<answer-message>` all sit under prose titles ("Command
+  Code Format Specification", "Grouped AVP Values", "Error Bit").
+- **Commands.** `<CER> ::= < Diameter Header: 257, REQ >` under a
+  name-titled section becomes a `Message` — the heading carries the long
+  name and the rule the abbreviation, the reverse of a 3GPP heading, which
+  prints both. RFC 6733's base commands print no application id, and the
+  file records that as its absence rather than fabricating the base
+  protocol's 0. Blank lines inside a body are page-break residue and are
+  skipped; the first non-blank non-rule line closes it.
+- **Grouped AVPs.** `Proxy-Info ::= < AVP Header: 284 >` plus body; the rule
+  name is angle-bracketed in some clauses (`<Failed-AVP> ::=`) and bare in
+  others, and `1* {AVP}` prints without inner spaces. A body an RFC prints
+  for another document's AVP is kept, the docx extractor's deliberate call:
+  RFC 8581 and 8582 both reprint RFC 7683's `OC-OLR` with their own member
+  added, and cross-file divergence is the linter's to report
+  (`reused-body-differs`).
+- **Enumerated AVPs.** A value list under a name-titled section becomes an
+  `EnumeratedAvp` when the local AVP table types that name as Enumerated;
+  the code comes from the table, as in the docx extractor. Both printed
+  layouts are read — the value alone on its line with the description
+  indented below (RFC 6733), and the description starting on the value's own
+  line and wrapping (RFC 7944, 8583, with 8581's trailing-colon variant).
+  Value names are all-caps in every collected RFC, and requiring that is
+  what keeps prose lines out. Descriptions are dropped for the same reason
+  as the docx extractor's: they are wrapped prose, not a one-line gloss.
+- **What the warnings say, and why each is right.** A value list under a
+  `Name AVP`-titled section whose name the local table does not type as
+  Enumerated is dropped with a warning: RFC 8581 §7.2.1 adds `PEER_REPORT 2`
+  to 7683's `OC-Report-Type`, and `.dad` has no way to extend another
+  document's enum. RFC 6733 itself earns three: `Termination-Cause` is
+  Enumerated with no local values (they moved to the IANA registry), and
+  `Inband-Security-Id` and `Session-Binding` print value-shaped lists for
+  AVPs the table types Unsigned32 (the latter a bit mask). All three record
+  what the document actually does.
+
+Commands and grouped bodies wait no longer; what still does is anything a
+consumer has not asked for — RFC 6733's `<answer-message>` template, and enum
+extensions to another document's AVP, which need format design, not
+extraction.
 
 ## Gotchas
 

@@ -139,8 +139,15 @@ def extract_rfc(
 
     if patches is None and _DEFAULT_PATCHES.is_dir():
         patches = _DEFAULT_PATCHES
+    warnings: list[str] = []
     with reported():
-        spec = rfc_text.extract(text, link=link, patches_dir=patches)
+        try:
+            spec = rfc_text.extract(
+                text, link=link, warnings=warnings, patches_dir=patches
+            )
+        finally:
+            for warning in warnings:
+                click.echo(f"warning: {warning}", err=True)
         notes: dict[int, list[str]] = {}
         if corrections is not None:
             spec, notes = _correct(spec, corrections, required=False)

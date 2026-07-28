@@ -3,6 +3,274 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc6733.txt
 
 
+; Type: Message
+; Name: Capabilities-Exchange-Request, CER
+; Section: 5.3.1
+; Page: 62
+<Capabilities-Exchange-Request> ::= < Diameter Header: 257, REQ >
+        { Origin-Host }
+        { Origin-Realm }
+     1* { Host-IP-Address }
+        { Vendor-Id }
+        { Product-Name }
+        [ Origin-State-Id ]
+      * [ Supported-Vendor-Id ]
+      * [ Auth-Application-Id ]
+      * [ Inband-Security-Id ]
+      * [ Acct-Application-Id ]
+      * [ Vendor-Specific-Application-Id ]
+        [ Firmware-Revision ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Capabilities-Exchange-Answer, CEA
+; Section: 5.3.2
+; Page: 63
+<Capabilities-Exchange-Answer> ::= < Diameter Header: 257 >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+     1* { Host-IP-Address }
+        { Vendor-Id }
+        { Product-Name }
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Failed-AVP ]
+      * [ Supported-Vendor-Id ]
+      * [ Auth-Application-Id ]
+      * [ Inband-Security-Id ]
+      * [ Acct-Application-Id ]
+      * [ Vendor-Specific-Application-Id ]
+        [ Firmware-Revision ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Disconnect-Peer-Request, DPR
+; Section: 5.4.1
+; Page: 65
+<Disconnect-Peer-Request> ::= < Diameter Header: 282, REQ >
+        { Origin-Host }
+        { Origin-Realm }
+        { Disconnect-Cause }
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Disconnect-Peer-Answer, DPA
+; Section: 5.4.2
+; Page: 65
+<Disconnect-Peer-Answer> ::= < Diameter Header: 282 >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Error-Message ]
+        [ Failed-AVP ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Device-Watchdog-Request, DWR
+; Section: 5.5.1
+; Page: 67
+<Device-Watchdog-Request> ::= < Diameter Header: 280, REQ >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Origin-State-Id ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Device-Watchdog-Answer, DWA
+; Section: 5.5.2
+; Page: 67
+<Device-Watchdog-Answer> ::= < Diameter Header: 280 >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Error-Message ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 8.3.1
+; Page: 110
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ User-Name ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 8.3.2
+; Page: 110
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Request, STR
+; Section: 8.4.1
+; Page: 112
+<Session-Termination-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ User-Name ]
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Answer, STA
+; Section: 8.4.2
+; Page: 113
+<Session-Termination-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 8.5.1
+; Page: 114
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ User-Name ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 8.5.2
+; Page: 114
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Accounting-Request, ACR
+; Section: 9.7.1
+; Page: 127
+<Accounting-Request> ::= < Diameter Header: 271, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Destination-Host ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Acct-Interim-Interval ]
+        [ Accounting-Realtime-Required ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Accounting-Answer, ACA
+; Section: 9.7.2
+; Page: 128
+<Accounting-Answer> ::= < Diameter Header: 271, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Acct-Interim-Interval ]
+        [ Accounting-Realtime-Required ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
 ; Type: AVP Table
 ; Section: 4.5
 ; Page: 55
@@ -56,3 +324,124 @@ Termination-Cause                295   8.15    Enumerated         M     V
 User-Name                        1     8.14    UTF8String         M     V
 Vendor-Id                        266   5.3.3   Unsigned32         M     V
 Vendor-Specific-Application-Id   260   6.11    Grouped            M     V
+
+
+; Type: Enumerated AVP
+; Name: Disconnect-Cause
+; Section: 5.4.3
+; Page: 66
+Disconnect-Cause ::= < Enumerated AVP header: 273 >
+        REBOOTING                  = 0
+        BUSY                       = 1
+        DO_NOT_WANT_TO_TALK_TO_YOU = 2
+
+
+; Type: Grouped AVP
+; Name: Proxy-Info
+; Section: 6.7.2
+; Page: 83
+Proxy-Info ::= < AVP header: 284 >
+        { Proxy-Host }
+        { Proxy-State }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Vendor-Specific-Application-Id
+; Section: 6.11
+; Page: 84
+Vendor-Specific-Application-Id ::= < AVP header: 260 >
+        { Vendor-Id }
+        [ Auth-Application-Id ]
+        [ Acct-Application-Id ]
+
+
+; Type: Enumerated AVP
+; Name: Redirect-Host-Usage
+; Section: 6.13
+; Page: 85
+Redirect-Host-Usage ::= < Enumerated AVP header: 261 >
+        DONT_CACHE            = 0
+        ALL_SESSION           = 1
+        ALL_REALM             = 2
+        REALM_AND_APPLICATION = 3
+        ALL_APPLICATION       = 4
+        ALL_HOST              = 5
+        ALL_USER              = 6
+
+
+; Type: Grouped AVP
+; Name: Failed-AVP
+; Section: 7.5
+; Page: 96
+Failed-AVP ::= < AVP header: 279 >
+     1* { AVP }
+
+
+; Type: Grouped AVP
+; Name: Experimental-Result
+; Section: 7.6
+; Page: 97
+Experimental-Result ::= < AVP header: 297 >
+        { Vendor-Id }
+        { Experimental-Result-Code }
+
+
+; Type: Enumerated AVP
+; Name: Auth-Request-Type
+; Section: 8.7
+; Page: 116
+Auth-Request-Type ::= < Enumerated AVP header: 274 >
+        AUTHENTICATE_ONLY      = 1
+        AUTHORIZE_ONLY         = 2
+        AUTHORIZE_AUTHENTICATE = 3
+
+
+; Type: Enumerated AVP
+; Name: Auth-Session-State
+; Section: 8.11
+; Page: 118
+Auth-Session-State ::= < Enumerated AVP header: 277 >
+        STATE_MAINTAINED    = 0
+        NO_STATE_MAINTAINED = 1
+
+
+; Type: Enumerated AVP
+; Name: Re-Auth-Request-Type
+; Section: 8.12
+; Page: 118
+Re-Auth-Request-Type ::= < Enumerated AVP header: 285 >
+        AUTHORIZE_ONLY         = 0
+        AUTHORIZE_AUTHENTICATE = 1
+
+
+; Type: Enumerated AVP
+; Name: Session-Server-Failover
+; Section: 8.18
+; Page: 121
+Session-Server-Failover ::= < Enumerated AVP header: 271 >
+        REFUSE_SERVICE          = 0
+        TRY_AGAIN               = 1
+        ALLOW_SERVICE           = 2
+        TRY_AGAIN_ALLOW_SERVICE = 3
+
+
+; Type: Enumerated AVP
+; Name: Accounting-Record-Type
+; Section: 9.8.1
+; Page: 129
+Accounting-Record-Type ::= < Enumerated AVP header: 480 >
+        EVENT_RECORD   = 1
+        START_RECORD   = 2
+        INTERIM_RECORD = 3
+        STOP_RECORD    = 4
+
+
+; Type: Enumerated AVP
+; Name: Accounting-Realtime-Required
+; Section: 9.8.7
+; Page: 132
+Accounting-Realtime-Required ::= < Enumerated AVP header: 483 >
+        DELIVER_AND_GRANT = 1
+        GRANT_AND_STORE   = 2
+        GRANT_AND_LOSE    = 3

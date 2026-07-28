@@ -1,0 +1,24 @@
+; Specification: RFC 8582
+; Vendor-ID: 0
+; Link: https://www.rfc-editor.org/rfc/rfc8582.txt
+
+
+; Type: AVP Table
+; Section: 7.3
+; Page: 11
+; Columns: Name   Code  Section Type         Must  M.not
+OC-Maximum-Rate   670   7.2.1   Unsigned32   -     V
+
+
+; Type: Grouped AVP
+; Name: OC-OLR
+; Section: 7.2
+; Page: 10
+OC-OLR ::= < AVP header: 623 >
+        < OC-Sequence-Number >
+        < OC-Report-Type >
+        [ OC-Reduction-Percentage ]
+        [ OC-Validity-Duration ]
+        [ SourceID ]
+        [ OC-Maximum-Rate ]
+      * [ AVP ]

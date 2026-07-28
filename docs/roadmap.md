@@ -190,10 +190,13 @@ the corpus — and the two facts an RFC states differently from a 3GPP spec
 became optional directives (`; Version:`, `; Table:`) rather than fabricated
 values. How it reads the layout, and why header labels are matched as whole
 collected spellings rather than parsed, is in
-[extractor.md](extractor.md#the-rfc-plain-text-extractor). Scope is the AVP
-table only — commands and grouped bodies wait for a consumer that needs them —
-and each further RFC (7683, 7944, 8583 first, per the note counts) costs at
-most its own header spelling.
+[extractor.md](extractor.md#the-rfc-plain-text-extractor). It now reads the
+full document model, not just the table: commands, grouped bodies and
+enumerated values, from their prose-embedded RFC forms, so an RFC's `.dad` is
+as complete as a 3GPP one's. What it deliberately does not read is an
+extension to another document's enum (RFC 8581 adding `PEER_REPORT` to 7683's
+`OC-Report-Type`) — that needs format design, not extraction, and is dropped
+with a warning. Each further RFC costs at most its own header spelling.
 
 17. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).

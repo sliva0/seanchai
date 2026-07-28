@@ -37,9 +37,82 @@ def _rfc(body: str) -> str:
 
 
 def _synthetic() -> str:
-    """Two page-broken chunks of one table, exercising every collected wrap."""
+    """Two page-broken chunks of one table, exercising every collected wrap,
+    preceded by the definition forms an RFC prints around it: a command, the
+    grammar's own example (which must not extract), grouped AVPs bare and
+    angle-bracketed, and both enumerated-value layouts."""
+    definitions = (
+        "3.2.  Command Code Format Specification\n"
+        "\n"
+        "   Every Command Code defined MUST include a corresponding CCF\n"
+        "   specification.  For example:\n"
+        "\n"
+        "   Example-Request ::= < Diameter Header: 9999999, REQ, PXY >\n"
+        "                       { Origin-Host }\n"
+        "                     * [ AVP ]\n"
+        "\n"
+        "5.3.1.  Synthetic-Exchange-Request\n"
+        "\n"
+        "   The Synthetic-Exchange-Request (SER), indicated by the Command Code\n"
+        "   set to 257, is sent to exchange local capabilities.\n"
+        "\n"
+        "      Message Format\n"
+        "\n"
+        "         <SER> ::= < Diameter Header: 257, REQ >\n"
+        "                   { Origin-Host }\n"
+        "                1* { Host-IP-Address }\n"
+        "\n" + _FOOTER.format(53) + "\n"
+        "\f\n" + _RUNNING + "\n"
+        "\n"
+        "                   [ Origin-State-Id ]\n"
+        "                 * [ AVP ]\n"
+        "\n"
+        "4.4.3.  Proxy-Info AVP\n"
+        "\n"
+        "   The Proxy-Info AVP (AVP Code 284) is of type Grouped.\n"
+        "\n"
+        "         Proxy-Info ::= < AVP Header: 284 >\n"
+        "                        { Proxy-Host }\n"
+        "                      * [ AVP ]\n"
+        "\n"
+        "4.4.4.  Failed-AVP AVP\n"
+        "\n"
+        "   AVP Format\n"
+        "\n"
+        "         <Failed-AVP> ::= < AVP Header: 279 >\n"
+        "                       1* {AVP}\n"
+        "\n"
+        "4.4.5.  Disconnect-Cause AVP\n"
+        "\n"
+        "   The Disconnect-Cause AVP (AVP Code 273) is of type Enumerated.  The\n"
+        "   following values are supported:\n"
+        "\n"
+        "      REBOOTING                         0\n"
+        "         A scheduled reboot is imminent.\n"
+        "\n"
+        "      BUSY                              1\n"
+        "         The peer's internal resources are constrained.\n"
+        "\n"
+        "4.4.6.  Load-Type AVP\n"
+        "\n"
+        "   The Load-Type AVP (AVP code 651) is of type Enumerated.\n"
+        "\n"
+        "   HOST 0  The load report is for a host.\n"
+        "\n"
+        "   PEER 1:  The load report is for a peer.\n"
+        "\n"
+        "4.4.7.  Extension-Type AVP\n"
+        "\n"
+        "   The following new report type is defined for the Extension-Type AVP\n"
+        "   of [RFC9998]:\n"
+        "\n"
+        "   PEER_REPORT 2  The overload treatment should apply to the peer.\n"
+        "\n" + _FOOTER.format(54) + "\n"
+        "\f\n" + _RUNNING + "\n"
+        "\n"
+    )
     page_one = (
-        "4.5.  Synthetic Base AVPs\n"
+        definitions + "4.5.  Synthetic Base AVPs\n"
         "\n"
         "   Due to space constraints, the short form DiamIdent is used to\n"
         "   represent DiameterIdentity.\n"
@@ -47,6 +120,8 @@ def _synthetic() -> str:
         + _HEADER_BOX
         + "   Acct-             85  9.8.2   Unsigned32 | M  |  V  |\n"
         "     Interim-Interval                       |    |     |\n"
+        "   Disconnect-Cause 273  4.4.5   Enumerated | M  |  V  |\n"
+        "   Load-Type        651  4.4.6   Enumerated | M  |  V  |\n"
         "   Class             25  8.20    OctetString| M  |  V  |\n"
         "   Error-Message    281  7.3     UTF8String |    | V,M |\n"
         "   -----------------------------------------|----+-----|\n"
@@ -83,8 +158,7 @@ def test_extracts_the_avp_table(synthetic_rfc):
     assert spec.specification == "RFC 9999"
     assert spec.version is None
     assert spec.vendor_id == 0
-    (table,) = spec.sections
-    assert isinstance(table, ast.AvpTable)
+    (table,) = [s for s in spec.sections if isinstance(s, ast.AvpTable)]
     assert table.table is None
     assert table.source.section == "4.5"
     assert table.source.page == 55
@@ -98,6 +172,8 @@ def test_extracts_the_avp_table(synthetic_rfc):
     )
     assert [row.name for row in table.rows] == [
         "Acct-Interim-Interval",  # name wrapped onto a continuation line
+        "Disconnect-Cause",
+        "Load-Type",
         "Class",
         "Error-Message",
         "Inband-Security-Id",  # reversed wrap: data cells on the continuation
@@ -115,6 +191,112 @@ def test_extracts_the_avp_table(synthetic_rfc):
         ast.AvpFlag.MANDATORY,
         ast.AvpFlag.VENDOR,
     }
+
+
+def test_extracts_later_rfc_fully_boxed_value_type_table(tmp_path):
+    body = _rfc(
+        "7.8.  AVP Flag Rules\n\n"
+        "                                      +---------+\n"
+        "                                      |AVP flag |\n"
+        "                                      |rules    |\n"
+        "                                      +----+----+\n"
+        "           AVP   Section              |    |MUST|\n"
+        "    Attribute Name Code Defined Value Type |MUST| NOT|\n"
+        "   +----------------- -----------------+----+----+\n"
+        "   |OC-Reduction                       |    |    |\n"
+        "   |  -Percentage 627 7.7 Unsigned32   |    | V  |\n"
+        "   +-----------------------------------+----+----+\n"
+        "\n"
+        "8.  After the Table\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
+
+    spec = rfc_text.extract(path)
+
+    (table,) = spec.sections
+    assert isinstance(table, ast.AvpTable)
+    assert table.columns == (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+        ast.AvpColumn.TYPE,
+        ast.AvpColumn.MUST,
+        ast.AvpColumn.MUST_NOT,
+    )
+    (row,) = table.rows
+    assert row.name == "OC-Reduction-Percentage"
+    assert row.code == 627
+    assert row.section == "7.7"
+    assert row.data_type == ast.DataType.UNSIGNED32
+    assert row.flag_rules.must_not == {ast.AvpFlag.VENDOR}
+
+
+def test_extracts_the_command(synthetic_rfc):
+    """Name from the heading, abbreviation from the rule — the reverse of a
+    3GPP heading — and a body read across a page break."""
+    spec = rfc_text.extract(synthetic_rfc)
+
+    (message,) = [s for s in spec.sections if isinstance(s, ast.Message)]
+    assert message.name == "Synthetic-Exchange-Request"
+    assert message.abbreviation == "SER"
+    assert message.source.section == "5.3.1"
+    assert message.source.page == 53
+    assert message.command_code == 257
+    assert message.flags == {ast.CommandFlag.REQUEST}
+    assert message.application_id is None  # the base protocol prints none
+    assert [(rule.name, rule.presence) for rule in message.avps] == [
+        ("Origin-Host", ast.Presence.REQUIRED),
+        ("Host-IP-Address", ast.Presence.REQUIRED),
+        ("Origin-State-Id", ast.Presence.OPTIONAL),  # after the page break
+        ("AVP", ast.Presence.OPTIONAL),
+    ]
+    assert message.avps[1].min_occurs == 1 and message.avps[1].max_occurs is None
+    # The CCF grammar's own Example-Request must not become a command: its
+    # section is titled with prose, which no definition heading is.
+    assert spec.sections[0] is message
+
+
+def test_extracts_grouped_avps(synthetic_rfc):
+    spec = rfc_text.extract(synthetic_rfc)
+
+    grouped = {s.name: s for s in spec.sections if isinstance(s, ast.GroupedAvp)}
+    assert set(grouped) == {"Proxy-Info", "Failed-AVP"}
+    proxy = grouped["Proxy-Info"]
+    assert proxy.code == 284
+    assert proxy.vendor_id is None
+    assert proxy.source.section == "4.4.3"
+    assert [rule.name for rule in proxy.avps] == ["Proxy-Host", "AVP"]
+    # `<Failed-AVP> ::=` spells the rule name angle-bracketed, and its one
+    # body line `1* {AVP}` without inner spaces.
+    failed = grouped["Failed-AVP"]
+    assert failed.code == 279
+    (rule,) = failed.avps
+    assert (rule.name, rule.min_occurs, rule.max_occurs) == ("AVP", 1, None)
+
+
+def test_extracts_enumerated_avps_in_both_layouts(synthetic_rfc):
+    warnings: list[str] = []
+    spec = rfc_text.extract(synthetic_rfc, warnings=warnings)
+
+    enums = {s.name: s for s in spec.sections if isinstance(s, ast.EnumeratedAvp)}
+    assert set(enums) == {"Disconnect-Cause", "Load-Type"}
+    # RFC 6733 layout: the value alone on its line, description indented below.
+    disconnect = enums["Disconnect-Cause"]
+    assert disconnect.code == 273  # from the AVP table, as in the docx extractor
+    assert disconnect.vendor_id is None
+    assert [(v.name, v.value) for v in disconnect.values] == [
+        ("REBOOTING", 0),
+        ("BUSY", 1),
+    ]
+    # RFC 7944/8583 layout: the description starts on the value's own line.
+    assert [(v.name, v.value) for v in enums["Load-Type"].values] == [
+        ("HOST", 0),
+        ("PEER", 1),
+    ]
+    # A value list for an AVP the local table does not type as Enumerated —
+    # an extension to another RFC's enum — is dropped with a warning.
+    assert any("Extension-Type" in warning for warning in warnings)
 
 
 def test_output_round_trips(synthetic_rfc):
@@ -198,8 +380,7 @@ def test_input_patches_apply_to_content_lines(tmp_path, synthetic_rfc):
 
     spec = rfc_text.extract(synthetic_rfc, patches_dir=patches)
 
-    (table,) = spec.sections
-    assert isinstance(table, ast.AvpTable)
+    (table,) = [s for s in spec.sections if isinstance(s, ast.AvpTable)]
     by_name = {row.name: row for row in table.rows}
     assert by_name["Class"].data_type == ast.DataType.UTF8_STRING
 

@@ -37,8 +37,8 @@ A deleted node produces no line to mark, so its note stands alone before the
 section that lost it (`;; deleted: (TS29.283.py:7)` in 29.283).
 
 A specification with no corrections yet still gets both files, byte-identical
-(`rfc6733`): the pair is the workflow's unit, and the corrected copy is the
-one consumers and the corpus loader read either way.
+(as the RFC files currently are): the pair is the workflow's unit, and the
+corrected copy is the one consumers and the corpus loader read either way.
 
 Keeping the raw file costs a second copy and buys three things that are
 awkward to get otherwise: a version upgrade can diff raw-vs-raw and see the

@@ -1,0 +1,33 @@
+; Specification: RFC 7944
+; Vendor-ID: 0
+; Link: https://www.rfc-editor.org/rfc/rfc7944.txt
+
+
+; Type: AVP Table
+; Section: 9.2
+; Page: 13
+; Columns: Name Code Section Type Must M.not
+DRMP   301   9.1   Enumerated   -     V
+
+
+; Type: Enumerated AVP
+; Name: DRMP
+; Section: 9.1
+; Page: 12
+DRMP ::= < Enumerated AVP header: 301 >
+        PRIORITY_15 = 15
+        PRIORITY_14 = 14
+        PRIORITY_13 = 13
+        PRIORITY_12 = 12
+        PRIORITY_11 = 11
+        PRIORITY_10 = 10
+        PRIORITY_9  = 9
+        PRIORITY_8  = 8
+        PRIORITY_7  = 7
+        PRIORITY_6  = 6
+        PRIORITY_5  = 5
+        PRIORITY_4  = 4
+        PRIORITY_3  = 3
+        PRIORITY_2  = 2
+        PRIORITY_1  = 1
+        PRIORITY_0  = 0

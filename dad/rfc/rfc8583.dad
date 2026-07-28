@@ -1,0 +1,33 @@
+; Specification: RFC 8583
+; Vendor-ID: 0
+; Link: https://www.rfc-editor.org/rfc/rfc8583.txt
+
+
+; Type: AVP Table
+; Section: 7.5
+; Page: 16
+; Columns: Name Code Section Type           Must  M.not
+Load         650   7.1   Grouped            -     V
+Load-Type    651   7.2   Enumerated         -     V
+Load-Value   652   7.3   Unsigned64         -     V
+SourceID     649   7.4   DiameterIdentity   -     V
+
+
+; Type: Grouped AVP
+; Name: Load
+; Section: 7.1
+; Page: 15
+Load ::= < AVP header: 650 >
+        [ Load-Type ]
+        [ Load-Value ]
+        [ SourceID ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Load-Type
+; Section: 7.2
+; Page: 15
+Load-Type ::= < Enumerated AVP header: 651 >
+        HOST = 0
+        PEER = 1
