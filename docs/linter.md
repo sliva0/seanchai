@@ -96,6 +96,19 @@ explicitly refuses to guess at.
   problems. One note per file listing all of them, because 29.272 alone cites
   nineteen origins and a Rel-18 corpus with no RFC extractor cannot resolve a
   single RFC.
+- `unresolved-reference` — phase two's rule, enforceable now that `; Bases:`
+  names the document supplying `Session-Id`, `Origin-Host` and the other
+  base-protocol AVPs no re-used table cites: every AVP referenced in a message
+  or grouped body resolves to a local definition, an AVP-table row, a re-used
+  entry, or a base document. The trailing `* [ AVP ]` is RFC 6733's any-AVP
+  wildcard — grammar, not a reference — and is skipped rather than resolved to
+  an AVP named `AVP`. A note rather than an error for now: the corrected
+  corpus still carries 34 of them (see
+  [standing findings](#standing-findings-and-why-each-one-stays)).
+- `base-not-in-corpus` — a `; Bases:` document the corpus could not supply.
+  Reference resolution is skipped entirely for that file rather than reporting
+  every base-protocol AVP as unresolved: the document is fine, the corpus is
+  incomplete, and a hundred spurious findings would bury the real ones.
 
 ## Resolving an origin
 
@@ -299,3 +312,25 @@ These notes clear themselves as the corpus grows. This is why acknowledging a
 finding was never built: suppressing them one by one would hide which
 cross-file rules were skipped and turn into discarded work when the missing
 origin arrives.
+
+### `unresolved-reference` — 34 references awaiting triage
+
+The first run of reference resolution left 34 notes across eight files, in
+three distinct shapes, and the rule stays a note until they are worked
+through:
+
+- **References to another document's AVPs that the re-used table omits.**
+  29.337's message bodies use `MME-Name`, `SGSN-Number` and four siblings from
+  TS 29.336 without listing them as re-used; 29.272's clause 7.3.194 does the
+  same for five monitoring AVPs, and RFC 8581/8582 reference RFC 7683's
+  `OC-Report-Type` family, which an RFC has no re-used table to cite. Each
+  wants either a correction inserting the missing rows or a second `; Bases:`
+  entry — which of the two is right is a per-document decision.
+- **Source typos.** 29.345's `WiFi-P2P-Assistance-Iinfo` (clause 6.3.31) is an
+  obvious misspelling the rule surfaced on its first run.
+- **Unexamined.** The remainder (29.128's `Bearer-Identifier`, `IMEI`,
+  `Software-Version`; 29.172's `LCS-Supported-GAD-Shapes`; 29.345's ProSe
+  discovery AVPs) have not yet been checked against their source clauses.
+
+Once every note is either corrected away or explained here, the rule should
+promote to an error so `lint --corpus` guards it from then on.

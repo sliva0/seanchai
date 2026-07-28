@@ -605,3 +605,67 @@ def test_re_used_rows_join_the_identity_check_once_their_vendor_is_known():
     assert "duplicate-identity" not in _rules(
         linter.lint_with_corpus(spec, _books(ietf))
     )
+
+
+def test_references_resolve_against_a_base_document():
+    """`; Bases:` supplies the names no re-used table cites — RFC 6733's
+    `Session-Id` and friends — so a message referencing them is resolved
+    rather than reported. The trailing `* [ AVP ]` is the base protocol's
+    any-AVP wildcard, not a reference."""
+    base = ast.Specification(
+        specification="RFC 6733",
+        vendor_id=0,
+        sections=(
+            _table(
+                ast.AvpTableRow(name="Session-Id", code=263),
+                _row("Local-Group", 700),
+            ),
+        ),
+    )
+    spec = ast.Specification(
+        specification="3GPP TS 29.329",
+        version="18.0.0",
+        vendor_id=10415,
+        bases=("RFC6733",),
+        sections=(
+            ast.Message(
+                name="Example-Request",
+                abbreviation="EXR",
+                source=ast.SourceRef(section="6.1.1"),
+                command_code=306,
+                flags=frozenset({ast.CommandFlag.REQUEST}),
+                application_id=16777217,
+                avps=(
+                    ast.AvpRule(name="Session-Id", presence=ast.Presence.FIXED),
+                    ast.AvpRule(name="Mystery", presence=ast.Presence.OPTIONAL),
+                    ast.AvpRule(name="AVP", presence=ast.Presence.OPTIONAL),
+                ),
+            ),
+        ),
+    )
+
+    findings = linter.lint_with_corpus(spec, _books(base))
+    (unresolved,) = [f for f in findings if f.rule == "unresolved-reference"]
+
+    assert unresolved.severity is linter.Severity.NOTE
+    assert "Mystery" in unresolved.message
+    assert "Session-Id" not in unresolved.message
+
+
+def test_a_base_missing_from_the_corpus_is_a_note_and_turns_the_rule_off():
+    spec = ast.Specification(
+        specification="3GPP TS 29.329",
+        version="18.0.0",
+        vendor_id=10415,
+        bases=("RFC6733",),
+        sections=(
+            _grouped_with("Example", 700, "Session-Id"),
+            _table(_row("Example", 700)),
+        ),
+    )
+
+    findings = linter.lint_with_corpus(spec, _books())
+    rules = _rules(findings)
+
+    assert "base-not-in-corpus" in rules
+    assert "unresolved-reference" not in rules

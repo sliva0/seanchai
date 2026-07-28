@@ -27,6 +27,7 @@ directive.
 ; Specification: 3GPP TS 29.329
 ; Version: 18.0.0
 ; Vendor-ID: 10415
+; Bases: RFC6733
 ; Link: https://www.etsi.org/deliver/...
 
 
@@ -75,6 +76,15 @@ These are the decisions the format rests on. Preserve them when changing it.
   Extractors state it rather than deriving it: 3GPP documents are 10415, RFCs
   are 0. A hand-authored file states its own, which is the whole mechanism a
   vendor extension needs — nothing else has to learn about that vendor.
+- **The file states what it builds on.** `; Bases:` is the comma-separated
+  list of documents whose AVPs the file uses without citing them anywhere —
+  RFC 6733's `Session-Id`, `Origin-Host` and the trailing `* [ AVP ]` appear
+  in every Diameter application's ABNF and in no re-used table. Extractors
+  stamp `RFC6733` for everything except RFC 6733 itself, so the line is
+  optional rather than fabricated at the base of the tree; reference
+  resolution reads it the way re-used rows' origins are read. A hand-authored
+  extension can state a different base, which is the same mechanism
+  `; Vendor-ID:` gives vendors.
 - **`; bold` stays inline** because it mirrors the source document: bold in
   3GPP ABNF marks AVPs defined or modified in that spec.
 - **Table cells are single whitespace-separated tokens**, with `-` as the empty

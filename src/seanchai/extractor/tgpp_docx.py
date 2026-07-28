@@ -930,6 +930,7 @@ def extract(
             specification=specification,
             version=version,
             vendor_id=TGPP_VENDOR,
+            bases=(ast.BASE_PROTOCOL,),
             link=None if link is None else pydantic.HttpUrl(link),
             sections=sections,
         )

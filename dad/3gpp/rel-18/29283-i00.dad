@@ -1,6 +1,7 @@
 ; Specification: 3GPP TS 29.283
 ; Version: 18.0.0
 ; Vendor-ID: 10415
+; Bases: RFC6733
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129283/18.00.00_60/ts_129283v180000p.pdf
 
 

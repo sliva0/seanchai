@@ -45,10 +45,13 @@ ABNF as in RFC 5234, with `%x` for literal code points. Two conventions:
 
 ```abnf
 file          = header 2*NL section *(2*NL section) NL
-header        = spec-line NL [version-line NL] vendor-line [NL link-line]
+header        = spec-line NL [version-line NL] vendor-line [NL bases-line]
+                [NL link-line]
 spec-line     = "; Specification: " inline-text
 version-line  = "; Version: " version
 vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
+bases-line    = "; Bases: " spec-ref *(", " spec-ref)
+spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)   ; "RFC6733"
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
@@ -66,6 +69,14 @@ state.
 3GPP specification does and an RFC does not: an RFC number names one immutable
 document, so an RFC `.dad` carries no version line rather than a fabricated
 one.
+
+`; Bases:` names the documents this one builds on without citing them
+anywhere — the base-protocol AVPs (`Session-Id`, `Origin-Host`, the trailing
+`* [ AVP ]`) appear in every Diameter application's ABNF and in no re-used
+table, because every application is assumed to have them. Entries use the same
+single-token spelling re-used rows cite origins by. Extractors write
+`; Bases: RFC6733` for every document except RFC 6733 itself, which is why the
+line is optional: the base of the tree has nothing to put in it.
 
 A file is a header block followed by one or more section blocks. Blocks are
 separated by blank lines; a block is a run of consecutive non-blank lines. The

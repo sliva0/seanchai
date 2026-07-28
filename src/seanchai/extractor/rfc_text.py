@@ -719,6 +719,10 @@ def extract(
             specification=specification,
             version=None,
             vendor_id=IETF_VENDOR,
+            # RFC 6733 is the base of the tree and states no bases of its own.
+            bases=()
+            if ast.spec_ref(specification) == ast.BASE_PROTOCOL
+            else (ast.BASE_PROTOCOL,),
             link=None if link is None else pydantic.HttpUrl(link),
             sections=(*messages, table, *definitions),
         )

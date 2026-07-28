@@ -1,6 +1,7 @@
 ; Specification: 3GPP TS 29.344
 ; Version: 18.1.0
 ; Vendor-ID: 10415
+; Bases: RFC6733
 ; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129344/18.01.00_60/ts_129344v180100p.pdf
 
 

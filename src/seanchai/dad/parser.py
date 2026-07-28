@@ -488,6 +488,9 @@ def parse(text: str) -> ast.Specification:
     # so its file carries no `; Version:` line.
     version = directives.pop("Version", None)
     vendor = _pop(directives, "Vendor-ID", header.start)
+    # Optional: absent means the document builds on nothing — RFC 6733, the
+    # base of the tree, is the file with nothing to put in it.
+    bases = directives.pop("Bases", None)
     link = directives.pop("Link", None)
     _no_leftovers(directives, header.start)
 
@@ -514,11 +517,23 @@ def parse(text: str) -> ast.Specification:
             parsed_link = pydantic.HttpUrl(link.value)
     with _validated(vendor.lineno):
         vendor_id = _number(vendor.value, vendor.lineno, "Vendor-ID")
+    parsed_bases: tuple[str, ...] = ()
+    if bases is not None:
+        parsed_bases = tuple(part.strip() for part in bases.value.split(","))
+        with _validated(bases.lineno):
+            for base in parsed_bases:
+                if not ast.SPEC_REF_RE.match(base):
+                    raise DadParseError(
+                        bases.lineno,
+                        f"Bases entry {base!r} does not name a supported"
+                        " document (expected e.g. 'RFC6733' or 'TS29.272')",
+                    )
     with _validated(specification.lineno):
         return ast.Specification(
             specification=specification.value,
             version=None if version is None else version.value,
             vendor_id=vendor_id,
+            bases=parsed_bases,
             link=parsed_link,
             sections=tuple(sections),
         )

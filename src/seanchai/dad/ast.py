@@ -71,6 +71,10 @@ Version = Annotated[str, Field(pattern=r"^\d+(\.\d+)*$")]
 # have to be reconciled before any identity is compared.
 IETF_VENDOR = 0
 
+# The base protocol every Diameter application builds on. Extractors stamp it
+# into `; Bases:` for every document except RFC 6733 itself.
+BASE_PROTOCOL = "RFC6733"
+
 Unsigned32 = Annotated[int, Field(ge=0, lt=2**32)]
 Unsigned24 = Annotated[int, Field(ge=0, lt=2**24)]
 
@@ -493,5 +497,14 @@ class Specification(Node):
     # space. An AVP it merely re-uses belongs to the origin's space, which is
     # that document's `; Vendor-ID:` to state, not this one's to guess.
     vendor_id: Unsigned32
+    # `; Bases:` — the documents this one builds on without citing them
+    # anywhere: RFC 6733's base-protocol AVPs (`Session-Id`, `Origin-Host`,
+    # the trailing `* [ AVP ]`) appear in every Diameter application's ABNF
+    # and in no re-used table, because every application is assumed to have
+    # them. Extractors stamp `RFC6733` for every document except RFC 6733
+    # itself, which is why the directive is optional: the base of the tree
+    # has nothing to put in it. Spelled as `SpecRef`s, the same form re-used
+    # rows cite origins by, so resolution shares their machinery.
+    bases: tuple[SpecRef, ...] = ()
     link: pydantic.HttpUrl | None = None
     sections: tuple[Section, ...]

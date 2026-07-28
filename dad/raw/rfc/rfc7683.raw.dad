@@ -1,5 +1,6 @@
 ; Specification: RFC 7683
 ; Vendor-ID: 0
+; Bases: RFC6733
 ; Link: https://www.rfc-editor.org/rfc/rfc7683.txt
 
 

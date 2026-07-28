@@ -563,6 +563,94 @@ def _compare(mine, theirs, origin: str) -> tuple[str, str]:
     return "reused-body-differs", f"{subject} adds {added}, missing {dropped}"
 
 
+def _resolve_bases(
+    spec: ast.Specification, books: corpus.Corpus
+) -> tuple[dict[str, _Origin], list[str]]:
+    """Resolve `; Bases:` the way re-used origins resolve, keeping the misses.
+
+    Bases are the documents a file builds on without citing them anywhere —
+    RFC 6733 for every Diameter application — so they share the origin
+    machinery but not the origin rules: a base supplies names for reference
+    resolution rather than rows to compare against.
+    """
+    resolved, missing = {}, []
+    for base in spec.bases:
+        entry = books.resolve(base, like=spec)
+        if entry is None:
+            missing.append(base)
+            continue
+        theirs = _index(entry.spec)
+        resolved[base] = _Origin(
+            spec=entry.spec,
+            defined={definition.name: definition for definition in theirs.definitions},
+            tabled={row.name: row for row in theirs.rows},
+            reused=theirs.reused,
+        )
+    return resolved, missing
+
+
+def _unresolved_references(
+    index: _Index, bases: dict[str, _Origin], missing_bases: list[str]
+) -> list[Finding]:
+    """Every AVP referenced in a message or grouped body resolves somewhere:
+    a local definition, an AVP-table row, a re-used entry, or a base document.
+
+    This is phase two's rule, enforceable now that `; Bases:` names the
+    document that supplies `Session-Id`, `Origin-Host` and the rest. The
+    trailing `* [ AVP ]` is RFC 6733's any-AVP wildcard — grammar, not a
+    reference — and is skipped rather than resolved to the name `AVP`.
+
+    A base missing from the corpus turns the rule off with a note instead of
+    reporting every base-protocol AVP as unresolved: the document is fine, the
+    corpus is incomplete, and a hundred spurious errors would bury the real
+    findings.
+
+    A note rather than an error, for now: the corrected corpus still carries
+    34 of these — references to AVPs a document neither defines, tabulates
+    nor lists as re-used (29.337's `MME-Name` from TS 29.336, RFC 8581's
+    `OC-Report-Type` from RFC 7683) plus at least one outright source typo
+    (29.345's `WiFi-P2P-Assistance-Iinfo`). Each needs a correction, a wider
+    re-used table reading, or an extra `; Bases:` entry before the rule can
+    promote to an error without breaking the corpus's clean exit.
+    """
+    if missing_bases:
+        return [
+            Finding(
+                Severity.NOTE,
+                "base-not-in-corpus",
+                f"the corpus holds no copy of base"
+                f" document{'s' if len(missing_bases) > 1 else ''}"
+                f" {', '.join(missing_bases)}, so reference resolution was"
+                " skipped",
+            )
+        ]
+    known = (
+        {definition.name for definition in index.definitions}
+        | {row.name for row in index.rows}
+        | set(index.reused)
+    )
+    for base in bases.values():
+        known |= base.defined.keys() | base.tabled.keys() | base.reused.keys()
+    cited_by: dict[str, list[str]] = defaultdict(list)
+    for section in (*index.messages, *index.definitions):
+        if not isinstance(section, ast.Message | ast.GroupedAvp):
+            continue
+        for rule in section.avps:
+            if rule.name == "AVP" or rule.name in known:
+                continue
+            cited_by[rule.name].append(section.source.section)
+    return [
+        Finding(
+            Severity.NOTE,
+            "unresolved-reference",
+            f"{name} is referenced in clause{'s' if len(where) > 1 else ''}"
+            f" {', '.join(dict.fromkeys(where))} but resolves to no local"
+            " definition, table row, re-used entry or base document",
+        )
+        for name, where in sorted(cited_by.items())
+    ]
+
+
 def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Finding]:
     """Every finding for `spec`, single-file and cross-file together.
 
@@ -576,6 +664,7 @@ def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Find
     """
     index = _index(spec)
     origins = _resolve_origins(spec, index, books)
+    bases, missing_bases = _resolve_bases(spec, books)
 
     def reused_vendor(origin: str) -> int | None:
         resolved = origins.get(origin)
@@ -593,5 +682,6 @@ def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Find
         *_reused_avp_exists(index, origins),
         *_reprint_or_extension(index, origins),
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
+        *_unresolved_references(index, bases, missing_bases),
     ]
     return _ordered(findings)

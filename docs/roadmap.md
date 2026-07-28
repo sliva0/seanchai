@@ -104,15 +104,21 @@ hundreds of occurrences — and almost all of them are RFC 6733's: `Session-Id`,
 `Origin-Host`, `Proxy-Info`, the trailing `* [ AVP ]`. No 3GPP spec
 re-declares them, because every Diameter application is assumed to have them.
 
-5. **A base-protocol import rule** — either an implicit RFC 6733 dependency or
-   an explicit dependency/import directive in the format. The base `.dad`
-   this needed now exists — `dad/rfc/rfc6733.dad`, the RFC extractor's first
-   output — so what is left is the design choice itself, and it can be tested
-   against real resolution: the 14–17 per-file references to `Session-Id`,
-   `Origin-Host` and the rest resolve to that file's table rows the moment
-   either rule names it. Nothing else gates this one now — with the RFC
-   backlog committed it is the only phase-two item whose prerequisites are
-   all met, and it is pure design rather than extraction.
+**The base-protocol import rule (item 5) is done, as an explicit directive.**
+The header carries an optional `; Bases:` line — a comma-separated list of
+`SpecRef`s, stated the way `; Vendor-ID:` is stated — and extractors stamp
+`RFC6733` into every document except RFC 6733 itself, which is why the line is
+optional: the base of the tree has nothing to put in it. The linter's
+`unresolved-reference` rule now enforces phase two's sentence — every AVP
+referenced in a message or grouped body resolves to a local definition, an
+AVP-table row, a re-used entry, or a base document — with the trailing
+`* [ AVP ]` recognised as the base protocol's any-AVP wildcard rather than a
+reference, and a `base-not-in-corpus` note turning the rule off when the
+corpus lacks a named base. Its first run cleared every base-protocol
+reference and left 34 notes in three shapes — re-used-table omissions, one
+source typo, and a handful not yet examined — catalogued in
+[linter.md](linter.md#unresolved-reference--34-references-awaiting-triage);
+the rule promotes to an error when that list is worked through.
 
 **Structural edits (item 6) are done in the parts documents actually
 forced.** `Delete` and AVP-table-row `Insert` are implemented

@@ -288,6 +288,8 @@ def format_spec(spec: ast.Specification, notes: Notes = _NO_NOTES) -> str:
     if spec.version is not None:
         header.append(f"; Version: {spec.version}")
     header.append(f"; Vendor-ID: {spec.vendor_id}")
+    if spec.bases:
+        header.append(f"; Bases: {', '.join(spec.bases)}")
     if spec.link is not None:
         header.append(f"; Link: {spec.link}")
 

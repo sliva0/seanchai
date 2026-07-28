@@ -1,6 +1,7 @@
 ; Specification: 3GPP TS 29.388
 ; Version: 18.1.0
 ; Vendor-ID: 10415
+; Bases: RFC6733
 
 
 ; Type: Message

@@ -508,3 +508,46 @@ def test_parses_a_version_less_header_and_a_label_less_avp_table():
     assert isinstance(table, ast.AvpTable)
     assert table.table is None
     assert table.rows[0].name == "Session-Id"
+
+
+def test_parses_a_bases_line_into_spec_refs():
+    spec = parser.parse(
+        "; Specification: 3GPP TS 29.329\n"
+        "; Version: 18.0.0\n"
+        "; Vendor-ID: 10415\n"
+        "; Bases: RFC6733, TS29.229\n"
+        "\n"
+        "; Type: Grouped AVP\n"
+        "; Name: Example\n"
+        "; Section: 6.3.1\n"
+        "Example ::= < AVP header: 700 10415 >\n"
+    )
+
+    assert spec.bases == ("RFC6733", "TS29.229")
+
+
+def test_a_missing_bases_line_means_no_bases():
+    spec = parser.parse(
+        _dad("; Type: AVP Table", "; Section: 6.3", "; Columns: Name", "Example")
+    )
+
+    assert spec.bases == ()
+
+
+def test_a_bases_entry_that_names_no_document_is_rejected_with_its_line():
+    text = (
+        "; Specification: 3GPP TS 29.329\n"
+        "; Version: 18.0.0\n"
+        "; Vendor-ID: 10415\n"
+        "; Bases: RFC 6733\n"
+        "\n"
+        "; Type: AVP Table\n"
+        "; Section: 6.3\n"
+        "; Columns: Name\n"
+        "Example\n"
+    )
+
+    with pytest.raises(parser.DadParseError, match="'RFC 6733'") as exc_info:
+        parser.parse(text)
+
+    assert exc_info.value.lineno == 4

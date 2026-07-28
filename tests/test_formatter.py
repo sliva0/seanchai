@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pydantic
 import pytest
 
 from seanchai.dad import ast, formatter, parser
@@ -435,3 +436,32 @@ def test_notes_do_not_survive_a_round_trip_and_that_is_the_relation():
 
     assert parser.parse(annotated) == spec
     assert formatter.format_spec(parser.parse(annotated)) == stripped + "\n"
+
+
+def test_bases_are_written_between_vendor_id_and_link_and_round_trip():
+    spec = ast.Specification(
+        specification="3GPP TS 29.329",
+        version="18.0.0",
+        vendor_id=10415,
+        bases=("RFC6733", "TS29.229"),
+        link=pydantic.HttpUrl("https://example.org/spec"),
+        sections=(
+            ast.AvpTable(
+                table=None,
+                columns=(ast.AvpColumn.NAME,),
+                source=ast.SourceRef(section="6.3"),
+                rows=(ast.AvpTableRow(name="Example"),),
+            ),
+        ),
+    )
+
+    text = formatter.format_spec(spec)
+
+    assert text.startswith(
+        "; Specification: 3GPP TS 29.329\n"
+        "; Version: 18.0.0\n"
+        "; Vendor-ID: 10415\n"
+        "; Bases: RFC6733, TS29.229\n"
+        "; Link: https://example.org/spec\n"
+    )
+    assert parser.parse(text) == spec
