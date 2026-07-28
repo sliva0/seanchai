@@ -235,7 +235,33 @@ fixture for it in `tests/conftest.py` too.
   carries it;
 - Encrypt cells spelled "Y"/"N" rather than "Yes"/"No" (29.061, 29.212,
   29.214). A document convention, so it is normalized here rather than
-  input-patched several hundred times.
+  input-patched several hundred times;
+- more than one AVP/re-used-table pair per document: 29.336 prints S6m/S6n
+  and S6t definition sets, 29.338 S6c and S6d, one AVP table and one re-used
+  table each, in document order. `_resolve` pairs them by that order and
+  rejects counts that cannot pair; enumerated codes resolve across all AVP
+  tables, with an error if two tables give one name different codes;
+- a re-used table's From cell citing a clause of the *same* document
+  ("6.4.2" in 29.336's S6t table, whose AVPs the S6m set defines) — the
+  origin becomes the document's own reference, which the cross-file rules
+  treat like any other;
+- a table whose every row merges each visible column across two grid columns
+  (29.336 table 8.4.1-2: 8 grid cells, 4 physical, in all 45 rows).
+  `_sections` collapses a table-wide *uniform* merge pattern to its physical
+  columns; mixed patterns — full-width NOTE rows, spanning headers — keep
+  their grid positions, which the positional column mapping relies on;
+- a placeholder instead of a code in an AVP-header line (29.336 §8.4.85
+  prints `<AVP header: xxxx 10415>`; table 8.4.1-1 gives Include-Identifiers
+  the code 3189) — input-patched;
+- one clause misprinting both the name and the code of its AVP-header line
+  (29.338 §6.3.3.13 writes `SMS-MI-Correlation-ID`/3308 — SM-RP-MTI's code —
+  for `SMSMI-Correlation-ID`/3324) — two corrections on one node;
+- one AVP printed with two different bodies in one document (29.336 defines
+  `User-Identifier` in §6.4.2 and prints an S6t-specific variant in §8.4.36
+  at the same code, swapping LMSI for Type-Of-External-Identifier). The
+  §8.4.36 copy is deleted by a correction: the clause's own prose says the
+  AVP "is defined in clause 6.4.2", and the S6t re-used table's row points
+  at that clause.
 
 ## Columns the format does not model
 

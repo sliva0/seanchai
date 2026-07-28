@@ -29,6 +29,7 @@ sections, so it is taken from the spec's grouped-AVP headers (3GPP: 10415).
 """
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -101,6 +102,9 @@ _PDF_COVER_RE = re.compile(
 # require.
 _ORIGIN_TS_RE = re.compile(r"TS\s+(?P<number>\d{2}\.\d{3})")
 _ORIGIN_RFC_RE = re.compile(r"RFC\s+(?P<number>\d+)")
+# A re-used table's From cell citing a clause of the same document
+# ("6.4.2" in 29.336's S6t table, whose AVPs the S6m set defines).
+_SECTION_REF_RE = re.compile(r"^\d+(?:\.\d+[A-Z]*)*$")
 
 # Every AVP a 3GPP specification defines is in 3GPP's vendor space. That is a
 # fact about the publisher, not about any one document, so this extractor
@@ -180,6 +184,7 @@ def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Secti
         if isinstance(item, docx.table.Table):
             if current is not None:
                 rows = []
+                spans: list[tuple[int, ...]] = []
                 for row in item.rows:
                     # Merged cells appear repeatedly in row.cells (a full-width
                     # note row repeats one cell nine times); count each physical cell
@@ -187,11 +192,16 @@ def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Secti
                     # already-counted text, so they don't record either.
                     seen: dict[int, str] = {}
                     cells = []
+                    row_spans = []
                     for cell in row.cells:
                         key = id(cell._tc)
                         if key not in seen:
                             seen[key] = patcher.apply(_normalize(cell.text), number)
+                            row_spans.append(1)
+                        else:
+                            row_spans[-1] += 1
                         cells.append(seen[key])
+                    spans.append(tuple(row_spans))
                     rows.append(
                         _Row(
                             cells=cells,
@@ -201,6 +211,23 @@ def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Secti
                             ],
                         )
                     )
+                # A table whose every row merges cells in the same pattern is
+                # that many columns wide, full stop — 29.336's table 8.4.1-2
+                # merges each of its four columns across two grid columns in
+                # all 45 rows, so reading the grid would double every label
+                # and cell. Collapsing only a table-wide uniform pattern keeps
+                # the genuinely mixed cases intact: a full-width NOTE row or a
+                # spanning header merges differently from its data rows, so
+                # those tables keep their grid positions (and the positional
+                # column mapping that relies on them).
+                if len(set(spans)) == 1 and any(span > 1 for span in spans[0]):
+                    for row in rows:
+                        starts = []
+                        position = 0
+                        for span in spans[0]:
+                            starts.append(row.cells[position])
+                            position += span
+                        row.cells = starts
                 current.tables.append(_Table(caption=caption, rows=rows))
             caption = None
             continue
@@ -459,6 +486,49 @@ def _map_columns[T](
     return tuple(columns), positions
 
 
+def _walk_table[T](
+    table: _Table,
+    known: dict[str, T],
+    kind: str,
+    warnings: list[str],
+    skip: Callable[[_Row], bool],
+) -> tuple[tuple[T, ...], list[int], list[list[str]]]:
+    """The row walk both table kinds share: the `Attribute Name` label row
+    defines the columns, every later data row is width-checked against it.
+    Returns the modelled columns, the cell indices they sit at, and every
+    data row's cells. `skip` is the caller's row filter — spanning headers,
+    NOTE rows — and never sees the label row, so a filter cannot silently
+    leave the walk without columns.
+    """
+    columns: tuple[T, ...] | None = None
+    positions: list[int] = []
+    width = 0
+    data_rows: list[list[str]] = []
+    for row in table.rows:
+        cells = row.cells
+        if not cells:
+            raise ExtractionError(f"{kind} row with no cells")
+        if cells[0] == "Attribute Name":
+            columns, positions = _map_columns(cells, known, kind, warnings)
+            width = len(cells)
+            continue
+        if skip(row):
+            continue
+        if columns is None:
+            raise ExtractionError(f"{kind} row before its column labels")
+        # The width check comes before every other cell is read: a malformed
+        # table must report its width, not an IndexError from column two.
+        if len(cells) != width:
+            raise ExtractionError(
+                f"{kind} row with {len(cells)} cells for"
+                f" {width} source columns: {cells!r}"
+            )
+        data_rows.append(cells)
+    if columns is None:
+        raise ExtractionError(f"{kind} without column labels")
+    return columns, positions, data_rows
+
+
 def _extract_avp_table(
     table: _Table, section_number: str, warnings: list[str]
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
@@ -470,35 +540,21 @@ def _extract_avp_table(
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
-    columns: tuple[ast.AvpColumn, ...] | None = None
-    positions: list[int] = []
-    width = 0
-    for row in table.rows:
+
+    def skip(row: _Row) -> bool:
         cells = row.cells
-        if not cells:
-            raise ExtractionError("AVP table row with no cells")
-        if cells[0].startswith("NOTE"):  # merged full-width row, one note per line
+        if cells[0].startswith("NOTE"):  # merged full-width row, 1 note per line
             for line in row.first_cell_lines:
                 if match := _NOTE_RFC_RE.match(line):
                     note_rfcs[match["number"]] = match["rfc"]
-            continue
-        if cells[0] == "Attribute Name":  # the label row defines the columns
-            columns, positions = _map_columns(
-                cells, _AVP_TABLE_COLUMNS, "AVP table", warnings
-            )
-            width = len(cells)
-            continue
-        if cells[0] == "" or cells[0] == cells[1]:
-            continue  # spanning header rows (merged cells repeat the same text)
-        if columns is None:
-            raise ExtractionError("AVP table row before its column labels")
-        # The width check comes before every other cell is read: a malformed
-        # table must report its width, not an IndexError from column two.
-        if len(cells) != width:
-            raise ExtractionError(
-                f"AVP table row with {len(cells)} cells for"
-                f" {width} source columns: {cells!r}"
-            )
+            return True
+        # Spanning header rows (merged cells repeat the same text).
+        return cells[0] == "" or cells[0] == cells[1]
+
+    columns, positions, data_rows = _walk_table(
+        table, _AVP_TABLE_COLUMNS, "AVP table", warnings, skip
+    )
+    for cells in data_rows:
         name = ""
         code_value: int | None = None
         section_value: str | None = None
@@ -553,8 +609,6 @@ def _extract_avp_table(
                 may_encrypt=encrypt,
             )
         )
-    if columns is None:
-        raise ExtractionError("AVP table without column labels")
     if table.caption is None:
         raise ExtractionError("AVP table without a caption")
     reused = [
@@ -571,11 +625,18 @@ def _extract_avp_table(
     return avp_table, reused
 
 
-def _origin(reference: str) -> str:
+def _origin(reference: str, own_reference: str) -> str:
     if match := _ORIGIN_TS_RE.search(reference):
         return f"TS{match['number']}"
     if match := _ORIGIN_RFC_RE.search(reference):
         return f"RFC{match['number']}"
+    # A bare clause number cites this document itself: 29.336's S6t re-used
+    # table lists AVPs its own S6m set defines, with cells like "6.4.2". The
+    # faithful origin is the document's own reference, not a parse failure —
+    # the linter's origin-resolution rules treat a self-reference like any
+    # other, so nothing downstream needs a special case.
+    if _SECTION_REF_RE.match(reference):
+        return own_reference
     raise ExtractionError(f"unrecognized origin reference {reference!r}")
 
 
@@ -587,31 +648,17 @@ _REUSED_TABLE_COLUMNS = {
 
 
 def _extract_reused_table(
-    table: _Table, warnings: list[str]
+    table: _Table, warnings: list[str], own_reference: str
 ) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedColumn, ...]]:
     rows = []
-    columns: tuple[ast.ReusedColumn, ...] | None = None
-    positions: list[int] = []
-    width = 0
-    for row in table.rows:
-        cells = row.cells
-        if not cells:
-            raise ExtractionError("re-used AVPs row with no cells")
-        if cells[0] == "Attribute Name":
-            columns, positions = _map_columns(
-                cells, _REUSED_TABLE_COLUMNS, "re-used table", warnings
-            )
-            width = len(cells)
-            continue
-        if cells[0] == "" or cells[0].startswith("NOTE"):
-            continue
-        if columns is None:
-            raise ExtractionError("re-used AVPs row before its column labels")
-        if len(cells) != width:
-            raise ExtractionError(
-                f"re-used AVPs row with {len(cells)} cells for"
-                f" {width} source columns: {cells!r}"
-            )
+    columns, positions, data_rows = _walk_table(
+        table,
+        _REUSED_TABLE_COLUMNS,
+        "re-used AVPs",
+        warnings,
+        lambda row: row.cells[0] == "" or row.cells[0].startswith("NOTE"),
+    )
+    for cells in data_rows:
         name, _ = _strip_note_ref(cells[0])
         origin: str | None = None
         m_bit: ast.MBitOverride | None = None
@@ -621,7 +668,7 @@ def _extract_reused_table(
                 case ast.ReusedColumn.NAME:
                     pass  # already read, so that the M-bit check can name it
                 case ast.ReusedColumn.FROM:
-                    origin = _origin(text)
+                    origin = _origin(text, own_reference)
                 case ast.ReusedColumn.M_BIT:
                     if text == cells[0]:
                         # Horizontally merged row: python-docx repeats the first
@@ -641,8 +688,6 @@ def _extract_reused_table(
         if origin is None:
             raise ExtractionError(f"re-used AVPs row {name!r} has no Reference column")
         rows.append(ast.ReusedAvpRow(name=name, origin=origin, m_bit=m_bit))
-    if columns is None:
-        raise ExtractionError("re-used AVPs table without column labels")
     return rows, columns
 
 
@@ -679,13 +724,24 @@ class _ReusedTable:
     section: str
 
 
+@dataclass(frozen=True)
+class _CollectedAvpTable:
+    """An AVP-flags table with the section it was found in and the re-used
+    rows its own NOTEs derived — kept with their table so a document holding
+    several definition sets attributes each note's rows to the right one."""
+
+    table: ast.AvpTable
+    section: str
+    note_reused: list[ast.ReusedAvpRow]
+
+
 @dataclass
 class _Collected:
     """What one pass over the document found, before anything is cross-checked.
 
-    Tables are kept as lists rather than as a single winner: a document with two
-    AVP tables is not something any collected spec does, and quietly keeping the
-    last one would hide it.
+    Tables are kept as lists rather than as a single winner: 29.336 (S6m/S6n
+    and S6t) and 29.338 (S6c and S6d) each carry a definition set per
+    interface, and quietly keeping the last table would hide the rest.
     """
 
     messages: list[ast.Message] = field(default_factory=list)
@@ -694,13 +750,8 @@ class _Collected:
     # heading. They cannot become definitions until the AVP table is known —
     # that is where their code comes from.
     pending_enums: list[tuple[_Section, str]] = field(default_factory=list)
-    # Each table is paired with what identifies it: the section it was found
-    # in for AVP tables, the caption label and its own section for re-used
-    # tables (the two tables are not always in the same clause).
-    avp_tables: list[tuple[ast.AvpTable, str]] = field(default_factory=list)
+    avp_tables: list[_CollectedAvpTable] = field(default_factory=list)
     reused_tables: list[_ReusedTable] = field(default_factory=list)
-    # Reused rows derived from AVP-table NOTEs rather than from a reused table.
-    note_reused: list[ast.ReusedAvpRow] = field(default_factory=list)
 
 
 @dataclass
@@ -709,15 +760,16 @@ class _Resolved:
     code and a vendor-id, and external AVPs have been dropped."""
 
     messages: list[ast.Message]
-    avp_table: ast.AvpTable
-    reused: list[ast.ReusedAvpRow]
-    reused_columns: tuple[ast.ReusedColumn, ...]
-    reused_label: str
-    reused_section: str
+    # Document order, one entry per definition set: the AVP table and the
+    # re-used block accompanying it (synthesised, with the AVP table's own
+    # label and section, when the document prints no re-used table).
+    pairs: list[tuple[ast.AvpTable, _ReusedTable]]
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
 
 
-def _collect(sections: list[_Section], warnings: list[str]) -> _Collected:
+def _collect(
+    sections: list[_Section], warnings: list[str], own_reference: str
+) -> _Collected:
     """Walk the document once, classifying sections. Source-shaped work only:
     nothing here needs to know about another section."""
     collected = _Collected()
@@ -731,14 +783,21 @@ def _collect(sections: list[_Section], warnings: list[str]) -> _Collected:
                 avp_table, note_reused = _extract_avp_table(
                     table, section.number, warnings
                 )
-                collected.avp_tables.append((avp_table, section.number))
-                collected.note_reused.extend(note_reused)
+                collected.avp_tables.append(
+                    _CollectedAvpTable(
+                        table=avp_table,
+                        section=section.number,
+                        note_reused=note_reused,
+                    )
+                )
             elif "Attribute Name" in header and "Reference" in header:
                 # Keyed on Reference rather than on M-bit: TS 29.128, 29.173
                 # and 29.336 print a re-used table with no M-bit column at all.
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
-                reused_rows, reused_columns = _extract_reused_table(table, warnings)
+                reused_rows, reused_columns = _extract_reused_table(
+                    table, warnings, own_reference
+                )
                 collected.reused_tables.append(
                     _ReusedTable(
                         rows=reused_rows,
@@ -773,34 +832,67 @@ def _collect(sections: list[_Section], warnings: list[str]) -> _Collected:
 
 
 def _resolve(collected: _Collected) -> _Resolved:
-    """Cross-section work: pick the tables, then turn pending enumerated
-    sections into definitions using codes from the AVP table."""
+    """Cross-section work: pair each AVP table with its re-used table, then
+    turn pending enumerated sections into definitions using codes from the
+    AVP tables."""
     if not collected.avp_tables:
         raise ExtractionError("no AVP table found")
-    if len(collected.avp_tables) > 1:
-        found = ", ".join(number for _, number in collected.avp_tables)
-        raise ExtractionError(f"more than one AVP table found, in sections {found}")
-    if len(collected.reused_tables) > 1:
-        found = ", ".join(table.label for table in collected.reused_tables)
-        raise ExtractionError(f"more than one re-used AVPs table found: {found}")
-    avp_table, tables_section = collected.avp_tables[0]
-    # `AvpTable.table` is optional only for label-less RFC tables; this
-    # extractor rejects a docx AVP table without a caption before it gets here.
-    assert avp_table.table is not None
-    reused_table = (
-        collected.reused_tables[0]
-        if collected.reused_tables
-        # Only NOTE-derived rows: they come from the AVP table, so that is
-        # honestly where the block was found.
-        else _ReusedTable(
-            rows=[],
-            columns=ast.REUSED_COLUMNS,
-            label=avp_table.table,
-            section=tables_section,
+    # A document with several definition sets (29.336's S6m/S6n and S6t,
+    # 29.338's S6c and S6d) prints one AVP table and one re-used table per
+    # set, in the same document order — that adjacency is the only thing that
+    # says which re-used block belongs to which set, so unequal counts leave
+    # no defensible pairing and are rejected rather than guessed at. A single
+    # AVP table without a re-used table stays legitimate: the re-used block is
+    # synthesised for its NOTE-derived rows.
+    if len(collected.reused_tables) > len(collected.avp_tables) or (
+        len(collected.avp_tables) > 1
+        and len(collected.reused_tables) != len(collected.avp_tables)
+    ):
+        avp_sections = ", ".join(entry.section for entry in collected.avp_tables)
+        reused_labels = ", ".join(table.label for table in collected.reused_tables)
+        raise ExtractionError(
+            f"{len(collected.avp_tables)} AVP tables (sections {avp_sections}) with"
+            f" {len(collected.reused_tables)} re-used tables"
+            f" ({reused_labels or 'none'}): cannot pair them"
         )
-    )
 
-    codes = {row.name: row.code for row in avp_table.rows}
+    pairs = []
+    for index, entry in enumerate(collected.avp_tables):
+        # `AvpTable.table` is optional only for label-less RFC tables; this
+        # extractor rejects a docx AVP table without a caption before here.
+        assert entry.table.table is not None
+        if index < len(collected.reused_tables):
+            reused = collected.reused_tables[index]
+        else:
+            # Only NOTE-derived rows: they come from the AVP table, so that
+            # is honestly where the block was found.
+            reused = _ReusedTable(
+                rows=[],
+                columns=ast.REUSED_COLUMNS,
+                label=entry.table.table,
+                section=entry.section,
+            )
+        pairs.append(
+            (
+                entry.table,
+                _ReusedTable(
+                    rows=[*reused.rows, *entry.note_reused],
+                    columns=reused.columns,
+                    label=reused.label,
+                    section=reused.section,
+                ),
+            )
+        )
+
+    codes: dict[str, int | None] = {}
+    for entry in collected.avp_tables:
+        for row in entry.table.rows:
+            if row.name in codes and codes[row.name] != row.code:
+                raise ExtractionError(
+                    f"AVP table code conflict for {row.name!r}:"
+                    f" {codes[row.name]} vs {row.code}"
+                )
+            codes[row.name] = row.code
     # An enumerated section whose values live in another spec has nothing to
     # emit: DRMP says "is of type Enumerated" and then prints no values,
     # because RFC 7944 defines them. Skipping it drops no information.
@@ -812,7 +904,7 @@ def _resolve(collected: _Collected) -> _Resolved:
     # both defined locally and listed as re-used is a real inconsistency in the
     # source, and reporting it is the linter's job — resolving it by deleting
     # what the specification says is not this layer's call to make.
-    external = {row.name for row in [*reused_table.rows, *collected.note_reused]}
+    external = {row.name for _, reused in pairs for row in reused.rows}
     local_enums = [
         (section, name)
         for section, name in collected.pending_enums
@@ -832,11 +924,7 @@ def _resolve(collected: _Collected) -> _Resolved:
 
     return _Resolved(
         messages=collected.messages,
-        avp_table=avp_table,
-        reused=[*reused_table.rows, *collected.note_reused],
-        reused_columns=reused_table.columns,
-        reused_label=reused_table.label,
-        reused_section=reused_table.section,
+        pairs=pairs,
         definitions=[*collected.grouped, *enumerated],
     )
 
@@ -863,18 +951,20 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp]) -> int:
 
 
 def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
-    """File order: messages, the AVP table, the reused table, then every
-    definition in document order."""
-    sections: list[ast.Section] = [*resolved.messages, resolved.avp_table]
-    if resolved.reused:
-        sections.append(
-            ast.ReusedAvps(
-                table=resolved.reused_label,
-                source=ast.SourceRef(section=resolved.reused_section),
-                columns=resolved.reused_columns,
-                rows=tuple(resolved.reused),
+    """File order: messages, then each definition set's AVP table followed by
+    its re-used table, then every definition in document order."""
+    sections: list[ast.Section] = [*resolved.messages]
+    for avp_table, reused in resolved.pairs:
+        sections.append(avp_table)
+        if reused.rows:
+            sections.append(
+                ast.ReusedAvps(
+                    table=reused.label,
+                    source=ast.SourceRef(section=reused.section),
+                    columns=reused.columns,
+                    rows=tuple(reused.rows),
+                )
             )
-        )
     sections.extend(
         sorted(
             resolved.definitions,
@@ -923,7 +1013,9 @@ def extract(
         )
         patcher = Patcher.load(patch_path, version)
 
-        collected = _collect(_sections(document, patcher), warnings)
+        collected = _collect(
+            _sections(document, patcher), warnings, ast.spec_ref(specification)
+        )
         patcher.finish()
         sections = _assemble(_resolve(collected))
         return ast.Specification(

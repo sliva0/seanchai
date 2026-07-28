@@ -5,6 +5,7 @@ import pytest
 
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
+from seanchai.extractor.patches import Patcher
 
 
 def _two_section_spec():
@@ -114,12 +115,17 @@ def test_extract_requires_cover_metadata_and_an_avp_table(tmp_path):
     ],
 )
 def test_origin_normalizes_supported_references(reference, expected):
-    assert tgpp_docx._origin(reference) == expected
+    assert tgpp_docx._origin(reference, "TS29.999") == expected
+
+
+def test_origin_reads_a_bare_clause_number_as_the_document_itself():
+    # 29.336's S6t re-used table cites its own S6m clauses ("6.4.2").
+    assert tgpp_docx._origin("6.4.2", "TS29.336") == "TS29.336"
 
 
 def test_origin_rejects_unknown_references():
     with pytest.raises(tgpp_docx.ExtractionError, match="unrecognized origin"):
-        tgpp_docx._origin("some other document")
+        tgpp_docx._origin("some other document", "TS29.999")
 
 
 def test_flags_cell_accepts_only_comma_separated_uppercase_flags():
@@ -431,5 +437,36 @@ def test_a_prose_column_is_dropped_without_a_warning(tmp_path):
     reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
     assert reused.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
     assert warnings == [
-        "re-used table column 'Acc. Type' is not modelled and was dropped"
+        "re-used AVPs column 'Acc. Type' is not modelled and was dropped"
+    ]
+
+
+def test_a_table_wide_uniform_merge_pattern_collapses_to_physical_columns():
+    """29.336's table 8.4.1-2 merges each of its four visible columns across
+    two grid columns in every row, so reading the grid would double every
+    label and cell. A table whose rows merge differently from each other —
+    the normal case, with full-width NOTE rows — keeps its grid positions."""
+    document = docx.Document()
+    heading = document.add_paragraph(style="Heading 1")
+    heading.add_run("8.4\tS6t Re-used AVPs")
+    uniform = document.add_table(rows=2, cols=4)
+    uniform.cell(0, 0).merge(uniform.cell(0, 1)).text = "Attribute Name"
+    uniform.cell(0, 2).merge(uniform.cell(0, 3)).text = "Reference"
+    uniform.cell(1, 0).merge(uniform.cell(1, 1)).text = "User-Identifier"
+    uniform.cell(1, 2).merge(uniform.cell(1, 3)).text = "6.4.2"
+    mixed = document.add_table(rows=2, cols=3)
+    for index, label in enumerate(("Attribute Name", "Reference", "M-bit")):
+        mixed.cell(0, index).text = label
+    mixed.cell(1, 0).merge(mixed.cell(1, 2)).text = "NOTE 1: full width"
+
+    sections = tgpp_docx._sections(document, Patcher.load(None, None))
+
+    collapsed, kept = sections[0].tables
+    assert [row.cells for row in collapsed.rows] == [
+        ["Attribute Name", "Reference"],
+        ["User-Identifier", "6.4.2"],
+    ]
+    assert [row.cells for row in kept.rows] == [
+        ["Attribute Name", "Reference", "M-bit"],
+        ["NOTE 1: full width"] * 3,
     ]

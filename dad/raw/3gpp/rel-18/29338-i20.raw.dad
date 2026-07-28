@@ -1,0 +1,540 @@
+; Specification: 3GPP TS 29.338
+; Version: 18.2.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129338/18.02.00_60/ts_129338v180200p.pdf
+
+
+; Type: Message
+; Name: Send-Routing-Info-for-SM-Request, SRR
+; Section: 5.3.2.3
+; Page: 25
+<Send-Routing-Info-for-SM-Request> ::= < Diameter Header: 8388647, REQ, PXY, 16777312 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ MSISDN ]
+        [ User-Name ]
+        [ SMSMI-Correlation-ID ]
+      * [ Supported-Features ]
+        [ SC-Address ]
+        [ SM-RP-MTI ]
+        [ SM-RP-SMEA ]
+        [ SRR-Flags ]
+        [ SM-Delivery-Not-Intended ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Send-Routing-info-for-SM-Answer, SRA
+; Section: 5.3.2.4
+; Page: 25
+<Send-Routing-info-for-SM-Answer> ::= < Diameter Header: 8388647, PXY, 16777312 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Supported-Features ]
+        [ Serving-Node ]
+        [ Additional-Serving-Node ]
+        [ SMSF-3GPP-Address ]
+        [ SMSF-Non-3GPP-Address ]
+        [ LMSI ]
+        [ User-Identifier ]
+        [ MWD-Status ]
+        [ MME-Absent-User-Diagnostic-SM ]
+        [ MSC-Absent-User-Diagnostic-SM ]
+        [ SGSN-Absent-User-Diagnostic-SM ]
+        [ SMSF-3GPP-Absent-User-Diagnostic-SM ]
+        [ SMSF-Non-3GPP-Absent-User-Diagnostic-SM ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Alert-Service-Centre-Request, ALR
+; Section: 5.3.2.5
+; Page: 26
+<Alert-Service-Centre-Request> ::= < Diameter Header: 8388648, REQ, PXY, 16777312 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { SC-Address }
+        { User-Identifier }
+        [ SMSMI-Correlation-ID ]
+        [ Maximum-UE-Availability-Time ]
+        [ SMS-GMSC-Alert-Event ]
+        [ Serving-Node ]
+      * [ Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Report-SM-Delivery-Status-Request, RDR
+; Section: 5.3.2.7
+; Page: 26
+<Report-SM-Delivery-Status-Request> ::= < Diameter Header: 8388649, REQ, PXY, 16777312 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        { User-Identifier }
+        [ SMSMI-Correlation-ID ]
+        { SC-Address }
+        { SM-Delivery-Outcome }
+        [ RDR-Flags ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Report-SM-Delivery-Status-Answer, RDA
+; Section: 5.3.2.8
+; Page: 27
+<Report-SM-Delivery-Status-Answer> ::= < Diameter Header: 8388649, PXY, 16777312 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ User-Identifier ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: MO-Forward-Short-Message-Request, OFR
+; Section: 6.3.2.3
+; Page: 48
+<MO-Forward-Short-Message-Request> ::= < Diameter Header: 8388645, REQ, PXY, 16777313 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { SC-Address }
+        [ OFR-Flags ]
+      * [ Supported-Features ]
+        { User-Identifier }
+        [ EPS-Location-Information ]
+        { SM-RP-UI }
+        [ SMSMI-Correlation-ID ]
+        [ SM-Delivery-Outcome ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: MO-Forward-Short-Message-Answer, OFA
+; Section: 6.3.2.4
+; Page: 48
+<MO-Forward-Short-Message-Answer> ::= < Diameter Header: 8388645, PXY, 16777313 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ SM-Delivery-Failure-Cause ]
+        [ SM-RP-UI ]
+        [ External-Identifier ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: MT-Forward-Short-Message-Request, TFR
+; Section: 6.3.2.5
+; Page: 49
+<MT-Forward-Short-Message-Request> ::= < Diameter Header: 8388646, REQ, PXY, 16777313 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        [ SMSMI-Correlation-ID ]
+        { SC-Address }
+        { SM-RP-UI }
+        [ MME-Number-for-MT-SMS ]
+        [ SGSN-Number ]
+        [ TFR-Flags ]
+        [ SM-Delivery-Timer ]
+        [ SM-Delivery-Start-Time ]
+        [ Maximum-Retransmission-Time ]
+        [ SMS-GMSC-Address ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: MT-Forward-Short-Message-Answer, TFA
+; Section: 6.3.2.6
+; Page: 49
+<MT-Forward-Short-Message-Answer> ::= < Diameter Header: 8388646, PXY, 16777313 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ Absent-User-Diagnostic-SM ]
+        [ SM-Delivery-Failure-Cause ]
+        [ SM-RP-UI ]
+        [ Requested-Retransmission-Time ]
+        [ User-Identifier ]
+        [ EPS-Location-Information ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 5.3.3.1
+; Table: 5.3.3.1/1
+; Page: 27
+; Columns: Name                           Code   Section    Type               Must  May   S.not M.not Encrypt
+SM-RP-MTI                                 3308   5.3.3.2    Enumerated         M,V   -     -     -     No
+SM-RP-SMEA                                3309   5.3.3.3    OctetString        M,V   -     -     -     No
+SRR-Flags                                 3310   5.3.3.4    Unsigned32         M,V   -     -     -     No
+SM-Delivery-Not-Intended                  3311   5.3.3.5    Enumerated         M,V   -     -     -     No
+MWD-Status                                3312   5.3.3.8    Unsigned32         M,V   -     -     -     No
+MME-Absent-User-Diagnostic-SM             3313   5.3.3.9    Unsigned32         M,V   -     -     -     No
+MSC-Absent-User-Diagnostic-SM             3314   5.3.3.10   Unsigned32         M,V   -     -     -     No
+SGSN-Absent-User-Diagnostic-SM            3315   5.3.3.11   Unsigned32         M,V   -     -     -     No
+SM-Delivery-Outcome                       3316   5.3.3.14   Grouped            M,V   -     -     -     No
+MME-SM-Delivery-Outcome                   3317   5.3.3.15   Grouped            M,V   -     -     -     No
+MSC-SM-Delivery-Outcome                   3318   5.3.3.16   Grouped            M,V   -     -     -     No
+SGSN-SM-Delivery-Outcome                  3319   5.3.3.17   Grouped            M,V   -     -     -     No
+IP-SM-GW-SM-Delivery-Outcome              3320   5.3.3.18   Grouped            M,V   -     -     -     No
+SM-Delivery-Cause                         3321   5.3.3.19   Enumerated         M,V   -     -     -     No
+Absent-User-Diagnostic-SM                 3322   5.3.3.20   Unsigned32         M,V   -     -     -     No
+RDR-Flags                                 3323   5.3.3.21   Unsigned32         V     -     -     M     No
+Maximum-UE-Availability-Time              3329   5.3.3.22   Time               V     -     -     M     No
+SMS-GMSC-Alert-Event                      3333   5.3.3.23   Unsigned32         V     -     -     M     No
+SMSF-3GPP-Absent-User-Diagnostic-SM       3334   5.3.3.25   Unsigned32         V     -     -     M     No
+SMSF-Non-3GPP-Absent-User-Diagnostic-SM   3335   5.3.3.26   Unsigned32         V     -     -     M     No
+SMSF-3GPP-SM-Delivery-Outcome             3336   5.3.3.27   Grouped            V     -     -     M     No
+SMSF-Non-3GPP-SM-Delivery-Outcome         3337   5.3.3.28   Grouped            V     -     -     M     No
+SMSF-3GPP-Number                          3338   5.3.3.29   OctetString        V     -     -     M     No
+SMSF-Non-3GPP-Number                      3339   5.3.3.30   OctetString        V     -     -     M     No
+SMSF-3GPP-Name                            3340   5.3.3.31   DiameterIdentity   V     -     -     M     No
+SMSF-Non-3GPP-Name                        3341   5.3.3.32   DiameterIdentity   V     -     -     M     No
+SMSF-3GPP-Realm                           3342   5.3.3.33   DiameterIdentity   V     -     -     M     No
+SMSF-Non-3GPP-Realm                       3343   5.3.3.34   DiameterIdentity   V     -     -     M     No
+SMSF-3GPP-Address                         3344   5.3.3.35   Grouped            V     -     -     M     No
+SMSF-Non-3GPP-Address                     3345   5.3.3.36   Grouped            V     -     -     M     No
+SMSF-3GPP-SBI-Support-Indicator           3346   5.3.3.37   Enumerated         V     -     -     M     No
+SMSF-Non-3GPP-SBI-Support-Indicator       3347   5.3.3.38   Enumerated         V     -     -     M     No
+IP-SM-GW-SBI-Support-Indicator            3348   5.3.3.39   Enumerated         V     -     -     M     No
+
+
+; Type: Reused AVPs
+; Section: 5.3.3.1
+; Table: 5.3.3.1/2
+; Page: 27
+; Columns: Name             From       M-bit
+User-Name                   RFC6733    MUST
+MSISDN                      TS23.329   -
+SC-Address                  TS29.338   -
+LMSI                        TS29.173   -
+Serving-Node                TS29.173   -
+MSC-Number                  TS29.173   -
+MME-Name                    TS29.173   -
+MME-Realm                   TS29.173   MUST
+MME-Number-for-MT-SMS       TS29.272   MUST
+SGSN-Number                 TS29.272   -
+SGSN-Name                   TS29.173   -
+SGSN-Realm                  TS29.173   -
+Additional-Serving-Node     TS29.173   -
+User-Identifier             TS29.336   -
+SM-Delivery-Failure-Cause   TS29.338   -
+IP-SM-GW-Name               TS29.336   -
+IP-SM-GW-Number             TS29.336   -
+SMSMI-Correlation-ID        TS29.338   -
+Destination-SIP-URI         TS29.338   -
+Supported-Features          TS29.229   -
+Feature-List-ID             TS29.229   -
+Feature-List                TS29.229   -
+DRMP                        RFC7944    MUST-NOT
+
+
+; Type: AVP Table
+; Section: 6.3.3.1
+; Table: 6.3.3.1/1
+; Page: 50
+; Columns: Name                        Code   Section    Type          Must  May   S.not M.not Encrypt
+SC-Address                             3300   6.3.3.2    OctetString   M,V   -     -     -     No
+SM-RP-UI                               3301   6.3.3.3    OctetString   M,V   -     -     -     No
+TFR-Flags                              3302   6.3.3.4    Unsigned32    M,V   -     -     -     No
+SM-Delivery-Failure-Cause              3303   6.3.3.5    Grouped       M,V   -     -     -     No
+SM-Enumerated-Delivery-Failure-Cause   3304   6.3.3.6    Enumerated    M,V   -     -     -     No
+SM-Diagnostic-Info                     3305   6.3.3.7    OctetString   M,V   -     -     -     No
+SM-Delivery-Timer                      3306   6.3.3.10   Unsigned32    M,V   -     -     -     No
+SM-Delivery-Start-Time                 3307   6.3.3.11   Time          M,V   -     -     -     No
+SMSMI-Correlation-ID                   3324   6.3.3.13   Grouped       V     -     -     M     No
+HSS-ID                                 3325   6.3.3.14   UTF8String    V     -     -     M     No
+Originating-SIP-URI                    3326   6.3.3.15   UTF8String    V     -     -     M     No
+Destination-SIP-URI                    3327   6.3.3.16   UTF8String    V     -     -     M     No
+OFR-Flags                              3328   6.3.3.12   Unsigned32    V     -     -     M     No
+Maximum-Retransmission-Time            3330   6.3.3.17   Time          V     -     -     M     No
+Requested-Retransmission-Time          3331   6.3.3.18   Time          V     -     -     M     No
+SMS-GMSC-Address                       3332   6.3.3.19   OctetString   V     -     -     M     No
+
+
+; Type: Reused AVPs
+; Section: 6.3.3.1
+; Table: 6.3.3.1/2
+; Page: 50
+; Columns: Name             From       M-bit
+User-Name                   RFC6733    MUST
+User-Identifier             TS29.336   -
+MME-Number-for-MT-SMS       TS29.272   -
+SGSN-Number                 TS29.272   MUST-NOT
+EPS-Location-Information    TS29.272   MUST-NOT
+Absent-User-Diagnostic-SM   TS29.338   -
+Supported-Features          TS29.229   -
+Feature-List-ID             TS29.229   -
+Feature-List                TS29.229   -
+DRMP                        RFC7944    MUST-NOT
+External-Identifier         TS29.336   MUST-NOT
+
+
+; Type: Enumerated AVP
+; Name: SM-RP-MTI
+; Section: 5.3.3.2
+; Page: 29
+SM-RP-MTI ::= < Enumerated AVP header: 3308 10415 >
+
+
+; Type: Enumerated AVP
+; Name: SM-Delivery-Not-Intended
+; Section: 5.3.3.5
+; Page: 30
+SM-Delivery-Not-Intended ::= < Enumerated AVP header: 3311 10415 >
+
+
+; Type: Grouped AVP
+; Name: Serving-Node
+; Section: 5.3.3.6
+; Page: 30
+Serving-Node ::= < AVP header: 2401 10415 >
+        [ SGSN-Name ]
+        [ SGSN-Realm ]
+        [ SGSN-Number ]
+        [ MME-Name ]
+        [ MME-Realm ]
+        [ MME-Number-for-MT-SMS ]
+        [ MSC-Number ]
+        [ IP-SM-GW-Number ]
+        [ IP-SM-GW-Name ]
+        [ IP-SM-GW-Realm ]
+        [ IP-SM-GW-SBI-Support-Indicator ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Additional-Serving-Node
+; Section: 5.3.3.7
+; Page: 31
+Additional-Serving-Node ::= < AVP header: 2406 10415 >
+        [ SGSN-Name ]
+        [ SGSN-Realm ]
+        [ SGSN-Number ]
+        [ MME-Name ]
+        [ MME-Realm ]
+        [ MME-Number-for-MT-SMS ]
+        [ MSC-Number ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: SM-Delivery-Outcome
+; Section: 5.3.3.14
+; Page: 33
+SM-Delivery-Outcome ::= < AVP header: 3316 10415 >
+        [ MME-SM-Delivery-Outcome ]
+        [ MSC-SM-Delivery-Outcome ]
+        [ SGSN-SM-Delivery-Outcome ]
+        [ IP-SM-GW-SM-Delivery-Outcome ]
+        [ SMSF-3GPP-SM-Delivery-Outcome ]
+        [ SMSF-Non-3GPP-SM-Delivery-Outcome ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: MME-SM-Delivery-Outcome
+; Section: 5.3.3.15
+; Page: 33
+MME-SM-Delivery-Outcome ::= < AVP header: 3317 10415 >
+        [ SM-Delivery-Cause ]
+        [ Absent-User-Diagnostic-SM ]
+
+
+; Type: Grouped AVP
+; Name: MSC-SM-Delivery-Outcome
+; Section: 5.3.3.16
+; Page: 33
+MSC-SM-Delivery-Outcome ::= < AVP header: 3318 10415 >
+        [ SM-Delivery-Cause ]
+        [ Absent-User-Diagnostic-SM ]
+
+
+; Type: Grouped AVP
+; Name: SGSN-SM-Delivery-Outcome
+; Section: 5.3.3.17
+; Page: 33
+SGSN-SM-Delivery-Outcome ::= < AVP header: 3319 10415 >
+        [ SM-Delivery-Cause ]
+        [ Absent-User-Diagnostic-SM ]
+
+
+; Type: Grouped AVP
+; Name: IP-SM-GW-SM-Delivery-Outcome
+; Section: 5.3.3.18
+; Page: 33
+IP-SM-GW-SM-Delivery-Outcome ::= < AVP header: 3320 10415 >
+        [ SM-Delivery-Cause ]
+        [ Absent-User-Diagnostic-SM ]
+
+
+; Type: Enumerated AVP
+; Name: SM-Delivery-Cause
+; Section: 5.3.3.19
+; Page: 34
+SM-Delivery-Cause ::= < Enumerated AVP header: 3321 10415 >
+
+
+; Type: Grouped AVP
+; Name: SMSF-3GPP-SM-Delivery-Outcome
+; Section: 5.3.3.27
+; Page: 35
+SMSF-3GPP-SM-Delivery-Outcome ::= < AVP header: 3336 10415 >
+        [ SM-Delivery-Cause ]
+        [ Absent-User-Diagnostic-SM ]
+
+
+; Type: Grouped AVP
+; Name: SMSF-Non-3GPP-SM-Delivery-Outcome
+; Section: 5.3.3.28
+; Page: 35
+SMSF-Non-3GPP-SM-Delivery-Outcome ::= < AVP header: 3337 10415 >
+        [ SM-Delivery-Cause ]
+        [ Absent-User-Diagnostic-SM ]
+
+
+; Type: Grouped AVP
+; Name: SMSF-3GPP-Address
+; Section: 5.3.3.35
+; Page: 36
+SMSF-3GPP-Address ::= < AVP header: 3344 10415 >
+        [ SMSF-3GPP-Number ]
+        [ SMSF-3GPP-Name ]
+        [ SMSF-3GPP-Realm ]
+        [ SMSF-3GPP-SBI-Support-Indicator ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: SMSF-Non-3GPP-Address
+; Section: 5.3.3.36
+; Page: 36
+SMSF-Non-3GPP-Address ::= < AVP header: 3345 10415 >
+        [ SMSF-Non-3GPP-Number ]
+        [ SMSF-Non-3GPP-Name ]
+        [ SMSF-Non-3GPP-Realm ]
+        [ SMSF-Non-3GPP-SBI-Support-Indicator ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: SMSF-3GPP-SBI-Support-Indicator
+; Section: 5.3.3.37
+; Page: 36
+SMSF-3GPP-SBI-Support-Indicator ::= < Enumerated AVP header: 3346 10415 >
+
+
+; Type: Enumerated AVP
+; Name: SMSF-Non-3GPP-SBI-Support-Indicator
+; Section: 5.3.3.38
+; Page: 37
+SMSF-Non-3GPP-SBI-Support-Indicator ::= < Enumerated AVP header: 3347 10415 >
+
+
+; Type: Enumerated AVP
+; Name: IP-SM-GW-SBI-Support-Indicator
+; Section: 5.3.3.39
+; Page: 37
+IP-SM-GW-SBI-Support-Indicator ::= < Enumerated AVP header: 3348 10415 >
+
+
+; Type: Grouped AVP
+; Name: SM-Delivery-Failure-Cause
+; Section: 6.3.3.5
+; Page: 52
+SM-Delivery-Failure-Cause ::= < AVP header: 3303 10415 >
+        { SM-Enumerated-Delivery-Failure-Cause }
+        [ SM-Diagnostic-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: SMS-MI-Correlation-ID
+; Section: 6.3.3.13
+; Page: 53
+SMS-MI-Correlation-ID ::= < AVP header: 3308 10415 >
+        [ HSS-ID ]
+        [ Originating-SIP-URI ]
+        [ Destination-SIP-URI ]
+      * [ AVP ]

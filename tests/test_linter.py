@@ -368,6 +368,12 @@ _RAW_ERRORS = {
         "duplicate-identity",
         "table-definition-mismatch",
     ],
+    "29336-i20.raw.dad": [
+        "duplicate-definition",
+        "duplicate-identity",
+        "duplicate-identity",
+    ],
+    "29338-i20.raw.dad": ["duplicate-identity"],
     "29345-i00.raw.dad": [
         "duplicate-identity",
         "duplicate-identity",
@@ -397,8 +403,11 @@ def test_the_raw_corpus_reports_exactly_what_the_documents_say(path):
 )
 def test_the_committed_corpus_reports_only_its_known_notes(path):
     """Pins what the corpus says today, so a rule that starts firing on
-    something else shows up as a test failure rather than as noise. Notes are
-    unaffected by correcting a file, so both kinds carry the same ones."""
+    something else shows up as a test failure rather than as noise. Notes
+    usually survive correction unchanged, so most specs carry one count for
+    both kinds; 29.336 and 29.338 differ because their corrections delete a
+    duplicated definition (removing its note) and align a misprinted name
+    with its re-used row (adding one)."""
     notes = [
         f
         for f in linter.lint(parser.parse(path.read_text(encoding="utf-8")))
@@ -410,12 +419,16 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29128-i00": 3,
         "29272-i60": 9,
         "29283-i00": 1,
+        "29336-i20.raw": 7,
+        "29336-i20": 6,
         "29337-i00": 2,
+        "29338-i20.raw": 3,
+        "29338-i20": 4,
         "29388-i00": 1,
     }
-    stem = path.name.removesuffix(".dad").removesuffix(".raw")
+    stem = path.name.removesuffix(".dad")
 
-    assert len(notes) == expected.get(stem, 0)
+    assert len(notes) == expected.get(stem, expected.get(stem.removesuffix(".raw"), 0))
     assert {f.rule for f in notes} <= {"local-and-reused"}
 
 

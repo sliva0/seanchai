@@ -663,6 +663,17 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     spec = parser.parse(path.read_text(encoding="utf-8"))
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
 
+    # A name correction rewrites what every *sibling* correction's selector
+    # matches on too: 29.338 fixes the name and the code of one misprinted
+    # AVP-header line, and in the corrected file both live under the new name.
+    renamed = {
+        (c.target.name, c.target.section): c.replace
+        for c in declared
+        if isinstance(c, corrections.Correction)
+        and c.field == "name"
+        and isinstance(c.target, corrections.definition)
+    }
+
     for correction in declared:
         if isinstance(correction, corrections.Insert):
             (table,) = correction.into.find(spec)
@@ -680,6 +691,13 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             # replacement. 29.172, 29.344 and 29.388 all fix a copied-in rule
             # name this way.
             target = dataclasses.replace(target, name=correction.replace)
+        elif (
+            isinstance(target, corrections.definition)
+            and (target.name, target.section) in renamed
+        ):
+            target = dataclasses.replace(
+                target, name=renamed[(target.name, target.section)]
+            )
         matches = list(target.find(spec))
         assert len(matches) == 1, f"{target.describe()} in {path.name}"
         assert getattr(matches[0], correction.field) == correction.replace

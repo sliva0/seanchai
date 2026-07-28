@@ -115,9 +115,9 @@ AVP-table row, a re-used entry, or a base document — with the trailing
 `* [ AVP ]` recognised as the base protocol's any-AVP wildcard rather than a
 reference, and a `base-not-in-corpus` note turning the rule off when the
 corpus lacks a named base. Its first run cleared every base-protocol
-reference and left 34 notes in three shapes — re-used-table omissions, one
+reference and left 41 notes (as of 29.336/29.338's arrival) in three shapes — re-used-table omissions, one
 source typo, and a handful not yet examined — catalogued in
-[linter.md](linter.md#unresolved-reference--34-references-awaiting-triage);
+[linter.md](linter.md#unresolved-reference--references-awaiting-triage);
 the rule promotes to an error when that list is worked through.
 
 **Structural edits (item 6) are done in the parts documents actually
@@ -134,7 +134,7 @@ against table 7.3.1/1 (`Additional-Context-ID` vs the clause heading's
 designed-but-unimplemented until a document forces it — its `expect` contract
 is in the same section of corrections.md.
 
-**The first resolvable tree is built.** Thirteen 3GPP specifications are now
+**The first resolvable tree is built.** Fifteen 3GPP specifications are now
 committed alongside six RFCs, and `seanchai lint --corpus` resolves re-used
 AVPs across them — see [linter.md](linter.md#cross-file-rules). The rules found
 things no single file could: a re-used AVP TS 29.229 has never heard of
@@ -143,49 +143,46 @@ definer (`Service-Selection`, 29.172 → 29.272 → RFC 5778), and five grouped
 bodies that differ from their cited origins — including both T4 serving-node
 bodies in 29.337 against their definitions in 29.173.
 
-What is left is the reach of the corpus rather than the rules. Eleven
-`local-and-reused` notes still await their origin: two in 29.128, eight in
-29.272 and one in 29.283. Nine cite TS 29.336; the other two cite TS 29.212
-and RFC 5447. Six RFCs are committed and resolving (6733, 7683, 7944, 8581,
-8582, 8583); the RFC origins still absent are RFC 4004, 4006, 4072, 4590, 5447
-and 7844 (one citing file each), plus RFC 5778 (cited by 29.128 and 29.272).
+What is left is the reach of the corpus rather than the rules. Committing
+TS 29.336 and TS 29.338 (via the multiple-table shape, item 28) resolved the
+nine `local-and-reused` notes that cited 29.336 and turned them into concrete
+`reused-reprint`/`reused-body-differs` findings; two such notes remain, both
+in 29.272, citing TS 29.212 and RFC 5447. Six RFCs are committed and
+resolving (6733, 7683, 7944, 8581, 8582, 8583); the RFC origins still absent
+are RFC 4004, 4006, 4072, 4590, 5447, 5777 and 7844 (one citing file each),
+plus RFC 5778 (cited by 29.128, 29.272 and 29.336).
 
-So the cheapest next wins have moved into the "more sources" section, and they
-are ordered by how many notes each closes:
+The cheapest next wins, ordered by how many citing files each unblocks:
 
-- **TS 29.336** is far the largest: it would resolve nine
-  `local-and-reused` notes and is an unresolved origin in seven files —
-  29.128, 29.272, 29.283, 29.329, 29.337, 29.345 and 29.389. Its input typos
-  are patched; what it waits on now is the multiple-table document shape
-  (item 28).
-- **TS 32.299** is cited unresolved by 29.172, 29.272, 29.128, 29.345 and
-  29.389, but it is one of the legacy `.doc` specs (item 11), so it is gated
-  on that whole prerequisite rather than on anything small.
-- **TS 29.061**, **TS 29.273** and **TS 29.338** are each unresolved in three
-  files. 29.061 is cited by 29.128, 29.272 and 29.344 and fails cover-page
-  spec-number detection (item 13); 29.273 is cited by 29.173, 29.272 and
-  29.345 and has a command section with no ABNF (item 14); 29.338 is cited by
-  29.128, 29.272 and 29.337 and reaches the multiple-table shape (item 28).
+- **TS 32.299** is cited unresolved by 29.128, 29.172, 29.272, 29.336,
+  29.345 and 29.389, but it is one of the legacy `.doc` specs (item 11), so
+  it is gated on that whole prerequisite rather than on anything small.
+- **TS 29.061**, **TS 29.273** and **TS 29.217** are each unresolved in two
+  or three files. 29.061 is cited by 29.128, 29.272 and 29.344 and fails
+  cover-page spec-number detection (item 13); 29.273 is cited by 29.173,
+  29.272 and 29.345 and has a command section with no ABNF (item 14); 29.217
+  is cited by 29.272 and 29.336 and is a legacy `.doc` spec (item 11).
 - **TS 29.212** is unresolved in 29.128 and 29.272 and also fails cover-page
   spec-number detection (item 13).
-- **TS 29.368** is an unresolved origin only in 29.337, but five of that
-  document's reused AVPs depend on it. It is a legacy `.doc` specification
-  gated on item 11.
+- **TS 29.368** is an unresolved origin in 29.337 (which draws five reused
+  AVPs from it) and 29.336. It is a legacy `.doc` specification gated on
+  item 11.
 
 29.389 already depends on 29.388, so a two-hop chain is available to exercise
-as soon as anything needs one.
+as soon as anything needs one — and 29.172 → 29.272 → RFC 5778 already
+exercises citation *indirection* across two hops.
 
 ## More sources
 
 Run the extractor over the remaining 3GPP Diameter specs. Expect new document
 quirks; keep the acceptance loop from [workflow.md](workflow.md). Running it
 over the whole downloaded corpus is cheap and says where the work is: of the 34
-specifications the downloader fetches, thirteen extract cleanly today, and all
-thirteen are now committed. The rest fail in a handful of classes, and the
+specifications the downloader fetches, fifteen extract cleanly today, and all
+fifteen are now committed. The rest fail in a handful of classes, and the
 classes matter more than the individual specs: the legacy `.doc` format (11),
 the cover page (13), documents with no AVP table of their own (14), and
-documents with more than one table pair (28) — the last being where 29.336 and
-29.338 landed once their input typos were patched away.
+documents with no AVP table of their own (14) — the multiple-table-pair shape
+(28) is done, and it is what brought 29.336 and 29.338 in.
 
 11. **Nine specifications never reach the extractor at all**, because 3GPP
     ships them as legacy binary `.doc` rather than `.docx`: 29.201, 29.215,
@@ -232,22 +229,22 @@ RFCs left).
 17. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).
 
-28. **Admit more than one AVP/re-used-table pair in a 3GPP document.** The
-    first-error corpus survey hid this behind the input typos: once those
-    are patched, 29.338 reaches the extractor's deliberate one-table guard and
-    29.336 exposes the same shape while its second re-used table is collected.
-    29.336 has separate S6m/S6n and S6t definition sets, while 29.338 has
-    separate S6c and S6d sets. The AST already permits several table sections;
-    `_Collected` does too, but `_Resolved` still chooses exactly one and rejects
-    the rest. Resolution has to associate each enumerated clause with the table
-    row that supplies its code and retain each re-used table's own columns,
-    label and section. 29.336 adds one wrinkle: its later re-used table cites
-    `6.4.2` and `6.4.11` in the same document, so those rows need a faithful
-    same-specification origin rather than being forced through the
-    external-reference parser. The code seam is the same table-walk
-    scaffolding item 25 wants factored out of `_extract_avp_table` and
-    `_extract_reused_table` — this item makes it three callers, so do 25 as
-    part of, or just before, this one.
+**More than one AVP/re-used-table pair per document (item 28) is done, with
+the table-walk factoring (item 25) underneath it.** `_Resolved` now carries
+table *pairs*: each AVP table with the re-used table accompanying it, paired
+by document order — 29.336's S6m/S6n and S6t sets and 29.338's S6c and S6d
+sets each print one of each per set — and unequal counts are rejected rather
+than guessed at. Codes for enumerated clauses resolve across all tables, with
+a conflict error if two tables disagree on a name. 29.336's same-document
+wrinkle is handled where the roadmap predicted: a From cell holding a bare
+clause number ("6.4.2") resolves to the document's own reference, which the
+cross-file rules then treat like any other origin. It also forced one shape
+nobody predicted: table 8.4.1-2 merges each of its four columns across two
+grid columns in every row, so `_sections` now collapses a table-wide uniform
+merge pattern to its physical columns (mixed patterns — NOTE rows, spanning
+headers — keep their grid positions). The shared walk lives in `_walk_table`,
+used by both table extractors — 29.230's registry path (14) would be its
+third caller.
 
 ## Validation against an independent oracle
 
@@ -255,7 +252,7 @@ This section deliberately sat after the RFC extractor (16, now done, with the
 cited RFC backlog extracted): those unblocked reference resolution (5), the
 base-protocol import rule, and cleared most `origin-not-in-corpus` noise at
 once, while the oracle only adds confidence to values already extracted. With
-thirteen specs committed and only 29.329 hand-verified, its moment is closer
+fifteen specs committed and only 29.329 hand-verified, its moment is closer
 than it was.
 
 9. **Fetch Wireshark's Diameter dictionary through the downloader.** It is

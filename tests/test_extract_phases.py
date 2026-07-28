@@ -12,15 +12,16 @@ from seanchai.dad import ast
 from seanchai.extractor import tgpp_docx
 
 
-def _avp_table(*rows, section="6.3", table="6.3.1"):
-    return (
-        ast.AvpTable(
+def _avp_table(*rows, section="6.3", table="6.3.1", note_reused=()):
+    return tgpp_docx._CollectedAvpTable(
+        table=ast.AvpTable(
             table=table,
             columns=tuple(ast.AvpColumn),
             source=ast.SourceRef(section=section),
             rows=tuple(rows),
         ),
-        section,
+        section=section,
+        note_reused=list(note_reused),
     )
 
 
@@ -103,7 +104,9 @@ def test_resolve_skips_enums_defined_in_another_specification(document):
     resolved = tgpp_docx._resolve(collected)
 
     assert resolved.definitions == []
-    assert resolved.reused == [ast.ReusedAvpRow(name="DRMP", origin="RFC7944")]
+    assert resolved.pairs[0][1].rows == [
+        ast.ReusedAvpRow(name="DRMP", origin="RFC7944")
+    ]
 
 
 def test_a_grouped_avp_is_kept_even_when_it_is_also_listed_as_re_used():
@@ -125,7 +128,7 @@ def test_a_grouped_avp_is_kept_even_when_it_is_also_listed_as_re_used():
         "Foreign",
         "Local",
     ]
-    assert resolved.reused == [reused]
+    assert resolved.pairs[0][1].rows == [reused]
 
 
 def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table(document):
@@ -139,29 +142,69 @@ def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table(document):
         tgpp_docx._resolve(collected)
 
 
-def test_resolve_rejects_a_document_with_two_avp_tables():
-    # No collected spec does this; the point is that it can't pass silently,
-    # which is what the old last-table-wins accumulator did.
+def test_resolve_pairs_each_avp_table_with_its_reused_table_in_order():
+    # 29.336 (S6m/S6n and S6t) and 29.338 (S6c and S6d) print one AVP table
+    # and one re-used table per definition set, in document order.
+    first_reused = ast.ReusedAvpRow(name="Load", origin="RFC8583")
     collected = tgpp_docx._Collected(
+        avp_tables=[
+            _avp_table(_row("One", 1), section="6.4", table="6.4.1/1"),
+            _avp_table(
+                _row("Two", 2),
+                section="8.4",
+                table="8.4.1/1",
+                note_reused=[ast.ReusedAvpRow(name="Two", origin="RFC7683")],
+            ),
+        ],
+        reused_tables=[
+            _reused_table(first_reused, label="6.4.1/2", section="6.4"),
+            _reused_table(label="8.4.1/2", section="8.4"),
+        ],
+    )
+
+    sections = tgpp_docx._assemble(tgpp_docx._resolve(collected))
+
+    kinds = [type(section).__name__ for section in sections]
+    assert kinds == ["AvpTable", "ReusedAvps", "AvpTable", "ReusedAvps"]
+    first, second = (s for s in sections if isinstance(s, ast.ReusedAvps))
+    assert first.rows == (first_reused,)
+    # The second set's NOTE-derived row lands in the second set's block.
+    assert second.rows == (ast.ReusedAvpRow(name="Two", origin="RFC7683"),)
+
+
+def test_resolve_rejects_avp_and_reused_table_counts_that_cannot_pair():
+    # Adjacency in document order is the only thing that says which re-used
+    # block belongs to which set, so unequal counts have no defensible pairing.
+    two_avp_one_reused = tgpp_docx._Collected(
         avp_tables=[
             _avp_table(_row("One", 1), section="6.3"),
             _avp_table(_row("Two", 2), section="7.3"),
-        ]
+        ],
+        reused_tables=[_reused_table(label="6.3.2")],
     )
-
-    with pytest.raises(
-        tgpp_docx.ExtractionError, match=r"more than one AVP table.*6\.3, 7\.3"
-    ):
-        tgpp_docx._resolve(collected)
-
-
-def test_resolve_rejects_a_document_with_two_reused_tables():
-    collected = tgpp_docx._Collected(
+    one_avp_two_reused = tgpp_docx._Collected(
         avp_tables=[_avp_table(_row("One", 1))],
         reused_tables=[_reused_table(label="6.3.2"), _reused_table(label="7.4.1")],
     )
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="more than one re-used"):
+    for collected in (two_avp_one_reused, one_avp_two_reused):
+        with pytest.raises(tgpp_docx.ExtractionError, match="cannot pair"):
+            tgpp_docx._resolve(collected)
+
+
+def test_resolve_rejects_one_name_with_two_codes_across_avp_tables():
+    collected = tgpp_docx._Collected(
+        avp_tables=[
+            _avp_table(_row("One", 1), section="6.3"),
+            _avp_table(_row("One", 2), section="7.3"),
+        ],
+        reused_tables=[
+            _reused_table(label="6.3.2"),
+            _reused_table(label="7.3.2"),
+        ],
+    )
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="code conflict"):
         tgpp_docx._resolve(collected)
 
 
@@ -256,8 +299,14 @@ def test_note_derived_reused_rows_are_attributed_to_the_avp_table():
     # With no re-used table in the document, the rows really did come from the
     # AVP table's NOTEs, so that is where the block is recorded.
     collected = tgpp_docx._Collected(
-        avp_tables=[_avp_table(_row("One", 1), section="6.3", table="6.3.1")],
-        note_reused=[ast.ReusedAvpRow(name="One", origin="RFC7683")],
+        avp_tables=[
+            _avp_table(
+                _row("One", 1),
+                section="6.3",
+                table="6.3.1",
+                note_reused=[ast.ReusedAvpRow(name="One", origin="RFC7683")],
+            )
+        ],
     )
 
     sections = tgpp_docx._assemble(tgpp_docx._resolve(collected))

@@ -103,7 +103,7 @@ explicitly refuses to guess at.
   entry, or a base document. The trailing `* [ AVP ]` is RFC 6733's any-AVP
   wildcard — grammar, not a reference — and is skipped rather than resolved to
   an AVP named `AVP`. A note rather than an error for now: the corrected
-  corpus still carries 34 of them (see
+  corpus still carries 41 of them (see
   [standing findings](#standing-findings-and-why-each-one-stays)).
 - `base-not-in-corpus` — a `; Bases:` document the corpus could not supply.
   Reference resolution is skipped entirely for that file rather than reporting
@@ -180,7 +180,7 @@ genuinely IETF-space AVP looks exactly like it.
 
 ## What the corpus reports today
 
-Thirteen 3GPP specifications and six RFCs, each committed raw and corrected.
+Fifteen 3GPP specifications and six RFCs, each committed raw and corrected.
 The raw files carry their documents' own mistakes and the corrected files clear
 them, which is what makes "the corrected corpus is clean" mean anything at all
 — a corpus that were clean because the rules never matched would look identical
@@ -194,6 +194,8 @@ otherwise. Between them the raw files exercise every single-file rule:
 | `29344-i10.raw.dad` | `one-name-two-commands`, twice — clauses 6.2.11/6.2.12 print 6.2.3/6.2.4's rule names above command 8388713 |
 | `29345-i00.raw.dad` | two `duplicate-identity` and six `table-definition-mismatch` findings — one capitalization mismatch, three copied AVP codes and three AVPs whose table type contradicts their grouped rules |
 | `29388-i00.raw.dad` | `duplicate-definition`, `duplicate-identity` and `table-definition-mismatch`, all from clause 6.3.10 re-printing 6.3.3's rule name |
+| `29336-i20.raw.dad` | `duplicate-definition` and two `duplicate-identity` findings — clause 8.4.36 prints a second, S6t-specific body for 6.4.2's `User-Identifier` at the same code, and clause 8.4.30 lowercases `Scheduled-Communication-Time` against its own table |
+| `29338-i20.raw.dad` | `duplicate-identity` — clause 6.3.3.13's AVP format misprints both the name (`SMS-MI-Correlation-ID` for `SMSMI-Correlation-ID`) and the code (SM-RP-MTI's 3308 for 3324) |
 
 `tests/test_linter.py` pins that table exactly, so a rule that starts firing on
 something else fails the suite instead of adding noise to a report.
@@ -296,10 +298,11 @@ between the definitions knows there is a choice to make.
 
 ### Notes waiting on corpus growth
 
-Eleven `local-and-reused` notes still await an origin: two in 29.128, eight in
-29.272 and one in 29.283. Nine of those cite TS 29.336; the other two cite
-TS 29.212 and RFC 5447. Adding 29.173 resolved 29.337's two such notes into the
-concrete `reused-body-differs` findings above.
+Two `local-and-reused` notes still await an origin, both in 29.272, citing
+TS 29.212 and RFC 5447. Committing TS 29.336 resolved the nine notes that
+cited it — two in 29.128, six more in 29.272 and one in 29.283 — the same way
+adding 29.173 had earlier resolved 29.337's two into concrete
+`reused-body-differs` findings.
 
 A fresh whole-corpus run leaves `origin-not-in-corpus` notes in eleven files.
 The two new ones are specific and intentional: 29.173 awaits TS 29.273, while
@@ -313,11 +316,11 @@ finding was never built: suppressing them one by one would hide which
 cross-file rules were skipped and turn into discarded work when the missing
 origin arrives.
 
-### `unresolved-reference` — 34 references awaiting triage
+### `unresolved-reference` — references awaiting triage
 
-The first run of reference resolution left 34 notes across eight files, in
-three distinct shapes, and the rule stays a note until they are worked
-through:
+The first run of reference resolution left 34 notes across eight files —
+41 once 29.336 and 29.338 joined — in three distinct shapes, and the rule
+stays a note until they are worked through:
 
 - **References to another document's AVPs that the re-used table omits.**
   29.337's message bodies use `MME-Name`, `SGSN-Number` and four siblings from

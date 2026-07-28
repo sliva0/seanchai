@@ -202,6 +202,7 @@ def test_extract_without_patch_file_rejects_malformed_input(
                 ("Maximum Latency", "8.4.1"),
                 ("Maximum Response Time", "8.4.1"),
                 ("Visited PLMN Id", "8.4.1"),
+                ("<AVP header: xxxx 10415>", "8.4.85"),
             ],
         ),
         (
