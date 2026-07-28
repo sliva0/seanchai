@@ -2,9 +2,14 @@
 
 ## The loop
 
-1. **Download** the source documents: `uv run seanchai download` fetches the
-   curated catalog into the git-ignored `specifications/`. Hand-fetched
-   docx/PDF pairs live in `specifications/manual/`.
+1. **Download** the source documents: `uv run seanchai download` fetches
+   the curated catalog into the git-ignored `specifications/`. PDFs are on by
+   default — they enable the PDF-matched version selection, and a `--no-pdfs`
+   run once overwrote a committed spec's docx with a newer version whose ETSI
+   PDF was unpublished (29.388) and stripped every `pdf_url` from
+   `manifest.json`, which re-extraction scripts read for `; Link:` values —
+   so pass `--no-pdfs` only for catalog experiments. Hand-fetched docx/PDF
+   pairs live in `specifications/manual/`.
 2. **Extract**: `uv run seanchai extract DOCX --pdf PDF --link URL -o OUT.dad`.
    Warnings go to stderr; read them, they are the extractor telling you the
    source document did something unusual. RFCs are one step shorter — the text

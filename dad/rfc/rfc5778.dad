@@ -1,6 +1,6 @@
 ; Specification: RFC 5778
 ; Vendor-ID: 0
-; Bases: RFC6733
+; Bases: RFC6733, RFC4004, RFC4005, RFC4072, RFC5447, RFC5777
 ; Link: https://www.rfc-editor.org/rfc/rfc5778.txt
 
 

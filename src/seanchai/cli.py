@@ -390,7 +390,15 @@ def _summary(counts, checked: int) -> str:
     is_flag=True,
     help="Keep 3GPP ZIPs without extracting their DOC/DOCX files.",
 )
-@click.option("--pdfs", is_flag=True, help="Also download the ETSI PDF renderings.")
+@click.option(
+    "--pdfs/--no-pdfs",
+    default=True,
+    help="Download the ETSI PDF renderings and prefer the newest version"
+    " whose PDF is published (default: on). --no-pdfs is for catalog"
+    " experiments only: it strips pdf_url from the manifest and lets"
+    " Specs/latest replace a committed spec's docx with a version whose"
+    " PDF is unpublished.",
+)
 @click.option("--list", "list_only", is_flag=True, help="Print the catalog and exit.")
 def download(
     release: int,

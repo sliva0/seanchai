@@ -7,9 +7,17 @@ progress through a callback, and raises `DownloadError`.
 
 ```sh
 uv run seanchai download --list     # show the catalog
-uv run seanchai download            # fetch it
-uv run seanchai download --pdfs     # include the ETSI PDF renderings
+uv run seanchai download            # fetch it, ETSI PDFs included (default)
 ```
+
+PDFs are downloaded by default because they are not merely renderings: the
+PDF-matched version selection below only runs with them, and a `--no-pdfs`
+run rewrites `manifest.json` without any `pdf_url` — the manifest is what
+re-extraction scripts read for `; Link:` values — while also letting
+`Specs/latest/` replace a committed spec's docx with a newer version whose
+ETSI PDF is unpublished (this happened to 29.388 before PDFs became the
+default). `--no-pdfs` exists for quick catalog experiments, not for
+refreshing the corpus.
 
 It downloads 3GPP archives and their matching ETSI PDF renderings, plus the
 plain-text RFCs, and writes `specifications/manifest.json` recording sha256 and size

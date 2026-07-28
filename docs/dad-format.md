@@ -82,7 +82,11 @@ These are the decisions the format rests on. Preserve them when changing it.
   in every Diameter application's ABNF and in no re-used table. Extractors
   stamp `RFC6733` for everything except RFC 6733 itself, so the line is
   optional rather than fabricated at the base of the tree; reference
-  resolution reads it the way re-used rows' origins are read. A hand-authored
+  resolution reads it the way re-used rows' origins are read. A document
+  that builds on more than the base protocol — RFC 4072's ABNFs use NASREQ's
+  AVPs the way every ABNF uses `Session-Id` — gets its further entries from
+  a `bases` correction targeting the file header, since the source text
+  states the dependency nowhere an extractor can read. A hand-authored
   extension can state a different base, which is the same mechanism
   `; Vendor-ID:` gives vendors.
 - **`; bold` stays inline** because it mirrors the source document: bold in

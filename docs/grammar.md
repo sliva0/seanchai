@@ -44,7 +44,7 @@ ABNF as in RFC 5234, with `%x` for literal code points. Two conventions:
 ## File
 
 ```abnf
-file          = header 2*NL section *(2*NL section) NL
+file          = header *(2*NL section) NL
 header        = spec-line NL [version-line NL] vendor-line [NL bases-line]
                 [NL link-line]
 spec-line     = "; Specification: " inline-text
@@ -79,9 +79,12 @@ single-token spelling re-used rows cite origins by. Extractors write
 `; Bases: RFC6733` for every document except RFC 6733 itself, which is why the
 line is optional: the base of the tree has nothing to put in it.
 
-A file is a header block followed by one or more section blocks. Blocks are
+A file is a header block followed by zero or more section blocks. Blocks are
 separated by blank lines; a block is a run of consecutive non-blank lines. The
-file ends with exactly one newline.
+file ends with exactly one newline. A header-only file is legal because not
+every document in the corpus defines anything — an RFC can allocate command
+codes or state applicability without defining a single AVP — and such a
+document is still a corpus node other files may cite.
 
 Free-text comments begin with `;;` and may appear anywhere: standing alone as
 a whole line, or ending one — everything from the first `;;` on a line to the

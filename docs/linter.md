@@ -103,7 +103,7 @@ explicitly refuses to guess at.
   entry, or a base document. The trailing `* [ AVP ]` is RFC 6733's any-AVP
   wildcard — grammar, not a reference — and is skipped rather than resolved to
   an AVP named `AVP`. A note rather than an error for now: the corrected
-  corpus still carries 41 of them (see
+  corpus still carries 55 of them (see
   [standing findings](#standing-findings-and-why-each-one-stays)).
 - `base-not-in-corpus` — a `; Bases:` document the corpus could not supply.
   Reference resolution is skipped entirely for that file rather than reporting
@@ -325,22 +325,37 @@ origin arrives.
 
 ### `unresolved-reference` — references awaiting triage
 
-The first run of reference resolution left 34 notes across eight files —
-41 once 29.336 and 29.338 joined — in three distinct shapes, and the rule
-stays a note until they are worked through:
+The rule stays a note until its standing findings are worked through. The
+first run left 34 notes; corpus growth has both closed and opened them since
+(29.212 arriving resolved 29.128's `Bearer-Identifier`; the application RFCs
+arriving initially added ninety, until multi-entry `; Bases:` corrections —
+RFC 4072 building on NASREQ the way everything builds on RFC 6733 — absorbed
+all that actually were base-document references). Fifty-five remain, in
+three shapes:
 
-- **References to another document's AVPs that the re-used table omits.**
-  29.337's message bodies use `MME-Name`, `SGSN-Number` and four siblings from
-  TS 29.336 without listing them as re-used; 29.272's clause 7.3.194 does the
-  same for five monitoring AVPs, and RFC 8581/8582 reference RFC 7683's
-  `OC-Report-Type` family, which an RFC has no re-used table to cite. Each
-  wants either a correction inserting the missing rows or a second `; Bases:`
-  entry — which of the two is right is a per-document decision.
-- **Source typos.** 29.345's `WiFi-P2P-Assistance-Iinfo` (clause 6.3.31) is an
-  obvious misspelling the rule surfaced on its first run.
-- **Unexamined.** The remainder (29.128's `Bearer-Identifier`, `IMEI`,
-  `Software-Version`; 29.172's `LCS-Supported-GAD-Shapes`; 29.345's ProSe
-  discovery AVPs) have not yet been checked against their source clauses.
+- **In-document spelling defects in the application RFCs** (26). The RFC
+  ABNFs misspell their own or their bases' AVPs: RFC 4005 and 7155 write
+  `Redirected-Host`/`Redirected-Host-Usage`/`Redirected-Max-Cache-Time` for
+  RFC 6733's `Redirect-*` family (plus 4005's `Redirect-Host-Usase` and
+  `Qos-Filter-Rule`), RFC 4004 writes `Session-ID`, `MIP-nonce` and swapped
+  SPI names (`MIP-HA-to-MN-SPI` for the table's `MIP-HA-to-FA-SPI` family),
+  RFC 5778 writes `MIP-Agent-Info` for `MIP6-Agent-Info` and
+  `Multi-Round-Time` for `Multi-Round-Time-Out`, RFC 4005 heads
+  `Framed-Appletalk-*` in its table but `Framed-AppleTalk-*` in ABNF, and
+  RFC 5777 writes `IP-Bit-Mask-Width` for its own
+  `IP-Mask-Bit-Mask-Width`. Each is an ordinary name correction waiting on
+  a verification pass against the RFC text.
+- **References to another document's AVPs that a 3GPP re-used table omits.**
+  29.337's message bodies use `MME-Name`, `SGSN-Number` and four siblings
+  from TS 29.336 without listing them as re-used; 29.272's clause 7.3.194
+  and 29.336's monitoring clauses do the same for the monitoring AVPs. Each
+  wants either a correction inserting the missing rows or a second
+  `; Bases:` entry — a per-document decision.
+- **Source typos and unexamined 3GPP names.** 29.345's
+  `WiFi-P2P-Assistance-Iinfo` (clause 6.3.31) is an obvious misspelling;
+  29.128's `IMEI`/`Software-Version`, 29.172's `LCS-Supported-GAD-Shapes`
+  and 29.345's ProSe discovery AVPs have not yet been checked against their
+  source clauses.
 
 Once every note is either corrected away or explained here, the rule should
 promote to an error so `lint --corpus` guards it from then on.

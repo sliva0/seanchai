@@ -1,6 +1,6 @@
 ; Specification: RFC 8582
 ; Vendor-ID: 0
-; Bases: RFC6733
+; Bases: RFC6733, RFC7683, RFC8581
 ; Link: https://www.rfc-editor.org/rfc/rfc8582.txt
 
 

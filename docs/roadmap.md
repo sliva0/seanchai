@@ -115,8 +115,9 @@ AVP-table row, a re-used entry, or a base document — with the trailing
 `* [ AVP ]` recognised as the base protocol's any-AVP wildcard rather than a
 reference, and a `base-not-in-corpus` note turning the rule off when the
 corpus lacks a named base. Its first run cleared every base-protocol
-reference and left 41 notes (as of 29.336/29.338's arrival) in three shapes — re-used-table omissions, one
-source typo, and a handful not yet examined — catalogued in
+reference and left a standing-findings list (55 notes today: the
+application RFCs' in-document misspellings, re-used-table omissions, and a
+handful not yet examined) catalogued in
 [linter.md](linter.md#unresolved-reference--references-awaiting-triage);
 the rule promotes to an error when that list is worked through.
 

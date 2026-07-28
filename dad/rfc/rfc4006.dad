@@ -1,6 +1,6 @@
 ; Specification: RFC 4006
 ; Vendor-ID: 0
-; Bases: RFC6733
+; Bases: RFC6733, RFC4005
 ; Link: https://www.rfc-editor.org/rfc/rfc4006.txt
 
 

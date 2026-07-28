@@ -130,6 +130,26 @@ class definition(Selector):
 
 
 @dataclass(frozen=True)
+class header(Selector):
+    """The file-level directive header — the `Specification` node itself.
+
+    What a `bases` correction targets. The extractor stamps `; Bases:
+    RFC6733` because that dependency is a fact about Diameter; a document
+    that additionally builds on another application's AVPs without citing
+    them anywhere — RFC 4072's command ABNFs use NASREQ's AVPs the way every
+    ABNF uses `Session-Id` — states that nowhere the extractor can read, so
+    the stamped default is corrected rather than a fabricated source line
+    patched in.
+    """
+
+    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
+        yield spec
+
+    def describe(self) -> str:
+        return "file header"
+
+
+@dataclass(frozen=True)
 class table_row(Selector):
     """One row of an AVP table, by AVP name."""
 
