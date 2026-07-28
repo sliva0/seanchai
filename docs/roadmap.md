@@ -110,7 +110,10 @@ re-declares them, because every Diameter application is assumed to have them.
    output — so what is left is the design choice itself, and it can be tested
    against real resolution: the 14–17 per-file references to `Session-Id`,
    `Origin-Host` and the rest resolve to that file's table rows the moment
-   either rule names it.
+   either rule names it. Nothing else gates this one now — with the RFC
+   backlog committed it is the only phase-two item whose prerequisites are
+   all met, and it is pure design rather than extraction.
+
 **Structural edits (item 6) are done in the part a document actually
 forced.** `Delete` is implemented
 ([corrections.md](corrections.md#structural-edits)), the bogus `Feature-Id`
@@ -134,15 +137,30 @@ rather than the definer (`Service-Selection`, 29.172 → 29.272 → RFC 5778), a
 directions.
 
 What is left is the reach of the corpus rather than the rules. Every remaining
-`local-and-reused` note names a document not yet extracted, and every file's
-unresolved origins are dominated by RFCs, which the RFC extractor (below) now
-reaches one document at a time — RFC 6733 is committed and resolving; RFC
-7683, 7944 and 8583 are cited by nearly every file and are the cheapest next
-wins, each costing at most a new header spelling in `_LEFT_HEADERS`. In rough
-order of what each adds: 29.336 closes eight of 29.272's notes and
-both of 29.283's and 29.329's; 29.212 closes another; 29.173 and 29.061 are
-what 29.344 reaches for. 29.389 already depends on 29.388, so a two-hop chain
-is available to exercise as soon as anything needs one.
+`local-and-reused` note names a document not yet extracted — and those
+documents are now 3GPP specifications rather than RFCs. Six RFCs are committed
+and resolving (6733, 7683, 7944, 8581, 8582, 8583), which was the whole of the
+RFC backlog phase two had; the only RFC origins the corpus still cannot
+resolve are RFC 4004, 4590, 5447, 5778 and 7844, each cited by one file.
+
+So the cheapest next wins have moved into the "more sources" section, and they
+are ordered by how many notes each closes:
+
+- **TS 29.336** is far the largest: six of 29.272's `local-and-reused` notes
+  plus 29.283's one, and it is an unresolved origin in four files — 29.272,
+  29.283, 29.389, and 29.329, where it is the only one left. It is blocked only on an input patch for a space inside a name cell
+  (item 15) — a patch to write, not code to change, which makes it the
+  cheapest and highest-value item on the board.
+- **TS 32.299** is cited unresolved by 29.172, 29.272 and 29.389, but it is
+  one of the legacy `.doc` specs (item 11), so it is gated on that whole
+  prerequisite rather than on anything small.
+- **TS 29.173** is cited by 29.172, 29.272 and 29.344 and already extracts
+  cleanly — it needs only extracting and committing.
+- **TS 29.061** (29.272, 29.344) and **TS 29.212** (29.272) both fail cover-page
+  spec-number detection (item 13).
+
+29.389 already depends on 29.388, so a two-hop chain is available to exercise
+as soon as anything needs one.
 
 ## More sources
 
@@ -180,7 +198,9 @@ individual specs.
     name cell in 29.336 and 29.338, `M. V` for flags in 29.345, and a
     misspelled data type in 29.109 ("OctedString") and 29.128 ("OctetSstring").
     This is the input-patch layer working as designed, so these are patches to
-    write rather than code to change. Two things left this list rather than
+    write rather than code to change. 29.336 is the one worth writing first:
+    it closes seven `local-and-reused` notes and is an unresolved origin in
+    four files, more than any other single document (see phase two above). Two things left this list rather than
     joining it: 29.389's empty Encrypt cell is now a representable value, and
     the four specs blocked on the `P` flag are no longer blocked on it.
 **The RFC (plain-text) extractor (item 16) is built.** `seanchai extract-rfc`
@@ -196,7 +216,11 @@ enumerated values, from their prose-embedded RFC forms, so an RFC's `.dad` is
 as complete as a 3GPP one's. What it deliberately does not read is an
 extension to another document's enum (RFC 8581 adding `PEER_REPORT` to 7683's
 `OC-Report-Type`) — that needs format design, not extraction, and is dropped
-with a warning. Each further RFC costs at most its own header spelling.
+with a warning. Each further RFC costs at most its own header spelling, which
+is what let the backlog close in one pass: `dad/rfc/` now holds 6733, 7683,
+7944, 8581, 8582 and 8583, and the corpus's unresolved origins are 3GPP
+specifications from here on (RFC 4004, 4590, 5447, 5778 and 7844 are the only
+RFCs left, one citing file each).
 
 17. **Downloader changes** for archive fetching and link derivation — see
     [downloader.md](downloader.md).
