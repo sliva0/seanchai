@@ -21,7 +21,7 @@ from seanchai.extractor import rfc_text, tgpp_docx
 _ROOT = Path(__file__).parent.parent
 _MANUAL = _ROOT / "specifications" / "manual"
 _RFC_TEXTS = _ROOT / "specifications" / "rfc"
-_PATCHES = _ROOT / "edits" / "patches"
+_SOURCES = _ROOT / "edits" / "sources"
 
 
 def _cases():
@@ -65,9 +65,9 @@ def test_the_real_sources_still_produce_the_committed_output(
         pytest.skip(f"sources not present locally: {', '.join(missing)}")
 
     if source.suffix == ".txt":
-        spec = rfc_text.extract(source, link=link, patches_dir=_PATCHES)
+        spec = rfc_text.extract(source, link=link, sources_dir=_SOURCES)
     else:
-        spec = tgpp_docx.extract(source, link=link, patches_dir=_PATCHES)
+        spec = tgpp_docx.extract(source, link=link, sources_dir=_SOURCES)
     if pdf is not None:
         spec = tgpp_docx.attach_pages(spec, pdf)
     notes, standing, detached = {}, {}, {}

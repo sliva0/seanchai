@@ -41,8 +41,9 @@ import pydantic
 import pypdf
 
 from ..dad import abnf, ast
+from . import sources
 from .errors import ExtractionError, boundary
-from .patches import Patcher
+from .sources import Patcher
 
 _HEADING_RE = re.compile(
     r"^(?P<number>(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*)\t(?P<title>.+)$"
@@ -1034,9 +1035,16 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
     return key
 
 
-def patch_file_name(specification: str) -> str:
-    """Patch file name for a cover-page spec title: "3GPP TS 29.272" →
-    "TS29.272.toml"."""
+# The quirk vocabulary this extractor defines: name → what declaring it
+# enables. Empty so far — no collected 3GPP document has needed a reading
+# heuristic enough to gate — but the mechanism is shared, so a TS source
+# declaration naming any quirk fails at load with this (empty) list.
+QUIRKS: dict[str, str] = {}
+
+
+def sources_file_name(specification: str) -> str:
+    """Source-declaration file name for a cover-page spec title:
+    "3GPP TS 29.272" → "TS29.272.toml"."""
     return f"{ast.spec_ref(specification)}.toml"
 
 
@@ -1044,27 +1052,30 @@ def extract(
     docx_path: Path | str,
     link: str | None = None,
     warnings: list[str] | None = None,
-    patches_dir: Path | None = None,
+    sources_dir: Path | None = None,
 ) -> ast.Specification:
     """Extract a `Specification` from a 3GPP docx. Non-fatal source-document
     inconsistencies are appended to `warnings` when a list is given. When
-    `patches_dir` is given, input patches from `<patches_dir>/<SpecRef>.toml`
-    (if present) are applied to the normalized source text before parsing."""
+    `sources_dir` is given, source declarations from
+    `<sources_dir>/<SpecRef>.toml` (if present) apply: input patches to the
+    normalized source text before parsing, and quirks to the readings the
+    extractor uses."""
     warnings = warnings if warnings is not None else []
     with boundary(f"extracting {docx_path}"):
         document = docx.Document(str(docx_path))
         specification, version = _spec_and_version(document)
-        patch_path = (
-            patches_dir / patch_file_name(specification)
-            if patches_dir is not None
+        declarations_path = (
+            sources_dir / sources_file_name(specification)
+            if sources_dir is not None
             else None
         )
-        patcher = Patcher.load(patch_path, version)
+        patcher, quirks = sources.load(declarations_path, version, QUIRKS)
 
         collected = _collect(
             _sections(document, patcher), warnings, ast.spec_ref(specification)
         )
         patcher.finish()
+        quirks.finish()
         sections = _assemble(_resolve(collected))
         return ast.Specification(
             specification=specification,

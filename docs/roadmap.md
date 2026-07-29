@@ -131,18 +131,6 @@ the extractor being right.
    the remaining planned changes are listed in
    [downloader.md](downloader.md#planned-changes).
 
-18. **Capture the RADIUS-heritage AVP codes RFC 7155 prints in prose.** Its
-    AVP tables carry no Code column — the codes are RADIUS attribute
-    numbers, printed per clause as "AVP Code 5" in the definition's prose —
-    so all 77 of the document's own AVPs sit in the corpus code-less, and
-    an AVP without a code has no wire identity: the python-diameter
-    validator (see [consumers.md](consumers.md)) can only report each one
-    as unchecked, and 150 of its body references resolve to nothing
-    checkable. The fix is an RFC-extractor path that reads the per-clause
-    code line into the table rows (or into the definitions), designed
-    against RFC 7155's actual layout; RFC 4004/4005/4006 print codes in
-    their tables already, so 7155 may be the only document that needs it.
-
 ## Downstream consumers
 
 This is the point of the project, and the reason the rest of it is worth
@@ -174,15 +162,15 @@ generating *your* format becomes a short script over a reviewed corpus.
    definitions for a library like mensonen/diameter, a JSON schema shaped
    like the 5G ones, an XML dictionary, whatever a given customer asks for.
    Seanchaí supplies the definitions and the queries; the output syntax is
-   the script's business. (Related: RFC 7155's AVPs validate as unchecked
-   until their codes reach the corpus — item 18.)
+   the script's business.
 
 19. **Make the consumer model rigid: an `Avp` should always carry a code, a
     data type and flag rules.** All three are `| None` in `model.py` today,
     and every `None` is a hole in the corpus rather than a fact about
     Diameter — an AVP without a code has no wire identity, and one without
-    a type cannot be decoded. The current sources of `None`: RFC 7155's
-    code-less rows (18), tables that print no type or flag columns for
+    a type cannot be decoded. The current sources of `None` (RFC 7155's
+    code-less rows were the largest and are closed — the `prose-avp-codes`
+    quirk, July 2026): tables that print no type or flag columns for
     re-used rows, definitions never tabulated at all, and the standing
     linter findings that keep some references unresolved. Each hole a
     consumer hits is really one of those upstream gaps; when they are

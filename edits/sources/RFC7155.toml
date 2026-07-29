@@ -1,0 +1,17 @@
+# Source declarations for RFC 7155 (Diameter NAS Application).
+
+[[patch]]
+find = "The Accounting-Input-Packets (AVP"
+replace = "The Accounting-Input-Packets AVP (AVP"
+section = "4.6.3"
+reason = "the defining sentence drops the word 'AVP' after the name; the other 75 defining clauses of this document all print it"
+
+[[patch]]
+find = "The Accounting-Output-Packets (AVP"
+replace = "The Accounting-Output-Packets AVP (AVP"
+section = "4.6.4"
+reason = "the defining sentence drops the word 'AVP' after the name; the other 75 defining clauses of this document all print it"
+
+[[quirk]]
+name = "prose-avp-codes"
+reason = "the per-category AVP tables print no Code or Type column — the codes are RADIUS attribute numbers, stated once per AVP in its defining clause ('The NAS-Port AVP (AVP Code 5) is of type Unsigned32'), the clause each row's Section cell already points at"

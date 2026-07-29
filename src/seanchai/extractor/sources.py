@@ -1,14 +1,18 @@
-"""Input patches: per-spec find/replace fixes for typos in source documents.
+"""Source declarations: everything declared about reading one source document.
 
-Genuine typos in a 3GPP docx ("M. V" flag cells, "Monitoring Event Report"
-with spaces for hyphens) are fixed *before* parsing, by patching the
-normalized paragraph/cell/title text — not the raw docx XML, which has
-arbitrary run splits and is hopeless as a patch target. Recurring document
-conventions stay in extractor code; semantic corrections stay in output
-`.dad` patches.
-
-Patch files are TOML, one per specification, named by its reference
-("TS29.272.toml"):
+One TOML file per specification, named by its reference ("TS29.272.toml"),
+holding two kinds of block. `[[patch]]` fixes a genuine typo in the source
+*text* before parsing — a 3GPP docx's "M. V" flag cell, "Monitoring Event
+Report" with spaces for hyphens — by patching the normalized
+paragraph/cell/title text, not the raw docx XML, which has arbitrary run
+splits and is hopeless as a patch target. `[[quirk]]` enables, by name, an
+extractor reading that is heuristic enough to misfire on a document it was
+not written for — harvesting AVP codes out of defining prose, indexing a
+document that prints no AVP table at all — and that therefore stays off
+unless the document declares it. Exact-match structural vocabulary (table
+header spellings, rule grammars) stays in extractor code, where unrecognized
+input fails loudly on its own; semantic corrections to data that parses fine
+stay in `edits/corrections/`.
 
     [[patch]]
     find = "M. V"
@@ -20,16 +24,20 @@ Patch files are TOML, one per specification, named by its reference
     first_version = "18.6.0"   # oldest version known to need this patch
     last_version = "18.6.0"    # newest version known to need this patch
 
-`find`, `replace` and `reason` are required, `find` must be non-empty and
-`count` positive: those are the declarations a patch cannot mean, and a patch
-whose `find` is empty would rewrite every gap between characters while still
-satisfying its own accounting.
+    [[quirk]]
+    name = "prose-avp-codes"   # must be one the extractor defines
+    reason = "AVP tables carry no Code column; each clause prints its code"
 
-A patch that applies more or fewer times than `count` fails the extraction,
-with a message including the known-needed version range, so patches cannot
-silently rot when the source document changes between versions. The version
-range is advisory: it explains where the patch is known to be needed, and does
-not gate whether the patch is applied.
+Both block kinds carry the same declaration contract: a required `reason`
+(a declaration asserts something about the source document, and without the
+reason the next reader cannot check that claim), an advisory version range,
+and must-fire accounting — a patch that applies more or fewer times than
+`count`, or a declared quirk that never changed anything, fails the
+extraction rather than rotting silently when the source changes between
+versions. A quirk carries no parameters by design: it is a named boolean
+with a reason, and the behavior it names lives in extractor code — TOML that
+carried logic would make the extractor an interpreter and the declaration
+unreviewable.
 """
 
 import tomllib
@@ -40,6 +48,10 @@ from .errors import ExtractionError
 
 
 class PatchError(ExtractionError):
+    pass
+
+
+class QuirkError(ExtractionError):
     pass
 
 
@@ -119,8 +131,7 @@ class Patcher:
     def load(cls, path: Path | None, version: str | None) -> Patcher:
         if path is None or not path.is_file():
             return cls([], version)
-        with path.open("rb") as stream:
-            data = tomllib.load(stream)
+        data = _read(path)
         try:
             patches = [Patch(**entry) for entry in data.get("patch", ())]
         except TypeError as error:
@@ -168,3 +179,99 @@ class Patcher:
             # One per line: each message already contains a semicolon, so
             # joining with another one reads as four clauses at two levels.
             raise PatchError("\n".join(problems))
+
+
+@dataclass
+class Quirk:
+    name: str
+    reason: str | None = None
+    first_version: str | None = None
+    last_version: str | None = None
+    fired: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            raise QuirkError("quirk declaration has an empty `name`")
+        if not self.reason:
+            # A quirk asserts that this document needs a reading no other
+            # document gets. Without the reason, the next reader cannot check
+            # that claim against the source.
+            raise QuirkError(f"quirk {self.name!r} has no `reason`")
+
+
+class Quirks:
+    """One spec's declared quirks, with the Patcher's accounting contract.
+
+    Each extractor owns a vocabulary of quirk names (its `QUIRKS` mapping);
+    declaring a name outside it fails at load, so a typo cannot silently
+    leave a quirk off. A declared quirk that never fires fails `finish()`,
+    so a reading the source stopped needing is loud, exactly like a patch
+    whose `find` stopped matching.
+    """
+
+    def __init__(self, quirks: list[Quirk], version: str | None):
+        self.quirks = {quirk.name: quirk for quirk in quirks}
+        if len(self.quirks) != len(quirks):
+            raise QuirkError("a quirk is declared twice")
+        self.version = version
+
+    def enabled(self, name: str) -> bool:
+        return name in self.quirks
+
+    def fire(self, name: str, count: int = 1) -> None:
+        self.quirks[name].fired += count
+
+    def finish(self) -> None:
+        problems = []
+        for quirk in self.quirks.values():
+            if quirk.fired:
+                continue
+            message = f"quirk {quirk.name!r} is declared but changed nothing"
+            if quirk.first_version is not None and self.version is not None:
+                known = quirk.first_version
+                if quirk.last_version not in (None, quirk.first_version):
+                    known += f"..{quirk.last_version}"
+                message += (
+                    f"; it was needed on version {known}, currently parsing"
+                    f" {self.version} — the source may have changed"
+                )
+            problems.append(message)
+        if problems:
+            raise QuirkError("\n".join(problems))
+
+
+def _read(path: Path) -> dict:
+    with path.open("rb") as stream:
+        return tomllib.load(stream)
+
+
+def load(
+    path: Path | None, version: str | None, known_quirks: dict[str, str]
+) -> tuple[Patcher, Quirks]:
+    """Load one specification's source declarations.
+
+    `known_quirks` is the calling extractor's vocabulary: name → one-line
+    description, used to reject an unknown declaration with the list of what
+    this extractor can be told.
+    """
+    patcher = Patcher.load(path, version)
+    if path is None or not path.is_file():
+        return patcher, Quirks([], version)
+    data = _read(path)
+    try:
+        quirks = [Quirk(**entry) for entry in data.get("quirk", ())]
+    except TypeError as error:
+        raise QuirkError(f"{path}: {error}") from None
+    for quirk in quirks:
+        if quirk.name not in known_quirks:
+            known = ", ".join(sorted(known_quirks)) or "none"
+            raise QuirkError(
+                f"{path}: unknown quirk {quirk.name!r}; this extractor defines: {known}"
+            )
+    unexpected = set(data) - {"patch", "quirk"}
+    if unexpected:
+        raise PatchError(
+            f"{path}: unknown block {', '.join(sorted(unexpected))!r};"
+            " a source declaration holds [[patch]] and [[quirk]] blocks"
+        )
+    return patcher, Quirks(quirks, version)

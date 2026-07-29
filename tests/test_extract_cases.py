@@ -124,5 +124,5 @@ def test_extract_rejects_an_avp_table_whose_caption_it_cannot_read(
         tgpp_docx.extract(uncaptioned)
 
 
-def test_patch_file_name_matches_the_dad_spec_reference():
-    assert tgpp_docx.patch_file_name("3GPP TS 29.272") == "TS29.272.toml"
+def test_sources_file_name_matches_the_dad_spec_reference():
+    assert tgpp_docx.sources_file_name("3GPP TS 29.272") == "TS29.272.toml"

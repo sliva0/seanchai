@@ -5,7 +5,7 @@ import pytest
 
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
-from seanchai.extractor.patches import Patcher
+from seanchai.extractor.sources import Patcher
 
 
 def _two_section_spec():

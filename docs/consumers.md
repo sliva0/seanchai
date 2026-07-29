@@ -96,9 +96,10 @@ AVPs must be right — name, type, mandatory default — in the library's global
 dictionary for their vendor space. An "extra AVP" finding can be another
 specification's legitimate use of the same command class, which is the
 reader's part of the job; and a corpus AVP that resolves to no
-`(vendor-id, code)` is reported as unchecked rather than judged — RFC 7155
-is the big case, printing its RADIUS-heritage codes in prose the RFC
-extractor does not capture into table rows.
+`(vendor-id, code)` is reported as unchecked rather than judged. RFC 7155
+was the big case — 77 AVPs whose RADIUS-heritage codes sat only in prose —
+until the `prose-avp-codes` quirk started completing its table rows from
+the defining clauses (see [extractor.md](extractor.md#quirks)).
 
 The first run — scoped to Cx, the six TS 29.229 commands — reported 94
 disagreements (library 0.9.0, corpus Rel-18; the library pins TS 29.229
@@ -151,7 +152,7 @@ finds are recorded where they were fixed:
   and PDF alike — and the extractor, which stops an ABNF at the first line
   that is not one, silently dropped that line *and* the `*[ AVP ]`,
   `*[ Proxy-Info ]`, `*[ Route-Record ]` tail behind it. Fixed by an input
-  patch (`edits/patches/TS29.229.toml`); the four recovered lines are the
+  patch (`edits/sources/TS29.229.toml`); the four recovered lines are the
   whole corpus diff.
 - TS 29.229's RTA prints `< Session-Id >` twice (clause 6.1.10, docx and PDF
   alike). The corpus records it faithfully, and the corrections layer cannot

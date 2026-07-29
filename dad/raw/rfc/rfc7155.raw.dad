@@ -435,108 +435,108 @@
 ; Type: AVP Table
 ; Section: 4.2.1
 ; Page: 24
-; Columns: Name         Section Must  M.not
-NAS-Port                4.2.2   M     V
-NAS-Port-Id             4.2.3   M     V
-NAS-Port-Type           4.2.4   M     V
-Called-Station-Id       4.2.5   M     V
-Calling-Station-Id      4.2.6   M     V
-Connect-Info            4.2.7   M     V
-Originating-Line-Info   4.2.8   M     V
-Reply-Message           4.2.9   M     V
+; Columns: Name         Code  Section Type          Must  M.not
+NAS-Port                5     4.2.2   Unsigned32    M     V
+NAS-Port-Id             87    4.2.3   UTF8String    M     V
+NAS-Port-Type           61    4.2.4   Enumerated    M     V
+Called-Station-Id       30    4.2.5   UTF8String    M     V
+Calling-Station-Id      31    4.2.6   UTF8String    M     V
+Connect-Info            77    4.2.7   UTF8String    M     V
+Originating-Line-Info   94    4.2.8   OctetString   M     V
+Reply-Message           18    4.2.9   UTF8String    M     V
 
 
 ; Type: AVP Table
 ; Section: 4.3
 ; Page: 28
-; Columns: Name           Section  Must  M.not
-User-Password             4.3.1    M     V
-Password-Retry            4.3.2    M     V
-Prompt                    4.3.3    M     V
-CHAP-Auth                 4.3.4    M     V
-CHAP-Algorithm            4.3.5    M     V
-CHAP-Ident                4.3.6    M     V
-CHAP-Response             4.3.7    M     V
-CHAP-Challenge            4.3.8    M     V
-ARAP-Password             4.3.9    M     V
-ARAP-Challenge-Response   4.3.10   M     V
-ARAP-Security             4.3.11   M     V
-ARAP-Security-Data        4.3.12   M     V
+; Columns: Name           Code  Section  Type          Must  M.not
+User-Password             2     4.3.1    OctetString   M     V
+Password-Retry            75    4.3.2    Unsigned32    M     V
+Prompt                    76    4.3.3    Enumerated    M     V
+CHAP-Auth                 402   4.3.4    Grouped       M     V
+CHAP-Algorithm            403   4.3.5    Enumerated    M     V
+CHAP-Ident                404   4.3.6    OctetString   M     V
+CHAP-Response             405   4.3.7    OctetString   M     V
+CHAP-Challenge            60    4.3.8    OctetString   M     V
+ARAP-Password             70    4.3.9    OctetString   M     V
+ARAP-Challenge-Response   84    4.3.10   OctetString   M     V
+ARAP-Security             73    4.3.11   Unsigned32    M     V
+ARAP-Security-Data        74    4.3.12   OctetString   M     V
 
 
 ; Type: AVP Table
 ; Section: 4.4
 ; Page: 31
-; Columns: Name            Section      Must  M.not
-Service-Type               4.4.1        M     V
-Callback-Number            4.4.2        M     V
-Callback-Id                4.4.3        M     V
-Idle-Timeout               4.4.4        M     V
-Port-Limit                 4.4.5        M     V
-NAS-Filter-Rule            4.4.6        M     V
-Filter-Id                  4.4.7        M     V
-Configuration-Token        4.4.8        M     V
-QoS-Filter-Rule            4.4.9        -     -
-Framed-Protocol            4.4.10.1     M     V
-Framed-Routing             4.4.10.2     M     V
-Framed-MTU                 4.4.10.3     M     V
-Framed-Compression         4.4.10.4     M     V
-Framed-IP-Address          4.4.10.5.1   M     V
-Framed-IP-Netmask          4.4.10.5.2   M     V
-Framed-Route               4.4.10.5.3   M     V
-Framed-Pool                4.4.10.5.4   M     V
-Framed-Interface-Id        4.4.10.5.5   M     V
-Framed-IPv6-Prefix         4.4.10.5.6   M     V
-Framed-IPv6-Route          4.4.10.5.7   M     V
-Framed-IPv6-Pool           4.4.10.5.8   M     V
-Framed-IPX-Network         4.4.10.6.1   M     V
-Framed-Appletalk-Link      4.4.10.7.1   M     V
-Framed-Appletalk-Network   4.4.10.7.2   M     V
-Framed-Appletalk-Zone      4.4.10.7.3   M     V
-ARAP-Features              4.4.10.8.1   M     V
-ARAP-Zone-Access           4.4.10.8.2   M     V
-Login-IP-Host              4.4.11.1     M     V
-Login-IPv6-Host            4.4.11.2     M     V
-Login-Service              4.4.11.3     M     V
-Login-TCP-Port             4.4.11.4.1   M     V
-Login-LAT-Service          4.4.11.5.1   M     V
-Login-LAT-Node             4.4.11.5.2   M     V
-Login-LAT-Group            4.4.11.5.3   M     V
-Login-LAT-Port             4.4.11.5.4   M     V
+; Columns: Name            Code  Section      Type            Must  M.not
+Service-Type               6     4.4.1        Enumerated      M     V
+Callback-Number            19    4.4.2        UTF8String      M     V
+Callback-Id                20    4.4.3        UTF8String      M     V
+Idle-Timeout               28    4.4.4        Unsigned32      M     V
+Port-Limit                 62    4.4.5        Unsigned32      M     V
+NAS-Filter-Rule            400   4.4.6        IPFilterRule    M     V
+Filter-Id                  11    4.4.7        UTF8String      M     V
+Configuration-Token        78    4.4.8        OctetString     M     V
+QoS-Filter-Rule            407   4.4.9        QoSFilterRule   -     -
+Framed-Protocol            7     4.4.10.1     Enumerated      M     V
+Framed-Routing             10    4.4.10.2     Enumerated      M     V
+Framed-MTU                 12    4.4.10.3     Unsigned32      M     V
+Framed-Compression         13    4.4.10.4     Enumerated      M     V
+Framed-IP-Address          8     4.4.10.5.1   OctetString     M     V
+Framed-IP-Netmask          9     4.4.10.5.2   OctetString     M     V
+Framed-Route               22    4.4.10.5.3   UTF8String      M     V
+Framed-Pool                88    4.4.10.5.4   OctetString     M     V
+Framed-Interface-Id        96    4.4.10.5.5   Unsigned64      M     V
+Framed-IPv6-Prefix         97    4.4.10.5.6   OctetString     M     V
+Framed-IPv6-Route          99    4.4.10.5.7   UTF8String      M     V
+Framed-IPv6-Pool           100   4.4.10.5.8   OctetString     M     V
+Framed-IPX-Network         23    4.4.10.6.1   Unsigned32      M     V
+Framed-Appletalk-Link      37    4.4.10.7.1   Unsigned32      M     V
+Framed-Appletalk-Network   38    4.4.10.7.2   Unsigned32      M     V
+Framed-Appletalk-Zone      39    4.4.10.7.3   OctetString     M     V
+ARAP-Features              71    4.4.10.8.1   OctetString     M     V
+ARAP-Zone-Access           72    4.4.10.8.2   Enumerated      M     V
+Login-IP-Host              14    4.4.11.1     OctetString     M     V
+Login-IPv6-Host            98    4.4.11.2     OctetString     M     V
+Login-Service              15    4.4.11.3     Enumerated      M     V
+Login-TCP-Port             16    4.4.11.4.1   Unsigned32      M     V
+Login-LAT-Service          34    4.4.11.5.1   OctetString     M     V
+Login-LAT-Node             35    4.4.11.5.2   OctetString     M     V
+Login-LAT-Group            36    4.4.11.5.3   OctetString     M     V
+Login-LAT-Port             63    4.4.11.5.4   OctetString     M     V
 
 
 ; Type: AVP Table
 ; Section: 4.5
 ; Page: 45
-; Columns: Name           Section  Must  M.not
-Tunneling                 4.5.1    M     V
-Tunnel-Type               4.5.2    M     V
-Tunnel-Medium-Type        4.5.3    M     V
-Tunnel-Client-Endpoint    4.5.4    M     V
-Tunnel-Server-Endpoint    4.5.5    M     V
-Tunnel-Password           4.5.6    M     V
-Tunnel-Private-Group-Id   4.5.7    M     V
-Tunnel-Assignment-Id      4.5.8    M     V
-Tunnel-Preference         4.5.9    M     V
-Tunnel-Client-Auth-Id     4.5.10   M     V
-Tunnel-Server-Auth-Id     4.5.11   M     V
+; Columns: Name           Code  Section  Type          Must  M.not
+Tunneling                 401   4.5.1    Grouped       M     V
+Tunnel-Type               64    4.5.2    Enumerated    M     V
+Tunnel-Medium-Type        65    4.5.3    Enumerated    M     V
+Tunnel-Client-Endpoint    66    4.5.4    UTF8String    M     V
+Tunnel-Server-Endpoint    67    4.5.5    UTF8String    M     V
+Tunnel-Password           69    4.5.6    OctetString   M     V
+Tunnel-Private-Group-Id   81    4.5.7    OctetString   M     V
+Tunnel-Assignment-Id      82    4.5.8    OctetString   M     V
+Tunnel-Preference         83    4.5.9    Unsigned32    M     V
+Tunnel-Client-Auth-Id     90    4.5.10   UTF8String    M     V
+Tunnel-Server-Auth-Id     91    4.5.11   UTF8String    M     V
 
 
 ; Type: AVP Table
 ; Section: 4.6
 ; Page: 51
-; Columns: Name             Section  Must  M.not
-Accounting-Input-Octets     4.6.1    M     V
-Accounting-Output-Octets    4.6.2    M     V
-Accounting-Input-Packets    4.6.3    M     V
-Accounting-Output-Packets   4.6.4    M     V
-Acct-Session-Time           4.6.5    M     V
-Acct-Authentic              4.6.6    M     V
-Accounting-Auth-Method      4.6.7    M     V
-Acct-Delay-Time             4.6.8    M     V
-Acct-Link-Count             4.6.9    M     V
-Acct-Tunnel-Connection      4.6.10   M     V
-Acct-Tunnel-Packets-Lost    4.6.11   M     V
+; Columns: Name             Code  Section  Type          Must  M.not
+Accounting-Input-Octets     363   4.6.1    Unsigned64    M     V
+Accounting-Output-Octets    364   4.6.2    Unsigned64    M     V
+Accounting-Input-Packets    365   4.6.3    Unsigned64    M     V
+Accounting-Output-Packets   366   4.6.4    Unsigned64    M     V
+Acct-Session-Time           46    4.6.5    Unsigned32    M     V
+Acct-Authentic              45    4.6.6    Enumerated    M     V
+Accounting-Auth-Method      406   4.6.7    Enumerated    M     V
+Acct-Delay-Time             41    4.6.8    Unsigned32    M     V
+Acct-Link-Count             51    4.6.9    Unsigned32    M     V
+Acct-Tunnel-Connection      68    4.6.10   OctetString   M     V
+Acct-Tunnel-Packets-Lost    86    4.6.11   Unsigned32    M     V
 
 
 ; Type: Grouped AVP

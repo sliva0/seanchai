@@ -52,7 +52,7 @@ get wrong in the same direction:
   body can change between versions.
 - **Do not normalize a value into what it "should" be.** That is what the two
   patch layers are for, and they are separate precisely so the unedited reading
-  stays on disk: [input patches](#input-patches) fix honest typos in the source
+  stays on disk: [input patches](#source-declarations) fix honest typos in the source
   text — a flags cell reading `M. V`, a rule name written with spaces — and
   only where the document is typographically wrong, never where it is
   semantically wrong. [Corrections](corrections.md) fix data that extracts and
@@ -118,14 +118,21 @@ definition the extractor threw away.
   document's own bibliography number, no publisher. The spec number identifies
   the origin; the prefix is decoration.
 
-## Input patches
+## Source declarations
+
+Everything declared about reading one source document lives in one TOML file
+per specification, named by its reference (`edits/sources/TS29.272.toml`),
+holding two kinds of block: input patches and quirks. Both carry the same
+contract — a required `reason`, an advisory version range, and must-fire
+accounting — because both assert something about the source document that the
+next reader has to be able to check, and both rot silently without the
+accounting.
+
+### Input patches
 
 Genuine typos in a source document are fixed *before* parsing, by patching the
 normalized paragraph, cell and title text — not the raw docx XML, which has
 arbitrary run splits and is hopeless as a patch target.
-
-Patch files are TOML, one per specification, named by its reference
-(`edits/patches/TS29.272.toml`):
 
 ```toml
 [[patch]]
@@ -157,12 +164,47 @@ application — a patch outside its recorded range still applies, because the
 alternative is silently dropping a fix on the next release, which is exactly
 the rot the accounting exists to catch.
 
+### Quirks
+
+A quirk enables, by name, an extractor reading that is heuristic enough to
+misfire on a document it was not written for, and that therefore stays off
+unless the document's declaration names it:
+
+```toml
+[[quirk]]
+name = "prose-avp-codes"   # must be in the extractor's vocabulary
+reason = "the AVP tables print no Code column; each clause prints its code"
+```
+
+What earns a behavior a quirk is misfire *risk*, not rarity. The header
+spelling maps and the ABNF grammars are also per-document knowledge, but an
+unrecognized header fails loudly on its own, so they stay in extractor code;
+harvesting facts out of prose would succeed silently on prose it was never
+meant to read, so it must be opted into. Each extractor defines its own
+vocabulary (`QUIRKS` in `rfc_text.py` and `tgpp_docx.py`); declaring a name
+outside it fails at load with the list of what the extractor can be told, so
+a typo cannot silently leave a quirk off. A declared quirk that fires zero
+times fails the extraction exactly like a rotted patch — a reading the source
+stopped needing must be loud.
+
+A quirk deliberately carries no parameters: it is a named boolean with a
+reason, and the behavior it names lives in extractor code. TOML that carried
+logic would make the extractor an interpreter and the declaration
+unreviewable.
+
+The RFC extractor's vocabulary today: `prose-avp-codes` (RFC 7155),
+`clause-avp-table` (RFC 4072, RFC 5447) and `radius-attribute-table`
+(RFC 4590) — see [the RFC extractor](#the-rfc-plain-text-extractor). The
+docx extractor's vocabulary is empty so far: no collected 3GPP document has
+needed a reading heuristic enough to gate.
+
 **Division of labor**, deliberately kept sharp:
 
 | Layer          | Fixes                                                  |
 |----------------|--------------------------------------------------------|
 | input patches  | typos in the source document that break extraction     |
-| extractor code | recurring conventions that carry information           |
+| quirks         | readings too heuristic to run undeclared               |
+| extractor code | exact-match structure that fails loudly on its own     |
 | corrections    | data that parses fine but is semantically wrong        |
 
 The correction layer is documented in [corrections](corrections.md).
@@ -353,9 +395,9 @@ not, then any extras. The column *set* has not:
 format: the Attribute Name / AVP Code / Section Defined / Data Type (or Value
 Type) columns in RFC AVP tables map onto `AvpTableRow` as it stands.
 `seanchai extract-rfc rfc6733.txt` drives it; the downloader already fetches
-the catalog's RFCs as `specifications/rfc/*.txt`. The same input-patch layer
-applies (`edits/patches/RFC6733.toml`), patched per content line after page
-furniture is stripped.
+the catalog's RFCs as `specifications/rfc/*.txt`. The same source-declaration
+layer applies (`edits/sources/RFC6733.toml`): input patches per content line
+after page furniture is stripped, and quirks for the prose readings below.
 
 What is different is the carrier, and everything this extractor knows is about
 that:
@@ -401,8 +443,25 @@ that:
   IANA allocation table carries Name, Code, Section, and Data Type and maps
   directly onto those four columns. RFCs 4072 and 5447 publish the same facts
   only in regular per-AVP definition sentences, so those clauses form the
-  document's AVP index. RFC 4590's Diameter-compatible RADIUS attributes
-  contribute Name, Code, and Section; no Diameter data type is fabricated.
+  document's AVP index — the `clause-avp-table` quirk, declared per document
+  because deciding which sentences are definitions is exactly the judgement
+  a prose reading can get wrong. RFC 4590's Diameter-compatible RADIUS
+  attributes contribute Name, Code, and Section (`radius-attribute-table`);
+  no Diameter data type is fabricated.
+- **Tables without a Code column.** RFC 7155 inherits its AVP codes from
+  RADIUS attribute numbers, so its per-category tables print only Name,
+  Section and flag rules; each code and type appears once, in the defining
+  sentence of the clause the row's Section cell points at ("The NAS-Port AVP
+  (AVP Code 5) is of type Unsigned32"). The `prose-avp-codes` quirk follows
+  that citation and completes the rows, extending `; Columns:` with Code and
+  Type — the file's own statement that those cells were read from the
+  clauses rather than from the printed table. Three defining sentences cite
+  the RADIUS origin between the identity and the type ("(AVP Code 8)
+  [RFC2865] is of type"); a citation there marks heritage, not an import,
+  unlike one inside the parentheses. A row with no matching sentence keeps
+  its `None` and warns; a sentence matching no row warns; the two
+  Accounting-*-Packets clauses that drop the word "AVP" from their own
+  sentences are input-patched.
 - **Stated facts.** Every AVP an RFC defines is in the IETF vendor space, so
   `; Vendor-ID: 0`; and an RFC number names one immutable document, so the
   file carries no `; Version:` line and its table — introduced by prose, with

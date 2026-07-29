@@ -119,7 +119,8 @@ never recover what the extractor threw away.
   empty cell. See [docs/dad-format.md](docs/dad-format.md), and
   [docs/grammar.md](docs/grammar.md) for the formal grammar.
 - **3GPP docx extractor**, plus the ETSI-PDF page-attachment pass and
-  per-spec input patches for source typos. See
+  per-spec source declarations — input patches for source typos, and quirks
+  that opt a document into readings too heuristic to run undeclared. See
   [docs/extractor.md](docs/extractor.md).
 - **RFC plain-text extractor** for the fixed-width AVP tables IETF documents
   print — the second input path into the same format. See
@@ -172,9 +173,10 @@ are kept in [docs/history/](docs/history/).
   generators later), each runnable standalone with `uv run`.
   See [docs/consumers.md](docs/consumers.md).
 - `edits/` — the two declared edit layers, side by side:
-  `edits/patches/<SpecRef>.toml` for source typos that would break extraction,
-  and `edits/corrections/<SpecRef>.py` for extracted data that parses but is
-  wrong.
+  `edits/sources/<SpecRef>.toml` for source declarations — input patches for
+  typos that would break extraction, and quirks enabling per-document
+  extractor readings — and `edits/corrections/<SpecRef>.py` for extracted
+  data that parses but is wrong.
 - `specifications/` — downloaded source documents (git-ignored; recreate with
   `seanchai download`). Output of the downloader, not of the project.
 - `examples/` — the hand-made reference `.dad` file the format is described

@@ -52,9 +52,13 @@ Three things this depends on, and which therefore must not regress:
 
 ## Which layer fixes what
 
-- **Input patches** (`edits/patches/<SpecRef>.toml`) — typos in the source document
-  that break extraction. See [extractor.md](extractor.md).
-- **Extractor code** — recurring conventions that carry information.
+- **Input patches** (`edits/sources/<SpecRef>.toml`, `[[patch]]`) — typos in
+  the source document that break extraction. See [extractor.md](extractor.md).
+- **Quirks** (same file, `[[quirk]]`) — extractor readings too heuristic to
+  run undeclared, enabled by name per document. See
+  [extractor.md](extractor.md#quirks).
+- **Extractor code** — exact-match structure that fails loudly on its own
+  when a document deviates.
 - **Corrections** (`edits/corrections/<SpecRef>.py`) — data that extracts and parses
   fine but is semantically wrong. See
   [corrections](corrections.md).

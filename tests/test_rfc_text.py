@@ -232,6 +232,14 @@ def test_extracts_later_rfc_fully_boxed_value_type_table(tmp_path):
     assert row.flag_rules.must_not == {ast.AvpFlag.VENDOR}
 
 
+def _declare(tmp_path, toml: str):
+    """A sources directory declaring `toml` for the synthetic RFC 9999."""
+    sources = tmp_path / "sources"
+    sources.mkdir(exist_ok=True)
+    (sources / "RFC9999.toml").write_text(toml, encoding="utf-8")
+    return sources
+
+
 def test_extracts_command_titles_and_clause_indexed_avps_without_a_table(tmp_path):
     body = _rfc(
         "3.1.  Diameter-EAP-Request (DER) Command\n\n"
@@ -243,8 +251,12 @@ def test_extracts_command_titles_and_clause_indexed_avps_without_a_table(tmp_pat
     )
     path = tmp_path / "rfc9999.txt"
     path.write_text(body, encoding="utf-8")
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "clause-avp-table"\nreason = "no summary table"\n',
+    )
 
-    spec = rfc_text.extract(path)
+    spec = rfc_text.extract(path, sources_dir=sources)
 
     message, table = spec.sections
     assert isinstance(message, ast.Message)
@@ -293,8 +305,12 @@ def test_indexes_radius_attributes_with_diameter_compatible_codes(tmp_path):
     )
     path = tmp_path / "rfc9999.txt"
     path.write_text(body, encoding="utf-8")
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "radius-attribute-table"\nreason = "RADIUS codes"\n',
+    )
 
-    spec = rfc_text.extract(path)
+    spec = rfc_text.extract(path, sources_dir=sources)
 
     (table,) = spec.sections
     assert isinstance(table, ast.AvpTable)
@@ -454,7 +470,7 @@ def test_input_patches_apply_to_content_lines(tmp_path, synthetic_rfc):
         encoding="utf-8",
     )
 
-    spec = rfc_text.extract(synthetic_rfc, patches_dir=patches)
+    spec = rfc_text.extract(synthetic_rfc, sources_dir=patches)
 
     (table,) = [s for s in spec.sections if isinstance(s, ast.AvpTable)]
     by_name = {row.name: row for row in table.rows}
@@ -469,4 +485,138 @@ def test_a_rotted_patch_fails_the_extraction(tmp_path, synthetic_rfc):
         encoding="utf-8",
     )
     with pytest.raises(ExtractionError, match="applied 0 times"):
-        rfc_text.extract(synthetic_rfc, patches_dir=patches)
+        rfc_text.extract(synthetic_rfc, sources_dir=patches)
+
+
+_CODELESS_RFC = (
+    "4.2.1.  Session AVPs\n"
+    "\n"
+    "                                            +-----------+\n"
+    "                                            | AVP Flag |\n"
+    "                                            |   Rules  |\n"
+    "                                            |-----+-----+\n"
+    "                                            |MUST | MUST|\n"
+    "   Attribute Name          Section Defined  |     |  NOT|\n"
+    "   -----------------------------------------|-----+-----|\n"
+    "   NAS-Port                4.2.2            |  M  |  V  |\n"
+    "   NAS-Port-Type           4.2.3            |  M  |  V  |\n"
+    "   -----------------------------------------|-----+-----|\n"
+    "\n"
+    "4.2.2.  NAS-Port AVP\n"
+    "\n"
+    "   The NAS-Port AVP (AVP Code 5) is of type Unsigned32 and contains\n"
+    "   the physical or virtual port number of the NAS.\n"
+    "\n"
+    "4.2.3.  NAS-Port-Type AVP\n"
+    "\n"
+    "   The NAS-Port-Type AVP (AVP Code 61) is of type Enumerated and\n"
+    "   contains the type of the port.\n"
+    "\n"
+    "   The supported values are defined below:\n"
+    "\n"
+    "   ASYNC        0\n"
+    "   SYNC         1\n"
+)
+
+
+def test_prose_avp_codes_completes_codeless_table_rows(tmp_path):
+    """The RFC 7155 shape: tables print Name/Section/flags only, and each
+    row's code and type sit in the defining sentence of the clause its
+    Section cell points at. The quirk follows that citation — and typing
+    NAS-Port-Type as Enumerated is what lets its value list extract."""
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(_rfc(_CODELESS_RFC), encoding="utf-8")
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "prose-avp-codes"\nreason = "codes in prose"\n',
+    )
+
+    spec = rfc_text.extract(path, sources_dir=sources)
+
+    table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
+    assert table.columns == (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+        ast.AvpColumn.TYPE,
+        ast.AvpColumn.MUST,
+        ast.AvpColumn.MUST_NOT,
+    )
+    by_name = {row.name: row for row in table.rows}
+    assert by_name["NAS-Port"].code == 5
+    assert by_name["NAS-Port"].data_type == ast.DataType.UNSIGNED32
+    assert by_name["NAS-Port"].flag_rules.must == {ast.AvpFlag.MANDATORY}
+    assert by_name["NAS-Port-Type"].code == 61
+    enum = next(s for s in spec.sections if isinstance(s, ast.EnumeratedAvp))
+    assert enum.name == "NAS-Port-Type"
+    assert enum.values == (
+        ast.EnumValue(name="ASYNC", value=0),
+        ast.EnumValue(name="SYNC", value=1),
+    )
+
+
+def test_without_the_quirk_a_codeless_table_stays_codeless(tmp_path):
+    """The rigid default: no declaration, no prose reading."""
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(_rfc(_CODELESS_RFC), encoding="utf-8")
+
+    spec = rfc_text.extract(path)
+
+    table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
+    assert ast.AvpColumn.CODE not in table.columns
+    assert all(row.code is None for row in table.rows)
+
+
+def test_a_row_without_a_defining_sentence_is_a_warning(tmp_path):
+    body = _CODELESS_RFC.replace(
+        "   The NAS-Port AVP (AVP Code 5) is of type Unsigned32 and contains\n"
+        "   the physical or virtual port number of the NAS.\n",
+        "   Discussed elsewhere.\n",
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(_rfc(body), encoding="utf-8")
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "prose-avp-codes"\nreason = "codes in prose"\n',
+    )
+    warnings: list[str] = []
+
+    spec = rfc_text.extract(path, sources_dir=sources, warnings=warnings)
+
+    table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
+    by_name = {row.name: row for row in table.rows}
+    assert by_name["NAS-Port"].code is None
+    assert by_name["NAS-Port-Type"].code == 61
+    assert any("no defining sentence" in warning for warning in warnings)
+
+
+def test_a_declared_quirk_that_changes_nothing_fails_the_extraction(
+    tmp_path, synthetic_rfc
+):
+    """The patch accounting contract, extended to quirks: a reading the
+    source stopped needing must be loud, not silently ignored."""
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "prose-avp-codes"\nreason = "codes in prose"\n',
+    )
+
+    with pytest.raises(ExtractionError, match="changed nothing"):
+        rfc_text.extract(synthetic_rfc, sources_dir=sources)
+
+
+def test_an_unknown_quirk_name_fails_with_the_vocabulary(tmp_path, synthetic_rfc):
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "prose-avp-codez"\nreason = "a typo"\n',
+    )
+
+    with pytest.raises(ExtractionError, match="clause-avp-table") as failure:
+        rfc_text.extract(synthetic_rfc, sources_dir=sources)
+    assert "prose-avp-codez" in str(failure.value)
+
+
+def test_a_quirk_without_a_reason_cannot_be_declared(tmp_path, synthetic_rfc):
+    sources = _declare(tmp_path, '[[quirk]]\nname = "prose-avp-codes"\n')
+
+    with pytest.raises(ExtractionError, match="no `reason`"):
+        rfc_text.extract(synthetic_rfc, sources_dir=sources)

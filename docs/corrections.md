@@ -5,7 +5,7 @@ the design and the reasoning behind it; the semantics below are what the code
 does.
 
 The pipeline has two patch layers by design. The first,
-[input patches](extractor.md#input-patches), fixes typos in the source document
+[input patches](extractor.md#source-declarations), fixes typos in the source document
 that would otherwise break extraction — a flags cell reading `M. V`, a rule name
 with spaces instead of hyphens. The second fixes data that extracts and parses
 perfectly well but is *wrong*: an AVP code that the spec's own table misprints, a
@@ -183,7 +183,7 @@ its marks, which is harmless because corrected files are regenerated rather
 than edited.
 
 CLI: `seanchai extract … --corrections DIR`, explicit rather than the
-`./edits/patches`-if-present auto-discovery the input patches use, because this
+`./edits/sources`-if-present auto-discovery the source declarations use, because this
 imports Python from the given directory. Plus `seanchai correct IN.dad -o
 OUT.dad`, so the layer can be re-run without a docx.
 
@@ -202,10 +202,10 @@ up: `ast.spec_ref` accepts only canonical document references, and the resolved
 candidate must sit directly in the resolved corrections directory. A file
 claiming `; Specification: ../outside` gets an error, not `../outside.py`.
 
-Input patches stay in `edits/patches/`; corrections go in
-`edits/corrections/`. Two directories side by side, so which layer a fix
-belongs to is visible from the path, and both are visibly *edits* rather than
-source.
+Source declarations (input patches and quirks) stay in `edits/sources/`;
+corrections go in `edits/corrections/`. Two directories side by side, so
+which layer a fix belongs to is visible from the path, and both are visibly
+*edits* rather than source.
 
 ## Testing
 

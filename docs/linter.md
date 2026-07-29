@@ -63,8 +63,11 @@ two of the members 29.344 lists.
   29.229 and TS 29.329 tabulate `Load` code-less among their own AVPs while
   their prose defines it only by reference to RFC 8583 — a re-used AVP printed
   in the wrong table, which the corrections move to the right one. Tables that
-  carry no Code column at all (RFC 7155's flag tables) are not checked; the
-  missing column is the document's layout, not a claim about any one AVP.
+  carry no Code column at all are not checked; the missing column is the
+  document's layout, not a claim about any one AVP. (RFC 7155's flag tables
+  were the standing example until the `prose-avp-codes` quirk started
+  completing their rows from the defining clauses — see
+  [extractor.md](extractor.md#quirks).)
 - `table-definition-mismatch` — an AVP-table row disagreeing with the clause
   that defines the same AVP, on code or on type. A row with no local clause is
   not compared: most rows are AVPs defined elsewhere, and comparing against

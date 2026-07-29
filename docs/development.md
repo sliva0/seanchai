@@ -106,11 +106,24 @@ reintroduce it as an incidental edit:
   container can (tests minus real sources, ruff); the full battery — both
   type checkers, the real-source re-extractions — runs locally before
   committing, and CI passing does not excuse skipping it.
-- **Version ranges are advisory.** For both input patches and corrections, a
-  recorded range describes where a fix is known to be needed and sharpens the
-  message. It never gates whether the fix is applied: gating means silently
-  dropping a fix on the next release, the exact failure the accounting exists
-  to catch.
+- **Version ranges are advisory.** For input patches, quirks and corrections,
+  a recorded range describes where a fix is known to be needed and sharpens
+  the message. It never gates whether the fix is applied: gating means
+  silently dropping a fix on the next release, the exact failure the
+  accounting exists to catch.
+- **Heuristic readings are opt-in per document.** An extractor behavior that
+  could silently misread a document it was not written for — prose
+  harvesting, tolerance of malformed input — runs only where a source
+  declaration names it as a quirk; exact-match structure (header spellings,
+  rule grammars) stays in code because unrecognized input fails loudly on
+  its own. This *reverses* an earlier settled line ("recurring document
+  conventions stay in extractor code"), deliberately: global leniencies
+  accumulate, each collected case loosening the parser for every future
+  document, and a code leniency has no per-document accounting — a quirk
+  fails loudly when its document stops needing it. Do not migrate a
+  leniency to a quirk in passing; do it when touching the behavior, with
+  the real-source pins proving the output unchanged. And a quirk carries no
+  parameters — the behavior it names lives in code.
 - **Don't design ahead of collected cases.** The extractor has repeatedly not
   grown override files, structural-instruction formats or generalised table
   handling, because no real document has needed them yet. The same restraint

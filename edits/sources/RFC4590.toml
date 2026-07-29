@@ -1,0 +1,5 @@
+# Source declarations for RFC 4590 (RADIUS Digest Authentication).
+
+[[quirk]]
+name = "radius-attribute-table"
+reason = "a RADIUS document cited by Diameter applications: each attribute clause's Type field assigns the Diameter-compatible code, and no Diameter data type is assigned anywhere"

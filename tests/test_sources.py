@@ -6,9 +6,9 @@ import pytest
 
 from seanchai.dad import ast
 from seanchai.extractor import tgpp_docx
-from seanchai.extractor.patches import Patch, Patcher, PatchError
+from seanchai.extractor.sources import Patch, Patcher, PatchError
 
-_PATCHES = Path(__file__).parent.parent / "edits" / "patches"
+_PATCHES = Path(__file__).parent.parent / "edits" / "sources"
 
 
 def test_patches_apply_by_substring_exact_match_and_section_scope():
@@ -141,7 +141,7 @@ first_version = "1.2.3"
 """
     )
 
-    spec = tgpp_docx.extract(malformed, patches_dir=patches_dir)
+    spec = tgpp_docx.extract(malformed, sources_dir=patches_dir)
 
     table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
     assert table.rows[1].flag_rules.must == {ast.AvpFlag.VENDOR}
@@ -164,7 +164,7 @@ last_version = "1.1.0"
     )
 
     with pytest.raises(PatchError, match=re.escape("needed on version 1.0.0..1.1.0")):
-        tgpp_docx.extract(synthetic_spec_docx, patches_dir=patches_dir)
+        tgpp_docx.extract(synthetic_spec_docx, sources_dir=patches_dir)
 
 
 def test_extract_without_patch_file_rejects_malformed_input(
@@ -179,7 +179,7 @@ def test_extract_without_patch_file_rejects_malformed_input(
         tgpp_docx.ExtractionError,
         match="malformed flags cell 'v'",
     ):
-        tgpp_docx.extract(malformed, patches_dir=tmp_path)
+        tgpp_docx.extract(malformed, sources_dir=tmp_path)
 
 
 @pytest.mark.parametrize(

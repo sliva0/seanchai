@@ -57,8 +57,8 @@ from pathlib import Path
 import pydantic
 
 from ..dad import abnf, ast
+from . import sources
 from .errors import ExtractionError, boundary
-from .patches import Patcher
 
 # Page furniture of the classic RFC rendering: a footer line ending in
 # "[Page N]", a form feed, then a running header repeating the RFC number and
@@ -223,6 +223,28 @@ _TYPE_SHORT_FORMS = {
 # extractor's 10415, a fact about the publisher, stated rather than read.
 IETF_VENDOR = ast.IETF_VENDOR
 
+# The quirk vocabulary this extractor defines: readings heuristic enough to
+# misfire on a document they were not written for, so each stays off unless
+# the document's source declaration names it (see `sources.py`). What gates a
+# behavior here is misfire risk, not rarity: the header-spelling maps above
+# are also per-document knowledge, but an unrecognized spelling fails loudly
+# on its own, where an unwanted prose harvest would succeed silently.
+QUIRKS: dict[str, str] = {
+    "prose-avp-codes": (
+        "complete AVP table rows from each clause's defining sentence, for a"
+        " document whose tables print no Code column — RFC 7155 inherits its"
+        " codes from RADIUS and prints them only as prose ('AVP Code 5')"
+    ),
+    "clause-avp-table": (
+        "build the AVP index from the defining sentences alone, for a"
+        " document that prints no AVP table at all (RFC 4072, RFC 5447)"
+    ),
+    "radius-attribute-table": (
+        "index RADIUS attributes cited as Diameter-compatible AVPs, reading"
+        " each code from its attribute clause's Type field (RFC 4590)"
+    ),
+}
+
 
 @dataclass
 class _Line:
@@ -235,7 +257,7 @@ class _Line:
 
 
 def _content_lines(
-    raw: list[str], patcher: Patcher
+    raw: list[str], patcher: sources.Patcher
 ) -> tuple[list[_Line], dict[str, _Line]]:
     """Strip page furniture, attach page numbers and sections, apply patches.
 
@@ -741,21 +763,35 @@ def _simple_avp_tables(
 _CLAUSE_AVP_RE = re.compile(
     r"\b(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) AVP\s*"
     r"\((?P<identity>[^)]*?(?:Code|Type)\s+(?P<code>\d+)[^)]*)\)"
+    # RFC 7155 cites the RADIUS document its attribute number comes from
+    # between the identity and the type ("(AVP Code 8) [RFC2865] is of
+    # type"). A citation *here* marks heritage, not an import — the AVP is
+    # this document's, sitting in its tables with its own defining clause —
+    # unlike one inside the parentheses, which `_clause_facts` excludes.
+    r"(?:\s*\[RFC\d+\])?"
     r"\s+is of type\s+(?P<data_type>[A-Za-z0-9]+)",
     re.IGNORECASE,
 )
 
 
-def _clause_avp_table(sections: list[_DocSection]) -> ast.AvpTable | None:
-    """Build the AVP index for RFCs that define AVPs clause-by-clause.
+@dataclass
+class _ClauseFact:
+    """One clause's defining sentence, reduced to the facts it states."""
 
-    RFCs 4072 and 5447 have no summary table.  Their definition sentences are
-    regular and carry the same Name/Code/Section/Type facts, so collect those
-    facts into the format's AVP index.  A code annotated with another RFC is
-    an imported AVP and is deliberately excluded.
+    section: _DocSection
+    name: str
+    code: int
+    data_type: ast.DataType
+
+
+def _clause_facts(sections: list[_DocSection]) -> list[_ClauseFact]:
+    """The Name/Code/Type facts stated by ` AVP`-titled defining clauses.
+
+    Strictly anchored: the sentence must sit under a clause titled with the
+    same name it defines. A code annotated with another RFC is an imported
+    AVP and is deliberately excluded.
     """
-    rows: list[ast.AvpTableRow] = []
-    first_source: ast.SourceRef | None = None
+    facts = []
     for section in sections:
         title = _TITLE_RE.match(section.title)
         if title is None or title["avp_suffix"] is None:
@@ -766,20 +802,42 @@ def _clause_avp_table(sections: list[_DocSection]) -> ast.AvpTable | None:
             continue
         if "[RFC" in match["identity"].upper():
             continue
-        source = ast.SourceRef(section=section.number, page=section.page)
-        first_source = first_source or source
-        rows.append(
-            ast.AvpTableRow(
+        facts.append(
+            _ClauseFact(
+                section=section,
                 name=title["name"],
                 code=int(match["code"]),
-                section=section.number,
                 data_type=_data_type(match["data_type"]),
             )
         )
-    if not rows or first_source is None:
+    return facts
+
+
+def _clause_avp_table(sections: list[_DocSection]) -> ast.AvpTable | None:
+    """Build the AVP index for RFCs that define AVPs clause-by-clause.
+
+    RFCs 4072 and 5447 have no summary table.  Their definition sentences are
+    regular and carry the same Name/Code/Section/Type facts, so collect those
+    facts into the format's AVP index.  Gated by the `clause-avp-table`
+    quirk: which sentences are definitions rather than discussion is exactly
+    the judgement a prose reading can get wrong on a document it was not
+    written for.
+    """
+    facts = _clause_facts(sections)
+    if not facts:
         return None
+    rows = [
+        ast.AvpTableRow(
+            name=fact.name,
+            code=fact.code,
+            section=fact.section.number,
+            data_type=fact.data_type,
+        )
+        for fact in facts
+    ]
+    first = facts[0].section
     return ast.AvpTable(
-        source=first_source,
+        source=ast.SourceRef(section=first.number, page=first.page),
         columns=(
             ast.AvpColumn.NAME,
             ast.AvpColumn.CODE,
@@ -788,6 +846,75 @@ def _clause_avp_table(sections: list[_DocSection]) -> ast.AvpTable | None:
         ),
         rows=tuple(rows),
     )
+
+
+def _complete_rows_from_prose(
+    tables: tuple[ast.AvpTable, ...],
+    sections: list[_DocSection],
+    quirks: sources.Quirks,
+    warnings: list[str],
+) -> tuple[ast.AvpTable, ...]:
+    """Fill code and type into the rows of tables that print no Code column,
+    from each row's own defining clause. The `prose-avp-codes` quirk.
+
+    RFC 7155 inherits its AVP codes from RADIUS attribute numbers, so its
+    per-category tables print only Name, Section and flag rules; the code and
+    type appear once, in the defining sentence of the clause the row's
+    Section cell already points at. Following that citation completes the
+    row without inventing anything: the columns added to `; Columns:` record
+    that this file's Code and Type cells were read from the clauses rather
+    than from the printed table.
+    """
+    facts = {fact.name: fact for fact in _clause_facts(sections)}
+    used: set[str] = set()
+    completed = []
+    for table in tables:
+        if ast.AvpColumn.CODE in table.columns:
+            completed.append(table)
+            continue
+        rows = []
+        for row in table.rows:
+            fact = facts.get(row.name)
+            if fact is None:
+                warnings.append(
+                    f"{table.source.section}: no defining sentence found for"
+                    f" table row {row.name!r} — its code and type stay unknown"
+                )
+                rows.append(row)
+                continue
+            used.add(row.name)
+            quirks.fire("prose-avp-codes")
+            rows.append(
+                ast.AvpTableRow(
+                    name=row.name,
+                    code=fact.code,
+                    section=row.section,
+                    data_type=fact.data_type,
+                    flag_rules=row.flag_rules,
+                    may_encrypt=row.may_encrypt,
+                )
+            )
+        columns: list[ast.AvpColumn] = []
+        for column in table.columns:
+            columns.append(column)
+            if column is ast.AvpColumn.NAME:
+                columns.append(ast.AvpColumn.CODE)
+            elif column is ast.AvpColumn.SECTION:
+                columns.append(ast.AvpColumn.TYPE)
+        completed.append(
+            ast.AvpTable(
+                table=table.table,
+                source=table.source,
+                columns=tuple(columns),
+                rows=tuple(rows),
+            )
+        )
+    for name in sorted(facts.keys() - used):
+        warnings.append(
+            f"{facts[name].section.number}: defining sentence for {name!r}"
+            f" (code {facts[name].code}) matches no code-less table row"
+        )
+    return tuple(completed)
 
 
 _RADIUS_ATTRIBUTE_TITLE_RE = re.compile(
@@ -1058,8 +1185,9 @@ def _specification(raw: list[str]) -> str:
     raise ExtractionError("cannot find the RFC number in the document header")
 
 
-def patch_file_name(specification: str) -> str:
-    """Patch file name for an RFC title: "RFC 6733" → "RFC6733.toml"."""
+def sources_file_name(specification: str) -> str:
+    """Source-declaration file name for an RFC title:
+    "RFC 6733" → "RFC6733.toml"."""
     return f"{ast.spec_ref(specification)}.toml"
 
 
@@ -1067,26 +1195,27 @@ def extract(
     text_path: Path | str,
     link: str | None = None,
     warnings: list[str] | None = None,
-    patches_dir: Path | None = None,
+    sources_dir: Path | None = None,
 ) -> ast.Specification:
     """Extract a `Specification` from an RFC's plain-text rendering.
 
     `; Page:` numbers are the RFC's own printed pages — the text is its sole
-    rendering, so there is no separate PDF step. When `patches_dir` is given,
-    input patches from `<patches_dir>/<SpecRef>.toml` (if present) are applied
-    to every content line before parsing. Non-fatal source inconsistencies are
-    appended to `warnings` when a list is given.
+    rendering, so there is no separate PDF step. When `sources_dir` is given,
+    source declarations from `<sources_dir>/<SpecRef>.toml` (if present)
+    apply: input patches to every content line before parsing, and quirks
+    (see `QUIRKS`) to the readings this extractor uses. Non-fatal source
+    inconsistencies are appended to `warnings` when a list is given.
     """
     warnings = warnings if warnings is not None else []
     with boundary(f"extracting {text_path}"):
         raw = Path(text_path).read_text(encoding="utf-8").splitlines()
         specification = _specification(raw)
-        patch_path = (
-            patches_dir / patch_file_name(specification)
-            if patches_dir is not None
+        declarations_path = (
+            sources_dir / sources_file_name(specification)
+            if sources_dir is not None
             else None
         )
-        patcher = Patcher.load(patch_path, version=None)
+        patcher, quirks = sources.load(declarations_path, None, QUIRKS)
 
         readers: list[_TableReader] = []
         reader: _TableReader | None = None
@@ -1116,10 +1245,21 @@ def extract(
             if (table := candidate.result_optional()) is not None
         )
         tables += _simple_avp_tables(lines, headings)
-        if not tables and (clause_table := _clause_avp_table(document_sections)):
-            tables = (clause_table,)
-        if not tables and (radius_table := _radius_attribute_table(document_sections)):
-            tables = (radius_table,)
+        if quirks.enabled("prose-avp-codes"):
+            tables = _complete_rows_from_prose(
+                tables, document_sections, quirks, warnings
+            )
+        if quirks.enabled("clause-avp-table") and (
+            clause_table := _clause_avp_table(document_sections)
+        ):
+            quirks.fire("clause-avp-table", len(clause_table.rows))
+            tables += (clause_table,)
+        if quirks.enabled("radius-attribute-table") and (
+            radius_table := _radius_attribute_table(document_sections)
+        ):
+            quirks.fire("radius-attribute-table", len(radius_table.rows))
+            tables += (radius_table,)
+        quirks.finish()
         messages, definitions = _extract_definitions(
             document_sections, tables, warnings
         )

@@ -134,3 +134,26 @@ What still reports, and why each class stays:
 Per the note above, none of the Wireshark-side defects patches the corpus;
 each is a per-finding candidate for a merge request into Wireshark, which is
 work this repository can only stage, not land.
+
+## After RFC 7155's codes became checkable (July 2026)
+
+The `prose-avp-codes` quirk (see [extractor.md](extractor.md#quirks)) gave
+RFC 7155's 77 AVPs their codes and types, so the crosscheck can match them
+for the first time. Four of the six findings it reports are new instances of
+already-triaged classes: `Framed-Pool` (display convenience, above) and
+`Acct-Tunnel-Connection` against Wireshark's `Tunnel-Connection-ID`
+(deliberate disambiguation, above). Two are untriaged leads:
+
+- **`Framed-IPX-Network` typed Unsigned32 against Wireshark's UTF8String.**
+  The corpus value is RFC 7155 clause 4.4.10.6.1's own sentence — and RFC
+  4005 already disagreed with *itself* here: its clause 6.12.1 also says
+  Unsigned32 while its summary table prints UTF8String, which is the cell
+  the corpus (and, apparently, Wireshark) carries for 4005. A reader with
+  both documents and RFC 2865 open should decide which side a merge request
+  argues.
+- **`Framed-Appletalk-Link`/`-Network`/`-Zone` casing.** RFC 7155 spells
+  `Appletalk` consistently — headings, ABNF and tables alike — where RFC
+  4005's clauses, RADIUS and Wireshark spell `AppleTalk`. Unlike 4005's
+  table-only slip (corrected in the triage), this is 7155's document-wide
+  spelling, so the corpus keeps it faithfully; whether it is worth an
+  erratum or a consumer-model name mapping is the open question.

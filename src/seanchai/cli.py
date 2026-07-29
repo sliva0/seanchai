@@ -14,10 +14,10 @@ from pathlib import Path
 
 import click
 
-# The two declared edit layers live side by side; only the input patches are
-# discovered automatically, because loading a correction module executes
-# Python from that directory.
-_DEFAULT_PATCHES = Path("edits") / "patches"
+# The two declared edit layers live side by side; only the source
+# declarations (input patches and quirks) are discovered automatically,
+# because loading a correction module executes Python from that directory.
+_DEFAULT_SOURCES = Path("edits") / "sources"
 
 # The `(trailing, standing, detached)` note triple `corrections.notes`
 # produces and `formatter.format_spec` takes.
@@ -99,9 +99,10 @@ def main() -> None:
 )
 @click.option("--link", help="ETSI PDF URL for the file's `; Link:` header.")
 @click.option(
-    "--patches",
+    "--sources",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with input-patch TOML files (default: ./edits/patches if present).",
+    help="Directory with source-declaration TOML files — input patches and"
+    " quirks (default: ./edits/sources if present).",
 )
 @click.option(
     "--corrections",
@@ -120,20 +121,20 @@ def extract(
     docx: Path,
     pdf: Path | None,
     link: str | None,
-    patches: Path | None,
+    sources: Path | None,
     corrections: Path | None,
     output: Path | None,
 ) -> None:
     """Extract a canonical `.dad` file from a 3GPP specification docx."""
     from .extractor import tgpp_docx
 
-    if patches is None and _DEFAULT_PATCHES.is_dir():
-        patches = _DEFAULT_PATCHES
+    if sources is None and _DEFAULT_SOURCES.is_dir():
+        sources = _DEFAULT_SOURCES
     warnings: list[str] = []
     with reported():
         try:
             spec = tgpp_docx.extract(
-                docx, link=link, warnings=warnings, patches_dir=patches
+                docx, link=link, warnings=warnings, sources_dir=sources
             )
             if pdf is not None:
                 spec = tgpp_docx.attach_pages(spec, pdf, warnings=warnings)
@@ -156,9 +157,10 @@ def extract(
 @click.argument("text", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--link", help="Canonical URL for the file's `; Link:` header.")
 @click.option(
-    "--patches",
+    "--sources",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with input-patch TOML files (default: ./edits/patches if present).",
+    help="Directory with source-declaration TOML files — input patches and"
+    " quirks (default: ./edits/sources if present).",
 )
 @click.option(
     "--corrections",
@@ -176,7 +178,7 @@ def extract(
 def extract_rfc(
     text: Path,
     link: str | None,
-    patches: Path | None,
+    sources: Path | None,
     corrections: Path | None,
     output: Path | None,
 ) -> None:
@@ -187,13 +189,13 @@ def extract_rfc(
     """
     from .extractor import rfc_text
 
-    if patches is None and _DEFAULT_PATCHES.is_dir():
-        patches = _DEFAULT_PATCHES
+    if sources is None and _DEFAULT_SOURCES.is_dir():
+        sources = _DEFAULT_SOURCES
     warnings: list[str] = []
     with reported():
         try:
             spec = rfc_text.extract(
-                text, link=link, warnings=warnings, patches_dir=patches
+                text, link=link, warnings=warnings, sources_dir=sources
             )
         finally:
             for warning in warnings:
