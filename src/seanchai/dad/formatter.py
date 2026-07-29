@@ -32,12 +32,13 @@ def _noted(line: str, node: Any, notes: Notes) -> str:
     return line + "".join(f" ;; {note}" for note in notes.get(id(node), ()))
 
 
-def _standing(node: Any, standing: Notes) -> list[str]:
+def _standing(node: Any, standing: Notes, indent: str = "") -> list[str]:
     """Whole-line notes, for an edit that left no line to append to: a
     deletion's note prints in the deleted line's place — before the sibling
     that moved up into it, or at the end of the section's lines when the
-    last sibling went, because the end is where that line stood."""
-    return [f";; {note}" for note in standing.get(id(node), ())]
+    last sibling went, because the end is where that line stood — indented
+    like the lines of the block it stands in."""
+    return [f"{indent};; {note}" for note in standing.get(id(node), ())]
 
 
 _MIN_COLUMN_WIDTH = 3
@@ -193,9 +194,9 @@ def _format_enumerated(
                 else f"{value.first}-{value.last}"
             )
             line = f"      ; {'RESERVED':<{width}} = {numbers}"
-        lines.extend(_standing(value, standing))
+        lines.extend(_standing(value, standing, indent=" " * 8))
         lines.append(_noted(line, value, notes))
-    lines.extend(_standing(avp, standing))
+    lines.extend(_standing(avp, standing, indent=" " * 8))
     return lines
 
 

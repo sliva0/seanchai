@@ -432,6 +432,27 @@ def test_a_standing_note_prints_in_place_of_a_deleted_row():
     assert lines[marker + 1].startswith("Load")
 
 
+def test_a_standing_note_in_an_enum_is_indented_like_the_values_around_it():
+    enumerated = ast.EnumeratedAvp(
+        name="Mode",
+        source=ast.SourceRef(section="6.3.2"),
+        code=702,
+        values=(ast.EnumValue(name="Off", value=0), ast.EnumValue(name="On", value=1)),
+    )
+    spec = _spec(enumerated)
+
+    note = "deleted: value 'Void' (= 0) (f.py:9)"
+    annotated = formatter.format_spec(
+        spec, standing={id(enumerated.values[1]): [note]}
+    )
+    lines = annotated.splitlines()
+
+    marker = lines.index(f"        ;; {note}")
+    assert lines[marker - 1].startswith("        Off")
+    assert lines[marker + 1].startswith("        On")
+    assert parser.parse(annotated) == spec
+
+
 def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
     # With no sibling left to stand before, the note is keyed by the table
     # and prints at the end of its lines — where the deleted row stood.

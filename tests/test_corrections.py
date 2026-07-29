@@ -536,6 +536,24 @@ def test_a_delete_reports_the_sibling_now_standing_in_the_rows_place():
     ]
 
 
+def test_a_deleted_enum_values_note_omits_the_avp_the_block_already_names():
+    # The standing note prints among the enum's own values, so repeating
+    # "of 'Example-Mode'" there would only restate the block's header; the
+    # Result keeps the full description for logs read on their own.
+    spec = _spec()
+    doomed = ast.EnumValue(name="Off", value=0)
+
+    _, (result,) = corrections.apply(
+        spec, [_delete(corrections.enum_value("Example-Mode", "Off", 0), doomed)]
+    )
+
+    assert result.node == "value 'Off' of 'Example-Mode' (= 0)"
+    _, standing, _ = corrections.notes([result])
+    assert standing[result.node_id] == [
+        f"deleted: value 'Off' (= 0) ({result.correction.origin})"
+    ]
+
+
 def test_a_delete_whose_expect_differs_reports_the_changed_fields():
     with pytest.raises(corrections.CorrectionError, match=r"has changed.*origin"):
         corrections.apply(

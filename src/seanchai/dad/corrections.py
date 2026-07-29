@@ -81,6 +81,12 @@ class Selector:
     def describe(self) -> str:
         raise NotImplementedError
 
+    def describe_in_place(self) -> str:
+        """The description a note printed *inside* the target's own block can
+        use: context the surrounding lines already state is dropped there,
+        while `describe` keeps it for errors and logs read on their own."""
+        return self.describe()
+
 
 @dataclass(frozen=True)
 class definition(Selector):
@@ -254,10 +260,15 @@ class enum_value(Selector):
                 )
 
     def describe(self) -> str:
-        described = f"value {self.name!r} of {self.avp!r}"
-        if self.value is not None:
-            described += f" (= {self.value})"
-        return described
+        return f"value {self.name!r} of {self.avp!r}" + self._value_suffix()
+
+    def describe_in_place(self) -> str:
+        # The note stands among the enum's own values, so the block already
+        # names the AVP.
+        return f"value {self.name!r}" + self._value_suffix()
+
+    def _value_suffix(self) -> str:
+        return "" if self.value is None else f" (= {self.value})"
 
 
 @dataclass(frozen=True)
@@ -752,7 +763,7 @@ def notes(
         if isinstance(edit, Delete):
             bucket = detached if isinstance(result.old, _SECTION_TYPES) else standing
             bucket.setdefault(result.node_id, []).append(
-                f"deleted: {result.node} ({edit.origin})"
+                f"deleted: {edit.target.describe_in_place()} ({edit.origin})"
             )
             continue
         kind = "inserted" if isinstance(edit, Insert) else "corrected"
