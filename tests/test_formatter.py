@@ -22,6 +22,10 @@ def test_every_committed_dad_file_round_trips_exactly(path):
         for line in text.splitlines()
         if not line.lstrip().startswith(";;")
     )
+    # A deleted section's note is a block of its own, spaced like a section —
+    # removing its line leaves both neighbours' separators behind, so the
+    # doubled gap collapses back to the canonical two blank lines.
+    canonical = canonical.replace("\n" * 5, "\n" * 3)
     spec = parser.parse(text)
 
     assert formatter.format_spec(spec) == canonical + "\n"
@@ -275,7 +279,7 @@ def test_an_unregistered_section_type_fails_loudly():
     # A new section kind without a formatter must not slip through as a
     # silently missing block.
     with pytest.raises(TypeError, match="no formatter for object"):
-        formatter._format_section(object(), {})  # type: ignore
+        formatter._format_section(object(), {}, {})  # type: ignore
 
 
 def test_a_subclass_is_not_formatted_as_its_base():
@@ -295,7 +299,7 @@ def test_a_subclass_is_not_formatted_as_its_base():
     )
 
     with pytest.raises(TypeError, match="no formatter for ExtendedMessage"):
-        formatter._format_section(section, {})
+        formatter._format_section(section, {}, {})
 
 
 def _group(name, section, avps):
@@ -406,9 +410,31 @@ def test_notes_trail_the_line_of_the_node_they_mark_and_the_file_still_parses():
     assert parser.parse(annotated) == spec
 
 
-def test_a_deletions_note_stands_alone_before_the_section_it_marks():
-    # A deleted row leaves no line to trail, so its note — keyed by the table
-    # that lost it — is the one whole-line comment the formatter still writes.
+def test_a_standing_note_prints_in_place_of_a_deleted_row():
+    # A deleted row leaves no line to trail, so its note — keyed by the row
+    # now standing where it stood — prints as a whole line in its place.
+    table = ast.ReusedAvps(
+        table="6.4",
+        source=ast.SourceRef(section="6.4"),
+        rows=(
+            ast.ReusedAvpRow(name="DRMP", origin="RFC7944"),
+            ast.ReusedAvpRow(name="Load", origin="RFC8583"),
+        ),
+    )
+    spec = _spec(table)
+
+    note = "deleted: re-used AVPs row 'Doomed' (f.py:9)"
+    annotated = formatter.format_spec(spec, standing={id(table.rows[1]): [note]})
+    lines = annotated.splitlines()
+
+    marker = lines.index(f";; {note}")
+    assert lines[marker - 1].startswith("DRMP")
+    assert lines[marker + 1].startswith("Load")
+
+
+def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
+    # With no sibling left to stand before, the note is keyed by the table
+    # and prints at the end of its lines — where the deleted row stood.
     table = ast.ReusedAvps(
         table="6.4",
         source=ast.SourceRef(section="6.4"),
@@ -416,11 +442,13 @@ def test_a_deletions_note_stands_alone_before_the_section_it_marks():
     )
     spec = _spec(table)
 
-    annotated = _annotated(spec, table, note=";; deleted: (f.py:9)")
+    note = "deleted: re-used AVPs row 'Doomed' (f.py:9)"
+    annotated = formatter.format_spec(spec, standing={id(table): [note]})
     lines = annotated.splitlines()
 
-    marker = lines.index(";; deleted: (f.py:9)")
-    assert lines[marker + 1] == "; Type: Reused AVPs"
+    marker = lines.index(f";; {note}")
+    assert lines[marker - 1].startswith("Load")
+    assert marker == len(lines) - 1
 
 
 def test_notes_do_not_survive_a_round_trip_and_that_is_the_relation():

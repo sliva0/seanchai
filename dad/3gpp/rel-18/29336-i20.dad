@@ -624,6 +624,9 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
       * [ AVP ]
 
 
+;; deleted: definition 'User-Identifier' (clause 8.4.36) (TS29.336.py:14)
+
+
 ; Type: Grouped AVP
 ; Name: Service-Result
 ; Section: 8.4.37

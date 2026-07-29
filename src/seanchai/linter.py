@@ -244,6 +244,38 @@ def _duplicate_identities(
     return findings
 
 
+def _rows_without_codes(index: _Index) -> list[Finding]:
+    """A table that declares a Code column fills it in every row.
+
+    An AVP is its `(vendor-id, code)`, so a row printing `-` for its code
+    describes nothing a message could carry. Both real cases are the same
+    editorial slip: TS 29.229 and TS 29.329 tabulate `Load` code-less among
+    their own AVPs while their prose defines it only by reference to
+    RFC 8583 — a re-used AVP printed in the wrong table. Only tables that
+    declare a Code column are checked: RFC 7155's tables carry no such
+    column at all, which is a statement about the document's layout rather
+    than about any one AVP.
+    """
+    findings = []
+    for table in index.tables:
+        if ast.AvpColumn.CODE not in table.columns:
+            continue
+        for row in table.rows:
+            if row.code is not None:
+                continue
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "row-without-code",
+                    f"{row.name} is tabulated with no AVP code, and an AVP"
+                    " without a code has no wire identity; a re-used AVP"
+                    " belongs in the re-used table instead",
+                    row.section or table.source.section,
+                )
+            )
+    return findings
+
+
 def _table_agrees_with_definitions(index: _Index) -> list[Finding]:
     by_name = {d.name: d for d in index.definitions}
     findings = []
@@ -362,6 +394,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_one_name_two_commands(index),
         *_duplicate_enum_values(index),
         *_duplicate_identities(index, spec.vendor_id),
+        *_rows_without_codes(index),
         *_table_agrees_with_definitions(index),
         *_vendor_id_agrees_with_header(index, spec.vendor_id),
         *_local_and_reused(index),

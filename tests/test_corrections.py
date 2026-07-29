@@ -455,9 +455,9 @@ def test_an_insert_adds_a_row_after_a_named_row_and_marks_the_new_row():
     table = _table(corrected)
     assert [row.name for row in table.rows] == ["Example-Mode", "Inserted-AVP"]
     assert result.node_id == id(table.rows[1])
-    assert corrections.notes([result])[result.node_id] == [
-        f"inserted: ({result.correction.origin})"
-    ]
+    trailing, standing, detached = corrections.notes([result])
+    assert trailing[result.node_id] == [f"inserted: ({result.correction.origin})"]
+    assert (standing, detached) == ({}, {})
 
 
 def test_an_insert_with_no_after_appends():
@@ -492,7 +492,7 @@ def test_an_insert_fails_when_its_after_row_is_missing():
         corrections.apply(_spec(), [_insert(inserted, after="Missing-AVP")])
 
 
-def test_a_delete_removes_the_node_and_reports_the_parent_it_left():
+def test_a_delete_of_a_last_row_reports_the_parent_it_left():
     spec = _with_reused(_spec())
     doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
 
@@ -505,9 +505,35 @@ def test_a_delete_removes_the_node_and_reports_the_parent_it_left():
     assert [row.name for row in table.rows] == ["Load"]
     assert corrected.sections[:3] == spec.sections[:3]
     assert result.node == "re-used AVPs row 'Feature-Id'"
-    # The deleted row produces no lines, so the note anchor is the parent
-    # section in the rebuilt tree.
+    # The deleted row produces no lines and, as the last row, leaves no
+    # sibling to stand before — so the note anchor falls back to the parent
+    # section in the rebuilt tree, and the formatter prints it after the
+    # remaining rows, where the deleted line stood.
     assert result.node_id == id(table)
+    _, standing, _ = corrections.notes([result])
+    assert standing[id(table)] == [
+        f"deleted: re-used AVPs row 'Feature-Id' ({result.correction.origin})"
+    ]
+
+
+def test_a_delete_reports_the_sibling_now_standing_in_the_rows_place():
+    """The note anchor is the *following* row, so the formatter prints the
+    note exactly where the deleted line used to be."""
+    spec = _with_reused(_spec())
+    doomed = ast.ReusedAvpRow(name="Load", origin="RFC8583")
+
+    corrected, (result,) = corrections.apply(
+        spec, [_delete(corrections.reused_row("Load"), doomed)]
+    )
+
+    table = corrected.sections[3]
+    assert isinstance(table, ast.ReusedAvps)
+    assert [row.name for row in table.rows] == ["Feature-Id"]
+    assert result.node_id == id(table.rows[0])
+    _, standing, _ = corrections.notes([result])
+    assert standing[id(table.rows[0])] == [
+        f"deleted: re-used AVPs row 'Load' ({result.correction.origin})"
+    ]
 
 
 def test_a_delete_whose_expect_differs_reports_the_changed_fields():

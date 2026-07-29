@@ -19,6 +19,11 @@ import click
 # Python from that directory.
 _DEFAULT_PATCHES = Path("edits") / "patches"
 
+# The `(trailing, standing, detached)` note triple `corrections.notes`
+# produces and `formatter.format_spec` takes.
+_NoteMap = Mapping[int, Sequence[str]]
+_Notes = tuple[_NoteMap, _NoteMap, _NoteMap]
+
 
 class _HelpFormatter(click.HelpFormatter):
     """Cargo-style help: `Usage:` and section headings in bold green.
@@ -139,7 +144,7 @@ def extract(
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        notes: dict[int, list[str]] = {}
+        notes: _Notes = ({}, {}, {})
         if corrections is not None:
             # A corpus run may pass a directory holding modules for only some
             # of its specifications, so a spec without one is not an error.
@@ -194,7 +199,7 @@ def extract_rfc(
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        notes: dict[int, list[str]] = {}
+        notes: _Notes = ({}, {}, {})
         if corrections is not None:
             spec, notes = _correct(spec, corrections, required=False)
     _write(spec, output, notes)
@@ -484,12 +489,11 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
     )
 
 
-def _write(
-    spec, output: Path | None, notes: Mapping[int, Sequence[str]] | None = None
-) -> None:
+def _write(spec, output: Path | None, notes: _Notes | None = None) -> None:
     from .dad import formatter
 
-    text = formatter.format_spec(spec, notes or {})
+    trailing, standing, detached = notes or ({}, {}, {})
+    text = formatter.format_spec(spec, trailing, standing, detached)
     if output is None:
         click.echo(text, nl=False)
     else:

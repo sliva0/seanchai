@@ -376,6 +376,10 @@ _RAW_ERRORS = {
         "duplicate-identity",
     ],
     "29338-i20.raw.dad": ["duplicate-identity"],
+    # Both tabulate RFC 8583's Load among their own AVPs, with no code —
+    # their Load clauses define it only by reference to RFC 8583.
+    "29229-i10.raw.dad": ["row-without-code"],
+    "29329-i00.raw.dad": ["row-without-code"],
     "29345-i00.raw.dad": [
         "duplicate-identity",
         "duplicate-identity",

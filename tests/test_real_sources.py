@@ -70,13 +70,14 @@ def test_the_real_sources_still_produce_the_committed_output(
         spec = tgpp_docx.extract(source, link=link, patches_dir=_PATCHES)
     if pdf is not None:
         spec = tgpp_docx.attach_pages(spec, pdf)
-    notes: dict[int, list[str]] = {}
+    notes, standing, detached = {}, {}, {}
     if not raw:
         declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
         if declared:
             spec, results = corrections.apply(spec, declared)
-            notes = corrections.notes(results)
+            notes, standing, detached = corrections.notes(results)
 
     # Byte-for-byte, not tree equality: the committed file is what a version
     # upgrade diffs against, so formatting is part of what must not drift.
-    assert formatter.format_spec(spec, notes) == committed.read_text(encoding="utf-8")
+    formatted = formatter.format_spec(spec, notes, standing, detached)
+    assert formatted == committed.read_text(encoding="utf-8")

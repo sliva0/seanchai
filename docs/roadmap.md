@@ -10,7 +10,8 @@ When you learn something non-obvious while working — a source-document quirk,
 a workflow gotcha, a convention that isn't visible in the code — write it
 down in the document it belongs to ([extractor.md](extractor.md),
 [workflow.md](workflow.md), [dad-format.md](dad-format.md),
-[downloader.md](downloader.md), [oracle.md](oracle.md)). Cheap to write now,
+[downloader.md](downloader.md), [oracle.md](oracle.md),
+[consumers.md](consumers.md)). Cheap to write now,
 expensive to rediscover later.
 
 Before adding items here, read the conventions in
@@ -130,6 +131,18 @@ the extractor being right.
    the remaining planned changes are listed in
    [downloader.md](downloader.md#planned-changes).
 
+18. **Capture the RADIUS-heritage AVP codes RFC 7155 prints in prose.** Its
+    AVP tables carry no Code column — the codes are RADIUS attribute
+    numbers, printed per clause as "AVP Code 5" in the definition's prose —
+    so all 77 of the document's own AVPs sit in the corpus code-less, and
+    an AVP without a code has no wire identity: the python-diameter
+    validator (see [consumers.md](consumers.md)) can only report each one
+    as unchecked, and 150 of its body references resolve to nothing
+    checkable. The fix is an RFC-extractor path that reads the per-clause
+    code line into the table rows (or into the definitions), designed
+    against RFC 7155's actual layout; RFC 4004/4005/4006 print codes in
+    their tables already, so 7155 may be the only document that needs it.
+
 ## Downstream consumers
 
 This is the point of the project, and the reason the rest of it is worth
@@ -138,74 +151,45 @@ protocols have OpenAPI, so every implementation invents its own dictionary
 format. The deliverable is not a format everyone adopts — it is that
 generating *your* format becomes a short script over a reviewed corpus.
 
-7. **A consumer model, distinct from the `.dad` AST.** These are two type
-   hierarchies with opposite jobs, and collapsing them into one would damage
-   both.
+7. **Carry Wireshark's AVP name in the consumer model.** The model itself is
+   built — `src/seanchai/model.py`, with its resolution policy and query set
+   recorded in [consumers.md](consumers.md) — and its one deliberately
+   unbuilt piece is this: where Wireshark's dictionary spells an AVP
+   differently — its deliberate disambiguations like `Cx-User-Data` — the
+   consumer-facing data should carry Wireshark's name *as a piece of
+   information* alongside the specification's, so a consumer interoperating
+   with Wireshark-derived tooling can map between the two; the corpus itself
+   always keeps the specification's spelling ([oracle.md](oracle.md)). It
+   waits for a consumer that actually maps between the namings: the
+   mensonen/diameter validator matches by `(vendor-id, code)` and never
+   needed it, and adding it unasked would break the model's rule that every
+   query was written by a real consumer first.
 
-   The AST mirrors a file one-to-one and its job is fidelity. It has to be
-   able to represent a specification that contradicts itself, because that
-   is what the extractor is for: a grouped AVP both defined locally and
-   listed as re-used stays as two nodes, an AVP-table row whose type
-   disagrees with its definition keeps disagreeing. Nodes are frozen,
-   round-trip is exact, and references are unresolved strings because that
-   is what the file contains. Pressure to make this layer convenient is
-   pressure to make it lie.
+8. **The *generate* consumer direction.** Validation came first and exists:
+   `integrations/python_diameter/validate.py` checks the
+   [mensonen/diameter](https://github.com/mensonen/diameter) library against
+   any one specification the corpus holds, passed as an argument; findings
+   and scope reasoning are in [consumers.md](consumers.md). What remains is
+   *generate*: a dictionary in a format the consumer chooses — Python class
+   definitions for a library like mensonen/diameter, a JSON schema shaped
+   like the 5G ones, an XML dictionary, whatever a given customer asks for.
+   Seanchaí supplies the definitions and the queries; the output syntax is
+   the script's business. (Related: RFC 7155's AVPs validate as unchecked
+   until their codes reach the corpus — item 18.)
 
-   The consumer model is what a generator or validator actually wants: a
-   message whose ABNF entries point at real AVP objects rather than names, a
-   grouped AVP that can enumerate its members, an AVP that knows its own
-   `(vendor-id, code)` identity, its type, its flag rules and which
-   specification introduced it — with methods, and with cross-references
-   already followed across files. Built once from a parsed corpus and handed
-   to the consumer resolved.
-
-   The seam between the two is where the linter's unresolved questions land:
-   you cannot resolve a reference into an object without the `; Bases:`
-   rule, the origin-version rule (both settled — see
-   [linter.md](linter.md)), or a policy for which of two conflicting
-   definitions wins — the last being exactly what `reused-body-differs`
-   reports without deciding. The consumer model is therefore downstream of
-   the standing-findings work (3), and the linter is the tool that reports
-   those conflicts instead of the model having to silently pick.
-
-   The queries every consumer would otherwise rewrite belong here: every
-   message defined in a specification with its ABNF and metadata, every
-   grouped AVP, every plain AVP, every enumerated AVP with its values, and
-   lookup of a single AVP by name or by `(vendor-id, code)`. Keep the set
-   thin — the test for adding one is that a real consumer wrote it by hand
-   first, which keeps [development.md](development.md#working-on-these-documents)'s
-   rule about not designing API ahead of a second consumer intact. The AST
-   stays public underneath for anything the model does not cover.
-
-   Two facts about names belong to this layer, not the corpus. Where
-   Wireshark's dictionary spells an AVP differently — its deliberate
-   disambiguations like `Cx-User-Data` — the consumer-facing data should
-   carry Wireshark's name *as a piece of information* alongside the
-   specification's, so a consumer interoperating with Wireshark-derived
-   tooling can map between the two; the corpus itself always keeps the
-   specification's spelling ([oracle.md](oracle.md)). And neither layer
-   carries prose: `.dad` has nowhere to put a clause's paragraphs, and
-   automatic description capture was tried and removed (`e9856a9`) —
-   narrative stays in the specification the `; Section:` pointer names.
-
-8. **Two consumer directions, both first-class**, over the same model (7):
-
-   *Generate* a dictionary in a format the consumer chooses — Python class
-   definitions for a library like
-   [mensonen/diameter](https://github.com/mensonen/diameter), a JSON schema
-   shaped like the 5G ones, an XML dictionary, whatever a given customer
-   asks for. Seanchaí supplies the definitions and the queries; the output
-   syntax is the script's business.
-
-   *Validate* a dictionary that already exists. Someone who has already
-   hand-written their format does not want it regenerated and rediffed —
-   they want to know whether it is correct. A script walks their dictionary,
-   resolves each entry against the corpus, and reports what disagrees: a
-   wrong code, a stale type, an AVP the spec no longer defines that way.
-   This is the more valuable of the two for anyone with an existing
-   implementation, since it costs them nothing to adopt — and the better one
-   to build first, because it needs no opinion about output syntax while
-   exercising exactly the lookups a generator needs.
+19. **Make the consumer model rigid: an `Avp` should always carry a code, a
+    data type and flag rules.** All three are `| None` in `model.py` today,
+    and every `None` is a hole in the corpus rather than a fact about
+    Diameter — an AVP without a code has no wire identity, and one without
+    a type cannot be decoded. The current sources of `None`: RFC 7155's
+    code-less rows (18), tables that print no type or flag columns for
+    re-used rows, definitions never tabulated at all, and the standing
+    linter findings that keep some references unresolved. Each hole a
+    consumer hits is really one of those upstream gaps; when they are
+    worked off, the fields should become required so the model *fails to
+    build* on an incomplete corpus instead of handing consumers `None` to
+    re-check — with whatever escape hatch hand-authored extension files (9)
+    turn out to need.
 
 9. **Keep hand-authored `.dad` files viable**, so a proprietary Diameter
    extension or an uncovered specification can be written directly and slot
@@ -255,3 +239,12 @@ generating *your* format becomes a short script over a reviewed corpus.
     declaration contract. Not worth a base class for three; it is worth one
     the day `Supply` would make a fourth copy, so fold the shared shape out
     as part of implementing it.
+
+17. A `Delete` selector cannot remove one of two *identical* nodes: `apply`
+    treats a multi-match as ambiguity, which is right everywhere except TS
+    29.229's RTA, whose ABNF prints `< Session-Id >` twice (clause 6.1.10,
+    docx and PDF alike — found by the first consumer validation, see
+    [consumers.md](consumers.md)). An occurrence-narrowing selector, or a
+    deduplicating delete whose expectation is that exactly two equal nodes
+    match, would let the corrected file drop the second line; until then the
+    corpus carries the duplicate faithfully.

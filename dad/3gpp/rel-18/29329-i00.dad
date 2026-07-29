@@ -266,7 +266,7 @@ AS-Number                    722   6.3.31   OctetString   V     -     -     M   
 OC-Supported-Features        621   6.3.32   Grouped       -     -     -     M,V   No
 OC-OLR                       623   6.3.33   Grouped       -     -     -     M,V   No
 DRMP                         301   6.3.34   Enumerated    -     -     -     M,V   No
-Load                         -     6.3.35   Grouped       -     -     -     M,V   No
+;; deleted: AVP table row 'Load' (TS29.329.py:7)
 
 
 ; Type: Reused AVPs

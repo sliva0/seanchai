@@ -65,5 +65,6 @@ Build patched `.dad` sets around the latest release with published PDFs
 (Rel-18 today); the tooling itself stays version-agnostic. `seanchai
 crosscheck` compares extracted values against Wireshark's dictionary — see
 [oracle.md](oracle.md), including why its findings are leads to investigate
-rather than verdicts. Dictionary validators as the first downstream
-consumers remain planned work in [roadmap.md](roadmap.md).
+rather than verdicts. The first downstream dictionary validator exists —
+see [consumers.md](consumers.md), whose Cx run also caught a silent
+extraction truncation the review loop had missed.

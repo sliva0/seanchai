@@ -32,10 +32,12 @@ def _noted(line: str, node: Any, notes: Notes) -> str:
     return line + "".join(f" ;; {note}" for note in notes.get(id(node), ()))
 
 
-def _notes_before(node: Any, notes: Notes) -> list[str]:
-    """Whole-line notes, for a node whose edit left no line to append to — a
-    deletion's note goes before the section the node disappeared from."""
-    return [f";; {note}" for note in notes.get(id(node), ())]
+def _standing(node: Any, standing: Notes) -> list[str]:
+    """Whole-line notes, for an edit that left no line to append to: a
+    deletion's note prints in the deleted line's place — before the sibling
+    that moved up into it, or at the end of the section's lines when the
+    last sibling went, because the end is where that line stood."""
+    return [f";; {note}" for note in standing.get(id(node), ())]
 
 
 _MIN_COLUMN_WIDTH = 3
@@ -48,7 +50,11 @@ def _avp_line(rule: ast.AvpRule) -> str:
     return f"{qualifier:>7} {open_bracket} {rule.name} {close_bracket}"
 
 
-def _abnf_body(avps: tuple[ast.AvpRule, ...], notes: Notes = _NO_NOTES) -> list[str]:
+def _abnf_body(
+    avps: tuple[ast.AvpRule, ...],
+    notes: Notes = _NO_NOTES,
+    standing: Notes = _NO_NOTES,
+) -> list[str]:
     """`; bold` markers sit one column past the longest rule *of this section*.
     A file-wide column would make one added AVP reflow every marker in the
     file, and the review workflow lives on raw-vs-raw diffs."""
@@ -58,6 +64,7 @@ def _abnf_body(avps: tuple[ast.AvpRule, ...], notes: Notes = _NO_NOTES) -> list[
     for rule, line in rules:
         if rule.bold:
             line = f"{line:<{bold_column}}; bold"
+        lines.extend(_standing(rule, standing))
         lines.append(_noted(line, rule, notes))
     return lines
 
@@ -74,9 +81,12 @@ def _table(
     rows: list[list[str]],
     prefix: str,
     row_notes: Sequence[Sequence[str]] | None = None,
+    row_standing: Sequence[Sequence[str]] | None = None,
 ) -> list[str]:
-    """`row_notes` is parallel to `rows`. Notes are appended *after* the
-    column widths are computed, so annotating a row cannot reflow the table."""
+    """`row_notes` and `row_standing` are parallel to `rows`. Notes are
+    appended *after* the column widths are computed, so annotating a row
+    cannot reflow the table; standing notes print as whole lines above
+    their row — where a deleted row used to be."""
     widths = [
         max(_MIN_COLUMN_WIDTH, max(len(row[i]) for row in rows))
         for i in range(len(headers))
@@ -90,7 +100,9 @@ def _table(
         header_line += " " * max(start - len(header_line), 1) + header
     lines = [header_line]
     notes = row_notes if row_notes is not None else [()] * len(rows)
-    for row, row_note in zip(rows, notes, strict=True):
+    standing = row_standing if row_standing is not None else [()] * len(rows)
+    for row, row_note, row_stand in zip(rows, notes, standing, strict=True):
+        lines.extend(f";; {note}" for note in row_stand)
         line = ""
         for cell, start in zip(row, starts, strict=True):
             line += " " * (start - len(line)) + cell
@@ -98,7 +110,9 @@ def _table(
     return lines
 
 
-def _format_message(message: ast.Message, notes: Notes = _NO_NOTES) -> list[str]:
+def _format_message(
+    message: ast.Message, notes: Notes = _NO_NOTES, standing: Notes = _NO_NOTES
+) -> list[str]:
     header_items = abnf.diameter_header_items(
         message.command_code, message.flags, message.application_id
     )
@@ -112,7 +126,8 @@ def _format_message(message: ast.Message, notes: Notes = _NO_NOTES) -> list[str]
             message,
             notes,
         ),
-        *_abnf_body(message.avps, notes),
+        *_abnf_body(message.avps, notes, standing),
+        *_standing(message, standing),
     ]
 
 
@@ -120,7 +135,9 @@ def _avp_header_items(code: int, vendor_id: int | None) -> str:
     return str(code) if vendor_id is None else f"{code} {vendor_id}"
 
 
-def _format_grouped(avp: ast.GroupedAvp, notes: Notes = _NO_NOTES) -> list[str]:
+def _format_grouped(
+    avp: ast.GroupedAvp, notes: Notes = _NO_NOTES, standing: Notes = _NO_NOTES
+) -> list[str]:
     return [
         "; Type: Grouped AVP",
         *_header_directives(avp.name, avp.source),
@@ -130,11 +147,14 @@ def _format_grouped(avp: ast.GroupedAvp, notes: Notes = _NO_NOTES) -> list[str]:
             avp,
             notes,
         ),
-        *_abnf_body(avp.avps, notes),
+        *_abnf_body(avp.avps, notes, standing),
+        *_standing(avp, standing),
     ]
 
 
-def _format_enumerated(avp: ast.EnumeratedAvp, notes: Notes = _NO_NOTES) -> list[str]:
+def _format_enumerated(
+    avp: ast.EnumeratedAvp, notes: Notes = _NO_NOTES, standing: Notes = _NO_NOTES
+) -> list[str]:
     width = max(
         (
             len(value.name) if isinstance(value, ast.EnumValue) else len("RESERVED")
@@ -173,7 +193,9 @@ def _format_enumerated(avp: ast.EnumeratedAvp, notes: Notes = _NO_NOTES) -> list
                 else f"{value.first}-{value.last}"
             )
             line = f"      ; {'RESERVED':<{width}} = {numbers}"
+        lines.extend(_standing(value, standing))
         lines.append(_noted(line, value, notes))
+    lines.extend(_standing(avp, standing))
     return lines
 
 
@@ -203,15 +225,14 @@ def _avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
             )
 
 
-def _format_avp_table(table: ast.AvpTable, notes: Notes = _NO_NOTES) -> list[str]:
+def _format_avp_table(
+    table: ast.AvpTable, notes: Notes = _NO_NOTES, standing: Notes = _NO_NOTES
+) -> list[str]:
     headers = [column.value for column in table.columns]
     rows = [
         [_avp_table_cell(row, column) for column in table.columns] for row in table.rows
     ]
     return [
-        # A note on the table itself marks an edit that left no line of its
-        # own — a deleted row — so it stands before the section.
-        *_notes_before(table, notes),
         "; Type: AVP Table",
         f"; Section: {table.source.section}",
         *([] if table.table is None else [f"; Table: {table.table}"]),
@@ -221,7 +242,11 @@ def _format_avp_table(table: ast.AvpTable, notes: Notes = _NO_NOTES) -> list[str
             rows,
             prefix="; Columns:",
             row_notes=[notes.get(id(row), ()) for row in table.rows],
+            row_standing=[standing.get(id(row), ()) for row in table.rows],
         ),
+        # A standing note on the table itself marks a deletion of its last
+        # row, whose line stood right here, after the ones that remain.
+        *_standing(table, standing),
     ]
 
 
@@ -235,12 +260,13 @@ def _reused_cell(row: ast.ReusedAvpRow, column: ast.ReusedColumn) -> str:
             return row.m_bit.value if row.m_bit else "-"
 
 
-def _format_reused(reused: ast.ReusedAvps, notes: Notes = _NO_NOTES) -> list[str]:
+def _format_reused(
+    reused: ast.ReusedAvps, notes: Notes = _NO_NOTES, standing: Notes = _NO_NOTES
+) -> list[str]:
     rows = [
         [_reused_cell(row, column) for column in reused.columns] for row in reused.rows
     ]
     return [
-        *_notes_before(reused, notes),
         "; Type: Reused AVPs",
         f"; Section: {reused.source.section}",
         f"; Table: {reused.table}",
@@ -250,14 +276,16 @@ def _format_reused(reused: ast.ReusedAvps, notes: Notes = _NO_NOTES) -> list[str
             rows,
             prefix="; Columns:",
             row_notes=[notes.get(id(row), ()) for row in reused.rows],
+            row_standing=[standing.get(id(row), ()) for row in reused.rows],
         ),
+        *_standing(reused, standing),
     ]
 
 
 # Keyed by exact type, not matched by isinstance: a subclass of `Message`
 # would otherwise be written out as a plain `Message`, silently dropping
 # whatever it added, and `.dad` output has to be exact.
-_FORMATTERS: dict[type, Callable[[Any, Notes], list[str]]] = {
+_FORMATTERS: dict[type, Callable[[Any, Notes, Notes], list[str]]] = {
     ast.Message: _format_message,
     ast.GroupedAvp: _format_grouped,
     ast.EnumeratedAvp: _format_enumerated,
@@ -266,18 +294,30 @@ _FORMATTERS: dict[type, Callable[[Any, Notes], list[str]]] = {
 }
 
 
-def _format_section(section: ast.Section, notes: Notes) -> list[str]:
+def _format_section(section: ast.Section, notes: Notes, standing: Notes) -> list[str]:
     formatter = _FORMATTERS.get(type(section))
     if formatter is None:
         raise TypeError(f"no formatter for {type(section).__name__}")
-    return formatter(section, notes)
+    return formatter(section, notes, standing)
 
 
-def format_spec(spec: ast.Specification, notes: Notes = _NO_NOTES) -> str:
+def format_spec(
+    spec: ast.Specification,
+    notes: Notes = _NO_NOTES,
+    standing: Notes = _NO_NOTES,
+    detached: Notes = _NO_NOTES,
+) -> str:
     """Canonical text, optionally with `;;` notes marking particular nodes.
 
-    A note trails the line its node produced; only a note for an edit that
-    left no line (a deletion) stands as a whole line before its section.
+    A `notes` entry trails the line its node produced. A `standing` entry is
+    a whole line printed *before* its node's lines — the shape a deletion
+    needs, keyed by the sibling standing where the deleted node stood, so
+    the note reads in the deleted line's place. A `detached` entry is a block
+    of its own, spaced from its neighbours like the section it replaces —
+    the shape a deleted *section's* note needs, keyed by the section that
+    follows the gap (or by the specification itself, when the last section
+    went): glued to the next section's lines it would read as being about
+    that section.
     Notes are the one thing here that does not round-trip: the parser discards
     `;;` comments, so `format_spec(parse(annotated))` gives the same file
     without them. That is the intended relation — an annotated file is
@@ -293,5 +333,13 @@ def format_spec(spec: ast.Specification, notes: Notes = _NO_NOTES) -> str:
     if spec.link is not None:
         header.append(f"; Link: {spec.link}")
 
-    parts = [header, *(_format_section(section, notes) for section in spec.sections)]
+    parts = [header]
+    for section in spec.sections:
+        block = _standing(section, detached)
+        if block:
+            parts.append(block)
+        parts.append(_format_section(section, notes, standing))
+    tail = _standing(spec, detached)
+    if tail:
+        parts.append(tail)
     return "\n\n\n".join("\n".join(part) for part in parts) + "\n"

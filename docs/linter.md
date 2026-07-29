@@ -57,6 +57,14 @@ two of the members 29.344 lists.
   same rule as duplicate names, and the corpus is why: TS 29.272 clause 7.3.138
   printed `Area-Scope` with `Job-Type`'s code, so two differently-named AVPs
   shared an identity while every name in the file stayed unique.
+- `row-without-code` — a table that declares a Code column printing a row
+  without one. An AVP is its `(vendor-id, code)`, so a code-less row describes
+  nothing a message could carry. Both real cases are one editorial slip: TS
+  29.229 and TS 29.329 tabulate `Load` code-less among their own AVPs while
+  their prose defines it only by reference to RFC 8583 — a re-used AVP printed
+  in the wrong table, which the corrections move to the right one. Tables that
+  carry no Code column at all (RFC 7155's flag tables) are not checked; the
+  missing column is the document's layout, not a claim about any one AVP.
 - `table-definition-mismatch` — an AVP-table row disagreeing with the clause
   that defines the same AVP, on code or on type. A row with no local clause is
   not compared: most rows are AVPs defined elsewhere, and comparing against

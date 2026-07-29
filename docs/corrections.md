@@ -167,7 +167,14 @@ inside a helper or a comprehension still cites the corrections file.
 
 These are `;;` comments, which the parser discards — everything from the first
 `;;` on a line to its end, or a whole line of its own, which is the form a
-deletion's note takes since a deleted node leaves no line to trail. An
+deletion's note takes since a deleted node leaves no line to trail. A
+deletion's note stands *in the deleted line's place* — before the sibling
+that moved up into it, or before the section when the last sibling went; a
+deleted *section's* note is a block of its own, blank-line-separated from the
+sections around it so it does not read as being about either — and, alone
+among the notes, names what is gone
+(`;; deleted: AVP table row 'Load' (TS29.229.py:14)`): a trailing note has
+its own line saying what was touched, a deletion's has nothing but the note. An
 annotated file is therefore *exactly* canonical output plus notes: parsing it
 gives the same tree, and reformatting it gives back the canonical text without
 them. That is the intended relation rather than a wart — a note is a reader's
@@ -307,8 +314,8 @@ format-instability notice both format documents carry.
 Two consequences govern `Insert` now and must also hold for a future `Supply`:
 
 - The corrected file must keep marking what a human did. `Replace` notes stay
-  `;; corrected:` and deletions carry `;; deleted:` on the section that lost
-  the node; inserted and supplied content should carry `;; supplied:`
+  `;; corrected:` and deletions carry a named `;; deleted:` line standing in
+  the deleted line's place; inserted and supplied content should carry `;; supplied:`
   (or `;; inserted:`) on *every* line it produced, so machine-extracted and
   hand-notated definitions are never confusable in a diff.
 - `apply`'s rebuild tracks the identity of inserted nodes as well as replaced

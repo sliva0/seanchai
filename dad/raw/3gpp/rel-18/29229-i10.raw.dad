@@ -240,6 +240,10 @@
       * [ Supported-Features ]             ; bold
       * [ Public-Identity ]                ; bold
         { Deregistration-Reason }          ; bold
+        [ RTR-Flags ]                      ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
 
 
 ; Type: Message

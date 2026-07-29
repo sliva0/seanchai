@@ -153,7 +153,6 @@ MCVideo-ID                     4514   7.3.24   UTF8String   V     -     -     M 
 MCData-ID                      4515   7.3.25   UTF8String   V     -     -     M     No
 
 
-;; deleted: (TS29.283.py:7)
 ; Type: Reused AVPs
 ; Section: 7.3.1
 ; Table: 7.3.1-2
@@ -163,6 +162,7 @@ Supported-Features      TS29.229   -
 DRMP                    RFC7944    MUST ;; corrected: (TS29.283.py:16)
 Feature-List-ID         TS29.229   -
 Feature-List            TS29.229   -
+;; deleted: re-used AVPs row 'Feature-Id' (TS29.283.py:7)
 User-Data               TS29.329   -
 User-Identifier         TS29.336   -
 OC-Supported-Features   RFC7683    MUST

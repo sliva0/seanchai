@@ -144,14 +144,21 @@ never recover what the extractor threw away.
 - **Extracted specs**: 34, committed raw and corrected — eighteen 3GPP
   specifications under `dad/3gpp/rel-18/` and sixteen RFCs under `dad/rfc/`.
   The corrected files carry no single-file findings.
+- **Consumer model**: `seanchai.model` resolves the corpus into what a
+  generator or validator wants — messages whose ABNF entries point at real
+  AVP objects, cross-references followed across files, lookup by name or
+  `(vendor-id, code)`. The first consumer exists: a validator that checks
+  [mensonen/diameter](https://github.com/mensonen/diameter) against any one
+  specification in the corpus, under `integrations/`. See
+  [docs/consumers.md](docs/consumers.md).
 
 ### Planned
 
 Open work is tracked in [docs/roadmap.md](docs/roadmap.md): working the
 standing linter and oracle findings off, the remaining 3GPP document shapes
-and the legacy `.doc` specs, and — the point of the whole thing — a consumer
-model with resolved cross-references, feeding dictionary validators first
-and generators second. Completed review rounds and the reasoning behind them
+and the legacy `.doc` specs, and — the point of the whole thing — more
+consumers over the model: dictionary validators beyond the Cx one, and
+generators. Completed review rounds and the reasoning behind them
 are kept in [docs/history/](docs/history/).
 
 ## Repository layout
@@ -161,6 +168,9 @@ are kept in [docs/history/](docs/history/).
 - `dad/` — the committed `.dad` corpus, raw and corrected side by side:
   `dad/3gpp/rel-18/` per 3GPP release, `dad/rfc/` flat.
   See [dad/README.md](dad/README.md).
+- `integrations/` — per-target scripts over the model (validators now,
+  generators later), each runnable standalone with `uv run`.
+  See [docs/consumers.md](docs/consumers.md).
 - `edits/` — the two declared edit layers, side by side:
   `edits/patches/<SpecRef>.toml` for source typos that would break extraction,
   and `edits/corrections/<SpecRef>.py` for extracted data that parses but is
@@ -174,7 +184,8 @@ are kept in [docs/history/](docs/history/).
 - `docs/` — the format ([dad-format](docs/dad-format.md),
   [grammar](docs/grammar.md)), the pipeline ([extractor](docs/extractor.md),
   [corrections](docs/corrections.md), [downloader](docs/downloader.md)),
-  the checks ([linter](docs/linter.md), [oracle](docs/oracle.md)), and the
+  the checks ([linter](docs/linter.md), [oracle](docs/oracle.md)), the
+  consumer layer ([consumers](docs/consumers.md)), and the
   [workflow](docs/workflow.md), [development](docs/development.md) and
   [roadmap](docs/roadmap.md) documents, plus `docs/history/` for completed
   review rounds.

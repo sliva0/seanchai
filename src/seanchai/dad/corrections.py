@@ -406,7 +406,8 @@ class Result:
     old: Any
     new: Any
     # Identity of the edited node *in the returned tree* — the new node for an
-    # `Insert`; for a `Delete`, the parent that lost the node, since the node
+    # `Insert`; for a `Delete`, the sibling that now stands where the node
+    # stood (or the parent, when the last sibling went), since the node
     # itself produces no lines — so a formatter can mark what an edit reached.
     # Set after the rebuild, because rebuilding constructs new objects: the
     # identity an edit was resolved by belongs to the input tree and is gone.
@@ -567,7 +568,7 @@ def _replaced(
         if replacement is not None:
             applied[original_id] = applied.get(original_id, 0) + 1
             node = replacement
-        deleted_here: list[int] = []
+        deleted_here: list[tuple[int, str, int]] = []  # id, field, position kept
         values = {}
         for name in type(node).model_fields:
             value = getattr(node, name)
@@ -576,7 +577,7 @@ def _replaced(
                 for item in value:
                     if isinstance(item, ast.Node) and id(item) in deletions:
                         applied[id(item)] = applied.get(id(item), 0) + 1
-                        deleted_here.append(id(item))
+                        deleted_here.append((id(item), name, len(kept)))
                         continue
                     kept.append(
                         _replaced(item, edits, deletions, tracked, applied, rebuilt)
@@ -595,10 +596,18 @@ def _replaced(
             ) from None
         if replacement is not None or original_id in tracked:
             rebuilt[original_id] = id(result)
-        # A deleted node produces no lines, so what a formatter can mark — and
-        # what its Result reports — is the parent it disappeared from.
-        for deleted_id in deleted_here:
-            rebuilt[deleted_id] = id(result)
+        # A deleted node produces no lines, so what a formatter can mark is
+        # the sibling that now stands where it stood — the note then prints
+        # in the deleted line's place. Only a node deleted from the end of
+        # its tuple has no follower, and falls back to the parent. The
+        # follower is looked up in `values`, not in `result`: pydantic keeps
+        # already-valid submodels as they are, so both hold the same object.
+        for deleted_id, field, position in deleted_here:
+            siblings = values[field]
+            if position < len(siblings) and isinstance(siblings[position], ast.Node):
+                rebuilt[deleted_id] = id(siblings[position])
+            else:
+                rebuilt[deleted_id] = id(result)
         return result
     if isinstance(node, tuple):
         return tuple(
@@ -706,28 +715,49 @@ def apply(
     return rebuilt, results
 
 
-def notes(results: list[Result]) -> dict[int, list[str]]:
-    """`;;` note lines marking what `apply` touched, keyed by node id in the
-    rebuilt tree, in the shape `format_spec` takes.
+_SECTION_TYPES = (
+    ast.Message,
+    ast.GroupedAvp,
+    ast.EnumeratedAvp,
+    ast.AvpTable,
+    ast.ReusedAvps,
+)
 
-    A note says only that an edit reached the line, and where the declaration
-    is: the declaration carries the change and its `reason`, and the raw file
-    carries the old value, so repeating either here would only lengthen every
-    corrected file. A deleted node produces no lines, so its note sits on the
-    section it disappeared from.
+
+def notes(
+    results: list[Result],
+) -> tuple[dict[int, list[str]], dict[int, list[str]], dict[int, list[str]]]:
+    """`;;` note lines marking what `apply` touched, keyed by node id in the
+    rebuilt tree, as the `(trailing, standing, detached)` triple
+    `format_spec` takes.
+
+    A trailing note says only that an edit reached the line, and where the
+    declaration is: the declaration carries the change and its `reason`, and
+    the raw file carries the old value, so repeating either here would only
+    lengthen every corrected file. A deleted node produces no line for a note
+    to trail, so its note *stands* — printed in the deleted line's place,
+    before the sibling that moved up into it — and names what is gone,
+    because unlike a trailing note it has no line saying that for it.
+
+    A deleted *section* gets a `detached` note instead: its place is between
+    two sections, so gluing the note to the top of the following section
+    would read as being about that section. The formatter prints detached
+    notes as a block of their own, spaced like the section they replace.
     """
-    lines: dict[int, list[str]] = {}
+    trailing: dict[int, list[str]] = {}
+    standing: dict[int, list[str]] = {}
+    detached: dict[int, list[str]] = {}
     for result in results:
         edit = result.correction
-        kind = (
-            "deleted"
-            if isinstance(edit, Delete)
-            else "inserted"
-            if isinstance(edit, Insert)
-            else "corrected"
-        )
-        lines.setdefault(result.node_id, []).append(f"{kind}: ({edit.origin})")
-    return lines
+        if isinstance(edit, Delete):
+            bucket = detached if isinstance(result.old, _SECTION_TYPES) else standing
+            bucket.setdefault(result.node_id, []).append(
+                f"deleted: {result.node} ({edit.origin})"
+            )
+            continue
+        kind = "inserted" if isinstance(edit, Insert) else "corrected"
+        trailing.setdefault(result.node_id, []).append(f"{kind}: ({edit.origin})")
+    return trailing, standing, detached
 
 
 def _module_path(directory: Path, specification: str) -> Path:
