@@ -152,8 +152,22 @@ def synthetic_rfc(tmp_path):
     return path
 
 
-def test_extracts_the_avp_table(synthetic_rfc):
-    spec = rfc_text.extract(synthetic_rfc, link="https://example.com/rfc9999.txt")
+@pytest.fixture
+def synthetic_sources(tmp_path):
+    """The synthetic RFC prints DiamIdent, mirroring RFC 6733's declared
+    convention, so its extraction declares the matching quirk."""
+    return _declare(
+        tmp_path,
+        '[[quirk]]\nname = "type-short-forms"\nreason = "prints DiamIdent"\n',
+    )
+
+
+def test_extracts_the_avp_table(synthetic_rfc, synthetic_sources):
+    spec = rfc_text.extract(
+        synthetic_rfc,
+        link="https://example.com/rfc9999.txt",
+        sources_dir=synthetic_sources,
+    )
 
     assert spec.specification == "RFC 9999"
     assert spec.version is None
@@ -211,8 +225,14 @@ def test_extracts_later_rfc_fully_boxed_value_type_table(tmp_path):
     )
     path = tmp_path / "rfc9999.txt"
     path.write_text(body, encoding="utf-8")
+    # The rule closing the header prints a stray space inside its dashes —
+    # the RFC 8583 artefact this fixture was abstracted from.
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "ragged-separator"\nreason = "stray space"\n',
+    )
 
-    spec = rfc_text.extract(path)
+    spec = rfc_text.extract(path, sources_dir=sources)
 
     (table,) = spec.sections
     assert isinstance(table, ast.AvpTable)
@@ -323,10 +343,10 @@ def test_indexes_radius_attributes_with_diameter_compatible_codes(tmp_path):
     assert table.rows[0].code == 104
 
 
-def test_extracts_the_command(synthetic_rfc):
+def test_extracts_the_command(synthetic_rfc, synthetic_sources):
     """Name from the heading, abbreviation from the rule — the reverse of a
     3GPP heading — and a body read across a page break."""
-    spec = rfc_text.extract(synthetic_rfc)
+    spec = rfc_text.extract(synthetic_rfc, sources_dir=synthetic_sources)
 
     (message,) = [s for s in spec.sections if isinstance(s, ast.Message)]
     assert message.name == "Synthetic-Exchange-Request"
@@ -348,8 +368,8 @@ def test_extracts_the_command(synthetic_rfc):
     assert spec.sections[0] is message
 
 
-def test_extracts_grouped_avps(synthetic_rfc):
-    spec = rfc_text.extract(synthetic_rfc)
+def test_extracts_grouped_avps(synthetic_rfc, synthetic_sources):
+    spec = rfc_text.extract(synthetic_rfc, sources_dir=synthetic_sources)
 
     grouped = {s.name: s for s in spec.sections if isinstance(s, ast.GroupedAvp)}
     assert set(grouped) == {"Proxy-Info", "Failed-AVP"}
@@ -366,9 +386,11 @@ def test_extracts_grouped_avps(synthetic_rfc):
     assert (rule.name, rule.min_occurs, rule.max_occurs) == ("AVP", 1, None)
 
 
-def test_extracts_enumerated_avps_in_both_layouts(synthetic_rfc):
+def test_extracts_enumerated_avps_in_both_layouts(synthetic_rfc, synthetic_sources):
     warnings: list[str] = []
-    spec = rfc_text.extract(synthetic_rfc, warnings=warnings)
+    spec = rfc_text.extract(
+        synthetic_rfc, warnings=warnings, sources_dir=synthetic_sources
+    )
 
     enums = {s.name: s for s in spec.sections if isinstance(s, ast.EnumeratedAvp)}
     assert set(enums) == {"Disconnect-Cause", "Load-Type"}
@@ -390,8 +412,10 @@ def test_extracts_enumerated_avps_in_both_layouts(synthetic_rfc):
     assert any("Extension-Type" in warning for warning in warnings)
 
 
-def test_output_round_trips(synthetic_rfc):
-    text = formatter.format_spec(rfc_text.extract(synthetic_rfc))
+def test_output_round_trips(synthetic_rfc, synthetic_sources):
+    text = formatter.format_spec(
+        rfc_text.extract(synthetic_rfc, sources_dir=synthetic_sources)
+    )
     assert formatter.format_spec(parser.parse(text)) == text
 
 
@@ -466,7 +490,8 @@ def test_input_patches_apply_to_content_lines(tmp_path, synthetic_rfc):
     patches.mkdir()
     (patches / "RFC9999.toml").write_text(
         '[[patch]]\nfind = "OctetString"\nreplace = "UTF8String"\n'
-        'section = "4.5"\nreason = "prove patches reach RFC lines"\n',
+        'section = "4.5"\nreason = "prove patches reach RFC lines"\n'
+        '[[quirk]]\nname = "type-short-forms"\nreason = "prints DiamIdent"\n',
         encoding="utf-8",
     )
 
@@ -481,7 +506,8 @@ def test_a_rotted_patch_fails_the_extraction(tmp_path, synthetic_rfc):
     patches = tmp_path / "patches"
     patches.mkdir()
     (patches / "RFC9999.toml").write_text(
-        '[[patch]]\nfind = "NoSuchText"\nreplace = "x"\nreason = "rotted"\n',
+        '[[patch]]\nfind = "NoSuchText"\nreplace = "x"\nreason = "rotted"\n'
+        '[[quirk]]\nname = "type-short-forms"\nreason = "prints DiamIdent"\n',
         encoding="utf-8",
     )
     with pytest.raises(ExtractionError, match="applied 0 times"):
@@ -590,18 +616,24 @@ def test_a_row_without_a_defining_sentence_is_a_warning(tmp_path):
     assert any("no defining sentence" in warning for warning in warnings)
 
 
-def test_a_declared_quirk_that_changes_nothing_fails_the_extraction(
-    tmp_path, synthetic_rfc
-):
+def test_a_declared_quirk_that_changes_nothing_fails_the_extraction(tmp_path):
     """The patch accounting contract, extended to quirks: a reading the
-    source stopped needing must be loud, not silently ignored."""
+    source stopped needing must be loud, not silently ignored. This table
+    prints its own Code column, so `prose-avp-codes` has nothing to do."""
+    body = _rfc(
+        "10.1.  AVP Codes\n\n"
+        "   |Attribute Name      Code Defined     Data Type|\n"
+        "   |QoS-Resources       508  3.1         Grouped  |\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
     sources = _declare(
         tmp_path,
         '[[quirk]]\nname = "prose-avp-codes"\nreason = "codes in prose"\n',
     )
 
     with pytest.raises(ExtractionError, match="changed nothing"):
-        rfc_text.extract(synthetic_rfc, sources_dir=sources)
+        rfc_text.extract(path, sources_dir=sources)
 
 
 def test_an_unknown_quirk_name_fails_with_the_vocabulary(tmp_path, synthetic_rfc):
@@ -620,3 +652,84 @@ def test_a_quirk_without_a_reason_cannot_be_declared(tmp_path, synthetic_rfc):
 
     with pytest.raises(ExtractionError, match="no `reason`"):
         rfc_text.extract(synthetic_rfc, sources_dir=sources)
+
+
+def test_a_short_form_type_without_the_quirk_is_an_error(synthetic_rfc):
+    """The synthetic table prints DiamIdent; undeclared, that is a cell the
+    extractor refuses rather than a convention it assumes."""
+    with pytest.raises(ExtractionError, match="type-short-forms"):
+        rfc_text.extract(synthetic_rfc)
+
+
+_CATCHALL_ROW = "   Rest of the AVPs                          |    |     |\n"
+
+
+def test_prose_catchall_row_is_ignored_only_when_declared(tmp_path):
+    body = _rfc(
+        "9.1.  Session AVPs\n\n"
+        + _HEADER_BOX
+        + "   Class             25  8.20    OctetString| M  |  V  |\n"
+        + _CATCHALL_ROW
+        + "   -----------------------------------------|----+-----|\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
+
+    with pytest.raises(ExtractionError, match="prose-catchall-row"):
+        rfc_text.extract(path)
+
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "prose-catchall-row"\nreason = "closing prose"\n',
+    )
+    spec = rfc_text.extract(path, sources_dir=sources)
+    (table,) = [s for s in spec.sections if isinstance(s, ast.AvpTable)]
+    assert [row.name for row in table.rows] == ["Class"]
+
+
+def test_bare_name_continuation_is_accepted_only_when_declared(tmp_path):
+    """The RFC 4004 shape: a wrapped name's fragment printed without its
+    otherwise-empty flag cells, outside the table box."""
+    body = _rfc(
+        "9.1.  Session AVPs\n\n"
+        + _HEADER_BOX
+        + "   MIP-Filter-      342  5.5     UTF8String | M  |  V  |\n"
+        "   Rule\n"
+        "   -----------------------------------------|----+-----|\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
+
+    with pytest.raises(ExtractionError, match="bare-name-continuation"):
+        rfc_text.extract(path)
+
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "bare-name-continuation"\nreason = "boxless wrap"\n',
+    )
+    spec = rfc_text.extract(path, sources_dir=sources)
+    (table,) = [s for s in spec.sections if isinstance(s, ast.AvpTable)]
+    assert [row.name for row in table.rows] == ["MIP-Filter-Rule"]
+
+
+def test_a_ragged_separator_is_box_drawing_only_when_declared(tmp_path):
+    """The RFC 8583 artefact: one stray space inside a horizontal rule."""
+    body = _rfc(
+        "9.1.  Session AVPs\n\n"
+        + _HEADER_BOX
+        + "   Class             25  8.20    OctetString| M  |  V  |\n"
+        "   ------------------------------------ ----|----+-----|\n"
+    )
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(body, encoding="utf-8")
+
+    with pytest.raises(ExtractionError):
+        rfc_text.extract(path)
+
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "ragged-separator"\nreason = "stray space"\n',
+    )
+    spec = rfc_text.extract(path, sources_dir=sources)
+    (table,) = [s for s in spec.sections if isinstance(s, ast.AvpTable)]
+    assert [row.name for row in table.rows] == ["Class"]

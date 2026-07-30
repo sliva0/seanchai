@@ -92,6 +92,27 @@ standing findings off.
    merge request into Wireshark's `resources/protocols/diameter/`
    dictionary, with the evidence already written down per finding.
 
+20. **A linter rule for one document's tables disagreeing about one AVP.**
+    A document with several definition sets can tabulate the same AVP more
+    than once, and nothing today compares those rows against each other:
+    the extractor fails only when the *codes* conflict (`_resolve`'s
+    cross-table check), `duplicate-identity` wants two different names on
+    one code, and `table-definition-mismatch` compares a row against its
+    defining clause, not against another row. The real case: TS 29.061
+    prints `3GPP-IMSI` (code 1, clause 16.4.7) in both its Gmb table 9a
+    (§16a.5) and its SGmb table 10 (§17.7.0), with `Must: V` in one and
+    `Must: M,V` in the other — a flag-rule disagreement the corpus records
+    faithfully and nothing reports. The rule should compare same-name rows
+    across one file's AVP tables on the cells the code check does not
+    cover — type, flag rules, encrypt — and report disagreement per pair.
+    Probably a note rather than an error: per-interface tables may
+    legitimately impose different flag rules on one AVP (that is arguably
+    what a per-interface table *is* for), so the finding is a
+    reader-with-the-document-open call, like the oracle's. Also worth
+    checking when implementing: whether the consumer model's
+    first-table-wins `tabled` resolution should surface the ambiguity to
+    consumers instead of silently picking the first row.
+
 ## More sources
 
 Of the 34 specifications the downloader fetches, eighteen extract cleanly

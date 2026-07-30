@@ -1,6 +1,6 @@
-# Input patches for 3GPP TS 29.128 (MME/SGSN interfaces to packet data networks
+# Source declarations for 3GPP TS 29.128 (MME/SGSN interfaces to packet data networks
 # and applications). Applied to normalized source text before parsing; see
-# src/seanchai/extractor/patches.py for the format.
+# src/seanchai/extractor/sources.py for the format.
 
 [[patch]]
 find = "OctetSstring"

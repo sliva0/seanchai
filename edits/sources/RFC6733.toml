@@ -1,0 +1,5 @@
+# Source declarations for RFC 6733 (Diameter Base Protocol).
+
+[[quirk]]
+name = "type-short-forms"
+reason = "§4.5 declares its own convention — 'Due to space constraints, the short form DiamIdent is used to represent DiameterIdentity' — and the table then also prints DiamURI"

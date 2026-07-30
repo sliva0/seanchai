@@ -1,0 +1,9 @@
+# Source declarations for RFC 4004 (Diameter Mobile IPv4 Application).
+
+[[quirk]]
+name = "type-short-forms"
+reason = "the AVP table prints DiamIdent and IPFiltrRule in its Value Type column"
+
+[[quirk]]
+name = "bare-name-continuation"
+reason = "a handful of wrapped names print their continuation fragment without the otherwise-empty flag cells, outside the table box"

@@ -1,0 +1,5 @@
+# Source declarations for RFC 4006 (Diameter Credit-Control Application).
+
+[[quirk]]
+name = "type-short-forms"
+reason = "the AVP table prints Restriction-Filter-Rule's type as IPFiltrRule"

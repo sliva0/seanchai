@@ -1,6 +1,6 @@
-# Input patches for 3GPP TS 29.338 (Diameter protocols supporting SMS-capable
+# Source declarations for 3GPP TS 29.338 (Diameter protocols supporting SMS-capable
 # MMEs). Applied to normalized source text before parsing; see
-# src/seanchai/extractor/patches.py for the format.
+# src/seanchai/extractor/sources.py for the format.
 
 [[patch]]
 find = "SGSN-Absent-User-Diagnostic SM"

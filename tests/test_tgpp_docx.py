@@ -5,7 +5,7 @@ import pytest
 
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
-from seanchai.extractor.sources import Patcher
+from seanchai.extractor.sources import Patcher, Quirks
 
 
 def _two_section_spec():
@@ -129,7 +129,7 @@ def test_origin_rejects_unknown_references():
 
 
 def test_flags_cell_accepts_only_comma_separated_uppercase_flags():
-    assert tgpp_docx._flags_cell("M, V") == {
+    assert tgpp_docx._flags_cell("M, V", Quirks([], None)) == {
         ast.AvpFlag.MANDATORY,
         ast.AvpFlag.VENDOR,
     }
@@ -141,7 +141,7 @@ def test_flags_cell_rejects_known_source_typos(cell):
         tgpp_docx.ExtractionError,
         match=f"malformed flags cell {cell!r}",
     ):
-        tgpp_docx._flags_cell(cell)
+        tgpp_docx._flags_cell(cell, Quirks([], None))
 
 
 def test_extract_rejects_spaces_in_avp_table_names(tmp_path, synthetic_spec_docx):

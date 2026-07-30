@@ -1,0 +1,9 @@
+# Source declarations for 3GPP TS 29.061 (Gn/Gi/Sgi interworking).
+
+[[quirk]]
+name = "dotted-flags"
+reason = "eleven flags cells write the separator as a period ('M.V'); the space-less form is this document's convention, unlike the 'M. V' typo class that goes through patches"
+
+[[quirk]]
+name = "clause-parenthetical"
+reason = "the Gmb and SGmb tables annotate 37 clause cells as '16.4.7 (see Note)', pointing at the note about RADIUS VSAs carried as Diameter vendor AVPs per RFC 7155"

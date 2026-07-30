@@ -1,6 +1,6 @@
-# Input patches for 3GPP TS 29.329 (Sh interface based on Diameter).
+# Source declarations for 3GPP TS 29.329 (Sh interface based on Diameter).
 # Applied to normalized source text before parsing; see
-# src/seanchai/extractor/patches.py for the format.
+# src/seanchai/extractor/sources.py for the format.
 
 [[patch]]
 find = "Push-Notifications-Answer"
@@ -10,3 +10,7 @@ section = "6.1.8"
 reason = "command name pluralized in the heading and prose, but not in the rule"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "note-defined-in-rfc"
+reason = "the AVP table's note reads 'The value of this attribute is defined in IETF RFC ...' for a code-less row, which is where that AVP's re-used origin comes from"

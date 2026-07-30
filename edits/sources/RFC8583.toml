@@ -1,0 +1,5 @@
+# Source declarations for RFC 8583 (Diameter Load Information).
+
+[[quirk]]
+name = "ragged-separator"
+reason = "the table's closing horizontal rule prints one stray space inside the dashes (page 15) — a publisher artefact, still unambiguously box drawing"

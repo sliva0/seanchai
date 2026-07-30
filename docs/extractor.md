@@ -20,7 +20,8 @@ counting is exact and every later parsing step sees patched text.
   numeric order.
 - The AVP-flags table (header cell "AVP Flag rules") → `AvpTable`. Rows whose
   code cell is a NOTE reference get `code=None`, and note texts naming a
-  defining RFC additionally produce `ReusedAvps` rows.
+  defining RFC additionally produce `ReusedAvps` rows — a prose harvest,
+  so it runs behind the `note-defined-in-rfc` quirk.
 - The "re-used Diameter AVPs" table → `ReusedAvps` rows with M-bit overrides.
 
 ## What the extractor does not decide
@@ -192,11 +193,18 @@ reason, and the behavior it names lives in extractor code. TOML that carried
 logic would make the extractor an interpreter and the declaration
 unreviewable.
 
-The RFC extractor's vocabulary today: `prose-avp-codes` (RFC 7155),
-`clause-avp-table` (RFC 4072, RFC 5447) and `radius-attribute-table`
-(RFC 4590) — see [the RFC extractor](#the-rfc-plain-text-extractor). The
-docx extractor's vocabulary is empty so far: no collected 3GPP document has
-needed a reading heuristic enough to gate.
+The RFC extractor's vocabulary today — see
+[the RFC extractor](#the-rfc-plain-text-extractor) for each behavior:
+`prose-avp-codes` (RFC 7155), `clause-avp-table` (RFC 4072, RFC 5447),
+`radius-attribute-table` (RFC 4590), `type-short-forms` (RFC 6733, 4004,
+4005, 4006), `prose-catchall-row` (RFC 5778), `bare-name-continuation`
+(RFC 4004) and `ragged-separator` (RFC 8583). The docx extractor's:
+`note-defined-in-rfc` (TS 29.229, 29.329), `dotted-flags` (TS 29.061,
+29.212) and `clause-parenthetical` (TS 29.061). Deliberately *not* gated,
+on the same criterion: the "Y"/"N" Encrypt spellings and TS 29.338's
+"Must"/"Must not" M-bit short forms — closed vocabularies whose misreading
+is impossible ("Y" cannot be a typo of anything), where `DiamIdent` or a
+dotted flags cell plausibly could be.
 
 **Division of labor**, deliberately kept sharp:
 
@@ -301,9 +309,12 @@ fixture for it in `tests/conftest.py` too.
 - the cover title printed as a plain paragraph rather than in the cover-page
   table (29.061, 29.212, 29.213, 29.214) — `_spec_and_version` reads both;
 - flags cells separated by periods with no space, "M.V" (29.061 eleven times,
-  29.212 seven) — a separator convention, normalized like Y/N Encrypt cells;
+  29.212 seven) — a separator convention, but a per-document one, so reading
+  it is the declared `dotted-flags` quirk rather than a global rewrite;
 - clause cells annotated "16.4.7 (see Note)" in both casings (29.061, 37
-  times) — normalized off;
+  times) — a clause number has no syntax for parentheses, so the tail is
+  almost certainly prose, but dropping text is the declared
+  `clause-parenthetical` quirk, not an assumption;
 - parenthesized note references on name cells, "(NOTE 3)"/"(Note 2)", and two
   stacked on one cell (29.212, 29.214) — stripped whole, or the remainder
   would be the non-name "3GPP-RAT-Type ()";
@@ -415,6 +426,12 @@ that:
   first. A physical line starting a new logical row is the one whose name
   fragment sits at the Attribute Name column; anything deeper continues the
   row above, and every cell must arrive on exactly one of a row's lines.
+  RFC 4004 prints a handful of continuation fragments *outside* the table
+  box, without their otherwise-empty flag cells — accepting loose text into
+  a name is the `bare-name-continuation` quirk. RFC 5778 closes its
+  application table with a "Rest of the AVPs" prose catch-all spanning three
+  physical rows; dropping table lines on a text match is the
+  `prose-catchall-row` quirk.
 - **More than one table.** Older application RFCs split their AVPs into
   several category tables. A repeated header after a page break continues the
   current table; a header after table-closing prose starts another one.
@@ -422,8 +439,9 @@ that:
   the 8581–8583 family box the complete table. The latter adds a structural
   leading border to every row and uses `+` at column intersections. Both
   normalize into the same fixed-width row reader. A stray space in RFC 8583's
-  closing rule is accepted only because a field containing nothing but dashes
-  and whitespace is unambiguously box drawing.
+  closing rule is still unambiguously box drawing — a field holding nothing
+  but dashes and whitespace — but only that document is known to print it,
+  so accepting it is the `ragged-separator` quirk.
 - **Header labels are matched as whole spellings, not tokenized.** The label
   rows print `Code Defined` (two columns) and `Attribute Name` (one label)
   with the same single space, so only vocabulary tells them apart —
@@ -435,10 +453,11 @@ that:
   RFC 7155 already print different spellings, so extending the table is the
   expected cost of each new RFC.
 - **Declared short forms.** §4.5 says "the short form DiamIdent is used to
-  represent DiameterIdentity", and then also writes DiamURI. RFCs 4004 and
-  4005 likewise use `IPFiltrRule`/`IPFltrRule` and `QoSFltrRule`. A document
-  convention carrying information, so it is extractor code rather than an
-  input patch per row.
+  represent DiameterIdentity", and then also writes DiamURI. RFCs 4004,
+  4005 and 4006 likewise print `IPFiltrRule`/`IPFltrRule` and `QoSFltrRule`.
+  The vocabulary lives in extractor code; *accepting* it is per-document,
+  behind the `type-short-forms` quirk, so a new document's typo cannot ride
+  in on another document's declared convention.
 - **Tables without flag columns, and clauses without tables.** RFC 5777's
   IANA allocation table carries Name, Code, Section, and Data Type and maps
   directly onto those four columns. RFCs 4072 and 5447 publish the same facts

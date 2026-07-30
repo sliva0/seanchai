@@ -175,17 +175,28 @@ _FLAG_COLUMNS = {
 }
 
 
-def _is_separator(text: str) -> bool:
+def _is_separator(text: str, quirks: sources.Quirks) -> bool:
     """The dashed rule closing the column labels and each page's chunk of
     rows: dashes filling the fixed-width area up to the first pipe. Judged on
     that area alone, because the boxed caption's own `|----+-----|` line is
     all dashes too once the pipes are ignored — but prints nothing left of
     its first pipe."""
-    # RFC 8583 has one stray space inside a horizontal rule.  It is still
-    # unambiguously box drawing (the field contains no character but dashes
-    # and whitespace), so tolerate that publisher artefact here.
-    left = "".join(text.split("|", 1)[0].split())
-    return len(left) >= 3 and set(left) == {"-"}
+    left = text.split("|", 1)[0].strip()
+    if len(left) >= 3 and set(left) == {"-"}:
+        return True
+    # RFC 8583 prints one stray space inside a horizontal rule. The field
+    # holding no character but dashes and whitespace is still unambiguously
+    # box drawing, but only where the document declares the publisher
+    # artefact — the `ragged-separator` quirk.
+    collapsed = "".join(left.split())
+    if (
+        len(collapsed) >= 3
+        and set(collapsed) == {"-"}
+        and quirks.enabled("ragged-separator")
+    ):
+        quirks.fire("ragged-separator")
+        return True
+    return False
 
 
 def _table_text(text: str) -> str:
@@ -208,9 +219,10 @@ def _table_text(text: str) -> str:
 
 
 # "Due to space constraints, the short form DiamIdent is used to represent
-# DiameterIdentity" — RFC 6733 §4.5, which then also writes DiamURI. A
-# document convention carrying information, so it is extractor code rather
-# than an input patch per row.
+# DiameterIdentity" — RFC 6733 §4.5, which then also writes DiamURI. The
+# vocabulary lives here; *accepting* it is per-document, behind the
+# `type-short-forms` quirk, so a new document's typo cannot ride in on
+# another document's declared convention.
 _TYPE_SHORT_FORMS = {
     "DiamIdent": ast.DataType.DIAMETER_IDENTITY,
     "DiamURI": ast.DataType.DIAMETER_URI,
@@ -242,6 +254,23 @@ QUIRKS: dict[str, str] = {
     "radius-attribute-table": (
         "index RADIUS attributes cited as Diameter-compatible AVPs, reading"
         " each code from its attribute clause's Type field (RFC 4590)"
+    ),
+    "type-short-forms": (
+        "accept the space-constrained Data Type spellings some RFC tables"
+        " declare and print — DiamIdent, DiamURI, IPFiltrRule/IPFltrRule,"
+        " QoSFltrRule (RFC 6733, 4004, 4005, 4006)"
+    ),
+    "prose-catchall-row": (
+        "ignore the 'Rest of the AVPs' prose catch-all RFC 5778 prints as"
+        " three physical rows at the end of its application table"
+    ),
+    "bare-name-continuation": (
+        "accept a wrapped name's continuation line printed without its"
+        " otherwise-empty flag cells, outside the table box (RFC 4004)"
+    ),
+    "ragged-separator": (
+        "accept a horizontal rule with a stray space inside it as box"
+        " drawing (RFC 8583)"
     ),
 }
 
@@ -369,9 +398,16 @@ def _read_header(label_lines: list[str]) -> _Columns:
     )
 
 
-def _data_type(text: str) -> ast.DataType:
+def _data_type(text: str, quirks: sources.Quirks) -> ast.DataType:
     if text in _TYPE_SHORT_FORMS:
-        return _TYPE_SHORT_FORMS[text]
+        if quirks.enabled("type-short-forms"):
+            quirks.fire("type-short-forms")
+            return _TYPE_SHORT_FORMS[text]
+        raise ExtractionError(
+            f"AVP table Data Type cell {text!r} is a declared short form,"
+            " which this document's source declaration does not accept"
+            " (the `type-short-forms` quirk)"
+        )
     try:
         return ast.DataType(text)
     except ValueError:
@@ -398,6 +434,7 @@ class _PendingRow:
     first and the data on the continuation.
     """
 
+    quirks: sources.Quirks
     name_parts: list[str] = field(default_factory=list)
     data: tuple[str, str, str] | None = None  # code, section, type as printed
     flags: list[str] = field(default_factory=list)
@@ -408,7 +445,16 @@ class _PendingRow:
             return
         if tokens[:4] == ["Rest", "of", "the", "AVPs"]:
             # RFC 5778 closes its application table with a prose catch-all
-            # spanning three physical rows.  It is not an AVP definition.
+            # spanning three physical rows.  It is not an AVP definition —
+            # but dropping table lines on a text match is exactly the kind
+            # of reading that must not run undeclared.
+            if not self.quirks.enabled("prose-catchall-row"):
+                raise ExtractionError(
+                    f"prose catch-all row {line!r}, which this document's"
+                    " source declaration does not ignore (the"
+                    " `prose-catchall-row` quirk)"
+                )
+            self.quirks.fire("prose-catchall-row")
             self.ignored = True
             return
         left_columns = shape.columns[: len(shape.columns) - shape.flag_count]
@@ -521,7 +567,7 @@ class _PendingRow:
             name=name,
             code=int(code) if code else None,
             section=section or None,
-            data_type=_data_type(data_type) if data_type else None,
+            data_type=_data_type(data_type, self.quirks) if data_type else None,
             flag_rules=ast.AvpFlagRules(
                 must=flag_rules.get(ast.AvpColumn.MUST, empty),
                 may=flag_rules.get(ast.AvpColumn.MAY, empty),
@@ -539,7 +585,8 @@ class _TableReader:
     heading; a header box met while open is the printed continuation after a
     page break and must declare the same columns."""
 
-    def __init__(self) -> None:
+    def __init__(self, quirks: sources.Quirks) -> None:
+        self.quirks = quirks
         self.shape: _Columns | None = None
         self.rows: list[ast.AvpTableRow] = []
         self.pending: _PendingRow | None = None
@@ -566,7 +613,7 @@ class _TableReader:
     def read(self, line: _Line) -> None:
         text = _table_text(line.text)
         if self.header_lines is not None:
-            if _is_separator(text):
+            if _is_separator(text, self.quirks):
                 if self.header_lines:
                     shape = _read_header(self.header_lines)
                     if self.shape is not None and shape != self.shape:
@@ -592,15 +639,25 @@ class _TableReader:
             if set(text.strip()) <= {"+", "-"}:
                 return
             # RFC 4004 omits the otherwise-empty flag cells on a handful of
-            # wrapped name continuations.  Accept only a single token while a
-            # row is pending; prose after the table cannot enter here.
+            # wrapped name continuations, printing the fragment outside the
+            # table box. Only a single token while a row is pending can be
+            # one — but reading loose text into a name is a declared quirk,
+            # because on any other document it would silently mangle a name.
             if self.pending is not None and len(text.split()) == 1:
+                if not self.quirks.enabled("bare-name-continuation"):
+                    raise ExtractionError(
+                        f"name continuation {text.strip()!r} printed outside"
+                        " the table box, which this document's source"
+                        " declaration does not accept (the"
+                        " `bare-name-continuation` quirk)"
+                    )
+                self.quirks.fire("bare-name-continuation")
                 assert self.shape is not None
                 self.pending.add_left(text.split(), text, self.shape)
             elif self.rows and self.pending is None:
                 self.after_table_prose = True
             return
-        if _is_separator(text):
+        if _is_separator(text, self.quirks):
             self._finish_pending()
             return
         assert self.shape is not None
@@ -620,7 +677,7 @@ class _TableReader:
         ):
             self._finish_pending()
         if self.pending is None:
-            self.pending = _PendingRow()
+            self.pending = _PendingRow(self.quirks)
         self.pending.add_left(left.split(), text, self.shape)
         self.pending.add_flags(cells, text)
 
@@ -701,7 +758,7 @@ _SIMPLE_TABLE_HEADER_RE = re.compile(
 
 
 def _simple_avp_tables(
-    lines: list[_Line], headings: dict[str, _Line]
+    lines: list[_Line], headings: dict[str, _Line], quirks: sources.Quirks
 ) -> tuple[ast.AvpTable, ...]:
     """Read IANA-style AVP allocation tables that have no flag columns.
 
@@ -732,7 +789,7 @@ def _simple_avp_tables(
                     name=name,
                     code=int(code),
                     section=section,
-                    data_type=_data_type(data_type),
+                    data_type=_data_type(data_type, quirks),
                 )
             )
         if not rows:
@@ -784,7 +841,9 @@ class _ClauseFact:
     data_type: ast.DataType
 
 
-def _clause_facts(sections: list[_DocSection]) -> list[_ClauseFact]:
+def _clause_facts(
+    sections: list[_DocSection], quirks: sources.Quirks
+) -> list[_ClauseFact]:
     """The Name/Code/Type facts stated by ` AVP`-titled defining clauses.
 
     Strictly anchored: the sentence must sit under a clause titled with the
@@ -807,13 +866,15 @@ def _clause_facts(sections: list[_DocSection]) -> list[_ClauseFact]:
                 section=section,
                 name=title["name"],
                 code=int(match["code"]),
-                data_type=_data_type(match["data_type"]),
+                data_type=_data_type(match["data_type"], quirks),
             )
         )
     return facts
 
 
-def _clause_avp_table(sections: list[_DocSection]) -> ast.AvpTable | None:
+def _clause_avp_table(
+    sections: list[_DocSection], quirks: sources.Quirks
+) -> ast.AvpTable | None:
     """Build the AVP index for RFCs that define AVPs clause-by-clause.
 
     RFCs 4072 and 5447 have no summary table.  Their definition sentences are
@@ -823,7 +884,7 @@ def _clause_avp_table(sections: list[_DocSection]) -> ast.AvpTable | None:
     the judgement a prose reading can get wrong on a document it was not
     written for.
     """
-    facts = _clause_facts(sections)
+    facts = _clause_facts(sections, quirks)
     if not facts:
         return None
     rows = [
@@ -865,7 +926,7 @@ def _complete_rows_from_prose(
     that this file's Code and Type cells were read from the clauses rather
     than from the printed table.
     """
-    facts = {fact.name: fact for fact in _clause_facts(sections)}
+    facts = {fact.name: fact for fact in _clause_facts(sections, quirks)}
     used: set[str] = set()
     completed = []
     for table in tables:
@@ -1227,7 +1288,7 @@ def extract(
                 if reader is not None and reader.open and reader.after_table_prose:
                     reader.close()
                 if reader is None or reader.closed:
-                    reader = _TableReader()
+                    reader = _TableReader(quirks)
                     readers.append(reader)
                 heading = headings.get(line.section or "")
                 reader.start_header(line, heading.page if heading else line.page)
@@ -1244,13 +1305,13 @@ def extract(
             for candidate in readers
             if (table := candidate.result_optional()) is not None
         )
-        tables += _simple_avp_tables(lines, headings)
+        tables += _simple_avp_tables(lines, headings, quirks)
         if quirks.enabled("prose-avp-codes"):
             tables = _complete_rows_from_prose(
                 tables, document_sections, quirks, warnings
             )
         if quirks.enabled("clause-avp-table") and (
-            clause_table := _clause_avp_table(document_sections)
+            clause_table := _clause_avp_table(document_sections, quirks)
         ):
             quirks.fire("clause-avp-table", len(clause_table.rows))
             tables += (clause_table,)

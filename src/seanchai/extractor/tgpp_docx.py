@@ -21,7 +21,8 @@ What maps to what in a 3GPP Diameter spec docx:
   inserted in numeric order.
 - The AVP-flags table (header "AVP Flag rules") → `AvpTable`; rows whose code
   cell is a NOTE reference get `code=None`, and note texts naming a defining
-  RFC additionally produce `ReusedAvps` rows.
+  RFC additionally produce `ReusedAvps` rows (the `note-defined-in-rfc`
+  quirk).
 - The "re-used Diameter AVPs" table → `ReusedAvps` rows with M-bit overrides.
 
 The vendor-id for locally defined AVPs is not printed by enumerated-AVP
@@ -417,13 +418,24 @@ def _strip_note_ref(text: str) -> tuple[str, str | None]:
 
 
 # Clause cells in 29.061's tables annotate the number: "16.4.7 (see Note)",
-# 37 times across two clauses in both spellings — a document convention like
-# the Y/N Encrypt cells, so it is normalized here rather than input-patched.
-_SEE_NOTE_RE = re.compile(r"\s*\(see [Nn]ote\)\s*$")
+# 37 times across two clauses in both spellings. A clause number has no
+# syntax for parentheses, so a trailing parenthetical is almost certainly
+# prose — but dropping text is a declared reading, the `clause-parenthetical`
+# quirk, not an assumption.
+_CLAUSE_PARENTHETICAL_RE = re.compile(r"\s*\([^)]*\)\s*$")
 
 
-def _strip_see_note(text: str) -> str:
-    return _SEE_NOTE_RE.sub("", text)
+def _clause_cell(text: str, quirks: sources.Quirks) -> str:
+    if _CLAUSE_PARENTHETICAL_RE.search(text):
+        if not quirks.enabled("clause-parenthetical"):
+            raise ExtractionError(
+                f"clause cell {text!r} carries a parenthetical, which this"
+                " document's source declaration does not strip (the"
+                " `clause-parenthetical` quirk)"
+            )
+        quirks.fire("clause-parenthetical")
+        return _CLAUSE_PARENTHETICAL_RE.sub("", text)
+    return text
 
 
 # Both spellings of the Encrypt column, normalized to one on the way in. This
@@ -451,15 +463,25 @@ def _data_type(text: str | None) -> ast.DataType | None:
         raise ExtractionError(f"AVP table Value Type cell {text!r}") from None
 
 
-def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
+def _flags_cell(text: str, quirks: sources.Quirks) -> frozenset[ast.AvpFlag]:
     # Strict: typos like "M. V" or lowercase "v" are fixed by input patches,
     # not tolerated here. Space-less "M.V" is different — 29.061 writes it 11
     # times and 29.212 seven, so the period is those documents' separator
-    # convention and is normalized like the Y/N Encrypt cells.
+    # convention — but a convention is per-document, so reading it is the
+    # declared `dotted-flags` quirk rather than a global rewrite.
     if not text:  # an empty table cell
         return frozenset()
+    if "." in text and " " not in text:
+        if not quirks.enabled("dotted-flags"):
+            raise ExtractionError(
+                f"flags cell {text!r} separates flags with periods, which"
+                " this document's source declaration does not accept (the"
+                " `dotted-flags` quirk)"
+            )
+        quirks.fire("dotted-flags")
+        text = text.replace(".", ",")
     try:
-        return abnf.avp_flags(text.replace(".", ",") if "." in text and " " not in text else text)
+        return abnf.avp_flags(text)
     except abnf.AbnfError as error:
         raise ExtractionError(str(error)) from None
 
@@ -567,7 +589,7 @@ def _walk_table[T](
 
 
 def _extract_avp_table(
-    table: _Table, section_number: str, warnings: list[str]
+    table: _Table, section_number: str, warnings: list[str], quirks: sources.Quirks
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
     """Column *order* has been identical in every 3GPP specification examined,
     but the set has not: TS 29.273's table has no Encrypt column, TS 29.212's
@@ -583,6 +605,16 @@ def _extract_avp_table(
         if cells[0].startswith("NOTE"):  # merged full-width row, 1 note per line
             for line in row.first_cell_lines:
                 if match := _NOTE_RFC_RE.match(line):
+                    # A note is prose; deriving a re-used AVP row from one is
+                    # a prose harvest, declared like the RFC extractor's.
+                    if not quirks.enabled("note-defined-in-rfc"):
+                        raise ExtractionError(
+                            f"table note {line!r} names a defining RFC, which"
+                            " this document's source declaration does not"
+                            " derive re-used rows from (the"
+                            " `note-defined-in-rfc` quirk)"
+                        )
+                    quirks.fire("note-defined-in-rfc")
                     note_rfcs[match["number"]] = match["rfc"]
             return True
         # Spanning header rows (merged cells repeat the same text).
@@ -619,19 +651,19 @@ def _extract_avp_table(
                     code_value = int(code) if code else None
                     note = note or code_note
                 case ast.AvpColumn.SECTION:
-                    section_value = _strip_see_note(text) or None
+                    section_value = _clause_cell(text, quirks) or None
                 case ast.AvpColumn.TYPE:
                     type_value = text or None
                 case ast.AvpColumn.ENCRYPT:
                     encrypt = _encrypt_cell(text)
                 case ast.AvpColumn.MUST:
-                    must = _flags_cell(text)
+                    must = _flags_cell(text, quirks)
                 case ast.AvpColumn.MAY:
-                    may = _flags_cell(text)
+                    may = _flags_cell(text, quirks)
                 case ast.AvpColumn.SHOULD_NOT:
-                    should_not = _flags_cell(text)
+                    should_not = _flags_cell(text, quirks)
                 case ast.AvpColumn.MUST_NOT:
-                    must_not = _flags_cell(text)
+                    must_not = _flags_cell(text, quirks)
         if note is not None:
             note_refs.append((name, note))
         rows.append(
@@ -813,7 +845,10 @@ class _Resolved:
 
 
 def _collect(
-    sections: list[_Section], warnings: list[str], own_reference: str
+    sections: list[_Section],
+    warnings: list[str],
+    own_reference: str,
+    quirks: sources.Quirks,
 ) -> _Collected:
     """Walk the document once, classifying sections. Source-shaped work only:
     nothing here needs to know about another section."""
@@ -828,7 +863,7 @@ def _collect(
             # "AVP Flag rules (Note 1)".
             if any("AVP Flag rules" in cell for cell in header):
                 avp_table, note_reused = _extract_avp_table(
-                    table, section.number, warnings
+                    table, section.number, warnings, quirks
                 )
                 collected.avp_tables.append(
                     _CollectedAvpTable(
@@ -1036,10 +1071,28 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
 
 
 # The quirk vocabulary this extractor defines: name → what declaring it
-# enables. Empty so far — no collected 3GPP document has needed a reading
-# heuristic enough to gate — but the mechanism is shared, so a TS source
-# declaration naming any quirk fails at load with this (empty) list.
-QUIRKS: dict[str, str] = {}
+# enables. The same criterion as the RFC extractor's (see `sources.py`):
+# readings that would succeed silently on a document they were not written
+# for. Closed vocabularies whose misreading is impossible stay global —
+# "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit short forms
+# cannot mean anything else, where a dotted flags cell or a prose note can.
+QUIRKS: dict[str, str] = {
+    "note-defined-in-rfc": (
+        "derive re-used AVP rows from AVP-table notes reading 'The value of"
+        " this attribute is defined in IETF RFC n' (TS 29.229, 29.329,"
+        " 29.330)"
+    ),
+    "dotted-flags": (
+        "read a space-less dotted flags cell ('M.V') with the period as the"
+        " separator (TS 29.061, 29.212)"
+    ),
+    "clause-parenthetical": (
+        "strip a trailing parenthetical from a clause cell as prose —"
+        " '16.4.7 (see Note)' (TS 29.061); clause numbers have no syntax"
+        " for parentheses, so the tail is almost certainly prose, but"
+        " dropping text is declared, not assumed"
+    ),
+}
 
 
 def sources_file_name(specification: str) -> str:
@@ -1072,7 +1125,10 @@ def extract(
         patcher, quirks = sources.load(declarations_path, version, QUIRKS)
 
         collected = _collect(
-            _sections(document, patcher), warnings, ast.spec_ref(specification)
+            _sections(document, patcher),
+            warnings,
+            ast.spec_ref(specification),
+            quirks,
         )
         patcher.finish()
         quirks.finish()

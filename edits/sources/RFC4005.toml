@@ -1,4 +1,8 @@
-# Input patches for RFC 4005 (Diameter NAS Application).
+# Source declarations for RFC 4005 (Diameter NAS Application).
+
+[[quirk]]
+name = "type-short-forms"
+reason = "the AVP tables print IPFltrRule and QoSFltrRule in their Value Type columns"
 
 [[patch]]
 find = "Acounting-Auth-"

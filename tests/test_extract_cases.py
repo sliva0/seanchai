@@ -16,6 +16,14 @@ def _paragraph(document, text):
     return next(p for p in document.paragraphs if p.text == text)
 
 
+def _declare(tmp_path, toml: str):
+    """A sources directory declaring `toml` for the synthetic TS 29.999."""
+    sources = tmp_path / "sources"
+    sources.mkdir(exist_ok=True)
+    (sources / "TS29.999.toml").write_text(toml, encoding="utf-8")
+    return sources
+
+
 def test_extract_rejects_an_abnf_line_with_mixed_bold(tmp_path, synthetic_spec_docx):
     # Word splits a line into runs at arbitrary points, and 3GPP files really
     # do carry bold on the brackets but not the name. When the *name* runs
@@ -75,13 +83,69 @@ def test_extract_turns_an_avp_table_note_into_a_reused_row(
     ).text = "NOTE 1: The value of this attribute is defined in IETF RFC 6733"
     document.save(with_note)
 
-    spec = tgpp_docx.extract(with_note)
+    # Deriving a row from a note's prose is the `note-defined-in-rfc` quirk:
+    # undeclared it is an error, declared it produces the re-used row.
+    with pytest.raises(tgpp_docx.ExtractionError, match="note-defined-in-rfc"):
+        tgpp_docx.extract(with_note)
+
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "note-defined-in-rfc"\nreason = "RFC note"\n',
+    )
+    spec = tgpp_docx.extract(with_note, sources_dir=sources)
 
     table_section = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
     noted = next(row for row in table_section.rows if row.name == "Noted-AVP")
     assert noted.code is None
     reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
     assert ast.ReusedAvpRow(name="Noted-AVP", origin="RFC6733") in reused.rows
+
+
+def test_dotted_flags_cells_are_read_only_when_declared(
+    tmp_path, synthetic_spec_docx
+):
+    # TS 29.061 and 29.212 write "M.V" — the space-less period is those
+    # documents' separator convention; anywhere undeclared it is refused.
+    dotted = tmp_path / "dotted-flags.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[1].cell(2, 4).text = "M.V"
+    document.save(dotted)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="dotted-flags"):
+        tgpp_docx.extract(dotted)
+
+    sources = _declare(
+        tmp_path, '[[quirk]]\nname = "dotted-flags"\nreason = "M.V cells"\n'
+    )
+    spec = tgpp_docx.extract(dotted, sources_dir=sources)
+    table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
+    assert table.rows[0].flag_rules.must == {
+        ast.AvpFlag.MANDATORY,
+        ast.AvpFlag.VENDOR,
+    }
+
+
+def test_clause_parentheticals_are_stripped_only_when_declared(
+    tmp_path, synthetic_spec_docx
+):
+    # TS 29.061 annotates clause cells as "16.4.7 (see Note)". A clause
+    # number has no syntax for parentheses, so the tail is prose — but
+    # dropping it is declared, not assumed.
+    annotated = tmp_path / "clause-note.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[1].cell(2, 2).text = "6.3.1 (see Note)"
+    document.save(annotated)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="clause-parenthetical"):
+        tgpp_docx.extract(annotated)
+
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "clause-parenthetical"\nreason = "see-note tails"\n',
+    )
+    spec = tgpp_docx.extract(annotated, sources_dir=sources)
+    table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
+    assert table.rows[0].section == "6.3.1"
 
 
 @pytest.mark.parametrize(

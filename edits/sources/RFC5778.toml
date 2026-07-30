@@ -1,0 +1,5 @@
+# Source declarations for RFC 5778 (Diameter Mobile IPv6: HA-to-AAA).
+
+[[quirk]]
+name = "prose-catchall-row"
+reason = "the application AVP table closes with 'Rest of the AVPs' spanning three physical rows — prose about imported AVPs, not an AVP definition"
