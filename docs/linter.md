@@ -62,7 +62,7 @@ With `--corpus`, each re-used row is resolved against the document it cites.
 - `unresolved-reference` — every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row, or a
   `; Bases:` document. `* [ AVP ]` is grammar and is skipped. A note rather
-  than an error while the five standing cases below exist.
+  than an error while the six standing cases below exist.
 - `base-not-in-corpus` — a `; Bases:` document the corpus lacks; reference
   resolution is skipped for that file rather than reporting every base AVP.
 
@@ -105,13 +105,15 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   clauses say they originate elsewhere and then print interface-specific
   bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
 - **`origin-not-in-corpus`.** Every missing origin is a legacy `.doc` (TS
-  32.299, cited by six files; 29.368, 29.217, 29.468; 29.154 is not in the
-  catalog at all), TS 29.273 (a docx shape the extractor cannot read yet), or
+  32.299; 29.368, 29.217, 29.468; 29.154 is not in the
+  catalog at all), an unextracted RFC (5580, 6734, 6942, cited by TS 29.273), or
   outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057, TS
   23.329). These clear as the corpus grows; see the roadmap.
-- **`unresolved-reference`**, five, all AVPs no document defines, tabulates or
+- **`unresolved-reference`**, six, all AVPs no document defines, tabulates or
   allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI`
   (clauses 9.4–9.6; erratum 1462 renames one to another undefined name, and
   Wireshark carries the same dead end), and TS 29.345's `ProSe-Query-Code`
-  and `ProSe-Response-Code` (clauses 6.3.53, 6.3.54). The rule promotes to an
+  and `ProSe-Response-Code` (clauses 6.3.53, 6.3.54), and TS 29.273’s
+  `NSWO-Authorization`
+  (clause 5.2.2.1.2 prints only a member reference). The rule promotes to an
   error when these are gone, which needs the upstream documents to move.

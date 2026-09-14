@@ -50,7 +50,7 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   every `expect`, which is what keeps "already corrected" distinguishable
   from "fixed upstream". The layer consumes raw files only.
 - **Selectors address identity, never position**: `definition(name)`,
-  `table_row(name)`, `reused_row(name, section=)`,
+  `table_row(name, table=)` (label narrows repeated rows), `reused_row(name, section=)`,
   `enum_value(avp, name, value=)`, `avp_rule(parent, name)` (parent may be a
   whole `definition` selector), `avp_table(label)`, `reused_avps(label)`,
   `header()`.

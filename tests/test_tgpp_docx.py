@@ -394,3 +394,22 @@ def test_undeclared_docx_shapes_are_rejected(tmp_path, synthetic_spec_docx, quir
     document.save(path)
     with pytest.raises(tgpp_docx.ExtractionError, match=quirk):
         tgpp_docx.extract(path)
+
+
+@pytest.mark.parametrize(
+    "body",
+    ["Refer to clause 1.2.3.\nAdditional definition text.", "No definition supplied."],
+)
+def test_reference_only_quirk_rejects_other_command_text(tmp_path, body):
+    document = docx.Document()
+    document.add_paragraph("3GPP TS 29.999 V1.2.3")
+    document.add_paragraph("6.1\tExample-Request (EXR) Command", style="Heading 1")
+    for text in body.splitlines():
+        document.add_paragraph(text)
+    path = tmp_path / "bad.docx"
+    document.save(path)
+    (tmp_path / "TS29.999.toml").write_text(
+        '[[quirk]]\nname = "command-reference-only"\nreason = "test rejection"\n'
+    )
+    with pytest.raises(tgpp_docx.ExtractionError, match="command section without ABNF"):
+        tgpp_docx.extract(path, sources_dir=tmp_path)

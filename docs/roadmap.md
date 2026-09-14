@@ -49,9 +49,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **I. TS 29.273** has a command section with no ABNF, and is an unresolved
-  origin in five files — the most valuable single spec. Its AVP table also
-  has no Encrypt column.
 - **J. Message-only documents.** 29.228 and 29.328 hold the Cx and Sh
   messages while 29.229 and 29.329 hold the AVPs; 29.330's AVP table is a
   header row and one blank row (drop an all-blank table, keep the non-empty

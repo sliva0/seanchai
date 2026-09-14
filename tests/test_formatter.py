@@ -19,10 +19,11 @@ def test_every_committed_dad_file_round_trips_exactly(path):
     # A deleted section's note is a block of its own, spaced like a section —
     # removing its line leaves both neighbours' separators behind, so the
     # doubled gap collapses back to the canonical two blank lines.
+    # A deleted final section also leaves its preceding separator at EOF.
     canonical = canonical.replace("\n" * 5, "\n" * 3)
     spec = parser.parse(text)
 
-    assert formatter.format_spec(spec) == canonical + "\n"
+    assert formatter.format_spec(spec) == canonical.rstrip("\n") + "\n"
     assert parser.parse(formatter.format_spec(spec)) == spec
 
 

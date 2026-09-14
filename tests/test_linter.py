@@ -136,6 +136,12 @@ def test_the_corrected_corpus_has_no_errors(path):
 # corrections exist to fix. Every entry was confirmed against the source clause
 # before it was written down; a file absent from here must lint clean raw.
 _RAW_ERRORS = {
+    "29273-i60.raw.dad": [
+        "duplicate-definition",
+        "duplicate-identity",
+        "duplicate-identity",
+        "table-definition-mismatch",
+    ],
     "29172-i10.raw.dad": ["duplicate-identity"],
     "29128-i00.raw.dad": ["duplicate-identity", "duplicate-identity"],
     "29272-i60.raw.dad": [
@@ -207,6 +213,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29128-i00": 3,
         "29212-i20": 9,
         "29272-i60": 9,
+        "29273-i60": 3,
         "29283-i00": 1,
         "29336-i20.raw": 7,
         "29336-i20": 6,
@@ -491,11 +498,8 @@ _STANDING_CORPUS_NOTES = {
         "origin-not-in-corpus": ["TS32.299"],
         "reused-origin-indirect": ["Service-Selection"],
     },
-    "29173-i00.dad": {
-        "origin-not-in-corpus": ["TS29.273"],
-    },
     "29212-i20.dad": {
-        "origin-not-in-corpus": ["TS283.034, TS29.273, TS32.299, X.S0057"],
+        "origin-not-in-corpus": ["TS283.034, TS32.299, X.S0057"],
         "reused-reprint": [
             "ADC-Rule-Definition",
             "ADC-Rule-Install",
@@ -509,10 +513,10 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29214-i40.dad": {
-        "origin-not-in-corpus": ["TS183.017, TS29.154, TS29.273, TS32.299"],
+        "origin-not-in-corpus": ["TS183.017, TS29.154, TS32.299"],
     },
     "29272-i60.dad": {
-        "origin-not-in-corpus": ["TS29.217, TS29.273, TS32.299"],
+        "origin-not-in-corpus": ["TS29.217, TS32.299"],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
             "Monitoring-Event-Report",
@@ -526,6 +530,11 @@ _STANDING_CORPUS_NOTES = {
             "Communication-Pattern-Set",
             "MIP6-Agent-Info",
         ],
+    },
+    "29273-i60.dad": {
+        "origin-not-in-corpus": ["RFC5580, RFC6734, RFC6942, TS283.034, TS32.299"],
+        "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
+        "unresolved-reference": ["NSWO-Authorization"],
     },
     "29283-i00.dad": {
         "reused-body-differs": ["User-Identifier"],
@@ -551,7 +560,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-reprint": ["SM-Delivery-Failure-Cause", "SMSMI-Correlation-ID"],
     },
     "29345-i00.dad": {
-        "origin-not-in-corpus": ["TS29.273, TS32.299"],
+        "origin-not-in-corpus": ["TS32.299"],
         "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
     "29388-i10.dad": {

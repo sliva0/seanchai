@@ -52,6 +52,9 @@ _HEADING_RE = re.compile(
 _COMMAND_TITLE_RE = re.compile(
     r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Command$"
 )
+_COMMAND_INTRO_RE = re.compile(
+    r"^The (?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) command,"
+)
 # The " AVP" suffix is spec-dependent: 29.329 titles are "MSISDN AVP",
 # 29.272 mostly bare "Subscription-Data". Bare titles like "General" also
 # match — harmless, since a section only becomes a definition when its body
@@ -192,7 +195,11 @@ def _is_bold(paragraph: docx.text.paragraph.Paragraph) -> bool:
     return flags.pop() if flags else False
 
 
-def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Section]:
+def _sections(
+    document: docx.document.Document,
+    patcher: Patcher,
+    quirks: sources.Quirks | None = None,
+) -> list[_Section]:
     sections: list[_Section] = []
     current: _Section | None = None
     caption: str | None = None
@@ -237,11 +244,22 @@ def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Secti
                 # spanning header merges differently from its data rows, so
                 # those tables keep their grid positions (and the positional
                 # column mapping that relies on them).
-                if len(set(spans)) == 1 and any(span > 1 for span in spans[0]):
-                    for row in rows:
+                physical_reused = (
+                    quirks is not None
+                    and quirks.enabled("physical-reused-columns")
+                    and "Reference" in rows[0].cells
+                    and len({len(row.cells) for row in rows}) > 1
+                )
+                if physical_reused:
+                    assert quirks is not None
+                    quirks.fire("physical-reused-columns")
+                if physical_reused or (
+                    len(set(spans)) == 1 and any(span > 1 for span in spans[0])
+                ):
+                    for row, row_spans in zip(rows, spans, strict=True):
                         starts = []
                         position = 0
-                        for span in spans[0]:
+                        for span in row_spans:
                             starts.append(row.cells[position])
                             position += span
                         row.cells = starts
@@ -249,7 +267,8 @@ def _sections(document: docx.document.Document, patcher: Patcher) -> list[_Secti
             caption = None
             continue
         style = (item.style.name or "") if item.style else ""
-        if style.startswith("Heading"):
+        # TS 29.273 §6.2.2.1.1 uses the explicit H6 heading style.
+        if style.startswith("Heading") or re.fullmatch(r"H[1-9]", style):
             match = _HEADING_RE.match(item.text.strip())
             if match:
                 current = _Section(
@@ -300,21 +319,33 @@ def _find_rule_header(
 
 
 def _extract_messages(
-    section: _Section, title: re.Match, warnings: list[str]
+    section: _Section,
+    title: re.Match | None,
+    warnings: list[str],
+    quirks: sources.Quirks,
 ) -> list[ast.Message]:
     """A command section usually holds one ABNF, but can hold several — the
     same command under different application ids (TS 29.272 defines IDR/DSR/RSR
     once for S6a and once for S7a in one section)."""
     messages = []
+    prose_title = title is None
     index = 0
     while index < len(section.paragraphs):
         text = section.paragraphs[index].text
         index += 1
+        if prose_title and (intro := _COMMAND_INTRO_RE.match(text)):
+            title = intro
         if "::=" not in text:
             continue
         header = _DIAMETER_HEADER_RE.match(text)
         if header is None:
             raise ExtractionError(f"{section.number}: malformed rule header {text!r}")
+        if title is None:
+            raise ExtractionError(
+                f"{section.number}: command ABNF without a named intro"
+            )
+        if prose_title:
+            quirks.fire("procedure-commands")
         rule_name = header["name"].replace(" ", "")
         if rule_name != title["name"]:
             # A real occurrence: TS 29.329 §6.1.8 heading says
@@ -344,7 +375,23 @@ def _extract_messages(
                 avps=avps,
             )
         )
+        if prose_title:
+            title = None
     if not messages:
+        # TS 29.273 §§4.2.2.4.3-4, 5.2.2.3.5-6 and 11.2.2.1.1-2
+        # contain only a pointer to another clause, not a definition.
+        paragraphs = [p.text for p in section.paragraphs if p.text]
+        if (
+            quirks.enabled("command-reference-only")
+            and len(paragraphs) == 1
+            and re.fullmatch(
+                r"(?:Refer to|See) clause \d+(?:\.\d+)+"
+                r"(?: of 3GPP TS \d{2}\.\d{3} \[\d+\])?\.?",
+                paragraphs[0],
+            )
+        ):
+            quirks.fire("command-reference-only")
+            return []
         raise ExtractionError(f"{section.number}: command section without ABNF")
     return messages
 
@@ -842,6 +889,7 @@ class _Resolved:
     # label and section, when the document prints no re-used table).
     pairs: list[tuple[ast.AvpTable, _ReusedTable]]
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
+    independent_reused: list[_ReusedTable] = field(default_factory=list)
 
 
 def _collect(
@@ -855,7 +903,16 @@ def _collect(
     collected = _Collected()
     for section in sections:
         if title := _COMMAND_TITLE_RE.match(section.title):
-            collected.messages.extend(_extract_messages(section, title, warnings))
+            collected.messages.extend(
+                _extract_messages(section, title, warnings, quirks)
+            )
+            continue
+        if quirks.enabled("procedure-commands") and any(
+            _DIAMETER_HEADER_RE.match(p.text) for p in section.paragraphs
+        ):
+            collected.messages.extend(
+                _extract_messages(section, None, warnings, quirks)
+            )
             continue
         for table in section.tables:
             header = table.rows[0].cells
@@ -913,10 +970,11 @@ def _collect(
     return collected
 
 
-def _resolve(collected: _Collected) -> _Resolved:
+def _resolve(collected: _Collected, quirks: sources.Quirks | None = None) -> _Resolved:
     """Cross-section work: pair each AVP table with its re-used table, then
     turn pending enumerated sections into definitions using codes from the
     AVP tables."""
+    quirks = quirks if quirks is not None else sources.Quirks([], None)
     if not collected.avp_tables:
         raise ExtractionError("no AVP table found")
     # A document with several definition sets (29.336's S6m/S6n and S6t,
@@ -926,9 +984,15 @@ def _resolve(collected: _Collected) -> _Resolved:
     # no defensible pairing and are rejected rather than guessed at. A single
     # AVP table without a re-used table stays legitimate: the re-used block is
     # synthesised for its NOTE-derived rows.
-    if len(collected.reused_tables) > len(collected.avp_tables) or (
-        len(collected.avp_tables) > 1
-        and len(collected.reused_tables) != len(collected.avp_tables)
+    independent = quirks.enabled("independent-avp-tables")
+    if independent:
+        quirks.fire("independent-avp-tables")
+    if not independent and (
+        len(collected.reused_tables) > len(collected.avp_tables)
+        or (
+            len(collected.avp_tables) > 1
+            and len(collected.reused_tables) != len(collected.avp_tables)
+        )
     ):
         avp_sections = ", ".join(entry.section for entry in collected.avp_tables)
         reused_labels = ", ".join(table.label for table in collected.reused_tables)
@@ -943,7 +1007,7 @@ def _resolve(collected: _Collected) -> _Resolved:
         # `AvpTable.table` is optional only for label-less RFC tables; this
         # extractor rejects a docx AVP table without a caption before here.
         assert entry.table.table is not None
-        if index < len(collected.reused_tables):
+        if not independent and index < len(collected.reused_tables):
             reused = collected.reused_tables[index]
         else:
             # Only NOTE-derived rows: they come from the AVP table, so that
@@ -970,6 +1034,13 @@ def _resolve(collected: _Collected) -> _Resolved:
     for entry in collected.avp_tables:
         for row in entry.table.rows:
             if row.name in codes and codes[row.name] != row.code:
+                if quirks.enabled("conflicting-avp-codes"):
+                    # TS 29.273 table 8.2.3.0/1 disagrees with
+                    # clause 5.2.3.24 and the other tables. Keep both statements;
+                    # no enum may derive its code from an ambiguous index.
+                    quirks.fire("conflicting-avp-codes")
+                    codes[row.name] = None
+                    continue
                 raise ExtractionError(
                     f"AVP table code conflict for {row.name!r}:"
                     f" {codes[row.name]} vs {row.code}"
@@ -987,6 +1058,10 @@ def _resolve(collected: _Collected) -> _Resolved:
     # source, and reporting it is the linter's job — resolving it by deleting
     # what the specification says is not this layer's call to make.
     external = {row.name for _, reused in pairs for row in reused.rows}
+    if independent:
+        external.update(
+            row.name for table in collected.reused_tables for row in table.rows
+        )
     local_enums = [
         (section, name)
         for section, name in collected.pending_enums
@@ -1008,6 +1083,7 @@ def _resolve(collected: _Collected) -> _Resolved:
         messages=collected.messages,
         pairs=pairs,
         definitions=[*collected.grouped, *enumerated],
+        independent_reused=collected.reused_tables if independent else [],
     )
 
 
@@ -1047,6 +1123,15 @@ def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
                     rows=tuple(reused.rows),
                 )
             )
+    for reused in resolved.independent_reused:
+        sections.append(
+            ast.ReusedAvps(
+                table=reused.label,
+                source=ast.SourceRef(section=reused.section),
+                columns=reused.columns,
+                rows=tuple(reused.rows),
+            )
+        )
     sections.extend(
         sorted(
             resolved.definitions,
@@ -1077,6 +1162,26 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
 # "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit short forms
 # cannot mean anything else, where a dotted flags cell or a prose note can.
 QUIRKS: dict[str, str] = {
+    "procedure-commands": (
+        "read command names and abbreviations from intros under procedure"
+        " headings (TS 29.273 clauses 8.2.2.1-4)"
+    ),
+    "conflicting-avp-codes": (
+        "keep disagreeing table codes, refusing to derive an enum code"
+        " from them (TS 29.273)"
+    ),
+    "physical-reused-columns": (
+        "read physical cells in a re-used table with ragged grid spans (TS"
+        " 29.273 table 8.2.3.0/2)"
+    ),
+    "independent-avp-tables": (
+        "retain AVP and re-used tables independently instead of pairing"
+        " them (TS 29.273 clauses 5-11)"
+    ),
+    "command-reference-only": (
+        "accept command clauses containing only a clause reference, with"
+        " no definition (TS 29.273)"
+    ),
     "note-defined-in-rfc": (
         "derive re-used AVP rows from AVP-table notes reading 'The value of"
         " this attribute is defined in IETF RFC n' (TS 29.229, 29.329,"
@@ -1125,14 +1230,14 @@ def extract(
         patcher, quirks = sources.load(declarations_path, version, QUIRKS)
 
         collected = _collect(
-            _sections(document, patcher),
+            _sections(document, patcher, quirks),
             warnings,
             ast.spec_ref(specification),
             quirks,
         )
         patcher.finish()
+        sections = _assemble(_resolve(collected, quirks))
         quirks.finish()
-        sections = _assemble(_resolve(collected))
         return ast.Specification(
             specification=specification,
             version=version,

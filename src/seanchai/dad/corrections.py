@@ -158,17 +158,21 @@ class header(Selector):
 
 @dataclass(frozen=True)
 class table_row(Selector):
-    """One row of an AVP table, by AVP name."""
+    """One row of an AVP table, by AVP name and optionally table label."""
 
     name: str
+    table: str | None = None
 
     def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
         for section in spec.sections:
-            if isinstance(section, ast.AvpTable):
+            if isinstance(section, ast.AvpTable) and (
+                self.table is None or section.table == self.table
+            ):
                 yield from (row for row in section.rows if row.name == self.name)
 
     def describe(self) -> str:
-        return f"AVP table row {self.name!r}"
+        suffix = f" (table {self.table})" if self.table is not None else ""
+        return f"AVP table row {self.name!r}{suffix}"
 
 
 @dataclass(frozen=True)

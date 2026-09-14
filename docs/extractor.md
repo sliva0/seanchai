@@ -80,7 +80,14 @@ Vocabulary, RFC extractor: `prose-avp-codes` (RFC 7155), `clause-avp-table`
 (RFC 6733, 4004, 4005, 4006), `prose-catchall-row` (RFC 5778),
 `bare-name-continuation` (RFC 4004), `ragged-separator` (RFC 8583).
 Docx extractor: `note-defined-in-rfc` (TS 29.229, 29.329), `dotted-flags`
-(TS 29.061, 29.212), `clause-parenthetical` (TS 29.061). Not gated: the
+(TS 29.061, 29.212), `clause-parenthetical` (TS 29.061). TS 29.273 declares
+`command-reference-only` (clauses
+4.2.2.4.3–4, 5.2.2.3.5–6, 11.2.2.1.1–2 contain only clause pointers),
+`procedure-commands` (8.2.2.1–4 name commands in preceding intros),
+`physical-reused-columns` (table 8.2.3.0/2 changes its grid spans),
+`independent-avp-tables` (clauses 5–11 have no one-to-one pairing), and
+`conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; retain
+both rows, refuse an ambiguous enum code). Not gated: the
 "Y"/"N" Encrypt spellings and TS 29.338's "Must"/"Must not" M-bit short
 forms, closed vocabularies that cannot be misread.
 
@@ -124,7 +131,7 @@ Conventions worth knowing:
   references are accepted as origins.
 - More than one AVP/re-used table pair per document (29.336, 29.338) is
   paired in document order; counts that cannot pair are an error, and one
-  name with two codes across tables is an error.
+  name with two codes across tables is an error unless declared as above.
 - A table whose every row merges each visible column across the same grid
   columns (29.336 table 8.4.1-2) is collapsed to its physical columns; mixed
   merge patterns keep their grid positions.
@@ -140,15 +147,15 @@ Conventions worth knowing:
   different specification or version, warns when the outline covers only
   some sections, and errors when it covers none.
 - A second AVP table or re-used table beyond a pairable set is rejected
-  naming the sections. Structural damage (missing captions, split tables)
-  has no collected case.
+  naming the sections. Missing captions and split tables have no collected case.
 
 Real-document cases handled in code or by patch, kept as evidence: heading
 and rule-name mismatches (29.329 §6.1.8); Diameter headers omitting the
 application id (29.272 VCSG → `application_id` optional); two ABNFs under
 one command heading (29.272 IDR/DSR/RSR, S6a + S7a); empty clause cells
 (29.272 3GPP2-MEID → `AvpTableRow.section` optional); merged rows
-duplicating cell text; headings without " AVP" (29.272) or with it
+duplicating cell text; the H6 heading style (29.273 §6.2.2.1.1); headings
+without " AVP" (29.272) or with it
 hyphenated on (29.214, patched); an underscore in a published name
 (29.109's `GBA_U-Awareness-Indicator`); `<AVP header: 632, 10415>` comma
 separator (29.229); the RFC 3588 `P` flag still printed (29.061, 29.212,
