@@ -195,6 +195,22 @@ and multiple cited specifications cannot be preserved by the current
 `.dad` definition blocks; its extraction remains deferred, not an empty
 corpus file.
 
+## Legacy `.doc` trial
+
+LibreOffice 26.8.0.3 converted TS 32.299 v18.0.0 (`32299-i00.doc`) with
+`--headless --convert-to 'docx:Office Open XML Text'`. The converted cover
+and numbered headings are readable; all 107 ABNF rule names match the ETSI
+PDF. This checks the import route, not every cell or rule member.
+
+The docx extractor stops at table 7.1.0.1: `AVP table row before its column
+labels`. Its header is `AVP Name`, not `Attribute Name`; table 7.2.0.1 also
+has merged grid columns and `refer [207]` type cells. These are printed in
+the PDF too. Clauses 6.2.2–6.4.5 use “message” headings and abbreviated
+rules; grouped rules such as 7.2.192 use `:: =`. Conversion alone therefore
+does not make a corpus file. LibreOffice is a viable import route, but
+source-reading support and raw lint must precede downloader automation.
+The trial did not change the manifest or convert the other legacy documents.
+
 ## The RFC plain-text extractor
 
 Same definitions, different carrier:

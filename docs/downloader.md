@@ -42,3 +42,10 @@ for catalog experiments, not for refreshing the corpus.
   run does not leave a stale manifest behind.
 - 3GPP index pages are scraped with regexes over raw HTML — fine for the FTP
   listing format, brittle if the markup changes.
+
+Legacy `.doc` archives remain unconverted. The manual TS 32.299 trial with
+LibreOffice preserved its numbered content but exposed unsupported source
+shapes in the docx extractor; see [extractor.md](extractor.md#legacy-doc-trial).
+A converter is not wired into downloads until that file can be extracted and
+reviewed end to end. Keep converted trial files outside the manifest, under
+`specifications/converted/`, so they cannot masquerade as publisher artifacts.
