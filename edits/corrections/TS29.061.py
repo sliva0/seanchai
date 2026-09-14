@@ -4,6 +4,7 @@ from seanchai.dad.corrections import Correction, table_row
 
 CORRECTIONS = [
     Correction(
+        id="mbms-flags-name",
         target=table_row("MBMS-Flag"),
         field="name",
         expect="MBMS-Flag",

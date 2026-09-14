@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
 
 CORRECTIONS = [
     Correction(
+        id="periodic-ldr-information-name",
         target=definition("Periodic-LDR-Info"),
         field="name",
         expect="Periodic-LDR-Info",
@@ -16,6 +17,7 @@ CORRECTIONS = [
         versions="18.1.0",
     ),
     Correction(
+        id="plr-supported-gad-shapes",
         target=avp_rule("Provide-Location-Request", "LCS-Supported-GAD-Shapes"),
         field="name",
         expect="LCS-Supported-GAD-Shapes",
@@ -27,6 +29,7 @@ CORRECTIONS = [
         versions="18.1.0",
     ),
     Correction(
+        id="area-identification-type",
         target=table_row("Area-Identification"),
         field="data_type",
         expect=ast.DataType.GROUPED,

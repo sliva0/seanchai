@@ -27,6 +27,7 @@ _VENDORLESS = [
 
 CORRECTIONS = [
     Correction(
+        id=f"vendor-id-{name.lower()}",
         target=definition(name, section=section),
         field="vendor_id",
         expect=None,
@@ -39,6 +40,7 @@ CORRECTIONS = [
     for name, section in _VENDORLESS
 ] + [
     Delete(
+        id=f"specific-action-void-{value}",
         target=enum_value("Specific-Action", "Void", value=value),
         expect=ast.EnumValue(name="Void", value=value),
         reason="clause 5.3.13 prints 'Void' as the label of values 0 and 5 —"
@@ -51,6 +53,7 @@ CORRECTIONS = [
 
 CORRECTIONS += [
     Correction(
+        id="framed-ipv6-prefix-row-case",
         target=reused_row("Framed-Ipv6-Prefix", section="5.4.0"),
         field="name",
         expect="Framed-Ipv6-Prefix",

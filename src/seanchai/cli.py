@@ -208,6 +208,105 @@ def extract_rfc(
 
 
 @main.command()
+@click.option(
+    "--manifest",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    default=Path("specifications") / "manifest.json",
+    show_default=True,
+    help="The downloader's manifest; its files are the sources.",
+)
+@click.option(
+    "--corpus",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    default=Path("dad"),
+    show_default=True,
+    help="The committed corpus: decides which specifications to rebuild.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(file_okay=False, path_type=Path),
+    help="Where to write (default: the corpus itself).",
+)
+@click.option(
+    "--sources",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    default=_DEFAULT_SOURCES,
+    show_default=True,
+    help="Directory with source-declaration TOML files.",
+)
+@click.option(
+    "--corrections",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    default=Path("edits") / "corrections",
+    show_default=True,
+    help="Directory with per-spec correction modules. Defaulted here, unlike"
+    " the other commands, because this one exists to rebuild the repository's"
+    " own corpus from its own edit layers.",
+)
+@click.option(
+    "--add",
+    multiple=True,
+    metavar="SPECREF",
+    help="Also build a specification the corpus does not hold yet"
+    " (e.g. TS29.273). Repeatable.",
+)
+def regenerate(
+    manifest: Path,
+    corpus: Path,
+    output: Path | None,
+    sources: Path,
+    corrections: Path,
+    add: tuple[str, ...],
+) -> None:
+    """Rebuild the committed corpus from the downloaded sources.
+
+    Every specification the corpus holds is re-extracted, paged and corrected
+    from the manifest's files and written back, raw mirror included. The
+    manifest decides the version: a newer download replaces the committed
+    pair, and the replacement is reported. A specification the extractor
+    cannot read fails on its own and the run continues; the exit status is
+    non-zero if anything failed.
+    """
+    from . import regenerate as library
+
+    report = library.regenerate(
+        manifest,
+        corpus,
+        output if output is not None else corpus,
+        sources_dir=sources,
+        corrections_dir=corrections,
+        add=add,
+        report=_echo_outcome,
+    )
+    counts = {}
+    for outcome in report.outcomes:
+        counts[outcome.status] = counts.get(outcome.status, 0) + 1
+    summary = ", ".join(f"{n} {status}" for status, n in sorted(counts.items()))
+    click.echo(f"{len(report.outcomes)} specifications: {summary}", err=True)
+    if report.failed:
+        raise click.exceptions.Exit(1)
+
+
+def _echo_outcome(outcome) -> None:
+    from .regenerate import describe
+
+    status, _, rest = describe(outcome).partition(" ")
+    colour = {
+        "unchanged": "green",
+        "changed": "yellow",
+        "new": "cyan",
+        "replaced": "magenta",
+    }.get(status, "red")
+    click.echo(f"{click.style(status, fg=colour)} {rest}")
+    # The extractor's warnings, under the specification they belong to: they
+    # are the document doing something unusual, and worth a glance on every
+    # rebuild, not only the first.
+    for warning in outcome.warnings:
+        click.echo(click.style(f"    warning: {warning}", dim=True), err=True)
+
+
+@main.command()
 @click.argument("source", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option(
     "--corrections",

@@ -19,6 +19,7 @@ _S7A_S7D = 16777308
 
 CORRECTIONS = [
     Correction(
+        id=f"vcsg-application-id-{name.lower()}",
         target=definition(name),
         field="application_id",
         expect=None,
@@ -37,6 +38,7 @@ CORRECTIONS = [
 
 CORRECTIONS += [
     Correction(
+        id="area-scope-code",
         target=definition("Area-Scope"),
         field="code",
         expect=1623,
@@ -46,6 +48,7 @@ CORRECTIONS += [
         versions="18.6.0",
     ),
     Correction(
+        id="wlan-offloadability-vendor-id",
         target=definition("WLAN-offloadability"),
         field="vendor_id",
         expect=None,
@@ -60,6 +63,7 @@ CORRECTIONS += [
     # references resolve once one side is spelled the way the defining clause
     # heading spells it.
     Correction(
+        id="additional-context-identifier-name",
         target=table_row("Additional-Context-ID"),
         field="name",
         expect="Additional-Context-ID",
@@ -70,6 +74,7 @@ CORRECTIONS += [
         versions="18.6.0",
     ),
     Correction(
+        id="re-synchronization-info-case",
         target=avp_rule(
             "Requested-EUTRAN-Authentication-Info", "Re-synchronization-Info"
         ),
@@ -86,6 +91,7 @@ CORRECTIONS += [
     # (Reference-ID-Validity-Time, Traffic-Profile, Battery-Indicator).
     *(
         Insert(
+            id=f"missing-row-{name.lower()}",
             into=reused_avps("7.3.1/2"),
             node=ast.ReusedAvpRow(name=name, origin=origin),
             after=after,

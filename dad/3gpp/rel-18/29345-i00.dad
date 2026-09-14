@@ -20,7 +20,7 @@
         { Destination-Realm }
       * [ Supported-Features ]
         [ OC-Supported-Features ]
-        { User-Identifier } ;; corrected: (TS29.345.py:99)
+        { User-Identifier } ;; corrected: (TS29.345.py#prose-authorization-request-user-identity)
         { Visited-PLMN-Id }
       * [ AVP ]
       * [ Proxy-Info ]
@@ -385,7 +385,7 @@
 ; Page: 40
 ; Columns: Name                      Code   Section  Type          Must  May   S.not M.not Encrypt
 App-Layer-User-Id                    3801   6.3.2    UTF8String    M,V   -     -     -     No
-Assistance-Info                      3802   6.3.3    Grouped       M,V   -     -     -     No ;; corrected: (TS29.345.py:7)
+Assistance-Info                      3802   6.3.3    Grouped       M,V   -     -     -     No ;; corrected: (TS29.345.py#assistance-info-case)
 Assistance-Info-Validity-Timer       3803   6.3.4    Unsigned32    M,V   -     -     -     No
 Discovery-Type                       3804   6.3.5    Unsigned32    M,V   -     -     -     No
 Filter-Id                            3805   6.3.9    OctetString   M,V   -     -     -     No
@@ -404,7 +404,7 @@ Targeted-EPUID                       3817   6.3.26   UTF8String    M,V   -     -
 Time-Window                          3818   6.3.27   Unsigned32    M,V   -     -     -     No
 WiFi-P2P-Assistance-Info             3819   6.3.30   Grouped       M,V   -     -     -     No
 WLAN-Assistance-Info                 3820   6.3.31   Grouped       M,V   -     -     -     No
-WLAN-Link-Layer-Id                   3821   6.3.32   Grouped       M,V   -     -     -     No ;; corrected: (TS29.345.py:16)
+WLAN-Link-Layer-Id                   3821   6.3.32   Grouped       M,V   -     -     -     No ;; corrected: (TS29.345.py#wlan-link-layer-id-type)
 WLAN-Link-Layer-Id-List              3822   6.3.33   Grouped       M,V   -     -     -     No
 Location-Update-Trigger              3823   6.3.42   Grouped       M,V   -     -     -     No
 Location-Update-Event-Type           3824   6.3.43   Unsigned32    M,V   -     -     -     No
@@ -430,7 +430,7 @@ Requesting-RPAUID                    3843   6.3.64   UTF8String    V     -     -
 Target-RPAUID                        3844   6.3.65   UTF8String    V     -     -     M     No
 Target-PDUID                         3845   6.3.66   OctetString   V     -     -     M     No
 ProSe-Restricted-Code                3846   6.3.67   OctetString   V     -     -     M     No
-ProSe-Restricted-Code-Suffix-Range   3847   6.3.68   Grouped       V     -     -     M     No ;; corrected: (TS29.345.py:25)
+ProSe-Restricted-Code-Suffix-Range   3847   6.3.68   Grouped       V     -     -     M     No ;; corrected: (TS29.345.py#prose-restricted-code-suffix-range-type)
 Beginning-Suffix                     3848   6.3.69   OctetString   V     -     -     M     No
 Ending-Suffix                        3849   6.3.70   OctetString   V     -     -     M     No
 Discovery-Entry-ID                   3850   6.3.59   Unsigned32    V     -     -     M     No
@@ -448,9 +448,9 @@ Code-Sending-Security-Material       3861   6.3.76   Grouped       V     -     -
 DUSK                                 3862   6.3.77   OctetString   V     -     -     M     No
 DUIK                                 3863   6.3.78   OctetString   V     -     -     M     No
 DUCK                                 3864   6.3.79   OctetString   V     -     -     M     No
-MIC-Check-Indicator                  3865   6.3.80   Unsigned32    V     -     -     M     No ;; corrected: (TS29.345.py:70)
+MIC-Check-Indicator                  3865   6.3.80   Unsigned32    V     -     -     M     No ;; corrected: (TS29.345.py#mic-check-indicator-case)
 Encrypted-Bitmask                    3866   6.3.81   OctetString   V     -     -     M     No
-ProSe-App-Code-Suffix-Range          3867   6.3.82   Grouped       V     -     -     M     No ;; corrected: (TS29.345.py:61)
+ProSe-App-Code-Suffix-Range          3867   6.3.82   Grouped       V     -     -     M     No ;; corrected: (TS29.345.py#prose-app-code-suffix-range-type)
 PC5-tech                             3868   6.3.84   OctetString   V     -     -     M     No
 
 
@@ -536,7 +536,7 @@ WiFi-P2P-Assistance-Info ::= < AVP header: 3819 10415 >
 ; Section: 6.3.31
 ; Page: 49
 WLAN-Assistance-Info ::= < AVP header: 3820 10415 >
-        [ WiFi-P2P-Assistance-Info ] ;; corrected: (TS29.345.py:80)
+        [ WiFi-P2P-Assistance-Info ] ;; corrected: (TS29.345.py#wifi-p2p-assistance-info-spelling)
       * [ AVP ]
 
 
@@ -614,8 +614,8 @@ Periodic-Location-Type ::= < AVP header: 3829 10415 >
 ; Page: 53
 Discovery-Auth-Request ::= < AVP header: 3854 10415 >
         { Discovery-Type }
-        [ User-Identifier ] ;; corrected: (TS29.345.py:99)
-        [ ProSe-App-Id ] ;; corrected: (TS29.345.py:99)
+        [ User-Identifier ] ;; corrected: (TS29.345.py#discovery-auth-request-user-identity)
+        [ ProSe-App-Id ] ;; corrected: (TS29.345.py#discovery-auth-request-prose-app-id)
         [ ProSe-App-Code ]
         [ ProSe-App-Code-Suffix-Range ]
         [ ProSe-Validity-Timer ]
@@ -661,8 +661,8 @@ Match-Request ::= < AVP header: 3856 10415 >
 ; Page: 56
 Match-Report-Info ::= < AVP header: 3857 10415 >
         { Discovery-Type }
-        [ User-Identifier ] ;; corrected: (TS29.345.py:99)
-      * [ ProSe-App-Id ] ;; corrected: (TS29.345.py:99)
+        [ User-Identifier ] ;; corrected: (TS29.345.py#match-report-info-user-identity)
+      * [ ProSe-App-Id ] ;; corrected: (TS29.345.py#match-report-info-prose-app-id)
       * [ AVP ]
 
 
@@ -688,7 +688,7 @@ ProSe-Restricted-Code-Suffix-Range ::= < AVP header: 3847 10415 >
 ; Name: Code-Receiving-Security-Material
 ; Section: 6.3.75
 ; Page: 58
-Code-Receiving-Security-Material ::= < AVP header: 3860 10415 > ;; corrected: (TS29.345.py:34)
+Code-Receiving-Security-Material ::= < AVP header: 3860 10415 > ;; corrected: (TS29.345.py#code-receiving-security-material-code)
         [ DUSK ]
         [ DUIK ]
         [ MIC-Check-Indicator ]
@@ -701,7 +701,7 @@ Code-Receiving-Security-Material ::= < AVP header: 3860 10415 > ;; corrected: (T
 ; Name: Code-Sending-Security-Material
 ; Section: 6.3.76
 ; Page: 58
-Code-Sending-Security-Material ::= < AVP header: 3861 10415 > ;; corrected: (TS29.345.py:43)
+Code-Sending-Security-Material ::= < AVP header: 3861 10415 > ;; corrected: (TS29.345.py#code-sending-security-material-code)
         [ DUSK ]
         [ DUIK ]
         [ DUCK ]
@@ -713,5 +713,5 @@ Code-Sending-Security-Material ::= < AVP header: 3861 10415 > ;; corrected: (TS2
 ; Name: ProSe-App-Code-Suffix-Range
 ; Section: 6.3.82
 ; Page: 59
-ProSe-App-Code-Suffix-Range ::= < AVP header: 3867 10415 > ;; corrected: (TS29.345.py:52)
+ProSe-App-Code-Suffix-Range ::= < AVP header: 3867 10415 > ;; corrected: (TS29.345.py#prose-app-code-suffix-range-code)
         { Beginning-Suffix }

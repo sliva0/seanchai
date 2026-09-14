@@ -42,6 +42,7 @@ _IPV6_RULES = [
 CORRECTIONS = (
     [
         Correction(
+            id=f"vendor-id-{name.lower()}",
             target=definition(name, section=section),
             field="vendor_id",
             expect=None,
@@ -55,6 +56,7 @@ CORRECTIONS = (
     ]
     + [
         Correction(
+            id=f"ipv6-case-row-{wrong.lower()}-{section.replace('.', '-')}",
             target=reused_row(wrong, section=section),
             field="name",
             expect=wrong,
@@ -68,6 +70,7 @@ CORRECTIONS = (
     ]
     + [
         Correction(
+            id=f"ipv6-case-rule-{parent.lower()}-{wrong.lower()}",
             target=avp_rule(definition(parent, section=section), wrong),
             field="name",
             expect=wrong,
@@ -82,6 +85,7 @@ CORRECTIONS = (
 
 CORRECTIONS += [
     Correction(
+        id=f"framed-ipv6-prefix-row-{section.replace('.', '-')}",
         target=reused_row("Framed-Ipv6-Prefix", section=section),
         field="name",
         expect="Framed-Ipv6-Prefix",
@@ -95,6 +99,7 @@ CORRECTIONS += [
 
 CORRECTIONS += [
     Correction(
+        id=f"framed-ipv6-prefix-rule-{section.replace('.', '-')}",
         target=avp_rule(definition(parent, section=section), "Framed-Ipv6-Prefix"),
         field="name",
         expect="Framed-Ipv6-Prefix",
@@ -114,6 +119,7 @@ CORRECTIONS += [
     )
 ] + [
     Correction(
+        id="cs-service-qos-request-identifier-case",
         target=table_row("CS-Service-Qos-Request-Identifier"),
         field="name",
         expect="CS-Service-Qos-Request-Identifier",

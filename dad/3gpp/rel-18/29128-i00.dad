@@ -273,7 +273,7 @@ OC-OLR                                RFC7683
 Monitoring-Event-Config-Status        TS29.336
 DRMP                                  RFC7944
 User-Identifier                       TS29.336
-Bearer-Identifier                     TS29.212 ;; corrected: (TS29.128.py:31)
+Bearer-Identifier                     TS29.212 ;; corrected: (TS29.128.py#bearer-identifier-spelling)
 Monitoring-Type                       TS29.336
 Loss-Of-Connectivity-Reason           TS29.336
 Maximum-Number-of-Reports             TS29.336
@@ -291,8 +291,8 @@ Maximum-UE-Availability-Time          TS29.338
 3GPP-Charging-Characteristics         TS29.061
 RAT-Type                              TS29.212
 Terminal-Information                  TS29.272
-IMEI                                  TS29.272 ;; inserted: (TS29.128.py:46)
-Software-Version                      TS29.272 ;; inserted: (TS29.128.py:46)
+IMEI                                  TS29.272 ;; inserted: (TS29.128.py#missing-row-imei)
+Software-Version                      TS29.272 ;; inserted: (TS29.128.py#missing-row-software-version)
 Visited-PLMN-Id                       TS29.272
 Load                                  RFC8583
 Subscribed-Periodic-RAU-TAU-Timer     TS29.272
@@ -367,7 +367,7 @@ Communication-Failure-Information ::= < AVP header: 4300 10415 >
 ; Name: Number-Of-UE-Per-Location-Configuration
 ; Section: 6.4.11
 ; Page: 45
-Number-Of-UE-Per-Location-Configuration ::= < AVP header: 4306 10415 > ;; corrected: (TS29.128.py:13)
+Number-Of-UE-Per-Location-Configuration ::= < AVP header: 4306 10415 > ;; corrected: (TS29.128.py#number-of-ue-per-location-configuration-case)
         { EPS-Location-Information }
         [ IMSI-Group-Id ]
       * [ AVP ]
@@ -377,7 +377,7 @@ Number-Of-UE-Per-Location-Configuration ::= < AVP header: 4306 10415 > ;; correc
 ; Name: Number-Of-UE-Per-Location-Report
 ; Section: 6.4.12
 ; Page: 45
-Number-Of-UE-Per-Location-Report ::= < AVP header: 4307 10415 > ;; corrected: (TS29.128.py:22)
+Number-Of-UE-Per-Location-Report ::= < AVP header: 4307 10415 > ;; corrected: (TS29.128.py#number-of-ue-per-location-report-case)
         { EPS-Location-Information }
         { UE-Count }
         [ IMSI-Group-Id ]

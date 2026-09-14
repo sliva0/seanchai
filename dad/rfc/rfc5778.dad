@@ -39,7 +39,7 @@
         [ EAP-Reissued-Payload ]
         [ EAP-Master-Session-Key ]
         [ EAP-Key-Name ]
-        [ Multi-Round-Time-Out ] ;; corrected: (RFC5778.py:16)
+        [ Multi-Round-Time-Out ] ;; corrected: (RFC5778.py#dea-multi-round-time-out)
 
 
 ; Type: Message
@@ -47,7 +47,7 @@
 ; Section: 5.2.1
 ; Page: 16
 <MIP6-Request> ::= < Diameter Header: 325, REQ, PXY >
-        < Session-Id > ;; corrected: (RFC5778.py:25)
+        < Session-Id > ;; corrected: (RFC5778.py#mir-session-id-case)
         { Auth-Application-Id }
         { User-Name }
         { Destination-Realm }
@@ -101,7 +101,7 @@
         [ Error-Reporting-Host ]
         [ Re-Auth-Request-Type ]
         [ MIP6-Feature-Vector ]
-        [ MIP6-Agent-Info ] ;; corrected: (RFC5778.py:6)
+        [ MIP6-Agent-Info ] ;; corrected: (RFC5778.py#mia-mip6-agent-info)
      *2 [ MIP-Mobile-Node-Address ]
         [ MIP-MN-HA-MSA ]
       * [ QoS-Resources ]

@@ -1,91 +1,66 @@
-"""Regression pin of both extractors against the real source documents.
+"""Regression pin of the whole pipeline against the real source documents.
 
-Every committed `.dad` file is re-extracted from the docx/PDF or RFC text that
-produced it and compared byte-for-byte. This is the test that catches an
-extractor change which is fine on the synthetic fixture and wrong on the real
-documents.
+`seanchai regenerate` is run over the downloaded corpus into a scratch
+directory, and every committed pair must come out unchanged. This is the test
+that catches an extractor or correction change which is fine on the synthetic
+fixture and wrong on the real documents, and it uses the same code path a
+maintainer runs, so the test and the tool cannot drift apart.
 
-The sources live under the git-ignored `specifications/`, exactly where
-`seanchai download` puts them: `3gpp/<release>/TS_<number>/<stem>.docx`,
-`3gpp/<release>/PDF/` and `rfc/`. A missing source is a failure, not a
-skip: a suite that silently skipped its strongest check would look green for
-the wrong reason. Run `pytest -m "not sources"` to leave these out
-deliberately.
+A missing manifest is a failure, not a skip: a suite that silently skipped its
+strongest check would look green for the wrong reason. Run
+`pytest -m "not sources"` to leave these out deliberately.
 """
 
 from pathlib import Path
 
 import pytest
+from conftest import _corpus
 
-from seanchai.dad import corrections, formatter, parser
-from seanchai.extractor import rfc_text, tgpp_docx
+from seanchai import regenerate
+from seanchai.dad import ast, parser
 
 _ROOT = Path(__file__).parent.parent
-_SPECIFICATIONS = _ROOT / "specifications"
-_RFC_TEXTS = _SPECIFICATIONS / "rfc"
-_SOURCES = _ROOT / "edits" / "sources"
+_MANIFEST = _ROOT / "specifications" / "manifest.json"
+_REFERENCES = sorted(
+    ast.spec_ref(parser.parse(path.read_text(encoding="utf-8")).specification)
+    for path in _corpus(raw=False)
+)
 
 
-def _downloaded(directory: str, name: str) -> Path:
-    """Where the downloader put `name`, under any release; the expected path
-    when it is absent, so the failure names the file."""
-    found = sorted((_SPECIFICATIONS / "3gpp").glob(f"*/{directory}/{name}"))
-    return found[0] if found else _SPECIFICATIONS / "3gpp" / directory / name
-
-
-def _cases():
-    """One case per committed file, paired with the sources that produced it:
-    the docx by file name, the PDF by the `; Link:` header the file carries.
-
-    Both kinds are covered. `.raw.dad` pins the extractor alone; `.dad` pins
-    the extractor plus the correction layer, which is also what re-checks that
-    every `expect` still matches freshly extracted output.
-    """
-    committed = sorted((_ROOT / "dad").rglob("*.dad"))
-    assert committed, "no committed .dad files found — this test would pass vacuously"
-    for path in committed:
-        spec = parser.parse(path.read_text(encoding="utf-8"))
-        raw = path.name.endswith(".raw.dad")
-        stem = path.name.removesuffix(".raw.dad" if raw else ".dad")
-        link = str(spec.link) if spec.link is not None else None
-        if path.parent.name == "rfc":
-            # RFC files re-extract from the downloader's own text output —
-            # `seanchai download` fetches rfc-editor.org renderings, so there
-            # is nothing to hand-fetch.
-            source = _RFC_TEXTS / f"{stem}.txt"
-            pdf = None
-        else:
-            source = _downloaded("TS_*", f"{stem}.docx")
-            pdf = _downloaded("PDF", Path(link).name) if link is not None else None
-        yield pytest.param(path, source, pdf, link, raw, id=path.name)
+@pytest.fixture(scope="module")
+def regenerated(tmp_path_factory):
+    assert _MANIFEST.is_file(), (
+        f"{_MANIFEST} not present — run `seanchai download`"
+        ' or deselect with `pytest -m "not sources"`'
+    )
+    report = regenerate.regenerate(
+        _MANIFEST,
+        _ROOT / "dad",
+        tmp_path_factory.mktemp("dad"),
+        sources_dir=_ROOT / "edits" / "sources",
+        corrections_dir=_ROOT / "edits" / "corrections",
+    )
+    return {outcome.reference: outcome for outcome in report.outcomes}
 
 
 @pytest.mark.sources
-@pytest.mark.parametrize(("committed", "source", "pdf", "link", "raw"), list(_cases()))
-def test_the_real_sources_still_produce_the_committed_output(
-    committed, source, pdf, link, raw
-):
-    sources = [source] if pdf is None else [source, pdf]
-    missing = [path.name for path in sources if not path.is_file()]
-    assert not missing, (
-        f"sources not present locally: {', '.join(missing)} — run `seanchai download`"
-        ' or deselect with `pytest -m "not sources"`'
-    )
-
-    if source.suffix == ".txt":
-        spec = rfc_text.extract(source, link=link, sources_dir=_SOURCES)
-    else:
-        spec = tgpp_docx.extract(source, link=link, sources_dir=_SOURCES)
-    if pdf is not None:
-        spec = tgpp_docx.attach_pages(spec, pdf)
-    notes, standing, detached = {}, {}, {}
-    if not raw:
-        declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
-        if declared:
-            spec, results = corrections.apply(spec, declared)
-            notes, standing, detached = corrections.notes(results)
-
-    # Byte-for-byte, not tree equality: the committed file is what a version
-    # upgrade diffs against, so formatting is part of what must not drift.
-    formatted = formatter.format_spec(spec, notes, standing, detached)
-    assert formatted == committed.read_text(encoding="utf-8")
+@pytest.mark.parametrize("reference", _REFERENCES)
+def test_the_real_sources_still_produce_the_committed_output(regenerated, reference):
+    outcome = regenerated[reference]
+    assert outcome.error is None, outcome.error
+    if outcome.status == "new":
+        pytest.fail(
+            f"the manifest holds {outcome.version}, the corpus"
+            f" {outcome.replaced_version}: run `seanchai regenerate` and commit"
+        )
+    if outcome.status == "changed":
+        diff = " and ".join(
+            f"{path.name} differs from {committed}"
+            for path in outcome.written
+            for committed in _corpus(raw=path.name.endswith(".raw.dad"))
+            if committed.name == path.name
+            and committed.read_text(encoding="utf-8")
+            != path.read_text(encoding="utf-8")
+        )
+        pytest.fail(f"{diff}: run `seanchai regenerate` and review the diff")
+    assert outcome.status == "unchanged"

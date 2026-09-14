@@ -102,9 +102,9 @@
         [ ARAP-Zone-Access ]
         [ Callback-Id ]
         [ Callback-Number ]
-        [ Framed-AppleTalk-Link ] ;; corrected: (RFC4005.py:24)
-      * [ Framed-AppleTalk-Network ] ;; corrected: (RFC4005.py:24)
-        [ Framed-AppleTalk-Zone ] ;; corrected: (RFC4005.py:24)
+        [ Framed-AppleTalk-Link ] ;; corrected: (RFC4005.py#framed-appletalk-link-aaa-case)
+      * [ Framed-AppleTalk-Network ] ;; corrected: (RFC4005.py#framed-appletalk-network-aaa-case)
+        [ Framed-AppleTalk-Zone ] ;; corrected: (RFC4005.py#framed-appletalk-zone-aaa-case)
       * [ Framed-Compression ]
         [ Framed-Interface-Id ]
         [ Framed-IP-Address ]
@@ -189,9 +189,9 @@
         [ Error-Message ]
         [ Error-Reporting-Host ]
       * [ Failed-AVP ]
-      * [ Redirect-Host ] ;; corrected: (RFC4005.py:41)
-        [ Redirect-Host-Usage ] ;; corrected: (RFC4005.py:41)
-        [ Redirect-Max-Cache-Time ] ;; corrected: (RFC4005.py:41)
+      * [ Redirect-Host ] ;; corrected: (RFC4005.py#re-auth-answer-redirected-host)
+        [ Redirect-Host-Usage ] ;; corrected: (RFC4005.py#re-auth-answer-redirected-host-usage)
+        [ Redirect-Max-Cache-Time ] ;; corrected: (RFC4005.py#re-auth-answer-redirected-host-cache-time)
         [ Service-Type ]
       * [ Configuration-Token ]
         [ Idle-Timeout ]
@@ -244,7 +244,7 @@
         [ Origin-AAA-Protocol ]
         [ Origin-State-Id ]
       * [ Redirect-Host ]
-        [ Redirect-Host-Usage ] ;; corrected: (RFC4005.py:41)
+        [ Redirect-Host-Usage ] ;; corrected: (RFC4005.py#session-termination-answer-redirect-host-usase)
         [ Redirect-Max-Cache-Time ]
       * [ Proxy-Info ]
       * [ AVP ]
@@ -303,9 +303,9 @@
         [ Error-Message ]
         [ Error-Reporting-Host ]
       * [ Failed-AVP ]
-      * [ Redirect-Host ] ;; corrected: (RFC4005.py:41)
-        [ Redirect-Host-Usage ] ;; corrected: (RFC4005.py:41)
-        [ Redirect-Max-Cache-Time ] ;; corrected: (RFC4005.py:41)
+      * [ Redirect-Host ] ;; corrected: (RFC4005.py#abort-session-answer-redirected-host)
+        [ Redirect-Host-Usage ] ;; corrected: (RFC4005.py#abort-session-answer-redirected-host-usage)
+        [ Redirect-Max-Cache-Time ] ;; corrected: (RFC4005.py#abort-session-answer-redirected-max-cache-time)
       * [ Proxy-Info ]
       * [ AVP ]
 
@@ -355,7 +355,7 @@
         [ Callback-Number ]
         [ Called-Station-Id ]
         [ Calling-Station-Id ]
-      * [ Connect-Info ] ;; corrected: (RFC4005.py:70)
+      * [ Connect-Info ] ;; corrected: (RFC4005.py#acr-connection-info)
         [ Originating-Line-Info ]
         [ Authorization-Lifetime ]
         [ Session-Timeout ]
@@ -365,7 +365,7 @@
         [ Acct-Interim-Interval ]
       * [ Filter-Id ]
       * [ NAS-Filter-Rule ]
-      * [ QoS-Filter-Rule ] ;; corrected: (RFC4005.py:80)
+      * [ QoS-Filter-Rule ] ;; corrected: (RFC4005.py#acr-qos-filter-rule-case)
         [ Framed-AppleTalk-Link ]
         [ Framed-AppleTalk-Network ]
         [ Framed-AppleTalk-Zone ]
@@ -493,9 +493,9 @@ Framed-IPv6-Prefix         97    6.11.6   OctetString     M     P     -     V   
 Framed-IPv6-Route          99    6.11.7   UTF8String      M     P     -     V     Yes
 Framed-IPv6-Pool           100   6.11.8   OctetString     M     P     -     V     Yes
 Framed-IPX-Network         23    6.12.1   UTF8String      M     P     -     V     Yes
-Framed-AppleTalk-Link      37    6.13.1   Unsigned32      M     P     -     V     Yes ;; corrected: (RFC4005.py:12)
-Framed-AppleTalk-Network   38    6.13.2   Unsigned32      M     P     -     V     Yes ;; corrected: (RFC4005.py:12)
-Framed-AppleTalk-Zone      39    6.13.3   OctetString     M     P     -     V     Yes ;; corrected: (RFC4005.py:12)
+Framed-AppleTalk-Link      37    6.13.1   Unsigned32      M     P     -     V     Yes ;; corrected: (RFC4005.py#framed-appletalk-link-table-case)
+Framed-AppleTalk-Network   38    6.13.2   Unsigned32      M     P     -     V     Yes ;; corrected: (RFC4005.py#framed-appletalk-network-table-case)
+Framed-AppleTalk-Zone      39    6.13.3   OctetString     M     P     -     V     Yes ;; corrected: (RFC4005.py#framed-appletalk-zone-table-case)
 ARAP-Features              71    6.14.1   OctetString     M     P     -     V     Yes
 ARAP-Zone-Access           72    6.14.2   Enumerated      M     P     -     V     Yes
 Login-IP-Host              14    6.15.1   OctetString     M     P     -     V     Yes

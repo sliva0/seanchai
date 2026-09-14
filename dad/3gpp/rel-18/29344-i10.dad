@@ -181,7 +181,7 @@
 ; Name: ProSe-Initial-Location-Information-Request, PSR
 ; Section: 6.2.11
 ; Page: 22
-<ProSe-Initial-Location-Information-Request> ::= < Diameter Header: 8388713, REQ, PXY, 16777336 > ;; corrected: (TS29.344.py:19)
+<ProSe-Initial-Location-Information-Request> ::= < Diameter Header: 8388713, REQ, PXY, 16777336 > ;; corrected: (TS29.344.py#psr-psa-rule-name-request)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -201,7 +201,7 @@
 ; Name: ProSe-Initial-Location-Information-Answer, PSA
 ; Section: 6.2.12
 ; Page: 22
-<ProSe-Initial-Location-Information-Answer> ::= < Diameter Header: 8388713, PXY, 16777336 > ;; corrected: (TS29.344.py:19)
+<ProSe-Initial-Location-Information-Answer> ::= < Diameter Header: 8388713, PXY, 16777336 > ;; corrected: (TS29.344.py#psr-psa-rule-name-answer)
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -231,7 +231,7 @@ ProSe-Direct-Allowed                 3704   6.3.5    Unsigned32   M,V   -     - 
 UPR-Flags                            3705   6.3.6    Unsigned32   M,V   -     -     -     No
 PNR-Flags                            3706   6.3.7    Unsigned32   M,V   -     -     -     No
 ProSe-Initial-Location-Information   3707   6.3.9    Grouped      M,V   -     -     -     No
-Authorized-Discovery-Range           3708   6.3.13   Unsigned32   M,V   -     -     -     No ;; inserted: (TS29.344.py:31)
+Authorized-Discovery-Range           3708   6.3.13   Unsigned32   M,V   -     -     -     No ;; inserted: (TS29.344.py#authorized-discovery-range-row-missing)
 
 
 ; Type: Reused AVPs

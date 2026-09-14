@@ -4,6 +4,7 @@ from seanchai.dad.corrections import Correction, header
 
 CORRECTIONS = [
     Correction(
+        id="bases-rfc7683",
         target=header(),
         field="bases",
         expect=("RFC6733",),

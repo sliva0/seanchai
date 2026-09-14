@@ -9,7 +9,7 @@
 ; Section: 5.1
 ; Page: 23
 <AA-Mobile-Node-Request> ::= < Diameter Header: 260, REQ, PXY >
-        < Session-Id > ;; corrected: (RFC4004.py:7)
+        < Session-Id > ;; corrected: (RFC4004.py#amr-session-id-case)
         { Auth-Application-Id }
         { User-Name }
         { Destination-Realm }
@@ -141,7 +141,7 @@ MIP-MN-AAA-SPI                  341   7.6.1   Unsigned32         M     P     -  
 MIP-Filter-Rule                 342   7.8     IPFilterRule       M     P     -     V     Yes
 MIP-FA-Challenge                344   7.7     OctetString        M     P     -     V     Yes
 MIP-Originating-Foreign-AAA     347   7.10    Grouped            M     P     -     V     Yes
-MIP-Home-Agent-Host             348   7.11    Grouped            M     P     -     V     No ;; corrected: (RFC4004.py:31)
+MIP-Home-Agent-Host             348   7.11    Grouped            M     P     -     V     No ;; corrected: (RFC4004.py#mip-home-agent-host-type)
 
 
 ; Type: AVP Table
@@ -248,7 +248,7 @@ MIP-HA-to-MN-MSA ::= < AVP header: 332 >
 MIP-MN-to-FA-MSA ::= < AVP header: 325 >
         { MIP-MN-FA-SPI }
         { MIP-Algorithm-Type }
-        { MIP-Nonce } ;; corrected: (RFC4004.py:17)
+        { MIP-Nonce } ;; corrected: (RFC4004.py#mip-nonce-case-mip-mn-to-fa-msa)
       * [ AVP ]
 
 
@@ -260,7 +260,7 @@ MIP-MN-to-HA-MSA ::= < AVP header: 331 >
         { MIP-MN-HA-SPI }
         { MIP-Algorithm-Type }
         { MIP-Replay-Mode }
-        { MIP-Nonce } ;; corrected: (RFC4004.py:17)
+        { MIP-Nonce } ;; corrected: (RFC4004.py#mip-nonce-case-mip-mn-to-ha-msa)
       * [ AVP ]
 
 

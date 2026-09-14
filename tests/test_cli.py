@@ -1,5 +1,3 @@
-import re
-
 import docx
 import pytest
 from click.testing import CliRunner
@@ -71,7 +69,8 @@ def _corrections_dir(tmp_path):
     directory.mkdir()
     (directory / "TS29.999.py").write_text(
         "from seanchai.dad.corrections import Correction, definition\n"
-        "CORRECTIONS = [Correction(target=definition('Example-Request'),"
+        "CORRECTIONS = [Correction(id='application',"
+        " target=definition('Example-Request'),"
         " field='application_id', expect=42, replace=16777308,"
         " reason='the header prints the wrong application')]\n"
     )
@@ -290,6 +289,7 @@ def test_correct_command_marks_the_lines_it_changed(tmp_path):
         "from seanchai.dad.corrections import Correction, definition\n"
         "CORRECTIONS = [\n"
         "    Correction(\n"
+        "        id='example-code',\n"
         "        target=definition('Example'),\n"
         "        field='code',\n"
         "        expect=700,\n"
@@ -310,9 +310,9 @@ def test_correct_command_marks_the_lines_it_changed(tmp_path):
     (noted,) = [line for line in text.splitlines() if ";;" in line]
     header, _, note = noted.partition(" ;; ")
     assert header == "Example ::= < AVP header: 701 10415 >"
-    # Only the declaration's location: the change and its reason live at the
-    # cited line, and the old value in the raw file.
-    assert re.fullmatch(r"corrected: \(TS29\.329\.py:\d+\)", note)
+    # Only the declaration's module and id: the change and its reason live at
+    # the declaration, and the old value in the raw file.
+    assert note == "corrected: (TS29.329.py#example-code)"
     # Still a `.dad` file, and still exactly the canonical text plus the note.
     stripped = "\n".join(line.split(" ;; ")[0] for line in text.splitlines())
     assert formatter.format_spec(parser.parse(text)) == stripped + "\n"

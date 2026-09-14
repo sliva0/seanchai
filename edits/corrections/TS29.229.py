@@ -12,6 +12,7 @@ from seanchai.dad.corrections import (
 
 CORRECTIONS = [
     Delete(
+        id="load-row-not-local",
         target=table_row("Load"),
         expect=ast.AvpTableRow(
             name="Load",
@@ -29,6 +30,7 @@ CORRECTIONS = [
         versions="18.1.0",
     ),
     Insert(
+        id="load-row-reused",
         into=reused_avps("6.3.0.1"),
         node=ast.ReusedAvpRow(name="Load", origin="RFC8583"),
         after="DRMP",
@@ -38,6 +40,7 @@ CORRECTIONS = [
         versions="18.1.0",
     ),
     Correction(
+        id="digest-qop-case",
         target=reused_row("Digest-QoP"),
         field="name",
         expect="Digest-QoP",

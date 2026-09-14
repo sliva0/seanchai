@@ -238,7 +238,7 @@ V2X-PC5-Allowed-PLMN ::= < AVP header: 4600 10415 >
 ; Name: PLMN-Allowed-PC5-RATs
 ; Section: 6.3.10
 ; Page: 23
-PLMN-Allowed-PC5-RATs ::= < AVP header: 4603 10415 > ;; corrected: (TS29.388.py:6)
+PLMN-Allowed-PC5-RATs ::= < AVP header: 4603 10415 > ;; corrected: (TS29.388.py#plmn-allowed-pc5-rats-rule-name)
         { Visited-PLMN-Id }
      1* { PC5-RAT-Type }
       * [ AVP ]

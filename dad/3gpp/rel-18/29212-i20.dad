@@ -34,7 +34,7 @@
         [ Dynamic-Address-Flag-Extension ]
         [ PDN-Connection-Charging-ID ]
         [ Framed-IP-Address ]
-        [ Framed-IPv6-Prefix ] ;; corrected: (TS29.212.py:97)
+        [ Framed-IPv6-Prefix ] ;; corrected: (TS29.212.py#framed-ipv6-prefix-rule-5-6-2)
         [ IP-CAN-Type ]
         [ 3GPP-RAT-Type ]
         [ AN-Trusted ]
@@ -51,9 +51,9 @@
         [ AN-GW-Status ]
         [ 3GPP-SGSN-MCC-MNC ]
         [ 3GPP-SGSN-Address ]
-        [ 3GPP-SGSN-IPv6-Address ] ;; corrected: (TS29.212.py:70)
+        [ 3GPP-SGSN-IPv6-Address ] ;; corrected: (TS29.212.py#ipv6-case-rule-cc-request-3gpp-sgsn-ipv6-address)
         [ 3GPP-GGSN-Address ]
-        [ 3GPP-GGSN-IPv6-Address ] ;; corrected: (TS29.212.py:70)
+        [ 3GPP-GGSN-IPv6-Address ] ;; corrected: (TS29.212.py#ipv6-case-rule-cc-request-3gpp-ggsn-ipv6-address)
         [ 3GPP-Selection-Mode ]
         [ RAI ]
         [ 3GPP-User-Location-Info ]
@@ -214,7 +214,7 @@
      *2 [ AN-GW-Address ]
         [ 3GPP-SGSN-MCC-MNC ]
         [ 3GPP-SGSN-Address ]
-        [ 3GPP-SGSN-IPv6-Address ] ;; corrected: (TS29.212.py:70)
+        [ 3GPP-SGSN-IPv6-Address ] ;; corrected: (TS29.212.py#ipv6-case-rule-ra-answer-3gpp-sgsn-ipv6-address)
         [ RAI ]
         [ 3GPP-User-Location-Info ]
         [ User-Location-Info-Time ]
@@ -252,7 +252,7 @@
       * [ Packet-Filter-Information ]     ; bold
         [ Packet-Filter-Operation ]       ; bold
         [ Framed-IP-Address ]             ; bold
-        [ Framed-IPv6-Prefix ]            ; bold ;; corrected: (TS29.212.py:97)
+        [ Framed-IPv6-Prefix ]            ; bold ;; corrected: (TS29.212.py#framed-ipv6-prefix-rule-5a-6-2)
         [ IP-CAN-Type ]                   ; bold
         [ RAT-Type ]                      ; bold
         [ Termination-Cause ]             ; bold
@@ -302,7 +302,7 @@
       * [ Supported-Features ]      ; bold
         [ Bearer-Control-Mode ]     ; bold
       * [ Event-Trigger ]           ; bold
-        [ Framed-IPv6-Prefix ]      ; bold ;; corrected: (TS29.212.py:97)
+        [ Framed-IPv6-Prefix ]      ; bold ;; corrected: (TS29.212.py#framed-ipv6-prefix-rule-5a-6-3)
         [ Origin-State-Id ]
       * [ Redirect-Host ]
         [ Redirect-Host-Usage ]
@@ -394,7 +394,7 @@
       * [ Subscription-Id ]
       * [ Supported-Features ]                  ; bold
         [ Framed-IP-Address ]                   ; bold
-        [ Framed-IPv6-Prefix ]                  ; bold ;; corrected: (TS29.212.py:97)
+        [ Framed-IPv6-Prefix ]                  ; bold ;; corrected: (TS29.212.py#framed-ipv6-prefix-rule-5b-6-2)
         [ IP-CAN-Type ]                         ; bold
         [ RAT-Type ]                            ; bold
         [ AN-Trusted ]                          ; bold
@@ -403,9 +403,9 @@
         [ QoS-Information ]                     ; bold
      *2 [ AN-GW-Address ]                       ; bold
         [ 3GPP-SGSN-Address ]                   ; bold
-        [ 3GPP-SGSN-IPv6-Address ]              ; bold ;; corrected: (TS29.212.py:70)
+        [ 3GPP-SGSN-IPv6-Address ]              ; bold ;; corrected: (TS29.212.py#ipv6-case-rule-ts-request-3gpp-sgsn-ipv6-address)
         [ 3GPP-GGSN-Address ]                   ; bold
-        [ 3GPP-GGSN-IPv6-Address ]              ; bold ;; corrected: (TS29.212.py:70)
+        [ 3GPP-GGSN-IPv6-Address ]              ; bold ;; corrected: (TS29.212.py#ipv6-case-rule-ts-request-3gpp-ggsn-ipv6-address)
         [ 3GPP-Selection-Mode ]                 ; bold
         [ Dynamic-Address-Flag ]                ; bold
         [ Dynamic-Address-Flag-Extension ]      ; bold
@@ -481,7 +481,7 @@
         [ Destination-Host ]
         [ Origin-State-Id ]
         [ Framed-IP-Address ]                 ; bold
-        [ Framed-IPv6-Prefix ]                ; bold ;; corrected: (TS29.212.py:97)
+        [ Framed-IPv6-Prefix ]                ; bold ;; corrected: (TS29.212.py#framed-ipv6-prefix-rule-5b-6-4)
       * [ ADC-Rule-Report ]                   ; bold
       * [ Application-Detection-Information ] ; bold
       * [ Event-Trigger ]                     ; bold
@@ -509,7 +509,7 @@
         { CC-Request-Number }
         [ OC-Supported-Features ]
         [ OC-OLR ]
-        [ Framed-IPv6-Prefix ]           ; bold ;; corrected: (TS29.212.py:97)
+        [ Framed-IPv6-Prefix ]           ; bold ;; corrected: (TS29.212.py#framed-ipv6-prefix-rule-5b-6-5)
         [ QoS-Information ]              ; bold
       * [ Event-Trigger ]                ; bold
       * [ CSG-Information-Reporting ]    ; bold
@@ -602,7 +602,7 @@
         [ OC-Supported-Features ]          ; bold
         [ Event-Report-Indication ]        ; bold
         [ Framed-IP-Address ]              ; bold
-        [ Framed-IPv6-Prefix ]             ; bold ;; corrected: (TS29.212.py:97)
+        [ Framed-IPv6-Prefix ]             ; bold ;; corrected: (TS29.212.py#framed-ipv6-prefix-rule-5c-6-2)
         [ Called-Station-Id ]              ; bold
       * [ ADC-Rule-Install ]               ; bold
       * [ ADC-Rule-Remove ]                ; bold
@@ -918,12 +918,12 @@ PCSCF-Restoration-Indication            2826   5.3.113   Unsigned32         V   
 ; Columns: Name                            From
 3GPP-Charging-Characteristics              TS29.061
 3GPP-GGSN-Address                          TS29.061
-3GPP-GGSN-IPv6-Address                     TS29.061 ;; corrected: (TS29.212.py:57)
+3GPP-GGSN-IPv6-Address                     TS29.061 ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-ggsn-ipv6-address-5-4-0)
 3GPP-MS-TimeZone                           TS29.061
 3GPP-RAT-Type                              TS29.061
 3GPP-Selection-Mode                        TS29.061
 3GPP-SGSN-Address                          TS29.061
-3GPP-SGSN-IPv6-Address                     TS29.061 ;; corrected: (TS29.212.py:57)
+3GPP-SGSN-IPv6-Address                     TS29.061 ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-sgsn-ipv6-address-5-4-0)
 3GPP-SGSN-MCC-MNC                          TS29.061
 3GPP-User-Location-Info                    TS29.061
 3GPP2-BSID                                 X.S0057
@@ -951,7 +951,7 @@ Flow-Description                           TS29.214
 Flows                                      TS29.214
 Flow-Status                                TS29.214
 Framed-IP-Address                          RFC4005
-Framed-IPv6-Prefix                         RFC4005 ;; corrected: (TS29.212.py:84)
+Framed-IPv6-Prefix                         RFC4005 ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5-4-0)
 Granted-Service-Unit                       RFC8506
 Load                                       RFC8583
 Logical-Access-ID                          TS283.034
@@ -1031,7 +1031,7 @@ Flow-Description                           TS29.214
 Flow-Information                           TS29.212
 Flow-Label                                 TS29.212
 Framed-IP-Address                          RFC4005
-Framed-IPv6-Prefix                         RFC4005 ;; corrected: (TS29.212.py:84)
+Framed-IPv6-Prefix                         RFC4005 ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5a-4-0)
 Guaranteed-Bitrate-DL                      TS29.212
 Guaranteed-Bitrate-UL                      TS29.212
 HeNB-Local-IP-Address                      TS29.212
@@ -1124,7 +1124,7 @@ Flow-Direction                          TS29.212
 Flow-Information                        TS29.212
 Flow-Status                             TS29.214
 Framed-IP-Address                       RFC4005
-Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py:84)
+Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5b-4-0)
 Granted-Service-Unit                    RFC8506
 IP-CAN-Type                             TS29.212
 Load                                    RFC8583
@@ -1183,11 +1183,11 @@ User-Equipment-Info                     RFC8506
 User-Equipment-Info-Extension           RFC8506
 3GPP-Charging-Characteristics           TS29.061
 3GPP-GGSN-Address                       TS29.061
-3GPP-GGSN-IPv6-Address                  TS29.061 ;; corrected: (TS29.212.py:57)
+3GPP-GGSN-IPv6-Address                  TS29.061 ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-ggsn-ipv6-address-5b-4-0)
 3GPP-MS-TimeZone                        TS29.061
 3GPP-Selection-Mode                     TS29.061
 3GPP-SGSN-Address                       TS29.061
-3GPP-SGSN-IPv6-Address                  TS29.061 ;; corrected: (TS29.212.py:57)
+3GPP-SGSN-IPv6-Address                  TS29.061 ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-sgsn-ipv6-address-5b-4-0)
 3GPP-SGSN-MCC-MNC                       TS29.061
 3GPP-User-Location-Info                 TS29.061
 3GPP2-BSID                              X.S0057
@@ -1219,7 +1219,7 @@ Flow-Description                        TS29.214
 Flow-Direction                          TS29.212
 Flow-Information                        TS29.212
 Framed-IP-Address                       RFC4005
-Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py:84)
+Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5c-4-1)
 Load                                    RFC8583
 OC-OLR                                  RFC7863
 OC-Supported-Features                   RFC7863
@@ -1238,7 +1238,7 @@ Traffic-Steering-Policy-Identifier-UL   TS29.212
 ; Section: E.6.3.1
 ; Table: E.6.3.1.1
 ; Columns: Name                        Code   Section   Type          Must  May   S.not M.not Encrypt
-CS-Service-QoS-Request-Identifier      2807   E.6.3.2   OctetString   M,V   P     -     -     Yes ;; corrected: (TS29.212.py:116)
+CS-Service-QoS-Request-Identifier      2807   E.6.3.2   OctetString   M,V   P     -     -     Yes ;; corrected: (TS29.212.py#cs-service-qos-request-identifier-case)
 CS-Service-QoS-Request-Operation       2808   E.6.3.3   Enumerated    M,V   P     -     -     Yes
 CS-Service-Resource-Report             2813   E.6.3.6   Grouped       M,V   P     -     -     Yes
 CS-Service-Resource-Failure-Cause      2814   E.6.3.5   Enumerated    M,V   P     -     -     Yes
@@ -1320,7 +1320,7 @@ Usage-Monitoring-Information ::= < AVP header: 1067 >
 ; Name: Routing-Rule-Install
 ; Section: 5.3.68
 ; Page: 167
-Routing-Rule-Install ::= < AVP header: 1081 10415 > ;; corrected: (TS29.212.py:44)
+Routing-Rule-Install ::= < AVP header: 1081 10415 > ;; corrected: (TS29.212.py#vendor-id-routing-rule-install)
       * [ Routing-Rule-Definition ]
       * [ AVP ]
 
@@ -1329,7 +1329,7 @@ Routing-Rule-Install ::= < AVP header: 1081 10415 > ;; corrected: (TS29.212.py:4
 ; Name: Routing-Rule-Remove
 ; Section: 5.3.69
 ; Page: 167
-Routing-Rule-Remove ::= < AVP header: 1075 10415 > ;; corrected: (TS29.212.py:44)
+Routing-Rule-Remove ::= < AVP header: 1075 10415 > ;; corrected: (TS29.212.py#vendor-id-routing-rule-remove)
       * [ Routing-Rule-Identifier ]
       * [ AVP ]
 
@@ -1338,7 +1338,7 @@ Routing-Rule-Remove ::= < AVP header: 1075 10415 > ;; corrected: (TS29.212.py:44
 ; Name: Routing-Rule-Definition
 ; Section: 5.3.70
 ; Page: 167
-Routing-Rule-Definition ::= < AVP header: 1076 10415 > ;; corrected: (TS29.212.py:44)
+Routing-Rule-Definition ::= < AVP header: 1076 10415 > ;; corrected: (TS29.212.py#vendor-id-routing-rule-definition)
         { Routing-Rule-Identifier }
       * [ Routing-Filter ]
         [ Precedence ]
@@ -1351,7 +1351,7 @@ Routing-Rule-Definition ::= < AVP header: 1076 10415 > ;; corrected: (TS29.212.p
 ; Name: Routing-Filter
 ; Section: 5.3.72
 ; Page: 168
-Routing-Filter ::= < AVP header: 1078 10415 > ;; corrected: (TS29.212.py:44)
+Routing-Filter ::= < AVP header: 1078 10415 > ;; corrected: (TS29.212.py#vendor-id-routing-filter)
         { Flow-Description }
         { Flow-Direction }
         [ ToS-Traffic-Class ]
@@ -1364,7 +1364,7 @@ Routing-Filter ::= < AVP header: 1078 10415 > ;; corrected: (TS29.212.py:44)
 ; Name: TDF-Information
 ; Section: 5.3.78
 ; Page: 169
-TDF-Information ::= < AVP header: 1087 10415 > ;; corrected: (TS29.212.py:44)
+TDF-Information ::= < AVP header: 1087 10415 > ;; corrected: (TS29.212.py#vendor-id-tdf-information)
         [ TDF-Destination-Realm ]
         [ TDF-Destination-Host ]
         [ TDF-IP-Address ]
@@ -1404,7 +1404,7 @@ IP-CAN-Session-Charging-Scope ::= < Enumerated AVP header: 2827 10415 >
 ; Name: Routing-Rule-Report
 ; Section: 5.3.118
 ; Page: 176
-Routing-Rule-Report ::= < AVP header: 2835 10415 > ;; corrected: (TS29.212.py:44)
+Routing-Rule-Report ::= < AVP header: 2835 10415 > ;; corrected: (TS29.212.py#vendor-id-routing-rule-report)
       * [ Routing-Rule-Identifier ]
         [ PCC-Rule-Status ]
         [ Routing-Rule-Failure-Code ]
@@ -1430,7 +1430,7 @@ Removal-Of-Access ::= < Enumerated AVP header: 2842 10415 >
 ; Name: Conditional-Policy-Information
 ; Section: 5.3.128
 ; Page: 178
-Conditional-Policy-Information ::= < AVP header: 2840 10415 > ;; corrected: (TS29.212.py:44)
+Conditional-Policy-Information ::= < AVP header: 2840 10415 > ;; corrected: (TS29.212.py#vendor-id-conditional-policy-information)
         [ Execution-Time ]
         [ Default-EPS-Bearer-QoS ]
         [ APN-Aggregate-Max-Bitrate-UL ]
@@ -1518,7 +1518,7 @@ ADC-Rule-Report ::= < AVP header: 1097 >
 ; Type: Grouped AVP
 ; Name: CS-Service-Resource-Report
 ; Section: E.6.3.6
-CS-Service-Resource-Report ::= < AVP header: 2813 10415 > ;; corrected: (TS29.212.py:44)
+CS-Service-Resource-Report ::= < AVP header: 2813 10415 > ;; corrected: (TS29.212.py#vendor-id-cs-service-resource-report)
       * [ CS-Service-QoS-Request-Identifier ]
         [ CS-Service-Resource-Result-Operation ]
         [ CS-Service-Resource-Failure-Cause ]

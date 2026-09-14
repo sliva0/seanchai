@@ -12,6 +12,7 @@ from seanchai.dad.corrections import (
 
 CORRECTIONS = [
     Delete(
+        id="user-identifier-duplicate-body",
         target=definition("User-Identifier", section="8.4.36"),
         expect=ast.GroupedAvp(
             name="User-Identifier",
@@ -45,6 +46,7 @@ CORRECTIONS = [
         versions="18.2.0",
     ),
     Correction(
+        id="scheduled-communication-time-case",
         target=definition("Scheduled-communication-time", section="8.4.30"),
         field="name",
         expect="Scheduled-communication-time",
@@ -55,6 +57,7 @@ CORRECTIONS = [
         versions="18.2.0",
     ),
     Correction(
+        id="periodic-time-case",
         target=table_row("Periodic-time"),
         field="name",
         expect="Periodic-time",
@@ -76,6 +79,7 @@ CORRECTIONS = [
     # re-uses SGSN-Number from TS 29.272.
     *(
         Insert(
+            id=f"missing-row-{name.lower()}",
             into=reused_avps("6.4.1/2"),
             node=ast.ReusedAvpRow(name=name, origin=origin),
             after=after,

@@ -302,7 +302,7 @@ User-Identifier             TS29.336   -
 SM-Delivery-Failure-Cause   TS29.338   -
 IP-SM-GW-Name               TS29.336   -
 IP-SM-GW-Number             TS29.336   -
-IP-SM-GW-Realm              TS29.336   - ;; inserted: (TS29.338.py:7)
+IP-SM-GW-Realm              TS29.336   - ;; inserted: (TS29.338.py#ip-sm-gw-realm-row-missing)
 SMSMI-Correlation-ID        TS29.338   -
 Destination-SIP-URI         TS29.338   -
 Supported-Features          TS29.229   -
@@ -534,7 +534,7 @@ SM-Delivery-Failure-Cause ::= < AVP header: 3303 10415 >
 ; Name: SMSMI-Correlation-ID
 ; Section: 6.3.3.13
 ; Page: 53
-SMSMI-Correlation-ID ::= < AVP header: 3324 10415 > ;; corrected: (TS29.338.py:16) ;; corrected: (TS29.338.py:26)
+SMSMI-Correlation-ID ::= < AVP header: 3324 10415 > ;; corrected: (TS29.338.py#smsmi-correlation-id-name) ;; corrected: (TS29.338.py#smsmi-correlation-id-code)
         [ HSS-ID ]
         [ Originating-SIP-URI ]
         [ Destination-SIP-URI ]

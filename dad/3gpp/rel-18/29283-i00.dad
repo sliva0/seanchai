@@ -159,10 +159,10 @@ MCData-ID                      4515   7.3.25   UTF8String   V     -     -     M 
 ; Page: 27
 ; Columns: Name         From       M-bit
 Supported-Features      TS29.229   -
-DRMP                    RFC7944    MUST ;; corrected: (TS29.283.py:16)
+DRMP                    RFC7944    MUST ;; corrected: (TS29.283.py#drmp-origin-rfc)
 Feature-List-ID         TS29.229   -
 Feature-List            TS29.229   -
-;; deleted: re-used AVPs row 'Feature-Id' (TS29.283.py:7)
+;; deleted: re-used AVPs row 'Feature-Id' (TS29.283.py#feature-id-row-not-in-origin)
 User-Data               TS29.329   -
 User-Identifier         TS29.336   -
 OC-Supported-Features   RFC7683    MUST

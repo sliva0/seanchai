@@ -39,6 +39,7 @@ reading of the same documents.
 
 ```sh
 seanchai download                       # fetch the catalog into specifications/
+seanchai regenerate [--add SPECREF]     # rebuild dad/ from it
 seanchai extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
 seanchai extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
 seanchai correct RAW.dad --corrections DIR -o OUT.dad
@@ -49,7 +50,8 @@ seanchai crosscheck FILE.dad...         # against Wireshark's dictionary
 ## Repository layout
 
 - `src/seanchai/` — `dad/` (AST, parser, formatter, corrections), `extractor/`,
-  `downloader/`, `linter.py`, `oracle.py`, `corpus.py`, `model.py`, `cli.py`.
+  `downloader/`, `regenerate.py`, `linter.py`, `oracle.py`, `corpus.py`,
+  `model.py`, `cli.py`.
 - `dad/` — the committed corpus: `dad/3gpp/rel-18/`, `dad/rfc/`, and the raw
   mirror under `dad/raw/`. See [dad/README.md](dad/README.md).
 - `edits/sources/<SpecRef>.toml` — input patches and quirks per source document.

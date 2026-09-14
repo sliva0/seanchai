@@ -15,6 +15,7 @@ from seanchai.dad.corrections import Correction, definition
 
 CORRECTIONS = [
     Correction(
+        id="vcsg-application-id",
         target=definition("Update-VCSG-Location-Request"),
         field="application_id",
         expect=None,
@@ -29,6 +30,10 @@ CORRECTIONS = [
 Python is the notation (imports of real enums, loops for twenty rows), not
 the validation: a `field` string is checked against the matched node and the
 node is rebuilt through pydantic.
+
+`id` is a short kebab-case name, unique within the module; a loop derives it
+from the loop variable. It is what the corrected file cites, so name what is
+corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
 
 ## Semantics
 
@@ -59,12 +64,12 @@ node is rebuilt through pydantic.
 ## Operations
 
 - **`Correction`**: replace one field; expects the old value.
-- **`Delete(target, expect=<the full node>, reason)`**: expects the node to
+- **`Delete(id, target, expect=<the full node>, reason)`**: expects the node to
   equal `expect` in every field, so it fails when upstream removes *or*
   changes the row. Deleting a node while correcting anything inside it is
   refused, as is emptying a table. Forcing case: TS 29.283's re-used
   `Feature-Id`, which TS 29.229 never defined.
-- **`Insert(into=avp_table(label) | reused_avps(label), node, after=<name | None>, reason)`**:
+- **`Insert(id, into=avp_table(label) | reused_avps(label), node, after=<name | None>, reason)`**:
   expects no row of that name to exist. Forcing case: TS 29.344 clause 6.3.13
   defines `Authorized-Discovery-Range` but table 6.3.1-1 omits the row;
   re-used-table inserts came from the reference triage (six members TS 29.337's
@@ -84,27 +89,27 @@ docx ──input patches──► extract ──► 29272-i60.raw.dad  (committe
                                      29272-i60.dad  (committed)
 ```
 
-Every corrected line carries a trailing `;;` note citing the declaration's
-`file:line` relative to the corrections directory:
+Every corrected line carries a trailing `;;` note citing the declaration as
+`module#id`, so grepping the id finds it:
 
 ```dad
-Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py:31)
+Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-vendor)
 ```
 
 A deletion's note stands in the deleted line's place and names what is gone
-(`;; deleted: AVP table row 'Load' (TS29.229.py:14)`); an inserted row is
-marked `;; inserted:`. The parser discards `;;` comments, so an annotated
-file is exactly canonical output plus notes, and reformatting drops them —
-harmless, because corrected files are regenerated, never edited.
-`Correction` captures its `file:line` by walking out to the first frame
-outside the corrections module, so a helper or comprehension still cites the
-right line.
+(`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
+inserted row is marked `;; inserted:`. The parser discards `;;` comments, so
+an annotated file is exactly canonical output plus notes, and reformatting
+drops them — harmless, because corrected files are regenerated, never edited.
+The citation is a name rather than a line number so that editing or
+reformatting a module does not change every corrected file.
 
 ## CLI
 
-`seanchai extract … --corrections DIR` and `seanchai correct RAW.dad
---corrections DIR -o OUT.dad`. The directory is always explicit because
-loading it executes Python. `extract` tolerates a specification with no
+`seanchai regenerate` rebuilds the corpus with `edits/corrections` (see
+[workflow.md](workflow.md)). For one file: `seanchai extract … --corrections
+DIR` and `seanchai correct RAW.dad --corrections DIR -o OUT.dad`, where the
+directory is explicit because loading it executes Python. `extract` tolerates a specification with no
 module (a corpus run passes one directory for everything); `correct` requires
 a module with at least one correction, since a mistyped path producing an
 uncorrected file would look like success. The module name is derived from

@@ -109,7 +109,7 @@ Calling-Party-Address           TS32.299
 DRMP                            RFC7944
 Final-Unit-Action               RFC8506
 Framed-IP-Address               RFC4005
-Framed-IPv6-Prefix              RFC4005 ;; corrected: (TS29.214.py:53)
+Framed-IPv6-Prefix              RFC4005 ;; corrected: (TS29.214.py#framed-ipv6-prefix-row-case)
 Granted-Service-Unit            RFC8506
 IP-CAN-Type                     TS29.212
 Load                            RFC8583
@@ -153,7 +153,7 @@ Abort-Cause ::= < Enumerated AVP header: 500 10415 >
 ; Name: Access-Network-Charging-Identifier
 ; Section: 5.3.3
 ; Page: 37
-Access-Network-Charging-Identifier ::= < AVP header: 502 10415 > ;; corrected: (TS29.214.py:29)
+Access-Network-Charging-Identifier ::= < AVP header: 502 10415 > ;; corrected: (TS29.214.py#vendor-id-access-network-charging-identifier)
         { Access-Network-Charging-Identifier-Value }
       * [ Flows ]
 
@@ -162,7 +162,7 @@ Access-Network-Charging-Identifier ::= < AVP header: 502 10415 > ;; corrected: (
 ; Name: Flows
 ; Section: 5.3.10
 ; Page: 39
-Flows ::= < AVP header: 510 10415 > ;; corrected: (TS29.214.py:29)
+Flows ::= < AVP header: 510 10415 > ;; corrected: (TS29.214.py#vendor-id-flows)
         { Media-Component-Number }
       * [ Flow-Number ]
       * [ Content-Version ]
@@ -198,12 +198,12 @@ Flow-Usage ::= < Enumerated AVP header: 512 10415 >
 ; Section: 5.3.13
 ; Page: 40
 Specific-Action ::= < Enumerated AVP header: 513 10415 >
-        ;; deleted: value 'Void' (= 0) (TS29.214.py:41)
+        ;; deleted: value 'Void' (= 0) (TS29.214.py#specific-action-void-0)
         CHARGING_CORRELATION_EXCHANGE                       = 1
         INDICATION_OF_LOSS_OF_BEARER                        = 2
         INDICATION_OF_RECOVERY_OF_BEARER                    = 3
         INDICATION_OF_RELEASE_OF_BEARER                     = 4
-        ;; deleted: value 'Void' (= 5) (TS29.214.py:41)
+        ;; deleted: value 'Void' (= 5) (TS29.214.py#specific-action-void-5)
         IP-CAN_CHANGE                                       = 6
         INDICATION_OF_OUT_OF_CREDIT                         = 7
         INDICATION_OF_SUCCESSFUL_RESOURCES_ALLOCATION       = 8
@@ -225,14 +225,14 @@ Specific-Action ::= < Enumerated AVP header: 513 10415 >
 ; Name: Media-Component-Description
 ; Section: 5.3.16
 ; Page: 44
-Media-Component-Description ::= < AVP header: 517 10415 > ;; corrected: (TS29.214.py:29)
+Media-Component-Description ::= < AVP header: 517 10415 > ;; corrected: (TS29.214.py#vendor-id-media-component-description)
 
 
 ; Type: Grouped AVP
 ; Name: Media-Sub-Component
 ; Section: 5.3.18
 ; Page: 46
-Media-Sub-Component ::= < AVP header: 519 10415 > ;; corrected: (TS29.214.py:29)
+Media-Sub-Component ::= < AVP header: 519 10415 > ;; corrected: (TS29.214.py#vendor-id-media-sub-component)
 
 
 ; Type: Enumerated AVP
@@ -255,7 +255,7 @@ SIP-Forking-Indication ::= < Enumerated AVP header: 523 10415 >
 ; Name: Acceptable-Service-Info
 ; Section: 5.3.24
 ; Page: 48
-Acceptable-Service-Info ::= < AVP header: 526 10415 > ;; corrected: (TS29.214.py:29)
+Acceptable-Service-Info ::= < AVP header: 526 10415 > ;; corrected: (TS29.214.py#vendor-id-acceptable-service-info)
       * [ Media-Component-Description ]
         [ Max-Requested-Bandwidth-DL ]
         [ Max-Requested-Bandwidth-UL ]
@@ -284,7 +284,7 @@ AF-Signalling-Protocol ::= < Enumerated AVP header: 529 10415 >
 ; Name: Sponsored-Connectivity-Data
 ; Section: 5.3.27
 ; Page: 49
-Sponsored-Connectivity-Data ::= < AVP header: 530 10415 > ;; corrected: (TS29.214.py:29)
+Sponsored-Connectivity-Data ::= < AVP header: 530 10415 > ;; corrected: (TS29.214.py#vendor-id-sponsored-connectivity-data)
         [ Sponsor-Identity ]
         [ Application-Service-Provider-Identity ]
         [ Granted-Service-Unit ]
@@ -344,7 +344,7 @@ IMS-Content-Type ::= < Enumerated AVP header: 564 10415 >
 ; Name: Callee-Information
 ; Section: 5.3.62
 ; Page: 55
-Callee-Information ::= < AVP header: 565 10415 > ;; corrected: (TS29.214.py:29)
+Callee-Information ::= < AVP header: 565 10415 > ;; corrected: (TS29.214.py#vendor-id-callee-information)
         [ Called-Party-Address ]
       * [ Requested-Party-Address ]
       * [ Called-Asserted-Identity ]
@@ -355,7 +355,7 @@ Callee-Information ::= < AVP header: 565 10415 > ;; corrected: (TS29.214.py:29)
 ; Name: MA-Information
 ; Section: 5.3.66
 ; Page: 56
-MA-Information ::= < AVP header: 570 10415 > ;; corrected: (TS29.214.py:29)
+MA-Information ::= < AVP header: 570 10415 > ;; corrected: (TS29.214.py#vendor-id-ma-information)
         [ IP-CAN-Type ]
         [ RAT-Type ]
         [ MA-Information-Action ]
@@ -366,7 +366,7 @@ MA-Information ::= < AVP header: 570 10415 > ;; corrected: (TS29.214.py:29)
 ; Name: NGAP-Cause
 ; Section: 5.3.72
 ; Page: 57
-NGAP-Cause ::= < AVP header: 575 10415 > ;; corrected: (TS29.214.py:29)
+NGAP-Cause ::= < AVP header: 575 10415 > ;; corrected: (TS29.214.py#vendor-id-ngap-cause)
         { NGAP-Group }
         { NGAP-Value }
 
@@ -375,7 +375,7 @@ NGAP-Cause ::= < AVP header: 575 10415 > ;; corrected: (TS29.214.py:29)
 ; Name: Wireline-User-Location-Info
 ; Section: 5.3.75
 ; Page: 57
-Wireline-User-Location-Info ::= < AVP header: 578 10415 > ;; corrected: (TS29.214.py:29)
+Wireline-User-Location-Info ::= < AVP header: 578 10415 > ;; corrected: (TS29.214.py#vendor-id-wireline-user-location-info)
         [ HFC-Node-Identifier ]
         [ GLI-Identifier ]
         [ Line-Type ]

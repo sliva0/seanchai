@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Correction, Delete, reused_row
 
 CORRECTIONS = [
     Delete(
+        id="feature-id-row-not-in-origin",
         target=reused_row("Feature-Id"),
         expect=ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229"),
         reason="table 7.3.1-2 cites Feature-Id from TS 29.229, which neither"
@@ -14,6 +15,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="drmp-origin-rfc",
         target=reused_row("DRMP"),
         field="origin",
         expect="RFC7844",

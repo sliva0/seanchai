@@ -10,6 +10,7 @@ from seanchai.dad.corrections import Correction, avp_rule, table_row
 CORRECTIONS = (
     [
         Correction(
+            id=f"framed-appletalk-{suffix.lower()}-table-case",
             target=table_row(f"Framed-Appletalk-{suffix}"),
             field="name",
             expect=f"Framed-Appletalk-{suffix}",
@@ -22,6 +23,7 @@ CORRECTIONS = (
     ]
     + [
         Correction(
+            id=f"framed-appletalk-{suffix.lower()}-aaa-case",
             target=avp_rule("AA-Answer", f"Framed-Appletalk-{suffix}"),
             field="name",
             expect=f"Framed-Appletalk-{suffix}",
@@ -39,6 +41,7 @@ CORRECTIONS = (
         # carries the same Redirected-* misspellings and its verified errata
         # 5993/5994 confirm the intended names.
         Correction(
+            id=f"{parent.lower()}-{wrong.lower()}",
             target=avp_rule(parent, wrong),
             field="name",
             expect=wrong,
@@ -68,6 +71,7 @@ CORRECTIONS = (
     ]
     + [
         Correction(
+            id="acr-connection-info",
             target=avp_rule("Accounting-Request", "Connection-Info"),
             field="name",
             expect="Connection-Info",
@@ -78,6 +82,7 @@ CORRECTIONS = (
             " in the successor document",
         ),
         Correction(
+            id="acr-qos-filter-rule-case",
             target=avp_rule("Accounting-Request", "Qos-Filter-Rule"),
             field="name",
             expect="Qos-Filter-Rule",

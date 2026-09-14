@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Correction, table_row
 
 CORRECTIONS = [
     Correction(
+        id="ip-bit-mask-width-name",
         target=table_row("IP-Mask-Bit-Mask-Width"),
         field="name",
         expect="IP-Mask-Bit-Mask-Width",
@@ -16,6 +17,7 @@ CORRECTIONS = [
         " IP-Bit-Mask-Width, and Wireshark's dictionary reads it the same way",
     ),
     Correction(
+        id="treatment-action-type",
         target=table_row("Treatment-Action"),
         field="data_type",
         expect=ast.DataType.GROUPED,

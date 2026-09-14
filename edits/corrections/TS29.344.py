@@ -17,6 +17,7 @@ _PSR_PSA = (
 
 CORRECTIONS = [
     Correction(
+        id=f"psr-psa-rule-name-{kind.lower()}",
         target=definition(f"ProSe-Subscriber-Information-{kind}", section=section),
         field="name",
         expect=f"ProSe-Subscriber-Information-{kind}",
@@ -29,6 +30,7 @@ CORRECTIONS = [
 
 CORRECTIONS += [
     Insert(
+        id="authorized-discovery-range-row-missing",
         into=avp_table("6.3.1-1"),
         node=ast.AvpTableRow(
             name="Authorized-Discovery-Range",

@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Correction, avp_rule, table_row
 
 CORRECTIONS = [
     Correction(
+        id="amr-session-id-case",
         target=avp_rule("AA-Mobile-Node-Request", "Session-ID"),
         field="name",
         expect="Session-ID",
@@ -15,6 +16,7 @@ CORRECTIONS = [
     ),
     *(
         Correction(
+            id=f"mip-nonce-case-{parent.lower()}",
             target=avp_rule(parent, "MIP-nonce"),
             field="name",
             expect="MIP-nonce",
@@ -29,6 +31,7 @@ CORRECTIONS = [
         )
     ),
     Correction(
+        id="mip-home-agent-host-type",
         target=table_row("MIP-Home-Agent-Host"),
         field="data_type",
         expect=ast.DataType.DIAMETER_IDENTITY,

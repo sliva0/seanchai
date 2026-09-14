@@ -21,14 +21,13 @@ Each specification is committed twice, and the pair is the point:
   included. The `.raw.dad` suffix is what the corpus loader and tests key on.
 
 Every line a correction touched carries a `;;` note citing the declaration in
-`edits/corrections/`; a deleted node's note stands alone where the line was.
-A specification with no corrections still gets both files, byte-identical.
+`edits/corrections/` by module and id; a deleted node's note stands alone
+where the line was. A specification with no corrections still gets both
+files, byte-identical. Nothing here is edited by hand: `seanchai regenerate`
+rebuilds the whole tree from the downloaded sources.
 
 Keeping the raw file buys three things: a version upgrade can diff raw-vs-raw
 with the correction layer held still, corrections can be re-checked without
 re-downloading the sources, and the linter has something to fire on.
-
-A file without a `; Link:` has no ETSI PDF of its own version, so it carries no
-`; Page:` directives either (TS 29.388: docx at V18.1.0, ETSI PDF at V18.0.0).
 
 See [docs/workflow.md](../docs/workflow.md).

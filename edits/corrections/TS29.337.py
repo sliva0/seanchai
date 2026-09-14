@@ -21,6 +21,7 @@ _MISSING = (
 
 CORRECTIONS = [
     Insert(
+        id=f"missing-row-{name.lower()}",
         into=reused_avps("6.3.1/2"),
         node=ast.ReusedAvpRow(name=name, origin=origin),
         after=after,

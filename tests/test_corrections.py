@@ -1,4 +1,5 @@
 import dataclasses
+import itertools
 from pathlib import Path
 
 import pytest
@@ -61,9 +62,17 @@ def _table(spec: ast.Specification) -> ast.AvpTable:
     return section
 
 
+_IDS = (f"test-{n}" for n in itertools.count())
+
+
 def _correction(target, field, expect, replace):
     return corrections.Correction(
-        target=target, field=field, expect=expect, replace=replace, reason="test"
+        id=next(_IDS),
+        target=target,
+        field=field,
+        expect=expect,
+        replace=replace,
+        reason="test",
     )
 
 
@@ -343,11 +352,14 @@ def _with_reused(spec: ast.Specification) -> ast.Specification:
 
 
 def _delete(target, expect):
-    return corrections.Delete(target=target, expect=expect, reason="test")
+    return corrections.Delete(
+        id=next(_IDS), target=target, expect=expect, reason="test"
+    )
 
 
 def _insert(node, after=None):
     return corrections.Insert(
+        id=next(_IDS),
         into=corrections.avp_table("6.3.1"),
         node=node,
         after=after,
@@ -661,7 +673,8 @@ def test_loading_rejects_a_generator_rather_than_silently_consuming_it(tmp_path)
     # it used to come out empty — a spec silently corrected by nothing.
     (tmp_path / "TS29.999.py").write_text(
         "from seanchai.dad.corrections import Correction, table_row\n"
-        "CORRECTIONS = (c for c in [Correction(target=table_row('Example-Mode'),"
+        "CORRECTIONS = (c for c in [Correction(id='x',"
+        " target=table_row('Example-Mode'),"
         " field='code', expect=1600, replace=1602, reason='typo')])\n"
     )
 
@@ -716,11 +729,35 @@ def test_a_required_load_fails_when_the_module_is_missing_or_empty(tmp_path):
     assert corrections.load(tmp_path, "3GPP TS 29.998") == []
 
 
-def test_origin_is_the_declaration_site_not_this_module():
-    """A `Correction` built inside a helper or a comprehension must still cite
-    the corrections file, which is why the frame is walked rather than taken at
-    a fixed depth."""
+def test_loaded_corrections_cite_their_module_and_a_unique_id():
     declared = corrections.load(_ROOT / "edits" / "corrections", "3GPP TS 29.272")
 
-    assert all(c.origin.startswith("TS29.272.py:") for c in declared)
-    assert all(c.origin.rpartition(":")[2].isdigit() for c in declared)
+    assert all(c.cited == f"TS29.272.py#{c.id}" for c in declared)
+    assert len({c.id for c in declared}) == len(declared)
+
+
+@pytest.mark.parametrize(
+    ("module", "message"),
+    [
+        (
+            "CORRECTIONS = [Correction(id='Bad Id', target=table_row('A'),"
+            " field='code', expect=1, replace=2, reason='r')]\n",
+            "not a lowercase kebab-case name",
+        ),
+        (
+            "CORRECTIONS = [Correction(id='same', target=table_row('A'),"
+            " field='code', expect=1, replace=2, reason='r'),"
+            " Correction(id='same', target=table_row('B'),"
+            " field='code', expect=1, replace=2, reason='r')]\n",
+            "declared twice",
+        ),
+    ],
+    ids=["malformed", "duplicate"],
+)
+def test_a_malformed_or_repeated_id_is_rejected(tmp_path, module, message):
+    (tmp_path / "TS29.999.py").write_text(
+        "from seanchai.dad.corrections import Correction, table_row\n" + module
+    )
+
+    with pytest.raises(corrections.CorrectionError, match=message):
+        corrections.load(tmp_path, "3GPP TS 29.999")

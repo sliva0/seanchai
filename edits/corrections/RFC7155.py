@@ -8,6 +8,7 @@ CORRECTIONS = [
     # confirm the intended RFC 6733 names.
     *(
         Correction(
+            id=f"{parent.lower()}-{wrong.lower()}",
             target=avp_rule(parent, wrong),
             field="name",
             expect=wrong,
@@ -30,6 +31,7 @@ CORRECTIONS = [
         )
     ),
     Correction(
+        id="acr-connection-info",
         target=avp_rule("Accounting-Request", "Connection-Info"),
         field="name",
         expect="Connection-Info",
@@ -39,6 +41,7 @@ CORRECTIONS = [
         " AAR ABNF; verified erratum 5995 corrects the typo",
     ),
     Correction(
+        id="bases-nasreq",
         target=header(),
         field="bases",
         expect=("RFC6733",),

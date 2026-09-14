@@ -4,6 +4,7 @@ from seanchai.dad.corrections import Correction, avp_rule, header
 
 CORRECTIONS = [
     Correction(
+        id="mia-mip6-agent-info",
         target=avp_rule("MIP6-Answer", "MIP-Agent-Info"),
         field="name",
         expect="MIP-Agent-Info",
@@ -14,6 +15,7 @@ CORRECTIONS = [
         " corrects the name",
     ),
     Correction(
+        id="dea-multi-round-time-out",
         target=avp_rule("Diameter-EAP-Answer", "Multi-Round-Time"),
         field="name",
         expect="Multi-Round-Time",
@@ -23,6 +25,7 @@ CORRECTIONS = [
         " which this ABNF extends, spells it fully",
     ),
     Correction(
+        id="mir-session-id-case",
         target=avp_rule("MIP6-Request", "Session-ID"),
         field="name",
         expect="Session-ID",
@@ -32,6 +35,7 @@ CORRECTIONS = [
         " document's every other ABNF",
     ),
     Correction(
+        id="bases-mip6-dependencies",
         target=header(),
         field="bases",
         expect=("RFC6733",),

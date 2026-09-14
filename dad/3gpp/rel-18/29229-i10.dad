@@ -382,7 +382,7 @@ Allowed-WAF-WWSF-Identities                   656   6.3.64     Grouped          
 WebRTC-Authentication-Function-Name           657   6.3.65     UTF8String         V     -     -     M     No
 WebRTC-Web-Server-Function-Name               658   6.3.66     UTF8String         V     -     -     M     No
 DRMP                                          301   6.3.67     Enumerated         -     -     -     M,V   No
-;; deleted: AVP table row 'Load' (TS29.229.py:14)
+;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)
 RTR-Flags                                     659   6.3.69     Unsigned32         V     -     -     M     No
 P-CSCF-Subscription-Info                      660   6.3.70     Grouped            V     -     -     M     No
 Registration-Time-Out                         661   6.3.71     Time               V     -     -     M     No
@@ -400,12 +400,12 @@ PCSCF-IP-Address                              666   6.3.76     Address          
 ; Columns: Name         From      M-bit
 Digest-Realm            RFC4590   -
 Digest-Algorithm        RFC4590   -
-Digest-Qop              RFC4590   - ;; corrected: (TS29.229.py:40)
+Digest-Qop              RFC4590   - ;; corrected: (TS29.229.py#digest-qop-case)
 Digest-HA1              RFC4590   -
 OC-Supported-Features   RFC7683   -
 OC-OLR                  RFC7683   -
 DRMP                    RFC7944   -
-Load                    RFC8583   - ;; inserted: (TS29.229.py:31)
+Load                    RFC8583   - ;; inserted: (TS29.229.py#load-row-reused)
 
 
 ; Type: Grouped AVP

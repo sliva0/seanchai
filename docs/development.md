@@ -21,9 +21,10 @@ checker-specific form (`# pyright: ignore[...]`) when they do.
 
 ## Tests
 
-- Tests marked `sources` re-extract every committed `.dad` from the real
-  documents under `specifications/` and compare byte-for-byte, and load the
-  pinned Wireshark dictionary. They *fail* when the sources are absent rather
+- Tests marked `sources` run `seanchai regenerate` over the real documents
+  under `specifications/` into a scratch directory and require every
+  committed pair to come out unchanged, and load the pinned Wireshark
+  dictionary. They *fail* when the sources are absent rather
   than skipping, so a green run without `-m "not sources"` means the strong
   check actually ran.
 - Everything else runs on committed files and small synthetic fixtures

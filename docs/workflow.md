@@ -1,30 +1,43 @@
 # Review and upgrade workflow
 
-## Adding or refreshing a specification
+The corpus under `dad/` is derived output. One command rebuilds all of it
+from the downloaded sources and the two edit layers:
 
-1. **Download**: `uv run seanchai download` fetches the catalog into the
-   git-ignored `specifications/`. PDFs are on by default; `--no-pdfs` is for
-   catalog experiments only (see [downloader.md](downloader.md)).
-2. **Extract**: `uv run seanchai extract DOCX --pdf PDF --link URL -o OUT.dad`,
-   or `uv run seanchai extract-rfc RFC.txt --link URL -o OUT.dad` (RFC text is
-   the RFC's only rendering, so no PDF). Read the warnings on stderr: they are
-   the extractor telling you the document did something unusual.
-3. **Lint** the raw output: `uv run seanchai lint RAW.dad`. Once the file is in
-   the corpus, `--corpus dad` adds the cross-file rules.
-4. **Correct**: declare each fix in `edits/corrections/<SpecRef>.py`, then
-   re-extract with `--corrections edits/corrections` writing to the corpus path.
-5. **Commit both files**: the corrected one under its release
-   (`dad/3gpp/rel-18/29272-i60.dad`) and the raw one under the mirror
-   (`dad/raw/3gpp/rel-18/29272-i60.raw.dad`). The corrected one lints clean;
-   the raw one need not.
+```sh
+uv run seanchai download      # the catalog into specifications/, PDFs included
+uv run seanchai regenerate    # every committed specification, raw mirror included
+git diff --stat dad           # what changed, if anything
+```
+
+`regenerate` prints one line per specification: `unchanged`, `changed`,
+`replaced` (the manifest holds a newer version than the corpus did; the old
+pair is removed), `new` (added with `--add`), or `failed` with the reason.
+The extractor's warnings print under each specification; they are the
+document doing something unusual and are worth a glance on every rebuild.
+`tests/test_real_sources.py` runs the same rebuild into a scratch directory
+and fails on anything but `unchanged`.
+
+## Adding a specification
+
+1. `uv run seanchai regenerate --add TS29.273`. The document must be in the
+   downloader's catalog (`src/seanchai/downloader/specs.toml`) and readable
+   by the extractor; a `.doc` archive or a shape it rejects fails with the
+   reason.
+2. Lint the raw file: `uv run seanchai lint dad/raw/... --corpus dad`. Every
+   error is either a source typo (input patch), a reading the extractor should
+   not make undeclared (quirk), or wrong data (correction); see the table
+   below.
+3. Declare the fixes, regenerate again, and commit the raw and corrected pair
+   with the edit files.
 
 ## Version upgrades
 
-Re-extract the new version and diff raw-vs-raw: that shows what changed in the
-*specification* with the correction layer held still. Then re-apply the
-corrections — one whose `expect` no longer matches fails, so a fix adopted
-upstream stops the run instead of passing silently — and diff the corrected
-files too.
+`seanchai download` follows 3GPP's newest version with a published ETSI PDF,
+so a newer version shows up as a `replaced` line on the next regenerate. Diff
+raw-vs-raw first: that is what changed in the *specification* with the
+correction layer held still. A correction whose `expect` no longer matches
+fails the specification's rebuild, which is the signal that a fix was adopted
+upstream and the declaration should go. Then diff the corrected files.
 
 This depends on three things that must not regress: canonical formatting is
 stable (an unrelated edit must not reflow other lines), the downloader reads

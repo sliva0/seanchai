@@ -33,8 +33,9 @@ the state that justified them: `Delete` expects the doomed node field-for-field,
 and `Insert` expects the row to be absent, so it fails the day upstream adds it.
 """
 
+import dataclasses
 import importlib.util
-import sys
+import re
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -310,26 +311,32 @@ class Correction:
     uncorrected file the first time a version moved.
     """
 
+    # A short kebab-case name, unique within its module. A corrected `.dad`
+    # file marks the lines an edit reached and cites `<module>#<id>`, so a
+    # reader who does not believe a value greps the id and lands on the
+    # declaration and its `reason`. A name rather than a line number, so that
+    # reformatting a module does not change every corrected file.
+    id: str
     target: Selector
     field: str
     expect: Any
     replace: Any
     reason: str
     versions: str | None = None
-    # Where this correction is written, as "<file>:<line>", captured at
-    # construction. A corrected `.dad` file marks the lines an edit reached and
-    # cites this, so a reader who does not believe a value can go straight to
-    # the declaration and its `reason` instead of grepping the corpus.
+    # The module file that declared this edit, stamped by `load()`.
     origin: str = ""
 
     def __post_init__(self) -> None:
+        _check_id(self.id)
         if self.expect == self.replace:
             raise CorrectionError(
                 f"{self.target.describe()}: {self.field} correction replaces"
                 " a value with itself"
             )
-        if not self.origin:
-            object.__setattr__(self, "origin", _declared_at())
+
+    @property
+    def cited(self) -> str:
+        return _cited(self)
 
 
 @dataclass(frozen=True)
@@ -346,6 +353,7 @@ class Delete:
     carries for a single field.
     """
 
+    id: str
     target: Selector
     expect: ast.Node
     reason: str
@@ -353,8 +361,11 @@ class Delete:
     origin: str = ""
 
     def __post_init__(self) -> None:
-        if not self.origin:
-            object.__setattr__(self, "origin", _declared_at())
+        _check_id(self.id)
+
+    @property
+    def cited(self) -> str:
+        return _cited(self)
 
 
 @dataclass(frozen=True)
@@ -370,6 +381,7 @@ class Insert:
     the day upstream adds the missing row itself.
     """
 
+    id: str
     into: avp_table | reused_avps
     node: ast.AvpTableRow | ast.ReusedAvpRow
     after: str | None
@@ -378,8 +390,11 @@ class Insert:
     origin: str = ""
 
     def __post_init__(self) -> None:
-        if not self.origin:
-            object.__setattr__(self, "origin", _declared_at())
+        _check_id(self.id)
+
+    @property
+    def cited(self) -> str:
+        return _cited(self)
 
 
 # What a corrections module may declare. `Supply` remains designed
@@ -388,22 +403,20 @@ class Insert:
 Edit = Correction | Delete | Insert
 
 
-def _declared_at() -> str:
-    """The first frame outside this module: the corrections file's own line.
+_ID_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 
-    Walked rather than taken at a fixed depth because a `Correction` may be
-    built inside a comprehension or a helper, and a fixed depth would then cite
-    this file.
-    """
-    frame = sys._getframe(1)
-    while frame is not None and frame.f_globals.get("__name__") == __name__:
-        frame = frame.f_back
-    if frame is None:  # pragma: no cover — only reachable if this module calls itself
-        return ""
-    # The file name alone: correction modules always sit directly in the
-    # corrections directory, so a longer path adds length to every note in a
-    # corrected file without distinguishing anything.
-    return f"{Path(frame.f_code.co_filename).name}:{frame.f_lineno}"
+
+def _check_id(value: object) -> None:
+    if not isinstance(value, str) or not _ID_RE.fullmatch(value):
+        raise CorrectionError(
+            f"correction id {value!r} is not a lowercase kebab-case name"
+        )
+
+
+def _cited(edit: Edit) -> str:
+    """How a `.dad` note refers to an edit: `TS29.272.py#area-scope-vendor`
+    once loaded from a module, the bare id before that."""
+    return f"{edit.origin}#{edit.id}" if edit.origin else edit.id
 
 
 @dataclass
@@ -763,11 +776,11 @@ def notes(
         if isinstance(edit, Delete):
             bucket = detached if isinstance(result.old, _SECTION_TYPES) else standing
             bucket.setdefault(result.node_id, []).append(
-                f"deleted: {edit.target.describe_in_place()} ({edit.origin})"
+                f"deleted: {edit.target.describe_in_place()} ({edit.cited})"
             )
             continue
         kind = "inserted" if isinstance(edit, Insert) else "corrected"
-        trailing.setdefault(result.node_id, []).append(f"{kind}: ({edit.origin})")
+        trailing.setdefault(result.node_id, []).append(f"{kind}: ({edit.cited})")
     return trailing, standing, detached
 
 
@@ -855,4 +868,13 @@ def _corrections_of(path: Path) -> list[Edit]:
         raise CorrectionError(
             f"{path}: CORRECTIONS must hold Correction, Delete or Insert objects"
         )
-    return list(corrections)
+    seen: set[str] = set()
+    for item in corrections:
+        if item.id in seen:
+            raise CorrectionError(
+                f"{path}: correction id {item.id!r} is declared twice"
+            )
+        seen.add(item.id)
+    # The module name is what a `.dad` note cites next to the id; stamped here
+    # rather than captured at construction so a module cannot misstate it.
+    return [dataclasses.replace(item, origin=path.name) for item in corrections]

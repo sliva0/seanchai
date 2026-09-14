@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Correction, avp_rule, header
 CORRECTIONS = [
     *(
         Correction(
+            id=f"dea-framed-appletalk-{suffix.lower()}-case",
             target=avp_rule("Diameter-EAP-Answer", f"Framed-Appletalk-{suffix}"),
             field="name",
             expect=f"Framed-Appletalk-{suffix}",
@@ -16,6 +17,7 @@ CORRECTIONS = [
         for suffix in ("Link", "Network", "Zone")
     ),
     Correction(
+        id="bases-nasreq",
         target=header(),
         field="bases",
         expect=("RFC6733",),

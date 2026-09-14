@@ -4,6 +4,7 @@ from seanchai.dad.corrections import Correction, definition
 
 CORRECTIONS = [
     Correction(
+        id="plmn-allowed-pc5-rats-rule-name",
         target=definition("V2X-PC5-Allowed-PLMN", section="6.3.10"),
         field="name",
         expect="V2X-PC5-Allowed-PLMN",

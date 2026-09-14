@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Correction, Insert, definition, reused_avps
 
 CORRECTIONS = [
     Insert(
+        id="ip-sm-gw-realm-row-missing",
         into=reused_avps("5.3.3.1/2"),
         node=ast.ReusedAvpRow(name="IP-SM-GW-Realm", origin="TS29.336"),
         after="IP-SM-GW-Number",
@@ -14,6 +15,7 @@ CORRECTIONS = [
         versions="18.2.0",
     ),
     Correction(
+        id="smsmi-correlation-id-name",
         target=definition("SMS-MI-Correlation-ID", section="6.3.3.13"),
         field="name",
         expect="SMS-MI-Correlation-ID",
@@ -24,6 +26,7 @@ CORRECTIONS = [
         versions="18.2.0",
     ),
     Correction(
+        id="smsmi-correlation-id-code",
         target=definition("SMS-MI-Correlation-ID", section="6.3.3.13"),
         field="code",
         expect=3308,

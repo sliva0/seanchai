@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
 
 CORRECTIONS = [
     Correction(
+        id="assistance-info-case",
         target=table_row("Assistance-info"),
         field="name",
         expect="Assistance-info",
@@ -14,6 +15,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="wlan-link-layer-id-type",
         target=table_row("WLAN-Link-Layer-Id"),
         field="data_type",
         expect=ast.DataType.OCTET_STRING,
@@ -23,6 +25,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="prose-restricted-code-suffix-range-type",
         target=table_row("ProSe-Restricted-Code-Suffix-Range"),
         field="data_type",
         expect=ast.DataType.OCTET_STRING,
@@ -32,6 +35,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="code-receiving-security-material-code",
         target=definition("Code-Receiving-Security-Material"),
         field="code",
         expect=3847,
@@ -41,6 +45,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="code-sending-security-material-code",
         target=definition("Code-Sending-Security-Material"),
         field="code",
         expect=3847,
@@ -50,6 +55,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="prose-app-code-suffix-range-code",
         target=definition("ProSe-App-Code-Suffix-Range"),
         field="code",
         expect=3847,
@@ -59,6 +65,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="prose-app-code-suffix-range-type",
         target=table_row("ProSe-App-Code-Suffix-Range"),
         field="data_type",
         expect=ast.DataType.OCTET_STRING,
@@ -68,6 +75,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="mic-check-indicator-case",
         target=table_row("MIC-Check-indicator"),
         field="name",
         expect="MIC-Check-indicator",
@@ -78,6 +86,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="wifi-p2p-assistance-info-spelling",
         target=avp_rule("WLAN-Assistance-Info", "WiFi-P2P-Assistance-Iinfo"),
         field="name",
         expect="WiFi-P2P-Assistance-Iinfo",
@@ -97,6 +106,7 @@ CORRECTIONS = [
     # referenced by nothing.
     *(
         Correction(
+            id=f"{parent.lower()}-{wrong.lower()}",
             target=avp_rule(parent, wrong),
             field="name",
             expect=wrong,

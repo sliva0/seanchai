@@ -5,6 +5,7 @@ from seanchai.dad.corrections import Delete, table_row
 
 CORRECTIONS = [
     Delete(
+        id="load-row-not-local",
         target=table_row("Load"),
         expect=ast.AvpTableRow(
             name="Load",

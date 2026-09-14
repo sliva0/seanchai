@@ -108,7 +108,7 @@ MBMS-GW-UDP-Port             927   20.5a.5    OctetString   V     P     -     M 
 MBMS-GW-UDP-Port-Indicator   928   20.5a.6    Enumerated    V     P     -     M     Yes
 MBMS-Data-Transfer-Start     929   20.5a.7    Unsigned64    V     P     -     M     Yes
 MBMS-Data-Transfer-Stop      930   20.5a.8    Unsigned64    V     P     -     M     Yes
-MBMS-Flags                   931   20.5a.9    Unsigned32    V     P     -     M     Yes ;; corrected: (TS29.061.py:6)
+MBMS-Flags                   931   20.5a.9    Unsigned32    V     P     -     M     Yes ;; corrected: (TS29.061.py#mbms-flags-name)
 Restart-Counter              932   20.5a.10   Unsigned32    V     P     -     M     Yes
 Diagnostic-Info              933   20.5a.11   Unsigned32    V     P     -     M     Yes
 MBMS-Cell-List               934   20.5a.12   OctetString   V     P     -     M     Yes

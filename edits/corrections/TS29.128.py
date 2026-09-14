@@ -11,6 +11,7 @@ from seanchai.dad.corrections import (
 
 CORRECTIONS = [
     Correction(
+        id="number-of-ue-per-location-configuration-case",
         target=definition("Number-of-UE-Per-Location-Configuration"),
         field="name",
         expect="Number-of-UE-Per-Location-Configuration",
@@ -20,6 +21,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="number-of-ue-per-location-report-case",
         target=definition("Number-of-UE-Per-Location-Report"),
         field="name",
         expect="Number-of-UE-Per-Location-Report",
@@ -29,6 +31,7 @@ CORRECTIONS = [
         versions="18.0.0",
     ),
     Correction(
+        id="bearer-identifier-spelling",
         target=reused_row("Bearer-Identity"),
         field="name",
         expect="Bearer-Identity",
@@ -44,6 +47,7 @@ CORRECTIONS = [
     # (codes 1402, 1403), but table 6.4.1-2 omits their rows.
     *(
         Insert(
+            id=f"missing-row-{name.lower()}",
             into=reused_avps("6.4.1-2"),
             node=ast.ReusedAvpRow(name=name, origin="TS29.272"),
             after=after,
