@@ -42,8 +42,10 @@ unreviewable.
 
 import tomllib
 from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from pathlib import Path
 
+from ..versions import VersionRange
 from .errors import ExtractionError
 
 
@@ -63,8 +65,7 @@ class Patch:
     section: str | None = None
     exact: bool = False
     reason: str | None = None
-    first_version: str | None = None
-    last_version: str | None = None
+    versions: VersionRange = dataclass_field(default_factory=VersionRange)
     applied: int = 0
 
     def __post_init__(self) -> None:
@@ -133,8 +134,8 @@ class Patcher:
             return cls([], version)
         data = _read(path)
         try:
-            patches = [Patch(**entry) for entry in data.get("patch", ())]
-        except TypeError as error:
+            patches = [Patch(**_ranged(entry)) for entry in data.get("patch", ())]
+        except (TypeError, ValueError) as error:
             # A misspelled or missing key in the TOML is the user's file being
             # wrong, not this program: report it like every other patch problem.
             raise PatchError(f"{path}: {error}") from None
@@ -166,10 +167,8 @@ class Patcher:
                 f"input patch {patch.find!r} -> {patch.replace!r} applied"
                 f" {patch.applied} times, expected {patch.count}"
             )
-            if patch.first_version is not None and self.version is not None:
-                known = patch.first_version
-                if patch.last_version not in (None, patch.first_version):
-                    known += f"..{patch.last_version}"
+            if patch.versions != VersionRange() and self.version is not None:
+                known = str(patch.versions)
                 message += (
                     f"; it was needed on version {known}, currently parsing"
                     f" {self.version} — the source may have changed"
@@ -185,8 +184,7 @@ class Patcher:
 class Quirk:
     name: str
     reason: str | None = None
-    first_version: str | None = None
-    last_version: str | None = None
+    versions: VersionRange = dataclass_field(default_factory=VersionRange)
     fired: int = 0
 
     def __post_init__(self) -> None:
@@ -227,10 +225,8 @@ class Quirks:
             if quirk.fired:
                 continue
             message = f"quirk {quirk.name!r} is declared but changed nothing"
-            if quirk.first_version is not None and self.version is not None:
-                known = quirk.first_version
-                if quirk.last_version not in (None, quirk.first_version):
-                    known += f"..{quirk.last_version}"
+            if quirk.versions != VersionRange() and self.version is not None:
+                known = str(quirk.versions)
                 message += (
                     f"; it was needed on version {known}, currently parsing"
                     f" {self.version} — the source may have changed"
@@ -246,7 +242,10 @@ def _read(path: Path) -> dict:
 
 
 def load(
-    path: Path | None, version: str | None, known_quirks: dict[str, str]
+    path: Path | None,
+    version: str | None,
+    known_quirks: dict[str, str],
+    warnings: list[str] | None = None,
 ) -> tuple[Patcher, Quirks]:
     """Load one specification's source declarations.
 
@@ -259,8 +258,8 @@ def load(
         return patcher, Quirks([], version)
     data = _read(path)
     try:
-        quirks = [Quirk(**entry) for entry in data.get("quirk", ())]
-    except TypeError as error:
+        quirks = [Quirk(**_ranged(entry)) for entry in data.get("quirk", ())]
+    except (TypeError, ValueError) as error:
         raise QuirkError(f"{path}: {error}") from None
     for quirk in quirks:
         if quirk.name not in known_quirks:
@@ -274,4 +273,26 @@ def load(
             f"{path}: unknown block {', '.join(sorted(unexpected))!r};"
             " a source declaration holds [[patch]] and [[quirk]] blocks"
         )
+    if warnings is not None:
+        for patch in patcher.patches:
+            if warning := patch.versions.warning(
+                version, f"{path}: input patch {patch.find!r}"
+            ):
+                warnings.append(warning)
+        for quirk in quirks:
+            if warning := quirk.versions.warning(
+                version, f"{path}: quirk {quirk.name!r}"
+            ):
+                warnings.append(warning)
     return patcher, Quirks(quirks, version)
+
+
+def _ranged(entry: dict) -> dict:
+    """Translate the TOML bounds into the same type corrections declare."""
+    fields = dict(entry)
+    if "versions" in fields:
+        raise ValueError("TOML ranges use first_version and last_version")
+    versions = VersionRange(
+        fields.pop("first_version", None), fields.pop("last_version", None)
+    )
+    return {**fields, "versions": versions}

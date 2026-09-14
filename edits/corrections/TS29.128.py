@@ -8,6 +8,7 @@ from seanchai.dad.corrections import (
     reused_avps,
     reused_row,
 )
+from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Correction(
@@ -18,7 +19,7 @@ CORRECTIONS = [
         replace="Number-Of-UE-Per-Location-Configuration",
         reason="table 6.4.1/1, the clause heading, and the ABNF reference in"
         " clause 6.2.4 all capitalize 'Of'; only the rule name uses 'of'",
-        versions="18.0.0",
+        versions=VersionRange.exact("18.0.0"),
     ),
     Correction(
         id="number-of-ue-per-location-report-case",
@@ -28,7 +29,7 @@ CORRECTIONS = [
         replace="Number-Of-UE-Per-Location-Report",
         reason="table 6.4.1/1, the clause heading, and the ABNF reference in"
         " clause 6.2.5 all capitalize 'Of'; only the rule name uses 'of'",
-        versions="18.0.0",
+        versions=VersionRange.exact("18.0.0"),
     ),
     Correction(
         id="bearer-identifier-spelling",
@@ -40,7 +41,7 @@ CORRECTIONS = [
         " defines no such AVP; 29.212's table 5.3.0.1 and this document's own"
         " command ABNFs (clauses 6.2.3, 6.2.6, 6.2.7) spell it"
         " 'Bearer-Identifier' (code 1020)",
-        versions="18.0.0",
+        versions=VersionRange.exact("18.0.0"),
     ),
     # The Terminal-Information body (clause 6.4.30) re-prints TS 29.272's
     # grouped AVP; its members IMEI and Software-Version are TS 29.272's too
@@ -54,7 +55,7 @@ CORRECTIONS = [
             reason=f"the Terminal-Information body (clause 6.4.30) uses"
             f" {name} but table 6.4.1-2 omits the row; TS 29.272 defines"
             " the AVP",
-            versions="18.0.0",
+            versions=VersionRange.exact("18.0.0"),
         )
         for name, after in (
             ("IMEI", "Terminal-Information"),

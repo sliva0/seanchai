@@ -17,7 +17,7 @@ Corrections are declared per specification, as data:
             replace=16777308,
             reason="clause 7.2.2 assigns the VCSG commands to S7a/S7d;"
             " the command header omits the id",
-            versions="18.6.0",
+            versions=VersionRange.exact("18.6.0"),
         ),
     ]
 
@@ -38,11 +38,13 @@ import importlib.util
 import re
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from pathlib import Path
 from typing import Any
 
 import pydantic
 
+from ..versions import VersionRange
 from . import ast
 
 
@@ -326,7 +328,7 @@ class Correction:
     expect: Any
     replace: Any
     reason: str
-    versions: str | None = None
+    versions: VersionRange = dataclass_field(default_factory=VersionRange)
     # The module file that declared this edit, stamped by `load()`.
     origin: str = ""
 
@@ -361,7 +363,7 @@ class Delete:
     target: Selector
     expect: ast.Node
     reason: str
-    versions: str | None = None
+    versions: VersionRange = dataclass_field(default_factory=VersionRange)
     origin: str = ""
 
     def __post_init__(self) -> None:
@@ -390,7 +392,7 @@ class Insert:
     node: ast.AvpTableRow | ast.ReusedAvpRow
     after: str | None
     reason: str
-    versions: str | None = None
+    versions: VersionRange = dataclass_field(default_factory=VersionRange)
     origin: str = ""
 
     def __post_init__(self) -> None:

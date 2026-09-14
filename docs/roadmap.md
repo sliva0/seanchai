@@ -41,11 +41,9 @@ letter is not reused. What exists is described in the per-module documents.
   ambiguity, so the corpus carries the duplicate.
 - **G. Stage the Wireshark merge requests** listed in
   [oracle.md](oracle.md#what-still-reports).
-- **H. A shared version type for patches, quirks and corrections**, so a
-  recorded range can be compared against the parsed version and *warn* when
-  it no longer covers it (never gate). Then a CLI flag that auto-expands a
-  range when a newer or older version still applied cleanly, which needs
-  comment-preserving TOML rewriting.
+- **H. Auto-expand advisory version ranges** when a newer or older version
+  still applies cleanly, behind a CLI flag. Needs comment-preserving TOML
+  rewriting.
 
 ## Sources
 

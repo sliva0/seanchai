@@ -9,6 +9,7 @@ from seanchai.dad.corrections import (
     reused_row,
     table_row,
 )
+from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Delete(
@@ -27,7 +28,7 @@ CORRECTIONS = [
         reason="table 6.3.0.1 prints Load with no AVP code because it is not"
         " this document's AVP: clause 6.3.68 says it is defined in RFC 8583,"
         " so the row belongs in the re-used table, where the next edit puts it",
-        versions="18.1.0",
+        versions=VersionRange.exact("18.1.0"),
     ),
     Insert(
         id="load-row-reused",
@@ -37,7 +38,7 @@ CORRECTIONS = [
         reason="clause 6.3.68 defines Load only by reference to RFC 8583, the"
         " same wording DRMP's clause uses for RFC 7944, but table 6.3.0.1"
         " lists DRMP as re-used and prints Load as a code-less local row",
-        versions="18.1.0",
+        versions=VersionRange.exact("18.1.0"),
     ),
     Correction(
         id="digest-qop-case",
@@ -47,6 +48,6 @@ CORRECTIONS = [
         replace="Digest-Qop",
         reason="table 6.3.0.1 cites RFC 4590, whose registered attribute name"
         " is Digest-Qop; the table uniquely capitalizes its final letter",
-        versions="18.1.0",
+        versions=VersionRange.exact("18.1.0"),
     ),
 ]

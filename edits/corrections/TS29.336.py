@@ -9,6 +9,7 @@ from seanchai.dad.corrections import (
     reused_avps,
     table_row,
 )
+from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Delete(
@@ -43,7 +44,7 @@ CORRECTIONS = [
         " the definition, which table 8.4.1-2's re-used row also cites; the"
         " S6t variant stays readable in the source behind that row's clause"
         " pointer",
-        versions="18.2.0",
+        versions=VersionRange.exact("18.2.0"),
     ),
     Correction(
         id="scheduled-communication-time-case",
@@ -54,7 +55,7 @@ CORRECTIONS = [
         reason="clause 8.4.30's heading and rule lowercase the name; table"
         " 8.4.1-1 and the Monitoring-Event-Configuration ABNF (clause 8.4.24)"
         " both spell the AVP at code 3118 'Scheduled-Communication-Time'",
-        versions="18.2.0",
+        versions=VersionRange.exact("18.2.0"),
     ),
     Correction(
         id="periodic-time-case",
@@ -70,7 +71,7 @@ CORRECTIONS = [
         " appears on Scheduled-Communication-Time and"
         " Periodic-communication-indicator, so it is this document's typo"
         " pattern, not a name",
-        versions="18.2.0",
+        versions=VersionRange.exact("18.2.0"),
     ),
     # The S6m Serving-Node and Additional-Serving-Node bodies (clauses
     # 6.4.12, 6.4.13) use six member AVPs that table 6.4.1/2 does not list,
@@ -86,7 +87,7 @@ CORRECTIONS = [
             reason="the Serving-Node and Additional-Serving-Node bodies"
             f" (clauses 6.4.12, 6.4.13) use {name} but table 6.4.1/2 omits"
             f" the row; {origin} defines the AVP",
-            versions="18.2.0",
+            versions=VersionRange.exact("18.2.0"),
         )
         for (name, origin), after in zip(
             (

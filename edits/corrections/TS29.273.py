@@ -11,6 +11,7 @@ from seanchai.dad.corrections import (
     reused_row,
     table_row,
 )
+from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Correction(
@@ -26,7 +27,7 @@ CORRECTIONS = [
             "RFC 6733 clause 9.8.2 defines Acct-Interim-Interval; the printed"
             " name does not exist."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="accounting-interim-interval-rule-5-2-2-1-2-diameter-eap-answer",
@@ -41,7 +42,7 @@ CORRECTIONS = [
             "RFC 6733 clause 9.8.2 defines Acct-Interim-Interval; the printed"
             " name does not exist."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-rule-5-2-2-1-2-diameter-eap-answer",
@@ -52,7 +53,7 @@ CORRECTIONS = [
         expect="Subscription-ID",
         replace="Subscription-Id",
         reason="RFC 4006 clause 8.46 spells its AVP Subscription-Id.",
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="accounting-interim-interval-rule-5-2-2-3-4-aa-answer",
@@ -66,7 +67,7 @@ CORRECTIONS = [
             "RFC 6733 clause 9.8.2 defines Acct-Interim-Interval; the printed"
             " name does not exist."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-rule-5-2-2-3-4-aa-answer",
@@ -77,7 +78,7 @@ CORRECTIONS = [
         expect="Subscription-ID",
         replace="Subscription-Id",
         reason="RFC 4006 clause 8.46 spells its AVP Subscription-Id.",
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="accounting-interim-interval-rule-6-2-2-1-1-2-diameter-eap-answer",
@@ -92,7 +93,7 @@ CORRECTIONS = [
             "RFC 6733 clause 9.8.2 defines Acct-Interim-Interval; the printed"
             " name does not exist."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-rule-7-2-2-1-2-diameter-eap-answer",
@@ -103,7 +104,7 @@ CORRECTIONS = [
         expect="Subscription-ID",
         replace="Subscription-Id",
         reason="RFC 4006 clause 8.46 spells its AVP Subscription-Id.",
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-rule-7-2-2-1-4-aa-answer",
@@ -114,7 +115,7 @@ CORRECTIONS = [
         expect="Subscription-ID",
         replace="Subscription-Id",
         reason="RFC 4006 clause 8.46 spells its AVP Subscription-Id.",
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="accounting-interim-interval-row-5-2-3-1",
@@ -126,7 +127,7 @@ CORRECTIONS = [
             "Table 5.2.3.1/2 misspells the AVP; its cited origin defines Acct-"
             " Interim-Interval."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-row-5-2-3-1",
@@ -138,7 +139,7 @@ CORRECTIONS = [
             "Table 5.2.3.1/2 misspells the AVP; its cited origin defines"
             " Subscription-Id."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="accounting-interim-interval-row-6-2-3-1",
@@ -150,7 +151,7 @@ CORRECTIONS = [
             "Table 6.2.3.1/2 misspells the AVP; its cited origin defines Acct-"
             " Interim-Interval."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-row-6-2-3-1",
@@ -162,7 +163,7 @@ CORRECTIONS = [
             "Table 6.2.3.1/2 misspells the AVP; its cited origin defines"
             " Subscription-Id."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-row-7-2-3-1",
@@ -174,7 +175,7 @@ CORRECTIONS = [
             "Table 7.2.3.1/2 misspells the AVP; its cited origin defines"
             " Subscription-Id."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-row-8-2-3-0",
@@ -186,7 +187,7 @@ CORRECTIONS = [
             "Table 8.2.3.0/2 misspells the AVP; its cited origin defines"
             " Subscription-Id."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="subscription-id-rule-8-2-3-1-non-3gpp-user-data",
@@ -197,7 +198,7 @@ CORRECTIONS = [
         expect="Subscription-ID",
         replace="Subscription-Id",
         reason="RFC 4006 clause 8.46 spells its AVP Subscription-Id.",
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="diameter-eap-request-swa-application",
@@ -209,7 +210,7 @@ CORRECTIONS = [
             "Clause 4.2.1 assigns SWa the STa application; clause 5.2.1"
             " assigns STa 16777250. The SWa headers omit it."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="diameter-eap-answer-swa-application",
@@ -221,7 +222,7 @@ CORRECTIONS = [
             "Clause 4.2.1 assigns SWa the STa application; clause 5.2.1"
             " assigns STa 16777250. The SWa headers omit it."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="access-network-info-code",
@@ -234,7 +235,7 @@ CORRECTIONS = [
             " 5.2.3.24 and tables 5.2.3.1/1 and 7.2.3.1/1: Access-Network-Info"
             " is 1526; 1524 is SSID."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Correction(
         id="emergency-services-clause",
@@ -246,7 +247,7 @@ CORRECTIONS = [
             "Emergency-Services is defined in clause 7.2.3.4; clause 7.2.3.5"
             " defines AAR-Flags."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Delete(
         id="mip6-agent-info-duplicate",
@@ -292,7 +293,7 @@ CORRECTIONS = [
             " print identical bodies for the same identity; keep the first copy"
             " in the corrected dictionary."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Insert(
         id="mip-home-agent-address-reused",
@@ -304,7 +305,7 @@ CORRECTIONS = [
             " its members from the re-used table; RFC 4004 clause 7.4 defines"
             " this member."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Insert(
         id="mip-home-agent-host-reused",
@@ -312,7 +313,7 @@ CORRECTIONS = [
         node=ast.ReusedAvpRow(name="MIP-Home-Agent-Host", origin="RFC4004"),
         after=None,
         reason="RFC 4004 clause 7.11 defines this member of MIP6-Agent-Info.",
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Insert(
         id="mip6-home-link-prefix-reused",
@@ -323,7 +324,7 @@ CORRECTIONS = [
             "Clause 9.2.3.2.2 explicitly retains this RFC 5447 member to"
             " reflect the complete definition."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Insert(
         id="subscription-id-type-reused",
@@ -334,7 +335,7 @@ CORRECTIONS = [
             "Clause 8.2.3.2 reprints Subscription-Id from RFC 4006 but the re-"
             " used table omits its members."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
     Insert(
         id="subscription-id-data-reused",
@@ -345,6 +346,6 @@ CORRECTIONS = [
             "RFC 4006 clause 8.48 supplies this member of Subscription-Id in"
             " clause 8.2.3.2."
         ),
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
 ]

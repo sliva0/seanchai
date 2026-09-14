@@ -5,6 +5,7 @@ import pytest
 
 from seanchai.extractor import rfc_text, tgpp_docx
 from seanchai.extractor.sources import Patch, Patcher, PatchError
+from seanchai.versions import VersionRange
 
 _PATCHES = Path(__file__).parent.parent / "edits" / "sources"
 
@@ -16,8 +17,7 @@ def test_unapplied_and_overapplied_patches_fail_with_the_version_range():
                 find="gone",
                 replace="fixed",
                 reason="a fix the source no longer needs",
-                first_version="18.0.0",
-                last_version="18.2.0",
+                versions=VersionRange("18.0.0", "18.2.0"),
             ),
             Patch(find="common", replace="rare", count=1, reason="too common"),
         ],

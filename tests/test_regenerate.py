@@ -8,6 +8,8 @@ pinned here.
 import json
 import shutil
 
+import pytest
+
 from seanchai import regenerate
 
 
@@ -102,3 +104,72 @@ def test_a_document_the_extractor_rejects_fails_alone(tmp_path):
     assert failed.status == "failed"
     assert failed.error
     assert not list(corpus.rglob("*.dad"))
+
+
+@pytest.mark.parametrize(
+    "first,last,expected", [("2.0", "3.0", 3), ("0.1", "1.1", 3), ("1.2.3", "1.2.3", 0)]
+)
+def test_ranges_warn_for_all_layers_without_gating_application(
+    tmp_path, synthetic_spec_docx, first, last, expected
+):
+    import docx
+    from click.testing import CliRunner
+
+    from seanchai.cli import main
+    from seanchai.dad import ast, parser
+
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    source = docx.Document(synthetic_spec_docx)
+    source.tables[1].cell(2, 4).text = "M.V"
+    source.save(document)
+    declarations = tmp_path / "edits"
+    declarations.mkdir()
+    bounds = f'first_version = "{first}"\nlast_version = "{last}"\n'
+    (declarations / "TS29.999.toml").write_text(
+        '[[patch]]\nfind = "Value Type"\nreplace = "Value Type (NOTE 2)"\n'
+        'exact = true\nreason = "exercise an out-of-range patch"\n'
+        + bounds
+        + '[[quirk]]\nname = "dotted-flags"\nreason = "out-of-range quirk"\n'
+        + bounds
+    )
+    (declarations / "TS29.999.py").write_text(
+        "from seanchai.dad.corrections import Correction, definition\n"
+        "from seanchai.versions import VersionRange\n"
+        'CORRECTIONS = [Correction(id="code", target=definition("Example-Group"), '
+        'field="code", expect=10, replace=12, reason="out-of-range correction", '
+        f"versions=VersionRange({first!r}, {last!r}))]\n"
+    )
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    result = CliRunner().invoke(
+        main,
+        [
+            "regenerate",
+            "--manifest",
+            str(manifest),
+            "--corpus",
+            str(corpus),
+            "--sources",
+            str(declarations),
+            "--corrections",
+            str(declarations),
+            "--add",
+            "TS29.999",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    lines = result.output.splitlines()
+    assert lines[0] == "new       TS29.999 1.2.3"
+    warnings = [line for line in lines if "warning:" in line]
+    assert len(warnings) == expected
+    if expected:
+        assert lines[1:4] == warnings
+        assert all(w.startswith("    warning:") for w in warnings)
+        assert all("does not cover parsed version 1.2.3" in w for w in warnings)
+        assert "input patch" in warnings[0]
+        assert "quirk" in warnings[1]
+        assert "TS29.999.py#code" in warnings[2]
+    corrected = parser.parse((corpus / "3gpp/rel-18/29999-123.dad").read_text())
+    assert any(
+        isinstance(s, ast.GroupedAvp) and s.code == 12 for s in corrected.sections
+    )

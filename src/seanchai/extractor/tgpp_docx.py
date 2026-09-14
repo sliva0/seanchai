@@ -1227,7 +1227,7 @@ def extract(
             if sources_dir is not None
             else None
         )
-        patcher, quirks = sources.load(declarations_path, version, QUIRKS)
+        patcher, quirks = sources.load(declarations_path, version, QUIRKS, warnings)
 
         collected = _collect(
             _sections(document, patcher, quirks),

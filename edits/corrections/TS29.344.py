@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import Correction, Insert, avp_table, definition
+from seanchai.versions import VersionRange
 
 # Clauses 6.2.11 and 6.2.12 head "ProSe-Initial-Location-Information-Request"
 # and "-Answer" and carry command code 8388713 with the abbreviations PSR/PSA,
@@ -23,7 +24,7 @@ CORRECTIONS = [
         expect=f"ProSe-Subscriber-Information-{kind}",
         replace=f"ProSe-Initial-Location-Information-{kind}",
         reason=_PSR_PSA,
-        versions="18.1.0",
+        versions=VersionRange.exact("18.1.0"),
     )
     for kind, section in (("Request", "6.2.11"), ("Answer", "6.2.12"))
 ]
@@ -46,6 +47,6 @@ CORRECTIONS += [
         reason="clause 6.3.13 defines this Unsigned32 AVP and TS 29.230 assigns"
         " it code 3708, but table 6.3.1-1 accidentally omits the row; its flag"
         " rules follow every locally defined PC4a AVP in the table",
-        versions="18.1.0",
+        versions=VersionRange.exact("18.1.0"),
     )
 ]

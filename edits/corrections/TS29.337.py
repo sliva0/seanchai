@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import Insert, reused_avps
+from seanchai.versions import VersionRange
 
 # The T4-specific Serving-Node and Additional-Serving-Node bodies (clauses
 # 6.3.3, 6.3.4) use six member AVPs that table 6.3.1/2 does not list, though
@@ -29,7 +30,7 @@ CORRECTIONS = [
         f" 6.3.3, 6.3.4) use {name} but table 6.3.1/2 omits the row while"
         " listing every other member those bodies use;"
         f" {origin} defines the AVP",
-        versions="18.0.0",
+        versions=VersionRange.exact("18.0.0"),
     )
     for (name, origin), after in zip(
         _MISSING,

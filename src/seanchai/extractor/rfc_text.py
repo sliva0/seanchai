@@ -1276,7 +1276,7 @@ def extract(
             if sources_dir is not None
             else None
         )
-        patcher, quirks = sources.load(declarations_path, None, QUIRKS)
+        patcher, quirks = sources.load(declarations_path, None, QUIRKS, warnings)
 
         readers: list[_TableReader] = []
         reader: _TableReader | None = None

@@ -12,8 +12,10 @@ git diff --stat dad           # what changed, if anything
 `regenerate` prints one line per specification: `unchanged`, `changed`,
 `replaced` (the manifest holds a newer version than the corpus did; the old
 pair is removed), `new` (added with `--add`), or `failed` with the reason.
-The extractor's warnings print under each specification; they are the
-document doing something unusual and are worth a glance on every rebuild.
+Warnings for declaration ranges that do not cover the parsed version print
+under each specification without gating application. The extractor's warnings
+print there too; they report unusual document structure and are worth a
+glance on every rebuild.
 `tests/test_real_sources.py` runs the same rebuild into a scratch directory
 and fails on anything but `unchanged`.
 

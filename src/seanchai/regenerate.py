@@ -190,6 +190,9 @@ def _produce(
             spec = tgpp_docx.attach_pages(spec, source.pdf, warnings=warnings)
     raw_text = formatter.format_spec(spec)
     declared = corrections.load(corrections_dir, spec.specification)
+    for edit in declared:
+        if warning := edit.versions.warning(spec.version, f"correction {edit.cited}"):
+            warnings.append(warning)
     if declared:
         spec, results = corrections.apply(spec, declared)
         corrected_text = formatter.format_spec(spec, *corrections.notes(results))

@@ -12,6 +12,7 @@ fields, with the same declare-expect-fail-loudly contract.
 
 ```python
 from seanchai.dad.corrections import Correction, definition
+from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Correction(
@@ -22,7 +23,7 @@ CORRECTIONS = [
         replace=16777308,
         reason="clause 7.2.2 assigns the VCSG commands to S7a/S7d (16777308);"
         " the command header omits the id",
-        versions="18.6.0",
+        versions=VersionRange.exact("18.6.0"),
     ),
 ]
 ```
@@ -44,8 +45,9 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   discriminator: `definition("Update-Location-Request", application_id=16777251)`.
   `application_id=None` is a real filter (the VCSG headers carry `None`);
   omitting the argument means "do not filter".
-- **`versions` is advisory**, recorded and never compared; it must not gate
-  application.
+- **`versions` is a shared `VersionRange`**, also used by patches and quirks.
+  Bounds are inclusive; omitted bounds are open. `regenerate` warns when the
+  parsed version falls outside them, and never gates application.
 - **Deterministic, not idempotent.** Correcting already-corrected input fails
   every `expect`, which is what keeps "already corrected" distinguishable
   from "fixed upstream". The layer consumes raw files only.
