@@ -2,7 +2,6 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
-from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Correction(
@@ -15,7 +14,7 @@ CORRECTIONS = [
         " table 7.4.1/1 and both message ABNFs spell it"
         " 'Periodic-LDR-Information' at the same code 2540; Wireshark's"
         " dictionary and mensonen/diameter both use the longer name",
-        versions=VersionRange.exact("18.1.0"),
+        versions="18.1.0",
     ),
     Correction(
         id="plr-supported-gad-shapes",
@@ -27,7 +26,7 @@ CORRECTIONS = [
         " prefix the name with LCS-; clause 7.4.12's heading and prose, table"
         " 7.4.1-1 and Wireshark's dictionary all define the AVP at code 2510"
         " as Supported-GAD-Shapes",
-        versions=VersionRange.exact("18.1.0"),
+        versions="18.1.0",
     ),
     Correction(
         id="area-identification-type",
@@ -39,6 +38,6 @@ CORRECTIONS = [
         " Area-Identification AVP as of type OctetString and lays out its"
         " octets; no grouped ABNF exists, and Wireshark's dictionary reads"
         " the clause the same way",
-        versions=VersionRange.exact("18.1.0"),
+        versions="18.1.0",
     ),
 ]

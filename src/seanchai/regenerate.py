@@ -28,6 +28,7 @@ from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
 from .extractor import rfc_text, tgpp_docx
 from .extractor.errors import ExtractionError
+from .versions import VersionRange
 
 Status = Literal["unchanged", "changed", "new", "failed", "not-in-manifest"]
 
@@ -191,7 +192,10 @@ def _produce(
     raw_text = formatter.format_spec(spec)
     declared = corrections.load(corrections_dir, spec.specification)
     for edit in declared:
-        if warning := edit.versions.warning(spec.version, f"correction {edit.cited}"):
+        # `__post_init__` parsed the declared string; the annotation still
+        # admits it, so parse again (a no-op) to satisfy the type.
+        versions = VersionRange.parse(edit.versions)
+        if warning := versions.warning(spec.version, f"correction {edit.cited}"):
             warnings.append(warning)
     if declared:
         spec, results = corrections.apply(spec, declared)

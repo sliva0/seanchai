@@ -7,7 +7,6 @@ from seanchai.dad.corrections import (
     reused_row,
     table_row,
 )
-from seanchai.versions import VersionRange
 
 # Eight grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
 # table 5.3.0.1 marks the V flag mandatory for every one of them, exactly the
@@ -51,7 +50,7 @@ CORRECTIONS = (
             reason=f"clause {section}'s AVP header omits the vendor-id; the AVP"
             " table marks the V flag mandatory for it, as for every other AVP"
             " the specification defines",
-            versions=VersionRange.exact("18.2.0"),
+            versions="18.2.0",
         )
         for name, section in _VENDORLESS
     ]
@@ -64,7 +63,7 @@ CORRECTIONS = (
             replace=right,
             reason=f"the clause {section} re-used table spells the AVP 'Ipv6';"
             " TS 29.061, which defines it, spells 'IPv6' throughout",
-            versions=VersionRange.exact("18.2.0"),
+            versions="18.2.0",
         )
         for wrong, right in _IPV6
         for section in ("5.4.0", "5b.4.0")
@@ -78,7 +77,7 @@ CORRECTIONS = (
             replace=dict(_IPV6)[wrong],
             reason=f"clause {section}'s ABNF repeats the document's 'Ipv6'"
             " spelling; TS 29.061, which defines the AVP, spells 'IPv6'",
-            versions=VersionRange.exact("18.2.0"),
+            versions="18.2.0",
         )
         for parent, section, wrong in _IPV6_RULES
     ]
@@ -93,7 +92,7 @@ CORRECTIONS += [
         replace="Framed-IPv6-Prefix",
         reason=f"the clause {section} re-used table lower-cases the 'v';"
         " RFC 4005, which defines the AVP, spells 'IPv6'",
-        versions=VersionRange.exact("18.2.0"),
+        versions="18.2.0",
     )
     for section in ("5.4.0", "5a.4.0", "5b.4.0", "5c.4.1")
 ]
@@ -107,7 +106,7 @@ CORRECTIONS += [
         replace="Framed-IPv6-Prefix",
         reason=f"clause {section}'s ABNF repeats the document's 'Ipv6'"
         " spelling; RFC 4005, which defines the AVP, spells 'IPv6'",
-        versions=VersionRange.exact("18.2.0"),
+        versions="18.2.0",
     )
     for parent, section in (
         ("CC-Request", "5.6.2"),
@@ -129,6 +128,6 @@ CORRECTIONS += [
         " E.6.3.2's heading and prose, and the E.6.6.2/E.6.3.6 ABNFs, all"
         " write CS-Service-QoS-Request-Identifier, matching every sibling"
         " CS-Service-QoS-* AVP in the same table",
-        versions=VersionRange.exact("18.2.0"),
+        versions="18.2.0",
     ),
 ]

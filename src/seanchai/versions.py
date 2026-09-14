@@ -34,6 +34,17 @@ class VersionRange:
         """A declaration reviewed against one version."""
         return cls(version, version)
 
+    @classmethod
+    def parse(cls, text: str | VersionRange) -> VersionRange:
+        """`"18.6.0"` for one version, `"18.0.0..18.2.0"` for a range, either
+        bound `*` for open — the spelling `__str__` produces."""
+        if isinstance(text, VersionRange):
+            return text
+        first, dots, last = text.partition("..")
+        if not dots:
+            return cls.exact(text)
+        return cls(None if first == "*" else first, None if last == "*" else last)
+
     def covers(self, version: str) -> bool:
         """Compare numeric components, including both endpoints."""
         parsed = _parts(version)

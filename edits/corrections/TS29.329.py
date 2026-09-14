@@ -2,7 +2,6 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import Delete, table_row
-from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Delete(
@@ -22,6 +21,6 @@ CORRECTIONS = [
         " this document's AVP: clause 6.3.35 says it is defined in RFC 8583,"
         " and table 6.3/2 already lists it as re-used from there — the"
         " code-less table row is the same fact printed in the wrong table",
-        versions=VersionRange.exact("18.0.0"),
+        versions="18.0.0",
     ),
 ]

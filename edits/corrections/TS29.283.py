@@ -2,7 +2,6 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import Correction, Delete, reused_row
-from seanchai.versions import VersionRange
 
 CORRECTIONS = [
     Delete(
@@ -13,7 +12,7 @@ CORRECTIONS = [
         " defines nor tabulates any such AVP in any version; the Supported-"
         "Features mechanism's real AVPs (Feature-List-ID, Feature-List) are"
         " already listed on the adjacent rows",
-        versions=VersionRange.exact("18.0.0"),
+        versions="18.0.0",
     ),
     Correction(
         id="drmp-origin-rfc",
@@ -23,6 +22,6 @@ CORRECTIONS = [
         replace="RFC7944",
         reason="RFC 7844 is about DHCP anonymity and defines no DRMP AVP;"
         " RFC 7944 defines DRMP with code 301",
-        versions=VersionRange.exact("18.0.0"),
+        versions="18.0.0",
     ),
 ]

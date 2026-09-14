@@ -8,7 +8,6 @@ from seanchai.dad.corrections import (
     enum_value,
     reused_row,
 )
-from seanchai.versions import VersionRange
 
 # Ten grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
 # table 5.3.0.1 marks the V flag mandatory for every one of them, exactly the
@@ -36,7 +35,7 @@ CORRECTIONS = [
         reason=f"clause {section}'s AVP header omits the vendor-id; table"
         " 5.3.0.1 marks the V flag mandatory for it, as for every other AVP"
         " the specification defines",
-        versions=VersionRange.exact("18.4.0"),
+        versions="18.4.0",
     )
     for name, section in _VENDORLESS
 ] + [
@@ -47,7 +46,7 @@ CORRECTIONS = [
         reason="clause 5.3.13 prints 'Void' as the label of values 0 and 5 —"
         " a 3GPP editorial placeholder for removed values, not an enumerated"
         " value a dictionary can carry, and one name cannot label two values",
-        versions=VersionRange.exact("18.4.0"),
+        versions="18.4.0",
     )
     for value in (0, 5)
 ]
@@ -61,6 +60,6 @@ CORRECTIONS += [
         replace="Framed-IPv6-Prefix",
         reason="table 5.4.0.1 lower-cases the 'v'; RFC 4005, which defines"
         " the AVP, spells 'IPv6'",
-        versions=VersionRange.exact("18.4.0"),
+        versions="18.4.0",
     )
 ]

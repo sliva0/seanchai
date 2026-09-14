@@ -11,19 +11,21 @@ def test_every_committed_dad_file_round_trips_exactly(path):
     """A corrected file is canonical output *plus* `;;` notes, which the parser
     discards — so the invariant is against the file with its notes stripped."""
     text = path.read_text()
-    canonical = "\n".join(
-        line.split(" ;; ")[0]
-        for line in text.splitlines()
-        if not line.lstrip().startswith(";;")
-    )
-    # A deleted section's note is a block of its own, spaced like a section —
-    # removing its line leaves both neighbours' separators behind, so the
-    # doubled gap collapses back to the canonical two blank lines.
-    # A deleted final section also leaves its preceding separator at EOF.
-    canonical = canonical.replace("\n" * 5, "\n" * 3)
+    # A deleted section's note is a block of its own, so blocks left with
+    # nothing but notes go entirely; a trailing note leaves its line.
+    blocks = []
+    for block in text.split("\n\n\n"):
+        lines = [
+            line.split(" ;; ")[0]
+            for line in block.splitlines()
+            if not line.lstrip().startswith(";;")
+        ]
+        if lines:
+            blocks.append("\n".join(lines))
+    canonical = "\n\n\n".join(blocks).rstrip("\n") + "\n"
     spec = parser.parse(text)
 
-    assert formatter.format_spec(spec) == canonical.rstrip("\n") + "\n"
+    assert formatter.format_spec(spec) == canonical
     assert parser.parse(formatter.format_spec(spec)) == spec
 
 

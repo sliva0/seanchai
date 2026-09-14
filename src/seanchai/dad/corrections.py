@@ -17,7 +17,7 @@ Corrections are declared per specification, as data:
             replace=16777308,
             reason="clause 7.2.2 assigns the VCSG commands to S7a/S7d;"
             " the command header omits the id",
-            versions=VersionRange.exact("18.6.0"),
+            versions="18.6.0",
         ),
     ]
 
@@ -38,7 +38,6 @@ import importlib.util
 import re
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
-from dataclasses import field as dataclass_field
 from pathlib import Path
 from typing import Any
 
@@ -328,12 +327,15 @@ class Correction:
     expect: Any
     replace: Any
     reason: str
-    versions: VersionRange = dataclass_field(default_factory=VersionRange)
+    # "18.6.0" or "18.0.0..18.2.0": the versions this was reviewed against.
+    # Advisory: `regenerate` warns when the parsed version is outside it.
+    versions: str | VersionRange = "*..*"
     # The module file that declared this edit, stamped by `load()`.
     origin: str = ""
 
     def __post_init__(self) -> None:
         _check_id(self.id)
+        object.__setattr__(self, "versions", VersionRange.parse(self.versions))
         if self.expect == self.replace:
             raise CorrectionError(
                 f"{self.target.describe()}: {self.field} correction replaces"
@@ -363,11 +365,12 @@ class Delete:
     target: Selector
     expect: ast.Node
     reason: str
-    versions: VersionRange = dataclass_field(default_factory=VersionRange)
+    versions: str | VersionRange = "*..*"
     origin: str = ""
 
     def __post_init__(self) -> None:
         _check_id(self.id)
+        object.__setattr__(self, "versions", VersionRange.parse(self.versions))
 
     @property
     def cited(self) -> str:
@@ -392,11 +395,12 @@ class Insert:
     node: ast.AvpTableRow | ast.ReusedAvpRow
     after: str | None
     reason: str
-    versions: VersionRange = dataclass_field(default_factory=VersionRange)
+    versions: str | VersionRange = "*..*"
     origin: str = ""
 
     def __post_init__(self) -> None:
         _check_id(self.id)
+        object.__setattr__(self, "versions", VersionRange.parse(self.versions))
 
     @property
     def cited(self) -> str:
