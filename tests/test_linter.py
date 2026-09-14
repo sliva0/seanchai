@@ -144,7 +144,7 @@ _RAW_ERRORS = {
         "vendor-id-mismatch",
     ],
     "29344-i10.raw.dad": ["one-name-two-commands", "one-name-two-commands"],
-    "29388-i00.raw.dad": [
+    "29388-i10.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
         "table-definition-mismatch",
@@ -213,7 +213,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29337-i00": 2,
         "29338-i20.raw": 3,
         "29338-i20": 4,
-        "29388-i00": 1,
+        "29388-i10": 1,
     }
     stem = path.name.removesuffix(".dad")
 
@@ -554,7 +554,7 @@ _STANDING_CORPUS_NOTES = {
         "origin-not-in-corpus": ["TS29.273, TS32.299"],
         "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
-    "29388-i00.dad": {
+    "29388-i10.dad": {
         "reused-body-differs": ["V2X-Subscription-Data"],
     },
     "29389-i00.dad": {

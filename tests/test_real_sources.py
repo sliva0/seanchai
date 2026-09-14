@@ -5,11 +5,12 @@ produced it and compared byte-for-byte. This is the test that catches an
 extractor change which is fine on the synthetic fixture and wrong on the real
 documents.
 
-The sources live under the git-ignored `specifications/` (fetched by
-`seanchai download`; hand-fetched docx/PDF pairs under `specifications/manual/`).
-A missing source is a failure, not a skip: a suite that silently skipped its
-strongest check would look green for the wrong reason. Run
-`pytest -m "not sources"` to leave these out deliberately.
+The sources live under the git-ignored `specifications/`, exactly where
+`seanchai download` puts them: `3gpp/<release>/TS_<number>/<stem>.docx`,
+`3gpp/<release>/PDF/` and `rfc/`. A missing source is a failure, not a
+skip: a suite that silently skipped its strongest check would look green for
+the wrong reason. Run `pytest -m "not sources"` to leave these out
+deliberately.
 """
 
 from pathlib import Path
@@ -20,9 +21,16 @@ from seanchai.dad import corrections, formatter, parser
 from seanchai.extractor import rfc_text, tgpp_docx
 
 _ROOT = Path(__file__).parent.parent
-_MANUAL = _ROOT / "specifications" / "manual"
-_RFC_TEXTS = _ROOT / "specifications" / "rfc"
+_SPECIFICATIONS = _ROOT / "specifications"
+_RFC_TEXTS = _SPECIFICATIONS / "rfc"
 _SOURCES = _ROOT / "edits" / "sources"
+
+
+def _downloaded(directory: str, name: str) -> Path:
+    """Where the downloader put `name`, under any release; the expected path
+    when it is absent, so the failure names the file."""
+    found = sorted((_SPECIFICATIONS / "3gpp").glob(f"*/{directory}/{name}"))
+    return found[0] if found else _SPECIFICATIONS / "3gpp" / directory / name
 
 
 def _cases():
@@ -32,10 +40,6 @@ def _cases():
     Both kinds are covered. `.raw.dad` pins the extractor alone; `.dad` pins
     the extractor plus the correction layer, which is also what re-checks that
     every `expect` still matches freshly extracted output.
-
-    A file with no `; Link:` is pinned without pages: TS 29.388's docx is
-    18.1.0 while ETSI publishes only an 18.0.0 PDF, and page numbers from the
-    wrong version are worse than none, so that file carries neither.
     """
     committed = sorted((_ROOT / "dad").rglob("*.dad"))
     assert committed, "no committed .dad files found — this test would pass vacuously"
@@ -51,8 +55,8 @@ def _cases():
             source = _RFC_TEXTS / f"{stem}.txt"
             pdf = None
         else:
-            source = _MANUAL / f"{stem}.docx"
-            pdf = _MANUAL / Path(link).name if link is not None else None
+            source = _downloaded("TS_*", f"{stem}.docx")
+            pdf = _downloaded("PDF", Path(link).name) if link is not None else None
         yield pytest.param(path, source, pdf, link, raw, id=path.name)
 
 
