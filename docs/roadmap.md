@@ -55,6 +55,9 @@ letter is not reused. What exists is described in the per-module documents.
   29.343, 29.368, 29.468, 32.299 and TR 29.909 ship as binary `.doc`. 32.299
   is an unresolved origin in six files, 29.368 in two. TS 29.154 is cited
   and not in the catalog at all.
+- **P. RFCs 5580, 6734 and 6942**, cited by TS 29.273 and not in the
+  catalog. Plain text like every other RFC, so adding them is catalog entries
+  plus `regenerate --add`; each clears an unresolved origin.
 - **L. Downloader: read the 3GPP archive throughout**, not only for the
   PDF-matched fallback, so every old version stays available for raw-vs-raw
   diffs; derive the ETSI `Link:` URL (needs the edition suffix, probably by

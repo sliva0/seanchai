@@ -54,12 +54,11 @@ last_version = "18.6.0"
 
 `find` must be non-empty (`str.replace("")` inserts between every character
 and still "applies" the declared number of times). A count mismatch raises
-`PatchError` naming the version range. The bounds load into
-`seanchai.versions.VersionRange`, shared with
-corrections: inclusive numeric bounds, with omitted bounds open and trailing
-zero components equivalent. A version outside the range warns under its
-specification during regeneration; it never gates application. RFCs have no
-version to compare.
+`PatchError` naming the version range. The bounds are inclusive, an omitted
+bound is open, and trailing zero components are equivalent; corrections
+declare the same range as one string (`"18.6.0"`, `"18.0.0..18.2.0"`). A
+version outside the range warns under its specification during regeneration
+and never gates application. RFCs have no version to compare.
 
 ### Quirks
 

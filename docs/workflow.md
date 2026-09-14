@@ -21,7 +21,7 @@ and fails on anything but `unchanged`.
 
 ## Adding a specification
 
-1. `uv run seanchai regenerate --add TS29.273`. The document must be in the
+1. `uv run seanchai regenerate --add TS29.305`. The document must be in the
    downloader's catalog (`src/seanchai/downloader/specs.toml`) and readable
    by the extractor; a `.doc` archive or a shape it rejects fails with the
    reason.
