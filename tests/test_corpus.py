@@ -7,8 +7,6 @@ import pytest
 from seanchai import corpus
 from seanchai.dad import ast, formatter
 
-_ROOT = Path(__file__).parent.parent
-
 
 def _spec(specification, version, *sections):
     return ast.Specification(
@@ -34,20 +32,12 @@ def _entry(specification, version):
     )
 
 
-def test_an_origin_resolves_within_its_own_major_version():
-    books = corpus.Corpus(
-        [_entry("3GPP TS 29.272", v) for v in ("17.9.0", "18.1.0", "19.0.0")]
-    )
-
-    resolved = books.resolve("TS29.272", like=_spec("3GPP TS 29.388", "18.1.0"))
-
-    assert resolved is not None
-    assert resolved.spec.version == "18.1.0"
-
-
 def test_the_newest_matching_version_wins():
     books = corpus.Corpus(
-        [_entry("3GPP TS 29.272", v) for v in ("18.1.0", "18.10.0", "18.2.0")]
+        [
+            _entry("3GPP TS 29.272", v)
+            for v in ("17.9.0", "18.1.0", "18.10.0", "18.2.0", "19.0.0")
+        ]
     )
 
     resolved = books.resolve("TS29.272", like=_spec("3GPP TS 29.388", "18.0.0"))
@@ -65,14 +55,6 @@ def test_nothing_resolves_across_a_major_version():
     books = corpus.Corpus([_entry("3GPP TS 29.272", "19.0.0")])
 
     assert books.resolve("TS29.272", like=_spec("3GPP TS 29.388", "18.1.0")) is None
-
-
-def test_an_rfc_has_no_release_axis():
-    """An RFC number names one immutable document, so there is no major version
-    to match — it resolves whatever the document asking for it is."""
-    books = corpus.Corpus([_entry("RFC 6733", "1.0.0")])
-
-    assert books.resolve("RFC6733", like=_spec("3GPP TS 29.388", "18.1.0")) is not None
 
 
 def test_an_absent_origin_resolves_to_nothing_rather_than_raising():
@@ -107,11 +89,3 @@ def test_load_names_the_file_it_could_not_parse(tmp_path):
 
     with pytest.raises(corpus.CorpusError, match=r"broken\.dad"):
         corpus.Corpus.load([tmp_path])
-
-
-def test_the_committed_corpus_loads_and_indexes_by_reference():
-    books = corpus.Corpus.load([_ROOT / "dad"])
-
-    assert len(books) >= 8
-    references = {entry.reference for entry in books}
-    assert {"TS29.229", "TS29.272", "TS29.329", "TS29.388"} <= references

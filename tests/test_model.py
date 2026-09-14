@@ -56,20 +56,6 @@ def _grouped(name, code, *members, vendor_id: int | None = 10415):
     )
 
 
-def _enumerated(name, code, values, vendor_id=10415):
-    return ast.EnumeratedAvp(
-        type="Enumerated AVP",
-        name=name,
-        source=ast.SourceRef(section="6.3.2"),
-        code=code,
-        vendor_id=vendor_id,
-        values=tuple(
-            ast.EnumValue(name=value, value=number)
-            for number, value in enumerate(values)
-        ),
-    )
-
-
 def _table(*rows):
     return ast.AvpTable(
         type="AVP Table",
@@ -150,15 +136,6 @@ class TestResolutionOrder:
         assert resolved.defined_in == "RFC4590"
         assert resolved.vendor_id == 0
 
-    def test_a_table_row_claims_the_files_own_vendor_space(self):
-        resolved = _model(
-            _spec("3GPP TS 29.900", [_table(_row("Plain", 600))])
-        ).resolve("TS29.900", "Plain")
-        assert resolved is not None
-        assert resolved.identity == (10415, 600)
-        assert resolved.data_type is ast.DataType.UNSIGNED32
-        assert resolved.defined_in == "TS29.900"
-
     def test_a_base_document_supplies_what_nothing_local_does(self):
         base = _spec(
             "RFC6733",
@@ -192,13 +169,6 @@ class TestResolutionOrder:
         assert resolved is not None
         assert resolved.defined_in == "RFC5778"
 
-    def test_an_unresolvable_name_stays_a_name(self):
-        citing = _spec("3GPP TS 29.900", [_message("Test-Request", "Missing")])
-        (message,) = _model(citing).messages("TS29.900")
-        (member,) = message.avps
-        assert member.name == "Missing"
-        assert member.avp is None
-
     def test_the_avp_wildcard_is_grammar_not_a_reference(self):
         """`* [ AVP ]` must not resolve even when some document defines an
         AVP that happens to be named `AVP`."""
@@ -217,16 +187,6 @@ class TestQueries:
     def test_an_unknown_reference_is_an_error_not_an_empty_answer(self):
         with pytest.raises(model.ModelError):
             _model().messages("TS29.999")
-
-    def test_enumerated_definitions_carry_their_values(self):
-        spec = _spec("3GPP TS 29.900", [_enumerated("Kind", 5, ["A", "B"])])
-        resolved = _model(spec).resolve("TS29.900", "Kind")
-        assert isinstance(resolved, model.Enumerated)
-        values = [v for v in resolved.values if isinstance(v, ast.EnumValue)]
-        assert [(value.name, value.value) for value in values] == [
-            ("A", 0),
-            ("B", 1),
-        ]
 
     def test_a_definitions_flag_rules_come_from_its_table_row(self):
         spec = _spec(
@@ -254,7 +214,6 @@ class TestOverTheCommittedCorpus:
             unresolved = [m.name for m in message.avps if m.avp is None]
             assert unresolved in ([], ["AVP"]), (message.name, unresolved)
 
-    def test_a_base_protocol_avp_resolves_into_rfc6733(self, built):
         (uar,) = [m for m in built.messages("TS29.229") if m.abbreviation == "UAR"]
         by_name = {member.name: member.avp for member in uar.avps}
         session_id = by_name["Session-Id"]

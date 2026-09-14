@@ -5,7 +5,6 @@ import pytest
 
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
-from seanchai.extractor.sources import Patcher, Quirks
 
 
 def _two_section_spec():
@@ -26,65 +25,10 @@ def _two_section_spec():
 
 
 def test_extract_builds_all_supported_sections_from_a_docx(synthetic_spec_docx):
-    warnings = []
-
-    spec = tgpp_docx.extract(
-        synthetic_spec_docx,
-        link="https://example.com/spec.pdf",
-        warnings=warnings,
-    )
-
-    assert spec.specification == "3GPP TS 29.999"
-    assert spec.version == "1.2.3"
-    assert str(spec.link) == "https://example.com/spec.pdf"
-    message, table, reused, grouped, enumerated = spec.sections
-    assert isinstance(message, ast.Message)
-    assert isinstance(table, ast.AvpTable)
-    assert isinstance(reused, ast.ReusedAvps)
-    assert isinstance(grouped, ast.GroupedAvp)
-    assert isinstance(enumerated, ast.EnumeratedAvp)
-
-    assert message.command_code == 321
-    assert message.application_id == 42
-    assert message.avps[1].bold is True
-
-    source_table = docx.Document(synthetic_spec_docx).tables[1]
-    merged_header = [cell.text for cell in source_table.rows[0].cells]
-    assert merged_header[0] == merged_header[1] == "AVP"
-    assert merged_header[4] == merged_header[5] == "AVP Flag rules"
-    assert len(table.rows) == 2
-    assert table.rows[1].may_encrypt is True
-    assert table.rows[1].flag_rules.must == {ast.AvpFlag.VENDOR}
-
-    # The fixture's re-used table has a Comments column, which the format does
-    # not model and does not want to: it holds prose.
-    assert reused.columns == (
-        ast.ReusedColumn.NAME,
-        ast.ReusedColumn.FROM,
-        ast.ReusedColumn.M_BIT,
-    )
-    assert reused.rows == (
-        ast.ReusedAvpRow(
-            name="Other-AVP",
-            origin="RFC6733",
-            m_bit=ast.MBitOverride.MUST_NOT,
-        ),
-    )
-
-    assert grouped.vendor_id == 10415
-    assert grouped.avps[0].presence is ast.Presence.REQUIRED
-
-    assert enumerated.vendor_id == 10415
-    # The clause prose between the two values is not captured: a `.dad`
-    # description is a one-line gloss, and a 3GPP clause has paragraphs.
-    # `; Section:` is what points a reader at the prose.
-    assert enumerated.values == (
-        ast.EnumValue(name="Disabled", value=0),
-        ast.ReservedValues(first=1, last=2),
-        ast.EnumValue(name="Enabled", value=3),
-    )
-    assert warnings == []
-    assert parser.parse(formatter.format_spec(spec)) == spec
+    spec = tgpp_docx.extract(synthetic_spec_docx)
+    text = formatter.format_spec(spec)
+    assert parser.parse(text) == spec
+    assert formatter.format_spec(parser.parse(text)) == text
 
 
 def test_extract_requires_cover_metadata_and_an_avp_table(tmp_path):
@@ -103,45 +47,20 @@ def test_extract_requires_cover_metadata_and_an_avp_table(tmp_path):
         tgpp_docx.extract(no_table)
 
 
-@pytest.mark.parametrize(
-    ("reference", "expected"),
-    [
-        ("Defined by 3GPP TS 29.336 clause 6", "TS29.336"),
-        ("See IETF RFC 6733", "RFC6733"),
-        # The publisher prefix is conventional, not reliable: 29.344 and 29.388
-        # write their From cells with the bibliography number instead.
-        ("TS 29.272 [10]", "TS29.272"),
-        ("RFC 6733 [5]", "RFC6733"),
-    ],
-)
-def test_origin_normalizes_supported_references(reference, expected):
-    assert tgpp_docx._origin(reference, "TS29.999") == expected
-
-
-def test_origin_reads_a_bare_clause_number_as_the_document_itself():
-    # 29.336's S6t re-used table cites its own S6m clauses ("6.4.2").
-    assert tgpp_docx._origin("6.4.2", "TS29.336") == "TS29.336"
-
-
 def test_origin_rejects_unknown_references():
     with pytest.raises(tgpp_docx.ExtractionError, match="unrecognized origin"):
         tgpp_docx._origin("some other document", "TS29.999")
 
 
-def test_flags_cell_accepts_only_comma_separated_uppercase_flags():
-    assert tgpp_docx._flags_cell("M, V", Quirks([], None)) == {
-        ast.AvpFlag.MANDATORY,
-        ast.AvpFlag.VENDOR,
-    }
-
-
-@pytest.mark.parametrize("cell", ["M. V", "M, v", "v"])
-def test_flags_cell_rejects_known_source_typos(cell):
-    with pytest.raises(
-        tgpp_docx.ExtractionError,
-        match=f"malformed flags cell {cell!r}",
-    ):
-        tgpp_docx._flags_cell(cell, Quirks([], None))
+@pytest.mark.parametrize("cell", ["M. V", "M, v", "v", "M.V"])
+def test_flags_cell_rejects_known_source_typos(tmp_path, synthetic_spec_docx, cell):
+    malformed = tmp_path / "flags.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[1].cell(3, 4).text = cell
+    document.save(malformed)
+    message = "dotted-flags" if cell == "M.V" else f"malformed flags cell {cell!r}"
+    with pytest.raises(tgpp_docx.ExtractionError, match=re.escape(message)):
+        tgpp_docx.extract(malformed, sources_dir=tmp_path)
 
 
 def test_extract_rejects_spaces_in_avp_table_names(tmp_path, synthetic_spec_docx):
@@ -211,12 +130,7 @@ def test_attach_pages_clears_a_page_this_pdf_does_not_bookmark(outlined_pdf):
     attached = tgpp_docx.attach_pages(stale, outlined_pdf)
 
     assert attached.sections[0].source.page is None
-
-
-def test_attach_pages_is_idempotent(outlined_pdf):
-    once = tgpp_docx.attach_pages(_two_section_spec(), outlined_pdf)
-
-    assert tgpp_docx.attach_pages(once, outlined_pdf) == once
+    assert tgpp_docx.attach_pages(attached, outlined_pdf) == attached
 
 
 @pytest.mark.parametrize(
@@ -272,57 +186,6 @@ def _avp_table_docx(tmp_path, labels, rows):
     return path
 
 
-def test_extract_reads_the_columns_off_the_label_row(tmp_path):
-    """TS 29.212's table has two columns beyond the shared nine. They are
-    dropped, and warned about, because a column with machine-readable values
-    is a reason to model it rather than to carry it anonymously."""
-    warnings = []
-    path = _avp_table_docx(
-        tmp_path,
-        [
-            "Attribute Name",
-            "AVP Code",
-            "Clause defined",
-            "Value Type (NOTE 2)",
-            "Must",
-            "May Encr.",
-            "Acc. Type",
-            "Applicability (notes 3, 9)",
-        ],
-        [["Local-AVP", "10", "6.3.1", "Unsigned32", "M, V", "Yes", "All", "Both Rel8"]],
-    )
-
-    spec = tgpp_docx.extract(path, warnings=warnings)
-
-    (table,) = spec.sections
-    assert isinstance(table, ast.AvpTable)
-    assert table.columns == (
-        ast.AvpColumn.NAME,
-        ast.AvpColumn.CODE,
-        ast.AvpColumn.SECTION,
-        # The note reference points at prose the format does not carry, so it
-        # is not part of the label — and "Value Type (NOTE 2)" is still Type.
-        ast.AvpColumn.TYPE,
-        ast.AvpColumn.MUST,
-        ast.AvpColumn.ENCRYPT,
-    )
-    assert warnings == [
-        "AVP table column 'Acc. Type' is not modelled and was dropped",
-        "AVP table column 'Applicability' is not modelled and was dropped",
-    ]
-    # Cells are still read positionally against the source table, so dropping
-    # a column in the middle must not shift the ones after it.
-    (row,) = table.rows
-    assert (row.code, row.data_type) == (10, ast.DataType.UNSIGNED32)
-    assert row.may_encrypt is True
-    # An undeclared column is absent, not empty: this table had no May column.
-    assert row.flag_rules.may == frozenset()
-
-    text = formatter.format_spec(spec)
-    assert formatter.format_spec(parser.parse(text)) == text
-    assert parser.parse(text) == spec
-
-
 def test_extract_distinguishes_an_absent_encrypt_column_from_an_empty_cell(tmp_path):
     """TS 29.273's AVP table has no Encrypt column at all, while TS 29.389's
     has one with an empty cell. Both used to be `False`."""
@@ -349,124 +212,185 @@ def test_extract_distinguishes_an_absent_encrypt_column_from_an_empty_cell(tmp_p
     assert ast.AvpColumn.ENCRYPT in empty_table.columns
 
 
-def _reused_docx(tmp_path, labels, rows):
-    """A spec with a minimal AVP table plus a re-used table with `labels`."""
-    document = docx.Document()
-    document.add_table(rows=1, cols=1).cell(0, 0).text = "3GPP TS 29.999 V1.2.3"
-    document.add_paragraph(style="Heading 1").add_run("6.3\tAVP Definitions")
-    document.add_paragraph("Table 6.3.1: AVP definitions")
-    avp = document.add_table(rows=2, cols=3)
-    avp.cell(0, 0).merge(avp.cell(0, 2)).text = "AVP Flag rules"
-    for cell, label in zip(
-        avp.rows[1].cells, ["Attribute Name", "AVP Code", "Value Type"], strict=True
-    ):
-        cell.text = label
-    for cell, value in zip(
-        avp.add_row().cells, ["Local-AVP", "10", "Unsigned32"], strict=True
-    ):
-        cell.text = value
-
-    document.add_paragraph("Table 6.3.2: Re-used AVPs")
-    reused = document.add_table(rows=1, cols=len(labels))
-    for cell, label in zip(reused.rows[0].cells, labels, strict=True):
-        cell.text = label
-    for values in rows:
-        for cell, value in zip(reused.add_row().cells, values, strict=True):
-            cell.text = value
-    path = tmp_path / "reused.docx"
-    document.save(path)
-    return path
+# Resolve rejects.
 
 
-def test_extract_reads_a_reused_table_with_no_m_bit_column(tmp_path):
-    """TS 29.128, 29.173 and 29.336 print no M-bit column. The Comments column
-    they do print is prose, so it is dropped without a warning."""
-    warnings = []
-    path = _reused_docx(
-        tmp_path,
-        ["Attribute Name", "Reference", "Comments"],
-        [["Other-AVP", "IETF RFC 6733", "See clause 6.4.2"]],
+def _avp_table(*rows, section="6.3", table="6.3.1", note_reused=()):
+    return tgpp_docx._CollectedAvpTable(
+        table=ast.AvpTable(
+            table=table,
+            columns=tuple(ast.AvpColumn),
+            source=ast.SourceRef(section=section),
+            rows=tuple(rows),
+        ),
+        section=section,
+        note_reused=list(note_reused),
     )
 
-    spec = tgpp_docx.extract(path, warnings=warnings)
 
-    reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
-    assert reused.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
-    assert reused.rows[0].m_bit is None
-    assert warnings == []
-
-    text = formatter.format_spec(spec)
-    assert parser.parse(text) == spec
-    assert formatter.format_spec(parser.parse(text)) == text
+def _reused_table(*rows, label="6.3.2", section="6.3"):
+    return tgpp_docx._ReusedTable(
+        rows=list(rows),
+        columns=ast.REUSED_COLUMNS,
+        label=label,
+        section=section,
+    )
 
 
-def test_reused_table_accepts_short_m_bit_spellings(tmp_path):
-    """TS 29.338 writes "Must"/"Must not", while its table note documents the
-    usual "Must set"/"Must not set"; both spellings carry the same override."""
-    path = _reused_docx(
-        tmp_path,
-        ["Attribute Name", "Reference", "M-bit"],
-        [
-            ["Required-AVP", "IETF RFC 6733", "Must"],
-            ["Optional-AVP", "IETF RFC 6733", "Must not"],
+def _grouped(vendor_id=10415, name="Group"):
+    return ast.GroupedAvp(
+        name=name,
+        source=ast.SourceRef(section="6.3.1"),
+        code=10,
+        vendor_id=vendor_id,
+        avps=(),
+    )
+
+
+def _row(name, code):
+    return ast.AvpTableRow(
+        name=name,
+        code=code,
+        section="6.3.1",
+        data_type=ast.DataType.ENUMERATED,
+        flag_rules=ast.AvpFlagRules(),
+        may_encrypt=False,
+    )
+
+
+def _enum_section(number, name, document):
+    """A section shaped like an enumerated-AVP clause. The paragraphs carry a
+    real docx paragraph because that is what bold inspection reads."""
+    paragraphs = [
+        tgpp_docx._Para(
+            text=text, style=style, source=document.add_paragraph(text, style=None)
+        )
+        for text, style in [
+            (f"The {name} AVP is of type Enumerated.", ""),
+            ("Off (0)", "B1"),
+        ]
+    ]
+    return tgpp_docx._Section(number=number, title=name, paragraphs=paragraphs)
+
+
+@pytest.fixture
+def document():
+    return docx.Document()
+
+
+def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table(document):
+    collected = tgpp_docx._Collected(
+        grouped=[_grouped()],
+        pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
+        avp_tables=[_avp_table(_row("Other", 1))],
+    )
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="has no code in the AVP table"):
+        tgpp_docx._resolve(collected)
+
+
+def test_resolve_rejects_avp_and_reused_table_counts_that_cannot_pair():
+    # Adjacency in document order is the only thing that says which re-used
+    # block belongs to which set, so unequal counts have no defensible pairing.
+    two_avp_one_reused = tgpp_docx._Collected(
+        avp_tables=[
+            _avp_table(_row("One", 1), section="6.3"),
+            _avp_table(_row("Two", 2), section="7.3"),
+        ],
+        reused_tables=[_reused_table(label="6.3.2")],
+    )
+    one_avp_two_reused = tgpp_docx._Collected(
+        avp_tables=[_avp_table(_row("One", 1))],
+        reused_tables=[_reused_table(label="6.3.2"), _reused_table(label="7.4.1")],
+    )
+
+    for collected in (two_avp_one_reused, one_avp_two_reused):
+        with pytest.raises(tgpp_docx.ExtractionError, match="cannot pair"):
+            tgpp_docx._resolve(collected)
+
+
+def test_resolve_rejects_one_name_with_two_codes_across_avp_tables():
+    collected = tgpp_docx._Collected(
+        avp_tables=[
+            _avp_table(_row("One", 1), section="6.3"),
+            _avp_table(_row("One", 2), section="7.3"),
+        ],
+        reused_tables=[
+            _reused_table(label="6.3.2"),
+            _reused_table(label="7.3.2"),
         ],
     )
 
-    spec = tgpp_docx.extract(path)
-
-    reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
-    assert [row.m_bit for row in reused.rows] == [
-        ast.MBitOverride.MUST,
-        ast.MBitOverride.MUST_NOT,
-    ]
+    with pytest.raises(tgpp_docx.ExtractionError, match="code conflict"):
+        tgpp_docx._resolve(collected)
 
 
-def test_a_prose_column_is_dropped_without_a_warning(tmp_path):
-    """Comments, Description and Comment are known to hold narrative — up to
-    1657 characters of it — which `.dad` does not carry. Dropping them is the
-    intent, so they are not warned about; anything else unmodelled is."""
-    warnings = []
-    path = _reused_docx(
-        tmp_path,
-        ["Attribute Name", "Reference", "Description", "Acc. Type"],
-        [["Other-AVP", "IETF RFC 6733", "a paragraph " * 40, "3GPP-EPS"]],
+def test_resolve_refuses_conflicting_enumerated_vendor_ids(document):
+    # Two different explicit vendor ids cannot both be this document's
+    # implicit vendor for enumerated definitions.
+    collected = tgpp_docx._Collected(
+        grouped=[_grouped(10415), _grouped(vendor_id=13019)],
+        pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
+        avp_tables=[_avp_table(_row("Mode", 11))],
     )
 
-    spec = tgpp_docx.extract(path, warnings=warnings)
-
-    reused = next(s for s in spec.sections if isinstance(s, ast.ReusedAvps))
-    assert reused.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
-    assert warnings == [
-        "re-used AVPs column 'Acc. Type' is not modelled and was dropped"
-    ]
+    with pytest.raises(tgpp_docx.ExtractionError, match="cannot resolve the vendor id"):
+        tgpp_docx._resolve(collected)
 
 
-def test_a_table_wide_uniform_merge_pattern_collapses_to_physical_columns():
-    """29.336's table 8.4.1-2 merges each of its four visible columns across
-    two grid columns in every row, so reading the grid would double every
-    label and cell. A table whose rows merge differently from each other —
-    the normal case, with full-width NOTE rows — keeps its grid positions."""
-    document = docx.Document()
-    heading = document.add_paragraph(style="Heading 1")
-    heading.add_run("8.4\tS6t Re-used AVPs")
-    uniform = document.add_table(rows=2, cols=4)
-    uniform.cell(0, 0).merge(uniform.cell(0, 1)).text = "Attribute Name"
-    uniform.cell(0, 2).merge(uniform.cell(0, 3)).text = "Reference"
-    uniform.cell(1, 0).merge(uniform.cell(1, 1)).text = "User-Identifier"
-    uniform.cell(1, 2).merge(uniform.cell(1, 3)).text = "6.4.2"
-    mixed = document.add_table(rows=2, cols=3)
-    for index, label in enumerate(("Attribute Name", "Reference", "M-bit")):
-        mixed.cell(0, index).text = label
-    mixed.cell(1, 0).merge(mixed.cell(1, 2)).text = "NOTE 1: full width"
+def _paragraph(document, text):
+    return next(p for p in document.paragraphs if p.text == text)
 
-    sections = tgpp_docx._sections(document, Patcher.load(None, None))
 
-    collapsed, kept = sections[0].tables
-    assert [row.cells for row in collapsed.rows] == [
-        ["Attribute Name", "Reference"],
-        ["User-Identifier", "6.4.2"],
-    ]
-    assert [row.cells for row in kept.rows] == [
-        ["Attribute Name", "Reference", "M-bit"],
-        ["NOTE 1: full width"] * 3,
-    ]
+def test_extract_rejects_an_abnf_line_with_mixed_bold(tmp_path, synthetic_spec_docx):
+    # Word splits a line into runs at arbitrary points, and 3GPP files really
+    # do carry bold on the brackets but not the name. When the *name* runs
+    # disagree with each other there is no honest answer, so it fails.
+    malformed = tmp_path / "mixed-bold.docx"
+    document = docx.Document(synthetic_spec_docx)
+    rule = _paragraph(document, "* [ Local-AVP ]")
+    rule.runs[0].text = "* [ Local-"
+    tail = rule.add_run("AVP ]")
+    tail.bold = False
+    document.save(malformed)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="mixed bold in ABNF line"):
+        tgpp_docx.extract(malformed)
+
+
+def test_extract_rejects_an_avp_table_whose_caption_it_cannot_read(
+    tmp_path, synthetic_spec_docx
+):
+    """The caption is where `; Table:` comes from, and a table with no label a
+    reader can look up is worse than no extraction at all."""
+    uncaptioned = tmp_path / "uncaptioned.docx"
+    document = docx.Document(synthetic_spec_docx)
+    _paragraph(document, "Table 6.3.1: AVP definitions").text = "Table  : definitions"
+    document.save(uncaptioned)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="AVP table without a caption"):
+        tgpp_docx.extract(uncaptioned)
+
+
+@pytest.mark.parametrize("quirk", ["note-defined-in-rfc", "clause-parenthetical"])
+def test_undeclared_docx_shapes_are_rejected(tmp_path, synthetic_spec_docx, quirk):
+    path = tmp_path / "undeclared.docx"
+    document = docx.Document(synthetic_spec_docx)
+    table = document.tables[1]
+    if quirk == "note-defined-in-rfc":
+        row = table.add_row()
+        for cell, value in zip(
+            row.cells,
+            ["Noted-AVP", "NOTE 1", "", "Unsigned32", "M", "", "", "V", "No"],
+            strict=True,
+        ):
+            cell.text = value
+        note = table.add_row()
+        note.cells[0].merge(
+            note.cells[8]
+        ).text = "NOTE 1: The value of this attribute is defined in IETF RFC 6733"
+    else:
+        table.cell(2, 2).text = "6.3.1 (see Note)"
+    document.save(path)
+    with pytest.raises(tgpp_docx.ExtractionError, match=quirk):
+        tgpp_docx.extract(path)

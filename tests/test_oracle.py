@@ -10,7 +10,13 @@ from seanchai.dad import ast
 _ROOT = Path(__file__).parent.parent
 
 
-def _dictionary(tmp_path, vendor_file="<avp name='Vendor-AVP' code='700' vendor-id='TGPP'><type type-name='Unsigned32'/></avp>"):
+_VENDOR_AVP = (
+    "<avp name='Vendor-AVP' code='700' vendor-id='TGPP'>"
+    "<type type-name='Unsigned32'/></avp>"
+)
+
+
+def _dictionary(tmp_path, vendor_file=_VENDOR_AVP):
     (tmp_path / "dictionary.ent").write_text('<!ENTITY Custom "">')
     (tmp_path / "TGPP.xml").write_text(
         f"<?xml version='1.0' encoding='UTF-8'?>\n{vendor_file}"

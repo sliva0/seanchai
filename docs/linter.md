@@ -93,26 +93,25 @@ rules) is reconciled before comparing.
 
 ## Standing findings
 
-Every committed raw file's findings are pinned in `tests/test_linter.py`, so
-"the corrected corpus is clean" stays distinguishable from "the rules never
-match". What the corrected corpus still reports, and why each stays:
+Two tests in `tests/test_linter.py` pin what the committed corpus reports:
+every raw file's single-file findings, and every corrected file's cross-file
+notes. The corrected corpus has no errors; "clean" stays distinguishable from
+"the rules never match". What still reports, and why each stays:
 
-- **`reused-body-differs`** in 29.388 (`V2X-Subscription-Data`), 29.337
-  (`Serving-Node`, `Additional-Serving-Node`, whose clauses say the AVPs
-  originate in 29.173 and then print T4-specific bodies), 29.128
-  (`Terminal-Information`) and 29.272 (`ProSe-Subscription-Data`, missing two
-  of 29.344's members). Two documents describe one AVP differently and
-  neither is known to be current; correcting one would invent an agreement.
-- **`reused-origin-indirect`** for 29.172's `Service-Selection`, above.
-- **`origin-not-in-corpus`** in twelve files. Every missing origin is a
-  legacy `.doc` (TS 32.299, cited by six files; 29.368, 29.217, 29.468;
-  29.154 is not even in the catalog), TS 29.273 (a docx shape the extractor
-  cannot read yet), or outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017,
-  3GPP2 X.S0057, TS 23.329). These clear as the corpus grows.
-- **`unresolved-reference`**, five, all references to AVPs no document
-  defines, tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`,
-  `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI` (clauses 9.4–9.6; erratum 1462 renames one
-  to another undefined name, and Wireshark carries the same dead end), and
-  TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code` (clauses 6.3.53,
-  6.3.54). The rule promotes to an error when these are gone, which needs the
-  upstream documents to move.
+- **`reused-reprint`, `reused-body-differs`, `reused-origin-indirect`.** Two
+  documents describe one AVP, and only the origin's editor knows which copy is
+  current; correcting either would invent an agreement. The
+  `reused-body-differs` cases are mostly `Serving-Node`-style AVPs whose
+  clauses say they originate elsewhere and then print interface-specific
+  bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
+- **`origin-not-in-corpus`.** Every missing origin is a legacy `.doc` (TS
+  32.299, cited by six files; 29.368, 29.217, 29.468; 29.154 is not in the
+  catalog at all), TS 29.273 (a docx shape the extractor cannot read yet), or
+  outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057, TS
+  23.329). These clear as the corpus grows; see the roadmap.
+- **`unresolved-reference`**, five, all AVPs no document defines, tabulates or
+  allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI`
+  (clauses 9.4–9.6; erratum 1462 renames one to another undefined name, and
+  Wireshark carries the same dead end), and TS 29.345's `ProSe-Query-Code`
+  and `ProSe-Response-Code` (clauses 6.3.53, 6.3.54). The rule promotes to an
+  error when these are gone, which needs the upstream documents to move.

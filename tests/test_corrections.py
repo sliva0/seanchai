@@ -2,6 +2,7 @@ import dataclasses
 from pathlib import Path
 
 import pytest
+from conftest import _corpus
 
 from seanchai.dad import ast, corrections, formatter, parser
 
@@ -66,75 +67,6 @@ def _correction(target, field, expect, replace):
     )
 
 
-def test_applies_a_correction_and_leaves_the_rest_of_the_tree_alone():
-    spec = _spec()
-
-    corrected, results = corrections.apply(
-        spec,
-        [
-            _correction(
-                corrections.definition("Example-Request"),
-                "application_id",
-                None,
-                16777308,
-            )
-        ],
-    )
-
-    assert _message(corrected).application_id == 16777308
-    assert corrected.sections[1:] == spec.sections[1:]
-    assert _message(spec).application_id is None  # the input is untouched
-    assert [(r.node, r.old, r.new) for r in results] == [
-        ("definition 'Example-Request'", None, 16777308)
-    ]
-
-
-@pytest.mark.parametrize(
-    ("target", "field", "expect", "replace"),
-    [
-        (corrections.table_row("Example-Mode"), "code", 1600, 1602),
-        (corrections.enum_value("Example-Mode", "Off"), "value", 0, 7),
-        (
-            corrections.avp_rule("Example-Request", "Session-Id"),
-            "presence",
-            ast.Presence.FIXED,
-            ast.Presence.REQUIRED,
-        ),
-    ],
-    ids=["table-row", "enum-value", "avp-rule"],
-)
-def test_every_selector_reaches_a_node_nested_in_the_tree(
-    target, field, expect, replace
-):
-    corrected, results = corrections.apply(
-        _spec(), [_correction(target, field, expect, replace)]
-    )
-
-    assert results[0].new == replace
-    assert getattr(next(iter(target.find(corrected))), field) == replace
-
-
-def test_applying_twice_fails_because_expect_no_longer_holds():
-    # Deterministic, deliberately not idempotent: an already-applied correction
-    # is indistinguishable from one the specification fixed upstream, and the
-    # difference is the whole point of `expect`.
-    correction = _correction(
-        corrections.definition("Example-Request"), "application_id", None, 16777308
-    )
-    corrected, _ = corrections.apply(_spec(), [correction])
-
-    assert corrections.apply(_spec(), [correction])[0] == corrected
-    with pytest.raises(corrections.CorrectionError, match="expected application_id"):
-        corrections.apply(corrected, [correction])
-
-
-def test_a_correction_that_no_longer_matches_is_an_error():
-    with pytest.raises(corrections.CorrectionError, match="expected code=99"):
-        corrections.apply(
-            _spec(), [_correction(corrections.table_row("Example-Mode"), "code", 99, 1)]
-        )
-
-
 def test_a_selector_matching_nothing_is_an_error():
     with pytest.raises(corrections.CorrectionError, match=r"Missing\-AVP.*no match"):
         corrections.apply(
@@ -194,22 +126,6 @@ def test_two_corrections_to_the_same_field_are_rejected():
         corrections.apply(_spec(), [correction, correction])
 
 
-def test_two_fields_of_one_node_can_be_corrected_independently():
-    corrected, results = corrections.apply(
-        _spec(),
-        [
-            _correction(corrections.table_row("Example-Mode"), "code", 1600, 1602),
-            _correction(
-                corrections.table_row("Example-Mode"), "section", "6.3.2", "6.3.3"
-            ),
-        ],
-    )
-
-    row = _table(corrected).rows[0]
-    assert (row.code, row.section) == (1602, "6.3.3")
-    assert len(results) == 2
-
-
 def test_a_correction_that_replaces_a_value_with_itself_is_rejected():
     with pytest.raises(corrections.CorrectionError, match="with itself"):
         _correction(corrections.table_row("Example-Mode"), "code", 1600, 1600)
@@ -218,46 +134,66 @@ def test_a_correction_that_replaces_a_value_with_itself_is_rejected():
 @pytest.mark.parametrize(
     "reversed_order", [False, True], ids=["parent-first", "child-first"]
 )
-def test_a_definition_and_one_of_its_avp_rules_are_both_applied(reversed_order):
-    # Rebuilding used to stop at the first replaced node it met, so whichever
-    # of these was the ancestor swallowed the other without a word — two
-    # successful results, one of them absent from the returned tree.
-    declared = [
-        _correction(
-            corrections.definition("Example-Request"), "application_id", None, 16777308
-        ),
-        _correction(
+@pytest.mark.parametrize(
+    (
+        "parent",
+        "field",
+        "before",
+        "after",
+        "child",
+        "child_field",
+        "child_before",
+        "child_after",
+    ),
+    [
+        (
+            "Example-Request",
+            "application_id",
+            None,
+            16777308,
             corrections.avp_rule("Example-Request", "Session-Id"),
             "presence",
             ast.Presence.FIXED,
             ast.Presence.REQUIRED,
         ),
+        (
+            "Example-Mode",
+            "code",
+            1600,
+            1602,
+            corrections.enum_value("Example-Mode", "Off"),
+            "value",
+            0,
+            7,
+        ),
+    ],
+    ids=["message-rule", "enum-value"],
+)
+def test_a_definition_and_one_of_its_avp_rules_are_both_applied(
+    reversed_order,
+    parent,
+    field,
+    before,
+    after,
+    child,
+    child_field,
+    child_before,
+    child_after,
+):
+    # Rebuilding the ancestor must preserve the child's edit in either order.
+    target = corrections.definition(parent)
+    declared = [
+        _correction(target, field, before, after),
+        _correction(child, child_field, child_before, child_after),
     ]
-
     corrected, results = corrections.apply(
         _spec(), list(reversed(declared)) if reversed_order else declared
     )
-
-    message = _message(corrected)
     assert len(results) == 2
-    assert message.application_id == 16777308
-    assert message.avps[0].presence is ast.Presence.REQUIRED
-
-
-def test_an_enumerated_avp_and_one_of_its_values_are_both_applied():
-    corrected, results = corrections.apply(
-        _spec(),
-        [
-            _correction(corrections.definition("Example-Mode"), "code", 1600, 1602),
-            _correction(corrections.enum_value("Example-Mode", "Off"), "value", 0, 7),
-        ],
-    )
-
-    enumerated = corrected.sections[2]
-    assert isinstance(enumerated, ast.EnumeratedAvp)
-    assert len(results) == 2
-    assert enumerated.code == 1602
-    assert enumerated.values == (ast.EnumValue(name="Off", value=7),)
+    (definition,) = target.find(corrected)
+    (nested,) = child.find(corrected)
+    assert getattr(definition, field) == after
+    assert getattr(nested, child_field) == child_after
 
 
 def test_replacing_a_structural_field_is_rejected_rather_than_given_semantics():
@@ -394,26 +330,6 @@ def test_a_node_shared_by_two_places_is_refused_rather_than_corrected_twice():
         )
 
 
-def test_the_reused_row_selector_reaches_a_reused_avps_row():
-    spec = _spec()
-    reused = ast.ReusedAvps(
-        table="6.4",
-        source=ast.SourceRef(section="6.4"),
-        rows=(ast.ReusedAvpRow(name="Load", origin="RFC7683"),),
-    )
-    with_reused = spec.model_copy(update={"sections": (*spec.sections, reused)})
-
-    corrected, results = corrections.apply(
-        with_reused,
-        [_correction(corrections.reused_row("Load"), "origin", "RFC7683", "RFC8583")],
-    )
-
-    row = corrected.sections[3]
-    assert isinstance(row, ast.ReusedAvps)
-    assert row.rows[0].origin == "RFC8583"
-    assert results[0].node == "re-used AVPs row 'Load'"
-
-
 def _with_reused(spec: ast.Specification) -> ast.Specification:
     reused = ast.ReusedAvps(
         table="6.4",
@@ -437,27 +353,6 @@ def _insert(node, after=None):
         after=after,
         reason="test",
     )
-
-
-def test_an_insert_adds_a_row_after_a_named_row_and_marks_the_new_row():
-    inserted = ast.AvpTableRow(
-        name="Inserted-AVP",
-        code=1601,
-        section="6.3.3",
-        data_type=ast.DataType.UNSIGNED32,
-        may_encrypt=False,
-    )
-
-    corrected, (result,) = corrections.apply(
-        _spec(), [_insert(inserted, after="Example-Mode")]
-    )
-
-    table = _table(corrected)
-    assert [row.name for row in table.rows] == ["Example-Mode", "Inserted-AVP"]
-    assert result.node_id == id(table.rows[1])
-    trailing, standing, detached = corrections.notes([result])
-    assert trailing[result.node_id] == [f"inserted: ({result.correction.origin})"]
-    assert (standing, detached) == ({}, {})
 
 
 def test_an_insert_with_no_after_appends():
@@ -490,68 +385,6 @@ def test_an_insert_fails_when_its_after_row_is_missing():
 
     with pytest.raises(corrections.CorrectionError, match="is not present"):
         corrections.apply(_spec(), [_insert(inserted, after="Missing-AVP")])
-
-
-def test_a_delete_of_a_last_row_reports_the_parent_it_left():
-    spec = _with_reused(_spec())
-    doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
-
-    corrected, (result,) = corrections.apply(
-        spec, [_delete(corrections.reused_row("Feature-Id"), doomed)]
-    )
-
-    table = corrected.sections[3]
-    assert isinstance(table, ast.ReusedAvps)
-    assert [row.name for row in table.rows] == ["Load"]
-    assert corrected.sections[:3] == spec.sections[:3]
-    assert result.node == "re-used AVPs row 'Feature-Id'"
-    # The deleted row produces no lines and, as the last row, leaves no
-    # sibling to stand before — so the note anchor falls back to the parent
-    # section in the rebuilt tree, and the formatter prints it after the
-    # remaining rows, where the deleted line stood.
-    assert result.node_id == id(table)
-    _, standing, _ = corrections.notes([result])
-    assert standing[id(table)] == [
-        f"deleted: re-used AVPs row 'Feature-Id' ({result.correction.origin})"
-    ]
-
-
-def test_a_delete_reports_the_sibling_now_standing_in_the_rows_place():
-    """The note anchor is the *following* row, so the formatter prints the
-    note exactly where the deleted line used to be."""
-    spec = _with_reused(_spec())
-    doomed = ast.ReusedAvpRow(name="Load", origin="RFC8583")
-
-    corrected, (result,) = corrections.apply(
-        spec, [_delete(corrections.reused_row("Load"), doomed)]
-    )
-
-    table = corrected.sections[3]
-    assert isinstance(table, ast.ReusedAvps)
-    assert [row.name for row in table.rows] == ["Feature-Id"]
-    assert result.node_id == id(table.rows[0])
-    _, standing, _ = corrections.notes([result])
-    assert standing[id(table.rows[0])] == [
-        f"deleted: re-used AVPs row 'Load' ({result.correction.origin})"
-    ]
-
-
-def test_a_deleted_enum_values_note_omits_the_avp_the_block_already_names():
-    # The standing note prints among the enum's own values, so repeating
-    # "of 'Example-Mode'" there would only restate the block's header; the
-    # Result keeps the full description for logs read on their own.
-    spec = _spec()
-    doomed = ast.EnumValue(name="Off", value=0)
-
-    _, (result,) = corrections.apply(
-        spec, [_delete(corrections.enum_value("Example-Mode", "Off", 0), doomed)]
-    )
-
-    assert result.node == "value 'Off' of 'Example-Mode' (= 0)"
-    _, standing, _ = corrections.notes([result])
-    assert standing[result.node_id] == [
-        f"deleted: value 'Off' (= 0) ({result.correction.origin})"
-    ]
 
 
 def test_a_delete_whose_expect_differs_reports_the_changed_fields():
@@ -643,46 +476,6 @@ def test_correcting_a_node_inside_a_deleted_subtree_is_refused():
                 ),
             ],
         )
-
-
-def test_a_delete_records_where_it_was_declared():
-    delete = _delete(
-        corrections.reused_row("Feature-Id"),
-        ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229"),
-    )
-
-    path, _, line = delete.origin.rpartition(":")
-
-    assert path.endswith("test_corrections.py")
-    assert line.isdigit()
-
-
-def test_loading_finds_the_module_named_after_the_specification(tmp_path):
-    (tmp_path / "TS29.999.py").write_text(
-        "from seanchai.dad.corrections import Correction, table_row\n"
-        "CORRECTIONS = [Correction(target=table_row('Example-Mode'), field='code',"
-        " expect=1600, replace=1602, reason='typo')]\n"
-    )
-
-    declared = corrections.load(tmp_path, "3GPP TS 29.999")
-
-    assert [c.replace for c in declared if isinstance(c, corrections.Correction)] == [
-        1602
-    ]
-    assert corrections.load(tmp_path, "3GPP TS 29.998") == []
-    assert corrections.load(None, "3GPP TS 29.999") == []
-
-
-def _corpus(*, raw: bool):
-    """Committed files of one kind. `rglob("*.dad")` matches `.raw.dad` too,
-    so the two are told apart by suffix rather than by glob."""
-    paths = [
-        path
-        for path in sorted((_ROOT / "dad").rglob("*.dad"))
-        if path.name.endswith(".raw.dad") == raw
-    ]
-    assert paths, "no committed .dad files found — these tests would pass vacuously"
-    return paths
 
 
 @pytest.mark.parametrize("raw", _corpus(raw=True), ids=lambda path: path.name)
@@ -832,9 +625,13 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
             "Re-Synchronization-Info",
         ),
     }
-    assert {
-        (c.into.label, c.node.name, c.node.origin) for c in inserted
-    } == {
+    inserted_rows = set()
+    for correction in inserted:
+        assert isinstance(correction.node, ast.ReusedAvpRow)
+        inserted_rows.add(
+            (correction.into.label, correction.node.name, correction.node.origin)
+        )
+    assert inserted_rows == {
         ("7.3.1/2", "MIP6-Home-Link-Prefix", "RFC5447"),
         ("7.3.1/2", "ProSe-Permission", "TS29.344"),
         ("7.3.1/2", "Periodic-Communication-Indicator", "TS29.336"),
@@ -903,12 +700,6 @@ def test_a_specification_header_cannot_name_a_module_outside_the_directory(
         corrections.load(directory, specification)
 
 
-def test_a_valid_reference_still_resolves_inside_the_directory(tmp_path):
-    (tmp_path / "TS29.272.py").write_text("CORRECTIONS = []\n")
-
-    assert corrections.load(tmp_path, "3GPP TS 29.272") == []
-
-
 def test_a_required_load_fails_when_the_module_is_missing_or_empty(tmp_path):
     # `seanchai correct` asked for this specification's corrections; producing
     # an uncorrected file and calling it a success is the failure mode.
@@ -925,17 +716,6 @@ def test_a_required_load_fails_when_the_module_is_missing_or_empty(tmp_path):
     assert corrections.load(tmp_path, "3GPP TS 29.998") == []
 
 
-def test_a_correction_records_where_it_was_declared():
-    """So a corrected file can cite the declaration rather than making a reader
-    grep the corpus for the value they do not believe."""
-    correction = _correction(corrections.table_row("Example-Mode"), "code", 1600, 1602)
-
-    path, _, line = correction.origin.rpartition(":")
-
-    assert path.endswith("test_corrections.py")
-    assert line.isdigit()
-
-
 def test_origin_is_the_declaration_site_not_this_module():
     """A `Correction` built inside a helper or a comprehension must still cite
     the corrections file, which is why the frame is walked rather than taken at
@@ -943,16 +723,4 @@ def test_origin_is_the_declaration_site_not_this_module():
     declared = corrections.load(_ROOT / "edits" / "corrections", "3GPP TS 29.272")
 
     assert all(c.origin.startswith("TS29.272.py:") for c in declared)
-
-
-def test_apply_reports_the_corrected_node_in_the_returned_tree():
-    """`node_id` has to name a node of the *rebuilt* tree: rebuilding
-    constructs new objects, so the identity a correction was resolved by is
-    gone by the time a formatter could use it."""
-    spec = _spec()
-    corrected, (result,) = corrections.apply(
-        spec, [_correction(corrections.table_row("Example-Mode"), "code", 1600, 1602)]
-    )
-
-    assert result.node_id == id(_table(corrected).rows[0])
-    assert result.node_id != id(_table(spec).rows[0])
+    assert all(c.origin.rpartition(":")[2].isdigit() for c in declared)

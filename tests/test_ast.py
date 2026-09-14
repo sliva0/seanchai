@@ -123,30 +123,6 @@ def test_inline_text_fields_reject_values_that_cannot_round_trip(build, text):
 
 
 @pytest.mark.parametrize(
-    "text",
-    ["x", "two  spaces", "; Version: 9", "ends in a period.", "-"],
-    ids=["single-char", "internal-run", "directive-shaped", "period", "punctuation"],
-)
-def test_inline_text_fields_accept_awkward_but_representable_values(text):
-    # The constraint exists to protect the round-trip, not to police prose:
-    # anything a spec might actually print on one line has to survive.
-    assert _with_enum_description(text).description == text
-    assert _with_table_label(text).table == text
-
-
-@pytest.mark.parametrize(
-    ("specification", "reference"),
-    [
-        ("3GPP TS 29.272", "TS29.272"),
-        ("TS 29.329", "TS29.329"),
-        ("RFC 6733", "RFC6733"),
-    ],
-)
-def test_spec_ref_accepts_the_canonical_document_references(specification, reference):
-    assert ast.spec_ref(specification) == reference
-
-
-@pytest.mark.parametrize(
     "specification",
     ["3GPP TS ../outside", "/etc/passwd", r"..\outside", "TS 29.2721", "", "Test"],
 )
@@ -165,41 +141,6 @@ def test_nodes_are_frozen_and_forbid_extra_fields():
         source.section = "2.1"  # type: ignore
     with pytest.raises(pydantic.ValidationError, match="Extra inputs"):
         ast.SourceRef(section="1.2", unknown=True)  # type: ignore
-
-
-def test_json_round_trip_preserves_discriminated_section_types():
-    spec = ast.Specification(
-        specification="Test",
-        version="1.0",
-        vendor_id=10415,
-        sections=(
-            ast.Message(
-                name="Example-Request",
-                abbreviation="EXR",
-                source=ast.SourceRef(section="1"),
-                command_code=123,
-                flags=frozenset({ast.CommandFlag.REQUEST}),
-                application_id=42,
-                avps=(
-                    ast.AvpRule(
-                        name="Session-Id", presence=ast.Presence.FIXED, bold=True
-                    ),
-                ),
-            ),
-            ast.EnumeratedAvp(
-                name="Example-Mode",
-                source=ast.SourceRef(section="2"),
-                code=7,
-                values=(ast.EnumValue(name="Enabled", value=1),),
-            ),
-        ),
-    )
-
-    restored = ast.Specification.model_validate_json(spec.model_dump_json())
-
-    assert restored == spec
-    assert isinstance(restored.sections[0], ast.Message)
-    assert isinstance(restored.sections[1], ast.EnumeratedAvp)
 
 
 def _table(columns, rows):

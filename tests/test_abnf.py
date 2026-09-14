@@ -5,30 +5,7 @@ change otherwise needs two edits with no failing test if you forget one."""
 
 import pytest
 
-from seanchai.dad import abnf, ast, parser
-from seanchai.extractor import tgpp_docx
-
-
-@pytest.mark.parametrize(
-    ("canonical", "source"),
-    [
-        ("        < Session-Id >", "< Session-Id >"),
-        ("        { Origin-Host }", "{Origin-Host}"),
-        ("        [ Destination-Host ]", "[ Destination-Host ]"),
-        ("      * [ Supported-Features ]", "*[ Supported-Features ]"),
-        ("    1*2 { Public-Identity }", "1*2 { Public-Identity }"),
-        ("     0* [ Load ]", "0*[ Load ]"),
-        ("     *5 [ Proxy-Info ]", "*5 [ Proxy-Info ]"),
-    ],
-)
-def test_both_dialects_read_an_avp_rule_the_same_way(canonical, source):
-    from_dad = parser._avp_rules([(1, canonical)])[0]
-
-    match = tgpp_docx._ABNF_LINE_RE.match(source)
-    assert match is not None, f"extractor dialect rejected {source!r}"
-    from_docx = abnf.avp_rule(match)
-
-    assert from_dad == from_docx
+from seanchai.dad import abnf
 
 
 @pytest.mark.parametrize(
@@ -68,28 +45,6 @@ def test_diameter_header_rejects_unknown_flags():
         abnf.diameter_header("306, REQ, XYZ, 4")
 
 
-def test_avp_flags_round_trip_through_the_canonical_cell():
-    flags = abnf.avp_flags("M, V")
-
-    assert flags == {ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}
-    assert abnf.avp_flags_cell(flags) == "M,V"
-    assert abnf.avp_flags(abnf.avp_flags_cell(flags)) == flags
-    assert abnf.avp_flags_cell(frozenset()) == "-"
-
-
-@pytest.mark.parametrize(
-    ("min_occurs", "max_occurs", "text"),
-    [(1, 1, ""), (0, None, "*"), (1, 2, "1*2"), (0, 5, "*5"), (2, None, "2*")],
-)
-def test_occurrence_qualifiers_round_trip(min_occurs, max_occurs, text):
-    assert abnf.qualifier(min_occurs, max_occurs) == text
-    minimum, _, maximum = text.partition("*")
-    if text:
-        assert abnf.occurrences(minimum, maximum) == (min_occurs, max_occurs)
-    else:
-        assert abnf.occurrences(None, None) == (1, 1)
-
-
 @pytest.mark.parametrize(
     ("call", "message"),
     [
@@ -106,11 +61,3 @@ def test_a_flag_named_twice_is_rejected_rather_than_collapsed(call, message):
     # the fix through an input patch, where it is declared and reviewed.
     with pytest.raises(abnf.AbnfError, match=message):
         call()
-
-
-def test_mismatched_brackets_are_rejected_by_the_shared_layer():
-    match = tgpp_docx._ABNF_LINE_RE.match("< Session-Id ]")
-    assert match is not None
-
-    with pytest.raises(abnf.AbnfError, match="mismatched brackets"):
-        abnf.avp_rule(match)

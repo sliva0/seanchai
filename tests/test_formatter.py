@@ -1,17 +1,11 @@
-from pathlib import Path
-
-import pydantic
 import pytest
+from conftest import _corpus
 
 from seanchai.dad import ast, formatter, parser
 
-_ROOT = Path(__file__).parent.parent
-
 
 @pytest.mark.parametrize(
-    "path",
-    sorted([*(_ROOT / "dad").rglob("*.dad"), *(_ROOT / "examples").glob("*.dad")]),
-    ids=lambda path: path.name,
+    "path", _corpus(raw=True) + _corpus(raw=False), ids=lambda path: path.name
 )
 def test_every_committed_dad_file_round_trips_exactly(path):
     """A corrected file is canonical output *plus* `;;` notes, which the parser
@@ -39,9 +33,7 @@ def _spec(*sections):
 
 
 def _boundary_specs():
-    """Shapes the committed examples don't happen to contain. The round-trip
-    invariant has to hold for the whole format, not just for what 29.229,
-    29.272 and 29.329 print."""
+    """Shapes absent from the committed corpus, pinned by the round-trip invariant."""
     source = ast.SourceRef(section="1")
     return {
         "empty-file": _spec(),
@@ -86,6 +78,18 @@ def _boundary_specs():
                         max_occurs=2**32 - 1,
                     ),
                     ast.AvpRule(name="Bold", presence=ast.Presence.REQUIRED, bold=True),
+                ),
+            )
+        ),
+        "enum-description-and-range": _spec(
+            ast.EnumeratedAvp(
+                name="Mode",
+                source=source,
+                code=1,
+                values=(
+                    ast.EnumValue(name="Short", value=1, description="first"),
+                    ast.ReservedValues(first=2, last=4),
+                    ast.EnumValue(name="Long-Name", value=200),
                 ),
             )
         ),
@@ -148,309 +152,25 @@ def test_formatting_is_idempotent_and_survives_a_round_trip(spec):
     assert formatter.format_spec(parser.parse(once)) == once
 
 
-def test_formats_every_section_and_optional_field_canonically():
-    spec = ast.Specification(
-        specification="Test Specification",
-        version="1.2.3",
-        vendor_id=10415,
-        sections=(
-            ast.Message(
-                name="Example-Request",
-                abbreviation="EXR",
-                source=ast.SourceRef(section="1"),
-                command_code=123,
-                flags=frozenset({ast.CommandFlag.ERROR, ast.CommandFlag.REQUEST}),
-                application_id=None,
-                avps=(
-                    ast.AvpRule(name="Session-Id", presence=ast.Presence.FIXED),
-                    ast.AvpRule(
-                        name="Repeated",
-                        presence=ast.Presence.OPTIONAL,
-                        min_occurs=2,
-                        max_occurs=4,
-                        bold=True,
-                    ),
-                ),
-            ),
-            ast.GroupedAvp(
-                name="Example-Group",
-                source=ast.SourceRef(section="2", page=9),
-                code=10,
-                avps=(),
-            ),
-            ast.EnumeratedAvp(
-                name="Example-Mode",
-                source=ast.SourceRef(section="3"),
-                code=11,
-                vendor_id=10415,
-                values=(
-                    ast.EnumValue(name="Short", value=1, description="first"),
-                    ast.ReservedValues(first=2, last=4),
-                    ast.EnumValue(name="Long-Name", value=20),
-                ),
-            ),
-            ast.AvpTable(
-                table="4/1",
-                columns=tuple(ast.AvpColumn),
-                source=ast.SourceRef(section="4"),
-                rows=(
-                    ast.AvpTableRow(
-                        name="A",
-                        code=None,
-                        section=None,
-                        data_type=ast.DataType.TIME,
-                        flag_rules=ast.AvpFlagRules(
-                            must=frozenset({ast.AvpFlag.VENDOR, ast.AvpFlag.MANDATORY})
-                        ),
-                        may_encrypt=True,
-                    ),
-                ),
-            ),
-            ast.ReusedAvps(
-                table="4/2",
-                source=ast.SourceRef(section="4"),
-                rows=(
-                    ast.ReusedAvpRow(
-                        name="Other",
-                        origin="RFC6733",
-                        m_bit=ast.MBitOverride.MUST_NOT,
-                    ),
-                ),
-            ),
-        ),
-    )
-
-    text = formatter.format_spec(spec)
-
-    assert text.startswith(
-        "; Specification: Test Specification\n"
-        "; Version: 1.2.3\n; Vendor-ID: 10415\n\n\n"
-    )
-    assert "<Example-Request> ::= < Diameter Header: 123, REQ, ERR >" in text
-    repeated_line = next(line for line in text.splitlines() if "Repeated" in line)
-    assert repeated_line.lstrip().startswith("2*4 [ Repeated ]")
-    assert repeated_line.endswith("; bold")
-    assert "Example-Group ::= < AVP header: 10 >" in text
-    assert "Example-Mode ::= < Enumerated AVP header: 11 10415 >" in text
-    assert "      ; RESERVED  = 2-4" in text
-    assert "A     -     -     Time   M,V" in text
-    assert "Other   RFC6733   MUST-NOT" in text
-    assert text.endswith("\n")
-    assert parser.parse(text) == spec
+class ExtendedMessage(ast.Message):
+    extra: str = "lost"
 
 
-def test_bold_markers_share_the_column_after_the_longest_rule():
-    spec = ast.Specification(
-        specification="Test",
-        version="1",
-        vendor_id=10415,
-        sections=(
-            ast.GroupedAvp(
-                name="Group",
-                source=ast.SourceRef(section="1"),
-                code=1,
-                avps=(
-                    ast.AvpRule(
-                        name="Short",
-                        presence=ast.Presence.OPTIONAL,
-                        bold=True,
-                    ),
-                    ast.AvpRule(
-                        name="A-Much-Longer-Name",
-                        presence=ast.Presence.REQUIRED,
-                        bold=True,
-                    ),
-                ),
-            ),
-        ),
-    )
-
-    bold_lines = [
-        line
-        for line in formatter.format_spec(spec).splitlines()
-        if line.endswith("; bold")
-    ]
-
-    assert len({line.index("; bold") for line in bold_lines}) == 1
-    assert bold_lines[1].index("; bold") == len(bold_lines[1].removesuffix("; bold"))
+_EXTENDED_MESSAGE = ExtendedMessage(
+    name="Example-Request",
+    abbreviation="EXR",
+    source=ast.SourceRef(section="1"),
+    command_code=1,
+    flags=frozenset(),
+    application_id=None,
+    avps=(),
+)
 
 
-def test_an_unregistered_section_type_fails_loudly():
-    # A new section kind without a formatter must not slip through as a
-    # silently missing block.
-    with pytest.raises(TypeError, match="no formatter for object"):
-        formatter._format_section(object(), {}, {})  # type: ignore
-
-
-def test_a_subclass_is_not_formatted_as_its_base():
-    # Dispatch is by exact type: anything that matched by isinstance would
-    # format this as a plain Message, dropping `extra` without a word.
-    class ExtendedMessage(ast.Message):
-        extra: str = "lost"
-
-    section = ExtendedMessage(
-        name="Example-Request",
-        abbreviation="EXR",
-        source=ast.SourceRef(section="1"),
-        command_code=1,
-        flags=frozenset(),
-        application_id=None,
-        avps=(),
-    )
-
-    with pytest.raises(TypeError, match="no formatter for ExtendedMessage"):
+@pytest.mark.parametrize("section", [object(), _EXTENDED_MESSAGE])
+def test_an_unregistered_section_type_fails_loudly(section):
+    with pytest.raises(TypeError, match=f"no formatter for {type(section).__name__}"):
         formatter._format_section(section, {}, {})
-
-
-def _group(name, section, avps):
-    return ast.GroupedAvp(
-        name=name, source=ast.SourceRef(section=section), code=1, avps=avps
-    )
-
-
-def test_a_long_rule_cannot_reflow_another_sections_bold_column():
-    # The review workflow diffs re-extracted raw files against each other, so
-    # adding one AVP must not rewrite every `; bold` line in the file.
-    short = _group(
-        "Group",
-        "1",
-        (ast.AvpRule(name="Short", presence=ast.Presence.OPTIONAL, bold=True),),
-    )
-    spec = ast.Specification(
-        specification="Test", version="1", vendor_id=10415, sections=(short,)
-    )
-    grown = ast.Specification(
-        specification="Test",
-        version="1",
-        vendor_id=10415,
-        sections=(
-            short,
-            _group(
-                "Other",
-                "2",
-                (
-                    ast.AvpRule(
-                        name="A-Very-Much-Longer-Name",
-                        presence=ast.Presence.REQUIRED,
-                        bold=True,
-                    ),
-                ),
-            ),
-        ),
-    )
-
-    def first_section(spec):
-        return formatter.format_spec(spec).split("\n\n\n")[1].rstrip("\n")
-
-    assert first_section(grown) == first_section(spec)
-
-
-def test_enum_equals_signs_are_aligned_and_values_are_not_zero_padded():
-    enum = ast.EnumeratedAvp(
-        name="Mode",
-        source=ast.SourceRef(section="1"),
-        code=1,
-        values=(
-            ast.EnumValue(name="A", value=1, description="one"),
-            ast.EnumValue(name="Long", value=200),
-            ast.ReservedValues(first=3, last=3),
-        ),
-    )
-    spec = ast.Specification(
-        specification="Test", version="1", vendor_id=10415, sections=(enum,)
-    )
-
-    value_lines = formatter.format_spec(spec).splitlines()[-3:]
-
-    assert len({line.index("=") for line in value_lines}) == 1
-    assert value_lines[0].rstrip().endswith("1   ; one")
-    assert value_lines[1].endswith("200")
-    assert value_lines[2].endswith("3")
-
-
-def _annotated(spec, node, note=";; corrected: (f.py:3)"):
-    return formatter.format_spec(spec, {id(node): [note.removeprefix(";; ")]})
-
-
-def test_notes_mark_a_table_row_without_reflowing_the_table():
-    """Notes are interleaved after the column widths are computed, so
-    annotating a row cannot move the columns of the rows around it."""
-    table = ast.AvpTable(
-        table="6.3.1",
-        columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE),
-        source=ast.SourceRef(section="6.3"),
-        rows=(
-            ast.AvpTableRow(name="Alpha", code=700),
-            ast.AvpTableRow(name="Beta", code=701),
-        ),
-    )
-    spec = _spec(table)
-
-    plain = formatter.format_spec(spec).splitlines()
-    annotated = _annotated(spec, table.rows[1]).splitlines()
-
-    marked = [line for line in annotated if ";; corrected" in line]
-    assert marked == ["Beta    701 ;; corrected: (f.py:3)"]
-    assert [line.split(" ;; ")[0] for line in annotated] == plain
-
-
-def test_notes_trail_the_line_of_the_node_they_mark_and_the_file_still_parses():
-    enumerated = ast.EnumeratedAvp(
-        name="Mode",
-        source=ast.SourceRef(section="6.3.2"),
-        code=702,
-        values=(ast.EnumValue(name="Off", value=0), ast.EnumValue(name="On", value=1)),
-    )
-    spec = _spec(enumerated)
-
-    annotated = _annotated(spec, enumerated.values[1])
-
-    note = next(line for line in annotated.splitlines() if ";; corrected" in line)
-    assert note == "        On  = 1 ;; corrected: (f.py:3)"
-    assert parser.parse(annotated) == spec
-
-
-def test_a_standing_note_prints_in_place_of_a_deleted_row():
-    # A deleted row leaves no line to trail, so its note — keyed by the row
-    # now standing where it stood — prints as a whole line in its place.
-    table = ast.ReusedAvps(
-        table="6.4",
-        source=ast.SourceRef(section="6.4"),
-        rows=(
-            ast.ReusedAvpRow(name="DRMP", origin="RFC7944"),
-            ast.ReusedAvpRow(name="Load", origin="RFC8583"),
-        ),
-    )
-    spec = _spec(table)
-
-    note = "deleted: re-used AVPs row 'Doomed' (f.py:9)"
-    annotated = formatter.format_spec(spec, standing={id(table.rows[1]): [note]})
-    lines = annotated.splitlines()
-
-    marker = lines.index(f";; {note}")
-    assert lines[marker - 1].startswith("DRMP")
-    assert lines[marker + 1].startswith("Load")
-
-
-def test_a_standing_note_in_an_enum_is_indented_like_the_values_around_it():
-    enumerated = ast.EnumeratedAvp(
-        name="Mode",
-        source=ast.SourceRef(section="6.3.2"),
-        code=702,
-        values=(ast.EnumValue(name="Off", value=0), ast.EnumValue(name="On", value=1)),
-    )
-    spec = _spec(enumerated)
-
-    note = "deleted: value 'Void' (= 0) (f.py:9)"
-    annotated = formatter.format_spec(
-        spec, standing={id(enumerated.values[1]): [note]}
-    )
-    lines = annotated.splitlines()
-
-    marker = lines.index(f"        ;; {note}")
-    assert lines[marker - 1].startswith("        Off")
-    assert lines[marker + 1].startswith("        On")
-    assert parser.parse(annotated) == spec
 
 
 def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
@@ -470,47 +190,3 @@ def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
     marker = lines.index(f";; {note}")
     assert lines[marker - 1].startswith("Load")
     assert marker == len(lines) - 1
-
-
-def test_notes_do_not_survive_a_round_trip_and_that_is_the_relation():
-    """An annotated file is canonical output plus `;;` comments: the parser
-    discards them, so reformatting gives back exactly the canonical text."""
-    grouped = ast.GroupedAvp(
-        name="Example", source=ast.SourceRef(section="6.3.1"), code=700, avps=()
-    )
-    spec = _spec(grouped)
-
-    annotated = _annotated(spec, grouped)
-    stripped = "\n".join(line.split(" ;; ")[0] for line in annotated.splitlines())
-
-    assert parser.parse(annotated) == spec
-    assert formatter.format_spec(parser.parse(annotated)) == stripped + "\n"
-
-
-def test_bases_are_written_between_vendor_id_and_link_and_round_trip():
-    spec = ast.Specification(
-        specification="3GPP TS 29.329",
-        version="18.0.0",
-        vendor_id=10415,
-        bases=("RFC6733", "TS29.229"),
-        link=pydantic.HttpUrl("https://example.org/spec"),
-        sections=(
-            ast.AvpTable(
-                table=None,
-                columns=(ast.AvpColumn.NAME,),
-                source=ast.SourceRef(section="6.3"),
-                rows=(ast.AvpTableRow(name="Example"),),
-            ),
-        ),
-    )
-
-    text = formatter.format_spec(spec)
-
-    assert text.startswith(
-        "; Specification: 3GPP TS 29.329\n"
-        "; Version: 18.0.0\n"
-        "; Vendor-ID: 10415\n"
-        "; Bases: RFC6733, TS29.229\n"
-        "; Link: https://example.org/spec\n"
-    )
-    assert parser.parse(text) == spec

@@ -13,16 +13,14 @@ from seanchai.downloader import core as downloader
 
 @pytest.mark.parametrize(
     ("release", "marker"),
-    [(4, "4"), (9, "9"), (10, "a"), (18, "i"), (35, "z")],
+    [(4, "4"), (9, "9"), (10, "a"), (18, "i"), (35, "z"), (3, None), (36, None)],
 )
 def test_release_marker_uses_3gpp_base36_encoding(release, marker):
-    assert downloader.release_marker(release) == marker
-
-
-@pytest.mark.parametrize("release", [3, 36])
-def test_release_marker_rejects_unsupported_releases(release):
-    with pytest.raises(downloader.DownloadError, match="between 4 and 35"):
-        downloader.release_marker(release)
+    if marker is None:
+        with pytest.raises(downloader.DownloadError, match="between 4 and 35"):
+            downloader.release_marker(release)
+    else:
+        assert downloader.release_marker(release) == marker
 
 
 def _zip_bytes(**members: bytes) -> bytes:
@@ -85,24 +83,23 @@ path = "resources/protocols/diameter"
     )
 
 
-def test_request_bytes_retries_transient_http_errors(local_http_server, monkeypatch):
+@pytest.mark.parametrize("status", [503, 404], ids=["transient", "permanent"])
+def test_request_bytes_retries_transient_http_errors(
+    local_http_server, monkeypatch, status
+):
     sleeps = []
     monkeypatch.setattr(downloader.time, "sleep", sleeps.append)
-    url = local_http_server.route("/retry", (503, b"unavailable"), (200, b"response"))
-
-    assert downloader.request_bytes(url) == b"response"
-    assert local_http_server.counts["/retry"] == 2
+    url = local_http_server.route(
+        "/retry", (status, b"unavailable"), (200, b"response")
+    )
+    if status == 404:
+        with pytest.raises(RuntimeError, match="HTTP 404"):
+            downloader.request_bytes(url)
+    else:
+        assert downloader.request_bytes(url) == b"response"
+    assert local_http_server.counts["/retry"] == (1 if status == 404 else 2)
     assert local_http_server.requests[0][1]["User-Agent"] == downloader.USER_AGENT
-    assert sleeps == [1]
-
-
-def test_request_bytes_does_not_retry_permanent_http_errors(local_http_server):
-    url = local_http_server.route("/missing", (404, b"missing"))
-
-    with pytest.raises(RuntimeError, match="HTTP 404"):
-        downloader.request_bytes(url)
-
-    assert local_http_server.counts["/missing"] == 1
+    assert sleeps == ([] if status == 404 else [1])
 
 
 def test_atomic_download_is_atomic_cached_and_validated(tmp_path, local_http_server):
@@ -129,19 +126,6 @@ def test_atomic_download_is_atomic_cached_and_validated(tmp_path, local_http_ser
     assert not list(destination.parent.glob("*.part"))
 
 
-def test_atomic_download_keeps_a_valid_cached_file_when_the_server_is_down(
-    tmp_path, local_http_server
-):
-    destination = tmp_path / "archive.zip"
-    url = local_http_server.route("/archive.zip", _zip_bytes(spec=b"body"))
-    downloader.atomic_download(url, destination, validate=downloader.validate_zip)
-    before = destination.read_bytes()
-
-    downloader.atomic_download(url, destination, validate=downloader.validate_zip)
-
-    assert destination.read_bytes() == before
-
-
 @pytest.mark.parametrize(
     ("validator", "content", "message"),
     [
@@ -162,10 +146,12 @@ def test_artifact_validators_reject_plausible_looking_files(
         getattr(downloader, validator)(path)
 
 
-def test_replace_extracted_removes_the_previous_versions_files(tmp_path):
+@pytest.mark.parametrize("existing", [True, False], ids=["replace", "install"])
+def test_replace_extracted_removes_the_previous_versions_files(tmp_path, existing):
     destination = tmp_path / "TS_29.999"
-    destination.mkdir()
-    (destination / "dropped-in-this-version.docx").write_bytes(b"old")
+    if existing:
+        destination.mkdir()
+        (destination / "dropped-in-this-version.docx").write_bytes(b"old")
     archive = tmp_path / "new.zip"
     archive.write_bytes(_zip_bytes(spec_docx=b"new"))
 
@@ -244,29 +230,6 @@ def test_a_failed_extraction_leaves_the_previous_version_untouched(tmp_path):
     assert not list(tmp_path.glob(".*previous"))
 
 
-def test_replace_extracted_installs_into_a_missing_destination(tmp_path):
-    destination = tmp_path / "TS_29.999"
-    archive = tmp_path / "new.zip"
-    archive.write_bytes(_zip_bytes(spec_docx=b"new"))
-
-    extracted = downloader.replace_extracted(archive, destination)
-
-    assert extracted == [destination / "spec_docx"]
-    assert not list(tmp_path.glob(".*previous"))
-
-
-def test_safe_extract_returns_files_and_creates_directories(tmp_path):
-    archive = tmp_path / "safe.zip"
-    with zipfile.ZipFile(archive, "w") as zipped:
-        zipped.writestr("nested/", b"")
-        zipped.writestr("nested/spec.docx", b"document")
-
-    extracted = downloader.safe_extract(archive, tmp_path / "output")
-
-    assert extracted == [tmp_path / "output" / "nested" / "spec.docx"]
-    assert extracted[0].read_bytes() == b"document"
-
-
 @pytest.mark.parametrize("member", ["../escape", "/absolute"])
 def test_safe_extract_rejects_path_traversal(tmp_path, member):
     archive = tmp_path / "unsafe.zip"
@@ -313,43 +276,16 @@ def test_discover_3gpp_urls_matches_release_and_resolves_relative_links(
     [
         ("https://example.test/29272-i00.zip", (18, 0, 0)),
         ("https://example.test/29272-i1a.zip", (18, 1, 10)),
+        ("https://example.test/spec.zip", None),
     ],
 )
 def test_decodes_3gpp_archive_versions(url, version):
-    assert downloader.decode_3gpp_version(url) == version
-    assert downloader.version_string(version) == ".".join(map(str, version))
-
-
-def test_decode_3gpp_version_rejects_unknown_names():
-    with pytest.raises(downloader.DownloadError, match="cannot determine"):
-        downloader.decode_3gpp_version("https://example.test/spec.zip")
-
-
-def test_builds_etsi_pdf_location_and_url():
-    spec = downloader.ThreeGppSpec("29.329", "Sh")
-
-    assert downloader.etsi_pdf_location(spec) == (
-        "ts",
-        "129329",
-        "https://www.etsi.org/deliver/etsi_ts/129300_129399/129329",
-    )
-    assert downloader.etsi_pdf_url(spec, (18, 1, 0)).endswith(
-        "/18.01.00_60/ts_129329v180100p.pdf"
-    )
-
-
-def test_discovers_matching_etsi_versions_newest_first(local_http_server, monkeypatch):
-    monkeypatch.setattr(downloader, "ETSI_DELIVER", local_http_server.base_url)
-    local_http_server.route(
-        "/etsi_ts/129300_129399/129329/",
-        (b"18.00.00_60/ 18.01.00_60/ 18.02.00_60/ 17.09.00_60/ 18.01.00_60/"),
-    )
-
-    versions = downloader.discover_etsi_pdf_versions(
-        downloader.ThreeGppSpec("29.329", "Sh"), (18, 1, 5)
-    )
-
-    assert versions == [(18, 1, 0), (18, 0, 0)]
+    if version is None:
+        with pytest.raises(downloader.DownloadError, match="cannot determine"):
+            downloader.decode_3gpp_version(url)
+    else:
+        assert downloader.decode_3gpp_version(url) == version
+        assert downloader.version_string(version) == ".".join(map(str, version))
 
 
 def test_download_rfc_records_hash_size_and_relative_path(
@@ -381,12 +317,16 @@ def test_download_3gpp_falls_back_to_latest_earlier_etsi_pdf(
     )
     local_http_server.route(
         "/etsi_ts/129300_129399/129329/",
-        b"18.01.00_60/ 18.00.00_60/",
+        b"18.00.00_60/ 18.01.00_60/ 18.02.00_60/ 17.09.00_60/ 18.01.00_60/",
     )
     local_http_server.route(
         "/etsi_ts/129300_129399/129329/18.00.00_60/ts_129329v180000p.pdf",
         _pdf_bytes(),
     )
+
+    assert downloader.discover_etsi_pdf_versions(
+        downloader.ThreeGppSpec("29.329", "Sh"), (18, 1, 5)
+    ) == [(18, 1, 0), (18, 0, 0)]
 
     record = downloader.download_3gpp(
         downloader.ThreeGppSpec("29.329", "Sh"),

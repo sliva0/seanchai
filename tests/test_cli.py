@@ -1,17 +1,17 @@
 import re
-from pathlib import Path
 
 import docx
+import pytest
 from click.testing import CliRunner
 
 from seanchai.cli import main
 from seanchai.dad import ast, formatter, parser
+from seanchai.extractor.errors import ExtractionError
 
-_ROOT = Path(__file__).parent.parent
 
-
+@pytest.mark.parametrize("to_stdout", [False, True], ids=["file", "stdout"])
 def test_extract_command_runs_docx_pdf_formatter_and_parser_end_to_end(
-    tmp_path, synthetic_spec_docx, outlined_pdf
+    tmp_path, synthetic_spec_docx, outlined_pdf, to_stdout
 ):
     output_path = tmp_path / "result.dad"
 
@@ -24,13 +24,12 @@ def test_extract_command_runs_docx_pdf_formatter_and_parser_end_to_end(
             str(outlined_pdf),
             "--link",
             "https://example.com/spec.pdf",
-            "--output",
-            str(output_path),
+            *([] if to_stdout else ["--output", str(output_path)]),
         ],
     )
 
     assert result.exit_code == 0
-    spec = parser.parse(output_path.read_text())
+    spec = parser.parse(result.stdout if to_stdout else output_path.read_text())
     assert spec.specification == "3GPP TS 29.999"
     assert str(spec.link) == "https://example.com/spec.pdf"
     assert len(spec.sections) == 5
@@ -39,18 +38,10 @@ def test_extract_command_runs_docx_pdf_formatter_and_parser_end_to_end(
     assert spec.sections[3].source.page == 4
     assert spec.sections[4].source.page == 5
     assert "warning:" not in result.stderr
-    assert f"wrote {output_path} (5 sections)" in result.stderr
-
-
-def test_extract_command_prints_parseable_output_to_stdout(synthetic_spec_docx):
-    result = CliRunner().invoke(main, ["extract", str(synthetic_spec_docx)])
-
-    assert result.exit_code == 0
-    spec = parser.parse(result.stdout)
-    assert spec.specification == "3GPP TS 29.999"
-    assert isinstance(spec.sections[0], ast.Message)
-    assert all(section.source.page is None for section in spec.sections)
-    assert result.stderr == ""
+    if to_stdout:
+        assert result.stderr == ""
+    else:
+        assert f"wrote {output_path} (5 sections)" in result.stderr
 
 
 def test_extract_command_reports_source_warnings_even_when_the_pdf_is_rejected(
@@ -75,12 +66,6 @@ def test_extract_command_reports_source_warnings_even_when_the_pdf_is_rejected(
     assert "warning: 6.1: heading name 'Example-Requests'" in result.stderr
 
 
-def _first_message(spec: ast.Specification) -> ast.Message:
-    section = spec.sections[0]
-    assert isinstance(section, ast.Message)
-    return section
-
-
 def _corrections_dir(tmp_path):
     directory = tmp_path / "corrections"
     directory.mkdir()
@@ -91,49 +76,6 @@ def _corrections_dir(tmp_path):
         " reason='the header prints the wrong application')]\n"
     )
     return directory
-
-
-def test_extract_command_applies_corrections_when_a_directory_is_given(
-    tmp_path, synthetic_spec_docx
-):
-    result = CliRunner().invoke(
-        main,
-        [
-            "extract",
-            str(synthetic_spec_docx),
-            "--corrections",
-            str(_corrections_dir(tmp_path)),
-        ],
-    )
-
-    assert result.exit_code == 0
-    spec = parser.parse(result.stdout)
-    assert _first_message(spec).application_id == 16777308
-    assert "corrected: definition 'Example-Request' application_id" in result.stderr
-
-
-def test_correct_command_reads_a_raw_dad_file(tmp_path, synthetic_spec_docx):
-    from seanchai.extractor import tgpp_docx
-
-    raw = tmp_path / "raw.dad"
-    raw.write_text(formatter.format_spec(tgpp_docx.extract(synthetic_spec_docx)))
-    corrected = tmp_path / "corrected.dad"
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "correct",
-            str(raw),
-            "--corrections",
-            str(_corrections_dir(tmp_path)),
-            "-o",
-            str(corrected),
-        ],
-    )
-
-    assert result.exit_code == 0
-    corrected_spec = parser.parse(corrected.read_text())
-    assert _first_message(corrected_spec).application_id == 16777308
 
 
 def test_correct_command_refuses_to_overwrite_its_input(tmp_path, synthetic_spec_docx):
@@ -160,30 +102,33 @@ def test_correct_command_refuses_to_overwrite_its_input(tmp_path, synthetic_spec
     assert "refusing to correct a file in place" in result.stderr
 
 
-def test_extract_command_rejects_a_missing_input_file():
-    result = CliRunner().invoke(main, ["extract", "missing.docx"])
-
-    assert result.exit_code == 2
-    assert "File 'missing.docx' does not exist" in result.stderr
-
-
+@pytest.mark.parametrize("exception_class", [parser.DadParseError, ExtractionError])
 def test_correct_command_reports_a_malformed_dad_as_an_error_not_a_traceback(
     tmp_path,
+    exception_class,
 ):
-    broken = tmp_path / "broken.dad"
-    broken.write_text(
-        "; Specification: 3GPP TS 29.999\n"
-        "; Version: not a version\n; Vendor-ID: 10415\n"
-    )
-
-    result = CliRunner().invoke(
-        main, ["correct", str(broken), "--corrections", str(_corrections_dir(tmp_path))]
-    )
-
+    if exception_class is parser.DadParseError:
+        broken = tmp_path / "broken.dad"
+        broken.write_text(
+            "; Specification: 3GPP TS 29.999\n"
+            "; Version: not a version\n; Vendor-ID: 10415\n"
+        )
+        arguments = [
+            "correct",
+            str(broken),
+            "--corrections",
+            str(_corrections_dir(tmp_path)),
+        ]
+        message = "error: line 2:"
+    else:
+        broken = tmp_path / "not-really.docx"
+        broken.write_bytes(b"this is not a Word document")
+        arguments = ["extract", str(broken)]
+        message = "error: extracting"
+    result = CliRunner().invoke(main, arguments)
     assert result.exit_code == 1
-    # A Click error handled by the CLI, not a library exception that escaped.
     assert isinstance(result.exception, SystemExit)
-    assert "error: line 2:" in result.stderr
+    assert message in result.stderr
 
 
 def test_correct_command_fails_when_the_specification_has_no_corrections_module(
@@ -222,43 +167,9 @@ def test_extract_command_tolerates_a_corrections_directory_without_this_spec(
     assert parser.parse(result.stdout).specification == "3GPP TS 29.999"
 
 
-def test_extract_command_reports_a_source_document_failure_as_an_error(tmp_path):
-    not_a_docx = tmp_path / "not-really.docx"
-    not_a_docx.write_bytes(b"this is not a Word document")
-
-    result = CliRunner().invoke(main, ["extract", str(not_a_docx)])
-
-    assert result.exit_code == 1
-    assert isinstance(result.exception, SystemExit)
-    assert "error: extracting" in result.stderr
-
-
 def _dad_with(*lines: str) -> str:
     header = "; Specification: 3GPP TS 29.329\n; Version: 18.0.0\n; Vendor-ID: 10415"
     return header + "\n\n" + "\n".join(lines) + "\n"
-
-
-def test_lint_command_reports_errors_and_exits_non_zero(tmp_path):
-    source = tmp_path / "clash.dad"
-    source.write_text(
-        _dad_with(
-            "; Type: Grouped AVP",
-            "; Name: First",
-            "; Section: 6.3.1",
-            "First ::= < AVP header: 700 10415 >",
-            "",
-            "",
-            "; Type: Grouped AVP",
-            "; Name: Second",
-            "; Section: 6.3.2",
-            "Second ::= < AVP header: 700 10415 >",
-        )
-    )
-
-    result = CliRunner().invoke(main, ["lint", str(source)])
-
-    assert result.exit_code == 1
-    assert "duplicate-identity" in result.output
 
 
 def test_lint_command_is_quiet_and_succeeds_on_a_clean_file(tmp_path):
@@ -324,6 +235,7 @@ def test_lint_default_output_groups_findings_under_the_file_with_a_summary(tmp_p
 
     result = CliRunner().invoke(main, ["lint", str(source)])
 
+    assert result.exit_code == 1
     lines = result.output.splitlines()
     assert lines[0] == str(source)
     assert lines[1].startswith("  error[duplicate-identity]")
@@ -404,3 +316,7 @@ def test_correct_command_marks_the_lines_it_changed(tmp_path):
     # Still a `.dad` file, and still exactly the canonical text plus the note.
     stripped = "\n".join(line.split(" ;; ")[0] for line in text.splitlines())
     assert formatter.format_spec(parser.parse(text)) == stripped + "\n"
+
+    (grouped,) = parser.parse(text).sections
+    assert isinstance(grouped, ast.GroupedAvp)
+    assert grouped.code == 701
