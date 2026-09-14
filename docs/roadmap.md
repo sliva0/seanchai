@@ -47,12 +47,10 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **J. Message-only documents.** 29.228 and 29.328 hold the Cx and Sh
-  messages while 29.229 and 29.329 hold the AVPs; 29.330's AVP table is a
-  header row and one blank row (drop an all-blank table, keep the non-empty
-  invariant). 29.230's registry tables lack the "AVP Flag rules" header the
-  dispatch keys on. 29.305 is unexamined. 29.213 is confirmed out of scope:
-  no ABNF, no tables.
+- **J. Remaining docx shapes.** 29.330's AVP table is a header row and one
+  blank row (drop an all-blank table, keep the non-empty invariant). 29.230's
+  registry tables lack the "AVP Flag rules" dispatch header. 29.305 is
+  unexamined.
 - **K. Legacy `.doc` specifications**: 29.201, 29.215, 29.217, 29.219,
   29.343, 29.368, 29.468, 32.299 and TR 29.909 ship as binary `.doc`. 32.299
   is an unresolved origin in six files, 29.368 in two. TS 29.154 is cited

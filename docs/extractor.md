@@ -170,6 +170,14 @@ printed with two bodies (29.336 §6.4.2 and §8.4.36, the second deleted by
 correction); "Void" as an enum value label (29.214, deleted by correction).
 Everything patched is listed with its reason in `edits/sources/`.
 
+TS 29.228 v18.0.0 and TS 29.328 v18.2.0 contain procedure/IE mappings,
+not Diameter ABNF or AVP definition tables. In both, annex A.1 assigns the
+Diameter definitions to TS 29.229 and TS 29.329 respectively (already in the
+corpus); table A.2.1 supplies command names and abbreviations, but no codes,
+flags or bodies. `regenerate --add` rejects them with `no AVP table found`;
+a message-only convention cannot supply those missing definitions. TS 29.213
+also has no ABNF or definition tables and is outside this extractor's scope.
+
 ## The RFC plain-text extractor
 
 Same definitions, different carrier:
