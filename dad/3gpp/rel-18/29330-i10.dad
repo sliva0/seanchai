@@ -1,0 +1,105 @@
+; Specification: 3GPP TS 29.330
+; Version: 18.1.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129330/18.01.00_60/ts_129330v180100p.pdf
+
+
+; Type: Message
+; Name: User-Data-Request, UDR
+; Section: 6.2.3
+; Page: 16
+<User-Data-Request> ::= < Diameter Header: 306, REQ, PXY, 16777363 >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Identity }
+      * [ Service-Indication ] ; bold
+      * { Data-Reference }     ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: User-Data-Answer, UDA
+; Section: 6.2.4
+; Page: 16
+<User-Data-Answer> ::= < Diameter Header: 306, PXY, 16777363 >
+        < Session-Id >
+        [ DRMP ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Data ]           ; bold
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Profile-Update-Request, PUR
+; Section: 6.2.5
+; Page: 17
+<Profile-Update-Request> ::= < Diameter Header: 307, REQ, PXY, 16777363 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Identity }                  ; bold
+      * { Data-Reference }
+        { User-Data }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Profile-Update-Answer, PUA
+; Section: 6.2.6
+; Page: 17
+<Profile-Update-Answer> ::= < Diameter Header: 307, PXY, 16777363 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Repository-Data-ID ]             ; bold
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Reused AVPs
+; Section: 6.3.1
+; Table: 6.3.1-2
+; Page: 17
+; Columns: Name         From       M-bit
+User-Identity           TS29.329   MUST
+Data-Reference          TS29.329   MUST
+User-Data               TS29.329   MUST
+Repository-Data-ID      TS29.329   -
+Public-Identity         TS29.229   MUST
+Service-Indication      TS29.329   MUST
+Sequence-Number         TS29.329   -
+MSISDN                  TS29.329   -
+External-Identifier     TS29.336   -
+OC-Supported-Features   TS29.229   -
+OC-OLR                  TS29.229   -
+Load                    TS29.229   -
+DRMP                    TS29.229   -

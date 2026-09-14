@@ -539,6 +539,7 @@ _STANDING_CORPUS_NOTES = {
     "29283-i00.dad": {
         "reused-body-differs": ["User-Identifier"],
     },
+    "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
         "origin-not-in-corpus": ["TS29.154, TS29.217, TS29.368, TS32.299"],
         "reused-body-differs": [

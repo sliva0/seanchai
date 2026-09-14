@@ -88,7 +88,8 @@ from the Type fields in 4.1–4.7). RFC 6734 uses `clause-avp-table` (3.1–3.1.
 including the bare Key-SPI heading) and `parenthesized-enum-values` (3.1.1's
 mixed-case `rRK (1)` and `rMSK (2)`). RFC 6942 uses `clause-avp-table` and
 `prose-cleared-flags` for the explicit cleared M/V bits in 8.1–8.2.
-Docx extractor: `note-defined-in-rfc` (TS 29.229, 29.329), `dotted-flags`
+Docx extractor: `message-only` (TS 29.330 §6.3.1 has no local AVPs;
+commands and re-used rows are retained), `note-defined-in-rfc` (TS 29.229, 29.329), `dotted-flags`
 (TS 29.061, 29.212), `clause-parenthetical` (TS 29.061). TS 29.273 declares
 `command-reference-only` (clauses
 4.2.2.4.3–4, 5.2.2.3.5–6, 11.2.2.1.1–2 contain only clause pointers),
@@ -115,6 +116,9 @@ Walks paragraphs and tables in document order under numbered headings:
   cell is a NOTE reference gets `code=None`; a note naming a defining RFC also
   produces a `ReusedAvps` row (`note-defined-in-rfc`).
 - The "re-used Diameter AVPs" table → `ReusedAvps` with M-bit overrides.
+- An AVP table whose labelled header is followed only by blank cells
+  contributes no definitions and warns (TS 29.330 table 6.3.1-1); non-empty
+  malformed tables still fail. The AST retains its non-empty table invariant.
 
 Conventions worth knowing:
 
@@ -182,6 +186,14 @@ corpus); table A.2.1 supplies command names and abbreviations, but no codes,
 flags or bodies. `regenerate --add` rejects them with `no AVP table found`;
 a message-only convention cannot supply those missing definitions. TS 29.213
 also has no ABNF or definition tables and is outside this extractor's scope.
+
+TS 29.305 v18.0.0 describes MAP/Diameter interworking (clause 1 and annex A)
+without command ABNF or AVP definition tables, so it is also outside scope.
+TS 29.230 v18.6.0 is an allocation registry: tables 4.1, 5.1/1–4, 7.1 and
+8.1.2–4 assign applications, commands, AVPs and result codes. Reserved ranges
+and multiple cited specifications cannot be preserved by the current
+`.dad` definition blocks; its extraction remains deferred, not an empty
+corpus file.
 
 ## The RFC plain-text extractor
 

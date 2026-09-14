@@ -413,3 +413,11 @@ def test_reference_only_quirk_rejects_other_command_text(tmp_path, body):
     )
     with pytest.raises(tgpp_docx.ExtractionError, match="command section without ABNF"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
+def test_message_only_quirk_cannot_accept_a_document_without_commands():
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="message-only", reason="rejection case")], None)
+    with pytest.raises(tgpp_docx.ExtractionError, match="no AVP table found"):
+        tgpp_docx._resolve(tgpp_docx._Collected(), quirks)

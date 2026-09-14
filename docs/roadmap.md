@@ -47,10 +47,11 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **J. Remaining docx shapes.** 29.330's AVP table is a header row and one
-  blank row (drop an all-blank table, keep the non-empty invariant). 29.230's
-  registry tables lack the "AVP Flag rules" dispatch header. 29.305 is
-  unexamined.
+- **J. TS 29.230 allocation registry.** Its application/command assignments,
+  reserved AVP code ranges and multiple cited specifications need registry
+  constructs in the format; treating the AVP allocation table as local
+  definitions would lose those distinctions. Deferred until the format can
+  preserve the registry.
 - **K. Legacy `.doc` specifications**: 29.201, 29.215, 29.217, 29.219,
   29.343, 29.368, 29.468, 32.299 and TR 29.909 ship as binary `.doc`. 32.299
   is an unresolved origin in six files, 29.368 in two. TS 29.154 is cited

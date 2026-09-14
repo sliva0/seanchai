@@ -919,6 +919,24 @@ def _collect(
             # Substring, not membership: 29.214 titles the column group
             # "AVP Flag rules (Note 1)".
             if any("AVP Flag rules" in cell for cell in header):
+                # TS 29.330 table 6.3.1-1 is a template with no definitions.
+                # Recognise only the full header followed entirely by blank cells.
+                labels = next(
+                    (
+                        i
+                        for i, row in enumerate(table.rows)
+                        if row.cells[0] == "Attribute Name"
+                    ),
+                    None,
+                )
+                if labels is not None and all(
+                    not any(row.cells) for row in table.rows[labels + 1 :]
+                ):
+                    warnings.append(
+                        f"{section.number}: AVP table {table.caption}"
+                        " contains no definitions"
+                    )
+                    continue
                 avp_table, note_reused = _extract_avp_table(
                     table, section.number, warnings, quirks
                 )
@@ -976,6 +994,26 @@ def _resolve(collected: _Collected, quirks: sources.Quirks | None = None) -> _Re
     AVP tables."""
     quirks = quirks if quirks is not None else sources.Quirks([], None)
     if not collected.avp_tables:
+        if (
+            quirks.enabled("message-only")
+            and collected.messages
+            and not collected.grouped
+            and all(
+                name
+                in {row.name for table in collected.reused_tables for row in table.rows}
+                and not any(
+                    _ENUM_VALUE_RE.fullmatch(p.text) for p in section.paragraphs
+                )
+                for section, name in collected.pending_enums
+            )
+        ):
+            quirks.fire("message-only")
+            return _Resolved(
+                messages=collected.messages,
+                pairs=[],
+                definitions=[],
+                independent_reused=collected.reused_tables,
+            )
         raise ExtractionError("no AVP table found")
     # A document with several definition sets (29.336's S6m/S6n and S6t,
     # 29.338's S6c and S6d) prints one AVP table and one re-used table per
@@ -1162,6 +1200,10 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
 # "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit short forms
 # cannot mean anything else, where a dotted flags cell or a prose note can.
 QUIRKS: dict[str, str] = {
+    "message-only": (
+        "retain commands and re-used AVPs without a local AVP table"
+        " (TS 29.330 clause 6.3.1)"
+    ),
     "procedure-commands": (
         "read command names and abbreviations from intros under procedure"
         " headings (TS 29.273 clauses 8.2.2.1-4)"

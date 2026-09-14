@@ -100,7 +100,8 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
 
 - **`reused-reprint`, `reused-body-differs`, `reused-origin-indirect`.** Two
   documents describe one AVP, and only the origin's editor knows which copy is
-  current; correcting either would invent an agreement. The
+  current; correcting either would invent an agreement. TS 29.330’s `Load`
+  reference goes through TS 29.229 to RFC 8583 and remains an indirect-origin note. The
   `reused-body-differs` cases are mostly `Serving-Node`-style AVPs whose
   clauses say they originate elsewhere and then print interface-specific
   bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
