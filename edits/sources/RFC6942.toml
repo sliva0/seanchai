@@ -1,0 +1,7 @@
+[[quirk]]
+name = "clause-avp-table"
+reason = "Clauses 8.1 and 8.2 define ERP-RK-Request and ERP-Realm with code and type in prose."
+
+[[quirk]]
+name = "prose-cleared-flags"
+reason = "Clauses 8.1 and 8.2 explicitly state that the M and V bits are cleared for their AVPs."

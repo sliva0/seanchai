@@ -1,0 +1,21 @@
+; Specification: RFC 6942
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc6942.txt
+
+
+; Type: AVP Table
+; Section: 8.1
+; Page: 13
+; Columns: Name  Code  Section Type             M.not
+ERP-RK-Request   618   8.1   Grouped            M,V
+ERP-Realm        619   8.2   DiameterIdentity   M,V
+
+
+; Type: Grouped AVP
+; Name: ERP-RK-Request
+; Section: 8.1
+; Page: 13
+ERP-RK-Request ::= < AVP header: 618 >
+        { ERP-Realm }
+      * [ AVP ]

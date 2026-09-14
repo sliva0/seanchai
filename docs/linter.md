@@ -105,8 +105,7 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   clauses say they originate elsewhere and then print interface-specific
   bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
 - **`origin-not-in-corpus`.** Every missing origin is a legacy `.doc` (TS
-  32.299, 29.368, 29.217, 29.468; 29.154 is not in the catalog at all), an
-  RFC not yet in the catalog (5580, 6734, 6942, cited by TS 29.273), or
+  32.299, 29.368, 29.217, 29.468; 29.154 is not in the catalog at all), or
   outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057, TS
   23.329). These clear as the corpus grows; see the roadmap.
 - **`unresolved-reference`**, six, all AVPs no document defines, tabulates or

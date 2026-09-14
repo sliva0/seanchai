@@ -1,0 +1,39 @@
+; Specification: RFC 6734
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc6734.txt
+
+
+; Type: AVP Table
+; Section: 3.1
+; Page: 3
+; Columns: Name   Code  Section Type
+Key               581   3.1     Grouped
+Key-Type          582   3.1.1   Enumerated
+Key-Name          586   3.1.2   OctetString
+Keying-Material   583   3.1.3   OctetString
+Key-Lifetime      584   3.1.4   Unsigned32
+Key-SPI           585   3.1.5   Unsigned32
+
+
+; Type: Grouped AVP
+; Name: Key
+; Section: 3.1
+; Page: 3
+Key ::= < AVP header: 581 >
+        < Key-Type >
+        { Keying-Material }
+        [ Key-Lifetime ]
+        [ Key-Name ]
+        [ Key-SPI ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Key-Type
+; Section: 3.1.1
+; Page: 4
+Key-Type ::= < Enumerated AVP header: 582 >
+        DSRK = 0
+        rRK  = 1
+        rMSK = 2

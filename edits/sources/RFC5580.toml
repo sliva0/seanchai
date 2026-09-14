@@ -1,0 +1,7 @@
+[[quirk]]
+name = "radius-avp-codes"
+reason = "Clause 6 assigns the Diameter AVPs the RADIUS codes from the Type fields in clauses 4.1–4.7; its flag table omits Code and Section columns."
+
+[[quirk]]
+name = "mixed-table-borders"
+reason = "Clause 6 boxes the entire data row but only the flag columns in the header; its leading header pipe is the first flag boundary."

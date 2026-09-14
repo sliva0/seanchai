@@ -82,6 +82,12 @@ Vocabulary, RFC extractor: `prose-avp-codes` (RFC 7155), `clause-avp-table`
 (RFC 4072, 5447), `radius-attribute-table` (RFC 4590), `type-short-forms`
 (RFC 6733, 4004, 4005, 4006), `prose-catchall-row` (RFC 5778),
 `bare-name-continuation` (RFC 4004), `ragged-separator` (RFC 8583).
+RFC 5580 declares `mixed-table-borders` (clause 6 boxes only flags in the
+header but whole data rows) and `radius-avp-codes` (clause 6 takes the codes
+from the Type fields in 4.1–4.7). RFC 6734 uses `clause-avp-table` (3.1–3.1.5,
+including the bare Key-SPI heading) and `parenthesized-enum-values` (3.1.1's
+mixed-case `rRK (1)` and `rMSK (2)`). RFC 6942 uses `clause-avp-table` and
+`prose-cleared-flags` for the explicit cleared M/V bits in 8.1–8.2.
 Docx extractor: `note-defined-in-rfc` (TS 29.229, 29.329), `dotted-flags`
 (TS 29.061, 29.212), `clause-parenthetical` (TS 29.061). TS 29.273 declares
 `command-reference-only` (clauses
@@ -226,8 +232,8 @@ Same definitions, different carrier:
 - **Enumerated AVPs**: a value list under a name-titled section, when the
   local table types the name Enumerated. Both layouts are read (value alone
   with description below; description on the value's line and wrapping) plus
-  older `2 HMAC-SHA-1` and `0 | IN - …` forms. Value names are all-caps in
-  every collected RFC and requiring that keeps prose out. Warnings record a
+  older `2 HMAC-SHA-1` and `0 | IN - …` forms. Unparenthesized value names require all-caps to keep prose out;
+  RFC 6734 declares its mixed-case parenthesized form separately. Warnings record a
   value list for a name not typed Enumerated (RFC 8581 extending 7683's
   `OC-Report-Type`, which `.dad` cannot express; RFC 6733's
   `Inband-Security-Id` and `Session-Binding`) and an Enumerated AVP with no

@@ -1,0 +1,7 @@
+[[quirk]]
+name = "clause-avp-table"
+reason = "Clauses 3.1–3.1.5 define Name/Code/Type in prose; 3.1.5 uses the bare Key-SPI heading."
+
+[[quirk]]
+name = "parenthesized-enum-values"
+reason = "Clause 3.1.1 prints DSRK (0), rRK (1), and rMSK (2), including mixed-case labels."

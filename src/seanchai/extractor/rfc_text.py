@@ -121,6 +121,8 @@ _ENUM_VALUE_PIPE_RE = re.compile(r"^(?P<value>\d+)\s*\|\s*(?P<label>\S.*)$")
 # spelled some other way fails loudly and earns its own entry, the same
 # collected-cases discipline as the docx extractor's column maps.
 _LEFT_HEADERS: dict[tuple[str, ...], tuple[ast.AvpColumn, ...]] = {
+    # RFC 5580 clause 6 omits both the code and defining-clause columns.
+    ("Attribute Name Value Type",): (ast.AvpColumn.NAME, ast.AvpColumn.TYPE),
     # RFC 6733 §4.5: "AVP" over "Code", "Section" over "Defined".
     ("AVP Section", "Attribute Name Code Defined Data Type"): (
         ast.AvpColumn.NAME,
@@ -242,6 +244,18 @@ IETF_VENDOR = ast.IETF_VENDOR
 # are also per-document knowledge, but an unrecognized spelling fails loudly
 # on its own, where an unwanted prose harvest would succeed silently.
 QUIRKS: dict[str, str] = {
+    "prose-cleared-flags": (
+        "read explicit cleared M/V bits in AVP clauses (RFC 6942 clauses 8.1-8.2)"
+    ),
+    "mixed-table-borders": (
+        "retain open flag-only header lines above boxed rows (RFC 5580 clause 6)"
+    ),
+    "radius-avp-codes": (
+        "complete Diameter table codes from RADIUS Type fields (RFC 5580 clause 6)"
+    ),
+    "parenthesized-enum-values": (
+        "read whole Name (number) lines as enum values (RFC 6734 clause 3.1.1)"
+    ),
     "prose-avp-codes": (
         "complete AVP table rows from each clause's defining sentence, for a"
         " document whose tables print no Code column — RFC 7155 inherits its"
@@ -613,6 +627,12 @@ class _TableReader:
     def read(self, line: _Line) -> None:
         text = _table_text(line.text)
         if self.header_lines is not None:
+            if self.quirks.enabled(
+                "mixed-table-borders"
+            ) and line.text.lstrip().startswith("|"):
+                # RFC 5580 clause 6 boxes the data but only the flags in the header.
+                text = line.text
+                self.quirks.fire("mixed-table-borders")
             if _is_separator(text, self.quirks):
                 if self.header_lines:
                     shape = _read_header(self.header_lines)
@@ -844,16 +864,17 @@ class _ClauseFact:
 def _clause_facts(
     sections: list[_DocSection], quirks: sources.Quirks
 ) -> list[_ClauseFact]:
-    """The Name/Code/Type facts stated by ` AVP`-titled defining clauses.
+    """The Name/Code/Type facts stated by name-titled defining clauses.
 
     Strictly anchored: the sentence must sit under a clause titled with the
     same name it defines. A code annotated with another RFC is an imported
     AVP and is deliberately excluded.
     """
+    # RFC 6734 clause 3.1.5 titles Key-SPI without the optional AVP suffix.
     facts = []
     for section in sections:
         title = _TITLE_RE.match(section.title)
-        if title is None or title["avp_suffix"] is None:
+        if title is None:
             continue
         prose = " ".join(text.strip() for text in section.texts)
         match = _CLAUSE_AVP_RE.search(prose)
@@ -887,15 +908,29 @@ def _clause_avp_table(
     facts = _clause_facts(sections, quirks)
     if not facts:
         return None
-    rows = [
-        ast.AvpTableRow(
-            name=fact.name,
-            code=fact.code,
-            section=fact.section.number,
-            data_type=fact.data_type,
+    rows = []
+    cleared = quirks.enabled("prose-cleared-flags")
+    for fact in facts:
+        flags = ast.AvpFlagRules()
+        if cleared:
+            prose = " ".join(text.strip() for text in fact.section.texts)
+            if "This AVP has the 'M' and 'V' bits cleared." not in prose:
+                raise ExtractionError(
+                    f"{fact.section.number}: no explicit cleared M/V bits"
+                )
+            flags = ast.AvpFlagRules(
+                must_not=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR})
+            )
+            quirks.fire("prose-cleared-flags")
+        rows.append(
+            ast.AvpTableRow(
+                name=fact.name,
+                code=fact.code,
+                section=fact.section.number,
+                data_type=fact.data_type,
+                flag_rules=flags,
+            )
         )
-        for fact in facts
-    ]
     first = facts[0].section
     return ast.AvpTable(
         source=ast.SourceRef(section=first.number, page=first.page),
@@ -904,6 +939,7 @@ def _clause_avp_table(
             ast.AvpColumn.CODE,
             ast.AvpColumn.SECTION,
             ast.AvpColumn.TYPE,
+            *((ast.AvpColumn.MUST_NOT,) if cleared else ()),
         ),
         rows=tuple(rows),
     )
@@ -998,7 +1034,7 @@ def _radius_attribute_table(sections: list[_DocSection]) -> ast.AvpTable | None:
             continue
         code: int | None = None
         for index, text in enumerate(section.texts):
-            if text.strip() != "Type":
+            if text.strip() not in ("Type", "Type:"):
                 continue
             following = next(
                 (
@@ -1009,6 +1045,12 @@ def _radius_attribute_table(sections: list[_DocSection]) -> ast.AvpTable | None:
                 "",
             )
             if match := re.match(r"(?P<code>\d+)\s+for\b", following):
+                code = int(match["code"])
+            elif match := re.fullmatch(
+                r"(?P<code>\d+) - " + re.escape(title["name"]) + r"(?: Attribute)?",
+                following,
+            ):
+                # RFC 5580 clauses 4.1-4.7 explicitly label each Type number.
                 code = int(match["code"])
             break
         if code is None:
@@ -1067,6 +1109,7 @@ def _extract_definitions(
     sections: list[_DocSection],
     tables: tuple[ast.AvpTable, ...],
     warnings: list[str],
+    quirks: sources.Quirks | None = None,
 ) -> tuple[list[ast.Message], list[ast.GroupedAvp | ast.EnumeratedAvp]]:
     """Messages, grouped and enumerated AVPs from the definition sections.
 
@@ -1167,11 +1210,22 @@ def _extract_definitions(
         assert title is not None
         if found_rule:
             continue
-        values = [
-            value
-            for text in section.texts
-            if (value := _enum_value(text.strip())) is not None
-        ]
+        values = []
+        for text in section.texts:
+            value = _enum_value(text.strip())
+            if (
+                value is None
+                and quirks is not None
+                and quirks.enabled("parenthesized-enum-values")
+            ):
+                match = re.fullmatch(
+                    r"(?P<name>[A-Za-z][A-Za-z0-9_-]*) \((?P<value>\d+)\)", text.strip()
+                )
+                if match:
+                    quirks.fire("parenthesized-enum-values")
+                    value = ast.EnumValue(name=match["name"], value=int(match["value"]))
+            if value is not None:
+                values.append(value)
         if not values:
             continue
         row = enum_rows.get(title["name"])
@@ -1320,10 +1374,43 @@ def extract(
         ):
             quirks.fire("radius-attribute-table", len(radius_table.rows))
             tables += (radius_table,)
-        quirks.finish()
+        if quirks.enabled("radius-avp-codes"):
+            index = _radius_attribute_table(document_sections)
+            if index is None:
+                raise ExtractionError("no RADIUS attribute codes found")
+            by_name = {row.name: row for row in index.rows}
+            completed = []
+            for table in tables:
+                rows = []
+                for row in table.rows:
+                    fact = by_name.get(row.name)
+                    if fact is None or row.code is not None:
+                        raise ExtractionError(
+                            f"cannot derive RADIUS code for {row.name}"
+                        )
+                    rows.append(
+                        row.model_copy(
+                            update={"code": fact.code, "section": fact.section}
+                        )
+                    )
+                    quirks.fire("radius-avp-codes")
+                completed.append(
+                    table.model_copy(
+                        update={
+                            "rows": tuple(rows),
+                            "columns": (
+                                *table.columns,
+                                ast.AvpColumn.CODE,
+                                ast.AvpColumn.SECTION,
+                            ),
+                        }
+                    )
+                )
+            tables = tuple(completed)
         messages, definitions = _extract_definitions(
-            document_sections, tables, warnings
+            document_sections, tables, warnings, quirks
         )
+        quirks.finish()
         # File order matches the docx extractor's: messages in document order,
         # the AVP table, then every definition in document order.
         definitions.sort(

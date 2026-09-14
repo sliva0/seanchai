@@ -532,7 +532,7 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29273-i60.dad": {
-        "origin-not-in-corpus": ["RFC5580, RFC6734, RFC6942, TS283.034, TS32.299"],
+        "origin-not-in-corpus": ["TS283.034, TS32.299"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "unresolved-reference": ["NSWO-Authorization"],
     },
