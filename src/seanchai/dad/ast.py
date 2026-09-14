@@ -317,7 +317,7 @@ def _check_columns(columns: tuple[AvpColumn | ReusedColumn, ...]) -> None:
     """`; Columns:` records which of the source table's columns the format
     models, in source order. Unmodelled source columns are dropped — why, and
     when one deserves modelling instead, is covered in
-    docs/extractor.md#columns-the-format-does-not-model."""
+    docs/extractor.md."""
     labels = [column.value for column in columns]
     if len(set(labels)) != len(labels):
         raise ValueError(f"duplicate column in {labels}")

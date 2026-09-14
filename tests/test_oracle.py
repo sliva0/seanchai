@@ -138,10 +138,7 @@ def test_reused_avps_are_the_origins_to_check_not_this_files(tmp_path):
     assert oracle.crosscheck(spec, loaded) == []
 
 
-@pytest.mark.skipif(
-    not (_ROOT / "specifications" / "wireshark" / "dictionary.xml").exists(),
-    reason="pinned Wireshark dictionary not downloaded",
-)
+@pytest.mark.sources
 def test_the_pinned_dictionary_loads_and_the_base_protocol_agrees():
     """The real dictionary parses, and RFC 6733's `.dad` — the file
     hand-verification started from — reports no disagreements beyond the

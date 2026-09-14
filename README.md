@@ -1,207 +1,77 @@
 # Seanchaí
 
 Seanchaí turns Diameter message ABNFs and AVP definitions from 3GPP
-specifications and RFCs into a single canonical, human- and machine-readable
-format (`.dad`), and provides a parser for that format so the definitions can be
-converted into, or validated against, any Diameter implementation's own
-dictionary format.
+specifications and RFCs into one canonical, human- and machine-readable
+format (`.dad`), and provides a parser and a resolved model over it so the
+definitions can be converted into, or validated against, any Diameter
+implementation's own dictionary format.
 
-## Motivation
+5G protocols ship OpenAPI; Diameter ships ABNF blocks and tables inside Word
+documents and RFC text, which every implementation hand-transcribes into a
+dictionary format of its own. Seanchaí does that transcription once, reviewed,
+so that emitting *your* format, or checking an existing one against the
+specifications, is a short script over a corpus rather than a project.
 
-5G's 3GPP protocols have OpenAPI and JSON Schema: a machine-readable
-description of the wire format, published alongside the prose, that anyone can
-generate code from. Diameter has nothing equivalent. Its definitions exist as
-ABNF blocks and tables inside Word documents and RFC text, so every
-implementation hand-transcribes them into a dictionary format of its own
-invention — command ABNFs, grouped AVP rules and AVP tables, copied out of spec
-PDFs. That work is slow, error-prone, and useful for exactly one implementation
-at a time.
+## Pipeline
 
-Seanchaí replaces it with one reviewed source of truth: transcribe (mostly
-automatically) once, review once, then generate or verify every
-implementation's dictionary from it. The intended end state is a Python library
-you point at the `.dad` corpus and query — every message in a given
-specification, every grouped AVP, every plain AVP — so that emitting
-definitions *in your own format* is a short script rather than a transcription
-project. That might be Python class definitions for a library like
-[mensonen/diameter](https://github.com/mensonen/diameter), or a JSON schema
-shaped like the 5G ones, or whatever a particular consumer already uses.
-Seanchaí does not pick the output format; it makes the input to that choice
-machine-readable and reviewed.
+1. **Extract** — source documents to raw `.dad`. 3GPP specs are read from their
+   `.docx` (with page numbers attached from the matching ETSI PDF), RFCs from
+   their plain text. See [docs/extractor.md](docs/extractor.md).
+2. **Review** — three things are committed per specification: the raw
+   extractor output, the corrections declared against it, and the corrected
+   file the two produce. Every corrected line carries a `;;` note citing its
+   declaration. See [docs/corrections.md](docs/corrections.md) and
+   [docs/workflow.md](docs/workflow.md).
+3. **Consume** — the parser turns `.dad` back into an AST, and `seanchai.model`
+   resolves the corpus into messages whose members point at real AVP objects.
+   See [docs/consumers.md](docs/consumers.md).
 
-Generating a dictionary is only one of the two things that buys. If you have
-already hand-written your format, you do not want it regenerated — you want to
-know whether it is right. The same library and the same corpus let you write a
-script that walks your existing dictionary and reports what disagrees with the
-specifications: a wrong code, a stale type, a definition that changed two
-releases ago. That costs nothing to adopt and does not ask you to move to
-anyone else's format.
+The one rule the pipeline rests on: **a `.dad` file records everything its
+source document says about a definition**, including where the document is
+redundant, self-contradictory or wrong. The extractor translates, it never
+curates; the two declared edit layers (input patches for source typos,
+corrections for wrong data) are the only edits, and both are reviewable. The
+[linter](docs/linter.md) reports the contradictions, and the
+[Wireshark oracle](docs/oracle.md) cross-checks values against an independent
+reading of the same documents.
 
-## Architecture
+## Commands
 
-The pipeline has three stages:
-
-1. **Extraction** — source documents to raw `.dad` files. 3GPP specs are parsed
-   from their **.docx** sources (3GPP publishes Word as the authoritative
-   format; bold runs, tables and section structure are explicit there), going
-   docx → intermediate document model → `.dad` AST. A separate pass reads the
-   bookmark outline of the matching ETSI **PDF** to attach page numbers. RFCs
-   are parsed from their plain-text renderings, which carry their own page
-   numbers.
-2. **Review** — three things get committed: raw extractor output per spec
-   version, the corrections declared against it, and the corrected file the two
-   produce. The corrected one is what any real use consumes, and every line a
-   correction touched carries a `;;` note citing the declaration it came from.
-   A version upgrade is re-extract, diff raw-vs-raw to see the document's own
-   change, then re-apply the corrections and let a stale one fail loudly — not
-   a re-review from scratch.
-3. **Consumption** — the parser turns `.dad` files back into the AST, and a
-   consumer model built from that AST lets downstream scripts emit an
-   implementation's native dictionary format or validate an existing
-   hand-written one against the spec. The parser is the half that exists
-   today.
-
-   The AST and the consumer model are deliberately different types. The AST
-   mirrors a `.dad` file one-to-one, keeps references as unresolved strings,
-   and must be able to represent a specification that contradicts itself —
-   fidelity is its whole job. The consumer model is the resolved view: AVP
-   references followed into real objects across files, identities and types
-   attached, methods where they help. Making the AST convenient would make it
-   less faithful, which is why the convenience lives one layer up.
-
-Extraction is the stage that happens to be hardest, but it is not the only way
-a `.dad` file can come to exist. The format is written, not just read: a vendor
-with a proprietary Diameter extension, or anyone with a spec Seanchaí does not
-cover, can hand-author a `.dad` file and have it slot into the same parser,
-linter and consumers as an extracted one. That is a deliberate goal rather than
-an accident of the design, though 3GPP and RFC sources come first in practice
-— the near-term obligation is only to keep hand-authoring viable, not to build
-anything specifically for it.
-
-### The rule that holds the pipeline together
-
-**A `.dad` file records everything its source document says about a
-definition.** Specifications are redundant, occasionally self-contradictory and
-sometimes plainly wrong; a `.dad` file records that faithfully rather than
-tidying it up. The extractor translates, it does not curate — it never drops a
-definition for being redundant, contradicted by another one, or not useful to
-any consumer anyone has written yet.
-
-The scope is definitions — names, codes, vendor-ids, types, flag rules, value
-lists, ABNF bodies — not the specification's narrative. `.dad` has nowhere to
-put a clause's paragraphs and nested bullet lists without mangling them, so it
-does not try; `; Section:` points at the clause for anyone who wants to read
-it. Inside that boundary, nothing is dropped for being inconvenient.
-
-The only edits are the two declared patch layers, and both exist to keep that
-property rather than to weaken it. Input patches fix honest typos in the source
-*text*, so that a document with a flags cell reading `M. V` can be read at all.
-Corrections fix data that parses fine but is wrong, and they produce a
-*separate* file — the committed raw one still says what the document said,
-and the corrected one marks every line they touched.
-Every edit is declared, reasoned and reviewable, and none of them are the
-extractor quietly deciding what a specification meant to say.
-
-Interpreting the result — resolving references, choosing between a local
-definition and a re-used row, filtering to what one implementation needs — is
-the consumer's job. A consumer can ignore anything the file carries; it can
-never recover what the extractor threw away.
-
-## Status
-
-### Working today
-
-- **The `.dad` format**: pydantic AST, strict line-oriented parser, canonical
-  formatter. Round-trip is exact and idempotent. All five section kinds are
-  implemented (Message, Grouped AVP, Enumerated AVP, AVP Table, Reused AVPs).
-  AVP tables declare their own columns, so a table can carry the extra columns
-  a given specification prints and an absent column stays distinct from an
-  empty cell. See [docs/dad-format.md](docs/dad-format.md), and
-  [docs/grammar.md](docs/grammar.md) for the formal grammar.
-- **3GPP docx extractor**, plus the ETSI-PDF page-attachment pass and
-  per-spec source declarations — input patches for source typos, and quirks
-  that opt a document into readings too heuristic to run undeclared. See
-  [docs/extractor.md](docs/extractor.md).
-- **RFC plain-text extractor** for the fixed-width AVP tables IETF documents
-  print — the second input path into the same format. See
-  [docs/extractor.md](docs/extractor.md#the-rfc-plain-text-extractor).
-- **Corrections**: the second patch layer, for data that parses fine but is
-  semantically wrong. See
-  [docs/corrections.md](docs/corrections.md).
-- **Linter**, in two layers: single-file rules for what one document gets
-  wrong about itself, and cross-file rules (`--corpus`) that resolve each
-  re-used AVP against the document it is borrowed from. Every file states its
-  own `; Vendor-ID:` — the half of an AVP's `(vendor-id, code)` identity
-  nothing else in the file supplies. See [docs/linter.md](docs/linter.md).
-- **Wireshark oracle**: `seanchai crosscheck` compares every extracted
-  code, vendor-id and type against Wireshark's independently maintained
-  Diameter dictionary, fetched pinned through the downloader. See
-  [docs/oracle.md](docs/oracle.md).
-- **CLI**: `seanchai extract` (docx → `.dad`), `seanchai extract-rfc`
-  (RFC text → `.dad`), `seanchai correct` (raw `.dad` → corrected),
-  `seanchai lint` (report inconsistencies), `seanchai crosscheck` (compare
-  against Wireshark's dictionary), `seanchai download` (fetch the
-  sources, from the curated catalog in `src/seanchai/downloader/specs.toml`).
-- **Extracted specs**: 34, committed raw and corrected — eighteen 3GPP
-  specifications under `dad/3gpp/rel-18/` and sixteen RFCs under `dad/rfc/`.
-  The corrected files carry no single-file findings.
-- **Consumer model**: `seanchai.model` resolves the corpus into what a
-  generator or validator wants — messages whose ABNF entries point at real
-  AVP objects, cross-references followed across files, lookup by name or
-  `(vendor-id, code)`. The first consumer exists: a validator that checks
-  [mensonen/diameter](https://github.com/mensonen/diameter) against any one
-  specification in the corpus, under `integrations/`. See
-  [docs/consumers.md](docs/consumers.md).
-
-### Planned
-
-Open work is tracked in [docs/roadmap.md](docs/roadmap.md): working the
-standing linter and oracle findings off, the remaining 3GPP document shapes
-and the legacy `.doc` specs, and — the point of the whole thing — more
-consumers over the model: dictionary validators beyond the Cx one, and
-generators. Completed review rounds and the reasoning behind them
-are kept in [docs/history/](docs/history/).
+```sh
+seanchai download                       # fetch the catalog into specifications/
+seanchai extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
+seanchai extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
+seanchai correct RAW.dad --corrections DIR -o OUT.dad
+seanchai lint [--corpus dad] FILE.dad...
+seanchai crosscheck FILE.dad...         # against Wireshark's dictionary
+```
 
 ## Repository layout
 
-- `src/seanchai/` — the `dad` package (AST, parser, formatter, corrections),
-  the `extractor` and `downloader` packages, and the `seanchai` CLI.
-- `dad/` — the committed `.dad` corpus, raw and corrected side by side:
-  `dad/3gpp/rel-18/` per 3GPP release, `dad/rfc/` flat.
-  See [dad/README.md](dad/README.md).
-- `integrations/` — per-target scripts over the model (validators now,
-  generators later), each runnable standalone with `uv run`.
-  See [docs/consumers.md](docs/consumers.md).
-- `edits/` — the two declared edit layers, side by side:
-  `edits/sources/<SpecRef>.toml` for source declarations — input patches for
-  typos that would break extraction, and quirks enabling per-document
-  extractor readings — and `edits/corrections/<SpecRef>.py` for extracted
-  data that parses but is wrong.
-- `specifications/` — downloaded source documents (git-ignored; recreate with
-  `seanchai download`). Output of the downloader, not of the project.
-- `examples/` — the hand-made reference `.dad` file the format is described
-  against. Not part of the corpus.
-- `external/` — third-party checkouts kept while working (git-ignored).
-- `tests/` — pytest suite.
-- `docs/` — the format ([dad-format](docs/dad-format.md),
-  [grammar](docs/grammar.md)), the pipeline ([extractor](docs/extractor.md),
-  [corrections](docs/corrections.md), [downloader](docs/downloader.md)),
-  the checks ([linter](docs/linter.md), [oracle](docs/oracle.md)), the
-  consumer layer ([consumers](docs/consumers.md)), and the
-  [workflow](docs/workflow.md), [development](docs/development.md) and
-  [roadmap](docs/roadmap.md) documents, plus `docs/history/` for completed
-  review rounds.
+- `src/seanchai/` — `dad/` (AST, parser, formatter, corrections), `extractor/`,
+  `downloader/`, `linter.py`, `oracle.py`, `corpus.py`, `model.py`, `cli.py`.
+- `dad/` — the committed corpus: `dad/3gpp/rel-18/`, `dad/rfc/`, and the raw
+  mirror under `dad/raw/`. See [dad/README.md](dad/README.md).
+- `edits/sources/<SpecRef>.toml` — input patches and quirks per source document.
+- `edits/corrections/<SpecRef>.py` — corrections per specification.
+- `integrations/` — consumer scripts over the model, runnable with `uv run`.
+- `editors/` — `.dad` syntax highlighting for VS Code, Vim and Neovim.
+- `specifications/` — downloaded sources (git-ignored).
+- `docs/` — format ([dad-format](docs/dad-format.md), [grammar](docs/grammar.md)),
+  pipeline ([extractor](docs/extractor.md), [corrections](docs/corrections.md),
+  [downloader](docs/downloader.md)), checks ([linter](docs/linter.md),
+  [oracle](docs/oracle.md)), [consumers](docs/consumers.md),
+  [workflow](docs/workflow.md), [development](docs/development.md) and the
+  [roadmap](docs/roadmap.md).
 
 ## Development
 
 ```sh
-uv sync                # install, including the dev group
-uv run pytest          # tests
-uv run ruff check .    # lint
-uv run ruff format .   # format
-uv run ty check        # type check (fast, alpha)
-uv run basedpyright    # type check (thorough, standard mode)
+uv sync
+uv run pytest -m "not sources"   # without the downloaded documents
+uv run pytest                    # everything, needs `seanchai download`
+uv run ruff check . && uv run ruff format .
+uv run ty check && uv run basedpyright
 ```
 
-See [docs/development.md](docs/development.md) for how strictly to take each of
-these.
+See [docs/development.md](docs/development.md).

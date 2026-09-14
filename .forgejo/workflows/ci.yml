@@ -27,9 +27,8 @@ jobs:
             uv-
       - run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - run: ~/.local/bin/uv sync --locked
-      # The tests that re-extract from real source documents skip themselves
-      # when specifications/ is absent, so the suite runs without downloads.
-      - run: ~/.local/bin/uv run pytest
+      # No source documents in CI: the tests that need them are deselected.
+      - run: ~/.local/bin/uv run pytest -m "not sources"
       - run: ~/.local/bin/uv run ruff check .
       - run: ~/.local/bin/uv run ruff format --check .
       # Drop anything sync no longer references, so the saved cache tracks

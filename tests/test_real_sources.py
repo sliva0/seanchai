@@ -1,14 +1,15 @@
-"""Optional regression pin of the extractor against the real source documents.
+"""Regression pin of both extractors against the real source documents.
 
-The rest of the suite runs on a synthetic docx, which is what keeps it fast and
-committable. This module pins the other half: that the committed raw output is
-still exactly what the real 3GPP docx and its ETSI PDF produce. It is the test
-that catches an extractor change which is fine on the fixture and wrong on the
-documents the fixture was abstracted from.
+Every committed `.dad` file is re-extracted from the docx/PDF or RFC text that
+produced it and compared byte-for-byte. This is the test that catches an
+extractor change which is fine on the synthetic fixture and wrong on the real
+documents.
 
-The sources are hand-fetched binaries under the git-ignored `output/manual/`
-(see docs/workflow.md), so every test here skips when they are absent — which
-is the normal state of a fresh clone, and of CI until there is one.
+The sources live under the git-ignored `specifications/` (fetched by
+`seanchai download`; hand-fetched docx/PDF pairs under `specifications/manual/`).
+A missing source is a failure, not a skip: a suite that silently skipped its
+strongest check would look green for the wrong reason. Run
+`pytest -m "not sources"` to leave these out deliberately.
 """
 
 from pathlib import Path
@@ -55,14 +56,17 @@ def _cases():
         yield pytest.param(path, source, pdf, link, raw, id=path.name)
 
 
+@pytest.mark.sources
 @pytest.mark.parametrize(("committed", "source", "pdf", "link", "raw"), list(_cases()))
 def test_the_real_sources_still_produce_the_committed_output(
     committed, source, pdf, link, raw
 ):
     sources = [source] if pdf is None else [source, pdf]
     missing = [path.name for path in sources if not path.is_file()]
-    if missing:
-        pytest.skip(f"sources not present locally: {', '.join(missing)}")
+    assert not missing, (
+        f"sources not present locally: {', '.join(missing)} — run `seanchai download`"
+        ' or deselect with `pytest -m "not sources"`'
+    )
 
     if source.suffix == ".txt":
         spec = rfc_text.extract(source, link=link, sources_dir=_SOURCES)
