@@ -354,7 +354,7 @@
         [ Callback-Number ]
         [ Called-Station-Id ]
         [ Calling-Station-Id ]
-      * [ Connect-Info ] ;; corrected: (RFC7155.py:28)
+      * [ Connect-Info ] ;; corrected: (RFC7155.py:32)
         [ Originating-Line-Info ]
         [ Authorization-Lifetime ]
         [ Session-Timeout ]

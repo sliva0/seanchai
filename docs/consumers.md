@@ -12,11 +12,11 @@ knowing its `(vendor-id, code)`, type, flag rules and defining document.
 from seanchai import corpus, model
 
 built = model.Model.build(corpus.Corpus.load([Path("dad")]))
-built.messages("TS29.229")          # bodies resolved
-built.avps("TS29.229")              # a spec's dictionary view
-built.resolve("TS29.229", "DRMP")   # one name in one spec's reading
-built.find("Public-Identity")       # every AVP under a name
-built.identified(10415, 601)        # every AVP claiming an identity
+built.messages("TS29.229")  # bodies resolved
+built.avps("TS29.229")  # a spec's dictionary view
+built.resolve("TS29.229", "DRMP")  # one name in one spec's reading
+built.find("Public-Identity")  # every AVP under a name
+built.identified(10415, 601)  # every AVP claiming an identity
 ```
 
 The query set is thin on purpose: each query was written because a real

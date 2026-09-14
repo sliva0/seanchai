@@ -32,7 +32,14 @@ CORRECTIONS = [
     )
     for (name, origin), after in zip(
         _MISSING,
-        ("Additional-Serving-Node", "MME-Name", "MME-Realm", "MSC-Number",
-         "SGSN-Name", "SGSN-Realm"),
+        (
+            "Additional-Serving-Node",
+            "MME-Name",
+            "MME-Realm",
+            "MSC-Number",
+            "SGSN-Name",
+            "SGSN-Realm",
+        ),
+        strict=True,
     )
 ]

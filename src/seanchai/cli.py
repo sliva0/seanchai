@@ -430,8 +430,7 @@ def download(
             for spec in rfc_specs:
                 click.echo(f"  RFC {spec.number}: {spec.title}")
             click.echo(
-                f"\nWireshark Diameter dictionary: {wireshark.path}"
-                f" at {wireshark.tag}"
+                f"\nWireshark Diameter dictionary: {wireshark.path} at {wireshark.tag}"
             )
             return
         download_corpus(
@@ -470,7 +469,8 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
     verdict — so findings never fail the run.
     """
     from .dad import parser
-    from .oracle import Oracle, OracleError, crosscheck as check
+    from .oracle import Oracle, OracleError
+    from .oracle import crosscheck as check
 
     try:
         oracle = Oracle.load(dictionary)
@@ -485,8 +485,7 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
             for finding in findings:
                 click.echo(f"{source}: {finding}")
     click.echo(
-        f"checked {len(sources)} files against the dictionary:"
-        f" {total} findings",
+        f"checked {len(sources)} files against the dictionary: {total} findings",
         err=True,
     )
 

@@ -7,7 +7,10 @@ CORRECTIONS = [
         target=header(),
         field="bases",
         expect=("RFC6733",),
-        replace=('RFC6733', 'RFC4005', 'RFC5777'),
-        reason="the credit-control ABNFs reference NASREQ's Filter-Id and RFC 5777's Filter-Rule without a re-used table",
+        replace=("RFC6733", "RFC4005", "RFC5777"),
+        reason=(
+            "the credit-control ABNFs reference NASREQ's Filter-Id and RFC 5777's "
+            "Filter-Rule without a re-used table"
+        ),
     ),
 ]

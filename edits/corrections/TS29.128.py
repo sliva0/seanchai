@@ -1,7 +1,13 @@
 """Corrections for 3GPP TS 29.128 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, definition, reused_avps, reused_row
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    definition,
+    reused_avps,
+    reused_row,
+)
 
 CORRECTIONS = [
     Correction(

@@ -93,8 +93,15 @@ CORRECTIONS = [
                 ("SGSN-Realm", "TS29.173"),
                 ("SGSN-Number", "TS29.272"),
             ),
-            ("Additional-Serving-Node", "MME-Name", "MME-Realm", "MSC-Number",
-             "SGSN-Name", "SGSN-Realm"),
+            (
+                "Additional-Serving-Node",
+                "MME-Name",
+                "MME-Realm",
+                "MSC-Number",
+                "SGSN-Name",
+                "SGSN-Realm",
+            ),
+            strict=True,
         )
     ),
 ]

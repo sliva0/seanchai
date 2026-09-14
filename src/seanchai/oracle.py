@@ -33,7 +33,9 @@ from pathlib import Path
 
 from .dad import ast
 
-_ENTITY_RE = re.compile(r'<!ENTITY\s+(?P<name>[A-Za-z0-9_]+)\s+SYSTEM\s+"(?P<file>[^"]+)"\s*>')
+_ENTITY_RE = re.compile(
+    r'<!ENTITY\s+(?P<name>[A-Za-z0-9_]+)\s+SYSTEM\s+"(?P<file>[^"]+)"\s*>'
+)
 _PROLOG_RE = re.compile(r"<\?xml[^>]*\?>")
 _DOCTYPE_RE = re.compile(r"<!DOCTYPE.*?\]>", re.DOTALL)
 _PI_RE = re.compile(r"<\?[^>]*\?>")
@@ -60,10 +62,7 @@ class DictionaryAvp:
 # type the specifications print. `OctetStringOrUTF8` is Wireshark hedging
 # where different specs disagree, so both readings are acceptable.
 _ACCEPTABLE: dict[str, frozenset[ast.DataType]] = {
-    **{
-        data_type.value: frozenset({data_type})
-        for data_type in ast.DataType
-    },
+    **{data_type.value: frozenset({data_type}) for data_type in ast.DataType},
     # NASREQ and the 3GPP specs type their IPv4/IPv6-carrying AVPs
     # OctetString (RFC 4005's Framed-IP-Address, 29.061's 3GPP-CG-Address);
     # `IPAddress` is how the dissector displays them, not a claim the
@@ -117,9 +116,7 @@ class Oracle:
             raise OracleError(
                 f"cannot read the dictionary at {directory}: {error}"
             ) from error
-        entities = {
-            match["name"]: match["file"] for match in _ENTITY_RE.finditer(text)
-        }
+        entities = {match["name"]: match["file"] for match in _ENTITY_RE.finditer(text)}
         # `dictionary.ent` is pulled in as a parameter entity and declares
         # `Custom` with a literal value — the empty string in a stock
         # checkout, entity references when a user extends the dictionary.
@@ -167,8 +164,10 @@ class Oracle:
         for avp in root.iter("avp"):
             symbol = avp.attrib.get("vendor-id", "None")
             if symbol not in vendors:
-                raise OracleError(f"AVP {avp.attrib.get('name')!r} names the"
-                                  f" undeclared vendor {symbol!r}")
+                raise OracleError(
+                    f"AVP {avp.attrib.get('name')!r} names the"
+                    f" undeclared vendor {symbol!r}"
+                )
             type_element = avp.find("type")
             entry = DictionaryAvp(
                 name=avp.attrib["name"],
@@ -206,7 +205,9 @@ def _acceptable(entry: DictionaryAvp) -> frozenset[ast.DataType] | None:
         # Wireshark types enumerated AVPs as their wire type; the enum
         # children are what say a value list exists.
         return (
-            _ACCEPTABLE.get(entry.type_name, frozenset()) if entry.type_name else frozenset()
+            _ACCEPTABLE.get(entry.type_name, frozenset())
+            if entry.type_name
+            else frozenset()
         ) | {ast.DataType.ENUMERATED}
     if entry.type_name is None:
         return None
@@ -319,9 +320,7 @@ def crosscheck(spec: ast.Specification, oracle: Oracle) -> list[Finding]:
             )
             continue
         if claim.data_type not in acceptable:
-            spelled = ", ".join(
-                sorted(entry.type_name or "Grouped" for entry in named)
-            )
+            spelled = ", ".join(sorted(entry.type_name or "Grouped" for entry in named))
             findings.append(
                 Finding(
                     "type-disagrees",

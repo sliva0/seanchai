@@ -7,7 +7,10 @@ CORRECTIONS = [
         target=header(),
         field="bases",
         expect=("RFC6733",),
-        replace=('RFC6733', 'RFC4005'),
-        reason="the CCR/CCA ABNFs reference Filter-Id, which NASREQ (RFC 4005) defines; the document's normative references cite NASREQ for it",
+        replace=("RFC6733", "RFC4005"),
+        reason=(
+            "the CCR/CCA ABNFs reference Filter-Id, which NASREQ (RFC 4005) defines; "
+            "the document's normative references cite NASREQ for it"
+        ),
     ),
 ]

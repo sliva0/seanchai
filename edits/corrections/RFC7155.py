@@ -22,7 +22,11 @@ CORRECTIONS = [
             ("Re-Auth-Answer", "Redirected-Host-Cache-Time", "Redirect-Max-Cache-Time"),
             ("Abort-Session-Answer", "Redirected-Host", "Redirect-Host"),
             ("Abort-Session-Answer", "Redirected-Host-Usage", "Redirect-Host-Usage"),
-            ("Abort-Session-Answer", "Redirected-Max-Cache-Time", "Redirect-Max-Cache-Time"),
+            (
+                "Abort-Session-Answer",
+                "Redirected-Max-Cache-Time",
+                "Redirect-Max-Cache-Time",
+            ),
         )
     ),
     Correction(
@@ -38,7 +42,12 @@ CORRECTIONS = [
         target=header(),
         field="bases",
         expect=("RFC6733",),
-        replace=('RFC6733', 'RFC4005'),
-        reason="the command ABNFs reference NAS-IP-Address, NAS-Identifier, State and their siblings, whose rows this document's own tables print with a 'Defined in' pointing at their RADIUS-era origins; RFC 4005 defines and tabulates them",
+        replace=("RFC6733", "RFC4005"),
+        reason=(
+            "the command ABNFs reference NAS-IP-Address, NAS-Identifier, State and "
+            "their siblings, whose rows this document's own tables print with a "
+            "'Defined in' pointing at their RADIUS-era origins; RFC 4005 defines and "
+            "tabulates them"
+        ),
     ),
 ]

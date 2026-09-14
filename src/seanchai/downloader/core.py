@@ -561,9 +561,7 @@ def validate_wireshark_file(path: Path) -> None:
         raise DownloadError(f"{path.name} contains no markup")
 
 
-def download_wireshark(
-    dictionary: WiresharkDictionary, output: Path
-) -> DownloadRecord:
+def download_wireshark(dictionary: WiresharkDictionary, output: Path) -> DownloadRecord:
     """Fetch every file of the pinned dictionary directory.
 
     One record for the whole directory: the files only mean anything
@@ -617,9 +615,7 @@ def download_corpus(
     workers: int = 6,
     extract: bool = True,
     pdfs: bool = False,
-    catalog: tuple[
-        tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary
-    ]
+    catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]
     | None = None,
     report: Callable[[str], None] = lambda message: None,
 ) -> Path:

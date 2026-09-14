@@ -7,71 +7,84 @@ from seanchai.dad.corrections import Correction, avp_rule, table_row
 # (section 6) and the AA-Answer ABNF lowercase the T. The definitions are
 # the canonical spelling — RADIUS's attributes of the same name and
 # Wireshark's dictionary both write AppleTalk.
-CORRECTIONS = [
-    Correction(
-        target=table_row(f"Framed-Appletalk-{suffix}"),
-        field="name",
-        expect=f"Framed-Appletalk-{suffix}",
-        replace=f"Framed-AppleTalk-{suffix}",
-        reason=f"clause 6.13.{clause} heads and defines"
-        f" Framed-AppleTalk-{suffix}, as do the Accounting-Request ABNF and"
-        " Wireshark's dictionary; the AVP table lowercases the T",
-    )
-    for clause, suffix in enumerate(("Link", "Network", "Zone"), start=1)
-] + [
-    Correction(
-        target=avp_rule("AA-Answer", f"Framed-Appletalk-{suffix}"),
-        field="name",
-        expect=f"Framed-Appletalk-{suffix}",
-        replace=f"Framed-AppleTalk-{suffix}",
-        reason=f"the AA-Answer ABNF lowercases the T of"
-        f" Framed-AppleTalk-{suffix} against clause 6.13.{clause}'s"
-        " definition and the Accounting-Request ABNF",
-    )
-    for clause, suffix in enumerate(("Link", "Network", "Zone"), start=1)
-] + [
-    # The redirect family: the RAA and ASA ABNFs (clauses 3.4, 3.8) misspell
-    # RFC 6733's Redirect-* base AVPs, and the STA ABNF (clause 3.6)
-    # misspells Redirect-Host-Usage. RFC 7155, this document's successor,
-    # carries the same Redirected-* misspellings and its verified errata
-    # 5993/5994 confirm the intended names.
-    Correction(
-        target=avp_rule(parent, wrong),
-        field="name",
-        expect=wrong,
-        replace=right,
-        reason=f"the {parent} ABNF writes {wrong}; RFC 6733 (and RFC 3588,"
-        f" current when this was published) defines {right} and no"
-        " Redirected-* AVP exists; the AAR/AAA ABNFs of this same document"
-        " spell the family correctly",
-    )
-    for parent, wrong, right in (
-        ("Re-Auth-Answer", "Redirected-Host", "Redirect-Host"),
-        ("Re-Auth-Answer", "Redirected-Host-Usage", "Redirect-Host-Usage"),
-        ("Re-Auth-Answer", "Redirected-Host-Cache-Time", "Redirect-Max-Cache-Time"),
-        ("Session-Termination-Answer", "Redirect-Host-Usase", "Redirect-Host-Usage"),
-        ("Abort-Session-Answer", "Redirected-Host", "Redirect-Host"),
-        ("Abort-Session-Answer", "Redirected-Host-Usage", "Redirect-Host-Usage"),
-        ("Abort-Session-Answer", "Redirected-Max-Cache-Time", "Redirect-Max-Cache-Time"),
-    )
-] + [
-    Correction(
-        target=avp_rule("Accounting-Request", "Connection-Info"),
-        field="name",
-        expect="Connection-Info",
-        replace="Connect-Info",
-        reason="the ACR ABNF (clause 3.9) writes Connection-Info; the AVP is"
-        " Connect-Info (code 77), defined in clause 4.7 and carried by the"
-        " AAR ABNF; RFC 7155's verified erratum 5995 confirms the same typo"
-        " in the successor document",
-    ),
-    Correction(
-        target=avp_rule("Accounting-Request", "Qos-Filter-Rule"),
-        field="name",
-        expect="Qos-Filter-Rule",
-        replace="QoS-Filter-Rule",
-        reason="the ACR ABNF (clause 3.9) lowercases the S; clause 6.9"
-        " defines QoS-Filter-Rule (code 407) and the AVP table spells it the"
-        " same way",
-    ),
-]
+CORRECTIONS = (
+    [
+        Correction(
+            target=table_row(f"Framed-Appletalk-{suffix}"),
+            field="name",
+            expect=f"Framed-Appletalk-{suffix}",
+            replace=f"Framed-AppleTalk-{suffix}",
+            reason=f"clause 6.13.{clause} heads and defines"
+            f" Framed-AppleTalk-{suffix}, as do the Accounting-Request ABNF and"
+            " Wireshark's dictionary; the AVP table lowercases the T",
+        )
+        for clause, suffix in enumerate(("Link", "Network", "Zone"), start=1)
+    ]
+    + [
+        Correction(
+            target=avp_rule("AA-Answer", f"Framed-Appletalk-{suffix}"),
+            field="name",
+            expect=f"Framed-Appletalk-{suffix}",
+            replace=f"Framed-AppleTalk-{suffix}",
+            reason=f"the AA-Answer ABNF lowercases the T of"
+            f" Framed-AppleTalk-{suffix} against clause 6.13.{clause}'s"
+            " definition and the Accounting-Request ABNF",
+        )
+        for clause, suffix in enumerate(("Link", "Network", "Zone"), start=1)
+    ]
+    + [
+        # The redirect family: the RAA and ASA ABNFs (clauses 3.4, 3.8) misspell
+        # RFC 6733's Redirect-* base AVPs, and the STA ABNF (clause 3.6)
+        # misspells Redirect-Host-Usage. RFC 7155, this document's successor,
+        # carries the same Redirected-* misspellings and its verified errata
+        # 5993/5994 confirm the intended names.
+        Correction(
+            target=avp_rule(parent, wrong),
+            field="name",
+            expect=wrong,
+            replace=right,
+            reason=f"the {parent} ABNF writes {wrong}; RFC 6733 (and RFC 3588,"
+            f" current when this was published) defines {right} and no"
+            " Redirected-* AVP exists; the AAR/AAA ABNFs of this same document"
+            " spell the family correctly",
+        )
+        for parent, wrong, right in (
+            ("Re-Auth-Answer", "Redirected-Host", "Redirect-Host"),
+            ("Re-Auth-Answer", "Redirected-Host-Usage", "Redirect-Host-Usage"),
+            ("Re-Auth-Answer", "Redirected-Host-Cache-Time", "Redirect-Max-Cache-Time"),
+            (
+                "Session-Termination-Answer",
+                "Redirect-Host-Usase",
+                "Redirect-Host-Usage",
+            ),
+            ("Abort-Session-Answer", "Redirected-Host", "Redirect-Host"),
+            ("Abort-Session-Answer", "Redirected-Host-Usage", "Redirect-Host-Usage"),
+            (
+                "Abort-Session-Answer",
+                "Redirected-Max-Cache-Time",
+                "Redirect-Max-Cache-Time",
+            ),
+        )
+    ]
+    + [
+        Correction(
+            target=avp_rule("Accounting-Request", "Connection-Info"),
+            field="name",
+            expect="Connection-Info",
+            replace="Connect-Info",
+            reason="the ACR ABNF (clause 3.9) writes Connection-Info; the AVP is"
+            " Connect-Info (code 77), defined in clause 4.7 and carried by the"
+            " AAR ABNF; RFC 7155's verified erratum 5995 confirms the same typo"
+            " in the successor document",
+        ),
+        Correction(
+            target=avp_rule("Accounting-Request", "Qos-Filter-Rule"),
+            field="name",
+            expect="Qos-Filter-Rule",
+            replace="QoS-Filter-Rule",
+            reason="the ACR ABNF (clause 3.9) lowercases the S; clause 6.9"
+            " defines QoS-Filter-Rule (code 407) and the AVP table spells it the"
+            " same way",
+        ),
+    ]
+)

@@ -7,7 +7,10 @@ CORRECTIONS = [
         target=header(),
         field="bases",
         expect=("RFC6733",),
-        replace=('RFC6733', 'RFC7683', 'RFC8581'),
-        reason="the OC-OLR extension references RFC 7683's OC- AVP family and RFC 8581's SourceID, which this document extends rather than re-declares",
+        replace=("RFC6733", "RFC7683", "RFC8581"),
+        reason=(
+            "the OC-OLR extension references RFC 7683's OC- AVP family and RFC 8581's"
+            " SourceID, which this document extends rather than re-declares"
+        ),
     ),
 ]
