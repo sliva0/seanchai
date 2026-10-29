@@ -1461,6 +1461,7 @@ Routing-Rule-Report ::= < AVP header: 2835 >
 ; Name: Default-Access
 ; Section: 5.3.120
 ; Page: 177
+; Values: IP-CAN-Type AVP
 Default-Access ::= < Enumerated AVP header: 2829 10415 >
 
 

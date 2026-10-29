@@ -158,6 +158,15 @@ def test_readings_that_differ_stay_apart_and_agreeing_ones_merge(package):
     ) in avps
 
 
+def test_an_externally_defined_enumeration_names_its_source(package):
+    avps = (package / "avps.py").read_text(encoding="utf-8")
+    assert (
+        "# Values: TS 32.422 [23] for Trace Depth (TS29.272 clause 7.3.67).\n"
+        "TRACE_DEPTH = AvpDef(\n"
+    ) in avps
+    assert "# Values: OMNA WSP Content Type Numbers [210] (TS32.299 clause" in avps
+
+
 # The modules whose documents print no application id in their command
 # headers; README.md lists the same.
 _WITHOUT_APPLICATION_ID = [

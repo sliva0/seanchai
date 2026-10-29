@@ -6,14 +6,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Format
 
-- **C. `; EXTERNALLY-DEFINED` marker and a `Supply` correction.** For an
-  enumerated AVP whose clause says the values live in another document
-  (29.272's `Alert-Reason`): the extractor records the fact instead of an
-  empty body, and `Supply` fills a whole hand-notated section, marked
-  `;; supplied:` on every line, expecting the marker and no values. Waits
-  for a consumer that needs those values. TS 32.299 adds two empty ones
-  today: Type-Number (clause 7.2.238, values from the OMNA WSP registry) and
-  API-Network-Service-Node (7.2.20eA, values from TS 23.682).
 - **D. Model the machine-readable source columns when a consumer asks.**
   29.212's and 29.215's "Acc. Type" and "Applicability", 29.214's and
   29.468's "Applicability" (29.215 and 29.468 in their re-used tables too),
@@ -32,10 +24,15 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Linter and corpus
 
-- **G. Submit the staged Wireshark merge requests** in
-  `integrations/wireshark/`.
-- **P. Report cross-file type and flag-rule disagreements** for one AVP
-  (a citing table against its origin); only codes and bodies are compared.
+- **R. Read the value lists the enumerated reading misses.** Seventeen
+  clauses print values the extractor drops, warning "lists no values": TS
+  29.109's six (`NO (0) The sending node ...`, `YES(1)`, `- (0) Private user
+  identity.`), 29.214's `Media-Type` and `Service-Info-Status` (a leading
+  dash, a label in words), 29.229's `Priviledged-Sender-Indication` (two
+  values on one line, 6.3.58), 29.272's `Error-Diagnostic` and
+  `SIPTO-Permission` (a leading dash, a space inside the name) and 29.338's
+  six (a leading dash, a trailing comma). Each shape needs a reading or a
+  patch.
 
 ## Sources
 

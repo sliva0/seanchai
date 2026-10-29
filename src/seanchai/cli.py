@@ -390,6 +390,9 @@ def _correct(spec, directory: Path, required: bool):
         elif isinstance(edit, corrections_module.Insert):
             verb = click.style("inserted", fg="green")
             click.echo(f"{verb}: {result.node} {reason}", err=True)
+        elif isinstance(edit, corrections_module.Supply):
+            verb = click.style("supplied", fg="green")
+            click.echo(f"{verb}: {result.node} {reason}", err=True)
         else:
             verb = click.style("corrected", fg="green")
             click.echo(

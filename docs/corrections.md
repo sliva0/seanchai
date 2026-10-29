@@ -89,6 +89,15 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   carries that label, creates the table's re-used block right after it:
   TS 32.299 table 7.1.0.1 tabulates IETF AVPs without naming an origin per
   row, and its corrections give each name its RFC.
+- **`Supply(id, target=definition(name), expect=<the ; Values: text>, values=(...), reason)`**:
+  fills the value list of an enumerated AVP whose clause names another
+  document for its values and prints none. It expects the section's
+  `; Values:` citation, exactly, and no values, so it fails when upstream
+  re-words the citation or starts printing the list itself; the citation
+  stays, since the document still makes it. The reason cites the clause of
+  the external document the values come from. No committed module declares
+  one: TS 32.299's `API-Network-Service-Node` cites TS 23.682, whose
+  V18.0.0 names the network elements but numbers none of them.
 
 No arbitrary `edit=lambda` escape hatch and no `move`/`split`: a correction
 that cannot be described cannot be reviewed. A structural case that appears
@@ -120,7 +129,8 @@ removes that line.
 
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
-inserted row is marked `;; inserted:`. Notes are `;;` comments, so an
+inserted row is marked `;; inserted:`, and every value a `Supply` adds
+`;; supplied:`. Notes are `;;` comments, so an
 annotated file parses to exactly the corrected tree, and they are placed by
 the rules a hand-written comment follows ([dad-format.md](dad-format.md#comments)):
 `seanchai format` keeps every note where it is, and a corrected file is

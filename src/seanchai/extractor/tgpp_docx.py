@@ -696,10 +696,12 @@ def _extract_enumerated(
                 elif match := _VALUE_FIRST_RE.fullmatch(line.text):
                     quirks.fire("value-first-enums")
                     values.append(_value_first(match, section.number))
-    if not values and not reserved:
-        # TS 32.299's Type-Number (7.2.238) takes its values from an OMNA
-        # registry and API-Network-Service-Node (7.2.20eA) from TS 23.682;
-        # neither prints a list. Kept empty rather than dropped.
+    values_source = _values_source(section, quirks)
+    if not values and not reserved and values_source is None:
+        # Kept empty rather than dropped. Every clause reported here today
+        # does print values, in shapes this reading does not take (TS
+        # 29.109's "- (0) Private user identity.", 29.338's "SM_DELIVER
+        # (0)" after a dash, 29.229 clause 6.3.58's two values on one line).
         warnings.append(f"{section.number}: enumerated AVP {name} lists no values")
     merged = sorted(
         [*values, *reserved],
@@ -710,8 +712,58 @@ def _extract_enumerated(
         source=ast.SourceRef(section=section.number),
         code=code,
         vendor_id=vendor_id,
+        values_source=values_source,
         values=tuple(merged),
     )
+
+
+# Behind `external-enum-values`: an enumerated clause naming the document or
+# clause its values are defined in, one lead-in per document's wording. What
+# follows the lead-in is the source as printed, reference number included.
+_VALUES_SOURCE_RES = (
+    # TS 29.272 clauses 7.3.67, 7.3.137 and ten more: "The possible values
+    # are those defined in TS 32.422 [23] for Trace Depth."
+    re.compile(r"The possible values are those defined in (?P<source>.+?)\.?$"),
+    # TS 29.212 clause 5.3.120: "The values defined in the Default-Access AVP
+    # are the same as the ones defined in IP-CAN-Type AVP."
+    re.compile(
+        r"The values defined in the \S+ AVP are the same as the ones defined in"
+        r" (?P<source>.+?)\.?$"
+    ),
+    # TS 32.299 clause 7.2.238: "The values are taken from OMNA WSP Content
+    # Type Numbers [210]."
+    re.compile(r"The values are taken from (?P<source>.+?)\.?$"),
+    # TS 32.299 clause 7.2.20eA: "... and holds the identifier of the network
+    # element as defined in TS 23.682[243], that triggers the API
+    # notification." TS 23.682 V18.0.0 names the network elements but
+    # numbers none of them.
+    re.compile(
+        r"holds the identifier of the network element as defined in"
+        r" (?P<source>[^,]+),"
+    ),
+)
+
+
+def _values_source(section: _Section, quirks: sources.Quirks) -> str | None:
+    """Where the clause says its values are defined, if it says so in one of
+    the wordings `_VALUES_SOURCE_RES` reads."""
+    if not quirks.enabled("external-enum-values"):
+        return None
+    found = [
+        match["source"]
+        for paragraph in section.paragraphs
+        for pattern in _VALUES_SOURCE_RES
+        if (match := pattern.search(paragraph.text))
+    ]
+    if len(found) > 1:
+        raise ExtractionError(
+            f"{section.number}: the clause names {len(found)} sources for its"
+            f" values: {found}"
+        )
+    if not found:
+        return None
+    quirks.fire("external-enum-values")
+    return found[0]
 
 
 # TS 32.299 writes its value lists value first, and labels values in words:
@@ -1678,6 +1730,11 @@ QUIRKS: dict[str, str] = {
     "value-first-enums": (
         "read 'n Label' enumerated values, the label ending at the first"
         " colon and the rest of the line its description (TS 32.299)"
+    ),
+    "external-enum-values": (
+        "read where an enumerated clause says its values are defined ('The"
+        " possible values are those defined in TS 32.422 [23] ...') into"
+        " `; Values:` (TS 29.212 clause 5.3.120, TS 29.272, TS 32.299)"
     ),
     "worded-enum-values": (
         "read 'Label In Words (n)' enumerated values, keeping the label's"

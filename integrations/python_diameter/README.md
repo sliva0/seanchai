@@ -154,7 +154,9 @@ or absent — is the library's switch to design; the per-module
   `Grouped`. Writing them out would repeat every member list.
 - Enumerated values live on the definition as `(name, value)` pairs in the
   document's spelling (TS 32.299's `"PS to CS Transfer"`), not as `E_*`
-  constants.
+  constants. An enumeration whose clause defines its values elsewhere has a
+  comment naming the source above it (`# Values: TS 32.422 [23] for Trace
+  Depth (TS29.272 clause 7.3.67).`) and no values.
 - Attribute names are derived mechanically (`_base.attribute_name`):
   `3GPP-IMSI` is `tgpp_imsi` where the library writes some `3GPP-` AVPs
   without the prefix, a leading digit gets `avp_` (`avp_5qi`), a Python

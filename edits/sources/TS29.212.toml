@@ -44,3 +44,9 @@ last_version = "18.2.0"
 [[quirk]]
 name = "dotted-flags"
 reason = "seven flags cells write the separator as a period ('M.V'); the space-less form is this document's convention, unlike the 'M. V' typo class that goes through patches"
+
+[[quirk]]
+name = "external-enum-values"
+reason = "clause 5.3.120 gives Default-Access no values of its own: 'The values defined in the Default-Access AVP are the same as the ones defined in IP-CAN-Type AVP.'"
+first_version = "18.2.0"
+last_version = "18.2.0"

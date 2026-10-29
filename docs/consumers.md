@@ -7,6 +7,9 @@ is the opposite contract: built once from a `corpus.Corpus`, it hands a
 consumer a `Message` whose entries point at real `Avp` objects, a `Grouped`
 that enumerates its members, an `Enumerated` with its values, and every AVP
 knowing its `(vendor-id, code)`, type, flag rules and defining document.
+An `Enumerated` whose clause defines its values elsewhere carries that
+citation in `values_source` (TS 29.272's `Trace-Depth`: "TS 32.422 [23] for
+Trace Depth"); with no values beside it the AVP is complete, not a hole.
 
 ```python
 from seanchai import corpus, model

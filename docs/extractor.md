@@ -96,16 +96,17 @@ The declared vocabulary, with the document that forced each:
   `independent-avp-tables` (no one-to-one table pairing; also 29.215,
   whose clause 5.4.0 states S9's re-use in prose),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
-  kept, no enum code derived from them). TS 32.299 declares ten:
+  kept, no enum code derived from them). TS 32.299 declares eleven:
   `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
   message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
   also 29.229's four grouped rules), `struck-rules-unused`,
   `physical-avp-columns` (table 7.2.0.1), `refer-type-cells`,
   `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
   `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
-  `value-first-enums`, `body-clause-headings` (7.2.135C) and
-  `dotted-flags`. TS 29.368 adds `worded-enum-values` (6.4.6's `Device
-  Trigger Request (1)`).
+  `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`
+  and `external-enum-values` (7.2.238, 7.2.20eA; also 29.212 and 29.272).
+  TS 29.368 adds `worded-enum-values` (6.4.6's `Device Trigger Request
+  (1)`).
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`); `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
@@ -141,9 +142,16 @@ Walks paragraphs and tables in document order under numbered headings:
   value's description (`2 High priority: Lower than Pre-emptive priority`,
   7.2.132); `11 .. 99 Reserved for …` is a reserved range, and a range
   allocated otherwise (`100 .. 199 Vendor specific SM services`, 7.2.213)
-  names no value and is reported. An enumerated clause printing no values
-  (32.299's Type-Number, 7.2.238, and API-Network-Service-Node, 7.2.20eA)
-  keeps an empty definition and warns.
+  names no value and is reported. Behind `external-enum-values`, a clause
+  that says where its values are defined instead of listing them gets that
+  citation as `; Values:`, in the document's words: TS 29.272's twelve
+  trace and MDT AVPs ("The possible values are those defined in TS 32.422
+  [23] for Trace Depth", 7.3.67), TS 29.212's `Default-Access` ("the same as
+  the ones defined in IP-CAN-Type AVP", 5.3.120), TS 32.299's `Type-Number`
+  (OMNA WSP Content Type Numbers, 7.2.238) and `API-Network-Service-Node`
+  (TS 23.682, 7.2.20eA). An enumerated clause yielding neither values nor a
+  citation keeps an empty definition and warns; every such clause today
+  prints values in a shape the reading misses (roadmap item R).
 - The table with the "AVP Flag rules" header → `AvpTable`. A row whose code
   cell is a NOTE reference gets `code=None`; a note naming a defining RFC also
   produces a `ReusedAvps` row (`note-defined-in-rfc`). Behind

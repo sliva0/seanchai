@@ -457,6 +457,23 @@ def test_message_only_quirk_cannot_accept_a_document_without_commands():
         tgpp_docx._resolve(tgpp_docx._Collected(), quirks)
 
 
+def test_an_enumerated_clause_naming_two_value_sources_is_rejected():
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    section = _enum_section("7.3.67", "Trace-Depth")
+    for text in (
+        "The possible values are those defined in TS 32.422 [23] for Trace Depth.",
+        "The values are taken from OMNA WSP Content Type Numbers [210].",
+    ):
+        section.paragraphs.append(
+            tgpp_docx._Para(text=text, style="", lines=section.paragraphs[0].lines)
+        )
+    quirks = Quirks([Quirk(name="external-enum-values", reason="rejection")], None)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="names 2 sources"):
+        tgpp_docx._extract_enumerated(section, "Trace-Depth", 1462, 10415, quirks, [])
+
+
 def _abnf_lines(*texts):
     return [
         tgpp_docx._Line(

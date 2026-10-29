@@ -47,6 +47,7 @@ _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?
 # The file header's fields belong to three separate lines, so they are checked
 # one directive at a time rather than by constructing the model.
 _VERSION = pydantic.TypeAdapter(ast.Version)
+_INLINE_TEXT = pydantic.TypeAdapter(ast.InlineText)
 
 
 class DadParseError(ValueError):
@@ -300,6 +301,9 @@ def _parse_enumerated(
 ) -> ast.EnumeratedAvp:
     name = _pop(directives, "Name", lineno)
     source = _source_ref(directives, lineno)
+    # Optional: present only where the clause says its values are defined
+    # in another document or clause.
+    values_source = directives.pop("Values", None)
     _no_leftovers(directives, lineno)
     header_name, code, vendor_id = _avp_header(body, "Enumerated AVP", lineno)
     if header_name != name.value:
@@ -325,12 +329,16 @@ def _parse_enumerated(
                 raise DadParseError(
                     value_lineno, f"malformed enum value: {line.strip()!r}"
                 )
+    if values_source is not None:
+        with _validated(values_source.lineno):
+            _INLINE_TEXT.validate_python(values_source.value)
     with _validated(name.lineno):
         return ast.EnumeratedAvp(
             name=name.value,
             source=source,
             code=code,
             vendor_id=vendor_id,
+            values_source=None if values_source is None else values_source.value,
             values=tuple(values),
         )
 
@@ -522,6 +530,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Page": ("source", "page"),
     "Table": ("table",),
     "Columns": ("columns",),
+    "Values": ("values_source",),
 }
 _BODIES = {
     "Message": ("avps", 1),

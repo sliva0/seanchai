@@ -218,6 +218,13 @@ class EnumeratedAvp(Node):
     source: SourceRef
     code: Unsigned32
     vendor_id: Unsigned32 | None = None
+    # `; Values:` — where the clause says the values are defined, in its own
+    # words, when that is somewhere else: TS 29.272 clause 7.3.67 gives
+    # `Trace-Depth` "those defined in TS 32.422 [23] for Trace Depth", TS
+    # 32.299 clause 7.2.238 takes `Type-Number`'s from "OMNA WSP Content Type
+    # Numbers [210]". None when the clause names no other source. Values a
+    # `Supply` correction fills in keep it, since the document still says it.
+    values_source: InlineText | None = None
     values: tuple[EnumValue | ReservedValues, ...]
 
 

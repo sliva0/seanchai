@@ -91,6 +91,60 @@ def test_enum_value_names_with_spaces_and_parentheses_round_trip():
     assert parser.parse(formatter.format_spec(spec)) == spec
 
 
+def test_a_values_source_round_trips_after_the_page_with_or_without_values():
+    # TS 29.272 clause 7.3.67 names TS 32.422 for Trace-Depth's values and
+    # prints none; a `Supply` correction can add them under the citation.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 29.272",
+            "; Version: 18.7.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Enumerated AVP",
+            "; Name: Trace-Depth",
+            "; Section: 7.3.67",
+            "; Page: 130",
+            "; Values: TS 32.422 [23] for Trace Depth",
+            "Trace-Depth ::= < Enumerated AVP header: 1462 10415 >",
+            "",
+            "",
+            "; Type: Enumerated AVP",
+            "; Name: Job-Type",
+            "; Section: 7.3.137",
+            "; Values: TS 32.422 [23] for Job-Type",
+            "Job-Type ::= < Enumerated AVP header: 1623 10415 >",
+            "        Immediate_MDT_only = 0",
+            "",
+        ]
+    )
+
+    spec = parser.parse(text)
+
+    trace_depth, job_type = spec.sections
+    assert isinstance(trace_depth, ast.EnumeratedAvp)
+    assert trace_depth.values_source == "TS 32.422 [23] for Trace Depth"
+    assert trace_depth.values == ()
+    assert isinstance(job_type, ast.EnumeratedAvp)
+    assert job_type.values_source == "TS 32.422 [23] for Job-Type"
+    assert formatter.format_spec(spec) == text
+
+
+def test_a_values_source_is_free_text_and_reports_its_own_line():
+    text = _dad(
+        "; Type: Enumerated AVP",
+        "; Name: Example-Mode",
+        "; Section: 5.2",
+        "; Values:  padded",
+        "Example-Mode ::= < Enumerated AVP header: 100 10415 >",
+    )
+
+    with pytest.raises(parser.DadParseError, match="String should match") as error:
+        parser.parse(text)
+
+    assert error.value.lineno == 8
+
+
 @pytest.mark.parametrize(
     "name", [" Leading", "Trailing ", "Doubled  space", "Tab\tinside", "(Leading"]
 )

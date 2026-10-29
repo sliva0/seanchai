@@ -1326,6 +1326,7 @@ API-Direction ::= < Enumerated AVP header: 1310 10415 >
 ; Name: API-Network-Service-Node
 ; Section: 7.2.20eA
 ; Page: 119
+; Values: TS 23.682[243]
 API-Network-Service-Node ::= < Enumerated AVP header: 1315 10415 >
 
 
@@ -3319,6 +3320,7 @@ TWAN-User-Location-Info ::= < AVP header: 2714 10415 > ;; corrected: (TS32.299.p
 ; Name: Type-Number
 ; Section: 7.2.238
 ; Page: 197
+; Values: OMNA WSP Content Type Numbers [210]
 Type-Number ::= < Enumerated AVP header: 1204 10415 >
 
 

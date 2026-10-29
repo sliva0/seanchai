@@ -71,7 +71,7 @@ syn match dadLink "https\?://\S\+" contained
 
 " Free-text directives get one uniform value color — no point picking the
 " 29.109 out of "3GPP TS 29.109". Defined after the generic line, so it wins.
-syn match dadDirectiveTextLine "^; \%(Specification\|Name\|Table\): .*$" contains=dadDirectiveKey,dadDirectiveText
+syn match dadDirectiveTextLine "^; \%(Specification\|Name\|Table\|Values\): .*$" contains=dadDirectiveKey,dadDirectiveText
 syn match dadDirectiveText ": \zs.*$" contained contains=dadComment
 
 " Free-text comments override everything else on the line

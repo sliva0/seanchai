@@ -556,6 +556,133 @@ def test_deleting_and_correcting_the_same_node_is_refused():
             corrections.apply(spec, ordering)
 
 
+_SUPPLIED = (
+    ast.EnumValue(name="Any", value=0),
+    ast.ReservedValues(first=1, last=3),
+    ast.EnumValue(name="Text", value=4),
+)
+
+
+def _externally_defined(
+    spec: ast.Specification, values: tuple = ()
+) -> ast.Specification:
+    """TS 32.299 clause 7.2.238's shape: an enumerated AVP whose clause
+    names another document for its values and prints none."""
+    enumerated = spec.sections[2]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    cited = enumerated.model_copy(
+        update={
+            "values_source": "OMNA WSP Content Type Numbers [210]",
+            "values": values,
+        }
+    )
+    return spec.model_copy(update={"sections": (*spec.sections[:2], cited)})
+
+
+def _supply(expect="OMNA WSP Content Type Numbers [210]", values=_SUPPLIED):
+    return corrections.Supply(
+        id=next(_IDS),
+        target=corrections.definition("Example-Mode"),
+        expect=expect,
+        values=values,
+        reason="test",
+    )
+
+
+def test_a_supply_fills_the_values_and_marks_every_supplied_line():
+    supply = _supply()
+
+    corrected, results = corrections.apply(_externally_defined(_spec()), [supply])
+
+    enumerated = corrected.sections[2]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert enumerated.values == _SUPPLIED
+    # The document still says where the values are defined.
+    assert enumerated.values_source == "OMNA WSP Content Type Numbers [210]"
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    noted = [line for line in text.splitlines() if ";;" in line]
+    assert noted == [
+        f"        Any      = 0 ;; supplied: ({supply.id})",
+        f"      ; RESERVED = 1-3 ;; supplied: ({supply.id})",
+        f"        Text     = 4 ;; supplied: ({supply.id})",
+    ]
+    assert parser.parse_with_comments(text) == (
+        corrected,
+        corrections.notes(results),
+    )
+
+
+@pytest.mark.parametrize(
+    ("spec", "expect", "message"),
+    [
+        # Upstream re-worded the citation.
+        (
+            _externally_defined(_spec()),
+            "OMNA WSP Content Type Codes [210]",
+            "expected values_source='OMNA WSP Content Type Codes",
+        ),
+        # Upstream prints the list itself.
+        (
+            _externally_defined(_spec(), values=_SUPPLIED[:1]),
+            "OMNA WSP Content Type Numbers [210]",
+            "already holds 1 values",
+        ),
+        # No citation at all: a clause saying nothing is not a Supply case.
+        (_spec(), "OMNA WSP Content Type Numbers [210]", "found None"),
+    ],
+    ids=["citation-changed", "values-printed", "no-citation"],
+)
+def test_a_supply_expects_the_citation_and_no_values(spec, expect, message):
+    with pytest.raises(corrections.CorrectionError, match=message):
+        corrections.apply(spec, [_supply(expect=expect)])
+
+
+def test_a_supply_requires_an_enumerated_avp():
+    supply = corrections.Supply(
+        id=next(_IDS),
+        target=corrections.definition("Example-Request"),
+        expect="anything",
+        values=_SUPPLIED,
+        reason="test",
+    )
+
+    with pytest.raises(corrections.CorrectionError, match="matched a Message"):
+        corrections.apply(_spec(), [supply])
+
+
+def test_a_supply_of_no_values_is_rejected_when_declared():
+    with pytest.raises(corrections.CorrectionError, match="supplies no values"):
+        _supply(values=())
+
+
+def test_supplying_one_section_twice_or_deleting_it_is_refused():
+    spec = _externally_defined(_spec())
+    enumerated = spec.sections[2]
+
+    with pytest.raises(corrections.CorrectionError, match="supplied more than once"):
+        corrections.apply(spec, [_supply(), _supply()])
+    edits = [_supply(), _delete(corrections.definition("Example-Mode"), enumerated)]
+    for ordering in (edits, list(reversed(edits))):
+        with pytest.raises(
+            corrections.CorrectionError, match="both corrected and deleted"
+        ):
+            corrections.apply(spec, ordering)
+
+
+def test_a_supply_and_a_correction_of_the_same_section_both_apply():
+    spec = _externally_defined(_spec())
+    edits = [
+        _correction(corrections.definition("Example-Mode"), "code", 1600, 1601),
+        _supply(),
+    ]
+
+    corrected, _ = corrections.apply(spec, edits)
+
+    enumerated = corrected.sections[2]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert (enumerated.code, enumerated.values) == (1601, _SUPPLIED)
+
+
 def _repeated_session_id(spec: ast.Specification) -> ast.Specification:
     """TS 29.229 clause 6.1.10's RTA shape: one rule printed twice."""
     message = _message(spec)
@@ -734,6 +861,11 @@ def test_every_corrected_file_already_carries_its_corrections(path):
         if isinstance(correction, corrections.Delete):
             # A deleted node's mark of success is its absence.
             assert list(target.find(spec)) == [], f"{target.describe()} in {path.name}"
+            continue
+        if isinstance(correction, corrections.Supply):
+            (enumerated,) = target.find(spec)
+            assert isinstance(enumerated, ast.EnumeratedAvp)
+            assert enumerated.values == correction.values
             continue
         if correction.field == "name":
             # A correction that rewrites a name also rewrites what the selector
@@ -927,6 +1059,22 @@ def test_a_required_load_fails_when_the_module_is_missing_or_empty(tmp_path):
     # The same two states are ordinary results for a corpus-wide extraction.
     assert corrections.load(tmp_path, "3GPP TS 29.999") == []
     assert corrections.load(tmp_path, "3GPP TS 29.998") == []
+
+
+def test_a_module_may_declare_a_supply(tmp_path):
+    (tmp_path / "TS29.999.py").write_text(
+        "from seanchai.dad import ast\n"
+        "from seanchai.dad.corrections import Supply, definition\n"
+        "CORRECTIONS = [Supply(id='mode-values', target=definition('Example-Mode'),"
+        " expect='TS 29.998 [1]', values=[ast.EnumValue(name='Off', value=0)],"
+        " reason='r')]\n"
+    )
+
+    (supply,) = corrections.load(tmp_path, "3GPP TS 29.999")
+
+    assert isinstance(supply, corrections.Supply)
+    assert supply.cited == "TS29.999.py#mode-values"
+    assert supply.values == (ast.EnumValue(name="Off", value=0),)
 
 
 def test_loaded_corrections_cite_their_module_and_a_unique_id():

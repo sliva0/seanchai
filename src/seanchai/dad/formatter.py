@@ -103,7 +103,8 @@ def _directives(
     section: ast.Section, name: str | None, path: ast.TreePath, notes: Comments
 ) -> list[str]:
     """A section's directive lines, in canonical order. Only tables carry a
-    `; Table:` caption and only definitions a `; Name:`."""
+    `; Table:` caption, only definitions a `; Name:`, and only an
+    enumerated AVP a `; Values:`."""
     lines = notes.line(f"; Type: {section.type}", (*path, "type"))
     if name is not None:
         lines.extend(notes.line(f"; Name: {name}", (*path, "name")))
@@ -115,6 +116,10 @@ def _directives(
     if section.source.page is not None:
         lines.extend(
             notes.line(f"; Page: {section.source.page}", (*path, "source", "page"))
+        )
+    if isinstance(section, ast.EnumeratedAvp) and section.values_source is not None:
+        lines.extend(
+            notes.line(f"; Values: {section.values_source}", (*path, "values_source"))
         )
     return lines
 

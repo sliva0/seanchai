@@ -26,11 +26,14 @@ output back in makes every `expect` fail, because treating an already-applied
 correction as a no-op would make "already corrected" indistinguishable from
 "fixed upstream".
 
-Beside field replacement there are two narrow structural operations: `Delete`
-for a node that should not exist at all, and `Insert` for an AVP-table row the
-source defines but omits from the table. Both fail loudly when upstream changes
-the state that justified them: `Delete` expects the doomed node field-for-field,
-and `Insert` expects the row to be absent, so it fails the day upstream adds it.
+Beside field replacement there are three narrow structural operations:
+`Delete` for a node that should not exist at all, `Insert` for an AVP-table row
+the source defines but omits from the table, and `Supply` for the value list of
+an enumerated AVP whose clause defines its values in another document. All fail
+loudly when upstream changes the state that justified them: `Delete` expects
+the doomed node field-for-field, `Insert` expects the row to be absent, so it
+fails the day upstream adds it, and `Supply` expects the clause's `; Values:`
+citation and no values.
 """
 
 import dataclasses
@@ -471,10 +474,52 @@ class Insert:
         return _cited(self)
 
 
-# What a corrections module may declare. `Supply` remains designed
-# (docs/corrections.md) but deliberately unimplemented until a document forces
-# its externally-defined-enum shape.
-Edit = Correction | Delete | Insert
+@dataclass(frozen=True)
+class Supply:
+    """Fill in the values of an enumerated AVP whose clause defines them
+    elsewhere, as a hand-notated list citing that document.
+
+    The clause states its values' source in a `; Values:` line and prints
+    none: TS 32.299 clause 7.2.238 takes `Type-Number`'s from the OMNA WSP
+    registry. `expect` is that line's text, and the section must hold no
+    values, so the declaration fails both when upstream re-words the
+    citation and when it starts printing the list itself. The `; Values:`
+    line stays, since the document still says it; every supplied line is
+    marked `;; supplied:`, because none of them is the document's own.
+    """
+
+    id: str
+    target: definition
+    expect: str
+    values: tuple[ast.EnumValue | ast.ReservedValues, ...]
+    reason: str
+    versions: str | VersionRange = "*..*"
+    origin: str = ""
+
+    def __post_init__(self) -> None:
+        _check_id(self.id)
+        object.__setattr__(self, "versions", VersionRange.parse(self.versions))
+        object.__setattr__(self, "values", tuple(self.values))
+        if not self.values:
+            raise CorrectionError(
+                f"{self.target.describe()}: Supply supplies no values"
+            )
+        if not all(
+            isinstance(value, ast.EnumValue | ast.ReservedValues)
+            for value in self.values
+        ):
+            raise CorrectionError(
+                f"{self.target.describe()}: Supply takes EnumValue and"
+                " ReservedValues nodes"
+            )
+
+    @property
+    def cited(self) -> str:
+        return _cited(self)
+
+
+# What a corrections module may declare.
+Edit = Correction | Delete | Insert | Supply
 
 
 _ID_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
@@ -500,16 +545,18 @@ class Result:
     correction: Edit
     node: str
     # For a `Correction`, the field's values; for a `Delete`, the removed node
-    # and None; for an `Insert`, None and the new node.
+    # and None; for an `Insert`, None and the new node; for a `Supply`, None
+    # and the supplied values.
     old: Any
     new: Any
     # Where the edited node sits *in the returned tree* — the new row for an
-    # `Insert`; for a `Delete`, the position the node stood in, which the
-    # sibling that moved up into it now holds (one past the end when the last
-    # sibling went), since the node itself produces no lines — so a formatter
-    # can mark what an edit reached. Set after the rebuild, because inserts
-    # and deletions move what follows them: the path an edit was resolved by
-    # belongs to the input tree.
+    # `Insert`, the enumerated AVP for a `Supply`; for a `Delete`, the
+    # position the node stood in, which the sibling that moved up into it now
+    # holds (one past the end when the last sibling went), since the node
+    # itself produces no lines — so a formatter can mark what an edit
+    # reached. Set after the rebuild, because inserts and deletions move what
+    # follows them: the path an edit was resolved by belongs to the input
+    # tree.
     path: ast.TreePath = ()
 
 
@@ -570,6 +617,27 @@ def _resolve(spec: ast.Specification, edit: Edit) -> ast.TreePath:
     return found[0]
 
 
+def _checked_supply(node: ast.Node, supply: Supply) -> None:
+    """What `Supply` fills must be an enumerated AVP that cites the expected
+    source for its values and prints none of them."""
+    described = supply.target.describe()
+    if not isinstance(node, ast.EnumeratedAvp):
+        raise CorrectionError(
+            f"{described}: Supply requires an enumerated AVP,"
+            f" matched a {type(node).__name__}"
+        )
+    if node.values_source != supply.expect:
+        raise CorrectionError(
+            f"{described}: expected values_source={supply.expect!r},"
+            f" found {node.values_source!r}"
+        )
+    if node.values:
+        raise CorrectionError(
+            f"{described}: the section already holds {len(node.values)} values;"
+            " Supply fills only an empty list"
+        )
+
+
 def _checked_deletion(node: ast.Node, delete: Delete) -> None:
     """`expect` names the whole node: a changed row may no longer deserve
     deletion, so any difference means the declaration wants re-review."""
@@ -592,16 +660,25 @@ def _checked_deletion(node: ast.Node, delete: Delete) -> None:
     )
 
 
-# Where a table row in the rebuild came from: its path in the tree being
-# rebuilt, or the declaration index of the `Insert` that adds it.
-type _Origin = ast.TreePath | int
+@dataclass(frozen=True)
+class _Added:
+    """A node an edit adds rather than finds: the edit's declaration index,
+    and the node's position among the ones that edit adds."""
+
+    edit: int
+    item: int = 0
+
+
+# Where a tuple item in the rebuild came from: its path in the tree being
+# rebuilt, or the edit that adds it.
+type _Origin = ast.TreePath | _Added
 
 
 def _inserted(
     parent: ast.Node,
     rows: list[tuple[_Origin, Any]] | None,
     insert: Insert,
-    origin: int,
+    origin: _Added,
     path: ast.TreePath,
 ) -> list[tuple[_Origin, Any]]:
     """The rows of the table at `path` with the declared row inserted, each
@@ -724,7 +801,8 @@ class _Plan:
     replaced: dict[ast.TreePath, ast.Node] = dataclasses.field(default_factory=dict)
     deleted: set[ast.TreePath] = dataclasses.field(default_factory=set)
     # A table's rows once its `Insert`s are in, keyed by the table's path
-    # plus "rows".
+    # plus "rows"; an enumerated AVP's values once `Supply` fills them, by
+    # its path plus "values".
     rows: dict[ast.TreePath, list[tuple[_Origin, Any]]] = dataclasses.field(
         default_factory=dict
     )
@@ -772,9 +850,9 @@ def _rebuilt(node: Any, path: ast.TreePath, out: ast.TreePath, plan: _Plan) -> A
             # the last.
             if origin in plan.deleted:
                 plan.placed[origin] = (*out, name, len(kept))
-            elif isinstance(origin, int):
-                # An inserted row was validated when its edit was declared
-                # and has no input to correct.
+            elif isinstance(origin, _Added):
+                # An inserted row or supplied value was validated when its
+                # edit was declared and has no input to correct.
                 plan.placed[origin] = (*out, name, len(kept))
                 kept.append(item)
             else:
@@ -825,7 +903,11 @@ def apply(
             raise CorrectionError(f"{described}: deleted more than once")
         if path in plan.deleted or (
             isinstance(correction, Delete)
-            and (path in plan.replaced or (*path, "rows") in plan.rows)
+            and (
+                path in plan.replaced
+                or (*path, "rows") in plan.rows
+                or (*path, "values") in plan.rows
+            )
         ):
             raise CorrectionError(
                 f"{described}: the node is both corrected and deleted;"
@@ -848,12 +930,30 @@ def apply(
             )
             origins.append(path)
             continue
+        if isinstance(correction, Supply):
+            _checked_supply(node, correction)
+            if (*path, "values") in plan.rows:
+                raise CorrectionError(f"{described}: values supplied more than once")
+            plan.rows[(*path, "values")] = [
+                (_Added(index, position), value)
+                for position, value in enumerate(correction.values)
+            ]
+            results.append(
+                Result(
+                    correction=correction,
+                    node=f"{described}, {len(correction.values)} values",
+                    old=None,
+                    new=correction.values,
+                )
+            )
+            origins.append(path)
+            continue
         if isinstance(correction, Insert):
             plan.rows[(*path, "rows")] = _inserted(
                 plan.replaced.get(path, node),
                 plan.rows.get((*path, "rows")),
                 correction,
-                index,
+                _Added(index),
                 path,
             )
             results.append(
@@ -864,7 +964,7 @@ def apply(
                     new=correction.node,
                 )
             )
-            origins.append(index)
+            origins.append(_Added(index))
             continue
         claim = (path, correction.field)
         if claim in claimed:
@@ -928,6 +1028,9 @@ def notes(results: list[Result]) -> formatter.Comments:
     before the sibling that moved up into it — and names what is gone,
     because unlike a trailing note it has no line saying that for it.
 
+    Each value a `Supply` adds trails a `supplied:` note, as an inserted
+    row trails `inserted:`.
+
     A deleted *section* gets a `detached` note instead: its place is between
     two sections, so gluing the note to the top of the following section
     would read as being about that section. The formatter prints detached
@@ -946,6 +1049,14 @@ def notes(results: list[Result]) -> formatter.Comments:
             continue
         if isinstance(edit, Insert):
             trailing.setdefault(result.path, []).append(f"inserted: ({edit.cited})")
+            continue
+        if isinstance(edit, Supply):
+            # The list was empty before, so the supplied values are the
+            # section's values, from the first.
+            for position in range(len(edit.values)):
+                trailing.setdefault((*result.path, "values", position), []).append(
+                    f"supplied: ({edit.cited})"
+                )
             continue
         trailing.setdefault(_cited_line(result, edit), []).append(
             f"corrected: ({edit.cited})"
@@ -1051,9 +1162,12 @@ def _corrections_of(path: Path) -> list[Edit]:
         raise CorrectionError(
             f"{path}: CORRECTIONS must be a list, not a {type(corrections).__name__}"
         )
-    if not all(isinstance(item, Correction | Delete | Insert) for item in corrections):
+    if not all(
+        isinstance(item, Correction | Delete | Insert | Supply) for item in corrections
+    ):
         raise CorrectionError(
-            f"{path}: CORRECTIONS must hold Correction, Delete or Insert objects"
+            f"{path}: CORRECTIONS must hold Correction, Delete, Insert or Supply"
+            " objects"
         )
     seen: set[str] = set()
     for item in corrections:

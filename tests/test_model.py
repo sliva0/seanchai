@@ -588,6 +588,19 @@ class TestOverTheCommittedCorpus:
         (row, *_) = built.table_rows("TS29.212", "Allocation-Retention-Priority")
         assert arp.flag_rules == row.flag_rules
 
+    def test_an_externally_defined_enumeration_is_complete(self, built):
+        """TS 29.272 clause 7.3.67 defines Trace-Depth and points at TS
+        32.422 for its values: an AVP with no values and their source, not a
+        hole."""
+        trace_depth = built.resolve("TS29.272", "Trace-Depth")
+        assert isinstance(trace_depth, model.Enumerated)
+        assert trace_depth.values == ()
+        assert trace_depth.values_source == "TS 32.422 [23] for Trace Depth"
+        assert built.hole("TS29.272", "Trace-Depth") is None
+        alert_reason = built.resolve("TS29.272", "Alert-Reason")
+        assert isinstance(alert_reason, model.Enumerated)
+        assert alert_reason.values_source is None
+
     def test_29229_types_the_digest_avps_rfc_4590_leaves_untyped(self, built):
         realm = built.resolve("TS29.229", "Digest-Realm")
         assert realm is not None

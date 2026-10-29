@@ -127,6 +127,7 @@ zero-or-more.
 enumerated-avp = "; Type: Enumerated AVP" NL
                  "; Name: " avp-name NL
                  source-ref
+                 ["; Values: " inline-text NL]
                  enum-header-rule NL
                  *((enum-value / reserved) NL)
 enum-header-rule = avp-name " ::= < Enumerated AVP header: " code
@@ -142,6 +143,11 @@ and parentheses after its first character: TS 32.299 labels its values in
 words (`PS to CS Transfer = 0`, `VAS4SMS Short Message Virtual Private
 Network (VPN) = 7`). It cannot contain `=`, so the ` = ` before the digits
 ends it.
+
+`; Values:` says where the clause defines the values instead, in its own
+words (`; Values: TS 32.422 [23] for Trace Depth`). With no values after
+it, the section is complete as it stands: the document points elsewhere for
+the list. Values may still follow, supplied by a correction.
 
 `; RESERVED` is the one `; Key:` line that may appear in a body. A reserved
 value is distinct from an unassigned one: a validator must reject a

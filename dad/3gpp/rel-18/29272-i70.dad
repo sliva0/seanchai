@@ -1255,6 +1255,7 @@ Trace-Data ::= < AVP header: 1458 10415 >
 ; Name: Trace-Depth
 ; Section: 7.3.67
 ; Page: 135
+; Values: TS 32.422 [23] for Trace Depth
 Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
 
 
@@ -1646,6 +1647,7 @@ MDT-Configuration ::= < AVP header: 1622 10415 >
 ; Name: Job-Type
 ; Section: 7.3.137
 ; Page: 150
+; Values: TS 32.422 [23] for Job-Type
 Job-Type ::= < Enumerated AVP header: 1623 10415 >
 
 
@@ -1667,6 +1669,7 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 ; Name: Report-Interval
 ; Section: 7.3.141
 ; Page: 150
+; Values: TS 32.422 [23] for Report Interval
 Report-Interval ::= < Enumerated AVP header: 1627 10415 >
 
 
@@ -1674,6 +1677,7 @@ Report-Interval ::= < Enumerated AVP header: 1627 10415 >
 ; Name: Report-Amount
 ; Section: 7.3.142
 ; Page: 150
+; Values: TS 32.422 [23] for Report Amount
 Report-Amount ::= < Enumerated AVP header: 1628 10415 >
 
 
@@ -1681,6 +1685,7 @@ Report-Amount ::= < Enumerated AVP header: 1628 10415 >
 ; Name: Logging-Interval
 ; Section: 7.3.145
 ; Page: 150
+; Values: TS 32.422 [23] for Logging Interval
 Logging-Interval ::= < Enumerated AVP header: 1631 10415 >
 
 
@@ -1688,6 +1693,7 @@ Logging-Interval ::= < Enumerated AVP header: 1631 10415 >
 ; Name: Logging-Duration
 ; Section: 7.3.146
 ; Page: 151
+; Values: TS 32.422 [23] for Logging Duration
 Logging-Duration ::= < Enumerated AVP header: 1632 10415 >
 
 
@@ -1770,6 +1776,7 @@ Daylight-Saving-Time ::= < Enumerated AVP header: 1650 10415 >
 ; Name: Measurement-Period-LTE
 ; Section: 7.3.166
 ; Page: 155
+; Values: TS 32.422 [23] for Measurement period LTE
 Measurement-Period-LTE ::= < Enumerated AVP header: 1655 10415 >
 
 
@@ -1777,6 +1784,7 @@ Measurement-Period-LTE ::= < Enumerated AVP header: 1655 10415 >
 ; Name: Measurement-Period-UMTS
 ; Section: 7.3.167
 ; Page: 155
+; Values: TS 32.422 [23] for Measurement period UMTS
 Measurement-Period-UMTS ::= < Enumerated AVP header: 1656 10415 >
 
 
@@ -1784,6 +1792,7 @@ Measurement-Period-UMTS ::= < Enumerated AVP header: 1656 10415 >
 ; Name: Collection-Period-RRM-LTE
 ; Section: 7.3.168
 ; Page: 155
+; Values: TS 32.422 [23] for Collection period for RRM measurements LTE
 Collection-Period-RRM-LTE ::= < Enumerated AVP header: 1657 10415 >
 
 
@@ -1791,6 +1800,7 @@ Collection-Period-RRM-LTE ::= < Enumerated AVP header: 1657 10415 >
 ; Name: Collection-Period-RRM-UMTS
 ; Section: 7.3.169
 ; Page: 155
+; Values: TS 32.422 [23] for Collection period for RRM measurements UMTS
 Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 
 
@@ -2118,6 +2128,7 @@ MDT-Configuration-NR ::= < AVP header: 1720 10415 >
 ; Name: Collection-Period-RRM-NR
 ; Section: 7.3.247
 ; Page: 175
+; Values: TS 32.422 [23] for Collection period for RRM measurements NR
 Collection-Period-RRM-NR ::= < Enumerated AVP header: 1722 10415 >
 
 
@@ -2125,6 +2136,7 @@ Collection-Period-RRM-NR ::= < Enumerated AVP header: 1722 10415 >
 ; Name: Collection-Period-M6-NR
 ; Section: 7.3.248
 ; Page: 175
+; Values: TS 32.422 [23] for Collection period M6 in NR
 Collection-Period-M6-NR ::= < Enumerated AVP header: 1723 10415 >
 
 

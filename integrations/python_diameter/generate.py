@@ -39,6 +39,7 @@ import keyword
 import re
 import shutil
 import sys
+import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -609,7 +610,16 @@ def render_definition(definition: Definition) -> str:
         items.append(Item(f"wireshark_name={quoted(definition.wireshark_alias)}"))
     if definition.hole is not None:
         items.append(Item(f"hole={quoted(definition.hole)}"))
-    return render_call("AvpDef", items, 0, prefix)
+    rendered = render_call("AvpDef", items, 0, prefix)
+    if isinstance(sample, model.Enumerated) and sample.values_source is not None:
+        # The clause names where the values are defined, in its words: with
+        # no values beside it (TS 29.272's Trace-Depth) the comment is all a
+        # reader gets of the list.
+        cited = f"{sample.defined_in} clause {sample.section}"
+        comment = f"Values: {sample.values_source} ({cited})."
+        lines = textwrap.wrap(comment, 86, break_on_hyphens=False)
+        rendered = "".join(f"# {line}\n" for line in lines) + rendered
+    return rendered
 
 
 def _sort_key(definition: Definition) -> tuple:

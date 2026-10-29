@@ -37,7 +37,7 @@ each starting with `; Type:`.
 |------------------|------------------------------------------------------------------|
 | `Message`        | a command-code ABNF rule with its Diameter header                |
 | `Grouped AVP`    | `Name ::= < AVP header: code vendor-id >` plus its body          |
-| `Enumerated AVP` | the header rule plus named values and reserved ranges            |
+| `Enumerated AVP` | the header rule plus values and reserved ranges, or their source |
 | `AVP Table`      | the spec's own AVP table, one AVP per row                        |
 | `Reused AVPs`    | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
 
@@ -73,6 +73,10 @@ each starting with `; Type:`.
   Transfer`, `Virtual Private Network (VPN)`), so a name may hold single
   spaces and parentheses rather than a derived identifier no document
   prints.
+- **An enumeration defined elsewhere says where.** A clause that gives its
+  values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
+  32.422 [23] for Trace Depth") prints `; Values:` with that citation and no
+  values, which is distinct from a clause the extractor found nothing in.
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
 - **The parser is strict; the formatter defines canonical form.** Hand edits

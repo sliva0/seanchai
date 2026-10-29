@@ -29,7 +29,7 @@
       }
     },
     "directive-text": {
-      "match": "^(; )(Specification|Name|Table)(: )(.*?)(?=;;|$)",
+      "match": "^(; )(Specification|Name|Table|Values)(: )(.*?)(?=;;|$)",
       "captures": {
         "2": { "name": "keyword.other.directive.dad" },
         "4": { "name": "string.unquoted.directive-value.dad" }

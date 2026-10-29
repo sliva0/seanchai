@@ -190,6 +190,11 @@ class Grouped(Avp):
 @dataclass(frozen=True)
 class Enumerated(Avp):
     values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
+    # Where the defining clause says the values are defined instead, in its
+    # words: TS 29.272's `Trace-Depth` takes "TS 32.422 [23] for Trace
+    # Depth". With no values beside it that is the whole statement, not a
+    # gap: the document defines the AVP and points elsewhere for the list.
+    values_source: str | None = None
 
 
 @dataclass(frozen=True)
@@ -274,6 +279,7 @@ class _Draft:
     wireshark_name: str | None = None
     members: tuple[Member, ...] = ()
     values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
+    values_source: str | None = None
 
     def fill(self, other: _Draft) -> _Draft:
         """This reading with what it leaves unstated taken from `other`, the
@@ -309,11 +315,13 @@ class _Draft:
             for mine, theirs in pairs
         ):
             return replace(self, conflict=other.reference)
-        kind, members, values = self.kind, self.members, self.values
+        kind, members = self.kind, self.members
+        values, values_source = self.values, self.values_source
         if self.data_type is None and other.kind is not Avp:
             # A row printing no type, for an AVP another document defines
             # as grouped or enumerated, takes the definition's body too.
-            kind, members, values = other.kind, other.members, other.values
+            kind, members = other.kind, other.members
+            values, values_source = other.values, other.values_source
         vendor_id, vendor_stated = self.vendor_id, self.vendor_stated
         if not vendor_stated and other.vendor_stated:
             vendor_id, vendor_stated = other.vendor_id, True
@@ -322,6 +330,7 @@ class _Draft:
             kind=kind,
             members=members,
             values=values,
+            values_source=values_source,
             vendor_id=vendor_id,
             vendor_stated=vendor_stated,
             code=other.code if self.code is None else self.code,
@@ -379,7 +388,9 @@ class _Draft:
         if self.kind is Grouped:
             return Grouped(*common, members=self.members)
         if self.kind is Enumerated:
-            return Enumerated(*common, values=self.values)
+            return Enumerated(
+                *common, values=self.values, values_source=self.values_source
+            )
         return Avp(*common)
 
 
@@ -718,6 +729,7 @@ class Model:
         else:
             draft.data_type = ast.DataType.ENUMERATED
             draft.values = definition.values
+            draft.values_source = definition.values_source
         return draft
 
     def _body(
