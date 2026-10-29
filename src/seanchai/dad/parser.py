@@ -32,8 +32,12 @@ _AVP_RULE_RE = re.compile(
     r"(?P<open>[<{\[]) (?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) (?P<close>[>}\]])"
     r"(?P<bold>\s*; bold)?\s*$"
 )
+# A name may hold single spaces and parentheses ("Virtual Private Network
+# (VPN)"); it cannot hold "=", so the ` = ` before the digits is what ends it,
+# whatever the alignment padding.
 _ENUM_VALUE_RE = re.compile(
-    r"^\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)\s*= (?P<value>\d+)"
+    r"^\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_()-]*(?: [A-Za-z0-9_()-]+)*)"
+    r"\s*= (?P<value>\d+)"
     r"(?:\s+; (?P<description>\S.*))?$"
 )
 _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")

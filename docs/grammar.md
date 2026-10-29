@@ -125,9 +125,16 @@ enumerated-avp = "; Type: Enumerated AVP" NL
 enum-header-rule = avp-name " ::= < Enumerated AVP header: " code
                    [SP vendor-id] " >"
 enum-value    = *SP enum-name *SP "= " 1*DIGIT [1*SP "; " inline-text]
-enum-name     = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-" / "_")
+enum-name     = (ALPHA / DIGIT) *name-char *(SP 1*name-char)
+name-char     = ALPHA / DIGIT / "-" / "_" / "(" / ")"
 reserved      = *SP "; RESERVED" *SP "= " 1*DIGIT ["-" 1*DIGIT]
 ```
+
+An enum name may contain single spaces, never leading, trailing or doubled,
+and parentheses after its first character: TS 32.299 labels its values in
+words (`PS to CS Transfer = 0`, `VAS4SMS Short Message Virtual Private
+Network (VPN) = 7`). It cannot contain `=`, so the ` = ` before the digits
+ends it.
 
 `; RESERVED` is the one `; Key:` line that may appear in a body. A reserved
 value is distinct from an unassigned one: a validator must reject a

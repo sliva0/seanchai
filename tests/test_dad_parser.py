@@ -1,6 +1,7 @@
+import pydantic
 import pytest
 
-from seanchai.dad import ast, parser
+from seanchai.dad import ast, formatter, parser
 
 
 def _dad(*section_lines: str) -> str:
@@ -32,6 +33,70 @@ def test_parses_enumerated_values_descriptions_and_reserved_ranges():
         ast.ReservedValues(first=2, last=4),
         ast.EnumValue(name="Last-Value", value=5),
     )
+
+
+def test_enum_value_names_may_hold_single_spaces():
+    # TS 32.299 clause 7.2.1B labels its values in words.
+    spec = parser.parse(
+        _dad(
+            "; Type: Enumerated AVP",
+            "; Name: Access-Transfer-Type",
+            "; Section: 7.2.1B",
+            "Access-Transfer-Type ::= < Enumerated AVP header: 2710 10415 >",
+            "        PS to CS Transfer = 0 ; a description",
+            "        Yes               = 1",
+        )
+    )
+
+    enumerated = spec.sections[0]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert enumerated.values == (
+        ast.EnumValue(name="PS to CS Transfer", value=0, description="a description"),
+        ast.EnumValue(name="Yes", value=1),
+    )
+
+
+def test_enum_value_names_with_spaces_and_parentheses_round_trip():
+    # TS 32.299 clauses 7.2.1B and 7.2.213.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 32.299",
+            "; Version: 18.0.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Enumerated AVP",
+            "; Name: SM-Service-Type",
+            "; Section: 7.2.213",
+            "SM-Service-Type ::= < Enumerated AVP header: 2029 10415 >",
+            "        PS to CS Transfer                               = 0",
+            "        VAS4SMS Short Message Virtual Private Network (VPN) = 7 ; note",
+            "",
+        ]
+    )
+
+    spec = parser.parse(text)
+
+    enumerated = spec.sections[0]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert [
+        value.name for value in enumerated.values if isinstance(value, ast.EnumValue)
+    ] == [
+        "PS to CS Transfer",
+        "VAS4SMS Short Message Virtual Private Network (VPN)",
+    ]
+    assert formatter.format_spec(parser.parse(formatter.format_spec(spec))) == (
+        formatter.format_spec(spec)
+    )
+    assert parser.parse(formatter.format_spec(spec)) == spec
+
+
+@pytest.mark.parametrize(
+    "name", [" Leading", "Trailing ", "Doubled  space", "Tab\tinside", "(Leading"]
+)
+def test_enum_value_names_reject_other_whitespace(name):
+    with pytest.raises(pydantic.ValidationError):
+        ast.EnumValue(name=name, value=0)
 
 
 @pytest.mark.parametrize(

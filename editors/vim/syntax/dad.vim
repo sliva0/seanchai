@@ -55,8 +55,8 @@ if !has('nvim')
 endif
 
 " Enumerated AVP body
-syn match dadEnumLine "^\s*[A-Za-z0-9][A-Za-z0-9_-]*\s*= \d\+\%(\s\+;.*\)\?$" contains=dadEnumName,dadNumber,dadEnumNote,dadComment
-syn match dadEnumName "[A-Za-z0-9][A-Za-z0-9_-]*" contained
+syn match dadEnumLine "^\s*[A-Za-z0-9][A-Za-z0-9_()-]*\%( [A-Za-z0-9_()-]\+\)*\s*= \d\+\%(\s\+;.*\)\?$" contains=dadEnumName,dadNumber,dadEnumNote,dadComment
+syn match dadEnumName "[A-Za-z0-9][A-Za-z0-9_()-]*\%( [A-Za-z0-9_()-]\+\)*" contained
 syn match dadEnumNote "; .*$" contained
 syn match dadReserved "^\s*; RESERVED\s*= \d\+\%(-\d\+\)\?\s*\%(;;.*\)\?$" contains=dadReservedKw,dadNumber,dadRange,dadComment
 syn match dadReservedKw "; RESERVED" contained

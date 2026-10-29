@@ -65,6 +65,11 @@ each starting with `; Type:`.
   unmodelled prose columns are dropped, and an unmodelled machine-readable
   column is a reason to model it, not to carry it anonymously.
 - **Table cells are single tokens**, `-` for empty.
+- **Enum value names keep the document's spelling.** Most are identifiers
+  (`DELIVERY_REPORT`), but TS 32.299 labels values in words (`PS to CS
+  Transfer`, `Virtual Private Network (VPN)`), so a name may hold single
+  spaces and parentheses rather than a derived identifier no document
+  prints.
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
 - **The parser is strict; the formatter defines canonical form.** Hand edits
