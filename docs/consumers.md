@@ -17,6 +17,7 @@ built.avps("TS29.229")  # a spec's dictionary view
 built.resolve("TS29.229", "DRMP")  # one name in one spec's reading
 built.find("Public-Identity")  # every AVP under a name
 built.identified(10415, 601)  # every AVP claiming an identity
+built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
 ```
 
 The query set is thin on purpose: each query was written because a real
@@ -27,8 +28,12 @@ definition, then to the origin its re-used table cites (recursively, so an
 indirect citation lands on the real definition), then to an AVP-table row,
 then to a `; Bases:` document. Local-over-reused makes an *extension* mean
 what the extending document says, while a plain re-print resolves through
-the origin. The model never reports the conflicts this papers over; run the
-linter for those. Vendor spaces follow the linter's reading. A name that
+the origin. A name tabulated in several of one file's AVP tables takes its
+table facts — flag rules, and type and code when no clause defines it — from
+the first row in file order; `table_rows` returns every copy, which matters
+where per-interface tables disagree (TS 29.061's `3GPP-IMSI`, the linter's
+`table-row-mismatch`). The model never reports the conflicts this papers
+over; run the linter for those. Vendor spaces follow the linter's reading. A name that
 resolves nowhere stays a name (`Member.avp is None`), as does the
 `* [ AVP ]` wildcard. Origins and bases use `corpus.Corpus.resolve`, the
 match-major-take-newest rule in [linter.md](linter.md#resolving-an-origin).

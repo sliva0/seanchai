@@ -33,6 +33,11 @@ cannot judge.
 - `table-definition-mismatch` — a row disagreeing with the local clause that
   defines the same AVP, on code or type. Rows with no local clause are not
   compared.
+- `table-row-mismatch` — one AVP printed in two of the file's AVP tables
+  with different type, flag rules or encrypt, compared where both tables
+  have the column and the cell. A note: per-interface tables may differ on
+  purpose, and only the document's editor knows. Two codes are an error,
+  left to `table-definition-mismatch` when a clause defines the AVP.
 - `vendor-id-mismatch` — a definition naming a vendor other than the file's
   `; Vendor-ID:`, or naming none while the AVP table marks `V` mandatory. A
   vendor-less definition with no such row is left alone: a genuine IETF-space
@@ -109,6 +114,16 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057, TS 23.329) or has no
   Release 18 version: TS 29.140, cited by TS 32.299 for `VAS-Id` and
   `VASP-Id`, ends at V7.0.0, and nothing resolves across a major version.
+- **`table-row-mismatch`**, nine. TS 29.061 prints `3GPP-IMSI`,
+  `3GPP-SGSN-Address`, `3GPP-SGSN-IPv6-Address`, `3GPP-IMEISV`,
+  `3GPP-RAT-Type`, `3GPP-User-Location-Info` and `3GPP-MS-TimeZone` with M
+  in M.not in table 9a (clause 16a.5, Gi/SGi) and in Must in table 10
+  (clause 17.7.0, Gmb). TS 29.273 sets M for `AN-Trusted` in tables
+  5.2.3.1/1 and 6.2.3.1/1 but not in 8.2.3.0/1, and types
+  `Mobile-Node-Identifier` UTF8String in 5.2.3.1/1 and 6.2.3.1/1 but
+  OctetString in 7.2.3.1/1. Which reading an interface uses is the
+  document's to say; the model reads the first row
+  ([consumers.md](consumers.md)).
 - **`unresolved-reference`**, eighteen. Seven are AVPs no document defines,
   tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`,
   `MIP-MN-HA-SPI` (clauses 9.4–9.6; erratum 1462 renames one to another

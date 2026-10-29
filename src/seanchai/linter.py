@@ -36,7 +36,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from . import corpus
-from .dad import ast
+from .dad import ast, formatter
 
 
 @dataclass(frozen=True)
@@ -310,6 +310,106 @@ def _table_agrees_with_definitions(index: _Index) -> list[Finding]:
     return findings
 
 
+# What `table-row-mismatch` compares, by the columns each reading spans. The
+# Section column is left out: TS 29.273 points each interface's row at its
+# own re-printed clause.
+_ROW_READINGS = (
+    ("code", (ast.AvpColumn.CODE,)),
+    ("type", (ast.AvpColumn.TYPE,)),
+    (
+        "flag rules",
+        (
+            ast.AvpColumn.MUST,
+            ast.AvpColumn.MAY,
+            ast.AvpColumn.SHOULD_NOT,
+            ast.AvpColumn.MUST_NOT,
+        ),
+    ),
+    ("encrypt", (ast.AvpColumn.ENCRYPT,)),
+)
+
+
+def _tables_agree_with_each_other(index: _Index) -> list[Finding]:
+    """Rows naming one AVP in two of a file's AVP tables say the same thing.
+
+    Per-interface tables re-print shared AVPs, and nothing keeps the copies in
+    step: TS 29.061 tabulates `3GPP-IMSI` and six more with M in M.not in
+    table 9a (clause 16a.5, Gi/SGi) and with M in Must in table 10 (clause
+    17.7.0, Gmb). A note, because the per-interface flag rule may be
+    deliberate and only the document's editor knows which; the model resolves
+    a name to its first row (see `docs/consumers.md`).
+
+    Compared only on columns every table carrying the row declares, and only
+    where the cells say something, so a table without an Encrypt column (TS
+    29.273's) or a blank type cell makes no claim to disagree with. A code
+    disagreement is an error, since two codes are two AVPs; it is left to
+    `table-definition-mismatch` when a clause defines the AVP, because that
+    rule names which row is wrong.
+    """
+    placed: dict[str, list[tuple[ast.AvpTable, ast.AvpTableRow]]] = defaultdict(list)
+    for table in index.tables:
+        for row in table.rows:
+            placed[row.name].append((table, row))
+    defined = {definition.name for definition in index.definitions}
+
+    findings = []
+    for name, copies in placed.items():
+        if len(copies) < 2:
+            continue
+        for label, columns in _ROW_READINGS:
+            if label == "code" and name in defined:
+                continue
+            shared = [
+                column
+                for column in columns
+                if all(column in table.columns for table, _ in copies)
+            ]
+            spelled = _disagreement(copies, shared)
+            if spelled is None:
+                continue
+            findings.append(
+                Finding(
+                    Severity.ERROR if label == "code" else Severity.NOTE,
+                    "table-row-mismatch",
+                    f"{name} is tabulated with differing {label}: {spelled}",
+                )
+            )
+    return findings
+
+
+def _disagreement(
+    copies: list[tuple[ast.AvpTable, ast.AvpTableRow]],
+    columns: list[ast.AvpColumn],
+) -> str | None:
+    """The rows' readings of `columns` grouped by value and spelled for a
+    message, or None when every row that says something agrees."""
+    readings: dict[str, list[ast.AvpTable]] = defaultdict(list)
+    for table, row in copies:
+        cells = [formatter.avp_table_cell(row, column) for column in columns]
+        if all(cell == "-" for cell in cells):
+            continue
+        reading = (
+            cells[0]
+            if len(columns) == 1
+            else ", ".join(
+                f"{column.value} {cell}"
+                for column, cell in zip(columns, cells, strict=True)
+            )
+        )
+        readings[reading].append(table)
+    if len(readings) < 2:
+        return None
+    return "; ".join(
+        f"{reading} in {_table_labels(tables)}" for reading, tables in readings.items()
+    )
+
+
+def _table_labels(tables: list[ast.AvpTable]) -> str:
+    # RFC 6733 §4.5 captions its table with prose, so there may be no label.
+    labels = [table.table or f"(clause {table.source.section})" for table in tables]
+    return f"table{'s' if len(labels) > 1 else ''} {', '.join(labels)}"
+
+
 def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Finding]:
     """A definition's vendor-id agrees with the file's `; Vendor-ID:`.
 
@@ -396,6 +496,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_duplicate_identities(index, spec.vendor_id),
         *_rows_without_codes(index),
         *_table_agrees_with_definitions(index),
+        *_tables_agree_with_each_other(index),
         *_vendor_id_agrees_with_header(index, spec.vendor_id),
         *_local_and_reused(index),
     ]

@@ -228,6 +228,18 @@ class TestOverTheCommittedCorpus:
         }
         assert {a.name for a in built.identified(0, 621)} == {"OC-Supported-Features"}
 
+    def test_the_first_table_row_wins_and_the_others_stay_reachable(self, built):
+        """TS 29.061 tabulates 3GPP-IMSI in tables 9a (Gi/SGi, M in M.not)
+        and 10 (Gmb, M in Must); resolution reads table 9a's."""
+        imsi = built.resolve("TS29.061", "3GPP-IMSI")
+        assert imsi is not None
+        assert imsi.flag_rules is not None
+        assert ast.AvpFlag.MANDATORY in imsi.flag_rules.must_not
+        first, second = built.table_rows("TS29.061", "3GPP-IMSI")
+        assert first.flag_rules == imsi.flag_rules
+        assert ast.AvpFlag.MANDATORY in second.flag_rules.must
+        assert built.table_rows("TS29.061", "No-Such-AVP") == ()
+
     def test_a_reused_chain_is_followed_across_files(self, built):
         drmp = built.resolve("TS29.229", "DRMP")
         assert drmp is not None

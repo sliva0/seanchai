@@ -122,6 +122,79 @@ def test_errors_sort_before_notes():
     )
 
 
+def _flagged_table(label, *rows, encrypt=True):
+    columns = (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.TYPE,
+        ast.AvpColumn.MUST,
+        ast.AvpColumn.MUST_NOT,
+    )
+    return ast.AvpTable(
+        table=label,
+        columns=(*columns, ast.AvpColumn.ENCRYPT) if encrypt else columns,
+        source=ast.SourceRef(section="6.3"),
+        rows=rows,
+    )
+
+
+def _flagged_row(
+    code=700, must=frozenset(), must_not=frozenset(), encrypt: bool | None = True
+):
+    return ast.AvpTableRow(
+        name="Example",
+        code=code,
+        data_type=ast.DataType.UNSIGNED32,
+        flag_rules=ast.AvpFlagRules(must=must, must_not=must_not),
+        may_encrypt=encrypt,
+    )
+
+
+def test_two_tables_disagreeing_on_a_code_is_an_error():
+    """A row with no clause behind it is only caught here: neither code
+    collides with anything, so `duplicate-identity` stays silent."""
+    spec = _spec(
+        _flagged_table("1", _flagged_row(700)), _flagged_table("2", _flagged_row(701))
+    )
+
+    (finding,) = linter.lint(spec)
+
+    assert (finding.severity, finding.rule) == (
+        linter.Severity.ERROR,
+        "table-row-mismatch",
+    )
+    assert "700 in table 1; 701 in table 2" in finding.message
+
+
+def test_two_tables_disagreeing_on_flags_is_a_note():
+    mandatory = frozenset({ast.AvpFlag.MANDATORY})
+    spec = _spec(
+        _flagged_table("1", _flagged_row(must=mandatory)),
+        _flagged_table("2", _flagged_row(must_not=mandatory)),
+        _flagged_table("3", _flagged_row(must=mandatory)),
+    )
+
+    (finding,) = linter.lint(spec)
+
+    assert (finding.severity, finding.rule) == (
+        linter.Severity.NOTE,
+        "table-row-mismatch",
+    )
+    assert finding.message == (
+        "Example is tabulated with differing flag rules:"
+        " Must M, M.not - in tables 1, 3; Must -, M.not M in table 2"
+    )
+
+
+def test_a_table_without_the_column_makes_no_claim_to_disagree_with():
+    spec = _spec(
+        _flagged_table("1", _flagged_row(encrypt=True)),
+        _flagged_table("2", _flagged_row(encrypt=None), encrypt=False),
+    )
+
+    assert linter.lint(spec) == []
+
+
 @pytest.mark.parametrize("path", _corpus(raw=False), ids=lambda path: path.name)
 def test_the_corrected_corpus_has_no_errors(path):
     """Correcting a file is what clears its errors, so the corrected corpus is
@@ -228,12 +301,15 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         if f.severity is linter.Severity.NOTE
     ]
 
-    # AVPs each document both defines and lists as re-used.
+    # AVPs each document both defines and lists as re-used, plus rows its
+    # tables print differently (29.061's tables 9a and 10, see
+    # `_STANDING_CORPUS_NOTES`; 29.273's two).
     expected = {
+        "29061-i10": 7,
         "29128-i00": 3,
         "29212-i20": 9,
         "29272-i70": 9,
-        "29273-i60": 3,
+        "29273-i60": 5,
         "29283-i00": 1,
         "29336-i20.raw": 7,
         "29336-i20": 6,
@@ -249,7 +325,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     stem = path.name.removesuffix(".dad")
 
     assert len(notes) == expected.get(stem, expected.get(stem.removesuffix(".raw"), 0))
-    assert {f.rule for f in notes} <= {"local-and-reused"}
+    assert {f.rule for f in notes} <= {"local-and-reused", "table-row-mismatch"}
 
 
 # --- cross-file rules -------------------------------------------------------
@@ -507,6 +583,17 @@ def test_a_base_missing_from_the_corpus_is_a_note_and_turns_the_rule_off():
 # Standing findings from docs/linter.md, plus the additional reprints,
 # body differences and indirect origins present in the committed corpus.
 _STANDING_CORPUS_NOTES = {
+    "29061-i10.dad": {
+        "table-row-mismatch": [
+            "3GPP-IMSI",
+            "3GPP-SGSN-Address",
+            "3GPP-SGSN-IPv6-Address",
+            "3GPP-IMEISV",
+            "3GPP-RAT-Type",
+            "3GPP-User-Location-Info",
+            "3GPP-MS-TimeZone",
+        ],
+    },
     "29128-i00.dad": {
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
@@ -562,6 +649,7 @@ _STANDING_CORPUS_NOTES = {
         "origin-not-in-corpus": ["TS283.034"],
         "reused-body-differs": ["SIP-Auth-Data-Item"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
+        "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
         "unresolved-reference": ["NSWO-Authorization"],
     },
     "29283-i00.dad": {

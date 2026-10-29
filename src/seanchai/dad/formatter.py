@@ -200,9 +200,9 @@ def _format_enumerated(
     return lines
 
 
-def _avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
-    """One modelled cell, with `-` as the canonical empty. Only reached for
-    columns the table declares, so a None here is an empty source cell."""
+def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
+    """One modelled cell, with `-` as the canonical empty. Meaningful only for
+    columns the row's table declares, where a None is an empty source cell."""
     match column:
         case ast.AvpColumn.NAME:
             return row.name
@@ -231,7 +231,7 @@ def _format_avp_table(
 ) -> list[str]:
     headers = [column.value for column in table.columns]
     rows = [
-        [_avp_table_cell(row, column) for column in table.columns] for row in table.rows
+        [avp_table_cell(row, column) for column in table.columns] for row in table.rows
     ]
     return [
         "; Type: AVP Table",

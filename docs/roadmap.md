@@ -34,12 +34,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Linter and corpus
 
-- **E. A rule for one document's tables disagreeing about one AVP.** TS
-  29.061 prints `3GPP-IMSI` in two per-interface tables with different flag
-  rules and nothing reports it; today only conflicting *codes* fail. Compare
-  same-name rows across one file's tables on type, flags and encrypt.
-  Probably a note. Also check whether the model's first-table-wins `tabled`
-  resolution should surface the ambiguity.
 - **F. An occurrence-narrowing `Delete`.** TS 29.229's RTA prints
   `< Session-Id >` twice (clause 6.1.10); `Delete` treats two matches as
   ambiguity, so the corpus carries the duplicate.

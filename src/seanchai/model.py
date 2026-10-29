@@ -27,6 +27,10 @@ and the policy is deliberately small:
   the file's own `; Vendor-ID:` space, exactly as the linter's
   `duplicate-identity` rule reads it; a definition written with no vendor-id
   is IETF-space (vendor 0), the wire format's reading of an absent vendor.
+- A name tabulated in more than one of a file's AVP tables takes its table
+  facts (flag rules; type and code when nothing defines it) from the first
+  row in file order. `Model.table_rows` returns all of them, for the
+  documents whose per-interface tables disagree.
 
 A name that resolves nowhere stays a name: `Member.avp` is `None` both for
 an unresolved reference (the linter's `unresolved-reference` note lists
@@ -114,7 +118,9 @@ class _View:
 
     entry: corpus.Entry
     defined: dict[str, ast.GroupedAvp | ast.EnumeratedAvp]
-    tabled: dict[str, ast.AvpTableRow]
+    # Every row per name, in file order. Resolution reads the first; the rest
+    # are other tables' copies, which may disagree (`table-row-mismatch`).
+    tabled: dict[str, list[ast.AvpTableRow]]
     reused: dict[str, str]
     messages: list[ast.Message]
 
@@ -126,7 +132,7 @@ class _View:
                 view.defined.setdefault(section.name, section)
             elif isinstance(section, ast.AvpTable):
                 for row in section.rows:
-                    view.tabled.setdefault(row.name, row)
+                    view.tabled.setdefault(row.name, []).append(row)
             elif isinstance(section, ast.ReusedAvps):
                 for row in section.rows:
                     view.reused.setdefault(row.name, row.origin)
@@ -198,6 +204,17 @@ class Model:
         """`name` as `reference` means it, or None when it resolves nowhere."""
         return self._resolve(self._view(reference), name, ())
 
+    def table_rows(self, reference: str, name: str) -> tuple[ast.AvpTableRow, ...]:
+        """Every AVP-table row `reference` prints for `name`, in file order.
+
+        `resolve` takes its table facts from the first; a document that
+        tabulates one AVP per interface may print the others differently
+        (TS 29.061's `3GPP-IMSI` in tables 9a and 10), and this is where a
+        consumer sees the alternatives the linter's `table-row-mismatch`
+        reports.
+        """
+        return tuple(self._view(reference).tabled.get(name, ()))
+
     def find(self, name: str) -> tuple[Avp, ...]:
         """Every distinct AVP the corpus knows under `name`."""
         return self._by_name.get(name, ())
@@ -238,8 +255,9 @@ class Model:
                     resolved = self._resolve(theirs, name, stack)
                     if resolved is not None:
                         return resolved
-        row = view.tabled.get(name)
-        if row is not None:
+        rows = view.tabled.get(name)
+        if rows is not None:
+            row = rows[0]
             return Avp(
                 name=name,
                 vendor_id=view.entry.spec.vendor_id,
@@ -267,7 +285,7 @@ class Model:
         definition: ast.GroupedAvp | ast.EnumeratedAvp,
         stack: tuple,
     ) -> Avp:
-        row = view.tabled.get(definition.name)
+        rows = view.tabled.get(definition.name)
         common = {
             "name": definition.name,
             # A definition written with no vendor-id is IETF-space; the wire
@@ -278,7 +296,7 @@ class Model:
                 else definition.vendor_id
             ),
             "code": definition.code,
-            "flag_rules": None if row is None else row.flag_rules,
+            "flag_rules": None if rows is None else rows[0].flag_rules,
             "defined_in": view.entry.reference,
             "section": definition.source.section,
         }
