@@ -212,3 +212,63 @@ def test_ranges_warn_for_all_layers_without_gating_application(
     assert any(
         isinstance(s, ast.GroupedAvp) and s.code == 12 for s in corrected.sections
     )
+
+
+def test_expanding_ranges_rewrites_the_edit_files_and_retires_the_warnings(
+    tmp_path, synthetic_spec_docx
+):
+    import docx
+    from click.testing import CliRunner
+
+    from seanchai.cli import main
+
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    source = docx.Document(synthetic_spec_docx)
+    source.tables[1].cell(2, 4).text = "M.V"
+    source.save(document)
+    declarations = tmp_path / "edits"
+    declarations.mkdir()
+    toml = declarations / "TS29.999.toml"
+    toml.write_text(
+        '[[quirk]]\nname = "dotted-flags"  # table 6.3.1\nreason = "dotted cell"\n'
+        'first_version = "1.0.0"\nlast_version = "1.0.0"\n'
+    )
+    module = declarations / "TS29.999.py"
+    module.write_text(
+        "from seanchai.dad.corrections import Correction, definition\n"
+        'CORRECTIONS = [Correction(id="code", target=definition("Example-Group"), '
+        'field="code", expect=10, replace=12, reason="reviewed on 1.0.0", '
+        'versions="1.0.0")]\n'
+    )
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    arguments = [
+        "regenerate",
+        "--manifest",
+        str(manifest),
+        "--corpus",
+        str(corpus),
+        "--sources",
+        str(declarations),
+        "--corrections",
+        str(declarations),
+        "--add",
+        "TS29.999",
+    ]
+
+    result = CliRunner().invoke(main, [*arguments, "--expand-ranges"])
+
+    assert result.exit_code == 0, result.output
+    lines = result.output.splitlines()
+    assert lines[1:3] == [
+        "    expanded: TS29.999.toml: quirk 'dotted-flags' 1.0.0 -> 1.0.0..1.2.3",
+        "    expanded: TS29.999.py:2: versions 1.0.0 -> 1.0.0..1.2.3",
+    ]
+    assert not [line for line in lines if "warning:" in line]
+    assert 'last_version = "1.2.3"' in toml.read_text()
+    assert "# table 6.3.1" in toml.read_text()
+    assert 'versions="1.0.0..1.2.3"' in module.read_text()
+
+    again = CliRunner().invoke(main, arguments)
+    assert again.exit_code == 0, again.output
+    assert "warning:" not in again.output

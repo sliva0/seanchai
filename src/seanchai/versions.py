@@ -16,6 +16,11 @@ def _parts(version: str) -> tuple[int, ...]:
     return parts
 
 
+class RangeWarning(str):
+    """A warning about a stale range, told apart from the extractor's own
+    warnings so `regenerate --expand-ranges` can retire it once widened."""
+
+
 @dataclass(frozen=True)
 class VersionRange:
     """Inclusive bounds; an absent bound is open, and both absent mean any version."""
@@ -52,11 +57,19 @@ class VersionRange:
             self.last is None or parsed <= _parts(self.last)
         )
 
-    def warning(self, version: str | None, declaration: str) -> str | None:
+    def expanded(self, version: str) -> VersionRange:
+        """The smallest widening of this range that covers `version`."""
+        if self.covers(version):
+            return self
+        if self.first is not None and _parts(version) < _parts(self.first):
+            return VersionRange(version, self.last)
+        return VersionRange(self.first, version)
+
+    def warning(self, version: str | None, declaration: str) -> RangeWarning | None:
         """Report an unreviewed version; this never decides whether an edit applies."""
         if version is None or self.covers(version):
             return None
-        return (
+        return RangeWarning(
             f"{declaration}: declared version range {self} does not cover parsed"
             f" version {version}; application is not gated"
         )

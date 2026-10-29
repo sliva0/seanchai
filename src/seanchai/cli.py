@@ -251,6 +251,12 @@ def extract_rfc(
     help="Also build a specification the corpus does not hold yet"
     " (e.g. TS29.273). Repeatable.",
 )
+@click.option(
+    "--expand-ranges",
+    is_flag=True,
+    help="Widen, in --sources and --corrections, every declaration range a"
+    " cleanly rebuilt specification's version falls outside.",
+)
 def regenerate(
     manifest: Path,
     corpus: Path,
@@ -258,6 +264,7 @@ def regenerate(
     sources: Path,
     corrections: Path,
     add: tuple[str, ...],
+    expand_ranges: bool,
 ) -> None:
     """Rebuild the committed corpus from the downloaded sources.
 
@@ -267,6 +274,11 @@ def regenerate(
     pair, and the replacement is reported. A specification the extractor
     cannot read fails on its own and the run continues; the exit status is
     non-zero if anything failed.
+
+    With --expand-ranges, a declaration whose advisory version range does not
+    cover the version it just applied cleanly to has the range rewritten in
+    its edit file, comments and layout kept; the widened ranges print under
+    the specification.
     """
     from . import regenerate as library
 
@@ -278,6 +290,7 @@ def regenerate(
         corrections_dir=corrections,
         add=add,
         report=_echo_outcome,
+        expand_ranges=expand_ranges,
     )
     counts = {}
     for outcome in report.outcomes:
@@ -304,6 +317,8 @@ def _echo_outcome(outcome) -> None:
     # rebuild, not only the first.
     for warning in outcome.warnings:
         click.echo(click.style(f"    warning: {warning}", dim=True), err=True)
+    for widened in outcome.expanded:
+        click.echo(f"    expanded: {widened}")
 
 
 @main.command()

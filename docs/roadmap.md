@@ -36,9 +36,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 - **G. Stage the Wireshark merge requests** listed in
   [oracle.md](oracle.md#what-still-reports).
-- **H. Auto-expand advisory version ranges** when a newer or older version
-  still applies cleanly, behind a CLI flag. Needs comment-preserving TOML
-  rewriting.
 
 ## Sources
 

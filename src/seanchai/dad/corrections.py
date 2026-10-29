@@ -891,7 +891,7 @@ def notes(
     return trailing, standing, detached
 
 
-def _module_path(directory: Path, specification: str) -> Path:
+def module_path(directory: Path, specification: str) -> Path:
     """The corrections module for `specification`, inside `directory`.
 
     Two independent boundaries, because loading this path executes its Python:
@@ -934,7 +934,7 @@ def load(
         if required:
             raise CorrectionError("no corrections directory was given")
         return []
-    path = _module_path(directory, specification)
+    path = module_path(directory, specification)
     if not path.is_file():
         if required:
             raise CorrectionError(

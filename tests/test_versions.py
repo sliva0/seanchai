@@ -23,3 +23,19 @@ def test_numeric_inclusive_and_open_bounds():
     assert VersionRange(first="2").covers("20")
     assert VersionRange().covers("999")
     assert bounds.warning(None, "RFC patch") is None
+
+
+@pytest.mark.parametrize(
+    ("declared", "version", "expected"),
+    [
+        ("18.6.0", "18.7.0", "18.6.0..18.7.0"),
+        ("18.6.0", "18.5.0", "18.5.0..18.6.0"),
+        ("18.0.0..18.2.0", "18.1.0", "18.0.0..18.2.0"),
+        ("*..18.2.0", "18.4.0", "*..18.4.0"),
+        ("18.2.0..*", "18.0.0", "18.0.0..*"),
+    ],
+)
+def test_expanding_moves_only_the_bound_the_version_is_past(
+    declared, version, expected
+):
+    assert str(VersionRange.parse(declared).expanded(version)) == expected

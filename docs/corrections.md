@@ -47,7 +47,10 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
 - **`versions` is advisory**: `"18.6.0"` or `"18.0.0..18.2.0"`, inclusive,
   `*` for an open bound, the same range type patches and quirks declare.
   `regenerate` warns when the parsed version falls outside it, and never
-  gates application.
+  gates application. `regenerate --expand-ranges` rewrites a string literal
+  in place to cover a version the module applied cleanly to (see
+  [workflow.md](workflow.md#version-upgrades)), which is why a range is best
+  written as a literal.
 - **Deterministic, not idempotent.** Correcting already-corrected input fails
   every `expect`, which is what keeps "already corrected" distinguishable
   from "fixed upstream". The layer consumes raw files only.

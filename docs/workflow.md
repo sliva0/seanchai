@@ -43,6 +43,29 @@ correction layer held still. A correction whose `expect` no longer matches
 fails the specification's rebuild, which is the signal that a fix was adopted
 upstream and the declaration should go. Then diff the corrected files.
 
+A rebuild that succeeds on the new version still warns about every
+declaration whose range does not cover it. Once the diffs are reviewed,
+
+```sh
+uv run seanchai regenerate --expand-ranges
+```
+
+widens those ranges in place — `first_version`/`last_version` in
+`edits/sources/<SpecRef>.toml`, the `versions=` string literal in
+`edits/corrections/<SpecRef>.py` — and prints each as `expanded:` under its
+specification. Only a specification that rebuilt cleanly is touched, since
+that is what shows every patch and quirk fired as declared and every
+`expect` held. Only the bound the version is past moves, by replacing that
+value's text: comments, block order and layout stay byte for byte, and a
+corrections module keeps its source encoding and is loaded from a scratch
+copy, required to declare the same edits, before it is replaced. A literal
+is rewritten only inside the top-level `CORRECTIONS =` and `+=` statements
+the loader applies, and outside lambdas, conditionals and filtered
+comprehensions; a literal elsewhere, one split by comments, or a range
+built by an expression is printed as `not widened` for a person. On the TS
+29.272 18.6.0 → 18.7.0 upgrade it produces the hand-widened files byte for
+byte.
+
 This depends on three things that must not regress: canonical formatting is
 stable (an unrelated edit must not reflow other lines), the downloader reads
 the 3GPP *archive* which keeps old versions, and corrections keep failing

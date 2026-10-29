@@ -24,12 +24,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
+from . import ranges
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
 from .extractor import rfc_text, tgpp_docx
 from .extractor.errors import ExtractionError
-from .versions import VersionRange
+from .versions import RangeWarning, VersionRange
 
 Status = Literal["unchanged", "changed", "new", "failed", "not-in-manifest"]
 
@@ -47,6 +48,8 @@ class Outcome:
     replaced: list[Path] = field(default_factory=list)
     replaced_version: str | None = None
     warnings: list[str] = field(default_factory=list)
+    # With `expand_ranges`: each declaration range widened to `version`.
+    expanded: list[str] = field(default_factory=list)
     error: str | None = None
 
 
@@ -87,12 +90,17 @@ def regenerate(
     corrections_dir: Path | None,
     add: Sequence[str] = (),
     report: Callable[[Outcome], None] = lambda outcome: None,
+    expand_ranges: bool = False,
 ) -> Report:
     """Rebuild every committed specification (plus `add`) into `output`.
 
     `output` may be `corpus` itself, which is the normal run, or an empty
     directory, which is how the test suite checks that the committed corpus
     is what the sources produce without touching it.
+
+    `expand_ranges` widens, in the edit files themselves, every declaration
+    range a successfully rebuilt specification's version falls outside; see
+    `seanchai.ranges`.
     """
     listed = _sources(manifest)
     committed = _committed(corpus)
@@ -106,6 +114,7 @@ def regenerate(
             output,
             sources_dir,
             corrections_dir,
+            expand_ranges,
         )
         outcomes.append(outcome)
         report(outcome)
@@ -120,6 +129,7 @@ def _one(
     output: Path,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    expand_ranges: bool,
 ) -> Outcome:
     if source is None:
         return Outcome(
@@ -130,14 +140,21 @@ def _one(
         )
     outcome = Outcome(reference, "unchanged")
     try:
-        raw_text, corrected_text, version = _produce(
+        raw_text, corrected_text, spec = _produce(
             source, sources_dir, corrections_dir, outcome.warnings
         )
     except (ExtractionError, CorrectionError, DadParseError, OSError) as error:
         outcome.status = "failed"
         outcome.error = str(error)
         return outcome
-    outcome.version = version
+    outcome.version = spec.version
+    if expand_ranges and spec.version is not None:
+        try:
+            _expand(outcome, spec, sources_dir, corrections_dir)
+        except (CorrectionError, OSError, ValueError) as error:
+            outcome.status = "failed"
+            outcome.error = f"expanding ranges: {error}"
+            return outcome
 
     stem = source.document.stem
     corrected = output / source.tree / f"{stem}.dad"
@@ -167,13 +184,42 @@ def _one(
     return outcome
 
 
+def _expand(
+    outcome: Outcome,
+    spec: ast.Specification,
+    sources_dir: Path | None,
+    corrections_dir: Path | None,
+) -> None:
+    """Widen the stale ranges of a specification that just rebuilt cleanly.
+
+    A clean rebuild is what makes this safe: every patch and quirk fired as
+    declared and every correction's `expect` held, on this version.
+    """
+    assert spec.version is not None
+    expansions = []
+    if sources_dir is not None:
+        path = sources_dir / f"{outcome.reference}.toml"
+        expansions.append(ranges.expand_sources(path, spec.version))
+    if corrections_dir is not None:
+        expansions.append(
+            ranges.expand_corrections(corrections_dir, spec.specification, spec.version)
+        )
+    outcome.expanded = [line for e in expansions for line in e.widened]
+    remaining = [line for e in expansions for line in e.remaining]
+    # The range warnings describe the files as they were; what is still out
+    # of range after the rewrite is reported in their place.
+    outcome.warnings = [
+        warning for warning in outcome.warnings if not isinstance(warning, RangeWarning)
+    ] + [f"not widened, widen it by hand: {line}" for line in remaining]
+
+
 def _produce(
     source: _Source,
     sources_dir: Path | None,
     corrections_dir: Path | None,
     warnings: list[str],
-) -> tuple[str, str, str | None]:
-    """The raw and corrected texts for one source, and its version."""
+) -> tuple[str, str, ast.Specification]:
+    """The raw and corrected texts for one source, and the corrected tree."""
     if source.document.suffix == ".txt":
         spec = rfc_text.extract(
             source.document,
@@ -203,7 +249,7 @@ def _produce(
         corrected_text = formatter.format_spec(spec, *corrections.notes(results))
     else:
         corrected_text = raw_text
-    return raw_text, corrected_text, spec.version
+    return raw_text, corrected_text, spec
 
 
 def _sources(manifest_path: Path) -> dict[str, _Source]:
