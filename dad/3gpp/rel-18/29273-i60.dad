@@ -448,7 +448,7 @@
 ; Name: AA-Answer, AAA
 ; Section: 7.2.2.1.4
 ; Page: 119
-<AA-Answer> ::= < Diameter Header: 265, REQ, PXY, 16777264 >
+<AA-Answer> ::= < Diameter Header: 265, PXY, 16777264 > ;; corrected: (TS29.273.py#swm-aa-answer-request-flag)
         < Session-Id >
         [ DRMP ]
         { Auth-Application-Id }

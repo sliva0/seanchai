@@ -90,7 +90,7 @@
 ; Name: Reporting-Information-Request, RIR
 ; Section: 8.2.5
 ; Page: 45
-<Reporting-Information-Request> ::= < Diameter Header: 8388719, PXY, 16777345 >
+<Reporting-Information-Request> ::= < Diameter Header: 8388719, REQ, PXY, 16777345 > ;; corrected: (TS29.336.py#rir-request-flag)
         < Session-Id >
         [ DRMP ]
         { Auth-Session-State }

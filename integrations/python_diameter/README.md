@@ -235,8 +235,8 @@ clauses 5.2.2.2.3 and 5.2.2.4.1, whose docstring cites both) and a second
 class named with its clause when they differ (TS 29.273's clause 9 AAR,
 application 16777272: `AaRequest_9_2_2_5_1`). `type_factory` returns the first.
 
-**Header flags as printed.** TS 29.336 clause 8.2.5 prints its
-Reporting-Information-Request header without REQ, and TS 29.273 clause
-7.2.2.1.4 its AA-Answer header (application 16777264) with it; the classes say what the headers
-say, with a comment, so `type_factory` resolves an answer header in TS
-29.336's clause 8 to the misflagged request.
+**Header flags.** A class's `is_request` is its header's REQ flag. Where a
+header's flag disagrees with the command's name the class says so in a
+comment; the corpus corrects the two misprints known (TS 29.336 clause
+8.2.5's RIR printed without REQ, TS 29.273 clause 7.2.2.1.4's AAA with it),
+so the committed corpus generates no such class.

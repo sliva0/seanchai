@@ -200,6 +200,18 @@ CORRECTIONS = [
         versions="18.6.0",
     ),
     Correction(
+        id="swm-aa-answer-request-flag",
+        target=definition("AA-Answer", section="7.2.2.1.4"),
+        field="flags",
+        expect=frozenset({ast.CommandFlag.REQUEST, ast.CommandFlag.PROXIABLE}),
+        replace=frozenset({ast.CommandFlag.PROXIABLE}),
+        reason=(
+            "Clause 7.2.2.1.4 states the AAA has the 'R' bit cleared, as RFC"
+            " 6733 section 3 has every answer; its header prints REQ."
+        ),
+        versions="18.6.0",
+    ),
+    Correction(
         id="diameter-eap-request-swa-application",
         target=definition("Diameter-EAP-Request", section="4.2.2.1.1"),
         field="application_id",

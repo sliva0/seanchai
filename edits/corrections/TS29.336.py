@@ -170,3 +170,22 @@ CORRECTIONS += [
         versions="18.2.0",
     ),
 ]
+
+# RFC 6733 section 3: a cleared R bit marks an answer. Clause 8.2.5 prints
+# the RIR header without REQ and its prose says "the 'R' bit cleared", both
+# copied from 8.2.4's CIA; clause 8.2.6's RIA is the answer under the same
+# command code, and TS 29.128 clause 6.2.5 prints this command with REQ.
+CORRECTIONS += [
+    Correction(
+        id="rir-request-flag",
+        target=definition("Reporting-Information-Request", section="8.2.5"),
+        field="flags",
+        expect=frozenset({ast.CommandFlag.PROXIABLE}),
+        replace=frozenset({ast.CommandFlag.REQUEST, ast.CommandFlag.PROXIABLE}),
+        reason="clause 8.2.5's header and prose clear the R bit, copied from"
+        " 8.2.4's CIA; RFC 6733 section 3 makes that an answer, clause 8.2.6's"
+        " RIA is the answer to command 8388719, and TS 29.128 clause 6.2.5"
+        " prints the RIR header with REQ",
+        versions="18.2.0",
+    ),
+]
