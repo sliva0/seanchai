@@ -1,0 +1,36 @@
+# Source declarations for 3GPP TS 29.215 (Policy and Charging Control (PCC)
+# over S9 reference point). Applied to normalized source text before parsing;
+# see src/seanchai/extractor/sources.py for the format.
+
+[[patch]]
+find = "5.3.x"
+replace = "5.3.8"
+exact = true
+section = "5.3.0"
+reason = "table 5.3.0.1 leaves DRA-Binding's clause as the drafting placeholder '5.3.x'; the AVP is defined in clause 5.3.8"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "is of type of Enumerated"
+replace = "is of type Enumerated"
+count = 2
+section = "5.3"
+reason = "the intros of clauses 5.3.4 (Subsession-Operation) and 5.3.8 (DRA-Binding) say 'is of type of Enumerated'; the extractor recognises an enumerated clause by 'is of type Enumerated', the spelling the other clauses use"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Octetstring"
+replace = "OctetString"
+exact = true
+section = "A.8.3"
+reason = "table A.8.3.1.1 lower-cases the 's' in UE-Local-IPv6-Prefix's type; RFC 6733's basic type is OctetString, as every other row spells it"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "independent-avp-tables"
+reason = "Three AVP tables (5.3.0.1 for S9, A.7.3.1.1 for S9a, A.8.3.1.1 for S9a*) and two re-used tables (A.7.4.1.1, A.8.4.1.1): clause 5.4.0 states S9's re-use in prose instead of a table, so document order cannot pair them."
+first_version = "18.0.0"
+last_version = "18.0.0"

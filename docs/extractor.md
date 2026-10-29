@@ -93,7 +93,8 @@ The declared vocabulary, with the document that forced each:
   `physical-reused-columns` (table 8.2.3.0/2 changes grid spans; also
   29.368 table 6.5.1.1 and 29.219 table 5.4, whose header and data rows
   merge a sliver grid column into different labels),
-  `independent-avp-tables` (no one-to-one table pairing),
+  `independent-avp-tables` (no one-to-one table pairing; also 29.215,
+  whose clause 5.4.0 states S9's re-use in prose),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
   kept, no enum code derived from them). TS 32.299 declares ten:
   `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
@@ -196,8 +197,9 @@ Conventions worth knowing:
   upper row prints the name label (32.299 table 7.2.0.1). "Comments",
   "Description" and "Comment" columns are dropped silently as prose; any
   other unmodelled column produces a warning. The standing machine-readable
-  candidates are 29.212's "Acc. Type" and "Applicability", 29.214's and
-  29.468's "Applicability" (29.468 prints it in both tables), 29.061's
+  candidates are 29.212's and 29.215's "Acc. Type" and "Applicability"
+  (29.215 in its re-used tables too), 29.214's and 29.468's "Applicability"
+  (29.468 prints it in both tables), 29.061's
   "Applicable Reference Points", the Code/Type columns 29.172 prints in its
   re-used table, and 32.299's per-command "Used in" columns (ACR, ACA, CCR,
   CCA) — see the roadmap.
@@ -242,7 +244,10 @@ a clause heading printed as a body paragraph (32.299 §7.2.135C,
 29.343's heading 6.4.10), an en dash, a Symbol-font dash and `V/M`, `VM` flag
 cells (32.299, patched); a trailing comma in a flags cell (29.217
 table 5.3.1.1, patched); a brace closing an optional member (29.343 §6.6.4,
-patched); a From cell dropping "RFC" (29.219 table 5.4, patched).
+patched); a From cell dropping "RFC" (29.219 table 5.4, patched); a
+drafting placeholder `5.3.x` for a clause number, "is of type of
+Enumerated" in an enumerated clause's intro and an `Octetstring` type
+(29.215, patched).
 Everything patched is listed with its reason in `edits/sources/`.
 
 TS 29.228 v18.0.0 and TS 29.328 v18.2.0 contain procedure/IE mappings,

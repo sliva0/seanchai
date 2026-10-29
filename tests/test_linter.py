@@ -163,9 +163,10 @@ _RAW_ERRORS = {
         "duplicate-identity",
     ],
     "29338-i20.raw.dad": ["duplicate-identity"],
-    # Grouped headers printing no vendor while the AVP tables set V (all five);
+    # Grouped headers printing no vendor while the AVP tables set V (all six);
     # 29.468's clauses 6.4.28 and 6.4.31 print FEC-Request's code, and table
     # 6.4.1-1 types clause 6.4.35's Enumerated AVP Unsigned32.
+    "29215-i00.raw.dad": ["vendor-id-mismatch"] * 2,
     "29217-i00.raw.dad": ["vendor-id-mismatch"] * 4,
     "29219-i00.raw.dad": ["vendor-id-mismatch"] * 2,
     "29343-i00.raw.dad": ["vendor-id-mismatch"] * 3,
@@ -529,9 +530,6 @@ _STANDING_CORPUS_NOTES = {
     },
     "29214-i40.dad": {
         "origin-not-in-corpus": ["TS183.017, TS29.154"],
-    },
-    "29217-i00.dad": {
-        "origin-not-in-corpus": ["TS29.215"],
     },
     "29219-i00.dad": {
         "origin-not-in-corpus": ["TS283.034"],

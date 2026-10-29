@@ -55,8 +55,9 @@ each starting with `; Type:`.
 - **The file states what it builds on.** `; Bases:` lists the documents
   whose AVPs the file uses without citing them (`Session-Id`, `Origin-Host`,
   `* [ AVP ]` from RFC 6733). Extractors stamp `RFC6733` for everything but
-  RFC 6733 itself; a document building on more (RFC 4072 on NASREQ) gets its
-  entries from a `bases` correction.
+  RFC 6733 itself; a document building on more (RFC 4072 on NASREQ, TS
+  29.215's S9 on all of 29.212's Gx and Gxx AVPs) gets its entries from a
+  `bases` correction.
 - **`; bold` stays inline**, mirroring the source, where bold marks AVPs the
   specification defines or modifies.
 - **A table declares its own columns.** `; Columns:` states which columns the
