@@ -163,6 +163,13 @@ _RAW_ERRORS = {
         "duplicate-identity",
     ],
     "29338-i20.raw.dad": ["duplicate-identity"],
+    # Grouped headers printing no vendor while the AVP tables set V (both);
+    # 29.468's clauses 6.4.28 and 6.4.31 print FEC-Request's code, and table
+    # 6.4.1-1 types clause 6.4.35's Enumerated AVP Unsigned32.
+    "29343-i00.raw.dad": ["vendor-id-mismatch"] * 3,
+    "29468-i00.raw.dad": ["duplicate-identity"]
+    + ["table-definition-mismatch"] * 3
+    + ["vendor-id-mismatch"] * 12,
     # Both tabulate RFC 8583's Load among their own AVPs, with no code —
     # their Load clauses define it only by reference to RFC 8583.
     "29229-i10.raw.dad": ["row-without-code"],
@@ -493,9 +500,6 @@ def test_a_base_missing_from_the_corpus_is_a_note_and_turns_the_rule_off():
 # Standing findings from docs/linter.md, plus the additional reprints,
 # body differences and indirect origins present in the committed corpus.
 _STANDING_CORPUS_NOTES = {
-    "29061-i10.dad": {
-        "origin-not-in-corpus": ["TS29.468"],
-    },
     "29128-i00.dad": {
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
@@ -579,7 +583,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["V2X-Subscription-Data"],
     },
     "32299-i00.dad": {
-        "origin-not-in-corpus": ["TS29.140, TS29.343, TS29.368"],
+        "origin-not-in-corpus": ["TS29.140, TS29.368"],
         "reused-body-differs": [
             "Multiple-Services-Credit-Control",
             "Used-Service-Unit",

@@ -192,10 +192,11 @@ Conventions worth knowing:
   upper row prints the name label (32.299 table 7.2.0.1). "Comments",
   "Description" and "Comment" columns are dropped silently as prose; any
   other unmodelled column produces a warning. The standing machine-readable
-  candidates are 29.212's "Acc. Type" and "Applicability", 29.214's
-  "Applicability", 29.061's "Applicable Reference Points", the Code/Type
-  columns 29.172 prints in its re-used table, and 32.299's per-command
-  "Used in" columns (ACR, ACA, CCR, CCA) — see the roadmap.
+  candidates are 29.212's "Acc. Type" and "Applicability", 29.214's and
+  29.468's "Applicability" (29.468 prints it in both tables), 29.061's
+  "Applicable Reference Points", the Code/Type columns 29.172 prints in its
+  re-used table, and 32.299's per-command "Used in" columns (ACR, ACA, CCR,
+  CCA) — see the roadmap.
 - A flags cell holding a lone `-` is empty (TS 32.299).
 - The cover title is read from the cover table or a plain paragraph (29.061,
   29.212, 29.214). `attach_pages` reads the PDF's own cover and refuses a
@@ -232,8 +233,10 @@ fourth column in a re-used table (29.212, dropped with a warning); one AVP
 printed with two bodies (29.336 §6.4.2 and §8.4.36, the second deleted by
 correction); "Void" as an enum value label (29.214, deleted by correction);
 a clause heading printed as a body paragraph (32.299 §7.2.135C,
-`body-clause-headings`); names broken by a space after a hyphen, an en dash,
-a Symbol-font dash and `V/M`, `VM` flag cells (32.299, patched).
+`body-clause-headings`); names broken by a space after a hyphen (32.299,
+29.343's heading 6.4.10), an en dash, a Symbol-font dash and `V/M`, `VM` flag
+cells (32.299, patched); a brace closing an optional member (29.343 §6.6.4,
+patched).
 Everything patched is listed with its reason in `edits/sources/`.
 
 TS 29.228 v18.0.0 and TS 29.328 v18.2.0 contain procedure/IE mappings,

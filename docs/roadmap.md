@@ -24,7 +24,8 @@ letter is not reused. What exists is described in the per-module documents.
   today: Type-Number (clause 7.2.238, values from the OMNA WSP registry) and
   API-Network-Service-Node (7.2.20eA, values from TS 23.682).
 - **D. Model the machine-readable source columns when a consumer asks.**
-  29.212's "Acc. Type" and "Applicability", 29.214's "Applicability",
+  29.212's "Acc. Type" and "Applicability", 29.214's and 29.468's
+  "Applicability" (29.468 in its re-used table too),
   29.061's "Applicable Reference Points", 29.172's re-used-table Code/Type,
   32.299's per-command "Used in" marks (ACR, ACA, CCR, CCA).
   Three axes under four labels; modelling means deciding what each means.
@@ -56,7 +57,7 @@ letter is not reused. What exists is described in the per-module documents.
   definitions would lose those distinctions. Deferred until the format can
   preserve the registry.
 - **K. Legacy `.doc` specifications**: 29.201, 29.215, 29.217, 29.219,
-  29.343, 29.368, 29.468 and TR 29.909 ship as binary `.doc`, which the
+  29.368 and TR 29.909 ship as binary `.doc`, which the
   downloader converts; none is extracted yet, 29.368 is an unresolved
   origin in three files, and a TR has no SpecRef form in the format. Two 32.299 statements the format cannot hold yet:
   `refer [223]` cites OMA-DDS-Charging_Data, which a From cell cannot name

@@ -1,0 +1,183 @@
+; Specification: 3GPP TS 29.343
+; Version: 18.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129343/18.00.00_60/ts_129343v180000p.pdf
+
+
+; Type: Message
+; Name: PX-Request, PXR
+; Section: 6.6.2
+; Page: 24
+<PX-Request> ::= < Diameter Header: 8388676, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        { ProSe-Request-Type }
+        [ Origin-App-Layer-User-Id ]
+        [ Target-App-Layer-User-Id ]
+        [ Requesting-EPUID ]
+        [ ProSe-Function-ID ]
+        [ Requesting-RPAUID ]
+        [ ProSe-App-Id ]
+        [ Application-Data ]
+        [ Allowed-Suffixes-Number ] ;; corrected: (TS29.343.py#pxr-allowed-suffixes-number-spelling)
+        [ Target-RPAUID ]
+      * [ Banned-User-Target ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: PX-Answer, PXA
+; Section: 6.6.3
+; Page: 25
+<PX-Answer> ::= < Diameter Header: 8388676, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        { ProSe-Request-Type }
+        [ Targeted-EPUID ]
+        [ ProSe-Function-ID ]
+      * [ PDUID ]
+      * [ ProSe-Restricted-Code-Suffix-Range ]
+      * [ ProSe-App-Code-Suffix-Range ] ;; corrected: (TS29.343.py#pxa-prose-app-code-suffix-range-name)
+      * [ ProSe-Code-Suffix-Mask ]
+      * [ Monitor-Target ]
+      * [ Target-PDUID ]
+        [ ProSe-Application-Metadata ]
+        [ Application-Data ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: XA-Request, XAR
+; Section: 6.6.4
+; Page: 25
+<XA-Request> ::= < Diameter Header: 8388727, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        { ProSe-Request-Type }
+        [ Requesting-RPAUID ]
+      * [ Banned-User-Target ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: XA-Answer, XAA
+; Section: 6.6.5
+; Page: 26
+<XA-Answer> ::= < Diameter Header: 8388727, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        { ProSe-Request-Type }
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 6.4.1
+; Table: 6.4.1-1
+; Page: 19
+; Columns: Name            Code   Section  Type          Must  May   S.not M.not
+Origin-App-Layer-User-Id   3600   6.4.2    UTF8String    M,V   P     -     -
+Target-App-Layer-User-Id   3601   6.4.3    UTF8String    M,V   P     -     -
+ProSe-Function-ID          3602   6.4.4    OctetString   M,V   P     -     -
+ProSe-Request-Type         3603   6.4.5    Unsigned32    M,V   P     -     -
+PDUID                      3604   6.4.6    OctetString   V     P     -     M
+Application-Data           3605   6.4.7    UTF8String    V     P     -     M
+Allowed-Suffixes-Number    3606   6.4.8    Unsigned32    V     P     -     M
+Monitor-Target             3607   6.4.9    Grouped       V     P     -     M
+ProSe-Code-Suffix-Mask     3608   6.4.10   Grouped       V     P     -     M
+Suffix-Code                3609   6.4.11   OctetString   V     P     -     M
+Suffix-Mask                3610   6.4.12   OctetString   V     P     -     M
+Banned-User-Target         3611   6.4.17   Grouped       V     P     -     M
+Metadata-Indicator         3612   6.4.18   Unsigned32    V     P     -     M
+
+
+; Type: Reused AVPs
+; Section: 6.5
+; Table: 6.5.1-1
+; Page: 23
+; Columns: Name                      From
+Load                                 RFC8583
+Requesting-EPUID                     TS29.345
+Targeted-EPUID                       TS29.345
+ProSe-Restricted-Code-Suffix-Range   TS29.345
+ProSe-App-Code-Suffix-Range          TS29.345 ;; corrected: (TS29.343.py#prose-app-code-suffix-range-row-name)
+ProSe-App-Id                         TS29.345
+Requesting-RPAUID                    TS29.345
+Target-RPAUID                        TS29.345
+Target-PDUID                         TS29.345
+ProSe-Application-Metadata           TS29.345
+
+
+; Type: Grouped AVP
+; Name: Monitor-Target
+; Section: 6.4.9
+; Page: 22
+Monitor-Target ::= < AVP header: 3607 10415 > ;; corrected: (TS29.343.py#vendor-id-monitor-target)
+        { Target-RPAUID }
+        { PDUID }
+        [ Metadata-Indicator ]
+      * [ ProSe-Code-Suffix-Mask ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ProSe-Code-Suffix-Mask
+; Section: 6.4.10
+; Page: 22
+ProSe-Code-Suffix-Mask ::= < AVP header: 3608 10415 > ;; corrected: (TS29.343.py#vendor-id-prose-code-suffix-mask)
+        { Suffix-Code }
+     1* { Suffix-Mask }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Banned-User-Target
+; Section: 6.4.17
+; Page: 22
+Banned-User-Target ::= < AVP header: 3611 10415 > ;; corrected: (TS29.343.py#vendor-id-banned-user-target)
+        { Target-RPAUID }
+        { Target-PDUID }
+      * [ AVP ]

@@ -1,0 +1,21 @@
+# Source declarations for 3GPP TS 29.343 (ProSe function to ProSe application
+# server aspects; PC2). Applied to normalized source text before parsing; see
+# src/seanchai/extractor/sources.py for the format.
+
+[[patch]]
+find = "ProSe- Code-Suffix-Mask AVP"
+replace = "ProSe-Code-Suffix-Mask AVP"
+exact = true
+section = "6.4.10"
+reason = "the clause 6.4.10 heading breaks the name after 'ProSe-'; its rule, table 6.4.1-1 and the PXA ABNF call the AVP 'ProSe-Code-Suffix-Mask'"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "*[ Banned-User-Target}"
+replace = "*[ Banned-User-Target ]"
+exact = true
+section = "6.6.4"
+reason = "the XAR ABNF (clause 6.6.4) closes an optional member with a brace; the PXR ABNF prints the same member as '*[ Banned-User-Target ]'"
+first_version = "18.0.0"
+last_version = "18.0.0"

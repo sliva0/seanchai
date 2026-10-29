@@ -1,0 +1,323 @@
+; Specification: 3GPP TS 29.468
+; Version: 18.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129400_129499/129468/18.00.00_60/ts_129468v180000p.pdf
+
+
+; Type: Message
+; Name: GA-Request, GAR
+; Section: 6.6.2
+; Page: 31
+<GA-Request> ::= < Diameter Header: 8388662, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * { Supported-Features }
+        [ TMGI-Allocation-Request ]
+        [ TMGI-Deallocation-Request ]
+      * [ MBMS-Bearer-Request ]
+        [ Restart-Counter ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: GA-Answer, GAA
+; Section: 6.6.3
+; Page: 31
+<GA-Answer> ::= < Diameter Header: 8388662, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * { Supported-Features }
+        [ TMGI-Allocation-Response ]
+      * [ TMGI-Deallocation-Response ]
+      * [ MBMS-Bearer-Response ]
+        [ Restart-Counter ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: GN-Request, GNR
+; Section: 6.6.4
+; Page: 32
+<GN-Request> ::= < Diameter Header: 8388663, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ TMGI-Expiry ]
+      * [ MBMS-Bearer-Event-Notification ]
+        [ Restart-Counter ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: GN-Answer, GNA
+; Section: 6.6.5
+; Page: 32
+<GN-Answer> ::= < Diameter Header: 8388663, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+        [ Restart-Counter ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 6.4.1
+; Table: 6.4.1-1
+; Page: 19
+; Columns: Name                     Code   Section  Type          Must  May   S.not M.not
+BMSC-Address                        3500   6.4.2    Address       M,V   P     -     -
+BMSC-Port                           3501   6.4.3    Unsigned32    M,V   P     -     -
+Common-Tunnel-Endpoint-Identifier   3524   6.4.26   OctetString   V     P     -     M
+FEC-Request                         3525   6.4.27   OctetString   V     P     -     M
+FEC-Result                          3531   6.4.33   Unsigned32    V     P     -     M
+Local-M1-Information                3518   6.4.20   Grouped       V     P     -     M
+Local-MB2-U-Information             3519   6.4.21   Grouped       V     P     -     M
+MB2U-Security                       3517   6.4.19   Unsigned32    M,V   P     -     -
+MBMS-Bearer-Event                   3502   6.4.4    Unsigned32    M,V   P     -     -
+MBMS-Bearer-Event-Diagnostic-Info   3533   6.4.35   Enumerated    V     P     -     M ;; corrected: (TS29.468.py#mbms-bearer-event-diagnostic-info-type)
+MBMS-Bearer-Event-Notification      3503   6.4.5    Grouped       M,V   P     -     -
+MBMS-Bearer-Request                 3504   6.4.6    Grouped       M,V   P     -     -
+MBMS-Bearer-Response                3505   6.4.7    Grouped       M,V   P     -     -
+MBMS-Bearer-Result                  3506   6.4.8    Unsigned32    M,V   P     -     -
+MBMS-eNB-IP-Multicast-Address       3520   6.4.22   Address       V     P     -     M
+MBMS-eNB-IPv6-Multicast-Address     3521   6.4.23   Address       V     P     -     M
+MBMS-GW-SSM-IP-Address              3522   6.4.24   Address       V     P     -     M
+MBMS-GW-SSM-IPv6-Address            3523   6.4.25   Address       V     P     -     M
+MBMS-Start-Time                     3507   6.4.9    Time          M,V   P     -     -
+Radio-Frequency                     3508   6.4.10   Unsigned32    M,V   P     -     -
+ROHC-Full-Header-Periodicity        3527   6.4.29   Float32       V     P     -     M
+ROHC-Max-CID                        3532   6.4.34   Unsigned32    V     P     -     M
+ROHC-Profile                        3528   6.4.30   Unsigned32    V     P     -     M
+ROHC-Request                        3526   6.4.28   Grouped       V     P     -     M
+ROHC-Result                         3530   6.4.32   Unsigned32    V     P     -     M
+TMGI-Allocation-Request             3509   6.4.11   Grouped       M,V   P     -     -
+TMGI-Allocation-Response            3510   6.4.12   Grouped       M,V   P     -     -
+TMGI-Allocation-Result              3511   6.4.13   Unsigned32    M,V   P     -     -
+TMGI-Deallocation-Request           3512   6.4.14   Grouped       M,V   P     -     -
+TMGI-Deallocation-Response          3513   6.4.15   Grouped       M,V   P     -     -
+TMGI-Deallocation-Result            3514   6.4.16   Unsigned32    M,V   P     -     -
+TMGI-Expiry                         3515   6.4.17   Grouped       M,V   P     -     -
+TMGI-Number                         3516   6.4.18   Unsigned32    M,V   P     -     -
+Userplane-Protocol-Result           3529   6.4.31   Grouped       V     P     -     M
+
+
+; Type: Reused AVPs
+; Section: 6.5.1
+; Table: 6.5.1-1
+; Page: 28
+; Columns: Name             From
+DRMP                        RFC7944
+Flow-Description            TS29.214
+Load                        RFC8583
+MBMS-Flow-Identifier        TS29.061
+MBMS-Session-Duration       TS29.061
+TMGI                        TS29.061
+MBMS-Service-Area           TS29.061
+MBMS-StartStop-Indication   TS29.061
+QoS-Information             TS29.212
+Supported-Features          TS29.229
+Restart-Counter             TS29.061
+MBMS-Cell-List              TS29.061
+
+
+; Type: Grouped AVP
+; Name: MBMS-Bearer-Event-Notification
+; Section: 6.4.5
+; Page: 20
+MBMS-Bearer-Event-Notification ::= < AVP header: 3503 10415 > ;; corrected: (TS29.468.py#vendor-id-mbms-bearer-event-notification)
+        { TMGI }
+        { MBMS-Flow-Identifier }
+        { MBMS-Bearer-Event }
+        [ MBMS-Bearer-Event-Diagnostic-Info ]
+      * [ Userplane-Protocol-Result ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: MBMS-Bearer-Request
+; Section: 6.4.6
+; Page: 20
+MBMS-Bearer-Request ::= < AVP header: 3504 10415 > ;; corrected: (TS29.468.py#vendor-id-mbms-bearer-request)
+        { MBMS-StartStop-Indication }
+        [ TMGI ]
+        [ MBMS-Flow-Identifier ]
+        [ QoS-Information ]
+        [ MBMS-Service-Area ]
+        [ MBMS-Start-Time ]
+        [ MB2U-Security ]
+        [ MBMS-Cell-List ]
+        [ Local-M1-Information ]
+        [ Local-MB2-U-Information ]
+        [ FEC-Request ]
+      * [ ROHC-Request ]
+        [ ROHC-Max-CID ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: MBMS-Bearer-Response
+; Section: 6.4.7
+; Page: 21
+MBMS-Bearer-Response ::= < AVP header: 3505 10415 > ;; corrected: (TS29.468.py#vendor-id-mbms-bearer-response)
+        [ TMGI ]
+        [ MBMS-Flow-Identifier ]
+        [ MBMS-Session-Duration ]
+        [ MBMS-Bearer-Result ]
+     *2 [ BMSC-Address ]
+        [ BMSC-Port ]
+        [ MB2U-Security ]
+      * [ Radio-Frequency ]
+      * [ Userplane-Protocol-Result ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: TMGI-Allocation-Request
+; Section: 6.4.11
+; Page: 22
+TMGI-Allocation-Request ::= < AVP header: 3509 10415 > ;; corrected: (TS29.468.py#vendor-id-tmgi-allocation-request)
+        { TMGI-Number }
+      * [ TMGI ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: TMGI-Allocation-Response
+; Section: 6.4.12
+; Page: 23
+TMGI-Allocation-Response ::= < AVP header: 3510 10415 > ;; corrected: (TS29.468.py#vendor-id-tmgi-allocation-response)
+      * [ TMGI ]
+        [ MBMS-Session-Duration ]
+        [ TMGI-Allocation-Result ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: TMGI-Deallocation-Request
+; Section: 6.4.14
+; Page: 23
+TMGI-Deallocation-Request ::= < AVP header: 3512 10415 > ;; corrected: (TS29.468.py#vendor-id-tmgi-deallocation-request)
+      * [ TMGI ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: TMGI-Deallocation-Response
+; Section: 6.4.15
+; Page: 23
+TMGI-Deallocation-Response ::= < AVP header: 3513 10415 > ;; corrected: (TS29.468.py#vendor-id-tmgi-deallocation-response)
+        { TMGI }
+        [ TMGI-Deallocation-Result ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: TMGI-Expiry
+; Section: 6.4.17
+; Page: 24
+TMGI-Expiry ::= < AVP header: 3515 10415 > ;; corrected: (TS29.468.py#vendor-id-tmgi-expiry)
+      * { TMGI }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Local-M1-Information
+; Section: 6.4.20
+; Page: 25
+Local-M1-Information ::= < AVP header: 3518 10415 > ;; corrected: (TS29.468.py#vendor-id-local-m1-information)
+        [ MBMS-eNB-IP-Multicast-Address ]
+        [ MBMS-eNB-IPv6-Multicast-Address ]
+        [ MBMS-GW-SSM-IP-Address ]
+        [ MBMS-GW-SSM-IPv6-Address ]
+        [ Common-Tunnel-Endpoint-Identifier ]
+
+
+; Type: Grouped AVP
+; Name: Local-MB2-U-Information
+; Section: 6.4.21
+; Page: 25
+Local-MB2-U-Information ::= < AVP header: 3519 10415 > ;; corrected: (TS29.468.py#vendor-id-local-mb2-u-information)
+     *2 [ BMSC-Address ]
+        [ BMSC-Port ]
+
+
+; Type: Grouped AVP
+; Name: ROHC-Request
+; Section: 6.4.28
+; Page: 26
+ROHC-Request ::= < AVP header: 3526 10415 > ;; corrected: (TS29.468.py#vendor-id-rohc-request) ;; corrected: (TS29.468.py#rohc-request-code)
+     1* { Flow-Description }
+        [ ROHC-Full-Header-Periodicity ]
+        { ROHC-Profile }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Userplane-Protocol-Result
+; Section: 6.4.31
+; Page: 26
+Userplane-Protocol-Result ::= < AVP header: 3529 10415 > ;; corrected: (TS29.468.py#vendor-id-userplane-protocol-result) ;; corrected: (TS29.468.py#userplane-protocol-result-code)
+      * [ Flow-Description ]
+        [ ROHC-Result ]
+        [ FEC-Result ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: MBMS-Bearer-Event-Diagnostic-Info
+; Section: 6.4.35
+; Page: 27
+MBMS-Bearer-Event-Diagnostic-Info ::= < Enumerated AVP header: 3533 10415 >
+        TMGI-Expiry                     = 0
+        MBMS-GW-Not-Establishment       = 1
+        SGmb-Transient-Path-Failure     = 2
+        SGmb-Non-Transient-Path-Failure = 3
+        MBMS-GW-User-Plane-Failure      = 4
+        MBMS-GW-Permanent-Error         = 5
+        MBMS-GW-Transient-Error         = 6
