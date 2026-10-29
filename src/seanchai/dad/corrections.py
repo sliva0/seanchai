@@ -44,7 +44,7 @@ from typing import Any
 import pydantic
 
 from ..versions import VersionRange
-from . import ast
+from . import ast, formatter
 
 
 class CorrectionError(ValueError):
@@ -915,10 +915,9 @@ _SECTION_TYPES = (
 type _NoteMap = dict[ast.TreePath, list[str]]
 
 
-def notes(results: list[Result]) -> tuple[_NoteMap, _NoteMap, _NoteMap]:
+def notes(results: list[Result]) -> formatter.Comments:
     """`;;` note lines marking what `apply` touched, keyed by path in the
-    rebuilt tree, as the `(trailing, standing, detached)` triple
-    `format_spec` takes.
+    rebuilt tree, as the `formatter.Comments` `format_spec` takes.
 
     A trailing note says only that an edit reached the line, and where the
     declaration is: the declaration carries the change and its `reason`, and
@@ -946,7 +945,7 @@ def notes(results: list[Result]) -> tuple[_NoteMap, _NoteMap, _NoteMap]:
             continue
         kind = "inserted" if isinstance(edit, Insert) else "corrected"
         trailing.setdefault(result.path, []).append(f"{kind}: ({edit.cited})")
-    return trailing, standing, detached
+    return formatter.Comments(trailing, standing, detached)
 
 
 def module_path(directory: Path, specification: str) -> Path:

@@ -676,9 +676,9 @@ def test_correction_notes_mark_the_same_lines_in_a_copied_or_reparsed_tree(raw):
     )
     text = committed.read_text(encoding="utf-8")
 
-    assert formatter.format_spec(corrected, *notes) == text
-    assert formatter.format_spec(copy.deepcopy(corrected), *notes) == text
-    assert formatter.format_spec(parser.parse(text), *notes) == text
+    assert formatter.format_spec(corrected, notes) == text
+    assert formatter.format_spec(copy.deepcopy(corrected), notes) == text
+    assert formatter.format_spec(parser.parse(text), notes) == text
 
 
 @pytest.mark.parametrize("path", _corpus(raw=False), ids=lambda path: path.name)

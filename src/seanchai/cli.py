@@ -9,22 +9,20 @@ user's document.
 """
 
 import contextlib
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import click
+
+if TYPE_CHECKING:
+    # The `dad` modules are imported only by the commands that use them.
+    from .dad.formatter import Comments
 
 # The two declared edit layers live side by side; only the source
 # declarations (input patches and quirks) are discovered automatically,
 # because loading a correction module executes Python from that directory.
 _DEFAULT_SOURCES = Path("edits") / "sources"
-
-# The `(trailing, standing, detached)` note triple `corrections.notes`
-# produces and `formatter.format_spec` takes, keyed by `ast.TreePath` —
-# spelled out, because the `dad` modules are imported only by the commands
-# that use them.
-_NoteMap = Mapping[tuple[str | int, ...], Sequence[str]]
-_Notes = tuple[_NoteMap, _NoteMap, _NoteMap]
 
 
 class _HelpFormatter(click.HelpFormatter):
@@ -147,7 +145,7 @@ def extract(
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        notes: _Notes = ({}, {}, {})
+        notes = None
         if corrections is not None:
             # A corpus run may pass a directory holding modules for only some
             # of its specifications, so a spec without one is not an error.
@@ -203,7 +201,7 @@ def extract_rfc(
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        notes: _Notes = ({}, {}, {})
+        notes = None
         if corrections is not None:
             spec, notes = _correct(spec, corrections, required=False)
     _write(spec, output, notes)
@@ -386,6 +384,68 @@ def _correct(spec, directory: Path, required: bool):
                 err=True,
             )
     return corrected, corrections_module.notes(results)
+
+
+@main.command(name="format")
+@click.argument(
+    "sources",
+    nargs=-1,
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
+@click.option(
+    "--check",
+    is_flag=True,
+    help="Print a diff for each file not in canonical form instead of"
+    " rewriting it, and exit non-zero if there is one.",
+)
+def format_command(sources: tuple[Path, ...], check: bool) -> None:
+    """Rewrite `.dad` files in canonical form, keeping their `;;` comments.
+
+    Every file is parsed before any is written, so one that does not parse
+    leaves all of them as they were. A trailing comment stays on its line,
+    a whole-line comment stays before the line that followed it, and a
+    block of comments stays before the section that followed it.
+    """
+    import difflib
+
+    from .dad import formatter, parser
+
+    changed: list[tuple[Path, str, str]] = []
+    for source in sources:
+        # Untranslated both ways: canonical form ends lines with "\n" alone,
+        # and a file with "\r\n" endings is one to rewrite, not one that
+        # reads as canonical because the newlines were translated away.
+        text = source.read_text(encoding="utf-8", newline="")
+        try:
+            spec, comments = parser.parse_with_comments(text)
+        except parser.DadParseError as error:
+            raise click.ClickException(f"{source}: {error}") from None
+        canonical = formatter.format_spec(spec, comments)
+        if canonical != text:
+            changed.append((source, text, canonical))
+    for source, text, canonical in changed:
+        if check:
+            click.echo(
+                "".join(
+                    difflib.unified_diff(
+                        text.splitlines(keepends=True),
+                        canonical.splitlines(keepends=True),
+                        fromfile=str(source),
+                        tofile=str(source),
+                    )
+                ),
+                nl=False,
+            )
+        else:
+            source.write_text(canonical, encoding="utf-8", newline="")
+    verb = "would reformat" if check else "reformatted"
+    click.echo(
+        f"{verb} {len(changed)} of {len(sources)} files",
+        err=True,
+    )
+    if check and changed:
+        raise SystemExit(1)
 
 
 @main.command()
@@ -612,11 +672,10 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
     )
 
 
-def _write(spec, output: Path | None, notes: _Notes | None = None) -> None:
+def _write(spec, output: Path | None, notes: Comments | None = None) -> None:
     from .dad import formatter
 
-    trailing, standing, detached = notes or ({}, {}, {})
-    text = formatter.format_spec(spec, trailing, standing, detached)
+    text = formatter.format_spec(spec, notes or formatter.Comments())
     if output is None:
         click.echo(text, nl=False)
     else:

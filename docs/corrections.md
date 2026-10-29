@@ -113,9 +113,13 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
-inserted row is marked `;; inserted:`. The parser discards `;;` comments, so
-an annotated file is exactly canonical output plus notes, and reformatting
-drops them — harmless, because corrected files are regenerated, never edited.
+inserted row is marked `;; inserted:`. Notes are `;;` comments, so an
+annotated file parses to exactly the corrected tree, and they are placed by
+the rules a hand-written comment follows ([dad-format.md](dad-format.md#comments)):
+`seanchai format` keeps every note where it is, and a corrected file is
+already in the form it writes. Edits are resolved, and notes keyed, by
+`ast.TreePath` rather than by object, so a note marks the same line in a
+copy or a re-parse of the corrected tree.
 The citation is a name rather than a line number so that editing or
 reformatting a module does not change every corrected file.
 

@@ -6,12 +6,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Format
 
-- **A. `seanchai format`, preserving comments.** There is no way to
-  normalise a hand-edited file from the CLI, and the parser discards `;;`
-  comments, so normalising would delete every annotation. Proposal: a
-  trailing comment belongs to the node on its line, a whole-line comment to
-  the node on the next line; the parser returns `(spec, comments)` in the
-  `Notes` shape `format_spec` already takes.
 - **C. `; EXTERNALLY-DEFINED` marker and a `Supply` correction.** For an
   enumerated AVP whose clause says the values live in another document
   (29.272's `Alert-Reason`): the extractor records the fact instead of an

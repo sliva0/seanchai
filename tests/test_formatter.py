@@ -173,7 +173,7 @@ _EXTENDED_MESSAGE = ExtendedMessage(
 @pytest.mark.parametrize("section", [object(), _EXTENDED_MESSAGE])
 def test_an_unregistered_section_type_fails_loudly(section):
     with pytest.raises(TypeError, match=f"no formatter for {type(section).__name__}"):
-        formatter._format_section(section, ("sections", 0), {}, {})
+        formatter._format_section(section, ("sections", 0), formatter.Comments())
 
 
 def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
@@ -189,9 +189,124 @@ def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
 
     note = "deleted: re-used AVPs row 'Doomed' (f.py:9)"
     standing: formatter.Notes = {("sections", 0, "rows", 1): [note]}
-    annotated = formatter.format_spec(spec, standing=standing)
+    annotated = formatter.format_spec(spec, formatter.Comments(standing=standing))
     lines = annotated.splitlines()
 
     marker = lines.index(f";; {note}")
     assert lines[marker - 1].startswith("Load")
     assert marker == len(lines) - 1
+
+
+# Comments in every place a hand-edited file can put them, and the canonical
+# form `format` writes them back in: each stays on or before the line it was
+# on or before, while indentation, column alignment and the spacing of
+# comment blocks are the formatter's.
+_COMMENTED = """\
+;; before the header
+
+; Specification: X ;; on a header line
+;; before a header line
+; Version: 1
+; Vendor-ID: 10415
+;; at the end of the header
+
+
+;; glued to the next section
+; Type: Message
+; Name: A-Request, AR ;; on a directive
+; Section: 1
+;; before the header rule
+<A-Request> ::= < Diameter Header: 1, REQ, 2 > ;; on the header rule
+    ;; before a rule
+        { X } ;;tight
+;;
+;; at the end;; of the section
+
+
+;; one comment block
+
+;; and another, merged
+
+; Type: Enumerated AVP
+; Name: E
+; Section: 2
+E ::= < Enumerated AVP header: 5 >
+  A = 1 ; description ;; on a value
+;; at the end of the values
+
+
+; Type: AVP Table
+; Section: 3
+;; before the columns
+; Columns: Name Code
+X 1
+
+;; after the last section
+"""
+
+_COMMENTED_CANONICAL = """\
+;; before the header
+
+
+; Specification: X ;; on a header line
+;; before a header line
+; Version: 1
+; Vendor-ID: 10415
+;; at the end of the header
+
+
+;; glued to the next section
+; Type: Message
+; Name: A-Request, AR ;; on a directive
+; Section: 1
+;; before the header rule
+<A-Request> ::= < Diameter Header: 1, REQ, 2 > ;; on the header rule
+;; before a rule
+        { X } ;; tight
+;;
+;; at the end;; of the section
+
+
+;; one comment block
+;; and another, merged
+
+
+; Type: Enumerated AVP
+; Name: E
+; Section: 2
+E ::= < Enumerated AVP header: 5 >
+        A = 1 ; description ;; on a value
+        ;; at the end of the values
+
+
+; Type: AVP Table
+; Section: 3
+;; before the columns
+; Columns: Name Code
+X     1
+
+
+;; after the last section
+"""
+
+
+def test_comments_are_written_back_where_they_stood():
+    spec, comments = parser.parse_with_comments(_COMMENTED)
+
+    assert spec == parser.parse(_COMMENTED)
+    assert formatter.format_spec(spec, comments) == _COMMENTED_CANONICAL
+    spec, comments = parser.parse_with_comments(_COMMENTED_CANONICAL)
+    assert formatter.format_spec(spec, comments) == _COMMENTED_CANONICAL
+
+
+def test_comments_are_keyed_by_the_path_of_their_line():
+    _, (trailing, standing, detached) = parser.parse_with_comments(_COMMENTED)
+
+    assert trailing[("sections", 0, "name")] == ["on a directive"]
+    assert trailing[("sections", 0)] == ["on the header rule"]
+    assert standing[("sections", 0, "avps", 0)] == ["before a rule"]
+    assert standing[("sections", 0, "avps", 1)] == ["", "at the end;; of the section"]
+    assert standing[()] == ["at the end of the header"]
+    assert detached[()] == ["before the header"]
+    assert detached[("sections", 1)] == ["one comment block", "and another, merged"]
+    assert detached[("sections", 3)] == ["after the last section"]

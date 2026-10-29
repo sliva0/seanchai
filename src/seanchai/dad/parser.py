@@ -4,7 +4,9 @@ The format is deliberately line-based, so this is hand-rolled: one pass
 splitting the file into contiguous-line blocks (file header first, then one
 block per section), then per-`; Type:` body parsers. Directives are grammar:
 a malformed `; ...` line is a parse error, never silently skipped. `;;`
-free-text comments — whole lines or the tail of a line — are discarded.
+free-text comments — whole lines or the tail of a line — are discarded by
+`parse`; `parse_with_comments` returns them keyed by where they attach, for
+`formatter.format_spec` to print back in place.
 """
 
 import contextlib
@@ -14,7 +16,7 @@ from typing import NamedTuple
 
 import pydantic
 
-from . import abnf, ast
+from . import abnf, ast, formatter
 
 # Keys carry hyphens (`; Vendor-ID:`), so the charset is wider than letters.
 # `; RESERVED = n` uses `=` rather than `:` and so is not a match either way.
@@ -64,29 +66,54 @@ class _Block:
         return self.lines[0][0]
 
 
-def _blocks(text: str) -> list[_Block]:
-    blocks: list[_Block] = []
-    current: list[tuple[int, str]] = []
+class _Line(NamedTuple):
+    lineno: int
+    # The line without its comment; empty for a line that is all comment.
+    content: str
+    # What follows `;;` and one space, or None for a line without a comment.
+    comment: str | None
+
+
+def _runs(text: str) -> list[list[_Line]]:
+    """The file's lines between blank lines. A line that is all comment is
+    not blank, so it belongs to the run it sits in."""
+    runs: list[list[_Line]] = []
+    current: list[_Line] = []
     for lineno, line in enumerate(text.splitlines(), start=1):
         if line.rstrip() != line:
             raise DadParseError(lineno, "trailing whitespace")
+        if not line:
+            if current:
+                runs.append(current)
+                current = []
+            continue
         # Everything from the first `;;` to the end of the line is comment;
         # inline values cannot contain `;;` (the AST rejects it), so nothing
-        # meaningful is ever cut. A line left empty by its comment is skipped
-        # rather than treated as the blank line that separates blocks.
+        # meaningful is ever cut.
         comment = line.find(";;")
-        if comment != -1:
-            line = line[:comment].rstrip()
-            if not line:
-                continue
-        if line:
-            current.append((lineno, line))
-        elif current:
-            blocks.append(_Block(current))
-            current = []
+        if comment == -1:
+            current.append(_Line(lineno, line, None))
+        else:
+            current.append(
+                _Line(
+                    lineno,
+                    line[:comment].rstrip(),
+                    line[comment + 2 :].removeprefix(" "),
+                )
+            )
     if current:
-        blocks.append(_Block(current))
-    return blocks
+        runs.append(current)
+    return runs
+
+
+def _blocks(runs: list[list[_Line]]) -> list[_Block]:
+    """The runs' content lines. A line left empty by its comment is skipped
+    rather than treated as the blank line that separates blocks, so a run of
+    nothing but comments is no block at all."""
+    blocks = [
+        [(line.lineno, line.content) for line in run if line.content] for run in runs
+    ]
+    return [_Block(lines) for lines in blocks if lines]
 
 
 class _Directive(NamedTuple):
@@ -477,14 +504,106 @@ _SECTION_PARSERS = {
     "Reused AVPs": _parse_reused,
 }
 
+# Where each line's comments attach: the path of what the line states. A
+# directive states one field, a header rule its section, a body line its
+# item. `_BODIES` names each section type's body field and how many
+# header-rule lines precede it.
+_HEADER_PATHS: dict[str, ast.TreePath] = {
+    "Specification": ("specification",),
+    "Version": ("version",),
+    "Vendor-ID": ("vendor_id",),
+    "Bases": ("bases",),
+    "Link": ("link",),
+}
+_DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
+    "Type": ("type",),
+    "Name": ("name",),
+    "Section": ("source", "section"),
+    "Page": ("source", "page"),
+    "Table": ("table",),
+    "Columns": ("columns",),
+}
+_BODIES = {
+    "Message": ("avps", 1),
+    "Grouped AVP": ("avps", 1),
+    "Enumerated AVP": ("values", 1),
+    "AVP Table": ("rows", 0),
+    "Reused AVPs": ("rows", 0),
+}
+
+
+class _Layout(NamedTuple):
+    """Which path each line printed, and where a whole-line comment after a
+    block's last line stands: one past its body's last item, or `()` for
+    the file header."""
+
+    paths: dict[int, ast.TreePath]
+    ends: list[ast.TreePath]
+
 
 def parse(text: str) -> ast.Specification:
-    blocks = _blocks(text)
+    """Parse a `.dad` file, discarding its `;;` comments."""
+    return _parse(_blocks(_runs(text)))[0]
+
+
+type _NoteMap = dict[ast.TreePath, list[str]]
+
+
+def parse_with_comments(text: str) -> tuple[ast.Specification, formatter.Comments]:
+    """Parse a `.dad` file and return its `;;` comments as the
+    `formatter.Comments` `format_spec` takes, so formatting the pair writes
+    each comment back where it stood.
+
+    A trailing comment belongs to the line it ends. A whole-line comment
+    belongs to the next line of its block, and prints before it; one after
+    the block's last line stands at the block's end. A run of whole-line
+    comments between blank lines is a block of its own, detached, and
+    belongs to the section that follows it (to the position past the last
+    section at the end of the file, to `()` before the file header).
+    Consecutive comment blocks merge into one, and a comment's indentation
+    and the blank lines around it are the formatter's to choose.
+    """
+    runs = _runs(text)
+    spec, layout = _parse(_blocks(runs))
+    trailing: _NoteMap = {}
+    standing: _NoteMap = {}
+    detached: _NoteMap = {}
+    blocks = 0
+    for run in runs:
+        if not any(line.content for line in run):
+            place = () if blocks == 0 else ("sections", blocks - 1)
+            detached.setdefault(place, []).extend(
+                line.comment for line in run if line.comment is not None
+            )
+            continue
+        waiting: list[str] = []
+        for line in run:
+            if not line.content:
+                if line.comment is not None:
+                    waiting.append(line.comment)
+                continue
+            path = layout.paths[line.lineno]
+            if waiting:
+                standing.setdefault(path, []).extend(waiting)
+                waiting = []
+            if line.comment is not None:
+                trailing.setdefault(path, []).append(line.comment)
+        if waiting:
+            standing.setdefault(layout.ends[blocks], []).extend(waiting)
+        blocks += 1
+    return spec, formatter.Comments(trailing, standing, detached)
+
+
+def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
     if not blocks:
         raise DadParseError(1, "empty file")
+    layout = _Layout({}, [()])
 
     header = blocks[0]
     directives, body = _split_directives(header)
+    for key, directive in directives.items():
+        if key in _HEADER_PATHS:
+            layout.paths[directive.lineno] = _HEADER_PATHS[key]
     if body:
         raise DadParseError(body[0][0], "unexpected content in file header")
     specification = _pop(directives, "Specification", header.start)
@@ -499,8 +618,12 @@ def parse(text: str) -> ast.Specification:
     _no_leftovers(directives, header.start)
 
     sections = []
-    for block in blocks[1:]:
+    for index, block in enumerate(blocks[1:]):
         directives, body = _split_directives(block)
+        path: ast.TreePath = ("sections", index)
+        for key, directive in directives.items():
+            if key in _DIRECTIVE_PATHS:
+                layout.paths[directive.lineno] = (*path, *_DIRECTIVE_PATHS[key])
         section_type = _pop(directives, "Type", block.start)
         parser = _SECTION_PARSERS.get(section_type.value)
         if parser is None:
@@ -509,6 +632,11 @@ def parse(text: str) -> ast.Specification:
             )
         with _validated(block.start):
             sections.append(parser(directives, body, block.start))
+        field, rules = _BODIES[section_type.value]
+        for position, (lineno, _) in enumerate(body):
+            item = position - rules
+            layout.paths[lineno] = path if item < 0 else (*path, field, item)
+        layout.ends.append((*path, field, len(body) - rules))
 
     # The header directives are checked one at a time so each reports its
     # own line, then assembled — by then only the whole-model rules are left.
@@ -533,7 +661,7 @@ def parse(text: str) -> ast.Specification:
                         " document (expected e.g. 'RFC6733' or 'TS29.272')",
                     )
     with _validated(specification.lineno):
-        return ast.Specification(
+        spec = ast.Specification(
             specification=specification.value,
             version=None if version is None else version.value,
             vendor_id=vendor_id,
@@ -541,3 +669,4 @@ def parse(text: str) -> ast.Specification:
             link=parsed_link,
             sections=tuple(sections),
         )
+    return spec, layout

@@ -3,8 +3,9 @@
 The tree mirrors the file structure: a `Specification` is a file-level header
 followed by sections, each of which corresponds to one `; Type: X` block.
 Everything the parser reads — including directive comments — is represented
-here; `;;` free-text comments are not (the parser discards them, and the
-canonical formatter regenerates cosmetic lines such as table column headers).
+here; `;;` free-text comments are not (`parser.parse_with_comments` returns
+them beside the tree, keyed by `TreePath`, and the canonical formatter
+regenerates cosmetic lines such as table column headers).
 
 All nodes are frozen pydantic models: extractor output and hand patches are
 exactly the kind of data worth validating eagerly, and `model_dump_json()`

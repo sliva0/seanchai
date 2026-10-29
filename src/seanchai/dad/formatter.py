@@ -16,30 +16,60 @@ depends on stable diffs. Canonical rules:
 """
 
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any
+from typing import Any, NamedTuple
 
 from . import abnf, ast
 
-# Free-text notes to attach to the lines particular nodes produce, keyed by
-# the node's `ast.TreePath`. Used to mark what the correction layer touched;
-# `;;` comments are discarded on parse, so a note is a reader's aid and never
-# data.
+# Free-text notes to attach to the lines a tree produces, keyed by
+# `ast.TreePath`; a note is a reader's aid and never data.
 Notes = Mapping[ast.TreePath, Sequence[str]]
 _NO_NOTES: Notes = {}
 
 
-def _noted(line: str, path: ast.TreePath, notes: Notes) -> str:
-    """The node's notes appended as a trailing comment, on the line it marks."""
-    return line + "".join(f" ;; {note}" for note in notes.get(path, ()))
+def _comment(note: str) -> str:
+    # An empty note is a bare `;;`: a trailing space would not parse back.
+    return f";; {note}" if note else ";;"
 
 
-def _standing(path: ast.TreePath, standing: Notes, indent: str = "") -> list[str]:
-    """Whole-line notes, for an edit that left no line to append to: a
-    deletion's note prints in the deleted line's place — before the sibling
-    that moved up into it, or after the last sibling when the path is one
-    past the end, because the end is where that line stood — indented like
-    the lines of the block it stands in."""
-    return [f"{indent};; {note}" for note in standing.get(path, ())]
+class Comments(NamedTuple):
+    """The `;;` lines to print with a tree, by placement: a file's own
+    comments from `parser.parse_with_comments`, or the notes
+    `corrections.notes` marks edits with.
+
+    Each is keyed by an `ast.TreePath`, and every line a tree produces has a
+    path of its own — a directive line the path of the field it states
+    (`("sections", 3, "source", "page")`), a header rule its section's path,
+    a body line its item's — so every line can carry notes and none can take
+    another's. `trailing` notes are appended to the line, `standing` ones
+    printed as whole lines before it, and `detached` ones as a block of
+    their own; `format_spec` says where each lands.
+    """
+
+    trailing: Notes = _NO_NOTES
+    standing: Notes = _NO_NOTES
+    detached: Notes = _NO_NOTES
+
+    def line(self, text: str, path: ast.TreePath, indent: str = "") -> list[str]:
+        """The line `path` printed, after its standing notes and with its
+        trailing ones appended."""
+        trailing = "".join(f" {_comment(note)}" for note in self.trailing.get(path, ()))
+        return [*self.standing_at(path, indent), text + trailing]
+
+    def standing_at(self, path: ast.TreePath, indent: str = "") -> list[str]:
+        """Whole-line notes before the line at `path`, indented like the
+        lines of the block they stand in: a whole-line comment, or the note
+        of an edit that left no line to append to. A deletion's note prints
+        in the deleted line's place — before the sibling that moved up into
+        it, or after the last sibling when the path is one past the end,
+        because the end is where that line stood."""
+        return [indent + _comment(note) for note in self.standing.get(path, ())]
+
+    def detached_at(self, path: ast.TreePath) -> list[str]:
+        """The block of notes before the section at `path`."""
+        return [_comment(note) for note in self.detached.get(path, ())]
+
+
+_NO_COMMENTS = Comments()
 
 
 _MIN_COLUMN_WIDTH = 3
@@ -53,10 +83,7 @@ def _avp_line(rule: ast.AvpRule) -> str:
 
 
 def _abnf_body(
-    avps: tuple[ast.AvpRule, ...],
-    path: ast.TreePath,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
+    avps: tuple[ast.AvpRule, ...], path: ast.TreePath, notes: Comments
 ) -> list[str]:
     """`; bold` markers sit one column past the longest rule *of this section*.
     A file-wide column would make one added AVP reflow every marker in the
@@ -67,16 +94,28 @@ def _abnf_body(
     for index, (rule, line) in enumerate(rules):
         if rule.bold:
             line = f"{line:<{bold_column}}; bold"
-        lines.extend(_standing((*path, "avps", index), standing))
-        lines.append(_noted(line, (*path, "avps", index), notes))
-    lines.extend(_standing((*path, "avps", len(rules)), standing))
+        lines.extend(notes.line(line, (*path, "avps", index)))
+    lines.extend(notes.standing_at((*path, "avps", len(rules))))
     return lines
 
 
-def _header_directives(name: str, source: ast.SourceRef) -> list[str]:
-    lines = [f"; Name: {name}", f"; Section: {source.section}"]
-    if source.page is not None:
-        lines.append(f"; Page: {source.page}")
+def _directives(
+    section: ast.Section, name: str | None, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    """A section's directive lines, in canonical order. Only tables carry a
+    `; Table:` caption and only definitions a `; Name:`."""
+    lines = notes.line(f"; Type: {section.type}", (*path, "type"))
+    if name is not None:
+        lines.extend(notes.line(f"; Name: {name}", (*path, "name")))
+    lines.extend(
+        notes.line(f"; Section: {section.source.section}", (*path, "source", "section"))
+    )
+    if isinstance(section, ast.AvpTable | ast.ReusedAvps) and section.table is not None:
+        lines.extend(notes.line(f"; Table: {section.table}", (*path, "table")))
+    if section.source.page is not None:
+        lines.extend(
+            notes.line(f"; Page: {section.source.page}", (*path, "source", "page"))
+        )
     return lines
 
 
@@ -85,8 +124,7 @@ def _table(
     rows: list[list[str]],
     prefix: str,
     path: ast.TreePath,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
+    notes: Comments,
 ) -> list[str]:
     """`rows` are the cells of the rows at `path` + `("rows", i)`. Notes are
     appended *after* the column widths are computed, so annotating a row
@@ -103,37 +141,28 @@ def _table(
     header_line = prefix
     for header, start in zip(headers, starts, strict=True):
         header_line += " " * max(start - len(header_line), 1) + header
-    lines = [header_line]
+    lines = notes.line(header_line, (*path, "columns"))
     for index, row in enumerate(rows):
-        lines.extend(_standing((*path, "rows", index), standing))
         line = ""
         for cell, start in zip(row, starts, strict=True):
             line += " " * (start - len(line)) + cell
-        lines.append(_noted(line, (*path, "rows", index), notes))
-    lines.extend(_standing((*path, "rows", len(rows)), standing))
+        lines.extend(notes.line(line, (*path, "rows", index)))
+    lines.extend(notes.standing_at((*path, "rows", len(rows))))
     return lines
 
 
 def _format_message(
-    message: ast.Message,
-    path: ast.TreePath,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
+    message: ast.Message, path: ast.TreePath, notes: Comments
 ) -> list[str]:
     header_items = abnf.diameter_header_items(
         message.command_code, message.flags, message.application_id
     )
     return [
-        "; Type: Message",
-        *_header_directives(f"{message.name}, {message.abbreviation}", message.source),
+        *_directives(message, f"{message.name}, {message.abbreviation}", path, notes),
         # Section-level notes trail the header rule: it is the line that
         # carries the fields a correction to the section itself can touch.
-        _noted(
-            f"<{message.name}> ::= < Diameter Header: {header_items} >",
-            path,
-            notes,
-        ),
-        *_abnf_body(message.avps, path, notes, standing),
+        *notes.line(f"<{message.name}> ::= < Diameter Header: {header_items} >", path),
+        *_abnf_body(message.avps, path, notes),
     ]
 
 
@@ -142,29 +171,21 @@ def _avp_header_items(code: int, vendor_id: int | None) -> str:
 
 
 def _format_grouped(
-    avp: ast.GroupedAvp,
-    path: ast.TreePath,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
+    avp: ast.GroupedAvp, path: ast.TreePath, notes: Comments
 ) -> list[str]:
     return [
-        "; Type: Grouped AVP",
-        *_header_directives(avp.name, avp.source),
-        _noted(
+        *_directives(avp, avp.name, path, notes),
+        *notes.line(
             f"{avp.name} ::= < AVP header:"
             f" {_avp_header_items(avp.code, avp.vendor_id)} >",
             path,
-            notes,
         ),
-        *_abnf_body(avp.avps, path, notes, standing),
+        *_abnf_body(avp.avps, path, notes),
     ]
 
 
 def _format_enumerated(
-    avp: ast.EnumeratedAvp,
-    path: ast.TreePath,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
+    avp: ast.EnumeratedAvp, path: ast.TreePath, notes: Comments
 ) -> list[str]:
     width = max(
         (
@@ -174,13 +195,11 @@ def _format_enumerated(
         default=0,
     )
     lines = [
-        "; Type: Enumerated AVP",
-        *_header_directives(avp.name, avp.source),
-        _noted(
+        *_directives(avp, avp.name, path, notes),
+        *notes.line(
             f"{avp.name} ::= < Enumerated AVP header:"
             f" {_avp_header_items(avp.code, avp.vendor_id)} >",
             path,
-            notes,
         ),
     ]
     value_width = max(
@@ -204,9 +223,8 @@ def _format_enumerated(
                 else f"{value.first}-{value.last}"
             )
             line = f"      ; {'RESERVED':<{width}} = {numbers}"
-        lines.extend(_standing((*path, "values", index), standing, indent=" " * 8))
-        lines.append(_noted(line, (*path, "values", index), notes))
-    lines.extend(_standing((*path, "values", len(avp.values)), standing, " " * 8))
+        lines.extend(notes.line(line, (*path, "values", index), indent=" " * 8))
+    lines.extend(notes.standing_at((*path, "values", len(avp.values)), " " * 8))
     return lines
 
 
@@ -237,27 +255,15 @@ def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
 
 
 def _format_avp_table(
-    table: ast.AvpTable,
-    path: ast.TreePath,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
+    table: ast.AvpTable, path: ast.TreePath, notes: Comments
 ) -> list[str]:
-    headers = [column.value for column in table.columns]
     rows = [
         [avp_table_cell(row, column) for column in table.columns] for row in table.rows
     ]
     return [
-        "; Type: AVP Table",
-        f"; Section: {table.source.section}",
-        *([] if table.table is None else [f"; Table: {table.table}"]),
-        *([f"; Page: {table.source.page}"] if table.source.page is not None else []),
+        *_directives(table, None, path, notes),
         *_table(
-            headers,
-            rows,
-            prefix="; Columns:",
-            path=path,
-            notes=notes,
-            standing=standing,
+            [column.value for column in table.columns], rows, "; Columns:", path, notes
         ),
     ]
 
@@ -273,26 +279,15 @@ def _reused_cell(row: ast.ReusedAvpRow, column: ast.ReusedColumn) -> str:
 
 
 def _format_reused(
-    reused: ast.ReusedAvps,
-    path: ast.TreePath,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
+    reused: ast.ReusedAvps, path: ast.TreePath, notes: Comments
 ) -> list[str]:
     rows = [
         [_reused_cell(row, column) for column in reused.columns] for row in reused.rows
     ]
     return [
-        "; Type: Reused AVPs",
-        f"; Section: {reused.source.section}",
-        f"; Table: {reused.table}",
-        *([f"; Page: {reused.source.page}"] if reused.source.page is not None else []),
+        *_directives(reused, None, path, notes),
         *_table(
-            [column.value for column in reused.columns],
-            rows,
-            prefix="; Columns:",
-            path=path,
-            notes=notes,
-            standing=standing,
+            [column.value for column in reused.columns], rows, "; Columns:", path, notes
         ),
     ]
 
@@ -300,7 +295,7 @@ def _format_reused(
 # Keyed by exact type, not matched by isinstance: a subclass of `Message`
 # would otherwise be written out as a plain `Message`, silently dropping
 # whatever it added, and `.dad` output has to be exact.
-_FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Notes, Notes], list[str]]] = {
+_FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.Message: _format_message,
     ast.GroupedAvp: _format_grouped,
     ast.EnumeratedAvp: _format_enumerated,
@@ -310,54 +305,54 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Notes, Notes], list[str]]] 
 
 
 def _format_section(
-    section: ast.Section, path: ast.TreePath, notes: Notes, standing: Notes
+    section: ast.Section, path: ast.TreePath, notes: Comments
 ) -> list[str]:
     formatter = _FORMATTERS.get(type(section))
     if formatter is None:
         raise TypeError(f"no formatter for {type(section).__name__}")
-    return formatter(section, path, notes, standing)
+    return formatter(section, path, notes)
 
 
-def format_spec(
-    spec: ast.Specification,
-    notes: Notes = _NO_NOTES,
-    standing: Notes = _NO_NOTES,
-    detached: Notes = _NO_NOTES,
-) -> str:
-    """Canonical text, optionally with `;;` notes marking particular nodes.
+def format_spec(spec: ast.Specification, comments: Comments = _NO_COMMENTS) -> str:
+    """Canonical text, optionally with `;;` comments on particular lines.
 
-    Every kind of note is keyed by an `ast.TreePath`. A `notes` entry trails
-    the line its node produced. A `standing` entry is a whole line printed
-    *before* its node's line — the shape a deletion needs, keyed by the
-    position the deleted node stood in, so the note reads in the deleted
-    line's place; a position one past a body's last item prints after it. A
-    `detached` entry is a block of its own, spaced from its neighbours like
-    the section it replaces — the shape a deleted *section's* note needs,
-    keyed by the section position that follows the gap (one past the last
-    section when the last one went): glued to the next section's lines it
-    would read as being about that section.
-    Notes are the one thing here that does not round-trip: the parser discards
-    `;;` comments, so `format_spec(parse(annotated))` gives the same file
-    without them. That is the intended relation — an annotated file is
-    canonical output plus a reader's aid — and it is why notes are a caller's
-    choice rather than part of the canonical form.
+    Every comment is keyed by an `ast.TreePath`, and every line has a path of
+    its own (see `Comments`). A `trailing` comment trails the line its path
+    printed. A `standing` one is a whole line printed *before* that line —
+    the shape a deletion needs, keyed by the position the deleted node stood
+    in, so the note reads in the deleted line's place. A position one past a
+    body's last item prints after it, and the root path `()` after the file
+    header's lines. A `detached` one is a block of its own, spaced from its
+    neighbours like the section it replaces — the shape a deleted
+    *section's* note needs, keyed by the section position that follows the
+    gap (one past the last section when the last one went): glued to the
+    next section's lines it would read as being about that section. A
+    `detached` comment at `()` is a block before the file header.
+
+    `parse(text)` discards comments, so `format_spec(parse(text))` gives the
+    file without them, while `parse_with_comments` keeps them:
+
+        spec, comments = parse_with_comments(text)
+        format_spec(spec, comments)  # the file back, comments in place
+
+    Comments are a caller's choice rather than part of the canonical form,
+    because the canonical form is what the parser reads.
     """
-    header = [f"; Specification: {spec.specification}"]
+    header = [
+        *comments.line(f"; Specification: {spec.specification}", ("specification",))
+    ]
     if spec.version is not None:
-        header.append(f"; Version: {spec.version}")
-    header.append(f"; Vendor-ID: {spec.vendor_id}")
+        header.extend(comments.line(f"; Version: {spec.version}", ("version",)))
+    header.extend(comments.line(f"; Vendor-ID: {spec.vendor_id}", ("vendor_id",)))
     if spec.bases:
-        header.append(f"; Bases: {', '.join(spec.bases)}")
+        header.extend(comments.line(f"; Bases: {', '.join(spec.bases)}", ("bases",)))
     if spec.link is not None:
-        header.append(f"; Link: {spec.link}")
+        header.extend(comments.line(f"; Link: {spec.link}", ("link",)))
+    header.extend(comments.standing_at(()))
 
-    parts = [header]
+    parts = [comments.detached_at(()), header]
     for index, section in enumerate(spec.sections):
-        block = _standing(("sections", index), detached)
-        if block:
-            parts.append(block)
-        parts.append(_format_section(section, ("sections", index), notes, standing))
-    tail = _standing(("sections", len(spec.sections)), detached)
-    if tail:
-        parts.append(tail)
-    return "\n\n\n".join("\n".join(part) for part in parts) + "\n"
+        parts.append(comments.detached_at(("sections", index)))
+        parts.append(_format_section(section, ("sections", index), comments))
+    parts.append(comments.detached_at(("sections", len(spec.sections))))
+    return "\n\n\n".join("\n".join(part) for part in parts if part) + "\n"

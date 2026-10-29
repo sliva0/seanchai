@@ -246,7 +246,7 @@ def _produce(
             warnings.append(warning)
     if declared:
         spec, results = corrections.apply(spec, declared)
-        corrected_text = formatter.format_spec(spec, *corrections.notes(results))
+        corrected_text = formatter.format_spec(spec, corrections.notes(results))
     else:
         corrected_text = raw_text
     return raw_text, corrected_text, spec

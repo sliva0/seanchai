@@ -41,11 +41,18 @@ file ends with exactly one newline.
 
 ```abnf
 comment       = ";;" *(%x20-10FFFF)
-; fills the rest of any line, or a whole line of its own; discarded on parse
+; fills the rest of any line, or a whole line of its own; ignorable here
 ```
 
 A line left empty by removing its comment is skipped, not a block separator.
 No inline value may contain `;;`.
+
+The grammar ignores comments, but a formatter that keeps them needs to know
+where each belongs: a trailing comment to its line; a whole-line comment to
+the next line of its block, or to the block's end after its last line; a run
+of comment lines between blank lines to the section after it (to the end of
+the file after the last section, to the start before the file header).
+[dad-format.md](dad-format.md#comments) gives the canonical placement.
 
 ```abnf
 directive     = "; " key ": " value NL

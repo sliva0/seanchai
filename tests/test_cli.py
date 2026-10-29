@@ -1,6 +1,7 @@
 import docx
 import pytest
 from click.testing import CliRunner
+from conftest import _corpus
 
 from seanchai.cli import main
 from seanchai.dad import ast, formatter, parser
@@ -320,3 +321,79 @@ def test_correct_command_marks_the_lines_it_changed(tmp_path):
     (grouped,) = parser.parse(text).sections
     assert isinstance(grouped, ast.GroupedAvp)
     assert grouped.code == 701
+
+
+def test_every_committed_dad_file_is_a_format_fixed_point():
+    """`format` keeps comments, so a committed file — corrected files and the
+    notes citing their corrections included — is already what it writes."""
+    paths = _corpus(raw=True) + _corpus(raw=False)
+
+    result = CliRunner().invoke(main, ["format", "--check", *map(str, paths)])
+
+    assert result.exit_code == 0, result.stdout
+    assert result.stdout == ""
+    assert f"would reformat 0 of {len(paths)} files" in result.stderr
+
+
+_HAND_EDITED = """\
+; Specification: X
+; Vendor-ID: 10415
+
+
+; Type: Grouped AVP
+; Name: G
+; Section: 1
+;; why the rule is optional
+G ::= < AVP header: 5 >
+  [ X ] ;;see clause 1
+"""
+
+
+def test_format_command_rewrites_in_place_and_keeps_comments(tmp_path):
+    source = tmp_path / "edited.dad"
+    source.write_text(_HAND_EDITED)
+
+    result = CliRunner().invoke(main, ["format", str(source)])
+
+    assert result.exit_code == 0
+    assert source.read_text() == _HAND_EDITED.replace(
+        "  [ X ] ;;see clause 1", "        [ X ] ;; see clause 1"
+    )
+    assert "reformatted 1 of 1 files" in result.stderr
+
+
+def test_format_check_reports_a_diff_and_leaves_the_file_alone(tmp_path):
+    source = tmp_path / "edited.dad"
+    source.write_text(_HAND_EDITED)
+
+    result = CliRunner().invoke(main, ["format", "--check", str(source)])
+
+    assert result.exit_code == 1
+    assert "-  [ X ] ;;see clause 1\n+        [ X ] ;; see clause 1\n" in result.stdout
+    assert source.read_text() == _HAND_EDITED
+
+
+def test_format_command_rewrites_crlf_line_endings(tmp_path):
+    source = tmp_path / "windows.dad"
+    canonical = formatter.format_spec(parser.parse(_HAND_EDITED))
+    source.write_bytes(canonical.replace("\n", "\r\n").encode())
+
+    checked = CliRunner().invoke(main, ["format", "--check", str(source)])
+    rewritten = CliRunner().invoke(main, ["format", str(source)])
+
+    assert checked.exit_code == 1
+    assert rewritten.exit_code == 0
+    assert source.read_bytes() == canonical.encode()
+
+
+def test_format_command_writes_nothing_when_any_file_fails_to_parse(tmp_path):
+    edited = tmp_path / "edited.dad"
+    edited.write_text(_HAND_EDITED)
+    broken = tmp_path / "broken.dad"
+    broken.write_text("; Specification: X\n; Vendor-ID: ten\n")
+
+    result = CliRunner().invoke(main, ["format", str(edited), str(broken)])
+
+    assert result.exit_code == 1
+    assert f"error: {broken}: line 2:" in result.stderr
+    assert edited.read_text() == _HAND_EDITED

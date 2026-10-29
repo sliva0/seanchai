@@ -21,7 +21,12 @@ built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
 ```
 
 The query set is thin on purpose: each query was written because a real
-consumer needed it. The AST stays public underneath.
+consumer needed it. The AST stays public underneath: `parser.parse(text)`
+reads one file into it, discarding `;;` comments, and
+`parser.parse_with_comments(text)` returns the comments too, as a
+`formatter.Comments` (trailing, standing and detached, each keyed by
+`ast.TreePath`) that `formatter.format_spec(spec, comments)` writes back in
+place.
 
 **Resolution policy.** A name resolves, in order, to the specification's own
 definition, then to the origin its re-used table cites (recursively, so an
