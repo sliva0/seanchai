@@ -82,24 +82,26 @@ Vocabulary, RFC extractor: `prose-avp-codes` (RFC 7155), `clause-avp-table`
 (RFC 4072, 5447), `radius-attribute-table` (RFC 4590), `type-short-forms`
 (RFC 6733, 4004, 4005, 4006), `prose-catchall-row` (RFC 5778),
 `bare-name-continuation` (RFC 4004), `ragged-separator` (RFC 8583).
-RFC 5580 declares `mixed-table-borders` (clause 6 boxes only flags in the
-header but whole data rows) and `radius-avp-codes` (clause 6 takes the codes
-from the Type fields in 4.1–4.7). RFC 6734 uses `clause-avp-table` (3.1–3.1.5,
-including the bare Key-SPI heading) and `parenthesized-enum-values` (3.1.1's
-mixed-case `rRK (1)` and `rMSK (2)`). RFC 6942 uses `clause-avp-table` and
-`prose-cleared-flags` for the explicit cleared M/V bits in 8.1–8.2.
-Docx extractor: `message-only` (TS 29.330 §6.3.1 has no local AVPs;
-commands and re-used rows are retained), `note-defined-in-rfc` (TS 29.229, 29.329), `dotted-flags`
-(TS 29.061, 29.212), `clause-parenthetical` (TS 29.061). TS 29.273 declares
-`command-reference-only` (clauses
-4.2.2.4.3–4, 5.2.2.3.5–6, 11.2.2.1.1–2 contain only clause pointers),
-`procedure-commands` (8.2.2.1–4 name commands in preceding intros),
-`physical-reused-columns` (table 8.2.3.0/2 changes its grid spans),
-`independent-avp-tables` (clauses 5–11 have no one-to-one pairing), and
-`conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; retain
-both rows, refuse an ambiguous enum code). Not gated: the
-"Y"/"N" Encrypt spellings and TS 29.338's "Must"/"Must not" M-bit short
-forms, closed vocabularies that cannot be misread.
+The declared vocabulary, with the document that forced each:
+
+- Docx: `note-defined-in-rfc` (29.229, 29.329: AVP-table notes naming a
+  defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
+  `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1: commands
+  and re-used rows, no local AVPs); and five from TS 29.273:
+  `command-reference-only` (clauses holding only a pointer),
+  `procedure-commands` (8.2.2.1–4 name commands in their intros),
+  `physical-reused-columns` (table 8.2.3.0/2 changes grid spans),
+  `independent-avp-tables` (no one-to-one table pairing),
+  `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
+  kept, no enum code derived from them).
+- RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
+  defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
+  `rRK (1)`); `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
+  cleared); `mixed-table-borders` and `radius-avp-codes` (5580 §6: header
+  boxes only the flags, codes come from the RADIUS Type fields in §4).
+
+Not gated: the "Y"/"N" Encrypt spellings and TS 29.338's "Must"/"Must not"
+M-bit short forms, closed vocabularies that cannot be misread.
 
 ## The 3GPP docx extractor
 
@@ -195,22 +197,6 @@ and multiple cited specifications cannot be preserved by the current
 `.dad` definition blocks; its extraction remains deferred, not an empty
 corpus file.
 
-## Legacy `.doc` trial
-
-LibreOffice 26.8.0.3 converted TS 32.299 v18.0.0 (`32299-i00.doc`) with
-`--headless --convert-to 'docx:Office Open XML Text'`. The converted cover
-and numbered headings are readable; all 107 ABNF rule names match the ETSI
-PDF. This checks the import route, not every cell or rule member.
-
-The docx extractor stops at table 7.1.0.1: `AVP table row before its column
-labels`. Its header is `AVP Name`, not `Attribute Name`; table 7.2.0.1 also
-has merged grid columns and `refer [207]` type cells. These are printed in
-the PDF too. Clauses 6.2.2–6.4.5 use “message” headings and abbreviated
-rules; grouped rules such as 7.2.192 use `:: =`. Conversion alone therefore
-does not make a corpus file. LibreOffice is a viable import route, but
-source-reading support and raw lint must precede downloader automation.
-The trial did not change the manifest or convert the other legacy documents.
-
 ## The RFC plain-text extractor
 
 Same definitions, different carrier:
@@ -260,10 +246,11 @@ Same definitions, different carrier:
 - **Enumerated AVPs**: a value list under a name-titled section, when the
   local table types the name Enumerated. Both layouts are read (value alone
   with description below; description on the value's line and wrapping) plus
-  older `2 HMAC-SHA-1` and `0 | IN - …` forms. Unparenthesized value names require all-caps to keep prose out;
-  RFC 6734 declares its mixed-case parenthesized form separately. Warnings record a
-  value list for a name not typed Enumerated (RFC 8581 extending 7683's
-  `OC-Report-Type`, which `.dad` cannot express; RFC 6733's
+  older `2 HMAC-SHA-1` and `0 | IN - …` forms. Value names are all-caps in
+  every collected RFC and requiring that keeps prose out; RFC 6734's
+  mixed-case `rRK (1)` is a declared quirk. Warnings record a value list
+  for a name not typed Enumerated (RFC 8581 extending 7683's `OC-Report-Type`,
+  which `.dad` cannot express; RFC 6733's
   `Inband-Security-Id` and `Session-Binding`) and an Enumerated AVP with no
   local values (`Termination-Cause`).
 

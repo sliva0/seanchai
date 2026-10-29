@@ -54,11 +54,15 @@ letter is not reused. What exists is described in the per-module documents.
   preserve the registry.
 - **K. Legacy `.doc` specifications**: 29.201, 29.215, 29.217, 29.219,
   29.343, 29.368, 29.468, 32.299 and TR 29.909 ship as binary `.doc`. 32.299
-  is an unresolved origin in nine files, 29.368 in two. Its manual LibreOffice
-  conversion works; next handle its table headers, reference-valued type
-  cells and ABNF conventions before adding a downloader converter (see
-  [extractor.md](extractor.md#legacy-doc-trial)). The other eight remain
-  unconverted. TS 29.154 is cited and not in the catalog at all.
+  is an unresolved origin in nine files, 29.368 in two. A headless LibreOffice
+  conversion of 32.299 (`--convert-to 'docx:Office Open XML Text'`) keeps all
+  107 ABNF rule names, but the extractor stops at table 7.1.0.1: an "AVP
+  Name" header, merged grid columns, `refer [n]` type cells, "message"
+  headings and `:: =` rules, all printed in the PDF too. Check which of those
+  are the document and which are the conversion before declaring readings;
+  then decide whether the downloader converts. Trial files live outside the
+  manifest under `specifications/converted/`. TS 29.154 is cited and not in
+  the catalog at all.
 - **L. Downloader: read the 3GPP archive throughout**, not only for the
   PDF-matched fallback, so every old version stays available for raw-vs-raw
   diffs; derive the ETSI `Link:` URL (needs the edition suffix, probably by
