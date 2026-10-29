@@ -260,6 +260,10 @@ also has no ABNF or definition tables and is outside this extractor's scope.
 
 TS 29.305 v18.0.0 describes MAP/Diameter interworking (clause 1 and annex A)
 without command ABNF or AVP definition tables, so it is also outside scope.
+TS 29.201 v18.0.0 (a legacy `.doc`) carries TS 29.214's Rx messages over
+REST: annex B is an XML Schema for 29.214's AVPs (B.1) and messages (B.2),
+with no ABNF, AVP codes or AVP table, and `regenerate --add` rejects it with
+`no AVP table found`. Nothing in the corpus cites it.
 TS 29.230 v18.6.0 is an allocation registry: tables 4.1, 5.1/1–4, 7.1 and
 8.1.2–4 assign applications, commands, AVPs and result codes. Reserved ranges
 and multiple cited specifications cannot be preserved by the current

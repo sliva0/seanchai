@@ -56,9 +56,9 @@ letter is not reused. What exists is described in the per-module documents.
   constructs in the format; treating the AVP allocation table as local
   definitions would lose those distinctions. Deferred until the format can
   preserve the registry.
-- **K. Legacy `.doc` specifications**: 29.201 and TR 29.909 ship as
-  binary `.doc`, which the downloader converts; neither is extracted yet,
-  and a TR has no SpecRef form in the format. Two 32.299 statements the
+- **K. Legacy `.doc` specifications**: TR 29.909 ships as binary `.doc`,
+  which the downloader converts; it is not extracted, and a TR has no
+  SpecRef form in the format. Two 32.299 statements the
   format cannot hold yet:
   `refer [223]` cites OMA-DDS-Charging_Data, which a From cell cannot name
   (13 rows stay untyped), and SM-Service-Type's "100 .. 199 Vendor specific
