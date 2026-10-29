@@ -222,7 +222,11 @@ printed so in the PDF too); any other line ends the body. A struck-through
 member fails, except behind `struck-rules-unused`, where TS 32.299's own
 legend (clauses 6.2.1.2, 6.4.1.2: "An AVP in grey strikethrough … is not
 used by 3GPP") makes leaving it out the translation; each dropped member
-warns.
+warns. ACR (clause 6.2.2) strikes `Vendor-Specific-Application-Id`,
+`Accounting-Sub-Session-Id`, `Acct-Session-Id`, `Acct-Multi-Session-Id` and
+`Accounting-Realtime-Required`. A PDF's text layer keeps the words and loses
+the strike, so text extracted from the PDF shows them as ordinary optional
+members; the docx's run formatting is what records them as struck.
 
 Real-document cases handled in code or by patch, kept as evidence: heading
 and rule-name mismatches (29.329 §6.1.8); Diameter headers omitting the
