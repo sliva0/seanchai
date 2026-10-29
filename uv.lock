@@ -222,6 +222,15 @@ wheels = [
 ]
 
 [[package]]
+name = "python-diameter"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/35/08a137802e4b1ad95fc4e3ce77693c7a1e6e9eb12410f3fb86007c50b85f/python_diameter-0.9.0.tar.gz", hash = "sha256:e0a8a9fbc83bc2da6ecdce62bde821e498821a23e69521a3d03a205515a3e568", size = 311694, upload-time = "2026-02-24T13:03:34.373Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/5c/72909b543afd7cbeb77c200afe929a9136fe43f45b794fa5063e569d64d6/python_diameter-0.9.0-py3-none-any.whl", hash = "sha256:b5ef067db631181a06578d8b1f33e8536425b318d8612aa48479ee3f4abf934d", size = 288278, upload-time = "2026-02-24T13:03:33.156Z" },
+]
+
+[[package]]
 name = "python-docx"
 version = "1.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -274,6 +283,7 @@ dependencies = [
 dev = [
     { name = "basedpyright" },
     { name = "pytest" },
+    { name = "python-diameter" },
     { name = "ruff" },
     { name = "ty" },
 ]
@@ -290,6 +300,7 @@ requires-dist = [
 dev = [
     { name = "basedpyright", specifier = ">=1.39.9" },
     { name = "pytest", specifier = ">=9.1.1" },
+    { name = "python-diameter", specifier = ">=0.9.0" },
     { name = "ruff", specifier = ">=0.16.0" },
     { name = "ty", specifier = ">=0.0.63" },
 ]

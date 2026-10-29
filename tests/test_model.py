@@ -418,6 +418,7 @@ class TestCommandShape:
             (ast.Presence.REQUIRED, (0, None), (1, None)),
             (ast.Presence.REQUIRED, (2, 4), (2, 4)),
             (ast.Presence.OPTIONAL, (1, 1), (0, 1)),
+            (ast.Presence.OPTIONAL, (1, 2), (0, 2)),
             (ast.Presence.OPTIONAL, (0, None), (0, None)),
             (ast.Presence.OPTIONAL, (0, 3), (0, 3)),
         ],

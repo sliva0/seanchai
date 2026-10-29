@@ -36,6 +36,9 @@ checker-specific form (`# pyright: ignore[...]`) when they do.
   committed correction re-applies to the committed raw output, the linter's
   findings over the corpus are pinned, and the remaining tests cover error
   paths and shapes the corpus does not contain.
+- `tests/test_python_diameter_generate.py` generates the python-diameter
+  package from the committed corpus and imports it in a fresh interpreter
+  against the real library, which is in the dev group for that reason.
 
 When you add handling for a new source-document shape, the real-source pin
 covers it; add a synthetic case only for a rejection path.

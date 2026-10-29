@@ -1,4 +1,4 @@
-# Consumers: the model and the validators
+# Consumers: the model and the integrations
 
 ## The model
 
@@ -28,7 +28,9 @@ application id and the clause they sit under, since documents share one id
 between interfaces (TS 29.273's SWa, STa and SWd) or print none (TS 29.212's
 Gx, Gxx, Sd and St, split by clauses 5, 5a, 5b and 5c). A `Member` carries
 the ABNF rule as spelled and `min_occurs`/`max_occurs` as RFC 6733 §3.2
-reads them: `[ X ]` may be absent, `* { X }` appears at least once. The AST stays public underneath: `parser.parse(text)`
+reads them: `[ X ]` may be absent, `* { X }` appears at least once. RFC
+6733 §3.2 forbids a non-zero explicit minimum on an optional rule, so the
+model reads `1*2 [ X ]` as `0*2`. The AST stays public underneath: `parser.parse(text)`
 reads one file into it, discarding `;;` comments, and
 `parser.parse_with_comments(text)` returns the comments too, as a
 `formatter.Comments` (trailing, standing and detached, each keyed by
@@ -89,13 +91,14 @@ re-used origins outside the corpus. The pinned list in `tests/test_model.py`
 (`_STANDING_HOLES`) is the full account: the strict build's failure is
 compared against it, so a hole worked off or a new one shows up as a diff.
 
-## The validators
+## The integrations
 
 Each target gets a directory under `integrations/`; scripts carry PEP 723
 inline metadata naming their dependencies, so uv supplies everything:
 
 ```sh
 uv run integrations/python_diameter/validate.py TS29.229
+uv run integrations/python_diameter/generate.py TS29.229 -o out/
 ```
 
 ### python-diameter
@@ -123,3 +126,12 @@ That run was also the corpus's sharpest review: it found an ABNF line the
 extractor silently dropped (29.229's RTR prints `RTR-Flags ]` with no opening
 bracket, now input-patched) and the `Load` rows that became the linter's
 `row-without-code` rule.
+
+`generate.py` is the other direction: a package of protocol-specific
+classes, one per command per application and interface with that document's
+own members, over one deduplicated module of AVP definitions, meant to sit
+beside the library's merged classes rather than replace them. Holes stay in
+the rule tables with their reason; a document whose command headers print no
+application id gets `None`. The
+[README](../integrations/python_diameter/README.md) covers the layout, where
+it departs from the library's conventions, and which documents lack ids.

@@ -22,6 +22,13 @@ letter is not reused. What exists is described in the per-module documents.
   Three axes under four labels; modelling means deciding what each means.
   The extractor warns about them today, which is the right amount of
   machinery until then.
+- **Q. Record application ids the command headers omit.** RFC 6733, 4005
+  and 4006, TS 29.212, 29.214, 32.299 and others print bare `272, REQ, PXY`
+  headers and state the id in prose (or leave it to the base application),
+  so the python-diameter generator writes `APPLICATION_ID = None` for 27
+  modules ([list](../integrations/python_diameter/README.md#what-the-documents-leave-to-the-reader)).
+  Needs a format construct naming the id per interface clause, cited like
+  any other statement; a header correction would claim the header says it.
 
 ## Linter and corpus
 
@@ -50,10 +57,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Consumers
 
-- **M. The *generate* direction.** Validation exists; what remains is a
-  dictionary in a format the consumer chooses (Python classes, a JSON schema,
-  XML). Seanchaí supplies definitions and queries; output syntax is the
-  script's business.
 - **N. Build the model strictly by default** once the committed corpus
   builds under `strict=True`; the pinned list in `tests/test_model.py` is
   what stands in the way.
