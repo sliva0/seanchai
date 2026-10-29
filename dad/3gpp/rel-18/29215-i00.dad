@@ -1,7 +1,7 @@
 ; Specification: 3GPP TS 29.215
 ; Version: 18.0.0
 ; Vendor-ID: 10415
-; Bases: RFC6733, TS29.212
+; Bases: RFC6733, TS29.212 ;; corrected: (TS29.215.py#bases-gx)
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129215/18.00.00_60/ts_129215v180000p.pdf
 
 

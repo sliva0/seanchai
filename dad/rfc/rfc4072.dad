@@ -1,6 +1,6 @@
 ; Specification: RFC 4072
 ; Vendor-ID: 0
-; Bases: RFC6733, RFC4005
+; Bases: RFC6733, RFC4005 ;; corrected: (RFC4072.py#bases-nasreq)
 ; Link: https://www.rfc-editor.org/rfc/rfc4072.txt
 
 

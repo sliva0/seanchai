@@ -1,6 +1,6 @@
 ; Specification: RFC 7155
 ; Vendor-ID: 0
-; Bases: RFC6733, RFC4005
+; Bases: RFC6733, RFC4005 ;; corrected: (RFC7155.py#bases-nasreq)
 ; Link: https://www.rfc-editor.org/rfc/rfc7155.txt
 
 

@@ -1,6 +1,6 @@
 ; Specification: RFC 8581
 ; Vendor-ID: 0
-; Bases: RFC6733, RFC7683
+; Bases: RFC6733, RFC7683 ;; corrected: (RFC8581.py#bases-rfc7683)
 ; Link: https://www.rfc-editor.org/rfc/rfc8581.txt
 
 

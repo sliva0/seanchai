@@ -111,6 +111,13 @@ Every corrected line carries a trailing `;;` note citing the declaration as
 Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-vendor)
 ```
 
+A correction to a definition is cited on its header rule, whichever field
+it changed. The file header and a table have no such line, so a correction
+to one of their fields is cited on the directive line that field prints —
+`; Bases: RFC6733, RFC4005 ;; corrected: (RFC4006.py#bases-nasreq)`, or
+`; Table:` for a table label — and on the block's first line when it
+removes that line.
+
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
 inserted row is marked `;; inserted:`. Notes are `;;` comments, so an

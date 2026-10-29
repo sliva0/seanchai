@@ -1,6 +1,6 @@
 ; Specification: RFC 5447
 ; Vendor-ID: 0
-; Bases: RFC6733, RFC4004
+; Bases: RFC6733, RFC4004 ;; corrected: (RFC5447.py#bases-rfc4004)
 ; Link: https://www.rfc-editor.org/rfc/rfc5447.txt
 
 

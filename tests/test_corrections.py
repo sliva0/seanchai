@@ -77,6 +77,31 @@ def _correction(target, field, expect, replace):
     )
 
 
+@pytest.mark.parametrize(
+    ("target", "field", "expect", "replace", "cited"),
+    [
+        (corrections.header(), "bases", (), ("RFC6733",), "; Bases: RFC6733"),
+        (corrections.avp_table("6.3.1"), "table", "6.3.1", "6.3.9", "; Table: 6.3.9"),
+        # A correction that removes its field's line is cited on the line
+        # that names the block.
+        (corrections.avp_table("6.3.1"), "table", "6.3.1", None, "; Type: AVP Table"),
+    ],
+    ids=["bases", "table-label", "table-label-removed"],
+)
+def test_a_header_or_table_field_correction_is_cited_on_its_directive_line(
+    target, field, expect, replace, cited
+):
+    # These have no header rule to carry the note, and every line the
+    # correction changed has to cite it.
+    correction = _correction(target, field, expect, replace)
+    corrected, results = corrections.apply(_spec(), [correction])
+
+    text = formatter.format_spec(corrected, corrections.notes(results))
+
+    (noted,) = [line for line in text.splitlines() if ";;" in line]
+    assert noted == f"{cited} ;; corrected: ({correction.id})"
+
+
 def test_a_selector_matching_nothing_is_an_error():
     with pytest.raises(corrections.CorrectionError, match=r"Missing\-AVP.*no match"):
         corrections.apply(

@@ -1,7 +1,7 @@
 ; Specification: 3GPP TS 32.299
 ; Version: 18.0.0
 ; Vendor-ID: 10415
-; Bases: RFC6733, RFC4006, RFC4005
+; Bases: RFC6733, RFC4006, RFC4005 ;; corrected: (TS32.299.py#bases-dcca-nasreq)
 ; Link: https://www.etsi.org/deliver/etsi_ts/132200_132299/132299/18.00.00_60/ts_132299v180000p.pdf
 
 

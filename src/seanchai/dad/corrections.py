@@ -922,7 +922,8 @@ def notes(results: list[Result]) -> formatter.Comments:
     A trailing note says only that an edit reached the line, and where the
     declaration is: the declaration carries the change and its `reason`, and
     the raw file carries the old value, so repeating either here would only
-    lengthen every corrected file. A deleted node produces no line for a note
+    lengthen every corrected file. It trails the line the corrected field
+    prints (`_cited_line`). A deleted node produces no line for a note
     to trail, so its note *stands* — printed in the deleted line's place,
     before the sibling that moved up into it — and names what is gone,
     because unlike a trailing note it has no line saying that for it.
@@ -943,9 +944,31 @@ def notes(results: list[Result]) -> formatter.Comments:
                 f"deleted: {edit.target.describe_in_place()} ({edit.cited})"
             )
             continue
-        kind = "inserted" if isinstance(edit, Insert) else "corrected"
-        trailing.setdefault(result.path, []).append(f"{kind}: ({edit.cited})")
+        if isinstance(edit, Insert):
+            trailing.setdefault(result.path, []).append(f"inserted: ({edit.cited})")
+            continue
+        trailing.setdefault(_cited_line(result, edit), []).append(
+            f"corrected: ({edit.cited})"
+        )
     return formatter.Comments(trailing, standing, detached)
+
+
+def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
+    """The path of the line a correction's note trails.
+
+    A definition is cited on its header rule, the line that states it,
+    whichever field was corrected. The file header and a table have no such
+    line: each field they let a correction replace prints on a directive
+    line of its own (`; Bases:`, `; Table:`), so the note trails that line.
+    A correction that removes the field's line altogether — a `; Table:`
+    caption or the `; Bases:` dropped — is cited on the block's first line,
+    the one left that names the block.
+    """
+    if not isinstance(correction.target, header | avp_table | reused_avps):
+        return result.path
+    if result.new is not None and result.new != ():
+        return (*result.path, correction.field)
+    return ("specification",) if not result.path else (*result.path, "type")
 
 
 def module_path(directory: Path, specification: str) -> Path:
