@@ -56,14 +56,13 @@ letter is not reused. What exists is described in the per-module documents.
   definitions would lose those distinctions. Deferred until the format can
   preserve the registry.
 - **K. Legacy `.doc` specifications**: 29.201, 29.215, 29.217, 29.219,
-  29.343, 29.368, 29.468 and TR 29.909 ship as binary `.doc`; 29.368 is an
-  unresolved origin in three files. `regenerate` reads a hand-made LibreOffice
-  conversion under `specifications/converted/<SpecRef>/` (TS 32.299 is read
-  that way); the downloader should make it. Two 32.299 statements the format
-  cannot hold yet: `refer [223]` cites OMA-DDS-Charging_Data, which a From
-  cell cannot name (13 rows stay untyped), and SM-Service-Type's "100 .. 199
-  Vendor specific SM services" allocates a range. TS 29.140 and 29.154 are
-  cited and not in the catalog at all.
+  29.343, 29.368, 29.468 and TR 29.909 ship as binary `.doc`, which the
+  downloader converts; none is extracted yet, 29.368 is an unresolved
+  origin in three files, and a TR has no SpecRef form in the format. Two 32.299 statements the format cannot hold yet:
+  `refer [223]` cites OMA-DDS-Charging_Data, which a From cell cannot name
+  (13 rows stay untyped), and SM-Service-Type's "100 .. 199 Vendor specific
+  SM services" allocates a range. TS 29.140 and 29.154 are cited and not in
+  the catalog at all.
 - **L. Downloader: read the 3GPP archive throughout**, not only for the
   PDF-matched fallback, so every old version stays available for raw-vs-raw
   diffs; derive the ETSI `Link:` URL (needs the edition suffix, probably by

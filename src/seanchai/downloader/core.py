@@ -23,7 +23,10 @@ import html
 import json
 import os
 import re
+import shlex
 import shutil
+import signal
+import subprocess
 import tempfile
 import time
 import tomllib
@@ -35,6 +38,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 
+import docx
 import pypdf
 
 THREE_GPP_INDEX = "https://www.3gpp.org/ftp/Specs/latest/Rel-{release}/{series}_series/"
@@ -52,6 +56,10 @@ WIRESHARK_TREE_URL = (
 )
 WIRESHARK_RAW_URL = "https://gitlab.com/wireshark/wireshark/-/raw/{tag}/{path}/{name}"
 USER_AGENT = "diameter-spec-corpus-downloader/1.0"
+# LibreOffice, for the archives that still ship a legacy binary `.doc` (TS
+# 32.299, TR 29.909 and seven more): the extractor reads only `.docx`.
+SOFFICE = "soffice"
+SOFFICE_TIMEOUT = 600
 
 
 @dataclass(frozen=True)
@@ -115,6 +123,30 @@ def load_catalog(
 
 
 @dataclass
+class Conversion:
+    """A `.docx` LibreOffice made from an archived legacy `.doc`.
+
+    The converted file is not reproducible byte for byte: two runs over the
+    same `.doc` with the same LibreOffice differ in the zip timestamps and in
+    the random OLE `ObjectID`s Writer assigns (TS 32.299's embedded
+    figures). Its `sha256` therefore identifies this run's file and nothing
+    more; what says whether a conversion should read the same is the pair
+    `source_sha256` and `converter`, and `command` is how to repeat it.
+    """
+
+    file: str
+    source: str
+    source_sha256: str
+    # `soffice --version`, e.g. "LibreOffice 26.8.1.1 bf8adb135da2…".
+    converter: str
+    # The argument vector, with the run's temporary directories as
+    # `{profile}` and `{outdir}` and the `.doc` as `{source}`.
+    command: list[str]
+    sha256: str
+    size: int
+
+
+@dataclass
 class DownloadRecord:
     family: str
     identifier: str
@@ -132,6 +164,9 @@ class DownloadRecord:
     # The newer archive version that was passed over because ETSI has not
     # published its PDF rendering; None when the newest version was taken.
     newer_source_version: str | None = None
+    # The `.docx` conversions of a legacy `.doc` archive; None when the
+    # archive was not extracted or holds a `.docx` of its own.
+    conversions: list[Conversion] | None = None
 
 
 def release_marker(release: int) -> str:
@@ -389,6 +424,166 @@ def replace_extracted(archive: Path, destination: Path) -> list[Path]:
     return sorted(path for path in destination.rglob("*") if path.is_file())
 
 
+def validate_docx(path: Path) -> None:
+    """Open the file with python-docx, as the extractor will.
+
+    A conversion LibreOffice reports as successful can still leave a package
+    with an unparsable part; checking only that the archive holds
+    `word/document.xml` would put it in the manifest and fail in
+    `regenerate` instead.
+    """
+    validate_zip(path)
+    try:
+        docx.Document(str(path))
+    except Exception as error:
+        raise DownloadError(f"{path} is not a readable .docx: {error}") from error
+
+
+def run_soffice(identifier: str, arguments: list[str]) -> str:
+    """Run LibreOffice and return its standard output.
+
+    The `.doc` belongs to a catalogued entry, so an absent LibreOffice is a
+    failed download rather than a skipped one: skipping would publish a
+    manifest without the document, which `regenerate` reports only later and
+    as "not in manifest".
+    """
+    command = [SOFFICE, *arguments]
+    try:
+        # A session of its own, so a timeout can kill the whole group:
+        # `soffice` is a launcher script whose `soffice.bin` child does the
+        # work, and killing only the launcher (what `subprocess.run` does)
+        # leaves the converter running into a profile directory the caller
+        # is about to delete.
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            errors="replace",
+            start_new_session=True,
+        )
+    except FileNotFoundError as error:
+        raise DownloadError(
+            f"{identifier} ships a legacy .doc; converting it needs LibreOffice"
+            f" (`{SOFFICE}`), which is not installed or not on PATH: {error}"
+        ) from error
+    except (OSError, subprocess.SubprocessError) as error:
+        raise DownloadError(
+            f"{identifier}: `{shlex.join(command)}` failed: {error}"
+        ) from error
+    try:
+        stdout, stderr = process.communicate(timeout=SOFFICE_TIMEOUT)
+    except subprocess.TimeoutExpired as error:
+        with contextlib.suppress(ProcessLookupError):
+            os.killpg(process.pid, signal.SIGKILL)
+        # Reaps the launcher; the pipes close only once every process in the
+        # group holding them is gone.
+        process.communicate()
+        raise DownloadError(
+            f"{identifier}: `{shlex.join(command)}` timed out after {SOFFICE_TIMEOUT} s"
+        ) from error
+    if process.returncode != 0:
+        output = (stderr.strip() or stdout.strip()).splitlines()
+        raise DownloadError(
+            f"{identifier}: `{shlex.join(command)}` exited {process.returncode}"
+            + (f": {output[-1]}" if output else "")
+        )
+    return stdout
+
+
+def convert_legacy_documents(
+    identifier: str, extracted: list[Path], spec_dir: Path, output: Path
+) -> list[Conversion]:
+    """Convert an archive's legacy `.doc` files to `.docx` with LibreOffice.
+
+    Only an archive with no `.docx` of its own is converted. The results go
+    to `converted/` beside the extracted tree (`converted/3gpp/Rel-18/
+    TS_32.299/32299-i00.docx`), not into it, because `replace_extracted`
+    promises that directory holds the archive's contents and nothing else.
+    They are rebuilt on every run, like the extraction they derive from, and
+    the manifest is the only way `regenerate` finds them: a run that fails
+    here writes no manifest, so a half-converted directory is never read.
+    """
+    legacy = [path for path in extracted if path.suffix == ".doc"]
+    if not legacy or any(path.suffix == ".docx" for path in extracted):
+        return []
+    converter = run_soffice(identifier, ["--version"]).strip()
+    if not converter:
+        raise DownloadError(f"{identifier}: `{SOFFICE} --version` printed nothing")
+    destination = output / "converted" / spec_dir.relative_to(output)
+    staging = destination.parent / f".{destination.name}.staging"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(staging, ignore_errors=True)
+    conversions = []
+    try:
+        # A private profile per run: with the user's own, a LibreOffice that
+        # is already open receives the request and the headless process
+        # exits without converting anything; concurrent conversions would
+        # also contend for the one profile's lock.
+        with tempfile.TemporaryDirectory(prefix="soffice-profile-") as profile:
+            for document in legacy:
+                relative = document.relative_to(spec_dir)
+                outdir = staging / relative.parent
+                outdir.mkdir(parents=True, exist_ok=True)
+                # `--infilter` pins the Word 97 import: left to detection,
+                # LibreOffice reads a file that is not a Word document as
+                # plain text and exits 0 with a docx of its bytes.
+                arguments = [
+                    "-env:UserInstallation={profile}",
+                    "--headless",
+                    "--infilter=MS Word 97",
+                    "--convert-to",
+                    "docx:Office Open XML Text",
+                    "--outdir",
+                    "{outdir}",
+                    "{source}",
+                ]
+                run_soffice(
+                    identifier,
+                    [
+                        argument.format(
+                            profile=Path(profile).as_uri(),
+                            outdir=outdir,
+                            source=document,
+                        )
+                        for argument in arguments
+                    ],
+                )
+                converted = outdir / f"{document.stem}.docx"
+                if not converted.is_file():
+                    raise DownloadError(
+                        f"{identifier}: LibreOffice wrote no {converted.name}"
+                        f" for {document.name}"
+                    )
+                validate_docx(converted)
+                conversions.append(
+                    Conversion(
+                        file=str(
+                            destination.relative_to(output)
+                            / relative.with_suffix(".docx")
+                        ),
+                        source=str(document.relative_to(output)),
+                        source_sha256=sha256_file(document),
+                        converter=converter,
+                        command=[SOFFICE, *arguments],
+                        sha256=sha256_file(converted),
+                        size=converted.stat().st_size,
+                    )
+                )
+        # Not swapped with a rollback as `replace_extracted` is: nothing reads
+        # this directory except through the manifest, and a failure from here
+        # on fails the run, which then writes none.
+        shutil.rmtree(destination, ignore_errors=True)
+        staging.replace(destination)
+    except OSError as error:
+        raise DownloadError(
+            f"{identifier}: cannot convert its legacy .doc: {error}"
+        ) from error
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+    return conversions
+
+
 def relative_paths(paths: Iterable[Path], root: Path) -> list[str]:
     return [str(path.relative_to(root)) for path in paths]
 
@@ -478,11 +673,17 @@ def download_3gpp(
     archive = output / "archives" / f"3gpp-rel-{release}" / archive_name
     atomic_download(url, archive, validate=validate_zip)
     files = [archive]
+    identifier = f"{spec.document_type} {spec.number}"
+    conversions = None
     if extract:
         spec_dir = (
             output / "3gpp" / f"Rel-{release}" / f"{spec.document_type}_{spec.number}"
         )
-        files.extend(replace_extracted(archive, spec_dir))
+        extracted = replace_extracted(archive, spec_dir)
+        files.extend(extracted)
+        conversions = (
+            convert_legacy_documents(identifier, extracted, spec_dir, output) or None
+        )
     pdf_url = None
     pdf_sha256 = None
     pdf_size = None
@@ -518,7 +719,7 @@ def download_3gpp(
         pdf_size = pdf.stat().st_size
     return DownloadRecord(
         family="3GPP",
-        identifier=f"{spec.document_type} {spec.number}",
+        identifier=identifier,
         title=spec.title,
         url=url,
         sha256=sha256_file(archive),
@@ -531,6 +732,7 @@ def download_3gpp(
         source_version=source_version,
         pdf_version=pdf_version,
         newer_source_version=newer_source_version,
+        conversions=conversions,
     )
 
 
@@ -696,6 +898,11 @@ def download_corpus(
                     f" (source {record.source_version}; newer"
                     f" {record.newer_source_version} skipped, its ETSI PDF is"
                     " unpublished)"
+                )
+            for conversion in record.conversions or ():
+                version_note += (
+                    f" (converted {PurePosixPath(conversion.source).name}"
+                    f" with {conversion.converter})"
                 )
             report(f"Downloaded {record.identifier}{version_note}")
 

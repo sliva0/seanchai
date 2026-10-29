@@ -7,8 +7,9 @@ driven by `specifications/manifest.json`, so that the corpus can never quietly
 drift from what the sources and the edit layers would produce today.
 
 Which documents count is decided by the corpus, not the manifest: the catalog
-holds documents the extractor cannot read yet (legacy `.doc`, specifications
-with no ABNF), so a run rebuilds what is committed plus whatever `add` names.
+holds documents the extractor cannot read yet (most legacy `.doc` documents,
+specifications with no ABNF), so a run rebuilds what is committed plus
+whatever `add` names.
 Which *version* counts is decided by the manifest: the downloader already
 prefers the newest version with a published ETSI PDF, and a corpus that lags
 it is exactly what this module exists to expose, so a superseded pair is
@@ -208,10 +209,11 @@ def _produce(
 def _sources(manifest_path: Path) -> dict[str, _Source]:
     """The manifest's records the extractor can read, by spec reference.
 
-    A 3GPP record whose archive held a legacy `.doc` is readable only through
-    a converted `.docx` under `converted/<SpecRef>/`; without one it is left
-    out, so asking for it reports "not in manifest" — which is what it is, as
-    far as regeneration is concerned.
+    A 3GPP record whose archive held a legacy `.doc` is readable through the
+    `.docx` the downloader converted it to, listed under `conversions`; a
+    manifest without one (an older manifest, `--no-extract`) leaves the
+    record out, so asking for it reports "not in manifest" — which is what it
+    is, as far as regeneration is concerned.
     """
     root = manifest_path.parent
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -228,24 +230,21 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
             )
         elif record["family"] == "3GPP":
             # (archived file, readable document): normally the same `.docx`;
-            # a legacy `.doc` is read through a LibreOffice conversion kept
-            # under `converted/<SpecRef>/` (TS 32.299), until the downloader
-            # makes the conversion itself.
+            # for a legacy `.doc` (TS 32.299), the downloader's conversion.
             documents = [(f, f) for f in files if f.suffix == ".docx"] or [
-                (f, converted)
-                for f in files
-                if f.suffix == ".doc"
-                and (
-                    converted := root
-                    / "converted"
-                    / record["identifier"].replace(" ", "")
-                    / f.with_suffix(".docx").name
-                ).is_file()
+                (root / conversion["source"], root / conversion["file"])
+                for conversion in record.get("conversions") or ()
             ]
             if not documents or not record.get("pdf_url"):
                 continue
             archived, document = documents[0]
-            reference = ast.spec_ref(record["identifier"])
+            try:
+                reference = ast.spec_ref(record["identifier"])
+            except ast.SpecRefError:
+                # A `.dad` file names a TS or an RFC; the catalog's TR 29.909
+                # is cross-specification guidance with no definitions of its
+                # own, and has no reference a corpus file could carry.
+                continue
             pdfs = [f for f in files if f.suffix == ".pdf"]
             # "3gpp/Rel-18/TS_29.388/29388-i10.docx" → "3gpp/rel-18".
             release = Path(record["files"][files.index(archived)]).parts[1]

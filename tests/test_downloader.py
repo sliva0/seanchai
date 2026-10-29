@@ -1,8 +1,11 @@
 import io
 import json
+import os
+import time
 import zipfile
 from pathlib import Path
 
+import docx
 import pypdf
 import pytest
 
@@ -518,3 +521,184 @@ def test_download_3gpp_prefers_the_highest_version_with_a_published_pdf(
     ]
     # The newest archive was never fetched.
     assert local_http_server.counts.get("/29388-i10.zip", 0) == 0
+
+
+def _docx_bytes() -> bytes:
+    """A real, empty `.docx`: the downloader opens a conversion with
+    python-docx, so a ZIP that only names `word/document.xml` is rejected."""
+    buffer = io.BytesIO()
+    docx.Document().save(buffer)
+    return buffer.getvalue()
+
+
+def _fake_soffice(monkeypatch, *, returncode=0, package: bytes | None = None):
+    """Stand in for LibreOffice: `--version` answers, a conversion writes
+    `package` (a real `.docx` by default; nothing with a failing exit status)
+    into `--outdir`. Returns the argument vectors it ran."""
+    calls = []
+    package = _docx_bytes() if package is None else package
+
+    class Popen:
+        pid = 0
+
+        def __init__(self, command, **options):
+            calls.append(command)
+            self.returncode = returncode
+            self.output = ("", "Error: source file could not be loaded\n")
+            if command[1:] == ["--version"]:
+                self.returncode = 0
+                self.output = ("LibreOffice 9.9.9.9 0123abc\n", "")
+            elif returncode == 0 and package:
+                outdir = Path(command[command.index("--outdir") + 1])
+                name = Path(command[-1]).with_suffix(".docx").name
+                (outdir / name).write_bytes(package)
+
+        def communicate(self, timeout=None):
+            return self.output
+
+    monkeypatch.setattr(downloader.subprocess, "Popen", Popen)
+    return calls
+
+
+def test_download_3gpp_converts_a_legacy_doc_archive(tmp_path, monkeypatch):
+    calls = _fake_soffice(monkeypatch)
+    url = "https://example.test/29999-i00.zip"
+    archive = tmp_path / "archives" / "3gpp-rel-18" / "29999-i00.zip"
+    archive.parent.mkdir(parents=True)
+    # The Temp/Promotion/Upgraded/ nesting is real (TS 29.215, TR 29.909).
+    archive.write_bytes(
+        _zip_bytes(**{"Temp/Upgraded/29999-i00.doc": b"\xd0\xcf\x11\xe0"})
+    )
+    stale = tmp_path / "converted" / "3gpp" / "Rel-18" / "TS_29.999" / "old.docx"
+    stale.parent.mkdir(parents=True)
+    stale.write_bytes(b"a previous version's conversion")
+    spec = downloader.ThreeGppSpec("29.999", "Test TS")
+
+    record = downloader.download_3gpp(
+        spec, url, release=18, output=tmp_path, extract=True, pdfs=False
+    )
+
+    source = "3gpp/Rel-18/TS_29.999/Temp/Upgraded/29999-i00.doc"
+    assert record.conversions is not None
+    (conversion,) = record.conversions
+    assert conversion.source == source
+    assert conversion.file == (
+        "converted/3gpp/Rel-18/TS_29.999/Temp/Upgraded/29999-i00.docx"
+    )
+    assert conversion.converter == "LibreOffice 9.9.9.9 0123abc"
+    assert conversion.source_sha256 == downloader.sha256_file(tmp_path / source)
+    assert conversion.sha256 == downloader.sha256_file(tmp_path / conversion.file)
+    assert conversion.command[-3:] == ["--outdir", "{outdir}", "{source}"]
+    # The derived file is not one of the archive's files, and the converted
+    # tree holds this run's conversion and nothing else.
+    assert conversion.file not in record.files
+    assert not stale.exists()
+    assert not list((tmp_path / "converted").rglob("*.staging"))
+    # Each conversion runs in a private profile, never the user's own.
+    (_, convert) = calls
+    assert convert[1].startswith("-env:UserInstallation=file:///")
+    assert convert[-1] == str(tmp_path / source)
+
+
+def test_an_archive_with_its_own_docx_is_not_converted(tmp_path, monkeypatch):
+    calls = _fake_soffice(monkeypatch)
+    extracted = [tmp_path / "spec" / "29999-i00.docx", tmp_path / "spec" / "a.doc"]
+
+    conversions = downloader.convert_legacy_documents(
+        "TS 29.999", extracted, tmp_path / "spec", tmp_path
+    )
+
+    assert conversions == []
+    assert calls == []
+
+
+@pytest.mark.parametrize(
+    ("soffice", "message"),
+    [
+        ("absent", r"TS 29\.999 ships a legacy \.doc; .*LibreOffice \(`.*soffice`\)"),
+        ("failing", r"TS 29\.999: `.*` exited 1: Error: source file could not be"),
+        ("silent", r"TS 29\.999: LibreOffice wrote no 29999-i00\.docx"),
+        ("broken", r"29999-i00\.docx is not a readable \.docx"),
+    ],
+)
+def test_a_failed_conversion_fails_the_run_without_a_manifest(
+    tmp_path, local_http_server, monkeypatch, soffice, message
+):
+    if soffice == "absent":
+        monkeypatch.setattr(downloader, "SOFFICE", str(tmp_path / "bin" / "soffice"))
+    else:
+        _fake_soffice(
+            monkeypatch,
+            returncode=1 if soffice == "failing" else 0,
+            # Exit 0 and a ZIP naming the main part, which is not XML.
+            package=(
+                _zip_bytes(**{"word/document.xml": b"not XML"})
+                if soffice == "broken"
+                else b""
+            ),
+        )
+    output = tmp_path / "corpus"
+    output.mkdir()
+    (output / "manifest.json").write_text('{"artifact_count": 99}')
+    local_http_server.route("/Rel-18/29_series/", b'<a href="29999-i00.zip">s</a>')
+    local_http_server.route(
+        "/Rel-18/29_series/29999-i00.zip", _zip_bytes(**{"29999-i00.doc": b"word"})
+    )
+    local_http_server.route("/tree/p/v9.9.9", b'[{"name": "d.xml", "type": "blob"}]')
+    local_http_server.route("/raw/v9.9.9/p/d.xml", b"<dictionary/>")
+    base = local_http_server.base_url
+    monkeypatch.setattr(
+        downloader, "WIRESHARK_TREE_URL", f"{base}/tree/{{path}}/{{tag}}"
+    )
+    monkeypatch.setattr(
+        downloader, "WIRESHARK_RAW_URL", f"{base}/raw/{{tag}}/{{path}}/{{name}}"
+    )
+    monkeypatch.setattr(
+        downloader, "THREE_GPP_INDEX", f"{base}/Rel-{{release}}/{{series}}_series/"
+    )
+
+    with pytest.raises(downloader.DownloadError, match=message):
+        downloader.download_corpus(
+            output,
+            catalog=(
+                (downloader.ThreeGppSpec("29.999", "Test TS"),),
+                (),
+                downloader.WiresharkDictionary(tag="v9.9.9", path="p"),
+            ),
+        )
+
+    assert not (output / "manifest.json").exists()
+    assert not list((output / "converted").rglob("*.docx"))
+
+
+def test_a_timed_out_conversion_kills_the_whole_process_group(tmp_path, monkeypatch):
+    # `soffice` is a launcher whose `soffice.bin` child does the converting;
+    # a shell that backgrounds a sleep stands in for the pair.
+    pidfile = tmp_path / "child.pid"
+    killed = []
+    killpg = downloader.os.killpg
+
+    def recording_killpg(group, sig):
+        killed.append((group, sig))
+        killpg(group, sig)
+
+    monkeypatch.setattr(downloader.os, "killpg", recording_killpg)
+    monkeypatch.setattr(downloader, "SOFFICE", "sh")
+    monkeypatch.setattr(downloader, "SOFFICE_TIMEOUT", 0.5)
+
+    with pytest.raises(downloader.DownloadError, match=r"timed out after 0\.5 s"):
+        downloader.run_soffice(
+            "TS 29.999", ["-c", f"sleep 30 >/dev/null 2>&1 & echo $! > {pidfile}; wait"]
+        )
+
+    assert [sig for _, sig in killed] == [downloader.signal.SIGKILL]
+    child = int(pidfile.read_text())
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        try:
+            os.kill(child, 0)
+        except ProcessLookupError:
+            break
+        time.sleep(0.05)
+    else:
+        pytest.fail(f"the launcher's child {child} outlived the timeout")

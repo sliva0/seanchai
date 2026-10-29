@@ -12,6 +12,9 @@ uv run ty check                  # fast, alpha; may be wrong
 uv run basedpyright              # standard mode; the more trustworthy one
 ```
 
+`seanchai download` needs LibreOffice's `soffice` on PATH to convert the
+catalog's legacy `.doc` archives; TS 32.299 is read from its conversion.
+
 CI runs the tests without sources plus ruff. Run everything locally before
 committing anyway; CI is a backstop, not the gate.
 

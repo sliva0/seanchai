@@ -91,6 +91,45 @@ def test_a_rebuild_follows_the_manifest_version_and_reports_what_it_did(
     assert (corpus / "3gpp" / "rel-18" / "29999-110.dad").is_file()
 
 
+def test_a_legacy_doc_is_read_through_the_manifest_conversion(
+    tmp_path, synthetic_spec_docx
+):
+    sources = tmp_path / "specifications"
+    manifest, document = _manifest(sources, "29999-100")
+    data = json.loads(manifest.read_text())
+    legacy = document.with_suffix(".doc")
+    converted = sources / "converted" / legacy.relative_to(sources)
+    converted = converted.with_suffix(".docx")
+    converted.parent.mkdir(parents=True)
+    shutil.copy(synthetic_spec_docx, converted)
+    conversion = {
+        "source": str(legacy.relative_to(sources)),
+        "file": str(converted.relative_to(sources)),
+    }
+    tgpp = data["artifacts"][0]
+    tgpp["files"] = [conversion["source"]]
+    # Without the record, a `.doc` is unreadable however many converted
+    # files lie around: the manifest is the only route.
+    manifest.write_text(json.dumps(data))
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    (missing,) = _run(manifest, corpus, corpus, add=["TS29.999"]).outcomes
+    assert missing.status == "not-in-manifest"
+
+    tgpp["conversions"] = [conversion]
+    # A TR has no reference a corpus file can carry; it is passed over.
+    data["artifacts"].append(dict(tgpp, identifier="TR 29.999"))
+    manifest.write_text(json.dumps(data))
+
+    (added,) = _run(manifest, corpus, corpus, add=["TS29.999"]).outcomes
+
+    assert added.status == "new"
+    assert [p.relative_to(corpus).as_posix() for p in added.written] == [
+        "3gpp/rel-18/29999-100.dad",
+        "raw/3gpp/rel-18/29999-100.raw.dad",
+    ]
+
+
 def test_a_document_the_extractor_rejects_fails_alone(tmp_path):
     sources = tmp_path / "specifications"
     manifest, document = _manifest(sources, "29999-100")

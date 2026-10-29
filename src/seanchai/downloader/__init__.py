@@ -1,7 +1,8 @@
 """Download the 3GPP and IETF Diameter specification corpus.
 
 3GPP publishes the latest version belonging to each release as a ZIP file.
-Those ZIPs normally contain the editable DOC or DOCX specification source.
+Those ZIPs normally contain the editable DOC or DOCX specification source;
+a legacy DOC is converted to DOCX with headless LibreOffice.
 RFCs are downloaded as canonical plain text from the RFC Editor. Official
 3GPP/ETSI PDF renditions can also be downloaded with ``--pdfs``.
 
@@ -16,6 +17,7 @@ promises.
 
 from .core import (
     CATALOG_PATH,
+    Conversion,
     DownloadError,
     DownloadRecord,
     RfcSpec,
@@ -26,6 +28,7 @@ from .core import (
 
 __all__ = [
     "CATALOG_PATH",
+    "Conversion",
     "DownloadError",
     "DownloadRecord",
     "RfcSpec",

@@ -494,7 +494,8 @@ def _summary(counts, checked: int) -> str:
 @click.option(
     "--no-extract",
     is_flag=True,
-    help="Keep 3GPP ZIPs without extracting their DOC/DOCX files.",
+    help="Keep 3GPP ZIPs without extracting their DOC/DOCX files (and so"
+    " without converting a legacy DOC).",
 )
 @click.option(
     "--pdfs/--no-pdfs",
@@ -514,7 +515,12 @@ def download(
     pdfs: bool,
     list_only: bool,
 ) -> None:
-    """Download the curated 3GPP and RFC specification corpus."""
+    """Download the curated 3GPP and RFC specification corpus.
+
+    A 3GPP archive holding only a legacy `.doc` is converted to `.docx` with
+    headless LibreOffice (`soffice` on PATH), and the conversion is recorded
+    in the manifest.
+    """
     from .downloader import download_corpus, load_catalog
 
     # Catalog loading is inside the boundary too: an unreadable or malformed
