@@ -3,9 +3,11 @@
 The extractor records what a specification says, including where it
 contradicts itself; this is the layer that reports those contradictions
 instead of resolving them. Every rule here is decided inside a single file,
-and every one of them has a real case in the committed corpus — they are not
+and nearly every one has a real case in the committed corpus — they are not
 hypothetical invariants, they are the inconsistencies three specifications
-actually contain.
+actually contain. The exceptions are the two application rules, which
+report what `model.Model.applications` would otherwise settle without
+comment.
 
 Findings carry a severity because not every one of them is a defect:
 
@@ -79,6 +81,7 @@ class _Index:
 
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = field(default_factory=list)
     messages: list[ast.Message] = field(default_factory=list)
+    applications: list[ast.Application] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
 
@@ -94,6 +97,8 @@ def _index(spec: ast.Specification) -> _Index:
             index.definitions.append(section)
         elif isinstance(section, ast.Message):
             index.messages.append(section)
+        elif isinstance(section, ast.Application):
+            index.applications.append(section)
         elif isinstance(section, ast.AvpTable):
             index.tables.append(section)
         elif isinstance(section, ast.ReusedAvps):
@@ -174,6 +179,47 @@ def _duplicate_enum_values(index: _Index) -> list[Finding]:
                         "duplicate-enum-value",
                         f"{definition.name} uses the {label} {repeated!r} twice",
                         definition.source.section,
+                    )
+                )
+    return findings
+
+
+def _applications_agree_with_headers(index: _Index) -> list[Finding]:
+    """A command sits in the scope of at most one application block, and a
+    header that prints an id prints the block's.
+
+    Both are what the model's grouping would decide quietly — the first
+    block in file order, the header over the block — so a document stating
+    two ids for one command is said out loud here instead.
+    """
+    findings = []
+    for message in index.messages:
+        blocks = [b for b in index.applications if b.covers(message.source.section)]
+        if len(blocks) > 1:
+            named = ", ".join(
+                f"{b.name} ({b.application_id}, clause {b.source.section})"
+                for b in blocks
+            )
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "application-overlap",
+                    f"{message.name} is in the scope of {len(blocks)}"
+                    f" applications: {named}",
+                    message.source.section,
+                )
+            )
+        for block in blocks:
+            if message.application_id not in (None, block.application_id):
+                findings.append(
+                    Finding(
+                        Severity.ERROR,
+                        "application-header-mismatch",
+                        f"{message.name}'s header prints application"
+                        f" {message.application_id}, but clause"
+                        f" {block.source.section} gives {block.name}"
+                        f" {block.application_id}",
+                        message.source.section,
                     )
                 )
     return findings
@@ -493,6 +539,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_duplicate_definitions(index),
         *_one_name_two_commands(index),
         *_duplicate_enum_values(index),
+        *_applications_agree_with_headers(index),
         *_duplicate_identities(index, spec.vendor_id),
         *_rows_without_codes(index),
         *_table_agrees_with_definitions(index),

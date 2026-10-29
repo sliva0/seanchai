@@ -14,13 +14,11 @@ letter is not reused. What exists is described in the per-module documents.
   Three axes under four labels; modelling means deciding what each means.
   The extractor warns about them today, which is the right amount of
   machinery until then.
-- **Q. Record application ids the command headers omit.** RFC 6733, 4005
-  and 4006, TS 29.212, 29.214, 32.299 and others print bare `272, REQ, PXY`
-  headers and state the id in prose (or leave it to the base application),
-  so the python-diameter generator writes `APPLICATION_ID = None` for 27
-  modules ([list](../integrations/python_diameter/README.md#what-the-documents-leave-to-the-reader)).
-  Needs a format construct naming the id per interface clause, cited like
-  any other statement; a header correction would claim the header says it.
+- **Q. Move the header application-id corrections to application
+  blocks.** TS 29.272's VCSG commands (clause 7.2.2, 16777308) and TS
+  29.273's SWa DER/DEA (clauses 4.2.1 and 5.2.1, 16777250) are corrected
+  by writing the id into the header, which claims the header prints it; an
+  inserted `Application` block would cite the clause instead.
 
 ## Linter and corpus
 

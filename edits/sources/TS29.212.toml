@@ -50,3 +50,9 @@ name = "external-enum-values"
 reason = "clause 5.3.120 gives Default-Access no values of its own: 'The values defined in the Default-Access AVP are the same as the ones defined in IP-CAN-Type AVP.'"
 first_version = "18.2.0"
 last_version = "18.2.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clauses 5.1 (Gx), 5a.1 (Gxx), 5b.1 (Sd), 5c.1 (St) and E.6.1 (S15) each state one: 'the Application-ID for the Gx Application in the present release is 16777238'"
+first_version = "18.2.0"
+last_version = "18.2.0"

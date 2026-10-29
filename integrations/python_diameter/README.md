@@ -34,11 +34,12 @@ out/protocols/
 ```
 
 A module groups what `Model.applications` groups: one document's commands
-for one header application id under one interface clause. TS 29.212 gives
-`ts29_212_5` (Gx), `_5a` (Gxx), `_5b` (Sd), `_5c` (St) and `_e_6`; TS
+for one application id under one interface clause. TS 29.212 gives
+`ts29_212_5` (Gx), `_5a` (Gxx), `_5b` (Sd), `_5c` (St) and `_e_6` (S15); TS
 29.273 gives one module per reference point, three of them sharing
 16777250; RFC 6733 gives `rfc6733_5` (CER, DWR, DPR), `_8` (RAR, STR, ASR)
-and `_9` (ACR).
+and `_9` (ACR); TS 32.299's clause 6 gives `ts32_299_3` (Rf) and `_4`
+(Ro), and RFC 5778's clause 5 `rfc5778_7` and `_8`.
 
 `avps.py` holds one `AvpDef` per distinct reading — name, code, vendor-id,
 value class, flag rules, grouped members with their cardinality, enumerated
@@ -219,17 +220,22 @@ holds only `additional_avps`.
 ## What the documents leave to the reader
 
 **Application ids.** The application id comes from the command header the
-document prints and nothing else; a module whose document prints none gets
-`APPLICATION_ID = None` and says so in its docstring. These documents state
-their application ids in prose or in another document, which the corpus
-does not record:
+document prints, or, where the headers print none, from the `Application`
+block that records the document's statement in prose; such a module's
+docstring names the clause (`The command headers print no application id;
+clause 5.1 states Gx's.`). The 3GPP blocks are read from the documents (TS
+29.154, 29.212, 29.214, 29.215, 29.217, 29.219, 29.343, 29.368, 29.468);
+those for RFC 4004, 4005, 4006, 4072, 5778, 6733, 7155, 8506 and TS 32.299
+are corrections citing the clause, since each words it differently. Two
+readings are worth knowing: RFC 4005 clause 1.3 gives the commands it takes
+from the base protocol "the Base application id value", and the block
+follows clause 11.3 and RFC 7155 in giving all of clause 3 the NASREQ id 1;
+RFC 6733's ACR is the base accounting application's 3, the split accounting
+model of clause 9.3, where coupled accounting carries the using
+application's id.
 
-- RFC 4004, 4005, 4006, 4072, 5778, 6733 (all three modules), 7155, 8506
-- TS 29.154 (clauses 5 and A.6), 29.212 (5, 5a, 5b, 5c, E.6), 29.214,
-  29.215 (5, A.7, A.8), 29.217, 29.219, 29.343, 29.368, 29.468, 32.299
-
-TS 32.299's clause 6 defines both Rf (ACR) and Ro (CCR, RAR), which share
-one module because the grouping is by top-level clause.
+`rfc6733_8` alone keeps `APPLICATION_ID = None`: clause 2.5 says RAR, STR
+and ASR "MUST carry the Application Id of the application" they serve.
 
 **Commands printed twice.** A document that prints one command twice in one
 interface clause gets one class when the bodies agree (TS 29.273's STa STR,

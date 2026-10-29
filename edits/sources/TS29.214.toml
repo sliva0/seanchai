@@ -19,3 +19,9 @@ section = "5.3.26"
 reason = "the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; table 5.3.0.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'"
 first_version = "18.4.0"
 last_version = "18.4.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Rx application in the present release is 16777236'"
+first_version = "18.4.0"
+last_version = "18.4.0"

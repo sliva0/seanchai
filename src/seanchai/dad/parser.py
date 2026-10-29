@@ -48,6 +48,7 @@ _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?
 # one directive at a time rather than by constructing the model.
 _VERSION = pydantic.TypeAdapter(ast.Version)
 _INLINE_TEXT = pydantic.TypeAdapter(ast.InlineText)
+_UNSIGNED32 = pydantic.TypeAdapter(ast.Unsigned32)
 
 
 class DadParseError(ValueError):
@@ -256,6 +257,32 @@ def _parse_message(
             flags=flags,
             application_id=application_id,
             avps=avps,
+        )
+
+
+def _parse_application(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.Application:
+    name = _pop(directives, "Name", lineno)
+    source = _source_ref(directives, lineno)
+    application_id = _pop(directives, "Application-ID", lineno)
+    scope = _pop(directives, "Scope", lineno)
+    _no_leftovers(directives, lineno)
+    # Every line of the block is a directive: the statement is the clause's
+    # prose, which has no rule to mirror.
+    if body:
+        raise DadParseError(body[0][0], "unexpected content in application block")
+    with _validated(name.lineno):
+        _INLINE_TEXT.validate_python(name.value)
+    number = _number(application_id.value, application_id.lineno, "Application-ID")
+    with _validated(application_id.lineno):
+        _UNSIGNED32.validate_python(number)
+    with _validated(scope.lineno):
+        return ast.Application(
+            name=name.value,
+            source=source,
+            application_id=number,
+            scope=tuple(part.strip() for part in scope.value.split(",")),
         )
 
 
@@ -505,6 +532,7 @@ def _parse_reused(
 
 
 _SECTION_PARSERS = {
+    "Application": _parse_application,
     "Message": _parse_message,
     "Grouped AVP": _parse_grouped,
     "Enumerated AVP": _parse_enumerated,
@@ -531,8 +559,13 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Table": ("table",),
     "Columns": ("columns",),
     "Values": ("values_source",),
+    "Application-ID": ("application_id",),
+    "Scope": ("scope",),
 }
+# An application block has no body: a whole-line comment after its last
+# line stands at the block's own path.
 _BODIES = {
+    "Application": ("", 0),
     "Message": ("avps", 1),
     "Grouped AVP": ("avps", 1),
     "Enumerated AVP": ("values", 1),
@@ -645,7 +678,7 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
         for position, (lineno, _) in enumerate(body):
             item = position - rules
             layout.paths[lineno] = path if item < 0 else (*path, field, item)
-        layout.ends.append((*path, field, len(body) - rules))
+        layout.ends.append((*path, field, len(body) - rules) if field else path)
 
     # The header directives are checked one at a time so each reports its
     # own line, then assembled — by then only the whole-model rules are left.

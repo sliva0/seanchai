@@ -409,3 +409,43 @@ CORRECTIONS = [
         )
     ),
 ]
+
+# Application ids the command headers omit and the prose states.
+CORRECTIONS += [
+    Insert(
+        id="application-id-rf",
+        into=header(),
+        node=ast.Application(
+            name="Rf",
+            source=ast.SourceRef(section="7.1.5", page=97),
+            application_id=3,
+            scope=("6.2",),
+        ),
+        after=None,
+        reason=(
+            "clause 7.1.5: 'The Acct-Application-Id AVP (AVP code 259) shall "
+            "contain the value of 3 as defined in RFC 6733'; the offline "
+            "charging ACR/ACA of clause 6.2 use the Diameter Base Protocol "
+            "Accounting application (6.2.1.1), and their headers print no id"
+        ),
+        versions="18.0.0",
+    ),
+    Insert(
+        id="application-id-ro",
+        into=header(),
+        node=ast.Application(
+            name="Ro",
+            source=ast.SourceRef(section="7.1.6", page=97),
+            application_id=4,
+            scope=("6.4",),
+        ),
+        after=None,
+        reason=(
+            "clause 7.1.6: 'The Auth-Application-Id AVP (AVP code 258) shall "
+            "contain the value of 4 as defined in RFC 4006'; the online "
+            "charging commands of clause 6.4 use the Diameter Credit-Control "
+            "Application (6.3.2.1), and their headers print no id"
+        ),
+        versions="18.0.0",
+    ),
+]

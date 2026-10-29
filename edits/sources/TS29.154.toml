@@ -10,3 +10,9 @@ section = "5.4"
 reason = "table 5.4.1 breaks the name after 'CC-Total-'; RFC 4006 defines CC-Total-Octets and the BTA ABNF spells it so"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clauses 5.1 (Nt, 16777348) and A.6.1 (Nta, 16777358) state them: 'the Application-ID for the Nt application in the present release is 16777348'"
+first_version = "18.0.0"
+last_version = "18.0.0"

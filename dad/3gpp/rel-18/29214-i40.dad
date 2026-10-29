@@ -5,6 +5,14 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129214/18.04.00_60/ts_129214v180400p.pdf
 
 
+; Type: Application
+; Name: Rx
+; Section: 5.1
+; Page: 33
+; Application-ID: 16777236
+; Scope: 5
+
+
 ; Type: Message
 ; Name: AA-Request, AAR
 ; Section: 5.6.1

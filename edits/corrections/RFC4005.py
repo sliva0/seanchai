@@ -1,6 +1,7 @@
 """Corrections for RFC 4005 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, avp_rule, table_row
+from seanchai.dad import ast
+from seanchai.dad.corrections import Correction, Insert, avp_rule, header, table_row
 
 # Clauses 6.13.1-6.13.3 head and define the three AVPs Framed-AppleTalk-*,
 # and the Accounting-Request ABNF spells them the same way; the AVP table
@@ -93,3 +94,25 @@ CORRECTIONS = (
         ),
     ]
 )
+
+# Application ids the command headers omit and the prose states.
+CORRECTIONS += [
+    Insert(
+        id="application-id",
+        into=header(),
+        node=ast.Application(
+            name="NASREQ",
+            source=ast.SourceRef(section="11.3", page=78),
+            application_id=1,
+            scope=("3",),
+        ),
+        after=None,
+        reason=(
+            "clause 11.3: 'This specification uses the value one (1) in the "
+            "Application Identifier namespace'; the command headers print none. "
+            "Clause 1.3 says the RAR, STR, ASR and ACR 'defined by [BASE]' use "
+            "'the Base application id value', which RFC 7155 clause 1.5, this "
+            "document's successor, replaces with one (1)"
+        ),
+    ),
+]

@@ -5,6 +5,45 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129212/18.02.00_60/ts_129212v180200p.pdf
 
 
+; Type: Application
+; Name: Gx
+; Section: 5.1
+; Page: 120
+; Application-ID: 16777238
+; Scope: 5
+
+
+; Type: Application
+; Name: Gxx
+; Section: 5a.1
+; Page: 201
+; Application-ID: 16777266
+; Scope: 5a
+
+
+; Type: Application
+; Name: Sd
+; Section: 5b.1
+; Page: 215
+; Application-ID: 16777303
+; Scope: 5b
+
+
+; Type: Application
+; Name: St
+; Section: 5c.1
+; Page: 234
+; Application-ID: 16777349
+; Scope: 5c
+
+
+; Type: Application
+; Name: S15
+; Section: E.6.1
+; Application-ID: 16777318
+; Scope: E.6
+
+
 ; Type: Message
 ; Name: CC-Request, CCR
 ; Section: 5.6.2

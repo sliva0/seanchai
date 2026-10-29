@@ -96,6 +96,59 @@ def _message(name, *members):
     )
 
 
+class TestApplications:
+    def _document(self, *sections):
+        return _spec("3GPP TS 29.999", sections)
+
+    def _command(self, section, application_id):
+        message = _message("Test-Request")
+        return message.model_copy(
+            update={
+                "source": ast.SourceRef(section=section),
+                "application_id": application_id,
+            }
+        )
+
+    def _block(self, name, application_id, *scope):
+        return ast.Application(
+            name=name,
+            source=ast.SourceRef(section="1.1"),
+            application_id=application_id,
+            scope=scope,
+        )
+
+    def test_a_block_gives_its_id_to_the_commands_whose_headers_print_none(self):
+        built = _model(
+            self._document(
+                self._block("Gx", 16777238, "5"),
+                self._command("5.6.2", None),
+                self._command("5a.6.2", None),
+            )
+        )
+
+        stated, unstated = built.applications("TS29.999")
+
+        assert (stated.application_id, stated.name, stated.stated_in) == (
+            16777238,
+            "Gx",
+            "1.1",
+        )
+        assert (unstated.application_id, unstated.name) == (None, None)
+
+    def test_a_header_keeps_its_own_id_against_a_block(self):
+        # The linter's application-header-mismatch reports this.
+        built = _model(
+            self._document(
+                self._block("Gx", 16777238, "5"),
+                self._command("5.6.2", 16777266),
+            )
+        )
+
+        (application,) = built.applications("TS29.999")
+
+        assert (application.application_id, application.name) == (16777266, None)
+
+
 class TestResolutionOrder:
     def test_a_local_definition_wins_over_the_reused_listing(self):
         """An extension means what the extending document says (TS 29.272
@@ -526,24 +579,29 @@ class TestOverTheCommittedCorpus:
 
     def test_applications_follow_each_documents_interfaces(self, built):
         """TS 29.272 splits S6a/S6d, S13 and S7a by application id within
-        clause 7; TS 29.212 prints no ids, so Gx, Gxx, Sd, St and annex E
-        split by clause; TS 29.273 shares 16777250 between SWa, STa and SWd."""
+        clause 7; TS 29.212's headers print no ids, so Gx, Gxx, Sd, St and
+        annex E take theirs from the clauses stating them and split by
+        clause; TS 29.273 shares 16777250 between SWa, STa and SWd."""
 
         def keys(reference):
             return [
-                (app.application_id, app.clause)
+                (app.application_id, app.clause, app.name, app.stated_in)
                 for app in built.applications(reference)
             ]
 
-        assert keys("TS29.272") == [(16777251, "7"), (16777308, "7"), (16777252, "7")]
-        assert keys("TS29.212") == [
-            (None, "5"),
-            (None, "5a"),
-            (None, "5b"),
-            (None, "5c"),
-            (None, "E.6"),
+        assert keys("TS29.272") == [
+            (16777251, "7", None, None),
+            (16777308, "7", None, None),
+            (16777252, "7", None, None),
         ]
-        assert keys("TS29.273") == [
+        assert keys("TS29.212") == [
+            (16777238, "5", "Gx", "5.1"),
+            (16777266, "5a", "Gxx", "5a.1"),
+            (16777303, "5b", "Sd", "5b.1"),
+            (16777349, "5c", "St", "5c.1"),
+            (16777318, "E.6", "S15", "E.6.1"),
+        ]
+        assert [key[:2] for key in keys("TS29.273")] == [
             (16777250, "4"),
             (16777250, "5"),
             (16777250, "6"),
@@ -551,6 +609,24 @@ class TestOverTheCommittedCorpus:
             (16777265, "8"),
             (16777272, "9"),
         ]
+
+    def test_application_blocks_split_a_clause_and_leave_the_rest(self, built):
+        """TS 32.299 clause 6 defines Rf (6.2, 3) and Ro (6.4, 4), RFC 5778's
+        clause 5 MIP6I (5.1, 7) and MIP6A (5.2, 8); RFC 6733's clause 8
+        commands carry the using application's id, which no block states."""
+
+        def keys(reference):
+            return [
+                (app.application_id, app.clause, [m.abbreviation for m in app.messages])
+                for app in built.applications(reference)
+            ]
+
+        assert keys("TS32.299") == [
+            (3, "6", ["ACR", "ACA"]),
+            (4, "6", ["CCR", "CCA", "RAR", "RAA"]),
+        ]
+        assert keys("RFC5778") == [(7, "5", ["DER", "DEA"]), (8, "5", ["MIR", "MIA"])]
+        assert [key[:2] for key in keys("RFC6733")] == [(0, "5"), (None, "8"), (3, "9")]
 
     def test_the_two_code_621_spaces_stay_separate(self, built):
         """TS 29.229's own 621 and RFC 7683's 621 are different AVPs, which

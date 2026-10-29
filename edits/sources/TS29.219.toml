@@ -18,3 +18,9 @@ section = "5.4"
 reason = "table 5.4 drops 'RFC' from the OC-OLR and OC-Supported-Features references; clause 2's reference [20] is IETF RFC 7683"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 5.1.5 states it: 'The Diameter application identifier assigned to the Sy interface application is 16777302.'"
+first_version = "18.0.0"
+last_version = "18.0.0"

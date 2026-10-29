@@ -77,6 +77,16 @@ SectionNumber = Annotated[
     str, Field(pattern=r"^([A-Za-z]+|\d+[A-Za-z]*)(\.\d+[A-Za-z]*)*$")
 ]
 
+
+def interface_clause(section: str) -> str:
+    """The clause that scopes one interface's commands: `5a` of `5a.6.2`,
+    `A.7` of `A.7.6.2`. A 3GPP document gives each interface a top-level
+    clause (TS 29.212's 5, 5a, 5b, 5c) or annex clause (29.215's A.7 and
+    A.8), and an annex letter alone spans several interfaces."""
+    parts = section.split(".")
+    return ".".join(parts[:2]) if parts[0].isalpha() else parts[0]
+
+
 # A document's own version numbering: "18.6.0".
 Version = Annotated[str, Field(pattern=r"^\d+(\.\d+)*$")]
 
@@ -170,9 +180,48 @@ class Message(Node):
     command_code: Unsigned24
     flags: frozenset[CommandFlag]
     # None when the source document itself omits it (TS 29.272 VCSG commands
-    # print "< Diameter Header: 8388638, REQ, PXY, >") — to be fixed by patches.
+    # print "< Diameter Header: 8388638, REQ, PXY, >"); an `Application`
+    # block records an id the document states elsewhere.
     application_id: Unsigned32 | None
     avps: tuple[AvpRule, ...]
+
+
+class Application(Node):
+    """`; Type: Application` — an application id the document states outside
+    its command headers, with the clause stating it and the clauses whose
+    commands it applies to.
+
+    TS 29.212 prints its Gx commands with bare `272, REQ, PXY` headers and
+    says in clause 5.1 that "the Application-ID for the Gx Application in
+    the present release is 16777238"; RFC 4006 assigns 4 in its IANA
+    considerations. A command's own header, where it prints one, is still
+    what that header says: this states the id for the commands whose
+    headers print none.
+    """
+
+    type: Literal["Application"] = "Application"
+    # The document's name for the application or interface: "Gx", "Diameter
+    # Credit Control".
+    name: InlineText
+    source: SourceRef
+    application_id: Unsigned32
+    # The clauses whose commands belong to the application, each covering
+    # its subclauses: "5" for TS 29.212's Gx, "5.1" and "5.2" for RFC 5778's
+    # two applications, which share a clause.
+    scope: Annotated[tuple[SectionNumber, ...], Field(min_length=1)]
+
+    @pydantic.model_validator(mode="after")
+    def _distinct_scope(self) -> Application:
+        if len(set(self.scope)) != len(self.scope):
+            raise ValueError(f"scope {list(self.scope)} names a clause twice")
+        return self
+
+    def covers(self, section: str) -> bool:
+        """Whether a command defined in clause `section` is in scope."""
+        return any(
+            section == clause or section.startswith(f"{clause}.")
+            for clause in self.scope
+        )
 
 
 class GroupedAvp(Node):
@@ -486,7 +535,7 @@ def node_at(root: Node, path: TreePath) -> Any:
 
 
 Section = Annotated[
-    Message | GroupedAvp | EnumeratedAvp | AvpTable | ReusedAvps,
+    Application | Message | GroupedAvp | EnumeratedAvp | AvpTable | ReusedAvps,
     Field(discriminator="type"),
 ]
 

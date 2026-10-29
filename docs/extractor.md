@@ -84,8 +84,10 @@ Vocabulary, RFC extractor: `prose-avp-codes` (RFC 7155), `clause-avp-table`
 `bare-name-continuation` (RFC 4004), `ragged-separator` (RFC 8583).
 The declared vocabulary, with the document that forced each:
 
-- Docx: `note-defined-in-rfc` (29.229, 29.329: AVP-table notes naming a
-  defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
+- Docx: `prose-application-ids` (29.154, 29.212, 29.214, 29.215, 29.217,
+  29.219, 29.343, 29.368, 29.468: the clause stating the application id the
+  command headers omit); `note-defined-in-rfc` (29.229, 29.329: AVP-table
+  notes naming a defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
   `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1: commands
   and re-used rows, no local AVPs); and five from TS 29.273:
   `command-reference-only` (clauses holding only a pointer),
@@ -119,6 +121,15 @@ M-bit short forms, closed vocabularies that cannot be misread.
 ## The 3GPP docx extractor
 
 Walks paragraphs and tables in document order under numbered headings:
+
+- Behind `prose-application-ids`, a sentence stating the application id the
+  command headers omit → `Application`, scoped to the interface clause the
+  sentence sits in. Two wordings: "the Application-ID for the Gx
+  Application in the present release is 16777238" (TS 29.212 clauses 5.1,
+  5a.1, 5b.1, 5c.1, E.6.1; 29.154, 29.214, 29.215, 29.217) and "The
+  Diameter application identifier assigned to the Sy interface application
+  is 16777302." (29.219 clause 5.1.5; 29.343, 29.368, 29.468). The file
+  lists them first, before the commands.
 
 - `x.y.z Name (ABBR) Command` heading + `::= < Diameter Header: … >` →
   `Message`; per-run bold marks this-spec AVPs (only name runs are trusted).
@@ -325,7 +336,9 @@ Same definitions, different carrier:
   `<answer-message>` out. Commands take the long name from the heading and
   the abbreviation from the rule (or from an `AA-Request (AAR) Command`
   heading). RFC 6733's base commands print no application id and the file
-  records its absence. Blank lines inside a body are page-break residue.
+  records its absence; no RFC states its ids in a wording a second one
+  shares, so their application blocks come from corrections. Blank lines
+  inside a body are page-break residue.
 - **Grouped AVPs** may write the rule name bracketed or bare, and `1* {AVP}`
   without inner spaces. A body printed for another document's AVP is kept
   (RFC 8581/8582 re-print 7683's `OC-OLR`), for the linter to compare.

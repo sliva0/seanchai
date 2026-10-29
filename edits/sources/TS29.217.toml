@@ -10,3 +10,9 @@ section = "5.3.1"
 reason = "table 5.3.1.1 ends Extended-eNodeB-Id's Must cell with a stray comma; the row sets M in Must not, so V is the only must-set flag"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Np Application in the present release is 16777342'"
+first_version = "18.0.0"
+last_version = "18.0.0"

@@ -145,6 +145,70 @@ def test_a_values_source_is_free_text_and_reports_its_own_line():
     assert error.value.lineno == 8
 
 
+def test_an_application_block_round_trips_with_its_comments():
+    # TS 29.212 clause 5.1 states Gx's id for the commands of clause 5.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 29.212",
+            "; Version: 18.2.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Application ;; read from the prose",
+            "; Name: Gx",
+            "; Section: 5.1",
+            "; Page: 120",
+            "; Application-ID: 16777238",
+            "; Scope: 5, E.6",
+            ";; after the block",
+            "",
+        ]
+    )
+
+    spec, comments = parser.parse_with_comments(text)
+
+    (application,) = spec.sections
+    assert isinstance(application, ast.Application)
+    assert application == ast.Application(
+        name="Gx",
+        source=ast.SourceRef(section="5.1", page=120),
+        application_id=16777238,
+        scope=("5", "E.6"),
+    )
+    assert application.covers("5.6.2") and application.covers("E.6")
+    assert not application.covers("5a.6.2")
+    assert comments.trailing == {("sections", 0, "type"): ["read from the prose"]}
+    assert comments.standing == {("sections", 0): ["after the block"]}
+    assert formatter.format_spec(spec, comments) == text
+
+
+@pytest.mark.parametrize(
+    ("lines", "lineno", "message"),
+    [
+        (["; Application-ID: 16777238"], 5, "missing directive 'Scope'"),
+        (
+            ["; Application-ID: 99999999999", "; Scope: 5"],
+            8,
+            "Input should be less than",
+        ),
+        (["; Application-ID: 1", "; Scope: 5, 5"], 9, "names a clause twice"),
+        (
+            ["; Application-ID: 1", "; Scope: 5", "<Gx> ::= < Diameter Header: 1 >"],
+            10,
+            "unexpected content in application block",
+        ),
+    ],
+    ids=["no-scope", "id-too-large", "repeated-clause", "a-body"],
+)
+def test_an_application_block_rejects_with_the_line(lines, lineno, message):
+    text = _dad("; Type: Application", "; Name: Gx", "; Section: 5.1", *lines)
+
+    with pytest.raises(parser.DadParseError, match=message) as error:
+        parser.parse(text)
+
+    assert error.value.lineno == lineno
+
+
 @pytest.mark.parametrize(
     "name", [" Leading", "Trailing ", "Doubled  space", "Tab\tinside", "(Leading"]
 )

@@ -1,6 +1,7 @@
 """Corrections for RFC 7155 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, avp_rule, header
+from seanchai.dad import ast
+from seanchai.dad.corrections import Correction, Insert, avp_rule, header
 
 CORRECTIONS = [
     # The redirect family, inherited verbatim from RFC 4005's RAA and ASA
@@ -51,6 +52,26 @@ CORRECTIONS = [
             "their siblings, whose rows this document's own tables print with a "
             "'Defined in' pointing at their RADIUS-era origins; RFC 4005 defines and "
             "tabulates them"
+        ),
+    ),
+]
+
+# Application ids the command headers omit and the prose states.
+CORRECTIONS += [
+    Insert(
+        id="application-id",
+        into=header(),
+        node=ast.Application(
+            name="NASREQ",
+            source=ast.SourceRef(section="1.5", page=8),
+            application_id=1,
+            scope=("3",),
+        ),
+        after=None,
+        reason=(
+            "clause 1.5: the Auth-Application-Id 'MUST be set to the value one "
+            "(1)' in AAR, RAR, STR and ASR, and clause 1.6 recommends one (1) "
+            "for ACR/ACA too; the command headers print none"
         ),
     ),
 ]

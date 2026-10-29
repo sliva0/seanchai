@@ -173,6 +173,24 @@ class header(Selector):
 
 
 @dataclass(frozen=True)
+class application(Selector):
+    """An application block, by the name it gives the application."""
+
+    name: str
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching block, at `("sections", i)`."""
+        yield from (
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
+            if isinstance(section, ast.Application) and section.name == self.name
+        )
+
+    def describe(self) -> str:
+        return f"application {self.name!r}"
+
+
+@dataclass(frozen=True)
 class table_row(Selector):
     """One row of an AVP table, by AVP name and optionally table label."""
 
@@ -455,11 +473,17 @@ class Insert:
     table's NOTEs name a defining RFC. TS 32.299 table 7.1.0.1 lists IETF
     AVPs without naming an origin per row, so its block exists only once
     the corrections supply the origins.
+
+    Into `header()` it inserts an `Application` block, for an application
+    id the document states in a form the extractor does not read: RFC 4006
+    assigns 4 in its IANA considerations. The block goes after the file's
+    other application blocks, which lead the file, so `after` must be None;
+    no other block may carry its name.
     """
 
     id: str
-    into: avp_table | reused_avps
-    node: ast.AvpTableRow | ast.ReusedAvpRow
+    into: avp_table | reused_avps | header
+    node: ast.AvpTableRow | ast.ReusedAvpRow | ast.Application
     after: str | None
     reason: str
     versions: str | VersionRange = "*..*"
@@ -730,6 +754,49 @@ def _inserted(
     return rows
 
 
+def _inserted_application(
+    spec: ast.Specification,
+    sections: list[tuple[_Origin, Any]] | None,
+    insert: Insert,
+    origin: _Added,
+) -> list[tuple[_Origin, Any]]:
+    """The file's sections with the declared application block placed after
+    the last one already there, each with its origin. `sections` holds what
+    earlier inserts made of them, None before the first."""
+    described = insert.into.describe()
+    node = insert.node
+    if not isinstance(node, ast.Application):
+        raise CorrectionError(
+            f"{described}: only an Application can be inserted into the file,"
+            f" not a {type(node).__name__}"
+        )
+    if insert.after is not None:
+        raise CorrectionError(
+            f"{described}: an application block follows the others; after must be None"
+        )
+    if sections is None:
+        sections = [
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
+        ]
+    if any(
+        isinstance(section, ast.Application) and section.name == node.name
+        for _, section in sections
+    ):
+        raise CorrectionError(
+            f"{described}: application {node.name!r} is already present"
+        )
+    position = max(
+        (
+            index + 1
+            for index, (_, section) in enumerate(sections)
+            if isinstance(section, ast.Application)
+        ),
+        default=0,
+    )
+    return [*sections[:position], (origin, node), *sections[position:]]
+
+
 def _created_blocks(
     spec: ast.Specification, corrections: Sequence[Edit]
 ) -> tuple[ast.Specification, list[int], dict[str, ast.TreePath]]:
@@ -948,6 +1015,20 @@ def apply(
             )
             origins.append(path)
             continue
+        if isinstance(correction, Insert) and isinstance(correction.into, header):
+            plan.rows[("sections",)] = _inserted_application(
+                tree, plan.rows.get(("sections",)), correction, _Added(index)
+            )
+            results.append(
+                Result(
+                    correction=correction,
+                    node=f"application {correction.node.name!r}",
+                    old=None,
+                    new=correction.node,
+                )
+            )
+            origins.append(_Added(index))
+            continue
         if isinstance(correction, Insert):
             plan.rows[(*path, "rows")] = _inserted(
                 plan.replaced.get(path, node),
@@ -1004,6 +1085,7 @@ def apply(
 
 
 _SECTION_TYPES = (
+    ast.Application,
     ast.Message,
     ast.GroupedAvp,
     ast.EnumeratedAvp,
@@ -1048,7 +1130,14 @@ def notes(results: list[Result]) -> formatter.Comments:
             )
             continue
         if isinstance(edit, Insert):
-            trailing.setdefault(result.path, []).append(f"inserted: ({edit.cited})")
+            # An application block has no line of its own, so the line that
+            # opens it carries the note.
+            line = (
+                (*result.path, "type")
+                if isinstance(edit.node, ast.Application)
+                else result.path
+            )
+            trailing.setdefault(line, []).append(f"inserted: ({edit.cited})")
             continue
         if isinstance(edit, Supply):
             # The list was empty before, so the supplied values are the
@@ -1068,14 +1157,17 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
     """The path of the line a correction's note trails.
 
     A definition is cited on its header rule, the line that states it,
-    whichever field was corrected. The file header and a table have no such
-    line: each field they let a correction replace prints on a directive
-    line of its own (`; Bases:`, `; Table:`), so the note trails that line.
+    whichever field was corrected. The file header, a table and an
+    application block have no such line: each field they let a correction
+    replace prints on a directive line of its own (`; Bases:`, `; Table:`,
+    `; Application-ID:`), so the note trails that line.
     A correction that removes the field's line altogether — a `; Table:`
     caption or the `; Bases:` dropped — is cited on the block's first line,
     the one left that names the block.
     """
-    if not isinstance(correction.target, header | avp_table | reused_avps):
+    if not isinstance(
+        correction.target, header | avp_table | reused_avps | application
+    ):
         return result.path
     if result.new is not None and result.new != ():
         return (*result.path, correction.field)

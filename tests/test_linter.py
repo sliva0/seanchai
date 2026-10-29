@@ -122,6 +122,56 @@ def test_errors_sort_before_notes():
     )
 
 
+def _application(name, application_id, *scope, section="5.1"):
+    return ast.Application(
+        name=name,
+        source=ast.SourceRef(section=section),
+        application_id=application_id,
+        scope=scope,
+    )
+
+
+def _command(section, application_id=None):
+    return ast.Message(
+        name="Credit-Control-Request",
+        abbreviation="CCR",
+        source=ast.SourceRef(section=section),
+        command_code=272,
+        flags=frozenset({ast.CommandFlag.REQUEST}),
+        application_id=application_id,
+        avps=(),
+    )
+
+
+def test_a_command_in_the_scope_of_two_applications_is_an_error():
+    spec = _spec(
+        _application("Gx", 16777238, "5"),
+        _application("Gxx", 16777266, "5.6", section="5a.1"),
+        _command("5.6.2"),
+        _command("5a.6.2"),
+    )
+
+    (finding,) = linter.lint(spec)
+
+    assert finding.rule == "application-overlap"
+    assert finding.section == "5.6.2"
+    assert "Gx (16777238, clause 5.1), Gxx (16777266, clause 5a.1)" in finding.message
+
+
+def test_a_header_disagreeing_with_its_application_is_an_error():
+    spec = _spec(
+        _application("Gx", 16777238, "5"),
+        _command("5.6.2", 16777238),
+        _command("5.6.3", 16777266),
+    )
+
+    (finding,) = linter.lint(spec)
+
+    assert finding.rule == "application-header-mismatch"
+    assert finding.section == "5.6.3"
+    assert "prints application 16777266" in finding.message
+
+
 def _flagged_table(label, *rows, encrypt=True):
     columns = (
         ast.AvpColumn.NAME,

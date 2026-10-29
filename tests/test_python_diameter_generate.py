@@ -167,46 +167,23 @@ def test_an_externally_defined_enumeration_names_its_source(package):
     assert "# Values: OMNA WSP Content Type Numbers [210] (TS32.299 clause" in avps
 
 
-# The modules whose documents print no application id in their command
-# headers; README.md lists the same.
-_WITHOUT_APPLICATION_ID = [
-    "rfc4004",
-    "rfc4005",
-    "rfc4006",
-    "rfc4072",
-    "rfc5778",
-    "rfc6733_5",
-    "rfc6733_8",
-    "rfc6733_9",
-    "rfc7155",
-    "rfc8506",
-    "ts29_154_5",
-    "ts29_154_a_6",
-    "ts29_212_5",
-    "ts29_212_5a",
-    "ts29_212_5b",
-    "ts29_212_5c",
-    "ts29_212_e_6",
-    "ts29_214",
-    "ts29_215_5",
-    "ts29_215_a_7",
-    "ts29_215_a_8",
-    "ts29_217",
-    "ts29_219",
-    "ts29_343",
-    "ts29_368",
-    "ts29_468",
-    "ts32_299",
-]
-
-
-def test_documents_without_header_application_ids_generate_none(package):
+def test_only_commands_no_document_gives_an_id_generate_none(package):
+    """RFC 6733's RAR, STR and ASR carry the using application's id (clause
+    2.5); every other module's document states one, in a header or in an
+    application block."""
     without = sorted(
         path.stem
         for path in package.glob("*.py")
         if "APPLICATION_ID: int | None = None\n" in path.read_text(encoding="utf-8")
     )
-    assert without == _WITHOUT_APPLICATION_ID
+    assert without == ["rfc6733_8"]
+    gx = (package / "ts29_212_5.py").read_text(encoding="utf-8")
+    assert "APPLICATION_ID: int | None = 16777238\n" in gx
+    assert (
+        "The command headers print no application id; clause 5.1 states Gx's."
+    ) in gx
+    ro = (package / "ts32_299_4.py").read_text(encoding="utf-8")
+    assert "APPLICATION_ID: int | None = 4\n" in ro
 
 
 def test_a_directory_it_did_not_write_is_refused(generator, tmp_path):

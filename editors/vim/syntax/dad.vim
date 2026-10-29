@@ -66,7 +66,7 @@ syn match dadRange "\d\+-\d\+" contained
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue
 syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
 syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadNumber,dadLink,dadComment
-syn match dadTypeValue "\%(Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\)$" contained
+syn match dadTypeValue "\%(Application\|Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\)$" contained
 syn match dadLink "https\?://\S\+" contained
 
 " Free-text directives get one uniform value color — no point picking the

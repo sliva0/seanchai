@@ -19,3 +19,9 @@ section = "6.6.4"
 reason = "the XAR ABNF (clause 6.6.4) closes an optional member with a brace; the PXR ABNF prints the same member as '*[ Banned-User-Target ]'"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 6.1.3 states it: 'The Diameter application identifier assigned to the PC2 interface application in the present release is 16777350.' (its NOTE's Release 12 id 16777337 is not read)"
+first_version = "18.0.0"
+last_version = "18.0.0"

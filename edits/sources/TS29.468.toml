@@ -1,0 +1,5 @@
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 6.1.3 states it: 'The Diameter application identifier assigned to the MB2-C interface application is 16777335.'"
+first_version = "18.0.0"
+last_version = "18.0.0"

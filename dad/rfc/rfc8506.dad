@@ -4,6 +4,14 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc8506.txt
 
 
+; Type: Application ;; inserted: (RFC8506.py#application-id)
+; Name: Diameter Credit Control
+; Section: 12.1
+; Page: 97
+; Application-ID: 4
+; Scope: 3
+
+
 ; Type: Message
 ; Name: Credit-Control-Request, CCR
 ; Section: 3.1

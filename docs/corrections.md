@@ -58,7 +58,7 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   `table_row(name, table=)` (label narrows repeated rows), `reused_row(name, section=)`,
   `enum_value(avp, name, value=)`, `avp_rule(parent, name, occurrence=)`
   (parent may be a whole `definition` selector), `avp_table(label)`,
-  `reused_avps(label)`, `header()`.
+  `reused_avps(label)`, `application(name)`, `header()`.
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, counted from 1, for a body that prints a
   rule twice identically: TS 29.229 clause 6.1.10 prints RTA's
@@ -88,7 +88,13 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   table omits). A `reused_avps(label)` matching no block, where an AVP table
   carries that label, creates the table's re-used block right after it:
   TS 32.299 table 7.1.0.1 tabulates IETF AVPs without naming an origin per
-  row, and its corrections give each name its RFC.
+  row, and its corrections give each name its RFC. Into `header()`,
+  `Insert` adds an `Application` block, after the file's others (`after`
+  must be None), expecting no block of that name: the RFCs state their
+  application ids in wordings no two share (RFC 4006 in its IANA
+  considerations, RFC 6733 per command group in clauses 2.5 and 9.3), and TS
+  32.299 only through its Acct- and Auth-Application-Id AVP clauses (7.1.5,
+  7.1.6), so their blocks are inserted citing the clause.
 - **`Supply(id, target=definition(name), expect=<the ; Values: text>, values=(...), reason)`**:
   fills the value list of an enumerated AVP whose clause names another
   document for its values and prints none. It expects the section's
@@ -121,16 +127,17 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 ```
 
 A correction to a definition is cited on its header rule, whichever field
-it changed. The file header and a table have no such line, so a correction
-to one of their fields is cited on the directive line that field prints —
-`; Bases: RFC6733, RFC4005 ;; corrected: (RFC4006.py#bases-nasreq)`, or
-`; Table:` for a table label — and on the block's first line when it
-removes that line.
+it changed. The file header, a table and an application block have no such
+line, so a correction to one of their fields is cited on the directive line
+that field prints —
+`; Bases: RFC6733, RFC4005 ;; corrected: (RFC4006.py#bases-nasreq)`,
+`; Table:` for a table label, `; Application-ID:` for an application's id —
+and on the block's first line when it removes that line.
 
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
-inserted row is marked `;; inserted:`, and every value a `Supply` adds
-`;; supplied:`. Notes are `;;` comments, so an
+inserted row is marked `;; inserted:`, an inserted application block on its
+`; Type:` line, and every value a `Supply` adds `;; supplied:`. Notes are `;;` comments, so an
 annotated file parses to exactly the corrected tree, and they are placed by
 the rules a hand-written comment follows ([dad-format.md](dad-format.md#comments)):
 `seanchai format` keeps every note where it is, and a corrected file is

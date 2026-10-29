@@ -156,6 +156,21 @@ def _table(
     return lines
 
 
+def _format_application(
+    application: ast.Application, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    return [
+        *_directives(application, application.name, path, notes),
+        *notes.line(
+            f"; Application-ID: {application.application_id}",
+            (*path, "application_id"),
+        ),
+        *notes.line(f"; Scope: {', '.join(application.scope)}", (*path, "scope")),
+        # No line states the block as a whole, so its own path is its end.
+        *notes.standing_at(path),
+    ]
+
+
 def _format_message(
     message: ast.Message, path: ast.TreePath, notes: Comments
 ) -> list[str]:
@@ -301,6 +316,7 @@ def _format_reused(
 # would otherwise be written out as a plain `Message`, silently dropping
 # whatever it added, and `.dad` output has to be exact.
 _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
+    ast.Application: _format_application,
     ast.Message: _format_message,
     ast.GroupedAvp: _format_grouped,
     ast.EnumeratedAvp: _format_enumerated,

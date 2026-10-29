@@ -5,6 +5,14 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129400_129499/129468/18.00.00_60/ts_129468v180000p.pdf
 
 
+; Type: Application
+; Name: MB2-C
+; Section: 6.1.3
+; Page: 18
+; Application-ID: 16777335
+; Scope: 6
+
+
 ; Type: Message
 ; Name: GA-Request, GAR
 ; Section: 6.6.2

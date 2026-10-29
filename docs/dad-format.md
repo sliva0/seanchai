@@ -35,6 +35,7 @@ each starting with `; Type:`.
 
 | `; Type:`        | Holds                                                            |
 |------------------|------------------------------------------------------------------|
+| `Application`    | an application id the document states in prose, with its scope  |
 | `Message`        | a command-code ABNF rule with its Diameter header                |
 | `Grouped AVP`    | `Name ::= < AVP header: code vendor-id >` plus its body          |
 | `Enumerated AVP` | the header rule plus values and reserved ranges, or their source |
@@ -60,6 +61,11 @@ each starting with `; Type:`.
   RFC 6733 itself; a document building on more (RFC 4072 on NASREQ, TS
   29.215's S9 on all of 29.212's Gx and Gxx AVPs) gets its entries from a
   `bases` correction.
+- **An application id stated in prose is a statement of its own.** TS
+  29.212 prints its Gx commands with bare `272, REQ, PXY` headers and says
+  in clause 5.1 that Gx's id is 16777238. An `Application` block records
+  that, citing clause 5.1, and scopes it to the commands of clause 5; the
+  headers stay as printed, so a header still says only what it says.
 - **`; bold` stays inline**, mirroring the source, where bold marks AVPs the
   specification defines or modifies.
 - **A table declares its own columns.** `; Columns:` states which columns the

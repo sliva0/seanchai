@@ -683,6 +683,92 @@ def test_a_supply_and_a_correction_of_the_same_section_both_apply():
     assert (enumerated.code, enumerated.values) == (1601, _SUPPLIED)
 
 
+def _application(name, application_id, scope=("6",), section="2.4"):
+    return ast.Application(
+        name=name,
+        source=ast.SourceRef(section=section),
+        application_id=application_id,
+        scope=scope,
+    )
+
+
+def _insert_application(node, after=None):
+    return corrections.Insert(
+        id=next(_IDS), into=corrections.header(), node=node, after=after, reason="t"
+    )
+
+
+def test_applications_inserted_into_the_file_lead_it_in_declaration_order():
+    first = _insert_application(_application("First", 1, ("6.1",)))
+    second = _insert_application(_application("Second", 2, ("6.2",)))
+
+    corrected, results = corrections.apply(_spec(), [first, second])
+
+    assert [type(s).__name__ for s in corrected.sections[:3]] == [
+        "Application",
+        "Application",
+        "Message",
+    ]
+    assert [
+        s.name for s in corrected.sections[:2] if isinstance(s, ast.Application)
+    ] == ["First", "Second"]
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    noted = [line for line in text.splitlines() if ";;" in line]
+    assert noted == [
+        f"; Type: Application ;; inserted: ({first.id})",
+        f"; Type: Application ;; inserted: ({second.id})",
+    ]
+    assert parser.parse_with_comments(text) == (corrected, corrections.notes(results))
+
+
+def test_an_application_insert_follows_the_files_own_and_fails_on_its_name():
+    spec = _spec()
+    spec = spec.model_copy(
+        update={"sections": (_application("Own", 1), *spec.sections)}
+    )
+
+    corrected, _ = corrections.apply(
+        spec, [_insert_application(_application("Inserted", 2))]
+    )
+
+    assert [
+        s.name for s in corrected.sections[:2] if isinstance(s, ast.Application)
+    ] == ["Own", "Inserted"]
+    with pytest.raises(corrections.CorrectionError, match="'Own' is already present"):
+        corrections.apply(spec, [_insert_application(_application("Own", 3))])
+
+
+@pytest.mark.parametrize(
+    ("node", "after", "message"),
+    [
+        (_application("Placed", 1), "Own", "after must be None"),
+        (ast.ReusedAvpRow(name="X", origin="RFC6733"), None, "only an Application"),
+    ],
+    ids=["after", "not-an-application"],
+)
+def test_an_insert_into_the_file_takes_an_application_and_no_after(
+    node, after, message
+):
+    with pytest.raises(corrections.CorrectionError, match=message):
+        corrections.apply(_spec(), [_insert_application(node, after)])
+
+
+def test_an_application_field_correction_is_cited_on_its_directive_line():
+    spec = _spec()
+    spec = spec.model_copy(
+        update={"sections": (_application("Own", 1), *spec.sections)}
+    )
+    correction = _correction(
+        corrections.application("Own"), "application_id", 1, 16777238
+    )
+
+    corrected, results = corrections.apply(spec, [correction])
+
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    (noted,) = [line for line in text.splitlines() if ";;" in line]
+    assert noted == f"; Application-ID: 16777238 ;; corrected: ({correction.id})"
+
+
 def _repeated_session_id(spec: ast.Specification) -> ast.Specification:
     """TS 29.229 clause 6.1.10's RTA shape: one rule printed twice."""
     message = _message(spec)
@@ -854,6 +940,9 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     for correction in declared:
         if isinstance(correction, corrections.Insert):
             (table,) = correction.into.find(spec)
+            if isinstance(table, ast.Specification):
+                assert correction.node in table.sections
+                continue
             assert isinstance(table, ast.AvpTable | ast.ReusedAvps)
             assert correction.node in table.rows
             continue
@@ -972,6 +1061,7 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     inserted_rows = set()
     for correction in inserted:
         assert isinstance(correction.node, ast.ReusedAvpRow)
+        assert isinstance(correction.into, corrections.reused_avps)
         inserted_rows.add(
             (correction.into.label, correction.node.name, correction.node.origin)
         )

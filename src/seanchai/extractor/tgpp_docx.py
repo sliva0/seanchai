@@ -612,6 +612,49 @@ def _extract_messages(
     return messages
 
 
+# Behind `prose-application-ids`: a 3GPP document stating the application id
+# its command headers omit. Two wordings, each used by several documents.
+_APPLICATION_ID_RES = (
+    # TS 29.212 clause 5.1, and 29.154, 29.214, 29.215, 29.217 likewise:
+    # "... and the Application-ID for the Gx Application in the present
+    # release is 16777238." 29.212's Sd and St (5b.1, 5c.1) open a sentence
+    # with it and drop "in the present release".
+    re.compile(
+        r"[Tt]he Application-ID for the (?P<name>\S+) [Aa]pplication"
+        r"(?: in the present release)? is (?P<id>\d+)\b"
+    ),
+    # TS 29.219 clause 5.1.5, and 29.343, 29.368, 29.468 likewise: "The
+    # Diameter application identifier assigned to the Sy interface
+    # application is 16777302."
+    re.compile(
+        r"^The Diameter application identifier assigned to the (?P<name>\S+)"
+        r" interface application(?: in the present release)? is (?P<id>\d+)\."
+    ),
+)
+
+
+def _stated_applications(
+    section: _Section, quirks: sources.Quirks
+) -> list[ast.Application]:
+    """The applications a clause states the ids of, each scoped to the
+    interface clause the statement sits in: Gx's clause 5.1 speaks for the
+    commands of clause 5, S9a's A.7.1 for those of A.7."""
+    found = []
+    for paragraph in section.paragraphs:
+        for pattern in _APPLICATION_ID_RES:
+            if match := pattern.search(paragraph.text):
+                quirks.fire("prose-application-ids")
+                found.append(
+                    ast.Application(
+                        name=match["name"],
+                        source=ast.SourceRef(section=section.number),
+                        application_id=int(match["id"]),
+                        scope=(ast.interface_clause(section.number),),
+                    )
+                )
+    return found
+
+
 def _extract_grouped(
     section: _Section,
     header: re.Match,
@@ -1343,6 +1386,7 @@ class _Collected:
     """
 
     messages: list[ast.Message] = field(default_factory=list)
+    applications: list[ast.Application] = field(default_factory=list)
     grouped: list[ast.GroupedAvp] = field(default_factory=list)
     # Sections that read like an enumerated AVP, with the name from the
     # heading. They cannot become definitions until the AVP table is known —
@@ -1364,6 +1408,7 @@ class _Resolved:
     pairs: list[tuple[ast.AvpTable, _ReusedTable]]
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
     independent_reused: list[_ReusedTable] = field(default_factory=list)
+    applications: list[ast.Application] = field(default_factory=list)
 
 
 def _collect(
@@ -1377,6 +1422,8 @@ def _collect(
     collected = _Collected()
     references = _references(sections) if quirks.enabled("refer-type-cells") else {}
     for section in sections:
+        if quirks.enabled("prose-application-ids"):
+            collected.applications.extend(_stated_applications(section, quirks))
         if title := _COMMAND_TITLE_RE.match(section.title):
             collected.messages.extend(
                 _extract_messages(section, title, warnings, quirks)
@@ -1507,6 +1554,7 @@ def _resolve(
                 pairs=[],
                 definitions=[],
                 independent_reused=collected.reused_tables,
+                applications=collected.applications,
             )
         raise ExtractionError("no AVP table found")
     # A document with several definition sets (29.336's S6m/S6n and S6t,
@@ -1621,6 +1669,7 @@ def _resolve(
         pairs=pairs,
         definitions=[*collected.grouped, *enumerated],
         independent_reused=collected.reused_tables if independent else [],
+        applications=collected.applications,
     )
 
 
@@ -1646,9 +1695,10 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp]) -> int:
 
 
 def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
-    """File order: messages, then each definition set's AVP table followed by
-    its re-used table, then every definition in document order."""
-    sections: list[ast.Section] = [*resolved.messages]
+    """File order: applications, then messages, then each definition set's
+    AVP table followed by its re-used table, then every definition in
+    document order."""
+    sections: list[ast.Section] = [*resolved.applications, *resolved.messages]
     for avp_table, reused in resolved.pairs:
         sections.append(avp_table)
         if reused.rows:
@@ -1730,6 +1780,13 @@ QUIRKS: dict[str, str] = {
     "value-first-enums": (
         "read 'n Label' enumerated values, the label ending at the first"
         " colon and the rest of the line its description (TS 32.299)"
+    ),
+    "prose-application-ids": (
+        "read 'the Application-ID for the Gx Application ... is n' and 'The"
+        " Diameter application identifier assigned to the Sy interface"
+        " application is n' into an application block scoped to the"
+        " statement's interface clause (TS 29.212 clause 5.1, TS 29.219"
+        " clause 5.1.5)"
     ),
     "external-enum-values": (
         "read where an enumerated clause says its values are defined ('The"

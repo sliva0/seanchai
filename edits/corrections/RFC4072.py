@@ -1,6 +1,7 @@
 """Corrections for RFC 4072 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, avp_rule, header
+from seanchai.dad import ast
+from seanchai.dad.corrections import Correction, Insert, avp_rule, header
 
 CORRECTIONS = [
     *(
@@ -27,6 +28,26 @@ CORRECTIONS = [
             "Framed- and NAS- families, Service-Type, Tunneling) without a re-used "
             "table; RFC 4072 is the EAP application of NASREQ and its normative "
             "references cite RFC 4005 for them"
+        ),
+    ),
+]
+
+# Application ids the command headers omit and the prose states.
+CORRECTIONS += [
+    Insert(
+        id="application-id",
+        into=header(),
+        node=ast.Application(
+            name="Diameter EAP",
+            source=ast.SourceRef(section="2.1", page=3),
+            application_id=5,
+            scope=("3",),
+        ),
+        after=None,
+        reason=(
+            "clause 2.1 advertises 'the Diameter EAP Application ID value of "
+            "5', and the IANA considerations (clause 7) allocate it; the "
+            "DER/DEA headers print none"
         ),
     ),
 ]

@@ -218,28 +218,25 @@ class Application:
 
     The wire tells applications apart by the header's application id, but
     documents share one between interfaces (TS 29.273's SWa, STa and SWd
-    all use 16777250) or print none (TS 29.212 defines its Gx, Gxx, Sd and
-    St commands with bare `272, REQ, PXY` headers), so the clause a command
-    sits under is the other half of the key. A 3GPP document gives each
-    interface its own top-level clause (29.212's 5, 5a, 5b, 5c) or annex
-    clause (29.215's A.7 and A.8).
+    all use 16777250) or print none in their headers (TS 29.212 defines its
+    Gx, Gxx, Sd and St commands with bare `272, REQ, PXY` headers and states
+    each id in prose), so the clause a command sits under is the other half
+    of the key. A 3GPP document gives each interface its own top-level
+    clause (29.212's 5, 5a, 5b, 5c) or annex clause (29.215's A.7 and A.8).
     """
 
     reference: str
-    # None when the document's headers print none; the application is then
-    # stated in prose the corpus does not record.
+    # The header's id, or for commands whose headers print none, the id an
+    # application block in scope states; None when neither says.
     application_id: int | None
     # "5a", or "A.7" for an annex: the leading clause component, with the
     # next one for an annex, whose letter alone spans several interfaces.
     clause: str
     messages: tuple[Message, ...]
-
-
-def _interface_clause(section: str) -> str:
-    """The clause that scopes one interface's commands: `5a` of `5a.6.2`,
-    `A.7` of `A.7.6.2`."""
-    parts = section.split(".")
-    return ".".join(parts[:2]) if parts[0].isalpha() else parts[0]
+    # The application block that states `application_id`, when one does:
+    # its name for the application ("Gx") and the clause stating the id.
+    name: str | None = None
+    stated_in: str | None = None
 
 
 def _stated(flag_rules: ast.AvpFlagRules) -> bool:
@@ -405,10 +402,11 @@ class _View:
     tabled: dict[str, list[ast.AvpTableRow]]
     reused: dict[str, str]
     messages: list[ast.Message]
+    applications: list[ast.Application]
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
-        view = cls(entry, {}, {}, {}, [])
+        view = cls(entry, {}, {}, {}, [], [])
         for section in entry.spec.sections:
             if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
                 view.defined.setdefault(section.name, section)
@@ -420,6 +418,8 @@ class _View:
                     view.reused.setdefault(row.name, row.origin)
             elif isinstance(section, ast.Message):
                 view.messages.append(section)
+            elif isinstance(section, ast.Application):
+                view.applications.append(section)
         return view
 
 
@@ -501,17 +501,42 @@ class Model:
         """`reference`'s commands, grouped by application id and the clause
         they sit under, in file order.
 
+        A command whose header prints no id takes the one an application
+        block in scope states (the first, where blocks overlap): TS 29.212's
+        clause 5.1 gives the Gx commands 16777238, and RFC 5778's two blocks
+        split its clause 5 between 7 and 8. A header that prints an id keeps
+        it; the linter reports one that disagrees with its block.
+
         One group can still define a command twice: TS 29.273 prints the
         STa Session-Termination-Request in clauses 5.2.2.2.3 and 5.2.2.4.1,
         once per procedure. Which copy a consumer keeps is its business.
         """
+        view = self._view(reference)
         groups: dict[tuple[int | None, str], list[Message]] = {}
+        stating: dict[tuple[int | None, str], ast.Application] = {}
         for message in self.messages(reference):
-            key = (message.application_id, _interface_clause(message.section))
+            block = next(
+                (each for each in view.applications if each.covers(message.section)),
+                None,
+            )
+            application_id = message.application_id
+            if application_id is None and block is not None:
+                application_id = block.application_id
+            key = (application_id, ast.interface_clause(message.section))
             groups.setdefault(key, []).append(message)
+            if block is not None and block.application_id == application_id:
+                stating.setdefault(key, block)
         return tuple(
-            Application(reference, application_id, clause, tuple(messages))
+            Application(
+                reference,
+                application_id,
+                clause,
+                tuple(messages),
+                name=None if block is None else block.name,
+                stated_in=None if block is None else block.source.section,
+            )
             for (application_id, clause), messages in groups.items()
+            for block in [stating.get((application_id, clause))]
         )
 
     def avps(self, reference: str) -> tuple[Avp, ...]:

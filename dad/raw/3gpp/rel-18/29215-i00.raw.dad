@@ -5,6 +5,28 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129215/18.00.00_60/ts_129215v180000p.pdf
 
 
+; Type: Application
+; Name: S9
+; Section: 5.1
+; Page: 38
+; Application-ID: 16777267
+; Scope: 5
+
+
+; Type: Application
+; Name: S9a
+; Section: A.7.1
+; Application-ID: 16777319
+; Scope: A.7
+
+
+; Type: Application
+; Name: S9a*
+; Section: A.8.1
+; Application-ID: 16777320
+; Scope: A.8
+
+
 ; Type: Message
 ; Name: CC-Request, CCR
 ; Section: 5.5.2

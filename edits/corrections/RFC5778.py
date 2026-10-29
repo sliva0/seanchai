@@ -1,6 +1,7 @@
 """Corrections for RFC 5778 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, avp_rule, header
+from seanchai.dad import ast
+from seanchai.dad.corrections import Correction, Insert, avp_rule, header
 
 CORRECTIONS = [
     Correction(
@@ -45,6 +46,42 @@ CORRECTIONS = [
             "NAS- and Station-Id AVPs, RFC 4072's EAP- AVPs, RFC 5447's MIP6- AVPs "
             "and RFC 5777's QoS-Resources without a re-used table; its mixed "
             "application tables cite those documents by name"
+        ),
+    ),
+]
+
+# Application ids the command headers omit and the prose states.
+CORRECTIONS += [
+    Insert(
+        id="application-id-mip6i",
+        into=header(),
+        node=ast.Application(
+            name="Diameter Mobile IPv6 IKE (MIP6I)",
+            source=ast.SourceRef(section="3", page=6),
+            application_id=7,
+            scope=("5.1",),
+        ),
+        after=None,
+        reason=(
+            "clause 3 defines MIP6I as 7, used with IKEv2, and clause 5.1.1 "
+            "sets the DER's Application-ID to 'the Diameter Mobile IPv6 IKE "
+            "Application ID (value of 7)'; the headers print none"
+        ),
+    ),
+    Insert(
+        id="application-id-mip6a",
+        into=header(),
+        node=ast.Application(
+            name="Diameter Mobile IPv6 Auth (MIP6A)",
+            source=ast.SourceRef(section="3", page=6),
+            application_id=8,
+            scope=("5.2",),
+        ),
+        after=None,
+        reason=(
+            "clause 3 defines MIP6A as 8, used with the Mobile IPv6 "
+            "Authentication Protocol, whose commands clause 5.2 defines; the "
+            "MIR/MIA headers print none"
         ),
     ),
 ]

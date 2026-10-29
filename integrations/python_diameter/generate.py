@@ -733,6 +733,15 @@ def render_unit(unit: Unit) -> str:
             f"{unit.name} commands, clause {application.clause}, application"
             f" {application.application_id}."
         )
+    stated = ""
+    if application.stated_in is not None and all(
+        message.application_id is None for message in application.messages
+    ):
+        # The id is the document's statement in prose, not any header's.
+        stated = (
+            "The command headers print no application id; clause"
+            f" {application.stated_in} states {application.name}'s."
+        )
     class_lines: list[str] = []
     imports = {"ProtocolMessage"}
     uses_datetime = False
@@ -806,7 +815,10 @@ def render_unit(unit: Unit) -> str:
                 imports.add("Rule")
             body.append(f"    avp_rules = {render_tuple(items, 4)}")
             class_lines += body
-    lines = [MARKER, f'"""{heading}', "", f"Generated from {unit.title}.", '"""', ""]
+    lines = [MARKER, f'"""{heading}', ""]
+    if stated:
+        lines += [*textwrap.wrap(stated, 79), ""]
+    lines += [f"Generated from {unit.title}.", '"""', ""]
     lines.append("from __future__ import annotations")
     lines.append("")
     if uses_datetime:
@@ -848,6 +860,8 @@ def render_init(units: list[Unit], sources: list[str]) -> str:
             if application.application_id is None
             else f"application {application.application_id}"
         )
+        if application.name is not None:
+            what += f" ({application.name})"
         lines.append(
             f"- `{unit.module}`: {unit.name} clause {application.clause}, {what}"
         )

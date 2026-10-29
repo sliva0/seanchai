@@ -3,6 +3,22 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc6733.txt
 
 
+; Type: Application ;; inserted: (RFC6733.py#application-id-common)
+; Name: Diameter common message
+; Section: 2.5
+; Page: 25
+; Application-ID: 0
+; Scope: 5
+
+
+; Type: Application ;; inserted: (RFC6733.py#application-id-accounting)
+; Name: Diameter base accounting
+; Section: 9.3
+; Page: 124
+; Application-ID: 3
+; Scope: 9
+
+
 ; Type: Message
 ; Name: Capabilities-Exchange-Request, CER
 ; Section: 5.3.1

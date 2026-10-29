@@ -1,7 +1,7 @@
 """Corrections for RFC 4004 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, avp_rule, table_row
+from seanchai.dad.corrections import Correction, Insert, avp_rule, header, table_row
 
 CORRECTIONS = [
     Correction(
@@ -38,5 +38,25 @@ CORRECTIONS = [
         replace=ast.DataType.GROUPED,
         reason="table 7 says DiameterIdentity, but clause 7.11 explicitly"
         " defines MIP-Home-Agent-Host as Grouped and prints its grouped ABNF",
+    ),
+]
+
+# Application ids the command headers omit and the prose states.
+CORRECTIONS += [
+    Insert(
+        id="application-id",
+        into=header(),
+        node=ast.Application(
+            name="Diameter Mobile IPv4",
+            source=ast.SourceRef(section="4", page=20),
+            application_id=2,
+            scope=("5",),
+        ),
+        after=None,
+        reason=(
+            "clause 4: 'The value of two (2) MUST be used as the Application-Id "
+            "in all AMR/AMA and HAR/HAA commands'; the command headers print "
+            "none"
+        ),
     ),
 ]

@@ -31,3 +31,9 @@ name = "worded-enum-values"
 reason = "Clause 6.4.6 labels Action-Type's values in words ('Device Trigger Request (1)', 'MSISDN-less MO-SMS Delivery (5)'); the other enumerated clauses print identifiers."
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 6.1.3 states it: 'The Diameter application identifier assigned to the Tsp interface application is 16777309.'"
+first_version = "18.0.0"
+last_version = "18.0.0"

@@ -4,6 +4,14 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc7155.txt
 
 
+; Type: Application ;; inserted: (RFC7155.py#application-id)
+; Name: NASREQ
+; Section: 1.5
+; Page: 8
+; Application-ID: 1
+; Scope: 3
+
+
 ; Type: Message
 ; Name: AA-Request, AAR
 ; Section: 3.1

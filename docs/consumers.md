@@ -27,10 +27,16 @@ built.holes("TS32.299")  # what the corpus cannot complete
 ```
 
 The query set is thin on purpose: each query was written because a real
-consumer needed it. `applications` groups a document's commands by header
+consumer needed it. `applications` groups a document's commands by
 application id and the clause they sit under, since documents share one id
-between interfaces (TS 29.273's SWa, STa and SWd) or print none (TS 29.212's
-Gx, Gxx, Sd and St, split by clauses 5, 5a, 5b and 5c). A `Member` carries
+between interfaces (TS 29.273's SWa, STa and SWd). The id is the header's,
+or, for commands whose headers print none, the one an `Application` block
+in scope states: TS 29.212's Gx, Gxx, Sd and St take theirs from clauses
+5.1, 5a.1, 5b.1 and 5c.1 and split by clauses 5, 5a, 5b and 5c, and TS
+32.299's Rf (3) and Ro (4) split its clause 6. `Application.name` and
+`stated_in` name the block and its clause; both are None for an id the
+headers print. RFC 6733's RAR, STR and ASR carry the using application's id
+(clause 2.5), so their group's id stays None. A `Member` carries
 the ABNF rule as spelled and `min_occurs`/`max_occurs` as RFC 6733 §3.2
 reads them: `[ X ]` may be absent, `* { X }` appears at least once. RFC
 6733 §3.2 forbids a non-zero explicit minimum on an optional rule, so the
@@ -142,7 +148,8 @@ bracket, now input-patched) and the `Load` rows that became the linter's
 classes, one per command per application and interface with that document's
 own members, over one deduplicated module of AVP definitions, meant to sit
 beside the library's merged classes rather than replace them. Holes stay in
-the rule tables with their reason; a document whose command headers print no
-application id gets `None`. The
+the rule tables with their reason; an application's id is the model's, so
+a module whose document states it only in prose gets it, and only RFC
+6733's clause 8 gets `None`. The
 [README](../integrations/python_diameter/README.md) covers the layout, where
-it departs from the library's conventions, and which documents lack ids.
+it departs from the library's conventions, and where the ids come from.
