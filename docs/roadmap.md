@@ -34,9 +34,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Linter and corpus
 
-- **F. An occurrence-narrowing `Delete`.** TS 29.229's RTA prints
-  `< Session-Id >` twice (clause 6.1.10); `Delete` treats two matches as
-  ambiguity, so the corpus carries the duplicate.
 - **G. Stage the Wireshark merge requests** listed in
   [oracle.md](oracle.md#what-still-reports).
 - **H. Auto-expand advisory version ranges** when a newer or older version

@@ -252,7 +252,7 @@
 ; Page: 18
 <Registration-Termination-Answer> ::= < Diameter Header: 304, PXY, 16777216 >
         < Session-Id >
-        < Session-Id >
+;; deleted: AVP rule 'Session-Id' (occurrence 2) (TS29.229.py#rta-session-id-repeated)
         [ DRMP ]
         { Vendor-Specific-Application-Id }
         [ Result-Code ]

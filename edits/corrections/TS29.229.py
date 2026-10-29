@@ -5,6 +5,7 @@ from seanchai.dad.corrections import (
     Correction,
     Delete,
     Insert,
+    avp_rule,
     reused_avps,
     reused_row,
     table_row,
@@ -77,6 +78,15 @@ CORRECTIONS = [
         reason="clause 6.3.55 says the Framed-Interface-Id AVP 'is defined in"
         " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
         " 6.3.0.1 omits it",
+        versions="18.1.0",
+    ),
+    Delete(
+        id="rta-session-id-repeated",
+        target=avp_rule("Registration-Termination-Answer", "Session-Id", occurrence=2),
+        expect=ast.AvpRule(name="Session-Id", presence=ast.Presence.FIXED),
+        reason="clause 6.1.10 prints RTA's '< Session-Id >' on two consecutive"
+        " lines; RFC 6733 section 8.8 says a message MUST include only one"
+        " Session-Id, and every other Cx command prints it once",
         versions="18.1.0",
     ),
 ]

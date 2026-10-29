@@ -526,6 +526,65 @@ def test_deleting_and_correcting_the_same_node_is_refused():
             corrections.apply(spec, ordering)
 
 
+def _repeated_session_id(spec: ast.Specification) -> ast.Specification:
+    """TS 29.229 clause 6.1.10's RTA shape: one rule printed twice."""
+    message = _message(spec)
+    repeated = message.model_copy(
+        update={
+            "avps": (
+                *message.avps,
+                ast.AvpRule(name="Session-Id", presence=ast.Presence.FIXED),
+            )
+        }
+    )
+    return spec.model_copy(update={"sections": (repeated, *spec.sections[1:])})
+
+
+_SESSION_ID = ast.AvpRule(name="Session-Id", presence=ast.Presence.FIXED)
+
+
+def test_an_occurrence_deletes_one_copy_of_a_repeated_rule():
+    target = corrections.avp_rule("Example-Request", "Session-Id", occurrence=2)
+
+    corrected, results = corrections.apply(
+        _repeated_session_id(_spec()), [_delete(target, _SESSION_ID)]
+    )
+
+    assert _message(corrected).avps == (_SESSION_ID,)
+    assert results[0].node == (
+        "AVP rule 'Session-Id' (occurrence 2) in definition 'Example-Request'"
+    )
+
+
+def test_without_an_occurrence_a_repeated_rule_is_ambiguous():
+    with pytest.raises(corrections.CorrectionError, match="2 matches, narrow"):
+        corrections.apply(
+            _repeated_session_id(_spec()),
+            [
+                _delete(
+                    corrections.avp_rule("Example-Request", "Session-Id"), _SESSION_ID
+                )
+            ],
+        )
+
+
+@pytest.mark.parametrize("occurrence", [1, 2], ids=["first", "second"])
+def test_an_occurrence_fails_once_the_rule_is_no_longer_repeated(occurrence):
+    """Upstream dropping the copy is the event the declaration exists to
+    report, so even the first occurrence stops matching."""
+    target = corrections.avp_rule(
+        "Example-Request", "Session-Id", occurrence=occurrence
+    )
+
+    with pytest.raises(corrections.CorrectionError, match="no match"):
+        corrections.apply(_spec(), [_delete(target, _SESSION_ID)])
+
+
+def test_an_occurrence_counts_from_one():
+    with pytest.raises(corrections.CorrectionError, match="counts from 1"):
+        corrections.avp_rule("Example-Request", "Session-Id", occurrence=0)
+
+
 def test_deleting_the_same_node_twice_is_refused():
     doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
     delete = _delete(corrections.reused_row("Feature-Id"), doomed)

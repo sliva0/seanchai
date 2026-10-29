@@ -53,9 +53,16 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   from "fixed upstream". The layer consumes raw files only.
 - **Selectors address identity, never position**: `definition(name)`,
   `table_row(name, table=)` (label narrows repeated rows), `reused_row(name, section=)`,
-  `enum_value(avp, name, value=)`, `avp_rule(parent, name)` (parent may be a
-  whole `definition` selector), `avp_table(label)`, `reused_avps(label)`,
-  `header()`.
+  `enum_value(avp, name, value=)`, `avp_rule(parent, name, occurrence=)`
+  (parent may be a whole `definition` selector), `avp_table(label)`,
+  `reused_avps(label)`, `header()`.
+- **Position only where identity runs out.** `occurrence=n` picks the n-th
+  rule of one name in one body, counted from 1, for a body that prints a
+  rule twice identically: TS 29.229 clause 6.1.10 prints RTA's
+  `< Session-Id >` on two lines, and `Delete(target=avp_rule("Registration-Termination-Answer",
+  "Session-Id", occurrence=2), expect=...)` removes the copy. It matches only
+  while the name still repeats, so the declaration fails once upstream drops
+  the copy; `expect` is still the whole node.
 - **One field of one node.** Replacing a structural field such as `avps` is
   rejected. Ancestor and descendant corrections in one set are both applied;
   two corrections to the same field are rejected; replacing a value with

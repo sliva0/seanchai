@@ -285,10 +285,24 @@ class avp_rule(Selector):
     a rule inside one of two same-named commands is reachable by the same
     discriminator that reaches the command itself. A bare string is shorthand
     for `definition(name)`.
+
+    `occurrence` picks the n-th (from 1) rule of that name in one body, for
+    the one case identity cannot narrow: a body printing the same rule twice.
+    TS 29.229 clause 6.1.10 prints RTA's `< Session-Id >` on two consecutive
+    lines, identical in every field. It matches only while the body still
+    repeats the name, so the declaration fails once upstream drops the copy.
     """
 
     parent: str | definition
     name: str
+    occurrence: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.occurrence is not None and self.occurrence < 1:
+            raise CorrectionError(
+                f"AVP rule {self.name!r}: occurrence counts from 1,"
+                f" not {self.occurrence}"
+            )
 
     @property
     def _parent(self) -> definition:
@@ -299,11 +313,24 @@ class avp_rule(Selector):
     def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
         for section in self._parent.find(spec):
             # An enumerated AVP matches `definition` but has no ABNF body.
-            if isinstance(section, ast.Message | ast.GroupedAvp):
-                yield from (rule for rule in section.avps if rule.name == self.name)
+            if not isinstance(section, ast.Message | ast.GroupedAvp):
+                continue
+            rules = [rule for rule in section.avps if rule.name == self.name]
+            if self.occurrence is None:
+                yield from rules
+            elif len(rules) > 1 and self.occurrence <= len(rules):
+                yield rules[self.occurrence - 1]
 
     def describe(self) -> str:
-        return f"AVP rule {self.name!r} in {self._parent.describe()}"
+        return f"{self.describe_in_place()} in {self._parent.describe()}"
+
+    def describe_in_place(self) -> str:
+        # The note stands inside the parent's own body, so the block already
+        # names the parent.
+        return f"AVP rule {self.name!r}{self._occurrence_suffix()}"
+
+    def _occurrence_suffix(self) -> str:
+        return "" if self.occurrence is None else f" (occurrence {self.occurrence})"
 
 
 @dataclass(frozen=True)

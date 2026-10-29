@@ -69,5 +69,4 @@ decides what becomes an upstream issue.
 That run was also the corpus's sharpest review: it found an ABNF line the
 extractor silently dropped (29.229's RTR prints `RTR-Flags ]` with no opening
 bracket, now input-patched) and the `Load` rows that became the linter's
-`row-without-code` rule. 29.229's RTA printing `< Session-Id >` twice still
-stands; see the roadmap.
+`row-without-code` rule.
