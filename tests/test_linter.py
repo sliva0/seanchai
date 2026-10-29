@@ -163,10 +163,11 @@ _RAW_ERRORS = {
         "duplicate-identity",
     ],
     "29338-i20.raw.dad": ["duplicate-identity"],
-    # Grouped headers printing no vendor while the AVP tables set V (both);
+    # Grouped headers printing no vendor while the AVP tables set V (all three);
     # 29.468's clauses 6.4.28 and 6.4.31 print FEC-Request's code, and table
     # 6.4.1-1 types clause 6.4.35's Enumerated AVP Unsigned32.
     "29343-i00.raw.dad": ["vendor-id-mismatch"] * 3,
+    "29368-i00.raw.dad": ["vendor-id-mismatch"] * 3,
     "29468-i00.raw.dad": ["duplicate-identity"]
     + ["table-definition-mismatch"] * 3
     + ["vendor-id-mismatch"] * 12,
@@ -557,7 +558,7 @@ _STANDING_CORPUS_NOTES = {
     },
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
-        "origin-not-in-corpus": ["TS29.154, TS29.217, TS29.368"],
+        "origin-not-in-corpus": ["TS29.154, TS29.217"],
         "reused-body-differs": [
             "Additional-Serving-Node",
             "MME-Location-Information",
@@ -568,7 +569,6 @@ _STANDING_CORPUS_NOTES = {
         "reused-reprint": ["EPS-Location-Information", "User-Identifier"],
     },
     "29337-i00.dad": {
-        "origin-not-in-corpus": ["TS29.368"],
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
     },
     "29338-i20.dad": {
@@ -583,7 +583,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["V2X-Subscription-Data"],
     },
     "32299-i00.dad": {
-        "origin-not-in-corpus": ["TS29.140, TS29.368"],
+        "origin-not-in-corpus": ["TS29.140"],
         "reused-body-differs": [
             "Multiple-Services-Credit-Control",
             "Used-Service-Unit",

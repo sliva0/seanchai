@@ -1,7 +1,13 @@
 """Corrections for 3GPP TS 29.337 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Insert, reused_avps
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    avp_rule,
+    reused_avps,
+    reused_row,
+)
 
 # The T4-specific Serving-Node and Additional-Serving-Node bodies (clauses
 # 6.3.3, 6.3.4) use six member AVPs that table 6.3.1/2 does not list, though
@@ -43,4 +49,29 @@ CORRECTIONS = [
         ),
         strict=True,
     )
+]
+
+CORRECTIONS += [
+    Correction(
+        id="application-port-identifier-row-name",
+        target=reused_row("SMS-Application-Port-ID"),
+        field="name",
+        expect="SMS-Application-Port-ID",
+        replace="Application-Port-Identifier",
+        reason="table 6.3.1/2 cites TS 29.368 for SMS-Application-Port-ID;"
+        " TS 29.368 defines the AVP as Application-Port-Identifier (clause"
+        " 6.4.11, code 3010)",
+        versions="18.0.0",
+    ),
+    Correction(
+        id="dtr-application-port-identifier",
+        target=avp_rule("Device-Trigger-Request", "SMS-Application-Port-ID"),
+        field="name",
+        expect="SMS-Application-Port-ID",
+        replace="Application-Port-Identifier",
+        reason="the DTR ABNF (clause 6.2.3) uses table 6.3.1/2's"
+        " SMS-Application-Port-ID; TS 29.368 clause 6.4.11 defines the AVP as"
+        " Application-Port-Identifier",
+        versions="18.0.0",
+    ),
 ]

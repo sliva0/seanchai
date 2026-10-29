@@ -98,6 +98,11 @@ _ABNF_MEMBER_RE = re.compile(
     r"\s*(?:\d*\*\d*)?\s*[<{\[]\s*[A-Za-z0-9][A-Za-z0-9_-]*\s*[>}\]]"
 )
 _ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
+# TS 29.368 clause 6.4.6 labels values in words, "Device Trigger Request (1)";
+# read behind `worded-enum-values`, since prose can end in "(n)" too.
+_WORDED_ENUM_VALUE_RE = re.compile(
+    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*(?: [A-Za-z0-9_-]+)+)\s*\((?P<value>\d+)\)$"
+)
 _RESERVED_NOTE_RE = re.compile(
     r"[Vv]alues? (?P<first>\d+)(?:\s*(?:-|to)\s*(?P<last>\d+))?\s+(?:is|are) reserved"
 )
@@ -323,11 +328,17 @@ def _sections(
                 # those tables keep their grid positions (and the positional
                 # column mapping that relies on them).
                 physical = len(set(spans)) == 1 and any(span > 1 for span in spans[0])
+                # TS 29.273 table 8.2.3.0/2 changes the grid spans of its
+                # Comments and M-bit columns partway through; TS 29.368 table
+                # 6.5.1.1 puts a 4-twip sliver column between the name and
+                # Reference columns, which the header merges into Reference
+                # and every data row into the name. Both have one physical
+                # cell per label.
                 if (
                     quirks is not None
                     and quirks.enabled("physical-reused-columns")
                     and "Reference" in rows[0].cells
-                    and len({len(row.cells) for row in rows}) > 1
+                    and len(set(spans)) > 1
                 ):
                     quirks.fire("physical-reused-columns")
                     physical = True
@@ -652,6 +663,11 @@ def _extract_enumerated(
         if not text:
             continue
         if match := _ENUM_VALUE_RE.fullmatch(text):
+            values.append(ast.EnumValue(name=match["name"], value=int(match["value"])))
+        elif quirks.enabled("worded-enum-values") and (
+            match := _WORDED_ENUM_VALUE_RE.fullmatch(text)
+        ):
+            quirks.fire("worded-enum-values")
             values.append(ast.EnumValue(name=match["name"], value=int(match["value"])))
         elif paragraph.style == "NO" and (match := _RESERVED_NOTE_RE.search(text)):
             first = int(match["first"])
@@ -1016,6 +1032,16 @@ def _extract_avp_table(
                     note = note or code_note
                 case ast.AvpColumn.SECTION:
                     section_value = _clause_cell(text, quirks) or None
+                    # Checked here so a typo (TS 29.368 table 6.4.1.1's
+                    # "6. 4.2") names its row, not a pydantic pattern.
+                    if section_value is not None and not _SECTION_REF_RE.match(
+                        section_value
+                    ):
+                        raise ExtractionError(
+                            f"{section_number}: AVP table row {name!r} has"
+                            f" clause cell {section_value!r}, which is not a"
+                            " clause number"
+                        )
                 case ast.AvpColumn.TYPE:
                     type_value = text or None
                     if match := _REFER_RE.fullmatch(text):
@@ -1648,6 +1674,10 @@ QUIRKS: dict[str, str] = {
     "value-first-enums": (
         "read 'n Label' enumerated values, the label ending at the first"
         " colon and the rest of the line its description (TS 32.299)"
+    ),
+    "worded-enum-values": (
+        "read 'Label In Words (n)' enumerated values, keeping the label's"
+        " spaces (TS 29.368 clause 6.4.6)"
     ),
     "body-clause-headings": (
         "read a body paragraph 'n.n.n Name AVP' as a clause heading (TS 32.299"

@@ -25,7 +25,7 @@
         [ Reference-Number ]
         [ Validity-Time ]
         [ Priority-Indication ]
-        [ SMS-Application-Port-ID ]
+        [ Application-Port-Identifier ] ;; corrected: (TS29.337.py#dtr-application-port-identifier)
         [ Old-Reference-Number ]
         [ Trigger-Action ]
       * [ Supported-Features ]
@@ -115,37 +115,37 @@ MTC-Error-Diagnostic              3203   6.3.7   Unsigned32   V     -     -     
 ; Section: 6.3
 ; Table: 6.3.1/2
 ; Page: 19
-; Columns: Name           From       M-bit
-User-Identifier           TS29.336   -
-SM-RP-SMEA                TS29.338   -
-Payload                   TS29.368   -
-Serving-Node              TS29.173   -
-Additional-Serving-Node   TS29.173   -
-MME-Name                  TS29.173   - ;; inserted: (TS29.337.py#missing-row-mme-name)
-MME-Realm                 TS29.173   - ;; inserted: (TS29.337.py#missing-row-mme-realm)
-MSC-Number                TS29.173   - ;; inserted: (TS29.337.py#missing-row-msc-number)
-SGSN-Name                 TS29.173   - ;; inserted: (TS29.337.py#missing-row-sgsn-name)
-SGSN-Realm                TS29.173   - ;; inserted: (TS29.337.py#missing-row-sgsn-realm)
-SGSN-Number               TS29.272   - ;; inserted: (TS29.337.py#missing-row-sgsn-number)
-Reference-Number          TS29.368   -
-Old-Reference-Number      TS29.368   -
-Validity-Time             RFC4006    -
-Priority-Indication       TS29.368   -
-SMS-Application-Port-ID   TS29.368   -
-Supported-Features        TS29.229   -
-Feature-List-ID           TS29.229   -
-Feature-List              TS29.229   -
-IP-SM-GW-Name             TS29.336   -
-IP-SM-GW-Realm            TS29.336   -
-IP-SM-GW-Number           TS29.336   -
-MME-Number-for-MT-SMS     TS29.272   -
-DRMP                      RFC7944    MUST-NOT
-SMSF-3GPP-Number          TS29.338   -
-SMSF-Non-3GPP-Number      TS29.338   -
-SMSF-3GPP-Name            TS29.338   -
-SMSF-Non-3GPP-Name        TS29.338   -
-SMSF-3GPP-Realm           TS29.338   -
-SMSF-Non-3GPP-Realm       TS29.338   -
+; Columns: Name               From       M-bit
+User-Identifier               TS29.336   -
+SM-RP-SMEA                    TS29.338   -
+Payload                       TS29.368   -
+Serving-Node                  TS29.173   -
+Additional-Serving-Node       TS29.173   -
+MME-Name                      TS29.173   - ;; inserted: (TS29.337.py#missing-row-mme-name)
+MME-Realm                     TS29.173   - ;; inserted: (TS29.337.py#missing-row-mme-realm)
+MSC-Number                    TS29.173   - ;; inserted: (TS29.337.py#missing-row-msc-number)
+SGSN-Name                     TS29.173   - ;; inserted: (TS29.337.py#missing-row-sgsn-name)
+SGSN-Realm                    TS29.173   - ;; inserted: (TS29.337.py#missing-row-sgsn-realm)
+SGSN-Number                   TS29.272   - ;; inserted: (TS29.337.py#missing-row-sgsn-number)
+Reference-Number              TS29.368   -
+Old-Reference-Number          TS29.368   -
+Validity-Time                 RFC4006    -
+Priority-Indication           TS29.368   -
+Application-Port-Identifier   TS29.368   - ;; corrected: (TS29.337.py#application-port-identifier-row-name)
+Supported-Features            TS29.229   -
+Feature-List-ID               TS29.229   -
+Feature-List                  TS29.229   -
+IP-SM-GW-Name                 TS29.336   -
+IP-SM-GW-Realm                TS29.336   -
+IP-SM-GW-Number               TS29.336   -
+MME-Number-for-MT-SMS         TS29.272   -
+DRMP                          RFC7944    MUST-NOT
+SMSF-3GPP-Number              TS29.338   -
+SMSF-Non-3GPP-Number          TS29.338   -
+SMSF-3GPP-Name                TS29.338   -
+SMSF-Non-3GPP-Name            TS29.338   -
+SMSF-3GPP-Realm               TS29.338   -
+SMSF-Non-3GPP-Realm           TS29.338   -
 
 
 ; Type: Enumerated AVP

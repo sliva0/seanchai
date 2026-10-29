@@ -90,7 +90,9 @@ The declared vocabulary, with the document that forced each:
   and re-used rows, no local AVPs); and five from TS 29.273:
   `command-reference-only` (clauses holding only a pointer),
   `procedure-commands` (8.2.2.1–4 name commands in their intros),
-  `physical-reused-columns` (table 8.2.3.0/2 changes grid spans),
+  `physical-reused-columns` (table 8.2.3.0/2 changes grid spans; also
+  29.368 table 6.5.1.1, whose header and data rows merge a sliver grid
+  column into different labels),
   `independent-avp-tables` (no one-to-one table pairing),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
   kept, no enum code derived from them). TS 32.299 declares ten:
@@ -101,7 +103,8 @@ The declared vocabulary, with the document that forced each:
   `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
   `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
   `value-first-enums`, `body-clause-headings` (7.2.135C) and
-  `dotted-flags`.
+  `dotted-flags`. TS 29.368 adds `worded-enum-values` (6.4.6's `Device
+  Trigger Request (1)`).
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`); `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
@@ -131,7 +134,8 @@ Walks paragraphs and tables in document order under numbered headings:
   `ValueName (n)` items → `EnumeratedAvp`. Values are classified by content,
   not paragraph style (29.229 §6.3.34 inverts the B1/B2 convention).
   "Value n is reserved" notes become reserved ranges, inserted by value.
-  Behind `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are
+  Behind `worded-enum-values`, a label of several words keeps its spaces
+  (TS 29.368's `Device Trigger Request (1)`). Behind `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are
   read too: the label ends at the first colon and the rest of the line is the
   value's description (`2 High priority: Lower than Pre-emptive priority`,
   7.2.132); `11 .. 99 Reserved for …` is a reserved range, and a range
@@ -197,7 +201,8 @@ Conventions worth knowing:
   "Applicable Reference Points", the Code/Type columns 29.172 prints in its
   re-used table, and 32.299's per-command "Used in" columns (ACR, ACA, CCR,
   CCA) — see the roadmap.
-- A flags cell holding a lone `-` is empty (TS 32.299).
+- A flags cell holding a lone `-` is empty (TS 32.299). A clause cell that
+  is no clause number fails naming its row (29.368's `6. 4.2`, patched).
 - The cover title is read from the cover table or a plain paragraph (29.061,
   29.212, 29.214). `attach_pages` reads the PDF's own cover and refuses a
   different specification or version, warns when the outline covers only

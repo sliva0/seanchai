@@ -1,0 +1,33 @@
+# Source declarations for 3GPP TS 29.368 (Tsp interface protocol between the
+# MTC-IWF and the SCS). Applied to normalized source text before parsing; see
+# src/seanchai/extractor/sources.py for the format.
+
+[[patch]]
+find = "6. 4.2"
+replace = "6.4.2"
+exact = true
+section = "6.4.1"
+reason = "table 6.4.1.1 prints Device-Action's clause with a stray space; the AVP is defined in clause 6.4.2"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Feature-Supported-In-Final-Target AVP"
+replace = "Feature-Supported-In-Final-Target"
+exact = true
+section = "6.4.1"
+reason = "table 6.4.1.1 prints the ' AVP' suffix in one name cell; clause 6.4.13 defines Feature-Supported-In-Final-Target"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "physical-reused-columns"
+reason = "Table 6.5.1.1 has a 4-twip sliver grid column after the name column; the header merges it into Reference, every data row into the name, so only the physical cells line up with the labels."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "Clause 6.4.6 labels Action-Type's values in words ('Device Trigger Request (1)', 'MSISDN-less MO-SMS Delivery (5)'); the other enumerated clauses print identifiers."
+first_version = "18.0.0"
+last_version = "18.0.0"

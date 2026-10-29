@@ -76,6 +76,24 @@ def test_extract_rejects_spaces_in_avp_table_names(tmp_path, synthetic_spec_docx
         tgpp_docx.extract(malformed)
 
 
+def test_extract_rejects_an_avp_table_clause_cell_that_is_no_clause_number(
+    tmp_path, synthetic_spec_docx
+):
+    malformed = tmp_path / "clause-cell.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[1].cell(2, 2).text = "6. 3.1"
+    document.save(malformed)
+
+    with pytest.raises(
+        tgpp_docx.ExtractionError,
+        match=re.escape(
+            "6.3: AVP table row 'Example-Group' has clause cell '6. 3.1',"
+            " which is not a clause number"
+        ),
+    ):
+        tgpp_docx.extract(malformed)
+
+
 def test_extract_rejects_spaces_in_grouped_avp_rule_names(
     tmp_path, synthetic_spec_docx
 ):
