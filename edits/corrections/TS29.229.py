@@ -49,4 +49,34 @@ CORRECTIONS = [
         " is Digest-Qop; the table uniquely capitalizes its final letter",
         versions="18.1.0",
     ),
+    Insert(
+        id="framed-ip-address-reused",
+        into=reused_avps("6.3.0.1"),
+        node=ast.ReusedAvpRow(name="Framed-IP-Address", origin="RFC4005"),
+        after=None,
+        reason="clause 6.3.53 says the Framed-IP-Address AVP 'is defined in"
+        " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
+        " 6.3.0.1 omits it",
+        versions="18.1.0",
+    ),
+    Insert(
+        id="framed-ipv6-prefix-reused",
+        into=reused_avps("6.3.0.1"),
+        node=ast.ReusedAvpRow(name="Framed-IPv6-Prefix", origin="RFC4005"),
+        after=None,
+        reason="clause 6.3.54 says the Framed-IPv6-Prefix AVP 'is defined in"
+        " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
+        " 6.3.0.1 omits it",
+        versions="18.1.0",
+    ),
+    Insert(
+        id="framed-interface-id-reused",
+        into=reused_avps("6.3.0.1"),
+        node=ast.ReusedAvpRow(name="Framed-Interface-Id", origin="RFC4005"),
+        after=None,
+        reason="clause 6.3.55 says the Framed-Interface-Id AVP 'is defined in"
+        " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
+        " 6.3.0.1 omits it",
+        versions="18.1.0",
+    ),
 ]

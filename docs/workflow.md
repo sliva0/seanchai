@@ -23,8 +23,12 @@ and fails on anything but `unchanged`.
 
 1. `uv run seanchai regenerate --add TS29.305`. The document must be in the
    downloader's catalog (`src/seanchai/downloader/specs.toml`) and readable
-   by the extractor; a `.doc` archive or a shape it rejects fails with the
-   reason.
+   by the extractor; a shape it rejects fails with the reason. A `.doc`
+   archive is read through a LibreOffice conversion placed at
+   `specifications/converted/<SpecRef>/<stem>.docx` (`soffice --headless
+   --convert-to 'docx:Office Open XML Text'`); without one it is not in the
+   manifest as far as `regenerate` is concerned. TS 32.299 is read this
+   way.
 2. Lint the raw file: `uv run seanchai lint dad/raw/... --corpus dad`. Every
    error is either a source typo (input patch), a reading the extractor should
    not make undeclared (quirk), or wrong data (correction); see the table

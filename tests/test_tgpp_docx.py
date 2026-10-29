@@ -258,12 +258,20 @@ def _row(name, code):
     )
 
 
-def _enum_section(number, name, document):
-    """A section shaped like an enumerated-AVP clause. The paragraphs carry a
-    real docx paragraph because that is what bold inspection reads."""
+def _enum_section(number, name):
+    """A section shaped like an enumerated-AVP clause."""
     paragraphs = [
         tgpp_docx._Para(
-            text=text, style=style, source=document.add_paragraph(text, style=None)
+            text=text,
+            style=style,
+            lines=[
+                tgpp_docx._Line(
+                    text=text,
+                    style=style,
+                    bold=frozenset({False}),
+                    struck=frozenset({False}),
+                )
+            ],
         )
         for text, style in [
             (f"The {name} AVP is of type Enumerated.", ""),
@@ -273,15 +281,10 @@ def _enum_section(number, name, document):
     return tgpp_docx._Section(number=number, title=name, paragraphs=paragraphs)
 
 
-@pytest.fixture
-def document():
-    return docx.Document()
-
-
-def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table(document):
+def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table():
     collected = tgpp_docx._Collected(
         grouped=[_grouped()],
-        pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
+        pending_enums=[(_enum_section("6.3.2", "Mode"), "Mode")],
         avp_tables=[_avp_table(_row("Other", 1))],
     )
 
@@ -325,12 +328,12 @@ def test_resolve_rejects_one_name_with_two_codes_across_avp_tables():
         tgpp_docx._resolve(collected)
 
 
-def test_resolve_refuses_conflicting_enumerated_vendor_ids(document):
+def test_resolve_refuses_conflicting_enumerated_vendor_ids():
     # Two different explicit vendor ids cannot both be this document's
     # implicit vendor for enumerated definitions.
     collected = tgpp_docx._Collected(
         grouped=[_grouped(10415), _grouped(vendor_id=13019)],
-        pending_enums=[(_enum_section("6.3.2", "Mode", document), "Mode")],
+        pending_enums=[(_enum_section("6.3.2", "Mode"), "Mode")],
         avp_tables=[_avp_table(_row("Mode", 11))],
     )
 
@@ -421,3 +424,28 @@ def test_message_only_quirk_cannot_accept_a_document_without_commands():
     quirks = Quirks([Quirk(name="message-only", reason="rejection case")], None)
     with pytest.raises(tgpp_docx.ExtractionError, match="no AVP table found"):
         tgpp_docx._resolve(tgpp_docx._Collected(), quirks)
+
+
+def _abnf_lines(*texts):
+    return [
+        tgpp_docx._Line(
+            text=text,
+            style="PL",
+            bold=frozenset({False}) if text else frozenset(),
+            struck=frozenset({False}) if text else frozenset(),
+        )
+        for text in texts
+    ]
+
+
+def test_a_blank_line_before_a_line_of_several_members_does_not_end_the_body():
+    # The corpus has blank lines inside bodies (TS 32.299's CCA) and lines of
+    # several members (its 7.2.154I), but never one right after the other.
+    lines = _abnf_lines("[ First ]", "", "[ Second ] [ Third ]", "[ Fourth ]", "Prose")
+
+    rules, end = tgpp_docx._abnf_body(
+        lines, 0, "Example", tgpp_docx.sources.Quirks([], None), []
+    )
+
+    assert [rule.name for rule in rules] == ["First", "Second", "Third", "Fourth"]
+    assert end == 4

@@ -115,7 +115,7 @@
         [ OC-OLR ]
       * [ Load ]
       * [ Supported-Features ]
-        [ PDN-Connection-Charging-Id ]
+        [ PDN-Connection-Charging-ID ] ;; corrected: (TS29.128.py#pdn-connection-charging-id-member-case)
         [ Extended-PCO ]
         [ APN-Rate-Control-Status ]
         [ Failed-AVP ]
@@ -284,7 +284,7 @@ Location-Information-Configuration    TS29.336
 Reachability-Information              TS29.336
 EPS-Location-Information              TS29.272
 Service-Selection                     RFC5778
-PDN-Connection-Charging-Id            TS32.299
+PDN-Connection-Charging-ID            TS32.299 ;; corrected: (TS29.128.py#pdn-connection-charging-id-reused-case)
 Maximum-Retransmission-Time           TS29.338
 Requested-Retransmission-Time         TS29.338
 Maximum-UE-Availability-Time          TS29.338

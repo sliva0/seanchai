@@ -20,10 +20,13 @@ letter is not reused. What exists is described in the per-module documents.
   (29.272's `Alert-Reason`): the extractor records the fact instead of an
   empty body, and `Supply` fills a whole hand-notated section, marked
   `;; supplied:` on every line, expecting the marker and no values. Waits
-  for a consumer that needs those values.
+  for a consumer that needs those values. TS 32.299 adds two empty ones
+  today: Type-Number (clause 7.2.238, values from the OMNA WSP registry) and
+  API-Network-Service-Node (7.2.20eA, values from TS 23.682).
 - **D. Model the machine-readable source columns when a consumer asks.**
   29.212's "Acc. Type" and "Applicability", 29.214's "Applicability",
-  29.061's "Applicable Reference Points", 29.172's re-used-table Code/Type.
+  29.061's "Applicable Reference Points", 29.172's re-used-table Code/Type,
+  32.299's per-command "Used in" marks (ACR, ACA, CCR, CCA).
   Three axes under four labels; modelling means deciding what each means.
   The extractor warns about them today, which is the right amount of
   machinery until then.
@@ -53,16 +56,14 @@ letter is not reused. What exists is described in the per-module documents.
   definitions would lose those distinctions. Deferred until the format can
   preserve the registry.
 - **K. Legacy `.doc` specifications**: 29.201, 29.215, 29.217, 29.219,
-  29.343, 29.368, 29.468, 32.299 and TR 29.909 ship as binary `.doc`. 32.299
-  is an unresolved origin in nine files, 29.368 in two. A headless LibreOffice
-  conversion of 32.299 (`--convert-to 'docx:Office Open XML Text'`) keeps all
-  107 ABNF rule names, but the extractor stops at table 7.1.0.1: an "AVP
-  Name" header, merged grid columns, `refer [n]` type cells, "message"
-  headings and `:: =` rules, all printed in the PDF too. Check which of those
-  are the document and which are the conversion before declaring readings;
-  then decide whether the downloader converts. Trial files live outside the
-  manifest under `specifications/converted/`. TS 29.154 is cited and not in
-  the catalog at all.
+  29.343, 29.368, 29.468 and TR 29.909 ship as binary `.doc`; 29.368 is an
+  unresolved origin in three files. `regenerate` reads a hand-made LibreOffice
+  conversion under `specifications/converted/<SpecRef>/` (TS 32.299 is read
+  that way); the downloader should make it. Two 32.299 statements the format
+  cannot hold yet: `refer [223]` cites OMA-DDS-Charging_Data, which a From
+  cell cannot name (13 rows stay untyped), and SM-Service-Type's "100 .. 199
+  Vendor specific SM services" allocates a range. TS 29.140 and 29.154 are
+  cited and not in the catalog at all.
 - **L. Downloader: read the 3GPP archive throughout**, not only for the
   PDF-matched fallback, so every old version stays available for raw-vs-raw
   diffs; derive the ETSI `Link:` URL (needs the edition suffix, probably by

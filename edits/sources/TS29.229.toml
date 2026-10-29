@@ -12,3 +12,9 @@ first_version = "18.1.0"
 [[quirk]]
 name = "note-defined-in-rfc"
 reason = "the AVP table's note reads 'The value of this attribute is defined in IETF RFC ...' for a code-less row, which is where that AVP's re-used origin comes from"
+
+[[quirk]]
+name = "spaced-rule-operator"
+reason = "Clauses 6.3.13, 6.3.16, 6.3.19 and 6.3.64 spell the grouped rule operator ':: =' (and 'AVP Header :'); unread, those four definitions were silently missing."
+first_version = "18.1.0"
+last_version = "18.1.0"

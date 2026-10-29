@@ -399,6 +399,90 @@ def test_an_insert_fails_when_its_after_row_is_missing():
         corrections.apply(_spec(), [_insert(inserted, after="Missing-AVP")])
 
 
+def _reused_insert(label, name):
+    return corrections.Insert(
+        id=next(_IDS),
+        into=corrections.reused_avps(label),
+        node=ast.ReusedAvpRow(name=name, origin="RFC6733"),
+        after=None,
+        reason="test",
+    )
+
+
+def test_a_reused_insert_without_its_block_or_table_matches_nothing():
+    # Only an AVP table of the same label can give a new block its place.
+    with pytest.raises(corrections.CorrectionError, match="no match"):
+        corrections.apply(_spec(), [_reused_insert("9.9.9", "Session-Id")])
+
+
+def test_a_created_reused_block_rejects_a_row_inserted_twice():
+    twice = [_reused_insert("6.3.1", "Session-Id")] * 2
+
+    with pytest.raises(corrections.CorrectionError, match="already present"):
+        corrections.apply(_spec(), twice)
+
+
+def test_a_created_reused_block_follows_its_table_and_carries_the_rows():
+    corrected, results = corrections.apply(
+        _spec(), [_reused_insert("6.3.1", "Session-Id")]
+    )
+
+    block = corrected.sections[2]
+    assert isinstance(block, ast.ReusedAvps)
+    assert block.table == "6.3.1"
+    assert block.source == _table(_spec()).source
+    assert [row.name for row in block.rows] == ["Session-Id"]
+    assert results[0].node_id == id(block.rows[0])
+
+
+def test_a_delete_cannot_reach_a_block_only_an_insert_creates():
+    # Selectors see the input: a block that exists only once the corrections
+    # run cannot be deleted by them, before or after the insert that makes it.
+    block = ast.ReusedAvps(
+        table="6.3.1",
+        source=ast.SourceRef(section="6.3"),
+        columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+        rows=(ast.ReusedAvpRow(name="Session-Id", origin="RFC6733"),),
+    )
+    delete = _delete(corrections.reused_avps("6.3.1"), block)
+
+    for order in (
+        [delete, _reused_insert("6.3.1", "Session-Id")],
+        [_reused_insert("6.3.1", "Session-Id"), delete],
+    ):
+        with pytest.raises(corrections.CorrectionError, match="no match"):
+            corrections.apply(_spec(), order)
+
+
+def test_an_inserted_row_cannot_be_deleted_afterwards():
+    inserted = _reused_insert("6.3.1", "Session-Id")
+    delete = _delete(
+        corrections.reused_row("Session-Id"),
+        ast.ReusedAvpRow(name="Session-Id", origin="RFC6733"),
+    )
+
+    with pytest.raises(corrections.CorrectionError, match="no match"):
+        corrections.apply(_spec(), [inserted, delete])
+
+
+def test_an_insert_into_a_table_another_edit_deletes_fails():
+    reused = _with_reused(_spec())
+    (block,) = corrections.reused_avps("6.4").find(reused)
+    edits = [
+        corrections.Insert(
+            id=next(_IDS),
+            into=corrections.reused_avps("6.4"),
+            node=ast.ReusedAvpRow(name="Inserted-AVP", origin="RFC6733"),
+            after=None,
+            reason="test",
+        ),
+        _delete(corrections.reused_avps("6.4"), block),
+    ]
+
+    with pytest.raises(corrections.CorrectionError, match="corrected and deleted"):
+        corrections.apply(reused, edits)
+
+
 def test_a_delete_whose_expect_differs_reports_the_changed_fields():
     with pytest.raises(corrections.CorrectionError, match=r"has changed.*origin"):
         corrections.apply(
@@ -514,13 +598,12 @@ def test_every_corrected_file_already_carries_its_corrections(path):
 
     # A name correction rewrites what every *sibling* correction's selector
     # matches on too: 29.338 fixes the name and the code of one misprinted
-    # AVP-header line, and in the corrected file both live under the new name.
+    # AVP-header line, and 32.299 the name and the origin of one re-used row;
+    # in the corrected file both live under the new name.
     renamed = {
-        (c.target.name, c.target.section): c.replace
+        c.target: c.replace
         for c in declared
-        if isinstance(c, corrections.Correction)
-        and c.field == "name"
-        and isinstance(c.target, corrections.definition)
+        if isinstance(c, corrections.Correction) and c.field == "name"
     }
 
     for correction in declared:
@@ -540,13 +623,8 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             # replacement. 29.172, 29.344 and 29.388 all fix a copied-in rule
             # name this way.
             target = dataclasses.replace(target, name=correction.replace)
-        elif (
-            isinstance(target, corrections.definition)
-            and (target.name, target.section) in renamed
-        ):
-            target = dataclasses.replace(
-                target, name=renamed[(target.name, target.section)]
-            )
+        elif target in renamed:
+            target = dataclasses.replace(target, name=renamed[target])
         matches = list(target.find(spec))
         assert len(matches) == 1, f"{target.describe()} in {path.name}"
         assert getattr(matches[0], correction.field) == correction.replace

@@ -37,6 +37,7 @@ from pathlib import Path
 import docx
 import docx.document
 import docx.table
+import docx.text.hyperlink
 import docx.text.paragraph
 import pydantic
 import pypdf
@@ -51,6 +52,16 @@ _HEADING_RE = re.compile(
 )
 _COMMAND_TITLE_RE = re.compile(
     r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Command$"
+)
+# TS 32.299 clauses 6.2.2-6.4.13: "Accounting-Request message",
+# "Accounting-Answer (ACA) message"; read behind `message-headings`.
+_MESSAGE_TITLE_RE = re.compile(
+    r"^(?P<name>[A-Za-z-]+)(?: \((?P<abbr>[A-Z]{2,5})\))? message$"
+)
+# A clause heading printed in a body style (TS 32.299 clause 7.2.135C), read
+# only behind the `body-clause-headings` quirk.
+_BODY_HEADING_RE = re.compile(
+    r"^(?P<number>\d+(?:\.\d+[A-Za-z]*)+) (?P<title>[A-Za-z0-9][A-Za-z0-9_-]* AVP)$"
 )
 _COMMAND_INTRO_RE = re.compile(
     r"^The (?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) command,"
@@ -68,13 +79,21 @@ _DIAMETER_HEADER_RE = re.compile(
 )
 _AVP_HEADER_RE = re.compile(
     # code/vendor separator varies between specs: "700 10415" and "632, 10415";
-    # rule names can carry spaces for hyphens ("Monitoring Event Report::=")
-    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9 _-]*?)\s*::=\s*<\s*AVP [Hh]eader:\s*(?P<code>\d+)"
+    # rule names can carry spaces for hyphens ("Monitoring Event Report::=");
+    # TS 32.299 brackets some rule names ("<Event-Type>::=", "< Participant-Group >
+    # ::="), as RFC 6733 does for `<Failed-AVP>`; TS 29.229 clause 6.3.13 writes
+    # "AVP Header : 612".
+    r"^(?P<open><\s*)?(?P<name>[A-Za-z0-9][A-Za-z0-9 _-]*?)\s*(?(open)>)"
+    r"\s*::=\s*<\s*AVP [Hh]eader ?:\s*(?P<code>\d+)"
     r"(?:\s*,?\s+(?P<vendor>\d+))?\s*>$"
 )
 _ABNF_LINE_RE = re.compile(
     r"^(?:(?P<min>\d*)\*(?P<max>\d*))?\s*"
     r"(?P<open>[<{\[])\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)\s*(?P<close>[>}\]])$"
+)
+# One member anywhere in a line, for lines holding several.
+_ABNF_MEMBER_RE = re.compile(
+    r"\s*(?:\d*\*\d*)?\s*[<{\[]\s*[A-Za-z0-9][A-Za-z0-9_-]*\s*[>}\]]"
 )
 _ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
 _RESERVED_NOTE_RE = re.compile(
@@ -148,13 +167,31 @@ def _normalize(text: str) -> str:
 
 
 @dataclass
-class _Para:
-    """A body paragraph: normalized+patched text, style name, and the docx
-    paragraph (kept for run-level bold inspection)."""
+class _Line:
+    """One line of a paragraph, split at manual line breaks, with what its
+    runs say about formatting.
+
+    TS 32.299 prints whole ABNF bodies as one paragraph with a line break
+    after every member (clauses 7.1.9, 7.2.124 and dozens more), so ABNF is
+    read line by line, and bold and strikethrough belong to a line rather
+    than to its paragraph."""
 
     text: str
     style: str
-    source: docx.text.paragraph.Paragraph
+    # Bold state of the runs that spell a name: only those are trusted, since
+    # Word bolds brackets and whitespace erratically.
+    bold: frozenset[bool]
+    # Strikethrough state of the same runs.
+    struck: frozenset[bool]
+
+
+@dataclass
+class _Para:
+    """A body paragraph: normalized+patched text, style name, and its lines."""
+
+    text: str
+    style: str
+    lines: list[_Line]
 
 
 @dataclass
@@ -180,19 +217,58 @@ class _Section:
     paragraphs: list[_Para] = field(default_factory=list)
     tables: list[_Table] = field(default_factory=list)
 
+    @property
+    def lines(self) -> list[_Line]:
+        return [line for paragraph in self.paragraphs for line in paragraph.lines]
 
-def _is_bold(paragraph: docx.text.paragraph.Paragraph) -> bool:
+
+def _is_bold(line: _Line) -> bool:
     # Word applies bold erratically to brackets/whitespace runs; only the runs
     # spelling the AVP name itself are trusted (`*{ `=True, `Data-Reference`=None,
     # ` }`=True occurs in real documents for a non-bold AVP).
-    flags = {
-        bool(run.bold)
-        for run in paragraph.runs
-        if any(char.isalnum() for char in run.text)
-    }
-    if len(flags) > 1:
-        raise ExtractionError(f"mixed bold in ABNF line: {paragraph.text!r}")
-    return flags.pop() if flags else False
+    if len(line.bold) > 1:
+        raise ExtractionError(f"mixed bold in ABNF line: {line.text!r}")
+    return next(iter(line.bold), False)
+
+
+def _lines(
+    paragraph: docx.text.paragraph.Paragraph,
+    style: str,
+    patcher: Patcher,
+    section: str | None,
+) -> list[_Line]:
+    """Split a paragraph at its manual line breaks (python-docx renders
+    `<w:br/>` as "\\n"), keeping each line's run formatting. Blank lines
+    inside a multi-line paragraph are dropped; a blank paragraph stays one
+    blank line, which still ends an ABNF body as it always has."""
+    texts: list[list[str]] = [[]]
+    bold: list[set[bool]] = [set()]
+    struck: list[set[bool]] = [set()]
+    for item in paragraph.iter_inner_content():
+        runs = item.runs if isinstance(item, docx.text.hyperlink.Hyperlink) else [item]
+        for run in runs:
+            for index, piece in enumerate(run.text.split("\n")):
+                if index:
+                    texts.append([])
+                    bold.append(set())
+                    struck.append(set())
+                texts[-1].append(piece)
+                if any(char.isalnum() for char in piece):
+                    bold[-1].add(bool(run.bold))
+                    struck[-1].add(bool(run.font.strike or run.font.double_strike))
+    lines = [
+        _Line(
+            # Not recorded: the paragraph's own text already counted.
+            text=patcher.apply(_normalize("".join(text)), section, record=False),
+            style=style,
+            bold=frozenset(flags),
+            struck=frozenset(strike),
+        )
+        for text, flags, strike in zip(texts, bold, struck, strict=True)
+    ]
+    return [line for line in lines if line.text] or [
+        _Line(text="", style=style, bold=frozenset(), struck=frozenset())
+    ]
 
 
 def _sections(
@@ -244,24 +320,41 @@ def _sections(
                 # spanning header merges differently from its data rows, so
                 # those tables keep their grid positions (and the positional
                 # column mapping that relies on them).
-                physical_reused = (
+                physical = len(set(spans)) == 1 and any(span > 1 for span in spans[0])
+                if (
                     quirks is not None
                     and quirks.enabled("physical-reused-columns")
                     and "Reference" in rows[0].cells
                     and len({len(row.cells) for row in rows}) > 1
-                )
-                if physical_reused:
-                    assert quirks is not None
-                    quirks.fire("physical-reused-columns")
-                if physical_reused or (
-                    len(set(spans)) == 1 and any(span > 1 for span in spans[0])
                 ):
+                    quirks.fire("physical-reused-columns")
+                    physical = True
+                # TS 32.299 table 7.2.0.1 spreads eleven columns over a
+                # 42-column grid with eight different span patterns (the PDF
+                # shows the CCR marks of the API-* rows off the grid too), so
+                # only its physical cells line up with the labels. 313 of its
+                # rows also end in an empty one-grid-column sliver the other
+                # rows fold into "Must not"; the header ends in the same
+                # empty sliver, so it is no column.
+                sliver = False
+                if (
+                    quirks is not None
+                    and quirks.enabled("physical-avp-columns")
+                    and any("AVP Flag rules" in cell for cell in rows[0].cells)
+                    and len(set(spans[1:])) > 1
+                ):
+                    quirks.fire("physical-avp-columns")
+                    physical = True
+                    sliver = spans[0][-1] == 1 and rows[0].cells[-1] == ""
+                if physical:
                     for row, row_spans in zip(rows, spans, strict=True):
                         starts = []
                         position = 0
                         for span in row_spans:
                             starts.append(row.cells[position])
                             position += span
+                        if sliver and row_spans[-1] == 1 and starts[-1] == "":
+                            starts.pop()
                         row.cells = starts
                 current.tables.append(_Table(caption=caption, rows=rows))
             caption = None
@@ -278,41 +371,131 @@ def _sections(
                 sections.append(current)
                 continue
         text = patcher.apply(_normalize(item.text), number)
+        # TS 32.299 prints the heading of clause 7.2.135C as a Normal
+        # paragraph inside 7.2.135B; without reading it, PC5-Radio-Technology's
+        # values would land in the Integer32 AVP before it.
+        if (
+            quirks is not None
+            and quirks.enabled("body-clause-headings")
+            and (match := _BODY_HEADING_RE.match(text))
+        ):
+            quirks.fire("body-clause-headings")
+            current = _Section(number=match["number"], title=match["title"])
+            sections.append(current)
+            continue
         if match := _TABLE_CAPTION_RE.match(text):
             caption = match["label"]
         if current is not None:
-            current.paragraphs.append(_Para(text=text, style=style, source=item))
+            lines = _lines(item, style, patcher, number)
+            current.paragraphs.append(_Para(text=text, style=style, lines=lines))
     return sections
 
 
 def _abnf_body(
-    paragraphs: list[_Para], start: int
+    lines: list[_Line],
+    start: int,
+    rule: str,
+    quirks: sources.Quirks,
+    warnings: list[str],
 ) -> tuple[tuple[ast.AvpRule, ...], int]:
     """Parse `[qual] bracket Name bracket` lines starting at `start`."""
     rules = []
     index = start
-    while index < len(paragraphs):
-        paragraph = paragraphs[index]
-        match = _ABNF_LINE_RE.match(paragraph.text)
-        if match is None:
+    while index < len(lines):
+        line = lines[index]
+        if not line.text:
+            # TS 32.299 leaves blank lines between a message header and its
+            # first member (clauses 6.2.2-6.4.5) and inside CCA's body
+            # (6.4.3); a blank line followed by anything else ends the body.
+            following = next((later for later in lines[index:] if later.text), None)
+            if following is None or not _abnf_members(following.text):
+                break
+            index += 1
+            continue
+        matches = _abnf_members(line.text)
+        if not matches:
             break
-        try:
-            rules.append(abnf.avp_rule(match, bold=_is_bold(paragraph.source)))
-        except abnf.AbnfError as error:
-            raise ExtractionError(f"{error} in {paragraph.text!r}") from None
         index += 1
+        if len(matches) > 1 and True in line.struck:
+            raise ExtractionError(f"struck line with several members: {line.text!r}")
+        for match in matches:
+            rules.extend(_abnf_member(match, line, rule, quirks, warnings))
     return tuple(rules), index
 
 
+def _abnf_members(text: str) -> list[re.Match]:
+    """The members one ABNF line holds: normally one, but TS 32.299 clause
+    7.2.154I prints "[ ProSe-Request-Timestamp ] [ PC3-Control-Protocol-Cause ]"
+    on one line (the PDF too). A line counts only when members cover all of
+    it."""
+    if match := _ABNF_LINE_RE.match(text):
+        return [match]
+    pieces = _ABNF_MEMBER_RE.findall(text)
+    if len(pieces) < 2 or "".join(pieces).replace(" ", "") != text.replace(" ", ""):
+        return []
+    found = [_ABNF_LINE_RE.match(piece.strip()) for piece in pieces]
+    return [match for match in found if match is not None]
+
+
+def _abnf_member(
+    match: re.Match,
+    line: _Line,
+    rule: str,
+    quirks: sources.Quirks,
+    warnings: list[str],
+) -> list[ast.AvpRule]:
+    if True in line.struck:
+        if False in line.struck:
+            raise ExtractionError(f"partly struck ABNF line: {line.text!r}")
+        # TS 32.299 clauses 6.2.1.2 and 6.4.1.2 define the strike: "An AVP
+        # in grey strikethrough in the message format ... is not used by
+        # 3GPP". The document's own legend says the member is not part of
+        # its rule, so leaving it out translates the rule rather than
+        # curating it; any other document's strike has no legend and fails.
+        if not quirks.enabled("struck-rules-unused"):
+            raise ExtractionError(
+                f"struck-through ABNF line {line.text!r} in {rule}, which"
+                " this document's source declaration does not read (the"
+                " `struck-rules-unused` quirk)"
+            )
+        quirks.fire("struck-rules-unused")
+        warnings.append(
+            f"{rule}: struck-through member {match['name']} is not used and was dropped"
+        )
+        return []
+    try:
+        return [abnf.avp_rule(match, bold=_is_bold(line))]
+    except abnf.AbnfError as error:
+        raise ExtractionError(f"{error} in {line.text!r}") from None
+
+
+def _rule_text(text: str, quirks: sources.Quirks) -> str:
+    """TS 32.299 spells the rule operator ":: =" in about ninety grouped
+    rules (clause 7.2.0A onwards), TS 29.229 in four (6.3.13, 6.3.16, 6.3.19,
+    6.3.64). A document convention rather than a typo, and per-document like
+    `dotted-flags`, so the reading is declared; undeclared it fails, where it
+    used to drop the definition silently."""
+    if ":: =" not in text:
+        return text
+    if not quirks.enabled("spaced-rule-operator"):
+        raise ExtractionError(
+            f"rule operator spelled ':: =' in {text!r}, which this document's"
+            " source declaration does not read (the `spaced-rule-operator` quirk)"
+        )
+    quirks.fire("spaced-rule-operator")
+    return text.replace(":: =", "::=")
+
+
 def _find_rule_header(
-    section: _Section, pattern: re.Pattern
+    section: _Section, pattern: re.Pattern, quirks: sources.Quirks
 ) -> tuple[re.Match, int] | None:
-    for index, paragraph in enumerate(section.paragraphs):
-        if "::=" in paragraph.text:
-            match = pattern.match(paragraph.text)
+    for index, line in enumerate(section.lines):
+        text = _rule_text(line.text, quirks)
+        if "::=" in text:
+            match = pattern.match(text)
             if match is None:
                 raise ExtractionError(
-                    f"{section.number}: malformed rule header {paragraph.text!r}"
+                    f"{section.number}: malformed rule header {line.text!r}"
                 )
             return match, index + 1
     return None
@@ -323,15 +506,22 @@ def _extract_messages(
     title: re.Match | None,
     warnings: list[str],
     quirks: sources.Quirks,
+    message_heading: bool = False,
 ) -> list[ast.Message]:
     """A command section usually holds one ABNF, but can hold several — the
     same command under different application ids (TS 29.272 defines IDR/DSR/RSR
-    once for S6a and once for S7a in one section)."""
+    once for S6a and once for S7a in one section).
+
+    With `message_heading`, `title` is a "Name message" heading whose rule
+    is spelled with the abbreviation (`<ACR> ::=`, TS 32.299 clauses
+    6.2.2-6.4.5): the long name comes from the heading, as the RFC extractor
+    takes it for RFC 6733's `<CER> ::=`."""
     messages = []
     prose_title = title is None
+    lines = section.lines
     index = 0
-    while index < len(section.paragraphs):
-        text = section.paragraphs[index].text
+    while index < len(lines):
+        text = _rule_text(lines[index].text, quirks)
         index += 1
         if prose_title and (intro := _COMMAND_INTRO_RE.match(text)):
             title = intro
@@ -347,6 +537,19 @@ def _extract_messages(
         if prose_title:
             quirks.fire("procedure-commands")
         rule_name = header["name"].replace(" ", "")
+        if message_heading:
+            quirks.fire("message-headings")
+            if not re.fullmatch(r"[A-Z]{2,5}", rule_name) or (
+                title["abbr"] is not None and title["abbr"] != rule_name
+            ):
+                raise ExtractionError(
+                    f"{section.number}: message heading {title['name']!r} over"
+                    f" rule {rule_name!r}, which is not its abbreviation"
+                )
+            abbreviation = rule_name
+            rule_name = title["name"]
+        else:
+            abbreviation = title["abbr"]
         if rule_name != title["name"]:
             # A real occurrence: TS 29.329 §6.1.8 heading says
             # "Push-Notifications-Answer", the rule "Push-Notification-Answer".
@@ -363,11 +566,11 @@ def _extract_messages(
             warnings.append(
                 f"{section.number}: {rule_name} header omits the application id"
             )
-        avps, index = _abnf_body(section.paragraphs, index)
+        avps, index = _abnf_body(lines, index, rule_name, quirks, warnings)
         messages.append(
             ast.Message(
                 name=rule_name,
-                abbreviation=title["abbr"],
+                abbreviation=abbreviation,
                 source=ast.SourceRef(section=section.number),
                 command_code=command_code,
                 flags=flags,
@@ -397,10 +600,15 @@ def _extract_messages(
 
 
 def _extract_grouped(
-    section: _Section, header: re.Match, body_start: int, name: str
+    section: _Section,
+    header: re.Match,
+    body_start: int,
+    name: str,
+    quirks: sources.Quirks,
+    warnings: list[str],
 ) -> ast.GroupedAvp:
     vendor = header["vendor"]
-    avps, _ = _abnf_body(section.paragraphs, body_start)
+    avps, _ = _abnf_body(section.lines, body_start, name, quirks, warnings)
     return ast.GroupedAvp(
         name=name,
         source=ast.SourceRef(section=section.number),
@@ -411,7 +619,12 @@ def _extract_grouped(
 
 
 def _extract_enumerated(
-    section: _Section, name: str, code: int, vendor_id: int | None
+    section: _Section,
+    name: str,
+    code: int,
+    vendor_id: int | None,
+    quirks: sources.Quirks,
+    warnings: list[str],
 ) -> ast.EnumeratedAvp:
     values: list[ast.EnumValue] = []
     reserved: list[ast.ReservedValues] = []
@@ -428,6 +641,10 @@ def _extract_enumerated(
     # 29.229 §6.3.15 kept "The request is generated in the following cases:"
     # and dropped the cases. `; Section:` points at the clause; a reader who
     # wants the prose reads it there, undamaged.
+    #
+    # The one exception is a description printed on the value's own line
+    # after a colon (TS 32.299 clause 7.2.132, "2 High priority: Lower than
+    # Pre-emptive priority"): that is the document's own one-line gloss.
     for paragraph in section.paragraphs:
         text = paragraph.text
         if not text:
@@ -439,6 +656,33 @@ def _extract_enumerated(
             reserved.append(
                 ast.ReservedValues(first=first, last=int(match["last"] or first))
             )
+        elif quirks.enabled("value-first-enums"):
+            for line in paragraph.lines:
+                if match := _VALUE_RANGE_RE.fullmatch(line.text):
+                    # SM-Service-Type (TS 32.299 clause 7.2.213) closes its
+                    # list with "11 .. 99 Reserved for 3GPP defined SM
+                    # services" and "100 .. 199 Vendor specific SM services".
+                    # The first is a reserved range; the second allocates a
+                    # range rather than naming a value, which `.dad` has no
+                    # construct for, so it is reported instead.
+                    quirks.fire("value-first-enums")
+                    first, last = int(match["first"]), int(match["last"])
+                    if match["label"].startswith("Reserved"):
+                        reserved.append(ast.ReservedValues(first=first, last=last))
+                    else:
+                        warnings.append(
+                            f"{section.number}: value range {first}..{last}"
+                            f" {match['label']!r} names no value and was not"
+                            " recorded"
+                        )
+                elif match := _VALUE_FIRST_RE.fullmatch(line.text):
+                    quirks.fire("value-first-enums")
+                    values.append(_value_first(match, section.number))
+    if not values and not reserved:
+        # TS 32.299's Type-Number (7.2.238) takes its values from an OMNA
+        # registry and API-Network-Service-Node (7.2.20eA) from TS 23.682;
+        # neither prints a list. Kept empty rather than dropped.
+        warnings.append(f"{section.number}: enumerated AVP {name} lists no values")
     merged = sorted(
         [*values, *reserved],
         key=lambda item: item.value if isinstance(item, ast.EnumValue) else item.first,
@@ -450,6 +694,29 @@ def _extract_enumerated(
         vendor_id=vendor_id,
         values=tuple(merged),
     )
+
+
+# TS 32.299 writes its value lists value first, and labels values in words:
+# "0 PS to CS Transfer" (clause 7.2.1B). The label ends at the first colon;
+# what follows is the line's description ("2 High priority: Lower than
+# Pre-emptive priority", clause 7.2.132).
+_VALUE_RANGE_RE = re.compile(r"(?P<first>\d+) ?\.\. ?(?P<last>\d+) (?P<label>.+)")
+_VALUE_FIRST_RE = re.compile(
+    r"(?P<value>\d+) (?P<label>[^:]+?)(?: ?:(?: (?P<description>.*))?)?"
+)
+
+
+def _value_first(match: re.Match, section: str) -> ast.EnumValue:
+    try:
+        return ast.EnumValue(
+            name=match["label"],
+            value=int(match["value"]),
+            description=match["description"] or None,
+        )
+    except pydantic.ValidationError:
+        raise ExtractionError(
+            f"{section}: enum value label {match['label']!r} is not a value name"
+        ) from None
 
 
 def _strip_note_ref(text: str) -> tuple[str, str | None]:
@@ -516,7 +783,9 @@ def _flags_cell(text: str, quirks: sources.Quirks) -> frozenset[ast.AvpFlag]:
     # times and 29.212 seven, so the period is those documents' separator
     # convention — but a convention is per-document, so reading it is the
     # declared `dotted-flags` quirk rather than a global rewrite.
-    if not text:  # an empty table cell
+    # An empty cell, or TS 32.299's dash for one (tables 7.1.0.1, 7.2.0.1):
+    # a lone dash names no flag and cannot be read as anything else.
+    if text in ("", "-"):
         return frozenset()
     if "." in text and " " not in text:
         if not quirks.enabled("dotted-flags"):
@@ -539,6 +808,7 @@ def _flags_cell(text: str, quirks: sources.Quirks) -> frozenset[ast.AvpFlag]:
 # are typographic, not semantic.
 _AVP_TABLE_COLUMNS = {
     "Attribute Name": ast.AvpColumn.NAME,
+    "AVP Name": ast.AvpColumn.NAME,  # TS 32.299 tables 7.1.0.1 and 7.2.0.1
     "AVP Code": ast.AvpColumn.CODE,
     "Clause defined": ast.AvpColumn.SECTION,
     "Section defined": ast.AvpColumn.SECTION,
@@ -592,6 +862,11 @@ def _map_columns[T](
     return tuple(columns), positions
 
 
+# The label a table prints over its name column. A row starting with one is
+# the column-label row.
+_NAME_LABELS = frozenset({"Attribute Name", "AVP Name"})
+
+
 def _walk_table[T](
     table: _Table,
     known: dict[str, T],
@@ -610,11 +885,34 @@ def _walk_table[T](
     positions: list[int] = []
     width = 0
     data_rows: list[list[str]] = []
-    for row in table.rows:
+    stacked = False
+    for index, row in enumerate(table.rows):
         cells = row.cells
         if not cells:
             raise ExtractionError(f"{kind} row with no cells")
-        if cells[0] == "Attribute Name":
+        if stacked:
+            stacked = False
+            continue
+        if cells[0] in _NAME_LABELS:
+            # A two-row header: the upper row groups ("Used in", "AVP Flag
+            # rules"), the lower one labels. TS 32.299 table 7.1.0.1 repeats
+            # "AVP Name" in both rows; table 7.2.0.1 prints it only in the
+            # upper one, leaving the lower row's first cell blank. The lower
+            # row is a label row because it carries known labels, which no
+            # data row does.
+            following = (
+                table.rows[index + 1].cells if index + 1 < len(table.rows) else []
+            )
+            if (
+                following
+                and following[0] in ("", cells[0])
+                and any(
+                    label in known and known[label] != known.get(cells[0])
+                    for label in following[1:]
+                )
+            ):
+                cells = [cells[0], *following[1:]]
+                stacked = True
             columns, positions = _map_columns(cells, known, kind, warnings)
             width = len(cells)
             continue
@@ -636,7 +934,12 @@ def _walk_table[T](
 
 
 def _extract_avp_table(
-    table: _Table, section_number: str, warnings: list[str], quirks: sources.Quirks
+    table: _Table,
+    section_number: str,
+    warnings: list[str],
+    quirks: sources.Quirks,
+    references: dict[str, str] | None = None,
+    own_reference: str = "",
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
     """Column *order* has been identical in every 3GPP specification examined,
     but the set has not: TS 29.273's table has no Encrypt column, TS 29.212's
@@ -646,6 +949,7 @@ def _extract_avp_table(
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
+    referred: list[ast.ReusedAvpRow] = []  # from `refer [n]` type cells
 
     def skip(row: _Row) -> bool:
         cells = row.cells
@@ -693,6 +997,17 @@ def _extract_avp_table(
                     note = name_note or note
                 case ast.AvpColumn.CODE:
                     code, code_note = _strip_note_ref(text)
+                    if code == "*" and name == "AVP":
+                        # TS 32.299 table 7.1.0.1 tabulates the `* [ AVP ]`
+                        # wildcard as a row with code "*": any AVP, so no code.
+                        if not quirks.enabled("wildcard-avp-row"):
+                            raise ExtractionError(
+                                "AVP table row 'AVP' with code '*', which this"
+                                " document's source declaration does not read"
+                                " (the `wildcard-avp-row` quirk)"
+                            )
+                        quirks.fire("wildcard-avp-row")
+                        code = ""
                     if code and not code.isdigit():
                         raise ExtractionError(f"AVP table code cell {code!r}")
                     code_value = int(code) if code else None
@@ -701,6 +1016,28 @@ def _extract_avp_table(
                     section_value = _clause_cell(text, quirks) or None
                 case ast.AvpColumn.TYPE:
                     type_value = text or None
+                    if match := _REFER_RE.fullmatch(text):
+                        type_value = None
+                        origin = _referred_origin(
+                            name, match["number"], references, own_reference, quirks
+                        )
+                        if origin is None:
+                            warnings.append(
+                                f"AVP table row {name!r} is typed by reference"
+                                f" [{match['number']}], which names no document"
+                                " a From cell can cite; kept without a type"
+                            )
+                        else:
+                            referred.append(ast.ReusedAvpRow(name=name, origin=origin))
+                    elif type_value in _TYPE_SHORT_FORMS:
+                        if not quirks.enabled("type-short-forms"):
+                            raise ExtractionError(
+                                f"AVP table Value Type cell {text!r} is a short"
+                                " form, which this document's source declaration"
+                                " does not read (the `type-short-forms` quirk)"
+                            )
+                        quirks.fire("type-short-forms")
+                        type_value = _TYPE_SHORT_FORMS[type_value]
                 case ast.AvpColumn.ENCRYPT:
                     encrypt = _encrypt_cell(text)
                 case ast.AvpColumn.MUST:
@@ -731,7 +1068,7 @@ def _extract_avp_table(
         ast.ReusedAvpRow(name=name, origin=f"RFC{note_rfcs[note]}")
         for name, note in note_refs
         if note in note_rfcs
-    ]
+    ] + referred
     avp_table = ast.AvpTable(
         table=table.caption,
         columns=columns,
@@ -739,6 +1076,59 @@ def _extract_avp_table(
         source=ast.SourceRef(section=section_number),
     )
     return avp_table, reused
+
+
+# RFC 6733 §4.5's abbreviations, printed in TS 32.299 table 7.1.0.1 as the
+# RFC extractor's `type-short-forms` reads them in RFC 6733's own table.
+_TYPE_SHORT_FORMS = {"DiamIdent": "DiameterIdentity", "DiamURI": "DiameterURI"}
+
+# TS 32.299 table 7.2.0.1 types a borrowed AVP by pointing at its definition:
+# "refer [207]", once spaced and once not ("refer[223]"). Clause 7.2.0 says
+# so: "for AVPs that are just borrowed from other applications only the
+# reference ... is provided in the following table".
+_REFER_RE = re.compile(r"refer ?\[(?P<number>\d+)\]")
+# A clause-2 reference entry: "[207] 3GPP TS 29.061: "Interworking ...""
+_REFERENCE_RE = re.compile(r"^\[(?P<number>\d+)\] (?P<text>.+)$")
+
+
+def _references(sections: list[_Section]) -> dict[str, str]:
+    """Clause 2's numbered references, number → entry text."""
+    return {
+        match["number"]: match["text"]
+        for section in sections
+        if section.number == "2"
+        for paragraph in section.paragraphs
+        if (match := _REFERENCE_RE.match(paragraph.text))
+    }
+
+
+def _referred_origin(
+    name: str,
+    number: str,
+    references: dict[str, str] | None,
+    own_reference: str,
+    quirks: sources.Quirks,
+) -> str | None:
+    """The document a `refer [n]` type cell cites, or None when the entry is
+    not one a From cell can name (TS 32.299's [223], OMA-DDS-Charging_Data).
+
+    The row becomes a re-used row citing that document: the type lives
+    there, and so does the rest of the definition."""
+    if not quirks.enabled("refer-type-cells"):
+        raise ExtractionError(
+            f"AVP table row {name!r} is typed 'refer [{number}]', which this"
+            " document's source declaration does not read (the"
+            " `refer-type-cells` quirk)"
+        )
+    quirks.fire("refer-type-cells")
+    entry = (references or {}).get(number)
+    if entry is None:
+        raise ExtractionError(
+            f"AVP table row {name!r} refers to [{number}], which clause 2 does not list"
+        )
+    if _ORIGIN_TS_RE.search(entry) or _ORIGIN_RFC_RE.search(entry):
+        return _origin(entry, own_reference)
+    return None
 
 
 def _origin(reference: str, own_reference: str) -> str:
@@ -901,14 +1291,27 @@ def _collect(
     """Walk the document once, classifying sections. Source-shaped work only:
     nothing here needs to know about another section."""
     collected = _Collected()
+    references = _references(sections) if quirks.enabled("refer-type-cells") else {}
     for section in sections:
         if title := _COMMAND_TITLE_RE.match(section.title):
             collected.messages.extend(
                 _extract_messages(section, title, warnings, quirks)
             )
             continue
+        if (
+            quirks.enabled("message-headings")
+            and (title := _MESSAGE_TITLE_RE.match(section.title))
+            and any("Diameter Header" in line.text for line in section.lines)
+        ):
+            # Only the clauses printing a rule: 6.4.6-6.4.13 point at RFC 6733.
+            collected.messages.extend(
+                _extract_messages(
+                    section, title, warnings, quirks, message_heading=True
+                )
+            )
+            continue
         if quirks.enabled("procedure-commands") and any(
-            _DIAMETER_HEADER_RE.match(p.text) for p in section.paragraphs
+            _DIAMETER_HEADER_RE.match(line.text) for line in section.lines
         ):
             collected.messages.extend(
                 _extract_messages(section, None, warnings, quirks)
@@ -925,7 +1328,7 @@ def _collect(
                     (
                         i
                         for i, row in enumerate(table.rows)
-                        if row.cells[0] == "Attribute Name"
+                        if row.cells[0] in _NAME_LABELS
                     ),
                     None,
                 )
@@ -938,7 +1341,7 @@ def _collect(
                     )
                     continue
                 avp_table, note_reused = _extract_avp_table(
-                    table, section.number, warnings, quirks
+                    table, section.number, warnings, quirks, references, own_reference
                 )
                 collected.avp_tables.append(
                     _CollectedAvpTable(
@@ -964,7 +1367,7 @@ def _collect(
                     )
                 )
         if title := _AVP_TITLE_RE.match(section.title):
-            found = _find_rule_header(section, _AVP_HEADER_RE)
+            found = _find_rule_header(section, _AVP_HEADER_RE, quirks)
             if found is not None:
                 header, body_start = found
                 rule_name = header["name"]
@@ -981,18 +1384,25 @@ def _collect(
                         " using the rule name"
                     )
                 collected.grouped.append(
-                    _extract_grouped(section, header, body_start, name=rule_name)
+                    _extract_grouped(
+                        section, header, body_start, rule_name, quirks, warnings
+                    )
                 )
             elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
                 collected.pending_enums.append((section, title["name"]))
     return collected
 
 
-def _resolve(collected: _Collected, quirks: sources.Quirks | None = None) -> _Resolved:
+def _resolve(
+    collected: _Collected,
+    quirks: sources.Quirks | None = None,
+    warnings: list[str] | None = None,
+) -> _Resolved:
     """Cross-section work: pair each AVP table with its re-used table, then
     turn pending enumerated sections into definitions using codes from the
     AVP tables."""
     quirks = quirks if quirks is not None else sources.Quirks([], None)
+    warnings = warnings if warnings is not None else []
     if not collected.avp_tables:
         if (
             quirks.enabled("message-only")
@@ -1021,7 +1431,9 @@ def _resolve(collected: _Collected, quirks: sources.Quirks | None = None) -> _Re
     # says which re-used block belongs to which set, so unequal counts leave
     # no defensible pairing and are rejected rather than guessed at. A single
     # AVP table without a re-used table stays legitimate: the re-used block is
-    # synthesised for its NOTE-derived rows.
+    # synthesised for its NOTE-derived rows. So do several AVP tables with
+    # no printed re-used table at all (TS 32.299's 7.1.0.1 and 7.2.0.1):
+    # each synthesises its own, and there is nothing to mis-pair.
     independent = quirks.enabled("independent-avp-tables")
     if independent:
         quirks.fire("independent-avp-tables")
@@ -1029,6 +1441,7 @@ def _resolve(collected: _Collected, quirks: sources.Quirks | None = None) -> _Re
         len(collected.reused_tables) > len(collected.avp_tables)
         or (
             len(collected.avp_tables) > 1
+            and collected.reused_tables
             and len(collected.reused_tables) != len(collected.avp_tables)
         )
     ):
@@ -1115,7 +1528,9 @@ def _resolve(collected: _Collected, quirks: sources.Quirks | None = None) -> _Re
                 f"{section.number}: enumerated AVP {name!r}"
                 " has no code in the AVP table"
             )
-        enumerated.append(_extract_enumerated(section, name, code, vendor_id))
+        enumerated.append(
+            _extract_enumerated(section, name, code, vendor_id, quirks, warnings)
+        )
 
     return _Resolved(
         messages=collected.messages,
@@ -1200,6 +1615,42 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
 # "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit short forms
 # cannot mean anything else, where a dotted flags cell or a prose note can.
 QUIRKS: dict[str, str] = {
+    "message-headings": (
+        "read a 'Name message' heading over a rule spelled with the"
+        " abbreviation ('<ACR> ::=') as the command's long name (TS 32.299"
+        " clauses 6.2.2-6.4.5)"
+    ),
+    "spaced-rule-operator": (
+        "read the rule operator spelled ':: =' as '::=' (TS 32.299 clause 7.2,"
+        " TS 29.229)"
+    ),
+    "struck-rules-unused": (
+        "drop struck-through ABNF members, which the document's legend says"
+        " are not used (TS 32.299 clauses 6.2.1.2, 6.4.1.2)"
+    ),
+    "physical-avp-columns": (
+        "read physical cells in an AVP table with ragged grid spans, dropping"
+        " an empty trailing sliver cell (TS 32.299 table 7.2.0.1)"
+    ),
+    "refer-type-cells": (
+        "read a 'refer [n]' Value Type cell as no type plus a re-used row"
+        " citing clause 2's reference n (TS 32.299 table 7.2.0.1)"
+    ),
+    "type-short-forms": (
+        "read RFC 6733's DiamIdent and DiamURI type abbreviations (TS 32.299"
+        " table 7.1.0.1)"
+    ),
+    "wildcard-avp-row": (
+        "read the 'AVP' row's code '*' as no code (TS 32.299 table 7.1.0.1)"
+    ),
+    "value-first-enums": (
+        "read 'n Label' enumerated values, the label ending at the first"
+        " colon and the rest of the line its description (TS 32.299)"
+    ),
+    "body-clause-headings": (
+        "read a body paragraph 'n.n.n Name AVP' as a clause heading (TS 32.299"
+        " clause 7.2.135C)"
+    ),
     "message-only": (
         "retain commands and re-used AVPs without a local AVP table"
         " (TS 29.330 clause 6.3.1)"
@@ -1278,7 +1729,7 @@ def extract(
             quirks,
         )
         patcher.finish()
-        sections = _assemble(_resolve(collected, quirks))
+        sections = _assemble(_resolve(collected, quirks, warnings))
         quirks.finish()
         return ast.Specification(
             specification=specification,

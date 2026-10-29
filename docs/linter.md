@@ -106,14 +106,22 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   clauses say they originate elsewhere and then print interface-specific
   bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
 - **`origin-not-in-corpus`.** Every missing origin is a legacy `.doc` (TS
-  32.299, 29.368, 29.217, 29.468; 29.154 is not in the catalog at all), or
-  outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057, TS
-  23.329). These clear as the corpus grows; see the roadmap.
-- **`unresolved-reference`**, six, all AVPs no document defines, tabulates or
-  allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI`
-  (clauses 9.4–9.6; erratum 1462 renames one to another undefined name, and
-  Wireshark carries the same dead end), and TS 29.345's `ProSe-Query-Code`
-  and `ProSe-Response-Code` (clauses 6.3.53, 6.3.54), and TS 29.273's
-  `NSWO-Authorization` (clause 5.2.2.1.2 prints only a member reference).
+  29.368, 29.217, 29.468, 29.343; 29.140 and 29.154 are not in the catalog
+  at all), or outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017, 3GPP2
+  X.S0057, TS 23.329). These clear as the corpus grows; see the roadmap.
+- **`unresolved-reference`**, seventeen. Six are AVPs no document defines,
+  tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`,
+  `MIP-MN-HA-SPI` (clauses 9.4–9.6; erratum 1462 renames one to another
+  undefined name, and Wireshark carries the same dead end), TS 29.345's
+  `ProSe-Query-Code` and `ProSe-Response-Code` (clauses 6.3.53, 6.3.54), and
+  TS 29.273's `NSWO-Authorization` (clause 5.2.2.1.2 prints only a member
+  reference). Eleven are members whose definition the document neither
+  prints nor cites: TS 29.229's `Line-Identifier` (clause 6.3.42 gives it
+  ETSI's vendor 13019, which a table row cannot state), and ten in TS
+  32.299's grouped bodies — `3GPP2-BSID`, `Logical-Access-ID`,
+  `Physical-Access-ID`, `TCP-Source-Port`, `Monitoring-Event-Report` and
+  `Service-ID` are defined elsewhere in the corpus but missing from table
+  7.2.0.1, while `M2M-Information`, `Network-Element`,
+  `Monitored-HPLMN-Identifier` and `Submission-Timestamp` resolve nowhere.
   The rule promotes to an error when these are gone, which needs the
   upstream documents to move.

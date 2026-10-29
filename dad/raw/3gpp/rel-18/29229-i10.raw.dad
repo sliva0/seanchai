@@ -418,6 +418,26 @@ Server-Capabilities ::= < AVP header: 603 10415 >
       * [ AVP ]
 
 
+; Type: Grouped AVP
+; Name: SIP-Auth-Data-Item
+; Section: 6.3.13
+; Page: 26
+SIP-Auth-Data-Item ::= < AVP header: 612 10415 >
+        [ SIP-Item-Number ]
+        [ SIP-Authentication-Scheme ]
+        [ SIP-Authenticate ]
+        [ SIP-Authorization ]
+        [ SIP-Authentication-Context ]
+        [ Confidentiality-Key ]
+        [ Integrity-Key ]
+        [ SIP-Digest-Authenticate ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+      * [ Line-Identifier ]
+      * [ AVP ]
+
+
 ; Type: Enumerated AVP
 ; Name: Server-Assignment-Type
 ; Section: 6.3.15
@@ -440,6 +460,16 @@ Server-Assignment-Type ::= < Enumerated AVP header: 614 10415 >
         RESTORATION                              = 14
 
 
+; Type: Grouped AVP
+; Name: Deregistration-Reason
+; Section: 6.3.16
+; Page: 28
+Deregistration-Reason ::= < AVP header: 615 10415 >
+        { Reason-Code }
+        [ Reason-Info ]
+      * [ AVP ]
+
+
 ; Type: Enumerated AVP
 ; Name: Reason-Code
 ; Section: 6.3.17
@@ -449,6 +479,18 @@ Reason-Code ::= < Enumerated AVP header: 616 10415 >
         NEW_SERVER_ASSIGNED   = 1
         SERVER_CHANGE         = 2
         REMOVE_S-CSCF         = 3
+
+
+; Type: Grouped AVP
+; Name: Charging-Information
+; Section: 6.3.19
+; Page: 29
+Charging-Information ::= < AVP header: 618 10415 >
+        [ Primary-Event-Charging-Function-Name ]
+        [ Secondary-Event-Charging-Function-Name ]
+        [ Primary-Charging-Collection-Function-Name ]
+        [ Secondary-Charging-Collection-Function-Name ]
+      * [ AVP ]
 
 
 ; Type: Enumerated AVP
@@ -616,6 +658,16 @@ Identity-with-Emergency-Registration ::= < AVP header: 651 10415 >
 ; Section: 6.3.58
 ; Page: 35
 Priviledged-Sender-Indication ::= < Enumerated AVP header: 652 10415 >
+
+
+; Type: Grouped AVP
+; Name: Allowed-WAF-WWSF-Identities
+; Section: 6.3.64
+; Page: 36
+Allowed-WAF-WWSF-Identities ::= < AVP header: 656 10415 >
+      * [ WebRTC-Authentication-Function-Name ]
+      * [ WebRTC-Web-Server-Function-Name ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP

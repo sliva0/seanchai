@@ -178,6 +178,12 @@ _RAW_ERRORS = {
         "table-definition-mismatch",
     ],
     "rfc4004.raw.dad": ["table-definition-mismatch"],
+    # The wildcard row of table 7.1.0.1; two Integer32 rows clauses 7.2.111AaA
+    # and 7.2.111AaB define as Enumerated; and every grouped header in clause
+    # 7.2 printing no vendor while table 7.2.0.1 sets V.
+    "32299-i00.raw.dad": ["row-without-code"]
+    + ["table-definition-mismatch"] * 2
+    + ["vendor-id-mismatch"] * 94,
 }
 
 
@@ -221,6 +227,10 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29338-i20.raw": 3,
         "29338-i20": 4,
         "29388-i10": 1,
+        # The corrections cite RFC origins for table 7.1.0.1, whose clauses
+        # 7.1.9, 7.1.14, 7.1.17 and B.2.4 print bodies of their own.
+        "32299-i00.raw": 0,
+        "32299-i00": 4,
     }
     stem = path.name.removesuffix(".dad")
 
@@ -487,7 +497,6 @@ _STANDING_CORPUS_NOTES = {
         "origin-not-in-corpus": ["TS29.468"],
     },
     "29128-i00.dad": {
-        "origin-not-in-corpus": ["TS32.299"],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
             "Monitoring-Event-Report",
@@ -495,11 +504,10 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29172-i10.dad": {
-        "origin-not-in-corpus": ["TS32.299"],
         "reused-origin-indirect": ["Service-Selection"],
     },
     "29212-i20.dad": {
-        "origin-not-in-corpus": ["TS283.034, TS32.299, X.S0057"],
+        "origin-not-in-corpus": ["TS283.034, X.S0057"],
         "reused-reprint": [
             "ADC-Rule-Definition",
             "ADC-Rule-Install",
@@ -513,10 +521,13 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29214-i40.dad": {
-        "origin-not-in-corpus": ["TS183.017, TS29.154, TS32.299"],
+        "origin-not-in-corpus": ["TS183.017, TS29.154"],
+    },
+    "29229-i10.dad": {
+        "unresolved-reference": ["Line-Identifier"],
     },
     "29272-i60.dad": {
-        "origin-not-in-corpus": ["TS29.217, TS32.299"],
+        "origin-not-in-corpus": ["TS29.217"],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
             "Monitoring-Event-Report",
@@ -532,7 +543,8 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29273-i60.dad": {
-        "origin-not-in-corpus": ["TS283.034, TS32.299"],
+        "origin-not-in-corpus": ["TS283.034"],
+        "reused-body-differs": ["SIP-Auth-Data-Item"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "unresolved-reference": ["NSWO-Authorization"],
     },
@@ -541,7 +553,7 @@ _STANDING_CORPUS_NOTES = {
     },
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
-        "origin-not-in-corpus": ["TS29.154, TS29.217, TS29.368, TS32.299"],
+        "origin-not-in-corpus": ["TS29.154, TS29.217, TS29.368"],
         "reused-body-differs": [
             "Additional-Serving-Node",
             "MME-Location-Information",
@@ -561,14 +573,32 @@ _STANDING_CORPUS_NOTES = {
         "reused-reprint": ["SM-Delivery-Failure-Cause", "SMSMI-Correlation-ID"],
     },
     "29345-i00.dad": {
-        "origin-not-in-corpus": ["TS32.299"],
         "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
     "29388-i10.dad": {
         "reused-body-differs": ["V2X-Subscription-Data"],
     },
-    "29389-i00.dad": {
-        "origin-not-in-corpus": ["TS32.299"],
+    "32299-i00.dad": {
+        "origin-not-in-corpus": ["TS29.140, TS29.343, TS29.368"],
+        "reused-body-differs": [
+            "Multiple-Services-Credit-Control",
+            "Used-Service-Unit",
+        ],
+        "reused-extension": ["OC-OLR"],
+        "reused-origin-indirect": ["Priority-Indication", "Reference-Number"],
+        "reused-reprint": ["User-Equipment-Info"],
+        "unresolved-reference": [
+            "3GPP2-BSID",
+            "Logical-Access-ID",
+            "M2M-Information",
+            "Monitored-HPLMN-Identifier",
+            "Monitoring-Event-Report",
+            "Network-Element",
+            "Physical-Access-ID",
+            "Service-ID",
+            "Submission-Timestamp",
+            "TCP-Source-Port",
+        ],
     },
     "rfc4004.dad": {
         "unresolved-reference": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-HA-SPI"],

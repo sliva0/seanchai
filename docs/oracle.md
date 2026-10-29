@@ -67,3 +67,7 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
   `Framed-Appletalk-*`, which 7155 spells document-wide where 4005, RADIUS
   and Wireshark write `AppleTalk` — kept faithfully, erratum or name mapping
   undecided.
+- **TS 32.299, untriaged**: fourteen name casings (`User-Session-Id` against
+  Wireshark's `User-Session-ID`), six type disagreements — two of them the
+  Monitoring-Event rows its corrections type Enumerated after their clauses,
+  where Wireshark follows table 7.2.0.1's Integer32 — and 47 absences.

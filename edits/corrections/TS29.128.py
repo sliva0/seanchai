@@ -4,6 +4,7 @@ from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Correction,
     Insert,
+    avp_rule,
     definition,
     reused_avps,
     reused_row,
@@ -60,5 +61,25 @@ CORRECTIONS = [
             ("IMEI", "Terminal-Information"),
             ("Software-Version", "IMEI"),
         )
+    ),
+    Correction(
+        id="pdn-connection-charging-id-reused-case",
+        target=reused_row("PDN-Connection-Charging-Id"),
+        field="name",
+        expect="PDN-Connection-Charging-Id",
+        replace="PDN-Connection-Charging-ID",
+        reason="the row cites TS 32.299, whose clause 7.2.136 and table 7.2.0.1"
+        " spell the AVP PDN-Connection-Charging-ID",
+        versions="18.0.0",
+    ),
+    Correction(
+        id="pdn-connection-charging-id-member-case",
+        target=avp_rule("Connection-Management-Answer", "PDN-Connection-Charging-Id"),
+        field="name",
+        expect="PDN-Connection-Charging-Id",
+        replace="PDN-Connection-Charging-ID",
+        reason="TS 32.299 clause 7.2.136 defines PDN-Connection-Charging-ID;"
+        " the CMA rule spells it as the re-used table does",
+        versions="18.0.0",
     ),
 ]

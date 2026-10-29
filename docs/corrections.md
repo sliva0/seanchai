@@ -75,7 +75,10 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   expects no row of that name to exist. Forcing case: TS 29.344 clause 6.3.13
   defines `Authorized-Discovery-Range` but table 6.3.1-1 omits the row;
   re-used-table inserts came from the reference triage (six members TS 29.337's
-  table omits).
+  table omits). A `reused_avps(label)` matching no block, where an AVP table
+  carries that label, creates the table's re-used block right after it:
+  TS 32.299 table 7.1.0.1 tabulates IETF AVPs without naming an origin per
+  row, and its corrections give each name its RFC.
 
 No arbitrary `edit=lambda` escape hatch and no `move`/`split`: a correction
 that cannot be described cannot be reviewed. A structural case that appears

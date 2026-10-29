@@ -208,9 +208,10 @@ def _produce(
 def _sources(manifest_path: Path) -> dict[str, _Source]:
     """The manifest's records the extractor can read, by spec reference.
 
-    A 3GPP record whose archive held a legacy `.doc` has no readable document
-    and is left out, so asking for it reports "not in manifest" — which is
-    what it is, as far as regeneration is concerned.
+    A 3GPP record whose archive held a legacy `.doc` is readable only through
+    a converted `.docx` under `converted/<SpecRef>/`; without one it is left
+    out, so asking for it reports "not in manifest" — which is what it is, as
+    far as regeneration is concerned.
     """
     root = manifest_path.parent
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -226,16 +227,31 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
                 reference, texts[0], None, record["url"], "rfc"
             )
         elif record["family"] == "3GPP":
-            documents = [f for f in files if f.suffix == ".docx"]
+            # (archived file, readable document): normally the same `.docx`;
+            # a legacy `.doc` is read through a LibreOffice conversion kept
+            # under `converted/<SpecRef>/` (TS 32.299), until the downloader
+            # makes the conversion itself.
+            documents = [(f, f) for f in files if f.suffix == ".docx"] or [
+                (f, converted)
+                for f in files
+                if f.suffix == ".doc"
+                and (
+                    converted := root
+                    / "converted"
+                    / record["identifier"].replace(" ", "")
+                    / f.with_suffix(".docx").name
+                ).is_file()
+            ]
             if not documents or not record.get("pdf_url"):
                 continue
+            archived, document = documents[0]
+            reference = ast.spec_ref(record["identifier"])
             pdfs = [f for f in files if f.suffix == ".pdf"]
             # "3gpp/Rel-18/TS_29.388/29388-i10.docx" → "3gpp/rel-18".
-            release = Path(record["files"][files.index(documents[0])]).parts[1]
-            reference = ast.spec_ref(record["identifier"])
+            release = Path(record["files"][files.index(archived)]).parts[1]
             sources[reference] = _Source(
                 reference,
-                documents[0],
+                document,
                 pdfs[0] if pdfs else None,
                 record["pdf_url"],
                 f"3gpp/{release.lower()}",

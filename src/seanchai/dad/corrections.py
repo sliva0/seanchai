@@ -388,6 +388,13 @@ class Insert:
     `after` addresses an existing row by name, never position; `None` appends.
     The operation expects no row with the inserted node's name, so it fails
     the day upstream adds the missing row itself.
+
+    A `reused_avps(label)` that matches no block, while an AVP table carries
+    the same label, creates that table's re-used block right after it, with
+    the table's clause and page — the block the extractor synthesises when a
+    table's NOTEs name a defining RFC. TS 32.299 table 7.1.0.1 lists IETF
+    AVPs without naming an origin per row, so its block exists only once
+    the corrections supply the origins.
     """
 
     id: str
@@ -572,6 +579,50 @@ def _inserted(parent: ast.Node, insert: Insert) -> ast.Node:
         ) from None
 
 
+def _created_blocks(
+    spec: ast.Specification, corrections: Sequence[Edit]
+) -> tuple[ast.Specification, dict[str, ast.ReusedAvps]]:
+    """Place an empty re-used block after each AVP table whose label an
+    `Insert` targets while no re-used block carries it (see `Insert`).
+
+    Returns the tree to rebuild, with the placeholders in it, and the
+    placeholders by label. A placeholder is built without validation, since a
+    table may not be empty; the inserts targeting it fill it through the same
+    `_inserted` as any other, and the rebuild validates the result. Selectors
+    never see it: they resolve against the original tree.
+    """
+    labels = {
+        edit.into.label
+        for edit in corrections
+        if isinstance(edit, Insert)
+        and isinstance(edit.into, reused_avps)
+        and not any(edit.into.find(spec))
+    }
+    placeholders: dict[str, ast.ReusedAvps] = {}
+    sections = list(spec.sections)
+    for label in sorted(labels):
+        tables = list(avp_table(label).find(spec))
+        if len(tables) != 1:
+            # Not a creation: `_resolve` reports the selector's no-match.
+            continue
+        table = tables[0]
+        assert isinstance(table, ast.AvpTable)
+        placeholder = ast.ReusedAvps.model_construct(
+            table=label,
+            source=table.source,
+            columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+            rows=(),
+        )
+        placeholders[label] = placeholder
+        sections.insert(
+            next(i for i, section in enumerate(sections) if section is table) + 1,
+            placeholder,
+        )
+    if not placeholders:
+        return spec, placeholders
+    return spec.model_copy(update={"sections": tuple(sections)}), placeholders
+
+
 def _replaced(
     node: Any,
     edits: dict[int, ast.Node],
@@ -660,6 +711,9 @@ def apply(
     anything is rebuilt, so a failing one cannot leave a half-corrected
     file behind.
     """
+    # Selectors and `expect` checks see only the input; the rebuild also
+    # walks the re-used blocks `Insert`s create.
+    tree, placeholders = _created_blocks(spec, corrections)
     edits: dict[int, ast.Node] = {}
     deletions: set[int] = set()
     targets: dict[int, str] = {}  # node id -> the selector that reached it
@@ -668,7 +722,18 @@ def apply(
     results = []
     resolved_ids = []  # per result: the id its node had in the input tree
     for correction in corrections:
-        node = _resolve(spec, correction)
+        if (
+            isinstance(correction, Insert)
+            and isinstance(correction.into, reused_avps)
+            and correction.into.label in placeholders
+        ):
+            node = placeholders[correction.into.label]
+        else:
+            node = _resolve(spec, correction)
+            if node is spec:
+                # `header()`: the rebuild's root is the copy holding the
+                # placeholders; every field a correction may touch is shared.
+                node = tree
         target = (
             correction.into if isinstance(correction, Insert) else correction.target
         )
@@ -692,8 +757,7 @@ def apply(
             resolved_ids.append(id(node))
             continue
         if isinstance(correction, Insert):
-            inserted = _inserted(edits.get(id(node), node), correction)
-            edits[id(node)] = inserted
+            edits[id(node)] = _inserted(edits.get(id(node), node), correction)
             tracked.add(id(correction.node))
             results.append(
                 Result(
@@ -727,7 +791,7 @@ def apply(
         edits[id(node)] = corrected
     applied: dict[int, int] = {}
     rebuilt_ids: dict[int, int] = {}
-    rebuilt = _replaced(spec, edits, deletions, tracked, applied, rebuilt_ids)
+    rebuilt = _replaced(tree, edits, deletions, tracked, applied, rebuilt_ids)
     # Identity is what maps a resolved node back to its place in the tree, so a
     # node object appearing in two places would be corrected in both while the
     # selector reported one match. Trees from `parse` and the extractor build
@@ -745,6 +809,12 @@ def apply(
                 " edit deleted"
             )
     for result, resolved_id in zip(results, resolved_ids, strict=True):
+        if isinstance(result.correction, Insert) and resolved_id not in rebuilt_ids:
+            # Reporting success for a row the output does not hold would be
+            # the silent loss the `expect` contract exists to prevent.
+            raise CorrectionError(
+                f"{result.node}: the inserted row is not in the corrected tree"
+            )
         result.node_id = rebuilt_ids.get(resolved_id, 0)
     return rebuilt, results
 

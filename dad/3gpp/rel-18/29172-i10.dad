@@ -230,7 +230,7 @@ AMF-Instance-Id                       2566   7.4.71   UTF8String    V     -     
 LCS-Format-Indicator      TS32.299
 LCS-Name-String           TS32.299
 LCS-Client-Type           TS32.299
-LCS-Requestor-Id-String   TS32.299
+LCS-Requestor-ID-String   TS32.299 ;; corrected: (TS29.172.py#lcs-requestor-id-string-reused-case)
 Location-Estimate         TS32.299
 IMEI                      TS29.272
 MSISDN                    TS29.329
@@ -265,6 +265,8 @@ SLg-Location-Type ::= < Enumerated AVP header: 2500 10415 >
 ; Section: 7.4.3
 ; Page: 32
 LCS-EPS-Client-Name ::= < AVP header: 2501 10415 >
+        [ LCS-Name-String ]
+        [ LCS-Format-Indicator ]
 
 
 ; Type: Grouped AVP
@@ -272,6 +274,8 @@ LCS-EPS-Client-Name ::= < AVP header: 2501 10415 >
 ; Section: 7.4.4
 ; Page: 33
 LCS-Requestor-Name ::= < AVP header: 2502 10415 >
+        [ LCS-Requestor-ID-String ] ;; corrected: (TS29.172.py#lcs-requestor-id-string-member-case)
+        [ LCS-Format-Indicator ]
 
 
 ; Type: Grouped AVP
@@ -279,6 +283,11 @@ LCS-Requestor-Name ::= < AVP header: 2502 10415 >
 ; Section: 7.4.6
 ; Page: 33
 LCS-QoS ::= < AVP header: 2504 10415 >
+        [ LCS-QoS-Class ]
+        [ Horizontal-Accuracy ]
+        [ Vertical-Accuracy ]
+        [ Vertical-Requested ]
+        [ Response-Time ]
 
 
 ; Type: Enumerated AVP
@@ -505,6 +514,9 @@ Deferred-MT-LR-Data ::= < AVP header: 2547 10415 >
 ; Section: 7.4.57
 ; Page: 43
 ESMLC-Cell-Info ::= < AVP header: 2552 10415 >
+        [ ECGI ]
+        [ Cell-Portion-ID ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP

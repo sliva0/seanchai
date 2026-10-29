@@ -1,0 +1,203 @@
+[[quirk]]
+name = "message-headings"
+reason = "Clauses 6.2.2-6.4.5 head commands 'Accounting-Request message' and spell the rule with the abbreviation, '<ACR> ::='."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "spaced-rule-operator"
+reason = "Most grouped rules in clause 7.2 spell the rule operator ':: =' (7.2.0A, 7.2.192 and on)."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "struck-rules-unused"
+reason = "Clauses 6.2.1.2 and 6.4.1.2: 'An AVP in grey strikethrough in the message format ... is not used by 3GPP'; the ACR, ACA, CCR and CCA rules and 7.1.9 strike such members."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "physical-avp-columns"
+reason = "Table 7.2.0.1 spreads its eleven columns over a 42-column grid with eight span patterns, and 313 rows end in an empty sliver cell."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "refer-type-cells"
+reason = "Table 7.2.0.1 types borrowed AVPs 'refer [n]'; clause 7.2.0 says only the reference to the defining document is given for them."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "type-short-forms"
+reason = "Table 7.1.0.1 copies RFC 6733's DiamIdent and DiamURI type abbreviations."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "wildcard-avp-row"
+reason = "Table 7.1.0.1 tabulates the '* [ AVP ]' wildcard as a row 'AVP' with code '*'."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "value-first-enums"
+reason = "Enumerated clauses list values as 'n Label' ('0 PS to CS Transfer', 7.2.1B), some with a description after a colon (7.2.132)."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "body-clause-headings"
+reason = "The heading of clause 7.2.135C, PC5-Radio-Technology AVP, is printed as a Normal paragraph inside 7.2.135B."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "dotted-flags"
+reason = "Table 7.2.0.1 writes some flag cells 'V.M' with a period for the comma."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "V/M"
+replace = "V,M"
+exact = true
+count = 2
+section = "7.2.0"
+reason = "Table 7.2.0.1 separates two Must cells' flags with a slash."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "ProSe-Direct-Communication- Transmission-Data-Container"
+replace = "ProSe-Direct-Communication-Transmission-Data-Container"
+count = 3
+reason = "Table 7.2.0.1 and clause 7.2.154B break the name after a hyphen with a space; the heading spells it whole."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Related- Change-Condition- Information"
+replace = "Related-Change-Condition-Information"
+count = 1
+reason = "Clause 7.2.171Aa's rule header breaks the name after two hyphens with spaces; the heading, table 7.2.0.1 and the rule using it spell it whole."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = ""
+replace = "-"
+exact = true
+count = 2
+section = "7.2.0"
+reason = "Table 7.2.0.1 prints two empty flags cells (Reason-Header among them) as a Symbol-font dash, which the conversion carries as U+F02D."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Status- AS-Code"
+replace = "Status-AS-Code"
+count = 2
+reason = "Table 7.2.0.1 and clause 7.2.24's rule break the name after a hyphen with a space; clause 7.2.215A spells it whole."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Charge- Reason-Code"
+replace = "Charge-Reason-Code"
+count = 1
+section = "7.2.161"
+reason = "Clause 7.2.161's Rate-Element rule breaks the member name after a hyphen with a space, which ends the ABNF body there."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "VM"
+replace = "V,M"
+exact = true
+count = 1
+section = "7.2.0"
+reason = "Table 7.2.0.1's Target-IP-Address row runs its Must flags together, 'VM'."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "User–Session-Id"
+replace = "User-Session-Id"
+exact = true
+count = 1
+section = "7.2.0"
+reason = "Table 7.2.0.1 prints User-Session-Id with an en dash for its first hyphen; clause 7.2.242 spells it with hyphens."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "0 Normal;"
+replace = "0 Normal"
+exact = true
+section = "7.2.142"
+reason = "PoC-Event-Type's value list ends every item but the last (4 PoC Talk Burst) with a semicolon: list punctuation, not part of the label."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "1 Instant Ppersonal Aalert event;"
+replace = "1 Instant Personal Alert event"
+exact = true
+section = "7.2.142"
+reason = "PoC-Event-Type's value 1 keeps tracked-change residue (doubled initials) and a trailing semicolon."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "2 PoC Group Advertisement event;"
+replace = "2 PoC Group Advertisement event"
+exact = true
+section = "7.2.142"
+reason = "PoC-Event-Type's value list ends every item but the last (4 PoC Talk Burst) with a semicolon: list punctuation, not part of the label."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "3 Early Ssession Setting-up event;"
+replace = "3 Early Session Setting-up event"
+exact = true
+section = "7.2.142"
+reason = "PoC-Event-Type's value 3 keeps tracked-change residue (a doubled initial) and a trailing semicolon."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "PoC-Session-Initiation-type"
+replace = "PoC-Session-Initiation-Type"
+count = 2
+reason = "Table 7.2.0.1 and PoC-Information's rule (7.2.144) lower-case the last word; the defining clause 7.2.147 spells PoC-Session-Initiation-Type, matching the table code to its definition."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "0 4xx;"
+replace = "0 4xx"
+exact = true
+section = "7.2.215A"
+reason = "Status-AS-Code's value list ends every item but the last (2 Timeout) with a semicolon: list punctuation, not part of the label."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "1 5xx;"
+replace = "1 5xx"
+exact = true
+section = "7.2.215A"
+reason = "Status-AS-Code's value list ends every item but the last (2 Timeout) with a semicolon: list punctuation, not part of the label."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "[ Serving Node Identity ]"
+replace = "[ Serving-Node-Identity ]"
+exact = true
+section = "7.2.46acA"
+reason = "CPDT-Information's rule spells the member Serving-Node-Identity (clause 7.2.197a) with spaces, which ends the ABNF body there."
+first_version = "18.0.0"
+last_version = "18.0.0"

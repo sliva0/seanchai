@@ -1,7 +1,13 @@
 """Corrections for 3GPP TS 29.172 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
+from seanchai.dad.corrections import (
+    Correction,
+    avp_rule,
+    definition,
+    reused_row,
+    table_row,
+)
 
 CORRECTIONS = [
     Correction(
@@ -38,6 +44,26 @@ CORRECTIONS = [
         " Area-Identification AVP as of type OctetString and lays out its"
         " octets; no grouped ABNF exists, and Wireshark's dictionary reads"
         " the clause the same way",
+        versions="18.1.0",
+    ),
+    Correction(
+        id="lcs-requestor-id-string-reused-case",
+        target=reused_row("LCS-Requestor-Id-String"),
+        field="name",
+        expect="LCS-Requestor-Id-String",
+        replace="LCS-Requestor-ID-String",
+        reason="the row cites TS 32.299, whose clause 7.2.92 and table 7.2.0.1"
+        " spell the AVP LCS-Requestor-ID-String",
+        versions="18.1.0",
+    ),
+    Correction(
+        id="lcs-requestor-id-string-member-case",
+        target=avp_rule("LCS-Requestor-Name", "LCS-Requestor-Id-String"),
+        field="name",
+        expect="LCS-Requestor-Id-String",
+        replace="LCS-Requestor-ID-String",
+        reason="TS 32.299 clause 7.2.92 defines LCS-Requestor-ID-String; the"
+        " body spells it as the re-used table does",
         versions="18.1.0",
     ),
 ]

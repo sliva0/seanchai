@@ -93,7 +93,15 @@ The declared vocabulary, with the document that forced each:
   `physical-reused-columns` (table 8.2.3.0/2 changes grid spans),
   `independent-avp-tables` (no one-to-one table pairing),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
-  kept, no enum code derived from them).
+  kept, no enum code derived from them). TS 32.299 declares ten:
+  `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
+  message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
+  also 29.229's four grouped rules), `struck-rules-unused`,
+  `physical-avp-columns` (table 7.2.0.1), `refer-type-cells`,
+  `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
+  `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
+  `value-first-enums`, `body-clause-headings` (7.2.135C) and
+  `dotted-flags`.
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`); `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
@@ -109,14 +117,34 @@ Walks paragraphs and tables in document order under numbered headings:
 
 - `x.y.z Name (ABBR) Command` heading + `::= < Diameter Header: … >` →
   `Message`; per-run bold marks this-spec AVPs (only name runs are trusted).
-- `x.y.z Name AVP` heading + `::= < AVP header: … >` → `GroupedAvp`.
+  Behind `message-headings`, an `x.y.z Name message` heading over a rule
+  spelled with the abbreviation (`<ACR> ::=`, TS 32.299) gives the long name,
+  as RFC 6733's `<CER> ::=` does in the RFC extractor; message headings
+  without a rule (32.299's 6.4.6–6.4.13, pointers to RFC 6733) are not
+  definitions.
+- `x.y.z Name AVP` heading + `::= < AVP header: … >` → `GroupedAvp`. The
+  rule name may be bracketed (`<Event-Type>::=`, `< Participant-Group > ::=`)
+  and the keyword spaced (`AVP Header : 612`, 29.229).
 - `x.y.z Name AVP` heading whose intro says "is of type Enumerated", with
   `ValueName (n)` items → `EnumeratedAvp`. Values are classified by content,
   not paragraph style (29.229 §6.3.34 inverts the B1/B2 convention).
   "Value n is reserved" notes become reserved ranges, inserted by value.
+  Behind `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are
+  read too: the label ends at the first colon and the rest of the line is the
+  value's description (`2 High priority: Lower than Pre-emptive priority`,
+  7.2.132); `11 .. 99 Reserved for …` is a reserved range, and a range
+  allocated otherwise (`100 .. 199 Vendor specific SM services`, 7.2.213)
+  names no value and is reported. An enumerated clause printing no values
+  (32.299's Type-Number, 7.2.238, and API-Network-Service-Node, 7.2.20eA)
+  keeps an empty definition and warns.
 - The table with the "AVP Flag rules" header → `AvpTable`. A row whose code
   cell is a NOTE reference gets `code=None`; a note naming a defining RFC also
-  produces a `ReusedAvps` row (`note-defined-in-rfc`).
+  produces a `ReusedAvps` row (`note-defined-in-rfc`). Behind
+  `refer-type-cells`, a Value Type cell `refer [n]` (TS 32.299 table 7.2.0.1,
+  for AVPs "just borrowed from other applications", clause 7.2.0) leaves the
+  row untyped and adds a re-used row citing clause 2's reference n; an entry
+  a From cell cannot name (`[223]`, OMA-DDS-Charging_Data) warns and adds
+  none.
 - The "re-used Diameter AVPs" table → `ReusedAvps` with M-bit overrides.
 - An AVP table whose labelled header is followed only by blank cells
   contributes no definitions and warns (TS 29.330 table 6.3.1-1); non-empty
@@ -147,22 +175,44 @@ Conventions worth knowing:
 - More than one AVP/re-used table pair per document (29.336, 29.338) is
   paired in document order; counts that cannot pair are an error, and one
   name with two codes across tables is an error unless declared as above.
+  Several AVP tables with no printed re-used table (32.299's 7.1.0.1 and
+  7.2.0.1) each get their own synthesised block.
 - A table whose every row merges each visible column across the same grid
   columns (29.336 table 8.4.1-2) is collapsed to its physical columns; mixed
-  merge patterns keep their grid positions.
+  merge patterns keep their grid positions. Behind `physical-avp-columns`,
+  an AVP table whose rows change grid spans (32.299 table 7.2.0.1: eight
+  patterns over 42 grid columns) is read by physical cells, dropping the
+  empty one-column sliver that ends some of its rows and its header.
 - Column labels are matched by spelling map (`_AVP_TABLE_COLUMNS`,
-  `_REUSED_TABLE_COLUMNS`), with note references stripped. "Comments",
+  `_REUSED_TABLE_COLUMNS`), with note references stripped. The name column
+  is "Attribute Name" or, in TS 32.299, "AVP Name"; a two-row header whose
+  lower row carries the labels is read from that row, also when only the
+  upper row prints the name label (32.299 table 7.2.0.1). "Comments",
   "Description" and "Comment" columns are dropped silently as prose; any
   other unmodelled column produces a warning. The standing machine-readable
   candidates are 29.212's "Acc. Type" and "Applicability", 29.214's
-  "Applicability", 29.061's "Applicable Reference Points", and the Code/Type
-  columns 29.172 prints in its re-used table — see the roadmap.
+  "Applicability", 29.061's "Applicable Reference Points", the Code/Type
+  columns 29.172 prints in its re-used table, and 32.299's per-command
+  "Used in" columns (ACR, ACA, CCR, CCA) — see the roadmap.
+- A flags cell holding a lone `-` is empty (TS 32.299).
 - The cover title is read from the cover table or a plain paragraph (29.061,
   29.212, 29.214). `attach_pages` reads the PDF's own cover and refuses a
   different specification or version, warns when the outline covers only
   some sections, and errors when it covers none.
 - A second AVP table or re-used table beyond a pairable set is rejected
   naming the sections. Missing captions and split tables have no collected case.
+
+ABNF is read line by line: a paragraph is split at its manual line breaks,
+and bold and strikethrough belong to the line. TS 32.299 prints whole bodies
+as one paragraph, and so do parts of 29.172 and 29.273, whose bodies the
+paragraph-level reading had truncated. Blank lines inside a body are
+skipped when another member follows (32.299's message rules); a line made
+entirely of several members is read as several (32.299 clause 7.2.154I,
+printed so in the PDF too); any other line ends the body. A struck-through
+member fails, except behind `struck-rules-unused`, where TS 32.299's own
+legend (clauses 6.2.1.2, 6.4.1.2: "An AVP in grey strikethrough … is not
+used by 3GPP") makes leaving it out the translation; each dropped member
+warns.
 
 Real-document cases handled in code or by patch, kept as evidence: heading
 and rule-name mismatches (29.329 §6.1.8); Diameter headers omitting the
@@ -178,7 +228,10 @@ separator (29.229); the RFC 3588 `P` flag still printed (29.061, 29.212,
 references on name cells (`(NOTE 3)`, two stacked); a label-less empty
 fourth column in a re-used table (29.212, dropped with a warning); one AVP
 printed with two bodies (29.336 §6.4.2 and §8.4.36, the second deleted by
-correction); "Void" as an enum value label (29.214, deleted by correction).
+correction); "Void" as an enum value label (29.214, deleted by correction);
+a clause heading printed as a body paragraph (32.299 §7.2.135C,
+`body-clause-headings`); names broken by a space after a hyphen, an en dash,
+a Symbol-font dash and `V/M`, `VM` flag cells (32.299, patched).
 Everything patched is listed with its reason in `edits/sources/`.
 
 TS 29.228 v18.0.0 and TS 29.328 v18.2.0 contain procedure/IE mappings,
