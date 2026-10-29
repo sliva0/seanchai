@@ -13,7 +13,8 @@ uv run basedpyright              # standard mode; the more trustworthy one
 ```
 
 `seanchai download` needs LibreOffice's `soffice` on PATH to convert the
-catalog's legacy `.doc` archives; TS 32.299 is read from its conversion.
+catalog's legacy `.doc` archives; TS 32.299, 29.154, 29.215, 29.217, 29.219,
+29.343, 29.368 and 29.468 are read from their conversions.
 
 CI runs the tests without sources plus ruff. Run everything locally before
 committing anyway; CI is a backstop, not the gate.

@@ -25,7 +25,8 @@ and fails on anything but `unchanged`.
    downloader's catalog (`src/seanchai/downloader/specs.toml`) and readable
    by the extractor; a shape it rejects fails with the reason. A legacy
    `.doc` archive is read through the `.docx` the downloader converted it to
-   (see [downloader.md](downloader.md)); TS 32.299 is read this way.
+   (see [downloader.md](downloader.md)); TS 32.299 and seven more are read
+   this way.
 2. Lint the raw file: `uv run seanchai lint dad/raw/... --corpus dad`. Every
    error is either a source typo (input patch), a reading the extractor should
    not make undeclared (quirk), or wrong data (correction); see the table
