@@ -56,14 +56,12 @@ letter is not reused. What exists is described in the per-module documents.
   constructs in the format; treating the AVP allocation table as local
   definitions would lose those distinctions. Deferred until the format can
   preserve the registry.
-- **K. Legacy `.doc` specifications**: TR 29.909 ships as binary `.doc`,
-  which the downloader converts; it is not extracted, and a TR has no
-  SpecRef form in the format. Two 32.299 statements the
-  format cannot hold yet:
-  `refer [223]` cites OMA-DDS-Charging_Data, which a From cell cannot name
-  (13 rows stay untyped), and SM-Service-Type's "100 .. 199 Vendor specific
-  SM services" allocates a range. TS 29.140 and 29.154 are cited and not in
-  the catalog at all.
+- **K. Catalog gaps and format limits from the legacy documents.** Two
+  TS 32.299 statements the format cannot hold yet: `refer [223]` cites
+  OMA-DDS-Charging_Data, which a From cell cannot name (13 rows stay
+  untyped), and SM-Service-Type's "100 .. 199 Vendor specific SM services"
+  allocates a range. TS 29.140 and 29.154 are cited and not in the catalog
+  at all.
 - **L. Downloader: read the 3GPP archive throughout**, not only for the
   PDF-matched fallback, so every old version stays available for raw-vs-raw
   diffs; derive the ETSI `Link:` URL (needs the edition suffix, probably by

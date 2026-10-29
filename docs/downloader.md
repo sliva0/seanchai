@@ -40,9 +40,9 @@ for catalog experiments, not for refreshing the corpus.
 - **Extraction replaces the specification directory** (`replace_extracted`
   stages and swaps, rolling back on failure) so a directory never holds two
   archive versions. `safe_extract` underneath does merge.
-- **Legacy `.doc` archives are converted, not skipped.** Nine catalogued
-  archives (TS 32.299, TR 29.909, 29.201, 29.215, 29.217, 29.219, 29.343,
-  29.368, 29.468) hold a `.doc` and no `.docx`. Each run converts them into
+- **Legacy `.doc` archives are converted, not skipped.** Eight catalogued
+  archives (TS 32.299, 29.201, 29.215, 29.217, 29.219, 29.343, 29.368,
+  29.468) hold a `.doc` and no `.docx`. Each run converts them into
   `converted/`, mirroring the extracted path
   (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`), with `soffice
   --headless --infilter='MS Word 97' --convert-to 'docx:Office Open XML

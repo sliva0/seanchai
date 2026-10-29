@@ -565,7 +565,7 @@ def test_download_3gpp_converts_a_legacy_doc_archive(tmp_path, monkeypatch):
     url = "https://example.test/29999-i00.zip"
     archive = tmp_path / "archives" / "3gpp-rel-18" / "29999-i00.zip"
     archive.parent.mkdir(parents=True)
-    # The Temp/Promotion/Upgraded/ nesting is real (TS 29.215, TR 29.909).
+    # The Temp/Promotion/Upgraded/ nesting is real (TS 29.215, 29.217).
     archive.write_bytes(
         _zip_bytes(**{"Temp/Upgraded/29999-i00.doc": b"\xd0\xcf\x11\xe0"})
     )

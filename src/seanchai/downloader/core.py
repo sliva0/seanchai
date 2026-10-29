@@ -57,7 +57,7 @@ WIRESHARK_TREE_URL = (
 WIRESHARK_RAW_URL = "https://gitlab.com/wireshark/wireshark/-/raw/{tag}/{path}/{name}"
 USER_AGENT = "diameter-spec-corpus-downloader/1.0"
 # LibreOffice, for the archives that still ship a legacy binary `.doc` (TS
-# 32.299, TR 29.909 and seven more): the extractor reads only `.docx`.
+# 32.299 and seven more): the extractor reads only `.docx`.
 SOFFICE = "soffice"
 SOFFICE_TIMEOUT = 600
 

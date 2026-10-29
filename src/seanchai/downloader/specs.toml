@@ -141,12 +141,6 @@ number = "29.468"
 title = "GCSE_LTE MB2 reference point"
 
 [[tgpp]]
-number = "29.909"
-title = "Diameter-based protocol usage and recommendations in 3GPP"
-reason = "Cross-specification guidance for 3GPP Diameter applications."
-document_type = "TR"
-
-[[tgpp]]
 number = "32.299"
 title = "Diameter charging applications"
 

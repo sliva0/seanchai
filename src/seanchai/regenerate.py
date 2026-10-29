@@ -241,9 +241,10 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
             try:
                 reference = ast.spec_ref(record["identifier"])
             except ast.SpecRefError:
-                # A `.dad` file names a TS or an RFC; the catalog's TR 29.909
-                # is cross-specification guidance with no definitions of its
-                # own, and has no reference a corpus file could carry.
+                # A `.dad` file names a TS or an RFC. A catalogued TR is
+                # guidance with no definitions of its own (TR 29.909, dropped
+                # from the catalog, proposed AVPs with codes left as "XXX")
+                # and has no reference a corpus file could carry.
                 continue
             pdfs = [f for f in files if f.suffix == ".pdf"]
             # "3gpp/Rel-18/TS_29.388/29388-i10.docx" → "3gpp/rel-18".
