@@ -27,6 +27,8 @@ letter is not reused. What exists is described in the per-module documents.
 
 - **G. Submit the staged Wireshark merge requests** in
   `integrations/wireshark/`.
+- **P. Report cross-file type and flag-rule disagreements** for one AVP
+  (a citing table against its origin); only codes and bodies are compared.
 
 ## Sources
 
@@ -52,12 +54,9 @@ letter is not reused. What exists is described in the per-module documents.
   dictionary in a format the consumer chooses (Python classes, a JSON schema,
   XML). Seanchaí supplies definitions and queries; output syntax is the
   script's business.
-- **N. Make the model rigid.** `Avp.code`, data type and flag rules are all
-  `| None`, and every `None` is a hole in the corpus, not a fact about
-  Diameter. When the upstream gaps (tables without type or flag columns for
-  re-used rows, the standing unresolved references) are worked off, make the
-  fields required so the model fails to build on an incomplete corpus — with
-  whatever escape hatch hand-authored files turn out to need.
+- **N. Build the model strictly by default** once the committed corpus
+  builds under `strict=True`; the pinned list in `tests/test_model.py` is
+  what stands in the way.
 - **O. Carry Wireshark's AVP name in the model** alongside the
   specification's, for consumers interoperating with Wireshark-derived
   tooling. Waits for a consumer that maps between the namings; the corpus

@@ -102,7 +102,10 @@ class TestResolutionOrder:
         re-defines nine of RFC 6733's AVPs with extra members)."""
         origin = _spec(
             "RFC6733",
-            [_grouped("Thing", 1, "A", vendor_id=None)],
+            [
+                _grouped("Thing", 1, "A", vendor_id=None),
+                _table(_row("Thing", 1, ast.DataType.GROUPED)),
+            ],
             vendor_id=0,
             version=None,
         )
@@ -129,7 +132,10 @@ class TestResolutionOrder:
         )
         citing = _spec(
             "3GPP TS 29.900",
-            [_table(_row("Digest-Thing", 7)), _reused("Digest-Thing", "RFC4590")],
+            [
+                _table(_row("Digest-Thing", 7, ast.DataType.GROUPED)),
+                _reused("Digest-Thing", "RFC4590"),
+            ],
         )
         resolved = _model(origin, citing).resolve("TS29.900", "Digest-Thing")
         assert resolved is not None
@@ -159,7 +165,10 @@ class TestResolutionOrder:
         re-uses it from RFC 5778 — the chain is followed to the end."""
         real = _spec(
             "RFC5778",
-            [_grouped("Thing", 1, "A", vendor_id=None)],
+            [
+                _grouped("Thing", 1, "A", vendor_id=None),
+                _table(_row("Thing", 1, ast.DataType.GROUPED)),
+            ],
             vendor_id=0,
             version=None,
         )
@@ -175,12 +184,213 @@ class TestResolutionOrder:
         citing = _spec("3GPP TS 29.900", [_message("Test-Request", "AVP")])
         (message,) = _model(citing).messages("TS29.900")
         assert message.avps[0].avp is None
+        assert message.avps[0].hole is None
 
     def test_a_definition_among_its_own_descendants_stops_resolving(self):
-        looped = _spec("3GPP TS 29.900", [_grouped("Loop", 1, "Loop")])
+        looped = _spec(
+            "3GPP TS 29.900",
+            [
+                _grouped("Loop", 1, "Loop"),
+                _table(_row("Loop", 1, ast.DataType.GROUPED)),
+            ],
+        )
         resolved = _model(looped).resolve("TS29.900", "Loop")
         assert isinstance(resolved, model.Grouped)
         assert resolved.members[0].avp is None
+        assert resolved.members[0].hole is None
+
+
+def _flagless_table(*rows):
+    """RFC 5777's shape: Name, Code, Section and Type, no flag columns."""
+    return ast.AvpTable(
+        type="AVP Table",
+        source=ast.SourceRef(section="10.1"),
+        columns=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.SECTION,
+            ast.AvpColumn.TYPE,
+        ),
+        rows=tuple(rows),
+    )
+
+
+class TestHoles:
+    def test_a_reprint_without_a_table_row_takes_the_origins_flag_rules(self):
+        """TS 29.272 re-prints TS 29.212's Allocation-Retention-Priority and
+        tabulates it nowhere; the flag rules are the origin's."""
+        origin = _spec(
+            "3GPP TS 29.901",
+            [_grouped("Thing", 1, "A"), _table(_row("Thing", 1, ast.DataType.GROUPED))],
+        )
+        reprint = _spec(
+            "3GPP TS 29.900",
+            [_grouped("Thing", 1, "A"), _reused("Thing", "TS29.901")],
+        )
+        resolved = _model(origin, reprint).resolve("TS29.900", "Thing")
+        assert isinstance(resolved, model.Grouped)
+        assert resolved.defined_in == "TS29.900"
+        assert ast.AvpFlag.VENDOR in resolved.flag_rules.must
+
+    def test_an_origin_without_a_type_takes_the_citing_tables(self):
+        """RFC 4590 is a RADIUS document and types none of its attributes;
+        TS 29.229's own table types the Digest AVPs it re-uses. The origin's
+        own reading keeps the hole."""
+        origin = _spec(
+            "RFC4590",
+            [_flagless_table(ast.AvpTableRow(name="Digest-Realm", code=104))],
+            vendor_id=0,
+            version=None,
+        )
+        citing = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(_row("Digest-Realm", 104, ast.DataType.UTF8_STRING)),
+                _reused("Digest-Realm", "RFC4590"),
+            ],
+        )
+        built = _model(origin, citing)
+        resolved = built.resolve("TS29.900", "Digest-Realm")
+        assert resolved is not None
+        assert (resolved.defined_in, resolved.identity) == ("RFC4590", (0, 104))
+        assert resolved.data_type is ast.DataType.UTF8_STRING
+        assert built.resolve("RFC4590", "Digest-Realm") is None
+        assert built.holes() == (
+            model.Hole(
+                "RFC4590",
+                "Digest-Realm",
+                (model.DATA_TYPE, model.FLAG_RULES),
+                vendor_id=0,
+                code=104,
+            ),
+        )
+
+    def test_readings_giving_two_codes_are_not_merged(self):
+        origin = _spec("3GPP TS 29.901", [_table(_row("Thing", 2))])
+        citing = _spec(
+            "3GPP TS 29.900",
+            [_flagless_table(ast.AvpTableRow(name="Thing", code=1))],
+            bases=["TS29.901"],
+        )
+        hole = _model(origin, citing).hole("TS29.900", "Thing")
+        assert hole is not None
+        assert hole.missing == (model.DATA_TYPE, model.FLAG_RULES)
+        assert hole.conflict == "TS29.901"
+
+    def test_a_definition_in_another_vendors_space_fills_nothing(self):
+        """(10415, 1) and (999, 1) are two AVPs, whatever the name says."""
+        origin = _spec(
+            "3GPP TS 29.901",
+            [
+                _grouped("Thing", 1, "A", vendor_id=999),
+                _table(_row("Thing", 1, ast.DataType.GROUPED)),
+            ],
+            vendor_id=999,
+        )
+        reprint = _spec(
+            "3GPP TS 29.900",
+            [_grouped("Thing", 1, "A"), _reused("Thing", "TS29.901")],
+        )
+        built = _model(origin, reprint)
+        assert built.resolve("TS29.900", "Thing") is None
+        assert str(built.hole("TS29.900", "Thing")) == (
+            "TS29.900 Thing: no flag_rules; TS29.901's reading, which states it,"
+            " disagrees"
+        )
+
+    def test_a_table_rows_vendor_is_inferred_and_agrees_with_any(self):
+        """The origin only tabulates the AVP, so its vendor is its file's
+        `; Vendor-ID:`, which is no claim against the definition's."""
+        origin = _spec(
+            "3GPP TS 29.901",
+            [_table(_row("Thing", 1, ast.DataType.GROUPED))],
+            vendor_id=999,
+        )
+        reprint = _spec(
+            "3GPP TS 29.900",
+            [_grouped("Thing", 1, "A"), _reused("Thing", "TS29.901")],
+        )
+        resolved = _model(origin, reprint).resolve("TS29.900", "Thing")
+        assert resolved is not None
+        assert resolved.identity == (10415, 1)
+        assert ast.AvpFlag.VENDOR in resolved.flag_rules.must
+
+    @pytest.mark.parametrize(
+        ("theirs", "complete"),
+        [(ast.DataType.TIME, True), (ast.DataType.UNSIGNED32, False)],
+    )
+    def test_readings_fill_each_other_only_where_they_agree(self, theirs, complete):
+        """A `Time` row with blank flag cells takes the flags of a `Time`
+        reading of the same code, never of an `Unsigned32` one: that would
+        be a complete AVP assembled from a disagreement."""
+        blank = ast.AvpTableRow(name="Thing", code=1, data_type=ast.DataType.TIME)
+        base = _spec("3GPP TS 29.901", [_table(_row("Thing", 1, theirs))])
+        citing = _spec("3GPP TS 29.900", [_table(blank)], bases=["TS29.901"])
+        built = _model(base, citing)
+        resolved = built.resolve("TS29.900", "Thing")
+        hole = built.hole("TS29.900", "Thing")
+        if complete:
+            assert resolved is not None
+            assert resolved.data_type is ast.DataType.TIME
+            assert hole is None
+        else:
+            assert resolved is None
+            assert hole is not None
+            assert (hole.missing, hole.conflict) == ((model.FLAG_RULES,), "TS29.901")
+
+    def test_empty_flag_cells_are_a_hole_not_an_absence_of_flags(self):
+        """TS 32.299 table 7.2.0.1 prints `-` in every flag cell of most
+        re-printed rows; that states nothing about the M bit."""
+        blank = ast.AvpTableRow(name="Thing", code=1, data_type=ast.DataType.UNSIGNED32)
+        spec = _spec("3GPP TS 29.900", [_table(blank)])
+        hole = _model(spec).hole("TS29.900", "Thing")
+        assert hole is not None
+        assert hole.missing == (model.FLAG_RULES,)
+        assert hole.data_type is ast.DataType.UNSIGNED32
+
+    def test_a_member_with_a_hole_says_why_it_has_no_avp(self):
+        absent = _spec(
+            "3GPP TS 29.900",
+            [
+                _message("Test-Request", "Nowhere", "Elsewhere"),
+                _reused("Elsewhere", "X.S0057"),
+            ],
+        )
+        (message,) = _model(absent).messages("TS29.900")
+        assert [member.avp for member in message.avps] == [None, None]
+        assert [str(member.hole) for member in message.avps] == [
+            "TS29.900 Nowhere: resolves nowhere",
+            "TS29.900 Elsewhere: resolves nowhere"
+            " (re-used from X.S0057, which the corpus lacks)",
+        ]
+
+    def test_a_strict_build_names_every_hole(self):
+        spec = _spec(
+            "3GPP TS 29.900",
+            [
+                _message("Test-Request", "Nowhere"),
+                _flagless_table(
+                    ast.AvpTableRow(name="Thing", code=1, data_type=ast.DataType.TIME)
+                ),
+            ],
+        )
+        books = corpus.Corpus([_entry(spec)])
+        with pytest.raises(model.IncompleteCorpusError) as raised:
+            model.Model.build(books, strict=True)
+        assert str(raised.value) == (
+            "the corpus has 2 holes (Model.build(..., strict=False) builds the"
+            " rest):\n  TS29.900 Nowhere: resolves nowhere"
+            "\n  TS29.900 Thing: no flag_rules"
+        )
+        assert raised.value.holes == model.Model.build(books).holes()
+
+    def test_a_complete_corpus_builds_strictly(self):
+        spec = _spec(
+            "3GPP TS 29.900",
+            [_message("Test-Request", "Thing"), _table(_row("Thing", 1))],
+        )
+        built = model.Model.build(corpus.Corpus([_entry(spec)]), strict=True)
+        assert built.holes() == ()
 
 
 class TestQueries:
@@ -245,3 +455,247 @@ class TestOverTheCommittedCorpus:
         assert drmp is not None
         assert drmp.defined_in == "RFC7944"
         assert isinstance(drmp, model.Enumerated)
+
+    def test_a_reprint_takes_its_flag_rules_through_the_origin(self, built):
+        """TS 29.272 clause 7.3.40 re-prints Allocation-Retention-Priority,
+        re-used from TS 29.212, and tabulates it nowhere."""
+        arp = built.resolve("TS29.272", "Allocation-Retention-Priority")
+        assert isinstance(arp, model.Grouped)
+        assert arp.defined_in == "TS29.272"
+        assert built.table_rows("TS29.272", "Allocation-Retention-Priority") == ()
+        (row, *_) = built.table_rows("TS29.212", "Allocation-Retention-Priority")
+        assert arp.flag_rules == row.flag_rules
+
+    def test_29229_types_the_digest_avps_rfc_4590_leaves_untyped(self, built):
+        realm = built.resolve("TS29.229", "Digest-Realm")
+        assert realm is not None
+        assert (realm.defined_in, realm.data_type) == (
+            "RFC4590",
+            ast.DataType.UTF8_STRING,
+        )
+        assert built.resolve("RFC4590", "Digest-Realm") is None
+
+
+# What keeps the committed corpus from building strictly, by document and
+# cause. Each is a statement its source does not make: RFC 4072, 5447, 5777
+# and 6734 print no flag-rule columns, RFC 4590 is a RADIUS document with no
+# Diameter types, TS 32.299's untyped rows are roadmap item K, and every
+# "resolves nowhere" is one of docs/linter.md's standing unresolved
+# references or a re-used origin outside the corpus. A hole worked off
+# shrinks this; a new one is a corpus regression.
+_STANDING_HOLES = {
+    "RFC4004": {
+        "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-HA-SPI"]
+    },
+    "RFC4005": {"no flag_rules": ["QoS-Filter-Rule"]},
+    "RFC4072": {
+        "no flag_rules": [
+            "Accounting-EAP-Auth-Method",
+            "EAP-Key-Name",
+            "EAP-Master-Session-Key",
+            "EAP-Payload",
+            "EAP-Reissued-Payload",
+        ]
+    },
+    "RFC4590": {
+        "no data_type, no flag_rules": [
+            "Digest-AKA-Auts",
+            "Digest-Algorithm",
+            "Digest-Auth-Param",
+            "Digest-CNonce",
+            "Digest-Domain",
+            "Digest-Entity-Body-Hash",
+            "Digest-HA1",
+            "Digest-Method",
+            "Digest-Nextnonce",
+            "Digest-Nonce",
+            "Digest-Nonce-Count",
+            "Digest-Opaque",
+            "Digest-Qop",
+            "Digest-Realm",
+            "Digest-Response",
+            "Digest-Response-Auth",
+            "Digest-Stale",
+            "Digest-URI",
+            "Digest-Username",
+            "SIP-AOR",
+        ]
+    },
+    "RFC5447": {
+        "no flag_rules": [
+            "MIP6-Agent-Info",
+            "MIP6-Feature-Vector",
+            "MIP6-Home-Link-Prefix",
+        ]
+    },
+    "RFC5777": {
+        "no flag_rules": [
+            "Absolute-End-Fractional-Seconds",
+            "Absolute-End-Time",
+            "Absolute-Start-Fractional-Seconds",
+            "Absolute-Start-Time",
+            "C-VID-End",
+            "C-VID-Start",
+            "Classifier",
+            "Classifier-ID",
+            "Day-Of-Month-Mask",
+            "Day-Of-Week-Mask",
+            "Diffserv-Code-Point",
+            "Direction",
+            "ETH-Ether-Type",
+            "ETH-Option",
+            "ETH-Proto-Type",
+            "ETH-SAP",
+            "EUI64-Address",
+            "EUI64-Address-Mask",
+            "EUI64-Address-Mask-Pattern",
+            "Excess-Treatment",
+            "Filter-Rule",
+            "Filter-Rule-Precedence",
+            "Fragmentation-Flag",
+            "From-Spec",
+            "High-User-Priority",
+            "ICMP-Code",
+            "ICMP-Type",
+            "ICMP-Type-Number",
+            "IP-Address",
+            "IP-Address-End",
+            "IP-Address-Mask",
+            "IP-Address-Range",
+            "IP-Address-Start",
+            "IP-Bit-Mask-Width",
+            "IP-Option",
+            "IP-Option-Type",
+            "IP-Option-Value",
+            "Low-User-Priority",
+            "MAC-Address",
+            "MAC-Address-Mask",
+            "MAC-Address-Mask-Pattern",
+            "Month-Of-Year-Mask",
+            "Negated",
+            "Port",
+            "Port-End",
+            "Port-Range",
+            "Port-Start",
+            "Protocol",
+            "QoS-Capability",
+            "QoS-Parameters",
+            "QoS-Profile-Id",
+            "QoS-Profile-Template",
+            "QoS-Resources",
+            "QoS-Semantics",
+            "S-VID-End",
+            "S-VID-Start",
+            "TCP-Flag-Type",
+            "TCP-Flags",
+            "TCP-Option",
+            "TCP-Option-Type",
+            "TCP-Option-Value",
+            "Time-Of-Day-Condition",
+            "Time-Of-Day-End",
+            "Time-Of-Day-Start",
+            "Timezone-Flag",
+            "Timezone-Offset",
+            "To-Spec",
+            "Treatment-Action",
+            "Use-Assigned-Address",
+            "User-Priority-Range",
+            "VLAN-ID-Range",
+        ]
+    },
+    "RFC6734": {
+        "no flag_rules": [
+            "Key",
+            "Key-Lifetime",
+            "Key-Name",
+            "Key-SPI",
+            "Key-Type",
+            "Keying-Material",
+        ]
+    },
+    "RFC7155": {"no flag_rules": ["QoS-Filter-Rule"]},
+    "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
+    "TS29.154": {"resolves nowhere": ["External-Group-Identifier"]},
+    "TS29.212": {
+        "resolves nowhere (re-used from X.S0057, which the corpus lacks)": [
+            "3GPP2-BSID"
+        ],
+        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+            "Logical-Access-ID",
+            "Physical-Access-ID",
+        ],
+    },
+    "TS29.214": {
+        "resolves nowhere (re-used from TS183.017, which the corpus lacks)": [
+            "Reservation-Priority"
+        ]
+    },
+    "TS29.219": {
+        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+            "Logical-Access-ID",
+            "Physical-Access-ID",
+        ]
+    },
+    "TS29.229": {"resolves nowhere": ["Line-Identifier"]},
+    "TS29.272": {"no flag_rules": ["MIP6-Agent-Info"]},
+    "TS29.273": {
+        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+            "Logical-Access-ID"
+        ],
+        "resolves nowhere": ["NSWO-Authorization"],
+    },
+    "TS29.338": {
+        "resolves nowhere (re-used from TS23.329, which the corpus lacks)": ["MSISDN"]
+    },
+    "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
+    "TS29.389": {
+        "no flag_rules": [
+            "V2X-Application-Server",
+            "V2X-Authorization-Data",
+            "V2X-Permission-in-VPLMN",
+        ]
+    },
+    "TS32.299": {
+        "resolves nowhere": [
+            "3GPP2-BSID",
+            "Logical-Access-ID",
+            "M2M-Information",
+            "Monitored-HPLMN-Identifier",
+            "Monitoring-Event-Report",
+            "Network-Element",
+            "Physical-Access-ID",
+            "Service-ID",
+            "Submission-Timestamp",
+            "TCP-Source-Port",
+        ],
+        "no data_type, no flag_rules": [
+            "Application-Server-ID",
+            "Application-Service-Type",
+            "Application-Session-ID",
+            "Content-ID",
+            "Content-Provider-ID",
+            "DCD-Information",
+            "Delivery-Status",
+            "IM-Information",
+            "Number-Of-Messages-Successfully-Exploded",
+            "Number-Of-Messages-Successfully-Sent",
+            "Service-Generic-Information",
+            "Total-Number-Of-Messages-Exploded",
+            "Total-Number-Of-Messages-Sent",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.140, which the corpus lacks)": [
+            "VAS-Id",
+            "VASP-Id",
+        ],
+    },
+}
+
+
+def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
+    with pytest.raises(model.IncompleteCorpusError) as raised:
+        model.Model.build(corpus.Corpus.load([_ROOT / "dad"]), strict=True)
+    actual: dict[str, dict[str, list[str]]] = {}
+    for hole in raised.value.holes:
+        why = str(hole).split(": ", 1)[1]
+        actual.setdefault(hole.reference, {}).setdefault(why, []).append(hole.name)
+    assert actual == _STANDING_HOLES

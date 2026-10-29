@@ -18,6 +18,7 @@ built.resolve("TS29.229", "DRMP")  # one name in one spec's reading
 built.find("Public-Identity")  # every AVP under a name
 built.identified(10415, 601)  # every AVP claiming an identity
 built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
+built.holes("TS32.299")  # what the corpus cannot complete
 ```
 
 The query set is thin on purpose: each query was written because a real
@@ -37,11 +38,50 @@ the origin. A name tabulated in several of one file's AVP tables takes its
 table facts — flag rules, and type and code when no clause defines it — from
 the first row in file order; `table_rows` returns every copy, which matters
 where per-interface tables disagree (TS 29.061's `3GPP-IMSI`, the linter's
-`table-row-mismatch`). The model never reports the conflicts this papers
-over; run the linter for those. Vendor spaces follow the linter's reading. A name that
-resolves nowhere stays a name (`Member.avp is None`), as does the
-`* [ AVP ]` wildcard. Origins and bases use `corpus.Corpus.resolve`, the
+`table-row-mismatch`). The model never reports the conflicts this order
+papers over; run the linter for those. Vendor spaces follow the linter's
+reading. Origins and bases use `corpus.Corpus.resolve`, the
 match-major-take-newest rule in [linter.md](linter.md#resolving-an-origin).
+
+**Filling through.** A field the first reading leaves unstated comes from
+the next reading along the order, if the two are the same AVP saying the
+same thing: every field both state — code, type, flag rules, and vendor
+where both state one — must be equal. A table row's vendor is inferred from
+its file's `; Vendor-ID:`, so it agrees with any. TS 29.272's re-print of
+`Allocation-Retention-Priority` takes TS 29.212's flag rules this way, and
+TS 29.229's re-used `Digest-*` AVPs take their Diameter types from TS
+29.229's own table, since RFC 4590 is a RADIUS document. A reading that
+disagrees fills nothing, nor does any after it: the name stays a hole that
+names the disagreeing document, rather than become one AVP assembled from
+two documents that disagree about it.
+
+**Holes.** An `Avp` has every field: code, type and flag rules are facts some
+document states, never `None`. A name the corpus cannot complete is a
+`model.Hole` instead, naming the document that falls short, the fields it
+leaves unstated (`code`, `data_type`, `flag_rules`), or `definition` when
+the name resolves nowhere, plus the re-used origin the corpus lacks or the
+disagreeing reading, if either applies. A flag-rule row with every cell
+blank is unstated, not "no flags". `Member.avp` is `None` for a hole and
+`Member.hole` says which; the `* [ AVP ]` wildcard is the one `None` without
+a hole. A hole keeps the vendor, code, type and flag rules its document
+states, but not a grouped AVP's members or an enumerated AVP's values: RFC
+5777's `Classifier` is a hole with no members. A consumer that wants those
+reads the AST, through `table_rows` or the file's `corpus.Entry.spec`.
+
+`Model.build(books, strict=True)` raises `model.IncompleteCorpusError`,
+listing every hole, rather than build a model with any. The default is
+`strict=False` because the committed corpus does not build strictly, and
+every standing hole is a statement its source does not make. RFC 4072,
+4590, 5447, 5777 and 6734 print no flag-rule columns (RFC 4590, a RADIUS
+document, no Diameter types either), and TS 29.272's re-print of RFC 5447's
+`MIP6-Agent-Info` inherits the gap. RFC 4005 and 7155 leave
+`QoS-Filter-Rule`'s flag cells blank, as TS 29.389 does for three V2X rows.
+TS 32.299's untyped rows are roadmap item K, TS 29.061's
+`3GPP-Session-Stop-Indicator` row states only a code, and the names that
+resolve nowhere are the linter's standing `unresolved-reference` cases and
+re-used origins outside the corpus. The pinned list in `tests/test_model.py`
+(`_STANDING_HOLES`) is the full account: the strict build's failure is
+compared against it, so a hole worked off or a new one shows up as a diff.
 
 ## The validators
 
@@ -61,8 +101,10 @@ must exist under the right codes, each direction's `avp_def` must cover the
 ABNF's members matched by `(vendor-id, code)`, `is_required` must agree with
 the brackets, and the document's own AVPs must be right — name, type,
 mandatory default — in the library's global dictionary. An "extra AVP" may
-be another specification's legitimate use of the same command class; a
-corpus AVP with no resolvable identity is reported as unchecked.
+be another specification's legitimate use of the same command class. The
+model is built non-strictly: a hole is checked on what its document states
+(RFC 4072's `EAP-Payload` has an identity but no flag rules), and one with no
+`(vendor-id, code)` is reported as unchecked.
 
 The first Cx run (library 0.9.0, which pins TS 29.229 V13.1.0) reported 94
 disagreements, the sharpest being three command classes carrying RFC 4740's

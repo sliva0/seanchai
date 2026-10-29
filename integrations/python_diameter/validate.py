@@ -108,6 +108,18 @@ def direction_class(base: type, request: bool) -> type | None:
     return None
 
 
+def identity_of(member: model.Member) -> tuple[int, int] | None:
+    """The member's `(vendor-id, code)`, read off a hole too: an AVP whose
+    document states no flag rules (RFC 4072's EAP-Payload) still has an
+    identity to look up in `avp_def`."""
+    if member.avp is not None:
+        return member.avp.identity
+    hole = member.hole
+    if hole is None or hole.vendor_id is None or hole.code is None:
+        return None
+    return (hole.vendor_id, hole.code)
+
+
 def check_message(message: model.Message, bases: dict[int, type]) -> list[str]:
     """One spec command body against the library class serving its code."""
     base = bases.get(message.command_code)
@@ -131,11 +143,12 @@ def check_message(message: model.Message, bases: dict[int, type]) -> list[str]:
     for member in message.avps:
         if member.name == "AVP":
             continue
-        identity = None if member.avp is None else member.avp.identity
+        identity = identity_of(member)
         if identity is None:
             findings.append(
                 f"{message.name}: {member.name} resolves to no"
-                " (vendor-id, code) in the corpus, so it could not be checked"
+                f" (vendor-id, code) in the corpus ({member.hole}), so it could"
+                " not be checked"
             )
             continue
         entry = by_identity.get(identity)
@@ -167,8 +180,11 @@ def check_message(message: model.Message, bases: dict[int, type]) -> list[str]:
     return findings
 
 
-def check_dictionary(avp: model.Avp, dictionary, where: str) -> list[str]:
-    """One of the specification's own AVPs against the library's dictionary."""
+def check_dictionary(avp: model.Avp | model.Hole, dictionary, where: str) -> list[str]:
+    """One of the specification's own AVPs against the library's dictionary.
+
+    A hole is checked on what its document does state.
+    """
     if avp.code is None:
         # A code-less row has nothing to key the library's dictionary with;
         # the linter's `row-without-code` rule reports it on the corpus side.
@@ -247,11 +263,19 @@ def main() -> int:
     for message in messages:
         findings += check_message(message, bases)
 
-    own = [avp for avp in built.avps(reference) if avp.defined_in == reference]
+    own: list[model.Avp | model.Hole] = [
+        avp for avp in built.avps(reference) if avp.defined_in == reference
+    ]
+    own += [
+        hole
+        for hole in built.holes(reference)
+        if hole.reference == reference and hole.vendor_id is not None
+    ]
     for avp in own:
         # Per AVP, not per file: a document's own AVPs almost always share
         # its `; Vendor-ID:`, but a vendor-less definition is IETF-space and
         # lives in the library's base dictionary.
+        assert avp.vendor_id is not None
         if avp.vendor_id == ast.IETF_VENDOR:
             dictionary, where = AVP_DICTIONARY, "AVP_DICTIONARY"
         else:

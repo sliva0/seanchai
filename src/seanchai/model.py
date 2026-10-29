@@ -31,16 +31,24 @@ and the policy is deliberately small:
   facts (flag rules; type and code when nothing defines it) from the first
   row in file order. `Model.table_rows` returns all of them, for the
   documents whose per-interface tables disagree.
+- A field the first reading in that order leaves unstated is taken from the
+  next reading, as long as every field both state agrees (a table row's
+  vendor, inferred from its file, agrees with any): a re-print tabulated
+  nowhere takes its origin's flag rules. A disagreeing reading fills
+  nothing and is named in the hole instead.
 
-A name that resolves nowhere stays a name: `Member.avp` is `None` both for
-an unresolved reference (the linter's `unresolved-reference` note lists
-them) and for RFC 6733's `* [ AVP ]` wildcard, which is grammar rather than
-a reference.
+An `Avp` has every field; a name the corpus cannot complete is a `Hole`
+instead, whether a field is unstated everywhere along the order or the name
+resolves nowhere at all. `Model.build(..., strict=True)` refuses a corpus
+with any; otherwise `Model.holes` lists them and `Member.avp` is `None` with
+`Member.hole` saying why. `Member.avp` is also `None`, with no hole, for RFC
+6733's `* [ AVP ]` wildcard, which is grammar rather than a reference.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Iterator
+from dataclasses import dataclass, replace
 from functools import cached_property
 
 from . import corpus
@@ -51,27 +59,88 @@ class ModelError(ValueError):
     pass
 
 
+class IncompleteCorpusError(ModelError):
+    """A strict build over a corpus with holes; `holes` lists every one."""
+
+    def __init__(self, holes: tuple[Hole, ...]) -> None:
+        self.holes = holes
+        listing = "".join(f"\n  {hole}" for hole in holes)
+        super().__init__(
+            f"the corpus has {len(holes)} hole{'' if len(holes) == 1 else 's'}"
+            f" (Model.build(..., strict=False) builds the rest):{listing}"
+        )
+
+
 @dataclass(frozen=True)
 class Avp:
-    """One resolved AVP, as the specification `defined_in` states it."""
+    """One resolved AVP, as the specification `defined_in` states it.
+
+    Every field is a fact some document in the corpus states; an AVP missing
+    one is a `Hole` instead, never an `Avp` with a gap in it.
+    """
 
     name: str
     vendor_id: int
-    # A table row may print no code — TS 29.229's raw extraction tabulates
-    # `Load` with `-`, which the linter's `row-without-code` rule reports —
-    # and an AVP without one has no wire identity, only a name.
-    code: int | None
-    data_type: ast.DataType | None
-    # Absent when the defining document never tabulates the AVP.
-    flag_rules: ast.AvpFlagRules | None
+    code: int
+    data_type: ast.DataType
+    flag_rules: ast.AvpFlagRules
     # The reference re-used rows cite: `TS29.229`, `RFC6733`.
     defined_in: str
     section: str | None
 
     @property
-    def identity(self) -> tuple[int, int] | None:
+    def identity(self) -> tuple[int, int]:
         """`(vendor-id, code)`, the pair that distinguishes AVPs on the wire."""
-        return None if self.code is None else (self.vendor_id, self.code)
+        return (self.vendor_id, self.code)
+
+
+# `Avp` field names, as `Hole.missing` spells them.
+CODE = "code"
+DATA_TYPE = "data_type"
+FLAG_RULES = "flag_rules"
+# A name nothing in the corpus defines, tabulates or can be followed to.
+DEFINITION = "definition"
+
+
+@dataclass(frozen=True)
+class Hole:
+    """A name the corpus cannot turn into a complete `Avp`.
+
+    `reference` is the document whose statement falls short: the one that
+    defines or tabulates the AVP without stating every field, or, when the
+    name resolves to nothing, the one that names it. Its code, type, vendor
+    and flag rules, where stated, are kept for a consumer that takes partial
+    data. A grouped AVP's members and an enumerated AVP's values are not; the
+    AST (`table_rows`, `corpus.Entry.spec`) has those.
+    """
+
+    reference: str
+    name: str
+    # `CODE`, `DATA_TYPE`, `FLAG_RULES`, or `DEFINITION` alone.
+    missing: tuple[str, ...]
+    vendor_id: int | None = None
+    code: int | None = None
+    data_type: ast.DataType | None = None
+    flag_rules: ast.AvpFlagRules | None = None
+    section: str | None = None
+    # The re-used origin the corpus holds no copy of, when one is cited:
+    # TS 29.212's `3GPP2-BSID` from 3GPP2 X.S0057.
+    origin: str | None = None
+    # The document whose reading states a missing field but disagrees with
+    # this one on a field both state, so nothing was taken from it or from
+    # any reading after it.
+    conflict: str | None = None
+
+    def __str__(self) -> str:
+        if self.missing == (DEFINITION,):
+            what = "resolves nowhere"
+        else:
+            what = "no " + ", no ".join(self.missing)
+        if self.origin is not None:
+            what += f" (re-used from {self.origin}, which the corpus lacks)"
+        if self.conflict is not None:
+            what += f"; {self.conflict}'s reading, which states it, disagrees"
+        return f"{self.reference} {self.name}: {what}"
 
 
 @dataclass(frozen=True)
@@ -79,9 +148,10 @@ class Member:
     """One line of an ABNF body, with the name resolved to an object."""
 
     rule: ast.AvpRule
-    # None for the `* [ AVP ]` wildcard and for a reference the corpus cannot
-    # resolve — the two cases where a name is all there is.
+    # None for the `* [ AVP ]` wildcard and for a name the corpus cannot
+    # complete; `hole` says which of the two.
     avp: Avp | None
+    hole: Hole | None = None
 
     @property
     def name(self) -> str:
@@ -110,6 +180,149 @@ class Message:
     defined_in: str
     section: str
     avps: tuple[Member, ...]
+
+
+def _stated(flag_rules: ast.AvpFlagRules) -> bool:
+    """Whether a row's flag cells say anything. A table with no flag columns
+    (RFC 4072, 4590, 5447, 5777 and 6734 print none) and a row with every
+    flag cell blank (TS 32.299 table 7.2.0.1 for most re-printed rows) both
+    parse to empty rules, and neither is a claim that no flag applies."""
+    return bool(
+        flag_rules.must
+        or flag_rules.may
+        or flag_rules.should_not
+        or flag_rules.must_not
+    )
+
+
+@dataclass
+class _Draft:
+    """One reading of a name while resolution assembles it: `Avp`'s fields,
+    any of them possibly unknown, until `final` turns it into an `Avp` or a
+    `Hole`."""
+
+    # Avp, Grouped or Enumerated; None when nothing defines the name, and the
+    # draft carries only the unreadable `origin` that would have.
+    kind: type[Avp] | None
+    name: str
+    reference: str
+    vendor_id: int | None = None
+    # False for a table row, whose vendor is the file's `; Vendor-ID:` rather
+    # than anything the row prints.
+    vendor_stated: bool = False
+    code: int | None = None
+    data_type: ast.DataType | None = None
+    flag_rules: ast.AvpFlagRules | None = None
+    section: str | None = None
+    origin: str | None = None
+    conflict: str | None = None
+    members: tuple[Member, ...] = ()
+    values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
+
+    def fill(self, other: _Draft) -> _Draft:
+        """This reading with what it leaves unstated taken from `other`, the
+        next document along the resolution order, when the two are the same
+        AVP saying the same thing.
+
+        Every field both readings state must be equal: code, type, flag
+        rules, and vendor where both state one. A table row's vendor is
+        inferred from its file, so it agrees with any: TS 29.229's row for
+        RFC 4590's `Digest-Realm` sits in vendor 10415's file, the origin's
+        row in vendor 0's. A reading that disagrees fills nothing, and
+        neither does any after it; the hole names it instead, since taking
+        a `Time` row's missing flags from an `Unsigned32` reading would make
+        one complete AVP out of two documents that disagree about it.
+        """
+        if self.kind is None:
+            # Nothing here yet: any definition wins, and failing one, the
+            # first unreadable origin stays the explanation.
+            return other if other.kind is not None or self.origin is None else self
+        if other.kind is None or self.conflict is not None:
+            return self
+        pairs = [
+            (self.code, other.code),
+            (self.data_type, other.data_type),
+            (self.flag_rules, other.flag_rules),
+        ]
+        if not any(mine is None and theirs is not None for mine, theirs in pairs):
+            return self
+        if self.vendor_stated and other.vendor_stated:
+            pairs.append((self.vendor_id, other.vendor_id))
+        if any(
+            mine is not None and theirs is not None and mine != theirs
+            for mine, theirs in pairs
+        ):
+            return replace(self, conflict=other.reference)
+        kind, members, values = self.kind, self.members, self.values
+        if self.data_type is None and other.kind is not Avp:
+            # A row printing no type, for an AVP another document defines
+            # as grouped or enumerated, takes the definition's body too.
+            kind, members, values = other.kind, other.members, other.values
+        vendor_id, vendor_stated = self.vendor_id, self.vendor_stated
+        if not vendor_stated and other.vendor_stated:
+            vendor_id, vendor_stated = other.vendor_id, True
+        return replace(
+            self,
+            kind=kind,
+            members=members,
+            values=values,
+            vendor_id=vendor_id,
+            vendor_stated=vendor_stated,
+            code=other.code if self.code is None else self.code,
+            data_type=other.data_type if self.data_type is None else self.data_type,
+            flag_rules=(
+                other.flag_rules if self.flag_rules is None else self.flag_rules
+            ),
+        )
+
+    @cached_property
+    def final(self) -> Avp | Hole:
+        if (
+            self.kind is None
+            or self.vendor_id is None
+            or self.code is None
+            or self.data_type is None
+            or self.flag_rules is None
+        ):
+            missing = (
+                (DEFINITION,)
+                if self.kind is None
+                else tuple(
+                    name
+                    for name, value in (
+                        (CODE, self.code),
+                        (DATA_TYPE, self.data_type),
+                        (FLAG_RULES, self.flag_rules),
+                    )
+                    if value is None
+                )
+            )
+            return Hole(
+                reference=self.reference,
+                name=self.name,
+                missing=missing,
+                vendor_id=self.vendor_id,
+                code=self.code,
+                data_type=self.data_type,
+                flag_rules=self.flag_rules,
+                section=self.section,
+                origin=self.origin,
+                conflict=self.conflict,
+            )
+        common = (
+            self.name,
+            self.vendor_id,
+            self.code,
+            self.data_type,
+            self.flag_rules,
+            self.reference,
+            self.section,
+        )
+        if self.kind is Grouped:
+            return Grouped(*common, members=self.members)
+        if self.kind is Enumerated:
+            return Enumerated(*common, values=self.values)
+        return Avp(*common)
 
 
 @dataclass
@@ -154,12 +367,24 @@ class Model:
         for entry in books:
             if entry.reference not in self._views:
                 self._views[entry.reference] = _View.index(entry)
-        # Memo of resolved AVPs, keyed by the view that defined the name.
-        self._resolved: dict[tuple[str, str], Avp | None] = {}
+        # Memo of resolved readings, keyed by the view that reads the name.
+        self._resolved: dict[tuple[str, str], _Draft | None] = {}
 
     @classmethod
-    def build(cls, books: corpus.Corpus) -> Model:
-        return cls(books)
+    def build(cls, books: corpus.Corpus, *, strict: bool = False) -> Model:
+        """The model over `books`.
+
+        `strict` refuses a corpus with any hole, raising
+        `IncompleteCorpusError` with all of them, so a consumer that needs
+        every AVP complete learns at build time rather than from a missing
+        member later. Off by default because the committed corpus has
+        standing holes (docs/consumers.md); without it, a name with a hole
+        resolves to no `Avp` and `holes` reports it.
+        """
+        built = cls(books)
+        if strict and (holes := built.holes()):
+            raise IncompleteCorpusError(holes)
+        return built
 
     def references(self) -> list[str]:
         """Every specification the model answers for, `TS29.229`-spelled."""
@@ -193,16 +418,60 @@ class Model:
 
         This is the specification's dictionary view: a re-printed or re-used
         AVP appears with the origin's `defined_in`, so a consumer that wants
-        only the document's own AVPs filters on that field.
+        only the document's own AVPs filters on that field. A name with a
+        hole is left out; `holes` lists it.
         """
-        view = self._view(reference)
-        names = dict.fromkeys((*view.defined, *view.tabled, *view.reused))
-        found = (self.resolve(reference, name) for name in names)
+        found = (self.resolve(reference, name) for name in self._names(reference))
         return tuple(avp for avp in found if avp is not None)
 
     def resolve(self, reference: str, name: str) -> Avp | None:
-        """`name` as `reference` means it, or None when it resolves nowhere."""
-        return self._resolve(self._view(reference), name, ())
+        """`name` as `reference` means it, or None when the corpus cannot
+        complete it — `hole` says why."""
+        found = self._final(self._view(reference), name)
+        return found if isinstance(found, Avp) else None
+
+    def hole(self, reference: str, name: str) -> Hole | None:
+        """What `reference`'s reading of `name` lacks, or None when it
+        resolves completely."""
+        found = self._final(self._view(reference), name)
+        return found if isinstance(found, Hole) else None
+
+    def holes(self, reference: str | None = None) -> tuple[Hole, ...]:
+        """Every hole in `reference`'s reading, or in the whole corpus.
+
+        A reading's holes are the names its dictionary view and its command
+        and grouped bodies cannot complete. A hole belongs to the document
+        that falls short, so TS 29.229's reading reports RFC 4590's untyped
+        `Digest-*` rows only where TS 29.229's own table does not type them.
+        Sorted by document and name.
+        """
+        references = self.references() if reference is None else [reference]
+        found: dict[Hole, None] = {}
+        for each in references:
+            view = self._view(each)
+            for name in self._names(each):
+                hole = self.hole(each, name)
+                if hole is not None:
+                    found[hole] = None
+            bodies = [message.avps for message in self.messages(each)]
+            bodies += [
+                avp.members
+                for avp in self.avps(each)
+                if isinstance(avp, Grouped) and avp.defined_in == each
+            ]
+            # A grouped definition with a hole is no `Grouped`, but its body
+            # is still this document's to resolve.
+            bodies += [
+                self._body(view, definition.avps)
+                for name, definition in view.defined.items()
+                if isinstance(definition, ast.GroupedAvp)
+                and self.hole(each, name) is not None
+            ]
+            for body in bodies:
+                found.update(
+                    (member.hole, None) for member in body if member.hole is not None
+                )
+        return tuple(sorted(found, key=lambda hole: (hole.reference, hole.name)))
 
     def table_rows(self, reference: str, name: str) -> tuple[ast.AvpTableRow, ...]:
         """Every AVP-table row `reference` prints for `name`, in file order.
@@ -230,7 +499,17 @@ class Model:
 
     # --- resolution ---------------------------------------------------------
 
-    def _resolve(self, view: _View, name: str, stack: tuple) -> Avp | None:
+    def _names(self, reference: str) -> dict[str, None]:
+        view = self._view(reference)
+        return dict.fromkeys((*view.defined, *view.tabled, *view.reused))
+
+    def _final(self, view: _View, name: str, stack: tuple = ()) -> Avp | Hole:
+        draft = self._resolve(view, name, stack)
+        if draft is None:
+            return Hole(view.entry.reference, name, (DEFINITION,))
+        return draft.final
+
+    def _resolve(self, view: _View, name: str, stack: tuple) -> _Draft | None:
         key = (view.entry.reference, name)
         if key in self._resolved:
             return self._resolved[key]
@@ -242,91 +521,118 @@ class Model:
         self._resolved[key] = result
         return result
 
-    def _resolve_here(self, view: _View, name: str, stack: tuple) -> Avp | None:
+    def _resolve_here(self, view: _View, name: str, stack: tuple) -> _Draft | None:
+        """The first reading along the resolution order, with whatever it
+        leaves unstated filled from the readings after it.
+
+        A re-print that tabulates no flag rules (TS 29.272's
+        `Allocation-Retention-Priority`, re-used from TS 29.212) takes them
+        from its origin, and an origin that states no Diameter type (RFC
+        4590's RADIUS-derived `Digest-*` rows) takes it from the citing
+        document's table. The first reading still names the defining
+        document.
+        """
+        found: _Draft | None = None
+        for reading in self._readings(view, name, stack):
+            found = reading if found is None else found.fill(reading)
+            if isinstance(found.final, Avp) or found.conflict is not None:
+                break
+        return found
+
+    def _readings(self, view: _View, name: str, stack: tuple) -> Iterator[_Draft]:
+        """Every document's reading of `name`, in resolution order, lazily:
+        the local definition, the re-used origin, the local table row, the
+        `; Bases:` documents."""
+        rows = view.tabled.get(name)
+        origin = view.reused.get(name)
+        theirs = None if origin is None else self._cited(view, origin)
+        unread = origin if theirs is None else None
         definition = view.defined.get(name)
         if definition is not None:
-            return self._from_definition(view, definition, stack)
-        origin = view.reused.get(name)
-        if origin is not None:
-            entry = self._books.resolve(origin, like=view.entry.spec)
-            if entry is not None:
-                theirs = self._views.get(entry.reference)
-                if theirs is not None:
-                    resolved = self._resolve(theirs, name, stack)
-                    if resolved is not None:
-                        return resolved
-        rows = view.tabled.get(name)
-        if rows is not None:
-            row = rows[0]
-            return Avp(
-                name=name,
-                vendor_id=view.entry.spec.vendor_id,
-                code=row.code,
-                data_type=row.data_type,
-                flag_rules=row.flag_rules,
-                defined_in=view.entry.reference,
-                section=row.section,
-            )
+            yield self._from_definition(view, definition, rows, unread, stack)
+        if theirs is not None and (found := self._resolve(theirs, name, stack)):
+            yield found
+        if rows is not None and definition is None:
+            yield self._from_row(view, name, rows[0], unread)
         for base in view.entry.spec.bases:
-            entry = self._books.resolve(base, like=view.entry.spec)
-            if entry is None:
-                continue
-            theirs = self._views.get(entry.reference)
-            if theirs is None:
-                continue
-            resolved = self._resolve(theirs, name, stack)
-            if resolved is not None:
-                return resolved
-        return None
+            cited = self._cited(view, base)
+            if cited is not None and (found := self._resolve(cited, name, stack)):
+                yield found
+        if unread is not None:
+            yield _Draft(None, name, view.entry.reference, origin=unread)
+
+    def _cited(self, view: _View, reference: str) -> _View | None:
+        """The view `reference` names when cited from `view`, if the corpus
+        holds a copy in the matching release."""
+        entry = self._books.resolve(reference, like=view.entry.spec)
+        return None if entry is None else self._views.get(entry.reference)
+
+    def _from_row(
+        self, view: _View, name: str, row: ast.AvpTableRow, unread: str | None
+    ) -> _Draft:
+        return _Draft(
+            Avp,
+            name,
+            view.entry.reference,
+            vendor_id=view.entry.spec.vendor_id,
+            code=row.code,
+            data_type=row.data_type,
+            flag_rules=row.flag_rules if _stated(row.flag_rules) else None,
+            section=row.section,
+            origin=unread,
+        )
 
     def _from_definition(
         self,
         view: _View,
         definition: ast.GroupedAvp | ast.EnumeratedAvp,
+        rows: list[ast.AvpTableRow] | None,
+        unread: str | None,
         stack: tuple,
-    ) -> Avp:
-        rows = view.tabled.get(definition.name)
-        common = {
-            "name": definition.name,
+    ) -> _Draft:
+        flag_rules = None if rows is None else rows[0].flag_rules
+        draft = _Draft(
+            Grouped if isinstance(definition, ast.GroupedAvp) else Enumerated,
+            definition.name,
+            view.entry.reference,
             # A definition written with no vendor-id is IETF-space; the wire
             # format calls that vendor 0.
-            "vendor_id": (
+            vendor_id=(
                 ast.IETF_VENDOR
                 if definition.vendor_id is None
                 else definition.vendor_id
             ),
-            "code": definition.code,
-            "flag_rules": None if rows is None else rows[0].flag_rules,
-            "defined_in": view.entry.reference,
-            "section": definition.source.section,
-        }
-        if isinstance(definition, ast.GroupedAvp):
-            return Grouped(
-                **common,
-                data_type=ast.DataType.GROUPED,
-                members=self._body(view, definition.avps, stack),
-            )
-        return Enumerated(
-            **common,
-            data_type=ast.DataType.ENUMERATED,
-            values=definition.values,
+            vendor_stated=True,
+            code=definition.code,
+            flag_rules=(
+                flag_rules if flag_rules is not None and _stated(flag_rules) else None
+            ),
+            section=definition.source.section,
+            origin=unread,
         )
+        if isinstance(definition, ast.GroupedAvp):
+            draft.data_type = ast.DataType.GROUPED
+            draft.members = self._body(view, definition.avps, stack)
+        else:
+            draft.data_type = ast.DataType.ENUMERATED
+            draft.values = definition.values
+        return draft
 
     def _body(
         self, view: _View, rules: tuple[ast.AvpRule, ...], stack: tuple = ()
     ) -> tuple[Member, ...]:
-        return tuple(
-            Member(
-                rule=rule,
-                # `AVP` is RFC 6733's any-AVP wildcard — grammar, not a name.
-                avp=(
-                    None
-                    if rule.name == "AVP"
-                    else self._resolve(view, rule.name, stack)
-                ),
-            )
-            for rule in rules
-        )
+        members = []
+        for rule in rules:
+            # `AVP` is RFC 6733's any-AVP wildcard — grammar, not a name.
+            if rule.name == "AVP" or (view.entry.reference, rule.name) in stack:
+                members.append(Member(rule=rule, avp=None))
+                continue
+            found = self._final(view, rule.name, stack)
+            if isinstance(found, Avp):
+                members.append(Member(rule=rule, avp=found))
+            else:
+                members.append(Member(rule=rule, avp=None, hole=found))
+        return tuple(members)
 
     # --- corpus-wide lookup -------------------------------------------------
 
@@ -348,6 +654,5 @@ class Model:
     def _by_identity(self) -> dict[tuple[int, int], tuple[Avp, ...]]:
         table: dict[tuple[int, int], list[Avp]] = {}
         for avp in self._everything:
-            if avp.identity is not None:
-                table.setdefault(avp.identity, []).append(avp)
+            table.setdefault(avp.identity, []).append(avp)
         return {identity: tuple(avps) for identity, avps in table.items()}
