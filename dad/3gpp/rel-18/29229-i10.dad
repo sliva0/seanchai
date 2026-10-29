@@ -662,6 +662,8 @@ Identity-with-Emergency-Registration ::= < AVP header: 651 10415 >
 ; Section: 6.3.58
 ; Page: 35
 Priviledged-Sender-Indication ::= < Enumerated AVP header: 652 10415 >
+        NOT_PRIVILEDGED_SENDER = 0
+        PRIVILEDGED_SENDER     = 1
 
 
 ; Type: Grouped AVP

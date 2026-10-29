@@ -98,11 +98,31 @@ _ABNF_MEMBER_RE = re.compile(
     r"\s*(?:\d*\*\d*)?\s*[<{\[]\s*[A-Za-z0-9][A-Za-z0-9_-]*\s*[>}\]]"
 )
 _ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
-# TS 29.368 clause 6.4.6 labels values in words, "Device Trigger Request (1)";
-# read behind `worded-enum-values`, since prose can end in "(n)" too.
-_WORDED_ENUM_VALUE_RE = re.compile(
-    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*(?: [A-Za-z0-9_-]+)+)\s*\((?P<value>\d+)\)$"
+# A value line in the shapes the quirks below read, each part optional so the
+# reading can say which quirk a line needed. Prose can end in "(n)" too, so
+# every departure from `NAME (n)` is declared per document:
+# - `dashed-enum-values`: a list dash printed as text, "- AUDIO (0)" (TS 29.214
+#   clause 5.3.19, 29.272 7.3.128, 29.338 5.3.3.2);
+# - `worded-enum-values`: a label in words, "Device Trigger Request (1)" (TS
+#   29.368 clause 6.4.6, 29.214 5.3.25);
+# - `hex-enum-values`: "OTHER (0xFFFFFFFF)" (TS 29.214 clause 5.3.19);
+# - `punctuated-enum-values`: a list's comma or full stop after the value,
+#   "- ONLY_IMSI_REQUESTED (0)," (TS 29.338 clause 5.3.3.5);
+# - `described-enum-values`: the value's gloss on its own line, "NO (0) The
+#   sending node is not GBA_U aware" (TS 29.109 clause 6.3.1.8);
+# - `label-after-enum-value`: no name before the value and the label after
+#   it, "- (0) Private user identity." (TS 29.109 clause 6.3.1.13).
+_LOOSE_ENUM_VALUE_RE = re.compile(
+    r"(?P<dash>- )?"
+    r"(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*(?P<words>(?: [A-Za-z0-9_-]+)+)?)?"
+    r"\s*\((?:(?P<value>\d+)|0x(?P<hex>[0-9A-Fa-f]+))\)"
+    r"\s*(?P<rest>.*)"
 )
+# Several `NAME (n)` printed in one paragraph with nothing between, read behind
+# `run-on-enum-values`: TS 29.229 clause 6.3.58's "NOT_PRIVILEDGED_SENDER
+# (0)PRIVILEDGED_SENDER (1)", one run in the docx and one line in the PDF.
+_RUN_ON_ENUM_VALUES_RE = re.compile(r"(?:[A-Za-z0-9_-]+\s*\(\d+\)\s*){2,}")
+_RUN_ON_ENUM_VALUE_RE = re.compile(r"(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)")
 _RESERVED_NOTE_RE = re.compile(
     r"[Vv]alues? (?P<first>\d+)(?:\s*(?:-|to)\s*(?P<last>\d+))?\s+(?:is|are) reserved"
 )
@@ -707,11 +727,16 @@ def _extract_enumerated(
             continue
         if match := _ENUM_VALUE_RE.fullmatch(text):
             values.append(ast.EnumValue(name=match["name"], value=int(match["value"])))
-        elif quirks.enabled("worded-enum-values") and (
-            match := _WORDED_ENUM_VALUE_RE.fullmatch(text)
+        elif value := _loose_enum_value(text, section.number, quirks):
+            values.append(value)
+        elif quirks.enabled("run-on-enum-values") and _RUN_ON_ENUM_VALUES_RE.fullmatch(
+            text
         ):
-            quirks.fire("worded-enum-values")
-            values.append(ast.EnumValue(name=match["name"], value=int(match["value"])))
+            quirks.fire("run-on-enum-values")
+            values.extend(
+                ast.EnumValue(name=match["name"], value=int(match["value"]))
+                for match in _RUN_ON_ENUM_VALUE_RE.finditer(text)
+            )
         elif paragraph.style == "NO" and (match := _RESERVED_NOTE_RE.search(text)):
             first = int(match["first"])
             reserved.append(
@@ -741,10 +766,9 @@ def _extract_enumerated(
                     values.append(_value_first(match, section.number))
     values_source = _values_source(section, quirks)
     if not values and not reserved and values_source is None:
-        # Kept empty rather than dropped. Every clause reported here today
-        # does print values, in shapes this reading does not take (TS
-        # 29.109's "- (0) Private user identity.", 29.338's "SM_DELIVER
-        # (0)" after a dash, 29.229 clause 6.3.58's two values on one line).
+        # Kept empty rather than dropped: the clause still says the AVP is
+        # enumerated, and a value line in a shape no declared reading takes
+        # shows up here rather than as a silently shorter list.
         warnings.append(f"{section.number}: enumerated AVP {name} lists no values")
     merged = sorted(
         [*values, *reserved],
@@ -817,6 +841,45 @@ _VALUE_RANGE_RE = re.compile(r"(?P<first>\d+) ?\.\. ?(?P<last>\d+) (?P<label>.+)
 _VALUE_FIRST_RE = re.compile(
     r"(?P<value>\d+) (?P<label>[^:]+?)(?: ?:(?: (?P<description>.*))?)?"
 )
+
+
+def _loose_enum_value(
+    text: str, section: str, quirks: sources.Quirks
+) -> ast.EnumValue | None:
+    """A value line departing from `NAME (n)` only in ways the document
+    declares (`_LOOSE_ENUM_VALUE_RE`), else None, as for any other prose."""
+    match = _LOOSE_ENUM_VALUE_RE.fullmatch(text)
+    if match is None:
+        return None
+    needed = []
+    if match["dash"]:
+        needed.append("dashed-enum-values")
+    if match["words"]:
+        needed.append("worded-enum-values")
+    if match["hex"]:
+        needed.append("hex-enum-values")
+    name, rest, description = match["name"], match["rest"], None
+    if rest in {",", "."}:
+        needed.append("punctuated-enum-values")
+    elif rest and name:
+        needed.append("described-enum-values")
+        description = rest
+    elif rest:
+        # TS 29.109 clause 6.3.1.13 labels "- (0) Private user identity." after
+        # the value; the full stop ends the sentence, not the label.
+        needed.append("label-after-enum-value")
+        name = rest.removesuffix(".")
+    if name is None or not all(quirks.enabled(quirk) for quirk in needed):
+        return None
+    for quirk in needed:
+        quirks.fire(quirk)
+    value = int(match["value"]) if match["hex"] is None else int(match["hex"], 16)
+    try:
+        return ast.EnumValue(name=name, value=value, description=description)
+    except pydantic.ValidationError:
+        raise ExtractionError(
+            f"{section}: enumerated value line {text!r} is no value name"
+        ) from None
 
 
 def _value_first(match: re.Match, section: str) -> ast.EnumValue:
@@ -1796,6 +1859,29 @@ QUIRKS: dict[str, str] = {
     "worded-enum-values": (
         "read 'Label In Words (n)' enumerated values, keeping the label's"
         " spaces (TS 29.368 clause 6.4.6)"
+    ),
+    "dashed-enum-values": (
+        "read '- NAME (n)' enumerated values, a list dash printed as text"
+        " (TS 29.272 clause 7.3.128)"
+    ),
+    "hex-enum-values": (
+        "read 'NAME (0xFFFFFFFF)' enumerated values (TS 29.214 clause 5.3.19)"
+    ),
+    "punctuated-enum-values": (
+        "read 'NAME (n),' and 'NAME (n).' enumerated values, dropping the"
+        " list's punctuation (TS 29.338 clause 5.3.3.5)"
+    ),
+    "described-enum-values": (
+        "read 'NAME (n) Gloss' enumerated values, the rest of the line the"
+        " value's description (TS 29.109 clause 6.3.1.8)"
+    ),
+    "label-after-enum-value": (
+        "read '(n) Label.' enumerated values, labelled after the value (TS"
+        " 29.109 clause 6.3.1.13)"
+    ),
+    "run-on-enum-values": (
+        "read several 'NAME (n)' run together in one paragraph (TS 29.229"
+        " clause 6.3.58)"
     ),
     "body-clause-headings": (
         "read a body paragraph 'n.n.n Name AVP' as a clause heading (TS 32.299"

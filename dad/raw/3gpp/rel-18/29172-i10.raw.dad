@@ -295,7 +295,8 @@ LCS-QoS ::= < AVP header: 2504 10415 >
 ; Section: 7.4.9
 ; Page: 33
 Vertical-Requested ::= < Enumerated AVP header: 2507 10415 >
-        VERTICAL_COORDINATE_IS_REQUESTED = 1
+        VERTICAL_COORDINATE_IS_NOT_REQUESTED = 0
+        VERTICAL_COORDINATE_IS_REQUESTED     = 1
 
 
 ; Type: Enumerated AVP
@@ -382,7 +383,8 @@ LCS-Privacy-Check-Session ::= < AVP header: 2522 10415 >
 ; Section: 7.4.27
 ; Page: 36
 LCS-QoS-Class ::= < Enumerated AVP header: 2523 10415 >
-        ASSURED = 0
+        ASSURED     = 0
+        BEST EFFORT = 1
 
 
 ; Type: Grouped AVP

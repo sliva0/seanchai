@@ -356,6 +356,8 @@ External-Identifier         TS29.336   MUST-NOT
 ; Section: 5.3.3.2
 ; Page: 29
 SM-RP-MTI ::= < Enumerated AVP header: 3308 10415 >
+        SM_DELIVER       = 0
+        SM_STATUS_REPORT = 1
 
 
 ; Type: Enumerated AVP
@@ -363,6 +365,8 @@ SM-RP-MTI ::= < Enumerated AVP header: 3308 10415 >
 ; Section: 5.3.3.5
 ; Page: 30
 SM-Delivery-Not-Intended ::= < Enumerated AVP header: 3311 10415 >
+        ONLY_IMSI_REQUESTED    = 0
+        ONLY_MCC_MNC_REQUESTED = 1
 
 
 ; Type: Grouped AVP
@@ -454,6 +458,9 @@ IP-SM-GW-SM-Delivery-Outcome ::= < AVP header: 3320 10415 >
 ; Section: 5.3.3.19
 ; Page: 34
 SM-Delivery-Cause ::= < Enumerated AVP header: 3321 10415 >
+        UE_MEMORY_CAPACITY_EXCEEDED = 0
+        ABSENT_USER                 = 1
+        SUCCESSFUL_TRANSFER         = 2
 
 
 ; Type: Grouped AVP
@@ -503,6 +510,8 @@ SMSF-Non-3GPP-Address ::= < AVP header: 3345 10415 >
 ; Section: 5.3.3.37
 ; Page: 36
 SMSF-3GPP-SBI-Support-Indicator ::= < Enumerated AVP header: 3346 10415 >
+        NOT_SUPPORT_SBI = 0
+        SUPPORT_SBI     = 1
 
 
 ; Type: Enumerated AVP
@@ -510,6 +519,8 @@ SMSF-3GPP-SBI-Support-Indicator ::= < Enumerated AVP header: 3346 10415 >
 ; Section: 5.3.3.38
 ; Page: 37
 SMSF-Non-3GPP-SBI-Support-Indicator ::= < Enumerated AVP header: 3347 10415 >
+        NOT_SUPPORT_SBI = 0
+        SUPPORT_SBI     = 1
 
 
 ; Type: Enumerated AVP
@@ -517,6 +528,8 @@ SMSF-Non-3GPP-SBI-Support-Indicator ::= < Enumerated AVP header: 3347 10415 >
 ; Section: 5.3.3.39
 ; Page: 37
 IP-SM-GW-SBI-Support-Indicator ::= < Enumerated AVP header: 3348 10415 >
+        NOT_SUPPORT_SBI = 0
+        SUPPORT_SBI     = 1
 
 
 ; Type: Grouped AVP
@@ -527,6 +540,20 @@ SM-Delivery-Failure-Cause ::= < AVP header: 3303 10415 >
         { SM-Enumerated-Delivery-Failure-Cause }
         [ SM-Diagnostic-Info ]
       * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: SM-Enumerated-Delivery-Failure-Cause
+; Section: 6.3.3.6
+; Page: 52
+SM-Enumerated-Delivery-Failure-Cause ::= < Enumerated AVP header: 3304 10415 >
+        MEMORY_CAPACITY_EXCEEDED  = 0
+        EQUIPMENT_PROTOCOL_ERROR  = 1
+        EQUIPMENT_NOT_SM-EQUIPPED = 2
+        UNKNOWN_SERVICE_CENTRE    = 3
+        SC-CONGESTION             = 4
+        INVALID_SME-ADDRESS       = 5
+        USER_NOT_SC-USER          = 6
 
 
 ; Type: Grouped AVP

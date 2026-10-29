@@ -20,8 +20,35 @@ reason = "the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; 
 first_version = "18.4.0"
 last_version = "18.4.0"
 
+[[patch]]
+find = "SPONSORED_DATA_CONNECTIVITY_ DISALLOWED (4)"
+replace = "SPONSORED_DATA_CONNECTIVITY_DISALLOWED (4)"
+exact = true
+section = "5.3.1"
+reason = "Abort-Cause's value 4 prints a space after an underscore (docx and PDF alike), which kept it out of the value list; every other value name in the clause is one underscore-joined token"
+first_version = "18.4.0"
+last_version = "18.4.0"
+
 [[quirk]]
 name = "prose-application-ids"
 reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Rx application in the present release is 16777236'"
+first_version = "18.4.0"
+last_version = "18.4.0"
+
+[[quirk]]
+name = "dashed-enum-values"
+reason = "clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'; unread, the list was empty"
+first_version = "18.4.0"
+last_version = "18.4.0"
+
+[[quirk]]
+name = "hex-enum-values"
+reason = "clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER (0xFFFFFFFF)'"
+first_version = "18.4.0"
+last_version = "18.4.0"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE INFORMATION (0)', and its intro names the default by that label"
 first_version = "18.4.0"
 last_version = "18.4.0"

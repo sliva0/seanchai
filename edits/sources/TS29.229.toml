@@ -18,3 +18,9 @@ name = "spaced-rule-operator"
 reason = "Clauses 6.3.13, 6.3.16, 6.3.19 and 6.3.64 spell the grouped rule operator ':: =' (and 'AVP Header :'); unread, those four definitions were silently missing."
 first_version = "18.1.0"
 last_version = "18.1.0"
+
+[[quirk]]
+name = "run-on-enum-values"
+reason = "clause 6.3.58 prints both Priviledged-Sender-Indication values in one paragraph with nothing between, 'NOT_PRIVILEDGED_SENDER (0)PRIVILEDGED_SENDER (1)' (one run in the docx, one line in the PDF)"
+first_version = "18.1.0"
+last_version = "18.1.0"

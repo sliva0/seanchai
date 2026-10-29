@@ -107,8 +107,15 @@ The declared vocabulary, with the document that forced each:
   `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
   `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`
   and `external-enum-values` (7.2.238, 7.2.20eA; also 29.212 and 29.272).
-  TS 29.368 adds `worded-enum-values` (6.4.6's `Device Trigger Request
-  (1)`).
+  Enumerated value lines that depart from `NAME (n)` each need their own:
+  `worded-enum-values` (29.368 6.4.6's `Device Trigger Request (1)`; also
+  29.109, 29.172, 29.214), `dashed-enum-values` (a list dash printed as
+  text, `- AUDIO (0)`: 29.109, 29.214, 29.272, 29.338), `hex-enum-values`
+  (29.214 5.3.19's `OTHER (0xFFFFFFFF)`), `punctuated-enum-values` (a list's
+  comma or full stop after the value: 29.109, 29.338),
+  `described-enum-values` and `label-after-enum-value` (29.109: `NO (0) The
+  sending node is not GBA_U aware`, `- (0) Private user identity.`) and
+  `run-on-enum-values` (29.229 6.3.58, two values in one paragraph).
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`); `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
@@ -147,8 +154,20 @@ Walks paragraphs and tables in document order under numbered headings:
   `ValueName (n)` items → `EnumeratedAvp`. Values are classified by content,
   not paragraph style (29.229 §6.3.34 inverts the B1/B2 convention).
   "Value n is reserved" notes become reserved ranges, inserted by value.
-  Behind `worded-enum-values`, a label of several words keeps its spaces
-  (TS 29.368's `Device Trigger Request (1)`). Behind `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are
+  Each departure from `NAME (n)` is read only where its quirk is declared,
+  and a line needing two is read only with both: a label of several words
+  keeps its spaces (`worded-enum-values`, TS 29.368's `Device Trigger
+  Request (1)`); a leading list dash is dropped (`dashed-enum-values`), as
+  is a comma or full stop after the value (`punctuated-enum-values`); a
+  hexadecimal value is read as its number (`hex-enum-values`, TS 29.214's
+  `OTHER (0xFFFFFFFF)` is 4294967295); the rest of the line after the value
+  is its description (`described-enum-values`, TS 29.109's `NO (0) The
+  sending node is not GBA_U aware`), the document's own one-line gloss, or,
+  with no name before the value, its name less a closing full stop
+  (`label-after-enum-value`, 29.109's `- (0) Private user identity.`, the
+  label Wireshark records too); several values run together in one
+  paragraph are each read (`run-on-enum-values`, TS 29.229 clause 6.3.58).
+  Behind `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are
   read too: the label ends at the first colon and the rest of the line is the
   value's description (`2 High priority: Lower than Pre-emptive priority`,
   7.2.132); `11 .. 99 Reserved for …` is a reserved range, and a range
@@ -161,8 +180,8 @@ Walks paragraphs and tables in document order under numbered headings:
   the ones defined in IP-CAN-Type AVP", 5.3.120), TS 32.299's `Type-Number`
   (OMNA WSP Content Type Numbers, 7.2.238) and `API-Network-Service-Node`
   (TS 23.682, 7.2.20eA). An enumerated clause yielding neither values nor a
-  citation keeps an empty definition and warns; every such clause today
-  prints values in a shape the reading misses (roadmap item R).
+  citation keeps an empty definition and warns; no clause in the corpus
+  does today.
 - The table with the "AVP Flag rules" header → `AvpTable`. A row whose code
   cell is a NOTE reference gets `code=None`; a note naming a defining RFC also
   produces a `ReusedAvps` row (`note-defined-in-rfc`). Behind
@@ -271,7 +290,11 @@ table 5.3.1.1, patched); a brace closing an optional member (29.343 §6.6.4,
 patched); a From cell dropping "RFC" (29.219 table 5.4, patched); a
 drafting placeholder `5.3.x` for a clause number, "is of type of
 Enumerated" in an enumerated clause's intro and an `Octetstring` type
-(29.215, patched).
+(29.215, patched); "is of type enumerated" in lower case (29.338 §6.3.3.6,
+patched); a space inside an enumerated value name
+(`SIPTO_above_RAN _ALLOWED` in 29.272 §7.3.135, also 29.172 §7.4.9, 29.214
+§5.3.1 and 29.338 §5.3.3.19, patched; unpatched, the value was silently not
+a value).
 Everything patched is listed with its reason in `edits/sources/`.
 
 TS 29.228 v18.0.0 and TS 29.328 v18.2.0 contain procedure/IE mappings,

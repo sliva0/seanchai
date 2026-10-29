@@ -19,3 +19,33 @@ section = "5.3.3"
 reason = "three grouped-AVP headers close with two angle brackets; the AVP header grammar and every neighbouring definition use one"
 first_version = "18.2.0"
 last_version = "18.2.0"
+
+[[patch]]
+find = "UE_ MEMORY_CAPACITY_EXCEEDED"
+replace = "UE_MEMORY_CAPACITY_EXCEEDED"
+count = 1
+section = "5.3.3.19"
+reason = "SM-Delivery-Cause's first value name prints a space after an underscore, '- UE_ MEMORY_CAPACITY_EXCEEDED (0)' (docx and PDF alike); clause 6.3.3.6 spells the same cause MEMORY_CAPACITY_EXCEEDED"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "is of type enumerated"
+replace = "is of type Enumerated"
+count = 1
+section = "6.3.3.6"
+reason = "clause 6.3.3.6 types SM-Enumerated-Delivery-Failure-Cause 'enumerated' in lower case, which kept the clause from being read as a definition at all; table 6.3.3.1/1 types it Enumerated"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[quirk]]
+name = "dashed-enum-values"
+reason = "clauses 5.3.3.2, 5.3.3.5, 5.3.3.19 and 5.3.3.37-39 print their values as dashed list items, '- SM_DELIVER (0)'; unread, the lists were empty"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[quirk]]
+name = "punctuated-enum-values"
+reason = "clauses 5.3.3.5, 5.3.3.37-39 and 6.3.3.6 end each value with the list's comma or full stop, '- ONLY_IMSI_REQUESTED (0),'"
+first_version = "18.2.0"
+last_version = "18.2.0"

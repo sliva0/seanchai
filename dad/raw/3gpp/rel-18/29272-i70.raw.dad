@@ -1580,6 +1580,11 @@ Active-APN ::= < AVP header: 1612 10415 >
 ; Section: 7.3.128
 ; Page: 147
 Error-Diagnostic ::= < Enumerated AVP header: 1614 10415 >
+        GPRS_DATA_SUBSCRIBED    = 0
+        NO_GPRS_DATA_SUBSCRIBED = 1
+        ODB_ALL_APN             = 2
+        ODB_HPLMN_APN           = 3
+        ODB_VPLMN_APN           = 4
 
 
 ; Type: Enumerated AVP
@@ -1615,6 +1620,8 @@ LIPA-Permission ::= < Enumerated AVP header: 1618 10415 >
 ; Section: 7.3.135
 ; Page: 149
 SIPTO-Permission ::= < Enumerated AVP header: 1613 10415 >
+        SIPTO_above_RAN_ALLOWED    = 0
+        SIPTO_above_RAN_NOTALLOWED = 1
 
 
 ; Type: Grouped AVP

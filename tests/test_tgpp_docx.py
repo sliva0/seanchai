@@ -474,6 +474,55 @@ def test_an_enumerated_clause_naming_two_value_sources_is_rejected():
         tgpp_docx._extract_enumerated(section, "Trace-Depth", 1462, 10415, quirks, [])
 
 
+def _enum_with(text):
+    section = _enum_section("6.3.1", "Example-Mode")
+    del section.paragraphs[1:]
+    section.paragraphs.append(
+        tgpp_docx._Para(text=text, style="B1", lines=section.paragraphs[0].lines)
+    )
+    return section
+
+
+@pytest.mark.parametrize(
+    ("text", "declared"),
+    [
+        ("- OFF (0)", []),
+        ("Fully Off (0)", []),
+        ("OFF (0x0)", []),
+        ("OFF (0),", []),
+        ("OFF (0) The mode is off", []),
+        ("- (0) Off.", []),
+        ("OFF (0)ON (1)", []),
+        # Every departure needs its own declaration.
+        ("- Fully Off (0)", ["dashed-enum-values"]),
+        ("- OFF (0),", ["punctuated-enum-values"]),
+    ],
+)
+def test_an_undeclared_enum_value_shape_is_not_read(text, declared):
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name=name, reason="rejection") for name in declared], None)
+    warnings = []
+
+    enum = tgpp_docx._extract_enumerated(
+        _enum_with(text), "Example-Mode", 1, 10415, quirks, warnings
+    )
+
+    assert enum.values == ()
+    assert warnings == ["6.3.1: enumerated AVP Example-Mode lists no values"]
+
+
+def test_a_label_after_the_value_must_be_a_value_name():
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="label-after-enum-value", reason="rejection")], None)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="is no value name"):
+        tgpp_docx._extract_enumerated(
+            _enum_with("(0) Off; see clause 2"), "Example-Mode", 1, 10415, quirks, []
+        )
+
+
 def _abnf_lines(*texts):
     return [
         tgpp_docx._Line(

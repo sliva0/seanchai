@@ -422,10 +422,11 @@ User-Location-Info-Time         TS29.212
 ; Section: 5.3.1
 ; Page: 36
 Abort-Cause ::= < Enumerated AVP header: 500 10415 >
-        BEARER_RELEASED               = 0
-        INSUFFICIENT_SERVER_RESOURCES = 1
-        INSUFFICIENT_BEARER_RESOURCES = 2
-        PS_TO_CS_HANDOVER             = 3
+        BEARER_RELEASED                        = 0
+        INSUFFICIENT_SERVER_RESOURCES          = 1
+        INSUFFICIENT_BEARER_RESOURCES          = 2
+        PS_TO_CS_HANDOVER                      = 3
+        SPONSORED_DATA_CONNECTIVITY_DISALLOWED = 4
 
 
 ; Type: Grouped AVP
@@ -519,6 +520,14 @@ Media-Sub-Component ::= < AVP header: 519 10415 > ;; corrected: (TS29.214.py#ven
 ; Section: 5.3.19
 ; Page: 47
 Media-Type ::= < Enumerated AVP header: 520 10415 >
+        AUDIO       = 0
+        VIDEO       = 1
+        DATA        = 2
+        APPLICATION = 3
+        CONTROL     = 4
+        TEXT        = 5
+        MESSAGE     = 6
+        OTHER       = 4294967295
 
 
 ; Type: Enumerated AVP
@@ -548,6 +557,8 @@ Acceptable-Service-Info ::= < AVP header: 526 10415 > ;; corrected: (TS29.214.py
 ; Section: 5.3.25
 ; Page: 48
 Service-Info-Status ::= < Enumerated AVP header: 527 10415 >
+        FINAL SERVICE INFORMATION       = 0
+        PRELIMINARY SERVICE INFORMATION = 1
 
 
 ; Type: Enumerated AVP

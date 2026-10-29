@@ -22,15 +22,14 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Linter and corpus
 
-- **R. Read the value lists the enumerated reading misses.** Seventeen
-  clauses print values the extractor drops, warning "lists no values": TS
-  29.109's six (`NO (0) The sending node ...`, `YES(1)`, `- (0) Private user
-  identity.`), 29.214's `Media-Type` and `Service-Info-Status` (a leading
-  dash, a label in words), 29.229's `Priviledged-Sender-Indication` (two
-  values on one line, 6.3.58), 29.272's `Error-Diagnostic` and
-  `SIPTO-Permission` (a leading dash, a space inside the name) and 29.338's
-  six (a leading dash, a trailing comma). Each shape needs a reading or a
-  patch.
+- **S. Read where the RFCs' value-less enumerated clauses point.** The RFC
+  extractor warns "no value list found" for 27 AVPs (RFC 4005, 5777, 5778,
+  6733, 7155). The clauses checked print no list: most cite a registry (RFC 6733's `Termination-Cause` "can be found
+  in the IANA registry", RFC 5777's seven "managed by IANA under the ...
+  registry", RFC 4005's and 7155's `[RADIUSAttrVals]`), RFC 5778's
+  `MIP-Algorithm-Type` borrows RFC 4004's, and its `MIP6-Auth-Mode` names
+  its one value in prose and numbers it only in the IANA section. The
+  first two shapes are what `; Values:` holds for the docx extractor.
 
 ## Sources
 
