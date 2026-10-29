@@ -144,7 +144,7 @@ _RAW_ERRORS = {
     ],
     "29172-i10.raw.dad": ["duplicate-identity"],
     "29128-i00.raw.dad": ["duplicate-identity", "duplicate-identity"],
-    "29272-i60.raw.dad": [
+    "29272-i70.raw.dad": [
         "duplicate-identity",
         "table-definition-mismatch",
         "vendor-id-mismatch",
@@ -218,7 +218,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     expected = {
         "29128-i00": 3,
         "29212-i20": 9,
-        "29272-i60": 9,
+        "29272-i70": 9,
         "29273-i60": 3,
         "29283-i00": 1,
         "29336-i20.raw": 7,
@@ -526,7 +526,7 @@ _STANDING_CORPUS_NOTES = {
     "29229-i10.dad": {
         "unresolved-reference": ["Line-Identifier"],
     },
-    "29272-i60.dad": {
+    "29272-i70.dad": {
         "origin-not-in-corpus": ["TS29.217"],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",

@@ -1,8 +1,8 @@
 ; Specification: 3GPP TS 29.272
-; Version: 18.6.0
+; Version: 18.7.0
 ; Vendor-ID: 10415
 ; Bases: RFC6733
-; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129272/18.06.00_60/ts_129272v180600p.pdf
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129272/18.07.00_60/ts_129272v180700p.pdf
 
 
 ; Type: Message
@@ -1310,7 +1310,7 @@ CSG-Subscription-Data ::= < AVP header: 1436 10415 >
 ; Type: Enumerated AVP
 ; Name: Roaming-Restricted-Due-To-Unsupported-Feature
 ; Section: 7.3.81
-; Page: 138
+; Page: 137
 Roaming-Restricted-Due-To-Unsupported-Feature ::= < Enumerated AVP header: 1457 10415 >
         Roaming-Restricted-Due-To-Unsupported-Feature = 0
 
@@ -1349,7 +1349,7 @@ LCS-Info ::= < AVP header: 1473 10415 >
 ; Type: Grouped AVP
 ; Name: LCS-PrivacyException
 ; Section: 7.3.86
-; Page: 139
+; Page: 138
 LCS-PrivacyException ::= < AVP header: 1475 10415 >
         { SS-Code }
         { SS-Status }
@@ -1839,7 +1839,7 @@ IMSI-Group-Id ::= < AVP header: 1675 10415 >
 ; Type: Grouped AVP
 ; Name: AESE-Communication-Pattern
 ; Section: 7.3.193
-; Page: 160
+; Page: 159
 AESE-Communication-Pattern ::= < AVP header: 3113 10415 >
         [ SCEF-Reference-ID ]
         [ SCEF-Reference-ID-Ext ]
@@ -1870,7 +1870,7 @@ Communication-Pattern-Set ::= < AVP header: 3114 10415 >
 ; Type: Grouped AVP
 ; Name: Monitoring-Event-Configuration
 ; Section: 7.3.195
-; Page: 161
+; Page: 160
 Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
         [ SCEF-Reference-ID ]
         [ SCEF-Reference-ID-Ext ]
@@ -1893,7 +1893,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 ; Type: Grouped AVP
 ; Name: Monitoring-Event-Report
 ; Section: 7.3.196
-; Page: 162
+; Page: 161
 Monitoring-Event-Report ::= < AVP header: 3123 10415 >
         { SCEF-Reference-ID }
         [ SCEF-Reference-ID-Ext ]
@@ -1973,7 +1973,7 @@ V2X-Subscription-Data ::= < AVP header: 1688 10415 >
 ; Type: Grouped AVP
 ; Name: eDRX-Cycle-Length
 ; Section: 7.3.215
-; Page: 167
+; Page: 166
 eDRX-Cycle-Length ::= < AVP header: 1691 10415 >
         { RAT-Type }
         { eDRX-Cycle-Length-Value }
@@ -1993,7 +1993,7 @@ MBSFN-Area ::= < AVP header: 1694 10415 >
 ; Type: Enumerated AVP
 ; Name: RDS-Indicator
 ; Section: 7.3.222
-; Page: 168
+; Page: 167
 RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
         DISABLED = 0
         ENABLED  = 1

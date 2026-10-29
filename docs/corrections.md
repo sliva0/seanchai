@@ -87,11 +87,11 @@ gets a named operation with its own `expect` contract.
 ## Output
 
 ```text
-docx ──input patches──► extract ──► 29272-i60.raw.dad  (committed)
+docx ──input patches──► extract ──► 29272-i70.raw.dad  (committed)
                                               │
                                  edits/corrections/TS29.272.py  (committed)
                                               ▼
-                                     29272-i60.dad  (committed)
+                                     29272-i70.dad  (committed)
 ```
 
 Every corrected line carries a trailing `;;` note citing the declaration as

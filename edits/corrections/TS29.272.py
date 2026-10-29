@@ -26,7 +26,7 @@ CORRECTIONS = [
         replace=_S7A_S7D,
         reason="clause 7.2.2 assigns the VCSG commands to S7a/S7d (16777308);"
         " the command header omits the id",
-        versions="18.6.0",
+        versions="18.6.0..18.7.0",
     )
     for name in (
         "Update-VCSG-Location-Request",
@@ -45,7 +45,7 @@ CORRECTIONS += [
         replace=1624,
         reason="clause 7.3.138's AVP header prints Job-Type's code; table"
         " 7.3.1/1 and the TS 29.230 registry both assign Area-Scope 1624",
-        versions="18.6.0",
+        versions="18.6.0..18.7.0",
     ),
     Correction(
         id="wlan-offloadability-vendor-id",
@@ -56,7 +56,7 @@ CORRECTIONS += [
         reason="clause 7.3.181's AVP header omits the vendor-id; table 7.3.1/1"
         " marks the V flag mandatory for it, as for every other AVP the"
         " specification defines",
-        versions="18.6.0",
+        versions="18.6.0..18.7.0",
     ),
     # Two AVPs the ABNF appears to reference without the document introducing
     # them turned out to be spelling mismatches against table 7.3.1/1 — the
@@ -71,7 +71,7 @@ CORRECTIONS += [
         reason="clause 7.3.206's heading and body, and the ABNF reference in"
         " clause 7.3.34, all spell it Additional-Context-Identifier; only the"
         " table row abbreviates it",
-        versions="18.6.0",
+        versions="18.6.0..18.7.0",
     ),
     Correction(
         id="re-synchronization-info-case",
@@ -83,7 +83,7 @@ CORRECTIONS += [
         replace="Re-Synchronization-Info",
         reason="clause 7.3.15's heading and table 7.3.1/1 both spell it"
         " Re-Synchronization-Info; clause 7.3.11's ABNF lower-cases the S",
-        versions="18.6.0",
+        versions="18.6.0..18.7.0",
     ),
     # Three re-printed grouped bodies use member AVPs that table 7.3.1/2
     # omits while listing the grouped AVPs themselves and, for
@@ -97,7 +97,7 @@ CORRECTIONS += [
             after=after,
             reason=f"the {parent} body (clause {clause}) uses {name} but"
             f" table 7.3.1/2 omits the row; {origin} defines the AVP",
-            versions="18.6.0",
+            versions="18.6.0..18.7.0",
         )
         for name, origin, after, parent, clause in (
             (

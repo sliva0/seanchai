@@ -10,14 +10,14 @@ dad/
 The corrected trees are what tools and consumers read. `raw/` mirrors them
 file-for-file and exists for diffing and rot-checking.
 
-Files are named as their publisher names them: `29272-i60` for TS 29.272
-V18.6.0 (3GPP's archive naming), `rfc6733` for an RFC. RFC files carry no
+Files are named as their publisher names them: `29272-i70` for TS 29.272
+V18.7.0 (3GPP's archive naming), `rfc6733` for an RFC. RFC files carry no
 `; Version:` header because an RFC number names one immutable document.
 
 Each specification is committed twice, and the pair is the point:
 
-- `29272-i60.dad` — the **corrected** file, the one to use.
-- `raw/3gpp/rel-18/29272-i60.raw.dad` — what the document said, mistakes
+- `29272-i70.dad` — the **corrected** file, the one to use.
+- `raw/3gpp/rel-18/29272-i70.raw.dad` — what the document said, mistakes
   included. The `.raw.dad` suffix is what the corpus loader and tests key on.
 
 Every line a correction touched carries a `;;` note citing the declaration in
