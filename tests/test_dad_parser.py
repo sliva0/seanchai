@@ -364,6 +364,18 @@ def test_enum_value_names_reject_other_whitespace(name):
             "Code cell must be a number, got 'twelve'",
         ),
         (
+            # `int()` would take `+1`; the grammar's `1*DIGIT` does not.
+            _dad(
+                "; Type: Application",
+                "; Name: Example",
+                "; Section: 1",
+                "; Application-ID: +1",
+                "; Scope: 5",
+            ),
+            8,
+            r"Application-ID must be a number, got '\+1'",
+        ),
+        (
             _dad(
                 "; Type: Grouped AVP",
                 "; Name: Example",

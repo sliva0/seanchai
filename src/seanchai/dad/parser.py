@@ -184,10 +184,15 @@ def _validated(lineno: int):
 
 
 def _number(text: str, lineno: int, label: str) -> int:
-    try:
-        return int(text)
-    except ValueError:
-        raise DadParseError(lineno, f"{label} must be a number, got {text!r}") from None
+    # `int()` alone would also take `+1`, `1_000`, surrounding whitespace and
+    # non-ASCII digits, silently normalising text the grammar (`1*DIGIT`)
+    # rejects; the file must spell the number the way it is printed back.
+    if not _ASCII_DIGITS.fullmatch(text):
+        raise DadParseError(lineno, f"{label} must be a number, got {text!r}")
+    return int(text)
+
+
+_ASCII_DIGITS = re.compile(r"[0-9]+")
 
 
 def _source_ref(directives: _Directives, lineno: int) -> ast.SourceRef:
