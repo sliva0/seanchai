@@ -186,6 +186,29 @@ class Oracle:
             raise OracleError("dictionary.xml holds no AVPs")
         return oracle
 
+    def name_for(
+        self, vendor_id: int, code: int, name: str, data_type: ast.DataType | None
+    ) -> str | None:
+        """Wireshark's name for the AVP the corpus calls `name`, or None when
+        the dictionary has no entry under `(vendor-id, code)` or cannot say
+        which of several is meant.
+
+        Where the identity collides (Wireshark's TGPP file warns some 3GPP
+        codes do), an entry spelled like the corpus is the answer, then the
+        one name among the entries whose type agrees with `data_type`.
+        """
+        entries = self.avps.get((vendor_id, code), [])
+        if any(entry.name == name for entry in entries):
+            return name
+        names = {entry.name for entry in entries}
+        if len(names) > 1 and data_type is not None:
+            names = {
+                entry.name
+                for entry in entries
+                if data_type in (_acceptable(entry) or frozenset())
+            }
+        return names.pop() if len(names) == 1 else None
+
 
 @dataclass(frozen=True)
 class Finding:

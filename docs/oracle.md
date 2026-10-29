@@ -34,7 +34,22 @@ finding is evaluated against the specification clause both projects read,
 and the fix goes where the mistake is: a corpus correction when the document's
 own table or the extractor was wrong, a merge request into Wireshark when the
 dictionary is. The corpus **always keeps the specification's own spelling**;
-Wireshark's belongs, if anywhere, in the consumer model as extra information.
+Wireshark's is extra information in the consumer model.
+
+## In the model
+
+`model.Model.build(books, dictionary=Path("specifications/wireshark"))`
+gives every AVP, and every hole with an identity, Wireshark's name for its
+`(vendor-id, code)` in `wireshark_name`, for consumers that interoperate
+with Wireshark-derived tooling: `Cx-User-Data` and `Sh-User-Data` for TS
+29.229's and 29.329's `User-Data`, `Call-Barring-Infor-List` for TS 29.272's
+`Call-Barring-Info`. `name` stays the document's. Where the identity
+collides in the dictionary, an entry spelled like the corpus wins, then the
+one whose type agrees; an identity the dictionary lacks or cannot settle is
+None, as is every name in a model built without a dictionary.
+`Oracle.name_for` is the lookup. The python-diameter generator emits the
+name as an alias where it differs
+([README](../integrations/python_diameter/README.md#wireshark-names)).
 
 ## What still reports
 

@@ -12,6 +12,7 @@ knowing its `(vendor-id, code)`, type, flag rules and defining document.
 from seanchai import corpus, model
 
 built = model.Model.build(corpus.Corpus.load([Path("dad")]))
+# or with dictionary=Path("specifications/wireshark") for Avp.wireshark_name
 built.messages("TS29.229")  # bodies resolved
 built.applications("TS29.212")  # commands per application and interface
 built.avps("TS29.229")  # a spec's dictionary view
@@ -75,6 +76,13 @@ a hole. A hole keeps the vendor, code, type and flag rules its document
 states, but not a grouped AVP's members or an enumerated AVP's values: RFC
 5777's `Classifier` is a hole with no members. A consumer that wants those
 reads the AST, through `table_rows` or the file's `corpus.Entry.spec`.
+
+**Wireshark's names.** Built with `dictionary=` a Wireshark dictionary
+directory, the model fills `Avp.wireshark_name` and `Hole.wireshark_name`
+with Wireshark's name for the identity (`Cx-User-Data` for TS 29.229's
+`User-Data`); built without one, both are None. The dictionary is optional
+and never changes `name`, which is always the document's spelling;
+[oracle.md](oracle.md#in-the-model) has the lookup rule.
 
 `Model.build(books, strict=True)` raises `model.IncompleteCorpusError`,
 listing every hole, rather than build a model with any. The default is

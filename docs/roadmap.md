@@ -60,7 +60,3 @@ letter is not reused. What exists is described in the per-module documents.
 - **N. Build the model strictly by default** once the committed corpus
   builds under `strict=True`; the pinned list in `tests/test_model.py` is
   what stands in the way.
-- **O. Carry Wireshark's AVP name in the model** alongside the
-  specification's, for consumers interoperating with Wireshark-derived
-  tooling. Waits for a consumer that maps between the namings; the corpus
-  itself always keeps the specification's spelling.

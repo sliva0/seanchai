@@ -474,6 +474,35 @@ class TestCommandShape:
         ]
 
 
+def test_a_dictionary_adds_wireshark_names_beside_the_documents(tmp_path):
+    """With a Wireshark dictionary every AVP and hole with an identity
+    carries its name there; the document's spelling stays the AVP's name."""
+    (tmp_path / "dictionary.xml").write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<dictionary>
+  <base>
+    <avp name="Wireshark-Thing" code="1" vendor-id="TGPP">
+      <type type-name="Unsigned32"/>
+    </avp>
+  </base>
+  <vendor vendor-id="TGPP" code="10415" name="3GPP"/>
+</dictionary>
+""",
+        encoding="utf-8",
+    )
+    spec = _spec("3GPP TS 29.900", [_table(_row("Thing", 1), _row("Other", 2))])
+    books = corpus.Corpus([_entry(spec)])
+
+    plain = model.Model.build(books).resolve("TS29.900", "Thing")
+    named = model.Model.build(books, dictionary=tmp_path).resolve("TS29.900", "Thing")
+    other = model.Model.build(books, dictionary=tmp_path).resolve("TS29.900", "Other")
+
+    assert plain is not None and plain.wireshark_name is None
+    assert named is not None
+    assert (named.name, named.wireshark_name) == ("Thing", "Wireshark-Thing")
+    assert other is not None and other.wireshark_name is None
+
+
 @pytest.fixture(scope="module")
 def built() -> model.Model:
     return model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
@@ -792,3 +821,24 @@ def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
         why = str(hole).split(": ", 1)[1]
         actual.setdefault(hole.reference, {}).setdefault(why, []).append(hole.name)
     assert actual == _STANDING_HOLES
+
+
+@pytest.mark.sources
+def test_the_pinned_dictionary_names_the_avps_it_spells_differently():
+    """Wireshark's deliberate disambiguations and its own defects both
+    arrive as `wireshark_name`, beside the specifications' spelling."""
+    named = model.Model.build(
+        corpus.Corpus.load([_ROOT / "dad"]),
+        dictionary=_ROOT / "specifications" / "wireshark",
+    )
+    for reference, name, wireshark_name in [
+        ("TS29.229", "User-Data", "Cx-User-Data"),
+        ("TS29.329", "User-Data", "Sh-User-Data"),
+        ("TS29.272", "Call-Barring-Info", "Call-Barring-Infor-List"),
+        ("RFC6733", "Session-Id", "Session-Id"),
+    ]:
+        avp = named.resolve(reference, name)
+        assert avp is not None
+        assert (avp.name, avp.wireshark_name) == (name, wireshark_name)
+    hole = named.hole("RFC4072", "EAP-Payload")
+    assert hole is not None and hole.wireshark_name == "EAP-Payload"

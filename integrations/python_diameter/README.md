@@ -10,14 +10,16 @@ seanchai (and, for `validate.py`, the library).
 ```sh
 uv run integrations/python_diameter/validate.py TS29.229
 uv run integrations/python_diameter/generate.py TS29.229 TS29.272 -o out/cx_s6a
-uv run integrations/python_diameter/generate.py --all -o out/protocols
+uv run integrations/python_diameter/generate.py --all -o out/protocols \
+    --dictionary specifications/wireshark
 ```
 
 `generate.py` takes references (`TS29.229`, `29.229`, `RFC6733`) or
-`--all`, and `--corpus` for a corpus other than the repository's `dad/`. It
-replaces the output directory only if every file in it is one it wrote. The
-output is a function of the corpus alone, byte for byte: regenerating after
-a corpus change gives a reviewable diff.
+`--all`, `--corpus` for a corpus other than the repository's `dad/`, and
+`--dictionary` for Wireshark's AVP names. It replaces the output directory
+only if every file in it is one it wrote. The output is a function of the
+corpus and the dictionary alone, byte for byte: regenerating after a corpus
+change gives a reviewable diff.
 
 ## Output layout
 
@@ -175,6 +177,25 @@ or absent — is the library's switch to design; the per-module
 - `_base.py` registers nothing in the library's global dictionary, so the
   library's own classes and `Message.from_bytes` still type a received AVP
   by it; the generated classes re-read the payload by their definitions.
+
+## Wireshark names
+
+With `--dictionary` (the downloader's `specifications/wireshark`), an
+`AvpDef` whose name Wireshark spells differently carries Wireshark's
+spelling, and `avps.BY_WIRESHARK_NAME` maps that spelling to the readings
+it names, for tooling that names AVPs Wireshark's way:
+
+```text
+USER_DATA = AvpDef(
+    "User-Data", 606, 10415, AvpOctetString, FlagRules(must="MV"),
+    defined_in=("TS29.229",),
+    wireshark_name="Cx-User-Data",
+)
+```
+
+Attributes and identifiers keep the document's spelling. Without a
+dictionary, `wireshark_name` is None throughout and `BY_WIRESHARK_NAME` is
+empty.
 
 ## Holes
 

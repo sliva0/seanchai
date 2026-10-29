@@ -50,8 +50,9 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from functools import cached_property
+from pathlib import Path
 
-from . import corpus
+from . import corpus, oracle
 from .dad import ast
 
 
@@ -87,6 +88,10 @@ class Avp:
     # The reference re-used rows cite: `TS29.229`, `RFC6733`.
     defined_in: str
     section: str | None
+    # Wireshark's dictionary name for `(vendor-id, code)`, when the model is
+    # built with one and it says: `Call-Barring-Infor-List` for TS 29.272's
+    # `Call-Barring-Info`. Extra information beside `name`, never instead.
+    wireshark_name: str | None
 
     @property
     def identity(self) -> tuple[int, int]:
@@ -130,6 +135,7 @@ class Hole:
     # this one on a field both state, so nothing was taken from it or from
     # any reading after it.
     conflict: str | None = None
+    wireshark_name: str | None = None
 
     def __str__(self) -> str:
         if self.missing == (DEFINITION,):
@@ -265,6 +271,7 @@ class _Draft:
     section: str | None = None
     origin: str | None = None
     conflict: str | None = None
+    wireshark_name: str | None = None
     members: tuple[Member, ...] = ()
     values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
 
@@ -357,6 +364,7 @@ class _Draft:
                 section=self.section,
                 origin=self.origin,
                 conflict=self.conflict,
+                wireshark_name=self.wireshark_name,
             )
         common = (
             self.name,
@@ -366,6 +374,7 @@ class _Draft:
             self.flag_rules,
             self.reference,
             self.section,
+            self.wireshark_name,
         )
         if self.kind is Grouped:
             return Grouped(*common, members=self.members)
@@ -406,8 +415,11 @@ class _View:
 class Model:
     """The resolved corpus. Build it once with `Model.build`."""
 
-    def __init__(self, books: corpus.Corpus) -> None:
+    def __init__(
+        self, books: corpus.Corpus, dictionary: oracle.Oracle | None = None
+    ) -> None:
         self._books = books
+        self._dictionary = dictionary
         # One view per reference: the corpus sorts candidates newest first,
         # so the first entry seen for a reference is the one every
         # reference-level query answers from — the same copy `; Bases:` and
@@ -420,7 +432,13 @@ class Model:
         self._resolved: dict[tuple[str, str], _Draft | None] = {}
 
     @classmethod
-    def build(cls, books: corpus.Corpus, *, strict: bool = False) -> Model:
+    def build(
+        cls,
+        books: corpus.Corpus,
+        *,
+        strict: bool = False,
+        dictionary: Path | None = None,
+    ) -> Model:
         """The model over `books`.
 
         `strict` refuses a corpus with any hole, raising
@@ -429,8 +447,14 @@ class Model:
         member later. Off by default because the committed corpus has
         standing holes (docs/consumers.md); without it, a name with a hole
         resolves to no `Avp` and `holes` reports it.
+
+        `dictionary` is a Wireshark dictionary directory (the downloader's
+        `specifications/wireshark`); with one, every AVP and hole with an
+        identity carries Wireshark's name for it in `wireshark_name`.
+        Without one that field is None and nothing else changes.
         """
-        built = cls(books)
+        loaded = None if dictionary is None else oracle.Oracle.load(dictionary)
+        built = cls(books, loaded)
         if strict and (holes := built.holes()):
             raise IncompleteCorpusError(holes)
         return built
@@ -603,6 +627,18 @@ class Model:
             found = reading if found is None else found.fill(reading)
             if isinstance(found.final, Avp) or found.conflict is not None:
                 break
+        if (
+            found is not None
+            and self._dictionary is not None
+            and found.vendor_id is not None
+            and found.code is not None
+        ):
+            # Looked up once the identity is final: a reading filled through
+            # may take its code from the next document.
+            wireshark_name = self._dictionary.name_for(
+                found.vendor_id, found.code, found.name, found.data_type
+            )
+            found = replace(found, wireshark_name=wireshark_name)
         return found
 
     def _readings(self, view: _View, name: str, stack: tuple) -> Iterator[_Draft]:

@@ -89,7 +89,10 @@ class AvpDef:
     `type_class` and `flags` are None only on a `hole`: an AVP the corpus
     knows the identity of but cannot complete, kept so a member naming it
     still decodes. `values` are an enumerated AVP's `(name, value)` pairs,
-    `reserved` its reserved `(first, last)` ranges.
+    `reserved` its reserved `(first, last)` ranges. `wireshark_name` is
+    Wireshark's dictionary spelling where it differs from `name` (`CUI` for
+    `Chargeable-User-Identity`), so tooling that names AVPs Wireshark's way
+    can find them; None where the two agree or no dictionary was given.
     """
 
     name: str
@@ -101,6 +104,7 @@ class AvpDef:
     values: tuple[tuple[str, int], ...] = ()
     reserved: tuple[tuple[int, int], ...] = ()
     defined_in: tuple[str, ...] = ()
+    wireshark_name: str | None = None
     hole: str | None = None
 
     @property

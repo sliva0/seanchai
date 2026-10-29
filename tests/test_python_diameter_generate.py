@@ -207,6 +207,69 @@ def test_a_directory_it_did_not_write_is_refused(generator, tmp_path):
     assert (tmp_path / "notes.txt").read_text(encoding="utf-8") == "mine"
 
 
+def test_a_dictionary_adds_wireshark_aliases(generator, tmp_path):
+    """Where Wireshark spells an AVP differently, the definition carries
+    its spelling and `BY_WIRESHARK_NAME` finds it; without a dictionary the
+    map is empty and nothing else changes."""
+    dictionary = tmp_path / "wireshark"
+    dictionary.mkdir()
+    (dictionary / "dictionary.xml").write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<dictionary>
+  <base>
+    <avp name="Session-ID" code="263" vendor-id="None">
+      <type type-name="UTF8String"/>
+    </avp>
+    <avp name="Origin-Host" code="264" vendor-id="None">
+      <type type-name="DiameterIdentity"/>
+    </avp>
+  </base>
+</dictionary>
+""",
+        encoding="utf-8",
+    )
+    plain = tmp_path / "plain"
+    named = tmp_path / "named"
+    assert generator.main(["TS29.229", "-o", str(plain)]) == 0
+    arguments = ["TS29.229", "-o", str(named), "--dictionary", str(dictionary)]
+    assert generator.main(arguments) == 0
+
+    avps = (named / "avps.py").read_text(encoding="utf-8")
+    session_id = avps.split("\nSESSION_ID = ")[1].split("\n)\n")[0]
+    assert 'wireshark_name="Session-ID"' in session_id
+    origin_host = avps.split("\nORIGIN_HOST = ")[1].split("\n)\n")[0]
+    assert "wireshark_name" not in origin_host
+    assert '    "Session-ID": (SESSION_ID,),' in avps
+    plain_avps = (plain / "avps.py").read_text(encoding="utf-8")
+    assert "BY_WIRESHARK_NAME: dict[str, tuple[AvpDef, ...]] = {\n}" in plain_avps
+    output = _run(
+        named,
+        """
+        from named import avps
+        print(avps.BY_WIRESHARK_NAME["Session-ID"][0].name)
+        """,
+    )
+    assert output == "Session-Id\n"
+
+
+@pytest.mark.sources
+def test_the_pinned_dictionary_aliases_import_cleanly(generator, tmp_path):
+    output = tmp_path / "aliased"
+    dictionary = _ROOT / "specifications" / "wireshark"
+    arguments = ["--all", "-o", str(output), "--dictionary", str(dictionary)]
+    assert generator.main(arguments) == 0
+    found = _run(
+        output,
+        """
+        from aliased import avps
+        (info,) = avps.BY_WIRESHARK_NAME["Call-Barring-Infor-List"]
+        print(info.name, info.wireshark_name)
+        print(avps.BY_WIRESHARK_NAME["Cx-User-Data"][0].name)
+        """,
+    )
+    assert found == "Call-Barring-Info Call-Barring-Infor-List\nUser-Data\n"
+
+
 def test_avps_are_built_and_read_as_their_generated_types(package):
     """TS 29.214's `Codec-Data` is OctetString and RFC 6733's
     `Authorization-Lifetime` Unsigned32, whatever the library's dictionary
@@ -327,7 +390,7 @@ def test_occurrence_bounds_are_rendered_and_enforced(
     )
     flag_rules = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR}))
     target = model.Avp(
-        "X", 10415, 1, ast.DataType.UNSIGNED32, flag_rules, "TS29.900", None
+        "X", 10415, 1, ast.DataType.UNSIGNED32, flag_rules, "TS29.900", None, None
     )
     definition = generator.Definition(target, [], identifier="X")
     member = model.Member(rule=rule, avp=target)

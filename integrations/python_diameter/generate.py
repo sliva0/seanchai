@@ -20,12 +20,16 @@ and where it departs from the library's conventions.
     uv run integrations/python_diameter/generate.py TS29.229 -o out/
     uv run integrations/python_diameter/generate.py 29.272 RFC6733 -o out/
     uv run integrations/python_diameter/generate.py --all -o out/
+    uv run integrations/python_diameter/generate.py --all -o out/ \
+        --dictionary specifications/wireshark
 
 The package holds `avps.py`, every AVP the generated commands reach plus the
 named documents' own dictionary views, deduplicated; one module per
 application and interface (`ts29_229.py`, `ts29_212_5a.py`); `_base.py`, the
-support code both rest on; and `__init__.py`. The output is a function of
-the corpus alone, byte for byte, so a regenerated package diffs cleanly.
+support code both rest on; and `__init__.py`. With `--dictionary`, every
+AVP Wireshark spells differently carries Wireshark's name as an alias. The
+output is a function of the corpus and that dictionary alone, byte for
+byte, so a regenerated package diffs cleanly.
 """
 
 from __future__ import annotations
@@ -107,7 +111,7 @@ RESERVED_ATTRIBUTES = frozenset(
     }
 )
 # Names `avps.py` binds besides AVPs.
-AVPS_MODULE_NAMES = frozenset({"BY_IDENTITY", "HOLES"})
+AVPS_MODULE_NAMES = frozenset({"BY_IDENTITY", "BY_WIRESHARK_NAME", "HOLES"})
 
 
 def attribute_name(avp_name: str) -> str:
@@ -195,6 +199,12 @@ class Definition:
     @property
     def hole(self) -> str | None:
         return str(self.sample) if isinstance(self.sample, model.Hole) else None
+
+    @property
+    def wireshark_alias(self) -> str | None:
+        """Wireshark's name where it is not the document's spelling."""
+        wireshark_name = self.sample.wireshark_name
+        return None if wireshark_name == self.name else wireshark_name
 
     @property
     def python_type(self) -> str:
@@ -595,6 +605,8 @@ def render_definition(definition: Definition) -> str:
             items.append(Item(f"reserved={render_tuple(reserved, 4)}"))
     documents = [Item(quoted(document)) for document in sorted(definition.documents)]
     items.append(Item(f"defined_in={render_tuple(documents, 4)}"))
+    if definition.wireshark_alias is not None:
+        items.append(Item(f"wireshark_name={quoted(definition.wireshark_alias)}"))
     if definition.hole is not None:
         items.append(Item(f"hole={quoted(definition.hole)}"))
     return render_call("AvpDef", items, 0, prefix)
@@ -645,8 +657,10 @@ def render_avps(definitions: Definitions, sources: list[str]) -> str:
         "",
         "One `AvpDef` per distinct reading, listed in `BY_IDENTITY` under its",
         "`(vendor-id, code)`: an AVP two documents define differently has one",
-        "per reading, and each command's rules name its own document's. `HOLES`",
-        "are member names the corpus resolves to no identity.",
+        "per reading, and each command's rules name its own document's.",
+        "`BY_WIRESHARK_NAME` finds a definition by Wireshark's spelling where it",
+        "differs from the document's. `HOLES` are member names the corpus",
+        "resolves to no identity.",
         "",
         "Generated from:",
         "",
@@ -678,6 +692,17 @@ def render_avps(definitions: Definitions, sources: list[str]) -> str:
     for (vendor_id, code), identifiers in sorted(by_identity.items()):
         readings = render_tuple([Item(name) for name in identifiers], 4)
         lines.append(f"    ({vendor_id}, {code}): {readings},")
+    lines.append("}")
+    aliases: dict[str, list[str]] = {}
+    for definition in sorted(complete, key=_sort_key):
+        if definition.wireshark_alias is not None:
+            aliases.setdefault(definition.wireshark_alias, []).append(
+                definition.identifier
+            )
+    lines.append("BY_WIRESHARK_NAME: dict[str, tuple[AvpDef, ...]] = {")
+    for alias, identifiers in sorted(aliases.items()):
+        readings = render_tuple([Item(name) for name in identifiers], 4)
+        lines.append(f"    {quoted(alias)}: {readings},")
     lines.append("}")
     hole_items = [Item(d.identifier) for d in holes]
     lines.append(f"HOLES: tuple[AvpHole, ...] = {render_tuple(hole_items, 0)}")
@@ -905,11 +930,16 @@ def main(argv: list[str] | None = None) -> int:
         default=_HERE.parents[1] / "dad",
         help="the corpus directory (default: the repository's dad/)",
     )
+    parser.add_argument(
+        "--dictionary",
+        type=Path,
+        help="a Wireshark dictionary directory, for Wireshark's AVP names",
+    )
     args = parser.parse_args(argv)
     if bool(args.specifications) == args.all:
         parser.error("name specifications or pass --all, not both")
     books = corpus.Corpus.load([args.corpus])
-    built = model.Model.build(books)
+    built = model.Model.build(books, dictionary=args.dictionary)
     if args.all:
         references = built.references()
     else:

@@ -166,3 +166,29 @@ def test_the_pinned_dictionary_loads_and_the_base_protocol_agrees():
         "name-disagrees",
         "type-disagrees",
     ]
+
+
+def test_name_for_reads_wireshark_spelling_by_identity(tmp_path):
+    """The corpus spelling wins where Wireshark has it; otherwise the one
+    name the identity carries, or among colliding entries the one whose type
+    agrees. Ambiguity and absence both say None."""
+    loaded = _dictionary(
+        tmp_path,
+        vendor_file=(
+            "<avp name='Vendor-AVP' code='700' vendor-id='TGPP'>"
+            "<type type-name='Unsigned32'/></avp>"
+            "<avp name='Clash-Text' code='701' vendor-id='TGPP'>"
+            "<type type-name='UTF8String'/></avp>"
+            "<avp name='Clash-Number' code='701' vendor-id='TGPP'>"
+            "<type type-name='Unsigned32'/></avp>"
+        ),
+    )
+    u32 = ast.DataType.UNSIGNED32
+    assert loaded.name_for(0, 263, "Session-Id", ast.DataType.UTF8_STRING) == (
+        "Session-Id"
+    )
+    assert loaded.name_for(10415, 700, "Spec-Spelling", u32) == "Vendor-AVP"
+    assert loaded.name_for(10415, 701, "Clash", u32) == "Clash-Number"
+    assert loaded.name_for(10415, 701, "Clash-Text", u32) == "Clash-Text"
+    assert loaded.name_for(10415, 701, "Clash", None) is None
+    assert loaded.name_for(10415, 702, "Absent", u32) is None
