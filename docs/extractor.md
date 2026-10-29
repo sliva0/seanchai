@@ -91,8 +91,8 @@ The declared vocabulary, with the document that forced each:
   `command-reference-only` (clauses holding only a pointer),
   `procedure-commands` (8.2.2.1–4 name commands in their intros),
   `physical-reused-columns` (table 8.2.3.0/2 changes grid spans; also
-  29.368 table 6.5.1.1, whose header and data rows merge a sliver grid
-  column into different labels),
+  29.368 table 6.5.1.1 and 29.219 table 5.4, whose header and data rows
+  merge a sliver grid column into different labels),
   `independent-avp-tables` (no one-to-one table pairing),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
   kept, no enum code derived from them). TS 32.299 declares ten:
@@ -242,7 +242,7 @@ a clause heading printed as a body paragraph (32.299 §7.2.135C,
 29.343's heading 6.4.10), an en dash, a Symbol-font dash and `V/M`, `VM` flag
 cells (32.299, patched); a trailing comma in a flags cell (29.217
 table 5.3.1.1, patched); a brace closing an optional member (29.343 §6.6.4,
-patched).
+patched); a From cell dropping "RFC" (29.219 table 5.4, patched).
 Everything patched is listed with its reason in `edits/sources/`.
 
 TS 29.228 v18.0.0 and TS 29.328 v18.2.0 contain procedure/IE mappings,

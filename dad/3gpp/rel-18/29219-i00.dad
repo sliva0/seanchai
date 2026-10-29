@@ -1,0 +1,206 @@
+; Specification: 3GPP TS 29.219
+; Version: 18.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129219/18.00.00_60/ts_129219v180000p.pdf
+
+
+; Type: Message
+; Name: SL-Request, SLR
+; Section: 5.6.2
+; Page: 20
+<SL-Request> ::= < Diameter Header: 8388635, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        { SL-Request-Type }
+      * [ Subscription-Id ]
+      * [ Policy-Counter-Identifier ]
+        [ Logical-Access-ID ]
+        [ Physical-Access-ID ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: SL-Answer, SLA
+; Section: 5.6.3
+; Page: 21
+<SL-Answer> ::= < Diameter Header: 8388635, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Supported-Features ]
+      * [ Policy-Counter-Status-Report ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: SN-Request, SNR
+; Section: 5.6.4
+; Page: 21
+<SN-Request> ::= < Diameter Header: 8388636, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ]
+      * [ Policy-Counter-Status-Report ]
+        [ SN-Request-Type ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: SN-Answer, SNA
+; Section: 5.6.5
+; Page: 21
+<SN-Answer> ::= < Diameter Header: 8388636, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 5.6.6
+; Page: 22
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+        [ OC-Supported-Features ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 5.6.7
+; Page: 22
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 5.3.0
+; Table: 5.3.0.1
+; Page: 16
+; Columns: Name                      Code   Section Type         Must  May   S.not M.not
+Pending-Policy-Counter-Information   2905   5.3.5   Grouped      M,V   P     -     -
+Pending-Policy-Counter-Change-Time   2906   5.3.6   Time         M,V   P     -     -
+Policy-Counter-Identifier            2901   5.3.1   UTF8String   M,V   P     -     -
+Policy-Counter-Status                2902   5.3.2   UTF8String   M,V   P     -     -
+Policy-Counter-Status-Report         2903   5.3.3   Grouped      M,V   P     -     -
+SL-Request-Type                      2904   5.3.4   Enumerated   M,V   P     -     -
+SN-Request-Type                      2907   5.3.7   Unsigned32   V     P     -     M
+
+
+; Type: Reused AVPs
+; Section: 5.4
+; Table: 5.4
+; Page: 18
+; Columns: Name         From
+DRMP                    RFC7944
+Subscription-Id         RFC4006
+Load                    RFC8583
+Logical-Access-ID       TS283.034
+OC-OLR                  RFC7683
+OC-Supported-Features   RFC7683
+Physical-Access-ID      TS283.034
+Supported-Features      TS29.229
+
+
+; Type: Grouped AVP
+; Name: Policy-Counter-Status-Report
+; Section: 5.3.3
+; Page: 17
+Policy-Counter-Status-Report ::= < AVP header: 2903 10415 > ;; corrected: (TS29.219.py#vendor-id-policy-counter-status-report)
+        { Policy-Counter-Identifier }
+        { Policy-Counter-Status }
+      * [ Pending-Policy-Counter-Information ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: SL-Request-Type
+; Section: 5.3.4
+; Page: 17
+SL-Request-Type ::= < Enumerated AVP header: 2904 10415 >
+        INITIAL_REQUEST      = 0
+        INTERMEDIATE_REQUEST = 1
+
+
+; Type: Grouped AVP
+; Name: Pending-Policy-Counter-Information
+; Section: 5.3.5
+; Page: 18
+Pending-Policy-Counter-Information ::= < AVP header: 2905 10415 > ;; corrected: (TS29.219.py#vendor-id-pending-policy-counter-information)
+        { Policy-Counter-Status }
+        { Pending-Policy-Counter-Change-Time }
+      * [ AVP ]

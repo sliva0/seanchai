@@ -1,0 +1,20 @@
+# Source declarations for 3GPP TS 29.219 (Policy and Charging Control:
+# Spending Limit Reporting over Sy reference point). Applied to normalized
+# source text before parsing; see src/seanchai/extractor/sources.py for the
+# format.
+
+[[quirk]]
+name = "physical-reused-columns"
+reason = "Table 5.4 has a 4-twip sliver grid column after the name column; the header merges it into Reference, every data row into the name, so only the physical cells line up with the labels."
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "IETF 7683 [20]"
+replace = "IETF RFC 7683 [20]"
+exact = true
+count = 2
+section = "5.4"
+reason = "table 5.4 drops 'RFC' from the OC-OLR and OC-Supported-Features references; clause 2's reference [20] is IETF RFC 7683"
+first_version = "18.0.0"
+last_version = "18.0.0"

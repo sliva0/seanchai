@@ -330,10 +330,10 @@ def _sections(
                 physical = len(set(spans)) == 1 and any(span > 1 for span in spans[0])
                 # TS 29.273 table 8.2.3.0/2 changes the grid spans of its
                 # Comments and M-bit columns partway through; TS 29.368 table
-                # 6.5.1.1 puts a 4-twip sliver column between the name and
-                # Reference columns, which the header merges into Reference
-                # and every data row into the name. Both have one physical
-                # cell per label.
+                # 6.5.1.1 and TS 29.219 table 5.4 put a 4-twip sliver column
+                # between the name and Reference columns, which the header
+                # merges into Reference and every data row into the name.
+                # All three have one physical cell per label.
                 if (
                     quirks is not None
                     and quirks.enabled("physical-reused-columns")
