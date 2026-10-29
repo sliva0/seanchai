@@ -50,8 +50,10 @@ from .sources import Patcher
 _HEADING_RE = re.compile(
     r"^(?P<number>(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*)\t(?P<title>.+)$"
 )
+# TS 29.343 clauses 6.6.2-6.6.5 lower-case the keyword
+# ("ProXimity-Action-Request (PXR) command").
 _COMMAND_TITLE_RE = re.compile(
-    r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Command$"
+    r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) [Cc]ommand$"
 )
 # TS 32.299 clauses 6.2.2-6.4.13: "Accounting-Request message",
 # "Accounting-Answer (ACA) message"; read behind `message-headings`.

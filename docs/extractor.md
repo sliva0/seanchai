@@ -117,6 +117,8 @@ Walks paragraphs and tables in document order under numbered headings:
 
 - `x.y.z Name (ABBR) Command` heading + `::= < Diameter Header: … >` →
   `Message`; per-run bold marks this-spec AVPs (only name runs are trusted).
+  The keyword may be lower-case (`command`: TS 29.214's Rx commands in
+  clause 5.6, 29.212's STR/STA in 5c.6.4–5).
   Behind `message-headings`, an `x.y.z Name message` heading over a rule
   spelled with the abbreviation (`<ACR> ::=`, TS 32.299) gives the long name,
   as RFC 6733's `<CER> ::=` does in the RFC extractor; message headings

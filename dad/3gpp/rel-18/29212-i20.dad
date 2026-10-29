@@ -639,6 +639,52 @@
 
 
 ; Type: Message
+; Name: ST-Request, STR
+; Section: 5c.6.4
+; Page: 241
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+        [ OC-Supported-Features ] ; bold
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 5c.6.5
+; Page: 241
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ OC-Supported-Features ]   ; bold
+        [ OC-OLR ]                  ; bold
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Class ]                   ; bold
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
 ; Name: TN-Request, TNR
 ; Section: 5c.6.6
 ; Page: 242

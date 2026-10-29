@@ -5,6 +5,277 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129214/18.04.00_60/ts_129214v180400p.pdf
 
 
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 5.6.1
+; Page: 69
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        [ IP-Domain-Id ]
+        [ Auth-Session-State ]
+        [ AF-Application-Identifier ]   ; bold
+      * [ Media-Component-Description ] ; bold
+        [ Service-Info-Status ]         ; bold
+        [ AF-Charging-Identifier ]      ; bold
+        [ SIP-Forking-Indication ]      ; bold
+      * [ Specific-Action ]             ; bold
+      * [ Subscription-Id ]             ; bold
+        [ OC-Supported-Features ]       ; bold
+      * [ Supported-Features ]          ; bold
+        [ Reservation-Priority ]        ; bold
+        [ Framed-IP-Address ]           ; bold
+        [ Framed-Ipv6-Prefix ]          ; bold
+        [ Called-Station-Id ]           ; bold
+        [ Service-URN ]                 ; bold
+        [ Sponsored-Connectivity-Data ] ; bold
+        [ MPS-Identifier ]              ; bold
+        [ GCS-Identifier ]              ; bold
+        [ MCPTT-Identifier ]            ; bold
+        [ MCVideo-Identifier ]          ; bold
+        [ IMS-Content-Identifier ]      ; bold
+        [ IMS-Content-Type ]            ; bold
+      * [ Calling-Party-Address ]       ; bold
+        [ Callee-Information ]          ; bold
+        [ Rx-Request-Type ]             ; bold
+      * [ Required-Access-Info ]        ; bold
+        [ AF-Requested-Data ]           ; bold
+        [ Reference-Id ]                ; bold
+        [ Pre-emption-Control-Info ]    ; bold
+        [ MPS-Action ]                  ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 5.6.2
+; Page: 70
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Auth-Session-State ]
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+        [ Acceptable-Service-Info ]            ; bold
+     *2 [ AN-GW-Address ]                      ; bold
+        [ AN-Trusted ]                         ; bold
+        [ Service-Authorization-Info ]         ; bold
+        [ IP-CAN-Type ]                        ; bold
+        [ MA-Information ]                     ; bold
+        [ NetLoc-Access-Support ]              ; bold
+        [ RAT-Type ]
+      * [ Flows ]                              ; bold
+        [ OC-Supported-Features ]              ; bold
+        [ OC-OLR ]                             ; bold
+      * [ Supported-Features ]
+      * [ Subscription-Id ]
+        [ User-Equipment-Info ]
+        [ User-Equipment-Info-Extension ]
+        [ 3GPP-SGSN-MCC-MNC ]
+        [ NID ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Retry-Interval ]                     ; bold
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5.6.3
+; Page: 70
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+      * { Specific-Action }
+        [ OC-Supported-Features ]              ; bold
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+     *2 [ AN-GW-Address ]                      ; bold
+        [ AN-Trusted ]                         ; bold
+      * [ Flows ]                              ; bold
+      * [ Subscription-Id ]                    ; bold
+        [ Abort-Cause ]                        ; bold
+        [ IP-CAN-Type ]                        ; bold
+        [ MA-Information ]                     ; bold
+        [ NetLoc-Access-Support ]              ; bold
+        [ RAT-Type ]                           ; bold
+        [ Sponsored-Connectivity-Data ]        ; bold
+        [ 3GPP-User-Location-Info ]            ; bold
+        [ User-Location-Info-Time ]            ; bold
+        [ 3GPP-MS-TimeZone ]                   ; bold
+      * [ RAN-NAS-Release-Cause ]              ; bold
+      * [ 5GS-RAN-NAS-Release-Cause ]          ; bold
+        [ 3GPP-SGSN-MCC-MNC ]                  ; bold
+        [ NID ]                                ; bold
+        [ TWAN-Identifier ]                    ; bold
+        [ TCP-Source-Port ]                    ; bold
+        [ UDP-Source-Port ]                    ; bold
+        [ UE-Local-IP-Address ]                ; bold
+        [ Wireline-User-Location-Info ]        ; bold
+        [ Origin-State-Id ]
+      * [ Class ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5.6.4
+; Page: 71
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ OC-Supported-Features ]       ; bold
+        [ OC-OLR ]                      ; bold
+      * [ Media-Component-Description ] ; bold
+        [ Service-URN ]                 ; bold
+        [ Origin-State-Id ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 5.6.5
+; Page: 71
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+        [ OC-Supported-Features ] ; bold
+      * [ Required-Access-Info ]  ; bold
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 5.6.6
+; Page: 72
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ OC-Supported-Features ]       ; bold
+        [ OC-OLR ]                      ; bold
+        [ Failed-AVP ]
+        [ Sponsored-Connectivity-Data ] ; bold
+        [ Origin-State-Id ]
+        [ 3GPP-User-Location-Info ]     ; bold
+        [ User-Location-Info-Time ]     ; bold
+        [ 3GPP-MS-TimeZone ]            ; bold
+      * [ RAN-NAS-Release-Cause ]       ; bold
+      * [ 5GS-RAN-NAS-Release-Cause ]   ; bold
+        [ 3GPP-SGSN-MCC-MNC ]           ; bold
+        [ NID ]                         ; bold
+        [ TWAN-Identifier ]             ; bold
+        [ TCP-Source-Port ]             ; bold
+        [ UDP-Source-Port ]             ; bold
+        [ UE-Local-IP-Address ]         ; bold
+        [ Netloc-Access-Support ]       ; bold
+        [ Wireline-User-Location-Info ] ; bold
+      * [ Class ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AS-Request, ASR
+; Section: 5.6.7
+; Page: 72
+<AS-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ OC-Supported-Features ] ; bold
+        { Abort-Cause }           ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AS-Answer, ASA
+; Section: 5.6.8
+; Page: 73
+<AS-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ OC-Supported-Features ]   ; bold
+        [ OC-OLR ]                  ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
 ; Type: AVP Table
 ; Section: 5.3.0
 ; Table: 5.3.0.1

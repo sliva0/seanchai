@@ -4,6 +4,7 @@ from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Correction,
     Delete,
+    avp_rule,
     definition,
     enum_value,
     reused_row,
@@ -62,4 +63,28 @@ CORRECTIONS += [
         " the AVP, spells 'IPv6'",
         versions="18.4.0",
     )
+]
+
+CORRECTIONS += [
+    Correction(
+        id="aar-framed-ipv6-prefix-case",
+        target=avp_rule("AA-Request", "Framed-Ipv6-Prefix"),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason="the AAR ABNF (clause 5.6.1) lower-cases the 'v' as table"
+        " 5.4.0.1 does; RFC 4005, which defines the AVP, spells 'IPv6'",
+        versions="18.4.0",
+    ),
+    Correction(
+        id="sta-netloc-access-support-case",
+        target=avp_rule("ST-Answer", "Netloc-Access-Support"),
+        field="name",
+        expect="Netloc-Access-Support",
+        replace="NetLoc-Access-Support",
+        reason="the STA ABNF (clause 5.6.6) lower-cases the 'L'; table 5.4.0.1"
+        " re-uses NetLoc-Access-Support from TS 29.212 and the AAA and RAR"
+        " ABNFs spell it the same way",
+        versions="18.4.0",
+    ),
 ]
