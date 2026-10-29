@@ -173,12 +173,13 @@ _EXTENDED_MESSAGE = ExtendedMessage(
 @pytest.mark.parametrize("section", [object(), _EXTENDED_MESSAGE])
 def test_an_unregistered_section_type_fails_loudly(section):
     with pytest.raises(TypeError, match=f"no formatter for {type(section).__name__}"):
-        formatter._format_section(section, {}, {})
+        formatter._format_section(section, ("sections", 0), {}, {})
 
 
 def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
-    # With no sibling left to stand before, the note is keyed by the table
-    # and prints at the end of its lines — where the deleted row stood.
+    # With no sibling left to stand before, the note is keyed by the position
+    # one past the last row and prints at the end of the table's lines —
+    # where the deleted row stood.
     table = ast.ReusedAvps(
         table="6.4",
         source=ast.SourceRef(section="6.4"),
@@ -187,7 +188,8 @@ def test_a_standing_note_for_a_last_row_deletion_prints_after_the_rows():
     spec = _spec(table)
 
     note = "deleted: re-used AVPs row 'Doomed' (f.py:9)"
-    annotated = formatter.format_spec(spec, standing={id(table): [note]})
+    standing: formatter.Notes = {("sections", 0, "rows", 1): [note]}
+    annotated = formatter.format_spec(spec, standing=standing)
     lines = annotated.splitlines()
 
     marker = lines.index(f";; {note}")

@@ -15,7 +15,7 @@ Not-yet-final corners of the format are marked with `TODO(format)`.
 
 import enum
 import re
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import pydantic
 from pydantic import Field
@@ -98,6 +98,17 @@ PageNumber = Annotated[int, Field(ge=1, lt=2**32)]
 
 class Node(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(frozen=True, extra="forbid")
+
+
+# Where something sits in a `Specification`: the field names and tuple indices
+# leading to it from the root — `()` is the specification itself,
+# `("sections", 3)` its fourth section, `("sections", 3, "avps", 0)` that
+# section's first AVP rule. Formatter notes and correction edits are keyed by
+# it rather than by `id(node)`: a path means the same place in a copy, a
+# rebuild or a re-parse of the tree, and an identity only lasts as long as
+# the object does. An index one past a tuple's end names the position after
+# its last item, where the note of a deleted last item stands.
+type TreePath = tuple[str | int, ...]
 
 
 class SourceRef(Node):
@@ -456,6 +467,14 @@ class ReusedAvps(Node):
                     f"{row.name}: m_bit set but the table has no M-bit column"
                 )
         return self
+
+
+def node_at(root: Node, path: TreePath) -> Any:
+    """What `path` names under `root`: a node, or a field's value."""
+    found: Any = root
+    for step in path:
+        found = found[step] if isinstance(step, int) else getattr(found, step)
+    return found
 
 
 Section = Annotated[

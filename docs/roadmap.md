@@ -12,9 +12,6 @@ letter is not reused. What exists is described in the per-module documents.
   trailing comment belongs to the node on its line, a whole-line comment to
   the node on the next line; the parser returns `(spec, comments)` in the
   `Notes` shape `format_spec` already takes.
-- **B. Key formatter notes and correction edits by tree path**, not
-  `id(node)`. Works today because the tree outlives every use, but nothing
-  enforces it. Same mechanism A wants; do them together.
 - **C. `; EXTERNALLY-DEFINED` marker and a `Supply` correction.** For an
   enumerated AVP whose clause says the values live in another document
   (29.272's `Alert-Reason`): the extractor records the fact instead of an

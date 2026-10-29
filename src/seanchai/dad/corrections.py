@@ -67,18 +67,28 @@ class _Unspecified:
 UNSPECIFIED = _Unspecified()
 
 
+# What a selector matches: each node with its path, in document order.
+type _Located = Iterator[tuple[ast.TreePath, ast.Node]]
+
+
 @dataclass(frozen=True)
 class Selector:
     """Base for the ways a correction names its target. Subclasses yield the
-    nodes they match, in document order, from a whole specification.
+    nodes they match with their paths, in document order, from a whole
+    specification.
 
     The subclasses are deliberately lower-case: a corrections file is data, and
     `table_row("MME-Location-Information")` reads as such where
     `TableRow(...)` would read as machinery.
     """
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Every matching node with its `ast.TreePath`, in document order."""
         raise NotImplementedError
+
+    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
+        """The matching nodes, without their paths."""
+        return (node for _, node in self.locate(spec))
 
     def describe(self) -> str:
         raise NotImplementedError
@@ -111,8 +121,9 @@ class definition(Selector):
     application_id: int | _Unspecified | None = UNSPECIFIED
     section: str | None = None
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
-        for section in spec.sections:
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching definition, at `("sections", i)`."""
+        for index, section in enumerate(spec.sections):
             if not isinstance(
                 section, ast.Message | ast.GroupedAvp | ast.EnumeratedAvp
             ):
@@ -126,7 +137,7 @@ class definition(Selector):
                 or section.application_id != self.application_id
             ):
                 continue
-            yield section
+            yield ("sections", index), section
 
     def describe(self) -> str:
         described = f"definition {self.name!r}"
@@ -150,8 +161,9 @@ class header(Selector):
     patched in.
     """
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
-        yield spec
+    def locate(self, spec: ast.Specification) -> _Located:
+        """The specification itself, at the root path `()`."""
+        yield (), spec
 
     def describe(self) -> str:
         return "file header"
@@ -164,12 +176,13 @@ class table_row(Selector):
     name: str
     table: str | None = None
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
-        for section in spec.sections:
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching row, at `("sections", i, "rows", j)`."""
+        for index, section in enumerate(spec.sections):
             if isinstance(section, ast.AvpTable) and (
                 self.table is None or section.table == self.table
             ):
-                yield from (row for row in section.rows if row.name == self.name)
+                yield from _rows(index, section, self.name)
 
     def describe(self) -> str:
         suffix = f" (table {self.table})" if self.table is not None else ""
@@ -182,10 +195,11 @@ class avp_table(Selector):
 
     label: str
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each AVP table carrying the label, at `("sections", i)`."""
         yield from (
-            section
-            for section in spec.sections
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
             if isinstance(section, ast.AvpTable) and section.table == self.label
         )
 
@@ -204,10 +218,11 @@ class reused_avps(Selector):
 
     label: str
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each re-used block carrying the label, at `("sections", i)`."""
         yield from (
-            section
-            for section in spec.sections
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
             if isinstance(section, ast.ReusedAvps) and section.table == self.label
         )
 
@@ -227,12 +242,13 @@ class reused_row(Selector):
     name: str
     section: str | None = None
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
-        for section in spec.sections:
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching row, at `("sections", i, "rows", j)`."""
+        for index, section in enumerate(spec.sections):
             if isinstance(section, ast.ReusedAvps) and (
                 self.section is None or section.source.section == self.section
             ):
-                yield from (row for row in section.rows if row.name == self.name)
+                yield from _rows(index, section, self.name)
 
     def describe(self) -> str:
         described = f"re-used AVPs row {self.name!r}"
@@ -254,12 +270,13 @@ class enum_value(Selector):
     name: str
     value: int | None = None
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
-        for section in spec.sections:
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching value, at `("sections", i, "values", j)`."""
+        for index, section in enumerate(spec.sections):
             if isinstance(section, ast.EnumeratedAvp) and section.name == self.avp:
                 yield from (
-                    value
-                    for value in section.values
+                    (("sections", index, "values", position), value)
+                    for position, value in enumerate(section.values)
                     if isinstance(value, ast.EnumValue)
                     and value.name == self.name
                     and (self.value is None or value.value == self.value)
@@ -310,12 +327,17 @@ class avp_rule(Selector):
             return definition(self.parent)
         return self.parent
 
-    def find(self, spec: ast.Specification) -> Iterator[ast.Node]:
-        for section in self._parent.find(spec):
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching rule, at `("sections", i, "avps", j)` under its parent."""
+        for path, section in self._parent.locate(spec):
             # An enumerated AVP matches `definition` but has no ABNF body.
             if not isinstance(section, ast.Message | ast.GroupedAvp):
                 continue
-            rules = [rule for rule in section.avps if rule.name == self.name]
+            rules = [
+                ((*path, "avps", index), rule)
+                for index, rule in enumerate(section.avps)
+                if rule.name == self.name
+            ]
             if self.occurrence is None:
                 yield from rules
             elif len(rules) > 1 and self.occurrence <= len(rules):
@@ -331,6 +353,14 @@ class avp_rule(Selector):
 
     def _occurrence_suffix(self) -> str:
         return "" if self.occurrence is None else f" (occurrence {self.occurrence})"
+
+
+def _rows(index: int, table: ast.AvpTable | ast.ReusedAvps, name: str) -> _Located:
+    return (
+        (("sections", index, "rows", position), row)
+        for position, row in enumerate(table.rows)
+        if row.name == name
+    )
 
 
 @dataclass(frozen=True)
@@ -473,13 +503,14 @@ class Result:
     # and None; for an `Insert`, None and the new node.
     old: Any
     new: Any
-    # Identity of the edited node *in the returned tree* — the new node for an
-    # `Insert`; for a `Delete`, the sibling that now stands where the node
-    # stood (or the parent, when the last sibling went), since the node
-    # itself produces no lines — so a formatter can mark what an edit reached.
-    # Set after the rebuild, because rebuilding constructs new objects: the
-    # identity an edit was resolved by belongs to the input tree and is gone.
-    node_id: int = 0
+    # Where the edited node sits *in the returned tree* — the new row for an
+    # `Insert`; for a `Delete`, the position the node stood in, which the
+    # sibling that moved up into it now holds (one past the end when the last
+    # sibling went), since the node itself produces no lines — so a formatter
+    # can mark what an edit reached. Set after the rebuild, because inserts
+    # and deletions move what follows them: the path an edit was resolved by
+    # belongs to the input tree.
+    path: ast.TreePath = ()
 
 
 def _holds_nodes(value: Any) -> bool:
@@ -527,9 +558,9 @@ def _corrected(node: ast.Node, correction: Correction) -> ast.Node:
         ) from None
 
 
-def _resolve(spec: ast.Specification, edit: Edit) -> ast.Node:
+def _resolve(spec: ast.Specification, edit: Edit) -> ast.TreePath:
     target = edit.into if isinstance(edit, Insert) else edit.target
-    found = list(target.find(spec))
+    found = [path for path, _ in target.locate(spec)]
     if not found:
         raise CorrectionError(f"{target.describe()}: no match")
     if len(found) > 1:
@@ -561,8 +592,21 @@ def _checked_deletion(node: ast.Node, delete: Delete) -> None:
     )
 
 
-def _inserted(parent: ast.Node, insert: Insert) -> ast.Node:
-    """Return the table with the declared row inserted and validated."""
+# Where a table row in the rebuild came from: its path in the tree being
+# rebuilt, or the declaration index of the `Insert` that adds it.
+type _Origin = ast.TreePath | int
+
+
+def _inserted(
+    parent: ast.Node,
+    rows: list[tuple[_Origin, Any]] | None,
+    insert: Insert,
+    origin: int,
+    path: ast.TreePath,
+) -> list[tuple[_Origin, Any]]:
+    """The rows of the table at `path` with the declared row inserted, each
+    with its origin, checked by validating the table they make. `rows` holds
+    what earlier inserts made of them, None before the first."""
     described = insert.into.describe()
     row_type = (
         ast.AvpTableRow if isinstance(insert.into, avp_table) else ast.ReusedAvpRow
@@ -576,16 +620,18 @@ def _inserted(parent: ast.Node, insert: Insert) -> ast.Node:
             f"{described}: the inserted node must be a {row_type.__name__},"
             f" not a {type(insert.node).__name__}"
         )
-    if any(row.name == insert.node.name for row in parent.rows):
+    if rows is None:
+        rows = [((*path, "rows", index), row) for index, row in enumerate(parent.rows)]
+    if any(row.name == insert.node.name for _, row in rows):
         raise CorrectionError(
             f"{described}: row {insert.node.name!r} is already present"
         )
-    rows = list(parent.rows)
+    rows = list(rows)
     if insert.after is None:
-        rows.append(insert.node)
+        rows.append((origin, insert.node))
     else:
         positions = [
-            index for index, row in enumerate(rows) if row.name == insert.after
+            index for index, (_, row) in enumerate(rows) if row.name == insert.after
         ]
         if not positions:
             raise CorrectionError(
@@ -595,28 +641,30 @@ def _inserted(parent: ast.Node, insert: Insert) -> ast.Node:
             raise CorrectionError(
                 f"{described}: after row {insert.after!r} is ambiguous"
             )
-        rows.insert(positions[0] + 1, insert.node)
+        rows.insert(positions[0] + 1, (origin, insert.node))
     values = {name: getattr(parent, name) for name in type(parent).model_fields}
-    values["rows"] = tuple(rows)
+    values["rows"] = tuple(row for _, row in rows)
     try:
-        return type(parent)(**values)
+        type(parent)(**values)
     except pydantic.ValidationError as error:
         raise CorrectionError(
             f"{described}: inserted row is not valid: {error.errors()[0]['msg']}"
         ) from None
+    return rows
 
 
 def _created_blocks(
     spec: ast.Specification, corrections: Sequence[Edit]
-) -> tuple[ast.Specification, dict[str, ast.ReusedAvps]]:
+) -> tuple[ast.Specification, list[int], dict[str, ast.TreePath]]:
     """Place an empty re-used block after each AVP table whose label an
     `Insert` targets while no re-used block carries it (see `Insert`).
 
-    Returns the tree to rebuild, with the placeholders in it, and the
-    placeholders by label. A placeholder is built without validation, since a
-    table may not be empty; the inserts targeting it fill it through the same
-    `_inserted` as any other, and the rebuild validates the result. Selectors
-    never see it: they resolve against the original tree.
+    Returns the tree to rebuild, with the placeholders in it; the index each
+    input section has in that tree; and the placeholders' paths by label. A
+    placeholder is built without validation, since a table may not be empty;
+    the inserts targeting it fill it through the same `_inserted` as any
+    other, and the rebuild validates the result. Selectors never see it: they
+    resolve against the original tree.
     """
     labels = {
         edit.into.label
@@ -625,48 +673,77 @@ def _created_blocks(
         and isinstance(edit.into, reused_avps)
         and not any(edit.into.find(spec))
     }
-    placeholders: dict[str, ast.ReusedAvps] = {}
-    sections = list(spec.sections)
-    for label in sorted(labels):
-        tables = list(avp_table(label).find(spec))
+    created: dict[int, ast.ReusedAvps] = {}
+    for label in labels:
+        tables = [
+            (index, section)
+            for index, section in enumerate(spec.sections)
+            if isinstance(section, ast.AvpTable) and section.table == label
+        ]
         if len(tables) != 1:
             # Not a creation: `_resolve` reports the selector's no-match.
             continue
-        table = tables[0]
-        assert isinstance(table, ast.AvpTable)
-        placeholder = ast.ReusedAvps.model_construct(
+        index, table = tables[0]
+        created[index] = ast.ReusedAvps.model_construct(
             table=label,
             source=table.source,
             columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
             rows=(),
         )
-        placeholders[label] = placeholder
-        sections.insert(
-            next(i for i, section in enumerate(sections) if section is table) + 1,
-            placeholder,
-        )
+    positions: list[int] = []
+    sections: list[ast.Section] = []
+    placeholders: dict[str, ast.TreePath] = {}
+    for index, section in enumerate(spec.sections):
+        positions.append(len(sections))
+        sections.append(section)
+        if (placeholder := created.get(index)) is not None:
+            placeholders[placeholder.table] = ("sections", len(sections))
+            sections.append(placeholder)
     if not placeholders:
-        return spec, placeholders
-    return spec.model_copy(update={"sections": tuple(sections)}), placeholders
+        return spec, positions, placeholders
+    tree = spec.model_copy(update={"sections": tuple(sections)})
+    return tree, positions, placeholders
 
 
-def _replaced(
-    node: Any,
-    edits: dict[int, ast.Node],
-    deletions: set[int],
-    tracked: set[int],
-    applied: dict[int, int],
-    rebuilt: dict[int, int],
-) -> Any:
-    """Rebuild the tree, swapping in corrected parents (including those
-    extended by `Insert`) and dropping deleted nodes, by identity.
+def _in_tree(path: ast.TreePath, positions: list[int]) -> ast.TreePath:
+    """An input path in the tree `_created_blocks` returned, where only
+    section indices can have moved."""
+    match path:
+        case ("sections", int() as index, *rest):
+            return ("sections", positions[index], *rest)
+        case _:
+            return path
 
-    A chosen replacement is descended into rather than returned whole: a
+
+@dataclass
+class _Plan:
+    """What `apply` resolved, keyed by path in the tree being rebuilt."""
+
+    # Nodes with their corrected fields, chained when one node is corrected
+    # in several fields.
+    replaced: dict[ast.TreePath, ast.Node] = dataclasses.field(default_factory=dict)
+    deleted: set[ast.TreePath] = dataclasses.field(default_factory=set)
+    # A table's rows once its `Insert`s are in, keyed by the table's path
+    # plus "rows".
+    rows: dict[ast.TreePath, list[tuple[_Origin, Any]]] = dataclasses.field(
+        default_factory=dict
+    )
+    # Filled by the rebuild: where each node, by its path in the tree being
+    # rebuilt or by its `Insert`, landed in the result.
+    placed: dict[_Origin, ast.TreePath] = dataclasses.field(default_factory=dict)
+
+
+def _rebuilt(node: Any, path: ast.TreePath, out: ast.TreePath, plan: _Plan) -> Any:
+    """Rebuild the tree, swapping in corrected nodes, adding inserted rows and
+    dropping deleted nodes, by path. `path` is where `node` sits in the tree
+    being rebuilt and `out` where it lands in the result; the two differ once
+    an insertion or deletion has moved a node's earlier siblings.
+
+    A corrected replacement is descended into rather than returned whole: a
     correction to a message and a correction to one of its AVP rules are both
-    legal, and stopping at the message would silently drop the second. Because
-    `_corrected` rebuilds through pydantic, which keeps already-valid submodels
-    as they are, the replacement's children still carry the identities the
-    remaining edits are keyed by.
+    legal, and stopping at the message would silently drop the second.
+    Corrections never replace a field holding child nodes, so the
+    replacement's children sit at the paths the original's did.
 
     The rebuild goes through validation for the same reason `_corrected` does:
     a correction that satisfies its own field's rules can still break a
@@ -674,59 +751,41 @@ def _replaced(
     downstream. Deleting a table's last row fails the same way, on the table's
     own non-empty invariant.
     """
-    if isinstance(node, ast.Node):
-        original_id = id(node)
-        replacement = edits.get(original_id)
-        if replacement is not None:
-            applied[original_id] = applied.get(original_id, 0) + 1
-            node = replacement
-        deleted_here: list[tuple[int, str, int]] = []  # id, field, position kept
-        values = {}
-        for name in type(node).model_fields:
-            value = getattr(node, name)
-            if isinstance(value, tuple):
-                kept = []
-                for item in value:
-                    if isinstance(item, ast.Node) and id(item) in deletions:
-                        applied[id(item)] = applied.get(id(item), 0) + 1
-                        deleted_here.append((id(item), name, len(kept)))
-                        continue
-                    kept.append(
-                        _replaced(item, edits, deletions, tracked, applied, rebuilt)
-                    )
-                values[name] = tuple(kept)
+    if not isinstance(node, ast.Node):
+        return node
+    plan.placed[path] = out
+    node = plan.replaced.get(path, node)
+    values = {}
+    for name in type(node).model_fields:
+        value = getattr(node, name)
+        if not isinstance(value, tuple):
+            values[name] = _rebuilt(value, (*path, name), (*out, name), plan)
+            continue
+        items = plan.rows.get((*path, name))
+        if items is None:
+            items = [((*path, name, index), item) for index, item in enumerate(value)]
+        kept = []
+        for origin, item in items:
+            # A deleted node produces no lines, so what a formatter can mark
+            # is the position it stood in, which the sibling that moved up
+            # into it now holds — or which is one past the end, when it was
+            # the last.
+            if origin in plan.deleted:
+                plan.placed[origin] = (*out, name, len(kept))
+            elif isinstance(origin, int):
+                # An inserted row was validated when its edit was declared
+                # and has no input to correct.
+                plan.placed[origin] = (*out, name, len(kept))
+                kept.append(item)
             else:
-                values[name] = _replaced(
-                    value, edits, deletions, tracked, applied, rebuilt
-                )
-        try:
-            result = type(node)(**values)
-        except pydantic.ValidationError as error:
-            raise CorrectionError(
-                f"corrected {type(node).__name__} is not valid:"
-                f" {error.errors()[0]['msg']}"
-            ) from None
-        if replacement is not None or original_id in tracked:
-            rebuilt[original_id] = id(result)
-        # A deleted node produces no lines, so what a formatter can mark is
-        # the sibling that now stands where it stood — the note then prints
-        # in the deleted line's place. Only a node deleted from the end of
-        # its tuple has no follower, and falls back to the parent. The
-        # follower is looked up in `values`, not in `result`: pydantic keeps
-        # already-valid submodels as they are, so both hold the same object.
-        for deleted_id, field, position in deleted_here:
-            siblings = values[field]
-            if position < len(siblings) and isinstance(siblings[position], ast.Node):
-                rebuilt[deleted_id] = id(siblings[position])
-            else:
-                rebuilt[deleted_id] = id(result)
-        return result
-    if isinstance(node, tuple):
-        return tuple(
-            _replaced(item, edits, deletions, tracked, applied, rebuilt)
-            for item in node
-        )
-    return node
+                kept.append(_rebuilt(item, origin, (*out, name, len(kept)), plan))
+        values[name] = tuple(kept)
+    try:
+        return type(node)(**values)
+    except pydantic.ValidationError as error:
+        raise CorrectionError(
+            f"corrected {type(node).__name__} is not valid: {error.errors()[0]['msg']}"
+        ) from None
 
 
 def apply(
@@ -740,52 +799,63 @@ def apply(
     """
     # Selectors and `expect` checks see only the input; the rebuild also
     # walks the re-used blocks `Insert`s create.
-    tree, placeholders = _created_blocks(spec, corrections)
-    edits: dict[int, ast.Node] = {}
-    deletions: set[int] = set()
-    targets: dict[int, str] = {}  # node id -> the selector that reached it
-    claimed: set[tuple[int, str]] = set()
-    tracked: set[int] = set()  # newly inserted nodes whose rebuilt ids we need
+    tree, positions, placeholders = _created_blocks(spec, corrections)
+    plan = _Plan()
+    targets: dict[ast.TreePath, str] = {}  # path -> the selector that reached it
+    claimed: set[tuple[ast.TreePath, str]] = set()
     results = []
-    resolved_ids = []  # per result: the id its node had in the input tree
-    for correction in corrections:
+    origins: list[_Origin] = []  # per result: what `plan.placed` knows it by
+    for index, correction in enumerate(corrections):
         if (
             isinstance(correction, Insert)
             and isinstance(correction.into, reused_avps)
             and correction.into.label in placeholders
         ):
-            node = placeholders[correction.into.label]
+            path = placeholders[correction.into.label]
         else:
-            node = _resolve(spec, correction)
-            if node is spec:
-                # `header()`: the rebuild's root is the copy holding the
-                # placeholders; every field a correction may touch is shared.
-                node = tree
+            path = _in_tree(_resolve(spec, correction), positions)
+        # Looked up in the tree rather than kept from the selector, so a
+        # `header()` correction rebuilds the root that holds the placeholders.
+        node: ast.Node = ast.node_at(tree, path)
         target = (
             correction.into if isinstance(correction, Insert) else correction.target
         )
         described = target.describe()
-        if isinstance(correction, Delete) and id(node) in deletions:
+        if isinstance(correction, Delete) and path in plan.deleted:
             raise CorrectionError(f"{described}: deleted more than once")
-        if id(node) in deletions or (
-            isinstance(correction, Delete) and id(node) in edits
+        if path in plan.deleted or (
+            isinstance(correction, Delete)
+            and (path in plan.replaced or (*path, "rows") in plan.rows)
         ):
             raise CorrectionError(
                 f"{described}: the node is both corrected and deleted;"
                 " a deleted node has no fields worth fixing"
             )
-        targets[id(node)] = described
+        targets[path] = described
         if isinstance(correction, Delete):
+            # Only an item of a tuple leaves a place behind: the file header
+            # is the tree itself, and what a deletion's note stands in is the
+            # position a section, rule, value or row was taken from.
+            if not path or not isinstance(path[-1], int):
+                raise CorrectionError(
+                    f"{described}: only a section, AVP rule, enum value or"
+                    " table row can be deleted"
+                )
             _checked_deletion(node, correction)
-            deletions.add(id(node))
+            plan.deleted.add(path)
             results.append(
                 Result(correction=correction, node=described, old=node, new=None)
             )
-            resolved_ids.append(id(node))
+            origins.append(path)
             continue
         if isinstance(correction, Insert):
-            edits[id(node)] = _inserted(edits.get(id(node), node), correction)
-            tracked.add(id(correction.node))
+            plan.rows[(*path, "rows")] = _inserted(
+                plan.replaced.get(path, node),
+                plan.rows.get((*path, "rows")),
+                correction,
+                index,
+                path,
+            )
             results.append(
                 Result(
                     correction=correction,
@@ -794,9 +864,9 @@ def apply(
                     new=correction.node,
                 )
             )
-            resolved_ids.append(id(correction.node))
+            origins.append(index)
             continue
-        claim = (id(node), correction.field)
+        claim = (path, correction.field)
         if claim in claimed:
             raise CorrectionError(
                 f"{described}: {correction.field} is corrected"
@@ -805,7 +875,7 @@ def apply(
         claimed.add(claim)
         # Chain onto an earlier correction of the same node, so two fields of
         # one row can be corrected independently.
-        corrected = _corrected(edits.get(id(node), node), correction)
+        plan.replaced[path] = _corrected(plan.replaced.get(path, node), correction)
         results.append(
             Result(
                 correction=correction,
@@ -814,35 +884,22 @@ def apply(
                 new=correction.replace,
             )
         )
-        resolved_ids.append(id(node))
-        edits[id(node)] = corrected
-    applied: dict[int, int] = {}
-    rebuilt_ids: dict[int, int] = {}
-    rebuilt = _replaced(tree, edits, deletions, tracked, applied, rebuilt_ids)
-    # Identity is what maps a resolved node back to its place in the tree, so a
-    # node object appearing in two places would be corrected in both while the
-    # selector reported one match. Trees from `parse` and the extractor build
-    # every node separately; a caller that shares one gets told, not surprised.
-    for node_id, description in targets.items():
-        count = applied.get(node_id, 0)
-        if count > 1:
-            raise CorrectionError(
-                f"{description}: the selected node appears more than once in the"
-                " tree; corrections address one place, not a shared object"
-            )
-        if count == 0:
+        origins.append(path)
+    rebuilt = _rebuilt(tree, (), (), plan)
+    for path, description in targets.items():
+        if path not in plan.placed:
             raise CorrectionError(
                 f"{description}: the selected node sits inside a subtree another"
                 " edit deleted"
             )
-    for result, resolved_id in zip(results, resolved_ids, strict=True):
-        if isinstance(result.correction, Insert) and resolved_id not in rebuilt_ids:
+    for result, origin in zip(results, origins, strict=True):
+        if origin not in plan.placed:
             # Reporting success for a row the output does not hold would be
             # the silent loss the `expect` contract exists to prevent.
             raise CorrectionError(
                 f"{result.node}: the inserted row is not in the corrected tree"
             )
-        result.node_id = rebuilt_ids.get(resolved_id, 0)
+        result.path = plan.placed[origin]
     return rebuilt, results
 
 
@@ -855,10 +912,11 @@ _SECTION_TYPES = (
 )
 
 
-def notes(
-    results: list[Result],
-) -> tuple[dict[int, list[str]], dict[int, list[str]], dict[int, list[str]]]:
-    """`;;` note lines marking what `apply` touched, keyed by node id in the
+type _NoteMap = dict[ast.TreePath, list[str]]
+
+
+def notes(results: list[Result]) -> tuple[_NoteMap, _NoteMap, _NoteMap]:
+    """`;;` note lines marking what `apply` touched, keyed by path in the
     rebuilt tree, as the `(trailing, standing, detached)` triple
     `format_spec` takes.
 
@@ -875,19 +933,19 @@ def notes(
     would read as being about that section. The formatter prints detached
     notes as a block of their own, spaced like the section they replace.
     """
-    trailing: dict[int, list[str]] = {}
-    standing: dict[int, list[str]] = {}
-    detached: dict[int, list[str]] = {}
+    trailing: _NoteMap = {}
+    standing: _NoteMap = {}
+    detached: _NoteMap = {}
     for result in results:
         edit = result.correction
         if isinstance(edit, Delete):
             bucket = detached if isinstance(result.old, _SECTION_TYPES) else standing
-            bucket.setdefault(result.node_id, []).append(
+            bucket.setdefault(result.path, []).append(
                 f"deleted: {edit.target.describe_in_place()} ({edit.cited})"
             )
             continue
         kind = "inserted" if isinstance(edit, Insert) else "corrected"
-        trailing.setdefault(result.node_id, []).append(f"{kind}: ({edit.cited})")
+        trailing.setdefault(result.path, []).append(f"{kind}: ({edit.cited})")
     return trailing, standing, detached
 
 

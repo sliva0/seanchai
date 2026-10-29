@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import itertools
 from pathlib import Path
@@ -310,33 +311,37 @@ def test_an_avp_rule_can_be_narrowed_by_its_parents_application():
     assert messages[1].avps[0].presence is ast.Presence.REQUIRED
 
 
-def test_a_node_shared_by_two_places_is_refused_rather_than_corrected_twice():
-    # Identity is what maps a resolved node back into the tree, so a caller
-    # that hands the same object to two parents would otherwise get one
-    # reported correction and two applied ones.
+def test_a_node_object_shared_by_two_places_is_corrected_only_where_selected():
+    # Edits are keyed by where the selector found a node, not by the object:
+    # a caller that hands the same object to two parents gets the one
+    # correction it was told about.
     spec = _spec()
     message = _message(spec)
     shared = message.model_copy(update={"application_id": 16777308})
 
-    with pytest.raises(corrections.CorrectionError, match="more than once in the tree"):
-        corrections.apply(
-            spec.model_copy(update={"sections": (message, shared, *spec.sections[1:])}),
-            [
-                _correction(
-                    # Narrowed, so the selector reports exactly one match — the
-                    # object it found is nevertheless in both messages.
-                    corrections.avp_rule(
-                        parent=corrections.definition(
-                            "Example-Request", application_id=16777308
-                        ),
-                        name="Session-Id",
+    corrected, results = corrections.apply(
+        spec.model_copy(update={"sections": (message, shared, *spec.sections[1:])}),
+        [
+            _correction(
+                corrections.avp_rule(
+                    parent=corrections.definition(
+                        "Example-Request", application_id=16777308
                     ),
-                    "bold",
-                    False,
-                    True,
-                )
-            ],
-        )
+                    name="Session-Id",
+                ),
+                "bold",
+                False,
+                True,
+            )
+        ],
+    )
+
+    first, second = corrected.sections[:2]
+    assert isinstance(first, ast.Message)
+    assert isinstance(second, ast.Message)
+    assert not first.avps[0].bold
+    assert second.avps[0].bold
+    assert results[0].path == ("sections", 1, "avps", 0)
 
 
 def _with_reused(spec: ast.Specification) -> ast.Specification:
@@ -432,7 +437,7 @@ def test_a_created_reused_block_follows_its_table_and_carries_the_rows():
     assert block.table == "6.3.1"
     assert block.source == _table(_spec()).source
     assert [row.name for row in block.rows] == ["Session-Id"]
-    assert results[0].node_id == id(block.rows[0])
+    assert results[0].path == ("sections", 2, "rows", 0)
 
 
 def test_a_delete_cannot_reach_a_block_only_an_insert_creates():
@@ -585,6 +590,15 @@ def test_an_occurrence_counts_from_one():
         corrections.avp_rule("Example-Request", "Session-Id", occurrence=0)
 
 
+def test_the_file_header_cannot_be_deleted():
+    # The root stands in no tuple, so there is no place for the deletion's
+    # note and nothing the corrected tree could leave out.
+    spec = _spec()
+
+    with pytest.raises(corrections.CorrectionError, match="can be deleted"):
+        corrections.apply(spec, [_delete(corrections.header(), spec)])
+
+
 def test_deleting_the_same_node_twice_is_refused():
     doomed = ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229")
     delete = _delete(corrections.reused_row("Feature-Id"), doomed)
@@ -645,6 +659,26 @@ def test_committed_corrections_still_apply_to_committed_raw_output(raw):
 
     assert len(results) == len(declared)
     assert parser.parse(formatter.format_spec(corrected)) == corrected
+
+
+@pytest.mark.parametrize("raw", _corpus(raw=True), ids=lambda path: path.name)
+def test_correction_notes_mark_the_same_lines_in_a_copied_or_reparsed_tree(raw):
+    """Notes are keyed by tree path, so they belong to a place rather than to
+    the objects `apply` built: formatting a deep copy of the corrected tree,
+    or the tree parsed back from the corrected file, with the same notes
+    gives the committed corrected file."""
+    spec = parser.parse(raw.read_text(encoding="utf-8"))
+    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+    corrected, results = corrections.apply(spec, declared)
+    notes = corrections.notes(results)
+    committed = (_ROOT / "dad" / raw.relative_to(_ROOT / "dad" / "raw")).with_name(
+        raw.name.removesuffix(".raw.dad") + ".dad"
+    )
+    text = committed.read_text(encoding="utf-8")
+
+    assert formatter.format_spec(corrected, *notes) == text
+    assert formatter.format_spec(copy.deepcopy(corrected), *notes) == text
+    assert formatter.format_spec(parser.parse(text), *notes) == text
 
 
 @pytest.mark.parametrize("path", _corpus(raw=False), ids=lambda path: path.name)

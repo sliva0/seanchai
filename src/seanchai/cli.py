@@ -20,8 +20,10 @@ import click
 _DEFAULT_SOURCES = Path("edits") / "sources"
 
 # The `(trailing, standing, detached)` note triple `corrections.notes`
-# produces and `formatter.format_spec` takes.
-_NoteMap = Mapping[int, Sequence[str]]
+# produces and `formatter.format_spec` takes, keyed by `ast.TreePath` —
+# spelled out, because the `dad` modules are imported only by the commands
+# that use them.
+_NoteMap = Mapping[tuple[str | int, ...], Sequence[str]]
 _Notes = tuple[_NoteMap, _NoteMap, _NoteMap]
 
 
