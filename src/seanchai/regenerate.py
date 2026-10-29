@@ -89,6 +89,7 @@ def regenerate(
     sources_dir: Path | None,
     corrections_dir: Path | None,
     add: Sequence[str] = (),
+    only: Sequence[str] = (),
     report: Callable[[Outcome], None] = lambda outcome: None,
     expand_ranges: bool = False,
 ) -> Report:
@@ -98,6 +99,11 @@ def regenerate(
     directory, which is how the test suite checks that the committed corpus
     is what the sources produce without touching it.
 
+    `only` rebuilds those specifications instead of every committed one. With
+    the manifest of an older version (`seanchai download --spec --version`)
+    and a scratch `output`, that re-extracts the older version for a
+    raw-vs-raw diff against the corpus.
+
     `expand_ranges` widens, in the edit files themselves, every declaration
     range a successfully rebuilt specification's version falls outside; see
     `seanchai.ranges`.
@@ -105,7 +111,7 @@ def regenerate(
     listed = _sources(manifest)
     committed = _committed(corpus)
     outcomes = []
-    for reference in sorted(set(committed) | set(add)):
+    for reference in sorted(set(only or committed) | set(add)):
         outcome = _one(
             reference,
             listed.get(reference),

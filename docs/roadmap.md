@@ -45,12 +45,6 @@ letter is not reused. What exists is described in the per-module documents.
   origin stays unresolved until the corpus holds more than one release
   *and* a resolution policy says when a Release 7 document may serve a
   Release 18 citation.
-- **L. Downloader: read the 3GPP archive throughout**, not only for the
-  PDF-matched fallback, so every old version stays available for raw-vs-raw
-  diffs; derive the ETSI `Link:` URL (needs the edition suffix, probably by
-  listing the ETSI deliver directory); and stage a whole corpus version
-  before publishing it, since a half-failed run today leaves a mix of old
-  and new specs.
 
 ## Consumers
 

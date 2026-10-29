@@ -34,14 +34,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 
 import docx
 import pypdf
 
-THREE_GPP_INDEX = "https://www.3gpp.org/ftp/Specs/latest/Rel-{release}/{series}_series/"
 THREE_GPP_ARCHIVE = "https://www.3gpp.org/ftp/Specs/archive/{series}_series/{number}/"
 ETSI_DELIVER = "https://www.etsi.org/deliver"
 RFC_TEXT_URL = "https://www.rfc-editor.org/rfc/rfc{number}.txt"
@@ -60,6 +59,19 @@ USER_AGENT = "diameter-spec-corpus-downloader/1.0"
 # 32.299 and seven more): the extractor reads only `.docx`.
 SOFFICE = "soffice"
 SOFFICE_TIMEOUT = 600
+
+# The layout under the output directory. `archives/` is the download cache:
+# every file ever fetched, version-named and never pruned, so an older
+# version is re-extracted from disk. The published tree is what
+# `manifest.json` describes; each run builds it afresh in `.staging/` and
+# swaps it in whole (`publish`). `versions/<SpecRef>/<version>/` holds an
+# older version fetched on request, as a tree of the same shape.
+CACHE = "archives"
+PUBLISHED = ("3gpp", "converted", "rfc", "wireshark")
+MANIFEST = "manifest.json"
+STAGING = ".staging"
+PREVIOUS = ".previous"
+VERSIONS = "versions"
 
 
 @dataclass(frozen=True)
@@ -202,51 +214,29 @@ def request_bytes(url: str, retries: int = 4) -> bytes:
     raise AssertionError("unreachable")
 
 
-def discover_3gpp_urls(
-    release: int, specs: tuple[ThreeGppSpec, ...] | None = None
-) -> dict[str, str]:
-    marker = release_marker(release)
-    specs = load_catalog()[0] if specs is None else specs
-    by_number: dict[str, str] = {}
-    for series in sorted({spec.series for spec in specs}):
-        index_url = THREE_GPP_INDEX.format(release=release, series=series)
-        page = request_bytes(index_url).decode("utf-8", errors="replace")
-        for spec in (item for item in specs if item.series == series):
-            # The first filename character after '-' encodes the 3GPP release.
-            pattern = re.compile(
-                rf"""href=["']([^"']*/?{re.escape(spec.archive_stem)}-"""
-                rf"""{re.escape(marker)}[0-9a-z]{{2}}\.zip)["']""",
-                re.IGNORECASE,
-            )
-            matches = pattern.findall(html.unescape(page))
-            if not matches:
-                continue
-            # The highest version, decoded from the file name — not the last
-            # link on the page. An index that lists 18.5.0 after 18.6.0 is a
-            # presentation detail; picking by it silently downloads the older
-            # specification.
-            href = max(matches, key=decode_3gpp_version)
-            by_number[spec.number] = urllib.parse.urljoin(index_url, href)
-    return by_number
-
-
 def discover_3gpp_archive_urls(
     spec: ThreeGppSpec, release: int
 ) -> dict[tuple[int, int, int], str]:
     """Every archived version of `spec` in `release`, from `Specs/archive/`.
 
-    The `Specs/latest/Rel-N/` index lists exactly one zip per specification,
-    so choosing any version other than the newest needs the archive, which
-    keeps them all.
+    The archive, not `Specs/latest/Rel-N/`, because `latest` lists one zip per
+    specification and drops it when the next version lands: a manifest
+    recording a `latest` URL names a file that stops existing, and choosing
+    any version but the newest (an unpublished ETSI PDF, `--version`) needs
+    the list of all of them anyway.
     """
     marker = release_marker(release)
     index_url = THREE_GPP_ARCHIVE.format(series=spec.series, number=spec.number)
     page = request_bytes(index_url).decode("utf-8", errors="replace")
+    # The first filename character after '-' encodes the 3GPP release.
     pattern = re.compile(
         rf"""href=["']([^"']*/?{re.escape(spec.archive_stem)}-"""
         rf"""{re.escape(marker)}[0-9a-z]{{2}}\.zip)["']""",
         re.IGNORECASE,
     )
+    # Keyed by the decoded version, so the newest is `max()` of the keys and
+    # never the last link on the page: an index that lists 18.5.0 after
+    # 18.6.0 is a presentation detail.
     return {
         decode_3gpp_version(href): urllib.parse.urljoin(index_url, href)
         for href in pattern.findall(html.unescape(page))
@@ -377,51 +367,82 @@ def safe_extract(archive: Path, destination: Path) -> list[Path]:
     return extracted
 
 
-def replace_extracted(archive: Path, destination: Path) -> list[Path]:
-    """Extract `archive` so that `destination` holds its contents and nothing else.
+def link_file(source: Path, target: Path) -> None:
+    """Put the cached file `source` at `target` in a tree being staged.
 
-    Extracting in place would leave the previous version's files behind
-    whenever a specification renames or drops one, and a directory holding two
-    versions at once is a corpus that silently extracts the wrong document.
-    The new contents are staged in a sibling directory and swapped in, so an
-    interrupted run leaves either the old version or the new one. Deleting the
-    old directory before the swap would break that promise for the one failure
-    it exists to survive — a failed install would leave no version at all — so
-    the old directory is renamed aside first and moved back if the swap fails.
+    A hard link, since the cache is never modified in place; a copy where the
+    filesystem refuses one.
     """
-    staging = destination.parent / f".{destination.name}.staging"
-    backup = destination.parent / f".{destination.name}.previous"
-    shutil.rmtree(staging, ignore_errors=True)
-    shutil.rmtree(backup, ignore_errors=True)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.unlink(missing_ok=True)
     try:
-        safe_extract(archive, staging)
-        replaced = destination.exists()
-        if replaced:
-            destination.replace(backup)
-        try:
-            staging.replace(destination)
-        except OSError as error:
-            if replaced:
-                # Best effort: the rollback can only fail for the same reason
-                # the install did, and the original error is the one worth
-                # reporting. The backup directory is left behind either way.
-                with contextlib.suppress(OSError):
-                    backup.replace(destination)
-            raise DownloadError(
-                f"cannot install {archive} into {destination}: {error}"
-            ) from error
+        os.link(source, target)
+    except OSError:
+        shutil.copy2(source, target)
+
+
+def publish(staging: Path, destination: Path, names: Iterable[str]) -> None:
+    """Swap the entries `names` and the manifest from `staging` into `destination`.
+
+    All of them or none: a run that published entry by entry would leave a
+    mix of two corpus versions whenever it failed partway, which is the state
+    staging exists to rule out. The current entries are renamed aside into
+    `.previous/` first and moved back if any rename fails. The manifest is
+    the first entry taken aside and the last put in, so an interruption
+    mid-swap leaves no manifest rather than one describing a half-swapped
+    tree. An entry `destination` has and `staging` lacks is removed: the tree
+    holds what the manifest lists and nothing else.
+
+    A `.previous/` already present is a rollback that failed and holds the
+    last published tree; it is refused rather than deleted.
+    """
+    refuse_failed_swap(destination)
+    previous = destination / PREVIOUS
+    entries = [MANIFEST, *names]
+    aside: list[str] = []
+    placed: list[str] = []
+    try:
+        previous.mkdir(parents=True)
+        for name in entries:
+            if (destination / name).exists():
+                (destination / name).replace(previous / name)
+                aside.append(name)
+        for name in reversed(entries):
+            if (staging / name).exists():
+                (staging / name).replace(destination / name)
+                placed.append(name)
     except OSError as error:
+        # Best effort: a rollback rename can only fail for the reason the
+        # swap did, and the original error is the one worth reporting. What
+        # cannot be moved back stays in `.previous/`, which the next run
+        # refuses to touch.
+        for name in reversed(placed):
+            with contextlib.suppress(OSError):
+                (destination / name).replace(staging / name)
+        # The manifest goes back last and only over a whole tree: restored
+        # beside a directory still stuck in `.previous/`, it would describe
+        # files that are not there.
+        stuck = []
+        for name in (*(n for n in aside if n != MANIFEST), MANIFEST):
+            if name not in aside or (name == MANIFEST and stuck):
+                continue
+            try:
+                (previous / name).replace(destination / name)
+            except OSError:
+                stuck.append(name)
+        with contextlib.suppress(OSError):
+            previous.rmdir()
+        if stuck:
+            kept = ", ".join(sorted(path.name for path in previous.iterdir()))
+            raise DownloadError(
+                f"cannot publish {staging} into {destination}: {error}; the"
+                f" rollback could not restore {', '.join(stuck)}, so {previous}"
+                f" holds {kept} and {destination} has no manifest"
+            ) from error
         raise DownloadError(
-            f"cannot install {archive} into {destination}: {error}"
+            f"cannot publish {staging} into {destination}: {error}"
         ) from error
-    finally:
-        shutil.rmtree(staging, ignore_errors=True)
-        if destination.exists():
-            # Only once the new version is in place: a surviving backup is the
-            # old corpus, and deleting it after a failed install is the whole
-            # thing this function promises not to do.
-            shutil.rmtree(backup, ignore_errors=True)
-    return sorted(path for path in destination.rglob("*") if path.is_file())
+    shutil.rmtree(previous, ignore_errors=True)
 
 
 def validate_docx(path: Path) -> None:
@@ -492,17 +513,17 @@ def run_soffice(identifier: str, arguments: list[str]) -> str:
 
 
 def convert_legacy_documents(
-    identifier: str, extracted: list[Path], spec_dir: Path, output: Path
+    identifier: str, extracted: list[Path], spec_dir: Path, tree: Path
 ) -> list[Conversion]:
     """Convert an archive's legacy `.doc` files to `.docx` with LibreOffice.
 
     Only an archive with no `.docx` of its own is converted. The results go
-    to `converted/` beside the extracted tree (`converted/3gpp/Rel-18/
-    TS_32.299/32299-i00.docx`), not into it, because `replace_extracted`
-    promises that directory holds the archive's contents and nothing else.
-    They are rebuilt on every run, like the extraction they derive from, and
-    the manifest is the only way `regenerate` finds them: a run that fails
-    here writes no manifest, so a half-converted directory is never read.
+    to `converted/` beside the extracted archive in the staged `tree`
+    (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`), not into it, so the
+    extracted directory holds the archive's contents and nothing else. They
+    are rebuilt on every run, like the extraction they derive from, and the
+    manifest is the only way `regenerate` finds them; a run that fails here
+    publishes nothing.
     """
     legacy = [path for path in extracted if path.suffix == ".doc"]
     if not legacy or any(path.suffix == ".docx" for path in extracted):
@@ -510,10 +531,7 @@ def convert_legacy_documents(
     converter = run_soffice(identifier, ["--version"]).strip()
     if not converter:
         raise DownloadError(f"{identifier}: `{SOFFICE} --version` printed nothing")
-    destination = output / "converted" / spec_dir.relative_to(output)
-    staging = destination.parent / f".{destination.name}.staging"
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.rmtree(staging, ignore_errors=True)
+    destination = tree / "converted" / spec_dir.relative_to(tree)
     conversions = []
     try:
         # A private profile per run: with the user's own, a LibreOffice that
@@ -523,7 +541,7 @@ def convert_legacy_documents(
         with tempfile.TemporaryDirectory(prefix="soffice-profile-") as profile:
             for document in legacy:
                 relative = document.relative_to(spec_dir)
-                outdir = staging / relative.parent
+                outdir = destination / relative.parent
                 outdir.mkdir(parents=True, exist_ok=True)
                 # `--infilter` pins the Word 97 import: left to detection,
                 # LibreOffice reads a file that is not a Word document as
@@ -559,10 +577,10 @@ def convert_legacy_documents(
                 conversions.append(
                     Conversion(
                         file=str(
-                            destination.relative_to(output)
+                            destination.relative_to(tree)
                             / relative.with_suffix(".docx")
                         ),
-                        source=str(document.relative_to(output)),
+                        source=str(document.relative_to(tree)),
                         source_sha256=sha256_file(document),
                         converter=converter,
                         command=[SOFFICE, *arguments],
@@ -570,17 +588,10 @@ def convert_legacy_documents(
                         size=converted.stat().st_size,
                     )
                 )
-        # Not swapped with a rollback as `replace_extracted` is: nothing reads
-        # this directory except through the manifest, and a failure from here
-        # on fails the run, which then writes none.
-        shutil.rmtree(destination, ignore_errors=True)
-        staging.replace(destination)
     except OSError as error:
         raise DownloadError(
             f"{identifier}: cannot convert its legacy .doc: {error}"
         ) from error
-    finally:
-        shutil.rmtree(staging, ignore_errors=True)
     return conversions
 
 
@@ -601,6 +612,19 @@ def version_string(version: tuple[int, int, int]) -> str:
     return ".".join(str(part) for part in version)
 
 
+def parse_version(text: str) -> tuple[int, int, int]:
+    """Read `18.6.0` as (18, 6, 0).
+
+    3GPP spells each component as one base-36 character in archive names, so
+    none can exceed 35.
+    """
+    match = re.fullmatch(r"([0-9]+)\.([0-9]+)\.([0-9]+)", text.strip())
+    if not match or any(int(part) > 35 for part in match.groups()):
+        raise DownloadError(f"not a 3GPP version: {text!r} (expected e.g. 18.6.0)")
+    major, minor, patch = (int(part) for part in match.groups())
+    return major, minor, patch
+
+
 def etsi_pdf_location(spec: ThreeGppSpec) -> tuple[str, str, str]:
     etsi_number = f"1{spec.archive_stem}"
     range_start = int(etsi_number) // 100 * 100
@@ -611,6 +635,12 @@ def etsi_pdf_location(spec: ThreeGppSpec) -> tuple[str, str, str]:
 
 
 def etsi_pdf_url(spec: ThreeGppSpec, version: tuple[int, int, int]) -> str:
+    """The ETSI PDF URL for `version`, derived without listing anything.
+
+    Assumes the `_60` edition, which every catalogued TS has today. The
+    fallback for when the deliver directory cannot be listed;
+    `etsi_listed_pdf_url` is the one to call.
+    """
     major, minor, patch = version
     kind, etsi_number, base_url = etsi_pdf_location(spec)
     version_directory = f"{major:02d}.{minor:02d}.{patch:02d}_60"
@@ -618,103 +648,179 @@ def etsi_pdf_url(spec: ThreeGppSpec, version: tuple[int, int, int]) -> str:
     return f"{base_url}/{version_directory}/{filename}"
 
 
-def discover_etsi_pdf_versions(
-    spec: ThreeGppSpec, source_version: tuple[int, int, int]
-) -> list[tuple[int, int, int]]:
+def discover_etsi_editions(spec: ThreeGppSpec) -> dict[tuple[int, int, int], str]:
+    """Every version ETSI has published for `spec`, with its directory's URL.
+
+    A version directory carries an edition suffix (`18.07.00_60`) that the
+    version does not determine, so it is read off the deliver listing rather
+    than assumed. Where one version has several editions the highest is
+    taken, as the latest publication of it.
+    """
     _, _, base_url = etsi_pdf_location(spec)
     page = request_bytes(f"{base_url}/").decode("utf-8", errors="replace")
-    versions: set[tuple[int, int, int]] = {
-        (int(major), int(minor), int(patch))
-        for major, minor, patch in re.findall(
-            r"([0-9]{2})\.([0-9]{2})\.([0-9]{2})_60/?", page
-        )
+    editions: dict[tuple[int, int, int], int] = {}
+    for *parts, edition in re.findall(
+        r"([0-9]{2})\.([0-9]{2})\.([0-9]{2})_([0-9]{2})/", page
+    ):
+        major, minor, patch = (int(part) for part in parts)
+        version = (major, minor, patch)
+        editions[version] = max(editions.get(version, 0), int(edition))
+    return {
+        version: f"{base_url}/{'.'.join(f'{part:02d}' for part in version)}"
+        f"_{edition:02d}/"
+        for version, edition in editions.items()
     }
-    return sorted(
-        (
-            version
-            for version in versions
-            if version[0] == source_version[0] and version <= source_version
-        ),
-        reverse=True,
+
+
+def etsi_listed_pdf_url(
+    spec: ThreeGppSpec,
+    version: tuple[int, int, int],
+    editions: dict[tuple[int, int, int], str] | None,
+) -> str:
+    """The ETSI PDF URL for `version`: the PDF its edition directory lists.
+
+    `editions` is `discover_etsi_editions`'s answer, None when the listing was
+    unreachable. A version it lacks gets `etsi_pdf_url`'s derivation; an
+    edition directory that cannot be listed, or lists no PDF of this version,
+    gets the derived file name inside it.
+    """
+    if editions is None or version not in editions:
+        return etsi_pdf_url(spec, version)
+    directory = editions[version]
+    kind, etsi_number, _ = etsi_pdf_location(spec)
+    major, minor, patch = version
+    stem = f"{kind}_{etsi_number}v{major:02d}{minor:02d}{patch:02d}"
+    try:
+        page = request_bytes(directory).decode("utf-8", errors="replace")
+    except DownloadError:
+        page = ""
+    hrefs = re.findall(
+        rf"""href=["']([^"']*{re.escape(stem)}[0-9a-z]*\.pdf)["']""",
+        html.unescape(page),
+        re.IGNORECASE,
     )
+    if hrefs:
+        return urllib.parse.urljoin(directory, min(hrefs))
+    return f"{directory}{stem}p.pdf"
+
+
+def url_name(url: str) -> str:
+    return Path(urllib.parse.urlparse(url).path).name
+
+
+def etsi_cache_path(output: Path, url: str) -> Path:
+    """Where the ETSI PDF at `url` is cached: under its edition directory
+    (`etsi/18.07.00_60/ts_129272v180700p.pdf`). The file name alone repeats
+    across editions, so a cache keyed by it would serve the `_60` bytes once
+    `_61` is the edition the manifest records."""
+    path = PurePosixPath(urllib.parse.urlparse(url).path)
+    return output / CACHE / "etsi" / path.parent.name / path.name
 
 
 def download_3gpp(
     spec: ThreeGppSpec,
-    url: str,
+    archived: dict[tuple[int, int, int], str],
     release: int,
     output: Path,
+    tree: Path,
     extract: bool,
     pdfs: bool,
+    version: tuple[int, int, int] | None = None,
+    link_archive: bool = False,
 ) -> DownloadRecord:
-    source_version_tuple = decode_3gpp_version(url)
+    """Fetch one specification into the cache under `output`, staged in `tree`.
+
+    `archived` is the specification's `discover_3gpp_archive_urls` listing.
+    Without `version` the newest archived version is taken, or with `pdfs`
+    the newest whose ETSI PDF is published; with it, exactly that one. The
+    record's paths are relative to `tree`. Its archive path names the cache
+    entry, which is where it is once `tree` is published into `output`;
+    `link_archive` puts a link to it in `tree` instead, for a tree published
+    anywhere else.
+    """
+    identifier = f"{spec.document_type} {spec.number}"
+    if not archived:
+        raise DownloadError(f"no Release {release} version of {identifier} is archived")
+    if version is not None:
+        if version not in archived:
+            listed = ", ".join(version_string(v) for v in sorted(archived))
+            raise DownloadError(
+                f"{identifier} {version_string(version)} is not archived;"
+                f" Release {release} has {listed}"
+            )
+        selected = version
+    else:
+        selected = max(archived)
     newer_source_version = None
+    editions = None
     if pdfs:
+        # Degrade to the newest-version-plus-fallback-PDF path rather than
+        # fail: the listing being unreachable is the situation the fallback
+        # below already handles, with its own error message.
+        with contextlib.suppress(DownloadError):
+            editions = discover_etsi_editions(spec)
         # Page attachment needs the exact-version ETSI PDF, so when the newest
         # archive version's rendering is not published yet, prefer the highest
         # version whose PDF exists over the newest version with a mismatched
         # fallback PDF. Only when no version of this release has a PDF at all
         # does the newest archive plus a fallback rendering remain the answer.
-        # Degrade to the newest-version-plus-fallback-PDF path rather than
-        # fail: either listing being unreachable is the situation the existing
-        # fallback already handles, with its own error message.
-        try:
-            published = set(discover_etsi_pdf_versions(spec, source_version_tuple))
-            if source_version_tuple not in published:
-                archived = discover_3gpp_archive_urls(spec, release)
-                matched = max((v for v in archived if v in published), default=None)
-                if matched is not None:
-                    newer_source_version = version_string(source_version_tuple)
-                    url = archived[matched]
-                    source_version_tuple = matched
-        except DownloadError:
-            pass
-    archive_name = Path(urllib.parse.urlparse(url).path).name
-    archive = output / "archives" / f"3gpp-rel-{release}" / archive_name
+        # An explicit `version` is never walked back: it was asked for.
+        if version is None and editions is not None and selected not in editions:
+            matched = max((v for v in archived if v in editions), default=None)
+            if matched is not None:
+                newer_source_version = version_string(selected)
+                selected = matched
+    url = archived[selected]
+    relative_archive = Path(CACHE) / f"3gpp-rel-{release}" / url_name(url)
+    archive = output / relative_archive
     atomic_download(url, archive, validate=validate_zip)
-    files = [archive]
-    identifier = f"{spec.document_type} {spec.number}"
+    if link_archive:
+        link_file(archive, tree / relative_archive)
+    files = [str(relative_archive)]
     conversions = None
     if extract:
         spec_dir = (
-            output / "3gpp" / f"Rel-{release}" / f"{spec.document_type}_{spec.number}"
+            tree / "3gpp" / f"Rel-{release}" / f"{spec.document_type}_{spec.number}"
         )
-        extracted = replace_extracted(archive, spec_dir)
-        files.extend(extracted)
+        # `tree` is staged afresh, so a plain extraction leaves no previous
+        # version's files behind; sorted, so the manifest lists them stably.
+        extracted = sorted(safe_extract(archive, spec_dir))
+        files.extend(relative_paths(extracted, tree))
         conversions = (
-            convert_legacy_documents(identifier, extracted, spec_dir, output) or None
+            convert_legacy_documents(identifier, extracted, spec_dir, tree) or None
         )
     pdf_url = None
     pdf_sha256 = None
     pdf_size = None
-    source_version = version_string(source_version_tuple)
+    source_version = version_string(selected)
     pdf_version = None
     if pdfs:
-        exact_pdf_url = etsi_pdf_url(spec, source_version_tuple)
-        pdf = output / "3gpp" / f"Rel-{release}" / "PDF" / Path(exact_pdf_url).name
+        exact_pdf_url = etsi_listed_pdf_url(spec, selected, editions)
+        cached = etsi_cache_path(output, exact_pdf_url)
         try:
-            atomic_download(exact_pdf_url, pdf, validate=validate_pdf)
+            atomic_download(exact_pdf_url, cached, validate=validate_pdf)
             pdf_url = exact_pdf_url
             pdf_version = source_version
         except DownloadError as exact_error:
-            fallback_versions = discover_etsi_pdf_versions(spec, source_version_tuple)
-            fallback_versions = [
-                version
-                for version in fallback_versions
-                if version != source_version_tuple
-            ]
+            if editions is None:
+                editions = discover_etsi_editions(spec)
+            fallback_versions = sorted(
+                (v for v in editions if v[0] == selected[0] and v < selected),
+                reverse=True,
+            )
             if not fallback_versions:
                 raise DownloadError(
                     f"no Release {release} ETSI PDF is published for"
-                    f" {spec.document_type} {spec.number}"
-                    f" (source {source_version}): {exact_error}"
+                    f" {identifier} (source {source_version}): {exact_error}"
                 ) from exact_error
             fallback_version = fallback_versions[0]
-            pdf_url = etsi_pdf_url(spec, fallback_version)
-            pdf = output / "3gpp" / f"Rel-{release}" / "PDF" / Path(pdf_url).name
-            atomic_download(pdf_url, pdf, validate=validate_pdf)
+            pdf_url = etsi_listed_pdf_url(spec, fallback_version, editions)
+            cached = etsi_cache_path(output, pdf_url)
+            atomic_download(pdf_url, cached, validate=validate_pdf)
             pdf_version = version_string(fallback_version)
-        files.append(pdf)
+        pdf = tree / "3gpp" / f"Rel-{release}" / "PDF" / cached.name
+        link_file(cached, pdf)
+        files.append(str(pdf.relative_to(tree)))
         pdf_sha256 = sha256_file(pdf)
         pdf_size = pdf.stat().st_size
     return DownloadRecord(
@@ -724,7 +830,7 @@ def download_3gpp(
         url=url,
         sha256=sha256_file(archive),
         size=archive.stat().st_size,
-        files=relative_paths(files, output),
+        files=files,
         reason=spec.reason,
         pdf_url=pdf_url,
         pdf_sha256=pdf_sha256,
@@ -736,18 +842,20 @@ def download_3gpp(
     )
 
 
-def download_rfc(spec: RfcSpec, output: Path) -> DownloadRecord:
+def download_rfc(spec: RfcSpec, output: Path, tree: Path) -> DownloadRecord:
     url = RFC_TEXT_URL.format(number=spec.number)
-    destination = output / "rfc" / f"rfc{spec.number}.txt"
-    atomic_download(url, destination, validate=validate_rfc_text)
+    relative = Path("rfc") / f"rfc{spec.number}.txt"
+    cached = output / CACHE / relative
+    atomic_download(url, cached, validate=validate_rfc_text)
+    link_file(cached, tree / relative)
     return DownloadRecord(
         family="IETF",
         identifier=f"RFC {spec.number}",
         title=spec.title,
         url=url,
-        sha256=sha256_file(destination),
-        size=destination.stat().st_size,
-        files=relative_paths([destination], output),
+        sha256=sha256_file(cached),
+        size=cached.stat().st_size,
+        files=[str(relative)],
     )
 
 
@@ -763,13 +871,16 @@ def validate_wireshark_file(path: Path) -> None:
         raise DownloadError(f"{path.name} contains no markup")
 
 
-def download_wireshark(dictionary: WiresharkDictionary, output: Path) -> DownloadRecord:
+def download_wireshark(
+    dictionary: WiresharkDictionary, output: Path, tree: Path
+) -> DownloadRecord:
     """Fetch every file of the pinned dictionary directory.
 
     One record for the whole directory: the files only mean anything
     together (dictionary.xml includes the vendor files as XML entities), so
     the manifest treats them as one artifact whose hash is the hash of the
-    per-file hashes in name order.
+    per-file hashes in name order. The cache keeps one directory per tag, and
+    the published `wireshark/` holds the pinned tag's files and no other's.
     """
     tree_url = WIRESHARK_TREE_URL.format(
         path=urllib.parse.quote(dictionary.path, safe=""), tag=dictionary.tag
@@ -794,8 +905,10 @@ def download_wireshark(dictionary: WiresharkDictionary, output: Path) -> Downloa
         url = WIRESHARK_RAW_URL.format(
             tag=dictionary.tag, path=dictionary.path, name=name
         )
-        destination = output / "wireshark" / name
-        atomic_download(url, destination, validate=validate_wireshark_file)
+        cached = output / CACHE / "wireshark" / dictionary.tag / name
+        atomic_download(url, cached, validate=validate_wireshark_file)
+        destination = tree / "wireshark" / name
+        link_file(cached, destination)
         digest.update(f"{name}\n{sha256_file(destination)}\n".encode())
         total += destination.stat().st_size
         files.append(destination)
@@ -806,9 +919,91 @@ def download_wireshark(dictionary: WiresharkDictionary, output: Path) -> Downloa
         url=tree_url,
         sha256=digest.hexdigest(),
         size=total,
-        files=relative_paths(files, output),
+        files=relative_paths(files, tree),
         reason="Independent oracle for extracted codes, vendor-ids and types.",
     )
+
+
+def describe(record: DownloadRecord) -> str:
+    """The progress line for one finished download."""
+    note = ""
+    if (
+        record.source_version is not None
+        and record.pdf_version is not None
+        and record.source_version != record.pdf_version
+    ):
+        note = (
+            f" (PDF {record.pdf_version}; source {record.source_version}, "
+            "ETSI publication lag)"
+        )
+    elif record.newer_source_version is not None:
+        note = (
+            f" (source {record.source_version}; newer"
+            f" {record.newer_source_version} skipped, its ETSI PDF is"
+            " unpublished)"
+        )
+    elif record.source_version is not None:
+        note = f" {record.source_version}"
+    for conversion in record.conversions or ():
+        note += (
+            f" (converted {PurePosixPath(conversion.source).name}"
+            f" with {conversion.converter})"
+        )
+    return f"Downloaded {record.identifier}{note}"
+
+
+def write_manifest(
+    tree: Path, release: int, pdfs: bool, records: list[DownloadRecord]
+) -> Path:
+    """Write `tree`'s manifest.json. `tree` is staged, so no temporary file:
+    a half-written manifest is never published."""
+    records = sorted(records, key=lambda item: (item.family, item.identifier))
+    manifest = {
+        "3gpp_release": release,
+        "generated_at_epoch": int(time.time()),
+        "include_pdfs": pdfs,
+        "artifact_count": len(records),
+        "artifacts": [asdict(record) for record in records],
+    }
+    path = tree / MANIFEST
+    try:
+        with path.open("w", encoding="utf-8") as stream:
+            json.dump(manifest, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+    except OSError as error:
+        raise DownloadError(f"cannot write {path}: {error}") from error
+    return path
+
+
+def refuse_failed_swap(destination: Path) -> None:
+    """Refuse a `destination` whose `.previous/` a failed `publish` left.
+
+    Checked before downloading too, so the refusal does not come only after
+    the whole catalog has been fetched.
+    """
+    if (destination / PREVIOUS).exists():
+        raise DownloadError(
+            f"{destination / PREVIOUS} holds the tree a failed swap could not"
+            f" restore; move its entries back into {destination} or delete it"
+        )
+
+
+@contextlib.contextmanager
+def staged(directory: Path) -> Iterator[Path]:
+    """A fresh staging directory, removed afterwards whatever happened.
+
+    One left by an interrupted run was never published, so nothing reads it.
+    """
+    staging = directory / STAGING
+    try:
+        shutil.rmtree(staging, ignore_errors=True)
+        staging.mkdir(parents=True)
+    except OSError as error:
+        raise DownloadError(f"cannot create {staging}: {error}") from error
+    try:
+        yield staging
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
 
 
 def download_corpus(
@@ -821,11 +1016,14 @@ def download_corpus(
     | None = None,
     report: Callable[[str], None] = lambda message: None,
 ) -> Path:
-    """Download the catalog into `output` and write `manifest.json`.
+    """Download the catalog into `output` and publish it with `manifest.json`.
 
-    Returns the manifest path. Progress goes to `report`, so the caller
-    decides what printing means; anything that stops the download raises
-    `DownloadError`.
+    Every entry is staged in `output/.staging/`, and the staged tree replaces
+    the published one only once every entry succeeded: a run that fails
+    anywhere leaves the previous tree and the manifest describing it exactly
+    as they were, rather than a mix of old and new specifications. Returns
+    the manifest path. Progress goes to `report`, so the caller decides what
+    printing means; anything that stops the download raises `DownloadError`.
     """
     if workers < 1:
         raise DownloadError("workers must be at least 1")
@@ -837,42 +1035,49 @@ def download_corpus(
     try:
         output = output.resolve()
         output.mkdir(parents=True, exist_ok=True)
-        # A run that fails partway leaves some artifacts replaced and others
-        # not, so the previous manifest now describes a corpus that no longer
-        # exists — and it is the file everything downstream reads to find out
-        # what is here. Removing it first makes a failed run look like what it
-        # is rather than like the state it interrupted.
-        (output / "manifest.json").unlink(missing_ok=True)
     except OSError as error:
         raise DownloadError(f"cannot create the corpus directory: {error}") from error
-    report(f"Resolving 3GPP Release {release} artifacts...")
-    # Discovery is inside the boundary too: it runs before the worker pool, so
-    # nothing else would translate a failure here.
-    urls = discover_3gpp_urls(release, tgpp_specs)
-    missing = [spec.number for spec in tgpp_specs if spec.number not in urls]
-    if missing:
-        raise DownloadError(
-            f"No Release {release} artifact found for: {', '.join(missing)}. "
-            "The release may not contain every catalogued specification."
-        )
-
-    jobs = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
-        for spec in tgpp_specs:
-            jobs.append(
-                executor.submit(
-                    download_3gpp,
-                    spec,
-                    urls[spec.number],
-                    release,
-                    output,
-                    extract,
-                    pdfs,
-                )
+    refuse_failed_swap(output)
+    with (
+        staged(output) as tree,
+        concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor,
+    ):
+        report(f"Resolving 3GPP Release {release} artifacts...")
+        # Discovery is inside the boundary too: one archive listing per
+        # specification, all of them before any download starts, so a
+        # release missing several catalogued specifications names them all.
+        listings = [
+            executor.submit(discover_3gpp_archive_urls, spec, release)
+            for spec in tgpp_specs
+        ]
+        archived = {
+            spec.number: listing.result()
+            for spec, listing in zip(tgpp_specs, listings, strict=True)
+        }
+        missing = [number for number, versions in archived.items() if not versions]
+        if missing:
+            raise DownloadError(
+                f"No Release {release} artifact found for: {', '.join(missing)}. "
+                "The release may not contain every catalogued specification."
             )
-        for spec in rfc_specs:
-            jobs.append(executor.submit(download_rfc, spec, output))
-        jobs.append(executor.submit(download_wireshark, wireshark, output))
+
+        jobs = [
+            executor.submit(
+                download_3gpp,
+                spec,
+                archived[spec.number],
+                release,
+                output,
+                tree,
+                extract,
+                pdfs,
+            )
+            for spec in tgpp_specs
+        ]
+        jobs.extend(
+            executor.submit(download_rfc, spec, output, tree) for spec in rfc_specs
+        )
+        jobs.append(executor.submit(download_wireshark, wireshark, output, tree))
 
         records: list[DownloadRecord] = []
         for future in concurrent.futures.as_completed(jobs):
@@ -883,55 +1088,77 @@ def download_corpus(
                     job.cancel()
                 raise DownloadError(str(error)) from error
             records.append(record)
-            version_note = ""
-            if (
-                record.source_version is not None
-                and record.pdf_version is not None
-                and record.source_version != record.pdf_version
-            ):
-                version_note = (
-                    f" (PDF {record.pdf_version}; source {record.source_version}, "
-                    "ETSI publication lag)"
-                )
-            elif record.newer_source_version is not None:
-                version_note = (
-                    f" (source {record.source_version}; newer"
-                    f" {record.newer_source_version} skipped, its ETSI PDF is"
-                    " unpublished)"
-                )
-            for conversion in record.conversions or ():
-                version_note += (
-                    f" (converted {PurePosixPath(conversion.source).name}"
-                    f" with {conversion.converter})"
-                )
-            report(f"Downloaded {record.identifier}{version_note}")
-
-    records.sort(key=lambda item: (item.family, item.identifier))
-    manifest = {
-        "3gpp_release": release,
-        "generated_at_epoch": int(time.time()),
-        "include_pdfs": pdfs,
-        "artifact_count": len(records),
-        "artifacts": [asdict(record) for record in records],
-    }
-    manifest_path = output / "manifest.json"  # `output` is resolved by now
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            dir=output,
-            prefix="manifest",
-            suffix=".part",
-            delete=False,
-        ) as stream:
-            temporary = Path(stream.name)
-            json.dump(manifest, stream, indent=2, sort_keys=True)
-            stream.write("\n")
-        try:
-            os.replace(temporary, manifest_path)
-        finally:
-            temporary.unlink(missing_ok=True)
-    except OSError as error:
-        raise DownloadError(f"cannot write {manifest_path}: {error}") from error
+            report(describe(record))
+        write_manifest(tree, release, pdfs, records)
+        publish(tree, output, PUBLISHED)
+    manifest_path = output / MANIFEST
     report(f"Wrote {len(records)} artifacts and {manifest_path}")
+    return manifest_path
+
+
+def download_version(
+    reference: str,
+    version: str,
+    output: Path,
+    extract: bool = True,
+    pdfs: bool = True,
+    catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]
+    | None = None,
+    report: Callable[[str], None] = lambda message: None,
+) -> Path:
+    """Fetch one catalogued 3GPP specification at `version` into `output/versions/`.
+
+    For diffing against what the corpus holds: the tree is
+    `versions/<SpecRef>/<version>/` (`versions/TS29.272/18.6.0/`), shaped
+    like the published one and with a one-record `manifest.json` of its own,
+    so `seanchai regenerate --manifest` reads it the way it reads the corpus.
+    The release is the version's major. The archive comes from the cache
+    when an earlier run fetched it; nothing else under `output` changes.
+    Returns the manifest path.
+    """
+    tgpp_specs = (catalog if catalog is not None else load_catalog())[0]
+    wanted = reference.replace(" ", "").upper()
+    spec = next(
+        (
+            item
+            for item in tgpp_specs
+            if wanted in (item.number, f"{item.document_type}{item.number}")
+        ),
+        None,
+    )
+    if spec is None:
+        raise DownloadError(
+            f"{reference} is not a catalogued 3GPP specification"
+            " (`seanchai download --list` shows the catalog)"
+        )
+    selected = parse_version(version)
+    release = selected[0]
+    release_marker(release)
+    try:
+        output = output.resolve()
+        parent = output / VERSIONS / f"{spec.document_type}{spec.number}"
+        parent.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        raise DownloadError(f"cannot create the versions directory: {error}") from error
+    refuse_failed_swap(parent)
+    name = version_string(selected)
+    with staged(parent) as staging:
+        tree = staging / name
+        report(f"Resolving {spec.document_type} {spec.number} {name}...")
+        record = download_3gpp(
+            spec,
+            discover_3gpp_archive_urls(spec, release),
+            release,
+            output,
+            tree,
+            extract,
+            pdfs,
+            version=selected,
+            link_archive=True,
+        )
+        report(describe(record))
+        write_manifest(tree, release, pdfs, [record])
+        publish(staging, parent, [name])
+    manifest_path = parent / name / MANIFEST
+    report(f"Wrote {manifest_path}")
     return manifest_path

@@ -1,10 +1,10 @@
 """Download the 3GPP and IETF Diameter specification corpus.
 
-3GPP publishes the latest version belonging to each release as a ZIP file.
+3GPP keeps every version of a specification as a ZIP file in its archive.
 Those ZIPs normally contain the editable DOC or DOCX specification source;
 a legacy DOC is converted to DOCX with headless LibreOffice.
-RFCs are downloaded as canonical plain text from the RFC Editor. Official
-3GPP/ETSI PDF renditions can also be downloaded with ``--pdfs``.
+RFCs are downloaded as canonical plain text from the RFC Editor, and the
+official ETSI PDF renditions alongside the 3GPP sources.
 
 The curated specification catalog lives in ``specs.toml`` next to this package;
 the CLI downloads into the git-ignored ``specifications/`` directory by default.
@@ -23,6 +23,7 @@ from .core import (
     RfcSpec,
     ThreeGppSpec,
     download_corpus,
+    download_version,
     load_catalog,
 )
 
@@ -34,5 +35,6 @@ __all__ = [
     "RfcSpec",
     "ThreeGppSpec",
     "download_corpus",
+    "download_version",
     "load_catalog",
 ]

@@ -397,3 +397,16 @@ def test_format_command_writes_nothing_when_any_file_fails_to_parse(tmp_path):
     assert result.exit_code == 1
     assert f"error: {broken}: line 2:" in result.stderr
     assert edited.read_text() == _HAND_EDITED
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [["--spec", "TS29.272"], ["--version", "18.6.0"]],
+    ids=["spec-only", "version-only"],
+)
+def test_download_takes_spec_and_version_together(tmp_path, arguments):
+    result = CliRunner().invoke(main, ["download", "-o", str(tmp_path), *arguments])
+
+    assert result.exit_code == 2
+    assert "--spec and --version go together" in result.output
+    assert not list(tmp_path.iterdir())

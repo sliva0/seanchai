@@ -40,6 +40,7 @@ reading of the same documents.
 
 ```sh
 seanchai download                       # fetch the catalog into specifications/
+seanchai download --spec SPECREF --version X.Y.Z   # one older version, for diffs
 seanchai regenerate [--add SPECREF]     # rebuild dad/ from it
 seanchai regenerate --expand-ranges     # also widen stale declaration ranges
 seanchai extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad

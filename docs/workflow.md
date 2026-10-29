@@ -43,6 +43,21 @@ correction layer held still. A correction whose `expect` no longer matches
 fails the specification's rebuild, which is the signal that a fix was adopted
 upstream and the declaration should go. Then diff the corrected files.
 
+The old raw file is in git. When the extractor has changed since it was
+committed, re-extract the old version with today's code instead, so the diff
+shows the specification's changes and not the extractor's:
+
+```sh
+uv run seanchai download --spec TS29.272 --version 18.6.0
+uv run seanchai regenerate --spec TS29.272 -o /tmp/old \
+    --manifest specifications/versions/TS29.272/18.6.0/manifest.json
+diff -u /tmp/old/raw/3gpp/rel-18/29272-i60.raw.dad dad/raw/3gpp/rel-18/29272-i70.raw.dad
+```
+
+`--spec` limits the rebuild to that specification, so the rest of the corpus
+is not reported missing from the one-record manifest, and `-o` keeps the
+older pair out of `dad/`; it reports as `replaced` there.
+
 A rebuild that succeeds on the new version still warns about every
 declaration whose range does not cover it. Once the diffs are reviewed,
 

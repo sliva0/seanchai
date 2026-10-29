@@ -7,6 +7,7 @@ pinned here.
 
 import json
 import shutil
+from pathlib import Path
 
 import pytest
 
@@ -89,6 +90,43 @@ def test_a_rebuild_follows_the_manifest_version_and_reports_what_it_did(
     (orphan,) = _run(manifest, corpus, corpus).outcomes
     assert orphan.status == "not-in-manifest"
     assert (corpus / "3gpp" / "rel-18" / "29999-110.dad").is_file()
+
+
+def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
+    tmp_path, synthetic_spec_docx
+):
+    # The route `seanchai download --spec --version` leads to: a one-record
+    # manifest, `only` so the corpus's other specifications are not reported
+    # missing from it, and an output that is not the corpus.
+    corpus = tmp_path / "dad"
+    manifest, document = _manifest(tmp_path / "specifications", "29999-110")
+    shutil.copy(synthetic_spec_docx, document)
+    _run(manifest, corpus, corpus, add=["TS29.999"])
+    other = Path(__file__).parent.parent / "dad" / "rfc" / "rfc4004.dad"
+    shutil.copy(other, corpus / "rfc4004.dad")
+    committed = {path: path.read_bytes() for path in corpus.rglob("*.dad")}
+    older, document = _manifest(
+        tmp_path / "versions" / "TS29.999" / "1.2.3", "29999-100"
+    )
+    shutil.copy(synthetic_spec_docx, document)
+    scratch = tmp_path / "scratch"
+
+    (outcome,) = regenerate.regenerate(
+        older,
+        corpus,
+        scratch,
+        sources_dir=None,
+        corrections_dir=None,
+        only=["TS29.999"],
+    ).outcomes
+
+    assert outcome.reference == "TS29.999"
+    assert outcome.replaced_version == "1.2.3"
+    assert [p.relative_to(scratch).as_posix() for p in outcome.written] == [
+        "3gpp/rel-18/29999-100.dad",
+        "raw/3gpp/rel-18/29999-100.raw.dad",
+    ]
+    assert {path: path.read_bytes() for path in corpus.rglob("*.dad")} == committed
 
 
 def test_a_legacy_doc_is_read_through_the_manifest_conversion(

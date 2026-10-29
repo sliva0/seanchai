@@ -252,6 +252,13 @@ def extract_rfc(
     " (e.g. TS29.273). Repeatable.",
 )
 @click.option(
+    "--spec",
+    "only",
+    multiple=True,
+    metavar="SPECREF",
+    help="Rebuild only this specification instead of the whole corpus. Repeatable.",
+)
+@click.option(
     "--expand-ranges",
     is_flag=True,
     help="Widen, in --sources and --corrections, every declaration range a"
@@ -264,6 +271,7 @@ def regenerate(
     sources: Path,
     corrections: Path,
     add: tuple[str, ...],
+    only: tuple[str, ...],
     expand_ranges: bool,
 ) -> None:
     """Rebuild the committed corpus from the downloaded sources.
@@ -279,6 +287,11 @@ def regenerate(
     cover the version it just applied cleanly to has the range rewritten in
     its edit file, comments and layout kept; the widened ranges print under
     the specification.
+
+    An older version fetched with `seanchai download --spec SPECREF
+    --version VERSION` is extracted for diffing with `--manifest
+    specifications/versions/SPECREF/VERSION/manifest.json --spec SPECREF -o
+    SCRATCH`; without -o it would replace the committed pair.
     """
     from . import regenerate as library
 
@@ -289,6 +302,7 @@ def regenerate(
         sources_dir=sources,
         corrections_dir=corrections,
         add=add,
+        only=only,
         report=_echo_outcome,
         expand_ranges=expand_ranges,
     )
@@ -580,10 +594,23 @@ def _summary(counts, checked: int) -> str:
     help="Download the ETSI PDF renderings and prefer the newest version"
     " whose PDF is published (default: on). --no-pdfs is for catalog"
     " experiments only: it strips pdf_url from the manifest and lets"
-    " Specs/latest replace a committed spec's docx with a version whose"
+    " the newest archive replace a committed spec's docx with a version whose"
     " PDF is unpublished.",
 )
 @click.option("--list", "list_only", is_flag=True, help="Print the catalog and exit.")
+@click.option(
+    "--spec",
+    metavar="SPECREF",
+    help="With --version: fetch one catalogued 3GPP specification"
+    " (e.g. TS29.272) into versions/ instead of the whole catalog.",
+)
+@click.option(
+    "--version",
+    "spec_version",
+    metavar="VERSION",
+    help="With --spec: the archived version to fetch (e.g. 18.6.0); its"
+    " major is the release.",
+)
 def download(
     release: int,
     output: Path,
@@ -591,14 +618,25 @@ def download(
     no_extract: bool,
     pdfs: bool,
     list_only: bool,
+    spec: str | None,
+    spec_version: str | None,
 ) -> None:
     """Download the curated 3GPP and RFC specification corpus.
 
-    A 3GPP archive holding only a legacy `.doc` is converted to `.docx` with
-    headless LibreOffice (`soffice` on PATH), and the conversion is recorded
-    in the manifest.
+    Every entry is staged and the whole set replaces the previous download
+    only when all of it succeeded; a failed run leaves the previous one and
+    its manifest as they were. A 3GPP archive holding only a legacy `.doc` is
+    converted to `.docx` with headless LibreOffice (`soffice` on PATH), and
+    the conversion is recorded in the manifest.
+
+    With --spec and --version, one older version is fetched into
+    `versions/<SPECREF>/<VERSION>/` with a manifest of its own, for
+    `seanchai regenerate --manifest ... --spec ... -o SCRATCH`.
     """
-    from .downloader import download_corpus, load_catalog
+    from .downloader import download_corpus, download_version, load_catalog
+
+    if (spec is None) != (spec_version is None):
+        raise click.UsageError("--spec and --version go together")
 
     # Catalog loading is inside the boundary too: an unreadable or malformed
     # specs.toml is a user-facing error, not a traceback.
@@ -606,13 +644,24 @@ def download(
         tgpp_specs, rfc_specs, wireshark = load_catalog()
         if list_only:
             click.echo(f"3GPP specifications ({len(tgpp_specs)}):")
-            for spec in tgpp_specs:
-                click.echo(f"  {spec.document_type} {spec.number}: {spec.title}")
+            for entry in tgpp_specs:
+                click.echo(f"  {entry.document_type} {entry.number}: {entry.title}")
             click.echo(f"\nRFCs ({len(rfc_specs)}):")
-            for spec in rfc_specs:
-                click.echo(f"  RFC {spec.number}: {spec.title}")
+            for rfc in rfc_specs:
+                click.echo(f"  RFC {rfc.number}: {rfc.title}")
             click.echo(
                 f"\nWireshark Diameter dictionary: {wireshark.path} at {wireshark.tag}"
+            )
+            return
+        if spec is not None and spec_version is not None:
+            download_version(
+                spec,
+                spec_version,
+                output,
+                extract=not no_extract,
+                pdfs=pdfs,
+                catalog=(tgpp_specs, rfc_specs, wireshark),
+                report=lambda message: click.echo(message, err=True),
             )
             return
         download_corpus(
