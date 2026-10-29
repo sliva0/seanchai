@@ -5,8 +5,10 @@ from seanchai.dad.corrections import (
     Correction,
     Delete,
     Insert,
+    avp_rule,
     definition,
     reused_avps,
+    reused_row,
     table_row,
 )
 
@@ -108,4 +110,38 @@ CORRECTIONS = [
             strict=True,
         )
     ),
+]
+
+# TS 29.217, which defines both AVPs, spells them eNodeB-Id and
+# Extended-eNodeB-Id in its table 5.3.1.1, the defining clauses and its
+# Congestion-Location-Id body; this document's re-used table and the
+# MME-Location-Information body (clause 8.4.34) capitalise the D.
+CORRECTIONS += [
+    correction
+    for printed, name, clause in (
+        ("eNodeB-ID", "eNodeB-Id", "5.3.10"),
+        ("Extended-eNodeB-ID", "Extended-eNodeB-Id", "5.3.15"),
+    )
+    for correction in (
+        Correction(
+            id=f"{name.lower()}-row-spelling",
+            target=reused_row(printed),
+            field="name",
+            expect=printed,
+            replace=name,
+            reason=f"the re-used row cites TS 29.217, which defines {name}"
+            f" (clause {clause})",
+            versions="18.2.0",
+        ),
+        Correction(
+            id=f"{name.lower()}-in-mme-location-information",
+            target=avp_rule("MME-Location-Information", printed),
+            field="name",
+            expect=printed,
+            replace=name,
+            reason="the MME-Location-Information body (clause 8.4.34) uses the"
+            f" re-used row's spelling; TS 29.217 defines {name}",
+            versions="18.2.0",
+        ),
+    )
 ]

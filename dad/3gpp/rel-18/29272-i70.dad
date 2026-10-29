@@ -928,7 +928,7 @@ Stationary-Indication                   TS29.336   - ;; inserted: (TS29.272.py#m
 Monitoring-Event-Configuration          TS29.336   MUST-NOT
 Monitoring-Event-Report                 TS29.336   MUST-NOT
 UE-Reachability-Configuration           TS29.336   MUST-NOT
-eNodeB-ID                               TS29.217   MUST-NOT
+eNodeB-Id                               TS29.217   MUST-NOT ;; corrected: (TS29.272.py#enodeb-id-row-spelling)
 SCEF-Reference-ID-for-Deletion          TS29.336   MUST-NOT
 Monitoring-Type                         TS29.336   MUST-NOT
 Maximum-Number-of-Reports               TS29.336   MUST-NOT
@@ -947,7 +947,7 @@ Reference-ID-Validity-Time              TS29.336   MUST-NOT
 Maximum-UE-Availability-Time            TS29.338   MUST-NOT
 Emergency-Services                      TS29.273   -
 Load                                    RFC8583    MUST-NOT
-Extended-eNodeB-ID                      TS29.217   MUST-NOT
+Extended-eNodeB-Id                      TS29.217   MUST-NOT ;; corrected: (TS29.272.py#extended-enodeb-id-row-spelling)
 External-Identifier                     TS29.336   MUST-NOT
 Loss-Of-Connectivity-Reason             TS29.336   MUST-NOT
 Active-Time                             TS29.128   MUST-NOT
@@ -1538,8 +1538,8 @@ MME-Location-Information ::= < AVP header: 1600 10415 >
         [ Current-Location-Retrieved ]
         [ Age-Of-Location-Information ]
         [ User-CSG-Information ]
-        [ eNodeB-ID ]
-        [ Extended-eNodeB-ID ]
+        [ eNodeB-Id ] ;; corrected: (TS29.272.py#enodeb-id-in-mme-location-information)
+        [ Extended-eNodeB-Id ] ;; corrected: (TS29.272.py#extended-enodeb-id-in-mme-location-information)
       * [ AVP ]
 
 

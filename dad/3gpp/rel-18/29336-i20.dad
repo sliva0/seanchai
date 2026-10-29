@@ -315,7 +315,7 @@ User-CSG-Information                  TS29.272   -
 Cell-Global-Identity                  TS29.272   -
 Service-Area-Identity                 TS29.272   -
 Routing-Area-Identity                 TS29.272   -
-eNodeB-ID                             TS29.217   -
+eNodeB-Id                             TS29.217   - ;; corrected: (TS29.336.py#enodeb-id-row-spelling)
 Day-Of-Week-Mask                      RFC5777    -
 Time-Of-Day-Start                     RFC5777    -
 Time-Of-Day-End                       RFC5777    -
@@ -323,7 +323,7 @@ DRMP                                  RFC7944    MUST-NOT
 Service-Selection                     RFC5778    -
 Load                                  RFC8583    MUST-NOT
 DL-Buffering-Suggested-Packet-Count   TS29.272   -
-Extended-eNodeB-ID                    TS29.217   MUST-NOT
+Extended-eNodeB-Id                    TS29.217   MUST-NOT ;; corrected: (TS29.336.py#extended-enodeb-id-row-spelling)
 Maximum-UE-Availability-Time          TS29.338   -
 Idle-Status-Indication                TS29.128   MUST-NOT
 Active-Time                           TS29.128   MUST-NOT
@@ -605,8 +605,8 @@ MME-Location-Information ::= < AVP header: 1600 10415 >
         [ Current-Location-Retrieved ]
         [ Age-Of-Location-Information ]
         [ User-CSG-Information ]
-        [ eNodeB-ID ]
-        [ Extended-eNodeB-ID ]
+        [ eNodeB-Id ] ;; corrected: (TS29.336.py#enodeb-id-in-mme-location-information)
+        [ Extended-eNodeB-Id ] ;; corrected: (TS29.336.py#extended-enodeb-id-in-mme-location-information)
       * [ AVP ]
 
 

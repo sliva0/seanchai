@@ -1,0 +1,12 @@
+# Source declarations for 3GPP TS 29.217 (Policy and Charging Control (PCC);
+# Np reference point). Applied to normalized source text before parsing; see
+# src/seanchai/extractor/sources.py for the format.
+
+[[patch]]
+find = "V,"
+replace = "V"
+exact = true
+section = "5.3.1"
+reason = "table 5.3.1.1 ends Extended-eNodeB-Id's Must cell with a stray comma; the row sets M in Must not, so V is the only must-set flag"
+first_version = "18.0.0"
+last_version = "18.0.0"

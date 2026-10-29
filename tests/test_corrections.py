@@ -662,8 +662,10 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     The rot check above reads its expectation out of the correction it is
     testing, so a wrong `expect`/`replace`/reason changed together stays green.
     This one names the outcome — four application ids, one AVP code, one
-    missing vendor-id and two respelled names, nothing else — so changing what
-    the corrections do has to be a deliberate edit here too.
+    missing vendor-id, two respelled names and TS 29.217's two eNodeB
+    spellings (each in a re-used row and a body, one label here), nothing
+    else — so changing what the corrections do has to be a deliberate edit
+    here too.
     """
     raw = _ROOT / "dad" / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
@@ -714,6 +716,8 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
             "Re-synchronization-Info",
             "Re-Synchronization-Info",
         ),
+        ("eNodeB-ID", "name", "eNodeB-ID", "eNodeB-Id"),
+        ("Extended-eNodeB-ID", "name", "Extended-eNodeB-ID", "Extended-eNodeB-Id"),
     }
     inserted_rows = set()
     for correction in inserted:

@@ -67,6 +67,9 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
   `Framed-Appletalk-*`, which 7155 spells document-wide where 4005, RADIUS
   and Wireshark write `AppleTalk` — kept faithfully, erratum or name mapping
   undecided.
+- **TS 29.217, untriaged**: `eNodeB-Id` and `Extended-eNodeB-Id`, which
+  29.217 spells so throughout and Wireshark, like 29.272 and 29.336 (whose
+  re-used rows are corrected to the origin's spelling), writes `-ID`.
 - **TS 32.299, untriaged**: fourteen name casings (`User-Session-Id` against
   Wireshark's `User-Session-ID`), six type disagreements — two of them the
   Monitoring-Event rows its corrections type Enumerated after their clauses,

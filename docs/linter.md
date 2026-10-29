@@ -106,7 +106,7 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   clauses say they originate elsewhere and then print interface-specific
   bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
 - **`origin-not-in-corpus`.** Every missing origin is a legacy `.doc` (TS
-  29.217; 29.140 and 29.154 are not in the catalog at all), or outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017, 3GPP2
+  29.215; 29.140 and 29.154 are not in the catalog at all), or outside 3GPP/IETF (ETSI TS 283 034 and TS 183 017, 3GPP2
   X.S0057, TS 23.329). These clear as the corpus grows; see the roadmap.
 - **`unresolved-reference`**, seventeen. Six are AVPs no document defines,
   tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`,

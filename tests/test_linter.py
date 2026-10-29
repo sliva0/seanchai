@@ -163,9 +163,10 @@ _RAW_ERRORS = {
         "duplicate-identity",
     ],
     "29338-i20.raw.dad": ["duplicate-identity"],
-    # Grouped headers printing no vendor while the AVP tables set V (all three);
+    # Grouped headers printing no vendor while the AVP tables set V (all four);
     # 29.468's clauses 6.4.28 and 6.4.31 print FEC-Request's code, and table
     # 6.4.1-1 types clause 6.4.35's Enumerated AVP Unsigned32.
+    "29217-i00.raw.dad": ["vendor-id-mismatch"] * 4,
     "29343-i00.raw.dad": ["vendor-id-mismatch"] * 3,
     "29368-i00.raw.dad": ["vendor-id-mismatch"] * 3,
     "29468-i00.raw.dad": ["duplicate-identity"]
@@ -528,11 +529,13 @@ _STANDING_CORPUS_NOTES = {
     "29214-i40.dad": {
         "origin-not-in-corpus": ["TS183.017, TS29.154"],
     },
+    "29217-i00.dad": {
+        "origin-not-in-corpus": ["TS29.215"],
+    },
     "29229-i10.dad": {
         "unresolved-reference": ["Line-Identifier"],
     },
     "29272-i70.dad": {
-        "origin-not-in-corpus": ["TS29.217"],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
             "Monitoring-Event-Report",
@@ -558,7 +561,7 @@ _STANDING_CORPUS_NOTES = {
     },
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
-        "origin-not-in-corpus": ["TS29.154, TS29.217"],
+        "origin-not-in-corpus": ["TS29.154"],
         "reused-body-differs": [
             "Additional-Serving-Node",
             "MME-Location-Information",

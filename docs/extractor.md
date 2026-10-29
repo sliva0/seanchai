@@ -240,7 +240,8 @@ correction); "Void" as an enum value label (29.214, deleted by correction);
 a clause heading printed as a body paragraph (32.299 §7.2.135C,
 `body-clause-headings`); names broken by a space after a hyphen (32.299,
 29.343's heading 6.4.10), an en dash, a Symbol-font dash and `V/M`, `VM` flag
-cells (32.299, patched); a brace closing an optional member (29.343 §6.6.4,
+cells (32.299, patched); a trailing comma in a flags cell (29.217
+table 5.3.1.1, patched); a brace closing an optional member (29.343 §6.6.4,
 patched).
 Everything patched is listed with its reason in `edits/sources/`.
 
