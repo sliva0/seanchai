@@ -13,6 +13,7 @@ from seanchai import corpus, model
 
 built = model.Model.build(corpus.Corpus.load([Path("dad")]))
 built.messages("TS29.229")  # bodies resolved
+built.applications("TS29.212")  # commands per application and interface
 built.avps("TS29.229")  # a spec's dictionary view
 built.resolve("TS29.229", "DRMP")  # one name in one spec's reading
 built.find("Public-Identity")  # every AVP under a name
@@ -22,7 +23,12 @@ built.holes("TS32.299")  # what the corpus cannot complete
 ```
 
 The query set is thin on purpose: each query was written because a real
-consumer needed it. The AST stays public underneath: `parser.parse(text)`
+consumer needed it. `applications` groups a document's commands by header
+application id and the clause they sit under, since documents share one id
+between interfaces (TS 29.273's SWa, STa and SWd) or print none (TS 29.212's
+Gx, Gxx, Sd and St, split by clauses 5, 5a, 5b and 5c). A `Member` carries
+the ABNF rule as spelled and `min_occurs`/`max_occurs` as RFC 6733 §3.2
+reads them: `[ X ]` may be absent, `* { X }` appears at least once. The AST stays public underneath: `parser.parse(text)`
 reads one file into it, discarding `;;` comments, and
 `parser.parse_with_comments(text)` returns the comments too, as a
 `formatter.Comments` (trailing, standing and detached, each keyed by

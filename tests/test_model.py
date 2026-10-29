@@ -409,6 +409,70 @@ class TestQueries:
         assert ast.AvpFlag.VENDOR in resolved.flag_rules.must
 
 
+class TestCommandShape:
+    @pytest.mark.parametrize(
+        ("presence", "spelled", "bounds"),
+        [
+            (ast.Presence.FIXED, (1, 1), (1, 1)),
+            (ast.Presence.REQUIRED, (1, 1), (1, 1)),
+            (ast.Presence.REQUIRED, (0, None), (1, None)),
+            (ast.Presence.REQUIRED, (2, 4), (2, 4)),
+            (ast.Presence.OPTIONAL, (1, 1), (0, 1)),
+            (ast.Presence.OPTIONAL, (0, None), (0, None)),
+            (ast.Presence.OPTIONAL, (0, 3), (0, 3)),
+        ],
+    )
+    def test_occurrence_bounds_follow_rfc_6733s_qualifier_defaults(
+        self, presence, spelled, bounds
+    ):
+        """`[ X ]` may be absent and `* { X }` must appear at least once,
+        though the AST records the qualifier as spelled."""
+        minimum, maximum = spelled
+        rule = ast.AvpRule(
+            name="X", presence=presence, min_occurs=minimum, max_occurs=maximum
+        )
+        member = model.Member(rule=rule, avp=None)
+        assert (member.min_occurs, member.max_occurs) == bounds
+
+    def test_applications_split_by_application_id_and_interface_clause(self):
+        def message(name, section, application_id):
+            return ast.Message(
+                type="Message",
+                name=name,
+                abbreviation="TR",
+                source=ast.SourceRef(section=section),
+                command_code=300,
+                flags=frozenset({ast.CommandFlag.REQUEST}),
+                application_id=application_id,
+                avps=(),
+            )
+
+        spec = _spec(
+            "3GPP TS 29.900",
+            [
+                message("A-Request", "5.6.2", None),
+                message("B-Request", "5a.6.2", None),
+                message("C-Request", "5a.6.3", None),
+                message("D-Request", "7.2.9", 1),
+                message("E-Request", "7.2.9", 2),
+                message("F-Request", "A.7.6.2", None),
+                message("G-Request", "A.8.6.2", None),
+            ],
+        )
+        found = [
+            (app.application_id, app.clause, [m.name for m in app.messages])
+            for app in _model(spec).applications("TS29.900")
+        ]
+        assert found == [
+            (None, "5", ["A-Request"]),
+            (None, "5a", ["B-Request", "C-Request"]),
+            (1, "7", ["D-Request"]),
+            (2, "7", ["E-Request"]),
+            (None, "A.7", ["F-Request"]),
+            (None, "A.8", ["G-Request"]),
+        ]
+
+
 @pytest.fixture(scope="module")
 def built() -> model.Model:
     return model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
@@ -429,6 +493,34 @@ class TestOverTheCommittedCorpus:
         session_id = by_name["Session-Id"]
         assert session_id is not None
         assert (session_id.defined_in, session_id.identity) == ("RFC6733", (0, 263))
+
+    def test_applications_follow_each_documents_interfaces(self, built):
+        """TS 29.272 splits S6a/S6d, S13 and S7a by application id within
+        clause 7; TS 29.212 prints no ids, so Gx, Gxx, Sd, St and annex E
+        split by clause; TS 29.273 shares 16777250 between SWa, STa and SWd."""
+
+        def keys(reference):
+            return [
+                (app.application_id, app.clause)
+                for app in built.applications(reference)
+            ]
+
+        assert keys("TS29.272") == [(16777251, "7"), (16777308, "7"), (16777252, "7")]
+        assert keys("TS29.212") == [
+            (None, "5"),
+            (None, "5a"),
+            (None, "5b"),
+            (None, "5c"),
+            (None, "E.6"),
+        ]
+        assert keys("TS29.273") == [
+            (16777250, "4"),
+            (16777250, "5"),
+            (16777250, "6"),
+            (16777264, "7"),
+            (16777265, "8"),
+            (16777272, "9"),
+        ]
 
     def test_the_two_code_621_spaces_stay_separate(self, built):
         """TS 29.229's own 621 and RFC 7683's 621 are different AVPs, which

@@ -157,6 +157,24 @@ class Member:
     def name(self) -> str:
         return self.rule.name
 
+    @property
+    def min_occurs(self) -> int:
+        """The fewest times the member may appear, by RFC 6733 §3.2's rules
+        for a qualifier: an optional rule may always be absent, whatever its
+        qualifier says, and a required rule's minimum defaults to one, so
+        `* { X }` means one or more. `rule.min_occurs` keeps what the bracket
+        and qualifier spell, which reads `[ X ]` as exactly once."""
+        if self.rule.presence is ast.Presence.OPTIONAL:
+            return 0
+        if self.rule.presence is ast.Presence.REQUIRED:
+            return max(self.rule.min_occurs, 1)
+        return self.rule.min_occurs
+
+    @property
+    def max_occurs(self) -> int | None:
+        """The most times the member may appear; None is unbounded."""
+        return self.rule.max_occurs
+
 
 @dataclass(frozen=True)
 class Grouped(Avp):
@@ -180,6 +198,37 @@ class Message:
     defined_in: str
     section: str
     avps: tuple[Member, ...]
+
+
+@dataclass(frozen=True)
+class Application:
+    """The commands one document defines for one application on one
+    interface: what a protocol-specific consumer generates one unit from.
+
+    The wire tells applications apart by the header's application id, but
+    documents share one between interfaces (TS 29.273's SWa, STa and SWd
+    all use 16777250) or print none (TS 29.212 defines its Gx, Gxx, Sd and
+    St commands with bare `272, REQ, PXY` headers), so the clause a command
+    sits under is the other half of the key. A 3GPP document gives each
+    interface its own top-level clause (29.212's 5, 5a, 5b, 5c) or annex
+    clause (29.215's A.7 and A.8).
+    """
+
+    reference: str
+    # None when the document's headers print none; the application is then
+    # stated in prose the corpus does not record.
+    application_id: int | None
+    # "5a", or "A.7" for an annex: the leading clause component, with the
+    # next one for an annex, whose letter alone spans several interfaces.
+    clause: str
+    messages: tuple[Message, ...]
+
+
+def _interface_clause(section: str) -> str:
+    """The clause that scopes one interface's commands: `5a` of `5a.6.2`,
+    `A.7` of `A.7.6.2`."""
+    parts = section.split(".")
+    return ".".join(parts[:2]) if parts[0].isalpha() else parts[0]
 
 
 def _stated(flag_rules: ast.AvpFlagRules) -> bool:
@@ -411,6 +460,23 @@ class Model:
                 avps=self._body(view, message.avps),
             )
             for message in view.messages
+        )
+
+    def applications(self, reference: str) -> tuple[Application, ...]:
+        """`reference`'s commands, grouped by application id and the clause
+        they sit under, in file order.
+
+        One group can still define a command twice: TS 29.273 prints the
+        STa Session-Termination-Request in clauses 5.2.2.2.3 and 5.2.2.4.1,
+        once per procedure. Which copy a consumer keeps is its business.
+        """
+        groups: dict[tuple[int | None, str], list[Message]] = {}
+        for message in self.messages(reference):
+            key = (message.application_id, _interface_clause(message.section))
+            groups.setdefault(key, []).append(message)
+        return tuple(
+            Application(reference, application_id, clause, tuple(messages))
+            for (application_id, clause), messages in groups.items()
         )
 
     def avps(self, reference: str) -> tuple[Avp, ...]:
