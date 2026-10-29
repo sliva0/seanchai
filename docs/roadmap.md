@@ -62,8 +62,10 @@ letter is not reused. What exists is described in the per-module documents.
   untyped), and SM-Service-Type's "100 .. 199 Vendor specific SM services"
   allocates a range. TS 32.299 cites `VAS-Id` and `VASP-Id` from TS
   29.140, which ends at Release 7 (V7.0.0): the downloader fetches one
-  release and the linter never resolves across a major version, so the
-  origin stays unresolved until the corpus holds more than one release.
+  release and `Corpus.resolve` never crosses a major version, so the
+  origin stays unresolved until the corpus holds more than one release
+  *and* a resolution policy says when a Release 7 document may serve a
+  Release 18 citation.
 - **L. Downloader: read the 3GPP archive throughout**, not only for the
   PDF-matched fallback, so every old version stays available for raw-vs-raw
   diffs; derive the ETSI `Link:` URL (needs the edition suffix, probably by
