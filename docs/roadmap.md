@@ -34,8 +34,8 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Linter and corpus
 
-- **G. Stage the Wireshark merge requests** listed in
-  [oracle.md](oracle.md#what-still-reports).
+- **G. Submit the staged Wireshark merge requests** in
+  `integrations/wireshark/`.
 
 ## Sources
 

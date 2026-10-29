@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Spell User-Session-Id as TS 32.299 does
+
+3GPP TS 32.299 clause 7.2.242 defines AVP 830 as User-Session-Id, and the
+IMS-Information body in clause 7.2.77 references it so. Checked against
+V18.0.0.
+
+Renaming an AVP renames its display filter field
+(diameter.User-Session-ID becomes diameter.User-Session-Id), so saved
+filters and profiles using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..2997cf5 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -3134,7 +3134,7 @@
+ 			<enum name="PROXY_ROLE" code="2"/>
+ 			<enum name="B2BUA_ROLE" code="3"/>
+ 		</avp>
+-		<avp name="User-Session-ID" code="830" mandatory="must" may-encrypt="no" protected="mustnot" vendor-bit="must" vendor-id="TGPP">
++		<avp name="User-Session-Id" code="830" mandatory="must" may-encrypt="no" protected="mustnot" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="UTF8String"/>
+ 		</avp>
+ 		<avp name="Calling-Party-Address" code="831" mandatory="must" may-encrypt="no" protected="mustnot" vendor-bit="must" vendor-id="TGPP">
+@@ -3565,7 +3565,7 @@
+ 				<gavp name="Event-Type"/>
+ 				<gavp name="Role-Of-Node"/>
+ 				<gavp name="Node-Functionality"/>
+-				<gavp name="User-Session-ID"/>
++				<gavp name="User-Session-Id"/>
+ 				<gavp name="Outgoing-Session-Id"/>
+ 				<gavp name="Calling-Party-Address"/>
+ 				<gavp name="Called-Party-Address"/>

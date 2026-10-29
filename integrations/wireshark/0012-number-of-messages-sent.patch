@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Spell Number-Of-Messages-Sent as TS 32.299 does
+
+3GPP TS 32.299 clause 7.2.116 defines AVP 2019 as
+Number-Of-Messages-Sent; table 7.2.0.1 and the SMS-Information body in
+clause 7.2.211 agree. Checked against V18.0.0.
+
+Renaming an AVP renames its display filter field
+(diameter.Number-of-Messages-Sent becomes
+diameter.Number-Of-Messages-Sent), so saved filters and profiles using
+the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..f6cc009 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -6456,7 +6456,7 @@
+ 				<gavp name="Reply-Path-Requested"/>
+ 				<gavp name="SM-Status"/>
+ 				<gavp name="SM-User-Data-Header"/>
+-				<gavp name="Number-of-Messages-Sent"/>
++				<gavp name="Number-Of-Messages-Sent"/>
+ 				<gavp name="Recipient-Info"/>
+ 			</grouped>
+ 		</avp>
+@@ -6538,7 +6538,7 @@
+ 		<avp name="Client-Address" code="2018" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="IPAddress"/>
+ 		</avp>
+-		<avp name="Number-of-Messages-Sent" code="2019" vendor-bit="must" vendor-id="TGPP">
++		<avp name="Number-Of-Messages-Sent" code="2019" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="Unsigned32"/>
+ 		</avp>
+ 		<avp name="Low-Balance-Indication" code="2020" vendor-bit="must" vendor-id="TGPP">

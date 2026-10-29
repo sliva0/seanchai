@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Type Authorization-Lifetime as Unsigned32
+
+RFC 6733 section 8.9: 'The Authorization-Lifetime AVP (AVP Code 291) is
+of type Unsigned32'; the AVP table in section 4.5 agrees. As Integer32,
+lifetimes from 2^31 seconds up decode as negative numbers.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..fa3c7ea 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -1754,7 +1754,7 @@
+ 		</avp>
+ 		<!-- 288-290    Unallocated http://www.iana.org/assignments/aaa-parameters  -->
+ 		<avp name="Authorization-Lifetime" code="291" mandatory="must" may-encrypt="no" vendor-bit="mustnot">
+-			<type type-name="Integer32"/>
++			<type type-name="Unsigned32"/>
+ 		</avp>
+ 		<avp name="Redirect-Host" code="292" mandatory="must" may-encrypt="no" protected="may" vendor-bit="mustnot">
+ 			<type type-name="DiameterURI"/>

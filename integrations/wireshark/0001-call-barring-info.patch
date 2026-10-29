@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Rename Call-Barring-Infor-List to Call-Barring-Info
+
+3GPP TS 29.272 defines AVP 1488 (vendor 10415) as Call-Barring-Info:
+clause 7.3.101 (heading, prose and the 'Call-Barring-Info ::= <AVP
+header: 1488 10415>' rule), table 7.3.1/1, and the Subscription-Data
+body in clause 7.3.2. Checked against V18.7.0.
+
+Renaming an AVP renames its display filter field
+(diameter.Call-Barring-Infor-List becomes diameter.Call-Barring-Info),
+so saved filters and profiles using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..15b13c3 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -5150,7 +5150,7 @@
+ 				<gavp name="APN-OI-Replacement"/>
+ 				<gavp name="LCS-Info"/>
+ 				<gavp name="Teleservice-List"/>
+-				<gavp name="Call-Barring-Infor-List"/>
++				<gavp name="Call-Barring-Info"/>
+ 				<gavp name="3GPP-Charging-Characteristics"/>
+ 				<gavp name="AMBR"/>
+ 				<gavp name="APN-Configuration-Profile"/>
+@@ -5623,7 +5623,7 @@
+ 		<avp name="TS-Code" code="1487" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
+ 			<type type-name="OctetString"/>
+ 		</avp>
+-		<avp name="Call-Barring-Infor-List" code="1488" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
++		<avp name="Call-Barring-Info" code="1488" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
+ 			<grouped>
+ 				<gavp name="SS-Code"/>
+ 			</grouped>

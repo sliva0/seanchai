@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Rename Accounting-Multi-Session-Id to
+ Acct-Multi-Session-Id
+
+RFC 6733 section 9.8.5 defines AVP 50 as Acct-Multi-Session-Id; the
+ACR/ACA ABNF in sections 9.7.1 and 9.7.2, the AVP table in section 4.5
+and the occurrence table in section 10.2 use the same name, as does
+RFC 3588.
+
+Renaming an AVP renames its display filter field
+(diameter.Accounting-Multi-Session-Id becomes
+diameter.Acct-Multi-Session-Id), so saved filters and profiles using the
+old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..2156627 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -958,7 +958,7 @@
+ 			<enum name="Port Reinitialized" code="21"/>
+ 			<enum name="Port Administratively Disabled" code="22"/>
+ 		</avp>
+-		<avp name="Accounting-Multi-Session-Id" code="50" mandatory="must" protected="may" may-encrypt="yes" vendor-bit="mustnot">
++		<avp name="Acct-Multi-Session-Id" code="50" mandatory="must" protected="may" may-encrypt="yes" vendor-bit="mustnot">
+ 			<type type-name="UTF8String"/>
+ 		</avp>
+ 		<avp name="Acct-Link-Count" code="51" mandatory="must" protected="may" may-encrypt="yes" vendor-bit="mustnot">

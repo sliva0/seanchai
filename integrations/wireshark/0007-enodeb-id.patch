@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Spell eNodeB-Id and Extended-eNodeB-Id as TS 29.217
+ does
+
+3GPP TS 29.217 defines AVPs 4008 and 4013 as eNodeB-Id and
+Extended-eNodeB-Id: clauses 5.3.10 and 5.3.15, table 5.3.1.1 and the
+Congestion-Location-Id body in clause 5.3.8. TS 29.272 and TS 29.336
+re-use both AVPs and print -ID in their re-used tables, so this follows
+the defining document. Checked against V18.0.0.
+
+Renaming an AVP renames its display filter field (diameter.eNodeB-ID
+becomes diameter.eNodeB-Id), so saved filters and profiles using the old
+name need updating.
+
+Renaming an AVP renames its display filter field
+(diameter.Extended-eNodeB-ID becomes diameter.Extended-eNodeB-Id), so
+saved filters and profiles using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..3220084 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -5866,8 +5866,8 @@
+ 				<gavp name="Current-Location-Retrieved"/>
+ 				<gavp name="Age-Of-Location-Information"/>
+ 				<gavp name="User-CSG-Information"/>
+-				<gavp name="eNodeB-ID"/>
+-				<gavp name="Extended-eNodeB-ID"/>
++				<gavp name="eNodeB-Id"/>
++				<gavp name="Extended-eNodeB-Id"/>
+ 			</grouped>
+ 		</avp>
+ 		<avp name="SGSN-Location-Information" code="1601" mandatory="mustnot" vendor-bit="must" vendor-id="TGPP">
+@@ -8878,10 +8878,10 @@
+ 		Note: The AVP codes from 3900 to 3999 are reserved for TS 32.299
+ 		-->
+ 
+-		<avp name="eNodeB-ID" code="4008" mandatory="must" vendor-bit="must" protected="may" may-encrypt="yes" vendor-id="TGPP">
++		<avp name="eNodeB-Id" code="4008" mandatory="must" vendor-bit="must" protected="may" may-encrypt="yes" vendor-id="TGPP">
+ 			<type type-name="OctetString"/>
+ 		</avp>
+-		<avp name="Extended-eNodeB-ID" code="4013" mandatory="must" vendor-bit="must" protected="may" may-encrypt="yes" vendor-id="TGPP">
++		<avp name="Extended-eNodeB-Id" code="4013" mandatory="must" vendor-bit="must" protected="may" may-encrypt="yes" vendor-id="TGPP">
+ 			<type type-name="OctetString"/>
+ 		</avp>
+ 

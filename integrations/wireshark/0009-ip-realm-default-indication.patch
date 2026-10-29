@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Rename IP-Realm-Default-Indicator to
+ IP-Realm-Default-Indication
+
+3GPP TS 32.299 clause 7.2.80A defines AVP 2603 as
+IP-Realm-Default-Indication; table 7.2.0.1 and the SDP-Media-Component
+body in clause 7.2.180 agree. Checked against V18.0.0.
+
+Renaming an AVP renames its display filter field
+(diameter.IP-Realm-Default-Indicator becomes
+diameter.IP-Realm-Default-Indication), so saved filters and profiles
+using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..f53c21f 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -7528,7 +7528,7 @@
+ 			<enum name="NO" code="0"/>
+ 			<enum name="YES" code="1"/>
+ 		</avp>
+-		<avp name="IP-Realm-Default-Indicator" code="2603" vendor-bit="must" vendor-id="TGPP">
++		<avp name="IP-Realm-Default-Indication" code="2603" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="Enumerated"/>
+ 			<enum name="Default IP Realm Not used" code="0"/>
+ 			<enum name="Default IP realm used" code="1"/>

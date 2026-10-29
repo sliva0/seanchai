@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Rename Local-GW-Inserted-Indicator to
+ Local-GW-Inserted-Indication
+
+3GPP TS 32.299 clause 7.2.92A defines AVP 2604 as
+Local-GW-Inserted-Indication; table 7.2.0.1 and the SDP-Media-Component
+body in clause 7.2.180 agree. Checked against V18.0.0.
+
+Renaming an AVP renames its display filter field
+(diameter.Local-GW-Inserted-Indicator becomes
+diameter.Local-GW-Inserted-Indication), so saved filters and profiles
+using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..42659cd 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -7533,7 +7533,7 @@
+ 			<enum name="Default IP Realm Not used" code="0"/>
+ 			<enum name="Default IP realm used" code="1"/>
+ 		</avp>
+-		<avp name="Local-GW-Inserted-Indicator" code="2604" vendor-bit="must" vendor-id="TGPP">
++		<avp name="Local-GW-Inserted-Indication" code="2604" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="Enumerated"/>
+ 			<enum name="Local GW Not Inserted" code="0"/>
+ 			<enum name="Local GW Inserted" code="1"/>

@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Rename 3GPP-IPv6-DNS-Server to
+ 3GPP-IPv6-DNS-Servers
+
+3GPP TS 29.061 names sub-attribute 17 3GPP-IPv6-DNS-Servers throughout:
+clause 16.4.7.2 ('17 - 3GPP-IPv6-DNS-Servers', a list of one or more
+IPv6 addresses), the clause 16.4.7.1 table, table 9a (clause 16a.5) and
+the AAA ABNF in clause 16a.4.2. Checked against V18.1.0.
+
+Renaming an AVP renames its display filter field
+(diameter.3GPP-IPv6-DNS-Server becomes diameter.3GPP-IPv6-DNS-Servers),
+so saved filters and profiles using the old name need updating.
+---
+ resources/protocols/diameter/TGPP.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/TGPP.xml b/resources/protocols/diameter/TGPP.xml
+index 65e5a13..52ae868 100644
+--- a/resources/protocols/diameter/TGPP.xml
++++ b/resources/protocols/diameter/TGPP.xml
+@@ -61,7 +61,7 @@
+   <avp name="3GPP-GGSN-IPv6-Address" code="16" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="must" vendor-id="TGPP">
+     <type type-name="OctetString"/>
+   </avp>
+-  <avp name="3GPP-IPv6-DNS-Server" code="17" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="must" vendor-id="TGPP">
++  <avp name="3GPP-IPv6-DNS-Servers" code="17" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="must" vendor-id="TGPP">
+     <type type-name="OctetString"/>
+   </avp>
+   <avp name="3GPP-SGSN-MCC-MNC" code="18" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="must" vendor-id="TGPP">

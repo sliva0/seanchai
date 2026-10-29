@@ -58,7 +58,8 @@ seanchai crosscheck FILE.dad...         # against Wireshark's dictionary
   mirror under `dad/raw/`. See [dad/README.md](dad/README.md).
 - `edits/sources/<SpecRef>.toml` — input patches and quirks per source document.
 - `edits/corrections/<SpecRef>.py` — corrections per specification.
-- `integrations/` — consumer scripts over the model, runnable with `uv run`.
+- `integrations/` — consumer scripts over the model, runnable with `uv run`,
+  and the staged Wireshark dictionary patches.
 - `editors/` — `.dad` syntax highlighting for VS Code, Vim and Neovim.
 - `specifications/` — downloaded sources (git-ignored).
 - `docs/` — format ([dad-format](docs/dad-format.md), [grammar](docs/grammar.md)),

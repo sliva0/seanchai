@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Spell SLg-Location-Type with a capital L
+
+3GPP TS 29.172 clause 7.4.2 defines AVP 2500 as SLg-Location-Type, after
+the SLg interface; table 7.4.1-1 and the PLR ABNF in clause 7.3.1 spell
+it the same way. Checked against V18.1.0.
+
+Renaming an AVP renames its display filter field
+(diameter.Slg-Location-Type becomes diameter.SLg-Location-Type), so
+saved filters and profiles using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..6c99b2a 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -7191,7 +7191,7 @@
+ 		Note: The AVP codes from 2412 to 2499 are reserved for TS 29.173
+ 		-->
+ 
+-		<avp name="Slg-Location-Type" code="2500" vendor-bit="must" vendor-id="TGPP">
++		<avp name="SLg-Location-Type" code="2500" vendor-bit="must" vendor-id="TGPP">
+ 		<type type-name="Enumerated"/>
+ 			<enum name="CURRENT_LOCATION" code="0"/>
+ 			<enum name="CURRENT_OR_LAST_KNOWN_LOCATION" code="1"/>

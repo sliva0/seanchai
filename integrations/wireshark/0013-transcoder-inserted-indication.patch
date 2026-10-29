@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Rename Transcoder-Inserted-Indicator to
+ Transcoder-Inserted-Indication
+
+3GPP TS 32.299 clause 7.2.233A defines AVP 2605 as
+Transcoder-Inserted-Indication; table 7.2.0.1 and the
+SDP-Media-Component body in clause 7.2.180 agree. Checked against
+V18.0.0.
+
+Renaming an AVP renames its display filter field
+(diameter.Transcoder-Inserted-Indicator becomes
+diameter.Transcoder-Inserted-Indication), so saved filters and profiles
+using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..2db26ec 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -7538,7 +7538,7 @@
+ 			<enum name="Local GW Not Inserted" code="0"/>
+ 			<enum name="Local GW Inserted" code="1"/>
+ 		</avp>
+-		<avp name="Transcoder-Inserted-Indicator" code="2605" vendor-bit="must" vendor-id="TGPP">
++		<avp name="Transcoder-Inserted-Indication" code="2605" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="Enumerated"/>
+ 			<enum name="Transcoder Not Inserted" code="0"/>
+ 			<enum name="Transcoder Inserted" code="1"/>

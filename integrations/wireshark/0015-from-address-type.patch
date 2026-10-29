@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Type From-Address as UTF8String
+
+3GPP TS 32.299 clause 7.2.67A: 'The From-Address AVP (AVP code 2708) is
+of type UTF8String and includes the information from the SIP From
+header'; table 7.2.0.1 agrees. Decoded as an IP address, a SIP URI is
+shown as garbage. Checked against V18.0.0.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..a340084 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -7577,7 +7577,7 @@
+ 			<enum name="outbound" code="1"/>
+ 		</avp>
+ 		<avp name="From-Address" code="2708" mandatory="must" vendor-bit="must" vendor-id="TGPP">
+-			<type type-name="IPAddress"/>
++			<type type-name="UTF8String"/>
+ 		</avp>
+ 		<avp name="Access-Transfer-Information" code="2709" mandatory="must" vendor-bit="must" vendor-id="TGPP">
+ 			<grouped>

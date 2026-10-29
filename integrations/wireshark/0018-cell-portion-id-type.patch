@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:33:48 +0000
+Subject: [PATCH] Diameter: Type Cell-Portion-ID as Unsigned32
+
+3GPP TS 29.172 clause 7.4.58: 'The Cell-Portion-ID AVP is of type
+Unsigned32', carrying the Cell Portion ID information element of
+TS 29.171; table 7.4.1-1 gives AVP 2553 the same type. Checked against
+V18.1.0.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..0097af2 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -7459,7 +7459,7 @@
+ 			</grouped>
+ 		</avp>
+ 		<avp name="Cell-Portion-ID" code="2553" vendor-bit="must" vendor-id="TGPP">
+-			<type type-name="OctetString"/>
++			<type type-name="Unsigned32"/>
+ 		</avp>
+ 		<avp name="OnexRTT-RCID" code="2554" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="OctetString"/>

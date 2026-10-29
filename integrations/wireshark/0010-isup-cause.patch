@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Rename ISUP-Release-Cause to ISUP-Cause
+
+3GPP TS 32.299 clause 7.2.80B defines grouped AVP 3416 as ISUP-Cause, and
+table 7.2.0.1 agrees; its members ISUP-Cause-Location, ISUP-Cause-Value
+and ISUP-Cause-Diagnostics already carry that prefix here. Checked
+against V18.0.0.
+
+Renaming an AVP renames its display filter field
+(diameter.ISUP-Release-Cause becomes diameter.ISUP-Cause), so saved
+filters and profiles using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..7c9b612 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -8547,7 +8547,7 @@
+ 				<gavp name="ISUP-Location-Number"/>
+ 				<gavp name="VLR-Number"/>
+ 				<gavp name="Forwarding-Pending"/>
+-				<gavp name="ISUP-Release-Cause"/>
++				<gavp name="ISUP-Cause"/>
+ 				<gavp name="Start-Time"/>
+ 				<gavp name="Start-of-Charging"/>
+ 				<gavp name="Stop-Time"/>
+@@ -8574,7 +8574,7 @@
+ 			<enum name="Forwarding not pending" code="0"/>
+ 			<enum name="Forwarding pending" code="1"/>
+ 		</avp>
+-		<avp name="ISUP-Release-Cause" code="3416" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
++		<avp name="ISUP-Cause" code="3416" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
+ 			<grouped>
+ 				<gavp name="ISUP-Cause-Location"/>
+ 				<gavp name="ISUP-Cause-Value"/>

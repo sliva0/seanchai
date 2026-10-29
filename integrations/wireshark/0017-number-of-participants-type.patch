@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Type Number-Of-Participants as Unsigned32
+
+3GPP TS 32.299 clause 7.2.117: 'The Number-Of-Participants AVP (AVP code
+885) is of type Unsigned32'; table 7.2.0.1 agrees. Checked against
+V18.0.0.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..c4f0226 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -3675,7 +3675,7 @@
+ 			<enum name="ad-hoc PoC group session" code="3"/>
+ 		</avp>
+ 		<avp name="Number-Of-Participants" code="885" mandatory="must" vendor-bit="must" vendor-id="TGPP">
+-			<type type-name="Integer32"/>
++			<type type-name="Unsigned32"/>
+ 		</avp>
+ 		<avp name="Originator-Address" code="886" mandatory="must" vendor-bit="must" vendor-id="TGPP">
+ 			<grouped>

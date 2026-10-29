@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Type ISUP-Cause-Location as Unsigned32
+
+3GPP TS 32.299 clause 7.2.80D: 'The ISUP-Cause-Location AVP (AVP code
+3423) is of type Unsigned32'; table 7.2.0.1 agrees, as does
+ISUP-Cause-Value (3424), already Unsigned32 here. Checked against
+V18.0.0.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..f7ee2c4 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -8602,7 +8602,7 @@
+ 			<type type-name="OctetString"/>
+ 		</avp>
+ 		<avp name="ISUP-Cause-Location" code="3423" mandatory="must" vendor-bit="must" protected="may" may-encrypt="no" vendor-id="TGPP">
+-			<type type-name="OctetString"/>
++			<type type-name="Unsigned32"/>
+ 		</avp>
+ 		<avp name="ISUP-Cause-Value" code="3424" mandatory="must" vendor-bit="must" protected="may" may-encrypt="no" vendor-id="TGPP">
+ 			<type type-name="Unsigned32"/>

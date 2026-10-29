@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Drop trailing space from
+ Cellular-Network-Information
+
+The AVP 3924 definition is named 'Cellular-Network-Information ' with a
+trailing space, so the two grouped AVPs listing
+'Cellular-Network-Information' as a member reference a name that does
+not exist. 3GPP TS 32.299 clause 7.2.35A and table 7.2.0.1 name it
+without the space. Checked against V18.0.0.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..e5eaf67 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -8796,7 +8796,7 @@
+ 		<avp name="Monitoring-Event-Report-Number" code="3923" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
+ 			<type type-name="Unsigned32"/>
+ 		</avp>
+-		<avp name="Cellular-Network-Information " code="3924" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
++		<avp name="Cellular-Network-Information" code="3924" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">
+ 			<type type-name="OctetString"/>
+ 		</avp>
+ 		<avp name="Related-Change-Condition-Information" code="3925" mandatory="must" vendor-bit="must" may-encrypt="no" protected="may" vendor-id="TGPP">
