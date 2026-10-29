@@ -145,3 +145,28 @@ CORRECTIONS += [
         ),
     )
 ]
+
+# TS 29.154, which defines the AVP (clause 5.3.10, code 4209), capitalises
+# "Of" in its table 5.3.1.1, clause and BTA body.
+CORRECTIONS += [
+    Correction(
+        id="number-of-ues-row-spelling",
+        target=reused_row("Number-of-UEs"),
+        field="name",
+        expect="Number-of-UEs",
+        replace="Number-Of-UEs",
+        reason="the re-used row cites TS 29.154, which defines Number-Of-UEs"
+        " (clause 5.3.10)",
+        versions="18.2.0",
+    ),
+    Correction(
+        id="cia-number-of-ues-spelling",
+        target=avp_rule("Configuration-Information-Answer", "Number-of-UEs"),
+        field="name",
+        expect="Number-of-UEs",
+        replace="Number-Of-UEs",
+        reason="the CIA ABNF (clause 8.2.4) uses the re-used row's spelling;"
+        " TS 29.154 clause 5.3.10 defines Number-Of-UEs",
+        versions="18.2.0",
+    ),
+]

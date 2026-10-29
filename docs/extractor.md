@@ -241,7 +241,8 @@ printed with two bodies (29.336 §6.4.2 and §8.4.36, the second deleted by
 correction); "Void" as an enum value label (29.214, deleted by correction);
 a clause heading printed as a body paragraph (32.299 §7.2.135C,
 `body-clause-headings`); names broken by a space after a hyphen (32.299,
-29.343's heading 6.4.10), an en dash, a Symbol-font dash and `V/M`, `VM` flag
+29.343's heading 6.4.10, 29.154's table 5.4.1; a re-used name cell with a
+space fails like an AVP table's), an en dash, a Symbol-font dash and `V/M`, `VM` flag
 cells (32.299, patched); a trailing comma in a flags cell (29.217
 table 5.3.1.1, patched); a brace closing an optional member (29.343 §6.6.4,
 patched); a From cell dropping "RFC" (29.219 table 5.4, patched); a

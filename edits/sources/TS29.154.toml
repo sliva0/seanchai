@@ -1,0 +1,12 @@
+# Source declarations for 3GPP TS 29.154 (Service capability exposure
+# functionality over Nt reference point). Applied to normalized source text
+# before parsing; see src/seanchai/extractor/sources.py for the format.
+
+[[patch]]
+find = "CC-Total- Octets"
+replace = "CC-Total-Octets"
+exact = true
+section = "5.4"
+reason = "table 5.4.1 breaks the name after 'CC-Total-'; RFC 4006 defines CC-Total-Octets and the BTA ABNF spells it so"
+first_version = "18.0.0"
+last_version = "18.0.0"

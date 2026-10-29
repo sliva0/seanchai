@@ -94,6 +94,19 @@ def test_extract_rejects_an_avp_table_clause_cell_that_is_no_clause_number(
         tgpp_docx.extract(malformed)
 
 
+def test_extract_rejects_spaces_in_reused_avp_names(tmp_path, synthetic_spec_docx):
+    malformed = tmp_path / "space-in-reused-name.docx"
+    document = docx.Document(synthetic_spec_docx)
+    document.tables[2].cell(1, 0).text = "Session- Id"
+    document.save(malformed)
+
+    with pytest.raises(
+        tgpp_docx.ExtractionError,
+        match="re-used AVPs name cell 'Session- Id' contains spaces",
+    ):
+        tgpp_docx.extract(malformed)
+
+
 def test_extract_rejects_spaces_in_grouped_avp_rule_names(
     tmp_path, synthetic_spec_docx
 ):

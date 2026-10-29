@@ -1197,6 +1197,10 @@ def _extract_reused_table(
     )
     for cells in data_rows:
         name, _ = _strip_note_ref(cells[0])
+        if " " in name:
+            # As in the AVP table: a line-wrap artifact (TS 29.154 table
+            # 5.4.1's "CC-Total- Octets") is input-patched.
+            raise ExtractionError(f"re-used AVPs name cell {name!r} contains spaces")
         origin: str | None = None
         m_bit: ast.MBitOverride | None = None
         for column, position in zip(columns, positions, strict=True):

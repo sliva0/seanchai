@@ -105,17 +105,19 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   `reused-body-differs` cases are mostly `Serving-Node`-style AVPs whose
   clauses say they originate elsewhere and then print interface-specific
   bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
-- **`origin-not-in-corpus`.** Every missing origin is missing from the
-  catalog (TS 29.140 and 29.154), or outside 3GPP/IETF (ETSI TS 283 034
-  and TS 183 017, 3GPP2 X.S0057, TS 23.329). These clear as the corpus
-  grows; see the roadmap.
-- **`unresolved-reference`**, seventeen. Six are AVPs no document defines,
+- **`origin-not-in-corpus`.** Every missing origin is outside 3GPP/IETF
+  (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057, TS 23.329) or has no
+  Release 18 version: TS 29.140, cited by TS 32.299 for `VAS-Id` and
+  `VASP-Id`, ends at V7.0.0, and nothing resolves across a major version.
+- **`unresolved-reference`**, eighteen. Seven are AVPs no document defines,
   tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`,
   `MIP-MN-HA-SPI` (clauses 9.4–9.6; erratum 1462 renames one to another
   undefined name, and Wireshark carries the same dead end), TS 29.345's
   `ProSe-Query-Code` and `ProSe-Response-Code` (clauses 6.3.53, 6.3.54), and
   TS 29.273's `NSWO-Authorization` (clause 5.2.2.1.2 prints only a member
-  reference). Eleven are members whose definition the document neither
+  reference), and TS 29.154's `External-Group-Identifier` (the ECR body,
+  clause A.6.6.2; table A.6.4.1-1 does not list it, and Wireshark has no
+  such AVP either). Eleven are members whose definition the document neither
   prints nor cites: TS 29.229's `Line-Identifier` (clause 6.3.42 gives it
   ETSI's vendor 13019, which a table row cannot state), and ten in TS
   32.299's grouped bodies — `3GPP2-BSID`, `Logical-Access-ID`,

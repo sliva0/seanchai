@@ -70,7 +70,7 @@
       * [ Load ]
       * [ Supported-Features ]
         [ User-Identifier ]
-        [ Number-of-UEs ]
+        [ Number-Of-UEs ] ;; corrected: (TS29.336.py#cia-number-of-ues-spelling)
       * [ Monitoring-Event-Report ]
       * [ Monitoring-Event-Config-Status ]
       * [ AESE-Communication-Pattern-Config-Status ]
@@ -330,7 +330,7 @@ Active-Time                           TS29.128   MUST-NOT
 DL-Buffering-Suggested-Packet-Count   TS29.272   MUST-NOT
 Subscribed-Periodic-RAU-TAU-Timer     TS29.272   MUST-NOT
 IMSI-Group-Id                         TS29.272   MUST-NOT
-Number-of-UEs                         TS29.154   MUST-NOT
+Number-Of-UEs                         TS29.154   MUST-NOT ;; corrected: (TS29.336.py#number-of-ues-row-spelling)
 Terminal-Information                  TS29.272   MUST-NOT
 PDN-Type                              TS29.272   MUST-NOT
 Non-IP-PDN-Type-Indicator             TS29.272   MUST-NOT
