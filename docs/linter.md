@@ -106,6 +106,16 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   re-used table's M-bit column is not compared, being the interface's own
   setting by design; its Type column (TS 29.172) is, against the origin's
   rows or definition. A note: a citing interface may set its own rule.
+- `reused-row-vendor-mismatch` — such a row placing the AVP in another
+  vendor space than the origin does. The row's vendor is read as
+  [below](#vendor-spaces): its Vendor-ID cell, else its V flag, Must-not
+  IETF space and Must the file's `; Vendor-ID:`; a row stating none agrees
+  with any. The origin's is its definition's header (no vendor-id is IETF
+  space) or what its own rows state the same way, and agreeing with any
+  one agrees. An error, as `reused-code-conflict` is: two vendors are two
+  identities. No corpus case: the rows TS 29.229, 29.273, 29.329, 32.299
+  and oneM2M TS-0004 tabulate for AVPs they re-use all agree, oneM2M's by
+  table A.4-1's cells for its IETF and 3GPP rows.
 - `reused-avp-not-in-origin` — the cited origin has never heard of it.
   TS 29.283 listed `Feature-Id` from TS 29.229 (now deleted by correction).
 - `reused-origin-indirect` — the origin borrows it too. TS 29.172 cites

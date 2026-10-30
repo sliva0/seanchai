@@ -872,6 +872,84 @@ def test_a_re_used_avp_tabulated_nowhere_in_its_origin_is_typed_by_its_definitio
     assert "reads Grouped in its clause 6.3.1" in finding.message
 
 
+_SHARED_V = _flag_table(
+    _origin_row("Shared", 1032, ast.DataType.ENUMERATED, must=(_V,))
+)
+
+
+@pytest.mark.parametrize(
+    ("ours", "theirs", "expected"),
+    [
+        # A Vendor-ID cell agreeing with the origin row's V under Must, read in
+        # the origin's file vendor.
+        (_vendor_table("A.4-1", _vendor_row("Shared", 1032, 10415)), _SHARED_V, []),
+        (
+            _vendor_table("A.4-1", _vendor_row("Shared", 1032, 45687)),
+            _SHARED_V,
+            [
+                "Shared is tabulated in vendor 45687 in table A.4-1, but TS29.212,"
+                " which it is re-used from, reads vendor 10415 in table 6.3.1"
+            ],
+        ),
+        # The origin's header states the vendor, as TS 183 017's do 13019.
+        (
+            _vendor_table("A.4-1", _vendor_row("Shared", 1032, 13019)),
+            _grouped("Shared", 1032, vendor_id=13019),
+            [],
+        ),
+        # No cell: V under Must puts the row in the file's vendor, against an
+        # origin header with no vendor-id, IETF space.
+        (
+            _SHARED_V,
+            _grouped("Shared", 1032, vendor_id=None),
+            [
+                "Shared is tabulated in vendor 10415 in table 6.3.1, but TS29.212,"
+                " which it is re-used from, reads vendor 0 in its clause 6.3.1"
+            ],
+        ),
+        # V under Must-not is IETF space, TS 29.229's Digest-* rows' reading.
+        (
+            _flag_table(
+                _origin_row("Shared", 1032, ast.DataType.ENUMERATED, must_not=(_V,))
+            ),
+            _grouped("Shared", 1032, vendor_id=None),
+            [],
+        ),
+        # A row placing V nowhere states no vendor, and agrees with any.
+        (
+            _flag_table(_origin_row("Shared", 1032, ast.DataType.ENUMERATED)),
+            _grouped("Shared", 1032, vendor_id=13019),
+            [],
+        ),
+    ],
+    ids=[
+        "cell-agrees",
+        "cell-disagrees",
+        "cell-against-header",
+        "no-cell-file-vendor",
+        "no-cell-ietf",
+        "no-cell-no-v",
+    ],
+)
+def test_a_tabulated_re_used_avp_is_in_its_origins_vendor_space(ours, theirs, expected):
+    origin = _origin_spec("3GPP TS 29.212", "18.0.0", theirs)
+    spec = _origin_spec(
+        "3GPP TS 29.273",
+        "18.0.0",
+        ours,
+        _reused(ast.ReusedAvpRow(name="Shared", origin="TS29.212")),
+    )
+
+    found = [
+        f
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule == "reused-row-vendor-mismatch"
+    ]
+
+    assert [f.message for f in found] == expected
+    assert all(f.severity is linter.Severity.ERROR for f in found)
+
+
 def test_two_documents_disagreeing_on_a_code_is_an_error():
     """An AVP is its (vendor-id, code), so two codes are two AVPs and one of
     the documents is wrong — the one thing here that is not a judgement call."""

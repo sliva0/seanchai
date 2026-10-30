@@ -1003,6 +1003,71 @@ def _reused_rows_agree_with_origin(
     return findings
 
 
+def _reused_row_vendors_agree_with_origin(
+    index: _Index, own_vendor: int, origins: dict[str, _Origin]
+) -> list[Finding]:
+    """A row this file tabulates for an AVP it re-uses places it in the
+    origin's vendor space.
+
+    The row's vendor is the model's reading (`ast.AvpTableRow.stated_vendor`):
+    its Vendor-ID cell where its table prints one, else IETF space for V
+    under Must-not and the file's `; Vendor-ID:` for V under Must; a row
+    stating none agrees with any. The origin's is its definition's header,
+    no vendor-id being IETF space, or what its own rows state the same way
+    in its file. TS 29.229's rows for RFC 4590's `Digest-*` AVPs put V under
+    Must-not and agree with RFC 4590's vendor 0. Agreeing with any one origin
+    reading agrees, as for `reused-row-mismatch`. An error, unlike that
+    rule's notes: two vendors are two identities, so the row and its origin
+    name two AVPs, as two codes do (`reused-code-conflict`).
+    """
+    findings = []
+    for name, origin in sorted(index.reused.items()):
+        resolved = origins.get(origin)
+        if resolved is None:
+            continue
+        readings: list[tuple[int, str]] = []
+        definition = resolved.defined.get(name)
+        if definition is not None:
+            readings.append(
+                (
+                    ast.IETF_VENDOR
+                    if definition.vendor_id is None
+                    else definition.vendor_id,
+                    f"its clause {definition.source.section}",
+                )
+            )
+        for table in resolved.tables:
+            for their_row in table.rows:
+                if their_row.name != name:
+                    continue
+                stated = their_row.stated_vendor(resolved.spec.vendor_id)
+                if stated is not None:
+                    readings.append((stated, _table_labels([table])))
+        if not readings:
+            continue
+        for table in index.tables:
+            for row in table.rows:
+                if row.name != name:
+                    continue
+                mine = row.stated_vendor(own_vendor)
+                if mine is None or any(mine == other for other, _ in readings):
+                    continue
+                spelled = "; ".join(
+                    f"vendor {other} in {where}" for other, where in readings
+                )
+                findings.append(
+                    Finding(
+                        Severity.ERROR,
+                        "reused-row-vendor-mismatch",
+                        f"{name} is tabulated in vendor {mine} in"
+                        f" {_table_labels([table])}, but {origin}, which it is"
+                        f" re-used from, reads {spelled}",
+                        paths=(index.path(row),),
+                    )
+                )
+    return findings
+
+
 def _reused_cells_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
@@ -1633,6 +1698,7 @@ def lint_with_corpus(
         *_reused_avp_exists(index, origins),
         *_reprint_or_extension(index, origins),
         *_reused_rows_agree_with_origin(index, origins),
+        *_reused_row_vendors_agree_with_origin(index, spec.vendor_id, origins),
         *_reused_cells_agree_with_origin(index, origins),
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
         *_unresolved_references(index, bases, missing_bases),
