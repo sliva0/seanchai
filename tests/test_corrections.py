@@ -513,6 +513,57 @@ def test_an_insert_into_a_table_another_edit_deletes_fails():
         corrections.apply(reused, edits)
 
 
+def _member_insert(
+    name, after: str | None = "Session-Id", into="Example-Request", node=None
+):
+    return corrections.Insert(
+        id=next(_IDS),
+        into=corrections.definition(into),
+        node=node or ast.AvpRule(name=name, presence=ast.Presence.OPTIONAL),
+        after=after,
+        reason="test",
+    )
+
+
+def test_a_member_insert_lands_after_its_member_and_is_noted():
+    edits = [_member_insert("Late-AVP"), _member_insert("Early-AVP")]
+
+    corrected, results = corrections.apply(_spec(), edits)
+
+    assert [rule.name for rule in _message(corrected).avps] == [
+        "Session-Id",
+        "Early-AVP",
+        "Late-AVP",
+    ]
+    assert [result.path for result in results] == [
+        ("sections", 0, "avps", 2),
+        ("sections", 0, "avps", 1),
+    ]
+    assert corrections.notes(results).trailing[("sections", 0, "avps", 1)] == [
+        f"inserted: ({edits[1].id})"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("edit", "problem"),
+    [
+        (_member_insert("Session-Id", after=None), "already present"),
+        (_member_insert("Other", after="Missing-AVP"), "is not present"),
+        (_member_insert("Other", into="Example-Mode"), "message or grouped AVP"),
+        (
+            _member_insert(
+                "Other",
+                node=ast.ReusedAvpRow(name="Other", origin="RFC6733"),
+            ),
+            "must be a AvpRule",
+        ),
+    ],
+)
+def test_a_member_insert_fails_where_its_body_cannot_take_it(edit, problem):
+    with pytest.raises(corrections.CorrectionError, match=problem):
+        corrections.apply(_spec(), [edit])
+
+
 def test_a_delete_whose_expect_differs_reports_the_changed_fields():
     with pytest.raises(corrections.CorrectionError, match=r"has changed.*origin"):
         corrections.apply(
@@ -1079,6 +1130,9 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             (table,) = correction.into.find(spec)
             if isinstance(table, ast.Specification):
                 assert correction.node in table.sections
+                continue
+            if isinstance(table, ast.Message | ast.GroupedAvp):
+                assert correction.node in table.avps
                 continue
             assert isinstance(table, ast.AvpTable | ast.ReusedAvps)
             assert correction.node in table.rows

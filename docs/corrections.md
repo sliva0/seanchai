@@ -90,7 +90,7 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   changes the row. Deleting a node while correcting anything inside it is
   refused, as is emptying a table. Forcing case: TS 29.283's re-used
   `Feature-Id`, which TS 29.229 never defined.
-- **`Insert(id, into=avp_table(label) | reused_avps(label), node, after=<name | None>, reason)`**:
+- **`Insert(id, into=avp_table(label) | reused_avps(label) | definition(name), node, after=<name | None>, reason)`**:
   expects no row of that name to exist. Forcing case: TS 29.344 clause 6.3.13
   defines `Authorized-Discovery-Range` but table 6.3.1-1 omits the row;
   re-used-table inserts came from the reference triage (six members TS 29.337's
@@ -106,7 +106,12 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   7.1.6), TS 29.272 for its VCSG commands in the command table's clause
   (7.2.2, 16777308) and TS 29.273 for SWa by naming STa's application
   (4.2.1, with the id in 5.2.1), so their blocks are inserted citing the
-  clause. The command headers stay as printed.
+  clause. The command headers stay as printed. Into `definition(name)`, a
+  message or grouped AVP, `Insert` adds an `ast.AvpRule`, `after` naming
+  the member it follows, and expects no member of that name: RFC 5777's
+  verified erratum 2333 restores three members `Time-Of-Day-Condition`'s
+  ABNF omits, each defined in a clause of its own and tabulated in section
+  10.1.
 - **`Supply(id, target=definition(name), expect=<the ; Values: text>, values=(...), reason)`**:
   fills the value list of an enumerated AVP whose clause names another
   document for its values and prints none. It expects the section's

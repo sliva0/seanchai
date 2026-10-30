@@ -4,10 +4,11 @@ Merge requests for Wireshark's Diameter dictionary, staged from the
 [oracle](../../docs/oracle.md)'s findings, in two series. None has been
 submitted.
 
-- **Defects**, `0001`–`0018` here: entries the dictionary holds wrongly, a
-  misspelt name or a wrong type, each checked by hand against the clause of
-  the specification that defines the AVP, which its commit message cites.
-  One defect per patch.
+- **Defects**, `0001`–`0020` here: entries the dictionary holds wrongly, a
+  misspelt name, a wrong type or a member list short of the document's,
+  each checked by hand against the clause of the specification that
+  defines the AVP, or the verified erratum correcting it, which its commit
+  message cites. One defect per patch.
 - **Additions**, under [`additions/`](additions/): AVPs the dictionary has
   no entry for at all, one patch per defining document, written by
   `additions.py` from the corpus. Nothing the dictionary holds changes.
@@ -38,6 +39,8 @@ patch's commit message is the merge request's title and description.
 | 0016 | `ISUP-Cause-Location` OctetString | Unsigned32 | TS 32.299 clause 7.2.80D |
 | 0017 | `Number-Of-Participants` Integer32 | Unsigned32 | TS 32.299 clause 7.2.117 |
 | 0018 | `Cell-Portion-ID` OctetString | Unsigned32 | TS 29.172 clause 7.4.58 |
+| 0019 | `IP-Bit-Mask-Width` | `IP-Mask-Bit-Mask-Width` | RFC 5777 erratum 2335 (verified) |
+| 0020 | `Time-Of-Day-Condition` without three members | `Absolute-Start-Fractional-Seconds`, `Absolute-End-Fractional-Seconds`, `Timezone-Offset` | RFC 5777 erratum 2333 (verified) |
 
 ## Additions
 
@@ -73,7 +76,7 @@ lower code, its own document's entries first, so most land beside their
 siblings: 137 in `TGPP.xml`, 132 in `dictionary.xml`. A place within three
 lines of another patch's, or of a line a defect patch changes, is passed
 over for the next, so every addition applies to `v4.7.2` on its own, all 28
-apply in order, and all 28 apply after the eighteen defects; the script
+apply in order, and all 28 apply after the twenty defects; the script
 checks the three before it writes, and its output is the same byte for byte
 on every run (`tests/test_wireshark_additions.py` pins it).
 
@@ -139,7 +142,7 @@ git am -3 /path/to/seanchai/integrations/wireshark/0001-call-barring-info.patch
 ```
 
 An addition is applied the same way, from `additions/`. Every defect
-patch applies on its own to `v4.7.2`, and all eighteen apply in order as
+patch applies on its own to `v4.7.2`, and all twenty apply in order as
 one series; `-3` lets `git am` merge through context that has moved
 on master since. `git am` keeps the patch's author; use
 `git commit --amend --reset-author` to submit under your own.
@@ -151,7 +154,7 @@ a test may refer to it. A renamed AVP also renames its display filter field
 ## Checking
 
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter`
-over the corpus no longer reports a patched AVP. With the eighteen defects
-applied to `v4.7.2` it reports 70 findings instead of 89; with the 28
-additions, 68, the ten absences above in eight notes, and none that the
+over the corpus no longer reports a patched AVP. With the twenty defects
+applied to `v4.7.2` it reports 70 findings instead of 90; with the 28
+additions, 69, the ten absences above in eight notes, and none that the
 unpatched dictionary did not; with both series, 49.

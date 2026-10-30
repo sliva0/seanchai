@@ -58,8 +58,8 @@ place for another spelling
 ## What still reports
 
 The first run's findings were triaged against the primary clauses; the
-corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
-`IP-Bit-Mask-Width`, 29.336's `Periodic-time`, RFC 4005's
+corpus-side fixes are corrections (RFC 5777's `Treatment-Action`,
+29.336's `Periodic-time`, RFC 4005's
 `Framed-Appletalk-*` table casing, 29.172's `Area-Identification`, 29.061's
 `MBMS-Flag`, where the dictionary agrees with clause 20.5a.9). What remains:
 
@@ -86,7 +86,12 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
   `Transcoder-Inserted-Indicator` for `-Indication`,
   `Number-of-Messages-Sent`, `User-Session-ID`, and `From-Address`,
   `ISUP-Cause-Location` and `Number-Of-Participants` typed IPAddress,
-  OctetString and Integer32 against clauses 7.2.67A, 7.2.80D and 7.2.117.
+  OctetString and Integer32 against clauses 7.2.67A, 7.2.80D and 7.2.117;
+  and from RFC 5777's verified errata, `IP-Bit-Mask-Width` for
+  `IP-Mask-Bit-Mask-Width` (2335, the IANA name; the dictionary renamed
+  its entry to the uncorrected ABNF's member in 2018) and
+  `Time-Of-Day-Condition` without the three members 2333 restores, which
+  the oracle, comparing names and types, does not report.
 - **Display conveniences the mapping does not tolerate**, corpus correct:
   `3GPP-NSAPI`, `Codec-Data`, `Framed-Pool`, `EAP-Key-Name` and 32.299's
   `Access-Network-Information` (the dictionary comments its OctetString

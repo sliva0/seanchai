@@ -23,7 +23,7 @@ IP-Address-Range                    519    4.1.7.3    Grouped
 IP-Address-Start                    520    4.1.7.4    Address
 IP-Address-End                      521    4.1.7.5    Address
 IP-Address-Mask                     522    4.1.7.6    Grouped
-IP-Bit-Mask-Width                   523    4.1.7.7    Unsigned32 ;; corrected: (RFC5777.py#ip-bit-mask-width-name)
+IP-Mask-Bit-Mask-Width              523    4.1.7.7    Unsigned32
 MAC-Address                         524    4.1.7.8    OctetString
 MAC-Address-Mask                    525    4.1.7.9    Grouped
 MAC-Address-Mask-Pattern            526    4.1.7.10   OctetString
@@ -207,7 +207,7 @@ IP-Address-Range ::= < AVP header: 519 >
 ; Page: 13
 IP-Address-Mask ::= < AVP header: 522 >
         { IP-Address }
-        { IP-Bit-Mask-Width }
+        { IP-Mask-Bit-Mask-Width } ;; corrected: (RFC5777.py#ip-mask-bit-mask-width-name)
       * [ AVP ]
 
 
@@ -396,8 +396,11 @@ Time-Of-Day-Condition ::= < AVP header: 560 >
         [ Day-Of-Month-Mask ]
         [ Month-Of-Year-Mask ]
         [ Absolute-Start-Time ]
+        [ Absolute-Start-Fractional-Seconds ] ;; inserted: (RFC5777.py#time-of-day-condition-absolute-start-fractional-seconds)
         [ Absolute-End-Time ]
+        [ Absolute-End-Fractional-Seconds ] ;; inserted: (RFC5777.py#time-of-day-condition-absolute-end-fractional-seconds)
         [ Timezone-Flag ]
+        [ Timezone-Offset ] ;; inserted: (RFC5777.py#time-of-day-condition-timezone-offset)
       * [ AVP ]
 
 

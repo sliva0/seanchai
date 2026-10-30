@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Fri, 30 Oct 2026 14:00:00 +0000
+Subject: [PATCH] Diameter: Rename IP-Bit-Mask-Width to IP-Mask-Bit-Mask-Width
+
+RFC 5777's verified erratum 2335 (global) corrects every
+IP-Bit-Mask-Width to IP-Mask-Bit-Mask-Width: "Since the AVP is referred
+as IP-Mask-Bit-Mask-Width in the IANA registry, this name should be
+used." Clause 4.1.7.7's heading and the allocation table in section
+10.1 give AVP 523 that name too; the IANA AVP Codes registry lists it.
+
+The entry was named IP-Mask-Bit-Mask-Width when it was added and was
+renamed to match the IP-Address-Mask member, which follows the RFC's
+uncorrected ABNF; both are renamed here. Renaming an AVP renames its
+display filter field (diameter.IP-Bit-Mask-Width becomes
+diameter.IP-Mask-Bit-Mask-Width), so saved filters and profiles using
+the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..c3f8542 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -2357,10 +2357,10 @@
+ 		<avp name="IP-Address-Mask" code="522" mandatory="must" may-encrypt="no" protected="mustnot" vendor-bit="mustnot">
+ 			<grouped>
+ 				<gavp name="IP-Address"/>
+-				<gavp name="IP-Bit-Mask-Width"/>
++				<gavp name="IP-Mask-Bit-Mask-Width"/>
+ 			</grouped>
+ 		</avp>
+-		<avp name="IP-Bit-Mask-Width" code="523" mandatory="may">
++		<avp name="IP-Mask-Bit-Mask-Width" code="523" mandatory="may">
+ 			<type type-name="Unsigned32"/>
+ 		</avp>
+ 		<avp name="MAC-Address" code="524" mandatory="may">

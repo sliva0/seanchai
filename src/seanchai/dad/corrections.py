@@ -33,7 +33,8 @@ from the open findings. Applying a module skips them.
 
 Beside field replacement there are three narrow structural operations:
 `Delete` for a node that should not exist at all, `Insert` for an AVP-table row
-the source defines but omits from the table, and `Supply` for what a document
+the source defines but omits from the table (or a body member a verified
+erratum restores), and `Supply` for what a document
 defines in another: the value list of an enumerated AVP, or the type and flag
 rules of a table row typed by reference. All fail loudly when upstream changes
 the state that justified them: `Delete` expects the doomed node
@@ -528,11 +529,16 @@ class Insert:
     assigns 4 in its IANA considerations. The block goes after the file's
     other application scopes, which lead the file, so `after` must be None;
     no other scope may carry its name.
+
+    Into a `definition()`, a message or grouped AVP, it inserts an
+    `AvpRule`, a member the body omits and a verified erratum restores:
+    RFC 5777's erratum 2333 adds three to `Time-Of-Day-Condition`. `after`
+    names the member it follows, as a row's does.
     """
 
     id: str
-    into: avp_table | reused_avps | header
-    node: ast.AvpTableRow | ast.ReusedAvpRow | ast.ApplicationScope
+    into: avp_table | reused_avps | header | definition
+    node: ast.AvpTableRow | ast.ReusedAvpRow | ast.ApplicationScope | ast.AvpRule
     after: str | None
     reason: str
     versions: str | VersionRange = "*..*"
@@ -867,14 +873,26 @@ def _inserted(
     origin: _Added,
     path: ast.TreePath,
 ) -> list[tuple[_Origin, Any]]:
-    """The rows of the table at `path` with the declared row inserted, each
-    with its origin, checked by validating the table they make. `rows` holds
-    what earlier inserts made of them, None before the first."""
+    """The rows of the table at `path`, or the members of the body, with the
+    declared one inserted, each with its origin, checked by validating the
+    node they make. `rows` holds what earlier inserts made of them, None
+    before the first."""
     described = insert.into.describe()
-    row_type = (
-        ast.AvpTableRow if isinstance(insert.into, avp_table) else ast.ReusedAvpRow
+    field = _inserted_field(insert)
+    row_type: type[ast.Node] = (
+        ast.AvpRule
+        if isinstance(insert.into, definition)
+        else ast.AvpTableRow
+        if isinstance(insert.into, avp_table)
+        else ast.ReusedAvpRow
     )
-    if not isinstance(parent, ast.AvpTable | ast.ReusedAvps):
+    if isinstance(insert.into, definition):
+        if not isinstance(parent, ast.Message | ast.GroupedAvp):
+            raise CorrectionError(
+                f"{described}: Insert requires a message or grouped AVP,"
+                f" matched {type(parent).__name__}"
+            )
+    elif not isinstance(parent, ast.AvpTable | ast.ReusedAvps):
         raise CorrectionError(
             f"{described}: Insert requires a table, matched {type(parent).__name__}"
         )
@@ -884,7 +902,10 @@ def _inserted(
             f" not a {type(insert.node).__name__}"
         )
     if rows is None:
-        rows = [((*path, "rows", index), row) for index, row in enumerate(parent.rows)]
+        rows = [
+            ((*path, field, index), row)
+            for index, row in enumerate(getattr(parent, field))
+        ]
     if any(row.name == insert.node.name for _, row in rows):
         raise CorrectionError(
             f"{described}: row {insert.node.name!r} is already present"
@@ -906,7 +927,7 @@ def _inserted(
             )
         rows.insert(positions[0] + 1, (origin, insert.node))
     values = {name: getattr(parent, name) for name in type(parent).model_fields}
-    values["rows"] = tuple(row for _, row in rows)
+    values[field] = tuple(row for _, row in rows)
     try:
         type(parent)(**values)
     except pydantic.ValidationError as error:
@@ -914,6 +935,11 @@ def _inserted(
             f"{described}: inserted row is not valid: {error.errors()[0]['msg']}"
         ) from None
     return rows
+
+
+def _inserted_field(insert: Insert) -> str:
+    """The tuple field an `Insert` adds to: a body's members or a table's rows."""
+    return "avps" if isinstance(insert.into, definition) else "rows"
 
 
 def _inserted_application_scope(
@@ -1034,8 +1060,9 @@ class _Plan:
     replaced: dict[ast.TreePath, ast.Node] = dataclasses.field(default_factory=dict)
     deleted: set[ast.TreePath] = dataclasses.field(default_factory=set)
     # A table's rows once its `Insert`s are in, keyed by the table's path
-    # plus "rows"; an enumerated AVP's values once `Supply` fills them, by
-    # its path plus "values".
+    # plus "rows", and a body's members by its path plus "avps"; an
+    # enumerated AVP's values once `Supply` fills them, by its path plus
+    # "values".
     rows: dict[ast.TreePath, list[tuple[_Origin, Any]]] = dataclasses.field(
         default_factory=dict
     )
@@ -1170,6 +1197,7 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
             and (
                 path in plan.replaced
                 or (*path, "rows") in plan.rows
+                or (*path, "avps") in plan.rows
                 or (*path, "values") in plan.rows
             )
         ):
@@ -1241,17 +1269,19 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
             origins.append(_Added(index))
             continue
         if isinstance(correction, Insert):
-            plan.rows[(*path, "rows")] = _inserted(
+            field = _inserted_field(correction)
+            plan.rows[(*path, field)] = _inserted(
                 plan.replaced.get(path, node),
-                plan.rows.get((*path, "rows")),
+                plan.rows.get((*path, field)),
                 correction,
                 _Added(index),
                 path,
             )
+            kind = "member" if field == "avps" else "row"
             results.append(
                 Result(
                     correction=correction,
-                    node=f"{described}, row {correction.node.name!r}",
+                    node=f"{described}, {kind} {correction.node.name!r}",
                     old=None,
                     new=correction.node,
                 )
