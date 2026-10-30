@@ -114,8 +114,20 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   re-words the citation or starts printing the list itself; the citation
   stays, since the document still makes it. The reason cites the clause of
   the external document the values come from. No committed module declares
-  one: TS 32.299's `API-Network-Service-Node` cites TS 23.682, whose
+  this form: TS 32.299's `API-Network-Service-Node` cites TS 23.682, whose
   V18.0.0 names the network elements but numbers none of them.
+- **`Supply(id, target=table_row(name, table=), expect=<the row>, data_type=, flag_rules=, reason)`**:
+  fills the blank Type cell, flag cells or both of an AVP-table row whose
+  document types it by reference to another document. It expects the whole
+  row, as `Delete` does, blank where it supplies, and requires the file to
+  list the AVP as re-used, the citation saying where its definition lives,
+  which stays. Forcing case: TS 32.299 table 7.2.0.1 types thirteen rows
+  `refer [223]`, `OMA-DDS-Charging_Data`, and prints no flags for them;
+  OMA's V1.0 states type and flags in table 11 of its clause 8.4, which
+  each declaration cites. A re-used row has no cells a model reads for
+  type or vendor, so an AVP only re-used from an absent document (TS
+  32.299's `M2M-Information` from `oneM2M-TS-0004`) has nowhere to take a
+  supplied type.
 
 No arbitrary `edit=lambda` escape hatch and no `move`/`split`: a correction
 that cannot be described cannot be reviewed. A structural case that appears
@@ -185,7 +197,7 @@ and on the block's first line when it removes that line.
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
 inserted row is marked `;; inserted:`, an inserted application scope on its
-`; Type:` line, and every value a `Supply` adds `;; supplied:`. Notes are `;;` comments, so an
+`; Type:` line, and every value or row a `Supply` fills `;; supplied:`. Notes are `;;` comments, so an
 annotated file parses to exactly the corrected tree, and they are placed by
 the rules a hand-written comment follows ([dad-format.md](dad-format.md#comments)):
 `seanchai format` keeps every note where it is, and a corrected file is

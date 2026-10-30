@@ -683,6 +683,101 @@ def test_a_supply_and_a_correction_of_the_same_section_both_apply():
     assert (enumerated.code, enumerated.values) == (1601, _SUPPLIED)
 
 
+_REFERRED = ast.AvpTableRow(name="Borrowed", code=2101)
+_OMA_FLAGS = ast.AvpFlagRules(
+    must=frozenset({ast.AvpFlag.VENDOR, ast.AvpFlag.MANDATORY}),
+    may=frozenset({ast.AvpFlag.PROTECTED}),
+)
+
+
+def _typed_by_reference(spec, reused=True):
+    """`_spec` with a row typed only by a reference to another document, as
+    TS 32.299 table 7.2.0.1 types OMA's rows, and the re-used row citing it."""
+    table = _table(spec)
+    table = table.model_copy(update={"rows": (*table.rows, _REFERRED)})
+    cited = ast.ReusedAvps(
+        table="6.3.1",
+        source=ast.SourceRef(section="6.3"),
+        rows=(ast.ReusedAvpRow(name="Borrowed", origin="OMA-DDS-Charging_Data"),),
+    )
+    sections = (spec.sections[0], table, *((cited,) if reused else ()))
+    return spec.model_copy(update={"sections": (*sections, *spec.sections[2:])})
+
+
+def _supply_row(expect=_REFERRED, data_type=ast.DataType.UTF8_STRING, flags=_OMA_FLAGS):
+    return corrections.Supply(
+        id=next(_IDS),
+        target=corrections.table_row("Borrowed"),
+        expect=expect,
+        data_type=data_type,
+        flag_rules=flags,
+        reason="test",
+    )
+
+
+def test_a_supply_fills_a_row_typed_by_reference_and_marks_it():
+    supply = _supply_row()
+
+    corrected, results = corrections.apply(_typed_by_reference(_spec()), [supply])
+
+    row = _table(corrected).rows[-1]
+    assert (row.data_type, row.flag_rules) == (ast.DataType.UTF8_STRING, _OMA_FLAGS)
+    # The citation stays: the document still says where the AVP is defined.
+    assert isinstance(corrected.sections[2], ast.ReusedAvps)
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    (noted,) = [line for line in text.splitlines() if ";;" in line]
+    assert noted.split()[:6] == ["Borrowed", "2101", "-", "UTF8String", "M,V", "P"]
+    assert noted.endswith(f" ;; supplied: ({supply.id})")
+    assert parser.parse_with_comments(text) == (
+        corrected,
+        corrections.notes(results),
+    )
+
+
+@pytest.mark.parametrize(
+    ("spec", "supply", "message"),
+    [
+        # Upstream types the row itself.
+        (
+            _typed_by_reference(_spec()),
+            _supply_row(expect=_REFERRED.model_copy(update={"code": 2102})),
+            "expected AvpTableRow",
+        ),
+        # Nothing says the AVP is defined elsewhere.
+        (_typed_by_reference(_spec(), reused=False), _supply_row(), "no re-used"),
+    ],
+    ids=["row-changed", "not-reused"],
+)
+def test_a_row_supply_expects_the_blank_row_of_a_reused_avp(spec, supply, message):
+    with pytest.raises(corrections.CorrectionError, match=message):
+        corrections.apply(spec, [supply])
+
+
+@pytest.mark.parametrize(
+    ("arguments", "message"),
+    [
+        (
+            {"expect": _REFERRED.model_copy(update={"data_type": "Unsigned32"})},
+            "fills only a blank type",
+        ),
+        ({"flags": ast.AvpFlagRules()}, "blank flag rules with stated ones"),
+        ({"data_type": None, "flags": None}, "supplies nothing"),
+    ],
+    ids=["typed", "no-flags", "nothing"],
+)
+def test_a_row_supply_is_checked_when_declared(arguments, message):
+    with pytest.raises(corrections.CorrectionError, match=message):
+        _supply_row(**arguments)
+
+
+def test_a_row_is_not_both_supplied_and_corrected():
+    spec = _typed_by_reference(_spec())
+    correction = _correction(corrections.table_row("Borrowed"), "code", 2101, 2102)
+    for ordering in ([_supply_row(), correction], [correction, _supply_row()]):
+        with pytest.raises(corrections.CorrectionError, match="corrected and supplied"):
+            corrections.apply(spec, ordering)
+
+
 def _application(name, application_id, applies_to=("6.*",), section="2.4"):
     return ast.ApplicationScope(
         name=name,
@@ -994,9 +1089,13 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             assert list(target.find(spec)) == [], f"{target.describe()} in {path.name}"
             continue
         if isinstance(correction, corrections.Supply):
-            (enumerated,) = target.find(spec)
-            assert isinstance(enumerated, ast.EnumeratedAvp)
-            assert enumerated.values == correction.values
+            (supplied,) = target.find(spec)
+            if isinstance(supplied, ast.AvpTableRow):
+                assert supplied.data_type == correction.data_type
+                assert supplied.flag_rules == correction.flag_rules
+                continue
+            assert isinstance(supplied, ast.EnumeratedAvp)
+            assert supplied.values == correction.values
             continue
         if correction.field == "name":
             # A correction that rewrites a name also rewrites what the selector

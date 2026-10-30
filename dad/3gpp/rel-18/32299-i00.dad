@@ -483,11 +483,11 @@ Applic-ID                                                1218   -     -     X   
 Application-Port-Identifier                              3010   X     -     X     -     -                  -      -     -       - ;; corrected: (TS32.299.py#row-application-port-identifier)
 Application-Provided-Called-Party-Address                837    X     -     X     -     UTF8String         M,V    -     -       -
 Application-Server                                       836    X     -     X     -     UTF8String         M,V    -     -       -
-Application-Server-ID                                    2101   X     -     X     -     -                  -      -     -       -
+Application-Server-ID                                    2101   X     -     X     -     UTF8String         M,V    P     -       - ;; supplied: (TS32.299.py#oma-application-server-id)
 Application-Service-Provider-Identity                    532    X     -     -     -     -                  -      -     -       -
 Application-Server-Information                           850    X     -     X     -     Grouped            M,V    -     -       -
-Application-Service-Type                                 2102   X     -     X     -     -                  -      -     -       -
-Application-Session-ID                                   2103   X     -     X     -     -                  -      -     -       -
+Application-Service-Type                                 2102   X     -     X     -     Enumerated         M,V    P     -       - ;; supplied: (TS32.299.py#oma-application-service-type)
+Application-Session-ID                                   2103   X     -     X     -     Unsigned32         M,V    P     -       - ;; supplied: (TS32.299.py#oma-application-session-id)
 Application-Specific-Data                                3458   X     -     -     -     OctetString        M,V    -     -       -
 Associated-Party-Address                                 2035   X     -     X     -     UTF8String         M,V    -     -       -
 Associated-URI                                           856    X     -     X     -     UTF8String         M,V    -     -       -
@@ -523,8 +523,8 @@ CN-Operator-Selection-Entity                             3421   X     -     -   
 Communication-Failure-Information                        4300   X     -     -     -     -                  -      -     -       -
 Content-Class                                            1220   -     -     X     -     Enumerated         M,V    -     -       -
 Content-Disposition                                      828    X     -     X     -     UTF8String         M,V    -     -       -
-Content-ID                                               2116   X     -     X     -     -                  -      -     -       -
-Content-Provider-ID                                      2117   X     -     X     -     -                  -      -     -       -
+Content-ID                                               2116   X     -     X     -     UTF8String         M,V    P     -       - ;; supplied: (TS32.299.py#oma-content-id)
+Content-Provider-ID                                      2117   X     -     X     -     UTF8String         M,V    P     -       - ;; supplied: (TS32.299.py#oma-content-provider-id)
 Content-Length                                           827    X     -     X     -     Unsigned32         M,V    -     -       -
 Content-Size                                             1206   -     -     X     -     Unsigned32         M,V    -     -       -
 Content-Type                                             826    X     -     X     -     UTF8String         M,V    -     -       -
@@ -538,10 +538,10 @@ CSG-Membership-Indication                                2318   X     -     X   
 CUG-Information                                          2304   X     -     X     -     OctetString        M,V    -     -       -
 Current-Tariff                                           2056   -     -     X     X     Grouped            M,V    -     -       -
 Data-Coding-Scheme                                       2001   X     -     X     -     Integer32          M,V    -     -       -
-DCD-Information                                          2115   X     -     X     -     -                  -      -     -       -
+DCD-Information                                          2115   X     -     X     -     Grouped            M,V    P     -       - ;; supplied: (TS32.299.py#oma-dcd-information)
 Deferred-Location-Event-Type                             1230   -     -     X     -     UTF8String         M,V    -     -       -
 Delivery-Report-Requested                                1216   X     -     X     -     Enumerated         M,V    -     -       -
-Delivery-Status                                          2104   X     -     X     -     -                  -      -     -       -
+Delivery-Status                                          2104   X     -     X     -     UTF8String         M,V    P     -       - ;; supplied: (TS32.299.py#oma-delivery-status)
 Destination-Interface                                    2002   X     -     X     -     Grouped            M,V    -     -       -
 Diagnostics                                              2039   X     -     X     -     Integer32          M,V    -     -       -
 Discoveree-UE-HPLMN-Identifier                           4402   X     -     X     -     UTF8String         M,V    -     -       -
@@ -576,7 +576,7 @@ Forwarding-Pending                                       3415   -     -     X   
 From-Address                                             2708   X     -     X     -     UTF8String         M,V    -     -       -
 GGSN-Address                                             847    X     -     X     -     Address            M,V    -     -       -
 Guaranteed-Bitrate-UL                                    1026   X     -     X     -     -                  -      -     -       -
-IM-Information                                           2110   X     -     X     -     -                  -      -     -       -
+IM-Information                                           2110   X     -     X     -     Grouped            M,V    P     -       - ;; supplied: (TS32.299.py#oma-im-information)
 IMS-Application-Reference-Identifier                     2601   X     -     -     -     UTF8String         M,V    -     -       -
 IMS-Charging-Identifier                                  841    X     -     X     -     UTF8String         M,V    -     -       -
 IMS-Communication-Service-Identifier                     1281   X     -     X     -     UTF8String         M,V    -     -       -
@@ -681,8 +681,8 @@ Node-Id                                                  2064   X     -     X   
 Nr-Cgi                                                   1325   X     -     -     -     UTF8String         M,V    -     -       -
 Number-Of-Diversions                                     2034   X     -     X     -     Unsigned32         M,V    -     -       -
 Number-Of-Messages-Sent                                  2019   X     -     X     -     Unsigned32         M,V    -     -       -
-Number-Of-Messages-Successfully-Exploded                 2111   X     -     X     -     -                  -      -     -       -
-Number-Of-Messages-Successfully-Sent                     2112   X     -     X     -     -                  -      -     -       -
+Number-Of-Messages-Successfully-Exploded                 2111   X     -     X     -     Unsigned32         M,V    P     -       - ;; supplied: (TS32.299.py#oma-number-of-messages-successfully-exploded)
+Number-Of-Messages-Successfully-Sent                     2112   X     -     X     -     Unsigned32         M,V    P     -       - ;; supplied: (TS32.299.py#oma-number-of-messages-successfully-sent)
 Number-Of-Participants                                   885    X     -     X     -     Unsigned32         M,V    -     -       -
 Number-Of-Received-Talk-Bursts                           1282   X     -     -     -     Unsigned32         M,V    -     -       -
 Number-Of-Talk-Bursts                                    1283   X     -     -     -     Unsigned32         M,V    -     -       -
@@ -838,7 +838,7 @@ Served-Party-IP-Address                                  848    X     -     -   
 Server-Capabilities                                      603    X     -     -     -     -                  -      -     -       -
 Server-Name                                              602    X     -     -     -     -                  -      -     -       -
 Service-Data-Container                                   2040   X     -     -     -     Grouped            M,V    -     -       -
-Service-Generic-Information                              1256   X     -     X     -     -                  -      -     -       -
+Service-Generic-Information                              1256   X     -     X     -     Grouped            M,V    P     -       - ;; supplied: (TS32.299.py#oma-service-generic-information)
 Service-ID                                               855    X     -     X     -     UTF8String         M,V    -     -       - ;; corrected: (TS32.299.py#row-service-id)
 Service-Information                                      873    X     -     X     X     Grouped            M,V    -     -       -
 Service-Mode                                             2032   X     -     X     -     Unsigned32         M,V    -     -       -
@@ -907,8 +907,8 @@ Time-Window                                              3818   X     -     X   
 TLTRI                                                    1318   X     -     X     -     Unsigned32         V      -     -       M
 TMGI                                                     900    X     -     X     -     -                  -      -     -       -
 Token-Text                                               1215   -     -     X     -     UTF8String         M,V    -     -       -
-Total-Number-Of-Messages-Exploded                        2113   X     -     X     -     -                  -      -     -       -
-Total-Number-Of-Messages-Sent                            2114   X     -     X     -     -                  -      -     -       -
+Total-Number-Of-Messages-Exploded                        2113   X     -     X     -     Unsigned32         M,V    P     -       - ;; supplied: (TS32.299.py#oma-total-number-of-messages-exploded)
+Total-Number-Of-Messages-Sent                            2114   X     -     X     -     Unsigned32         M,V    P     -       - ;; supplied: (TS32.299.py#oma-total-number-of-messages-sent)
 Traffic-Data-Volumes                                     2046   X     -     -     -     Grouped            M,V    -     -       -
 Traffic-Steering-Policy-Identifier-DL                    2836   X     -     -     -     -                  -      -     -       -
 Traffic-Steering-Policy-Identifier-UL                    2837   X     -     -     -     -                  -      -     -       -

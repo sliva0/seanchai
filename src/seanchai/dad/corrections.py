@@ -33,12 +33,13 @@ from the open findings. Applying a module skips them.
 
 Beside field replacement there are three narrow structural operations:
 `Delete` for a node that should not exist at all, `Insert` for an AVP-table row
-the source defines but omits from the table, and `Supply` for the value list of
-an enumerated AVP whose clause defines its values in another document. All fail
-loudly when upstream changes the state that justified them: `Delete` expects
-the doomed node field-for-field, `Insert` expects the row to be absent, so it
-fails the day upstream adds it, and `Supply` expects the clause's `; Values:`
-citation and no values.
+the source defines but omits from the table, and `Supply` for what a document
+defines in another: the value list of an enumerated AVP, or the type and flag
+rules of a table row typed by reference. All fail loudly when upstream changes
+the state that justified them: `Delete` expects the doomed node
+field-for-field, `Insert` expects the row to be absent, so it fails the day
+upstream adds it, and `Supply` expects the clause's `; Values:` citation and
+no values, or the blank row.
 """
 
 import dataclasses
@@ -546,25 +547,39 @@ class Insert:
         return _cited(self)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Supply:
-    """Fill in the values of an enumerated AVP whose clause defines them
-    elsewhere, as a hand-notated list citing that document.
+    """Fill in what a document defines in another document, as a hand-notated
+    statement citing that document's clause.
 
-    The clause states its values' source in a `; Values:` line and prints
-    none: TS 32.299 clause 7.2.238 takes `Type-Number`'s from the OMNA WSP
-    registry. `expect` is that line's text, and the section must hold no
-    values, so the declaration fails both when upstream re-words the
-    citation and when it starts printing the list itself. The `; Values:`
-    line stays, since the document still says it; every supplied line is
-    marked `;; supplied:`, because none of them is the document's own.
+    Two forms. Into an enumerated AVP (`target=definition(name)`), the values
+    its clause takes from elsewhere: the clause states its values' source in
+    a `; Values:` line and prints none, as TS 32.299 clause 7.2.238 takes
+    `Type-Number`'s from the OMNA WSP registry. `expect` is that line's text,
+    and the section must hold no values, so the declaration fails both when
+    upstream re-words the citation and when it starts printing the list
+    itself. The `; Values:` line stays, since the document still says it.
+
+    Into an AVP-table row (`target=table_row(name, table=)`), the type and
+    flag rules its cells leave blank because the document types the AVP by
+    reference: TS 32.299 table 7.2.0.1 prints `refer [223]` for thirteen
+    rows, OMA-DDS-Charging_Data's. `expect` is the whole row, as for a
+    `Delete`, with no type and no flag rules where they are supplied, and
+    the file must list the AVP as re-used, the citation that says where its
+    definition lives; the re-used row stays. `data_type`, `flag_rules` or
+    both are what the cited document states.
+
+    Every supplied line is marked `;; supplied:`, because none of it is the
+    document's own.
     """
 
     id: str
-    target: definition
-    expect: str
-    values: tuple[ast.EnumValue | ast.ReservedValues, ...]
+    target: definition | table_row
+    expect: str | ast.AvpTableRow
     reason: str
+    values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
+    data_type: ast.DataType | None = None
+    flag_rules: ast.AvpFlagRules | None = None
     versions: str | VersionRange = "*..*"
     origin: str = ""
 
@@ -572,17 +587,47 @@ class Supply:
         _check_id(self.id)
         object.__setattr__(self, "versions", VersionRange.parse(self.versions))
         object.__setattr__(self, "values", tuple(self.values))
-        if not self.values:
+        described = self.target.describe()
+        if isinstance(self.target, table_row):
+            self._check_row_form(described)
+            return
+        if not isinstance(self.target, definition) or not isinstance(self.expect, str):
             raise CorrectionError(
-                f"{self.target.describe()}: Supply supplies no values"
+                f"{described}: Supply fills a definition's values, expecting its"
+                " `; Values:` text, or a table row's cells, expecting the row"
             )
+        if self.data_type is not None or self.flag_rules is not None:
+            raise CorrectionError(
+                f"{described}: Supply fills an enumerated AVP's values only"
+            )
+        if not self.values:
+            raise CorrectionError(f"{described}: Supply supplies no values")
         if not all(
             isinstance(value, ast.EnumValue | ast.ReservedValues)
             for value in self.values
         ):
             raise CorrectionError(
-                f"{self.target.describe()}: Supply takes EnumValue and"
-                " ReservedValues nodes"
+                f"{described}: Supply takes EnumValue and ReservedValues nodes"
+            )
+
+    def _check_row_form(self, described: str) -> None:
+        if not isinstance(self.expect, ast.AvpTableRow):
+            raise CorrectionError(f"{described}: Supply into a row expects the row")
+        if self.values:
+            raise CorrectionError(f"{described}: a table row holds no values")
+        if self.data_type is None and self.flag_rules is None:
+            raise CorrectionError(f"{described}: Supply supplies nothing")
+        if self.data_type is not None and self.expect.data_type is not None:
+            raise CorrectionError(
+                f"{described}: the row is typed {self.expect.data_type};"
+                " Supply fills only a blank type"
+            )
+        if self.flag_rules is not None and (
+            self.expect.flag_rules != ast.AvpFlagRules()
+            or self.flag_rules == ast.AvpFlagRules()
+        ):
+            raise CorrectionError(
+                f"{described}: Supply fills blank flag rules with stated ones"
             )
 
     @property
@@ -731,10 +776,36 @@ def _resolve(spec: ast.Specification, edit: Edit) -> ast.TreePath:
     return found[0]
 
 
-def _checked_supply(node: ast.Node, supply: Supply) -> None:
+def _checked_supply(
+    spec: ast.Specification, node: ast.Node, supply: Supply
+) -> ast.AvpTableRow | None:
     """What `Supply` fills must be an enumerated AVP that cites the expected
-    source for its values and prints none of them."""
+    source for its values and prints none of them, or the expected row of
+    an AVP the file re-uses; for a row, the row filled in."""
     described = supply.target.describe()
+    if isinstance(supply.target, table_row):
+        assert isinstance(supply.expect, ast.AvpTableRow)
+        if node != supply.expect:
+            raise CorrectionError(
+                f"{described}: expected {supply.expect!r}, found {node!r}"
+            )
+        if not any(
+            row.name == supply.target.name
+            for section in spec.sections
+            if isinstance(section, ast.ReusedAvps)
+            for row in section.rows
+        ):
+            raise CorrectionError(
+                f"{described}: Supply fills a row whose AVP the file re-uses,"
+                " and no re-used table lists it"
+            )
+        assert isinstance(node, ast.AvpTableRow)
+        values = {name: getattr(node, name) for name in type(node).model_fields}
+        if supply.data_type is not None:
+            values["data_type"] = supply.data_type
+        if supply.flag_rules is not None:
+            values["flag_rules"] = supply.flag_rules
+        return ast.AvpTableRow(**values)
     if not isinstance(node, ast.EnumeratedAvp):
         raise CorrectionError(
             f"{described}: Supply requires an enumerated AVP,"
@@ -750,6 +821,7 @@ def _checked_supply(node: ast.Node, supply: Supply) -> None:
             f"{described}: the section already holds {len(node.values)} values;"
             " Supply fills only an empty list"
         )
+    return None
 
 
 def _checked_deletion(node: ast.Node, delete: Delete) -> None:
@@ -1072,6 +1144,7 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
     plan = _Plan()
     targets: dict[ast.TreePath, str] = {}  # path -> the selector that reached it
     claimed: set[tuple[ast.TreePath, str]] = set()
+    supplied: set[ast.TreePath] = set()  # rows a `Supply` fills
     results = []
     origins: list[_Origin] = []  # per result: what `plan.placed` knows it by
     for index, correction in enumerate(corrections):
@@ -1122,7 +1195,21 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
             origins.append(path)
             continue
         if isinstance(correction, Supply):
-            _checked_supply(node, correction)
+            filled = _checked_supply(tree, node, correction)
+            if filled is not None:
+                if path in plan.replaced or any(
+                    claim[: len(path)] == path for claim, _ in claimed
+                ):
+                    raise CorrectionError(
+                        f"{described}: the row is both corrected and supplied"
+                    )
+                plan.replaced[path] = filled
+                supplied.add(path)
+                results.append(
+                    Result(correction=correction, node=described, old=node, new=filled)
+                )
+                origins.append(path)
+                continue
             if (*path, "values") in plan.rows:
                 raise CorrectionError(f"{described}: values supplied more than once")
             plan.rows[(*path, "values")] = [
@@ -1171,6 +1258,10 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
             )
             origins.append(_Added(index))
             continue
+        if any(path[: len(row)] == row for row in supplied):
+            raise CorrectionError(
+                f"{described}: the row is both corrected and supplied"
+            )
         claim = (path, correction.field)
         if claim in claimed:
             raise CorrectionError(
@@ -1422,6 +1513,10 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
             yield "trailing", line, f"inserted: ({edit.cited})", index
             continue
         if isinstance(edit, Supply):
+            if isinstance(edit.target, table_row):
+                # The supplied cells print on the row's line.
+                yield "trailing", result.path, f"supplied: ({edit.cited})", index
+                continue
             # The list was empty before, so the supplied values are the
             # section's values, from the first.
             for position in range(len(edit.values)):

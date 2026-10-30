@@ -6,6 +6,7 @@ from seanchai.dad.corrections import (
     Correction,
     Delete,
     Insert,
+    Supply,
     avp_rule,
     definition,
     flag_rules,
@@ -546,4 +547,66 @@ CORRECTIONS += [
         "clause 7.2.0 gives table 7.2.0.1 'along with the AVP flag rules'",
         versions="18.0.0",
     ),
+]
+
+# Table 7.2.0.1 types thirteen AVPs only "refer [223]", OMA-DDS-Charging_Data
+# (clause 7.2.0: "for AVPs that are just borrowed from other applications only
+# the reference ... is provided"), and leaves their flag cells blank. OMA's
+# approved V1.0 (OMA-DDS-Charging_Data-V1_0-20110201-A) states both in table
+# 11 of its clause 8.4, the code 10415 vendor's, as this table's codes are:
+# Must V,M and May P for each. Its names differ in case from table 7.2.0.1's
+# (`Application-Server-Id`, `Content-provider-ID`), its codes do not.
+_OMA_TYPES = {
+    "Application-Server-ID": (ast.DataType.UTF8_STRING, 2101),
+    "Application-Service-Type": (ast.DataType.ENUMERATED, 2102),
+    "Application-Session-ID": (ast.DataType.UNSIGNED32, 2103),
+    "Content-ID": (ast.DataType.UTF8_STRING, 2116),
+    "Content-Provider-ID": (ast.DataType.UTF8_STRING, 2117),
+    "DCD-Information": (ast.DataType.GROUPED, 2115),
+    "Delivery-Status": (ast.DataType.UTF8_STRING, 2104),
+    "IM-Information": (ast.DataType.GROUPED, 2110),
+    "Number-Of-Messages-Successfully-Exploded": (ast.DataType.UNSIGNED32, 2111),
+    "Number-Of-Messages-Successfully-Sent": (ast.DataType.UNSIGNED32, 2112),
+    "Service-Generic-Information": (ast.DataType.GROUPED, 1256),
+    "Total-Number-Of-Messages-Exploded": (ast.DataType.UNSIGNED32, 2113),
+    "Total-Number-Of-Messages-Sent": (ast.DataType.UNSIGNED32, 2114),
+}
+# OMA's clauses defining the grouped three say so again with their bodies.
+_OMA_GROUPED_CLAUSES = {
+    "DCD-Information": "8.5.5",
+    "IM-Information": "8.5.6",
+    "Service-Generic-Information": "8.5.10",
+}
+CORRECTIONS += [
+    Supply(
+        id=f"oma-{name.lower()}",
+        target=table_row(name, table="7.2.0.1"),
+        expect=ast.AvpTableRow(
+            name=name,
+            code=code,
+            marks={
+                ast.MarkColumn.ACR: ("X",),
+                ast.MarkColumn.ACA: (),
+                ast.MarkColumn.CCR: ("X",),
+                ast.MarkColumn.CCA: (),
+            },
+        ),
+        data_type=data_type,
+        flag_rules=ast.AvpFlagRules(
+            must=frozenset({ast.AvpFlag.VENDOR, ast.AvpFlag.MANDATORY}),
+            may=frozenset({ast.AvpFlag.PROTECTED}),
+        ),
+        reason=(
+            f"table 7.2.0.1 types {name} 'refer [223]', OMA-DDS-Charging_Data;"
+            f" its V1.0 table 11 (clause 8.4) gives code {code} type {data_type},"
+            " flags Must V,M and May P"
+            + (
+                f", and clause {_OMA_GROUPED_CLAUSES[name]} prints its body"
+                if name in _OMA_GROUPED_CLAUSES
+                else ""
+            )
+        ),
+        versions="18.0.0",
+    )
+    for name, (data_type, code) in _OMA_TYPES.items()
 ]

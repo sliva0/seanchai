@@ -6,17 +6,20 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **K. Catalog gaps and format limits from the legacy documents.** TS
-  32.299 types thirteen rows of table 7.2.0.1 only by `refer [223]`,
-  `OMA-DDS-Charging_Data`, which no extractor reads, so they stay untyped,
-  as do the AVPs the corpus re-uses from ETSI, 3GPP2 and oneM2M documents.
-  SM-Service-Type's "100 .. 199 Vendor specific SM services" allocates a
-  range the format cannot hold. TS 32.299 cites `VAS-Id` and `VASP-Id` from
-  TS 29.140, which ends at Release 7 (V7.0.0): the downloader fetches one
-  release and `Corpus.resolve` never crosses a major version, so the
-  origin stays unresolved until the corpus holds more than one release
-  *and* a resolution policy says when a Release 7 document may serve a
-  Release 18 citation.
+- **K. Catalog gaps and format limits from the legacy documents.** The
+  AVPs the corpus only re-uses from documents outside 3GPP and IETF stay
+  holes: a re-used row's identity, vendor included, is its origin's, so a
+  type supplied into the citing file has nowhere to go, and the origin
+  would have to be a hand-written `.dad` file. ETSI ES 283 034 V2.2.0 (cited
+  as "ETSI TS 283 034"), ETSI TS 183 017 V3.2.1 and oneM2M TS-0004 are
+  readable; 3GPP2 X.S0057 could not be fetched. SM-Service-Type's "100 .. 199
+  Vendor specific SM services" allocates a range the format cannot hold.
+  TS 32.299 cites `VAS-Id` and `VASP-Id` from TS 29.140, which ends at
+  Release 7 (V7.0.0): the downloader fetches one release and
+  `Corpus.resolve` never crosses a major version, so the origin stays
+  unresolved until the corpus holds more than one release *and* a
+  resolution policy says when a Release 7 document may serve a Release 18
+  citation.
 
 ## Consumers
 
@@ -29,8 +32,8 @@ letter is not reused. What exists is described in the per-module documents.
     7155's `QoS-Filter-Rule` and TS 29.389's three V2X rows print blank
     cells;
   - types no source states: RFC 4590 is a RADIUS document; TS 29.061's
-    `3GPP-Session-Stop-Indicator` row prints only a code; TS 32.299's 13
-    OMA rows and `VAS-Id`/`VASP-Id` are item K;
+    `3GPP-Session-Stop-Indicator` row prints only a code; TS 32.299's
+    `VAS-Id`/`VASP-Id` are item K;
   - names no corpus document defines: RFC 4004's three SPI members, TS
     29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.273's
     `NSWO-Authorization`, TS 29.154's `External-Group-Identifier`, TS

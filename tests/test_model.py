@@ -974,22 +974,6 @@ _STANDING_HOLES = {
         "resolves nowhere (re-used from oneM2M-TS-0004, which the corpus lacks)": [
             "M2M-Information"
         ],
-        "no data_type, no flag_rules"
-        " (re-used from OMA-DDS-Charging_Data, which the corpus lacks)": [
-            "Application-Server-ID",
-            "Application-Service-Type",
-            "Application-Session-ID",
-            "Content-ID",
-            "Content-Provider-ID",
-            "DCD-Information",
-            "Delivery-Status",
-            "IM-Information",
-            "Number-Of-Messages-Successfully-Exploded",
-            "Number-Of-Messages-Successfully-Sent",
-            "Service-Generic-Information",
-            "Total-Number-Of-Messages-Exploded",
-            "Total-Number-Of-Messages-Sent",
-        ],
         "no data_type, no flag_rules (re-used from TS29.140, which the corpus lacks)": [
             "VAS-Id",
             "VASP-Id",
