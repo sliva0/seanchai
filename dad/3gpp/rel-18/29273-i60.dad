@@ -1017,7 +1017,7 @@
 MIP6-Feature-Vector            124    5.2.3.3     Unsigned64    M     -     -     V,P
 QoS-Capability                 578    5.2.3.4     Grouped       M     -     -     V,P
 Service-Selection              493    5.2.3.5     UTF8String    M     -     -     V,P
-RAT-Type                       1032   5.2.3.6     Enumerated    M,V   -     -     P
+RAT-Type                       1032   5.2.3.6     Enumerated    V     -     -     M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-5-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-5-2-3-1-1)
 ANID                           1504   5.2.3.7     UTF8String    M,V   -     -     P
 AN-Trusted                     1503   5.2.3.9     Enumerated    M,V   -     -     P
 MIP-FA-RK                      1506   5.2.3.12    OctetString   M,V   -     -     P
@@ -1056,7 +1056,7 @@ High-Priority-Access-Info      1542   5.2.3.36    Unsigned32    V     -     -   
 ; Columns: Name                Code   Section     Type          Must  May   S.not M.not
 MIP6-Feature-Vector            124    5.2.3.3     Unsigned64    M     -     -     V,P
 QoS-Capability                 578    5.2.3.4     Grouped       M     -     -     V,P
-RAT-Type                       1032   5.2.3.6     Enumerated    M,V   -     -     P
+RAT-Type                       1032   5.2.3.6     Enumerated    V     -     -     M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-6-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-6-2-3-1-1)
 ANID                           1504   5.2.3.7     UTF8String    M,V   -     -     P
 Service-Selection              493    5.2.3.5     UTF8String    M     -     -     V,P
 Mobile-Node-Identifier         506    5.2.3.2     UTF8String    M     -     -     V,P
@@ -1089,7 +1089,7 @@ APN-Configuration            1430   8.2.3.7     Grouped       M,V   -     -     
 Mobile-Node-Identifier       506    5.2.3.2     OctetString   M     -     -     V,P
 MIP6-Feature-Vector          124    5.2.3.3     Unsigned64    M     -     -     V,P
 QoS-Capability               578    9.2.3.2.4   Grouped       M     -     -     V,P
-RAT-Type                     1032   5.2.3.6     Enumerated    M,V   -     -     P
+RAT-Type                     1032   5.2.3.6     Enumerated    V     -     -     M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-7-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-7-2-3-1-1)
 Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V   -     -     P
 Trace-Info                   1505   8.2.3.13    Grouped       V     -     -     M,P
 Service-Selection            493    5.2.3.5     UTF8String    M     -     -     V,P

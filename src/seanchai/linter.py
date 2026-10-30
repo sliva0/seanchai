@@ -604,6 +604,18 @@ class _Origin:
     defined: dict[str, ast.GroupedAvp | ast.EnumeratedAvp]
     tabled: dict[str, ast.AvpTableRow]
     reused: dict[str, str]
+    tables: list[ast.AvpTable]
+
+    @classmethod
+    def of(cls, spec: ast.Specification) -> _Origin:
+        theirs = _index(spec)
+        return cls(
+            spec=spec,
+            defined={definition.name: definition for definition in theirs.definitions},
+            tabled={row.name: row for row in theirs.rows},
+            reused=theirs.reused,
+            tables=theirs.tables,
+        )
 
 
 def _resolve_origins(
@@ -614,13 +626,7 @@ def _resolve_origins(
         entry = books.resolve(origin, like=spec)
         if entry is None:
             continue
-        theirs = _index(entry.spec)
-        origins[origin] = _Origin(
-            spec=entry.spec,
-            defined={definition.name: definition for definition in theirs.definitions},
-            tabled={row.name: row for row in theirs.rows},
-            reused=theirs.reused,
-        )
+        origins[origin] = _Origin.of(entry.spec)
     return origins
 
 
@@ -704,6 +710,135 @@ def _reused_avp_exists(index: _Index, origins: dict[str, _Origin]) -> list[Findi
             )
         )
     return findings
+
+
+def _reused_rows_agree_with_origin(
+    index: _Index, origins: dict[str, _Origin]
+) -> list[Finding]:
+    """A row this file tabulates for an AVP it re-uses reads the origin's way.
+
+    The cross-file counterpart of `table-row-mismatch`, with the same
+    discipline: only what both rows state is compared. Type and encrypt are
+    compared where both tables declare the column and both cells say
+    something; with no origin row typing the AVP, an origin definition types it
+    Grouped or Enumerated. A flag is compared where both rows place it in a
+    column: RFC 7683's table puts M in neither Must nor Must-not, which leaves
+    a citing interface free to forbid it. A row agreeing with any of the
+    origin's rows agrees, since the origin's own disagreements are its
+    `table-row-mismatch`. A note, because a citing interface may set its own
+    flag rule on purpose. A re-used table's M-bit column is not compared: it
+    states this interface's setting, which is what the column is for. Codes are
+    `reused-code-conflict`'s.
+
+    Only M and V are compared. RFC 6733 clause 4.1 reserves the P bit ("the
+    'P' bit SHOULD be set to 0"), so documents written since drop it while
+    their origins (RFC 4005, 4006, 5778; TS 29.212) still print it: across two
+    documents a P cell records which side of RFC 6733 each was written on.
+    """
+    ours: dict[str, list[tuple[ast.AvpTable, ast.AvpTableRow]]] = defaultdict(list)
+    for table in index.tables:
+        for row in table.rows:
+            ours[row.name].append((table, row))
+    findings = []
+    for name, origin in sorted(index.reused.items()):
+        resolved = origins.get(origin)
+        if resolved is None or name not in ours:
+            continue
+        theirs = [
+            (table, row)
+            for table in resolved.tables
+            for row in table.rows
+            if row.name == name
+        ]
+        definition = resolved.defined.get(name)
+        for table, row in ours[name]:
+            for label, compared in _row_comparisons(table, row, theirs, definition):
+                if not compared or any(mine == other for mine, other, _ in compared):
+                    continue
+                spelled = "; ".join(
+                    f"{other} in {where}" for _, other, where in compared
+                )
+                findings.append(
+                    Finding(
+                        Severity.NOTE,
+                        "reused-row-mismatch",
+                        f"{name} is tabulated with {label} {compared[0][0]} in"
+                        f" {_table_labels([table])}, but {origin}, which it is"
+                        f" re-used from, reads {spelled}",
+                    )
+                )
+    return findings
+
+
+_CROSS_FILE_FLAGS = (ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR)
+_FLAG_COLUMNS = {
+    ast.AvpColumn.MUST: "must",
+    ast.AvpColumn.MAY: "may",
+    ast.AvpColumn.SHOULD_NOT: "should_not",
+    ast.AvpColumn.MUST_NOT: "must_not",
+}
+
+
+def _row_comparisons(
+    table: ast.AvpTable,
+    row: ast.AvpTableRow,
+    theirs: list[tuple[ast.AvpTable, ast.AvpTableRow]],
+    definition: ast.GroupedAvp | ast.EnumeratedAvp | None,
+) -> list[tuple[str, list[tuple[str, str, str]]]]:
+    """Per reading, the (this row, origin row, where) pairs that both state."""
+    out = []
+    for label, column in (
+        ("type", ast.AvpColumn.TYPE),
+        ("encrypt", ast.AvpColumn.ENCRYPT),
+    ):
+        compared = [
+            (mine, other, _table_labels([their_table]))
+            for their_table, their_row in theirs
+            if column in table.columns
+            and column in their_table.columns
+            and (mine := formatter.avp_table_cell(row, column)) != "-"
+            and (other := formatter.avp_table_cell(their_row, column)) != "-"
+        ]
+        if (
+            not compared
+            and column is ast.AvpColumn.TYPE
+            and definition is not None
+            and column in table.columns
+            and row.data_type is not None
+        ):
+            kind = (
+                ast.DataType.GROUPED
+                if isinstance(definition, ast.GroupedAvp)
+                else ast.DataType.ENUMERATED
+            )
+            compared = [
+                (
+                    row.data_type.value,
+                    kind.value,
+                    f"its clause {definition.source.section}",
+                )
+            ]
+        out.append((label, compared))
+    for flag in _CROSS_FILE_FLAGS:
+        mine = _placement(table, row, flag)
+        compared = [
+            (f"{flag.value} in {mine}", f"{flag.value} in {other}", _table_labels([t]))
+            for t, their_row in theirs
+            if mine is not None
+            and (other := _placement(t, their_row, flag)) is not None
+        ]
+        out.append(("flag rule", compared))
+    return out
+
+
+def _placement(
+    table: ast.AvpTable, row: ast.AvpTableRow, flag: ast.AvpFlag
+) -> str | None:
+    """The flag-rule column a row puts `flag` in, or None if it states none."""
+    for column, field_name in _FLAG_COLUMNS.items():
+        if column in table.columns and flag in getattr(row.flag_rules, field_name):
+            return column.value
+    return None
 
 
 def _reprint_or_extension(index: _Index, origins: dict[str, _Origin]) -> list[Finding]:
@@ -790,13 +925,7 @@ def _resolve_bases(
         if entry is None:
             missing.append(base)
             continue
-        theirs = _index(entry.spec)
-        resolved[base] = _Origin(
-            spec=entry.spec,
-            defined={definition.name: definition for definition in theirs.definitions},
-            tabled={row.name: row for row in theirs.rows},
-            reused=theirs.reused,
-        )
+        resolved[base] = _Origin.of(entry.spec)
     return resolved, missing
 
 
@@ -892,6 +1021,7 @@ def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Find
         *_unresolved_origins(spec, index, origins, books),
         *_reused_avp_exists(index, origins),
         *_reprint_or_extension(index, origins),
+        *_reused_rows_agree_with_origin(index, origins),
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
         *_unresolved_references(index, bases, missing_bases),
     ]

@@ -189,7 +189,7 @@ Accounting-Record-Type             480   Enumerated         M     -     -     V
 Accounting-Sub-Session-Id          287   Unsigned64         -     -     -     -
 Acct-Application-Id                259   Unsigned32         M     -     -     V
 Acct-Interim-Interval              85    Unsigned32         M     -     -     V
-Acct-Multi-Session-Id              50    Unsigned32         -     -     -     -
+Acct-Multi-Session-Id              50    UTF8String         -     -     -     - ;; corrected: (TS32.299.py#acct-multi-session-id-type)
 Acct-Session-Id                    44    OctetString        -     -     -     -
 Auth-Application-Id                258   Unsigned32         M     -     -     V
 ;; deleted: AVP table row 'AVP' (table 7.1.0.1) (TS32.299.py#wildcard-row)
@@ -218,8 +218,8 @@ Direct-Debiting-Failure-Handling   428   Enumerated         M     -     -     V
 Error-Message                      281   UTF8String         -     -     -     -
 Error-Reporting-Host               294   DiameterIdentity   -     -     -     M,V
 Event-Timestamp                    55    Time               M     -     -     V
-Experimental-Result                297   Grouped            -     -     -     M,V
-Experimental-Result-Code           298   Unsigned32         -     -     -     M,V
+Experimental-Result                297   Grouped            M     -     -     V ;; corrected: (TS32.299.py#experimental-result-m-flag-must-not) ;; corrected: (TS32.299.py#experimental-result-m-flag-must)
+Experimental-Result-Code           298   Unsigned32         M     -     -     V ;; corrected: (TS32.299.py#experimental-result-code-m-flag-must-not) ;; corrected: (TS32.299.py#experimental-result-code-m-flag-must)
 Exponent                           429   Integer32          M     -     -     V
 Failed-AVP                         279   Grouped            M     -     -     V
 Filter-Id                          11    UTF8String         M     -     -     V

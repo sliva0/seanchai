@@ -488,6 +488,101 @@ def test_a_body_that_neither_reprints_nor_extends_is_reported_as_it_is():
     assert "adds C" in finding.message and "missing B" in finding.message
 
 
+def _origin_row(name, code, data_type, must=(), must_not=()):
+    return ast.AvpTableRow(
+        name=name,
+        code=code,
+        data_type=data_type,
+        flag_rules=ast.AvpFlagRules(must=frozenset(must), must_not=frozenset(must_not)),
+    )
+
+
+def _flag_table(*rows, label="6.3.1", section="6.3"):
+    return ast.AvpTable(
+        table=label,
+        columns=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.TYPE,
+            ast.AvpColumn.MUST,
+            ast.AvpColumn.MUST_NOT,
+        ),
+        source=ast.SourceRef(section=section),
+        rows=rows,
+    )
+
+
+_M, _V, _P = ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR, ast.AvpFlag.PROTECTED
+
+
+@pytest.mark.parametrize(
+    ("ours", "theirs", "expected"),
+    [
+        # M placed in two different columns.
+        (
+            (ast.DataType.ENUMERATED, (_M, _V), ()),
+            (ast.DataType.ENUMERATED, (_V,), (_M,)),
+            ["flag rule M in Must"],
+        ),
+        (
+            (ast.DataType.UNSIGNED32, (_V,), ()),
+            (ast.DataType.ENUMERATED, (_V,), ()),
+            ["type Unsigned32"],
+        ),
+        # The origin places M nowhere, RFC 7683's way: nothing to disagree with.
+        (
+            (ast.DataType.ENUMERATED, (_V,), (_M,)),
+            (ast.DataType.ENUMERATED, (_V,), ()),
+            [],
+        ),
+        # P is compared nowhere.
+        (
+            (ast.DataType.ENUMERATED, (_V,), (_P,)),
+            (ast.DataType.ENUMERATED, (_V, _P), ()),
+            [],
+        ),
+    ],
+    ids=["flag", "type", "unplaced", "p-bit"],
+)
+def test_a_tabulated_re_used_avp_is_compared_with_its_origin(ours, theirs, expected):
+    origin = _origin_spec(
+        "3GPP TS 29.212", "18.0.0", _flag_table(_origin_row("Shared", 1032, *theirs))
+    )
+    spec = _origin_spec(
+        "3GPP TS 29.273",
+        "18.0.0",
+        _flag_table(_origin_row("Shared", 1032, *ours)),
+        _reused(ast.ReusedAvpRow(name="Shared", origin="TS29.212")),
+    )
+
+    found = [
+        f.message.split(" is tabulated with ")[1].split(" in table")[0]
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule == "reused-row-mismatch"
+    ]
+
+    assert found == expected
+
+
+def test_a_re_used_avp_tabulated_nowhere_in_its_origin_is_typed_by_its_definition():
+    origin = _origin_spec("3GPP TS 29.212", "18.0.0", _grouped_with("Shared", 1032))
+    spec = _origin_spec(
+        "3GPP TS 29.273",
+        "18.0.0",
+        _flag_table(_origin_row("Shared", 1032, ast.DataType.OCTET_STRING)),
+        _reused(ast.ReusedAvpRow(name="Shared", origin="TS29.212")),
+    )
+
+    (finding,) = [
+        f
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule == "reused-row-mismatch"
+    ]
+
+    assert finding.severity is linter.Severity.NOTE
+    assert "reads Grouped in its clause 6.3.1" in finding.message
+
+
 def test_two_documents_disagreeing_on_a_code_is_an_error():
     """An AVP is its (vendor-id, code), so two codes are two AVPs and one of
     the documents is wrong — the one thing here that is not a judgement call."""
@@ -760,6 +855,13 @@ _STANDING_CORPUS_NOTES = {
         "reused-extension": ["OC-OLR"],
         "reused-origin-indirect": ["Priority-Indication", "Reference-Number"],
         "reused-reprint": ["User-Equipment-Info"],
+        # Table 7.2.0.1 sets M for the charging application on AVPs it
+        # refers to TS 29.229 for, which leaves M out of Must.
+        "reused-row-mismatch": [
+            "Feature-List",
+            "Feature-List-ID",
+            "Supported-Features",
+        ],
         "unresolved-reference": [
             "3GPP2-BSID",
             "Logical-Access-ID",

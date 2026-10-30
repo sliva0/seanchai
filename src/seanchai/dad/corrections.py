@@ -211,6 +211,30 @@ class table_row(Selector):
 
 
 @dataclass(frozen=True)
+class flag_rules(Selector):
+    """The flag rules of one AVP-table row, whose `must`, `may`,
+    `should_not` and `must_not` a correction replaces one at a time.
+
+    The rules are a node of their own, so the row's `flag_rules` field cannot
+    be replaced whole. TS 29.273's three RAT-Type rows set M in Must where TS
+    29.212, which the document defers to, sets it in Must not: moving one flag
+    is two field corrections, each with its own `expect`.
+    """
+
+    row: table_row
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching row's rules, at `("sections", i, "rows", j,
+        "flag_rules")`."""
+        for path, row in self.row.locate(spec):
+            assert isinstance(row, ast.AvpTableRow)
+            yield (*path, "flag_rules"), row.flag_rules
+
+    def describe(self) -> str:
+        return f"flag rules of {self.row.describe()}"
+
+
+@dataclass(frozen=True)
 class avp_table(Selector):
     """An AVP-table section, by its printed label."""
 
@@ -1165,6 +1189,9 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
     caption or the `; Bases:` dropped — is cited on the block's first line,
     the one left that names the block.
     """
+    if isinstance(correction.target, flag_rules):
+        # The rules print as cells of their row's line.
+        return result.path[:-1]
     if not isinstance(
         correction.target, header | avp_table | reused_avps | application
     ):

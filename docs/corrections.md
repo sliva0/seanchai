@@ -55,7 +55,10 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   every `expect`, which is what keeps "already corrected" distinguishable
   from "fixed upstream". The layer consumes raw files only.
 - **Selectors address identity, never position**: `definition(name)`,
-  `table_row(name, table=)` (label narrows repeated rows), `reused_row(name, section=)`,
+  `table_row(name, table=)` (label narrows repeated rows),
+  `flag_rules(table_row(...))` (a row's `must`, `may`, `should_not` and
+  `must_not`, one field per correction: moving TS 29.273's RAT-Type M from
+  Must to Must not is two), `reused_row(name, section=)`,
   `enum_value(avp, name, value=)`, `avp_rule(parent, name, occurrence=)`
   (parent may be a whole `definition` selector), `avp_table(label)`,
   `reused_avps(label)`, `application(name)`, `header()`.
@@ -67,7 +70,9 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   while the name still repeats, so the declaration fails once upstream drops
   the copy; `expect` is still the whole node.
 - **One field of one node.** Replacing a structural field such as `avps` is
-  rejected. Ancestor and descendant corrections in one set are both applied;
+  rejected. Several fields of one node are replaced in declaration order,
+  each through validation, so a flag leaves one column before it enters
+  another. Ancestor and descendant corrections in one set are both applied;
   two corrections to the same field are rejected; replacing a value with
   itself is rejected.
 - **All-or-nothing.** Every correction is resolved against the original tree
@@ -127,7 +132,7 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 ```
 
 A correction to a definition is cited on its header rule, whichever field
-it changed. The file header, a table and an application block have no such
+it changed, and one to a row's flag rules on the row. The file header, a table and an application block have no such
 line, so a correction to one of their fields is cited on the directive line
 that field prints —
 `; Bases: RFC6733, RFC4005 ;; corrected: (RFC4006.py#bases-nasreq)`,

@@ -7,6 +7,7 @@ from seanchai.dad.corrections import (
     Insert,
     avp_rule,
     definition,
+    flag_rules,
     header,
     reused_avps,
     reused_row,
@@ -448,4 +449,49 @@ CORRECTIONS += [
         ),
         versions="18.0.0",
     ),
+]
+
+# Table 7.1.0.1 rows contradicting the RFC that defines them, as the table's
+# own notes say it does (NOTE 2: "Experimental-Result AVP is defined in
+# Diameter Base Protocol in RFC 6733 [401]").
+CORRECTIONS += [
+    Correction(
+        id="acct-multi-session-id-type",
+        target=table_row("Acct-Multi-Session-Id", table="7.1.0.1"),
+        field="data_type",
+        expect=ast.DataType.UNSIGNED32,
+        replace=ast.DataType.UTF8_STRING,
+        reason=(
+            "table 7.1.0.1 types Acct-Multi-Session-Id Unsigned32; RFC 6733,"
+            " which clause 7.1.0 names for these AVPs, defines it as"
+            " UTF8String (clause 9.8.5 and the table in 4.5)"
+        ),
+        versions="18.0.0",
+    ),
+]
+CORRECTIONS += [
+    Correction(
+        id=f"{name.lower()}-m-flag-{field.replace('_', '-')}",
+        target=flag_rules(table_row(name, table="7.1.0.1")),
+        field=field,
+        expect=expect,
+        replace=replace,
+        reason=(
+            f"table 7.1.0.1 puts M in Must not for {name}, which its NOTE 2"
+            " says RFC 6733 defines; RFC 6733's table in clause 4.5 sets M in"
+            " Must, and gives M,V in Must not to Error-Reporting-Host, the row"
+            " above Experimental-Result there"
+        ),
+        versions="18.0.0",
+    )
+    for name in ("Experimental-Result", "Experimental-Result-Code")
+    # Out of Must not first: each field is validated as it is replaced.
+    for field, expect, replace in (
+        (
+            "must_not",
+            frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}),
+            frozenset({ast.AvpFlag.VENDOR}),
+        ),
+        ("must", frozenset(), frozenset({ast.AvpFlag.MANDATORY})),
+    )
 ]

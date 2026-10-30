@@ -7,6 +7,7 @@ from seanchai.dad.corrections import (
     Insert,
     avp_rule,
     definition,
+    flag_rules,
     reused_avps,
     reused_row,
     table_row,
@@ -359,4 +360,40 @@ CORRECTIONS = [
         ),
         versions="18.6.0",
     ),
+]
+
+# RAT-Type is re-used from TS 29.212 (tables 5.2.3.1/2, 6.2.3.1/2, 8.2.3.0/2,
+# no M-bit override) and clauses 5.2.3.6 and 8.2.3.5 defer to it ("It follows
+# the specification described in TS 29.212"), yet three AVP tables set M in
+# Must, where TS 29.212 table 5.3.0.1 has it in Must not.
+CORRECTIONS += [
+    Correction(
+        id=(
+            f"rat-type-m-flag-{field.replace('_', '-')}-"
+            + table.replace(".", "-").replace("/", "-")
+        ),
+        target=flag_rules(table_row("RAT-Type", table=table)),
+        field=field,
+        expect=expect,
+        replace=replace,
+        reason=(
+            f"table {table} sets M in Must for RAT-Type, which clause 5.2.3.6"
+            " says follows TS 29.212 and the re-used tables list from it with"
+            " no M-bit override; TS 29.212 table 5.3.0.1 puts M in Must not"
+        ),
+        versions="18.6.0",
+    )
+    for table in ("5.2.3.1/1", "6.2.3.1/1", "7.2.3.1/1")
+    for field, expect, replace in (
+        (
+            "must",
+            frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}),
+            frozenset({ast.AvpFlag.VENDOR}),
+        ),
+        (
+            "must_not",
+            frozenset({ast.AvpFlag.PROTECTED}),
+            frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.PROTECTED}),
+        ),
+    )
 ]

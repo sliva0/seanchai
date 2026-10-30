@@ -68,6 +68,18 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   `V2X-Subscription-Data` neither re-prints nor extends 29.272's.
 - `reused-code-conflict` — two documents giving one AVP two codes. An error:
   an AVP *is* its `(vendor-id, code)`.
+- `reused-row-mismatch` — a row this file tabulates for an AVP it re-uses,
+  reading its type, flag rules or encrypt differently from the origin's
+  rows, or typed otherwise than the origin's Grouped or Enumerated
+  definition when no origin row types it. `table-row-mismatch`'s discipline
+  across two files: a cell is compared where both tables declare the column
+  and both say something, and a flag where both rows place it in a column
+  (RFC 7683 puts M in neither Must nor Must not, which leaves a citing
+  interface free to forbid it). Only M and V are compared: RFC 6733 clause
+  4.1 reserves the P bit, so a P cell records which side of RFC 6733 a
+  document was written on. Agreeing with any one origin row agrees. A
+  re-used table's M-bit column is not compared, being the interface's own
+  setting by design. A note: a citing interface may set its own rule.
 - `reused-avp-not-in-origin` — the cited origin has never heard of it.
   TS 29.283 listed `Feature-Id` from TS 29.229 (now deleted by correction).
 - `reused-origin-indirect` — the origin borrows it too. TS 29.172 cites
@@ -136,6 +148,18 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   OctetString in 7.2.3.1/1. Which reading an interface uses is the
   document's to say; the model reads the first row
   ([consumers.md](consumers.md)).
+- **`reused-row-mismatch`**, three. TS 32.299 table 7.2.0.1 types
+  `Feature-List`, `Feature-List-ID` and `Supported-Features` by `refer
+  [204]` (TS 29.229) and prints its own flags, setting M for the charging
+  application where 29.229 puts it in Must not (May for
+  `Supported-Features`). Clause 7.2.0 refers to the origin for the
+  description, not the flags. Where the citing clause defers to the origin,
+  the row was corrected instead: TS 29.273's three `RAT-Type` rows (M in
+  Must; clauses 5.2.3.6 and 8.2.3.5 follow TS 29.212, whose table sets M
+  in Must not, and the re-used tables print no M-bit override), and TS
+  32.299 table 7.1.0.1's `Acct-Multi-Session-Id` (Unsigned32 against RFC
+  6733's UTF8String) and `Experimental-Result`/`-Code` (M in Must not, the
+  cell RFC 6733's table gives the Error-Reporting-Host row above them).
 - **`unresolved-reference`**, eighteen. Seven are AVPs no document defines,
   tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`,
   `MIP-MN-HA-SPI` (clauses 9.4–9.6; erratum 1462 renames one to another
