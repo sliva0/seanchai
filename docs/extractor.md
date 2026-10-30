@@ -121,7 +121,12 @@ The declared vocabulary, with the document that forced each:
   29.061 and 29.212 declare `worded-enum-values` too.
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
-  `rRK (1)`); `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
+  `rRK (1)`; 7155 §4.4.1, `Login (1)`); `worded-enum-values` (4005 §5.5 and
+  7155 §4.3.5, `CHAP with MD5       5`; 4005 §6.1, and with the previous
+  one 7155 §4.4.1, `Callback Login`); `parenthesized-value-first` (5777
+  §5.4, `(0): QoS-Desired`); `external-enum-values` (4005, 5777, 5778, 6733,
+  7155: where an enumerated clause says its values are listed);
+  `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
   cleared); `mixed-table-borders` and `radius-avp-codes` (5580 §6: header
   boxes only the flags, codes come from the RADIUS Type fields in §4).
 
@@ -404,11 +409,31 @@ Same definitions, different carrier:
   with description below; description on the value's line and wrapping) plus
   older `2 HMAC-SHA-1` and `0 | IN - …` forms. Value names are all-caps in
   every collected RFC and requiring that keeps prose out; RFC 6734's
-  mixed-case `rRK (1)` is a declared quirk. Warnings record a value list
-  for a name not typed Enumerated (RFC 8581 extending 7683's `OC-Report-Type`,
-  which `.dad` cannot express; RFC 6733's
-  `Inband-Security-Id` and `Session-Binding`) and an Enumerated AVP with no
-  local values (`Termination-Cause`).
+  mixed-case `rRK (1)` is a declared quirk, as are names of several words
+  (`"CHAP with MD5" = 5`, RFC 4005 §5.5, 7155 §4.3.5) and RFC 5777's
+  `(0): QoS-Desired`. Behind `external-enum-values`, a clause that says
+  where its values are listed gets that citation as `; Values:`, in the
+  document's words up to the sentence's end, with or without a list beside
+  it: RFC 6733's `Termination-Cause` ("can be found in the IANA registry
+  for Termination-Cause AVP Values [IANATCV]", §8.15), RFC 5777's six
+  "managed by IANA under the … registry" AVPs, RFC 4005's and 7155's
+  `[RADIUSTypes]` and `[RADIUSAttrVals]` (7155's `Accounting-Auth-Method`:
+  "identical, to the Microsoft MS-Acct-Auth-Type vendor-specific RADIUS
+  attribute [RFC2548]", §4.6.7), and RFC 5778's `MIP-Algorithm-Type`
+  ("defined in [RFC4004] that also fulfill current RFC 4285 requirements",
+  §6.13). Warnings record a value list for a name not typed Enumerated (RFC
+  8581 extending 7683's `OC-Report-Type`, which `.dad` cannot express; RFC
+  6733's `Inband-Security-Id` and `Session-Binding`), an Enumerated AVP
+  with neither values nor a citation, and value-first lines an enumerated
+  clause holds but the reading leaves out. Two clauses have neither: RFC
+  4005's `Termination-Cause` (§9.3.5 maps RADIUS causes onto Diameter values
+  in a two-column table of worded names, extending RFC 6733's clause) and
+  RFC 5778's `MIP6-Auth-Mode` (§6.20 names `MIP6_AUTH_MN_AAA`, only the
+  IANA registry in §9.5 numbers it). RFC 4005's informational lists (§4.4,
+  5.3, 6.1, 6.10.1, 6.10.2, 6.10.4, 6.15.3, 7.2, 7.3) label values in words
+  after the number (`2   ISDN Sync`, wrapping in places) and are read only
+  where the label is one word; §7.3's `802 (includes all 802 media plus Ethernet
+  "canonical format")` holds a double quote, which no value name can.
 
 ## Strictness
 

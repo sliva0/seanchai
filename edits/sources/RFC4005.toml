@@ -9,3 +9,11 @@ find = "Acounting-Auth-"
 replace = "Accounting-Auth-"
 section = "8"
 reason = "the AVP table drops the first 'c' from Accounting-Auth-Method; the clause heading, prose, occurrence tables, and IANA section use the correct spelling"
+
+[[quirk]]
+name = "external-enum-values"
+reason = "enumerated clauses say where their values are listed instead of, or besides, listing them: 'The supported values are listed in [RADIUSTypes]' (6.14.2, 7.2, and the informational lists of 4.4, 5.3, 6.10.x, 6.15.3, 7.3, 8.x), 'The complete list of defined values can be found in [RADIUS] and [RADIUSTypes]' (6.1)"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "value names printed in words before the value: CHAP-Algorithm's one value, 'CHAP with MD5       5' (5.5), and two of the four Service-Type values 6.1 qualifies, 'Callback Login      3'"

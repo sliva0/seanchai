@@ -253,3 +253,47 @@ def test_undeclared_rfc_shapes_are_rejected(tmp_path, body, quirk):
     message = "flag cells" if quirk == "ragged-separator" else quirk
     with pytest.raises(ExtractionError, match=message):
         rfc_text.extract(path)
+
+
+def _enumerated(clause: str) -> str:
+    """The synthetic table typing `Prompt` Enumerated, and its clause."""
+    return _rfc(
+        "4.5.  Synthetic Base AVPs\n\n"
+        + _HEADER_BOX
+        + "   Prompt            76  5.3     Enumerated | M  |  V  |\n"
+        "   -----------------------------------------|----+-----|\n\n"
+        "5.3.  Prompt AVP\n\n"
+        "   The Prompt AVP (AVP Code 76) is of type Enumerated.\n" + clause
+    )
+
+
+def test_a_clause_naming_two_value_sources_is_an_error(tmp_path):
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(
+        _enumerated(
+            "   The supported values are listed in [RADIUSTypes].  The\n"
+            "   complete list of defined values can be found in [RADIUS].\n"
+        ),
+        encoding="utf-8",
+    )
+    sources = _declare(
+        tmp_path, '[[quirk]]\nname = "external-enum-values"\nreason = "x"\n'
+    )
+
+    with pytest.raises(ExtractionError, match="names 2 sources"):
+        rfc_text.extract(path, sources_dir=sources)
+
+
+def test_unread_value_lines_in_an_enumerated_clause_are_a_warning(tmp_path):
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(_enumerated("      0  No Echo\n      1  Echo\n"), encoding="utf-8")
+    warnings: list[str] = []
+
+    spec = rfc_text.extract(path, warnings=warnings)
+
+    prompt = spec.sections[-1]
+    assert isinstance(prompt, ast.EnumeratedAvp)
+    assert prompt.values == (ast.EnumValue(name="Echo", value=1),)
+    assert warnings == [
+        "5.3: enumerated AVP 'Prompt': 1 value line(s) not read, first '0  No Echo'"
+    ]

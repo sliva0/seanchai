@@ -256,6 +256,21 @@ QUIRKS: dict[str, str] = {
     "parenthesized-enum-values": (
         "read whole Name (number) lines as enum values (RFC 6734 clause 3.1.1)"
     ),
+    "worded-enum-values": (
+        "read value names of several words, keeping their spaces: 'CHAP with"
+        " MD5       5' (RFC 4005 clause 5.5, RFC 7155 clause 4.3.5), and with"
+        " `parenthesized-enum-values` 'Callback Login (3)' (RFC 7155 clause"
+        " 4.4.1)"
+    ),
+    "parenthesized-value-first": (
+        "read '(0): QoS-Desired' lines as enum values (RFC 5777 clause 5.4)"
+    ),
+    "external-enum-values": (
+        "read where an enumerated clause says its values are listed instead"
+        " of listing them ('The supported values are listed in"
+        " [RADIUSAttrVals].') into `; Values:` (RFC 4005, 5777, 5778, 6733,"
+        " 7155)"
+    ),
     "prose-avp-codes": (
         "complete AVP table rows from each clause's defining sentence, for a"
         " document whose tables print no Code column — RFC 7155 inherits its"
@@ -1211,24 +1226,21 @@ def _extract_definitions(
         if found_rule:
             continue
         values = []
+        unread: list[str] = []
         for text in section.texts:
-            value = _enum_value(text.strip())
-            if (
-                value is None
-                and quirks is not None
-                and quirks.enabled("parenthesized-enum-values")
-            ):
-                match = re.fullmatch(
-                    r"(?P<name>[A-Za-z][A-Za-z0-9_-]*) \((?P<value>\d+)\)", text.strip()
-                )
-                if match:
-                    quirks.fire("parenthesized-enum-values")
-                    value = ast.EnumValue(name=match["name"], value=int(match["value"]))
+            value = _enum_value(text.strip()) or _quirk_enum_value(text.strip(), quirks)
             if value is not None:
                 values.append(value)
-        if not values:
-            continue
+            elif _VALUE_FIRST_LINE_RE.match(text):
+                unread.append(text.strip())
         row = enum_rows.get(title["name"])
+        values_source = (
+            _values_source(section, quirks)
+            if row is not None and row.code is not None and quirks is not None
+            else None
+        )
+        if not values and values_source is None:
+            continue
         if row is None or row.code is None:
             if title["avp_suffix"]:
                 warnings.append(
@@ -1237,6 +1249,16 @@ def _extract_definitions(
                     " table — values dropped"
                 )
             continue
+        if unread:
+            # RFC 4005's informational lists (clauses 4.4, 6.1, 6.10.x, 6.15.3,
+            # 7.3) label values in words, `2   ISDN Sync`, of which only the
+            # one-word labels read; one label holds a double quote (7.3's
+            # `6  802 (includes ... "canonical format")`), which no value name
+            # can. Said aloud rather than left a silently partial list.
+            warnings.append(
+                f"{section.number}: enumerated AVP {title['name']!r}:"
+                f" {len(unread)} value line(s) not read, first {unread[0]!r}"
+            )
         defined_enums.add(title["name"])
         definitions.append(
             ast.EnumeratedAvp(
@@ -1244,6 +1266,7 @@ def _extract_definitions(
                 source=source,
                 code=row.code,
                 vendor_id=None,
+                values_source=values_source,
                 values=tuple(values),
             )
         )
@@ -1266,6 +1289,113 @@ def _enum_value(text: str) -> ast.EnumValue | None:
         if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", name):
             return ast.EnumValue(name=name, value=int(match["value"]))
     return None
+
+
+# A value-first list line (`2   ISDN Sync`, RFC 4005 clause 4.4): a number,
+# then the label after two spaces or more. Only for reporting what
+# `_enum_value` left unread inside an enumerated clause.
+_VALUE_FIRST_LINE_RE = re.compile(r"^\s*\d+ {2,}\S")
+_WORDED_NAME = r"[A-Za-z][A-Za-z0-9_-]*(?: [A-Za-z0-9_-]+)+"
+
+
+def _quirk_enum_value(text: str, quirks: sources.Quirks | None) -> ast.EnumValue | None:
+    """The value-line shapes read only where a quirk declares them. A line
+    needing two quirks is read only with both."""
+    if quirks is None:
+        return None
+    parenthesized = quirks.enabled("parenthesized-enum-values")
+    worded = quirks.enabled("worded-enum-values")
+    fired: tuple[str, ...] = ()
+    match = None
+    if parenthesized and (
+        match := re.fullmatch(
+            r"(?P<name>[A-Za-z][A-Za-z0-9_-]*) \((?P<value>\d+)\)", text
+        )
+    ):
+        fired = ("parenthesized-enum-values",)
+    elif (
+        parenthesized
+        and worded
+        and (
+            match := re.fullmatch(rf"(?P<name>{_WORDED_NAME}) \((?P<value>\d+)\)", text)
+        )
+    ):
+        fired = ("parenthesized-enum-values", "worded-enum-values")
+    elif worded and (
+        match := re.fullmatch(rf"(?P<name>{_WORDED_NAME}) {{2,}}(?P<value>\d+)", text)
+    ):
+        fired = ("worded-enum-values",)
+    elif quirks.enabled("parenthesized-value-first") and (
+        match := re.fullmatch(
+            r"\((?P<value>\d+)\): (?P<name>[A-Za-z][A-Za-z0-9_-]*)", text
+        )
+    ):
+        fired = ("parenthesized-value-first",)
+    if match is None:
+        return None
+    for name in fired:
+        quirks.fire(name)
+    return ast.EnumValue(name=match["name"], value=int(match["value"]))
+
+
+# Behind `external-enum-values`: an enumerated clause saying where its values
+# are listed, one pattern per wording, matched on the clause's prose joined
+# into one line. What the source group holds is the document's own words up
+# to the sentence's end, reference tags included.
+_VALUES_SOURCE_RES = (
+    # RFC 7155 clause 4.6.6: "The supported values are listed in
+    # [RADIUSAttrVals]."; 4.2.4: "The currently supported values of the
+    # NAS-Port-Type AVP are listed in [RADIUSAttrVals]."; RFC 4005 clause
+    # 6.14.2: "... listed in [RADIUSTypes] and defined in [RADIUSExt]."; RFC
+    # 6733 clause 8.15: "The currently assigned values for this AVP can be
+    # found in the IANA registry for Termination-Cause AVP Values [IANATCV]."
+    re.compile(
+        r"The (?:currently )?(?:supported|assigned) values"
+        r"(?: of the \S+ AVP| for this AVP)? (?:are|can be) (?:listed|defined|found)"
+        r" in (?P<source>[^.]+)\."
+    ),
+    # RFC 7155 clause 4.4.1: "The complete list of defined values that the
+    # Service-Type AVP can take can be found in [RFC2865] and the relevant
+    # IANA registry [RADIUSAttrVals], but the following values require
+    # further qualification here:"; RFC 4005 clause 6.1 without the clause.
+    re.compile(
+        r"The complete list of defined values(?: that the \S+ AVP can take)?"
+        r" can be found in (?P<source>[^.,]+)[.,]"
+    ),
+    # RFC 5777 clauses 4.1.3, 4.1.8.1, 4.1.8.4, 4.1.8.7, 4.1.8.12, 4.1.8.13:
+    # "The values are managed by IANA under the Differentiated Services Field
+    # Codepoints registry as defined in [RFC2474]."
+    re.compile(r"values (?:for this AVP )?are managed by (?P<source>IANA [^.]+)\."),
+    # RFC 7155 clause 4.6.7: "(Note that this AVP is semantically equivalent,
+    # and the supported values are identical, to the Microsoft
+    # MS-Acct-Auth-Type vendor-specific RADIUS attribute [RFC2548])."
+    re.compile(r"the supported values are identical, to (?P<source>[^.()]+)\)\."),
+    # RFC 5778 clause 6.13: "Existing algorithm types are defined in
+    # [RFC4004] that also fulfill current RFC 4285 requirements."
+    re.compile(r"Existing algorithm types are defined in (?P<source>[^.]+)\."),
+)
+
+
+def _values_source(section: _DocSection, quirks: sources.Quirks) -> str | None:
+    """Where the enumerated clause says its values are listed, if it says so
+    in one of the wordings `_VALUES_SOURCE_RES` reads."""
+    if not quirks.enabled("external-enum-values"):
+        return None
+    prose = " ".join(" ".join(text.split()) for text in section.texts if text.strip())
+    found = [
+        match["source"]
+        for pattern in _VALUES_SOURCE_RES
+        for match in pattern.finditer(prose)
+    ]
+    if len(found) > 1:
+        raise ExtractionError(
+            f"{section.number}: the clause names {len(found)} sources for its"
+            f" values: {found}"
+        )
+    if not found:
+        return None
+    quirks.fire("external-enum-values")
+    return found[0]
 
 
 def _message_abbreviation(section: _DocSection, rule_name: str) -> str:

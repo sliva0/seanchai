@@ -173,6 +173,14 @@ MIP-MN-HA-MSA ::= < AVP header: 492 >
 
 
 ; Type: Enumerated AVP
+; Name: MIP-Algorithm-Type
+; Section: 6.13
+; Page: 24
+; Values: [RFC4004] that also fulfill current RFC 4285 requirements
+MIP-Algorithm-Type ::= < Enumerated AVP header: 345 >
+
+
+; Type: Enumerated AVP
 ; Name: MIP-Replay-Mode
 ; Section: 6.14
 ; Page: 24

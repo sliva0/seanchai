@@ -17,15 +17,14 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Linter and corpus
 
-- **S. Read where the RFCs' value-less enumerated clauses point.** The RFC
-  extractor warns "no value list found" for 27 AVPs (RFC 4005, 5777, 5778,
-  6733, 7155). The clauses checked print no list: most cite a registry (RFC
-  6733's `Termination-Cause` "can be found in the IANA registry", RFC 5777's
-  seven "managed by IANA under the ... registry", RFC 4005's and 7155's
-  `[RADIUSAttrVals]`), RFC 5778's `MIP-Algorithm-Type` borrows RFC 4004's,
-  and its `MIP6-Auth-Mode` names its one value in prose and numbers it only
-  in the IANA section. The first two shapes are what `; Values:` holds for
-  the docx extractor.
+- **S. Read the RFC value lists left unread.** RFC 4005's informational
+  lists label values in words after the number (`2   ISDN Sync`, 65 lines
+  over nine clauses, some wrapping) and only one-word labels are read; one
+  label, Tunnel-Medium-Type's `802 (includes … "canonical format")`, holds
+  a double quote no value name can. RFC 4005's `Termination-Cause` values
+  are a RADIUS-to-Diameter mapping table (§9.3.5) and RFC 5778's
+  `MIP6-Auth-Mode` value is numbered only in its IANA section (§9.5); both
+  still warn "no value list found".
 
 ## Sources
 

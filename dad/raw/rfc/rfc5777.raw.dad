@@ -127,6 +127,14 @@ Classifier ::= < AVP header: 511 >
 
 
 ; Type: Enumerated AVP
+; Name: Protocol
+; Section: 4.1.3
+; Page: 9
+; Values: IANA under the Protocol Numbers registry as defined in [RFC2780]
+Protocol ::= < Enumerated AVP header: 513 >
+
+
+; Type: Enumerated AVP
 ; Name: Direction
 ; Section: 4.1.4
 ; Page: 9
@@ -243,6 +251,14 @@ Use-Assigned-Address ::= < Enumerated AVP header: 534 >
 
 
 ; Type: Enumerated AVP
+; Name: Diffserv-Code-Point
+; Section: 4.1.8.1
+; Page: 16
+; Values: IANA under the Differentiated Services Field Codepoints registry as defined in [RFC2474]
+Diffserv-Code-Point ::= < Enumerated AVP header: 535 >
+
+
+; Type: Enumerated AVP
 ; Name: Fragmentation-Flag
 ; Section: 4.1.8.2
 ; Page: 16
@@ -262,6 +278,14 @@ IP-Option ::= < AVP header: 537 >
       * [ AVP ]
 
 
+; Type: Enumerated AVP
+; Name: IP-Option-Type
+; Section: 4.1.8.4
+; Page: 16
+; Values: IANA under the IP Option Numbers registry as defined in [RFC2780]
+IP-Option-Type ::= < Enumerated AVP header: 538 >
+
+
 ; Type: Grouped AVP
 ; Name: TCP-Option
 ; Section: 4.1.8.6
@@ -271,6 +295,14 @@ TCP-Option ::= < AVP header: 540 >
       * [ TCP-Option-Value ]
         [ Negated ]
       * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: TCP-Option-Type
+; Section: 4.1.8.7
+; Page: 17
+; Values: IANA under the TCP Option Numbers registry as defined in [RFC2780]
+TCP-Option-Type ::= < Enumerated AVP header: 541 >
 
 
 ; Type: Grouped AVP
@@ -292,6 +324,22 @@ ICMP-Type ::= < AVP header: 545 >
       * [ ICMP-Code ]
         [ Negated ]
       * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: ICMP-Type-Number
+; Section: 4.1.8.12
+; Page: 18
+; Values: IANA under the ICMP Type Numbers registry as defined in [RFC2780]
+ICMP-Type-Number ::= < Enumerated AVP header: 546 >
+
+
+; Type: Enumerated AVP
+; Name: ICMP-Code
+; Section: 4.1.8.13
+; Page: 19
+; Values: IANA under the ICMP Type Numbers registry as defined in [RFC2780]
+ICMP-Code ::= < Enumerated AVP header: 547 >
 
 
 ; Type: Grouped AVP
@@ -371,6 +419,18 @@ QoS-Profile-Template ::= < AVP header: 574 >
         { Vendor-Id }
         { QoS-Profile-Id }
       * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: QoS-Semantics
+; Section: 5.4
+; Page: 28
+QoS-Semantics ::= < Enumerated AVP header: 575 >
+        QoS-Desired    = 0
+        QoS-Available  = 1
+        QoS-Delivered  = 2
+        Minimum-QoS    = 3
+        QoS-Authorized = 4
 
 
 ; Type: Grouped AVP

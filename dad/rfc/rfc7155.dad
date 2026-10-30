@@ -547,6 +547,22 @@ Acct-Tunnel-Connection      68    4.6.10   OctetString   M     V
 Acct-Tunnel-Packets-Lost    86    4.6.11   Unsigned32    M     V
 
 
+; Type: Enumerated AVP
+; Name: NAS-Port-Type
+; Section: 4.2.4
+; Page: 26
+; Values: [RADIUSAttrVals]
+NAS-Port-Type ::= < Enumerated AVP header: 61 >
+
+
+; Type: Enumerated AVP
+; Name: Prompt
+; Section: 4.3.3
+; Page: 29
+; Values: [RADIUSAttrVals]
+Prompt ::= < Enumerated AVP header: 76 >
+
+
 ; Type: Grouped AVP
 ; Name: CHAP-Auth
 ; Section: 4.3.4
@@ -556,6 +572,66 @@ CHAP-Auth ::= < AVP header: 402 >
         { CHAP-Ident }
         [ CHAP-Response ]
       * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: CHAP-Algorithm
+; Section: 4.3.5
+; Page: 30
+CHAP-Algorithm ::= < Enumerated AVP header: 403 >
+        "CHAP with MD5" = 5
+
+
+; Type: Enumerated AVP
+; Name: Service-Type
+; Section: 4.4.1
+; Page: 33
+; Values: [RFC2865] and the relevant IANA registry [RADIUSAttrVals]
+Service-Type ::= < Enumerated AVP header: 6 >
+        Login             = 1
+        Framed            = 2
+        "Callback Login"  = 3
+        "Callback Framed" = 4
+
+
+; Type: Enumerated AVP
+; Name: Framed-Protocol
+; Section: 4.4.10.1
+; Page: 36
+; Values: [RADIUSAttrVals]
+Framed-Protocol ::= < Enumerated AVP header: 7 >
+
+
+; Type: Enumerated AVP
+; Name: Framed-Routing
+; Section: 4.4.10.2
+; Page: 36
+; Values: [RADIUSAttrVals]
+Framed-Routing ::= < Enumerated AVP header: 10 >
+
+
+; Type: Enumerated AVP
+; Name: Framed-Compression
+; Section: 4.4.10.4
+; Page: 37
+; Values: [RADIUSAttrVals]
+Framed-Compression ::= < Enumerated AVP header: 13 >
+
+
+; Type: Enumerated AVP
+; Name: ARAP-Zone-Access
+; Section: 4.4.10.8.2
+; Page: 41
+; Values: [RADIUSAttrVals] and defined in [RFC2869]
+ARAP-Zone-Access ::= < Enumerated AVP header: 72 >
+
+
+; Type: Enumerated AVP
+; Name: Login-Service
+; Section: 4.4.11.3
+; Page: 42
+; Values: RFC 2869
+Login-Service ::= < Enumerated AVP header: 15 >
 
 
 ; Type: Grouped AVP
@@ -573,3 +649,35 @@ Tunneling ::= < AVP header: 401 >
         [ Tunnel-Assignment-Id ]
         [ Tunnel-Password ]
         [ Tunnel-Private-Group-Id ]
+
+
+; Type: Enumerated AVP
+; Name: Tunnel-Type
+; Section: 4.5.2
+; Page: 46
+; Values: [RADIUSAttrVals]
+Tunnel-Type ::= < Enumerated AVP header: 64 >
+
+
+; Type: Enumerated AVP
+; Name: Tunnel-Medium-Type
+; Section: 4.5.3
+; Page: 46
+; Values: [RADIUSAttrVals]
+Tunnel-Medium-Type ::= < Enumerated AVP header: 65 >
+
+
+; Type: Enumerated AVP
+; Name: Acct-Authentic
+; Section: 4.6.6
+; Page: 53
+; Values: [RADIUSAttrVals]
+Acct-Authentic ::= < Enumerated AVP header: 45 >
+
+
+; Type: Enumerated AVP
+; Name: Accounting-Auth-Method
+; Section: 4.6.7
+; Page: 53
+; Values: the Microsoft MS-Acct-Auth-Type vendor-specific RADIUS attribute [RFC2548]
+Accounting-Auth-Method ::= < Enumerated AVP header: 406 >

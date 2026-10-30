@@ -1,0 +1,9 @@
+# Source declarations for RFC 5777 (Traffic Classification and QoS Attributes).
+
+[[quirk]]
+name = "external-enum-values"
+reason = "clauses 4.1.3, 4.1.8.1, 4.1.8.4, 4.1.8.7, 4.1.8.12 and 4.1.8.13 list no values: 'The values are managed by IANA under the Protocol Numbers registry as defined in [RFC2780]'"
+
+[[quirk]]
+name = "parenthesized-value-first"
+reason = "clause 5.4 prints QoS-Semantics' values value first in parentheses: '(0): QoS-Desired'"

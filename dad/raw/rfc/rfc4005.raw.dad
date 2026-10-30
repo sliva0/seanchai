@@ -558,6 +558,7 @@ Origin-AAA-Protocol   408   9.3.6   Enumerated    M     P     -     V     Yes
 ; Name: NAS-Port-Type
 ; Section: 4.4
 ; Page: 22
+; Values: [RADIUSTypes]
 NAS-Port-Type ::= < Enumerated AVP header: 61 >
         Async      = 0
         Sync       = 1
@@ -574,6 +575,7 @@ NAS-Port-Type ::= < Enumerated AVP header: 61 >
 ; Name: Prompt
 ; Section: 5.3
 ; Page: 27
+; Values: [RADIUSTypes]
 Prompt ::= < Enumerated AVP header: 76 >
         Echo = 1
 
@@ -590,24 +592,36 @@ CHAP-Auth ::= < AVP header: 402 >
 
 
 ; Type: Enumerated AVP
+; Name: CHAP-Algorithm
+; Section: 5.5
+; Page: 28
+CHAP-Algorithm ::= < Enumerated AVP header: 403 >
+        "CHAP with MD5" = 5
+
+
+; Type: Enumerated AVP
 ; Name: Service-Type
 ; Section: 6.1
 ; Page: 30
+; Values: [RADIUS] and [RADIUSTypes]
 Service-Type ::= < Enumerated AVP header: 6 >
-        Login          = 1
-        Framed         = 2
-        Outbound       = 5
-        Administrative = 6
-        Voice          = 12
-        Fax            = 13
-        IAPP-Register  = 15
-        IAPP-AP-Check  = 16
+        Login             = 1
+        Framed            = 2
+        Outbound          = 5
+        Administrative    = 6
+        Voice             = 12
+        Fax               = 13
+        IAPP-Register     = 15
+        IAPP-AP-Check     = 16
+        "Callback Login"  = 3
+        "Callback Framed" = 4
 
 
 ; Type: Enumerated AVP
 ; Name: Framed-Protocol
 ; Section: 6.10.1
 ; Page: 35
+; Values: [RADIUSTypes]
 Framed-Protocol ::= < Enumerated AVP header: 7 >
         PPP  = 1
         SLIP = 2
@@ -617,6 +631,7 @@ Framed-Protocol ::= < Enumerated AVP header: 7 >
 ; Name: Framed-Routing
 ; Section: 6.10.2
 ; Page: 35
+; Values: [RADIUSTypes]
 Framed-Routing ::= < Enumerated AVP header: 10 >
         None = 0
 
@@ -625,14 +640,24 @@ Framed-Routing ::= < Enumerated AVP header: 10 >
 ; Name: Framed-Compression
 ; Section: 6.10.4
 ; Page: 36
+; Values: [RADIUSTypes]
 Framed-Compression ::= < Enumerated AVP header: 13 >
         None = 0
+
+
+; Type: Enumerated AVP
+; Name: ARAP-Zone-Access
+; Section: 6.14.2
+; Page: 40
+; Values: [RADIUSTypes] and defined in [RADIUSExt]
+ARAP-Zone-Access ::= < Enumerated AVP header: 72 >
 
 
 ; Type: Enumerated AVP
 ; Name: Login-Service
 ; Section: 6.15.3
 ; Page: 41
+; Values: [RADIUSTypes]
 Login-Service ::= < Enumerated AVP header: 15 >
         Telnet    = 0
         Rlogin    = 1
@@ -659,9 +684,18 @@ Tunneling ::= < AVP header: 401 >
 
 
 ; Type: Enumerated AVP
+; Name: Tunnel-Type
+; Section: 7.2
+; Page: 45
+; Values: [RADIUSTypes]
+Tunnel-Type ::= < Enumerated AVP header: 64 >
+
+
+; Type: Enumerated AVP
 ; Name: Tunnel-Medium-Type
 ; Section: 7.3
 ; Page: 46
+; Values: [RADIUSTypes]
 Tunnel-Medium-Type ::= < Enumerated AVP header: 65 >
         NSAP      = 3
         IPX       = 11
@@ -672,6 +706,7 @@ Tunnel-Medium-Type ::= < Enumerated AVP header: 65 >
 ; Name: Acct-Authentic
 ; Section: 8.6
 ; Page: 52
+; Values: [RADIUSTypes]
 Acct-Authentic ::= < Enumerated AVP header: 45 >
         RADIUS   = 1
         Local    = 2

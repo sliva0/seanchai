@@ -416,6 +416,14 @@ Re-Auth-Request-Type ::= < Enumerated AVP header: 285 >
 
 
 ; Type: Enumerated AVP
+; Name: Termination-Cause
+; Section: 8.15
+; Page: 120
+; Values: the IANA registry for Termination-Cause AVP Values [IANATCV]
+Termination-Cause ::= < Enumerated AVP header: 295 >
+
+
+; Type: Enumerated AVP
 ; Name: Session-Server-Failover
 ; Section: 8.18
 ; Page: 121
