@@ -3,9 +3,9 @@
 Two scripts over the [model](../../docs/consumers.md) for
 [python-diameter](https://github.com/mensonen/diameter): `validate.py`
 checks the library's merged command classes against one specification at a
-time, and `generate.py` writes the protocol-specific classes the library
-could carry beside them. Both carry PEP 723 metadata, so uv supplies
-seanchai (and, for `validate.py`, the library).
+time, and `generate.py` writes per-application command modules in the
+library's own shape, for the library to carry beside its merged classes.
+Both carry PEP 723 metadata, so uv supplies seanchai and the library.
 
 ```sh
 uv run integrations/python_diameter/validate.py TS29.229
@@ -16,20 +16,22 @@ uv run integrations/python_diameter/generate.py --all -o out/protocols \
 
 `generate.py` takes references (`TS29.229`, `29.229`, `RFC6733`) or
 `--all`, `--corpus` for a corpus other than the repository's `dad/`, and
-`--dictionary` for Wireshark's AVP names. It replaces the output directory
-only if every file in it is one it wrote. The output is a function of the
-corpus and the dictionary alone, byte for byte: regenerating after a corpus
-change gives a reviewable diff.
+`--dictionary` for Wireshark's AVP names. It reads the installed library
+for the names it references, replaces the output directory only if every
+file in it is one it wrote, and prints how many additions each
+specification needs (`TS29.229: 19 additions`). The output is a function
+of the corpus, the Wireshark dictionary and the library version alone,
+byte for byte: regenerating after a change to any of them gives a
+reviewable diff.
 
 ## Output layout
 
 ```
 out/protocols/
-  __init__.py        module list and the documents generated from
-  _base.py           AvpDef, Rule, ProtocolMessage: copied from _base.py here
-  avps.py            every AVP definition, deduplicated
-  ts29_229.py        one module per application and interface
-  ts29_212_5a.py     ...interface clause appended where a document has several
+  __init__.py            module list, the documents generated from, additions per module
+  additions.py           what the library's dictionary and grouped classes lack
+  ts29_229.py            one module per application and interface
+  ts29_212_5a.py         ...interface clause appended where a document has several
   ts29_272_16777308.py   ...application id where several share one clause
 ```
 
@@ -41,210 +43,195 @@ for one application id under one interface clause. TS 29.212 gives
 and `_9` (ACR); TS 32.299's clause 6 gives `ts32_299_3` (Rf) and `_4`
 (Ro), and RFC 5778's clause 5 `rfc5778_7` and `_8`.
 
-`avps.py` holds one `AvpDef` per distinct reading — name, code, vendor-id,
-value class, flag rules, grouped members with their cardinality, enumerated
-values and reserved ranges, and the defining documents:
-
-```text
-SERVER_CAPABILITIES = AvpDef(
-    "Server-Capabilities", 603, 10415, AvpGrouped, FlagRules(must="MV"),
-    members=(
-        Rule(MANDATORY_CAPABILITY, max=None),
-        Rule(OPTIONAL_CAPABILITY, max=None),
-        Rule(SERVER_NAME, max=None),
-        Rule(ANY_AVP, max=None),
-    ),
-    defined_in=("TS29.229",),
-)
-```
-
-Readings that agree on everything that goes on the wire are one definition
-whichever documents print them (TS 29.329's re-print of TS 29.229's
-`Public-Identity`). Readings that differ stay apart, each suffixed with its
-first defining document — `CC_TIME__RFC4006` and `CC_TIME__RFC8506`, since
-RFC 8506 drops the P flag; `ALLOCATION_RETENTION_PRIORITY__TS29_212` and
-`__TS29_272`, since TS 29.272 extends it — and each command names its own
-document's. `BY_IDENTITY` lists every reading under its `(vendor-id, code)`.
-
-A command module carries a class per command code and a Request and Answer
-class per direction, whose rule table names the AVP definitions and carries
-only what varies per command: presence (`FIXED` for `< >`, `REQUIRED` for
-`{ }`, optional by default), `min` where RFC 6733 §3.2's default for the
-presence does not give it, and `max` (`None` for `*`):
+Each module is written the way `diameter/message/commands/*.py` is: a
+`DefinedMessage` base class per command code with `code`, `name` and the
+library's `type_factory`, and a Request and an Answer subclass per
+direction with one annotation and one `AvpGenDef` per member, the list
+members initialised in `__post_init__` and the received AVPs assigned with
+the library's `assign_attr_from_defs`. Class names, `name` and attribute
+spellings are the library's wherever it has them — TS 29.212's
+`CC-Request` is `CreditControlRequest`, RFC 4005's AAR `AaRequest` — and
+the document's otherwise. The `AvpGenDef`s reference the library's `AVP_*`
+and `VENDOR_*` constants and its `grouped.py` classes, with `is_required`
+from the brackets and `is_mandatory` wherever the flag rules fix the M bit:
 
 ```python
-APPLICATION_ID: int | None = 16777216
+APPLICATION_ID = APP_3GPP_CX  # 16777216
 
 
-class UserAuthorization(ProtocolMessage):
-    """The User-Authorization command, code 300."""
-
-    code: int = 300
-    name: str = "User-Authorization"
-    application_id = APPLICATION_ID
-
-
-class UserAuthorizationRequest(UserAuthorization):
-    """User-Authorization-Request, clause 6.1.1."""
-
-    session_id: str
-    drmp: int
-    vendor_specific_application_id: Grouped
+class RegistrationTermination(DefinedMessage):
+    code: int = 304
+    name: str = "Registration-Termination"
+    avp_def: AvpGenType
     ...
 
-    is_request = True
-    is_proxyable = True
-    avp_rules = (
-        Rule(avps.SESSION_ID, FIXED),
-        Rule(avps.DRMP),
-        Rule(avps.VENDOR_SPECIFIC_APPLICATION_ID, REQUIRED),
+
+class RegistrationTerminationRequest(RegistrationTermination):
+    """A Registration-Termination-Request message, clause 6.1.9."""
+    session_id: str
+    ...
+    rtr_flags: int
+    proxy_info: list[ProxyInfo]
+    route_record: list[bytes]
+
+    avp_def: AvpGenType = (
+        AvpGenDef("session_id", AVP_SESSION_ID, is_required=True, is_mandatory=True),
         ...
-        Rule(ANY_AVP, max=None),
-        Rule(avps.PROXY_INFO, max=None),
-        Rule(avps.ROUTE_RECORD, max=None),
+        AvpGenDef("rtr_flags", AVP_TGPP_RTR_FLAGS, VENDOR_TGPP, is_mandatory=False),
+        # * [ AVP ]
+        AvpGenDef("proxy_info", AVP_PROXY_INFO, is_mandatory=True, type_class=ProxyInfo),
+        AvpGenDef("route_record", AVP_ROUTE_RECORD, is_mandatory=True),
     )
 ```
 
-`COMMANDS` maps each command code to its command class, as the library's
-`all_commands` does.
+`AVP_TGPP_RTR_FLAGS` is not one of the library's constants: the module
+imports it from `additions`. The imports are absolute
+(`diameter.message.constants`, not `..constants`), so a module works both
+where it was generated and inside the library.
 
-## Against the library today
+## The additions
 
-`_base.py` stands in for the base classes the library would ship, and runs
-on python-diameter 0.9.0 unchanged. It encodes and decodes by the rule
-tables: every AVP a rule names is built from, and re-read as, its
-definition's own value class with its code and vendor set, so TS 29.214's
-`Codec-Data` is OctetString and `Authorization-Lifetime` Unsigned32 where
-the library's dictionary says UTF8String and Integer32. The dictionary is
-the fallback only for AVPs the generated set does not know: those landing in
-`* [ AVP ]`, and a hole whose type no document states. It also builds a
-grouped AVP's value class from its definition's members, sets the header's
-command code, flags and (on a fresh message) application id, and derives
-the library's `avp_def` tuples for code that introspects them.
+The library's dictionary is not papered over. `additions.py` holds, in the
+shapes of `dictionary.py`, `constants.py` and `grouped.py`:
 
-Decoding fills, for each received AVP, the first rule naming its identity
-that still has room, so a body naming one AVP twice gets its occurrences in
-order; anything past every rule's maximum goes to the additional AVPs, so
-re-encoding keeps it. Encoding checks every member's set values against its
-`min` and `max` and raises `OccurrenceError`, a subclass of the library's
-`AvpEncodeError` naming the command and member: a CER whose
-`host_ip_address` is empty is refused, since RFC 6733 requires
-`1* { Host-IP-Address }`. `0*1< X >` is fixed in position but optional.
-`tests/test_python_diameter_generate.py` imports every generated module
-against the library, round-trips a Cx UAR through `Message.from_bytes`, and
-pins each of these behaviours.
+- **New entries**, for AVPs the dictionary lacks, under new constants named
+  the library's way (`AVP_TGPP_RTR_FLAGS = 659`), in
+  `AVP_DICTIONARY_ADDITIONS` and `AVP_VENDOR_DICTIONARY_ADDITIONS[10415]`,
+  one `AvpInfo` per line with the defining clause as a comment. Where the
+  dictionary has the name under another identity, the comment says so. A
+  new enumerated AVP gets `E_` constants for its values, or a comment
+  naming the document its clause defers them to.
+- **Corrections**, for entries whose value class carries something other
+  than the document's type, keyed by the library's own constant:
+  `AVP_RESULT_CODE` is AvpInteger32 in 0.9.0 where RFC 6733 says
+  Unsigned32. An Enumerated held as AvpInteger32 (AvpEnumerated's base)
+  and the string-derived types held as either string class are not
+  corrected, since the library uses both for them. A rule naming a
+  corrected AVP says so in a comment. An identity whose documents disagree
+  on its type, one of them as the library holds it, is listed in a closing
+  comment instead (RFC 4005 and RFC 7155 on `Framed-IPX-Network`).
+- **Grouped classes**, `grouped.py` dataclasses for every grouped reading
+  the library's class does not carry as the document says. The library's
+  class is reused only when its members' identities, their nesting and
+  their M bits all agree with the reading: it must hold every member the
+  reading names, each grouped member in a class that itself agrees, and
+  encode each member's M bit as the reading's flag rules fix it (its
+  `is_mandatory`, or failing that the dictionary default; a member whose
+  rules leave M open accepts either). TS 29.229's `Supported-Features`
+  gets `SupportedFeatures_TS29_229`, since the library's `SupportedFeatures`
+  sets M on Feature-List-ID and Feature-List, which TS 29.229's table
+  forbids. The docstring says which of these failed. A class never takes a name the library binds: a
+  second reading of one AVP, or a reading the library's class does not
+  serve, is suffixed with its first document (`ScscfRestorationInfo_TS29_229`,
+  `SipAuthDataItem_TS29_229` beside the library's IETF `SipAuthDataItem`).
 
-**Backwards compatibility.** The generated package is additive: nothing in
-it touches the library's merged classes, its `all_commands` table or its
-AVP dictionary, so a user who does not import it sees no change. Choosing
-the protocol-specific classes for a received message — by application id,
-and by configuration where an id is shared (TS 29.273's SWa, STa and SWd)
-or absent — is the library's switch to design; the per-module
-`APPLICATION_ID` and `COMMANDS` are what it would read.
+Importing `additions` changes nothing in the library. `register()` merges
+the new entries into the library's global dictionaries, which the command
+modules need before they encode an AVP only `additions` defines
+(`Avp.new` refuses an unknown one); `register(corrections=True)` also
+replaces the corrected entries, which changes how the library's own merged
+classes read those AVPs.
 
-**Where it departs from the library's conventions**, and why:
+The count a specification reports is the new entries, corrections and
+grouped classes its modules and its dictionary view reach; the module list
+in `__init__.py` counts per module.
 
-- AVPs are `AvpDef` objects referenced by name, not `AVP_*`/`VENDOR_*`
-  constants repeated in every `AvpGenDef` with a separate `AVP_DICTIONARY`
-  entry: one definition carries what the library spreads over
-  `constants.py`, `dictionary.py`, `grouped.py` and each command's
-  `avp_def`. `avp_def` itself still exists, derived.
-- Grouped AVP value classes are built at import from the definition's
-  members rather than written out as dataclasses, so attributes inside a
-  grouped value are not visible to an IDE and the class annotations say
-  `Grouped`. Writing them out would repeat every member list.
-- Enumerated values live on the definition as `(name, value)` pairs in the
-  document's spelling (TS 32.299's `"PS to CS Transfer"`), not as `E_*`
-  constants. An enumeration whose clause defines its values elsewhere has a
-  comment naming the source above it (`# Values: TS 32.422 [23] for Trace
-  Depth (TS29.272 clause 7.3.67).`) and no values.
-- Attribute names are derived mechanically (`_base.attribute_name`):
-  `3GPP-IMSI` is `tgpp_imsi` where the library writes some `3GPP-` AVPs
-  without the prefix, a leading digit gets `avp_` (`avp_5qi`), a Python
-  keyword or an attribute the base classes use gets a trailing underscore
-  (`class_`), and a body naming one AVP twice (TS 29.345's
-  `WiFi-P2P-Assistance-Info` prints `[ WLAN-Link-Layer-Id-List ]` twice)
-  gets a counter through `Rule(..., attr=...)`.
-- Classes are named after the document's own command names: TS 29.212's
-  `CC-Request` is `CcRequest`, not the library's `CreditControlRequest`.
-- The M flag follows the reading's flag rules (M in Must or Must-not)
-  instead of the dictionary default, which is what makes the classes
-  protocol-specific on the wire as well as in their member lists. Where the
-  rules leave it open (M in May) it is unset; only a hole with no flag
-  rules takes the dictionary's default.
-- Unset required members raise at encode time, where the library's
-  `generate_avps_from_defs` only logs them unless asked to be strict.
-- `DiameterIdentity` is held as `AvpOctetString` and `DiameterURI` as
-  `AvpUtf8String`, matching how the library's dictionary holds Origin-Host
-  and Redirect-Host; `IPFilterRule` and `QoSFilterRule` as octets.
-- `_base.py` registers nothing in the library's global dictionary, so the
-  library's own classes and `Message.from_bytes` still type a received AVP
-  by it; the generated classes re-read the payload by their definitions.
+## Adopting it in the library
 
-## Wireshark names
+The generated modules are additive, and nothing in them registers
+anything: a class subclassing `DefinedMessage` outside the library's
+package has no side effect, since `all_commands` is built once, when
+`diameter.message.commands` is imported, and `commands.register` is never
+called. A maintainer would:
 
-With `--dictionary` (the downloader's `specifications/wireshark`), an
-`AvpDef` whose name Wireshark spells differently carries Wireshark's
-spelling, and `avps.BY_WIRESHARK_NAME` maps that spelling to the readings
-it names, for tooling that names AVPs Wireshark's way:
+1. Put the modules in a package of their own beside the merged classes,
+   such as `diameter/message/commands/<application>/` or
+   `diameter/message/protocols/`, leaving the existing modules untouched.
+2. Merge `additions.py`: its constants into `constants.py`, its entries into
+   `dictionary.py` (reviewing each correction for the merged classes'
+   users), its dataclasses into `grouped.py`, and drop the import from the
+   modules. `register()` is then unnecessary.
+3. Not import the new package from `commands/__init__.py` above the
+   `all_commands` table. That table is `DefinedMessage.__subclasses__()`
+   keyed by code, so new base classes loaded first would replace the
+   merged classes for every code they share, which is exactly the switch
+   the library should make opt-in.
+4. Add the opt-in dispatch: a lookup from the header's application id and
+   command code to a module's base class, built from each module's
+   `APPLICATION_ID` and classes, with configuration where an id is shared
+   (TS 29.273's SWa, STa and SWd) or absent (`rfc6733_8`). The tests do it
+   by hand: `Message.from_bytes(data, plain_msg=True)`, then
+   `ts29_229.UserAuthorization.type_factory(header)(header, avps)`.
 
-```text
-USER_DATA = AvpDef(
-    "User-Data", 606, 10415, AvpOctetString, FlagRules(must="MV"),
-    defined_in=("TS29.229",),
-    wireshark_name="Cx-User-Data",
-)
-```
+Until then the merged classes serve every received message, and the
+generated ones are built by hand, as the library's are.
 
-Attributes and identifiers keep the document's spelling. Without a
-dictionary, `wireshark_name` is None throughout and `BY_WIRESHARK_NAME` is
-empty.
+## What the library's shape cannot carry
 
-## Holes
-
-The model is built non-strictly, and a hole is never dropped. A member
-whose AVP the corpus knows the identity of but cannot complete is an
-`AvpDef` with the missing fields `None` and `hole` set (RFC 4072's
-`EAP-Payload` has no flag rules), so it still decodes. A name the corpus
-resolves to no identity is an `AvpHole`, listed in `avps.HOLES`; its rule
-stays in the table and has no attribute. Every rule naming either carries
-the reason as a comment:
-
-```text
-        Rule(avps.EAP_PAYLOAD, REQUIRED),  # hole: RFC4072 EAP-Payload: no flag_rules
-```
-
-A grouped hole has no members (the model keeps none), so its value class
-holds only `additional_avps`.
+- **Occurrence bounds.** `AvpGenDef` has `is_required` and no minimum or
+  maximum; a list attribute says the member repeats. Bounds the two convey
+  (`[ X ]`, `{ X }`, `*[ X ]`, `1*{ X }`) are written as such; any other is
+  the ABNF line as a trailing comment (`# *2 [ AN-GW-Address ]`), and
+  nothing enforces it. An unset required member is only logged at encode
+  time, as for the library's classes.
+- **A member printed twice.** The library decodes by identity, so TS
+  29.345's `WiFi-P2P-Assistance-Info`, which prints
+  `[ WLAN-Link-Layer-Id-List ]` twice, gets one list attribute with a
+  comment naming both lines.
+- **Wireshark's names.** The library has no slot for another spelling;
+  with `--dictionary`, Wireshark's name is a trailing comment where it
+  differs (`# Wireshark: Cx-User-Data`).
+- **Enumerated values** of AVPs the library already holds, and where a
+  clause defers its values to another document, except for new entries:
+  the library keeps `E_` constants per AVP, and `additions` writes them only
+  for the AVPs it adds.
+- **The application id on the wire.** The library's classes leave
+  `header.application_id` to the caller, and so do these; `APPLICATION_ID`
+  is the value to set and the dispatcher's key.
+- **An M bit the flag rules leave open** (M under May) takes the
+  dictionary's default, as there is no `is_mandatory` to state.
+- **The library's grouped classes, where they serve.** A grouped AVP whose
+  library class agrees with the reading on member identities, nesting and
+  M bits is carried by that class, with its own `is_required` flags rather
+  than the document's.
+- **Holes.** An AVP the corpus knows the identity of but cannot complete
+  is an `AvpGenDef` with the reason as a comment (`# hole: RFC4072
+  EAP-Payload: no flag_rules`), or, absent from the dictionary, an entry
+  typed `Avp` when no document states its type. A name that resolves to no
+  identity, like `* [ AVP ]`, is a comment in its place; the library keeps
+  such AVPs in the additional AVPs.
 
 ## What the documents leave to the reader
 
 **Application ids.** The application id comes from the command header the
 document prints, or, where the headers print none, from the
 `Application Scope` block that records the document's statement in prose;
-such a module's docstring names the clause (`The command headers print no application id;
-clause 5.1 states Gx's.`). The 3GPP blocks are read from the documents (TS
-29.154, 29.212, 29.214, 29.215, 29.217, 29.219, 29.343, 29.368, 29.468);
-those for RFC 4004, 4005, 4006, 4072, 5778, 6733, 7155, 8506 and TS 32.299
-are corrections citing the clause, since each words it differently. Two
-readings are worth knowing: RFC 4005 clause 1.3 gives the commands it takes
-from the base protocol "the Base application id value", and the block
-follows clause 11.3 and RFC 7155 in giving all of clause 3 the NASREQ id 1;
-RFC 6733's ACR is the base accounting application's 3, the split accounting
-model of clause 9.3, where coupled accounting carries the using
-application's id.
+such a module's docstring names the clause (`The command headers print no
+application id; clause 5.1 states Gx's.`). The 3GPP blocks are read from
+the documents (TS 29.154, 29.212, 29.214, 29.215, 29.217, 29.219, 29.343,
+29.368, 29.468); those for RFC 4004, 4005, 4006, 4072, 5778, 6733, 7155,
+8506 and TS 32.299 are corrections citing the clause, since each words it
+differently. Two readings are worth knowing: RFC 4005 clause 1.3 gives the
+commands it takes from the base protocol "the Base application id value",
+and the block follows clause 11.3 and RFC 7155 in giving all of clause 3
+the NASREQ id 1; RFC 6733's ACR is the base accounting application's 3, the
+split accounting model of clause 9.3, where coupled accounting carries the
+using application's id. `APPLICATION_ID` is the library's `APP_` constant
+for the id where it has one.
 
-`rfc6733_8` alone keeps `APPLICATION_ID = None`: clause 2.5 says RAR, STR
-and ASR "MUST carry the Application Id of the application" they serve.
+`rfc6733_8` alone has `APPLICATION_ID = None`: clause 2.5 says RAR, STR and
+ASR "MUST carry the Application Id of the application" they serve.
 
 **Commands printed twice.** A document that prints one command twice in one
 interface clause gets one class when the bodies agree (TS 29.273's STa STR,
 clauses 5.2.2.2.3 and 5.2.2.4.1, whose docstring cites both) and a second
 class named with its clause when they differ (TS 29.273's clause 9 AAR,
-application 16777272: `AaRequest_9_2_2_5_1`). `type_factory` returns the first.
+application 16777272: `AaRequest_9_2_2_5_1`). `type_factory` returns the
+first, and the library's `to_answer`, which pairs classes by the
+`Request`/`Answer` suffix, does not pair the second.
 
-**Header flags.** A class's `is_request` is its header's REQ flag. Where a
-header's flag disagrees with the command's name the class says so in a
-comment; the corpus corrects the two misprints known (TS 29.336 clause
+**Header flags.** A class's `header.is_request` is its header's REQ flag.
+Where a header's flag disagrees with the command's name the class says so
+in a comment; the corpus corrects the two misprints known (TS 29.336 clause
 8.2.5's RIR printed without REQ, TS 29.273 clause 7.2.2.1.4's AAA with it),
 so the committed corpus generates no such class.

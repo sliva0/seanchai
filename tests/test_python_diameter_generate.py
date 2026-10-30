@@ -1,9 +1,10 @@
-"""The python-diameter generator writes a package the library can run.
+"""The python-diameter generator writes modules in the library's own shape.
 
 The package is generated from the committed corpus once per module and then
 imported in a fresh interpreter against the real library, so a rendering
 slip shows up as an import error rather than as text that merely looks
-right. The pinned lists are what README.md beside the script states.
+right, and the encoding checks run through the library's own codec. The
+pinned lists are what README.md beside the script states.
 """
 
 import importlib.util
@@ -11,10 +12,8 @@ import subprocess
 import sys
 import textwrap
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
-from diameter.message.avp import AvpUnsigned32
 
 from seanchai import model
 from seanchai.dad import ast
@@ -55,6 +54,10 @@ def _run(package: Path, code: str) -> str:
     return result.stdout
 
 
+def _read(package: Path, module: str) -> str:
+    return (package / f"{module}.py").read_text(encoding="utf-8")
+
+
 def test_the_output_is_a_function_of_the_corpus(generator, package, tmp_path):
     again = tmp_path / "again"
     assert generator.main(["--all", "-o", str(again)]) == 0
@@ -63,42 +66,87 @@ def test_the_output_is_a_function_of_the_corpus(generator, package, tmp_path):
     assert first == second
 
 
-def test_every_class_imports_and_names_what_its_rules_derive(package):
-    """Each annotation the generator writes is an attribute the runtime
-    derives from the same rule, in the same order; building `avp_def` also
-    builds every grouped value class a command reaches."""
+def test_every_module_imports_as_library_classes_and_registers_nothing(package):
+    """Every class is a `DefinedMessage` whose annotations name its
+    `AvpGenDef` attributes in order. Importing the package leaves the
+    library's dictionaries and command table as they were; once
+    `additions.register()` has run, every `AvpGenDef` in every class,
+    grouped classes included, has a dictionary entry to encode by."""
     output = _run(
         package,
         """
-        import importlib, pkgutil
+        import importlib, inspect, pkgutil
+        from diameter.message import DefinedMessage
+        from diameter.message.avp.avp import get_avp_dictionary_entry
+        from diameter.message.avp import dictionary
+        from diameter.message.avp.generator import AvpGenDef
+        from diameter.message.commands import all_commands
+
+        def snapshot():
+            vendors = dictionary.AVP_VENDOR_DICTIONARY.items()
+            return (
+                dict(dictionary.AVP_DICTIONARY),
+                {vendor: dict(entries) for vendor, entries in vendors},
+                dict(all_commands),
+            )
+
+        before = snapshot()
         import generated
-        count = 0
-        for info in pkgutil.iter_modules(generated.__path__):
-            module = importlib.import_module(f"generated.{info.name}")
-            for name in getattr(module, "__all__", ()):
-                cls = getattr(module, name)
-                if getattr(cls, "is_request", None) is None:
+        modules = [
+            importlib.import_module(f"generated.{info.name}")
+            for info in pkgutil.iter_modules(generated.__path__)
+        ]
+        assert snapshot() == before
+        holders = []
+        directions = 0
+        for module in modules:
+            for name, cls in inspect.getmembers(module, inspect.isclass):
+                if cls.__module__ != module.__name__:
                     continue
-                written = list(cls.__annotations__)
-                derived = [d.attr_name for d in cls.avp_def]
-                assert written == derived, (info.name, name, written, derived)
-                count += 1
-        print(count)
+                holders.append(cls)
+                if module.__name__ == "generated.additions":
+                    continue
+                assert issubclass(cls, DefinedMessage), name
+                assert name in module.__all__, name
+                if "avp_def" in vars(cls):
+                    written = list(vars(cls)["__annotations__"])
+                    assert written.pop() == "avp_def"
+                    derived = [d.attr_name for d in cls.avp_def]
+                    assert written == derived, (module.__name__, name)
+                    assert all(isinstance(d, AvpGenDef) for d in cls.avp_def)
+                    directions += 1
+        from generated import additions
+        additions.register()
+        unknown = [
+            (cls.__name__, d.attr_name)
+            for cls in holders
+            for d in getattr(cls, "avp_def", ()) or ()
+            if get_avp_dictionary_entry(d.avp_code, d.vendor_id) is None
+        ]
+        assert not unknown, unknown
+        print(len(modules), directions)
         """,
     )
-    assert int(output) > 300
+    modules, directions = map(int, output.split())
+    assert modules == 55
+    assert directions > 300
 
 
-def test_a_command_round_trips_through_the_library(package):
-    """A Cx UAR encoded from the generated class decodes, through the
-    library's own command table, back into the generated class."""
+def test_a_cx_uar_round_trips_through_the_librarys_codec(package):
+    """A UAR built from the generated class encodes with the library's
+    `Avp.new`, decodes through `Message.from_bytes` into the library's own
+    merged class, which reads the same values, and into the generated class
+    through its `type_factory`, which re-encodes it byte for byte."""
     output = _run(
         package,
         """
-        from diameter.message import Message
-        from generated import avps, ts29_229
+        from diameter.message import Message, MessageHeader
+        from diameter.message.avp.grouped import VendorSpecificApplicationId
+        from diameter.message.constants import APP_3GPP_CX, VENDOR_TGPP
+        from generated import ts29_229
 
         request = ts29_229.UserAuthorizationRequest()
+        request.header.application_id = ts29_229.APPLICATION_ID
         request.session_id = "scscf.example;1;2"
         request.auth_session_state = 1
         request.origin_host = b"scscf.example"
@@ -107,66 +155,259 @@ def test_a_command_round_trips_through_the_library(package):
         request.user_name = "user@example"
         request.public_identity = "sip:user@example"
         request.visited_network_identifier = b"visited"
-        request.vendor_specific_application_id = (
-            avps.VENDOR_SPECIFIC_APPLICATION_ID.grouped_class(
-                vendor_id=10415, auth_application_id=16777216
-            )
+        request.uar_flags = 1
+        request.vendor_specific_application_id = VendorSpecificApplicationId(
+            vendor_id=VENDOR_TGPP, auth_application_id=APP_3GPP_CX
         )
-        decoded = Message.from_bytes(request.as_bytes())
-        header = decoded.header
-        cls = ts29_229.UserAuthorization.type_factory(header)
-        again = cls(header, decoded.avps)
-        print(header.application_id, type(again).__name__)
+        sent = request.as_bytes()
+
+        merged = Message.from_bytes(sent)
+        print(type(merged).__module__, type(merged).__name__, merged.public_identity)
+        plain = Message.from_bytes(sent, plain_msg=True)
+        cls = ts29_229.UserAuthorization.type_factory(plain.header)
+        again = cls(plain.header, plain.avps)
+        print(cls.__module__, cls.__name__, again.header.application_id)
         print(again.public_identity, again.vendor_specific_application_id.vendor_id)
-        print(type(again.to_answer()).__name__)
+        print(again.as_bytes() == sent, type(again.to_answer()).__name__)
+        answer = MessageHeader(command_code=300)
+        print(ts29_229.UserAuthorization.type_factory(answer).__name__)
+        # TS 29.229 forbids the M flag on UAR-Flags, which the library's
+        # dictionary defaults on: `is_mandatory` follows the document.
+        (flags,) = [avp for avp in again.avps if avp.name == "UAR-Flags"]
+        print(flags.is_mandatory)
         """,
     )
-    assert output.split("\n")[:3] == [
-        "16777216 UserAuthorizationRequest",
+    assert output.splitlines() == [
+        "diameter.message.commands.user_authorization UserAuthorizationRequest"
+        " sip:user@example",
+        "generated.ts29_229 UserAuthorizationRequest 16777216",
         "sip:user@example 10415",
+        "True UserAuthorizationAnswer",
         "UserAuthorizationAnswer",
+        "False",
     ]
 
 
-def test_holes_stay_in_the_rule_tables(package):
-    """A hole with an identity is an `AvpDef` that says so, one without is
-    an `AvpHole`, and every rule naming either carries the reason."""
-    avps = (package / "avps.py").read_text(encoding="utf-8")
-    assert 'LINE_IDENTIFIER = AvpHole(\n    "Line-Identifier",' in avps
+def test_a_library_grouped_class_with_other_m_bits_is_not_reused(package):
+    """TS 29.229's table forbids the M flag on Feature-List-ID and
+    Feature-List, which the library's `SupportedFeatures` sets, so a Cx UAR
+    carries Supported-Features in a class of its own and sends both inner
+    AVPs with M clear."""
+    output = _run(
+        package,
+        """
+        from diameter.message import Message
+        from diameter.message.avp.grouped import SupportedFeatures
+        from generated import ts29_229
+
+        (rule,) = [
+            d for d in ts29_229.UserAuthorizationRequest.avp_def
+            if d.attr_name == "supported_features"
+        ]
+        print(rule.type_class.__name__, rule.type_class is SupportedFeatures)
+        request = ts29_229.UserAuthorizationRequest()
+        request.supported_features = [
+            rule.type_class(vendor_id=10415, feature_list_id=1, feature_list=3)
+        ]
+        (features,) = [
+            avp
+            for avp in Message.from_bytes(request.as_bytes(), plain_msg=True).avps
+            if avp.name == "Supported-Features"
+        ]
+        for inner in features.value:
+            print(inner.name, inner.is_mandatory)
+        """,
+    )
+    assert output.splitlines() == [
+        "SupportedFeatures_TS29_229 False",
+        "Vendor-Id True",
+        "Feature-List-ID False",
+        "Feature-List False",
+    ]
+
+
+def test_digest_qop_is_the_librarys_ietf_avp(package):
+    """TS 29.229's table forbids V on Digest-QoP, so it is RFC 4590's code
+    110 in vendor 0, which the library holds as `AVP_DIGEST_QOP`, not an
+    addition in vendor 10415."""
+    additions = _read(package, "additions")
+    assert "DIGEST_QOP =" not in additions
+    holder = additions.split("\nclass SipDigestAuthenticate_TS29_229:\n")[1]
     assert (
-        "Rule(LINE_IDENTIFIER, max=None),"
-        "  # hole: TS29.229 Line-Identifier: resolves nowhere"
-    ) in avps
-    sta = (package / "ts29_273_7.py").read_text(encoding="utf-8")
+        '        AvpGenDef("digest_qop", AVP_DIGEST_QOP, is_required=True,'
+        " is_mandatory=True),\n"
+    ) in holder.split("\n\n\n")[0]
+
+
+def test_classes_take_the_librarys_names_and_constants(package):
+    gx = _read(package, "ts29_212_5")
+    assert "class CreditControl(DefinedMessage):" in gx
+    assert '    name: str = "Credit-Control"' in gx
     assert (
-        "Rule(avps.EAP_PAYLOAD, REQUIRED),  # hole: RFC4072 EAP-Payload: no flag_rules"
+        "class CreditControlRequest(CreditControl):\n"
+        '    """A Credit-Control-Request message, clause 5.6.2, printed CC-Request."""'
+    ) in gx
+    assert "APPLICATION_ID = APP_3GPP_GX  # 16777238\n" in gx
+    assert "from diameter.message.constants import *\n" in gx
+    cx = _read(package, "ts29_229")
+    assert (
+        '        AvpGenDef("public_identity", AVP_TGPP_PUBLIC_IDENTITY, VENDOR_TGPP,'
+        " is_required=True, is_mandatory=True),\n"
+    ) in cx
+    # The library's own type_factory idiom.
+    assert (
+        "        if header.is_request:\n"
+        "            return UserAuthorizationRequest\n"
+        "        return UserAuthorizationAnswer\n"
+    ) in cx
+    # A command code the library has no class for takes the document's name.
+    assert "class Ec(DefinedMessage):" in _read(package, "ts29_154_a_6")
+
+
+def test_what_the_library_lacks_is_an_addition_in_its_shape(package):
+    """RTR-Flags is absent from 0.9.0's dictionary, and Result-Code is there
+    as Integer32 where RFC 6733 says Unsigned32. Neither is registered on
+    import; `register()` adds the new entry and leaves the library's own,
+    and only `corrections=True` replaces it."""
+    additions = _read(package, "additions")
+    assert "AVP_TGPP_RTR_FLAGS = 659  # TS29.229 clause 6.3.69\n" in additions
+    assert (
+        '    AVP_TGPP_RTR_FLAGS: {"name": "RTR-Flags", "type": AvpUnsigned32,'
+        ' "vendor": 10415},  # TS29.229 clause 6.3.69\n'
+    ) in additions
+    assert (
+        '    AVP_RESULT_CODE: {"name": "Result-Code", "type": AvpUnsigned32,'
+        ' "mandatory": True},  # RFC6733 clause 7.1; the library holds it as'
+        " AvpInteger32\n"
+    ) in additions
+    cx = _read(package, "ts29_229")
+    assert "    AVP_TGPP_RTR_FLAGS,\n" in cx.split("from .additions import (")[1]
+    assert (
+        "AVP_RESULT_CODE, is_mandatory=True),  # additions.py corrects the"
+        " library's AvpInteger32 to AvpUnsigned32\n"
+    ) in cx
+    output = _run(
+        package,
+        """
+        from diameter.message.avp import Avp
+        from diameter.message.constants import AVP_RESULT_CODE
+        from generated import additions
+
+        try:
+            Avp.new(additions.AVP_TGPP_RTR_FLAGS, 10415)
+        except ValueError as error:
+            print(error)
+        additions.register()
+        print(type(Avp.new(additions.AVP_TGPP_RTR_FLAGS, 10415, 1)).__name__)
+        print(type(Avp.new(AVP_RESULT_CODE)).__name__)
+        additions.register(corrections=True)
+        print(type(Avp.new(AVP_RESULT_CODE, value=2**31)).__name__)
+        """,
+    )
+    assert output.splitlines() == [
+        "AVP code 659 with vendor 10415 is unknown",
+        "AvpUnsigned32",
+        "AvpInteger32",
+        "AvpUnsigned32",
+    ]
+
+
+def test_a_grouped_class_the_library_cannot_use_is_an_addition(package):
+    """In `grouped.py`'s shape, named so it shadows nothing the star imports
+    bring in, and saying why the library's class does not serve."""
+    additions = _read(package, "additions")
+    assert (
+        "@dataclasses.dataclass\n"
+        "class FailedPcscf:\n"
+        '    """A data container that represents the "Failed-PCSCF" (664) grouped'
+        " AVP.\n\n"
+        "    TS29.229 clause 6.3.74: the library has no class for it.\n"
+    ) in additions
+    restoration = additions.split("\nclass ScscfRestorationInfo_TS29_229:\n")[1]
+    why = " ".join(restoration.split('    """', 2)[1].split())
+    assert why.endswith(
+        "TS29.229 clause 6.3.46: `ScscfRestorationInfo` lacks"
+        " Registration-Time-Out, SIP-Authentication-Scheme;"
+        " `ScscfRestorationInfo` holds Restoration-Info in a class this"
+        " reading's does not match; `ScscfRestorationInfo` encodes"
+        " Restoration-Info with M set, which this reading's flag rules forbid."
+    )
+    cx = _read(package, "ts29_229")
+    assert "    ScscfRestorationInfo_TS29_229,\n" in cx
+    assert "type_class=ScscfRestorationInfo_TS29_229)" in cx
+
+
+def test_holes_stay_in_the_tables_with_their_reason(package):
+    """A hole with an identity is an `AvpGenDef` that says so; one without,
+    like `* [ AVP ]`, is a comment in its place."""
+    sta = _read(package, "ts29_273_7")
+    assert (
+        '        AvpGenDef("eap_payload", AVP_EAP_PAYLOAD, is_required=True),'
+        "  # hole: RFC4072 EAP-Payload: no flag_rules\n"
     ) in sta
-
-
-def test_readings_that_differ_stay_apart_and_agreeing_ones_merge(package):
-    avps = (package / "avps.py").read_text(encoding="utf-8")
-    # TS 29.273's SIP-Auth-Data-Item body differs from TS 29.229's.
-    assert "SIP_AUTH_DATA_ITEM__TS29_229 = AvpDef(" in avps
-    assert "SIP_AUTH_DATA_ITEM__TS29_273 = AvpDef(" in avps
-    # TS 29.272 re-prints TS 29.212's Allocation-Retention-Priority.
-    assert 'defined_in=("TS29.212", "TS29.272"),\n)' in avps
-    # RFC 8506 drops the P flag RFC 4006 allows on CC-Time.
-    assert "CC_TIME__RFC4006 = AvpDef(" in avps
-    assert "CC_TIME__RFC8506 = AvpDef(" in avps
-    # TS 29.329 re-prints TS 29.229's Public-Identity.
+    additions = _read(package, "additions")
     assert (
-        'PUBLIC_IDENTITY = AvpDef(\n    "Public-Identity", 601, 10415, AvpUtf8String,'
-        ' FlagRules(must="MV"),\n    defined_in=("TS29.229", "TS29.329"),\n)'
-    ) in avps
+        "        # * [ Line-Identifier ]  # hole: TS29.229 Line-Identifier:"
+        " resolves nowhere\n        # * [ AVP ]\n"
+    ) in additions
 
 
-def test_an_externally_defined_enumeration_names_its_source(package):
-    avps = (package / "avps.py").read_text(encoding="utf-8")
+def _member(presence, minimum, maximum):
+    rule = ast.AvpRule(
+        name="Session-Id", presence=presence, min_occurs=minimum, max_occurs=maximum
+    )
+    flag_rules = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.MANDATORY}))
+    utf8 = ast.DataType.UTF8_STRING
+    target = model.Avp("Session-Id", 0, 263, utf8, flag_rules, "RFC6733", None, None)
+    return model.Member(rule=rule, avp=target), target
+
+
+_SESSION_ID = 'AvpGenDef("session_id", AVP_SESSION_ID, '
+
+
+@pytest.mark.parametrize(
+    ("presence", "spelled", "rendered"),
+    [
+        (ast.Presence.OPTIONAL, (1, 1), "is_mandatory=True),"),
+        (ast.Presence.REQUIRED, (1, None), "is_required=True, is_mandatory=True),"),
+        (ast.Presence.OPTIONAL, (0, None), "is_mandatory=True),"),
+        # What a list and `is_required` cannot say is a comment.
+        (ast.Presence.OPTIONAL, (0, 2), "is_mandatory=True),  # *2 [ Session-Id ]"),
+        (ast.Presence.FIXED, (0, 1), "is_mandatory=True),  # *1 < Session-Id >"),
+        (
+            ast.Presence.REQUIRED,
+            (2, None),
+            "is_required=True, is_mandatory=True),  # 2* { Session-Id }",
+        ),
+    ],
+)
+def test_occurrence_bounds_the_library_cannot_hold_are_comments(
+    generator, presence, spelled, rendered
+):
+    member, target = _member(presence, *spelled)
+    definitions = generator.Definitions()
+    definition = definitions.add(target)
+    resolver = generator.Resolver(generator.Library.load(), definitions)
+    (entry,) = generator.gen_defs([(member, definition)], resolver)
+    assert entry.text == _SESSION_ID + rendered
+    assert entry.repeated == (spelled[1] != 1)
+
+
+def test_a_member_named_twice_is_one_list(package):
+    """TS 29.345's `WiFi-P2P-Assistance-Info` prints
+    `[ WLAN-Link-Layer-Id-List ]` twice; the library decodes by identity,
+    so both occurrences go to one list attribute."""
+    additions = _read(package, "additions")
+    holder = additions.split("\nclass WifiP2pAssistanceInfo:\n")[1].split("\n\n\n")[0]
     assert (
-        "# Values: TS 32.422 [23] for Trace Depth (TS29.272 clause 7.3.67).\n"
-        "TRACE_DEPTH = AvpDef(\n"
-    ) in avps
-    assert "# Values: OMNA WSP Content Type Numbers [210] (TS32.299 clause" in avps
+        "    wlan_link_layer_id_list: list[WlanLinkLayerIdList] ="
+        " dataclasses.field(default_factory=list)\n"
+    ) in holder
+    assert holder.count('AvpGenDef("wlan_link_layer_id_list"') == 1
+    assert (
+        "  # printed [ WLAN-Link-Layer-Id-List ] and [ WLAN-Link-Layer-Id-List ],"
+        " one list\n"
+    ) in holder
 
 
 def test_only_commands_no_document_gives_an_id_generate_none(package):
@@ -176,16 +417,30 @@ def test_only_commands_no_document_gives_an_id_generate_none(package):
     without = sorted(
         path.stem
         for path in package.glob("*.py")
-        if "APPLICATION_ID: int | None = None\n" in path.read_text(encoding="utf-8")
+        if "\nAPPLICATION_ID = None\n" in path.read_text(encoding="utf-8")
     )
     assert without == ["rfc6733_8"]
-    gx = (package / "ts29_212_5.py").read_text(encoding="utf-8")
-    assert "APPLICATION_ID: int | None = 16777238\n" in gx
+    gx = _read(package, "ts29_212_5")
     assert (
         "The command headers print no application id; clause 5.1 states Gx's."
     ) in gx
-    ro = (package / "ts32_299_4.py").read_text(encoding="utf-8")
-    assert "APPLICATION_ID: int | None = 4\n" in ro
+    ro = _read(package, "ts32_299_4")
+    assert "APPLICATION_ID = APP_DIAMETER_CREDIT_CONTROL_APPLICATION  # 4\n" in ro
+
+
+def test_each_specification_reports_its_additions(generator, tmp_path, capsys):
+    assert generator.main(["TS29.229", "-o", str(tmp_path / "cx")]) == 0
+    assert capsys.readouterr().out == "TS29.229: 19 additions\n"
+    init = (tmp_path / "cx" / "__init__.py").read_text(encoding="utf-8")
+    assert (
+        "- `ts29_229`: 3GPP TS 29.229 clause 6, application 16777216; 18 additions\n"
+    ) in init
+
+
+def test_an_added_enumeration_carries_its_values_or_their_source(package):
+    additions = _read(package, "additions")
+    assert "E_MPS_ACTION_DISABLE_MPS_FOR_DTS = 0\n" in additions
+    assert "# Values: TS 23.682[243] (TS32.299 clause 7.2.20eA).\n" in additions
 
 
 def test_a_directory_it_did_not_write_is_refused(generator, tmp_path):
@@ -195,10 +450,9 @@ def test_a_directory_it_did_not_write_is_refused(generator, tmp_path):
     assert (tmp_path / "notes.txt").read_text(encoding="utf-8") == "mine"
 
 
-def test_a_dictionary_adds_wireshark_aliases(generator, tmp_path):
-    """Where Wireshark spells an AVP differently, the definition carries
-    its spelling and `BY_WIRESHARK_NAME` finds it; without a dictionary the
-    map is empty and nothing else changes."""
+def test_a_dictionary_adds_wireshark_names_as_comments(generator, tmp_path):
+    """The library has no place for another spelling, so Wireshark's
+    rides on the rule as a comment; without a dictionary there is none."""
     dictionary = tmp_path / "wireshark"
     dictionary.mkdir()
     (dictionary / "dictionary.xml").write_text(
@@ -222,185 +476,41 @@ def test_a_dictionary_adds_wireshark_aliases(generator, tmp_path):
     arguments = ["TS29.229", "-o", str(named), "--dictionary", str(dictionary)]
     assert generator.main(arguments) == 0
 
-    avps = (named / "avps.py").read_text(encoding="utf-8")
-    session_id = avps.split("\nSESSION_ID = ")[1].split("\n)\n")[0]
-    assert 'wireshark_name="Session-ID"' in session_id
-    origin_host = avps.split("\nORIGIN_HOST = ")[1].split("\n)\n")[0]
-    assert "wireshark_name" not in origin_host
-    assert '    "Session-ID": (SESSION_ID,),' in avps
-    plain_avps = (plain / "avps.py").read_text(encoding="utf-8")
-    assert "BY_WIRESHARK_NAME: dict[str, tuple[AvpDef, ...]] = {\n}" in plain_avps
-    output = _run(
-        named,
-        """
-        from named import avps
-        print(avps.BY_WIRESHARK_NAME["Session-ID"][0].name)
-        """,
-    )
-    assert output == "Session-Id\n"
+    cx = (named / "ts29_229.py").read_text(encoding="utf-8")
+    assert (
+        '        AvpGenDef("session_id", AVP_SESSION_ID, is_required=True,'
+        " is_mandatory=True),  # Wireshark: Session-ID\n"
+    ) in cx
+    assert (
+        '        AvpGenDef("origin_host", AVP_ORIGIN_HOST, is_required=True,'
+        " is_mandatory=True),\n"
+    ) in cx
+    assert "Wireshark:" not in (plain / "ts29_229.py").read_text(encoding="utf-8")
 
 
 @pytest.mark.sources
-def test_the_pinned_dictionary_aliases_import_cleanly(generator, tmp_path):
+def test_the_pinned_dictionary_names_import_cleanly(generator, tmp_path):
     output = tmp_path / "aliased"
     dictionary = _ROOT / "specifications" / "wireshark"
     arguments = ["--all", "-o", str(output), "--dictionary", str(dictionary)]
     assert generator.main(arguments) == 0
+    additions = (output / "additions.py").read_text(encoding="utf-8")
+    assert "type_class=CallBarringInfo),  # Wireshark: Call-Barring-Infor-List\n" in (
+        additions
+    )
+    cx = (output / "ts29_229.py").read_text(encoding="utf-8")
+    assert (
+        '"user_data", AVP_TGPP_CX_USER_DATA, VENDOR_TGPP, is_mandatory=True),'
+        "  # Wireshark: Cx-User-Data\n"
+    ) in cx
     found = _run(
         output,
         """
-        from aliased import avps
-        (info,) = avps.BY_WIRESHARK_NAME["Call-Barring-Infor-List"]
-        print(info.name, info.wireshark_name)
-        print(avps.BY_WIRESHARK_NAME["Cx-User-Data"][0].name)
+        import importlib, pkgutil
+        import aliased
+        for info in pkgutil.iter_modules(aliased.__path__):
+            importlib.import_module(f"aliased.{info.name}")
+        print("ok")
         """,
     )
-    assert found == "Call-Barring-Info Call-Barring-Infor-List\nUser-Data\n"
-
-
-def test_avps_are_built_and_read_as_their_generated_types(package):
-    """TS 29.214's `Codec-Data` is OctetString and RFC 6733's
-    `Authorization-Lifetime` Unsigned32, whatever the library's dictionary
-    holds under their codes (UTF8String and Integer32 in 0.9.0), so values
-    only the generated types can hold survive a round trip."""
-    output = _run(
-        package,
-        """
-        from diameter.message import Message
-        from diameter.message.avp import Avp
-        from generated import avps, rfc4005
-
-        codec = avps.CODEC_DATA.build(b"\\xff")
-        back = avps.CODEC_DATA.read(Avp.from_bytes(codec.as_bytes()))
-        print(type(codec).__name__, back)
-
-        request = rfc4005.AaRequest()
-        request.session_id = "nas.example;1"
-        request.auth_application_id = 1
-        request.origin_host = b"nas.example"
-        request.origin_realm = b"example"
-        request.destination_realm = b"example"
-        request.auth_request_type = 1
-        request.authorization_lifetime = 2147483648
-        received = Message.from_bytes(request.as_bytes(), plain_msg=True)
-        again = rfc4005.AaRequest(received.header, received.avps)
-        print(again.authorization_lifetime)
-        """,
-    )
-    assert output == "AvpOctetString b'\\xff'\n2147483648\n"
-
-
-def test_a_member_named_twice_keeps_both_occurrences(package):
-    """TS 29.345's `WiFi-P2P-Assistance-Info` prints
-    `[ WLAN-Link-Layer-Id-List ]` twice: each occurrence decodes into its
-    own attribute, in order, and re-encodes to the same bytes."""
-    output = _run(
-        package,
-        """
-        from diameter.message.avp import Avp
-        from generated import avps
-
-        info = avps.WIFI_P2P_ASSISTANCE_INFO
-        listed = avps.WLAN_LINK_LAYER_ID_LIST.grouped_class
-        one = avps.WLAN_LINK_LAYER_ID.grouped_class
-        value = info.grouped_class(
-            wlan_link_layer_id_list=listed(wlan_link_layer_id=[one(mac_address="first")]),
-            wlan_link_layer_id_list_2=listed(wlan_link_layer_id=[one(mac_address="second")]),
-        )
-        sent = info.build(value).as_bytes()
-        back = info.read(Avp.from_bytes(sent))
-        print(back.wlan_link_layer_id_list.wlan_link_layer_id[0].mac_address)
-        print(back.wlan_link_layer_id_list_2.wlan_link_layer_id[0].mac_address)
-        print(info.build(back).as_bytes() == sent, back.additional_avps)
-        """,
-    )
-    assert output == "first\nsecond\nTrue []\n"
-
-
-def test_a_cer_without_host_ip_address_is_refused(package):
-    """RFC 6733's CER requires `1* { Host-IP-Address }`."""
-    output = _run(
-        package,
-        """
-        from generated import rfc6733_5
-        from generated._base import OccurrenceError
-
-        request = rfc6733_5.CapabilitiesExchangeRequest()
-        request.origin_host = b"peer.example"
-        request.origin_realm = b"example"
-        request.vendor_id = 0
-        request.product_name = "seanchai"
-        request.host_ip_address = []
-        try:
-            request.as_bytes()
-        except OccurrenceError as error:
-            print(error)
-        """,
-    )
-    assert output == (
-        "CapabilitiesExchangeRequest: Host-IP-Address (host_ip_address) is set"
-        " 0 times, outside its 1* bounds\n"
-    )
-
-
-@pytest.fixture(scope="module")
-def base():
-    """The runtime support module, imported against the real library."""
-    path = _ROOT / "integrations" / "python_diameter" / "_base.py"
-    spec = importlib.util.spec_from_file_location("python_diameter_base", path)
-    assert spec is not None and spec.loader is not None
-    loaded = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = loaded
-    spec.loader.exec_module(loaded)
-    return loaded
-
-
-@pytest.mark.parametrize(
-    ("presence", "spelled", "rendered", "accepted", "refused"),
-    [
-        # `0*1< X >`: fixed in position, but may be absent.
-        (ast.Presence.FIXED, (0, 1), "Rule(X, FIXED, min=0)", [None, 7], [[7, 8]]),
-        # `1*2 [ X ]`: RFC 6733 §3.2 makes an optional rule's minimum 0.
-        (ast.Presence.OPTIONAL, (1, 2), "Rule(X, max=2)", [[], [7, 8]], [[7, 8, 9]]),
-        # `1* { X }`: at least one, an empty list included.
-        (ast.Presence.REQUIRED, (1, None), "Rule(X, REQUIRED, max=None)", [[7]], [[]]),
-        (ast.Presence.REQUIRED, (0, None), "Rule(X, REQUIRED, max=None)", [[7]], [[]]),
-        # `* [ X ]`: any number, none included.
-        (ast.Presence.OPTIONAL, (0, None), "Rule(X, max=None)", [[], [7, 8, 9]], []),
-    ],
-)
-def test_occurrence_bounds_are_rendered_and_enforced(
-    generator, base, presence, spelled, rendered, accepted, refused
-):
-    minimum, maximum = spelled
-    rule = ast.AvpRule(
-        name="X", presence=presence, min_occurs=minimum, max_occurs=maximum
-    )
-    flag_rules = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR}))
-    target = model.Avp(
-        "X", 10415, 1, ast.DataType.UNSIGNED32, flag_rules, "TS29.900", None, None
-    )
-    definition = generator.Definition(target, [], identifier="X")
-    member = model.Member(rule=rule, avp=target)
-    (item,) = generator.rule_items([(member, definition)], "")
-    assert item.text == rendered
-
-    x = base.AvpDef("X", 1, 10415, AvpUnsigned32, base.FlagRules(must="V"))
-    evaluated = eval(rendered, {**vars(base), "X": x})
-    assert evaluated.is_required == (member.min_occurs > 0)
-    assert (evaluated.min_occurs, evaluated.max) == (
-        member.min_occurs,
-        member.max_occurs,
-    )
-
-    for value in accepted:
-        holder = SimpleNamespace(x=value)
-        sent = base.encode(holder, (evaluated,), "Holder")
-        expected = (
-            [] if value is None else value if isinstance(value, list) else [value]
-        )
-        assert [avp.value for avp in sent] == expected
-    for value in refused:
-        holder = SimpleNamespace(x=value)
-        with pytest.raises(base.OccurrenceError, match=r"Holder: X \(x\)"):
-            base.encode(holder, (evaluated,), "Holder")
+    assert found == "ok\n"

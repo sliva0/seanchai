@@ -47,9 +47,10 @@ with Wireshark-derived tooling: `Cx-User-Data` and `Sh-User-Data` for TS
 collides in the dictionary, an entry spelled like the corpus wins, then the
 one whose type agrees; an identity the dictionary lacks or cannot settle is
 None, as is every name in a model built without a dictionary.
-`Oracle.name_for` is the lookup. The python-diameter generator emits the
-name as an alias where it differs
-([README](../integrations/python_diameter/README.md#wireshark-names)).
+`Oracle.name_for` is the lookup. The python-diameter generator writes the
+name as a comment on the rule where it differs, since the library has no
+place for another spelling
+([README](../integrations/python_diameter/README.md#what-the-librarys-shape-cannot-carry)).
 
 ## What still reports
 

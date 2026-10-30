@@ -152,12 +152,16 @@ extractor silently dropped (29.229's RTR prints `RTR-Flags ]` with no opening
 bracket, now input-patched) and the `Load` rows that became the linter's
 `row-without-code` rule.
 
-`generate.py` is the other direction: a package of protocol-specific
-classes, one per command per application and interface with that document's
-own members, over one deduplicated module of AVP definitions, meant to sit
-beside the library's merged classes rather than replace them. Holes stay in
-the rule tables with their reason; an application's id is the model's, so
-a module whose document states it only in prose gets it, and only RFC
-6733's clause 8 gets `None`. The
-[README](../integrations/python_diameter/README.md) covers the layout, where
-it departs from the library's conventions, and where the ids come from.
+`generate.py` is the other direction: one module per application and
+interface, whose command classes carry that document's own members and are
+written the way the library writes its own — `DefinedMessage` subclasses
+whose `AvpGenDef` tables reference the library's `AVP_*`, `VENDOR_*` and
+grouped classes — so the library can carry them beside its merged classes.
+What its dictionary lacks, or types otherwise than the document, goes to an
+`additions.py` in the dictionary's shape rather than being papered over.
+Holes stay in the tables with their reason; an application's id is the
+model's, so a module whose document states it only in prose gets it, and
+only RFC 6733's clause 8 gets `None`. The
+[README](../integrations/python_diameter/README.md) covers the layout, the
+additions, how the library would adopt the modules, and what its shape
+cannot carry.
