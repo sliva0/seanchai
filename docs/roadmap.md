@@ -14,22 +14,18 @@ letter is not reused. What exists is described in the per-module documents.
   Three axes under four labels; modelling means deciding what each means.
   The extractor warns about them today, which is the right amount of
   machinery until then.
-- **Q. Move the header application-id corrections to application
-  blocks.** TS 29.272's VCSG commands (clause 7.2.2, 16777308) and TS
-  29.273's SWa DER/DEA (clauses 4.2.1 and 5.2.1, 16777250) are corrected
-  by writing the id into the header, which claims the header prints it; an
-  inserted `Application` block would cite the clause instead.
 
 ## Linter and corpus
 
 - **S. Read where the RFCs' value-less enumerated clauses point.** The RFC
   extractor warns "no value list found" for 27 AVPs (RFC 4005, 5777, 5778,
-  6733, 7155). The clauses checked print no list: most cite a registry (RFC 6733's `Termination-Cause` "can be found
-  in the IANA registry", RFC 5777's seven "managed by IANA under the ...
-  registry", RFC 4005's and 7155's `[RADIUSAttrVals]`), RFC 5778's
-  `MIP-Algorithm-Type` borrows RFC 4004's, and its `MIP6-Auth-Mode` names
-  its one value in prose and numbers it only in the IANA section. The
-  first two shapes are what `; Values:` holds for the docx extractor.
+  6733, 7155). The clauses checked print no list: most cite a registry (RFC
+  6733's `Termination-Cause` "can be found in the IANA registry", RFC 5777's
+  seven "managed by IANA under the ... registry", RFC 4005's and 7155's
+  `[RADIUSAttrVals]`), RFC 5778's `MIP-Algorithm-Type` borrows RFC 4004's,
+  and its `MIP6-Auth-Mode` names its one value in prose and numbers it only
+  in the IANA section. The first two shapes are what `; Values:` holds for
+  the docx extractor.
 
 ## Sources
 

@@ -1000,11 +1000,11 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
 
     The rot check above reads its expectation out of the correction it is
     testing, so a wrong `expect`/`replace`/reason changed together stays green.
-    This one names the outcome — four application ids, one AVP code, one
-    missing vendor-id, two respelled names and TS 29.217's two eNodeB
-    spellings (each in a re-used row and a body, one label here), nothing
-    else — so changing what the corrections do has to be a deliberate edit
-    here too.
+    This one names the outcome — one AVP code, one missing vendor-id, two
+    respelled names and TS 29.217's two eNodeB spellings (each in a re-used
+    row and a body, one label here), nothing else, plus the inserted rows
+    and the VCSG application block — so changing what the corrections do has
+    to be a deliberate edit here too.
     """
     raw = _ROOT / "dad" / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
@@ -1030,14 +1030,6 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     assert {
         (labels[path[:-1]], path[-1], *value) for path, value in changed.items()
     } == {
-        (name, "application_id", None, 16777308)
-        for name in (
-            "Update-VCSG-Location-Request",
-            "Update-VCSG-Location-Answer",
-            "Cancel-VCSG-Location-Request",
-            "Cancel-VCSG-Location-Answer",
-        )
-    } | {
         # Alert-Reason's misspelled type is an input patch, not a correction:
         # a closed `data_type` means the raw file cannot carry "Enumerate" as
         # far as this layer.
@@ -1058,8 +1050,17 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
         ("eNodeB-ID", "name", "eNodeB-ID", "eNodeB-Id"),
         ("Extended-eNodeB-ID", "name", "Extended-eNodeB-ID", "Extended-eNodeB-Id"),
     }
+    (block,) = [c.node for c in inserted if isinstance(c.into, corrections.header)]
+    assert block == ast.Application(
+        name="S7a/S7d",
+        source=ast.SourceRef(section="7.2.2", page=73),
+        application_id=16777308,
+        scope=("7.2.21", "7.2.22", "7.2.23", "7.2.24"),
+    )
     inserted_rows = set()
     for correction in inserted:
+        if isinstance(correction.into, corrections.header):
+            continue
         assert isinstance(correction.node, ast.ReusedAvpRow)
         assert isinstance(correction.into, corrections.reused_avps)
         inserted_rows.add(

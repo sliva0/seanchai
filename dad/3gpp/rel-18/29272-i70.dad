@@ -5,6 +5,14 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129272/18.07.00_60/ts_129272v180700p.pdf
 
 
+; Type: Application ;; inserted: (TS29.272.py#application-id-vcsg)
+; Name: S7a/S7d
+; Section: 7.2.2
+; Page: 73
+; Application-ID: 16777308
+; Scope: 7.2.21, 7.2.22, 7.2.23, 7.2.24
+
+
 ; Type: Message
 ; Name: Update-Location-Request, ULR
 ; Section: 7.2.3
@@ -572,7 +580,7 @@
 ; Name: Update-VCSG-Location-Request, UVR
 ; Section: 7.2.21
 ; Page: 84
-<Update-VCSG-Location-Request> ::= < Diameter Header: 8388638, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py#vcsg-application-id-update-vcsg-location-request)
+<Update-VCSG-Location-Request> ::= < Diameter Header: 8388638, REQ, PXY >
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -595,7 +603,7 @@
 ; Name: Update-VCSG-Location-Answer, UVA
 ; Section: 7.2.22
 ; Page: 84
-<Update-VCSG-Location-Answer> ::= < Diameter Header: 8388638, PXY, 16777308 > ;; corrected: (TS29.272.py#vcsg-application-id-update-vcsg-location-answer)
+<Update-VCSG-Location-Answer> ::= < Diameter Header: 8388638, PXY >
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -618,7 +626,7 @@
 ; Name: Cancel-VCSG-Location-Request, CVR
 ; Section: 7.2.23
 ; Page: 84
-<Cancel-VCSG-Location-Request> ::= < Diameter Header: 8388642, REQ, PXY, 16777308 > ;; corrected: (TS29.272.py#vcsg-application-id-cancel-vcsg-location-request)
+<Cancel-VCSG-Location-Request> ::= < Diameter Header: 8388642, REQ, PXY >
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]
@@ -639,7 +647,7 @@
 ; Name: Cancel-VCSG-Location-Answer, CVA
 ; Section: 7.2.24
 ; Page: 85
-<Cancel-VCSG-Location-Answer> ::= < Diameter Header: 8388642, PXY, 16777308 > ;; corrected: (TS29.272.py#vcsg-application-id-cancel-vcsg-location-answer)
+<Cancel-VCSG-Location-Answer> ::= < Diameter Header: 8388642, PXY >
         < Session-Id >
         [ DRMP ]
         [ Vendor-Specific-Application-Id ]

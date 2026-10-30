@@ -2,7 +2,7 @@
 
 `src/seanchai/dad/corrections.py` is the second edit layer: for data that
 extracts and parses fine but is *wrong* — a misprinted AVP code, a clause
-reference to the wrong section, an application id the header omits. Input
+reference to the wrong section, an application id no reading states. Input
 patches are find/replace on text; corrections are find/replace on typed
 fields, with the same declare-expect-fail-loudly contract.
 
@@ -15,14 +15,14 @@ from seanchai.dad.corrections import Correction, definition
 
 CORRECTIONS = [
     Correction(
-        id="vcsg-application-id",
-        target=definition("Update-VCSG-Location-Request"),
-        field="application_id",
-        expect=None,
-        replace=16777308,
-        reason="clause 7.2.2 assigns the VCSG commands to S7a/S7d (16777308);"
-        " the command header omits the id",
-        versions="18.6.0",
+        id="area-scope-code",
+        target=definition("Area-Scope"),
+        field="code",
+        expect=1623,
+        replace=1624,
+        reason="clause 7.3.138's AVP header prints Job-Type's code; table"
+        " 7.3.1/1 and the TS 29.230 registry both assign Area-Scope 1624",
+        versions="18.6.0..18.7.0",
     ),
 ]
 ```
@@ -97,9 +97,12 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   `Insert` adds an `Application` block, after the file's others (`after`
   must be None), expecting no block of that name: the RFCs state their
   application ids in wordings no two share (RFC 4006 in its IANA
-  considerations, RFC 6733 per command group in clauses 2.5 and 9.3), and TS
+  considerations, RFC 6733 per command group in clauses 2.5 and 9.3), TS
   32.299 only through its Acct- and Auth-Application-Id AVP clauses (7.1.5,
-  7.1.6), so their blocks are inserted citing the clause.
+  7.1.6), TS 29.272 for its VCSG commands in the command table's clause
+  (7.2.2, 16777308) and TS 29.273 for SWa by naming STa's application
+  (4.2.1, with the id in 5.2.1), so their blocks are inserted citing the
+  clause. The command headers stay as printed.
 - **`Supply(id, target=definition(name), expect=<the ; Values: text>, values=(...), reason)`**:
   fills the value list of an enumerated AVP whose clause names another
   document for its values and prints none. It expects the section's

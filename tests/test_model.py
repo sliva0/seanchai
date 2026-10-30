@@ -579,7 +579,8 @@ class TestOverTheCommittedCorpus:
 
     def test_applications_follow_each_documents_interfaces(self, built):
         """TS 29.272 splits S6a/S6d, S13 and S7a by application id within
-        clause 7; TS 29.212's headers print no ids, so Gx, Gxx, Sd, St and
+        clause 7, its VCSG commands joining S7a through clause 7.2.2's
+        block; TS 29.212's headers print no ids, so Gx, Gxx, Sd, St and
         annex E take theirs from the clauses stating them and split by
         clause; TS 29.273 shares 16777250 between SWa, STa and SWd."""
 
@@ -591,7 +592,7 @@ class TestOverTheCommittedCorpus:
 
         assert keys("TS29.272") == [
             (16777251, "7", None, None),
-            (16777308, "7", None, None),
+            (16777308, "7", "S7a/S7d", "7.2.2"),
             (16777252, "7", None, None),
         ]
         assert keys("TS29.212") == [

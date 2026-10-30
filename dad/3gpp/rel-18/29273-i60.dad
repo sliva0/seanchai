@@ -5,11 +5,19 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129273/18.06.00_60/ts_129273v180600p.pdf
 
 
+; Type: Application ;; inserted: (TS29.273.py#application-id-swa)
+; Name: STa
+; Section: 4.2.1
+; Page: 24
+; Application-ID: 16777250
+; Scope: 4
+
+
 ; Type: Message
 ; Name: Diameter-EAP-Request, DER
 ; Section: 4.2.2.1.1
 ; Page: 24
-<Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY, 16777250 > ;; corrected: (TS29.273.py#diameter-eap-request-swa-application)
+<Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY >
         < Session-Id >
         [ DRMP ]
         { Auth-Application-Id }
@@ -27,7 +35,7 @@
 ; Name: Diameter-EAP-Answer, DEA
 ; Section: 4.2.2.1.2
 ; Page: 25
-<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY, 16777250 > ;; corrected: (TS29.273.py#diameter-eap-answer-swa-application)
+<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY >
         < Session-Id >
         [ DRMP ]
         { Auth-Application-Id }

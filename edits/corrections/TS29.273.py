@@ -8,6 +8,7 @@ from seanchai.dad.corrections import (
     avp_rule,
     definition,
     flag_rules,
+    header,
     reused_avps,
     reused_row,
     table_row,
@@ -213,30 +214,6 @@ CORRECTIONS = [
         versions="18.6.0",
     ),
     Correction(
-        id="diameter-eap-request-swa-application",
-        target=definition("Diameter-EAP-Request", section="4.2.2.1.1"),
-        field="application_id",
-        expect=None,
-        replace=16777250,
-        reason=(
-            "Clause 4.2.1 assigns SWa the STa application; clause 5.2.1"
-            " assigns STa 16777250. The SWa headers omit it."
-        ),
-        versions="18.6.0",
-    ),
-    Correction(
-        id="diameter-eap-answer-swa-application",
-        target=definition("Diameter-EAP-Answer", section="4.2.2.1.2"),
-        field="application_id",
-        expect=None,
-        replace=16777250,
-        reason=(
-            "Clause 4.2.1 assigns SWa the STa application; clause 5.2.1"
-            " assigns STa 16777250. The SWa headers omit it."
-        ),
-        versions="18.6.0",
-    ),
-    Correction(
         id="access-network-info-code",
         target=table_row("Access-Network-Info", table="8.2.3.0/1"),
         field="code",
@@ -396,4 +373,29 @@ CORRECTIONS += [
             frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.PROTECTED}),
         ),
     )
+]
+
+# Clause 4.2.1: "The SWa reference point shall use the same Diameter
+# application as the STa reference point", which clause 5.2.1 numbers
+# 16777250. SWa's DER/DEA headers (4.2.2.1.1, 4.2.2.1.2) print no id; its
+# RAR/RAA headers print 16777250.
+CORRECTIONS += [
+    Insert(
+        id="application-id-swa",
+        into=header(),
+        node=ast.Application(
+            name="STa",
+            source=ast.SourceRef(section="4.2.1", page=24),
+            application_id=16777250,
+            scope=("4",),
+        ),
+        after=None,
+        reason=(
+            "clause 4.2.1: 'The SWa reference point shall use the same"
+            " Diameter application as the STa reference point'; clause 5.2.1"
+            " defines '\"STa\" with value 16777250'. The DER/DEA headers of"
+            " 4.2.2.1.1 and 4.2.2.1.2 print no id"
+        ),
+        versions="18.6.0",
+    ),
 ]
