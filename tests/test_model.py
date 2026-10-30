@@ -953,7 +953,6 @@ _STANDING_HOLES = {
             "3GPP2-BSID"
         ],
     },
-    "TS29.229": {"resolves nowhere": ["Line-Identifier"]},
     "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
     "TS32.299": {
         "resolves nowhere": [

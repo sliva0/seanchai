@@ -364,7 +364,7 @@ why each stays:
 - **`registry-application-name`**, one. TS 29.272's VCSG application scope,
   inserted by correction citing clause 7.2.2, names 16777308 `S7a/S7d`;
   table 4.1 calls it "3GPP S7a".
-- **`unresolved-reference`**, ten. Six are AVPs no document defines,
+- **`unresolved-reference`**, nine. Six are AVPs no document defines,
   tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`
   and `MIP-MN-to-HA-SPI` (clauses 9.4–9.6; the prose and clause 11.1's
   table call the second `MIP-MN-to-FA-SPI`, defined nowhere either, and
@@ -374,11 +374,8 @@ why each stays:
   TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code` (clauses
   6.3.53, 6.3.54), and TS 29.154's `External-Group-Identifier` (the ECR
   body, clause A.6.6.2; table A.6.4.1-1 does not list it, and Wireshark
-  has no such AVP either). Four are members whose definition the document
-  neither prints nor cites in a form the file can hold: TS 29.229's
-  `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019, which its
-  table prints no Vendor-ID column to state, and neither ETSI transcription defines it;
-  Wireshark's dictionary attributes its code 500 to ETSI TS 183 033), and three in TS 32.299's grouped bodies.
+  has no such AVP either). Three are members of TS 32.299's grouped bodies
+  whose definition the document neither prints nor cites.
   `Submission-Timestamp` (7.2.112aA) and `Network-Element` (7.2.66aA)
   resolve nowhere; each has a near-name the document defines,
   `Submission-Time` (7.2.217, MMS-Information's) and
@@ -398,6 +395,13 @@ why each stays:
   `NSWO-Authorization`, an AVP until V11.3.0 whose indication table
   5.2.3.21/1 now carries as DEA-Flags bit 0, the member below it; the
   registry's 1514 is "Reserved", and the member is deleted.
+  Where the document defines the member in prose alone, the row was
+  inserted: TS 29.229 clause 6.3.42 says `Line-Identifier` "is of type
+  OctetString" and "has Vendor Id ETSI (13019) and AVP code 500", which
+  table 6.3.0.1 omits. The corrections give the table a Vendor-ID column,
+  blank in every printed row, so the row can state ETSI's vendor, V in
+  Must by RFC 6733 section 4.1.1; neither ETSI transcription defines it,
+  and Wireshark's dictionary has it, attributed to ETSI TS 183 033.
   The rule promotes to an error when these are gone, which needs the
   upstream documents to move.
 

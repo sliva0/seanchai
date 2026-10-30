@@ -6,6 +6,7 @@ from seanchai.dad.corrections import (
     Delete,
     Insert,
     avp_rule,
+    avp_table,
     reused_avps,
     reused_row,
     table_row,
@@ -102,6 +103,61 @@ CORRECTIONS = [
         reason="clause 6.3.55 says the Framed-Interface-Id AVP 'is defined in"
         " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
         " 6.3.0.1 omits it",
+        versions="18.1.0",
+    ),
+    # Clause 6.3.42 defines Line-Identifier in ETSI's vendor space, and the
+    # table, whose rows are all the file's vendor or IETF's by their V flag,
+    # prints no row for it. A Vendor-ID column, blank in every printed row,
+    # is where the row states the vendor the clause gives it.
+    Correction(
+        id="vendor-id-column",
+        target=avp_table("6.3.0.1"),
+        field="columns",
+        expect=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.SECTION,
+            ast.AvpColumn.TYPE,
+            ast.AvpColumn.MUST,
+            ast.AvpColumn.MAY,
+            ast.AvpColumn.SHOULD_NOT,
+            ast.AvpColumn.MUST_NOT,
+            ast.AvpColumn.ENCRYPT,
+        ),
+        replace=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.VENDOR,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.SECTION,
+            ast.AvpColumn.TYPE,
+            ast.AvpColumn.MUST,
+            ast.AvpColumn.MAY,
+            ast.AvpColumn.SHOULD_NOT,
+            ast.AvpColumn.MUST_NOT,
+            ast.AvpColumn.ENCRYPT,
+        ),
+        reason="clause 6.3.42: Line-Identifier 'has Vendor Id ETSI (13019)',"
+        " which no cell of table 6.3.0.1 can state; the printed rows' cells"
+        " stay blank, their vendor the file's or IETF's by their V flag",
+        versions="18.1.0",
+    ),
+    Insert(
+        id="line-identifier-row-missing",
+        into=avp_table("6.3.0.1"),
+        node=ast.AvpTableRow(
+            name="Line-Identifier",
+            vendor_id=13019,
+            code=500,
+            section="6.3.42",
+            data_type=ast.DataType.OCTET_STRING,
+            flag_rules=ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR})),
+        ),
+        after="Digest-HA1",
+        reason="clause 6.3.42: 'The Line-Identifier AVP is of type OctetString."
+        " This AVP has Vendor Id ETSI (13019) and AVP code 500.' SIP-Auth-Data-Item"
+        " (6.3.13) uses it and table 6.3.0.1 omits the row; V is in Must, as RFC"
+        " 6733 section 4.1.1 sets it for a header carrying a Vendor-ID, and the"
+        " clause states neither M nor encryption",
         versions="18.1.0",
     ),
     Delete(

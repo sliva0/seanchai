@@ -42,8 +42,5 @@ letter is not reused. What exists is described in the per-module documents.
     defines under the same name without being cited: TS 32.299's
     `TCP-Source-Port` (TS 29.212; table 7.2.0.1 refers to [215] for
     `UDP-Source-Port` only);
-  - definitions the format cannot hold: TS 29.229's `Line-Identifier`
-    (ETSI vendor 13019 in a clause, a vendor its table prints no column for; neither ETSI
-    transcription defines it);
   - re-used origins outside 3GPP and IETF, item K: `3GPP2-X.S0057` (TS
     29.212's `3GPP2-BSID`).

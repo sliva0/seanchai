@@ -5,7 +5,8 @@ definitions and own AVP-table rows, skipping re-used names — against
 Wireshark's Diameter dictionary by `(vendor-id, code)`, comparing name and
 type. A row's vendor is read as the model reads it
 ([linter.md](linter.md#vendor-spaces)), from its Vendor-ID cell where the
-table prints one (oneM2M TS-0004) and its V flag otherwise: TS 29.273's
+table prints one (oneM2M TS-0004; TS 29.229's `Line-Identifier`, which
+agrees with `etsie2e4.xml`'s ETSI 500) and its V flag otherwise: TS 29.273's
 rows for RFC 5778's `MIP-Session-Key` forbid the V bit, so they are checked
 in vendor 0. The
 dictionary is an independent reading of the same specifications, which is

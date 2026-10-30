@@ -351,8 +351,12 @@ def test_holes_stay_in_the_tables_with_their_reason(package):
         " 3GPP-Session-Stop-Indicator: no data_type, no flag_rules\n"
     ) in additions
     assert (
-        "        # * [ Line-Identifier ]  # hole: TS29.229 Line-Identifier:"
-        " resolves nowhere\n        # * [ AVP ]\n"
+        "        # [ TCP-Source-Port ]  # hole: TS32.299 TCP-Source-Port:"
+        " resolves nowhere\n"
+    ) in additions
+    # TS 29.229's Line-Identifier, ETSI's 500 by clause 6.3.42, resolves.
+    assert (
+        '        AvpGenDef("line_identifier", AVP_ETSI_LINE_IDENTIFIER, VENDOR_ETSI),\n'
     ) in additions
 
 

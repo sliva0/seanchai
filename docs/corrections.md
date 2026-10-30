@@ -115,7 +115,10 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   the member it follows, and expects no member of that name: RFC 5777's
   verified erratum 2333 restores three members `Time-Of-Day-Condition`'s
   ABNF omits, each defined in a clause of its own and tabulated in section
-  10.1.
+  10.1. A row stating a vendor its table prints no column for needs the
+  column first, a `Correction` to the table's `columns` adding `Vendor-ID`
+  with every printed row's cell blank: TS 29.229 clause 6.3.42 defines
+  `Line-Identifier` in ETSI's vendor 13019, and table 6.3.0.1 omits it.
 - **`Supply(id, target=definition(name), expect=<the ; Values: text>, values=(...), reason)`**:
   fills the value list of an enumerated AVP whose clause names another
   document for its values and prints none. It expects the section's
@@ -202,7 +205,8 @@ it changed, and one to a row's flag rules on the row. The file header, a table a
 line, so a correction to one of their fields is cited on the directive line
 that field prints —
 `; Bases: RFC6733, RFC4005 ;; corrected: (RFC4006.py#bases-nasreq)`,
-`; Table:` for a table label, `; Application-ID:` for an application's id —
+`; Table:` for a table label, `; Columns:` for its columns,
+`; Application-ID:` for an application's id —
 and on the block's first line when it removes that line.
 
 A deletion's note stands in the deleted line's place and names what is gone

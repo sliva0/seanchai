@@ -1182,9 +1182,6 @@ _STANDING_CORPUS_NOTES = {
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
     },
-    "29229-i10.dad": {
-        "unresolved-reference": ["Line-Identifier"],
-    },
     "29230-i60.dad": {
         "registry-range-overlap": [
             "318",

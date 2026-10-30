@@ -268,9 +268,11 @@ A Vendor-ID cell is the row's vendor as its table prints it, for a
 document tabulating several vendors' AVPs in one table: oneM2M TS-0004
 table A.4-1 gives IETF rows 0, `Node-Id` 3GPP's 10415 and its own AVPs
 45687. Where the column is present the cell is the row's vendor, its V
-flag notwithstanding; a table without it leaves the vendor to the file's
-`; Vendor-ID:` and the V flag
-([linter.md](linter.md#vendor-spaces)).
+flag notwithstanding; a table without it, or a dash in it, leaves the
+vendor to the file's `; Vendor-ID:` and the V flag
+([linter.md](linter.md#vendor-spaces)). TS 29.229 table 6.3.0.1 gains the
+column by correction for the one row clause 6.3.42 puts in ETSI's 13019,
+`Line-Identifier`, its printed rows' cells a dash.
 
 A mark column holds what the document marks about where its row applies,
 each mark in the document's spelling: the IP-CAN access types under
