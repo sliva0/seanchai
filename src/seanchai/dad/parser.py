@@ -758,7 +758,11 @@ _HEADER_PATHS: dict[str, ast.TreePath] = {
     "Vendor-ID": ("vendor_id",),
     "Bases": ("bases",),
     "Link": ("link",),
+    "Transcribed": ("transcribed",),
 }
+# `; Transcribed:` says how as well as from what, so a reader of the header
+# sees that no extractor wrote the file.
+_TRANSCRIBED_PREFIX = "by hand from "
 _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Type": ("type",),
     "Name": ("name",),
@@ -867,6 +871,8 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
     # base of the tree, is the file with nothing to put in it.
     bases = directives.pop("Bases", None)
     link = directives.pop("Link", None)
+    # Optional: only a file a person copied from a rendering carries it.
+    transcribed = directives.pop("Transcribed", None)
     _no_leftovers(directives, header.start)
 
     sections = []
@@ -899,6 +905,17 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
     if link is not None:
         with _validated(link.lineno):
             parsed_link = pydantic.HttpUrl(link.value)
+    parsed_transcribed = None
+    if transcribed is not None:
+        if not transcribed.value.startswith(_TRANSCRIBED_PREFIX):
+            raise DadParseError(
+                transcribed.lineno,
+                f"Transcribed must read {_TRANSCRIBED_PREFIX!r} and a URL",
+            )
+        with _validated(transcribed.lineno):
+            parsed_transcribed = pydantic.HttpUrl(
+                transcribed.value.removeprefix(_TRANSCRIBED_PREFIX)
+            )
     with _validated(vendor.lineno):
         vendor_id = _number(vendor.value, vendor.lineno, "Vendor-ID")
     parsed_bases: tuple[str, ...] = ()
@@ -919,6 +936,7 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
             vendor_id=vendor_id,
             bases=parsed_bases,
             link=parsed_link,
+            transcribed=parsed_transcribed,
             sections=tuple(sections),
         )
     return spec, layout

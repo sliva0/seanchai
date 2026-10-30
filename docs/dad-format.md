@@ -124,6 +124,13 @@ each starting with `; Type:`.
   prefix, ETSI's three-digit TISPAN series would read as a 3GPP number and
   OMA's names as nothing. No extractor reads these documents, so the corpus
   holds one only when someone writes it by hand.
+- **A transcription says so.** A document no extractor reads, because no
+  Word or text source of it exists, is copied by hand from its rendering,
+  and its header says which (`; Transcribed: by hand from <url>`, after
+  `; Link:`), so a reader knows no extractor vouches for the reading. The
+  extractor's rule binds the copyist: a transcription records what the
+  document prints, in the shapes the extractors give the same constructs,
+  and what the document prints wrong is a correction, never a silent fix.
 - **The parser is strict; the formatter defines canonical form.** Hand edits
   are normalised by the formatter (`seanchai format`), not by the parser
   guessing.

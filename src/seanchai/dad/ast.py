@@ -937,4 +937,10 @@ class Specification(Node):
     # rows cite origins by, so resolution shares their machinery.
     bases: tuple[SpecRef, ...] = ()
     link: pydantic.HttpUrl | None = None
+    # `; Transcribed: by hand from <url>` — the rendering a person copied
+    # this file from, for a document no extractor reads: ETSI ES 283 034
+    # and TS 183 017 exist only as PDF. None for extractor output, which
+    # never writes it; a transcription is held to the extractor's rule all
+    # the same (translate, never curate), and its misprints are corrections.
+    transcribed: pydantic.HttpUrl | None = None
     sections: tuple[Section, ...]

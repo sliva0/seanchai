@@ -18,7 +18,7 @@ has no tabs, carriage returns or trailing spaces. Productions ending in
 ```abnf
 file          = header *(2*NL section) NL
 header        = spec-line NL [version-line NL] vendor-line [NL bases-line]
-                [NL link-line]
+                [NL link-line] [NL transcribed-line]
 spec-line     = "; Specification: " inline-text
 version-line  = "; Version: " version
 vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
@@ -30,6 +30,7 @@ external-ref  = ("ETSI-" ("TS" / "ES") 3DIGIT "." 3DIGIT)  ; "ETSI-TS283.034"
               / ("OMA" 1*("-" 1*(ALPHA / DIGIT / "_")))   ; "OMA-DDS-Charging_Data"
               / ("oneM2M-TS-" 4DIGIT)                     ; "oneM2M-TS-0004"
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
+transcribed-line = "; Transcribed: by hand from " URI   ; the rendering copied
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
 section       = application-scope / message / grouped-avp / enumerated-avp
@@ -42,6 +43,10 @@ and keeps the publisher's numbering, written as one token: ETSI's
 "TS 283 034" dotted as a 3GPP number is, 3GPP2's "X.S0057" without its
 revision letter, OMA's name as OMA prints it, oneM2M's "TS-0004". Every
 publisher has one spelling, since resolution compares references exactly.
+
+`; Transcribed:` marks a file a person copied from a rendering, for a
+document no extractor reads (ETSI ES 283 034 and TS 183 017 exist only as
+PDF), and names that rendering; no extractor writes it.
 
 `; Version:` is present when the source has a version axis (3GPP yes, RFC
 no). `; Bases:` is optional only because RFC 6733, the base of the tree, has

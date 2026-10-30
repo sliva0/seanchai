@@ -1,10 +1,10 @@
 """RFC extraction smoke test, rejected shapes and quirk declarations."""
 
 import pytest
-from conftest import _declare
+from conftest import _ROOT, _declare
 
 from seanchai.dad import ast, formatter, parser
-from seanchai.extractor import rfc_text
+from seanchai.extractor import rfc_text, tgpp_docx
 from seanchai.extractor.errors import ExtractionError
 
 _HEADER_BOX = """\
@@ -51,6 +51,28 @@ def synthetic_rfc(tmp_path):
 def test_extracts_the_avp_table(synthetic_rfc):
     spec = rfc_text.extract(synthetic_rfc)
     assert parser.parse(formatter.format_spec(spec)) == spec
+
+
+def test_the_extractors_never_mark_their_output_transcribed(
+    synthetic_spec_docx, tmp_path
+):
+    """`; Transcribed:` is a person's statement about a file no extractor
+    wrote; nothing either extractor produces, nor any raw file they
+    committed, carries it."""
+    rfc = tmp_path / "rfc9999.txt"
+    rfc.write_text(_synthetic(), encoding="utf-8")
+    extracted = [tgpp_docx.extract(synthetic_spec_docx), rfc_text.extract(rfc)]
+    committed = [
+        parser.parse(path.read_text(encoding="utf-8"))
+        for tree in ("3gpp", "rfc")
+        for path in sorted((_ROOT / "dad" / "raw" / tree).rglob("*.raw.dad"))
+    ]
+
+    assert committed
+    assert all(spec.transcribed is None for spec in extracted + committed)
+    assert all(
+        "; Transcribed:" not in formatter.format_spec(spec) for spec in extracted
+    )
 
 
 def test_an_rfc_without_an_avp_table_can_still_be_a_corpus_node(tmp_path):

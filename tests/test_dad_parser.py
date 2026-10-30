@@ -779,6 +779,45 @@ def test_a_bases_entry_that_names_no_document_is_rejected_with_its_line():
     assert exc_info.value.lineno == 4
 
 
+_TRANSCRIBED = (
+    "; Specification: ETSI ES 283 034\n"
+    "; Version: 2.2.0\n"
+    "; Vendor-ID: 13019\n"
+    "; Bases: RFC6733\n"
+    "; Link: https://www.etsi.org/deliver/es.pdf\n"
+    "; Transcribed: by hand from https://www.etsi.org/deliver/es.pdf\n"
+)
+
+
+def test_a_transcription_names_the_rendering_it_was_copied_from():
+    spec = parser.parse(_TRANSCRIBED)
+
+    assert str(spec.transcribed) == "https://www.etsi.org/deliver/es.pdf"
+    assert formatter.format_spec(spec) == _TRANSCRIBED
+
+
+def test_the_transcribed_directive_formats_after_the_link():
+    lines = _TRANSCRIBED.splitlines()
+    swapped = "\n".join([*lines[:4], lines[5], lines[4]]) + "\n"
+
+    assert formatter.format_spec(parser.parse(swapped)) == _TRANSCRIBED
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["https://www.etsi.org/deliver/es.pdf", "by hand from es.pdf", "by hand from"],
+)
+def test_a_transcribed_directive_must_say_by_hand_from_a_url(value):
+    text = _TRANSCRIBED.replace(
+        "by hand from https://www.etsi.org/deliver/es.pdf", value
+    )
+
+    with pytest.raises(parser.DadParseError) as exc_info:
+        parser.parse(text)
+
+    assert exc_info.value.lineno == 6
+
+
 def test_avp_rules_carry_bold_and_strikethrough_markers_in_that_order():
     spec = parser.parse(
         _dad(
