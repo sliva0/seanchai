@@ -29,6 +29,7 @@ The vendor-id for locally defined AVPs is not printed by enumerated-AVP
 sections, so it is taken from the spec's grouped-AVP headers (3GPP: 10415).
 """
 
+import contextlib
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -855,6 +856,14 @@ _VALUE_FIRST_RE = re.compile(
 )
 
 
+# A label read out of prose is taken only in the shape a value name takes in
+# the documents: words of letters, digits, `-`, `_` and parentheses, single
+# spaces between (TS 32.299's "VAS4SMS Short Message Virtual Private Network
+# (VPN)", 7.2.213). `.dad` can quote any label, but a line of prose that
+# happens to follow a value is no label, and this is what turns it away.
+_VALUE_LABEL_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_()-]*(?: [A-Za-z0-9_()-]+)*")
+
+
 def _loose_enum_value(
     text: str, section: str, quirks: sources.Quirks
 ) -> ast.EnumValue | None:
@@ -886,25 +895,23 @@ def _loose_enum_value(
     for quirk in needed:
         quirks.fire(quirk)
     value = int(match["value"]) if match["hex"] is None else int(match["hex"], 16)
-    try:
-        return ast.EnumValue(name=name, value=value, description=description)
-    except pydantic.ValidationError:
-        raise ExtractionError(
-            f"{section}: enumerated value line {text!r} is no value name"
-        ) from None
+    if _VALUE_LABEL_RE.fullmatch(name):
+        with contextlib.suppress(pydantic.ValidationError):
+            return ast.EnumValue(name=name, value=value, description=description)
+    raise ExtractionError(f"{section}: enumerated value line {text!r} is no value name")
 
 
 def _value_first(match: re.Match, section: str) -> ast.EnumValue:
-    try:
-        return ast.EnumValue(
-            name=match["label"],
-            value=int(match["value"]),
-            description=match["description"] or None,
-        )
-    except pydantic.ValidationError:
-        raise ExtractionError(
-            f"{section}: enum value label {match['label']!r} is not a value name"
-        ) from None
+    if _VALUE_LABEL_RE.fullmatch(match["label"]):
+        with contextlib.suppress(pydantic.ValidationError):
+            return ast.EnumValue(
+                name=match["label"],
+                value=int(match["value"]),
+                description=match["description"] or None,
+            )
+    raise ExtractionError(
+        f"{section}: enum value label {match['label']!r} is not a value name"
+    )
 
 
 def _strip_note_ref(text: str) -> tuple[str, str | None]:

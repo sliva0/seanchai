@@ -383,8 +383,8 @@ LCS-Privacy-Check-Session ::= < AVP header: 2522 10415 >
 ; Section: 7.4.27
 ; Page: 36
 LCS-QoS-Class ::= < Enumerated AVP header: 2523 10415 >
-        ASSURED     = 0
-        BEST EFFORT = 1
+        ASSURED       = 0
+        "BEST EFFORT" = 1
 
 
 ; Type: Grouped AVP

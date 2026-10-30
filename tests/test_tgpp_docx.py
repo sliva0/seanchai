@@ -523,6 +523,19 @@ def test_a_label_after_the_value_must_be_a_value_name():
         )
 
 
+def test_a_label_before_the_value_must_be_a_value_name():
+    # TS 32.299 writes "0 PS to CS Transfer"; `.dad` could quote a label of
+    # prose, but the line is still no value.
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="value-first-enums", reason="rejection")], None)
+    section = _enum_with("3 Off; see clause 2")
+    section.paragraphs[-1].lines = _abnf_lines("3 Off; see clause 2")
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="is not a value name"):
+        tgpp_docx._extract_enumerated(section, "Example-Mode", 1, 10415, quirks, [])
+
+
 def _abnf_lines(*texts):
     return [
         tgpp_docx._Line(

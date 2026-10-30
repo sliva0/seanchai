@@ -75,10 +75,11 @@ each starting with `; Type:`.
   column is a reason to model it, not to carry it anonymously.
 - **Table cells are single tokens**, `-` for empty.
 - **Enum value names keep the document's spelling.** Most are identifiers
-  (`DELIVERY_REPORT`), but TS 32.299 labels values in words (`PS to CS
-  Transfer`, `Virtual Private Network (VPN)`), so a name may hold single
-  spaces and parentheses rather than a derived identifier no document
-  prints.
+  (`DELIVERY_REPORT`), but TS 32.299 labels values in words, so a name is
+  free text rather than a derived identifier no document prints, and one
+  that is not an identifier is quoted (`"PS to CS Transfer"`,
+  `"Virtual Private Network (VPN)"`). Quoting only where needed keeps the
+  identifiers reading as the ABNF does.
 - **An enumeration defined elsewhere says where.** A clause that gives its
   values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
   32.422 [23] for Trace Depth") prints `; Values:` with that citation and no

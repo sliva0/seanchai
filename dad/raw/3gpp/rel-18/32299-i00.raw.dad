@@ -1012,10 +1012,10 @@ Access-Transfer-Information ::= < AVP header: 2709 >
 ; Section: 7.2.1B
 ; Page: 114
 Access-Transfer-Type ::= < Enumerated AVP header: 2710 10415 >
-        PS to CS Transfer = 0
-        CS to PS Transfer = 1
-        PS to PS Transfer = 2
-        CS to CS Transfer = 3
+        "PS to CS Transfer" = 0
+        "CS to PS Transfer" = 1
+        "PS to PS Transfer" = 2
+        "CS to CS Transfer" = 3
 
 
 ; Type: Grouped AVP
@@ -1051,8 +1051,8 @@ Additional-Content-Information ::= < AVP header: 1207 >
 ; Section: 7.2.5A
 ; Page: 115
 Additional-Exception-Reports ::= < Enumerated AVP header: 3936 10415 >
-        Not allowed = 0
-        Allowed     = 1
+        "Not allowed" = 0
+        Allowed       = 1
 
 
 ; Type: Grouped AVP
@@ -1069,14 +1069,14 @@ Address-Domain ::= < AVP header: 898 >
 ; Section: 7.2.9
 ; Page: 116
 Address-Type ::= < Enumerated AVP header: 899 10415 >
-        e-mail address         = 0
-        MSISDN                 = 1
-        IPv4 Address           = 2
-        IPv6 Address           = 3
-        Numeric Shortcode      = 4
-        Alphanumeric Shortcode = 5
-        Other                  = 6
-        IMSI                   = 7
+        "e-mail address"         = 0
+        MSISDN                   = 1
+        "IPv4 Address"           = 2
+        "IPv6 Address"           = 3
+        "Numeric Shortcode"      = 4
+        "Alphanumeric Shortcode" = 5
+        Other                    = 6
+        IMSI                     = 7
 
 
 ; Type: Enumerated AVP
@@ -1297,8 +1297,8 @@ Class-Identifier ::= < Enumerated AVP header: 1214 10415 >
 ; Section: 7.2.41A
 ; Page: 128
 CN-Operator-Selection-Entity ::= < Enumerated AVP header: 3421 10415 >
-        The Serving Network has been selected by the UE      = 0
-        The Serving Network has been selected by the network = 1
+        "The Serving Network has been selected by the UE"      = 0
+        "The Serving Network has been selected by the network" = 1
 
 
 ; Type: Enumerated AVP
@@ -1321,8 +1321,8 @@ Content-Class ::= < Enumerated AVP header: 1220 10415 >
 ; Section: 7.2.46A
 ; Page: 130
 CSG-Access-Mode ::= < Enumerated AVP header: 2317 10415 >
-        Closed mode = 0
-        Hybrid Mode = 1
+        "Closed mode" = 0
+        "Hybrid Mode" = 1
 
 
 ; Type: Enumerated AVP
@@ -1330,8 +1330,8 @@ CSG-Access-Mode ::= < Enumerated AVP header: 2317 10415 >
 ; Section: 7.2.46B
 ; Page: 130
 CSG-Membership-Indication ::= < Enumerated AVP header: 2318 10415 >
-        Not CSG member = 0
-        CSG Member     = 1
+        "Not CSG member" = 0
+        "CSG Member"     = 1
 
 
 ; Type: Enumerated AVP
@@ -1339,8 +1339,8 @@ CSG-Membership-Indication ::= < Enumerated AVP header: 2318 10415 >
 ; Section: 7.2.46aA
 ; Page: 129
 Coverage-Status ::= < Enumerated AVP header: 3428 10415 >
-        Out of coverage = 0
-        In coverage     = 1
+        "Out of coverage" = 0
+        "In coverage"     = 1
 
 
 ; Type: Grouped AVP
@@ -1358,8 +1358,8 @@ Coverage-Info ::= < AVP header: 3459 >
 ; Section: 7.2.46abA
 ; Page: 130
 CP-CIoT-EPS-Optimisation-Indicator ::= < Enumerated AVP header: 3930 10415 >
-        Not Apply = 0
-        Apply     = 1
+        "Not Apply" = 0
+        Apply       = 1
 
 
 ; Type: Grouped AVP
@@ -1517,8 +1517,8 @@ File-Repair-Supported ::= < Enumerated AVP header: 1224 10415 >
 ; Section: 7.2.67aA
 ; Page: 137
 Forwarding-Pending ::= < Enumerated AVP header: 3415 10415 >
-        Forwarding not pending = 0
-        Forwarding pending     = 1
+        "Forwarding not pending" = 0
+        "Forwarding pending"     = 1
 
 
 ; Type: Grouped AVP
@@ -1547,8 +1547,8 @@ Interface-Type ::= < Enumerated AVP header: 2006 10415 >
 ; Section: 7.2.74aA
 ; Page: 138
 Inter-UE-Transfer ::= < Enumerated AVP header: 3902 10415 >
-        Intra-UE transfer = 0
-        Inter-UE transfer = 1
+        "Intra-UE transfer" = 0
+        "Inter-UE transfer" = 1
 
 
 ; Type: Enumerated AVP
@@ -1556,8 +1556,8 @@ Inter-UE-Transfer ::= < Enumerated AVP header: 3902 10415 >
 ; Section: 7.2.76A
 ; Page: 138
 IMS-Emergency-Indicator ::= < Enumerated AVP header: 2322 10415 >
-        Non Emergency = 0
-        Emergency     = 1
+        "Non Emergency" = 0
+        Emergency       = 1
 
 
 ; Type: Grouped AVP
@@ -1643,8 +1643,8 @@ Inter-Operator-Identifier ::= < AVP header: 838 >
 ; Section: 7.2.80A
 ; Page: 140
 IP-Realm-Default-Indication ::= < Enumerated AVP header: 2603 10415 >
-        Default IP Realm Not used = 0
-        Default IP realm used     = 1
+        "Default IP Realm Not used" = 0
+        "Default IP realm used"     = 1
 
 
 ; Type: Grouped AVP
@@ -1730,8 +1730,8 @@ LCS-Requestor-ID ::= < AVP header: 1239 >
 ; Section: 7.2.92A
 ; Page: 144
 Local-GW-Inserted-Indication ::= < Enumerated AVP header: 2604 10415 >
-        Local GW Not Inserted = 0
-        Local GW Inserted     = 1
+        "Local GW Not Inserted" = 0
+        "Local GW Inserted"     = 1
 
 
 ; Type: Enumerated AVP
@@ -1787,8 +1787,8 @@ Low-Priority-Indicator ::= < Enumerated AVP header: 2602 10415 >
 ; Section: 7.2.97B
 ; Page: 145
 MBMS-Charged-Party ::= < Enumerated AVP header: 2323 10415 >
-        Content Provider = 0
-        Subscriber       = 1
+        "Content Provider" = 0
+        Subscriber         = 1
 
 
 ; Type: Grouped AVP
@@ -1827,9 +1827,9 @@ MBMS-User-Service-Type ::= < Enumerated AVP header: 1225 10415 >
 ; Section: 7.2.101
 ; Page: 147
 Media-Initiator-Flag ::= < Enumerated AVP header: 882 10415 >
-        called party  = 0
-        calling party = 1
-        unknown       = 2
+        "called party"  = 0
+        "calling party" = 1
+        unknown         = 2
 
 
 ; Type: Grouped AVP
@@ -2015,9 +2015,9 @@ NNI-Information ::= < AVP header: 2703 >
 ; Section: 7.2.112B
 ; Page: 153
 NNI-Type ::= < Enumerated AVP header: 2704 10415 >
-        non-roaming              = 0
-        roaming without loopback = 1
-        roaming with loopback    = 2
+        non-roaming                = 0
+        "roaming without loopback" = 1
+        "roaming with loopback"    = 2
 
 
 ; Type: Grouped AVP
@@ -2037,28 +2037,28 @@ NIDD-Submission ::= < AVP header: 3928 >
 ; Section: 7.2.113
 ; Page: 153
 Node-Functionality ::= < Enumerated AVP header: 862 10415 >
-        S-CSCF         = 0
-        P-CSCF         = 1
-        I-CSCF         = 2
-        MRFC           = 3
-        MGCF           = 4
-        BGCF           = 5
-        AS             = 6
-        IBCF           = 7
-        S-GW           = 8
-        P-GW           = 9
-        HSGW           = 10
-        E-CSCF         = 11
-        MME            = 12
-        TRF            = 13
-        TF             = 14
-        ATCF           = 15
-        Proxy Function = 16
-        ePDG           = 17
-        TDF            = 18
-        TWAG           = 19
-        SCEF           = 20
-        IWK-SCEF       = 21
+        S-CSCF           = 0
+        P-CSCF           = 1
+        I-CSCF           = 2
+        MRFC             = 3
+        MGCF             = 4
+        BGCF             = 5
+        AS               = 6
+        IBCF             = 7
+        S-GW             = 8
+        P-GW             = 9
+        HSGW             = 10
+        E-CSCF           = 11
+        MME              = 12
+        TRF              = 13
+        TF               = 14
+        ATCF             = 15
+        "Proxy Function" = 16
+        ePDG             = 17
+        TDF              = 18
+        TWAG             = 19
+        SCEF             = 20
+        IWK-SCEF         = 21
 
 
 ; Type: Grouped AVP
@@ -2078,8 +2078,8 @@ Offline-Charging ::= < AVP header: 1278 >
 ; Section: 7.2.122
 ; Page: 154
 Online-Charging-Flag ::= < Enumerated AVP header: 2303 10415 >
-        ECF address not provided = 0
-        ECF address provided     = 1
+        "ECF address not provided" = 0
+        "ECF address provided"     = 1
 
 
 ; Type: Enumerated AVP
@@ -2087,8 +2087,8 @@ Online-Charging-Flag ::= < Enumerated AVP header: 2303 10415 >
 ; Section: 7.2.124
 ; Page: 155
 Originator ::= < Enumerated AVP header: 864 10415 >
-        Calling Party = 0
-        Called Party  = 1
+        "Calling Party" = 0
+        "Called Party"  = 1
 
 
 ; Type: Grouped AVP
@@ -2137,10 +2137,10 @@ Participant-Group ::= < AVP header: 1260 >
 ; Section: 7.2.132
 ; Page: 157
 Participant-Access-Priority ::= < Enumerated AVP header: 1259 10415 >
-        Pre-emptive priority = 1
-        High priority        = 2 ; Lower than Pre-emptive priority
-        Normal priority      = 3 ; Normal level. Lower than High priority
-        Low priority         = 4 ; Lowest level priority
+        "Pre-emptive priority" = 1
+        "High priority"        = 2 ; Lower than Pre-emptive priority
+        "Normal priority"      = 3 ; Normal level. Lower than High priority
+        "Low priority"         = 4 ; Lowest level priority
 
 
 ; Type: Enumerated AVP
@@ -2158,9 +2158,9 @@ Participant-Action-Type ::= < Enumerated AVP header: 2049 10415 >
 ; Name: PC5-Radio-Technology
 ; Section: 7.2.135C
 PC5-Radio-Technology ::= < Enumerated AVP header: 1300 10415 >
-        EUTRA               = 0
-        WLAN                = 1
-        Both EUTRA and WLAN = 2
+        EUTRA                 = 0
+        WLAN                  = 1
+        "Both EUTRA and WLAN" = 2
 
 
 ; Type: Enumerated AVP
@@ -2177,8 +2177,8 @@ PDP-Context-Type ::= < Enumerated AVP header: 1247 10415 >
 ; Section: 7.2.138A
 ; Page: 159
 Play-Alternative ::= < Enumerated AVP header: 3913 10415 >
-        served party = 0
-        remote party = 1
+        "served party" = 0
+        "remote party" = 1
 
 
 ; Type: Enumerated AVP
@@ -2199,11 +2199,11 @@ PoC-Change-Condition ::= < Enumerated AVP header: 1261 10415 >
 ; Section: 7.2.142
 ; Page: 161
 PoC-Event-Type ::= < Enumerated AVP header: 2025 10415 >
-        Normal                         = 0
-        Instant Personal Alert event   = 1
-        PoC Group Advertisement event  = 2
-        Early Session Setting-up event = 3
-        PoC Talk Burst                 = 4
+        Normal                           = 0
+        "Instant Personal Alert event"   = 1
+        "PoC Group Advertisement event"  = 2
+        "Early Session Setting-up event" = 3
+        "PoC Talk Burst"                 = 4
 
 
 ; Type: Grouped AVP
@@ -2231,10 +2231,10 @@ PoC-Information ::= < AVP header: 879 >
 ; Section: 7.2.145
 ; Page: 161
 PoC-Server-Role ::= < Enumerated AVP header: 883 10415 >
-        Participating PoC Server        = 0
-        Controlling PoC Server          = 1
-        Interworking function           = 2
-        Interworking selection function = 3
+        "Participating PoC Server"        = 0
+        "Controlling PoC Server"          = 1
+        "Interworking function"           = 2
+        "Interworking selection function" = 3
 
 
 ; Type: Enumerated AVP
@@ -2251,10 +2251,10 @@ PoC-Session-Initiation-Type ::= < Enumerated AVP header: 1277 10415 >
 ; Section: 7.2.148
 ; Page: 162
 PoC-Session-Type ::= < Enumerated AVP header: 884 10415 >
-        1 to 1 PoC session             = 0
-        Chat PoC group session         = 1
-        Pre-arranged PoC group session = 2
-        Ad-hoc PoC group session       = 3
+        "1 to 1 PoC session"             = 0
+        "Chat PoC group session"         = 1
+        "Pre-arranged PoC group session" = 2
+        "Ad-hoc PoC group session"       = 3
 
 
 ; Type: Grouped AVP
@@ -2326,8 +2326,8 @@ ProSe-Direct-Communication-Transmission-Data-Container ::= < AVP header: 3441 >
 ; Section: 7.2.154C
 ; Page: 164
 ProSe-Direct-Discovery-Model ::= < Enumerated AVP header: 3442 10415 >
-        Model A = 0
-        Model B = 1
+        "Model A" = 0
+        "Model B" = 1
 
 
 ; Type: Enumerated AVP
@@ -2335,9 +2335,9 @@ ProSe-Direct-Discovery-Model ::= < Enumerated AVP header: 3442 10415 >
 ; Section: 7.2.154D
 ; Page: 164
 ProSe-Event-Type ::= < Enumerated AVP header: 3443 10415 >
-        Annoucing    = 0
-        Monitoring   = 1
-        Match Report = 2
+        Annoucing      = 0
+        Monitoring     = 1
+        "Match Report" = 2
 
 
 ; Type: Enumerated AVP
@@ -2345,9 +2345,9 @@ ProSe-Event-Type ::= < Enumerated AVP header: 3443 10415 >
 ; Section: 7.2.154G
 ; Page: 164
 ProSe-Functionality ::= < Enumerated AVP header: 3445 10415 >
-        Direct discovery     = 0
-        EPC-level discovery  = 1
-        Direct communication = 2
+        "Direct discovery"     = 0
+        "EPC-level discovery"  = 1
+        "Direct communication" = 2
 
 
 ; Type: Grouped AVP
@@ -2413,11 +2413,11 @@ ProSe-Information ::= < AVP header: 3447 >
 ; Page: 165
 ProSe-Range-Class ::= < Enumerated AVP header: 3448 10415 >
         Reserved = 0
-        50 m     = 1
-        100 m    = 2
-        200 m    = 3
-        500 m    = 4
-        1000 m   = 5
+        "50 m"   = 1
+        "100 m"  = 2
+        "200 m"  = 3
+        "500 m"  = 4
+        "1000 m" = 5
 
 
 ; Type: Enumerated AVP
@@ -2425,9 +2425,9 @@ ProSe-Range-Class ::= < Enumerated AVP header: 3448 10415 >
 ; Section: 7.2.154K
 ; Page: 166
 ProSe-Reason-For-Cancellation ::= < Enumerated AVP header: 3449 10415 >
-        Proximity Alert sent         = 0
-        Time expired with no renewal = 1
-        Requestor cancellation       = 2
+        "Proximity Alert sent"         = 0
+        "Time expired with no renewal" = 1
+        "Requestor cancellation"       = 2
 
 
 ; Type: Enumerated AVP
@@ -2435,10 +2435,10 @@ ProSe-Reason-For-Cancellation ::= < Enumerated AVP header: 3449 10415 >
 ; Section: 7.2.154M
 ; Page: 166
 ProSe-Role-Of-UE ::= < Enumerated AVP header: 3451 10415 >
-        Announcing UE = 0
-        Monitoring UE = 1
-        Requestor UE  = 2
-        Requested UE  = 3
+        "Announcing UE" = 0
+        "Monitoring UE" = 1
+        "Requestor UE"  = 2
+        "Requested UE"  = 3
 
 
 ; Type: Enumerated AVP
@@ -2446,8 +2446,8 @@ ProSe-Role-Of-UE ::= < Enumerated AVP header: 3451 10415 >
 ; Section: 7.2.154P
 ; Page: 167
 Proximity-Alert-Indication ::= < Enumerated AVP header: 3454 10415 >
-        Alert    = 0
-        No Alert = 1
+        Alert      = 0
+        "No Alert" = 1
 
 
 ; Type: Enumerated AVP
@@ -2690,8 +2690,8 @@ Remaining-Balance ::= < AVP header: 2021 >
 ; Section: 7.2.174
 ; Page: 175
 Reply-Path-Requested ::= < Enumerated AVP header: 2011 10415 >
-        No Reply Path Set = 0
-        Reply path Set    = 1
+        "No Reply Path Set" = 0
+        "Reply path Set"    = 1
 
 
 ; Type: Enumerated AVP
@@ -2726,9 +2726,9 @@ Role-Of-Node ::= < Enumerated AVP header: 829 10415 >
 ; Section: 7.2.177aA
 ; Page: 177
 Role-Of-ProSe-Function ::= < Enumerated AVP header: 3438 10415 >
-        HPLMN      = 0
-        VPLMN      = 1
-        Local PLMN = 2
+        HPLMN        = 0
+        VPLMN        = 1
+        "Local PLMN" = 2
 
 
 ; Type: Grouped AVP
@@ -2780,8 +2780,8 @@ SDP-TimeStamps ::= < AVP header: 1273 >
 ; Section: 7.2.186
 ; Page: 179
 SDP-Type ::= < Enumerated AVP header: 2036 10415 >
-        SDP Offer  = 0
-        SDP Answer = 1
+        "SDP Offer"  = 0
+        "SDP Answer" = 1
 
 
 ; Type: Enumerated AVP
@@ -2903,10 +2903,10 @@ SGW-Change ::= < Enumerated AVP header: 2065 10415 >
 ; Section: 7.2.205A
 ; Page: 184
 SM-Device-Trigger-Indicator ::= < Enumerated AVP header: 3407 10415 >
-        Not DeviceTrigger      = 0
-        Device Trigger request = 1
-        Device Trigger replace = 2
-        Device Trigger recall  = 3
+        "Not DeviceTrigger"      = 0
+        "Device Trigger request" = 1
+        "Device Trigger replace" = 2
+        "Device Trigger recall"  = 3
 
 
 ; Type: Grouped AVP
@@ -2927,11 +2927,11 @@ SM-Device-Trigger-Information ::= < AVP header: 3405 >
 ; Section: 7.2.207
 ; Page: 184
 SM-Message-Type ::= < Enumerated AVP header: 2007 10415 >
-        SUBMISSION           = 0
-        DELIVERY_REPORT      = 1
-        T4 Device Trigger    = 3
-        SM Device Trigger    = 4
-        MO-SMS T4 submission = 5
+        SUBMISSION             = 0
+        DELIVERY_REPORT        = 1
+        "T4 Device Trigger"    = 3
+        "SM Device Trigger"    = 4
+        "MO-SMS T4 submission" = 5
 
 
 ; Type: Grouped AVP
@@ -2969,10 +2969,10 @@ SMS-Information ::= < AVP header: 2000 >
 ; Section: 7.2.212
 ; Page: 186
 SMS-Node ::= < Enumerated AVP header: 2016 10415 >
-        SMS Router              = 0
-        IP-SM-GW                = 1
-        SMS Router and IP-SM-GW = 2
-        SMS-SC                  = 3
+        "SMS Router"              = 0
+        IP-SM-GW                  = 1
+        "SMS Router and IP-SM-GW" = 2
+        SMS-SC                    = 3
 
 
 ; Type: Enumerated AVP
@@ -2980,18 +2980,18 @@ SMS-Node ::= < Enumerated AVP header: 2016 10415 >
 ; Section: 7.2.213
 ; Page: 187
 SM-Service-Type ::= < Enumerated AVP header: 2029 10415 >
-        VAS4SMS Short Message content processing                = 0
-        VAS4SMS Short Message forwarding                        = 1
-        VAS4SMS Short Message Forwarding multiple subscriptions = 2
-        VAS4SMS Short Message filtering                         = 3
-        VAS4SMS Short Message receipt                           = 4
-        VAS4SMS Short Message Network Storage                   = 5
-        VAS4SMS Short Message to multiple destinations          = 6
-        VAS4SMS Short Message Virtual Private Network (VPN)     = 7
-        VAS4SMS Short Message Auto Reply                        = 8
-        VAS4SMS Short Message Personal Signature                = 9
-        VAS4SMS Short Message Deferred Delivery                 = 10
-      ; RESERVED                                                = 11-99
+        "VAS4SMS Short Message content processing"                = 0
+        "VAS4SMS Short Message forwarding"                        = 1
+        "VAS4SMS Short Message Forwarding multiple subscriptions" = 2
+        "VAS4SMS Short Message filtering"                         = 3
+        "VAS4SMS Short Message receipt"                           = 4
+        "VAS4SMS Short Message Network Storage"                   = 5
+        "VAS4SMS Short Message to multiple destinations"          = 6
+        "VAS4SMS Short Message Virtual Private Network (VPN)"     = 7
+        "VAS4SMS Short Message Auto Reply"                        = 8
+        "VAS4SMS Short Message Personal Signature"                = 9
+        "VAS4SMS Short Message Deferred Delivery"                 = 10
+      ; RESERVED                                                  = 11-99
 
 
 ; Type: Enumerated AVP
@@ -3125,8 +3125,8 @@ Traffic-Data-Volumes ::= < AVP header: 2046 >
 ; Section: 7.2.233A
 ; Page: 192
 Transcoder-Inserted-Indication ::= < Enumerated AVP header: 2605 10415 >
-        Transcoder Not Inserted = 0
-        Transcoder Inserted     = 1
+        "Transcoder Not Inserted" = 0
+        "Transcoder Inserted"     = 1
 
 
 ; Type: Grouped AVP
@@ -3180,7 +3180,7 @@ Trigger-Type ::= < Enumerated AVP header: 870 10415 >
         CHANGEINLOCATION_ECGI                              = 36
         CHANGE_IN_MEDIA_COMPOSITION                        = 40
         CHANGE_IN_PARTICIPANTS_NMB                         = 50
-        CHANGE_IN_ THRSHLD_OF_PARTICIPANTS_NMB             = 51
+        "CHANGE_IN_ THRSHLD_OF_PARTICIPANTS_NMB"           = 51
         CHANGE_IN_USER_PARTICIPATING_TYPE                  = 52
         CHANGE_IN_SERVICE_CONDITION                        = 60
         CHANGE_IN_SERVING_NODE                             = 61
@@ -3255,9 +3255,9 @@ User-CSG-Information ::= < AVP header: 2319 >
 ; Section: 7.2.241
 ; Page: 198
 User-Participating-Type ::= < Enumerated AVP header: 1279 10415 >
-        Normal     = 0
-        NW PoC Box = 1
-        UE PoC Box = 2
+        Normal       = 0
+        "NW PoC Box" = 1
+        "UE PoC Box" = 2
 
 
 ; Type: Grouped AVP

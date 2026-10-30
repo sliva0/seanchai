@@ -35,7 +35,7 @@ def test_parses_enumerated_values_descriptions_and_reserved_ranges():
     )
 
 
-def test_enum_value_names_may_hold_single_spaces():
+def test_enum_value_names_that_are_no_identifier_are_quoted():
     # TS 32.299 clause 7.2.1B labels its values in words.
     spec = parser.parse(
         _dad(
@@ -43,8 +43,8 @@ def test_enum_value_names_may_hold_single_spaces():
             "; Name: Access-Transfer-Type",
             "; Section: 7.2.1B",
             "Access-Transfer-Type ::= < Enumerated AVP header: 2710 10415 >",
-            "        PS to CS Transfer = 0 ; a description",
-            "        Yes               = 1",
+            '        "PS to CS Transfer" = 0 ; a description',
+            "        Yes                 = 1",
         )
     )
 
@@ -69,8 +69,8 @@ def test_enum_value_names_with_spaces_and_parentheses_round_trip():
             "; Name: SM-Service-Type",
             "; Section: 7.2.213",
             "SM-Service-Type ::= < Enumerated AVP header: 2029 10415 >",
-            "        PS to CS Transfer                               = 0",
-            "        VAS4SMS Short Message Virtual Private Network (VPN) = 7 ; note",
+            '        "PS to CS Transfer"                                   = 0',
+            '        "VAS4SMS Short Message Virtual Private Network (VPN)" = 7 ; note',
             "",
         ]
     )
@@ -85,10 +85,52 @@ def test_enum_value_names_with_spaces_and_parentheses_round_trip():
         "PS to CS Transfer",
         "VAS4SMS Short Message Virtual Private Network (VPN)",
     ]
-    assert formatter.format_spec(parser.parse(formatter.format_spec(spec))) == (
-        formatter.format_spec(spec)
-    )
+    assert formatter.format_spec(spec) == text
     assert parser.parse(formatter.format_spec(spec)) == spec
+
+
+def test_a_quoted_identifier_formats_bare():
+    text = _dad(
+        "; Type: Enumerated AVP",
+        "; Name: Example",
+        "; Section: 1",
+        "Example ::= < Enumerated AVP header: 1 >",
+        '        "Yes"     = 0',
+        '        "Two  (2)" = 1',
+    )
+
+    spec = parser.parse(text)
+
+    assert formatter.format_spec(spec).splitlines()[-2:] == [
+        "        Yes        = 0",
+        '        "Two  (2)" = 1',
+    ]
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        # Unquoted, a name of words is no value line: the quotes are what
+        # say where it ends.
+        "        PS to CS Transfer = 0",
+        '        "Unclosed = 0',
+        '        "" = 0',
+        '        "Two "quotes"" = 0',
+    ],
+)
+def test_enum_value_names_that_are_no_identifier_must_be_quoted(line):
+    text = _dad(
+        "; Type: Enumerated AVP",
+        "; Name: Example",
+        "; Section: 1",
+        "Example ::= < Enumerated AVP header: 1 >",
+        line,
+    )
+
+    with pytest.raises(parser.DadParseError) as error:
+        parser.parse(text)
+
+    assert error.value.lineno == 9
 
 
 def test_a_values_source_round_trips_after_the_page_with_or_without_values():
@@ -210,9 +252,10 @@ def test_an_application_block_rejects_with_the_line(lines, lineno, message):
 
 
 @pytest.mark.parametrize(
-    "name", [" Leading", "Trailing ", "Doubled  space", "Tab\tinside", "(Leading"]
+    "name",
+    [" Leading", "Trailing ", "Tab\tinside", "New\nline", 'A "quote"', "a ;; b"],
 )
-def test_enum_value_names_reject_other_whitespace(name):
+def test_enum_value_names_reject_what_quotes_cannot_hold(name):
     with pytest.raises(pydantic.ValidationError):
         ast.EnumValue(name=name, value=0)
 

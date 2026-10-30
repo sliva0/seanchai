@@ -1610,9 +1610,9 @@ Charging-Rule-Report ::= < AVP header: 1018 >
 ; Section: 5.3.19
 ; Page: 147
 PCC-Rule-Status ::= < Enumerated AVP header: 1019 10415 >
-        ACTIVE               = 0
-        INACTIVE             = 1
-        TEMPORARILY INACTIVE = 2
+        ACTIVE                 = 0
+        INACTIVE               = 1
+        "TEMPORARILY INACTIVE" = 2
 
 
 ; Type: Enumerated AVP
@@ -1652,8 +1652,8 @@ Bearer-Control-Mode ::= < Enumerated AVP header: 1023 10415 >
 ; Section: 5.3.24
 ; Page: 148
 Network-Request-Support ::= < Enumerated AVP header: 1024 10415 >
-        NETWORK_REQUEST NOT SUPPORTED = 0
-        NETWORK_REQUEST SUPPORTED     = 1
+        "NETWORK_REQUEST NOT SUPPORTED" = 0
+        "NETWORK_REQUEST SUPPORTED"     = 1
 
 
 ; Type: Enumerated AVP

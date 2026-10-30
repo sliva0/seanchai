@@ -189,8 +189,8 @@ MBMS-Counting-Information ::= < Enumerated AVP header: 914 10415 >
 ; Section: 17.7.18
 ; Page: 153
 MBMS-User-Data-Mode-Indication ::= < Enumerated AVP header: 915 10415 >
-        Unicast               = 0
-        Multicast and Unicast = 1
+        Unicast                 = 0
+        "Multicast and Unicast" = 1
 
 
 ; Type: Enumerated AVP

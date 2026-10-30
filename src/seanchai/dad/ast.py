@@ -25,14 +25,8 @@ from pydantic import Field
 # RFC 6733's name-fmt excludes "_", but TS 29.109 consistently publishes
 # GBA_U-Awareness-Indicator in its heading, ABNF, table and defining prose.
 # The source-fidelity AST must represent what a specification actually names.
-AvpName = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
-# Enum value names are the same plus single internal spaces and parentheses:
-# TS 32.299 labels its values in words ("0 PS to CS Transfer", clause 7.2.1B;
-# "Virtual Private Network (VPN)", 7.2.213), and an identifier derived from
-# the label would be a spelling no document prints.
-EnumValueName = Annotated[
-    str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_()-]*(?: [A-Za-z0-9_()-]+)*$")
-]
+AVP_NAME_PATTERN = r"[A-Za-z0-9][A-Za-z0-9_-]*"
+AvpName = Annotated[str, Field(pattern=f"^{AVP_NAME_PATTERN}$")]
 
 # Free text the line-oriented format writes onto a single line, next to a
 # directive keyword or after a `;`. Only what survives a round-trip is
@@ -54,6 +48,19 @@ def _no_comment_start(value: str) -> str:
 InlineText = Annotated[
     str,
     Field(pattern=r"^\S([^\r\n]*\S)?$"),
+    pydantic.AfterValidator(_no_comment_start),
+]
+
+# Enum value names are free text: TS 32.299 labels its values in words ("0 PS
+# to CS Transfer", clause 7.2.1B; "Virtual Private Network (VPN)", 7.2.213),
+# and an identifier derived from the label would be a spelling no document
+# prints. A file quotes any name that is not an `AvpName`, so a name is
+# whatever the quotes can hold: no `"`, which would close them, no `;;`, which
+# starts a comment wherever it stands, and no control characters or padding,
+# which the formatter could not print back as written.
+EnumValueName = Annotated[
+    str,
+    Field(pattern=r'^[^\x00-\x20\x7f"]([^\x00-\x1f\x7f"]*[^\x00-\x20\x7f"])?$'),
     pydantic.AfterValidator(_no_comment_start),
 ]
 

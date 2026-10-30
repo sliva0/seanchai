@@ -34,11 +34,11 @@ _AVP_RULE_RE = re.compile(
     r"(?P<open>[<{\[]) (?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) (?P<close>[>}\]])"
     r"(?P<bold>\s*; bold)?\s*$"
 )
-# A name may hold single spaces and parentheses ("Virtual Private Network
-# (VPN)"); it cannot hold "=", so the ` = ` before the digits is what ends it,
-# whatever the alignment padding.
+# A name is an identifier or a quoted string ("Virtual Private Network
+# (VPN)"); `ast.EnumValueName` decides what the quotes may hold, so this
+# only finds where they close.
 _ENUM_VALUE_RE = re.compile(
-    r"^\s*(?P<name>[A-Za-z0-9][A-Za-z0-9_()-]*(?: [A-Za-z0-9_()-]+)*)"
+    r'^\s*(?:(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)|"(?P<quoted>[^"]*)")'
     r"\s*= (?P<value>\d+)"
     r"(?:\s+; (?P<description>\S.*))?$"
 )
@@ -352,7 +352,7 @@ def _parse_enumerated(
             elif match := _ENUM_VALUE_RE.match(line):
                 values.append(
                     ast.EnumValue(
-                        name=match["name"],
+                        name=match["name"] or match["quoted"],
                         value=int(match["value"]),
                         description=match["description"],
                     )

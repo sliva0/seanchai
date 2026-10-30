@@ -48,9 +48,9 @@ GBA_U-Awareness-Indicator ::= < Enumerated AVP header: 407 10415 >
 ; Section: 6.3.1.11
 ; Page: 41
 GBA-Type ::= < Enumerated AVP header: 410 10415 >
-        3G GBA     = 0 ; The 3G GBA has been performed as defined in TS 33.220 [5].
-        2G GBA     = 1 ; The 2G GBA has been performed as defined in TS 33.220 [5] , Annex I.
-        GBA Digest = 2 ; The GBA Digest has been performed as defined in TS 33.220 [5], Annex M.
+        "3G GBA"     = 0 ; The 3G GBA has been performed as defined in TS 33.220 [5].
+        "2G GBA"     = 1 ; The 2G GBA has been performed as defined in TS 33.220 [5] , Annex I.
+        "GBA Digest" = 2 ; The GBA Digest has been performed as defined in TS 33.220 [5], Annex M.
 
 
 ; Type: Enumerated AVP
@@ -58,8 +58,8 @@ GBA-Type ::= < Enumerated AVP header: 410 10415 >
 ; Section: 6.3.1.13
 ; Page: 41
 UE-Id-Type ::= < Enumerated AVP header: 412 10415 >
-        Private user identity = 0
-        Public user identity  = 1
+        "Private user identity" = 0
+        "Public user identity"  = 1
 
 
 ; Type: Enumerated AVP
@@ -76,8 +76,8 @@ UICC-ME ::= < Enumerated AVP header: 414 10415 >
 ; Section: 6.3.1.17
 ; Page: 42
 Private-Identity-Request ::= < Enumerated AVP header: 416 10415 >
-        Private identity requested     = 0
-        Private identity not requested = 1
+        "Private identity requested"     = 0
+        "Private identity not requested" = 1
 
 
 ; Type: Enumerated AVP

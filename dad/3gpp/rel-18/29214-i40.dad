@@ -557,8 +557,8 @@ Acceptable-Service-Info ::= < AVP header: 526 10415 > ;; corrected: (TS29.214.py
 ; Section: 5.3.25
 ; Page: 48
 Service-Info-Status ::= < Enumerated AVP header: 527 10415 >
-        FINAL SERVICE INFORMATION       = 0
-        PRELIMINARY SERVICE INFORMATION = 1
+        "FINAL SERVICE INFORMATION"       = 0
+        "PRELIMINARY SERVICE INFORMATION" = 1
 
 
 ; Type: Enumerated AVP

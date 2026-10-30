@@ -153,16 +153,19 @@ enumerated-avp = "; Type: Enumerated AVP" NL
 enum-header-rule = avp-name " ::= < Enumerated AVP header: " code
                    [SP vendor-id] " >"
 enum-value    = *SP enum-name *SP "= " 1*DIGIT [1*SP "; " inline-text]
-enum-name     = (ALPHA / DIGIT) *name-char *(SP 1*name-char)
-name-char     = ALPHA / DIGIT / "-" / "_" / "(" / ")"
+enum-name     = avp-name / quoted-name
+quoted-name   = DQUOTE name-text DQUOTE
+name-text     = name-char [*(name-char / SP) name-char]
+name-char     = %x21 / %x23-7E / %x80-10FFFF   ; neither SP nor DQUOTE
 reserved      = *SP "; RESERVED" *SP "= " 1*DIGIT ["-" 1*DIGIT]
 ```
 
-An enum name may contain single spaces, never leading, trailing or doubled,
-and parentheses after its first character: TS 32.299 labels its values in
-words (`PS to CS Transfer = 0`, `VAS4SMS Short Message Virtual Private
-Network (VPN) = 7`). It cannot contain `=`, so the ` = ` before the digits
-ends it.
+A value name that is not an `avp-name` is quoted: TS 32.299 labels its
+values in words (`"PS to CS Transfer" = 0`, `"VAS4SMS Short Message Virtual
+Private Network (VPN)" = 7`). The quotes are not part of the name. There is
+no escape: a name cannot contain `"`, nor `;;`, which no value may. A
+quoted `avp-name` (`"Yes" = 1`) parses as the same name, and the formatter
+writes it bare, so each name has one spelling.
 
 `; Values:` says where the clause defines the values instead, in its own
 words (`; Values: TS 32.422 [23] for Trace Depth`). With no values after

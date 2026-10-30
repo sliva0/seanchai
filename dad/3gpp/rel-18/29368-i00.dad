@@ -186,11 +186,11 @@ Trigger-Data ::= < AVP header: 3003 10415 > ;; corrected: (TS29.368.py#vendor-id
 ; Section: 6.4.6
 ; Page: 17
 Action-Type ::= < Enumerated AVP header: 3005 10415 >
-        Device Trigger Request      = 1
-        Delivery Report             = 2
-        Device Trigger Recall       = 3
-        Device Trigger Replace      = 4
-        MSISDN-less MO-SMS Delivery = 5
+        "Device Trigger Request"      = 1
+        "Delivery Report"             = 2
+        "Device Trigger Recall"       = 3
+        "Device Trigger Replace"      = 4
+        "MSISDN-less MO-SMS Delivery" = 5
 
 
 ; Type: Enumerated AVP

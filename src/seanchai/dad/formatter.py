@@ -7,7 +7,8 @@ depends on stable diffs. Canonical rules:
 - ABNF bodies: 8-space indent with the repetition qualifier right-aligned in
   front of it; `; bold` markers aligned one column past the longest ABNF body
   line of their own section;
-- enum bodies: `=` aligned per section (RESERVED counts as a name);
+- enum bodies: a value name quoted exactly when it is not an identifier,
+  `=` aligned per section (RESERVED counts as a name);
 - tables: columns split by 3 spaces, widths from data cells only (minimum 3);
   labels sit at column starts, overflowing into gaps when wider than the
   column. Both table kinds write their labels as a `; Columns:` directive, so
@@ -15,6 +16,7 @@ depends on stable diffs. Canonical rules:
   data.
 """
 
+import re
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any, NamedTuple
 
@@ -204,12 +206,23 @@ def _format_grouped(
     ]
 
 
+_IDENTIFIER_RE = re.compile(ast.AVP_NAME_PATTERN)
+
+
+def _value_name(name: str) -> str:
+    """A value name as a file spells it: quoted exactly when it is not an
+    identifier, so each name has one spelling."""
+    return name if _IDENTIFIER_RE.fullmatch(name) else f'"{name}"'
+
+
 def _format_enumerated(
     avp: ast.EnumeratedAvp, path: ast.TreePath, notes: Comments
 ) -> list[str]:
     width = max(
         (
-            len(value.name) if isinstance(value, ast.EnumValue) else len("RESERVED")
+            len(_value_name(value.name))
+            if isinstance(value, ast.EnumValue)
+            else len("RESERVED")
             for value in avp.values
         ),
         default=0,
@@ -232,7 +245,8 @@ def _format_enumerated(
     )
     for index, value in enumerate(avp.values):
         if isinstance(value, ast.EnumValue):
-            line = f"        {value.name:<{width}} = {value.value:<{value_width}}"
+            name = _value_name(value.name)
+            line = f"        {name:<{width}} = {value.value:<{value_width}}"
             if value.description is not None:
                 line += f" ; {value.description}"
             line = line.rstrip()
