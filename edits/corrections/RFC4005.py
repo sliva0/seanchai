@@ -1,7 +1,15 @@
 """Corrections for RFC 4005 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, avp_rule, header, table_row
+from seanchai.dad.corrections import (
+    Correction,
+    Delete,
+    Insert,
+    avp_rule,
+    enum_value,
+    header,
+    table_row,
+)
 
 # Clauses 6.13.1-6.13.3 head and define the three AVPs Framed-AppleTalk-*,
 # and the Accounting-Request ABNF spells them the same way; the AVP table
@@ -115,4 +123,19 @@ CORRECTIONS += [
             "document's successor, replaces with one (1)"
         ),
     ),
+]
+
+# Clause 6.1 lists Service-Type's values, then re-lists four of them as "The
+# following values are further qualified", each with its description. Two
+# of the four are labelled in words and read a second time; the clause
+# assigns nothing new by repeating them.
+CORRECTIONS += [
+    Delete(
+        id=f"service-type-{name.lower().replace(' ', '-')}-requalified",
+        target=enum_value("Service-Type", name, value=value, occurrence=2),
+        expect=ast.EnumValue(name=name, value=value),
+        reason=f"clause 6.1 lists {name} ({value}) among Service-Type's values"
+        " and repeats it under 'The following values are further qualified'",
+    )
+    for name, value in (("Callback Login", 3), ("Callback Framed", 4))
 ]

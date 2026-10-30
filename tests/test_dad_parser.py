@@ -108,6 +108,39 @@ def test_a_quoted_identifier_formats_bare():
 
 
 @pytest.mark.parametrize(
+    ("line", "name"),
+    [
+        ('        "a\\"b" = 0', 'a"b'),
+        ('        "a\\\\" = 0', "a\\"),
+        ('        "\\"\\\\\\"" = 0', '"\\"'),
+        # RFC 4005 clause 7.3, Tunnel-Medium-Type.
+        (
+            '        "802 (includes all 802 media plus Ethernet \\"canonical'
+            ' format\\")" = 6',
+            '802 (includes all 802 media plus Ethernet "canonical format")',
+        ),
+    ],
+)
+def test_a_quoted_name_escapes_a_double_quote_and_a_backslash(line, name):
+    text = _dad(
+        "; Type: Enumerated AVP",
+        "; Name: Example",
+        "; Section: 1",
+        "Example ::= < Enumerated AVP header: 1 >",
+        line,
+    )
+
+    spec = parser.parse(text)
+
+    enumerated = spec.sections[0]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert enumerated.values == (ast.EnumValue(name=name, value=int(line[-1])),)
+    formatted = formatter.format_spec(spec)
+    assert formatted.splitlines()[-1] == line
+    assert parser.parse(formatted) == spec
+
+
+@pytest.mark.parametrize(
     "line",
     [
         # Unquoted, a name of words is no value line: the quotes are what
@@ -116,6 +149,11 @@ def test_a_quoted_identifier_formats_bare():
         '        "Unclosed = 0',
         '        "" = 0',
         '        "Two "quotes"" = 0',
+        # Only `\"` and `\\` are escapes: a lone backslash is no name
+        # character, and a trailing one escapes the closing quote.
+        '        "a\\b" = 0',
+        '        "a\\" = 0',
+        '        "\\" = 0',
     ],
 )
 def test_enum_value_names_that_are_no_identifier_must_be_quoted(line):
@@ -274,7 +312,7 @@ def test_an_application_scope_rejects_with_the_line(lines, lineno, message):
 
 @pytest.mark.parametrize(
     "name",
-    [" Leading", "Trailing ", "Tab\tinside", "New\nline", 'A "quote"', "a ;; b"],
+    [" Leading", "Trailing ", "Tab\tinside", "New\nline", "a ;; b"],
 )
 def test_enum_value_names_reject_what_quotes_cannot_hold(name):
     with pytest.raises(pydantic.ValidationError):

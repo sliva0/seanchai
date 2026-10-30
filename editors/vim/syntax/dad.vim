@@ -56,10 +56,11 @@ if !has('nvim')
 endif
 
 " Enumerated AVP body
-" A value name is an identifier or a quoted string; `#` delimits the
-" patterns because they contain the double quote.
-syn match dadEnumLine #^\s*\%([A-Za-z0-9][A-Za-z0-9_-]*\|"[^"]*"\)\s*= \d\+\%(\s\+;.*\)\?$# contains=dadEnumName,dadNumber,dadEnumNote,dadComment
-syn match dadEnumName #^\s*\zs\%([A-Za-z0-9][A-Za-z0-9_-]*\|"[^"]*"\)# contained
+" A value name is an identifier or a quoted string, inside which \" and \\
+" are escapes; `#` delimits the patterns because they contain the double
+" quote.
+syn match dadEnumLine #^\s*\%([A-Za-z0-9][A-Za-z0-9_-]*\|"\%([^"\\]\|\\["\\]\)*"\)\s*= \d\+\%(\s\+;.*\)\?$# contains=dadEnumName,dadNumber,dadEnumNote,dadComment
+syn match dadEnumName #^\s*\zs\%([A-Za-z0-9][A-Za-z0-9_-]*\|"\%([^"\\]\|\\["\\]\)*"\)# contained
 syn match dadEnumNote "; .*$" contained
 syn match dadReserved "^\s*; RESERVED\s*= \d\+\%(-\d\+\)\?\s*\%(;;.*\)\?$" contains=dadReservedKw,dadNumber,dadRange,dadComment
 syn match dadReservedKw "; RESERVED" contained

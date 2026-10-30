@@ -35,13 +35,16 @@ _AVP_RULE_RE = re.compile(
     r"(?P<bold>\s*; bold)?(?P<strikethrough>\s*; strikethrough)?\s*$"
 )
 # A name is an identifier or a quoted string ("Virtual Private Network
-# (VPN)"); `ast.EnumValueName` decides what the quotes may hold, so this
-# only finds where they close.
+# (VPN)"), inside which `\"` is a double quote and `\\` a backslash and
+# nothing else is escapable, so a backslash before any other character, or
+# before the closing quote, leaves the line no value line. Past that,
+# `ast.EnumValueName` decides what the quotes may hold.
 _ENUM_VALUE_RE = re.compile(
-    r'^\s*(?:(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)|"(?P<quoted>[^"]*)")'
+    r'^\s*(?:(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)|"(?P<quoted>(?:[^"\\]|\\["\\])*)")'
     r"\s*= (?P<value>\d+)"
     r"(?:\s+; (?P<description>\S.*))?$"
 )
+_ESCAPE_RE = re.compile(r'\\(["\\])')
 _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")
 
 # The file header's fields belong to three separate lines, so they are checked
@@ -368,7 +371,7 @@ def _parse_enumerated(
             elif match := _ENUM_VALUE_RE.match(line):
                 values.append(
                     ast.EnumValue(
-                        name=match["name"] or match["quoted"],
+                        name=match["name"] or _ESCAPE_RE.sub(r"\1", match["quoted"]),
                         value=int(match["value"]),
                         description=match["description"],
                     )

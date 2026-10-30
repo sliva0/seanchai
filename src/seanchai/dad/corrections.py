@@ -309,23 +309,39 @@ class enum_value(Selector):
     `value` disambiguates when one name labels several values — 29.214's
     Specific-Action prints "Void" at both 0 and 5, and a deletion has to name
     which one it dooms.
+
+    `occurrence` picks the n-th (from 1) of several matching values in one
+    AVP, as `avp_rule`'s does, for a list printing the same value twice: RFC
+    4005 clause 6.1 lists Service-Type's `Callback Login (3)` and re-lists it
+    among the values it qualifies. It matches only while the value repeats.
     """
 
     avp: str
     name: str
     value: int | None = None
+    occurrence: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.occurrence is not None and self.occurrence < 1:
+            raise CorrectionError(
+                f"value {self.name!r}: occurrence counts from 1, not {self.occurrence}"
+            )
 
     def locate(self, spec: ast.Specification) -> _Located:
         """Each matching value, at `("sections", i, "values", j)`."""
         for index, section in enumerate(spec.sections):
             if isinstance(section, ast.EnumeratedAvp) and section.name == self.avp:
-                yield from (
+                values = [
                     (("sections", index, "values", position), value)
                     for position, value in enumerate(section.values)
                     if isinstance(value, ast.EnumValue)
                     and value.name == self.name
                     and (self.value is None or value.value == self.value)
-                )
+                ]
+                if self.occurrence is None:
+                    yield from values
+                elif len(values) > 1 and self.occurrence <= len(values):
+                    yield values[self.occurrence - 1]
 
     def describe(self) -> str:
         return f"value {self.name!r} of {self.avp!r}" + self._value_suffix()
@@ -336,7 +352,10 @@ class enum_value(Selector):
         return f"value {self.name!r}" + self._value_suffix()
 
     def _value_suffix(self) -> str:
-        return "" if self.value is None else f" (= {self.value})"
+        suffix = "" if self.value is None else f" (= {self.value})"
+        if self.occurrence is not None:
+            suffix += f" (occurrence {self.occurrence})"
+        return suffix
 
 
 @dataclass(frozen=True)

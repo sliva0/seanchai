@@ -163,16 +163,24 @@ enum-value    = *SP enum-name *SP "= " 1*DIGIT [1*SP "; " inline-text]
 enum-name     = avp-name / quoted-name
 quoted-name   = DQUOTE name-text DQUOTE
 name-text     = name-char [*(name-char / SP) name-char]
-name-char     = %x21 / %x23-7E / %x80-10FFFF   ; neither SP nor DQUOTE
+name-char     = %x21 / %x23-5B / %x5D-7E / %x80-10FFFF / escaped
+                ; neither SP, DQUOTE nor a bare "\"
+escaped       = "\" (DQUOTE / "\")
 reserved      = *SP "; RESERVED" *SP "= " 1*DIGIT ["-" 1*DIGIT]
 ```
 
 A value name that is not an `avp-name` is quoted: TS 32.299 labels its
 values in words (`"PS to CS Transfer" = 0`, `"VAS4SMS Short Message Virtual
-Private Network (VPN)" = 7`). The quotes are not part of the name. There is
-no escape: a name cannot contain `"`, nor `;;`, which no value may. A
-quoted `avp-name` (`"Yes" = 1`) parses as the same name, and the formatter
-writes it bare, so each name has one spelling.
+Private Network (VPN)" = 7`). The quotes are not part of the name. Inside
+them `\"` is a double quote and `\\` a backslash; nothing else is
+escapable, so a backslash before any other character, or a trailing one
+that would escape the closing quote, is no value line. RFC 4005 clause 7.3
+labels a value `802 (includes all 802 media plus Ethernet "canonical
+format")`, written `"802 (includes all 802 media plus Ethernet \"canonical
+format\")" = 6`. A name cannot contain `;;`, which no value may. A quoted
+`avp-name` (`"Yes" = 1`) parses as the same name, and the formatter writes
+it bare and escapes exactly the two characters, so each name has one
+spelling.
 
 `; Values:` says where the clause defines the values instead, in its own
 words (`; Values: TS 32.422 [23] for Trace Depth`). With no values after

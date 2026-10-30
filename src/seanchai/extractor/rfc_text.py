@@ -258,7 +258,8 @@ QUIRKS: dict[str, str] = {
     ),
     "worded-enum-values": (
         "read value names of several words, keeping their spaces: 'CHAP with"
-        " MD5       5' (RFC 4005 clause 5.5, RFC 7155 clause 4.3.5), and with"
+        " MD5       5' (RFC 4005 clause 5.5, RFC 7155 clause 4.3.5), '2   ISDN"
+        " Sync' with its wrapped lines (RFC 4005 clauses 4.4-7.3), and with"
         " `parenthesized-enum-values` 'Callback Login (3)' (RFC 7155 clause"
         " 4.4.1)"
     ),
@@ -1227,8 +1228,13 @@ def _extract_definitions(
             continue
         values = []
         unread: list[str] = []
-        for text in section.texts:
+        index = 0
+        while index < len(section.texts):
+            text = section.texts[index]
+            index += 1
             value = _enum_value(text.strip()) or _quirk_enum_value(text.strip(), quirks)
+            if value is None and _VALUE_FIRST_LINE_RE.match(text):
+                value, index = _worded_value_first(section.texts, index, quirks)
             if value is not None:
                 values.append(value)
             elif _VALUE_FIRST_LINE_RE.match(text):
@@ -1250,11 +1256,9 @@ def _extract_definitions(
                 )
             continue
         if unread:
-            # RFC 4005's informational lists (clauses 4.4, 6.1, 6.10.x, 6.15.3,
-            # 7.3) label values in words, `2   ISDN Sync`, of which only the
-            # one-word labels read; one label holds a double quote (7.3's
-            # `6  802 (includes ... "canonical format")`), which no value name
-            # can. Said aloud rather than left a silently partial list.
+            # A value-first list whose labels the readings above leave out
+            # (RFC 4005's worded labels, before `worded-enum-values` read
+            # them) is said aloud rather than left a silently partial list.
             warnings.append(
                 f"{section.number}: enumerated AVP {title['name']!r}:"
                 f" {len(unread)} value line(s) not read, first {unread[0]!r}"
@@ -1296,6 +1300,42 @@ def _enum_value(text: str) -> ast.EnumValue | None:
 # `_enum_value` left unread inside an enumerated clause.
 _VALUE_FIRST_LINE_RE = re.compile(r"^\s*\d+ {2,}\S")
 _WORDED_NAME = r"[A-Za-z][A-Za-z0-9_-]*(?: [A-Za-z0-9_-]+)+"
+
+
+# Behind `worded-enum-values`, a value-first line whose label is words, RFC
+# 4005's informational lists: `2   ISDN Sync` (clause 4.4), `3  AppleTalk
+# Remote Access Protocol (ARAP)` (6.10.1). A closing reference tag is the
+# value's citation, not its name (`17  Authorize Only  [RADDynAuth]`, 6.1),
+# as it is for a one-word label.
+_WORDED_VALUE_FIRST_RE = re.compile(
+    r"^(?P<indent>\s*)(?P<value>\d+)(?P<gap> {2,})(?P<label>\S.*?)"
+    r"(?:\s+\[[^\]]+\])?$"
+)
+
+
+def _worded_value_first(
+    texts: list[str], index: int, quirks: sources.Quirks | None
+) -> tuple[ast.EnumValue | None, int]:
+    """The worded value-first line at `index - 1`, with the lines that wrap
+    its label: those indented past the label's first character (`12   ADSL-CAP
+    - Asymmetric DSL, Carrierless Amplitude Phase` over `Modulation`, RFC 4005
+    clause 4.4). Returns the value, or None, and where reading resumes."""
+    if quirks is None or not quirks.enabled("worded-enum-values"):
+        return None, index
+    match = _WORDED_VALUE_FIRST_RE.match(texts[index - 1])
+    if match is None:
+        return None, index
+    column = match.start("label")
+    label = [match["label"]]
+    while index < len(texts):
+        text = texts[index]
+        indent = len(text) - len(text.lstrip())
+        if not text.strip() or indent <= column:
+            break
+        label.append(text.strip())
+        index += 1
+    quirks.fire("worded-enum-values")
+    return ast.EnumValue(name=" ".join(label), value=int(match["value"])), index
 
 
 def _quirk_enum_value(text: str, quirks: sources.Quirks | None) -> ast.EnumValue | None:

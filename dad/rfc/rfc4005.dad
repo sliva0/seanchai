@@ -568,15 +568,32 @@ Origin-AAA-Protocol   408   9.3.6   Enumerated    M     P     -     V     Yes
 ; Page: 22
 ; Values: [RADIUSTypes]
 NAS-Port-Type ::= < Enumerated AVP header: 61 >
-        Async      = 0
-        Sync       = 1
-        Virtual    = 5
-        PIAFS      = 6
-        Ethernet   = 15
-        Cable      = 17
-        Token-Ring = 20
-        FDDI       = 21
-        IAPP       = 25
+        Async                                                               = 0
+        Sync                                                                = 1
+        "ISDN Sync"                                                         = 2
+        "ISDN Async V.120"                                                  = 3
+        "ISDN Async V.110"                                                  = 4
+        Virtual                                                             = 5
+        PIAFS                                                               = 6
+        "HDLC Clear Channel"                                                = 7
+        "X.25"                                                              = 8
+        "X.75"                                                              = 9
+        "G.3 Fax"                                                           = 10
+        "SDSL - Symmetric DSL"                                              = 11
+        "ADSL-CAP - Asymmetric DSL, Carrierless Amplitude Phase Modulation" = 12
+        "ADSL-DMT - Asymmetric DSL, Discrete Multi-Tone"                    = 13
+        "IDSL - ISDN Digital Subscriber Line"                               = 14
+        Ethernet                                                            = 15
+        "xDSL - Digital Subscriber Line of unknown type"                    = 16
+        Cable                                                               = 17
+        "Wireless - Other"                                                  = 18
+        "Wireless - IEEE 802.11"                                            = 19
+        Token-Ring                                                          = 20
+        FDDI                                                                = 21
+        "Wireless - CDMA2000"                                               = 22
+        "Wireless - UMTS"                                                   = 23
+        "Wireless - 1X-EV"                                                  = 24
+        IAPP                                                                = 25
 
 
 ; Type: Enumerated AVP
@@ -585,7 +602,8 @@ NAS-Port-Type ::= < Enumerated AVP header: 61 >
 ; Page: 27
 ; Values: [RADIUSTypes]
 Prompt ::= < Enumerated AVP header: 76 >
-        Echo = 1
+        "No Echo" = 0
+        Echo      = 1
 
 
 ; Type: Grouped AVP
@@ -613,16 +631,25 @@ CHAP-Algorithm ::= < Enumerated AVP header: 403 >
 ; Page: 30
 ; Values: [RADIUS] and [RADIUSTypes]
 Service-Type ::= < Enumerated AVP header: 6 >
-        Login             = 1
-        Framed            = 2
-        Outbound          = 5
-        Administrative    = 6
-        Voice             = 12
-        Fax               = 13
-        IAPP-Register     = 15
-        IAPP-AP-Check     = 16
-        "Callback Login"  = 3
-        "Callback Framed" = 4
+        Login                     = 1
+        Framed                    = 2
+        "Callback Login"          = 3
+        "Callback Framed"         = 4
+        Outbound                  = 5
+        Administrative            = 6
+        "NAS Prompt"              = 7
+        "Authenticate Only"       = 8
+        "Callback NAS Prompt"     = 9
+        "Call Check"              = 10
+        "Callback Administrative" = 11
+        Voice                     = 12
+        Fax                       = 13
+        "Modem Relay"             = 14
+        IAPP-Register             = 15
+        IAPP-AP-Check             = 16
+        "Authorize Only"          = 17
+        ;; deleted: value 'Callback Login' (= 3) (occurrence 2) (RFC4005.py#service-type-callback-login-requalified)
+        ;; deleted: value 'Callback Framed' (= 4) (occurrence 2) (RFC4005.py#service-type-callback-framed-requalified)
 
 
 ; Type: Enumerated AVP
@@ -631,8 +658,12 @@ Service-Type ::= < Enumerated AVP header: 6 >
 ; Page: 35
 ; Values: [RADIUSTypes]
 Framed-Protocol ::= < Enumerated AVP header: 7 >
-        PPP  = 1
-        SLIP = 2
+        PPP                                                 = 1
+        SLIP                                                = 2
+        "AppleTalk Remote Access Protocol (ARAP)"           = 3
+        "Gandalf proprietary SingleLink/MultiLink protocol" = 4
+        "Xylogics proprietary IPX/SLIP"                     = 5
+        "X.75 Synchronous"                                  = 6
 
 
 ; Type: Enumerated AVP
@@ -641,7 +672,10 @@ Framed-Protocol ::= < Enumerated AVP header: 7 >
 ; Page: 35
 ; Values: [RADIUSTypes]
 Framed-Routing ::= < Enumerated AVP header: 10 >
-        None = 0
+        None                         = 0
+        "Send routing packets"       = 1
+        "Listen for routing packets" = 2
+        "Send and Listen"            = 3
 
 
 ; Type: Enumerated AVP
@@ -650,7 +684,10 @@ Framed-Routing ::= < Enumerated AVP header: 10 >
 ; Page: 36
 ; Values: [RADIUSTypes]
 Framed-Compression ::= < Enumerated AVP header: 13 >
-        None = 0
+        None                           = 0
+        "VJ TCP/IP header compression" = 1
+        "IPX header compression"       = 2
+        "Stac-LZS compression"         = 3
 
 
 ; Type: Enumerated AVP
@@ -667,11 +704,14 @@ ARAP-Zone-Access ::= < Enumerated AVP header: 72 >
 ; Page: 41
 ; Values: [RADIUSTypes]
 Login-Service ::= < Enumerated AVP header: 15 >
-        Telnet    = 0
-        Rlogin    = 1
-        LAT       = 4
-        X25-PAD   = 5
-        X25-T3POS = 6
+        Telnet                                                          = 0
+        Rlogin                                                          = 1
+        "TCP Clear"                                                     = 2
+        "PortMaster (proprietary)"                                      = 3
+        LAT                                                             = 4
+        X25-PAD                                                         = 5
+        X25-T3POS                                                       = 6
+        "TCP Clear Quiet (suppresses any NAS-generated connect string)" = 8
 
 
 ; Type: Grouped AVP
@@ -697,6 +737,19 @@ Tunneling ::= < AVP header: 401 >
 ; Page: 45
 ; Values: [RADIUSTypes]
 Tunnel-Type ::= < Enumerated AVP header: 64 >
+        "Point-to-Point Tunneling Protocol (PPTP)"                   = 1
+        "Layer Two Forwarding (L2F)"                                 = 2
+        "Layer Two Tunneling Protocol (L2TP)"                        = 3
+        "Ascend Tunnel Management Protocol (ATMP)"                   = 4
+        "Virtual Tunneling Protocol (VTP)"                           = 5
+        "IP Authentication Header in the Tunnel-mode (AH)"           = 6
+        "IP-in-IP Encapsulation (IP-IP)"                             = 7
+        "Minimal IP-in-IP Encapsulation (MIN-IP-IP)"                 = 8
+        "IP Encapsulating Security Payload in the Tunnel-mode (ESP)" = 9
+        "Generic Route Encapsulation (GRE)"                          = 10
+        "Bay Dial Virtual Services (DVS)"                            = 11
+        "IP-in-IP Tunneling"                                         = 12
+        "Virtual LANs (VLAN)"                                        = 13
 
 
 ; Type: Enumerated AVP
@@ -705,9 +758,21 @@ Tunnel-Type ::= < Enumerated AVP header: 64 >
 ; Page: 46
 ; Values: [RADIUSTypes]
 Tunnel-Medium-Type ::= < Enumerated AVP header: 65 >
-        NSAP      = 3
-        IPX       = 11
-        Appletalk = 12
+        "IPv4 (IP version 4)"                                             = 1
+        "IPv6 (IP version 6)"                                             = 2
+        NSAP                                                              = 3
+        "HDLC (8-bit multidrop)"                                          = 4
+        "BBN 1822"                                                        = 5
+        "802 (includes all 802 media plus Ethernet \"canonical format\")" = 6
+        "E.163 (POTS)"                                                    = 7
+        "E.164 (SMDS, Frame Relay, ATM)"                                  = 8
+        "F.69 (Telex)"                                                    = 9
+        "X.121 (X.25, Frame Relay)"                                       = 10
+        IPX                                                               = 11
+        Appletalk                                                         = 12
+        "Decnet IV"                                                       = 13
+        "Banyan Vines"                                                    = 14
+        "E.164 with NSAP format subaddress"                               = 15
 
 
 ; Type: Enumerated AVP

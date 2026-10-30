@@ -123,7 +123,8 @@ The declared vocabulary, with the document that forced each:
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`; 7155 §4.4.1, `Login (1)`); `worded-enum-values` (4005 §5.5 and
   7155 §4.3.5, `CHAP with MD5       5`; 4005 §6.1, and with the previous
-  one 7155 §4.4.1, `Callback Login`); `parenthesized-value-first` (5777
+  one 7155 §4.4.1, `Callback Login`; 4005's informational lists, `2   ISDN
+  Sync`); `parenthesized-value-first` (5777
   §5.4, `(0): QoS-Desired`); `external-enum-values` (4005, 5777, 5778, 6733,
   7155: where an enumerated clause says its values are listed);
   `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
@@ -422,7 +423,17 @@ Same definitions, different carrier:
   every collected RFC and requiring that keeps prose out; RFC 6734's
   mixed-case `rRK (1)` is a declared quirk, as are names of several words
   (`"CHAP with MD5" = 5`, RFC 4005 §5.5, 7155 §4.3.5) and RFC 5777's
-  `(0): QoS-Desired`. Behind `external-enum-values`, a clause that says
+  `(0): QoS-Desired`. With `worded-enum-values`, RFC 4005's informational
+  lists (§4.4, 5.3, 6.1, 6.10.1, 6.10.2, 6.10.4, 6.15.3, 7.2, 7.3) are read
+  whole: a value-first line's label is every word after the number, a
+  closing reference tag dropped as it is after a one-word label (`17
+  Authorize Only  [RADDynAuth]`), and a line indented past the label's first
+  character continues it (`12   ADSL-CAP - Asymmetric DSL, Carrierless
+  Amplitude Phase` over `Modulation`). §7.3's `802 (includes all 802 media
+  plus Ethernet "canonical format")` is written with the quotes escaped
+  ([grammar.md](grammar.md#enumerated-avp)). §6.1 then re-lists four values
+  it qualifies, two worded ones reading a second time; the raw file keeps
+  both copies and corrections delete the repeats. Behind `external-enum-values`, a clause that says
   where its values are listed gets that citation as `; Values:`, in the
   document's words up to the sentence's end, with or without a list beside
   it: RFC 6733's `Termination-Cause` ("can be found in the IANA registry
@@ -440,11 +451,7 @@ Same definitions, different carrier:
   4005's `Termination-Cause` (§9.3.5 maps RADIUS causes onto Diameter values
   in a two-column table of worded names, extending RFC 6733's clause) and
   RFC 5778's `MIP6-Auth-Mode` (§6.20 names `MIP6_AUTH_MN_AAA`, only the
-  IANA registry in §9.5 numbers it). RFC 4005's informational lists (§4.4,
-  5.3, 6.1, 6.10.1, 6.10.2, 6.10.4, 6.15.3, 7.2, 7.3) label values in words
-  after the number (`2   ISDN Sync`, wrapping in places) and are read only
-  where the label is one word; §7.3's `802 (includes all 802 media plus Ethernet
-  "canonical format")` holds a double quote, which no value name can.
+  IANA registry in §9.5 numbers it).
 
 ## Strictness
 

@@ -16,4 +16,4 @@ reason = "enumerated clauses say where their values are listed instead of, or be
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "value names printed in words before the value: CHAP-Algorithm's one value, 'CHAP with MD5       5' (5.5), and two of the four Service-Type values 6.1 qualifies, 'Callback Login      3'"
+reason = "value names printed in words: before the value, CHAP-Algorithm's one value, 'CHAP with MD5       5' (5.5), and two of the four Service-Type values 6.1 qualifies, 'Callback Login      3'; after it, the informational lists of 4.4, 5.3, 6.1, 6.10.1, 6.10.2, 6.10.4, 6.15.3, 7.2 and 7.3, '2   ISDN Sync', some wrapping onto a deeper-indented line ('Carrierless Amplitude Phase' over 'Modulation', 4.4)"

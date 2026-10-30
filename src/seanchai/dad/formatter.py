@@ -8,7 +8,8 @@ depends on stable diffs. Canonical rules:
   front of it; `; bold` and `; strikethrough` markers aligned one column past
   the longest ABNF body line of their own section;
 - enum bodies: a value name quoted exactly when it is not an identifier,
-  `=` aligned per section (RESERVED counts as a name);
+  with `"` and backslash escaped inside the quotes, `=` aligned per section
+  (RESERVED counts as a name);
 - tables: columns split by 3 spaces, widths from data cells only (minimum 3);
   labels sit at column starts, overflowing into gaps when wider than the
   column. Both table kinds write their labels as a `; Columns:` directive, so
@@ -241,8 +242,12 @@ _IDENTIFIER_RE = re.compile(ast.AVP_NAME_PATTERN)
 
 def _value_name(name: str) -> str:
     """A value name as a file spells it: quoted exactly when it is not an
-    identifier, so each name has one spelling."""
-    return name if _IDENTIFIER_RE.fullmatch(name) else f'"{name}"'
+    identifier, so each name has one spelling, and inside the quotes a
+    backslash and `"` escaped, the only two characters that are."""
+    if _IDENTIFIER_RE.fullmatch(name):
+        return name
+    escaped = name.replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
 
 
 def _format_enumerated(

@@ -54,13 +54,15 @@ InlineText = Annotated[
 # Enum value names are free text: TS 32.299 labels its values in words ("0 PS
 # to CS Transfer", clause 7.2.1B; "Virtual Private Network (VPN)", 7.2.213),
 # and an identifier derived from the label would be a spelling no document
-# prints. A file quotes any name that is not an `AvpName`, so a name is
-# whatever the quotes can hold: no `"`, which would close them, no `;;`, which
-# starts a comment wherever it stands, and no control characters or padding,
-# which the formatter could not print back as written.
+# prints. A file quotes any name that is not an `AvpName`, escaping `"` and
+# `\` inside the quotes (RFC 4005 clause 7.3 labels a value `802 (includes
+# all 802 media plus Ethernet "canonical format")`), so a name is whatever
+# the quotes can hold: no `;;`, which starts a comment wherever it stands,
+# and no control characters or padding, which the formatter could not print
+# back as written.
 EnumValueName = Annotated[
     str,
-    Field(pattern=r'^[^\x00-\x20\x7f"]([^\x00-\x1f\x7f"]*[^\x00-\x20\x7f"])?$'),
+    Field(pattern=r"^[^\x00-\x20\x7f]([^\x00-\x1f\x7f]*[^\x00-\x20\x7f])?$"),
     pydantic.AfterValidator(_no_comment_start),
 ]
 

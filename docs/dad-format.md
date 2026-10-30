@@ -84,8 +84,10 @@ each starting with `; Type:`.
   (`DELIVERY_REPORT`), but TS 32.299 labels values in words, so a name is
   free text rather than a derived identifier no document prints, and one
   that is not an identifier is quoted (`"PS to CS Transfer"`,
-  `"Virtual Private Network (VPN)"`). Quoting only where needed keeps the
-  identifiers reading as the ABNF does.
+  `"Virtual Private Network (VPN)"`), with `\"` and `\\` for a double quote
+  and a backslash inside the quotes (RFC 4005's `802 (… "canonical
+  format")`). Quoting only where needed keeps the identifiers reading as the
+  ABNF does.
 - **An enumeration defined elsewhere says where.** A clause that gives its
   values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
   32.422 [23] for Trace Depth") prints `; Values:` with that citation and no

@@ -17,13 +17,10 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Linter and corpus
 
-- **S. Read the RFC value lists left unread.** RFC 4005's informational
-  lists label values in words after the number (`2   ISDN Sync`, 65 lines
-  over nine clauses, some wrapping) and only one-word labels are read; one
-  label, Tunnel-Medium-Type's `802 (includes … "canonical format")`, holds
-  a double quote no value name can. RFC 4005's `Termination-Cause` values
-  are a RADIUS-to-Diameter mapping table (§9.3.5) and RFC 5778's
-  `MIP6-Auth-Mode` value is numbered only in its IANA section (§9.5); both
+- **S. Read the two RFC value lists left unread.** RFC 4005's
+  `Termination-Cause` values are a RADIUS-to-Diameter mapping table of
+  worded causes (§9.3.5, extending RFC 6733's clause) and RFC 5778's
+  `MIP6-Auth-Mode` value is numbered only in its IANA registry (§9.5); both
   still warn "no value list found".
 
 ## Sources

@@ -377,6 +377,9 @@ _RAW_ERRORS = {
         "table-definition-mismatch",
     ],
     "rfc4004.raw.dad": ["table-definition-mismatch"],
+    # Clause 6.1 lists Service-Type's Callback Login (3) and Callback Framed
+    # (4), then repeats both among the values it qualifies.
+    "rfc4005.raw.dad": ["duplicate-enum-value"] * 4,
     # The wildcard row of table 7.1.0.1; two Integer32 rows clauses 7.2.111AaA
     # and 7.2.111AaB define as Enumerated; and every grouped header in clause
     # 7.2 printing no vendor while table 7.2.0.1 sets V.

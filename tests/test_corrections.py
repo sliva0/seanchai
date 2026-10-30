@@ -832,6 +832,42 @@ def test_an_occurrence_counts_from_one():
         corrections.avp_rule("Example-Request", "Session-Id", occurrence=0)
 
 
+_OFF = ast.EnumValue(name="Off", value=0)
+
+
+def _repeated_off(spec: ast.Specification) -> ast.Specification:
+    """RFC 4005 clause 6.1's shape: a value listed, then listed again."""
+    enumerated = spec.sections[2]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    repeated = enumerated.model_copy(update={"values": (_OFF, _OFF)})
+    return spec.model_copy(update={"sections": (*spec.sections[:2], repeated)})
+
+
+def test_an_occurrence_deletes_one_copy_of_a_repeated_value():
+    target = corrections.enum_value("Example-Mode", "Off", value=0, occurrence=2)
+
+    corrected, results = corrections.apply(
+        _repeated_off(_spec()), [_delete(target, _OFF)]
+    )
+
+    enumerated = corrected.sections[2]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert enumerated.values == (_OFF,)
+    assert results[0].node == ("value 'Off' of 'Example-Mode' (= 0) (occurrence 2)")
+
+
+def test_a_value_occurrence_fails_once_the_value_is_no_longer_repeated():
+    target = corrections.enum_value("Example-Mode", "Off", occurrence=1)
+
+    with pytest.raises(corrections.CorrectionError, match="no match"):
+        corrections.apply(_spec(), [_delete(target, _OFF)])
+
+
+def test_a_value_occurrence_counts_from_one():
+    with pytest.raises(corrections.CorrectionError, match="counts from 1"):
+        corrections.enum_value("Example-Mode", "Off", occurrence=0)
+
+
 def test_the_file_header_cannot_be_deleted():
     # The root stands in no tuple, so there is no place for the deletion's
     # note and nothing the corrected tree could leave out.

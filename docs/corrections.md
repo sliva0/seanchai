@@ -59,16 +59,20 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   `flag_rules(table_row(...))` (a row's `must`, `may`, `should_not` and
   `must_not`, one field per correction: moving TS 29.273's RAT-Type M from
   Must to Must not is two), `reused_row(name, section=)`,
-  `enum_value(avp, name, value=)`, `avp_rule(parent, name, occurrence=)`
+  `enum_value(avp, name, value=, occurrence=)`,
+  `avp_rule(parent, name, occurrence=)`
   (parent may be a whole `definition` selector), `avp_table(label)`,
   `reused_avps(label)`, `application_scope(name)`, `header()`.
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, counted from 1, for a body that prints a
   rule twice identically: TS 29.229 clause 6.1.10 prints RTA's
   `< Session-Id >` on two lines, and `Delete(target=avp_rule("Registration-Termination-Answer",
-  "Session-Id", occurrence=2), expect=...)` removes the copy. It matches only
-  while the name still repeats, so the declaration fails once upstream drops
-  the copy; `expect` is still the whole node.
+  "Session-Id", occurrence=2), expect=...)` removes the copy. `enum_value`
+  takes it too, for a list printing one value twice: RFC 4005 clause 6.1
+  lists Service-Type's `Callback Login (3)` and `Callback Framed (4)`, then
+  repeats both among the values it qualifies. It matches only while the
+  name still repeats, so the declaration fails once upstream drops the copy;
+  `expect` is still the whole node.
 - **One field of one node.** Replacing a structural field such as `avps` is
   rejected. Several fields of one node are replaced in declaration order,
   each through validation, so a flag leaves one column before it enters
