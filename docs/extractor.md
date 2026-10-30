@@ -439,6 +439,20 @@ behind two quirks of its own:
   table 7.1 types code 314 (Charging-Characteristics, TS 29.234) `"Integer"`,
   which could be Integer32, Integer64 or neither, and TS 29.234 is outside
   the corpus. Undeclared, such a cell fails.
+
+  No source settles 314's type, so the row stays as printed and no
+  correction supplies one. TS 29.234 clause 10.1.27 says "of type Integer"
+  in every version that has the AVP, V6.1.0 to its last, V11.2.0, never
+  with a width; it carries "the charging mode … as described in 3GPP TS
+  32.215", whose information element (clause 6.1 and annex A, and TS
+  32.298's ASN.1 on 3GPP Forge today) is `OCTET STRING (SIZE(2))`, a
+  16-bit string of Profile and Behaviour bits. Wireshark types 314
+  OctetString since MR !4102 (commit `61e1e69218`, 2021), which states no
+  rationale and rewrote `dictionary.xml`'s comment to `314
+  Charging-Characteristics Integer [3GPP 29.234]`; freeDiameter, and Open5GS through
+  it, and EasyDiameter read Integer32, python-diameter OctetString.
+  OctetString fits the information element and Integer32 the document's
+  word; neither is the document's statement.
 - `reserved-range-notes`: a full-width note row → a reserved range per
   line reading "The AVP codes from a to b are reserved for P" or "The
   Experimental Result Codes from a to b …", P less its closing full stop the
