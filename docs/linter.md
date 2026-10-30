@@ -50,6 +50,13 @@ cannot judge.
 - `local-and-reused` — an AVP both defined locally and listed as re-used.
   A note, because a re-print and an extension look the same from one file;
   superseded by the cross-file rules when the origin is readable.
+- `member-marked-unused` — a command's ABNF member that a table's column
+  for that command marks with a dash, which TS 32.299 clause 7.1.0 reads as
+  "not used". Rows are indexed by AVP name and command column (`ACR`, `ACA`,
+  `CCR`, `CCA`), AVP and re-used tables alike, and one note reports each
+  table's dash against each direct member; a blank cell marks nothing, and
+  `* [ AVP ]` is grammar. A note: the ABNF is the wire format, and only the
+  document's editor knows which statement is meant.
 
 A re-used row citing the file's own document is no re-use: TS 29.212's Gxx,
 S9, Sd and St tables list Gx's AVPs from TS 29.212, and 29.061's SGmb table
@@ -145,6 +152,10 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057) or has no
   Release 18 version: TS 29.140, cited by TS 32.299 for `VAS-Id` and
   `VASP-Id`, ends at V7.0.0, and nothing resolves across a major version.
+- **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
+  `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
+  ABNF lists both (and table 6.2.3.1 marks them OC). The generator keeps
+  them, following the ABNF, with the mark as a comment.
 - **`table-row-mismatch`**, nine. TS 29.061 prints `3GPP-IMSI`,
   `3GPP-SGSN-Address`, `3GPP-SGSN-IPv6-Address`, `3GPP-IMEISV`,
   `3GPP-RAT-Type`, `3GPP-User-Location-Info` and `3GPP-MS-TimeZone` with M

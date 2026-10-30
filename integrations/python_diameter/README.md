@@ -215,7 +215,7 @@ dash speaks for it; a blank cell says nothing.
   mark is the dash clause 7.1.0 reads as "not used", the comment says so;
   the member stays, as the ABNF lists it. In the committed corpus that is
   ACA's `Error-Message` and `Failed-AVP` (table 7.1.0.1, against clause
-  6.2.3's ABNF):
+  6.2.3's ABNF; the linter's `member-marked-unused` reports it):
 
   ```python
   (

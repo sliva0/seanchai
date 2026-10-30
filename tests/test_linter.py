@@ -427,15 +427,20 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29337-i00": 2,
         "29338-i20": 2,
         "29388-i10": 1,
-        # The corrections cite RFC origins for table 7.1.0.1, whose clauses
-        # 7.1.9, 7.1.14, 7.1.17 and B.2.4 print bodies of their own.
-        "32299-i00.raw": 0,
-        "32299-i00": 4,
+        # Table 7.1.0.1 marks ACA's Error-Message and Failed-AVP unused; the
+        # corrections cite RFC origins for it, whose clauses 7.1.9, 7.1.14,
+        # 7.1.17 and B.2.4 print bodies of their own.
+        "32299-i00.raw": 2,
+        "32299-i00": 6,
     }
     stem = path.name.removesuffix(".dad")
 
     assert len(notes) == expected.get(stem, expected.get(stem.removesuffix(".raw"), 0))
-    assert {f.rule for f in notes} <= {"local-and-reused", "table-row-mismatch"}
+    assert {f.rule for f in notes} <= {
+        "local-and-reused",
+        "member-marked-unused",
+        "table-row-mismatch",
+    }
 
 
 # --- cross-file rules -------------------------------------------------------
@@ -671,6 +676,45 @@ def test_a_re_used_tables_code_and_type_cells_are_compared_with_the_origin():
         found["reused-row-mismatch"].message
     )
     assert found["reused-row-mismatch"].message.endswith("reads Grouped")
+
+
+def test_a_member_its_table_marks_unused_in_its_command_is_a_note():
+    """TS 32.299 clause 7.1.0: "Those Diameter AVPs that are not used are
+    marked '-'". A blank cell marks nothing, and another command's dash
+    says nothing of this one."""
+    acr = ast.MarkColumn.ACR
+    table = ast.AvpTable(
+        table="7.1.0.1",
+        source=ast.SourceRef(section="7.1.0"),
+        columns=(ast.AvpColumn.NAME, ast.AvpColumn.ACR, ast.AvpColumn.ACA),
+        rows=(
+            ast.AvpTableRow(name="Dashed", marks={acr: ()}),
+            ast.AvpTableRow(name="Blank"),
+            ast.AvpTableRow(name="Other", marks={acr: ("M",), ast.MarkColumn.ACA: ()}),
+        ),
+    )
+    message = ast.Message(
+        name="Accounting-Request",
+        abbreviation="ACR",
+        source=ast.SourceRef(section="6.2.2"),
+        command_code=271,
+        flags=frozenset({ast.CommandFlag.REQUEST}),
+        application_id=3,
+        avps=tuple(
+            ast.AvpRule(name=name, presence=ast.Presence.OPTIONAL)
+            for name in ("Dashed", "Blank", "Other")
+        ),
+    )
+
+    (finding,) = [
+        f
+        for f in linter.lint(_spec(message, table))
+        if f.rule == "member-marked-unused"
+    ]
+
+    assert finding.severity is linter.Severity.NOTE
+    assert finding.message.startswith("Dashed is a member of ACR, but table 7.1.0.1")
+    assert finding.section == "6.2.2"
 
 
 def test_an_avp_the_origin_never_heard_of():
@@ -916,6 +960,8 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["V2X-Subscription-Data"],
     },
     "32299-i00.dad": {
+        # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
+        "member-marked-unused": ["Error-Message", "Failed-AVP"],
         "origin-not-in-corpus": ["TS283.034, TS29.140"],
         "reused-body-differs": [
             "Multiple-Services-Credit-Control",

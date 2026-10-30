@@ -571,6 +571,51 @@ def _local_and_reused(index: _Index) -> list[Finding]:
     return findings
 
 
+def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
+    """A command's ABNF member its tables mark unused in that command.
+
+    TS 32.299 tabulates per command whether an AVP is used in it, a column
+    each for ACR, ACA, CCR and CCA, and clause 7.1.0 reads the dash: "Those
+    Diameter AVPs that are not used are marked '-'". Table 7.1.0.1 marks
+    `Error-Message` and `Failed-AVP` so under ACA, whose clause 6.2.3 ABNF
+    lists both. A note: the ABNF is the wire format, and only the document's
+    editor knows which statement is meant. A blank cell marks nothing, and
+    the `* [ AVP ]` wildcard is grammar, not a member.
+    """
+    unused: dict[tuple[str, ast.MarkColumn], list[str]] = defaultdict(list)
+    for section in spec.sections:
+        if not isinstance(section, ast.AvpTable | ast.ReusedAvps):
+            continue
+        label = section.table or f"(clause {section.source.section})"
+        for row in section.rows:
+            for column, marks in row.marks.items():
+                if marks == ():
+                    unused[row.name, column].append(label)
+    findings = []
+    for section in spec.sections:
+        if (
+            not isinstance(section, ast.Message)
+            or section.abbreviation not in ast.MarkColumn
+        ):
+            continue
+        command = ast.MarkColumn(section.abbreviation)
+        for rule in section.avps:
+            if rule.name == "AVP":
+                continue
+            findings += [
+                Finding(
+                    Severity.NOTE,
+                    "member-marked-unused",
+                    f"{rule.name} is a member of {section.abbreviation}, but"
+                    f" table {label} marks it '-', unused in"
+                    f" {section.abbreviation}",
+                    section.source.section,
+                )
+                for label in unused.get((rule.name, command), [])
+            ]
+    return findings
+
+
 def lint(spec: ast.Specification) -> list[Finding]:
     """Every single-file finding, errors before notes."""
     index = _index(spec)
@@ -586,6 +631,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_vendor_id_agrees_with_header(index, spec.vendor_id),
         *_self_cited_exists(index),
         *_local_and_reused(index),
+        *_members_marked_unused(spec),
     ]
     return _ordered(findings)
 
