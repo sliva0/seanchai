@@ -133,7 +133,7 @@ def extract(
     warnings: list[str] = []
     with reported():
         try:
-            spec = tgpp_docx.extract(
+            spec, comments = tgpp_docx.extract_with_comments(
                 docx, link=link, warnings=warnings, sources_dir=sources
             )
             if pdf is not None:
@@ -145,12 +145,11 @@ def extract(
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        notes = None
         if corrections is not None:
             # A corpus run may pass a directory holding modules for only some
             # of its specifications, so a spec without one is not an error.
-            spec, notes = _correct(spec, corrections, required=False)
-    _write(spec, output, notes)
+            spec, comments = _correct(spec, comments, corrections, required=False)
+    _write(spec, output, comments)
 
 
 @main.command(name="extract-rfc")
@@ -203,7 +202,11 @@ def extract_rfc(
                 click.echo(f"{prefix}: {warning}", err=True)
         notes = None
         if corrections is not None:
-            spec, notes = _correct(spec, corrections, required=False)
+            from .dad import formatter
+
+            spec, notes = _correct(
+                spec, formatter.Comments(), corrections, required=False
+            )
     _write(spec, output, notes)
 
 
@@ -370,17 +373,22 @@ def correct(source: Path, corrections: Path, output: Path | None) -> None:
         # Explicit encoding both ways: `.dad` files are UTF-8 wherever they were
         # written, and the platform default would otherwise decide whether a
         # spec title with a non-ASCII character survives the round trip.
-        spec = parser.parse(source.read_text(encoding="utf-8"))
-        corrected, notes = _correct(spec, corrections, required=True)
+        # The raw file's own comments — struck members commented out — move
+        # with their lines.
+        spec, comments = parser.parse_with_comments(source.read_text(encoding="utf-8"))
+        corrected, notes = _correct(spec, comments, corrections, required=True)
     _write(corrected, output, notes)
 
 
-def _correct(spec, directory: Path, required: bool):
-    """Returns the corrected tree and the notes marking what was touched."""
+def _correct(spec, comments: Comments, directory: Path, required: bool):
+    """Returns the corrected tree, and `comments` moved with their lines
+    beside the notes marking what was touched."""
     from .dad import corrections as corrections_module
 
     declared = corrections_module.load(directory, spec.specification, required=required)
-    corrected, results = corrections_module.apply(spec, declared)
+    corrected, results, notes = corrections_module.apply_with_comments(
+        spec, comments, declared
+    )
     for result in results:
         edit = result.correction
         reason = click.style(f"({edit.reason})", dim=True)
@@ -400,7 +408,7 @@ def _correct(spec, directory: Path, required: bool):
                 f" {result.old!r} -> {result.new!r} {reason}",
                 err=True,
             )
-    return corrected, corrections_module.notes(results)
+    return corrected, notes
 
 
 @main.command(name="format")

@@ -32,7 +32,7 @@ _AVP_HEADER_RE = re.compile(
 _AVP_RULE_RE = re.compile(
     r"^\s*(?:(?P<min>\d*)\*(?P<max>\d*)\s*)?"
     r"(?P<open>[<{\[]) (?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) (?P<close>[>}\]])"
-    r"(?P<bold>\s*; bold)?\s*$"
+    r"(?P<bold>\s*; bold)?(?P<strikethrough>\s*; strikethrough)?\s*$"
 )
 # A name is an identifier or a quoted string ("Virtual Private Network
 # (VPN)"); `ast.EnumValueName` decides what the quotes may hold, so this
@@ -219,7 +219,13 @@ def _avp_rules(body: list[tuple[int, str]]) -> tuple[ast.AvpRule, ...]:
             raise DadParseError(lineno, f"malformed AVP rule: {line.strip()!r}")
         try:
             with _validated(lineno):
-                rules.append(abnf.avp_rule(match, bold=match["bold"] is not None))
+                rules.append(
+                    abnf.avp_rule(
+                        match,
+                        bold=match["bold"] is not None,
+                        strikethrough=match["strikethrough"] is not None,
+                    )
+                )
         except abnf.AbnfError as error:
             raise DadParseError(lineno, str(error)) from None
     return tuple(rules)

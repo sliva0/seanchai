@@ -410,3 +410,85 @@ def test_download_takes_spec_and_version_together(tmp_path, arguments):
     assert result.exit_code == 2
     assert "--spec and --version go together" in result.output
     assert not list(tmp_path.iterdir())
+
+
+def test_correct_command_keeps_the_raw_files_commented_out_members(tmp_path):
+    # TS 32.299's struck members are commented out in its raw file.
+    raw = tmp_path / "raw.dad"
+    raw.write_text(
+        _dad_with(
+            "; Type: Grouped AVP",
+            "; Name: Example",
+            "; Section: 6.3.1",
+            "Example ::= < AVP header: 700 10415 >",
+            ";;      [ Struck ] ; strikethrough",
+            "        [ Kept ]",
+        )
+    )
+    directory = tmp_path / "corrections"
+    directory.mkdir()
+    (directory / "TS29.329.py").write_text(
+        "from seanchai.dad.corrections import Correction, definition\n"
+        "CORRECTIONS = [\n"
+        "    Correction(\n"
+        "        id='example-code',\n"
+        "        target=definition('Example'),\n"
+        "        field='code',\n"
+        "        expect=700,\n"
+        "        replace=701,\n"
+        "        reason='clause 6.3.1 misprints the code',\n"
+        "    )\n"
+        "]\n"
+    )
+    output = tmp_path / "corrected.dad"
+
+    result = CliRunner().invoke(
+        main, ["correct", str(raw), "--corrections", str(directory), "-o", str(output)]
+    )
+
+    assert result.exit_code == 0
+    assert output.read_text().splitlines()[-2:] == [
+        ";;      [ Struck ] ; strikethrough",
+        "        [ Kept ]",
+    ]
+
+
+def test_correct_command_keeps_a_comment_block_ending_the_file(tmp_path):
+    raw = tmp_path / "raw.dad"
+    raw.write_text(
+        _dad_with(
+            "; Type: Grouped AVP",
+            "; Name: Example",
+            "; Section: 6.3.1",
+            "Example ::= < AVP header: 700 10415 >",
+            "",
+            "",
+            ";; end of file",
+        )
+    )
+    directory = tmp_path / "corrections"
+    directory.mkdir()
+    (directory / "TS29.329.py").write_text(
+        "from seanchai.dad.corrections import Correction, definition\n"
+        "CORRECTIONS = [\n"
+        "    Correction(\n"
+        "        id='example-code',\n"
+        "        target=definition('Example'),\n"
+        "        field='code',\n"
+        "        expect=700,\n"
+        "        replace=701,\n"
+        "        reason='clause 6.3.1 misprints the code',\n"
+        "    )\n"
+        "]\n"
+    )
+    output = tmp_path / "corrected.dad"
+
+    result = CliRunner().invoke(
+        main, ["correct", str(raw), "--corrections", str(directory), "-o", str(output)]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert output.read_text().endswith(
+        "Example ::= < AVP header: 701 10415 > ;; corrected:"
+        " (TS29.329.py#example-code)\n\n\n;; end of file\n"
+    )

@@ -226,6 +226,7 @@ def _produce(
     warnings: list[str],
 ) -> tuple[str, str, ast.Specification]:
     """The raw and corrected texts for one source, and the corrected tree."""
+    comments = formatter.Comments()
     if source.document.suffix == ".txt":
         spec = rfc_text.extract(
             source.document,
@@ -234,7 +235,7 @@ def _produce(
             sources_dir=sources_dir,
         )
     else:
-        spec = tgpp_docx.extract(
+        spec, comments = tgpp_docx.extract_with_comments(
             source.document,
             link=source.link,
             warnings=warnings,
@@ -242,7 +243,7 @@ def _produce(
         )
         if source.pdf is not None:
             spec = tgpp_docx.attach_pages(spec, source.pdf, warnings=warnings)
-    raw_text = formatter.format_spec(spec)
+    raw_text = formatter.format_spec(spec, comments)
     declared = corrections.load(corrections_dir, spec.specification)
     for edit in declared:
         # `__post_init__` parsed the declared string; the annotation still
@@ -251,8 +252,8 @@ def _produce(
         if warning := versions.warning(spec.version, f"correction {edit.cited}"):
             warnings.append(warning)
     if declared:
-        spec, results = corrections.apply(spec, declared)
-        corrected_text = formatter.format_spec(spec, corrections.notes(results))
+        spec, _, comments = corrections.apply_with_comments(spec, comments, declared)
+        corrected_text = formatter.format_spec(spec, comments)
     else:
         corrected_text = raw_text
     return raw_text, corrected_text, spec

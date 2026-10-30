@@ -828,7 +828,8 @@ def _created_blocks(
     `Insert` targets while no re-used block carries it (see `Insert`).
 
     Returns the tree to rebuild, with the placeholders in it; the index each
-    input section has in that tree; and the placeholders' paths by label. A
+    input section has in that tree, and past the last one the tree's end;
+    and the placeholders' paths by label. A
     placeholder is built without validation, since a table may not be empty;
     the inserts targeting it fill it through the same `_inserted` as any
     other, and the rebuild validates the result. Selectors never see it: they
@@ -867,6 +868,9 @@ def _created_blocks(
         if (placeholder := created.get(index)) is not None:
             placeholders[placeholder.table] = ("sections", len(sections))
             sections.append(placeholder)
+    # One past the last input section is one past the tree's last: where a
+    # comment block ending the file stands.
+    positions.append(len(sections))
     if not placeholders:
         return spec, positions, placeholders
     tree = spec.model_copy(update={"sections": tuple(sections)})
@@ -966,6 +970,26 @@ def apply(
     anything is rebuilt, so a failing one cannot leave a half-corrected
     file behind.
     """
+    applied = _applied(spec, corrections)
+    return applied.rebuilt, applied.results
+
+
+@dataclass
+class _Applied:
+    """What `apply` did, with what `apply_with_comments` needs to follow
+    lines from the input tree to the output: the tree the rebuild walked,
+    where each input section sits in it, the plan, and per result the path
+    `plan.placed` knows it by."""
+
+    rebuilt: ast.Specification
+    results: list[Result]
+    tree: ast.Specification
+    positions: list[int]
+    plan: _Plan
+    origins: list[_Origin]
+
+
+def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
     # Selectors and `expect` checks see only the input; the rebuild also
     # walks the re-used blocks `Insert`s create.
     tree, positions, placeholders = _created_blocks(spec, corrections)
@@ -1105,7 +1129,153 @@ def apply(
                 f"{result.node}: the inserted row is not in the corrected tree"
             )
         result.path = plan.placed[origin]
-    return rebuilt, results
+    return _Applied(rebuilt, results, tree, positions, plan, origins)
+
+
+def apply_with_comments(
+    spec: ast.Specification,
+    comments: formatter.Comments,
+    corrections: Sequence[Edit],
+) -> tuple[ast.Specification, list[Result], formatter.Comments]:
+    """`apply` for a tree with `;;` comments of its own, as
+    `parser.parse_with_comments` returns them: the comments come back keyed
+    by where their lines landed, merged with `notes(results)`.
+
+    A comment moves with the line it attaches to, so one standing before a
+    member stays before it when an insert or a deletion shifts the body;
+    TS 32.299's commented-out struck members depend on it. A deleted line
+    takes nothing with it: what stood before it, or trailed it, stands where
+    it stood, before the deletion's note, and what stood after it stays
+    after the note; inside a deleted section, it becomes a block of its own
+    there. A directive line a correction removes (`; Bases:` emptied) has
+    its comments go where the correction's note goes, to the block's first
+    line, ahead of the note. Where a comment and a note trail one line, the
+    comment comes first.
+    """
+    applied = _applied(spec, corrections)
+    # Per place, in print order: each note or comment with the input
+    # position it belongs at, and whether it is an edit's note.
+    places: dict[tuple[str, ast.TreePath], list[tuple[int, str, bool]]] = {}
+    for kind, path, note, index in _noted(applied.results):
+        # Only a deletion's note shares a standing or detached place with a
+        # comment; it belongs where the deleted node stood, an index in its
+        # tuple. A trailing note follows the comments on its line.
+        at = applied.origins[index]
+        deleted = isinstance(applied.results[index].correction, Delete)
+        order = at[-1] if deleted and isinstance(at, tuple) else -1
+        assert isinstance(order, int)
+        places.setdefault((kind, path), []).append((order, note, True))
+    # Comments an edit brings to one place keep the order they printed in.
+    printed = _print_order(spec, comments)
+    moved = sorted(
+        (
+            (*_landing(kind, _in_tree(path, applied.positions), applied), note, line)
+            for (kind, path), lines in _placed(comments)
+            for note, line in zip(lines, printed[kind, path], strict=True)
+        ),
+        key=lambda each: (each[2], each[4]),
+    )
+    for kind, path, order, note, _ in moved:
+        place = places.setdefault((kind, path), [])
+        # After the notes of nodes that stood before it, and after the
+        # comments placed so far, which came earlier in the input.
+        position = max(
+            (
+                index + 1
+                for index, (at, _, is_note) in enumerate(place)
+                if not is_note or (at < order and at >= 0)
+            ),
+            default=0,
+        )
+        place.insert(position, (order, note, False))
+    merged: dict[str, _NoteMap] = {kind: {} for kind in _KINDS}
+    for (kind, path), place in places.items():
+        merged[kind][path] = [note for _, note, _ in place]
+    return (
+        applied.rebuilt,
+        applied.results,
+        formatter.Comments(merged["trailing"], merged["standing"], merged["detached"]),
+    )
+
+
+_KINDS = ("trailing", "standing", "detached")
+
+
+def _placed(
+    comments: formatter.Comments,
+) -> Iterator[tuple[tuple[str, ast.TreePath], Sequence[str]]]:
+    """Each place's comments, by placement and path."""
+    for kind, kept in zip(_KINDS, comments, strict=True):
+        for path, lines in kept.items():
+            yield (kind, path), lines
+
+
+def _print_order(
+    spec: ast.Specification, comments: formatter.Comments
+) -> dict[tuple[str, ast.TreePath], list[int]]:
+    """Where in `spec`'s file each comment prints, by placement and path:
+    found by printing a numbered tag for each and reading them back."""
+    tags: dict[tuple[str, ast.TreePath], list[str]] = {}
+    for count, (place, lines) in enumerate(_placed(comments)):
+        tags[place] = [f"\0{count}.{line}\0" for line in range(len(lines))]
+    tagged = formatter.Comments(
+        *(
+            {path: tags[kind, path] for path in kept}
+            for kind, kept in zip(_KINDS, comments, strict=True)
+        )
+    )
+    text = formatter.format_spec(spec, tagged)
+    return {place: [text.index(tag) for tag in found] for place, found in tags.items()}
+
+
+def _landing(
+    kind: str, path: ast.TreePath, applied: _Applied
+) -> tuple[str, ast.TreePath, int]:
+    """Where a comment keyed `path` in the input (in the coordinates of the
+    tree the rebuild walked) lands in the output: its placement, path, and
+    the input position it orders by among a deletion's notes."""
+    plan = applied.plan
+    for depth in range(1, len(path) + 1):
+        gone = path[:depth]
+        if gone in plan.deleted:
+            # A deleted section leaves a gap between sections, which only a
+            # block of its own can fill; anything else stands in its place.
+            placed = "detached" if len(gone) == 2 else "standing"
+            position = gone[-1]
+            assert isinstance(position, int)
+            return placed, plan.placed[gone], position
+    order = path[-1] if path and isinstance(path[-1], int) else -1
+    for depth in range(len(path), -1, -1):
+        if (found := path[:depth]) not in plan.placed:
+            continue
+        out = plan.placed[found]
+        match path[depth:]:
+            case ():
+                return kind, out, order
+            case (str() as field, int() as end) if end == len(
+                getattr(ast.node_at(applied.tree, found), field)
+            ):
+                # One past a tuple's end: the end of what that tuple became.
+                ended = len(getattr(ast.node_at(applied.rebuilt, out), field))
+                return kind, (*out, field, ended), order
+            case (str(), int()):
+                pass  # an item that is neither in the tree nor its end
+            case (str(), *_) as rest if _prints(applied.rebuilt, (*out, *rest)):
+                return kind, (*out, *rest), order
+            case (str(), *_):
+                # A correction emptied the field and its directive line went
+                # with it. The comments go where the correction's note does,
+                # to the line naming the block, ahead of the note.
+                named = ("specification",) if not out else (*out[:2], "type")
+                return kind, named, -1
+        break
+    raise CorrectionError(f"comment at {path} attaches to nothing in the tree")
+
+
+def _prints(spec: ast.Specification, path: ast.TreePath) -> bool:
+    """Whether the field at `path` prints a line: an absent value, or the
+    empty `; Bases:` list, prints none."""
+    return ast.node_at(spec, path) not in (None, ())
 
 
 _SECTION_TYPES = (
@@ -1142,15 +1312,26 @@ def notes(results: list[Result]) -> formatter.Comments:
     would read as being about that section. The formatter prints detached
     notes as a block of their own, spaced like the section they replace.
     """
-    trailing: _NoteMap = {}
-    standing: _NoteMap = {}
-    detached: _NoteMap = {}
-    for result in results:
+    placed: dict[str, _NoteMap] = {"trailing": {}, "standing": {}, "detached": {}}
+    for kind, path, note, _ in _noted(results):
+        placed[kind].setdefault(path, []).append(note)
+    return formatter.Comments(
+        placed["trailing"], placed["standing"], placed["detached"]
+    )
+
+
+def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]]:
+    """Each note `notes` places: its placement, path, text and the index of
+    the result it marks."""
+    for index, result in enumerate(results):
         edit = result.correction
         if isinstance(edit, Delete):
-            bucket = detached if isinstance(result.old, _SECTION_TYPES) else standing
-            bucket.setdefault(result.path, []).append(
-                f"deleted: {edit.target.describe_in_place()} ({edit.cited})"
+            kind = "detached" if isinstance(result.old, _SECTION_TYPES) else "standing"
+            yield (
+                kind,
+                result.path,
+                f"deleted: {edit.target.describe_in_place()} ({edit.cited})",
+                index,
             )
             continue
         if isinstance(edit, Insert):
@@ -1161,20 +1342,25 @@ def notes(results: list[Result]) -> formatter.Comments:
                 if isinstance(edit.node, ast.ApplicationScope)
                 else result.path
             )
-            trailing.setdefault(line, []).append(f"inserted: ({edit.cited})")
+            yield "trailing", line, f"inserted: ({edit.cited})", index
             continue
         if isinstance(edit, Supply):
             # The list was empty before, so the supplied values are the
             # section's values, from the first.
             for position in range(len(edit.values)):
-                trailing.setdefault((*result.path, "values", position), []).append(
-                    f"supplied: ({edit.cited})"
+                yield (
+                    "trailing",
+                    (*result.path, "values", position),
+                    f"supplied: ({edit.cited})",
+                    index,
                 )
             continue
-        trailing.setdefault(_cited_line(result, edit), []).append(
-            f"corrected: ({edit.cited})"
+        yield (
+            "trailing",
+            _cited_line(result, edit),
+            f"corrected: ({edit.cited})",
+            index,
         )
-    return formatter.Comments(trailing, standing, detached)
 
 
 def _cited_line(result: Result, correction: Correction) -> ast.TreePath:

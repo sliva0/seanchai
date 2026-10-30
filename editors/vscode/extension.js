@@ -15,9 +15,16 @@ const bold = vscode.window.createTextEditorDecorationType({
   fontWeight: 'bold',
 });
 
+// `; strikethrough` rule lines mirror its struck AVPs. Commented-out ones are
+// comments and stay as such.
+const struck = vscode.window.createTextEditorDecorationType({
+  textDecoration: 'line-through',
+});
+
 function decorationRanges(doc) {
   const stripes = [];
   const bolds = [];
+  const strikes = [];
   let inTable = false;
   let row = 0;
   for (let i = 0; i < doc.lineCount; i++) {
@@ -33,18 +40,23 @@ function decorationRanges(doc) {
         if (row % 2 === 0) stripes.push(doc.lineAt(i).range);
       }
     }
-    if (/; bold\s*$/.test(text.replace(/;;.*$/, ''))) {
+    const rule = text.replace(/;;.*$/, '');
+    if (/; bold(\s*; strikethrough)?\s*$/.test(rule)) {
       bolds.push(doc.lineAt(i).range);
     }
+    if (/; strikethrough\s*$/.test(rule)) {
+      strikes.push(doc.lineAt(i).range);
+    }
   }
-  return { stripes, bolds };
+  return { stripes, bolds, strikes };
 }
 
 function refresh(editor) {
   if (!editor || editor.document.languageId !== 'dad') return;
-  const { stripes, bolds } = decorationRanges(editor.document);
+  const { stripes, bolds, strikes } = decorationRanges(editor.document);
   editor.setDecorations(stripe, stripes);
   editor.setDecorations(bold, bolds);
+  editor.setDecorations(struck, strikes);
 }
 
 function activate(context) {

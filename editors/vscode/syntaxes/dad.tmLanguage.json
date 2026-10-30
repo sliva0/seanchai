@@ -118,7 +118,7 @@
       }
     },
     "avp-rule": {
-      "match": "^(\\s*)(\\d*\\*\\d*)?(\\s*)(?:(<) ([A-Za-z0-9][A-Za-z0-9_-]*) (>)|(\\{) ([A-Za-z0-9][A-Za-z0-9_-]*) (\\})|(\\[) ([A-Za-z0-9][A-Za-z0-9_-]*) (\\]))(\\s*; bold)?\\s*(;;.*)?$",
+      "match": "^(\\s*)(\\d*\\*\\d*)?(\\s*)(?:(<) ([A-Za-z0-9][A-Za-z0-9_-]*) (>)|(\\{) ([A-Za-z0-9][A-Za-z0-9_-]*) (\\})|(\\[) ([A-Za-z0-9][A-Za-z0-9_-]*) (\\]))(\\s*; bold)?(\\s*; strikethrough)?\\s*(;;.*)?$",
       "captures": {
         "2": { "name": "keyword.operator.occurrences.dad" },
         "4": { "name": "punctuation.definition.bracket.fixed.dad" },
@@ -131,7 +131,8 @@
         "11": { "name": "variable.other.avp.optional.dad" },
         "12": { "name": "punctuation.definition.bracket.optional.dad" },
         "13": { "name": "storage.modifier.bold.dad" },
-        "14": { "name": "comment.line.double-semicolon.dad" }
+        "14": { "name": "storage.modifier.strikethrough.dad" },
+        "15": { "name": "comment.line.double-semicolon.dad" }
       }
     },
     "enum-value": {

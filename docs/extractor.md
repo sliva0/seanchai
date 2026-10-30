@@ -270,14 +270,34 @@ paragraph-level reading had truncated. Blank lines inside a body are
 skipped when another member follows (32.299's message rules); a line made
 entirely of several members is read as several (32.299 clause 7.2.154I,
 printed so in the PDF too); any other line ends the body. A struck-through
-member fails, except behind `struck-rules-unused`, where TS 32.299's own
-legend (clauses 6.2.1.2, 6.4.1.2: "An AVP in grey strikethrough … is not
-used by 3GPP") makes leaving it out the translation; each dropped member
-warns. ACR (clause 6.2.2) strikes `Vendor-Specific-Application-Id`,
-`Accounting-Sub-Session-Id`, `Acct-Session-Id`, `Acct-Multi-Session-Id` and
-`Accounting-Realtime-Required`. A PDF's text layer keeps the words and loses
-the strike, so text extracted from the PDF shows them as ordinary optional
-members; the docx's run formatting is what records them as struck.
+member carries `; strikethrough`, as a bold one carries `; bold`, and a
+line only partly struck fails. Without a legend the extractor reads, the
+member stays a member and warns, naming its rule. Behind
+`struck-rules-unused`, TS 32.299's own legend (clauses 6.2.1.2, 6.4.1.2:
+"An AVP in grey strikethrough … is not used by 3GPP") makes it no member,
+and the line is commented out where it stood, marker kept, so `seanchai
+format` and the corrections leave it in place. ACR (clause 6.2.2) strikes
+five members:
+
+```dad
+<Accounting-Request> ::= < Diameter Header: 271, REQ, PXY >
+        < Session-Id >
+        ...
+        [ Acct-Application-Id ]
+;;      [ Vendor-Specific-Application-Id ] ; strikethrough
+        [ User-Name ]
+        [ Destination-Host ]
+;;      [ Accounting-Sub-Session-Id ]      ; strikethrough
+;;      [ Acct-Session-Id ]                ; strikethrough
+;;      [ Acct-Multi-Session-Id ]          ; strikethrough
+        [ Acct-Interim-Interval ]
+;;      [ Accounting-Realtime-Required ]   ; strikethrough
+```
+
+ACA, CCR, CCA and clause 7.1.9 strike 29 more. A PDF's text layer keeps
+the words and loses the strike, so text extracted from the PDF shows them as
+ordinary optional members; the docx's run formatting is what records them as
+struck.
 
 Real-document cases handled in code or by patch, kept as evidence: heading
 and rule-name mismatches (29.329 §6.1.8); Diameter headers omitting the

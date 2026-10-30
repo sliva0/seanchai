@@ -71,7 +71,9 @@ def qualifier(min_occurs: int, max_occurs: int | None) -> str:
     return f"{minimum}*{maximum}"
 
 
-def avp_rule(match: re.Match, bold: bool = False) -> ast.AvpRule:
+def avp_rule(
+    match: re.Match, bold: bool = False, strikethrough: bool = False
+) -> ast.AvpRule:
     """One body line of a message or grouped AVP, from either dialect's match."""
     min_occurs, max_occurs = occurrences(match["min"], match["max"])
     return ast.AvpRule(
@@ -80,6 +82,7 @@ def avp_rule(match: re.Match, bold: bool = False) -> ast.AvpRule:
         min_occurs=min_occurs,
         max_occurs=max_occurs,
         bold=bold,
+        strikethrough=strikethrough,
     )
 
 

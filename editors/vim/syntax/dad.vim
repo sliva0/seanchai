@@ -32,24 +32,25 @@ syn match dadMsgName "^[A-Za-z0-9][A-Za-z0-9_-]*\ze ::="
 
 " The bracket pair carries the presence: <> fixed, {} required, [] optional.
 " A `;;` comment may end any line, so the rules tolerate one.
-syn match dadAvpRuleFixed "^\s*\%(\d*\*\d*\s*\)\?< [A-Za-z0-9][A-Za-z0-9_-]* >\%(\s*; bold\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpFixed,dadBold,dadComment
-syn match dadAvpRuleRequired "^\s*\%(\d*\*\d*\s*\)\?{ [A-Za-z0-9][A-Za-z0-9_-]* }\%(\s*; bold\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpRequired,dadBold,dadComment
-syn match dadAvpRuleOptional "^\s*\%(\d*\*\d*\s*\)\?\[ [A-Za-z0-9][A-Za-z0-9_-]* \]\%(\s*; bold\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpOptional,dadBold,dadComment
+syn match dadAvpRuleFixed "^\s*\%(\d*\*\d*\s*\)\?< [A-Za-z0-9][A-Za-z0-9_-]* >\%(\s*; bold\)\?\%(\s*; strikethrough\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpFixed,dadBold,dadStrike,dadComment
+syn match dadAvpRuleRequired "^\s*\%(\d*\*\d*\s*\)\?{ [A-Za-z0-9][A-Za-z0-9_-]* }\%(\s*; bold\)\?\%(\s*; strikethrough\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpRequired,dadBold,dadStrike,dadComment
+syn match dadAvpRuleOptional "^\s*\%(\d*\*\d*\s*\)\?\[ [A-Za-z0-9][A-Za-z0-9_-]* \]\%(\s*; bold\)\?\%(\s*; strikethrough\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpOptional,dadBold,dadStrike,dadComment
 syn match dadOccur "\d*\*\d*" contained
 syn match dadBracket "[<>{}[\]]" contained
 syn match dadAvpFixed "[A-Za-z0-9][A-Za-z0-9_-]*" contained
 syn match dadAvpRequired "[A-Za-z0-9][A-Za-z0-9_-]*" contained
 syn match dadAvpOptional "[A-Za-z0-9][A-Za-z0-9_-]*" contained
 syn match dadBold "; bold" contained
+syn match dadStrike "; strikethrough" contained
 
 " Classic Vim cannot layer a bold attribute over syntax colors, so `; bold`
 " lines get a dedicated bold-only name group there (defined after the normal
 " rules, so it wins). Neovim keeps the colored groups and adds bold
 " additively via extmarks in ftplugin/dad.lua.
 if !has('nvim')
-  syn match dadAvpRuleFixedB "^\s*\%(\d*\*\d*\s*\)\?< [A-Za-z0-9][A-Za-z0-9_-]* >\s*; bold\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpBoldName,dadBold,dadComment
-  syn match dadAvpRuleRequiredB "^\s*\%(\d*\*\d*\s*\)\?{ [A-Za-z0-9][A-Za-z0-9_-]* }\s*; bold\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpBoldName,dadBold,dadComment
-  syn match dadAvpRuleOptionalB "^\s*\%(\d*\*\d*\s*\)\?\[ [A-Za-z0-9][A-Za-z0-9_-]* \]\s*; bold\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpBoldName,dadBold,dadComment
+  syn match dadAvpRuleFixedB "^\s*\%(\d*\*\d*\s*\)\?< [A-Za-z0-9][A-Za-z0-9_-]* >\s*; bold\%(\s*; strikethrough\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpBoldName,dadBold,dadStrike,dadComment
+  syn match dadAvpRuleRequiredB "^\s*\%(\d*\*\d*\s*\)\?{ [A-Za-z0-9][A-Za-z0-9_-]* }\s*; bold\%(\s*; strikethrough\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpBoldName,dadBold,dadStrike,dadComment
+  syn match dadAvpRuleOptionalB "^\s*\%(\d*\*\d*\s*\)\?\[ [A-Za-z0-9][A-Za-z0-9_-]* \]\s*; bold\%(\s*; strikethrough\)\?\s*\%(;;.*\)\?$" contains=dadOccur,dadBracket,dadAvpBoldName,dadBold,dadStrike,dadComment
   syn match dadAvpBoldName "[A-Za-z0-9][A-Za-z0-9_-]*" contained
   hi def dadAvpBoldName term=bold cterm=bold gui=bold
 endif
@@ -106,6 +107,7 @@ hi def link dadAvpRequired    Function
 hi def link dadAvpOptional    Identifier
 hi def link dadOccur          Operator
 hi def link dadBold           SpecialComment
+hi def link dadStrike         SpecialComment
 hi def link dadEnumName       Identifier
 hi def link dadEnumNote       String
 hi def link dadReservedKw     Keyword

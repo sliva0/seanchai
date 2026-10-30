@@ -535,3 +535,70 @@ def test_a_bases_entry_that_names_no_document_is_rejected_with_its_line():
         parser.parse(text)
 
     assert exc_info.value.lineno == 4
+
+
+def test_avp_rules_carry_bold_and_strikethrough_markers_in_that_order():
+    spec = parser.parse(
+        _dad(
+            "; Type: Grouped AVP",
+            "; Name: Group",
+            "; Section: 1",
+            "Group ::= < AVP header: 1 >",
+            "        [ Struck ] ; strikethrough",
+            "        [ Both ]   ; bold ; strikethrough",
+        )
+    )
+
+    (grouped,) = spec.sections
+    assert isinstance(grouped, ast.GroupedAvp)
+    assert [(rule.bold, rule.strikethrough) for rule in grouped.avps] == [
+        (False, True),
+        (True, True),
+    ]
+    with pytest.raises(parser.DadParseError, match="malformed AVP rule"):
+        parser.parse(
+            _dad(
+                "; Type: Grouped AVP",
+                "; Name: Group",
+                "; Section: 1",
+                "Group ::= < AVP header: 1 >",
+                "        [ Both ] ; strikethrough ; bold",
+            )
+        )
+
+
+def test_a_commented_out_member_is_no_member_and_keeps_its_place():
+    # TS 32.299 clause 6.2.2's ACR, behind `struck-rules-unused`.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 32.299",
+            "; Version: 18.0.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Message",
+            "; Name: Accounting-Request, ACR",
+            "; Section: 6.2.2",
+            "<Accounting-Request> ::= < Diameter Header: 271, REQ, PXY >",
+            "        < Session-Id >",
+            ";;      [ Vendor-Specific-Application-Id ] ; strikethrough",
+            "        [ User-Name ]",
+            ";;      [ Accounting-Realtime-Required ]   ; strikethrough",
+            "",
+        ]
+    )
+
+    spec, comments = parser.parse_with_comments(text)
+
+    (message,) = spec.sections
+    assert isinstance(message, ast.Message)
+    assert [rule.name for rule in message.avps] == ["Session-Id", "User-Name"]
+    assert comments.standing == {
+        ("sections", 0, "avps", 1): [
+            "     [ Vendor-Specific-Application-Id ] ; strikethrough"
+        ],
+        ("sections", 0, "avps", 2): [
+            "     [ Accounting-Realtime-Required ]   ; strikethrough"
+        ],
+    }
+    assert formatter.format_spec(spec, comments) == text

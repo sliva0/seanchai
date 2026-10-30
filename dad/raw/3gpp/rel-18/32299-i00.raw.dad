@@ -17,9 +17,14 @@
         { Accounting-Record-Type }
         { Accounting-Record-Number }
         [ Acct-Application-Id ]
+;;      [ Vendor-Specific-Application-Id ] ; strikethrough
         [ User-Name ]
         [ Destination-Host ]
+;;      [ Accounting-Sub-Session-Id ]      ; strikethrough
+;;      [ Acct-Session-Id ]                ; strikethrough
+;;      [ Acct-Multi-Session-Id ]          ; strikethrough
         [ Acct-Interim-Interval ]
+;;      [ Accounting-Realtime-Required ]   ; strikethrough
         [ Origin-State-Id ]
         [ Event-Timestamp ]
       * [ Proxy-Info ]
@@ -42,11 +47,16 @@
         { Accounting-Record-Type }
         { Accounting-Record-Number }
         [ Acct-Application-Id ]
+;;      [ Vendor-Specific-Application-Id ] ; strikethrough
         [ User-Name ]
+;;      [ Accounting-Sub-Session-Id ]      ; strikethrough
+;;      [ Acct-Session-Id ]                ; strikethrough
+;;      [ Acct-Multi-Session-Id ]          ; strikethrough
         [ Error-Message ]
         [ Error-Reporting-Host ]
         [ Acct-Interim-Interval ]
         [ Failed-AVP ]
+;;      [ Accounting-Realtime-Required ]   ; strikethrough
         [ Origin-State-Id ]
         [ Event-Timestamp ]
       * [ Proxy-Info ]
@@ -68,14 +78,20 @@
         { CC-Request-Number }
         [ Destination-Host ]
         [ User-Name ]
+;;      [ CC-Sub-Session-Id ]                ; strikethrough
+;;      [ Acct-Multi-Session-Id ]            ; strikethrough
         [ Origin-State-Id ]
         [ Event-Timestamp ]
       * [ Subscription-Id ]
+;;      [ Service-Identifier ]               ; strikethrough
         [ Termination-Cause ]
+;;      [ Requested-Service-Unit ]           ; strikethrough
         [ Requested-Action ]
+;;    * [ Used-Service-Unit ]                ; strikethrough
         [ AoC-Request-Type ]
         [ Multiple-Services-Indicator ]
       * [ Multiple-Services-Credit-Control ]
+;;    * [ Service-Parameter-Info ]           ; strikethrough
         [ CC-Correlation-Id ]
         [ User-Equipment-Info ]
         [ OC-Supported-Features ]
@@ -98,13 +114,22 @@
         { Auth-Application-Id }
         { CC-Request-Type }
         { CC-Request-Number }
+;;      [ User-Name ]                        ; strikethrough
         [ CC-Session-Failover ]
+;;      [ CC-Sub-Session-Id ]                ; strikethrough
+;;      [ Acct-Multi-Session-Id ]            ; strikethrough
+;;      [ Origin-State-Id ]                  ; strikethrough
+;;      [ Event-Timestamp ]                  ; strikethrough
+;;      [ Granted-Service-Unit ]             ; strikethrough
       * [ Multiple-Services-Credit-Control ]
         [ Cost-Information ]
         [ Low-Balance-Indication ]
         [ Remaining-Balance ]
+;;      [ Final-Unit-Indication ]            ; strikethrough
+;;      [ Check-Balance-Result ]             ; strikethrough
         [ Credit-Control-Failure-Handling ]
         [ Direct-Debiting-Failure-Handling ]
+;;      [ Validity-Time ]                    ; strikethrough
         [ OC-Supported-Features ]
         [ OC-OLR ]
       * [ Redirect-Host ]
@@ -133,6 +158,7 @@
         [ Origin-State-Id ]
       * [ Proxy-Info ]
       * [ Route-Record ]
+;;      [ CC-Sub-Session-Id ]     ; strikethrough
         [ G-S-U-Pool-Identifier ]
         [ Service-Identifier ]
         [ Rating-Group ]
@@ -157,6 +183,10 @@
         [ Redirect-Host-Usage ]
         [ Redirect-Host-Cache-Time ]
       * [ Proxy-Info ]
+;;      [ CC-Sub-Session-Id ]        ; strikethrough
+;;      [ G-S-U-Pool-Identifier ]    ; strikethrough
+;;      [ Service-Identifier ]       ; strikethrough
+;;      [ Rating-Group ]             ; strikethrough
       * [ AVP ]
 
 
@@ -922,6 +952,7 @@ Multiple-Services-Credit-Control ::= < AVP header: 456 >
         [ Granted-Service-Unit ]
         [ Requested-Service-Unit ]
       * [ Used-Service-Unit ]
+;;      [ Tariff-Change-Usage ]             ; strikethrough
       * [ Service-Identifier ]
         [ Rating-Group ]
       * [ G-S-U-Pool-Reference ]
@@ -946,6 +977,7 @@ Multiple-Services-Credit-Control ::= < AVP header: 456 >
       * [ Announcement-Information ]
         [ 3GPP-RAT-Type ]
         [ Related-Trigger ]
+;;    * [ AVP ]                             ; strikethrough
 
 
 ; Type: Grouped AVP
@@ -956,11 +988,13 @@ Used-Service-Unit ::= < AVP header: 446 >
         [ Reporting-Reason ]
         [ Tariff-Change-Usage ]
         [ CC-Time ]
+;;      [ CC-Money ]                  ; strikethrough
         [ CC-Total-Octets ]
         [ CC-Input-Octets ]
         [ CC-Output-Octets ]
         [ CC-Service-Specific-Units ]
       * [ Event-Charging-TimeStamp ]
+;;    * [ AVP ]                       ; strikethrough
 
 
 ; Type: Grouped AVP

@@ -35,11 +35,13 @@ block covering their clause states: TS 29.212's Gx, Gxx, Sd and St take
 theirs from clauses 5.1, 5a.1, 5b.1 and 5c.1, applying to `5.*`, `5a.*`,
 `5b.*` and `5c.*`, and TS 32.299's Rf (3) and Ro (4) split its clause 6
 between `6.2.*` and `6.4.*`. `Application.name` and `stated_in` name the
-block and its clause; both are None for an id the headers print. RFC 6733's RAR, STR and ASR carry the using application's id
-(clause 2.5), so their group's id stays None. A `Member` carries
-the ABNF rule as spelled and `min_occurs`/`max_occurs` as RFC 6733 §3.2
-reads them: `[ X ]` may be absent, `* { X }` appears at least once. RFC
-6733 §3.2 forbids a non-zero explicit minimum on an optional rule, so the
+block and its clause; both are None for an id the headers print. RFC
+6733's RAR, STR and ASR carry the using application's id (clause 2.5), so
+their group's id stays None. A `Member` carries the ABNF rule as spelled,
+markers included (a struck member with no legend saying otherwise is still
+a member, `rule.strikethrough` set; TS 32.299's commented-out ones are
+none), and `min_occurs`/`max_occurs` as RFC 6733 §3.2 reads them: `[ X ]`
+may be absent, `* { X }` appears at least once. RFC 6733 §3.2 forbids a non-zero explicit minimum on an optional rule, so the
 model reads `1*2 [ X ]` as `0*2`. The AST stays public underneath: `parser.parse(text)`
 reads one file into it, discarding `;;` comments, and
 `parser.parse_with_comments(text)` returns the comments too, as a

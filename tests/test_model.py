@@ -401,6 +401,21 @@ class TestHoles:
         assert hole.missing == (model.FLAG_RULES,)
         assert hole.data_type is ast.DataType.UNSIGNED32
 
+    def test_a_struck_member_still_in_its_body_is_a_member(self):
+        # Behind `struck-rules-unused` a struck member is a comment, no
+        # member; without it the strike is only a marker on the rule.
+        message = _message("Test-Request", "Thing")
+        struck = message.avps[0].model_copy(update={"strikethrough": True})
+        spec = _spec(
+            "3GPP TS 29.900",
+            [message.model_copy(update={"avps": (struck,)}), _table(_row("Thing", 1))],
+        )
+
+        (resolved,) = _model(spec).messages("TS29.900")
+
+        (member,) = resolved.avps
+        assert member.rule.strikethrough and member.avp is not None
+
     def test_a_member_with_a_hole_says_why_it_has_no_avp(self):
         absent = _spec(
             "3GPP TS 29.900",

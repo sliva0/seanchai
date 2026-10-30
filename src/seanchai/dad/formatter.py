@@ -5,8 +5,8 @@ depends on stable diffs. Canonical rules:
 
 - sections separated by two blank lines; file ends with one newline;
 - ABNF bodies: 8-space indent with the repetition qualifier right-aligned in
-  front of it; `; bold` markers aligned one column past the longest ABNF body
-  line of their own section;
+  front of it; `; bold` and `; strikethrough` markers aligned one column past
+  the longest ABNF body line of their own section;
 - enum bodies: a value name quoted exactly when it is not an identifier,
   `=` aligned per section (RESERVED counts as a name);
 - tables: columns split by 3 spaces, widths from data cells only (minimum 3);
@@ -84,20 +84,47 @@ def _avp_line(rule: ast.AvpRule) -> str:
     return f"{qualifier:>7} {open_bracket} {rule.name} {close_bracket}"
 
 
+def _marker_column(avps: Sequence[ast.AvpRule]) -> int:
+    """`; bold` and `; strikethrough` sit one column past the longest rule
+    *of this section*. A file-wide column would make one added AVP reflow
+    every marker in the file, and the review workflow lives on raw-vs-raw
+    diffs."""
+    return max((len(_avp_line(rule)) for rule in avps), default=0) + 1
+
+
+def _marked(rule: ast.AvpRule, column: int) -> str:
+    """A rule's line with its markers at `column`, `; bold` first when the
+    source both bolds and strikes a member."""
+    line = _avp_line(rule)
+    markers = [
+        f"; {marker}"
+        for marker, present in (
+            ("bold", rule.bold),
+            ("strikethrough", rule.strikethrough),
+        )
+        if present
+    ]
+    return f"{line:<{column}}{' '.join(markers)}" if markers else line
+
+
+def commented_avp_rule(rule: ast.AvpRule, avps: Sequence[ast.AvpRule]) -> str:
+    """The note that stands, as a `;;` line, for `rule` commented out of an
+    ABNF body: the line it would print there, its markers at the column
+    `avps` would put them in, less the three columns `;; ` takes, so that its
+    brackets line up with the members'. TS 32.299's struck members are
+    written so (`struck-rules-unused`)."""
+    line = _marked(rule, max(_marker_column(avps), len(_avp_line(rule)) + 1))
+    return line[3:] if line.startswith("   ") else line.lstrip()
+
+
 def _abnf_body(
     avps: tuple[ast.AvpRule, ...], path: ast.TreePath, notes: Comments
 ) -> list[str]:
-    """`; bold` markers sit one column past the longest rule *of this section*.
-    A file-wide column would make one added AVP reflow every marker in the
-    file, and the review workflow lives on raw-vs-raw diffs."""
-    rules = [(rule, _avp_line(rule)) for rule in avps]
-    bold_column = max((len(line) for _, line in rules), default=0) + 1
+    column = _marker_column(avps)
     lines = []
-    for index, (rule, line) in enumerate(rules):
-        if rule.bold:
-            line = f"{line:<{bold_column}}; bold"
-        lines.extend(notes.line(line, (*path, "avps", index)))
-    lines.extend(notes.standing_at((*path, "avps", len(rules))))
+    for index, rule in enumerate(avps):
+        lines.extend(notes.line(_marked(rule, column), (*path, "avps", index)))
+    lines.extend(notes.standing_at((*path, "avps", len(avps))))
     return lines
 
 

@@ -908,11 +908,11 @@ def test_correction_notes_mark_the_same_lines_in_a_copied_or_reparsed_tree(raw):
     """Notes are keyed by tree path, so they belong to a place rather than to
     the objects `apply` built: formatting a deep copy of the corrected tree,
     or the tree parsed back from the corrected file, with the same notes
-    gives the committed corrected file."""
-    spec = parser.parse(raw.read_text(encoding="utf-8"))
+    gives the committed corrected file. The raw file's own comments, TS
+    32.299's commented-out struck members, move with their lines."""
+    spec, comments = parser.parse_with_comments(raw.read_text(encoding="utf-8"))
     declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
-    corrected, results = corrections.apply(spec, declared)
-    notes = corrections.notes(results)
+    corrected, _, notes = corrections.apply_with_comments(spec, comments, declared)
     committed = (_ROOT / "dad" / raw.relative_to(_ROOT / "dad" / "raw")).with_name(
         raw.name.removesuffix(".raw.dad") + ".dad"
     )
@@ -1204,3 +1204,179 @@ def test_a_malformed_or_repeated_id_is_rejected(tmp_path, module, message):
 
     with pytest.raises(corrections.CorrectionError, match=message):
         corrections.load(tmp_path, "3GPP TS 29.999")
+
+
+_COMMENTED = """\
+; Specification: 3GPP TS 29.999
+; Version: 1.2.3
+; Vendor-ID: 10415
+
+
+; Type: Message
+; Name: Example-Request, EXR
+; Section: 6.1
+<Example-Request> ::= < Diameter Header: 321, REQ > ;; printed without an id
+        < Session-Id >
+;;      [ Struck-Before ] ; strikethrough
+        { Origin-Host }
+;;      [ Struck-After ]  ; strikethrough
+        { Origin-Realm }
+        [ Last ]
+;;      [ Struck-End ]    ; strikethrough
+
+
+; Type: Enumerated AVP ;; from clause 6.3.2
+; Name: Example-Mode
+; Section: 6.3.2
+Example-Mode ::= < Enumerated AVP header: 1600 10415 >
+        ;; one value
+        Off = 0 ;; the only value
+"""
+
+
+def test_a_files_comments_move_with_their_lines_through_the_edits():
+    """TS 32.299's struck members are commented out of their bodies; a
+    correction inserting or deleting around them must leave each where it
+    stood."""
+    spec, comments = parser.parse_with_comments(_COMMENTED)
+    message, enumerated = spec.sections
+    assert isinstance(message, ast.Message)
+    scope = ast.ApplicationScope(
+        name="Example",
+        source=ast.SourceRef(section="6"),
+        application_id=7,
+        applies_to=("6.*",),
+    )
+    edits = [
+        corrections.Insert(
+            id="scope", into=corrections.header(), node=scope, after=None, reason="t"
+        ),
+        _correction(
+            corrections.definition("Example-Request"), "application_id", None, 7
+        ),
+        corrections.Delete(
+            id="host",
+            target=corrections.avp_rule("Example-Request", "Origin-Host"),
+            expect=message.avps[1],
+            reason="t",
+        ),
+        corrections.Delete(
+            id="last",
+            target=corrections.avp_rule("Example-Request", "Last"),
+            expect=message.avps[3],
+            reason="t",
+        ),
+        corrections.Delete(
+            id="mode",
+            target=corrections.definition("Example-Mode"),
+            expect=enumerated,
+            reason="t",
+        ),
+    ]
+
+    corrected, _, merged = corrections.apply_with_comments(spec, comments, edits)
+
+    text = formatter.format_spec(corrected, merged)
+    corrected_id = edits[1].id
+    assert text.split("\n\n\n")[2:] == [
+        "\n".join(
+            [
+                "; Type: Message",
+                "; Name: Example-Request, EXR",
+                "; Section: 6.1",
+                "<Example-Request> ::= < Diameter Header: 321, REQ, 7 >"
+                f" ;; printed without an id ;; corrected: ({corrected_id})",
+                "        < Session-Id >",
+                # Before the deleted line, then the deletion, then after it.
+                ";;      [ Struck-Before ] ; strikethrough",
+                ";; deleted: AVP rule 'Origin-Host' (host)",
+                ";;      [ Struck-After ]  ; strikethrough",
+                "        { Origin-Realm }",
+                ";; deleted: AVP rule 'Last' (last)",
+                ";;      [ Struck-End ]    ; strikethrough",
+            ]
+        ),
+        # A deleted section's comments are a block where it stood, in the
+        # order they printed.
+        "\n".join(
+            [
+                ";; from clause 6.3.2",
+                ";; one value",
+                ";; the only value",
+                ";; deleted: definition 'Example-Mode' (mode)",
+                "",
+            ]
+        ),
+    ]
+    assert parser.parse(text) == corrected
+    assert formatter.format_spec(*parser.parse_with_comments(text)) == text
+
+
+def test_without_comments_apply_with_comments_gives_the_notes():
+    spec = _spec()
+    edits = [
+        corrections.Delete(
+            id="session-id",
+            target=corrections.avp_rule("Example-Request", "Session-Id"),
+            expect=_message(spec).avps[0],
+            reason="t",
+        )
+    ]
+
+    corrected, results, merged = corrections.apply_with_comments(
+        spec, formatter.Comments(), edits
+    )
+
+    assert (corrected, results) == corrections.apply(spec, edits)
+    assert merged == corrections.notes(results)
+
+
+def test_a_comment_block_ending_the_file_stays_at_its_end():
+    text = _COMMENTED + "\n\n;; end of file\n"
+    spec, comments = parser.parse_with_comments(text)
+
+    unchanged, _, kept = corrections.apply_with_comments(spec, comments, [])
+
+    assert formatter.format_spec(unchanged, kept) == text
+    # After the note of a deleted last section, which stood before it.
+    enumerated = spec.sections[1]
+    deleted, _, kept = corrections.apply_with_comments(
+        spec,
+        comments,
+        [
+            corrections.Delete(
+                id="mode",
+                target=corrections.definition("Example-Mode"),
+                expect=enumerated,
+                reason="t",
+            )
+        ],
+    )
+    assert formatter.format_spec(deleted, kept).endswith(
+        ";; deleted: definition 'Example-Mode' (mode)\n;; end of file\n"
+    )
+
+
+def test_comments_on_a_directive_line_a_correction_removes_survive():
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 29.999",
+            "; Version: 1.2.3",
+            "; Vendor-ID: 10415",
+            ";; standing on the bases",
+            "; Bases: RFC6733 ;; trailing on the bases",
+            "",
+        ]
+    )
+    spec, comments = parser.parse_with_comments(text)
+    emptied = _correction(corrections.header(), "bases", ("RFC6733",), ())
+
+    corrected, _, kept = corrections.apply_with_comments(spec, comments, [emptied])
+
+    assert formatter.format_spec(corrected, kept).splitlines() == [
+        ";; standing on the bases",
+        "; Specification: 3GPP TS 29.999 ;; trailing on the bases"
+        f" ;; corrected: ({emptied.id})",
+        "; Version: 1.2.3",
+        "; Vendor-ID: 10415",
+    ]

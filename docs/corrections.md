@@ -155,6 +155,19 @@ copy or a re-parse of the corrected tree.
 The citation is a name rather than a line number so that editing or
 reformatting a module does not change every corrected file.
 
+A raw file can carry comments of its own: TS 32.299's struck members, which
+the extractor comments out (`tgpp_docx.extract_with_comments` returns them
+beside the tree). `corrections.apply_with_comments(spec, comments, edits)`
+carries them into the corrected file, each moving with the line it
+attaches to, and returns them merged with the notes. A comment standing
+before or trailing a deleted line stands where that line stood, before the
+deletion's note, and one standing after it follows the note; inside a
+deleted section it joins the section's note block. Comments on a directive
+line a correction removes (`; Bases:` emptied) go with the correction's
+note to the block's first line, standing before it or trailing it ahead
+of the note. `seanchai correct` and
+`regenerate` both carry them.
+
 ## CLI
 
 `seanchai regenerate` rebuilds the corpus with `edits/corrections` (see

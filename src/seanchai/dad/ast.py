@@ -156,6 +156,12 @@ class AvpRule(Node):
     max_occurs: Unsigned32 | None = 1
     # `; bold` — bold in 3GPP ABNF marks AVPs defined/modified in this spec.
     bold: bool = False
+    # `; strikethrough` — the source strikes the member through. TS 32.299's
+    # legend (clauses 6.2.1.2, 6.4.1.2) says a struck AVP "is not used by
+    # 3GPP", and there the extractor comments the line out instead; a struck
+    # member that is still a member is one whose document gives the strike
+    # no meaning the extractor reads.
+    strikethrough: bool = False
 
     @pydantic.model_validator(mode="after")
     def _ordered(self) -> AvpRule:

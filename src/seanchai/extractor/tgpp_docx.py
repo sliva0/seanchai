@@ -43,7 +43,7 @@ import docx.text.paragraph
 import pydantic
 import pypdf
 
-from ..dad import abnf, ast
+from ..dad import abnf, ast, formatter
 from . import sources
 from .errors import ExtractionError, boundary
 from .sources import Patcher
@@ -434,15 +434,25 @@ def _sections(
     return sections
 
 
+# The members commented out of a body behind `struck-rules-unused`, by the
+# message or grouped AVP they were struck from: each the note standing for it,
+# with the number of members before it.
+type _Commented = list[tuple[ast.Message | ast.GroupedAvp, list[tuple[int, str]]]]
+
+
 def _abnf_body(
     lines: list[_Line],
     start: int,
     rule: str,
     quirks: sources.Quirks,
     warnings: list[str],
-) -> tuple[tuple[ast.AvpRule, ...], int]:
-    """Parse `[qual] bracket Name bracket` lines starting at `start`."""
-    rules = []
+) -> tuple[tuple[ast.AvpRule, ...], int, list[tuple[int, str]]]:
+    """Parse `[qual] bracket Name bracket` lines starting at `start`.
+
+    Also returns the members commented out behind `struck-rules-unused`,
+    each as the note standing for it with the number of members before it."""
+    rules: list[ast.AvpRule] = []
+    struck: list[tuple[int, ast.AvpRule]] = []
     index = start
     while index < len(lines):
         line = lines[index]
@@ -462,8 +472,25 @@ def _abnf_body(
         if len(matches) > 1 and True in line.struck:
             raise ExtractionError(f"struck line with several members: {line.text!r}")
         for match in matches:
-            rules.extend(_abnf_member(match, line, rule, quirks, warnings))
-    return tuple(rules), index
+            member = _abnf_member(match, line, rule, quirks, warnings)
+            if member.strikethrough and quirks.enabled("struck-rules-unused"):
+                # TS 32.299 clauses 6.2.1.2 and 6.4.1.2 define the strike: "An
+                # AVP in grey strikethrough in the message format ... is not
+                # used by 3GPP". The document's own legend says the member is
+                # not part of its rule, so it is no member; it stays in the
+                # file as a comment, where the reader still sees it.
+                quirks.fire("struck-rules-unused")
+                struck.append((len(rules), member))
+            else:
+                rules.append(member)
+    # Aligned over the struck members too, so a body's markers stay one
+    # column whichever kind of line is longest.
+    members = [*rules, *(member for _, member in struck)]
+    commented = [
+        (position, formatter.commented_avp_rule(member, members))
+        for position, member in struck
+    ]
+    return tuple(rules), index, commented
 
 
 def _abnf_members(text: str) -> list[re.Match]:
@@ -486,28 +513,18 @@ def _abnf_member(
     rule: str,
     quirks: sources.Quirks,
     warnings: list[str],
-) -> list[ast.AvpRule]:
-    if True in line.struck:
-        if False in line.struck:
-            raise ExtractionError(f"partly struck ABNF line: {line.text!r}")
-        # TS 32.299 clauses 6.2.1.2 and 6.4.1.2 define the strike: "An AVP
-        # in grey strikethrough in the message format ... is not used by
-        # 3GPP". The document's own legend says the member is not part of
-        # its rule, so leaving it out translates the rule rather than
-        # curating it; any other document's strike has no legend and fails.
-        if not quirks.enabled("struck-rules-unused"):
-            raise ExtractionError(
-                f"struck-through ABNF line {line.text!r} in {rule}, which"
-                " this document's source declaration does not read (the"
-                " `struck-rules-unused` quirk)"
-            )
-        quirks.fire("struck-rules-unused")
-        warnings.append(
-            f"{rule}: struck-through member {match['name']} is not used and was dropped"
-        )
-        return []
+) -> ast.AvpRule:
+    """One member, struck through or not, which `; strikethrough` records as
+    `; bold` records bold."""
+    if False in line.struck and True in line.struck:
+        raise ExtractionError(f"partly struck ABNF line: {line.text!r}")
+    struck = True in line.struck
+    if struck and not quirks.enabled("struck-rules-unused"):
+        # A strike with no legend the extractor reads: the marker records
+        # it, and the member stays, since nothing says what it means.
+        warnings.append(f"{rule}: member {match['name']} is struck through")
     try:
-        return [abnf.avp_rule(match, bold=_is_bold(line))]
+        return abnf.avp_rule(match, bold=_is_bold(line), strikethrough=struck)
     except abnf.AbnfError as error:
         raise ExtractionError(f"{error} in {line.text!r}") from None
 
@@ -549,6 +566,7 @@ def _extract_messages(
     title: re.Match | None,
     warnings: list[str],
     quirks: sources.Quirks,
+    commented: _Commented,
     message_heading: bool = False,
 ) -> list[ast.Message]:
     """A command section usually holds one ABNF, but can hold several — the
@@ -609,18 +627,19 @@ def _extract_messages(
             warnings.append(
                 f"{section.number}: {rule_name} header omits the application id"
             )
-        avps, index = _abnf_body(lines, index, rule_name, quirks, warnings)
-        messages.append(
-            ast.Message(
-                name=rule_name,
-                abbreviation=abbreviation,
-                source=ast.SourceRef(section=section.number),
-                command_code=command_code,
-                flags=flags,
-                application_id=application_id,
-                avps=avps,
-            )
+        avps, index, struck = _abnf_body(lines, index, rule_name, quirks, warnings)
+        message = ast.Message(
+            name=rule_name,
+            abbreviation=abbreviation,
+            source=ast.SourceRef(section=section.number),
+            command_code=command_code,
+            flags=flags,
+            application_id=application_id,
+            avps=avps,
         )
+        messages.append(message)
+        if struck:
+            commented.append((message, struck))
         if prose_title:
             title = None
     if not messages:
@@ -692,16 +711,20 @@ def _extract_grouped(
     name: str,
     quirks: sources.Quirks,
     warnings: list[str],
+    commented: _Commented,
 ) -> ast.GroupedAvp:
     vendor = header["vendor"]
-    avps, _ = _abnf_body(section.lines, body_start, name, quirks, warnings)
-    return ast.GroupedAvp(
+    avps, _, struck = _abnf_body(section.lines, body_start, name, quirks, warnings)
+    grouped = ast.GroupedAvp(
         name=name,
         source=ast.SourceRef(section=section.number),
         code=int(header["code"]),
         vendor_id=None if vendor is None else int(vendor),
         avps=avps,
     )
+    if struck:
+        commented.append((grouped, struck))
+    return grouped
 
 
 def _extract_enumerated(
@@ -1470,6 +1493,7 @@ class _Collected:
     messages: list[ast.Message] = field(default_factory=list)
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     grouped: list[ast.GroupedAvp] = field(default_factory=list)
+    commented: _Commented = field(default_factory=list)
     # Sections that read like an enumerated AVP, with the name from the
     # heading. They cannot become definitions until the AVP table is known —
     # that is where their code comes from.
@@ -1511,7 +1535,7 @@ def _collect(
             collected.applications.extend(_stated_applications(section, quirks))
         if title := _COMMAND_TITLE_RE.match(section.title):
             collected.messages.extend(
-                _extract_messages(section, title, warnings, quirks)
+                _extract_messages(section, title, warnings, quirks, collected.commented)
             )
             continue
         if (
@@ -1522,7 +1546,12 @@ def _collect(
             # Only the clauses printing a rule: 6.4.6-6.4.13 point at RFC 6733.
             collected.messages.extend(
                 _extract_messages(
-                    section, title, warnings, quirks, message_heading=True
+                    section,
+                    title,
+                    warnings,
+                    quirks,
+                    collected.commented,
+                    message_heading=True,
                 )
             )
             continue
@@ -1530,7 +1559,7 @@ def _collect(
             _DIAMETER_HEADER_RE.match(line.text) for line in section.lines
         ):
             collected.messages.extend(
-                _extract_messages(section, None, warnings, quirks)
+                _extract_messages(section, None, warnings, quirks, collected.commented)
             )
             continue
         for table in section.tables:
@@ -1601,7 +1630,13 @@ def _collect(
                     )
                 collected.grouped.append(
                     _extract_grouped(
-                        section, header, body_start, rule_name, quirks, warnings
+                        section,
+                        header,
+                        body_start,
+                        rule_name,
+                        quirks,
+                        warnings,
+                        collected.commented,
                     )
                 )
             elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
@@ -1862,8 +1897,8 @@ QUIRKS: dict[str, str] = {
         " TS 29.229)"
     ),
     "struck-rules-unused": (
-        "drop struck-through ABNF members, which the document's legend says"
-        " are not used (TS 32.299 clauses 6.2.1.2, 6.4.1.2)"
+        "comment out struck-through ABNF members, which the document's legend"
+        " says are not used (TS 32.299 clauses 6.2.1.2, 6.4.1.2)"
     ),
     "physical-avp-columns": (
         "read physical cells in an AVP table with ragged grid spans, dropping"
@@ -1991,7 +2026,23 @@ def extract(
     `sources_dir` is given, source declarations from
     `<sources_dir>/<SpecRef>.toml` (if present) apply: input patches to the
     normalized source text before parsing, and quirks to the readings the
-    extractor uses."""
+    extractor uses.
+
+    Members commented out behind `struck-rules-unused` are not in the tree;
+    `extract_with_comments` returns them too."""
+    return extract_with_comments(docx_path, link, warnings, sources_dir)[0]
+
+
+def extract_with_comments(
+    docx_path: Path | str,
+    link: str | None = None,
+    warnings: list[str] | None = None,
+    sources_dir: Path | None = None,
+) -> tuple[ast.Specification, formatter.Comments]:
+    """`extract`, plus the `;;` lines the file prints beside the tree, as the
+    `formatter.Comments` `format_spec` takes: each member commented out
+    behind `struck-rules-unused`, standing before the member that followed
+    it, or at its body's end."""
     warnings = warnings if warnings is not None else []
     with boundary(f"extracting {docx_path}"):
         document = docx.Document(str(docx_path))
@@ -2012,7 +2063,7 @@ def extract(
         patcher.finish()
         sections = _assemble(_resolve(collected, quirks, warnings))
         quirks.finish()
-        return ast.Specification(
+        spec = ast.Specification(
             specification=specification,
             version=version,
             vendor_id=TGPP_VENDOR,
@@ -2020,6 +2071,29 @@ def extract(
             link=None if link is None else pydantic.HttpUrl(link),
             sections=sections,
         )
+        return spec, _comments(sections, collected.commented)
+
+
+def _comments(
+    sections: tuple[ast.Section, ...], commented: _Commented
+) -> formatter.Comments:
+    """The commented-out members, keyed by the path of what follows each:
+    the member after it in its body, or the body's end. A body is found by
+    identity, since it is the very object the file holds."""
+    standing: dict[ast.TreePath, list[str]] = {}
+    for body, notes in commented:
+        index = next(
+            (index for index, section in enumerate(sections) if section is body),
+            None,
+        )
+        if index is None:
+            raise ExtractionError(
+                f"{body.name}: the body its struck members were commented out"
+                " of is not in the file"
+            )
+        for position, note in notes:
+            standing.setdefault(("sections", index, "avps", position), []).append(note)
+    return formatter.Comments(standing=standing)
 
 
 def attach_pages(

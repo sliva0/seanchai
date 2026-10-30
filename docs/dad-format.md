@@ -45,10 +45,10 @@ each starting with `; Type:`.
 ## Design intent
 
 - **Directive comments are grammar.** A single `;` in a defined position is
-  semantic (`; Key: value` headers, `; bold`, `; RESERVED`); a malformed one
-  is a parse error. Free-text comments use `;;` and carry no data; where
-  they attach is still defined (see [Comments](#comments)), so normalising
-  a file keeps them.
+  semantic (`; Key: value` headers, `; bold`, `; strikethrough`,
+  `; RESERVED`); a malformed one is a parse error. Free-text comments use
+  `;;` and carry no data; where they attach is still defined (see
+  [Comments](#comments)), so normalising a file keeps them.
 - **The file states its own vendor-id.** `; Vendor-ID:` is the vendor space
   the document's own AVPs are defined in, and nothing else in the file
   supplies it: tables have no vendor column, and a clause header omits the
@@ -67,8 +67,13 @@ each starting with `; Type:`.
   records that, citing clause 5.1, and applies it to the commands of clause
   5 (`; Applies-To: 5.*`); the headers stay as printed, so a header still
   says only what it says.
-- **`; bold` stays inline**, mirroring the source, where bold marks AVPs the
-  specification defines or modifies.
+- **`; bold` and `; strikethrough` stay inline**, mirroring the source,
+  where bold marks AVPs the specification defines or modifies. A strike
+  means what its document says it means, so the marker records the fact
+  and nothing more; where a document's legend gives it a meaning, the
+  extractor reads that instead. TS 32.299's (clauses 6.2.1.2, 6.4.1.2) is
+  "not used by 3GPP", so its struck members are commented out, marker
+  kept, and stay visible where they stood without being members.
 - **A table declares its own columns.** `; Columns:` states which columns the
   source table had, in source order, so "the table had no such column" stays
   distinct from "the cell was empty". Only modelled columns are recorded;

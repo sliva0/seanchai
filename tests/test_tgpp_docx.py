@@ -553,9 +553,57 @@ def test_a_blank_line_before_a_line_of_several_members_does_not_end_the_body():
     # several members (its 7.2.154I), but never one right after the other.
     lines = _abnf_lines("[ First ]", "", "[ Second ] [ Third ]", "[ Fourth ]", "Prose")
 
-    rules, end = tgpp_docx._abnf_body(
+    rules, end, _ = tgpp_docx._abnf_body(
         lines, 0, "Example", tgpp_docx.sources.Quirks([], None), []
     )
 
     assert [rule.name for rule in rules] == ["First", "Second", "Third", "Fourth"]
     assert end == 4
+
+
+def _struck_lines():
+    lines = _abnf_lines("[ First ]", "[ Struck ]", "[ Last ]")
+    lines[1].struck = frozenset({True})
+    return lines
+
+
+def test_a_struck_member_without_a_legend_stays_a_member_with_its_marker():
+    warnings: list[str] = []
+
+    rules, _, commented = tgpp_docx._abnf_body(
+        _struck_lines(), 0, "Example", tgpp_docx.sources.Quirks([], None), warnings
+    )
+
+    assert [(rule.name, rule.strikethrough) for rule in rules] == [
+        ("First", False),
+        ("Struck", True),
+        ("Last", False),
+    ]
+    assert commented == []
+    assert warnings == ["Example: member Struck is struck through"]
+
+
+def test_behind_its_legend_a_struck_member_is_commented_out_in_place():
+    # TS 32.299 clauses 6.2.1.2 and 6.4.1.2: struck "is not used by 3GPP".
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="struck-rules-unused", reason="legend")], None)
+    warnings: list[str] = []
+
+    rules, _, commented = tgpp_docx._abnf_body(
+        _struck_lines(), 0, "Example", quirks, warnings
+    )
+
+    assert [rule.name for rule in rules] == ["First", "Last"]
+    assert commented == [(1, "     [ Struck ] ; strikethrough")]
+    assert warnings == []
+
+
+def test_a_partly_struck_line_still_fails():
+    lines = _struck_lines()
+    lines[1].struck = frozenset({True, False})
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="partly struck"):
+        tgpp_docx._abnf_body(
+            lines, 0, "Example", tgpp_docx.sources.Quirks([], None), []
+        )

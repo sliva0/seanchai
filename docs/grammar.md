@@ -133,7 +133,7 @@ vendor-id     = 1*DIGIT                 ; < 2^32; absent for IETF-space AVPs
 
 ```abnf
 avp-rule      = *SP [occurrences *SP] bracket-open SP avp-name SP bracket-close
-                [*SP "; bold"]
+                [*SP "; bold"] [*SP "; strikethrough"]
 occurrences   = [1*DIGIT] "*" [1*DIGIT]
 bracket-open  = "<" / "{" / "["
 bracket-close = ">" / "}" / "]"
@@ -141,7 +141,12 @@ bracket-close = ">" / "}" / "]"
 
 Brackets match as a pair and carry the presence: `<>` fixed, `{}` required,
 `[]` optional. No `occurrences` means exactly once; a bare `*` means
-zero-or-more.
+zero-or-more. A member the source both bolds and strikes carries both
+markers, `; bold` first.
+
+A member commented out (`;;      [ Acct-Session-Id ] ; strikethrough`) is a
+comment like any other: no member, and attached to the member after it, or
+to the body's end.
 
 ### Enumerated AVP
 

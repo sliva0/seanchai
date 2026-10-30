@@ -1,6 +1,7 @@
 -- Zebra-stripes table rows (the lines after a `; Columns:` directive) with
 -- extmarks so wide rows are easier to follow, and renders `; bold` rule
--- lines in bold (additively — syntax colors stay). Neovim-only; classic Vim
+-- lines in bold and `; strikethrough` ones struck through (additively —
+-- syntax colors stay). Neovim-only; classic Vim
 -- uses the fallbacks in dad.vim and syntax/dad.vim.
 
 if vim.b.did_dad_stripes then
@@ -31,6 +32,7 @@ local function define_highlights()
   end
   vim.api.nvim_set_hl(0, 'DadTableStripe', { default = true, bg = stripe })
   vim.api.nvim_set_hl(0, 'DadBoldRule', { default = true, bold = true })
+  vim.api.nvim_set_hl(0, 'DadStruckRule', { default = true, strikethrough = true })
 end
 
 local function restripe(buf)
@@ -52,11 +54,19 @@ local function restripe(buf)
         end
       end
     end
-    if line:gsub(';;.*$', ''):match('; bold%s*$') then
+    local rule = line:gsub(';;.*$', '')
+    if rule:match('; bold%s*$') or rule:match('; bold%s*; strikethrough%s*$') then
       vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
         end_col = #line,
         hl_group = 'DadBoldRule',
         priority = 110,
+      })
+    end
+    if rule:match('; strikethrough%s*$') then
+      vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
+        end_col = #line,
+        hl_group = 'DadStruckRule',
+        priority = 111,
       })
     end
   end

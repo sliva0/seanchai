@@ -81,6 +81,17 @@ def _boundary_specs():
                         max_occurs=2**32 - 1,
                     ),
                     ast.AvpRule(name="Bold", presence=ast.Presence.REQUIRED, bold=True),
+                    ast.AvpRule(
+                        name="Struck",
+                        presence=ast.Presence.OPTIONAL,
+                        strikethrough=True,
+                    ),
+                    ast.AvpRule(
+                        name="Both",
+                        presence=ast.Presence.OPTIONAL,
+                        bold=True,
+                        strikethrough=True,
+                    ),
                 ),
             )
         ),
@@ -310,3 +321,53 @@ def test_comments_are_keyed_by_the_path_of_their_line():
     assert detached[()] == ["before the header"]
     assert detached[("sections", 1)] == ["one comment block", "and another, merged"]
     assert detached[("sections", 3)] == ["after the last section"]
+
+
+def test_markers_share_one_column_with_bold_before_strikethrough():
+    grouped = ast.GroupedAvp(
+        name="Group",
+        source=ast.SourceRef(section="1"),
+        code=1,
+        avps=(
+            ast.AvpRule(name="Plain", presence=ast.Presence.REQUIRED),
+            ast.AvpRule(
+                name="Struck", presence=ast.Presence.OPTIONAL, strikethrough=True
+            ),
+            ast.AvpRule(
+                name="Both",
+                presence=ast.Presence.OPTIONAL,
+                bold=True,
+                strikethrough=True,
+            ),
+        ),
+    )
+    spec = ast.Specification(specification="Test", vendor_id=0, sections=(grouped,))
+
+    assert formatter.format_spec(spec).splitlines()[-3:] == [
+        "        { Plain }",
+        "        [ Struck ] ; strikethrough",
+        "        [ Both ]   ; bold ; strikethrough",
+    ]
+
+
+def test_a_commented_out_rule_lines_up_with_the_body():
+    # TS 32.299 clause 6.4.2's CCR strikes `* [ Used-Service-Unit ]`.
+    struck = ast.AvpRule(
+        name="Used-Service-Unit",
+        presence=ast.Presence.OPTIONAL,
+        min_occurs=0,
+        max_occurs=None,
+        strikethrough=True,
+    )
+    body = [
+        ast.AvpRule(name="Session-Id", presence=ast.Presence.FIXED),
+        ast.AvpRule(name="Service-Information", presence=ast.Presence.OPTIONAL),
+    ]
+
+    note = formatter.commented_avp_rule(struck, body)
+
+    assert f";; {note}" == ";;    * [ Used-Service-Unit ]   ; strikethrough"
+    # Longer than the body, it ends its own line rather than overrun it.
+    assert formatter.commented_avp_rule(struck, body[:1]) == (
+        "   * [ Used-Service-Unit ] ; strikethrough"
+    )
