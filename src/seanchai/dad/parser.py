@@ -486,6 +486,7 @@ def _avp_table_row(
 ) -> ast.AvpTableRow:
     name: str | None = None
     marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
+    vendor_id: int | None = None
     code: int | None = None
     section: str | None = None
     data_type: ast.DataType | None = None
@@ -495,6 +496,10 @@ def _avp_table_row(
         match column:
             case ast.AvpColumn.NAME:
                 name = text
+            case ast.AvpColumn.VENDOR:
+                vendor_id = (
+                    None if text == "-" else _number(text, lineno, "Vendor-ID cell")
+                )
             case ast.AvpColumn.CODE:
                 code = None if text == "-" else _number(text, lineno, "Code cell")
             case ast.AvpColumn.SECTION:
@@ -518,6 +523,7 @@ def _avp_table_row(
     with _validated(lineno):
         return ast.AvpTableRow(
             name=name,
+            vendor_id=vendor_id,
             code=code,
             section=section,
             data_type=data_type,

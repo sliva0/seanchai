@@ -777,7 +777,7 @@ def test_a_supply_fills_a_row_typed_by_reference_and_marks_it():
     assert isinstance(corrected.sections[2], ast.ReusedAvps)
     text = formatter.format_spec(corrected, corrections.notes(results))
     (noted,) = [line for line in text.splitlines() if ";;" in line]
-    assert noted.split()[:6] == ["Borrowed", "2101", "-", "UTF8String", "M,V", "P"]
+    assert noted.split()[:7] == ["Borrowed", "-", "2101", "-", "UTF8String", "M,V", "P"]
     assert noted.endswith(f" ;; supplied: ({supply.id})")
     assert parser.parse_with_comments(text) == (
         corrected,

@@ -108,6 +108,101 @@ def test_a_definition_claiming_another_vendors_space():
     assert "states vendor 10415" in finding.message
 
 
+def _vendor_row(name, code, vendor_id, column="must"):
+    return ast.AvpTableRow(
+        name=name,
+        vendor_id=vendor_id,
+        code=code,
+        flag_rules=ast.AvpFlagRules(**{column: frozenset({ast.AvpFlag.VENDOR})}),
+    )
+
+
+def _vendor_table(label, *rows):
+    return ast.AvpTable(
+        table=label,
+        columns=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.VENDOR,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.MUST,
+            ast.AvpColumn.MUST_NOT,
+        ),
+        source=ast.SourceRef(section="A.4"),
+        rows=rows,
+    )
+
+
+def test_a_vendor_id_cell_its_v_flag_contradicts_is_an_error():
+    """oneM2M TS-0004 table A.4-1 gives its own AVPs vendor 45687 and puts
+    V under Must-not; RFC 6733 section 4.1.1 sets V exactly with a vendor."""
+    spec = _spec(
+        _vendor_table(
+            "A.4-1",
+            _vendor_row("Occupancy", 1012, 45687, "must_not"),
+            _vendor_row("Session-Id", 263, 0, "must_not"),
+            _vendor_row("Node-Id", 2064, 10415),
+            _vendor_row("Odd", 1999, 0),
+        ),
+        specification="oneM2M TS-0004",
+        vendor_id=45687,
+    )
+
+    found = [f for f in linter.lint(spec) if f.rule == "vendor-flag-mismatch"]
+
+    assert [(f.severity, f.message.split(";")[0]) for f in found] == [
+        (
+            linter.Severity.ERROR,
+            "Occupancy is tabulated with vendor 45687 with V under Must-not in"
+            " table A.4-1",
+        ),
+        (
+            linter.Severity.ERROR,
+            "Odd is tabulated with vendor 0 with V under Must in table A.4-1",
+        ),
+    ]
+    # Each row is its own identity: 0/263 and 10415/2064 and 45687/1012.
+    assert "duplicate-identity" not in _rules(linter.lint(spec))
+
+
+def test_two_tables_giving_one_avp_two_vendors_is_an_error():
+    spec = _spec(
+        _vendor_table("1", _vendor_row("Example", 1000, 45687)),
+        _vendor_table("2", _vendor_row("Example", 1000, 10415)),
+    )
+
+    (finding,) = [f for f in linter.lint(spec) if f.rule == "table-row-mismatch"]
+
+    assert finding.severity is linter.Severity.ERROR
+    assert finding.message == (
+        "Example is tabulated with differing vendor: 45687 in table 1; 10415 in table 2"
+    )
+
+
+def test_a_definition_is_compared_with_its_rows_vendor_id_cell():
+    """oneM2M TS-0004 prints M2M-Information's header with no vendor-id
+    (clause A.5.14) and its table A.4-1 row with vendor 45687."""
+    forgot = _spec(
+        _grouped("M2M-Information", 1011, vendor_id=None),
+        _vendor_table("A.4-1", _vendor_row("M2M-Information", 1011, 45687)),
+        vendor_id=45687,
+    )
+    ietf = _spec(
+        _grouped("Accounting-Record-Type", 480, vendor_id=None),
+        _vendor_table(
+            "A.4-1", _vendor_row("Accounting-Record-Type", 480, 0, "must_not")
+        ),
+        vendor_id=45687,
+    )
+
+    (finding,) = [f for f in linter.lint(forgot) if f.rule == "vendor-id-mismatch"]
+
+    assert finding.message == (
+        "M2M-Information is defined with no vendor-id, but the AVP table gives"
+        " it vendor 45687"
+    )
+    assert "vendor-id-mismatch" not in _rules(linter.lint(ietf))
+
+
 def test_a_row_citing_its_own_document_is_no_re_use():
     """TS 29.212's Gxx and S9 tables cite TS 29.212 for Gx's AVPs: the
     definition is the file's own, so it is checked like one and not reported

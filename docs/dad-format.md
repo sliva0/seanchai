@@ -52,10 +52,16 @@ each starting with `; Type:`.
   [Comments](#comments)), so normalising a file keeps them.
 - **The file states its own vendor-id.** `; Vendor-ID:` is the vendor space
   the document's own AVPs are defined in, and nothing else in the file
-  supplies it: tables have no vendor column, and a clause header omits the
-  vendor both for a genuine IETF-space AVP and when the document forgot. A
+  supplies it: a clause header omits the vendor both for a genuine
+  IETF-space AVP and when the document forgot, and a table has a vendor
+  column only where its document prints one. A
   hand-authored vendor extension states its own, and nothing else needs to
   learn about that vendor.
+- **A table printing each row's vendor keeps it.** oneM2M TS-0004 table
+  A.4-1 tabulates IETF, 3GPP and oneM2M AVPs side by side, each with its
+  "AVP Vendor Id"; the `Vendor-ID` column holds it, and the row's identity
+  is that vendor and its code. Inferring it from the V flag would read the
+  document's 45687 rows, which put V under Must-not, as IETF space.
 - **The file states what it builds on.** `; Bases:` lists the documents
   whose AVPs the file uses without citing them (`Session-Id`, `Origin-Host`,
   `* [ AVP ]` from RFC 6733). Extractors stamp `RFC6733` for everything but

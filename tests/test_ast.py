@@ -196,6 +196,25 @@ def test_a_row_may_not_carry_a_value_for_a_column_the_table_lacks():
         )
 
 
+def test_a_vendor_id_cell_states_the_rows_vendor_over_its_v_flag():
+    """oneM2M TS-0004 table A.4-1 prints vendor 45687 with V under Must-not:
+    the cell is the row's vendor, and the contradiction is the linter's."""
+    forbidden = ast.AvpFlagRules(must_not=frozenset({ast.AvpFlag.VENDOR}))
+    required = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR}))
+    onem2m = ast.AvpTableRow(name="E", vendor_id=45687, flag_rules=forbidden)
+    ietf = ast.AvpTableRow(name="E", vendor_id=0, flag_rules=required)
+    agreeing = ast.AvpTableRow(name="E", vendor_id=0, flag_rules=forbidden)
+
+    assert onem2m.stated_vendor(10415) == 45687
+    assert ietf.stated_vendor(10415) == 0
+    assert onem2m.vendor_flag_conflict() == "vendor 45687 with V under Must-not"
+    assert ietf.vendor_flag_conflict() == "vendor 0 with V under Must"
+    assert agreeing.vendor_flag_conflict() is None
+    assert ast.AvpTableRow(name="E", flag_rules=forbidden).stated_vendor(10415) == 0
+    with pytest.raises(pydantic.ValidationError, match="table has no Vendor-ID column"):
+        _table((ast.AvpColumn.NAME,), (ast.AvpTableRow(name="E", vendor_id=0),))
+
+
 def test_a_table_needs_a_name_column_and_no_duplicates():
     with pytest.raises(pydantic.ValidationError, match="no Name column"):
         _table((ast.AvpColumn.CODE,), (ast.AvpTableRow(name="Example", code=1),))

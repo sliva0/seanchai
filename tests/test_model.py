@@ -461,6 +461,27 @@ class TestHoles:
         assert resolved is not None
         assert resolved.identity == (0, 110)
 
+    def test_a_rows_vendor_id_cell_is_its_vendor(self):
+        """oneM2M TS-0004 table A.4-1 mixes vendors: each row's identity is
+        its own Vendor-ID cell and code, whatever its V flag says."""
+        rows = (
+            ast.AvpTableRow(name="Occupancy", vendor_id=45687, code=1012),
+            ast.AvpTableRow(name="Node-Id", vendor_id=10415, code=2064),
+            _row("Session-Id", 263, vendor="must_not").model_copy(
+                update={"vendor_id": 0}
+            ),
+        )
+        spec = _spec("oneM2M TS-0004", [_table(*rows)], vendor_id=45687, version=None)
+        built = _model(spec)
+        identities = {}
+        for row in rows:
+            resolved = built.resolve("oneM2M-TS-0004", row.name)
+            identities[row.name] = None if resolved is None else resolved.identity
+        hole = built.hole("oneM2M-TS-0004", "Occupancy")
+        assert hole is not None
+        assert (hole.vendor_id, hole.code) == (45687, 1012)
+        assert identities["Session-Id"] == (0, 263)
+
     def test_a_row_requiring_v_states_the_files_vendor(self):
         """A row requiring V states its file's vendor, so a definition in
         another vendor's space does not fill it."""

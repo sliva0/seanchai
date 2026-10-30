@@ -745,6 +745,34 @@ def test_a_malformed_mark_cell_is_rejected(cell, message):
         )
 
 
+def test_a_vendor_id_column_states_each_rows_vendor():
+    """oneM2M TS-0004 table A.4-1 prints each row's vendor, IETF, 3GPP and
+    oneM2M rows in one table; `-` is a blank cell."""
+    text = _dad(
+        "; Type: AVP Table",
+        "; Section: A.4",
+        "; Table: A.4-1",
+        "; Columns: Name                Vendor-ID   Code   Must   M.not",
+        "Session-Id                    0           263    M      V",
+        "Node-Id                       10415       2064   M,V    -",
+        "Access-Network-Identifier     45687       1000   M      V",
+        "Unstated                      -           1999   -      -",
+    )
+    spec = parser.parse(text)
+
+    (table,) = spec.sections
+    assert isinstance(table, ast.AvpTable)
+    assert [row.vendor_id for row in table.rows] == [0, 10415, 45687, None]
+    assert [row.stated_vendor(10415) for row in table.rows] == [0, 10415, 45687, None]
+    canonical = formatter.format_spec(spec)
+    assert parser.parse(canonical) == spec
+    assert "\nAccess-Network-Identifier   45687       1000   M      V\n" in canonical
+    with pytest.raises(parser.DadParseError, match="line 11: Vendor-ID cell must"):
+        parser.parse(text.replace("45687", "oneM2M"))
+    with pytest.raises(parser.DadParseError, match=r"line 11: .*vendor_id"):
+        parser.parse(text.replace("45687", "4294967296"))
+
+
 def test_a_data_type_outside_the_closed_set_is_rejected():
     """TS 29.272 table 7.3.1/1 printed "Enumerate" and TS 29.212's prints
     "Enumarated"; both are typos no free-text field would have caught."""

@@ -226,7 +226,7 @@ avp-table     = "; Type: AVP Table" NL
                 "; Columns: " *SP columns NL
                 1*(table-row NL)
 columns       = column *(1*SP column)
-column        = "Name" / "Code" / "Section" / "Type"
+column        = "Name" / "Vendor-ID" / "Code" / "Section" / "Type"
               / "Must" / "May" / "S.not" / "M.not" / "Encrypt"
               / mark-column
 mark-column   = "Acc-Type" / "Applicability" / "Reference-Points"
@@ -242,6 +242,7 @@ source prints no caption (RFC tables).
 
 ```abnf
 name-cell     = avp-name
+vendor-cell   = 1*DIGIT / "-"           ; < 2^32; 0 is the IETF space
 code-cell     = 1*DIGIT / "-"
 section-cell  = section-number / "-"
 type-cell     = data-type / "-"
@@ -262,6 +263,14 @@ data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
 
 `data-type` is closed: RFC 6733 §4.2 and §4.3.1 plus RFC 3588's
 `QoSFilterRule` used by RFC 4005.
+
+A Vendor-ID cell is the row's vendor as its table prints it, for a
+document tabulating several vendors' AVPs in one table: oneM2M TS-0004
+table A.4-1 gives IETF rows 0, `Node-Id` 3GPP's 10415 and its own AVPs
+45687. Where the column is present the cell is the row's vendor, its V
+flag notwithstanding; a table without it leaves the vendor to the file's
+`; Vendor-ID:` and the V flag
+([linter.md](linter.md#vendor-spaces)).
 
 A mark column holds what the document marks about where its row applies,
 each mark in the document's spelling: the IP-CAN access types under

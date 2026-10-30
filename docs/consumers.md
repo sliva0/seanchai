@@ -70,8 +70,9 @@ which also reads 3GPP's `ETSI-TS283.034` as the ETSI ES 283 034 it names.
 **Filling through.** A field the first reading leaves unstated comes from
 the next reading along the order, if the two are the same AVP saying the
 same thing: every field both state — code, type, flag rules, and vendor
-where both state one — must be equal. A table row prints no vendor, so its
-V flag says it (`ast.AvpTableRow.stated_vendor`, which the linter's
+where both state one — must be equal. A table row's Vendor-ID cell, where
+its table prints one (oneM2M TS-0004 table A.4-1), is its vendor; otherwise
+its V flag says it (`ast.AvpTableRow.stated_vendor`, which the linter's
 `duplicate-identity` reads too): V under Must-not is IETF space, vendor 0
 (TS 29.229's `Digest-Qop`, code 110, is RFC 4590's; TS 29.273's
 `QoS-Capability`, `QoS-Resources`, `Mobile-Node-Identifier`,

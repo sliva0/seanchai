@@ -323,6 +323,8 @@ def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
     match column:
         case ast.AvpColumn.NAME:
             return row.name
+        case ast.AvpColumn.VENDOR:
+            return "-" if row.vendor_id is None else str(row.vendor_id)
         case ast.AvpColumn.CODE:
             return "-" if row.code is None else str(row.code)
         case ast.AvpColumn.SECTION:

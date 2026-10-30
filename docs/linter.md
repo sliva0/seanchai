@@ -39,12 +39,21 @@ acknowledges as an override its document states on purpose
 - `table-row-mismatch` — one AVP printed in two of the file's AVP tables
   with different type, flag rules or encrypt, compared where both tables
   have the column and the cell. A note: per-interface tables may differ on
-  purpose, and only the document's editor knows. Two codes are an error,
-  left to `table-definition-mismatch` when a clause defines the AVP.
+  purpose, and only the document's editor knows. Two codes or two
+  Vendor-ID cells are an error, two codes left to
+  `table-definition-mismatch` when a clause defines the AVP.
 - `vendor-id-mismatch` — a definition naming a vendor other than the file's
-  `; Vendor-ID:`, or naming none while the AVP table marks `V` mandatory. A
+  `; Vendor-ID:`, or naming none while the AVP table marks `V` mandatory;
+  where its row prints a Vendor-ID cell, a definition naming another vendor
+  than the cell, or none for a vendor other than 0 (oneM2M TS-0004's
+  `M2M-Information`, clause A.5.14, against table A.4-1's 45687). A
   vendor-less definition with no such row is left alone: a genuine IETF-space
   AVP looks exactly like it, and a re-used one belongs to its origin.
+- `vendor-flag-mismatch` — a row whose Vendor-ID cell its V flag
+  contradicts: a vendor other than 0 with V under Must-not, or 0 with V
+  under Must. RFC 6733 section 4.1.1 sets V exactly when the header
+  carries a Vendor-ID, which is never 0. oneM2M TS-0004 table A.4-1 puts V
+  under Must-not for each of its own 45687 AVPs.
 - `application-scope-overlap` / `application-header-mismatch` — a command
   two `Application Scope` blocks apply to, or one whose header prints an id
   the block applying to it does not state. Errors with no case in the corpus: the model would
@@ -204,11 +213,13 @@ order.
 ## Vendor spaces
 
 An AVP's identity is `(vendor-id, code)`, and a `.dad` file supplies only
-half of it in its tables: no vendor column, and clause headers omit the vendor
+half of it in most tables: no vendor column, and clause headers omit the vendor
 both for genuine IETF-space AVPs and when the document forgot. The file's own
 `; Vendor-ID:` supplies the other half for local rows, except that a row
 whose V flag is Must-not is IETF space, vendor 0, as the model reads it
-(TS 29.229's `Digest-Qop` row is RFC 4590's code 110). TS 29.229 gives 621 to
+(TS 29.229's `Digest-Qop` row is RFC 4590's code 110), and a row printing a
+Vendor-ID cell states its own (oneM2M TS-0004 table A.4-1), whatever its V
+flag says; `vendor-flag-mismatch` reports where the two disagree. TS 29.229 gives 621 to
 its own `Primary-Charging-Collection-Function-Name` and lists RFC 7683's
 `OC-Supported-Features` at 621 too; without the vendor those are a false
 collision. Vendor 0 (the IETF space, spelled as an absent vendor in header

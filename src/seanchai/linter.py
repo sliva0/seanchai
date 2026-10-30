@@ -24,9 +24,10 @@ Findings carry a severity because not every one of them is a defect:
   acknowledges as a deliberate override its document states (`accept`).
 
 An AVP's identity is `(vendor-id, code)`, and the vendor half comes from the
-file's own `; Vendor-ID:` directive, except for a table row whose V flag is
-Must-not, which is IETF space (`ast.AvpTableRow.stated_vendor`, the model's
-reading too); re-used rows belong to their origins' vendor spaces, which the
+file's own `; Vendor-ID:` directive, except for a table row printing a
+Vendor-ID cell, which states its own, and one whose V flag is Must-not,
+which is IETF space (`ast.AvpTableRow.stated_vendor`, the model's reading
+too); re-used rows belong to their origins' vendor spaces, which the
 single-file rules therefore leave to the cross-file ones — see
 `_duplicate_identities`.
 
@@ -418,6 +419,7 @@ def _table_agrees_with_definitions(index: _Index) -> list[Finding]:
 # Section column is left out: TS 29.273 points each interface's row at its
 # own re-printed clause.
 _ROW_READINGS = (
+    ("vendor", (ast.AvpColumn.VENDOR,)),
     ("code", (ast.AvpColumn.CODE,)),
     ("type", (ast.AvpColumn.TYPE,)),
     (
@@ -446,9 +448,9 @@ def _tables_agree_with_each_other(index: _Index) -> list[Finding]:
     Compared only on columns every table carrying the row declares, and only
     where the cells say something, so a table without an Encrypt column (TS
     29.273's) or a blank type cell makes no claim to disagree with. A code
-    disagreement is an error, since two codes are two AVPs; it is left to
-    `table-definition-mismatch` when a clause defines the AVP, because that
-    rule names which row is wrong.
+    or vendor disagreement is an error, since two identities are two AVPs; a
+    code's is left to `table-definition-mismatch` when a clause defines the
+    AVP, because that rule names which row is wrong.
     """
     placed: dict[str, list[tuple[ast.AvpTable, ast.AvpTableRow]]] = defaultdict(list)
     for table in index.tables:
@@ -473,7 +475,7 @@ def _tables_agree_with_each_other(index: _Index) -> list[Finding]:
                 continue
             findings.append(
                 Finding(
-                    Severity.ERROR if label == "code" else Severity.NOTE,
+                    Severity.ERROR if label in ("code", "vendor") else Severity.NOTE,
                     "table-row-mismatch",
                     f"{name} is tabulated with differing {label}: {spelled}",
                     paths=tuple(index.path(row) for _, row in copies),
@@ -516,7 +518,8 @@ def _table_labels(tables: list[ast.AvpTable]) -> str:
 
 
 def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Finding]:
-    """A definition's vendor-id agrees with the file's `; Vendor-ID:`.
+    """A definition's vendor-id agrees with the file's `; Vendor-ID:`, or
+    with its row's Vendor-ID cell where the table prints one.
 
     A clause header writes no vendor-id for an IETF-space AVP, and writes no
     vendor-id when the document simply forgot — the two look identical. What
@@ -526,6 +529,8 @@ def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Findin
     document says in one place that the AVP carries a vendor-id and in another
     that it has none. `MIP6-Agent-Info` in the same file is equally vendor-less
     and entirely correct, because it is RFC 5447's and listed as re-used.
+    oneM2M TS-0004 prints `M2M-Information`'s header with no vendor-id
+    (clause A.5.14) and its row in table A.4-1 with vendor 45687.
     """
     rows = {row.name: row for row in index.rows}
     findings = []
@@ -535,8 +540,26 @@ def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Findin
             # file does not state. The cross-document rules settle these.
             continue
         clause = definition.source.section
-        if definition.vendor_id is None:
-            row = rows.get(definition.name)
+        row = rows.get(definition.name)
+        stated = None if row is None else row.vendor_id
+        if stated is not None:
+            if (definition.vendor_id or ast.IETF_VENDOR) == stated:
+                continue
+            printed = (
+                "no vendor-id"
+                if definition.vendor_id is None
+                else f"vendor {definition.vendor_id}"
+            )
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "vendor-id-mismatch",
+                    f"{definition.name} is defined with {printed}, but the AVP"
+                    f" table gives it vendor {stated}",
+                    clause,
+                )
+            )
+        elif definition.vendor_id is None:
             if row is None or ast.AvpFlag.VENDOR not in row.flag_rules.must:
                 continue
             findings.append(
@@ -560,6 +583,32 @@ def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Findin
                 )
             )
     return findings
+
+
+def _vendors_agree_with_flags(index: _Index) -> list[Finding]:
+    """A row's Vendor-ID cell and its V flag say the same thing.
+
+    RFC 6733 section 4.1.1 sets the V bit exactly when the header carries a
+    Vendor-ID, which is never zero. oneM2M TS-0004 table A.4-1 prints
+    vendor 45687 for its own AVPs, as clause A.4 assigns them ("AVPs defined
+    for oneM2M specific usage are assigned Vendor-Id of 45687"), and puts V
+    under Must-not in every one of those rows, as it does for its IETF rows.
+    The model takes the vendor from the cell (`AvpTableRow.stated_vendor`).
+    """
+    return [
+        Finding(
+            Severity.ERROR,
+            "vendor-flag-mismatch",
+            f"{row.name} is tabulated with {conflict} in"
+            f" {_table_labels([table])}; RFC 6733 section 4.1.1 sets V exactly"
+            " when the header carries a vendor-id, which is never 0",
+            row.section or table.source.section,
+            paths=(index.path(row),),
+        )
+        for table in index.tables
+        for row in table.rows
+        if (conflict := row.vendor_flag_conflict()) is not None
+    ]
 
 
 def _self_cited_exists(index: _Index) -> list[Finding]:
@@ -731,6 +780,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_table_agrees_with_definitions(index),
         *_tables_agree_with_each_other(index),
         *_vendor_id_agrees_with_header(index, spec.vendor_id),
+        *_vendors_agree_with_flags(index),
         *_self_cited_exists(index),
         *_local_and_reused(index),
         *_members_marked_unused(spec),

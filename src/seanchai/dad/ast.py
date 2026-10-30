@@ -426,6 +426,9 @@ class AvpColumn(enum.StrEnum):
     `; Columns:` directive writes them."""
 
     NAME = "Name"
+    # oneM2M TS-0004 table A.4-1 prints each row's vendor ("AVP Vendor Id"),
+    # mixing IETF, 3GPP and oneM2M AVPs in one table.
+    VENDOR = "Vendor-ID"
     CODE = "Code"
     SECTION = "Section"
     TYPE = "Type"
@@ -535,6 +538,9 @@ class AvpTableRow(Node):
     """
 
     name: AvpName
+    # The row's own Vendor-ID cell, where its table prints one (oneM2M
+    # TS-0004 table A.4-1): 0 for an IETF-space AVP, as the table writes it.
+    vendor_id: Unsigned32 | None = None
     code: Unsigned32 | None = None
     section: SectionNumber | None = None
     data_type: DataType | None = None
@@ -545,20 +551,42 @@ class AvpTableRow(Node):
     marks: Marks = Field(default_factory=dict)
 
     def stated_vendor(self, file_vendor: int) -> int | None:
-        """The vendor space the row's V flag places the AVP in, or None
-        where the row leaves it to the file.
+        """The vendor space the row places the AVP in, or None where the row
+        leaves it to the file.
 
-        A row prints no vendor-id; its V flag is the one cell that says
-        whether the AVP carries one. Forbidding it is IETF space: TS
-        29.229's `Digest-QoP` row (clause 6.3.40) prints V under Must-not
-        in vendor 10415's table, and is RFC 4590's code 110 in vendor 0.
-        Requiring it is the file's own `; Vendor-ID:`. A row with V in
-        neither column, or no flag cells at all, states neither.
+        A row printing a Vendor-ID cell states it outright, and that cell is
+        the answer even where its V flag disagrees: oneM2M TS-0004 table
+        A.4-1 puts V under Must-not in every vendor 45687 row, and the
+        linter reports that (`vendor-flag-mismatch`). Otherwise a row prints
+        no vendor-id, and its V flag is the one cell that says whether the
+        AVP carries one. Forbidding it is IETF space: TS 29.229's
+        `Digest-QoP` row (clause 6.3.40) prints V under Must-not in vendor
+        10415's table, and is RFC 4590's code 110 in vendor 0. Requiring it
+        is the file's own `; Vendor-ID:`. A row with V in neither column, or
+        no flag cells at all, states neither.
         """
+        if self.vendor_id is not None:
+            return self.vendor_id
         if AvpFlag.VENDOR in self.flag_rules.must_not:
             return IETF_VENDOR
         if AvpFlag.VENDOR in self.flag_rules.must:
             return file_vendor
+        return None
+
+    def vendor_flag_conflict(self) -> str | None:
+        """How the row's Vendor-ID cell and its V flag contradict each
+        other, or None where they agree or either is silent.
+
+        RFC 6733 section 4.1.1 sets V exactly when the header carries a
+        Vendor-ID, and forbids a Vendor-ID of zero: a vendor AVP with V
+        under Must-not, or an IETF one with V under Must, says two things
+        that cannot both hold."""
+        if self.vendor_id is None:
+            return None
+        if self.vendor_id != IETF_VENDOR and AvpFlag.VENDOR in self.flag_rules.must_not:
+            return f"vendor {self.vendor_id} with V under Must-not"
+        if self.vendor_id == IETF_VENDOR and AvpFlag.VENDOR in self.flag_rules.must:
+            return f"vendor {IETF_VENDOR} with V under Must"
         return None
 
 
@@ -593,6 +621,7 @@ class AvpTable(Node):
         # A value under a column the table does not have is unattributable: it
         # cannot be written out, so it cannot survive a round-trip.
         absent = {
+            AvpColumn.VENDOR: "vendor_id",
             AvpColumn.CODE: "code",
             AvpColumn.SECTION: "section",
             AvpColumn.TYPE: "data_type",
@@ -918,8 +947,9 @@ class Specification(Node):
     #
     # It has to be stated, because an AVP's identity is `(vendor-id, code)` and
     # nothing else in the file supplies the first half: AVP tables have no
-    # vendor column, and a clause header omits the vendor both when the AVP
-    # really is IETF-space and when the document forgot. TS 29.229 gives 621 to
+    # vendor column but where a document prints one (oneM2M TS-0004), and a
+    # clause header omits the vendor both when the AVP really is IETF-space
+    # and when the document forgot. TS 29.229 gives 621 to
     # `Primary-Charging-Collection-Function-Name` while RFC 7683 gives 621 to
     # `OC-Supported-Features`, and 29.229's table lists both.
     #

@@ -24,8 +24,9 @@ and the policy is deliberately small:
   resolved here by the order above without comment. Run the linter to see
   what the policy papered over.
 - An AVP-table row with no matching definition and no re-used listing is
-  IETF-space (vendor 0) where its V flag is Must-not and the file's own
-  `; Vendor-ID:` space otherwise, exactly as the linter's
+  in the vendor its Vendor-ID cell states where its table prints one (oneM2M
+  TS-0004), else IETF-space (vendor 0) where its V flag is Must-not and the
+  file's own `; Vendor-ID:` space otherwise, exactly as the linter's
   `duplicate-identity` rule reads it (`AvpTableRow.stated_vendor`); a
   definition written with no vendor-id is IETF-space, the wire format's
   reading of an absent vendor.
