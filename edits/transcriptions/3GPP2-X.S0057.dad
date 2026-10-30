@@ -1,0 +1,25 @@
+; Specification: 3GPP2 X.S0057
+; Version: 2.0
+; Vendor-ID: 5535
+; Bases: RFC6733
+; Link: http://www.3gpp2.org/Public_html/Specs/X.S0057-0_v2.0_091215.pdf
+; Transcribed: by hand from http://www.3gpp2.org/Public_html/Specs/X.S0057-0_v2.0_091215.pdf
+
+
+;; The cover prints "3GPP2 X.S0057-0 Version 2.0": revision 0, which the
+;; title leaves out as every spec-ref does, and the rendering's name keeps.
+;; The document states 3GPP2's vendor-id only in table 1's code cell and
+;; clause 5.6.2.1.1's sentence, which print vendor and code as one, 5535
+;; before a slash and 9010 after it: TS 29.212 table 5.4.0.1 sets the
+;; AVP's "Vendor-Id ... to 3GPP2 (5535) [24]" and TS 32.299 table 7.3.1
+;; tabulates it as code 9010. Clause 12.4.1's "5532 (3GPP2)" is a PMIPv6
+;; vendor option's, no Diameter statement.
+;; Table 1 is printed after clause 5.6.2.1.1's sentence, below a header
+;; row "AVP Flag rules" over the four flag columns.
+; Type: AVP Table
+; Section: 5.6.2.1.1
+; Table: 1
+; Page: 61
+; Columns: Name   Code        Type         Shall   May   S.not   M.not   Encrypt
+3GPP2-BSID        5535/9010   UTF8String   M,V     P     -       -       No
+;; NOTE: The AVP header bit denoted as ‘M’, indicates whether support of the AVP is required. The AVP header bit denoted as ‘V’, indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see [48] .

@@ -139,7 +139,9 @@ type TreePath = tuple[str | int, ...]
 
 class SourceRef(Node):
     """`; Section:` / `; Page:` directives — where a block sits in the source
-    document. Pages are PDF page numbers of the ETSI rendering."""
+    document. Pages are PDF page numbers of the ETSI rendering, or the
+    printed page numbers of a 3GPP2 one, whose front matter is numbered
+    apart."""
 
     section: SectionNumber
     page: PageNumber | None = None
@@ -969,8 +971,8 @@ class Specification(Node):
     bases: tuple[SpecRef, ...] = ()
     link: pydantic.HttpUrl | None = None
     # `; Transcribed: by hand from <url>` — the rendering a person copied
-    # this file from, for a document no extractor reads: ETSI ES 283 034
-    # and TS 183 017 exist only as PDF. None for extractor output, which
+    # this file from, for a document no extractor reads: ETSI ES 283 034,
+    # TS 183 017 and 3GPP2 X.S0057 exist only as PDF. None for extractor output, which
     # never writes it; a transcription is held to the extractor's rule all
     # the same (translate, never curate), and its misprints are corrections.
     transcribed: pydantic.HttpUrl | None = None

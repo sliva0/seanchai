@@ -22,8 +22,10 @@ and the policy is deliberately small:
 - A citation means the copy the drafting rules on references say
   (`corpus.Corpus.resolution`): the newest in the citing document's
   release, the version a specific reference names, or the final version of
-  a document that ended before the citing release. An AVP reached outside
-  the citing document's release says so in `across_releases`; an older
+  a document that ended before the citing release, or a 3GPP2 revision a
+  table entry lets stand in for the one cited (`corpus.STAND_INS`). An AVP
+  reached outside the citing document's release, or revision, says so in
+  `across_releases`; an older
   copy answers only through such a citation, never a reference-level query.
 - The linter, not this module, is where the conflicts live: anything
   `reused-body-differs` or `table-definition-mismatch` would report is
@@ -207,7 +209,7 @@ class Hole:
     flag_rules: ast.AvpFlagRules | None = None
     section: str | None = None
     # The re-used origin the corpus holds no copy of, when one is cited:
-    # TS 29.212's `3GPP2-BSID` from 3GPP2 X.S0057.
+    # TS 32.299 V11.20.0's `DCD-Information` from OMA-DDS-Charging_Data.
     origin: str | None = None
     # The document whose reading states a missing field but disagrees with
     # this one on a field both state, so nothing was taken from it or from

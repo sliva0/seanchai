@@ -131,11 +131,11 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   note: the rule is the corpus's reading of the citing document's
   references clause, and a reader audits it here.
 - `external-origin-not-in-corpus` — the same for origins outside 3GPP and
-  IETF (`3GPP2-X.S0057`, `OMA-DDS-Charging_Data`), apart because no
-  3GPP or IETF download closes the gap: the corpus holds such a document
-  only as a hand-written file or a catalogued one an extractor reads, which
-  resolves like an RFC, release axis ignored (ETSI ES 283 034 and TS 183
-  017 are [transcribed](extractor.md#transcriptions), oneM2M TS-0004 is
+  IETF (`OMA-DDS-Charging_Data`), apart because no 3GPP or IETF download
+  closes the gap: the corpus holds such a document only as a hand-written
+  file or a catalogued one an extractor reads, which resolves like an RFC,
+  release axis ignored (ETSI ES 283 034, TS 183 017 and 3GPP2 X.S0057 are
+  [transcribed](extractor.md#transcriptions), oneM2M TS-0004 is
   [extracted](extractor.md#onem2m-ts-0004)).
 - `unresolved-reference` — every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row, or a
@@ -230,9 +230,22 @@ are its publisher's (ETSI TS 283 034 V2.2.0 is no Release 2). For the same
 reason such a document's non-specific citations of 3GPP documents resolve
 only to a final version: its version names no release. oneM2M TS-0004
 resolves for TS 32.299's `M2M-Information` (table 7.5.1, [301]), in
-oneM2M's vendor 45687. A reference the citing documents spell otherwise than
-the publisher resolves to the publisher's document, through a table in
-`corpus.py` with one entry per misnaming: TS 29.212, 29.219, 29.273 and
+oneM2M's vendor 45687. A 3GPP2 revision letter is 3GPP2's release: a
+spec-ref keeps none, so a citation naming one is recorded with it
+(`corpus.CITED_REVISIONS`) and means that revision only, and a held copy
+of another answers it only where `corpus.STAND_INS` says so, with the
+evidence that the cited one is out of reach; the resolution is a
+`cross-release-origin` note, and without the entry the origin stays
+unresolved. TS 29.212 cites revision B ([24], "3GPP2 X.S0057-B") for
+`3GPP2-BSID` (tables 5.4.0.1, 5a.4.0.1, 5b.4.0.1), which 3GPP2's library
+does not publish: it lists X.S0057-0 V1.0 and V2.0 alone (checked
+2026-10-30, X series), and revision 0 V2.0 stands in, in 3GPP2's vendor
+5535. Its table 1 agrees with what TS 29.212 and 32.299 state of the AVP
+(vendor 5535 in TS 29.212 table 5.4.0.1, code 9010 in TS 32.299 table
+7.3.1). A
+reference the citing documents spell otherwise than the publisher
+resolves to the publisher's document, through a table in `corpus.py` with
+one entry per misnaming: TS 29.212, 29.219, 29.273 and
 32.299 cite "ETSI TS 283 034", which ETSI publishes as ES 283 034, so
 `ETSI-TS283.034` resolves to `ETSI-ES283.034`. Raw files are excluded
 from a corpus by default; loading both copies would leave the choice to sort
@@ -289,7 +302,7 @@ why each stays:
   `Globally-Unique-Address`, identical once ES 283 034's `Frame-*` members
   are corrected, and seven of its clauses 7.3.14-7.3.32 re-print V6.8.0's
   Gq AVPs as printed there.
-- **`cross-release-origin`**, six, in five files. TS 32.299 cites TS
+- **`cross-release-origin`**, seven, in six files. TS 32.299 cites TS
   29.140 non-specifically for `VAS-ID` and `VASP-ID` (clause 2, [213]),
   which reads as its final version, V7.0.0, and so does TS 32.299 V11.20.0;
   ES 283 034 cites TS 29.209 non-specifically ([5]), V6.8.0, its final;
@@ -297,14 +310,16 @@ why each stays:
   Release 7" ([19]), V6.8.0 and V7.12.0; oneM2M TS-0004 names "3GPP TS
   32.299 ... (Release 11)" ([31]), V11.20.0, for `Node-Id` and
   `Service-Information`, whose rows print vendor, code, type and flags
-  agreeing with it.
+  agreeing with it; TS 29.212 names "3GPP2 X.S0057-B" ([24]), a revision
+  3GPP2's library does not publish, for which revision 0 V2.0 stands in
+  (`corpus.STAND_INS`).
 - **`origin-not-in-corpus`**, two. The older copies held for those
   citations cite in turn what the corpus holds at Release 18 only, and a
   non-specific reference means the citing release's version: TS 29.214
   V7.12.0 Release 7's TS 29.061 and 29.212, TS 32.299 V11.20.0 eight
   Release 11 documents.
-- **`external-origin-not-in-corpus`**, three files: TS 29.212
-  (`3GPP2-X.S0057`) and both copies of 32.299 (`OMA-DDS-Charging_Data`).
+- **`external-origin-not-in-corpus`**, two files: both copies of TS 32.299
+  (`OMA-DDS-Charging_Data`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
   ABNF lists both (and table 6.2.3.1 marks them OC). The generator keeps

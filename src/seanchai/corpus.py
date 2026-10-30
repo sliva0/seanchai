@@ -14,13 +14,16 @@ final versions (`FINAL_VERSIONS`, which the downloader verifies). RFC
 numbers name immutable documents and resolve to whatever the corpus holds,
 as does a document outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M), whose
 versions are its publisher's and share no release axis with the citing
-document's. The reasoning, and what a resolution across releases reports,
-is in docs/consumers.md#resolution-across-releases and
+document's, unless the citation names a 3GPP2 revision (`CITED_REVISIONS`):
+then only that revision answers it, or a held one an explicit entry lets
+stand in for it (`STAND_INS`). The reasoning, and what a resolution across
+releases reports, is in docs/consumers.md#resolution-across-releases and
 docs/linter.md#resolving-an-origin.
 """
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -81,9 +84,56 @@ FINAL_VERSIONS: dict[str, str] = {
     "TS29.209": "6.8.0",
 }
 
-# `CrossRelease.rule`'s values: the drafting rule a resolution followed.
+# The revision a citation of a 3GPP2 document names, by (citing, cited)
+# reference, read from the citing document's references clause. 3GPP2
+# numbers revisions of a document (X.S0057-0, -A, -B) as 3GPP numbers
+# releases, each with versions of its own, and a spec-ref keeps no revision
+# letter, so the revision a reference names is recorded here, as
+# `CITED_VERSIONS` records versions. It is a specific reference: that
+# revision answers it and no other, unless `STAND_INS` says one does.
+CITED_REVISIONS: dict[tuple[str, str], str] = {
+    # TS 29.212 V18.2.0 clause 2, [24] 3GPP2 X.S0057-B: "E-UTRAN - eHRPD
+    # Connectivity and Interworking: Core Network Aspects".
+    ("TS29.212", "3GPP2-X.S0057"): "B",
+}
+
+
+@dataclass(frozen=True)
+class StandIn:
+    """A held revision answering a citation of one the corpus cannot hold,
+    and the evidence that it cannot."""
+
+    revision: str  # "0"
+    version: str  # "2.0"
+    evidence: str
+
+
+# Citations of a revision (`CITED_REVISIONS`) that a held copy of another
+# revision answers, by (citing, cited) reference. One entry per citation,
+# each with the evidence the cited revision is out of reach; a citation
+# without one resolves to nothing while the corpus lacks its revision.
+STAND_INS: dict[tuple[str, str], StandIn] = {
+    ("TS29.212", "3GPP2-X.S0057"): StandIn(
+        "0",
+        "2.0",
+        "3GPP2's library publishes X.S0057-0 v1.0 and v2.0 only (checked"
+        " 2026-10-30 at http://www.3gpp2.org/Public_html/Specs/index.cfm,"
+        " X series)",
+    ),
+}
+
+# 3GPP2's name for a rendering, "X.S0057-0_v2.0_091215.pdf": number,
+# revision, version and publication date.
+TGPP2_RENDERING_RE = re.compile(
+    r"^(?P<number>[A-Z]\.[A-Z]\d{4})-(?P<revision>[0-9A-Z])"
+    r"_v(?P<version>\d+\.\d+)_\d{6}\.pdf$"
+)
+
+# `CrossRelease.rule`'s values: the drafting rule a resolution followed, or
+# `STAND_IN`, the table entry that let another revision answer.
 SPECIFIC = "specific"
 NON_SPECIFIC = "non-specific"
+STAND_IN = "stand-in"
 
 
 @dataclass(frozen=True)
@@ -92,14 +142,26 @@ class CrossRelease:
     rule that allowed it: `SPECIFIC`, the version the citing document's
     references name (`CITED_VERSIONS`), or `NON_SPECIFIC`, the cited
     document's final version (`FINAL_VERSIONS`). A document outside 3GPP
-    has no release, so each of its 3GPP citations that resolves is one."""
+    has no release, so each of its 3GPP citations that resolves is one.
+    `STAND_IN` is a 3GPP2 revision answering a citation of another, a
+    revision being 3GPP2's release (`STAND_INS`)."""
 
     citing: str  # "TS32.299"
     cited: str  # "TS29.140"
     version: str  # "7.0.0", the copy resolved to
     rule: str
+    # For `STAND_IN`, a 3GPP2 revision being 3GPP2's release: the revision
+    # the reference names ("B") and the one resolved to ("0").
+    cited_revision: str | None = None
+    revision: str | None = None
 
     def __str__(self) -> str:
+        if self.rule == STAND_IN:
+            return (
+                f"{self.citing} cites {self.cited} revision {self.cited_revision},"
+                f" which the corpus lacks: revision {self.revision}"
+                f" V{self.version} stands in (corpus.STAND_INS)"
+            )
         if self.rule == SPECIFIC:
             why = f"the reference names V{self.version} (corpus.CITED_VERSIONS)"
         else:
@@ -126,6 +188,17 @@ def _version_key(version: str | None) -> tuple[int, ...]:
 
 def _major(version: str) -> int:
     return _version_key(version)[0]
+
+
+def revision(spec: ast.Specification) -> str | None:
+    """The 3GPP2 revision `spec` is a copy of, which its spec-ref does not
+    keep: the one its rendering's name states (`X.S0057-0_v2.0_091215.pdf`
+    is revision 0), or None for a document of no such naming."""
+    for url in (spec.transcribed, spec.link):
+        name = str(url).rsplit("/", 1)[-1] if url is not None else ""
+        if match := TGPP2_RENDERING_RE.match(name):
+            return match["revision"]
+    return None
 
 
 def _external(spec: ast.Specification) -> bool:
@@ -229,8 +302,11 @@ class Corpus:
         file is outside `like`'s release, how the citation got there.
 
         In order: a reference its citers spell otherwise than the publisher
-        (`CITED_AS`) is the publisher's document. An RFC, or a document
-        outside 3GPP, is whatever copy the corpus holds. A specific
+        (`CITED_AS`) is the publisher's document. A citation naming a 3GPP2
+        revision (`CITED_REVISIONS`) is a copy of that revision, or failing
+        one, the copy an explicit `STAND_INS` entry names, or nothing. An
+        RFC, or another document outside 3GPP, is whatever copy the corpus
+        holds. A specific
         reference (`CITED_VERSIONS`) is the version it names and no other.
         A 3GPP document's non-specific one is the newest copy in its own
         major version, and failing one, the cited document's final version
@@ -240,6 +316,10 @@ class Corpus:
         reference is the final version or nothing.
         """
         candidates = self._candidates(reference)
+        citing = _reference(like)
+        cited_revision = CITED_REVISIONS.get((citing, reference))
+        if cited_revision is not None:
+            return self._revision(citing, reference, cited_revision, candidates)
         if reference.startswith("RFC") or ast.is_external(reference):
             # An RFC number names one immutable document; there is no release
             # axis to match against. Nor is there for another publisher's
@@ -247,7 +327,6 @@ class Corpus:
             # 3GPP numbers. The corpus holds such a document only when someone
             # writes it by hand, and then the newest copy is the answer.
             return (candidates[0] if candidates else None), None
-        citing = _reference(like)
         version = like.version
         external = _external(like)
         named = CITED_VERSIONS.get((citing, reference))
@@ -291,6 +370,38 @@ class Corpus:
         if entry is None:
             return None, None
         return entry, CrossRelease(citing, reference, final, NON_SPECIFIC)
+
+    @staticmethod
+    def _revision(
+        citing: str, reference: str, cited: str, candidates: list[Entry]
+    ) -> tuple[Entry | None, CrossRelease | None]:
+        """A citation of revision `cited`: its newest copy, or the copy a
+        `STAND_INS` entry lets stand in for it, reported as such."""
+        entry = next((e for e in candidates if revision(e.spec) == cited), None)
+        if entry is not None:
+            return entry, None
+        stand_in = STAND_INS.get((citing, reference))
+        if stand_in is None:
+            return None, None
+        entry = next(
+            (
+                e
+                for e in candidates
+                if revision(e.spec) == stand_in.revision
+                and e.spec.version == stand_in.version
+            ),
+            None,
+        )
+        if entry is None:
+            return None, None
+        return entry, CrossRelease(
+            citing,
+            reference,
+            stand_in.version,
+            STAND_IN,
+            cited_revision=cited,
+            revision=stand_in.revision,
+        )
 
 
 def _reference(spec: ast.Specification) -> str:

@@ -7,8 +7,9 @@ dad/
                  documents mean (docs/consumers.md)
   rfc/           RFCs have no release axis, so they sit flat
   etsi/          ETSI documents transcribed by hand; versions are ETSI's
+  3gpp2/         3GPP2 documents transcribed by hand; versions are 3GPP2's
   onem2m/        oneM2M documents; versions are oneM2M's
-  raw/           unedited extractor output, mirroring the four trees
+  raw/           unedited extractor output, mirroring the five trees
                  above
 ```
 
@@ -17,7 +18,9 @@ file-for-file and exists for diffing and rot-checking.
 
 Files are named as their publisher names them: `29272-i70` for TS 29.272
 V18.7.0 (3GPP's archive naming), `rfc6733` for an RFC, `es283034-020200`
-for ETSI ES 283 034 V2.2.0 (ETSI's), `ts-0004-v2_35_0` for oneM2M TS-0004
+for ETSI ES 283 034 V2.2.0 (ETSI's), `xs0057-0_v2.0` for 3GPP2 X.S0057
+revision 0 V2.0 (3GPP2's file name, `X.S0057-0_v2.0_091215`, lower-cased
+and less its series dot and date), `ts-0004-v2_35_0` for oneM2M TS-0004
 V2.35.0 (oneM2M's file name, `TS-0004-Service_Layer_Core_Protocol-V2_35_0`,
 lower-cased and less its title). RFC files carry no
 `; Version:` header because an RFC number names one immutable document.
@@ -33,7 +36,7 @@ Every line a correction touched carries a `;;` note citing the declaration in
 where the line was. A specification with no corrections still gets both
 files, byte-identical. Nothing here is edited by hand: `seanchai
 regenerate` rebuilds the whole tree from the downloaded sources, oneM2M's
-included, and the `etsi/` pairs from their hand transcriptions in
+included, and the `etsi/` and `3gpp2/` pairs from their hand transcriptions in
 `edits/transcriptions/`,
 documents published only as PDF
 ([extractor.md](../docs/extractor.md#transcriptions)).

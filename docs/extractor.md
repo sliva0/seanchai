@@ -779,6 +779,32 @@ A transcription gives each construct the shape the 3GPP extractor gives it:
   `[ Address-Realm ]` for `[Address-Realm]`), spellings the 3GPP extractor
   reads in code.
 
+3GPP2 X.S0057-0 V2.0 ("E-UTRAN – eHRPD Connectivity and Interworking:
+Core Network Aspects"), which TS 29.212 cites for `3GPP2-BSID`, is
+transcribed the same way from the PDF that is 3GPP2's only rendering of
+it. Its one Diameter clause is 5.6.2.1, "Gxa 3GPP2 AVPs": table 1 is an
+`AVP Table` in the clause it is printed in, 5.6.2.1.1, its NOTE a `;;`
+comment, and clause 5.6.2.1.1's sentence, a simple type's, is not
+transcribed. Two of the table's cells are copied as printed and patched
+on input (`edits/sources/3GPP2-X.S0057.toml`): the first flag column's
+header "Shall", no column name the extractor reads, to `Must`, RFC 3588's
+[48] heading for it, and the code cell `5535/9010`, vendor and code as
+the clause's sentence prints them too, to `9010`. The vendor is the file's
+`; Vendor-ID: 5535`, 3GPP2's, which the document states nowhere else
+(TS 29.212 table 5.4.0.1: "The Vendor-Id shall be set to 3GPP2 (5535)").
+A 3GPP2 page is the number its footer prints: the front matter is
+numbered in roman, so clause 5.6.2's page 61 is the PDF's 71st. The pair
+is `dad/3gpp2/xs0057-0_v2.0.dad`, 3GPP2's file name for the rendering,
+`X.S0057-0_v2.0_091215.pdf`, lower-cased and less its series dot and
+date. 3GPP2 numbers revisions of a document (X.S0057-0, -A, -B), each
+with versions of its own, and a spec-ref keeps no revision letter, so
+the rendering's name in `; Transcribed:` is where a transcription states
+its revision; `regenerate` checks it against the file's number and
+`; Version:`, and `corpus.revision` reads it for a citation naming a
+revision ([linter.md](linter.md#resolving-an-origin)). The rest of the document defines no AVP: every other line
+naming an AVP or Diameter uses or points to what TS 29.212, 29.273 and
+the RFCs define.
+
 Not transcribed, as an extractor reads none of it: clause prose, the
 defining sentence of an AVP of a simple type (its AVP-table row carries
 code and type; no section holds a sentence), experimental result codes and

@@ -129,8 +129,9 @@ each starting with `; Type:`.
   `3GPP2-X.S0057`, `OMA-DDS-Charging_Data`, `oneM2M-TS-0004`). Without the
   prefix, ETSI's three-digit TISPAN series would read as a 3GPP number and
   OMA's names as nothing. The corpus holds one when someone writes it by
-  hand, as ETSI ES 283 034 and TS 183 017 are, or when its publisher's
-  Word original is one the extractor reads, as oneM2M TS-0004's is.
+  hand, as ETSI ES 283 034, TS 183 017 and 3GPP2 X.S0057 are, or when its
+  publisher's Word original is one the extractor reads, as oneM2M
+  TS-0004's is.
 - **A transcription says so.** A document no extractor reads, because no
   Word or text source of it exists, is copied by hand from its rendering,
   and its header says which (`; Transcribed: by hand from <url>`, after

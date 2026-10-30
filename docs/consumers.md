@@ -71,6 +71,10 @@ within a release, the match-major-take-newest rule in
 which also reads 3GPP's `ETSI-TS283.034` as the ETSI ES 283 034 it names,
 and takes TS 32.299's `oneM2M-TS-0004` to the oneM2M document the corpus
 extracts, whatever its version: `M2M-Information` is (45687, 1011) there.
+TS 29.212's `3GPP2-X.S0057` goes to the 3GPP2 transcription, revision 0
+V2.0 standing in for the revision B its reference [24] names (below):
+`3GPP2-BSID` is (5535, 9010), and TS 32.299's row, re-used through TS
+29.212, the same.
 
 **Filling through.** A field the first reading leaves unstated comes from
 the next reading along the order, if the two are the same AVP saying the
@@ -202,14 +206,25 @@ references clause (ETSI TS 183 017's "3GPP TS 29.209 Release 6" [4] and
 29.209 V6.8.0). Every version either names is a catalog pin the downloader
 checks against the 3GPP archive on each download, so a later version
 appearing fails the download rather than the reading
-([downloader.md](downloader.md)). Five citations resolve so: TS 32.299's
-TS 29.140 (`VAS-ID`, `VASP-ID`) and ES 283 034's TS 29.209
+([downloader.md](downloader.md)). A 3GPP2 revision letter (X.S0057-0,
+-A, -B) is 3GPP2's release, which a spec-ref does not keep either: a
+reference naming one is specific to it, recorded in
+`corpus.CITED_REVISIONS`, and resolves to a copy of that revision only.
+Where the corpus cannot hold the cited revision, a copy of another answers
+only by an entry in `corpus.STAND_INS` that names it and states the
+evidence; without one the citation resolves to nothing. TS 29.212 cites
+"3GPP2 X.S0057-B" [24], and 3GPP2's library publishes X.S0057-0 V1.0 and
+V2.0 alone (checked 2026-10-30 at its X-series index), so revision 0 V2.0
+stands in. Six citations resolve across releases or revisions: TS
+32.299's TS 29.140 (`VAS-ID`, `VASP-ID`) and ES 283 034's TS 29.209
 (`Media-Type`, `AF-Application-Identifier`) as final versions, TS 183
 017's TS 29.209 and TS 29.214 and oneM2M TS-0004's TS 32.299 as the
-versions named. An `Avp` or `Hole` that took a field from such a copy
-carries `across_releases`, a `corpus.CrossRelease` naming the citing and
-cited documents, the version and the rule (`corpus.SPECIFIC` or
-`corpus.NON_SPECIFIC`); `across_releases()` lists them for a reader to
+versions named, and TS 29.212's 3GPP2 X.S0057 (`3GPP2-BSID`) as the
+revision standing in. An `Avp` or `Hole` that took a field from such a
+copy carries `across_releases`, a `corpus.CrossRelease` naming the citing
+and cited documents, the version and the rule (`corpus.SPECIFIC`,
+`corpus.NON_SPECIFIC`, or `corpus.STAND_IN` with the cited and held
+revisions); `across_releases()` lists them for a reader to
 audit, and the linter's `cross-release-origin` note says the same per
 citing file. An older copy answers only through a citation:
 reference-level queries (`avps("TS32.299")`, `holes`, `references`) read
@@ -249,7 +264,7 @@ a RADIUS document with no Diameter types (TS 29.229's table types the four
 Digest AVPs it re-uses, for its own reading),
 TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, the
 names that resolve nowhere are the linter's standing
-`unresolved-reference` cases and re-used origins outside the corpus, and
+`unresolved-reference` cases, and
 oneM2M TS-0004's `Service-Information`, TS 32.299 V11.20.0's, reaches
 forty-one members that Release 11 copies of TS 29.061, 29.173, 29.212,
 29.214, 29.229, 29.272, 29.273 and 29.329 define, and three of

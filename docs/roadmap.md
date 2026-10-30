@@ -6,15 +6,10 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **K. Catalog gaps and format limits from the legacy documents.** An
-  AVP the corpus only re-uses from a document outside 3GPP and IETF stays
-  a hole while that document is absent: a re-used row's identity, vendor
-  included, is its origin's, so a type supplied into the citing file has
-  nowhere to go. 3GPP2 X.S0057, cited by TS 29.212 for `3GPP2-BSID`,
-  could not be fetched. SM-Service-Type's "100 .. 199 Vendor specific SM
-  services", and oneM2M TS-0004's Protocol-Type "100 .. 199 Operator and
-  vendor specific protocol types", allocate a range the format cannot
-  hold.
+- **K. Value ranges the format cannot hold.** SM-Service-Type's "100 ..
+  199 Vendor specific SM services", and oneM2M TS-0004's Protocol-Type
+  "100 .. 199 Operator and vendor specific protocol types", allocate a
+  range of enumerated values, which the format has no line for.
 
 ## Consumers
 
@@ -32,8 +27,6 @@ letter is not reused. What exists is described in the per-module documents.
     defines under the same name without being cited: TS 32.299's
     `TCP-Source-Port` (TS 29.212; table 7.2.0.1 refers to [215] for
     `UDP-Source-Port` only);
-  - re-used origins outside 3GPP and IETF, item K: `3GPP2-X.S0057` (TS
-    29.212's `3GPP2-BSID`);
   - what oneM2M TS-0004's `Service-Information` reaches in TS 32.299
     V11.20.0, the version its reference [31] names: forty-one members
     re-used from Release 11's TS 29.061, 29.173, 29.212, 29.214, 29.229,

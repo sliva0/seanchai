@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import pydantic
 import pytest
 from conftest import _corpus
 
@@ -1121,6 +1122,42 @@ def test_an_origin_resolved_across_releases_is_a_note_naming_the_rule():
     assert "reused-avp-not-in-origin" in _rules(findings)
 
 
+def _tgpp2_origin(revision):
+    return ast.Specification(
+        specification="3GPP2 X.S0057",
+        version="2.0",
+        vendor_id=5535,
+        transcribed=pydantic.HttpUrl(
+            f"http://example.test/X.S0057-{revision}_v2.0_091215.pdf"
+        ),
+        sections=(_grouped_with("Borrowed", 700),),
+    )
+
+
+def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
+    """TS 29.212 cites 3GPP2 X.S0057-B, which 3GPP2's library does not
+    publish; revision 0 V2.0 answers it only by its `corpus.STAND_INS`
+    entry, and a note says so with the entry's evidence."""
+    spec = _spec(
+        _reused(ast.ReusedAvpRow(name="Borrowed", origin="3GPP2-X.S0057")),
+        specification="3GPP TS 29.212",
+        version="18.2.0",
+    )
+
+    findings = linter.lint_with_corpus(spec, _books(_tgpp2_origin("0")))
+
+    (crossing,) = [f for f in findings if f.rule == "cross-release-origin"]
+    assert crossing.severity is linter.Severity.NOTE
+    assert crossing.message == (
+        "3GPP2-X.S0057 is resolved across releases to 0.dad: 3GPP TS 29.212"
+        " V18.2.0 is the citing file, and its references name revision B,"
+        " which the corpus lacks, and revision 0 V2.0 stands in: "
+        + corpus.STAND_INS["TS29.212", "3GPP2-X.S0057"].evidence
+        + " (corpus.STAND_INS)"
+    )
+    assert "external-origin-not-in-corpus" not in _rules(findings)
+
+
 def test_an_unresolvable_origin_is_one_note_and_keeps_the_single_file_answer():
     """A partial corpus must stay useful: the rules that needed the missing
     document are skipped, and the single-file note it would have superseded
@@ -1285,12 +1322,12 @@ _STANDING_CORPUS_NOTES = {
     "29172-i10.dad": {
         "reused-origin-indirect": ["Service-Selection"],
     },
-    "29212-i20.dad": {
-        "external-origin-not-in-corpus": ["3GPP2-X.S0057"],
-    },
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
     },
+    # Clause 2 [24] cites 3GPP2 X.S0057-B, which 3GPP2's library does not
+    # publish; revision 0 V2.0 stands in (corpus.STAND_INS).
+    "29212-i20.dad": {"cross-release-origin": ["3GPP2-X.S0057"]},
     "29230-i60.dad": {
         "registry-range-overlap": [
             "318",

@@ -62,7 +62,7 @@ seanchai crosscheck dad                 # against Wireshark's dictionary
   `rel-11` for the older versions citations mean), `dad/rfc/`, and the raw
   mirror under `dad/raw/`. See [dad/README.md](dad/README.md).
 - `edits/transcriptions/<SpecRef>.dad` — documents no extractor reads (ETSI
-  ES 283 034, TS 183 017), copied by hand as printed.
+  ES 283 034, TS 183 017, 3GPP2 X.S0057), copied by hand as printed.
 - `edits/sources/<SpecRef>.toml` — input patches and quirks per source document.
 - `edits/corrections/<SpecRef>.py` — corrections per specification.
 - `integrations/` — consumer scripts over the model, runnable with `uv run`,

@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Literal
 
 from . import linter, ranges
-from .corpus import Corpus
+from .corpus import TGPP2_RENDERING_RE, Corpus
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
@@ -450,35 +450,68 @@ def _sources(manifest_path: Path) -> dict[_Key, _Source]:
 
 def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
     """Every hand transcription in `directory`, by the reference its file
-    is named for, as a source: `ETSI-ES283.034.dad` is written to
-    `etsi/es283034-020200.dad`, ETSI's own name for V2.2.0 of the document,
-    as a 3GPP pair is named for its archive."""
+    is named for, as a source, named as its publisher names the version:
+    `ETSI-ES283.034.dad` is written to `etsi/es283034-020200.dad`, ETSI's
+    code for V2.2.0, as a 3GPP pair is named for its archive, and
+    `3GPP2-X.S0057.dad` to `3gpp2/xs0057-0_v2.0.dad`, 3GPP2's file name
+    for revision 0 V2.0 less its date (`_tgpp2_stem`)."""
     found: dict[_Key, _Source] = {}
     for path in sorted(directory.glob("*.dad")) if directory is not None else ():
-        match = _EXTERNAL_STEM_RE.match(path.stem)
-        version = _VERSION_LINE_RE.search(path.read_text(encoding="utf-8"))
-        if match is None or version is None:
+        text = path.read_text(encoding="utf-8")
+        version = _VERSION_LINE_RE.search(text)
+        if version is None:
+            raise ValueError(f"{path}: a transcription states its '; Version:'")
+        if match := _ETSI_STEM_RE.match(path.stem):
+            code = "".join(f"{int(part):02d}" for part in version["value"].split("."))
+            tree = "etsi"
+            stem = f"{match['kind'].lower()}{match['series']}{match['number']}-{code}"
+        elif match := _TGPP2_STEM_RE.match(path.stem):
+            tree = "3gpp2"
+            stem = _tgpp2_stem(path, text, match["number"], version["value"])
+        else:
             raise ValueError(
-                f"{path}: a transcription is named for an ETSI document"
-                " (ETSI-ES283.034.dad) and states its '; Version:'"
+                f"{path}: a transcription is named for an ETSI or 3GPP2 document"
+                " (ETSI-ES283.034.dad, 3GPP2-X.S0057.dad)"
             )
-        code = "".join(f"{int(part):02d}" for part in version["value"].split("."))
-        found[path.stem, "etsi"] = _Source(
-            path.stem,
-            path,
-            None,
-            "",
-            "etsi",
-            transcribed=True,
-            stem=f"{match['kind'].lower()}{match['series']}{match['number']}-{code}",
+        found[path.stem, tree] = _Source(
+            path.stem, path, None, "", tree, transcribed=True, stem=stem
         )
     return found
 
 
-_EXTERNAL_STEM_RE = re.compile(
+def _tgpp2_stem(path: Path, text: str, number: str, version: str) -> str:
+    """`xs0057-0_v2.0` for 3GPP2 X.S0057 V2.0, from the rendering's name,
+    `X.S0057-0_v2.0_091215.pdf`. 3GPP2 numbers revisions of a document
+    (X.S0057-0, -A, -B), each with its own versions; a spec-ref keeps no
+    revision letter, so the rendering's name is the one place a
+    transcription states it, and where `corpus.revision` reads it."""
+    transcribed = _TRANSCRIBED_LINE_RE.search(text)
+    rendering = (
+        TGPP2_RENDERING_RE.match(transcribed["value"].rsplit("/", 1)[-1])
+        if transcribed is not None
+        else None
+    )
+    if (
+        rendering is None
+        or rendering["number"] != number
+        or rendering["version"] != version
+    ):
+        raise ValueError(
+            f"{path}: a 3GPP2 transcription is transcribed from 3GPP2's"
+            f" rendering of its number and version, {number}-<revision>"
+            f"_v{version}_<date>.pdf"
+        )
+    return f"{number.replace('.', '')}-{rendering['revision']}_v{version}".lower()
+
+
+_ETSI_STEM_RE = re.compile(
     r"^ETSI-(?P<kind>TS|ES)(?P<series>\d{3})\.(?P<number>\d{3})$"
 )
+_TGPP2_STEM_RE = re.compile(r"^3GPP2-(?P<number>[A-Z]\.[A-Z]\d{4})$")
 _VERSION_LINE_RE = re.compile(r"^; Version: (?P<value>[0-9.]+)$", re.MULTILINE)
+_TRANSCRIBED_LINE_RE = re.compile(
+    r"^; Transcribed: by hand from (?P<value>\S+)$", re.MULTILINE
+)
 
 
 def _committed(corpus: Path) -> dict[_Key, _Committed]:

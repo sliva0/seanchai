@@ -875,10 +875,10 @@ class TestOverTheCommittedCorpus:
 # What keeps the committed corpus from building strictly, by document and
 # cause. Each is a statement its source does not make: RFC 4590 is a RADIUS
 # document with no Diameter types, TS 29.061's 3GPP-Session-Stop-Indicator
-# row prints only a code, TS 32.299's untyped rows are roadmap item K, and
-# every "resolves nowhere" is one of
-# docs/linter.md's standing unresolved references or a re-used origin
-# outside the corpus. A hole worked off shrinks this; a new one is a corpus
+# row prints only a code, every "resolves nowhere" is one of
+# docs/linter.md's standing unresolved references, and TS 32.299 V11.20.0's
+# rows are re-used from Release 11 copies and OMA-DDS-Charging_Data, which
+# the corpus lacks. A hole worked off shrinks this; a new one is a corpus
 # regression. Roadmap item N lists them by cause.
 _STANDING_HOLES = {
     "RFC4004": {
@@ -910,11 +910,6 @@ _STANDING_HOLES = {
     },
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
     "TS29.154": {"resolves nowhere": ["External-Group-Identifier"]},
-    "TS29.212": {
-        "resolves nowhere (re-used from 3GPP2-X.S0057, which the corpus lacks)": [
-            "3GPP2-BSID"
-        ],
-    },
     "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
     "TS32.299": {
         "resolves nowhere": [
@@ -1026,12 +1021,55 @@ def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
         assert avp.defined_in in {reference, corpus.CITED_AS.get(origin, origin)}
 
 
+def test_3gpp2_bsid_resolves_to_the_3gpp2_transcription():
+    """TS 29.212 re-uses 3GPP2-BSID from 3GPP2 X.S0057 and TS 32.299 from TS
+    29.212; both reach table 1 of the transcription, in 3GPP2's vendor
+    space, with the flag rules it prints, and say that revision 0 stands
+    in for the revision B TS 29.212 [24] cites."""
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+
+    for reference in ("TS29.212", "TS32.299"):
+        avp = built.resolve(reference, "3GPP2-BSID")
+        assert avp is not None, reference
+        assert (avp.defined_in, avp.identity, avp.data_type) == (
+            "3GPP2-X.S0057",
+            (5535, 9010),
+            ast.DataType.UTF8_STRING,
+        )
+        flags = avp.flag_rules
+        assert flags.must == {ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}
+        assert flags.may == {ast.AvpFlag.PROTECTED}
+        assert avp.across_releases == corpus.CrossRelease(
+            "TS29.212",
+            "3GPP2-X.S0057",
+            "2.0",
+            corpus.STAND_IN,
+            cited_revision="B",
+            revision="0",
+        )
+
+
+def test_without_its_stand_in_entry_3gpp2_bsid_is_a_hole(monkeypatch):
+    """TS 29.212 [24] names revision B, which the corpus lacks; with no
+    `corpus.STAND_INS` entry letting revision 0 answer, the AVP resolves
+    nowhere, as it did before the transcription."""
+    monkeypatch.delitem(corpus.STAND_INS, ("TS29.212", "3GPP2-X.S0057"))
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+
+    assert built.resolve("TS29.212", "3GPP2-BSID") is None
+    assert (
+        "TS29.212 3GPP2-BSID: resolves nowhere (re-used from 3GPP2-X.S0057,"
+        " which the corpus lacks)"
+    ) in {str(hole) for hole in built.holes()}
+
+
 def test_citations_across_releases_resolve_and_say_by_which_rule():
     """The drafting rules on references (docs/consumers.md): TS 32.299's
     non-specific TS 29.140 [213] is its final version, V7.0.0; TS 183
     017's "TS 29.214 Release 7" [19] and oneM2M TS-0004's "TS 32.299
-    (Release 11)" [31] are the versions they name. Each AVP so reached
-    says so, and nothing else in the corpus resolves across releases."""
+    (Release 11)" [31] are the versions they name; TS 29.212's "3GPP2
+    X.S0057-B" [24] is revision 0, standing in. Each AVP so reached says
+    so, and nothing else in the corpus resolves across releases."""
     built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
 
     vas = built.resolve("TS32.299", "VAS-ID")
@@ -1065,10 +1103,13 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("ETSI-ES283.034", "TS29.209"),
         ("ETSI-TS183.017", "TS29.209"),
         ("ETSI-TS183.017", "TS29.214"),
+        ("TS29.212", "3GPP2-X.S0057"),
         ("TS32.299", "TS29.140"),
         ("oneM2M-TS-0004", "TS32.299"),
     }
-    assert len(built.across_releases()) == 26
+    # TS 29.212's and 32.299's 3GPP2-BSID are one Avp, revision 0 standing
+    # in for TS 29.212's revision B.
+    assert len(built.across_releases()) == 27
 
 
 def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():

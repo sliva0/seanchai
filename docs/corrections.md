@@ -142,9 +142,9 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   each declaration cites. Three of the rows are typed by TS 32.299's own
   clauses (7.2.50, 7.2.69, 7.2.191: "is of type Grouped"), so their
   declarations expect the type and supply the flags alone. A re-used row has no cells a model reads for
-  type or vendor, so an AVP only re-used from an absent document (TS
-  29.212's `3GPP2-BSID` from `3GPP2-X.S0057`) has nowhere to take a
-  supplied type.
+  type or vendor, so an AVP only re-used from an absent document has
+  nowhere to take a supplied type: the document has to enter the corpus,
+  as 3GPP2 X.S0057 did, transcribed, for TS 29.212's `3GPP2-BSID`.
 
 No arbitrary `edit=lambda` escape hatch and no `move`/`split`: a correction
 that cannot be described cannot be reviewed. A structural case that appears

@@ -41,7 +41,8 @@ A `spec-ref` names a document without its version. A 3GPP or IETF
 document is its number; a document outside them leads with its publisher
 and keeps the publisher's numbering, written as one token: ETSI's
 "TS 183 017" dotted as a 3GPP number is, 3GPP2's "X.S0057" without its
-revision letter, OMA's name as OMA prints it, oneM2M's "TS-0004". Every
+revision letter (a citation's revision is recorded beside the corpus,
+[linter.md](linter.md#resolving-an-origin)), OMA's name as OMA prints it, oneM2M's "TS-0004". Every
 publisher has one spelling, since resolution compares references exactly.
 A From cell keeps the citing document's reference even where it misnames
 the publisher's: 3GPP cites ETSI ES 283 034 as "ETSI TS 283 034", so its
@@ -50,8 +51,9 @@ the transcription's title gives, one listed misnaming at a time
 ([linter.md](linter.md#resolving-an-origin)).
 
 `; Transcribed:` marks a file a person copied from a rendering, for a
-document no extractor reads (ETSI ES 283 034 and TS 183 017 exist only as
-PDF), and names that rendering; no extractor writes it. It is written in
+document no extractor reads (ETSI ES 283 034, TS 183 017 and 3GPP2
+X.S0057 exist only as PDF), and names that rendering; no extractor writes
+it. It is written in
 the transcription, which is no `.dad` file until its input patches have
 applied (transcription → input patches → raw → corrections → corrected,
 [extractor.md](extractor.md#transcriptions)), and the raw and corrected
@@ -98,7 +100,9 @@ section-number = (1*ALPHA / 1*DIGIT *ALPHA) *("." 1*DIGIT *ALPHA)
 avp-name      = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-" / "_")
 ```
 
-`; Page:` counts printed pages of the ETSI PDF from 1. The underscore
+`; Page:` counts printed pages of the ETSI PDF from 1; a 3GPP2 PDF's are
+the numbers its footers print, after a front matter numbered in roman
+(3GPP2 X.S0057's page 61 is the PDF's 71st). The underscore
 extends RFC 6733's `name-fmt` for TS 29.109's `GBA_U-Awareness-Indicator`.
 
 ### Application Scope

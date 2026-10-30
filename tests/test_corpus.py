@@ -83,6 +83,80 @@ def test_onem2m_ts_0004_resolves_for_ts_32_299_from_the_committed_corpus():
     assert books.versions("oneM2M-TS-0004") == ["2.35.0"]
 
 
+def test_3gpp2_x_s0057_resolves_for_ts_29_212_from_the_committed_corpus():
+    """TS 29.212 cites "3GPP2 X.S0057-B" ([24]); a spec-ref keeps no
+    revision letter, and the corpus holds revision 0 V2.0, the last 3GPP2's
+    library publishes, which a Release 18 citation reads as any external
+    document's."""
+    books = corpus.Corpus.load([Path(__file__).parent.parent / "dad"])
+    citing = _spec("3GPP TS 29.212", "18.2.0")
+
+    resolved = books.resolve("3GPP2-X.S0057", like=citing)
+
+    assert resolved is not None
+    assert resolved.path.as_posix().endswith("dad/3gpp2/xs0057-0_v2.0.dad")
+    assert (resolved.spec.version, resolved.spec.vendor_id) == ("2.0", 5535)
+    assert books.versions("3GPP2-X.S0057") == ["2.0"]
+
+
+def _tgpp2_entry(revision, version="2.0"):
+    spec = _spec("3GPP2 X.S0057", version).model_copy(
+        update={
+            "transcribed": f"http://example.test/X.S0057-{revision}_v{version}"
+            "_091215.pdf"
+        }
+    )
+    return corpus.Entry(path=Path(f"xs0057-{revision}.dad"), spec=spec)
+
+
+def test_a_cited_3gpp2_revision_resolves_to_that_revision_and_no_other():
+    """TS 29.212 [24] names revision B of 3GPP2 X.S0057 (`CITED_REVISIONS`):
+    a copy of revision B answers it, unreported, ahead of a newer one."""
+    books = corpus.Corpus([_tgpp2_entry("0"), _tgpp2_entry("B", "1.0")])
+
+    entry, across = books.resolution(
+        "3GPP2-X.S0057", like=_spec("3GPP TS 29.212", "18.2.0")
+    )
+
+    assert entry is not None and corpus.revision(entry.spec) == "B"
+    assert across is None
+
+
+def test_another_revision_stands_in_only_by_its_table_entry(monkeypatch):
+    """Revision 0 V2.0 answers the citation of revision B because
+    `STAND_INS` says so, and says so in turn; without the entry, the
+    citation of an absent revision resolves to nothing, whatever the
+    corpus holds of other revisions."""
+    books = corpus.Corpus([_tgpp2_entry("0")])
+    citing = _spec("3GPP TS 29.212", "18.2.0")
+
+    entry, across = books.resolution("3GPP2-X.S0057", like=citing)
+
+    assert entry is not None and corpus.revision(entry.spec) == "0"
+    assert across == corpus.CrossRelease(
+        "TS29.212",
+        "3GPP2-X.S0057",
+        "2.0",
+        corpus.STAND_IN,
+        cited_revision="B",
+        revision="0",
+    )
+    assert str(across) == (
+        "TS29.212 cites 3GPP2-X.S0057 revision B, which the corpus lacks:"
+        " revision 0 V2.0 stands in (corpus.STAND_INS)"
+    )
+    # Only the version the entry names stands in.
+    assert corpus.Corpus([_tgpp2_entry("0", "1.0")]).resolution(
+        "3GPP2-X.S0057", like=citing
+    ) == (None, None)
+
+    monkeypatch.delitem(corpus.STAND_INS, ("TS29.212", "3GPP2-X.S0057"))
+    assert books.resolution("3GPP2-X.S0057", like=citing) == (None, None)
+    # A citation naming no revision takes whatever copy the corpus holds.
+    other = _spec("3GPP TS 29.999", "18.0.0")
+    assert books.resolve("3GPP2-X.S0057", like=other) is not None
+
+
 def test_a_misnamed_citation_resolves_to_the_publishers_document():
     """3GPP cites the e4 document as "ETSI TS 283 034"; ETSI publishes it
     as ES 283 034, which is the title its transcription carries."""

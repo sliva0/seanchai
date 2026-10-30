@@ -14,7 +14,7 @@ what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
-uv run seanchai crosscheck dad                    # 53 files, 98 findings
+uv run seanchai crosscheck dad                    # 54 files, 98 findings
 ```
 
 The check reads the newest copy of each document and no other: the
@@ -24,7 +24,7 @@ is no reading of it. `crosscheck` takes files or directories (a
 directory's raw files skipped, as the corpus loader skips them), lists
 each older copy it skips (TS 29.214 V7.12.0, TS 32.299 V11.20.0), and
 refuses two files of one document and version, so a count over every
-committed copy (116 findings in 55 files) cannot be reported by accident.
+committed copy (116 findings in 56 files) cannot be reported by accident.
 TS 29.140 V7.0.0 and TS 29.209 V6.8.0 are the newest copies of their
 documents and are checked.
 
@@ -162,6 +162,11 @@ remains:
   goes beside its vendor's, and a vendor the dictionary lacks needs a
   `<vendor>` declaration, a file and its entity in `dictionary.xml`, a
   merge request of another shape than the series'.
+- **3GPP2 X.S0057, vendor 5535**: `TGPP2.xml` declares the vendor and
+  holds `3GPP2-BSID` at 9010, UTF8String, so the oracle checks the
+  transcription unchanged and it agrees in name and type; the entry's
+  flags (M and V must, P may, no encryption) are table 1's too, though
+  the oracle compares none. Nothing is staged.
 - **ETSI TS 183 017, untriaged**: `Binding-information` (450), the
   spelling of table 7.3.1, clause 7.3.1's heading and its rule name, where
   the clause's sentence and the AAR and AAA ABNFs write

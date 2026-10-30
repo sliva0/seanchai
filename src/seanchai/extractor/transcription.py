@@ -1,19 +1,22 @@
 """Reader for a transcription: a document no extractor reads, copied by hand.
 
-ETSI ES 283 034 and TS 183 017 exist only as PDF. A person writes each in
-`.dad` notation under `edits/transcriptions/<SpecRef>.dad`, copying what the
-document prints, misprints included, even where the grammar cannot hold it
-(TS 183 017's `< AVP Header: x >`). This module is the extractor's place in
-the pipeline for it: the input patches of `edits/sources/<SpecRef>.toml`
-apply to the transcription's text, and the patched text must parse. The
-result is the raw file; corrections take it from there, as for any other.
+ETSI ES 283 034, TS 183 017 and 3GPP2 X.S0057 exist only as PDF. A person
+writes each in `.dad` notation under `edits/transcriptions/<SpecRef>.dad`,
+copying what the document prints, misprints included, even where the
+grammar cannot hold it (TS 183 017's `< AVP Header: x >`, X.S0057's
+`5535/9010` code cell). This module is the extractor's place in the
+pipeline for it: the input patches of `edits/sources/<SpecRef>.toml` apply
+to the transcription's text, and the patched text must parse. The result
+is the raw file; corrections take it from there, as for any other.
 
     transcription → input patches → raw → corrections → corrected
 
-A patch's text unit is one line of the transcription, and its `section`
-scope is the `; Section:` of the block the line sits in, so a patch can be
-narrowed to one clause as a 3GPP patch is. The transcription carries its
-`; Transcribed:` header itself; nothing here adds or checks it.
+A patch's text unit is one line of the transcription, a `;;` comment's
+included, so a note quoting what a patch repairs counts as a match; its
+`section` scope is the `; Section:` of the block the line sits in, so a
+patch can be narrowed to one clause as a 3GPP patch is. The transcription
+carries its `; Transcribed:` header itself; nothing here adds or checks
+it.
 """
 
 import re

@@ -632,3 +632,65 @@ def test_a_transcription_answers_to_its_declarations_version_ranges(tmp_path):
 
     (again,) = run()
     assert again.warnings == []
+
+
+_TGPP2_TRANSCRIPTION = """\
+; Specification: 3GPP2 X.S0057
+; Version: 2.0
+; Vendor-ID: 5535
+; Transcribed: by hand from http://example.test/Specs/X.S0057-0_v2.0_091215.pdf
+
+
+; Type: AVP Table
+; Section: 5.6.2.1.1
+; Table: 1
+; Columns: Name Code
+3GPP2-BSID 9010
+"""
+
+
+def _run_transcriptions(tmp_path, text):
+    transcriptions = tmp_path / "transcriptions"
+    transcriptions.mkdir()
+    (transcriptions / "3GPP2-X.S0057.dad").write_text(text, encoding="utf-8")
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    manifest, _ = _manifest(tmp_path / "specifications", "29999-100")
+    return (
+        corpus,
+        lambda: (
+            regenerate.regenerate(
+                manifest,
+                corpus,
+                corpus,
+                sources_dir=None,
+                corrections_dir=None,
+                transcriptions_dir=transcriptions,
+                add=["3GPP2-X.S0057"],
+            ).outcomes
+        ),
+    )
+
+
+def test_a_3gpp2_transcription_is_named_for_its_rendering(tmp_path):
+    """3GPP2 numbers revisions (X.S0057-0, -A, -B) a spec-ref does not
+    keep; the rendering's name, X.S0057-0_v2.0_091215.pdf, states it."""
+    corpus, run = _run_transcriptions(tmp_path, _TGPP2_TRANSCRIPTION)
+
+    (added,) = run()
+    assert (added.reference, added.status) == ("3GPP2-X.S0057", "new")
+    assert [p.relative_to(corpus).as_posix() for p in added.written] == [
+        "3gpp2/xs0057-0_v2.0.dad",
+        "raw/3gpp2/xs0057-0_v2.0.raw.dad",
+    ]
+
+
+def test_a_3gpp2_transcription_from_another_versions_rendering_is_refused(
+    tmp_path,
+):
+    _, run = _run_transcriptions(
+        tmp_path, _TGPP2_TRANSCRIPTION.replace("; Version: 2.0", "; Version: 1.0")
+    )
+
+    with pytest.raises(ValueError, match=r"X\.S0057-<revision>_v1\.0_<date>\.pdf"):
+        run()
