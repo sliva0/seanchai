@@ -336,6 +336,20 @@ title = "Diameter load-information conveyance"
 number = 9390
 title = "Diameter group signaling"
 
+# oneM2M specifications, each pinned to one version of one release: the
+# document library serves only a document id's latest revision, so the
+# version is stated here and the download fails when the file served carries
+# another. Release 2 is the line TS 32.299 [301] cites; ETSI's mirror (TS 118
+# 104 V2.7.1) is PDF only, and V2.35.0 prints table A.4-1, clause A.5 and
+# M2M-Information's ABNF as V2.7.1 does.
+[[onem2m]]
+number = "0004"
+title = "Service Layer Core Protocol"
+release = 2
+version = "2.35.0"
+document_id = 36771
+reason = "Annex A binds Mch to Diameter accounting; TS 32.299 re-uses its M2M-Information."
+
 # Wireshark's Diameter dictionary — the independent oracle `seanchai
 # crosscheck` compares extracted codes, vendor-ids and types against. The
 # whole directory is needed, not just dictionary.xml: the dictionary is split

@@ -1,11 +1,11 @@
 # The downloader
 
 `src/seanchai/downloader/` fetches the catalog in its `specs.toml` — 3GPP
-archives with their ETSI PDF renderings, the plain-text RFCs, and Wireshark's
-Diameter dictionary — into the git-ignored `specifications/`, converts the
-archives that ship a legacy binary `.doc` to `.docx` with headless
-LibreOffice, and writes `specifications/manifest.json` with sha256 and size
-per artifact. Standard library plus pypdf and python-docx for validation and
+archives with their ETSI PDF renderings, the plain-text RFCs, oneM2M's Word
+originals at a pinned version, and Wireshark's Diameter dictionary — into the
+git-ignored `specifications/`, converts every legacy binary `.doc` to `.docx`
+with headless LibreOffice, and writes `specifications/manifest.json` with
+sha256 and size per artifact. Standard library plus pypdf and python-docx for validation and
 the `soffice` executable (unless `--no-convert`); the module returns records, reports progress through a callback and raises
 `DownloadError`, and the CLI does the printing.
 
@@ -24,10 +24,11 @@ specifications/
   3gpp/Rel-18/TS_29.272/   extracted archives          ┐
   3gpp/Rel-18/PDF/         ETSI renderings             │ published tree,
   converted/               LibreOffice conversions     │ swapped in whole
+  onem2m/Release-2/TS-0004/  the clean oneM2M document │
   rfc/  wireshark/         RFC texts, the dictionary   ┘
   archives/                download cache: every file fetched, never pruned
     3gpp-rel-18/29272-i60.zip  29272-i70.zip
-    etsi/18.07.00_60/  rfc/  wireshark/v4.7.2/
+    etsi/18.07.00_60/  onem2m/TS-0004-V2_35_0.zip  rfc/  wireshark/v4.7.2/
   versions/TS29.272/18.6.0/   an older version, on request
   .staging/                a run in progress
 ```
@@ -136,6 +137,27 @@ for catalog experiments, not for refreshing the corpus.
   the flag stays a failure, whose message names the flag: whether a run's
   manifest can rebuild the whole corpus depends on what the run was asked,
   never on what happens to be installed.
+- **oneM2M documents are pinned by the catalog, not discovered.** An
+  `[[onem2m]]` entry names the document (`number = "0004"`), its release,
+  version and the document library's id; TS-0004 Release 2 is V2.35.0, the
+  Word original of the line ETSI mirrors only as PDF (TS 118 104 V2.7.1).
+  The library serves a document id's latest revision with no archive of
+  earlier ones
+  (`https://member.onem2m.org/Application/documentapp/downloadLatestRevision/default.aspx?docID=36771`,
+  no login), so the version is the catalog's to state and the download's
+  to check: the zip must hold exactly one top-level
+  `TS-0004-…-V2_35_0(cl).doc`, and one carrying another version fails the
+  run naming it, rather than replace the document under a committed corpus.
+  Once fetched, the pinned zip is the cache's
+  (`archives/onem2m/TS-0004-V2_35_0.zip`) and later runs read it from
+  disk. Only the clean `(cl)` file is extracted, to
+  `onem2m/Release-2/TS-0004/`; the zip's revision-marked `(rm)` twin and
+  its `__MACOSX/` metadata are not. It is converted like a 3GPP legacy
+  `.doc` (`converted/onem2m/Release-2/TS-0004/…(cl).docx`), recorded in
+  `conversions` the same way, and `--no-convert` leaves it unconverted
+  with `conversions: []`. The record's family is `oneM2M`, its
+  `source_version` the pinned version, and it has no PDF: no rendering of
+  V2.35.0 exists to attach pages from.
 - A failed download cancels the remaining jobs; running ones finish.
 - 3GPP and ETSI index pages are scraped with regexes over raw HTML — fine
   for the listing formats, brittle if the markup changes.

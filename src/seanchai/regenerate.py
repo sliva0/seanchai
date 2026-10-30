@@ -377,6 +377,31 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
                 f"3gpp/{release.lower()}",
                 unconverted,
             )
+        elif record["family"] == "oneM2M":
+            # Always a legacy `.doc`, read through its conversion; no PDF
+            # rendering of the same version exists, so no pages, and the
+            # link is oneM2M's download.
+            converted = [
+                root / conversion["file"]
+                for conversion in record.get("conversions") or ()
+            ]
+            legacy = [f for f in files if f.suffix == ".doc"]
+            if not converted and not legacy:
+                continue
+            reference = ast.spec_ref(record["identifier"])
+            # "oneM2M TS-0004" V2.35.0 → "ts-0004-v2_35_0", the name oneM2M
+            # gives its file, less the title: "TS-0004-Service_Layer_Core_
+            # Protocol-V2_35_0(cl).doc".
+            version = record["source_version"].replace(".", "_")
+            sources[reference] = _Source(
+                reference,
+                converted[0] if converted else legacy[0],
+                None,
+                record["url"],
+                "onem2m",
+                unconverted=not converted,
+                stem=f"{reference.removeprefix('oneM2M-').lower()}-v{version}",
+            )
     return sources
 
 

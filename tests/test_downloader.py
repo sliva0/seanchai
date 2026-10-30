@@ -64,13 +64,20 @@ reason = "For tests"
 number = 9999
 title = "Test RFC"
 
+[[onem2m]]
+number = "0004"
+title = "Service Layer Core Protocol"
+release = 2
+version = "2.35.0"
+document_id = 36771
+
 [wireshark]
 tag = "v9.9.9"
 path = "resources/protocols/diameter"
 """.strip()
     )
 
-    tgpp, rfcs, wireshark = downloader.load_catalog(catalog)
+    tgpp, rfcs, wireshark, onem2m = downloader.load_catalog(catalog)
 
     assert tgpp == (
         downloader.ThreeGppSpec(
@@ -86,6 +93,9 @@ path = "resources/protocols/diameter"
     assert wireshark == downloader.WiresharkDictionary(
         tag="v9.9.9", path="resources/protocols/diameter"
     )
+    (document,) = onem2m
+    assert document.identifier == "oneM2M TS-0004"
+    assert document.file_version == "V2_35_0"
 
 
 @pytest.mark.parametrize("status", [503, 404], ids=["transient", "permanent"])
@@ -566,7 +576,7 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
         output,
         workers=2,
         extract=False,
-        catalog=(
+        catalog=downloader.Catalog(
             (downloader.ThreeGppSpec("29.999", "Test TS"),),
             (downloader.RfcSpec(9999, "Test RFC"),),
             SHARK,
@@ -610,7 +620,7 @@ def test_a_failed_run_leaves_the_previous_tree_and_manifest_as_they_were(
     # publishes nothing until every entry has succeeded.
     _serve(local_http_server, monkeypatch)
     output = tmp_path / "corpus"
-    catalog = (
+    catalog = downloader.Catalog(
         (
             downloader.ThreeGppSpec("29.998", "Fine"),
             downloader.ThreeGppSpec("29.999", "Broken"),
@@ -717,7 +727,9 @@ def test_download_version_fetches_one_older_version_into_its_own_tree(
         "/etsi_ts/129900_129999/129999/18.06.00_60/ts_129999v180600p.pdf",
         _pdf_bytes(),
     )
-    catalog = ((downloader.ThreeGppSpec("29.999", "Test TS"),), (), SHARK)
+    catalog = downloader.Catalog(
+        (downloader.ThreeGppSpec("29.999", "Test TS"),), (), SHARK
+    )
 
     manifest_path = downloader.download_version(
         "TS29.999", "18.6.0", output, catalog=catalog
@@ -891,7 +903,9 @@ def test_a_failed_conversion_fails_the_run_and_publishes_nothing(
     with pytest.raises(downloader.DownloadError, match=message):
         downloader.download_corpus(
             output,
-            catalog=((downloader.ThreeGppSpec("29.999", "Test TS"),), (), SHARK),
+            catalog=downloader.Catalog(
+                (downloader.ThreeGppSpec("29.999", "Test TS"),), (), SHARK
+            ),
         )
 
     # The previous manifest still describes the previous tree, which the
@@ -922,7 +936,9 @@ def test_download_corpus_converts_a_legacy_doc_unless_asked_not_to(
 
     downloader.download_corpus(
         output,
-        catalog=((downloader.ThreeGppSpec("29.999", "Test TS"),), (), SHARK),
+        catalog=downloader.Catalog(
+            (downloader.ThreeGppSpec("29.999", "Test TS"),), (), SHARK
+        ),
         report=progress.append,
         convert=convert,
     )
@@ -979,3 +995,116 @@ def test_a_timed_out_conversion_kills_the_whole_process_group(tmp_path, monkeypa
         time.sleep(0.05)
     else:
         pytest.fail(f"the launcher's child {child} outlived the timeout")
+
+
+ONEM2M = downloader.OneM2MSpec(
+    number="0004",
+    title="Service Layer Core Protocol",
+    release=2,
+    version="2.35.0",
+    document_id=36771,
+)
+
+
+def _onem2m_zip(version: str = "V2_35_0") -> bytes:
+    """oneM2M's zip as published: the clean and revision-marked documents,
+    each with macOS resource-fork metadata beside it."""
+    stem = f"TS-0004-Service_Layer_Core_Protocol-{version}"
+    return _zip_bytes(
+        **{
+            f"{stem}(cl).doc": b"clean",
+            f"__MACOSX__._{stem}(cl).doc": b"fork",
+            f"{stem}(rm).doc": b"marked",
+            f"__MACOSX__._{stem}(rm).doc": b"fork",
+        }
+    )
+
+
+def _serve_onem2m(local_http_server, monkeypatch, *served: bytes) -> str:
+    base = _serve(local_http_server, monkeypatch)
+    monkeypatch.setattr(
+        downloader, "ONEM2M_DOWNLOAD_URL", f"{base}/onem2m/{{document_id}}"
+    )
+    local_http_server.route("/onem2m/36771", *served)
+    return f"{base}/onem2m/36771"
+
+
+@pytest.mark.parametrize("convert", [True, False], ids=["convert", "no-convert"])
+def test_a_onem2m_document_is_fetched_pinned_and_its_clean_copy_converted(
+    tmp_path, local_http_server, monkeypatch, convert
+):
+    calls = _fake_soffice(monkeypatch)
+    url = _serve_onem2m(local_http_server, monkeypatch, _onem2m_zip())
+    output = tmp_path / "corpus"
+    progress = []
+
+    downloader.download_corpus(
+        output,
+        catalog=downloader.Catalog((), (), SHARK, (ONEM2M,)),
+        report=progress.append,
+        convert=convert,
+    )
+
+    manifest = json.loads((output / "manifest.json").read_text())
+    (record,) = [a for a in manifest["artifacts"] if a["family"] == "oneM2M"]
+    document = (
+        "onem2m/Release-2/TS-0004/TS-0004-Service_Layer_Core_Protocol-V2_35_0(cl).doc"
+    )
+    assert record["identifier"] == "oneM2M TS-0004"
+    assert record["url"] == url
+    assert record["source_version"] == "2.35.0"
+    # Cached under its version, and only the clean document extracted.
+    assert record["files"] == ["archives/onem2m/TS-0004-V2_35_0.zip", document]
+    assert [path.name for path in (output / "onem2m").rglob("*.doc")] == [
+        "TS-0004-Service_Layer_Core_Protocol-V2_35_0(cl).doc"
+    ]
+    if convert:
+        (conversion,) = record["conversions"]
+        assert conversion["source"] == document
+        assert conversion["file"] == (
+            "converted/onem2m/Release-2/TS-0004/"
+            "TS-0004-Service_Layer_Core_Protocol-V2_35_0(cl).docx"
+        )
+        assert (output / conversion["file"]).is_file()
+        assert len(calls) == 2
+        assert any("Downloaded oneM2M TS-0004 2.35.0 (converted" in p for p in progress)
+    else:
+        assert record["conversions"] == []
+        assert calls == []
+
+
+def test_a_newer_onem2m_revision_fails_the_download_rather_than_replace_the_pin(
+    tmp_path, local_http_server, monkeypatch
+):
+    """The endpoint serves the latest revision. Once the pinned one is cached
+    it is read from disk; a fresh fetch serving another version fails."""
+    _fake_soffice(monkeypatch)
+    _serve_onem2m(local_http_server, monkeypatch, _onem2m_zip(), _onem2m_zip("V2_36_0"))
+    output = tmp_path / "corpus"
+    catalog = downloader.Catalog((), (), SHARK, (ONEM2M,))
+    downloader.download_corpus(output, catalog=catalog)
+    downloader.download_corpus(output, catalog=catalog)
+    assert local_http_server.counts["/onem2m/36771"] == 1
+    before = _snapshot(output)
+
+    (output / "archives" / "onem2m" / "TS-0004-V2_35_0.zip").unlink()
+    with pytest.raises(
+        downloader.DownloadError,
+        match=r"oneM2M TS-0004: oneM2M now serves .*V2_36_0\(cl\)\.doc, but the"
+        r" catalog pins 2\.35\.0",
+    ):
+        downloader.download_corpus(output, catalog=catalog)
+
+    assert _snapshot(output) == {
+        name: content
+        for name, content in before.items()
+        if name != "archives/onem2m/TS-0004-V2_35_0.zip"
+    }
+
+
+def test_a_onem2m_zip_must_hold_exactly_one_clean_document(tmp_path):
+    archive = tmp_path / "TS-0004.zip"
+    archive.write_bytes(_zip_bytes(**{"TS-0004-Core-V2_35_0(rm).doc": b"marked"}))
+
+    with pytest.raises(downloader.DownloadError, match="holds 0 clean TS-0004"):
+        downloader.check_onem2m_archive(ONEM2M, archive)

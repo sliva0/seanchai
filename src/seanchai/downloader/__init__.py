@@ -2,7 +2,9 @@
 
 3GPP keeps every version of a specification as a ZIP file in its archive.
 Those ZIPs normally contain the editable DOC or DOCX specification source;
-a legacy DOC is converted to DOCX with headless LibreOffice.
+a legacy DOC is converted to DOCX with headless LibreOffice. oneM2M's
+specifications come from its document library at a catalogued version, as
+a ZIP holding a legacy DOC converted the same way.
 RFCs are downloaded as canonical plain text from the RFC Editor, and the
 official ETSI PDF renditions alongside the 3GPP sources.
 
@@ -17,9 +19,11 @@ promises.
 
 from .core import (
     CATALOG_PATH,
+    Catalog,
     Conversion,
     DownloadError,
     DownloadRecord,
+    OneM2MSpec,
     RfcSpec,
     ThreeGppSpec,
     download_corpus,
@@ -29,9 +33,11 @@ from .core import (
 
 __all__ = [
     "CATALOG_PATH",
+    "Catalog",
     "Conversion",
     "DownloadError",
     "DownloadRecord",
+    "OneM2MSpec",
     "RfcSpec",
     "ThreeGppSpec",
     "download_corpus",

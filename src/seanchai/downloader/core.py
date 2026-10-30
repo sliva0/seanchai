@@ -37,6 +37,7 @@ import zipfile
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
+from typing import NamedTuple
 
 import docx
 import pypdf
@@ -54,6 +55,13 @@ WIRESHARK_TREE_URL = (
     "?path={path}&ref={tag}&per_page=100"
 )
 WIRESHARK_RAW_URL = "https://gitlab.com/wireshark/wireshark/-/raw/{tag}/{path}/{name}"
+# oneM2M's document library: no login, served as application/octet-stream.
+# The endpoint always serves a document's latest revision, so the catalog pins
+# the version and the download checks the file it got (`OneM2MSpec`).
+ONEM2M_DOWNLOAD_URL = (
+    "https://member.onem2m.org/Application/documentapp/downloadLatestRevision/"
+    "default.aspx?docID={document_id}"
+)
 USER_AGENT = "diameter-spec-corpus-downloader/1.0"
 # LibreOffice, for the archives that still ship a legacy binary `.doc` (TS
 # 32.299 and seven more): the extractor reads only `.docx`.
@@ -67,7 +75,7 @@ SOFFICE_TIMEOUT = 600
 # swaps it in whole (`publish`). `versions/<SpecRef>/<version>/` holds an
 # older version fetched on request, as a tree of the same shape.
 CACHE = "archives"
-PUBLISHED = ("3gpp", "converted", "rfc", "wireshark")
+PUBLISHED = ("3gpp", "converted", "onem2m", "rfc", "wireshark")
 MANIFEST = "manifest.json"
 STAGING = ".staging"
 PREVIOUS = ".previous"
@@ -104,6 +112,46 @@ class WiresharkDictionary:
     path: str
 
 
+@dataclass(frozen=True)
+class OneM2MSpec:
+    """A oneM2M Technical Specification, pinned to one version of one release.
+
+    oneM2M publishes the Word original, which ETSI's TS 118 1xx mirror does
+    not (PDF only), as a zip of a clean `(cl)` and a revision-marked `(rm)`
+    legacy `.doc`. Its download endpoint serves whatever revision is latest
+    for the document id, with no archive of earlier ones to select from, so
+    the version is the catalog's and the downloaded file must carry it
+    (`check_onem2m_archive`): a newer upload fails the run rather than
+    replacing the document under a committed corpus.
+    """
+
+    number: str  # "0004"
+    title: str
+    release: int
+    version: str  # "2.35.0"
+    document_id: int
+    reason: str = "Defines Diameter commands, command ABNF, AVPs, or AVP mappings."
+
+    @property
+    def identifier(self) -> str:
+        """The title `ast.spec_ref` reads: "oneM2M TS-0004"."""
+        return f"oneM2M TS-{self.number}"
+
+    @property
+    def file_version(self) -> str:
+        """The version as oneM2M's file names spell it: "V2_35_0"."""
+        return "V" + self.version.replace(".", "_")
+
+
+class Catalog(NamedTuple):
+    """`specs.toml`, read."""
+
+    tgpp: tuple[ThreeGppSpec, ...]
+    rfc: tuple[RfcSpec, ...]
+    wireshark: WiresharkDictionary
+    onem2m: tuple[OneM2MSpec, ...] = ()
+
+
 CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
 
 
@@ -111,9 +159,7 @@ class DownloadError(RuntimeError):
     """Anything that stops the corpus being fetched as asked."""
 
 
-def load_catalog(
-    path: Path | None = None,
-) -> tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]:
+def load_catalog(path: Path | None = None) -> Catalog:
     """Read the curated specification catalog from specs.toml.
 
     Called on demand rather than at import: reading a file as a side effect of
@@ -126,12 +172,13 @@ def load_catalog(
         tgpp = tuple(ThreeGppSpec(**entry) for entry in data["tgpp"])
         rfc = tuple(RfcSpec(**entry) for entry in data["rfc"])
         wireshark = WiresharkDictionary(**data["wireshark"])
+        onem2m = tuple(OneM2MSpec(**entry) for entry in data.get("onem2m", ()))
     except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError) as error:
         raise DownloadError(
             f"cannot read the specification catalog {path}:"
             f" {type(error).__name__}: {error}"
         ) from error
-    return tgpp, rfc, wireshark
+    return Catalog(tgpp, rfc, wireshark, onem2m)
 
 
 @dataclass
@@ -859,6 +906,100 @@ def download_3gpp(
     )
 
 
+def check_onem2m_archive(spec: OneM2MSpec, path: Path) -> str:
+    """Validate a oneM2M zip and return the name of its clean `.doc`.
+
+    The zip holds `TS-0004-Service_Layer_Core_Protocol-V2_35_0(cl).doc`, its
+    revision-marked `(rm)` twin and macOS `__MACOSX/` metadata; the `(cl)`
+    file at the top level is the document. Its version must be the one
+    catalogued: the endpoint serves the latest revision, and one that moved
+    on is a decision to make in `specs.toml`, not a silent upgrade.
+    """
+    validate_zip(path)
+    with zipfile.ZipFile(path) as zipped:
+        names = zipped.namelist()
+    pattern = re.compile(
+        rf"TS-{re.escape(spec.number)}-[^/]*-(?P<version>V\d+_\d+_\d+)\(cl\)\.doc"
+    )
+    found = [(name, match) for name in names if (match := pattern.fullmatch(name))]
+    if len(found) != 1:
+        raise DownloadError(
+            f"{path} holds {len(found)} clean TS-{spec.number} documents"
+            f" ('(cl).doc' at its top level), not one: {', '.join(names)}"
+        )
+    ((name, match),) = found
+    if match["version"] != spec.file_version:
+        raise DownloadError(
+            f"{spec.identifier}: oneM2M now serves {name}, but the catalog pins"
+            f" {spec.version} ({spec.file_version}); a newer revision is a"
+            " version to adopt in specs.toml, not one to take silently"
+        )
+    return name
+
+
+def download_onem2m(
+    spec: OneM2MSpec,
+    output: Path,
+    tree: Path,
+    extract: bool,
+    convert: bool = True,
+) -> DownloadRecord:
+    """Fetch one pinned oneM2M specification into the cache, staged in `tree`.
+
+    Cached by the version-bearing name (`archives/onem2m/TS-0004-V2_35_0.zip`),
+    so once fetched the pinned version is read from disk even after oneM2M
+    publishes the next. Only the clean `(cl)` document is extracted, to
+    `onem2m/Release-2/TS-0004/`, and converted like a 3GPP legacy `.doc`;
+    without `convert` its `conversions` is empty, as there.
+    """
+
+    def validate(path: Path) -> None:
+        check_onem2m_archive(spec, path)
+
+    url = ONEM2M_DOWNLOAD_URL.format(document_id=spec.document_id)
+    relative_archive = (
+        Path(CACHE) / "onem2m" / f"TS-{spec.number}-{spec.file_version}.zip"
+    )
+    archive = output / relative_archive
+    atomic_download(url, archive, validate=validate)
+    files = [str(relative_archive)]
+    conversions = None
+    if extract:
+        member = check_onem2m_archive(spec, archive)
+        spec_dir = tree / "onem2m" / f"Release-{spec.release}" / f"TS-{spec.number}"
+        document = spec_dir / member
+        try:
+            spec_dir.mkdir(parents=True, exist_ok=True)
+            with (
+                zipfile.ZipFile(archive) as zipped,
+                zipped.open(member) as source,
+                document.open("wb") as target,
+            ):
+                shutil.copyfileobj(source, target)
+        except (OSError, zipfile.BadZipFile) as error:
+            raise DownloadError(
+                f"cannot extract {member} from {archive}: {error}"
+            ) from error
+        files.append(str(document.relative_to(tree)))
+        conversions = (
+            convert_legacy_documents(spec.identifier, [document], spec_dir, tree)
+            if convert
+            else []
+        )
+    return DownloadRecord(
+        family="oneM2M",
+        identifier=spec.identifier,
+        title=spec.title,
+        url=url,
+        sha256=sha256_file(archive),
+        size=archive.stat().st_size,
+        files=files,
+        reason=spec.reason,
+        source_version=spec.version,
+        conversions=conversions,
+    )
+
+
 def download_rfc(spec: RfcSpec, output: Path, tree: Path) -> DownloadRecord:
     url = RFC_TEXT_URL.format(number=spec.number)
     relative = Path("rfc") / f"rfc{spec.number}.txt"
@@ -1031,8 +1172,7 @@ def download_corpus(
     workers: int = 6,
     extract: bool = True,
     pdfs: bool = False,
-    catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]
-    | None = None,
+    catalog: Catalog | None = None,
     report: Callable[[str], None] = lambda message: None,
     convert: bool = True,
 ) -> Path:
@@ -1051,7 +1191,7 @@ def download_corpus(
         raise DownloadError("workers must be at least 1")
     release_marker(release)
 
-    tgpp_specs, rfc_specs, wireshark = (
+    tgpp_specs, rfc_specs, wireshark, onem2m_specs = (
         catalog if catalog is not None else load_catalog()
     )
     try:
@@ -1100,6 +1240,10 @@ def download_corpus(
         jobs.extend(
             executor.submit(download_rfc, spec, output, tree) for spec in rfc_specs
         )
+        jobs.extend(
+            executor.submit(download_onem2m, spec, output, tree, extract, convert)
+            for spec in onem2m_specs
+        )
         jobs.append(executor.submit(download_wireshark, wireshark, output, tree))
 
         records: list[DownloadRecord] = []
@@ -1125,8 +1269,7 @@ def download_version(
     output: Path,
     extract: bool = True,
     pdfs: bool = True,
-    catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]
-    | None = None,
+    catalog: Catalog | None = None,
     report: Callable[[str], None] = lambda message: None,
     convert: bool = True,
 ) -> Path:
@@ -1140,7 +1283,7 @@ def download_version(
     when an earlier run fetched it; nothing else under `output` changes.
     Returns the manifest path.
     """
-    tgpp_specs = (catalog if catalog is not None else load_catalog())[0]
+    tgpp_specs = (catalog if catalog is not None else load_catalog()).tgpp
     wanted = reference.replace(" ", "").upper()
     spec = next(
         (

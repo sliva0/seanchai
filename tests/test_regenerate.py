@@ -177,6 +177,46 @@ def test_a_legacy_doc_is_read_through_the_manifest_conversion(
     ]
 
 
+@pytest.mark.parametrize("converted", [True, False], ids=["converted", "unconverted"])
+def test_a_onem2m_document_is_read_through_its_conversion_into_its_own_tree(
+    tmp_path, converted
+):
+    """oneM2M's record has no PDF; the pair is named as oneM2M names the
+    file, less its title, under `onem2m/`."""
+    source = "onem2m/Release-2/TS-0004/TS-0004-Core-V2_35_0(cl).doc"
+    conversion = {
+        "source": source,
+        "file": f"converted/{source.removesuffix('.doc')}.docx",
+    }
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "artifacts": [
+                    {
+                        "family": "oneM2M",
+                        "identifier": "oneM2M TS-0004",
+                        "files": ["archives/onem2m/TS-0004-V2_35_0.zip", source],
+                        "url": "https://example.test/download?docID=36771",
+                        "source_version": "2.35.0",
+                        "conversions": [conversion] if converted else [],
+                    }
+                ]
+            }
+        )
+    )
+
+    found = regenerate._sources(manifest)["oneM2M-TS-0004"]
+
+    assert found.document == tmp_path / (conversion["file"] if converted else source)
+    assert (found.pdf, found.link) == (
+        None,
+        "https://example.test/download?docID=36771",
+    )
+    assert (found.tree, found.stem) == ("onem2m", "ts-0004-v2_35_0")
+    assert found.unconverted is not converted
+
+
 def test_a_document_the_extractor_rejects_fails_alone(tmp_path):
     sources = tmp_path / "specifications"
     manifest, document = _manifest(sources, "29999-100")

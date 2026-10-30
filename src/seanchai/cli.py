@@ -704,14 +704,15 @@ def download(
     spec: str | None,
     spec_version: str | None,
 ) -> None:
-    """Download the curated 3GPP and RFC specification corpus.
+    """Download the curated 3GPP, RFC and oneM2M specification corpus.
 
     Every entry is staged and the whole set replaces the previous download
     only when all of it succeeded; a failed run leaves the previous one and
-    its manifest as they were. A 3GPP archive holding only a legacy `.doc` is
-    converted to `.docx` with headless LibreOffice (`soffice` on PATH), and
-    the conversion is recorded in the manifest; without LibreOffice the run
-    fails unless --no-convert says to skip the conversions.
+    its manifest as they were. A 3GPP archive holding only a legacy `.doc`,
+    and a oneM2M document, is converted to `.docx` with headless LibreOffice
+    (`soffice` on PATH), and the conversion is recorded in the manifest;
+    without LibreOffice the run fails unless --no-convert says to skip the
+    conversions.
 
     With --spec and --version, one older version is fetched into
     `versions/<SPECREF>/<VERSION>/` with a manifest of its own, for
@@ -725,7 +726,8 @@ def download(
     # Catalog loading is inside the boundary too: an unreadable or malformed
     # specs.toml is a user-facing error, not a traceback.
     with reported():
-        tgpp_specs, rfc_specs, wireshark = load_catalog()
+        catalog = load_catalog()
+        tgpp_specs, rfc_specs, wireshark, onem2m_specs = catalog
         if list_only:
             click.echo(f"3GPP specifications ({len(tgpp_specs)}):")
             for entry in tgpp_specs:
@@ -733,6 +735,12 @@ def download(
             click.echo(f"\nRFCs ({len(rfc_specs)}):")
             for rfc in rfc_specs:
                 click.echo(f"  RFC {rfc.number}: {rfc.title}")
+            click.echo(f"\noneM2M specifications ({len(onem2m_specs)}):")
+            for onem2m in onem2m_specs:
+                click.echo(
+                    f"  {onem2m.identifier} V{onem2m.version} (Release"
+                    f" {onem2m.release}): {onem2m.title}"
+                )
             click.echo(
                 f"\nWireshark Diameter dictionary: {wireshark.path} at {wireshark.tag}"
             )
@@ -744,7 +752,7 @@ def download(
                 output,
                 extract=not no_extract,
                 pdfs=pdfs,
-                catalog=(tgpp_specs, rfc_specs, wireshark),
+                catalog=catalog,
                 report=lambda message: click.echo(message, err=True),
                 convert=not no_convert,
             )
@@ -755,7 +763,7 @@ def download(
             workers=workers,
             extract=not no_extract,
             pdfs=pdfs,
-            catalog=(tgpp_specs, rfc_specs, wireshark),
+            catalog=catalog,
             report=lambda message: click.echo(message, err=True),
             convert=not no_convert,
         )
