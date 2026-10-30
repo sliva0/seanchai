@@ -793,6 +793,35 @@ Accounting-Auth-Method ::= < Enumerated AVP header: 406 >
 
 
 ; Type: Enumerated AVP
+; Name: Termination-Cause
+; Section: 9.3.5
+; Page: 66
+Termination-Cause ::= < Enumerated AVP header: 295 >
+        "User Request"             = 11
+        "Lost Carrier"             = 12
+        "Lost Service"             = 13
+        "Idle Timeout"             = 14
+        "Session Timeout"          = 15
+        "Admin Reset"              = 16
+        "Admin Reboot"             = 17
+        "Port Error"               = 18
+        "NAS Error"                = 19
+        "NAS Request"              = 20
+        "NAS Reboot"               = 21
+        "Port Unneeded"            = 22
+        "Port Preempted"           = 23
+        "Port Suspended"           = 24
+        "Service Unavailable"      = 25
+        Callback                   = 26
+        "User Error"               = 27
+        "Host Request"             = 28
+        "Supplicant Restart"       = 29
+        "Reauthentication Failure" = 30
+        "Port Reinit"              = 31
+        "Port Disabled"            = 32
+
+
+; Type: Enumerated AVP
 ; Name: Origin-AAA-Protocol
 ; Section: 9.3.6
 ; Page: 68

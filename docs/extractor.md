@@ -138,7 +138,10 @@ The declared vocabulary, with the document that forced each:
   7155: where an enumerated clause says its values are listed);
   `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
   cleared); `mixed-table-borders` and `radius-avp-codes` (5580 §6: header
-  boxes only the flags, codes come from the RADIUS Type fields in §4).
+  boxes only the flags, codes come from the RADIUS Type fields in §4);
+  `cause-mapping-table` (4005 §9.3.5: Termination-Cause's values only in a
+  RADIUS-to-Diameter mapping table); `registry-enum-values` (5778 §6.20
+  names `MIP6-Auth-Mode`'s value, only the IANA section §9.5 numbers it).
 
 Not gated: the "Y"/"N" Encrypt spellings and TS 29.338's "Must"/"Must not"
 M-bit short forms, closed vocabularies that cannot be misread.
@@ -500,11 +503,25 @@ Same definitions, different carrier:
   8581 extending 7683's `OC-Report-Type`, which `.dad` cannot express; RFC
   6733's `Inband-Security-Id` and `Session-Binding`), an Enumerated AVP
   with neither values nor a citation, and value-first lines an enumerated
-  clause holds but the reading leaves out. Two clauses have neither: RFC
-  4005's `Termination-Cause` (§9.3.5 maps RADIUS causes onto Diameter values
-  in a two-column table of worded names, extending RFC 6733's clause) and
-  RFC 5778's `MIP6-Auth-Mode` (§6.20 names `MIP6_AUTH_MN_AAA`, only the
-  IANA registry in §9.5 numbers it).
+  clause holds but the reading leaves out; no clause in the corpus has
+  neither today.
+- **Values printed outside a value list.** An Enumerated row whose own
+  clause yields nothing is read in two more shapes, each behind its quirk.
+  `cause-mapping-table`: RFC 4005's `Termination-Cause` row cites §9.3.5,
+  which "extends the definitions in the 'Termination-Cause AVP' section of
+  the Base Diameter specification" with a table mapping RADIUS
+  Acct-Terminate-Cause values onto Diameter ones (`User Request | 1 |
+  11`); the worded cause is the name, quoted, and the Diameter column the
+  value, 11–32, with the four rows' closing `[RAD802.1X]` dropped as a
+  citation. RFC 6733 §8.15 lists none of its own (it cites the IANA
+  registry), so nothing repeats. `registry-enum-values`: RFC 5778 §6.20
+  "defines only one value MIP6_AUTH_MN_AAA" without numbering it, and the
+  IANA section §9.5, a registry "for use with the enumerated MIP6-Auth-Mode
+  AVP", numbers it in a `Token | Value | Description` table. The
+  definition cites §9.5, where its values are printed, and every token must
+  be one the defining clause names, so the registry numbers values and adds
+  none. The section's "The value 0 (zero) is reserved" is read too, as a
+  reserved value.
 
 ## Strictness
 

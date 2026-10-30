@@ -266,6 +266,17 @@ QUIRKS: dict[str, str] = {
     "parenthesized-value-first": (
         "read '(0): QoS-Desired' lines as enum values (RFC 5777 clause 5.4)"
     ),
+    "cause-mapping-table": (
+        "read an Enumerated row's clause that maps RADIUS causes onto the"
+        " AVP's values in a 'Cause Value Name | RADIUS | Diameter' table,"
+        " the Diameter column the value (RFC 4005 clause 9.3.5)"
+    ),
+    "registry-enum-values": (
+        "read an Enumerated AVP's values from the IANA section that numbers"
+        " them in a 'Token | Value | Description' table, and the values its"
+        " policy reserves, where the defining clause names the values and"
+        " numbers none (RFC 5778 clauses 6.20, 9.5)"
+    ),
     "external-enum-values": (
         "read where an enumerated clause says its values are listed instead"
         " of listing them ('The supported values are listed in"
@@ -1274,9 +1285,158 @@ def _extract_definitions(
                 values=tuple(values),
             )
         )
+    by_number = {section.number: section for section in sections}
     for name in sorted(enum_rows.keys() - defined_enums):
+        row = enum_rows[name]
+        clause = by_number.get(row.section or "")
+        definition = None
+        if quirks is not None and clause is not None and row.code is not None:
+            definition = _mapped_values(
+                name, row.code, clause, quirks
+            ) or _registry_values(name, row.code, clause, sections, quirks)
+        if definition is not None:
+            definitions.append(definition)
+            continue
         warnings.append(f"enumerated AVP {name!r}: no value list found in its clause")
     return messages, definitions
+
+
+# Behind `cause-mapping-table`, RFC 4005 clause 9.3.5's table mapping RADIUS
+# Acct-Terminate-Cause values onto Termination-Cause's: the cause in words,
+# the RADIUS value, the Diameter value, and a closing reference tag on four
+# rows (`Supplicant Restart | 19 | 29 |  [RAD802.1X]`), which is the row's
+# citation, not its name.
+_CAUSE_MAPPING_HEADER_RE = re.compile(
+    r"^\s*Cause Value Name\s+\|\s*RADIUS\s*\|\s*Diameter\s*\|\s*$"
+)
+_CAUSE_MAPPING_ROW_RE = re.compile(
+    r"^\s*(?P<name>\S.*?)\s+\|\s*(?P<radius>\d+)\s*\|\s*(?P<diameter>\d+)\s*\|"
+    r"(?:\s*\[[^\]]+\])?\s*$"
+)
+
+
+def _table_rows(
+    texts: list[str], header: re.Pattern[str], row: re.Pattern[str], where: str
+) -> list[re.Match[str]]:
+    """The rows of the one fixed-width table under `header` in a clause: the
+    separator after the header is skipped, and every line up to the first
+    blank or separator line must be a row."""
+    starts = [index for index, text in enumerate(texts) if header.match(text)]
+    if len(starts) != 1:
+        return []
+    rows: list[re.Match[str]] = []
+    for text in texts[starts[0] + 1 :]:
+        stripped = text.strip()
+        if not rows and stripped.startswith("-"):
+            continue
+        if not stripped or stripped.startswith("-"):
+            break
+        match = row.match(text)
+        if match is None:
+            raise ExtractionError(f"{where}: unreadable table row {stripped!r}")
+        rows.append(match)
+    if not rows:
+        raise ExtractionError(f"{where}: a table header with no rows")
+    return rows
+
+
+def _mapped_values(
+    name: str, code: int, clause: _DocSection, quirks: sources.Quirks
+) -> ast.EnumeratedAvp | None:
+    """The values of an Enumerated row's clause that maps RADIUS causes onto
+    them (`cause-mapping-table`): the worded cause the name, the Diameter
+    column the value. The RADIUS column is the translation, not this AVP's."""
+    if not quirks.enabled("cause-mapping-table"):
+        return None
+    rows = _table_rows(
+        clause.texts, _CAUSE_MAPPING_HEADER_RE, _CAUSE_MAPPING_ROW_RE, clause.number
+    )
+    if not rows:
+        return None
+    quirks.fire("cause-mapping-table")
+    return ast.EnumeratedAvp(
+        name=name,
+        source=ast.SourceRef(section=clause.number, page=clause.page),
+        code=code,
+        vendor_id=None,
+        values=tuple(
+            ast.EnumValue(name=row["name"], value=int(row["diameter"])) for row in rows
+        ),
+    )
+
+
+# Behind `registry-enum-values`, RFC 5778 clause 9.5: "IANA has created a new
+# registry, ... for use with the enumerated MIP6-Auth-Mode AVP", over a
+# `Token | Value | Description` table.
+_REGISTRY_FOR_RE = re.compile(r"for use with the enumerated (?P<name>\S+) AVP")
+_REGISTRY_HEADER_RE = re.compile(r"^\s*Token\s+\|\s*Value\s+\|\s*Description\s*$")
+_REGISTRY_ROW_RE = re.compile(
+    r"^\s*(?P<name>[A-Za-z][A-Za-z0-9_-]*)\s+\|\s*(?P<value>\d+)\s*\|\s*\S.*$"
+)
+# The section's allocation policy reserving values the table does not list:
+# "The value 0 (zero) is reserved, and the maximum value is 4294967295".
+_REGISTRY_RESERVED_RE = re.compile(r"The value (?P<value>\d+)(?: \(\w+\))? is reserved")
+
+
+def _registry_values(
+    name: str,
+    code: int,
+    clause: _DocSection,
+    sections: list[_DocSection],
+    quirks: sources.Quirks,
+) -> ast.EnumeratedAvp | None:
+    """The values of an Enumerated AVP from the IANA section that numbers
+    them (`registry-enum-values`). The definition's `; Section:` is the IANA
+    one, where the values are printed; every token must be one the defining
+    clause names, so the registry supplies numbers and no values of its own.
+    A value the section reserves is a reserved range, in value order."""
+    if not quirks.enabled("registry-enum-values"):
+        return None
+    found = []
+    for section in sections:
+        prose = " ".join(" ".join(text.split()) for text in section.texts)
+        if any(match["name"] == name for match in _REGISTRY_FOR_RE.finditer(prose)):
+            found.append(section)
+    if not found:
+        return None
+    if len(found) > 1:
+        raise ExtractionError(
+            f"{name}: {len(found)} registries for its values:"
+            f" {[section.number for section in found]}"
+        )
+    registry = found[0]
+    rows = _table_rows(
+        registry.texts, _REGISTRY_HEADER_RE, _REGISTRY_ROW_RE, registry.number
+    )
+    if not rows:
+        raise ExtractionError(f"{registry.number}: no value table for {name}")
+    prose = " ".join(clause.texts)
+    for row in rows:
+        if not re.search(rf"\b{re.escape(row['name'])}\b", prose):
+            raise ExtractionError(
+                f"{registry.number}: {row['name']!r} is not named in {name}'s"
+                f" clause {clause.number}"
+            )
+    quirks.fire("registry-enum-values")
+    registry_prose = " ".join(" ".join(text.split()) for text in registry.texts)
+    values: list[ast.EnumValue | ast.ReservedValues] = [
+        ast.EnumValue(name=row["name"], value=int(row["value"])) for row in rows
+    ]
+    values += [
+        ast.ReservedValues(first=int(match["value"]), last=int(match["value"]))
+        for match in _REGISTRY_RESERVED_RE.finditer(registry_prose)
+    ]
+    return ast.EnumeratedAvp(
+        name=name,
+        source=ast.SourceRef(section=registry.number, page=registry.page),
+        code=code,
+        vendor_id=None,
+        values=tuple(sorted(values, key=_value_order)),
+    )
+
+
+def _value_order(value: ast.EnumValue | ast.ReservedValues) -> int:
+    return value.value if isinstance(value, ast.EnumValue) else value.first
 
 
 def _enum_value(text: str) -> ast.EnumValue | None:

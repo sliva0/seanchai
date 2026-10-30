@@ -4,14 +4,6 @@ Open work, grouped by area and ordered by value within each. Items are
 lettered so they can be referred to; a finished item is removed and its
 letter is not reused. What exists is described in the per-module documents.
 
-## Linter and corpus
-
-- **S. Read the two RFC value lists left unread.** RFC 4005's
-  `Termination-Cause` values are a RADIUS-to-Diameter mapping table of
-  worded causes (§9.3.5, extending RFC 6733's clause) and RFC 5778's
-  `MIP6-Auth-Mode` value is numbered only in its IANA registry (§9.5); both
-  still warn "no value list found".
-
 ## Sources
 
 - **K. Catalog gaps and format limits from the legacy documents.** Two

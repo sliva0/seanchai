@@ -297,3 +297,48 @@ def test_unread_value_lines_in_an_enumerated_clause_are_a_warning(tmp_path):
     assert warnings == [
         "5.3: enumerated AVP 'Prompt': 1 value line(s) not read, first '0  No Echo'"
     ]
+
+
+def test_a_mapping_table_row_that_does_not_read_is_an_error(tmp_path):
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(
+        _enumerated(
+            "   Cause Value Name              |  RADIUS   | Diameter  |\n"
+            "   ------------------------------|-----------+-----------+\n"
+            "   User Request                  |     1     |   11      |\n"
+            "   Lost Carrier                  |     2     |           |\n"
+            "   ------------------------------|-----------+-----------+\n"
+        ),
+        encoding="utf-8",
+    )
+    sources = _declare(
+        tmp_path, '[[quirk]]\nname = "cause-mapping-table"\nreason = "x"\n'
+    )
+
+    with pytest.raises(ExtractionError, match=r"5\.3: unreadable table row"):
+        rfc_text.extract(path, sources_dir=sources)
+
+
+def _registry(token: str) -> str:
+    return (
+        "9.5.  Namespaces\n\n"
+        "   IANA has created a registry for use with the enumerated Prompt AVP.\n\n"
+        "   Token                                        | Value    | Description\n"
+        "   ---------------------------------------------+----------+------------\n"
+        f"   {token:<45}| 1        | RFC 9999\n"
+    )
+
+
+def test_a_registry_value_its_clause_does_not_name_is_an_error(tmp_path):
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(
+        _enumerated("   This specification defines one value, ECHO.\n\n")
+        + _registry("NO_ECHO"),
+        encoding="utf-8",
+    )
+    sources = _declare(
+        tmp_path, '[[quirk]]\nname = "registry-enum-values"\nreason = "x"\n'
+    )
+
+    with pytest.raises(ExtractionError, match="'NO_ECHO' is not named"):
+        rfc_text.extract(path, sources_dir=sources)

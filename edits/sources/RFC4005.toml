@@ -17,3 +17,7 @@ reason = "enumerated clauses say where their values are listed instead of, or be
 [[quirk]]
 name = "worded-enum-values"
 reason = "value names printed in words: before the value, CHAP-Algorithm's one value, 'CHAP with MD5       5' (5.5), and two of the four Service-Type values 6.1 qualifies, 'Callback Login      3'; after it, the informational lists of 4.4, 5.3, 6.1, 6.10.1, 6.10.2, 6.10.4, 6.15.3, 7.2 and 7.3, '2   ISDN Sync', some wrapping onto a deeper-indented line ('Carrierless Amplitude Phase' over 'Modulation', 4.4)"
+
+[[quirk]]
+name = "cause-mapping-table"
+reason = "Termination-Cause's row cites clause 9.3.5, which prints no value list but a table mapping RADIUS Acct-Terminate-Cause causes onto Termination-Cause values, 'Cause Value Name | RADIUS | Diameter' ('User Request | 1 | 11'), extending RFC 6733's clause 8.15; the Diameter column is the value, the worded cause its name"

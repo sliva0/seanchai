@@ -171,3 +171,12 @@ MIP-Algorithm-Type ::= < Enumerated AVP header: 345 >
 MIP-Replay-Mode ::= < Enumerated AVP header: 346 >
         None      = 1
         Timestamp = 2
+
+
+; Type: Enumerated AVP
+; Name: MIP6-Auth-Mode
+; Section: 9.5
+; Page: 30
+MIP6-Auth-Mode ::= < Enumerated AVP header: 494 >
+      ; RESERVED         = 0
+        MIP6_AUTH_MN_AAA = 1
