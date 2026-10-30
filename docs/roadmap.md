@@ -14,11 +14,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **J. TS 29.230 allocation registry.** Its application/command assignments,
-  reserved AVP code ranges and multiple cited specifications need registry
-  constructs in the format; treating the AVP allocation table as local
-  definitions would lose those distinctions. Deferred until the format can
-  preserve the registry.
 - **K. Catalog gaps and format limits from the legacy documents.** Two
   TS 32.299 statements the format cannot hold yet: `refer [223]` cites
   OMA-DDS-Charging_Data, which a From cell cannot name (13 rows stay

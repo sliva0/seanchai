@@ -1,0 +1,2045 @@
+; Specification: 3GPP TS 29.230
+; Version: 18.6.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129230/18.06.00_60/ts_129230v180600p.pdf
+
+
+; Type: Registry
+; Registry: Application IDs
+; Section: 4.1
+; Table: 4.1
+; Page: 9
+; Columns: Code   Name                              Defined-In
+16777216          "3GPP Cx/Px"                      TS29.228,TS29.229
+16777217          "3GPP Sh/Ph"                      TS29.328,TS29.329
+16777218          "3GPP Re"                         TS32.296
+16777219          "3GPP Wx"                         TS29.234
+16777220          "3GPP Zn"                         TS29.109
+16777221          "3GPP Zh"                         TS29.109
+16777222          "3GPP Gq"                         TS29.209
+16777223          "3GPP Gmb"                        TS29.061
+16777224          "3GPP Gx"                         TS29.210
+16777225          "3GPP Gx over Gy"                 TS29.210
+16777226          "3GPP MM10"                       TS29.140
+16777229          "3GPP Rx"                         TS29.211
+16777230          "3GPP Pr"                         TS29.234
+16777236          "3GPP Rx"                         TS29.214
+16777238          "3GPP Gx"                         TS29.212
+16777250          "3GPP STa"                        TS29.273
+16777251          "3GPP S6a"                        TS29.272
+16777252          "3GPP S13/S13'"                   TS29.272
+16777255          "3GPP SLg"                        TS29.172
+16777264          "3GPP SWm"                        TS29.273
+16777265          "3GPP SWx"                        TS29.273
+16777266          "3GPP Gxx"                        TS29.212
+16777267          "3GPP S9"                         TS29.215
+16777268          "3GPP Zpn"                        TS29.109
+16777272          "3GPP S6b"                        TS29.273
+16777291          "3GPP SLh"                        TS29.173
+16777292          "3GPP SGmb"                       TS29.061
+16777302          "3GPP Sy"                         TS29.219
+16777303          "3GPP Sd"                         TS29.212
+16777308          "3GPP S7a"                        TS29.272
+16777309          "3GPP Tsp"                        TS29.368
+16777310          "3GPP S6m"                        TS29.336
+16777311          "3GPP T4"                         TS29.337
+16777312          "3GPP S6c"                        TS29.338
+16777313          "3GPP SGd"                        TS29.338
+16777318          "3GPP S15"                        TS29.212
+16777319          "3GPP S9a"                        TS29.215
+16777320          "3GPP S9a*"                       TS29.215
+16777335          "3GPP MB2-C"                      TS29.468
+16777336          "3GPP PC4a"                       TS29.344
+16777337          "3GPP PC2"                        TS29.343
+16777340          "3GPP PC6/PC7"                    TS29.345
+16777342          "3GPP Np"                         TS29.217
+16777345          "3GPP S6t"                        TS29.336
+16777346          "3GPP T6a/T6b"                    TS29.128
+16777347          "3GPP Ns"                         TS29.153
+16777348          "3GPP Nt"                         TS29.154
+16777349          "3GPP St"                         TS29.212
+16777350          "3GPP PC2"                        TS29.343
+16777351          "3GPP Diameter Data Management"   TS29.283
+16777355          "3GPP V4"                         TS29.388
+16777356          "3GPP V6"                         TS29.389
+16777358          "3GPP Nta"                        TS29.154
+16777363          "3GPP Sc"                         TS29.330
+
+
+; Type: Registry
+; Registry: Command Codes
+; Section: 5.1
+; Table: 5.1/1
+; Page: 11
+; Columns: Code   Name                                       Abbreviation   Defined-In
+300               User-Authorization-Request/-Answer         UAR/UAA        TS29.229
+301               Server-Assignment-Request/-Answer          SAR/SAA        TS29.229
+302               Location-Info-Request/-Answer              LIR/LIA        TS29.229
+303               Multimedia-Auth-Request/-Answer            MAR/MAA        TS29.229
+304               Registration-Termination-Request/-Answer   RTR/RTA        TS29.229
+305               Push-Profile-Request/-Answer               PPR/PPA        TS29.229
+306               User-Data-Request/-Answer                  UDR/UDA        TS29.329
+307               Profile-Update-Request/-Answer             PUR/PUA        TS29.329
+308               Subscribe-Notifications-Request/-Answer    SNR/SNA        TS29.329
+309               Push-Notification-Request/-Answer          PNR/PNA        TS29.329
+310               Boostrapping-Info-Request/Answer           BIR/BIA        TS29.109
+311               Message-Process-Request/Answer             MPR/MPA        TS29.140
+312               GBAPush-Info-Request/Answer                GPR/GPI        TS29.109
+
+
+; Type: Registry
+; Registry: Command Codes
+; Section: 5.1
+; Table: 5.1/2
+; Page: 11
+; Columns: Code   Name   Abbreviation   Defined-In
+313               -      -              -
+
+
+; Type: Registry
+; Registry: Command Codes
+; Section: 5.1
+; Table: 5.1/3
+; Page: 11
+; Columns: Code   Name                                        Abbreviation   Defined-In
+316               Update-Location-Request/Answer              ULR/ULA        TS29.272
+317               Cancel-Location-Request/Answer              CLR/CLA        TS29.272
+318               Authentication-Information-Request/Answer   AIR/AIA        TS29.272
+319               "Insert Subscriber Data-Request/Answer"     IDR/IDA        TS29.272
+320               Delete-Subscriber-Data-Request/Answer       DSR/DSA        TS29.272
+321               Purge-UE-Request/Answer                     PUR/PUA        TS29.272
+322               Reset-Request/Answer                        RSR/RSA        TS29.272
+323               Notify-Request/Answer                       NOR/NOA        TS29.272
+324               ME-Identity-Check-Request/Answer            ECR/ECA        TS29.272
+
+
+; Type: Registry
+; Registry: Command Codes
+; Section: 5.1
+; Table: 5.1/4
+; Page: 11
+; Columns: Code   Name                                                Abbreviation   Defined-In
+8388620           Provide-Location-Request/Answer                     PLR/PLA        TS29.172
+8388621           Location-Report-Request/Answer                      LRR/LRA        TS29.172
+8388622           LCS-Routing-Info-Request/Answer                     RIR/RIA        TS29.173
+8388635           Spending-Limit-Request/Answer                       SLR/SLA        TS29.219
+8388636           Spending-Status-Notification-Request/Answer         SNR/SNA        TS29.219
+8388637           TDF-Session-Request/Answer                          TSR/TSA        TS29.212
+8388731           TSSF-Notification-Request/Answer                    TNR/TNA        TS29.212
+8388638           Update-VCSG-Location-Request/Answer                 UVR/UVA        TS29.272
+8388642           Cancel-VCSG-Location-Request/Answer                 CVR/CVA        TS29.272
+8388639           Device-Action-Request/Answer                        DAR/DAA        TS29.368
+8388640           Device-Notification-Request/Answer                  DNR/DNA        TS29.368
+8388641           Subscriber-Information-Request/Answer               SIR/SIA        TS29.336
+8388718           Configuration-Information-Request/Answer            CIR/CIA        TS29.336
+8388719           Reporting-Information-Request/Answer                RIR/RIA        TS29.336
+8388726           NIDD-Information-Request/Answer                     NIR/NIA        TS29.336
+8388643           Device-Trigger-Request/Answer                       DTR/DTA        TS29.337
+8388644           Delivery-Report-Request/Answer                      DRR/DRA        TS29.337
+8388645           "MO-Forward-Short-Message Request/Answer"           OFR/OFA        TS29.338
+8388646           "MT-Forward-Short-Message Request/Answer"           TFR/TFA        TS29.338
+8388647           Send-Routing-Info-for-SM-Request/Answer             SRR/SRA        TS29.338
+8388648           Alert-Service-Centre-Request/Answer                 ALR/ALA        TS29.338
+8388649           Report-SM-Delivery-Status-Request/Answer            RDR/RDA        TS29.338
+8388656           Trigger-Establishment-Request/Answer                TER/TEA        TS29.215
+8388662           GCS-Action-Request/Answer                           GAR/GAA        TS29.468
+8388663           GCS-Notification-Request/Answer                     GNR/GNA        TS29.468
+8388664           ProSe-Subscriber-Information-Request/Answer         PIR/PIA        TS29.344
+8388665           Update-ProSe-Subscriber-Data-Request/Answer         UPR/UPA        TS29.344
+8388666           ProSe-Notify-Request/Answer                         PNR/PNA        TS29.344
+8388713           ProSe-Initial-Location-Information-Request/Answer   PSR/PSA        TS29.344
+8388668           ProSe-Authorization-Request/Answer                  PAR/PAA        TS29.345
+8388669           ProSe-Discovery-Request/Answer                      PDR/PDA        TS29.345
+8388670           ProSe-Match-Request/Answer                          PMR/PMA        TS29.345
+8388671           ProSe-Match-Report-Info-Request/Answer              PIR/PIA        TS29.345
+8388672           ProSe-Proximity-Request/Answer                      PRR/PRA        TS29.345
+8388673           ProSe-Location-Update-Request/Answer                PLR/PLA        TS29.345
+8388674           ProSe-Alert-Request/Answer                          ALR/ALA        TS29.345
+8388675           ProSe-Cancellation-Request/Answer                   RPR/RPA        TS29.345
+8388676           ProXimity-Action-Request/Answer                     PXR/PXA        TS29.343
+8388727           ProXimity-Application-Request/Answer                XAR/XAA        TS29.343
+8388720           Non-Aggregated-RUCI-Report-Request/Answer           NRR/NRA        TS29.217
+8388721           Aggregated-RUCI-Report-Request/Answer               ARR/ARA        TS29.217
+8388722           Modify-Uecontext-Request/Answer                     MUR/MUA        TS29.217
+8388724           Network-Status-Request/Answer                       NSR/NSA        TS29.153
+8388725           Network-Status-Continuous-Report-Request/Answer     NCR/NCA        TS29.153
+8388723           Background-Data-Transfer-Request/Answer             BTR/BTA        TS29.154
+8388728           Data-Pull-Request/Answer                            DPR/DPA        TS29.283
+8388729           Data-Update-Request/Answer                          DUR/DUA        TS29.283
+8388730           Notification-Data-Request/Answer                    NDR/NDA        TS29.283
+8388732           Connection-Management-Request/Answer                CMR/CMA        TS29.128
+8388733           MO-Data-Request/Answer                              ODR/ODA        TS29.128
+8388734           MT-Data-Request/Answer                              TDR/TDA        TS29.128
+8388735           Event-Configuration-Request/Answer                  ECR/ECA        TS29.154
+8388736           Event-Reporting-Request/Answer                      ERR/ERA        TS29.154
+
+
+; Type: Registry
+; Registry: AVP Codes
+; Section: 7.1
+; Table: 7.1
+; Page: 15
+; Columns: Code   Name                                                     Type               Defined-In
+100               3GPP-WLAN-APN-Id                                         OctetString        TS29.234
+101               3GPP-WLAN-QoS-Filter-Rule                                UTF8String         TS29.234
+102               3GPP-WLAN-QoS-Filter-Support                             OctetString        TS29.234
+; RESERVED 1..255 TS29.061,TS29.561,TS29.234 "backwards compatibility with 3GPP RADIUS Vendor Specific Attributes (See 3GPP TS 29.061 [13], 3GPP TS 29.561 [42] and 3GPP TS 29.234 [6])"
+; RESERVED 256..299 "future use"
+300               Authentication-Method                                    Enumerated         TS29.234
+301               Authentication-Information-SIM                           OctetString        TS29.234
+302               Authorization-Information-SIM                            OctetString        TS29.234
+303               WLAN-User-Data                                           Grouped            TS29.234
+304               Charging-Data                                            Grouped            TS29.234
+305               WLAN-Access                                              Enumerated         TS29.234
+306               WLAN-3GPP-IP-Access                                      Enumerated         TS29.234
+307               APN-Authorized                                           Grouped            TS29.234
+308               APN-Id                                                   -                  TS29.234
+309               APN-Barring-Type                                         Enumerated         TS29.234
+310               WLAN-Direct-IP-Access                                    Enumerated         TS29.234
+311               Session-Request-Type                                     Enumerated         TS29.234
+312               Routing-Policy                                           IPFilterRule       TS29.234
+313               Max-Requested-Bandwidth                                  OctetString        TS29.234
+314               Charging-Characteristics                                 "Integer"          TS29.234
+315               Charging-Nodes                                           Grouped            TS29.234
+316               Primary-OCS-Charging-Function-Name                       DiameterIdentity   TS29.234
+317               Secondary-OCS-Charging-Function-Name                     DiameterIdentity   TS29.234
+318               3GPP-AAA-Server-Name                                     DiameterIdentity   TS29.234
+319               Maximum-Number-Accesses                                  Unsigned32         TS29.234
+; RESERVED 320..399 TS29.234 "TS 29.234"
+400               GBA-UserSecSettings                                      OctetString        TS29.109
+401               Transaction-Identifier                                   OctetString        TS29.109
+402               NAF-Hostname                                             OctetString        TS29.109
+403               GAA-Service-Identifier                                   OctetString        TS29.109
+404               Key-ExpiryTime                                           Time               TS29.109
+405               ME-Key-Material                                          OctetString        TS29.109
+406               UICC-Key-Material                                        OctetString        TS29.109
+407               GBA_U-Awareness-Indicator                                Enumerated         TS29.109
+408               BootstrapInfoCreationTime                                Time               TS29.109
+409               GUSS-Timestamp                                           Time               TS29.109
+410               GBA-Type                                                 Enumerated         TS29.109
+411               UE-Id                                                    OctetString        TS29.109
+412               UE-Id-Type                                               Enumerated         TS29.109
+413               UICC-App-Label                                           OctetString        TS29.109
+414               UICC-ME                                                  Enumerated         TS29.109
+415               Requested-Key-Lifetime                                   Time               TS29.109
+416               Private-Identity-Request                                 Enumerated         TS29.109
+417               GBA-Push-Info                                            OctetString        TS29.109
+418               NAF-SA-Identifier                                        OctetString        TS29.109
+419               Security-Feature-Request                                 OctetString        TS29.109
+420               Security-Feature-Response                                OctetString        TS29.109
+421               SHA-256-Indication                                       Enumerated         TS29.109
+; RESERVED 422..499 TS29.109 "TS 29.109"
+500               Abort-Cause                                              Enumerated         TS29.209,TS29.211,TS29.214
+501               Access-Network-Charging-Address                          Address            TS29.209,TS29.211,TS29.214
+502               Access-Network-Charging-Identifier                       Grouped            TS29.209,TS29.211,TS29.214
+503               Access-Network-Charging-Identifier-Value                 OctetString        TS29.209,TS29.211,TS29.214
+504               AF-Application-Identifier                                OctetString        TS29.209,TS29.211,TS29.214
+505               AF-Charging-Identifier                                   OctetString        TS29.209,TS29.211,TS29.214
+506               Authorization-Token                                      OctetString        TS29.209,TS29.211,TS29.214
+507               Flow-Description                                         IPFilterRule       TS29.209,TS29.211,TS29.214
+508               Flow-Grouping                                            Grouped            TS29.209,TS29.211,TS29.214
+509               Flow-Number                                              Unsigned32         TS29.209,TS29.211,TS29.214
+510               Flows                                                    Grouped            TS29.209,TS29.211,TS29.214
+511               Flow-Status                                              Enumerated         TS29.209,TS29.211,TS29.214
+512               Flow-Usage                                               Enumerated         TS29.209,TS29.211,TS29.214
+513               Specific-Action                                          Enumerated         TS29.209,TS29.211,TS29.214
+514               Max-Requested-Bandwidth                                  Unsigned32         TS29.209,TS29.211,TS29.214
+515               Max-Requested-Bandwidth-DL                               Unsigned32         TS29.209,TS29.211,TS29.214
+516               Max-Requested-Bandwidth-UL                               Unsigned32         TS29.209,TS29.211,TS29.214
+517               Media-Component-Description                              Grouped            TS29.209,TS29.211,TS29.214
+518               Media-Component-Number                                   Unsigned32         TS29.209,TS29.211,TS29.214
+519               "Media-Sub-Component AVP"                                Grouped            TS29.209,TS29.211,TS29.214
+520               Media-Type                                               Enumerated         TS29.209,TS29.211,TS29.214
+521               RR-Bandwidth                                             Unsigned32         TS29.209,TS29.211,TS29.214
+522               RS-Bandwidth                                             Unsigned32         TS29.209,TS29.211,TS29.214
+523               SIP-Forking-Indication                                   Enumerated         TS29.209,TS29.211,TS29.214
+524               Codec-Data                                               OctetString        TS29.209,TS29.211,TS29.214
+525               Service-URN                                              OctetString        TS29.209,TS29.211,TS29.214
+526               Acceptable-Service-Info                                  Grouped            TS29.209,TS29.211,TS29.214
+527               Service-Info-Status                                      Enumerated         TS29.209,TS29.211,TS29.214
+528               MPS-Identifier                                           OctetString        TS29.209,TS29.211,TS29.214
+529               AF-Signalling-Protocol                                   Enumerated         TS29.209,TS29.211,TS29.214
+530               Sponsored-Connectivity-Data                              Grouped            TS29.209,TS29.211,TS29.214
+531               Sponsor-Identity                                         OctetString        TS29.209,TS29.211,TS29.214
+532               Application-Service-Provider-Identity                    OctetString        TS29.209,TS29.211,TS29.214
+533               Rx-Request-Type                                          Enumerated         TS29.209,TS29.211,TS29.214
+534               Min-Requested-Bandwidth-DL                               Unsigned32         TS29.209,TS29.211,TS29.214
+535               Min-Requested-Bandwidth-UL                               Unsigned32         TS29.209,TS29.211,TS29.214
+536               Required-Access-Info                                     Enumerated         TS29.209,TS29.211,TS29.214
+537               IP-Domain-Id                                             OctetString        TS29.209,TS29.211,TS29.214
+538               GCS-Identifier                                           OctetString        TS29.209,TS29.211,TS29.214
+539               Sharing-Key-DL                                           Unsigned32         TS29.209,TS29.211,TS29.214
+540               Sharing-Key-UL                                           Unsigned32         TS29.209,TS29.211,TS29.214
+541               Retry-Interval                                           Unsigned32         TS29.209,TS29.211,TS29.214
+542               Sponsoring-Action                                        Enumerated         TS29.209,TS29.211,TS29.214
+543               Max-Supported-Bandwidth-DL                               Unsigned32         TS29.209,TS29.211,TS29.214
+544               Max-Supported-Bandwidth-UL                               Unsigned32         TS29.209,TS29.211,TS29.214
+545               Min-Desired-Bandwidth-DL                                 Unsigned32         TS29.209,TS29.211,TS29.214
+546               Min-Desired-Bandwidth-UL                                 Unsigned32         TS29.209,TS29.211,TS29.214
+547               MCPTT-Identifier                                         OctetString        TS29.209,TS29.211,TS29.214
+548               Service-Authorization-Info                               Unsigned32         TS29.209,TS29.211,TS29.214
+549               Media-Component-Status                                   Unsigned32         TS29.209,TS29.211,TS29.214
+550               Priority-Sharing-Indicator                               Enumerated         TS29.209,TS29.211,TS29.214
+551               AF-Requested-Data                                        Unsigned32         TS29.209,TS29.211,TS29.214
+552               Content-Version                                          Unsigned64         TS29.209,TS29.211,TS29.214
+553               Pre-emption-Control-Info                                 Unsigned32         TS29.209,TS29.211,TS29.214
+554               Extended-Max-Requested-BW-DL                             Unsigned32         TS29.209,TS29.211,TS29.214
+555               Extended-Max-Requested-BW-UL                             Unsigned32         TS29.209,TS29.211,TS29.214
+556               Extended-Max-Supported-BW-DL                             Unsigned32         TS29.209,TS29.211,TS29.214
+557               Extended-Max-Supported-BW-UL                             Unsigned32         TS29.209,TS29.211,TS29.214
+558               Extended-Min-Desired-BW-DL                               Unsigned32         TS29.209,TS29.211,TS29.214
+559               Extended-Min-Desired-BW-UL                               Unsigned32         TS29.209,TS29.211,TS29.214
+560               Extended-Min-Requested-BW-DL                             Unsigned32         TS29.209,TS29.211,TS29.214
+561               Extended-Min-Requested-BW-UL                             Unsigned32         TS29.209,TS29.211,TS29.214
+562               MCVideo-Identifier                                       OctetString        TS29.209,TS29.211,TS29.214
+563               IMS-Content-Identifier                                   OctetString        TS29.209,TS29.211,TS29.214
+564               IMS-Content-Type                                         Enumerated         TS29.209,TS29.211,TS29.214
+565               Callee-Information                                       Grouped            TS29.209,TS29.211,TS29.214
+566               FLUS-Identifier                                          OctetString        TS29.209,TS29.211,TS29.214
+567               Desired-Max-Latency                                      Float32            TS29.209,TS29.211,TS29.214
+568               Desired-Max-Loss                                         Float32            TS29.209,TS29.211,TS29.214
+569               NID                                                      OctetString        TS29.209,TS29.211,TS29.214
+570               MA-Information                                           Grouped            TS29.209,TS29.211,TS29.214
+571               MA-Information-Action                                    Unsigned32         TS29.209,TS29.211,TS29.214
+572               5GS-RAN-NAS-Release-Cause                                Grouped            TS29.209,TS29.211,TS29.214
+573               5GMM-Cause                                               Unsigned32         TS29.209,TS29.211,TS29.214
+574               5GSM-Cause                                               Unsigned32         TS29.209,TS29.211,TS29.214
+575               NGAP-Cause                                               Grouped            TS29.209,TS29.211,TS29.214
+576               NGAP-Group                                               Unsigned32         TS29.209,TS29.211,TS29.214
+577               NGAP-Value                                               Unsigned32         TS29.209,TS29.211,TS29.214
+578               Wireline-User-Location-Info                              Grouped            TS29.209,TS29.211,TS29.214
+579               HFC-Node-Identifier                                      OctetString        TS29.209,TS29.211,TS29.214
+580               GLI-Identifier                                           OctetString        TS29.209,TS29.211,TS29.214
+581               Line-Type                                                Unsigned32         TS29.209,TS29.211,TS29.214
+; RESERVED 582..599 TS29.209,TS29.211,TS29.214 "TS 29.209, TS 29.211 and TS 29.214"
+600               Visited-Network-Identifier                               OctetString        TS29.229
+601               Public-Identity                                          UTF8String         TS29.229
+602               Server-Name                                              UTF8String         TS29.229
+603               Server-Capabilities                                      Grouped            TS29.229
+604               Mandatory-Capability                                     Unsigned32         TS29.229
+605               Optional-Capability                                      Unsigned32         TS29.229
+606               User-Data                                                OctetString        TS29.229
+607               SIP-Number-Auth-Items                                    Unsigned32         TS29.229
+608               SIP-Authentication-Scheme                                UTF8String         TS29.229
+609               SIP-Authenticate                                         OctetString        TS29.229
+610               SIP-Authorization                                        OctetString        TS29.229
+611               SIP-Authentication-Context                               OctetString        TS29.229
+612               SIP-Auth-Data-Item                                       Grouped            TS29.229
+613               SIP-Item-Number                                          Unsigned32         TS29.229
+614               Server-Assignment-Type                                   Enumerated         TS29.229
+615               Deregistration-Reason                                    Grouped            TS29.229
+616               Reason-Code                                              Enumerated         TS29.229
+617               Reason-Info                                              UTF8String         TS29.229
+618               Charging-Information                                     Grouped            TS29.229
+619               Primary-Event-Charging-Function-Name                     DiameterURI        TS29.229
+620               Secondary-Event-Charging-Function-Name                   DiameterURI        TS29.229
+621               Primary-Charging-Collection-Function-Name                DiameterURI        TS29.229
+622               Secondary-Charging-Collection-Function-Name              DiameterURI        TS29.229
+623               User-Authorization-Type                                  Enumerated         TS29.229
+624               User-Data-Already-Available                              Enumerated         TS29.229
+625               Confidentiality-Key                                      OctetString        TS29.229
+626               Integrity-Key                                            OctetString        TS29.229
+627               User-Data-Request-Type                                   Enumerated         TS29.229
+628               Supported-Features                                       Grouped            TS29.229
+629               Feature-List-ID                                          Unsigned32         TS29.229
+630               Feature-List                                             Unsigned32         TS29.229
+631               Supported-Applications                                   Grouped            TS29.229
+632               Associated-Identities                                    Grouped            TS29.229
+633               Originating-Request                                      Enumerated         TS29.229
+634               Wildcarded-Public-Identity                               UTF8String         TS29.229
+635               SIP-Digest-Authenticate                                  Grouped            TS29.229
+636               Wildcarded-IMPU                                          UTF8String         TS29.229
+637               UAR-Flags                                                Unsigned32         TS29.229
+638               Loose-Route-Indication                                   Enumerated         TS29.229
+639               SCSCF-Restoration-Info                                   Grouped            TS29.229
+640               Path                                                     OctetString        TS29.229
+641               Contact                                                  OctetString        TS29.229
+642               Subscription-Info                                        Grouped            TS29.229
+643               Call-ID-SIP-Header                                       OctetString        TS29.229
+644               From-SIP-Header                                          OctetString        TS29.229
+645               To-SIP-Header                                            OctetString        TS29.229
+646               Record-Route                                             OctetString        TS29.229
+647               Associated-Registered-Identities                         Grouped            TS29.229
+648               Multiple-Registration-Indication                         Enumerated         TS29.229
+649               Restoration-Info                                         Grouped            TS29.229
+650               Session-Priority                                         Enumerated         TS29.229
+651               Identity-with-Emergency-Registration                     Grouped            TS29.229
+652               Priviledged-Sender-Indication                            Enumerated         TS29.229
+653               LIA-Flags                                                Unsigned32         TS29.229
+654               Initial-CSeq-Sequence-Number                             Unsigned32         TS29.229
+655               SAR-Flags                                                Unsigned32         TS29.229
+656               Allowed-WAF-WWSF-Identities                              Grouped            TS29.229
+657               WebRTC-Authentication-Function-Name                      UTF8String         TS29.229
+658               WebRTC-Web-Server-Function-Name                          UTF8String         TS29.229
+659               RTR-Flags                                                Unsigned32         TS29.229
+660               P-CSCF-Subscription-Info                                 Grouped            TS29.229
+661               Registration-Time-Out                                    Time               TS29.229
+662               Alternate-Digest-Algorithm                               UTF8String         TS29.229
+663               Alternate-Digest-HA1                                     UTF8String         TS29.229
+664               Failed-PCSCF                                             Grouped            TS29.229
+665               PCSCF-FQDN                                               DiameterIdentity   TS29.229
+666               PCSCF-IP-Address                                         Address            TS29.229
+; RESERVED 667..699 TS29.229 "TS 29.229"
+700               User-Identity                                            Grouped            TS29.329
+701               MSISDN                                                   OctetString        TS29.329
+702               User-Data                                                OctetString        TS29.329
+703               Data-Reference                                           Enumerated         TS29.329
+704               Service-Indication                                       OctetString        TS29.329
+705               Subs-Req-Type                                            Enumerated         TS29.329
+706               Requested-Domain                                         Enumerated         TS29.329
+707               Current-Location                                         Enumerated         TS29.329
+708               Identity-Set                                             Enumerated         TS29.329
+709               Expiry-Time                                              Time               TS29.329
+710               Send-Data-Indication                                     Enumerated         TS29.329
+711               DSAI-Tag                                                 OctetString        TS29.329
+712               One-Time-Notification                                    Enumerated         TS29.329
+713               Requested-Nodes                                          Unsigned32         TS29.329
+714               Serving-Node-Indication                                  Enumerated         TS29.329
+715               Repository-Data-ID                                       Grouped            TS29.329
+716               Sequence-Number                                          Unsigned32         TS29.329
+717               Pre-paging-Supported                                     Enumerated         TS29.329
+718               Local-Time-Zone-Indication                               Enumerated         TS29.329
+719               UDR-Flags                                                Unsigned32         TS29.329
+720               Call-Reference-Info                                      Grouped            TS29.329
+721               Call-Reference-Number                                    OctetString        TS29.329
+722               AS-Number                                                OctetString        TS29.329
+; RESERVED 723..799 TS29.329 "TS 29.329"
+; RESERVED 800..822 TS32.299 "TS 32.299"
+823               Event-Type                                               Grouped            TS32.299
+824               SIP-Method                                               UTF8String         TS32.299
+825               Event                                                    UTF8String         TS32.299
+826               Content-Type                                             UTF8String         TS32.299
+827               Content-Length                                           Unsigned32         TS32.299
+828               Content-Disposition                                      UTF8String         TS32.299
+829               Role-of-Node                                             Enumerated         TS32.299
+830               User-Session-Id                                          UTF8String         TS32.299
+831               Calling-Party-Address                                    UTF8String         TS32.299
+832               Called-Party-Address                                     UTF8String         TS32.299
+833               Time-Stamps                                              Grouped            TS32.299
+834               SIP-Request-Timestamp                                    Time               TS32.299
+835               SIP-Response-Timestamp                                   Time               TS32.299
+836               Application-Server                                       UTF8String         TS32.299
+837               Application-provided-called-party-address                UTF8String         TS32.299
+838               Inter-Operator-Identifier                                Grouped            TS32.299
+839               Originating-IOI                                          UTF8String         TS32.299
+840               Terminating-IOI                                          UTF8String         TS32.299
+841               IMS-Charging-Identifier                                  UTF8String         TS32.299
+842               SDP-Session-Description                                  UTF8String         TS32.299
+843               SDP-Media-Component                                      Grouped            TS32.299
+844               SDP-Media-Name                                           UTF8String         TS32.299
+845               SDP-Media-Description                                    UTF8String         TS32.299
+846               CG-Address                                               Address            TS32.299
+847               GGSN-Address                                             Address            TS32.299
+848               Served-Party-IP-Address                                  Address            TS32.299
+849               Authorized-QoS                                           UTF8String         TS32.299
+850               Application-Server-Information                           Grouped            TS32.299
+851               Trunk-Group-Id                                           Grouped            TS32.299
+852               Incoming-Trunk-Group-Id                                  UTF8String         TS32.299
+853               Outgoing-Trunk-Group-Id                                  UTF8String         TS32.299
+854               Bearer-Service                                           OctetString        TS32.299
+855               Service-Id                                               UTF8String         TS32.299
+856               Associated-URI                                           UTF8String         TS32.299
+857               Charged-Party                                            UTF8String         TS32.299
+858               PoC-Controlling-Address                                  UTF8String         TS32.299
+859               PoC-Group-Name                                           UTF8String         TS32.299
+860               Cause                                                    Grouped            TS32.299
+861               Cause-Code                                               Integer32          TS32.299
+862               Node-Functionality                                       Enumerated         TS32.299
+863               Service-Specific-Data                                    UTF8String         TS32.299
+864               Originator                                               Enumerated         TS32.299
+865               PS-Furnish-Charging-Information                          Grouped            TS32.299
+866               PS-Free-Format-Data                                      OctetString        TS32.299
+867               PS-Append-Free-Format-Data                               Enumerated         TS32.299
+868               Time-Quota-Threshold                                     Unsigned32         TS32.299
+869               Volume-Quota-Threshold                                   Unsigned32         TS32.299
+870               Trigger-Type                                             Enumerated         TS32.299
+871               Quota-Holding-Time                                       Unsigned32         TS32.299
+872               Reporting-Reason                                         Enumerated         TS32.299
+873               Service-Information                                      Grouped            TS32.299
+874               PS-Information                                           Grouped            TS32.299
+875               Reserved                                                 -                  TS32.299
+876               IMS-Information                                          Grouped            TS32.299
+877               MMS-Information                                          Grouped            TS32.299
+878               LCS-Information                                          Grouped            TS32.299
+879               PoC-Information                                          Grouped            TS32.299
+880               MBMS-Information                                         Grouped            TS32.299
+881               Quota-Consumption-Time                                   Unsigned32         TS32.299
+882               Media-Initiator-Flag                                     Enumerated         TS32.299
+883               PoC-Server-Role                                          Enumerated         TS32.299
+884               PoC-Session-Type                                         Enumerated         TS32.299
+885               Number-Of-Participants                                   Unsigned32         TS32.299
+886               Originator-Address                                       Grouped            TS32.299
+887               Participants-Involved                                    UTF8String         TS32.299
+888               Expires                                                  Unsigned32         TS32.299
+889               Message-Body                                             Grouped            TS32.299
+890               Reserved                                                 -                  TS32.299
+891               Reserved                                                 -                  TS32.299
+892               Reserved                                                 -                  TS32.299
+893               Reserved                                                 -                  TS32.299
+894               Reserved                                                 -                  TS32.299
+895               Reserved                                                 -                  TS32.299
+896               Reserved                                                 -                  TS32.299
+897               Address-Data                                             UTF8String         TS32.299
+898               Address-Domain                                           Grouped            TS32.299
+899               Address-Type                                             Enumerated         TS32.299
+900               TMGI                                                     OctetString        TS29.061
+901               Required-MBMS-Bearer-Capabilities                        UTF8String         TS29.061
+902               MBMS-StartStop-Indication                                Enumerated         TS29.061
+903               MBMS-Service-Area                                        OctetString        TS29.061
+904               MBMS-Session-Duration                                    Unsigned32         TS29.061
+905               Alternative-APN                                          UTF8String         TS29.061
+906               MBMS-Service-Type                                        Enumerated         TS29.061
+907               MBMS-2G-3G-Indicator                                     Enumerated         TS29.061
+908               MBMS-Session-Identity                                    OctetString        TS29.061
+909               RAI                                                      UTF8String         TS29.061
+910               Additional-MBMS-Trace-Info                               OctetString        TS29.061
+911               MBMS-Time-To-Data-Transfer                               Unsigned32         TS29.061
+912               MBMS-Session-Identity-Repetition-Number                  Unsigned32         TS29.061
+913               MBMS-Required-QoS                                        UTF8String         TS29.061
+914               MBMS-Counting-Information                                Enumerated         TS29.061
+915               MBMS-User-Data-Mode-Indication                           Enumerated         TS29.061
+916               MBMS-GGSN-Address                                        UTF8String         TS29.061
+917               MBMS-GGSN-IPv6-Address                                   UTF8String         TS29.061
+918               MBMS-BMSC-SSM-IP-Address                                 UTF8String         TS29.061
+919               MBMS-BMSC-SSM-IPv6-Address                               UTF8String         TS29.061
+920               MBMS-Flow-Identifier                                     OctetString        TS29.061
+921               CN-IP-Multicast-Distribution                             Enumerated         TS29.061
+922               MBMS-HC-Indicator                                        Enumerated         TS29.061
+923               MBMS-Access-Indicator                                    Enumerated         TS29.061
+924               MBMS-GW-SSM-IP-Address                                   OctetString        TS29.061
+925               MBMS-GW-SSM-IPv6-Address                                 OctetString        TS29.061
+926               MBMS-BMSC-SSM-UDP-Port                                   OctetString        TS29.061
+927               MBMS-GW-UDP-Port                                         OctetString        TS29.061
+928               MBMS-GW-UDP-Port-Indicator                               Enumerated         TS29.061
+929               MBMS-Data-Transfer-Start                                 Unsigned64         TS29.061
+930               MBMS-Data-Transfer-Stop                                  Unsigned64         TS29.061
+931               MBMS-Flags                                               Unsigned32         TS29.061
+932               Restart-Counter                                          Unsigned32         TS29.061
+933               Diagnostic-Info                                          Unsigned32         TS29.061
+934               MBMS-Cell-List                                           OctetString        TS29.061
+; RESERVED 935..999 TS29.061 "TS 29.061"
+1000              Bearer-Usage                                             Enumerated         TS29.212
+1001              Charging-Rule-Install                                    Grouped            TS29.212
+1002              Charging-Rule-Remove                                     Grouped            TS29.212
+1003              Charging-Rule-Definition                                 Grouped            TS29.212
+1004              Charging-Rule-Base-Name                                  UTF8String         TS29.212
+1005              Charging-Rule-Name                                       OctetString        TS29.212
+1006              Event-Trigger                                            Enumerated         TS29.212
+1007              Metering-Method                                          Enumerated         TS29.212
+1008              Offline                                                  Enumerated         TS29.212
+1009              Online                                                   Enumerated         TS29.212
+1010              Precedence                                               Unsigned32         TS29.212
+1011              Reporting-Level                                          Enumerated         TS29.212
+1012              TFT-Filter                                               IPFilterRule       TS29.212
+1013              TFT-Packet-Filter-Information                            Grouped            TS29.212
+1014              ToS-Traffic-Class                                        OctetString        TS29.212
+1016              QoS-Information                                          Grouped            TS29.212
+1018              Charging-Rule-Report                                     Grouped            TS29.212
+1019              PCC-Rule-Status                                          Enumerated         TS29.212
+1020              Bearer-Identifier                                        OctetString        TS29.212
+1021              Bearer-Operation                                         Enumerated         TS29.212
+1022              Access-Network-Charging-Identifier-Gx                    Grouped            TS29.212
+1023              Bearer-Control-Mode                                      Enumerated         TS29.212
+1024              Network-Request-Support                                  Enumerated         TS29.212
+1025              Guaranteed-Bitrate-DL                                    Unsigned32         TS29.212
+1026              Guaranteed-Bitrate-UL                                    Unsigned32         TS29.212
+1027              IP-CAN-Type                                              Enumerated         TS29.212
+1028              QoS-Class-Identifier                                     Enumerated         TS29.212
+1029              QoS-Negotiation                                          Enumerated         TS29.212
+1030              QoS-Upgrade                                              Enumerated         TS29.212
+1031              Rule-Failure-Code                                        Enumerated         TS29.212
+1032              RAT-Type                                                 Enumerated         TS29.212
+1033              Event-Report-Indication                                  Grouped            TS29.212
+1034              Allocation-Retention-Priority                            Grouped            TS29.212
+1035              CoA-IP-Address                                           Address            TS29.212
+1036              Tunnel-Header-Filter                                     IPFilterRule       TS29.212
+1037              Tunnel-Header-Length                                     Unsigned32         TS29.212
+1038              Tunnel-Information                                       Grouped            TS29.212
+1039              CoA-Information                                          Grouped            TS29.212
+1040              APN-Aggregate-Max-Bitrate-DL                             Unsigned32         TS29.212
+1041              APN-Aggregate-Max-Bitrate-UL                             Unsigned32         TS29.212
+1042              Revalidation-Time                                        Time               TS29.212
+1043              Rule-Activation-Time                                     Time               TS29.212
+1044              Rule-DeActivation-Time                                   Time               TS29.212
+1045              Session-Release-Cause                                    Enumerated         TS29.212
+1046              Priority-Level                                           Unsigned32         TS29.212
+1047              Pre-emption-Capability                                   Enumerated         TS29.212
+1048              Pre-emption-Vulnerability                                Enumerated         TS29.212
+1049              Default-EPS-Bearer-QoS                                   Grouped            TS29.212
+1050              AN-GW-Address                                            Address            TS29.212
+1051              QoS-Rule-Install                                         Grouped            TS29.212
+1052              QoS-Rule-Remove                                          Grouped            TS29.212
+1053              QoS-Rule-Definition                                      Grouped            TS29.212
+1054              QoS-Rule-Name                                            OctetString        TS29.212
+1055              QoS-Rule-Report                                          Grouped            TS29.212
+1056              Security-Parameter-Index                                 OctetString        TS29.212
+1057              Flow-Label                                               OctetString        TS29.212
+1058              Flow-Information                                         Grouped            TS29.212
+1059              Packet-Filter-Content                                    IPFilterRule       TS29.212
+1060              Packet-Filter-Identifier                                 OctetString        TS29.212
+1061              Packet-Filter-Information                                Grouped            TS29.212
+1062              Packet-Filter-Operation                                  Enumerated         TS29.212
+1063              Resource-Allocation-Notification                         Enumerated         TS29.212
+1064              Session-Linking-Indicator                                Enumerated         TS29.212
+1065              PDN-Connection-ID                                        OctetString        TS29.212
+1066              Monitoring-Key                                           OctetString        TS29.212
+1067              Usage-Monitoring-Information                             Grouped            TS29.212
+1068              Usage-Monitoring-Level                                   Enumerated         TS29.212
+1069              Usage-Monitoring-Report                                  Enumerated         TS29.212
+1070              Usage-Monitoring-Support                                 Enumerated         TS29.212
+1071              CSG-Information-Reporting                                Enumerated         TS29.212
+1072              Packet-Filter-Usage                                      Enumerated         TS29.212
+1073              Charging-Correlation-Indicator                           Enumerated         TS29.212
+1074              QoS-Rule-Base-Name                                       UTF8String         TS29.212
+1075              Routing-Rule-Remove                                      Grouped            TS29.212
+1076              Routing-Rule-Definition                                  Grouped            TS29.212
+1077              Routing-Rule-Identifier                                  OctetString        TS29.212
+1078              Routing-Filter                                           Grouped            TS29.212
+1079              Routing-IP-Address                                       Address            TS29.212
+1080              Flow-Direction                                           Enumerated         TS29.212
+1081              Routing-Rule-Install                                     Grouped            TS29.212
+1082              Credit-Management-Status                                 Unsigned32         TS29.212
+1085              Redirect-Information                                     Grouped            TS29.212
+1086              Redirect-Support                                         Enumerated         TS29.212
+1087              TDF-Information                                          Grouped            TS29.212
+1088              TDF-Application-Identifier                               OctetString        TS29.212
+1089              TDF-Destination-Host                                     DiameterIdentity   TS29.212
+1090              TDF-Destination-Realm                                    DiameterIdentity   TS29.212
+1091              TDF-IP-address                                           Address            TS29.212
+1092              ADC-Rule-Install                                         Grouped            TS29.212
+1093              ADC-Rule-Remove                                          Grouped            TS29.212
+1094              ADC-Rule-Definition                                      Grouped            TS29.212
+1095              ADC-Rule-Base-Name                                       UTF8String         TS29.212
+1096              ADC-Rule-Name                                            OctetString        TS29.212
+1097              ADC-Rule-Report                                          Grouped            TS29.212
+1098              Application-Detection-Information                        Grouped            TS29.212
+1099              PS-to-CS-Session-Continuity                              Enumerated         TS29.212
+; RESERVED 1083..1084 TS29.212 "TS 29.212"
+1100              Served-User-Identity                                     Grouped            TS29.140
+1101              VASP-ID                                                  UTF8String         TS29.140
+1102              VAS-ID                                                   UTF8String         TS29.140
+1103              Trigger-Event                                            Enumerated         TS29.140
+1104              Sender-Address                                           UTF8String         TS29.140
+1105              Initial-Recipient-Address                                Grouped            TS29.140
+1106              Result-Recipient-Address                                 Grouped            TS29.140
+1107              Sequence-Number                                          Unsigned32         TS29.140
+1108              Recipient-Address                                        UTF8String         TS29.140
+1109              Routeing-Address                                         UTF8String         TS29.140
+1110              Originating-Interface                                    Enumerated         TS29.140
+1111              Delivery-Report                                          Enumerated         TS29.140
+1112              Read-Reply                                               Enumerated         TS29.140
+1113              Sender-Visibility                                        Enumerated         TS29.140
+1114              Service-Key                                              UTF8String         TS29.140
+1115              Billing-Information                                      UTF8String         TS29.140
+1116              Status                                                   Grouped            TS29.140
+1117              Status-Code                                              UTF8String         TS29.140
+1118              Status-Text                                              UTF8String         TS29.140
+; RESERVED 1119..1199 TS29.140 "TS 29.140"
+1200              Domain-Name                                              UTF8String         TS32.299
+1201              Recipient-Address                                        Grouped            TS32.299
+1202              Submission-Time                                          Time               TS32.299
+1203              MM-Content-Type                                          Grouped            TS32.299
+1204              Type-Number                                              Enumerated         TS32.299
+1205              Additional-Type-Information                              UTF8String         TS32.299
+1206              Content-Size                                             Unsigned32         TS32.299
+1207              Additional-Content-Information                           Grouped            TS32.299
+1208              Addressee-Type                                           Enumerated         TS32.299
+1209              Priority                                                 Enumerated         TS32.299
+1210              Message-ID                                               UTF8String         TS32.299
+1211              Message-Type                                             Enumerated         TS32.299
+1212              Message-Size                                             Unsigned32         TS32.299
+1213              Message-Class                                            Grouped            TS32.299
+1214              Class-Identifier                                         Enumerated         TS32.299
+1215              Token-Text                                               UTF8String         TS32.299
+1216              Delivery-Report-Requested                                Enumerated         TS32.299
+1217              Adaptations                                              Enumerated         TS32.299
+1218              Applic-ID                                                UTF8String         TS32.299
+1219              Aux-Applic-Info                                          UTF8String         TS32.299
+1220              Content-Class                                            Enumerated         TS32.299
+1221              DRM-Content                                              Enumerated         TS32.299
+1222              Read-Reply-Report-Requested                              Enumerated         TS32.299
+1223              Reply-Applic-ID                                          UTF8String         TS32.299
+1224              File-Repair-Supported                                    Enumerated         TS32.299
+1225              MBMS-User-Service-Type                                   Enumerated         TS32.299
+1226              Unit-Quota-Threshold                                     Unsigned32         TS32.299
+1227              PDP-Address                                              Address            TS32.299
+1228              SGSN-Address                                             Address            TS32.299
+1229              PoC-Session-Id                                           UTF8String         TS32.299
+1230              Deferred-Location-Even-Type                              UTF8String         TS32.299
+1231              LCS-APN                                                  UTF8String         TS32.299
+1232              LCS-Client-Id                                            Grouped            TS32.299
+1233              LCS-Client-Dialed-By-MS                                  UTF8String         TS32.299
+1234              LCS-Client-External-ID                                   UTF8String         TS32.299
+1235              LCS-Client-Name                                          Grouped            TS32.299
+1236              LCS-Data-Coding-Scheme                                   UTF8String         TS32.299
+1237              LCS-Format-Indicator                                     Enumerated         TS32.299
+1238              LCS-Name-String                                          UTF8String         TS32.299
+1239              LCS-Requestor-Id                                         Grouped            TS32.299
+1240              LCS-Requestor-Id-String                                  UTF8String         TS32.299
+1241              LCS-Client-Type                                          Enumerated         TS32.299
+1242              Location-Estimate                                        OctetString        TS32.299
+1243              Location-Estimate-Type                                   Enumerated         TS32.299
+1244              Location-Type                                            Grouped            TS32.299
+1245              Positioning-Data                                         UTF8String         TS32.299
+1246              Reserved                                                 -                  TS32.299
+1247              PDP-Context-Type                                         Enumerated         TS32.299
+1248              MMBox-Storage-Requested                                  Enumerated         TS32.299
+1249              Service-Specific-Info                                    Grouped            TS32.299
+1250              Called-Asserted-Identity                                 UTF8String         TS32.299
+1251              Requested-Party-Address                                  UTF8String         TS32.299
+1252              PoC-User-Role                                            Grouped            TS32.299
+1253              PoC-User-Role-IDs                                        UTF8String         TS32.299
+1254              PoC-User-Role-info-Units                                 Enumerated         TS32.299
+1255              Talk-Burst-Exchange                                      Grouped            TS32.299
+1256              Service-Generic-Information                              Grouped            TS32.299
+1257              Service-Specific-Type                                    Unsigned32         TS32.299
+1258              Event-Charging-TimeStamp                                 Time               TS32.299
+1259              Participant-Access-Priority                              Enumerated         TS32.299
+1260              Participant-Group                                        Grouped            TS32.299
+1261              PoC-Change-Conditions                                    Enumerated         TS32.299
+1262              PoC-Change-Time                                          Time               TS32.299
+1263              Access-Network-Information                               OctetString        TS32.299
+1264              Trigger                                                  Grouped            TS32.299
+1265              Base-Time-Interval                                       Unsigned32         TS32.299
+1266              Envelope                                                 Grouped            TS32.299
+1267              Envelope-End-Time                                        Time               TS32.299
+1268              Envelope-Reporting                                       Enumerated         TS32.299
+1269              Envelope-Start-Time                                      Time               TS32.299
+1270              Time-Quota-Mechanism                                     Grouped            TS32.299
+1271              Time-Quota-Type                                          Enumerated         TS32.299
+1272              Early-Media-Description                                  Grouped            TS32.299
+1273              SDP-TimeStamps                                           Grouped            TS32.299
+1274              SDP-Offer-Timestamp                                      Time               TS32.299
+1275              SDP-Answer-Timestamp                                     Time               TS32.299
+1276              AF-Correlation-Information                               Grouped            TS32.299
+1277              PoC-Session-Initiation-type                              Enumerated         TS32.299
+1278              Offline-Charging                                         Grouped            TS32.299
+1279              User-Participating-Type                                  Enumerated         TS32.299
+1280              Alternate-Charged-Party-Address                          UTF8String         TS32.299
+1281              IMS-Communication-Service-Identifier                     UTF8String         TS32.299
+1282              Number-Of-Received-Talk-Bursts                           Unsigned32         TS32.299
+1283              Number-Of-Talk-Bursts                                    Unsigned32         TS32.299
+1284              Received-Talk-Burst-Time                                 Unsigned32         TS32.299
+1285              Received-Talk-Burst-Volume                               Unsigned32         TS32.299
+1286              Talk-Burst-Time                                          Unsigned32         TS32.299
+1287              Talk-Burst-Volume                                        Unsigned32         TS32.299
+1288              Media-Initiator-Party                                    UTF8String         TS32.299
+; RESERVED 1289..1299 TS32.299 "TS 32.299"
+1300              PC5-Radio-Technology                                     Enumerated         TS32.299
+1301              RAN-End-Time                                             Time               TS32.299
+1302              RAN-Secondary-RAT-Usage-Report                           Grouped            TS32.299
+1303              RAN-Start-Time                                           Time               TS32.299
+1304              Secondary-RAT-Type                                       OctetString        TS32.299
+1305              Civic-Address-Information                                UTF8String         TS32.299
+1306              WLAN-Operator-Id                                         Grouped            TS32.299
+1307              WLAN-Operator-Name                                       UTF8String         TS32.299
+1308              WLAN-PLMN-Id                                             UTF8String         TS32.299
+1309              API-Content                                              UTF8String         TS32.299
+1310              API-Direction                                            Enumerated         TS32.299
+1311              API-Identifier                                           OctetString        TS32.299
+1312              API-Invocation-Timestamp                                 Time               TS32.299
+1313              API-Result-Code                                          Unsigned32         TS32.299
+1314              API-Size                                                 Unsigned64         TS32.299
+1315              API-Network-Service-Node                                 Enumerated         TS32.299
+1316              Exposure-Function-API-Information                        Grouped            TS32.299
+1317              SCEF-Address                                             Address            TS32.299
+1318              TLTRI                                                    Unsigned32         TS32.299
+1319              TTRI                                                     Unsigned32         TS32.299
+1320              3GPP-OC-Specific-Reduction                               Grouped            TS32.299
+1321              3GPP-OC-Rating-Group                                     Unsigned32         TS32.299
+1322              3GPP-OC-Request-Type                                     Enumerated         TS32.299
+1323              VoLTE-Information                                        Grouped            TS32.299
+; RESERVED 1324..1399 TS32.229 "TS 32.229"
+1400              Subscription-Data                                        Grouped            TS29.272
+1401              Terminal-Information                                     Grouped            TS29.272
+1402              IMEI                                                     UTF8String         TS29.272
+1403              Software-Version                                         UTF8String         TS29.272
+1404              QoS-Subscribed                                           UTF8String         TS29.272
+1405              ULR-Flags                                                Unsigned32         TS29.272
+1406              ULA-Flags                                                Unsigned32         TS29.272
+1407              "Visited PLMN Id"                                        OctetString        TS29.272
+1408              Requested-EUTRAN-Authentication-Info                     Grouped            TS29.272
+1409              Requested-UTRAN-GERAN-Authentication-Info                Grouped            TS29.272
+1410              Number-Of-Requested-Vectors                              Unsigned32         TS29.272
+1411              Re-Synchronization-Info                                  OctetString        TS29.272
+1412              Immediate-Response-Preferred                             Unsigned32         TS29.272
+1413              Authentication-Info                                      Grouped            TS29.272
+1414              E-UTRAN-Vector                                           Grouped            TS29.272
+1415              UTRAN-Vector                                             Grouped            TS29.272
+1416              GERAN-Vector                                             Grouped            TS29.272
+1417              Network-Access-Mode                                      Enumerated         TS29.272
+1418              HPLMN-ODB                                                Enumerated         TS29.272
+1419              Item-Number                                              Unsigned32         TS29.272
+1420              Cancellation-Type                                        Enumerated         TS29.272
+1421              DSR-Flags                                                Unsigned32         TS29.272
+1422              DSA-Flags                                                Unsigned32         TS29.272
+1423              Context-Identifier                                       Unsigned32         TS29.272
+1424              Subscriber-Status                                        Enumerated         TS29.272
+1425              Operator-Determined-Barring                              Unsigned32         TS29.272
+1426              Access-Restriction-Data                                  Unsigned32         TS29.272
+1427              APN-OI-Replacement                                       UTF8String         TS29.272
+1428              All-APN-Configurations-Included-Indicator                Enumerated         TS29.272
+1429              APN-Configuration-Profile                                Grouped            TS29.272
+1430              APN-Configuration                                        Grouped            TS29.272
+1431              EPS-Subscribed-QoS-Profile                               Grouped            TS29.272
+1432              VPLMN-Dynamic-Address-Allowed                            Enumerated         TS29.272
+1433              STN-SR                                                   OctetString        TS29.272
+1434              Alert-Reason                                             Enumerated         TS29.272
+1435              AMBR                                                     Grouped            TS29.272
+1436              CSG-Subscription-Data                                    Grouped            TS29.272
+1437              CSG-Id                                                   Unsigned32         TS29.272
+1438              PDN-GW-Allocation-Type                                   Enumerated         TS29.272
+1439              Expiration-Date                                          Time               TS29.272
+1440              RAT-Frequency-Selection-Priority-ID                      Unsigned32         TS29.272
+1441              IDA-Flags                                                Unsigned32         TS29.272
+1442              PUA-Flags                                                Unsigned32         TS29.272
+1443              NOR-Flags                                                Unsigned32         TS29.272
+1444              User-Id                                                  UTF8String         TS29.272
+1445              Equipment-Status                                         Enumerated         TS29.272
+1446              Regional-Subscription-Zone-Code                          OctetString        TS29.272
+1447              RAND                                                     OctetString        TS29.272
+1448              XRES                                                     OctetString        TS29.272
+1449              AUTN                                                     OctetString        TS29.272
+1450              KASME                                                    OctetString        TS29.272
+1451              Reserved                                                 -                  TS29.272
+1452              Trace-Collection-Entity                                  Address            TS29.272
+1453              Kc                                                       OctetString        TS29.272
+1454              SRES                                                     OctetString        TS29.272
+1455              Reserved                                                 -                  TS29.272
+1456              PDN-Type                                                 Enumerated         TS29.272
+1457              Roaming-Restricted-Due-To-Unsupported-Feature            Enumerated         TS29.272
+1458              Trace-Data                                               Grouped            TS29.272
+1459              Trace-Reference                                          OctetString        TS29.272
+1460              Reserved                                                 -                  TS29.272
+1461              Reserved                                                 -                  TS29.272
+1462              Trace-Depth                                              Enumerated         TS29.272
+1463              Trace-NE-Type-List                                       OctetString        TS29.272
+1464              Trace-Interface-List                                     OctetString        TS29.272
+1465              Trace-Event-List                                         OctetString        TS29.272
+1466              OMC-Id                                                   OctetString        TS29.272
+1467              GPRS-Subscription-Data                                   Grouped            TS29.272
+1468              Complete-Data-List-Included-Indicator                    Enumerated         TS29.272
+1469              PDP-Context                                              Grouped            TS29.272
+1470              PDP-Type                                                 OctetString        TS29.272
+1471              3GPP2-MEID                                               OctetString        TS29.272
+1472              Specific-APN-Info                                        Grouped            TS29.272
+1473              LCS-Info                                                 Grouped            TS29.272
+1474              GMLC-Number                                              OctetString        TS29.272
+1475              LCS-PrivacyException                                     Grouped            TS29.272
+1476              SS-Code                                                  OctetString        TS29.272
+1477              SS-Status                                                OctetString        TS29.272
+1478              Notification-To-UE-User                                  Enumerated         TS29.272
+1479              External-Client                                          Grouped            TS29.272
+1480              Client-Identity                                          OctetString        TS29.272
+1481              GMLC-Restriction                                         Enumerated         TS29.272
+1482              PLMN-Client                                              Enumerated         TS29.272
+1483              Service-Type                                             Grouped            TS29.272
+1484              ServiceTypeIdentity                                      Unsigned32         TS29.272
+1485              MO-LR                                                    Grouped            TS29.272
+1486              Teleservice-List                                         Grouped            TS29.272
+1487              TS-Code                                                  Enumerated         TS29.272
+1488              Call-Barring-Info                                        Grouped            TS29.272
+1489              SGSN-Number                                              OctetString        TS29.272
+1490              IDR-Flags                                                Unsigned32         TS29.272
+1491              ICS-Indicator                                            Enumerated         TS29.272
+1492              IMS-Voice-Over-PS-Sessions-Supported                     Enumerated         TS29.272
+1493              Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions        Enumerated         TS29.272
+1494              Last-UE-Activity-Time                                    Time               TS29.272
+1495              EPS-User-State                                           Grouped            TS29.272
+1496              EPS-Location-Information                                 Grouped            TS29.272
+1497              MME-User-State                                           Grouped            TS29.272
+1498              SGSN-User-State                                          Grouped            TS29.272
+1499              User-State                                               Enumerated         TS29.272
+1500              Non-3GPP-User-Data                                       Grouped            TS29.273
+1501              Non-3GPP-IP-Access                                       Enumerated         TS29.273
+1502              Non-3GPP-IP-Access-APN                                   Enumerated         TS29.273
+1503              AN-Trusted                                               Enumerated         TS29.273
+1504              ANID                                                     UTF8String         TS29.273
+1505              Trace-Info                                               Grouped            TS29.273
+1506              MIP-FA-RK                                                OctetString        TS29.273
+1507              MIP-FA-RK-SPI                                            Unsigned32         TS29.273
+1508              PPR-Flags                                                Unsigned32         TS29.273
+1509              WLAN-Identifier                                          Grouped            TS29.273
+1510              TWAN-Access-Info                                         Grouped            TS29.273
+1511              Access-Authorization-Flags                               Unsigned32         TS29.273
+1512              TWAN-Default-APN-Context-Id                              Unsigned32         TS29.273
+1513              Reserved                                                 -                  TS29.273
+1514              Reserved                                                 -                  TS29.273
+1515              Reserved                                                 -                  TS29.273
+1516              Full-Network-Name                                        OctetString        TS29.273
+1517              Short-Network-Name                                       OctetString        TS29.273
+1518              AAA-Failure-Indication                                   Unsigned32         TS29.273
+1519              Transport-Access-Type                                    Enumerated         TS29.273
+1520              DER-Flags                                                Unsigned32         TS29.273
+1521              DEA-Flags                                                Unsigned32         TS29.273
+1522              RAR-Flags                                                Unsigned32         TS29.273
+1523              DER-S6b-Flags                                            Unsigned32         TS29.273
+1524              SSID                                                     UTF8String         TS29.273
+1525              HESSID                                                   UTF8String         TS29.273
+1526              Access-Network-Info                                      Grouped            TS29.273
+1527              TWAN-Connection-Mode                                     Unsigned32         TS29.273
+1528              TWAN-Connectivity-Parameters                             Grouped            TS29.273
+1529              Connectivity-Flags                                       Unsigned32         TS29.273
+1530              TWAN-PCO                                                 OctetString        -
+1531              TWAG-CP-Address                                          Address            -
+1532              TWAG-UP-Address                                          UTF8String         -
+1533              TWAN-S2a-Failure-Cause                                   Unsigned32         -
+1534              SM-Back-Off-Timer                                        Unsigned32         -
+1535              WLCP-Key                                                 OctetString        -
+318               3GPP-AAA-Server-Name                                     DiameterIdentity   -
+1536              Origination-Time-Stamp                                   Unsigned64         -
+1537              Maximum-Wait-Time                                        Unsigned32         -
+1538              Emergency-Services                                       Unsigned32         -
+1539              AAR-Flags                                                Unsigned32         -
+1540              IMEI-Check-In-VPLMN-Result                               Unsigned32         -
+1541              ERP-Authorization                                        Unsigned32         -
+1542              High-Priority-Access-Info                                Unsigned32         -
+; RESERVED 1543..1599 TS29.273 "TS 29.273"
+1600              MME-Location-Information                                 Grouped            TS29.272
+1601              SGSN-Location-Information                                Grouped            TS29.272
+1602              E-UTRAN-Cell-Global-Identity                             OctetString        TS29.272
+1603              Tracking-Area-Identity                                   OctetString        TS29.272
+1604              Cell-Global-Identity                                     OctetString        TS29.272
+1605              Routing-Area-Identity                                    OctetString        TS29.272
+1606              Location-Area-Identity                                   OctetString        TS29.272
+1607              Service-Area-Identity                                    OctetString        TS29.272
+1608              Geographical-Information                                 OctetString        TS29.272
+1609              Geodetic-Information                                     OctetString        TS29.272
+1610              Current-Location-Retrieved                               Enumerated         TS29.272
+1611              Age-Of-Location-Information                              Unsigned32         TS29.272
+1612              Active-APN                                               Grouped            TS29.272
+1613              SIPTO-Permission                                         Enumerated         TS29.272
+1614              Error-Diagnostic                                         Enumerated         TS29.272
+1615              UE-SRVCC-Capability                                      Enumerated         TS29.272
+1616              MPS-Priority                                             Unsigned32         TS29.272
+1617              VPLMN-LIPA-Allowed                                       Enumerated         TS29.272
+1618              LIPA-Permission                                          Enumerated         TS29.272
+1619              Subscribed-Periodic-RAU-TAU-Timer                        Unsigned32         TS29.272
+1620              Ext-PDP-Type                                             OctetString        TS29.272
+1621              Ext-PDP-Address                                          Address            TS29.272
+1622              MDT-Configuration                                        Grouped            TS29.272
+1623              Job-Type                                                 Enumerated         TS29.272
+1624              Area-Scope                                               Grouped            TS29.272
+1625              List-Of-Measurements                                     Unsigned32         TS29.272
+1626              Reporting-Trigger                                        Unsigned32         TS29.272
+1627              Report-Interval                                          Enumerated         TS29.272
+1628              Report-Amount                                            Enumerated         TS29.272
+1629              Event-ThresholdRSRP                                      Unsigned32         TS29.272
+1630              Event-ThresholdRSRQ                                      Unsigned32         TS29.272
+1631              Logging-Interval                                         Enumerated         TS29.272
+1632              Logging-Duration                                         Enumerated         TS29.272
+1633              Relay-Node-Indicator                                     Enumerated         TS29.272
+1634              MDT-User-Consent                                         Enumerated         TS29.272
+1635              PUR-Flags                                                Unsigned32         TS29.272
+1636              Subscribed-VSRVCC                                        Enumerated         TS29.272
+1637              Equivalent-PLMN-List                                     Grouped            TS29.272
+1638              CLR-Flags                                                Unsigned32         TS29.272
+1639              UVR-Flags                                                Unsigned32         TS29.272
+1640              UVA-Flags                                                Unsigned32         TS29.272
+1641              VPLMN-CSG-Subscription-Data                              Grouped            TS29.272
+1642              Time-Zone                                                UTF8String         TS29.272
+1643              A-MSISDN                                                 OctetString        TS29.272
+1644              Reserved                                                 -                  TS29.272
+1645              MME-Number-for-MT-SMS                                    OctetString        TS29.272
+1646              Reserved                                                 -                  TS29.272
+1647              Reserved                                                 -                  TS29.272
+1648              SMS-Register-Request                                     Enumerated         TS29.272
+1649              Local-Time-Zone                                          Grouped            TS29.272
+1650              Daylight-Saving-Time                                     Enumerated         TS29.272
+1651              GMLC-Info                                                Grouped            TS29.272
+1652              GMLC-Name                                                DiameterIdentity   TS29.272
+1653              GMLC-Realm                                               DiameterIdentity   TS29.272
+1654              Subscription-Data-Flags                                  Unsigned32         TS29.272
+1655              Measurement-Period-LTE                                   Enumerated         TS29.272
+1656              Measurement-Period-UMTS                                  Enumerated         TS29.272
+1657              Collection-Period-RRM-LTE                                Enumerated         TS29.272
+1658              Collection-Period-RRM-UMTS                               Enumerated         TS29.272
+1659              Positioning-Method                                       OctetString        TS29.272
+1660              Measurement-Quantity                                     OctetString        TS29.272
+1661              Event-Threshold-Event-1F                                 Integer32          TS29.272
+1662              Event-Threshold-Event-1I                                 Integer32          TS29.272
+1663              Restoration-Priority                                     Unsigned32         TS29.272
+1664              SGs-MME-Identity                                         UTF8String         TS29.272
+1665              SIPTO-Local-Network-Permission                           Unsigned32         TS29.272
+1666              Coupled-Node-Diameter-ID                                 DiameterIdentity   TS29.272
+1667              WLAN-offloadability                                      Grouped            TS29.272
+1668              WLAN-offloadability-EUTRAN                               Unsigned32         TS29.272
+1669              WLAN-offloadability-UTRAN                                Unsigned32         TS29.272
+1670              Reset-ID                                                 OctetString        TS29.272
+1671              MDT-Allowed-PLMN-Id                                      OctetString        TS29.272
+1672              Adjacent-PLMNs                                           Grouped            TS29.272
+1673              Adjacent-Access-Restriction-Data                         Grouped            TS29.272
+1674              DL-Buffering-Suggested-Packet-Count                      Integer32          TS29.272
+1675              IMSI-Group-Id                                            Grouped            TS29.272
+1676              Group-Service-Id                                         Unsigned32         TS29.272
+1677              Group-PLMN-Id                                            OctetString        TS29.272
+1678              Local-Group-Id                                           OctetString        TS29.272
+1679              AIR-Flags                                                Unsigned32         TS29.272
+1680              UE-Usage-Type                                            Unsigned32         TS29.272
+1681              Non-IP-PDN-Type-Indicator                                Enumerated         TS29.272
+1682              Non-IP-Data-Delivery-Mechanism                           Unsigned32         TS29.272
+1683              Additional-Context-Identifier                            Unsigned32         TS29.272
+1684              SCEF-Realm                                               DiameterIdentity   TS29.272
+1685              Subscription-Data-Deletion                               Grouped            TS29.272
+1686              Preferred-Data-Mode                                      Unsigned32         TS29.272
+1687              Emergency-Info                                           Grouped            TS29.272
+1688              V2X-Subscription-Data                                    Grouped            TS29.272
+1689              V2X-Permission                                           Unsigned32         TS29.272
+1690              PDN-Connection-Continuity                                Unsigned32         TS29.272
+1691              eDRX-Cycle-Length                                        Grouped            TS29.272
+1692              eDRX-Cycle-Length-Value                                  OctetString        TS29.272
+1693              UE-PC5-AMBR                                              Unsigned32         TS29.272
+1694              MBSFN-Area                                               Grouped            TS29.272
+1695              MBSFN-Area-ID                                            Unsigned32         TS29.272
+1696              Carrier-Frequency                                        Unsigned32         TS29.272
+1697              RDS-Indicator                                            Enumerated         TS29.272
+1698              Service-Gap-Time                                         Unsigned32         TS29.272
+1699              Aerial-UE-Subscription-Information                       Unsigned32         TS29.272
+1700              Broadcast-Location-Assistance-Data-Types                 Unsigned64         TS29.272
+1701              Paging-Time-Window                                       Grouped            TS29.272
+1702              Operation-Mode                                           Unsigned32         TS29.272
+1703              Paging-Time-Window-Length                                OctetString        TS29.272
+1704              Core-Network-Restrictions                                Unsigned32         TS29.272
+1705              eDRX-Related-RAT                                         Grouped            TS29.272
+1706              Interworking-5GS-Indicator                               Enumerated         TS29.272
+1707              Ethernet-PDN-Type-Indicator                              Enumerated         TS29.272
+1708              Subscribed-ARPI                                          Unsigned32         TS29.272
+1709              IAB-Operation-Permission                                 Enumerated         TS29.272
+1710              V2X-Subscription-Data-Nr                                 Grouped            TS29.272
+1711              UE-PC5-QoS                                               Grouped            TS29.272
+1712              PC5-QoS-Flow                                             Grouped            TS29.272
+1713              5QI                                                      Integer32          TS29.272
+1714              PC5-Flow-Bitrates                                        Grouped            TS29.272
+1715              Guaranteed-Flow-Bitrates                                 Integer32          TS29.272
+1716              Maximum-Flow-Bitrates                                    Integer32          TS29.272
+1717              PC5-Range                                                Integer32          TS29.272
+1718              PC5-Link-AMBR                                            Integer32          TS29.272
+1719              Third-Context-ID                                         Unsigned32         TS29.272
+1720              MDT-Configuration-NR                                     Grouped            TS29.272
+1721              Event-Threshold-SINR                                     Unsigned32         TS29.272
+1722              Collection-Period-RRM-NR                                 Enumerated         TS29.272
+1723              Collection-Period-M6-NR                                  Enumerated         TS29.272
+1724              Collection-Period-M7-NR                                  Unsigned32         TS29.272
+1725              Sensor-Measurement                                       Enumerated         TS29.272
+1726              NR-Cell-Global-Identity                                  OctetString        TS29.272
+1727              Trace-Reporting-Consumer-Uri                             DiameterURI        TS29.272
+; RESERVED 1728..1799 TS29.272 "TS 29.272"
+2000              SMS-Information                                          Grouped            TS32.299
+2001              Data-Coding-Scheme                                       Integer32          TS32.299
+2002              Destination-Interface                                    Grouped            TS32.299
+2003              Interface-Id                                             UTF8String         TS32.299
+2004              Interface-Port                                           UTF8String         TS32.299
+2005              Interface-Text                                           UTF8String         TS32.299
+2006              Interface-Type                                           Enumerated         TS32.299
+2007              SM-Message-Type                                          Enumerated         TS32.299
+2008              Originating-SCCP-Address                                 Address            TS32.299
+2009              Originator-Interface                                     Grouped            TS32.299
+2010              Recipient-SCCP-Address                                   Address            TS32.299
+2011              Reply-Path-Requested                                     Enumerated         TS32.299
+2012              SM-Discharge-Time                                        Time               TS32.299
+2013              SM-Protocol-ID                                           OctetString        TS32.299
+2014              SM-Status                                                OctetString        TS32.299
+2015              SM-User-Data-Header                                      OctetString        TS32.299
+2016              SMS-Node                                                 Enumerated         TS32.299
+2017              SMSC-Address                                             Address            TS32.299
+2018              Client-Address                                           Address            TS32.299
+2019              Number-of-Messages-Sent                                  Unsigned32         TS32.299
+2020              Low-Balance-Indication                                   Enumerated         TS32.299
+2021              Remaining-Balance                                        Grouped            TS32.299
+2022              Refund-Information                                       OctetString        TS32.299
+2023              Carrier-Select-Routing-Information                       UTF8String         TS32.299
+2024              Number-Portability-Routing-Information                   UTF8String         TS32.299
+2025              PoC-Event-Type                                           Enumerated         TS32.299
+2026              Recipient-Info                                           Grouped            TS32.299
+2027              Originator-Received-Address                              Grouped            TS32.299
+2028              Recipient-Received-Address                               Grouped            TS32.299
+2029              SM-Service-Type                                          Enumerated         TS32.299
+2030              MMTel-Information                                        Grouped            TS32.299
+2031              MMTel-Sservice-Type                                      Unsigned32         TS32.299
+2032              Service-Mode                                             Unsigned32         TS32.299
+2033              Subscriber-Role                                          Enumerated         TS32.299
+2034              Number-Of-Diversions                                     Unsigned32         TS32.299
+2035              Associated-Party-Address                                 UTF8String         TS32.299
+2036              SDP-Type                                                 Enumerated         TS32.299
+2037              Change-Condition                                         Integer32          TS32.299
+2038              Change-Time                                              Time               TS32.299
+2039              Diagnostics                                              Integer32          TS32.299
+2040              Service-Data-Container                                   Grouped            TS32.299
+2041              Start-Time                                               Time               TS32.299
+2042              Stop-Time                                                Time               TS32.299
+2043              Time-First-Usage                                         Time               TS32.299
+2044              Time-Last-Usage                                          Time               TS32.299
+2045              Time-Usage                                               Unsigned32         TS32.299
+2046              Traffic-Data-Volumes                                     Grouped            TS32.299
+2047              Serving-Node-Type                                        Enumerated         TS32.299
+2048              Supplementary-Service                                    Grouped            TS32.299
+2049              Participant-Action-Type                                  Enumerated         TS32.299
+2050              PDN-Connection-Charging-ID                               Unsigned32         TS32.299
+2051              Dynamic-Address-Flag                                     Enumerated         TS32.299
+2052              Accumulated-Cost                                         Grouped            TS32.299
+2053              AoC-Cost-Information                                     Grouped            TS32.299
+2054              AoC-Information                                          Grouped            TS32.299
+2055              AoC-Request-Type                                         Enumerated         TS32.299
+2056              Current-Tariff                                           Grouped            TS32.299
+2057              Next-Tariff                                              Grouped            TS32.299
+2058              Rate-Element                                             Grouped            TS32.299
+2059              Scale-Factor                                             Grouped            TS32.299
+2060              Tariff-Information                                       Grouped            TS32.299
+2061              Unit-Cost                                                Grouped            TS32.299
+2062              Incremental-Cost                                         Grouped            TS32.299
+2063              Local-Sequence-Number                                    Unsigned32         TS32.299
+2064              Node-Id                                                  UTF8String         TS32.299
+2065              SGW-Change                                               Enumerated         TS32.299
+2066              Charging-Characteristic-Selection-Mode                   Enumerated         TS32.299
+2067              SGW-Address                                              Address            TS32.299
+2068              Dynamic-Address-Flag-Extension                           Enumerated         TS32.299
+; RESERVED 2069..2099 TS32.299 "TS 32.299"
+2100              reserved                                                 -                  TS32.299
+2101              Application-Server-ID                                    UTF8String         TS32.299
+2102              Application-Service-Type                                 Enumerated         TS32.299
+2103              Application-Session-ID                                   Unsigned32         TS32.299
+2104              Delivery-Status                                          UTF8String         TS32.299
+2105              reserved                                                 -                  TS32.299
+2106              reserved                                                 -                  TS32.299
+2107              reserved                                                 -                  TS32.299
+2108              reserved                                                 -                  TS32.299
+2109              reserved                                                 -                  TS32.299
+2110              IM-Information                                           Grouped            TS32.299
+2111              Number-Of-Messages-Successfully-Exploded                 Unsigned32         TS32.299
+2112              Number-Of-Messages-Successfully-Sent                     Unsigned32         TS32.299
+2113              Total-Number-Of-Messages-Exploded                        Unsigned32         TS32.299
+2114              Total-Number-Of-Messages-Sent                            Unsigned32         TS32.299
+2115              DCD-Information                                          Grouped            TS32.299
+2116              Content-ID                                               UTF8String         TS32.299
+2117              Content-provider-ID                                      UTF8String         TS32.299
+2118              Charge-Reason-Code                                       Enumerated         TS32.299
+; RESERVED 2119..2199 TS32.299 "TS 32.299"
+2200              Subsession-Decision-Info                                 Grouped            TS29.215
+2201              Subsession-Enforcement-Info                              Grouped            TS29.215
+2202              Subsession-Id                                            Unsigned32         TS29.215
+2203              Subsession-Operation                                     Enumerated         TS29.215
+2204              Multiple-BBERF-Action                                    Enumerated         TS29.215
+2205              UE-Local-IPv6-Prefix                                     OctetString        TS29.215
+2206              DRA-Deployment                                           Enumerated         TS29.215
+2207              PCRF-Address                                             DiameterIdentity   TS29.215
+2208              DRA-Binding                                              Enumerated         TS29.215
+; RESERVED 2209..2299 TS29.215 "TS 29.215"
+2300              reserved                                                 -                  TS32.299
+2301              SIP-Request-Timestamp-Fraction                           Unsigned32         TS32.299
+2302              SIP-Response-Timestamp-Fraction                          Unsigned32         TS32.299
+2303              Online-Charging-Flag                                     Enumerated         TS32.299
+2304              CUG-Information                                          OctetString        TS32.299
+2305              Real-Time-Tariff-Information                             Grouped            TS32.299
+2306              Tariff-XML                                               UTF8String         TS32.299
+2307              "MBMS GW-Address"                                        Address            TS32.299
+2308              IMSI-Unauthenticated-Flag                                Enumerated         TS32.299
+2309              Account-Expiration                                       Time               TS32.299
+2310              AoC-Format                                               Enumerated         TS32.299
+2311              AoC-Service                                              Enumerated         TS32.299
+2312              AoC-Service-Obligatory-Type                              Grouped            TS32.299
+2313              AoC-Service-Type                                         Enumerated         TS32.299
+2314              AoC-Subscription-Information                             Grouped            TS32.299
+2315              Preferred-AoC-Currency                                   Unsigned32         TS32.299
+2316              Reserved                                                 -                  TS32.299
+2317              CSG-Access-Mode                                          Enumerated         TS32.299
+2318              CSG-Membership-Indication                                Enumerated         TS32.299
+2319              User-CSG-Information                                     Grouped            TS32.299
+2320              Outgoing-Session-Id                                      UTF8String         TS32.299
+2321              Initial-IMS-Charging-Identifier                          UTF8String         TS32.299
+2322              IMS-Emergency-Indicator                                  Enumerated         TS32.299
+2323              MBMS-Charged-Party                                       Enumerated         TS32.299
+; RESERVED 2324..2399 TS32.299 "TS 32.299"
+2400              LMSI                                                     OctetString        TS29.173
+2401              Serving-Node                                             Grouped            TS29.173
+2402              MME-Name                                                 DiameterIdentity   TS29.173
+2403              MSC-Number                                               OctetString        TS29.173
+2404              LCS-Capabilities-Sets                                    Unsigned32         TS29.173
+2405              GMLC-Address                                             Address            TS29.173
+2406              Additional-Serving-Node                                  Grouped            TS29.173
+2407              PPR-Address                                              Address            TS29.173
+2408              MME-Realm                                                DiameterIdentity   TS29.173
+2409              SGSN-Name                                                DiameterIdentity   TS29.173
+2410              SGSN-Realm                                               DiameterIdentity   TS29.173
+2411              RIA-Flags                                                Unsigned32         TS29.173
+; RESERVED 2412..2499 TS29.173 "TS 29.173"
+2500              SLg-Location-Type                                        Enumerated         TS29.172
+2501              LCS-EPS-Client-Name                                      Grouped            TS29.172
+2502              LCS-Requestor-Name                                       Grouped            TS29.172
+2503              LCS-Priority                                             Unsigned32         TS29.172
+2504              LCS-QoS                                                  Grouped            TS29.172
+2505              Horizontal-Accuracy                                      Unsigned32         TS29.172
+2506              Vertical-Accuracy                                        Unsigned32         TS29.172
+2507              Vertical-Requested                                       Enumerated         TS29.172
+2508              Velocity-Requested                                       Enumerated         TS29.172
+2509              Response-Time                                            Enumerated         TS29.172
+2510              Supported-GAD-Shapes                                     Unsigned32         TS29.172
+2511              LCS-Codeword                                             UTF8String         TS29.172
+2512              LCS-Privacy-Check                                        Enumerated         TS29.172
+2513              Accuracy-Fulfilment-Indicator                            Enumerated         TS29.172
+2514              Age-Of-Location-Estimate                                 Unsigned32         TS29.172
+2515              Velocity-Estimate                                        OctetString        TS29.172
+2516              EUTRAN-Positioning-Data                                  OctetString        TS29.172
+2517              ECGI                                                     OctetString        TS29.172
+2518              Location-Event                                           Enumerated         TS29.172
+2519              Pseudonym-Indicator                                      Enumerated         TS29.172
+2520              LCS-Service-Type-ID                                      Unsigned32         TS29.172
+2521              LCS-Privacy-Check-Non-Session                            Grouped            TS29.172
+2522              LCS-Privacy-Check-Session                                Grouped            TS29.172
+2523              LCS-QoS-Class                                            Enumerated         TS29.172
+2524              GERAN-Positioning-Info                                   Grouped            TS29.172
+2525              GERAN-Positioning-Data                                   OctetString        TS29.172
+2526              GERAN-GANSS-Positioning-Data                             OctetString        TS29.172
+2527              UTRAN-Positioning-Info                                   Grouped            TS29.172
+2528              UTRAN-Positioning-Data                                   OctetString        TS29.172
+2529              UTRAN-GANSS-Positioning-Data                             OctetString        TS29.172
+2530              LRR-Flags                                                Unsigned32         TS29.172
+2531              LCS-Reference-Number                                     OctetString        TS29.172
+2532              Deferred-Location-Type                                   Unsigned32         TS29.172
+2533              Area-Event-Info                                          Grouped            TS29.172
+2534              Area-Definition                                          Grouped            TS29.172
+2535              Area                                                     Grouped            TS29.172
+2536              Area-Type                                                Unsigned32         TS29.172
+2537              Area-Identification                                      Grouped            TS29.172
+2538              Occurrence-Info                                          Enumerated         TS29.172
+2539              Interval-Time                                            Unsigned32         TS29.172
+2540              Periodic-LDR-Information                                 Grouped            TS29.172
+2541              Reporting-Amount                                         Unsigned32         TS29.172
+2542              Reporting-Interval                                       Unsigned32         TS29.172
+2543              Reporting-PLMN-List                                      Grouped            TS29.172
+2544              PLMN-ID-List                                             Grouped            TS29.172
+2545              PLR-Flags                                                Unsigned32         TS29.172
+2546              PLA-Flags                                                Unsigned32         TS29.172
+2547              Deferred-MT-LR-Data                                      Grouped            TS29.172
+2548              Termination-Cause                                        Unsigned32         TS29.172
+2549              LRA-Flags                                                Unsigned32         TS29.172
+2550              Periodic-Location-Support-Indicator                      Enumerated         TS29.172
+2551              Prioritized-List-Indicator                               Enumerated         TS29.172
+2552              ESMLC-Cell-Info                                          Grouped            TS29.172
+2553              Cell-Portion-ID                                          Unsigned32         TS29.172
+2554              1xRTT-RCID                                               OctetString        TS29.172
+2555              Delayed-Location-Reporting-Data                          Grouped            TS29.172
+2556              Civic-Address                                            UTF8String         TS29.172
+2557              Barometric-Pressure                                      Unsigned32         TS29.172
+2558              UTRAN-Additional-Positioning-Data                        OctetString        TS29.172
+2559              Motion-Event-Info                                        Grouped            TS29.172
+2560              Linear-Distance                                          Unsigned32         TS29.172
+2561              Maximum-Interval                                         Unsigned32         TS29.172
+2562              Sampling-Interval                                        Unsigned32         TS29.172
+2563              Reporting-Duration                                       Unsigned32         TS29.172
+2564              Reporting-Location-Requirements                          Unsigned32         TS29.172
+2565              Additional-Area                                          Grouped            TS29.172
+2566              AMF-Instance-Id                                          UTF8String         TS29.172
+; RESERVED 2567..2599 TS29.172 "TS 29.172"
+2600              reserved                                                 -                  TS32.299
+2601              IMS-Application-Reference-Identifier                     UTF8String         TS32.299
+2602              Low-Priority-Indicator                                   Enumerated         TS32.299
+2603              IP-Realm-Default-Indicator                               Enumerated         TS32.299
+2604              Local-GW-Inserted-Indicator                              Enumerated         TS32.299
+2605              Transcoder-Inserted-Indicator                            Enumerated         TS32.299
+2606              PDP-Address-Prefix-Length                                Unsigned32         TS32.299
+; RESERVED 2607..2699 TS32.299 "TS 32.299"
+2700              Reserved                                                 -                  TS32.299
+2701              Transit-IOI-List                                         UTF8String         TS32.299
+2702              Status-AS-Code                                           Enumerated         TS32.299
+2703              NNI-Information                                          Grouped            TS32.299
+2704              NNI-Type                                                 Enumerated         TS32.299
+2705              Neighbour-Node-Address                                   Address            TS32.299
+2706              Relationship-Mode                                        Enumerated         TS32.299
+2707              Session-Direction                                        Enumerated         TS32.299
+2708              From-Address                                             UTF8String         TS32.299
+2709              Access-Transfer-Information                              Grouped            TS32.299
+2710              Access-Transfer-Type                                     Enumerated         TS32.299
+2711              Related-IMS-Charging-Identifier                          UTF8String         TS32.299
+2712              Related-IMS-Charging-Identifier-Node                     Address            TS32.299
+2713              IMS-Visited-Network-Identifier                           UTF8String         TS32.299
+2714              TWAN-User-Location-Info                                  Grouped            TS32.299
+2715              Reserved                                                 -                  TS32.299
+2716              BSSID                                                    UTF8String         TS32.299
+2717              TAD-Identifier                                           Enumerated         TS32.299
+; RESERVED 2718..2799 TS32.299 "TS 32.299"
+2800              Reserved                                                 -                  TS29.212
+2801              ADC-Revalidation-Time                                    Time               TS29.212
+2802              TDF-Application-Instance-Identifier                      OctetString        TS29.212
+2803              HeNB-BBF-FQDN                                            UTF8String         TS29.212
+2804              HeNB-Local-IP-Address                                    Address            TS29.212
+2805              UE-Local-IP-Address                                      Address            TS29.212
+2806              UDP-Source-Port                                          Unsigned32         TS29.212
+2807              CS-Service-Qos-Request-Identifier                        OctetString        TS29.212
+2808              CS-Service-QoS-Request-Operation                         Enumerated         TS29.212
+2809              Mute-Notification                                        Enumerated         TS29.212
+2810              Monitoring-Time                                          Time               TS29.212
+2811              AN-GW-Status                                             Enumerated         TS29.212
+2812              User-Location-Info-Time                                  Grouped            TS29.212
+2813              CS-Service-Resource-Report                               Time               TS29.212
+2814              CS-Service-Resource-Failure-Cause                        Enumerated         TS29.212
+2815              CS-Service-Resource-Result-Operation                     Enumerated         TS29.212
+2816              Default-QoS-Information                                  Grouped            TS29.212
+2817              Default-QoS-Name                                         UTF8String         TS29.212
+2818              Conditional-APN-Aggregate-Max-Bitrate                    Grouped            TS29.212
+2819              RAN-NAS-Release-Cause                                    OctetString        TS29.212
+2820              Presence-Reporting-Area-Elements-List                    OctetString        TS29.212
+2821              Presence-Reporting-Area-Identifier                       OctetString        TS29.212
+2822              Presence-Reporting-Area-Information                      Grouped            TS29.212
+2823              Presence-Reporting-Area-Status                           Unsigned32         TS29.212
+2824              NetLoc-Access-Support                                    Unsigned32         TS29.212
+2825              Fixed-User-Location-Info                                 Grouped            TS29.212
+2826              PCSCF-Restoration-Indication                             Unsigned32         TS29.212
+2827              IP-CAN-Session-Charging-Scope                            Enumerated         TS29.212
+2828              Monitoring-Flags                                         Unsigned32         TS29.212
+2829              Default-Access                                           Enumerated         TS29.212
+2830              NBIFOM-Mode                                              Enumerated         TS29.212
+2831              NBIFOM-Support                                           Enumerated         TS29.212
+2832              RAN-Rule-Support                                         Unsigned32         TS29.212
+2833              Access-Availability-Change-Reason                        Unsigned32         TS29.212
+2834              Routing-Rule-Failure-Code                                Unsigned32         TS29.212
+2835              Routing-Rule-Report                                      Grouped            TS29.212
+2836              Traffic-Steering-Policy-Identifier-DL                    OctetString        TS29.212
+2837              Traffic-Steering-Policy-Identifier-UL                    OctetString        TS29.212
+2838              Request-Type                                             Unsigned32         TS29.212
+2839              Execution-Time                                           Time               TS29.212
+2840              Conditional-Policy-Information                           Grouped            TS29.212
+2841              Resource-Release-Notification                            Enumerated         TS29.212
+2842              Removal-Of-Access                                        Enumerated         TS29.212
+2843              TCP-Source-Port                                          Unsigned32         TS29.212
+2844              Default-Bearer-Indication                                Enumerated         TS29.212
+2845              PRA-Install                                              Grouped            TS29.212
+2846              PRA-Remove                                               Grouped            TS29.212
+2847              3GPP-PS-Data-Off-Status                                  Enumerated         TS29.212
+2848              Extended-APN-AMBR-DL                                     Unsigned32         TS29.212
+2849              Extended-APN-AMBR-UL                                     Unsigned32         TS29.212
+2850              Extended-GBR-DL                                          Unsigned32         TS29.212
+2851              Extended-GBR-UL                                          Unsigned32         TS29.212
+2852              Max-PLR-DL                                               Unsigned32         TS29.212
+2853              Max-PLR-UL                                               Unsigned32         TS29.212
+2854              UE-Status                                                Unsigned32         TS29.212
+; RESERVED 2855..2899 TS29.212 "TS 29.212"
+2900              reserved                                                 -                  TS29.219
+2901              Policy-Counter-Identifier                                Grouped            TS29.219
+2902              Policy-Counter-Status                                    UTF8String         TS29.219
+2903              Policy-Counter-Status-Report                             Grouped            TS29.219
+2904              SL-Request-Type                                          Enumerated         TS29.219
+2905              Pending-Policy-Counter-Information                       Grouped            TS29.219
+2906              Pending-Policy-Counter-Change-Time                       Time               TS29.219
+2907              SN-Request-Type                                          Unsigned32         TS29.219
+; RESERVED 2908..2999 TS29.219 "TS 29.219"
+3000              reserved                                                 -                  TS29.368
+3001              Device-Action                                            Grouped            TS29.368
+3002              Device-Notification                                      Grouped            TS29.368
+3003              Trigger-Data                                             Grouped            TS29.368
+3004              Payload                                                  OctetString        TS29.368
+3005              Action-Type                                              Enumerated         TS29.368
+3006              Priority-Indication                                      Enumerated         TS29.368
+3007              Reference-Number                                         Unsigned32         TS29.368
+3008              Request-Status                                           Enumerated         TS29.368
+3009              Delivery-Outcome                                         Enumerated         TS29.368
+3010              Application-Port-Identifier                              Unsigned32         TS29.368
+3011              Old-Reference-Number                                     Unsigned32         TS29.368
+3012              Feature-Supported-In-Final-Target                        Unsigned32         TS29.368
+; RESERVED 3013..3099 TS29.368 "TS 29.368"
+3100              IP-SM-GW-Number                                          OctetString        TS29.336
+3101              IP-SM-GW-Name                                            DiameterIdentity   TS29.336
+3102              User-Identifier                                          Grouped            TS29.336
+3103              Service-ID                                               Enumerated         TS29.336
+3104              SCS-Identity                                             OctetString        TS29.336
+3105              Service-Parameters                                       Grouped            TS29.336
+3106              T4-Parameters                                            Grouped            TS29.336
+3107              Service-Data                                             Grouped            TS29.336
+3108              T4-Data                                                  Grouped            TS29.336
+3109              HSS-Cause                                                Unsigned32         TS29.336
+3110              SIR-Flags                                                Unsigned32         TS29.336
+3111              External-Identifier                                      UTF8String         TS29.336
+3112              IP-SM-GW-Realm                                           DiameterIdentity   TS29.336
+3113              AESE-Communication-Pattern                               Grouped            TS29.336
+3114              Communication-Pattern-Set                                Grouped            TS29.336
+3115              Periodic-Communication-Indicator                         Unsigned32         TS29.336
+3116              Communication-Duration-Time                              Unsigned32         TS29.336
+3117              Periodic-Time                                            Unsigned32         TS29.336
+3118              Scheduled-Communication-Time                             Grouped            TS29.336
+3119              Stationary-Indication                                    Unsigned32         TS29.336
+3120              AESE-Communication-Pattern-Config-Status                 Grouped            TS29.336
+3121              AESE-Error-Report                                        Grouped            TS29.336
+3122              Monitoring-Event-Configuration                           Grouped            TS29.336
+3123              Monitoring-Event-Report                                  Grouped            TS29.336
+3124              SCEF-Reference-ID                                        Unsigned32         TS29.336
+3125              SCEF-ID                                                  DiameterIdentity   TS29.336
+3126              SCEF-Reference-ID-for-Deletion                           Unsigned32         TS29.336
+3127              Monitoring-Type                                          Unsigned32         TS29.336
+3128              Maximum-Number-of-Reports                                Unsigned32         TS29.336
+3129              UE-Reachability-Configuration                            Grouped            TS29.336
+3130              Monitoring-Duration                                      Time               TS29.336
+3131              Maximum-Detection-Time                                   Unsigned32         TS29.336
+3132              Reachability-Type                                        Unsigned32         TS29.336
+3133              Maximum-Latency                                          Unsigned32         TS29.336
+3134              Maximum-Response-Time                                    Unsigned32         TS29.336
+3135              Location-Information-Configuration                       Grouped            TS29.336
+3136              MONTE-Location-Type                                      Unsigned32         TS29.336
+3137              Accuracy                                                 Unsigned32         TS29.336
+3138              Association-Type                                         Unsigned32         TS29.336
+3139              Roaming-Information                                      Unsigned32         TS29.336
+3140              Reachability-Information                                 Unsigned32         TS29.336
+3141              IMEI-Change                                              Unsigned32         TS29.336
+3142              Monitoring-Event-Config-Status                           Grouped            TS29.336
+3143              Supported-Service                                        Grouped            TS29.336
+3144              Supported-Monitoring-Event                               Unsigned64         TS29.336
+3145              CIR-Flags                                                Unsigned32         TS29.336
+3146              Service-Result                                           Grouped            TS29.336
+3147              Service-Result-Code                                      Unsigned32         TS29.336
+3148              Reference-ID-Validity-Time                               Time               TS29.336
+3149              Event-handling                                           Unsigned32         TS29.336
+3150              NIDD-Authorization-Request                               Grouped            TS29.336
+3151              NIDD-Authorization-Response                              Grouped            TS29.336
+3152              Service-Report                                           Grouped            TS29.336
+3153              Node-Type                                                Unsigned32         TS29.336
+3154              S6t-HSS-Cause                                            Unsigned32         TS29.336
+3155              Enhanced-Coverage-Restriction                            Grouped            TS29.336
+3156              Enhanced-Coverage-Restriction-Data                       Grouped            TS29.336
+3157              Restricted-PLMN-List                                     Grouped            TS29.336
+3158              Allowed-PLMN-List                                        Grouped            TS29.336
+3159              Requested-Validity-Time                                  Time               TS29.336
+3160              Granted-Validity-Time                                    Time               TS29.336
+3161              NIDD-Authorization-Update                                Grouped            TS29.336
+3162              Loss-Of-Connectivity-Reason                              Unsigned32         TS29.336
+3163              Group-Reporting-Guard-Timer                              Unsigned32         TS29.336
+3164              CIA-Flags                                                Unsigned32         TS29.336
+3165              Group-Report                                             Grouped            TS29.336
+3166              Group-Report-Item                                        Grouped            TS29.336
+3167              RIR-Flags                                                Unsigned32         TS29.336
+3168              Type-Of-External-Identifier                              Unsigned32         TS29.336
+3169              APN-Validity-Time                                        Grouped            TS29.336
+3170              Suggested-Network-Configuration                          Grouped            TS29.336
+3171              Monitoring-Event-Report-Status                           Grouped            TS29.336
+3172              PLMN-ID-Requested                                        Enumerated         TS29.336
+3173              AdditionalIdentifiers                                    Grouped            TS29.336
+3174              NIR-Flags                                                Unsigned32         TS29.336
+3175              Reporting-Time-Stamp                                     Time               TS29.336
+3176              Group-User-Identifier                                    Grouped            TS29.336
+3177              NIA-Flags                                                Unsigned32         TS29.336
+3178              MTC-Provider-Info                                        Grouped            TS29.336
+3179              MTC-Provider-ID                                          UTF8String         TS29.336
+3180              PDN-Connectivity-Status-Configuration                    Grouped            TS29.336
+3181              PDN-Connectivity-Status-Report                           Grouped            TS29.336
+3182              PDN-Connectivity-Status-Type                             Unsigned32         TS29.336
+3183              Traffic-Profile                                          Unsigned32         TS29.336
+3184              Updated-Network-Configuration                            Grouped            TS29.336
+3185              Battery-Indicator                                        Unsigned32         TS29.336
+3186              SCEF-Reference-ID-Ext                                    Unsigned64         TS29.336
+3187              SCEF-Reference-ID-for-Deletion-Ext                       Unsigned64         TS29.336
+3188              Exclude-Identifiers                                      Grouped            TS29.336
+3189              Include-Identifiers                                      Grouped            TS29.336
+; RESERVED 3190..3199 TS29.336 "TS 29.336"
+3200              SM-Delivery-Outcome-T4                                   Enumerated         TS29.337
+3201              Absent-Subscriber-Diagnostic-T4                          Enumerated         TS29.337
+3202              Trigger-Action                                           Unsigned32         TS29.337
+3203              MTC-Error-Diagnostic                                     Unsigned32         TS29.337
+; RESERVED 3204..3299 TS29.337 "TS 29.337"
+3300              SC-Address                                               OctetString        TS29.338
+3301              SM-RP-UI                                                 OctetString        TS29.338
+3302              TFR-Flags                                                Unsigned32         TS29.338
+3303              SM-Delivery-Failure-Cause                                Grouped            TS29.338
+3304              SM-Enumerated-Delivery-Failure-Cause                     Enumerated         TS29.338
+3305              SM-Diagnostic-Info                                       OctetString        TS29.338
+3306              SM-Delivery-Timer                                        Unsigned32         TS29.338
+3307              SM-Delivery-Start-Time                                   Time               TS29.338
+3308              SM-RP-MTI                                                Enumerated         TS29.338
+3309              SM-RP-SMEA                                               OctetString        TS29.338
+3310              SRR-Flags                                                Unsigned32         TS29.338
+3311              SM-Delivery-Not-Intended                                 Enumerated         TS29.338
+3312              MWD-Status                                               Unsigned32         TS29.338
+3313              MME-Absent-User-Subscriber-Diagnostic-SM                 Unsigned32         TS29.338
+3314              MSC-Absent-User-Subscriber-Diagnostic-SM                 Unsigned32         TS29.338
+3315              "SGSN-Absent-User-Subscriber-Diagnostic SM"              Unsigned32         TS29.338
+3316              SM-Delivery-Outcome                                      Grouped            TS29.338
+3317              MME-SM-Delivery-Outcome                                  Grouped            TS29.338
+3318              MSC-SM-Delivery-Outcome                                  Grouped            TS29.338
+3319              SGSN-SM-Delivery-Outcome                                 Grouped            TS29.338
+3320              IP-SM-GW-SM-Delivery-Outcome                             Grouped            TS29.338
+3321              SM-Delivery-Cause                                        Enumerated         TS29.338
+3322              Absent-User-Diagnostic-SM                                Unsigned32         TS29.338
+3323              RDR-Flags                                                Unsigned32         TS29.338
+3324              SMSMI-Correlation-ID                                     Unsigned32         TS29.338
+3325              HSS-ID                                                   UTF8String         TS29.338
+3326              Originating-SIP-URI                                      UTF8String         TS29.338
+3327              Destination-SIP-URI                                      UTF8String         TS29.338
+3328              OFR-Flags                                                Unsigned32         TS29.338
+3329              Maximum-UE-Availability-Time                             Time               TS29.338
+3330              Maximum-Retransmission-Time                              Time               TS29.338
+3331              Requested-Retransmission-Time                            Time               TS29.338
+3332              SMS-GMSC-Address                                         OctetString        TS29.338
+3333              SMS-GMSC-Alert-Event                                     Unsigned32         TS29.338
+3334              SMSF-3GPP-Absent-User-Diagnostic-SM                      Unsigned32         TS29.338
+3335              SMSF-Non-3GPP-Absent-User-Diagnostic-SM                  Unsigned32         TS29.338
+3336              SMSF-3GPP-SM-Delivery-Outcome                            Grouped            TS29.338
+3337              SMSF-Non-3GPP-SM-Delivery-Outcome                        Grouped            TS29.338
+3338              SMSF-3GPP-Number                                         OctetString        TS29.338
+3339              SMSF-Non-3GPP-Number                                     OctetString        TS29.338
+3340              SMSF-3GPP-Name                                           DiameterIdentity   TS29.338
+3341              SMSF-Non-3GPP-Name                                       DiameterIdentity   TS29.338
+3342              SMSF-3GPP-Realm                                          DiameterIdentity   TS29.338
+3343              SMSF-Non-3GPP-Realm                                      DiameterIdentity   TS29.338
+3344              SMSF-3GPP-Address                                        Grouped            TS29.338
+3345              SMSF-Non-3GPP-Address                                    Grouped            TS29.338
+3346              SMSF-3GPP-SBI-Support-Indicator                          Enumerated         TS29.338
+3347              SMSF-Non-3GPP-SBI-Support-Indicator                      Enumerated         TS29.338
+3348              IP-SM-GW-SBI-Support-Indicator                           Enumerated         TS29.338
+; RESERVED 3349..3399 TS29.338 "TS 29.338"
+3400              reserved                                                 -                  TS32.299
+3401              Reason-Header                                            UTF8String         TS32.299
+3402              Instance-Id                                              UTF8String         TS32.299
+3403              Route-Header-Received                                    UTF8String         TS32.299
+3404              Route-Header-Transmitted                                 UTF8String         TS32.299
+3405              SM-Device-Trigger-Information                            Grouped            TS32.299
+3406              MTC-IWF-Address                                          Address            TS32.299
+3407              SM-Device-Trigger-Indicator                              Enumerated         TS32.299
+3408              SM-Sequence-Number                                       Unsigned32         TS32.299
+3409              SMS-Result                                               Unsigned32         TS32.299
+3410              VCS-Information                                          Grouped            TS32.299
+3411              Basic-Service-Code                                       Grouped            TS32.299
+3412              Bearer-Capability                                        OctetString        TS32.299
+3413              Teleservice                                              OctetString        TS32.299
+3414              ISUP-Location-Number                                     OctetString        TS32.299
+3415              Forwarding-Pending                                       Enumerated         TS32.299
+3416              ISUP-Release-Cause                                       Unsigned32         TS32.299
+3417              MSC-Address                                              OctetString        TS32.299
+3418              Network-Call-Reference-Number                            OctetString        TS32.299
+3419              Start-of-Charging                                        Time               TS32.299
+3420              VLR-Number                                               OctetString        TS32.299
+3421              CN-Operator-Selection-Entity                             Enumerated         TS32.299
+3422              ISUP-Cause-Diagnostics                                   OctetString        TS32.299
+3423              ISUP-Cause-Location                                      Unsigned32         TS32.299
+3424              ISUP-Cause-Value                                         Unsigned32         TS32.299
+3425              EPDG-Address                                             Address            TS32.299
+3426              Announcing-UE-HPLMN-Identifier                           UTF8String         TS32.299
+3427              Announcing-UE-VPLMN-Identifier                           UTF8String         TS32.299
+3428              Coverage-Status                                          Enumerated         TS32.299
+3429              Layer-2-Group-ID                                         OctetString        TS32.299
+3430              Monitored-PLMN-Identifier                                UTF8String         TS32.299
+3431              Monitoring-UE-HPLMN-Identifier                           UTF8String         TS32.299
+3432              Monitoring-UE-Identifier                                 UTF8String         TS32.299
+3433              Monitoring-UE-VPLMN-Identifier                           UTF8String         TS32.299
+3434              ProSe-PC3-Control-Protocol-Cause                         Integer32          TS32.299
+3435              ProSe-PC3-EPC-Control-Protocol-Cause                     Integer32          TS32.299
+3436              Requested-PLMN-Identifier                                UTF8String         TS32.299
+3437              Requestor-PLMN-Identifier                                UTF8String         TS32.299
+3438              Role-Of-ProSe-Function                                   Enumerated         TS32.299
+3439              Usage-Information-Report-Sequence-Number                 Integer32          TS32.299
+3440              ProSe-3rd-Party-Application-ID                           UTF8String         TS32.299
+3441              ProSe-Direct-Communication-Transmission-Data-Container   Grouped            TS32.299
+3442              ProSe-Direct-Discovery-Model                             Enumerated         TS32.299
+3443              ProSe-Event-Type                                         Enumerated         TS32.299
+3444              ProSe-Function-IP-Address                                Address            TS32.299
+3445              ProSe-Functionality                                      Enumerated         TS32.299
+3446              ProSe-Group-IP-Multicast-Addresses                       Address            TS32.299
+3447              ProSe-Information                                        Grouped            TS32.299
+3448              ProSe-Range-Class                                        Enumerated         TS32.299
+3449              ProSe-Reason-For-Cancellation                            Enumerated         TS32.299
+3450              ProSe-Request-Timestamp                                  Time               TS32.299
+3451              ProSe-Role-Of-UE                                         Enumerated         TS32.299
+3452              ProSe-Source-IP-Address                                  Address            TS32.299
+3453              ProSe-UE-ID                                              OctetString        TS32.299
+3454              Proximity-Alert-Indication                               Enumerated         TS32.299
+3455              Proximity-Alert-Timestamp                                Time               TS32.299
+3456              Proximity-Cancellation-Timestamp                         Time               TS32.299
+3457              ProSe-Function-PLMN-Identifier                           UTF8String         TS32.299
+3458              Application-Specific-Data                                OctetString        TS32.299
+3459              Coverage-Info                                            Grouped            TS32.299
+3460              Location-Info                                            Grouped            TS32.299
+3461              ProSe-Direct-Communication-Reception-Data-Container      Grouped            TS32.299
+3462              Radio-Frequency                                          OctetString        TS32.299
+3463              Radio-Parameter-Set-Info                                 Grouped            TS32.299
+3464              Radio-Parameter-Set-Values                               OctetString        TS32.299
+3465              Radio-Resources-Indicator                                Integer32          TS32.299
+3466              Time-First-Reception                                     Time               TS32.299
+3467              Time-First-Transmission                                  Time               TS32.299
+3468              Transmitter-Info                                         Grouped            TS32.299
+; RESERVED 3469..3499 TS32.299 "TS 32.299"
+3500              BMSC-Address                                             Address            TS29.468
+3501              BMSC-Port                                                Unsigned32         TS29.468
+3502              MBMS-Bearer-Event                                        Unsigned32         TS29.468
+3503              MBMS-Bearer-Event-Notification                           Grouped            TS29.468
+3504              MBMS-Bearer-Request                                      Grouped            TS29.468
+3505              MBMS-Bearer-Response                                     Grouped            TS29.468
+3506              MBMS-Bearer-Result                                       Unsigned32         TS29.468
+3507              MBMS-Start-Time                                          Time               TS29.468
+3508              Radio-Frequency                                          Unsigned32         TS29.468
+3509              TMGI-Allocation-Request                                  Grouped            TS29.468
+3510              TMGI-Allocation-Response                                 Grouped            TS29.468
+3511              TMGI-Allocation-Result                                   Unsigned32         TS29.468
+3512              TMGI-Deallocation-Request                                Grouped            TS29.468
+3513              TMGI-Deallocation-Response                               Grouped            TS29.468
+3514              TMGI-Deallocation-Result                                 Unsigned32         TS29.468
+3515              TMGI-Expiry                                              Grouped            TS29.468
+3516              TMGI-Number                                              Unsigned32         TS29.468
+3517              MB2U-Security                                            Unsigned32         TS29.468
+3518              Local-M1-Information                                     Grouped            TS29.468
+3519              Local-MB2-U-Information                                  Grouped            TS29.468
+3520              MBMS-eNB-IP-Multicast-Address                            Address            TS29.468
+3521              MBMS-eNB-IPv6-Multicast-Address                          Address            TS29.468
+3522              MBMS-GW-SSM-IP-Address                                   Address            TS29.468
+3523              MBMS-GW-SSM-IPv6-Address                                 Address            TS29.468
+3524              Common-Tunnel-Endpoint-Identifier                        OctetString        TS29.468
+3525              FEC-Request                                              OctetString        TS29.468
+3526              ROHC-Request                                             Grouped            TS29.468
+3527              ROHC-Full-Header-Periodicity                             Float32            TS29.468
+3528              ROHC-Profile                                             Unsigned32         TS29.468
+3529              Userplane-Protocol-Result                                Grouped            TS29.468
+3530              ROHC-Result                                              Unsigned32         TS29.468
+3531              FEC-Result                                               Unsigned32         TS29.468
+3532              ROHC-Max-CID                                             Unsigned32         TS29.468
+3533              MBMS-Bearer-Event-Diagnostic-Info                        Unsigned32         TS29.468
+; RESERVED 3534..3599 TS29.468 "TS 29.468"
+3600              Origin-App-Layer-User-Id                                 UTF8String         TS29.343
+3601              Target-App-Layer-User-Id                                 UTF8String         TS29.343
+3602              ProSe-Function-ID                                        OctetString        TS29.343
+3603              ProSe-Request-Type                                       Unsigned32         TS29.343
+3604              PDUID                                                    OctetString        TS29.343
+3605              Application-Data                                         UTF8String         TS29.343
+3606              Allowed-Suffixes-Number                                  Unsigned32         TS29.343
+3607              Monitor-Target                                           Grouped            TS29.343
+3608              ProSe-Code-Suffix-Mask                                   Grouped            TS29.343
+3609              Suffix-Code                                              OctetString        TS29.343
+3610              Suffix-Mask                                              OctetString        TS29.343
+3611              Banned-User-Target                                       Grouped            TS29.343
+3612              Metadata-Indicator                                       Unsigned32         TS29.343
+; RESERVED 3613..3699 TS29.343 "TS 29.343"
+3701              ProSe-Subscription-Data                                  Grouped            TS29.344
+3702              ProSe-Permission                                         Unsigned32         TS29.344
+3703              ProSe-Allowed-PLMN                                       Grouped            TS29.344
+3704              ProSe-Direct-Allowed                                     Unsigned32         TS29.344
+3705              UPR-Flags                                                Unsigned32         TS29.344
+3706              PNR-Flags                                                Unsigned32         TS29.344
+3707              ProSe-Initial-Location-Information                       Grouped            TS29.344
+3708              Authorized-Discovery-Range                               Unsigned32         TS29.344
+; RESERVED 3709..3799 TS29.344 "TS 29.344"
+3800              Reserved                                                 -                  TS29.345
+3801              App-Layer-User-Id                                        UTF8String         TS29.345
+3802              Assistance-info                                          Grouped            TS29.345
+3803              Assistance-Info-Validity-Timer                           Unsigned32         TS29.345
+3804              Discovery-Type                                           Unsigned32         TS29.345
+3805              Filter-Id                                                OctetString        TS29.345
+3806              MAC-Address                                              UTF8String         TS29.345
+3807              Match-Report                                             Grouped            TS29.345
+3808              Operating-Channel                                        Unsigned32         TS29.345
+3809              P2P-Features                                             Unsigned32         TS29.345
+3810              ProSe-App-Code                                           UTF8String         TS29.345
+3811              ProSe-App-Id                                             UTF8String         TS29.345
+3812              ProSe-App-Mask                                           UTF8String         TS29.345
+3813              ProSe-Discovery-Filter                                   Grouped            TS29.345
+3814              PRR-Flags                                                Unsigned32         TS29.345
+3815              ProSe-Validity-Timer                                     Unsigned32         TS29.345
+3816              Requesting-EPUID                                         UTF8String         TS29.345
+3817              Targeted-EPUID                                           UTF8String         TS29.345
+3818              Time-Window                                              Unsigned32         TS29.345
+3819              WiFi-P2P-Assistance-Info                                 Grouped            TS29.345
+3820              WLAN-Assistance-Info                                     Grouped            TS29.345
+3821              WLAN-Link-Layer-Id                                       OctetString        TS29.345
+3822              WLAN-Link-Layer-Id-List                                  Grouped            TS29.345
+3823              Location-Update-Trigger                                  Grouped            TS29.345
+3824              Location-Update-Event-Type                               Unsigned32         TS29.345
+3825              Change-Of-Area-Type                                      Grouped            TS29.345
+3826              Location-Update-Event-Trigger                            Unsigned32         TS29.345
+3827              Report-Cardinality                                       Enumerated         TS29.345
+3828              Minimum-Interval-Time                                    Unsigned32         TS29.345
+3829              Periodic-Location-Type                                   Grouped            TS29.345
+3830              Location-Report-Interval-Time                            Unsigned32         TS29.345
+3831              Total-Number-Of-Reports                                  Unsigned32         TS29.345
+3832              Validity-Time-Announce                                   Unsigned32         TS29.345
+3833              Validity-Time-Monitor                                    Unsigned32         TS29.345
+3834              Validity-Time-Communication                              Unsigned32         TS29.345
+3835              ProSe-App-Code-Info                                      Grouped            TS29.345
+3836              MIC                                                      OctetString        TS29.345
+3837              UTC-based-Counter                                        Unsigned32         TS29.345
+3838              ProSe-Match-Refresh-Timer                                Unsigned32         TS29.345
+3839              ProSe-Metadata-Index-Mask                                OctetString        TS29.345
+3840              App-Identifier                                           Grouped            TS29.345
+3841              OS-ID                                                    OctetString        TS29.345
+3842              OS-App-ID                                                UTF8String         TS29.345
+3843              Requesting-RPAUID                                        UTF8String         TS29.345
+3844              Target-RPAUID                                            UTF8String         TS29.345
+3845              Target-PDUID                                             OctetString        TS29.345
+3846              ProSe-Restricted-Code                                    OctetString        TS29.345
+3847              ProSe-Restricted-Code-Suffix-Range                       OctetString        TS29.345
+3848              Beginning-Suffix                                         OctetString        TS29.345
+3849              Ending-Suffix                                            OctetString        TS29.345
+3850              Discovery-Entry-ID                                       Unsigned32         TS29.345
+3851              Match-Timestamp                                          Time               TS29.345
+3852              PMR-Flags                                                Unsigned32         TS29.345
+3853              ProSe-Application-Metadata                               UTF8String         TS29.345
+3854              Discovery-Auth-Request                                   Grouped            TS29.345
+3855              Discovery-Auth-Response                                  Grouped            TS29.345
+3856              Match-Request                                            Grouped            TS29.345
+3857              Match-Report-Info                                        Grouped            TS29.345
+3858              Banned-RPAUID                                            UTF8String         TS29.345
+3859              Banned-PDUID                                             OctetString        TS29.345
+3860              Code-Receiving-Security-Material                         Grouped            TS29.345
+3861              Code-Sending-Security-Material                           Grouped            TS29.345
+3862              DUSK                                                     OctetString        TS29.345
+3863              DUIK                                                     OctetString        TS29.345
+3864              DUCK                                                     OctetString        TS29.345
+3865              MIC-Check-indicator                                      Unsigned32         TS29.345
+3866              Encrypted-Bitmask                                        OctetString        TS29.345
+3867              ProSe-App-Code-Suffix-Range                              OctetString        TS29.345
+3868              PC5-tech                                                 OctetString        TS29.345
+; RESERVED 3869..3899 TS29.345 "TS 29.345"
+3900              Reserved                                                 -                  TS32.299
+3901              Enhanced-Diagnostics                                     Grouped            TS32.299
+3902              Inter-UE-Transfer                                        Enumerated         TS32.299
+3903              TWAG-Address                                             Address            TS32.299
+3904              Announcement-Information                                 Grouped            TS32.299
+3905              Announcement-Identifier                                  Unsigned32         TS32.299
+3906              Announcement-Order                                       Unsigned32         TS32.299
+3907              Variable-Part                                            Grouped            TS32.299
+3908              Variable-Part-Order                                      Unsigned32         TS32.299
+3909              Variable-Part-Type                                       Unsigned32         TS32.299
+3910              Variable-Part-Value                                      UTF8String         TS32.299
+3911              Time-Indicator                                           Unsigned32         TS32.299
+3912              Quota-Indicator                                          Enumerated         TS32.299
+3913              Play-Alternative                                         Enumerated         TS32.299
+3914              Language                                                 UTF8String         TS32.299
+3915              Privacy-Indicator                                        Enumerated         TS32.299
+3916              Called-Identity                                          UTF8String         TS32.299
+3917              Called-Identity-Change                                   Grouped            TS32.299
+3918              UWAN-User-Location-Info                                  Grouped            TS32.299
+3919              Monitoring-Event-Configuration-Activity                  Integer32          TS32.299
+3920              Monitoring-Event-Report-Data                             Grouped            TS32.299
+3921              Monitoring-Event-Information                             Grouped            TS32.299
+3922              Monitoring-Event-Functionality                           Integer32          TS32.299
+3923              Monitoring-Event-Report-Number                           Unsigned32         TS32.299
+3924              Cellular-Network-Information                             OctetString        TS32.299
+3925              Related-Change-Condition-Information                     Grouped            TS32.299
+3926              Related-Trigger                                          Grouped            TS32.299
+3927              CPDT-Information                                         Grouped            TS32.299
+3928              NIDD-Submission                                          Grouped            TS32.299
+3929              Serving-Node-Identity                                    DiameterIdentity   TS32.299
+3930              CP-CIoT-EPS-Optimisation-Indicator                       Enumerated         TS32.299
+3931              SGi-PtP-Tunnelling-Method                                Enumerated         TS32.299
+3932              UNI-PDU-CP-Only-Flag                                     Enumerated         TS32.299
+3933              APN-Rate-Control                                         Grouped            TS32.299
+3934              APN-Rate-Control-Downlink                                Grouped            TS32.299
+3935              APN-Rate-Control-Uplink                                  Grouped            TS32.299
+3936              Additional-Exception-Reports                             Enumerated         TS32.299
+3937              Rate-Control-Max-Message-Size                            Unsigned32         TS32.299
+3938              Rate-Control-Max-Rate                                    Unsigned32         TS32.299
+3939              Rate-Control-Time-Unit                                   Unsigned32         TS32.299
+3940              SCS-AS-Address                                           Grouped            TS32.299
+3941              SCS-Address                                              Address            TS32.299
+3942              SCS-Realm                                                DiameterIdentity   TS32.299
+; RESERVED 3943..3999 TS32.299 "TS 32.299"
+4000              Aggregated-Congestion-Info                               Grouped            TS29.217
+4001              Aggregated-RUCI-Report                                   Grouped            TS29.217
+4002              Congestion-Level-Definition                              Grouped            TS29.217
+4003              Congestion-Level-Range                                   Unsigned32         TS29.217
+4004              Congestion-Level-Set-Id                                  Unsigned32         TS29.217
+4005              Congestion-Level-Value                                   Unsigned32         TS29.217
+4006              Congestion-Location-Id                                   Grouped            TS29.217
+4007              Conditional-Restriction                                  Unsigned32         TS29.217
+4008              eNodeB-Id                                                OctetString        TS29.217
+4009              IMSI-List                                                OctetString        TS29.217
+4010              RCAF-Id                                                  DiameterIdentity   TS29.217
+4011              Reporting-Restriction                                    Unsigned32         TS29.217
+4012              RUCI-Action                                              Unsigned32         TS29.217
+4013              Extended-eNodeB-ID                                       OctetString        TS29.217
+; RESERVED 4014..4099 TS29.217 "TS 29.217"
+4101              Network-Congestion-Area-Report                           Grouped            TS29.153
+4102              Ns-Request-Type                                          Unsigned32         TS29.153
+; RESERVED 4103..4199 TS29.153 "TS 29.153"
+4201              Network-Area-Info-List                                   OctetString        TS29.154
+4202              Reference-Id                                             OctetString        TS29.154
+4203              Transfer-Request-Type                                    Unsigned32         TS29.154
+4204              Time-Window                                              Grouped            TS29.154
+4205              Transfer-End-Time                                        Time               TS29.154
+4206              Transfer-Start-Time                                      Time               TS29.154
+4207              Transfer-Policy                                          Grouped            TS29.154
+4208              Transfer-Policy-Id                                       Unsigned32         TS29.154
+4209              Number-Of-UEs                                            Unsigned32         TS29.154
+4210              Access-Network-Reports                                   Grouped            TS29.154
+4211              Event-Configuration                                      Grouped            TS29.154
+4212              Event-Configuration-State                                Unsigned32         TS29.154
+4213              Event-Configuration-Status                               Grouped            TS29.154
+4214              Event-Reporting-Results                                  Unsigned32         TS29.154
+4215              Event-Reports                                            Grouped            TS29.154
+4216              Extended-SCEF-Reference-ID                               Unsigned64         TS29.154
+; RESERVED 4217..4299 TS29.154 "TS 29.154"
+4300              Communication-Failure-Information                        Grouped            TS29.128
+4301              Cause-Type                                               Unsigned32         TS29.128
+4302              S1AP-Cause                                               Unsigned32         TS29.128
+4303              RANAP-Cause                                              Unsigned32         TS29.128
+4304              GMM-Cause                                                Unsigned32         TS29.128
+4305              SM-Cause                                                 Unsigned32         TS29.128
+4306              Number-of-UE-Per-Location-Configuration                  Grouped            TS29.128
+4307              Number-of-UE-Per-Location-Report                         Grouped            TS29.128
+4308              UE-Count                                                 Unsigned32         TS29.128
+4309              BSSGP-Cause                                              Unsigned32         TS29.128
+4310              Serving-PLMN-Rate-Control                                Grouped            TS29.128
+4311              Uplink-Rate-Limit                                        Unsigned32         TS29.128
+4312              Downlink-Rate-Limit                                      Unsigned32         TS29.128
+4313              Extended-PCO                                             OctetString        TS29.128
+4314              Connection-Action                                        Unsigned32         TS29.128
+4315              Non-IP-Data                                              OctetString        TS29.128
+4316              SCEF-Wait-Time                                           Time               TS29.128
+4317              CMR-Flags                                                Unsigned32         TS29.128
+4318              RRC-Cause-Counter                                        Grouped            TS29.128
+4319              Counter-Value                                            Unsigned32         TS29.128
+4320              RRC-Counter-Timestamp                                    Time               TS29.128
+4321              TDA-Flags                                                Unsigned32         TS29.128
+4322              Idle-Status-Indication                                   Grouped            TS29.128
+4323              Idle-Status-Timestamp                                    Time               TS29.128
+4324              Active-Time                                              Unsigned32         TS29.128
+4325              Reachability-Cause                                       Unsigned32         TS29.128
+4326              APN-Rate-Control-Status                                  Grouped            TS29.128
+4327              Uplink-Number-Of-Packets-Allowed                         Unsigned32         TS29.128
+4328              Number-Of-Additional-Exception-Reports                   Unsigned32         TS29.128
+4329              Downlink-Number-Of-Packets-Allowed                       Unsigned32         TS29.128
+4330              APN-Rate-Control-Status-Validity-Time                    Unsigned64         TS29.128
+; RESERVED 4331..4399 TS29.128 "TS 29.128"
+4400              Charging-Per-IP-CAN-Session-Indicator                    Enumerated         TS32.299
+4401              Access-Network-Info-Change                               Enumerated         TS32.299
+4402              Discoveree-UE-HPLMN-Identifier                           UTF8String         TS32.299
+4403              Discoveree-UE-VPLMN-Identifier                           UTF8String         TS32.299
+4404              Discoverer-UE-HPLMN-Identifier                           UTF8String         TS32.299
+4405              Discoverer-UE-VPLMN-Identifier                           UTF8String         TS32.299
+4406              3GPP-PS-Data-Off-Status                                  Enumerated         TS32.299
+4407              Unused-Quota-Timer                                       Unsigned32         TS32.299
+4408              Announcing-PLMN-ID                                       UTF8String         TS32.299
+4409              ProSe-UE-to-Network-Relay-UE-ID                          OctetString        TS32.299
+4410              ProSe-Target-Layer-2-ID                                  OctetString        TS32.299
+4411              Relay-IP-address                                         Address            TS32.299
+4412              Target-IP-Address                                        Address            TS32.299
+4413              FE-Identifier-List                                       UTF8String         TS32.299
+; RESERVED 4414..4499 TS32.299 "TS 32.299"
+4500              MCPTT-ID                                                 UTF8String         TS29.283
+4501              Data-Identification                                      Grouped            TS29.283
+4502              Data-Identification-Prefix                               Unsigned32         TS29.283
+4503              Data-Identification-Flags                                Unsigned64         TS29.283
+4504              DPR-Flags                                                Unsigned32         TS29.283
+4505              DPA-Flags                                                Unsigned32         TS29.283
+4506              DUR-Flags                                                Unsigned32         TS29.283
+4507              DUA-Flags                                                Unsigned32         TS29.283
+4508              NDR-Flags                                                Unsigned32         TS29.283
+4509              NDA-Flags                                                Unsigned32         TS29.283
+4510              User-Data-Id                                             Unsigned32         TS29.283
+4511              MC-Service-User-Profile-Data                             Grouped            TS29.283
+4512              Sequence-Number                                          Unsigned32         TS29.283
+4513              MCVideo-ID                                               UTF8String         TS29.283
+4514              MC-Data-ID                                               UTF8String         TS29.283
+; RESERVED 4515..4599 TS29.283 "TS 29.283"
+4600              V2X-PC5-Allowed-PLMN                                     Grouped            TS29.388
+4601              V2X-Update-Flags                                         Unsigned32         TS29.388
+4602              V2X-Notify-Flags                                         Unsigned32         TS29.388
+4603              PLMN-Allowed-PC5-RATs                                    Grouped            TS29.388
+4604              PC5-RAT-Type                                             Enumerated         TS29.388
+; RESERVED 4605..4799 TS29.388 "TS 29.388"
+4700              V2X-Authorization-Data                                   Grouped            TS29.389
+4701              V2X-Permission-in-VPLMN                                  Unsigned32         TS29.389
+4702              V2X-Application-Server                                   Grouped            TS29.389
+; RESERVED 4703..4799 TS29.389 "TS and TS 29.389"
+; RESERVED 4800..4999 TS29.561 "TS and TS 29.561"
+
+
+; Type: Registry
+; Registry: Result Codes
+; Section: 8.1.2
+; Table: 8.1.2
+; Page: 42
+; Columns: Code   Name                                       Defined-In
+2001              DIAMETER_FIRST_REGISTRATION                TS29.229
+2002              DIAMETER_SUBSEQUENT_REGISTRATION           TS29.229
+2003              DIAMETER_UNREGISTERED_SERVICE              TS29.229
+2004              DIAMETER_SUCCESS_SERVER_NAME_NOT_STORED    TS29.229
+2005              "Deprecated value"                         TS29.229
+; RESERVED 2006..2020 TS29.229 "the TS 29.229"
+2021              DIAMETER_PDP_CONTEXT_DELETION_INDICATION   TS29.061
+; RESERVED 2022..2040 TS29.061 "the TS 29.061"
+; RESERVED 2401..2420 TS29.109 "the TS 29.109"
+2421              DIAMETER_QOS_FLOW_DELETION_INDICATION      TS29.561
+; RESERVED 2422..2440 TS29.561 "the TS 29.561"
+
+
+; Type: Registry
+; Registry: Result Codes
+; Section: 8.1.3
+; Table: 8.1.3
+; Page: 42
+; Columns: Code   Name                                              Defined-In
+4100              DIAMETER_USER_DATA_NOT_AVAILABLE                  TS29.329
+4101              DIAMETER_PRIOR_UPDATE_IN_PROGRESS                 -
+; RESERVED 4102..4120 TS29.329 "the TS 29.329"
+4121              DIAMETER_ERROR_OUT_OF_RESOURCES                   TS29.061
+; RESERVED 4122..4140 TS29.061 "the TS 29.061"
+4141              DIAMETER_PCC_BEARER_EVENT                         TS29.212
+4142              DIAMETER_BEARER_EVENT                             TS29.212
+4143              DIAMETER_AN_GW_FAILED                             TS29.212
+4144              DIAMETER_PENDING_TRANSACTION                      TS29.212
+4145              DIAMETER_UE_STATUS_SUSPEND                        TS29.212
+; RESERVED 4146..4160 TS29.212 "the TS 29.212"
+; RESERVED 4161..4180 TS32.299 "the TS 32.299"
+4181              DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE          TS29.272
+4182              DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT         TS29.272
+; RESERVED 4182..4200 TS29.272 "the TS 29.272"
+4201              DIAMETER_ERROR_ABSENT_USER                        TS29.173
+; RESERVED 4202..4220 TS29.173 "the TS 29.173"
+4221              DIAMETER_ERROR_UNREACHABLE_USER                   TS29.172
+4222              DIAMETER_ERROR_SUSPENDED_USER                     TS29.172
+4223              DIAMETER_ERROR_DETACHED_USER                      TS29.172
+4224              DIAMETER_ERROR_POSITIONING_DENIED                 TS29.172
+4225              DIAMETER_ERROR_POSITIONING_FAILED                 TS29.172
+4226              "DIAMETER_ERROR_UNKNOWN_UNREACHABLE LCS_CLIENT"   TS29.172
+; RESERVED 4227..4240 TS29.172 "the TS 29.172"
+4241              DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS       TS29.219
+; RESERVED 4242..4260 TS29.219 "the TS 29.219"
+4261              REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED      TS29.214
+; RESERVED 4262..4280 TS29.214 "the TS 29.214"
+
+
+; Type: Registry
+; Registry: Result Codes
+; Section: 8.1.4
+; Table: 8.1.4
+; Page: 43
+; Columns: Code   Name                                                        Defined-In
+5001              DIAMETER_ERROR_USER_UNKNOWN                                 TS29.229
+5002              DIAMETER_ERROR_IDENTITIES_DONT_MATCH                        TS29.229
+5003              DIAMETER_ERROR_IDENTITY_NOT_REGISTERED                      TS29.229
+5004              DIAMETER_ERROR_ROAMING_NOT_ALLOWED                          TS29.229
+5005              DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED                  TS29.229
+5006              DIAMETER_ERROR_AUTH_SCHEME_NOT_SUPPORTED                    TS29.229
+5007              DIAMETER_ERROR_IN_ASSIGNMENT_TYPE                           TS29.229
+5008              DIAMETER_ERROR_TOO_MUCH_DATA                                TS29.229
+5009              DIAMETER_ERROR_NOT_SUPPORTED_USER_DATA                      TS29.229
+5010              unassigned                                                  TS29.229
+5011              DIAMETER_ERROR_FEATURE_UNSUPPORTED                          TS29.229
+5012              DIAMETER_ERROR_SERVING_NODE_FEATURE_UNSUPPORTED             TS29.229
+; RESERVED 5013..5020 TS29.229 "the TS 29.229"
+; RESERVED 5021..5040 TS32.299 "the TS 32.299"
+5041              DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTION                    TS29.234
+5042              DIAMETER_ERROR_W-APN_UNUSED_BY_USER                         TS29.234
+5043              DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION           TS29.234
+5044              DIAMETER_ERROR_USER_NO_W-APN_SUBSCRIPTION                   TS29.234
+5045              DIAMETER_ERROR_UNSUITABLE_NETWORK                           TS29.234
+; RESERVED 5046..5060 TS29.234 "the TS 29.234"
+5061              INVALID_SERVICE_INFORMATION                                 TS29.209,TS29.211,TS29.214
+5062              FILTER_RESTRICTIONS                                         TS29.209,TS29.211,TS29.214
+5063              REQUESTED_SERVICE_NOT_AUTHORIZED                            TS29.209,TS29.211,TS29.214
+5064              DUPLICATED_AF_SESSION                                       TS29.209,TS29.211,TS29.214
+5065              IP-CAN_SESSION_NOT_AVAILABLE                                TS29.209,TS29.211,TS29.214
+5066              UNAUTHORIZED_NON_EMERGENCY_SESSION                          TS29.209,TS29.211,TS29.214
+5067              UNAUTHORIZED_SPONSORED_DATA_CONNECTIVITY                    TS29.209,TS29.211,TS29.214
+5068              TEMPORARY_NETWORK_FAILURE                                   TS29.209,TS29.211,TS29.214
+; RESERVED 5069..5080 TS29.209,TS29.211,TS29.214 "TS 29.209, TS 29.211 and TS 29.214"
+5100              DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED                     TS29.329
+5101              DIAMETER_ERROR_OPERATION_NOT_ALLOWED                        TS29.329
+5102              DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ                     TS29.329
+5103              DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED                 TS29.329
+5104              DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED                 TS29.329
+5105              "DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC"               TS29.329
+5106              DIAMETER_ERROR_SUBS_DATA_ABSENT                             TS29.329
+5107              DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA                      TS29.329
+5108              DIAMETER_ERROR_DSAI_NOT_AVAILABLE                           TS29.329
+; RESERVED 5109..5119 TS29.329 "the TS 29.329"
+5120              DIAMETER_ERROR_START_INDICATION                             TS29.061
+5121              DIAMETER_ERROR_STOP_INDICATION                              TS29.061
+5122              DIAMETER_ERROR_UNKNOWN_MBMS_BEARER_SERVICE                  TS29.061
+5123              DIAMETER_ERROR_SERVICE_AREA                                 TS29.061
+; RESERVED 5124..5139 TS29.061 "the TS 29.061"
+5140              DIAMETER_ERROR_INITIAL_PARAMETERS                           TS29.212
+5141              DIAMETER_ERROR_TRIGGER_EVENT                                TS29.212
+5142              DIAMETER_PCC_RULE_EVENT                                     TS29.212
+5143              DIAMETER_ERROR_BEARER_NOT_AUTHORIZED                        TS29.212
+5144              DIAMETER_ERROR_TRAFFIC_MAPPING_INFO_REJECTED                TS29.212
+5145              DIAMETER_QOS_RULE_EVENT                                     TS29.212
+5146              reserved                                                    TS29.212
+5147              DIAMETER_ERROR_CONFLICTING_REQUEST                          TS29.212
+5148              DIAMETER_ADC_RULE_EVENT                                     TS29.212
+5149              DIAMETER_ERROR_NBIFOM_NOT_AUTHORIZED                        TS29.212
+; RESERVED 5150..5159 TS29.212 "the TS 29.212"
+5401              DIAMETER_ERROR_IMPI_UNKNOWN                                 TS29.109
+5402              DIAMETER_ERROR_NOT_AUTHORIZED                               TS29.109
+5403              DIAMETER_ERROR_TRANSACTION_IDENTIFIER_INVALID               TS29.109
+; RESERVED 5404..5419 TS29.109 "the TS 29.109"
+5420              DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION                     TS29.272
+5421              DIAMETER_ERROR_RAT_NOT_ALLOWED                              TS29.272
+5422              DIAMETER_ERROR_EQUIPMENT_UNKNOWN                            TS29.272
+5423              DIAMETER_ERROR_UNKNOWN_SERVING_NODE                         -
+; RESERVED 5424..5449 TS29.272 "the TS 29.272"
+5450              DIAMETER_ERROR_USER_NO_NON_3GPP_SUBSCRIPTION                TS29.273
+5451              DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION                     TS29.273
+5452              DIAMETER_ERROR_RAT_TYPE_NOT_ALLOWED                         TS29.273
+5453              DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST                     TS29.273
+5454              DIAMETER_ERROR_TIMED_OUT_REQUEST                            TS29.273
+5455              DIAMETER_ERROR_TRUSTED_NON_3GPP_ACCESS_NOT_ALLOWED          TS29.273
+5456              DIAMETER_ERROR_UNTRUSTED_NON_3GPP_ACCESS_NOT_ALLOWED        TS29.273
+; RESERVED 5455..5469 TS29.273 "the TS 29.273"
+5470              DIAMETER_ERROR_SUBSESSION                                   TS29.215
+5471              DIAMETER_ERROR_ONGOING_SESSION_ESTABLISHMENT                TS29.215
+; RESERVED 5472..5489 TS29.215 "the TS 29.215"
+5490              DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK              TS29.173
+; RESERVED 5491..5509 TS29.173 "the TS 29.173"
+5510              DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY               TS29.336
+5511              DIAMETER_ERROR_UNAUTHORIZED_SERVICE                         TS29.336
+5512              "DIAMETER_ERROR_REQUESTED_RANGE_IS_NOT ALLOWED"             TS29.336
+5513              DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL   TS29.336
+5514              DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT             TS29.336
+5515              DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN                    TS29.336
+5516              DIAMETER_ERROR_UNAUTHORIZED_MTC_PROVIDER                    TS29.336
+; RESERVED 5517..5529 TS29.336 "the TS 29.336"
+5530              DIAMETER_ERROR_INVALID_SME_ADDRESS                          TS29.337
+5531              DIAMETER_ERROR_SC_CONGESTION                                TS29.337
+5532              DIAMETER_ERROR_SM_PROTOCOL                                  TS29.337
+5533              DIAMETER_ERROR_TRIGGER_REPLACE_FAILURE                      TS29.337
+5534              DIAMETER_ERROR_TRIGGER_RECALL_FAILURE                       TS29.337
+5535              DIAMETER_ERROR_ORIGINAL_MESSAGE_NOT_PENDING                 TS29.337
+; RESERVED 5536..5549 TS29.337 "the TS 29.337"
+5550              DIAMETER_ERROR_ABSENT_USER                                  TS29.338
+5551              DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS                         TS29.338
+5552              DIAMETER_ERROR_FACILITY_NOT_SUPPORTED                       TS29.338
+5553              DIAMETER_ERROR_ILLEGAL_USER                                 TS29.338
+5554              DIAMETER_ERROR_ILLEGAL_EQUIPMENT                            TS29.338
+5555              DIAMETER_ERROR_SM_DELIVERY_FAILURE                          TS29.338
+5556              DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED                       TS29.338
+5557              DIAMETER_ERROR_SERVICE_BARRED                               TS29.338
+5558              DIAMETER_ERROR_MWD_LIST_FULL                                TS29.338
+; RESERVED 5559..5569 TS29.338 "the TS 29.338"
+5570              DIAMETER_ERROR_UNKNOWN_POLICY_COUNTERS                      TS29.219
+; RESERVED 5571..5589 TS29.219 "the TS 29.219"
+5590              DIAMETER_ERROR_ORIGIN_ALUID_UNKNOWN                         TS29.343
+5591              DIAMETER_ERROR_TARGET_ALUID_UNKNOWN                         TS29.343
+5592              DIAMETER_ERROR_PFID_UNKNOWN                                 TS29.343
+5593              DIAMETER_ERROR_APP_REGISTER_REJECT                          TS29.343
+5594              DIAMETER_ERROR_PROSE_MAP_REQUEST_DISALLOWED                 TS29.343
+5595              DIAMETER_ERROR_MAP_REQUEST_REJECT                           TS29.343
+5596              DIAMETER_ERROR_REQUESTING_RPAUID_UNKNOWN                    TS29.343
+5597              DIAMETER_ERROR_UNKNOWN_OR_INVALID_TARGET_SET                TS29.343
+5598              DIAMETER_ERROR_MISSING_APPLICATION_DATA                     TS29.343
+5599              DIAMETER_ERROR_AUTHORIZATION_REJECT                         TS29.343
+5600              DIAMETER_ERROR_DISCOVERY_NOT_PERMITTED                      TS29.343
+5601              DIAMETER_ERROR_TARGET_RPAUID_UNKNOWN                        TS29.343
+5602              DIAMETER_ERROR_INVALID_APPLICATION_DATA                     TS29.343
+; RESERVED 5603..5609 TS29.343 "the TS 29.343"
+5610              DIAMETER_ERROR_UNKNOWN_PROSE_SUBSCRIPTION                   TS29.344
+5611              DIAMETER_ERROR_PROSE_NOT_ALLOWED                            TS29.344
+5612              DIAMETER_ERROR_UE_LOCATION_UNKNOWN                          TS29.344
+; RESERVED 5613..5629 TS29.344 "the TS 29.344"
+5630              DIAMETER_ERROR_NO_ASSOCIATED_DISCOVERY_FILTER               TS29.345
+5631              DIAMETER_ERROR_ANNOUNCING_UNAUTHORIZED_IN_PLMN              TS29.345
+5632              DIAMETER_ERROR_INVALID_APPLICATION_CODE                     TS29.345
+5633              DIAMETER_ERROR_PROXIMITY_UNAUTHORIZED                       TS29.345
+5634              DIAMETER_ERROR_PROXIMITY_REJECTED                           TS29.345
+5635              DIAMETER_ERROR_NO_PROXIMITY_REQUEST                         TS29.345
+5636              DIAMETER_ERROR_UNAUTHORIZED_SERVICE_IN_THIS_PLMN            TS29.345
+5637              DIAMETER_ERROR_PROXIMITY_CANCELLED                          TS29.345
+5638              DIAMETER_ERROR_INVALID_TARGET_PDUID                         TS29.345
+5639              DIAMETER_ERROR_INVALID_TARGET_RPAUID                        TS29.345
+5640              DIAMETER_ERROR_NO_ASSOCIATED_RESTRICTED_CODE                TS29.345
+5641              DIAMETER_ERROR_INVALID_DISCOVERY_TYPE                       TS29.345
+; RESERVED 5642..5649 TS29.345 "the TS 29.345"
+5650              DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED                TS29.128
+5651              DIAMETER_ERROR_INVALID_EPS_BEARER                           TS29.128
+5652              DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE             TS29.128
+5653              DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE                 TS29.128
+; RESERVED 5654..5669 TS29.128 "the TS 29.128"
+5670              DIAMETER_ERROR_UNKNKOWN_DATA                                TS29.283
+5671              DIAMETER_ERROR_REQUIRED_KEY_NOT_PROVIDED                    TS29.283
+; RESERVED 5672..5689 TS29.128 "the TS 29.128"
+5690              DIAMETER_ERROR_UNKNOWN_V2X_SUBSCRIPTION                     TS29.388
+5691              DIAMETER_ERROR_V2X_NOT_ALLOWED                              TS29.388
+; RESERVED 5692..5709 TS29.388 "the TS 29.388"

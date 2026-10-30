@@ -8,8 +8,8 @@ drift from what the sources and the edit layers would produce today.
 
 Which documents count is decided by the corpus, not the manifest: the catalog
 holds documents that define nothing the extractor reads (TS 29.201's XML
-mapping, 29.228's IE tables, 29.230's registry), so a run rebuilds what is
-committed plus whatever `add` names.
+mapping, 29.228's IE tables), so a run rebuilds what is committed plus
+whatever `add` names.
 Which *version* counts is decided by the manifest: the downloader already
 prefers the newest version with a published ETSI PDF, and a corpus that lags
 it is exactly what this module exists to expose, so a superseded pair is

@@ -1,0 +1,150 @@
+# Source declarations for 3GPP TS 29.230 (Diameter applications; 3GPP
+# specific codes and identifiers). Applied to normalized source text before
+# parsing; see src/seanchai/extractor/sources.py for the format.
+
+[[quirk]]
+name = "registry-tables"
+reason = "the document allocates codes rather than defining them: tables 4.1 (application identifiers), 5.1/1-5.1/4 (command codes), 7.1 (AVP codes) and 8.1.2-8.1.4 (experimental result codes) give each code the 3GPP TS 'specified in'"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[quirk]]
+name = "reserved-range-notes"
+reason = "tables 7.1 and 8.1.2-8.1.4 reserve ranges in full-width note rows, 'Note: The AVP codes from 320 to 399 are reserved for TS 29.234'; annex A.3 and A.4 describe the allocation of such ranges"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "29.153[37]"
+replace = "29.153 [37]"
+exact = true
+count = 1
+section = "4.1"
+reason = "table 4.1's Ns row runs the reference into the document number; clause 2's reference [37] is TS 29.153"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "29.154[38]"
+replace = "29.154 [38]"
+exact = true
+count = 1
+section = "4.1"
+reason = "table 4.1's Nt row runs the reference into the document number; clause 2's reference [38] is TS 29.154"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[quirk]]
+name = "unknown-type-tokens"
+reason = "table 7.1 types Charging-Characteristics (314, TS 29.234 [6]) 'Integer', which names no Diameter type and could be Integer32, Integer64 or neither; TS 29.234 is outside the corpus, so the cell is kept as printed rather than patched to a guess (Wireshark's TGPP.xml types 314 OctetString)"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "OctectString"
+replace = "OctetString"
+exact = true
+count = 2
+section = "7.1"
+reason = "table 7.1 misspells OctetString for TMGI (900) and MBMS-Service-Area (903)"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "Groupe"
+replace = "Grouped"
+exact = true
+count = 1
+section = "7.1"
+reason = "table 7.1 truncates Grouped for Served-User-Identity (1100)"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "UTF8Str"
+replace = "UTF8String"
+exact = true
+count = 1
+section = "7.1"
+reason = "table 7.1 truncates UTF8String for VASP-ID (1101)"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "29.109 [7"
+replace = "29.109 [7]"
+exact = true
+count = 3
+section = "8.1.4"
+reason = "table 8.1.4's rows 5401-5403 drop the reference's closing bracket; clause 2's reference [7] is TS 29.109"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "from 723 to799"
+replace = "from 723 to 799"
+count = 1
+section = "7.1"
+reason = "table 7.1's note reserving TS 29.329's range runs the range's last number into 'to'"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "Authorization -Information-SIM"
+replace = "Authorization-Information-SIM"
+exact = true
+count = 1
+section = "7.1"
+reason = "table 7.1's code 302 (TS 29.234) breaks the name with a space beside a hyphen"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "WLAN- 3GPP-IP-Access"
+replace = "WLAN-3GPP-IP-Access"
+exact = true
+count = 1
+section = "7.1"
+reason = "table 7.1's code 306 (TS 29.234) breaks the name with a space beside a hyphen"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "Redirect- Support"
+replace = "Redirect-Support"
+exact = true
+count = 1
+section = "7.1"
+reason = "table 7.1's code 1086 (TS 29.212 clause 5.3.83) breaks the name with a space beside a hyphen"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "Requested-UTRAN- GERAN-Authentication-Info"
+replace = "Requested-UTRAN-GERAN-Authentication-Info"
+exact = true
+count = 1
+section = "7.1"
+reason = "table 7.1's code 1409 (TS 29.272 clause 7.3.12) breaks the name with a space beside a hyphen"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "SM-Delivery- Failure-Cause"
+replace = "SM-Delivery-Failure-Cause"
+exact = true
+count = 1
+section = "7.1"
+reason = "table 7.1's code 3303 (TS 29.338 clause 6.3.3.5) breaks the name with a space beside a hyphen"
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "Authentication- Information -Request/Answer"
+replace = "Authentication-Information-Request/Answer"
+exact = true
+count = 1
+section = "5.1"
+reason = "table 5.1/3's command 318 (TS 29.272) breaks the name with a space beside a hyphen"
+first_version = "18.6.0"
+last_version = "18.6.0"

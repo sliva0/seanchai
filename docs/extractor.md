@@ -105,7 +105,9 @@ The declared vocabulary, with the document that forced each:
   `independent-avp-tables` (no one-to-one table pairing; also 29.215,
   whose clause 5.4.0 states S9's re-use in prose),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
-  kept, no enum code derived from them). TS 32.299 declares thirteen:
+  kept, no enum code derived from them). TS 29.230 declares
+  `registry-tables`, `unknown-type-tokens` and `reserved-range-notes`
+  (below). TS 32.299 declares thirteen:
   `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
   message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
   also 29.229's four grouped rules), `struck-rules-unused`,
@@ -385,11 +387,39 @@ TS 29.201 v18.0.0 (a legacy `.doc`) carries TS 29.214's Rx messages over
 REST: annex B is an XML Schema for 29.214's AVPs (B.1) and messages (B.2),
 with no ABNF, AVP codes or AVP table, and `regenerate --add` rejects it with
 `no AVP table found`. Nothing in the corpus cites it.
-TS 29.230 v18.6.0 is an allocation registry: tables 4.1, 5.1/1–4, 7.1 and
-8.1.2–4 assign applications, commands, AVPs and result codes. Reserved ranges
-and multiple cited specifications cannot be preserved by the current
-`.dad` definition blocks; its extraction remains deferred, not an empty
-corpus file.
+TS 29.230 v18.6.0 is an allocation registry rather than a definer, read
+behind two quirks of its own:
+
+- `registry-tables`: a table whose first column is "Application
+  identifier" (4.1), "Command code value" (5.1/1–5.1/4), "AVP Code" (7.1)
+  or "Experimental Result Code" (8.1.2–8.1.4) → `Registry`, one block per
+  table, read by physical cells (table 7.1 merges its four columns across
+  six grid columns in four patterns). A "Specified in" cell is one or more
+  `29.229 [2]`, separated by commas or "and", and the row cites each by its
+  number; a reference clause 2 lists for another document warns and the
+  number is read: TS 29.215 defines TER, which table 5.1/4 cites as
+  "29.215 [30]", clause 2's TS 29.338. A Data Type cell's dash and blank
+  are both no type, the registry's type being informational. A row with no
+  code warns and is not read: tables 7.1 (`29.561 [42]`), 8.1.2 (`29.109
+  [7]`), 8.1.3 and 8.1.4 (`32.299 [5]`) print a document alone ahead of the
+  range reserved for it.
+- `unknown-type-tokens`: a Type cell naming no Diameter type is kept as
+  printed, quoted, beside the closed set rather than patched to a guess:
+  table 7.1 types code 314 (Charging-Characteristics, TS 29.234) `"Integer"`,
+  which could be Integer32, Integer64 or neither, and TS 29.234 is outside
+  the corpus. Undeclared, such a cell fails.
+- `reserved-range-notes`: a full-width note row → a reserved range per
+  line reading "The AVP codes from a to b are reserved for P" or "The
+  Experimental Result Codes from a to b …", P less its closing full stop the
+  purpose, as printed ("TS and TS 29.389", "future use"), and every `TS
+  n.n` it names the range's documents. Any other line of a note row warns:
+  table 7.1's two "Note 2" lines on where 3GPP-AAA-Server-Name moved.
+
+The input patches repair what fails these readings: three reference cells
+(`29.153[37]`, `29.154[38]`, `29.109 [7`), `723 to799`, three type typos
+(`OctectString`, `Groupe`, `UTF8Str`) and six names broken beside a hyphen (`Redirect- Support`, `Authentication- Information
+-Request/Answer`). Names with spaces stay as printed, quoted (`"Visited PLMN
+Id"`, `"Media-Sub-Component AVP"`).
 
 ## The RFC plain-text extractor
 

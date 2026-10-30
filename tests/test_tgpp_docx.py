@@ -660,3 +660,55 @@ def test_a_vendor_table_row_citing_an_unnameable_reference_adds_no_row():
         "re-used AVPs row '3GPP2-BSID' refers to [301], which names no"
         " document a From cell can cite; no row added"
     )
+
+
+_REGISTRY_HEADER = ("AVP Code", "Attribute Name", "Specified in the TS")
+
+
+def _registry_table(*rows, header=_REGISTRY_HEADER):
+    """TS 29.230 table 7.1's shape: a header, then rows of physical cells."""
+    return tgpp_docx._Table(
+        caption="7.1",
+        rows=[
+            tgpp_docx._Row(cells=list(cells), first_cell_lines=list(cells[:1]))
+            for cells in (header, *rows)
+        ],
+    )
+
+
+def _registry_quirks(*names):
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    return Quirks([Quirk(name=name, reason="rejection") for name in names], None)
+
+
+@pytest.mark.parametrize(
+    ("table", "message"),
+    [
+        (
+            _registry_table(("1", "A", "29.229")),
+            r"unrecognized document cell '29\.229'",
+        ),
+        (
+            _registry_table(("1", "A", "29.229 [2]"), header=("AVP Code", "Owner")),
+            "unrecognized registry column 'Owner'",
+        ),
+        (
+            _registry_table(("Note: The AVP codes from 1 to 9 are reserved for x",)),
+            "does not read \\(the `reserved-range-notes` quirk\\)",
+        ),
+        (
+            _registry_table(
+                ("314", "Charging-Characteristics", "Integer"),
+                header=("AVP Code", "Attribute Name", "Data Type"),
+            ),
+            "'Integer' names no Diameter type",
+        ),
+    ],
+    ids=["bare-number", "unknown-column", "undeclared-notes", "undeclared-type"],
+)
+def test_a_registry_table_rejects_what_it_cannot_read(table, message):
+    with pytest.raises(tgpp_docx.ExtractionError, match=message):
+        tgpp_docx._extract_registry(
+            table, "7.1", [], _registry_quirks("registry-tables"), {"2": "TS 29.229"}
+        )

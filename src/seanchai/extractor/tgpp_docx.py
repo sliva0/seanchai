@@ -27,6 +27,8 @@ What maps to what in a 3GPP Diameter spec docx:
 - Columns marking where a row applies ("Acc. Type", "Applicability", "Used
   in", ...), in either table, → the row's marks, each behind its declared
   quirk.
+- Behind `registry-tables`, TS 29.230's allocation tables → `Registry`, and
+  behind `reserved-range-notes` their full-width notes → reserved ranges.
 
 The vendor-id for locally defined AVPs is not printed by enumerated-AVP
 sections, so it is taken from the spec's grouped-AVP headers (3GPP: 10415).
@@ -393,6 +395,16 @@ def _sections(
                     quirks.fire("physical-avp-columns")
                     physical = True
                     sliver = spans[0][-1] == 1 and rows[0].cells[-1] == ""
+                # TS 29.230's registry tables merge their columns across grid
+                # columns in several patterns (table 7.1: four, besides its
+                # full-width notes), so only physical cells line up with the
+                # labels.
+                if (
+                    quirks is not None
+                    and quirks.enabled("registry-tables")
+                    and rows[0].cells[0] in _REGISTRY_KINDS
+                ):
+                    physical = True
                 if physical:
                     for row, row_spans in zip(rows, spans, strict=True):
                         starts = []
@@ -1663,6 +1675,204 @@ def _extract_vendor_table(
     )
 
 
+# TS 29.230's registry tables, by the label of their first column, and the
+# labels each prints; read behind `registry-tables`.
+_REGISTRY_KINDS = {
+    "Application identifier": ast.RegistryKind.APPLICATION_IDS,
+    "Command code value": ast.RegistryKind.COMMAND_CODES,
+    "AVP Code": ast.RegistryKind.AVP_CODES,
+    "Experimental Result Code": ast.RegistryKind.RESULT_CODES,
+}
+_REGISTRY_COLUMNS = {
+    **dict.fromkeys(_REGISTRY_KINDS, ast.RegistryColumn.CODE),
+    "Application": ast.RegistryColumn.NAME,
+    "Command name": ast.RegistryColumn.NAME,
+    "Attribute Name": ast.RegistryColumn.NAME,
+    "Result text": ast.RegistryColumn.NAME,
+    "Abbreviation": ast.RegistryColumn.ABBREVIATION,
+    "Data Type": ast.RegistryColumn.TYPE,
+    "3GPP TS": ast.RegistryColumn.DEFINED_IN,
+    "Specified in 3GPP TS": ast.RegistryColumn.DEFINED_IN,
+    "Specified in the 3GPP TS": ast.RegistryColumn.DEFINED_IN,
+    "Specified in the TS": ast.RegistryColumn.DEFINED_IN,
+}
+# A "Specified in" cell: one or more "29.229 [2]", the document's number and
+# its clause-2 reference, separated by commas or "and" (table 4.1's "29.228
+# [1] and 29.229 [2]", table 7.1's "29.209 [8], 29.211 [17] , 29.214 [18]").
+_REGISTRY_DOCUMENT = r"\d{2}\.\d{3} \[\d+\]"
+_REGISTRY_DOCUMENTS_RE = re.compile(
+    rf"{_REGISTRY_DOCUMENT}(?:(?:\s*,\s*| and ){_REGISTRY_DOCUMENT})*"
+)
+_REGISTRY_DOCUMENT_RE = re.compile(r"(?P<number>\d{2}\.\d{3}) \[(?P<reference>\d+)\]")
+# A full-width note row reserving a range, behind `reserved-range-notes`:
+# "Note: The AVP codes from 320 to 399 are reserved for TS 29.234" (table
+# 7.1), "Note: The Experimental Result Codes from 2006 to 2020 are reserved
+# for the TS 29.229." (tables 8.1.2-8.1.4). The purpose is the rest of the
+# sentence, as printed, less its closing full stop.
+_RESERVED_RANGE_NOTE_RE = re.compile(
+    r"^Note(?: \d+)?: The (?:AVP codes|Experimental Result Codes) from"
+    r" (?P<first>\d+) to (?P<last>\d+) are reserved for (?P<purpose>.+?)\.?$"
+)
+_NAMED_DOCUMENT_RE = re.compile(r"TS (?P<number>\d{2}\.\d{3})(?!\d)")
+
+
+def _registry_documents(
+    text: str, label: str, references: dict[str, str], warnings: list[str]
+) -> tuple[str, ...]:
+    """A "Specified in" cell's documents, read by their numbers. A number
+    its reference does not name is the cell's to say and warns: TS 29.230
+    table 5.1/4 cites TER, which TS 29.215 defines, as "29.215 [30]", and
+    clause 2's [30] is TS 29.338."""
+    if not text:
+        return ()
+    if not _REGISTRY_DOCUMENTS_RE.fullmatch(text):
+        raise ExtractionError(f"{label}: unrecognized document cell {text!r}")
+    documents = []
+    for match in _REGISTRY_DOCUMENT_RE.finditer(text):
+        document = f"TS{match['number']}"
+        entry = references.get(match["reference"])
+        cited = None if entry is None else _ORIGIN_TS_RE.search(entry)
+        listed = None if cited is None else f"TS {cited['series']}.{cited['number']}"
+        if listed != f"TS {match['number']}":
+            warnings.append(
+                f"{label}: cites {match['number']} as [{match['reference']}],"
+                f" which clause 2 lists as {listed or 'no TS'}; reading {document}"
+            )
+        documents.append(document)
+    return tuple(dict.fromkeys(documents))
+
+
+def _extract_registry(
+    table: _Table,
+    section: str,
+    warnings: list[str],
+    quirks: sources.Quirks,
+    references: dict[str, str],
+) -> ast.Registry:
+    """A TS 29.230 registry table: one row per allocation, and behind
+    `reserved-range-notes` the full-width notes reserving ranges among them."""
+    quirks.fire("registry-tables")
+    if table.caption is None:
+        raise ExtractionError(f"{section}: registry table without a caption")
+    header = table.rows[0].cells
+    columns = []
+    for label in header:
+        if label not in _REGISTRY_COLUMNS:
+            raise ExtractionError(
+                f"table {table.caption}: unrecognized registry column {label!r}"
+            )
+        columns.append(_REGISTRY_COLUMNS[label])
+    rows: list[ast.RegistryRow | ast.RegistryReservation] = []
+    for row in table.rows[1:]:
+        cells = row.cells
+        if len(cells) == 1:
+            if cells[0]:
+                rows.extend(
+                    _reserved_ranges(
+                        row.first_cell_lines, table.caption, warnings, quirks
+                    )
+                )
+            continue
+        if len(cells) != len(columns):
+            raise ExtractionError(
+                f"table {table.caption}: a row of {len(cells)} cells under"
+                f" {len(columns)} columns: {cells!r}"
+            )
+        by_column = dict(zip(columns, cells, strict=True))
+        code = by_column[ast.RegistryColumn.CODE]
+        if not code:
+            # Tables 7.1 and 8.1.2-8.1.4 print a document alone ahead of the
+            # range reserved for it, with no code to allocate.
+            if any(by_column.values()):
+                warnings.append(
+                    f"table {table.caption}: a row with no code, printing only"
+                    f" {' '.join(cell for cell in cells if cell)!r}; not read"
+                )
+            continue
+        if not code.isdigit():
+            raise ExtractionError(f"table {table.caption}: code cell {code!r}")
+        label = f"table {table.caption} code {code}"
+        defined_in = _registry_documents(
+            by_column.get(ast.RegistryColumn.DEFINED_IN, ""),
+            label,
+            references,
+            warnings,
+        )
+        data_type = by_column.get(ast.RegistryColumn.TYPE, "")
+        printed_type = None
+        if data_type not in ("", "-", *ast.DataType):
+            # TS 29.230 table 7.1 types code 314 "Integer", which could be
+            # Integer32, Integer64 or neither; TS 29.234 would say.
+            if not quirks.enabled("unknown-type-tokens"):
+                raise ExtractionError(
+                    f"{label}: Type cell {data_type!r} names no Diameter type,"
+                    " and this document's source declaration does not keep"
+                    " one (the `unknown-type-tokens` quirk)"
+                )
+            quirks.fire("unknown-type-tokens")
+            printed_type, data_type = data_type, ""
+        try:
+            rows.append(
+                ast.RegistryRow(
+                    code=int(code),
+                    name=by_column.get(ast.RegistryColumn.NAME) or None,
+                    abbreviation=by_column.get(ast.RegistryColumn.ABBREVIATION) or None,
+                    # The registry's type is informational: a dash and a
+                    # blank cell are the same absence.
+                    data_type=None
+                    if data_type in ("", "-")
+                    else ast.DataType(data_type),
+                    printed_type=printed_type,
+                    defined_in=defined_in,
+                )
+            )
+        except (ValueError, pydantic.ValidationError) as error:
+            raise ExtractionError(f"{label}: {error}") from None
+    return ast.Registry(
+        registry=_REGISTRY_KINDS[header[0]],
+        table=table.caption,
+        source=ast.SourceRef(section=section),
+        columns=tuple(columns),
+        rows=tuple(rows),
+    )
+
+
+def _reserved_ranges(
+    lines: list[str], caption: str, warnings: list[str], quirks: sources.Quirks
+) -> list[ast.RegistryReservation]:
+    """A full-width note row's reservations, one per line; a line reserving
+    nothing is prose and warns (table 7.1's "Note 2: The 3GPP-AAA-Server-Name
+    definition is moved to TS 29.273 starting from Rel-12.")."""
+    if not quirks.enabled("reserved-range-notes"):
+        raise ExtractionError(
+            f"table {caption}: a full-width note row, which this document's"
+            " source declaration does not read (the `reserved-range-notes`"
+            f" quirk): {' '.join(lines)!r}"
+        )
+    reservations = []
+    for line in lines:
+        match = _RESERVED_RANGE_NOTE_RE.match(line)
+        if match is None:
+            warnings.append(f"table {caption}: note reserves nothing: {line!r}")
+            continue
+        quirks.fire("reserved-range-notes")
+        purpose = match["purpose"]
+        reservations.append(
+            ast.RegistryReservation(
+                first=int(match["first"]),
+                last=int(match["last"]),
+                defined_in=tuple(
+                    dict.fromkeys(
+                        f"TS{named['number']}"
+                        for named in _NAMED_DOCUMENT_RE.finditer(purpose)
+                    )
+                ),
+                purpose=purpose,
+            )
+        )
+    return reservations
+
+
 def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
     """The cover title, "3GPP TS 29.272 V18.6.0", read from wherever the
     template of the day put it: most specs print it in a cover-page table,
@@ -1737,6 +1947,8 @@ class _Collected:
     own_reference: str = ""
     avp_tables: list[_CollectedAvpTable] = field(default_factory=list)
     reused_tables: list[_ReusedTable] = field(default_factory=list)
+    # Behind `registry-tables`: TS 29.230's allocation tables.
+    registries: list[ast.Registry] = field(default_factory=list)
 
 
 @dataclass
@@ -1752,6 +1964,7 @@ class _Resolved:
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
     independent_reused: list[_ReusedTable] = field(default_factory=list)
     applications: list[ast.ApplicationScope] = field(default_factory=list)
+    registries: list[ast.Registry] = field(default_factory=list)
 
 
 def _collect(
@@ -1765,7 +1978,9 @@ def _collect(
     collected = _Collected(own_reference=own_reference)
     references = (
         _references(sections)
-        if quirks.enabled("refer-type-cells") or quirks.enabled("vendor-avp-tables")
+        if quirks.enabled("refer-type-cells")
+        or quirks.enabled("vendor-avp-tables")
+        or quirks.enabled("registry-tables")
         else {}
     )
     for section in sections:
@@ -1802,6 +2017,13 @@ def _collect(
             continue
         for table in section.tables:
             header = table.rows[0].cells
+            if quirks.enabled("registry-tables") and header[0] in _REGISTRY_KINDS:
+                collected.registries.append(
+                    _extract_registry(
+                        table, section.number, warnings, quirks, references
+                    )
+                )
+                continue
             # Substring, not membership: 29.214 titles the column group
             # "AVP Flag rules (Note 1)".
             if any("AVP Flag rules" in cell for cell in header):
@@ -1914,6 +2136,17 @@ def _resolve(
     AVP tables."""
     quirks = quirks if quirks is not None else sources.Quirks([], None)
     warnings = warnings if warnings is not None else []
+    if (
+        collected.registries
+        and not collected.avp_tables
+        and not collected.messages
+        and not collected.grouped
+    ):
+        # A registry allocates and defines nothing (TS 29.230): its tables
+        # are the whole file.
+        return _Resolved(
+            messages=[], pairs=[], definitions=[], registries=collected.registries
+        )
     if not collected.avp_tables:
         if (
             quirks.enabled("message-only")
@@ -2088,10 +2321,14 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp]) -> int:
 
 
 def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
-    """File order: applications, then messages, then each definition set's
-    AVP table followed by its re-used table, then every definition in
-    document order."""
-    sections: list[ast.Section] = [*resolved.applications, *resolved.messages]
+    """File order: applications, messages and registries, then each
+    definition set's AVP table followed by its re-used table, then every
+    definition in document order."""
+    sections: list[ast.Section] = [
+        *resolved.applications,
+        *resolved.messages,
+        *resolved.registries,
+    ]
     for avp_table, reused in resolved.pairs:
         sections.append(avp_table)
         if reused.rows:
@@ -2280,6 +2517,20 @@ QUIRKS: dict[str, str] = {
     "command-columns": (
         "read 'Used in' columns ACR, ACA, CCR and CCA as per-command use"
         " marks, '-' marking none (TS 32.299 clause 7.1.0)"
+    ),
+    "registry-tables": (
+        "read tables allocating application ids, command codes, AVP codes"
+        " and result codes, each row citing the documents defining it, as"
+        " registries (TS 29.230 clauses 4.1, 5.1, 7.1, 8.1)"
+    ),
+    "unknown-type-tokens": (
+        "keep a registry Type cell naming no Diameter type as printed,"
+        " quoted, rather than fail (TS 29.230 table 7.1 code 314, 'Integer')"
+    ),
+    "reserved-range-notes": (
+        "read full-width 'The AVP codes from a to b are reserved for ...'"
+        " notes in a registry table as reserved ranges (TS 29.230 tables"
+        " 7.1, 8.1.2-8.1.4)"
     ),
     "clause-parenthetical": (
         "strip a trailing parenthetical from a clause cell as prose —"
