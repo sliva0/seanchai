@@ -39,6 +39,10 @@ and the policy is deliberately small:
   re-print tabulated
   nowhere takes its origin's flag rules. A disagreeing reading fills
   nothing and is named in the hole instead.
+- An IETF-space AVP whose readings leave the M or V bit unplaced takes
+  RFC 6733's rule for it (`FlagRules`): V is Must-not (section 4.1.1), and
+  M is the using application's to set (section 4.1), which no document
+  along the order did.
 
 An `Avp` has every field; a name the corpus cannot complete is a `Hole`
 instead, whether a field is unstated everywhere along the order or the name
@@ -54,6 +58,8 @@ from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from functools import cached_property
 from pathlib import Path
+
+import pydantic
 
 from . import corpus, oracle
 from .dad import ast
@@ -75,12 +81,64 @@ class IncompleteCorpusError(ModelError):
         )
 
 
+class FlagRules(ast.AvpFlagRules):
+    """Flag rules holding the one setting no table cell prints: a bit RFC
+    6733 leaves to whichever application uses the AVP.
+
+    RFC 6733 section 4.1: "The 'M' bit MUST be set according to the rules
+    defined in the application specification that introduces or reuses this
+    AVP", and RFC 7423 section 4.4.1 has a re-using application "specify
+    the setting of the M-bit". An IETF AVP whose defining RFC states no M
+    rule (RFC 4072, 5447, 5777 and 6734 print no flag columns) therefore has
+    none of its own, by rule rather than by omission, and Must or May would
+    each be a guess. Its V bit is no guess: section 4.1.1 forbids a Vendor-ID
+    of zero, so an IETF-space AVP carries none and its V bit is Must-not.
+
+    The model builds these only for vendor 0 (`_ietf_rules`); every other
+    `Avp.flag_rules` is the document's `ast.AvpFlagRules` as printed.
+    """
+
+    application_defined: frozenset[ast.AvpFlag] = frozenset()
+
+    @pydantic.model_validator(mode="after")
+    def _defined_once(self) -> FlagRules:
+        placed = self.must | self.may | self.should_not | self.must_not
+        if overlap := placed & self.application_defined:
+            raise ValueError(
+                f"AVP flag {min(overlap).value!r} is both placed and"
+                " application-defined"
+            )
+        return self
+
+
+def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> ast.AvpFlagRules:
+    """An IETF-space AVP's flag rules with RFC 6733's rule for each of M and
+    V that no reading places: V under Must-not (section 4.1.1), M
+    application-defined (section 4.1). Rules placing both are returned as
+    they are; so are a document's own rules for the P bit, which RFC 6733
+    reserves. RFC 7683 and 8583 place V only, and say in prose that "the
+    M-bit usage for a given AVP in a given command may be defined by the
+    application"."""
+    rules = ast.AvpFlagRules() if flag_rules is None else flag_rules
+    placed = rules.must | rules.may | rules.should_not | rules.must_not
+    if {ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR} <= placed:
+        return rules
+    return FlagRules(
+        must=rules.must,
+        may=rules.may,
+        should_not=rules.should_not,
+        must_not=rules.must_not | ({ast.AvpFlag.VENDOR} - placed),
+        application_defined=frozenset({ast.AvpFlag.MANDATORY}) - placed,
+    )
+
+
 @dataclass(frozen=True)
 class Avp:
     """One resolved AVP, as the specification `defined_in` states it.
 
-    Every field is a fact some document in the corpus states; an AVP missing
-    one is a `Hole` instead, never an `Avp` with a gap in it.
+    Every field is a fact some document in the corpus states, or for an
+    IETF-space AVP's unplaced M and V bits, RFC 6733's rule (`FlagRules`);
+    an AVP missing one is a `Hole` instead, never an `Avp` with a gap in it.
     """
 
     name: str
@@ -378,14 +436,30 @@ class _Draft:
             ),
         )
 
+    @property
+    def complete(self) -> bool:
+        """Whether this reading states every field itself, so that no later
+        reading has anything to fill. RFC 6733's rule for an IETF AVP's
+        unplaced bits is no statement: TS 29.273's row setting M for RFC
+        5777's `QoS-Capability` still fills the origin's reading."""
+        return self.kind is not None and None not in (
+            self.vendor_id,
+            self.code,
+            self.data_type,
+            self.flag_rules,
+        )
+
     @cached_property
     def final(self) -> Avp | Hole:
+        flag_rules = self.flag_rules
+        if self.kind is not None and self.vendor_id == ast.IETF_VENDOR:
+            flag_rules = _ietf_rules(flag_rules)
         if (
             self.kind is None
             or self.vendor_id is None
             or self.code is None
             or self.data_type is None
-            or self.flag_rules is None
+            or flag_rules is None
         ):
             missing = (
                 (DEFINITION,)
@@ -395,7 +469,7 @@ class _Draft:
                     for name, value in (
                         (CODE, self.code),
                         (DATA_TYPE, self.data_type),
-                        (FLAG_RULES, self.flag_rules),
+                        (FLAG_RULES, flag_rules),
                     )
                     if value is None
                 )
@@ -407,7 +481,7 @@ class _Draft:
                 vendor_id=self.vendor_id,
                 code=self.code,
                 data_type=self.data_type,
-                flag_rules=self.flag_rules,
+                flag_rules=flag_rules,
                 section=self.section,
                 origin=self.origin,
                 conflict=self.conflict,
@@ -418,7 +492,7 @@ class _Draft:
             self.vendor_id,
             self.code,
             self.data_type,
-            self.flag_rules,
+            flag_rules,
             self.reference,
             self.section,
             self.wireshark_name,
@@ -758,7 +832,7 @@ class Model:
         found: _Draft | None = None
         for reading in self._readings(view, name, stack):
             found = reading if found is None else found.fill(reading)
-            if isinstance(found.final, Avp) or found.conflict is not None:
+            if found.complete or found.conflict is not None:
                 break
         if (
             found is not None

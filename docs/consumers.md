@@ -124,8 +124,34 @@ anything from it, and the linter's `registry-*` rules
 ([linter.md](linter.md#registry-rules)) report where documents and
 registry differ.
 
+**IETF flag rules.** RFC 6733 section 4.1 makes the M bit the business
+of "the application specification that introduces or reuses this AVP",
+and RFC 7423 section 4.4.1 has a re-using application "specify the setting
+of the M-bit"; section 4.1.1 puts a Vendor-ID in the header exactly when V
+is set, and forbids a Vendor-ID of zero. So an IETF-space (vendor 0) AVP
+whose readings place neither bit has rules all the same: V under
+Must-not, and M application-defined, a `model.FlagRules` (an
+`ast.AvpFlagRules` with an `application_defined` column) holding M there
+rather than in any of the four columns, since Must or May would be a
+guess. RFC 4072, 5447, 5777 and 6734 print no flag columns and say
+nothing of either bit, RFC 4005 and 7155 leave `QoS-Filter-Rule`'s cells
+blank, and RFC 7683, 7944 and 8581–8583 place V alone, 7683 and 8583
+saying that "the M-bit usage for a given AVP in a given command may be
+defined by the application"; each gets the rule for the bit it leaves
+unplaced. It is
+the last reading, after every document's: TS 29.273's tables set M for
+RFC 5777's `QoS-Capability`, and TS 29.273's reading takes that, while
+RFC 5777's own keeps the rule. A vendor AVP gets no such rule: TS 29.389's
+three V2X rows print blank flag cells, and their V bit is read from clause
+6.3.1's "The Vendor-ID header of all AVPs defined in this specification
+shall be set to 3GPP (10415)" ([extractor.md](extractor.md#quirks)), their M
+bit staying in no column, as TS 29.212 leaves `PDN-Connection-ID`'s. The
+python-diameter generator writes an application-defined M as no
+`is_mandatory`, the dictionary's default.
+
 **Holes.** An `Avp` has every field: code, type and flag rules are facts some
-document states, never `None`. A name the corpus cannot complete is a
+document states, or RFC 6733's rule for an IETF AVP's unplaced bits, never
+`None`. A name the corpus cannot complete is a
 `model.Hole` instead, naming the document that falls short, the fields it
 leaves unstated (`code`, `data_type`, `flag_rules`), or `definition` when
 the name resolves nowhere, plus the re-used origin the corpus lacks or the
@@ -147,12 +173,9 @@ and never changes `name`, which is always the document's spelling;
 `Model.build(books, strict=True)` raises `model.IncompleteCorpusError`,
 listing every hole, rather than build a model with any. The default is
 `strict=False` because the committed corpus does not build strictly, and
-every standing hole is a statement its source does not make. RFC 4072,
-5447, 5777 and 6734 print no flag-rule columns and state no M or V bit in
-prose (RFC 6942, which does, is read), RFC 4590 is a RADIUS document with
-no Diameter types or flags, and TS 29.272's re-print of RFC 5447's
-`MIP6-Agent-Info` inherits the gap. RFC 4005 and 7155 leave
-`QoS-Filter-Rule`'s flag cells blank, as TS 29.389 does for three V2X rows.
+every standing hole is a statement its source does not make. RFC 4590 is
+a RADIUS document with no Diameter types (TS 29.229's table types the four
+Digest AVPs it re-uses, for its own reading),
 TS 32.299's `VAS-Id` and `VASP-Id` are roadmap item K, TS 29.061's
 `3GPP-Session-Stop-Indicator` row states only a code, and the names that
 resolve nowhere are the linter's standing `unresolved-reference` cases and
@@ -185,8 +208,8 @@ the brackets, and the document's own AVPs must be right — name, type,
 mandatory default — in the library's global dictionary. An "extra AVP" may
 be another specification's legitimate use of the same command class. The
 model is built non-strictly: a hole is checked on what its document states
-(RFC 4072's `EAP-Payload` has an identity but no flag rules), and one with no
-`(vendor-id, code)` is reported as unchecked.
+(TS 29.061's `3GPP-Session-Stop-Indicator` has an identity but no type),
+and one with no `(vendor-id, code)` is reported as unchecked.
 
 The first Cx run (library 0.9.0, which pins TS 29.229 V13.1.0) reported 94
 disagreements, the sharpest being three command classes carrying RFC 4740's

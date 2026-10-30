@@ -188,15 +188,18 @@ generated ones are built by hand, as the library's are.
 - **The application id on the wire.** The library's classes leave
   `header.application_id` to the caller, and so do these; `APPLICATION_ID`
   is the value to set and the dispatcher's key.
-- **An M bit the flag rules leave open** (M under May) takes the
-  dictionary's default, as there is no `is_mandatory` to state.
+- **An M bit the flag rules leave open** (M under May, or an IETF AVP's
+  M that RFC 6733 section 4.1 leaves to the application using it,
+  RFC 4072's `EAP-Payload` among them) takes the dictionary's default, as
+  there is no `is_mandatory` to state.
 - **The library's grouped classes, where they serve.** A grouped AVP whose
   library class agrees with the reading on member identities, nesting and
   M bits is carried by that class, with its own `is_required` flags rather
   than the document's.
 - **Holes.** An AVP the corpus knows the identity of but cannot complete
-  is an `AvpGenDef` with the reason as a comment (`# hole: RFC4072
-  EAP-Payload: no flag_rules`), or, absent from the dictionary, an entry
+  is an `AvpGenDef` with the reason as a comment (`# hole: TS29.061
+  3GPP-Session-Stop-Indicator: no data_type, no flag_rules`), or, absent
+  from the dictionary, an entry
   typed `Avp` when no document states its type. A name that resolves to no
   identity, like `* [ AVP ]`, is a comment in its place; the library keeps
   such AVPs in the additional AVPs.

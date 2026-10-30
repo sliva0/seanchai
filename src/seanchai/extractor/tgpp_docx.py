@@ -1445,6 +1445,42 @@ def _extract_avp_table(
     return avp_table, reused
 
 
+_VENDOR_ID_SENTENCE = (
+    "The Vendor-ID header of all AVPs defined in this specification shall be"
+    " set to 3GPP (10415)."
+)
+
+
+def _vendor_id_sentence(
+    table: ast.AvpTable, section: _Section, quirks: sources.Quirks
+) -> ast.AvpTable:
+    """`table` with V under Must in every row whose flag cells are all
+    blank, read from its clause's sentence setting the Vendor-ID header of
+    all the document's AVPs. The `vendor-id-sentence` quirk.
+
+    Most documents print the sentence above a table whose V cells say the
+    same. TS 29.389 table 6.3.1-1 leaves every flag cell of its three rows
+    blank, in every version from V14.0.0 to V19.0.0, and clause 6.3.1's
+    sentence is its one statement of the V bit: RFC 6733 section 4.1.1
+    puts a Vendor-ID in the header exactly when V is set. The M bit stays
+    blank, as printed. A row printing any flag keeps its cells.
+    """
+    prose = " ".join(paragraph.text for paragraph in section.paragraphs)
+    if _VENDOR_ID_SENTENCE not in prose:
+        raise ExtractionError(
+            f"{section.number}: AVP table {table.table} sits in a clause not"
+            f" saying {_VENDOR_ID_SENTENCE!r} (the `vendor-id-sentence` quirk)"
+        )
+    rows = []
+    for row in table.rows:
+        if row.flag_rules == ast.AvpFlagRules():
+            vendor = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR}))
+            row = row.model_copy(update={"flag_rules": vendor})
+            quirks.fire("vendor-id-sentence")
+        rows.append(row)
+    return table.model_copy(update={"rows": tuple(rows)})
+
+
 # RFC 6733 §4.5's abbreviations, printed in TS 32.299 table 7.1.0.1 as the
 # RFC extractor's `type-short-forms` reads them in RFC 6733's own table.
 _TYPE_SHORT_FORMS = {"DiamIdent": "DiameterIdentity", "DiamURI": "DiameterURI"}
@@ -2130,6 +2166,8 @@ def _collect(
                 avp_table, note_reused = _extract_avp_table(
                     table, section.number, warnings, quirks, references, own_reference
                 )
+                if quirks.enabled("vendor-id-sentence"):
+                    avp_table = _vendor_id_sentence(avp_table, section, quirks)
                 collected.avp_tables.append(
                     _CollectedAvpTable(
                         table=avp_table,
@@ -2583,6 +2621,12 @@ QUIRKS: dict[str, str] = {
     "dotted-flags": (
         "read a space-less dotted flags cell ('M.V') with the period as the"
         " separator (TS 29.061, 29.212)"
+    ),
+    "vendor-id-sentence": (
+        "read an AVP table's clause saying 'The Vendor-ID header of all AVPs"
+        " defined in this specification shall be set to 3GPP (10415).' as V"
+        " under Must for the rows whose flag cells are all blank (TS 29.389"
+        " clause 6.3.1)"
     ),
     "access-type-column": (
         "read an 'Acc. Type' column's cells as the access types the row"

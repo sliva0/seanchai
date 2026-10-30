@@ -96,6 +96,8 @@ The declared vocabulary, with the document that forced each:
   marks of several words, separated by commas only);
   `note-defined-in-rfc` (29.229, 29.329: AVP-table
   notes naming a defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
+  `vendor-id-sentence` (29.389: the V bit its table leaves blank, from the
+  clause's sentence);
   `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1: commands
   and re-used rows, no local AVPs); and five from TS 29.273:
   `command-reference-only` (clauses holding only a pointer),
@@ -220,6 +222,15 @@ Walks paragraphs and tables in document order under numbered headings:
   row untyped and adds a re-used row citing clause 2's reference n,
   thirteen of them `OMA-DDS-Charging_Data` (`[223]`); an entry naming no
   document warns and adds none.
+- Behind `vendor-id-sentence`, an AVP table whose clause says "The
+  Vendor-ID header of all AVPs defined in this specification shall be set
+  to 3GPP (10415)." gets V under Must in each row whose flag cells are all
+  blank: TS 29.389 table 6.3.1-1 prints none for its three rows, in every
+  version from V14.0.0 to V19.0.0, and the sentence in clause 6.3.1 is the
+  document's one statement of the bit (RFC 6733 section 4.1.1 sets V
+  exactly when the header carries a Vendor-ID). The M cells stay blank, as
+  printed; a row printing any flag is left alone, and a clause without the
+  sentence fails.
 - The "re-used Diameter AVPs" table → `ReusedAvps` with M-bit overrides,
   and the code and type where the table prints them (TS 29.172 table
   7.4.1-2).

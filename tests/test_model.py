@@ -257,6 +257,13 @@ class TestResolutionOrder:
         assert resolved.members[0].hole is None
 
 
+_I32 = ast.DataType.INTEGER32
+_M = frozenset({ast.AvpFlag.MANDATORY})
+_V = frozenset({ast.AvpFlag.VENDOR})
+# RFC 6733's rule for an IETF AVP no document flags.
+_IETF_RULES = model.FlagRules(must_not=_V, application_defined=_M)
+
+
 def _flagless_table(*rows):
     """RFC 5777's shape: Name, Code, Section and Type, no flag columns."""
     return ast.AvpTable(
@@ -320,11 +327,73 @@ class TestHoles:
             model.Hole(
                 "RFC4590",
                 "Digest-Realm",
-                (model.DATA_TYPE, model.FLAG_RULES),
+                (model.DATA_TYPE,),
                 vendor_id=0,
                 code=104,
+                flag_rules=_IETF_RULES,
             ),
         )
+
+    def test_an_ietf_avp_no_reading_flags_takes_rfc_6733s_rule(self):
+        """RFC 5777 prints no flag columns. RFC 6733 section 4.1 leaves the M
+        bit to the application using the AVP, and section 4.1.1 forbids a
+        zero Vendor-ID, so V is Must-not: complete, by rule."""
+        spec = _spec(
+            "RFC5777",
+            [_flagless_table(ast.AvpTableRow(name="Port", code=530, data_type=_I32))],
+            vendor_id=0,
+            version=None,
+        )
+        built = model.Model.build(corpus.Corpus([_entry(spec)]), strict=True)
+        resolved = built.resolve("RFC5777", "Port")
+        assert resolved is not None
+        assert resolved.flag_rules == _IETF_RULES
+        assert resolved.flag_rules != ast.AvpFlagRules(must_not=_V)
+
+    def test_a_citing_tables_m_bit_comes_before_rfc_6733s_rule(self):
+        """TS 29.273 sets M for RFC 5777's `QoS-Capability` in its own table;
+        its reading takes that, and RFC 5777's own reading keeps the rule."""
+        origin = _spec(
+            "RFC5777",
+            [_flagless_table(ast.AvpTableRow(name="Port", code=530, data_type=_I32))],
+            vendor_id=0,
+            version=None,
+        )
+        rules = ast.AvpFlagRules(must=_M, must_not=_V)
+        row = ast.AvpTableRow(name="Port", code=530, data_type=_I32, flag_rules=rules)
+        citing = _spec("3GPP TS 29.900", [_table(row), _reused("Port", "RFC5777")])
+        built = _model(origin, citing)
+        resolved = built.resolve("TS29.900", "Port")
+        assert resolved is not None
+        assert (resolved.defined_in, resolved.flag_rules) == ("RFC5777", rules)
+        origins = built.resolve("RFC5777", "Port")
+        assert origins is not None and origins.flag_rules == _IETF_RULES
+
+    def test_an_ietf_row_placing_v_only_has_m_application_defined(self):
+        """RFC 7683's table places V under Must-not and M nowhere, and says
+        the M-bit usage "may be defined by the application"."""
+        rules = ast.AvpFlagRules(must_not=_V)
+        row = ast.AvpTableRow(name="OC-OLR", code=623, data_type=_I32, flag_rules=rules)
+        spec = _spec("RFC7683", [_table(row)], vendor_id=0, version=None)
+        resolved = _model(spec).resolve("RFC7683", "OC-OLR")
+        assert resolved is not None
+        assert resolved.flag_rules == _IETF_RULES
+
+    def test_a_vendor_row_placing_v_only_states_no_m(self):
+        """TS 29.389 table 6.3.1-1, V read from clause 6.3.1: no rule
+        completes a vendor AVP's M bit."""
+        row = ast.AvpTableRow(
+            name="Thing", code=1, data_type=_I32, flag_rules=ast.AvpFlagRules(must=_V)
+        )
+        resolved = _model(_spec("3GPP TS 29.900", [_table(row)])).resolve(
+            "TS29.900", "Thing"
+        )
+        assert resolved is not None
+        assert type(resolved.flag_rules) is ast.AvpFlagRules
+
+    def test_a_bit_cannot_be_both_placed_and_application_defined(self):
+        with pytest.raises(ValueError, match="both placed and application-defined"):
+            model.FlagRules(may=_M, application_defined=_M)
 
     def test_readings_giving_two_codes_are_not_merged(self):
         origin = _spec("3GPP TS 29.901", [_table(_row("Thing", 2))])
@@ -783,10 +852,10 @@ class TestOverTheCommittedCorpus:
 
 
 # What keeps the committed corpus from building strictly, by document and
-# cause. Each is a statement its source does not make: RFC 4072, 5447, 5777
-# and 6734 print no flag-rule columns and state no M or V bit in prose, RFC
-# 4590 is a RADIUS document with no Diameter types, TS 32.299's untyped rows
-# are roadmap item K, and every "resolves nowhere" is one of
+# cause. Each is a statement its source does not make: RFC 4590 is a RADIUS
+# document with no Diameter types, TS 29.061's 3GPP-Session-Stop-Indicator
+# row prints only a code, TS 32.299's untyped rows are roadmap item K, and
+# every "resolves nowhere" is one of
 # docs/linter.md's standing unresolved references or a re-used origin
 # outside the corpus. A hole worked off shrinks this; a new one is a corpus
 # regression. Roadmap item N lists them by cause.
@@ -794,18 +863,8 @@ _STANDING_HOLES = {
     "RFC4004": {
         "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-HA-SPI"]
     },
-    "RFC4005": {"no flag_rules": ["QoS-Filter-Rule"]},
-    "RFC4072": {
-        "no flag_rules": [
-            "Accounting-EAP-Auth-Method",
-            "EAP-Key-Name",
-            "EAP-Master-Session-Key",
-            "EAP-Payload",
-            "EAP-Reissued-Payload",
-        ]
-    },
     "RFC4590": {
-        "no data_type, no flag_rules": [
+        "no data_type": [
             "Digest-AKA-Auts",
             "Digest-Algorithm",
             "Digest-Auth-Param",
@@ -828,99 +887,6 @@ _STANDING_HOLES = {
             "SIP-AOR",
         ]
     },
-    "RFC5447": {
-        "no flag_rules": [
-            "MIP6-Agent-Info",
-            "MIP6-Feature-Vector",
-            "MIP6-Home-Link-Prefix",
-        ]
-    },
-    "RFC5777": {
-        "no flag_rules": [
-            "Absolute-End-Fractional-Seconds",
-            "Absolute-End-Time",
-            "Absolute-Start-Fractional-Seconds",
-            "Absolute-Start-Time",
-            "C-VID-End",
-            "C-VID-Start",
-            "Classifier",
-            "Classifier-ID",
-            "Day-Of-Month-Mask",
-            "Day-Of-Week-Mask",
-            "Diffserv-Code-Point",
-            "Direction",
-            "ETH-Ether-Type",
-            "ETH-Option",
-            "ETH-Proto-Type",
-            "ETH-SAP",
-            "EUI64-Address",
-            "EUI64-Address-Mask",
-            "EUI64-Address-Mask-Pattern",
-            "Excess-Treatment",
-            "Filter-Rule",
-            "Filter-Rule-Precedence",
-            "Fragmentation-Flag",
-            "From-Spec",
-            "High-User-Priority",
-            "ICMP-Code",
-            "ICMP-Type",
-            "ICMP-Type-Number",
-            "IP-Address",
-            "IP-Address-End",
-            "IP-Address-Mask",
-            "IP-Address-Range",
-            "IP-Address-Start",
-            "IP-Bit-Mask-Width",
-            "IP-Option",
-            "IP-Option-Type",
-            "IP-Option-Value",
-            "Low-User-Priority",
-            "MAC-Address",
-            "MAC-Address-Mask",
-            "MAC-Address-Mask-Pattern",
-            "Month-Of-Year-Mask",
-            "Negated",
-            "Port",
-            "Port-End",
-            "Port-Range",
-            "Port-Start",
-            "Protocol",
-            "QoS-Capability",
-            "QoS-Parameters",
-            "QoS-Profile-Id",
-            "QoS-Profile-Template",
-            "QoS-Resources",
-            "QoS-Semantics",
-            "S-VID-End",
-            "S-VID-Start",
-            "TCP-Flag-Type",
-            "TCP-Flags",
-            "TCP-Option",
-            "TCP-Option-Type",
-            "TCP-Option-Value",
-            "Time-Of-Day-Condition",
-            "Time-Of-Day-End",
-            "Time-Of-Day-Start",
-            "Timezone-Flag",
-            "Timezone-Offset",
-            "To-Spec",
-            "Treatment-Action",
-            "Use-Assigned-Address",
-            "User-Priority-Range",
-            "VLAN-ID-Range",
-        ]
-    },
-    "RFC6734": {
-        "no flag_rules": [
-            "Key",
-            "Key-Lifetime",
-            "Key-Name",
-            "Key-SPI",
-            "Key-Type",
-            "Keying-Material",
-        ]
-    },
-    "RFC7155": {"no flag_rules": ["QoS-Filter-Rule"]},
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
     "TS29.154": {"resolves nowhere": ["External-Group-Identifier"]},
     "TS29.212": {
@@ -944,7 +910,6 @@ _STANDING_HOLES = {
         ]
     },
     "TS29.229": {"resolves nowhere": ["Line-Identifier"]},
-    "TS29.272": {"no flag_rules": ["MIP6-Agent-Info"]},
     "TS29.273": {
         "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
             "Logical-Access-ID"
@@ -952,13 +917,6 @@ _STANDING_HOLES = {
         "resolves nowhere": ["NSWO-Authorization"],
     },
     "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
-    "TS29.389": {
-        "no flag_rules": [
-            "V2X-Application-Server",
-            "V2X-Authorization-Data",
-            "V2X-Permission-in-VPLMN",
-        ]
-    },
     "TS32.299": {
         "resolves nowhere": [
             "Monitored-HPLMN-Identifier",
@@ -1009,5 +967,5 @@ def test_the_pinned_dictionary_names_the_avps_it_spells_differently():
         avp = named.resolve(reference, name)
         assert avp is not None
         assert (avp.name, avp.wireshark_name) == (name, wireshark_name)
-    hole = named.hole("RFC4072", "EAP-Payload")
-    assert hole is not None and hole.wireshark_name == "EAP-Payload"
+    hole = named.hole("RFC4590", "Digest-Realm")
+    assert hole is not None and hole.wireshark_name == "Digest-Realm"

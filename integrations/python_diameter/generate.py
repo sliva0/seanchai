@@ -403,6 +403,10 @@ class Definition:
     @property
     def is_mandatory(self) -> bool | None:
         """The M bit the flag rules fix, or None where they leave it open."""
+        # An IETF AVP whose documents state no M rule has it application-
+        # defined (`model.FlagRules`, RFC 6733 section 4.1): in no column,
+        # so None, and the library encodes the dictionary's default, as for
+        # an M under May.
         flag_rules = self.sample.flag_rules
         if flag_rules is None:
             return None

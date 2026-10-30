@@ -56,9 +56,9 @@
 ; Table: 6.3.1-1
 ; Page: 14
 ; Columns: Name           Code   Section   Type         Must   May   S.not   M.not   Encrypt
-V2X-Authorization-Data    4700   6.3.2     Grouped      -      -     -       -       -
-V2X-Permission-in-VPLMN   4701   6.3.3     Unsigned32   -      -     -       -       -
-V2X-Application-Server    4702   6.3.4     Grouped      -      -     -       -       -
+V2X-Authorization-Data    4700   6.3.2     Grouped      V      -     -       -       -
+V2X-Permission-in-VPLMN   4701   6.3.3     Unsigned32   V      -     -       -       -
+V2X-Application-Server    4702   6.3.4     Grouped      V      -     -       -       -
 
 
 ; Type: Reused AVPs

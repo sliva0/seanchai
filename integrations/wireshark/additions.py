@@ -395,6 +395,33 @@ def _message(document: Document) -> str:
                 else "."
             )
         )
+    open_m = [
+        a.name
+        for a in additions
+        if isinstance(a.flag_rules, model.FlagRules)
+        and ast.AvpFlag.MANDATORY in a.flag_rules.application_defined
+    ]
+    if open_m:
+        notes.append(
+            f"The document states no M bit for {', '.join(open_m)}: RFC 6733"
+            " section 4.1 leaves it to the application that uses an AVP, so"
+            f" {'its' if len(open_m) == 1 else 'their'} mandatory attribute is"
+            " left at the dictionary's default, and section 4.1.1 forbids the"
+            " V bit in the IETF space."
+        )
+    no_m = [
+        a.name
+        for a in additions
+        if a.flag_rules is not None
+        and a.name not in open_m
+        and _flag(a.flag_rules, ast.AvpFlag.MANDATORY) is None
+    ]
+    if no_m:
+        notes.append(
+            f"The document states no M bit for {', '.join(no_m)}, so"
+            f" {'its' if len(no_m) == 1 else 'their'} mandatory attribute is"
+            " left at the dictionary's default."
+        )
     if document.skipped:
         notes.append(
             "Not added here: "

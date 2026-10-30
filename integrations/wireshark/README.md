@@ -60,9 +60,13 @@ member is named as the dictionary names it (`Cx-User-Data` for TS 29.229's
 `User-Data`), or as the ABNF does where no entry carries it: six do not,
 TS 32.299's and TS 29.345's names no document defines and `Time-Window`
 (below). Wireshark's dictionary loader stores `<gavp>` names without
-resolving them. Where a document states no flag rules (RFC 6734, TS 29.389's
-three V2X rows), `mandatory` is left at the DTD's default, `vendor-bit`
-follows the vendor, and the description says so.
+resolving them. Where a document states no M bit, `mandatory` is left at
+the DTD's default and the description says so: TS 29.389's three V2X rows
+state V alone (clause 6.3.1), and RFC 6734 and RFC 8582's
+`OC-Maximum-Rate` leave M to the application using the AVP (RFC 6733
+section 4.1), with `vendor-bit="mustnot"` for the IETF space (section
+4.1.1). Where a document states no flag rules at all, `vendor-bit`
+follows the vendor.
 
 An entry goes after the dictionary entry of its vendor with the nearest
 lower code, its own document's entries first, so most land beside their

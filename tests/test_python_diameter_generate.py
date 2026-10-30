@@ -344,16 +344,26 @@ def test_a_grouped_class_the_library_cannot_use_is_an_addition(package):
 def test_holes_stay_in_the_tables_with_their_reason(package):
     """A hole with an identity is an `AvpGenDef` that says so; one without,
     like `* [ AVP ]`, is a comment in its place."""
-    sta = _read(package, "ts29_273_7")
-    assert (
-        '        AvpGenDef("eap_payload", AVP_EAP_PAYLOAD, is_required=True),'
-        "  # hole: RFC4072 EAP-Payload: no flag_rules\n"
-    ) in sta
     additions = _read(package, "additions")
+    assert (
+        '        AvpGenDef("tgpp_session_stop_indicator",'
+        " AVP_TGPP_3GPP_SESSION_STOP_INDICATOR, VENDOR_TGPP),  # hole: TS29.061"
+        " 3GPP-Session-Stop-Indicator: no data_type, no flag_rules\n"
+    ) in additions
     assert (
         "        # * [ Line-Identifier ]  # hole: TS29.229 Line-Identifier:"
         " resolves nowhere\n        # * [ AVP ]\n"
     ) in additions
+
+
+def test_an_application_defined_m_bit_takes_the_dictionary_default(package):
+    """RFC 4072 states no M rule for EAP-Payload, which RFC 6733 section 4.1
+    leaves to the application, and TS 29.273's STa table leaves blank: no
+    `is_mandatory`, as for an M under May."""
+    sta = _read(package, "ts29_273_7")
+    assert (
+        '        AvpGenDef("eap_payload", AVP_EAP_PAYLOAD, is_required=True),\n'
+    ) in sta
 
 
 def _member(presence, minimum, maximum):
