@@ -84,6 +84,10 @@ class _Index:
     applications: list[ast.Application] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
+    # Names a re-used table cites from this file itself. TS 29.212's Gxx, S9,
+    # Sd and St tables list Gx's AVPs "from" TS 29.212: those are this file's
+    # own definitions, so no rule treats them as belonging elsewhere.
+    self_cited: list[str] = field(default_factory=list)
 
     @property
     def rows(self) -> list[ast.AvpTableRow]:
@@ -92,6 +96,11 @@ class _Index:
 
 def _index(spec: ast.Specification) -> _Index:
     index = _Index()
+    try:
+        own = ast.spec_ref(spec.specification)
+    except ast.SpecRefError:
+        # A hand-authored file may name a document no From cell can cite.
+        own = None
     for section in spec.sections:
         if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
             index.definitions.append(section)
@@ -103,7 +112,10 @@ def _index(spec: ast.Specification) -> _Index:
             index.tables.append(section)
         elif isinstance(section, ast.ReusedAvps):
             for row in section.rows:
-                index.reused[row.name] = row.origin
+                if row.origin == own:
+                    index.self_cited.append(row.name)
+                else:
+                    index.reused[row.name] = row.origin
     return index
 
 
@@ -503,6 +515,23 @@ def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Findin
     return findings
 
 
+def _self_cited_exists(index: _Index) -> list[Finding]:
+    """A re-used row citing this file for an AVP the file neither defines nor
+    tabulates: `reused-avp-not-in-origin`, with the file as the origin."""
+    local = {definition.name for definition in index.definitions} | {
+        row.name for row in index.rows
+    }
+    return [
+        Finding(
+            Severity.ERROR,
+            "reused-avp-not-in-origin",
+            f"{name} is listed as re-used from this document, which neither"
+            " defines nor tabulates it",
+        )
+        for name in sorted(set(index.self_cited) - local)
+    ]
+
+
 def _local_and_reused(index: _Index) -> list[Finding]:
     """An AVP both defined here and listed as re-used from elsewhere.
 
@@ -545,6 +574,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_table_agrees_with_definitions(index),
         *_tables_agree_with_each_other(index),
         *_vendor_id_agrees_with_header(index, spec.vendor_id),
+        *_self_cited_exists(index),
         *_local_and_reused(index),
     ]
     return _ordered(findings)

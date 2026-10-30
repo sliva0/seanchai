@@ -10,7 +10,7 @@ from seanchai.dad.corrections import (
     reused_row,
 )
 
-# Ten grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
+# Eleven grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
 # table 5.3.0.1 marks the V flag mandatory for every one of them, exactly the
 # TS 29.272 WLAN-offloadability case.
 _VENDORLESS = [
@@ -22,6 +22,7 @@ _VENDORLESS = [
     ("Sponsored-Connectivity-Data", "5.3.27"),
     ("Callee-Information", "5.3.62"),
     ("MA-Information", "5.3.66"),
+    ("5GS-RAN-NAS-Release-Cause", "5.3.69"),
     ("NGAP-Cause", "5.3.72"),
     ("Wireline-User-Location-Info", "5.3.75"),
 ]

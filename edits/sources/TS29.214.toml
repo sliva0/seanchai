@@ -52,3 +52,9 @@ name = "worded-enum-values"
 reason = "clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE INFORMATION (0)', and its intro names the default by that label"
 first_version = "18.4.0"
 last_version = "18.4.0"
+
+[[quirk]]
+name = "access-type-headings"
+reason = "the clause 5.3.69 heading names the access types after the AVP, '(3GPP-5GS and Non-3GPP-5GS access type)'; unread, the grouped definition was missing"
+first_version = "18.4.0"
+last_version = "18.4.0"

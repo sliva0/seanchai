@@ -73,6 +73,15 @@ _COMMAND_INTRO_RE = re.compile(
 # match — harmless, since a section only becomes a definition when its body
 # holds an AVP-header rule or an Enumerated intro with a known code.
 _AVP_TITLE_RE = re.compile(r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)( AVP)?$")
+# TS 29.212 heads most of its AVP clauses with the access types the AVP
+# applies to: "Event-Trigger AVP (All access types)", "Bearer-Operation AVP
+# (Applicable access type 3GPP-GPRS)", "QoS-Upgrade AVP (3GPP-GPRS Access Type
+# only)", once without " AVP" (5.3.44); 29.214 clause 5.3.69 once. Read
+# behind `access-type-headings`.
+_ACCESS_TYPE_TITLE_RE = re.compile(
+    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)(?: AVP)?"
+    r" \((?:[^()]* )?[Aa]ccess [Tt]ypes?(?: [^()]*)?\)$"
+)
 _DIAMETER_HEADER_RE = re.compile(
     # The rule name is normalized separately: source docx sometimes carries
     # stray spaces inside it ("< User-Data -Request>").
@@ -797,6 +806,9 @@ _VALUES_SOURCE_RES = (
         r"The values defined in the \S+ AVP are the same as the ones defined in"
         r" (?P<source>.+?)\.?$"
     ),
+    # TS 29.061 clause 17.7.25: "The enumeration values are defined in 3GPP
+    # TS 25.413 [92]."
+    re.compile(r"The enumeration values are defined in (?P<source>.+?)\.?$"),
     # TS 32.299 clause 7.2.238: "The values are taken from OMNA WSP Content
     # Type Numbers [210]."
     re.compile(r"The values are taken from (?P<source>.+?)\.?$"),
@@ -1455,6 +1467,9 @@ class _Collected:
     # heading. They cannot become definitions until the AVP table is known —
     # that is where their code comes from.
     pending_enums: list[tuple[_Section, str]] = field(default_factory=list)
+    # The document's own reference, which a re-used row may cite (TS 29.212's
+    # Gxx and S9 tables list Gx's AVPs "from" TS 29.212).
+    own_reference: str = ""
     avp_tables: list[_CollectedAvpTable] = field(default_factory=list)
     reused_tables: list[_ReusedTable] = field(default_factory=list)
 
@@ -1482,7 +1497,7 @@ def _collect(
 ) -> _Collected:
     """Walk the document once, classifying sections. Source-shaped work only:
     nothing here needs to know about another section."""
-    collected = _Collected()
+    collected = _Collected(own_reference=own_reference)
     references = _references(sections) if quirks.enabled("refer-type-cells") else {}
     for section in sections:
         if quirks.enabled("prose-application-ids"):
@@ -1560,7 +1575,7 @@ def _collect(
                         section=section.number,
                     )
                 )
-        if title := _AVP_TITLE_RE.match(section.title):
+        if title := _avp_title(section.title, quirks):
             found = _find_rule_header(section, _AVP_HEADER_RE, quirks)
             if found is not None:
                 header, body_start = found
@@ -1585,6 +1600,18 @@ def _collect(
             elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
                 collected.pending_enums.append((section, title["name"]))
     return collected
+
+
+def _avp_title(title: str, quirks: sources.Quirks) -> re.Match | None:
+    """The heading of a clause that may define an AVP, with its name."""
+    if match := _AVP_TITLE_RE.match(title):
+        return match
+    if quirks.enabled("access-type-headings") and (
+        match := _ACCESS_TYPE_TITLE_RE.match(title)
+    ):
+        quirks.fire("access-type-headings")
+        return match
+    return None
 
 
 def _resolve(
@@ -1703,11 +1730,17 @@ def _resolve(
     # both defined locally and listed as re-used is a real inconsistency in the
     # source, and reporting it is the linter's job — resolving it by deleting
     # what the specification says is not this layer's call to make.
-    external = {row.name for _, reused in pairs for row in reused.rows}
+    #
+    # A row citing this document itself is no "elsewhere": TS 29.212's Gxx,
+    # S9, Sd and St re-used tables (clauses 5a.4.0, 5b.4.0, 5c.4.1, E.6.4.1)
+    # list Gx's AVPs as re-used from TS 29.212, and 29.061's SGmb table (20.5)
+    # cites 29.061, while the clauses defining them are in the same document.
+    reused_rows = [row for _, reused in pairs for row in reused.rows]
     if independent:
-        external.update(
-            row.name for table in collected.reused_tables for row in table.rows
-        )
+        reused_rows += [row for table in collected.reused_tables for row in table.rows]
+    external = {
+        row.name for row in reused_rows if row.origin != collected.own_reference
+    }
     local_enums = [
         (section, name)
         for section, name in collected.pending_enums
@@ -1854,11 +1887,16 @@ QUIRKS: dict[str, str] = {
     "external-enum-values": (
         "read where an enumerated clause says its values are defined ('The"
         " possible values are those defined in TS 32.422 [23] ...') into"
-        " `; Values:` (TS 29.212 clause 5.3.120, TS 29.272, TS 32.299)"
+        " `; Values:` (TS 29.061 clause 17.7.25, TS 29.212 clause 5.3.120,"
+        " TS 29.272, TS 32.299)"
     ),
     "worded-enum-values": (
         "read 'Label In Words (n)' enumerated values, keeping the label's"
         " spaces (TS 29.368 clause 6.4.6)"
+    ),
+    "access-type-headings": (
+        "read 'Name AVP (All access types)' clause headings, the parenthetical"
+        " naming the access types the AVP applies to (TS 29.212 clause 5.3)"
     ),
     "dashed-enum-values": (
         "read '- NAME (n)' enumerated values, a list dash printed as text"

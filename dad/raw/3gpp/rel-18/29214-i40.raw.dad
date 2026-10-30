@@ -653,6 +653,17 @@ MA-Information ::= < AVP header: 570 >
 
 
 ; Type: Grouped AVP
+; Name: 5GS-RAN-NAS-Release-Cause
+; Section: 5.3.69
+; Page: 56
+5GS-RAN-NAS-Release-Cause ::= < AVP header: 572 >
+        [ 5GMM-Cause ]
+        [ 5GSM-Cause ]
+        [ NGAP-Cause ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
 ; Name: NGAP-Cause
 ; Section: 5.3.72
 ; Page: 57

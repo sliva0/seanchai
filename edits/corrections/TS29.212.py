@@ -8,18 +8,49 @@ from seanchai.dad.corrections import (
     table_row,
 )
 
-# Eight grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
-# table 5.3.0.1 marks the V flag mandatory for every one of them, exactly the
-# TS 29.272 WLAN-offloadability case. The rest of the document's AVP-format
-# lines carry the 10415 the table implies.
+# Thirty-nine grouped-AVP clauses print `<AVP header: nnn>` with no
+# vendor-id while the AVP tables mark the V flag mandatory for every one of
+# them, exactly the TS 29.272 WLAN-offloadability case. The rest of the
+# document's AVP-format lines carry the 10415 the tables imply.
 _VENDORLESS = [
+    ("Charging-Rule-Install", "5.3.2"),
+    ("Charging-Rule-Remove", "5.3.3"),
+    ("Charging-Rule-Definition", "5.3.4"),
+    ("TFT-Packet-Filter-Information", "5.3.14"),
+    ("QoS-Information", "5.3.16"),
+    ("Charging-Rule-Report", "5.3.18"),
+    ("Access-Network-Charging-Identifier-Gx", "5.3.22"),
+    ("Event-Report-Indication", "5.3.30"),
+    ("Allocation-Retention-Priority", "5.3.32"),
+    ("Tunnel-Information", "5.3.36"),
+    ("CoA-Information", "5.3.37"),
+    ("Default-EPS-Bearer-QoS", "5.3.48"),
+    ("Flow-Information", "5.3.53"),
+    ("Packet-Filter-Information", "5.3.56"),
+    ("Usage-Monitoring-Information", "5.3.60"),
     ("Routing-Rule-Install", "5.3.68"),
     ("Routing-Rule-Remove", "5.3.69"),
     ("Routing-Rule-Definition", "5.3.70"),
     ("Routing-Filter", "5.3.72"),
     ("TDF-Information", "5.3.78"),
+    ("Redirect-Information", "5.3.82"),
+    ("Application-Detection-Information", "5.3.91"),
+    ("Default-QoS-Information", "5.3.103"),
+    ("Conditional-APN-Aggregate-Max-Bitrate", "5.3.105"),
+    ("Presence-Reporting-Area-Information", "5.3.109"),
+    ("Fixed-User-Location-Info", "5.3.112"),
     ("Routing-Rule-Report", "5.3.118"),
     ("Conditional-Policy-Information", "5.3.128"),
+    ("PRA-Install", "5.3.130"),
+    ("PRA-Remove", "5.3.131"),
+    ("QoS-Rule-Install", "5a.3.1"),
+    ("QoS-Rule-Remove", "5a.3.2"),
+    ("QoS-Rule-Definition", "5a.3.3"),
+    ("QoS-Rule-Report", "5a.3.5"),
+    ("ADC-Rule-Install", "5b.3.1"),
+    ("ADC-Rule-Remove", "5b.3.2"),
+    ("ADC-Rule-Definition", "5b.3.3"),
+    ("ADC-Rule-Report", "5b.3.6"),
     ("CS-Service-Resource-Report", "E.6.3.6"),
 ]
 
@@ -37,6 +68,8 @@ _IPV6_RULES = [
     ("RA-Answer", "5.6.5", "3GPP-SGSN-Ipv6-Address"),
     ("TS-Request", "5b.6.2", "3GPP-SGSN-Ipv6-Address"),
     ("TS-Request", "5b.6.2", "3GPP-GGSN-Ipv6-Address"),
+    ("Event-Report-Indication", "5.3.30", "3GPP-SGSN-Ipv6-Address"),
+    ("QoS-Rule-Install", "5a.3.1", "3GPP-GGSN-Ipv6-Address"),
 ]
 
 CORRECTIONS = (

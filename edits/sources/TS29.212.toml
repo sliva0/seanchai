@@ -56,3 +56,51 @@ name = "prose-application-ids"
 reason = "the command headers print no application id; clauses 5.1 (Gx), 5a.1 (Gxx), 5b.1 (Sd), 5c.1 (St) and E.6.1 (S15) each state one: 'the Application-ID for the Gx Application in the present release is 16777238'"
 first_version = "18.2.0"
 last_version = "18.2.0"
+
+[[quirk]]
+name = "access-type-headings"
+reason = "69 AVP clause headings in 5.3 and 5a.3 name the access types the AVP applies to after it, 'Event-Trigger AVP (All access types)'; unread, 22 enumerated and 21 grouped definitions were missing"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "clause 5.3.19 labels PCC-Rule-Status's value 2 in words, 'TEMPORARILY INACTIVE (2)'"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "is of type of Enumerated"
+replace = "is of type Enumerated"
+count = 7
+section = "5.3"
+reason = "seven enumerated clauses (5.3.21, 5.3.23, 5.3.24, 5.3.57, 5.3.66, 5.3.116, 5.3.117) say 'is of type of Enumerated', which kept them from being read as definitions; every other clause says 'is of type Enumerated'"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "is type of Enumerated"
+replace = "is of type Enumerated"
+count = 3
+section = "E.6.3"
+reason = "clauses E.6.3.3-E.6.3.5 say 'is type of Enumerated', which kept them from being read as definitions"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "USER_CSG_ HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (36)"
+replace = "USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (36)"
+exact = true
+section = "5.3.7"
+reason = "Event-Trigger's value 36 prints a space after an underscore, which kept it out of the value list; value 35 beside it is USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "TRUSTED- N3GA (2)"
+replace = "TRUSTED-N3GA (2)"
+exact = true
+section = "5.3.31"
+reason = "RAT-Type's value 2 prints a space after a hyphen, which kept it out of the value list; the neighbouring values are single tokens (VIRTUAL, WIRELINE-CABLE)"
+first_version = "18.2.0"
+last_version = "18.2.0"

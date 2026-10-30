@@ -51,6 +51,13 @@ cannot judge.
   A note, because a re-print and an extension look the same from one file;
   superseded by the cross-file rules when the origin is readable.
 
+A re-used row citing the file's own document is no re-use: TS 29.212's Gxx,
+S9, Sd and St tables list Gx's AVPs from TS 29.212, and 29.061's SGmb table
+cites 29.061. Those AVPs are the file's own to every rule (their headers'
+vendor-ids included), and a self-cited name the file neither defines nor
+tabulates is `reused-avp-not-in-origin`, with no corpus needed; the corpus
+has no case.
+
 ## Cross-file rules
 
 With `--corpus`, each re-used row is resolved against the document it cites.

@@ -108,6 +108,43 @@ def test_a_definition_claiming_another_vendors_space():
     assert "states vendor 10415" in finding.message
 
 
+def test_a_row_citing_its_own_document_is_no_re_use():
+    """TS 29.212's Gxx and S9 tables cite TS 29.212 for Gx's AVPs: the
+    definition is the file's own, so it is checked like one and not reported
+    as defined here and re-used from elsewhere."""
+    spec = _spec(
+        _grouped("Own", 700, vendor_id=None),
+        ast.AvpTable(
+            table="6.3.1",
+            columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE, ast.AvpColumn.MUST),
+            source=ast.SourceRef(section="6.3"),
+            rows=(
+                ast.AvpTableRow(
+                    name="Own",
+                    code=700,
+                    flag_rules=ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR})),
+                ),
+            ),
+        ),
+        _reused(ast.ReusedAvpRow(name="Own", origin="TS29.329")),
+    )
+
+    assert _rules(linter.lint(spec)) == ["vendor-id-mismatch"]
+
+
+def test_a_row_citing_its_own_document_for_nothing_it_has_is_an_error():
+    spec = _spec(
+        _table(_row("Own", 700)),
+        _reused(ast.ReusedAvpRow(name="Elsewhere", origin="TS29.329")),
+    )
+
+    (finding,) = linter.lint(spec)
+
+    assert finding.rule == "reused-avp-not-in-origin"
+    assert finding.severity is linter.Severity.ERROR
+    assert "Elsewhere" in finding.message
+
+
 def test_errors_sort_before_notes():
     spec = _spec(
         _grouped("First", 700),
@@ -278,8 +315,8 @@ _RAW_ERRORS = {
         "duplicate-identity",
         "table-definition-mismatch",
     ],
-    "29212-i20.raw.dad": ["vendor-id-mismatch"] * 8,
-    "29214-i40.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 10,
+    "29212-i20.raw.dad": ["vendor-id-mismatch"] * 39,
+    "29214-i40.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 11,
     "29336-i20.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
@@ -341,10 +378,8 @@ def test_the_raw_corpus_reports_exactly_what_the_documents_say(path):
 def test_the_committed_corpus_reports_only_its_known_notes(path):
     """Pins what the corpus says today, so a rule that starts firing on
     something else shows up as a test failure rather than as noise. Notes
-    usually survive correction unchanged, so most specs carry one count for
-    both kinds; 29.336 and 29.338 differ because their corrections delete a
-    duplicated definition (removing its note) and align a misprinted name
-    with its re-used row (adding one)."""
+    survive correction unchanged, so each spec carries one count for both
+    kinds."""
     notes = [
         f
         for f in linter.lint(parser.parse(path.read_text(encoding="utf-8")))
@@ -357,15 +392,12 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     expected = {
         "29061-i10": 7,
         "29128-i00": 3,
-        "29212-i20": 9,
         "29272-i70": 9,
         "29273-i60": 5,
         "29283-i00": 1,
-        "29336-i20.raw": 7,
-        "29336-i20": 6,
+        "29336-i20": 5,
         "29337-i00": 2,
-        "29338-i20.raw": 3,
-        "29338-i20": 4,
+        "29338-i20": 2,
         "29388-i10": 1,
         # The corrections cite RFC origins for table 7.1.0.1, whose clauses
         # 7.1.9, 7.1.14, 7.1.17 and B.2.4 print bodies of their own.
@@ -656,17 +688,6 @@ _STANDING_CORPUS_NOTES = {
     },
     "29212-i20.dad": {
         "origin-not-in-corpus": ["TS283.034, X.S0057"],
-        "reused-reprint": [
-            "ADC-Rule-Definition",
-            "ADC-Rule-Install",
-            "ADC-Rule-Remove",
-            "ADC-Rule-Report",
-            "Application-Detection-Information",
-            "Default-EPS-Bearer-QoS",
-            "Packet-Filter-Information",
-            "Redirect-Information",
-            "Usage-Monitoring-Information",
-        ],
     },
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
@@ -691,6 +712,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-origin-indirect": ["Charged-Party"],
         "reused-reprint": [
             "AESE-Communication-Pattern",
+            "Allocation-Retention-Priority",
             "Communication-Pattern-Set",
             "MIP6-Agent-Info",
         ],
@@ -714,7 +736,7 @@ _STANDING_CORPUS_NOTES = {
             "Serving-Node",
         ],
         "reused-origin-indirect": ["User-CSG-Information"],
-        "reused-reprint": ["EPS-Location-Information", "User-Identifier"],
+        "reused-reprint": ["EPS-Location-Information"],
     },
     "29337-i00.dad": {
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
@@ -722,7 +744,6 @@ _STANDING_CORPUS_NOTES = {
     "29338-i20.dad": {
         "origin-not-in-corpus": ["TS23.329"],
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
-        "reused-reprint": ["SM-Delivery-Failure-Cause", "SMSMI-Correlation-ID"],
     },
     "29345-i00.dad": {
         "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],

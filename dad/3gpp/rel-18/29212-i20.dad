@@ -1344,6 +1344,486 @@ UDP-Source-Port         TS29.212
 
 
 ; Type: Enumerated AVP
+; Name: Bearer-Usage
+; Section: 5.3.1
+; Page: 128
+Bearer-Usage ::= < Enumerated AVP header: 1000 10415 >
+        GENERAL        = 0
+        IMS_SIGNALLING = 1
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Install
+; Section: 5.3.2
+; Page: 128
+Charging-Rule-Install ::= < AVP header: 1001 10415 > ;; corrected: (TS29.212.py#vendor-id-charging-rule-install)
+      * [ Charging-Rule-Definition ]
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+        [ Bearer-Identifier ]
+        [ Monitoring-Flags ]
+        [ Rule-Activation-Time ]
+        [ Rule-Deactivation-Time ]
+        [ Resource-Allocation-Notification ]
+        [ Charging-Correlation-Indicator ]
+        [ IP-CAN-Type ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Remove
+; Section: 5.3.3
+; Page: 129
+Charging-Rule-Remove ::= < AVP header: 1002 10415 > ;; corrected: (TS29.212.py#vendor-id-charging-rule-remove)
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+      * [ Required-Access-Info ]
+        [ Resource-Release-Notification ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Definition
+; Section: 5.3.4
+; Page: 130
+Charging-Rule-Definition ::= < AVP header: 1003 10415 > ;; corrected: (TS29.212.py#vendor-id-charging-rule-definition)
+        { Charging-Rule-Name }
+        [ Service-Identifier ]
+        [ Rating-Group ]
+      * [ Flow-Information ]
+        [ Default-Bearer-Indication ]
+        [ TDF-Application-Identifier ]
+        [ Flow-Status ]
+        [ QoS-Information ]
+        [ PS-to-CS-Session-Continuity ]
+        [ Reporting-Level ]
+        [ Online ]
+        [ Offline ]
+        [ Max-PLR-DL ]
+        [ Max-PLR-UL ]
+        [ Metering-Method ]
+        [ Precedence ]
+        [ AF-Charging-Identifier ]
+      * [ Flows ]
+        [ Monitoring-Key ]
+     *2 [ Redirect-Information ]
+        [ Mute-Notification ]
+        [ AF-Signalling-Protocol ]
+        [ Sponsor-Identity ]
+        [ Application-Service-Provider-Identity ]
+      * [ Required-Access-Info ]
+        [ Sharing-Key-DL ]
+        [ Sharing-Key-UL ]
+        [ Traffic-Steering-Policy-Identifier-DL ]
+        [ Traffic-Steering-Policy-Identifier-UL ]
+        [ Content-Version ]
+      * [ Calling-Party-Address ]
+        [ Callee-Information ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Event-Trigger
+; Section: 5.3.7
+; Page: 131
+Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
+        SGSN_CHANGE                                             = 0
+        QOS_CHANGE                                              = 1
+        RAT_CHANGE                                              = 2
+        TFT_CHANGE                                              = 3
+        PLMN_CHANGE                                             = 4
+        LOSS_OF_BEARER                                          = 5
+        RECOVERY_OF_BEARER                                      = 6
+        IP-CAN_CHANGE                                           = 7
+        QOS_CHANGE_EXCEEDING_AUTHORIZATION                      = 11
+        RAI_CHANGE                                              = 12
+        USER_LOCATION_CHANGE                                    = 13
+        NO_EVENT_TRIGGERS                                       = 14
+        OUT_OF_CREDIT                                           = 15
+        REALLOCATION_OF_CREDIT                                  = 16
+        REVALIDATION_TIMEOUT                                    = 17
+        UE_IP_ADDRESS_ALLOCATE                                  = 18
+        UE_IP_ADDRESS_RELEASE                                   = 19
+        DEFAULT_EPS_BEARER_QOS_CHANGE                           = 20
+        AN_GW_CHANGE                                            = 21
+        SUCCESSFUL_RESOURCE_ALLOCATION                          = 22
+        RESOURCE_MODIFICATION_REQUEST                           = 23
+        PGW_TRACE_CONTROL                                       = 24
+        UE_TIME_ZONE_CHANGE                                     = 25
+        TAI_CHANGE                                              = 26
+        ECGI_CHANGE                                             = 27
+        CHARGING_CORRELATION_EXCHANGE                           = 28
+        APN-AMBR_MODIFICATION_FAILURE                           = 29
+        USER_CSG_INFORMATION_CHANGE                             = 30
+        USAGE_REPORT                                            = 33
+        DEFAULT-EPS-BEARER-QOS_MODIFICATION_FAILURE             = 34
+        USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE           = 35
+        USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE         = 36
+        ROUTING_RULE_CHANGE                                     = 37
+        APPLICATION_START                                       = 39
+        APPLICATION_STOP                                        = 40
+        CS_TO_PS_HANDOVER                                       = 42
+        UE_LOCAL_IP_ADDRESS_CHANGE                              = 43
+        ACCESS_NETWORK_INFO_REPORT                              = 45
+        CREDIT_MANAGEMENT_SESSION_FAILURE                       = 46
+        DEFAULT_QOS_CHANGE                                      = 47
+        CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT = 48
+        ADDITION_OF_ACCESS                                      = 49
+        REMOVAL_OF_ACCESS                                       = 50
+        UNAVAILABLITY_OF_ACCESS                                 = 51
+        AVAILABLITY_OF_ACCESS                                   = 52
+        RESOURCE_RELEASE                                        = 53
+        ENODEB_CHANGE                                           = 54
+        3GPP_PS_DATA_OFF_CHANGE                                 = 55
+        UE_STATUS_RESUME                                        = 56
+        SUCCESSFUL_QOS_UPDATE                                   = 57
+
+
+; Type: Enumerated AVP
+; Name: Metering-Method
+; Section: 5.3.8
+; Page: 139
+Metering-Method ::= < Enumerated AVP header: 1007 10415 >
+        DURATION        = 0
+        VOLUME          = 1
+        DURATION_VOLUME = 2
+        EVENT           = 3
+
+
+; Type: Enumerated AVP
+; Name: Offline
+; Section: 5.3.9
+; Page: 139
+Offline ::= < Enumerated AVP header: 1008 10415 >
+        DISABLE_OFFLINE = 0
+        ENABLE_OFFLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Online
+; Section: 5.3.10
+; Page: 140
+Online ::= < Enumerated AVP header: 1009 10415 >
+        DISABLE_ONLINE = 0
+        ENABLE_ONLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Reporting-Level
+; Section: 5.3.12
+; Page: 141
+Reporting-Level ::= < Enumerated AVP header: 1011 10415 >
+        SERVICE_IDENTIFIER_LEVEL     = 0
+        RATING_GROUP_LEVEL           = 1
+        SPONSORED_CONNECTIVITY_LEVEL = 2
+
+
+; Type: Grouped AVP
+; Name: TFT-Packet-Filter-Information
+; Section: 5.3.14
+; Page: 142
+TFT-Packet-Filter-Information ::= < AVP header: 1013 10415 > ;; corrected: (TS29.212.py#vendor-id-tft-packet-filter-information)
+        [ Precedence ]
+        [ TFT-Filter ]
+        [ ToS-Traffic-Class ]
+        [ Security-Parameter-Index ]
+        [ Flow-Label ]
+        [ Flow-Direction ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Information
+; Section: 5.3.16
+; Page: 142
+QoS-Information ::= < AVP header: 1016 10415 > ;; corrected: (TS29.212.py#vendor-id-qos-information)
+        [ QoS-Class-Identifier ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Extended-Max-Requested-BW-UL ]
+        [ Extended-Max-Requested-BW-DL ]
+        [ Guaranteed-Bitrate-UL ]
+        [ Guaranteed-Bitrate-DL ]
+        [ Extended-GBR-UL ]
+        [ Extended-GBR-DL ]
+        [ Bearer-Identifier ]
+        [ Allocation-Retention-Priority ]
+        [ APN-Aggregate-Max-Bitrate-UL ]
+        [ APN-Aggregate-Max-Bitrate-DL ]
+        [ Extended-APN-AMBR-UL ]
+        [ Extended-APN-AMBR-DL ]
+      * [ Conditional-APN-Aggregate-Max-Bitrate ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: QoS-Class-Identifier
+; Section: 5.3.17
+; Page: 143
+QoS-Class-Identifier ::= < Enumerated AVP header: 1028 10415 >
+        QCI_1  = 1
+        QCI_2  = 2
+        QCI_3  = 3
+        QCI_4  = 4
+        QCI_5  = 5
+        QCI_6  = 6
+        QCI_7  = 7
+        QCI_8  = 8
+        QCI_9  = 9
+        QCI_65 = 65
+        QCI_66 = 66
+        QCI_67 = 67
+        QCI_69 = 69
+        QCI_70 = 70
+        QCI_71 = 71
+        QCI_72 = 72
+        QCI_73 = 73
+        QCI_74 = 74
+        QCI_75 = 75
+        QCI_76 = 76
+        QCI_79 = 79
+        QCI_80 = 80
+        QCI_82 = 82
+        QCI_83 = 83
+        QCI_84 = 84
+        QCI_85 = 85
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Report
+; Section: 5.3.18
+; Page: 146
+Charging-Rule-Report ::= < AVP header: 1018 10415 > ;; corrected: (TS29.212.py#vendor-id-charging-rule-report)
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+        [ Bearer-Identifier ]
+        [ PCC-Rule-Status ]
+        [ Rule-Failure-Code ]
+        [ Final-Unit-Indication ]
+      * [ RAN-NAS-Release-Cause ]
+      * [ Content-Version ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: PCC-Rule-Status
+; Section: 5.3.19
+; Page: 147
+PCC-Rule-Status ::= < Enumerated AVP header: 1019 10415 >
+        ACTIVE               = 0
+        INACTIVE             = 1
+        TEMPORARILY INACTIVE = 2
+
+
+; Type: Enumerated AVP
+; Name: Bearer-Operation
+; Section: 5.3.21
+; Page: 147
+Bearer-Operation ::= < Enumerated AVP header: 1021 10415 >
+        TERMINATION   = 0
+        ESTABLISHMENT = 1
+        MODIFICATION  = 2
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Charging-Identifier-Gx
+; Section: 5.3.22
+; Page: 147
+Access-Network-Charging-Identifier-Gx ::= < AVP header: 1022 10415 > ;; corrected: (TS29.212.py#vendor-id-access-network-charging-identifier-gx)
+        { Access-Network-Charging-Identifier-Value }
+      * [ Charging-Rule-Base-Name ]
+      * [ Charging-Rule-Name ]
+        [ IP-CAN-Session-Charging-Scope ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Bearer-Control-Mode
+; Section: 5.3.23
+; Page: 148
+Bearer-Control-Mode ::= < Enumerated AVP header: 1023 10415 >
+        UE_ONLY  = 0
+        RESERVED = 1
+        UE_NW    = 2
+
+
+; Type: Enumerated AVP
+; Name: Network-Request-Support
+; Section: 5.3.24
+; Page: 148
+Network-Request-Support ::= < Enumerated AVP header: 1024 10415 >
+        NETWORK_REQUEST NOT SUPPORTED = 0
+        NETWORK_REQUEST SUPPORTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: IP-CAN-Type
+; Section: 5.3.27
+; Page: 149
+IP-CAN-Type ::= < Enumerated AVP header: 1027 10415 >
+        3GPP-GPRS    = 0
+        DOCSIS       = 1
+        xDSL         = 2
+        WiMAX        = 3
+        3GPP2        = 4
+        3GPP-EPS     = 5
+        Non-3GPP-EPS = 6
+        FBA          = 7
+        3GPP-5GS     = 8
+        Non-3GPP-5GS = 9
+
+
+; Type: Enumerated AVP
+; Name: QoS-Negotiation
+; Section: 5.3.28
+; Page: 150
+QoS-Negotiation ::= < Enumerated AVP header: 1029 10415 >
+        NO_QoS_NEGOTIATION        = 0
+        QoS_NEGOTIATION_SUPPORTED = 1
+
+
+; Type: Enumerated AVP
+; Name: QoS-Upgrade
+; Section: 5.3.29
+; Page: 150
+QoS-Upgrade ::= < Enumerated AVP header: 1030 10415 >
+        QoS_UPGRADE_NOT_SUPPORTED = 0
+        QoS_UPGRADE_SUPPORTED     = 1
+
+
+; Type: Grouped AVP
+; Name: Event-Report-Indication
+; Section: 5.3.30
+; Page: 150
+Event-Report-Indication ::= < AVP header: 1033 10415 > ;; corrected: (TS29.212.py#vendor-id-event-report-indication)
+        [ AN-Trusted ]
+      * [ Event-Trigger ]
+        [ User-CSG-Information ]
+        [ IP-CAN-Type ]
+     *2 [ AN-GW-Address ]
+        [ 3GPP-SGSN-Address ]
+        [ 3GPP-SGSN-IPv6-Address ] ;; corrected: (TS29.212.py#ipv6-case-rule-event-report-indication-3gpp-sgsn-ipv6-address)
+        [ 3GPP-SGSN-MCC-MNC ]
+        [ Framed-IP-Address ]
+        [ RAT-Type ]
+        [ RAI ]
+        [ 3GPP-User-Location-Info ]
+        [ Trace-Data ]
+        [ Trace-Reference ]
+        [ 3GPP2-BSID ]
+        [ 3GPP-MS-TimeZone ]
+        [ Routing-IP-Address ]
+        [ UE-Local-IP-Address ]
+        [ HeNB-Local-IP-Address ]
+        [ UDP-Source-Port ]
+        [ Presence-Reporting-Area-Information ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: RAT-Type
+; Section: 5.3.31
+; Page: 151
+RAT-Type ::= < Enumerated AVP header: 1032 10415 >
+        WLAN           = 0
+        VIRTUAL        = 1
+        TRUSTED-N3GA   = 2
+        WIRELINE       = 3
+        WIRELINE-CABLE = 4
+        WIRELINE-BBF   = 5
+        UTRAN          = 1000
+        GERAN          = 1001
+        GAN            = 1002
+        HSPA_EVOLUTION = 1003
+        EUTRAN         = 1004
+        EUTRAN-NB-IoT  = 1005
+        NR             = 1006
+        LTE-M          = 1007
+        NR-U           = 1008
+        NR-REDCAP      = 1039
+        NR-EREDCAP     = 1040
+        CDMA2000_1X    = 2000
+        HRPD           = 2001
+        UMB            = 2002
+        EHRPD          = 2003
+
+
+; Type: Grouped AVP
+; Name: Allocation-Retention-Priority
+; Section: 5.3.32
+; Page: 155
+Allocation-Retention-Priority ::= < AVP header: 1034 10415 > ;; corrected: (TS29.212.py#vendor-id-allocation-retention-priority)
+        { Priority-Level }
+        [ Pre-emption-Capability ]
+        [ Pre-emption-Vulnerability ]
+
+
+; Type: Grouped AVP
+; Name: Tunnel-Information
+; Section: 5.3.36
+; Page: 155
+Tunnel-Information ::= < AVP header: 1038 10415 > ;; corrected: (TS29.212.py#vendor-id-tunnel-information)
+        [ Tunnel-Header-Length ]
+
+
+; Type: Grouped AVP
+; Name: CoA-Information
+; Section: 5.3.37
+; Page: 156
+CoA-Information ::= < AVP header: 1039 10415 > ;; corrected: (TS29.212.py#vendor-id-coa-information)
+        { Tunnel-Information }
+        { CoA-IP-Address }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Rule-Failure-Code
+; Section: 5.3.38
+; Page: 156
+Rule-Failure-Code ::= < Enumerated AVP header: 1031 10415 >
+        UNKNOWN_RULE_NAME                  = 1
+        RATING_GROUP_ERROR                 = 2
+        SERVICE_IDENTIFIER_ERROR           = 3
+        RESOURCES_LIMITATION               = 5
+        MAX_NR_BEARERS_REACHED             = 6
+        UNKNOWN_BEARER_ID                  = 7
+        MISSING_BEARER_ID                  = 8
+        MISSING_FLOW_INFORMATION           = 9
+        RESOURCE_ALLOCATION_FAILURE        = 10
+        UNSUCCESSFUL_QOS_VALIDATION        = 11
+        INCORRECT_FLOW_INFORMATION         = 12
+        PS_TO_CS_HANDOVER                  = 13
+        TDF_APPLICATION_IDENTIFIER_ERROR   = 14
+        NO_BEARER_BOUND                    = 15
+        FILTER_RESTRICTIONS                = 16
+        AN_GW_FAILED                       = 17
+        MISSING_REDIRECT_SERVER_ADDRESS    = 18
+        CM_END_USER_SERVICE_DENIED         = 19
+        CM_CREDIT_CONTROL_NOT_APPLICABLE   = 20
+        CM_AUTHORIZATION_REJECTED          = 21
+        CM_USER_UNKNOWN                    = 22
+        CM_RATING_FAILED                   = 23
+        ROUTING_RULE_REJECTION             = 24
+        UNKNOWN_ROUTING_ACCESS_INFORMATION = 25
+        NO_NBIFOM_SUPPORT                  = 26
+        UE_STATE_SUSPEND                   = 27
+        TRAFFIC_STEERING_ERROR             = 28
+        SAME_TIME_ERROR                    = 29
+
+
+; Type: Enumerated AVP
+; Name: Session-Release-Cause
+; Section: 5.3.44
+; Page: 159
+Session-Release-Cause ::= < Enumerated AVP header: 1045 10415 >
+        UNSPECIFIED_REASON            = 0
+        UE_SUBSCRIPTION_REASON        = 1
+        INSUFFICIENT_SERVER_RESOURCES = 2
+        IP_CAN_SESSION_TERMINATION    = 3
+        UE_IP_ADDRESS_RELEASE         = 4
+
+
+; Type: Enumerated AVP
 ; Name: Pre-emption-Capability
 ; Section: 5.3.46
 ; Page: 160
@@ -1365,9 +1845,33 @@ Pre-emption-Vulnerability ::= < Enumerated AVP header: 1048 10415 >
 ; Name: Default-EPS-Bearer-QoS
 ; Section: 5.3.48
 ; Page: 161
-Default-EPS-Bearer-QoS ::= < AVP header: 1049 >
+Default-EPS-Bearer-QoS ::= < AVP header: 1049 10415 > ;; corrected: (TS29.212.py#vendor-id-default-eps-bearer-qos)
         [ QoS-Class-Identifier ]
         [ Allocation-Retention-Priority ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Resource-Allocation-Notification
+; Section: 5.3.50
+; Page: 161
+Resource-Allocation-Notification ::= < Enumerated AVP header: 1063 10415 >
+        ENABLE_NOTIFICATION = 0
+
+
+; Type: Grouped AVP
+; Name: Flow-Information
+; Section: 5.3.53
+; Page: 162
+Flow-Information ::= < AVP header: 1058 10415 > ;; corrected: (TS29.212.py#vendor-id-flow-information)
+        [ Flow-Description ]
+        [ Packet-Filter-Identifier ]
+        [ Packet-Filter-Usage ]
+        [ ToS-Traffic-Class ]
+        [ Security-Parameter-Index ]
+        [ Flow-Label ]
+        [ Flow-Direction ]
+        [ Routing-Rule-Identifier ]
       * [ AVP ]
 
 
@@ -1375,7 +1879,7 @@ Default-EPS-Bearer-QoS ::= < AVP header: 1049 >
 ; Name: Packet-Filter-Information
 ; Section: 5.3.56
 ; Page: 163
-Packet-Filter-Information ::= < AVP header: 1061 >
+Packet-Filter-Information ::= < AVP header: 1061 10415 > ;; corrected: (TS29.212.py#vendor-id-packet-filter-information)
         [ Packet-Filter-Identifier ]
         [ Precedence ]
         [ Packet-Filter-Content ]
@@ -1386,11 +1890,21 @@ Packet-Filter-Information ::= < AVP header: 1061 >
       * [ AVP ]
 
 
+; Type: Enumerated AVP
+; Name: Packet-Filter-Operation
+; Section: 5.3.57
+; Page: 164
+Packet-Filter-Operation ::= < Enumerated AVP header: 1062 10415 >
+        DELETION     = 0
+        ADDITION     = 1
+        MODIFICATION = 2
+
+
 ; Type: Grouped AVP
 ; Name: Usage-Monitoring-Information
 ; Section: 5.3.60
 ; Page: 164
-Usage-Monitoring-Information ::= < AVP header: 1067 >
+Usage-Monitoring-Information ::= < AVP header: 1067 10415 > ;; corrected: (TS29.212.py#vendor-id-usage-monitoring-information)
         [ Monitoring-Key ]
      *2 [ Granted-Service-Unit ]
      *2 [ Used-Service-Unit ]
@@ -1399,6 +1913,69 @@ Usage-Monitoring-Information ::= < AVP header: 1067 >
         [ Usage-Monitoring-Report ]
         [ Usage-Monitoring-Support ]
       * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Usage-Monitoring-Level
+; Section: 5.3.61
+; Page: 165
+Usage-Monitoring-Level ::= < Enumerated AVP header: 1068 10415 >
+        SESSION_LEVEL  = 0
+        PCC_RULE_LEVEL = 1
+        ADC_RULE_LEVEL = 2
+
+
+; Type: Enumerated AVP
+; Name: Usage-Monitoring-Report
+; Section: 5.3.62
+; Page: 165
+Usage-Monitoring-Report ::= < Enumerated AVP header: 1069 10415 >
+        USAGE_MONITORING_REPORT_REQUIRED = 0
+
+
+; Type: Enumerated AVP
+; Name: Usage-Monitoring-Support
+; Section: 5.3.63
+; Page: 165
+Usage-Monitoring-Support ::= < Enumerated AVP header: 1070 10415 >
+        USAGE_MONITORING_DISABLED = 0
+
+
+; Type: Enumerated AVP
+; Name: CSG-Information-Reporting
+; Section: 5.3.64
+; Page: 166
+CSG-Information-Reporting ::= < Enumerated AVP header: 1071 10415 >
+        CHANGE_CSG_CELL                     = 0
+        CHANGE_CSG_SUBSCRIBED_HYBRID_CELL   = 1
+        CHANGE_CSG_UNSUBSCRIBED_HYBRID_CELL = 2
+
+
+; Type: Enumerated AVP
+; Name: Flow-Direction
+; Section: 5.3.65
+; Page: 166
+Flow-Direction ::= < Enumerated AVP header: 1080 10415 >
+        UNSPECIFIED   = 0
+        DOWNLINK      = 1
+        UPLINK        = 2
+        BIDIRECTIONAL = 3
+
+
+; Type: Enumerated AVP
+; Name: Packet-Filter-Usage
+; Section: 5.3.66
+; Page: 166
+Packet-Filter-Usage ::= < Enumerated AVP header: 1072 10415 >
+        SEND_TO_UE = 1
+
+
+; Type: Enumerated AVP
+; Name: Charging-Correlation-Indicator
+; Section: 5.3.67
+; Page: 167
+Charging-Correlation-Indicator ::= < Enumerated AVP header: 1073 10415 >
+        CHARGING_IDENTIFIER_REQUIRED = 0
 
 
 ; Type: Grouped AVP
@@ -1459,21 +2036,104 @@ TDF-Information ::= < AVP header: 1087 10415 > ;; corrected: (TS29.212.py#vendor
 ; Name: Redirect-Information
 ; Section: 5.3.82
 ; Page: 169
-Redirect-Information ::= < AVP header: 1085 >
+Redirect-Information ::= < AVP header: 1085 10415 > ;; corrected: (TS29.212.py#vendor-id-redirect-information)
         [ Redirect-Support ]
         [ Redirect-Address-Type ]
         [ Redirect-Server-Address ]
       * [ AVP ]
 
 
+; Type: Enumerated AVP
+; Name: Redirect-Support
+; Section: 5.3.83
+; Page: 169
+Redirect-Support ::= < Enumerated AVP header: 1086 10415 >
+        REDIRECTION_DISABLED = 0
+        REDIRECTION_ENABLED  = 1
+
+
+; Type: Enumerated AVP
+; Name: PS-to-CS-Session-Continuity
+; Section: 5.3.84
+; Page: 170
+PS-to-CS-Session-Continuity ::= < Enumerated AVP header: 1099 10415 >
+        VIDEO_PS2CS_CONT_CANDIDATE = 0
+
+
 ; Type: Grouped AVP
 ; Name: Application-Detection-Information
 ; Section: 5.3.91
 ; Page: 170
-Application-Detection-Information ::= < AVP header: 1098 >
+Application-Detection-Information ::= < AVP header: 1098 10415 > ;; corrected: (TS29.212.py#vendor-id-application-detection-information)
         { TDF-Application-Identifier }
         [ TDF-Application-Instance-Identifier ]
       * [ Flow-Information ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Mute-Notification
+; Section: 5.3.98
+; Page: 171
+Mute-Notification ::= < Enumerated AVP header: 2809 10415 >
+        MUTE_REQUIRED = 0
+
+
+; Type: Enumerated AVP
+; Name: AN-GW-Status
+; Section: 5.3.100
+; Page: 172
+AN-GW-Status ::= < Enumerated AVP header: 2811 10415 >
+        AN_GW_FAILED = 0
+
+
+; Type: Grouped AVP
+; Name: Default-QoS-Information
+; Section: 5.3.103
+; Page: 172
+Default-QoS-Information ::= < AVP header: 2816 10415 > ;; corrected: (TS29.212.py#vendor-id-default-qos-information)
+        [ QoS-Class-Identifier ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Default-QoS-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Conditional-APN-Aggregate-Max-Bitrate
+; Section: 5.3.105
+; Page: 173
+Conditional-APN-Aggregate-Max-Bitrate ::= < AVP header: 2818 10415 > ;; corrected: (TS29.212.py#vendor-id-conditional-apn-aggregate-max-bitrate)
+        [ APN-Aggregate-Max-Bitrate-UL ]
+        [ APN-Aggregate-Max-Bitrate-DL ]
+        [ Extended-APN-AMBR-UL ]
+        [ Extended-APN-AMBR-DL ]
+      * [ IP-CAN-Type ]
+      * [ RAT-Type ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Presence-Reporting-Area-Information
+; Section: 5.3.109
+; Page: 174
+Presence-Reporting-Area-Information ::= < AVP header: 2822 10415 > ;; corrected: (TS29.212.py#vendor-id-presence-reporting-area-information)
+        [ Presence-Reporting-Area-Identifier ]
+        [ Presence-Reporting-Area-Status ]
+        [ Presence-Reporting-Area-Elements-List ]
+        [ Presence-Reporting-Area-Node ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Fixed-User-Location-Info
+; Section: 5.3.112
+; Page: 175
+Fixed-User-Location-Info ::= < AVP header: 2825 10415 > ;; corrected: (TS29.212.py#vendor-id-fixed-user-location-info)
+        [ SSID ]
+        [ BSSID ]
+        [ Logical-Access-ID ]
+        [ Physical-Access-ID ]
       * [ AVP ]
 
 
@@ -1483,6 +2143,24 @@ Application-Detection-Information ::= < AVP header: 1098 >
 ; Page: 175
 IP-CAN-Session-Charging-Scope ::= < Enumerated AVP header: 2827 10415 >
         IP-CAN_SESSION_SCOPE = 0
+
+
+; Type: Enumerated AVP
+; Name: NBIFOM-Support
+; Section: 5.3.116
+; Page: 176
+NBIFOM-Support ::= < Enumerated AVP header: 2831 10415 >
+        NBIFOM_NOT_SUPPORTED = 0
+        NBIFOM_SUPPORTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: NBIFOM-Mode
+; Section: 5.3.117
+; Page: 176
+NBIFOM-Mode ::= < Enumerated AVP header: 2830 10415 >
+        UE_INITIATED      = 0
+        NETWORK_INITIATED = 1
 
 
 ; Type: Grouped AVP
@@ -1502,6 +2180,14 @@ Routing-Rule-Report ::= < AVP header: 2835 10415 > ;; corrected: (TS29.212.py#ve
 ; Page: 177
 ; Values: IP-CAN-Type AVP
 Default-Access ::= < Enumerated AVP header: 2829 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Resource-Release-Notification
+; Section: 5.3.125
+; Page: 178
+Resource-Release-Notification ::= < Enumerated AVP header: 2841 10415 >
+        ENABLE_NOTIFICATION = 0
 
 
 ; Type: Enumerated AVP
@@ -1527,6 +2213,24 @@ Conditional-Policy-Information ::= < AVP header: 2840 10415 > ;; corrected: (TS2
       * [ AVP ]
 
 
+; Type: Grouped AVP
+; Name: PRA-Install
+; Section: 5.3.130
+; Page: 179
+PRA-Install ::= < AVP header: 2845 10415 > ;; corrected: (TS29.212.py#vendor-id-pra-install)
+      * [ Presence-Reporting-Area-Information ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: PRA-Remove
+; Section: 5.3.131
+; Page: 179
+PRA-Remove ::= < AVP header: 2846 10415 > ;; corrected: (TS29.212.py#vendor-id-pra-remove)
+      * [ Presence-Reporting-Area-Identifier ]
+      * [ AVP ]
+
+
 ; Type: Enumerated AVP
 ; Name: Default-Bearer-Indication
 ; Section: 5.3.132
@@ -1536,11 +2240,89 @@ Default-Bearer-Indication ::= < Enumerated AVP header: 2844 10415 >
         BIND_TO_APPLICABLE_BEARER = 1
 
 
+; Type: Enumerated AVP
+; Name: 3GPP-PS-Data-Off-Status
+; Section: 5.3.133
+; Page: 180
+3GPP-PS-Data-Off-Status ::= < Enumerated AVP header: 2847 10415 >
+        ACTIVE   = 0
+        INACTIVE = 1
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Install
+; Section: 5a.3.1
+; Page: 203
+QoS-Rule-Install ::= < AVP header: 1051 10415 > ;; corrected: (TS29.212.py#vendor-id-qos-rule-install)
+      * [ QoS-Rule-Definition ]
+      * [ QoS-Rule-Name ]
+      * [ QoS-Rule-Base-Name ]
+        [ Tunnel-Information ]
+        [ Access-Network-Charging-Identifier-Value ]
+        [ Resource-Allocation-Notification ]
+        [ Rule-Activation-Time ]
+        [ Rule-Deactivation-Time ]
+        [ 3GPP-GGSN-Address ]
+        [ 3GPP-GGSN-IPv6-Address ] ;; corrected: (TS29.212.py#ipv6-case-rule-qos-rule-install-3gpp-ggsn-ipv6-address)
+     *2 [ AN-GW-Address ]
+        [ UDP-Source-Port ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Remove
+; Section: 5a.3.2
+; Page: 203
+QoS-Rule-Remove ::= < AVP header: 1052 10415 > ;; corrected: (TS29.212.py#vendor-id-qos-rule-remove)
+      * [ QoS-Rule-Name ]
+      * [ QoS-Rule-Base-Name ]
+      * [ Required-Access-Info ] ; bold
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Definition
+; Section: 5a.3.3
+; Page: 204
+QoS-Rule-Definition ::= < AVP header: 1053 10415 > ;; corrected: (TS29.212.py#vendor-id-qos-rule-definition)
+        { QoS-Rule-Name }
+      * [ Flow-Information ]
+        [ QoS-Information ]
+        [ Precedence ]
+      * [ Required-Access-Info ]
+        [ Sharing-Key-DL ]
+        [ Sharing-Key-UL ]
+        [ Content-Version ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Report
+; Section: 5a.3.5
+; Page: 204
+QoS-Rule-Report ::= < AVP header: 1055 10415 > ;; corrected: (TS29.212.py#vendor-id-qos-rule-report)
+      * [ QoS-Rule-Name ]
+      * [ QoS-Rule-Base-Name ]
+        [ PCC-Rule-Status ]
+        [ Rule-Failure-Code ]
+      * [ Content-Version ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Session-Linking-Indicator
+; Section: 5a.3.6
+; Page: 205
+Session-Linking-Indicator ::= < Enumerated AVP header: 1064 10415 >
+        SESSION_LINKING_IMMEDIATE = 0
+        SESSION_LINKING_DEFERRED  = 1
+
+
 ; Type: Grouped AVP
 ; Name: ADC-Rule-Install
 ; Section: 5b.3.1
 ; Page: 216
-ADC-Rule-Install ::= < AVP header: 1092 >
+ADC-Rule-Install ::= < AVP header: 1092 10415 > ;; corrected: (TS29.212.py#vendor-id-adc-rule-install)
       * [ ADC-Rule-Definition ]
       * [ ADC-Rule-Name ]
       * [ ADC-Rule-Base-Name ]
@@ -1554,7 +2336,7 @@ ADC-Rule-Install ::= < AVP header: 1092 >
 ; Name: ADC-Rule-Remove
 ; Section: 5b.3.2
 ; Page: 217
-ADC-Rule-Remove ::= < AVP header: 1093 >
+ADC-Rule-Remove ::= < AVP header: 1093 10415 > ;; corrected: (TS29.212.py#vendor-id-adc-rule-remove)
       * [ ADC-Rule-Name ]
       * [ ADC-Rule-Base-Name ]
       * [ AVP ]
@@ -1564,7 +2346,7 @@ ADC-Rule-Remove ::= < AVP header: 1093 >
 ; Name: ADC-Rule-Definition
 ; Section: 5b.3.3
 ; Page: 217
-ADC-Rule-Definition ::= < AVP header: 1094 >
+ADC-Rule-Definition ::= < AVP header: 1094 10415 > ;; corrected: (TS29.212.py#vendor-id-adc-rule-definition)
         { ADC-Rule-Name }
         [ TDF-Application-Identifier ]
       * [ Flow-Information ]
@@ -1592,13 +2374,35 @@ ADC-Rule-Definition ::= < AVP header: 1094 >
 ; Name: ADC-Rule-Report
 ; Section: 5b.3.6
 ; Page: 218
-ADC-Rule-Report ::= < AVP header: 1097 >
+ADC-Rule-Report ::= < AVP header: 1097 10415 > ;; corrected: (TS29.212.py#vendor-id-adc-rule-report)
       * [ ADC-Rule-Name ]
       * [ ADC-Rule-Base-Name ]
         [ PCC-Rule-Status ]
         [ Rule-Failure-Code ]
         [ Final-Unit-Indication ]
       * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: CS-Service-QoS-Request-Operation
+; Section: E.6.3.3
+CS-Service-QoS-Request-Operation ::= < Enumerated AVP header: 2808 10415 >
+        DELETION     = 0
+        MODIFICATION = 1
+
+
+; Type: Enumerated AVP
+; Name: CS-Service-Resource-Result-Operation
+; Section: E.6.3.4
+CS-Service-Resource-Result-Operation ::= < Enumerated AVP header: 2815 10415 >
+        DELETION = 0
+
+
+; Type: Enumerated AVP
+; Name: CS-Service-Resource-Failure-Cause
+; Section: E.6.3.5
+CS-Service-Resource-Failure-Cause ::= < Enumerated AVP header: 2814 10415 >
+        RESOURCE_RELEASED = 0
 
 
 ; Type: Grouped AVP

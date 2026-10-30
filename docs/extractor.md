@@ -86,7 +86,8 @@ The declared vocabulary, with the document that forced each:
 
 - Docx: `prose-application-ids` (29.154, 29.212, 29.214, 29.215, 29.217,
   29.219, 29.343, 29.368, 29.468: the clause stating the application id the
-  command headers omit); `note-defined-in-rfc` (29.229, 29.329: AVP-table
+  command headers omit); `access-type-headings` (29.212, 29.214: `Event-Trigger
+  AVP (All access types)`); `note-defined-in-rfc` (29.229, 29.329: AVP-table
   notes naming a defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
   `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1: commands
   and re-used rows, no local AVPs); and five from TS 29.273:
@@ -106,7 +107,8 @@ The declared vocabulary, with the document that forced each:
   `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
   `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
   `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`
-  and `external-enum-values` (7.2.238, 7.2.20eA; also 29.212 and 29.272).
+  and `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
+  and 29.272).
   Enumerated value lines that depart from `NAME (n)` each need their own:
   `worded-enum-values` (29.368 6.4.6's `Device Trigger Request (1)`; also
   29.109, 29.172, 29.214), `dashed-enum-values` (a list dash printed as
@@ -115,7 +117,8 @@ The declared vocabulary, with the document that forced each:
   comma or full stop after the value: 29.109, 29.338),
   `described-enum-values` and `label-after-enum-value` (29.109: `NO (0) The
   sending node is not GBA_U aware`, `- (0) Private user identity.`) and
-  `run-on-enum-values` (29.229 6.3.58, two values in one paragraph).
+  `run-on-enum-values` (29.229 6.3.58, two values in one paragraph);
+  29.061 and 29.212 declare `worded-enum-values` too.
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`); `prose-cleared-flags` (6942 §8.1–8.2 state the M and V bits
@@ -147,7 +150,12 @@ Walks paragraphs and tables in document order under numbered headings:
   as RFC 6733's `<CER> ::=` does in the RFC extractor; message headings
   without a rule (32.299's 6.4.6–6.4.13, pointers to RFC 6733) are not
   definitions.
-- `x.y.z Name AVP` heading + `::= < AVP header: … >` → `GroupedAvp`. The
+- `x.y.z Name AVP` heading + `::= < AVP header: … >` → `GroupedAvp`.
+  Behind `access-type-headings`, the heading may name the access types the
+  AVP applies to after it (TS 29.212's `Event-Trigger AVP (All access
+  types)`, `Bearer-Operation AVP (Applicable access type 3GPP-GPRS)`, once
+  without " AVP"; 29.214 clause 5.3.69), for this and the enumerated
+  reading below. The
   rule name may be bracketed (`<Event-Type>::=`, `< Participant-Group > ::=`)
   and the keyword spaced (`AVP Header : 612`, 29.229).
 - `x.y.z Name AVP` heading whose intro says "is of type Enumerated", with
@@ -176,7 +184,8 @@ Walks paragraphs and tables in document order under numbered headings:
   that says where its values are defined instead of listing them gets that
   citation as `; Values:`, in the document's words: TS 29.272's twelve
   trace and MDT AVPs ("The possible values are those defined in TS 32.422
-  [23] for Trace Depth", 7.3.67), TS 29.212's `Default-Access` ("the same as
+  [23] for Trace Depth", 7.3.67), TS 29.061's `MBMS-HC-Indicator` ("The
+  enumeration values are defined in 3GPP TS 25.413 [92]", 17.7.25), TS 29.212's `Default-Access` ("the same as
   the ones defined in IP-CAN-Type AVP", 5.3.120), TS 32.299's `Type-Number`
   (OMNA WSP Content Type Numbers, 7.2.238) and `API-Network-Service-Node`
   (TS 23.682, 7.2.20eA). An enumerated clause yielding neither values nor a
@@ -203,7 +212,11 @@ Conventions worth knowing:
   gets no local definition: its section has nothing to emit (DRMP in 29.229,
   values in RFC 7944). Grouped AVPs are *not* treated that way: TS 29.272
   re-prints nine of 29.212's grouped AVPs in full and lists them as re-used;
-  the bodies are kept and the linter reports the conflict.
+  the bodies are kept and the linter reports the conflict. A row citing the
+  document itself is no re-use: TS 29.212's Gxx, S9, Sd and St re-used
+  tables (5a.4.0, 5b.4.0, 5c.4.1, E.6.4.1) list Gx's AVPs from TS 29.212,
+  and 29.061's SGmb table (20.5) cites 29.061, so their enumerated clauses
+  are still read.
 - Enumerated AVPs take their code from the AVP table and their vendor-id from
   the spec's grouped-AVP headers; with no grouped header (29.109) the 3GPP
   vendor 10415 is used. Conflicting candidate vendors are an error.
@@ -290,10 +303,11 @@ table 5.3.1.1, patched); a brace closing an optional member (29.343 §6.6.4,
 patched); a From cell dropping "RFC" (29.219 table 5.4, patched); a
 drafting placeholder `5.3.x` for a clause number, "is of type of
 Enumerated" in an enumerated clause's intro and an `Octetstring` type
-(29.215, patched); "is of type enumerated" in lower case (29.338 §6.3.3.6,
+(29.215, patched; "is of type of Enumerated" and "is type of Enumerated" in
+29.212 too); "is of type enumerated" in lower case (29.338 §6.3.3.6,
 patched); a space inside an enumerated value name
-(`SIPTO_above_RAN _ALLOWED` in 29.272 §7.3.135, also 29.172 §7.4.9, 29.214
-§5.3.1 and 29.338 §5.3.3.19, patched; unpatched, the value was silently not
+(`SIPTO_above_RAN _ALLOWED` in 29.272 §7.3.135, also 29.172 §7.4.9, 29.212
+§5.3.7 and §5.3.31, 29.214 §5.3.1 and 29.338 §5.3.3.19, patched; unpatched, the value was silently not
 a value).
 Everything patched is listed with its reason in `edits/sources/`.
 

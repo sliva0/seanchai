@@ -145,9 +145,11 @@ def test_holes_stay_in_the_rule_tables(package):
 
 def test_readings_that_differ_stay_apart_and_agreeing_ones_merge(package):
     avps = (package / "avps.py").read_text(encoding="utf-8")
-    # TS 29.272 extends TS 29.212's Allocation-Retention-Priority.
-    assert "ALLOCATION_RETENTION_PRIORITY__TS29_212 = AvpDef(" in avps
-    assert "ALLOCATION_RETENTION_PRIORITY__TS29_272 = AvpDef(" in avps
+    # TS 29.273's SIP-Auth-Data-Item body differs from TS 29.229's.
+    assert "SIP_AUTH_DATA_ITEM__TS29_229 = AvpDef(" in avps
+    assert "SIP_AUTH_DATA_ITEM__TS29_273 = AvpDef(" in avps
+    # TS 29.272 re-prints TS 29.212's Allocation-Retention-Priority.
+    assert 'defined_in=("TS29.212", "TS29.272"),\n)' in avps
     # RFC 8506 drops the P flag RFC 4006 allows on CC-Time.
     assert "CC_TIME__RFC4006 = AvpDef(" in avps
     assert "CC_TIME__RFC8506 = AvpDef(" in avps

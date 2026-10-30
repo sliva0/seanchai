@@ -7,3 +7,15 @@ reason = "eleven flags cells write the separator as a period ('M.V'); the space-
 [[quirk]]
 name = "clause-parenthetical"
 reason = "the Gmb and SGmb tables annotate 37 clause cells as '16.4.7 (see Note)', pointing at the note about RADIUS VSAs carried as Diameter vendor AVPs per RFC 7155"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "clause 17.7.18 labels MBMS-User-Data-Mode-Indication's value 1 in words, 'Multicast and Unicast (1)'"
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[quirk]]
+name = "external-enum-values"
+reason = "clause 17.7.25 prints no values for MBMS-HC-Indicator and says 'The enumeration values are defined in 3GPP TS 25.413 [92].'"
+first_version = "18.1.0"
+last_version = "18.1.0"

@@ -146,6 +146,17 @@ Supported-Features               TS29.229
 
 
 ; Type: Enumerated AVP
+; Name: MBMS-StartStop-Indication
+; Section: 17.7.5
+; Page: 150
+MBMS-StartStop-Indication ::= < Enumerated AVP header: 902 10415 >
+        START     = 0
+        STOP      = 1
+        UPDATE    = 2
+        HEARTBEAT = 3
+
+
+; Type: Enumerated AVP
 ; Name: MBMS-Service-Type
 ; Section: 17.7.9
 ; Page: 151
@@ -171,6 +182,32 @@ MBMS-2G-3G-Indicator ::= < Enumerated AVP header: 907 10415 >
 MBMS-Counting-Information ::= < Enumerated AVP header: 914 10415 >
         COUNTING-NOT-APPLICABLE = 0
         COUNTING-APPLICABLE     = 1
+
+
+; Type: Enumerated AVP
+; Name: MBMS-User-Data-Mode-Indication
+; Section: 17.7.18
+; Page: 153
+MBMS-User-Data-Mode-Indication ::= < Enumerated AVP header: 915 10415 >
+        Unicast               = 0
+        Multicast and Unicast = 1
+
+
+; Type: Enumerated AVP
+; Name: CN-IP-Multicast-Distribution
+; Section: 17.7.24
+; Page: 154
+CN-IP-Multicast-Distribution ::= < Enumerated AVP header: 921 10415 >
+        NO-IP-MULTICAST = 0
+        IP-MULTICAST    = 1
+
+
+; Type: Enumerated AVP
+; Name: MBMS-HC-Indicator
+; Section: 17.7.25
+; Page: 154
+; Values: 3GPP TS 25.413 [92]
+MBMS-HC-Indicator ::= < Enumerated AVP header: 922 10415 >
 
 
 ; Type: Enumerated AVP
