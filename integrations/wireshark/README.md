@@ -1,14 +1,22 @@
 # Wireshark dictionary patches
 
 Merge requests for Wireshark's Diameter dictionary, staged from the
-[oracle](../../docs/oracle.md)'s Wireshark-side findings. Each one is
-checked against the clause of the specification that defines the AVP, which
-its commit message cites. None has been submitted.
+[oracle](../../docs/oracle.md)'s findings, in two series. None has been
+submitted.
 
-The patches are `git format-patch` output against the release `specs.toml`
-pins (`v4.7.2`), touching only `resources/protocols/diameter/`. Each patch
-is one defect, and its commit message is the merge request's title and
-description.
+- **Defects**, `0001`–`0018` here: entries the dictionary holds wrongly, a
+  misspelt name or a wrong type, each checked by hand against the clause of
+  the specification that defines the AVP, which its commit message cites.
+  One defect per patch.
+- **Additions**, under [`additions/`](additions/): AVPs the dictionary has
+  no entry for at all, one patch per defining document, written by
+  `additions.py` from the corpus. Nothing the dictionary holds changes.
+
+Both are `git format-patch` output against the release `specs.toml` pins
+(`v4.7.2`), touching only `resources/protocols/diameter/`, and each
+patch's commit message is the merge request's title and description.
+
+## Defects
 
 | Patch | Dictionary says | Specification says | Where |
 |---|---|---|---|
@@ -31,6 +39,92 @@ description.
 | 0017 | `Number-Of-Participants` Integer32 | Unsigned32 | TS 32.299 clause 7.2.117 |
 | 0018 | `Cell-Portion-ID` OctetString | Unsigned32 | TS 29.172 clause 7.4.58 |
 
+## Additions
+
+`seanchai crosscheck` reports 280 absences from the pinned dictionary, 279
+AVPs (TS 29.273 tabulates RFC 5777's `QoS-Capability`, which both report).
+`additions.py` turns 269 of them into 28 patches, one per document that
+defines them, numbered TS documents first:
+
+```sh
+uv run integrations/wireshark/additions.py   # rewrites additions/
+```
+
+Each entry is written in the shape of the entries around it: name, code,
+`vendor-id`, a `<type>` with an `<enum>` per value of an enumerated AVP or a
+`<grouped>` with a `<gavp>` per member, `mandatory` and `vendor-bit` from the
+document's flag rules, and `may-encrypt` where its AVP table has the column.
+Corpus types map to the dictionary's typedefns one to one, except `Address`,
+written `IPAddress` as the dictionary writes RFC 6733's `Host-IP-Address`. A
+member is named as the dictionary names it (`Cx-User-Data` for TS 29.229's
+`User-Data`), or as the ABNF does where no entry carries it: six do not,
+TS 32.299's and TS 29.345's names no document defines and `Time-Window`
+(below). Wireshark's dictionary loader stores `<gavp>` names without
+resolving them. Where a document states no flag rules (RFC 6734, TS 29.389's
+three V2X rows), `mandatory` is left at the DTD's default, `vendor-bit`
+follows the vendor, and the description says so.
+
+An entry goes after the dictionary entry of its vendor with the nearest
+lower code, its own document's entries first, so most land beside their
+siblings: 137 in `TGPP.xml`, 132 in `dictionary.xml`. A place within three
+lines of another patch's, or of a line a defect patch changes, is passed
+over for the next, so every addition applies to `v4.7.2` on its own, all 28
+apply in order, and all 28 apply after the eighteen defects; the script
+checks the three before it writes, and its output is the same byte for byte
+on every run (`tests/test_wireshark_additions.py` pins it).
+
+| Patch | Document | Entries | File |
+|---|---|---|---|
+| 0001 | TS 29.061 | 4 | `TGPP.xml` |
+| 0002 | TS 29.109 | 1 | `dictionary.xml` |
+| 0003 | TS 29.128 | 4 | `TGPP.xml` |
+| 0004 | TS 29.154 | 15 | `dictionary.xml` |
+| 0005 | TS 29.172 | 1 | `dictionary.xml` |
+| 0006 | TS 29.212 | 1 | `dictionary.xml` |
+| 0007 | TS 29.214 | 19 | `TGPP.xml` |
+| 0008 | TS 29.215 | 4 | `TGPP.xml` |
+| 0009 | TS 29.217 | 12 | `dictionary.xml` |
+| 0010 | TS 29.219 | 1 | `dictionary.xml` |
+| 0011 | TS 29.229 | 8 | `TGPP.xml` |
+| 0012 | TS 29.272 | 8 | `dictionary.xml` |
+| 0013 | TS 29.273 | 1 | `dictionary.xml` |
+| 0014 | TS 29.283 | 15 | `dictionary.xml` |
+| 0015 | TS 29.329 | 3 | `TGPP.xml` |
+| 0016 | TS 29.336 | 2 | `dictionary.xml` |
+| 0017 | TS 29.338 | 3 | `TGPP.xml` |
+| 0018 | TS 29.343 | 13 | `TGPP.xml` |
+| 0019 | TS 29.345 | 65 | `TGPP.xml` |
+| 0020 | TS 29.368 | 1 | `dictionary.xml` |
+| 0021 | TS 29.388 | 5 | `dictionary.xml` |
+| 0022 | TS 29.389 | 3 | `dictionary.xml` |
+| 0023 | TS 29.468 | 14 | `TGPP.xml` |
+| 0024 | TS 32.299 | 46 | `dictionary.xml` |
+| 0025 | RFC 6734 | 6 | `dictionary.xml` |
+| 0026 | RFC 6942 | 2 | `dictionary.xml` |
+| 0027 | RFC 8506 | 11 | `dictionary.xml` |
+| 0028 | RFC 8582 | 1 | `dictionary.xml` |
+
+Ten absences stay out, each named in its document's description:
+
+- **Named like another entry.** Wireshark names each display filter field
+  after its AVP, so a second entry named alike collides, and which of the
+  two is renamed (as `Cx-User-Data` and `Sh-User-Data` were) is a
+  maintainer's call: TS 29.345's `Filter-Id` (3805) and `MAC-Address`
+  (3806), named like RADIUS's 11 and RFC 5777's 524; TS 29.283's
+  `Sequence-Number` (4512) like TS 29.329's 716; TS 29.468's
+  `MBMS-GW-SSM-IP-Address` and `-IPv6-Address` (3522, 3523) like TS
+  29.061's 924 and 925; TS 32.299's `Radio-Frequency` (3462) like TS
+  29.468's 3508; and `Time-Window`, both TS 29.154's 4204 and TS 29.345's
+  3818.
+- **Grouped with no members to list**, which the DTD's `<grouped>` cannot
+  hold: RFC 5777's `QoS-Capability` (578) and TS 29.128's
+  `APN-Rate-Control-Status` (4326), whose bodies the corpus does not hold.
+
+The description of each addition is the same shape: the document and
+version, the entries with their code, type and clause, and what it leaves
+out. It is an addition, not a correction: a reviewer checks it against the
+clauses it cites, not against an entry it replaces.
+
 ## Applying
 
 In a Wireshark checkout, one branch per merge request:
@@ -40,8 +134,9 @@ git switch -c diameter-call-barring-info origin/master
 git am -3 /path/to/seanchai/integrations/wireshark/0001-call-barring-info.patch
 ```
 
-Every patch applies on its own to `v4.7.2`, and all eighteen apply in
-order as one series; `-3` lets `git am` merge through context that has moved
+An addition is applied the same way, from `additions/`. Every defect
+patch applies on its own to `v4.7.2`, and all eighteen apply in order as
+one series; `-3` lets `git am` merge through context that has moved
 on master since. `git am` keeps the patch's author; use
 `git commit --amend --reset-author` to submit under your own.
 
@@ -52,6 +147,7 @@ a test may refer to it. A renamed AVP also renames its display filter field
 ## Checking
 
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter`
-over the corpus no longer reports a patched AVP; with all eighteen applied
-to `v4.7.2`, it reports 70 findings instead of 89, and none that the
-unpatched dictionary did not.
+over the corpus no longer reports a patched AVP. With the eighteen defects
+applied to `v4.7.2` it reports 70 findings instead of 89; with the 28
+additions, 68, the ten absences above in eight notes, and none that the
+unpatched dictionary did not; with both series, 49.

@@ -5,8 +5,9 @@ definitions and own AVP-table rows, skipping re-used names — against
 Wireshark's Diameter dictionary by `(vendor-id, code)`, comparing name and
 type. A row's vendor is read from its V flag as the model reads it
 ([linter.md](linter.md#vendor-spaces)): TS 29.273's rows for RFC 5778's
-`MIP-Session-Key` forbid the V bit, so they are checked in vendor 0. The dictionary is an independent reading of the same specifications,
-which is what makes disagreement informative.
+`MIP-Session-Key` forbid the V bit, so they are checked in vendor 0. The
+dictionary is an independent reading of the same specifications, which is
+what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
@@ -91,7 +92,12 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
   `Access-Network-Information` (the dictionary comments its OctetString
   out) typed UTF8String where the specs say OctetString.
 - **Absences**: AVPs newer than the pinned dictionary, one grouped note per
-  file.
+  file, 280 in 29 files, 279 AVPs. All but ten have an addition staged under
+  [`integrations/wireshark/additions/`](../integrations/wireshark/README.md#additions),
+  written by `integrations/wireshark/additions.py` from the corpus, one
+  patch per defining document; the ten are named like an entry the
+  dictionary or another addition already has, or grouped with no body the
+  corpus holds.
 - **One untriaged lead from TS 29.229**: its row for RFC 4590's code 110
   spells `Digest-QoP`, where RFC 4590 (section 3.8) and Wireshark write
   `Digest-Qop`.
@@ -108,8 +114,8 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
   table or body lower-case `type`/`info`), and the two Monitoring-Event
   rows its corrections type Enumerated after their clauses where Wireshark
   follows table 7.2.0.1's Integer32; `MMTel-SService-Type`, which 32.299
-  misprints consistently and Wireshark spells `MMTel-Service-Type`; and 47
-  absences. Table 7.2.0.1's thirteen rows typed `refer [223]` are re-used
+  misprints consistently and Wireshark spells `MMTel-Service-Type`. Table
+  7.2.0.1's thirteen rows typed `refer [223]` are re-used
   from `OMA-DDS-Charging_Data` and so not checked: Wireshark spells code
   2117 `Content-provider-ID`, as OMA's own table 11 does, where 32.299
   writes `Content-Provider-ID`.

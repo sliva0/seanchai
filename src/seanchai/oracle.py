@@ -238,7 +238,7 @@ def _acceptable(entry: DictionaryAvp) -> frozenset[ast.DataType] | None:
 
 
 @dataclass(frozen=True)
-class _Claim:
+class Claim:
     """One (name, identity, type) fact the corpus asserts and the oracle can
     check. Definitions and table rows both reduce to this."""
 
@@ -249,7 +249,9 @@ class _Claim:
     where: str
 
 
-def _claims(spec: ast.Specification) -> list[_Claim]:
+def claims(spec: ast.Specification) -> list[Claim]:
+    """What one file asserts of its own AVPs, once per name and identity:
+    its definitions and AVP-table rows, less the names it re-uses."""
     reused = {
         row.name
         for section in spec.sections
@@ -265,7 +267,7 @@ def _claims(spec: ast.Specification) -> list[_Claim]:
                 # re-print is compared against the origin by the linter.
                 continue
             claims.append(
-                _Claim(
+                Claim(
                     name=section.name,
                     vendor=section.vendor_id if section.vendor_id is not None else 0,
                     code=section.code,
@@ -284,7 +286,7 @@ def _claims(spec: ast.Specification) -> list[_Claim]:
                 # not, IETF space, in a vendor 10415 file.
                 stated = row.stated_vendor(spec.vendor_id)
                 claims.append(
-                    _Claim(
+                    Claim(
                         name=row.name,
                         vendor=spec.vendor_id if stated is None else stated,
                         code=row.code,
@@ -311,7 +313,7 @@ def crosscheck(spec: ast.Specification, oracle: Oracle) -> list[Finding]:
     """
     findings = []
     absent = []
-    for claim in _claims(spec):
+    for claim in claims(spec):
         entries = oracle.avps.get((claim.vendor, claim.code))
         if not entries:
             absent.append(claim.name)
