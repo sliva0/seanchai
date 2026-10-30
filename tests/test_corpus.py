@@ -58,14 +58,26 @@ def test_nothing_resolves_across_a_major_version():
 
 
 def test_an_external_origin_resolves_to_any_copy():
-    """ETSI's versions are not 3GPP's releases: a hand-written V2.2.0 of
-    ETSI TS 283 034 is what a Release 18 citation means."""
-    books = corpus.Corpus([_entry("ETSI TS 283 034", "2.2.0")])
+    """ETSI's versions are not 3GPP's releases: a hand-written V3.2.1 of
+    ETSI TS 183 017 is what a Release 18 citation means."""
+    books = corpus.Corpus([_entry("ETSI TS 183 017", "3.2.1")])
+
+    resolved = books.resolve("ETSI-TS183.017", like=_spec("3GPP TS 29.214", "18.4.0"))
+
+    assert resolved is not None
+    assert resolved.reference == "ETSI-TS183.017"
+
+
+def test_a_misnamed_citation_resolves_to_the_publishers_document():
+    """3GPP cites the e4 document as "ETSI TS 283 034"; ETSI publishes it
+    as ES 283 034, which is the title its transcription carries."""
+    books = corpus.Corpus([_entry("ETSI ES 283 034", "2.2.0")])
 
     resolved = books.resolve("ETSI-TS283.034", like=_spec("3GPP TS 29.212", "18.2.0"))
 
     assert resolved is not None
-    assert resolved.reference == "ETSI-TS283.034"
+    assert resolved.reference == "ETSI-ES283.034"
+    assert books.versions("ETSI-TS283.034") == ["2.2.0"]
 
 
 def test_another_publishers_document_resolves_no_3gpp_citation():

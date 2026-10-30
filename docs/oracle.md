@@ -11,7 +11,7 @@ what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
-uv run seanchai crosscheck dad/3gpp/rel-18/*.dad dad/rfc/*.dad
+uv run seanchai crosscheck dad/3gpp/rel-18/*.dad dad/rfc/*.dad dad/etsi/*.dad
 ```
 
 The `[wireshark]` entry in `specs.toml` pins a release tag; the downloader
@@ -101,7 +101,14 @@ remains:
   up to V15.2.0, without `TCP-Source-Port`, `Civic-Address-Information`,
   `WLAN-Operator-Id` and `Logical-Access-ID`. TCP-Source-Port itself
   (2843, TS 29.212 clause 5.3.129) is absent from the dictionary, and its
-  TS 29.212 addition supplies it.
+  TS 29.212 addition supplies it. In ETSI's vendor 13019, whose entries
+  `etsie2e4.xml` holds, the transcriptions' clauses name three AVPs
+  otherwise: `Initial-Gate-Setting` (303) and `QoS-Profile` (304) for ES
+  283 034's `Initial-Gate-Setting-Description` and
+  `QoS-Profile-Description` (clauses 7.3.4, 7.3.5, table 10 and the
+  ABNFs alike), and `Requested-Information-457` for TS 183 017's
+  `Latching-Indication` (clause 7.3.8), an entry carrying its `LATCH` and
+  `RELATCH` values under a name copied from ES 283 035's AVP 353.
 - **Leads not staged**, resting on a reading the corpus makes rather than
   on a document's statement, or on nothing a merge request changes:
   `Monitoring-Event-Information` (3921) lists TS 29.336's
@@ -128,6 +135,17 @@ remains:
   patch per defining document; the ten are named like an entry the
   dictionary or another addition already has, or grouped with no body the
   corpus holds.
+- **ETSI TS 183 017, untriaged**: `Binding-information` (450), the
+  spelling of table 7.3.1, clause 7.3.1's heading and its rule name, where
+  the clause's sentence and the AAR and AAA ABNFs write
+  `Binding-Information`, to which the corpus corrects it; and
+  `ETSI-Service-Class` (459), the publisher prefix the dictionary gives
+  some of ETSI's entries (`ETSI-Experimental-Result-Code` to keep apart
+  from RFC 6733's), against clause 7.3.33's `Service-Class`, which no
+  other entry in the pinned dictionary is named. The oracle compares no
+  flags: the dictionary sets `Port-Number` and `Reservation-Class` (455,
+  456) M to "may" and encryption off, where table 7.3.1 puts M in Must not
+  and sets encryption.
 - **Two untriaged leads from RFC 7155**: `Framed-IPX-Network` typed Unsigned32
   (clause 4.4.10.6.1's own sentence; RFC 4005 disagrees with itself here,
   clause 6.12.1 vs its table) against Wireshark's UTF8String; and

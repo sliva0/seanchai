@@ -167,8 +167,9 @@ def class_name(name: str) -> str:
 
 
 def slug(reference: str) -> str:
-    """`TS29.229` → `ts29_229`; `RFC6733` → `rfc6733`."""
-    return reference.lower().replace(".", "_")
+    """`TS29.229` → `ts29_229`; `RFC6733` → `rfc6733`; `ETSI-ES283.034` →
+    `etsi_es283_034`, an identifier the `import` statement takes."""
+    return reference.lower().replace(".", "_").replace("-", "_")
 
 
 def reference_of(argument: str) -> str:

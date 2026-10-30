@@ -931,33 +931,14 @@ _STANDING_HOLES = {
         "resolves nowhere (re-used from 3GPP2-X.S0057, which the corpus lacks)": [
             "3GPP2-BSID"
         ],
-        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
-            "Logical-Access-ID",
-            "Physical-Access-ID",
-        ],
-    },
-    "TS29.219": {
-        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
-            "Logical-Access-ID",
-            "Physical-Access-ID",
-        ]
     },
     "TS29.229": {"resolves nowhere": ["Line-Identifier"]},
-    "TS29.273": {
-        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
-            "Logical-Access-ID"
-        ],
-    },
     "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
     "TS32.299": {
         "resolves nowhere": [
             "Network-Element",
             "Submission-Timestamp",
             "TCP-Source-Port",
-        ],
-        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
-            "Logical-Access-ID",
-            "Physical-Access-ID",
         ],
         "resolves nowhere (re-used from oneM2M-TS-0004, which the corpus lacks)": [
             "M2M-Information"
@@ -968,6 +949,36 @@ _STANDING_HOLES = {
         ],
     },
 }
+
+
+def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
+    """3GPP cites ES 283 034 as "ETSI TS 283 034" and TS 183 017 under its
+    own number; each row resolves to the transcribed document's AVP, in
+    ETSI's vendor space, and the transcriptions cite each other too."""
+    books = corpus.Corpus.load([_ROOT / "dad"])
+    built = model.Model.build(books)
+    cited = [
+        (entry.reference, row.name, row.origin)
+        for entry in books
+        for section in entry.spec.sections
+        if isinstance(section, ast.ReusedAvps)
+        for row in section.rows
+        if row.origin in {"ETSI-TS283.034", "ETSI-ES283.034", "ETSI-TS183.017"}
+    ]
+
+    assert {origin for _, _, origin in cited} == {
+        "ETSI-TS283.034",
+        "ETSI-ES283.034",
+        "ETSI-TS183.017",
+    }
+    for reference, name, origin in cited:
+        avp = built.resolve(reference, name)
+        assert avp is not None, (reference, name)
+        assert avp.vendor_id == 13019, (reference, name)
+        # A transcription that re-prints what it imports reads its own copy
+        # first (ES 283 034's Reservation-Priority, TS 183 017's
+        # Globally-Unique-Address).
+        assert avp.defined_in in {reference, corpus.CITED_AS.get(origin, origin)}
 
 
 def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():

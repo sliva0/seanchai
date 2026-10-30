@@ -948,7 +948,7 @@ def test_an_origin_outside_3gpp_and_ietf_is_a_note_of_its_own():
 
 
 def test_a_hand_written_external_origin_resolves():
-    origin = _origin_spec("ETSI TS 283 034", "2.2.0", _grouped_with("Borrowed", 700))
+    origin = _origin_spec("ETSI ES 283 034", "2.2.0", _grouped_with("Borrowed", 700))
     spec = _spec(
         _reused(ast.ReusedAvpRow(name="Borrowed", origin="ETSI-TS283.034")),
         version="18.0.0",
@@ -1078,13 +1078,10 @@ _STANDING_CORPUS_NOTES = {
         "reused-origin-indirect": ["Service-Selection"],
     },
     "29212-i20.dad": {
-        "external-origin-not-in-corpus": ["3GPP2-X.S0057, ETSI-TS283.034"],
+        "external-origin-not-in-corpus": ["3GPP2-X.S0057"],
     },
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
-    },
-    "29219-i00.dad": {
-        "external-origin-not-in-corpus": ["ETSI-TS283.034"],
     },
     "29229-i10.dad": {
         "unresolved-reference": ["Line-Identifier"],
@@ -1114,7 +1111,6 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29273-i60.dad": {
-        "external-origin-not-in-corpus": ["ETSI-TS283.034"],
         "registry-avp-document": ["3GPP-AAA-Server-Name"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
@@ -1158,9 +1154,7 @@ _STANDING_CORPUS_NOTES = {
     "32299-i00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
-        "external-origin-not-in-corpus": [
-            "ETSI-TS283.034, OMA-DDS-Charging_Data, oneM2M-TS-0004"
-        ],
+        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data, oneM2M-TS-0004"],
         "origin-not-in-corpus": ["TS29.140"],
         "reused-origin-indirect": [
             "3GPP2-BSID",

@@ -24,6 +24,15 @@ class CorpusError(ValueError):
     pass
 
 
+# A document its citers number otherwise than its publisher does, by the
+# reference a From cell carries. TS 29.212 (clause 2, [37]: "ETSI TS 283 034
+# v2.2.0"), 29.219, 29.273 and 32.299 cite the e4 document as a Technical
+# Specification; ETSI publishes V2.2.0 as an ETSI Standard, ES 283 034, the
+# title its transcription carries, and has no TS 283 034. One entry per
+# misnaming, never a fuzzy match.
+CITED_AS = {"ETSI-TS283.034": "ETSI-ES283.034"}
+
+
 def _version_key(version: str | None) -> tuple[int, ...]:
     """`"18.6.0"` → `(18, 6, 0)`, for ordering. Non-numeric parts sort as 0
     rather than raising: the grammar already restricts a version to digits and
@@ -112,18 +121,24 @@ class Corpus:
     def versions(self, reference: str) -> list[str]:
         return [
             entry.spec.version
-            for entry in self._by_reference.get(reference, ())
+            for entry in self._candidates(reference)
             if entry.spec.version is not None
         ]
+
+    def _candidates(self, reference: str) -> list[Entry]:
+        """The copies `reference` names, newest first, through `CITED_AS`."""
+        return self._by_reference.get(CITED_AS.get(reference, reference), [])
 
     def resolve(self, reference: str, *, like: ast.Specification) -> Entry | None:
         """The file `reference` names, read as the specification `like` would.
 
-        `like` supplies the major version to match. Returns `None` when the
+        `like` supplies the major version to match. A reference its citers
+        spell otherwise than the publisher (`CITED_AS`) resolves to the
+        publisher's document. Returns `None` when the
         corpus holds no copy in that major version — which is a gap in the
         corpus, not a defect in the document, and callers report it that way.
         """
-        candidates = self._by_reference.get(reference, [])
+        candidates = self._candidates(reference)
         if reference.startswith("RFC") or ast.is_external(reference):
             # An RFC number names one immutable document; there is no release
             # axis to match against. Nor is there for another publisher's

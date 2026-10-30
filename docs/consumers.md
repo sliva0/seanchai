@@ -64,7 +64,8 @@ where per-interface tables disagree (TS 29.061's `3GPP-IMSI`, the linter's
 `table-row-mismatch`). The model never reports the conflicts this order
 papers over; run the linter for those. Vendor spaces follow the linter's
 reading. Origins and bases use `corpus.Corpus.resolve`, the
-match-major-take-newest rule in [linter.md](linter.md#resolving-an-origin).
+match-major-take-newest rule in [linter.md](linter.md#resolving-an-origin),
+which also reads 3GPP's `ETSI-TS283.034` as the ETSI ES 283 034 it names.
 
 **Filling through.** A field the first reading leaves unstated comes from
 the next reading along the order, if the two are the same AVP saying the

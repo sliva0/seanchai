@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Fri, 30 Oct 2026 14:00:00 +0000
+Subject: [PATCH] Diameter: Name AVP 457 as ETSI TS 183 017 does
+
+ETSI TS 183 017 V3.2.1 clause 7.3.8 defines AVP 457 (vendor ETSI) as
+Latching-Indication, with the values LATCH (0) and RELATCH (1) the entry
+already carries, and the AA-Request ABNF (clause 7.1.1) names it so;
+table 7.3.1 prints Latching-indication. Requested-Information is ES 283
+035's AVP 353.
+
+Renaming an AVP renames its display filter field
+(diameter.Requested-Information-457 becomes
+diameter.Latching-Indication), so saved filters and profiles using the
+old name need updating.
+---
+ resources/protocols/diameter/etsie2e4.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/etsie2e4.xml b/resources/protocols/diameter/etsie2e4.xml
+index a48da2b..a72c4bb 100644
+--- a/resources/protocols/diameter/etsie2e4.xml
++++ b/resources/protocols/diameter/etsie2e4.xml
+@@ -209,7 +209,7 @@
+ 	<avp name="Reservation-Class" code="456" mandatory="may" vendor-bit="must" vendor-id="ETSI" may-encrypt="no">
+ 		<type type-name="Unsigned32"/>
+ 	</avp>
+-	<avp name="Requested-Information-457" code="457" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
++	<avp name="Latching-Indication" code="457" mandatory="mustnot" vendor-bit="must" vendor-id="ETSI" may-encrypt="yes">
+ 		<type type-name="Enumerated"/>
+ 		<enum name="LATCH" code="0"/>
+ 		<enum name="RELATCH" code="1"/>

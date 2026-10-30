@@ -193,7 +193,11 @@ outside 3GPP and IETF, whose versions are its publisher's (ETSI TS 283 034
 V2.2.0 is no Release 2). For the same reason such a document's own
 citations of 3GPP documents resolve nowhere: its version names no release,
 and the one it cites is in its references (TS 183 017 V3.2.1 cites TS
-29.214 Release 7). Raw files are excluded
+29.214 Release 7). A reference the citing documents spell otherwise than
+the publisher resolves to the publisher's document, through a table in
+`corpus.py` with one entry per misnaming: TS 29.212, 29.219, 29.273 and
+32.299 cite "ETSI TS 283 034", which ETSI publishes as ES 283 034, so
+`ETSI-TS283.034` resolves to `ETSI-ES283.034`. Raw files are excluded
 from a corpus by default; loading both copies would leave the choice to sort
 order.
 
@@ -246,10 +250,9 @@ why each stays:
   major version. The ETSI transcriptions import Gq's AVPs from TS 29.209,
   which ends at Release 6, and TS 183 017 imports `Codec-Data` from TS
   29.214 Release 7 (its clause 2, reference [19]).
-- **`external-origin-not-in-corpus`**, four files: TS 29.212
-  (`3GPP2-X.S0057`, `ETSI-TS283.034`), 29.219 and 29.273
-  (`ETSI-TS283.034`) and 32.299 (`ETSI-TS283.034`,
-  `OMA-DDS-Charging_Data`, `oneM2M-TS-0004`).
+- **`external-origin-not-in-corpus`**, two files: TS 29.212
+  (`3GPP2-X.S0057`) and 32.299 (`OMA-DDS-Charging_Data`,
+  `oneM2M-TS-0004`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
   ABNF lists both (and table 6.2.3.1 marks them OC). The generator keeps
@@ -358,7 +361,8 @@ why each stays:
   has no such AVP either). Four are members whose definition the document
   neither prints nor cites in a form the file can hold: TS 29.229's
   `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019, which a
-  table row cannot state), and three in TS 32.299's grouped bodies.
+  table row cannot state, and neither ETSI transcription defines it;
+  Wireshark's dictionary attributes its code 500 to ETSI TS 183 033), and three in TS 32.299's grouped bodies.
   `Submission-Timestamp` (7.2.112aA) and `Network-Element` (7.2.66aA)
   resolve nowhere; each has a near-name the document defines,
   `Submission-Time` (7.2.217, MMS-Information's) and

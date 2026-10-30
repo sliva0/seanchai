@@ -4,7 +4,7 @@ Merge requests for Wireshark's Diameter dictionary, staged from the
 [oracle](../../docs/oracle.md)'s findings, in two series. None has been
 submitted.
 
-- **Defects**, `0001`–`0022` here: entries the dictionary holds wrongly, a
+- **Defects**, `0001`–`0025` here: entries the dictionary holds wrongly, a
   misspelt name, a wrong type or a member list short of the document's,
   each checked by hand against the clause of the specification that
   defines the AVP, or the verified erratum correcting it, which its commit
@@ -43,6 +43,9 @@ patch's commit message is the merge request's title and description.
 | 0020 | `Time-Of-Day-Condition` without three members | `Absolute-Start-Fractional-Seconds`, `Absolute-End-Fractional-Seconds`, `Timezone-Offset` | RFC 5777 erratum 2333 (verified) |
 | 0021 | `Application-Server-ID` Unsigned32 | UTF8String | OMA-DDS-Charging_Data V1.0 table 11, which TS 32.299 table 7.2.0.1 refers to |
 | 0022 | `UWAN-User-Location-Info` without four members | `TCP-Source-Port`, `Civic-Address-Information`, `WLAN-Operator-Id`, `Logical-Access-ID` | TS 32.299 clause 7.2.242aaA |
+| 0023 | `Initial-Gate-Setting` | `Initial-Gate-Setting-Description` | ETSI ES 283 034 clause 7.3.4 |
+| 0024 | `QoS-Profile` | `QoS-Profile-Description` | ETSI ES 283 034 clause 7.3.5 |
+| 0025 | `Requested-Information-457` | `Latching-Indication` | ETSI TS 183 017 clause 7.3.8 |
 
 ## Additions
 
@@ -79,7 +82,7 @@ siblings: 137 in `TGPP.xml`, 132 in `dictionary.xml`, 2 in `etsie2e4.xml`.
 A place within three lines of another patch's, or of a line a defect patch
 changes, is passed over for the next, so every addition applies to
 `v4.7.2` on its own, all 29 apply in order, and all 29 apply after the
-twenty-two defects; the script
+twenty-five defects; the script
 checks the three before it writes, and its output is the same byte for byte
 on every run (`tests/test_wireshark_additions.py` pins it).
 
@@ -146,7 +149,7 @@ git am -3 /path/to/seanchai/integrations/wireshark/0001-call-barring-info.patch
 ```
 
 An addition is applied the same way, from `additions/`. Every defect
-patch applies on its own to `v4.7.2`, and all twenty-two apply in order as
+patch applies on its own to `v4.7.2`, and all twenty-five apply in order as
 one series; `-3` lets `git am` merge through context that has moved
 on master since. `git am` keeps the patch's author; use
 `git commit --amend --reset-author` to submit under your own.
@@ -158,7 +161,7 @@ a test may refer to it. A renamed AVP also renames its display filter field
 ## Checking
 
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter`
-over the corpus no longer reports a patched AVP. With the twenty-two
-defects applied to `v4.7.2` it reports 75 findings instead of 95; with the 29
+over the corpus no longer reports a patched AVP. With the twenty-five
+defects applied to `v4.7.2` it reports 72 findings instead of 95; with the 29
 additions, 73, the ten absences above in eight notes, and none that the
-unpatched dictionary did not; with both series, 53.
+unpatched dictionary did not; with both series, 50.

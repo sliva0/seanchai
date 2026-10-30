@@ -40,9 +40,14 @@ section       = application-scope / message / grouped-avp / enumerated-avp
 A `spec-ref` names a document without its version. A 3GPP or IETF
 document is its number; a document outside them leads with its publisher
 and keeps the publisher's numbering, written as one token: ETSI's
-"TS 283 034" dotted as a 3GPP number is, 3GPP2's "X.S0057" without its
+"TS 183 017" dotted as a 3GPP number is, 3GPP2's "X.S0057" without its
 revision letter, OMA's name as OMA prints it, oneM2M's "TS-0004". Every
 publisher has one spelling, since resolution compares references exactly.
+A From cell keeps the citing document's reference even where it misnames
+the publisher's: 3GPP cites ETSI ES 283 034 as "ETSI TS 283 034", so its
+cells read `ETSI-TS283.034`, which the corpus maps to the `ETSI-ES283.034`
+the transcription's title gives, one listed misnaming at a time
+([linter.md](linter.md#resolving-an-origin)).
 
 `; Transcribed:` marks a file a person copied from a rendering, for a
 document no extractor reads (ETSI ES 283 034 and TS 183 017 exist only as

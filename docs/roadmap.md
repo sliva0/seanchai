@@ -10,9 +10,8 @@ letter is not reused. What exists is described in the per-module documents.
   AVPs the corpus only re-uses from documents outside 3GPP and IETF stay
   holes: a re-used row's identity, vendor included, is its origin's, so a
   type supplied into the citing file has nowhere to go, and the origin
-  would have to be a hand-written `.dad` file. ETSI ES 283 034 V2.2.0 (cited
-  as "ETSI TS 283 034") is transcribed but not yet resolved under that
-  citation; oneM2M TS-0004 is readable; 3GPP2 X.S0057 could not be
+  would have to be a hand-written `.dad` file, as ETSI ES 283 034 and TS
+  183 017 are. oneM2M TS-0004 is readable; 3GPP2 X.S0057 could not be
   fetched. SM-Service-Type's "100 .. 199 Vendor specific SM services"
   allocates a range the format cannot hold.
   TS 32.299 cites `VAS-Id` and `VASP-Id` from TS 29.140, which ends at
@@ -42,7 +41,7 @@ letter is not reused. What exists is described in the per-module documents.
     `TCP-Source-Port` (TS 29.212; table 7.2.0.1 refers to [215] for
     `UDP-Source-Port` only);
   - definitions the format cannot hold: TS 29.229's `Line-Identifier`
-    (ETSI vendor 13019 in a clause, no row can state it);
-  - re-used origins outside 3GPP and IETF, item K: `ETSI-TS283.034` (TS
-    29.212, 29.219, 29.273, 32.299), `3GPP2-X.S0057` (TS 29.212) and
-    `oneM2M-TS-0004` (TS 32.299's `M2M-Information`).
+    (ETSI vendor 13019 in a clause, no row can state it; neither ETSI
+    transcription defines it);
+  - re-used origins outside 3GPP and IETF, item K: `3GPP2-X.S0057` (TS
+    29.212) and `oneM2M-TS-0004` (TS 32.299's `M2M-Information`).
