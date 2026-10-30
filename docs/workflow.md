@@ -64,7 +64,11 @@ diff -u /tmp/old/raw/3gpp/rel-18/29272-i60.raw.dad dad/raw/3gpp/rel-18/29272-i70
 
 `--spec` limits the rebuild to that specification, so the rest of the corpus
 is not reported missing from the one-record manifest, and `-o` keeps the
-older pair out of `dad/`; it reports as `replaced` there.
+older pair out of `dad/`; it reports as `replaced` there. A document the
+corpus holds in two releases (TS 32.299 in `rel-18` and, pinned, `rel-11`;
+[downloader.md](downloader.md)) is two copies, each rebuilt in its own
+tree: `--spec` rebuilds the ones the manifest lists, and `--add` adds every
+listed copy not yet committed.
 
 A rebuild that succeeds on the new version still warns about every
 declaration whose range does not cover it. Once the diffs are reviewed,

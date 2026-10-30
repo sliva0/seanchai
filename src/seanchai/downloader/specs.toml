@@ -336,6 +336,53 @@ title = "Diameter load-information conveyance"
 number = 9390
 title = "Diameter group signaling"
 
+# 3GPP versions the corpus holds beside the release above, because a citing
+# document means them (docs/consumers.md, resolution across releases). Each
+# is fetched into its own release's tree, and `final` is checked against the
+# archive listing on every download: "document" claims no later version is
+# archived in any release, "release" none later in its own. A version
+# archived later fails the download, naming it.
+
+# TS 32.299 clause 2 [213] cites TS 29.140 non-specifically for VAS-Id and
+# VASP-Id (table 7.2.0.1); V7.0.0 is the document's last version, so a
+# non-specific reference from any later release means it.
+[[tgpp_pinned]]
+number = "29.140"
+title = "MM10 interface based on Diameter protocol; Stage 3"
+version = "7.0.0"
+final = "document"
+reason = "Defines VAS-Id and VASP-Id, which TS 32.299 re-uses."
+
+# ETSI ES 283 034 clause 2 [5] cites ETSI TS 129 209 "(3GPP TS 29.209)",
+# non-specifically (table 11), and TS 183 017 clause 2 [4] "(3GPP TS
+# 29.209 Release 6)" (table 7.3.3); Release 6 is the document's last, and
+# V6.8.0 its last version.
+[[tgpp_pinned]]
+number = "29.209"
+title = "Policy control over Gq interface"
+version = "6.8.0"
+final = "document"
+reason = "Defines the Gq AVPs ETSI ES 283 034 and TS 183 017 re-use."
+
+# ETSI TS 183 017 clause 2 [19] cites ETSI TS 129 214 "(3GPP TS 29.214
+# Release 7)" for Codec-Data (table 7.3.5); V7.12.0 is Release 7's last.
+[[tgpp_pinned]]
+number = "29.214"
+title = "Policy and charging control over Rx reference point"
+version = "7.12.0"
+final = "release"
+reason = "Defines Codec-Data as ETSI TS 183 017 re-uses it."
+
+# oneM2M TS-0004 V2.35.0 clause 2 [31] cites "3GPP TS 32.299 ... (Release
+# 11)" for Node-Id and Service-Information (table A.4-1); V11.20.0 is
+# Release 11's last.
+[[tgpp_pinned]]
+number = "32.299"
+title = "Charging management; Diameter charging applications"
+version = "11.20.0"
+final = "release"
+reason = "Defines Node-Id and Service-Information as oneM2M TS-0004 re-uses them."
+
 # oneM2M specifications, each pinned to one version of one release: the
 # document library serves only a document id's latest revision, so the
 # version is stated here and the download fails when the file served carries

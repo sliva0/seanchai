@@ -77,7 +77,7 @@ path = "resources/protocols/diameter"
 """.strip()
     )
 
-    tgpp, rfcs, wireshark, onem2m = downloader.load_catalog(catalog)
+    tgpp, rfcs, wireshark, onem2m, pinned = downloader.load_catalog(catalog)
 
     assert tgpp == (
         downloader.ThreeGppSpec(
@@ -96,6 +96,63 @@ path = "resources/protocols/diameter"
     (document,) = onem2m
     assert document.identifier == "oneM2M TS-0004"
     assert document.file_version == "V2_35_0"
+    assert pinned == ()
+
+
+def test_a_pinned_version_names_what_it_claims_to_be_final_in(tmp_path):
+    catalog = tmp_path / "specs.toml"
+    text = """
+[[tgpp]]
+number = "29.999"
+title = "Test TS"
+
+[[rfc]]
+number = 9999
+title = "Test RFC"
+
+[[tgpp_pinned]]
+number = "29.998"
+title = "Ended TS"
+version = "7.0.0"
+final = "{final}"
+
+[wireshark]
+tag = "v9.9.9"
+path = "resources/protocols/diameter"
+"""
+    catalog.write_text(text.format(final="document"))
+    (pin,) = downloader.load_catalog(catalog).pinned
+    assert (pin.release, pin.spec.archive_stem) == (7, "29998")
+
+    catalog.write_text(text.format(final="yes"))
+    with pytest.raises(downloader.DownloadError, match="final must be one of"):
+        downloader.load_catalog(catalog)
+
+
+def _listing(*versions: str) -> dict[tuple[int, int, int], str]:
+    return {downloader.parse_version(v): f"https://example/{v}.zip" for v in versions}
+
+
+def test_a_pinned_final_version_is_checked_against_every_release():
+    """TS 29.140 ends at V7.0.0: the pin says so, and a version archived
+    after it, in any release, fails the download instead of leaving a
+    resolution resting on a claim the archive no longer supports."""
+    pin = downloader.PinnedThreeGppSpec("29.140", "MM10", "7.0.0", "document")
+
+    assert downloader.check_final(pin, _listing("6.4.0", "7.0.0")) == _listing("7.0.0")
+    with pytest.raises(downloader.DownloadError, match=r"lists 8\.0\.0;"):
+        downloader.check_final(pin, _listing("6.4.0", "7.0.0", "8.0.0"))
+    with pytest.raises(downloader.DownloadError, match="not archived"):
+        downloader.check_final(pin, _listing("6.4.0"))
+
+
+def test_a_release_final_version_is_checked_against_its_release_only():
+    pin = downloader.PinnedThreeGppSpec("29.214", "Rx", "7.12.0", "release")
+    listing = _listing("7.11.0", "7.12.0", "8.0.0", "18.4.0")
+
+    assert sorted(downloader.check_final(pin, listing)) == [(7, 11, 0), (7, 12, 0)]
+    with pytest.raises(downloader.DownloadError, match="Release 7's final"):
+        downloader.check_final(pin, {**listing, **_listing("7.13.0")})
 
 
 @pytest.mark.parametrize("status", [503, 404], ids=["transient", "permanent"])
@@ -705,6 +762,75 @@ def test_download_3gpp_prefers_the_highest_version_with_a_published_pdf(
     assert (
         local_http_server.counts.get("/archive/29_series/29.388/29388-i10.zip", 0) == 0
     )
+
+
+def test_a_pinned_version_is_published_in_its_releases_tree_beside_the_catalogs(
+    tmp_path, local_http_server, monkeypatch
+):
+    """TS 29.999 at Release 18 and its pinned Release 7 last version share
+    an identifier and live in two trees, the manifest listing both, the
+    pinned one with what it claims."""
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+    _archive_listing(
+        local_http_server,
+        "29.999",
+        **{
+            "29999-7b0": _zip_bytes(**{"29999-7b0.docx": b"eleventh"}),
+            "29999-7c0": _zip_bytes(**{"29999-7c0.docx": b"last"}),
+            "29999-i00": _zip_bytes(**{"29999-i00.docx": b"now"}),
+        },
+    )
+    local_http_server.route(
+        "/etsi_ts/129900_129999/129999/", b"07.12.00_60/ 18.00.00_60/"
+    )
+    for name in (
+        "07.12.00_60/ts_129999v071200p.pdf",
+        "18.00.00_60/ts_129999v180000p.pdf",
+    ):
+        local_http_server.route(f"/etsi_ts/129900_129999/129999/{name}", _pdf_bytes())
+    spec = downloader.ThreeGppSpec("29.999", "Test TS")
+    pin = downloader.PinnedThreeGppSpec("29.999", "Test TS", "7.12.0", "release")
+
+    downloader.download_corpus(
+        output,
+        pdfs=True,
+        catalog=downloader.Catalog((spec,), (), SHARK, (), (pin,)),
+    )
+
+    manifest = json.loads((output / "manifest.json").read_text())
+    tgpp = [a for a in manifest["artifacts"] if a["family"] == "3GPP"]
+    assert [(a["source_version"], a["final"]) for a in tgpp] == [
+        ("7.12.0", "release"),
+        ("18.0.0", None),
+    ]
+    assert tgpp[0]["files"] == [
+        "archives/3gpp-rel-7/29999-7c0.zip",
+        "3gpp/Rel-7/TS_29.999/29999-7c0.docx",
+        "3gpp/Rel-7/PDF/ts_129999v071200p.pdf",
+    ]
+    released = output / "3gpp" / "Rel-7" / "TS_29.999" / "29999-7c0.docx"
+    assert released.read_bytes() == b"last"
+
+    # Release 7 gains a version: the pin's claim fails, and nothing is
+    # published.
+    before = _snapshot(output)
+    _archive_listing(
+        local_http_server,
+        "29.999",
+        **{
+            "29999-7c0": _zip_bytes(**{"29999-7c0.docx": b"last"}),
+            "29999-7d0": _zip_bytes(**{"29999-7d0.docx": b"later"}),
+            "29999-i00": _zip_bytes(**{"29999-i00.docx": b"now"}),
+        },
+    )
+    with pytest.raises(downloader.DownloadError, match=r"lists 7\.13\.0"):
+        downloader.download_corpus(
+            output,
+            pdfs=True,
+            catalog=downloader.Catalog((spec,), (), SHARK, (), (pin,)),
+        )
+    assert _snapshot(output) == before
 
 
 def test_download_version_fetches_one_older_version_into_its_own_tree(

@@ -143,6 +143,51 @@ class OneM2MSpec:
         return "V" + self.version.replace(".", "_")
 
 
+# What a pinned version's `final` says the archive must list nothing newer
+# than it in: any release, or its own.
+FINAL_SCOPES = ("document", "release")
+
+
+@dataclass(frozen=True)
+class PinnedThreeGppSpec:
+    """A 3GPP specification at one version, beside the catalog's release.
+
+    A citing document may mean another release than the corpus's: TS 32.299
+    cites TS 29.140, whose last version is V7.0.0, and ETSI TS 183 017 cites
+    "3GPP TS 29.214 Release 7". Each such version is pinned here and
+    fetched into its own release's tree (`3gpp/Rel-7/TS_29.140/`), and
+    `final` says what the pin claims about it, checked against the archive
+    listing on every download (`check_final`): `"document"`, the
+    document's final version, no later one archived in any release, or
+    `"release"`, its release's last, no later one archived in that release.
+    A version archived later breaks the claim, and the download fails
+    rather than leave a resolution resting on it (docs/consumers.md).
+    """
+
+    number: str
+    title: str
+    version: str  # "7.0.0"
+    final: str  # one of FINAL_SCOPES
+    reason: str = "Defines Diameter commands, command ABNF, AVPs, or AVP mappings."
+    document_type: str = "TS"
+
+    def __post_init__(self) -> None:
+        if self.final not in FINAL_SCOPES:
+            raise TypeError(
+                f"{self.document_type} {self.number}: final must be one of"
+                f" {', '.join(FINAL_SCOPES)}, not {self.final!r}"
+            )
+        parse_version(self.version)
+
+    @property
+    def spec(self) -> ThreeGppSpec:
+        return ThreeGppSpec(self.number, self.title, self.reason, self.document_type)
+
+    @property
+    def release(self) -> int:
+        return parse_version(self.version)[0]
+
+
 class Catalog(NamedTuple):
     """`specs.toml`, read."""
 
@@ -150,6 +195,7 @@ class Catalog(NamedTuple):
     rfc: tuple[RfcSpec, ...]
     wireshark: WiresharkDictionary
     onem2m: tuple[OneM2MSpec, ...] = ()
+    pinned: tuple[PinnedThreeGppSpec, ...] = ()
 
 
 CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
@@ -173,12 +219,21 @@ def load_catalog(path: Path | None = None) -> Catalog:
         rfc = tuple(RfcSpec(**entry) for entry in data["rfc"])
         wireshark = WiresharkDictionary(**data["wireshark"])
         onem2m = tuple(OneM2MSpec(**entry) for entry in data.get("onem2m", ()))
-    except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError) as error:
+        pinned = tuple(
+            PinnedThreeGppSpec(**entry) for entry in data.get("tgpp_pinned", ())
+        )
+    except (
+        OSError,
+        tomllib.TOMLDecodeError,
+        KeyError,
+        TypeError,
+        DownloadError,
+    ) as error:
         raise DownloadError(
             f"cannot read the specification catalog {path}:"
             f" {type(error).__name__}: {error}"
         ) from error
-    return Catalog(tgpp, rfc, wireshark, onem2m)
+    return Catalog(tgpp, rfc, wireshark, onem2m, pinned)
 
 
 @dataclass
@@ -227,6 +282,10 @@ class DownloadRecord:
     # was asked not to convert; None when the archive was not extracted or
     # holds a `.docx` of its own.
     conversions: list[Conversion] | None = None
+    # A pinned version's claim, checked against the archive listing:
+    # "document" (no later version in any release) or "release" (none later
+    # in its own). None for the catalog's release.
+    final: str | None = None
 
 
 def release_marker(release: int) -> str:
@@ -263,9 +322,10 @@ def request_bytes(url: str, retries: int = 4) -> bytes:
 
 
 def discover_3gpp_archive_urls(
-    spec: ThreeGppSpec, release: int
+    spec: ThreeGppSpec, release: int | None
 ) -> dict[tuple[int, int, int], str]:
-    """Every archived version of `spec` in `release`, from `Specs/archive/`.
+    """Every archived version of `spec` in `release`, from `Specs/archive/`;
+    with None, in every release.
 
     The archive, not `Specs/latest/Rel-N/`, because `latest` lists one zip per
     specification and drops it when the next version lands: a manifest
@@ -273,13 +333,13 @@ def discover_3gpp_archive_urls(
     any version but the newest (an unpublished ETSI PDF, `--version`) needs
     the list of all of them anyway.
     """
-    marker = release_marker(release)
+    marker = "[0-9a-z]" if release is None else re.escape(release_marker(release))
     index_url = THREE_GPP_ARCHIVE.format(series=spec.series, number=spec.number)
     page = request_bytes(index_url).decode("utf-8", errors="replace")
     # The first filename character after '-' encodes the 3GPP release.
     pattern = re.compile(
         rf"""href=["']([^"']*/?{re.escape(spec.archive_stem)}-"""
-        rf"""{re.escape(marker)}[0-9a-z]{{2}}\.zip)["']""",
+        rf"""{marker}[0-9a-z]{{2}}\.zip)["']""",
         re.IGNORECASE,
     )
     # Keyed by the decoded version, so the newest is `max()` of the keys and
@@ -288,6 +348,41 @@ def discover_3gpp_archive_urls(
     return {
         decode_3gpp_version(href): urllib.parse.urljoin(index_url, href)
         for href in pattern.findall(html.unescape(page))
+    }
+
+
+def check_final(
+    pin: PinnedThreeGppSpec, archived: dict[tuple[int, int, int], str]
+) -> dict[tuple[int, int, int], str]:
+    """Check `pin`'s `final` claim against its archive listing in every
+    release, and return the listing of the pinned version's release.
+
+    The listing is the archive's, which keeps every version, so a version
+    published after the pin was made shows up here and fails the download,
+    naming it: the catalog then states what the corpus should hold.
+    """
+    identifier = f"{pin.document_type} {pin.number}"
+    selected = parse_version(pin.version)
+    if selected not in archived:
+        listed = ", ".join(version_string(v) for v in sorted(archived)) or "nothing"
+        raise DownloadError(
+            f"{identifier} {pin.version} is not archived; the archive lists {listed}"
+        )
+    later = sorted(
+        version
+        for version in archived
+        if version > selected and (pin.final == "document" or version[0] == selected[0])
+    )
+    if later:
+        scope = "document" if pin.final == "document" else f"Release {selected[0]}"
+        raise DownloadError(
+            f"{identifier}: the catalog pins {pin.version} as the {scope}'s final"
+            f" version, but the archive lists"
+            f" {', '.join(version_string(v) for v in later)}; a later version is"
+            " one to adopt in specs.toml, not one to pass over"
+        )
+    return {
+        version: url for version, url in archived.items() if version[0] == selected[0]
     }
 
 
@@ -906,6 +1001,33 @@ def download_3gpp(
     )
 
 
+def download_pinned(
+    pin: PinnedThreeGppSpec,
+    archived: dict[tuple[int, int, int], str],
+    output: Path,
+    tree: Path,
+    extract: bool,
+    pdfs: bool,
+    convert: bool = True,
+) -> DownloadRecord:
+    """Fetch a pinned version into its release's tree, as `download_3gpp`
+    fetches an asked-for `version`: never walked back, its PDF the exact
+    rendering when published. `archived` is `check_final`'s answer."""
+    record = download_3gpp(
+        pin.spec,
+        archived,
+        pin.release,
+        output,
+        tree,
+        extract,
+        pdfs,
+        version=parse_version(pin.version),
+        convert=convert,
+    )
+    record.final = pin.final
+    return record
+
+
 def check_onem2m_archive(spec: OneM2MSpec, path: Path) -> str:
     """Validate a oneM2M zip and return the name of its clean `.doc`.
 
@@ -1109,6 +1231,10 @@ def describe(record: DownloadRecord) -> str:
         )
     if record.conversions == []:
         note += " (legacy .doc not converted)"
+    if record.final == "document":
+        note += " (pinned: the final version, none later archived)"
+    elif record.final == "release":
+        note += " (pinned: its release's last, none later archived in it)"
     return f"Downloaded {record.identifier}{note}"
 
 
@@ -1117,7 +1243,18 @@ def write_manifest(
 ) -> Path:
     """Write `tree`'s manifest.json. `tree` is staged, so no temporary file:
     a half-written manifest is never published."""
-    records = sorted(records, key=lambda item: (item.family, item.identifier))
+    # A pinned version shares its identifier with the catalog's release of
+    # the same document; the version keeps the order stable.
+    records = sorted(
+        records,
+        key=lambda item: (
+            item.family,
+            item.identifier,
+            parse_version(item.source_version)
+            if item.family == "3GPP" and item.source_version
+            else (),
+        ),
+    )
     manifest = {
         "3gpp_release": release,
         "generated_at_epoch": int(time.time()),
@@ -1191,9 +1328,9 @@ def download_corpus(
         raise DownloadError("workers must be at least 1")
     release_marker(release)
 
-    tgpp_specs, rfc_specs, wireshark, onem2m_specs = (
-        catalog if catalog is not None else load_catalog()
-    )
+    catalog = catalog if catalog is not None else load_catalog()
+    tgpp_specs, rfc_specs, wireshark, onem2m_specs = catalog[:4]
+    pinned_specs = catalog.pinned
     try:
         output = output.resolve()
         output.mkdir(parents=True, exist_ok=True)
@@ -1212,6 +1349,11 @@ def download_corpus(
             executor.submit(discover_3gpp_archive_urls, spec, release)
             for spec in tgpp_specs
         ]
+        # A pinned version's listing covers every release, for its `final`.
+        pinned_listings = [
+            executor.submit(discover_3gpp_archive_urls, pin.spec, None)
+            for pin in pinned_specs
+        ]
         archived = {
             spec.number: listing.result()
             for spec, listing in zip(tgpp_specs, listings, strict=True)
@@ -1222,6 +1364,11 @@ def download_corpus(
                 f"No Release {release} artifact found for: {', '.join(missing)}. "
                 "The release may not contain every catalogued specification."
             )
+
+        pinned_archived = [
+            check_final(pin, listing.result())
+            for pin, listing in zip(pinned_specs, pinned_listings, strict=True)
+        ]
 
         jobs = [
             executor.submit(
@@ -1237,6 +1384,12 @@ def download_corpus(
             )
             for spec in tgpp_specs
         ]
+        jobs.extend(
+            executor.submit(
+                download_pinned, pin, archived, output, tree, extract, pdfs, convert
+            )
+            for pin, archived in zip(pinned_specs, pinned_archived, strict=True)
+        )
         jobs.extend(
             executor.submit(download_rfc, spec, output, tree) for spec in rfc_specs
         )
@@ -1283,7 +1436,10 @@ def download_version(
     when an earlier run fetched it; nothing else under `output` changes.
     Returns the manifest path.
     """
-    tgpp_specs = (catalog if catalog is not None else load_catalog()).tgpp
+    catalog = catalog if catalog is not None else load_catalog()
+    # A pinned document's other versions are fetched the same way: TS
+    # 29.140, which the catalog's release lacks, at 6.4.0 for a diff.
+    tgpp_specs = catalog.tgpp + tuple(pin.spec for pin in catalog.pinned)
     wanted = reference.replace(" ", "").upper()
     spec = next(
         (

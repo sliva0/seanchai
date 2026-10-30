@@ -1,7 +1,8 @@
 # The downloader
 
 `src/seanchai/downloader/` fetches the catalog in its `specs.toml` — 3GPP
-archives with their ETSI PDF renderings, the plain-text RFCs, oneM2M's Word
+archives with their ETSI PDF renderings, the older 3GPP versions citing
+documents mean, pinned, the plain-text RFCs, oneM2M's Word
 originals at a pinned version, and Wireshark's Diameter dictionary — into the
 git-ignored `specifications/`, converts every legacy binary `.doc` to `.docx`
 with headless LibreOffice, and writes `specifications/manifest.json` with
@@ -23,11 +24,12 @@ specifications/
   manifest.json            what the published tree below holds
   3gpp/Rel-18/TS_29.272/   extracted archives          ┐
   3gpp/Rel-18/PDF/         ETSI renderings             │ published tree,
+  3gpp/Rel-7/TS_29.140/    a pinned version, its release's │
   converted/               LibreOffice conversions     │ swapped in whole
   onem2m/Release-2/TS-0004/  the clean oneM2M document │
   rfc/  wireshark/         RFC texts, the dictionary   ┘
   archives/                download cache: every file fetched, never pruned
-    3gpp-rel-18/29272-i60.zip  29272-i70.zip
+    3gpp-rel-18/29272-i60.zip  29272-i70.zip  3gpp-rel-7/29140-700.zip
     etsi/18.07.00_60/  onem2m/TS-0004-V2_35_0.zip  rfc/  wireshark/v4.7.2/
   versions/TS29.272/18.6.0/   an older version, on request
   .staging/                a run in progress
@@ -137,6 +139,29 @@ for catalog experiments, not for refreshing the corpus.
   the flag stays a failure, whose message names the flag: whether a run's
   manifest can rebuild the whole corpus depends on what the run was asked,
   never on what happens to be installed.
+- **Older 3GPP versions are pinned, and their claim is checked.** A
+  `[[tgpp_pinned]]` entry names a document, one version and what it claims
+  that version is: `final = "document"`, the document's last version in any
+  release, or `final = "release"`, its release's last. TS 29.140 V7.0.0
+  and TS 29.209 V6.8.0 are their documents' final versions, which TS
+  32.299 and ETSI ES 283 034 cite non-specifically; TS 29.214 V7.12.0 and
+  TS 32.299 V11.20.0 are the last of the releases ETSI TS 183 017 and
+  oneM2M TS-0004 name in their references. How the corpus resolves to them
+  is in [consumers.md](consumers.md). Every run lists the document's
+  archive across releases and checks the claim (`check_final`): a version
+  archived later than the pin, in any release or in its own, fails the run
+  naming it, before anything is downloaded, so a resolution never rests on
+  a claim the archive stopped supporting. The version is then fetched as
+  `--version` fetches one, never walked back, its exact ETSI rendering
+  attached (all four are published), into its own release's tree
+  (`3gpp/Rel-7/TS_29.140/`, `3gpp/Rel-11/TS_32.299/` beside
+  `3gpp/Rel-18/TS_32.299/`), its legacy `.doc` converted like any other.
+  Its record carries the claim in `final`, None for the catalog's release;
+  a document the catalog holds at both releases has two records under one
+  identifier, ordered by version. `regenerate` keys a copy by its
+  reference and its corpus tree (`dad/3gpp/rel-7/`), so neither replaces
+  the other. `--spec`/`--version` reaches a pinned document's other
+  versions too.
 - **oneM2M documents are pinned by the catalog, not discovered.** An
   `[[onem2m]]` entry names the document (`number = "0004"`), its release,
   version and the document library's id; TS-0004 Release 2 is V2.35.0, the

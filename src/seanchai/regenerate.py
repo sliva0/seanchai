@@ -134,11 +134,11 @@ def regenerate(
     # their ranges are widened; loaded once, and only then.
     books = Corpus.load([corpus]) if expand_ranges else None
     outcomes = []
-    for reference in sorted(set(only or committed) | set(add)):
+    for key in _selected(listed, committed, only, add):
         outcome = _one(
-            reference,
-            listed.get(reference),
-            committed.get(reference),
+            key[0],
+            listed.get(key),
+            committed.get(key),
             corpus,
             output,
             sources_dir,
@@ -148,6 +148,44 @@ def regenerate(
         outcomes.append(outcome)
         report(outcome)
     return Report(outcomes)
+
+
+# A corpus file's place: its reference and the corpus subdirectory it sits
+# in, `("TS29.214", "3gpp/rel-18")`. The corpus holds one copy of a document
+# per release tree, so TS 29.214 V7.12.0, which ETSI TS 183 017 cites as
+# "Release 7", sits in `3gpp/rel-7` beside V18.4.0 in `3gpp/rel-18`.
+_Key = tuple[str, str | None]
+
+
+def _selected(
+    listed: dict[_Key, _Source],
+    committed: dict[_Key, _Committed],
+    only: Sequence[str],
+    add: Sequence[str],
+) -> list[_Key]:
+    """The copies a run rebuilds: every committed one, or with `only` those
+    of the references it names that the manifest lists (an older version's
+    one-record manifest lists one release of a document the corpus may hold
+    in two), and with `add` every listed copy of a reference not committed.
+    A named reference neither lists nor commits is kept, as `(reference,
+    None)`, to be reported."""
+
+    def of(reference: str, keys) -> list[_Key]:
+        return [key for key in keys if key[0] == reference]
+
+    if only:
+        keys = []
+        for reference in only:
+            keys += (
+                of(reference, listed) or of(reference, committed) or [(reference, None)]
+            )
+    else:
+        keys = list(committed)
+    for reference in add:
+        keys += [key for key in of(reference, listed) if key not in committed] or (
+            [] if of(reference, committed) else [(reference, None)]
+        )
+    return sorted(set(keys), key=lambda key: (key[0], key[1] or ""))
 
 
 def _one(
@@ -320,7 +358,7 @@ def _produce(
     return raw_text, corrected_text, spec
 
 
-def _sources(manifest_path: Path) -> dict[str, _Source]:
+def _sources(manifest_path: Path) -> dict[_Key, _Source]:
     """The manifest's records the extractor can read, by spec reference.
 
     A 3GPP record whose archive held a legacy `.doc` is readable through the
@@ -333,7 +371,7 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
     """
     root = manifest_path.parent
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    sources: dict[str, _Source] = {}
+    sources: dict[_Key, _Source] = {}
     for record in manifest["artifacts"]:
         files = [root / name for name in record["files"]]
         if record["family"] == "IETF":
@@ -341,7 +379,7 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
             if not texts:
                 continue
             reference = ast.spec_ref(record["identifier"])
-            sources[reference] = _Source(
+            sources[reference, "rfc"] = _Source(
                 reference, texts[0], None, record["url"], "rfc"
             )
         elif record["family"] == "3GPP":
@@ -369,12 +407,13 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
             pdfs = [f for f in files if f.suffix == ".pdf"]
             # "3gpp/Rel-18/TS_29.388/29388-i10.docx" → "3gpp/rel-18".
             release = Path(record["files"][files.index(archived)]).parts[1]
-            sources[reference] = _Source(
+            tree = f"3gpp/{release.lower()}"
+            sources[reference, tree] = _Source(
                 reference,
                 document,
                 pdfs[0] if pdfs else None,
                 record["pdf_url"],
-                f"3gpp/{release.lower()}",
+                tree,
                 unconverted,
             )
         elif record["family"] == "oneM2M":
@@ -393,7 +432,7 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
             # gives its file, less the title: "TS-0004-Service_Layer_Core_
             # Protocol-V2_35_0(cl).doc".
             version = record["source_version"].replace(".", "_")
-            sources[reference] = _Source(
+            sources[reference, "onem2m"] = _Source(
                 reference,
                 converted[0] if converted else legacy[0],
                 None,
@@ -405,12 +444,12 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
     return sources
 
 
-def _transcriptions(directory: Path | None) -> dict[str, _Source]:
+def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
     """Every hand transcription in `directory`, by the reference its file
     is named for, as a source: `ETSI-ES283.034.dad` is written to
     `etsi/es283034-020200.dad`, ETSI's own name for V2.2.0 of the document,
     as a 3GPP pair is named for its archive."""
-    found: dict[str, _Source] = {}
+    found: dict[_Key, _Source] = {}
     for path in sorted(directory.glob("*.dad")) if directory is not None else ():
         match = _EXTERNAL_STEM_RE.match(path.stem)
         version = _VERSION_LINE_RE.search(path.read_text(encoding="utf-8"))
@@ -420,7 +459,7 @@ def _transcriptions(directory: Path | None) -> dict[str, _Source]:
                 " (ETSI-ES283.034.dad) and states its '; Version:'"
             )
         code = "".join(f"{int(part):02d}" for part in version["value"].split("."))
-        found[path.stem] = _Source(
+        found[path.stem, "etsi"] = _Source(
             path.stem,
             path,
             None,
@@ -438,9 +477,10 @@ _EXTERNAL_STEM_RE = re.compile(
 _VERSION_LINE_RE = re.compile(r"^; Version: (?P<value>[0-9.]+)$", re.MULTILINE)
 
 
-def _committed(corpus: Path) -> dict[str, _Committed]:
-    """Every corrected file in the corpus with its raw mirror, by reference."""
-    committed: dict[str, _Committed] = {}
+def _committed(corpus: Path) -> dict[_Key, _Committed]:
+    """Every corrected file in the corpus with its raw mirror, by reference
+    and tree."""
+    committed: dict[_Key, _Committed] = {}
     for corrected in sorted(corpus.rglob("*.dad")):
         if (
             corrected.name.endswith(".raw.dad")
@@ -450,7 +490,8 @@ def _committed(corpus: Path) -> dict[str, _Committed]:
         spec = parser.parse(corrected.read_text(encoding="utf-8"))
         reference = ast.spec_ref(spec.specification)
         raw = corpus / "raw" / corrected.relative_to(corpus).with_suffix(".raw.dad")
-        committed[reference] = _Committed(corrected, raw, spec.version)
+        tree = corrected.parent.relative_to(corpus).as_posix()
+        committed[reference, tree] = _Committed(corrected, raw, spec.version)
     return committed
 
 

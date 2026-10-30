@@ -129,6 +129,50 @@ def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
     assert {path: path.read_bytes() for path in corpus.rglob("*.dad")} == committed
 
 
+def test_two_releases_of_one_document_are_two_copies_in_two_trees(
+    tmp_path, synthetic_spec_docx
+):
+    """A pinned version (`seanchai download`'s `[[tgpp_pinned]]`) shares
+    its reference with the catalog's release of the document: each is
+    rebuilt in its own release's tree, and neither replaces the other."""
+    sources = tmp_path / "specifications"
+    manifest, document = _manifest(sources, "29999-i00")
+    shutil.copy(synthetic_spec_docx, document)
+    data = json.loads(manifest.read_text())
+    old = sources / "3gpp" / "Rel-7" / "TS_29.999" / "29999-7c0.docx"
+    old.parent.mkdir(parents=True)
+    shutil.copy(synthetic_spec_docx, old)
+    data["artifacts"].append(
+        dict(data["artifacts"][0], files=[str(old.relative_to(sources))])
+    )
+    manifest.write_text(json.dumps(data))
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+
+    added = _run(manifest, corpus, corpus, add=["TS29.999"]).outcomes
+    assert [(o.status, o.written[0].relative_to(corpus).as_posix()) for o in added] == [
+        ("new", "3gpp/rel-18/29999-i00.dad"),
+        ("new", "3gpp/rel-7/29999-7c0.dad"),
+    ]
+    assert [o.status for o in _run(manifest, corpus, corpus).outcomes] == [
+        "unchanged",
+        "unchanged",
+    ]
+
+    # A one-release manifest rebuilds that release's copy only.
+    data["artifacts"].pop(0)
+    manifest.write_text(json.dumps(data))
+    (outcome,) = regenerate.regenerate(
+        manifest,
+        corpus,
+        tmp_path / "scratch",
+        sources_dir=None,
+        corrections_dir=None,
+        only=["TS29.999"],
+    ).outcomes
+    assert (outcome.status, outcome.written[0].parent.name) == ("unchanged", "rel-7")
+
+
 def test_a_legacy_doc_is_read_through_the_manifest_conversion(
     tmp_path, synthetic_spec_docx
 ):
@@ -206,7 +250,7 @@ def test_a_onem2m_document_is_read_through_its_conversion_into_its_own_tree(
         )
     )
 
-    found = regenerate._sources(manifest)["oneM2M-TS-0004"]
+    found = regenerate._sources(manifest)["oneM2M-TS-0004", "onem2m"]
 
     assert found.document == tmp_path / (conversion["file"] if converted else source)
     assert (found.pdf, found.link) == (
