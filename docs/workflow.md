@@ -11,13 +11,16 @@ git diff --stat dad           # what changed, if anything
 
 `regenerate` prints one line per specification: `unchanged`, `changed`,
 `replaced` (the manifest holds a newer version than the corpus did; the old
-pair is removed), `new` (added with `--add`), or `failed` with the reason.
+pair is removed), `new` (added with `--add`), `not-converted` (a legacy
+`.doc` downloaded with `--no-convert`; skipped, its committed pair left
+alone, and not a failure), or `failed` with the reason.
 Warnings for declaration ranges that do not cover the parsed version print
 under each specification without gating application. The extractor's warnings
 print there too; they report unusual document structure and are worth a
 glance on every rebuild.
 `tests/test_real_sources.py` runs the same rebuild into a scratch directory
-and fails on anything but `unchanged`.
+and fails on anything but `unchanged`, `not-converted` included: it needs a
+download that converted the legacy `.doc` archives.
 
 ## Adding a specification
 

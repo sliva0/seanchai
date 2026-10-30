@@ -32,7 +32,9 @@ from .extractor import rfc_text, tgpp_docx
 from .extractor.errors import ExtractionError
 from .versions import RangeWarning, VersionRange
 
-Status = Literal["unchanged", "changed", "new", "failed", "not-in-manifest"]
+Status = Literal[
+    "unchanged", "changed", "new", "failed", "not-in-manifest", "not-converted"
+]
 
 
 @dataclass
@@ -72,6 +74,9 @@ class _Source:
     link: str
     # "3gpp/rel-18" or "rfc": the corpus subdirectory the pair belongs in.
     tree: str
+    # A legacy `.doc` the download did not convert (`--no-convert`);
+    # `document` is the `.doc` itself, which the extractor cannot read.
+    unconverted: bool = False
 
 
 @dataclass(frozen=True)
@@ -143,6 +148,17 @@ def _one(
             "not-in-manifest",
             error="the manifest lists no readable source for it; the committed"
             " files were left alone",
+        )
+    if source.unconverted:
+        # Not a failure: the download was asked to skip LibreOffice. The
+        # sources test refuses it for a committed pair, so a manifest that
+        # skipped conversions cannot pass it.
+        return Outcome(
+            reference,
+            "not-converted",
+            error=f"{source.document.name} was downloaded without conversion"
+            " (`seanchai download --no-convert`); the committed files were"
+            " left alone",
         )
     outcome = Outcome(reference, "unchanged")
     try:
@@ -263,10 +279,12 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
     """The manifest's records the extractor can read, by spec reference.
 
     A 3GPP record whose archive held a legacy `.doc` is readable through the
-    `.docx` the downloader converted it to, listed under `conversions`; a
-    manifest without one (an older manifest, `--no-extract`) leaves the
-    record out, so asking for it reports "not in manifest" — which is what it
-    is, as far as regeneration is concerned.
+    `.docx` the downloader converted it to, listed under `conversions`. One
+    whose `.doc` was extracted with no conversion (`--no-convert`) is listed
+    as unconverted, so asking for it reports "not converted"; a record with
+    no document at all (`--no-extract`) is left out, so asking for it reports
+    "not in manifest" — which is what it is, as far as regeneration is
+    concerned.
     """
     root = manifest_path.parent
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -289,6 +307,9 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
                 (root / conversion["source"], root / conversion["file"])
                 for conversion in record.get("conversions") or ()
             ]
+            legacy = [(f, f) for f in files if f.suffix == ".doc"]
+            unconverted = not documents and bool(legacy)
+            documents = documents or legacy
             if not documents or not record.get("pdf_url"):
                 continue
             archived, document = documents[0]
@@ -309,6 +330,7 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
                 pdfs[0] if pdfs else None,
                 record["pdf_url"],
                 f"3gpp/{release.lower()}",
+                unconverted,
             )
     return sources
 

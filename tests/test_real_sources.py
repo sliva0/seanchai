@@ -8,7 +8,9 @@ maintainer runs, so the test and the tool cannot drift apart.
 
 A missing manifest is a failure, not a skip: a suite that silently skipped its
 strongest check would look green for the wrong reason. Run
-`pytest -m "not sources"` to leave these out deliberately.
+`pytest -m "not sources"` to leave these out deliberately. For the same
+reason a committed pair whose legacy `.doc` the manifest holds unconverted
+(`seanchai download --no-convert`) fails, rather than pass as skipped.
 """
 
 from pathlib import Path
@@ -43,10 +45,28 @@ def regenerated(tmp_path_factory):
     return {outcome.reference: outcome for outcome in report.outcomes}
 
 
+_RECONVERT = (
+    "the manifest holds the legacy .doc unconverted: run `seanchai download`"
+    " with LibreOffice installed, without --no-convert"
+)
+
+
+@pytest.mark.sources
+def test_every_committed_legacy_document_was_converted(regenerated):
+    unconverted = sorted(
+        reference
+        for reference, outcome in regenerated.items()
+        if outcome.status == "not-converted"
+    )
+    assert not unconverted, f"{', '.join(unconverted)}: {_RECONVERT}"
+
+
 @pytest.mark.sources
 @pytest.mark.parametrize("reference", _REFERENCES)
 def test_the_real_sources_still_produce_the_committed_output(regenerated, reference):
     outcome = regenerated[reference]
+    if outcome.status == "not-converted":
+        pytest.fail(f"{reference}: {_RECONVERT}")
     assert outcome.error is None, outcome.error
     if outcome.status == "new":
         pytest.fail(

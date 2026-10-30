@@ -13,8 +13,10 @@ uv run basedpyright              # standard mode; the more trustworthy one
 ```
 
 `seanchai download` needs LibreOffice's `soffice` on PATH to convert the
-catalog's legacy `.doc` archives; TS 32.299, 29.154, 29.215, 29.217, 29.219,
-29.343, 29.368 and 29.468 are read from their conversions.
+catalog's legacy `.doc` archives, unless it is run with `--no-convert`. The
+full sources test needs the conversions: TS 32.299, 29.154, 29.215, 29.217,
+29.219, 29.343, 29.368 and 29.468 are read from them, and a `--no-convert`
+manifest fails the test naming those eight.
 
 CI runs the tests without sources plus ruff. Run everything locally before
 committing anyway; CI is a backstop, not the gate.
@@ -28,9 +30,9 @@ checker-specific form (`# pyright: ignore[...]`) when they do.
 - Tests marked `sources` run `seanchai regenerate` over the real documents
   under `specifications/` into a scratch directory and require every
   committed pair to come out unchanged, and load the pinned Wireshark
-  dictionary. They *fail* when the sources are absent rather
-  than skipping, so a green run without `-m "not sources"` means the strong
-  check actually ran.
+  dictionary. They *fail* when the sources are absent, or a committed
+  specification's legacy `.doc` is unconverted, rather than skipping, so a
+  green run without `-m "not sources"` means the strong check actually ran.
 - Everything else runs on committed files and small synthetic fixtures
   (`tests/conftest.py`): every committed `.dad` round-trips by glob, every
   committed correction re-applies to the committed raw output, the linter's

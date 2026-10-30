@@ -40,6 +40,7 @@ reading of the same documents.
 
 ```sh
 seanchai download                       # fetch the catalog into specifications/
+seanchai download --no-convert          # without LibreOffice; legacy .doc unread
 seanchai download --spec SPECREF --version X.Y.Z   # one older version, for diffs
 seanchai regenerate [--add SPECREF]     # rebuild dad/ from it
 seanchai regenerate --expand-ranges     # also widen stale declaration ranges
@@ -77,6 +78,7 @@ seanchai crosscheck FILE.dad...         # against Wireshark's dictionary
 uv sync
 uv run pytest -m "not sources"   # without the downloaded documents
 uv run pytest                    # everything, needs `seanchai download`
+                                 # with LibreOffice (not --no-convert)
 uv run ruff check . && uv run ruff format .
 uv run ty check && uv run basedpyright
 ```

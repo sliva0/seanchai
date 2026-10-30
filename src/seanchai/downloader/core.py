@@ -176,8 +176,9 @@ class DownloadRecord:
     # The newer archive version that was passed over because ETSI has not
     # published its PDF rendering; None when the newest version was taken.
     newer_source_version: str | None = None
-    # The `.docx` conversions of a legacy `.doc` archive; None when the
-    # archive was not extracted or holds a `.docx` of its own.
+    # The `.docx` conversions of a legacy `.doc` archive; empty when the run
+    # was asked not to convert; None when the archive was not extracted or
+    # holds a `.docx` of its own.
     conversions: list[Conversion] | None = None
 
 
@@ -464,9 +465,9 @@ def run_soffice(identifier: str, arguments: list[str]) -> str:
     """Run LibreOffice and return its standard output.
 
     The `.doc` belongs to a catalogued entry, so an absent LibreOffice is a
-    failed download rather than a skipped one: skipping would publish a
-    manifest without the document, which `regenerate` reports only later and
-    as "not in manifest".
+    failed download rather than a skipped one: whether a run's manifest can
+    rebuild the whole corpus depends on what it was asked, never on what
+    happens to be installed. Skipping is `convert=False`, which records it.
     """
     command = [SOFFICE, *arguments]
     try:
@@ -486,7 +487,8 @@ def run_soffice(identifier: str, arguments: list[str]) -> str:
     except FileNotFoundError as error:
         raise DownloadError(
             f"{identifier} ships a legacy .doc; converting it needs LibreOffice"
-            f" (`{SOFFICE}`), which is not installed or not on PATH: {error}"
+            f" (`{SOFFICE}`), which is not installed or not on PATH: {error};"
+            " `seanchai download --no-convert` downloads without converting"
         ) from error
     except (OSError, subprocess.SubprocessError) as error:
         raise DownloadError(
@@ -512,6 +514,14 @@ def run_soffice(identifier: str, arguments: list[str]) -> str:
     return stdout
 
 
+def legacy_documents(extracted: list[Path]) -> list[Path]:
+    """The extracted `.doc` files to convert: none when the archive holds a
+    `.docx` of its own."""
+    if any(path.suffix == ".docx" for path in extracted):
+        return []
+    return [path for path in extracted if path.suffix == ".doc"]
+
+
 def convert_legacy_documents(
     identifier: str, extracted: list[Path], spec_dir: Path, tree: Path
 ) -> list[Conversion]:
@@ -525,8 +535,8 @@ def convert_legacy_documents(
     manifest is the only way `regenerate` finds them; a run that fails here
     publishes nothing.
     """
-    legacy = [path for path in extracted if path.suffix == ".doc"]
-    if not legacy or any(path.suffix == ".docx" for path in extracted):
+    legacy = legacy_documents(extracted)
+    if not legacy:
         return []
     converter = run_soffice(identifier, ["--version"]).strip()
     if not converter:
@@ -727,6 +737,7 @@ def download_3gpp(
     pdfs: bool,
     version: tuple[int, int, int] | None = None,
     link_archive: bool = False,
+    convert: bool = True,
 ) -> DownloadRecord:
     """Fetch one specification into the cache under `output`, staged in `tree`.
 
@@ -736,7 +747,8 @@ def download_3gpp(
     record's paths are relative to `tree`. Its archive path names the cache
     entry, which is where it is once `tree` is published into `output`;
     `link_archive` puts a link to it in `tree` instead, for a tree published
-    anywhere else.
+    anywhere else. Without `convert`, a legacy `.doc` is extracted but not
+    converted, and the record's `conversions` is empty rather than None.
     """
     identifier = f"{spec.document_type} {spec.number}"
     if not archived:
@@ -786,9 +798,14 @@ def download_3gpp(
         # version's files behind; sorted, so the manifest lists them stably.
         extracted = sorted(safe_extract(archive, spec_dir))
         files.extend(relative_paths(extracted, tree))
-        conversions = (
-            convert_legacy_documents(identifier, extracted, spec_dir, tree) or None
-        )
+        if not legacy_documents(extracted):
+            conversions = None
+        elif convert:
+            conversions = convert_legacy_documents(
+                identifier, extracted, spec_dir, tree
+            )
+        else:
+            conversions = []
     pdf_url = None
     pdf_sha256 = None
     pdf_size = None
@@ -949,6 +966,8 @@ def describe(record: DownloadRecord) -> str:
             f" (converted {PurePosixPath(conversion.source).name}"
             f" with {conversion.converter})"
         )
+    if record.conversions == []:
+        note += " (legacy .doc not converted)"
     return f"Downloaded {record.identifier}{note}"
 
 
@@ -1015,6 +1034,7 @@ def download_corpus(
     catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]
     | None = None,
     report: Callable[[str], None] = lambda message: None,
+    convert: bool = True,
 ) -> Path:
     """Download the catalog into `output` and publish it with `manifest.json`.
 
@@ -1024,6 +1044,8 @@ def download_corpus(
     as they were, rather than a mix of old and new specifications. Returns
     the manifest path. Progress goes to `report`, so the caller decides what
     printing means; anything that stops the download raises `DownloadError`.
+    `convert=False` leaves legacy `.doc` archives unconverted, so LibreOffice
+    is not needed; see `download_3gpp`.
     """
     if workers < 1:
         raise DownloadError("workers must be at least 1")
@@ -1071,6 +1093,7 @@ def download_corpus(
                 tree,
                 extract,
                 pdfs,
+                convert=convert,
             )
             for spec in tgpp_specs
         ]
@@ -1105,6 +1128,7 @@ def download_version(
     catalog: tuple[tuple[ThreeGppSpec, ...], tuple[RfcSpec, ...], WiresharkDictionary]
     | None = None,
     report: Callable[[str], None] = lambda message: None,
+    convert: bool = True,
 ) -> Path:
     """Fetch one catalogued 3GPP specification at `version` into `output/versions/`.
 
@@ -1155,6 +1179,7 @@ def download_version(
             pdfs,
             version=selected,
             link_archive=True,
+            convert=convert,
         )
         report(describe(record))
         write_manifest(tree, release, pdfs, [record])

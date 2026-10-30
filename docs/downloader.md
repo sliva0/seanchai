@@ -6,12 +6,13 @@ Diameter dictionary — into the git-ignored `specifications/`, converts the
 archives that ship a legacy binary `.doc` to `.docx` with headless
 LibreOffice, and writes `specifications/manifest.json` with sha256 and size
 per artifact. Standard library plus pypdf and python-docx for validation and
-the `soffice` executable; the module returns records, reports progress through a callback and raises
+the `soffice` executable (unless `--no-convert`); the module returns records, reports progress through a callback and raises
 `DownloadError`, and the CLI does the printing.
 
 ```sh
 uv run seanchai download --list     # show the catalog
 uv run seanchai download            # fetch it, ETSI PDFs included
+uv run seanchai download --no-convert   # without LibreOffice; see below
 uv run seanchai download --spec TS29.272 --version 18.6.0   # one older version
 ```
 
@@ -124,6 +125,17 @@ for catalog experiments, not for refreshing the corpus.
   the specification. A conversion still running after ten minutes is killed
   with its whole process group, `soffice.bin` included, not just the
   `soffice` launcher.
+- **`--no-convert` skips the conversions**, and with them the need for
+  LibreOffice. The `.doc` is still extracted and listed in `files`; the
+  record's `conversions` is `[]`, where an archive with a `.docx` of its own
+  (or a `--no-extract` run) has `null`, and the progress line ends `(legacy
+  .doc not converted)`. `regenerate` reports each such specification as
+  `not-converted` and leaves its committed pair alone, and the sources test
+  fails naming them, so this manifest is for working on the other
+  specifications, not for checking the corpus. A missing `soffice` without
+  the flag stays a failure, whose message names the flag: whether a run's
+  manifest can rebuild the whole corpus depends on what the run was asked,
+  never on what happens to be installed.
 - A failed download cancels the remaining jobs; running ones finish.
 - 3GPP and ETSI index pages are scraped with regexes over raw HTML — fine
   for the listing formats, brittle if the markup changes.

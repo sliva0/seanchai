@@ -852,7 +852,11 @@ def test_an_archive_with_its_own_docx_is_not_converted(tmp_path, monkeypatch):
 @pytest.mark.parametrize(
     ("soffice", "message"),
     [
-        ("absent", r"TS 29\.999 ships a legacy \.doc; .*LibreOffice \(`.*soffice`\)"),
+        (
+            "absent",
+            r"TS 29\.999 ships a legacy \.doc; .*LibreOffice \(`.*soffice`\)"
+            r".*; `seanchai download --no-convert` downloads without converting",
+        ),
         ("failing", r"TS 29\.999: `.*` exited 1: Error: source file could not be"),
         ("silent", r"TS 29\.999: LibreOffice wrote no 29999-i00\.docx"),
         ("broken", r"29999-i00\.docx is not a readable \.docx"),
@@ -895,6 +899,53 @@ def test_a_failed_conversion_fails_the_run_and_publishes_nothing(
     assert (output / "manifest.json").read_text() == '{"artifact_count": 99}'
     assert not list(output.rglob("*.docx"))
     assert not (output / ".staging").exists()
+
+
+@pytest.mark.parametrize("convert", [True, False], ids=["convert", "no-convert"])
+def test_download_corpus_converts_a_legacy_doc_unless_asked_not_to(
+    tmp_path, local_http_server, monkeypatch, convert
+):
+    if convert:
+        calls = _fake_soffice(monkeypatch)
+    else:
+        # Not installed at all: without conversion it is never looked for.
+        calls = []
+        monkeypatch.setattr(downloader, "SOFFICE", str(tmp_path / "bin" / "soffice"))
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+    _archive_listing(
+        local_http_server,
+        "29.999",
+        **{"29999-i00": _zip_bytes(**{"29999-i00.doc": b"word"})},
+    )
+    progress = []
+
+    downloader.download_corpus(
+        output,
+        catalog=((downloader.ThreeGppSpec("29.999", "Test TS"),), (), SHARK),
+        report=progress.append,
+        convert=convert,
+    )
+
+    manifest = json.loads((output / "manifest.json").read_text())
+    record = manifest["artifacts"][0]
+    assert record["identifier"] == "TS 29.999"
+    # The `.doc` is extracted and listed either way.
+    assert "3gpp/Rel-18/TS_29.999/29999-i00.doc" in record["files"]
+    assert (output / "3gpp" / "Rel-18" / "TS_29.999" / "29999-i00.doc").is_file()
+    if convert:
+        assert [conversion["file"] for conversion in record["conversions"]] == [
+            "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx"
+        ]
+        assert (output / record["conversions"][0]["file"]).is_file()
+        assert len(calls) == 2
+    else:
+        # Empty, not absent: the record says a conversion was skipped.
+        assert record["conversions"] == []
+        assert not list(output.rglob("*.docx"))
+        assert any(line.endswith("(legacy .doc not converted)") for line in progress), (
+            progress
+        )
 
 
 def test_a_timed_out_conversion_kills_the_whole_process_group(tmp_path, monkeypatch):

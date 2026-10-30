@@ -1,8 +1,8 @@
 """The corpus rebuild's bookkeeping, on a manifest of one synthetic document.
 
-The real corpus never exercises the version-replacement and not-in-manifest
-paths (the moment it does, the fix is to regenerate and commit), so they are
-pinned here.
+The real corpus never exercises the version-replacement, not-in-manifest and
+not-converted paths (the moment it does, the fix is to regenerate and commit,
+or download again), so they are pinned here.
 """
 
 import json
@@ -147,12 +147,21 @@ def test_a_legacy_doc_is_read_through_the_manifest_conversion(
     tgpp = data["artifacts"][0]
     tgpp["files"] = [conversion["source"]]
     # Without the record, a `.doc` is unreadable however many converted
-    # files lie around: the manifest is the only route.
+    # files lie around: the manifest is the only route. A `.doc` downloaded
+    # with `--no-convert` is skipped on its own line, not failed.
+    tgpp["conversions"] = []
     manifest.write_text(json.dumps(data))
     corpus = tmp_path / "dad"
     corpus.mkdir()
-    (missing,) = _run(manifest, corpus, corpus, add=["TS29.999"]).outcomes
-    assert missing.status == "not-in-manifest"
+    report = _run(manifest, corpus, corpus, add=["TS29.999"])
+    (skipped,) = report.outcomes
+    assert skipped.status == "not-converted"
+    assert report.failed == []
+    assert not list(corpus.rglob("*.dad"))
+    assert regenerate.describe(skipped) == (
+        "not-converted TS29.999: 29999-100.doc was downloaded without conversion"
+        " (`seanchai download --no-convert`); the committed files were left alone"
+    )
 
     tgpp["conversions"] = [conversion]
     # A TR has no reference a corpus file can carry; it is passed over.

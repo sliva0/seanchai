@@ -327,6 +327,7 @@ def _echo_outcome(outcome) -> None:
         "changed": "yellow",
         "new": "cyan",
         "replaced": "magenta",
+        "not-converted": "yellow",
     }.get(status, "red")
     click.echo(f"{click.style(status, fg=colour)} {rest}")
     # The extractor's warnings, under the specification they belong to: they
@@ -600,6 +601,13 @@ def _summary(counts, checked: int) -> str:
     " without converting a legacy DOC).",
 )
 @click.option(
+    "--no-convert",
+    is_flag=True,
+    help="Extract a legacy DOC without converting it to DOCX, so LibreOffice"
+    " is not needed; the manifest records it unconverted and `regenerate`"
+    " skips its specification.",
+)
+@click.option(
     "--pdfs/--no-pdfs",
     default=True,
     help="Download the ETSI PDF renderings and prefer the newest version"
@@ -627,6 +635,7 @@ def download(
     output: Path,
     workers: int,
     no_extract: bool,
+    no_convert: bool,
     pdfs: bool,
     list_only: bool,
     spec: str | None,
@@ -638,7 +647,8 @@ def download(
     only when all of it succeeded; a failed run leaves the previous one and
     its manifest as they were. A 3GPP archive holding only a legacy `.doc` is
     converted to `.docx` with headless LibreOffice (`soffice` on PATH), and
-    the conversion is recorded in the manifest.
+    the conversion is recorded in the manifest; without LibreOffice the run
+    fails unless --no-convert says to skip the conversions.
 
     With --spec and --version, one older version is fetched into
     `versions/<SPECREF>/<VERSION>/` with a manifest of its own, for
@@ -673,6 +683,7 @@ def download(
                 pdfs=pdfs,
                 catalog=(tgpp_specs, rfc_specs, wireshark),
                 report=lambda message: click.echo(message, err=True),
+                convert=not no_convert,
             )
             return
         download_corpus(
@@ -683,6 +694,7 @@ def download(
             pdfs=pdfs,
             catalog=(tgpp_specs, rfc_specs, wireshark),
             report=lambda message: click.echo(message, err=True),
+            convert=not no_convert,
         )
 
 
