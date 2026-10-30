@@ -10,3 +10,19 @@ section = "6.4.1"
 reason = "table 6.4.1-1 misspells Non-IP-Data's type; clause 6.4.19 defines it as OctetString and OctetSstring is not a Diameter data type"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[patch]]
+find = "Number-of-UE-Per-Location-Configuration"
+replace = "Number-Of-UE-Per-Location-Configuration"
+section = "6.4.11"
+reason = "clause 6.4.11's rule name lower-cases 'Of'; the clause's heading and prose, table 6.4.1-1 and Monitoring-Event-Configuration's rule (6.4.2) write Number-Of-UE-Per-Location-Configuration (the TS 29.230 registry copies the rule's spelling)"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Number-of-UE-Per-Location-Report"
+replace = "Number-Of-UE-Per-Location-Report"
+section = "6.4.12"
+reason = "clause 6.4.12's rule name lower-cases 'Of'; the clause's heading and prose, table 6.4.1-1 and Monitoring-Event-Report's rule (6.4.3) write Number-Of-UE-Per-Location-Report (the TS 29.230 registry copies the rule's spelling)"
+first_version = "18.0.0"
+last_version = "18.0.0"

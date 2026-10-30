@@ -367,7 +367,7 @@ Communication-Failure-Information ::= < AVP header: 4300 10415 >
 ; Name: Number-Of-UE-Per-Location-Configuration
 ; Section: 6.4.11
 ; Page: 45
-Number-Of-UE-Per-Location-Configuration ::= < AVP header: 4306 10415 > ;; corrected: (TS29.128.py#number-of-ue-per-location-configuration-case)
+Number-Of-UE-Per-Location-Configuration ::= < AVP header: 4306 10415 >
         { EPS-Location-Information }
         [ IMSI-Group-Id ]
       * [ AVP ]
@@ -377,7 +377,7 @@ Number-Of-UE-Per-Location-Configuration ::= < AVP header: 4306 10415 > ;; correc
 ; Name: Number-Of-UE-Per-Location-Report
 ; Section: 6.4.12
 ; Page: 45
-Number-Of-UE-Per-Location-Report ::= < AVP header: 4307 10415 > ;; corrected: (TS29.128.py#number-of-ue-per-location-report-case)
+Number-Of-UE-Per-Location-Report ::= < AVP header: 4307 10415 >
         { EPS-Location-Information }
         { UE-Count }
         [ IMSI-Group-Id ]

@@ -37,8 +37,9 @@ to catch.
 
 ### Input patches
 
-Typos in the source that break extraction, patched on the normalized
-paragraph, cell and title text before parsing:
+Typos in the source that break extraction, or that misspell a name only in
+case against the clause defining it, patched on the normalized paragraph,
+cell and title text before parsing:
 
 ```toml
 [[patch]]
@@ -421,7 +422,9 @@ behind two quirks of its own:
 The input patches repair what fails these readings: three reference cells
 (`29.153[37]`, `29.154[38]`, `29.109 [7`), `723 to799`, three type typos
 (`OctectString`, `Groupe`, `UTF8Str`) and six names broken beside a hyphen (`Redirect- Support`, `Authentication- Information
--Request/Answer`). Names with spaces stay as printed, quoted (`"Visited PLMN
+-Request/Answer`). Twenty-two more respell table 7.1's names that differ
+only in case from the defining clause's (`Role-of-Node`, TS 32.299's
+`Role-Of-Node`); see [linter.md](linter.md#standing-findings). Names with spaces stay as printed, quoted (`"Visited PLMN
 Id"`, `"Media-Sub-Component AVP"`).
 
 ## The RFC plain-text extractor

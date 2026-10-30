@@ -93,7 +93,7 @@ loudly.
 
 | Layer | Fixes | Where |
 |---|---|---|
-| input patches | typos in the source text that break extraction | `edits/sources/<SpecRef>.toml`, `[[patch]]` |
+| input patches | typos in the source text that break extraction, and case-only misspellings of a name | `edits/sources/<SpecRef>.toml`, `[[patch]]` |
 | quirks | readings too heuristic to run undeclared | same file, `[[quirk]]` |
 | extractor code | exact-match structure that fails loudly on its own | `src/seanchai/extractor/` |
 | corrections | data that parses fine but is semantically wrong | `edits/corrections/<SpecRef>.py` |

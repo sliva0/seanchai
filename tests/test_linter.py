@@ -328,7 +328,6 @@ _RAW_ERRORS = {
         "table-definition-mismatch",
     ],
     "29172-i10.raw.dad": ["duplicate-identity"],
-    "29128-i00.raw.dad": ["duplicate-identity", "duplicate-identity"],
     "29272-i70.raw.dad": [
         "duplicate-identity",
         "table-definition-mismatch",
@@ -368,7 +367,6 @@ _RAW_ERRORS = {
     "29329-i00.raw.dad": ["row-without-code"],
     "29345-i00.raw.dad": [
         "duplicate-identity",
-        "duplicate-identity",
         "table-definition-mismatch",
         "table-definition-mismatch",
         "table-definition-mismatch",
@@ -385,7 +383,7 @@ _RAW_ERRORS = {
     # 7.2 printing no vendor while table 7.2.0.1 sets V.
     "32299-i00.raw.dad": ["row-without-code"]
     + ["table-definition-mismatch"] * 2
-    + ["vendor-id-mismatch"] * 94,
+    + ["vendor-id-mismatch"] * 96,
 }
 
 
@@ -892,10 +890,6 @@ _STANDING_CORPUS_NOTES = {
     },
     "29109-i10.dad": {"registry-avp-name": ["NAF-Id"]},
     "29128-i00.dad": {
-        "registry-avp-name": [
-            "Number-Of-UE-Per-Location-Configuration",
-            "Number-Of-UE-Per-Location-Report",
-        ],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
             "Monitoring-Event-Report",
@@ -907,11 +901,6 @@ _STANDING_CORPUS_NOTES = {
     },
     "29212-i20.dad": {
         "origin-not-in-corpus": ["TS283.034, X.S0057"],
-        "registry-avp-name": [
-            "CS-Service-QoS-Request-Identifier",
-            "Rule-Deactivation-Time",
-            "TDF-IP-Address",
-        ],
     },
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
@@ -920,7 +909,6 @@ _STANDING_CORPUS_NOTES = {
         "origin-not-in-corpus": ["TS183.017"],
         "registry-avp-name": ["Media-Sub-Component"],
     },
-    "29217-i00.dad": {"registry-avp-name": ["Extended-eNodeB-Id"]},
     "29219-i00.dad": {
         "origin-not-in-corpus": ["TS283.034"],
     },
@@ -990,7 +978,6 @@ _STANDING_CORPUS_NOTES = {
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
         "registry-avp-name": [
-            "Event-Handling",
             "Group-User-Identifier",
             "NIA-Flags",
             "Supported-Monitoring-Events",
@@ -1017,7 +1004,6 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
     },
     "29345-i00.dad": {
-        "registry-avp-name": ["Assistance-Info", "MIC-Check-Indicator"],
         "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
     "29388-i10.dad": {
@@ -1038,35 +1024,22 @@ _STANDING_CORPUS_NOTES = {
             "Reference-Number",
         ],
         "registry-avp-name": [
-            "Application-Provided-Called-Party-Address",
             "Authorised-QoS",
             "Charging-Characteristics-Selection-Mode",
-            "Content-Provider-ID",
             "Deferred-Location-Event-Type",
             "IP-Realm-Default-Indication",
             "ISUP-Cause",
-            "Incoming-Trunk-Group-ID",
-            "LCS-Client-ID",
-            "LCS-Requestor-ID",
-            "LCS-Requestor-ID-String",
             "Local-GW-Inserted-Indication",
             "MBMS-GW-Address",
-            "MMTel-SService-Type",
-            "Number-Of-Messages-Sent",
             "Originator-SCCP-Address",
-            "Outgoing-Trunk-Group-ID",
             "PC3-Control-Protocol-Cause",
             "PC3-EPC-Control-Protocol-Cause",
             "PoC-Change-Condition",
-            "PoC-Session-Initiation-Type",
-            "PoC-User-Role-Info-Units",
             "ProSe-Group-IP-Multicast-Address",
             "RAN-End-Timestamp",
             "RAN-Start-Timestamp",
-            "Role-Of-Node",
             "Service-ID",
             "Transcoder-Inserted-Indication",
-            "Trunk-Group-ID",
         ],
         # Table 7.1 reserves 1324-1399 for "TS 32.229", likely TS 32.299.
         "registry-reserved-code": ["Nr-Cgi", "PSCell-Info"],

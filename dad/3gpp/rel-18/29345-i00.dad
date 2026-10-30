@@ -385,7 +385,7 @@
 ; Page: 40
 ; Columns: Name                      Code   Section   Type          Must   May   S.not   M.not   Encrypt
 App-Layer-User-Id                    3801   6.3.2     UTF8String    M,V    -     -       -       No
-Assistance-Info                      3802   6.3.3     Grouped       M,V    -     -       -       No ;; corrected: (TS29.345.py#assistance-info-case)
+Assistance-Info                      3802   6.3.3     Grouped       M,V    -     -       -       No
 Assistance-Info-Validity-Timer       3803   6.3.4     Unsigned32    M,V    -     -       -       No
 Discovery-Type                       3804   6.3.5     Unsigned32    M,V    -     -       -       No
 Filter-Id                            3805   6.3.9     OctetString   M,V    -     -       -       No
@@ -448,7 +448,7 @@ Code-Sending-Security-Material       3861   6.3.76    Grouped       V      -    
 DUSK                                 3862   6.3.77    OctetString   V      -     -       M       No
 DUIK                                 3863   6.3.78    OctetString   V      -     -       M       No
 DUCK                                 3864   6.3.79    OctetString   V      -     -       M       No
-MIC-Check-Indicator                  3865   6.3.80    Unsigned32    V      -     -       M       No ;; corrected: (TS29.345.py#mic-check-indicator-case)
+MIC-Check-Indicator                  3865   6.3.80    Unsigned32    V      -     -       M       No
 Encrypted-Bitmask                    3866   6.3.81    OctetString   V      -     -       M       No
 ProSe-App-Code-Suffix-Range          3867   6.3.82    Grouped       V      -     -       M       No ;; corrected: (TS29.345.py#prose-app-code-suffix-range-type)
 PC5-tech                             3868   6.3.84    OctetString   V      -     -       M       No

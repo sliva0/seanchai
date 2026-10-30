@@ -176,6 +176,50 @@ first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[patch]]
+find = "PoC-User-Role-info-Units"
+replace = "PoC-User-Role-Info-Units"
+section = "7.2.149"
+reason = "PoC-User-Role's rule lower-cases Info; the defining clause 7.2.151 and table 7.2.0.1 write PoC-User-Role-Info-Units"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Trunk-Group-Id"
+replace = "Trunk-Group-ID"
+exact = true
+section = "7.2.0"
+reason = "table 7.2.0.1 spells the row Trunk-Group-Id; the defining clause 7.2.237 and IMS-Information's rule (7.2.77) write Trunk-Group-ID"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Incoming-Trunk-Group-Id"
+replace = "Incoming-Trunk-Group-ID"
+exact = true
+section = "7.2.0"
+reason = "table 7.2.0.1 spells the row Incoming-Trunk-Group-Id; the defining clause 7.2.79 and Trunk-Group-ID's rule (7.2.237) write Incoming-Trunk-Group-ID"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "Outgoing-Trunk-Group-Id"
+replace = "Outgoing-Trunk-Group-ID"
+exact = true
+section = "7.2.0"
+reason = "table 7.2.0.1 spells the row Outgoing-Trunk-Group-Id; the defining clause 7.2.129 and Trunk-Group-ID's rule (7.2.237) write Outgoing-Trunk-Group-ID"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "LCS-Client-Id"
+replace = "LCS-Client-ID"
+exact = true
+section = "7.2.0"
+reason = "table 7.2.0.1 spells the row LCS-Client-Id; the defining clause 7.2.84's heading and rule (its prose once writes LCS-Client-Id) and LCS-Information's rule (7.2.89) write LCS-Client-ID"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
 find = "0 4xx;"
 replace = "0 4xx"
 exact = true

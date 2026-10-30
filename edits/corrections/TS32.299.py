@@ -255,12 +255,6 @@ _MEMBER_SPELLINGS = (
     ("CPDT-Information", "NIDD-submission", "NIDD-Submission", "7.2.112aA"),
     ("PoC-User-Role", "PoC-User-Role-Ids", "PoC-User-Role-IDs", "7.2.150"),
     (
-        "PoC-User-Role",
-        "PoC-User-Role-info-Units",
-        "PoC-User-Role-Info-Units",
-        "7.2.151",
-    ),
-    (
         "ProSe-Information",
         "Prose-Function-PLMN-Identifier",
         "ProSe-Function-PLMN-Identifier",
@@ -272,12 +266,8 @@ _MEMBER_SPELLINGS = (
 
 # Table 7.2.0.1 rows spelled differently from the clause defining the AVP.
 _ROW_SPELLINGS = (
-    ("Incoming-Trunk-Group-Id", "Incoming-Trunk-Group-ID", "7.2.79"),
-    ("Outgoing-Trunk-Group-Id", "Outgoing-Trunk-Group-ID", "7.2.129"),
     ("RAN-End-Time", "RAN-End-Timestamp", "7.2.160Da"),
     ("RAN-Start-Time", "RAN-Start-Timestamp", "7.2.160Dc"),
-    ("LCS-Client-Id", "LCS-Client-ID", "7.2.84"),
-    ("Trunk-Group-Id", "Trunk-Group-ID", "7.2.237"),
     ("Service-Id", "Service-ID", "7.2.190"),
 )
 

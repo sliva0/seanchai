@@ -5,7 +5,6 @@ from seanchai.dad.corrections import (
     avp_rule,
     definition,
     reused_row,
-    table_row,
 )
 
 # Thirty-nine grouped-AVP clauses print `<AVP header: nnn>` with no
@@ -150,17 +149,4 @@ CORRECTIONS += [
         ("CC-Answer", "5b.6.5"),
         ("TS-Request", "5c.6.2"),
     )
-] + [
-    Correction(
-        id="cs-service-qos-request-identifier-case",
-        target=table_row("CS-Service-Qos-Request-Identifier"),
-        field="name",
-        expect="CS-Service-Qos-Request-Identifier",
-        replace="CS-Service-QoS-Request-Identifier",
-        reason="only the table E.6.3.1 cell lowercases the S; clause"
-        " E.6.3.2's heading and prose, and the E.6.6.2/E.6.3.6 ABNFs, all"
-        " write CS-Service-QoS-Request-Identifier, matching every sibling"
-        " CS-Service-QoS-* AVP in the same table",
-        versions="18.2.0",
-    ),
 ]

@@ -5,32 +5,11 @@ from seanchai.dad.corrections import (
     Correction,
     Insert,
     avp_rule,
-    definition,
     reused_avps,
     reused_row,
 )
 
 CORRECTIONS = [
-    Correction(
-        id="number-of-ue-per-location-configuration-case",
-        target=definition("Number-of-UE-Per-Location-Configuration"),
-        field="name",
-        expect="Number-of-UE-Per-Location-Configuration",
-        replace="Number-Of-UE-Per-Location-Configuration",
-        reason="table 6.4.1/1, the clause heading, and the ABNF reference in"
-        " clause 6.2.4 all capitalize 'Of'; only the rule name uses 'of'",
-        versions="18.0.0",
-    ),
-    Correction(
-        id="number-of-ue-per-location-report-case",
-        target=definition("Number-of-UE-Per-Location-Report"),
-        field="name",
-        expect="Number-of-UE-Per-Location-Report",
-        replace="Number-Of-UE-Per-Location-Report",
-        reason="table 6.4.1/1, the clause heading, and the ABNF reference in"
-        " clause 6.2.5 all capitalize 'Of'; only the rule name uses 'of'",
-        versions="18.0.0",
-    ),
     Correction(
         id="bearer-identifier-spelling",
         target=reused_row("Bearer-Identity"),

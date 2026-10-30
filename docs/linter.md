@@ -226,17 +226,15 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   4700–4702 (TS 29.389's) and 4703..4799 "for TS and TS 29.389" inside it;
   table 8.1.3 reserves 4182..4200 for TS 29.272 from its own 4182, and
   8.1.4 5455..5469 for TS 29.273 from its own 5455 and 5456.
-- **`registry-avp-name`**, 54. Twenty-three differ only in case (`Role-Of-Node`
-  against the registry's `Role-of-Node`, TS 32.299 clause 7.2.177), and
-  most of the rest are the registry spelling a name otherwise than its
-  defining clause (`Authorised-QoS`/`Authorized-QoS`, `RAN-Start-Timestamp`/
-  `RAN-Start-Time`) or as no name at all (`"Visited PLMN Id"`, `"MBMS
-  GW-Address"`, `"Media-Sub-Component AVP"`). None is corrected: a document
-  is the primary source for its own AVP's name, and where a document
-  prints the registry's spelling somewhere too (TS 29.345's
-  `Assistance-info`), that is the document disagreeing with itself, not
-  its defining clause supporting the registry. Six, in four places, are the
-  registry being wrong, its defining clause saying otherwise:
+- **`registry-avp-name`**, 32. Most are the registry spelling a name
+  otherwise than its defining clause (`Authorised-QoS`/`Authorized-QoS`,
+  `RAN-Start-Timestamp`/`RAN-Start-Time`) or as no name at all (`"Visited
+  PLMN Id"`, `"MBMS GW-Address"`, `"Media-Sub-Component AVP"`). None is
+  corrected: a document is the primary source for its own AVP's name, and
+  where a document prints the registry's spelling somewhere too, that is
+  the document disagreeing with itself, not its defining clause supporting
+  the registry. Six, in four places, are the registry being wrong, its
+  defining clause saying otherwise:
   - TS 29.336 3176/3177: the registry swaps `NIA-Flags` and
     `Group-User-Identifier`; table 8.4.1-1 and clause 8.4.73's header (`<AVP
     header: 3177 10415>`) agree with each other.
@@ -253,6 +251,20 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   at 1515 for clause 9.2.3.1.4, which is "Void", and the registry
   allocates 1515 to `Reserved`; the row is deleted (RAR-Flags bit 0 carries
   the indication, table 9.2.3.1.5/1).
+  A name differing only in case is a typo, patched on input rather than
+  reported: TS 29.230's table 7.1 is respelled to the defining clause's
+  spelling for 22 codes (`Role-of-Node` to TS 32.299 clause 7.2.177's
+  `Role-Of-Node`), and where the defining document is the one printing two
+  spellings, its stray one is patched too, which is the spelling table 7.1
+  copied: TS 29.128's rule names in clauses 6.4.11–6.4.12, TS 29.212's
+  table E.6.3.1.1, TS 29.345's table 6.3.1-1 and four rows of TS 32.299's
+  table 7.2.0.1 and PoC-User-Role's rule. One stays, because case is all
+  that tells two AVPs apart: table 7.1 allocates 855 to TS 32.299's
+  `Service-Id` and 3103 to TS 29.336's `Service-ID`, while TS 32.299
+  defines 855 as `Service-ID` (clause 7.2.190; table 7.2.0.1 prints
+  `Service-Id`, which a correction aligns with the clause). Wireshark's
+  dictionary calls 855 `Service-Id` and 3103 `S6-Service-ID`, a name no
+  document prints, to keep the two apart.
 - **`registry-avp-document`**, ten. TS 29.329 table 6.3.1 lists nine of TS
   29.229's AVPs among its own (`Public-Identity`, `Server-Name`,
   `Supported-Features` and six more), and its clauses 6.3.9–6.3.21 refer to

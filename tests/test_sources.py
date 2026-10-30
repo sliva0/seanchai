@@ -122,7 +122,12 @@ last_version = "1.1.0"
         (
             "TS29.128",
             "18.0.0",
-            [("OctetSstring", "6.4.1")],
+            # The rule lines carry only the name the patches target.
+            [
+                ("OctetSstring", "6.4.1"),
+                ("Number-of-UE-Per-Location-Configuration ::=", "6.4.11"),
+                ("Number-of-UE-Per-Location-Report ::=", "6.4.12"),
+            ],
         ),
         (
             "TS29.336",
@@ -161,6 +166,8 @@ last_version = "1.1.0"
                 ("M. V", "6.3.1"),
                 ("M. V", "6.3.1"),
                 ("Group", "6.3.1"),
+                ("Assistance-info", "6.3.1"),
+                ("MIC-Check-indicator", "6.3.1"),
             ],
         ),
     ],

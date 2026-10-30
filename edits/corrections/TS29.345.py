@@ -5,16 +5,6 @@ from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
 
 CORRECTIONS = [
     Correction(
-        id="assistance-info-case",
-        target=table_row("Assistance-info"),
-        field="name",
-        expect="Assistance-info",
-        replace="Assistance-Info",
-        reason="the AVP rule and its references capitalize Info; table 6.3.1/1"
-        " alone spells the name Assistance-info",
-        versions="18.0.0",
-    ),
-    Correction(
         id="wlan-link-layer-id-type",
         target=table_row("WLAN-Link-Layer-Id"),
         field="data_type",
@@ -72,17 +62,6 @@ CORRECTIONS = [
         replace=ast.DataType.GROUPED,
         reason="clause 6.3.82 explicitly defines this AVP as Grouped and gives"
         " its grouped rule; table 6.3.1/1 incorrectly says OctetString",
-        versions="18.0.0",
-    ),
-    Correction(
-        id="mic-check-indicator-case",
-        target=table_row("MIC-Check-indicator"),
-        field="name",
-        expect="MIC-Check-indicator",
-        replace="MIC-Check-Indicator",
-        reason="only the table 6.3.1-1 cell lowercases the I; clause 6.3.80's"
-        " heading and prose and the Match-Report ABNF (clause 6.3.75) all"
-        " write MIC-Check-Indicator",
         versions="18.0.0",
     ),
     Correction(

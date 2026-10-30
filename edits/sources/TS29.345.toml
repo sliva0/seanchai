@@ -20,3 +20,21 @@ section = "6.3.1"
 reason = "table 6.3.1-1 calls App-Identifier's type Group; clause 6.3.61 defines it as Grouped and Group is not a Diameter data type"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[patch]]
+find = "Assistance-info"
+replace = "Assistance-Info"
+exact = true
+section = "6.3.1"
+reason = "table 6.3.1-1 lower-cases Info, as clause 6.3.3's heading does; the clause's rule and prose, the ALR rule (6.2.15) and table 5.9.1's row write Assistance-Info"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "MIC-Check-indicator"
+replace = "MIC-Check-Indicator"
+exact = true
+section = "6.3.1"
+reason = "table 6.3.1-1 lower-cases Indicator; clause 6.3.80's heading and prose and the Match-Report rule (6.3.75) write MIC-Check-Indicator"
+first_version = "18.0.0"
+last_version = "18.0.0"

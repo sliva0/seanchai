@@ -584,7 +584,7 @@ IMS-Emergency-Indicator                                  2322   X     -     -   
 IMS-Information                                          876    X     -     X     -     Grouped            M,V    -     -       -
 IMS-Visited-Network-Identifier                           2713   X     -     X     -     UTF8String         M,V    -     -       -
 IMSI-Unauthenticated-Flag                                2308   X     -     X     -     Enumerated         M,V    -     -       -
-Incoming-Trunk-Group-ID                                  852    X     -     -     -     UTF8String         M,V    -     -       - ;; corrected: (TS32.299.py#row-incoming-trunk-group-id)
+Incoming-Trunk-Group-ID                                  852    X     -     -     -     UTF8String         M,V    -     -       -
 Incremental-Cost                                         2062   -     -     -     X     Grouped            M,V    -     -       -
 Initial-IMS-Charging-Identifier                          2321   X     -     X     -     UTF8String         M,V    -     -       -
 Instance-Id                                              3402   X     -     X     -     UTF8String         M,V    -     -       -
@@ -605,7 +605,7 @@ Layer-2-Group-ID                                         3429   -     -     X   
 LCS-APN                                                  1231   -     -     X     -     UTF8String         M,V    -     -       -
 LCS-Client-Dialed-By-MS                                  1233   -     -     X     -     UTF8String         M,V    -     -       -
 LCS-Client-External-ID                                   1234   -     -     X     -     UTF8String         M,V    -     -       -
-LCS-Client-ID                                            1232   -     -     X     -     Grouped            M,V    -     -       - ;; corrected: (TS32.299.py#row-lcs-client-id)
+LCS-Client-ID                                            1232   -     -     X     -     Grouped            M,V    -     -       -
 LCS-Client-Name                                          1235   -     -     X     -     Grouped            M,V    -     -       -
 LCS-Client-Type                                          1241   -     -     X     -     Enumerated         M,V    -     -       -
 LCS-Data-Coding-Scheme                                   1236   -     -     X     -     UTF8String         M,V    -     -       -
@@ -700,7 +700,7 @@ Originator-Interface                                     2009   X     -     X   
 Originator-Received-Address                              2027   X     -     X     -     Grouped            M,V    -     -       -
 Originator-SCCP-Address                                  2008   X     -     X     -     Address            M,V    -     -       -
 Outgoing-Session-Id                                      2320   X     -     X     -     UTF8String         M,V    -     -       -
-Outgoing-Trunk-Group-ID                                  853    X     -     -     -     UTF8String         M,V    -     -       - ;; corrected: (TS32.299.py#row-outgoing-trunk-group-id)
+Outgoing-Trunk-Group-ID                                  853    X     -     -     -     UTF8String         M,V    -     -       -
 Participant-Access-Priority                              1259   X     -     X     -     Enumerated         M,V    -     -       -
 Participant-Action-Type                                  2049   X     -     X     -     Enumerated         M,V    -     -       -
 Participant-Group                                        1260   X     -     X     -     Grouped            M,V    -     -       -
@@ -917,7 +917,7 @@ Transit-IOI-List                                         2701   X     -     X   
 Transmitter-Info                                         3468   X     -     -     -     Grouped            M,V    -     -       -
 Trigger                                                  1264   -     -     X     X     Grouped            M,V    -     -       -
 Trigger-Type                                             870    -     -     X     X     Enumerated         M,V    -     -       -
-Trunk-Group-ID                                           851    X     -     -     -     Grouped            M,V    -     -       - ;; corrected: (TS32.299.py#row-trunk-group-id)
+Trunk-Group-ID                                           851    X     -     -     -     Grouped            M,V    -     -       -
 TWAG-Address                                             3903   X     -     -     -     Address            M,V    -     -       -
 TWAN-User-Location-Info                                  2714   X     -     X     -     Grouped            M,V    -     -       -
 Type-Number                                              1204   -     -     X     -     Enumerated         M,V    -     -       -
@@ -2432,7 +2432,7 @@ PoC-Session-Type ::= < Enumerated AVP header: 884 10415 >
 ; Page: 162
 PoC-User-Role ::= < AVP header: 1252 10415 > ;; corrected: (TS32.299.py#vendor-poc-user-role)
         [ PoC-User-Role-IDs ] ;; corrected: (TS32.299.py#member-poc-user-role-ids)
-        [ PoC-User-Role-Info-Units ] ;; corrected: (TS32.299.py#member-poc-user-role-info-units)
+        [ PoC-User-Role-Info-Units ]
 
 
 ; Type: Enumerated AVP
