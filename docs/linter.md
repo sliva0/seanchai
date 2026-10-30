@@ -124,6 +124,12 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   the From column does not distinguish.
 - `origin-not-in-corpus` — one note per file listing the origins the corpus
   could not supply, so the reader knows which rules stayed silent.
+- `cross-release-origin` — an origin resolved outside the citing file's
+  release ([below](#resolving-an-origin)), one note per cited document,
+  naming the citing file, the cited file and the rule: a specific
+  reference's named version, or a non-specific one's final version. A
+  note: the rule is the corpus's reading of the citing document's
+  references clause, and a reader audits it here.
 - `external-origin-not-in-corpus` — the same for origins outside 3GPP and
   IETF (`3GPP2-X.S0057`, `OMA-DDS-Charging_Data`), apart because no
   3GPP or IETF download closes the gap: the corpus holds such a document
@@ -203,19 +209,28 @@ note. An error is never accepted.
 
 ## Resolving an origin
 
-A re-used row names a specification, never a version. The rule is **match
-the major version, then take the newest**: an 18.x document resolves
-`TS29.272` against 18.x copies and prefers 18.2.0 over 18.1.0. Nothing
-resolves across a major version — a release boundary is where 3GPP may
-change what an AVP means — which is also why the corpus is one directory per
-release. RFCs resolve to whatever the corpus holds, and so does a document
-outside 3GPP and IETF, whose versions are its publisher's (ETSI TS 283 034
-V2.2.0 is no Release 2). For the same reason such a document's own
-citations of 3GPP documents resolve nowhere: its version names no release,
-and the one it cites is in its references (TS 183 017 V3.2.1 cites TS
-29.214 Release 7, oneM2M TS-0004 V2.35.0 TS 32.299 Release 11). oneM2M
-TS-0004 resolves for TS 32.299's `M2M-Information` (table 7.5.1, [301]),
-in oneM2M's vendor 45687. A reference the citing documents spell otherwise than
+A re-used row names a specification, never a version. The rule for a
+non-specific reference is **match the major version, then take the
+newest**: an 18.x document resolves `TS29.272` against 18.x copies and
+prefers 18.2.0 over 18.1.0, the latest version in the citing document's
+release that 3GPP TR 21.801 clause 6.6.6.5.3 says it means. A release
+boundary is where 3GPP may change what an AVP means, which is also why the
+corpus is one directory per release, and a citation crosses it only where
+the drafting rules say which version it means
+([consumers.md](consumers.md#resolution-across-releases)): a specific
+reference, whose version the citing document's references clause names
+(`corpus.CITED_VERSIONS`: TS 183 017 V3.2.1's TS 29.209 Release 6 and TS
+29.214 Release 7, oneM2M TS-0004 V2.35.0's TS 32.299 Release 11), resolves
+to that version only, and a non-specific one to a document that ended
+before the citing release resolves to its final version
+(`corpus.FINAL_VERSIONS`: TS 29.140 V7.0.0, TS 29.209 V6.8.0); each such
+resolution is a `cross-release-origin` note. RFCs resolve to whatever the
+corpus holds, and so does a document outside 3GPP and IETF, whose versions
+are its publisher's (ETSI TS 283 034 V2.2.0 is no Release 2). For the same
+reason such a document's non-specific citations of 3GPP documents resolve
+only to a final version: its version names no release. oneM2M TS-0004
+resolves for TS 32.299's `M2M-Information` (table 7.5.1, [301]), in
+oneM2M's vendor 45687. A reference the citing documents spell otherwise than
 the publisher resolves to the publisher's document, through a table in
 `corpus.py` with one entry per misnaming: TS 29.212, 29.219, 29.273 and
 32.299 cite "ETSI TS 283 034", which ETSI publishes as ES 283 034, so
@@ -246,7 +261,8 @@ notes and accepted findings. The corrected corpus has no errors; "clean"
 stays distinguishable from "the rules never match". What still reports, and
 why each stays:
 
-- **`reused-reprint`, `reused-body-differs`, `reused-origin-indirect`.** Two
+- **`reused-reprint`, `reused-extension`, `reused-body-differs`,
+  `reused-origin-indirect`.** Two
   documents describe one AVP, and only the origin's editor knows which copy is
   current; correcting either would invent an agreement. TS 29.330's `Load`
   goes through TS 29.229 to RFC 8583, an indirect origin, and TS 32.299's
@@ -266,20 +282,27 @@ why each stays:
   is ETSI ES 283 034's `Reservation-Priority` (clause 7.3.11), which table
   13 imports from TS 183 017 but whose values `PRIORITY 0`–`PRIORITY 7`
   are not TS 183 017's `DEFAULT` and `PRIORITY-ONE`–`PRIORITY-FIFTEEN`
-  (clause 7.3.9). TS 183 017 clause 7.3.10 re-prints ES 283 034's
+  (clause 7.3.9). A ninth is TS 183 017's `Specific-Action` (7.3.23),
+  which table 7.3.3 imports from TS 29.209 [4] V6.8.0 with values of its
+  own, and its `Media-Type` (7.3.29) adds `OTHER` to V6.8.0's, unremarked.
+  TS 183 017 clause 7.3.10 re-prints ES 283 034's
   `Globally-Unique-Address`, identical once ES 283 034's `Frame-*` members
-  are corrected.
-- **`origin-not-in-corpus`**, six. TS 29.140, cited by TS 32.299 for
-  `VAS-ID` and `VASP-ID`, ends at V7.0.0, and nothing resolves across a
-  major version, though the corpus holds V7.0.0. The ETSI transcriptions
-  import Gq's AVPs from TS 29.209, which ends at Release 6, and TS 183 017
-  imports `Codec-Data` from TS 29.214 Release 7 (its clause 2, reference
-  [19]). oneM2M TS-0004 table A.4-1 cites TS 32.299 [31] ("Release 11")
-  for `Node-Id` and `Service-Information`, whose rows print vendor, code,
-  type and flags of their own. The older copies held for those citations
-  cite in turn what the corpus holds at Release 18 only: TS 29.214 V7.12.0
-  Release 7's TS 29.061 and 29.212, TS 32.299 V11.20.0 nine Release 11
-  documents.
+  are corrected, and seven of its clauses 7.3.14-7.3.32 re-print V6.8.0's
+  Gq AVPs as printed there.
+- **`cross-release-origin`**, six, in five files. TS 32.299 cites TS
+  29.140 non-specifically for `VAS-ID` and `VASP-ID` (clause 2, [213]),
+  which reads as its final version, V7.0.0, and so does TS 32.299 V11.20.0;
+  ES 283 034 cites TS 29.209 non-specifically ([5]), V6.8.0, its final;
+  TS 183 017 names "3GPP TS 29.209 Release 6" ([4]) and "3GPP TS 29.214
+  Release 7" ([19]), V6.8.0 and V7.12.0; oneM2M TS-0004 names "3GPP TS
+  32.299 ... (Release 11)" ([31]), V11.20.0, for `Node-Id` and
+  `Service-Information`, whose rows print vendor, code, type and flags
+  agreeing with it.
+- **`origin-not-in-corpus`**, two. The older copies held for those
+  citations cite in turn what the corpus holds at Release 18 only, and a
+  non-specific reference means the citing release's version: TS 29.214
+  V7.12.0 Release 7's TS 29.061 and 29.212, TS 32.299 V11.20.0 eight
+  Release 11 documents.
 - **`external-origin-not-in-corpus`**, three files: TS 29.212
   (`3GPP2-X.S0057`) and both copies of 32.299 (`OMA-DDS-Charging_Data`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
@@ -443,8 +466,12 @@ citing the clause that makes the override deliberate:
   `#used-service-unit-charging-body` (7.1.9, 7.1.14: "It contains
   additional 3GPP specific charging parameters"; the members they drop are
   struck, "not used by 3GPP").
-- **`reused-extension`**, one. `TS32.299.py#oc-olr-extension` (B.2.4: "It
-  has been extended compared to the IETF RFC 7683").
+- **`reused-extension`**, two. `TS32.299.py#oc-olr-extension` (B.2.4: "It
+  has been extended compared to the IETF RFC 7683"), and
+  `ETSI-TS183.017.py#media-component-description-extension` (table 7.3.3
+  NOTE 3: "The present document provides updated syntax to some of those
+  AVP in the form of optional AVPs that have been added to the Grouped AVP
+  syntax").
 - **`reused-row-mismatch`**, one.
   `TS32.299.py#supported-features-charging-m`: clause 6.5.10.3 answers a
   server not supporting Supported-Features "as per 'M' bit set rule" with

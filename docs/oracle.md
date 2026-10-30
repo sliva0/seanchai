@@ -14,9 +14,19 @@ what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
-uv run seanchai crosscheck dad/3gpp/rel-18/*.dad dad/rfc/*.dad dad/etsi/*.dad \
-    dad/onem2m/*.dad
+uv run seanchai crosscheck dad                    # 53 files, 98 findings
 ```
+
+The check reads the newest copy of each document and no other: the
+dictionary describes a document, and an older copy the corpus holds for a
+citation across releases ([consumers.md](consumers.md#resolution-across-releases))
+is no reading of it. `crosscheck` takes files or directories (a
+directory's raw files skipped, as the corpus loader skips them), lists
+each older copy it skips (TS 29.214 V7.12.0, TS 32.299 V11.20.0), and
+refuses two files of one document and version, so a count over every
+committed copy (116 findings in 55 files) cannot be reported by accident.
+TS 29.140 V7.0.0 and TS 29.209 V6.8.0 are the newest copies of their
+documents and are checked.
 
 The `[wireshark]` entry in `specs.toml` pins a release tag; the downloader
 fetches the whole `resources/protocols/diameter/` directory (the dictionary
@@ -73,7 +83,10 @@ remains:
   prefixes (32.299's `Reporting-Reason` and `SIP-Method` included),
   `Termination-Cause-3GPP`, `Wildcarded-PSI`, `S6-Service-ID`,
   `OnexRTT-RCID` (an XML name cannot start with a digit), `CUI`,
-  `Tunnel-Connection-ID`, `NAF-Hostname`.
+  `Tunnel-Connection-ID`, `NAF-Hostname`, and TS 29.140's
+  `MM10-Sequence-Number` and `MM10-Recipient-Address` (1107, 1108), whose
+  document calls them `Sequence-Number` and `Recipient-Address`, names
+  TS 32.299 gives code 1201 too.
 - **Wireshark-side defects**, each with a merge request staged under
   [`integrations/wireshark/`](../integrations/wireshark/README.md) and
   not yet submitted: `Call-Barring-Infor-List` for 29.272's

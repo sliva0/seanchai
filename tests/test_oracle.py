@@ -222,3 +222,61 @@ def test_name_for_reads_wireshark_spelling_by_identity(tmp_path):
     assert loaded.name_for(10415, 701, "Clash-Text", u32) == "Clash-Text"
     assert loaded.name_for(10415, 701, "Clash", None) is None
     assert loaded.name_for(10415, 702, "Absent", u32) is None
+
+
+def _written(path, version, data_type):
+    from seanchai.dad import formatter
+
+    spec = ast.Specification(
+        specification="3GPP TS 29.999",
+        vendor_id=10415,
+        version=version,
+        sections=(_table(_row("Vendor-AVP", 700, data_type)),),
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(formatter.format_spec(spec), encoding="utf-8")
+
+
+def test_crosscheck_reads_the_newest_copy_of_each_document_only(tmp_path):
+    """The corpus holds TS 32.299 at Release 18 and, for oneM2M TS-0004's
+    citation, at Release 11; the dictionary describes the document, so the
+    older copy is skipped and said to be, and a directory's raw files are
+    skipped as the corpus loader skips them."""
+    from click.testing import CliRunner
+
+    from seanchai.cli import main
+
+    (tmp_path / "dictionary").mkdir()
+    _dictionary(tmp_path / "dictionary")
+    corpus = tmp_path / "dad"
+    _written(corpus / "3gpp/rel-18/29999-i00.dad", "18.0.0", ast.DataType.UNSIGNED32)
+    _written(corpus / "3gpp/rel-7/29999-700.dad", "7.0.0", ast.DataType.OCTET_STRING)
+    _written(
+        corpus / "raw/3gpp/rel-18/29999-i00.raw.dad",
+        "18.0.0",
+        ast.DataType.OCTET_STRING,
+    )
+
+    result = CliRunner().invoke(
+        main, ["crosscheck", "--dictionary", str(tmp_path / "dictionary"), str(corpus)]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert result.output.splitlines() == [
+        f"skipped {corpus}/3gpp/rel-7/29999-700.dad: TS29.999 7.0.0, an older"
+        " copy than the one checked",
+        "checked 1 files against the dictionary: 0 findings",
+    ]
+
+    twice = CliRunner().invoke(
+        main,
+        [
+            "crosscheck",
+            "--dictionary",
+            str(tmp_path / "dictionary"),
+            str(corpus / "3gpp/rel-18/29999-i00.dad"),
+            str(corpus / "raw/3gpp/rel-18/29999-i00.raw.dad"),
+        ],
+    )
+    assert twice.exit_code != 0
+    assert "give one copy" in twice.output

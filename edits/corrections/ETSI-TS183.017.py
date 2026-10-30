@@ -6,6 +6,7 @@ sentence-case AVP names ("Port-number AVP", "Flow-description AVP"), so a
 clause's defining sentence and the ABNFs are what name an AVP here."""
 
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     avp_rule,
     definition,
@@ -209,4 +210,23 @@ CORRECTIONS += [
         ("Redirected-Host-Usage", "Redirect-Host-Usage"),
         ("Redirected-Max-Cache-Time", "Redirect-Max-Cache-Time"),
     ]
+]
+
+# Resolved to TS 29.209 V6.8.0, the version clause 2's [4] names
+# ("3GPP TS 29.209 Release 6"; corpus.CITED_VERSIONS), the re-printed Gq
+# AVPs are compared with it.
+CORRECTIONS += [
+    Accept(
+        id="media-component-description-extension",
+        rule="reused-extension",
+        target=definition("Media-Component-Description"),
+        expect="Media-Component-Description's body, against TS29.209's"
+        " definition: extended, adding Codec-Data, Media-Authorization-Context-Id,"
+        " Reservation-Class, Reservation-Priority, Transport-Class",
+        reason="table 7.3.3 NOTE 3: 'The AVP was initially defined in the Gq"
+        " specification TS 129 209 [4]. The present document provides updated"
+        " syntax to some of those AVP in the form of optional AVPs that have"
+        " been added to the Grouped AVP syntax.'",
+        versions="3.2.1",
+    )
 ]

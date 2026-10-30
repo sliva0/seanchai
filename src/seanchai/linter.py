@@ -830,14 +830,46 @@ class _Origin:
 
 def _resolve_origins(
     spec: ast.Specification, index: _Index, books: corpus.Corpus
-) -> dict[str, _Origin]:
+) -> tuple[dict[str, _Origin], list[Finding]]:
+    """The origins the corpus resolves, and a `cross-release-origin` note
+    for each it resolved outside `spec`'s release."""
     origins = {}
-    for origin in set(index.reused.values()):
-        entry = books.resolve(origin, like=spec)
+    crossings = []
+    for origin in sorted(set(index.reused.values())):
+        entry, across = books.resolution(origin, like=spec)
         if entry is None:
             continue
         origins[origin] = _Origin.of(entry.spec)
-    return origins
+        if across is not None:
+            crossings.append(_cross_release(spec, entry, across))
+    return origins, crossings
+
+
+def _cross_release(
+    spec: ast.Specification, entry: corpus.Entry, across: corpus.CrossRelease
+) -> Finding:
+    """A re-used origin resolved outside the citing document's release, by
+    the drafting rule `corpus.resolution` applied, so a reader can audit it:
+    TS 32.299 V18.0.0's TS 29.140 is V7.0.0, the document's final version.
+    A note: the rule is the corpus's reading of the citing document's
+    references, and only its editor knows whether it meant that."""
+    citing = spec.specification + (f" V{spec.version}" if spec.version else "")
+    if across.rule == corpus.SPECIFIC:
+        rule = (
+            f"its references name V{across.version} (a specific reference;"
+            " corpus.CITED_VERSIONS)"
+        )
+    else:
+        rule = (
+            f"it cites the document non-specifically, which reads as its"
+            f" final version, V{across.version} (corpus.FINAL_VERSIONS)"
+        )
+    return Finding(
+        Severity.NOTE,
+        "cross-release-origin",
+        f"{across.cited} is resolved across releases to {entry.path.name}:"
+        f" {citing} is the citing file, and {rule}",
+    )
 
 
 def _unresolved_origins(
@@ -1679,7 +1711,7 @@ def lint_with_corpus(
     resolved.
     """
     index = _index(spec)
-    origins = _resolve_origins(spec, index, books)
+    origins, crossings = _resolve_origins(spec, index, books)
     bases, missing_bases = _resolve_bases(spec, books)
 
     def reused_vendor(origin: str) -> int | None:
@@ -1694,6 +1726,7 @@ def lint_with_corpus(
         or (finding.rule == "local-and-reused" and finding.origin not in origins)
     ]
     findings += [
+        *crossings,
         *_unresolved_origins(spec, index, origins, books),
         *_reused_avp_exists(index, origins),
         *_reprint_or_extension(index, origins),

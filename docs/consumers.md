@@ -26,6 +26,7 @@ built.identified(10415, 601)  # every AVP claiming an identity
 built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
 built.marks("TS29.212", "AN-GW-Address")  # what each table marks about it
 built.holes("TS32.299")  # what the corpus cannot complete
+built.across_releases()  # what citations resolved across releases
 built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 ```
 
@@ -64,7 +65,9 @@ where per-interface tables disagree (TS 29.061's `3GPP-IMSI`, the linter's
 `table-row-mismatch`). The model never reports the conflicts this order
 papers over; run the linter for those. Vendor spaces follow the linter's
 reading. Origins and bases use `corpus.Corpus.resolve`, the
-match-major-take-newest rule in [linter.md](linter.md#resolving-an-origin),
+drafting rules below ([resolution across releases](#resolution-across-releases);
+within a release, the match-major-take-newest rule in
+[linter.md](linter.md#resolving-an-origin)),
 which also reads 3GPP's `ETSI-TS283.034` as the ETSI ES 283 034 it names,
 and takes TS 32.299's `oneM2M-TS-0004` to the oneM2M document the corpus
 extracts, whatever its version: `M2M-Information` is (45687, 1011) there.
@@ -155,6 +158,64 @@ bit staying in no column, as TS 29.212 leaves `PDN-Connection-ID`'s. The
 python-diameter generator writes an application-defined M as no
 `is_mandatory`, the dictionary's default.
 
+**Resolution across releases.** The corpus holds one copy of each
+document per release tree, and a citation means the copy the drafting rules
+on references say it means. A *specific* reference, one whose entry in the
+citing document's references clause names a version or a release, means
+that version (3GPP TR 21.801 V19.1.0 clause 6.6.6.5.2, references
+"identified by date of publication, edition number, version number,
+etc."; the ETSI Drafting Rules as published in ETSI SR 001 262 V2.0.0,
+clause 12: "For a specific reference, subsequent revisions do not apply";
+and the citing documents' own clause 2, ETSI TS 183 017 V3.2.1's "For
+dated references, only the edition cited applies" and oneM2M TS-0004
+V2.35.0's "For specific references, only the cited version applies"). A
+reference naming a release means its last version. A *non-specific*
+reference, one naming neither, means "the latest version of the referenced
+TS or TR in the Release in question", the citing document's release (TR
+21.801 clause 6.6.6.5.3, and every 3GPP document's clause 2: "a
+non-specific reference implicitly refers to the latest version of that
+document in the same Release as the present document"), which is the
+match-major-take-newest rule; and for a document outside 3GPP the latest
+version of the referenced document (SR 001 262 clause 12: "For a
+non-specific reference, subsequent revisions do apply", conditions in
+clause 12.4; TS 183 017's clause 2: "the latest edition of the referenced
+document (including any amendments) applies"). The Drafting Rules in force
+today are part of the ETSI Directives, which are not public; the clause 2
+boilerplate ETSI's drafts quote from them, citing EDR clause 2.10.1, reads
+"For specific references, only the cited version applies. For
+non-specific references, the latest version of the referenced document
+(including any amendments) applies", as oneM2M's does. Neither rule says what a non-specific 3GPP
+reference means when the cited document ended before the citing
+document's release; the corpus reads it as the document's *final* version,
+its last in any release, the latest there is. So `corpus.Corpus.resolution`
+takes, in order: a specific reference's named version and no other; the
+newest copy in the citing document's major version; and failing one, the
+cited document's final version when it ended in an earlier release. A
+document outside 3GPP has no release, so its non-specific reference is the
+final version or nothing. The `.dad` grammar names no versions, so the two
+facts this needs live beside `corpus.CITED_AS`, each entry citing its
+source: `corpus.CITED_VERSIONS`, the version a specific reference names
+keyed by (citing, cited) reference and read from the citing document's
+references clause (ETSI TS 183 017's "3GPP TS 29.209 Release 6" [4] and
+"3GPP TS 29.214 Release 7" [19], oneM2M TS-0004's "3GPP TS 32.299 ...
+(Release 11)" [31]), and `corpus.FINAL_VERSIONS` (TS 29.140 V7.0.0, TS
+29.209 V6.8.0). Every version either names is a catalog pin the downloader
+checks against the 3GPP archive on each download, so a later version
+appearing fails the download rather than the reading
+([downloader.md](downloader.md)). Five citations resolve so: TS 32.299's
+TS 29.140 (`VAS-ID`, `VASP-ID`) and ES 283 034's TS 29.209
+(`Media-Type`, `AF-Application-Identifier`) as final versions, TS 183
+017's TS 29.209 and TS 29.214 and oneM2M TS-0004's TS 32.299 as the
+versions named. An `Avp` or `Hole` that took a field from such a copy
+carries `across_releases`, a `corpus.CrossRelease` naming the citing and
+cited documents, the version and the rule (`corpus.SPECIFIC` or
+`corpus.NON_SPECIFIC`); `across_releases()` lists them for a reader to
+audit, and the linter's `cross-release-origin` note says the same per
+citing file. An older copy answers only through a citation:
+reference-level queries (`avps("TS32.299")`, `holes`, `references`) read
+the newest copy of each document, and Release 18's TS 32.299 never reads
+its Release 11 copy.
+
 **Holes.** An `Avp` has every field: code, type and flag rules are facts some
 document states, or RFC 6733's rule for an IETF AVP's unplaced bits, never
 `None`. A name the corpus cannot complete is a
@@ -168,6 +229,10 @@ a hole. A hole keeps the vendor, code, type and flag rules its document
 states, but not a grouped AVP's members or an enumerated AVP's values: RFC
 5777's `Classifier` is a hole with no members. A consumer that wants those
 reads the AST, through `table_rows` or the file's `corpus.Entry.spec`.
+A reading's holes include those of the grouped AVPs it reaches in an
+older copy through a citation across releases, which no reading of that
+copy's own reports: such a hole carries the copy's `version`, and
+`Hole.document` reads "TS32.299 V11.20.0".
 
 **Wireshark's names.** Built with `dictionary=` a Wireshark dictionary
 directory, the model fills `Avp.wireshark_name` and `Hole.wireshark_name`
@@ -182,12 +247,13 @@ listing every hole, rather than build a model with any. The default is
 every standing hole is a statement its source does not make. RFC 4590 is
 a RADIUS document with no Diameter types (TS 29.229's table types the four
 Digest AVPs it re-uses, for its own reading),
-TS 32.299's `VAS-ID` and `VASP-ID` are roadmap item K, as are the Gq
-AVPs the ETSI transcriptions import from TS 29.209 (Release 6) and TS
-29.214 Release 7, TS 183 017's re-prints of them typed but unflagged, TS
-29.061's `3GPP-Session-Stop-Indicator` row states only a code, and the
+TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, the
 names that resolve nowhere are the linter's standing
-`unresolved-reference` cases and re-used origins outside the corpus. TS 32.299's thirteen OMA rows are no
+`unresolved-reference` cases and re-used origins outside the corpus, and
+oneM2M TS-0004's `Service-Information`, TS 32.299 V11.20.0's, reaches
+forty-one members that Release 11 copies of TS 29.061, 29.173, 29.212,
+29.214, 29.229, 29.272, 29.273 and 29.329 define, and three of
+OMA-DDS-Charging_Data's, none of which the corpus holds. TS 32.299's thirteen OMA rows are no
 holes: their flags, and the types of the ten its clauses do not type, are
 supplied from OMA-DDS-Charging_Data
 ([corrections.md](corrections.md#operations)), and a grouped one is an

@@ -1097,6 +1097,30 @@ def test_an_origin_that_borrows_the_avp_itself_is_a_note_not_an_error():
     assert "RFC5778" in finding.message
 
 
+def test_an_origin_resolved_across_releases_is_a_note_naming_the_rule():
+    """TS 29.140 ends at V7.0.0; a Release 18 document's non-specific
+    reference reads as that final version (`corpus.FINAL_VERSIONS`), the
+    cross-file rules run against it, and a note says so for audit."""
+    spec = _spec(
+        _reused(ast.ReusedAvpRow(name="Borrowed", origin="TS29.140")),
+        specification="3GPP TS 32.299",
+        version="18.0.0",
+    )
+    origin = _origin_spec("3GPP TS 29.140", "7.0.0", _grouped_with("Other", 700))
+
+    findings = linter.lint_with_corpus(spec, _books(origin))
+
+    (crossing,) = [f for f in findings if f.rule == "cross-release-origin"]
+    assert crossing.severity is linter.Severity.NOTE
+    assert crossing.message == (
+        "TS29.140 is resolved across releases to 0.dad: 3GPP TS 32.299 V18.0.0"
+        " is the citing file, and it cites the document non-specifically,"
+        " which reads as its final version, V7.0.0 (corpus.FINAL_VERSIONS)"
+    )
+    assert "origin-not-in-corpus" not in _rules(findings)
+    assert "reused-avp-not-in-origin" in _rules(findings)
+
+
 def test_an_unresolvable_origin_is_one_note_and_keeps_the_single_file_answer():
     """A partial corpus must stay useful: the rules that needed the missing
     document are skipped, and the single-file note it would have superseded
@@ -1336,7 +1360,9 @@ _STANDING_CORPUS_NOTES = {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
         "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
-        "origin-not-in-corpus": ["TS29.140 (corpus has 7.0.0)"],
+        # Clause 2 [213] cites TS 29.140 non-specifically for VAS-ID and
+        # VASP-ID; V7.0.0 is its final version.
+        "cross-release-origin": ["TS29.140"],
         "reused-origin-indirect": [
             "3GPP2-BSID",
             "Priority-Indication",
@@ -1358,53 +1384,54 @@ _STANDING_CORPUS_NOTES = {
             "TCP-Source-Port",
         ],
     },
-    # TS 29.209 ends at Release 6 and TS 183 017 cites TS 29.214 Release 7;
-    # neither is in the corpus's release.
+    # The transcriptions cite TS 29.209, which ends at V6.8.0, ES 283 034
+    # non-specifically and TS 183 017 as "Release 6", and TS 183 017 cites
+    # TS 29.214 "Release 7", V7.12.0.
     "es283034-020200.dad": {
-        "origin-not-in-corpus": ["TS29.209 (corpus has 6.8.0)"],
+        "cross-release-origin": ["TS29.209"],
         # Clause 7.3.11 prints values PRIORITY 0-7 and table 13 types the AVP
         # Unsigned32, re-used from TS 183 017, whose clause 7.3.9 enumerates
         # DEFAULT and PRIORITY-ONE to PRIORITY-FIFTEEN.
         "reused-body-differs": ["Reservation-Priority"],
         "reused-row-mismatch": ["Reservation-Priority"],
     },
-    # oneM2M cites TS 32.299 [31] for Node-Id and Service-Information; its
-    # version names no 3GPP release.
-    "ts-0004-v2_35_0.dad": {
-        "origin-not-in-corpus": ["TS32.299 (corpus has 18.0.0, 11.20.0)"]
-    },
+    # oneM2M cites TS 32.299 [31], "Release 11", for Node-Id and
+    # Service-Information: V11.20.0.
+    "ts-0004-v2_35_0.dad": {"cross-release-origin": ["TS32.299"]},
     "ts183017-030201.dad": {
-        # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports.
-        "local-and-reused": [
+        "cross-release-origin": ["TS29.209", "TS29.214"],
+        # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports
+        # from TS 29.209 V6.8.0: seven as printed there, Media-Type adding
+        # OTHER (7.3.29), and Specific-Action (7.3.23) with values of its
+        # own. Media-Component-Description's extension is NOTE 3's,
+        # accepted.
+        "reused-body-differs": ["Specific-Action"],
+        "reused-extension": ["Media-Type"],
+        "reused-reprint": [
             "Abort-Cause",
             "Flow-Grouping",
             "Flow-Status",
             "Flow-Usage",
             "Flows",
-            "Media-Component-Description",
+            "Globally-Unique-Address",
             "Media-Sub-Component",
-            "Media-Type",
             "SIP-Forking-Indication",
-            "Specific-Action",
         ],
-        "origin-not-in-corpus": [
-            "TS29.209 (corpus has 6.8.0), TS29.214 (corpus has 18.4.0, 7.12.0)"
-        ],
-        "reused-reprint": ["Globally-Unique-Address"],
     },
     # The older releases the corpus holds for citations cite in turn
     # documents it holds at Release 18 only: TS 29.214 V7.12.0 re-uses Gx's
-    # and Gi's AVPs, TS 32.299 V11.20.0 Release 11's charging origins and
-    # TS 29.140 V7.0.0 from Release 7.
+    # and Gi's AVPs, TS 32.299 V11.20.0 Release 11's charging origins, and
+    # TS 29.140 non-specifically, which reads as V7.0.0 here too.
     "29214-7c0.dad": {
         "origin-not-in-corpus": [
             "TS29.061 (corpus has 18.1.0), TS29.212 (corpus has 18.2.0)"
         ]
     },
     "32299-bk0.dad": {
+        "cross-release-origin": ["TS29.140"],
         "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0), TS29.140 (corpus has 7.0.0),"
+            "TS29.061 (corpus has 18.1.0),"
             " TS29.173 (corpus has 18.0.0), TS29.212 (corpus has 18.2.0),"
             " TS29.214 (corpus has 18.4.0, 7.12.0), TS29.229 (corpus has 18.1.0),"
             " TS29.272 (corpus has 18.7.0), TS29.273 (corpus has 18.6.0),"
@@ -1424,6 +1451,9 @@ _STANDING_CORPUS_NOTES = {
 # Notes the specifications' corrections modules accept as overrides their
 # documents state, by acceptance (docs/linter.md#standing-findings).
 _ACCEPTED_CORPUS_NOTES = {
+    "ts183017-030201.dad": {
+        "reused-extension": ["ETSI-TS183.017.py#media-component-description-extension"],
+    },
     "29128-i00.dad": {
         "reused-body-differs": [
             "TS29.128.py#monitoring-event-configuration-t6a-body",

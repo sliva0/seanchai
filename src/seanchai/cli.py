@@ -791,7 +791,7 @@ def download(
     "sources",
     nargs=-1,
     required=True,
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    type=click.Path(exists=True, path_type=Path),
 )
 @click.option(
     "--dictionary",
@@ -809,7 +809,15 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
     vocabulary, and AVPs the pinned dictionary does not carry at all.
     Disagreement is a report for a reader with the documents open, not a
     verdict — so findings never fail the run.
+
+    SOURCES are files or directories, a directory's raw files skipped as
+    the corpus loader skips them (`seanchai crosscheck dad`). Only the
+    newest copy of each document is checked: an older one the corpus holds
+    for a citation (TS 32.299 V11.20.0) is no reading of the document the
+    dictionary describes, and is listed as skipped. Two files of one
+    document and version are refused.
     """
+    from .corpus import Corpus, CorpusError, Entry
     from .dad import parser
     from .oracle import Oracle, OracleError
     from .oracle import crosscheck as check
@@ -820,14 +828,43 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
         raise click.ClickException(str(error)) from None
     total = 0
     with reported():
+        entries: list[Entry] = []
         for source in sources:
-            spec = parser.parse(source.read_text(encoding="utf-8"))
-            findings = check(spec, oracle)
+            if source.is_dir():
+                try:
+                    entries.extend(Corpus.load([source]))
+                except CorpusError as error:
+                    raise click.ClickException(str(error)) from None
+            else:
+                spec = parser.parse(source.read_text(encoding="utf-8"))
+                entries.append(Entry(path=source, spec=spec))
+        seen: dict[tuple[str, str | None], Path] = {}
+        for entry in entries:
+            key = (entry.reference, entry.spec.version)
+            if key in seen and seen[key] != entry.path:
+                version = f" {entry.spec.version}" if entry.spec.version else ""
+                raise click.ClickException(
+                    f"{seen[key]} and {entry.path} are both"
+                    f" {entry.reference}{version}; give one copy"
+                )
+            seen[key] = entry.path
+        books = Corpus({entry.path: entry for entry in entries}.values())
+        newest = sorted(books.newest(), key=lambda entry: entry.path.as_posix())
+        checked = {entry.path for entry in newest}
+        for entry in sorted(books, key=lambda entry: entry.path.as_posix()):
+            if entry.path not in checked:
+                click.echo(
+                    f"skipped {entry.path}: {entry.reference}"
+                    f" {entry.spec.version}, an older copy than the one checked",
+                    err=True,
+                )
+        for entry in newest:
+            findings = check(entry.spec, oracle)
             total += len(findings)
             for finding in findings:
-                click.echo(f"{source}: {finding}")
+                click.echo(f"{entry.path}: {finding}")
     click.echo(
-        f"checked {len(sources)} files against the dictionary: {total} findings",
+        f"checked {len(newest)} files against the dictionary: {total} findings",
         err=True,
     )
 

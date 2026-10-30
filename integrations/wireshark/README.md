@@ -167,8 +167,10 @@ a test may refer to it. A renamed AVP also renames its display filter field
 
 ## Checking
 
-`seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter`
-over the corpus no longer reports a patched AVP. With the twenty-five
-defects applied to `v4.7.2` it reports 73 findings instead of 96; with the 29
-additions, 74, the thirty-three absences above in nine notes, and none that
-the unpatched dictionary did not; with both series, 51.
+`seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter dad`
+over the corpus, the newest copy of each document and no other
+([oracle.md](../../docs/oracle.md)), no longer reports a patched AVP.
+With the twenty-five defects applied to `v4.7.2` it reports 75 findings
+instead of 98; with the 29 additions, 76, the thirty-three absences above
+in nine notes, and none that the unpatched dictionary did not; with both
+series, 53.

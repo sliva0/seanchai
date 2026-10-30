@@ -881,44 +881,6 @@ class TestOverTheCommittedCorpus:
 # outside the corpus. A hole worked off shrinks this; a new one is a corpus
 # regression. Roadmap item N lists them by cause.
 _STANDING_HOLES = {
-    # The transcriptions import Gq's AVPs from TS 29.209, which ends at
-    # Release 6, and Codec-Data from TS 29.214 Release 7 (TS 183 017 clause
-    # 2, reference [19]); the corpus holds Release 18. The ten TS 183 017
-    # re-prints are typed by their clauses but flagged only by the origin.
-    "ETSI-ES283.034": {
-        "resolves nowhere (re-used from TS29.209, which the corpus lacks)": [
-            "AF-Application-Identifier",
-            "Media-Type",
-        ]
-    },
-    "ETSI-TS183.017": {
-        "resolves nowhere (re-used from TS29.209, which the corpus lacks)": [
-            "AF-Application-Identifier",
-            "AF-Charging-Identifier",
-            "Flow-Description",
-            "Flow-Number",
-            "Max-Requested-Bandwidth-DL",
-            "Max-Requested-Bandwidth-UL",
-            "Media-Component-Number",
-            "RR-Bandwidth",
-            "RS-Bandwidth",
-        ],
-        "no flag_rules (re-used from TS29.209, which the corpus lacks)": [
-            "Abort-Cause",
-            "Flow-Grouping",
-            "Flow-Status",
-            "Flow-Usage",
-            "Flows",
-            "Media-Component-Description",
-            "Media-Sub-Component",
-            "Media-Type",
-            "SIP-Forking-Indication",
-            "Specific-Action",
-        ],
-        "resolves nowhere (re-used from TS29.214, which the corpus lacks)": [
-            "Codec-Data"
-        ],
-    },
     "RFC4004": {
         "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-to-HA-SPI"]
     },
@@ -960,9 +922,75 @@ _STANDING_HOLES = {
             "Submission-Timestamp",
             "TCP-Source-Port",
         ],
-        "no data_type, no flag_rules (re-used from TS29.140, which the corpus lacks)": [
-            "VAS-ID",
-            "VASP-ID",
+    },
+    # oneM2M TS-0004's Service-Information is V11.20.0's ([31], "Release
+    # 11"), whose body reaches what Release 11's other documents define;
+    # the corpus holds them at Release 18, and their non-specific
+    # references mean Release 11's. The three OMA-DDS-Charging_Data rows
+    # are as Release 18's were before their types and flags were supplied.
+    "TS32.299 V11.20.0": {
+        "no data_type, no flag_rules (re-used from OMA-DDS-Charging_Data,"
+        " which the corpus lacks)": [
+            "DCD-Information",
+            "IM-Information",
+            "Service-Generic-Information",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.061, which the corpus lacks)": [
+            "3GPP-Charging-Characteristics",
+            "3GPP-Charging-Id",
+            "3GPP-GGSN-MCC-MNC",
+            "3GPP-IMSI",
+            "3GPP-IMSI-MCC-MNC",
+            "3GPP-MS-TimeZone",
+            "3GPP-NSAPI",
+            "3GPP-PDP-Type",
+            "3GPP-RAT-Type",
+            "3GPP-SGSN-MCC-MNC",
+            "3GPP-Selection-Mode",
+            "3GPP-Session-Stop-Indicator",
+            "3GPP-User-Location-Info",
+            "CN-IP-Multicast-Distribution",
+            "MBMS-2G-3G-Indicator",
+            "MBMS-Data-Transfer-Start",
+            "MBMS-Data-Transfer-Stop",
+            "MBMS-Service-Area",
+            "MBMS-Service-Type",
+            "MBMS-Session-Identity",
+            "RAI",
+            "Required-MBMS-Bearer-Capabilities",
+            "TMGI",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.173, which the corpus lacks)": [
+            "MME-Name",
+            "MME-Realm",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.212, which the corpus lacks)": [
+            "3GPP2-BSID",
+            "Charging-Rule-Base-Name",
+            "QoS-Information",
+            "User-Location-Info-Time",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.214, which the corpus lacks)": [
+            "AF-Charging-Identifier",
+            "Access-Network-Charging-Identifier-Value",
+            "Application-Service-Provider-Identity",
+            "Flows",
+            "Sponsor-Identity",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.229, which the corpus lacks)": [
+            "Server-Capabilities",
+            "Session-Priority",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.272, which the corpus lacks)": [
+            "CSG-Id",
+            "MME-Number-for-MT-SMS",
+            "Terminal-Information",
+        ],
+        "no data_type, no flag_rules (re-used from TS29.273, which the corpus lacks)": [
+            "SSID"
+        ],
+        "no data_type, no flag_rules (re-used from TS29.329, which the corpus lacks)": [
+            "MSISDN"
         ],
     },
 }
@@ -998,6 +1026,51 @@ def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
         assert avp.defined_in in {reference, corpus.CITED_AS.get(origin, origin)}
 
 
+def test_citations_across_releases_resolve_and_say_by_which_rule():
+    """The drafting rules on references (docs/consumers.md): TS 32.299's
+    non-specific TS 29.140 [213] is its final version, V7.0.0; TS 183
+    017's "TS 29.214 Release 7" [19] and oneM2M TS-0004's "TS 32.299
+    (Release 11)" [31] are the versions they name. Each AVP so reached
+    says so, and nothing else in the corpus resolves across releases."""
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+
+    vas = built.resolve("TS32.299", "VAS-ID")
+    codec = built.resolve("ETSI-TS183.017", "Codec-Data")
+    node = built.resolve("oneM2M-TS-0004", "Node-Id")
+
+    assert vas is not None and codec is not None and node is not None
+    assert (vas.identity, vas.data_type, vas.defined_in) == (
+        (10415, 1102),
+        ast.DataType.UTF8_STRING,
+        "TS29.140",
+    )
+    assert vas.across_releases == corpus.CrossRelease(
+        "TS32.299", "TS29.140", "7.0.0", corpus.NON_SPECIFIC
+    )
+    assert codec.across_releases == corpus.CrossRelease(
+        "ETSI-TS183.017", "TS29.214", "7.12.0", corpus.SPECIFIC
+    )
+    assert node.across_releases == corpus.CrossRelease(
+        "oneM2M-TS-0004", "TS32.299", "11.20.0", corpus.SPECIFIC
+    )
+    # The Release 18 reading of TS 32.299 is untouched by its older copy.
+    current = built.resolve("TS32.299", "Node-Id")
+    assert current is not None and current.across_releases is None
+    crossings = {
+        (found.across_releases.citing, found.across_releases.cited)
+        for found in built.across_releases()
+        if found.across_releases is not None
+    }
+    assert crossings == {
+        ("ETSI-ES283.034", "TS29.209"),
+        ("ETSI-TS183.017", "TS29.209"),
+        ("ETSI-TS183.017", "TS29.214"),
+        ("TS32.299", "TS29.140"),
+        ("oneM2M-TS-0004", "TS32.299"),
+    }
+    assert len(built.across_releases()) == 26
+
+
 def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
     """TS 32.299 table 7.5.1 tabulates M2M-Information from oneM2M TS-0004
     ([301]), which the corpus extracts from oneM2M's Word file: vendor
@@ -1018,7 +1091,11 @@ def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
     assert members["Rating-Group"] == (0, 432)
     assert members["Node-Id"] == (10415, 2064)
     assert {identity[0] for identity in members.values()} == {0, 10415, 45687}
-    assert built.holes("oneM2M-TS-0004") == ()
+    # Its own reading is complete; what it reaches in TS 32.299 V11.20.0
+    # through Service-Information is that copy's (`_STANDING_HOLES`).
+    assert {hole.document for hole in built.holes("oneM2M-TS-0004")} == {
+        "TS32.299 V11.20.0"
+    }
 
 
 def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
@@ -1027,7 +1104,7 @@ def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
     actual: dict[str, dict[str, list[str]]] = {}
     for hole in raised.value.holes:
         why = str(hole).split(": ", 1)[1]
-        actual.setdefault(hole.reference, {}).setdefault(why, []).append(hole.name)
+        actual.setdefault(hole.document, {}).setdefault(why, []).append(hole.name)
     assert actual == _STANDING_HOLES
 
 

@@ -95,7 +95,7 @@ def test_a_misnamed_citation_resolves_to_the_publishers_document():
     assert books.versions("ETSI-TS283.034") == ["2.2.0"]
 
 
-def test_another_publishers_document_resolves_no_3gpp_citation():
+def test_another_publishers_document_resolves_no_3gpp_citation_by_its_version():
     """ETSI TS 183 017 V3.2.1 cites TS 29.214 Release 7 (its clause 2); its
     own version names no 3GPP release, so a Release 18 copy is no answer."""
     books = corpus.Corpus(
@@ -105,6 +105,77 @@ def test_another_publishers_document_resolves_no_3gpp_citation():
 
     assert books.resolve("TS29.214", like=citing) is None
     assert books.resolve("RFC4005", like=citing) is not None
+
+
+def test_a_specific_reference_resolves_to_the_version_it_names_and_no_other():
+    """TS 183 017 V3.2.1 clause 2 [19] names "3GPP TS 29.214 Release 7",
+    whose last version is V7.12.0 (`corpus.CITED_VERSIONS`): the Release 18
+    copy is no answer, nor is another Release 7 version."""
+    citing = _spec("ETSI TS 183 017", "3.2.1")
+    books = corpus.Corpus(
+        [_entry("3GPP TS 29.214", v) for v in ("7.11.0", "7.12.0", "18.4.0")]
+    )
+
+    entry, across = books.resolution("TS29.214", like=citing)
+
+    assert entry is not None and entry.spec.version == "7.12.0"
+    assert across == corpus.CrossRelease(
+        "ETSI-TS183.017", "TS29.214", "7.12.0", corpus.SPECIFIC
+    )
+    lacking = corpus.Corpus([_entry("3GPP TS 29.214", "7.11.0")])
+    assert lacking.resolution("TS29.214", like=citing) == (None, None)
+
+
+def test_a_non_specific_reference_past_the_documents_end_means_its_final_version():
+    """TS 32.299 V18.0.0 cites TS 29.140 non-specifically, which TR 21.801
+    clause 6.6.6.5.3 reads as the latest version in Release 18; TS 29.140
+    ended at V7.0.0 (`corpus.FINAL_VERSIONS`), which the corpus reads it as,
+    and not an earlier Release 7 copy."""
+    books = corpus.Corpus([_entry("3GPP TS 29.140", v) for v in ("6.4.0", "7.0.0")])
+
+    entry, across = books.resolution("TS29.140", like=_spec("3GPP TS 32.299", "18.0.0"))
+
+    assert entry is not None and entry.spec.version == "7.0.0"
+    assert across is not None and across.rule == corpus.NON_SPECIFIC
+    assert str(across) == (
+        "TS32.299 cites TS29.140: the reference is non-specific and V7.0.0 is"
+        " the document's final version (corpus.FINAL_VERSIONS)"
+    )
+    # An ETSI document has no release; its non-specific reference is the
+    # latest version, which for an ended document is the final one.
+    assert books.resolve("TS29.140", like=_spec("ETSI ES 283 034", "2.2.0")) is not None
+
+
+def test_the_final_version_answers_no_citation_from_its_own_release_or_earlier():
+    """A Release 6 document citing TS 29.140 means Release 6's latest, which
+    the corpus lacks; Release 7's own citation is today's rule, with no
+    crossing; and a document with no final version is never read so."""
+    books = corpus.Corpus([_entry("3GPP TS 29.140", "7.0.0")])
+
+    assert books.resolve("TS29.140", like=_spec("3GPP TS 32.299", "6.12.0")) is None
+    assert (
+        books.resolution("TS29.140", like=_spec("3GPP TS 32.299", "7.9.0"))[1] is None
+    )
+    alive = corpus.Corpus([_entry("3GPP TS 29.229", "18.1.0")])
+    assert alive.resolve("TS29.229", like=_spec("ETSI ES 283 034", "2.2.0")) is None
+
+
+def test_the_tables_name_only_versions_the_catalog_pins_and_verifies():
+    """A specific reference's version and a final version are the catalog's
+    pins, which every download checks against the 3GPP archive (`final`):
+    a version the corpus could not be shown to hold is never claimed."""
+    from seanchai.downloader import load_catalog
+
+    pinned = {
+        (f"TS{pin.number}", pin.version): pin.final for pin in load_catalog().pinned
+    }
+
+    assert {
+        (reference, version): "document"
+        for reference, version in corpus.FINAL_VERSIONS.items()
+    }.items() <= pinned.items()
+    for (_, cited), version in corpus.CITED_VERSIONS.items():
+        assert (cited, version) in pinned
 
 
 def test_an_absent_origin_resolves_to_nothing_rather_than_raising():

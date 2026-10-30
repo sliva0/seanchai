@@ -19,6 +19,12 @@ and the policy is deliberately small:
   re-defines nine of RFC 6733's AVPs with extra members) mean what the
   extending document says; a plain re-print resolves to the origin's copy,
   which is also the copy the linter checks.
+- A citation means the copy the drafting rules on references say
+  (`corpus.Corpus.resolution`): the newest in the citing document's
+  release, the version a specific reference names, or the final version of
+  a document that ended before the citing release. An AVP reached outside
+  the citing document's release says so in `across_releases`; an older
+  copy answers only through such a citation, never a reference-level query.
 - The linter, not this module, is where the conflicts live: anything
   `reused-body-differs` or `table-definition-mismatch` would report is
   resolved here by the order above without comment. Run the linter to see
@@ -112,6 +118,11 @@ class FlagRules(ast.AvpFlagRules):
         return self
 
 
+def _by_citing_document(found: Avp | Hole) -> tuple[str, str]:
+    across = found.across_releases
+    return ("" if across is None else across.citing, found.name)
+
+
 def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> ast.AvpFlagRules:
     """An IETF-space AVP's flag rules with RFC 6733's rule for each of M and
     V that no reading places: V under Must-not (section 4.1.1), M
@@ -154,6 +165,11 @@ class Avp:
     # built with one and it says: `Call-Barring-Infor-List` for TS 29.272's
     # `Call-Barring-Info`. Extra information beside `name`, never instead.
     wireshark_name: str | None
+    # Set when a reading this AVP took a field from was reached through a
+    # citation outside the citing document's release, with the rule that
+    # allowed it: TS 32.299's `VAS-ID` is TS 29.140 V7.0.0's, the final
+    # version its non-specific reference means (docs/consumers.md).
+    across_releases: corpus.CrossRelease | None = None
 
     @property
     def identity(self) -> tuple[int, int]:
@@ -198,6 +214,12 @@ class Hole:
     # any reading after it.
     conflict: str | None = None
     wireshark_name: str | None = None
+    # As `Avp.across_releases`, for a reading that still falls short.
+    across_releases: corpus.CrossRelease | None = None
+    # The version of `reference` falling short, when that is an older copy
+    # the corpus holds for a citation (TS 32.299 V11.20.0, which oneM2M
+    # TS-0004 cites), not the one reference-level queries answer from.
+    version: str | None = None
 
     def __str__(self) -> str:
         if self.missing == (DEFINITION,):
@@ -208,7 +230,13 @@ class Hole:
             what += f" (re-used from {self.origin}, which the corpus lacks)"
         if self.conflict is not None:
             what += f"; {self.conflict}'s reading, which states it, disagrees"
-        return f"{self.reference} {self.name}: {what}"
+        return f"{self.document} {self.name}: {what}"
+
+    @property
+    def document(self) -> str:
+        """`reference`, with the version when it is an older copy's:
+        "TS32.299 V11.20.0"."""
+        return self.reference + ("" if self.version is None else f" V{self.version}")
 
 
 @dataclass(frozen=True)
@@ -373,6 +401,7 @@ class _Draft:
     origin: str | None = None
     conflict: str | None = None
     wireshark_name: str | None = None
+    across: corpus.CrossRelease | None = None
     members: tuple[Member, ...] = ()
     values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
     values_source: str | None = None
@@ -424,6 +453,7 @@ class _Draft:
             vendor_id, vendor_stated = other.vendor_id, True
         return replace(
             self,
+            across=self.across or other.across,
             kind=kind,
             members=members,
             values=values,
@@ -487,6 +517,7 @@ class _Draft:
                 origin=self.origin,
                 conflict=self.conflict,
                 wireshark_name=self.wireshark_name,
+                across_releases=self.across,
             )
         common = (
             self.name,
@@ -499,12 +530,15 @@ class _Draft:
             self.wireshark_name,
         )
         if self.kind is Grouped:
-            return Grouped(*common, members=self.members)
+            return Grouped(*common, across_releases=self.across, members=self.members)
         if self.kind is Enumerated:
             return Enumerated(
-                *common, values=self.values, values_source=self.values_source
+                *common,
+                across_releases=self.across,
+                values=self.values,
+                values_source=self.values_source,
             )
-        return Avp(*common)
+        return Avp(*common, across_releases=self.across)
 
 
 @dataclass
@@ -566,16 +600,18 @@ class Model:
     ) -> None:
         self._books = books
         self._dictionary = dictionary
-        # One view per reference: the corpus sorts candidates newest first,
-        # so the first entry seen for a reference is the one every
-        # reference-level query answers from — the same copy `; Bases:` and
-        # re-used rows resolve to when the citing document is that version.
-        self._views: dict[str, _View] = {}
-        for entry in books:
-            if entry.reference not in self._views:
-                self._views[entry.reference] = _View.index(entry)
-        # Memo of resolved readings, keyed by the view that reads the name.
-        self._resolved: dict[tuple[str, str], _Draft | None] = {}
+        # One view per copy, and per reference the newest, which every
+        # reference-level query answers from: the corpus sorts candidates
+        # newest first. An older copy (TS 32.299 V11.20.0) is read only
+        # where a citation resolves to it (`corpus.Corpus.resolution`).
+        self._copies: dict[Path, _View] = {
+            entry.path: _View.index(entry) for entry in books
+        }
+        self._views: dict[str, _View] = {
+            entry.reference: self._copies[entry.path] for entry in books.newest()
+        }
+        # Memo of resolved readings, keyed by the copy that reads the name.
+        self._resolved: dict[tuple[Path, str], _Draft | None] = {}
 
     @classmethod
     def build(
@@ -702,8 +738,10 @@ class Model:
         """Every hole in `reference`'s reading, or in the whole corpus.
 
         A reading's holes are the names its dictionary view and its command
-        and grouped bodies cannot complete. A hole belongs to the document
-        that falls short, so TS 29.229's reading reports RFC 4590's untyped
+        and grouped bodies cannot complete, and those of the grouped AVPs it
+        reaches in an older copy through a citation across releases, which
+        carry that copy's `version`. A hole belongs to the document that
+        falls short, so TS 29.229's reading reports RFC 4590's untyped
         `Digest-*` rows only where TS 29.229's own table does not type them.
         Sorted by document and name.
         """
@@ -733,7 +771,53 @@ class Model:
                 found.update(
                     (member.hole, None) for member in body if member.hole is not None
                 )
-        return tuple(sorted(found, key=lambda hole: (hole.reference, hole.name)))
+            found.update(dict.fromkeys(self._holes_across(each)))
+        return tuple(sorted(found, key=lambda hole: (hole.document, hole.name)))
+
+    def _holes_across(self, reference: str) -> Iterator[Hole]:
+        """The holes in the grouped AVPs `reference`'s reading reaches
+        through a citation across releases, at any depth: oneM2M TS-0004's
+        `Service-Information` is TS 32.299 V11.20.0's, whose `PS-Information`
+        re-uses Release 11's TS 29.061, which the corpus lacks. No reading
+        of that older copy's own reports them, since reference-level
+        queries answer from the newest."""
+        pending = [*self.avps(reference)]
+        pending += [
+            member.avp
+            for message in self.messages(reference)
+            for member in message.avps
+            if member.avp is not None
+        ]
+        seen: set[int] = set()
+        while pending:
+            avp = pending.pop()
+            if id(avp) in seen or not isinstance(avp, Grouped):
+                continue
+            seen.add(id(avp))
+            for member in avp.members:
+                if member.hole is not None and member.hole.version is not None:
+                    yield member.hole
+                elif member.avp is not None:
+                    pending.append(member.avp)
+
+    def across_releases(self, reference: str | None = None) -> tuple[Avp | Hole, ...]:
+        """Every name in `reference`'s reading, or in the whole corpus's,
+        that took a field from a document resolved outside the citing
+        document's release, each carrying the `corpus.CrossRelease` that
+        says by which drafting rule: TS 32.299's `VAS-ID` from TS 29.140
+        V7.0.0, ETSI TS 183 017's `Codec-Data` from TS 29.214 V7.12.0. The
+        audit list for a reader who wants to check the corpus's reading of
+        the citing documents' references (docs/consumers.md). Sorted by
+        citing document and name."""
+        references = self.references() if reference is None else [reference]
+        found: dict[Avp | Hole, None] = {}
+        for each in references:
+            view = self._view(each)
+            for name in self._names(each):
+                resolved = self._final(view, name)
+                if resolved.across_releases is not None:
+                    found[resolved] = None
+        return tuple(sorted(found, key=_by_citing_document))
 
     def table_rows(self, reference: str, name: str) -> tuple[ast.AvpTableRow, ...]:
         """Every AVP-table row `reference` prints for `name`, in file order.
@@ -803,12 +887,17 @@ class Model:
 
     def _final(self, view: _View, name: str, stack: tuple = ()) -> Avp | Hole:
         draft = self._resolve(view, name, stack)
-        if draft is None:
-            return Hole(view.entry.reference, name, (DEFINITION,))
-        return draft.final
+        found = (
+            Hole(view.entry.reference, name, (DEFINITION,))
+            if draft is None
+            else draft.final
+        )
+        if isinstance(found, Hole) and view is not self._views[view.entry.reference]:
+            return replace(found, version=view.entry.spec.version)
+        return found
 
     def _resolve(self, view: _View, name: str, stack: tuple) -> _Draft | None:
-        key = (view.entry.reference, name)
+        key = (view.entry.path, name)
         if key in self._resolved:
             return self._resolved[key]
         if key in stack:
@@ -855,27 +944,30 @@ class Model:
         `; Bases:` documents."""
         rows = view.tabled.get(name)
         origin = view.reused.get(name)
-        theirs = None if origin is None else self._cited(view, origin)
+        theirs, across = (None, None) if origin is None else self._cited(view, origin)
         unread = origin if theirs is None else None
         definition = view.defined.get(name)
         if definition is not None:
             yield self._from_definition(view, definition, rows, unread, stack)
         if theirs is not None and (found := self._resolve(theirs, name, stack)):
-            yield found
+            yield found if across is None else replace(found, across=across)
         if rows is not None and definition is None:
             yield self._from_row(view, name, rows[0], unread)
         for base in view.entry.spec.bases:
-            cited = self._cited(view, base)
+            cited, across = self._cited(view, base)
             if cited is not None and (found := self._resolve(cited, name, stack)):
-                yield found
+                yield found if across is None else replace(found, across=across)
         if unread is not None:
             yield _Draft(None, name, view.entry.reference, origin=unread)
 
-    def _cited(self, view: _View, reference: str) -> _View | None:
-        """The view `reference` names when cited from `view`, if the corpus
-        holds a copy in the matching release."""
-        entry = self._books.resolve(reference, like=view.entry.spec)
-        return None if entry is None else self._views.get(entry.reference)
+    def _cited(
+        self, view: _View, reference: str
+    ) -> tuple[_View | None, corpus.CrossRelease | None]:
+        """The copy `reference` names when cited from `view`, if the corpus
+        holds the one the drafting rules mean, and how it was reached when
+        that is outside `view`'s release (`corpus.Corpus.resolution`)."""
+        entry, across = self._books.resolution(reference, like=view.entry.spec)
+        return (None, None) if entry is None else (self._copies[entry.path], across)
 
     def _from_row(
         self, view: _View, name: str, row: ast.AvpTableRow, unread: str | None
@@ -938,7 +1030,7 @@ class Model:
         members = []
         for rule in rules:
             # `AVP` is RFC 6733's any-AVP wildcard — grammar, not a name.
-            if rule.name == "AVP" or (view.entry.reference, rule.name) in stack:
+            if rule.name == "AVP" or (view.entry.path, rule.name) in stack:
                 members.append(Member(rule=rule, avp=None))
                 continue
             found = self._final(view, rule.name, stack)
