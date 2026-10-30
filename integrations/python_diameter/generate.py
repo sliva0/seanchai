@@ -600,6 +600,9 @@ class Unit:
     # order.
     bases: dict[int, tuple[str, str]]
     commands: list[Command]
+    # The registry's name for the application, where the document names it
+    # nowhere: "3GPP Cx/Px", TS 29.230 table 4.1.
+    registered: str | None = None
 
     @property
     def name(self) -> str:
@@ -682,7 +685,23 @@ def collect_unit(
         command = Command(message, members, name, [message.section], notes)
         alike.append(command)
         commands.append(command)
-    return Unit(module, application.reference, application, title, bases, commands)
+    registered = None
+    if application.application_id is not None and application.name is None:
+        registered = next(
+            (
+                f"{allocation.entry.name}, {allocation.reference} table"
+                f" {allocation.table}"
+                for allocation in built.registry(
+                    ast.RegistryKind.APPLICATION_IDS, application.application_id
+                )
+                if isinstance(allocation.entry, ast.RegistryRow)
+                and allocation.entry.name is not None
+            ),
+            None,
+        )
+    return Unit(
+        module, application.reference, application, title, bases, commands, registered
+    )
 
 
 # --- resolving against the library -------------------------------------------
@@ -1060,14 +1079,21 @@ def annotation(entry: Entry) -> str:
     return f"list[{entry.python_type}]" if entry.repeated else entry.python_type
 
 
-def application_line(application: model.Application, library: Library) -> str:
+def application_line(
+    application: model.Application, library: Library, registered: str | None = None
+) -> str:
+    """The module's `APPLICATION_ID`, its comment naming the application as
+    the registry does where the document names it nowhere."""
     identifier = application.application_id
     if identifier is None:
         return "APPLICATION_ID = None"
+    named = "" if registered is None else f", {registered}"
     constant = library.applications.get(identifier)
     if constant is None:
-        return f"APPLICATION_ID = {identifier}  # the library has no APP_ constant"
-    return f"APPLICATION_ID = {constant}  # {identifier}"
+        return (
+            f"APPLICATION_ID = {identifier}  # the library has no APP_ constant{named}"
+        )
+    return f"APPLICATION_ID = {constant}  # {identifier}{named}"
 
 
 def render_unit(unit: Unit, resolver: Resolver) -> str:
@@ -1220,7 +1246,7 @@ def render_unit(unit: Unit, resolver: Resolver) -> str:
         lines.append(")")
     lines += ["", ""]
     lines.append(f"__all__ = [{', '.join(quoted(name) for name in sorted(names))}]")
-    lines += ["", application_line(application, library)]
+    lines += ["", application_line(application, library, unit.registered)]
     lines += classes
     return "\n".join(lines) + "\n"
 

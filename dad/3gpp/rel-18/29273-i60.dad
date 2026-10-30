@@ -1144,7 +1144,7 @@ QoS-Capability               578    9.2.3.2.4   Grouped       M      -     -    
 QoS-Resources                508    9.2.3.2.5   Grouped       M      -     -       V,P
 Trace-Info                   1505   8.2.3.13    Grouped       V      -     -       M,P
 Service-Selection            493    5.2.3.5     UTF8String    M      -     -       V,P
-Trust-Relationship-Update    1515   9.2.3.1.4   Enumerated    V      -     -       M,P
+;; deleted: AVP table row 'Trust-Relationship-Update' (table 9.2.3.1.1/1) (TS29.273.py#trust-relationship-update-void)
 AAA-Failure-Indication       1518   8.2.3.21    Unsigned32    V      -     -       M,P
 DER-S6b-Flags                1523   9.2.3.7     Unsigned32    V      -     -       M,P
 

@@ -250,6 +250,10 @@ def test_classes_take_the_librarys_names_and_constants(package):
     assert "APPLICATION_ID = APP_3GPP_GX  # 16777238\n" in gx
     assert "from diameter.message.constants import *\n" in gx
     cx = _read(package, "ts29_229")
+    # TS 29.229 names its application nowhere; TS 29.230 table 4.1 does.
+    assert (
+        "APPLICATION_ID = APP_3GPP_CX  # 16777216, 3GPP Cx/Px, TS29.230 table 4.1\n"
+    ) in cx
     assert (
         '        AvpGenDef("public_identity", AVP_TGPP_PUBLIC_IDENTITY, VENDOR_TGPP,'
         " is_required=True, is_mandatory=True),\n"

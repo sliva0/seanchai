@@ -57,6 +57,10 @@ cannot judge.
   table's dash against each direct member; a blank cell marks nothing, and
   `* [ AVP ]` is grammar. A note: the ABNF is the wire format, and only the
   document's editor knows which statement is meant.
+- `registry-range-overlap` — within one registry table, a code two rows
+  allocate, two reserved ranges that overlap, or a reserved range covering
+  codes a row allocates. A note: a range reserved for a document may hold
+  its codes, and which statement is meant is the registry editor's.
 
 A re-used row citing the file's own document is no re-use: TS 29.212's Gxx,
 S9, Sd and St tables list Gx's AVPs from TS 29.212, and 29.061's SGmb table
@@ -107,6 +111,42 @@ With `--corpus`, each re-used row is resolved against the document it cites.
 
 With `--corpus`, `duplicate-identity` also runs over re-used rows, since the
 origin's `; Vendor-ID:` is readable then.
+
+## Registry rules
+
+With `--corpus`, a file is also compared with the TS 29.230 registry the
+corpus resolves for it, by the rule origins resolve by. TS 29.230 allocates
+codes to the documents defining them; it is evidence, not a definer, so
+every rule is a note, and a corpus file is corrected only where its own
+defining clause supports the registry. Without a registry in the corpus the
+rules stay silent.
+
+- `registry-avp-name` — an AVP the file defines or tabulates as its own in
+  the registry's vendor space (10415) whose code the registry allocates
+  under another name, compared exactly, since a dictionary keys on it; the
+  message says when the two differ only in case. A name the file lists as
+  re-used is its origin's.
+- `registry-avp-document` — the same AVPs, where the rows allocating the
+  code cite documents and none is the file. A row citing none (table 7.1's
+  1530–1542) claims nothing.
+- `registry-reserved-code` — such an AVP whose code no row allocates but a
+  reserved range covers, unless a covering range names the file's document
+  among its documents or in its purpose: TS 29.061's RADIUS-compatible 1–33
+  sit silently in 1..255, "backwards compatibility with 3GPP RADIUS Vendor
+  Specific Attributes (See 3GPP TS 29.061 [13], …)".
+- `registry-command-name` — a command whose code the registry allocates
+  under neither the command's name nor its abbreviation, the row's
+  `Name-Request/-Answer` pair read as both names. The defining documents
+  are not compared: a command code is the application's to re-use (TS
+  29.273's SWx carries TS 29.229's Cx codes). TS 29.215's `TE-Request`
+  agrees with table 5.1/4's `Trigger-Establishment-Request/Answer` through
+  `TER`. No corpus case.
+- `registry-application-document` / `registry-application-name` — an
+  application id a header or an application scope uses that the registry
+  allocates to other documents, or that a scope names otherwise than the
+  registry does, less table 4.1's "3GPP " prefix. Ids the registry does not
+  list are not reported: IETF ids are IANA's, and TS 29.230 lists only
+  3GPP's.
 
 ## Resolving an origin
 
@@ -178,6 +218,55 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   32.299 table 7.1.0.1's `Acct-Multi-Session-Id` (Unsigned32 against RFC
   6733's UTF8String) and `Experimental-Result`/`-Code` (M in Must not, the
   cell RFC 6733's table gives the Error-Reporting-Host row above them).
+- **`registry-range-overlap`**, six, all in TS 29.230 as printed: table
+  7.1 allocates 318 (3GPP-AAA-Server-Name) in TS 29.234's block and again,
+  citing nothing, in TS 29.273's, beside a note that the definition moved
+  to TS 29.273 from Rel-12; reserves 1..255 for RADIUS compatibility over
+  its own 100–102 (TS 29.234's WLAN AVPs), 4605..4799 for TS 29.388 over
+  4700–4702 (TS 29.389's) and 4703..4799 "for TS and TS 29.389" inside it;
+  table 8.1.3 reserves 4182..4200 for TS 29.272 from its own 4182, and
+  8.1.4 5455..5469 for TS 29.273 from its own 5455 and 5456.
+- **`registry-avp-name`**, 54. Twenty-three differ only in case (`Role-Of-Node`
+  against the registry's `Role-of-Node`, TS 32.299 clause 7.2.177), and
+  most of the rest are the registry spelling a name otherwise than its
+  defining clause (`Authorised-QoS`/`Authorized-QoS`, `RAN-Start-Timestamp`/
+  `RAN-Start-Time`) or as no name at all (`"Visited PLMN Id"`, `"MBMS
+  GW-Address"`, `"Media-Sub-Component AVP"`). None is corrected: a document
+  is the primary source for its own AVP's name, and where a document
+  prints the registry's spelling somewhere too (TS 29.345's
+  `Assistance-info`), that is the document disagreeing with itself, not
+  its defining clause supporting the registry. Six, in four places, are the
+  registry being wrong, its defining clause saying otherwise:
+  - TS 29.336 3176/3177: the registry swaps `NIA-Flags` and
+    `Group-User-Identifier`; table 8.4.1-1 and clause 8.4.73's header (`<AVP
+    header: 3177 10415>`) agree with each other.
+  - TS 29.283 4513/4514: the registry allocates `MCVideo-ID` and
+    `MC-Data-ID`, and reserves from 4515; TS 29.283 defines `Data` (4513,
+    clause 7.3.22's header), `MCVideo-ID` (4514) and `MCData-ID` (4515).
+  - TS 29.109 402: the registry's `NAF-Hostname`; clause 6.3.1.3 reads "The
+    NAF-Id AVP (AVP code 402)".
+  - TS 29.061 912: the registry's `MBMS-Session-Identity-Repetition-Number`;
+    clause 17.7.15 reads "The MBMS-Session-Repetition-Number AVP (AVP code
+    912)".
+  Where the defining clause supports the registry, the corpus was corrected
+  instead: TS 29.273 table 9.2.3.1.1/1 listed `Trust-Relationship-Update`
+  at 1515 for clause 9.2.3.1.4, which is "Void", and the registry
+  allocates 1515 to `Reserved`; the row is deleted (RAR-Flags bit 0 carries
+  the indication, table 9.2.3.1.5/1).
+- **`registry-avp-document`**, ten. TS 29.329 table 6.3.1 lists nine of TS
+  29.229's AVPs among its own (`Public-Identity`, `Server-Name`,
+  `Supported-Features` and six more), and its clauses 6.3.9–6.3.21 refer to
+  TS 29.229 for each, as the registry does; the rows stay, since they also
+  state the flag rules Sh uses. TS 29.273 defines `3GPP-AAA-Server-Name`
+  (318), which the registry's first row still gives TS 29.234, its second
+  row nothing.
+- **`registry-reserved-code`**, two. TS 32.299 defines `PSCell-Info` (1324)
+  and `Nr-Cgi` (1325) in a range table 7.1 reserves "for TS 32.229", most
+  likely a misprint of TS 32.299, whose ranges surround it; reported as
+  printed.
+- **`registry-application-name`**, one. TS 29.272's VCSG application scope,
+  inserted by correction citing clause 7.2.2, names 16777308 `S7a/S7d`;
+  table 4.1 calls it "3GPP S7a".
 - **`unresolved-reference`**, fourteen. Seven are AVPs no document
   defines, tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`,
   `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI` (clauses 9.4–9.6, whose prose calls them

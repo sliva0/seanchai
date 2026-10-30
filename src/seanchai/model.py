@@ -243,6 +243,22 @@ class Application:
 
 
 @dataclass(frozen=True)
+class Allocation:
+    """What a registry says of a code: a row allocating it, or a range
+    reserving it, with the registry table it sits in.
+
+    TS 29.230 allocates rather than defines, so this is evidence beside the
+    model, never a reading of it: an AVP is what its defining document says,
+    and the linter's `registry-*` rules report where the two differ.
+    """
+
+    reference: str  # "TS29.230"
+    table: str  # "7.1"
+    section: str
+    entry: ast.RegistryRow | ast.RegistryReservation
+
+
+@dataclass(frozen=True)
 class Marks:
     """What one table row marks about where its AVP applies: per mark
     column its table prints, the row's marks in the document's spelling,
@@ -430,10 +446,11 @@ class _View:
     applications: list[ast.ApplicationScope]
     # Every row of a table printing mark columns, per name, in file order.
     marked: dict[str, list[Marks]]
+    registries: list[ast.Registry]
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
-        view = cls(entry, {}, {}, {}, [], [], {})
+        view = cls(entry, {}, {}, {}, [], [], {}, [])
         for section in entry.spec.sections:
             if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
                 view.defined.setdefault(section.name, section)
@@ -461,6 +478,8 @@ class _View:
                 view.messages.append(section)
             elif isinstance(section, ast.ApplicationScope):
                 view.applications.append(section)
+            elif isinstance(section, ast.Registry):
+                view.registries.append(section)
         return view
 
 
@@ -663,6 +682,30 @@ class Model:
         reads the rows whose `section` lies in its clause.
         """
         return tuple(self._view(reference).marked.get(name, ()))
+
+    def registry(
+        self, kind: ast.RegistryKind, code: int | None = None
+    ) -> tuple[Allocation, ...]:
+        """What the corpus's registries say of `kind`'s codes, in file
+        order: every row and reserved range, or with `code`, the rows
+        allocating it and the ranges reserving it.
+
+        TS 29.230's table 4.1 allocates 16777216 to "3GPP Cx/Px" in TS
+        29.228 and 29.229; table 7.1 allocates 318 twice and reserves 1-255
+        for RADIUS compatibility. Read-only evidence: nothing else the model
+        answers takes from it.
+        """
+        return tuple(
+            Allocation(view.entry.reference, table.table, table.source.section, row)
+            for reference in self.references()
+            for view in [self._views[reference]]
+            for table in view.registries
+            if table.registry is kind
+            for row in table.rows
+            if code is None
+            or (isinstance(row, ast.RegistryRow) and row.code == code)
+            or (isinstance(row, ast.RegistryReservation) and row.covers(code))
+        )
 
     def find(self, name: str) -> tuple[Avp, ...]:
         """Every distinct AVP the corpus knows under `name`."""

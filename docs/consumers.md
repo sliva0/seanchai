@@ -13,6 +13,7 @@ Trace Depth"); with no values beside it the AVP is complete, not a hole.
 
 ```python
 from seanchai import corpus, model
+from seanchai.dad import ast
 
 built = model.Model.build(corpus.Corpus.load([Path("dad")]))
 # or with dictionary=Path("specifications/wireshark") for Avp.wireshark_name
@@ -25,6 +26,7 @@ built.identified(10415, 601)  # every AVP claiming an identity
 built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
 built.marks("TS29.212", "AN-GW-Address")  # what each table marks about it
 built.holes("TS32.299")  # what the corpus cannot complete
+built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 ```
 
 The query set is thin on purpose: each query was written because a real
@@ -111,6 +113,17 @@ gives each its own tables, so a row's interface is its table's clause: TS
 29.212 marks `AN-GW-Address` `Both, Rel8, EPC-routed` for Gx in table
 5.3.0.1 and `EPC-routed (See NOTE 8)` for Gxx in re-used table 5a.4.0.1.
 
+**The registry.** `registry(kind, code)` returns what the corpus's
+registries say of a code, as `model.Allocation`s naming the registry
+document, table and clause: the rows allocating it and the reserved ranges
+covering it, or with no code every row and range of that kind, in file
+order. TS 29.230 table 4.1 allocates 16777216 to "3GPP Cx/Px" in TS 29.228
+and 29.229, and table 7.1 allocates 318 twice. It is evidence beside the
+model, not a reading of it: no `Avp`, `Message` or `Application` takes
+anything from it, and the linter's `registry-*` rules
+([linter.md](linter.md#registry-rules)) report where documents and
+registry differ.
+
 **Holes.** An `Avp` has every field: code, type and flag rules are facts some
 document states, never `None`. A name the corpus cannot complete is a
 `model.Hole` instead, naming the document that falls short, the fields it
@@ -193,7 +206,14 @@ What its dictionary lacks, or types otherwise than the document, goes to an
 `additions.py` in the dictionary's shape rather than being papered over.
 Holes stay in the tables with their reason; an application's id is the
 model's, so a module whose document states it only in prose gets it, and
-only RFC 6733's clause 8 gets `None`. The ABNF decides a class's members,
+only RFC 6733's clause 8 gets `None`. Where no application scope names the
+application, the `APPLICATION_ID` comment names it as the registry does
+(`# 16777216, 3GPP Cx/Px, TS29.230 table 4.1`); the id stays the model's.
+TS 29.230 is a corpus document like any other, so `--all` lists "3GPP TS
+29.230 V18.6.0" among the sources in `__init__.py` and `additions.py`,
+though it contributes no module and no addition; and since TS 29.273's
+`Trust-Relationship-Update` row is corrected away (clause 9.2.3.1.4 is
+"Void"), `additions.py` no longer carries its 1515 constant. The ABNF decides a class's members,
 and the tables' marks are comments on them: TS 32.299's per command, the
 others from the command's interface clause. The
 [README](../integrations/python_diameter/README.md) covers the layout, the

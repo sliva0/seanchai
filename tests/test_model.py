@@ -764,6 +764,23 @@ class TestOverTheCommittedCorpus:
         )
         assert built.resolve("RFC4590", "Digest-Realm") is None
 
+    def test_the_registry_answers_by_code_beside_the_model(self, built):
+        (cx,) = built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)
+        assert (cx.reference, cx.table, cx.section) == ("TS29.230", "4.1", "4.1")
+        assert cx.entry == ast.RegistryRow(
+            code=16777216, name="3GPP Cx/Px", defined_in=("TS29.228", "TS29.229")
+        )
+        # Table 7.1 prints 318 in TS 29.234's block and again in TS 29.273's.
+        twice = built.registry(ast.RegistryKind.AVP_CODES, 318)
+        assert [allocation.entry.defined_in for allocation in twice] == [
+            ("TS29.234",),
+            (),
+        ]
+        (radius,) = built.registry(ast.RegistryKind.AVP_CODES, 1)
+        assert isinstance(radius.entry, ast.RegistryReservation)
+        assert (radius.entry.first, radius.entry.last) == (1, 255)
+        assert len(built.registry(ast.RegistryKind.APPLICATION_IDS)) == 54
+
 
 # What keeps the committed corpus from building strictly, by document and
 # cause. Each is a statement its source does not make: RFC 4072, 5447, 5777

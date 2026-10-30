@@ -427,6 +427,9 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29337-i00": 2,
         "29338-i20": 2,
         "29388-i10": 1,
+        # TS 29.230's registry: 318 allocated twice, four reservations
+        # covering allocated codes, and 4703-4799 inside 4605-4799.
+        "29230-i60": 6,
         # Table 7.1.0.1 marks ACA's Error-Message and Failed-AVP unused; the
         # corrections cite RFC origins for it, whose clauses 7.1.9, 7.1.14,
         # 7.1.17 and B.2.4 print bodies of their own.
@@ -439,6 +442,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     assert {f.rule for f in notes} <= {
         "local-and-reused",
         "member-marked-unused",
+        "registry-range-overlap",
         "table-row-mismatch",
     }
 
@@ -875,6 +879,7 @@ def test_a_base_missing_from_the_corpus_is_a_note_and_turns_the_rule_off():
 # body differences and indirect origins present in the committed corpus.
 _STANDING_CORPUS_NOTES = {
     "29061-i10.dad": {
+        "registry-avp-name": ["MBMS-Session-Repetition-Number"],
         "table-row-mismatch": [
             "3GPP-IMSI",
             "3GPP-SGSN-Address",
@@ -885,7 +890,12 @@ _STANDING_CORPUS_NOTES = {
             "3GPP-MS-TimeZone",
         ],
     },
+    "29109-i10.dad": {"registry-avp-name": ["NAF-Id"]},
     "29128-i00.dad": {
+        "registry-avp-name": [
+            "Number-Of-UE-Per-Location-Configuration",
+            "Number-Of-UE-Per-Location-Report",
+        ],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
             "Monitoring-Event-Report",
@@ -897,20 +907,44 @@ _STANDING_CORPUS_NOTES = {
     },
     "29212-i20.dad": {
         "origin-not-in-corpus": ["TS283.034, X.S0057"],
+        "registry-avp-name": [
+            "CS-Service-QoS-Request-Identifier",
+            "Rule-Deactivation-Time",
+            "TDF-IP-Address",
+        ],
     },
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
     },
     "29214-i40.dad": {
         "origin-not-in-corpus": ["TS183.017"],
+        "registry-avp-name": ["Media-Sub-Component"],
     },
+    "29217-i00.dad": {"registry-avp-name": ["Extended-eNodeB-Id"]},
     "29219-i00.dad": {
         "origin-not-in-corpus": ["TS283.034"],
     },
     "29229-i10.dad": {
         "unresolved-reference": ["Line-Identifier"],
     },
+    "29230-i60.dad": {
+        "registry-range-overlap": [
+            "318",
+            "1..255",
+            "4605..4799",
+            "4605..4799",
+            "4182..4200",
+            "5455..5469",
+        ],
+    },
     "29272-i70.dad": {
+        "registry-application-name": ["S7a/S7d"],
+        "registry-avp-name": [
+            "Event-Threshold-RSRP",
+            "Event-Threshold-RSRQ",
+            "Third-Context-Identifier",
+            "Visited-PLMN-Id",
+        ],
         "reused-body-differs": [
             "Monitoring-Event-Configuration",
             "Monitoring-Event-Report",
@@ -928,16 +962,40 @@ _STANDING_CORPUS_NOTES = {
     },
     "29273-i60.dad": {
         "origin-not-in-corpus": ["TS283.034"],
+        "registry-avp-document": ["3GPP-AAA-Server-Name"],
         "reused-body-differs": ["SIP-Auth-Data-Item"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
         "unresolved-reference": ["NSWO-Authorization"],
     },
     "29283-i00.dad": {
+        "registry-avp-name": ["Data", "MCVideo-ID"],
         "reused-body-differs": ["User-Identifier"],
+    },
+    # Clauses 6.3.9-6.3.21 refer to TS 29.229 for nine AVPs table 6.3.1
+    # lists among 29.329's own.
+    "29329-i00.dad": {
+        "registry-avp-document": [
+            "Feature-List",
+            "Feature-List-ID",
+            "Public-Identity",
+            "Server-Name",
+            "Session-Priority",
+            "Supported-Applications",
+            "Supported-Features",
+            "Wildcarded-IMPU",
+            "Wildcarded-Public-Identity",
+        ],
     },
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
+        "registry-avp-name": [
+            "Event-Handling",
+            "Group-User-Identifier",
+            "NIA-Flags",
+            "Supported-Monitoring-Events",
+            "Supported-Services",
+        ],
         "reused-body-differs": [
             "Additional-Serving-Node",
             "MME-Location-Information",
@@ -951,9 +1009,15 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
     },
     "29338-i20.dad": {
+        "registry-avp-name": [
+            "MME-Absent-User-Diagnostic-SM",
+            "MSC-Absent-User-Diagnostic-SM",
+            "SGSN-Absent-User-Diagnostic-SM",
+        ],
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
     },
     "29345-i00.dad": {
+        "registry-avp-name": ["Assistance-Info", "MIC-Check-Indicator"],
         "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
     "29388-i10.dad": {
@@ -973,6 +1037,39 @@ _STANDING_CORPUS_NOTES = {
             "Priority-Indication",
             "Reference-Number",
         ],
+        "registry-avp-name": [
+            "Application-Provided-Called-Party-Address",
+            "Authorised-QoS",
+            "Charging-Characteristics-Selection-Mode",
+            "Content-Provider-ID",
+            "Deferred-Location-Event-Type",
+            "IP-Realm-Default-Indication",
+            "ISUP-Cause",
+            "Incoming-Trunk-Group-ID",
+            "LCS-Client-ID",
+            "LCS-Requestor-ID",
+            "LCS-Requestor-ID-String",
+            "Local-GW-Inserted-Indication",
+            "MBMS-GW-Address",
+            "MMTel-SService-Type",
+            "Number-Of-Messages-Sent",
+            "Originator-SCCP-Address",
+            "Outgoing-Trunk-Group-ID",
+            "PC3-Control-Protocol-Cause",
+            "PC3-EPC-Control-Protocol-Cause",
+            "PoC-Change-Condition",
+            "PoC-Session-Initiation-Type",
+            "PoC-User-Role-Info-Units",
+            "ProSe-Group-IP-Multicast-Address",
+            "RAN-End-Timestamp",
+            "RAN-Start-Timestamp",
+            "Role-Of-Node",
+            "Service-ID",
+            "Transcoder-Inserted-Indication",
+            "Trunk-Group-ID",
+        ],
+        # Table 7.1 reserves 1324-1399 for "TS 32.229", likely TS 32.299.
+        "registry-reserved-code": ["Nr-Cgi", "PSCell-Info"],
         "reused-reprint": ["User-Equipment-Info"],
         # Table 7.2.0.1 sets M for the charging application on AVPs it
         # refers to TS 29.229 for, which leaves M out of Must.
@@ -1014,3 +1111,166 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
         if notes:
             actual[entry.path.name] = notes
     assert actual == _STANDING_CORPUS_NOTES
+
+
+def _registry_spec(*sections):
+    return _origin_spec("3GPP TS 29.230", "18.6.0", *sections)
+
+
+def _registry(kind, columns, *rows, table="7.1"):
+    return ast.Registry(
+        registry=kind,
+        table=table,
+        source=ast.SourceRef(section=table.partition("/")[0]),
+        columns=columns,
+        rows=rows,
+    )
+
+
+def _registered_command(name, abbreviation, code, application_id=None, section="6.1.1"):
+    return ast.Message(
+        name=name,
+        abbreviation=abbreviation,
+        source=ast.SourceRef(section=section),
+        command_code=code,
+        flags=frozenset({ast.CommandFlag.REQUEST}),
+        application_id=application_id,
+        avps=(),
+    )
+
+
+def _registry_findings(spec, registry):
+    return [
+        (f.rule, f.message.split()[0])
+        for f in linter.lint_with_corpus(spec, _books(spec, registry))
+        if f.rule.startswith("registry")
+    ]
+
+
+def test_a_command_agrees_with_its_registry_row_by_either_name_or_abbreviation():
+    registry = _registry_spec(
+        _registry(
+            ast.RegistryKind.COMMAND_CODES,
+            (
+                ast.RegistryColumn.CODE,
+                ast.RegistryColumn.NAME,
+                ast.RegistryColumn.ABBREVIATION,
+                ast.RegistryColumn.DEFINED_IN,
+            ),
+            ast.RegistryRow(
+                code=300,
+                name="User-Authorization-Request/-Answer",
+                abbreviation="UAR/UAA",
+                defined_in=("TS29.229",),
+            ),
+            ast.RegistryRow(
+                code=8388656,
+                name="Trigger-Establishment-Request/Answer",
+                abbreviation="TER/TEA",
+                defined_in=("TS29.338",),
+            ),
+            table="5.1/1",
+        )
+    )
+    spec = _origin_spec(
+        "3GPP TS 29.273",
+        "18.6.0",
+        # Another document re-using the code under its name is no finding.
+        _registered_command("User-Authorization-Answer", "XXA", 300),
+        _registered_command("TE-Request", "TER", 8388656),
+        _registered_command("Other-Request", "OTR", 8388656),
+    )
+
+    assert _registry_findings(spec, registry) == [
+        ("registry-command-name", "Other-Request")
+    ]
+
+
+def test_an_application_id_is_compared_by_document_and_scope_name():
+    registry = _registry_spec(
+        _registry(
+            ast.RegistryKind.APPLICATION_IDS,
+            (
+                ast.RegistryColumn.CODE,
+                ast.RegistryColumn.NAME,
+                ast.RegistryColumn.DEFINED_IN,
+            ),
+            ast.RegistryRow(code=16777238, name="3GPP Gx", defined_in=("TS29.212",)),
+            ast.RegistryRow(code=16777251, name="3GPP S6a", defined_in=("TS29.272",)),
+            table="4.1",
+        )
+    )
+    scope = ast.ApplicationScope(
+        name="Gx",
+        source=ast.SourceRef(section="5.1"),
+        application_id=16777238,
+        applies_to=("5.*",),
+    )
+    spec = _origin_spec(
+        "3GPP TS 29.212",
+        "18.2.0",
+        scope,
+        _registered_command("X-Request", "XR", 1, 16777251),
+    )
+
+    assert _registry_findings(spec, registry) == [
+        ("registry-application-document", "Application")
+    ]
+
+
+def test_a_reserved_code_is_reported_only_outside_its_own_documents_ranges():
+    registry = _registry_spec(
+        _registry(
+            ast.RegistryKind.AVP_CODES,
+            (ast.RegistryColumn.CODE, ast.RegistryColumn.NAME),
+            ast.RegistryReservation(
+                first=1,
+                last=255,
+                defined_in=("TS29.061",),
+                purpose="backwards compatibility (See TS 29.329)",
+            ),
+            ast.RegistryReservation(first=300, last=399, purpose="future use"),
+            ast.RegistryRow(code=700, name="User-Identity"),
+        )
+    )
+    spec = _origin_spec(
+        "3GPP TS 29.329",
+        "18.0.0",
+        _grouped_with("Named-In-Purpose", 5),
+        _grouped_with("Future", 300),
+        _grouped_with("User-Id", 700),
+        _grouped_with("Unallocated", 900),
+    )
+
+    assert _registry_findings(spec, registry) == [
+        ("registry-avp-name", "User-Id"),
+        ("registry-reserved-code", "Future"),
+    ]
+    assert _registry_findings(spec, _origin_spec("3GPP TS 29.231", "18.0.0")) == []
+
+
+def test_every_scope_naming_an_application_id_is_compared_with_the_registry():
+    registry = _registry_spec(
+        _registry(
+            ast.RegistryKind.APPLICATION_IDS,
+            (ast.RegistryColumn.CODE, ast.RegistryColumn.NAME),
+            ast.RegistryRow(code=16777238, name="3GPP Gx"),
+            table="4.1",
+        )
+    )
+    scopes = [
+        ast.ApplicationScope(
+            name=name,
+            source=ast.SourceRef(section=clause),
+            application_id=16777238,
+            applies_to=(f"{clause}.*",),
+        )
+        for name, clause in (("Gx", "5"), ("Wrong", "6"), ("Wrong", "7"))
+    ]
+    spec = _origin_spec("3GPP TS 29.212", "18.2.0", *scopes)
+
+    assert [
+        (f.rule, f.message.split()[0], f.section)
+        for f in linter.lint_with_corpus(spec, _books(spec, registry))
+        if f.rule.startswith("registry")
+    ] == [("registry-application-name", "Wrong", "6")]

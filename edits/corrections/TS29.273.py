@@ -399,3 +399,30 @@ CORRECTIONS += [
         versions="18.6.0",
     ),
 ]
+
+# Table 9.2.3.1.1/1 still lists Trust-Relationship-Update at 1515 for
+# clause 9.2.3.1.4, which reads "Void"; table 9.2.3.1.5/1's RAR-Flags bit 0,
+# Trust-Relationship-Update-indication, carries what it did. No ABNF
+# references it.
+CORRECTIONS += [
+    Delete(
+        id="trust-relationship-update-void",
+        target=table_row("Trust-Relationship-Update", table="9.2.3.1.1/1"),
+        expect=ast.AvpTableRow(
+            name="Trust-Relationship-Update",
+            code=1515,
+            section="9.2.3.1.4",
+            data_type=ast.DataType.ENUMERATED,
+            flag_rules=ast.AvpFlagRules(
+                must=frozenset({ast.AvpFlag.VENDOR}),
+                must_not=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.PROTECTED}),
+            ),
+        ),
+        reason=(
+            "the row's clause 9.2.3.1.4 is 'Void', and TS 29.230 table 7.1"
+            " allocates 1515 to 'Reserved' (TS 29.273); table 9.2.3.1.5/1"
+            " carries the indication as RAR-Flags bit 0"
+        ),
+        versions="18.6.0",
+    ),
+]

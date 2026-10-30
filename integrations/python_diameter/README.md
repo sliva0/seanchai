@@ -56,7 +56,7 @@ and `VENDOR_*` constants and its `grouped.py` classes, with `is_required`
 from the brackets and `is_mandatory` wherever the flag rules fix the M bit:
 
 ```python
-APPLICATION_ID = APP_3GPP_CX  # 16777216
+APPLICATION_ID = APP_3GPP_CX  # 16777216, 3GPP Cx/Px, TS29.230 table 4.1
 
 
 class RegistrationTermination(DefinedMessage):
@@ -241,7 +241,9 @@ module shows them.
 document prints, or, where the headers print none, from the
 `Application Scope` block that records the document's statement in prose;
 such a module's docstring names the clause (`The command headers print no
-application id; clause 5.1 states Gx's.`). The 3GPP blocks are read from
+application id; clause 5.1 states Gx's.`). Where no block names the
+application, the `APPLICATION_ID` comment gives TS 29.230 table 4.1's name
+for the id, which the id itself never comes from. The 3GPP blocks are read from
 the documents (TS 29.154, 29.212, 29.214, 29.215, 29.217, 29.219, 29.343,
 29.368, 29.468); those for RFC 4004, 4005, 4006, 4072, 5778, 6733, 7155,
 8506 and TS 32.299 are corrections citing the clause, since each words it
