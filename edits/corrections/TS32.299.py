@@ -267,6 +267,7 @@ _MEMBER_SPELLINGS = (
         "7.2.154F",
     ),
     ("PS-Information", "ePDG-Address", "EPDG-Address", "7.2.62A"),
+    ("IMS-Information", "Service-Id", "Service-ID", "7.2.190"),
 )
 
 # Table 7.2.0.1 rows spelled differently from the clause defining the AVP.
@@ -277,6 +278,7 @@ _ROW_SPELLINGS = (
     ("RAN-Start-Time", "RAN-Start-Timestamp", "7.2.160Dc"),
     ("LCS-Client-Id", "LCS-Client-ID", "7.2.84"),
     ("Trunk-Group-Id", "Trunk-Group-ID", "7.2.237"),
+    ("Service-Id", "Service-ID", "7.2.190"),
 )
 
 CORRECTIONS = [

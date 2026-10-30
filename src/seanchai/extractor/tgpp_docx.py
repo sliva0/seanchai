@@ -1432,6 +1432,67 @@ def _extract_reused_table(
     return rows, columns
 
 
+# TS 32.299 clauses 7.3-7.5 tabulate AVPs other vendors define, each row
+# pointing at its definition: "the specification including the detailed
+# definition and description, is referred to" (7.3), the Reference cell
+# holding a clause-2 number ("[215]"). The AVP Code and "Used in" columns are
+# dropped with a warning, as in any re-used table.
+_VENDOR_TABLE_COLUMNS = {
+    "AVP Name": ast.ReusedColumn.NAME,
+    "Reference": ast.ReusedColumn.FROM,
+}
+_REFERENCE_CELL_RE = re.compile(r"\[(?P<number>\d+)\]")
+
+
+def _extract_vendor_table(
+    table: _Table,
+    section_number: str,
+    warnings: list[str],
+    quirks: sources.Quirks,
+    references: dict[str, str],
+) -> _ReusedTable:
+    """A table of other vendors' AVPs as a re-used block, the
+    `vendor-avp-tables` quirk. A reference no From cell can name (TS 32.299's
+    [301], oneM2M TS-0004) warns and adds no row, as `refer [n]` does."""
+    if table.caption is None:
+        raise ExtractionError(f"{section_number}: AVP table without a caption")
+    columns, positions, data_rows = _walk_table(
+        table,
+        _VENDOR_TABLE_COLUMNS,
+        "re-used AVPs",
+        warnings,
+        lambda row: row.cells[0] == "",
+    )
+    rows = []
+    for cells in data_rows:
+        named = dict(zip(columns, (cells[i] for i in positions), strict=True))
+        name = named[ast.ReusedColumn.NAME]
+        match = _REFERENCE_CELL_RE.fullmatch(named[ast.ReusedColumn.FROM])
+        if match is None:
+            raise ExtractionError(
+                f"{section_number}: re-used AVPs row {name!r} has Reference"
+                f" cell {named[ast.ReusedColumn.FROM]!r}, which is no"
+                " reference number"
+            )
+        entry = references.get(match["number"])
+        if entry is None:
+            raise ExtractionError(
+                f"re-used AVPs row {name!r} refers to [{match['number']}],"
+                " which clause 2 does not list"
+            )
+        quirks.fire("vendor-avp-tables")
+        if not (_ORIGIN_TS_RE.search(entry) or _ORIGIN_RFC_RE.search(entry)):
+            warnings.append(
+                f"re-used AVPs row {name!r} refers to [{match['number']}],"
+                " which names no document a From cell can cite; no row added"
+            )
+            continue
+        rows.append(ast.ReusedAvpRow(name=name, origin=_origin(entry, "")))
+    return _ReusedTable(
+        rows=rows, columns=columns, label=table.caption, section=section_number
+    )
+
+
 def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
     """The cover title, "3GPP TS 29.272 V18.6.0", read from wherever the
     template of the day put it: most specs print it in a cover-page table,
@@ -1494,6 +1555,9 @@ class _Collected:
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     grouped: list[ast.GroupedAvp] = field(default_factory=list)
     commented: _Commented = field(default_factory=list)
+    # Behind `vendor-avp-tables`: re-used blocks read from tables of other
+    # vendors' AVPs, which pair with no AVP table (TS 32.299 7.3.1-7.5.1).
+    vendor_reused: list[_ReusedTable] = field(default_factory=list)
     # Sections that read like an enumerated AVP, with the name from the
     # heading. They cannot become definitions until the AVP table is known —
     # that is where their code comes from.
@@ -1529,7 +1593,11 @@ def _collect(
     """Walk the document once, classifying sections. Source-shaped work only:
     nothing here needs to know about another section."""
     collected = _Collected(own_reference=own_reference)
-    references = _references(sections) if quirks.enabled("refer-type-cells") else {}
+    references = (
+        _references(sections)
+        if quirks.enabled("refer-type-cells") or quirks.enabled("vendor-avp-tables")
+        else {}
+    )
     for section in sections:
         if quirks.enabled("prose-application-ids"):
             collected.applications.extend(_stated_applications(section, quirks))
@@ -1595,6 +1663,16 @@ def _collect(
                         note_reused=note_reused,
                     )
                 )
+            elif (
+                header[0] == "AVP Name"
+                and "Reference" in header
+                and quirks.enabled("vendor-avp-tables")
+            ):
+                vendor = _extract_vendor_table(
+                    table, section.number, warnings, quirks, references
+                )
+                if vendor.rows:  # 7.5.1's one row cites oneM2M
+                    collected.vendor_reused.append(vendor)
             elif "Attribute Name" in header and "Reference" in header:
                 # Keyed on Reference rather than on M-bit: TS 29.128, 29.173
                 # and 29.336 print a re-used table with no M-bit column at all.
@@ -1685,7 +1763,10 @@ def _resolve(
                 messages=collected.messages,
                 pairs=[],
                 definitions=[],
-                independent_reused=collected.reused_tables,
+                independent_reused=[
+                    *collected.reused_tables,
+                    *collected.vendor_reused,
+                ],
                 applications=collected.applications,
             )
         raise ExtractionError("no AVP table found")
@@ -1780,6 +1861,7 @@ def _resolve(
     reused_rows = [row for _, reused in pairs for row in reused.rows]
     if independent:
         reused_rows += [row for table in collected.reused_tables for row in table.rows]
+    reused_rows += [row for table in collected.vendor_reused for row in table.rows]
     external = {
         row.name for row in reused_rows if row.origin != collected.own_reference
     }
@@ -1806,7 +1888,10 @@ def _resolve(
         messages=collected.messages,
         pairs=pairs,
         definitions=[*collected.grouped, *enumerated],
-        independent_reused=collected.reused_tables if independent else [],
+        independent_reused=[
+            *(collected.reused_tables if independent else []),
+            *collected.vendor_reused,
+        ],
         applications=collected.applications,
     )
 
@@ -1903,6 +1988,11 @@ QUIRKS: dict[str, str] = {
     "physical-avp-columns": (
         "read physical cells in an AVP table with ragged grid spans, dropping"
         " an empty trailing sliver cell (TS 32.299 table 7.2.0.1)"
+    ),
+    "vendor-avp-tables": (
+        "read tables of other vendors' AVPs, whose Reference cell cites a"
+        " clause-2 entry, as re-used blocks (TS 32.299 tables 7.3.1, 7.4.1,"
+        " 7.5.1)"
     ),
     "refer-type-cells": (
         "read a 'refer [n]' Value Type cell as no type plus a re-used row"

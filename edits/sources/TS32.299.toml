@@ -207,3 +207,7 @@ name = "external-enum-values"
 reason = "Type-Number (clause 7.2.238) takes its values from 'OMNA WSP Content Type Numbers [210]', and API-Network-Service-Node (7.2.20eA) holds 'the identifier of the network element as defined in TS 23.682[243]'; neither prints a list."
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "vendor-avp-tables"
+reason = "clauses 7.3-7.5 tabulate 3GPP2, ETSI and oneM2M AVPs (tables 7.3.1, 7.4.1, 7.5.1) with a Reference cell citing clause 2: 'the specification including the detailed definition and description, is referred to'"

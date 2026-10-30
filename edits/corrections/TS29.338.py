@@ -1,7 +1,13 @@
 """Corrections for 3GPP TS 29.338 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, definition, reused_avps
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    definition,
+    reused_avps,
+    reused_row,
+)
 
 CORRECTIONS = [
     Insert(
@@ -12,6 +18,17 @@ CORRECTIONS = [
         reason="the Serving-Node body (clause 5.3.3.6) uses IP-SM-GW-Realm"
         " but table 5.3.3.1/2 lists only IP-SM-GW-Name and IP-SM-GW-Number;"
         " TS 29.336 clause 6.4.18 defines it beside the two listed ones",
+        versions="18.2.0",
+    ),
+    Correction(
+        id="msisdn-origin",
+        target=reused_row("MSISDN"),
+        field="origin",
+        expect="TS23.329",
+        replace="TS29.329",
+        reason="table 5.3.3.1/2 cites MSISDN from '3GPP TS 23.329 [14]';"
+        " clause 2 lists reference [14] as TS 29.329, whose clause 6.3.2"
+        " defines MSISDN (code 701)",
         versions="18.2.0",
     ),
     Correction(

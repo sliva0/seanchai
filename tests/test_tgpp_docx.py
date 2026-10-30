@@ -607,3 +607,56 @@ def test_a_partly_struck_line_still_fails():
         tgpp_docx._abnf_body(
             lines, 0, "Example", tgpp_docx.sources.Quirks([], None), []
         )
+
+
+def _vendor_table(reference):
+    """TS 32.299 table 7.3.1's two-row header and one row."""
+    rows = [
+        [
+            "AVP Name",
+            "AVP Code",
+            "Used in",
+            "Used in",
+            "Used in",
+            "Used in",
+            "Reference",
+        ],
+        ["AVP Name", "AVP Code", "ACR", "ACA", "CCR", "CCA", "Reference"],
+        ["3GPP2-BSID", "9010", "X", "-", "X", "-", reference],
+    ]
+    return tgpp_docx._Table(
+        caption="7.3.1",
+        rows=[
+            tgpp_docx._Row(cells=cells, first_cell_lines=cells[:1]) for cells in rows
+        ],
+    )
+
+
+def test_a_vendor_table_reference_cell_must_be_a_reference_number():
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="vendor-avp-tables", reason="rejection")], None)
+    with pytest.raises(tgpp_docx.ExtractionError, match="no reference number"):
+        tgpp_docx._extract_vendor_table(
+            _vendor_table("TS 29.212"), "7.3", [], quirks, {}
+        )
+
+
+def test_a_vendor_table_row_citing_an_unnameable_reference_adds_no_row():
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="vendor-avp-tables", reason="rejection")], None)
+    warnings: list[str] = []
+    table = tgpp_docx._extract_vendor_table(
+        _vendor_table("[301]"),
+        "7.5",
+        warnings,
+        quirks,
+        {"301": 'oneM2M TS-0004: "Service Layer Core Protocol Specification".'},
+    )
+
+    assert table.rows == []
+    assert warnings[-1] == (
+        "re-used AVPs row '3GPP2-BSID' refers to [301], which names no"
+        " document a From cell can cite; no row added"
+    )

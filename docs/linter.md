@@ -91,7 +91,7 @@ With `--corpus`, each re-used row is resolved against the document it cites.
 - `unresolved-reference` — every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row, or a
   `; Bases:` document. `* [ AVP ]` is grammar and is skipped. A note rather
-  than an error while the six standing cases below exist.
+  than an error while the standing cases below exist.
 - `base-not-in-corpus` — a `; Bases:` document the corpus lacks; reference
   resolution is skipped for that file rather than reporting every base AVP.
 
@@ -132,12 +132,14 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
 - **`reused-reprint`, `reused-body-differs`, `reused-origin-indirect`.** Two
   documents describe one AVP, and only the origin's editor knows which copy is
   current; correcting either would invent an agreement. TS 29.330's `Load`
-  goes through TS 29.229 to RFC 8583, an indirect origin. The
+  goes through TS 29.229 to RFC 8583, an indirect origin, and TS 32.299's
+  `3GPP2-BSID` (table 7.3.1, reference [215]) through TS 29.212 to 3GPP2
+  X.S0057. The
   `reused-body-differs` cases are mostly `Serving-Node`-style AVPs whose
   clauses say they originate elsewhere and then print interface-specific
   bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
 - **`origin-not-in-corpus`.** Every missing origin is outside 3GPP/IETF
-  (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057, TS 23.329) or has no
+  (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057) or has no
   Release 18 version: TS 29.140, cited by TS 32.299 for `VAS-Id` and
   `VASP-Id`, ends at V7.0.0, and nothing resolves across a major version.
 - **`table-row-mismatch`**, nine. TS 29.061 prints `3GPP-IMSI`,
@@ -162,21 +164,31 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   32.299 table 7.1.0.1's `Acct-Multi-Session-Id` (Unsigned32 against RFC
   6733's UTF8String) and `Experimental-Result`/`-Code` (M in Must not, the
   cell RFC 6733's table gives the Error-Reporting-Host row above them).
-- **`unresolved-reference`**, eighteen. Seven are AVPs no document defines,
-  tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`,
-  `MIP-MN-HA-SPI` (clauses 9.4–9.6; erratum 1462 renames one to another
-  undefined name, and Wireshark carries the same dead end), TS 29.345's
-  `ProSe-Query-Code` and `ProSe-Response-Code` (clauses 6.3.53, 6.3.54), and
-  TS 29.273's `NSWO-Authorization` (clause 5.2.2.1.2 prints only a member
-  reference), and TS 29.154's `External-Group-Identifier` (the ECR body,
-  clause A.6.6.2; table A.6.4.1-1 does not list it, and Wireshark has no
-  such AVP either). Eleven are members whose definition the document neither
-  prints nor cites: TS 29.229's `Line-Identifier` (clause 6.3.42 gives it
-  ETSI's vendor 13019, which a table row cannot state), and ten in TS
-  32.299's grouped bodies — `3GPP2-BSID`, `Logical-Access-ID`,
-  `Physical-Access-ID`, `TCP-Source-Port`, `Monitoring-Event-Report` and
-  `Service-ID` are defined elsewhere in the corpus but missing from table
-  7.2.0.1, while `M2M-Information`, `Network-Element`,
-  `Monitored-HPLMN-Identifier` and `Submission-Timestamp` resolve nowhere.
+- **`unresolved-reference`**, fourteen. Seven are AVPs no document
+  defines, tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`,
+  `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI` (clauses 9.4–9.6, whose prose calls them
+  `MIP-MN-to-FA-SPI` and the like, defined nowhere either; erratum 1462
+  renames one to another undefined name, and Wireshark carries the same dead
+  end; RFC 5778's later `MIP-MN-HA-SPI`, code 491, is not cited), TS
+  29.345's `ProSe-Query-Code` and `ProSe-Response-Code` (clauses 6.3.53,
+  6.3.54), and TS 29.273's `NSWO-Authorization` (clause 5.2.2.1.2 prints
+  only a member reference), and TS 29.154's `External-Group-Identifier`
+  (the ECR body, clause A.6.6.2; table A.6.4.1-1 does not list it, and
+  Wireshark has no such AVP either). Seven are members whose definition the
+  document neither prints nor cites in a form the file can hold: TS
+  29.229's `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019,
+  which a table row cannot state), and six in TS 32.299's grouped bodies.
+  `M2M-Information` is tabulated in table 7.5.1 citing oneM2M TS-0004
+  [301], which a From cell cannot name; `Monitored-HPLMN-Identifier`
+  (7.2.154I), `Submission-Timestamp` (7.2.112aA), `Network-Element`
+  (7.2.66aA) and `Monitoring-Event-Report` (7.2.111AaC) resolve nowhere.
+  Each has a near-name the document does define — `Monitored-PLMN-Identifier`
+  (7.2.111Aa), `Submission-Time` (7.2.217), `API-Network-Service-Node`
+  (7.2.20eA), `Monitoring-Event-Report-Data` (7.2.111AaD), or TS 29.336's
+  `Monitoring-Event-Report` — but nothing in TS 32.299 says which, so none
+  is corrected. `TCP-Source-Port` (7.2.242aaA) sits beside
+  `UDP-Source-Port`, which table 7.2.0.1 refers to TS 29.212 [215] for.
+  TS 29.212 defines a `TCP-Source-Port` too (5.3.129), but TS 32.299 cites
+  it for only the one, and sharing a name is no citation.
   The rule promotes to an error when these are gone, which needs the
   upstream documents to move.

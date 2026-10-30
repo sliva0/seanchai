@@ -99,16 +99,16 @@ The declared vocabulary, with the document that forced each:
   `independent-avp-tables` (no one-to-one table pairing; also 29.215,
   whose clause 5.4.0 states S9's re-use in prose),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
-  kept, no enum code derived from them). TS 32.299 declares eleven:
+  kept, no enum code derived from them). TS 32.299 declares twelve:
   `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
   message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
   also 29.229's four grouped rules), `struck-rules-unused`,
   `physical-avp-columns` (table 7.2.0.1), `refer-type-cells`,
   `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
   `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
-  `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`
-  and `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
-  and 29.272).
+  `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`,
+  `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
+  and 29.272) and `vendor-avp-tables` (tables 7.3.1, 7.4.1, 7.5.1).
   Enumerated value lines that depart from `NAME (n)` each need their own:
   `worded-enum-values` (29.368 6.4.6's `Device Trigger Request (1)`; also
   29.109, 29.172, 29.214), `dashed-enum-values` (a list dash printed as
@@ -205,6 +205,17 @@ Walks paragraphs and tables in document order under numbered headings:
   a From cell cannot name (`[223]`, OMA-DDS-Charging_Data) warns and adds
   none.
 - The "re-used Diameter AVPs" table → `ReusedAvps` with M-bit overrides.
+- Behind `vendor-avp-tables`, a table of other vendors' AVPs → `ReusedAvps`
+  of its own, pairing with no AVP table: TS 32.299 tables 7.3.1 (3GPP2),
+  7.4.1 (ETSI) and 7.5.1 (oneM2M) list AVP Name, AVP Code, "Used in" and a
+  Reference cell holding a clause-2 number, and clauses 7.3–7.5 say "the
+  specification including the detailed definition and description, is
+  referred to". The Reference becomes the From cell (`[215]` is TS 29.212,
+  `[300]` ETSI TS 283 034); the AVP Code and "Used in" columns are dropped
+  with a warning, and the vendor-id each clause states in prose (5535,
+  13019, 45687) is not read, a re-used row's identity being its origin's.
+  A reference no From cell can name (`[301]`, oneM2M TS-0004) warns and adds
+  no row, so table 7.5.1 contributes no block.
 - An AVP table whose labelled header is followed only by blank cells
   contributes no definitions and warns (TS 29.330 table 6.3.1-1); non-empty
   malformed tables still fail. The AST retains its non-empty table invariant.

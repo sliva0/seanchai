@@ -839,7 +839,7 @@ Server-Capabilities                                      603    -               
 Server-Name                                              602    -                  -     -     -     -
 Service-Data-Container                                   2040   Grouped            M,V   -     -     -
 Service-Generic-Information                              1256   -                  -     -     -     -
-Service-Id                                               855    UTF8String         M,V   -     -     -
+Service-ID                                               855    UTF8String         M,V   -     -     - ;; corrected: (TS32.299.py#row-service-id)
 Service-Information                                      873    Grouped            M,V   -     -     -
 Service-Mode                                             2032   Unsigned32         M,V   -     -     -
 Service-Specific-Data                                    863    UTF8String         M,V   -     -     -
@@ -1060,6 +1060,23 @@ VAS-Id                                     TS29.140   -
 VASP-Id                                    TS29.140   -
 Visited-PLMN-Id                            TS29.272   -
 WLAN-Link-Layer-Id                         TS29.345   -
+
+
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.3.1
+; Page: 202
+; Columns: Name From
+3GPP2-BSID   TS29.212
+
+
+; Type: Reused AVPs
+; Section: 7.4
+; Table: 7.4.1
+; Page: 202
+; Columns: Name      From
+Logical-Access-ID    TS283.034
+Physical-Access-ID   TS283.034
 
 
 ; Type: Grouped AVP
@@ -1743,7 +1760,7 @@ IMS-Information ::= < AVP header: 876 10415 > ;; corrected: (TS32.299.py#vendor-
         [ Server-Capabilities ]
         [ Trunk-Group-ID ]
         [ Bearer-Service ]
-        [ Service-Id ]
+        [ Service-ID ] ;; corrected: (TS32.299.py#member-service-id)
       * [ Service-Specific-Info ]
       * [ Message-Body ]
         [ Cause-Code ]

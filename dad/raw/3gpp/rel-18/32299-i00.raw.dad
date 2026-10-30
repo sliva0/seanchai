@@ -944,6 +944,23 @@ Visited-PLMN-Id                            TS29.272   -
 WLAN-Link-Layer-Id                         TS29.345   -
 
 
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.3.1
+; Page: 202
+; Columns: Name From
+3GPP2-BSID   TS29.212
+
+
+; Type: Reused AVPs
+; Section: 7.4
+; Table: 7.4.1
+; Page: 202
+; Columns: Name      From
+Logical-Access-ID    TS283.034
+Physical-Access-ID   TS283.034
+
+
 ; Type: Grouped AVP
 ; Name: Multiple-Services-Credit-Control
 ; Section: 7.1.9

@@ -862,7 +862,6 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
     },
     "29338-i20.dad": {
-        "origin-not-in-corpus": ["TS23.329"],
         "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
     },
     "29345-i00.dad": {
@@ -872,13 +871,17 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["V2X-Subscription-Data"],
     },
     "32299-i00.dad": {
-        "origin-not-in-corpus": ["TS29.140"],
+        "origin-not-in-corpus": ["TS283.034, TS29.140"],
         "reused-body-differs": [
             "Multiple-Services-Credit-Control",
             "Used-Service-Unit",
         ],
         "reused-extension": ["OC-OLR"],
-        "reused-origin-indirect": ["Priority-Indication", "Reference-Number"],
+        "reused-origin-indirect": [
+            "3GPP2-BSID",
+            "Priority-Indication",
+            "Reference-Number",
+        ],
         "reused-reprint": ["User-Equipment-Info"],
         # Table 7.2.0.1 sets M for the charging application on AVPs it
         # refers to TS 29.229 for, which leaves M out of Must.
@@ -888,14 +891,10 @@ _STANDING_CORPUS_NOTES = {
             "Supported-Features",
         ],
         "unresolved-reference": [
-            "3GPP2-BSID",
-            "Logical-Access-ID",
             "M2M-Information",
             "Monitored-HPLMN-Identifier",
             "Monitoring-Event-Report",
             "Network-Element",
-            "Physical-Access-ID",
-            "Service-ID",
             "Submission-Timestamp",
             "TCP-Source-Port",
         ],

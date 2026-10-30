@@ -286,7 +286,7 @@ IP-SM-GW-SBI-Support-Indicator            3348   5.3.3.39   Enumerated         V
 ; Page: 27
 ; Columns: Name             From       M-bit
 User-Name                   RFC6733    MUST
-MSISDN                      TS23.329   -
+MSISDN                      TS29.329   - ;; corrected: (TS29.338.py#msisdn-origin)
 SC-Address                  TS29.338   -
 LMSI                        TS29.173   -
 Serving-Node                TS29.173   -

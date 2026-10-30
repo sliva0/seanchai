@@ -913,9 +913,6 @@ _STANDING_HOLES = {
         ],
         "resolves nowhere": ["NSWO-Authorization"],
     },
-    "TS29.338": {
-        "resolves nowhere (re-used from TS23.329, which the corpus lacks)": ["MSISDN"]
-    },
     "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
     "TS29.389": {
         "no flag_rules": [
@@ -926,16 +923,16 @@ _STANDING_HOLES = {
     },
     "TS32.299": {
         "resolves nowhere": [
-            "3GPP2-BSID",
-            "Logical-Access-ID",
             "M2M-Information",
             "Monitored-HPLMN-Identifier",
             "Monitoring-Event-Report",
             "Network-Element",
-            "Physical-Access-ID",
-            "Service-ID",
             "Submission-Timestamp",
             "TCP-Source-Port",
+        ],
+        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+            "Logical-Access-ID",
+            "Physical-Access-ID",
         ],
         "no data_type, no flag_rules": [
             "Application-Server-ID",
