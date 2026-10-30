@@ -53,5 +53,5 @@ a test may refer to it. A renamed AVP also renames its display filter field
 
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter`
 over the corpus no longer reports a patched AVP; with all eighteen applied
-to `v4.7.2`, it reports 71 findings instead of 90, and none that the
+to `v4.7.2`, it reports 70 findings instead of 89, and none that the
 unpatched dictionary did not.

@@ -279,10 +279,14 @@ def _claims(spec: ast.Specification) -> list[_Claim]:
             for row in section.rows:
                 if row.code is None or row.name in reused:
                     continue
+                # A row's V flag says its vendor space where it says one: TS
+                # 29.273 tabulates RFC 5778's MIP-Session-Key with V in Must
+                # not, IETF space, in a vendor 10415 file.
+                stated = row.stated_vendor(spec.vendor_id)
                 claims.append(
                     _Claim(
                         name=row.name,
-                        vendor=spec.vendor_id,
+                        vendor=spec.vendor_id if stated is None else stated,
                         code=row.code,
                         data_type=row.data_type,
                         where="AVP table",

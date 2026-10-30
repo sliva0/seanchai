@@ -3,7 +3,9 @@
 `src/seanchai/oracle.py` cross-checks every AVP a file defines — its
 definitions and own AVP-table rows, skipping re-used names — against
 Wireshark's Diameter dictionary by `(vendor-id, code)`, comparing name and
-type. The dictionary is an independent reading of the same specifications,
+type. A row's vendor is read from its V flag as the model reads it
+([linter.md](linter.md#vendor-spaces)): TS 29.273's rows for RFC 5778's
+`MIP-Session-Key` forbid the V bit, so they are checked in vendor 0. The dictionary is an independent reading of the same specifications,
 which is what makes disagreement informative.
 
 ```sh
@@ -90,6 +92,9 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
   out) typed UTF8String where the specs say OctetString.
 - **Absences**: AVPs newer than the pinned dictionary, one grouped note per
   file.
+- **One untriaged lead from TS 29.229**: its row for RFC 4590's code 110
+  spells `Digest-QoP`, where RFC 4590 (section 3.8) and Wireshark write
+  `Digest-Qop`.
 - **Two untriaged leads from RFC 7155**: `Framed-IPX-Network` typed Unsigned32
   (clause 4.4.10.6.1's own sentence; RFC 4005 disagrees with itself here,
   clause 6.12.1 vs its table) against Wireshark's UTF8String; and

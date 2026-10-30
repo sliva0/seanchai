@@ -129,6 +129,36 @@ def test_name_type_and_absence_each_report(tmp_path):
     assert "calls (vendor 0, code 263) Session-Id" in findings[0].message
 
 
+def test_a_row_forbidding_the_v_bit_is_checked_in_the_ietf_space(tmp_path):
+    """TS 29.273 tabulates RFC 5778's AVPs with V in Must not in a vendor
+    10415 file; the row's identity is vendor 0's, as the model reads it."""
+    loaded = _dictionary(tmp_path)
+    table = ast.AvpTable(
+        table="1",
+        columns=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.TYPE,
+            ast.AvpColumn.MUST,
+            ast.AvpColumn.MUST_NOT,
+        ),
+        source=ast.SourceRef(section="4.5"),
+        rows=(
+            ast.AvpTableRow(
+                name="Session-Id",
+                code=263,
+                data_type=ast.DataType.UTF8_STRING,
+                flag_rules=ast.AvpFlagRules(
+                    must=frozenset({ast.AvpFlag.MANDATORY}),
+                    must_not=frozenset({ast.AvpFlag.VENDOR}),
+                ),
+            ),
+        ),
+    )
+
+    assert oracle.crosscheck(_spec(table, vendor_id=10415), loaded) == []
+
+
 def test_reused_avps_are_the_origins_to_check_not_this_files(tmp_path):
     loaded = _dictionary(tmp_path)
     spec = _spec(
