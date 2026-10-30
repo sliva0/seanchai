@@ -3,15 +3,18 @@
 `src/seanchai/oracle.py` cross-checks every AVP a file defines — its
 definitions and own AVP-table rows, skipping re-used names — against
 Wireshark's Diameter dictionary by `(vendor-id, code)`, comparing name and
-type. A row's vendor is read from its V flag as the model reads it
-([linter.md](linter.md#vendor-spaces)): TS 29.273's rows for RFC 5778's
-`MIP-Session-Key` forbid the V bit, so they are checked in vendor 0. The
+type. A row's vendor is read as the model reads it
+([linter.md](linter.md#vendor-spaces)), from its Vendor-ID cell where the
+table prints one (oneM2M TS-0004) and its V flag otherwise: TS 29.273's
+rows for RFC 5778's `MIP-Session-Key` forbid the V bit, so they are checked
+in vendor 0. The
 dictionary is an independent reading of the same specifications, which is
 what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
-uv run seanchai crosscheck dad/3gpp/rel-18/*.dad dad/rfc/*.dad dad/etsi/*.dad
+uv run seanchai crosscheck dad/3gpp/rel-18/*.dad dad/rfc/*.dad dad/etsi/*.dad \
+    dad/onem2m/*.dad
 ```
 
 The `[wireshark]` entry in `specs.toml` pins a release tag; the downloader
@@ -129,12 +132,22 @@ remains:
   `Access-Network-Information` (the dictionary comments its OctetString
   out) typed UTF8String where the specs say OctetString.
 - **Absences**: AVPs newer than the pinned dictionary, one grouped note per
-  file, 282 in 30 files, 281 AVPs. All but ten have an addition staged under
+  file, 305 in 31 files, 304 AVPs. All but thirty-three have an addition
+  staged under
   [`integrations/wireshark/additions/`](../integrations/wireshark/README.md#additions),
   written by `integrations/wireshark/additions.py` from the corpus, one
-  patch per defining document; the ten are named like an entry the
+  patch per defining document; ten are named like an entry the
   dictionary or another addition already has, or grouped with no body the
-  corpus holds.
+  corpus holds, and twenty-three are oneM2M's.
+- **oneM2M TS-0004, vendor 45687**: the pinned dictionary declares no such
+  vendor and holds none of annex A's AVPs under any vendor, so the oracle
+  checks the file unchanged: its IETF rows and its 3GPP ones (`Node-Id`
+  2064, `Service-Information` 873) agree in name and type, the corrected
+  `Service-Context-Id` (461, UTF8String) included, and all twenty-three of
+  oneM2M's own AVPs are absent. No addition is staged for them: an entry
+  goes beside its vendor's, and a vendor the dictionary lacks needs a
+  `<vendor>` declaration, a file and its entity in `dictionary.xml`, a
+  merge request of another shape than the series'.
 - **ETSI TS 183 017, untriaged**: `Binding-information` (450), the
   spelling of table 7.3.1, clause 7.3.1's heading and its rule name, where
   the clause's sentence and the AAR and AAA ABNFs write

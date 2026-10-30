@@ -486,10 +486,25 @@ def stage(
         for each in entries:
             holders.setdefault(each.name, set()).add(identity)
     made: list[Addition] = []
+    _, declared = _vendors(dictionary)
     for (_, _), (entry, claim) in sorted(
         _owners(books, loaded).items(),
         key=lambda item: (item[1][0].reference, item[0][1]),
     ):
+        if claim.vendor not in declared:
+            # An entry goes beside its vendor's; a vendor the dictionary
+            # does not declare (oneM2M's 45687) has no file to go in, and
+            # adding one is a vendor file, an entity and a `<vendor>`, not
+            # an addition of this series' shape.
+            skipped.append(
+                Skipped(
+                    entry.reference,
+                    claim.name,
+                    f"vendor {claim.vendor}, which the dictionary declares no"
+                    " vendor for",
+                )
+            )
+            continue
         addition = _addition(built, entry, claim)
         if isinstance(addition, Skipped):
             skipped.append(addition)

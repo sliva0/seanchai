@@ -859,8 +859,9 @@ def _unresolved_origins(
     they all say the same thing.
 
     An origin outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M) gets a note of
-    its own, `external-origin-not-in-corpus`: no extractor reads it, so the
-    gap is not one a download closes, only a hand-written file.
+    its own, `external-origin-not-in-corpus`: no 3GPP or IETF download
+    closes the gap, only a hand-written file or a catalogued document an
+    extractor reads (oneM2M TS-0004).
     """
     cited = sorted(set(index.reused.values()))
     missing: list[str] = []

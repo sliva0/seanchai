@@ -521,8 +521,9 @@ definition it recognises.
   the Diameter Base Protocol in IETF RFC 6733 [14]"), and
   `message-headings` reads a "Name Command" heading as it reads TS 32.299's
   "Name message". Neither header prints an application id, and no clause
-  says one beside them; clause A.5.2 says only that Acct-Application-Id
-  "shall contain the value of 3".
+  says one beside them; clause A.5.2 says that Acct-Application-Id
+  "shall contain the value of 3" on Mch, which a correction records as the
+  `Mch` application scope over `A.2.*`, as TS 32.299's clause 7.1.5 is.
 - **Table A.4-1** mixes vendors, each row printing its own "AVP Vendor Id"
   (0, 10415 or 45687), read into the `Vendor-ID` column
   ([grammar.md](grammar.md#avp-table)), which is modelled wherever a table
@@ -534,10 +535,18 @@ definition it recognises.
   the table's own, as it does for TS 32.299's `refer [n]` rows. The row
   stays in the AVP table with its marks, type and flags. The "Used in"
   columns are `command-columns`' marks and `DiamIdent` is
-  `type-short-forms`'.
+  `type-short-forms`'. The table puts V under Must not in each row of
+  vendor 45687, and in 3GPP's `Service-Information`, which
+  `vendor-flag-mismatch` reports and the corrections move to Must, citing
+  clause A.4's vendor and RFC 6733 section 4.1.1; they also type
+  `Service-Context-Id` UTF8String, as clause A.5.26 does where the table
+  says Grouped, and point three Reference cells at the clauses their
+  headings name (`[5.5.1]`, `[5.4.2]` and `[A.5.2]` for A.5.2, A.5.3 and
+  A.5.4).
 - **Definitions.** `M2M-Information`'s rule (A.5.14) spells its operator `::
-  =` (`spaced-rule-operator`) and prints `< AVP Header: 1011>`, no vendor,
-  and two members on one line. An enumerated AVP takes its vendor from its
+  =` (`spaced-rule-operator`) and prints `< AVP Header: 1011>`, no vendor
+  (a correction gives it table A.4-1's 45687), and two members on one
+  line. An enumerated AVP takes its vendor from its
   row's Vendor-ID cell where the table prints one, 0 being no vendor:
   `Accounting-Record-Type` is IETF space, `Protocol-Type` 45687.
   `Protocol-Type`'s values are value first (`value-first-enums`, "0 HTTP"

@@ -115,11 +115,12 @@ With `--corpus`, each re-used row is resolved against the document it cites.
 - `origin-not-in-corpus` — one note per file listing the origins the corpus
   could not supply, so the reader knows which rules stayed silent.
 - `external-origin-not-in-corpus` — the same for origins outside 3GPP and
-  IETF (`ETSI-TS283.034`, `3GPP2-X.S0057`, `OMA-DDS-Charging_Data`,
-  `oneM2M-TS-0004`), apart because no download closes the gap: no extractor
-  reads them, and the corpus holds one only as a hand-written file, which
+  IETF (`3GPP2-X.S0057`, `OMA-DDS-Charging_Data`), apart because no
+  3GPP or IETF download closes the gap: the corpus holds such a document
+  only as a hand-written file or a catalogued one an extractor reads, which
   resolves like an RFC, release axis ignored (ETSI ES 283 034 and TS 183
-  017 are [transcribed](extractor.md#transcriptions)).
+  017 are [transcribed](extractor.md#transcriptions), oneM2M TS-0004 is
+  [extracted](extractor.md#onem2m-ts-0004)).
 - `unresolved-reference` — every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row, or a
   `; Bases:` document. `* [ AVP ]` is grammar and is skipped. A note rather
@@ -202,7 +203,9 @@ outside 3GPP and IETF, whose versions are its publisher's (ETSI TS 283 034
 V2.2.0 is no Release 2). For the same reason such a document's own
 citations of 3GPP documents resolve nowhere: its version names no release,
 and the one it cites is in its references (TS 183 017 V3.2.1 cites TS
-29.214 Release 7). A reference the citing documents spell otherwise than
+29.214 Release 7, oneM2M TS-0004 V2.35.0 TS 32.299 Release 11). oneM2M
+TS-0004 resolves for TS 32.299's `M2M-Information` (table 7.5.1, [301]),
+in oneM2M's vendor 45687. A reference the citing documents spell otherwise than
 the publisher resolves to the publisher's document, through a table in
 `corpus.py` with one entry per misnaming: TS 29.212, 29.219, 29.273 and
 32.299 cite "ETSI TS 283 034", which ETSI publishes as ES 283 034, so
@@ -256,14 +259,16 @@ why each stays:
   (clause 7.3.9). TS 183 017 clause 7.3.10 re-prints ES 283 034's
   `Globally-Unique-Address`, identical once ES 283 034's `Frame-*` members
   are corrected.
-- **`origin-not-in-corpus`**, three. TS 29.140, cited by TS 32.299 for
+- **`origin-not-in-corpus`**, four. TS 29.140, cited by TS 32.299 for
   `VAS-Id` and `VASP-Id`, ends at V7.0.0, and nothing resolves across a
   major version. The ETSI transcriptions import Gq's AVPs from TS 29.209,
   which ends at Release 6, and TS 183 017 imports `Codec-Data` from TS
-  29.214 Release 7 (its clause 2, reference [19]).
+  29.214 Release 7 (its clause 2, reference [19]). oneM2M TS-0004 table
+  A.4-1 cites TS 32.299 [31] ("Release 11") for `Node-Id` and
+  `Service-Information`, whose rows print vendor, code, type and flags of
+  their own.
 - **`external-origin-not-in-corpus`**, two files: TS 29.212
-  (`3GPP2-X.S0057`) and 32.299 (`OMA-DDS-Charging_Data`,
-  `oneM2M-TS-0004`).
+  (`3GPP2-X.S0057`) and 32.299 (`OMA-DDS-Charging_Data`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
   ABNF lists both (and table 6.2.3.1 marks them OC). The generator keeps
@@ -371,8 +376,8 @@ why each stays:
   body, clause A.6.6.2; table A.6.4.1-1 does not list it, and Wireshark
   has no such AVP either). Four are members whose definition the document
   neither prints nor cites in a form the file can hold: TS 29.229's
-  `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019, which a
-  table row cannot state, and neither ETSI transcription defines it;
+  `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019, which its
+  table prints no Vendor-ID column to state, and neither ETSI transcription defines it;
   Wireshark's dictionary attributes its code 500 to ETSI TS 183 033), and three in TS 32.299's grouped bodies.
   `Submission-Timestamp` (7.2.112aA) and `Network-Element` (7.2.66aA)
   resolve nowhere; each has a near-name the document defines,

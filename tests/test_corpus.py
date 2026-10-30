@@ -68,6 +68,21 @@ def test_an_external_origin_resolves_to_any_copy():
     assert resolved.reference == "ETSI-TS183.017"
 
 
+def test_onem2m_ts_0004_resolves_for_ts_32_299_from_the_committed_corpus():
+    """TS 32.299 table 7.5.1 cites `oneM2M-TS-0004` ([301], Release 2 by no
+    version); the corpus holds V2.35.0, oneM2M's own numbering, which a
+    Release 18 citation reads as any external document's."""
+    books = corpus.Corpus.load([Path(__file__).parent.parent / "dad"])
+    citing = _spec("3GPP TS 32.299", "18.0.0")
+
+    resolved = books.resolve("oneM2M-TS-0004", like=citing)
+
+    assert resolved is not None
+    assert resolved.path.as_posix().endswith("dad/onem2m/ts-0004-v2_35_0.dad")
+    assert (resolved.spec.version, resolved.spec.vendor_id) == ("2.35.0", 45687)
+    assert books.versions("oneM2M-TS-0004") == ["2.35.0"]
+
+
 def test_a_misnamed_citation_resolves_to_the_publishers_document():
     """3GPP cites the e4 document as "ETSI TS 283 034"; ETSI publishes it
     as ES 283 034, which is the title its transcription carries."""

@@ -1,0 +1,198 @@
+; Specification: oneM2M TS-0004
+; Version: 2.35.0
+; Vendor-ID: 45687
+; Bases: RFC6733
+; Link: https://member.onem2m.org/Application/documentapp/downloadLatestRevision/default.aspx?docID=36771
+
+
+; Type: Application Scope ;; inserted: (oneM2M-TS-0004.py#application-id-mch)
+; Name: Mch
+; Section: A.5.2
+; Application-ID: 3
+; Applies-To: A.2.*
+
+
+; Type: Message
+; Name: Accounting-Request, ACR
+; Section: A.2.1
+<Accounting-Request> ::= < Diameter Header: 271, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Destination-Host ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Acct-Interim-Interval ]
+        [ Accounting-Realtime-Required ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Accounting-Answer, ACA
+; Section: A.2.2
+<Accounting-Answer> ::= < Diameter Header: 271, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Acct-Interim-Interval ]
+        [ Accounting-Realtime-Required ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: A.4
+; Table: A.4-1
+; Columns: Name              Vendor-ID   Code   ACR   ACA   CCR   CCA   Section   Type               Must   May   S.not   M.not   Encrypt
+Access-Network-Identifier    45687       1000   O     -     -     -     A.5.1     Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#access-network-identifier-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#access-network-identifier-v-flag-must)
+Acct-Application-Id          0           259    O     O     -     -     A.5.2     Unsigned32         M      P     -       V       No ;; corrected: (oneM2M-TS-0004.py#acct-application-id-clause)
+Accounting-Record-Number     0           485    M     M     -     -     -         Unsigned32         M      P     -       V       Yes
+Accounting-Record-Type       0           480    M     M     -     -     A.5.3     Enumerated         M      P     -       V       Yes ;; corrected: (oneM2M-TS-0004.py#accounting-record-type-clause)
+Application-Entity-ID        45687       1001   O     -     -     -     A.5.4     UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#application-entity-id-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#application-entity-id-v-flag-must) ;; corrected: (oneM2M-TS-0004.py#application-entity-id-clause)
+Control-Memory-Size          45687       1002   O     -     -     -     A.5.5     Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#control-memory-size-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#control-memory-size-v-flag-must)
+Current-Number-Members       45687       1003   O     -     -     -     A.5.6     Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#current-number-members-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#current-number-members-v-flag-must)
+Data-Memory-Size             45687       1004   O     -     -     -     A.5.7     Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#data-memory-size-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#data-memory-size-v-flag-must)
+Destination-Host             0           293    O     -     -     -     -         DiameterIdentity   M      P     -       V       No
+Event-Timestamp              0           55     O     O     -     -     -         Time               M      P     -       V       No
+External-ID                  45687       1005   O     -     -     -     A.5.8     UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#external-id-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#external-id-v-flag-must)
+Group-Name                   45687       1006   O     -     -     -     A.5.9     UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#group-name-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#group-name-v-flag-must)
+Hosting-CSE-ID               45687       1007   O     -     -     -     A.5.10    UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#hosting-cse-id-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#hosting-cse-id-v-flag-must)
+Originator                   45687       1008   M     -     -     -     A.5.11    UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#originator-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#originator-v-flag-must)
+Maximum-Number-Members       45687       1009   O     -     -     -     A.5.12    Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#maximum-number-members-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#maximum-number-members-v-flag-must)
+M2M-Event-Record-Timestamp   45687       1010   M     -     -     -     A.5.13    Time               M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#m2m-event-record-timestamp-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#m2m-event-record-timestamp-v-flag-must)
+M2M-Information              45687       1011   M     -     -     -     A.5.14    Grouped            M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#m2m-information-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#m2m-information-v-flag-must)
+Node-Id                      10415       2064   M     -     -     -     -         UTF8String         M,V    P     -       -       No
+Occupancy                    45687       1012   O     -     -     -     A.5.16    Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#occupancy-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#occupancy-v-flag-must)
+Origin-Host                  0           264    M     M     -     -     -         DiameterIdentity   M      P     -       V       No
+Origin-Realm                 0           296    M     M     -     -     -         DiameterIdentity   M      P     -       V       No
+Origin-State-Id              0           278    O     O     -     -     -         Unsigned32         M      P     -       V       No
+Protocol-Type                45687       1013   O     -     -     -     A.5.17    Enumerated         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#protocol-type-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#protocol-type-v-flag-must)
+Proxy-Info                   0           284    O     O     -     -     -         Grouped            M      -     -       V,P     No
+Rating-Group                 0           432    O     -     -     -     -         Unsigned32         M      P     -       V       Yes
+Receiver                     45687       1014   O     -     -     -     A.5.19    UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#receiver-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#receiver-v-flag-must)
+Request-Body-Size            45687       1015   O     -     -     -     A.5.20    Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#request-body-size-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#request-body-size-v-flag-must)
+Request-Headers-Size         45687       1016   O     -     -     -     A.5.21    Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#request-headers-size-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#request-headers-size-v-flag-must)
+Request-Operation            45687       1017   O     -     -     -     A.5.22    Enumerated         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#request-operation-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#request-operation-v-flag-must)
+Response-Body-Size           45687       1018   O     -     -     -     A.5.23    Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#response-body-size-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#response-body-size-v-flag-must)
+Response-Headers-Size        45687       1019   O     -     -     -     A.5.24    Unsigned32         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#response-headers-size-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#response-headers-size-v-flag-must)
+Response-Status-Code         45687       1020   O     -     -     -     A.5.25    Enumerated         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#response-status-code-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#response-status-code-v-flag-must)
+Result-Code                  0           268    -     M     -     -     -         Unsigned32         M      P     -       V       No
+Route-Record                 0           282    O     -     -     -     -         DiameterIdentity   M      -     -       V,P     No
+Service-Context-Id           0           461    O     -     -     -     A.5.26    UTF8String         M      P     -       V       No ;; corrected: (oneM2M-TS-0004.py#service-context-id-type)
+Service-Information          10415       873    O     -     -     -     -         Grouped            M,V    P     -       -       No ;; corrected: (oneM2M-TS-0004.py#service-information-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#service-information-v-flag-must)
+Session-Id                   0           263    M     M     -     -     -         UTF8String         M      P     -       V       Yes
+Subgroup-Name                45687       1021   O     -     -     -     A.5.28    UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#subgroup-name-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#subgroup-name-v-flag-must)
+Subscription-Id              0           443    M     -     -     -     -         Grouped            M      P     -       V       Yes
+Subscription-Id-Data         0           444    M     -     -     -     -         UTF8String         M      P     -       V       Yes
+Subscription-Id-Type         0           450    M     -     -     -     -         Enumerated         M      P     -       V       Yes
+Target-ID                    45687       1022   O     -     -     -     A.5.32    UTF8String         M,V    P     -       -       Yes ;; corrected: (oneM2M-TS-0004.py#target-id-v-flag-must-not) ;; corrected: (oneM2M-TS-0004.py#target-id-v-flag-must)
+
+
+; Type: Reused AVPs
+; Section: A.4
+; Table: A.4-1
+; Columns: Name            From       M-bit
+Accounting-Record-Number   RFC6733    -
+Destination-Host           RFC6733    -
+Event-Timestamp            RFC6733    -
+Node-Id                    TS32.299   -
+Origin-Host                RFC6733    -
+Origin-Realm               RFC6733    -
+Origin-State-Id            RFC6733    -
+Proxy-Info                 RFC6733    -
+Rating-Group               RFC4006    -
+Result-Code                RFC6733    -
+Route-Record               RFC6733    -
+Service-Information        TS32.299   -
+Session-Id                 RFC6733    -
+Subscription-Id            RFC4006    -
+Subscription-Id-Data       RFC4006    -
+Subscription-Id-Type       RFC4006    -
+
+
+; Type: Enumerated AVP
+; Name: Accounting-Record-Type
+; Section: A.5.3
+Accounting-Record-Type ::= < Enumerated AVP header: 480 >
+        EVENT_RECORD = 1
+
+
+; Type: Grouped AVP
+; Name: M2M-Information
+; Section: A.5.14
+M2M-Information ::= < AVP header: 1011 45687 > ;; corrected: (oneM2M-TS-0004.py#m2m-information-vendor)
+        [ Application-Entity-ID ]
+        [ External-ID ]
+        [ Receiver ]
+        [ Originator ]
+        [ Hosting-CSE-ID ]
+        [ Target-ID ]
+        [ Protocol-Type ]
+        [ Request-Operation ]
+        [ Request-Headers-Size ]
+        [ Request-Body-Size ]
+        [ Response-Headers-Size ]
+        [ Response-Body-Size ]
+        [ Response-Status-Code ]
+        [ Rating-Group ]
+        [ M2M-Event-Record-Timestamp ]
+        [ Control-Memory-Size ]
+        [ Data-Memory-Size ]
+        [ Access-Network-Identifier ]
+        [ Occupancy ]
+        [ Group-Name ]
+        [ Maximum-Number-Members ]
+        [ Current-Number-Members ]
+        [ Subgroup-Name ]
+        [ Node-Id ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Protocol-Type
+; Section: A.5.17
+Protocol-Type ::= < Enumerated AVP header: 1013 45687 >
+        HTTP      = 0
+        CoAP      = 1
+        MQTT      = 2
+        WebSocket = 3
+      ; RESERVED  = 4-99
+
+
+; Type: Enumerated AVP
+; Name: Request-Operation
+; Section: A.5.22
+; Values: Table 6.3.4.2.5-6
+Request-Operation ::= < Enumerated AVP header: 1017 45687 >
+
+
+; Type: Enumerated AVP
+; Name: Response-Status-Code
+; Section: A.5.25
+; Values: clause 6.6.3
+Response-Status-Code ::= < Enumerated AVP header: 1020 45687 >

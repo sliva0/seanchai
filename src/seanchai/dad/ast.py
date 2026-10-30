@@ -903,8 +903,9 @@ _EXTERNAL_TITLE_RE = re.compile(
 
 
 def is_external(reference: str) -> bool:
-    """Whether a `SpecRef` names a document outside 3GPP and IETF, which no
-    extractor reads and the corpus holds only if someone writes it by hand."""
+    """Whether a `SpecRef` names a document outside 3GPP and IETF, which the
+    corpus holds only as a hand transcription (ETSI) or where the catalog
+    lists it for the extractor (oneM2M TS-0004)."""
     return EXTERNAL_REF_RE.match(reference) is not None
 
 

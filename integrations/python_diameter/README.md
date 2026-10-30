@@ -249,8 +249,8 @@ application, the `APPLICATION_ID` comment gives TS 29.230 table 4.1's name
 for the id, which the id itself never comes from. The 3GPP blocks are read from
 the documents (TS 29.154, 29.212, 29.214, 29.215, 29.217, 29.219, 29.343,
 29.368, 29.468); those for RFC 4004, 4005, 4006, 4072, 5778, 6733, 7155,
-8506 and TS 32.299 are corrections citing the clause, since each words it
-differently. Two readings are worth knowing: RFC 4005 clause 1.3 gives the
+8506, TS 32.299 and oneM2M TS-0004 are corrections citing the clause, since
+each words it differently. Two readings are worth knowing: RFC 4005 clause 1.3 gives the
 commands it takes from the base protocol "the Base application id value",
 and the block follows clause 11.3 and RFC 7155 in giving all of clause 3
 the NASREQ id 1; RFC 6733's ACR is the base accounting application's 3, the

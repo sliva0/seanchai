@@ -961,9 +961,6 @@ _STANDING_HOLES = {
             "Submission-Timestamp",
             "TCP-Source-Port",
         ],
-        "resolves nowhere (re-used from oneM2M-TS-0004, which the corpus lacks)": [
-            "M2M-Information"
-        ],
         "no data_type, no flag_rules (re-used from TS29.140, which the corpus lacks)": [
             "VAS-Id",
             "VASP-Id",
@@ -1000,6 +997,29 @@ def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
         # first (ES 283 034's Reservation-Priority, TS 183 017's
         # Globally-Unique-Address).
         assert avp.defined_in in {reference, corpus.CITED_AS.get(origin, origin)}
+
+
+def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
+    """TS 32.299 table 7.5.1 tabulates M2M-Information from oneM2M TS-0004
+    ([301]), which the corpus extracts from oneM2M's Word file: vendor
+    45687 per clause A.4, every member resolving, oneM2M's own in 45687
+    and the rest in the space table A.4-1 gives each."""
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+
+    avp = built.resolve("TS32.299", "M2M-Information")
+
+    assert isinstance(avp, model.Grouped)
+    assert (avp.identity, avp.defined_in, avp.section) == (
+        (45687, 1011),
+        "oneM2M-TS-0004",
+        "A.5.14",
+    )
+    members = {m.rule.name: m.avp.identity for m in avp.members if m.avp is not None}
+    assert len(members) == 24
+    assert members["Rating-Group"] == (0, 432)
+    assert members["Node-Id"] == (10415, 2064)
+    assert {identity[0] for identity in members.values()} == {0, 10415, 45687}
+    assert built.holes("oneM2M-TS-0004") == ()
 
 
 def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():

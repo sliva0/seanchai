@@ -6,22 +6,24 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **K. Catalog gaps and format limits from the legacy documents.** The
-  AVPs the corpus only re-uses from documents outside 3GPP and IETF stay
-  holes: a re-used row's identity, vendor included, is its origin's, so a
-  type supplied into the citing file has nowhere to go, and the origin
-  would have to be a hand-written `.dad` file, as ETSI ES 283 034 and TS
-  183 017 are. oneM2M TS-0004 is readable; 3GPP2 X.S0057 could not be
-  fetched. SM-Service-Type's "100 .. 199 Vendor specific SM services"
-  allocates a range the format cannot hold.
+- **K. Catalog gaps and format limits from the legacy documents.** An
+  AVP the corpus only re-uses from a document outside 3GPP and IETF stays
+  a hole while that document is absent: a re-used row's identity, vendor
+  included, is its origin's, so a type supplied into the citing file has
+  nowhere to go. 3GPP2 X.S0057, cited by TS 29.212 for `3GPP2-BSID`,
+  could not be fetched. SM-Service-Type's "100 .. 199 Vendor specific SM
+  services", and oneM2M TS-0004's Protocol-Type "100 .. 199 Operator and
+  vendor specific protocol types", allocate a range the format cannot
+  hold.
   TS 32.299 cites `VAS-Id` and `VASP-Id` from TS 29.140, which ends at
   Release 7 (V7.0.0): the downloader fetches one release and
   `Corpus.resolve` never crosses a major version, so the origin stays
   unresolved until the corpus holds more than one release *and* a
   resolution policy says when a Release 7 document may serve a Release 18
   citation. The same holds for the ETSI transcriptions' own citations of
-  TS 29.209 (Release 6) and TS 29.214 Release 7, whose policy would also
-  read the release from the citing document's references.
+  TS 29.209 (Release 6) and TS 29.214 Release 7, and oneM2M TS-0004's of
+  TS 32.299 Release 11, whose policy would also read the release from the
+  citing document's references.
 
 ## Consumers
 
@@ -41,7 +43,7 @@ letter is not reused. What exists is described in the per-module documents.
     `TCP-Source-Port` (TS 29.212; table 7.2.0.1 refers to [215] for
     `UDP-Source-Port` only);
   - definitions the format cannot hold: TS 29.229's `Line-Identifier`
-    (ETSI vendor 13019 in a clause, no row can state it; neither ETSI
+    (ETSI vendor 13019 in a clause, a vendor its table prints no column for; neither ETSI
     transcription defines it);
   - re-used origins outside 3GPP and IETF, item K: `3GPP2-X.S0057` (TS
-    29.212) and `oneM2M-TS-0004` (TS 32.299's `M2M-Information`).
+    29.212's `3GPP2-BSID`).

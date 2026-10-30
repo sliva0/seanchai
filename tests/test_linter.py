@@ -490,6 +490,10 @@ _RAW_ERRORS = {
     "32299-i00.raw.dad": ["row-without-code"]
     + ["table-definition-mismatch"] * 2
     + ["vendor-id-mismatch"] * 96,
+    # Table A.4-1 puts V under Must not for its 45687 rows and 3GPP's
+    # Service-Information, and clause A.5.14 prints M2M-Information's
+    # header with no vendor-id.
+    "ts-0004-v2_35_0.raw.dad": ["vendor-flag-mismatch"] * 24 + ["vendor-id-mismatch"],
 }
 
 
@@ -1249,7 +1253,7 @@ _STANDING_CORPUS_NOTES = {
     "32299-i00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
-        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data, oneM2M-TS-0004"],
+        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
         "origin-not-in-corpus": ["TS29.140"],
         "reused-origin-indirect": [
             "3GPP2-BSID",
@@ -1282,6 +1286,9 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["Reservation-Priority"],
         "reused-row-mismatch": ["Reservation-Priority"],
     },
+    # oneM2M cites TS 32.299 [31] for Node-Id and Service-Information; its
+    # version names no 3GPP release.
+    "ts-0004-v2_35_0.dad": {"origin-not-in-corpus": ["TS32.299 (corpus has 18.0.0)"]},
     "ts183017-030201.dad": {
         # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports.
         "local-and-reused": [

@@ -49,7 +49,7 @@ patch's commit message is the merge request's title and description.
 
 ## Additions
 
-`seanchai crosscheck` reports 282 absences from the pinned dictionary, 281
+`seanchai crosscheck` reports 305 absences from the pinned dictionary, 304
 AVPs (TS 29.273 tabulates RFC 5777's `QoS-Capability`, which both report).
 `additions.py` turns 271 of them into 29 patches, one per document that
 defines them, numbered 3GPP documents first, then ETSI's, then the RFCs:
@@ -118,7 +118,8 @@ on every run (`tests/test_wireshark_additions.py` pins it).
 | 0028 | RFC 8506 | 11 | `dictionary.xml` |
 | 0029 | RFC 8582 | 1 | `dictionary.xml` |
 
-Ten absences stay out, each named in its document's description:
+Thirty-three absences stay out, the first ten named in their document's
+description:
 
 - **Named like another entry.** Wireshark names each display filter field
   after its AVP, so a second entry named alike collides, and which of the
@@ -133,6 +134,12 @@ Ten absences stay out, each named in its document's description:
 - **Grouped with no members to list**, which the DTD's `<grouped>` cannot
   hold: RFC 5777's `QoS-Capability` (578) and TS 29.128's
   `APN-Rate-Control-Status` (4326), whose bodies the corpus does not hold.
+- **A vendor the dictionary does not declare**: oneM2M TS-0004's
+  twenty-three AVPs in vendor 45687, `Access-Network-Identifier` (1000) to
+  `Target-ID` (1022). An entry goes beside its vendor's, and with no
+  `<vendor>` for 45687 there is no file to put them in; adding the vendor,
+  its file and its entity is a merge request of another shape, so no patch
+  carries them and the script prints each as not added.
 
 The description of each addition is the same shape: the document and
 version, the entries with their code, type and clause, and what it leaves
@@ -162,6 +169,6 @@ a test may refer to it. A renamed AVP also renames its display filter field
 
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter`
 over the corpus no longer reports a patched AVP. With the twenty-five
-defects applied to `v4.7.2` it reports 72 findings instead of 95; with the 29
-additions, 73, the ten absences above in eight notes, and none that the
-unpatched dictionary did not; with both series, 50.
+defects applied to `v4.7.2` it reports 73 findings instead of 96; with the 29
+additions, 74, the thirty-three absences above in nine notes, and none that
+the unpatched dictionary did not; with both series, 51.

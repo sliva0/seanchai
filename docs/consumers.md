@@ -65,7 +65,9 @@ where per-interface tables disagree (TS 29.061's `3GPP-IMSI`, the linter's
 papers over; run the linter for those. Vendor spaces follow the linter's
 reading. Origins and bases use `corpus.Corpus.resolve`, the
 match-major-take-newest rule in [linter.md](linter.md#resolving-an-origin),
-which also reads 3GPP's `ETSI-TS283.034` as the ETSI ES 283 034 it names.
+which also reads 3GPP's `ETSI-TS283.034` as the ETSI ES 283 034 it names,
+and takes TS 32.299's `oneM2M-TS-0004` to the oneM2M document the corpus
+extracts, whatever its version: `M2M-Information` is (45687, 1011) there.
 
 **Filling through.** A field the first reading leaves unstated comes from
 the next reading along the order, if the two are the same AVP saying the
