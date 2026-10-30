@@ -747,11 +747,12 @@ class TestOverTheCommittedCorpus:
 
 # What keeps the committed corpus from building strictly, by document and
 # cause. Each is a statement its source does not make: RFC 4072, 5447, 5777
-# and 6734 print no flag-rule columns, RFC 4590 is a RADIUS document with no
-# Diameter types, TS 32.299's untyped rows are roadmap item K, and every
-# "resolves nowhere" is one of docs/linter.md's standing unresolved
-# references or a re-used origin outside the corpus. A hole worked off
-# shrinks this; a new one is a corpus regression.
+# and 6734 print no flag-rule columns and state no M or V bit in prose, RFC
+# 4590 is a RADIUS document with no Diameter types, TS 32.299's untyped rows
+# are roadmap item K, and every "resolves nowhere" is one of
+# docs/linter.md's standing unresolved references or a re-used origin
+# outside the corpus. A hole worked off shrinks this; a new one is a corpus
+# regression. Roadmap item N lists them by cause.
 _STANDING_HOLES = {
     "RFC4004": {
         "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-HA-SPI"]

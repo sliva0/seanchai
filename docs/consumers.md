@@ -105,8 +105,9 @@ and never changes `name`, which is always the document's spelling;
 listing every hole, rather than build a model with any. The default is
 `strict=False` because the committed corpus does not build strictly, and
 every standing hole is a statement its source does not make. RFC 4072,
-4590, 5447, 5777 and 6734 print no flag-rule columns (RFC 4590, a RADIUS
-document, no Diameter types either), and TS 29.272's re-print of RFC 5447's
+5447, 5777 and 6734 print no flag-rule columns and state no M or V bit in
+prose (RFC 6942, which does, is read), RFC 4590 is a RADIUS document with
+no Diameter types or flags, and TS 29.272's re-print of RFC 5447's
 `MIP6-Agent-Info` inherits the gap. RFC 4005 and 7155 leave
 `QoS-Filter-Rule`'s flag cells blank, as TS 29.389 does for three V2X rows.
 TS 32.299's untyped rows are roadmap item K, TS 29.061's
@@ -115,6 +116,7 @@ resolve nowhere are the linter's standing `unresolved-reference` cases and
 re-used origins outside the corpus. The pinned list in `tests/test_model.py`
 (`_STANDING_HOLES`) is the full account: the strict build's failure is
 compared against it, so a hole worked off or a new one shows up as a diff.
+Roadmap item N lists them by cause.
 
 ## The integrations
 
