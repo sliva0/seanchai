@@ -66,14 +66,19 @@ syn match dadEnumLine #^\s*\%([A-Za-z0-9][A-Za-z0-9_-]*\|"\%([^"\\]\|\\["\\]\)*"
 syn match dadEnumName #^\s*\zs\%([A-Za-z0-9][A-Za-z0-9_-]*\|"\%([^"\\]\|\\["\\]\)*"\)# contained
 syn match dadEnumNote "; .*$" contained
 syn match dadReserved "^\s*; RESERVED\s*= \d\+\%(-\d\+\)\?\s*\%(;;.*\)\?$" contains=dadReservedKw,dadNumber,dadRange,dadComment
+" A registry's reserved range: `; RESERVED 320..399 TS29.234 "TS 29.234"`.
+syn match dadRegistryReserved #^; RESERVED \d\+\.\.\d\+\%( [^ "]\+\)\?\%( "\%([^"\\]\|\\["\\]\)*"\)\?\s*\%(;;.*\)\?$# contains=dadReservedKw,dadRange,dadSpecRef,dadQuotedCell,dadComment
 syn match dadReservedKw "; RESERVED" contained
 syn match dadRange "\d\+-\d\+" contained
+syn match dadRange "\d\+\.\.\d\+" contained
 
 " Directives
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue
 syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
 syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadClauseWildcard,dadNumber,dadLink,dadComment
-syn match dadTypeValue "\%(Application Scope\|Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\)$" contained
+syn match dadTypeValue "\%(Application Scope\|Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\)$" contained
+" `; Registry:` kinds.
+syn match dadTypeValue "\%(Application IDs\|Command Codes\|AVP Codes\|Result Codes\)$" contained
 syn match dadLink "https\?://\S\+" contained
 " `; Applies-To:` entries: a clause and its subclauses, `5.*`, `E.6.*`.
 syn match dadClauseWildcard "\%(^\|[ ,]\)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\.\*\%([ ,]\|$\)\@=" contained

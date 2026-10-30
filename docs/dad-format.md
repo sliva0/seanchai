@@ -41,6 +41,7 @@ each starting with `; Type:`.
 | `Enumerated AVP`    | the header rule plus values and reserved ranges, or their source |
 | `AVP Table`         | the spec's own AVP table, one AVP per row                        |
 | `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
+| `Registry`          | codes a registry allocates, each to the documents defining it    |
 
 ## Design intent
 
@@ -104,6 +105,15 @@ each starting with `; Type:`.
   values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
   32.422 [23] for Trace Depth") prints `; Values:` with that citation and no
   values, which is distinct from a clause the extractor found nothing in.
+- **A registry allocates; it defines nothing.** TS 29.230 assigns each AVP
+  code, command code and application id to the document defining it, so its
+  tables are `Registry` blocks rather than AVP tables: a row is a code, the
+  name the registry gives it and the documents it cites, which may be
+  several (`TS29.209,TS29.211,TS29.214` for codes 500–581), and a reserved
+  range is a `; RESERVED` line with the documents its note names and its
+  purpose quoted as printed. Read as AVP definitions, the table would make
+  the registry a second definer of every 3GPP AVP and lose which document
+  defines each.
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
 - **The parser is strict; the formatter defines canonical form.** Hand edits

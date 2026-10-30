@@ -16,6 +16,9 @@ depends on stable diffs. Canonical rules:
   directive, its column wide enough for both, and every later one lines up
   with its data. A mark column's cell quotes a mark that is not a plain
   token, as enum bodies quote names, and writes `""` for a blank cell.
+- registries: a table, its text cells quoted as marks are and `-` for a
+  blank cell; a reserved range is a `; RESERVED a..b` line among the rows,
+  at column 0 and widening no column, its purpose always quoted.
 """
 
 import re
@@ -137,12 +140,17 @@ def _directives(
     `; Table:` caption, only definitions a `; Name:`, and only an
     enumerated AVP a `; Values:`."""
     lines = notes.line(f"; Type: {section.type}", (*path, "type"))
+    if isinstance(section, ast.Registry):
+        lines.extend(notes.line(f"; Registry: {section.registry}", (*path, "registry")))
     if name is not None:
         lines.extend(notes.line(f"; Name: {name}", (*path, "name")))
     lines.extend(
         notes.line(f"; Section: {section.source.section}", (*path, "source", "section"))
     )
-    if isinstance(section, ast.AvpTable | ast.ReusedAvps) and section.table is not None:
+    if (
+        isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry)
+        and section.table is not None
+    ):
         lines.extend(notes.line(f"; Table: {section.table}", (*path, "table")))
     if section.source.page is not None:
         lines.extend(
@@ -157,22 +165,24 @@ def _directives(
 
 def _table(
     headers: list[str],
-    rows: list[list[str]],
+    rows: Sequence[list[str] | str],
     prefix: str,
     path: ast.TreePath,
     notes: Comments,
 ) -> list[str]:
-    """`rows` are the cells of the rows at `path` + `("rows", i)`. Notes are
-    appended *after* the column widths are computed, so annotating a row
-    cannot reflow the table; standing notes print as whole lines above
-    their row — where a deleted row used to be."""
+    """`rows` are the cells of the rows at `path` + `("rows", i)`, or a line
+    printed as it is (a registry's reserved range), which no column is
+    widened for. Notes are appended *after* the column widths are computed,
+    so annotating a row cannot reflow the table; standing notes print as
+    whole lines above their row — where a deleted row used to be."""
+    cells = [row for row in rows if not isinstance(row, str)]
     # A label counts toward its column's width, so every label sits at its
     # column's start; the first follows the directive, which it overruns.
     widths = [
         max(
             _MIN_COLUMN_WIDTH,
             len(header) + (len(prefix) + 1 if i == 0 else 0),
-            max(len(row[i]) for row in rows),
+            max((len(row[i]) for row in cells), default=0),
         )
         for i, header in enumerate(headers)
     ]
@@ -185,9 +195,12 @@ def _table(
         header_line += " " * max(start - len(header_line), 1) + header
     lines = notes.line(header_line, (*path, "columns"))
     for index, row in enumerate(rows):
-        line = ""
-        for cell, start in zip(row, starts, strict=True):
-            line += " " * (start - len(line)) + cell
+        if isinstance(row, str):
+            line = row
+        else:
+            line = ""
+            for cell, start in zip(row, starts, strict=True):
+                line += " " * (start - len(line)) + cell
         lines.extend(notes.line(line, (*path, "rows", index)))
     lines.extend(notes.standing_at((*path, "rows", len(rows))))
     return lines
@@ -402,6 +415,70 @@ def _format_reused(
     ]
 
 
+def _text(text: str | None) -> str:
+    """A registry text cell, quoted as a mark is; `-` for a blank one."""
+    return "-" if text is None else _mark(text)
+
+
+def _documents(documents: tuple[str, ...]) -> str:
+    return ",".join(documents) or "-"
+
+
+def _registry_cell(row: ast.RegistryRow, column: ast.RegistryColumn) -> str:
+    match column:
+        case ast.RegistryColumn.CODE:
+            return str(row.code)
+        case ast.RegistryColumn.NAME:
+            return _text(row.name)
+        case ast.RegistryColumn.ABBREVIATION:
+            return _text(row.abbreviation)
+        case ast.RegistryColumn.TYPE if row.printed_type is not None:
+            # Always quoted, even a plain token: bare, a Type cell is a
+            # Diameter data type.
+            return _quoted(row.printed_type)
+        case ast.RegistryColumn.TYPE:
+            return "-" if row.data_type is None else row.data_type.value
+        case ast.RegistryColumn.DEFINED_IN:
+            return _documents(row.defined_in)
+
+
+def _reservation(reservation: ast.RegistryReservation) -> str:
+    """`; RESERVED 320..399 TS29.234 "TS 29.234"`: the purpose always
+    quoted, so it cannot be read as the documents."""
+    line = f"; RESERVED {reservation.first}..{reservation.last}"
+    if reservation.defined_in:
+        line += f" {_documents(reservation.defined_in)}"
+    if reservation.purpose is not None:
+        line += f" {_quoted(reservation.purpose)}"
+    return line
+
+
+def _quoted(text: str) -> str:
+    escaped = text.replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def _format_registry(
+    registry: ast.Registry, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    rows = [
+        _reservation(row)
+        if isinstance(row, ast.RegistryReservation)
+        else [_registry_cell(row, column) for column in registry.columns]
+        for row in registry.rows
+    ]
+    return [
+        *_directives(registry, None, path, notes),
+        *_table(
+            [column.value for column in registry.columns],
+            rows,
+            "; Columns:",
+            path,
+            notes,
+        ),
+    ]
+
+
 # Keyed by exact type, not matched by isinstance: a subclass of `Message`
 # would otherwise be written out as a plain `Message`, silently dropping
 # whatever it added, and `.dad` output has to be exact.
@@ -412,6 +489,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.EnumeratedAvp: _format_enumerated,
     ast.AvpTable: _format_avp_table,
     ast.ReusedAvps: _format_reused,
+    ast.Registry: _format_registry,
 }
 
 

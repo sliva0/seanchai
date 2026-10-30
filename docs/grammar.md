@@ -29,7 +29,7 @@ link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
 section       = application-scope / message / grouped-avp / enumerated-avp
-              / avp-table / reused-avps
+              / avp-table / reused-avps / registry
 ```
 
 `; Version:` is present when the source has a version axis (3GPP yes, RFC
@@ -276,6 +276,49 @@ Name and From are required; M-bit is not (TS 29.128, 29.173, 29.336 print no
 such column). Code and Type are the citing table's own statement of what
 the origin defines (TS 29.172 table 7.4.1-2, TS 32.299 tables 7.3.1-7.5.1).
 
+### Registry
+
+```abnf
+registry      = "; Type: Registry" NL
+                "; Registry: " registry-kind NL
+                "; Section: " section-number NL
+                "; Table: " inline-text NL
+                ["; Page: " 1*DIGIT NL]
+                "; Columns: " *SP registry-columns NL
+                1*((table-row / registry-reserved) NL)
+registry-kind = "Application IDs" / "Command Codes" / "AVP Codes"
+              / "Result Codes"
+registry-columns = registry-column *(1*SP registry-column)
+registry-column = "Code" / "Name" / "Abbreviation" / "Type" / "Defined-In"
+registry-reserved = "; RESERVED " 1*DIGIT ".." 1*DIGIT
+                    [SP defined-in-cell] [SP quoted]
+defined-in-cell = spec-ref *("," spec-ref) / "-"
+registry-type-cell = data-type / quoted / "-"
+; a Code cell is 1*DIGIT; Name and Abbreviation cells are a mark or "-"
+```
+
+A table allocating codes to the documents defining them, rather than
+defining anything: TS 29.230 allocates application ids (table 4.1), command
+codes (5.1/1–5.1/4), the 3GPP vendor's AVP codes (7.1) and its experimental
+result codes (8.1.2–8.1.4). A row is one allocation, `Defined-In` the
+documents it cites (`TS29.228,TS29.229` where table 4.1 prints "29.228 [1]
+and 29.229 [2]"). A Name or Abbreviation cell is written as a mark is,
+quoted where it is not a plain token (`"3GPP Cx/Px"`, `"Deprecated
+value"`); in every registry column `-` is a blank cell, the Code column's
+excepted, which has none. A Type cell is a `data-type`, or, quoted, a type
+the closed set lacks, kept as printed: TS 29.230 table 7.1 types code 314
+`"Integer"`. Bare, a Type cell is always a data type, so the quotes stay on
+a plain token; a quoted data type parses as that type, and the formatter
+writes it bare.
+
+A `registry-reserved` line is a range the table reserves without
+allocating, among the rows where the table prints it: the range, every
+document its note names, and what it is reserved for, in the document's
+words and always quoted (`; RESERVED 320..399 TS29.234 "TS 29.234"`, `;
+RESERVED 256..299 "future use"`). Rows and reservations keep the table's
+order, overlaps and all: TS 29.230 reserves 4703–4799 for TS 29.389 inside
+4605–4799 for TS 29.388.
+
 ## Text values
 
 ```abnf
@@ -290,13 +333,13 @@ survive, including values that look like directives.
 
 Checked by the AST after parsing:
 
-- `RESERVED first-last` requires `last >= first`; `min*max` requires
-  `max >= min` when bounded.
+- `RESERVED first-last` and `RESERVED first..last` require `last >= first`;
+  `min*max` requires `max >= min` when bounded.
 - A flag appears in at most one of Must, May, S.not, M.not.
 - Exactly one cell per declared column; no value for an undeclared column
   (a mark column's blank cell is no value);
-  a Name column (Name and From for re-used tables) is mandatory; no duplicate
-  column; tables are non-empty.
+  a Name column (Name and From for re-used tables, Code for registries) is
+  mandatory; no duplicate column; tables are non-empty.
 - `; Name:` equals the name in the block's header rule.
 - `; Applies-To:` names a clause at most once.
 - Command codes are 24-bit; codes, vendor ids, application ids and enum

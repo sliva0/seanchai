@@ -1304,6 +1304,7 @@ _SECTION_TYPES = (
     ast.EnumeratedAvp,
     ast.AvpTable,
     ast.ReusedAvps,
+    ast.Registry,
 )
 
 

@@ -4,6 +4,7 @@
   "scopeName": "source.dad",
   "patterns": [
     { "include": "#comment" },
+    { "include": "#registry-reserved" },
     { "include": "#reserved" },
     { "include": "#directive-text" },
     { "include": "#directive" },
@@ -17,6 +18,17 @@
     "comment": {
       "name": "comment.line.double-semicolon.dad",
       "match": ";;.*$"
+    },
+    "registry-reserved": {
+      "match": "^(; RESERVED) (\\d+)(\\.\\.)(\\d+)(?: ([^\\s\"]+))?(?: (\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"))?",
+      "captures": {
+        "1": { "name": "keyword.other.reserved.dad" },
+        "2": { "name": "constant.numeric.dad" },
+        "3": { "name": "keyword.operator.range.dad" },
+        "4": { "name": "constant.numeric.dad" },
+        "5": { "name": "entity.name.tag.spec-ref.dad" },
+        "6": { "name": "string.quoted.double.mark.dad" }
+      }
     },
     "reserved": {
       "match": "^(\\s*)(; RESERVED)(\\s*)(=)\\s*(\\d+)(?:(-)(\\d+))?",
@@ -42,7 +54,7 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application Scope|Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs)\\b",
+              "match": "\\b(Application Scope|Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
               "name": "storage.type.section.dad"
             },
             {
@@ -163,7 +175,7 @@
               "name": "constant.language.dad"
             },
             {
-              "match": "(?<=\\s|^)(?:TS\\d{2,3}\\.\\d{3}|RFC\\d+|[A-Z]\\.[A-Z]\\d{4})(?=\\s|$)",
+              "match": "(?<=\\s|^|,)(?:TS\\d{2,3}\\.\\d{3}|RFC\\d+|[A-Z]\\.[A-Z]\\d{4})(?=\\s|$|,)",
               "name": "entity.name.tag.spec-ref.dad"
             },
             {

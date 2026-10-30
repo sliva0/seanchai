@@ -676,6 +676,161 @@ class ReusedAvps(Node):
         return self
 
 
+class RegistryKind(enum.StrEnum):
+    """The code space a registry table allocates, as `; Registry:` writes it.
+
+    TS 29.230 allocates four: application ids (table 4.1), command codes
+    (5.1/1-5.1/4), the 3GPP vendor's AVP codes (7.1) and its experimental
+    result codes (8.1.2-8.1.4)."""
+
+    APPLICATION_IDS = "Application IDs"
+    COMMAND_CODES = "Command Codes"
+    AVP_CODES = "AVP Codes"
+    RESULT_CODES = "Result Codes"
+
+
+class RegistryColumn(enum.StrEnum):
+    """Columns of a registry table that the format models."""
+
+    CODE = "Code"
+    NAME = "Name"
+    # TS 29.230's command tables print "UAR/UAA" beside the command's name.
+    ABBREVIATION = "Abbreviation"
+    TYPE = "Type"
+    # "Specified in 3GPP TS": the documents the row cites as defining it.
+    DEFINED_IN = "Defined-In"
+
+
+# A registry cell's text, quoted where it is not a plain token, as a mark
+# is: TS 29.230 names applications "3GPP Cx/Px" and result codes "Deprecated
+# value", and prints `Visited PLMN Id` in its AVP table.
+RegistryText = Mark
+
+
+class RegistryRow(Node):
+    """One allocation: a code and what the registry says it is.
+
+    Every field but the code is None, or empty, where the cell is blank: TS
+    29.230 table 5.1/2 allocates command code 313 to nothing yet ("allocated
+    to 3GPP, but they have not been used yet"), and table 7.1's TS 29.273
+    rows 1530-1542 print no document."""
+
+    code: Unsigned32
+    # "User-Authorization-Request/-Answer", "3GPP Gx", as printed.
+    name: RegistryText | None = None
+    abbreviation: RegistryText | None = None
+    # Informational: the registry's own statement of the AVP's type.
+    data_type: DataType | None = None
+    # A Type cell naming no Diameter type, as printed: TS 29.230 table 7.1
+    # types 314 "Integer". Kept apart from `data_type`, whose set stays
+    # closed, so the statement survives without becoming a type.
+    printed_type: RegistryText | None = None
+    # The documents the row cites. Usually one; TS 29.230 table 4.1 gives
+    # Cx "29.228 [1] and 29.229 [2]", and table 7.1 gives codes 500-581
+    # "29.209 [8], 29.211 [17], 29.214 [18]".
+    defined_in: tuple[SpecRef, ...] = ()
+
+    @pydantic.model_validator(mode="after")
+    def _one_type(self) -> RegistryRow:
+        if self.printed_type is not None and (
+            self.data_type is not None or self.printed_type in DataType
+        ):
+            raise ValueError(
+                f"code {self.code}: printed_type {self.printed_type!r} is for a"
+                " Type cell naming no Diameter type"
+            )
+        return self
+
+
+class RegistryReservation(Node):
+    """`; RESERVED 320..399 TS29.234 "TS 29.234"`: a range the registry
+    reserves without allocating, with the documents it names and what the
+    range is reserved for, in the document's words.
+
+    TS 29.230 states them as notes: "The AVP codes from 320 to 399 are
+    reserved for TS 29.234", "... from 256 to 299 are reserved for future
+    use", "... from 1 to 255 are reserved for backwards compatibility with
+    3GPP RADIUS Vendor Specific Attributes (See 3GPP TS 29.061 [13], ...)".
+    `defined_in` is every document the purpose names, so it is empty for
+    "future use"."""
+
+    first: Unsigned32
+    last: Unsigned32
+    defined_in: tuple[SpecRef, ...] = ()
+    purpose: RegistryText | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> RegistryReservation:
+        if self.last < self.first:
+            raise ValueError(f"reserved range {self.first}..{self.last} is inverted")
+        return self
+
+    def covers(self, code: int) -> bool:
+        return self.first <= code <= self.last
+
+
+class Registry(Node):
+    """`; Type: Registry` — a table allocating codes to the documents that
+    define them, rather than defining anything itself: TS 29.230's
+    application ids, command codes, AVP codes and result codes.
+
+    Rows and reservations keep the table's order, which TS 29.230 does not
+    keep numeric (table 5.1/4 lists 8388731 among the 8388637s, table 7.1
+    reserves 4703-4799 for TS 29.389 inside 4605-4799 for TS 29.388)."""
+
+    type: Literal["Registry"] = "Registry"
+    registry: RegistryKind
+    table: TableLabel
+    source: SourceRef
+    columns: Annotated[tuple[RegistryColumn, ...], Field(min_length=1)]
+    rows: Annotated[tuple[RegistryRow | RegistryReservation, ...], Field(min_length=1)]
+
+    @pydantic.model_validator(mode="after")
+    def _rows_match_columns(self) -> Registry:
+        labels = [column.value for column in self.columns]
+        if len(set(labels)) != len(labels):
+            raise ValueError(f"duplicate column in {labels}")
+        if RegistryColumn.CODE not in self.columns:
+            raise ValueError("registry has no Code column")
+        absent = {
+            RegistryColumn.NAME: "name",
+            RegistryColumn.ABBREVIATION: "abbreviation",
+            RegistryColumn.TYPE: "data_type",
+            RegistryColumn.DEFINED_IN: "defined_in",
+        }
+        if RegistryColumn.TYPE not in self.columns and any(
+            isinstance(row, RegistryRow) and row.printed_type is not None
+            for row in self.rows
+        ):
+            raise ValueError("printed_type set but the table has no Type column")
+        for row in self.rows:
+            if not isinstance(row, RegistryRow):
+                continue
+            for column, field in absent.items():
+                if column not in self.columns and getattr(row, field):
+                    raise ValueError(
+                        f"code {row.code}: {field} set but the table has no"
+                        f" {column.value} column"
+                    )
+        return self
+
+    def allocations(self, code: int) -> list[RegistryRow]:
+        """The rows allocating `code`; TS 29.230 table 7.1 prints 318 twice."""
+        return [
+            row
+            for row in self.rows
+            if isinstance(row, RegistryRow) and row.code == code
+        ]
+
+    def reservations(self, code: int) -> list[RegistryReservation]:
+        """The reservations covering `code`."""
+        return [
+            row
+            for row in self.rows
+            if isinstance(row, RegistryReservation) and row.covers(code)
+        ]
+
+
 def node_at(root: Node, path: TreePath) -> Any:
     """What `path` names under `root`: a node, or a field's value."""
     found: Any = root
@@ -685,7 +840,13 @@ def node_at(root: Node, path: TreePath) -> Any:
 
 
 Section = Annotated[
-    ApplicationScope | Message | GroupedAvp | EnumeratedAvp | AvpTable | ReusedAvps,
+    ApplicationScope
+    | Message
+    | GroupedAvp
+    | EnumeratedAvp
+    | AvpTable
+    | ReusedAvps
+    | Registry,
     Field(discriminator="type"),
 ]
 

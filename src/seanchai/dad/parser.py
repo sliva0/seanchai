@@ -611,6 +611,133 @@ def _parse_reused(
         )
 
 
+# A registry's reserved range: `; RESERVED 320..399 TS29.234 "TS 29.234"`,
+# the documents and the purpose each optional.
+_REGISTRY_RESERVED_RE = re.compile(
+    rf"^\s*; RESERVED (?P<first>\d+)\.\.(?P<last>\d+)"
+    rf'(?: (?P<documents>[^\s"]+))?(?: (?P<purpose>{_QUOTED}))?\s*$'
+)
+_PLAIN_TEXT_RE = re.compile(r'[^\s,;"\\]+')
+
+
+def _text_cell(cell: str, lineno: int, label: str) -> str | None:
+    """A registry text cell: a plain token or a quoted string, as a mark
+    is written; `-` for a blank cell."""
+    if cell == "-":
+        return None
+    if cell.startswith('"') and re.fullmatch(_QUOTED, cell):
+        return _ESCAPE_RE.sub(r"\1", cell[1:-1])
+    if _PLAIN_TEXT_RE.fullmatch(cell):
+        return cell
+    raise DadParseError(lineno, f"malformed {label} cell {cell!r}")
+
+
+def _documents(cell: str, lineno: int) -> tuple[str, ...]:
+    """A Defined-In cell: spec-refs separated by commas, `-` for none."""
+    if cell == "-":
+        return ()
+    documents = tuple(cell.split(","))
+    for document in documents:
+        if not ast.SPEC_REF_RE.match(document):
+            raise DadParseError(
+                lineno,
+                f"Defined-In entry {document!r} does not name a supported"
+                " document (expected e.g. 'TS29.229' or 'TS29.228,TS29.229')",
+            )
+    return documents
+
+
+def _registry_row(
+    columns: tuple[ast.RegistryColumn, ...], cells: list[str], lineno: int
+) -> ast.RegistryRow:
+    code: int | None = None
+    name: str | None = None
+    abbreviation: str | None = None
+    data_type: ast.DataType | None = None
+    printed_type: str | None = None
+    defined_in: tuple[str, ...] = ()
+    for column, text in zip(columns, cells, strict=True):
+        match column:
+            case ast.RegistryColumn.CODE:
+                code = _number(text, lineno, "Code cell")
+            case ast.RegistryColumn.NAME:
+                name = _text_cell(text, lineno, "Name")
+            case ast.RegistryColumn.ABBREVIATION:
+                abbreviation = _text_cell(text, lineno, "Abbreviation")
+            case ast.RegistryColumn.TYPE if text.startswith('"'):
+                # A type the closed set lacks, quoted as printed; a quoted
+                # data type is that type.
+                printed = _text_cell(text, lineno, "Type")
+                if printed in ast.DataType:
+                    data_type = ast.DataType(printed)
+                else:
+                    printed_type = printed
+            case ast.RegistryColumn.TYPE:
+                data_type = None if text == "-" else _data_type(text, lineno)
+            case ast.RegistryColumn.DEFINED_IN:
+                defined_in = _documents(text, lineno)
+    assert code is not None, "a registry without a Code column is rejected first"
+    with _validated(lineno):
+        return ast.RegistryRow(
+            code=code,
+            name=name,
+            abbreviation=abbreviation,
+            data_type=data_type,
+            printed_type=printed_type,
+            defined_in=defined_in,
+        )
+
+
+def _registry_reservation(line: str, lineno: int) -> ast.RegistryReservation:
+    match = _REGISTRY_RESERVED_RE.match(line)
+    if match is None:
+        raise DadParseError(lineno, f"malformed reserved range: {line.strip()!r}")
+    purpose = match["purpose"]
+    with _validated(lineno):
+        return ast.RegistryReservation(
+            first=_number(match["first"], lineno, "reserved range"),
+            last=_number(match["last"], lineno, "reserved range"),
+            defined_in=_documents(match["documents"] or "-", lineno),
+            purpose=None if purpose is None else _ESCAPE_RE.sub(r"\1", purpose[1:-1]),
+        )
+
+
+def _parse_registry(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.Registry:
+    kind = _pop(directives, "Registry", lineno)
+    table = _pop(directives, "Table", lineno)
+    columns_directive = _pop(directives, "Columns", lineno)
+    columns = _columns(columns_directive, ast.RegistryColumn)
+    # Before the rows, which each need their code.
+    if ast.RegistryColumn.CODE not in columns:
+        raise DadParseError(columns_directive.lineno, "registry has no Code column")
+    source = _source_ref(directives, lineno)
+    _no_leftovers(directives, lineno)
+    try:
+        registry = ast.RegistryKind(kind.value)
+    except ValueError:
+        known = ", ".join(member.value for member in ast.RegistryKind)
+        raise DadParseError(
+            kind.lineno, f"unknown registry {kind.value!r} (expected one of {known})"
+        ) from None
+    rows: list[ast.RegistryRow | ast.RegistryReservation] = []
+    for row_lineno, line in body:
+        if line.lstrip().startswith("; RESERVED"):
+            rows.append(_registry_reservation(line, row_lineno))
+        else:
+            ((_, cells),) = _cells([(row_lineno, line)], len(columns))
+            rows.append(_registry_row(columns, cells, row_lineno))
+    with _validated(lineno):
+        return ast.Registry(
+            registry=registry,
+            table=table.value,
+            source=source,
+            columns=columns,
+            rows=tuple(rows),
+        )
+
+
 _SECTION_PARSERS = {
     "Application Scope": _parse_application_scope,
     "Message": _parse_message,
@@ -618,6 +745,7 @@ _SECTION_PARSERS = {
     "Enumerated AVP": _parse_enumerated,
     "AVP Table": _parse_avp_table,
     "Reused AVPs": _parse_reused,
+    "Registry": _parse_registry,
 }
 
 # Where each line's comments attach: the path of what the line states. A
@@ -641,6 +769,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Values": ("values_source",),
     "Application-ID": ("application_id",),
     "Applies-To": ("applies_to",),
+    "Registry": ("registry",),
 }
 # An application scope has no body: a whole-line comment after its last
 # line stands at the block's own path.
@@ -651,6 +780,7 @@ _BODIES = {
     "Enumerated AVP": ("values", 1),
     "AVP Table": ("rows", 0),
     "Reused AVPs": ("rows", 0),
+    "Registry": ("rows", 0),
 }
 
 

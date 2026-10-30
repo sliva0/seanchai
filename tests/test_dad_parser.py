@@ -310,6 +310,147 @@ def test_an_application_scope_rejects_with_the_line(lines, lineno, message):
     assert error.value.lineno == lineno
 
 
+def test_a_registry_round_trips_rows_and_reservations_with_its_comments():
+    # TS 29.230 table 7.1: a row citing three documents, a blank type and
+    # document, and reservations with and without the documents they name.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 29.230",
+            "; Version: 18.6.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Registry",
+            "; Registry: AVP Codes",
+            "; Section: 7.1",
+            "; Table: 7.1",
+            "; Page: 12",
+            "; Columns: Code   Name                      Type          Defined-In",
+            "100               3GPP-WLAN-APN-Id          OctetString   TS29.234",
+            '; RESERVED 1..255 TS29.061,TS29.234 "compatibility (See \\"x\\")"',
+            '; RESERVED 256..299 "future use" ;; a note',
+            "308               APN-Id                    -             -",
+            ";; standing",
+            '519               "Media-Sub-Component AVP" Grouped       '
+            "TS29.209,TS29.211,TS29.214",
+            "; RESERVED 320..399",
+            # A type outside the closed set, kept quoted as printed.
+            '314               Charging-Characteristics  "Integer"     TS29.234',
+            "",
+        ]
+    )
+
+    spec, comments = parser.parse_with_comments(text)
+
+    (registry,) = spec.sections
+    assert isinstance(registry, ast.Registry)
+    assert registry.registry is ast.RegistryKind.AVP_CODES
+    assert registry.rows[1] == ast.RegistryReservation(
+        first=1,
+        last=255,
+        defined_in=("TS29.061", "TS29.234"),
+        purpose='compatibility (See "x")',
+    )
+    assert registry.rows[3] == ast.RegistryRow(code=308, name="APN-Id")
+    assert registry.rows[4].defined_in == ("TS29.209", "TS29.211", "TS29.214")
+    assert registry.rows[5] == ast.RegistryReservation(first=320, last=399)
+    assert registry.rows[6] == ast.RegistryRow(
+        code=314,
+        name="Charging-Characteristics",
+        printed_type="Integer",
+        defined_in=("TS29.234",),
+    )
+    assert registry.allocations(519) == [registry.rows[4]]
+    assert registry.reservations(299) == [registry.rows[2]]
+    assert comments.trailing == {("sections", 0, "rows", 2): ["a note"]}
+    assert comments.standing == {("sections", 0, "rows", 4): ["standing"]}
+    formatted = formatter.format_spec(spec, comments)
+    assert parser.parse_with_comments(formatted) == (spec, comments)
+    assert formatter.format_spec(*parser.parse_with_comments(formatted)) == formatted
+
+
+def test_a_registry_type_cell_is_a_data_type_bare_and_a_printed_token_quoted():
+    text = _dad(
+        "; Type: Registry",
+        "; Registry: AVP Codes",
+        "; Section: 7.1",
+        "; Table: 7.1",
+        "; Columns: Code Type",
+        '1 "Grouped"',
+        '2 "Integer"',
+    )
+
+    (registry,) = parser.parse(text).sections
+    assert isinstance(registry, ast.Registry)
+    grouped, integer = registry.rows
+    assert isinstance(grouped, ast.RegistryRow)
+    assert (grouped.data_type, grouped.printed_type) == (ast.DataType.GROUPED, None)
+    assert integer == ast.RegistryRow(code=2, printed_type="Integer")
+    formatted = formatter.format_spec(parser.parse(text)).splitlines()
+    assert [line.split() for line in formatted[-2:]] == [
+        ["1", "Grouped"],
+        ["2", '"Integer"'],
+    ]
+    with pytest.raises(parser.DadParseError, match="unknown Diameter data type"):
+        parser.parse(text.replace('"Integer"', "Integer"))
+
+
+@pytest.mark.parametrize(
+    ("lines", "lineno", "message"),
+    [
+        (["; Columns: Code Name", "1 A"], 5, "missing directive 'Registry'"),
+        (
+            ["; Registry: Vendor IDs", "; Columns: Code Name", "1 A"],
+            8,
+            "unknown registry 'Vendor IDs'",
+        ),
+        (["; Registry: AVP Codes", "; Columns: Name", "A"], 9, "no Code column"),
+        (
+            ["; Registry: AVP Codes", "; Columns: Code Defined-In", "1 29.229"],
+            10,
+            "Defined-In entry '29.229' does not name a supported document",
+        ),
+        (
+            ["; Registry: AVP Codes", "; Columns: Code Name", "1 Bad,Name"],
+            10,
+            "malformed Name cell",
+        ),
+        (
+            ["; Registry: AVP Codes", "; Columns: Code Name", "; RESERVED 9..1"],
+            10,
+            "inverted",
+        ),
+        (
+            ["; Registry: AVP Codes", "; Columns: Code Name", "; RESERVED 1-9"],
+            10,
+            "malformed reserved range",
+        ),
+        (
+            ["; Registry: AVP Codes", "; Columns: Code Name", '; RESERVED 1..9 "a" b'],
+            10,
+            "malformed reserved range",
+        ),
+    ],
+    ids=[
+        "no-kind",
+        "unknown-kind",
+        "no-code",
+        "bare-number",
+        "comma-in-plain-name",
+        "inverted",
+        "enum-spelling",
+        "purpose-first",
+    ],
+)
+def test_a_registry_rejects_with_the_line(lines, lineno, message):
+    text = _dad("; Type: Registry", "; Section: 7.1", "; Table: 7.1", *lines)
+
+    with pytest.raises(parser.DadParseError, match=message) as error:
+        parser.parse(text)
+
+    assert error.value.lineno == lineno
+
+
 @pytest.mark.parametrize(
     "name",
     [" Leading", "Trailing ", "Tab\tinside", "New\nline", "a ;; b"],
