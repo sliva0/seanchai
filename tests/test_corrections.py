@@ -1091,8 +1091,11 @@ def test_every_corrected_file_already_carries_its_corrections(path):
         if isinstance(correction, corrections.Supply):
             (supplied,) = target.find(spec)
             if isinstance(supplied, ast.AvpTableRow):
-                assert supplied.data_type == correction.data_type
-                assert supplied.flag_rules == correction.flag_rules
+                # Each supplies what the row leaves blank: TS 32.299's clause
+                # 7.2.50 types DCD-Information itself, and OMA only flags it.
+                for field in ("data_type", "flag_rules"):
+                    if (value := getattr(correction, field)) is not None:
+                        assert getattr(supplied, field) == value
                 continue
             assert isinstance(supplied, ast.EnumeratedAvp)
             assert supplied.values == correction.values

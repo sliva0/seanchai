@@ -420,7 +420,7 @@ CSG-Membership-Indication                                2318   X     -     X   
 CUG-Information                                          2304   X     -     X     -     OctetString        M,V    -     -       -
 Current-Tariff                                           2056   -     -     X     X     Grouped            M,V    -     -       -
 Data-Coding-Scheme                                       2001   X     -     X     -     Integer32          M,V    -     -       -
-DCD-Information                                          2115   X     -     X     -     -                  -      -     -       -
+DCD-Information                                          2115   X     -     X     -     Grouped            -      -     -       -
 Deferred-Location-Event-Type                             1230   -     -     X     -     UTF8String         M,V    -     -       -
 Delivery-Report-Requested                                1216   X     -     X     -     Enumerated         M,V    -     -       -
 Delivery-Status                                          2104   X     -     X     -     -                  -      -     -       -
@@ -458,7 +458,7 @@ Forwarding-Pending                                       3415   -     -     X   
 From-Address                                             2708   X     -     X     -     UTF8String         M,V    -     -       -
 GGSN-Address                                             847    X     -     X     -     Address            M,V    -     -       -
 Guaranteed-Bitrate-UL                                    1026   X     -     X     -     -                  -      -     -       -
-IM-Information                                           2110   X     -     X     -     -                  -      -     -       -
+IM-Information                                           2110   X     -     X     -     Grouped            -      -     -       -
 IMS-Application-Reference-Identifier                     2601   X     -     -     -     UTF8String         M,V    -     -       -
 IMS-Charging-Identifier                                  841    X     -     X     -     UTF8String         M,V    -     -       -
 IMS-Communication-Service-Identifier                     1281   X     -     X     -     UTF8String         M,V    -     -       -
@@ -720,7 +720,7 @@ Served-Party-IP-Address                                  848    X     -     -   
 Server-Capabilities                                      603    X     -     -     -     -                  -      -     -       -
 Server-Name                                              602    X     -     -     -     -                  -      -     -       -
 Service-Data-Container                                   2040   X     -     -     -     Grouped            M,V    -     -       -
-Service-Generic-Information                              1256   X     -     X     -     -                  -      -     -       -
+Service-Generic-Information                              1256   X     -     X     -     Grouped            -      -     -       -
 Service-Id                                               855    X     -     X     -     UTF8String         M,V    -     -       -
 Service-Information                                      873    X     -     X     X     Grouped            M,V    -     -       -
 Service-Mode                                             2032   X     -     X     -     Unsigned32         M,V    -     -       -

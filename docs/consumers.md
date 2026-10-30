@@ -180,9 +180,11 @@ TS 32.299's `VAS-Id` and `VASP-Id` are roadmap item K, TS 29.061's
 `3GPP-Session-Stop-Indicator` row states only a code, and the names that
 resolve nowhere are the linter's standing `unresolved-reference` cases and
 re-used origins outside the corpus. TS 32.299's thirteen OMA rows are no
-holes: their type and flags are supplied from OMA-DDS-Charging_Data
+holes: their flags, and the types of the ten its clauses do not type, are
+supplied from OMA-DDS-Charging_Data
 ([corrections.md](corrections.md#operations)), and a grouped one is an
-`Avp` typed Grouped with no members, since the corpus holds no body for it. The pinned list in `tests/test_model.py`
+`Avp` typed Grouped with no members, since the corpus holds no body for
+it. The pinned list in `tests/test_model.py`
 (`_STANDING_HOLES`) is the full account: the strict build's failure is
 compared against it, so a hole worked off or a new one shows up as a diff.
 Roadmap item N lists them by cause.

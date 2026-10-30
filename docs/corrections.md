@@ -124,7 +124,9 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   which stays. Forcing case: TS 32.299 table 7.2.0.1 types thirteen rows
   `refer [223]`, `OMA-DDS-Charging_Data`, and prints no flags for them;
   OMA's V1.0 states type and flags in table 11 of its clause 8.4, which
-  each declaration cites. A re-used row has no cells a model reads for
+  each declaration cites. Three of the rows are typed by TS 32.299's own
+  clauses (7.2.50, 7.2.69, 7.2.191: "is of type Grouped"), so their
+  declarations expect the type and supply the flags alone. A re-used row has no cells a model reads for
   type or vendor, so an AVP only re-used from an absent document (TS
   32.299's `M2M-Information` from `oneM2M-TS-0004`) has nowhere to take a
   supplied type.

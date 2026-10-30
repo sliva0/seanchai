@@ -110,12 +110,12 @@ The declared vocabulary, with the document that forced each:
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
   kept, no enum code derived from them). TS 29.230 declares
   `registry-tables`, `unknown-type-tokens` and `reserved-range-notes`
-  (below). TS 32.299 declares thirteen:
+  (below). TS 32.299 declares fourteen:
   `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
   message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
   also 29.229's four grouped rules), `struck-rules-unused`,
   `physical-avp-columns` (table 7.2.0.1), `refer-type-cells`,
-  `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
+  `referred-type-sentences` (7.2.50, 7.2.69, 7.2.191), `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
   `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
   `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`,
   `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
@@ -221,7 +221,13 @@ Walks paragraphs and tables in document order under numbered headings:
   for AVPs "just borrowed from other applications", clause 7.2.0) leaves the
   row untyped and adds a re-used row citing clause 2's reference n,
   thirteen of them `OMA-DDS-Charging_Data` (`[223]`); an entry naming no
-  document warns and adds none.
+  document warns and adds none. Behind `referred-type-sentences`, such a
+  row whose own clause opens "The DCD-Information AVP (AVP code 2115) is of
+  type Grouped." takes that type, the re-used row staying: clauses 7.2.50,
+  7.2.69 and 7.2.191 type `DCD-Information`, `IM-Information` and
+  `Service-Generic-Information` so, print no body and say "The AVP is
+  defined in OMA-DDS-Charging_Data [223]". A clause giving another code
+  fails, and one stating no type warns.
 - Behind `vendor-id-sentence`, an AVP table whose clause says "The
   Vendor-ID header of all AVPs defined in this specification shall be set
   to 3GPP (10415)." gets V under Must in each row whose flag cells are all

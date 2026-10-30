@@ -1445,6 +1445,62 @@ def _extract_avp_table(
     return avp_table, reused
 
 
+# "The DCD-Information AVP (AVP code 2115) is of type Grouped.", TS 32.299
+# clause 7.2.50: the sentence every AVP clause of the document opens with.
+_TYPE_SENTENCE_RE = re.compile(
+    r"^The (?P<name>\S+) AVP \(AVP code (?P<code>\d+)\) is of type"
+    r" (?P<type>[A-Za-z0-9]+)\b"
+)
+
+
+def _referred_type_sentences(
+    table: ast.AvpTable,
+    referred: list[ast.ReusedAvpRow],
+    sections: list[_Section],
+    warnings: list[str],
+    quirks: sources.Quirks,
+) -> ast.AvpTable:
+    """`table` with each row typed `refer [n]` typed from its own clause,
+    where the document has one stating the type. The
+    `referred-type-sentences` quirk.
+
+    TS 32.299 table 7.2.0.1 types thirteen AVPs "refer [223]",
+    OMA-DDS-Charging_Data, and for three of them clauses 7.2.50, 7.2.69
+    and 7.2.191 say "The DCD-Information AVP (AVP code 2115) is of type
+    Grouped" before "The AVP is defined in OMA-DDS-Charging_Data [223]",
+    printing no body: the document's own statement of the type, which the
+    row's cell defers. The re-used row stays, since the definition is
+    still OMA's. A clause naming another code fails.
+    """
+    names = {row.name for row in referred}
+    titled: dict[str, _Section] = {}
+    for section in sections:
+        if (match := _AVP_TITLE_RE.match(section.title)) and match["name"] in names:
+            titled.setdefault(match["name"], section)
+    rows = []
+    for row in table.rows:
+        section = titled.get(row.name) if row.data_type is None else None
+        if section is not None:
+            opening = section.paragraphs[0].text if section.paragraphs else ""
+            match = _TYPE_SENTENCE_RE.match(opening)
+            if match is None or match["name"] != row.name:
+                warnings.append(
+                    f"{section.number}: {row.name} is typed by reference in"
+                    f" table {table.table}, and its clause states no type"
+                )
+            elif row.code is not None and int(match["code"]) != row.code:
+                raise ExtractionError(
+                    f"{section.number}: {row.name} has code {match['code']},"
+                    f" table {table.table} {row.code}"
+                )
+            else:
+                data_type = _data_type(match["type"])
+                row = row.model_copy(update={"data_type": data_type})
+                quirks.fire("referred-type-sentences")
+        rows.append(row)
+    return table.model_copy(update={"rows": tuple(rows)})
+
+
 _VENDOR_ID_SENTENCE = (
     "The Vendor-ID header of all AVPs defined in this specification shall be"
     " set to 3GPP (10415)."
@@ -2166,6 +2222,10 @@ def _collect(
                 avp_table, note_reused = _extract_avp_table(
                     table, section.number, warnings, quirks, references, own_reference
                 )
+                if quirks.enabled("referred-type-sentences"):
+                    avp_table = _referred_type_sentences(
+                        avp_table, note_reused, sections, warnings, quirks
+                    )
                 if quirks.enabled("vendor-id-sentence"):
                     avp_table = _vendor_id_sentence(avp_table, section, quirks)
                 collected.avp_tables.append(
@@ -2529,6 +2589,12 @@ QUIRKS: dict[str, str] = {
     "refer-type-cells": (
         "read a 'refer [n]' Value Type cell as no type plus a re-used row"
         " citing clause 2's reference n (TS 32.299 table 7.2.0.1)"
+    ),
+    "referred-type-sentences": (
+        "type a row whose Value Type cell is 'refer [n]' from its own clause's"
+        " sentence 'The Name AVP (AVP code n) is of type T', where the"
+        " document has such a clause (TS 32.299 clauses 7.2.50, 7.2.69,"
+        " 7.2.191)"
     ),
     "type-short-forms": (
         "read RFC 6733's DiamIdent and DiamURI type abbreviations (TS 32.299"

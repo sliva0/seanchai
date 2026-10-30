@@ -571,11 +571,13 @@ _OMA_TYPES = {
     "Total-Number-Of-Messages-Exploded": (ast.DataType.UNSIGNED32, 2113),
     "Total-Number-Of-Messages-Sent": (ast.DataType.UNSIGNED32, 2114),
 }
-# OMA's clauses defining the grouped three say so again with their bodies.
-_OMA_GROUPED_CLAUSES = {
-    "DCD-Information": "8.5.5",
-    "IM-Information": "8.5.6",
-    "Service-Generic-Information": "8.5.10",
+# Three of them have clauses here too, which type them Grouped and print no
+# body (read behind `referred-type-sentences`): the row states the type, and
+# OMA supplies only the flags. OMA's clauses print the bodies.
+_TYPED_HERE = {
+    "DCD-Information": ("7.2.50", "8.5.5"),
+    "IM-Information": ("7.2.69", "8.5.6"),
+    "Service-Generic-Information": ("7.2.191", "8.5.10"),
 }
 CORRECTIONS += [
     Supply(
@@ -584,6 +586,7 @@ CORRECTIONS += [
         expect=ast.AvpTableRow(
             name=name,
             code=code,
+            data_type=data_type if name in _TYPED_HERE else None,
             marks={
                 ast.MarkColumn.ACR: ("X",),
                 ast.MarkColumn.ACA: (),
@@ -591,19 +594,21 @@ CORRECTIONS += [
                 ast.MarkColumn.CCA: (),
             },
         ),
-        data_type=data_type,
+        data_type=None if name in _TYPED_HERE else data_type,
         flag_rules=ast.AvpFlagRules(
             must=frozenset({ast.AvpFlag.VENDOR, ast.AvpFlag.MANDATORY}),
             may=frozenset({ast.AvpFlag.PROTECTED}),
         ),
         reason=(
             f"table 7.2.0.1 types {name} 'refer [223]', OMA-DDS-Charging_Data;"
-            f" its V1.0 table 11 (clause 8.4) gives code {code} type {data_type},"
-            " flags Must V,M and May P"
             + (
-                f", and clause {_OMA_GROUPED_CLAUSES[name]} prints its body"
-                if name in _OMA_GROUPED_CLAUSES
-                else ""
+                f" clause {_TYPED_HERE[name][0]} types it Grouped and prints no"
+                " body; OMA's V1.0 table 11 (clause 8.4) gives code"
+                f" {code} flags Must V,M and May P, and its clause"
+                f" {_TYPED_HERE[name][1]} prints the body"
+                if name in _TYPED_HERE
+                else f" its V1.0 table 11 (clause 8.4) gives code {code} type"
+                f" {data_type}, flags Must V,M and May P"
             )
         ),
         versions="18.0.0",

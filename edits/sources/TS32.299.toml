@@ -29,6 +29,12 @@ first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
+name = "referred-type-sentences"
+reason = "Three of table 7.2.0.1's 'refer [223]' rows, OMA-DDS-Charging_Data's, have clauses of their own printing no body: 7.2.50, 7.2.69 and 7.2.191 open 'The DCD-Information AVP (AVP code 2115) is of type Grouped.' (and IM-Information 2110, Service-Generic-Information 1256), then say 'The AVP is defined in OMA-DDS-Charging_Data [223].'"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
 name = "type-short-forms"
 reason = "Table 7.1.0.1 copies RFC 6733's DiamIdent and DiamURI type abbreviations."
 first_version = "18.0.0"
