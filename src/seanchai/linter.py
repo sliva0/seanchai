@@ -20,6 +20,8 @@ Findings carry a severity because not every one of them is a defect:
   both defined locally and listed as re-used is the case that forced the
   distinction: a specification may re-print another's AVP for convenience or
   *extend* it with new fields, and deciding which needs the origin document.
+- `ACCEPTED` — a note an `Accept` in the specification's corrections module
+  acknowledges as a deliberate override its document states (`accept`).
 
 An AVP's identity is `(vendor-id, code)`, and the vendor half comes from the
 file's own `; Vendor-ID:` directive, except for a table row whose V flag is
@@ -36,13 +38,14 @@ where the reader has to go anyway.
 
 from __future__ import annotations
 
+import dataclasses
 import enum
 from collections import defaultdict
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
 from . import corpus
-from .dad import ast, formatter
+from .dad import ast, corrections, formatter
 
 
 @dataclass(frozen=True)
@@ -57,8 +60,10 @@ class AvpIdentity:
 
 
 class Severity(enum.StrEnum):
+    # Declaration order is report order.
     ERROR = "error"
     NOTE = "note"
+    ACCEPTED = "accepted"
 
 
 @dataclass(frozen=True)
@@ -73,10 +78,19 @@ class Finding:
     # carried structurally so `lint_with_corpus` can decide what a resolved
     # origin supersedes without parsing it back out of `message`.
     origin: str | None = None
+    # The acceptance a note was accepted by, as a corrected file cites it
+    # (`TS29.336.py#serving-node-t4-body`).
+    accepted_by: str | None = None
+    # Where in the tree the nodes the finding is about sit, as correction
+    # selectors locate them: the definition whose body differs, every row
+    # of a name the tables disagree on. What an acceptance's target must
+    # select; a rule that sets none cannot be accepted.
+    paths: tuple[ast.TreePath, ...] = ()
 
     def __str__(self) -> str:
         where = f" (clause {self.section})" if self.section else ""
-        return f"{self.severity.value}: [{self.rule}] {self.message}{where}"
+        by = f" ({self.accepted_by})" if self.accepted_by else ""
+        return f"{self.severity.value}: [{self.rule}] {self.message}{where}{by}"
 
 
 @dataclass
@@ -97,6 +111,16 @@ class _Index:
     reused_cells: list[tuple[ast.ReusedAvps, ast.ReusedAvpRow]] = field(
         default_factory=list
     )
+    # Each section, body rule and row's tree path, by object identity:
+    # equal nodes in two places are two nodes.
+    paths: dict[int, ast.TreePath] = field(default_factory=dict)
+    # Re-used rows' paths by AVP name.
+    reused_paths: dict[str, list[ast.TreePath]] = field(
+        default_factory=lambda: defaultdict(list)
+    )
+
+    def path(self, node: ast.Node) -> ast.TreePath:
+        return self.paths[id(node)]
 
     @property
     def rows(self) -> list[ast.AvpTableRow]:
@@ -110,7 +134,15 @@ def _index(spec: ast.Specification) -> _Index:
     except ast.SpecRefError:
         # A hand-authored file may name a document no From cell can cite.
         own = None
-    for section in spec.sections:
+    for position, section in enumerate(spec.sections):
+        at: ast.TreePath = ("sections", position)
+        index.paths[id(section)] = at
+        if isinstance(section, ast.Message | ast.GroupedAvp):
+            for number, rule in enumerate(section.avps):
+                index.paths[id(rule)] = (*at, "avps", number)
+        if isinstance(section, ast.AvpTable | ast.ReusedAvps):
+            for number, row in enumerate(section.rows):
+                index.paths[id(row)] = (*at, "rows", number)
         if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
             index.definitions.append(section)
         elif isinstance(section, ast.Message):
@@ -121,6 +153,7 @@ def _index(spec: ast.Specification) -> _Index:
             index.tables.append(section)
         elif isinstance(section, ast.ReusedAvps):
             for row in section.rows:
+                index.reused_paths[row.name].append(index.path(row))
                 if row.origin == own:
                     index.self_cited.append(row.name)
                 else:
@@ -149,6 +182,7 @@ def _duplicate_definitions(index: _Index) -> list[Finding]:
                     Severity.ERROR,
                     "duplicate-definition",
                     f"{name} is defined {len(group)} times, in clauses {clauses}",
+                    paths=tuple(index.path(definition) for definition in group),
                 )
             )
     return findings
@@ -442,6 +476,7 @@ def _tables_agree_with_each_other(index: _Index) -> list[Finding]:
                     Severity.ERROR if label == "code" else Severity.NOTE,
                     "table-row-mismatch",
                     f"{name} is tabulated with differing {label}: {spelled}",
+                    paths=tuple(index.path(row) for _, row in copies),
                 )
             )
     return findings
@@ -594,14 +629,14 @@ def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
                 if marks == ():
                     unused[row.name, column].append(label)
     findings = []
-    for section in spec.sections:
+    for position, section in enumerate(spec.sections):
         if (
             not isinstance(section, ast.Message)
             or section.abbreviation not in ast.MarkColumn
         ):
             continue
         command = ast.MarkColumn(section.abbreviation)
-        for rule in section.avps:
+        for number, rule in enumerate(section.avps):
             if rule.name == "AVP":
                 continue
             findings += [
@@ -612,6 +647,7 @@ def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
                     f" table {label} marks it '-', unused in"
                     f" {section.abbreviation}",
                     section.source.section,
+                    paths=(("sections", position, "avps", number),),
                 )
                 for label in unused.get((rule.name, command), [])
             ]
@@ -704,7 +740,8 @@ def lint(spec: ast.Specification) -> list[Finding]:
 
 
 def _ordered(findings: list[Finding]) -> list[Finding]:
-    return sorted(findings, key=lambda f: (f.severity != Severity.ERROR, f.rule))
+    order = list(Severity)
+    return sorted(findings, key=lambda f: (order.index(f.severity), f.rule))
 
 
 # --- cross-file rules -------------------------------------------------------
@@ -816,6 +853,7 @@ def _reused_avp_exists(index: _Index, origins: dict[str, _Origin]) -> list[Findi
                     "reused-origin-indirect",
                     f"{name} is listed as re-used from {origin}, which re-uses it"
                     f" from {theirs} rather than defining it",
+                    paths=tuple(index.reused_paths[name]),
                 )
             )
             continue
@@ -888,6 +926,7 @@ def _reused_rows_agree_with_origin(
                         f"{name} is tabulated with {label} {compared[0][0]} in"
                         f" {_table_labels([table])}, but {origin}, which it is"
                         f" re-used from, reads {spelled}",
+                        paths=(index.path(row),),
                     )
                 )
     return findings
@@ -950,6 +989,7 @@ def _reused_cells_agree_with_origin(
                     f" {', '.join(sorted(each.value for each in types))}",
                     block.source.section,
                     row.origin,
+                    paths=(index.path(row),),
                 )
             )
     return findings
@@ -1063,7 +1103,11 @@ def _reprint_or_extension(index: _Index, origins: dict[str, _Origin]) -> list[Fi
             )
             continue
         rule, message = _compare(definition, theirs, origin)
-        findings.append(Finding(Severity.NOTE, rule, message, where))
+        findings.append(
+            Finding(
+                Severity.NOTE, rule, message, where, paths=(index.path(definition),)
+            )
+        )
     return findings
 
 
@@ -1482,8 +1526,13 @@ def _against_registry(
     ]
 
 
-def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Finding]:
-    """Every finding for `spec`, single-file and cross-file together.
+def lint_with_corpus(
+    spec: ast.Specification,
+    books: corpus.Corpus,
+    acceptances: Sequence[corrections.Accept] = (),
+) -> list[Finding]:
+    """Every finding for `spec`, single-file and cross-file together, with
+    the notes `acceptances` acknowledge reported as accepted (`accept`).
 
     The single-file rules that a second document supersedes are dropped rather
     than reported alongside their own answers: `local-and-reused` becomes
@@ -1518,4 +1567,73 @@ def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Find
         *_unresolved_references(index, bases, missing_bases),
         *_against_registry(spec, index, books),
     ]
-    return _ordered(findings)
+    return accept(spec, _ordered(findings), acceptances)
+
+
+# --- acceptances ------------------------------------------------------------
+
+
+def accept(
+    spec: ast.Specification,
+    findings: list[Finding],
+    acceptances: Sequence[corrections.Accept],
+) -> list[Finding]:
+    """`findings` with each note an acceptance matches reported as accepted.
+
+    An acceptance names a rule, the node the finding is about and the
+    finding's message, exactly; it matches when its target selects one node
+    in `spec` and one finding of that rule about that node, its tree path
+    among the finding's `paths`, reads `expect`. Two definitions of one name
+    are two nodes: accepting clause 6.3.1's body says nothing of 6.3.2's. A
+    note so matched becomes `ACCEPTED`, citing the acceptance; a second
+    acceptance of it finds it accepted. Anything else is a
+    `stale-acceptance` error: the document has changed what it says,
+    and the acknowledgement no longer describes it. An error is never
+    accepted, since it is the file asserting two things that cannot both be
+    true.
+    """
+    out = list(findings)
+    for acceptance in acceptances:
+        problem, at = _accepted_at(spec, out, acceptance)
+        if problem is None:
+            out[at] = dataclasses.replace(
+                out[at], severity=Severity.ACCEPTED, accepted_by=acceptance.cited
+            )
+            continue
+        out.append(
+            Finding(
+                Severity.ERROR,
+                "stale-acceptance",
+                f"{acceptance.cited} accepts [{acceptance.rule}] for"
+                f" {acceptance.target.describe()}, but {problem}",
+            )
+        )
+    return _ordered(out)
+
+
+def _accepted_at(
+    spec: ast.Specification, findings: list[Finding], acceptance: corrections.Accept
+) -> tuple[str | None, int]:
+    """The index of the finding `acceptance` matches, or why it matches none."""
+    located = list(acceptance.target.locate(spec))
+    if len(located) != 1:
+        return f"its target matches {len(located)} nodes", -1
+    path = located[0][0]
+    about = [
+        index
+        for index, finding in enumerate(findings)
+        if finding.rule == acceptance.rule and path in finding.paths
+    ]
+    matching = [
+        index for index in about if findings[index].message == acceptance.expect
+    ]
+    if len(matching) > 1:
+        return f"{len(matching)} findings read as expected", -1
+    if not matching:
+        now = "; ".join(repr(findings[index].message) for index in about)
+        return "no finding about it reads as expected" + (
+            f"; it now reads {now}" if now else ""
+        ), -1
+    if findings[matching[0]].severity is not Severity.NOTE:
+        return f"the finding is {findings[matching[0]].severity.value}", -1
+    return None, matching[0]

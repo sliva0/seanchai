@@ -17,6 +17,10 @@ known to apply it: inside the top-level `CORRECTIONS` assignments, outside
 lambdas, conditionals and filtered comprehensions. Anything this cannot
 rewrite safely — a literal elsewhere, one split by comments, a range built
 by an expression — is reported for a person to widen instead.
+
+An `Accept` is no edit, so a clean rebuild says nothing about it: its range
+is widened only when the caller found it still matching its finding on the
+rebuilt file (`accepted`), and is reported stale otherwise.
 """
 
 import ast
@@ -26,7 +30,7 @@ import re
 import tempfile
 import tokenize
 import tomllib
-from collections.abc import Iterator
+from collections.abc import Collection, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -44,6 +48,8 @@ class Expansion:
     # Declarations still outside the range afterwards, each with the reason
     # it was left for a person.
     remaining: list[str]
+    # Acceptances left out of range because they no longer match a finding.
+    stale: list[str] = dataclasses.field(default_factory=list)
 
 
 # --- source declarations ----------------------------------------------------
@@ -156,12 +162,23 @@ def _uncovered_sources(path: Path, data: dict, version: str, why: str) -> list[s
 
 # --- corrections modules ----------------------------------------------------
 
-_DECLARATIONS = {"Correction", "Delete", "Insert", "Supply"}
+_DECLARATIONS = {"Correction", "Delete", "Insert", "Supply", "Accept"}
 
 
-def expand_corrections(directory: Path, specification: str, version: str) -> Expansion:
+def expand_corrections(
+    directory: Path,
+    specification: str,
+    version: str,
+    accepted: Collection[str] = (),
+) -> Expansion:
     """Widen the `versions=` literals in `specification`'s corrections module
-    that the loader applies and that do not cover `version`."""
+    that the loader applies and that do not cover `version`.
+
+    An `Accept`'s literal is widened only when its id, cited as
+    `<module>#<id>`, is in `accepted`: the acceptances the caller checked
+    against the rebuilt file and found matching. One that is not is
+    reported in `stale`; one whose id is not a string literal cannot be
+    told apart and is left for a person."""
     path = corrections.module_path(directory, specification)
     if not path.is_file():
         return Expansion([], [])
@@ -182,11 +199,11 @@ def expand_corrections(directory: Path, specification: str, version: str) -> Exp
         return start + len(utf8[:column].decode("utf-8"))
 
     replacements: list[tuple[int, int, str]] = []
-    widened, manual = [], []
+    widened, manual, stale = [], [], []
     # Ranges a reported literal declares: the declarations it builds are
     # covered by that line and not listed again by id.
     explained: set[str] = set()
-    for literal, value in _range_literals(tree):
+    for literal, value, acceptance in _range_literals(tree):
         declared = VersionRange.parse(value)
         expanded = declared.expanded(version)
         if expanded == declared:
@@ -196,6 +213,16 @@ def expand_corrections(directory: Path, specification: str, version: str) -> Exp
             manual.append(f"{where}: outside the CORRECTIONS the loader applies")
             explained.add(str(declared))
             continue
+        if acceptance is not None:
+            cited = f"{path.name}#{acceptance}" if acceptance else None
+            if cited is None:
+                manual.append(f"{where}: an acceptance whose id is not a literal")
+                explained.add(str(declared))
+                continue
+            if cited not in accepted:
+                stale.append(f"{where}: acceptance {cited} matches no finding")
+                explained.add(str(declared))
+                continue
         assert literal.end_lineno is not None and literal.end_col_offset is not None
         begin = offset(literal.lineno, literal.col_offset)
         end = offset(literal.end_lineno, literal.end_col_offset)
@@ -221,22 +248,22 @@ def expand_corrections(directory: Path, specification: str, version: str) -> Exp
         if not VersionRange.parse(edit.versions).covers(version)
         and str(edit.versions) not in explained
     ]
-    return Expansion(widened, remaining)
+    return Expansion(widened, remaining, stale)
 
 
 def _checked_rewrite(
     rewritten: bytes,
     path: Path,
     specification: str,
-    declared: list[corrections.Edit],
-) -> list[corrections.Edit]:
+    declared: list[corrections.Declaration],
+) -> list[corrections.Declaration]:
     """Load the rewritten module from a scratch copy and require it to declare
     exactly what the original did, ranges aside, before anything is replaced."""
     with tempfile.TemporaryDirectory() as scratch:
         (Path(scratch) / path.name).write_bytes(rewritten)
         loaded = corrections.load(Path(scratch), specification)
 
-    def unranged(edit: corrections.Edit) -> corrections.Edit:
+    def unranged(edit: corrections.Declaration) -> corrections.Declaration:
         return dataclasses.replace(edit, versions="*..*")
 
     if [unranged(edit) for edit in loaded] != [unranged(edit) for edit in declared]:
@@ -253,9 +280,12 @@ def _line_starts(text: str) -> list[int]:
     return [0] + [match.end() for match in re.finditer(r"\r\n|\r|\n", text)]
 
 
-def _range_literals(tree: ast.Module) -> Iterator[tuple[ast.Constant, str]]:
+def _range_literals(
+    tree: ast.Module,
+) -> Iterator[tuple[ast.Constant, str, str | None]]:
     """The `versions=` string literals of every declaration call in the
-    module, in source order."""
+    module, in source order, each with the declaring `Accept`'s id: None for
+    an edit, "" for an acceptance whose id is no string literal."""
     calls = sorted(
         (node for node in ast.walk(tree) if isinstance(node, ast.Call)),
         key=lambda node: (node.lineno, node.col_offset),
@@ -267,6 +297,16 @@ def _range_literals(tree: ast.Module) -> Iterator[tuple[ast.Constant, str]]:
             name = called.id
         if name not in _DECLARATIONS:
             continue
+        acceptance = None
+        if name == "Accept":
+            ids = [
+                keyword.value.value
+                for keyword in node.keywords
+                if keyword.arg == "id"
+                and isinstance(keyword.value, ast.Constant)
+                and isinstance(keyword.value.value, str)
+            ]
+            acceptance = ids[0] if ids else ""
         for keyword in node.keywords:
             value = keyword.value
             if (
@@ -274,7 +314,7 @@ def _range_literals(tree: ast.Module) -> Iterator[tuple[ast.Constant, str]]:
                 and isinstance(value, ast.Constant)
                 and isinstance(value.value, str)
             ):
-                yield value, value.value
+                yield value, value.value, acceptance
 
 
 def _applied_literals(tree: ast.Module) -> set[int]:

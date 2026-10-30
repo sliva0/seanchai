@@ -73,7 +73,9 @@ widens those ranges in place — `first_version`/`last_version` in
 `edits/corrections/<SpecRef>.py` — and prints each as `expanded:` under its
 specification. Only a specification that rebuilt cleanly is touched, since
 that is what shows every patch and quirk fired as declared and every
-`expect` held. Only the bound the version is past moves, by replacing that
+`expect` held. An `Accept` is checked separately: the rebuilt file is
+linted against the corpus, and an acceptance matching no finding is
+printed as `not widened, stale` rather than widened. Only the bound the version is past moves, by replacing that
 value's text: comments, block order and layout stay byte for byte, and a
 corrections module keeps its source encoding and is loaded from a scratch
 copy, required to declare the same edits, before it is replaced. A literal
@@ -97,6 +99,7 @@ loudly.
 | quirks | readings too heuristic to run undeclared | same file, `[[quirk]]` |
 | extractor code | exact-match structure that fails loudly on its own | `src/seanchai/extractor/` |
 | corrections | data that parses fine but is semantically wrong | `edits/corrections/<SpecRef>.py` |
+| acceptances | linter notes a clause makes deliberate; no data changes | same file, `Accept` |
 
 See [extractor.md](extractor.md) for the first three and
 [corrections.md](corrections.md) for the last.

@@ -319,3 +319,73 @@ def test_expanding_ranges_rewrites_the_edit_files_and_retires_the_warnings(
     again = CliRunner().invoke(main, arguments)
     assert again.exit_code == 0, again.output
     assert "warning:" not in again.output
+
+
+def test_expanding_ranges_widens_only_the_acceptances_still_matching(
+    tmp_path, synthetic_spec_docx
+):
+    """An acceptance changes nothing a rebuild checks, so its range moves
+    only once the rebuilt file is linted and it still matches its finding.
+    The corpus's RFC 6733 re-uses `Other-AVP` itself, which makes the
+    synthetic document's citation an indirect origin."""
+    from click.testing import CliRunner
+
+    from seanchai.cli import main
+
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    shutil.copy(synthetic_spec_docx, document)
+    corpus = tmp_path / "dad"
+    (corpus / "rfc").mkdir(parents=True)
+    (corpus / "rfc" / "rfc6733.dad").write_text(
+        "; Specification: RFC 6733\n"
+        "; Vendor-ID: 0\n"
+        "\n"
+        "\n"
+        "; Type: Reused AVPs\n"
+        "; Section: 4.5\n"
+        "; Table: 4.5/2\n"
+        "; Columns: Name From\n"
+        "Other-AVP RFC4005\n"
+    )
+    declarations = tmp_path / "edits"
+    declarations.mkdir()
+    module = declarations / "TS29.999.py"
+    module.write_text(
+        "from seanchai.dad.corrections import Accept, reused_row\n"
+        "CORRECTIONS = [\n"
+        "    Accept(id='indirect', rule='reused-origin-indirect',"
+        " target=reused_row('Other-AVP'), expect='Other-AVP is listed as re-used"
+        " from RFC6733, which re-uses it from RFC4005 rather than defining it',"
+        " reason='r', versions='1.0.0'),\n"
+        "    Accept(id='gone', rule='reused-origin-indirect',"
+        " target=reused_row('Other-AVP'), expect='an older message',"
+        " reason='r', versions='1.0.0'),\n"
+        "]\n"
+    )
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "regenerate",
+            "--manifest",
+            str(manifest),
+            "--corpus",
+            str(corpus),
+            "--corrections",
+            str(declarations),
+            "--spec",
+            "TS29.999",
+            "--expand-ranges",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    lines = result.output.splitlines()
+    assert "    expanded: TS29.999.py:3: versions 1.0.0 -> 1.0.0..1.2.3" in lines
+    assert (
+        "    warning: not widened, stale: TS29.999.py:4: versions 1.0.0:"
+        " acceptance TS29.999.py#gone matches no finding"
+    ) in lines
+    text = module.read_text()
+    assert text.count("versions='1.0.0..1.2.3'") == 1
+    assert "expect='an older message', reason='r', versions='1.0.0')" in text

@@ -24,7 +24,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from . import ranges
+from . import linter, ranges
+from .corpus import Corpus
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
@@ -115,6 +116,9 @@ def regenerate(
     """
     listed = _sources(manifest)
     committed = _committed(corpus)
+    # Acceptances are checked against the committed corpus's origins before
+    # their ranges are widened; loaded once, and only then.
+    books = Corpus.load([corpus]) if expand_ranges else None
     outcomes = []
     for reference in sorted(set(only or committed) | set(add)):
         outcome = _one(
@@ -125,7 +129,7 @@ def regenerate(
             output,
             sources_dir,
             corrections_dir,
-            expand_ranges,
+            books,
         )
         outcomes.append(outcome)
         report(outcome)
@@ -140,7 +144,7 @@ def _one(
     output: Path,
     sources_dir: Path | None,
     corrections_dir: Path | None,
-    expand_ranges: bool,
+    books: Corpus | None,
 ) -> Outcome:
     if source is None:
         return Outcome(
@@ -170,9 +174,9 @@ def _one(
         outcome.error = str(error)
         return outcome
     outcome.version = spec.version
-    if expand_ranges and spec.version is not None:
+    if books is not None and spec.version is not None:
         try:
-            _expand(outcome, spec, sources_dir, corrections_dir)
+            _expand(outcome, spec, sources_dir, corrections_dir, books)
         except (CorrectionError, OSError, ValueError) as error:
             outcome.status = "failed"
             outcome.error = f"expanding ranges: {error}"
@@ -211,11 +215,15 @@ def _expand(
     spec: ast.Specification,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    books: Corpus,
 ) -> None:
     """Widen the stale ranges of a specification that just rebuilt cleanly.
 
     A clean rebuild is what makes this safe: every patch and quirk fired as
-    declared and every correction's `expect` held, on this version.
+    declared and every correction's `expect` held, on this version. An
+    acceptance changes nothing the rebuild checks, so the rebuilt file is
+    linted against `books` with the module's acceptances, and only those
+    that matched their finding are widened; the rest are reported stale.
     """
     assert spec.version is not None
     expansions = []
@@ -223,16 +231,37 @@ def _expand(
         path = sources_dir / f"{outcome.reference}.toml"
         expansions.append(ranges.expand_sources(path, spec.version))
     if corrections_dir is not None:
+        acceptances = corrections.acceptances(
+            corrections.load(corrections_dir, spec.specification)
+        )
+        accepted = (
+            {
+                finding.accepted_by
+                for finding in linter.lint_with_corpus(spec, books, acceptances)
+                if finding.accepted_by is not None
+            }
+            if acceptances
+            else set()
+        )
         expansions.append(
-            ranges.expand_corrections(corrections_dir, spec.specification, spec.version)
+            ranges.expand_corrections(
+                corrections_dir, spec.specification, spec.version, accepted
+            )
         )
     outcome.expanded = [line for e in expansions for line in e.widened]
     remaining = [line for e in expansions for line in e.remaining]
+    stale = [line for e in expansions for line in e.stale]
     # The range warnings describe the files as they were; what is still out
     # of range after the rewrite is reported in their place.
-    outcome.warnings = [
-        warning for warning in outcome.warnings if not isinstance(warning, RangeWarning)
-    ] + [f"not widened, widen it by hand: {line}" for line in remaining]
+    outcome.warnings = (
+        [
+            warning
+            for warning in outcome.warnings
+            if not isinstance(warning, RangeWarning)
+        ]
+        + [f"not widened, widen it by hand: {line}" for line in remaining]
+        + [f"not widened, stale: {line}" for line in stale]
+    )
 
 
 def _produce(

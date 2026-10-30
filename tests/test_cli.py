@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import docx
 import pytest
 from click.testing import CliRunner
@@ -240,6 +242,71 @@ def test_lint_default_output_groups_findings_under_the_file_with_a_summary(tmp_p
     assert lines[0] == str(source)
     assert lines[1].startswith("  error[duplicate-identity]")
     assert lines[-1] == "found 1 error in 1 file"
+
+
+_REPO = Path(__file__).parent.parent
+_V2X = "V2X-Subscription-Data's body, against TS29.272's definition"
+
+
+def _lint_v2x(*options, corrections=_REPO / "edits" / "corrections", raw=False):
+    """TS 29.388 against the committed corpus, whose module accepts clause
+    6.3.2's V4 body for V2X-Subscription-Data, its one cross-file note."""
+    source = (
+        _REPO / "dad" / "raw" / "3gpp" / "rel-18" / "29388-i10.raw.dad"
+        if raw
+        else _REPO / "dad" / "3gpp" / "rel-18" / "29388-i10.dad"
+    )
+    return CliRunner().invoke(
+        main,
+        [
+            "lint",
+            "--corpus",
+            str(_REPO / "dad"),
+            "--corrections",
+            str(corrections),
+            *options,
+            str(source),
+        ],
+    )
+
+
+def test_lint_counts_accepted_findings_apart_and_prints_them_on_request():
+    hidden = _lint_v2x()
+    shown = _lint_v2x("--show-accepted")
+
+    assert hidden.exit_code == 0
+    assert hidden.output == "found 1 accepted in 1 file\n"
+    assert shown.exit_code == 0
+    (line,) = [line for line in shown.output.splitlines() if _V2X in line]
+    assert line.startswith("  accepted[reused-body-differs]")
+    assert line.endswith("(TS29.388.py#v2x-subscription-data-v4-body)")
+
+
+def test_lint_reads_no_acceptances_for_a_raw_file():
+    result = _lint_v2x("--output-format", "concise", raw=True)
+
+    assert f"note: [reused-body-differs] {_V2X}" in result.output
+
+
+def test_lint_fails_on_an_acceptance_that_matches_no_finding(tmp_path):
+    (tmp_path / "TS29.388.py").write_text(
+        "from seanchai.dad.corrections import Accept, definition\n"
+        "CORRECTIONS = [Accept(id='v2x-body', rule='reused-body-differs',"
+        " target=definition('V2X-Subscription-Data'), expect='an older message',"
+        " reason='clause 6.3.2')]\n"
+    )
+
+    result = _lint_v2x("--output-format", "concise", corrections=tmp_path)
+
+    assert result.exit_code == 1
+    assert "error: [stale-acceptance] TS29.388.py#v2x-body accepts" in result.output
+
+
+def test_lint_rejects_a_corrections_directory_given_that_does_not_exist(tmp_path):
+    result = _lint_v2x(corrections=tmp_path / "missing")
+
+    assert result.exit_code == 2
+    assert "does not exist" in result.output
 
 
 def test_lint_concise_output_keeps_the_one_line_per_finding_shape(tmp_path):

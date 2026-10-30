@@ -121,6 +121,42 @@ No arbitrary `edit=lambda` escape hatch and no `move`/`split`: a correction
 that cannot be described cannot be reviewed. A structural case that appears
 gets a named operation with its own `expect` contract.
 
+## Acceptances
+
+Some linter notes are a document saying on purpose what another says
+otherwise: an interface printing its own body for an AVP it re-uses, or its
+own flag rule. `Accept` acknowledges one such note, so it stops reading as
+an open finding while staying recorded:
+
+```python
+Accept(
+    id="serving-node-t4-body",
+    rule="reused-body-differs",
+    target=definition("Serving-Node"),
+    expect="Serving-Node's body, against TS29.173's definition: adds"
+    " IP-SM-GW-Name, ...",
+    reason="clause 6.4.12 says the AVP 'is originally defined in 3GPP TS"
+    " 29.173 [8]' and lists the member combinations 'allowed' for"
+    " T4-triggering, ...",
+    versions="18.2.0",
+)
+```
+
+`rule` is the linter rule, `target` the node the finding is about, by the
+selectors above, and `expect` the finding's message, exactly, so a document
+that changes what it says fails the acceptance as a changed value fails a
+correction. `reason` cites the clause that makes the override deliberate;
+where no clause says so, the note stays open. An acceptance changes no
+data: `apply` skips it, the corrected file carries no note for it, and a
+module declaring only acceptances is one `seanchai correct` refuses, as it
+corrects nothing. It is declared in `CORRECTIONS` beside the edits, with
+the same `id` and `versions` rules. A clean rebuild checks nothing about
+it, so `regenerate --expand-ranges` lints the rebuilt file and widens an
+acceptance's range only when it still matches its finding, reporting the
+rest as `not widened, stale`. The linter checks it, with `--corpus`, against the
+corrected file ([linter.md](linter.md#acceptances)); the accepted findings
+are listed by id under the linter's standing findings.
+
 ## Output
 
 ```text
@@ -175,7 +211,8 @@ of the note. `seanchai correct` and
 ## CLI
 
 `seanchai regenerate` rebuilds the corpus with `edits/corrections` (see
-[workflow.md](workflow.md)). For one file: `seanchai extract … --corrections
+[workflow.md](workflow.md)), and `seanchai lint --corpus` reads its
+acceptances from there too. For one file: `seanchai extract … --corrections
 DIR` and `seanchai correct RAW.dad --corrections DIR -o OUT.dad`, where the
 directory is explicit because loading it executes Python. `extract` tolerates a specification with no
 module (a corpus run passes one directory for everything); `correct` requires

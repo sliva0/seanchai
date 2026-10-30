@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Delete,
     Insert,
@@ -488,4 +489,61 @@ CORRECTIONS += [
         ),
         ("must", frozenset(), frozenset({ast.AvpFlag.MANDATORY})),
     )
+]
+
+# Findings the linter reports that the document makes on purpose; they
+# change no data (docs/corrections.md).
+CORRECTIONS += [
+    Accept(
+        id="multiple-services-credit-control-charging-body",
+        rule="reused-body-differs",
+        target=definition("Multiple-Services-Credit-Control"),
+        expect="Multiple-Services-Credit-Control's body, against RFC4006's definition: "
+        "adds 3GPP-RAT-Type, AF-Correlation-Information, Announcement-Information, "
+        "Envelope, Envelope-Reporting, PS-Furnish-Charging-Information, "
+        "QoS-Information, Quota-Consumption-Time, Quota-Holding-Time, "
+        "Refund-Information, Related-Trigger, Reporting-Reason, Service-Specific-Info, "
+        "Time-Quota-Mechanism, Time-Quota-Threshold, Trigger, Unit-Quota-Threshold, "
+        "Volume-Quota-Threshold, missing AVP, Tariff-Change-Usage",
+        reason="clause 7.1.9: 'of type grouped as specified in RFC 4006 [402]. It "
+        "contains additional 3GPP specific charging parameters.'; the members it "
+        "leaves out, Tariff-Change-Usage and the * [ AVP ] wildcard, are struck, which "
+        "clauses 6.2.1.2 and 6.4.1.2 read as not used by 3GPP",
+        versions="18.0.0",
+    ),
+    Accept(
+        id="used-service-unit-charging-body",
+        rule="reused-body-differs",
+        target=definition("Used-Service-Unit"),
+        expect="Used-Service-Unit's body, against RFC4006's definition: adds "
+        "Event-Charging-TimeStamp, Reporting-Reason, missing AVP, CC-Money",
+        reason="clause 7.1.14: 'of type grouped as specified in RFC 4006 [402]. It "
+        "contains additional 3GPP specific charging parameters.'; the members it "
+        "leaves out, CC-Money and the * [ AVP ] wildcard, are struck, which clauses "
+        "6.2.1.2 and 6.4.1.2 read as not used by 3GPP",
+        versions="18.0.0",
+    ),
+    Accept(
+        id="oc-olr-extension",
+        rule="reused-extension",
+        target=definition("OC-OLR"),
+        expect="OC-OLR's body, against RFC7683's definition: extended, adding "
+        "3GPP-OC-Specific-Reduction",
+        reason="clause B.2.4: 'It has been extended compared to the IETF RFC 7683 "
+        "[403].'",
+        versions="18.0.0",
+    ),
+    Accept(
+        id="supported-features-charging-m",
+        rule="reused-row-mismatch",
+        target=table_row("Supported-Features", table="7.2.0.1"),
+        expect="Supported-Features is tabulated with flag rule M in Must in table "
+        "7.2.0.1, but TS29.229, which it is re-used from, reads M in May in table "
+        "6.3.0.1",
+        reason="clause 6.5.10.3 answers a request whose Supported-Features the server "
+        "does not support 'as per 'M' bit set rule', with DIAMETER_AVP_UNSUPPORTED, so "
+        "the charging applications set M where TS 29.229 table 6.3.0.1 leaves it May; "
+        "clause 7.2.0 gives table 7.2.0.1 'along with the AVP flag rules'",
+        versions="18.0.0",
+    ),
 ]

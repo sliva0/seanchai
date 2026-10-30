@@ -6,7 +6,7 @@ import pytest
 from conftest import _corpus
 
 from seanchai import corpus, linter
-from seanchai.dad import ast, parser
+from seanchai.dad import ast, corrections, parser
 
 
 def _spec(*sections, specification="3GPP TS 29.329", vendor_id=10415, version="1.0.0"):
@@ -523,6 +523,143 @@ def test_a_body_that_neither_reprints_nor_extends_is_reported_as_it_is():
     assert "adds C" in finding.message and "missing B" in finding.message
 
 
+def _differing_body():
+    """TS 29.336's Serving-Node shape: a body differing from its origin's."""
+    origin = _origin_spec(
+        "3GPP TS 29.272", "18.6.0", _grouped_with("Borrowed", 700, "A", "B")
+    )
+    spec = _spec(
+        _grouped_with("Borrowed", 700, "A", "C"),
+        _reused(ast.ReusedAvpRow(name="Borrowed", origin="TS29.272")),
+        version="18.0.0",
+    )
+    return spec, _books(origin)
+
+
+_DIFFERS = "Borrowed's body, against TS29.272's definition: adds C, missing B"
+
+
+def _acceptance(target=None, expect=_DIFFERS, rule="reused-body-differs"):
+    return corrections.Accept(
+        id="borrowed-body",
+        rule=rule,
+        target=target or corrections.definition("Borrowed"),
+        expect=expect,
+        reason="clause 6.3.1 prints the interface's own body",
+    )
+
+
+def test_an_accepted_note_is_reported_apart_citing_its_acceptance():
+    spec, books = _differing_body()
+
+    findings = linter.lint_with_corpus(spec, books, [_acceptance()])
+
+    (finding,) = [f for f in findings if f.rule == "reused-body-differs"]
+    assert finding.severity is linter.Severity.ACCEPTED
+    assert finding.accepted_by == "borrowed-body"
+    assert str(finding).startswith("accepted: [reused-body-differs]")
+    assert linter.Severity.ERROR not in {f.severity for f in findings}
+
+
+@pytest.mark.parametrize(
+    ("acceptance", "problem"),
+    [
+        # The document changed what it says: the message moved on.
+        (
+            _acceptance(expect=_DIFFERS.replace("adds C", "adds D")),
+            f"no finding about it reads as expected; it now reads {_DIFFERS!r}",
+        ),
+        (_acceptance(rule="reused-reprint"), "no finding about it reads as expected"),
+        (
+            _acceptance(target=corrections.definition("Lent")),
+            "its target matches 0 nodes",
+        ),
+        # The node exists, but the finding is about another.
+        (
+            _acceptance(target=corrections.definition("Own")),
+            "no finding about it reads as expected",
+        ),
+    ],
+)
+def test_an_acceptance_matching_no_finding_is_a_stale_error(acceptance, problem):
+    spec, books = _differing_body()
+    spec = spec.model_copy(
+        update={"sections": (*spec.sections, _grouped("Own", 701, section="6.3.2"))}
+    )
+
+    findings = linter.lint_with_corpus(spec, books, [acceptance])
+
+    (stale,) = [f for f in findings if f.rule == "stale-acceptance"]
+    assert stale.severity is linter.Severity.ERROR
+    assert stale.message.endswith(f"but {problem}")
+    (kept,) = [f for f in findings if f.rule == "reused-body-differs"]
+    assert kept.severity is linter.Severity.NOTE
+
+
+def test_an_acceptance_covers_only_the_node_its_target_selects():
+    """Two clauses defining `Borrowed`: 6.3.1 re-prints the origin's body,
+    6.3.2 differs from it. Accepting 6.3.1's body as differing must not
+    take 6.3.2's finding, whose name and message it shares."""
+    origin = _origin_spec(
+        "3GPP TS 29.272", "18.6.0", _grouped_with("Borrowed", 700, "A", "B")
+    )
+    spec = _spec(
+        _grouped_with("Borrowed", 700, "A", "B", section="6.3.1"),
+        _grouped_with("Borrowed", 700, "A", "C", section="6.3.2"),
+        _reused(ast.ReusedAvpRow(name="Borrowed", origin="TS29.272")),
+        version="18.0.0",
+    )
+
+    findings = linter.lint_with_corpus(
+        spec,
+        _books(origin),
+        [_acceptance(target=corrections.definition("Borrowed", section="6.3.1"))],
+    )
+
+    (differs,) = [f for f in findings if f.rule == "reused-body-differs"]
+    assert differs.severity is linter.Severity.NOTE
+    assert differs.section == "6.3.2"
+    (stale,) = [f for f in findings if f.rule == "stale-acceptance"]
+    assert stale.message.endswith("but no finding about it reads as expected")
+
+
+def test_an_error_is_never_accepted():
+    """An error is the file asserting two things that cannot both be true;
+    no clause makes that deliberate."""
+    spec = _spec(_grouped("Twice", 700), _grouped("Twice", 700, section="6.3.2"))
+    (error,) = [f for f in linter.lint(spec) if f.rule == "duplicate-definition"]
+
+    findings = linter.accept(
+        spec,
+        linter.lint(spec),
+        [
+            _acceptance(
+                target=corrections.definition("Twice", section="6.3.1"),
+                expect=error.message,
+                rule="duplicate-definition",
+            )
+        ],
+    )
+
+    assert error in findings
+    (stale,) = [f for f in findings if f.rule == "stale-acceptance"]
+    assert stale.message.endswith("but the finding is error")
+
+
+@pytest.mark.parametrize(
+    ("declare", "message"),
+    [
+        (lambda: _acceptance(rule="Reused Body"), "names no linter rule"),
+        (lambda: _acceptance(expect=""), "expects no finding"),
+    ],
+)
+def test_acceptance_declarations_that_cannot_mean_anything_are_rejected(
+    declare, message
+):
+    with pytest.raises(corrections.CorrectionError, match=message):
+        declare()
+
+
 def _origin_row(name, code, data_type, must=(), must_not=()):
     return ast.AvpTableRow(
         name=name,
@@ -889,13 +1026,7 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29109-i10.dad": {"registry-avp-name": ["NAF-Id"]},
-    "29128-i00.dad": {
-        "reused-body-differs": [
-            "Monitoring-Event-Configuration",
-            "Monitoring-Event-Report",
-            "Terminal-Information",
-        ],
-    },
+    "29128-i00.dad": {"reused-body-differs": ["Terminal-Information"]},
     "29172-i10.dad": {
         "reused-origin-indirect": ["Service-Selection"],
     },
@@ -934,11 +1065,8 @@ _STANDING_CORPUS_NOTES = {
             "Visited-PLMN-Id",
         ],
         "reused-body-differs": [
-            "Monitoring-Event-Configuration",
-            "Monitoring-Event-Report",
             "ProSe-Subscription-Data",
             "Supported-Services",
-            "UE-Reachability-Configuration",
         ],
         "reused-origin-indirect": ["Charged-Party"],
         "reused-reprint": [
@@ -951,7 +1079,6 @@ _STANDING_CORPUS_NOTES = {
     "29273-i60.dad": {
         "origin-not-in-corpus": ["TS283.034"],
         "registry-avp-document": ["3GPP-AAA-Server-Name"],
-        "reused-body-differs": ["SIP-Auth-Data-Item"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
         "unresolved-reference": ["NSWO-Authorization"],
@@ -984,16 +1111,11 @@ _STANDING_CORPUS_NOTES = {
             "Supported-Services",
         ],
         "reused-body-differs": [
-            "Additional-Serving-Node",
             "MME-Location-Information",
             "SGSN-Location-Information",
-            "Serving-Node",
         ],
         "reused-origin-indirect": ["User-CSG-Information"],
         "reused-reprint": ["EPS-Location-Information"],
-    },
-    "29337-i00.dad": {
-        "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
     },
     "29338-i20.dad": {
         "registry-avp-name": [
@@ -1001,23 +1123,15 @@ _STANDING_CORPUS_NOTES = {
             "MSC-Absent-User-Diagnostic-SM",
             "SGSN-Absent-User-Diagnostic-SM",
         ],
-        "reused-body-differs": ["Additional-Serving-Node", "Serving-Node"],
+        "reused-body-differs": ["Serving-Node"],
     },
     "29345-i00.dad": {
         "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],
-    },
-    "29388-i10.dad": {
-        "reused-body-differs": ["V2X-Subscription-Data"],
     },
     "32299-i00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
         "origin-not-in-corpus": ["TS283.034, TS29.140"],
-        "reused-body-differs": [
-            "Multiple-Services-Credit-Control",
-            "Used-Service-Unit",
-        ],
-        "reused-extension": ["OC-OLR"],
         "reused-origin-indirect": [
             "3GPP2-BSID",
             "Priority-Indication",
@@ -1049,7 +1163,6 @@ _STANDING_CORPUS_NOTES = {
         "reused-row-mismatch": [
             "Feature-List",
             "Feature-List-ID",
-            "Supported-Features",
         ],
         "unresolved-reference": [
             "M2M-Information",
@@ -1066,13 +1179,72 @@ _STANDING_CORPUS_NOTES = {
 }
 
 
+# Notes the specifications' corrections modules accept as overrides their
+# documents state, by acceptance (docs/linter.md#standing-findings).
+_ACCEPTED_CORPUS_NOTES = {
+    "29128-i00.dad": {
+        "reused-body-differs": [
+            "TS29.128.py#monitoring-event-configuration-t6a-body",
+            "TS29.128.py#monitoring-event-report-t6a-body",
+        ],
+    },
+    "29272-i70.dad": {
+        "reused-body-differs": [
+            "TS29.272.py#monitoring-event-configuration-s6a-body",
+            "TS29.272.py#monitoring-event-report-s6a-body",
+            "TS29.272.py#ue-reachability-configuration-s6a-body",
+        ],
+    },
+    "29273-i60.dad": {
+        "reused-body-differs": ["TS29.273.py#sip-auth-data-item-swx-body"],
+    },
+    "29336-i20.dad": {
+        "reused-body-differs": [
+            "TS29.336.py#additional-serving-node-t4-body",
+            "TS29.336.py#serving-node-t4-body",
+        ],
+    },
+    "29337-i00.dad": {
+        "reused-body-differs": [
+            "TS29.337.py#additional-serving-node-t4-body",
+            "TS29.337.py#serving-node-t4-body",
+        ],
+    },
+    "29338-i20.dad": {
+        "reused-body-differs": ["TS29.338.py#additional-serving-node-body"],
+    },
+    "29388-i10.dad": {
+        "reused-body-differs": ["TS29.388.py#v2x-subscription-data-v4-body"],
+    },
+    "32299-i00.dad": {
+        "reused-body-differs": [
+            "TS32.299.py#multiple-services-credit-control-charging-body",
+            "TS32.299.py#used-service-unit-charging-body",
+        ],
+        "reused-extension": ["TS32.299.py#oc-olr-extension"],
+        "reused-row-mismatch": ["TS32.299.py#supported-features-charging-m"],
+    },
+}
+
+
 def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
     books = corpus.Corpus.load(_corpus(raw=False))
     actual = {}
+    accepted = {}
     for entry in books:
+        declared = corrections.load(
+            Path(__file__).parent.parent / "edits" / "corrections",
+            entry.spec.specification,
+        )
         notes = {}
-        for finding in linter.lint_with_corpus(entry.spec, books):
-            assert finding.severity is linter.Severity.NOTE, (entry.path, finding)
+        for finding in linter.lint_with_corpus(
+            entry.spec, books, corrections.acceptances(declared)
+        ):
+            assert finding.severity is not linter.Severity.ERROR, (entry.path, finding)
+            if finding.severity is linter.Severity.ACCEPTED:
+                by_rule = accepted.setdefault(entry.path.name, {})
+                by_rule.setdefault(finding.rule, []).append(finding.accepted_by)
+                continue
             # Missing origins are grouped in one finding per file; all other
             # standing notes start with the affected AVP's name.
             subject = (
@@ -1084,6 +1256,7 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
         if notes:
             actual[entry.path.name] = notes
     assert actual == _STANDING_CORPUS_NOTES
+    assert accepted == _ACCEPTED_CORPUS_NOTES
 
 
 def _registry_spec(*sections):

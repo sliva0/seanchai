@@ -26,6 +26,11 @@ output back in makes every `expect` fail, because treating an already-applied
 correction as a no-op would make "already corrected" indistinguishable from
 "fixed upstream".
 
+A module may also declare `Accept`s, which change nothing: each
+acknowledges one linter finding on the corrected file as a deliberate
+override its document states, so `seanchai lint --corpus` reports it apart
+from the open findings. Applying a module skips them.
+
 Beside field replacement there are three narrow structural operations:
 `Delete` for a node that should not exist at all, `Insert` for an AVP-table row
 the source defines but omits from the table, and `Supply` for the value list of
@@ -585,8 +590,50 @@ class Supply:
         return _cited(self)
 
 
-# What a corrections module may declare.
+@dataclass(frozen=True)
+class Accept:
+    """Acknowledge one linter finding on the corrected file as deliberate.
+
+    Some findings are a document saying on purpose what another says
+    otherwise: TS 29.336 clause 6.4.12 prints its own `Serving-Node` body
+    for T4-triggering, with the combinations its interface allows, and the
+    linter's `reused-body-differs` note is then no open question. An
+    acceptance changes no data; `seanchai lint --corpus` reports the
+    finding as `accepted` instead of as a note, and `reason` cites the
+    clause that makes the override deliberate.
+
+    `rule` names the linter rule, `target` the node the finding is about,
+    by the selectors corrections use, and `expect` is the finding's message,
+    exactly. All three must match one finding, a note, so an acceptance
+    stops matching when its document changes what it says, and a stale one
+    is an error (`linter.accept`).
+    """
+
+    id: str
+    rule: str
+    target: Selector
+    expect: str
+    reason: str
+    versions: str | VersionRange = "*..*"
+    origin: str = ""
+
+    def __post_init__(self) -> None:
+        _check_id(self.id)
+        object.__setattr__(self, "versions", VersionRange.parse(self.versions))
+        if not _ID_RE.fullmatch(self.rule):
+            raise CorrectionError(f"{self.id}: {self.rule!r} names no linter rule")
+        if not self.expect:
+            raise CorrectionError(f"{self.id}: an acceptance expects no finding")
+
+    @property
+    def cited(self) -> str:
+        return _cited(self)
+
+
+# What a corrections module may declare: the edits `apply` makes, and the
+# acceptances it skips.
 Edit = Correction | Delete | Insert | Supply
+Declaration = Edit | Accept
 
 
 _ID_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
@@ -599,7 +646,7 @@ def _check_id(value: object) -> None:
         )
 
 
-def _cited(edit: Edit) -> str:
+def _cited(edit: Declaration) -> str:
     """How a `.dad` note refers to an edit: `TS29.272.py#area-scope-vendor`
     once loaded from a module, the bare id before that."""
     return f"{edit.origin}#{edit.id}" if edit.origin else edit.id
@@ -981,16 +1028,26 @@ def _rebuilt(node: Any, path: ast.TreePath, out: ast.TreePath, plan: _Plan) -> A
 
 
 def apply(
-    spec: ast.Specification, corrections: Sequence[Edit]
+    spec: ast.Specification, corrections: Sequence[Declaration]
 ) -> tuple[ast.Specification, list[Result]]:
-    """Apply every edit, or none of them.
+    """Apply every edit, or none of them; acceptances are skipped.
 
     Each edit is resolved and checked against the original tree before
     anything is rebuilt, so a failing one cannot leave a half-corrected
     file behind.
     """
-    applied = _applied(spec, corrections)
+    applied = _applied(spec, edits(corrections))
     return applied.rebuilt, applied.results
+
+
+def edits(declarations: Sequence[Declaration]) -> list[Edit]:
+    """The declarations that change data, in declaration order."""
+    return [item for item in declarations if not isinstance(item, Accept)]
+
+
+def acceptances(declarations: Sequence[Declaration]) -> list[Accept]:
+    """The declarations acknowledging linter findings, in declaration order."""
+    return [item for item in declarations if isinstance(item, Accept)]
 
 
 @dataclass
@@ -1154,7 +1211,7 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
 def apply_with_comments(
     spec: ast.Specification,
     comments: formatter.Comments,
-    corrections: Sequence[Edit],
+    corrections: Sequence[Declaration],
 ) -> tuple[ast.Specification, list[Result], formatter.Comments]:
     """`apply` for a tree with `;;` comments of its own, as
     `parser.parse_with_comments` returns them: the comments come back keyed
@@ -1171,7 +1228,7 @@ def apply_with_comments(
     line, ahead of the note. Where a comment and a note trail one line, the
     comment comes first.
     """
-    applied = _applied(spec, corrections)
+    applied = _applied(spec, edits(corrections))
     # Per place, in print order: each note or comment with the input
     # position it belongs at, and whether it is an edit's note.
     places: dict[tuple[str, ast.TreePath], list[tuple[int, str, bool]]] = {}
@@ -1432,8 +1489,9 @@ def module_path(directory: Path, specification: str) -> Path:
 
 def load(
     directory: Path | None, specification: str, required: bool = False
-) -> list[Edit]:
-    """Read `<directory>/<SpecRef>.py` and return its `CORRECTIONS` list.
+) -> list[Declaration]:
+    """Read `<directory>/<SpecRef>.py` and return its `CORRECTIONS` list,
+    acceptances included.
 
     The file name is derived from the specification, so a corrections file
     cannot be applied to the wrong document. Importing it executes Python from
@@ -1443,8 +1501,9 @@ def load(
     `required` distinguishes the two callers. Extraction over a corpus may pass
     a directory that holds modules for some of its specifications, so a missing
     module is an ordinary empty result. `seanchai correct` was asked for exactly
-    one specification's corrections, so a missing or empty module there means a
-    typo silently produced an uncorrected file, and it fails instead.
+    one specification's corrections, so a missing module, or one declaring no
+    edit, means a typo silently produced an uncorrected file, and it fails
+    instead.
     """
     if directory is None:
         if required:
@@ -1458,12 +1517,12 @@ def load(
             )
         return []
     corrections = _corrections_of(path)
-    if required and not corrections:
+    if required and not edits(corrections):
         raise CorrectionError(f"{path} declares no corrections")
     return corrections
 
 
-def _corrections_of(path: Path) -> list[Edit]:
+def _corrections_of(path: Path) -> list[Declaration]:
     module_spec = importlib.util.spec_from_file_location(path.stem, path)
     if module_spec is None or module_spec.loader is None:
         raise CorrectionError(f"cannot load corrections from {path}")
@@ -1488,11 +1547,12 @@ def _corrections_of(path: Path) -> list[Edit]:
             f"{path}: CORRECTIONS must be a list, not a {type(corrections).__name__}"
         )
     if not all(
-        isinstance(item, Correction | Delete | Insert | Supply) for item in corrections
+        isinstance(item, Correction | Delete | Insert | Supply | Accept)
+        for item in corrections
     ):
         raise CorrectionError(
-            f"{path}: CORRECTIONS must hold Correction, Delete, Insert or Supply"
-            " objects"
+            f"{path}: CORRECTIONS must hold Correction, Delete, Insert, Supply"
+            " or Accept objects"
         )
     seen: set[str] = set()
     for item in corrections:

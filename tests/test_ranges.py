@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from seanchai import ranges
+from seanchai.dad import corrections
 from seanchai.versions import VersionRange
 
 _EDITS = Path(__file__).parent.parent / "edits"
@@ -131,6 +132,42 @@ def test_a_corrections_literal_is_replaced_in_place(tmp_path):
         "TS29.999.py:34: versions 18.6.0 -> 18.6.0..18.7.0",
     ]
     assert expansion.remaining == []
+
+
+_ACCEPTANCE = (
+    "from seanchai.dad.corrections import Accept, definition\n"
+    "CORRECTIONS = [Accept(id='a', rule='reused-body-differs',"
+    " target=definition('A'), expect='m', reason='r', versions='18.6.0')]\n"
+)
+
+
+def test_a_matching_acceptance_literal_is_widened_like_a_correction(tmp_path):
+    path = tmp_path / "TS29.999.py"
+    path.write_text(_ACCEPTANCE, encoding="utf-8")
+
+    expansion = ranges.expand_corrections(
+        tmp_path, "3GPP TS 29.999", "18.7.0", accepted={"TS29.999.py#a"}
+    )
+
+    assert path.read_text(encoding="utf-8") == _ACCEPTANCE.replace(
+        "versions='18.6.0'", "versions='18.6.0..18.7.0'"
+    )
+    assert expansion.remaining == expansion.stale == []
+
+
+def test_an_acceptance_matching_no_finding_is_reported_stale_not_widened(tmp_path):
+    """A clean rebuild checks no acceptance: widening one the caller did not
+    find matching would carry a stale acknowledgement to the new version."""
+    path = tmp_path / "TS29.999.py"
+    path.write_text(_ACCEPTANCE, encoding="utf-8")
+
+    expansion = ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
+
+    assert path.read_text(encoding="utf-8") == _ACCEPTANCE
+    assert expansion.widened == expansion.remaining == []
+    assert expansion.stale == [
+        "TS29.999.py:2: versions 18.6.0: acceptance TS29.999.py#a matches no finding"
+    ]
 
 
 def test_a_range_built_by_an_expression_is_left_for_a_person(tmp_path):
@@ -264,10 +301,15 @@ def test_every_committed_range_is_one_the_rewrite_can_reach(tmp_path, path):
     to a far version leaves nothing for a person and changes only them."""
     copy = tmp_path / path.name
     copy.write_bytes(path.read_bytes())
-    # `spec_ref` accepts its own canonical form back.
-    expansion = ranges.expand_corrections(tmp_path, path.stem, "99.0.0")
+    # `spec_ref` accepts its own canonical form back. Every acceptance is
+    # taken as matching: what is pinned here is that each literal is reachable.
+    accepted = {
+        acceptance.cited
+        for acceptance in corrections.acceptances(corrections.load(tmp_path, path.stem))
+    }
+    expansion = ranges.expand_corrections(tmp_path, path.stem, "99.0.0", accepted)
 
-    assert expansion.remaining == []
+    assert expansion.remaining == expansion.stale == []
     before = path.read_bytes().splitlines()
     after = copy.read_bytes().splitlines()
     changed = [old for old, new in zip(before, after, strict=True) if old != new]

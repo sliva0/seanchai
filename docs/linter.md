@@ -8,12 +8,15 @@ contradictions, the linter says them out loud.
 uv run seanchai lint dad/3gpp/rel-18/*.dad
 uv run seanchai lint --no-notes FILE.dad          # errors only
 uv run seanchai lint --corpus dad FILE.dad        # also the cross-file rules
+uv run seanchai lint --corpus dad --show-accepted FILE.dad
 uv run seanchai lint --output-format concise ...  # file: severity: [rule] message
 ```
 
 Errors exit non-zero; notes do not. **Error** means the file asserts two
 things that cannot both be true. **Note** means something a single file
-cannot judge.
+cannot judge. **Accepted** is a note the specification's corrections module
+acknowledges as an override its document states on purpose
+([below](#acceptances)).
 
 ## Single-file rules
 
@@ -148,6 +151,30 @@ rules stay silent.
   list are not reported: IETF ids are IANA's, and TS 29.230 lists only
   3GPP's.
 
+## Acceptances
+
+A note can be a document saying deliberately what another says otherwise:
+TS 29.336 clause 6.4.12 says `Serving-Node` "is originally defined in 3GPP
+TS 29.173" and then prints the body T4-triggering uses, with the member
+combinations it allows. An `Accept` in the specification's corrections
+module ([corrections.md](corrections.md#acceptances)) acknowledges such a
+note, citing the clause; it changes no data. With `--corpus`, `seanchai
+lint` reads the module (`--corrections`, by default `edits/corrections`)
+for every file but a raw one, which the acceptances do not describe, and
+reports each acknowledged note as `accepted[rule]`, citing the acceptance
+(`TS29.336.py#serving-node-t4-body`). Accepted findings are counted apart
+in the summary line and printed only with `--show-accepted`.
+
+An acceptance matches one finding: its rule, its message exactly, and the
+node its target selects, which must be one the finding is about. A finding
+records the tree paths of its nodes (the definition whose body differs,
+each row of a name the tables disagree on), so a target is told from
+another definition of the same name in another clause; a rule that records
+none cannot be accepted. One matching none is a
+`stale-acceptance` error, naming what the finding now reads where one is
+about that node, so a document that changes what it says re-opens the
+note. An error is never accepted.
+
 ## Resolving an origin
 
 A re-used row names a specification, never a version. The rule is **match
@@ -176,18 +203,27 @@ rules) is reconciled before comparing.
 
 Two tests in `tests/test_linter.py` pin what the committed corpus reports:
 every raw file's single-file findings, and every corrected file's cross-file
-notes. The corrected corpus has no errors; "clean" stays distinguishable from
-"the rules never match". What still reports, and why each stays:
+notes and accepted findings. The corrected corpus has no errors; "clean"
+stays distinguishable from "the rules never match". What still reports, and
+why each stays:
 
 - **`reused-reprint`, `reused-body-differs`, `reused-origin-indirect`.** Two
   documents describe one AVP, and only the origin's editor knows which copy is
   current; correcting either would invent an agreement. TS 29.330's `Load`
   goes through TS 29.229 to RFC 8583, an indirect origin, and TS 32.299's
   `3GPP2-BSID` (table 7.3.1, reference [215]) through TS 29.212 to 3GPP2
-  X.S0057. The
-  `reused-body-differs` cases are mostly `Serving-Node`-style AVPs whose
-  clauses say they originate elsewhere and then print interface-specific
-  bodies (29.128, 29.272, 29.283, 29.336, 29.337, 29.338, 29.388).
+  X.S0057. Six `reused-body-differs` stay open with clauses saying only
+  where the AVP was "originally defined" before printing a body of their
+  own: TS 29.128's `Terminal-Information` (6.4.30), TS 29.272's
+  `ProSe-Subscription-Data` (7.3.180) and `Supported-Services` (7.3.199,
+  naming no origin), TS 29.336's `MME-Location-Information` and
+  `SGSN-Location-Information` (8.4.34, 8.4.35), and TS 29.283's
+  `User-Identifier` (7.3.8), which "is extended to contain either an MCPTT
+  ID, an MCVideo ID or an MCData ID" but also drops four of TS 29.336's
+  members, which the clause does not say. A seventh is TS 29.338's
+  `Serving-Node` (5.3.3.6): its clause lists the member combinations
+  allowed, as its siblings' do, but its body also adds `IP-SM-GW-Realm`,
+  which no combination and no other line of the document names.
 - **`origin-not-in-corpus`.** Every missing origin is outside 3GPP/IETF
   (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057) or has no
   Release 18 version: TS 29.140, cited by TS 32.299 for `VAS-Id` and
@@ -200,22 +236,26 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   `3GPP-SGSN-Address`, `3GPP-SGSN-IPv6-Address`, `3GPP-IMEISV`,
   `3GPP-RAT-Type`, `3GPP-User-Location-Info` and `3GPP-MS-TimeZone` with M
   in M.not in table 9a (clause 16a.5, Gi/SGi) and in Must in table 10
-  (clause 17.7.0, Gmb). TS 29.273 sets M for `AN-Trusted` in tables
-  5.2.3.1/1 and 6.2.3.1/1 but not in 8.2.3.0/1, and types
-  `Mobile-Node-Identifier` UTF8String in 5.2.3.1/1 and 6.2.3.1/1 but
-  OctetString in 7.2.3.1/1. Which reading an interface uses is the
-  document's to say; the model reads the first row
-  ([consumers.md](consumers.md)).
-- **`reused-row-mismatch`**, three. TS 32.299 table 7.2.0.1 types
-  `Feature-List`, `Feature-List-ID` and `Supported-Features` by `refer
-  [204]` (TS 29.229) and prints its own flags, setting M for the charging
-  application where 29.229 puts it in Must not (May for
-  `Supported-Features`). Clause 7.2.0 refers to the origin for the
-  description, not the flags. Where the citing clause defers to the origin,
-  the row was corrected instead: TS 29.273's three `RAT-Type` rows (M in
-  Must; clauses 5.2.3.6 and 8.2.3.5 follow TS 29.212, whose table sets M
-  in Must not, and the re-used tables print no M-bit override), and TS
-  32.299 table 7.1.0.1's `Acct-Multi-Session-Id` (Unsigned32 against RFC
+  (clause 17.7.0, Gmb). Clause 17.7.0's "All AVPs in table 10 are
+  mandatory within Gmb interface unless otherwise stated" follows "The Gmb
+  specific AVPs require to be supported to be compliant": it is about
+  support, not the M bit, so nothing makes the difference deliberate. TS
+  29.273 sets M for `AN-Trusted` in tables 5.2.3.1/1 and 6.2.3.1/1 but not
+  in 8.2.3.0/1, and types `Mobile-Node-Identifier` UTF8String in 5.2.3.1/1
+  and 6.2.3.1/1 but OctetString in 7.2.3.1/1; the tables' notes explain
+  M-bit overrides for re-used AVPs only. Which reading an interface uses is the document's to
+  say; the model reads the first row ([consumers.md](consumers.md)).
+- **`reused-row-mismatch`**, two. TS 32.299 table 7.2.0.1 types
+  `Feature-List` and `Feature-List-ID` by `refer [204]` (TS 29.229) and
+  prints its own flags, setting M for the charging application where
+  29.229 puts it in Must not. Clause 7.2.0 refers to the origin for the
+  description and gives the table "along with the AVP flag rules", but no
+  clause says why charging sets M on these two, as clause 6.5.10.3 does
+  for `Supported-Features` (accepted, below). Where the citing clause
+  defers to the origin, the row was corrected instead: TS 29.273's three
+  `RAT-Type` rows (M in Must; clauses 5.2.3.6 and 8.2.3.5 follow TS 29.212,
+  whose table sets M in Must not, and the re-used tables print no M-bit
+  override), and TS 32.299 table 7.1.0.1's `Acct-Multi-Session-Id` (Unsigned32 against RFC
   6733's UTF8String) and `Experimental-Result`/`-Code` (M in Must not, the
   cell RFC 6733's table gives the Error-Reporting-Host row above them).
 - **`registry-range-overlap`**, six, all in TS 29.230 as printed: table
@@ -307,3 +347,35 @@ notes. The corrected corpus has no errors; "clean" stays distinguishable from
   it for only the one, and sharing a name is no citation.
   The rule promotes to an error when these are gone, which needs the
   upstream documents to move.
+
+Accepted, by acceptance (`edits/corrections/<SpecRef>.py#<id>`), each
+citing the clause that makes the override deliberate:
+
+- **`reused-body-differs`**, fourteen. Clauses printing a format for their
+  interface: `TS29.128.py#monitoring-event-configuration-t6a-body` and
+  `#monitoring-event-report-t6a-body` (6.4.2, 6.4.3: "For the T6a/T6b
+  interface, the … AVP format is specified as following"),
+  `TS29.272.py#monitoring-event-configuration-s6a-body`,
+  `#monitoring-event-report-s6a-body` and
+  `#ue-reachability-configuration-s6a-body` (7.3.195–7.3.197, "For S6a/S6d
+  interface"), `TS29.388.py#v2x-subscription-data-v4-body` (6.3.2, "AVP
+  format when used over V4 interface") and
+  `TS29.273.py#sip-auth-data-item-swx-body` (8.2.3.9, "The optional AVPs
+  that are needed in SWx reference point are included in the ABNF
+  representation below"). `Serving-Node` and `Additional-Serving-Node`,
+  whose clauses list the member combinations allowed, naming every member
+  the body adds and none it drops: `TS29.336.py#serving-node-t4-body` and
+  `#additional-serving-node-t4-body` (6.4.12, 6.4.13),
+  `TS29.337.py#serving-node-t4-body` and `#additional-serving-node-t4-body`
+  (6.3.3, 6.3.4) and `TS29.338.py#additional-serving-node-body` (5.3.3.7).
+  And
+  `TS32.299.py#multiple-services-credit-control-charging-body` and
+  `#used-service-unit-charging-body` (7.1.9, 7.1.14: "It contains
+  additional 3GPP specific charging parameters"; the members they drop are
+  struck, "not used by 3GPP").
+- **`reused-extension`**, one. `TS32.299.py#oc-olr-extension` (B.2.4: "It
+  has been extended compared to the IETF RFC 7683").
+- **`reused-row-mismatch`**, one.
+  `TS32.299.py#supported-features-charging-m`: clause 6.5.10.3 answers a
+  server not supporting Supported-Features "as per 'M' bit set rule" with
+  DIAMETER_AVP_UNSUPPORTED, where TS 29.229 leaves M in May.

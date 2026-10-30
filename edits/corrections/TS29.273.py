@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Delete,
     Insert,
@@ -423,6 +424,23 @@ CORRECTIONS += [
             " allocates 1515 to 'Reserved' (TS 29.273); table 9.2.3.1.5/1"
             " carries the indication as RAR-Flags bit 0"
         ),
+        versions="18.6.0",
+    ),
+]
+
+# Findings the linter reports that the document makes on purpose; they
+# change no data (docs/corrections.md).
+CORRECTIONS += [
+    Accept(
+        id="sip-auth-data-item-swx-body",
+        rule="reused-body-differs",
+        target=definition("SIP-Auth-Data-Item"),
+        expect="SIP-Auth-Data-Item's body, against TS29.229's definition: missing "
+        "Framed-IP-Address, Framed-IPv6-Prefix, Framed-Interface-Id, Line-Identifier, "
+        "SIP-Authentication-Context, SIP-Digest-Authenticate",
+        reason="clause 8.2.3.9: 'The SIP-Auth-Data-Item AVP is defined in 3GPP TS "
+        "29.229 [24]. The optional AVPs that are needed in SWx reference point are "
+        "included in the ABNF representation below.'",
         versions="18.6.0",
     ),
 ]

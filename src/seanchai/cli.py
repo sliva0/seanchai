@@ -20,9 +20,11 @@ if TYPE_CHECKING:
     from .dad.formatter import Comments
 
 # The two declared edit layers live side by side; only the source
-# declarations (input patches and quirks) are discovered automatically,
-# because loading a correction module executes Python from that directory.
+# declarations (input patches and quirks) are discovered automatically by
+# every command, because loading a correction module executes Python from
+# that directory. `regenerate` and `lint` default to the repository's own.
 _DEFAULT_SOURCES = Path("edits") / "sources"
+_DEFAULT_CORRECTIONS = Path("edits") / "corrections"
 
 
 class _HelpFormatter(click.HelpFormatter):
@@ -241,10 +243,10 @@ def extract_rfc(
 @click.option(
     "--corrections",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    default=Path("edits") / "corrections",
+    default=_DEFAULT_CORRECTIONS,
     show_default=True,
     help="Directory with per-spec correction modules. Defaulted here, unlike"
-    " the other commands, because this one exists to rebuild the repository's"
+    " extract's and correct's, because this one exists to rebuild the repository's"
     " own corpus from its own edit layers.",
 )
 @click.option(
@@ -502,11 +504,28 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
     " `concise` prints one greppable `file: severity: [rule] ...` line per"
     " finding.",
 )
+@click.option(
+    "--corrections",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=_DEFAULT_CORRECTIONS,
+    show_default=True,
+    help="Directory with per-spec correction modules, whose acceptances mark"
+    " deliberate overrides among a corrected file's findings; read with"
+    " --corpus only. Defaulted, like regenerate's, for the repository's own"
+    " corpus; a missing default directory is no acceptances.",
+)
+@click.option(
+    "--show-accepted",
+    is_flag=True,
+    help="Also print the findings an acceptance acknowledges (always counted).",
+)
 def lint(
     sources: tuple[Path, ...],
     notes: bool,
     corpus_paths: tuple[Path, ...],
     output_format: str,
+    corrections: Path,
+    show_accepted: bool,
 ) -> None:
     """Report structural inconsistencies in `.dad` files.
 
@@ -516,27 +535,52 @@ def lint(
     With `--corpus`, re-used AVPs are resolved against the other files it names
     and the cross-file rules run too. An origin the corpus does not hold is
     reported as a note and its rules are skipped, so a partial corpus is
-    useful rather than an error.
+    useful rather than an error. The specification's corrections module is
+    read too: a note one of its acceptances acknowledges is reported as
+    `accepted`, hidden unless `--show-accepted`, and an acceptance matching
+    no finding is an error. A raw (`.raw.dad`) file is linted without them,
+    since they describe the corrected one.
     """
     from .corpus import Corpus
+    from .dad import corrections as corrections_module
     from .dad import parser
     from .linter import Severity, lint_with_corpus
     from .linter import lint as lint_spec
 
-    counts = {Severity.ERROR: 0, Severity.NOTE: 0}
+    explicit = (
+        click.get_current_context().get_parameter_source("corrections")
+        is not click.core.ParameterSource.DEFAULT
+    )
+    if explicit and not corrections.is_dir():
+        raise click.BadParameter(
+            f"directory {str(corrections)!r} does not exist",
+            param_hint="'--corrections'",
+        )
+    directory = corrections if corrections.is_dir() else None
+    counts = dict.fromkeys(Severity, 0)
     checked = 0
     with reported():
         books = Corpus.load(corpus_paths) if corpus_paths else None
         for source in sources:
             spec = parser.parse(source.read_text(encoding="utf-8"))
-            findings = (
-                lint_spec(spec) if books is None else lint_with_corpus(spec, books)
-            )
+            if books is None:
+                findings = lint_spec(spec)
+            else:
+                accepts = (
+                    []
+                    if source.name.endswith(".raw.dad")
+                    else corrections_module.acceptances(
+                        corrections_module.load(directory, spec.specification)
+                    )
+                )
+                findings = lint_with_corpus(spec, books, accepts)
             if not notes:
                 findings = [f for f in findings if f.severity is Severity.ERROR]
             checked += 1
             for finding in findings:
                 counts[finding.severity] += 1
+            if not show_accepted:
+                findings = [f for f in findings if f.severity is not Severity.ACCEPTED]
             if output_format == "concise":
                 for finding in findings:
                     click.echo(f"{source}: {finding}")
@@ -553,8 +597,9 @@ def _echo_findings(source: Path, findings) -> None:
     from .linter import Severity
 
     click.secho(str(source), bold=True)
-    color = {Severity.ERROR: "red", Severity.NOTE: "cyan"}
-    for finding in sorted(findings, key=lambda f: f.severity is not Severity.ERROR):
+    color = {Severity.ERROR: "red", Severity.NOTE: "cyan", Severity.ACCEPTED: "green"}
+    order = list(Severity)
+    for finding in sorted(findings, key=lambda f: order.index(f.severity)):
         severity = click.style(finding.severity.value, fg=color[finding.severity])
         rule = click.style(f"[{finding.rule}]", dim=True)
         where = (
@@ -562,7 +607,12 @@ def _echo_findings(source: Path, findings) -> None:
             if finding.section
             else ""
         )
-        click.echo(f"  {severity}{rule} {finding.message}{where}")
+        by = (
+            click.style(f" ({finding.accepted_by})", dim=True)
+            if finding.accepted_by
+            else ""
+        )
+        click.echo(f"  {severity}{rule} {finding.message}{where}{by}")
     click.echo()
 
 
@@ -572,10 +622,13 @@ def _summary(counts, checked: int) -> str:
     def plural(count: int, noun: str) -> str:
         return f"{count} {noun}{'' if count == 1 else 's'}"
 
+    # "accepted" is no noun to pluralise.
     found = ", ".join(
         click.style(
-            plural(count, severity.value),
-            fg="red" if severity is Severity.ERROR else "cyan",
+            f"{count} accepted"
+            if severity is Severity.ACCEPTED
+            else plural(count, severity.value),
+            fg={Severity.ERROR: "red", Severity.NOTE: "cyan"}.get(severity, "green"),
             bold=severity is Severity.ERROR,
         )
         for severity, count in counts.items()

@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Delete,
     Insert,
@@ -186,6 +187,35 @@ CORRECTIONS += [
         " 8.2.4's CIA; RFC 6733 section 3 makes that an answer, clause 8.2.6's"
         " RIA is the answer to command 8388719, and TS 29.128 clause 6.2.5"
         " prints the RIR header with REQ",
+        versions="18.2.0",
+    ),
+]
+
+# Findings the linter reports that the document makes on purpose; they
+# change no data (docs/corrections.md).
+CORRECTIONS += [
+    Accept(
+        id="serving-node-t4-body",
+        rule="reused-body-differs",
+        target=definition("Serving-Node"),
+        expect="Serving-Node's body, against TS29.173's definition: adds "
+        "IP-SM-GW-Name, IP-SM-GW-Number, IP-SM-GW-Realm, MME-Number-for-MT-SMS, "
+        "missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
+        reason="clause 6.4.12 says the AVP 'is originally defined in 3GPP TS 29.173 "
+        "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
+        "name every member its body adds and none it leaves out",
+        versions="18.2.0",
+    ),
+    Accept(
+        id="additional-serving-node-t4-body",
+        rule="reused-body-differs",
+        target=definition("Additional-Serving-Node"),
+        expect="Additional-Serving-Node's body, against TS29.173's definition: adds "
+        "MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, "
+        "LCS-Capabilities-Sets",
+        reason="clause 6.4.13 says the AVP 'is originally defined in 3GPP TS 29.173 "
+        "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
+        "name every member its body adds and none it leaves out",
         versions="18.2.0",
     ),
 ]

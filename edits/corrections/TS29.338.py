@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Insert,
     definition,
@@ -51,6 +52,23 @@ CORRECTIONS = [
         reason="clause 6.3.3.13's AVP format re-prints SM-RP-MTI's code 3308"
         " (clause 5.3.3.2); table 6.3.3.1-1 gives SMSMI-Correlation-ID the"
         " code 3324",
+        versions="18.2.0",
+    ),
+]
+
+# Findings the linter reports that the document makes on purpose; they
+# change no data (docs/corrections.md).
+CORRECTIONS += [
+    Accept(
+        id="additional-serving-node-body",
+        rule="reused-body-differs",
+        target=definition("Additional-Serving-Node"),
+        expect="Additional-Serving-Node's body, against TS29.173's definition: adds "
+        "MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, "
+        "LCS-Capabilities-Sets",
+        reason="clause 5.3.3.7 says the AVP 'is originally defined in 3GPP TS 29.173 "
+        "[10]' and lists the member combinations 'allowed', which name every member "
+        "its body adds and none it leaves out",
         versions="18.2.0",
     ),
 ]

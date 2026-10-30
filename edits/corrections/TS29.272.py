@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Insert,
     avp_rule,
@@ -187,4 +188,46 @@ CORRECTIONS += [
             versions="18.7.0",
         ),
     )
+]
+
+# Findings the linter reports that the document makes on purpose; they
+# change no data (docs/corrections.md).
+CORRECTIONS += [
+    Accept(
+        id="monitoring-event-configuration-s6a-body",
+        rule="reused-body-differs",
+        target=definition("Monitoring-Event-Configuration"),
+        expect="Monitoring-Event-Configuration's body, against TS29.336's definition: "
+        "adds External-Identifier, SCEF-Realm, missing Association-Type, "
+        "DL-Buffering-Suggested-Packet-Count, Exclude-Identifiers, "
+        "Include-Identifiers, Maximum-Detection-Time, PLMN-ID-Requested",
+        reason="clause 7.3.195: 'It is originally defined in TS 29.336 [54]. For "
+        "S6a/S6d interface, the Monitoring-Event-Configuration AVP format is specified "
+        "as following'",
+        versions="18.7.0",
+    ),
+    Accept(
+        id="monitoring-event-report-s6a-body",
+        rule="reused-body-differs",
+        target=definition("Monitoring-Event-Report"),
+        expect="Monitoring-Event-Report's body, against TS29.336's definition: missing "
+        "Event-Handling, IMEI-Change, Roaming-Information, "
+        "SCEF-Reference-ID-for-Deletion, SCEF-Reference-ID-for-Deletion-Ext, "
+        "Service-Report, Terminal-Information, Visited-PLMN-Id",
+        reason="clause 7.3.196: 'It is originally defined in TS 29.336 [54]. For "
+        "S6a/S6d interface, the Monitoring-Event-Report AVP format is specified as "
+        "following'",
+        versions="18.7.0",
+    ),
+    Accept(
+        id="ue-reachability-configuration-s6a-body",
+        rule="reused-body-differs",
+        target=definition("UE-Reachability-Configuration"),
+        expect="UE-Reachability-Configuration's body, against TS29.336's definition: "
+        "missing DL-Buffering-Suggested-Packet-Count, Maximum-Latency",
+        reason="clause 7.3.197: 'It is originally defined in TS 29.336 [54]. For "
+        "S6a/S6d interface, the UE-Reachability-Configuration AVP format is specified "
+        "as following'",
+        versions="18.7.0",
+    ),
 ]

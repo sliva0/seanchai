@@ -2,9 +2,11 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Insert,
     avp_rule,
+    definition,
     reused_avps,
     reused_row,
 )
@@ -72,6 +74,38 @@ CORRECTIONS += [
         reason="the DTR ABNF (clause 6.2.3) uses table 6.3.1/2's"
         " SMS-Application-Port-ID; TS 29.368 clause 6.4.11 defines the AVP as"
         " Application-Port-Identifier",
+        versions="18.0.0",
+    ),
+]
+
+# Findings the linter reports that the document makes on purpose; they
+# change no data (docs/corrections.md).
+CORRECTIONS += [
+    Accept(
+        id="serving-node-t4-body",
+        rule="reused-body-differs",
+        target=definition("Serving-Node"),
+        expect="Serving-Node's body, against TS29.173's definition: adds "
+        "IP-SM-GW-Name, IP-SM-GW-Number, IP-SM-GW-Realm, MME-Number-for-MT-SMS, "
+        "SMSF-3GPP-Name, SMSF-3GPP-Number, SMSF-3GPP-Realm, SMSF-Non-3GPP-Name, "
+        "SMSF-Non-3GPP-Number, SMSF-Non-3GPP-Realm, missing 3GPP-AAA-Server-Name, "
+        "GMLC-Address, LCS-Capabilities-Sets",
+        reason="clause 6.3.3 says the AVP 'is originally defined in 3GPP TS 29.173 "
+        "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
+        "name every member its body adds and none it leaves out",
+        versions="18.0.0",
+    ),
+    Accept(
+        id="additional-serving-node-t4-body",
+        rule="reused-body-differs",
+        target=definition("Additional-Serving-Node"),
+        expect="Additional-Serving-Node's body, against TS29.173's definition: adds "
+        "MME-Number-for-MT-SMS, SMSF-3GPP-Name, SMSF-3GPP-Number, SMSF-3GPP-Realm, "
+        "SMSF-Non-3GPP-Name, SMSF-Non-3GPP-Number, SMSF-Non-3GPP-Realm, missing "
+        "3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
+        reason="clause 6.3.4 says the AVP 'is originally defined in 3GPP TS 29.173 "
+        "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
+        "name every member its body adds and none it leaves out",
         versions="18.0.0",
     ),
 ]

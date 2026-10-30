@@ -935,7 +935,7 @@ def test_committed_corrections_still_apply_to_committed_raw_output(raw):
 
     corrected, results = corrections.apply(spec, declared)
 
-    assert len(results) == len(declared)
+    assert len(results) == len(corrections.edits(declared))
     assert parser.parse(formatter.format_spec(corrected)) == corrected
 
 
@@ -965,7 +965,9 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     plus the module produces, so every `replace` is already the value in it and
     correcting it again must fail."""
     spec = parser.parse(path.read_text(encoding="utf-8"))
-    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+    declared = corrections.edits(
+        corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+    )
 
     # A name correction rewrites what every *sibling* correction's selector
     # matches on too: 29.338 fixes the name and the code of one misprinted
@@ -1206,6 +1208,29 @@ def test_a_module_may_declare_a_supply(tmp_path):
     assert isinstance(supply, corrections.Supply)
     assert supply.cited == "TS29.999.py#mode-values"
     assert supply.values == (ast.EnumValue(name="Off", value=0),)
+
+
+def test_an_acceptance_is_declared_beside_corrections_and_changes_nothing(
+    tmp_path,
+):
+    (tmp_path / "TS29.999.py").write_text(
+        "from seanchai.dad.corrections import Accept, definition\n"
+        "CORRECTIONS = [Accept(id='mode-body', rule='reused-body-differs',"
+        " target=definition('Example-Mode'), expect='a message',"
+        " reason='clause 6.3.2 prints its own body')]\n"
+    )
+
+    (accept,) = corrections.load(tmp_path, "3GPP TS 29.999")
+    spec = ast.Specification(
+        specification="3GPP TS 29.999", vendor_id=10415, sections=()
+    )
+
+    assert isinstance(accept, corrections.Accept)
+    assert accept.cited == "TS29.999.py#mode-body"
+    assert corrections.apply(spec, [accept]) == (spec, [])
+    # Nothing to correct is what `seanchai correct` refuses.
+    with pytest.raises(corrections.CorrectionError, match="declares no corrections"):
+        corrections.load(tmp_path, "3GPP TS 29.999", required=True)
 
 
 def test_loaded_corrections_cite_their_module_and_a_unique_id():
