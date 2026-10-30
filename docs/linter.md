@@ -114,7 +114,9 @@ order.
 An AVP's identity is `(vendor-id, code)`, and a `.dad` file supplies only
 half of it in its tables: no vendor column, and clause headers omit the vendor
 both for genuine IETF-space AVPs and when the document forgot. The file's own
-`; Vendor-ID:` supplies the other half for local rows. TS 29.229 gives 621 to
+`; Vendor-ID:` supplies the other half for local rows, except that a row
+whose V flag is Must-not is IETF space, vendor 0, as the model reads it
+(TS 29.229's `Digest-QoP` row is RFC 4590's code 110). TS 29.229 gives 621 to
 its own `Primary-Charging-Collection-Function-Name` and lists RFC 7683's
 `OC-Supported-Features` at 621 too; without the vendor those are a false
 collision. Vendor 0 (the IETF space, spelled as an absent vendor in header

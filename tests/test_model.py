@@ -65,12 +65,14 @@ def _table(*rows):
     )
 
 
-def _row(name, code, data_type=ast.DataType.UNSIGNED32):
+def _row(name, code, data_type=ast.DataType.UNSIGNED32, *, vendor="must"):
+    """A row flagging V under `vendor`: "must" for the file's space,
+    "must_not" for IETF space, "may" for a row that states neither."""
     return ast.AvpTableRow(
         name=name,
         code=code,
         data_type=data_type,
-        flag_rules=ast.AvpFlagRules(must=frozenset({ast.AvpFlag.VENDOR})),
+        flag_rules=ast.AvpFlagRules(**{vendor: frozenset({ast.AvpFlag.VENDOR})}),
     )
 
 
@@ -186,7 +188,9 @@ class TestResolutionOrder:
         citing = _spec(
             "3GPP TS 29.900",
             [
-                _table(_row("Digest-Thing", 7, ast.DataType.GROUPED)),
+                _table(
+                    _row("Digest-Thing", 7, ast.DataType.GROUPED, vendor="must_not")
+                ),
                 _reused("Digest-Thing", "RFC4590"),
             ],
         )
@@ -298,7 +302,11 @@ class TestHoles:
         citing = _spec(
             "3GPP TS 29.900",
             [
-                _table(_row("Digest-Realm", 104, ast.DataType.UTF8_STRING)),
+                _table(
+                    _row(
+                        "Digest-Realm", 104, ast.DataType.UTF8_STRING, vendor="must_not"
+                    )
+                ),
                 _reused("Digest-Realm", "RFC4590"),
             ],
         )
@@ -352,11 +360,12 @@ class TestHoles:
         )
 
     def test_a_table_rows_vendor_is_inferred_and_agrees_with_any(self):
-        """The origin only tabulates the AVP, so its vendor is its file's
-        `; Vendor-ID:`, which is no claim against the definition's."""
+        """The origin only tabulates the AVP, with V under May, so its vendor
+        is its file's `; Vendor-ID:`, which is no claim against the
+        definition's."""
         origin = _spec(
             "3GPP TS 29.901",
-            [_table(_row("Thing", 1, ast.DataType.GROUPED))],
+            [_table(_row("Thing", 1, ast.DataType.GROUPED, vendor="may"))],
             vendor_id=999,
         )
         reprint = _spec(
@@ -366,7 +375,40 @@ class TestHoles:
         resolved = _model(origin, reprint).resolve("TS29.900", "Thing")
         assert resolved is not None
         assert resolved.identity == (10415, 1)
-        assert ast.AvpFlag.VENDOR in resolved.flag_rules.must
+        assert ast.AvpFlag.VENDOR in resolved.flag_rules.may
+
+    def test_a_row_forbidding_v_is_ietf_space(self):
+        """TS 29.229's `Digest-QoP` row prints V under Must-not in vendor
+        10415's table; the AVP is RFC 4590's code 110 in vendor 0."""
+        spec = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(
+                    _row("Digest-QoP", 110, ast.DataType.UTF8_STRING, vendor="must_not")
+                )
+            ],
+        )
+        resolved = _model(spec).resolve("TS29.900", "Digest-QoP")
+        assert resolved is not None
+        assert resolved.identity == (0, 110)
+
+    def test_a_row_requiring_v_states_the_files_vendor(self):
+        """A row requiring V states its file's vendor, so a definition in
+        another vendor's space does not fill it."""
+        origin = _spec(
+            "3GPP TS 29.901",
+            [_table(_row("Thing", 1, ast.DataType.GROUPED))],
+            vendor_id=999,
+        )
+        reprint = _spec(
+            "3GPP TS 29.900",
+            [_grouped("Thing", 1, "A"), _reused("Thing", "TS29.901")],
+        )
+        built = _model(origin, reprint)
+        assert built.resolve("TS29.900", "Thing") is None
+        hole = built.hole("TS29.900", "Thing")
+        assert hole is not None
+        assert hole.conflict == "TS29.901"
 
     @pytest.mark.parametrize(
         ("theirs", "complete"),

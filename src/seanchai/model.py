@@ -23,17 +23,20 @@ and the policy is deliberately small:
   `reused-body-differs` or `table-definition-mismatch` would report is
   resolved here by the order above without comment. Run the linter to see
   what the policy papered over.
-- An AVP-table row with no matching definition and no re-used listing claims
-  the file's own `; Vendor-ID:` space, exactly as the linter's
-  `duplicate-identity` rule reads it; a definition written with no vendor-id
-  is IETF-space (vendor 0), the wire format's reading of an absent vendor.
+- An AVP-table row with no matching definition and no re-used listing is
+  IETF-space (vendor 0) where its V flag is Must-not and the file's own
+  `; Vendor-ID:` space otherwise, exactly as the linter's
+  `duplicate-identity` rule reads it (`AvpTableRow.stated_vendor`); a
+  definition written with no vendor-id is IETF-space, the wire format's
+  reading of an absent vendor.
 - A name tabulated in more than one of a file's AVP tables takes its table
   facts (flag rules; type and code when nothing defines it) from the first
   row in file order. `Model.table_rows` returns all of them, for the
   documents whose per-interface tables disagree.
 - A field the first reading in that order leaves unstated is taken from the
-  next reading, as long as every field both state agrees (a table row's
-  vendor, inferred from its file, agrees with any): a re-print tabulated
+  next reading, as long as every field both state agrees (a table row whose
+  V flag states no vendor infers it from its file, and agrees with any): a
+  re-print tabulated
   nowhere takes its origin's flag rules. A disagreeing reading fills
   nothing and is named in the hole instead.
 
@@ -264,8 +267,8 @@ class _Draft:
     name: str
     reference: str
     vendor_id: int | None = None
-    # False for a table row, whose vendor is the file's `; Vendor-ID:` rather
-    # than anything the row prints.
+    # False for a table row whose V flag states no vendor space, so that the
+    # vendor is the file's `; Vendor-ID:` rather than anything the row says.
     vendor_stated: bool = False
     code: int | None = None
     data_type: ast.DataType | None = None
@@ -284,11 +287,12 @@ class _Draft:
         AVP saying the same thing.
 
         Every field both readings state must be equal: code, type, flag
-        rules, and vendor where both state one. A table row's vendor is
-        inferred from its file, so it agrees with any: TS 29.229's row for
-        RFC 4590's `Digest-Realm` sits in vendor 10415's file, the origin's
-        row in vendor 0's. A reading that disagrees fills nothing, and
-        neither does any after it; the hole names it instead, since taking
+        rules, and vendor where both state one. A table row states its
+        vendor through its V flag (`AvpTableRow.stated_vendor`); one whose
+        V flag says neither is inferred from its file, and agrees with any:
+        TS 29.229's row for RFC 4590's `Digest-Realm` sits in vendor 10415's
+        file, the origin's row in vendor 0's. A reading that disagrees fills
+        nothing, and neither does any after it; the hole names it instead, since taking
         a `Time` row's missing flags from an `Unsigned32` reading would make
         one complete AVP out of two documents that disagree about it.
         """
@@ -709,11 +713,14 @@ class Model:
     def _from_row(
         self, view: _View, name: str, row: ast.AvpTableRow, unread: str | None
     ) -> _Draft:
+        file_vendor = view.entry.spec.vendor_id
+        stated = row.stated_vendor(file_vendor)
         return _Draft(
             Avp,
             name,
             view.entry.reference,
-            vendor_id=view.entry.spec.vendor_id,
+            vendor_id=file_vendor if stated is None else stated,
+            vendor_stated=stated is not None,
             code=row.code,
             data_type=row.data_type,
             flag_rules=row.flag_rules if _stated(row.flag_rules) else None,

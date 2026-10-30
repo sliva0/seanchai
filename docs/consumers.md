@@ -66,8 +66,14 @@ match-major-take-newest rule in [linter.md](linter.md#resolving-an-origin).
 **Filling through.** A field the first reading leaves unstated comes from
 the next reading along the order, if the two are the same AVP saying the
 same thing: every field both state — code, type, flag rules, and vendor
-where both state one — must be equal. A table row's vendor is inferred from
-its file's `; Vendor-ID:`, so it agrees with any. TS 29.272's re-print of
+where both state one — must be equal. A table row prints no vendor, so its
+V flag says it (`ast.AvpTableRow.stated_vendor`, which the linter's
+`duplicate-identity` reads too): V under Must-not is IETF space, vendor 0
+(TS 29.229's `Digest-QoP`, code 110, is RFC 4590's; TS 29.273's
+`QoS-Capability`, `QoS-Resources`, `Mobile-Node-Identifier`,
+`MIP-MN-HA-SPI` and `MIP-Session-Key` are RFC 5777's and RFC 5778's), V
+under Must the file's `; Vendor-ID:`, and a row stating neither infers its
+file's vendor, which agrees with any. TS 29.272's re-print of
 `Allocation-Retention-Priority` takes TS 29.212's flag rules this way, and
 TS 29.229's re-used `Digest-*` AVPs take their Diameter types from TS
 29.229's own table, since RFC 4590 is a RADIUS document. A reading that

@@ -237,6 +237,31 @@ def _flagged_row(
     )
 
 
+def test_a_row_forbidding_v_is_compared_in_ietf_space():
+    """Two rows numbered 110 in vendor 10415's table, one of them with V
+    under Must-not: RFC 4590's IETF `Digest-QoP` and a 3GPP AVP are two
+    identities, as the model reads them; two rows requiring V collide."""
+
+    def row(name, column):
+        return ast.AvpTableRow(
+            name=name,
+            code=110,
+            data_type=ast.DataType.UTF8_STRING,
+            flag_rules=ast.AvpFlagRules(**{column: frozenset({ast.AvpFlag.VENDOR})}),
+        )
+
+    apart = _spec(
+        _flagged_table("1", row("Digest-QoP", "must_not"), row("Other", "must"))
+    )
+    together = _spec(
+        _flagged_table("1", row("Digest-QoP", "must"), row("Other", "must"))
+    )
+
+    assert "duplicate-identity" not in _rules(linter.lint(apart))
+    (finding,) = [f for f in linter.lint(together) if f.rule == "duplicate-identity"]
+    assert "vendor 10415, code 110" in finding.message
+
+
 def test_two_tables_disagreeing_on_a_code_is_an_error():
     """A row with no clause behind it is only caught here: neither code
     collides with anything, so `duplicate-identity` stays silent."""

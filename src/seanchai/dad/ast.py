@@ -441,6 +441,23 @@ class AvpTableRow(Node):
     flag_rules: AvpFlagRules = AvpFlagRules()
     may_encrypt: bool | None = None
 
+    def stated_vendor(self, file_vendor: int) -> int | None:
+        """The vendor space the row's V flag places the AVP in, or None
+        where the row leaves it to the file.
+
+        A row prints no vendor-id; its V flag is the one cell that says
+        whether the AVP carries one. Forbidding it is IETF space: TS
+        29.229's `Digest-QoP` row (clause 6.3.40) prints V under Must-not
+        in vendor 10415's table, and is RFC 4590's code 110 in vendor 0.
+        Requiring it is the file's own `; Vendor-ID:`. A row with V in
+        neither column, or no flag cells at all, states neither.
+        """
+        if AvpFlag.VENDOR in self.flag_rules.must_not:
+            return IETF_VENDOR
+        if AvpFlag.VENDOR in self.flag_rules.must:
+            return file_vendor
+        return None
+
 
 class AvpTable(Node):
     """`; Type: AVP Table` — mirrors the spec's own per-application AVP table

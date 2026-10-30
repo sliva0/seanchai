@@ -20,9 +20,11 @@ Findings carry a severity because not every one of them is a defect:
   *extend* it with new fields, and deciding which needs the origin document.
 
 An AVP's identity is `(vendor-id, code)`, and the vendor half comes from the
-file's own `; Vendor-ID:` directive; re-used rows belong to their origins'
-vendor spaces, which the single-file rules therefore leave to the cross-file
-ones — see `_duplicate_identities`.
+file's own `; Vendor-ID:` directive, except for a table row whose V flag is
+Must-not, which is IETF space (`ast.AvpTableRow.stated_vendor`, the model's
+reading too); re-used rows belong to their origins' vendor spaces, which the
+single-file rules therefore leave to the cross-file ones — see
+`_duplicate_identities`.
 
 Findings are anchored by clause and name rather than by line number. The AST
 carries no line information, and a clause reference survives reformatting and
@@ -274,7 +276,8 @@ def _duplicate_identities(
             continue
         origin = index.reused.get(row.name)
         if origin is None:
-            identity = AvpIdentity(own_vendor, row.code)
+            stated = row.stated_vendor(own_vendor)
+            identity = AvpIdentity(own_vendor if stated is None else stated, row.code)
             claim = f"{row.name} (AVP table)"
         else:
             vendor = None if reused_vendor is None else reused_vendor(origin)
