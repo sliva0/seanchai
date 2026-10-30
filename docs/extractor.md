@@ -1,8 +1,9 @@
 # The extractors
 
 Two extractors produce the same `.dad` AST: `extractor/tgpp_docx.py` for 3GPP
-`.docx` specifications (page numbers attached from the matching ETSI PDF) and
-`extractor/rfc_text.py` for RFC plain text. Both read per-document
+`.docx` specifications (page numbers attached from the matching ETSI PDF),
+and for oneM2M's on the same Word conventions ([below](#onem2m-ts-0004)),
+and `extractor/rfc_text.py` for RFC plain text. Both read per-document
 [source declarations](#source-declarations) from `edits/sources/`.
 
 ## What the extractor does not decide
@@ -132,7 +133,11 @@ The declared vocabulary, with the document that forced each:
   `run-on-enum-values` (29.229 6.3.58, two values in one paragraph);
   29.061 and 29.212 declare `worded-enum-values` too. TS 29.212 and 29.214
   declare `origins-by-reference` (a From cell naming ETSI's document as
-  3GPP's, read through clause 2).
+  3GPP's, read through clause 2). oneM2M TS-0004 declares
+  `list-numbered-headings`, `reference-cells` and `prose-enum-values` of its
+  own ([below](#onem2m-ts-0004)), with `message-headings`,
+  `spaced-rule-operator`, `command-columns`, `type-short-forms`,
+  `value-first-enums` and `external-enum-values`.
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`; 7155 §4.4.1, `Login (1)`); `worded-enum-values` (4005 §5.5 and
@@ -470,6 +475,86 @@ defining clause's, twenty-one differing only in case (`Role-of-Node`, TS
 A name with spaces no patch respells stays as printed, quoted
 (`"SGSN-Absent-User-Subscriber-Diagnostic SM"`, whose defining clause
 prints two names).
+
+## oneM2M TS-0004
+
+oneM2M TS-0004 (Service Layer Core Protocol) binds the Mch reference point
+to Diameter accounting in its annex A, "Binding Mch to Diameter for
+Charging". The downloader fetches the Word original of the Release 2 line,
+V2.35.0, and converts it ([downloader.md](downloader.md)); ETSI mirrors the
+line as TS 118 104, PDF only, whose V2.7.1 prints annex A's table A.4-1,
+clause A.5 and `M2M-Information`'s ABNF as V2.35.0 does (the commands' ABNF
+differs: V2.35.0 lists the RFC 6733 accounting members and no longer prints
+`[ Service-Context-Id ]` and `[ Service-Information ]`). The document is on
+3GPP's Word conventions — `PL` ABNF, `TH` captions, an "AVP Flag rules"
+table — and the 3GPP extractor reads it whole; nothing outside annex A is a
+definition it recognises.
+
+- **The cover** prints the document number, `oneM2M-TS-0004-V2.35.0`, read
+  as `; Specification: oneM2M TS-0004` and `; Version: 2.35.0`. The file's
+  `; Vendor-ID:` is oneM2M's 45687, as 10415 is stated for 3GPP: "AVPs
+  defined for oneM2M specific usage are assigned Vendor-Id of 45687"
+  (clause A.4). No PDF of V2.35.0 exists, so no `; Page:`; `; Link:` is
+  oneM2M's download.
+- **Headings print no clause numbers** (`list-numbered-headings`). Annex A's
+  carry a `w:numPr` whose level text in `word/numbering.xml` is `A.%1`,
+  `A.%1.%2`, so "Accounting Request Command" is A.2.1 only as Word renders
+  it. The extractor replays the numbering: every numbered paragraph of the
+  body, in document order, advances its list's counter at its level, deeper
+  levels restart as their `w:lvlRestart` says, and counters belong to the
+  abstract numbering. A `w:num`'s `w:lvlOverride` redefines a level for its
+  paragraphs, an embedded `w:lvl` property by property (start, level
+  text, format, restart) and a `w:startOverride` its start; the level
+  restarts at the `w:num`'s first paragraph and, whenever a level above
+  restarts it, from that start. A paragraph's `w:numPr` gives its list and
+  its level each, and what it leaves out comes from its style's (`basedOn`
+  followed), as Word merges them. A heading that prints no number takes the
+  rendered one; one that prints its own keeps it. The result is the
+  document's own numbering: annex A's 39 headings read A.1 to A.5.32 as TS
+  118 104 V2.7.1 and TS-0004 V5.2.0's Word file print them, and 350 of the
+  351 headings whose title V2.7.1's contents list holds once agree with it,
+  the one other a clause V2.35.0 renumbers. Paragraphs inside tables are
+  not replayed; no heading list continues into one.
+- **Commands.** Clauses A.2.1 and A.2.2 head them "Accounting Request
+  Command" over `<ACR> ::=`. Input patches join the words to RFC 6733's
+  names (clauses 9.7.1, 9.7.2; the clauses define the format "according to
+  the Diameter Base Protocol in IETF RFC 6733 [14]"), and
+  `message-headings` reads a "Name Command" heading as it reads TS 32.299's
+  "Name message". Neither header prints an application id, and no clause
+  says one beside them; clause A.5.2 says only that Acct-Application-Id
+  "shall contain the value of 3".
+- **Table A.4-1** mixes vendors, each row printing its own "AVP Vendor Id"
+  (0, 10415 or 45687), read into the `Vendor-ID` column
+  ([grammar.md](grammar.md#avp-table)), which is modelled wherever a table
+  prints the label. Behind `reference-cells`, its Reference column, "a
+  reference to where this AVP is defined" (clause A.4), is read cell by
+  cell: a bracketed clause (`[A.5.1]`) is the row's Section, a document
+  (`IETF RFC 6733 [14]`, `IETF RFC 4006 [32]`, `3GPP TS 32.299 [31]`) a
+  re-used row citing it, which the extractor adds to a re-used block of
+  the table's own, as it does for TS 32.299's `refer [n]` rows. The row
+  stays in the AVP table with its marks, type and flags. The "Used in"
+  columns are `command-columns`' marks and `DiamIdent` is
+  `type-short-forms`'.
+- **Definitions.** `M2M-Information`'s rule (A.5.14) spells its operator `::
+  =` (`spaced-rule-operator`) and prints `< AVP Header: 1011>`, no vendor,
+  and two members on one line. An enumerated AVP takes its vendor from its
+  row's Vendor-ID cell where the table prints one, 0 being no vendor:
+  `Accounting-Record-Type` is IETF space, `Protocol-Type` 45687.
+  `Protocol-Type`'s values are value first (`value-first-enums`, "0 HTTP"
+  to "3 WebSocket", "4 .. 99 Reserved for oneM2M defined protocol types";
+  "100 .. 199 Operator and vendor specific protocol types" allocates a
+  range and warns, as TS 32.299's SM-Service-Type does);
+  `Request-Operation` and `Response-Status-Code` cite where theirs are
+  ("The values are defined in Table 6.3.4.2.5-6.", "... in clause 6.6.3.",
+  `external-enum-values`); `Accounting-Record-Type` names its one value in
+  a sentence, "EVENT_RECORD (value 1)" (`prose-enum-values`).
+  `Subscription-Id-Type`, "of type Enumerated as defined in IETF RFC 4006
+  [32]", is re-used and gets no local definition.
+- Not read: the type sentences of simple-typed clauses ("The
+  Access-Network-Identifier AVP (AVP Code 1000) is of type Unsigned32"),
+  whose rows carry code and type, as the ETSI transcriptions leave them;
+  table A.3-1, mapping oneM2M's recorded information elements to AVP
+  names; and the prose of clauses A.5.26-A.5.31.
 
 ## The RFC plain-text extractor
 

@@ -1,4 +1,5 @@
-"""Extractor: 3GPP .docx specification → `.dad` AST.
+"""Extractor: 3GPP .docx specification → `.dad` AST; also oneM2M TS-0004,
+whose Diameter annex follows 3GPP's Word conventions.
 
 Pipeline stage one of two: this module walks the docx body (paragraphs and
 tables in document order, grouped under numbered headings) and produces a
@@ -35,11 +36,13 @@ sections, so it is taken from the spec's grouped-AVP headers (3GPP: 10415).
 """
 
 import contextlib
+import dataclasses
 import enum
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import docx
 import docx.document
@@ -48,6 +51,7 @@ import docx.text.hyperlink
 import docx.text.paragraph
 import pydantic
 import pypdf
+from docx.oxml.ns import qn
 
 from ..dad import abnf, ast, formatter
 from . import sources
@@ -63,9 +67,11 @@ _COMMAND_TITLE_RE = re.compile(
     r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) [Cc]ommand$"
 )
 # TS 32.299 clauses 6.2.2-6.4.13: "Accounting-Request message",
-# "Accounting-Answer (ACA) message"; read behind `message-headings`.
+# "Accounting-Answer (ACA) message"; oneM2M TS-0004 clauses A.2.1-A.2.2,
+# "Accounting Request Command", once a patch joins the words. Read behind
+# `message-headings`.
 _MESSAGE_TITLE_RE = re.compile(
-    r"^(?P<name>[A-Za-z-]+)(?: \((?P<abbr>[A-Z]{2,5})\))? message$"
+    r"^(?P<name>[A-Za-z-]+)(?: \((?P<abbr>[A-Z]{2,5})\))? (?:message|Command)$"
 )
 # A clause heading printed in a body style (TS 32.299 clause 7.2.135C), read
 # only behind the `body-clause-headings` quirk.
@@ -170,6 +176,8 @@ _NOTE_RFC_RE = re.compile(
 _DOCX_COVER_RE = re.compile(
     r"3GPP (?P<spec>TS \d{2}\.\d{3}) V(?P<version>\d+(?:\.\d+)*)"
 )
+# oneM2M's cover table: "Document Number | oneM2M-TS-0004-V2.35.0".
+_ONEM2M_COVER_RE = re.compile(r"oneM2M-(?P<spec>TS-\d{4})-V(?P<version>\d+(?:\.\d+)*)")
 _PDF_COVER_RE = re.compile(
     r"3GPP (?P<spec>TS \d{2}\.\d{3}) version (?P<version>\d+(?:\.\d+)*)"
 )
@@ -203,6 +211,15 @@ _SECTION_REF_RE = re.compile(r"^(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*$")
 # states it rather than reading it out of the text — the same way an RFC
 # extractor will state the IETF's 0.
 TGPP_VENDOR = 10415
+# oneM2M TS-0004 clause A.4: "AVPs defined for oneM2M specific usage are
+# assigned Vendor-Id of 45687."
+ONEM2M_VENDOR = 45687
+
+
+def _publisher_vendor(specification: str) -> int:
+    """The vendor space a publisher defines its AVPs in."""
+    return ONEM2M_VENDOR if specification.startswith("oneM2M ") else TGPP_VENDOR
+
 
 _M_BIT_OVERRIDES = {
     "": None,
@@ -324,6 +341,206 @@ def _lines(
     ]
 
 
+def _val(element: Any, tag: str) -> str | None:
+    """The `w:val` of `element`'s child `tag`, or None."""
+    child = None if element is None else element.find(qn(tag))
+    return None if child is None else child.get(qn("w:val"))
+
+
+def _counter_text(value: int, fmt: str) -> str:
+    """A list counter as its level's `w:numFmt` writes it."""
+    if fmt in ("decimal", "decimalZero"):
+        return f"{value:02d}" if fmt == "decimalZero" else str(value)
+    if fmt in ("upperLetter", "lowerLetter"):
+        # Word continues past Z by repeating the letter: AA, BB.
+        letter = chr(ord("A") + (value - 1) % 26) * ((value - 1) // 26 + 1)
+        return letter if fmt == "upperLetter" else letter.lower()
+    if fmt in ("upperRoman", "lowerRoman"):
+        roman = ""
+        for number, numeral in (
+            (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"),
+            (90, "XC"), (50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"),
+            (4, "IV"), (1, "I"),
+        ):  # fmt: skip
+            while value >= number:
+                roman += numeral
+                value -= number
+        return roman if fmt == "upperRoman" else roman.lower()
+    raise ExtractionError(f"list numbering format {fmt!r} is not read")
+
+
+@dataclass(frozen=True)
+class _Level:
+    start: int
+    fmt: str
+    text: str
+    # 1-based level after whose use this one restarts; 0 never restarts.
+    restart: int | None
+    legal: bool
+
+
+def _list_level(element: Any, base: _Level | None = None) -> _Level:
+    """A `w:lvl`, each property it leaves out taken from `base`: the
+    abstract numbering's level, where a `w:lvlOverride` redefines one."""
+    base = base or _Level(start=1, fmt="decimal", text="", restart=None, legal=False)
+    start = _val(element, "w:start")
+    restart = _val(element, "w:lvlRestart")
+    text = element.find(qn("w:lvlText"))
+    legal = element.find(qn("w:isLgl"))
+    return _Level(
+        start=base.start if start is None else int(start),
+        fmt=_val(element, "w:numFmt") or base.fmt,
+        text=base.text if text is None else text.get(qn("w:val")) or "",
+        restart=base.restart if restart is None else int(restart),
+        legal=base.legal
+        if legal is None
+        else legal.get(qn("w:val")) not in ("0", "false"),
+    )
+
+
+@dataclass(frozen=True)
+class _Num:
+    """A `w:num`: its abstract numbering and what its `w:lvlOverride`s
+    change, by level — a whole `w:lvl`, a `w:startOverride`, or both."""
+
+    abstract: str
+    levels: dict[int, Any]
+    starts: dict[int, int]
+
+
+class _ListNumbering:
+    """Word's list numbering, replayed over a document's paragraphs.
+
+    A heading's clause number is normally its text ("A.2.1\\tAccounting
+    ..."). oneM2M TS-0004 prints none: its annex headings carry a `w:numPr`
+    pointing at `word/numbering.xml`, whose level text (`A.%1.%2`) Word
+    renders, so the number exists only once the counters are replayed —
+    every numbered paragraph of the body in document order advancing its
+    list's counter at its level, deeper levels restarting, as Word does.
+    Counters belong to an abstract numbering, which every `w:num` naming it
+    shares. A `w:num`'s `w:lvlOverride` redefines a level for the
+    paragraphs using that `w:num`: an embedded `w:lvl` over the abstract
+    level, property by property, and a `w:startOverride` over its start;
+    the overridden level restarts at the first paragraph using the `w:num`,
+    and whenever a level above restarts it, from that start. A paragraph's
+    `w:numPr` gives its list and level each, and what it leaves out comes
+    from its style's, through `w:basedOn`. Paragraphs inside tables are not
+    replayed: no heading list continues into one.
+    """
+
+    def __init__(self, numbering: Any, styles: Any) -> None:
+        self._abstract: dict[str, dict[int, _Level]] = {}
+        links: dict[str, str] = {}
+        for abstract in (
+            numbering.findall(qn("w:abstractNum")) if numbering is not None else ()
+        ):
+            key = abstract.get(qn("w:abstractNumId"))
+            if (link := _val(abstract, "w:numStyleLink")) is not None:
+                links[key] = link
+            self._abstract[key] = {
+                int(level.get(qn("w:ilvl"))): _list_level(level)
+                for level in abstract.findall(qn("w:lvl"))
+            }
+        self._styles: dict[str, tuple[str | None, Any]] = {}
+        for style in styles.findall(qn("w:style")) if styles is not None else ():
+            self._styles[style.get(qn("w:styleId"))] = (
+                _val(style, "w:basedOn"),
+                style.find(f"{qn('w:pPr')}/{qn('w:numPr')}"),
+            )
+        self._nums: dict[str, _Num] = {}
+        for num in numbering.findall(qn("w:num")) if numbering is not None else ():
+            levels: dict[int, Any] = {}
+            starts: dict[int, int] = {}
+            for override in num.findall(qn("w:lvlOverride")):
+                ilvl = int(override.get(qn("w:ilvl")))
+                if (level := override.find(qn("w:lvl"))) is not None:
+                    levels[ilvl] = level
+                if (start := _val(override, "w:startOverride")) is not None:
+                    starts[ilvl] = int(start)
+            abstract = _val(num, "w:abstractNumId")
+            if abstract is not None:
+                self._nums[num.get(qn("w:numId"))] = _Num(abstract, levels, starts)
+        # A list style's abstract numbering points at the list style, whose
+        # own `w:numPr` names the `w:num` holding the levels.
+        for key, link in links.items():
+            _, num_pr = self._styles.get(link, (None, None))
+            target = self._nums.get(_val(num_pr, "w:numId") or "")
+            if target is not None:
+                self._abstract[key] = self._abstract.get(target.abstract, {})
+        self._counters: dict[str, dict[int, int]] = {}
+        self._used: set[str] = set()
+
+    def _num_pr(self, paragraph: Any) -> tuple[str, int] | None:
+        """The paragraph's (num id, level). Each is the paragraph's own
+        where its `w:numPr` gives it, else the nearest style's that does: a
+        heading may print only `w:ilvl` and number in its style's list."""
+        p_pr = paragraph.find(qn("w:pPr"))
+        num_pr = None if p_pr is None else p_pr.find(qn("w:numPr"))
+        style = _val(p_pr, "w:pStyle")
+        num_id = ilvl = None
+        seen = set()
+        while True:
+            if num_pr is not None:
+                num_id = num_id if num_id is not None else _val(num_pr, "w:numId")
+                ilvl = ilvl if ilvl is not None else _val(num_pr, "w:ilvl")
+            if num_id is not None and ilvl is not None:
+                break
+            if style is None or style in seen:
+                break
+            seen.add(style)
+            style, num_pr = self._styles.get(style, (None, None))
+        if num_id is None or num_id == "0":
+            return None
+        return num_id, int(ilvl or 0)
+
+    def _levels(self, num: _Num) -> dict[int, _Level]:
+        """The levels paragraphs of `num` number by: the abstract's, with
+        the num's overrides applied."""
+        levels = dict(self._abstract.get(num.abstract, {}))
+        for ilvl, element in num.levels.items():
+            levels[ilvl] = _list_level(element, levels.get(ilvl))
+        for ilvl, start in num.starts.items():
+            if ilvl in levels:
+                levels[ilvl] = dataclasses.replace(levels[ilvl], start=start)
+        return levels
+
+    def advance(self, paragraph: Any) -> str | None:
+        """Count `paragraph` and return the number Word renders before it,
+        or None where it is unnumbered or its level prints nothing."""
+        found = self._num_pr(paragraph)
+        if found is None or found[0] not in self._nums:
+            return None
+        num_id, level = found
+        num = self._nums[num_id]
+        levels = self._levels(num)
+        if level not in levels:
+            return None
+        counters = self._counters.setdefault(num.abstract, {})
+        if num_id not in self._used:
+            self._used.add(num_id)
+            for overridden in {*num.levels, *num.starts}:
+                # Unstarted: the next paragraph at the level takes its start.
+                counters.pop(overridden, None)
+        counters[level] = counters.get(level, levels[level].start - 1) + 1
+        for deeper, definition in levels.items():
+            restart = deeper if definition.restart is None else definition.restart
+            if deeper > level and restart and level < restart:
+                counters.pop(deeper, None)
+        own = levels[level]
+        if own.fmt == "none" or not own.text:
+            return None
+
+        def rendered(match: re.Match[str]) -> str:
+            index = int(match[1]) - 1
+            definition = levels.get(index)
+            if definition is None:
+                return ""
+            value = counters.get(index, definition.start)
+            return _counter_text(value, "decimal" if own.legal else definition.fmt)
+
+        return re.sub(r"%([1-9])", rendered, own.text)
+
+
 def _sections(
     document: docx.document.Document,
     patcher: Patcher,
@@ -332,6 +549,11 @@ def _sections(
     sections: list[_Section] = []
     current: _Section | None = None
     caption: str | None = None
+    numbering = (
+        _ListNumbering(document.part.numbering_part.element, document.styles.element)
+        if quirks is not None and quirks.enabled("list-numbered-headings")
+        else None
+    )
     for item in document.iter_inner_content():
         number = current.number if current is not None else None
         if isinstance(item, docx.table.Table):
@@ -429,9 +651,19 @@ def _sections(
             caption = None
             continue
         style = (item.style.name or "") if item.style else ""
+        label = None if numbering is None else numbering.advance(item._p)
         # TS 29.273 §6.2.2.1.1 uses the explicit H6 heading style.
         if style.startswith("Heading") or re.fullmatch(r"H[1-9]", style):
-            match = _HEADING_RE.match(item.text.strip())
+            heading = item.text.strip()
+            if (
+                label is not None
+                and quirks is not None
+                and not _HEADING_RE.match(heading)
+            ):
+                # oneM2M TS-0004's annex headings: the number is Word's.
+                quirks.fire("list-numbered-headings")
+                heading = f"{label}\t{heading}"
+            match = _HEADING_RE.match(heading)
             if match:
                 current = _Section(
                     number=match["number"],
@@ -823,6 +1055,13 @@ def _extract_enumerated(
                 elif match := _VALUE_FIRST_RE.fullmatch(line.text):
                     quirks.fire("value-first-enums")
                     values.append(_value_first(match, section.number))
+    if quirks.enabled("prose-enum-values"):
+        for paragraph in section.paragraphs:
+            for match in _PROSE_ENUM_VALUE_RE.finditer(paragraph.text):
+                quirks.fire("prose-enum-values")
+                values.append(
+                    ast.EnumValue(name=match["name"], value=int(match["value"]))
+                )
     values_source = _values_source(section, quirks)
     if not values and not reserved and values_source is None:
         # Kept empty rather than dropped: the clause still says the AVP is
@@ -841,6 +1080,15 @@ def _extract_enumerated(
         values_source=values_source,
         values=tuple(merged),
     )
+
+
+# A value named in a sentence, read behind `prose-enum-values`: oneM2M TS-0004
+# clause A.5.3, "The following value is currently defined for the
+# Accounting-Record-Type AVP: EVENT_RECORD (value 1) for an Event Based
+# request."
+_PROSE_ENUM_VALUE_RE = re.compile(
+    r"\b(?P<name>[A-Z][A-Z0-9_]*) \(value (?P<value>\d+)\)"
+)
 
 
 # Behind `external-enum-values`: an enumerated clause naming the document or
@@ -862,6 +1110,9 @@ _VALUES_SOURCE_RES = (
     # TS 32.299 clause 7.2.238: "The values are taken from OMNA WSP Content
     # Type Numbers [210]."
     re.compile(r"The values are taken from (?P<source>.+?)\.?$"),
+    # oneM2M TS-0004 clause A.5.22: "... the type of operation requested.
+    # The values are defined in Table 6.3.4.2.5-6.", A.5.25 likewise.
+    re.compile(r"(?:^|\. )The values are defined in (?P<source>.+?)\.?$"),
     # TS 32.299 clause 7.2.20eA: "... and holds the identifier of the network
     # element as defined in TS 23.682[243], that triggers the API
     # notification." TS 23.682 V18.0.0 names the network elements but
@@ -1053,6 +1304,9 @@ def _flags_cell(text: str, quirks: sources.Quirks) -> frozenset[ast.AvpFlag]:
 _AVP_TABLE_COLUMNS = {
     "Attribute Name": ast.AvpColumn.NAME,
     "AVP Name": ast.AvpColumn.NAME,  # TS 32.299 tables 7.1.0.1 and 7.2.0.1
+    # oneM2M TS-0004 table A.4-1, "The entity defining the AVP code in the
+    # next column" (clause A.4).
+    "AVP Vendor Id": ast.AvpColumn.VENDOR,
     "AVP Code": ast.AvpColumn.CODE,
     "Clause defined": ast.AvpColumn.SECTION,
     "Section defined": ast.AvpColumn.SECTION,
@@ -1317,16 +1571,16 @@ def _extract_avp_table(
         # Spanning header rows (merged cells repeat the same text).
         return cells[0] == "" or cells[0] == cells[1]
 
+    known = _with_marks(_AVP_TABLE_COLUMNS, ast.AvpColumn, quirks)
+    if quirks.enabled("reference-cells"):
+        known["Reference"] = ast.AvpColumn.SECTION
     columns, positions, data_rows = _walk_table(
-        table,
-        _with_marks(_AVP_TABLE_COLUMNS, ast.AvpColumn, quirks),
-        "AVP table",
-        warnings,
-        skip,
+        table, known, "AVP table", warnings, skip
     )
     for cells in data_rows:
         name = ""
         marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
+        vendor_value: int | None = None
         code_value: int | None = None
         section_value: str | None = None
         type_value: str | None = None
@@ -1346,6 +1600,10 @@ def _extract_avp_table(
                             f"AVP table name cell {name!r} contains spaces"
                         )
                     note = name_note or note
+                case ast.AvpColumn.VENDOR:
+                    if text and not text.isdigit():
+                        raise ExtractionError(f"AVP table vendor cell {text!r}")
+                    vendor_value = int(text) if text else None
                 case ast.AvpColumn.CODE:
                     code, code_note = _strip_note_ref(text)
                     if code == "*" and name == "AVP":
@@ -1363,6 +1621,10 @@ def _extract_avp_table(
                         raise ExtractionError(f"AVP table code cell {code!r}")
                     code_value = int(code) if code else None
                     note = note or code_note
+                case ast.AvpColumn.SECTION if quirks.enabled("reference-cells"):
+                    section_value, origin = _reference_cell(name, text, quirks)
+                    if origin is not None:
+                        referred.append(ast.ReusedAvpRow(name=name, origin=origin))
                 case ast.AvpColumn.SECTION:
                     section_value = _clause_cell(text, quirks) or None
                     # Checked here so a typo (TS 29.368 table 6.4.1.1's
@@ -1419,6 +1681,7 @@ def _extract_avp_table(
         rows.append(
             ast.AvpTableRow(
                 name=name,
+                vendor_id=vendor_value,
                 code=code_value,
                 section=section_value,
                 data_type=_data_type(type_value),
@@ -1443,6 +1706,42 @@ def _extract_avp_table(
         source=ast.SourceRef(section=section_number),
     )
     return avp_table, reused
+
+
+# oneM2M TS-0004 table A.4-1's Reference cell: a bracketed clause of the
+# document itself ("[A.5.1]"), or another document by its clause-2 entry
+# ("IETF RFC 6733 [14]", "3GPP TS 32.299 [31]").
+_BRACKETED_CLAUSE_RE = re.compile(r"\[(?P<clause>[^\[\]]+)\]")
+
+
+def _reference_cell(
+    name: str, text: str, quirks: sources.Quirks
+) -> tuple[str | None, str | None]:
+    """A Reference cell as (the row's defining clause, the document it is
+    re-used from), the `reference-cells` quirk.
+
+    Clause A.4 of oneM2M TS-0004 calls the column "a reference to where
+    this AVP is defined": a bracketed clause number is the document's own,
+    which a 3GPP table prints under "Clause defined"; a document's name is
+    a re-use, as `refer [n]` is in TS 32.299. Anything else fails."""
+    quirks.fire("reference-cells")
+    if not text:
+        return None, None
+    if match := _BRACKETED_CLAUSE_RE.fullmatch(text):
+        clause = match["clause"]
+        if not _SECTION_REF_RE.match(clause):
+            raise ExtractionError(
+                f"AVP table row {name!r} has Reference cell {text!r}, whose"
+                " bracket holds no clause number"
+            )
+        return clause, None
+    origin = _named_document(text)
+    if origin is None:
+        raise ExtractionError(
+            f"AVP table row {name!r} has Reference cell {text!r}, which names"
+            " neither a clause nor a document"
+        )
+    return None, origin
 
 
 # "The DCD-Information AVP (AVP code 2115) is of type Grouped.", TS 32.299
@@ -2049,15 +2348,25 @@ def _reserved_ranges(
 def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
     """The cover title, "3GPP TS 29.272 V18.6.0", read from wherever the
     template of the day put it: most specs print it in a cover-page table,
-    but 29.061, 29.212, 29.213 and 29.214 print it as a plain paragraph."""
+    but 29.061, 29.212, 29.213 and 29.214 print it as a plain paragraph.
+    oneM2M's cover table prints its document number, "oneM2M-TS-0004-V2.35.0",
+    read as "oneM2M TS-0004"."""
+
+    def cover(text: str) -> tuple[str, str] | None:
+        if match := _DOCX_COVER_RE.search(text):
+            return f"3GPP {match['spec']}", match["version"]
+        if match := _ONEM2M_COVER_RE.search(text):
+            return f"oneM2M {match['spec']}", match["version"]
+        return None
+
     for item in document.iter_inner_content():
         if isinstance(item, docx.table.Table):
             for row in item.rows:
                 for cell in row.cells:
-                    if match := _DOCX_COVER_RE.search(_normalize(cell.text)):
-                        return f"3GPP {match['spec']}", match["version"]
-        elif match := _DOCX_COVER_RE.search(_normalize(item.text)):
-            return f"3GPP {match['spec']}", match["version"]
+                    if found := cover(_normalize(cell.text)):
+                        return found
+        elif found := cover(_normalize(item.text)):
+            return found
     raise ExtractionError("cannot find spec number/version on the cover page")
 
 
@@ -2118,6 +2427,9 @@ class _Collected:
     # The document's own reference, which a re-used row may cite (TS 29.212's
     # Gxx and S9 tables list Gx's AVPs "from" TS 29.212).
     own_reference: str = ""
+    # The publisher's vendor space, for enumerated AVPs nothing else gives
+    # one.
+    vendor: int = TGPP_VENDOR
     avp_tables: list[_CollectedAvpTable] = field(default_factory=list)
     reused_tables: list[_ReusedTable] = field(default_factory=list)
     # Behind `registry-tables`: TS 29.230's allocation tables.
@@ -2145,10 +2457,11 @@ def _collect(
     warnings: list[str],
     own_reference: str,
     quirks: sources.Quirks,
+    publisher_vendor: int = TGPP_VENDOR,
 ) -> _Collected:
     """Walk the document once, classifying sections. Source-shaped work only:
     nothing here needs to know about another section."""
-    collected = _Collected(own_reference=own_reference)
+    collected = _Collected(own_reference=own_reference, vendor=publisher_vendor)
     references = (
         _references(sections)
         if quirks.enabled("refer-type-cells")
@@ -2453,7 +2766,18 @@ def _resolve(
         for section, name in collected.pending_enums
         if name not in external
     ]
-    vendor_id = _enum_vendor_id(collected.grouped) if local_enums else None
+    vendor_id = (
+        _enum_vendor_id(collected.grouped, collected.vendor) if local_enums else None
+    )
+    # A table printing each row's vendor states the enumerated AVP's too,
+    # 0 being the IETF space a definition spells as no vendor (oneM2M
+    # TS-0004's Accounting-Record-Type, table A.4-1).
+    row_vendors = {
+        row.name: row.vendor_id
+        for entry in collected.avp_tables
+        for row in entry.table.rows
+        if row.vendor_id is not None
+    }
 
     enumerated = []
     for section, name in local_enums:
@@ -2463,8 +2787,9 @@ def _resolve(
                 f"{section.number}: enumerated AVP {name!r}"
                 " has no code in the AVP table"
             )
+        vendor = row_vendors.get(name, vendor_id)
         enumerated.append(
-            _extract_enumerated(section, name, code, vendor_id, quirks, warnings)
+            _extract_enumerated(section, name, code, vendor or None, quirks, warnings)
         )
 
     return _Resolved(
@@ -2479,7 +2804,7 @@ def _resolve(
     )
 
 
-def _enum_vendor_id(grouped: list[ast.GroupedAvp]) -> int:
+def _enum_vendor_id(grouped: list[ast.GroupedAvp], publisher: int) -> int:
     """The vendor id shared by this spec's locally defined AVPs.
 
     Enumerated-AVP sections never print it, so it is read off the grouped-AVP
@@ -2490,7 +2815,7 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp]) -> int:
     """
     vendors = sorted({avp.vendor_id for avp in grouped if avp.vendor_id is not None})
     if not vendors:
-        return TGPP_VENDOR
+        return publisher
     if len(vendors) != 1:
         found = ", ".join(str(vendor) for vendor in vendors)
         raise ExtractionError(
@@ -2559,10 +2884,15 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
 # "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit short forms
 # cannot mean anything else, where a dotted flags cell or a prose note can.
 QUIRKS: dict[str, str] = {
+    "list-numbered-headings": (
+        "number a heading printing no clause number with the number Word's"
+        " list numbering renders for it (word/numbering.xml), replayed over"
+        " the document (oneM2M TS-0004 annex A)"
+    ),
     "message-headings": (
-        "read a 'Name message' heading over a rule spelled with the"
-        " abbreviation ('<ACR> ::=') as the command's long name (TS 32.299"
-        " clauses 6.2.2-6.4.5)"
+        "read a 'Name message' or 'Name Command' heading over a rule spelled"
+        " with the abbreviation ('<ACR> ::=') as the command's long name (TS"
+        " 32.299 clauses 6.2.2-6.4.5, oneM2M TS-0004 clauses A.2.1-A.2.2)"
     ),
     "spaced-rule-operator": (
         "read the rule operator spelled ':: =' as '::=' (TS 32.299 clause 7.2,"
@@ -2703,6 +3033,15 @@ QUIRKS: dict[str, str] = {
         " (and in TS 29.212 the CC/PC functions) the row is marked with,"
         " separated by commas or spaces (TS 29.212 table 5.3.0.1 notes 3, 9)"
     ),
+    "prose-enum-values": (
+        "read 'NAME (value n)' in an enumerated clause's sentences as a value"
+        " (oneM2M TS-0004 clause A.5.3)"
+    ),
+    "reference-cells": (
+        "read an AVP table's 'Reference' column: a bracketed clause number"
+        " ('[A.5.1]') as the row's defining clause, a document ('IETF RFC 6733"
+        " [14]') as a re-used row citing it (oneM2M TS-0004 table A.4-1)"
+    ),
     "reference-points-column": (
         "read an 'Applicable Reference Points' column's cells as reference"
         " points, separated by commas (TS 29.061 table 9a)"
@@ -2788,6 +3127,7 @@ def extract_with_comments(
             warnings,
             ast.spec_ref(specification),
             quirks,
+            _publisher_vendor(specification),
         )
         patcher.finish()
         sections = _assemble(_resolve(collected, quirks, warnings))
@@ -2795,7 +3135,7 @@ def extract_with_comments(
         spec = ast.Specification(
             specification=specification,
             version=version,
-            vendor_id=TGPP_VENDOR,
+            vendor_id=_publisher_vendor(specification),
             bases=(ast.BASE_PROTOCOL,),
             link=None if link is None else pydantic.HttpUrl(link),
             sections=sections,

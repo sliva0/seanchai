@@ -1,6 +1,8 @@
 import re
+from pathlib import Path
 
 import docx
+import docx.text.paragraph
 import pytest
 
 from seanchai.dad import ast, formatter, parser
@@ -742,3 +744,388 @@ def test_a_registry_table_rejects_what_it_cannot_read(table, message):
         tgpp_docx._extract_registry(
             table, "7.1", [], _registry_quirks("registry-tables"), {"2": "TS 29.229"}
         )
+
+
+# --- list-numbered headings (oneM2M TS-0004) --------------------------------
+
+_W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+
+def _numbering(xml: str):
+    from docx.oxml import parse_xml
+
+    return parse_xml(f'<w:numbering xmlns:w="{_W}">{xml}</w:numbering>')
+
+
+def _level(ilvl, text, fmt="decimal", start=1, extra=""):
+    return (
+        f'<w:lvl w:ilvl="{ilvl}"><w:start w:val="{start}"/>'
+        f'<w:numFmt w:val="{fmt}"/><w:lvlText w:val="{text}"/>{extra}</w:lvl>'
+    )
+
+
+def _numbered(num_id=None, ilvl=0, style=None):
+    from docx.oxml import parse_xml
+
+    num_pr = (
+        ""
+        if num_id is None
+        else f'<w:numPr><w:ilvl w:val="{ilvl}"/><w:numId w:val="{num_id}"/></w:numPr>'
+    )
+    p_style = "" if style is None else f'<w:pStyle w:val="{style}"/>'
+    return parse_xml(f'<w:p xmlns:w="{_W}"><w:pPr>{p_style}{num_pr}</w:pPr></w:p>')
+
+
+def test_list_numbering_replays_counters_with_restarts_and_overrides():
+    """oneM2M TS-0004's annex: level text `A.%1`, `A.%1.%2`, deeper levels
+    restarting under a new parent; a style's own list prints nothing."""
+    numbering = _numbering(
+        '<w:abstractNum w:abstractNumId="1">'
+        + _level(0, "A.%1", extra="<w:isLgl/>")
+        + _level(1, "A.%1.%2", extra="<w:isLgl/>")
+        + _level(2, "(%3)", fmt="lowerLetter", extra='<w:lvlRestart w:val="0"/>')
+        + "</w:abstractNum>"
+        '<w:abstractNum w:abstractNumId="2">'
+        + _level(0, "", fmt="none")
+        + "</w:abstractNum>"
+        '<w:abstractNum w:abstractNumId="3">'
+        + _level(0, "%1.", fmt="upperRoman")
+        + "</w:abstractNum>"
+        '<w:num w:numId="7"><w:abstractNumId w:val="1"/></w:num>'
+        '<w:num w:numId="8"><w:abstractNumId w:val="2"/></w:num>'
+        '<w:num w:numId="9"><w:abstractNumId w:val="3"/></w:num>'
+        '<w:num w:numId="10"><w:abstractNumId w:val="3"/>'
+        '<w:lvlOverride w:ilvl="0"><w:startOverride w:val="4"/></w:lvlOverride>'
+        "</w:num>"
+    )
+    styles = _numbering(
+        '<w:style w:styleId="Heading1"><w:pPr><w:numPr><w:ilvl w:val="0"/>'
+        '<w:numId w:val="8"/></w:numPr></w:pPr></w:style>'
+        '<w:style w:styleId="Heading2"><w:basedOn w:val="Heading1"/></w:style>'
+    )
+    replay = tgpp_docx._ListNumbering(numbering, styles)
+
+    labels = [
+        replay.advance(paragraph)
+        for paragraph in (
+            _numbered(7, 0, style="Heading1"),  # A.1, its own list over its style's
+            _numbered(style="Heading2"),  # the style's list, which prints nothing
+            _numbered(7, 0),  # A.2
+            _numbered(7, 1),  # A.2.1
+            _numbered(7, 2),  # (a)
+            _numbered(7, 1),  # A.2.2
+            _numbered(7, 2),  # (b): level 3 never restarts
+            _numbered(),
+            _numbered(7, 0),  # A.3
+            _numbered(7, 1),  # A.3.1: level 2 restarts under A.3
+            _numbered(9, 0),  # I.
+            _numbered(10, 0),  # IV., the override restarting the shared list
+            _numbered(9, 0),  # V.
+            _numbered(0, 0),  # numId 0 is no numbering
+        )
+    ]
+
+    assert labels == [
+        "A.1",
+        None,
+        "A.2",
+        "A.2.1",
+        "(a)",
+        "A.2.2",
+        "(b)",
+        None,
+        "A.3",
+        "A.3.1",
+        "I.",
+        "IV.",
+        "V.",
+        None,
+    ]
+
+
+def _with_num_pr(num_pr: str, style: str | None = None):
+    """A paragraph whose `w:numPr` holds exactly `num_pr`."""
+    from docx.oxml import parse_xml
+
+    p_style = "" if style is None else f'<w:pStyle w:val="{style}"/>'
+    return parse_xml(
+        f'<w:p xmlns:w="{_W}"><w:pPr>{p_style}<w:numPr>{num_pr}</w:numPr></w:pPr></w:p>'
+    )
+
+
+_TWO_LEVELS = (
+    '<w:abstractNum w:abstractNumId="1">'
+    + _level(0, "A.%1")
+    + _level(1, "A.%1.%2")
+    + "</w:abstractNum>"
+)
+
+
+@pytest.mark.parametrize(
+    "override",
+    [
+        _level(0, "B.%1", start=4),
+        # The level's start overridden apart from its text.
+        '<w:startOverride w:val="4"/>' + _level(0, "B.%1"),
+    ],
+    ids=["lvl", "lvl-and-start-override"],
+)
+def test_an_override_level_renders_with_its_own_text_format_and_start(override):
+    """A `w:lvlOverride/w:lvl` redefines the level for its `w:num`: start 4
+    and level text `B.%1` number the first paragraph B.4, not A.1."""
+    numbering = _numbering(
+        _TWO_LEVELS
+        + '<w:abstractNum w:abstractNumId="2">'
+        + _level(0, "(%1)", fmt="lowerLetter")
+        + "</w:abstractNum>"
+        '<w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>'
+        '<w:num w:numId="2"><w:abstractNumId w:val="1"/>'
+        f'<w:lvlOverride w:ilvl="0">{override}</w:lvlOverride></w:num>'
+        '<w:num w:numId="3"><w:abstractNumId w:val="2"/>'
+        '<w:lvlOverride w:ilvl="0"><w:lvl w:ilvl="0"><w:numFmt w:val="upperRoman"/>'
+        "</w:lvl></w:lvlOverride></w:num>"
+    )
+    replay = tgpp_docx._ListNumbering(numbering, None)
+
+    labels = [
+        replay.advance(_numbered(num_id, ilvl))
+        for num_id, ilvl in ((2, 0), (2, 1), (2, 0), (1, 0), (3, 0))
+    ]
+
+    # The abstract's text and its other levels stay for the num without the
+    # override; a `w:lvl` giving only a format keeps the abstract's text.
+    assert labels == ["B.4", "A.4.1", "B.5", "A.6", "(I)"]
+
+
+def test_a_restarted_level_restarts_at_its_overridden_start():
+    """Level 1 overridden to start at 4 restarts at 4 under each new
+    level-0 paragraph, the first included."""
+    numbering = _numbering(
+        _TWO_LEVELS + '<w:num w:numId="1"><w:abstractNumId w:val="1"/>'
+        '<w:lvlOverride w:ilvl="1"><w:startOverride w:val="4"/></w:lvlOverride>'
+        "</w:num>"
+    )
+    replay = tgpp_docx._ListNumbering(numbering, None)
+
+    labels = [replay.advance(_numbered(1, ilvl)) for ilvl in (0, 1, 1, 0, 1)]
+
+    assert labels == ["A.1", "A.1.4", "A.1.5", "A.2", "A.2.4"]
+
+
+def test_a_paragraph_numpr_inherits_what_it_leaves_out_from_its_style():
+    """Word merges `w:numId` and `w:ilvl` separately: a heading printing
+    only its level numbers in its style's list, one printing only its list
+    takes its style's level."""
+    numbering = _numbering(
+        _TWO_LEVELS + '<w:num w:numId="5"><w:abstractNumId w:val="1"/></w:num>'
+        '<w:num w:numId="6"><w:abstractNumId w:val="1"/></w:num>'
+    )
+    styles = _numbering(
+        '<w:style w:styleId="Heading1"><w:pPr><w:numPr><w:ilvl w:val="0"/>'
+        '<w:numId w:val="5"/></w:numPr></w:pPr></w:style>'
+        '<w:style w:styleId="Heading2"><w:basedOn w:val="Heading1"/><w:pPr>'
+        '<w:numPr><w:ilvl w:val="1"/></w:numPr></w:pPr></w:style>'
+    )
+    replay = tgpp_docx._ListNumbering(numbering, styles)
+
+    labels = [
+        replay.advance(paragraph)
+        for paragraph in (
+            _with_num_pr('<w:ilvl w:val="0"/>', style="Heading2"),  # list 5
+            _with_num_pr('<w:numId w:val="6"/>', style="Heading2"),  # level 1
+            _with_num_pr("", style="Heading2"),  # level 1, Heading1's list
+            _with_num_pr('<w:numId w:val="0"/>', style="Heading1"),  # unnumbered
+        )
+    ]
+
+    assert labels == ["A.1", "A.1.1", "A.1.2", None]
+
+
+def test_a_list_format_the_replay_cannot_render_fails():
+    numbering = _numbering(
+        '<w:abstractNum w:abstractNumId="1">'
+        + _level(0, "%1", fmt="chineseCounting")
+        + '</w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>'
+    )
+    replay = tgpp_docx._ListNumbering(numbering, None)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="'chineseCounting'"):
+        replay.advance(_numbered(1, 0))
+
+
+_ONEM2M_SOURCE = (
+    Path(__file__).parent.parent
+    / "specifications/converted/onem2m/Release-2/TS-0004"
+    / "TS-0004-Service_Layer_Core_Protocol-V2_35_0(cl).docx"
+)
+
+
+@pytest.mark.sources
+def test_onem2m_ts_0004s_annex_a_headings_number_as_its_pdf_prints_them():
+    """ETSI TS 118 104 V2.7.1 (the same Release 2 line, PDF only) and
+    TS-0004 V5.2.0's Word file print annex A's numbers as text; V2.35.0's
+    exist only in its list numbering."""
+    assert _ONEM2M_SOURCE.is_file(), "run `seanchai download`"
+    document = docx.Document(str(_ONEM2M_SOURCE))
+    replay = tgpp_docx._ListNumbering(
+        document.part.numbering_part.element, document.styles.element
+    )
+    annex = []
+    inside = False
+    for item in document.iter_inner_content():
+        if not isinstance(item, docx.text.paragraph.Paragraph):
+            continue
+        label = replay.advance(item._p)
+        style = (item.style.name if item.style is not None else None) or ""
+        if item.text.startswith("Annex "):
+            inside = item.text.startswith("Annex A ")
+        elif inside and style.startswith("Heading"):
+            annex.append((label, item.text))
+
+    assert annex[:7] == [
+        ("A.1", "Introduction"),
+        ("A.2", "Diameter Commands on Mch"),
+        ("A.2.1", "Accounting Request Command"),
+        ("A.2.2", "Accounting Answer Command"),
+        ("A.3", "Mapping of M2M Recorded Information Elements to AVPs"),
+        ("A.4", "Summary of AVPs used"),
+        ("A.5", "oneM2M Specific AVP Usage"),
+    ]
+    assert [label for label, _ in annex[7:]] == [f"A.5.{n}" for n in range(1, 33)]
+    assert annex[20] == ("A.5.14", "M2M-Information AVP")
+
+
+# --- oneM2M TS-0004 table A.4-1 ---------------------------------------------
+
+
+def _vendor_column_table(*data):
+    upper = [
+        "AVP Name",
+        "AVP Vendor Id",
+        "AVP Code",
+        *["Used in"] * 4,
+        "Reference",
+        "Value Type",
+        *["AVP Flag rules"] * 5,
+    ]
+    lower = [
+        "AVP Name",
+        "AVP Vendor Id",
+        "AVP Code",
+        "ACR",
+        "ACA",
+        "CCR",
+        "CCA",
+        "Reference",
+        "Value Type",
+        "Must",
+        "May",
+        "Should not",
+        "Must not",
+        "May Encr.",
+    ]
+    return tgpp_docx._Table(
+        caption="A.4-1",
+        rows=[
+            tgpp_docx._Row(cells=cells, first_cell_lines=cells[:1])
+            for cells in (upper, lower, *data)
+        ],
+    )
+
+
+def _a4_row(name, vendor, code, reference):
+    marks = ["O", "-", "-", "-"]
+    flags = ["M", "P", "-", "V", "Y"]
+    return [name, vendor, code, *marks, reference, "Unsigned32", *flags]
+
+
+def _a4_quirks(*names):
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    return Quirks([Quirk(name=name, reason="test") for name in names], None)
+
+
+def test_a_reference_column_names_a_clause_or_the_document_re_used_from():
+    table, reused = tgpp_docx._extract_avp_table(
+        _vendor_column_table(
+            _a4_row("Occupancy", "45687", "1012", "[A.5.16]"),
+            _a4_row("Origin-State-Id", "0", "278", "IETF RFC 6733 [14]"),
+            _a4_row("Node-Id", "10415", "2064", "3GPP TS 32.299 [31]"),
+        ),
+        "A.4",
+        [],
+        _a4_quirks("reference-cells", "command-columns"),
+    )
+
+    assert ast.AvpColumn.VENDOR in table.columns
+    assert [(row.vendor_id, row.code, row.section) for row in table.rows] == [
+        (45687, 1012, "A.5.16"),
+        (0, 278, None),
+        (10415, 2064, None),
+    ]
+    assert [(row.name, row.origin) for row in reused] == [
+        ("Origin-State-Id", "RFC6733"),
+        ("Node-Id", "TS32.299"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("cell", "column", "message"),
+    [
+        ("see A.5.1", 7, "names neither a clause nor a document"),
+        ("[see A.5.1]", 7, "bracket holds no clause number"),
+        ("oneM2M", 1, "vendor cell 'oneM2M'"),
+    ],
+)
+def test_a_table_a4_cell_it_cannot_read_fails(cell, column, message):
+    row = _a4_row("Occupancy", "45687", "1012", "[A.5.16]")
+    row[column] = cell
+    with pytest.raises(tgpp_docx.ExtractionError, match=message):
+        tgpp_docx._extract_avp_table(
+            _vendor_column_table(row),
+            "A.4",
+            [],
+            _a4_quirks("reference-cells", "command-columns"),
+        )
+
+
+def test_a_reference_column_is_unmodelled_without_its_quirk():
+    warnings: list[str] = []
+    table, reused = tgpp_docx._extract_avp_table(
+        _vendor_column_table(_a4_row("Occupancy", "45687", "1012", "[A.5.16]")),
+        "A.4",
+        warnings,
+        _a4_quirks("command-columns"),
+    )
+
+    assert ast.AvpColumn.SECTION not in table.columns
+    assert reused == []
+    assert "AVP table column 'Reference' is not modelled and was dropped" in warnings
+
+
+def test_a_onem2m_cover_names_the_document_and_its_publishers_vendor(tmp_path):
+    document = docx.Document()
+    cover = document.add_table(rows=1, cols=2)
+    cover.cell(0, 0).text = "Document Number"
+    cover.cell(0, 1).text = "oneM2M-TS-0004-V2.35.0"
+
+    assert tgpp_docx._spec_and_version(document) == ("oneM2M TS-0004", "2.35.0")
+    assert tgpp_docx._publisher_vendor("oneM2M TS-0004") == 45687
+    assert tgpp_docx._publisher_vendor("3GPP TS 29.272") == 10415
+
+
+def test_a_value_named_in_a_sentence_is_read_behind_its_quirk():
+    text = (
+        "The following value is currently defined for the Accounting-Record-Type"
+        " AVP: EVENT_RECORD (value 1) for an Event Based request."
+    )
+    read = tgpp_docx._extract_enumerated(
+        _enum_with(text), "Accounting-Record-Type", 480, None,
+        _a4_quirks("prose-enum-values"), [],
+    )  # fmt: skip
+    unread = tgpp_docx._extract_enumerated(
+        _enum_with(text), "Accounting-Record-Type", 480, None, _a4_quirks(), []
+    )
+
+    assert read.values == (ast.EnumValue(name="EVENT_RECORD", value=1),)
+    assert unread.values == ()

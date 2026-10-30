@@ -16,8 +16,9 @@ specifications, is a short script over a corpus rather than a project.
 
 1. **Extract** — source documents to raw `.dad`. 3GPP specs are read from their
    `.docx` (a legacy `.doc` through the downloader's LibreOffice conversion;
-   page numbers attached from the matching ETSI PDF), RFCs from their plain
-   text. See [docs/extractor.md](docs/extractor.md).
+   page numbers attached from the matching ETSI PDF), oneM2M TS-0004's
+   Diameter annex likewise, RFCs from their plain text. See
+   [docs/extractor.md](docs/extractor.md).
 2. **Review** — three things are committed per specification: the raw
    extractor output, the corrections declared against it, and the corrected
    file the two produce. Every corrected line carries a `;;` note citing its
