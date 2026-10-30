@@ -19,3 +19,21 @@ name = "external-enum-values"
 reason = "clause 17.7.25 prints no values for MBMS-HC-Indicator and says 'The enumeration values are defined in 3GPP TS 25.413 [92].'"
 first_version = "18.1.0"
 last_version = "18.1.0"
+
+[[quirk]]
+name = "reference-points-column"
+reason = "table 9a (clause 16a.5, Gi/SGi specific AVPs) prints an 'Applicable Reference Points' column naming the reference points each AVP is used on, separated by commas ('Gi, Sgi')"
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[quirk]]
+name = "applicability-column"
+reason = "table 20.5a.1 (SGmb specific AVPs) prints an 'Applicability' column of supported features, 'MBMS Heartbeat', 'MBMS Cell List': its note, 'AVPs marked with a supported feature are applicable as described in subclause 20.7'"
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[quirk]]
+name = "worded-marks"
+reason = "the SGmb features are named in words ('MBMS Cell List', table 20.7.1), so a space is no separator; table 9a's reference points are separated by commas ('Gi, Sgi')"
+first_version = "18.1.0"
+last_version = "18.1.0"

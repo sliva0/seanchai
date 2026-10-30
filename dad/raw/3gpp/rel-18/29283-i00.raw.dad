@@ -134,23 +134,23 @@
 ; Section: 7.3.1
 ; Table: 7.3.1-1
 ; Page: 27
-; Columns: Name                Code   Section  Type         Must  May   S.not M.not Encrypt
-MCPTT-ID                       4500   7.3.2    UTF8String   M,V   -     -     -     No
-Data-Identification            4501   7.3.3    Grouped      M,V   -     -     -     No
-Data-Identification-Prefix     4502   7.3.11   Unsigned32   M,V   -     -     -     No
-Data-Identification-Flags      4503   7.3.12   Unsigned64   M,V   -     -     -     No
-DPR-Flags                      4504   7.3.13   Unsigned32   M,V   -     -     -     No
-DPA-Flags                      4505   7.3.14   Unsigned32   M,V   -     -     -     No
-DUR-Flags                      4506   7.3.15   Unsigned32   M,V   -     -     -     No
-DUA-Flags                      4507   7.3.16   Unsigned32   M,V   -     -     -     No
-NDR-Flags                      4508   7.3.17   Unsigned32   M,V   -     -     -     No
-NDA-Flags                      4509   7.3.18   Unsigned32   M,V   -     -     -     No
-User-Data-Id                   4510   7.3.19   Unsigned32   M,V   -     -     -     No
-MC-Service-User-Profile-Data   4511   7.3.20   Grouped      M,V   -     -     -     No
-Sequence-Number                4512   7.3.21   Unsigned32   M,V   -     -     -     No
-Data                           4513   7.3.22   Grouped      M,V   -     -     -     No
-MCVideo-ID                     4514   7.3.24   UTF8String   V     -     -     M     No
-MCData-ID                      4515   7.3.25   UTF8String   V     -     -     M     No
+; Columns: Name                Code   Section   Type         Must   May   S.not   M.not   Encrypt
+MCPTT-ID                       4500   7.3.2     UTF8String   M,V    -     -       -       No
+Data-Identification            4501   7.3.3     Grouped      M,V    -     -       -       No
+Data-Identification-Prefix     4502   7.3.11    Unsigned32   M,V    -     -       -       No
+Data-Identification-Flags      4503   7.3.12    Unsigned64   M,V    -     -       -       No
+DPR-Flags                      4504   7.3.13    Unsigned32   M,V    -     -       -       No
+DPA-Flags                      4505   7.3.14    Unsigned32   M,V    -     -       -       No
+DUR-Flags                      4506   7.3.15    Unsigned32   M,V    -     -       -       No
+DUA-Flags                      4507   7.3.16    Unsigned32   M,V    -     -       -       No
+NDR-Flags                      4508   7.3.17    Unsigned32   M,V    -     -       -       No
+NDA-Flags                      4509   7.3.18    Unsigned32   M,V    -     -       -       No
+User-Data-Id                   4510   7.3.19    Unsigned32   M,V    -     -       -       No
+MC-Service-User-Profile-Data   4511   7.3.20    Grouped      M,V    -     -       -       No
+Sequence-Number                4512   7.3.21    Unsigned32   M,V    -     -       -       No
+Data                           4513   7.3.22    Grouped      M,V    -     -       -       No
+MCVideo-ID                     4514   7.3.24    UTF8String   V      -     -       M       No
+MCData-ID                      4515   7.3.25    UTF8String   V      -     -       M       No
 
 
 ; Type: Reused AVPs

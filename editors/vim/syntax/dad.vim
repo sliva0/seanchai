@@ -22,6 +22,9 @@ syn match dadDataType "\%(^\|\s\)\zs\%(OctetString\|Integer32\|Integer64\|Unsign
 syn match dadCellConst "\%(^\|\s\)\zs\%(MUST-NOT\|MUST\|Yes\|No\)\ze\%(\s\|$\)"
 syn match dadFlagCell "\%(^\|\s\)\zs[MVP]\%(,\s\?[MVP]\)*\ze\%(\s\|$\)"
 syn match dadEmptyCell "\%(^\|\s\)\zs-\ze\%(\s\|$\)"
+" A mark that is not a plain token is quoted, as enum value names are
+" (`"All (NOTE 5)"`); `""` is a blank mark cell.
+syn match dadQuotedCell #"\%([^"\\]\|\\["\\]\)*"#
 
 " Header and body rules
 syn match dadDefine " ::= "
@@ -111,6 +114,7 @@ hi def link dadBold           SpecialComment
 hi def link dadStrike         SpecialComment
 hi def link dadEnumName       Identifier
 hi def link dadEnumNote       String
+hi def link dadQuotedCell     String
 hi def link dadReservedKw     Keyword
 
 let b:current_syntax = 'dad'

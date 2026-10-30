@@ -24,12 +24,16 @@ What maps to what in a 3GPP Diameter spec docx:
   RFC additionally produce `ReusedAvps` rows (the `note-defined-in-rfc`
   quirk).
 - The "re-used Diameter AVPs" table → `ReusedAvps` rows with M-bit overrides.
+- Columns marking where a row applies ("Acc. Type", "Applicability", "Used
+  in", ...), in either table, → the row's marks, each behind its declared
+  quirk.
 
 The vendor-id for locally defined AVPs is not printed by enumerated-AVP
 sections, so it is taken from the spec's grouped-AVP headers (3GPP: 10415).
 """
 
 import contextlib
+import enum
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -1052,6 +1056,108 @@ _COLUMN_NOTE_RE = re.compile(r"\s*\((?:NOTE|Note|note)S?s?[^)]*\)$")
 _PROSE_COLUMNS = frozenset({"Comments", "Comment", "Description"})
 
 
+# Columns marking where a row applies (`ast.MarkColumn`), keyed by the label
+# they print. A cell lists the document's marks, and what separates them is
+# the document's convention rather than a closed vocabulary: TS 29.212
+# writes "Both Rel8" and "3GPP-EPS, Non-3GPP-EPS", where TS 29.468 names a
+# feature "V2X Localized User Plane" (`worded-marks`). Reading a column at a
+# space is right for one document and wrong for the next, so each column is
+# read only where its quirk is declared, the declaration naming the legend;
+# elsewhere it is dropped with the unmodelled columns' warning.
+_MARK_COLUMNS = {
+    "Acc. Type": ast.MarkColumn.ACCESS_TYPES,
+    "Acc. type": ast.MarkColumn.ACCESS_TYPES,  # TS 29.215
+    "Applicability": ast.MarkColumn.APPLICABILITY,
+    # TS 29.215 tables A.7.4.1.1 and A.8.4.1.1, the note reference unbracketed.
+    "Applicability Note 1": ast.MarkColumn.APPLICABILITY,
+    "Applicable Reference Points": ast.MarkColumn.REFERENCE_POINTS,
+    # TS 32.299's "Used in" columns, under a spanning header.
+    "ACR": ast.MarkColumn.ACR,
+    "ACA": ast.MarkColumn.ACA,
+    "CCR": ast.MarkColumn.CCR,
+    "CCA": ast.MarkColumn.CCA,
+}
+_MARK_QUIRKS = {
+    ast.MarkColumn.ACCESS_TYPES: "access-type-column",
+    ast.MarkColumn.APPLICABILITY: "applicability-column",
+    ast.MarkColumn.REFERENCE_POINTS: "reference-points-column",
+    ast.MarkColumn.ACR: "command-columns",
+    ast.MarkColumn.ACA: "command-columns",
+    ast.MarkColumn.CCR: "command-columns",
+    ast.MarkColumn.CCA: "command-columns",
+}
+
+
+def _with_marks[T: enum.StrEnum](
+    known: dict[str, T], kind: type[T], quirks: sources.Quirks
+) -> dict[str, T]:
+    """`known` plus the mark columns this document's quirks read."""
+    return known | {
+        label: kind(column.value)
+        for label, column in _MARK_COLUMNS.items()
+        if quirks.enabled(_MARK_QUIRKS[column])
+    }
+
+
+# A mark as a cell prints it: a word, followed by what the document prints
+# beside it in parentheses, a note reference mostly ("All (NOTE 5)", "All
+# (see NOTE 3 and NOTE 6)", "EPC-routed (See NOTE 8)"). The parenthetical
+# stays with its mark: TS 29.212's note 5 says the AVP "does not apply to
+# 3GPP-GPRS access type", which a bare `All` would lose. Behind
+# `worded-marks` a mark may be several words, separated from the next by a
+# comma only (TS 29.468's "V2X Localized User Plane", "ROHC, FEC").
+_MARK_WORD = r"[A-Za-z0-9](?:[A-Za-z0-9_-]*[A-Za-z0-9])?"
+_PARENTHETICAL = r"(?:\s*\([^()]*\))?"
+_SPACED_MARK_RE = re.compile(rf"{_MARK_WORD}{_PARENTHETICAL}")
+_SPACED_SEPARATOR_RE = re.compile(r"\s*,\s*|\s+")
+_WORDED_MARK_RE = re.compile(rf"{_MARK_WORD}(?: {_MARK_WORD})*{_PARENTHETICAL}")
+_WORDED_SEPARATOR_RE = re.compile(r"\s*,\s*")
+
+
+def _split_marks(
+    text: str, mark: re.Pattern[str], separator: re.Pattern[str]
+) -> list[str] | None:
+    """`text` as marks, or None where something between them is neither a
+    mark nor a separator."""
+    marks: list[str] = []
+    position = 0
+    while (found := mark.match(text, position)) is not None:
+        marks.append(found.group())
+        if found.end() == len(text):
+            return marks
+        gap = separator.match(text, found.end())
+        if gap is None:
+            return None
+        position = gap.end()
+    return None
+
+
+def _mark_cell(
+    text: str, column: ast.MarkColumn, name: str, quirks: sources.Quirks
+) -> tuple[str, ...] | None:
+    """A mark column's cell: None where it is blank, no marks where it
+    prints a dash (TS 32.299 clause 7.1.0: "Those Diameter AVPs that are not
+    used are marked '-'"), and otherwise its marks, separated by commas or
+    spaces, or behind `worded-marks` by commas only. A mark that is not
+    words — a hyphen left by a line wrap ("NetLoc- Untrusted-WLAN" in TS
+    29.212), a full stop for a comma — fails, for an input patch."""
+    quirks.fire(_MARK_QUIRKS[column])
+    if not text:
+        return None
+    if text == "-":
+        return ()
+    if quirks.enabled("worded-marks"):
+        quirks.fire("worded-marks")
+        marks = _split_marks(text, _WORDED_MARK_RE, _WORDED_SEPARATOR_RE)
+    else:
+        marks = _split_marks(text, _SPACED_MARK_RE, _SPACED_SEPARATOR_RE)
+    if marks is None:
+        raise ExtractionError(
+            f"row {name!r}: {column.value} cell {text!r} is no list of marks"
+        )
+    return tuple(marks)
+
+
 def _map_columns[T](
     labels: list[str], known: dict[str, T], kind: str, warnings: list[str]
 ) -> tuple[tuple[T, ...], list[int]]:
@@ -1190,10 +1296,15 @@ def _extract_avp_table(
         return cells[0] == "" or cells[0] == cells[1]
 
     columns, positions, data_rows = _walk_table(
-        table, _AVP_TABLE_COLUMNS, "AVP table", warnings, skip
+        table,
+        _with_marks(_AVP_TABLE_COLUMNS, ast.AvpColumn, quirks),
+        "AVP table",
+        warnings,
+        skip,
     )
     for cells in data_rows:
         name = ""
+        marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
         code_value: int | None = None
         section_value: str | None = None
         type_value: str | None = None
@@ -1276,6 +1387,11 @@ def _extract_avp_table(
                     should_not = _flags_cell(text, quirks)
                 case ast.AvpColumn.MUST_NOT:
                     must_not = _flags_cell(text, quirks)
+                case _:
+                    marked = ast.MarkColumn(column.value)
+                    found = _mark_cell(text, marked, name, quirks)
+                    if found is not None:
+                        marks[marked] = found
         if note is not None:
             note_refs.append((name, note))
         rows.append(
@@ -1288,6 +1404,7 @@ def _extract_avp_table(
                     must=must, may=may, should_not=should_not, must_not=must_not
                 ),
                 may_encrypt=encrypt,
+                marks=marks,
             )
         )
     if table.caption is None:
@@ -1381,16 +1498,25 @@ _REUSED_TABLE_COLUMNS = {
     "Attribute Name": ast.ReusedColumn.NAME,
     "Reference": ast.ReusedColumn.FROM,
     "M-bit": ast.ReusedColumn.M_BIT,
+    # TS 29.172 table 7.4.1-2.
+    "AVP Code": ast.ReusedColumn.CODE,
+    "Value Type": ast.ReusedColumn.TYPE,
 }
 
 
+def _reused_code(text: str, name: str) -> int | None:
+    if text and not text.isdigit():
+        raise ExtractionError(f"re-used AVPs row {name!r}: code cell {text!r}")
+    return int(text) if text else None
+
+
 def _extract_reused_table(
-    table: _Table, warnings: list[str], own_reference: str
+    table: _Table, warnings: list[str], own_reference: str, quirks: sources.Quirks
 ) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedColumn, ...]]:
     rows = []
     columns, positions, data_rows = _walk_table(
         table,
-        _REUSED_TABLE_COLUMNS,
+        _with_marks(_REUSED_TABLE_COLUMNS, ast.ReusedColumn, quirks),
         "re-used AVPs",
         warnings,
         lambda row: row.cells[0] == "" or row.cells[0].startswith("NOTE"),
@@ -1403,11 +1529,31 @@ def _extract_reused_table(
             raise ExtractionError(f"re-used AVPs name cell {name!r} contains spaces")
         origin: str | None = None
         m_bit: ast.MBitOverride | None = None
+        code: int | None = None
+        data_type: ast.DataType | None = None
+        marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
         for column, position in zip(columns, positions, strict=True):
             text = cells[position]
             match column:
                 case ast.ReusedColumn.NAME:
                     pass  # already read, so that the M-bit check can name it
+                case ast.ReusedColumn.CODE:
+                    code = _reused_code(text, name)
+                case ast.ReusedColumn.TYPE:
+                    data_type = _data_type(text or None)
+                case (
+                    ast.ReusedColumn.ACCESS_TYPES
+                    | ast.ReusedColumn.APPLICABILITY
+                    | ast.ReusedColumn.REFERENCE_POINTS
+                    | ast.ReusedColumn.ACR
+                    | ast.ReusedColumn.ACA
+                    | ast.ReusedColumn.CCR
+                    | ast.ReusedColumn.CCA
+                ):
+                    marked = ast.MarkColumn(column.value)
+                    found = _mark_cell(text, marked, name, quirks)
+                    if found is not None:
+                        marks[marked] = found
                 case ast.ReusedColumn.FROM:
                     origin = _origin(text, own_reference)
                 case ast.ReusedColumn.M_BIT:
@@ -1428,17 +1574,28 @@ def _extract_reused_table(
                     m_bit = _M_BIT_OVERRIDES[text]
         if origin is None:
             raise ExtractionError(f"re-used AVPs row {name!r} has no Reference column")
-        rows.append(ast.ReusedAvpRow(name=name, origin=origin, m_bit=m_bit))
+        rows.append(
+            ast.ReusedAvpRow(
+                name=name,
+                origin=origin,
+                m_bit=m_bit,
+                code=code,
+                data_type=data_type,
+                marks=marks,
+            )
+        )
     return rows, columns
 
 
 # TS 32.299 clauses 7.3-7.5 tabulate AVPs other vendors define, each row
 # pointing at its definition: "the specification including the detailed
 # definition and description, is referred to" (7.3), the Reference cell
-# holding a clause-2 number ("[215]"). The AVP Code and "Used in" columns are
-# dropped with a warning, as in any re-used table.
+# holding a clause-2 number ("[215]"). The AVP Code column is the table's
+# statement of the code, and the "Used in" columns are read behind
+# `command-columns`, as in the AVP tables.
 _VENDOR_TABLE_COLUMNS = {
     "AVP Name": ast.ReusedColumn.NAME,
+    "AVP Code": ast.ReusedColumn.CODE,
     "Reference": ast.ReusedColumn.FROM,
 }
 _REFERENCE_CELL_RE = re.compile(r"\[(?P<number>\d+)\]")
@@ -1458,7 +1615,7 @@ def _extract_vendor_table(
         raise ExtractionError(f"{section_number}: AVP table without a caption")
     columns, positions, data_rows = _walk_table(
         table,
-        _VENDOR_TABLE_COLUMNS,
+        _with_marks(_VENDOR_TABLE_COLUMNS, ast.ReusedColumn, quirks),
         "re-used AVPs",
         warnings,
         lambda row: row.cells[0] == "",
@@ -1467,6 +1624,12 @@ def _extract_vendor_table(
     for cells in data_rows:
         named = dict(zip(columns, (cells[i] for i in positions), strict=True))
         name = named[ast.ReusedColumn.NAME]
+        marks = {
+            marked: found
+            for column, text in named.items()
+            if (marked := ast.mark_column(column)) is not None
+            and (found := _mark_cell(text, marked, name, quirks)) is not None
+        }
         match = _REFERENCE_CELL_RE.fullmatch(named[ast.ReusedColumn.FROM])
         if match is None:
             raise ExtractionError(
@@ -1487,7 +1650,14 @@ def _extract_vendor_table(
                 " which names no document a From cell can cite; no row added"
             )
             continue
-        rows.append(ast.ReusedAvpRow(name=name, origin=_origin(entry, "")))
+        rows.append(
+            ast.ReusedAvpRow(
+                name=name,
+                origin=_origin(entry, ""),
+                code=_reused_code(named.get(ast.ReusedColumn.CODE, ""), name),
+                marks=marks,
+            )
+        )
     return _ReusedTable(
         rows=rows, columns=columns, label=table.caption, section=section_number
     )
@@ -1679,7 +1849,7 @@ def _collect(
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
                 reused_rows, reused_columns = _extract_reused_table(
-                    table, warnings, own_reference
+                    table, warnings, own_reference, quirks
                 )
                 collected.reused_tables.append(
                     _ReusedTable(
@@ -2089,6 +2259,27 @@ QUIRKS: dict[str, str] = {
     "dotted-flags": (
         "read a space-less dotted flags cell ('M.V') with the period as the"
         " separator (TS 29.061, 29.212)"
+    ),
+    "access-type-column": (
+        "read an 'Acc. Type' column's cells as the access types the row"
+        " applies to, separated by commas or spaces (TS 29.212 table 5.3.0.1)"
+    ),
+    "applicability-column": (
+        "read an 'Applicability' column's cells as the supported features"
+        " (and in TS 29.212 the CC/PC functions) the row is marked with,"
+        " separated by commas or spaces (TS 29.212 table 5.3.0.1 notes 3, 9)"
+    ),
+    "reference-points-column": (
+        "read an 'Applicable Reference Points' column's cells as reference"
+        " points, separated by commas (TS 29.061 table 9a)"
+    ),
+    "worded-marks": (
+        "read a mark column's cells as marks separated by commas only, a mark"
+        " keeping its spaces (TS 29.468's 'V2X Localized User Plane')"
+    ),
+    "command-columns": (
+        "read 'Used in' columns ACR, ACA, CCR and CCA as per-command use"
+        " marks, '-' marking none (TS 32.299 clause 7.1.0)"
     ),
     "clause-parenthetical": (
         "strip a trailing parenthetical from a clause cell as prose —"

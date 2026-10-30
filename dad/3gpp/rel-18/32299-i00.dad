@@ -210,103 +210,103 @@
 ; Section: 7.1.0
 ; Table: 7.1.0.1
 ; Page: 94
-; Columns: Name                    Code  Type               Must  May   S.not M.not
-Accounting-Input-Octets            363   Unsigned64         M     -     -     V
-Accounting-Output-Octets           364   Unsigned64         M     -     -     V
-Accounting-Realtime-Required       483   Enumerated         -     -     -     -
-Accounting-Record-Number           485   Unsigned32         M     -     -     V
-Accounting-Record-Type             480   Enumerated         M     -     -     V
-Accounting-Sub-Session-Id          287   Unsigned64         -     -     -     -
-Acct-Application-Id                259   Unsigned32         M     -     -     V
-Acct-Interim-Interval              85    Unsigned32         M     -     -     V
-Acct-Multi-Session-Id              50    UTF8String         -     -     -     - ;; corrected: (TS32.299.py#acct-multi-session-id-type)
-Acct-Session-Id                    44    OctetString        -     -     -     -
-Auth-Application-Id                258   Unsigned32         M     -     -     V
+; Columns: Name                    Code   ACR   ACA   CCR   CCA   Type               Must   May   S.not   M.not
+Accounting-Input-Octets            363    OC    -     -     -     Unsigned64         M      -     -       V
+Accounting-Output-Octets           364    OC    -     -     -     Unsigned64         M      -     -       V
+Accounting-Realtime-Required       483    -     -     -     -     Enumerated         -      -     -       -
+Accounting-Record-Number           485    M     M     -     -     Unsigned32         M      -     -       V
+Accounting-Record-Type             480    M     M     -     -     Enumerated         M      -     -       V
+Accounting-Sub-Session-Id          287    -     -     -     -     Unsigned64         -      -     -       -
+Acct-Application-Id                259    OC    OC    -     -     Unsigned32         M      -     -       V
+Acct-Interim-Interval              85     OC    OC    -     -     Unsigned32         M      -     -       V
+Acct-Multi-Session-Id              50     -     -     -     -     UTF8String         -      -     -       - ;; corrected: (TS32.299.py#acct-multi-session-id-type)
+Acct-Session-Id                    44     -     -     -     -     OctetString        -      -     -       -
+Auth-Application-Id                258    -     -     M     M     Unsigned32         M      -     -       V
 ;; deleted: AVP table row 'AVP' (table 7.1.0.1) (TS32.299.py#wildcard-row)
-Called-Station-Id                  30    UTF8String         M     -     -     V
-CC-Correlation-Id                  411   OctetString        -     M     -     V
-CC-Input-Octets                    412   Unsigned64         M     -     -     V
-CC-Money                           413   Grouped            -     -     -     -
-CC-Output-Octets                   414   Unsigned64         M     -     -     V
-CC-Request-Number                  415   Unsigned32         M     -     -     V
-CC-Request-Type                    416   Enumerated         M     -     -     V
-CC-Service-Specific-Units          417   Unsigned64         M     -     -     V
-CC-Session-Failover                418   Enumerated         M     -     -     V
-CC-Sub-Session-Id                  419   Unsigned64         -     -     -     -
-CC-Time                            420   Unsigned32         M     -     -     V
-CC-Total-Octets                    421   Unsigned64         M     -     -     V
-CC-Unit-Type                       454   Enumerated         M     -     -     V
-Check-Balance-Result               422   Enumerated         -     -     -     -
-Cost-Information                   423   Grouped            M     -     -     V
-Cost-Unit                          424   UTF8String         M     -     -     V
-Credit-Control                     426   Enumerated         -     -     -     -
-Credit-Control-Failure-Handling    427   Enumerated         M     -     -     V
-Currency-Code                      425   Unsigned32         M     -     -     V
-Destination-Host                   293   DiameterIdentity   M     -     -     V
-Destination-Realm                  283   DiameterIdentity   M     -     -     V
-Direct-Debiting-Failure-Handling   428   Enumerated         M     -     -     V
-Error-Message                      281   UTF8String         -     -     -     -
-Error-Reporting-Host               294   DiameterIdentity   -     -     -     M,V
-Event-Timestamp                    55    Time               M     -     -     V
-Experimental-Result                297   Grouped            M     -     -     V ;; corrected: (TS32.299.py#experimental-result-m-flag-must-not) ;; corrected: (TS32.299.py#experimental-result-m-flag-must)
-Experimental-Result-Code           298   Unsigned32         M     -     -     V ;; corrected: (TS32.299.py#experimental-result-code-m-flag-must-not) ;; corrected: (TS32.299.py#experimental-result-code-m-flag-must)
-Exponent                           429   Integer32          M     -     -     V
-Failed-AVP                         279   Grouped            M     -     -     V
-Filter-Id                          11    UTF8String         M     -     -     V
-Final-Unit-Action                  449   Enumerated         M     -     -     V
-Final-Unit-Indication              430   Grouped            M     -     -     V
-Granted-Service-Unit               431   Grouped            M     -     -     V
-G-S-U-Pool-Identifier              453   Unsigned32         M     -     -     V
-G-S-U-Pool-Reference               457   Grouped            M     -     -     V
-Multiple-Services-Credit-Control   456   Grouped            M     -     -     V
-Multiple-Services-Indicator        455   Enumerated         M     -     -     V
-OC-Feature-Vector                  622   Unsigned64         -     -     -     M,V
-OC-OLR                             623   Grouped            -     -     -     M,V
-OC-Reduction-Percentage            627   Unsigned32         -     -     -     M,V
-OC-Report-Type                     626   Enumerated         -     -     -     M,V
-OC-Sequence-Number                 624   Unsigned64         -     -     -     M,V
-OC-Supported-Features              621   Grouped            -     -     -     M,V
-OC-Validity-Duration               625   Unsigned32         -     -     -     M,V
-Origin-Host                        264   DiameterIdentity   M     -     -     V
-Origin-Realm                       296   DiameterIdentity   M     -     -     V
-Origin-State-Id                    278   Unsigned32         M     -     -     V
-Proxy-Info                         284   Grouped            M     -     -     V
-Proxy-Host                         280   DiameterIdentity   M     -     -     V
-Proxy-State                        33    OctetString        M     -     -     V
-Rating-Group                       432   Unsigned32         M     -     -     V
-Redirect-Address-Type              433   Enumerated         M     -     -     V
-Redirect-Host                      292   DiameterURI        M     -     -     V
-Redirect-Host-Usage                261   Enumerated         M     -     -     V
-Redirect-Max-Cache-Time            262   Unsigned32         M     -     -     V
-Redirect-Server                    434   Grouped            M     -     -     V
-Redirect-Server-Address            435   UTF8String         M     -     -     V
-Requested-Action                   436   Enumerated         M     -     -     V
-Requested-Service-Unit             437   Grouped            M     -     -     V
-Restriction-Filter-Rule            438   IPFilterRule       M     -     -     V
-Result-Code                        268   Unsigned32         M     -     -     V
-Route-Record                       282   DiameterIdentity   M     -     -     V
-Service-Context-Id                 461   UTF8String         M     -     -     V
-Service-Identifier                 439   Unsigned32         M     -     -     V
-Service-Parameter-Info             440   Grouped            -     -     -     -
-Service-Parameter-Type             441   Unsigned32         -     -     -     -
-Service-Parameter-Value            442   OctetString        -     -     -     -
-Session-Id                         263   UTF8String         M     -     -     V
-Subscription-Id                    443   Grouped            M     -     -     V
-Subscription-Id-Data               444   UTF8String         M     -     -     V
-Subscription-Id-Type               450   Enumerated         M     -     -     V
-Tariff-Change-Usage                452   Enumerated         M     -     -     V
-Tariff-Time-Change                 451   Time               M     -     -     V
-Termination-Cause                  295   Enumerated         M     -     -     V
-Unit-Value                         445   Grouped            M     -     -     V
-Used-Service-Unit                  446   Grouped            M     -     -     V
-User-Equipment-Info                458   Grouped            -     M     -     V
-User-Equipment-Info-Type           459   Enumerated         -     M     -     V
-User-Equipment-Info-Value          460   OctetString        -     M     -     V
-User-Name                          1     UTF8String         M     -     -     V
-Value-Digits                       447   Integer64          M     -     -     V
-Validity-Time                      448   Unsigned32         M     -     -     V
-Vendor-Id                          266   Unsigned32         -     -     -     -
-Vendor-Specific-Application-Id     260   Grouped            -     -     -     -
+Called-Station-Id                  30     OC    -     OC    -     UTF8String         M      -     -       V
+CC-Correlation-Id                  411    -     -     OC    -     OctetString        -      M     -       V
+CC-Input-Octets                    412    -     -     OC    OC    Unsigned64         M      -     -       V
+CC-Money                           413    -     -     -     -     Grouped            -      -     -       -
+CC-Output-Octets                   414    -     -     OC    OC    Unsigned64         M      -     -       V
+CC-Request-Number                  415    -     -     M     M     Unsigned32         M      -     -       V
+CC-Request-Type                    416    -     -     M     M     Enumerated         M      -     -       V
+CC-Service-Specific-Units          417    -     -     OC    OC    Unsigned64         M      -     -       V
+CC-Session-Failover                418    -     -     -     OC    Enumerated         M      -     -       V
+CC-Sub-Session-Id                  419    -     -     -     -     Unsigned64         -      -     -       -
+CC-Time                            420    -     -     OC    OC    Unsigned32         M      -     -       V
+CC-Total-Octets                    421    -     -     OC    OC    Unsigned64         M      -     -       V
+CC-Unit-Type                       454    -     -     -     M     Enumerated         M      -     -       V
+Check-Balance-Result               422    -     -     -     -     Enumerated         -      -     -       -
+Cost-Information                   423    -     -     -     OC    Grouped            M      -     -       V
+Cost-Unit                          424    -     -     -     OC    UTF8String         M      -     -       V
+Credit-Control                     426    -     -     -     -     Enumerated         -      -     -       -
+Credit-Control-Failure-Handling    427    -     -     -     OC    Enumerated         M      -     -       V
+Currency-Code                      425    -     -     -     M     Unsigned32         M      -     -       V
+Destination-Host                   293    OC    -     OC    -     DiameterIdentity   M      -     -       V
+Destination-Realm                  283    M     -     M     -     DiameterIdentity   M      -     -       V
+Direct-Debiting-Failure-Handling   428    -     -     -     OC    Enumerated         M      -     -       V
+Error-Message                      281    -     -     -     -     UTF8String         -      -     -       -
+Error-Reporting-Host               294    -     OC    -     -     DiameterIdentity   -      -     -       M,V
+Event-Timestamp                    55     OC    OC    OC    -     Time               M      -     -       V
+Experimental-Result                297    -     OC    -     OC    Grouped            M      -     -       V ;; corrected: (TS32.299.py#experimental-result-m-flag-must-not) ;; corrected: (TS32.299.py#experimental-result-m-flag-must)
+Experimental-Result-Code           298    -     OC    -     OC    Unsigned32         M      -     -       V ;; corrected: (TS32.299.py#experimental-result-code-m-flag-must-not) ;; corrected: (TS32.299.py#experimental-result-code-m-flag-must)
+Exponent                           429    -     -     -     OC    Integer32          M      -     -       V
+Failed-AVP                         279    -     -     -     OC    Grouped            M      -     -       V
+Filter-Id                          11     -     -     -     OC    UTF8String         M      -     -       V
+Final-Unit-Action                  449    -     -     -     OC    Enumerated         M      -     -       V
+Final-Unit-Indication              430    -     -     -     OC    Grouped            M      -     -       V
+Granted-Service-Unit               431    -     -     -     OC    Grouped            M      -     -       V
+G-S-U-Pool-Identifier              453    -     -     -     OC    Unsigned32         M      -     -       V
+G-S-U-Pool-Reference               457    -     -     -     OC    Grouped            M      -     -       V
+Multiple-Services-Credit-Control   456    -     -     OC    OC    Grouped            M      -     -       V
+Multiple-Services-Indicator        455    -     -     OM    -     Enumerated         M      -     -       V
+OC-Feature-Vector                  622    -     -     OC    OC    Unsigned64         -      -     -       M,V
+OC-OLR                             623    -     -     -     OC    Grouped            -      -     -       M,V
+OC-Reduction-Percentage            627    -     -     -     OC    Unsigned32         -      -     -       M,V
+OC-Report-Type                     626    -     -     -     OC    Enumerated         -      -     -       M,V
+OC-Sequence-Number                 624    -     -     -     OC    Unsigned64         -      -     -       M,V
+OC-Supported-Features              621    -     -     OC    OC    Grouped            -      -     -       M,V
+OC-Validity-Duration               625    -     -     -     OC    Unsigned32         -      -     -       M,V
+Origin-Host                        264    M     M     M     M     DiameterIdentity   M      -     -       V
+Origin-Realm                       296    M     M     M     M     DiameterIdentity   M      -     -       V
+Origin-State-Id                    278    OC    OC    OC    -     Unsigned32         M      -     -       V
+Proxy-Info                         284    OC    OC    OC    OC    Grouped            M      -     -       V
+Proxy-Host                         280    M     M     M     M     DiameterIdentity   M      -     -       V
+Proxy-State                        33     M     M     M     M     OctetString        M      -     -       V
+Rating-Group                       432    OC    -     OC    OC    Unsigned32         M      -     -       V
+Redirect-Address-Type              433    -     -     -     M     Enumerated         M      -     -       V
+Redirect-Host                      292    -     -     -     OC    DiameterURI        M      -     -       V
+Redirect-Host-Usage                261    -     -     -     OC    Enumerated         M      -     -       V
+Redirect-Max-Cache-Time            262    -     -     -     OC    Unsigned32         M      -     -       V
+Redirect-Server                    434    -     -     -     OC    Grouped            M      -     -       V
+Redirect-Server-Address            435    -     -     -     M     UTF8String         M      -     -       V
+Requested-Action                   436    -     -     OC    -     Enumerated         M      -     -       V
+Requested-Service-Unit             437    -     -     OC    -     Grouped            M      -     -       V
+Restriction-Filter-Rule            438    -     -     -     OC    IPFilterRule       M      -     -       V
+Result-Code                        268    -     M     -     M     Unsigned32         M      -     -       V
+Route-Record                       282    OC    -     OC    OC    DiameterIdentity   M      -     -       V
+Service-Context-Id                 461    OM    -     M     -     UTF8String         M      -     -       V
+Service-Identifier                 439    OC    -     OC    OC    Unsigned32         M      -     -       V
+Service-Parameter-Info             440    -     -     -     -     Grouped            -      -     -       -
+Service-Parameter-Type             441    -     -     -     -     Unsigned32         -      -     -       -
+Service-Parameter-Value            442    -     -     -     -     OctetString        -      -     -       -
+Session-Id                         263    M     M     M     M     UTF8String         M      -     -       V
+Subscription-Id                    443    OC    -     OM    -     Grouped            M      -     -       V
+Subscription-Id-Data               444    M     -     M     -     UTF8String         M      -     -       V
+Subscription-Id-Type               450    M     -     M     -     Enumerated         M      -     -       V
+Tariff-Change-Usage                452    -     -     OC    -     Enumerated         M      -     -       V
+Tariff-Time-Change                 451    -     ""    -     OC    Time               M      -     -       V
+Termination-Cause                  295    ""    -     OC    -     Enumerated         M      -     -       V
+Unit-Value                         445    -     -     -     M     Grouped            M      -     -       V
+Used-Service-Unit                  446    -     -     OC    -     Grouped            M      -     -       V
+User-Equipment-Info                458    OC    -     OC    -     Grouped            -      M     -       V
+User-Equipment-Info-Type           459    OM    -     M     -     Enumerated         -      M     -       V
+User-Equipment-Info-Value          460    OM    -     M     -     OctetString        -      M     -       V
+User-Name                          1      OC    OC    OC    -     UTF8String         M      -     -       V
+Value-Digits                       447    -     -     -     M     Integer64          M      -     -       V
+Validity-Time                      448    -     -     -     OC    Unsigned32         M      -     -       V
+Vendor-Id                          266    -     -     -     -     Unsigned32         -      -     -       -
+Vendor-Specific-Application-Id     260    -     -     -     -     Grouped            -      -     -       -
 
 
 ; Type: Reused AVPs
@@ -415,541 +415,541 @@ OC-Validity-Duration               RFC7683 ;; inserted: (TS32.299.py#ietf-origin
 ; Section: 7.2.0
 ; Table: 7.2.0.1
 ; Page: 102
-; Columns: Name                                          Code   Type               Must  May   S.not M.not
-3GPP-Charging-Characteristics                            13     -                  -     -     -     -
-3GPP-Charging-Id                                         2      -                  -     -     -     -
-3GPP-GGSN-MCC-MNC                                        9      -                  -     -     -     -
-3GPP-IMSI                                                1      -                  -     -     -     -
-3GPP-IMSI-MCC-MNC                                        8      -                  -     -     -     -
-3GPP-MS-TimeZone                                         23     -                  -     -     -     -
-3GPP-NSAPI                                               10     -                  -     -     -     -
-3GPP-OC-Specific-Reduction                               1320   Grouped            -     -     -     M
-3GPP-OC-Rating-Group                                     1321   Unsigned32         -     -     -     M
-3GPP-OC-Request-Type                                     1322   Enumerated         -     -     -     M
-3GPP-PDP-Type                                            3      -                  -     -     -     -
-3GPP-PS-Data-Off-Status                                  4406   Enumerated         M,V   -     -     -
-3GPP-RAT-Type                                            21     -                  -     -     -     -
-3GPP-Selection-Mode                                      12     -                  -     -     -     -
-3GPP-Session-Stop-Indicator                              11     -                  -     -     -     -
-3GPP-SGSN-MCC-MNC                                        18     -                  -     -     -     -
-3GPP-User-Location-Info                                  22     -                  -     -     -     -
-Access-Availability-Change-Reason                        2833   -                  -     -     -     -
-Access-Network-Charging-Identifier-Value                 503    -                  -     -     -     -
-Access-Network-Info-Change                               4401   Grouped            M,V   -     -     -
-Access-Network-Information                               1263   OctetString        M,V   -     -     -
-Access-Transfer-Information                              2709   Grouped            M,V   -     -     -
-Access-Transfer-Type                                     2710   Enumerated         M,V   -     -     -
-Account-Expiration                                       2309   Time               M,V   -     -     -
-Accumulated-Cost                                         2052   Grouped            M,V   -     -     -
-Accuracy                                                 3137   -                  -     -     -     -
-Adaptations                                              1217   Enumerated         M,V   -     -     -
-ADC-Rule-Base-Name                                       1095   -                  -     -     -     -
-Additional-Content-Information                           1207   Grouped            M,V   -     -     -
-Additional-Exception-Reports                             3936   Enumerated         M,V   -     -     -
-Additional-Type-Information                              1205   UTF8String         M,V   -     -     -
-Address-Data                                             897    UTF8String         M,V   -     -     -
-Address-Domain                                           898    Grouped            M,V   -     -     -
-Addressee-Type                                           1208   Enumerated         M,V   -     -     -
-Address-Type                                             899    Enumerated         M,V   -     -     -
-AF-Charging-Identifier                                   505    -                  -     -     -     -
-AF-Correlation-Information                               1276   Grouped            M,V   -     -     -
-Allocation-Retention-Priority                            1034   -                  -     -     -     -
-Alternate-Charged-Party-Address                          1280   UTF8String         M,V   -     -     -
-Announcement-Identifier                                  3905   Unsigned32         M,V   -     -     -
-Announcement-Information                                 3904   Grouped            M,V   -     -     -
-Announcement-Order                                       3906   Unsigned32         M,V   -     -     -
-Announcing-PLMN-ID                                       4408   UTF8String         M,V   -     -     -
-Announcing-UE-HPLMN-Identifier                           3426   UTF8String         M,V   -     -     -
-Announcing-UE-VPLMN-Identifier                           3427   UTF8String         M,V   -     -     -
-AoC-Cost-Information                                     2053   Grouped            M,V   -     -     -
-AoC-Format                                               2310   Enumerated         M,V   -     -     -
-AoC-Information                                          2054   Grouped            M,V   -     -     -
-AoC-Request-Type                                         2055   Enumerated         M,V   -     -     -
-AoC-Service                                              2311   Grouped            M,V   -     -     -
-AoC-Service-Obligatory-Type                              2312   Enumerated         M,V   -     -     -
-AoC-Service-Type                                         2313   Enumerated         M,V   -     -     -
-AoC-Subscription-Information                             2314   Grouped            M,V   -     -     -
-API-Content                                              1309   UTF8String         V     -     -     M
-API-Direction                                            1310   Enumerated         V     -     -     M
-API-Identifier                                           1311   OctetString        V     -     -     M
-API-Invocation-Timestamp                                 1312   Time               V     -     -     M
-API-Network-Service-Node                                 1315   Enumerated         V     -     -     M
-API-Result-Code                                          1313   Unsigned32         V     -     -     M
-API-Size                                                 1314   Unsigned64         V     -     -     M
-APN-Rate-Control                                         3933   Grouped            M,V   -     -     -
-APN-Rate-Control-Downlink                                3934   Grouped            M,V   -     -     -
-APN-Rate-Control-Uplink                                  3935   Grouped            M,V   -     -     -
-Applic-ID                                                1218   UTF8String         M,V   -     -     -
-Application-Port-Identifier                              3010   -                  -     -     -     - ;; corrected: (TS32.299.py#row-application-port-identifier)
-Application-Provided-Called-Party-Address                837    UTF8String         M,V   -     -     -
-Application-Server                                       836    UTF8String         M,V   -     -     -
-Application-Server-ID                                    2101   -                  -     -     -     -
-Application-Service-Provider-Identity                    532    -                  -     -     -     -
-Application-Server-Information                           850    Grouped            M,V   -     -     -
-Application-Service-Type                                 2102   -                  -     -     -     -
-Application-Session-ID                                   2103   -                  -     -     -     -
-Application-Specific-Data                                3458   OctetString        M,V   -     -     -
-Associated-Party-Address                                 2035   UTF8String         M,V   -     -     -
-Associated-URI                                           856    UTF8String         M,V   -     -     -
-Authorised-QoS                                           849    UTF8String         M,V   -     -     -
-Aux-Applic-Info                                          1219   UTF8String         M,V   -     -     -
-Base-Time-Interval                                       1265   Unsigned32         M,V   -     -     -
-Basic-Service-Code                                       3411   Grouped            M,V   -     -     -
-Bearer-Capability                                        3412   OctetString        M,V   -     -     -
-Bearer-Service                                           854    OctetString        M,V   -     -     -
-BSSID                                                    2716   UTF8String         M,V   -     -     -
-Called-Asserted-Identity                                 1250   UTF8String         M,V   -     -     -
-Called-Identity                                          3916   UTF8String         M,V   -     -     -
-Called-Identity-Change                                   3917   Grouped            M,V   -     -     -
-Called-Party-Address                                     832    UTF8String         M,V   -     -     -
-Calling-Party-Address                                    831    UTF8String         M,V   -     -     -
-Callee-Information                                       565    -                  -     -     -     -
-Carrier-Select-Routing-Information                       2023   UTF8String         M,V   -     -     -
-Cause-Code                                               861    Integer32          M,V   -     -     -
-Cellular-Network-Information                             3924   OctetString        M,V   -     -     -
-CG-Address                                               846    Address            M,V   -     -     -
-Change-Condition                                         2037   Integer32          M,V   -     -     -
-Change-Time                                              2038   Time               M,V   -     -     -
-Charge-Reason-Code                                       2118   Enumerated         M,V   -     -     -
-Charged-Party                                            857    UTF8String         M,V   -     -     -
-Charging-Characteristics-Selection-Mode                  2066   Enumerated         M,V   -     -     -
-Charging-Per-IP-CAN-Session-Indicator                    4400   Enumerated         M,V   -     -     -
-Charging-Rule-Base-Name                                  1004   -                  -     -     -     -
-Civic-Address-Information                                1305   UTF8String         V     -     -     M
-Class-Identifier                                         1214   Enumerated         M,V   -     -     -
-Client-Address                                           2018   Address            M,V   -     -     -
-CN-IP-Multicast-Distribution                             921    -                  -     -     -     -
-CN-Operator-Selection-Entity                             3421   Enumerated         M,V   -     -     -
-Communication-Failure-Information                        4300   -                  -     -     -     -
-Content-Class                                            1220   Enumerated         M,V   -     -     -
-Content-Disposition                                      828    UTF8String         M,V   -     -     -
-Content-ID                                               2116   -                  -     -     -     -
-Content-Provider-ID                                      2117   -                  -     -     -     -
-Content-Length                                           827    Unsigned32         M,V   -     -     -
-Content-Size                                             1206   Unsigned32         M,V   -     -     -
-Content-Type                                             826    UTF8String         M,V   -     -     -
-Coverage-Info                                            3459   Grouped            M,V   -     -     -
-Coverage-Status                                          3428   Enumerated         M,V   -     -     -
-CP-CIoT-EPS-Optimisation-Indicator                       3930   Enumerated         M,V   -     -     -
-CPDT-Information                                         3927   Grouped            M,V   -     -     -
-CSG-Access-Mode                                          2317   Enumerated         M,V   -     -     -
-CSG-Id                                                   1437   -                  -     -     -     -
-CSG-Membership-Indication                                2318   Enumerated         M,V   -     -     -
-CUG-Information                                          2304   OctetString        M,V   -     -     -
-Current-Tariff                                           2056   Grouped            M,V   -     -     -
-Data-Coding-Scheme                                       2001   Integer32          M,V   -     -     -
-DCD-Information                                          2115   -                  -     -     -     -
-Deferred-Location-Event-Type                             1230   UTF8String         M,V   -     -     -
-Delivery-Report-Requested                                1216   Enumerated         M,V   -     -     -
-Delivery-Status                                          2104   -                  -     -     -     -
-Destination-Interface                                    2002   Grouped            M,V   -     -     -
-Diagnostics                                              2039   Integer32          M,V   -     -     -
-Discoveree-UE-HPLMN-Identifier                           4402   UTF8String         M,V   -     -     -
-Discoveree-UE-VPLMN-Identifier                           4403   UTF8String         M,V   -     -     -
-Discoverer-UE-HPLMN-Identifier                           4404   UTF8String         M,V   -     -     -
-Discoverer-UE-VPLMN-Identifier                           4405   UTF8String         M,V   -     -     -
-Domain-Name                                              1200   UTF8String         M,V   -     -     -
-DRM-Content                                              1221   Enumerated         M,V   -     -     -
-Dynamic-Address-Flag                                     2051   Enumerated         M,V   -     -     -
-Dynamic-Address-Flag-Extension                           2068   Enumerated         M,V   -     -     -
-Early-Media-Description                                  1272   Grouped            M,V   -     -     -
-Enhanced-Diagnostics                                     3901   Grouped            M,V   -     -     -
-Envelope                                                 1266   Grouped            M,V   -     -     -
-Envelope-End-Time                                        1267   Time               M,V   -     -     -
-Envelope-Reporting                                       1268   Enumerated         M,V   -     -     -
-Envelope-Start-Time                                      1269   Time               M,V   -     -     -
-EPDG-Address                                             3425   Address            M,V   -     -     -
-EPS-Location-Information                                 1496   -                  -     -     -     -
-Event                                                    825    UTF8String         M,V   -     -     -
-Event-Charging-TimeStamp                                 1258   Time               M,V   -     -     -
-Event-Type                                               823    Grouped            M,V   -     -     -
-Expires                                                  888    Unsigned32         M,V   -     -     -
-Exposure-Function-API-Information                        1316   Grouped            V     -     -     M
-External-Identifier                                      3111   -                  -     -     -     -
-Feature-List                                             630    -                  M,V   -     -     -
-Feature-List-ID                                          629    -                  M,V   -     -     -
-FE-Identifier-List                                       4413   UTF8String         M,V   -     -     -
-File-Repair-Supported                                    1224   Enumerated         M,V   -     -     -
-Fixed-User-Location-Info                                 2825   -                  -     -     -     -
-Flows                                                    510    -                  -     -     -     -
-Forwarding-Pending                                       3415   Enumerated         M,V   -     -     -
-From-Address                                             2708   UTF8String         M,V   -     -     -
-GGSN-Address                                             847    Address            M,V   -     -     -
-Guaranteed-Bitrate-UL                                    1026   -                  -     -     -     -
-IM-Information                                           2110   -                  -     -     -     -
-IMS-Application-Reference-Identifier                     2601   UTF8String         M,V   -     -     -
-IMS-Charging-Identifier                                  841    UTF8String         M,V   -     -     -
-IMS-Communication-Service-Identifier                     1281   UTF8String         M,V   -     -     -
-IMS-Emergency-Indicator                                  2322   Enumerated         M,V   -     -     -
-IMS-Information                                          876    Grouped            M,V   -     -     -
-IMS-Visited-Network-Identifier                           2713   UTF8String         M,V   -     -     -
-IMSI-Unauthenticated-Flag                                2308   Enumerated         M,V   -     -     -
-Incoming-Trunk-Group-ID                                  852    UTF8String         M,V   -     -     - ;; corrected: (TS32.299.py#row-incoming-trunk-group-id)
-Incremental-Cost                                         2062   Grouped            M,V   -     -     -
-Initial-IMS-Charging-Identifier                          2321   UTF8String         M,V   -     -     -
-Instance-Id                                              3402   UTF8String         M,V   -     -     -
-Interface-Id                                             2003   UTF8String         M,V   -     -     -
-Interface-Port                                           2004   UTF8String         M,V   -     -     -
-Interface-Text                                           2005   UTF8String         M,V   -     -     -
-Interface-Type                                           2006   Enumerated         M,V   -     -     -
-Inter-Operator-Identifier                                838    Grouped            M,V   -     -     -
-Inter-UE-Transfer                                        3902   Enumerated         M,V   -     -     -
-IP-Realm-Default-Indication                              2603   Enumerated         M,V   -     -     -
-ISUP-Cause                                               3416   Grouped            M,V   -     -     -
-ISUP-Cause-Diagnostics                                   3422   OctetString        M,V   -     -     -
-ISUP-Cause-Location                                      3423   Unsigned32         M,V   -     -     -
-ISUP-Cause-Value                                         3424   Unsigned32         M,V   -     -     -
-ISUP-Location-Number                                     3414   OctetString        M,V   -     -     -
-Language                                                 3914   UTF8String         M,V   -     -     -
-Layer-2-Group-ID                                         3429   OctetString        M,V   -     -     -
-LCS-APN                                                  1231   UTF8String         M,V   -     -     -
-LCS-Client-Dialed-By-MS                                  1233   UTF8String         M,V   -     -     -
-LCS-Client-External-ID                                   1234   UTF8String         M,V   -     -     -
-LCS-Client-ID                                            1232   Grouped            M,V   -     -     - ;; corrected: (TS32.299.py#row-lcs-client-id)
-LCS-Client-Name                                          1235   Grouped            M,V   -     -     -
-LCS-Client-Type                                          1241   Enumerated         M,V   -     -     -
-LCS-Data-Coding-Scheme                                   1236   UTF8String         M,V   -     -     -
-LCS-Format-Indicator                                     1237   Enumerated         M,V   -     -     -
-LCS-Information                                          878    Grouped            M,V   -     -     -
-LCS-Name-String                                          1238   UTF8String         M,V   -     -     -
-LCS-Requestor-ID                                         1239   Grouped            M,V   -     -     -
-LCS-Requestor-ID-String                                  1240   UTF8String         M,V   -     -     -
-Local-GW-Inserted-Indication                             2604   Enumerated         M,V   -     -     -
-Local-Sequence-Number                                    2063   Unsigned32         M,V   -     -     -
-Location-Estimate                                        1242   OctetString        M,V   -     -     -
-Location-Estimate-Type                                   1243   Enumerated         M,V   -     -     -
-Location-Info                                            3460   Grouped            M,V   -     -     -
-Location-Type                                            1244   Grouped            M,V   -     -     -
-Low-Balance-Indication                                   2020   Enumerated         M,V   -     -     -
-Low-Priority-Indicator                                   2602   Enumerated         M,V   -     -     -
-Mandatory-Capability                                     604    -                  -     -     -     -
-Max-Requested-Bandwidth-DL                               515    -                  -     -     -     -
-Max-Requested-Bandwidth-UL                               516    -                  -     -     -     -
-Maximum-Detection-Time                                   3131   -                  -     -     -     -
-Maximum-Number-of-Reports                                3128   -                  -     -     -     -
-MBMS-2G-3G-Indicator                                     907    -                  -     -     -     -
-MBMS-Charged-Party                                       2323   Enumerated         M,V   -     -     -
-MBMS-Data-Transfer-Start                                 929    -                  -     -     -     -
-MBMS-Data-Transfer-Stop                                  930    -                  -     -     -     -
-MBMS-GW-Address                                          2307   Address            M,V   -     -     -
-MBMS-Information                                         880    Grouped            M,V   -     -     -
-MBMS-Service-Area                                        903    -                  -     -     -     -
-MBMS-Service-Type                                        906    -                  -     -     -     -
-MBMS-Session-Identity                                    908    -                  -     -     -     -
-MBMS-User-Service-Type                                   1225   Enumerated         M,V   -     -     -
-Media-Initiator-Flag                                     882    Enumerated         M,V   -     -     -
-Media-Initiator-Party                                    1288   UTF8String         M,V   -     -     -
-Message-Body                                             889    Grouped            M,V   -     -     -
-Message-Class                                            1213   Grouped            M,V   -     -     -
-Message-ID                                               1210   UTF8String         M,V   -     -     -
-Message-Size                                             1212   Unsigned32         M,V   -     -     -
-Message-Type                                             1211   Enumerated         M,V   -     -     -
-MMBox-Storage-Requested                                  1248   Enumerated         M,V   -     -     -
-MM-Content-Type                                          1203   Grouped            M,V   -     -     -
-MME-Name                                                 2402   -                  -     -     -     -
-MME-Number-for-MT-SMS                                    1645   -                  -     -     -     -
-MME-Realm                                                2408   -                  -     -     -     -
-MMS-Information                                          877    Grouped            M,V   -     -     -
-MMTel-Information                                        2030   Grouped            M,V   -     -     -
-MMTel-SService-Type                                      2031   Unsigned32         M,V   -     -     -
-Monitored-PLMN-Identifier                                3430   UTF8String         M,V   -     -     -
-Monitoring-Duration                                      3130   -                  -     -     -     -
-Monitoring-Event-Config-Status                           3142   -                  -     -     -     -
-Monitoring-Event-Configuration-Activity                  3919   Enumerated         M,V   -     -     - ;; corrected: (TS32.299.py#type-monitoring-event-configuration-activity)
-Monitoring-Event-Functionality                           3922   Enumerated         M,V   -     -     - ;; corrected: (TS32.299.py#type-monitoring-event-functionality)
-Monitoring-Event-Information                             3921   Grouped            M,V   -     -     -
-Monitoring-Event-Report-Data                             3920   Grouped            M,V   -     -     -
-Monitoring-Event-Report-Number                           3923   Unsigned32         M,V   -     -     -
-Monitoring-Type                                          3127   -                  -     -     -     -
-Monitoring-UE-HPLMN-Identifier                           3431   UTF8String         M,V   -     -     -
-Monitoring-UE-Identifier                                 3432   UTF8String         M,V   -     -     -
-Monitoring-UE-VPLMN-Identifier                           3433   UTF8String         M,V   -     -     -
-MONTE-Location-Type                                      3136   -                  -     -     -     -
-MSC-Address                                              3417   OctetString        M,V   -     -     -
-MSISDN                                                   701    -                  -     -     -     -
-MTC-IWF-Address                                          3406   Address            M,V   -     -     -
-NBIFOM-Mode                                              2830   -                  -     -     -     -
-NBIFOM-Support                                           2831   -                  -     -     -     -
-Neighbour-Node-Address                                   2705   Address            M,V   -     -     -
-Network-Call-Reference-Number                            3418   OctetString        M,V   -     -     -
-Next-Tariff                                              2057   Grouped            M,V   -     -     -
-NIDD-Submission                                          3928   Grouped            M,V   -     -     -
-NNI-Information                                          2703   Grouped            M,V   -     -     -
-NNI-Type                                                 2704   Enumerated         M,V   -     -     -
-Node-Functionality                                       862    Enumerated         M,V   -     -     -
-Node-Id                                                  2064   UTF8String         M,V   -     -     -
-Nr-Cgi                                                   1325   UTF8String         M,V   -     -     -
-Number-Of-Diversions                                     2034   Unsigned32         M,V   -     -     -
-Number-Of-Messages-Sent                                  2019   Unsigned32         M,V   -     -     -
-Number-Of-Messages-Successfully-Exploded                 2111   -                  -     -     -     -
-Number-Of-Messages-Successfully-Sent                     2112   -                  -     -     -     -
-Number-Of-Participants                                   885    Unsigned32         M,V   -     -     -
-Number-Of-Received-Talk-Bursts                           1282   Unsigned32         M,V   -     -     -
-Number-Of-Talk-Bursts                                    1283   Unsigned32         M,V   -     -     -
-Number-Of-UE-Per-Location-Configuration                  4306   -                  -     -     -     -
-Number-Of-UE-Per-Location-Report                         4307   -                  -     -     -     -
-Number-Portability-Routing-Information                   2024   UTF8String         M,V   -     -     -
-Offline-Charging                                         1278   Grouped            M,V   -     -     -
-Online-Charging-Flag                                     2303   Enumerated         M,V   -     -     -
-Optional-Capability                                      605    -                  -     -     -     -
-Origin-App-Layer-User-Id                                 3600   -                  -     -     -     -
-Originating-IOI                                          839    UTF8String         M,V   -     -     -
-Originator                                               864    Enumerated         M,V   -     -     -
-Originator-Address                                       886    Grouped            M,V   -     -     -
-Originator-Interface                                     2009   Grouped            M,V   -     -     -
-Originator-Received-Address                              2027   Grouped            M,V   -     -     -
-Originator-SCCP-Address                                  2008   Address            M,V   -     -     -
-Outgoing-Session-Id                                      2320   UTF8String         M,V   -     -     -
-Outgoing-Trunk-Group-ID                                  853    UTF8String         M,V   -     -     - ;; corrected: (TS32.299.py#row-outgoing-trunk-group-id)
-Participant-Access-Priority                              1259   Enumerated         M,V   -     -     -
-Participant-Action-Type                                  2049   Enumerated         M,V   -     -     -
-Participant-Group                                        1260   Grouped            M,V   -     -     -
-Participants-Involved                                    887    UTF8String         M,V   -     -     -
-PC3-Control-Protocol-Cause                               3434   Integer32          M,V   -     -     -
-PC3-EPC-Control-Protocol-Cause                           3435   Integer32          M,V   -     -     -
-PC5-Radio-Technology                                     1300   Enumerated         V     -     -     M
-PDN-Connection-Charging-ID                               2050   Unsigned32         M,V   -     -     -
-PDP-Address                                              1227   Address            M,V   -     -     -
-PDP-Address-Prefix-Length                                2606   Unsigned32         M,V   -     -     -
-PDP-Context-Type                                         1247   Enumerated         M,V   -     -     -
-Play-Alternative                                         3913   Enumerated         M,V   -     -     -
-PoC-Change-Condition                                     1261   Enumerated         M,V   -     -     -
-PoC-Change-Time                                          1262   Time               M,V   -     -     -
-PoC-Controlling-Address                                  858    UTF8String         M,V   -     -     -
-PoC-Event-Type                                           2025   Enumerated         M,V   -     -     -
-PoC-Group-Name                                           859    UTF8String         M,V   -     -     -
-PoC-Information                                          879    Grouped            M,V   -     -     -
-PoC-Server-Role                                          883    Enumerated         M,V   -     -     -
-PoC-Session-Id                                           1229   UTF8String         M,V   -     -     -
-PoC-Session-Initiation-Type                              1277   Enumerated         M,V   -     -     -
-PoC-Session-Type                                         884    Enumerated         M,V   -     -     -
-PoC-User-Role                                            1252   Grouped            M,V   -     -     -
-PoC-User-Role-IDs                                        1253   UTF8String         M,V   -     -     -
-PoC-User-Role-Info-Units                                 1254   Enumerated         M,V   -     -     -
-Positioning-Data                                         1245   UTF8String         M,V   -     -     -
-Preferred-AoC-Currency                                   2315   Unsigned32         M,V   -     -     -
-Presence-Reporting-Area-Identifier                       2821   -                  -     -     -     -
-Presence-Reporting-Area-Information                      2822   -                  -     -     -     -
-Presence-Reporting-Area-Elements-List                    2820   -                  -     -     -     -
-Presence-Reporting-Area-Node                             2855   -                  -     -     -     -
-Presence-Reporting-Area-Status                           2823   -                  -     -     -     -
-Priority                                                 1209   Enumerated         M,V   -     -     -
-Priority-Indication                                      3006   -                  -     -     -     -
-Priority-Level                                           1046   -                  -     -     -     -
-Privacy-Indicator                                        3915   Enumerated         M,V   -     -     -
-ProSe-3rd-Party-Application-ID                           3440   UTF8String         M,V   -     -     -
-ProSe-App-Id                                             3811   -                  -     -     -     -
-ProSe-Direct-Communication-Reception-Data-Container      3461   Grouped            M,V   -     -     -
-ProSe-Direct-Communication-Transmission-Data-Container   3441   Grouped            M,V   -     -     -
-ProSe-Direct-Discovery-Model                             3442   Enumerated         M,V   -     -     -
-ProSe-Event-Type                                         3443   Enumerated         M,V   -     -     -
-ProSe-Function-ID                                        3602   -                  -     -     -     -
-ProSe-Function-IP-Address                                3444   Address            M,V   -     -     -
-ProSe-Function-PLMN-Identifier                           3457   UTF8String         M,V   -     -     -
-ProSe-Functionality                                      3445   Enumerated         M,V   -     -     -
-ProSe-Group-IP-Multicast-Address                         3446   Address            M,V   -     -     -
-ProSe-Information                                        3447   Grouped            M,V   -     -     -
-ProSe-Range-Class                                        3448   Enumerated         M,V   -     -     -
-ProSe-Reason-For-Cancellation                            3449   Enumerated         M,V   -     -     -
-ProSe-Request-Timestamp                                  3450   Time               M,V   -     -     -
-ProSe-Role-Of-UE                                         3451   Enumerated         M,V   -     -     -
-ProSe-Source-IP-Address                                  3452   Address            M,V   -     -     -
-ProSe-Target-Layer-2-ID                                  4410   OctetString        M,V   -     -     -
-ProSe-UE-ID                                              3453   OctetString        M,V   -     -     -
-ProSe-UE-to-Network-Relay-UE-ID                          4409   OctetString        M,V   -     -     -
-ProSe-Validity-Timer                                     3815   -                  -     -     -     -
-Proximity-Alert-Indication                               3454   Enumerated         M,V   -     -     -
-Proximity-Alert-Timestamp                                3455   Time               M,V   -     -     -
-Proximity-Cancellation-Timestamp                         3456   Time               M,V   -     -     -
-PS-Append-Free-Format-Data                               867    Enumerated         M,V   -     -     -
-PS-Free-Format-Data                                      866    OctetString        M,V   -     -     -
-PS-Furnish-Charging-Information                          865    Grouped            M,V   -     -     -
-PS-Information                                           874    Grouped            M,V   -     -     -
-PSCell-Info                                              1324   Grouped            M,V   -     -     -
-QoS-Information                                          1016   -                  -     -     -     -
-QoS-Class-Identifier                                     1028   -                  -     -     -     -
-Quota-Consumption-Time                                   881    Unsigned32         M,V   -     -     -
-Quota-Holding-Time                                       871    Unsigned32         M,V   -     -     -
-Quota-Indicator                                          3912   Enumerated         M,V   -     -     -
-Radio-Frequency                                          3462   OctetString        M,V   -     -     -
-Radio-Parameter-Set-Info                                 3463   Grouped            M,V   -     -     -
-Radio-Parameter-Set-Values                               3464   OctetString        M,V   -     -     -
-Radio-Resources-Indicator                                3465   Integer32          M,V   -     -     -
-RAI                                                      909    -                  -     -     -     -
-RAN-End-Timestamp                                        1301   Time               V     -     -     M ;; corrected: (TS32.299.py#row-ran-end-time)
-RAN-NAS-Release-Cause                                    2819   -                  -     -     -     -
-RAN-Secondary-RAT-Usage-Report                           1302   Grouped            V     -     -     M
-RAN-Start-Timestamp                                      1303   Time               V     -     -     M ;; corrected: (TS32.299.py#row-ran-start-time)
-Rate-Control-Max-Message-Size                            3937   Unsigned32         M,V   -     -     -
-Rate-Control-Max-Rate                                    3938   Unsigned32         M,V   -     -     -
-Rate-Control-Time-Unit                                   3939   Unsigned32         M,V   -     -     -
-Rate-Element                                             2058   Grouped            M,V   -     -     -
-Reachability-Information                                 3140   -                  -     -     -     -
-Read-Reply-Report-Requested                              1222   Enumerated         M,V   -     -     -
-Real-Time-Tariff-Information                             2305   Grouped            M,V   -     -     -
-Reason-Header                                            3401   UTF8String         M,V   -     -     -
-Received-Talk-Burst-Time                                 1284   Unsigned32         M,V   -     -     -
-Received-Talk-Burst-Volume                               1285   Unsigned32         M,V   -     -     -
-Recipient-Address                                        1201   Grouped            M,V   -     -     -
-Recipient-Info                                           2026   Grouped            M,V   -     -     -
-Recipient-Received-Address                               2028   Grouped            M,V   -     -     -
-Recipient-SCCP-Address                                   2010   Address            M,V   -     -     -
-Reference-Number                                         3007   -                  -     -     -     -
-Refund-Information                                       2022   OctetString        M,V   -     -     -
-Related-Change-Condition-Information                     3925   Grouped            M,V   -     -     -
-Related-Trigger                                          3926   Grouped            M,V   -     -     -
-Related-IMS-Charging-Identifier                          2711   UTF8String         M,V   -     -     -
-Related-IMS-Charging-Identifier-Node                     2712   Address            M,V   -     -     -
-Relationship-Mode                                        2706   Enumerated         M,V   -     -     -
-Relay-IP-address                                         4411   Address            M,V   -     -     -
-Remaining-Balance                                        2021   Grouped            M,V   -     -     -
-Reply-Applic-ID                                          1223   UTF8String         M,V   -     -     -
-Reply-Path-Requested                                     2011   Enumerated         M,V   -     -     -
-Reporting-Reason                                         872    Enumerated         M,V   -     -     -
-Requested-Party-Address                                  1251   UTF8String         M,V   -     -     -
-Requested-PLMN-Identifier                                3436   UTF8String         M,V   -     -     -
-Requesting-EPUID                                         3816   -                  -     -     -     -
-Requestor-PLMN-Identifier                                3437   UTF8String         M,V   -     -     -
-Required-MBMS-Bearer-Capabilities                        901    -                  -     -     -     -
-Role-Of-Node                                             829    Enumerated         M,V   -     -     -
-Role-Of-ProSe-Function                                   3438   Enumerated         M,V   -     -     -
-Route-Header-Received                                    3403   UTF8String         M,V   -     -     -
-Route-Header-Transmitted                                 3404   UTF8String         M,V   -     -     -
-RRC-Cause-Counter                                        4318   -                  -     -     -     -
-Scale-Factor                                             2059   Grouped            M,V   -     -     -
-SCEF-Address                                             1317   Address            V     -     -     M
-SCEF-ID                                                  3125   -                  -     -     -     -
-SCEF-Reference-ID                                        3124   -                  -     -     -     -
-SCS-Address                                              3941   Address            M,V   -     -     -
-SCS-AS-Address                                           3940   Grouped            M,V   -     -     -
-SCS-Realm                                                3942   DiameterIdentity   M,V   -     -     -
-SDP-Answer-Timestamp                                     1275   Time               M,V   -     -     -
-SDP-Media-Component                                      843    Grouped            M,V   -     -     -
-SDP-Media-Description                                    845    UTF8String         M,V   -     -     -
-SDP-Media-Name                                           844    UTF8String         M,V   -     -     -
-SDP-Offer-Timestamp                                      1274   Time               M,V   -     -     -
-SDP-Session-Description                                  842    UTF8String         M,V   -     -     -
-SDP-TimeStamps                                           1273   Grouped            M,V   -     -     -
-SDP-Type                                                 2036   Enumerated         M,V   -     -     -
-Secondary-RAT-Type                                       1304   OctetString        V     -     -     M
-Serving-Node                                             2401   -                  -     -     -     -
-Serving-Node-Identity                                    3929   DiameterIdentity   M,V   -     -     -
-Served-Party-IP-Address                                  848    Address            M,V   -     -     -
-Server-Capabilities                                      603    -                  -     -     -     -
-Server-Name                                              602    -                  -     -     -     -
-Service-Data-Container                                   2040   Grouped            M,V   -     -     -
-Service-Generic-Information                              1256   -                  -     -     -     -
-Service-ID                                               855    UTF8String         M,V   -     -     - ;; corrected: (TS32.299.py#row-service-id)
-Service-Information                                      873    Grouped            M,V   -     -     -
-Service-Mode                                             2032   Unsigned32         M,V   -     -     -
-Service-Specific-Data                                    863    UTF8String         M,V   -     -     -
-Service-Specific-Info                                    1249   Grouped            M,V   -     -     -
-Service-Specific-Type                                    1257   Unsigned32         M,V   -     -     -
-Serving-Node-Type                                        2047   Enumerated         M,V   -     -     -
-Serving-PLMN-Rate-Control                                4310   -                  -     -     -     -
-Session-Direction                                        2707   Enumerated         M,V   -     -     -
-Session-Priority                                         650    -                  -     -     -     -
-SGi-PtP-Tunnelling-Method                                3931   Enumerated         M,V   -     -     -
-SGSN-Address                                             1228   Address            M,V   -     -     -
-SGW-Address                                              2067   Address            M,V   -     -     -
-SGW-Change                                               2065   Enumerated         M,V   -     -     -
-SIP-Method                                               824    UTF8String         M,V   -     -     -
-SIP-Request-Timestamp                                    834    Time               M,V   -     -     -
-SIP-Request-Timestamp-Fraction                           2301   Unsigned32         M,V   -     -     -
-SIP-Response-Timestamp                                   835    Time               M,V   -     -     -
-SIP-Response-Timestamp-Fraction                          2302   Unsigned32         M,V   -     -     -
-SM-Device-Trigger-Indicator                              3407   Enumerated         M,V   -     -     -
-SM-Device-Trigger-Information                            3405   Grouped            M,V   -     -     -
-SM-Discharge-Time                                        2012   Time               M,V   -     -     -
-SM-Message-Type                                          2007   Enumerated         M,V   -     -     -
-SM-Protocol-ID                                           2013   OctetString        M,V   -     -     -
-SM-Sequence-Number                                       3408   Unsigned32         M,V   -     -     -
-SM-Service-Type                                          2029   Enumerated         M,V   -     -     -
-SM-Status                                                2014   OctetString        M,V   -     -     -
-SM-User-Data-Header                                      2015   OctetString        M,V   -     -     -
-SMS-Information                                          2000   Grouped            M,V   -     -     -
-SMS-Node                                                 2016   Enumerated         M,V   -     -     -
-SMS-Result                                               3409   Unsigned32         M,V   -     -     -
-SMSC-Address                                             2017   Address            M,V   -     -     -
-Sponsor-Identity                                         531    -                  -     -     -     -
-SSID                                                     1524   -                  -     -     -     -
-Start-of-Charging                                        3419   Time               M,V   -     -     -
-Start-Time                                               2041   Time               M,V   -     -     -
-Status-AS-Code                                           2702   Enumerated         M,V   -     -     -
-Stop-Time                                                2042   Time               M,V   -     -     -
-Submission-Time                                          1202   Time               M,V   -     -     -
-Subscriber-Role                                          2033   Enumerated         M,V   -     -     -
-Supported-Features                                       628    -                  M,V   -     -     -
-Supplementary-Service                                    2048   Grouped            M,V   -     -     -
-TAD-Identifier                                           2717   Enumerated         M,V   -     -     -
-Talk-Burst-Exchange                                      1255   Grouped            M,V   -     -     -
-Talk-Burst-Time                                          1286   Unsigned32         M,V   -     -     -
-Talk-Burst-Volume                                        1287   Unsigned32         M,V   -     -     -
-Target-App-Layer-User-Id                                 3601   -                  -     -     -     -
-Target-IP-Address                                        4412   Address            M,V   -     -     -
-Tariff-Information                                       2060   Grouped            M,V   -     -     -
-Tariff-XML                                               2306   UTF8String         M,V   -     -     -
-TDF-IP-Address                                           1091   -                  -     -     -     -
-Teleservice                                              3413   OctetString        M,V   -     -     -
-Terminal-Information                                     1401   -                  -     -     -     -
-Terminating-IOI                                          840    UTF8String         M,V   -     -     -
-Time-First-Reception                                     3466   Time               M,V   -     -     -
-Time-First-Transmission                                  3467   Time               M,V   -     -     -
-Time-First-Usage                                         2043   Time               M,V   -     -     -
-Time-Indicator                                           3911   Unsigned32         M,V   -     -     -
-Time-Last-Usage                                          2044   Time               M,V   -     -     -
-Time-Quota-Mechanism                                     1270   Grouped            M,V   -     -     -
-Time-Quota-Threshold                                     868    Unsigned32         M,V   -     -     -
-Time-Quota-Type                                          1271   Enumerated         M,V   -     -     -
-Time-Stamps                                              833    Grouped            M,V   -     -     -
-Time-Usage                                               2045   Unsigned32         M,V   -     -     -
-Time-Window                                              3818   -                  -     -     -     -
-TLTRI                                                    1318   Unsigned32         V     -     -     M
-TMGI                                                     900    -                  -     -     -     -
-Token-Text                                               1215   UTF8String         M,V   -     -     -
-Total-Number-Of-Messages-Exploded                        2113   -                  -     -     -     -
-Total-Number-Of-Messages-Sent                            2114   -                  -     -     -     -
-Traffic-Data-Volumes                                     2046   Grouped            M,V   -     -     -
-Traffic-Steering-Policy-Identifier-DL                    2836   -                  -     -     -     -
-Traffic-Steering-Policy-Identifier-UL                    2837   -                  -     -     -     -
-Transcoder-Inserted-Indication                           2605   Enumerated         M,V   -     -     -
-Transit-IOI-List                                         2701   UTF8String         M,V   -     -     -
-Transmitter-Info                                         3468   Grouped            M,V   -     -     -
-Trigger                                                  1264   Grouped            M,V   -     -     -
-Trigger-Type                                             870    Enumerated         M,V   -     -     -
-Trunk-Group-ID                                           851    Grouped            M,V   -     -     - ;; corrected: (TS32.299.py#row-trunk-group-id)
-TWAG-Address                                             3903   Address            M,V   -     -     -
-TWAN-User-Location-Info                                  2714   Grouped            M,V   -     -     -
-Type-Number                                              1204   Enumerated         M,V   -     -     -
-UDP-Source-Port                                          2806   -                  -     -     -     -
-UE-Local-IP-Address                                      2805   -                  -     -     -     -
-UE-Reachability-Configuration                            3129   -                  -     -     -     -
-UNI-PDU-CP-Only-Flag                                     3932   Enumerated         M,V   -     -     -
-Unit-Cost                                                2061   Grouped            M,V   -     -     -
-Unit-Quota-Threshold                                     1226   Unsigned32         M,V   -     -     -
-Unused-Quota-Timer                                       4407   Unsigned32         M,V   -     -     -
-Usage-Information-Report-Sequence-Number                 3439   Integer32          M,V   -     -     -
-User-CSG-Information                                     2319   Grouped            M,V   -     -     -
-User-Data                                                606    -                  -     -     -     -
-User-Location-Info-Time                                  2812   -                  -     -     -     -
-User-Participating-Type                                  1279   Enumerated         M,V   -     -     -
-User-Session-Id                                          830    UTF8String         M,V   -     -     -
-UWAN-User-Location-Info                                  3918   Grouped            M,V   -     -     -
-VAS-Id                                                   1102   -                  -     -     -     -
-Variable-Part                                            3907   Grouped            M,V   -     -     -
-Variable-Part-Order                                      3908   Unsigned32         M,V   -     -     -
-Variable-Part-Type                                       3909   Unsigned32         M,V   -     -     -
-Variable-Part-Value                                      3910   UTF8String         M,V   -     -     -
-VASP-Id                                                  1101   -                  -     -     -     -
-VCS-Information                                          3410   Grouped            M,V   -     -     -
-Visited-PLMN-Id                                          1407   -                  -     -     -     -
-VLR-Number                                               3420   OctetString        M,V   -     -     -
-VoLTE-Information                                        1323   Grouped            M,V   -     -     -
-Volume-Quota-Threshold                                   869    Unsigned32         M,V   -     -     -
-WLAN-Link-Layer-Id                                       3821   -                  -     -     -     -
-WLAN-Operator-Id                                         1306   Grouped            V     -     -     M
-WLAN-Operator-Name                                       1307   UTF8String         V     -     -     M
-WLAN-PLMN-Id                                             1308   UTF8String         V     -     -     M
+; Columns: Name                                          Code   ACR   ACA   CCR   CCA   Type               Must   May   S.not   M.not
+3GPP-Charging-Characteristics                            13     X     -     X     -     -                  -      -     -       -
+3GPP-Charging-Id                                         2      X     -     X     -     -                  -      -     -       -
+3GPP-GGSN-MCC-MNC                                        9      X     -     X     -     -                  -      -     -       -
+3GPP-IMSI                                                1      -     -     X     -     -                  -      -     -       -
+3GPP-IMSI-MCC-MNC                                        8      X     -     X     -     -                  -      -     -       -
+3GPP-MS-TimeZone                                         23     X     -     X     -     -                  -      -     -       -
+3GPP-NSAPI                                               10     X     -     X     -     -                  -      -     -       -
+3GPP-OC-Specific-Reduction                               1320   -     -     -     X     Grouped            -      -     -       M
+3GPP-OC-Rating-Group                                     1321   -     -     -     X     Unsigned32         -      -     -       M
+3GPP-OC-Request-Type                                     1322   -     -     -     X     Enumerated         -      -     -       M
+3GPP-PDP-Type                                            3      X     -     X     -     -                  -      -     -       -
+3GPP-PS-Data-Off-Status                                  4406   X     -     X     -     Enumerated         M,V    -     -       -
+3GPP-RAT-Type                                            21     X     -     X     -     -                  -      -     -       -
+3GPP-Selection-Mode                                      12     X     -     X     -     -                  -      -     -       -
+3GPP-Session-Stop-Indicator                              11     -     -     X     -     -                  -      -     -       -
+3GPP-SGSN-MCC-MNC                                        18     X     -     X     -     -                  -      -     -       -
+3GPP-User-Location-Info                                  22     X     -     X     -     -                  -      -     -       -
+Access-Availability-Change-Reason                        2833   X     -     -     -     -                  -      -     -       -
+Access-Network-Charging-Identifier-Value                 503    X     -     X     -     -                  -      -     -       -
+Access-Network-Info-Change                               4401   X     -     -     -     Grouped            M,V    -     -       -
+Access-Network-Information                               1263   X     -     X     -     OctetString        M,V    -     -       -
+Access-Transfer-Information                              2709   X     -     X     -     Grouped            M,V    -     -       -
+Access-Transfer-Type                                     2710   X     -     X     -     Enumerated         M,V    -     -       -
+Account-Expiration                                       2309   -     -     -     X     Time               M,V    -     -       -
+Accumulated-Cost                                         2052   -     -     -     X     Grouped            M,V    -     -       -
+Accuracy                                                 3137   X     -     -     -     -                  -      -     -       -
+Adaptations                                              1217   -     -     X     -     Enumerated         M,V    -     -       -
+ADC-Rule-Base-Name                                       1095   X     -     X     -     -                  -      -     -       -
+Additional-Content-Information                           1207   -     -     X     -     Grouped            M,V    -     -       -
+Additional-Exception-Reports                             3936   X     -     X     -     Enumerated         M,V    -     -       -
+Additional-Type-Information                              1205   -     -     X     -     UTF8String         M,V    -     -       -
+Address-Data                                             897    X     -     X     -     UTF8String         M,V    -     -       -
+Address-Domain                                           898    X     -     X     -     Grouped            M,V    -     -       -
+Addressee-Type                                           1208   X     -     X     -     Enumerated         M,V    -     -       -
+Address-Type                                             899    X     -     X     -     Enumerated         M,V    -     -       -
+AF-Charging-Identifier                                   505    X     -     X     -     -                  -      -     -       -
+AF-Correlation-Information                               1276   X     -     X     -     Grouped            M,V    -     -       -
+Allocation-Retention-Priority                            1034   X     -     X     -     -                  -      -     -       -
+Alternate-Charged-Party-Address                          1280   X     -     -     -     UTF8String         M,V    -     -       -
+Announcement-Identifier                                  3905   -     -     -     X     Unsigned32         M,V    -     -       -
+Announcement-Information                                 3904   -     -     -     X     Grouped            M,V    -     -       -
+Announcement-Order                                       3906   -     -     -     X     Unsigned32         M,V    -     -       -
+Announcing-PLMN-ID                                       4408   X     -     -     -     UTF8String         M,V    -     -       -
+Announcing-UE-HPLMN-Identifier                           3426   X     -     X     -     UTF8String         M,V    -     -       -
+Announcing-UE-VPLMN-Identifier                           3427   X     -     X     -     UTF8String         M,V    -     -       -
+AoC-Cost-Information                                     2053   -     -     -     X     Grouped            M,V    -     -       -
+AoC-Format                                               2310   -     -     X     -     Enumerated         M,V    -     -       -
+AoC-Information                                          2054   -     -     X     X     Grouped            M,V    -     -       -
+AoC-Request-Type                                         2055   -     -     X     -     Enumerated         M,V    -     -       -
+AoC-Service                                              2311   -     -     X     -     Grouped            M,V    -     -       -
+AoC-Service-Obligatory-Type                              2312   -     -     X     -     Enumerated         M,V    -     -       -
+AoC-Service-Type                                         2313   -     -     X     -     Enumerated         M,V    -     -       -
+AoC-Subscription-Information                             2314   -     -     X     -     Grouped            M,V    -     -       -
+API-Content                                              1309   X     -     X     -     UTF8String         V      -     -       M
+API-Direction                                            1310   X     -     X     -     Enumerated         V      -     -       M
+API-Identifier                                           1311   X     -     X     -     OctetString        V      -     -       M
+API-Invocation-Timestamp                                 1312   X     -     X     -     Time               V      -     -       M
+API-Network-Service-Node                                 1315   X     -     X     -     Enumerated         V      -     -       M
+API-Result-Code                                          1313   X     -     X     -     Unsigned32         V      -     -       M
+API-Size                                                 1314   X     -     X     -     Unsigned64         V      -     -       M
+APN-Rate-Control                                         3933   X     -     X     -     Grouped            M,V    -     -       -
+APN-Rate-Control-Downlink                                3934   X     -     X     -     Grouped            M,V    -     -       -
+APN-Rate-Control-Uplink                                  3935   X     -     X     -     Grouped            M,V    -     -       -
+Applic-ID                                                1218   -     -     X     -     UTF8String         M,V    -     -       -
+Application-Port-Identifier                              3010   X     -     X     -     -                  -      -     -       - ;; corrected: (TS32.299.py#row-application-port-identifier)
+Application-Provided-Called-Party-Address                837    X     -     X     -     UTF8String         M,V    -     -       -
+Application-Server                                       836    X     -     X     -     UTF8String         M,V    -     -       -
+Application-Server-ID                                    2101   X     -     X     -     -                  -      -     -       -
+Application-Service-Provider-Identity                    532    X     -     -     -     -                  -      -     -       -
+Application-Server-Information                           850    X     -     X     -     Grouped            M,V    -     -       -
+Application-Service-Type                                 2102   X     -     X     -     -                  -      -     -       -
+Application-Session-ID                                   2103   X     -     X     -     -                  -      -     -       -
+Application-Specific-Data                                3458   X     -     -     -     OctetString        M,V    -     -       -
+Associated-Party-Address                                 2035   X     -     X     -     UTF8String         M,V    -     -       -
+Associated-URI                                           856    X     -     X     -     UTF8String         M,V    -     -       -
+Authorised-QoS                                           849    -     -     -     -     UTF8String         M,V    -     -       -
+Aux-Applic-Info                                          1219   -     -     X     -     UTF8String         M,V    -     -       -
+Base-Time-Interval                                       1265   -     -     -     X     Unsigned32         M,V    -     -       -
+Basic-Service-Code                                       3411   -     -     X     -     Grouped            M,V    -     -       -
+Bearer-Capability                                        3412   -     -     X     -     OctetString        M,V    -     -       -
+Bearer-Service                                           854    X     -     X     -     OctetString        M,V    -     -       -
+BSSID                                                    2716   X     -     X     -     UTF8String         M,V    -     -       -
+Called-Asserted-Identity                                 1250   X     -     X     -     UTF8String         M,V    -     -       -
+Called-Identity                                          3916   X     -     X     -     UTF8String         M,V    -     -       -
+Called-Identity-Change                                   3917   X     -     X     -     Grouped            M,V    -     -       -
+Called-Party-Address                                     832    X     -     X     -     UTF8String         M,V    -     -       -
+Calling-Party-Address                                    831    X     -     X     -     UTF8String         M,V    -     -       -
+Callee-Information                                       565    X     -     X     -     -                  -      -     -       -
+Carrier-Select-Routing-Information                       2023   X     -     X     -     UTF8String         M,V    -     -       -
+Cause-Code                                               861    X     -     X     -     Integer32          M,V    -     -       -
+Cellular-Network-Information                             3924   X     -     X     -     OctetString        M,V    -     -       -
+CG-Address                                               846    X     -     X     -     Address            M,V    -     -       -
+Change-Condition                                         2037   X     -     -     -     Integer32          M,V    -     -       -
+Change-Time                                              2038   X     -     X     -     Time               M,V    -     -       -
+Charge-Reason-Code                                       2118   -     -     X     X     Enumerated         M,V    -     -       -
+Charged-Party                                            857    X     -     -     -     UTF8String         M,V    -     -       -
+Charging-Characteristics-Selection-Mode                  2066   X     -     X     -     Enumerated         M,V    -     -       -
+Charging-Per-IP-CAN-Session-Indicator                    4400   X     -     -     -     Enumerated         M,V    -     -       -
+Charging-Rule-Base-Name                                  1004   X     -     X     -     -                  -      -     -       -
+Civic-Address-Information                                1305   X     -     X     -     UTF8String         V      -     -       M
+Class-Identifier                                         1214   -     -     X     -     Enumerated         M,V    -     -       -
+Client-Address                                           2018   X     -     X     -     Address            M,V    -     -       -
+CN-IP-Multicast-Distribution                             921    X     -     -     -     -                  -      -     -       -
+CN-Operator-Selection-Entity                             3421   X     -     -     -     Enumerated         M,V    -     -       -
+Communication-Failure-Information                        4300   X     -     -     -     -                  -      -     -       -
+Content-Class                                            1220   -     -     X     -     Enumerated         M,V    -     -       -
+Content-Disposition                                      828    X     -     X     -     UTF8String         M,V    -     -       -
+Content-ID                                               2116   X     -     X     -     -                  -      -     -       -
+Content-Provider-ID                                      2117   X     -     X     -     -                  -      -     -       -
+Content-Length                                           827    X     -     X     -     Unsigned32         M,V    -     -       -
+Content-Size                                             1206   -     -     X     -     Unsigned32         M,V    -     -       -
+Content-Type                                             826    X     -     X     -     UTF8String         M,V    -     -       -
+Coverage-Info                                            3459   X     -     -     -     Grouped            M,V    -     -       -
+Coverage-Status                                          3428   X     -     -     -     Enumerated         M,V    -     -       -
+CP-CIoT-EPS-Optimisation-Indicator                       3930   X     -     -     -     Enumerated         M,V    -     -       -
+CPDT-Information                                         3927   X     -     -     -     Grouped            M,V    -     -       -
+CSG-Access-Mode                                          2317   X     -     X     -     Enumerated         M,V    -     -       -
+CSG-Id                                                   1437   X     -     X     -     -                  -      -     -       -
+CSG-Membership-Indication                                2318   X     -     X     -     Enumerated         M,V    -     -       -
+CUG-Information                                          2304   X     -     X     -     OctetString        M,V    -     -       -
+Current-Tariff                                           2056   -     -     X     X     Grouped            M,V    -     -       -
+Data-Coding-Scheme                                       2001   X     -     X     -     Integer32          M,V    -     -       -
+DCD-Information                                          2115   X     -     X     -     -                  -      -     -       -
+Deferred-Location-Event-Type                             1230   -     -     X     -     UTF8String         M,V    -     -       -
+Delivery-Report-Requested                                1216   X     -     X     -     Enumerated         M,V    -     -       -
+Delivery-Status                                          2104   X     -     X     -     -                  -      -     -       -
+Destination-Interface                                    2002   X     -     X     -     Grouped            M,V    -     -       -
+Diagnostics                                              2039   X     -     X     -     Integer32          M,V    -     -       -
+Discoveree-UE-HPLMN-Identifier                           4402   X     -     X     -     UTF8String         M,V    -     -       -
+Discoveree-UE-VPLMN-Identifier                           4403   X     -     X     -     UTF8String         M,V    -     -       -
+Discoverer-UE-HPLMN-Identifier                           4404   X     -     X     -     UTF8String         M,V    -     -       -
+Discoverer-UE-VPLMN-Identifier                           4405   X     -     X     -     UTF8String         M,V    -     -       -
+Domain-Name                                              1200   X     -     X     -     UTF8String         M,V    -     -       -
+DRM-Content                                              1221   -     -     X     -     Enumerated         M,V    -     -       -
+Dynamic-Address-Flag                                     2051   X     -     X     -     Enumerated         M,V    -     -       -
+Dynamic-Address-Flag-Extension                           2068   X     -     X     -     Enumerated         M,V    -     -       -
+Early-Media-Description                                  1272   X     -     -     -     Grouped            M,V    -     -       -
+Enhanced-Diagnostics                                     3901   X     -     X     -     Grouped            M,V    -     -       -
+Envelope                                                 1266   -     -     X     -     Grouped            M,V    -     -       -
+Envelope-End-Time                                        1267   -     -     X     -     Time               M,V    -     -       -
+Envelope-Reporting                                       1268   -     -     -     X     Enumerated         M,V    -     -       -
+Envelope-Start-Time                                      1269   -     -     X     -     Time               M,V    -     -       -
+EPDG-Address                                             3425   X     -     -     -     Address            M,V    -     -       -
+EPS-Location-Information                                 1496   X     -     -     -     -                  -      -     -       -
+Event                                                    825    X     -     X     -     UTF8String         M,V    -     -       -
+Event-Charging-TimeStamp                                 1258   -     -     X     -     Time               M,V    -     -       -
+Event-Type                                               823    X     -     X     -     Grouped            M,V    -     -       -
+Expires                                                  888    X     -     X     -     Unsigned32         M,V    -     -       -
+Exposure-Function-API-Information                        1316   X     -     X     -     Grouped            V      -     -       M
+External-Identifier                                      3111   X     -     X     -     -                  -      -     -       -
+Feature-List                                             630    X     X     X     X     -                  M,V    -     -       -
+Feature-List-ID                                          629    X     X     X     X     -                  M,V    -     -       -
+FE-Identifier-List                                       4413   X     -     -     -     UTF8String         M,V    -     -       -
+File-Repair-Supported                                    1224   X     -     X     -     Enumerated         M,V    -     -       -
+Fixed-User-Location-Info                                 2825   X     -     X     -     -                  -      -     -       -
+Flows                                                    510    -     -     X     -     -                  -      -     -       -
+Forwarding-Pending                                       3415   -     -     X     -     Enumerated         M,V    -     -       -
+From-Address                                             2708   X     -     X     -     UTF8String         M,V    -     -       -
+GGSN-Address                                             847    X     -     X     -     Address            M,V    -     -       -
+Guaranteed-Bitrate-UL                                    1026   X     -     X     -     -                  -      -     -       -
+IM-Information                                           2110   X     -     X     -     -                  -      -     -       -
+IMS-Application-Reference-Identifier                     2601   X     -     -     -     UTF8String         M,V    -     -       -
+IMS-Charging-Identifier                                  841    X     -     X     -     UTF8String         M,V    -     -       -
+IMS-Communication-Service-Identifier                     1281   X     -     X     -     UTF8String         M,V    -     -       -
+IMS-Emergency-Indicator                                  2322   X     -     -     -     Enumerated         M,V    -     -       -
+IMS-Information                                          876    X     -     X     -     Grouped            M,V    -     -       -
+IMS-Visited-Network-Identifier                           2713   X     -     X     -     UTF8String         M,V    -     -       -
+IMSI-Unauthenticated-Flag                                2308   X     -     X     -     Enumerated         M,V    -     -       -
+Incoming-Trunk-Group-ID                                  852    X     -     -     -     UTF8String         M,V    -     -       - ;; corrected: (TS32.299.py#row-incoming-trunk-group-id)
+Incremental-Cost                                         2062   -     -     -     X     Grouped            M,V    -     -       -
+Initial-IMS-Charging-Identifier                          2321   X     -     X     -     UTF8String         M,V    -     -       -
+Instance-Id                                              3402   X     -     X     -     UTF8String         M,V    -     -       -
+Interface-Id                                             2003   -     -     X     -     UTF8String         M,V    -     -       -
+Interface-Port                                           2004   -     -     X     -     UTF8String         M,V    -     -       -
+Interface-Text                                           2005   -     -     X     -     UTF8String         M,V    -     -       -
+Interface-Type                                           2006   -     -     X     -     Enumerated         M,V    -     -       -
+Inter-Operator-Identifier                                838    X     -     X     -     Grouped            M,V    -     -       -
+Inter-UE-Transfer                                        3902   X     -     X     -     Enumerated         M,V    -     -       -
+IP-Realm-Default-Indication                              2603   X     -     -     -     Enumerated         M,V    -     -       -
+ISUP-Cause                                               3416   X     -     X     -     Grouped            M,V    -     -       -
+ISUP-Cause-Diagnostics                                   3422   X     -     X     -     OctetString        M,V    -     -       -
+ISUP-Cause-Location                                      3423   X     -     X     -     Unsigned32         M,V    -     -       -
+ISUP-Cause-Value                                         3424   X     -     X     -     Unsigned32         M,V    -     -       -
+ISUP-Location-Number                                     3414   -     -     X     -     OctetString        M,V    -     -       -
+Language                                                 3914   -     -     -     X     UTF8String         M,V    -     -       -
+Layer-2-Group-ID                                         3429   -     -     X     -     OctetString        M,V    -     -       -
+LCS-APN                                                  1231   -     -     X     -     UTF8String         M,V    -     -       -
+LCS-Client-Dialed-By-MS                                  1233   -     -     X     -     UTF8String         M,V    -     -       -
+LCS-Client-External-ID                                   1234   -     -     X     -     UTF8String         M,V    -     -       -
+LCS-Client-ID                                            1232   -     -     X     -     Grouped            M,V    -     -       - ;; corrected: (TS32.299.py#row-lcs-client-id)
+LCS-Client-Name                                          1235   -     -     X     -     Grouped            M,V    -     -       -
+LCS-Client-Type                                          1241   -     -     X     -     Enumerated         M,V    -     -       -
+LCS-Data-Coding-Scheme                                   1236   -     -     X     -     UTF8String         M,V    -     -       -
+LCS-Format-Indicator                                     1237   -     -     X     -     Enumerated         M,V    -     -       -
+LCS-Information                                          878    -     -     X     -     Grouped            M,V    -     -       -
+LCS-Name-String                                          1238   -     -     X     -     UTF8String         M,V    -     -       -
+LCS-Requestor-ID                                         1239   -     -     X     -     Grouped            M,V    -     -       -
+LCS-Requestor-ID-String                                  1240   -     -     X     -     UTF8String         M,V    -     -       -
+Local-GW-Inserted-Indication                             2604   X     -     -     -     Enumerated         M,V    -     -       -
+Local-Sequence-Number                                    2063   X     -     -     -     Unsigned32         M,V    -     -       -
+Location-Estimate                                        1242   -     -     X     -     OctetString        M,V    -     -       -
+Location-Estimate-Type                                   1243   -     -     X     -     Enumerated         M,V    -     -       -
+Location-Info                                            3460   X     -     -     -     Grouped            M,V    -     -       -
+Location-Type                                            1244   -     -     X     -     Grouped            M,V    -     -       -
+Low-Balance-Indication                                   2020   -     -     -     X     Enumerated         M,V    -     -       -
+Low-Priority-Indicator                                   2602   X     -     -     -     Enumerated         M,V    -     -       -
+Mandatory-Capability                                     604    X     -     -     -     -                  -      -     -       -
+Max-Requested-Bandwidth-DL                               515    X     -     X     -     -                  -      -     -       -
+Max-Requested-Bandwidth-UL                               516    X     -     X     -     -                  -      -     -       -
+Maximum-Detection-Time                                   3131   X     -     -     -     -                  -      -     -       -
+Maximum-Number-of-Reports                                3128   X     -     -     -     -                  -      -     -       -
+MBMS-2G-3G-Indicator                                     907    X     -     X     -     -                  -      -     -       -
+MBMS-Charged-Party                                       2323   X     -     -     -     Enumerated         M,V    -     -       -
+MBMS-Data-Transfer-Start                                 929    X     -     -     -     -                  -      -     -       -
+MBMS-Data-Transfer-Stop                                  930    X     -     -     -     -                  -      -     -       -
+MBMS-GW-Address                                          2307   X     -     -     -     Address            M,V    -     -       -
+MBMS-Information                                         880    X     -     X     -     Grouped            M,V    -     -       -
+MBMS-Service-Area                                        903    X     -     X     -     -                  -      -     -       -
+MBMS-Service-Type                                        906    X     -     X     -     -                  -      -     -       -
+MBMS-Session-Identity                                    908    X     -     X     -     -                  -      -     -       -
+MBMS-User-Service-Type                                   1225   X     -     X     -     Enumerated         M,V    -     -       -
+Media-Initiator-Flag                                     882    X     -     X     -     Enumerated         M,V    -     -       -
+Media-Initiator-Party                                    1288   X     -     X     -     UTF8String         M,V    -     -       -
+Message-Body                                             889    X     -     X     -     Grouped            M,V    -     -       -
+Message-Class                                            1213   X     -     X     -     Grouped            M,V    -     -       -
+Message-ID                                               1210   X     -     X     -     UTF8String         M,V    -     -       -
+Message-Size                                             1212   X     -     X     -     Unsigned32         M,V    -     -       -
+Message-Type                                             1211   X     -     X     -     Enumerated         M,V    -     -       -
+MMBox-Storage-Requested                                  1248   -     -     X     -     Enumerated         M,V    -     -       -
+MM-Content-Type                                          1203   -     -     X     -     Grouped            M,V    -     -       -
+MME-Name                                                 2402   X     -     -     -     -                  -      -     -       -
+MME-Number-for-MT-SMS                                    1645   X     -     -     -     -                  -      -     -       -
+MME-Realm                                                2408   X     -     -     -     -                  -      -     -       -
+MMS-Information                                          877    -     -     X     -     Grouped            M,V    -     -       -
+MMTel-Information                                        2030   X     -     X     -     Grouped            M,V    -     -       -
+MMTel-SService-Type                                      2031   X     -     X     -     Unsigned32         M,V    -     -       -
+Monitored-PLMN-Identifier                                3430   X     -     X     -     UTF8String         M,V    -     -       -
+Monitoring-Duration                                      3130   X     -     -     -     -                  -      -     -       -
+Monitoring-Event-Config-Status                           3142   X     -     -     -     -                  -      -     -       -
+Monitoring-Event-Configuration-Activity                  3919   X     -     -     -     Enumerated         M,V    -     -       - ;; corrected: (TS32.299.py#type-monitoring-event-configuration-activity)
+Monitoring-Event-Functionality                           3922   X     -     -     -     Enumerated         M,V    -     -       - ;; corrected: (TS32.299.py#type-monitoring-event-functionality)
+Monitoring-Event-Information                             3921   X     -     -     -     Grouped            M,V    -     -       -
+Monitoring-Event-Report-Data                             3920   X     -     -     -     Grouped            M,V    -     -       -
+Monitoring-Event-Report-Number                           3923   X     -     -     -     Unsigned32         M,V    -     -       -
+Monitoring-Type                                          3127   X     -     -     -     -                  -      -     -       -
+Monitoring-UE-HPLMN-Identifier                           3431   X     -     X     -     UTF8String         M,V    -     -       -
+Monitoring-UE-Identifier                                 3432   X     -     X     -     UTF8String         M,V    -     -       -
+Monitoring-UE-VPLMN-Identifier                           3433   X     -     X     -     UTF8String         M,V    -     -       -
+MONTE-Location-Type                                      3136   X     -     -     -     -                  -      -     -       -
+MSC-Address                                              3417   X     -     X     -     OctetString        M,V    -     -       -
+MSISDN                                                   701    X     -     X     -     -                  -      -     -       -
+MTC-IWF-Address                                          3406   X     -     X     -     Address            M,V    -     -       -
+NBIFOM-Mode                                              2830   X     -     X     -     -                  -      -     -       -
+NBIFOM-Support                                           2831   X     -     X     -     -                  -      -     -       -
+Neighbour-Node-Address                                   2705   X     -     -     -     Address            M,V    -     -       -
+Network-Call-Reference-Number                            3418   -     -     X     -     OctetString        M,V    -     -       -
+Next-Tariff                                              2057   -     -     X     X     Grouped            M,V    -     -       -
+NIDD-Submission                                          3928   X     -     -     -     Grouped            M,V    -     -       -
+NNI-Information                                          2703   X     -     -     -     Grouped            M,V    -     -       -
+NNI-Type                                                 2704   X     -     -     -     Enumerated         M,V    -     -       -
+Node-Functionality                                       862    X     -     X     -     Enumerated         M,V    -     -       -
+Node-Id                                                  2064   X     -     X     -     UTF8String         M,V    -     -       -
+Nr-Cgi                                                   1325   X     -     -     -     UTF8String         M,V    -     -       -
+Number-Of-Diversions                                     2034   X     -     X     -     Unsigned32         M,V    -     -       -
+Number-Of-Messages-Sent                                  2019   X     -     X     -     Unsigned32         M,V    -     -       -
+Number-Of-Messages-Successfully-Exploded                 2111   X     -     X     -     -                  -      -     -       -
+Number-Of-Messages-Successfully-Sent                     2112   X     -     X     -     -                  -      -     -       -
+Number-Of-Participants                                   885    X     -     X     -     Unsigned32         M,V    -     -       -
+Number-Of-Received-Talk-Bursts                           1282   X     -     -     -     Unsigned32         M,V    -     -       -
+Number-Of-Talk-Bursts                                    1283   X     -     -     -     Unsigned32         M,V    -     -       -
+Number-Of-UE-Per-Location-Configuration                  4306   X     -     -     -     -                  -      -     -       -
+Number-Of-UE-Per-Location-Report                         4307   X     -     -     -     -                  -      -     -       -
+Number-Portability-Routing-Information                   2024   X     -     X     -     UTF8String         M,V    -     -       -
+Offline-Charging                                         1278   -     -     -     X     Grouped            M,V    -     -       -
+Online-Charging-Flag                                     2303   X     -     -     -     Enumerated         M,V    -     -       -
+Optional-Capability                                      605    X     -     -     -     -                  -      -     -       -
+Origin-App-Layer-User-Id                                 3600   X     -     X     -     -                  -      -     -       -
+Originating-IOI                                          839    X     -     X     -     UTF8String         M,V    -     -       -
+Originator                                               864    X     -     X     -     Enumerated         M,V    -     -       -
+Originator-Address                                       886    X     -     X     -     Grouped            M,V    -     -       -
+Originator-Interface                                     2009   X     -     X     -     Grouped            M,V    -     -       -
+Originator-Received-Address                              2027   X     -     X     -     Grouped            M,V    -     -       -
+Originator-SCCP-Address                                  2008   X     -     X     -     Address            M,V    -     -       -
+Outgoing-Session-Id                                      2320   X     -     X     -     UTF8String         M,V    -     -       -
+Outgoing-Trunk-Group-ID                                  853    X     -     -     -     UTF8String         M,V    -     -       - ;; corrected: (TS32.299.py#row-outgoing-trunk-group-id)
+Participant-Access-Priority                              1259   X     -     X     -     Enumerated         M,V    -     -       -
+Participant-Action-Type                                  2049   X     -     X     -     Enumerated         M,V    -     -       -
+Participant-Group                                        1260   X     -     X     -     Grouped            M,V    -     -       -
+Participants-Involved                                    887    X     -     X     -     UTF8String         M,V    -     -       -
+PC3-Control-Protocol-Cause                               3434   X     -     X     -     Integer32          M,V    -     -       -
+PC3-EPC-Control-Protocol-Cause                           3435   X     -     X     -     Integer32          M,V    -     -       -
+PC5-Radio-Technology                                     1300   X     -     X     -     Enumerated         V      -     -       M
+PDN-Connection-Charging-ID                               2050   X     -     X     -     Unsigned32         M,V    -     -       -
+PDP-Address                                              1227   X     -     X     -     Address            M,V    -     -       -
+PDP-Address-Prefix-Length                                2606   X     -     X     -     Unsigned32         M,V    -     -       -
+PDP-Context-Type                                         1247   X     -     X     -     Enumerated         M,V    -     -       -
+Play-Alternative                                         3913   -     -     -     X     Enumerated         M,V    -     -       -
+PoC-Change-Condition                                     1261   X     -     -     -     Enumerated         M,V    -     -       -
+PoC-Change-Time                                          1262   X     -     -     -     Time               M,V    -     -       -
+PoC-Controlling-Address                                  858    X     -     X     -     UTF8String         M,V    -     -       -
+PoC-Event-Type                                           2025   X     -     X     -     Enumerated         M,V    -     -       -
+PoC-Group-Name                                           859    X     -     X     -     UTF8String         M,V    -     -       -
+PoC-Information                                          879    X     -     X     -     Grouped            M,V    -     -       -
+PoC-Server-Role                                          883    X     -     X     -     Enumerated         M,V    -     -       -
+PoC-Session-Id                                           1229   X     -     X     -     UTF8String         M,V    -     -       -
+PoC-Session-Initiation-Type                              1277   X     -     X     -     Enumerated         M,V    -     -       -
+PoC-Session-Type                                         884    X     -     X     -     Enumerated         M,V    -     -       -
+PoC-User-Role                                            1252   X     -     X     -     Grouped            M,V    -     -       -
+PoC-User-Role-IDs                                        1253   X     -     X     -     UTF8String         M,V    -     -       -
+PoC-User-Role-Info-Units                                 1254   X     -     X     -     Enumerated         M,V    -     -       -
+Positioning-Data                                         1245   -     -     X     -     UTF8String         M,V    -     -       -
+Preferred-AoC-Currency                                   2315   -     -     X     -     Unsigned32         M,V    -     -       -
+Presence-Reporting-Area-Identifier                       2821   X     -     X     X     -                  -      -     -       -
+Presence-Reporting-Area-Information                      2822   X     -     X     X     -                  -      -     -       -
+Presence-Reporting-Area-Elements-List                    2820   X     -     X     X     -                  -      -     -       -
+Presence-Reporting-Area-Node                             2855   X     -     -     -     -                  -      -     -       -
+Presence-Reporting-Area-Status                           2823   X     -     X     -     -                  -      -     -       -
+Priority                                                 1209   -     -     X     -     Enumerated         M,V    -     -       -
+Priority-Indication                                      3006   X     -     X     -     -                  -      -     -       -
+Priority-Level                                           1046   X     -     X     -     -                  -      -     -       -
+Privacy-Indicator                                        3915   -     -     -     X     Enumerated         M,V    -     -       -
+ProSe-3rd-Party-Application-ID                           3440   X     -     X     -     UTF8String         M,V    -     -       -
+ProSe-App-Id                                             3811   X     -     X     -     -                  -      -     -       -
+ProSe-Direct-Communication-Reception-Data-Container      3461   X     -     -     -     Grouped            M,V    -     -       -
+ProSe-Direct-Communication-Transmission-Data-Container   3441   X     -     -     -     Grouped            M,V    -     -       -
+ProSe-Direct-Discovery-Model                             3442   X     -     X     -     Enumerated         M,V    -     -       -
+ProSe-Event-Type                                         3443   X     -     X     -     Enumerated         M,V    -     -       -
+ProSe-Function-ID                                        3602   X     -     X     -     -                  -      -     -       -
+ProSe-Function-IP-Address                                3444   X     -     X     -     Address            M,V    -     -       -
+ProSe-Function-PLMN-Identifier                           3457   X     -     X     -     UTF8String         M,V    -     -       -
+ProSe-Functionality                                      3445   X     -     X     -     Enumerated         M,V    -     -       -
+ProSe-Group-IP-Multicast-Address                         3446   X     -     -     -     Address            M,V    -     -       -
+ProSe-Information                                        3447   X     -     X     -     Grouped            M,V    -     -       -
+ProSe-Range-Class                                        3448   X     -     X     -     Enumerated         M,V    -     -       -
+ProSe-Reason-For-Cancellation                            3449   X     -     X     -     Enumerated         M,V    -     -       -
+ProSe-Request-Timestamp                                  3450   X     -     X     -     Time               M,V    -     -       -
+ProSe-Role-Of-UE                                         3451   X     -     X     -     Enumerated         M,V    -     -       -
+ProSe-Source-IP-Address                                  3452   -     -     X     -     Address            M,V    -     -       -
+ProSe-Target-Layer-2-ID                                  4410   X     -     -     -     OctetString        M,V    -     -       -
+ProSe-UE-ID                                              3453   -     -     X     -     OctetString        M,V    -     -       -
+ProSe-UE-to-Network-Relay-UE-ID                          4409   X     -     -     -     OctetString        M,V    -     -       -
+ProSe-Validity-Timer                                     3815   X     -     X     -     -                  -      -     -       -
+Proximity-Alert-Indication                               3454   X     -     X     -     Enumerated         M,V    -     -       -
+Proximity-Alert-Timestamp                                3455   X     -     X     -     Time               M,V    -     -       -
+Proximity-Cancellation-Timestamp                         3456   X     -     X     -     Time               M,V    -     -       -
+PS-Append-Free-Format-Data                               867    X     -     -     X     Enumerated         M,V    -     -       -
+PS-Free-Format-Data                                      866    X     -     -     X     OctetString        M,V    -     -       -
+PS-Furnish-Charging-Information                          865    X     -     -     X     Grouped            M,V    -     -       -
+PS-Information                                           874    X     -     X     X     Grouped            M,V    -     -       -
+PSCell-Info                                              1324   X     -     -     -     Grouped            M,V    -     -       -
+QoS-Information                                          1016   X     -     X     -     -                  -      -     -       -
+QoS-Class-Identifier                                     1028   X     -     X     -     -                  -      -     -       -
+Quota-Consumption-Time                                   881    -     -     -     X     Unsigned32         M,V    -     -       -
+Quota-Holding-Time                                       871    -     -     -     X     Unsigned32         M,V    -     -       -
+Quota-Indicator                                          3912   -     -     -     X     Enumerated         M,V    -     -       -
+Radio-Frequency                                          3462   X     -     -     -     OctetString        M,V    -     -       -
+Radio-Parameter-Set-Info                                 3463   X     -     -     -     Grouped            M,V    -     -       -
+Radio-Parameter-Set-Values                               3464   X     -     -     -     OctetString        M,V    -     -       -
+Radio-Resources-Indicator                                3465   X     -     -     -     Integer32          M,V    -     -       -
+RAI                                                      909    X     -     X     -     -                  -      -     -       -
+RAN-End-Timestamp                                        1301   X     -     -     -     Time               V      -     -       M ;; corrected: (TS32.299.py#row-ran-end-time)
+RAN-NAS-Release-Cause                                    2819   X     -     X     -     -                  -      -     -       -
+RAN-Secondary-RAT-Usage-Report                           1302   X     -     -     -     Grouped            V      -     -       M
+RAN-Start-Timestamp                                      1303   X     -     -     -     Time               V      -     -       M ;; corrected: (TS32.299.py#row-ran-start-time)
+Rate-Control-Max-Message-Size                            3937   X     -     X     -     Unsigned32         M,V    -     -       -
+Rate-Control-Max-Rate                                    3938   X     -     X     -     Unsigned32         M,V    -     -       -
+Rate-Control-Time-Unit                                   3939   X     -     X     -     Unsigned32         M,V    -     -       -
+Rate-Element                                             2058   -     -     X     X     Grouped            M,V    -     -       -
+Reachability-Information                                 3140   X     -     -     -     -                  -      -     -       -
+Read-Reply-Report-Requested                              1222   -     -     X     -     Enumerated         M,V    -     -       -
+Real-Time-Tariff-Information                             2305   X     -     X     -     Grouped            M,V    -     -       -
+Reason-Header                                            3401   X     -     X     -     UTF8String         M,V    -     -       -
+Received-Talk-Burst-Time                                 1284   X     -     -     -     Unsigned32         M,V    -     -       -
+Received-Talk-Burst-Volume                               1285   X     -     -     -     Unsigned32         M,V    -     -       -
+Recipient-Address                                        1201   X     -     X     -     Grouped            M,V    -     -       -
+Recipient-Info                                           2026   X     -     X     -     Grouped            M,V    -     -       -
+Recipient-Received-Address                               2028   X     -     X     -     Grouped            M,V    -     -       -
+Recipient-SCCP-Address                                   2010   X     -     X     -     Address            M,V    -     -       -
+Reference-Number                                         3007   X     -     X     -     -                  -      -     -       -
+Refund-Information                                       2022   -     -     X     X     OctetString        M,V    -     -       -
+Related-Change-Condition-Information                     3925   X     -     -     -     Grouped            M,V    -     -       -
+Related-Trigger                                          3926   -     -     X     -     Grouped            M,V    -     -       -
+Related-IMS-Charging-Identifier                          2711   X     -     X     ""    UTF8String         M,V    -     -       -
+Related-IMS-Charging-Identifier-Node                     2712   X     -     X     ""    Address            M,V    -     -       -
+Relationship-Mode                                        2706   X     -     -     -     Enumerated         M,V    -     -       -
+Relay-IP-address                                         4411   X     -     -     -     Address            M,V    -     -       -
+Remaining-Balance                                        2021   -     -     -     X     Grouped            M,V    -     -       -
+Reply-Applic-ID                                          1223   -     -     X     -     UTF8String         M,V    -     -       -
+Reply-Path-Requested                                     2011   X     -     X     -     Enumerated         M,V    -     -       -
+Reporting-Reason                                         872    -     -     X     -     Enumerated         M,V    -     -       -
+Requested-Party-Address                                  1251   X     -     X     -     UTF8String         M,V    -     -       -
+Requested-PLMN-Identifier                                3436   X     -     X     -     UTF8String         M,V    -     -       -
+Requesting-EPUID                                         3816   X     -     X     -     -                  -      -     -       -
+Requestor-PLMN-Identifier                                3437   X     -     X     -     UTF8String         M,V    -     -       -
+Required-MBMS-Bearer-Capabilities                        901    X     -     X     -     -                  -      -     -       -
+Role-Of-Node                                             829    X     -     X     -     Enumerated         M,V    -     -       -
+Role-Of-ProSe-Function                                   3438   X     -     X     -     Enumerated         M,V    -     -       -
+Route-Header-Received                                    3403   X     -     -     -     UTF8String         M,V    -     -       -
+Route-Header-Transmitted                                 3404   X     -     -     -     UTF8String         M,V    -     -       -
+RRC-Cause-Counter                                        4318   X     -     -     -     -                  -      -     -       -
+Scale-Factor                                             2059   -     -     X     X     Grouped            M,V    -     -       -
+SCEF-Address                                             1317   X     -     X     -     Address            V      -     -       M
+SCEF-ID                                                  3125   X     -     -     -     -                  -      -     -       -
+SCEF-Reference-ID                                        3124   X     -     -     -     -                  -      -     -       -
+SCS-Address                                              3941   X     -     X     -     Address            M,V    -     -       -
+SCS-AS-Address                                           3940   X     -     X     -     Grouped            M,V    -     -       -
+SCS-Realm                                                3942   X     -     X     -     DiameterIdentity   M,V    -     -       -
+SDP-Answer-Timestamp                                     1275   X     -     -     -     Time               M,V    -     -       -
+SDP-Media-Component                                      843    X     -     X     -     Grouped            M,V    -     -       -
+SDP-Media-Description                                    845    X     -     X     -     UTF8String         M,V    -     -       -
+SDP-Media-Name                                           844    X     -     X     -     UTF8String         M,V    -     -       -
+SDP-Offer-Timestamp                                      1274   X     -     -     -     Time               M,V    -     -       -
+SDP-Session-Description                                  842    X     -     X     -     UTF8String         M,V    -     -       -
+SDP-TimeStamps                                           1273   X     -     -     -     Grouped            M,V    -     -       -
+SDP-Type                                                 2036   X     -     X     -     Enumerated         M,V    -     -       -
+Secondary-RAT-Type                                       1304   X     -     -     -     OctetString        V      -     -       M
+Serving-Node                                             2401   X     -     X     -     -                  -      -     -       -
+Serving-Node-Identity                                    3929   X     -     -     -     DiameterIdentity   M,V    -     -       -
+Served-Party-IP-Address                                  848    X     -     -     -     Address            M,V    -     -       -
+Server-Capabilities                                      603    X     -     -     -     -                  -      -     -       -
+Server-Name                                              602    X     -     -     -     -                  -      -     -       -
+Service-Data-Container                                   2040   X     -     -     -     Grouped            M,V    -     -       -
+Service-Generic-Information                              1256   X     -     X     -     -                  -      -     -       -
+Service-ID                                               855    X     -     X     -     UTF8String         M,V    -     -       - ;; corrected: (TS32.299.py#row-service-id)
+Service-Information                                      873    X     -     X     X     Grouped            M,V    -     -       -
+Service-Mode                                             2032   X     -     X     -     Unsigned32         M,V    -     -       -
+Service-Specific-Data                                    863    X     -     X     -     UTF8String         M,V    -     -       -
+Service-Specific-Info                                    1249   X     -     X     -     Grouped            M,V    -     -       -
+Service-Specific-Type                                    1257   X     -     X     -     Unsigned32         M,V    -     -       -
+Serving-Node-Type                                        2047   X     -     X     -     Enumerated         M,V    -     -       -
+Serving-PLMN-Rate-Control                                4310   X     -     X     -     -                  -      -     -       -
+Session-Direction                                        2707   X     -     -     -     Enumerated         M,V    -     -       -
+Session-Priority                                         650    X     -     X     -     -                  -      -     -       -
+SGi-PtP-Tunnelling-Method                                3931   X     -     X     -     Enumerated         M,V    -     -       -
+SGSN-Address                                             1228   X     -     X     -     Address            M,V    -     -       -
+SGW-Address                                              2067   X     -     -     -     Address            M,V    -     -       -
+SGW-Change                                               2065   X     -     -     -     Enumerated         M,V    -     -       -
+SIP-Method                                               824    X     -     X     -     UTF8String         M,V    -     -       -
+SIP-Request-Timestamp                                    834    X     -     X     -     Time               M,V    -     -       -
+SIP-Request-Timestamp-Fraction                           2301   X     -     X     -     Unsigned32         M,V    -     -       -
+SIP-Response-Timestamp                                   835    X     -     X     -     Time               M,V    -     -       -
+SIP-Response-Timestamp-Fraction                          2302   X     -     X     -     Unsigned32         M,V    -     -       -
+SM-Device-Trigger-Indicator                              3407   X     -     X     -     Enumerated         M,V    -     -       -
+SM-Device-Trigger-Information                            3405   X     -     X     -     Grouped            M,V    -     -       -
+SM-Discharge-Time                                        2012   X     -     X     -     Time               M,V    -     -       -
+SM-Message-Type                                          2007   X     -     X     -     Enumerated         M,V    -     -       -
+SM-Protocol-ID                                           2013   X     -     X     -     OctetString        M,V    -     -       -
+SM-Sequence-Number                                       3408   X     -     -     -     Unsigned32         M,V    -     -       -
+SM-Service-Type                                          2029   -     -     X     -     Enumerated         M,V    -     -       -
+SM-Status                                                2014   X     -     X     -     OctetString        M,V    -     -       -
+SM-User-Data-Header                                      2015   X     -     X     -     OctetString        M,V    -     -       -
+SMS-Information                                          2000   X     -     X     -     Grouped            M,V    -     -       -
+SMS-Node                                                 2016   X     -     X     -     Enumerated         M,V    -     -       -
+SMS-Result                                               3409   X     -     -     -     Unsigned32         M,V    -     -       -
+SMSC-Address                                             2017   X     -     X     -     Address            M,V    -     -       -
+Sponsor-Identity                                         531    X     -     -     -     -                  -      -     -       -
+SSID                                                     1524   X     -     X     -     -                  -      -     -       -
+Start-of-Charging                                        3419   -     -     X     -     Time               M,V    -     -       -
+Start-Time                                               2041   X     -     X     -     Time               M,V    -     -       -
+Status-AS-Code                                           2702   X     -     -     -     Enumerated         M,V    -     -       -
+Stop-Time                                                2042   X     -     X     -     Time               M,V    -     -       -
+Submission-Time                                          1202   X     -     X     -     Time               M,V    -     -       -
+Subscriber-Role                                          2033   -     -     -     -     Enumerated         M,V    -     -       -
+Supported-Features                                       628    X     X     X     X     -                  M,V    -     -       -
+Supplementary-Service                                    2048   X     -     X     -     Grouped            M,V    -     -       -
+TAD-Identifier                                           2717   X     -     -     -     Enumerated         M,V    -     -       -
+Talk-Burst-Exchange                                      1255   X     -     -     -     Grouped            M,V    -     -       -
+Talk-Burst-Time                                          1286   X     -     -     -     Unsigned32         M,V    -     -       -
+Talk-Burst-Volume                                        1287   X     -     -     -     Unsigned32         M,V    -     -       -
+Target-App-Layer-User-Id                                 3601   X     -     X     -     -                  -      -     -       -
+Target-IP-Address                                        4412   X     -     -     -     Address            M,V    -     -       -
+Tariff-Information                                       2060   X     -     X     X     Grouped            M,V    -     -       -
+Tariff-XML                                               2306   X     -     -     -     UTF8String         M,V    -     -       -
+TDF-IP-Address                                           1091   X     -     X     -     -                  -      -     -       -
+Teleservice                                              3413   -     -     X     -     OctetString        M,V    -     -       -
+Terminal-Information                                     1401   X     -     -     -     -                  -      -     -       -
+Terminating-IOI                                          840    X     -     X     -     UTF8String         M,V    -     -       -
+Time-First-Reception                                     3466   X     -     -     -     Time               M,V    -     -       -
+Time-First-Transmission                                  3467   X     -     -     -     Time               M,V    -     -       -
+Time-First-Usage                                         2043   X     -     -     -     Time               M,V    -     -       -
+Time-Indicator                                           3911   -     -     -     X     Unsigned32         M,V    -     -       -
+Time-Last-Usage                                          2044   X     -     -     -     Time               M,V    -     -       -
+Time-Quota-Mechanism                                     1270   -     -     -     X     Grouped            M,V    -     -       -
+Time-Quota-Threshold                                     868    -     -     -     X     Unsigned32         M,V    -     -       -
+Time-Quota-Type                                          1271   -     -     -     X     Enumerated         M,V    -     -       -
+Time-Stamps                                              833    X     -     X     -     Grouped            M,V    -     -       -
+Time-Usage                                               2045   X     -     -     -     Unsigned32         M,V    -     -       -
+Time-Window                                              3818   X     -     X     -     -                  -      -     -       -
+TLTRI                                                    1318   X     -     X     -     Unsigned32         V      -     -       M
+TMGI                                                     900    X     -     X     -     -                  -      -     -       -
+Token-Text                                               1215   -     -     X     -     UTF8String         M,V    -     -       -
+Total-Number-Of-Messages-Exploded                        2113   X     -     X     -     -                  -      -     -       -
+Total-Number-Of-Messages-Sent                            2114   X     -     X     -     -                  -      -     -       -
+Traffic-Data-Volumes                                     2046   X     -     -     -     Grouped            M,V    -     -       -
+Traffic-Steering-Policy-Identifier-DL                    2836   X     -     -     -     -                  -      -     -       -
+Traffic-Steering-Policy-Identifier-UL                    2837   X     -     -     -     -                  -      -     -       -
+Transcoder-Inserted-Indication                           2605   X     -     -     -     Enumerated         M,V    -     -       -
+Transit-IOI-List                                         2701   X     -     X     -     UTF8String         M,V    -     -       -
+Transmitter-Info                                         3468   X     -     -     -     Grouped            M,V    -     -       -
+Trigger                                                  1264   -     -     X     X     Grouped            M,V    -     -       -
+Trigger-Type                                             870    -     -     X     X     Enumerated         M,V    -     -       -
+Trunk-Group-ID                                           851    X     -     -     -     Grouped            M,V    -     -       - ;; corrected: (TS32.299.py#row-trunk-group-id)
+TWAG-Address                                             3903   X     -     -     -     Address            M,V    -     -       -
+TWAN-User-Location-Info                                  2714   X     -     X     -     Grouped            M,V    -     -       -
+Type-Number                                              1204   -     -     X     -     Enumerated         M,V    -     -       -
+UDP-Source-Port                                          2806   X     -     X     -     -                  -      -     -       -
+UE-Local-IP-Address                                      2805   X     -     X     -     -                  -      -     -       -
+UE-Reachability-Configuration                            3129   X     -     -     -     -                  -      -     -       -
+UNI-PDU-CP-Only-Flag                                     3932   X     -     X     -     Enumerated         M,V    -     -       -
+Unit-Cost                                                2061   -     -     X     X     Grouped            M,V    -     -       -
+Unit-Quota-Threshold                                     1226   -     -     -     X     Unsigned32         M,V    -     -       -
+Unused-Quota-Timer                                       4407   -     -     X     X     Unsigned32         M,V    -     -       -
+Usage-Information-Report-Sequence-Number                 3439   X     -     -     -     Integer32          M,V    -     -       -
+User-CSG-Information                                     2319   X     -     X     X     Grouped            M,V    -     -       -
+User-Data                                                606    X     -     -     -     -                  -      -     -       -
+User-Location-Info-Time                                  2812   X     -     X     -     -                  -      -     -       -
+User-Participating-Type                                  1279   X     -     X     -     Enumerated         M,V    -     -       -
+User-Session-Id                                          830    X     -     X     -     UTF8String         M,V    -     -       -
+UWAN-User-Location-Info                                  3918   X     -     X     -     Grouped            M,V    -     -       -
+VAS-Id                                                   1102   -     -     X     -     -                  -      -     -       -
+Variable-Part                                            3907   -     -     -     X     Grouped            M,V    -     -       -
+Variable-Part-Order                                      3908   -     -     -     X     Unsigned32         M,V    -     -       -
+Variable-Part-Type                                       3909   -     -     -     X     Unsigned32         M,V    -     -       -
+Variable-Part-Value                                      3910   -     -     -     X     UTF8String         M,V    -     -       -
+VASP-Id                                                  1101   -     -     X     -     -                  -      -     -       -
+VCS-Information                                          3410   X     -     X     -     Grouped            M,V    -     -       -
+Visited-PLMN-Id                                          1407   X     -     -     -     -                  -      -     -       -
+VLR-Number                                               3420   X     -     X     -     OctetString        M,V    -     -       -
+VoLTE-Information                                        1323   X     -     X     -     Grouped            M,V    -     -       -
+Volume-Quota-Threshold                                   869    -     -     -     X     Unsigned32         M,V    -     -       -
+WLAN-Link-Layer-Id                                       3821   X     -     X     -     -                  -      -     -       -
+WLAN-Operator-Id                                         1306   X     -     X     -     Grouped            V      -     -       M
+WLAN-Operator-Name                                       1307   X     -     X     -     UTF8String         V      -     -       M
+WLAN-PLMN-Id                                             1308   X     -     X     -     UTF8String         V      -     -       M
 
 
 ; Type: Reused AVPs
@@ -1066,17 +1066,17 @@ WLAN-Link-Layer-Id                         TS29.345   -
 ; Section: 7.3
 ; Table: 7.3.1
 ; Page: 202
-; Columns: Name From
-3GPP2-BSID   TS29.212
+; Columns: Name   Code   ACR   ACA   CCR   CCA   From
+3GPP2-BSID        9010   X     -     X     -     TS29.212
 
 
 ; Type: Reused AVPs
 ; Section: 7.4
 ; Table: 7.4.1
 ; Page: 202
-; Columns: Name      From
-Logical-Access-ID    TS283.034
-Physical-Access-ID   TS283.034
+; Columns: Name      Code   ACR   ACA   CCR   CCA   From
+Logical-Access-ID    302    X     -     X     -     TS283.034
+Physical-Access-ID   313    X     -     X     -     TS283.034
 
 
 ; Type: Grouped AVP

@@ -90,6 +90,11 @@ class _Index:
     # Sd and St tables list Gx's AVPs "from" TS 29.212: those are this file's
     # own definitions, so no rule treats them as belonging elsewhere.
     self_cited: list[str] = field(default_factory=list)
+    # Re-used rows printing the AVP's code or type (TS 29.172 table
+    # 7.4.1-2), with their block, for comparing against the origin.
+    reused_cells: list[tuple[ast.ReusedAvps, ast.ReusedAvpRow]] = field(
+        default_factory=list
+    )
 
     @property
     def rows(self) -> list[ast.AvpTableRow]:
@@ -118,6 +123,8 @@ def _index(spec: ast.Specification) -> _Index:
                     index.self_cited.append(row.name)
                 else:
                     index.reused[row.name] = row.origin
+                    if row.code is not None or row.data_type is not None:
+                        index.reused_cells.append((section, row))
     return index
 
 
@@ -773,6 +780,68 @@ def _reused_rows_agree_with_origin(
     return findings
 
 
+def _reused_cells_agree_with_origin(
+    index: _Index, origins: dict[str, _Origin]
+) -> list[Finding]:
+    """A re-used table's own Code and Type cells read the origin's way.
+
+    TS 29.172 table 7.4.1-2 and TS 32.299's tables 7.3.1-7.5.1 print the
+    code, 29.172 the type too, of the AVPs they take from elsewhere. The
+    origin states both, in its definition or its table rows; a code it does
+    not give is `reused-code-conflict`, an error like any second code, and a
+    type it does not give is `reused-row-mismatch`. Only what the origin
+    states is compared, and agreeing with any of its readings agrees.
+    """
+    findings = []
+    for block, row in index.reused_cells:
+        resolved = origins.get(row.origin)
+        if resolved is None:
+            continue
+        definition = resolved.defined.get(row.name)
+        theirs = [
+            their_row
+            for table in resolved.tables
+            for their_row in table.rows
+            if their_row.name == row.name
+        ]
+        codes = {their.code for their in theirs if their.code is not None}
+        types = {their.data_type for their in theirs if their.data_type is not None}
+        if definition is not None:
+            codes.add(definition.code)
+            if not types:
+                types.add(
+                    ast.DataType.GROUPED
+                    if isinstance(definition, ast.GroupedAvp)
+                    else ast.DataType.ENUMERATED
+                )
+        where = f"re-used table {block.table}"
+        if row.code is not None and codes and row.code not in codes:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "reused-code-conflict",
+                    f"{row.name} is code {row.code} in {where} and"
+                    f" {', '.join(map(str, sorted(codes)))} in {row.origin},"
+                    " which it is re-used from",
+                    block.source.section,
+                    row.origin,
+                )
+            )
+        if row.data_type is not None and types and row.data_type not in types:
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "reused-row-mismatch",
+                    f"{row.name} is typed {row.data_type.value} in {where}, but"
+                    f" {row.origin}, which it is re-used from, reads"
+                    f" {', '.join(sorted(each.value for each in types))}",
+                    block.source.section,
+                    row.origin,
+                )
+            )
+    return findings
+
+
 _CROSS_FILE_FLAGS = (ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR)
 _FLAG_COLUMNS = {
     ast.AvpColumn.MUST: "must",
@@ -1025,6 +1094,7 @@ def lint_with_corpus(spec: ast.Specification, books: corpus.Corpus) -> list[Find
         *_reused_avp_exists(index, origins),
         *_reprint_or_extension(index, origins),
         *_reused_rows_agree_with_origin(index, origins),
+        *_reused_cells_agree_with_origin(index, origins),
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
         *_unresolved_references(index, bases, missing_bases),
     ]

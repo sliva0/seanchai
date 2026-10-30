@@ -221,38 +221,38 @@
 ; Section: 6.4.1
 ; Table: 6.4.1-1
 ; Page: 39
-; Columns: Name                           Code   Section  Type          Must  May   S.not M.not Encrypt
-Communication-Failure-Information         4300   6.4.4    Grouped       M,V   -     -     -     No
-Cause-Type                                4301   6.4.5    Unsigned32    M,V   -     -     -     No
-S1AP-Cause                                4302   6.4.6    Unsigned32    M,V   -     -     -     No
-RANAP-Cause                               4303   6.4.7    Unsigned32    M,V   -     -     -     No
-BSSGP-Cause                               4309   6.4.8    Unsigned32    M,V   -     -     -     No
-GMM-Cause                                 4304   6.4.9    Unsigned32    M,V   -     -     -     No
-SM-Cause                                  4305   6.4.10   Unsigned32    M,V   -     -     -     No
-Number-Of-UE-Per-Location-Configuration   4306   6.4.11   Grouped       M,V   -     -     -     No
-Number-Of-UE-Per-Location-Report          4307   6.4.12   Grouped       M,V   -     -     -     No
-UE-Count                                  4308   6.4.13   Unsigned32    M,V   -     -     -     No
-Connection-Action                         4314   6.4.18   Unsigned32    M,V   -     -     -     No
-Non-IP-Data                               4315   6.4.19   OctetString   M,V   -     -     -     No
-Serving-PLMN-Rate-Control                 4310   6.4.21   Grouped       M,V   -     -     -     No
-Uplink-Rate-Limit                         4311   6.4.23   Unsigned32    M,V   -     -     -     No
-Downlink-Rate-Limit                       4312   6.4.22   Unsigned32    M,V   -     -     -     No
-Extended-PCO                              4313   6.4.26   OctetString   M,V   -     -     -     No
-SCEF-Wait-Time                            4316   6.4.24   Time          M,V   -     -     -     No
-CMR-Flags                                 4317   6.4.25   Unsigned32    M,V   -     -     -     No
-RRC-Cause-Counter                         4318   6.4.27   Grouped       M,V   -     -     -     No
-Counter-Value                             4319   6.4.28   Unsigned32    M,V   -     -     -     No
-RRC-Counter-Timestamp                     4320   6.4.29   Time          M,V   -     -     -     No
-TDA-Flags                                 4321   6.4.31   Unsigned32    V     -     -     M     No
-Idle-Status-Indication                    4322   6.4.32   Grouped       V     -     -     M     No
-Idle-Status-Timestamp                     4323   6.4.33   Time          V     -     -     M     No
-Active-Time                               4324   6.4.34   Unsigned32    V     -     -     M     No
-Reachability-Cause                        4325   6.4.35   Unsigned32    V     -     -     M     No
-APN-Rate-Control-Status                   4326   6.4.36   Grouped       V     -     -     M     No
-Uplink-Number-Of-Packets-Allowed          4327   6.4.37   Unsigned32    V     -     -     M     No
-Number-Of-Additional-Exception-Reports    4328   6.4.38   Unsigned32    V     -     -     M     No
-Downlink-Number-Of-Packets-Allowed        4329   6.4.39   Unsigned32    V     -     -     M     No
-APN-Rate-Control-Status-Validity-Time     4330   6.4.40   Unsigned64    V     -     -     M     No
+; Columns: Name                           Code   Section   Type          Must   May   S.not   M.not   Encrypt
+Communication-Failure-Information         4300   6.4.4     Grouped       M,V    -     -       -       No
+Cause-Type                                4301   6.4.5     Unsigned32    M,V    -     -       -       No
+S1AP-Cause                                4302   6.4.6     Unsigned32    M,V    -     -       -       No
+RANAP-Cause                               4303   6.4.7     Unsigned32    M,V    -     -       -       No
+BSSGP-Cause                               4309   6.4.8     Unsigned32    M,V    -     -       -       No
+GMM-Cause                                 4304   6.4.9     Unsigned32    M,V    -     -       -       No
+SM-Cause                                  4305   6.4.10    Unsigned32    M,V    -     -       -       No
+Number-Of-UE-Per-Location-Configuration   4306   6.4.11    Grouped       M,V    -     -       -       No
+Number-Of-UE-Per-Location-Report          4307   6.4.12    Grouped       M,V    -     -       -       No
+UE-Count                                  4308   6.4.13    Unsigned32    M,V    -     -       -       No
+Connection-Action                         4314   6.4.18    Unsigned32    M,V    -     -       -       No
+Non-IP-Data                               4315   6.4.19    OctetString   M,V    -     -       -       No
+Serving-PLMN-Rate-Control                 4310   6.4.21    Grouped       M,V    -     -       -       No
+Uplink-Rate-Limit                         4311   6.4.23    Unsigned32    M,V    -     -       -       No
+Downlink-Rate-Limit                       4312   6.4.22    Unsigned32    M,V    -     -       -       No
+Extended-PCO                              4313   6.4.26    OctetString   M,V    -     -       -       No
+SCEF-Wait-Time                            4316   6.4.24    Time          M,V    -     -       -       No
+CMR-Flags                                 4317   6.4.25    Unsigned32    M,V    -     -       -       No
+RRC-Cause-Counter                         4318   6.4.27    Grouped       M,V    -     -       -       No
+Counter-Value                             4319   6.4.28    Unsigned32    M,V    -     -       -       No
+RRC-Counter-Timestamp                     4320   6.4.29    Time          M,V    -     -       -       No
+TDA-Flags                                 4321   6.4.31    Unsigned32    V      -     -       M       No
+Idle-Status-Indication                    4322   6.4.32    Grouped       V      -     -       M       No
+Idle-Status-Timestamp                     4323   6.4.33    Time          V      -     -       M       No
+Active-Time                               4324   6.4.34    Unsigned32    V      -     -       M       No
+Reachability-Cause                        4325   6.4.35    Unsigned32    V      -     -       M       No
+APN-Rate-Control-Status                   4326   6.4.36    Grouped       V      -     -       M       No
+Uplink-Number-Of-Packets-Allowed          4327   6.4.37    Unsigned32    V      -     -       M       No
+Number-Of-Additional-Exception-Reports    4328   6.4.38    Unsigned32    V      -     -       M       No
+Downlink-Number-Of-Packets-Allowed        4329   6.4.39    Unsigned32    V      -     -       M       No
+APN-Rate-Control-Status-Validity-Time     4330   6.4.40    Unsigned64    V      -     -       M       No
 
 
 ; Type: Reused AVPs

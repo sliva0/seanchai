@@ -7,9 +7,9 @@
 ; Type: AVP Table
 ; Section: 7.4
 ; Page: 16
-; Columns: Name Code Section Type               Must  M.not
-OC-Peer-Algo   648   7.1.2   Unsigned64         -     V
-SourceID       649   7.3     DiameterIdentity   -     V
+; Columns: Name   Code   Section   Type               Must   M.not
+OC-Peer-Algo      648    7.1.2     Unsigned64         -      V
+SourceID          649    7.3       DiameterIdentity   -      V
 
 
 ; Type: Grouped AVP

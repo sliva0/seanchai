@@ -106,34 +106,34 @@
 ; Section: 6.4.1
 ; Table: 6.4.1.1
 ; Page: 16
-; Columns: Name                     Code   Section  Type          Must  May   S.not M.not
-Device-Action                       3001   6.4.2    Grouped       M,V   P     -     -
-Device-Notification                 3002   6.4.3    Grouped       M,V   P     -     -
-Trigger-Data                        3003   6.4.4    Grouped       M,V   P     -     -
-Payload                             3004   6.4.5    OctetString   M,V   P     -     -
-Action-Type                         3005   6.4.6    Enumerated    M,V   P     -     -
-Priority-Indication                 3006   6.4.7    Enumerated    M,V   P     -     -
-Reference-Number                    3007   6.4.8    Unsigned32    M,V   P     -     -
-Request-Status                      3008   6.4.9    Enumerated    M,V   P     -     -
-Delivery-Outcome                    3009   6.4.10   Enumerated    M,V   P     -     -
-Application-Port-Identifier         3010   6.4.11   Unsigned32    M,V   P     -     -
-Old-Reference-Number                3011   6.4.12   Unsigned32    V     P     -     M
-Feature-Supported-In-Final-Target   3012   6.4.13   Unsigned32    V     P     -     M
+; Columns: Name                     Code   Section   Type          Must   May   S.not   M.not   Applicability
+Device-Action                       3001   6.4.2     Grouped       M,V    P     -       -       ""
+Device-Notification                 3002   6.4.3     Grouped       M,V    P     -       -       ""
+Trigger-Data                        3003   6.4.4     Grouped       M,V    P     -       -       ""
+Payload                             3004   6.4.5     OctetString   M,V    P     -       -       ""
+Action-Type                         3005   6.4.6     Enumerated    M,V    P     -       -       ""
+Priority-Indication                 3006   6.4.7     Enumerated    M,V    P     -       -       ""
+Reference-Number                    3007   6.4.8     Unsigned32    M,V    P     -       -       ""
+Request-Status                      3008   6.4.9     Enumerated    M,V    P     -       -       ""
+Delivery-Outcome                    3009   6.4.10    Enumerated    M,V    P     -       -       ""
+Application-Port-Identifier         3010   6.4.11    Unsigned32    M,V    P     -       -       ""
+Old-Reference-Number                3011   6.4.12    Unsigned32    V      P     -       M       Device-Trigger-Recall-Replace
+Feature-Supported-In-Final-Target   3012   6.4.13    Unsigned32    V      P     -       M       Device-Trigger-Recall-Replace
 
 
 ; Type: Reused AVPs
 ; Section: 6.5.1
 ; Table: 6.5.1.1
 ; Page: 21
-; Columns: Name        From
-MSISDN                 TS29.329
-External-Id            TS29.336
-SCS-Identity           TS29.336
-Validity-Time          RFC4006
-Supported-Features     TS29.229
-MTC-Error-Diagnostic   TS29.337
-Load                   RFC8583
-SM-RP-UI               TS29.338
+; Columns: Name        From       Applicability
+MSISDN                 TS29.329   ""
+External-Id            TS29.336   ""
+SCS-Identity           TS29.336   ""
+Validity-Time          RFC4006    ""
+Supported-Features     TS29.229   ""
+MTC-Error-Diagnostic   TS29.337   ""
+Load                   RFC8583    ""
+SM-RP-UI               TS29.338   "MSISDN-less MO-SMS Delivery"
 
 
 ; Type: Grouped AVP

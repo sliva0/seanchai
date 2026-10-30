@@ -79,7 +79,19 @@ each starting with `; Type:`.
   distinct from "the cell was empty". Only modelled columns are recorded;
   unmodelled prose columns are dropped, and an unmodelled machine-readable
   column is a reason to model it, not to carry it anonymously.
-- **Table cells are single tokens**, `-` for empty.
+- **Where a row applies is the document's marks.** TS 29.212's "Acc.
+  Type" and "Applicability", TS 29.061's "Applicable Reference Points" and
+  TS 32.299's per-command "Used in" columns are mark columns (`Acc-Type`,
+  `Applicability`, `Reference-Points`, `ACR` to `CCA`): a cell lists the
+  marks the document prints, comma-separated, without interpreting them,
+  each with what the document prints beside it (`"All (NOTE 5)"`, whose
+  note 5 excludes 3GPP-GPRS). What `Rel8` or `OC` means is the document's
+  legend's, which the model documents per label. A dash the source prints
+  is `-` and a blank cell `""`, since TS 32.299 gives the dash a meaning
+  and the blank none.
+- **Table cells are single tokens**, `-` for empty, except in a mark
+  column, where a mark that is not a plain token is quoted as an enum value
+  name is and `-` is the source's own dash.
 - **Enum value names keep the document's spelling.** Most are identifiers
   (`DELIVERY_REPORT`), but TS 32.299 labels values in words, so a name is
   free text rather than a derived identifier no document prints, and one

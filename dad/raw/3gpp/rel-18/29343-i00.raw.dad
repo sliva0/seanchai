@@ -126,20 +126,20 @@
 ; Section: 6.4.1
 ; Table: 6.4.1-1
 ; Page: 19
-; Columns: Name            Code   Section  Type          Must  May   S.not M.not
-Origin-App-Layer-User-Id   3600   6.4.2    UTF8String    M,V   P     -     -
-Target-App-Layer-User-Id   3601   6.4.3    UTF8String    M,V   P     -     -
-ProSe-Function-ID          3602   6.4.4    OctetString   M,V   P     -     -
-ProSe-Request-Type         3603   6.4.5    Unsigned32    M,V   P     -     -
-PDUID                      3604   6.4.6    OctetString   V     P     -     M
-Application-Data           3605   6.4.7    UTF8String    V     P     -     M
-Allowed-Suffixes-Number    3606   6.4.8    Unsigned32    V     P     -     M
-Monitor-Target             3607   6.4.9    Grouped       V     P     -     M
-ProSe-Code-Suffix-Mask     3608   6.4.10   Grouped       V     P     -     M
-Suffix-Code                3609   6.4.11   OctetString   V     P     -     M
-Suffix-Mask                3610   6.4.12   OctetString   V     P     -     M
-Banned-User-Target         3611   6.4.17   Grouped       V     P     -     M
-Metadata-Indicator         3612   6.4.18   Unsigned32    V     P     -     M
+; Columns: Name            Code   Section   Type          Must   May   S.not   M.not
+Origin-App-Layer-User-Id   3600   6.4.2     UTF8String    M,V    P     -       -
+Target-App-Layer-User-Id   3601   6.4.3     UTF8String    M,V    P     -       -
+ProSe-Function-ID          3602   6.4.4     OctetString   M,V    P     -       -
+ProSe-Request-Type         3603   6.4.5     Unsigned32    M,V    P     -       -
+PDUID                      3604   6.4.6     OctetString   V      P     -       M
+Application-Data           3605   6.4.7     UTF8String    V      P     -       M
+Allowed-Suffixes-Number    3606   6.4.8     Unsigned32    V      P     -       M
+Monitor-Target             3607   6.4.9     Grouped       V      P     -       M
+ProSe-Code-Suffix-Mask     3608   6.4.10    Grouped       V      P     -       M
+Suffix-Code                3609   6.4.11    OctetString   V      P     -       M
+Suffix-Mask                3610   6.4.12    OctetString   V      P     -       M
+Banned-User-Target         3611   6.4.17    Grouped       V      P     -       M
+Metadata-Indicator         3612   6.4.18    Unsigned32    V      P     -       M
 
 
 ; Type: Reused AVPs

@@ -7,14 +7,14 @@
 ; Type: AVP Table
 ; Section: 7.8
 ; Page: 28
-; Columns: Name           Code  Section Type       Must  M.not
-OC-Supported-Features     621   7.1   Grouped      -     V
-OC-Feature-Vector         622   7.2   Unsigned64   -     V
-OC-OLR                    623   7.3   Grouped      -     V
-OC-Sequence-Number        624   7.4   Unsigned64   -     V
-OC-Validity-Duration      625   7.5   Unsigned32   -     V
-OC-Report-Type            626   7.6   Enumerated   -     V
-OC-Reduction-Percentage   627   7.7   Unsigned32   -     V
+; Columns: Name           Code   Section   Type         Must   M.not
+OC-Supported-Features     621    7.1       Grouped      -      V
+OC-Feature-Vector         622    7.2       Unsigned64   -      V
+OC-OLR                    623    7.3       Grouped      -      V
+OC-Sequence-Number        624    7.4       Unsigned64   -      V
+OC-Validity-Duration      625    7.5       Unsigned32   -      V
+OC-Report-Type            626    7.6       Enumerated   -      V
+OC-Reduction-Percentage   627    7.7       Unsigned32   -      V
 
 
 ; Type: Grouped AVP

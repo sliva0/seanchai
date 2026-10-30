@@ -7,9 +7,9 @@
 ; Type: AVP Table
 ; Section: 8.1
 ; Page: 13
-; Columns: Name  Code  Section Type             M.not
-ERP-RK-Request   618   8.1   Grouped            M,V
-ERP-Realm        619   8.2   DiameterIdentity   M,V
+; Columns: Name   Code   Section   Type               M.not
+ERP-RK-Request    618    8.1       Grouped            M,V
+ERP-Realm         619    8.2       DiameterIdentity   M,V
 
 
 ; Type: Grouped AVP

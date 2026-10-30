@@ -483,74 +483,74 @@
 ; Section: 5.3.0
 ; Table: 5.3.0.1
 ; Page: 39
-; Columns: Name               Code   Section Type         Must  May   S.not M.not Encrypt
-DRA-Deployment                2206   5.3.7   Enumerated   V     P     -     M     Yes
-Multiple-BBERF-Action         2204   5.3.6   Enumerated   M,V   P     -     -     Yes
-Subsession-Decision-Info      2200   5.3.1   Grouped      M,V   P     -     -     Yes
-Subsession-Enforcement-Info   2201   5.3.2   Grouped      M,V   P     -     -     Yes
-Subsession-Id                 2202   5.3.3   Unsigned32   M,V   P     -     -     Yes
-Subsession-Operation          2203   5.3.4   Enumerated   M,V   P     -     -     Yes
-DRA-Binding                   2208   5.3.8   Enumerated   V     P     -     M     Yes
+; Columns: Name               Code   Section   Type         Must   May   S.not   M.not   Encrypt   Acc-Type                Applicability
+DRA-Deployment                2206   5.3.7     Enumerated   V      P     -       M       Yes       Non-3GPP-EPS,3GPP-EPS   PC,EPC-routed
+Multiple-BBERF-Action         2204   5.3.6     Enumerated   M,V    P     -       -       Yes       All                     PC
+Subsession-Decision-Info      2200   5.3.1     Grouped      M,V    P     -       -       Yes       All                     Both
+Subsession-Enforcement-Info   2201   5.3.2     Grouped      M,V    P     -       -       Yes       All                     Both
+Subsession-Id                 2202   5.3.3     Unsigned32   M,V    P     -       -       Yes       All                     Both
+Subsession-Operation          2203   5.3.4     Enumerated   M,V    P     -       -       Yes       All                     Both
+DRA-Binding                   2208   5.3.8     Enumerated   V      P     -       M       Yes       Non-3GPP-EPS,3GPP-EPS   PC,EPC-routed
 
 
 ; Type: AVP Table
 ; Section: A.7.3.1
 ; Table: A.7.3.1.1
-; Columns: Name Code  Section     Type               Must  May   S.not M.not Encrypt
-PCRF-Address   2207   A.7.3.1.1   DiameterIdentity   M,V   P     -     -     Yes
+; Columns: Name   Code   Section     Type               Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+PCRF-Address      2207   A.7.3.1.1   DiameterIdentity   M,V    P     -       -       Yes       ""         PC,EPC-routed
 
 
 ; Type: AVP Table
 ; Section: A.8.3.1
 ; Table: A.8.3.1.1
-; Columns: Name        Code   Section   Type          Must  May   S.not M.not Encrypt
-UE-Local-IPv6-Prefix   2205   A.8.3.1   OctetString   M,V   P     -     -     Yes
+; Columns: Name        Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+UE-Local-IPv6-Prefix   2205   A.8.3.1   OctetString   M,V    P     -       -       Yes       ""         PC,NSWO
 
 
 ; Type: Reused AVPs
 ; Section: A.7.4.1
 ; Table: A.7.4.1.1
-; Columns: Name           From
-Called-Station-Id         RFC4005
-CC-Request-Number         RFC4006
-CC-Request-Type           RFC4006
-DRMP                      RFC7944
-Event-Report-Indication   TS29.212
-Load                      RFC8583
-OC-OLR                    RFC7683
-OC-Supported-Features     RFC7683
-QoS-Information           TS29.212
-QoS-Rule-Install          TS29.212
-QoS-Rule-Remove           TS29.212
-QoS-Rule-Report           TS29.212
-Session-Release-Cause     TS29.212
-Subscription-Id           RFC4006
-Supported-Features        TS29.229
-HeNB-Local-IP-Address     TS29.212
-UE-Local-IP-Address       TS29.212
-UDP-Source-Port           TS29.212
+; Columns: Name           From       Acc-Type                           Applicability
+Called-Station-Id         RFC4005    Non-3GPP-EPS,3GPP-EPS              PC
+CC-Request-Number         RFC4006    Non-3GPP-EPS,3GPP-EPS              PC
+CC-Request-Type           RFC4006    Non-3GPP-EPS,3GPP-EPS              PC
+DRMP                      RFC7944    Non-3GPP-EPS,3GPP-EPS              PC
+Event-Report-Indication   TS29.212   Non-3GPP-EPS,"3GPP-EPS (NOTE x)"   PC
+Load                      RFC8583    Non-3GPP-EPS,3GPP-EPS              PC
+OC-OLR                    RFC7683    Non-3GPP-EPS,3GPP-EPS              PC
+OC-Supported-Features     RFC7683    Non-3GPP-EPS,3GPP-EPS              PC
+QoS-Information           TS29.212   Non-3GPP-EPS                       PC
+QoS-Rule-Install          TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+QoS-Rule-Remove           TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+QoS-Rule-Report           TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+Session-Release-Cause     TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+Subscription-Id           RFC4006    Non-3GPP-EPS                       PC
+Supported-Features        TS29.229   Non-3GPP-EPS,3GPP-EPS              PC
+HeNB-Local-IP-Address     TS29.212   3GPP-EPS                           PC
+UE-Local-IP-Address       TS29.212   Non-3GPP-EPS                       PC
+UDP-Source-Port           TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
 
 
 ; Type: Reused AVPs
 ; Section: A.8.4.1
 ; Table: A.8.4.1.1
-; Columns: Name         From
-Called-Station-Id       RFC4005
-CC-Request-Number       RFC4006
-CC-Request-Type         RFC4006
-DRMP                    RFC7944
-OC-OLR                  RFC7683
-OC-Supported-Features   RFC7683
-QoS-Information         TS29.212
-Charging-Rule-Install   TS29.212
-Charging-Rule-Remove    TS29.212
-Charging-Rule-Report    TS29.212
-Load                    RFC8583
-Session-Release-Cause   TS29.212
-Subscription-Id         RFC4006
-Supported-Features      TS29.229
-TDF-Information         TS29.212
-UE-Local-IP-Address     TS29.212
+; Columns: Name         From       Acc-Type   Applicability
+Called-Station-Id       RFC4005    ""         PC
+CC-Request-Number       RFC4006    ""         PC
+CC-Request-Type         RFC4006    ""         PC
+DRMP                    RFC7944    ""         PC
+OC-OLR                  RFC7683    ""         PC
+OC-Supported-Features   RFC7683    ""         PC
+QoS-Information         TS29.212   ""         PC
+Charging-Rule-Install   TS29.212   ""         PC
+Charging-Rule-Remove    TS29.212   ""         PC
+Charging-Rule-Report    TS29.212   ""         PC
+Load                    RFC8583    ""         PC
+Session-Release-Cause   TS29.212   ""         PC
+Subscription-Id         RFC4006    ""         PC
+Supported-Features      TS29.229   ""         PC
+TDF-Information         TS29.212   ""         PC
+UE-Local-IP-Address     TS29.212   ""         PC
 
 
 ; Type: Grouped AVP

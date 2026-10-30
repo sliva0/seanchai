@@ -528,15 +528,78 @@ def test_an_unknown_column_is_rejected_with_the_ones_that_exist():
     not carried under its own label, so a `.dad` file can only name modelled
     ones."""
     with pytest.raises(
-        parser.DadParseError, match=r"unknown column 'Applicability'.*expected one of"
+        parser.DadParseError, match=r"unknown column 'Comments'.*expected one of"
     ):
         parser.parse(
             _dad(
                 "; Type: AVP Table",
                 "; Section: 1",
                 "; Table: 1",
+                "; Columns: Name Comments",
+                "Local-AVP prose",
+            )
+        )
+
+
+def test_mark_cells_read_as_comma_separated_marks():
+    """Marks are plain or quoted, as enum value names are; `-` is a printed
+    dash and `""` a blank cell."""
+    spec = parser.parse(
+        _dad(
+            "; Type: AVP Table",
+            "; Section: 5.3.0",
+            "; Table: 5.3.0.1",
+            "; Columns: Name Code Acc-Type Applicability",
+            'Local-AVP 1000 3GPP-EPS,"Non-3GPP-EPS (NOTE 11)" Both,Rel8',
+            'Other-AVP 1001 "All (NOTE 5)" ""',
+            'Odd-AVP 1002 "say \\"so\\"" -',
+            "",
+            "",
+            "; Type: Reused AVPs",
+            "; Section: 7.3",
+            "; Table: 7.3.1",
+            "; Columns: Name Code ACR ACA From",
+            "3GPP2-BSID 9010 X - TS29.212",
+        )
+    )
+
+    table, reused = spec.sections
+    assert isinstance(table, ast.AvpTable)
+    assert [row.marks for row in table.rows] == [
+        {
+            ast.MarkColumn.ACCESS_TYPES: ("3GPP-EPS", "Non-3GPP-EPS (NOTE 11)"),
+            ast.MarkColumn.APPLICABILITY: ("Both", "Rel8"),
+        },
+        {ast.MarkColumn.ACCESS_TYPES: ("All (NOTE 5)",)},
+        {
+            ast.MarkColumn.ACCESS_TYPES: ('say "so"',),
+            ast.MarkColumn.APPLICABILITY: (),
+        },
+    ]
+    assert isinstance(reused, ast.ReusedAvps)
+    assert reused.rows[0].code == 9010
+    assert reused.rows[0].marks == {ast.MarkColumn.ACR: ("X",), ast.MarkColumn.ACA: ()}
+    assert parser.parse(formatter.format_spec(spec)) == spec
+
+
+@pytest.mark.parametrize(
+    ("cell", "message"),
+    [
+        ("Both,,Rel8", "malformed Applicability cell"),
+        ('Both,""', r"marks\.Applicability"),
+        ("Both,-", r"marks\.Applicability"),
+        ('"unclosed', "malformed table row"),
+    ],
+)
+def test_a_malformed_mark_cell_is_rejected(cell, message):
+    with pytest.raises(parser.DadParseError, match=f"line 9: {message}"):
+        parser.parse(
+            _dad(
+                "; Type: AVP Table",
+                "; Section: 5.3.0",
+                "; Table: 5.3.0.1",
                 "; Columns: Name Applicability",
-                "Local-AVP Both",
+                f"Local-AVP {cell}",
             )
         )
 

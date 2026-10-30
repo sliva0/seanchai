@@ -41,6 +41,30 @@ reason = "one table name cell line-wraps with a space after the second hyphen; t
 first_version = "18.2.0"
 last_version = "18.2.0"
 
+[[patch]]
+find = "NetLoc- "
+replace = "NetLoc-"
+count = 5
+reason = "five Applicability cells of tables 5.3.0.1 and 5.4.0.1 line-wrap 'NetLoc-Trusted-WLAN' and 'NetLoc-Untrusted-WLAN' with a space after the first hyphen; the feature lists of clause 5.4.1 spell them unbroken"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "3GPP- EPS"
+replace = "3GPP-EPS"
+count = 3
+reason = "three Acc. Type cells of tables 5.3.0.1 and 5a.4.0.1 line-wrap '3GPP-EPS' with a space after the hyphen"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[patch]]
+find = "3GPP-GPRS. 3GPP-EPS"
+replace = "3GPP-GPRS, 3GPP-EPS"
+count = 5
+reason = "five Acc. Type cells of tables 5.3.0.1 and 5.4.0.1 separate two access types with a full stop where the rest use a comma or a space"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
 [[quirk]]
 name = "dotted-flags"
 reason = "seven flags cells write the separator as a period ('M.V'); the space-less form is this document's convention, unlike the 'M. V' typo class that goes through patches"
@@ -102,5 +126,17 @@ replace = "TRUSTED-N3GA (2)"
 exact = true
 section = "5.3.31"
 reason = "RAT-Type's value 2 prints a space after a hyphen, which kept it out of the value list; the neighbouring values are single tokens (VIRTUAL, WIRELINE-CABLE)"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[quirk]]
+name = "access-type-column"
+reason = "the AVP and re-used tables of clauses 5, 5a, 5b and E.6 print an 'Acc. Type' column naming the IP-CAN access types each AVP applies to, separated by commas or spaces ('All', '3GPP-EPS, Non-3GPP-EPS', '3GPP-GPRS 3GPP-EPS'); notes 4-8 and 11 of table 5.3.0.1 qualify some cells in prose"
+first_version = "18.2.0"
+last_version = "18.2.0"
+
+[[quirk]]
+name = "applicability-column"
+reason = "the AVP and re-used tables print an 'Applicability' column marking each AVP with the function it serves and the supported features it belongs to, separated by spaces or commas ('Both Rel8'): table 5.3.0.1 note 3 ('AVPs marked with \"CC\" are applicable to charging control, AVPs marked with \"PC\" are applicable to policy control and AVPs marked with \"Both\" are applicable to both', also ADC and ABC) and note 9 (supported features, clause 5.4.1)"
 first_version = "18.2.0"
 last_version = "18.2.0"

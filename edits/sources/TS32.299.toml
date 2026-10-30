@@ -211,3 +211,9 @@ last_version = "18.0.0"
 [[quirk]]
 name = "vendor-avp-tables"
 reason = "clauses 7.3-7.5 tabulate 3GPP2, ETSI and oneM2M AVPs (tables 7.3.1, 7.4.1, 7.5.1) with a Reference cell citing clause 2: 'the specification including the detailed definition and description, is referred to'"
+
+[[quirk]]
+name = "command-columns"
+reason = "tables 7.1.0.1, 7.2.0.1 and 7.3.1-7.5.1 print a 'Used in' column per command (ACR, ACA, CCR, CCA); clause 7.1.0: 'Those Diameter AVPs that are used are marked \"M\", \"OM\" or \"Oc\" in the following table ... Those Diameter AVPs that are not used are marked \"-\"', tables 7.2.0.1 and 7.3.1-7.5.1 marking use with 'X'"
+first_version = "18.0.0"
+last_version = "18.0.0"

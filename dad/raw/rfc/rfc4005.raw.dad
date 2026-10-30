@@ -438,120 +438,120 @@
 ; Type: AVP Table
 ; Section: 4.1
 ; Page: 21
-; Columns: Name         Code  Section Type        Must  May   S.not M.not Encrypt
-NAS-Port                5     4.2   Unsigned32    M     P     -     V     Yes
-NAS-Port-Id             87    4.3   UTF8String    M     P     -     V     Yes
-NAS-Port-Type           61    4.4   Enumerated    M     P     -     V     Yes
-Called-Station-Id       30    4.5   UTF8String    M     P     -     V     Yes
-Calling-Station-Id      31    4.6   UTF8String    M     P     -     V     Yes
-Connect-Info            77    4.7   UTF8String    M     P     -     V     Yes
-Originating-Line-Info   94    4.8   OctetString   -     M,P   -     V     Yes
-Reply-Message           18    4.9   UTF8String    M     P     -     V     Yes
+; Columns: Name         Code   Section   Type          Must   May   S.not   M.not   Encrypt
+NAS-Port                5      4.2       Unsigned32    M      P     -       V       Yes
+NAS-Port-Id             87     4.3       UTF8String    M      P     -       V       Yes
+NAS-Port-Type           61     4.4       Enumerated    M      P     -       V       Yes
+Called-Station-Id       30     4.5       UTF8String    M      P     -       V       Yes
+Calling-Station-Id      31     4.6       UTF8String    M      P     -       V       Yes
+Connect-Info            77     4.7       UTF8String    M      P     -       V       Yes
+Originating-Line-Info   94     4.8       OctetString   -      M,P   -       V       Yes
+Reply-Message           18     4.9       UTF8String    M      P     -       V       Yes
 
 
 ; Type: AVP Table
 ; Section: 5
 ; Page: 26
-; Columns: Name           Code  Section Type         Must  May   S.not M.not Encrypt
-User-Password             2     5.1    OctetString   M     P     -     V     Yes
-Password-Retry            75    5.2    Unsigned32    M     P     -     V     Yes
-Prompt                    76    5.3    Enumerated    M     P     -     V     Yes
-CHAP-Auth                 402   5.4    Grouped       M     P     -     V     Yes
-CHAP-Algorithm            403   5.5    Enumerated    M     P     -     V     Yes
-CHAP-Ident                404   5.6    OctetString   M     P     -     V     Yes
-CHAP-Response             405   5.7    OctetString   M     P     -     V     Yes
-CHAP-Challenge            60    5.8    OctetString   M     P     -     V     Yes
-ARAP-Password             70    5.9    OctetString   M     P     -     V     Yes
-ARAP-Challenge-Response   84    5.10   OctetString   M     P     -     V     Yes
-ARAP-Security             73    5.11   Unsigned32    M     P     -     V     Yes
-ARAP-Security-Data        74    5.12   OctetString   M     P     -     V     Yes
+; Columns: Name           Code   Section   Type          Must   May   S.not   M.not   Encrypt
+User-Password             2      5.1       OctetString   M      P     -       V       Yes
+Password-Retry            75     5.2       Unsigned32    M      P     -       V       Yes
+Prompt                    76     5.3       Enumerated    M      P     -       V       Yes
+CHAP-Auth                 402    5.4       Grouped       M      P     -       V       Yes
+CHAP-Algorithm            403    5.5       Enumerated    M      P     -       V       Yes
+CHAP-Ident                404    5.6       OctetString   M      P     -       V       Yes
+CHAP-Response             405    5.7       OctetString   M      P     -       V       Yes
+CHAP-Challenge            60     5.8       OctetString   M      P     -       V       Yes
+ARAP-Password             70     5.9       OctetString   M      P     -       V       Yes
+ARAP-Challenge-Response   84     5.10      OctetString   M      P     -       V       Yes
+ARAP-Security             73     5.11      Unsigned32    M      P     -       V       Yes
+ARAP-Security-Data        74     5.12      OctetString   M      P     -       V       Yes
 
 
 ; Type: AVP Table
 ; Section: 6
 ; Page: 29
-; Columns: Name            Code  Section  Type            Must  May   S.not M.not Encrypt
-Service-Type               6     6.1      Enumerated      M     P     -     V     Yes
-Callback-Number            19    6.2      UTF8String      M     P     -     V     Yes
-Callback-Id                20    6.3      UTF8String      M     P     -     V     Yes
-Idle-Timeout               28    6.4      Unsigned32      M     P     -     V     Yes
-Port-Limit                 62    6.5      Unsigned32      M     P     -     V     Yes
-NAS-Filter-Rule            400   6.6      IPFilterRule    M     P     -     V     Yes
-Filter-Id                  11    6.7      UTF8String      M     P     -     V     Yes
-Configuration-Token        78    6.8      OctetString     M     -     -     V,P   -
-QoS-Filter-Rule            407   6.9      QoSFilterRule   -     -     -     -     -
-Framed-Protocol            7     6.10.1   Enumerated      M     P     -     V     Yes
-Framed-Routing             10    6.10.2   Enumerated      M     P     -     V     Yes
-Framed-MTU                 12    6.10.3   Unsigned32      M     P     -     V     Yes
-Framed-Compression         13    6.10.4   Enumerated      M     P     -     V     Yes
-Framed-IP-Address          8     6.11.1   OctetString     M     P     -     V     Yes
-Framed-IP-Netmask          9     6.11.2   OctetString     M     P     -     V     Yes
-Framed-Route               22    6.11.3   UTF8String      M     P     -     V     Yes
-Framed-Pool                88    6.11.4   OctetString     M     P     -     V     Yes
-Framed-Interface-Id        96    6.11.5   Unsigned64      M     P     -     V     Yes
-Framed-IPv6-Prefix         97    6.11.6   OctetString     M     P     -     V     Yes
-Framed-IPv6-Route          99    6.11.7   UTF8String      M     P     -     V     Yes
-Framed-IPv6-Pool           100   6.11.8   OctetString     M     P     -     V     Yes
-Framed-IPX-Network         23    6.12.1   UTF8String      M     P     -     V     Yes
-Framed-Appletalk-Link      37    6.13.1   Unsigned32      M     P     -     V     Yes
-Framed-Appletalk-Network   38    6.13.2   Unsigned32      M     P     -     V     Yes
-Framed-Appletalk-Zone      39    6.13.3   OctetString     M     P     -     V     Yes
-ARAP-Features              71    6.14.1   OctetString     M     P     -     V     Yes
-ARAP-Zone-Access           72    6.14.2   Enumerated      M     P     -     V     Yes
-Login-IP-Host              14    6.15.1   OctetString     M     P     -     V     Yes
-Login-IPv6-Host            98    6.15.2   OctetString     M     P     -     V     Yes
-Login-Service              15    6.15.3   Enumerated      M     P     -     V     Yes
-Login-TCP-Port             16    6.16.1   Unsigned32      M     P     -     V     Yes
-Login-LAT-Service          34    6.17.1   OctetString     M     P     -     V     Yes
-Login-LAT-Node             35    6.17.2   OctetString     M     P     -     V     Yes
-Login-LAT-Group            36    6.17.3   OctetString     M     P     -     V     Yes
-Login-LAT-Port             63    6.17.4   OctetString     M     P     -     V     Yes
+; Columns: Name            Code   Section   Type            Must   May   S.not   M.not   Encrypt
+Service-Type               6      6.1       Enumerated      M      P     -       V       Yes
+Callback-Number            19     6.2       UTF8String      M      P     -       V       Yes
+Callback-Id                20     6.3       UTF8String      M      P     -       V       Yes
+Idle-Timeout               28     6.4       Unsigned32      M      P     -       V       Yes
+Port-Limit                 62     6.5       Unsigned32      M      P     -       V       Yes
+NAS-Filter-Rule            400    6.6       IPFilterRule    M      P     -       V       Yes
+Filter-Id                  11     6.7       UTF8String      M      P     -       V       Yes
+Configuration-Token        78     6.8       OctetString     M      -     -       V,P     -
+QoS-Filter-Rule            407    6.9       QoSFilterRule   -      -     -       -       -
+Framed-Protocol            7      6.10.1    Enumerated      M      P     -       V       Yes
+Framed-Routing             10     6.10.2    Enumerated      M      P     -       V       Yes
+Framed-MTU                 12     6.10.3    Unsigned32      M      P     -       V       Yes
+Framed-Compression         13     6.10.4    Enumerated      M      P     -       V       Yes
+Framed-IP-Address          8      6.11.1    OctetString     M      P     -       V       Yes
+Framed-IP-Netmask          9      6.11.2    OctetString     M      P     -       V       Yes
+Framed-Route               22     6.11.3    UTF8String      M      P     -       V       Yes
+Framed-Pool                88     6.11.4    OctetString     M      P     -       V       Yes
+Framed-Interface-Id        96     6.11.5    Unsigned64      M      P     -       V       Yes
+Framed-IPv6-Prefix         97     6.11.6    OctetString     M      P     -       V       Yes
+Framed-IPv6-Route          99     6.11.7    UTF8String      M      P     -       V       Yes
+Framed-IPv6-Pool           100    6.11.8    OctetString     M      P     -       V       Yes
+Framed-IPX-Network         23     6.12.1    UTF8String      M      P     -       V       Yes
+Framed-Appletalk-Link      37     6.13.1    Unsigned32      M      P     -       V       Yes
+Framed-Appletalk-Network   38     6.13.2    Unsigned32      M      P     -       V       Yes
+Framed-Appletalk-Zone      39     6.13.3    OctetString     M      P     -       V       Yes
+ARAP-Features              71     6.14.1    OctetString     M      P     -       V       Yes
+ARAP-Zone-Access           72     6.14.2    Enumerated      M      P     -       V       Yes
+Login-IP-Host              14     6.15.1    OctetString     M      P     -       V       Yes
+Login-IPv6-Host            98     6.15.2    OctetString     M      P     -       V       Yes
+Login-Service              15     6.15.3    Enumerated      M      P     -       V       Yes
+Login-TCP-Port             16     6.16.1    Unsigned32      M      P     -       V       Yes
+Login-LAT-Service          34     6.17.1    OctetString     M      P     -       V       Yes
+Login-LAT-Node             35     6.17.2    OctetString     M      P     -       V       Yes
+Login-LAT-Group            36     6.17.3    OctetString     M      P     -       V       Yes
+Login-LAT-Port             63     6.17.4    OctetString     M      P     -       V       Yes
 
 
 ; Type: AVP Table
 ; Section: 7
 ; Page: 44
-; Columns: Name           Code  Section Type         Must  May   S.not M.not Encrypt
-Tunneling                 401   7.1    Grouped       M     P     -     V     No
-Tunnel-Type               64    7.2    Enumerated    M     P     -     V     Yes
-Tunnel-Medium-Type        65    7.3    Enumerated    M     P     -     V     Yes
-Tunnel-Client-Endpoint    66    7.4    UTF8String    M     P     -     V     Yes
-Tunnel-Server-Endpoint    67    7.5    UTF8String    M     P     -     V     Yes
-Tunnel-Password           69    7.6    OctetString   M     P     -     V     Yes
-Tunnel-Private-Group-Id   81    7.7    OctetString   M     P     -     V     Yes
-Tunnel-Assignment-Id      82    7.8    OctetString   M     P     -     V     Yes
-Tunnel-Preference         83    7.9    Unsigned32    M     P     -     V     Yes
-Tunnel-Client-Auth-Id     90    7.10   UTF8String    M     P     -     V     Yes
-Tunnel-Server-Auth-Id     91    7.11   UTF8String    M     P     -     V     Yes
+; Columns: Name           Code   Section   Type          Must   May   S.not   M.not   Encrypt
+Tunneling                 401    7.1       Grouped       M      P     -       V       No
+Tunnel-Type               64     7.2       Enumerated    M      P     -       V       Yes
+Tunnel-Medium-Type        65     7.3       Enumerated    M      P     -       V       Yes
+Tunnel-Client-Endpoint    66     7.4       UTF8String    M      P     -       V       Yes
+Tunnel-Server-Endpoint    67     7.5       UTF8String    M      P     -       V       Yes
+Tunnel-Password           69     7.6       OctetString   M      P     -       V       Yes
+Tunnel-Private-Group-Id   81     7.7       OctetString   M      P     -       V       Yes
+Tunnel-Assignment-Id      82     7.8       OctetString   M      P     -       V       Yes
+Tunnel-Preference         83     7.9       Unsigned32    M      P     -       V       Yes
+Tunnel-Client-Auth-Id     90     7.10      UTF8String    M      P     -       V       Yes
+Tunnel-Server-Auth-Id     91     7.11      UTF8String    M      P     -       V       Yes
 
 
 ; Type: AVP Table
 ; Section: 8
 ; Page: 50
-; Columns: Name             Code  Section Type         Must  May   S.not M.not Encrypt
-Accounting-Input-Octets     363   8.1    Unsigned64    M     P     -     V     Yes
-Accounting-Output-Octets    364   8.2    Unsigned64    M     P     -     V     Yes
-Accounting-Input-Packets    365   8.3    Unsigned64    M     P     -     V     Yes
-Accounting-Output-Packets   366   8.4    Unsigned64    M     P     -     V     Yes
-Acct-Session-Time           46    8.5    Unsigned32    M     P     -     V     Yes
-Acct-Authentic              45    8.6    Enumerated    M     P     -     V     Yes
-Accounting-Auth-Method      406   8.7    Enumerated    M     P     -     V     Yes
-Acct-Delay-Time             41    8.8    Unsigned32    M     P     -     V     Yes
-Acct-Link-Count             51    8.9    Unsigned32    M     P     -     V     Yes
-Acct-Tunnel-Connection      68    8.10   OctetString   M     P     -     V     Yes
-Acct-Tunnel-Packets-Lost    86    8.11   Unsigned32    M     P     -     V     Yes
+; Columns: Name             Code   Section   Type          Must   May   S.not   M.not   Encrypt
+Accounting-Input-Octets     363    8.1       Unsigned64    M      P     -       V       Yes
+Accounting-Output-Octets    364    8.2       Unsigned64    M      P     -       V       Yes
+Accounting-Input-Packets    365    8.3       Unsigned64    M      P     -       V       Yes
+Accounting-Output-Packets   366    8.4       Unsigned64    M      P     -       V       Yes
+Acct-Session-Time           46     8.5       Unsigned32    M      P     -       V       Yes
+Acct-Authentic              45     8.6       Enumerated    M      P     -       V       Yes
+Accounting-Auth-Method      406    8.7       Enumerated    M      P     -       V       Yes
+Acct-Delay-Time             41     8.8       Unsigned32    M      P     -       V       Yes
+Acct-Link-Count             51     8.9       Unsigned32    M      P     -       V       Yes
+Acct-Tunnel-Connection      68     8.10      OctetString   M      P     -       V       Yes
+Acct-Tunnel-Packets-Lost    86     8.11      Unsigned32    M      P     -       V       Yes
 
 
 ; Type: AVP Table
 ; Section: 9.3
 ; Page: 63
-; Columns: Name       Code  Section Type          Must  May   S.not M.not Encrypt
-NAS-Identifier        32    9.3.1   UTF8String    M     P     -     V     Yes
-NAS-IP-Address        4     9.3.2   OctetString   M     P     -     V     Yes
-NAS-IPv6-Address      95    9.3.3   OctetString   M     P     -     V     Yes
-State                 24    9.3.4   OctetString   M     P     -     V     Yes
-Termination-Cause     295   9.3.5   Enumerated    M     P     -     V     Yes
-Origin-AAA-Protocol   408   9.3.6   Enumerated    M     P     -     V     Yes
+; Columns: Name       Code   Section   Type          Must   May   S.not   M.not   Encrypt
+NAS-Identifier        32     9.3.1     UTF8String    M      P     -       V       Yes
+NAS-IP-Address        4      9.3.2     OctetString   M      P     -       V       Yes
+NAS-IPv6-Address      95     9.3.3     OctetString   M      P     -       V       Yes
+State                 24     9.3.4     OctetString   M      P     -       V       Yes
+Termination-Cause     295    9.3.5     Enumerated    M      P     -       V       Yes
+Origin-AAA-Protocol   408    9.3.6     Enumerated    M      P     -       V       Yes
 
 
 ; Type: Enumerated AVP

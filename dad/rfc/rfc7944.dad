@@ -7,8 +7,8 @@
 ; Type: AVP Table
 ; Section: 9.2
 ; Page: 13
-; Columns: Name Code Section Type Must M.not
-DRMP   301   9.1   Enumerated   -     V
+; Columns: Name   Code   Section   Type         Must   M.not
+DRMP              301    9.1       Enumerated   -      V
 
 
 ; Type: Enumerated AVP

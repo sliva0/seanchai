@@ -118,60 +118,60 @@
 ; Section: 6.4.1
 ; Table: 6.4.1-1
 ; Page: 19
-; Columns: Name                     Code   Section  Type          Must  May   S.not M.not
-BMSC-Address                        3500   6.4.2    Address       M,V   P     -     -
-BMSC-Port                           3501   6.4.3    Unsigned32    M,V   P     -     -
-Common-Tunnel-Endpoint-Identifier   3524   6.4.26   OctetString   V     P     -     M
-FEC-Request                         3525   6.4.27   OctetString   V     P     -     M
-FEC-Result                          3531   6.4.33   Unsigned32    V     P     -     M
-Local-M1-Information                3518   6.4.20   Grouped       V     P     -     M
-Local-MB2-U-Information             3519   6.4.21   Grouped       V     P     -     M
-MB2U-Security                       3517   6.4.19   Unsigned32    M,V   P     -     -
-MBMS-Bearer-Event                   3502   6.4.4    Unsigned32    M,V   P     -     -
-MBMS-Bearer-Event-Diagnostic-Info   3533   6.4.35   Enumerated    V     P     -     M ;; corrected: (TS29.468.py#mbms-bearer-event-diagnostic-info-type)
-MBMS-Bearer-Event-Notification      3503   6.4.5    Grouped       M,V   P     -     -
-MBMS-Bearer-Request                 3504   6.4.6    Grouped       M,V   P     -     -
-MBMS-Bearer-Response                3505   6.4.7    Grouped       M,V   P     -     -
-MBMS-Bearer-Result                  3506   6.4.8    Unsigned32    M,V   P     -     -
-MBMS-eNB-IP-Multicast-Address       3520   6.4.22   Address       V     P     -     M
-MBMS-eNB-IPv6-Multicast-Address     3521   6.4.23   Address       V     P     -     M
-MBMS-GW-SSM-IP-Address              3522   6.4.24   Address       V     P     -     M
-MBMS-GW-SSM-IPv6-Address            3523   6.4.25   Address       V     P     -     M
-MBMS-Start-Time                     3507   6.4.9    Time          M,V   P     -     -
-Radio-Frequency                     3508   6.4.10   Unsigned32    M,V   P     -     -
-ROHC-Full-Header-Periodicity        3527   6.4.29   Float32       V     P     -     M
-ROHC-Max-CID                        3532   6.4.34   Unsigned32    V     P     -     M
-ROHC-Profile                        3528   6.4.30   Unsigned32    V     P     -     M
-ROHC-Request                        3526   6.4.28   Grouped       V     P     -     M
-ROHC-Result                         3530   6.4.32   Unsigned32    V     P     -     M
-TMGI-Allocation-Request             3509   6.4.11   Grouped       M,V   P     -     -
-TMGI-Allocation-Response            3510   6.4.12   Grouped       M,V   P     -     -
-TMGI-Allocation-Result              3511   6.4.13   Unsigned32    M,V   P     -     -
-TMGI-Deallocation-Request           3512   6.4.14   Grouped       M,V   P     -     -
-TMGI-Deallocation-Response          3513   6.4.15   Grouped       M,V   P     -     -
-TMGI-Deallocation-Result            3514   6.4.16   Unsigned32    M,V   P     -     -
-TMGI-Expiry                         3515   6.4.17   Grouped       M,V   P     -     -
-TMGI-Number                         3516   6.4.18   Unsigned32    M,V   P     -     -
-Userplane-Protocol-Result           3529   6.4.31   Grouped       V     P     -     M
+; Columns: Name                     Code   Section   Type          Must   May   S.not   M.not   Applicability
+BMSC-Address                        3500   6.4.2     Address       M,V    P     -       -       ""
+BMSC-Port                           3501   6.4.3     Unsigned32    M,V    P     -       -       ""
+Common-Tunnel-Endpoint-Identifier   3524   6.4.26    OctetString   V      P     -       M       "V2X Localized User Plane"
+FEC-Request                         3525   6.4.27    OctetString   V      P     -       M       FEC
+FEC-Result                          3531   6.4.33    Unsigned32    V      P     -       M       FEC
+Local-M1-Information                3518   6.4.20    Grouped       V      P     -       M       "V2X Localized User Plane"
+Local-MB2-U-Information             3519   6.4.21    Grouped       V      P     -       M       "V2X Localized User Plane"
+MB2U-Security                       3517   6.4.19    Unsigned32    M,V    P     -       -       ""
+MBMS-Bearer-Event                   3502   6.4.4     Unsigned32    M,V    P     -       -       ""
+MBMS-Bearer-Event-Diagnostic-Info   3533   6.4.35    Enumerated    V      P     -       M       "" ;; corrected: (TS29.468.py#mbms-bearer-event-diagnostic-info-type)
+MBMS-Bearer-Event-Notification      3503   6.4.5     Grouped       M,V    P     -       -       ""
+MBMS-Bearer-Request                 3504   6.4.6     Grouped       M,V    P     -       -       ""
+MBMS-Bearer-Response                3505   6.4.7     Grouped       M,V    P     -       -       ""
+MBMS-Bearer-Result                  3506   6.4.8     Unsigned32    M,V    P     -       -       ""
+MBMS-eNB-IP-Multicast-Address       3520   6.4.22    Address       V      P     -       M       "V2X Localized User Plane"
+MBMS-eNB-IPv6-Multicast-Address     3521   6.4.23    Address       V      P     -       M       "V2X Localized User Plane"
+MBMS-GW-SSM-IP-Address              3522   6.4.24    Address       V      P     -       M       "V2X Localized User Plane"
+MBMS-GW-SSM-IPv6-Address            3523   6.4.25    Address       V      P     -       M       "V2X Localized User Plane"
+MBMS-Start-Time                     3507   6.4.9     Time          M,V    P     -       -       ""
+Radio-Frequency                     3508   6.4.10    Unsigned32    M,V    P     -       -       ""
+ROHC-Full-Header-Periodicity        3527   6.4.29    Float32       V      P     -       M       ROHC
+ROHC-Max-CID                        3532   6.4.34    Unsigned32    V      P     -       M       ROHC
+ROHC-Profile                        3528   6.4.30    Unsigned32    V      P     -       M       ROHC
+ROHC-Request                        3526   6.4.28    Grouped       V      P     -       M       ROHC
+ROHC-Result                         3530   6.4.32    Unsigned32    V      P     -       M       ROHC
+TMGI-Allocation-Request             3509   6.4.11    Grouped       M,V    P     -       -       ""
+TMGI-Allocation-Response            3510   6.4.12    Grouped       M,V    P     -       -       ""
+TMGI-Allocation-Result              3511   6.4.13    Unsigned32    M,V    P     -       -       ""
+TMGI-Deallocation-Request           3512   6.4.14    Grouped       M,V    P     -       -       ""
+TMGI-Deallocation-Response          3513   6.4.15    Grouped       M,V    P     -       -       ""
+TMGI-Deallocation-Result            3514   6.4.16    Unsigned32    M,V    P     -       -       ""
+TMGI-Expiry                         3515   6.4.17    Grouped       M,V    P     -       -       ""
+TMGI-Number                         3516   6.4.18    Unsigned32    M,V    P     -       -       ""
+Userplane-Protocol-Result           3529   6.4.31    Grouped       V      P     -       M       ROHC,FEC
 
 
 ; Type: Reused AVPs
 ; Section: 6.5.1
 ; Table: 6.5.1-1
 ; Page: 28
-; Columns: Name             From
-DRMP                        RFC7944
-Flow-Description            TS29.214
-Load                        RFC8583
-MBMS-Flow-Identifier        TS29.061
-MBMS-Session-Duration       TS29.061
-TMGI                        TS29.061
-MBMS-Service-Area           TS29.061
-MBMS-StartStop-Indication   TS29.061
-QoS-Information             TS29.212
-Supported-Features          TS29.229
-Restart-Counter             TS29.061
-MBMS-Cell-List              TS29.061
+; Columns: Name             From       Applicability
+DRMP                        RFC7944    ""
+Flow-Description            TS29.214   FEC,ROHC
+Load                        RFC8583    ""
+MBMS-Flow-Identifier        TS29.061   ""
+MBMS-Session-Duration       TS29.061   ""
+TMGI                        TS29.061   ""
+MBMS-Service-Area           TS29.061   ""
+MBMS-StartStop-Indication   TS29.061   ""
+QoS-Information             TS29.212   ""
+Supported-Features          TS29.229   ""
+Restart-Counter             TS29.061   Heartbeat
+MBMS-Cell-List              TS29.061   "MBMS Cell List"
 
 
 ; Type: Grouped AVP

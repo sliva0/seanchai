@@ -37,3 +37,15 @@ name = "prose-application-ids"
 reason = "the command headers print no application id; clause 6.1.3 states it: 'The Diameter application identifier assigned to the Tsp interface application is 16777309.'"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "applicability-column"
+reason = "tables 6.4.1.1 and 6.5.1.1 print an 'Applicability' column of supported features ('Device-Trigger-Recall-Replace', 'MSISDN-less MO-SMS Delivery'): note 2 of 6.4.1.1, 'AVPs marked with a supported feature ... are applicable as described in clause 6.4.12'"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "worded-marks"
+reason = "the 'MSISDN-less MO-SMS Delivery' feature is named in words (clause 5.9), so a space is no separator"
+first_version = "18.0.0"
+last_version = "18.0.0"

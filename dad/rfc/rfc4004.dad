@@ -134,42 +134,42 @@
 ; Type: AVP Table
 ; Section: 7
 ; Page: 28
-; Columns: Name                 Code  Section Type               Must  May   S.not M.not Encrypt
-MIP-Reg-Request                 320   7.1     OctetString        M     P     -     V     Yes
-MIP-Reg-Reply                   321   7.2     OctetString        M     P     -     V     Yes
-MIP-MN-AAA-Auth                 322   7.6     Grouped            M     P     -     V     Yes
-MIP-Mobile-Node-Address         333   7.3     Address            M     P     -     V     Yes
-MIP-Home-Agent-Address          334   7.4     Address            M     P     -     V     Yes
-MIP-Candidate-Home-Agent-Host   336   7.9     DiameterIdentity   M     P     -     V     No
-MIP-Feature-Vector              337   7.5     Unsigned32         M     P     -     V     Yes
-MIP-Auth-Input-Data-Length      338   7.6.2   Unsigned32         M     P     -     V     Yes
-MIP-Authenticator-Length        339   7.6.3   Unsigned32         M     P     -     V     Yes
-MIP-Authenticator-Offset        340   7.6.4   Unsigned32         M     P     -     V     Yes
-MIP-MN-AAA-SPI                  341   7.6.1   Unsigned32         M     P     -     V     Yes
-MIP-Filter-Rule                 342   7.8     IPFilterRule       M     P     -     V     Yes
-MIP-FA-Challenge                344   7.7     OctetString        M     P     -     V     Yes
-MIP-Originating-Foreign-AAA     347   7.10    Grouped            M     P     -     V     Yes
-MIP-Home-Agent-Host             348   7.11    Grouped            M     P     -     V     No ;; corrected: (RFC4004.py#mip-home-agent-host-type)
+; Columns: Name                 Code   Section   Type               Must   May   S.not   M.not   Encrypt
+MIP-Reg-Request                 320    7.1       OctetString        M      P     -       V       Yes
+MIP-Reg-Reply                   321    7.2       OctetString        M      P     -       V       Yes
+MIP-MN-AAA-Auth                 322    7.6       Grouped            M      P     -       V       Yes
+MIP-Mobile-Node-Address         333    7.3       Address            M      P     -       V       Yes
+MIP-Home-Agent-Address          334    7.4       Address            M      P     -       V       Yes
+MIP-Candidate-Home-Agent-Host   336    7.9       DiameterIdentity   M      P     -       V       No
+MIP-Feature-Vector              337    7.5       Unsigned32         M      P     -       V       Yes
+MIP-Auth-Input-Data-Length      338    7.6.2     Unsigned32         M      P     -       V       Yes
+MIP-Authenticator-Length        339    7.6.3     Unsigned32         M      P     -       V       Yes
+MIP-Authenticator-Offset        340    7.6.4     Unsigned32         M      P     -       V       Yes
+MIP-MN-AAA-SPI                  341    7.6.1     Unsigned32         M      P     -       V       Yes
+MIP-Filter-Rule                 342    7.8       IPFilterRule       M      P     -       V       Yes
+MIP-FA-Challenge                344    7.7       OctetString        M      P     -       V       Yes
+MIP-Originating-Foreign-AAA     347    7.10      Grouped            M      P     -       V       Yes
+MIP-Home-Agent-Host             348    7.11      Grouped            M      P     -       V       No ;; corrected: (RFC4004.py#mip-home-agent-host-type)
 
 
 ; Type: AVP Table
 ; Section: 9
 ; Page: 38
-; Columns: Name      Code  Section Type         Must  May   S.not M.not Encrypt
-MIP-FA-to-HA-SPI     318   9.11   Unsigned32    M     P     -     V     Yes
-MIP-FA-to-MN-SPI     319   9.10   Unsigned32    M     P     -     V     Yes
-MIP-HA-to-FA-SPI     323   9.14   Unsigned32    M     P     -     V     Yes
-MIP-MN-to-FA-MSA     325   9.5    Grouped       M     P     -     V     Yes
-MIP-FA-to-MN-MSA     326   9.1    Grouped       M     P     -     V     Yes
-MIP-FA-to-HA-MSA     328   9.2    Grouped       M     P     -     V     Yes
-MIP-HA-to-FA-MSA     329   9.3    Grouped       M     P     -     V     Yes
-MIP-MN-to-HA-MSA     331   9.6    Grouped       M     P     -     V     Yes
-MIP-HA-to-MN-MSA     332   9.4    Grouped       M     P     -     V     Yes
-MIP-Nonce            335   9.12   OctetString   M     P     -     V     Yes
-MIP-Session-Key      343   9.7    OctetString   M     P     -     V     Yes
-MIP-Algorithm-Type   345   9.8    Enumerated    M     P     -     V     Yes
-MIP-Replay-Mode      346   9.9    Enumerated    M     P     -     V     Yes
-MIP-MSA-Lifetime     367   9.13   Unsigned32    M     P     -     V     Yes
+; Columns: Name      Code   Section   Type          Must   May   S.not   M.not   Encrypt
+MIP-FA-to-HA-SPI     318    9.11      Unsigned32    M      P     -       V       Yes
+MIP-FA-to-MN-SPI     319    9.10      Unsigned32    M      P     -       V       Yes
+MIP-HA-to-FA-SPI     323    9.14      Unsigned32    M      P     -       V       Yes
+MIP-MN-to-FA-MSA     325    9.5       Grouped       M      P     -       V       Yes
+MIP-FA-to-MN-MSA     326    9.1       Grouped       M      P     -       V       Yes
+MIP-FA-to-HA-MSA     328    9.2       Grouped       M      P     -       V       Yes
+MIP-HA-to-FA-MSA     329    9.3       Grouped       M      P     -       V       Yes
+MIP-MN-to-HA-MSA     331    9.6       Grouped       M      P     -       V       Yes
+MIP-HA-to-MN-MSA     332    9.4       Grouped       M      P     -       V       Yes
+MIP-Nonce            335    9.12      OctetString   M      P     -       V       Yes
+MIP-Session-Key      343    9.7       OctetString   M      P     -       V       Yes
+MIP-Algorithm-Type   345    9.8       Enumerated    M      P     -       V       Yes
+MIP-Replay-Mode      346    9.9       Enumerated    M      P     -       V       Yes
+MIP-MSA-Lifetime     367    9.13      Unsigned32    M      P     -       V       Yes
 
 
 ; Type: Grouped AVP

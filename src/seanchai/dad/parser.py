@@ -394,9 +394,21 @@ def _parse_enumerated(
         )
 
 
+# A table cell: a run of non-space characters, of which a quoted string,
+# a mark that is not a plain token, may hold spaces (`"All (NOTE 5)"`).
+_QUOTED = r'"(?:[^"\\]|\\["\\])*"'
+_CELL_RE = re.compile(rf'(?:{_QUOTED}|[^\s"])+')
+_ROW_RE = re.compile(rf"\s*{_CELL_RE.pattern}(?:\s+{_CELL_RE.pattern})*\s*")
+# A mark cell's list: plain or quoted marks, separated by commas.
+_MARK_RE = re.compile(rf'{_QUOTED}|[^\s,;"\\]+')
+_MARKS_RE = re.compile(rf"(?:{_MARK_RE.pattern})(?:,(?:{_MARK_RE.pattern}))*")
+
+
 def _cells(body: list[tuple[int, str]], count: int):
     for lineno, line in body:
-        cells = line.split()
+        if not _ROW_RE.fullmatch(line):
+            raise DadParseError(lineno, f"malformed table row: {line.strip()!r}")
+        cells = _CELL_RE.findall(line)
         if len(cells) != count:
             raise DadParseError(lineno, f"expected {count} columns, got {len(cells)}")
         yield lineno, cells
@@ -445,10 +457,35 @@ def _encrypt(cell: str, lineno: int) -> bool | None:
     return cell == "Yes"
 
 
+def _marks(
+    marks: dict[ast.MarkColumn, tuple[str, ...]],
+    column: ast.AvpColumn | ast.ReusedColumn,
+    cell: str,
+    lineno: int,
+) -> None:
+    """A `MarkColumn` cell into `marks`: comma-separated marks, plain or
+    quoted; `-` for a printed dash, no marks; `""` for a blank cell, no
+    entry. The marks themselves are checked by the row's validation."""
+    marked = ast.mark_column(column)
+    assert marked is not None, f"{column.value} is no mark column"
+    if cell == formatter.BLANK_CELL:
+        return
+    if cell == "-":
+        marks[marked] = ()
+        return
+    if not _MARKS_RE.fullmatch(cell):
+        raise DadParseError(lineno, f"malformed {column.value} cell {cell!r}")
+    marks[marked] = tuple(
+        _ESCAPE_RE.sub(r"\1", mark[1:-1]) if mark.startswith('"') else mark
+        for mark in _MARK_RE.findall(cell)
+    )
+
+
 def _avp_table_row(
     columns: tuple[ast.AvpColumn, ...], cells: list[str], lineno: int
 ) -> ast.AvpTableRow:
     name: str | None = None
+    marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
     code: int | None = None
     section: str | None = None
     data_type: ast.DataType | None = None
@@ -474,6 +511,8 @@ def _avp_table_row(
                 should_not = _flags(text, lineno)
             case ast.AvpColumn.MUST_NOT:
                 must_not = _flags(text, lineno)
+            case _:
+                _marks(marks, column, text, lineno)
     if name is None:  # `AvpTable` requires a Name column, so this is unreachable
         raise DadParseError(lineno, "table row has no Name cell")
     with _validated(lineno):
@@ -486,6 +525,7 @@ def _avp_table_row(
                 must=must, may=may, should_not=should_not, must_not=must_not
             ),
             may_encrypt=may_encrypt,
+            marks=marks,
         )
 
 
@@ -519,6 +559,9 @@ def _reused_row(
     name: str | None = None
     origin: str | None = None
     m_bit: ast.MBitOverride | None = None
+    code: int | None = None
+    data_type: ast.DataType | None = None
+    marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
     for column, text in zip(columns, cells, strict=True):
         match column:
             case ast.ReusedColumn.NAME:
@@ -533,10 +576,23 @@ def _reused_row(
                         raise DadParseError(
                             lineno, f"malformed M-bit cell {text!r}"
                         ) from None
+            case ast.ReusedColumn.CODE:
+                code = None if text == "-" else _number(text, lineno, "Code cell")
+            case ast.ReusedColumn.TYPE:
+                data_type = None if text == "-" else _data_type(text, lineno)
+            case _:
+                _marks(marks, column, text, lineno)
     if name is None or origin is None:  # both columns are required by the model
         raise DadParseError(lineno, "re-used row is missing a Name or From cell")
     with _validated(lineno):
-        return ast.ReusedAvpRow(name=name, origin=origin, m_bit=m_bit)
+        return ast.ReusedAvpRow(
+            name=name,
+            origin=origin,
+            m_bit=m_bit,
+            code=code,
+            data_type=data_type,
+            marks=marks,
+        )
 
 
 def _parse_reused(

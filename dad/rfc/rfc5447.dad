@@ -7,10 +7,10 @@
 ; Type: AVP Table
 ; Section: 4.2.1
 ; Page: 6
-; Columns: Name         Code  Section Type
-MIP6-Agent-Info         486   4.2.1   Grouped
-MIP6-Home-Link-Prefix   125   4.2.4   OctetString
-MIP6-Feature-Vector     124   4.2.5   Unsigned64
+; Columns: Name         Code   Section   Type
+MIP6-Agent-Info         486    4.2.1     Grouped
+MIP6-Home-Link-Prefix   125    4.2.4     OctetString
+MIP6-Feature-Vector     124    4.2.5     Unsigned64
 
 
 ; Type: Grouped AVP

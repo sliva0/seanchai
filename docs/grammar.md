@@ -203,8 +203,12 @@ avp-table     = "; Type: AVP Table" NL
 columns       = column *(1*SP column)
 column        = "Name" / "Code" / "Section" / "Type"
               / "Must" / "May" / "S.not" / "M.not" / "Encrypt"
+              / mark-column
+mark-column   = "Acc-Type" / "Applicability" / "Reference-Points"
+              / "ACR" / "ACA" / "CCR" / "CCA"
 table-row     = cell *(1*SP cell)
-cell          = 1*(%x21-10FFFF)
+cell          = 1*(quoted / %x21 / %x23-10FFFF)   ; spaces only inside quotes
+quoted        = DQUOTE *(name-char / SP) DQUOTE
 ```
 
 `; Columns:` states the columns the source table had, in source order; a row
@@ -219,6 +223,11 @@ type-cell     = data-type / "-"
 flags-cell    = avp-flag *("," [SP] avp-flag) / "-"
 avp-flag      = "M" / "V" / "P"   ; P is RFC 3588's deprecated protected bit
 encrypt-cell  = "Yes" / "No" / "-"
+mark-cell     = mark *("," mark) / "-" / blank
+mark          = plain-mark / quoted-name
+plain-mark    = 1*(%x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-10FFFF)
+                ; no SP, ",", ";", DQUOTE or "\", and not "-" alone
+blank         = DQUOTE DQUOTE
 data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
               / "Unsigned64" / "Float32" / "Float64" / "Grouped"
               / "Address" / "Time" / "UTF8String" / "DiameterIdentity"
@@ -228,6 +237,24 @@ data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
 
 `data-type` is closed: RFC 6733 §4.2 and §4.3.1 plus RFC 3588's
 `QoSFilterRule` used by RFC 4005.
+
+A mark column holds what the document marks about where its row applies,
+each mark in the document's spelling: the IP-CAN access types under
+`Acc-Type` (`3GPP-EPS,Non-3GPP-EPS`, TS 29.212 and 29.215), functions and
+supported features under `Applicability` (`Both,Rel8`), reference points
+under `Reference-Points` (`Gi,Sgi`, TS 29.061), and TS 32.299's use mark per
+command under `ACR`, `ACA`, `CCR` and `CCA` (`M`, `OM`, `OC`, `X`). The
+vocabulary is the document's, so the grammar does not close it. A mark keeps
+what the document prints beside it, a note reference mostly, and a mark
+that is not a plain token is quoted with the rules of a quoted enum value
+name ([Enumerated AVP](#enumerated-avp)): `"All (NOTE 5)"`, `"V2X Localized
+User Plane"`. A quoted plain token parses as the same mark, and the
+formatter writes it bare.
+
+A mark cell tells three things apart. `-` is a dash the source printed,
+which TS 32.299 clause 7.1.0 gives a meaning: "Those Diameter AVPs that are
+not used are marked '-'". `""`, an empty quoted string no mark can be, is a
+cell the source left blank. Anything else is the cell's marks.
 
 ### Re-used AVPs
 
@@ -239,13 +266,15 @@ reused-avps   = "; Type: Reused AVPs" NL
                 "; Columns: " *SP reused-columns NL
                 1*(table-row NL)
 reused-columns = reused-column *(1*SP reused-column)
-reused-column = "Name" / "From" / "M-bit"
+reused-column = "Name" / "From" / "M-bit" / "Code" / "Type" / mark-column
 m-bit         = "MUST" / "MUST-NOT" / "-"
-; a From cell holds a spec-ref
+; a From cell holds a spec-ref; Code, Type and mark cells read as in an
+; AVP table
 ```
 
 Name and From are required; M-bit is not (TS 29.128, 29.173, 29.336 print no
-such column).
+such column). Code and Type are the citing table's own statement of what
+the origin defines (TS 29.172 table 7.4.1-2, TS 32.299 tables 7.3.1-7.5.1).
 
 ## Text values
 
@@ -264,7 +293,8 @@ Checked by the AST after parsing:
 - `RESERVED first-last` requires `last >= first`; `min*max` requires
   `max >= min` when bounded.
 - A flag appears in at most one of Must, May, S.not, M.not.
-- Exactly one cell per declared column; no value for an undeclared column;
+- Exactly one cell per declared column; no value for an undeclared column
+  (a mark column's blank cell is no value);
   a Name column (Name and From for re-used tables) is mandatory; no duplicate
   column; tables are non-empty.
 - `; Name:` equals the name in the block's header rule.

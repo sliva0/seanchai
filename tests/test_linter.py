@@ -631,6 +631,48 @@ def test_two_documents_disagreeing_on_a_code_is_an_error():
     assert "701 here and 700" in finding.message
 
 
+def test_a_re_used_tables_code_and_type_cells_are_compared_with_the_origin():
+    """TS 29.172 table 7.4.1-2 prints the code and type of what it re-uses;
+    the origin's definition states both."""
+    origin = _origin_spec("3GPP TS 29.272", "18.6.0", _grouped_with("Borrowed", 700))
+    spec = _spec(
+        ast.ReusedAvps(
+            table="7.4.1-2",
+            columns=(
+                ast.ReusedColumn.NAME,
+                ast.ReusedColumn.CODE,
+                ast.ReusedColumn.FROM,
+                ast.ReusedColumn.TYPE,
+            ),
+            source=ast.SourceRef(section="7.4.1"),
+            rows=(
+                ast.ReusedAvpRow(
+                    name="Borrowed",
+                    origin="TS29.272",
+                    code=701,
+                    data_type=ast.DataType.UNSIGNED32,
+                ),
+            ),
+        ),
+        version="18.0.0",
+    )
+
+    found = {
+        f.rule: f
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule in ("reused-code-conflict", "reused-row-mismatch")
+    }
+
+    assert found["reused-code-conflict"].severity is linter.Severity.ERROR
+    assert "code 701 in re-used table 7.4.1-2 and 700" in (
+        found["reused-code-conflict"].message
+    )
+    assert "typed Unsigned32 in re-used table 7.4.1-2" in (
+        found["reused-row-mismatch"].message
+    )
+    assert found["reused-row-mismatch"].message.endswith("reads Grouped")
+
+
 def test_an_avp_the_origin_never_heard_of():
     """TS 29.283 cites Feature-Id from TS 29.229, which has no such AVP."""
     origin = _origin_spec("3GPP TS 29.229", "18.1.0", _grouped_with("Something", 700))

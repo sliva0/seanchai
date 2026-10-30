@@ -4,17 +4,6 @@ Open work, grouped by area and ordered by value within each. Items are
 lettered so they can be referred to; a finished item is removed and its
 letter is not reused. What exists is described in the per-module documents.
 
-## Format
-
-- **D. Model the machine-readable source columns when a consumer asks.**
-  29.212's and 29.215's "Acc. Type" and "Applicability", 29.214's and
-  29.468's "Applicability" (29.215 and 29.468 in their re-used tables too),
-  29.061's "Applicable Reference Points", 29.172's re-used-table Code/Type,
-  32.299's per-command "Used in" marks (ACR, ACA, CCR, CCA).
-  Three axes under four labels; modelling means deciding what each means.
-  The extractor warns about them today, which is the right amount of
-  machinery until then.
-
 ## Linter and corpus
 
 - **S. Read the two RFC value lists left unread.** RFC 4005's

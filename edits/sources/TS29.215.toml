@@ -40,3 +40,15 @@ name = "prose-application-ids"
 reason = "the command headers print no application id; clauses 5.1 (S9), A.7.1 (S9a) and A.8.1 (S9a*) state them: 'the Application-ID for the S9 Application in the present release is 16777267'"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "access-type-column"
+reason = "tables 5.3.0.1, A.7.3.1.1, A.7.4.1.1, A.8.3.1.1 and A.8.4.1.1 print an 'Acc. type' column naming the IP-CAN access types each AVP applies to, separated by spaces ('Non-3GPP-EPS 3GPP-EPS'), as TS 29.212's does"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[quirk]]
+name = "applicability-column"
+reason = "the AVP and re-used tables print an 'Applicability' column marking the function and supported features, separated by spaces ('PC EPC-routed'): table 5.3.0.1 note 3 ('AVPs marked with \"CC\" are applicable to charging control, AVPs marked with \"PC\" are applicable to policy control ...'), table A.7.4.1.1 note 1"
+first_version = "18.0.0"
+last_version = "18.0.0"

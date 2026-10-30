@@ -87,7 +87,13 @@ The declared vocabulary, with the document that forced each:
 - Docx: `prose-application-ids` (29.154, 29.212, 29.214, 29.215, 29.217,
   29.219, 29.343, 29.368, 29.468: the clause stating the application id the
   command headers omit); `access-type-headings` (29.212, 29.214: `Event-Trigger
-  AVP (All access types)`); `note-defined-in-rfc` (29.229, 29.329: AVP-table
+  AVP (All access types)`); the mark columns, each declaration naming the
+  column's legend: `access-type-column` (29.212, 29.215),
+  `applicability-column` (29.061, 29.154, 29.212, 29.214, 29.215, 29.217,
+  29.219, 29.368, 29.468), `reference-points-column` (29.061) and
+  `command-columns` (32.299), and `worded-marks` (29.061, 29.368, 29.468:
+  marks of several words, separated by commas only);
+  `note-defined-in-rfc` (29.229, 29.329: AVP-table
   notes naming a defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
   `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1: commands
   and re-used rows, no local AVPs); and five from TS 29.273:
@@ -99,7 +105,7 @@ The declared vocabulary, with the document that forced each:
   `independent-avp-tables` (no one-to-one table pairing; also 29.215,
   whose clause 5.4.0 states S9's re-use in prose),
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
-  kept, no enum code derived from them). TS 32.299 declares twelve:
+  kept, no enum code derived from them). TS 32.299 declares thirteen:
   `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
   message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
   also 29.229's four grouped rules), `struck-rules-unused`,
@@ -108,7 +114,8 @@ The declared vocabulary, with the document that forced each:
   `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
   `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`,
   `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
-  and 29.272) and `vendor-avp-tables` (tables 7.3.1, 7.4.1, 7.5.1).
+  and 29.272), `vendor-avp-tables` (tables 7.3.1, 7.4.1, 7.5.1) and
+  `command-columns`.
   Enumerated value lines that depart from `NAME (n)` each need their own:
   `worded-enum-values` (29.368 6.4.6's `Device Trigger Request (1)`; also
   29.109, 29.172, 29.214), `dashed-enum-values` (a list dash printed as
@@ -205,16 +212,35 @@ Walks paragraphs and tables in document order under numbered headings:
   row untyped and adds a re-used row citing clause 2's reference n; an entry
   a From cell cannot name (`[223]`, OMA-DDS-Charging_Data) warns and adds
   none.
-- The "re-used Diameter AVPs" table → `ReusedAvps` with M-bit overrides.
+- The "re-used Diameter AVPs" table → `ReusedAvps` with M-bit overrides,
+  and the code and type where the table prints them (TS 29.172 table
+  7.4.1-2).
+- Behind each mark column's quirk, its cells → the row's marks, in AVP and
+  re-used tables alike. A cell is split at commas and spaces; behind
+  `worded-marks` at commas only, since TS 29.468 names a feature "V2X
+  Localized User Plane", as do TS 29.368 ("MSISDN-less MO-SMS Delivery")
+  and TS 29.061's table 20.5a.1 ("MBMS Cell List"). A parenthetical stays
+  with the mark it follows, as printed (`All (NOTE 5)`, `All (see NOTE 3
+  and NOTE 6)`, `Non-3GPP-EPS (NOTE 11)`): TS 29.212's note 5 says the AVP
+  "does not apply to 3GPP-GPRS access type", which a bare `All` would lose.
+  A mark that is not words fails, for a patch: TS 29.212 line-wraps
+  `NetLoc- Untrusted-WLAN` and `3GPP- EPS` and once separates with a full
+  stop, `3GPP-GPRS. 3GPP-EPS`. A printed dash is no marks and a blank cell
+  is none at all, kept apart because TS 32.299 says what the dash means
+  (clause 7.1.0: "Those Diameter AVPs that are not used are marked '-'")
+  and leaves four cells blank: table 7.1.0.1's `Tariff-Time-Change` under
+  ACA and `Termination-Cause` under ACR, table 7.2.0.1's two
+  `Related-IMS-Charging-Identifier` rows under CCA.
 - Behind `vendor-avp-tables`, a table of other vendors' AVPs → `ReusedAvps`
   of its own, pairing with no AVP table: TS 32.299 tables 7.3.1 (3GPP2),
   7.4.1 (ETSI) and 7.5.1 (oneM2M) list AVP Name, AVP Code, "Used in" and a
   Reference cell holding a clause-2 number, and clauses 7.3–7.5 say "the
   specification including the detailed definition and description, is
   referred to". The Reference becomes the From cell (`[215]` is TS 29.212,
-  `[300]` ETSI TS 283 034); the AVP Code and "Used in" columns are dropped
-  with a warning, and the vendor-id each clause states in prose (5535,
-  13019, 45687) is not read, a re-used row's identity being its origin's.
+  `[300]` ETSI TS 283 034); the AVP Code becomes the row's code and the
+  "Used in" columns its command marks, and the vendor-id each clause states
+  in prose (5535, 13019, 45687) is not read, a re-used row's identity being
+  its origin's.
   A reference no From cell can name (`[301]`, oneM2M TS-0004) warns and adds
   no row, so table 7.5.1 contributes no block.
 - An AVP table whose labelled header is followed only by blank cells
@@ -264,13 +290,9 @@ Conventions worth knowing:
   lower row carries the labels is read from that row, also when only the
   upper row prints the name label (32.299 table 7.2.0.1). "Comments",
   "Description" and "Comment" columns are dropped silently as prose; any
-  other unmodelled column produces a warning. The standing machine-readable
-  candidates are 29.212's and 29.215's "Acc. Type" and "Applicability"
-  (29.215 in its re-used tables too), 29.214's and 29.468's "Applicability"
-  (29.468 prints it in both tables), 29.061's
-  "Applicable Reference Points", the Code/Type columns 29.172 prints in its
-  re-used table, and 32.299's per-command "Used in" columns (ACR, ACA, CCR,
-  CCA) — see the roadmap.
+  other unmodelled column, or a mark column whose quirk the document does
+  not declare, produces a warning. Standing: TS 29.212's label-less last
+  columns in tables 5b.4.0.1 and 5c.3.1.1.
 - A flags cell holding a lone `-` is empty (TS 32.299). A clause cell that
   is no clause number fails naming its row (29.368's `6. 4.2`, patched).
 - The cover title is read from the cover table or a plain paragraph (29.061,
@@ -328,7 +350,8 @@ hyphenated on (29.214, patched); an underscore in a published name
 separator (29.229); the RFC 3588 `P` flag still printed (29.061, 29.212,
 29.214, 29.273); annex clause numbers (`E.6.3.6`); parenthesized note
 references on name cells (`(NOTE 3)`, two stacked); a label-less empty
-fourth column in a re-used table (29.212, dropped with a warning); one AVP
+fourth column in a re-used table (29.212's 5b.4.0.1, dropped with a
+warning); one AVP
 printed with two bodies (29.336 §6.4.2 and §8.4.36, the second deleted by
 correction); "Void" as an enum value label (29.214, deleted by correction);
 a clause heading printed as a body paragraph (32.299 §7.2.135C,

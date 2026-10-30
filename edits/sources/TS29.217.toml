@@ -16,3 +16,9 @@ name = "prose-application-ids"
 reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Np Application in the present release is 16777342'"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "applicability-column"
+reason = "the AVP and re-used tables print an 'Applicability' column of supported features ('ReportRestriction'): table 5.3.1.1 note 3, 'AVPs marked with a supported feature ... are applicable as described in clause 5.4.2'"
+first_version = "18.0.0"
+last_version = "18.0.0"

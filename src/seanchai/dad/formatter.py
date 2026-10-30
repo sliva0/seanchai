@@ -10,11 +10,12 @@ depends on stable diffs. Canonical rules:
 - enum bodies: a value name quoted exactly when it is not an identifier,
   with `"` and backslash escaped inside the quotes, `=` aligned per section
   (RESERVED counts as a name);
-- tables: columns split by 3 spaces, widths from data cells only (minimum 3);
-  labels sit at column starts, overflowing into gaps when wider than the
-  column. Both table kinds write their labels as a `; Columns:` directive, so
-  the first label follows the directive and every later one lines up with its
-  data.
+- tables: columns split by 3 spaces, each as wide as its widest cell or
+  label (minimum 3), so labels sit at column starts. Both table kinds write
+  their labels as a `; Columns:` directive, so the first label follows the
+  directive, its column wide enough for both, and every later one lines up
+  with its data. A mark column's cell quotes a mark that is not a plain
+  token, as enum bodies quote names, and writes `""` for a blank cell.
 """
 
 import re
@@ -165,9 +166,15 @@ def _table(
     appended *after* the column widths are computed, so annotating a row
     cannot reflow the table; standing notes print as whole lines above
     their row — where a deleted row used to be."""
+    # A label counts toward its column's width, so every label sits at its
+    # column's start; the first follows the directive, which it overruns.
     widths = [
-        max(_MIN_COLUMN_WIDTH, max(len(row[i]) for row in rows))
-        for i in range(len(headers))
+        max(
+            _MIN_COLUMN_WIDTH,
+            len(header) + (len(prefix) + 1 if i == 0 else 0),
+            max(len(row[i]) for row in rows),
+        )
+        for i, header in enumerate(headers)
     ]
     starts = [0]
     for width in widths[:-1]:
@@ -321,6 +328,34 @@ def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
             return (
                 "-" if row.may_encrypt is None else "Yes" if row.may_encrypt else "No"
             )
+        case _:
+            return marks_cell(row.marks, column)
+
+
+# A mark a cell writes bare: no space, comma, semicolon, quote or backslash.
+_PLAIN_MARK_RE = re.compile(r'[^\s,;"\\]+')
+
+# The cell of a mark column the source left blank: an empty quoted mark,
+# which no mark can be.
+BLANK_CELL = '""'
+
+
+def marks_cell(marks: ast.Marks, column: ast.AvpColumn | ast.ReusedColumn) -> str:
+    """A `MarkColumn` cell: the row's marks joined by commas, each quoted
+    exactly when it is not a plain token; `-` for a printed dash and `""`
+    for a blank cell."""
+    marked = ast.mark_column(column)
+    assert marked is not None, f"{column.value} is no mark column"
+    if marked not in marks:
+        return BLANK_CELL
+    return ",".join(map(_mark, marks[marked])) or "-"
+
+
+def _mark(mark: str) -> str:
+    if _PLAIN_MARK_RE.fullmatch(mark) and mark != "-":
+        return mark
+    escaped = mark.replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
 
 
 def _format_avp_table(
@@ -345,6 +380,12 @@ def _reused_cell(row: ast.ReusedAvpRow, column: ast.ReusedColumn) -> str:
             return row.origin
         case ast.ReusedColumn.M_BIT:
             return row.m_bit.value if row.m_bit else "-"
+        case ast.ReusedColumn.CODE:
+            return "-" if row.code is None else str(row.code)
+        case ast.ReusedColumn.TYPE:
+            return "-" if row.data_type is None else row.data_type.value
+        case _:
+            return marks_cell(row.marks, column)
 
 
 def _format_reused(

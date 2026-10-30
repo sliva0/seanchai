@@ -8,7 +8,10 @@ Table cells are highlighted token-by-token (data types, `MUST`/`MUST-NOT`,
 spec-refs, flag cells, numbers, `-` empty cells) rather than column-aware:
 which vocabulary a cell uses depends on the `; Columns:` declaration, which
 regex-based highlighters cannot track. In practice the vocabularies barely
-collide.
+collide: the mark columns (`Acc-Type`, `Applicability`, ...) hold the
+documents' own open vocabularies and stay plain, except TS 32.299's `M` use
+mark, which reads as a flag cell, and quoted marks (`"All (NOTE 5)"`, the
+blank cell `""`), which read as strings.
 
 The grammar is not stable yet (see the warning in docs/grammar.md); these
 definitions follow it and get updated with it, which is why they live in-repo.

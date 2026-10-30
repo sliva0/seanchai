@@ -24,3 +24,9 @@ name = "prose-application-ids"
 reason = "the command headers print no application id; clause 5.1.5 states it: 'The Diameter application identifier assigned to the Sy interface application is 16777302.'"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[quirk]]
+name = "applicability-column"
+reason = "table 5.3.0.1 prints an 'Applicability' column of supported features ('ASR'): note 2, 'AVPs marked with a supported feature are applicable as described in clause 5.1.6'"
+first_version = "18.0.0"
+last_version = "18.0.0"

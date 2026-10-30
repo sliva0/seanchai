@@ -117,9 +117,9 @@
 ; Type: AVP Table
 ; Section: 4.1.1
 ; Page: 18
-; Columns: Name              Code  Section Type
-EAP-Payload                  462   4.1.1   OctetString
-EAP-Reissued-Payload         463   4.1.2   OctetString
-EAP-Master-Session-Key       464   4.1.3   OctetString
-EAP-Key-Name                 102   4.1.4   OctetString
-Accounting-EAP-Auth-Method   465   4.1.5   Unsigned64
+; Columns: Name              Code   Section   Type
+EAP-Payload                  462    4.1.1     OctetString
+EAP-Reissued-Payload         463    4.1.2     OctetString
+EAP-Master-Session-Key       464    4.1.3     OctetString
+EAP-Key-Name                 102    4.1.4     OctetString
+Accounting-EAP-Auth-Method   465    4.1.5     Unsigned64

@@ -300,6 +300,8 @@ CORRECTIONS = [
             code=None,
             data_type=ast.DataType.GROUPED,
             flag_rules=ast.AvpFlagRules(),
+            # "-" under all four commands, which clause 7.1.0 reads as unused.
+            marks={ast.MarkColumn(each): () for each in ("ACR", "ACA", "CCR", "CCA")},
         ),
         reason="table 7.1.0.1 tabulates the '* [ AVP ]' wildcard with code '*';"
         " it is ABNF grammar, not an AVP",

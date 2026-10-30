@@ -9,29 +9,29 @@
 ; Section: 6.3
 ; Table: 6.1
 ; Page: 39
-; Columns: Name             Code  Section    Type          Must  May   S.not M.not Encrypt
-GBA-UserSecSettings         400   6.3.1.1    OctetString   M,V   -     -     -     No
-Transaction-Identifier      401   6.3.1.2    OctetString   M,V   -     -     -     No
-NAF-Id                      402   6.3.1.3    OctetString   M,V   -     -     -     No
-GAA-Service-Identifier      403   6.3.1.4    OctetString   M,V   -     -     -     No
-Key-ExpiryTime              404   6.3.1.5    Time          M,V   -     -     -     No
-ME-Key-Material             405   6.3.1.6    OctetString   M,V   -     -     -     No
-UICC-Key-Material           406   6.3.1.7    OctetString   M,V   -     -     -     No
-GBA_U-Awareness-Indicator   407   6.3.1.8    Enumerated    M,V   -     -     -     No
-BootstrapInfoCreationTime   408   6.3.1.9    Time          M,V   -     -     -     No
-GUSS-Timestamp              409   6.3.1.10   Time          V     -     -     M     No
-GBA-Type                    410   6.3.1.11   Enumerated    M,V   -     -     -     No
-UE-Id                       411   6.3.1.12   OctetString   M,V   -     -     -     No
-UE-Id-Type                  412   6.3.1.13   Enumerated    M,V   -     -     -     No
-UICC-App-Label              413   6.3.1.14   OctetString   M,V   -     -     -     No
-UICC-ME                     414   6.3.1.15   Enumerated    M,V   -     -     -     No
-Requested-Key-Lifetime      415   6.3.1.16   Time          M,V   -     -     -     No
-Private-Identity-Request    416   6.3.1.17   Enumerated    M,V   -     -     -     No
-GBA-Push-Info               417   6.3.1.18   OctetString   M,V   -     -     -     No
-NAF-SA-Identifier           418   6.3.1.19   OctetString   M,V   -     -     -     No
-Security-Feature-Request    419   6.3.1.20   OctetString   M,V   -     -     -     No
-Security-Feature-Response   420   6.3.1.21   OctetString   M,V   -     -     -     No
-SHA-256-Indication          421   6.3.1.22   Enumerated    M,V   -     -     -     No
+; Columns: Name             Code   Section    Type          Must   May   S.not   M.not   Encrypt
+GBA-UserSecSettings         400    6.3.1.1    OctetString   M,V    -     -       -       No
+Transaction-Identifier      401    6.3.1.2    OctetString   M,V    -     -       -       No
+NAF-Id                      402    6.3.1.3    OctetString   M,V    -     -       -       No
+GAA-Service-Identifier      403    6.3.1.4    OctetString   M,V    -     -       -       No
+Key-ExpiryTime              404    6.3.1.5    Time          M,V    -     -       -       No
+ME-Key-Material             405    6.3.1.6    OctetString   M,V    -     -       -       No
+UICC-Key-Material           406    6.3.1.7    OctetString   M,V    -     -       -       No
+GBA_U-Awareness-Indicator   407    6.3.1.8    Enumerated    M,V    -     -       -       No
+BootstrapInfoCreationTime   408    6.3.1.9    Time          M,V    -     -       -       No
+GUSS-Timestamp              409    6.3.1.10   Time          V      -     -       M       No
+GBA-Type                    410    6.3.1.11   Enumerated    M,V    -     -       -       No
+UE-Id                       411    6.3.1.12   OctetString   M,V    -     -       -       No
+UE-Id-Type                  412    6.3.1.13   Enumerated    M,V    -     -       -       No
+UICC-App-Label              413    6.3.1.14   OctetString   M,V    -     -       -       No
+UICC-ME                     414    6.3.1.15   Enumerated    M,V    -     -       -       No
+Requested-Key-Lifetime      415    6.3.1.16   Time          M,V    -     -       -       No
+Private-Identity-Request    416    6.3.1.17   Enumerated    M,V    -     -       -       No
+GBA-Push-Info               417    6.3.1.18   OctetString   M,V    -     -       -       No
+NAF-SA-Identifier           418    6.3.1.19   OctetString   M,V    -     -       -       No
+Security-Feature-Request    419    6.3.1.20   OctetString   M,V    -     -       -       No
+Security-Feature-Response   420    6.3.1.21   OctetString   M,V    -     -       -       No
+SHA-256-Indication          421    6.3.1.22   Enumerated    M,V    -     -       -       No
 
 
 ; Type: Enumerated AVP

@@ -223,14 +223,14 @@
 ; Section: 6.3.1
 ; Table: 6.3.1-1
 ; Page: 23
-; Columns: Name                      Code   Section Type         Must  May   S.not M.not Encrypt
-ProSe-Subscription-Data              3701   6.3.2   Grouped      M,V   -     -     -     No
-ProSe-Permission                     3702   6.3.3   Unsigned32   M,V   -     -     -     No
-ProSe-Allowed-PLMN                   3703   6.3.4   Grouped      M,V   -     -     -     No
-ProSe-Direct-Allowed                 3704   6.3.5   Unsigned32   M,V   -     -     -     No
-UPR-Flags                            3705   6.3.6   Unsigned32   M,V   -     -     -     No
-PNR-Flags                            3706   6.3.7   Unsigned32   M,V   -     -     -     No
-ProSe-Initial-Location-Information   3707   6.3.9   Grouped      M,V   -     -     -     No
+; Columns: Name                      Code   Section   Type         Must   May   S.not   M.not   Encrypt
+ProSe-Subscription-Data              3701   6.3.2     Grouped      M,V    -     -       -       No
+ProSe-Permission                     3702   6.3.3     Unsigned32   M,V    -     -       -       No
+ProSe-Allowed-PLMN                   3703   6.3.4     Grouped      M,V    -     -       -       No
+ProSe-Direct-Allowed                 3704   6.3.5     Unsigned32   M,V    -     -       -       No
+UPR-Flags                            3705   6.3.6     Unsigned32   M,V    -     -       -       No
+PNR-Flags                            3706   6.3.7     Unsigned32   M,V    -     -       -       No
+ProSe-Initial-Location-Information   3707   6.3.9     Grouped      M,V    -     -       -       No
 
 
 ; Type: Reused AVPs

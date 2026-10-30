@@ -7,11 +7,11 @@
 ; Type: AVP Table
 ; Section: 6
 ; Page: 30
-; Columns: Name                  Type          Must  May   S.not M.not Encrypt Code Section
-Operator-Name                    OctetString   -     P     -     M,V   Yes   126   4.1
-Location-Information             OctetString   -     P     -     M,V   Yes   127   4.2
-Location-Data                    OctetString   -     P     -     M,V   Yes   128   4.3
-Basic-Location-Policy-Rules      OctetString   -     P     -     M,V   Yes   129   4.4
-Extended-Location-Policy-Rules   OctetString   -     P     -     M,V   Yes   130   4.5
-Requested-Location-Info          OctetString   -     P     -     M,V   Yes   132   4.7
-Location-Capable                 OctetString   -     P     -     M,V   Yes   131   4.6
+; Columns: Name                  Type          Must   May   S.not   M.not   Encrypt   Code   Section
+Operator-Name                    OctetString   -      P     -       M,V     Yes       126    4.1
+Location-Information             OctetString   -      P     -       M,V     Yes       127    4.2
+Location-Data                    OctetString   -      P     -       M,V     Yes       128    4.3
+Basic-Location-Policy-Rules      OctetString   -      P     -       M,V     Yes       129    4.4
+Extended-Location-Policy-Rules   OctetString   -      P     -       M,V     Yes       130    4.5
+Requested-Location-Info          OctetString   -      P     -       M,V     Yes       132    4.7
+Location-Capable                 OctetString   -      P     -       M,V     Yes       131    4.6

@@ -230,43 +230,43 @@
 ; Section: 6.3
 ; Table: 6.3.1
 ; Page: 17
-; Columns: Name              Code  Section  Type          Must  May   S.not M.not Encrypt
-User-Identity                700   6.3.1    Grouped       M,V   -     -     -     No
-MSISDN                       701   6.3.2    OctetString   M,V   -     -     -     No
-User-Data                    702   6.3.3    OctetString   M,V   -     -     -     No
-Data-Reference               703   6.3.4    Enumerated    M,V   -     -     -     No
-Service-Indication           704   6.3.5    OctetString   M,V   -     -     -     No
-Subs-Req-Type                705   6.3.6    Enumerated    M,V   -     -     -     No
-Requested-Domain             706   6.3.7    Enumerated    M,V   -     -     -     No
-Current-Location             707   6.3.8    Enumerated    M,V   -     -     -     No
-Identity-Set                 708   6.3.10   Enumerated    V     -     -     M     No
-Expiry-Time                  709   6.3.16   Time          V     -     -     M     No
-Send-Data-Indication         710   6.3.17   Enumerated    V     -     -     M     No
-Server-Name                  602   6.3.9    UTF8String    M,V   -     -     -     No
-Supported-Features           628   6.3.11   Grouped       V     M     -     -     No
-Feature-List-ID              629   6.3.12   Unsigned32    V     -     -     M     No
-Feature-List                 630   6.3.13   Unsigned32    V     -     -     M     No
-Supported-Applications       631   6.3.14   Grouped       V     -     -     M     No
-Public-Identity              601   6.3.15   UTF8String    M,V   -     -     -     No
-DSAI-Tag                     711   6.3.18   OctetString   M,V   -     -     -     No
-Wildcarded-Public-Identity   634   6.3.19   UTF8String    V     -     -     M     No
-Wildcarded-IMPU              636   6.3.20   UTF8String    V     -     -     M     No
-Session-Priority             650   6.3.21   Enumerated    V     -     -     M     No
-One-Time-Notification        712   6.3.22   Enumerated    V     -     -     M     No
-Requested-Nodes              713   6.3.7A   Unsigned32    V     -     -     M     No
-Serving-Node-Indication      714   6.3.23   Enumerated    V     -     -     M     No
-Repository-Data-ID           715   6.3.24   Grouped       V     -     -     M     No
-Sequence-Number              716   6.3.25   Unsigned32    V     -     -     M     No
-Pre-paging-Supported         717   6.3.26   Enumerated    V     -     -     M     No
-Local-Time-Zone-Indication   718   6.3.27   Enumerated    V     -     -     M     No
-UDR-Flags                    719   6.3.28   Unsigned32    V     -     -     M     No
-Call-Reference-Info          720   6.3.29   Grouped       V     -     -     M     No
-Call-Reference-Number        721   6.3.30   OctetString   V     -     -     M     No
-AS-Number                    722   6.3.31   OctetString   V     -     -     M     No
-OC-Supported-Features        621   6.3.32   Grouped       -     -     -     M,V   No
-OC-OLR                       623   6.3.33   Grouped       -     -     -     M,V   No
-DRMP                         301   6.3.34   Enumerated    -     -     -     M,V   No
-Load                         -     6.3.35   Grouped       -     -     -     M,V   No
+; Columns: Name              Code   Section   Type          Must   May   S.not   M.not   Encrypt
+User-Identity                700    6.3.1     Grouped       M,V    -     -       -       No
+MSISDN                       701    6.3.2     OctetString   M,V    -     -       -       No
+User-Data                    702    6.3.3     OctetString   M,V    -     -       -       No
+Data-Reference               703    6.3.4     Enumerated    M,V    -     -       -       No
+Service-Indication           704    6.3.5     OctetString   M,V    -     -       -       No
+Subs-Req-Type                705    6.3.6     Enumerated    M,V    -     -       -       No
+Requested-Domain             706    6.3.7     Enumerated    M,V    -     -       -       No
+Current-Location             707    6.3.8     Enumerated    M,V    -     -       -       No
+Identity-Set                 708    6.3.10    Enumerated    V      -     -       M       No
+Expiry-Time                  709    6.3.16    Time          V      -     -       M       No
+Send-Data-Indication         710    6.3.17    Enumerated    V      -     -       M       No
+Server-Name                  602    6.3.9     UTF8String    M,V    -     -       -       No
+Supported-Features           628    6.3.11    Grouped       V      M     -       -       No
+Feature-List-ID              629    6.3.12    Unsigned32    V      -     -       M       No
+Feature-List                 630    6.3.13    Unsigned32    V      -     -       M       No
+Supported-Applications       631    6.3.14    Grouped       V      -     -       M       No
+Public-Identity              601    6.3.15    UTF8String    M,V    -     -       -       No
+DSAI-Tag                     711    6.3.18    OctetString   M,V    -     -       -       No
+Wildcarded-Public-Identity   634    6.3.19    UTF8String    V      -     -       M       No
+Wildcarded-IMPU              636    6.3.20    UTF8String    V      -     -       M       No
+Session-Priority             650    6.3.21    Enumerated    V      -     -       M       No
+One-Time-Notification        712    6.3.22    Enumerated    V      -     -       M       No
+Requested-Nodes              713    6.3.7A    Unsigned32    V      -     -       M       No
+Serving-Node-Indication      714    6.3.23    Enumerated    V      -     -       M       No
+Repository-Data-ID           715    6.3.24    Grouped       V      -     -       M       No
+Sequence-Number              716    6.3.25    Unsigned32    V      -     -       M       No
+Pre-paging-Supported         717    6.3.26    Enumerated    V      -     -       M       No
+Local-Time-Zone-Indication   718    6.3.27    Enumerated    V      -     -       M       No
+UDR-Flags                    719    6.3.28    Unsigned32    V      -     -       M       No
+Call-Reference-Info          720    6.3.29    Grouped       V      -     -       M       No
+Call-Reference-Number        721    6.3.30    OctetString   V      -     -       M       No
+AS-Number                    722    6.3.31    OctetString   V      -     -       M       No
+OC-Supported-Features        621    6.3.32    Grouped       -      -     -       M,V     No
+OC-OLR                       623    6.3.33    Grouped       -      -     -       M,V     No
+DRMP                         301    6.3.34    Enumerated    -      -     -       M,V     No
+Load                         -      6.3.35    Grouped       -      -     -       M,V     No
 
 
 ; Type: Reused AVPs

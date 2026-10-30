@@ -1021,163 +1021,163 @@
 ; Section: 5.2.3.1
 ; Table: 5.2.3.1/1
 ; Page: 71
-; Columns: Name                Code   Section     Type          Must  May   S.not M.not
-MIP6-Feature-Vector            124    5.2.3.3     Unsigned64    M     -     -     V,P
-QoS-Capability                 578    5.2.3.4     Grouped       M     -     -     V,P
-Service-Selection              493    5.2.3.5     UTF8String    M     -     -     V,P
-RAT-Type                       1032   5.2.3.6     Enumerated    V     -     -     M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-5-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-5-2-3-1-1)
-ANID                           1504   5.2.3.7     UTF8String    M,V   -     -     P
-AN-Trusted                     1503   5.2.3.9     Enumerated    M,V   -     -     P
-MIP-FA-RK                      1506   5.2.3.12    OctetString   M,V   -     -     P
-MIP-FA-RK-SPI                  1507   5.2.3.13    Unsigned32    M,V   -     -     P
-Full-Network-Name              1516   5.2.3.14    OctetString   V     -     -     M,P
-Short-Network-Name             1517   5.2.3.15    OctetString   V     -     -     M,P
-WLAN-Identifier                1509   5.2.3.18    Grouped       V     -     -     M,P
-Mobile-Node-Identifier         506    5.2.3.2     UTF8String    M     -     -     V,P
-AAA-Failure-Indication         1518   8.2.3.21    Unsigned32    V     -     -     M,P
-Transport-Access-Type          1519   5.2.3.19    Enumerated    V     -     -     M,P
-APN-Configuration              1430   8.2.3.7     Grouped       M,V   -     -     P
-Visited-Network-Identifier     600    9.2.3.1.2   OctetString   M,V   -     -     P
-DER-Flags                      1520   5.2.3.20    Unsigned32    V     -     -     M,P
-DEA-Flags                      1521   5.2.3.21    Unsigned32    V     -     -     M,P
-SSID                           1524   5.2.3.22    UTF8String    V     -     -     M,P
-HESSID                         1525   5.2.3.23    UTF8String    V     -     -     M,P
-Access-Network-Info            1526   5.2.3.24    Grouped       V     -     -     M,P
-TWAN-Connection-Mode           1527   5.2.3.25    Unsigned32    V     -     -     M,P
-TWAN-Connectivity-Parameters   1528   5.2.3.26    Grouped       V     -     -     M,P
-Connectivity-Flags             1529   5.2.3.27    Unsigned32    V     -     -     M,P
-TWAN-PCO                       1530   5.2.3.28    OctetString   V     -     -     M,P
-TWAG-CP-Address                1531   5.2.3.29    Address       V     -     -     M,P
-TWAG-UP-Address                1532   5.2.3.30    UTF8String    V     -     -     M,P
-TWAN-S2a-Failure-Cause         1533   5.2.3.31    Unsigned32    V     -     -     M,P
-SM-Back-Off-Timer              1534   5.2.3.32    Unsigned32    V     -     -     M,P
-WLCP-Key                       1535   5.2.3.33    OctetString   V     -     -     M,P
-Emergency-Services             1538   7.2.3.4     Unsigned32    V     -     -     M,P
-IMEI-Check-In-VPLMN-Result     1540   5.2.3.35    Unsigned32    V     -     -     M,P
-High-Priority-Access-Info      1542   5.2.3.36    Unsigned32    V     -     -     M,P
+; Columns: Name                Code   Section     Type          Must   May   S.not   M.not
+MIP6-Feature-Vector            124    5.2.3.3     Unsigned64    M      -     -       V,P
+QoS-Capability                 578    5.2.3.4     Grouped       M      -     -       V,P
+Service-Selection              493    5.2.3.5     UTF8String    M      -     -       V,P
+RAT-Type                       1032   5.2.3.6     Enumerated    V      -     -       M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-5-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-5-2-3-1-1)
+ANID                           1504   5.2.3.7     UTF8String    M,V    -     -       P
+AN-Trusted                     1503   5.2.3.9     Enumerated    M,V    -     -       P
+MIP-FA-RK                      1506   5.2.3.12    OctetString   M,V    -     -       P
+MIP-FA-RK-SPI                  1507   5.2.3.13    Unsigned32    M,V    -     -       P
+Full-Network-Name              1516   5.2.3.14    OctetString   V      -     -       M,P
+Short-Network-Name             1517   5.2.3.15    OctetString   V      -     -       M,P
+WLAN-Identifier                1509   5.2.3.18    Grouped       V      -     -       M,P
+Mobile-Node-Identifier         506    5.2.3.2     UTF8String    M      -     -       V,P
+AAA-Failure-Indication         1518   8.2.3.21    Unsigned32    V      -     -       M,P
+Transport-Access-Type          1519   5.2.3.19    Enumerated    V      -     -       M,P
+APN-Configuration              1430   8.2.3.7     Grouped       M,V    -     -       P
+Visited-Network-Identifier     600    9.2.3.1.2   OctetString   M,V    -     -       P
+DER-Flags                      1520   5.2.3.20    Unsigned32    V      -     -       M,P
+DEA-Flags                      1521   5.2.3.21    Unsigned32    V      -     -       M,P
+SSID                           1524   5.2.3.22    UTF8String    V      -     -       M,P
+HESSID                         1525   5.2.3.23    UTF8String    V      -     -       M,P
+Access-Network-Info            1526   5.2.3.24    Grouped       V      -     -       M,P
+TWAN-Connection-Mode           1527   5.2.3.25    Unsigned32    V      -     -       M,P
+TWAN-Connectivity-Parameters   1528   5.2.3.26    Grouped       V      -     -       M,P
+Connectivity-Flags             1529   5.2.3.27    Unsigned32    V      -     -       M,P
+TWAN-PCO                       1530   5.2.3.28    OctetString   V      -     -       M,P
+TWAG-CP-Address                1531   5.2.3.29    Address       V      -     -       M,P
+TWAG-UP-Address                1532   5.2.3.30    UTF8String    V      -     -       M,P
+TWAN-S2a-Failure-Cause         1533   5.2.3.31    Unsigned32    V      -     -       M,P
+SM-Back-Off-Timer              1534   5.2.3.32    Unsigned32    V      -     -       M,P
+WLCP-Key                       1535   5.2.3.33    OctetString   V      -     -       M,P
+Emergency-Services             1538   7.2.3.4     Unsigned32    V      -     -       M,P
+IMEI-Check-In-VPLMN-Result     1540   5.2.3.35    Unsigned32    V      -     -       M,P
+High-Priority-Access-Info      1542   5.2.3.36    Unsigned32    V      -     -       M,P
 
 
 ; Type: AVP Table
 ; Section: 6.2.3.1
 ; Table: 6.2.3.1/1
 ; Page: 91
-; Columns: Name                Code   Section     Type          Must  May   S.not M.not
-MIP6-Feature-Vector            124    5.2.3.3     Unsigned64    M     -     -     V,P
-QoS-Capability                 578    5.2.3.4     Grouped       M     -     -     V,P
-RAT-Type                       1032   5.2.3.6     Enumerated    V     -     -     M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-6-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-6-2-3-1-1)
-ANID                           1504   5.2.3.7     UTF8String    M,V   -     -     P
-Service-Selection              493    5.2.3.5     UTF8String    M     -     -     V,P
-Mobile-Node-Identifier         506    5.2.3.2     UTF8String    M     -     -     V,P
-AN-Trusted                     1503   5.2.3.9     Enumerated    M,V   -     -     P
-Full-Network-Name              1516   5.2.3.14    OctetString   V     -     -     M,P
-Short-Network-Name             1517   5.2.3.15    OctetString   V     -     -     M,P
-WLAN-Identifier                1509   5.2.3.18    Grouped       V     -     -     M,P
-APN-Configuration              1430   8.2.3.7     Grouped       M,V   -     -     P
-Visited-Network-Identifier     600    9.2.3.1.2   OctetString   M,V   -     -     P
-DER-Flags                      1520   5.2.3.20    Unsigned32    V     -     -     M,P
-DEA-Flags                      1521   5.2.3.21    Unsigned32    V     -     -     M,P
-SSID                           1524   5.2.3.22    UTF8String    V     -     -     M,P
-HESSID                         1525   5.2.3.23    UTF8String    V     -     -     M,P
-TWAN-Connection-Mode           1527   5.2.3.25    Unsigned32    V     -     -     M,P
-TWAN-Connectivity-Parameters   1528   5.2.3.26    Grouped       V     -     -     M,P
-Connectivity-Flags             1529   5.2.3.27    Unsigned32    V     -     -     M,P
-TWAN-PCO                       1530   5.2.3.28    OctetString   V     -     -     M,P
-TWAG-CP-Address                1531   5.2.3.29    Address       V     -     -     M,P
-TWAG-UP-Address                1532   5.2.3.30    UTF8String    V     -     -     M,P
-TWAN-S2a-Failure-Cause         1533   5.2.3.31    Unsigned32    V     -     -     M,P
-High-Priority-Access-Info      1542   5.2.3.36    Unsigned32    V     -     -     M,P
+; Columns: Name                Code   Section     Type          Must   May   S.not   M.not
+MIP6-Feature-Vector            124    5.2.3.3     Unsigned64    M      -     -       V,P
+QoS-Capability                 578    5.2.3.4     Grouped       M      -     -       V,P
+RAT-Type                       1032   5.2.3.6     Enumerated    V      -     -       M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-6-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-6-2-3-1-1)
+ANID                           1504   5.2.3.7     UTF8String    M,V    -     -       P
+Service-Selection              493    5.2.3.5     UTF8String    M      -     -       V,P
+Mobile-Node-Identifier         506    5.2.3.2     UTF8String    M      -     -       V,P
+AN-Trusted                     1503   5.2.3.9     Enumerated    M,V    -     -       P
+Full-Network-Name              1516   5.2.3.14    OctetString   V      -     -       M,P
+Short-Network-Name             1517   5.2.3.15    OctetString   V      -     -       M,P
+WLAN-Identifier                1509   5.2.3.18    Grouped       V      -     -       M,P
+APN-Configuration              1430   8.2.3.7     Grouped       M,V    -     -       P
+Visited-Network-Identifier     600    9.2.3.1.2   OctetString   M,V    -     -       P
+DER-Flags                      1520   5.2.3.20    Unsigned32    V      -     -       M,P
+DEA-Flags                      1521   5.2.3.21    Unsigned32    V      -     -       M,P
+SSID                           1524   5.2.3.22    UTF8String    V      -     -       M,P
+HESSID                         1525   5.2.3.23    UTF8String    V      -     -       M,P
+TWAN-Connection-Mode           1527   5.2.3.25    Unsigned32    V      -     -       M,P
+TWAN-Connectivity-Parameters   1528   5.2.3.26    Grouped       V      -     -       M,P
+Connectivity-Flags             1529   5.2.3.27    Unsigned32    V      -     -       M,P
+TWAN-PCO                       1530   5.2.3.28    OctetString   V      -     -       M,P
+TWAG-CP-Address                1531   5.2.3.29    Address       V      -     -       M,P
+TWAG-UP-Address                1532   5.2.3.30    UTF8String    V      -     -       M,P
+TWAN-S2a-Failure-Cause         1533   5.2.3.31    Unsigned32    V      -     -       M,P
+High-Priority-Access-Info      1542   5.2.3.36    Unsigned32    V      -     -       M,P
 
 
 ; Type: AVP Table
 ; Section: 7.2.3.1
 ; Table: 7.2.3.1/1
 ; Page: 122
-; Columns: Name              Code   Section     Type          Must  May   S.not M.not
-APN-Configuration            1430   8.2.3.7     Grouped       M,V   -     -     P
-Mobile-Node-Identifier       506    5.2.3.2     OctetString   M     -     -     V,P
-MIP6-Feature-Vector          124    5.2.3.3     Unsigned64    M     -     -     V,P
-QoS-Capability               578    9.2.3.2.4   Grouped       M     -     -     V,P
-RAT-Type                     1032   5.2.3.6     Enumerated    V     -     -     M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-7-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-7-2-3-1-1)
-Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V   -     -     P
-Trace-Info                   1505   8.2.3.13    Grouped       V     -     -     M,P
-Service-Selection            493    5.2.3.5     UTF8String    M     -     -     V,P
-AAA-Failure-Indication       1518   8.2.3.21    Unsigned32    V     -     -     M,P
-Emergency-Services           1538   7.2.3.4     Unsigned32    V     -     -     M,P
-Access-Network-Info          1526   5.2.3.24    Grouped       V     -     -     M,P
-AAR-Flags                    1539   7.2.3.5     Unsigned32    V     -     -     M,P
-High-Priority-Access-Info    1542   5.2.3.36    Unsigned32    V     -     -     M,P
+; Columns: Name              Code   Section     Type          Must   May   S.not   M.not
+APN-Configuration            1430   8.2.3.7     Grouped       M,V    -     -       P
+Mobile-Node-Identifier       506    5.2.3.2     OctetString   M      -     -       V,P
+MIP6-Feature-Vector          124    5.2.3.3     Unsigned64    M      -     -       V,P
+QoS-Capability               578    9.2.3.2.4   Grouped       M      -     -       V,P
+RAT-Type                     1032   5.2.3.6     Enumerated    V      -     -       M,P ;; corrected: (TS29.273.py#rat-type-m-flag-must-7-2-3-1-1) ;; corrected: (TS29.273.py#rat-type-m-flag-must-not-7-2-3-1-1)
+Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V    -     -       P
+Trace-Info                   1505   8.2.3.13    Grouped       V      -     -       M,P
+Service-Selection            493    5.2.3.5     UTF8String    M      -     -       V,P
+AAA-Failure-Indication       1518   8.2.3.21    Unsigned32    V      -     -       M,P
+Emergency-Services           1538   7.2.3.4     Unsigned32    V      -     -       M,P
+Access-Network-Info          1526   5.2.3.24    Grouped       V      -     -       M,P
+AAR-Flags                    1539   7.2.3.5     Unsigned32    V      -     -       M,P
+High-Priority-Access-Info    1542   5.2.3.36    Unsigned32    V      -     -       M,P
 
 
 ; Type: AVP Table
 ; Section: 8.2.3.0
 ; Table: 8.2.3.0/1
 ; Page: 145
-; Columns: Name               Code   Section    Type               Must  May   S.not M.not
-Non-3GPP-User-Data            1500   8.2.3.1    Grouped            M,V   -     -     P
-Non-3GPP-IP-Access            1501   8.2.3.3    Enumerated         M,V   -     -     P
-Non-3GPP-IP-Access-APN        1502   8.2.3.4    Enumerated         M,V   -     -     P
-ANID                          1504   5.2.3.7    UTF8String         M,V   -     -     P
-Trace-Info                    1505   8.2.3.13   Grouped            V     -     -     M,P
-PPR-Flags                     1508   8.2.3.17   Unsigned32         V     -     -     M,P
-TWAN-Default-APN-Context-Id   1512   8.2.3.18   Unsigned32         V     -     -     M,P
-TWAN-Access-Info              1510   8.2.3.19   Grouped            V     -     -     M,P
-Access-Authorization-Flags    1511   8.2.3.20   Unsigned32         V     -     -     M,P
-WLAN-Identifier               1509   5.2.3.18   Grouped            V     -     -     M,P
-Service-Selection             493    5.2.3.5    UTF8String         M     -     -     V,P
-AAA-Failure-Indication        1518   8.2.3.21   Unsigned32         V     -     -     M,P
-Access-Network-Info           1526   5.2.3.24   Grouped            V     -     -     M,P ;; corrected: (TS29.273.py#access-network-info-code)
-3GPP-AAA-Server-Name          318    8.2.3.24   DiameterIdentity   M,V   -     -     P
-ERP-Authorization             1541   8.2.3.27   Unsigned32         V     -     -     M,P
-AN-Trusted                    1503   5.2.3.9    Enumerated         V     -     -     M,P
+; Columns: Name               Code   Section    Type               Must   May   S.not   M.not
+Non-3GPP-User-Data            1500   8.2.3.1    Grouped            M,V    -     -       P
+Non-3GPP-IP-Access            1501   8.2.3.3    Enumerated         M,V    -     -       P
+Non-3GPP-IP-Access-APN        1502   8.2.3.4    Enumerated         M,V    -     -       P
+ANID                          1504   5.2.3.7    UTF8String         M,V    -     -       P
+Trace-Info                    1505   8.2.3.13   Grouped            V      -     -       M,P
+PPR-Flags                     1508   8.2.3.17   Unsigned32         V      -     -       M,P
+TWAN-Default-APN-Context-Id   1512   8.2.3.18   Unsigned32         V      -     -       M,P
+TWAN-Access-Info              1510   8.2.3.19   Grouped            V      -     -       M,P
+Access-Authorization-Flags    1511   8.2.3.20   Unsigned32         V      -     -       M,P
+WLAN-Identifier               1509   5.2.3.18   Grouped            V      -     -       M,P
+Service-Selection             493    5.2.3.5    UTF8String         M      -     -       V,P
+AAA-Failure-Indication        1518   8.2.3.21   Unsigned32         V      -     -       M,P
+Access-Network-Info           1526   5.2.3.24   Grouped            V      -     -       M,P ;; corrected: (TS29.273.py#access-network-info-code)
+3GPP-AAA-Server-Name          318    8.2.3.24   DiameterIdentity   M,V    -     -       P
+ERP-Authorization             1541   8.2.3.27   Unsigned32         V      -     -       M,P
+AN-Trusted                    1503   5.2.3.9    Enumerated         V      -     -       M,P
 
 
 ; Type: AVP Table
 ; Section: 9.2.3.1.1
 ; Table: 9.2.3.1.1/1
 ; Page: 188
-; Columns: Name              Code   Section     Type          Must  May   S.not M.not
-MIP6-Agent-Info              486    9.2.3.2.2   Grouped       M     -     -     V,P
-MIP6-Feature-Vector          124    9.2.3.2.3   Unsigned64    M     -     -     V,P
-Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V   -     -     P
-RAR-Flags                    1522   9.2.3.1.5   Unsigned32    V     -     -     M,P
-QoS-Capability               578    9.2.3.2.4   Grouped       M     -     -     V,P
-QoS-Resources                508    9.2.3.2.5   Grouped       M     -     -     V,P
-Trace-Info                   1505   8.2.3.13    Grouped       V     -     -     M,P
-Service-Selection            493    5.2.3.5     UTF8String    M     -     -     V,P
-Trust-Relationship-Update    1515   9.2.3.1.4   Enumerated    V     -     -     M,P
-AAA-Failure-Indication       1518   8.2.3.21    Unsigned32    V     -     -     M,P
-DER-S6b-Flags                1523   9.2.3.7     Unsigned32    V     -     -     M,P
+; Columns: Name              Code   Section     Type          Must   May   S.not   M.not
+MIP6-Agent-Info              486    9.2.3.2.2   Grouped       M      -     -       V,P
+MIP6-Feature-Vector          124    9.2.3.2.3   Unsigned64    M      -     -       V,P
+Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V    -     -       P
+RAR-Flags                    1522   9.2.3.1.5   Unsigned32    V      -     -       M,P
+QoS-Capability               578    9.2.3.2.4   Grouped       M      -     -       V,P
+QoS-Resources                508    9.2.3.2.5   Grouped       M      -     -       V,P
+Trace-Info                   1505   8.2.3.13    Grouped       V      -     -       M,P
+Service-Selection            493    5.2.3.5     UTF8String    M      -     -       V,P
+Trust-Relationship-Update    1515   9.2.3.1.4   Enumerated    V      -     -       M,P
+AAA-Failure-Indication       1518   8.2.3.21    Unsigned32    V      -     -       M,P
+DER-S6b-Flags                1523   9.2.3.7     Unsigned32    V      -     -       M,P
 
 
 ; Type: AVP Table
 ; Section: 9.2.3.2.1
 ; Table: 9.2.3.2.1/1
 ; Page: 190
-; Columns: Name              Code   Section     Type          Must  May   S.not M.not
-MIP6-Agent-Info              486    9.2.3.2.2   Grouped       M     -     -     V,P
-MIP6-Feature-Vector          124    9.2.3.2.3   Unsigned64    M     -     -     V,P
-QoS-Capability               578    9.2.3.2.4   Grouped       M     -     -     V,P
-QoS-Resources                508    9.2.3.2.5   Grouped       M     -     -     V,P
-Trace-Info                   1505   8.2.3.13    Grouped       V     -     -     M,P
-Service-Selection            493    5.2.3.5     UTF8String    M     -     -     V,P
-Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V   -     -     P
-Origination-Time-Stamp       1536   9.2.3.2.6   Unsigned64    V     -     -     M,P
-Maximum-Wait-Time            1537   9.2.3.2.7   Unsigned32    V     -     -     M,P
-Emergency-Services           1538   7.2.3.4     Unsigned32    V     -     -     M,P ;; corrected: (TS29.273.py#emergency-services-clause)
+; Columns: Name              Code   Section     Type          Must   May   S.not   M.not
+MIP6-Agent-Info              486    9.2.3.2.2   Grouped       M      -     -       V,P
+MIP6-Feature-Vector          124    9.2.3.2.3   Unsigned64    M      -     -       V,P
+QoS-Capability               578    9.2.3.2.4   Grouped       M      -     -       V,P
+QoS-Resources                508    9.2.3.2.5   Grouped       M      -     -       V,P
+Trace-Info                   1505   8.2.3.13    Grouped       V      -     -       M,P
+Service-Selection            493    5.2.3.5     UTF8String    M      -     -       V,P
+Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V    -     -       P
+Origination-Time-Stamp       1536   9.2.3.2.6   Unsigned64    V      -     -       M,P
+Maximum-Wait-Time            1537   9.2.3.2.7   Unsigned32    V      -     -       M,P
+Emergency-Services           1538   7.2.3.4     Unsigned32    V      -     -       M,P ;; corrected: (TS29.273.py#emergency-services-clause)
 
 
 ; Type: AVP Table
 ; Section: 9.2.3.6.1
 ; Table: 9.2.3.6.1/1
 ; Page: 192
-; Columns: Name       Code  Section     Type          Must  May   S.not M.not
-MIP6-Agent-Info       486   9.2.3.6.2   Grouped       M     -     -     V,P
-MIP6-Feature-Vector   124   9.2.3.6.3   Unsigned64    M     -     -     V,P
-QoS-Capability        578   9.2.3.6.4   Grouped       M     -     -     V,P
-QoS-Resources         508   9.2.3.6.5   Grouped       M     -     -     V,P
-MIP-MN-HA-SPI         491   9.2.3.6.6   Unsigned32    M     -     -     V,P
-MIP-Session-Key       343   9.2.3.6.7   OctetString   M     -     -     V,P
-Service-Selection     493   5.2.3.5     UTF8String    M     -     -     V,P
+; Columns: Name       Code   Section     Type          Must   May   S.not   M.not
+MIP6-Agent-Info       486    9.2.3.6.2   Grouped       M      -     -       V,P
+MIP6-Feature-Vector   124    9.2.3.6.3   Unsigned64    M      -     -       V,P
+QoS-Capability        578    9.2.3.6.4   Grouped       M      -     -       V,P
+QoS-Resources         508    9.2.3.6.5   Grouped       M      -     -       V,P
+MIP-MN-HA-SPI         491    9.2.3.6.6   Unsigned32    M      -     -       V,P
+MIP-Session-Key       343    9.2.3.6.7   OctetString   M      -     -       V,P
+Service-Selection     493    5.2.3.5     UTF8String    M      -     -       V,P
 
 
 ; Type: Reused AVPs

@@ -187,12 +187,12 @@
 ; Section: 6.3.1
 ; Table: 6.3.1-1
 ; Page: 20
-; Columns: Name         Code   Section  Type         Must  May   S.not M.not Encrypt
-V2X-PC5-Allowed-PLMN    4600   6.3.3    Grouped      M,V   -     -     -     No
-V2X-Update-Flags        4601   6.3.4    Unsigned32   M,V   -     -     -     No
-V2X-Notify-Flags        4602   6.3.5    Unsigned32   M,V   -     -     -     No
-PLMN-Allowed-PC5-RATs   4603   6.3.10   Grouped      V     -     -     M     No
-PC5-RAT-Type            4604   6.3.11   Enumerated   V     -     -     M     No
+; Columns: Name         Code   Section   Type         Must   May   S.not   M.not   Encrypt
+V2X-PC5-Allowed-PLMN    4600   6.3.3     Grouped      M,V    -     -       -       No
+V2X-Update-Flags        4601   6.3.4     Unsigned32   M,V    -     -       -       No
+V2X-Notify-Flags        4602   6.3.5     Unsigned32   M,V    -     -       -       No
+PLMN-Allowed-PC5-RATs   4603   6.3.10    Grouped      V      -     -       M       No
+PC5-RAT-Type            4604   6.3.11    Enumerated   V      -     -       M       No
 
 
 ; Type: Reused AVPs

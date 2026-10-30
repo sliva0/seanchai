@@ -293,8 +293,8 @@ E ::= < Enumerated AVP header: 5 >
 ; Type: AVP Table
 ; Section: 3
 ;; before the columns
-; Columns: Name Code
-X     1
+; Columns: Name   Code
+X                 1
 
 
 ;; after the last section
@@ -371,3 +371,38 @@ def test_a_commented_out_rule_lines_up_with_the_body():
     assert formatter.commented_avp_rule(struck, body[:1]) == (
         "   * [ Used-Service-Unit ] ; strikethrough"
     )
+
+
+def test_a_label_wider_than_its_cells_widens_its_column():
+    """Every label sits at its column's start: TS 29.212 table 5a.3.0.1's
+    `Acc-Type` and `Applicability` are wider than any of their cells."""
+    table = ast.AvpTable(
+        table="5a.3.0.1",
+        source=ast.SourceRef(section="5a.3.0"),
+        columns=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.ACCESS_TYPES,
+            ast.AvpColumn.APPLICABILITY,
+        ),
+        rows=(
+            ast.AvpTableRow(
+                name="QoS-Rule-Base-Name",
+                marks={
+                    ast.MarkColumn.ACCESS_TYPES: ("All",),
+                    ast.MarkColumn.APPLICABILITY: ("Rel9",),
+                },
+            ),
+            ast.AvpTableRow(name="QoS-Rule-Name"),
+        ),
+    )
+    spec = ast.Specification(
+        specification="3GPP TS 29.212", vendor_id=10415, sections=(table,)
+    )
+
+    lines = formatter.format_spec(spec).splitlines()[-3:]
+
+    assert lines == [
+        "; Columns: Name      Acc-Type   Applicability",
+        "QoS-Rule-Base-Name   All        Rel9",
+        'QoS-Rule-Name        ""         ""',
+    ]

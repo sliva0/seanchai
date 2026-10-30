@@ -176,3 +176,29 @@ def test_a_table_needs_a_name_column_and_no_duplicates():
             (ast.AvpColumn.NAME, ast.AvpColumn.NAME),
             (ast.AvpTableRow(name="Example"),),
         )
+
+
+def test_marks_need_their_column_and_are_no_dash():
+    """A mark may hold what a quoted enum value name may (TS 29.212's `All
+    (NOTE 5)`), but not a lone `-`, which is the cell's printed dash: no
+    marks, `()`, as a blank cell is no entry."""
+    applicability = {ast.MarkColumn.APPLICABILITY: ("Both", "All (NOTE 5)")}
+    with pytest.raises(pydantic.ValidationError, match="no Applicability column"):
+        _table((ast.AvpColumn.NAME,), (ast.AvpTableRow(name="E", marks=applicability),))
+    with pytest.raises(pydantic.ValidationError, match="no ACR column"):
+        ast.ReusedAvps(
+            table="7.3.1",
+            source=ast.SourceRef(section="7.3"),
+            rows=(
+                ast.ReusedAvpRow(
+                    name="E", origin="TS29.212", marks={ast.MarkColumn.ACR: ("X",)}
+                ),
+            ),
+        )
+    for marks in (("-",), ("",), (" padded",), ("a;;b",)):
+        with pytest.raises(pydantic.ValidationError):
+            ast.AvpTableRow(name="E", marks={ast.MarkColumn.APPLICABILITY: marks})
+    columns = (ast.AvpColumn.NAME, ast.AvpColumn.APPLICABILITY)
+    _table(columns, (ast.AvpTableRow(name="E", marks=applicability),))
+    dash = {ast.MarkColumn.APPLICABILITY: ()}
+    _table(columns, (ast.AvpTableRow(name="E", marks=dash),))

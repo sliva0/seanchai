@@ -7,24 +7,24 @@
 ; Type: AVP Table
 ; Section: 3.1
 ; Page: 12
-; Columns: Name           Code  Section
-Digest-Response           103   3.1
-Digest-Realm              104   3.2
-Digest-Nonce              105   3.3
-Digest-Response-Auth      106   3.4
-Digest-Nextnonce          107   3.5
-Digest-Method             108   3.6
-Digest-URI                109   3.7
-Digest-Qop                110   3.8
-Digest-Algorithm          111   3.9
-Digest-Entity-Body-Hash   112   3.10
-Digest-CNonce             113   3.11
-Digest-Nonce-Count        114   3.12
-Digest-Username           115   3.13
-Digest-Opaque             116   3.14
-Digest-Auth-Param         117   3.15
-Digest-AKA-Auts           118   3.16
-Digest-Domain             119   3.17
-Digest-Stale              120   3.18
-Digest-HA1                121   3.19
-SIP-AOR                   122   3.20
+; Columns: Name           Code   Section
+Digest-Response           103    3.1
+Digest-Realm              104    3.2
+Digest-Nonce              105    3.3
+Digest-Response-Auth      106    3.4
+Digest-Nextnonce          107    3.5
+Digest-Method             108    3.6
+Digest-URI                109    3.7
+Digest-Qop                110    3.8
+Digest-Algorithm          111    3.9
+Digest-Entity-Body-Hash   112    3.10
+Digest-CNonce             113    3.11
+Digest-Nonce-Count        114    3.12
+Digest-Username           115    3.13
+Digest-Opaque             116    3.14
+Digest-Auth-Param         117    3.15
+Digest-AKA-Auts           118    3.16
+Digest-Domain             119    3.17
+Digest-Stale              120    3.18
+Digest-HA1                121    3.19
+SIP-AOR                   122    3.20

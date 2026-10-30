@@ -863,320 +863,320 @@
 ; Section: 5.3.0
 ; Table: 5.3.0.1
 ; Page: 121
-; Columns: Name                         Code   Section   Type               Must  May   S.not M.not Encrypt
-3GPP-PS-Data-Off-Status                 2847   5.3.133   Enumerated         V     P     -     M     Yes
-Access-Availability-Change-Reason       2833   5.3.121   Unsigned32         V     P     -     M     Yes
-Access-Network-Charging-Identifier-Gx   1022   5.3.22    Grouped            M,V   P     -     -     Yes
-Allocation-Retention-Priority           1034   5.3.32    Grouped            V     P     -     M     Yes
-AN-GW-Address                           1050   5.3.49    Address            V     P     -     M     Yes
-AN-GW-Status                            2811   5.3.100   Enumerated         V     P     -     M     Yes
-APN-Aggregate-Max-Bitrate-DL            1040   5.3.39    Unsigned32         V     P     -     M     Yes
-APN-Aggregate-Max-Bitrate-UL            1041   5.3.40    Unsigned32         V     P     -     M     Yes
-Application-Detection-Information       1098   5.3.91    Grouped            V     P     -     M     Yes
-Bearer-Control-Mode                     1023   5.3.23    Enumerated         M,V   P     -     -     Yes
-Bearer-Identifier                       1020   5.3.20    OctetString        M,V   P     -     -     Yes
-Bearer-Operation                        1021   5.3.21    Enumerated         M,V   P     -     -     Yes
-Bearer-Usage                            1000   5.3.1     Enumerated         M,V   P     -     -     Yes
-Charging-Correlation-Indicator          1073   5.3.67    Enumerated         V     P     -     M     Yes
-Charging-Rule-Base-Name                 1004   5.3.5     UTF8String         M,V   P     -     -     Yes
-Charging-Rule-Definition                1003   5.3.4     Grouped            M,V   P     -     -     Yes
-Charging-Rule-Install                   1001   5.3.2     Grouped            M,V   P     -     -     Yes
-Charging-Rule-Name                      1005   5.3.6     OctetString        M,V   P     -     -     Yes
-Charging-Rule-Remove                    1002   5.3.3     Grouped            M,V   P     -     -     Yes
-Charging-Rule-Report                    1018   5.3.18    Grouped            M,V   P     -     -     Yes
-CoA-Information                         1039   5.3.37    Grouped            V     P     -     M     Yes
-CoA-IP-Address                          1035   5.3.33    Address            V     P     -     M     Yes
-Conditional-APN-Aggregate-Max-Bitrate   2818   5.3.105   Grouped            V     P     -     M     Yes
-Conditional-Policy-Information          2840   5.3.128   Grouped            V     P     -     M     Yes
-Credit-Management-Status                1082   5.3.102   Unsigned32         V     P     -     M     Yes
-CSG-Information-Reporting               1071   5.3.64    Enumerated         V     P     -     M     Yes
-Default-Access                          2829   5.3.120   Enumerated         V     P     -     M     Yes
-Default-Bearer-Indication               2844   5.3.132   Enumerated         V     P     -     M     Yes
-Default-EPS-Bearer-QoS                  1049   5.3.48    Grouped            V     P     -     M     Yes
-Default-QoS-Information                 2816   5.3.103   Grouped            V     P     -     M     Yes
-Default-QoS-Name                        2817   5.3.104   UTF8String         V     P     -     M     Yes
-Event-Report-Indication                 1033   5.3.30    Grouped            V     P     -     M     Yes
-Event-Trigger                           1006   5.3.7     Enumerated         M,V   P     -     -     Yes
-Execution-Time                          2839   5.3.127   Time               V     P     -     M     Yes
-Extended-APN-AMBR-DL                    2848   5.3.134   Unsigned32         V     P     -     M     Yes
-Extended-APN-AMBR-UL                    2849   5.3.135   Unsigned32         V     P     -     M     Yes
-Extended-GBR-DL                         2850   5.3.136   Unsigned32         V     P     -     M     Yes
-Extended-GBR-UL                         2851   5.3.137   Unsigned32         V     P     -     M     Yes
-Flow-Direction                          1080   5.3.65    Enumerated         V     P     -     M     Yes
-Flow-Information                        1058   5.3.53    Grouped            V     P     -     M     Yes
-Flow-Label                              1057   5.3.52    OctetString        V     P     -     M     Yes
-Fixed-User-Location-Info                2825   5.3.112   Grouped            V     P     -     M     Yes
-Guaranteed-Bitrate-DL                   1025   5.3.25    Unsigned32         M,V   P     -     -     Yes
-Guaranteed-Bitrate-UL                   1026   5.3.26    Unsigned32         M,V   P     -     -     Yes
-HeNB-Local-IP-Address                   2804   5.3.95    Address            V     P     -     M     Yes
-IP-CAN-Session-Charging-Scope           2827   5.3.114   Enumerated         V     P     -     M     Yes
-IP-CAN-Type                             1027   5.3.27    Enumerated         M,V   P     -     -     Yes
-Max-PLR-DL                              2852   5.3.138   Float32            V     P     -     M     Yes
-Max-PLR-UL                              2853   5.3.139   Float32            V     P     -     M     Yes
-Metering-Method                         1007   5.3.8     Enumerated         M,V   P     -     -     Yes
-Monitoring-Flags                        2828   5.3.115   Unsigned32         V     -     -     M     Yes
-Monitoring-Key                          1066   5.3.59    OctetString        V     P     -     M     Yes
-Mute-Notification                       2809   5.3.98    Enumerated         V     P     -     M     Yes
-Monitoring-Time                         2810   5.3.99    Time               V     P     -     M     Yes
-NBIFOM-Mode                             2830   5.3.117   Enumerated         V     P     -     M     Yes
-NBIFOM-Support                          2831   5.3.116   Enumerated         V     P     -     M     Yes
-NetLoc-Access-Support                   2824   5.3.111   Unsigned32         V     P     -     M     Yes
-Network-Request-Support                 1024   5.3.24    Enumerated         M,V   P     -     -     Yes
-Offline                                 1008   5.3.9     Enumerated         M,V   P     -     -     Yes
-Online                                  1009   5.3.10    Enumerated         M,V   P     -     -     Yes
-Packet-Filter-Content                   1059   5.3.54    IPFilterRule       V     P     -     M     Yes
-Packet-Filter-Identifier                1060   5.3.55    OctetString        V     P     -     M     Yes
-Packet-Filter-Information               1061   5.3.56    Grouped            V     P     -     M     Yes
-Packet-Filter-Operation                 1062   5.3.57    Enumerated         V     P     -     M     Yes
-Packet-Filter-Usage                     1072   5.3.66    Enumerated         V     P     -     M     Yes
-PCC-Rule-Status                         1019   5.3.19    Enumerated         M,V   P     -     -     Yes
-PDN-Connection-ID                       1065   5.3.58    OctetString        V     P     -     -     Yes
-PRA-Install                             2845   5.3.130   Grouped            V     P     -     M     -
-PRA-Remove                              2846   5.3.131   Grouped            V     P     -     M     -
-Precedence                              1010   5.3.11    Unsigned32         M,V   P     -     -     Yes
-Pre-emption-Capability                  1047   5.3.46    Enumerated         V     P     -     M     Yes
-Pre-emption-Vulnerability               1048   5.3.47    Enumerated         V     P     -     M     Yes
-Presence-Reporting-Area-Elements-List   2820   5.3.107   OctetString        V     P     -     M     Yes
-Presence-Reporting-Area-Identifier      2821   5.3.108   OctetString        V     P     -     M     Yes
-Presence-Reporting-Area-Information     2822   5.3.109   Grouped            V     P     -     M     Yes
-Presence-Reporting-Area-Node            2855   5.3.141   Unsigned32         V     P     -     M     Yes
-Presence-Reporting-Area-Status          2823   5.3.110   Unsigned32         V     P     -     M     Yes
-Priority-Level                          1046   5.3.45    Unsigned32         V     P     -     M     Yes
-PS-to-CS-Session-Continuity             1099   5.3.84    Enumerated         V     P     -     -     Yes
-QoS-Class-Identifier                    1028   5.3.17    Enumerated         M,V   P     -     -     Yes
-QoS-Information                         1016   5.3.16    Grouped            M,V   P     -     -     Yes
-QoS-Negotiation                         1029   5.3.28    Enumerated         M,V   P     -     -     Yes
-QoS-Upgrade                             1030   5.3.29    Enumerated         M,V   P     -     -     Yes
-RAN-NAS-Release-Cause                   2819   5.3.106   OctetString        V     P     -     M     Yes
-RAN-Rule-Support                        2832   5.3.122   Unsigned32         V     P     -     M     Yes
-RAT-Type                                1032   5.3.31    Enumerated         V     P     -     M     Yes
-Redirect-Information                    1085   5.3.82    Grouped            V     P     -     M     Yes
-Redirect-Support                        1086   5.3.83    Enumerated         V     P     -     M     Yes
-Removal-Of-Access                       2842   5.3.126   Enumerated         V     P     -     M     Yes
-Reporting-Level                         1011   5.3.12    Enumerated         M,V   P     -     -     Yes
-Resource-Allocation-Notification        1063   5.3.50    Enumerated         V     P     -     M     Yes
-Resource-Release-Notification           2841   5.3.125   Enumerated         V     P     -     M     Yes
-Revalidation-Time                       1042   5.3.41    Time               M,V   P     -     -     Yes
-Routing-Filter                          1078   5.3.72    Grouped            V     P     -     M     Yes
-Routing-IP-Address                      1079   5.3.73    Address            V     P     -     M     Yes
-Routing-Rule-Definition                 1076   5.3.70    Grouped            V     P     -     M     Yes
-Routing-Rule-Identifier                 1077   5.3.71    OctetString        V     P     -     M     Yes
-Routing-Rule-Install                    1081   5.3.68    Grouped            V     P     -     M     Yes
-Routing-Rule-Remove                     1075   5.3.69    Grouped            V     P     -     M     Yes
-Routing-Rule-Failure-Code               2834   5.3.119   Unsigned32         V     P     -     M     Yes
-Routing-Rule-Report                     2835   5.3.118   Grouped            V     P     -     M     Yes
-Rule-Activation-Time                    1043   5.3.42    Time               M,V   P     -     -     Yes
-Rule-Deactivation-Time                  1044   5.3.43    Time               M,V   P     -     -     Yes
-Rule-Failure-Code                       1031   5.3.38    Enumerated         M,V   P     -     -     Yes
-Security-Parameter-Index                1056   5.3.51    OctetString        V     P     -     M     Yes
-Session-Release-Cause                   1045   5.3.44    Enumerated         M,V   P     -     -     Yes
-TCP-Source-Port                         2843   5.3.129   Unsigned32         V     P     -     M     Yes
-TDF-Information                         1087   5.3.78    Grouped            V     P     -     M     Yes
-TDF-Application-Identifier              1088   5.3.77    OctetString        V     P     -     M     Yes
-TDF-Application-Instance-Identifier     2802   5.3.92    OctetString        V     P     -     M     Yes
-TDF-Destination-Host                    1089   5.3.80    DiameterIdentity   V     P     -     M     Yes
-TDF-Destination-Realm                   1090   5.3.79    DiameterIdentity   V     P     -     M     Yes
-TDF-IP-Address                          1091   5.3.81    Address            V     P     -     M     Yes
-TFT-Filter                              1012   5.3.13    IPFilterRule       M,V   P     -     -     Yes
-TFT-Packet-Filter-Information           1013   5.3.14    Grouped            M,V   P     -     -     Yes
-Traffic-Steering-Policy-Identifier-DL   2836   5.3.123   OctetString        V     P     -     M     Yes
-Traffic-Steering-Policy-Identifier-UL   2837   5.3.124   OctetString        V     P     -     M     Yes
-ToS-Traffic-Class                       1014   5.3.15    OctetString        M,V   P     -     -     Yes
-Tunnel-Header-Filter                    1036   5.3.34    IPFilterRule       V     P     -     M     Yes
-Tunnel-Header-Length                    1037   5.3.35    Unsigned32         V     P     -     M     Yes
-Tunnel-Information                      1038   5.3.36    Grouped            V     P     -     M     Yes
-UDP-Source-Port                         2806   5.3.97    Unsigned32         V     P     -     M     Yes
-UE-Local-IP-Address                     2805   5.3.96    Address            V     P     -     M     Yes
-UE-Status                               2854   5.3.140   Unsigned32         V     P     -     M     Yes
-Usage-Monitoring-Information            1067   5.3.60    Grouped            V     P     -     M     Yes
-Usage-Monitoring-Level                  1068   5.3.61    Enumerated         V     P     -     M     Yes
-Usage-Monitoring-Report                 1069   5.3.62    Enumerated         V     P     -     M     Yes
-Usage-Monitoring-Support                1070   5.3.63    Enumerated         V     P     -     M     Yes
-User-Location-Info-Time                 2812   5.3.101   Time               V     P     -     M     Yes
-PCSCF-Restoration-Indication            2826   5.3.113   Unsigned32         V     P     -     M     Yes
+; Columns: Name                         Code   Section   Type               Must   May   S.not   M.not   Encrypt   Acc-Type                                           Applicability
+3GPP-PS-Data-Off-Status                 2847   5.3.133   Enumerated         V      P     -       M       Yes       3GPP-EPS                                           3GPP-PS-Data-Off
+Access-Availability-Change-Reason       2833   5.3.121   Unsigned32         V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+Access-Network-Charging-Identifier-Gx   1022   5.3.22    Grouped            M,V    P     -       -       Yes       All                                                CC
+Allocation-Retention-Priority           1034   5.3.32    Grouped            V      P     -       M       Yes       All                                                Both,Rel8
+AN-GW-Address                           1050   5.3.49    Address            V      P     -       M       Yes       All                                                Both,Rel8,EPC-routed
+AN-GW-Status                            2811   5.3.100   Enumerated         V      P     -       M       Yes       3GPP-EPS                                           Both,SGW-Rest
+APN-Aggregate-Max-Bitrate-DL            1040   5.3.39    Unsigned32         V      P     -       M       Yes       All                                                PC,Rel8
+APN-Aggregate-Max-Bitrate-UL            1041   5.3.40    Unsigned32         V      P     -       M       Yes       All                                                PC,Rel8
+Application-Detection-Information       1098   5.3.91    Grouped            V      P     -       M       Yes       All                                                ADC
+Bearer-Control-Mode                     1023   5.3.23    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS,3GPP-EPS,3GPP2,"Non-3GPP-EPS (NOTE 6)"   PC
+Bearer-Identifier                       1020   5.3.20    OctetString        M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+Bearer-Operation                        1021   5.3.21    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+Bearer-Usage                            1000   5.3.1     Enumerated         M,V    P     -       -       Yes       3GPP-GPRS,3GPP-EPS                                 Both
+Charging-Correlation-Indicator          1073   5.3.67    Enumerated         V      P     -       M       Yes       All                                                CC,Rel8
+Charging-Rule-Base-Name                 1004   5.3.5     UTF8String         M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Definition                1003   5.3.4     Grouped            M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Install                   1001   5.3.2     Grouped            M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Name                      1005   5.3.6     OctetString        M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Remove                    1002   5.3.3     Grouped            M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Report                    1018   5.3.18    Grouped            M,V    P     -       -       Yes       All                                                Both
+CoA-Information                         1039   5.3.37    Grouped            V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+CoA-IP-Address                          1035   5.3.33    Address            V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+Conditional-APN-Aggregate-Max-Bitrate   2818   5.3.105   Grouped            V      P     -       M       Yes       "All (NOTE 5)"                                     PC,ConditionalAPNPolicyInfo
+Conditional-Policy-Information          2840   5.3.128   Grouped            V      P     -       M       Yes       All                                                Both,CondPolicyInfo,CondPolicyInfo-DefaultQoS
+Credit-Management-Status                1082   5.3.102   Unsigned32         V      P     -       M       Yes       All                                                CC
+CSG-Information-Reporting               1071   5.3.64    Enumerated         V      P     -       M       Yes       3GPP-GPRS,3GPP-EPS                                 CC,Rel9
+Default-Access                          2829   5.3.120   Enumerated         V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+Default-Bearer-Indication               2844   5.3.132   Enumerated         V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Rule-Bound-to-Default-Bearer
+Default-EPS-Bearer-QoS                  1049   5.3.48    Grouped            V      P     -       M       Yes       "All (NOTE 5)"                                     PC,Rel8
+Default-QoS-Information                 2816   5.3.103   Grouped            V      P     -       M       Yes       FBA                                                PC,FBAC
+Default-QoS-Name                        2817   5.3.104   UTF8String         V      P     -       M       Yes       FBA                                                PC,FBAC
+Event-Report-Indication                 1033   5.3.30    Grouped            V      P     -       M       Yes       All                                                Both,Rel8
+Event-Trigger                           1006   5.3.7     Enumerated         M,V    P     -       -       Yes       All                                                Both
+Execution-Time                          2839   5.3.127   Time               V      P     -       M       Yes       All                                                Both,CondPolicyInfo,CondPolicyInfo-DefaultQoS
+Extended-APN-AMBR-DL                    2848   5.3.134   Unsigned32         V      P     -       M       Yes       All                                                Both,Extended-BW-NR
+Extended-APN-AMBR-UL                    2849   5.3.135   Unsigned32         V      P     -       M       Yes       All                                                Both,Extended-BW-NR
+Extended-GBR-DL                         2850   5.3.136   Unsigned32         V      P     -       M       Yes       All                                                Both,Extended-BW-NR
+Extended-GBR-UL                         2851   5.3.137   Unsigned32         V      P     -       M       Yes       All                                                Both,Extended-BW-NR
+Flow-Direction                          1080   5.3.65    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+Flow-Information                        1058   5.3.53    Grouped            V      P     -       M       Yes       All                                                Both
+Flow-Label                              1057   5.3.52    OctetString        V      P     -       M       Yes       All                                                Both
+Fixed-User-Location-Info                2825   5.3.112   Grouped            V      P     -       M       Yes       FBA                                                Both,FBAC
+Guaranteed-Bitrate-DL                   1025   5.3.25    Unsigned32         M,V    P     -       -       Yes       All                                                PC
+Guaranteed-Bitrate-UL                   1026   5.3.26    Unsigned32         M,V    P     -       -       Yes       All                                                PC
+HeNB-Local-IP-Address                   2804   5.3.95    Address            V      P     -       M       Yes       3GPP-EPS                                           PC,EPC-routed
+IP-CAN-Session-Charging-Scope           2827   5.3.114   Enumerated         V      P     -       M       Yes       All                                                CC
+IP-CAN-Type                             1027   5.3.27    Enumerated         M,V    P     -       -       Yes       All                                                Both
+Max-PLR-DL                              2852   5.3.138   Float32            V      P     -       M       Yes       All                                                PC,RAN-Support-Info
+Max-PLR-UL                              2853   5.3.139   Float32            V      P     -       M       Yes       All                                                PC,RAN-Support-Info
+Metering-Method                         1007   5.3.8     Enumerated         M,V    P     -       -       Yes       All                                                CC
+Monitoring-Flags                        2828   5.3.115   Unsigned32         V      -     -       M       Yes       All                                                ExUsage
+Monitoring-Key                          1066   5.3.59    OctetString        V      P     -       M       Yes       All                                                Both,Rel9
+Mute-Notification                       2809   5.3.98    Enumerated         V      P     -       M       Yes       All                                                ADC
+Monitoring-Time                         2810   5.3.99    Time               V      P     -       M       Yes       All                                                Both,UMCH
+NBIFOM-Mode                             2830   5.3.117   Enumerated         V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+NBIFOM-Support                          2831   5.3.116   Enumerated         V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+NetLoc-Access-Support                   2824   5.3.111   Unsigned32         V      P     -       M       Yes       All                                                NetLoc,NetLoc-Trusted-WLAN,NetLoc-Untrusted-WLAN
+Network-Request-Support                 1024   5.3.24    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS,3GPP-EPS,3GPP2,"Non-3GPP-EPS (NOTE 6)"   PC
+Offline                                 1008   5.3.9     Enumerated         M,V    P     -       -       Yes       All                                                CC
+Online                                  1009   5.3.10    Enumerated         M,V    P     -       -       Yes       All                                                CC
+Packet-Filter-Content                   1059   5.3.54    IPFilterRule       V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Identifier                1060   5.3.55    OctetString        V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Information               1061   5.3.56    Grouped            V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Operation                 1062   5.3.57    Enumerated         V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Usage                     1072   5.3.66    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+PCC-Rule-Status                         1019   5.3.19    Enumerated         M,V    P     -       -       Yes       All                                                Both
+PDN-Connection-ID                       1065   5.3.58    OctetString        V      P     -       -       Yes       "All (NOTE 7)"                                     Both,Rel9
+PRA-Install                             2845   5.3.130   Grouped            V      P     -       M       -         3GPP-EPS                                           Both,Multiple-PRA
+PRA-Remove                              2846   5.3.131   Grouped            V      P     -       M       -         3GPP-EPS                                           Both,Multiple-PRA
+Precedence                              1010   5.3.11    Unsigned32         M,V    P     -       -       Yes       All                                                Both
+Pre-emption-Capability                  1047   5.3.46    Enumerated         V      P     -       M       Yes       3GPP-EPS,3GPP-GPRS                                 Both,Rel8
+Pre-emption-Vulnerability               1048   5.3.47    Enumerated         V      P     -       M       Yes       3GPP-EPS,3GPP-GPRS                                 Both,Rel8
+Presence-Reporting-Area-Elements-List   2820   5.3.107   OctetString        V      P     -       M       Yes       3GPP-EPS                                           Both,CNO-ULI,Multiple-PRA
+Presence-Reporting-Area-Identifier      2821   5.3.108   OctetString        V      P     -       M       Yes       3GPP-EPS                                           Both,CNO-ULI,Multiple-PRA
+Presence-Reporting-Area-Information     2822   5.3.109   Grouped            V      P     -       M       Yes       3GPP-EPS                                           Both,CNO-ULI,Multiple-PRA
+Presence-Reporting-Area-Node            2855   5.3.141   Unsigned32         V      P     -       M       Yes       3GPP-EPS                                           ""
+Presence-Reporting-Area-Status          2823   5.3.110   Unsigned32         V      P     -       M       Yes       3GPP-EPS                                           Both,CNO-ULI,Multiple-PRA
+Priority-Level                          1046   5.3.45    Unsigned32         V      P     -       M       Yes       All                                                Both,Rel8
+PS-to-CS-Session-Continuity             1099   5.3.84    Enumerated         V      P     -       -       Yes       3GPP-EPS                                           Both,vSRVCC
+QoS-Class-Identifier                    1028   5.3.17    Enumerated         M,V    P     -       -       Yes       "All (NOTE 10, NOTE 12)"                           Both
+QoS-Information                         1016   5.3.16    Grouped            M,V    P     -       -       Yes       All                                                Both
+QoS-Negotiation                         1029   5.3.28    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS                                          PC
+QoS-Upgrade                             1030   5.3.29    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS                                          PC
+RAN-NAS-Release-Cause                   2819   5.3.106   OctetString        V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,RAN-NAS-Cause
+RAN-Rule-Support                        2832   5.3.122   Unsigned32         V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+RAT-Type                                1032   5.3.31    Enumerated         V      P     -       M       Yes       "All (NOTE 4)"                                     Both,Rel8
+Redirect-Information                    1085   5.3.82    Grouped            V      P     -       M       Yes       All                                                ADC,ADC-Add-Redirection
+Redirect-Support                        1086   5.3.83    Enumerated         V      P     -       M       Yes       All                                                ADC
+Removal-Of-Access                       2842   5.3.126   Enumerated         V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+Reporting-Level                         1011   5.3.12    Enumerated         M,V    P     -       -       Yes       All                                                CC
+Resource-Allocation-Notification        1063   5.3.50    Enumerated         V      P     -       M       Yes       All                                                Both,Rel8
+Resource-Release-Notification           2841   5.3.125   Enumerated         V      P     -       M       Yes       All                                                Both,Enh-RAN-NAS-Cause
+Revalidation-Time                       1042   5.3.41    Time               M,V    P     -       -       Yes       All                                                Both
+Routing-Filter                          1078   5.3.72    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-IP-Address                      1079   5.3.73    Address            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Definition                 1076   5.3.70    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Identifier                 1077   5.3.71    OctetString        V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Install                    1081   5.3.68    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Remove                     1075   5.3.69    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Failure-Code               2834   5.3.119   Unsigned32         V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+Routing-Rule-Report                     2835   5.3.118   Grouped            V      P     -       M       Yes       3GPP-EPS,"Non-3GPP-EPS (NOTE 11)"                  Both,NBIFOM
+Rule-Activation-Time                    1043   5.3.42    Time               M,V    P     -       -       Yes       All                                                Both
+Rule-Deactivation-Time                  1044   5.3.43    Time               M,V    P     -       -       Yes       All                                                Both
+Rule-Failure-Code                       1031   5.3.38    Enumerated         M,V    P     -       -       Yes       All                                                Both
+Security-Parameter-Index                1056   5.3.51    OctetString        V      P     -       M       Yes       All                                                Both
+Session-Release-Cause                   1045   5.3.44    Enumerated         M,V    P     -       -       Yes       All                                                Both
+TCP-Source-Port                         2843   5.3.129   Unsigned32         V      P     -       M       Yes       Non-3GPP-EPS                                       PC,NetLoc-Untrusted-WLAN
+TDF-Information                         1087   5.3.78    Grouped            V      P     -       M       Yes       All                                                PC
+TDF-Application-Identifier              1088   5.3.77    OctetString        V      P     -       M       Yes       All                                                PC,ADC
+TDF-Application-Instance-Identifier     2802   5.3.92    OctetString        V      P     -       M       Yes       All                                                ADC
+TDF-Destination-Host                    1089   5.3.80    DiameterIdentity   V      P     -       M       Yes       All                                                PC
+TDF-Destination-Realm                   1090   5.3.79    DiameterIdentity   V      P     -       M       Yes       All                                                PC
+TDF-IP-Address                          1091   5.3.81    Address            V      P     -       M       Yes       All                                                PC
+TFT-Filter                              1012   5.3.13    IPFilterRule       M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+TFT-Packet-Filter-Information           1013   5.3.14    Grouped            M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+Traffic-Steering-Policy-Identifier-DL   2836   5.3.123   OctetString        V      P     -       M       Yes       All                                                PC,TSC
+Traffic-Steering-Policy-Identifier-UL   2837   5.3.124   OctetString        V      P     -       M       Yes       All                                                PC,TSC
+ToS-Traffic-Class                       1014   5.3.15    OctetString        M,V    P     -       -       Yes       All                                                Both
+Tunnel-Header-Filter                    1036   5.3.34    IPFilterRule       V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+Tunnel-Header-Length                    1037   5.3.35    Unsigned32         V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+Tunnel-Information                      1038   5.3.36    Grouped            V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+UDP-Source-Port                         2806   5.3.97    Unsigned32         V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              PC,EPC-routed,NetLoc-Untrusted-WLAN
+UE-Local-IP-Address                     2805   5.3.96    Address            V      P     -       M       Yes       Non-3GPP-EPS                                       PC,BBAI,NetLoc-Untrusted-WLAN
+UE-Status                               2854   5.3.140   Unsigned32         V      P     -       M       Yes       3GPP-EPS                                           UE-Status-Change
+Usage-Monitoring-Information            1067   5.3.60    Grouped            V      P     -       M       Yes       All                                                Both,Rel9
+Usage-Monitoring-Level                  1068   5.3.61    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+Usage-Monitoring-Report                 1069   5.3.62    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+Usage-Monitoring-Support                1070   5.3.63    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+User-Location-Info-Time                 2812   5.3.101   Time               V      P     -       M       Yes       3GPP-GPRS,3GPP-EPS                                 Both,NetLoc,RAN-NAS-Cause,NetLoc-Untrusted-WLAN
+PCSCF-Restoration-Indication            2826   5.3.113   Unsigned32         V      P     -       M       Yes       All                                                Both,PCSCF-Restoration-Enhancement
 
 
 ; Type: Reused AVPs
 ; Section: 5.4.0
 ; Table: 5.4.0.1
 ; Page: 181
-; Columns: Name                            From
-3GPP-Charging-Characteristics              TS29.061
-3GPP-GGSN-Address                          TS29.061
-3GPP-GGSN-Ipv6-Address                     TS29.061
-3GPP-MS-TimeZone                           TS29.061
-3GPP-RAT-Type                              TS29.061
-3GPP-Selection-Mode                        TS29.061
-3GPP-SGSN-Address                          TS29.061
-3GPP-SGSN-Ipv6-Address                     TS29.061
-3GPP-SGSN-MCC-MNC                          TS29.061
-3GPP-User-Location-Info                    TS29.061
-3GPP2-BSID                                 X.S0057
-Access-Network-Charging-Address            TS29.214
-Access-Network-Charging-Identifier-Value   TS29.214
-AF-Charging-Identifier                     TS29.214
-AF-Signalling-Protocol                     TS29.214
-AN-Trusted                                 TS29.273
-Application-Service-Provider-Identity      TS29.214
-BSSID                                      TS32.299
-Called-Station-Id                          RFC4005
-Callee-Information                         TS29.214
-Calling-Party-Address                      TS32.299
-CC-Request-Number                          RFC8506
-CC-Request-Type                            RFC8506
-Charging-Information                       TS29.229
-Content-Version                            TS29.214
-DRMP                                       RFC7944
-Dynamic-Address-Flag                       TS32.299
-Dynamic-Address-Flag-Extension             TS32.299
-Extended-Max-Requested-BW-DL               TS29.214
-Extended-Max-Requested-BW-UL               TS29.214
-Final-Unit-Indication                      RFC8506
-Flow-Description                           TS29.214
-Flows                                      TS29.214
-Flow-Status                                TS29.214
-Framed-IP-Address                          RFC4005
-Framed-Ipv6-Prefix                         RFC4005
-Granted-Service-Unit                       RFC8506
-Load                                       RFC8583
-Logical-Access-ID                          TS283.034
-Max-Requested-Bandwidth-UL                 TS29.214
-Max-Requested-Bandwidth-DL                 TS29.214
-Maximum-Wait-Time                          TS29.273
-OC-OLR                                     RFC7683
-OC-Supported-Features                      RFC7683
-Origination-Time-Stamp                     TS29.273
-PDN-Connection-Charging-ID                 TS32.299
-Physical-Access-ID                         TS283.034
-Quota-Consumption-Time                     TS32.299
-RAI                                        TS29.061
-Rating-Group                               RFC8506
-Redirect-Address-Type                      RFC8506
-Redirect-Server-Address                    RFC8506
-Required-Access-Info                       TS29.214
-Service-Identifier                         RFC8506
-Sharing-Key-DL                             TS29.214
-Sharing-Key-UL                             TS29.214
-Sponsor-Identity                           TS29.214
-SSID                                       TS29.273
-Subscription-Id                            RFC8506
-Supported-Features                         TS29.229
-Trace-Data                                 TS29.272
-Trace-Reference                            TS29.272
-TWAN-Identifier                            TS29.061
-User-CSG-Information                       TS32.299
-User-Equipment-Info                        RFC8506
-User-Equipment-Info-Extension              RFC8506
-Used-Service-Unit                          RFC8506
+; Columns: Name                            From        Acc-Type             Applicability
+3GPP-Charging-Characteristics              TS29.061    All                  ABC
+3GPP-GGSN-Address                          TS29.061    "All (NOTE 8)"       Both,EPC-routed,ABC
+3GPP-GGSN-Ipv6-Address                     TS29.061    "All (NOTE 8)"       Both,EPC-routed,ABC
+3GPP-MS-TimeZone                           TS29.061    All                  Both
+3GPP-RAT-Type                              TS29.061    3GPP-GPRS            Both
+3GPP-Selection-Mode                        TS29.061    All                  ABC
+3GPP-SGSN-Address                          TS29.061    3GPP-GPRS,3GPP-EPS   Both
+3GPP-SGSN-Ipv6-Address                     TS29.061    3GPP-GPRS,3GPP-EPS   Both
+3GPP-SGSN-MCC-MNC                          TS29.061    All                  Both
+3GPP-User-Location-Info                    TS29.061    3GPP-GPRS,3GPP-EPS   Both
+3GPP2-BSID                                 X.S0057     3GPP2,Non-3GPP-EPS   Both,Rel8
+Access-Network-Charging-Address            TS29.214    All                  CC
+Access-Network-Charging-Identifier-Value   TS29.214    All                  CC
+AF-Charging-Identifier                     TS29.214    All                  CC
+AF-Signalling-Protocol                     TS29.214    All                  Both,ProvAF-signalFlow
+AN-Trusted                                 TS29.273    Non-3GPP-EPS         Both
+Application-Service-Provider-Identity      TS29.214    All                  Both,SponsoredConnectivity
+BSSID                                      TS32.299    FBA                  Both,FBAC
+Called-Station-Id                          RFC4005     All                  Both
+Callee-Information                         TS29.214    EPS                  VBCLTE
+Calling-Party-Address                      TS32.299    EPS                  VBCLTE
+CC-Request-Number                          RFC8506     All                  Both
+CC-Request-Type                            RFC8506     All                  Both
+Charging-Information                       TS29.229    All                  CC
+Content-Version                            TS29.214    All                  RuleVersioning
+DRMP                                       RFC7944     All                  Both
+Dynamic-Address-Flag                       TS32.299    All                  ABC
+Dynamic-Address-Flag-Extension             TS32.299    All                  ABC
+Extended-Max-Requested-BW-DL               TS29.214    All                  PC,Extended-BW-NR
+Extended-Max-Requested-BW-UL               TS29.214    All                  PC,Extended-BW-NR
+Final-Unit-Indication                      RFC8506     All                  CC
+Flow-Description                           TS29.214    All                  Both
+Flows                                      TS29.214    All                  CC
+Flow-Status                                TS29.214    All                  Both
+Framed-IP-Address                          RFC4005     All                  Both
+Framed-Ipv6-Prefix                         RFC4005     All                  Both
+Granted-Service-Unit                       RFC8506     All                  Both,Rel9,TimeBasedUM
+Load                                       RFC8583     All                  ""
+Logical-Access-ID                          TS283.034   xDSL                 Both,Rel10
+Max-Requested-Bandwidth-UL                 TS29.214    All                  PC
+Max-Requested-Bandwidth-DL                 TS29.214    All                  PC
+Maximum-Wait-Time                          TS29.273    All                  ""
+OC-OLR                                     RFC7683     All                  Both
+OC-Supported-Features                      RFC7683     All                  Both
+Origination-Time-Stamp                     TS29.273    All                  ""
+PDN-Connection-Charging-ID                 TS32.299    All                  ABC
+Physical-Access-ID                         TS283.034   xDSL                 Both,Rel10
+Quota-Consumption-Time                     TS32.299    All                  TimeBasedUM
+RAI                                        TS29.061    3GPP-GPRS,3GPP-EPS   Both
+Rating-Group                               RFC8506     All                  CC
+Redirect-Address-Type                      RFC8506     All                  PC,ADC
+Redirect-Server-Address                    RFC8506     All                  PC,ADC
+Required-Access-Info                       TS29.214    3GPP-GPRS,3GPP-EPS   CC,NetLoc
+Service-Identifier                         RFC8506     All                  CC
+Sharing-Key-DL                             TS29.214    All                  ResShare
+Sharing-Key-UL                             TS29.214    All                  ResShare
+Sponsor-Identity                           TS29.214    All                  CC,SponsoredConnectivity
+SSID                                       TS29.273    FBA                  Both,FBAC
+Subscription-Id                            RFC8506     All                  Both
+Supported-Features                         TS29.229    All                  Both,Rel8
+Trace-Data                                 TS29.272    3GPP-EPS             Both,Rel8
+Trace-Reference                            TS29.272    3GPP-EPS             Both,Rel8
+TWAN-Identifier                            TS29.061    Non-3GPP-EPS         Trusted-WLAN,NetLoc-Trusted-WLAN,NetLoc-Untrusted-WLAN
+User-CSG-Information                       TS32.299    3GPP-EPS             CC,Rel9
+User-Equipment-Info                        RFC8506     All                  Both
+User-Equipment-Info-Extension              RFC8506     All                  Both,User-Equipment-Info-Extension
+Used-Service-Unit                          RFC8506     All                  Both,Rel9,TimeBasedUM
 
 
 ; Type: AVP Table
 ; Section: 5a.3.0
 ; Table: 5a.3.0.1
 ; Page: 202
-; Columns: Name             Code   Section  Type          Must  May   S.not M.not Encrypt
-QoS-Rule-Install            1051   5a.3.1   Grouped       M,V   P     -     -     Yes
-QoS-Rule-Remove             1052   5a.3.2   Grouped       M,V   P     -     -     Yes
-QoS-Rule-Definition         1053   5a.3.3   Grouped       M,V   P     -     -     Yes
-QoS-Rule-Name               1054   5a.3.4   OctetString   M,V   P     -     -     Yes
-QoS-Rule-Base-Name          1074   5a.3.7   UTF8String    V     P     -     M     Yes
-QoS-Rule-Report             1055   5a.3.5   Grouped       M,V   P     -     -     Yes
-Session-Linking-Indicator   1064   5a.3.6   Enumerated    M,V   P     -     -     Yes
+; Columns: Name             Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type        Applicability
+QoS-Rule-Install            1051   5a.3.1    Grouped       M,V    P     -       -       Yes       All             ""
+QoS-Rule-Remove             1052   5a.3.2    Grouped       M,V    P     -       -       Yes       All             ""
+QoS-Rule-Definition         1053   5a.3.3    Grouped       M,V    P     -       -       Yes       All             ""
+QoS-Rule-Name               1054   5a.3.4    OctetString   M,V    P     -       -       Yes       All             ""
+QoS-Rule-Base-Name          1074   5a.3.7    UTF8String    V      P     -       M       Yes       All             Rel9
+QoS-Rule-Report             1055   5a.3.5    Grouped       M,V    P     -       -       Yes       All             ""
+Session-Linking-Indicator   1064   5a.3.6    Enumerated    M,V    P     -       -       Yes       "All (NOTE4)"   ""
 
 
 ; Type: Reused AVPs
 ; Section: 5a.4.0
 ; Table: 5a.4.0.1
 ; Page: 205
-; Columns: Name                            From
-3GPP-MS-TimeZone                           TS29.061
-3GPP-SGSN-MCC-MNC                          TS29.061
-3GPP-User-Location-Info                    TS29.061
-3GPP2-BSID                                 X.S0057
-Access-Network-Charging-Identifier-Value   TS29.214
-Allocation-Retention-Priority              TS29.212
-AN-GW-Address                              TS29.212
-APN-Aggregate-Max-Bitrate-DL               TS29.212
-APN-Aggregate-Max-Bitrate-UL               TS29.212
-Bearer-Control-Mode                        TS29.212
-Called-Station-Id                          RFC4005
-CC-Request-Number                          RFC8506
-CC-Request-Type                            RFC8506
-Default-EPS-Bearer-QoS                     TS29.212
-Content-Version                            TS29.214
-DRMP                                       RFC7944
-Event-Trigger                              TS29.212
-Extended-APN-AMBR-DL                       TS29.212
-Extended-APN-AMBR-UL                       TS29.212
-Extended-GBR-DL                            TS29.212
-Extended-GBR-UL                            TS29.212
-Extended-Max-Requested-BW-DL               TS29.214
-Extended-Max-Requested-BW-UL               TS29.214
-Flow-Description                           TS29.214
-Flow-Information                           TS29.212
-Flow-Label                                 TS29.212
-Framed-IP-Address                          RFC4005
-Framed-Ipv6-Prefix                         RFC4005
-Guaranteed-Bitrate-DL                      TS29.212
-Guaranteed-Bitrate-UL                      TS29.212
-HeNB-Local-IP-Address                      TS29.212
-IP-CAN-Type                                TS29.212
-Load                                       RFC8583
-Max-Requested-Bandwidth-UL                 TS29.214
-Max-Requested-Bandwidth-DL                 TS29.214
-NetLoc-Access-Support                      TS29.212
-Network-Request-Support                    TS29.212
-OC-OLR                                     RFC7683
-OC-Supported-Features                      RFC7683
-Packet-Filter-Content                      TS29.212
-Packet-Filter-Identifier                   TS29.212
-Packet-Filter-Information                  TS29.212
-Packet-Filter-Operation                    TS29.212
-Packet-Filter-Usage                        TS29.212
-PCC-Rule-Status                            TS29.212
-PDN-Connection-ID                          TS29.212
-Precedence                                 TS29.212
-PS-to-CS-Session-Continuity                TS29.212
-QoS-Class-Identifier                       TS29.212
-QoS-Information                            TS29.212
-RAI                                        TS29.061
-RAT-Type                                   TS29.212
-Required-Access-Info                       TS29.214
-Resource-Allocation-Notification           TS29.212
-Rule-Activation-Time                       TS29.212
-Rule-Deactivation-Time                     TS29.212
-Rule-Failure-Code                          TS29.212
-Security-Parameter-Index                   TS29.212
-Session-Release-Cause                      TS29.212
-Sharing-Key-DL                             TS29.214
-Sharing-Key-UL                             TS29.214
-Subscription-Id                            RFC8506
-Supported-Features                         TS29.229
-ToS-Traffic-Class                          TS29.212
-Trace-Data                                 TS29.272
-Trace-Reference                            TS29.272
-Tunnel-Header-Filter                       TS29.212
-Tunnel-Header-Length                       TS29.212
-Tunnel-Information                         TS29.212
-UDP-Source-Port                            TS29.212
-UE-Local-IP-Address                        TS29.212
-User-CSG-Information                       TS32.299
-User-Equipment-Info                        RFC8506
-User-Equipment-Info-Extension              RFC8506
-User-Location-Info-Time                    TS29.212
+; Columns: Name                            From       Acc-Type                        Applicability
+3GPP-MS-TimeZone                           TS29.061   All                             ""
+3GPP-SGSN-MCC-MNC                          TS29.061   All                             ""
+3GPP-User-Location-Info                    TS29.061   3GPP-EPS                        ""
+3GPP2-BSID                                 X.S0057    3GPP2,Non-3GPP-EPS              ""
+Access-Network-Charging-Identifier-Value   TS29.214   "All (See NOTE 6)"              ""
+Allocation-Retention-Priority              TS29.212   All                             ""
+AN-GW-Address                              TS29.212   All                             "EPC-routed (See NOTE 8)"
+APN-Aggregate-Max-Bitrate-DL               TS29.212   All                             ""
+APN-Aggregate-Max-Bitrate-UL               TS29.212   All                             ""
+Bearer-Control-Mode                        TS29.212   "All (See NOTE 3)"              ""
+Called-Station-Id                          RFC4005    All                             ""
+CC-Request-Number                          RFC8506    All                             ""
+CC-Request-Type                            RFC8506    All                             ""
+Default-EPS-Bearer-QoS                     TS29.212   All                             ""
+Content-Version                            TS29.214   All                             RuleVersioning
+DRMP                                       RFC7944    All                             ""
+Event-Trigger                              TS29.212   All                             ""
+Extended-APN-AMBR-DL                       TS29.212   All                             Extended-BW-NR
+Extended-APN-AMBR-UL                       TS29.212   All                             Extended-BW-NR
+Extended-GBR-DL                            TS29.212   All                             Extended-BW-NR
+Extended-GBR-UL                            TS29.212   All                             Extended-BW-NR
+Extended-Max-Requested-BW-DL               TS29.214   All                             Extended-BW-NR
+Extended-Max-Requested-BW-UL               TS29.214   All                             Extended-BW-NR
+Flow-Description                           TS29.214   All                             ""
+Flow-Information                           TS29.212   All                             ""
+Flow-Label                                 TS29.212   ""                              ""
+Framed-IP-Address                          RFC4005    All                             ""
+Framed-Ipv6-Prefix                         RFC4005    All                             ""
+Guaranteed-Bitrate-DL                      TS29.212   All                             ""
+Guaranteed-Bitrate-UL                      TS29.212   All                             ""
+HeNB-Local-IP-Address                      TS29.212   3GPP-EPS                        EPC-routed
+IP-CAN-Type                                TS29.212   All                             ""
+Load                                       RFC8583    All                             ""
+Max-Requested-Bandwidth-UL                 TS29.214   All                             ""
+Max-Requested-Bandwidth-DL                 TS29.214   All                             ""
+NetLoc-Access-Support                      TS29.212   All                             NetLoc
+Network-Request-Support                    TS29.212   "All (See NOTE 3)"              ""
+OC-OLR                                     RFC7683    All                             ""
+OC-Supported-Features                      RFC7683    All                             ""
+Packet-Filter-Content                      TS29.212   All                             ""
+Packet-Filter-Identifier                   TS29.212   All                             ""
+Packet-Filter-Information                  TS29.212   All                             ""
+Packet-Filter-Operation                    TS29.212   All                             ""
+Packet-Filter-Usage                        TS29.212   All                             Rel9
+PCC-Rule-Status                            TS29.212   All                             ""
+PDN-Connection-ID                          TS29.212   "All (See NOTE 4)"              Rel9
+Precedence                                 TS29.212   All                             ""
+PS-to-CS-Session-Continuity                TS29.212   3GPP-EPS                        vSRVCC
+QoS-Class-Identifier                       TS29.212   All                             ""
+QoS-Information                            TS29.212   All                             ""
+RAI                                        TS29.061   3GPP-EPS                        ""
+RAT-Type                                   TS29.212   All                             ""
+Required-Access-Info                       TS29.214   3GPP-EPS                        CC,NetLoc
+Resource-Allocation-Notification           TS29.212   All                             ""
+Rule-Activation-Time                       TS29.212   All                             ""
+Rule-Deactivation-Time                     TS29.212   All                             ""
+Rule-Failure-Code                          TS29.212   All                             ""
+Security-Parameter-Index                   TS29.212   All                             ""
+Session-Release-Cause                      TS29.212   All                             ""
+Sharing-Key-DL                             TS29.214   All                             ResShare
+Sharing-Key-UL                             TS29.214   All                             ResShare
+Subscription-Id                            RFC8506    All                             ""
+Supported-Features                         TS29.229   All                             ""
+ToS-Traffic-Class                          TS29.212   All                             ""
+Trace-Data                                 TS29.272   3GPP-EPS                        ""
+Trace-Reference                            TS29.272   3GPP-EPS                        ""
+Tunnel-Header-Filter                       TS29.212   "All (see NOTE 3 and NOTE 6)"   ""
+Tunnel-Header-Length                       TS29.212   "All (see NOTE 3 and NOTE 6)"   ""
+Tunnel-Information                         TS29.212   "All (see NOTE 3 and NOTE 6)"   ""
+UDP-Source-Port                            TS29.212   3GPP-EPS,Non-3GPP-EPS           EPC-routed
+UE-Local-IP-Address                        TS29.212   Non-3GPP-EPS                    BBAI
+User-CSG-Information                       TS32.299   3GPP-EPS                        Rel9
+User-Equipment-Info                        RFC8506    All                             ""
+User-Equipment-Info-Extension              RFC8506    All                             User-Equipment-Info-Extension
+User-Location-Info-Time                    TS29.212   3GPP-EPS                        CC,NetLoc
 
 
 ; Type: AVP Table
 ; Section: 5b.3.0
 ; Table: 5b.3.0.1
 ; Page: 216
-; Columns: Name       Code   Section  Type          Must  May   S.not M.not Encrypt
-ADC-Rule-Base-Name    1095   5b.3.4   UTF8String    M,V   P     -     -     Yes
-ADC-Rule-Definition   1094   5b.3.3   Grouped       M,V   P     -     -     Yes
-ADC-Rule-Install      1092   5b.3.1   Grouped       M,V   P     -     -     Yes
-ADC-Rule-Name         1096   5b.3.5   OctetString   M,V   P     -     -     Yes
-ADC-Rule-Remove       1093   5b.3.2   Grouped       M,V   P     -     -     Yes
-ADC-Rule-Report       1097   5b.3.6   Grouped       M,V   P     -     -     Yes
+; Columns: Name       Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+ADC-Rule-Base-Name    1095   5b.3.4    UTF8String    M,V    P     -       -       Yes       All        ""
+ADC-Rule-Definition   1094   5b.3.3    Grouped       M,V    P     -       -       Yes       All        ""
+ADC-Rule-Install      1092   5b.3.1    Grouped       M,V    P     -       -       Yes       All        ""
+ADC-Rule-Name         1096   5b.3.5    OctetString   M,V    P     -       -       Yes       All        ""
+ADC-Rule-Remove       1093   5b.3.2    Grouped       M,V    P     -       -       Yes       All        ""
+ADC-Rule-Report       1097   5b.3.6    Grouped       M,V    P     -       -       Yes       All        ""
 
 
 ; Type: Reused AVPs
@@ -1282,65 +1282,65 @@ User-Equipment-Info-Extension           RFC8506
 ; Section: 5c.3.1
 ; Table: 5c.3.1.1
 ; Page: 234
-; Columns: Name Code  Section  Type         Must  May   S.not M.not Encrypt
-Request-Type   2838   5c.3.2   Unsigned32   M,V   P     -     -     Yes
+; Columns: Name   Code   Section   Type         Must   May   S.not   M.not   Encrypt
+Request-Type      2838   5c.3.2    Unsigned32   M,V    P     -       -       Yes
 
 
 ; Type: Reused AVPs
 ; Section: 5c.4.1
 ; Table: 5c.4.1.1
 ; Page: 235
-; Columns: Name                         From
-ADC-Rule-Base-Name                      TS29.212
-ADC-Rule-Definition                     TS29.212
-ADC-Rule-Install                        TS29.212
-ADC-Rule-Name                           TS29.212
-ADC-Rule-Remove                         TS29.212
-ADC-Rule-Report                         TS29.212
-Called-Station-Id                       RFC4005
-DRMP                                    RFC7944
-Event-Report-Indication                 TS29.212
-Flow-Description                        TS29.214
-Flow-Direction                          TS29.212
-Flow-Information                        TS29.212
-Framed-IP-Address                       RFC4005
-Framed-Ipv6-Prefix                      RFC4005
-Load                                    RFC8583
-OC-OLR                                  RFC7863
-OC-Supported-Features                   RFC7863
-PCC-Rule-Status                         TS29.212
-Precedence                              TS29.212
-Rule-Failure-Code                       TS29.212
-Security-Parameter-Index                TS29.212
-Supported-Features                      TS29.229
-TDF-Application-Identifier              TS29.212
-ToS-Traffic-Class                       TS29.212
-Traffic-Steering-Policy-Identifier-DL   TS29.212
-Traffic-Steering-Policy-Identifier-UL   TS29.212
+; Columns: Name                         From       Applicability
+ADC-Rule-Base-Name                      TS29.212   ""
+ADC-Rule-Definition                     TS29.212   ""
+ADC-Rule-Install                        TS29.212   ""
+ADC-Rule-Name                           TS29.212   ""
+ADC-Rule-Remove                         TS29.212   ""
+ADC-Rule-Report                         TS29.212   ""
+Called-Station-Id                       RFC4005    ""
+DRMP                                    RFC7944    ""
+Event-Report-Indication                 TS29.212   ""
+Flow-Description                        TS29.214   ""
+Flow-Direction                          TS29.212   ""
+Flow-Information                        TS29.212   ""
+Framed-IP-Address                       RFC4005    ""
+Framed-Ipv6-Prefix                      RFC4005    ""
+Load                                    RFC8583    ""
+OC-OLR                                  RFC7863    ""
+OC-Supported-Features                   RFC7863    ""
+PCC-Rule-Status                         TS29.212   ""
+Precedence                              TS29.212   ""
+Rule-Failure-Code                       TS29.212   ""
+Security-Parameter-Index                TS29.212   ""
+Supported-Features                      TS29.229   ""
+TDF-Application-Identifier              TS29.212   ""
+ToS-Traffic-Class                       TS29.212   ""
+Traffic-Steering-Policy-Identifier-DL   TS29.212   ""
+Traffic-Steering-Policy-Identifier-UL   TS29.212   ""
 
 
 ; Type: AVP Table
 ; Section: E.6.3.1
 ; Table: E.6.3.1.1
-; Columns: Name                        Code   Section   Type          Must  May   S.not M.not Encrypt
-CS-Service-Qos-Request-Identifier      2807   E.6.3.2   OctetString   M,V   P     -     -     Yes
-CS-Service-QoS-Request-Operation       2808   E.6.3.3   Enumerated    M,V   P     -     -     Yes
-CS-Service-Resource-Report             2813   E.6.3.6   Grouped       M,V   P     -     -     Yes
-CS-Service-Resource-Failure-Cause      2814   E.6.3.5   Enumerated    M,V   P     -     -     Yes
-CS-Service-Resource-Result-Operation   2815   E.6.3.4   Enumerated    M,V   P     -     -     Yes
+; Columns: Name                        Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+CS-Service-Qos-Request-Identifier      2807   E.6.3.2   OctetString   M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-QoS-Request-Operation       2808   E.6.3.3   Enumerated    M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-Resource-Report             2813   E.6.3.6   Grouped       M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-Resource-Failure-Cause      2814   E.6.3.5   Enumerated    M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-Resource-Result-Operation   2815   E.6.3.4   Enumerated    M,V    P     -       -       Yes       3GPP-EPS   PC
 
 
 ; Type: Reused AVPs
 ; Section: E.6.4.1
 ; Table: E.6.4.1.1
-; Columns: Name         From
-DRMP                    RFC7944
-HeNB-Local-IP-Address   TS29.212
-Load                    RFC8583
-OC-OLR                  RFC7683
-OC-Supported-Features   RFC7683
-QoS-Information         TS29.212
-UDP-Source-Port         TS29.212
+; Columns: Name         From       Acc-Type
+DRMP                    RFC7944    3GPP-EPS
+HeNB-Local-IP-Address   TS29.212   3GPP-EPS
+Load                    RFC8583    3GPP-EPS
+OC-OLR                  RFC7683    3GPP-EPS
+OC-Supported-Features   RFC7683    3GPP-EPS
+QoS-Information         TS29.212   3GPP-EPS
+UDP-Source-Port         TS29.212   3GPP-EPS
 
 
 ; Type: Enumerated AVP

@@ -384,6 +384,37 @@ class AvpFlagRules(Node):
         return self
 
 
+class MarkColumn(enum.StrEnum):
+    """Columns in which a table marks where its row applies, each cell a
+    list of the document's marks. Both table kinds may carry them.
+
+    What a mark means is the document's legend's to say, so the cells keep
+    its spelling and the model and consumers interpret them per label:
+
+    - `Acc-Type`: TS 29.212's and 29.215's "Acc. Type", the IP-CAN access
+      types the AVP applies to (`All`, `3GPP-EPS`, `Non-3GPP-EPS`, ...).
+    - `Applicability`: the supported features an AVP belongs to ("AVPs
+      marked with a supported feature are applicable as described in clause
+      5.4.1", TS 29.212 table 5.3.0.1 note 9; TS 29.468's `V2X Localized
+      User Plane`), and in TS 29.212 and 29.215 also the function: `CC`
+      charging control, `PC` policy control, `Both`, `ADC`, `ABC` (note 3).
+    - `Reference-Points`: TS 29.061's "Applicable Reference Points" (`Gi`,
+      `Sgi`).
+    - `ACR`, `ACA`, `CCR`, `CCA`: TS 32.299's "Used in" columns, one per
+      command: `M`, `OM` or `OC` (table 7.1.0.1, clause 7.1.0) or `X`
+      (tables 7.2.0.1 and 7.3.1-7.5.1) where the AVP is used in it, a dash
+      where it is not.
+    """
+
+    ACCESS_TYPES = "Acc-Type"
+    APPLICABILITY = "Applicability"
+    REFERENCE_POINTS = "Reference-Points"
+    ACR = "ACR"
+    ACA = "ACA"
+    CCR = "CCR"
+    CCA = "CCA"
+
+
 class AvpColumn(enum.StrEnum):
     """Columns of an AVP table that the format models, spelled as the
     `; Columns:` directive writes them."""
@@ -397,6 +428,13 @@ class AvpColumn(enum.StrEnum):
     SHOULD_NOT = "S.not"
     MUST_NOT = "M.not"
     ENCRYPT = "Encrypt"
+    ACCESS_TYPES = MarkColumn.ACCESS_TYPES.value
+    APPLICABILITY = MarkColumn.APPLICABILITY.value
+    REFERENCE_POINTS = MarkColumn.REFERENCE_POINTS.value
+    ACR = MarkColumn.ACR.value
+    ACA = MarkColumn.ACA.value
+    CCR = MarkColumn.CCR.value
+    CCA = MarkColumn.CCA.value
 
 
 class ReusedColumn(enum.StrEnum):
@@ -405,9 +443,29 @@ class ReusedColumn(enum.StrEnum):
     NAME = "Name"
     FROM = "From"
     M_BIT = "M-bit"
+    # TS 29.172 table 7.4.1-2 and TS 32.299's tables 7.3.1-7.5.1 print the
+    # code, 29.172 the type too, of the AVPs they re-use.
+    CODE = "Code"
+    TYPE = "Type"
+    ACCESS_TYPES = MarkColumn.ACCESS_TYPES.value
+    APPLICABILITY = MarkColumn.APPLICABILITY.value
+    REFERENCE_POINTS = MarkColumn.REFERENCE_POINTS.value
+    ACR = MarkColumn.ACR.value
+    ACA = MarkColumn.ACA.value
+    CCR = MarkColumn.CCR.value
+    CCA = MarkColumn.CCA.value
 
 
-REUSED_COLUMNS: tuple[ReusedColumn, ...] = tuple(ReusedColumn)
+REUSED_COLUMNS: tuple[ReusedColumn, ...] = (
+    ReusedColumn.NAME,
+    ReusedColumn.FROM,
+    ReusedColumn.M_BIT,
+)
+
+
+def mark_column(column: AvpColumn | ReusedColumn) -> MarkColumn | None:
+    """The `MarkColumn` a table column is, or None for any other column."""
+    return MarkColumn(column.value) if column.value in MarkColumn else None
 
 
 def _check_columns(columns: tuple[AvpColumn | ReusedColumn, ...]) -> None:
@@ -418,6 +476,40 @@ def _check_columns(columns: tuple[AvpColumn | ReusedColumn, ...]) -> None:
     labels = [column.value for column in columns]
     if len(set(labels)) != len(labels):
         raise ValueError(f"duplicate column in {labels}")
+
+
+# One mark in a `MarkColumn` cell, as the document prints it: `Rel8`,
+# `3GPP-EPS`, `OC`, and with what the document prints beside it, `All (NOTE
+# 5)` (TS 29.212, whose note 5 excludes 3GPP-GPRS) or `V2X Localized User
+# Plane` (TS 29.468). A file quotes a mark that is not a plain token, as it
+# does an enum value name, so a mark may hold what an enum value name may.
+# A lone `-` is not one: it is the dash a cell prints in place of a mark.
+def _not_the_dash(value: str) -> str:
+    if value == "-":
+        raise ValueError("'-' is a cell's printed dash, not a mark")
+    return value
+
+
+Mark = Annotated[EnumValueName, pydantic.AfterValidator(_not_the_dash)]
+
+# A row's marks per mark column its table prints, three ways: marks; `()`
+# where the cell prints a dash, which TS 32.299 clause 7.1.0 gives a meaning
+# ("Those Diameter AVPs that are not used are marked '-'"); and no entry
+# where the cell is blank. `columns` tells a blank cell from an absent
+# column.
+Marks = dict[MarkColumn, tuple[Mark, ...]]
+
+
+def _check_marks(
+    name: str, marks: Marks, columns: tuple[AvpColumn | ReusedColumn, ...]
+) -> None:
+    declared = {mark_column(column) for column in columns}
+    for column in marks:
+        if column not in declared:
+            raise ValueError(
+                f"{name}: {column.value} marks set but the table has no"
+                f" {column.value} column"
+            )
 
 
 class AvpTableRow(Node):
@@ -442,6 +534,9 @@ class AvpTableRow(Node):
     data_type: DataType | None = None
     flag_rules: AvpFlagRules = AvpFlagRules()
     may_encrypt: bool | None = None
+    # Per mark column (`MarkColumn`), what the row marks: TS 29.212's
+    # `Acc-Type` and `Applicability`, TS 32.299's per-command use.
+    marks: Marks = Field(default_factory=dict)
 
     def stated_vendor(self, file_vendor: int) -> int | None:
         """The vendor space the row's V flag places the AVP in, or None
@@ -516,6 +611,7 @@ class AvpTable(Node):
                         f"{row.name}: {field} flags set but the table has no"
                         f" {column.value} column"
                     )
+            _check_marks(row.name, row.marks, self.columns)
         return self
 
 
@@ -533,6 +629,11 @@ class ReusedAvpRow(Node):
     # None when the table has no M-bit column (TS 29.128, 29.173, 29.336) or
     # when it has one and this row's cell is empty.
     m_bit: MBitOverride | None = None
+    # What the citing table says of the AVP's code and type, where it prints
+    # them; the origin defines both, and the linter compares the two.
+    code: Unsigned32 | None = None
+    data_type: DataType | None = None
+    marks: Marks = Field(default_factory=dict)
 
 
 class ReusedAvps(Node):
@@ -559,11 +660,19 @@ class ReusedAvps(Node):
         for required in (ReusedColumn.NAME, ReusedColumn.FROM):
             if required not in self.columns:
                 raise ValueError(f"re-used table has no {required.value} column")
+        absent = {
+            ReusedColumn.M_BIT: "m_bit",
+            ReusedColumn.CODE: "code",
+            ReusedColumn.TYPE: "data_type",
+        }
         for row in self.rows:
-            if ReusedColumn.M_BIT not in self.columns and row.m_bit is not None:
-                raise ValueError(
-                    f"{row.name}: m_bit set but the table has no M-bit column"
-                )
+            for column, field in absent.items():
+                if column not in self.columns and getattr(row, field) is not None:
+                    raise ValueError(
+                        f"{row.name}: {field} set but the table has no"
+                        f" {column.value} column"
+                    )
+            _check_marks(row.name, row.marks, self.columns)
         return self
 
 

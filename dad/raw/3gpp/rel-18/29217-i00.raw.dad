@@ -177,37 +177,37 @@
 ; Section: 5.3.1
 ; Table: 5.3.1.1
 ; Page: 14
-; Columns: Name               Code   Section  Type               Must  May   S.not M.not Encrypt
-Aggregated-Congestion-Info    4000   5.3.2    Grouped            M,V   P     -     -     Yes
-Aggregated-RUCI-Report        4001   5.3.3    Grouped            M,V   P     -     -     Yes
-Congestion-Level-Definition   4002   5.3.4    Grouped            V     P     -     M     Yes
-Congestion-Level-Range        4003   5.3.5    Unsigned32         V     P     -     M     Yes
-Congestion-Level-Set-Id       4004   5.3.6    Unsigned32         V     P     -     M     Yes
-Congestion-Level-Value        4005   5.3.7    Unsigned32         M,V   P     -     -     Yes
-Congestion-Location-Id        4006   5.3.8    Grouped            V     P     -     M     Yes
-Conditional-Restriction       4007   5.3.9    Unsigned32         V     P     -     M     Yes
-eNodeB-Id                     4008   5.3.10   OctetString        M,V   P     -     -     Yes
-IMSI-List                     4009   5.3.11   OctetString        M,V   P     -     -     Yes
-RCAF-Id                       4010   5.3.12   DiameterIdentity   M,V   P     -     -     Yes
-Reporting-Restriction         4011   5.3.13   Unsigned32         V     P     -     M     Yes
-RUCI-Action                   4012   5.3.14   Unsigned32         V     P     -     M     Yes
-Extended-eNodeB-Id            4013   5.3.15   OctetString        V     P     -     M     Yes
+; Columns: Name               Code   Section   Type               Must   May   S.not   M.not   Encrypt   Applicability
+Aggregated-Congestion-Info    4000   5.3.2     Grouped            M,V    P     -       -       Yes       ""
+Aggregated-RUCI-Report        4001   5.3.3     Grouped            M,V    P     -       -       Yes       ""
+Congestion-Level-Definition   4002   5.3.4     Grouped            V      P     -       M       Yes       ReportRestriction
+Congestion-Level-Range        4003   5.3.5     Unsigned32         V      P     -       M       Yes       ReportRestriction
+Congestion-Level-Set-Id       4004   5.3.6     Unsigned32         V      P     -       M       Yes       ReportRestriction
+Congestion-Level-Value        4005   5.3.7     Unsigned32         M,V    P     -       -       Yes       ""
+Congestion-Location-Id        4006   5.3.8     Grouped            V      P     -       M       Yes       ReportRestriction
+Conditional-Restriction       4007   5.3.9     Unsigned32         V      P     -       M       Yes       ReportRestriction
+eNodeB-Id                     4008   5.3.10    OctetString        M,V    P     -       -       Yes       ""
+IMSI-List                     4009   5.3.11    OctetString        M,V    P     -       -       Yes       ""
+RCAF-Id                       4010   5.3.12    DiameterIdentity   M,V    P     -       -       Yes       ""
+Reporting-Restriction         4011   5.3.13    Unsigned32         V      P     -       M       Yes       ReportRestriction
+RUCI-Action                   4012   5.3.14    Unsigned32         V      P     -       M       Yes       ReportRestriction
+Extended-eNodeB-Id            4013   5.3.15    OctetString        V      P     -       M       Yes       ""
 
 
 ; Type: Reused AVPs
 ; Section: 5.4.1
 ; Table: 5.4.1.1
 ; Page: 18
-; Columns: Name           From
-Called-Station-Id         RFC4005
-DRMP                      RFC7944
-Load                      RFC8583
-OC-OLR                    RFC7683
-OC-Supported-Features     RFC7683
-PCRF-Address              TS29.215
-Subscription-Id           RFC4006
-Supported-Features        TS29.229
-3GPP-User-Location-Info   TS29.061
+; Columns: Name           From       Applicability
+Called-Station-Id         RFC4005    ""
+DRMP                      RFC7944    ""
+Load                      RFC8583    ""
+OC-OLR                    RFC7683    ""
+OC-Supported-Features     RFC7683    ""
+PCRF-Address              TS29.215   ""
+Subscription-Id           RFC4006    ""
+Supported-Features        TS29.229   ""
+3GPP-User-Location-Info   TS29.061   ""
 
 
 ; Type: Grouped AVP

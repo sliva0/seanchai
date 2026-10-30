@@ -151,6 +151,10 @@
         "1": {
           "patterns": [
             {
+              "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
+              "name": "string.quoted.double.mark.dad"
+            },
+            {
               "match": "(?<=\\s|^)(OctetString|Integer32|Integer64|Unsigned32|Unsigned64|Float32|Float64|Grouped|Address|Time|UTF8String|DiameterIdentity|DiameterURI|Enumerated|IPFilterRule|QoSFilterRule)(?=\\s|$)",
               "name": "storage.type.data-type.dad"
             },

@@ -66,7 +66,9 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   local-and-reused AVP is doing, decided by comparing bodies. All notes: only
   the origin's editor knows which copy is current. TS 29.388's
   `V2X-Subscription-Data` neither re-prints nor extends 29.272's.
-- `reused-code-conflict` — two documents giving one AVP two codes. An error:
+- `reused-code-conflict` — two documents giving one AVP two codes, also
+  where a re-used table prints a code of its own (TS 29.172 table 7.4.1-2,
+  TS 32.299 tables 7.3.1-7.5.1) that the origin does not give. An error:
   an AVP *is* its `(vendor-id, code)`.
 - `reused-row-mismatch` — a row this file tabulates for an AVP it re-uses,
   reading its type, flag rules or encrypt differently from the origin's
@@ -79,7 +81,8 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   4.1 reserves the P bit, so a P cell records which side of RFC 6733 a
   document was written on. Agreeing with any one origin row agrees. A
   re-used table's M-bit column is not compared, being the interface's own
-  setting by design. A note: a citing interface may set its own rule.
+  setting by design; its Type column (TS 29.172) is, against the origin's
+  rows or definition. A note: a citing interface may set its own rule.
 - `reused-avp-not-in-origin` — the cited origin has never heard of it.
   TS 29.283 listed `Feature-Id` from TS 29.229 (now deleted by correction).
 - `reused-origin-indirect` — the origin borrows it too. TS 29.172 cites

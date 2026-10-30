@@ -57,19 +57,19 @@
 ; Section: 6.4.1
 ; Table: 6.4.1/1
 ; Page: 16
-; Columns: Name           Code   Section  Type               Must  May   S.not M.not Encrypt
-LMSI                      2400   6.4.2    OctetString        M,V   -     -     -     No
-Serving-Node              2401   6.4.3    Grouped            M,V   -     -     -     No
-MME-Name                  2402   6.4.4    DiameterIdentity   M,V   -     -     -     No
-MSC-Number                2403   6.4.5    OctetString        M,V   -     -     -     No
-LCS-Capabilities-Sets     2404   6.4.6    Unsigned32         M,V   -     -     -     No
-GMLC-Address              2405   6.4.7    Address            M,V   -     -     -     No
-Additional-Serving-Node   2406   6.4.8    Grouped            M,V   -     -     -     No
-PPR-Address               2407   6.4.9    Address            M,V   -     -     -     No
-MME-Realm                 2408   6.4.12   DiameterIdentity   V     -     -     M     No
-SGSN-Name                 2409   6.4.13   DiameterIdentity   V     -     -     M     No
-SGSN-Realm                2410   6.4.14   DiameterIdentity   V     -     -     M     No
-RIA-Flags                 2411   6.4.15   Unsigned32         V     -     -     M     No
+; Columns: Name           Code   Section   Type               Must   May   S.not   M.not   Encrypt
+LMSI                      2400   6.4.2     OctetString        M,V    -     -       -       No
+Serving-Node              2401   6.4.3     Grouped            M,V    -     -       -       No
+MME-Name                  2402   6.4.4     DiameterIdentity   M,V    -     -       -       No
+MSC-Number                2403   6.4.5     OctetString        M,V    -     -       -       No
+LCS-Capabilities-Sets     2404   6.4.6     Unsigned32         M,V    -     -       -       No
+GMLC-Address              2405   6.4.7     Address            M,V    -     -       -       No
+Additional-Serving-Node   2406   6.4.8     Grouped            M,V    -     -       -       No
+PPR-Address               2407   6.4.9     Address            M,V    -     -       -       No
+MME-Realm                 2408   6.4.12    DiameterIdentity   V      -     -       M       No
+SGSN-Name                 2409   6.4.13    DiameterIdentity   V      -     -       M       No
+SGSN-Realm                2410   6.4.14    DiameterIdentity   V      -     -       M       No
+RIA-Flags                 2411   6.4.15    Unsigned32         V      -     -       M       No
 
 
 ; Type: Reused AVPs
