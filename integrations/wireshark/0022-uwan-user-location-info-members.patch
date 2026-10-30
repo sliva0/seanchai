@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Fri, 30 Oct 2026 14:00:00 +0000
+Subject: [PATCH] Diameter: Add UWAN-User-Location-Info's later members
+
+3GPP TS 32.299 clause 7.2.242aaA gives UWAN-User-Location-Info (3918)
+the members UE-Local-IP-Address, UDP-Source-Port, SSID, BSSID,
+TCP-Source-Port, Civic-Address-Information, WLAN-Operator-Id and
+Logical-Access-ID; the dictionary lists the first four, as the ABNF
+did up to V15.2.0. The other four arrived in V15.3.0. Checked against
+V18.0.0.
+
+Civic-Address-Information (1305), WLAN-Operator-Id (1306) and ETSI's
+Logical-Access-ID (302) have entries already. TCP-Source-Port (2843,
+3GPP TS 29.212 clause 5.3.129) has none; the dictionary stores member
+names without resolving them, and an addition for TS 29.212 supplies
+the entry.
+---
+ resources/protocols/diameter/dictionary.xml | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..1f2ea1f 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -8752,6 +8752,10 @@
+ 				<gavp name="UDP-Source-Port"/>
+ 				<gavp name="SSID"/>
+ 				<gavp name="BSSID"/>
++				<gavp name="TCP-Source-Port"/>
++				<gavp name="Civic-Address-Information"/>
++				<gavp name="WLAN-Operator-Id"/>
++				<gavp name="Logical-Access-ID"/>
+ 			</grouped>
+ 		</avp>
+ 		<avp name="Monitoring-Event-Configuration-Activity" code="3919" mandatory="must" vendor-bit="must" may-encrypt="no" vendor-id="TGPP">

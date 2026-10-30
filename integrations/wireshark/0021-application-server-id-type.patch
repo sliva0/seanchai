@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Fri, 30 Oct 2026 14:00:00 +0000
+Subject: [PATCH] Diameter: Type Application-Server-ID as UTF8String
+
+3GPP TS 32.299 table 7.2.0.1 types AVP 2101 only "refer [223]",
+OMA-DDS-Charging_Data, the document that defines it. Its approved V1.0
+(OMA-DDS-Charging_Data-V1_0-20110201-A), table 11 in clause 8.4, types
+Application-Server-Id (vendor 10415, code 2101) UTF8String; clause 6.2.5
+describes it as identifying "the application server providing the
+service". As Unsigned32, any identifier but a four-octet one is
+reported malformed.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..7950288 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -6943,7 +6943,7 @@
+ 			<type type-name="OctetString"/>
+ 		</avp>
+ 		<avp name="Application-Server-ID" code="2101" vendor-bit="must" vendor-id="TGPP">
+-			<type type-name="Unsigned32"/>
++			<type type-name="UTF8String"/>
+ 		</avp>
+ 		<avp name="Application-Service-Type" code="2102" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="Enumerated"/>

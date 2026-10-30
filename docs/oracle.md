@@ -92,7 +92,31 @@ remains:
   `IP-Mask-Bit-Mask-Width` (2335, the IANA name; the dictionary renamed
   its entry to the uncorrected ABNF's member in 2018) and
   `Time-Of-Day-Condition` without the three members 2333 restores, which
-  the oracle, comparing names and types, does not report.
+  the oracle, comparing names and types, does not report. Two more the
+  oracle cannot see, the AVP being re-used or the defect a member list:
+  `Application-Server-ID` (2101) typed Unsigned32 where OMA-DDS-Charging_Data
+  V1.0 table 11, which TS 32.299 table 7.2.0.1 refers to and the corpus
+  supplies the type from, says UTF8String; and `UWAN-User-Location-Info`
+  (3918) listing only the four members TS 32.299 clause 7.2.242aaA printed
+  up to V15.2.0, without `TCP-Source-Port`, `Civic-Address-Information`,
+  `WLAN-Operator-Id` and `Logical-Access-ID`. TCP-Source-Port itself
+  (2843, TS 29.212 clause 5.3.129) is absent from the dictionary, and its
+  TS 29.212 addition supplies it.
+- **Leads not staged**, resting on a reading the corpus makes rather than
+  on a document's statement, or on nothing a merge request changes:
+  `Monitoring-Event-Information` (3921) lists TS 29.336's
+  `Monitoring-Event-Report` (3123), the name TS 32.299 clause 7.2.111AaC
+  prints, where the corpus corrects the member to TS 32.299's own
+  `Monitoring-Event-Report-Data` (3920); `dictionary.xml`'s comment `314
+  Charging-Characteristics Integer [3GPP 29.234]` beside `TGPP.xml`'s
+  OctetString entry, both from one 2021 commit, where no document settles
+  the type ([extractor.md](extractor.md)); and `mobileipv4.xml`'s MSA
+  members, which no source gives: `MIP-MN-to-HA-MSA` lists
+  `MIP-MN-HA-SPI`, which resolves by name to RFC 5778's MIPv6 AVP 491
+  (RFC 4004's verified erratum 1462 names the member `MIP-MN-to-HA-SPI`,
+  which nothing defines), `MIP-MN-to-FA-MSA` and `MIP-FA-to-MN-MSA` list
+  `MIP-MN-AAA-SPI` (341), a member of a 2004 draft, and
+  `MIP-HA-to-MN-MSA` lists no SPI.
 - **Display conveniences the mapping does not tolerate**, corpus correct:
   `3GPP-NSAPI`, `Codec-Data`, `Framed-Pool`, `EAP-Key-Name` and 32.299's
   `Access-Network-Information` (the dictionary comments its OctetString
