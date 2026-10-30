@@ -50,6 +50,30 @@ CORRECTIONS = [
         " is Digest-Qop; the table uniquely capitalizes its final letter",
         versions="18.1.0",
     ),
+    # The same name on the row stating Cx's flag rules for it, V in Must not
+    # (code 110, RFC 4590's IETF space), and in the body using it.
+    Correction(
+        id="digest-qop-row-case",
+        target=table_row("Digest-QoP", table="6.3.0.1"),
+        field="name",
+        expect="Digest-QoP",
+        replace="Digest-Qop",
+        reason="the row tabulates code 110 with V in Must not, RFC 4590's"
+        " attribute, which section 3.8 names Digest-Qop; NOTE 3 says these"
+        " attributes are defined in RFC 4590",
+        versions="18.1.0",
+    ),
+    Correction(
+        id="digest-qop-member-case",
+        target=avp_rule("SIP-Digest-Authenticate", "Digest-QoP"),
+        field="name",
+        expect="Digest-QoP",
+        replace="Digest-Qop",
+        reason="clause 6.3.36's member is RFC 4590's attribute, which section"
+        " 3.8 names Digest-Qop; clause 6.3.40 says the AVP is defined"
+        " elsewhere (RFC 4740, which imports it from RFC 4590)",
+        versions="18.1.0",
+    ),
     Insert(
         id="framed-ip-address-reused",
         into=reused_avps("6.3.0.1"),

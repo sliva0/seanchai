@@ -592,14 +592,15 @@ CORRECTIONS += [
 # the reference ... is provided"), and leaves their flag cells blank. OMA's
 # approved V1.0 (OMA-DDS-Charging_Data-V1_0-20110201-A) states both in table
 # 11 of its clause 8.4, the code 10415 vendor's, as this table's codes are:
-# Must V,M and May P for each. Its names differ in case from table 7.2.0.1's
-# (`Application-Server-Id`, `Content-provider-ID`), its codes do not.
+# Must V,M and May P for each. Its table writes `Application-Server-Id`, where
+# table 7.2.0.1 and OMA's own ABNF write -ID, and `Content-provider-ID`, as
+# OMA writes it throughout and an input patch respells table 7.2.0.1's row.
 _OMA_TYPES = {
     "Application-Server-ID": (ast.DataType.UTF8_STRING, 2101),
     "Application-Service-Type": (ast.DataType.ENUMERATED, 2102),
     "Application-Session-ID": (ast.DataType.UNSIGNED32, 2103),
     "Content-ID": (ast.DataType.UTF8_STRING, 2116),
-    "Content-Provider-ID": (ast.DataType.UTF8_STRING, 2117),
+    "Content-provider-ID": (ast.DataType.UTF8_STRING, 2117),
     "DCD-Information": (ast.DataType.GROUPED, 2115),
     "Delivery-Status": (ast.DataType.UTF8_STRING, 2104),
     "IM-Information": (ast.DataType.GROUPED, 2110),

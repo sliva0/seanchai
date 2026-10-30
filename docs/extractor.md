@@ -449,10 +449,13 @@ behind two quirks of its own:
 The input patches repair what fails these readings: three reference cells
 (`29.153[37]`, `29.154[38]`, `29.109 [7`), `723 to799`, three type typos
 (`OctectString`, `Groupe`, `UTF8Str`) and six names broken beside a hyphen (`Redirect- Support`, `Authentication- Information
--Request/Answer`). Twenty-two more respell table 7.1's names that differ
-only in case from the defining clause's (`Role-of-Node`, TS 32.299's
-`Role-Of-Node`); see [linter.md](linter.md#standing-findings). Names with spaces stay as printed, quoted (`"Visited PLMN
-Id"`, `"Media-Sub-Component AVP"`).
+-Request/Answer`). Forty-seven more respell table 7.1's names to the
+defining clause's, twenty-one differing only in case (`Role-of-Node`, TS
+32.299's `Role-Of-Node`) and the rest otherwise (`"Visited PLMN Id"`, TS
+29.272's `Visited-PLMN-Id`); see [linter.md](linter.md#standing-findings).
+A name with spaces no patch respells stays as printed, quoted
+(`"SGSN-Absent-User-Subscriber-Diagnostic SM"`, whose defining clause
+prints two names).
 
 ## The RFC plain-text extractor
 

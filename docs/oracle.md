@@ -58,10 +58,11 @@ place for another spelling
 ## What still reports
 
 The first run's findings were triaged against the primary clauses; the
-corpus-side fixes are corrections (RFC 5777's `Treatment-Action`,
-29.336's `Periodic-time`, RFC 4005's
-`Framed-Appletalk-*` table casing, 29.172's `Area-Identification`, 29.061's
-`MBMS-Flag`, where the dictionary agrees with clause 20.5a.9). What remains:
+corpus-side fixes are corrections (RFC 5777's `Treatment-Action`, 29.229's
+`Digest-QoP` for RFC 4590's `Digest-Qop`, 29.336's `Periodic-time`, RFC
+4005's `Framed-Appletalk-*` table casing, 29.172's `Area-Identification`,
+29.061's `MBMS-Flag`, where the dictionary agrees with clause 20.5a.9). What
+remains:
 
 - **Deliberate disambiguations and XML-imposed spellings**, correct on both
   sides: `Cx-User-Data`/`Sh-User-Data`, the `3GPP-SIP-*` and `3GPP-*`
@@ -103,9 +104,6 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action`,
   patch per defining document; the ten are named like an entry the
   dictionary or another addition already has, or grouped with no body the
   corpus holds.
-- **One untriaged lead from TS 29.229**: its row for RFC 4590's code 110
-  spells `Digest-QoP`, where RFC 4590 (section 3.8) and Wireshark write
-  `Digest-Qop`.
 - **Two untriaged leads from RFC 7155**: `Framed-IPX-Network` typed Unsigned32
   (clause 4.4.10.6.1's own sentence; RFC 4005 disagrees with itself here,
   clause 6.12.1 vs its table) against Wireshark's UTF8String; and
@@ -121,6 +119,7 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action`,
   follows table 7.2.0.1's Integer32; `MMTel-SService-Type`, which 32.299
   misprints consistently and Wireshark spells `MMTel-Service-Type`. Table
   7.2.0.1's thirteen rows typed `refer [223]` are re-used
-  from `OMA-DDS-Charging_Data` and so not checked: Wireshark spells code
-  2117 `Content-provider-ID`, as OMA's own table 11 does, where 32.299
-  writes `Content-Provider-ID`.
+  from `OMA-DDS-Charging_Data` and so not checked; code 2117 is
+  `Content-provider-ID` throughout OMA's document, as in Wireshark and TS
+  29.230, and an input patch respells table 7.2.0.1's `Content-Provider-ID`
+  to it.

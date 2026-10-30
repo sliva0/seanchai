@@ -1045,7 +1045,6 @@ def test_a_base_missing_from_the_corpus_is_a_note_and_turns_the_rule_off():
 # body differences and indirect origins present in the committed corpus.
 _STANDING_CORPUS_NOTES = {
     "29061-i10.dad": {
-        "registry-avp-name": ["MBMS-Session-Repetition-Number"],
         "table-row-mismatch": [
             "3GPP-IMSI",
             "3GPP-SGSN-Address",
@@ -1056,7 +1055,6 @@ _STANDING_CORPUS_NOTES = {
             "3GPP-MS-TimeZone",
         ],
     },
-    "29109-i10.dad": {"registry-avp-name": ["NAF-Id"]},
     "29128-i00.dad": {"reused-body-differs": ["Terminal-Information"]},
     "29172-i10.dad": {
         "reused-origin-indirect": ["Service-Selection"],
@@ -1069,7 +1067,6 @@ _STANDING_CORPUS_NOTES = {
     },
     "29214-i40.dad": {
         "external-origin-not-in-corpus": ["ETSI-TS183.017"],
-        "registry-avp-name": ["Media-Sub-Component"],
     },
     "29219-i00.dad": {
         "external-origin-not-in-corpus": ["ETSI-TS283.034"],
@@ -1089,12 +1086,6 @@ _STANDING_CORPUS_NOTES = {
     },
     "29272-i70.dad": {
         "registry-application-name": ["S7a/S7d"],
-        "registry-avp-name": [
-            "Event-Threshold-RSRP",
-            "Event-Threshold-RSRQ",
-            "Third-Context-Identifier",
-            "Visited-PLMN-Id",
-        ],
         "reused-body-differs": [
             "ProSe-Subscription-Data",
             "Supported-Services",
@@ -1134,12 +1125,7 @@ _STANDING_CORPUS_NOTES = {
     },
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
-        "registry-avp-name": [
-            "Group-User-Identifier",
-            "NIA-Flags",
-            "Supported-Monitoring-Events",
-            "Supported-Services",
-        ],
+        "registry-avp-name": ["Group-User-Identifier", "NIA-Flags"],
         "reused-body-differs": [
             "MME-Location-Information",
             "SGSN-Location-Information",
@@ -1148,11 +1134,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-reprint": ["EPS-Location-Information"],
     },
     "29338-i20.dad": {
-        "registry-avp-name": [
-            "MME-Absent-User-Diagnostic-SM",
-            "MSC-Absent-User-Diagnostic-SM",
-            "SGSN-Absent-User-Diagnostic-SM",
-        ],
+        "registry-avp-name": ["SGSN-Absent-User-Diagnostic-SM"],
         "reused-body-differs": ["Serving-Node"],
     },
     "29345-i00.dad": {
@@ -1170,24 +1152,7 @@ _STANDING_CORPUS_NOTES = {
             "Priority-Indication",
             "Reference-Number",
         ],
-        "registry-avp-name": [
-            "Authorised-QoS",
-            "Charging-Characteristics-Selection-Mode",
-            "Deferred-Location-Event-Type",
-            "IP-Realm-Default-Indication",
-            "ISUP-Cause",
-            "Local-GW-Inserted-Indication",
-            "MBMS-GW-Address",
-            "Originator-SCCP-Address",
-            "PC3-Control-Protocol-Cause",
-            "PC3-EPC-Control-Protocol-Cause",
-            "PoC-Change-Condition",
-            "ProSe-Group-IP-Multicast-Address",
-            "RAN-End-Timestamp",
-            "RAN-Start-Timestamp",
-            "Service-ID",
-            "Transcoder-Inserted-Indication",
-        ],
+        "registry-avp-name": ["Service-ID"],
         # Table 7.1 reserves 1324-1399 for "TS 32.229", likely TS 32.299.
         "registry-reserved-code": ["Nr-Cgi", "PSCell-Info"],
         "reused-reprint": ["User-Equipment-Info"],

@@ -355,7 +355,7 @@ Wildcarded-Public-Identity                    634    6.3.35     UTF8String      
 SIP-Digest-Authenticate                       635    6.3.36     Grouped            V      -     -       M       No
 Digest-Realm                                  104    6.3.37     UTF8String         M      -     -       V       No
 Digest-Algorithm                              111    6.3.39     UTF8String         M      -     -       V       No
-Digest-QoP                                    110    6.3.40     UTF8String         M      -     -       V       No
+Digest-Qop                                    110    6.3.40     UTF8String         M      -     -       V       No ;; corrected: (TS29.229.py#digest-qop-row-case)
 Digest-HA1                                    121    6.3.41     UTF8String         M      -     -       V       No
 UAR-Flags                                     637    6.3.44     Unsigned32         V      -     -       M       No
 Loose-Route-Indication                        638    6.3.45     Enumerated         V      -     -       M       No
@@ -562,7 +562,7 @@ Originating-Request ::= < Enumerated AVP header: 633 10415 >
 SIP-Digest-Authenticate ::= < AVP header: 635 10415 >
         { Digest-Realm }
         [ Digest-Algorithm ]
-        { Digest-QoP }
+        { Digest-Qop } ;; corrected: (TS29.229.py#digest-qop-member-case)
         { Digest-HA1 }
         [ Alternate-Digest-Algorithm ]
         [ Alternate-Digest-HA1 ]

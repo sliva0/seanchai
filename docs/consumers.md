@@ -72,7 +72,7 @@ same thing: every field both state — code, type, flag rules, and vendor
 where both state one — must be equal. A table row prints no vendor, so its
 V flag says it (`ast.AvpTableRow.stated_vendor`, which the linter's
 `duplicate-identity` reads too): V under Must-not is IETF space, vendor 0
-(TS 29.229's `Digest-QoP`, code 110, is RFC 4590's; TS 29.273's
+(TS 29.229's `Digest-Qop`, code 110, is RFC 4590's; TS 29.273's
 `QoS-Capability`, `QoS-Resources`, `Mobile-Node-Identifier`,
 `MIP-MN-HA-SPI` and `MIP-Session-Key` are RFC 5777's and RFC 5778's), V
 under Must the file's `; Vendor-ID:`, and a row stating neither infers its

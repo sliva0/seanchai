@@ -217,6 +217,16 @@ first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[patch]]
+find = "Content-Provider-ID"
+replace = "Content-provider-ID"
+exact = true
+count = 1
+section = "7.2.0"
+reason = "table 7.2.0.1 spells the row Content-Provider-ID and types it 'refer[223]'; the defining document, OMA-DDS-Charging_Data V1.0, writes Content-provider-ID in its table 11 (clause 8.4), its data mapping and DCD-Information's ABNF, and TS 29.230 table 7.1 allocates 2117 to Content-provider-ID"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
 find = "LCS-Client-Id"
 replace = "LCS-Client-ID"
 exact = true

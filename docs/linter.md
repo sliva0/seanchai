@@ -200,7 +200,7 @@ half of it in its tables: no vendor column, and clause headers omit the vendor
 both for genuine IETF-space AVPs and when the document forgot. The file's own
 `; Vendor-ID:` supplies the other half for local rows, except that a row
 whose V flag is Must-not is IETF space, vendor 0, as the model reads it
-(TS 29.229's `Digest-QoP` row is RFC 4590's code 110). TS 29.229 gives 621 to
+(TS 29.229's `Digest-Qop` row is RFC 4590's code 110). TS 29.229 gives 621 to
 its own `Primary-Charging-Collection-Function-Name` and lists RFC 7683's
 `OC-Supported-Features` at 621 too; without the vendor those are a false
 collision. Vendor 0 (the IETF space, spelled as an absent vendor in header
@@ -276,45 +276,46 @@ why each stays:
   4700–4702 (TS 29.389's) and 4703..4799 "for TS and TS 29.389" inside it;
   table 8.1.3 reserves 4182..4200 for TS 29.272 from its own 4182, and
   8.1.4 5455..5469 for TS 29.273 from its own 5455 and 5456.
-- **`registry-avp-name`**, 32. Most are the registry spelling a name
-  otherwise than its defining clause (`Authorised-QoS`/`Authorized-QoS`,
-  `RAN-Start-Timestamp`/`RAN-Start-Time`) or as no name at all (`"Visited
-  PLMN Id"`, `"MBMS GW-Address"`, `"Media-Sub-Component AVP"`). None is
-  corrected: a document is the primary source for its own AVP's name, and
-  where a document prints the registry's spelling somewhere too, that is
-  the document disagreeing with itself, not its defining clause supporting
-  the registry. Six, in four places, are the registry being wrong, its
-  defining clause saying otherwise:
+- **`registry-avp-name`**, six. A document is the primary source for its
+  own AVP's name, so where table 7.1 names a code otherwise than the clause
+  defining it — its heading, its defining sentence save an evident slip,
+  with the document's tables and ABNFs following it or corrected to it —
+  table 7.1 is patched on input to the clause's name, citing it: 47 codes,
+  from case (`Role-of-Node` to TS 32.299 clause 7.2.177's `Role-Of-Node`)
+  through a cell that is no name at all (`"Visited PLMN Id"`, `"MBMS
+  GW-Address"`, `"Media-Sub-Component AVP"`) to a name the document
+  replaced (`Authorized-QoS`, which TS 32.299's CR 0325 renamed
+  `Authorised-QoS`; TS 29.109's `NAF-Hostname`, which it now calls
+  `NAF-Id`). Where the defining document prints two case spellings, its
+  stray one is patched too, which is the spelling table 7.1 copied: TS
+  29.128's rule names in clauses 6.4.11–6.4.12, TS 29.212's table
+  E.6.3.1.1, TS 29.345's table 6.3.1-1 and four rows of TS 32.299's table
+  7.2.0.1 and PoC-User-Role's rule; where it is the AVP's origin that
+  spells it otherwise, the citing table is: TS 32.299 table 7.2.0.1 writes
+  `Content-Provider-ID` for OMA-DDS-Charging_Data's `Content-provider-ID`,
+  table 7.1's spelling. Where the defining clause supports the registry,
+  the corpus was corrected instead: TS 29.273 table 9.2.3.1.1/1 listed
+  `Trust-Relationship-Update` at 1515 for clause 9.2.3.1.4, which is
+  "Void", and the registry allocates 1515 to `Reserved`; the row is
+  deleted (RAR-Flags bit 0 carries the indication, table 9.2.3.1.5/1).
+  What stays is no spelling the defining clause settles:
   - TS 29.336 3176/3177: the registry swaps `NIA-Flags` and
     `Group-User-Identifier`; table 8.4.1-1 and clause 8.4.73's header (`<AVP
-    header: 3177 10415>`) agree with each other.
+    header: 3177 10415>`) agree with each other. Which side holds the codes
+    wrong is an allocation question, not a name's.
   - TS 29.283 4513/4514: the registry allocates `MCVideo-ID` and
     `MC-Data-ID`, and reserves from 4515; TS 29.283 defines `Data` (4513,
     clause 7.3.22's header), `MCVideo-ID` (4514) and `MCData-ID` (4515).
-  - TS 29.109 402: the registry's `NAF-Hostname`; clause 6.3.1.3 reads "The
-    NAF-Id AVP (AVP code 402)".
-  - TS 29.061 912: the registry's `MBMS-Session-Identity-Repetition-Number`;
-    clause 17.7.15 reads "The MBMS-Session-Repetition-Number AVP (AVP code
-    912)".
-  Where the defining clause supports the registry, the corpus was corrected
-  instead: TS 29.273 table 9.2.3.1.1/1 listed `Trust-Relationship-Update`
-  at 1515 for clause 9.2.3.1.4, which is "Void", and the registry
-  allocates 1515 to `Reserved`; the row is deleted (RAR-Flags bit 0 carries
-  the indication, table 9.2.3.1.5/1).
-  A name differing only in case is a typo, patched on input rather than
-  reported: TS 29.230's table 7.1 is respelled to the defining clause's
-  spelling for 22 codes (`Role-of-Node` to TS 32.299 clause 7.2.177's
-  `Role-Of-Node`), and where the defining document is the one printing two
-  spellings, its stray one is patched too, which is the spelling table 7.1
-  copied: TS 29.128's rule names in clauses 6.4.11–6.4.12, TS 29.212's
-  table E.6.3.1.1, TS 29.345's table 6.3.1-1 and four rows of TS 32.299's
-  table 7.2.0.1 and PoC-User-Role's rule. One stays, because case is all
-  that tells two AVPs apart: table 7.1 allocates 855 to TS 32.299's
-  `Service-Id` and 3103 to TS 29.336's `Service-ID`, while TS 32.299
-  defines 855 as `Service-ID` (clause 7.2.190; table 7.2.0.1 prints
-  `Service-Id`, which a correction aligns with the clause). Wireshark's
-  dictionary calls 855 `Service-Id` and 3103 `S6-Service-ID`, a name no
-  document prints, to keep the two apart.
+  - TS 29.338 3315: the registry's `SGSN-Absent-User-Subscriber-Diagnostic
+    SM`; clause 5.3.3.11's heading reads `SGSN-Absent-Subscriber-Diagnostic-SM`
+    and its sentence, table 5.3.3.1/1 and the SRA ABNF
+    `SGSN-Absent-User-Diagnostic-SM`, so the clause prints two names.
+  - TS 32.299 855, because case is all that tells two AVPs apart: table 7.1
+    allocates 855 to TS 32.299's `Service-Id` and 3103 to TS 29.336's
+    `Service-ID`, while TS 32.299 defines 855 as `Service-ID` (clause
+    7.2.190; table 7.2.0.1 prints `Service-Id`, which a correction aligns
+    with the clause). Wireshark's dictionary calls 855 `Service-Id` and
+    3103 `S6-Service-ID`, a name no document prints, to keep the two apart.
 - **`registry-avp-document`**, ten. TS 29.329 table 6.3.1 lists nine of TS
   29.229's AVPs among its own (`Public-Identity`, `Server-Name`,
   `Supported-Features` and six more), and its clauses 6.3.9–6.3.21 refer to
