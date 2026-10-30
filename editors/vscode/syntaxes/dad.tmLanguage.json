@@ -42,7 +42,7 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application|Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs)\\b",
+              "match": "\\b(Application Scope|Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs)\\b",
               "name": "storage.type.section.dad"
             },
             {
@@ -56,6 +56,10 @@
             {
               "match": "(?<=^|[ ,])(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=[ ,]|$)",
               "name": "constant.other.section.dad"
+            },
+            {
+              "match": "(?<=^|[ ,])(?:\\d+[A-Za-z]*|[A-Za-z]+)(?:\\.\\d+[A-Za-z]*)*\\.\\*(?=[ ,]|$)",
+              "name": "constant.other.section.wildcard.dad"
             },
             {
               "match": "(?<=^|[ ,])\\d+(?=[ ,]|$)",

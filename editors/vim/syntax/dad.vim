@@ -67,9 +67,11 @@ syn match dadRange "\d\+-\d\+" contained
 " Directives
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue
 syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
-syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadNumber,dadLink,dadComment
-syn match dadTypeValue "\%(Application\|Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\)$" contained
+syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadClauseWildcard,dadNumber,dadLink,dadComment
+syn match dadTypeValue "\%(Application Scope\|Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\)$" contained
 syn match dadLink "https\?://\S\+" contained
+" `; Applies-To:` entries: a clause and its subclauses, `5.*`, `E.6.*`.
+syn match dadClauseWildcard "\%(^\|[ ,]\)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\.\*\%([ ,]\|$\)\@=" contained
 
 " Free-text directives get one uniform value color — no point picking the
 " 29.109 out of "3GPP TS 29.109". Defined after the generic line, so it wins.
@@ -89,6 +91,7 @@ hi def link dadSpecRef        Tag
 hi def link dadNumber         Number
 hi def link dadRange          Number
 hi def link dadSection        Constant
+hi def link dadClauseWildcard Constant
 hi def link dadDataType       Type
 hi def link dadCellConst      Boolean
 hi def link dadFlagCell       Constant

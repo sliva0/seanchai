@@ -173,8 +173,8 @@ class header(Selector):
 
 
 @dataclass(frozen=True)
-class application(Selector):
-    """An application block, by the name it gives the application."""
+class application_scope(Selector):
+    """An application scope, by the name it gives the application."""
 
     name: str
 
@@ -183,11 +183,11 @@ class application(Selector):
         yield from (
             (("sections", index), section)
             for index, section in enumerate(spec.sections)
-            if isinstance(section, ast.Application) and section.name == self.name
+            if isinstance(section, ast.ApplicationScope) and section.name == self.name
         )
 
     def describe(self) -> str:
-        return f"application {self.name!r}"
+        return f"application scope {self.name!r}"
 
 
 @dataclass(frozen=True)
@@ -498,16 +498,16 @@ class Insert:
     AVPs without naming an origin per row, so its block exists only once
     the corrections supply the origins.
 
-    Into `header()` it inserts an `Application` block, for an application
+    Into `header()` it inserts an `ApplicationScope`, for an application
     id the document states in a form the extractor does not read: RFC 4006
     assigns 4 in its IANA considerations. The block goes after the file's
-    other application blocks, which lead the file, so `after` must be None;
-    no other block may carry its name.
+    other application scopes, which lead the file, so `after` must be None;
+    no other scope may carry its name.
     """
 
     id: str
     into: avp_table | reused_avps | header
-    node: ast.AvpTableRow | ast.ReusedAvpRow | ast.Application
+    node: ast.AvpTableRow | ast.ReusedAvpRow | ast.ApplicationScope
     after: str | None
     reason: str
     versions: str | VersionRange = "*..*"
@@ -778,25 +778,25 @@ def _inserted(
     return rows
 
 
-def _inserted_application(
+def _inserted_application_scope(
     spec: ast.Specification,
     sections: list[tuple[_Origin, Any]] | None,
     insert: Insert,
     origin: _Added,
 ) -> list[tuple[_Origin, Any]]:
-    """The file's sections with the declared application block placed after
+    """The file's sections with the declared application scope placed after
     the last one already there, each with its origin. `sections` holds what
     earlier inserts made of them, None before the first."""
     described = insert.into.describe()
     node = insert.node
-    if not isinstance(node, ast.Application):
+    if not isinstance(node, ast.ApplicationScope):
         raise CorrectionError(
-            f"{described}: only an Application can be inserted into the file,"
+            f"{described}: only an ApplicationScope can be inserted into the file,"
             f" not a {type(node).__name__}"
         )
     if insert.after is not None:
         raise CorrectionError(
-            f"{described}: an application block follows the others; after must be None"
+            f"{described}: an application scope follows the others; after must be None"
         )
     if sections is None:
         sections = [
@@ -804,17 +804,17 @@ def _inserted_application(
             for index, section in enumerate(spec.sections)
         ]
     if any(
-        isinstance(section, ast.Application) and section.name == node.name
+        isinstance(section, ast.ApplicationScope) and section.name == node.name
         for _, section in sections
     ):
         raise CorrectionError(
-            f"{described}: application {node.name!r} is already present"
+            f"{described}: application scope {node.name!r} is already present"
         )
     position = max(
         (
             index + 1
             for index, (_, section) in enumerate(sections)
-            if isinstance(section, ast.Application)
+            if isinstance(section, ast.ApplicationScope)
         ),
         default=0,
     )
@@ -1040,13 +1040,13 @@ def apply(
             origins.append(path)
             continue
         if isinstance(correction, Insert) and isinstance(correction.into, header):
-            plan.rows[("sections",)] = _inserted_application(
+            plan.rows[("sections",)] = _inserted_application_scope(
                 tree, plan.rows.get(("sections",)), correction, _Added(index)
             )
             results.append(
                 Result(
                     correction=correction,
-                    node=f"application {correction.node.name!r}",
+                    node=f"application scope {correction.node.name!r}",
                     old=None,
                     new=correction.node,
                 )
@@ -1109,7 +1109,7 @@ def apply(
 
 
 _SECTION_TYPES = (
-    ast.Application,
+    ast.ApplicationScope,
     ast.Message,
     ast.GroupedAvp,
     ast.EnumeratedAvp,
@@ -1154,11 +1154,11 @@ def notes(results: list[Result]) -> formatter.Comments:
             )
             continue
         if isinstance(edit, Insert):
-            # An application block has no line of its own, so the line that
+            # An application scope has no line of its own, so the line that
             # opens it carries the note.
             line = (
                 (*result.path, "type")
-                if isinstance(edit.node, ast.Application)
+                if isinstance(edit.node, ast.ApplicationScope)
                 else result.path
             )
             trailing.setdefault(line, []).append(f"inserted: ({edit.cited})")
@@ -1182,7 +1182,7 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
 
     A definition is cited on its header rule, the line that states it,
     whichever field was corrected. The file header, a table and an
-    application block have no such line: each field they let a correction
+    application scope have no such line: each field they let a correction
     replace prints on a directive line of its own (`; Bases:`, `; Table:`,
     `; Application-ID:`), so the note trails that line.
     A correction that removes the field's line altogether — a `; Table:`
@@ -1193,7 +1193,7 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
         # The rules print as cells of their row's line.
         return result.path[:-1]
     if not isinstance(
-        correction.target, header | avp_table | reused_avps | application
+        correction.target, header | avp_table | reused_avps | application_scope
     ):
         return result.path
     if result.new is not None and result.new != ():

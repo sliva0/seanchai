@@ -187,16 +187,25 @@ class Message(Node):
     command_code: Unsigned24
     flags: frozenset[CommandFlag]
     # None when the source document itself omits it (TS 29.272 VCSG commands
-    # print "< Diameter Header: 8388638, REQ, PXY, >"); an `Application`
+    # print "< Diameter Header: 8388638, REQ, PXY, >"); an `ApplicationScope`
     # block records an id the document states elsewhere.
     application_id: Unsigned32 | None
     avps: tuple[AvpRule, ...]
 
 
-class Application(Node):
-    """`; Type: Application` — an application id the document states outside
-    its command headers, with the clause stating it and the clauses whose
-    commands it applies to.
+# One `; Applies-To:` entry: a clause and every subclause under it, "5.*"
+# for clause 5, 5.1 and 5.6.2. The wildcard is spelled out so that a bare
+# clause number stays free to mean that clause alone, a form no document has
+# needed yet.
+ClauseWildcard = Annotated[
+    str, Field(pattern=r"^([A-Za-z]+|\d+[A-Za-z]*)(\.\d+[A-Za-z]*)*\.\*$")
+]
+
+
+class ApplicationScope(Node):
+    """`; Type: Application Scope` — an application id the document states
+    outside its command headers, with the clause stating it and the clauses
+    whose commands it applies to.
 
     TS 29.212 prints its Gx commands with bare `272, REQ, PXY` headers and
     says in clause 5.1 that "the Application-ID for the Gx Application in
@@ -206,28 +215,28 @@ class Application(Node):
     headers print none.
     """
 
-    type: Literal["Application"] = "Application"
+    type: Literal["Application Scope"] = "Application Scope"
     # The document's name for the application or interface: "Gx", "Diameter
     # Credit Control".
     name: InlineText
     source: SourceRef
     application_id: Unsigned32
-    # The clauses whose commands belong to the application, each covering
-    # its subclauses: "5" for TS 29.212's Gx, "5.1" and "5.2" for RFC 5778's
-    # two applications, which share a clause.
-    scope: Annotated[tuple[SectionNumber, ...], Field(min_length=1)]
+    # The clauses whose commands belong to the application: "5.*" for TS
+    # 29.212's Gx, "5.1.*" and "5.2.*" for RFC 5778's two applications, which
+    # share a clause.
+    applies_to: Annotated[tuple[ClauseWildcard, ...], Field(min_length=1)]
 
     @pydantic.model_validator(mode="after")
-    def _distinct_scope(self) -> Application:
-        if len(set(self.scope)) != len(self.scope):
-            raise ValueError(f"scope {list(self.scope)} names a clause twice")
+    def _distinct_clauses(self) -> ApplicationScope:
+        if len(set(self.applies_to)) != len(self.applies_to):
+            raise ValueError(f"applies_to {list(self.applies_to)} names a clause twice")
         return self
 
     def covers(self, section: str) -> bool:
         """Whether a command defined in clause `section` is in scope."""
         return any(
             section == clause or section.startswith(f"{clause}.")
-            for clause in self.scope
+            for clause in (entry.removesuffix(".*") for entry in self.applies_to)
         )
 
 
@@ -542,7 +551,7 @@ def node_at(root: Node, path: TreePath) -> Any:
 
 
 Section = Annotated[
-    Application | Message | GroupedAvp | EnumeratedAvp | AvpTable | ReusedAvps,
+    ApplicationScope | Message | GroupedAvp | EnumeratedAvp | AvpTable | ReusedAvps,
     Field(discriminator="type"),
 ]
 

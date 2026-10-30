@@ -220,9 +220,9 @@ holds only `additional_avps`.
 ## What the documents leave to the reader
 
 **Application ids.** The application id comes from the command header the
-document prints, or, where the headers print none, from the `Application`
-block that records the document's statement in prose; such a module's
-docstring names the clause (`The command headers print no application id;
+document prints, or, where the headers print none, from the
+`Application Scope` block that records the document's statement in prose;
+such a module's docstring names the clause (`The command headers print no application id;
 clause 5.1 states Gx's.`). The 3GPP blocks are read from the documents (TS
 29.154, 29.212, 29.214, 29.215, 29.217, 29.219, 29.343, 29.368, 29.468);
 those for RFC 4004, 4005, 4006, 4072, 5778, 6733, 7155, 8506 and TS 32.299

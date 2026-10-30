@@ -665,21 +665,21 @@ _APPLICATION_ID_RES = (
 
 def _stated_applications(
     section: _Section, quirks: sources.Quirks
-) -> list[ast.Application]:
-    """The applications a clause states the ids of, each scoped to the
+) -> list[ast.ApplicationScope]:
+    """The applications a clause states the ids of, each applying to the
     interface clause the statement sits in: Gx's clause 5.1 speaks for the
-    commands of clause 5, S9a's A.7.1 for those of A.7."""
+    commands of clause 5 (`5.*`), S9a's A.7.1 for those of A.7 (`A.7.*`)."""
     found = []
     for paragraph in section.paragraphs:
         for pattern in _APPLICATION_ID_RES:
             if match := pattern.search(paragraph.text):
                 quirks.fire("prose-application-ids")
                 found.append(
-                    ast.Application(
+                    ast.ApplicationScope(
                         name=match["name"],
                         source=ast.SourceRef(section=section.number),
                         application_id=int(match["id"]),
-                        scope=(ast.interface_clause(section.number),),
+                        applies_to=(f"{ast.interface_clause(section.number)}.*",),
                     )
                 )
     return found
@@ -1468,7 +1468,7 @@ class _Collected:
     """
 
     messages: list[ast.Message] = field(default_factory=list)
-    applications: list[ast.Application] = field(default_factory=list)
+    applications: list[ast.ApplicationScope] = field(default_factory=list)
     grouped: list[ast.GroupedAvp] = field(default_factory=list)
     # Sections that read like an enumerated AVP, with the name from the
     # heading. They cannot become definitions until the AVP table is known —
@@ -1493,7 +1493,7 @@ class _Resolved:
     pairs: list[tuple[ast.AvpTable, _ReusedTable]]
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
     independent_reused: list[_ReusedTable] = field(default_factory=list)
-    applications: list[ast.Application] = field(default_factory=list)
+    applications: list[ast.ApplicationScope] = field(default_factory=list)
 
 
 def _collect(
@@ -1887,7 +1887,7 @@ QUIRKS: dict[str, str] = {
     "prose-application-ids": (
         "read 'the Application-ID for the Gx Application ... is n' and 'The"
         " Diameter application identifier assigned to the Sy interface"
-        " application is n' into an application block scoped to the"
+        " application is n' into an application scope applying to the"
         " statement's interface clause (TS 29.212 clause 5.1, TS 29.219"
         " clause 5.1.5)"
     ),

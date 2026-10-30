@@ -187,7 +187,7 @@ def test_a_values_source_is_free_text_and_reports_its_own_line():
     assert error.value.lineno == 8
 
 
-def test_an_application_block_round_trips_with_its_comments():
+def test_an_application_scope_round_trips_with_its_comments():
     # TS 29.212 clause 5.1 states Gx's id for the commands of clause 5.
     text = "\n".join(
         [
@@ -196,12 +196,12 @@ def test_an_application_block_round_trips_with_its_comments():
             "; Vendor-ID: 10415",
             "",
             "",
-            "; Type: Application ;; read from the prose",
+            "; Type: Application Scope ;; read from the prose",
             "; Name: Gx",
             "; Section: 5.1",
             "; Page: 120",
             "; Application-ID: 16777238",
-            "; Scope: 5, E.6",
+            "; Applies-To: 5.*, E.6.*",
             ";; after the block",
             "",
         ]
@@ -210,15 +210,16 @@ def test_an_application_block_round_trips_with_its_comments():
     spec, comments = parser.parse_with_comments(text)
 
     (application,) = spec.sections
-    assert isinstance(application, ast.Application)
-    assert application == ast.Application(
+    assert isinstance(application, ast.ApplicationScope)
+    assert application == ast.ApplicationScope(
         name="Gx",
         source=ast.SourceRef(section="5.1", page=120),
         application_id=16777238,
-        scope=("5", "E.6"),
+        applies_to=("5.*", "E.6.*"),
     )
-    assert application.covers("5.6.2") and application.covers("E.6")
-    assert not application.covers("5a.6.2")
+    assert application.covers("5") and application.covers("5.6.2")
+    assert application.covers("E.6")
+    assert not application.covers("5a.6.2") and not application.covers("E.61")
     assert comments.trailing == {("sections", 0, "type"): ["read from the prose"]}
     assert comments.standing == {("sections", 0): ["after the block"]}
     assert formatter.format_spec(spec, comments) == text
@@ -227,23 +228,43 @@ def test_an_application_block_round_trips_with_its_comments():
 @pytest.mark.parametrize(
     ("lines", "lineno", "message"),
     [
-        (["; Application-ID: 16777238"], 5, "missing directive 'Scope'"),
+        (["; Application-ID: 16777238"], 5, "missing directive 'Applies-To'"),
         (
-            ["; Application-ID: 99999999999", "; Scope: 5"],
+            ["; Application-ID: 99999999999", "; Applies-To: 5.*"],
             8,
             "Input should be less than",
         ),
-        (["; Application-ID: 1", "; Scope: 5, 5"], 9, "names a clause twice"),
+        (["; Application-ID: 1", "; Applies-To: 5.*, 5.*"], 9, "names a clause twice"),
+        # A bare clause is reserved for that clause alone.
         (
-            ["; Application-ID: 1", "; Scope: 5", "<Gx> ::= < Diameter Header: 1 >"],
+            ["; Application-ID: 1", "; Applies-To: 5.*, 6"],
+            9,
+            r"Applies-To entry '6' names no subclauses \(write '6\.\*'",
+        ),
+        (["; Application-ID: 1", "; Applies-To: 5-1.*"], 9, "should match pattern"),
+        (["; Application-ID: 1", "; Scope: 5"], 5, "missing directive 'Applies-To'"),
+        (
+            [
+                "; Application-ID: 1",
+                "; Applies-To: 5.*",
+                "<Gx> ::= < Diameter Header: 1 >",
+            ],
             10,
-            "unexpected content in application block",
+            "unexpected content in application scope",
         ),
     ],
-    ids=["no-scope", "id-too-large", "repeated-clause", "a-body"],
+    ids=[
+        "no-applies-to",
+        "id-too-large",
+        "repeated-clause",
+        "bare-clause",
+        "not-a-clause",
+        "old-scope",
+        "a-body",
+    ],
 )
-def test_an_application_block_rejects_with_the_line(lines, lineno, message):
-    text = _dad("; Type: Application", "; Name: Gx", "; Section: 5.1", *lines)
+def test_an_application_scope_rejects_with_the_line(lines, lineno, message):
+    text = _dad("; Type: Application Scope", "; Name: Gx", "; Section: 5.1", *lines)
 
     with pytest.raises(parser.DadParseError, match=message) as error:
         parser.parse(text)
@@ -409,11 +430,11 @@ def test_enum_value_names_reject_what_quotes_cannot_hold(name):
         (
             # `int()` would take `+1`; the grammar's `1*DIGIT` does not.
             _dad(
-                "; Type: Application",
+                "; Type: Application Scope",
                 "; Name: Example",
                 "; Section: 1",
                 "; Application-ID: +1",
-                "; Scope: 5",
+                "; Applies-To: 5.*",
             ),
             8,
             r"Application-ID must be a number, got '\+1'",

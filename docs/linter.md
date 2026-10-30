@@ -42,9 +42,9 @@ cannot judge.
   `; Vendor-ID:`, or naming none while the AVP table marks `V` mandatory. A
   vendor-less definition with no such row is left alone: a genuine IETF-space
   AVP looks exactly like it, and a re-used one belongs to its origin.
-- `application-overlap` / `application-header-mismatch` — a command in the
-  scope of two `Application` blocks, or one whose header prints an id its
-  block does not state. Errors with no case in the corpus: the model would
+- `application-scope-overlap` / `application-header-mismatch` — a command
+  two `Application Scope` blocks apply to, or one whose header prints an id
+  the block applying to it does not state. Errors with no case in the corpus: the model would
   otherwise settle them quietly, taking the first block and the header's
   id.
 - `local-and-reused` — an AVP both defined locally and listed as re-used.

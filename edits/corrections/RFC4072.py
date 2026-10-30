@@ -37,11 +37,11 @@ CORRECTIONS += [
     Insert(
         id="application-id",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Diameter EAP",
             source=ast.SourceRef(section="2.1", page=3),
             application_id=5,
-            scope=("3",),
+            applies_to=("3.*",),
         ),
         after=None,
         reason=(

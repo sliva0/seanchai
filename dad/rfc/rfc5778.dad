@@ -4,20 +4,20 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc5778.txt
 
 
-; Type: Application ;; inserted: (RFC5778.py#application-id-mip6i)
+; Type: Application Scope ;; inserted: (RFC5778.py#application-id-mip6i)
 ; Name: Diameter Mobile IPv6 IKE (MIP6I)
 ; Section: 3
 ; Page: 6
 ; Application-ID: 7
-; Scope: 5.1
+; Applies-To: 5.1.*
 
 
-; Type: Application ;; inserted: (RFC5778.py#application-id-mip6a)
+; Type: Application Scope ;; inserted: (RFC5778.py#application-id-mip6a)
 ; Name: Diameter Mobile IPv6 Auth (MIP6A)
 ; Section: 3
 ; Page: 6
 ; Application-ID: 8
-; Scope: 5.2
+; Applies-To: 5.2.*
 
 
 ; Type: Message

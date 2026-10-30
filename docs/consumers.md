@@ -30,12 +30,12 @@ The query set is thin on purpose: each query was written because a real
 consumer needed it. `applications` groups a document's commands by
 application id and the clause they sit under, since documents share one id
 between interfaces (TS 29.273's SWa, STa and SWd). The id is the header's,
-or, for commands whose headers print none, the one an `Application` block
-in scope states: TS 29.212's Gx, Gxx, Sd and St take theirs from clauses
-5.1, 5a.1, 5b.1 and 5c.1 and split by clauses 5, 5a, 5b and 5c, and TS
-32.299's Rf (3) and Ro (4) split its clause 6. `Application.name` and
-`stated_in` name the block and its clause; both are None for an id the
-headers print. RFC 6733's RAR, STR and ASR carry the using application's id
+or, for commands whose headers print none, the one an `Application Scope`
+block covering their clause states: TS 29.212's Gx, Gxx, Sd and St take
+theirs from clauses 5.1, 5a.1, 5b.1 and 5c.1, applying to `5.*`, `5a.*`,
+`5b.*` and `5c.*`, and TS 32.299's Rf (3) and Ro (4) split its clause 6
+between `6.2.*` and `6.4.*`. `Application.name` and `stated_in` name the
+block and its clause; both are None for an id the headers print. RFC 6733's RAR, STR and ASR carry the using application's id
 (clause 2.5), so their group's id stays None. A `Member` carries
 the ABNF rule as spelled and `min_occurs`/`max_occurs` as RFC 6733 §3.2
 reads them: `[ X ]` may be absent, `* { X }` appears at least once. RFC

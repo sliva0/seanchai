@@ -4,12 +4,12 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc4072.txt
 
 
-; Type: Application ;; inserted: (RFC4072.py#application-id)
+; Type: Application Scope ;; inserted: (RFC4072.py#application-id)
 ; Name: Diameter EAP
 ; Section: 2.1
 ; Page: 3
 ; Application-ID: 5
-; Scope: 3
+; Applies-To: 3.*
 
 
 ; Type: Message

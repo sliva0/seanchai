@@ -5,19 +5,19 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129100_129199/129154/18.00.00_60/ts_129154v180000p.pdf
 
 
-; Type: Application
+; Type: Application Scope
 ; Name: Nt
 ; Section: 5.1
 ; Page: 10
 ; Application-ID: 16777348
-; Scope: 5
+; Applies-To: 5.*
 
 
-; Type: Application
+; Type: Application Scope
 ; Name: Nta
 ; Section: A.6.1
 ; Application-ID: 16777358
-; Scope: A.6
+; Applies-To: A.6.*
 
 
 ; Type: Message

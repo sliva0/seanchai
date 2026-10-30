@@ -22,11 +22,11 @@ CORRECTIONS += [
     Insert(
         id="application-id",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Diameter Credit Control",
             source=ast.SourceRef(section="12.1", page=86),
             application_id=4,
-            scope=("3",),
+            applies_to=("3.*",),
         ),
         after=None,
         reason=(

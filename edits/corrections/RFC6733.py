@@ -8,11 +8,11 @@ CORRECTIONS = [
     Insert(
         id="application-id-common",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Diameter common message",
             source=ast.SourceRef(section="2.5", page=25),
             application_id=0,
-            scope=("5",),
+            applies_to=("5.*",),
         ),
         after=None,
         reason=(
@@ -26,11 +26,11 @@ CORRECTIONS = [
     Insert(
         id="application-id-accounting",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Diameter base accounting",
             source=ast.SourceRef(section="9.3", page=124),
             application_id=3,
-            scope=("9",),
+            applies_to=("9.*",),
         ),
         after=None,
         reason=(

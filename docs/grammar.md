@@ -28,7 +28,7 @@ spec-ref      = ("TS" 2*3DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
-section       = application / message / grouped-avp / enumerated-avp
+section       = application-scope / message / grouped-avp / enumerated-avp
               / avp-table / reused-avps
 ```
 
@@ -76,23 +76,25 @@ avp-name      = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-" / "_")
 `; Page:` counts printed pages of the ETSI PDF from 1. The underscore
 extends RFC 6733's `name-fmt` for TS 29.109's `GBA_U-Awareness-Indicator`.
 
-### Application
+### Application Scope
 
 ```abnf
-application   = "; Type: Application" NL
-                "; Name: " inline-text NL
-                source-ref
-                "; Application-ID: " application-id NL
-                "; Scope: " section-number *(", " section-number) NL
+application-scope = "; Type: Application Scope" NL
+                    "; Name: " inline-text NL
+                    source-ref
+                    "; Application-ID: " application-id NL
+                    "; Applies-To: " clause-wildcard *(", " clause-wildcard) NL
+clause-wildcard   = section-number ".*"
 ```
 
 An application id the document states outside its command headers:
 `; Name:` is the document's name for the application ("Gx", "Diameter
-Credit Control"), `; Section:` the clause stating the id, and `; Scope:` the
-clauses whose commands it applies to, each covering its subclauses (`5`
-covers `5.6.2`; `5.1` does not cover `5.2.1`). It applies to the commands
-whose headers print no id; a header that prints one keeps it. The block has
-no body.
+Credit Control"), `; Section:` the clause stating the id, and `; Applies-To:`
+the clauses whose commands it applies to. `5.*` is clause 5 and every
+subclause under it (`5.6.2`, not `5a.1`); `5.1.*` does not cover `5.2.1`. A
+bare `5`, which would name clause 5 alone, is reserved and does not parse.
+The id applies to the commands whose headers print none; a header that
+prints one keeps it. The block has no body.
 
 ### Message
 
@@ -112,7 +114,7 @@ application-id = 1*DIGIT                ; < 2^32
 
 Flags appear in the order above, each at most once. The application id is
 optional only because some documents omit it (TS 29.272's VCSG commands);
-an `application` block records an id the document states elsewhere.
+an `application-scope` block records an id the document states elsewhere.
 
 ### Grouped AVP
 
@@ -253,7 +255,7 @@ Checked by the AST after parsing:
   a Name column (Name and From for re-used tables) is mandatory; no duplicate
   column; tables are non-empty.
 - `; Name:` equals the name in the block's header rule.
-- `; Scope:` names a clause at most once.
+- `; Applies-To:` names a clause at most once.
 - Command codes are 24-bit; codes, vendor ids, application ids and enum
   values are 32-bit; page numbers are 32-bit and at least 1.
 

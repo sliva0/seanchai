@@ -5,20 +5,20 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/132200_132299/132299/18.00.00_60/ts_132299v180000p.pdf
 
 
-; Type: Application ;; inserted: (TS32.299.py#application-id-rf)
+; Type: Application Scope ;; inserted: (TS32.299.py#application-id-rf)
 ; Name: Rf
 ; Section: 7.1.5
 ; Page: 97
 ; Application-ID: 3
-; Scope: 6.2
+; Applies-To: 6.2.*
 
 
-; Type: Application ;; inserted: (TS32.299.py#application-id-ro)
+; Type: Application Scope ;; inserted: (TS32.299.py#application-id-ro)
 ; Name: Ro
 ; Section: 7.1.6
 ; Page: 97
 ; Application-ID: 4
-; Scope: 6.4
+; Applies-To: 6.4.*
 
 
 ; Type: Message

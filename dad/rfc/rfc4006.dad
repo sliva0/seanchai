@@ -4,12 +4,12 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc4006.txt
 
 
-; Type: Application ;; inserted: (RFC4006.py#application-id)
+; Type: Application Scope ;; inserted: (RFC4006.py#application-id)
 ; Name: Diameter Credit Control
 ; Section: 12.1
 ; Page: 86
 ; Application-ID: 4
-; Scope: 3
+; Applies-To: 3.*
 
 
 ; Type: Message

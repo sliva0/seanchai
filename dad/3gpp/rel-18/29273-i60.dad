@@ -5,12 +5,12 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129273/18.06.00_60/ts_129273v180600p.pdf
 
 
-; Type: Application ;; inserted: (TS29.273.py#application-id-swa)
+; Type: Application Scope ;; inserted: (TS29.273.py#application-id-swa)
 ; Name: STa
 ; Section: 4.2.1
 ; Page: 24
 ; Application-ID: 16777250
-; Scope: 4
+; Applies-To: 4.*
 
 
 ; Type: Message

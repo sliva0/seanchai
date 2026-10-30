@@ -55,11 +55,11 @@ CORRECTIONS += [
     Insert(
         id="application-id-mip6i",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Diameter Mobile IPv6 IKE (MIP6I)",
             source=ast.SourceRef(section="3", page=6),
             application_id=7,
-            scope=("5.1",),
+            applies_to=("5.1.*",),
         ),
         after=None,
         reason=(
@@ -71,11 +71,11 @@ CORRECTIONS += [
     Insert(
         id="application-id-mip6a",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Diameter Mobile IPv6 Auth (MIP6A)",
             source=ast.SourceRef(section="3", page=6),
             application_id=8,
-            scope=("5.2",),
+            applies_to=("5.2.*",),
         ),
         after=None,
         reason=(

@@ -5,12 +5,12 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129217/18.00.00_60/ts_129217v180000p.pdf
 
 
-; Type: Application
+; Type: Application Scope
 ; Name: Np
 ; Section: 5.1
 ; Page: 13
 ; Application-ID: 16777342
-; Scope: 5
+; Applies-To: 5.*
 
 
 ; Type: Message

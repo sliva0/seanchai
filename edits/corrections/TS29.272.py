@@ -21,11 +21,11 @@ CORRECTIONS = [
     Insert(
         id="application-id-vcsg",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="S7a/S7d",
             source=ast.SourceRef(section="7.2.2", page=73),
             application_id=16777308,
-            scope=("7.2.21", "7.2.22", "7.2.23", "7.2.24"),
+            applies_to=("7.2.21.*", "7.2.22.*", "7.2.23.*", "7.2.24.*"),
         ),
         after=None,
         reason=(

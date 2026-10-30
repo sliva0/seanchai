@@ -227,13 +227,13 @@ class Application:
 
     reference: str
     # The header's id, or for commands whose headers print none, the id an
-    # application block in scope states; None when neither says.
+    # application scope covering them states; None when neither says.
     application_id: int | None
     # "5a", or "A.7" for an annex: the leading clause component, with the
     # next one for an annex, whose letter alone spans several interfaces.
     clause: str
     messages: tuple[Message, ...]
-    # The application block that states `application_id`, when one does:
+    # The application scope that states `application_id`, when one does:
     # its name for the application ("Gx") and the clause stating the id.
     name: str | None = None
     stated_in: str | None = None
@@ -402,7 +402,7 @@ class _View:
     tabled: dict[str, list[ast.AvpTableRow]]
     reused: dict[str, str]
     messages: list[ast.Message]
-    applications: list[ast.Application]
+    applications: list[ast.ApplicationScope]
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
@@ -418,7 +418,7 @@ class _View:
                     view.reused.setdefault(row.name, row.origin)
             elif isinstance(section, ast.Message):
                 view.messages.append(section)
-            elif isinstance(section, ast.Application):
+            elif isinstance(section, ast.ApplicationScope):
                 view.applications.append(section)
         return view
 
@@ -501,11 +501,12 @@ class Model:
         """`reference`'s commands, grouped by application id and the clause
         they sit under, in file order.
 
-        A command whose header prints no id takes the one an application
-        block in scope states (the first, where blocks overlap): TS 29.212's
-        clause 5.1 gives the Gx commands 16777238, and RFC 5778's two blocks
-        split its clause 5 between 7 and 8. A header that prints an id keeps
-        it; the linter reports one that disagrees with its block.
+        A command whose header prints no id takes the one an `Application
+        Scope` block covering its clause states (the first, where scopes
+        overlap): TS 29.212's clause 5.1 gives the Gx commands of `5.*`
+        16777238, and RFC 5778's two blocks split its clause 5 between 7 and
+        8. A header that prints an id keeps it; the linter reports one that
+        disagrees with its block.
 
         One group can still define a command twice: TS 29.273 prints the
         STa Session-Termination-Request in clauses 5.2.2.2.3 and 5.2.2.4.1,
@@ -513,7 +514,7 @@ class Model:
         """
         view = self._view(reference)
         groups: dict[tuple[int | None, str], list[Message]] = {}
-        stating: dict[tuple[int | None, str], ast.Application] = {}
+        stating: dict[tuple[int | None, str], ast.ApplicationScope] = {}
         for message in self.messages(reference):
             block = next(
                 (each for each in view.applications if each.covers(message.section)),

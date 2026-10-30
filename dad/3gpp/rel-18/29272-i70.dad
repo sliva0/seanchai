@@ -5,12 +5,12 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129272/18.07.00_60/ts_129272v180700p.pdf
 
 
-; Type: Application ;; inserted: (TS29.272.py#application-id-vcsg)
+; Type: Application Scope ;; inserted: (TS29.272.py#application-id-vcsg)
 ; Name: S7a/S7d
 ; Section: 7.2.2
 ; Page: 73
 ; Application-ID: 16777308
-; Scope: 7.2.21, 7.2.22, 7.2.23, 7.2.24
+; Applies-To: 7.2.21.*, 7.2.22.*, 7.2.23.*, 7.2.24.*
 
 
 ; Type: Message

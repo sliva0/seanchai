@@ -61,7 +61,7 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   Must to Must not is two), `reused_row(name, section=)`,
   `enum_value(avp, name, value=)`, `avp_rule(parent, name, occurrence=)`
   (parent may be a whole `definition` selector), `avp_table(label)`,
-  `reused_avps(label)`, `application(name)`, `header()`.
+  `reused_avps(label)`, `application_scope(name)`, `header()`.
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, counted from 1, for a body that prints a
   rule twice identically: TS 29.229 clause 6.1.10 prints RTA's
@@ -94,7 +94,7 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   carries that label, creates the table's re-used block right after it:
   TS 32.299 table 7.1.0.1 tabulates IETF AVPs without naming an origin per
   row, and its corrections give each name its RFC. Into `header()`,
-  `Insert` adds an `Application` block, after the file's others (`after`
+  `Insert` adds an `Application Scope` block, after the file's others (`after`
   must be None), expecting no block of that name: the RFCs state their
   application ids in wordings no two share (RFC 4006 in its IANA
   considerations, RFC 6733 per command group in clauses 2.5 and 9.3), TS
@@ -135,7 +135,7 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 ```
 
 A correction to a definition is cited on its header rule, whichever field
-it changed, and one to a row's flag rules on the row. The file header, a table and an application block have no such
+it changed, and one to a row's flag rules on the row. The file header, a table and an application scope have no such
 line, so a correction to one of their fields is cited on the directive line
 that field prints —
 `; Bases: RFC6733, RFC4005 ;; corrected: (RFC4006.py#bases-nasreq)`,
@@ -144,7 +144,7 @@ and on the block's first line when it removes that line.
 
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
-inserted row is marked `;; inserted:`, an inserted application block on its
+inserted row is marked `;; inserted:`, an inserted application scope on its
 `; Type:` line, and every value a `Supply` adds `;; supplied:`. Notes are `;;` comments, so an
 annotated file parses to exactly the corrected tree, and they are placed by
 the rules a hand-written comment follows ([dad-format.md](dad-format.md#comments)):

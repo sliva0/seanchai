@@ -4,12 +4,12 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc4004.txt
 
 
-; Type: Application ;; inserted: (RFC4004.py#application-id)
+; Type: Application Scope ;; inserted: (RFC4004.py#application-id)
 ; Name: Diameter Mobile IPv4
 ; Section: 4
 ; Page: 20
 ; Application-ID: 2
-; Scope: 5
+; Applies-To: 5.*
 
 
 ; Type: Message

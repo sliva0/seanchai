@@ -46,11 +46,11 @@ CORRECTIONS += [
     Insert(
         id="application-id",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Diameter Mobile IPv4",
             source=ast.SourceRef(section="4", page=20),
             application_id=2,
-            scope=("5",),
+            applies_to=("5.*",),
         ),
         after=None,
         reason=(

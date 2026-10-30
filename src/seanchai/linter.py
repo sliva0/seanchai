@@ -5,7 +5,7 @@ contradicts itself; this is the layer that reports those contradictions
 instead of resolving them. Every rule here is decided inside a single file,
 and nearly every one has a real case in the committed corpus — they are not
 hypothetical invariants, they are the inconsistencies three specifications
-actually contain. The exceptions are the two application rules, which
+actually contain. The exceptions are the two application-scope rules, which
 report what `model.Model.applications` would otherwise settle without
 comment.
 
@@ -81,7 +81,7 @@ class _Index:
 
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = field(default_factory=list)
     messages: list[ast.Message] = field(default_factory=list)
-    applications: list[ast.Application] = field(default_factory=list)
+    applications: list[ast.ApplicationScope] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
     # Names a re-used table cites from this file itself. TS 29.212's Gxx, S9,
@@ -106,7 +106,7 @@ def _index(spec: ast.Specification) -> _Index:
             index.definitions.append(section)
         elif isinstance(section, ast.Message):
             index.messages.append(section)
-        elif isinstance(section, ast.Application):
+        elif isinstance(section, ast.ApplicationScope):
             index.applications.append(section)
         elif isinstance(section, ast.AvpTable):
             index.tables.append(section)
@@ -197,8 +197,8 @@ def _duplicate_enum_values(index: _Index) -> list[Finding]:
 
 
 def _applications_agree_with_headers(index: _Index) -> list[Finding]:
-    """A command sits in the scope of at most one application block, and a
-    header that prints an id prints the block's.
+    """A command sits in at most one application scope, and a header that
+    prints an id prints the scope's.
 
     Both are what the model's grouping would decide quietly — the first
     block in file order, the header over the block — so a document stating
@@ -215,7 +215,7 @@ def _applications_agree_with_headers(index: _Index) -> list[Finding]:
             findings.append(
                 Finding(
                     Severity.ERROR,
-                    "application-overlap",
+                    "application-scope-overlap",
                     f"{message.name} is in the scope of {len(blocks)}"
                     f" applications: {named}",
                     message.source.section,

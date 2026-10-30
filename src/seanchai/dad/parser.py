@@ -265,29 +265,39 @@ def _parse_message(
         )
 
 
-def _parse_application(
+def _parse_application_scope(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
-) -> ast.Application:
+) -> ast.ApplicationScope:
     name = _pop(directives, "Name", lineno)
     source = _source_ref(directives, lineno)
     application_id = _pop(directives, "Application-ID", lineno)
-    scope = _pop(directives, "Scope", lineno)
+    applies_to = _pop(directives, "Applies-To", lineno)
     _no_leftovers(directives, lineno)
     # Every line of the block is a directive: the statement is the clause's
     # prose, which has no rule to mirror.
     if body:
-        raise DadParseError(body[0][0], "unexpected content in application block")
+        raise DadParseError(body[0][0], "unexpected content in application scope")
     with _validated(name.lineno):
         _INLINE_TEXT.validate_python(name.value)
     number = _number(application_id.value, application_id.lineno, "Application-ID")
     with _validated(application_id.lineno):
         _UNSIGNED32.validate_python(number)
-    with _validated(scope.lineno):
-        return ast.Application(
+    clauses = tuple(part.strip() for part in applies_to.value.split(","))
+    for clause in clauses:
+        # A bare clause is reserved for that clause alone, which nothing
+        # reads yet; said here rather than as a pattern mismatch.
+        if not clause.endswith(".*"):
+            raise DadParseError(
+                applies_to.lineno,
+                f"Applies-To entry {clause!r} names no subclauses"
+                f" (write {clause + '.*'!r} for the clause and its subclauses)",
+            )
+    with _validated(applies_to.lineno):
+        return ast.ApplicationScope(
             name=name.value,
             source=source,
             application_id=number,
-            scope=tuple(part.strip() for part in scope.value.split(",")),
+            applies_to=clauses,
         )
 
 
@@ -537,7 +547,7 @@ def _parse_reused(
 
 
 _SECTION_PARSERS = {
-    "Application": _parse_application,
+    "Application Scope": _parse_application_scope,
     "Message": _parse_message,
     "Grouped AVP": _parse_grouped,
     "Enumerated AVP": _parse_enumerated,
@@ -565,12 +575,12 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Columns": ("columns",),
     "Values": ("values_source",),
     "Application-ID": ("application_id",),
-    "Scope": ("scope",),
+    "Applies-To": ("applies_to",),
 }
-# An application block has no body: a whole-line comment after its last
+# An application scope has no body: a whole-line comment after its last
 # line stands at the block's own path.
 _BODIES = {
-    "Application": ("", 0),
+    "Application Scope": ("", 0),
     "Message": ("avps", 1),
     "Grouped AVP": ("avps", 1),
     "Enumerated AVP": ("values", 1),

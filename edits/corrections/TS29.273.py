@@ -383,11 +383,11 @@ CORRECTIONS += [
     Insert(
         id="application-id-swa",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="STa",
             source=ast.SourceRef(section="4.2.1", page=24),
             application_id=16777250,
-            scope=("4",),
+            applies_to=("4.*",),
         ),
         after=None,
         reason=(

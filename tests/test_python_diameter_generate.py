@@ -172,7 +172,7 @@ def test_an_externally_defined_enumeration_names_its_source(package):
 def test_only_commands_no_document_gives_an_id_generate_none(package):
     """RFC 6733's RAR, STR and ASR carry the using application's id (clause
     2.5); every other module's document states one, in a header or in an
-    application block."""
+    application scope."""
     without = sorted(
         path.stem
         for path in package.glob("*.py")

@@ -109,18 +109,18 @@ class TestApplications:
             }
         )
 
-    def _block(self, name, application_id, *scope):
-        return ast.Application(
+    def _block(self, name, application_id, *applies_to):
+        return ast.ApplicationScope(
             name=name,
             source=ast.SourceRef(section="1.1"),
             application_id=application_id,
-            scope=scope,
+            applies_to=applies_to,
         )
 
     def test_a_block_gives_its_id_to_the_commands_whose_headers_print_none(self):
         built = _model(
             self._document(
-                self._block("Gx", 16777238, "5"),
+                self._block("Gx", 16777238, "5.*"),
                 self._command("5.6.2", None),
                 self._command("5a.6.2", None),
             )
@@ -139,7 +139,7 @@ class TestApplications:
         # The linter's application-header-mismatch reports this.
         built = _model(
             self._document(
-                self._block("Gx", 16777238, "5"),
+                self._block("Gx", 16777238, "5.*"),
                 self._command("5.6.2", 16777266),
             )
         )

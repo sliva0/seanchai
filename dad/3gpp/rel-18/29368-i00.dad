@@ -5,12 +5,12 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129368/18.00.00_60/ts_129368v180000p.pdf
 
 
-; Type: Application
+; Type: Application Scope
 ; Name: Tsp
 ; Section: 6.1.3
 ; Page: 14
 ; Application-ID: 16777309
-; Scope: 6
+; Applies-To: 6.*
 
 
 ; Type: Message

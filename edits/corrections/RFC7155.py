@@ -61,11 +61,11 @@ CORRECTIONS += [
     Insert(
         id="application-id",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="NASREQ",
             source=ast.SourceRef(section="1.5", page=8),
             application_id=1,
-            scope=("3",),
+            applies_to=("3.*",),
         ),
         after=None,
         reason=(

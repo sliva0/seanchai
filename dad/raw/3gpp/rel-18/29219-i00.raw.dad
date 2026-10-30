@@ -5,12 +5,12 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129219/18.00.00_60/ts_129219v180000p.pdf
 
 
-; Type: Application
+; Type: Application Scope
 ; Name: Sy
 ; Section: 5.1.5
 ; Page: 15
 ; Application-ID: 16777302
-; Scope: 5
+; Applies-To: 5.*
 
 
 ; Type: Message

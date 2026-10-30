@@ -683,12 +683,12 @@ def test_a_supply_and_a_correction_of_the_same_section_both_apply():
     assert (enumerated.code, enumerated.values) == (1601, _SUPPLIED)
 
 
-def _application(name, application_id, scope=("6",), section="2.4"):
-    return ast.Application(
+def _application(name, application_id, applies_to=("6.*",), section="2.4"):
+    return ast.ApplicationScope(
         name=name,
         source=ast.SourceRef(section=section),
         application_id=application_id,
-        scope=scope,
+        applies_to=applies_to,
     )
 
 
@@ -699,24 +699,24 @@ def _insert_application(node, after=None):
 
 
 def test_applications_inserted_into_the_file_lead_it_in_declaration_order():
-    first = _insert_application(_application("First", 1, ("6.1",)))
-    second = _insert_application(_application("Second", 2, ("6.2",)))
+    first = _insert_application(_application("First", 1, ("6.1.*",)))
+    second = _insert_application(_application("Second", 2, ("6.2.*",)))
 
     corrected, results = corrections.apply(_spec(), [first, second])
 
     assert [type(s).__name__ for s in corrected.sections[:3]] == [
-        "Application",
-        "Application",
+        "ApplicationScope",
+        "ApplicationScope",
         "Message",
     ]
     assert [
-        s.name for s in corrected.sections[:2] if isinstance(s, ast.Application)
+        s.name for s in corrected.sections[:2] if isinstance(s, ast.ApplicationScope)
     ] == ["First", "Second"]
     text = formatter.format_spec(corrected, corrections.notes(results))
     noted = [line for line in text.splitlines() if ";;" in line]
     assert noted == [
-        f"; Type: Application ;; inserted: ({first.id})",
-        f"; Type: Application ;; inserted: ({second.id})",
+        f"; Type: Application Scope ;; inserted: ({first.id})",
+        f"; Type: Application Scope ;; inserted: ({second.id})",
     ]
     assert parser.parse_with_comments(text) == (corrected, corrections.notes(results))
 
@@ -732,7 +732,7 @@ def test_an_application_insert_follows_the_files_own_and_fails_on_its_name():
     )
 
     assert [
-        s.name for s in corrected.sections[:2] if isinstance(s, ast.Application)
+        s.name for s in corrected.sections[:2] if isinstance(s, ast.ApplicationScope)
     ] == ["Own", "Inserted"]
     with pytest.raises(corrections.CorrectionError, match="'Own' is already present"):
         corrections.apply(spec, [_insert_application(_application("Own", 3))])
@@ -742,7 +742,11 @@ def test_an_application_insert_follows_the_files_own_and_fails_on_its_name():
     ("node", "after", "message"),
     [
         (_application("Placed", 1), "Own", "after must be None"),
-        (ast.ReusedAvpRow(name="X", origin="RFC6733"), None, "only an Application"),
+        (
+            ast.ReusedAvpRow(name="X", origin="RFC6733"),
+            None,
+            "only an ApplicationScope",
+        ),
     ],
     ids=["after", "not-an-application"],
 )
@@ -759,7 +763,7 @@ def test_an_application_field_correction_is_cited_on_its_directive_line():
         update={"sections": (_application("Own", 1), *spec.sections)}
     )
     correction = _correction(
-        corrections.application("Own"), "application_id", 1, 16777238
+        corrections.application_scope("Own"), "application_id", 1, 16777238
     )
 
     corrected, results = corrections.apply(spec, [correction])
@@ -1003,7 +1007,7 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     This one names the outcome — one AVP code, one missing vendor-id, two
     respelled names and TS 29.217's two eNodeB spellings (each in a re-used
     row and a body, one label here), nothing else, plus the inserted rows
-    and the VCSG application block — so changing what the corrections do has
+    and the VCSG application scope — so changing what the corrections do has
     to be a deliberate edit here too.
     """
     raw = _ROOT / "dad" / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
@@ -1051,11 +1055,11 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
         ("Extended-eNodeB-ID", "name", "Extended-eNodeB-ID", "Extended-eNodeB-Id"),
     }
     (block,) = [c.node for c in inserted if isinstance(c.into, corrections.header)]
-    assert block == ast.Application(
+    assert block == ast.ApplicationScope(
         name="S7a/S7d",
         source=ast.SourceRef(section="7.2.2", page=73),
         application_id=16777308,
-        scope=("7.2.21", "7.2.22", "7.2.23", "7.2.24"),
+        applies_to=("7.2.21.*", "7.2.22.*", "7.2.23.*", "7.2.24.*"),
     )
     inserted_rows = set()
     for correction in inserted:

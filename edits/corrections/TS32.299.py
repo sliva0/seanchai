@@ -416,11 +416,11 @@ CORRECTIONS += [
     Insert(
         id="application-id-rf",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Rf",
             source=ast.SourceRef(section="7.1.5", page=97),
             application_id=3,
-            scope=("6.2",),
+            applies_to=("6.2.*",),
         ),
         after=None,
         reason=(
@@ -434,11 +434,11 @@ CORRECTIONS += [
     Insert(
         id="application-id-ro",
         into=header(),
-        node=ast.Application(
+        node=ast.ApplicationScope(
             name="Ro",
             source=ast.SourceRef(section="7.1.6", page=97),
             application_id=4,
-            scope=("6.4",),
+            applies_to=("6.4.*",),
         ),
         after=None,
         reason=(

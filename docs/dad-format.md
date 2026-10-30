@@ -33,14 +33,14 @@ each starting with `; Type:`.
       * [ Supported-Features ]                ; bold
 ```
 
-| `; Type:`        | Holds                                                            |
-|------------------|------------------------------------------------------------------|
-| `Application`    | an application id the document states in prose, with its scope  |
-| `Message`        | a command-code ABNF rule with its Diameter header                |
-| `Grouped AVP`    | `Name ::= < AVP header: code vendor-id >` plus its body          |
-| `Enumerated AVP` | the header rule plus values and reserved ranges, or their source |
-| `AVP Table`      | the spec's own AVP table, one AVP per row                        |
-| `Reused AVPs`    | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
+| `; Type:`           | Holds                                                            |
+|---------------------|------------------------------------------------------------------|
+| `Application Scope` | an application id the document states in prose, and its clauses  |
+| `Message`           | a command-code ABNF rule with its Diameter header                |
+| `Grouped AVP`       | `Name ::= < AVP header: code vendor-id >` plus its body          |
+| `Enumerated AVP`    | the header rule plus values and reserved ranges, or their source |
+| `AVP Table`         | the spec's own AVP table, one AVP per row                        |
+| `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
 
 ## Design intent
 
@@ -63,9 +63,10 @@ each starting with `; Type:`.
   `bases` correction.
 - **An application id stated in prose is a statement of its own.** TS
   29.212 prints its Gx commands with bare `272, REQ, PXY` headers and says
-  in clause 5.1 that Gx's id is 16777238. An `Application` block records
-  that, citing clause 5.1, and scopes it to the commands of clause 5; the
-  headers stay as printed, so a header still says only what it says.
+  in clause 5.1 that Gx's id is 16777238. An `Application Scope` block
+  records that, citing clause 5.1, and applies it to the commands of clause
+  5 (`; Applies-To: 5.*`); the headers stay as printed, so a header still
+  says only what it says.
 - **`; bold` stays inline**, mirroring the source, where bold marks AVPs the
   specification defines or modifies.
 - **A table declares its own columns.** `; Columns:` states which columns the
