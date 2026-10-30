@@ -31,6 +31,19 @@ CORRECTIONS = [
         )
     ),
     Correction(
+        id="mn-to-ha-msa-spi-name",
+        target=avp_rule("MIP-MN-to-HA-MSA", "MIP-MN-HA-SPI"),
+        field="name",
+        expect="MIP-MN-HA-SPI",
+        replace="MIP-MN-to-HA-SPI",
+        reason="the MIP-MN-to-HA-MSA ABNF (clause 9.6) writes MIP-MN-HA-SPI,"
+        " where its prose says 'The HA allocates the MIP-MN-to-HA-SPI' and"
+        " the command AVP table of clause 11.1 lists MIP-MN-to-HA-SPI;"
+        " verified erratum 1462 corrects the name. No clause defines either"
+        " spelling, and the printed one is RFC 5778's later MIPv6 AVP (code"
+        " 491)",
+    ),
+    Correction(
         id="mip-home-agent-host-type",
         target=table_row("MIP-Home-Agent-Host"),
         field="data_type",

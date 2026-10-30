@@ -407,6 +407,44 @@ CORRECTIONS = [
     ),
 ]
 
+# Members naming an AVP nothing defines, where the document defines an AVP
+# for exactly that information and references it from no body: table 7.2.0.1
+# and a clause of its own, and no ABNF using it.
+CORRECTIONS += [
+    Correction(
+        id="monitored-plmn-identifier-member",
+        target=avp_rule("ProSe-Information", "Monitored-HPLMN-Identifier"),
+        field="name",
+        expect="Monitored-HPLMN-Identifier",
+        replace="Monitored-PLMN-Identifier",
+        reason=(
+            "no clause defines Monitored-HPLMN-Identifier; clause 7.2.111Aa"
+            " defines Monitored-PLMN-Identifier (3430), the Monitored PLMN ID"
+            " of ProSe's MATCH_REPORT, which no ABNF of the document"
+            " references; TS 32.298's ProSe CDR field is"
+            " monitoredPLMNIdentifier, and TS 29.230 allocates 3430 to it"
+        ),
+        versions="18.0.0",
+    ),
+    Correction(
+        id="monitoring-event-report-data-member",
+        target=avp_rule("Monitoring-Event-Information", "Monitoring-Event-Report"),
+        field="name",
+        expect="Monitoring-Event-Report",
+        replace="Monitoring-Event-Report-Data",
+        reason=(
+            "no clause defines Monitoring-Event-Report and TS 32.299 cites no"
+            " document for it; clause 7.2.111AaD defines"
+            " Monitoring-Event-Report-Data (3920), 'charging information"
+            " associated with an individual Monitoring Event report', which"
+            " no ABNF of the document references; TS 32.298's MERERecord"
+            " carries listofMonitoringEventReportData, a SEQUENCE OF"
+            " MonitoringEventReportData"
+        ),
+        versions="18.0.0",
+    ),
+]
+
 # Application ids the command headers omit and the prose states.
 CORRECTIONS += [
     Insert(

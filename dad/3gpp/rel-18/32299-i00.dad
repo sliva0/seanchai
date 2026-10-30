@@ -2158,7 +2158,7 @@ Monitoring-Event-Information ::= < AVP header: 3921 10415 > ;; corrected: (TS32.
         [ MONTE-Location-Type ]
         [ Accuracy ]
       * [ Number-Of-UE-Per-Location-Configuration ]
-      * [ Monitoring-Event-Report ]
+      * [ Monitoring-Event-Report-Data ] ;; corrected: (TS32.299.py#monitoring-event-report-data-member)
 
 
 ; Type: Grouped AVP
@@ -2550,7 +2550,7 @@ ProSe-Information ::= < AVP header: 3447 10415 > ;; corrected: (TS32.299.py#vend
         [ Announcing-UE-VPLMN-Identifier ]
         [ Monitoring-UE-HPLMN-Identifier ]
         [ Monitoring-UE-VPLMN-Identifier ]
-        [ Monitored-HPLMN-Identifier ]
+        [ Monitored-PLMN-Identifier ] ;; corrected: (TS32.299.py#monitored-plmn-identifier-member)
         [ Role-Of-ProSe-Function ]
         [ ProSe-App-Id ]
         [ ProSe-3rd-Party-Application-ID ]

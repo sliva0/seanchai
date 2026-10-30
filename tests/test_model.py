@@ -861,7 +861,7 @@ class TestOverTheCommittedCorpus:
 # regression. Roadmap item N lists them by cause.
 _STANDING_HOLES = {
     "RFC4004": {
-        "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-HA-SPI"]
+        "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-to-HA-SPI"]
     },
     "RFC4590": {
         "no data_type": [
@@ -914,13 +914,10 @@ _STANDING_HOLES = {
         "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
             "Logical-Access-ID"
         ],
-        "resolves nowhere": ["NSWO-Authorization"],
     },
     "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
     "TS32.299": {
         "resolves nowhere": [
-            "Monitored-HPLMN-Identifier",
-            "Monitoring-Event-Report",
             "Network-Element",
             "Submission-Timestamp",
             "TCP-Source-Port",

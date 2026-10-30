@@ -30,14 +30,13 @@ letter is not reused. What exists is described in the per-module documents.
     `3GPP-Session-Stop-Indicator` row prints only a code, flag cells
     included; TS 32.299's `VAS-Id`/`VASP-Id` are item K;
   - names no corpus document defines: RFC 4004's three SPI members, TS
-    29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.273's
-    `NSWO-Authorization`, TS 29.154's `External-Group-Identifier`, TS
-    32.299's `Monitored-HPLMN-Identifier`, `Submission-Timestamp` and
+    29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's
+    `External-Group-Identifier`, TS 32.299's `Submission-Timestamp` and
     `Network-Element`;
-  - names undefined in the citing document, which another corpus document
+  - a name undefined in the citing document, which another corpus document
     defines under the same name without being cited: TS 32.299's
-    `Monitoring-Event-Report` (TS 29.336) and `TCP-Source-Port` (TS 29.212;
-    table 7.2.0.1 refers to [215] for `UDP-Source-Port` only);
+    `TCP-Source-Port` (TS 29.212; table 7.2.0.1 refers to [215] for
+    `UDP-Source-Port` only);
   - definitions the format cannot hold: TS 29.229's `Line-Identifier`
     (ETSI vendor 13019 in a clause, no row can state it);
   - re-used origins outside 3GPP and IETF, item K: `ETSI-TS283.034` (TS

@@ -265,7 +265,7 @@ MIP-MN-to-FA-MSA ::= < AVP header: 325 >
 ; Section: 9.6
 ; Page: 41
 MIP-MN-to-HA-MSA ::= < AVP header: 331 >
-        { MIP-MN-HA-SPI }
+        { MIP-MN-to-HA-SPI } ;; corrected: (RFC4004.py#mn-to-ha-msa-spi-name)
         { MIP-Algorithm-Type }
         { MIP-Replay-Mode }
         { MIP-Nonce } ;; corrected: (RFC4004.py#mip-nonce-case-mip-mn-to-ha-msa)

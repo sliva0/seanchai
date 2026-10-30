@@ -1112,7 +1112,6 @@ _STANDING_CORPUS_NOTES = {
         "registry-avp-document": ["3GPP-AAA-Server-Name"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
-        "unresolved-reference": ["NSWO-Authorization"],
     },
     "29283-i00.dad": {
         "registry-avp-name": ["Data", "MCVideo-ID"],
@@ -1199,15 +1198,17 @@ _STANDING_CORPUS_NOTES = {
             "Feature-List-ID",
         ],
         "unresolved-reference": [
-            "Monitored-HPLMN-Identifier",
-            "Monitoring-Event-Report",
             "Network-Element",
             "Submission-Timestamp",
             "TCP-Source-Port",
         ],
     },
     "rfc4004.dad": {
-        "unresolved-reference": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-HA-SPI"],
+        "unresolved-reference": [
+            "MIP-HA-to-MN-SPI",
+            "MIP-MN-FA-SPI",
+            "MIP-MN-to-HA-SPI",
+        ],
     },
 }
 

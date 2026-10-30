@@ -57,7 +57,7 @@ document's flag rules, and `may-encrypt` where its AVP table has the column.
 Corpus types map to the dictionary's typedefns one to one, except `Address`,
 written `IPAddress` as the dictionary writes RFC 6733's `Host-IP-Address`. A
 member is named as the dictionary names it (`Cx-User-Data` for TS 29.229's
-`User-Data`), or as the ABNF does where no entry carries it: six do not,
+`User-Data`), or as the ABNF does where no entry carries it: five do not,
 TS 32.299's and TS 29.345's names no document defines and `Time-Window`
 (below). Wireshark's dictionary loader stores `<gavp>` names without
 resolving them. Where a document states no M bit, `mandatory` is left at

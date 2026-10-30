@@ -141,7 +141,7 @@
       * [ Supported-Features ]
         [ MIP-FA-RK ]
         [ MIP-FA-RK-SPI ]
-        [ NSWO-Authorization ]
+;; deleted: AVP rule 'NSWO-Authorization' (TS29.273.py#nswo-authorization-flag)
         [ DEA-Flags ]
         [ TWAN-Connection-Mode ]
         [ TWAN-Connectivity-Parameters ]

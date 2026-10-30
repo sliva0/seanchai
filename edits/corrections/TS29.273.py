@@ -428,6 +428,27 @@ CORRECTIONS += [
     ),
 ]
 
+# Clause 5.2.2.1.2's DEA still lists NSWO-Authorization, an Enumerated AVP
+# (1514, clause 5.2.3.17) until V11.3.0; CR 0309r2 (V11.4.0) made it DEA-Flags
+# bit 0, printed right below it, and dropped the clause.
+CORRECTIONS += [
+    Delete(
+        id="nswo-authorization-flag",
+        target=avp_rule(
+            definition("Diameter-EAP-Answer", section="5.2.2.1.2"),
+            "NSWO-Authorization",
+        ),
+        expect=ast.AvpRule(name="NSWO-Authorization", presence=ast.Presence.OPTIONAL),
+        reason=(
+            "no clause defines NSWO-Authorization; table 5.2.3.21/1 carries it"
+            " as DEA-Flags bit 0 'NSWO-Authorization', the [ DEA-Flags ] member"
+            " beside it, and TS 29.230 table 7.1 allocates its former code"
+            " 1514 to 'Reserved' (TS 29.273)"
+        ),
+        versions="18.6.0",
+    ),
+]
+
 # Findings the linter reports that the document makes on purpose; they
 # change no data (docs/corrections.md).
 CORRECTIONS += [

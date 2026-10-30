@@ -329,30 +329,39 @@ why each stays:
 - **`registry-application-name`**, one. TS 29.272's VCSG application scope,
   inserted by correction citing clause 7.2.2, names 16777308 `S7a/S7d`;
   table 4.1 calls it "3GPP S7a".
-- **`unresolved-reference`**, thirteen. Seven are AVPs no document
-  defines, tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`,
-  `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI` (clauses 9.4–9.6, whose prose calls them
-  `MIP-MN-to-FA-SPI` and the like, defined nowhere either; erratum 1462
-  renames one to another undefined name, and Wireshark carries the same dead
-  end; RFC 5778's later `MIP-MN-HA-SPI`, code 491, is not cited), TS
-  29.345's `ProSe-Query-Code` and `ProSe-Response-Code` (clauses 6.3.53,
-  6.3.54), and TS 29.273's `NSWO-Authorization` (clause 5.2.2.1.2 prints
-  only a member reference), and TS 29.154's `External-Group-Identifier`
-  (the ECR body, clause A.6.6.2; table A.6.4.1-1 does not list it, and
-  Wireshark has no such AVP either). Six are members whose definition the
-  document neither prints nor cites in a form the file can hold: TS
-  29.229's `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019,
-  which a table row cannot state), and five in TS 32.299's grouped bodies:
-  `Monitored-HPLMN-Identifier` (7.2.154I), `Submission-Timestamp` (7.2.112aA), `Network-Element`
-  (7.2.66aA) and `Monitoring-Event-Report` (7.2.111AaC) resolve nowhere.
-  Each has a near-name the document does define — `Monitored-PLMN-Identifier`
-  (7.2.111Aa), `Submission-Time` (7.2.217), `API-Network-Service-Node`
-  (7.2.20eA), `Monitoring-Event-Report-Data` (7.2.111AaD), or TS 29.336's
-  `Monitoring-Event-Report` — but nothing in TS 32.299 says which, so none
-  is corrected. `TCP-Source-Port` (7.2.242aaA) sits beside
-  `UDP-Source-Port`, which table 7.2.0.1 refers to TS 29.212 [215] for.
-  TS 29.212 defines a `TCP-Source-Port` too (5.3.129), but TS 32.299 cites
-  it for only the one, and sharing a name is no citation.
+- **`unresolved-reference`**, ten. Six are AVPs no document defines,
+  tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`
+  and `MIP-MN-to-HA-SPI` (clauses 9.4–9.6; the prose and clause 11.1's
+  table call the second `MIP-MN-to-FA-SPI`, defined nowhere either, and
+  the third is verified erratum 1462's name for the printed
+  `MIP-MN-HA-SPI`, corrected so it no longer reads as RFC 5778's later
+  MIPv6 AVP of that name, code 491, as Wireshark's dictionary reads it),
+  TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code` (clauses
+  6.3.53, 6.3.54), and TS 29.154's `External-Group-Identifier` (the ECR
+  body, clause A.6.6.2; table A.6.4.1-1 does not list it, and Wireshark
+  has no such AVP either). Four are members whose definition the document
+  neither prints nor cites in a form the file can hold: TS 29.229's
+  `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019, which a
+  table row cannot state), and three in TS 32.299's grouped bodies.
+  `Submission-Timestamp` (7.2.112aA) and `Network-Element` (7.2.66aA)
+  resolve nowhere; each has a near-name the document defines,
+  `Submission-Time` (7.2.217, MMS-Information's) and
+  `API-Network-Service-Node` (7.2.20eA, in the same body), but nothing in
+  TS 32.299 says either is meant. `TCP-Source-Port` (7.2.242aaA) sits
+  beside `UDP-Source-Port`, which table 7.2.0.1 refers to TS 29.212 [215]
+  for. TS 29.212 defines a `TCP-Source-Port` too (5.3.129), but TS 32.299
+  cites it for only the one, and sharing a name is no citation.
+  Where the document itself names the AVP a member means, the member was
+  corrected instead. TS 32.299's ProSe-Information printed
+  `Monitored-HPLMN-Identifier` and Monitoring-Event-Information
+  `Monitoring-Event-Report`; clauses 7.2.111Aa and 7.2.111AaD define
+  `Monitored-PLMN-Identifier` (3430) and `Monitoring-Event-Report-Data`
+  (3920) for exactly that information and no body references either
+  (TS 32.298's CDRs carry `monitoredPLMNIdentifier` and a SEQUENCE OF
+  `MonitoringEventReportData`). TS 29.273's DEA (clause 5.2.2.1.2) lists
+  `NSWO-Authorization`, an AVP until V11.3.0 whose indication table
+  5.2.3.21/1 now carries as DEA-Flags bit 0, the member below it; the
+  registry's 1514 is "Reserved", and the member is deleted.
   The rule promotes to an error when these are gone, which needs the
   upstream documents to move.
 
