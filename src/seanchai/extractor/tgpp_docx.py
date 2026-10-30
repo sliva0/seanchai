@@ -68,10 +68,11 @@ _COMMAND_TITLE_RE = re.compile(
 )
 # TS 32.299 clauses 6.2.2-6.4.13: "Accounting-Request message",
 # "Accounting-Answer (ACA) message"; oneM2M TS-0004 clauses A.2.1-A.2.2,
-# "Accounting Request Command", once a patch joins the words. Read behind
+# "Accounting Request Command", once a patch joins the words; TS 32.299
+# V11.20.0 capitalizes "Accounting-Request Message". Read behind
 # `message-headings`.
 _MESSAGE_TITLE_RE = re.compile(
-    r"^(?P<name>[A-Za-z-]+)(?: \((?P<abbr>[A-Z]{2,5})\))? (?:message|Command)$"
+    r"^(?P<name>[A-Za-z-]+)(?: \((?P<abbr>[A-Z]{2,5})\))? (?:[Mm]essage|Command)$"
 )
 # A clause heading printed in a body style (TS 32.299 clause 7.2.135C), read
 # only behind the `body-clause-headings` quirk.
@@ -136,7 +137,7 @@ _ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
 #   it, "- (0) Private user identity." (TS 29.109 clause 6.3.1.13).
 _LOOSE_ENUM_VALUE_RE = re.compile(
     r"(?P<dash>- )?"
-    r"(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*(?P<words>(?: [A-Za-z0-9_-]+)+)?)?"
+    r"(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*(?P<words>(?:,? [A-Za-z0-9_-]+)+)?)?"
     r"\s*\((?:(?P<value>\d+)|0x(?P<hex>[0-9A-Fa-f]+))\)"
     r"\s*(?P<rest>.*)"
 )
@@ -253,6 +254,10 @@ class _Line:
     bold: frozenset[bool]
     # Strikethrough state of the same runs.
     struck: frozenset[bool]
+    # Whether the line, as printed, ends in a number set off by a tab or a
+    # run of spaces, which normalizing collapses: TS 32.299 V11.20.0's value
+    # lines, "MONETARY<tabs>0" (clause 7.2.14), and no sentence's last word.
+    tabbed_number: bool = False
 
 
 @dataclass
@@ -262,6 +267,9 @@ class _Para:
     text: str
     style: str
     lines: list[_Line]
+    # The number Word's list numbering renders before the paragraph, where
+    # the document declares a reading that needs it (`_ListNumbering`).
+    label: str | None = None
 
 
 @dataclass
@@ -301,6 +309,9 @@ def _is_bold(line: _Line) -> bool:
     return next(iter(line.bold), False)
 
 
+_TABBED_NUMBER_RE = re.compile(r"\S(?:\t|[ \xa0]{2,})[\s\xa0]*\d+[\s\xa0]*$")
+
+
 def _lines(
     paragraph: docx.text.paragraph.Paragraph,
     style: str,
@@ -333,6 +344,7 @@ def _lines(
             style=style,
             bold=frozenset(flags),
             struck=frozenset(strike),
+            tabbed_number=bool(_TABBED_NUMBER_RE.search("".join(text))),
         )
         for text, flags, strike in zip(texts, bold, struck, strict=True)
     ]
@@ -381,8 +393,11 @@ class _Level:
 
 def _list_level(element: Any, base: _Level | None = None) -> _Level:
     """A `w:lvl`, each property it leaves out taken from `base`: the
-    abstract numbering's level, where a `w:lvlOverride` redefines one."""
-    base = base or _Level(start=1, fmt="decimal", text="", restart=None, legal=False)
+    abstract numbering's level, where a `w:lvlOverride` redefines one. A
+    level with no `w:start` starts at 0 (ECMA-376 part 1, 17.9.25): TS
+    32.299 V11.20.0's PoC-Server-Role list (clause 7.2.145) omits it, and
+    the ETSI PDF prints "0 Participating PoC Server"."""
+    base = base or _Level(start=0, fmt="decimal", text="", restart=None, legal=False)
     start = _val(element, "w:start")
     restart = _val(element, "w:lvlRestart")
     text = element.find(qn("w:lvlText"))
@@ -551,7 +566,11 @@ def _sections(
     caption: str | None = None
     numbering = (
         _ListNumbering(document.part.numbering_part.element, document.styles.element)
-        if quirks is not None and quirks.enabled("list-numbered-headings")
+        if quirks is not None
+        and (
+            quirks.enabled("list-numbered-headings")
+            or quirks.enabled("list-numbered-enum-values")
+        )
         else None
     )
     for item in document.iter_inner_content():
@@ -688,7 +707,9 @@ def _sections(
             caption = match["label"]
         if current is not None:
             lines = _lines(item, style, patcher, number)
-            current.paragraphs.append(_Para(text=text, style=style, lines=lines))
+            current.paragraphs.append(
+                _Para(text=text, style=style, lines=lines, label=label)
+            )
     return sections
 
 
@@ -724,6 +745,17 @@ def _abnf_body(
             index += 1
             continue
         matches = _abnf_members(line.text)
+        if (
+            not matches
+            and quirks.enabled("abnf-comments")
+            and (commented := _ABNF_COMMENT_RE.fullmatch(line.text))
+            and (matches := _abnf_members(commented["rule"]))
+        ):
+            # TS 29.209 V6.8.0 clause 6.5.18: "{ Media-Component-Number } ;
+            # Ordinal number of the media comp." The comment is RFC 5234's
+            # (section 3.9) and prose, which a `.dad` body does not keep.
+            quirks.fire("abnf-comments")
+            line = dataclasses.replace(line, text=commented["rule"])
         if not matches:
             break
         index += 1
@@ -749,6 +781,10 @@ def _abnf_body(
         for position, member in struck
     ]
     return tuple(rules), index, commented
+
+
+# An ABNF line with a trailing comment, read behind `abnf-comments`.
+_ABNF_COMMENT_RE = re.compile(r"(?P<rule>[^;]*\S) ?;.*")
 
 
 def _abnf_members(text: str) -> list[re.Match]:
@@ -937,6 +973,12 @@ _APPLICATION_ID_RES = (
         r"^The Diameter application identifier assigned to the (?P<name>\S+)"
         r" interface application(?: in the present release)? is (?P<id>\d+)\."
     ),
+    # TS 29.209 V6.8.0 clause 6.1: "The Gq application is defined as an IETF
+    # vendor specific Diameter application with application ID 16777222".
+    re.compile(
+        r"^The (?P<name>\S+) application is defined as an IETF vendor specific"
+        r" Diameter application with application ID (?P<id>\d+)\b"
+    ),
 )
 
 
@@ -1016,7 +1058,23 @@ def _extract_enumerated(
         text = paragraph.text
         if not text:
             continue
-        if match := _ENUM_VALUE_RE.fullmatch(text):
+        if (
+            quirks.enabled("list-numbered-enum-values")
+            and paragraph.label is not None
+            and (number := _LIST_VALUE_RE.fullmatch(paragraph.label))
+        ):
+            # TS 32.299 V11.20.0 clauses 7.2.132-7.2.151: the value is the
+            # number Word's list renders before the label ("0 Participating
+            # PoC Server", "1. Moderator" in the ETSI PDF), which the text
+            # does not carry.
+            match = _VALUE_FIRST_RE.fullmatch(f"{number['value']} {text}")
+            if match is None:
+                raise ExtractionError(
+                    f"{section.number}: list-numbered value {text!r} is no value"
+                )
+            quirks.fire("list-numbered-enum-values")
+            values.append(_value_first(match, section.number))
+        elif match := _ENUM_VALUE_RE.fullmatch(text):
             values.append(ast.EnumValue(name=match["name"], value=int(match["value"])))
         elif value := _loose_enum_value(text, section.number, quirks):
             values.append(value)
@@ -1033,9 +1091,36 @@ def _extract_enumerated(
             reserved.append(
                 ast.ReservedValues(first=first, last=int(match["last"] or first))
             )
-        elif quirks.enabled("value-first-enums"):
+        elif any(
+            quirks.enabled(name)
+            for name in (
+                "value-first-enums",
+                "value-last-enums",
+                "bracketed-enum-values",
+                "dotted-enum-values",
+            )
+        ):
             for line in paragraph.lines:
-                if match := _VALUE_RANGE_RE.fullmatch(line.text):
+                if (
+                    quirks.enabled("value-last-enums")
+                    and line.tabbed_number
+                    and (match := _VALUE_LAST_RE.fullmatch(line.text))
+                ):
+                    quirks.fire("value-last-enums")
+                    values.append(_value_first(match, section.number))
+                elif quirks.enabled("bracketed-enum-values") and (
+                    match := _BRACKETED_VALUE_RE.fullmatch(line.text)
+                ):
+                    quirks.fire("bracketed-enum-values")
+                    values.append(_value_first(match, section.number))
+                elif quirks.enabled("dotted-enum-values") and (
+                    match := _DOTTED_VALUE_RE.fullmatch(line.text)
+                ):
+                    quirks.fire("dotted-enum-values")
+                    values.append(_value_first(match, section.number))
+                elif not quirks.enabled("value-first-enums"):
+                    continue
+                elif match := _VALUE_RANGE_RE.fullmatch(line.text):
                     # SM-Service-Type (TS 32.299 clause 7.2.213) closes its
                     # list with "11 .. 99 Reserved for 3GPP defined SM
                     # services" and "100 .. 199 Vendor specific SM services".
@@ -1156,6 +1241,23 @@ _VALUE_FIRST_RE = re.compile(
 )
 
 
+# TS 32.299 V11.20.0 writes most value lists label first, the value set off
+# by tabs: "MONETARY<tabs>0" (clause 7.2.14), "Calling Party<tab>0"
+# (7.2.124). Read only where the printed line has that tab
+# (`_Line.tabbed_number`).
+_VALUE_LAST_RE = re.compile(r"(?P<label>.+?) (?P<value>\d+)(?P<description>)")
+
+
+# TS 32.299 V11.20.0's other value-first shapes: the value bracketed, "[0]
+# called party" (clause 7.2.101), or followed by a full stop, "0.
+# SUBMISSION" (7.2.207, 7.2.218); each read behind its own quirk.
+_BRACKETED_VALUE_RE = re.compile(r"\[(?P<value>\d+)\] (?P<label>.+?)(?P<description>)")
+_DOTTED_VALUE_RE = re.compile(r"(?P<value>\d+)\. (?P<label>.+?)(?P<description>)")
+# A list number Word renders before a value, behind `list-numbered-enum-values`:
+# "0", or "1." (TS 32.299 V11.20.0 clause 7.2.151).
+_LIST_VALUE_RE = re.compile(r"(?P<value>\d+)\.?")
+
+
 # A label read out of prose is taken only in the shape a value name takes in
 # the documents: words of letters, digits, `-`, `_` and parentheses, single
 # spaces between (TS 32.299's "VAS4SMS Short Message Virtual Private Network
@@ -1177,6 +1279,10 @@ def _loose_enum_value(
         needed.append("dashed-enum-values")
     if match["words"]:
         needed.append("worded-enum-values")
+    if match["words"] and "," in match["words"]:
+        # TS 29.140 V7.0.0 clause 6.3.5: "MM1 Message Submission, Profile
+        # based (0)", a label `.dad` quotes (docs/grammar.md, quoted-name).
+        needed.append("comma-enum-labels")
     if match["hex"]:
         needed.append("hex-enum-values")
     name, rest, description = match["name"], match["rest"], None
@@ -1195,7 +1301,7 @@ def _loose_enum_value(
     for quirk in needed:
         quirks.fire(quirk)
     value = int(match["value"]) if match["hex"] is None else int(match["hex"], 16)
-    if _VALUE_LABEL_RE.fullmatch(name):
+    if _VALUE_LABEL_RE.fullmatch(name.replace(", ", " ")):
         with contextlib.suppress(pydantic.ValidationError):
             return ast.EnumValue(name=name, value=value, description=description)
     raise ExtractionError(f"{section}: enumerated value line {text!r} is no value name")
@@ -1250,8 +1356,11 @@ def _clause_cell(text: str, quirks: sources.Quirks) -> str:
 # Both spellings of the Encrypt column, normalized to one on the way in. This
 # is a document convention rather than a typo — TS 29.061, 29.212 and 29.214
 # write "Y"/"N" throughout, the rest write "Yes"/"No" — and a convention is
-# extractor code, not several hundred input patches.
-_ENCRYPT_CELLS = {"Yes": True, "Y": True, "No": False, "N": False, "": None}
+# extractor code, not several hundred input patches. A dash states nothing,
+# as in the flag cells beside it: TS 32.299 V11.20.0's table 7.1 dashes
+# every cell of the fifteen rows it does not use (CC-Sub-Session-Id,
+# Vendor-Id), Encrypt included.
+_ENCRYPT_CELLS = {"Yes": True, "Y": True, "No": False, "N": False, "": None, "-": None}
 
 
 def _encrypt_cell(text: str) -> bool | None:
@@ -2936,6 +3045,34 @@ QUIRKS: dict[str, str] = {
     "value-first-enums": (
         "read 'n Label' enumerated values, the label ending at the first"
         " colon and the rest of the line its description (TS 32.299)"
+    ),
+    "abnf-comments": (
+        "read an ABNF member line's trailing '; comment' (RFC 5234 section"
+        " 3.9) as the member, dropping the comment (TS 29.209 V6.8.0 clauses"
+        " 6.5.18 and 6.5.20, TS 29.214 V7.12.0 clauses 5.3.16 and 5.3.18)"
+    ),
+    "comma-enum-labels": (
+        "read a worded enumerated label whose words a comma separates,"
+        " 'MM1 Message Submission, Profile based (0)', as the quoted name it"
+        " is (TS 29.140 V7.0.0 clause 6.3.5)"
+    ),
+    "bracketed-enum-values": (
+        "read '[n] label' enumerated values, the value bracketed before the"
+        " label (TS 32.299 V11.20.0 clause 7.2.101)"
+    ),
+    "dotted-enum-values": (
+        "read 'n. Label' enumerated values, the value followed by a full stop"
+        " (TS 32.299 V11.20.0 clauses 7.2.207, 7.2.218)"
+    ),
+    "list-numbered-enum-values": (
+        "read an enumerated value's number from the list numbering Word"
+        " renders before its label (word/numbering.xml, replayed), '0"
+        " Participating PoC Server' and '1. Moderator' in the PDF (TS 32.299"
+        " V11.20.0 clauses 7.2.132, 7.2.145, 7.2.147, 7.2.151)"
+    ),
+    "value-last-enums": (
+        "read 'Label<tab>n' enumerated values, the value last and set off by"
+        " a tab or a run of spaces (TS 32.299 V11.20.0)"
     ),
     "prose-application-ids": (
         "read 'the Application-ID for the Gx Application ... is n' and 'The"

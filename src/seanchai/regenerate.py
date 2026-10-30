@@ -284,7 +284,9 @@ def _expand(
         expansions.append(ranges.expand_sources(path, spec.version))
     if corrections_dir is not None:
         acceptances = corrections.acceptances(
-            corrections.load(corrections_dir, spec.specification)
+            corrections.in_release(
+                corrections.load(corrections_dir, spec.specification), spec.version
+            )
         )
         accepted = (
             {
@@ -343,7 +345,9 @@ def _produce(
         if source.pdf is not None:
             spec = tgpp_docx.attach_pages(spec, source.pdf, warnings=warnings)
     raw_text = formatter.format_spec(spec, comments)
-    declared = corrections.load(corrections_dir, spec.specification)
+    declared = corrections.in_release(
+        corrections.load(corrections_dir, spec.specification), spec.version
+    )
     for edit in declared:
         # `__post_init__` parsed the declared string; the annotation still
         # admits it, so parse again (a no-op) to satisfy the type.

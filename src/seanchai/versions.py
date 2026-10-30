@@ -1,4 +1,5 @@
-"""Advisory, inclusive version ranges shared by all declaration layers."""
+"""Inclusive version ranges shared by all declaration layers: each scopes its
+declaration to the releases it spans, and is advisory within them."""
 
 import re
 from dataclasses import dataclass
@@ -78,3 +79,54 @@ class VersionRange:
         if self.first == self.last and self.first is not None:
             return self.first
         return f"{self.first or '*'}..{self.last or '*'}"
+
+
+def _major(version: str) -> int:
+    return int(version.split(".", 1)[0])
+
+
+def _releases(versions: VersionRange) -> tuple[int | None, int | None]:
+    """The majors `versions` spans, either bound None for open."""
+    return (
+        None if versions.first is None else _major(versions.first),
+        None if versions.last is None else _major(versions.last),
+    )
+
+
+def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | None:
+    """The release whose declarations apply to `version`, or None for all.
+
+    A document's declarations are reviewed per release: a 3GPP release is
+    where a template, and with it every quirk and typo, may change, so a
+    declaration made for Release 18 says nothing about Release 7 (TS 29.214
+    V7.12.0 beside V18.4.0). Within a release a range is advisory, so the
+    next version of a release still gets every declaration and a warning
+    (docs/workflow.md#version-upgrades). The release is `version`'s own
+    when some range spans it, else the newest declared release below it,
+    which is a release upgrade: Release 19 is first read with Release 18's
+    declarations, as within a release. A version below every declared
+    release gets none. None, meaning every declaration, for a version-less
+    document (an RFC) and for a file whose ranges are all open.
+    """
+    if version is None:
+        return None
+    wanted = _major(version)
+    spans = [_releases(versions) for versions in ranges]
+    if not spans or all(first is None and last is None for first, last in spans):
+        return None
+    if any(
+        (first is None or first <= wanted) and (last is None or wanted <= last)
+        for first, last in spans
+    ):
+        return wanted
+    below = [last for first, last in spans if last is not None and last < wanted]
+    return max(below) if below else -1
+
+
+def applies(versions: VersionRange, release: int | None) -> bool:
+    """Whether a declaration ranged `versions` applies in `release`, which
+    `reviewed_release` chose; None applies everything."""
+    if release is None:
+        return True
+    first, last = _releases(versions)
+    return (first is None or first <= release) and (last is None or release <= last)

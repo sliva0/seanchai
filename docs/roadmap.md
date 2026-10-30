@@ -15,7 +15,7 @@ letter is not reused. What exists is described in the per-module documents.
   services", and oneM2M TS-0004's Protocol-Type "100 .. 199 Operator and
   vendor specific protocol types", allocate a range the format cannot
   hold.
-  TS 32.299 cites `VAS-Id` and `VASP-Id` from TS 29.140, which ends at
+  TS 32.299 cites `VAS-ID` and `VASP-ID` from TS 29.140, which ends at
   Release 7 (V7.0.0): the downloader fetches one release and
   `Corpus.resolve` never crosses a major version, so the origin stays
   unresolved until the corpus holds more than one release *and* a
@@ -32,7 +32,7 @@ letter is not reused. What exists is described in the per-module documents.
   `_STANDING_HOLES` in `tests/test_model.py`):
   - types no source states: RFC 4590 is a RADIUS document; TS 29.061's
     `3GPP-Session-Stop-Indicator` row prints only a code, flag cells
-    included; TS 32.299's `VAS-Id`/`VASP-Id` are item K, as are the ETSI
+    included; TS 32.299's `VAS-ID`/`VASP-ID` are item K, as are the ETSI
     transcriptions' TS 29.209 and TS 29.214 Release 7 imports;
   - names no corpus document defines: RFC 4004's three SPI members, TS
     29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's

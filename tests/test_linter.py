@@ -436,6 +436,10 @@ _RAW_ERRORS = {
     ],
     "29212-i20.raw.dad": ["vendor-id-mismatch"] * 39,
     "29214-i40.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 11,
+    # Release 7 and TS 29.209, its Release 6 predecessor: grouped headers
+    # printing no vendor where clause 5.3 (6.5) sets 3GPP's for every AVP.
+    "29214-7c0.raw.dad": ["vendor-id-mismatch"] * 5,
+    "29209-680.raw.dad": ["vendor-id-mismatch"] * 5,
     "29336-i20.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
@@ -490,6 +494,9 @@ _RAW_ERRORS = {
     "32299-i00.raw.dad": ["row-without-code"]
     + ["table-definition-mismatch"] * 2
     + ["vendor-id-mismatch"] * 96,
+    # Release 11: table 7.1's wildcard row, and the grouped headers of clause
+    # 7.2 printing no vendor while table 7.2 sets V.
+    "32299-bk0.raw.dad": ["row-without-code"] + ["vendor-id-mismatch"] * 65,
     # Table A.4-1 puts V under Must not for its 45687 rows and 3GPP's
     # Service-Information, and clause A.5.14 prints M2M-Information's
     # header with no vendor-id.
@@ -1329,7 +1336,7 @@ _STANDING_CORPUS_NOTES = {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
         "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
-        "origin-not-in-corpus": ["TS29.140"],
+        "origin-not-in-corpus": ["TS29.140 (corpus has 7.0.0)"],
         "reused-origin-indirect": [
             "3GPP2-BSID",
             "Priority-Indication",
@@ -1354,7 +1361,7 @@ _STANDING_CORPUS_NOTES = {
     # TS 29.209 ends at Release 6 and TS 183 017 cites TS 29.214 Release 7;
     # neither is in the corpus's release.
     "es283034-020200.dad": {
-        "origin-not-in-corpus": ["TS29.209"],
+        "origin-not-in-corpus": ["TS29.209 (corpus has 6.8.0)"],
         # Clause 7.3.11 prints values PRIORITY 0-7 and table 13 types the AVP
         # Unsigned32, re-used from TS 183 017, whose clause 7.3.9 enumerates
         # DEFAULT and PRIORITY-ONE to PRIORITY-FIFTEEN.
@@ -1363,7 +1370,9 @@ _STANDING_CORPUS_NOTES = {
     },
     # oneM2M cites TS 32.299 [31] for Node-Id and Service-Information; its
     # version names no 3GPP release.
-    "ts-0004-v2_35_0.dad": {"origin-not-in-corpus": ["TS32.299 (corpus has 18.0.0)"]},
+    "ts-0004-v2_35_0.dad": {
+        "origin-not-in-corpus": ["TS32.299 (corpus has 18.0.0, 11.20.0)"]
+    },
     "ts183017-030201.dad": {
         # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports.
         "local-and-reused": [
@@ -1378,8 +1387,29 @@ _STANDING_CORPUS_NOTES = {
             "SIP-Forking-Indication",
             "Specific-Action",
         ],
-        "origin-not-in-corpus": ["TS29.209, TS29.214 (corpus has 18.4.0)"],
+        "origin-not-in-corpus": [
+            "TS29.209 (corpus has 6.8.0), TS29.214 (corpus has 18.4.0, 7.12.0)"
+        ],
         "reused-reprint": ["Globally-Unique-Address"],
+    },
+    # The older releases the corpus holds for citations cite in turn
+    # documents it holds at Release 18 only: TS 29.214 V7.12.0 re-uses Gx's
+    # and Gi's AVPs, TS 32.299 V11.20.0 Release 11's charging origins and
+    # TS 29.140 V7.0.0 from Release 7.
+    "29214-7c0.dad": {
+        "origin-not-in-corpus": [
+            "TS29.061 (corpus has 18.1.0), TS29.212 (corpus has 18.2.0)"
+        ]
+    },
+    "32299-bk0.dad": {
+        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
+        "origin-not-in-corpus": [
+            "TS29.061 (corpus has 18.1.0), TS29.140 (corpus has 7.0.0),"
+            " TS29.173 (corpus has 18.0.0), TS29.212 (corpus has 18.2.0),"
+            " TS29.214 (corpus has 18.4.0, 7.12.0), TS29.229 (corpus has 18.1.0),"
+            " TS29.272 (corpus has 18.7.0), TS29.273 (corpus has 18.6.0),"
+            " TS29.329 (corpus has 18.0.0)"
+        ],
     },
     "rfc4004.dad": {
         "unresolved-reference": [
@@ -1444,9 +1474,12 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
     actual = {}
     accepted = {}
     for entry in books:
-        declared = corrections.load(
-            Path(__file__).parent.parent / "edits" / "corrections",
-            entry.spec.specification,
+        declared = corrections.in_release(
+            corrections.load(
+                Path(__file__).parent.parent / "edits" / "corrections",
+                entry.spec.specification,
+            ),
+            entry.spec.version,
         )
         notes = {}
         for finding in linter.lint_with_corpus(

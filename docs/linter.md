@@ -269,16 +269,19 @@ why each stays:
   (clause 7.3.9). TS 183 017 clause 7.3.10 re-prints ES 283 034's
   `Globally-Unique-Address`, identical once ES 283 034's `Frame-*` members
   are corrected.
-- **`origin-not-in-corpus`**, four. TS 29.140, cited by TS 32.299 for
-  `VAS-Id` and `VASP-Id`, ends at V7.0.0, and nothing resolves across a
-  major version. The ETSI transcriptions import Gq's AVPs from TS 29.209,
-  which ends at Release 6, and TS 183 017 imports `Codec-Data` from TS
-  29.214 Release 7 (its clause 2, reference [19]). oneM2M TS-0004 table
-  A.4-1 cites TS 32.299 [31] ("Release 11") for `Node-Id` and
-  `Service-Information`, whose rows print vendor, code, type and flags of
-  their own.
-- **`external-origin-not-in-corpus`**, two files: TS 29.212
-  (`3GPP2-X.S0057`) and 32.299 (`OMA-DDS-Charging_Data`).
+- **`origin-not-in-corpus`**, six. TS 29.140, cited by TS 32.299 for
+  `VAS-ID` and `VASP-ID`, ends at V7.0.0, and nothing resolves across a
+  major version, though the corpus holds V7.0.0. The ETSI transcriptions
+  import Gq's AVPs from TS 29.209, which ends at Release 6, and TS 183 017
+  imports `Codec-Data` from TS 29.214 Release 7 (its clause 2, reference
+  [19]). oneM2M TS-0004 table A.4-1 cites TS 32.299 [31] ("Release 11")
+  for `Node-Id` and `Service-Information`, whose rows print vendor, code,
+  type and flags of their own. The older copies held for those citations
+  cite in turn what the corpus holds at Release 18 only: TS 29.214 V7.12.0
+  Release 7's TS 29.061 and 29.212, TS 32.299 V11.20.0 nine Release 11
+  documents.
+- **`external-origin-not-in-corpus`**, three files: TS 29.212
+  (`3GPP2-X.S0057`) and both copies of 32.299 (`OMA-DDS-Charging_Data`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
   ABNF lists both (and table 6.2.3.1 marks them OC). The generator keeps

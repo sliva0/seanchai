@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .dad import corrections
-from .versions import VersionRange
+from .versions import VersionRange, applies, reviewed_release
 
 
 @dataclass
@@ -71,8 +71,14 @@ def expand_sources(path: Path, version: str) -> Expansion:
     replacements: list[tuple[int, int, str]] = []
     expected = {kind: [dict(entry) for entry in data.get(kind, ())] for kind in _KINDS}
     widened = []
+    release = reviewed_release(
+        [_source_range(entry) for *_, entry in _source_entries(data)], version
+    )
     for kind, label, index, entry in _source_entries(data):
         declared = _source_range(entry)
+        if not applies(declared, release):
+            # Another release's declaration: not applied, so not widened.
+            continue
         expanded = declared.expanded(version)
         if expanded == declared:
             continue
@@ -153,10 +159,14 @@ def _source_range(entry: dict) -> VersionRange:
 
 
 def _uncovered_sources(path: Path, data: dict, version: str, why: str) -> list[str]:
+    release = reviewed_release(
+        [_source_range(entry) for *_, entry in _source_entries(data)], version
+    )
     return [
         f"{path.name}: {_KINDS[kind]} {label!r} {_source_range(entry)}: {why}"
         for kind, label, _index, entry in _source_entries(data)
-        if not _source_range(entry).covers(version)
+        if applies(_source_range(entry), release)
+        and not _source_range(entry).covers(version)
     ]
 
 
@@ -203,8 +213,15 @@ def expand_corrections(
     # Ranges a reported literal declares: the declarations it builds are
     # covered by that line and not listed again by id.
     explained: set[str] = set()
+    declared_edits = corrections.load(directory, specification)
+    release = reviewed_release(
+        [VersionRange.parse(edit.versions) for edit in declared_edits], version
+    )
     for literal, value, acceptance in _range_literals(tree):
         declared = VersionRange.parse(value)
+        if not applies(declared, release):
+            # Another release's declaration: not applied, so not widened.
+            continue
         expanded = declared.expanded(version)
         if expanded == declared:
             continue
@@ -236,7 +253,6 @@ def expand_corrections(
         replacements.append((begin, end, f"{quote}{expanded}{quote}"))
         widened.append(f"{where} -> {expanded}")
 
-    declared_edits = corrections.load(directory, specification)
     edits = declared_edits
     if replacements:
         rewritten = _replaced(text, replacements).encode(encoding)
@@ -245,7 +261,8 @@ def expand_corrections(
     remaining = manual + [
         f"correction {edit.cited} {edit.versions}: not a string literal"
         for edit in edits
-        if not VersionRange.parse(edit.versions).covers(version)
+        if applies(VersionRange.parse(edit.versions), release)
+        and not VersionRange.parse(edit.versions).covers(version)
         and str(edit.versions) not in explained
     ]
     return Expansion(widened, remaining, stale)

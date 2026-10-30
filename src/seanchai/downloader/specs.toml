@@ -343,15 +343,16 @@ title = "Diameter group signaling"
 # archived in any release, "release" none later in its own. A version
 # archived later fails the download, naming it.
 
-# TS 32.299 clause 2 [213] cites TS 29.140 non-specifically for VAS-Id and
-# VASP-Id (table 7.2.0.1); V7.0.0 is the document's last version, so a
-# non-specific reference from any later release means it.
+# TS 32.299 clause 2 [213] cites TS 29.140 non-specifically for VAS-ID and
+# VASP-ID (table 7.2.0.1, which spells them VAS-Id and VASP-Id); V7.0.0 is
+# the document's last version, so a non-specific reference from any later
+# release means it.
 [[tgpp_pinned]]
 number = "29.140"
 title = "MM10 interface based on Diameter protocol; Stage 3"
 version = "7.0.0"
 final = "document"
-reason = "Defines VAS-Id and VASP-Id, which TS 32.299 re-uses."
+reason = "Defines VAS-ID and VASP-ID, which TS 32.299 re-uses."
 
 # ETSI ES 283 034 clause 2 [5] cites ETSI TS 129 209 "(3GPP TS 29.209)",
 # non-specifically (table 11), and TS 183 017 clause 2 [4] "(3GPP TS

@@ -1,0 +1,186 @@
+; Specification: 3GPP TS 29.140
+; Version: 7.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129100_129199/129140/07.00.00_60/ts_129140v070000p.pdf
+
+
+; Type: Message
+; Name: Message-Process-Request, MPR
+; Section: 6.1.1
+; Page: 12
+<Message-Process-Request> ::= < Diameter Header: 311, REQ, PXY, 16777226 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { Event-Timestamp }
+        { Trigger-Event }                  ; bold
+        { Served-User-Identity }           ; bold
+        [ 3GPP-IMSI ]                      ; bold
+        [ Sender-Address ]                 ; bold
+      * { Initial-Recipient-Address }      ; bold
+        { Originating-Interface }          ; bold
+        [ Service-Key ]                    ; bold
+        [ Delivery-Report ]                ; bold
+        [ Read-Reply ]                     ; bold
+        [ Sender-Visibility ]              ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Message-Process-Answer, MPA
+; Section: 6.1.2
+; Page: 13
+<Message-Process-Answer> ::= < Diameter Header: 311, PXY, 16777226 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Status ]                         ; bold
+      * [ Result-Recipient-Address ]       ; bold
+        [ Delivery-Report ]                ; bold
+        [ Read-Reply ]                     ; bold
+        [ Billing-Information ]            ; bold
+        [ Sender-Visibility ]              ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.3
+; Table: 6.3.1
+; Page: 14
+; Columns: Name               Code   Section   Type          Must   May   S.not   M.not   Encrypt
+Served-User-Identity          1100   6.3.1     Grouped       M,V    -     -       -       No
+MSISDN                        701    6.3.2     OctetString   M,V    -     -       -       No
+VASP-ID                       1101   6.3.3     UTF8String    M,V    -     -       -       No
+VAS-ID                        1102   6.3.4     UTF8String    M,V    -     -       -       No
+Trigger-Event                 1103   6.3.5     Enumerated    M,V    -     -       -       No
+3GPP-IMSI                     1      6.3.6     UTF8String    M,V    -     -       -       No
+Sender-Address                1104   6.3.7     UTF8String    M,V    -     -       -       No
+Initial-Recipient-Address     1105   6.3.8     Grouped       M,V    -     -       -       No
+Result-Recipient-Address      1106   6.3.9     Grouped       M,V    -     -       -       No
+Sequence-Number               1107   6.3.10    Unsigned32    M,V    -     -       -       No
+Recipient-Address             1108   6.3.11    UTF8String    M,V    -     -       -       No
+Routeing-Address              1109   6.3.12    UTF8String    M,V    -     -       -       No
+Originating-Interface         1110   6.3.13    Enumerated    M,V    -     -       -       No
+Delivery-Report               1111   6.3.14    Enumerated    M,V    -     -       -       No
+Read-Reply                    1112   6.3.15    Enumerated    M,V    -     -       -       No
+Sender-Visibility             1113   6.3.16    Enumerated    M,V    -     -       -       No
+Service-Key                   1114   6.3.17    UTF8String    M,V    -     -       -       No
+Billing-Information           1115   6.3.18    UTF8String    M,V    -     -       -       No
+Status                        1116   6.3.19    Grouped       M,V    -     -       -       No
+Status-Code                   1117   6.3.20    UTF8String    M,V    -     -       -       No
+Status-Text                   1118   6.3.21    UTF8String    M,V    -     -       -       No
+Routeing-Address-Resolution   1119   6.3.22    Enumerated    M,V    -     -       -       No
+
+
+; Type: Grouped AVP
+; Name: Served-User-Identity
+; Section: 6.3.1
+; Page: 14
+Served-User-Identity ::= < AVP header: 1100 10415 >
+        [ MSISDN ]
+        [ VASP-ID ]
+        [ VAS-ID ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Trigger-Event
+; Section: 6.3.5
+; Page: 15
+Trigger-Event ::= < Enumerated AVP header: 1103 10415 >
+        "MM1 Message Submission, Profile based" = 0
+        "MM1 Message Submission, Address based" = 1
+        "MM1 Message Delivery"                  = 2
+        "MM7 Message Submission, Profile based" = 3
+        "MM7 Message Submission, Address based" = 4
+
+
+; Type: Grouped AVP
+; Name: Initial-Recipient-Address
+; Section: 6.3.8
+; Page: 15
+Initial-Recipient-Address ::= < AVP header: 1105 10415 >
+        { Sequence-Number }
+        { Recipient-Address }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Result-Recipient-Address
+; Section: 6.3.9
+; Page: 15
+Result-Recipient-Address ::= < AVP header: 1106 10415 >
+        { Sequence-Number }
+        [ Recipient-Address ]
+        [ Routeing-Address ]
+        [ Sender-Address ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Originating-Interface
+; Section: 6.3.13
+; Page: 16
+Originating-Interface ::= < Enumerated AVP header: 1110 10415 >
+        MM1 = 0
+        MM3 = 1
+        MM4 = 2
+        MM7 = 3
+
+
+; Type: Enumerated AVP
+; Name: Delivery-Report
+; Section: 6.3.14
+; Page: 16
+Delivery-Report ::= < Enumerated AVP header: 1111 10415 >
+        "No Delivery Report Requested" = 0
+        "Delivery Report Requested"    = 1
+
+
+; Type: Enumerated AVP
+; Name: Read-Reply
+; Section: 6.3.15
+; Page: 16
+Read-Reply ::= < Enumerated AVP header: 1112 10415 >
+        "No Read Reply Requested" = 0
+        "Read Reply Requested"    = 1
+
+
+; Type: Enumerated AVP
+; Name: Sender-Visibility
+; Section: 6.3.16
+; Page: 17
+Sender-Visibility ::= < Enumerated AVP header: 1113 10415 >
+        "Sender Identification requested not to be hidden" = 0
+        "Sender Identification requested to be hidden"     = 1
+
+
+; Type: Grouped AVP
+; Name: Status
+; Section: 6.3.19
+; Page: 17
+Status ::= < AVP header: 1116 10415 >
+        [ Status-Code ]
+        [ Status-Text ]
+
+
+; Type: Enumerated AVP
+; Name: Routeing-Address-Resolution
+; Section: 6.3.22
+; Page: 18
+Routeing-Address-Resolution ::= < Enumerated AVP header: 1119 10415 >
+        unresolved = 0
+        resolved   = 1

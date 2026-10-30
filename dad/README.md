@@ -2,7 +2,9 @@
 
 ```
 dad/
-  3gpp/rel-18/   one directory per 3GPP release
+  3gpp/rel-18/   one directory per 3GPP release: rel-18 is the corpus's,
+                 rel-6, rel-7 and rel-11 hold the older versions citing
+                 documents mean (docs/consumers.md)
   rfc/           RFCs have no release axis, so they sit flat
   etsi/          ETSI documents transcribed by hand; versions are ETSI's
   onem2m/        oneM2M documents; versions are oneM2M's

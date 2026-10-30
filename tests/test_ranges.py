@@ -60,12 +60,23 @@ def test_an_older_version_moves_the_first_bound(tmp_path):
     path = tmp_path / "TS29.999.toml"
     path.write_text(_TOML, encoding="utf-8")
 
-    expansion = ranges.expand_sources(path, "17.9.0")
+    expansion = ranges.expand_sources(path, "18.5.0")
 
     text = path.read_text(encoding="utf-8")
-    assert text.count('first_version = "17.9.0"') == 2
+    assert text.count('first_version = "18.5.0"') == 1
     assert 'last_version = "18.6.0"' in text
-    assert len(expansion.widened) == 2
+    assert len(expansion.widened) == 1
+
+
+def test_another_releases_declarations_are_not_widened(tmp_path):
+    """Release 17 is spanned only by the quirk's open lower bound, so only
+    the quirk applies there, and it already covers 17.9.0: the Release 18
+    patches are another release's, neither applied nor widened."""
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(_TOML, encoding="utf-8")
+
+    assert ranges.expand_sources(path, "17.9.0") == ranges.Expansion([], [])
+    assert path.read_text(encoding="utf-8") == _TOML
 
 
 def test_a_covered_version_leaves_the_file_untouched(tmp_path):
@@ -250,6 +261,16 @@ _SOURCE_FILES = sorted((_EDITS / "sources").glob("*.toml"))
 _CORRECTION_MODULES = sorted((_EDITS / "corrections").glob("*.py"))
 
 
+def _inside_each_release(entries) -> list[str]:
+    """Per release the file declares for (TS 29.214's 7.12.0 and 18.4.0), a
+    version every range of that release covers."""
+    releases: dict[str, list] = {}
+    for entry in entries:
+        bound = entry.get("first_version") or entry.get("last_version") or "1"
+        releases.setdefault(bound.split(".")[0], []).append(entry)
+    return [_inside_every_range(group) for group in releases.values()]
+
+
 def _inside_every_range(entries) -> str:
     """A version every declared range covers: the latest first bound."""
     firsts = [entry["first_version"] for entry in entries if "first_version" in entry]
@@ -269,12 +290,11 @@ def test_a_covered_version_leaves_every_source_file_byte_identical(tmp_path, pat
     copy.write_bytes(path.read_bytes())
     data = tomllib.loads(path.read_text(encoding="utf-8"))
     entries = [*data.get("patch", ()), *data.get("quirk", ())]
-    version = _inside_every_range(entries)
+    for version in _inside_each_release(entries):
+        expansion = ranges.expand_sources(copy, version)
 
-    expansion = ranges.expand_sources(copy, version)
-
-    assert expansion == ranges.Expansion([], [])
-    assert copy.read_bytes() == path.read_bytes()
+        assert expansion == ranges.Expansion([], [])
+        assert copy.read_bytes() == path.read_bytes()
 
 
 @pytest.mark.parametrize("path", _SOURCE_FILES, ids=lambda path: path.name)

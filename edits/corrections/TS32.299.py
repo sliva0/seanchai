@@ -654,3 +654,120 @@ CORRECTIONS += [
     )
     for name, (data_type, code) in _OMA_TYPES.items()
 ]
+
+# Release 11, V11.20.0: the copy oneM2M TS-0004 [31] cites as "3GPP TS
+# 32.299 ... (Release 11)" for Node-Id and Service-Information. The Release
+# 18 declarations above do not reach it (src/seanchai/versions.py); these
+# are what resolution through it needs.
+
+# Grouped clauses printing `< AVP Header: nnn >` with no vendor-id, where
+# clause 7.2 says "The 3GPP Charging Application uses the value 10415
+# (3GPP) as Vendor-Id" and table 7.2 marks V mandatory for each.
+_VENDORLESS_REL11 = [
+    ("Access-Transfer-Information", "7.2.1A"),
+    ("Accumulated-Cost", "7.2.3"),
+    ("Additional-Content-Information", "7.2.5"),
+    ("Address-Domain", "7.2.8"),
+    ("AF-Correlation-Information", "7.2.11"),
+    ("AoC-Cost-Information", "7.2.13"),
+    ("AoC-Information", "7.2.15"),
+    ("AoC-Service", "7.2.17"),
+    ("AoC-Subscription-Information", "7.2.20"),
+    ("Application-Server-Information", "7.2.24"),
+    ("Current-Tariff", "7.2.46B"),
+    ("Destination-Interface", "7.2.53"),
+    ("Early-Media-Description", "7.2.58"),
+    ("Envelope", "7.2.59"),
+    ("Event-Type", "7.2.65"),
+    ("Incremental-Cost", "7.2.70"),
+    ("IMS-Information", "7.2.77"),
+    ("Inter-Operator-Identifier", "7.2.80"),
+    ("LCS-Client-Name", "7.2.85"),
+    ("LCS-Information", "7.2.89"),
+    ("LCS-Requestor-ID", "7.2.91"),
+    ("Location-Type", "7.2.96"),
+    ("MBMS-Information", "7.2.99"),
+    ("Message-Body", "7.2.103"),
+    ("Message-Class", "7.2.104"),
+    ("MM-Content-Type", "7.2.108"),
+    ("MMS-Information", "7.2.110"),
+    ("MMTel-Information", "7.2.111"),
+    ("Next-Tariff", "7.2.112"),
+    ("NNI-Information", "7.2.112A"),
+    ("Offline-Charging", "7.2.121"),
+    ("Originator-Address", "7.2.125"),
+    ("Originator-Interface", "7.2.126"),
+    ("Originator-Received-Address", "7.2.127"),
+    ("Participant-Group", "7.2.131"),
+    ("PoC-Information", "7.2.144"),
+    ("PoC-User-Role", "7.2.149"),
+    ("PS-Furnish-Charging-Information", "7.2.157"),
+    ("PS-Information", "7.2.158"),
+    ("Rate-Element", "7.2.161"),
+    ("Real-Time-Tariff-Information", "7.2.164"),
+    ("Recipient-Address", "7.2.167"),
+    ("Recipient-Info", "7.2.168"),
+    ("Recipient-Received-Address", "7.2.169"),
+    ("Remaining-Balance", "7.2.172"),
+    ("Scale-Factor", "7.2.178"),
+    ("SDP-Media-Component", "7.2.180"),
+    ("SDP-TimeStamps", "7.2.185"),
+    ("Service-Data-Container", "7.2.189"),
+    ("Service-Information", "7.2.192"),
+    ("Service-Specific-Info", "7.2.195"),
+    ("SMS-Information", "7.2.211"),
+    ("Supplementary-Service", "7.2.219"),
+    ("Talk-Burst-Exchange", "7.2.220"),
+    ("Tariff-Information", "7.2.223"),
+    ("Time-Quota-Mechanism", "7.2.228"),
+    ("Time-Stamps", "7.2.231"),
+    ("Traffic-Data-Volumes", "7.2.233"),
+    ("Trigger", "7.2.235"),
+    ("Trunk-Group-ID", "7.2.237"),
+    ("TWAN-User-Location-Info", "7.2.237C"),
+    ("Unit-Cost", "7.2.239"),
+    ("User-CSG-Information", "7.2.240A"),
+    ("WLAN-Information", "7.2.246"),
+    ("WLAN-Radio-Container", "7.2.247"),
+]
+
+CORRECTIONS += [
+    Correction(
+        id="rel11-bases-dcca-nasreq",
+        target=header(),
+        field="bases",
+        expect=("RFC6733",),
+        replace=("RFC6733", "RFC4006", "RFC4005"),
+        reason="clause 7.1 says the IETF AVPs it does not specify 'can be found"
+        " from RFC 3588 [401], RFC 4006 [402] and and RFC 4005 [407]'; the"
+        " corpus reads the base protocol as RFC 6733, which obsoletes RFC 3588",
+        versions="11.20.0",
+    ),
+    Delete(
+        id="rel11-wildcard-row",
+        target=table_row("AVP", table="7.1"),
+        expect=ast.AvpTableRow(
+            name="AVP",
+            code=None,
+            data_type=ast.DataType.GROUPED,
+            flag_rules=ast.AvpFlagRules(),
+            marks={ast.MarkColumn(each): () for each in ("ACR", "ACA", "CCR", "CCA")},
+        ),
+        reason="table 7.1 tabulates the '* [ AVP ]' wildcard with code '*'; it"
+        " is ABNF grammar, not an AVP",
+        versions="11.20.0",
+    ),
+    *(
+        Correction(
+            id=f"rel11-vendor-{name.lower()}",
+            target=definition(name, section=section),
+            field="vendor_id",
+            expect=None,
+            replace=10415,
+            reason="clause 7.2 gives the 3GPP charging AVPs vendor 10415; the"
+            f" grouped header of clause {section} prints only the code",
+            versions="11.20.0",
+        )
+        for name, section in _VENDORLESS_REL11
+    ),
+]

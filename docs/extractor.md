@@ -31,7 +31,8 @@ the file carries; it can never recover what the extractor threw away.
 ## Source declarations
 
 One TOML file per document, `edits/sources/<SpecRef>.toml`, with two block
-kinds. Both require a `reason`, carry an advisory version range, and must
+kinds. Both require a `reason`, carry a version range scoping them to a
+release ([below](#releases)), advisory within it, and must
 fire exactly as declared — a declaration that stops matching fails the
 extraction, because a silently dropped fix is the rot the accounting exists
 to catch.
@@ -59,8 +60,24 @@ and still "applies" the declared number of times). A count mismatch raises
 `PatchError` naming the version range. The bounds are inclusive, an omitted
 bound is open, and trailing zero components are equivalent; corrections
 declare the same range as one string (`"18.6.0"`, `"18.0.0..18.2.0"`). A
-version outside the range warns under its specification during regeneration
-and never gates application. RFCs have no version to compare.
+version outside the range but in its release warns under its specification
+during regeneration and never gates application. RFCs have no version to
+compare.
+
+### Releases
+
+A release is where 3GPP may change a document's template, and with it every
+quirk and typo, so a declaration speaks for the releases its range spans
+(`versions.reviewed_release`): TS 29.214's file declares for V18.4.0 and,
+below them, for V7.12.0, the copy ETSI TS 183 017 cites, and TS 32.299's
+for V18.0.0 and V11.20.0; neither copy gets the other's. A version is read
+with the declarations of its own release when any spans it, else with
+those of the newest declared release below it, which is a release upgrade
+(Release 19 first read with Release 18's, each warning as within a
+release, so `--expand-ranges` widens them as it does there), else with
+none. A file whose ranges are all open applies everywhere. Corrections and
+acceptances are scoped the same way, per module (`corrections.in_release`),
+and `--expand-ranges` touches only the declarations it applied.
 
 ### Quirks
 
@@ -111,7 +128,7 @@ The declared vocabulary, with the document that forced each:
   `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
   kept, no enum code derived from them). TS 29.230 declares
   `registry-tables`, `unknown-type-tokens` and `reserved-range-notes`
-  (below). TS 32.299 declares fourteen:
+  (below). TS 32.299 declares fourteen for V18.0.0:
   `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
   message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
   also 29.229's four grouped rules), `struck-rules-unused`,
@@ -121,7 +138,27 @@ The declared vocabulary, with the document that forced each:
   `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`,
   `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
   and 29.272), `vendor-avp-tables` (tables 7.3.1, 7.4.1, 7.5.1) and
-  `command-columns`.
+  `command-columns`. Its V11.20.0, the copy oneM2M TS-0004 cites, declares
+  its own: `message-headings` (6.2.2–6.4.3 print "Accounting-Request
+  Message", capitalized), `spaced-rule-operator`, `struck-rules-unused`,
+  `refer-type-cells` (table 7.2), `type-short-forms` and
+  `wildcard-avp-row` (table 7.1), `value-first-enums` (7.2.10's `0 TO`),
+  `dotted-flags`, `command-columns`, `worded-enum-values` (7.2.1B),
+  `external-enum-values` (7.2.238) and `value-last-enums`, whose
+  `MONETARY<tabs>0` lines (7.2.14 and nineteen more) are read only where
+  the printed line sets the number off with a tab or a run of spaces,
+  which normalizing would erase (`_Line.tabbed_number`), so a sentence
+  ending in a number is never a value; `bracketed-enum-values` (7.2.101's
+  `[0] called party`), `dotted-enum-values` (7.2.207's `0. SUBMISSION`,
+  7.2.218) and `list-numbered-enum-values`, for the lists of clauses
+  7.2.132, 7.2.145, 7.2.147, 7.2.148 and 7.2.151 whose numbers exist only
+  in Word's list numbering, replayed as for oneM2M's headings and checked
+  against the ETSI PDF, which prints them (`0 Participating PoC Server`,
+  `1. Moderator`). A level that gives no `w:start` counts from 0 (ECMA-376
+  part 1, 17.9.25), as those two lists do. TS 29.140 V7.0.0 declares
+  `worded-enum-values` and `comma-enum-labels`, for clause 6.3.5's
+  `MM1 Message Submission, Profile based (0)`, a quoted name with a comma
+  ([grammar.md](grammar.md)).
   Enumerated value lines that depart from `NAME (n)` each need their own:
   `worded-enum-values` (29.368 6.4.6's `Device Trigger Request (1)`; also
   29.109, 29.172, 29.214), `dashed-enum-values` (a list dash printed as
@@ -131,7 +168,15 @@ The declared vocabulary, with the document that forced each:
   `described-enum-values` and `label-after-enum-value` (29.109: `NO (0) The
   sending node is not GBA_U aware`, `- (0) Private user identity.`) and
   `run-on-enum-values` (29.229 6.3.58, two values in one paragraph);
-  29.061 and 29.212 declare `worded-enum-values` too. TS 29.212 and 29.214
+  29.061 and 29.212 declare `worded-enum-values` too. TS 29.214 V7.12.0
+  declares `dashed-enum-values`, `hex-enum-values` and `worded-enum-values`
+  as V18.4.0 does, and TS 29.209 V6.8.0 and TS 29.214 V7.12.0
+  `prose-application-ids` (29.209 clause 6.1's third wording, "The Gq
+  application is defined as an IETF vendor specific Diameter application
+  with application ID 16777222") and `abnf-comments` (a member line's
+  trailing `; Ordinal number of the media comp.`, RFC 5234's comment, in
+  29.209 clauses 6.5.18 and 6.5.20 and 29.214 V7.12.0 clauses 5.3.16 and
+  5.3.18; unread, each body ended silently before its first member). TS 29.212 and 29.214 (both releases)
   declare `origins-by-reference` (a From cell naming ETSI's document as
   3GPP's, read through clause 2). oneM2M TS-0004 declares
   `list-numbered-headings`, `reference-cells` and `prose-enum-values` of its
@@ -153,7 +198,9 @@ The declared vocabulary, with the document that forced each:
   RADIUS-to-Diameter mapping table); `registry-enum-values` (5778 §6.20
   names `MIP6-Auth-Mode`'s value, only the IANA section §9.5 numbers it).
 
-Not gated: the "Y"/"N" Encrypt spellings and TS 29.338's "Must"/"Must not"
+Not gated: the "Y"/"N" Encrypt spellings, a dashed Encrypt cell stating
+nothing as dashed flag cells do (TS 32.299 V11.20.0's unused table 7.1
+rows), and TS 29.338's "Must"/"Must not"
 M-bit short forms, closed vocabularies that cannot be misread.
 
 ## The 3GPP docx extractor

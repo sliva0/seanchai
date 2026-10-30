@@ -1,0 +1,35 @@
+# Source declarations for 3GPP TS 29.209 (Policy control over Gq
+# interface), V6.8.0, the document's final version. Applied to normalized
+# source text before parsing; see src/seanchai/extractor/sources.py for the
+# format.
+
+[[patch]]
+find = "Media-Sub-Component AVP"
+replace = "Media-Sub-Component"
+exact = true
+count = 2
+section = "6.5"
+reason = "table 6.5.1's row for clause 6.5.20 prints the name with an ' AVP' suffix, which no other row carries; the clause's sentence and the ABNFs call it 'Media-Sub-Component'. The clause heading's text is the same and is patched with it, as the heading reads alike either way"
+first_version = "6.8.0"
+last_version = "6.8.0"
+
+[[patch]]
+find = "Flows::= < AVP Header: x >"
+replace = "Flows::= < AVP Header: 510 >"
+exact = true
+section = "6.5.11"
+reason = "clause 6.5.11's AVP format prints 'x' for the code its first sentence gives: 'The Flows AVP (AVP code 510) is of type Grouped'"
+first_version = "6.8.0"
+last_version = "6.8.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 6.1 states it: 'The Gq application is defined as an IETF vendor specific Diameter application with application ID 16777222'"
+first_version = "6.8.0"
+last_version = "6.8.0"
+
+[[quirk]]
+name = "abnf-comments"
+reason = "clauses 6.5.18 and 6.5.20 comment three members of Media-Component-Description and Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of the media comp.'; unread, both bodies ended before their first member"
+first_version = "6.8.0"
+last_version = "6.8.0"

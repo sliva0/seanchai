@@ -1,0 +1,375 @@
+; Specification: 3GPP TS 29.214
+; Version: 7.12.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129214/07.12.00_60/ts_129214v071200p.pdf
+
+
+; Type: Application Scope
+; Name: Rx
+; Section: 5.1
+; Page: 15
+; Application-ID: 16777236
+; Applies-To: 5.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 5.6.1
+; Page: 26
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        [ AF-Application-Identifier ]   ; bold
+      * [ Media-Component-Description ] ; bold
+        [ Service-Info-Status ]         ; bold
+        [ AF-Charging-Identifier ]      ; bold
+        [ SIP-Forking-Indication ]      ; bold
+      * [ Specific-Action ]             ; bold
+      * [ Subscription-Id ]             ; bold
+        [ Reservation-Priority ]        ; bold
+        [ Framed-IP-Address ]           ; bold
+        [ Framed-IPv6-Prefix ]          ; bold
+        [ Service-URN ]                 ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 5.6.2
+; Page: 27
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+        [ Acceptable-Service-Info ]            ; bold
+        [ IP-CAN-Type ]                        ; bold
+        [ 3GPP-RAT-Type ]                      ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5.6.3
+; Page: 27
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Specific-Action }                    ; bold
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+      * [ Flows ]                              ; bold
+      * [ Subscription-Id ]                    ; bold
+        [ Abort-Cause ]
+        [ IP-CAN-Type ]                        ; bold
+        [ 3GPP-RAT-Type ]                      ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5.6.4
+; Page: 27
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+      * [ Media-Component-Description ] ; bold
+        [ Service-URN ]                 ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 5.6.5
+; Page: 28
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 5.6.6
+; Page: 28
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AS-Request, ASR
+; Section: 5.6.7
+; Page: 28
+<AS-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Abort-Cause }         ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AS-Answer, ASA
+; Section: 5.6.8
+; Page: 29
+<AS-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirect-Host ] ;; corrected: (TS29.214.py#rel7-asa-redirect-host)
+        [ Redirect-Host-Usage ] ;; corrected: (TS29.214.py#rel7-asa-redirect-host-usage)
+        [ Redirect-Max-Cache-Time ] ;; corrected: (TS29.214.py#rel7-asa-redirect-max-cache-time)
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 5.3
+; Table: 5.3.1
+; Page: 16
+; Columns: Name                            Code   Section   Type           Must   May   S.not   M.not   Encrypt
+Abort-Cause                                500    5.3.1     Enumerated     M,V    P     -       -       Yes
+Access-Network-Charging-Address            501    5.3.2     Address        M,V    P     -       -       Yes
+Access-Network-Charging-Identifier         502    5.3.3     Grouped        M,V    P     -       -       Yes
+Access-Network-Charging-Identifier-Value   503    5.3.4     OctetString    M,V    P     -       -       Yes
+Acceptable-Service-Info                    526    5.3.24    Grouped        M,V    P     -       -       Yes
+AF-Application-Identifier                  504    5.3.5     OctetString    M,V    P     -       -       Yes
+AF-Charging-Identifier                     505    5.3.6     OctetString    M,V    P     -       -       Yes
+Codec-Data                                 524    5.3.7     OctetString    M,V    P     -       -       Yes
+Flow-Description                           507    5.3.8     IPFilterRule   M,V    P     -       -       Yes
+Flow-Number                                509    5.3.9     Unsigned32     M,V    P     -       -       Yes
+Flows                                      510    5.3.10    Grouped        M,V    P     -       -       Yes
+Flow-Status                                511    5.3.11    Enumerated     M,V    P     -       -       Yes
+Flow-Usage                                 512    5.3.12    Enumerated     M,V    P     -       -       Yes
+Service-URN                                525    5.3.23    OctetString    M,V    P     -       -       Yes
+Specific-Action                            513    5.3.13    Enumerated     M,V    P     -       -       Yes
+Max-Requested-Bandwidth-DL                 515    5.3.14    Unsigned32     M,V    P     -       -       Yes
+Max-Requested-Bandwidth-UL                 516    5.3.15    Unsigned32     M,V    P     -       -       Yes
+Media-Component-Description                517    5.3.16    Grouped        M,V    P     -       -       Yes
+Media-Component-Number                     518    5.3.17    Unsigned32     M,V    P     -       -       Yes
+Media-Sub-Component                        519    5.3.18    Grouped        M,V    P     -       -       Yes
+Media-Type                                 520    5.3.19    Enumerated     M,V    P     -       -       Yes
+RR-Bandwidth                               521    5.3.20    Unsigned32     M,V    P     -       -       Yes
+RS-Bandwidth                               522    5.3.21    Unsigned32     M,V    P     -       -       Yes
+Service-Info-Status                        527    5.3.25    Enumerated     M,V    P     -       -       Yes
+SIP-Forking-Indication                     523    5.3.22    Enumerated     M,V    P     -       -       Yes
+
+
+; Type: Reused AVPs
+; Section: 5.4
+; Table: 5.4.1
+; Page: 25
+; Columns: Name        From
+Subscription-Id        RFC4006
+Reservation-Priority   ETSI-TS183.017
+Framed-IP-Address      RFC4005
+Framed-IPv6-Prefix     RFC4005
+3GPP-RAT-Type          TS29.061
+IP-CAN-Type            TS29.212
+
+
+; Type: Enumerated AVP
+; Name: Abort-Cause
+; Section: 5.3.1
+; Page: 17
+Abort-Cause ::= < Enumerated AVP header: 500 10415 >
+        BEARER_RELEASED               = 0
+        INSUFFICIENT_SERVER_RESOURCES = 1
+        INSUFFICIENT_BEARER_RESOURCES = 2
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Charging-Identifier
+; Section: 5.3.3
+; Page: 18
+Access-Network-Charging-Identifier ::= < AVP header: 502 10415 > ;; corrected: (TS29.214.py#rel7-vendor-id-access-network-charging-identifier)
+        { Access-Network-Charging-Identifier-Value }
+      * [ Flows ]
+
+
+; Type: Grouped AVP
+; Name: Flows
+; Section: 5.3.10
+; Page: 19
+Flows ::= < AVP header: 510 10415 > ;; corrected: (TS29.214.py#rel7-vendor-id-flows)
+        { Media-Component-Number }
+      * [ Flow-Number ]
+
+
+; Type: Enumerated AVP
+; Name: Flow-Status
+; Section: 5.3.11
+; Page: 20
+Flow-Status ::= < Enumerated AVP header: 511 10415 >
+        ENABLED-UPLINK   = 0
+        ENABLED-DOWNLINK = 1
+        ENABLED          = 2
+        DISABLED         = 3
+        REMOVED          = 4
+
+
+; Type: Enumerated AVP
+; Name: Flow-Usage
+; Section: 5.3.12
+; Page: 20
+Flow-Usage ::= < Enumerated AVP header: 512 10415 >
+        NO_INFORMATION = 0
+        RTCP           = 1
+        AF_SIGNALLING  = 2
+
+
+; Type: Enumerated AVP
+; Name: Specific-Action
+; Section: 5.3.13
+; Page: 20
+Specific-Action ::= < Enumerated AVP header: 513 10415 >
+        Void                                  = 0
+        CHARGING_CORRELATION_EXCHANGE         = 1
+        INDICATION_OF_LOSS_OF_BEARER          = 2
+        INDICATION_OF_RECOVERY_OF_BEARER      = 3
+        INDICATION_OF_RELEASE_OF_BEARER       = 4
+        INDICATION_OF_ESTABLISHMENT_OF_BEARER = 5
+        IP-CAN_CHANGE                         = 6
+
+
+; Type: Grouped AVP
+; Name: Media-Component-Description
+; Section: 5.3.16
+; Page: 22
+Media-Component-Description ::= < AVP header: 517 10415 > ;; corrected: (TS29.214.py#rel7-vendor-id-media-component-description)
+        { Media-Component-Number }
+      * [ Media-Sub-Component ]
+        [ AF-Application-Identifier ]
+        [ Media-Type ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Flow-Status ]
+        [ Reservation-Priority ]
+        [ RS-Bandwidth ]
+        [ RR-Bandwidth ]
+      * [ Codec-Data ]
+
+
+; Type: Grouped AVP
+; Name: Media-Sub-Component
+; Section: 5.3.18
+; Page: 23
+Media-Sub-Component ::= < AVP header: 519 10415 > ;; corrected: (TS29.214.py#rel7-vendor-id-media-sub-component)
+        { Flow-Number }
+     *2 [ Flow-Description ]
+        [ Flow-Status ]
+        [ Flow-Usage ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Media-Type
+; Section: 5.3.19
+; Page: 23
+Media-Type ::= < Enumerated AVP header: 520 10415 >
+        AUDIO       = 0
+        VIDEO       = 1
+        DATA        = 2
+        APPLICATION = 3
+        CONTROL     = 4
+        TEXT        = 5
+        MESSAGE     = 6
+        OTHER       = 4294967295
+
+
+; Type: Enumerated AVP
+; Name: SIP-Forking-Indication
+; Section: 5.3.22
+; Page: 24
+SIP-Forking-Indication ::= < Enumerated AVP header: 523 10415 >
+        SINGLE_DIALOGUE   = 0
+        SEVERAL_DIALOGUES = 1
+
+
+; Type: Grouped AVP
+; Name: Acceptable-Service-Info
+; Section: 5.3.24
+; Page: 24
+Acceptable-Service-Info ::= < AVP header: 526 10415 > ;; corrected: (TS29.214.py#rel7-vendor-id-acceptable-service-info)
+      * [ Media-Component-Description ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Max-Requested-Bandwidth-UL ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Service-Info-Status
+; Section: 5.3.25
+; Page: 25
+Service-Info-Status ::= < Enumerated AVP header: 527 10415 >
+        "FINAL SERVICE INFORMATION"       = 0
+        "PRELIMINARY SERVICE INFORMATION" = 1

@@ -398,7 +398,10 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
     beside the notes marking what was touched."""
     from .dad import corrections as corrections_module
 
-    declared = corrections_module.load(directory, spec.specification, required=required)
+    declared = corrections_module.in_release(
+        corrections_module.load(directory, spec.specification, required=required),
+        spec.version,
+    )
     corrected, results, notes = corrections_module.apply_with_comments(
         spec, comments, declared
     )
@@ -580,7 +583,10 @@ def lint(
                     []
                     if source.name.endswith(".raw.dad")
                     else corrections_module.acceptances(
-                        corrections_module.load(directory, spec.specification)
+                        corrections_module.in_release(
+                            corrections_module.load(directory, spec.specification),
+                            spec.version,
+                        )
                     )
                 )
                 findings = lint_with_corpus(spec, books, accepts)

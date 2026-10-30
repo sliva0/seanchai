@@ -97,7 +97,8 @@ for catalog experiments, not for refreshing the corpus.
   do the derivation, so don't hand-build those URLs.
 - **Legacy `.doc` archives are converted, not skipped.** Nine catalogued
   archives (TS 32.299, 29.154, 29.201, 29.215, 29.217, 29.219, 29.343,
-  29.368, 29.468) hold a `.doc` and no `.docx`. Each run converts them into
+  29.368, 29.468) hold a `.doc` and no `.docx`, and so do all four pinned
+  versions. Each run converts them into
   `converted/`, mirroring the extracted path
   (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`), with `soffice
   --headless --infilter='MS Word 97' --convert-to 'docx:Office Open XML

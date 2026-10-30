@@ -78,3 +78,78 @@ name = "origins-by-reference"
 reason = "re-used table 5.4.0.1 cites Reservation-Priority's origin as '3GPP TS 183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'"
 first_version = "18.4.0"
 last_version = "18.4.0"
+
+# Release 7, V7.12.0: what ETSI TS 183 017 [19] cites as "3GPP TS 29.214
+# Release 7". A release's template is its own, so these apply to it alone
+# and the Release 18 ones above do not (src/seanchai/versions.py).
+
+[[patch]]
+find = "Media-Sub-Component AVP"
+replace = "Media-Sub-Component"
+exact = true
+count = 2
+section = "5.3"
+reason = "table 5.3.1's row for clause 5.3.18 prints the name with an ' AVP' suffix, which no other row carries; the clause's sentence and the ABNFs call it 'Media-Sub-Component'. The clause heading's text is the same and is patched with it, as the heading reads alike either way"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[quirk]]
+name = "origins-by-reference"
+reason = "re-used table 5.4.1 cites Reservation-Priority's origin as 'TS 183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017'"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[patch]]
+find = "Service-Info-Status-AVP"
+replace = "Service-Info-Status AVP"
+exact = true
+section = "5.3.25"
+reason = "the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table 5.3.1 and the Rx ABNF call the AVP 'Service-Info-Status'"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[quirk]]
+name = "dashed-enum-values"
+reason = "clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[quirk]]
+name = "hex-enum-values"
+reason = "clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER (0xFFFFFFFF)'"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE INFORMATION (0)'"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[patch]]
+find = "Reservation-priority"
+replace = "Reservation-Priority"
+count = 2
+reason = "table 5.4.1 and Media-Component-Description's body (clause 5.3.16) lower-case the 'p' of the name the table re-uses from ETSI TS 183 017 [15], whose clause 7.3.9 defines Reservation-Priority, as this document's AAR ABNF (clause 5.6.1) spells it"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Rx application in the present release is 16777236'"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[patch]]
+find = "Subscription-ID"
+replace = "Subscription-Id"
+count = 2
+reason = "the AAR and RAR ABNFs (clauses 5.6.1, 5.6.3) upper-case the last letter of the AVP table 5.4.1 re-uses from RFC 4006 [14], which defines Subscription-Id"
+first_version = "7.12.0"
+last_version = "7.12.0"
+
+[[quirk]]
+name = "abnf-comments"
+reason = "clauses 5.3.16 and 5.3.18 comment three members of Media-Component-Description and Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of the media comp.'; unread, both bodies ended before their first member"
+first_version = "7.12.0"
+last_version = "7.12.0"

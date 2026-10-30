@@ -271,9 +271,419 @@ last_version = "18.0.0"
 [[quirk]]
 name = "vendor-avp-tables"
 reason = "clauses 7.3-7.5 tabulate 3GPP2, ETSI and oneM2M AVPs (tables 7.3.1, 7.4.1, 7.5.1) with a Reference cell citing clause 2: 'the specification including the detailed definition and description, is referred to'"
+first_version = "18.0.0"
+last_version = "18.0.0"
 
 [[quirk]]
 name = "command-columns"
 reason = "tables 7.1.0.1, 7.2.0.1 and 7.3.1-7.5.1 print a 'Used in' column per command (ACR, ACA, CCR, CCA); clause 7.1.0: 'Those Diameter AVPs that are used are marked \"M\", \"OM\" or \"Oc\" in the following table ... Those Diameter AVPs that are not used are marked \"-\"', tables 7.2.0.1 and 7.3.1-7.5.1 marking use with 'X'"
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[patch]]
+find = "VAS-Id"
+replace = "VAS-ID"
+count = 2
+reason = "table 7.2.0.1 and MMS-Information's body (clause 7.2.110) spell 'Id' the AVP the table re-uses from TS 29.140 [213], whose clause 6.3.4 defines VAS-ID, as TS 29.230 table 7.1 allocates 1102"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "VASP-Id"
+replace = "VASP-ID"
+count = 2
+reason = "table 7.2.0.1 and MMS-Information's body (clause 7.2.110) spell 'Id' the AVP the table re-uses from TS 29.140 [213], whose clause 6.3.3 defines VASP-ID, as TS 29.230 table 7.1 allocates 1101"
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+# Release 11, V11.20.0: what oneM2M TS-0004 [31] cites as "3GPP TS 32.299
+# ... (Release 11)". A release's template is its own, so these apply to it
+# alone and the Release 18 ones above do not (src/seanchai/versions.py).
+
+[[quirk]]
+name = "spaced-rule-operator"
+reason = "Grouped rules in clause 7.2 spell the rule operator ':: =' (7.2.11 AF-Correlation-Information and on)."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "struck-rules-unused"
+reason = "Clauses 6.2.1.2 and 6.4.1.2: 'An AVP in grey strikethrough in the message format ... is not used by 3GPP'; the ACR, ACA, CCR and CCA rules strike such members."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "refer-type-cells"
+reason = "Table 7.2 types borrowed AVPs 'refer [n]'; clause 7.2 says only the reference to the defining document is given for them."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "type-short-forms"
+reason = "Table 7.1 copies the DiamIdent and DiamURI type abbreviations."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "wildcard-avp-row"
+reason = "Table 7.1 tabulates the '* [ AVP ]' wildcard as a row 'AVP' with code '*'."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "value-first-enums"
+reason = "Some enumerated clauses list values as 'n Label' ('0 TO', 7.2.10; '0 Normal', 7.2.142 and 7.2.241; SM-Service-Type, 7.2.213)."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "dotted-flags"
+reason = "Table 7.2 writes some flag cells 'V.M' with a period for the comma (Alternate-Charged-Party-Address, AoC-Information, AoC-Request-Type)."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "command-columns"
+reason = "tables 7.1, 7.2 and 7.3 print a 'Used in' column per command (ACR, ACA, CCR, CCA); clause 7.1: 'Those Diameter AVPs that are used are marked \"M\", \"OM\"or \"Oc\" in the following table ... Those Diameter AVPs that are not used are marked \"-\"', tables 7.2 and 7.3 marking use with 'X'"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "UTF8string"
+replace = "UTF8String"
+exact = true
+section = "7.2"
+reason = "table 7.2's Alternate-Charged-Party-Address row lower-cases the type's 'S'; clause 7.2.7A types it UTF8String"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "V/M"
+replace = "V,M"
+exact = true
+section = "7.2"
+reason = "table 7.2's Next-Tariff row separates its Must flags with a slash; every other row writes 'V,M'"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "-."
+replace = "-"
+exact = true
+section = "7.2"
+reason = "table 7.2's Node-Functionality row prints its ACA cell '-.'; every other unused cell is a bare dash"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Refer[223]"
+replace = "refer[223]"
+exact = true
+section = "7.2"
+reason = "table 7.2 capitalizes one 'refer' type cell; the others print 'refer [n]' or 'refer[n]'"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Refer [204]"
+replace = "refer [204]"
+exact = true
+section = "7.2"
+reason = "table 7.2 capitalizes one 'refer' type cell; the others print 'refer [n]' or 'refer[n]'"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Status- AS-Code"
+replace = "Status-AS-Code"
+count = 4
+reason = "clause 7.2.215A, table 7.2 and Application-Server-Information's body (7.2.24) print a space after the first hyphen in every spelling of the name"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "User–Session-Id"
+replace = "User-Session-Id"
+exact = true
+section = "7.2"
+reason = "table 7.2's User-Session-Id row joins the first two words with an en dash; clause 7.2.226 and the bodies use a hyphen"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "0 TO ;"
+replace = "0 TO"
+exact = true
+section = "7.2.10"
+reason = "clause 7.2.10 ends Addressee-Type's value lines with ' ;' or '.', list punctuation the value labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "1 CC ;"
+replace = "1 CC"
+exact = true
+section = "7.2.10"
+reason = "clause 7.2.10 ends Addressee-Type's value lines with ' ;' or '.', list punctuation the value labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "2 BCC."
+replace = "2 BCC"
+exact = true
+section = "7.2.10"
+reason = "clause 7.2.10 ends Addressee-Type's value lines with ' ;' or '.', list punctuation the value labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "0 Normal;"
+replace = "0 Normal"
+exact = true
+count = 2
+reason = "clauses 7.2.142 (PoC-Event-Type) and 7.2.241 (User-Participating-Type) end their value lines with list semicolons the labels do not carry; the PDF bookmarks place no section at 7.2.142's heading, so the patch is not scoped to it"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "1 Instant Ppersonal Aalert event;"
+replace = "1 Instant Personal Alert event"
+exact = true
+reason = "PoC-Event-Type's value 1 (clause 7.2.142) keeps tracked-change residue (doubled initials) and a trailing semicolon"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "2 PoC Group Advertisement event;"
+replace = "2 PoC Group Advertisement event"
+exact = true
+reason = "clause 7.2.142 ends PoC-Event-Type's value lines with list semicolons the labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "3 Early Ssession Setting-up event;"
+replace = "3 Early Session Setting-up event"
+exact = true
+reason = "PoC-Event-Type's value 3 (clause 7.2.142) keeps tracked-change residue (a doubled initial) and a trailing semicolon"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "0 4xx;"
+replace = "0 4xx"
+exact = true
+section = "7.2.215A"
+reason = "clause 7.2.215A ends Status-AS-Code's value lines with list semicolons the labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "1 5xx;"
+replace = "1 5xx"
+exact = true
+section = "7.2.215A"
+reason = "clause 7.2.215A ends Status-AS-Code's value lines with list semicolons the labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "1 NW PoC Box;"
+replace = "1 NW PoC Box"
+exact = true
+section = "7.2.241"
+reason = "clause 7.2.241 ends User-Participating-Type's value lines with ';' or '.', list punctuation the labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "2 UE PoC Box."
+replace = "2 UE PoC Box"
+exact = true
+section = "7.2.241"
+reason = "clause 7.2.241 ends User-Participating-Type's value lines with ';' or '.', list punctuation the labels do not carry"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "Clause 7.2.1B labels Access-Transfer-Type's values in words, 'PS to CS Transfer (0)'."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "PoC-Session-Initiation-type"
+replace = "PoC-Session-Initiation-Type"
+count = 2
+reason = "table 7.2 and PoC-Information's body (clause 7.2.144) lower-case the last word's initial; clause 7.2.147 defines PoC-Session-Initiation-Type"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "value-last-enums"
+reason = "Most enumerated clauses print the label first and the value after tabs, 'MONETARY<tabs>0' (AoC-Format, 7.2.14), 'Calling Party<tab>0' (Originator, 7.2.124)."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = " (as defined in TS 22.142 [217]"
+replace = ""
+count = 11
+section = "7.2.213"
+reason = "clause 7.2.213 follows SM-Service-Type's values 0 to 10 with a citation it opens and never closes, '(as defined in TS 22.142 [217]', which no value label can hold; Release 18's clause prints the same labels without it"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "100 - 199 Vendor specific SM services"
+replace = "100 .. 199 Vendor specific SM services"
+exact = true
+section = "7.2.213"
+reason = "clause 7.2.213 writes SM-Service-Type's last range with a hyphen, '100 - 199', where the range above it writes '11 .. 99'"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "message-headings"
+reason = "Clauses 6.2.2, 6.2.3, 6.4.2 and 6.4.3 head commands 'Accounting-Request Message' and spell the rule with the abbreviation, '<ACR> ::='."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Application-provided-called-party-address"
+replace = "Application-Provided-Called-Party-Address"
+exact = true
+section = "7.2"
+reason = "table 7.2 lower-cases the row's last four initials; clause 7.2.22's defining sentence and Application-Server-Information's body (7.2.24) spell Application-Provided-Called-Party-Address"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "[ Change-condition ]"
+replace = "[ Change-Condition ]"
+exact = true
+section = "7.2.233"
+reason = "Traffic-Data-Volumes' body (clause 7.2.233) lower-cases the member's second initial; clause 7.2.37 defines Change-Condition"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Trunk-Group-Id"
+replace = "Trunk-Group-ID"
+exact = true
+section = "7.2"
+reason = "table 7.2 spells the row 'Id'; clause 7.2.237 defines Trunk-Group-ID and IMS-Information's body (7.2.77) carries it so"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Incoming-Trunk-Group-Id"
+replace = "Incoming-Trunk-Group-ID"
+exact = true
+section = "7.2"
+reason = "table 7.2 spells the row 'Id'; clause 7.2.79 defines Incoming-Trunk-Group-ID and Trunk-Group-ID's body (7.2.237) carries it so"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Outgoing-Trunk-Group-Id"
+replace = "Outgoing-Trunk-Group-ID"
+exact = true
+section = "7.2"
+reason = "table 7.2 spells the row 'Id'; clause 7.2.129 defines Outgoing-Trunk-Group-ID and Trunk-Group-ID's body (7.2.237) carries it so"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "[ PoC-User-Role-Ids ]"
+replace = "[ PoC-User-Role-IDs ]"
+section = "7.2.149"
+reason = "PoC-User-Role's body (clause 7.2.149) spells the member 'Ids'; clause 7.2.150 and table 7.2 define PoC-User-Role-IDs"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Service-Id"
+replace = "Service-ID"
+exact = true
+section = "7.2"
+reason = "table 7.2 spells the row 'Id'; clause 7.2.190 defines Service-ID, as Supplementary-Service's body (7.2.219) carries it"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "[ Service-Id ]"
+replace = "[ Service-ID ]"
+exact = true
+section = "7.2.77"
+reason = "IMS-Information's body (clause 7.2.77) spells the member 'Id'; clause 7.2.190 defines Service-ID"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "external-enum-values"
+reason = "Type-Number (clause 7.2.238): 'The values are taken from OMNA WSP Content Type Numbers [210]'."
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "VAS-Id"
+replace = "VAS-ID"
+count = 2
+reason = "table 7.2 and MMS-Information's body (clause 7.2.110) spell 'Id' the AVP the table re-uses from TS 29.140 [213], whose clause 6.3.4 defines VAS-ID"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "VASP-Id"
+replace = "VASP-ID"
+count = 2
+reason = "table 7.2 and MMS-Information's body (clause 7.2.110) spell 'Id' the AVP the table re-uses from TS 29.140 [213], whose clause 6.3.3 defines VASP-ID"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "{ User-Equipment-Info-Value }."
+replace = "{ User-Equipment-Info-Value }"
+exact = true
+section = "7.1.17"
+reason = "clause 7.1.17 ends User-Equipment-Info's last member with the sentence's full stop, which ended the body before it"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "[Charge- Reason-Code ]"
+replace = "[ Charge-Reason-Code ]"
+exact = true
+section = "7.2.161"
+reason = "Rate-Element's body (clause 7.2.161) prints a space after the first hyphen of a member clause 7.2.38A defines as Charge-Reason-Code, which ended the body before it"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "[ A F-Correlation-Information ]"
+replace = "[ AF-Correlation-Information ]"
+exact = true
+section = "7.2.189"
+reason = "Service-Data-Container's body (clause 7.2.189) splits the first member's 'AF', which ended the body before it; clause 7.2.11 defines AF-Correlation-Information"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "bracketed-enum-values"
+reason = "clause 7.2.101 brackets Media-Initiator-Flag's values before their labels, '[0] called party'"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "dotted-enum-values"
+reason = "clauses 7.2.207 and 7.2.218 follow SM-Message-Type's and Subscriber-Role's values with a full stop, '0. SUBMISSION'"
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
+name = "list-numbered-enum-values"
+reason = "clauses 7.2.132, 7.2.145, 7.2.147, 7.2.148 and 7.2.151 print their values' numbers only as Word list numbering, which the ETSI PDF renders: '1 Pre-emptive priority: The highest level priority.', '0 Participating PoC Server', '0 Pre-established', '0 1 to 1 PoC session', '1. Moderator'"
+first_version = "11.20.0"
+last_version = "11.20.0"

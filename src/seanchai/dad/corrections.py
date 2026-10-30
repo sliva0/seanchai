@@ -53,7 +53,7 @@ from typing import Any
 
 import pydantic
 
-from ..versions import VersionRange
+from ..versions import VersionRange, applies, reviewed_release
 from . import ast, formatter
 
 
@@ -1142,6 +1142,23 @@ def apply(
 def edits(declarations: Sequence[Declaration]) -> list[Edit]:
     """The declarations that change data, in declaration order."""
     return [item for item in declarations if not isinstance(item, Accept)]
+
+
+def in_release(
+    declarations: Sequence[Declaration], version: str | None
+) -> list[Declaration]:
+    """The declarations that apply to `version`: those of its release
+    (`versions.reviewed_release`), each range advisory within it. A module
+    holding TS 32.299's Release 18 corrections says nothing about the
+    Release 11 copy the corpus holds beside it."""
+    release = reviewed_release(
+        [VersionRange.parse(item.versions) for item in declarations], version
+    )
+    return [
+        item
+        for item in declarations
+        if applies(VersionRange.parse(item.versions), release)
+    ]
 
 
 def acceptances(declarations: Sequence[Declaration]) -> list[Accept]:

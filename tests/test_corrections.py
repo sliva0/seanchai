@@ -1077,7 +1077,10 @@ def test_committed_corrections_still_apply_to_committed_raw_output(raw):
     spec bump changes what a correction expects, this fails. Committing the raw
     file is what lets it run without the source documents."""
     spec = parser.parse(raw.read_text(encoding="utf-8"))
-    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+    declared = corrections.in_release(
+        corrections.load(_ROOT / "edits" / "corrections", spec.specification),
+        spec.version,
+    )
 
     corrected, results = corrections.apply(spec, declared)
 
@@ -1093,7 +1096,10 @@ def test_correction_notes_mark_the_same_lines_in_a_copied_or_reparsed_tree(raw):
     gives the committed corrected file. The raw file's own comments, TS
     32.299's commented-out struck members, move with their lines."""
     spec, comments = parser.parse_with_comments(raw.read_text(encoding="utf-8"))
-    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+    declared = corrections.in_release(
+        corrections.load(_ROOT / "edits" / "corrections", spec.specification),
+        spec.version,
+    )
     corrected, _, notes = corrections.apply_with_comments(spec, comments, declared)
     committed = (_ROOT / "dad" / raw.relative_to(_ROOT / "dad" / "raw")).with_name(
         raw.name.removesuffix(".raw.dad") + ".dad"
@@ -1112,7 +1118,10 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     correcting it again must fail."""
     spec = parser.parse(path.read_text(encoding="utf-8"))
     declared = corrections.edits(
-        corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+        corrections.in_release(
+            corrections.load(_ROOT / "edits" / "corrections", spec.specification),
+            spec.version,
+        )
     )
 
     # A name correction rewrites what every *sibling* correction's selector
@@ -1206,7 +1215,10 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     """
     raw = _ROOT / "dad" / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
-    declared = corrections.load(_ROOT / "edits" / "corrections", spec.specification)
+    declared = corrections.in_release(
+        corrections.load(_ROOT / "edits" / "corrections", spec.specification),
+        spec.version,
+    )
 
     # Inserted rows shift every row index after them, which would drown the
     # field-level pin below in artifacts of renumbering; they are pinned

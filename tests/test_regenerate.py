@@ -277,7 +277,7 @@ def test_a_document_the_extractor_rejects_fails_alone(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "first,last,expected", [("2.0", "3.0", 3), ("0.1", "1.1", 3), ("1.2.3", "1.2.3", 0)]
+    "first,last,expected", [("1.3", "1.9", 3), ("0.1", "1.1", 3), ("1.2.3", "1.2.3", 0)]
 )
 def test_ranges_warn_for_all_layers_without_gating_application(
     tmp_path, synthetic_spec_docx, first, last, expected
@@ -343,6 +343,39 @@ def test_ranges_warn_for_all_layers_without_gating_application(
     assert any(
         isinstance(s, ast.GroupedAvp) and s.code == 12 for s in corrected.sections
     )
+
+
+def test_declarations_for_another_release_do_not_apply(tmp_path, synthetic_spec_docx):
+    """A document read at a release no declaration spans, with none for an
+    earlier release either, gets none: TS 32.299's Release 18 quirks say
+    nothing about its Release 11 template. The dotted flag cell then fails
+    as undeclared, and the Release 2 correction is not applied."""
+    import docx
+
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    source = docx.Document(synthetic_spec_docx)
+    source.tables[1].cell(2, 4).text = "M.V"
+    source.save(document)
+    declarations = tmp_path / "edits"
+    declarations.mkdir()
+    (declarations / "TS29.999.toml").write_text(
+        '[[quirk]]\nname = "dotted-flags"\nreason = "Release 2 only"\n'
+        'first_version = "2.0.0"\nlast_version = "2.0.0"\n'
+    )
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+
+    (outcome,) = regenerate.regenerate(
+        manifest,
+        corpus,
+        corpus,
+        sources_dir=declarations,
+        corrections_dir=None,
+        add=["TS29.999"],
+    ).outcomes
+
+    assert outcome.status == "failed"
+    assert outcome.error is not None and "`dotted-flags` quirk" in outcome.error
 
 
 def test_expanding_ranges_rewrites_the_edit_files_and_retires_the_warnings(

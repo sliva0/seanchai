@@ -115,6 +115,14 @@ class Corpus:
         for candidates in self._by_reference.values():
             yield from candidates
 
+    def newest(self) -> Iterator[Entry]:
+        """The newest copy of each reference: what the corpus answers for a
+        document when no citation asks for an older release. TS 32.299
+        V11.20.0, held for oneM2M TS-0004's "Release 11" citation, is
+        reached through `resolve` only."""
+        for candidates in self._by_reference.values():
+            yield candidates[0]
+
     def __len__(self) -> int:
         return sum(len(c) for c in self._by_reference.values())
 

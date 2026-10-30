@@ -58,7 +58,8 @@ seanchai crosscheck FILE.dad...         # against Wireshark's dictionary
 - `src/seanchai/` — `dad/` (AST, parser, formatter, corrections), `extractor/`,
   `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`, `oracle.py`,
   `corpus.py`, `model.py`, `cli.py`.
-- `dad/` — the committed corpus: `dad/3gpp/rel-18/`, `dad/rfc/`, and the raw
+- `dad/` — the committed corpus: `dad/3gpp/rel-18/` (and `rel-6`, `rel-7`,
+  `rel-11` for the older versions citations mean), `dad/rfc/`, and the raw
   mirror under `dad/raw/`. See [dad/README.md](dad/README.md).
 - `edits/transcriptions/<SpecRef>.dad` — documents no extractor reads (ETSI
   ES 283 034, TS 183 017), copied by hand as printed.

@@ -961,8 +961,8 @@ _STANDING_HOLES = {
             "TCP-Source-Port",
         ],
         "no data_type, no flag_rules (re-used from TS29.140, which the corpus lacks)": [
-            "VAS-Id",
-            "VASP-Id",
+            "VAS-ID",
+            "VASP-ID",
         ],
     },
 }

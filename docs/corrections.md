@@ -44,10 +44,13 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   discriminator: `definition("Update-Location-Request", application_id=16777251)`.
   `application_id=None` is a real filter (the VCSG headers carry `None`);
   omitting the argument means "do not filter".
-- **`versions` is advisory**: `"18.6.0"` or `"18.0.0..18.2.0"`, inclusive,
-  `*` for an open bound, the same range type patches and quirks declare.
-  `regenerate` warns when the parsed version falls outside it, and never
-  gates application. `regenerate --expand-ranges` rewrites a string literal
+- **`versions` is advisory within its release**: `"18.6.0"` or
+  `"18.0.0..18.2.0"`, inclusive, `*` for an open bound, the same range type
+  patches and quirks declare. A declaration applies to the releases its
+  range spans and to none other ([extractor.md](extractor.md#releases)):
+  TS 32.299's module holds Release 18's corrections and Release 11's, each
+  for its copy. Within a release `regenerate` warns when the parsed version
+  falls outside the range, and never gates application. `regenerate --expand-ranges` rewrites a string literal
   in place to cover a version the module applied cleanly to (see
   [workflow.md](workflow.md#version-upgrades)), which is why a range is best
   written as a literal.

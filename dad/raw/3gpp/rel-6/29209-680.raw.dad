@@ -1,0 +1,327 @@
+; Specification: 3GPP TS 29.209
+; Version: 6.8.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129209/06.08.00_60/ts_129209v060800p.pdf
+
+
+; Type: Application Scope
+; Name: Gq
+; Section: 6.1
+; Page: 13
+; Application-ID: 16777222
+; Applies-To: 6.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 6.3.1
+; Page: 14
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+      * [ Media-Component-Description ] ; bold
+      * [ Flow-Grouping ]               ; bold
+        [ AF-Charging-Identifier ]      ; bold
+        [ SIP-Forking-Indication ]      ; bold
+      * [ Specific-Action ]             ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 6.3.2
+; Page: 14
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Authorization-Token ]                ; bold
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 6.3.3
+; Page: 15
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+      * { Specific-Action }                    ; bold
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+      * [ Flows ]                              ; bold
+        [ Abort-Cause ]                        ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 6.3.4
+; Page: 15
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+      * [ Media-Component-Description ] ; bold
+      * [ Flow-Grouping ]               ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 6.3.5
+; Page: 15
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Termination-Cause }
+        { Auth-Application-Id }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 6.3.6
+; Page: 16
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Request, ASR
+; Section: 6.3.7
+; Page: 16
+<AS-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Abort-Cause }         ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Answer, ASA
+; Section: 6.3.8
+; Page: 16
+<AS-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 6.5
+; Table: 6.5.1
+; Page: 17
+; Columns: Name                            Code   Section   Type           Must   May   S.not   M.not   Encrypt
+Abort-Cause                                500    6.5.1     Enumerated     M,V    P     -       -       Yes
+Access-Network-Charging-Address            501    6.5.2     Address        M,V    P     -       -       Yes
+Access-Network-Charging-Identifier         502    6.5.3     Grouped        M,V    P     -       -       Yes
+Access-Network-Charging-Identifier-Value   503    6.5.4     OctetString    M,V    P     -       -       Yes
+AF-Application-Identifier                  504    6.5.5     OctetString    M,V    P     -       -       Yes
+AF-Charging-Identifier                     505    6.5.6     OctetString    M,V    P     -       -       Yes
+Authorization-Token                        506    6.5.7     OctetString    M,V    P     -       -       Yes
+Flow-Description                           507    6.5.8     IPFilterRule   M,V    P     -       -       Yes
+Flow-Grouping                              508    6.5.9     Grouped        M,V    P     -       -       Yes
+Flow-Number                                509    6.5.10    Unsigned32     M,V    P     -       -       Yes
+Flows                                      510    6.5.11    Grouped        M,V    P     -       -       Yes
+Flow-Status                                511    6.5.12    Enumerated     M,V    P     -       -       Yes
+Flow-Usage                                 512    6.5.13    Enumerated     M,V    P     -       -       Yes
+Specific-Action                            513    6.5.14    Enumerated     M,V    P     -       -       Yes
+Max-Requested-Bandwidth-DL                 515    6.5.16    Unsigned32     M,V    P     -       -       Yes
+Max-Requested-Bandwidth-UL                 516    6.5.17    Unsigned32     M,V    P     -       -       Yes
+Media-Component-Description                517    6.5.18    Grouped        M,V    P     -       -       Yes
+Media-Component-Number                     518    6.5.19    Unsigned32     M,V    P     -       -       Yes
+Media-Sub-Component                        519    6.5.20    Grouped        M,V    P     -       -       Yes
+Media-Type                                 520    6.5.21    Enumerated     M,V    P     -       -       Yes
+RR-Bandwidth                               521    6.5.22    Unsigned32     M,V    P     -       -       Yes
+RS-Bandwidth                               522    6.5.23    Unsigned32     M,V    P     -       -       Yes
+SIP-Forking-Indication                     523    6.5.24    Enumerated     M,V    P     -       -       Yes
+
+
+; Type: Enumerated AVP
+; Name: Abort-Cause
+; Section: 6.5.1
+; Page: 18
+Abort-Cause ::= < Enumerated AVP header: 500 10415 >
+        BEARER_RELEASED               = 0
+        INSUFFICIENT_SERVER_RESOURCES = 1
+        INSUFFICIENT_BEARER_RESOURCES = 2
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Charging-Identifier
+; Section: 6.5.3
+; Page: 18
+Access-Network-Charging-Identifier ::= < AVP header: 502 >
+        { Access-Network-Charging-Identifier-Value }
+      * [ Flows ]
+
+
+; Type: Grouped AVP
+; Name: Flow-Grouping
+; Section: 6.5.9
+; Page: 19
+Flow-Grouping ::= < AVP header: 508 >
+      * [ Flows ]
+
+
+; Type: Grouped AVP
+; Name: Flows
+; Section: 6.5.11
+; Page: 20
+Flows ::= < AVP header: 510 >
+        { Media-Component-Number }
+      * [ Flow-Number ]
+
+
+; Type: Enumerated AVP
+; Name: Flow-Status
+; Section: 6.5.12
+; Page: 20
+Flow-Status ::= < Enumerated AVP header: 511 10415 >
+        ENABLED-UPLINK   = 0
+        ENABLED-DOWNLINK = 1
+        ENABLED          = 2
+        DISABLED         = 3
+        REMOVED          = 4
+
+
+; Type: Enumerated AVP
+; Name: Flow-Usage
+; Section: 6.5.13
+; Page: 21
+Flow-Usage ::= < Enumerated AVP header: 512 10415 >
+        NO_INFORMATION = 0
+        RTCP           = 1
+
+
+; Type: Enumerated AVP
+; Name: Specific-Action
+; Section: 6.5.14
+; Page: 21
+Specific-Action ::= < Enumerated AVP header: 513 10415 >
+        SERVICE_INFORMATION_REQUEST           = 0
+        CHARGING_CORRELATION_EXCHANGE         = 1
+        INDICATION_OF_LOSS_OF_BEARER          = 2
+        INDICATION_OF_RECOVERY_OF_BEARER      = 3
+        INDICATION_OF_RELEASE_OF_BEARER       = 4
+        INDICATION_OF_ESTABLISHMENT_OF_BEARER = 5
+
+
+; Type: Grouped AVP
+; Name: Media-Component-Description
+; Section: 6.5.18
+; Page: 22
+Media-Component-Description ::= < AVP header: 517 >
+        { Media-Component-Number }
+      * [ Media-Sub-Component ]
+        [ AF-Application-Identifier ]
+        [ Media-Type ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Flow-Status ]
+        [ RS-Bandwidth ]
+        [ RR-Bandwidth ]
+
+
+; Type: Grouped AVP
+; Name: Media-Sub-Component
+; Section: 6.5.20
+; Page: 23
+Media-Sub-Component ::= < AVP header: 519 >
+        { Flow-Number }
+     *2 [ Flow-Description ]
+        [ Flow-Status ]
+        [ Flow-Usage ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+
+
+; Type: Enumerated AVP
+; Name: Media-Type
+; Section: 6.5.21
+; Page: 23
+Media-Type ::= < Enumerated AVP header: 520 10415 >
+        AUDIO       = 0
+        VIDEO       = 1
+        DATA        = 2
+        APPLICATION = 3
+        CONTROL     = 4
+        TEXT        = 5
+        MESSAGE     = 6
+
+
+; Type: Enumerated AVP
+; Name: SIP-Forking-Indication
+; Section: 6.5.24
+; Page: 24
+SIP-Forking-Indication ::= < Enumerated AVP header: 523 10415 >
+        SINGLE_DIALOGUE   = 0
+        SEVERAL_DIALOGUES = 1

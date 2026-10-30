@@ -817,12 +817,12 @@ User-Location-Info-Time                                  2812   X     -     X   
 User-Participating-Type                                  1279   X     -     X     -     Enumerated         M,V    -     -       -
 User-Session-Id                                          830    X     -     X     -     UTF8String         M,V    -     -       -
 UWAN-User-Location-Info                                  3918   X     -     X     -     Grouped            M,V    -     -       -
-VAS-Id                                                   1102   -     -     X     -     -                  -      -     -       -
+VAS-ID                                                   1102   -     -     X     -     -                  -      -     -       -
 Variable-Part                                            3907   -     -     -     X     Grouped            M,V    -     -       -
 Variable-Part-Order                                      3908   -     -     -     X     Unsigned32         M,V    -     -       -
 Variable-Part-Type                                       3909   -     -     -     X     Unsigned32         M,V    -     -       -
 Variable-Part-Value                                      3910   -     -     -     X     UTF8String         M,V    -     -       -
-VASP-Id                                                  1101   -     -     X     -     -                  -      -     -       -
+VASP-ID                                                  1101   -     -     X     -     -                  -      -     -       -
 VCS-Information                                          3410   X     -     X     -     Grouped            M,V    -     -       -
 Visited-PLMN-Id                                          1407   X     -     -     -     -                  -      -     -       -
 VLR-Number                                               3420   X     -     X     -     OctetString        M,V    -     -       -
@@ -951,8 +951,8 @@ UE-Local-IP-Address                        TS29.212                -
 UE-Reachability-Configuration              TS29.336                -
 User-Data                                  TS29.229                -
 User-Location-Info-Time                    TS29.212                -
-VAS-Id                                     TS29.140                -
-VASP-Id                                    TS29.140                -
+VAS-ID                                     TS29.140                -
+VASP-ID                                    TS29.140                -
 Visited-PLMN-Id                            TS29.272                -
 WLAN-Link-Layer-Id                         TS29.345                -
 
@@ -1989,8 +1989,8 @@ MMS-Information ::= < AVP header: 877 >
         [ Content-Class ]
         [ DRM-Content ]
         [ Adaptations ]
-        [ VASP-Id ]
-        [ VAS-Id ]
+        [ VASP-ID ]
+        [ VAS-ID ]
 
 
 ; Type: Grouped AVP

@@ -23,8 +23,13 @@ from seanchai.dad import ast, parser
 
 _ROOT = Path(__file__).parent.parent
 _MANIFEST = _ROOT / "specifications" / "manifest.json"
-_REFERENCES = sorted(
-    ast.spec_ref(parser.parse(path.read_text(encoding="utf-8")).specification)
+# Each committed copy, by reference and corpus tree: TS 32.299 is two,
+# `rel-18` and the pinned `rel-11`.
+_COPIES = sorted(
+    (
+        ast.spec_ref(parser.parse(path.read_text(encoding="utf-8")).specification),
+        path.parent.name,
+    )
     for path in _corpus(raw=False)
 )
 
@@ -43,7 +48,14 @@ def regenerated(tmp_path_factory):
         corrections_dir=_ROOT / "edits" / "corrections",
         transcriptions_dir=_ROOT / "edits" / "transcriptions",
     )
-    return {outcome.reference: outcome for outcome in report.outcomes}
+    # A legacy `.doc` left unconverted writes nothing, so has no tree.
+    return {
+        (
+            outcome.reference,
+            outcome.written[0].parent.name if outcome.written else None,
+        ): outcome
+        for outcome in report.outcomes
+    }
 
 
 _RECONVERT = (
@@ -56,16 +68,18 @@ _RECONVERT = (
 def test_every_committed_legacy_document_was_converted(regenerated):
     unconverted = sorted(
         reference
-        for reference, outcome in regenerated.items()
+        for (reference, _), outcome in regenerated.items()
         if outcome.status == "not-converted"
     )
     assert not unconverted, f"{', '.join(unconverted)}: {_RECONVERT}"
 
 
 @pytest.mark.sources
-@pytest.mark.parametrize("reference", _REFERENCES)
-def test_the_real_sources_still_produce_the_committed_output(regenerated, reference):
-    outcome = regenerated[reference]
+@pytest.mark.parametrize(("reference", "tree"), _COPIES)
+def test_the_real_sources_still_produce_the_committed_output(
+    regenerated, reference, tree
+):
+    outcome = regenerated.get((reference, tree)) or regenerated[reference, None]
     if outcome.status == "not-converted":
         pytest.fail(f"{reference}: {_RECONVERT}")
     assert outcome.error is None, outcome.error

@@ -30,7 +30,8 @@ stay in `edits/corrections/`.
 
 Both block kinds carry the same declaration contract: a required `reason`
 (a declaration asserts something about the source document, and without the
-reason the next reader cannot check that claim), an advisory version range,
+reason the next reader cannot check that claim), a version range scoping it
+to the releases it spans and advisory within them (`versions.reviewed_release`),
 and must-fire accounting — a patch that applies more or fewer times than
 `count`, or a declared quirk that never changed anything, fails the
 extraction rather than rotting silently when the source changes between
@@ -45,7 +46,7 @@ from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from pathlib import Path
 
-from ..versions import VersionRange
+from ..versions import VersionRange, applies, reviewed_release
 from .errors import ExtractionError
 
 
@@ -139,7 +140,12 @@ class Patcher:
             # A misspelled or missing key in the TOML is the user's file being
             # wrong, not this program: report it like every other patch problem.
             raise PatchError(f"{path}: {error}") from None
-        return cls(patches, version)
+        release = reviewed_release(
+            [patch.versions for patch in patches]
+            + [_ranged(entry)["versions"] for entry in data.get("quirk", ())],
+            version,
+        )
+        return cls([p for p in patches if applies(p.versions, release)], version)
 
     def apply(self, text: str, section: str | None = None, record: bool = True) -> str:
         """Apply all patches to one text unit. `record=False` applies without
@@ -261,6 +267,12 @@ def load(
         quirks = [Quirk(**_ranged(entry)) for entry in data.get("quirk", ())]
     except (TypeError, ValueError) as error:
         raise QuirkError(f"{path}: {error}") from None
+    release = reviewed_release(
+        [patch.versions for patch in Patcher.load(path, None).patches]
+        + [quirk.versions for quirk in quirks],
+        version,
+    )
+    # Unknown names are refused in every release's declarations alike.
     for quirk in quirks:
         if quirk.name not in known_quirks:
             known = ", ".join(sorted(known_quirks)) or "none"
@@ -273,6 +285,7 @@ def load(
             f"{path}: unknown block {', '.join(sorted(unexpected))!r};"
             " a source declaration holds [[patch]] and [[quirk]] blocks"
         )
+    quirks = [quirk for quirk in quirks if applies(quirk.versions, release)]
     if warnings is not None:
         for patch in patcher.patches:
             if warning := patch.versions.warning(

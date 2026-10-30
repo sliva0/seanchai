@@ -182,7 +182,7 @@ listing every hole, rather than build a model with any. The default is
 every standing hole is a statement its source does not make. RFC 4590 is
 a RADIUS document with no Diameter types (TS 29.229's table types the four
 Digest AVPs it re-uses, for its own reading),
-TS 32.299's `VAS-Id` and `VASP-Id` are roadmap item K, as are the Gq
+TS 32.299's `VAS-ID` and `VASP-ID` are roadmap item K, as are the Gq
 AVPs the ETSI transcriptions import from TS 29.209 (Release 6) and TS
 29.214 Release 7, TS 183 017's re-prints of them typed but unflagged, TS
 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and the

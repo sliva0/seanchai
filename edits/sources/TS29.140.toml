@@ -1,0 +1,16 @@
+# Source declarations for 3GPP TS 29.140 (MM10 interface based on Diameter
+# protocol; Stage 3), V7.0.0, the document's final version. Applied to
+# normalized source text before parsing; see
+# src/seanchai/extractor/sources.py for the format.
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "clauses 6.3.5 and 6.3.14-6.3.16 label values in words, 'No Delivery Report Requested (0)' (Delivery-Report, 6.3.14)"
+first_version = "7.0.0"
+last_version = "7.0.0"
+
+[[quirk]]
+name = "comma-enum-labels"
+reason = "clause 6.3.5 labels four of Trigger-Event's values with a comma among the words, 'MM1 Message Submission, Profile based (0)'"
+first_version = "7.0.0"
+last_version = "7.0.0"

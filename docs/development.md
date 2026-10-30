@@ -15,8 +15,10 @@ uv run basedpyright              # standard mode; the more trustworthy one
 `seanchai download` needs LibreOffice's `soffice` on PATH to convert the
 catalog's legacy `.doc` files, unless it is run with `--no-convert`. The
 full sources test needs the conversions: TS 32.299, 29.154, 29.215, 29.217,
-29.219, 29.343, 29.368, 29.468 and oneM2M TS-0004 are read from them, and a
-`--no-convert` manifest fails the test naming those nine.
+29.219, 29.343, 29.368, 29.468 and oneM2M TS-0004 are read from them, as
+are the pinned TS 29.140 V7.0.0, 29.209 V6.8.0, 29.214 V7.12.0 and 32.299
+V11.20.0, and a `--no-convert` manifest fails the test naming those
+thirteen.
 
 CI runs the tests without sources plus ruff. Run everything locally before
 committing anyway; CI is a backstop, not the gate.

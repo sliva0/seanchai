@@ -498,6 +498,7 @@ def _enum_with(text):
         # Every departure needs its own declaration.
         ("- Fully Off (0)", ["dashed-enum-values"]),
         ("- OFF (0),", ["punctuated-enum-values"]),
+        ("Submission, Profile based (0)", ["worded-enum-values"]),
     ],
 )
 def test_an_undeclared_enum_value_shape_is_not_read(text, declared):
@@ -536,6 +537,106 @@ def test_a_label_before_the_value_must_be_a_value_name():
 
     with pytest.raises(tgpp_docx.ExtractionError, match="is not a value name"):
         tgpp_docx._extract_enumerated(section, "Example-Mode", 1, 10415, quirks, [])
+
+
+@pytest.mark.parametrize(("tabbed", "values"), [(True, 1), (False, 0)])
+def test_a_label_first_value_is_read_only_where_a_tab_sets_it_off(tabbed, values):
+    """TS 32.299 V11.20.0 prints "MONETARY<tabs>0"; normalizing makes that
+    "MONETARY 0", which a sentence ending in a number also reads as, so
+    `value-last-enums` takes a line only where the printed one had the tab."""
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="value-last-enums", reason="rejection")], None)
+    section = _enum_with("MONETARY 0")
+    section.paragraphs[-1].lines = [
+        tgpp_docx._Line(
+            text="MONETARY 0",
+            style="B1",
+            bold=frozenset({False}),
+            struck=frozenset({False}),
+            tabbed_number=tabbed,
+        )
+    ]
+
+    enum = tgpp_docx._extract_enumerated(section, "Example-Mode", 1, 10415, quirks, [])
+
+    assert len(enum.values) == values
+
+
+def _enum_lines(text, *, label=None):
+    section = _enum_with(text)
+    section.paragraphs[-1] = tgpp_docx._Para(
+        text=text, style="B1", lines=_abnf_lines(text), label=label
+    )
+    return section
+
+
+@pytest.mark.parametrize(
+    ("text", "quirk", "label", "value"),
+    [
+        # TS 29.140 V7.0.0 clause 6.3.5, a quoted name with a comma.
+        (
+            "MM1 Message Submission, Profile based (0)",
+            "comma-enum-labels",
+            None,
+            ast.EnumValue(name="MM1 Message Submission, Profile based", value=0),
+        ),
+        # TS 32.299 V11.20.0 clauses 7.2.101 and 7.2.207.
+        (
+            "[2] unknown",
+            "bracketed-enum-values",
+            None,
+            ast.EnumValue(name="unknown", value=2),
+        ),
+        (
+            "0. SUBMISSION",
+            "dotted-enum-values",
+            None,
+            ast.EnumValue(name="SUBMISSION", value=0),
+        ),
+        # Clause 7.2.151: the number is the list's, "1." in the PDF.
+        (
+            "Moderator",
+            "list-numbered-enum-values",
+            "1.",
+            ast.EnumValue(name="Moderator", value=1),
+        ),
+    ],
+)
+def test_a_declared_enum_value_shape_is_read_and_only_then(text, quirk, label, value):
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    needed = [quirk] + (["worded-enum-values"] if "," in text else [])
+    declared = Quirks([Quirk(name=name, reason="test") for name in needed], None)
+    undeclared = Quirks(
+        [Quirk(name=name, reason="test") for name in needed if name != quirk], None
+    )
+
+    read = tgpp_docx._extract_enumerated(
+        _enum_lines(text, label=label), "Example-Mode", 1, 10415, declared, []
+    )
+    warnings = []
+    unread = tgpp_docx._extract_enumerated(
+        _enum_lines(text, label=label), "Example-Mode", 1, 10415, undeclared, warnings
+    )
+
+    assert read.values == (value,)
+    assert unread.values == ()
+    assert warnings == ["6.3.1: enumerated AVP Example-Mode lists no values"]
+
+
+def test_a_list_level_without_a_start_counts_from_zero():
+    """ECMA-376 part 1, 17.9.25: TS 32.299 V11.20.0's PoC-Server-Role list
+    (clause 7.2.145) gives no `w:start`, and its PDF prints 0 and 1."""
+    numbering = _numbering(
+        '<w:abstractNum w:abstractNumId="1">'
+        '<w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:lvlText w:val="%1"/>'
+        "</w:lvl></w:abstractNum>"
+        '<w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>'
+    )
+    replay = tgpp_docx._ListNumbering(numbering, None)
+
+    assert [replay.advance(_numbered(1, 0)) for _ in range(2)] == ["0", "1"]
 
 
 def _abnf_lines(*texts):
@@ -1129,3 +1230,64 @@ def test_a_value_named_in_a_sentence_is_read_behind_its_quirk():
 
     assert read.values == (ast.EnumValue(name="EVENT_RECORD", value=1),)
     assert unread.values == ()
+
+
+# --- documents the corpus holds at an older release -------------------------
+
+_RELEASE_11_TS_32_299 = (
+    Path(__file__).parent.parent / "dad/raw/3gpp/rel-11/32299-bk0.raw.dad"
+)
+
+
+def test_ts_32_299_release_11_reads_its_own_template():
+    """V11.20.0, which oneM2M TS-0004 cites, heads its commands "Message",
+    writes value lists label first after tabs and dashes the Encrypt cells
+    of its unused table 7.1 rows; its Release 11 declarations read all
+    three, and none of Release 18's apply to it."""
+    from seanchai.dad import parser
+
+    spec = parser.parse(_RELEASE_11_TS_32_299.read_text(encoding="utf-8"))
+    sections = {getattr(section, "name", None): section for section in spec.sections}
+
+    assert spec.version == "11.20.0"
+    assert [
+        message.abbreviation
+        for message in spec.sections
+        if isinstance(message, ast.Message)
+    ] == ["ACR", "ACA", "CCR", "CCA"]
+    aoc_format = sections["AoC-Format"]
+    assert isinstance(aoc_format, ast.EnumeratedAvp)
+    assert aoc_format.values == (
+        ast.EnumValue(name="MONETARY", value=0),
+        ast.EnumValue(name="NON_MONETARY", value=1),
+        ast.EnumValue(name="CAI", value=2),
+    )
+    (unused,) = [
+        row
+        for table in spec.sections
+        if isinstance(table, ast.AvpTable)
+        for row in table.rows
+        if row.name == "CC-Sub-Session-Id"
+    ]
+    assert unused.may_encrypt is None
+    # Value lists printed in four more shapes, each its own declaration.
+    enumerated = {
+        section.name: section
+        for section in spec.sections
+        if isinstance(section, ast.EnumeratedAvp)
+    }
+    assert [
+        (value.name, value.value)
+        for name in ("Media-Initiator-Flag", "PoC-Server-Role", "SM-Message-Type")
+        for value in enumerated[name].values
+        if isinstance(value, ast.EnumValue)
+    ] == [
+        ("called party", 0),
+        ("calling party", 1),
+        ("unknown", 2),
+        ("Participating PoC Server", 0),
+        ("Controlling PoC Server", 1),
+        ("SUBMISSION", 0),
+        ("DELIVERY_REPORT", 1),
+        ("SM Service Request", 2),
+    ]

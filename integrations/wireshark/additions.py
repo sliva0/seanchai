@@ -173,7 +173,9 @@ def _owners(
     tabulates RFC 5777's `QoS-Capability`), else the first in corpus
     order."""
     owners: dict[tuple[int, int], tuple[corpus.Entry, oracle.Claim]] = {}
-    for entry in sorted(books, key=lambda e: e.path.as_posix()):
+    # The newest copies: an older release held for a citation (TS 32.299
+    # V11.20.0) is not what the corpus adds to a dictionary.
+    for entry in sorted(books.newest(), key=lambda e: e.path.as_posix()):
         for claim in oracle.claims(entry.spec):
             identity = (claim.vendor, claim.code)
             if identity in dictionary.avps:
@@ -479,7 +481,7 @@ def stage(
     built = model.Model.build(books, dictionary=dictionary)
     documents: dict[str, Document] = {}
     skipped: list[Skipped] = []
-    books_by_reference = {entry.reference: entry.spec for entry in books}
+    books_by_reference = {entry.reference: entry.spec for entry in books.newest()}
     # Every identity holding a name: the dictionary's, then the additions'.
     holders: dict[str, set[tuple[int, int]]] = {}
     for identity, entries in loaded.avps.items():
