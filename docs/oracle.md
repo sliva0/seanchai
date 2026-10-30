@@ -103,6 +103,8 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action` and
   table or body lower-case `type`/`info`), and the two Monitoring-Event
   rows its corrections type Enumerated after their clauses where Wireshark
   follows table 7.2.0.1's Integer32; `MMTel-SService-Type`, which 32.299
-  misprints consistently and Wireshark spells `MMTel-Service-Type`;
-  `Content-Provider-ID`, tabulated only, its definition in
-  OMA-DDS-Charging_Data; and 47 absences.
+  misprints consistently and Wireshark spells `MMTel-Service-Type`; and 47
+  absences. Table 7.2.0.1's thirteen rows typed `refer [223]` are re-used
+  from `OMA-DDS-Charging_Data` and so not checked: Wireshark spells code
+  2117 `Content-provider-ID`, as OMA's own table 11 does, where 32.299
+  writes `Content-Provider-ID`.

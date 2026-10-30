@@ -4,7 +4,9 @@ A single file names the documents it borrows from but not the versions:
 `ReusedAvpRow.origin` is `TS29.272`, never `TS29.272 V18.6.0`. The rule this
 module implements: **match the major version, and among the candidates that
 match, take the newest**; RFC numbers name immutable documents and resolve to
-whatever the corpus holds. The reasoning — why nothing resolves across a major
+whatever the corpus holds, as does a document outside 3GPP and IETF (ETSI,
+3GPP2, OMA, oneM2M), whose versions are its publisher's and share no release
+axis with the citing document's. The reasoning — why nothing resolves across a major
 version, and why the corpus layout mirrors the rule — is in
 docs/linter.md#resolving-an-origin.
 """
@@ -113,9 +115,12 @@ class Corpus:
         corpus, not a defect in the document, and callers report it that way.
         """
         candidates = self._by_reference.get(reference, [])
-        if reference.startswith("RFC"):
+        if reference.startswith("RFC") or ast.is_external(reference):
             # An RFC number names one immutable document; there is no release
-            # axis to match against.
+            # axis to match against. Nor is there for another publisher's
+            # document: ETSI TS 283 034 V2.2.0 is no Release 2 of anything
+            # 3GPP numbers. The corpus holds such a document only when someone
+            # writes it by hand, and then the newest copy is the answer.
             return candidates[0] if candidates else None
         version = like.version
         if version is None:
@@ -125,7 +130,8 @@ class Corpus:
         wanted = _major(version)
         for entry in candidates:  # newest first
             # A version-less candidate has no major version to match; only an
-            # RFC is version-less, and RFC references never reach this branch.
+            # RFC or an external document may be version-less, and neither
+            # reaches this branch.
             if entry.spec.version is not None and _major(entry.spec.version) == wanted:
                 return entry
         return None

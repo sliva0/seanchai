@@ -105,6 +105,11 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   the From column does not distinguish.
 - `origin-not-in-corpus` — one note per file listing the origins the corpus
   could not supply, so the reader knows which rules stayed silent.
+- `external-origin-not-in-corpus` — the same for origins outside 3GPP and
+  IETF (`ETSI-TS283.034`, `3GPP2-X.S0057`, `OMA-DDS-Charging_Data`,
+  `oneM2M-TS-0004`), apart because no download closes the gap: no extractor
+  reads them, and the corpus holds one only as a hand-written file, which
+  resolves like an RFC, release axis ignored.
 - `unresolved-reference` — every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row, or a
   `; Bases:` document. `* [ AVP ]` is grammar and is skipped. A note rather
@@ -182,7 +187,9 @@ the major version, then take the newest**: an 18.x document resolves
 `TS29.272` against 18.x copies and prefers 18.2.0 over 18.1.0. Nothing
 resolves across a major version — a release boundary is where 3GPP may
 change what an AVP means — which is also why the corpus is one directory per
-release. RFCs resolve to whatever the corpus holds. Raw files are excluded
+release. RFCs resolve to whatever the corpus holds, and so does a document
+outside 3GPP and IETF, whose versions are its publisher's (ETSI TS 283 034
+V2.2.0 is no Release 2). Raw files are excluded
 from a corpus by default; loading both copies would leave the choice to sort
 order.
 
@@ -211,8 +218,8 @@ why each stays:
   documents describe one AVP, and only the origin's editor knows which copy is
   current; correcting either would invent an agreement. TS 29.330's `Load`
   goes through TS 29.229 to RFC 8583, an indirect origin, and TS 32.299's
-  `3GPP2-BSID` (table 7.3.1, reference [215]) through TS 29.212 to 3GPP2
-  X.S0057. Six `reused-body-differs` stay open with clauses saying only
+  `3GPP2-BSID` (table 7.3.1, reference [215]) through TS 29.212 to
+  `3GPP2-X.S0057`. Six `reused-body-differs` stay open with clauses saying only
   where the AVP was "originally defined" before printing a body of their
   own: TS 29.128's `Terminal-Information` (6.4.30), TS 29.272's
   `ProSe-Subscription-Data` (7.3.180) and `Supported-Services` (7.3.199,
@@ -224,10 +231,13 @@ why each stays:
   `Serving-Node` (5.3.3.6): its clause lists the member combinations
   allowed, as its siblings' do, but its body also adds `IP-SM-GW-Realm`,
   which no combination and no other line of the document names.
-- **`origin-not-in-corpus`.** Every missing origin is outside 3GPP/IETF
-  (ETSI TS 283 034 and TS 183 017, 3GPP2 X.S0057) or has no
-  Release 18 version: TS 29.140, cited by TS 32.299 for `VAS-Id` and
-  `VASP-Id`, ends at V7.0.0, and nothing resolves across a major version.
+- **`origin-not-in-corpus`**, one. TS 29.140, cited by TS 32.299 for
+  `VAS-Id` and `VASP-Id`, ends at V7.0.0, and nothing resolves across a
+  major version.
+- **`external-origin-not-in-corpus`**, five files: TS 29.212
+  (`3GPP2-X.S0057`, `ETSI-TS283.034`), 29.214 (`ETSI-TS183.017`), 29.219
+  and 29.273 (`ETSI-TS283.034`) and 32.299 (`ETSI-TS283.034`,
+  `OMA-DDS-Charging_Data`, `oneM2M-TS-0004`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
   ABNF lists both (and table 6.2.3.1 marks them OC). The generator keeps
@@ -319,7 +329,7 @@ why each stays:
 - **`registry-application-name`**, one. TS 29.272's VCSG application scope,
   inserted by correction citing clause 7.2.2, names 16777308 `S7a/S7d`;
   table 4.1 calls it "3GPP S7a".
-- **`unresolved-reference`**, fourteen. Seven are AVPs no document
+- **`unresolved-reference`**, thirteen. Seven are AVPs no document
   defines, tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`,
   `MIP-MN-FA-SPI`, `MIP-MN-HA-SPI` (clauses 9.4–9.6, whose prose calls them
   `MIP-MN-to-FA-SPI` and the like, defined nowhere either; erratum 1462
@@ -329,13 +339,11 @@ why each stays:
   6.3.54), and TS 29.273's `NSWO-Authorization` (clause 5.2.2.1.2 prints
   only a member reference), and TS 29.154's `External-Group-Identifier`
   (the ECR body, clause A.6.6.2; table A.6.4.1-1 does not list it, and
-  Wireshark has no such AVP either). Seven are members whose definition the
+  Wireshark has no such AVP either). Six are members whose definition the
   document neither prints nor cites in a form the file can hold: TS
   29.229's `Line-Identifier` (clause 6.3.42 gives it ETSI's vendor 13019,
-  which a table row cannot state), and six in TS 32.299's grouped bodies.
-  `M2M-Information` is tabulated in table 7.5.1 citing oneM2M TS-0004
-  [301], which a From cell cannot name; `Monitored-HPLMN-Identifier`
-  (7.2.154I), `Submission-Timestamp` (7.2.112aA), `Network-Element`
+  which a table row cannot state), and five in TS 32.299's grouped bodies:
+  `Monitored-HPLMN-Identifier` (7.2.154I), `Submission-Timestamp` (7.2.112aA), `Network-Element`
   (7.2.66aA) and `Monitoring-Event-Report` (7.2.111AaC) resolve nowhere.
   Each has a near-name the document does define — `Monitored-PLMN-Identifier`
   (7.2.111Aa), `Submission-Time` (7.2.217), `API-Network-Service-Node`

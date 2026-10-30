@@ -807,25 +807,45 @@ def _unresolved_origins(
     extractor cannot resolve a single RFC, and 29.272 alone cites eighteen
     origins — reported individually they would bury every real finding, and
     they all say the same thing.
+
+    An origin outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M) gets a note of
+    its own, `external-origin-not-in-corpus`: no extractor reads it, so the
+    gap is not one a download closes, only a hand-written file.
     """
-    missing = []
-    for origin in sorted(set(index.reused.values())):
+    cited = sorted(set(index.reused.values()))
+    missing: list[str] = []
+    external: list[str] = []
+    for origin in cited:
         if origin in origins:
+            continue
+        if ast.is_external(origin):
+            external.append(origin)
             continue
         held = books.versions(origin)
         missing.append(f"{origin} (corpus has {', '.join(held)})" if held else origin)
-    if not missing:
-        return []
-    return [
-        Finding(
-            Severity.NOTE,
-            "origin-not-in-corpus",
-            f"{len(missing)} of {len(set(index.reused.values()))} cited origins"
-            f" could not be resolved for a {spec.version or 'version-less'} document,"
-            f" and the rules"
-            f" needing them were skipped: {', '.join(missing)}",
+    findings = []
+    if missing:
+        findings.append(
+            Finding(
+                Severity.NOTE,
+                "origin-not-in-corpus",
+                f"{len(missing)} of {len(cited)} cited origins"
+                f" could not be resolved for a {spec.version or 'version-less'}"
+                f" document, and the rules"
+                f" needing them were skipped: {', '.join(missing)}",
+            )
         )
-    ]
+    if external:
+        findings.append(
+            Finding(
+                Severity.NOTE,
+                "external-origin-not-in-corpus",
+                f"{len(external)} of {len(cited)} cited origins are documents"
+                " outside 3GPP and IETF that the corpus holds no copy of, and"
+                f" the rules needing them were skipped: {', '.join(external)}",
+            )
+        )
+    return findings
 
 
 def _reused_avp_exists(index: _Index, origins: dict[str, _Origin]) -> list[Finding]:

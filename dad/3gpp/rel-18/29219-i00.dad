@@ -177,10 +177,10 @@ SN-Request-Type                      2907   5.3.7     Unsigned32   V      P     
 DRMP                    RFC7944
 Subscription-Id         RFC4006
 Load                    RFC8583
-Logical-Access-ID       TS283.034
+Logical-Access-ID       ETSI-TS283.034
 OC-OLR                  RFC7683
 OC-Supported-Features   RFC7683
-Physical-Access-ID      TS283.034
+Physical-Access-ID      ETSI-TS283.034
 Supported-Features      TS29.229
 
 

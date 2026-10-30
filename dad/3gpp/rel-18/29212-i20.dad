@@ -1000,74 +1000,74 @@ PCSCF-Restoration-Indication            2826   5.3.113   Unsigned32         V   
 ; Section: 5.4.0
 ; Table: 5.4.0.1
 ; Page: 181
-; Columns: Name                            From        Acc-Type             Applicability
-3GPP-Charging-Characteristics              TS29.061    All                  ABC
-3GPP-GGSN-Address                          TS29.061    "All (NOTE 8)"       Both,EPC-routed,ABC
-3GPP-GGSN-IPv6-Address                     TS29.061    "All (NOTE 8)"       Both,EPC-routed,ABC ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-ggsn-ipv6-address-5-4-0)
-3GPP-MS-TimeZone                           TS29.061    All                  Both
-3GPP-RAT-Type                              TS29.061    3GPP-GPRS            Both
-3GPP-Selection-Mode                        TS29.061    All                  ABC
-3GPP-SGSN-Address                          TS29.061    3GPP-GPRS,3GPP-EPS   Both
-3GPP-SGSN-IPv6-Address                     TS29.061    3GPP-GPRS,3GPP-EPS   Both ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-sgsn-ipv6-address-5-4-0)
-3GPP-SGSN-MCC-MNC                          TS29.061    All                  Both
-3GPP-User-Location-Info                    TS29.061    3GPP-GPRS,3GPP-EPS   Both
-3GPP2-BSID                                 X.S0057     3GPP2,Non-3GPP-EPS   Both,Rel8
-Access-Network-Charging-Address            TS29.214    All                  CC
-Access-Network-Charging-Identifier-Value   TS29.214    All                  CC
-AF-Charging-Identifier                     TS29.214    All                  CC
-AF-Signalling-Protocol                     TS29.214    All                  Both,ProvAF-signalFlow
-AN-Trusted                                 TS29.273    Non-3GPP-EPS         Both
-Application-Service-Provider-Identity      TS29.214    All                  Both,SponsoredConnectivity
-BSSID                                      TS32.299    FBA                  Both,FBAC
-Called-Station-Id                          RFC4005     All                  Both
-Callee-Information                         TS29.214    EPS                  VBCLTE
-Calling-Party-Address                      TS32.299    EPS                  VBCLTE
-CC-Request-Number                          RFC8506     All                  Both
-CC-Request-Type                            RFC8506     All                  Both
-Charging-Information                       TS29.229    All                  CC
-Content-Version                            TS29.214    All                  RuleVersioning
-DRMP                                       RFC7944     All                  Both
-Dynamic-Address-Flag                       TS32.299    All                  ABC
-Dynamic-Address-Flag-Extension             TS32.299    All                  ABC
-Extended-Max-Requested-BW-DL               TS29.214    All                  PC,Extended-BW-NR
-Extended-Max-Requested-BW-UL               TS29.214    All                  PC,Extended-BW-NR
-Final-Unit-Indication                      RFC8506     All                  CC
-Flow-Description                           TS29.214    All                  Both
-Flows                                      TS29.214    All                  CC
-Flow-Status                                TS29.214    All                  Both
-Framed-IP-Address                          RFC4005     All                  Both
-Framed-IPv6-Prefix                         RFC4005     All                  Both ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5-4-0)
-Granted-Service-Unit                       RFC8506     All                  Both,Rel9,TimeBasedUM
-Load                                       RFC8583     All                  ""
-Logical-Access-ID                          TS283.034   xDSL                 Both,Rel10
-Max-Requested-Bandwidth-UL                 TS29.214    All                  PC
-Max-Requested-Bandwidth-DL                 TS29.214    All                  PC
-Maximum-Wait-Time                          TS29.273    All                  ""
-OC-OLR                                     RFC7683     All                  Both
-OC-Supported-Features                      RFC7683     All                  Both
-Origination-Time-Stamp                     TS29.273    All                  ""
-PDN-Connection-Charging-ID                 TS32.299    All                  ABC
-Physical-Access-ID                         TS283.034   xDSL                 Both,Rel10
-Quota-Consumption-Time                     TS32.299    All                  TimeBasedUM
-RAI                                        TS29.061    3GPP-GPRS,3GPP-EPS   Both
-Rating-Group                               RFC8506     All                  CC
-Redirect-Address-Type                      RFC8506     All                  PC,ADC
-Redirect-Server-Address                    RFC8506     All                  PC,ADC
-Required-Access-Info                       TS29.214    3GPP-GPRS,3GPP-EPS   CC,NetLoc
-Service-Identifier                         RFC8506     All                  CC
-Sharing-Key-DL                             TS29.214    All                  ResShare
-Sharing-Key-UL                             TS29.214    All                  ResShare
-Sponsor-Identity                           TS29.214    All                  CC,SponsoredConnectivity
-SSID                                       TS29.273    FBA                  Both,FBAC
-Subscription-Id                            RFC8506     All                  Both
-Supported-Features                         TS29.229    All                  Both,Rel8
-Trace-Data                                 TS29.272    3GPP-EPS             Both,Rel8
-Trace-Reference                            TS29.272    3GPP-EPS             Both,Rel8
-TWAN-Identifier                            TS29.061    Non-3GPP-EPS         Trusted-WLAN,NetLoc-Trusted-WLAN,NetLoc-Untrusted-WLAN
-User-CSG-Information                       TS32.299    3GPP-EPS             CC,Rel9
-User-Equipment-Info                        RFC8506     All                  Both
-User-Equipment-Info-Extension              RFC8506     All                  Both,User-Equipment-Info-Extension
-Used-Service-Unit                          RFC8506     All                  Both,Rel9,TimeBasedUM
+; Columns: Name                            From             Acc-Type             Applicability
+3GPP-Charging-Characteristics              TS29.061         All                  ABC
+3GPP-GGSN-Address                          TS29.061         "All (NOTE 8)"       Both,EPC-routed,ABC
+3GPP-GGSN-IPv6-Address                     TS29.061         "All (NOTE 8)"       Both,EPC-routed,ABC ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-ggsn-ipv6-address-5-4-0)
+3GPP-MS-TimeZone                           TS29.061         All                  Both
+3GPP-RAT-Type                              TS29.061         3GPP-GPRS            Both
+3GPP-Selection-Mode                        TS29.061         All                  ABC
+3GPP-SGSN-Address                          TS29.061         3GPP-GPRS,3GPP-EPS   Both
+3GPP-SGSN-IPv6-Address                     TS29.061         3GPP-GPRS,3GPP-EPS   Both ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-sgsn-ipv6-address-5-4-0)
+3GPP-SGSN-MCC-MNC                          TS29.061         All                  Both
+3GPP-User-Location-Info                    TS29.061         3GPP-GPRS,3GPP-EPS   Both
+3GPP2-BSID                                 3GPP2-X.S0057    3GPP2,Non-3GPP-EPS   Both,Rel8
+Access-Network-Charging-Address            TS29.214         All                  CC
+Access-Network-Charging-Identifier-Value   TS29.214         All                  CC
+AF-Charging-Identifier                     TS29.214         All                  CC
+AF-Signalling-Protocol                     TS29.214         All                  Both,ProvAF-signalFlow
+AN-Trusted                                 TS29.273         Non-3GPP-EPS         Both
+Application-Service-Provider-Identity      TS29.214         All                  Both,SponsoredConnectivity
+BSSID                                      TS32.299         FBA                  Both,FBAC
+Called-Station-Id                          RFC4005          All                  Both
+Callee-Information                         TS29.214         EPS                  VBCLTE
+Calling-Party-Address                      TS32.299         EPS                  VBCLTE
+CC-Request-Number                          RFC8506          All                  Both
+CC-Request-Type                            RFC8506          All                  Both
+Charging-Information                       TS29.229         All                  CC
+Content-Version                            TS29.214         All                  RuleVersioning
+DRMP                                       RFC7944          All                  Both
+Dynamic-Address-Flag                       TS32.299         All                  ABC
+Dynamic-Address-Flag-Extension             TS32.299         All                  ABC
+Extended-Max-Requested-BW-DL               TS29.214         All                  PC,Extended-BW-NR
+Extended-Max-Requested-BW-UL               TS29.214         All                  PC,Extended-BW-NR
+Final-Unit-Indication                      RFC8506          All                  CC
+Flow-Description                           TS29.214         All                  Both
+Flows                                      TS29.214         All                  CC
+Flow-Status                                TS29.214         All                  Both
+Framed-IP-Address                          RFC4005          All                  Both
+Framed-IPv6-Prefix                         RFC4005          All                  Both ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5-4-0)
+Granted-Service-Unit                       RFC8506          All                  Both,Rel9,TimeBasedUM
+Load                                       RFC8583          All                  ""
+Logical-Access-ID                          ETSI-TS283.034   xDSL                 Both,Rel10
+Max-Requested-Bandwidth-UL                 TS29.214         All                  PC
+Max-Requested-Bandwidth-DL                 TS29.214         All                  PC
+Maximum-Wait-Time                          TS29.273         All                  ""
+OC-OLR                                     RFC7683          All                  Both
+OC-Supported-Features                      RFC7683          All                  Both
+Origination-Time-Stamp                     TS29.273         All                  ""
+PDN-Connection-Charging-ID                 TS32.299         All                  ABC
+Physical-Access-ID                         ETSI-TS283.034   xDSL                 Both,Rel10
+Quota-Consumption-Time                     TS32.299         All                  TimeBasedUM
+RAI                                        TS29.061         3GPP-GPRS,3GPP-EPS   Both
+Rating-Group                               RFC8506          All                  CC
+Redirect-Address-Type                      RFC8506          All                  PC,ADC
+Redirect-Server-Address                    RFC8506          All                  PC,ADC
+Required-Access-Info                       TS29.214         3GPP-GPRS,3GPP-EPS   CC,NetLoc
+Service-Identifier                         RFC8506          All                  CC
+Sharing-Key-DL                             TS29.214         All                  ResShare
+Sharing-Key-UL                             TS29.214         All                  ResShare
+Sponsor-Identity                           TS29.214         All                  CC,SponsoredConnectivity
+SSID                                       TS29.273         FBA                  Both,FBAC
+Subscription-Id                            RFC8506          All                  Both
+Supported-Features                         TS29.229         All                  Both,Rel8
+Trace-Data                                 TS29.272         3GPP-EPS             Both,Rel8
+Trace-Reference                            TS29.272         3GPP-EPS             Both,Rel8
+TWAN-Identifier                            TS29.061         Non-3GPP-EPS         Trusted-WLAN,NetLoc-Trusted-WLAN,NetLoc-Untrusted-WLAN
+User-CSG-Information                       TS32.299         3GPP-EPS             CC,Rel9
+User-Equipment-Info                        RFC8506          All                  Both
+User-Equipment-Info-Extension              RFC8506          All                  Both,User-Equipment-Info-Extension
+Used-Service-Unit                          RFC8506          All                  Both,Rel9,TimeBasedUM
 
 
 ; Type: AVP Table
@@ -1088,82 +1088,82 @@ Session-Linking-Indicator   1064   5a.3.6    Enumerated    M,V    P     -       
 ; Section: 5a.4.0
 ; Table: 5a.4.0.1
 ; Page: 205
-; Columns: Name                            From       Acc-Type                        Applicability
-3GPP-MS-TimeZone                           TS29.061   All                             ""
-3GPP-SGSN-MCC-MNC                          TS29.061   All                             ""
-3GPP-User-Location-Info                    TS29.061   3GPP-EPS                        ""
-3GPP2-BSID                                 X.S0057    3GPP2,Non-3GPP-EPS              ""
-Access-Network-Charging-Identifier-Value   TS29.214   "All (See NOTE 6)"              ""
-Allocation-Retention-Priority              TS29.212   All                             ""
-AN-GW-Address                              TS29.212   All                             "EPC-routed (See NOTE 8)"
-APN-Aggregate-Max-Bitrate-DL               TS29.212   All                             ""
-APN-Aggregate-Max-Bitrate-UL               TS29.212   All                             ""
-Bearer-Control-Mode                        TS29.212   "All (See NOTE 3)"              ""
-Called-Station-Id                          RFC4005    All                             ""
-CC-Request-Number                          RFC8506    All                             ""
-CC-Request-Type                            RFC8506    All                             ""
-Default-EPS-Bearer-QoS                     TS29.212   All                             ""
-Content-Version                            TS29.214   All                             RuleVersioning
-DRMP                                       RFC7944    All                             ""
-Event-Trigger                              TS29.212   All                             ""
-Extended-APN-AMBR-DL                       TS29.212   All                             Extended-BW-NR
-Extended-APN-AMBR-UL                       TS29.212   All                             Extended-BW-NR
-Extended-GBR-DL                            TS29.212   All                             Extended-BW-NR
-Extended-GBR-UL                            TS29.212   All                             Extended-BW-NR
-Extended-Max-Requested-BW-DL               TS29.214   All                             Extended-BW-NR
-Extended-Max-Requested-BW-UL               TS29.214   All                             Extended-BW-NR
-Flow-Description                           TS29.214   All                             ""
-Flow-Information                           TS29.212   All                             ""
-Flow-Label                                 TS29.212   ""                              ""
-Framed-IP-Address                          RFC4005    All                             ""
-Framed-IPv6-Prefix                         RFC4005    All                             "" ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5a-4-0)
-Guaranteed-Bitrate-DL                      TS29.212   All                             ""
-Guaranteed-Bitrate-UL                      TS29.212   All                             ""
-HeNB-Local-IP-Address                      TS29.212   3GPP-EPS                        EPC-routed
-IP-CAN-Type                                TS29.212   All                             ""
-Load                                       RFC8583    All                             ""
-Max-Requested-Bandwidth-UL                 TS29.214   All                             ""
-Max-Requested-Bandwidth-DL                 TS29.214   All                             ""
-NetLoc-Access-Support                      TS29.212   All                             NetLoc
-Network-Request-Support                    TS29.212   "All (See NOTE 3)"              ""
-OC-OLR                                     RFC7683    All                             ""
-OC-Supported-Features                      RFC7683    All                             ""
-Packet-Filter-Content                      TS29.212   All                             ""
-Packet-Filter-Identifier                   TS29.212   All                             ""
-Packet-Filter-Information                  TS29.212   All                             ""
-Packet-Filter-Operation                    TS29.212   All                             ""
-Packet-Filter-Usage                        TS29.212   All                             Rel9
-PCC-Rule-Status                            TS29.212   All                             ""
-PDN-Connection-ID                          TS29.212   "All (See NOTE 4)"              Rel9
-Precedence                                 TS29.212   All                             ""
-PS-to-CS-Session-Continuity                TS29.212   3GPP-EPS                        vSRVCC
-QoS-Class-Identifier                       TS29.212   All                             ""
-QoS-Information                            TS29.212   All                             ""
-RAI                                        TS29.061   3GPP-EPS                        ""
-RAT-Type                                   TS29.212   All                             ""
-Required-Access-Info                       TS29.214   3GPP-EPS                        CC,NetLoc
-Resource-Allocation-Notification           TS29.212   All                             ""
-Rule-Activation-Time                       TS29.212   All                             ""
-Rule-Deactivation-Time                     TS29.212   All                             ""
-Rule-Failure-Code                          TS29.212   All                             ""
-Security-Parameter-Index                   TS29.212   All                             ""
-Session-Release-Cause                      TS29.212   All                             ""
-Sharing-Key-DL                             TS29.214   All                             ResShare
-Sharing-Key-UL                             TS29.214   All                             ResShare
-Subscription-Id                            RFC8506    All                             ""
-Supported-Features                         TS29.229   All                             ""
-ToS-Traffic-Class                          TS29.212   All                             ""
-Trace-Data                                 TS29.272   3GPP-EPS                        ""
-Trace-Reference                            TS29.272   3GPP-EPS                        ""
-Tunnel-Header-Filter                       TS29.212   "All (see NOTE 3 and NOTE 6)"   ""
-Tunnel-Header-Length                       TS29.212   "All (see NOTE 3 and NOTE 6)"   ""
-Tunnel-Information                         TS29.212   "All (see NOTE 3 and NOTE 6)"   ""
-UDP-Source-Port                            TS29.212   3GPP-EPS,Non-3GPP-EPS           EPC-routed
-UE-Local-IP-Address                        TS29.212   Non-3GPP-EPS                    BBAI
-User-CSG-Information                       TS32.299   3GPP-EPS                        Rel9
-User-Equipment-Info                        RFC8506    All                             ""
-User-Equipment-Info-Extension              RFC8506    All                             User-Equipment-Info-Extension
-User-Location-Info-Time                    TS29.212   3GPP-EPS                        CC,NetLoc
+; Columns: Name                            From            Acc-Type                        Applicability
+3GPP-MS-TimeZone                           TS29.061        All                             ""
+3GPP-SGSN-MCC-MNC                          TS29.061        All                             ""
+3GPP-User-Location-Info                    TS29.061        3GPP-EPS                        ""
+3GPP2-BSID                                 3GPP2-X.S0057   3GPP2,Non-3GPP-EPS              ""
+Access-Network-Charging-Identifier-Value   TS29.214        "All (See NOTE 6)"              ""
+Allocation-Retention-Priority              TS29.212        All                             ""
+AN-GW-Address                              TS29.212        All                             "EPC-routed (See NOTE 8)"
+APN-Aggregate-Max-Bitrate-DL               TS29.212        All                             ""
+APN-Aggregate-Max-Bitrate-UL               TS29.212        All                             ""
+Bearer-Control-Mode                        TS29.212        "All (See NOTE 3)"              ""
+Called-Station-Id                          RFC4005         All                             ""
+CC-Request-Number                          RFC8506         All                             ""
+CC-Request-Type                            RFC8506         All                             ""
+Default-EPS-Bearer-QoS                     TS29.212        All                             ""
+Content-Version                            TS29.214        All                             RuleVersioning
+DRMP                                       RFC7944         All                             ""
+Event-Trigger                              TS29.212        All                             ""
+Extended-APN-AMBR-DL                       TS29.212        All                             Extended-BW-NR
+Extended-APN-AMBR-UL                       TS29.212        All                             Extended-BW-NR
+Extended-GBR-DL                            TS29.212        All                             Extended-BW-NR
+Extended-GBR-UL                            TS29.212        All                             Extended-BW-NR
+Extended-Max-Requested-BW-DL               TS29.214        All                             Extended-BW-NR
+Extended-Max-Requested-BW-UL               TS29.214        All                             Extended-BW-NR
+Flow-Description                           TS29.214        All                             ""
+Flow-Information                           TS29.212        All                             ""
+Flow-Label                                 TS29.212        ""                              ""
+Framed-IP-Address                          RFC4005         All                             ""
+Framed-IPv6-Prefix                         RFC4005         All                             "" ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5a-4-0)
+Guaranteed-Bitrate-DL                      TS29.212        All                             ""
+Guaranteed-Bitrate-UL                      TS29.212        All                             ""
+HeNB-Local-IP-Address                      TS29.212        3GPP-EPS                        EPC-routed
+IP-CAN-Type                                TS29.212        All                             ""
+Load                                       RFC8583         All                             ""
+Max-Requested-Bandwidth-UL                 TS29.214        All                             ""
+Max-Requested-Bandwidth-DL                 TS29.214        All                             ""
+NetLoc-Access-Support                      TS29.212        All                             NetLoc
+Network-Request-Support                    TS29.212        "All (See NOTE 3)"              ""
+OC-OLR                                     RFC7683         All                             ""
+OC-Supported-Features                      RFC7683         All                             ""
+Packet-Filter-Content                      TS29.212        All                             ""
+Packet-Filter-Identifier                   TS29.212        All                             ""
+Packet-Filter-Information                  TS29.212        All                             ""
+Packet-Filter-Operation                    TS29.212        All                             ""
+Packet-Filter-Usage                        TS29.212        All                             Rel9
+PCC-Rule-Status                            TS29.212        All                             ""
+PDN-Connection-ID                          TS29.212        "All (See NOTE 4)"              Rel9
+Precedence                                 TS29.212        All                             ""
+PS-to-CS-Session-Continuity                TS29.212        3GPP-EPS                        vSRVCC
+QoS-Class-Identifier                       TS29.212        All                             ""
+QoS-Information                            TS29.212        All                             ""
+RAI                                        TS29.061        3GPP-EPS                        ""
+RAT-Type                                   TS29.212        All                             ""
+Required-Access-Info                       TS29.214        3GPP-EPS                        CC,NetLoc
+Resource-Allocation-Notification           TS29.212        All                             ""
+Rule-Activation-Time                       TS29.212        All                             ""
+Rule-Deactivation-Time                     TS29.212        All                             ""
+Rule-Failure-Code                          TS29.212        All                             ""
+Security-Parameter-Index                   TS29.212        All                             ""
+Session-Release-Cause                      TS29.212        All                             ""
+Sharing-Key-DL                             TS29.214        All                             ResShare
+Sharing-Key-UL                             TS29.214        All                             ResShare
+Subscription-Id                            RFC8506         All                             ""
+Supported-Features                         TS29.229        All                             ""
+ToS-Traffic-Class                          TS29.212        All                             ""
+Trace-Data                                 TS29.272        3GPP-EPS                        ""
+Trace-Reference                            TS29.272        3GPP-EPS                        ""
+Tunnel-Header-Filter                       TS29.212        "All (see NOTE 3 and NOTE 6)"   ""
+Tunnel-Header-Length                       TS29.212        "All (see NOTE 3 and NOTE 6)"   ""
+Tunnel-Information                         TS29.212        "All (see NOTE 3 and NOTE 6)"   ""
+UDP-Source-Port                            TS29.212        3GPP-EPS,Non-3GPP-EPS           EPC-routed
+UE-Local-IP-Address                        TS29.212        Non-3GPP-EPS                    BBAI
+User-CSG-Information                       TS32.299        3GPP-EPS                        Rel9
+User-Equipment-Info                        RFC8506         All                             ""
+User-Equipment-Info-Extension              RFC8506         All                             User-Equipment-Info-Extension
+User-Location-Info-Time                    TS29.212        3GPP-EPS                        CC,NetLoc
 
 
 ; Type: AVP Table
@@ -1213,7 +1213,7 @@ Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py#frame
 Granted-Service-Unit                    RFC8506
 IP-CAN-Type                             TS29.212
 Load                                    RFC8583
-Logical-Access-ID                       TS283.034
+Logical-Access-ID                       ETSI-TS283.034
 Max-Requested-Bandwidth-UL              TS29.214
 Max-Requested-Bandwidth-DL              TS29.214
 Metering-Method                         TS29.212
@@ -1227,7 +1227,7 @@ Offline                                 TS29.212
 Online                                  TS29.212
 PCC-Rule-Status                         TS29.212
 PDN-Connection-Charging-ID              TS32.299
-Physical-Access-ID                      TS283.034
+Physical-Access-ID                      ETSI-TS283.034
 Precedence                              TS29.212
 Presence-Reporting-Area-Identifier      TS29.212
 Presence-Reporting-Area-Information     TS29.212
@@ -1275,7 +1275,7 @@ User-Equipment-Info-Extension           RFC8506
 3GPP-SGSN-IPv6-Address                  TS29.061 ;; corrected: (TS29.212.py#ipv6-case-row-3gpp-sgsn-ipv6-address-5b-4-0)
 3GPP-SGSN-MCC-MNC                       TS29.061
 3GPP-User-Location-Info                 TS29.061
-3GPP2-BSID                              X.S0057
+3GPP2-BSID                              3GPP2-X.S0057
 
 
 ; Type: AVP Table

@@ -652,7 +652,8 @@ def test_a_vendor_table_row_citing_an_unnameable_reference_adds_no_row():
         "7.5",
         warnings,
         quirks,
-        {"301": 'oneM2M TS-0004: "Service Layer Core Protocol Specification".'},
+        # TS 32.299's [209], which numbers no document.
+        {"301": 'OMA "Multimedia Messaging Service; Encapsulation Protocol".'},
     )
 
     assert table.rows == []
@@ -660,6 +661,35 @@ def test_a_vendor_table_row_citing_an_unnameable_reference_adds_no_row():
         "re-used AVPs row '3GPP2-BSID' refers to [301], which names no"
         " document a From cell can cite; no row added"
     )
+
+
+@pytest.mark.parametrize(
+    ("entry", "origin"),
+    [
+        ('oneM2M TS-0004: "Service Layer Core Protocol ...".', "oneM2M-TS-0004"),
+        ('OMA-DDS-Charging_Data: "Charging Data".', "OMA-DDS-Charging_Data"),
+        ('ETSI TS 283 034 v2.2.0: "... (TISPAN); ..."', "ETSI-TS283.034"),
+        ('3GPP2 X.S0057-B: "E-UTRAN - eHRPD ..."', "3GPP2-X.S0057"),
+        # The document is what precedes the title.
+        ('3GPP TS 29.212: "... (ETSI TS 283 034)".', "TS29.212"),
+    ],
+)
+def test_a_clause_2_entry_names_its_document_with_its_publisher(entry, origin):
+    assert tgpp_docx._entry_document(entry) == origin
+
+
+def test_a_from_cell_printing_an_etsi_series_reads_clause_2():
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    references = {"37": 'ETSI TS 283 034 v2.2.0: "..."', "15": 'ETSI TS 183 017: "..."'}
+    cell = "3GPP\xa0TS 283 034\xa0[37]"
+    with pytest.raises(tgpp_docx.ExtractionError, match="origins-by-reference"):
+        tgpp_docx._origin(cell, "TS29.212", references, Quirks([], None))
+
+    quirks = Quirks([Quirk(name="origins-by-reference", reason="test")], None)
+    assert tgpp_docx._origin(cell, "TS29.212", references, quirks) == "ETSI-TS283.034"
+    with pytest.raises(tgpp_docx.ExtractionError, match=r"\[15\], which names"):
+        tgpp_docx._origin("3GPP TS 283 034 [15]", "TS29.212", references, quirks)
 
 
 _REGISTRY_HEADER = ("AVP Code", "Attribute Name", "Specified in the TS")

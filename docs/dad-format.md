@@ -116,6 +116,14 @@ each starting with `; Type:`.
   defines each.
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
+- **An origin names its publisher, unless it is 3GPP or IETF.** The corpus
+  is 3GPP's and IETF's, so their documents are bare numbers (`TS29.272`,
+  `RFC6733`); anything else a document re-uses from leads with its
+  publisher and keeps the publisher's own numbering (`ETSI-TS283.034`,
+  `3GPP2-X.S0057`, `OMA-DDS-Charging_Data`, `oneM2M-TS-0004`). Without the
+  prefix, ETSI's three-digit TISPAN series would read as a 3GPP number and
+  OMA's names as nothing. No extractor reads these documents, so the corpus
+  holds one only when someone writes it by hand.
 - **The parser is strict; the formatter defines canonical form.** Hand edits
   are normalised by the formatter (`seanchai format`), not by the parser
   guessing.

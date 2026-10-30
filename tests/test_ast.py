@@ -123,8 +123,36 @@ def test_inline_text_fields_reject_values_that_cannot_round_trip(build, text):
 
 
 @pytest.mark.parametrize(
+    ("specification", "reference"),
+    [
+        ("3GPP TS 29.272", "TS29.272"),
+        ("RFC 6733", "RFC6733"),
+        ("ETSI TS 283 034", "ETSI-TS283.034"),
+        ("ETSI ES 283 034", "ETSI-ES283.034"),
+        ("3GPP2 X.S0057", "3GPP2-X.S0057"),
+        ("OMA-DDS-Charging_Data", "OMA-DDS-Charging_Data"),
+        ("oneM2M TS-0004", "oneM2M-TS-0004"),
+    ],
+)
+def test_spec_ref_spells_each_publisher_one_way(specification, reference):
+    assert ast.spec_ref(specification) == reference
+    assert ast.is_external(reference) is not reference.startswith(("TS", "RFC"))
+
+
+@pytest.mark.parametrize(
     "specification",
-    ["3GPP TS ../outside", "/etc/passwd", r"..\outside", "TS 29.2721", "", "Test"],
+    [
+        "3GPP TS ../outside",
+        "/etc/passwd",
+        r"..\outside",
+        "TS 29.2721",
+        "",
+        "Test",
+        # 3GPP numbers no three-digit series; ETSI's needs its publisher.
+        "3GPP TS 283.034",
+        "OMA-../outside",
+        "3GPP2 ../X.S0057",
+    ],
 )
 def test_spec_ref_rejects_anything_that_could_name_another_file(specification):
     # The result becomes a file name in a directory whose Python gets executed.

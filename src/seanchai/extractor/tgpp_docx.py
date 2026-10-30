@@ -178,12 +178,22 @@ _PDF_COVER_RE = re.compile(
 # "TS 29.272 [10]", with the document's own bibliography number and no
 # publisher. The number is what identifies the origin, so that is what these
 # require.
-# The series may be three digits with either separator: 29.212 spells an ETSI
-# TISPAN document "3GPP TS 283 034", 29.214 spells one "3GPP TS 183.017".
+# A three-digit series is no 3GPP one: ETSI numbers its TISPAN documents
+# so, and a cell may print one with either separator and the wrong publisher
+# (29.212's "3GPP TS 283 034 [37]", 29.214's "3GPP TS 183.017 [15]").
 _ORIGIN_TS_RE = re.compile(r"TS\s+(?P<series>\d{2,3})[. ](?P<number>\d{3})(?!\d)")
 _ORIGIN_RFC_RE = re.compile(r"RFC\s+(?P<number>\d+)")
-# 3GPP2 documents keep their publisher's numbering: "3GPP2 X.S0057 [24]".
+# Documents outside 3GPP and IETF keep their publisher's numbering, the
+# publisher leading: "ETSI TS 283 034 [37]", "3GPP2 X.S0057 [24]", and in
+# TS 32.299's clause 2 "OMA-DDS-Charging_Data: ..." and "oneM2M TS-0004: ...".
+_ORIGIN_ETSI_RE = re.compile(
+    r"ETSI\s+(?P<kind>TS|ES)\s+(?P<series>\d{3})[. ](?P<number>\d{3})(?!\d)"
+)
 _ORIGIN_3GPP2_RE = re.compile(r"3GPP2\s+(?P<number>[A-Z]\.[A-Z]\d{4})")
+_ORIGIN_OMA_RE = re.compile(r"(?<![\w-])(?P<name>OMA(?:-[A-Za-z0-9_]+)+)")
+_ORIGIN_ONEM2M_RE = re.compile(r"oneM2M\s+TS-(?P<number>\d{4})")
+# A cell's clause-2 reference number: "[37]".
+_ORIGIN_NUMBER_RE = re.compile(r"\[(?P<number>\d+)\]")
 # A re-used table's From cell citing a clause of the same document
 # ("6.4.2" in 29.336's S6t table, whose AVPs the S6m set defines).
 _SECTION_REF_RE = re.compile(r"^(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*$")
@@ -1466,8 +1476,8 @@ def _referred_origin(
     own_reference: str,
     quirks: sources.Quirks,
 ) -> str | None:
-    """The document a `refer [n]` type cell cites, or None when the entry is
-    not one a From cell can name (TS 32.299's [223], OMA-DDS-Charging_Data).
+    """The document a `refer [n]` type cell cites, or None when the entry
+    names none a From cell can cite.
 
     The row becomes a re-used row citing that document: the type lives
     there, and so does the rest of the definition."""
@@ -1483,18 +1493,50 @@ def _referred_origin(
         raise ExtractionError(
             f"AVP table row {name!r} refers to [{number}], which clause 2 does not list"
         )
-    if _ORIGIN_TS_RE.search(entry) or _ORIGIN_RFC_RE.search(entry):
-        return _origin(entry, own_reference)
+    return _entry_document(entry)
+
+
+def _entry_document(entry: str) -> str | None:
+    """The document a clause-2 entry names: what precedes its title, so a
+    title mentioning another document ("... (3GPP TS 32.299)") names none."""
+    return _named_document(entry.partition(":")[0])
+
+
+def _named_document(text: str) -> str | None:
+    """The document a From cell or a clause-2 entry names, as a `SpecRef`,
+    or None when it names none a From cell can cite (TS 32.299's [209],
+    'OMA "Multimedia Messaging Service; ..."', numbers no document).
+
+    A publisher-led name is tried first, since "ETSI TS 283 034" also reads
+    as a TS number. A three-digit series no publisher claims is no answer
+    either: `_origin` settles it through clause 2."""
+    if match := _ORIGIN_ETSI_RE.search(text):
+        return f"ETSI-{match['kind']}{match['series']}.{match['number']}"
+    if match := _ORIGIN_3GPP2_RE.search(text):
+        return f"3GPP2-{match['number']}"
+    if match := _ORIGIN_ONEM2M_RE.search(text):
+        return f"oneM2M-TS-{match['number']}"
+    if match := _ORIGIN_OMA_RE.search(text):
+        return match["name"]
+    if match := _ORIGIN_TS_RE.search(text):
+        if len(match["series"]) == 3:
+            return None
+        return f"TS{match['series']}.{match['number']}"
+    if match := _ORIGIN_RFC_RE.search(text):
+        return f"RFC{match['number']}"
     return None
 
 
-def _origin(reference: str, own_reference: str) -> str:
-    if match := _ORIGIN_TS_RE.search(reference):
-        return f"TS{match['series']}.{match['number']}"
-    if match := _ORIGIN_RFC_RE.search(reference):
-        return f"RFC{match['number']}"
-    if match := _ORIGIN_3GPP2_RE.search(reference):
-        return match["number"]
+def _origin(
+    reference: str,
+    own_reference: str,
+    references: dict[str, str] | None = None,
+    quirks: sources.Quirks | None = None,
+) -> str:
+    if (named := _named_document(reference)) is not None:
+        return named
+    if (ts := _ORIGIN_TS_RE.search(reference)) is not None:
+        return _external_by_reference(reference, ts, references, quirks)
     # A bare clause number cites this document itself: 29.336's S6t re-used
     # table lists AVPs its own S6m set defines, with cells like "6.4.2". The
     # faithful origin is the document's own reference, not a parse failure —
@@ -1504,6 +1546,40 @@ def _origin(reference: str, own_reference: str) -> str:
     if _SECTION_REF_RE.match(reference.removeprefix("Clause ")):
         return own_reference
     raise ExtractionError(f"unrecognized origin reference {reference!r}")
+
+
+def _external_by_reference(
+    reference: str,
+    ts: re.Match[str],
+    references: dict[str, str] | None,
+    quirks: sources.Quirks | None,
+) -> str:
+    """The document a From cell printing a three-digit TS series names,
+    read from the clause-2 entry the cell cites, the `origins-by-reference`
+    quirk. 3GPP numbers no series so; TS 29.212 prints ETSI TS 283 034 as
+    "3GPP TS 283 034 [37]" and TS 29.214 ETSI TS 183 017 as "3GPP TS 183.017
+    [15]", and their clause 2 entries name the publisher. The entry must
+    name the same number, so a cell citing the wrong entry fails."""
+    if quirks is None or not quirks.enabled("origins-by-reference"):
+        raise ExtractionError(
+            f"origin reference {reference!r} names a TS series 3GPP does not"
+            " number, which this document's source declaration does not read"
+            " through clause 2 (the `origins-by-reference` quirk)"
+        )
+    number = _ORIGIN_NUMBER_RE.search(reference)
+    entry = (references or {}).get(number["number"]) if number else None
+    if entry is None:
+        raise ExtractionError(
+            f"origin reference {reference!r} cites no reference clause 2 lists"
+        )
+    named = _entry_document(entry)
+    if named is None or not named.endswith(f"{ts['series']}.{ts['number']}"):
+        raise ExtractionError(
+            f"origin reference {reference!r} cites clause 2's"
+            f" [{number['number'] if number else ''}], which names {named or entry!r}"
+        )
+    quirks.fire("origins-by-reference")
+    return named
 
 
 _REUSED_TABLE_COLUMNS = {
@@ -1523,7 +1599,11 @@ def _reused_code(text: str, name: str) -> int | None:
 
 
 def _extract_reused_table(
-    table: _Table, warnings: list[str], own_reference: str, quirks: sources.Quirks
+    table: _Table,
+    warnings: list[str],
+    own_reference: str,
+    quirks: sources.Quirks,
+    references: dict[str, str],
 ) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedColumn, ...]]:
     rows = []
     columns, positions, data_rows = _walk_table(
@@ -1567,7 +1647,7 @@ def _extract_reused_table(
                     if found is not None:
                         marks[marked] = found
                 case ast.ReusedColumn.FROM:
-                    origin = _origin(text, own_reference)
+                    origin = _origin(text, own_reference, references, quirks)
                 case ast.ReusedColumn.M_BIT:
                     if text == cells[0]:
                         # Horizontally merged row: python-docx repeats the first
@@ -1621,8 +1701,8 @@ def _extract_vendor_table(
     references: dict[str, str],
 ) -> _ReusedTable:
     """A table of other vendors' AVPs as a re-used block, the
-    `vendor-avp-tables` quirk. A reference no From cell can name (TS 32.299's
-    [301], oneM2M TS-0004) warns and adds no row, as `refer [n]` does."""
+    `vendor-avp-tables` quirk. A reference naming no document a From cell
+    can cite warns and adds no row, as `refer [n]` does."""
     if table.caption is None:
         raise ExtractionError(f"{section_number}: AVP table without a caption")
     columns, positions, data_rows = _walk_table(
@@ -1656,7 +1736,8 @@ def _extract_vendor_table(
                 " which clause 2 does not list"
             )
         quirks.fire("vendor-avp-tables")
-        if not (_ORIGIN_TS_RE.search(entry) or _ORIGIN_RFC_RE.search(entry)):
+        origin = _entry_document(entry)
+        if origin is None:
             warnings.append(
                 f"re-used AVPs row {name!r} refers to [{match['number']}],"
                 " which names no document a From cell can cite; no row added"
@@ -1665,7 +1746,7 @@ def _extract_vendor_table(
         rows.append(
             ast.ReusedAvpRow(
                 name=name,
-                origin=_origin(entry, ""),
+                origin=origin,
                 code=_reused_code(named.get(ast.ReusedColumn.CODE, ""), name),
                 marks=marks,
             )
@@ -1981,6 +2062,7 @@ def _collect(
         if quirks.enabled("refer-type-cells")
         or quirks.enabled("vendor-avp-tables")
         or quirks.enabled("registry-tables")
+        or quirks.enabled("origins-by-reference")
         else {}
     )
     for section in sections:
@@ -2063,7 +2145,7 @@ def _collect(
                 vendor = _extract_vendor_table(
                     table, section.number, warnings, quirks, references
                 )
-                if vendor.rows:  # 7.5.1's one row cites oneM2M
+                if vendor.rows:
                     collected.vendor_reused.append(vendor)
             elif "Attribute Name" in header and "Reference" in header:
                 # Keyed on Reference rather than on M-bit: TS 29.128, 29.173
@@ -2071,7 +2153,7 @@ def _collect(
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
                 reused_rows, reused_columns = _extract_reused_table(
-                    table, warnings, own_reference, quirks
+                    table, warnings, own_reference, quirks, references
                 )
                 collected.reused_tables.append(
                     _ReusedTable(
@@ -2400,6 +2482,11 @@ QUIRKS: dict[str, str] = {
         "read tables of other vendors' AVPs, whose Reference cell cites a"
         " clause-2 entry, as re-used blocks (TS 32.299 tables 7.3.1, 7.4.1,"
         " 7.5.1)"
+    ),
+    "origins-by-reference": (
+        "read a re-used row's From cell printing a TS series 3GPP does not"
+        " number ('3GPP TS 283 034 [37]') as the document its clause-2"
+        " reference names (TS 29.212, 29.214)"
     ),
     "refer-type-cells": (
         "read a 'refer [n]' Value Type cell as no type plus a re-used row"

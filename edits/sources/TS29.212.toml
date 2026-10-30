@@ -149,3 +149,9 @@ section = "E.6.3.1"
 reason = "table E.6.3.1.1 lower-cases the S of QoS; clause E.6.3.2's heading and prose and the E.6.3.6 and E.6.6.2 rules write CS-Service-QoS-Request-Identifier, as every sibling CS-Service-QoS-* row does"
 first_version = "18.2.0"
 last_version = "18.2.0"
+
+[[quirk]]
+name = "origins-by-reference"
+reason = "the re-used tables cite ETSI TS 283 034 once as '3GPP TS 283 034 [37]' (table 5.4.0.1's Logical-Access-ID row) beside 'ETSI TS 283 034 [37]'; clause 2's [37] is 'ETSI TS 283 034 v2.2.0'"
+first_version = "18.2.0"
+last_version = "18.2.0"

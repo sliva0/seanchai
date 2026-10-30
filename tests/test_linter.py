@@ -911,6 +911,37 @@ def test_an_unresolvable_origin_is_one_note_and_keeps_the_single_file_answer():
     assert "local-and-reused" in rules
 
 
+def test_an_origin_outside_3gpp_and_ietf_is_a_note_of_its_own():
+    spec = _spec(
+        _reused(
+            ast.ReusedAvpRow(name="Borrowed", origin="TS29.212"),
+            ast.ReusedAvpRow(name="Elsewhere", origin="oneM2M-TS-0004"),
+        ),
+        version="18.0.0",
+    )
+
+    found = {f.rule: f for f in linter.lint_with_corpus(spec, _books())}
+
+    assert found["origin-not-in-corpus"].message.endswith(": TS29.212")
+    external = found["external-origin-not-in-corpus"]
+    assert external.severity is linter.Severity.NOTE
+    assert external.message.startswith("1 of 2 cited origins are documents outside")
+    assert external.message.endswith(": oneM2M-TS-0004")
+
+
+def test_a_hand_written_external_origin_resolves():
+    origin = _origin_spec("ETSI TS 283 034", "2.2.0", _grouped_with("Borrowed", 700))
+    spec = _spec(
+        _reused(ast.ReusedAvpRow(name="Borrowed", origin="ETSI-TS283.034")),
+        version="18.0.0",
+    )
+
+    rules = _rules(linter.lint_with_corpus(spec, _books(origin)))
+
+    assert "external-origin-not-in-corpus" not in rules
+    assert "reused-avp-not-in-origin" not in rules
+
+
 def test_resolving_the_origin_replaces_the_single_file_note():
     origin = _origin_spec("3GPP TS 29.272", "18.6.0", _grouped_with("Borrowed", 700))
     spec = _spec(
@@ -1031,17 +1062,17 @@ _STANDING_CORPUS_NOTES = {
         "reused-origin-indirect": ["Service-Selection"],
     },
     "29212-i20.dad": {
-        "origin-not-in-corpus": ["TS283.034, X.S0057"],
+        "external-origin-not-in-corpus": ["3GPP2-X.S0057, ETSI-TS283.034"],
     },
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
     },
     "29214-i40.dad": {
-        "origin-not-in-corpus": ["TS183.017"],
+        "external-origin-not-in-corpus": ["ETSI-TS183.017"],
         "registry-avp-name": ["Media-Sub-Component"],
     },
     "29219-i00.dad": {
-        "origin-not-in-corpus": ["TS283.034"],
+        "external-origin-not-in-corpus": ["ETSI-TS283.034"],
     },
     "29229-i10.dad": {
         "unresolved-reference": ["Line-Identifier"],
@@ -1077,7 +1108,7 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29273-i60.dad": {
-        "origin-not-in-corpus": ["TS283.034"],
+        "external-origin-not-in-corpus": ["ETSI-TS283.034"],
         "registry-avp-document": ["3GPP-AAA-Server-Name"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
@@ -1131,7 +1162,10 @@ _STANDING_CORPUS_NOTES = {
     "32299-i00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
-        "origin-not-in-corpus": ["TS283.034, TS29.140"],
+        "external-origin-not-in-corpus": [
+            "ETSI-TS283.034, OMA-DDS-Charging_Data, oneM2M-TS-0004"
+        ],
+        "origin-not-in-corpus": ["TS29.140"],
         "reused-origin-indirect": [
             "3GPP2-BSID",
             "Priority-Indication",
@@ -1165,7 +1199,6 @@ _STANDING_CORPUS_NOTES = {
             "Feature-List-ID",
         ],
         "unresolved-reference": [
-            "M2M-Information",
             "Monitored-HPLMN-Identifier",
             "Monitoring-Event-Report",
             "Network-Element",
@@ -1249,7 +1282,8 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
             # standing notes start with the affected AVP's name.
             subject = (
                 finding.message.rpartition(": ")[2]
-                if finding.rule == "origin-not-in-corpus"
+                if finding.rule
+                in {"origin-not-in-corpus", "external-origin-not-in-corpus"}
                 else finding.message.split()[0].removesuffix("'s")
             )
             notes.setdefault(finding.rule, []).append(subject)

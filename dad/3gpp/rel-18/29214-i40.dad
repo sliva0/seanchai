@@ -375,46 +375,46 @@ Wireline-User-Location-Info                578    5.3.75    Grouped        V    
 ; Section: 5.4.0
 ; Table: 5.4.0.1
 ; Page: 59
-; Columns: Name                 From        Applicability
-3GPP-MS-TimeZone                TS29.061    NetLoc,RAN-NAS-Cause
-3GPP-SGSN-MCC-MNC               TS29.061    NetLoc,RAN-NAS-Cause
-3GPP-User-Location-Info         TS29.061    NetLoc,RAN-NAS-Cause
-AN-GW-Address                   TS29.212    ""
-AN-Trusted                      TS29.273    ""
-Called-Asserted-Identity        TS32.299    VBCLTE
-Called-Party-Address            TS32.299    VBCLTE
-Called-Station-Id               RFC4005     Rel8
-Calling-Party-Address           TS32.299    VBCLTE
-DRMP                            RFC7944     ""
-Final-Unit-Action               RFC8506     Rel8
-Framed-IP-Address               RFC4005     ""
-Framed-IPv6-Prefix              RFC4005     "" ;; corrected: (TS29.214.py#framed-ipv6-prefix-row-case)
-Granted-Service-Unit            RFC8506     SponsoredConnectivity,SCTimeBasedUM
-IP-CAN-Type                     TS29.212    ""
-Load                            RFC8583     ""
-Max-PLR-DL                      TS29.212    CHEM
-Max-PLR-UL                      TS29.212    CHEM
-NetLoc-Access-Support           TS29.212    NetLoc
-OC-OLR                          RFC7683     ""
-OC-Supported-Features           RFC7683     ""
-Pre-emption-Capability          TS29.212    MCPTT-Preemption
-Pre-emption-Vulnerability       TS29.212    MCPTT-Preemption
-RAN-NAS-Release-Cause           TS29.212    RAN-NAS-Cause
-RAT-Type                        TS29.212    Rel8
-Requested-Party-Address         TS32.299    VBCLTE
-Reference-Id                    TS29.154    ""
-Reservation-Priority            TS183.017   ""
-Subscription-Id                 RFC8506     ""
-Supported-Features              TS29.229    Rel8
-TCP-Source-Port                 TS29.212    NetLoc-Untrusted-WLAN
-TWAN-Identifier                 TS29.061    Netloc-Trusted-WLAN,RAN-NAS-Cause,NetLoc-Untrusted-WLAN
-ToS-Traffic-Class               TS29.212    DSCP
-UDP-Source-Port                 TS29.212    NetLoc-Untrusted-WLAN
-UE-Local-IP-Address             TS29.212    NetLoc-Untrusted-WLAN
-Used-Service-Unit               RFC8506     SponsoredConnectivity,SCTimeBasedUM
-User-Equipment-Info             RFC8506     ""
-User-Equipment-Info-Extension   RFC8506     User-Equipment-Info-Extension
-User-Location-Info-Time         TS29.212    NetLoc,RAN-NAS-Cause
+; Columns: Name                 From             Applicability
+3GPP-MS-TimeZone                TS29.061         NetLoc,RAN-NAS-Cause
+3GPP-SGSN-MCC-MNC               TS29.061         NetLoc,RAN-NAS-Cause
+3GPP-User-Location-Info         TS29.061         NetLoc,RAN-NAS-Cause
+AN-GW-Address                   TS29.212         ""
+AN-Trusted                      TS29.273         ""
+Called-Asserted-Identity        TS32.299         VBCLTE
+Called-Party-Address            TS32.299         VBCLTE
+Called-Station-Id               RFC4005          Rel8
+Calling-Party-Address           TS32.299         VBCLTE
+DRMP                            RFC7944          ""
+Final-Unit-Action               RFC8506          Rel8
+Framed-IP-Address               RFC4005          ""
+Framed-IPv6-Prefix              RFC4005          "" ;; corrected: (TS29.214.py#framed-ipv6-prefix-row-case)
+Granted-Service-Unit            RFC8506          SponsoredConnectivity,SCTimeBasedUM
+IP-CAN-Type                     TS29.212         ""
+Load                            RFC8583          ""
+Max-PLR-DL                      TS29.212         CHEM
+Max-PLR-UL                      TS29.212         CHEM
+NetLoc-Access-Support           TS29.212         NetLoc
+OC-OLR                          RFC7683          ""
+OC-Supported-Features           RFC7683          ""
+Pre-emption-Capability          TS29.212         MCPTT-Preemption
+Pre-emption-Vulnerability       TS29.212         MCPTT-Preemption
+RAN-NAS-Release-Cause           TS29.212         RAN-NAS-Cause
+RAT-Type                        TS29.212         Rel8
+Requested-Party-Address         TS32.299         VBCLTE
+Reference-Id                    TS29.154         ""
+Reservation-Priority            ETSI-TS183.017   ""
+Subscription-Id                 RFC8506          ""
+Supported-Features              TS29.229         Rel8
+TCP-Source-Port                 TS29.212         NetLoc-Untrusted-WLAN
+TWAN-Identifier                 TS29.061         Netloc-Trusted-WLAN,RAN-NAS-Cause,NetLoc-Untrusted-WLAN
+ToS-Traffic-Class               TS29.212         DSCP
+UDP-Source-Port                 TS29.212         NetLoc-Untrusted-WLAN
+UE-Local-IP-Address             TS29.212         NetLoc-Untrusted-WLAN
+Used-Service-Unit               RFC8506          SponsoredConnectivity,SCTimeBasedUM
+User-Equipment-Info             RFC8506          ""
+User-Equipment-Info-Extension   RFC8506          User-Equipment-Info-Extension
+User-Location-Info-Time         TS29.212         NetLoc,RAN-NAS-Cause
 
 
 ; Type: Enumerated AVP

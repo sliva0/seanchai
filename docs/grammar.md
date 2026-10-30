@@ -23,14 +23,25 @@ spec-line     = "; Specification: " inline-text
 version-line  = "; Version: " version
 vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
 bases-line    = "; Bases: " spec-ref *(", " spec-ref)
-spec-ref      = ("TS" 2*3DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT)
-                / (ALPHA "." ALPHA 4DIGIT)   ; "RFC6733", "TS29.272", "X.S0057"
+spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT) / external-ref
+                ; "TS29.272", "RFC6733"
+external-ref  = ("ETSI-" ("TS" / "ES") 3DIGIT "." 3DIGIT)  ; "ETSI-TS283.034"
+              / ("3GPP2-" ALPHA "." ALPHA 4DIGIT)         ; "3GPP2-X.S0057"
+              / ("OMA" 1*("-" 1*(ALPHA / DIGIT / "_")))   ; "OMA-DDS-Charging_Data"
+              / ("oneM2M-TS-" 4DIGIT)                     ; "oneM2M-TS-0004"
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
 section       = application-scope / message / grouped-avp / enumerated-avp
               / avp-table / reused-avps / registry
 ```
+
+A `spec-ref` names a document without its version. A 3GPP or IETF
+document is its number; a document outside them leads with its publisher
+and keeps the publisher's numbering, written as one token: ETSI's
+"TS 283 034" dotted as a 3GPP number is, 3GPP2's "X.S0057" without its
+revision letter, OMA's name as OMA prints it, oneM2M's "TS-0004". Every
+publisher has one spelling, since resolution compares references exactly.
 
 `; Version:` is present when the source has a version axis (3GPP yes, RFC
 no). `; Bases:` is optional only because RFC 6733, the base of the tree, has
@@ -271,6 +282,11 @@ m-bit         = "MUST" / "MUST-NOT" / "-"
 ; a From cell holds a spec-ref; Code, Type and mark cells read as in an
 ; AVP table
 ```
+
+A From cell may name a document outside 3GPP and IETF: TS 29.212 re-uses
+`3GPP2-BSID` from `3GPP2-X.S0057` and `Logical-Access-ID` from
+`ETSI-TS283.034`, TS 32.299 types thirteen rows by `OMA-DDS-Charging_Data`
+and tabulates `M2M-Information` from `oneM2M-TS-0004`.
 
 Name and From are required; M-bit is not (TS 29.128, 29.173, 29.336 print no
 such column). Code and Type are the citing table's own statement of what

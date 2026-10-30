@@ -57,6 +57,17 @@ def test_nothing_resolves_across_a_major_version():
     assert books.resolve("TS29.272", like=_spec("3GPP TS 29.388", "18.1.0")) is None
 
 
+def test_an_external_origin_resolves_to_any_copy():
+    """ETSI's versions are not 3GPP's releases: a hand-written V2.2.0 of
+    ETSI TS 283 034 is what a Release 18 citation means."""
+    books = corpus.Corpus([_entry("ETSI TS 283 034", "2.2.0")])
+
+    resolved = books.resolve("ETSI-TS283.034", like=_spec("3GPP TS 29.212", "18.2.0"))
+
+    assert resolved is not None
+    assert resolved.reference == "ETSI-TS283.034"
+
+
 def test_an_absent_origin_resolves_to_nothing_rather_than_raising():
     """A partial corpus is the normal state, and callers report the gap as a
     note rather than failing the run."""

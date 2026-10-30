@@ -67,10 +67,16 @@ EnumValueName = Annotated[
 ]
 
 # Single-token reference to a defining document: "TS29.336", "RFC7683".
-# The TS series may be three digits — 29.212 cites ETSI TISPAN documents it
-# spells "3GPP TS 283 034", 29.214 "3GPP TS 183.017" — and 29.212 also cites
-# 3GPP2's "X.S0057", which keeps its publisher's letter-dot-letter shape.
-SPEC_REF_PATTERN = r"^(TS\d{2,3}\.\d{3}|RFC\d+|[A-Z]\.[A-Z]\d{4})$"
+# A document outside 3GPP and IETF leads with its publisher and keeps the
+# publisher's own numbering: ETSI's "ETSI-TS283.034" (29.212's TISPAN
+# origin, dotted as a 3GPP number is), 3GPP2's "3GPP2-X.S0057", OMA's
+# "OMA-DDS-Charging_Data", whose name already leads with it, and oneM2M's
+# "oneM2M-TS-0004" (TS 32.299 tables 7.2.0.1 and 7.5.1).
+EXTERNAL_REF_PATTERN = (
+    r"ETSI-(?:TS|ES)\d{3}\.\d{3}|3GPP2-[A-Z]\.[A-Z]\d{4}"
+    r"|OMA-[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*|oneM2M-TS-\d{4}"
+)
+SPEC_REF_PATTERN = rf"^(TS\d{{2}}\.\d{{3}}|RFC\d+|{EXTERNAL_REF_PATTERN})$"
 SpecRef = Annotated[str, Field(pattern=SPEC_REF_PATTERN)]
 
 # Table label as printed in the spec, carried by `; Table:`: "6.3.1", "6.3/2".
@@ -856,10 +862,26 @@ class SpecRefError(ValueError):
 
 
 SPEC_REF_RE = re.compile(SPEC_REF_PATTERN)
+EXTERNAL_REF_RE = re.compile(rf"^(?:{EXTERNAL_REF_PATTERN})$")
+
+# A title naming a document outside 3GPP and IETF, as the publisher prints
+# it ("ETSI TS 283 034", "3GPP2 X.S0057", "oneM2M TS-0004"); OMA's names
+# carry no spaces and need no rule.
+_EXTERNAL_TITLE_RE = re.compile(
+    r"^(?:ETSI (?P<etsi>TS|ES) (?P<series>\d{3}) (?P<number>\d{3})"
+    r"|(?P<publisher>3GPP2|oneM2M) (?P<document>\S+))$"
+)
+
+
+def is_external(reference: str) -> bool:
+    """Whether a `SpecRef` names a document outside 3GPP and IETF, which no
+    extractor reads and the corpus holds only if someone writes it by hand."""
+    return EXTERNAL_REF_RE.match(reference) is not None
 
 
 def spec_ref(specification: str) -> str:
-    """The `SpecRef` form of a cover-page title: "3GPP TS 29.272" → "TS29.272".
+    """The `SpecRef` form of a cover-page title: "3GPP TS 29.272" → "TS29.272",
+    "ETSI TS 283 034" → "ETSI-TS283.034".
 
     Per-spec side files — input patches, corrections — are named by it, so the
     rule lives here rather than in whichever loader needed it first. Because
@@ -868,7 +890,14 @@ def spec_ref(specification: str) -> str:
     accepted, so no title can produce a path separator, a `..` component or an
     absolute path.
     """
-    reference = specification.removeprefix("3GPP ").replace(" ", "")
+    if match := _EXTERNAL_TITLE_RE.match(specification):
+        reference = (
+            f"ETSI-{match['etsi']}{match['series']}.{match['number']}"
+            if match["etsi"]
+            else f"{match['publisher']}-{match['document']}"
+        )
+    else:
+        reference = specification.removeprefix("3GPP ").replace(" ", "")
     if not SPEC_REF_RE.match(reference):
         raise SpecRefError(
             f"specification {specification!r} does not name a supported document"

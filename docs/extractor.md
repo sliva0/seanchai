@@ -128,7 +128,9 @@ The declared vocabulary, with the document that forced each:
   `described-enum-values` and `label-after-enum-value` (29.109: `NO (0) The
   sending node is not GBA_U aware`, `- (0) Private user identity.`) and
   `run-on-enum-values` (29.229 6.3.58, two values in one paragraph);
-  29.061 and 29.212 declare `worded-enum-values` too.
+  29.061 and 29.212 declare `worded-enum-values` too. TS 29.212 and 29.214
+  declare `origins-by-reference` (a From cell naming ETSI's document as
+  3GPP's, read through clause 2).
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`; 7155 §4.4.1, `Login (1)`); `worded-enum-values` (4005 §5.5 and
@@ -215,9 +217,9 @@ Walks paragraphs and tables in document order under numbered headings:
   produces a `ReusedAvps` row (`note-defined-in-rfc`). Behind
   `refer-type-cells`, a Value Type cell `refer [n]` (TS 32.299 table 7.2.0.1,
   for AVPs "just borrowed from other applications", clause 7.2.0) leaves the
-  row untyped and adds a re-used row citing clause 2's reference n; an entry
-  a From cell cannot name (`[223]`, OMA-DDS-Charging_Data) warns and adds
-  none.
+  row untyped and adds a re-used row citing clause 2's reference n,
+  thirteen of them `OMA-DDS-Charging_Data` (`[223]`); an entry naming no
+  document warns and adds none.
 - The "re-used Diameter AVPs" table → `ReusedAvps` with M-bit overrides,
   and the code and type where the table prints them (TS 29.172 table
   7.4.1-2).
@@ -243,12 +245,11 @@ Walks paragraphs and tables in document order under numbered headings:
   Reference cell holding a clause-2 number, and clauses 7.3–7.5 say "the
   specification including the detailed definition and description, is
   referred to". The Reference becomes the From cell (`[215]` is TS 29.212,
-  `[300]` ETSI TS 283 034); the AVP Code becomes the row's code and the
-  "Used in" columns its command marks, and the vendor-id each clause states
-  in prose (5535, 13019, 45687) is not read, a re-used row's identity being
-  its origin's.
-  A reference no From cell can name (`[301]`, oneM2M TS-0004) warns and adds
-  no row, so table 7.5.1 contributes no block.
+  `[300]` `ETSI-TS283.034`, `[301]` `oneM2M-TS-0004`); the AVP Code becomes
+  the row's code and the "Used in" columns its command marks, and the
+  vendor-id each clause states in prose (5535, 13019, 45687) is not read, a
+  re-used row's identity being its origin's. A reference naming no document
+  warns and adds no row.
 - An AVP table whose labelled header is followed only by blank cells
   contributes no definitions and warns (TS 29.330 table 6.3.1-1); non-empty
   malformed tables still fail. The AST retains its non-empty table invariant.
@@ -275,10 +276,19 @@ Conventions worth knowing:
 - Table captions are matched as a general dotted label (`Table 7.3.1/1`,
   `Table 6.3.1-1`, `Table B.1.1`, `9A.2.1`): a table whose caption goes
   unrecognised is rejected for having none.
-- The publisher prefix on a From cell is optional (`TS 29.272 [10]` in
-  29.344, 29.388). A bare clause number cites the document itself (29.336's
-  S6t table). ETSI (`TS 283 034`, `TS 183.017`) and 3GPP2 (`X.S0057`)
-  references are accepted as origins.
+- The publisher prefix on a From cell is optional for 3GPP and IETF
+  (`TS 29.272 [10]` in 29.344, 29.388). A bare clause number cites the
+  document itself (29.336's S6t table). Another publisher's document is
+  read with its publisher, as the cell or clause 2's entry prints it:
+  `ETSI TS 283 034` → `ETSI-TS283.034`, `3GPP2 X.S0057` →
+  `3GPP2-X.S0057`, `OMA-DDS-Charging_Data`, `oneM2M TS-0004` →
+  `oneM2M-TS-0004`; a clause-2 entry is read for what precedes its title.
+  Behind `origins-by-reference`, a cell printing a TS series 3GPP does not
+  number under 3GPP's name is read through the clause-2 entry it cites,
+  which must name the same number: TS 29.212's "3GPP TS 283 034 [37]"
+  (table 5.4.0.1, beside "ETSI TS 283 034 [37]" elsewhere) and TS 29.214's
+  "3GPP TS 183.017 [15]" (table 5.4.0.1), whose entries are ETSI's. Without
+  the quirk such a cell fails.
 - More than one AVP/re-used table pair per document (29.336, 29.338) is
   paired in document order; counts that cannot pair are an error, and one
   name with two codes across tables is an error unless declared as above.

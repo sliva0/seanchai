@@ -72,3 +72,9 @@ name = "applicability-column"
 reason = "the AVP and re-used tables print an 'Applicability' column of supported features, separated by spaces or commas ('NetLoc RAN-NAS-Cause'): table 5.3.0.1 note 3, 'AVPs marked with a supported feature ... are applicable as described in clause 5.4.1'"
 first_version = "18.4.0"
 last_version = "18.4.0"
+
+[[quirk]]
+name = "origins-by-reference"
+reason = "re-used table 5.4.0.1 cites Reservation-Priority's origin as '3GPP TS 183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'"
+first_version = "18.4.0"
+last_version = "18.4.0"

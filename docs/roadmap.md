@@ -6,13 +6,13 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **K. Catalog gaps and format limits from the legacy documents.** Two
-  TS 32.299 statements the format cannot hold yet: `refer [223]` cites
-  OMA-DDS-Charging_Data, which a From cell cannot name (13 rows stay
-  untyped; table 7.5.1's `[301]`, oneM2M TS-0004, leaves `M2M-Information`
-  unresolved the same way), and SM-Service-Type's "100 .. 199 Vendor specific SM services"
-  allocates a range. TS 32.299 cites `VAS-Id` and `VASP-Id` from TS
-  29.140, which ends at Release 7 (V7.0.0): the downloader fetches one
+- **K. Catalog gaps and format limits from the legacy documents.** TS
+  32.299 types thirteen rows of table 7.2.0.1 only by `refer [223]`,
+  `OMA-DDS-Charging_Data`, which no extractor reads, so they stay untyped,
+  as do the AVPs the corpus re-uses from ETSI, 3GPP2 and oneM2M documents.
+  SM-Service-Type's "100 .. 199 Vendor specific SM services" allocates a
+  range the format cannot hold. TS 32.299 cites `VAS-Id` and `VASP-Id` from
+  TS 29.140, which ends at Release 7 (V7.0.0): the downloader fetches one
   release and `Corpus.resolve` never crosses a major version, so the
   origin stays unresolved until the corpus holds more than one release
   *and* a resolution policy says when a Release 7 document may serve a
@@ -41,7 +41,8 @@ letter is not reused. What exists is described in the per-module documents.
     `Monitoring-Event-Report` (TS 29.336) and `TCP-Source-Port` (TS 29.212;
     table 7.2.0.1 refers to [215] for `UDP-Source-Port` only);
   - definitions the format cannot hold: TS 29.229's `Line-Identifier`
-    (ETSI vendor 13019 in a clause, no row can state it) and TS 32.299's
-    `M2M-Information` (cited from oneM2M TS-0004, item K);
-  - re-used origins outside the corpus: ETSI TS 283 034 (TS 29.212, 29.219,
-    29.273, 32.299), TS 183 017 (TS 29.214) and 3GPP2 X.S0057 (TS 29.212).
+    (ETSI vendor 13019 in a clause, no row can state it);
+  - re-used origins outside 3GPP and IETF, item K: `ETSI-TS283.034` (TS
+    29.212, 29.219, 29.273, 32.299), `ETSI-TS183.017` (TS 29.214),
+    `3GPP2-X.S0057` (TS 29.212) and `oneM2M-TS-0004` (TS 32.299's
+    `M2M-Information`).

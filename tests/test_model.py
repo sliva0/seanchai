@@ -463,7 +463,7 @@ class TestHoles:
             "3GPP TS 29.900",
             [
                 _message("Test-Request", "Nowhere", "Elsewhere"),
-                _reused("Elsewhere", "X.S0057"),
+                _reused("Elsewhere", "3GPP2-X.S0057"),
             ],
         )
         (message,) = _model(absent).messages("TS29.900")
@@ -471,7 +471,7 @@ class TestHoles:
         assert [str(member.hole) for member in message.avps] == [
             "TS29.900 Nowhere: resolves nowhere",
             "TS29.900 Elsewhere: resolves nowhere"
-            " (re-used from X.S0057, which the corpus lacks)",
+            " (re-used from 3GPP2-X.S0057, which the corpus lacks)",
         ]
 
     def test_a_strict_build_names_every_hole(self):
@@ -924,21 +924,21 @@ _STANDING_HOLES = {
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
     "TS29.154": {"resolves nowhere": ["External-Group-Identifier"]},
     "TS29.212": {
-        "resolves nowhere (re-used from X.S0057, which the corpus lacks)": [
+        "resolves nowhere (re-used from 3GPP2-X.S0057, which the corpus lacks)": [
             "3GPP2-BSID"
         ],
-        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
             "Logical-Access-ID",
             "Physical-Access-ID",
         ],
     },
     "TS29.214": {
-        "resolves nowhere (re-used from TS183.017, which the corpus lacks)": [
+        "resolves nowhere (re-used from ETSI-TS183.017, which the corpus lacks)": [
             "Reservation-Priority"
         ]
     },
     "TS29.219": {
-        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
             "Logical-Access-ID",
             "Physical-Access-ID",
         ]
@@ -946,7 +946,7 @@ _STANDING_HOLES = {
     "TS29.229": {"resolves nowhere": ["Line-Identifier"]},
     "TS29.272": {"no flag_rules": ["MIP6-Agent-Info"]},
     "TS29.273": {
-        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
             "Logical-Access-ID"
         ],
         "resolves nowhere": ["NSWO-Authorization"],
@@ -961,18 +961,21 @@ _STANDING_HOLES = {
     },
     "TS32.299": {
         "resolves nowhere": [
-            "M2M-Information",
             "Monitored-HPLMN-Identifier",
             "Monitoring-Event-Report",
             "Network-Element",
             "Submission-Timestamp",
             "TCP-Source-Port",
         ],
-        "resolves nowhere (re-used from TS283.034, which the corpus lacks)": [
+        "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [
             "Logical-Access-ID",
             "Physical-Access-ID",
         ],
-        "no data_type, no flag_rules": [
+        "resolves nowhere (re-used from oneM2M-TS-0004, which the corpus lacks)": [
+            "M2M-Information"
+        ],
+        "no data_type, no flag_rules"
+        " (re-used from OMA-DDS-Charging_Data, which the corpus lacks)": [
             "Application-Server-ID",
             "Application-Service-Type",
             "Application-Session-ID",
