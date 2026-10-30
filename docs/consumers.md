@@ -23,6 +23,7 @@ built.resolve("TS29.229", "DRMP")  # one name in one spec's reading
 built.find("Public-Identity")  # every AVP under a name
 built.identified(10415, 601)  # every AVP claiming an identity
 built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
+built.marks("TS29.212", "AN-GW-Address")  # what each table marks about it
 built.holes("TS32.299")  # what the corpus cannot complete
 ```
 
@@ -80,6 +81,35 @@ TS 29.229's re-used `Digest-*` AVPs take their Diameter types from TS
 disagrees fills nothing, nor does any after it: the name stays a hole that
 names the disagreeing document, rather than become one AVP assembled from
 two documents that disagree about it.
+
+**Marks.** `marks` returns, per row of a table printing mark columns (AVP
+and re-used tables alike, in file order), the table's label and clause and
+the row's marks per column: a tuple of marks, `()` where the cell prints a
+dash, None where it is blank. The marks keep the document's spelling,
+with the note reference printed beside one (`All (NOTE 5)`, whose note
+excludes 3GPP-GPRS); what they mean is the legend's, per label:
+
+- `Acc-Type` (TS 29.212, 29.215): the IP-CAN access types the AVP applies
+  to, `All` or a list (`3GPP-EPS`, `Non-3GPP-EPS`, `3GPP-GPRS`, `3GPP2`,
+  `FBA`, `xDSL`).
+- `Applicability`: the supported features the AVP belongs to ("AVPs marked
+  with a supported feature are applicable as described in clause 5.4.1",
+  TS 29.212 table 5.3.0.1 note 9; also 29.061, 29.154, 29.214, 29.215,
+  29.217, 29.219, 29.368, 29.468, whose `V2X Localized User Plane` is one
+  feature), and in TS 29.212 and 29.215 the function too: `CC` charging
+  control, `PC` policy control, `Both`, `ADC` application detection and
+  control, `ABC` application based charging (note 3). Blank is the base
+  functionality.
+- `Reference-Points` (TS 29.061 table 9a): `Gi`, `Sgi`.
+- `ACR`, `ACA`, `CCR`, `CCA` (TS 32.299): whether the AVP is used in that
+  command, `M`, `OM` or `OC` in table 7.1.0.1 (clause 7.1.0), `X` in tables
+  7.2.0.1 and 7.3.1-7.5.1, `()` for the dash clause 7.1.0 reads as "not
+  used", None for the four cells the document leaves blank.
+
+None of these names an interface. A document tabulating several interfaces
+gives each its own tables, so a row's interface is its table's clause: TS
+29.212 marks `AN-GW-Address` `Both, Rel8, EPC-routed` for Gx in table
+5.3.0.1 and `EPC-routed (See NOTE 8)` for Gxx in re-used table 5a.4.0.1.
 
 **Holes.** An `Avp` has every field: code, type and flag rules are facts some
 document states, never `None`. A name the corpus cannot complete is a
@@ -163,7 +193,9 @@ What its dictionary lacks, or types otherwise than the document, goes to an
 `additions.py` in the dictionary's shape rather than being papered over.
 Holes stay in the tables with their reason; an application's id is the
 model's, so a module whose document states it only in prose gets it, and
-only RFC 6733's clause 8 gets `None`. The
+only RFC 6733's clause 8 gets `None`. The ABNF decides a class's members,
+and the tables' marks are comments on them: TS 32.299's per command, the
+others from the command's interface clause. The
 [README](../integrations/python_diameter/README.md) covers the layout, the
 additions, how the library would adopt the modules, and what its shape
 cannot carry.

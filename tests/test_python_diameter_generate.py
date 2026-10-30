@@ -410,6 +410,41 @@ def test_a_member_named_twice_is_one_list(package):
     ) in holder
 
 
+def test_members_carry_their_interfaces_marks_as_comments(package):
+    """TS 29.212 marks AN-GW-Address for Gx in table 5.3.0.1 and again for
+    Gxx in table 5a.4.0.1; each module comments its own clause's marks as
+    printed, note references included. `All` access types, which restricts
+    nothing, is not repeated unless a note qualifies it."""
+    gx, gxx = _read(package, "ts29_212_5"), _read(package, "ts29_212_5a")
+    line = (
+        '        AvpGenDef("an_gw_address", AVP_TGPP_AN_GW_ADDRESS, VENDOR_TGPP,'
+        " is_mandatory=False),  # *2 [ AN-GW-Address ]; Applicability: "
+    )
+    assert line + "Both, Rel8, EPC-routed\n" in gx
+    assert line + "EPC-routed (See NOTE 8)\n" in gxx
+    assert "Acc-Type: All;" not in gx and "Acc-Type: All\n" not in gx
+    assert "  # Acc-Type: All (NOTE 5); Applicability: PC, Rel8\n" in gx
+
+
+def test_a_member_its_tables_mark_unused_stays_with_the_mark_as_comment(package):
+    """TS 32.299 table 7.1.0.1 marks Error-Message and Failed-AVP "-" under
+    ACA, "not used" by clause 7.1.0, while clause 6.2.3's ABNF lists both:
+    the class follows the ABNF, which is the wire format, and says what the
+    table marks."""
+    rf = _read(package, "ts32_299_3")
+    aca = rf.split("\nclass AccountingAnswer(")[1]
+    assert "    error_message: str\n" in aca
+    assert (
+        '        AvpGenDef("error_message", AVP_ERROR_MESSAGE, is_mandatory=False),'
+        "  # ACA: - (unused, table 7.1.0.1)\n"
+    ) in aca
+    assert (
+        '        AvpGenDef("failed_avp", AVP_FAILED_AVP, is_mandatory=True,'
+        " type_class=FailedAvp),  # ACA: - (unused, table 7.1.0.1)\n"
+    ) in aca
+    assert "  # ACA: OC\n" in aca
+
+
 def test_only_commands_no_document_gives_an_id_generate_none(package):
     """RFC 6733's RAR, STR and ASR carry the using application's id (clause
     2.5); every other module's document states one, in a header or in an

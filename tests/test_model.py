@@ -706,6 +706,26 @@ class TestOverTheCommittedCorpus:
         assert ast.AvpFlag.MANDATORY in second.flag_rules.must
         assert built.table_rows("TS29.061", "No-Such-AVP") == ()
 
+    def test_marks_come_from_every_table_row_in_file_order(self, built):
+        """TS 29.212 marks AN-GW-Address in Gx's AVP table and again in
+        Gxx's re-used table, a note reference kept with its mark; TS 32.299
+        marks Error-Message per command, `()` for each printed dash, and
+        leaves Termination-Cause blank, None, under ACR."""
+        gx, gxx = built.marks("TS29.212", "AN-GW-Address")
+        assert (gx.table, gx.section) == ("5.3.0.1", "5.3.0")
+        assert gx.marks == {
+            ast.MarkColumn.ACCESS_TYPES: ("All",),
+            ast.MarkColumn.APPLICABILITY: ("Both", "Rel8", "EPC-routed"),
+        }
+        assert gxx.table == "5a.4.0.1"
+        assert gxx.marks[ast.MarkColumn.APPLICABILITY] == ("EPC-routed (See NOTE 8)",)
+        (charging,) = built.marks("TS32.299", "Error-Message")
+        commands = [ast.MarkColumn(each) for each in ("ACR", "ACA", "CCR", "CCA")]
+        assert charging.marks == dict.fromkeys(commands, ())
+        (termination,) = built.marks("TS32.299", "Termination-Cause")
+        assert list(termination.marks.values()) == [None, (), ("OC",), ()]
+        assert built.marks("TS29.229", "User-Data") == ()
+
     def test_a_reused_chain_is_followed_across_files(self, built):
         drmp = built.resolve("TS29.229", "DRMP")
         assert drmp is not None

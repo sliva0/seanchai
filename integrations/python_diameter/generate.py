@@ -514,6 +514,65 @@ def _order(definition: Definition) -> tuple:
     )
 
 
+# The mark columns a member's comment carries from its command's interface
+# clause. None of them names an interface: each interface clause has tables
+# of its own, and these say which access types and features within it an
+# AVP serves (TS 29.212 table 5.3.0.1 notes 3 and 9), or on which reference
+# points (TS 29.061 table 9a).
+_NOTED_MARKS = (
+    ast.MarkColumn.ACCESS_TYPES,
+    ast.MarkColumn.APPLICABILITY,
+    ast.MarkColumn.REFERENCE_POINTS,
+)
+
+
+def member_note(
+    built: model.Model,
+    application: model.Application,
+    message: model.Message,
+    member: model.Member,
+) -> str | None:
+    """What the tables mark about `member` of `message`, for a comment.
+
+    The ABNF decides membership, being what goes on the wire; the marks are
+    comments. A command column (TS 32.299's ACR, ACA, CCR, CCA) is read from
+    any of the document's tables, which tabulate per command rather than
+    per clause: table 7.1.0.1 marks ACA's `Error-Message` "-", "not used"
+    by clause 7.1.0, though clause 6.2.3's ABNF lists it. Every other mark
+    column is read from the tables in the command's own interface clause:
+    TS 29.212's Gxx re-used table re-marks Gx's AVPs for Gxx. The first row
+    printing a column with a mark or a dash speaks for it; a blank cell
+    says nothing.
+    """
+    if member.avp is None and member.hole is None:
+        return None  # the `* [ AVP ]` wildcard
+    rows = built.marks(application.reference, member.name)
+    here = [
+        row for row in rows if ast.interface_clause(row.section) == application.clause
+    ]
+    columns = [(noted, here) for noted in _NOTED_MARKS]
+    if message.abbreviation in ast.MarkColumn:
+        columns.insert(0, (ast.MarkColumn(message.abbreviation), list(rows)))
+    spelled = []
+    for column, candidates in columns:
+        found = next(
+            (
+                (row, marks)
+                for row in candidates
+                if (marks := row.marks.get(column)) is not None
+            ),
+            None,
+        )
+        if found is None:
+            continue
+        row, marks = found
+        if not marks:
+            spelled.append(f"{column.value}: - (unused, table {row.table})")
+        elif marks != ("All",):  # every access type restricts nothing
+            spelled.append(f"{column.value}: {', '.join(marks)}")
+    return "; ".join(spelled) or None
+
+
 @dataclass
 class Command:
     """One generated Request or Answer class."""
@@ -524,6 +583,8 @@ class Command:
     # The clauses printing this body; more than one where a document
     # repeats a command identically per procedure (TS 29.273's STa STR).
     sections: list[str]
+    # Per member, what the tables mark about it, for a comment.
+    notes: list[str | None]
 
 
 @dataclass
@@ -573,6 +634,7 @@ def command_base(name: str) -> str:
 
 
 def collect_unit(
+    built: model.Model,
     application: model.Application,
     module: str,
     title: str,
@@ -591,6 +653,9 @@ def collect_unit(
         )
         bases.setdefault(message.command_code, (base_class, base_name))
         members = [(member, definitions.member(member)) for member in message.avps]
+        notes = [
+            member_note(built, application, message, member) for member in message.avps
+        ]
         request = ast.CommandFlag.REQUEST in message.flags
         named_request = message.name.lower().endswith("-request")
         named_answer = message.name.lower().endswith("-answer")
@@ -603,6 +668,7 @@ def collect_unit(
             command
             for command in alike
             if _body_signature(command.members) == _body_signature(members)
+            and command.notes == notes
             and command.message.flags == message.flags
         ]
         if same:
@@ -613,7 +679,7 @@ def collect_unit(
             # 29.273's AAR in clauses 9.2.2.2.1 and 9.2.2.5.1): the later
             # copy keeps its clause in its name.
             name = f"{name}_{message.section.replace('.', '_')}"
-        command = Command(message, members, name, [message.section])
+        command = Command(message, members, name, [message.section], notes)
         alike.append(command)
         commands.append(command)
     return Unit(module, application.reference, application, title, bases, commands)
@@ -905,25 +971,28 @@ class Entry:
 
 
 def gen_defs(
-    members: list[tuple[model.Member, Definition | None]], resolver: Resolver
+    members: list[tuple[model.Member, Definition | None]],
+    resolver: Resolver,
+    notes: list[str | None] | None = None,
 ) -> list[Entry]:
     """One `AvpGenDef` per member, in the document's order, as the library
     writes them: attribute, constant, vendor, then `is_required` from the
     brackets, `is_mandatory` from the flag rules where they fix the M bit,
     and the grouped class. What `AvpGenDef` has no slot for is a trailing
     comment: occurrence bounds the brackets and a list attribute do not
-    convey, a hole's reason, Wireshark's spelling. A member with no
-    identity (a hole, `* [ AVP ]`) is a comment in its place; the library
-    keeps such AVPs in the additional AVPs.
+    convey, a hole's reason, the tables' marks, Wireshark's spelling. A
+    member with no identity (a hole, `* [ AVP ]`) is a comment in its
+    place; the library keeps such AVPs in the additional AVPs.
     """
     library = resolver.library
+    notes = notes or [None] * len(members)
     grouped: dict[Identity, list[model.Member]] = {}
     for member, target in members:
         if target is not None and target.identity is not None:
             grouped.setdefault(target.identity, []).append(member)
     used: dict[str, int] = {}
     entries = []
-    for member, target in members:
+    for (member, target), note in zip(members, notes, strict=True):
         if target is None or target.identity is None:
             reason = "" if target is None else f"  # hole: {target.hole}"
             entries.append(Entry(None, f"# {spelled(member)}{reason}"))
@@ -963,6 +1032,8 @@ def gen_defs(
                 comments.append(spelled(member))
         if target.hole is not None:
             comments.append(f"hole: {target.hole}")
+        if note is not None:
+            comments.append(note)
         addition = resolver.additions.get(target.identity)
         if addition is not None and addition.replaces is not None:
             comments.append(
@@ -1080,7 +1151,7 @@ def render_unit(unit: Unit, resolver: Resolver) -> str:
                 if message.name.lower() == spelled_as.lower()
                 else f", printed {message.name}"
             )
-            entries = gen_defs(command.members, resolver)
+            entries = gen_defs(command.members, resolver, command.notes)
             for _, target in command.members:
                 imported.update(resolver.imports(target))
             body = [
@@ -1457,7 +1528,7 @@ def generate(
         ):
             units.append(
                 collect_unit(
-                    application, module, titles[reference], definitions, library
+                    built, application, module, titles[reference], definitions, library
                 )
             )
         view = [definitions.add(avp) for avp in built.avps(reference)]

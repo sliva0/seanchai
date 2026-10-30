@@ -242,6 +242,27 @@ class Application:
     stated_in: str | None = None
 
 
+@dataclass(frozen=True)
+class Marks:
+    """What one table row marks about where its AVP applies: per mark
+    column its table prints, the row's marks in the document's spelling,
+    `()` where the cell prints a dash and None where it is blank.
+
+    The labels mean what their legends say (`ast.MarkColumn`): TS 29.212's
+    `Acc-Type` names IP-CAN access types and its `Applicability` functions
+    and supported features, neither of them an interface, since each
+    interface clause has tables of its own; TS 32.299's `ACR` to `CCA` say
+    whether the AVP is used in that command, `()` for the dash clause 7.1.0
+    reads as "not used". A blank cell states nothing: TS 32.299 leaves
+    four, and a feature column is blank for a row of the base functionality.
+    """
+
+    # The table's label and the clause it sits in: "5a.4.0.1" and "5a.4.0".
+    table: str | None
+    section: str
+    marks: dict[ast.MarkColumn, tuple[str, ...] | None]
+
+
 def _stated(flag_rules: ast.AvpFlagRules) -> bool:
     """Whether a row's flag cells say anything. A table with no flag columns
     (RFC 4072, 4590, 5447, 5777 and 6734 print none) and a row with every
@@ -407,10 +428,12 @@ class _View:
     reused: dict[str, str]
     messages: list[ast.Message]
     applications: list[ast.ApplicationScope]
+    # Every row of a table printing mark columns, per name, in file order.
+    marked: dict[str, list[Marks]]
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
-        view = cls(entry, {}, {}, {}, [], [])
+        view = cls(entry, {}, {}, {}, [], [], {})
         for section in entry.spec.sections:
             if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
                 view.defined.setdefault(section.name, section)
@@ -420,6 +443,20 @@ class _View:
             elif isinstance(section, ast.ReusedAvps):
                 for row in section.rows:
                     view.reused.setdefault(row.name, row.origin)
+            if isinstance(section, ast.AvpTable | ast.ReusedAvps):
+                columns = [
+                    marked
+                    for column in section.columns
+                    if (marked := ast.mark_column(column)) is not None
+                ]
+                for row in section.rows if columns else ():
+                    view.marked.setdefault(row.name, []).append(
+                        Marks(
+                            section.table,
+                            section.source.section,
+                            {column: row.marks.get(column) for column in columns},
+                        )
+                    )
             elif isinstance(section, ast.Message):
                 view.messages.append(section)
             elif isinstance(section, ast.ApplicationScope):
@@ -614,6 +651,18 @@ class Model:
         reports.
         """
         return tuple(self._view(reference).tabled.get(name, ()))
+
+    def marks(self, reference: str, name: str) -> tuple[Marks, ...]:
+        """What `reference`'s tables mark about `name`, one entry per row of
+        a table printing mark columns, AVP and re-used tables alike, in file
+        order.
+
+        A document tabulating per interface marks per interface: TS 29.212
+        lists Gx's AVPs again in Gxx's re-used table 5a.4.0.1 with Gxx's
+        access types and features, so a consumer generating one interface
+        reads the rows whose `section` lies in its clause.
+        """
+        return tuple(self._view(reference).marked.get(name, ()))
 
     def find(self, name: str) -> tuple[Avp, ...]:
         """Every distinct AVP the corpus knows under `name`."""

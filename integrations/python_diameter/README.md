@@ -201,6 +201,40 @@ generated ones are built by hand, as the library's are.
   identity, like `* [ AVP ]`, is a comment in its place; the library keeps
   such AVPs in the additional AVPs.
 
+## What the tables mark
+
+A document's AVP tables may mark where each row applies
+([consumers.md](../../docs/consumers.md#the-model) has the labels). The
+ABNF decides a class's members, being the wire format; the marks are
+comments on them, read for each command from the document generating it,
+as printed. The first row for a member printing a column with a mark or a
+dash speaks for it; a blank cell says nothing.
+
+- **Use in the command.** TS 32.299's tables mark per command whether an
+  AVP is used in ACR, ACA, CCR and CCA, from any of its tables. Where the
+  mark is the dash clause 7.1.0 reads as "not used", the comment says so;
+  the member stays, as the ABNF lists it. In the committed corpus that is
+  ACA's `Error-Message` and `Failed-AVP` (table 7.1.0.1, against clause
+  6.2.3's ABNF):
+
+  ```python
+  (
+      AvpGenDef("error_message", AVP_ERROR_MESSAGE, is_mandatory=False),
+  )  # ACA: - (unused, table 7.1.0.1)
+  ```
+
+- **Every other mark, from the command's interface clause.** Access types,
+  functions and supported features say when an AVP is used within an
+  interface, not on which: the documents give each interface its own
+  tables. So TS 29.212's Gxx module reads table 5a.4.0.1 where its Gx
+  module reads 5.3.0.1 (`Applicability: EPC-routed (See NOTE 8)` beside
+  Gx's `Both, Rel8, EPC-routed`). An `Acc-Type` of plain `All` restricts
+  nothing and is not repeated; `All (NOTE 5)` is.
+
+TS 29.061's reference points (`Gi`, `Sgi`) are on AVPs no 29.061 command
+carries, Gi/SGi using RFC 7155's commands (clauses 16a.1, 16a.2), so no
+module shows them.
+
 ## What the documents leave to the reader
 
 **Application ids.** The application id comes from the command header the
