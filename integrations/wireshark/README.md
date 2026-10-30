@@ -46,10 +46,10 @@ patch's commit message is the merge request's title and description.
 
 ## Additions
 
-`seanchai crosscheck` reports 280 absences from the pinned dictionary, 279
+`seanchai crosscheck` reports 282 absences from the pinned dictionary, 281
 AVPs (TS 29.273 tabulates RFC 5777's `QoS-Capability`, which both report).
-`additions.py` turns 269 of them into 28 patches, one per document that
-defines them, numbered TS documents first:
+`additions.py` turns 271 of them into 29 patches, one per document that
+defines them, numbered 3GPP documents first, then ETSI's, then the RFCs:
 
 ```sh
 uv run integrations/wireshark/additions.py   # rewrites additions/
@@ -75,10 +75,11 @@ follows the vendor.
 
 An entry goes after the dictionary entry of its vendor with the nearest
 lower code, its own document's entries first, so most land beside their
-siblings: 137 in `TGPP.xml`, 132 in `dictionary.xml`. A place within three
-lines of another patch's, or of a line a defect patch changes, is passed
-over for the next, so every addition applies to `v4.7.2` on its own, all 28
-apply in order, and all 28 apply after the twenty-two defects; the script
+siblings: 137 in `TGPP.xml`, 132 in `dictionary.xml`, 2 in `etsie2e4.xml`.
+A place within three lines of another patch's, or of a line a defect patch
+changes, is passed over for the next, so every addition applies to
+`v4.7.2` on its own, all 29 apply in order, and all 29 apply after the
+twenty-two defects; the script
 checks the three before it writes, and its output is the same byte for byte
 on every run (`tests/test_wireshark_additions.py` pins it).
 
@@ -108,10 +109,11 @@ on every run (`tests/test_wireshark_additions.py` pins it).
 | 0022 | TS 29.389 | 3 | `dictionary.xml` |
 | 0023 | TS 29.468 | 14 | `TGPP.xml` |
 | 0024 | TS 32.299 | 46 | `dictionary.xml` |
-| 0025 | RFC 6734 | 6 | `dictionary.xml` |
-| 0026 | RFC 6942 | 2 | `dictionary.xml` |
-| 0027 | RFC 8506 | 11 | `dictionary.xml` |
-| 0028 | RFC 8582 | 1 | `dictionary.xml` |
+| 0025 | ETSI TS 183 017 | 2 | `etsie2e4.xml` |
+| 0026 | RFC 6734 | 6 | `dictionary.xml` |
+| 0027 | RFC 6942 | 2 | `dictionary.xml` |
+| 0028 | RFC 8506 | 11 | `dictionary.xml` |
+| 0029 | RFC 8582 | 1 | `dictionary.xml` |
 
 Ten absences stay out, each named in its document's description:
 
@@ -157,6 +159,6 @@ a test may refer to it. A renamed AVP also renames its display filter field
 
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter`
 over the corpus no longer reports a patched AVP. With the twenty-two
-defects applied to `v4.7.2` it reports 69 findings instead of 89; with the 28
-additions, 68, the ten absences above in eight notes, and none that the
-unpatched dictionary did not; with both series, 48.
+defects applied to `v4.7.2` it reports 75 findings instead of 95; with the 29
+additions, 73, the ten absences above in eight notes, and none that the
+unpatched dictionary did not; with both series, 53.

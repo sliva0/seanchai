@@ -374,6 +374,17 @@ _RAW_ERRORS = {
         "table-definition-mismatch",
         "table-definition-mismatch",
     ],
+    # Two clauses naming their rule Transport-Address (7.3.4, 7.3.5), two
+    # values both labelled Overbooking-indicator (7.3.35), table 7.3.1's
+    # sentence-cased names against the clauses' own six, and two Gq AVPs
+    # whose sentences name them otherwise than table 7.3.3 does, so their
+    # 3GPP vendor-id reads as the document's own.
+    "ts183017-030201.raw.dad": [
+        "duplicate-definition",
+        "duplicate-enum-value",
+    ]
+    + ["duplicate-identity"] * 6
+    + ["vendor-id-mismatch"] * 2,
     "rfc4004.raw.dad": ["table-definition-mismatch"],
     # Clause 6.1 lists Service-Type's Callback Login (3) and Callback Framed
     # (4), then repeats both among the values it qualifies.
@@ -433,6 +444,13 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         # 7.1.17 and B.2.4 print bodies of their own.
         "32299-i00.raw": 2,
         "32299-i00": 6,
+        # The transcriptions re-print what they import: ES 283 034 clause
+        # 7.3.11 TS 183 017's Reservation-Priority, TS 183 017 clauses
+        # 7.3.10-7.3.32 the Gq AVPs and ES 283 034's Globally-Unique-Address;
+        # two of TS 183 017's carry another name until corrected.
+        "es283034-020200": 1,
+        "ts183017-030201.raw": 9,
+        "ts183017-030201": 11,
     }
     stem = path.name.removesuffix(".dad")
 
@@ -1065,9 +1083,6 @@ _STANDING_CORPUS_NOTES = {
     "29154-i00.dad": {
         "unresolved-reference": ["External-Group-Identifier"],
     },
-    "29214-i40.dad": {
-        "external-origin-not-in-corpus": ["ETSI-TS183.017"],
-    },
     "29219-i00.dad": {
         "external-origin-not-in-corpus": ["ETSI-TS283.034"],
     },
@@ -1167,6 +1182,33 @@ _STANDING_CORPUS_NOTES = {
             "Submission-Timestamp",
             "TCP-Source-Port",
         ],
+    },
+    # TS 29.209 ends at Release 6 and TS 183 017 cites TS 29.214 Release 7;
+    # neither is in the corpus's release.
+    "es283034-020200.dad": {
+        "origin-not-in-corpus": ["TS29.209"],
+        # Clause 7.3.11 prints values PRIORITY 0-7 and table 13 types the AVP
+        # Unsigned32, re-used from TS 183 017, whose clause 7.3.9 enumerates
+        # DEFAULT and PRIORITY-ONE to PRIORITY-FIFTEEN.
+        "reused-body-differs": ["Reservation-Priority"],
+        "reused-row-mismatch": ["Reservation-Priority"],
+    },
+    "ts183017-030201.dad": {
+        # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports.
+        "local-and-reused": [
+            "Abort-Cause",
+            "Flow-Grouping",
+            "Flow-Status",
+            "Flow-Usage",
+            "Flows",
+            "Media-Component-Description",
+            "Media-Sub-Component",
+            "Media-Type",
+            "SIP-Forking-Indication",
+            "Specific-Action",
+        ],
+        "origin-not-in-corpus": ["TS29.209, TS29.214 (corpus has 18.4.0)"],
+        "reused-reprint": ["Globally-Unique-Address"],
     },
     "rfc4004.dad": {
         "unresolved-reference": [

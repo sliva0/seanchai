@@ -389,3 +389,129 @@ def test_expanding_ranges_widens_only_the_acceptances_still_matching(
     text = module.read_text()
     assert text.count("versions='1.0.0..1.2.3'") == 1
     assert "expect='an older message', reason='r', versions='1.0.0')" in text
+
+
+_TRANSCRIPTION = """\
+; Specification: ETSI TS 183 017
+; Version: 3.2.1
+; Vendor-ID: 13019
+; Transcribed: by hand from https://example.test/ts.pdf
+
+
+; Type: AVP Table
+; Section: 7.3
+; Table: 7.3.1
+; Columns: Name Code
+Port-number x
+"""
+
+_TRANSCRIPTION_PATCHES = """\
+[[patch]]
+find = "Port-number x"
+replace = "Port-number 455"
+section = "7.3"
+reason = "the code cell prints 'x'; clause 7.3.6 gives 455"
+first_version = "3.2.1"
+last_version = "3.2.1"
+"""
+
+_TRANSCRIPTION_CORRECTIONS = """\
+from seanchai.dad.corrections import Correction, table_row
+
+CORRECTIONS = [
+    Correction(
+        id="port-number-row-case",
+        target=table_row("Port-number"),
+        field="name",
+        expect="Port-number",
+        replace="Port-Number",
+        reason="clause 7.3.6's sentence spells Port-Number",
+        versions="3.2.1",
+    )
+]
+"""
+
+
+def _transcribed(tmp_path, version="3.2.1", declared="3.2.1"):
+    """A transcription of `version` needing one input patch and one
+    correction, both declared for `declared`."""
+    transcriptions = tmp_path / "transcriptions"
+    transcriptions.mkdir()
+    (transcriptions / "ETSI-TS183.017.dad").write_text(
+        _TRANSCRIPTION.replace("3.2.1", version), encoding="utf-8"
+    )
+    sources = tmp_path / "sources"
+    sources.mkdir()
+    (sources / "ETSI-TS183.017.toml").write_text(
+        _TRANSCRIPTION_PATCHES.replace("3.2.1", declared)
+    )
+    edits = tmp_path / "corrections"
+    edits.mkdir()
+    (edits / "ETSI-TS183.017.py").write_text(
+        _TRANSCRIPTION_CORRECTIONS.replace("3.2.1", declared)
+    )
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    manifest, _ = _manifest(tmp_path / "specifications", "29999-100")
+
+    def run(**options):
+        return regenerate.regenerate(
+            manifest,
+            corpus,
+            corpus,
+            sources_dir=sources,
+            corrections_dir=edits,
+            transcriptions_dir=transcriptions,
+            **options,
+        ).outcomes
+
+    return corpus, sources, edits, run
+
+
+def test_a_transcription_is_read_through_its_input_patches(tmp_path):
+    """No manifest lists a document no extractor reads; its transcription
+    is the source, patched into the raw file and corrected from there."""
+    corpus, _, _, run = _transcribed(tmp_path)
+
+    (added,) = run(add=["ETSI-TS183.017"])
+    assert (added.reference, added.status) == ("ETSI-TS183.017", "new")
+    assert [p.relative_to(corpus).as_posix() for p in added.written] == [
+        "etsi/ts183017-030201.dad",
+        "raw/etsi/ts183017-030201.raw.dad",
+    ]
+    raw, corrected = (
+        (corpus / "raw" / "etsi" / "ts183017-030201.raw.dad"),
+        (corpus / "etsi" / "ts183017-030201.dad"),
+    )
+    assert "Port-number       455" in raw.read_text(encoding="utf-8")
+    assert "Port-Number" in corrected.read_text(encoding="utf-8")
+    assert "; Transcribed: by hand from" in raw.read_text(encoding="utf-8")
+
+    (again,) = run()
+    assert again.status == "unchanged"
+
+
+def test_a_transcription_answers_to_its_declarations_version_ranges(tmp_path):
+    """A V2.2.1 transcription under declarations reviewed on V2.2.0 is
+    patched and corrected all the same, with the warnings an extraction
+    gets; `--expand-ranges` widens both files once it rebuilt cleanly."""
+    corpus, sources, edits, run = _transcribed(tmp_path, "2.2.1", "2.2.0")
+
+    (added,) = run(add=["ETSI-TS183.017"])
+    assert added.status == "new"
+    assert len(added.warnings) == 2
+    assert all("does not cover parsed version 2.2.1" in w for w in added.warnings)
+    assert "input patch 'Port-number x'" in added.warnings[0]
+    assert "ETSI-TS183.017.py#port-number-row-case" in added.warnings[1]
+    corrected = corpus / "etsi" / "ts183017-020201.dad"
+    assert "Port-Number" in corrected.read_text(encoding="utf-8")
+
+    (expanded,) = run(expand_ranges=True)
+    assert expanded.status == "unchanged"
+    assert expanded.warnings == []
+    assert len(expanded.expanded) == 2
+    assert 'last_version = "2.2.1"' in (sources / "ETSI-TS183.017.toml").read_text()
+    assert 'versions="2.2.0..2.2.1"' in (edits / "ETSI-TS183.017.py").read_text()
+
+    (again,) = run()
+    assert again.warnings == []

@@ -41,6 +41,7 @@ def regenerated(tmp_path_factory):
         tmp_path_factory.mktemp("dad"),
         sources_dir=_ROOT / "edits" / "sources",
         corrections_dir=_ROOT / "edits" / "corrections",
+        transcriptions_dir=_ROOT / "edits" / "transcriptions",
     )
     return {outcome.reference: outcome for outcome in report.outcomes}
 

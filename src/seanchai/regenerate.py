@@ -6,6 +6,11 @@ This module does that for every specification the corpus holds, in one call,
 driven by `specifications/manifest.json`, so that the corpus can never quietly
 drift from what the sources and the edit layers would produce today.
 
+A transcription — a document no extractor reads, copied by hand into
+`edits/transcriptions/` — has no manifest record: the transcription is its
+source, read through its input patches into the raw file, and it is
+otherwise rebuilt like any other (`extractor.transcription`).
+
 Which documents count is decided by the corpus, not the manifest: the catalog
 holds documents that define nothing the extractor reads (TS 29.201's XML
 mapping, 29.228's IE tables), so a run rebuilds what is committed plus
@@ -19,6 +24,7 @@ The library returns a `Report`; `seanchai regenerate` prints it.
 """
 
 import json
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,7 +35,7 @@ from .corpus import Corpus
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
-from .extractor import rfc_text, tgpp_docx
+from .extractor import rfc_text, tgpp_docx, transcription
 from .extractor.errors import ExtractionError
 from .versions import RangeWarning, VersionRange
 
@@ -78,6 +84,10 @@ class _Source:
     # A legacy `.doc` the download did not convert (`--no-convert`);
     # `document` is the `.doc` itself, which the extractor cannot read.
     unconverted: bool = False
+    # A hand transcription (`edits/transcriptions/`), named in the corpus by
+    # `stem` rather than by its file.
+    transcribed: bool = False
+    stem: str | None = None
 
 
 @dataclass(frozen=True)
@@ -94,6 +104,7 @@ def regenerate(
     *,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    transcriptions_dir: Path | None = None,
     add: Sequence[str] = (),
     only: Sequence[str] = (),
     report: Callable[[Outcome], None] = lambda outcome: None,
@@ -113,8 +124,11 @@ def regenerate(
     `expand_ranges` widens, in the edit files themselves, every declaration
     range a successfully rebuilt specification's version falls outside; see
     `seanchai.ranges`.
+
+    `transcriptions_dir` holds the hand transcriptions of documents no
+    extractor reads, each a source like a manifest record.
     """
-    listed = _sources(manifest)
+    listed = _sources(manifest) | _transcriptions(transcriptions_dir)
     committed = _committed(corpus)
     # Acceptances are checked against the committed corpus's origins before
     # their ranges are widened; loaded once, and only then.
@@ -182,7 +196,7 @@ def _one(
             outcome.error = f"expanding ranges: {error}"
             return outcome
 
-    stem = source.document.stem
+    stem = source.stem or source.document.stem
     corrected = output / source.tree / f"{stem}.dad"
     raw = output / "raw" / source.tree / f"{stem}.raw.dad"
     outcome.written = [corrected, raw]
@@ -272,7 +286,9 @@ def _produce(
 ) -> tuple[str, str, ast.Specification]:
     """The raw and corrected texts for one source, and the corrected tree."""
     comments = formatter.Comments()
-    if source.document.suffix == ".txt":
+    if source.transcribed:
+        spec, comments = transcription.read(source.document, sources_dir, warnings)
+    elif source.document.suffix == ".txt":
         spec = rfc_text.extract(
             source.document,
             link=source.link,
@@ -362,6 +378,39 @@ def _sources(manifest_path: Path) -> dict[str, _Source]:
                 unconverted,
             )
     return sources
+
+
+def _transcriptions(directory: Path | None) -> dict[str, _Source]:
+    """Every hand transcription in `directory`, by the reference its file
+    is named for, as a source: `ETSI-ES283.034.dad` is written to
+    `etsi/es283034-020200.dad`, ETSI's own name for V2.2.0 of the document,
+    as a 3GPP pair is named for its archive."""
+    found: dict[str, _Source] = {}
+    for path in sorted(directory.glob("*.dad")) if directory is not None else ():
+        match = _EXTERNAL_STEM_RE.match(path.stem)
+        version = _VERSION_LINE_RE.search(path.read_text(encoding="utf-8"))
+        if match is None or version is None:
+            raise ValueError(
+                f"{path}: a transcription is named for an ETSI document"
+                " (ETSI-ES283.034.dad) and states its '; Version:'"
+            )
+        code = "".join(f"{int(part):02d}" for part in version["value"].split("."))
+        found[path.stem] = _Source(
+            path.stem,
+            path,
+            None,
+            "",
+            "etsi",
+            transcribed=True,
+            stem=f"{match['kind'].lower()}{match['series']}{match['number']}-{code}",
+        )
+    return found
+
+
+_EXTERNAL_STEM_RE = re.compile(
+    r"^ETSI-(?P<kind>TS|ES)(?P<series>\d{3})\.(?P<number>\d{3})$"
+)
+_VERSION_LINE_RE = re.compile(r"^; Version: (?P<value>[0-9.]+)$", re.MULTILINE)
 
 
 def _committed(corpus: Path) -> dict[str, _Committed]:

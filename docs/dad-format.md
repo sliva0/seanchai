@@ -129,8 +129,12 @@ each starting with `; Type:`.
   and its header says which (`; Transcribed: by hand from <url>`, after
   `; Link:`), so a reader knows no extractor vouches for the reading. The
   extractor's rule binds the copyist: a transcription records what the
-  document prints, in the shapes the extractors give the same constructs,
-  and what the document prints wrong is a correction, never a silent fix.
+  document prints, in the shapes the extractors give the same constructs
+  ([extractor.md](extractor.md#transcriptions)), and goes through the
+  extractor's pipeline — transcription → input patches → raw →
+  corrections → corrected — so what the grammar cannot hold is an input
+  patch and what the document prints wrong a correction, never a silent
+  fix.
 - **The parser is strict; the formatter defines canonical form.** Hand edits
   are normalised by the formatter (`seanchai format`), not by the parser
   guessing.

@@ -18,6 +18,11 @@ Warnings for declaration ranges that do not cover the parsed version print
 under each specification without gating application. The extractor's warnings
 print there too; they report unusual document structure and are worth a
 glance on every rebuild.
+A transcription, a document no extractor reads that a person copied into
+`edits/transcriptions/` ([extractor.md](extractor.md#transcriptions)), has
+no manifest record: it is read through its input patches in place of an
+extraction and rebuilt like the rest, range warnings and `--expand-ranges`
+included.
 `tests/test_real_sources.py` runs the same rebuild into a scratch directory
 and fails on anything but `unchanged`, `not-converted` included: it needs a
 download that converted the legacy `.doc` archives.
@@ -95,6 +100,7 @@ loudly.
 
 | Layer | Fixes | Where |
 |---|---|---|
+| transcriptions | documents no extractor reads, copied by hand as printed | `edits/transcriptions/<SpecRef>.dad` |
 | input patches | typos in the source text that break extraction, and case-only misspellings of a name | `edits/sources/<SpecRef>.toml`, `[[patch]]` |
 | quirks | readings too heuristic to run undeclared | same file, `[[quirk]]` |
 | extractor code | exact-match structure that fails loudly on its own | `src/seanchai/extractor/` |

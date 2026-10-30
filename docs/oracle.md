@@ -122,7 +122,7 @@ remains:
   `Access-Network-Information` (the dictionary comments its OctetString
   out) typed UTF8String where the specs say OctetString.
 - **Absences**: AVPs newer than the pinned dictionary, one grouped note per
-  file, 280 in 29 files, 279 AVPs. All but ten have an addition staged under
+  file, 282 in 30 files, 281 AVPs. All but ten have an addition staged under
   [`integrations/wireshark/additions/`](../integrations/wireshark/README.md#additions),
   written by `integrations/wireshark/additions.py` from the corpus, one
   patch per defining document; the ten are named like an entry the

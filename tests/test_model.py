@@ -860,6 +860,44 @@ class TestOverTheCommittedCorpus:
 # outside the corpus. A hole worked off shrinks this; a new one is a corpus
 # regression. Roadmap item N lists them by cause.
 _STANDING_HOLES = {
+    # The transcriptions import Gq's AVPs from TS 29.209, which ends at
+    # Release 6, and Codec-Data from TS 29.214 Release 7 (TS 183 017 clause
+    # 2, reference [19]); the corpus holds Release 18. The ten TS 183 017
+    # re-prints are typed by their clauses but flagged only by the origin.
+    "ETSI-ES283.034": {
+        "resolves nowhere (re-used from TS29.209, which the corpus lacks)": [
+            "AF-Application-Identifier",
+            "Media-Type",
+        ]
+    },
+    "ETSI-TS183.017": {
+        "resolves nowhere (re-used from TS29.209, which the corpus lacks)": [
+            "AF-Application-Identifier",
+            "AF-Charging-Identifier",
+            "Flow-Description",
+            "Flow-Number",
+            "Max-Requested-Bandwidth-DL",
+            "Max-Requested-Bandwidth-UL",
+            "Media-Component-Number",
+            "RR-Bandwidth",
+            "RS-Bandwidth",
+        ],
+        "no flag_rules (re-used from TS29.209, which the corpus lacks)": [
+            "Abort-Cause",
+            "Flow-Grouping",
+            "Flow-Status",
+            "Flow-Usage",
+            "Flows",
+            "Media-Component-Description",
+            "Media-Sub-Component",
+            "Media-Type",
+            "SIP-Forking-Indication",
+            "Specific-Action",
+        ],
+        "resolves nowhere (re-used from TS29.214, which the corpus lacks)": [
+            "Codec-Data"
+        ],
+    },
     "RFC4004": {
         "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-to-HA-SPI"]
     },
@@ -897,11 +935,6 @@ _STANDING_HOLES = {
             "Logical-Access-ID",
             "Physical-Access-ID",
         ],
-    },
-    "TS29.214": {
-        "resolves nowhere (re-used from ETSI-TS183.017, which the corpus lacks)": [
-            "Reservation-Priority"
-        ]
     },
     "TS29.219": {
         "resolves nowhere (re-used from ETSI-TS283.034, which the corpus lacks)": [

@@ -1,0 +1,493 @@
+; Specification: ETSI TS 183 017
+; Version: 3.2.1
+; Vendor-ID: 13019
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/183000_183099/183017/03.02.01_60/ts_183017v030201p.pdf
+; Transcribed: by hand from https://www.etsi.org/deliver/etsi_ts/183000_183099/183017/03.02.01_60/ts_183017v030201p.pdf
+
+
+; Type: Application Scope
+; Name: Gq
+; Section: 7
+; Page: 16
+; Application-ID: 16777222
+; Applies-To: 7.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 7.1.1
+; Page: 17
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+      * [ Media-Component-Description ]
+      * [ Flow-Grouping ]
+        [ AF-Charging-Identifier ]
+        [ SIP-Forking-Indication ]
+      * [ Specific-Action ]
+        [ User-Name ]
+        [ Binding-Information ]         ; bold
+        [ Latching-Indication ]         ; bold
+        [ Reservation-Priority ]        ; bold
+        [ Globally-Unique-Address ]
+        [ Service-Class ]               ; bold
+        [ Authorization-Lifetime ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Overbooking-indicator ]       ; bold
+      * [ Authorization-Package-Id ]    ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 7.1.2
+; Page: 17
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Binding-Information ]    ; bold
+        [ Reservation-Priority ]   ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 7.1.3
+; Page: 18
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+      * { Specific-Action }
+      * [ Flow-Description ]
+        [ Globally-Unique-Address ]
+        [ Logical-Access-Id ]
+      * [ Flows ]
+        [ Abort-Cause ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 7.1.4
+; Page: 18
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+      * [ Media-Component-Description ]
+      * [ Flow-Grouping ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 7.1.5
+; Page: 18
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Termination-Cause }
+        { Auth-Application-Id }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 7.1.6
+; Page: 19
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Request, ASR
+; Section: 7.1.7
+; Page: 19
+<AS-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Abort-Cause }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Answer, ASA
+; Section: 7.1.8
+; Page: 19
+<AS-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 7.3
+; Table: 7.3.1
+; Page: 20
+; Columns: Name                  Code   Section   Type         Must   May   S.not   M.not   Encrypt
+Binding-information              450    7.3.1     Grouped      V      -     -       M       Yes
+Binding-input-list               451    7.3.2     Grouped      V      -     -       M       Yes
+Binding-output-list              452    7.3.3     Grouped      V      -     -       M       Yes
+V6-transport-address             453    7.3.4     Grouped      V      -     -       M       Yes
+V4-transport-address             454    7.3.5     Grouped      V      -     -       M       Yes
+Port-number                      455    7.3.6     Unsigned32   V      -     -       M       Yes
+Reservation-class                456    7.3.7     Unsigned32   V      -     -       M       Yes
+Latching-indication              457    7.3.8     Enumerated   V      -     -       M       Yes
+Reservation-priority             458    7.3.9     Enumerated   V      -     -       M       Yes
+Service-Class                    459    7.3.33    UTF8String   V      -     -       M       Yes
+Authorization-Package-Id         461    7.3.37    UTF8String   V      -     -       M       Yes
+Media-Authorization-Context-Id   462    7.3.38    UTF8String   V      -     -       M       Yes
+Overbooking-indicator            460    7.3.35    Enumerated   V      -     -       M       Yes
+;; NOTE 1: The AVP header bit denoted as "M", indicates whether support of the AVP is required. The AVP header bit denoted as "V", indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see RFC 3588 [3].
+;; NOTE 2: The value types are defined in RFC 3588 [3].
+
+
+;; Table 7.3.2 prints the defining clauses of the present document (7.3.10,
+;; 7.3.11, 7.3.39, 7.3.34) where table 13 of ES 283 034 prints its
+;; reference, and flag columns of its own: V in Must and M in Must not for
+;; the first two rows, V in Must and M in May for the last two. The
+;; paragraph above it says the AVPs are imported from ES 283 035 [13]; the
+;; caption and the AVPs are ES 283 034's [15].
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.3.2
+; Page: 20
+; Columns: Name           Code   From             Type
+Globally-Unique-Address   300    ETSI-ES283.034   Grouped
+Address-Realm             301    ETSI-ES283.034   OctetString
+Logical-Access-Id         302    ETSI-ES283.034   OctetString
+Transport-Class           311    ETSI-ES283.034   Unsigned32
+
+
+;; Table 7.3.3 prints the present document's clauses 7.3.14 to 7.3.32 in its
+;; Clause column, where the present document re-prints each AVP, and M,V in
+;; Must and P in May for every row. NOTE 3 on Media-Component-Description:
+;; "The AVP was initially defined in the Gq specification TS 129 209 [4].
+;; The present document provides updated syntax to some of those AVP in the
+;; form of optional AVPs that have been added to the Grouped AVP syntax."
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.3.3
+; Page: 20
+; Columns: Name               Code   From       Type
+Abort-Cause                   500    TS29.209   Enumerated
+AF-Application-Identifier     504    TS29.209   OctetString
+AF-Charging-Identifier        505    TS29.209   OctetString
+Flow-Description              507    TS29.209   IPFilterRule
+Flow-Grouping                 508    TS29.209   Grouped
+Flow-Number                   509    TS29.209   Unsigned32
+Flows                         510    TS29.209   Grouped
+Flow-Status                   511    TS29.209   Enumerated
+Flow-Usage                    512    TS29.209   Enumerated
+Specific-Action               513    TS29.209   Enumerated
+Max-Requested-Bandwidth-DL    515    TS29.209   Unsigned32
+Max-Requested-Bandwidth-UL    516    TS29.209   Unsigned32
+Media-Component-Description   517    TS29.209   Grouped
+Media-Component-Number        518    TS29.209   Unsigned32
+Media-Sub-Component           519    TS29.209   Grouped
+Media-Type                    520    TS29.209   Enumerated
+RR-Bandwidth                  521    TS29.209   Unsigned32
+RS-Bandwidth                  522    TS29.209   Unsigned32
+SIP-Forking-Indication        523    TS29.209   Enumerated
+
+
+;; Table 7.3.4 prints V,M in Must not for both rows.
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.3.4
+; Page: 20
+; Columns: Name      Code   From      Type
+Framed-IP-Address    8      RFC4005   OctetString
+Framed-IPv6-Prefix   97     RFC4005   OctetString
+
+
+;; Table 7.3.5 prints its clause 7.3.36, and V in Must, P in May and M in
+;; Must not.
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.3.5
+; Page: 20
+; Columns: Name   Code   From       Type
+Codec-Data        524    TS29.214   OctetString
+
+
+; Type: Grouped AVP
+; Name: Binding-information
+; Section: 7.3.1
+; Page: 23
+Binding-information ::= < AVP header: 450 13019 >
+        { Binding-Input-List }
+        [ Binding-Output-List ]
+
+
+; Type: Grouped AVP
+; Name: Binding-Input-List
+; Section: 7.3.2
+; Page: 23
+Binding-Input-List ::= < AVP header: 451 13019 >
+      * [ V6-Transport-Address ]
+      * [ V4-Transport-Address ]
+
+
+; Type: Grouped AVP
+; Name: Binding-Output-List
+; Section: 7.3.3
+; Page: 23
+Binding-Output-List ::= < AVP header: 452 13019 >
+      * [ V6-Transport-Address ]
+      * [ V4-Transport-Address ]
+
+
+; Type: Grouped AVP
+; Name: Transport-Address
+; Section: 7.3.4
+; Page: 23
+Transport-Address ::= < AVP header: 453 13019 >
+        { Framed-IPv6-Prefix }
+        { Port-Number }
+
+
+; Type: Grouped AVP
+; Name: Transport-Address
+; Section: 7.3.5
+; Page: 24
+Transport-Address ::= < AVP header: 454 13019 >
+        { Framed-IP-Address }
+        { Port-Number }
+
+
+; Type: Enumerated AVP
+; Name: Latching-Indication
+; Section: 7.3.8
+; Page: 24
+Latching-Indication ::= < Enumerated AVP header: 457 13019 >
+        LATCH   = 0
+        RELATCH = 1
+
+
+; Type: Enumerated AVP
+; Name: Reservation-Priority
+; Section: 7.3.9
+; Page: 24
+Reservation-Priority ::= < Enumerated AVP header: 458 13019 >
+        DEFAULT           = 0
+        PRIORITY-ONE      = 1
+        PRIORITY-TWO      = 2
+        PRIORITY-THREE    = 3
+        PRIORITY-FOUR     = 4
+        PRIORITY-FIVE     = 5
+        PRIORITY-SIX      = 6
+        PRIORITY-SEVEN    = 7
+        PRIORITY-EIGHT    = 8
+        PRIORITY-NINE     = 9
+        PRIORITY-TEN      = 10
+        PRIORITY-ELEVEN   = 11
+        PRIORITY-TWELVE   = 12
+        PRIORITY-THIRTEEN = 13
+        PRIORITY-FOURTEEN = 14
+        PRIORITY-FIFTEEN  = 15
+
+
+; Type: Grouped AVP
+; Name: Globally-Unique-Address
+; Section: 7.3.10
+; Page: 25
+Globally-Unique-Address ::= < AVP header: 300 13019 >
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Address-Realm ]
+
+
+; Type: Enumerated AVP
+; Name: Session-Abort-Cause
+; Section: 7.3.14
+; Page: 25
+Session-Abort-Cause ::= < Enumerated AVP header: 500 10415 >
+        BEARER_RELEASED               = 0
+        INSUFFICIENT_SERVER_RESOURCES = 1
+        INSUFFICIENT_BEARER_RESOURCES = 2
+
+
+; Type: Grouped AVP
+; Name: Flow-Grouping
+; Section: 7.3.18
+; Page: 26
+Flow-Grouping ::= < AVP header: 508 >
+      * [ Flows ]
+
+
+; Type: Grouped AVP
+; Name: Flows
+; Section: 7.3.20
+; Page: 27
+Flows ::= < AVP header: 510 >
+        { Media-Component-Number }
+      * [ Flow-Number ]
+
+
+; Type: Enumerated AVP
+; Name: Flow-Status
+; Section: 7.3.21
+; Page: 27
+Flow-Status ::= < Enumerated AVP header: 511 10415 >
+        ENABLED-UPLINK   = 0
+        ENABLED-DOWNLINK = 1
+        ENABLED          = 2
+        DISABLED         = 3
+        REMOVED          = 4
+
+
+; Type: Enumerated AVP
+; Name: Flow-Usage
+; Section: 7.3.22
+; Page: 27
+Flow-Usage ::= < Enumerated AVP header: 512 10415 >
+        NO_INFORMATION = 0
+        RTCP           = 1
+
+
+; Type: Enumerated AVP
+; Name: Specific-Action
+; Section: 7.3.23
+; Page: 28
+Specific-Action ::= < Enumerated AVP header: 513 10415 >
+        INDICATION_OF_LOSS_OF_BEARER         = 2
+        INDICATION_OF_RECOVERY_OF_BEARER     = 3
+        INDICATION_OF_RELEASE_OF_BEARER      = 4
+        INDICATION_OF_SUBSCRIBER_DETACHMENT  = 6
+        INDICATION_OF_RESERVATION_EXPIRATION = 7
+
+
+; Type: Grouped AVP
+; Name: Media-Component-Description
+; Section: 7.3.26
+; Page: 29
+Media-Component-Description ::= < AVP header: 517 >
+        { Media-Component-Number } ;; Ordinal number of the media comp.
+      * [ Media-Sub-Component ] ;; Set of flows for one flow identifier
+        [ AF-Application-Identifier ]
+        [ Media-Type ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Flow-Status ]
+        [ RS-Bandwidth ]
+        [ RR-Bandwidth ]
+        [ Reservation-Class ]
+        [ Reservation-Priority ]
+        [ Transport-Class ]
+      * [ Codec-Data ]
+      * [ Media-Authorization-Context-Id ]
+
+
+; Type: Grouped AVP
+; Name: Media-Sub-Component
+; Section: 7.3.28
+; Page: 30
+Media-Sub-Component ::= < AVP header: 519 >
+        { Flow-Number } ;; Ordinal number of the IP flow
+     *2 [ Flow-Description ] ;; UL and/or DL
+        [ Flow-Status ]
+        [ Flow-Usage ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+
+
+; Type: Enumerated AVP
+; Name: Media-Type
+; Section: 7.3.29
+; Page: 30
+Media-Type ::= < Enumerated AVP header: 520 10415 >
+        AUDIO       = 0
+        VIDEO       = 1
+        DATA        = 2
+        APPLICATION = 3
+        CONTROL     = 4
+        TEXT        = 5
+        MESSAGE     = 6
+        OTHER       = 4294967295
+
+
+; Type: Enumerated AVP
+; Name: SIP_Forking
+; Section: 7.3.32
+; Page: 31
+SIP_Forking ::= < Enumerated AVP header: 523 10415 >
+        SINGLE_DIALOGUE   = 0
+        SEVERAL_DIALOGUES = 1
+
+
+; Type: Enumerated AVP
+; Name: Overbooking-indicator
+; Section: 7.3.35
+; Page: 31
+Overbooking-indicator ::= < Enumerated AVP header: 460 13019 >
+        Overbooking-indicator = 0 ; means that no overbooking mode is required
+        Overbooking-indicator = 1 ; means that overbooking is mode required

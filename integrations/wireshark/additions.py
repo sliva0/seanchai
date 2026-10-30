@@ -457,7 +457,11 @@ def _slug(reference: str) -> str:
 
 
 def _ordered(reference: str) -> tuple[int, str]:
-    return (1 if reference.startswith("RFC") else 0, reference)
+    # 3GPP's documents, then other publishers' (ETSI's TISPAN
+    # transcriptions), then the RFCs.
+    if reference.startswith("RFC"):
+        return (2, reference)
+    return (1 if ast.is_external(reference) else 0, reference)
 
 
 def stage(

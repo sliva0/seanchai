@@ -53,7 +53,11 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   written as a literal.
 - **Deterministic, not idempotent.** Correcting already-corrected input fails
   every `expect`, which is what keeps "already corrected" distinguishable
-  from "fixed upstream". The layer consumes raw files only.
+  from "fixed upstream". The layer consumes raw files only, a
+  transcription's included: a document copied by hand
+  ([extractor.md](extractor.md#transcriptions)) is patched into its raw
+  file and corrected in the module its `; Specification:` names
+  (`ETSI-TS183.017.py`) like any other.
 - **Selectors address identity, never position**: `definition(name)`,
   `table_row(name, table=)` (label narrows repeated rows),
   `flag_rules(table_row(...))` (a row's `must`, `may`, `should_not` and

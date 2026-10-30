@@ -59,6 +59,8 @@ seanchai crosscheck FILE.dad...         # against Wireshark's dictionary
   `corpus.py`, `model.py`, `cli.py`.
 - `dad/` — the committed corpus: `dad/3gpp/rel-18/`, `dad/rfc/`, and the raw
   mirror under `dad/raw/`. See [dad/README.md](dad/README.md).
+- `edits/transcriptions/<SpecRef>.dad` — documents no extractor reads (ETSI
+  ES 283 034, TS 183 017), copied by hand as printed.
 - `edits/sources/<SpecRef>.toml` — input patches and quirks per source document.
 - `edits/corrections/<SpecRef>.py` — corrections per specification.
 - `integrations/` — consumer scripts over the model, runnable with `uv run`,

@@ -42,6 +42,15 @@ def _major(version: str) -> int:
     return _version_key(version)[0]
 
 
+def _external(spec: ast.Specification) -> bool:
+    """Whether `spec` is another publisher's document. A title naming no
+    supported document (a hand-authored vendor extension) is not."""
+    try:
+        return ast.is_external(ast.spec_ref(spec.specification))
+    except ast.SpecRefError:
+        return False
+
+
 @dataclass(frozen=True)
 class Entry:
     """One parsed file and where it came from."""
@@ -122,6 +131,12 @@ class Corpus:
             # 3GPP numbers. The corpus holds such a document only when someone
             # writes it by hand, and then the newest copy is the answer.
             return candidates[0] if candidates else None
+        if _external(like):
+            # An ETSI version is no 3GPP release, so it says nothing about
+            # which release a citation means; the document says that in its
+            # references (TS 183 017 V3.2.1 cites "3GPP TS 29.214 Release
+            # 7"), and nothing resolves across releases.
+            return None
         version = like.version
         if version is None:
             # A version-less document (an RFC) citing a versioned one has no

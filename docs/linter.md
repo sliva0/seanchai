@@ -109,7 +109,8 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   IETF (`ETSI-TS283.034`, `3GPP2-X.S0057`, `OMA-DDS-Charging_Data`,
   `oneM2M-TS-0004`), apart because no download closes the gap: no extractor
   reads them, and the corpus holds one only as a hand-written file, which
-  resolves like an RFC, release axis ignored.
+  resolves like an RFC, release axis ignored (ETSI ES 283 034 and TS 183
+  017 are [transcribed](extractor.md#transcriptions)).
 - `unresolved-reference` — every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row, or a
   `; Bases:` document. `* [ AVP ]` is grammar and is skipped. A note rather
@@ -189,7 +190,10 @@ resolves across a major version — a release boundary is where 3GPP may
 change what an AVP means — which is also why the corpus is one directory per
 release. RFCs resolve to whatever the corpus holds, and so does a document
 outside 3GPP and IETF, whose versions are its publisher's (ETSI TS 283 034
-V2.2.0 is no Release 2). Raw files are excluded
+V2.2.0 is no Release 2). For the same reason such a document's own
+citations of 3GPP documents resolve nowhere: its version names no release,
+and the one it cites is in its references (TS 183 017 V3.2.1 cites TS
+29.214 Release 7). Raw files are excluded
 from a corpus by default; loading both copies would leave the choice to sort
 order.
 
@@ -230,13 +234,21 @@ why each stays:
   members, which the clause does not say. A seventh is TS 29.338's
   `Serving-Node` (5.3.3.6): its clause lists the member combinations
   allowed, as its siblings' do, but its body also adds `IP-SM-GW-Realm`,
-  which no combination and no other line of the document names.
-- **`origin-not-in-corpus`**, one. TS 29.140, cited by TS 32.299 for
+  which no combination and no other line of the document names. An eighth
+  is ETSI ES 283 034's `Reservation-Priority` (clause 7.3.11), which table
+  13 imports from TS 183 017 but whose values `PRIORITY 0`–`PRIORITY 7`
+  are not TS 183 017's `DEFAULT` and `PRIORITY-ONE`–`PRIORITY-FIFTEEN`
+  (clause 7.3.9). TS 183 017 clause 7.3.10 re-prints ES 283 034's
+  `Globally-Unique-Address`, identical once ES 283 034's `Frame-*` members
+  are corrected.
+- **`origin-not-in-corpus`**, three. TS 29.140, cited by TS 32.299 for
   `VAS-Id` and `VASP-Id`, ends at V7.0.0, and nothing resolves across a
-  major version.
-- **`external-origin-not-in-corpus`**, five files: TS 29.212
-  (`3GPP2-X.S0057`, `ETSI-TS283.034`), 29.214 (`ETSI-TS183.017`), 29.219
-  and 29.273 (`ETSI-TS283.034`) and 32.299 (`ETSI-TS283.034`,
+  major version. The ETSI transcriptions import Gq's AVPs from TS 29.209,
+  which ends at Release 6, and TS 183 017 imports `Codec-Data` from TS
+  29.214 Release 7 (its clause 2, reference [19]).
+- **`external-origin-not-in-corpus`**, four files: TS 29.212
+  (`3GPP2-X.S0057`, `ETSI-TS283.034`), 29.219 and 29.273
+  (`ETSI-TS283.034`) and 32.299 (`ETSI-TS283.034`,
   `OMA-DDS-Charging_Data`, `oneM2M-TS-0004`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
@@ -255,8 +267,11 @@ why each stays:
   and 6.2.3.1/1 but OctetString in 7.2.3.1/1; the tables' notes explain
   M-bit overrides for re-used AVPs only. Which reading an interface uses is the document's to
   say; the model reads the first row ([consumers.md](consumers.md)).
-- **`reused-row-mismatch`**, two. TS 32.299 table 7.2.0.1 types
-  `Feature-List` and `Feature-List-ID` by `refer [204]` (TS 29.229) and
+- **`reused-row-mismatch`**, three. ETSI ES 283 034 table 13 types
+  `Reservation-Priority` Unsigned32, where TS 183 017, which it imports
+  it from, and its own clause 7.3.11 say Enumerated. TS 32.299 table
+  7.2.0.1 types `Feature-List` and `Feature-List-ID` by `refer [204]` (TS
+  29.229) and
   prints its own flags, setting M for the charging application where
   29.229 puts it in Must not. Clause 7.2.0 refers to the origin for the
   description and gives the table "along with the AVP flag rules", but no

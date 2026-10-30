@@ -570,6 +570,79 @@ Same definitions, different carrier:
   none. The section's "The value 0 (zero) is reserved" is read too, as a
   reserved value.
 
+## Transcriptions
+
+ETSI ES 283 034 V2.2.0 (e4) and TS 183 017 V3.2.1 (Gq'), which 3GPP
+documents cite for `Logical-Access-ID`, `Physical-Access-ID` and
+`Reservation-Priority`, are published as PDF alone, frozen, and on 3GPP's
+Word template. No extractor reads them: each is copied by hand into
+`edits/transcriptions/<SpecRef>.dad`, named like the other edit files, in
+`.dad` notation, and its header says so (`; Transcribed: by hand from <the
+PDF>`, written in the transcription). The transcription stands where the
+document does for an extraction, and the pipeline is the extractor's:
+
+    transcription → input patches → raw → corrections → corrected
+
+The transcription copies what the document prints, misprints included,
+even where the grammar cannot hold it, so it need not parse. Input
+patches in `edits/sources/<SpecRef>.toml`, with the 3GPP files' schema,
+apply to its lines, a patch's `section` scope being the `; Section:` of
+the line's block; the patched text must parse, and is the raw file
+(`dad/raw/etsi/es283034-020200.raw.dad`, named with ETSI's version code as
+the 3GPP files are with the archive's). Corrections
+(`edits/corrections/ETSI-ES283.034.py`) make the corrected file from it.
+`seanchai regenerate` reads `edits/transcriptions/` (`--transcriptions`)
+as it reads the manifest's documents, version-range warnings and
+`--expand-ranges` included, and `tests/test_transcription.py` pins each
+committed raw file to its patched transcription.
+
+A transcription gives each construct the shape the 3GPP extractor gives it:
+
+- Commands and grouped AVPs as their ABNF prints them, bold members
+  `; bold` ("New AVPs are represented in bold", both documents' clause
+  7.1), ABNF comments as trailing `;;` comments and an empty `;` dropped.
+- The AVP table as an `AVP Table`, `Y` read as `Yes`, its NOTE rows as
+  `;;` comments after the rows. Pages follow the extractor's rule: a
+  section's `; Page:` is where its clause starts, and a table takes its
+  clause's.
+- An enumerated clause, which prints no ABNF, as an `Enumerated AVP` named
+  by its defining sentence, "The X AVP (AVP code n) is of type
+  Enumerated", since TS 183 017's headings sentence-case the names
+  ("Latching-indication AVP"). The code is the sentence's; the vendor is
+  the sentence's where it prints one (ES 283 034's "AVP code 305 13019"),
+  or else the one the paragraph introducing the AVP's table states (TS 183
+  017 sets 13019 for table 7.3.1's AVPs and 3GPP's 10415 for the Gq AVPs
+  of table 7.3.3). Values as `NAME (n)` reads, the hexadecimal `OTHER
+  (0xFFFFFFFF)` as its number, the rest of a value's line as its
+  description. A clause that re-prints an imported AVP's values is
+  transcribed too: what it lists may differ from the origin's (ES 283 034
+  clause 7.3.11's `PRIORITY 0`–`7` against TS 183 017's `DEFAULT` and
+  `PRIORITY-ONE`–`FIFTEEN`).
+- A table of imported AVPs ("Diameter AVPs imported from …", ES 283 034
+  tables 11–13, TS 183 017 tables 7.3.2–7.3.5) as `Reused AVPs` with Name,
+  Code, From and Type. From is the document the row's clause cell names
+  ("See TS 129 209 [5]" → `TS29.209`, ETSI's number for a 3GPP document
+  read as the 3GPP one) or, where the cell holds the present document's
+  own clause, the caption's (`ETSI-ES283.034` for TS 183 017 table 7.3.2).
+  The tables also state flag rules "in the context of the present
+  document" and TS 183 017's the local clause, for which a re-used table
+  has no column: a `;;` comment above the table records them.
+- An application id stated in prose as an `Application Scope`: TS 183 017
+  clause 7 re-uses Gq's 16777222 for commands whose headers print none.
+- What the grammar cannot hold is copied as printed and patched on input,
+  citing the clause that states it otherwise: ES 283 034's `< User-Data
+  -Request >`, TS 183 017's `< AVP header: x >` for `Flows` (510 in its
+  sentence and table 7.3.3), its `Octet String` cells and the
+  `Media-Sub-Component AVP` name cell. Only the notation is the grammar's
+  (`< AVP header: 300 13019 >` for the printed `< AVP Header: 300 13019 >`,
+  `[ Address-Realm ]` for `[Address-Realm]`), spellings the 3GPP extractor
+  reads in code.
+
+Not transcribed, as an extractor reads none of it: clause prose, the
+defining sentence of an AVP of a simple type (its AVP-table row carries
+code and type; no section holds a sentence), experimental result codes and
+the informative annexes.
+
 ## Strictness
 
 Everything that can fail an extraction derives from `ExtractionError`,

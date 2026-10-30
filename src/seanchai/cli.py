@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 # that directory. `regenerate` and `lint` default to the repository's own.
 _DEFAULT_SOURCES = Path("edits") / "sources"
 _DEFAULT_CORRECTIONS = Path("edits") / "corrections"
+_DEFAULT_TRANSCRIPTIONS = Path("edits") / "transcriptions"
 
 
 class _HelpFormatter(click.HelpFormatter):
@@ -250,6 +251,13 @@ def extract_rfc(
     " own corpus from its own edit layers.",
 )
 @click.option(
+    "--transcriptions",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    default=_DEFAULT_TRANSCRIPTIONS,
+    show_default=True,
+    help="Directory with hand transcriptions of documents no extractor reads.",
+)
+@click.option(
     "--add",
     multiple=True,
     metavar="SPECREF",
@@ -275,6 +283,7 @@ def regenerate(
     output: Path | None,
     sources: Path,
     corrections: Path,
+    transcriptions: Path,
     add: tuple[str, ...],
     only: tuple[str, ...],
     expand_ranges: bool,
@@ -306,6 +315,7 @@ def regenerate(
         output if output is not None else corpus,
         sources_dir=sources,
         corrections_dir=corrections,
+        transcriptions_dir=transcriptions,
         add=add,
         only=only,
         report=_echo_outcome,

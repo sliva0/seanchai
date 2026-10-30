@@ -46,7 +46,11 @@ publisher has one spelling, since resolution compares references exactly.
 
 `; Transcribed:` marks a file a person copied from a rendering, for a
 document no extractor reads (ETSI ES 283 034 and TS 183 017 exist only as
-PDF), and names that rendering; no extractor writes it.
+PDF), and names that rendering; no extractor writes it. It is written in
+the transcription, which is no `.dad` file until its input patches have
+applied (transcription → input patches → raw → corrections → corrected,
+[extractor.md](extractor.md#transcriptions)), and the raw and corrected
+files carry it from there.
 
 `; Version:` is present when the source has a version axis (3GPP yes, RFC
 no). `; Bases:` is optional only because RFC 6733, the base of the tree, has
@@ -296,6 +300,11 @@ and tabulates `M2M-Information` from `oneM2M-TS-0004`.
 Name and From are required; M-bit is not (TS 29.128, 29.173, 29.336 print no
 such column). Code and Type are the citing table's own statement of what
 the origin defines (TS 29.172 table 7.4.1-2, TS 32.299 tables 7.3.1-7.5.1).
+A table restating the flag rules an imported AVP takes "in the context of
+the present document" (ETSI ES 283 034 tables 11–13, TS 183 017 tables
+7.3.2–7.3.5) has no column for them: M-bit is one interface setting, not
+four flag columns, and the transcriptions keep the flags in a `;;` comment
+above the table.
 
 ### Registry
 
