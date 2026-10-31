@@ -23,14 +23,18 @@ are. README.md beside this script describes the layout and how to adopt it.
     uv run integrations/python_diameter/generate.py --all -o out/
     uv run integrations/python_diameter/generate.py --all -o out/ \
         --dictionary specifications/wireshark
+    uv run integrations/python_diameter/generate.py --all -o out/ \
+        --undefined supply --supply acme.dad
 
 What the library's dictionary lacks, or holds with a value type the document
 does not give, is not papered over: it goes to `additions.py`, in the shape of
 the library's `dictionary.py` and `grouped.py`, and the command modules import
 it from there. The script prints how many additions each specification needs.
-The output is a function of the corpus, the Wireshark dictionary and the
-installed library alone, byte for byte, so a regenerated package diffs
-cleanly.
+The output is a function of the corpus, the Wireshark dictionary, the
+installed library and the options alone, byte for byte, so a regenerated
+package diffs cleanly. `--undefined` is the model's policy for the names the
+corpus declares defined nowhere (`model.UndefinedPolicy`), and `__init__.py`
+records it.
 """
 
 from __future__ import annotations
@@ -369,9 +373,10 @@ def _flags(flag_rules: ast.AvpFlagRules | None) -> tuple[str, str, str, str] | N
 @dataclass(eq=False)
 class Definition:
     """One distinct AVP reading the generated set reaches: a complete `Avp`,
-    or a `Hole` with or without an identity."""
+    a `Hole` with or without an identity, or an undefined name kept as a
+    `Placeholder`, which has none."""
 
-    sample: model.Avp | model.Hole
+    sample: model.Avp | model.Hole | model.Placeholder
     # Each member's target; None for the `* [ AVP ]` wildcard.
     members: list[tuple[model.Member, Definition | None]]
     documents: set[str] = field(default_factory=set)
@@ -394,22 +399,59 @@ class Definition:
     @property
     def identity(self) -> Identity | None:
         sample = self.sample
-        if sample.vendor_id is None or sample.code is None:
+        if (
+            isinstance(sample, model.Placeholder)
+            or sample.vendor_id is None
+            or sample.code is None
+        ):
             return None
         return (sample.vendor_id, sample.code)
 
     @property
     def is_grouped(self) -> bool:
-        return self.sample.data_type is ast.DataType.GROUPED
+        return self.data_type is ast.DataType.GROUPED
+
+    @property
+    def data_type(self) -> ast.DataType | None:
+        sample = self.sample
+        return None if isinstance(sample, model.Placeholder) else sample.data_type
+
+    @property
+    def flag_rules(self) -> ast.AvpFlagRules | None:
+        sample = self.sample
+        return None if isinstance(sample, model.Placeholder) else sample.flag_rules
 
     @property
     def hole(self) -> str | None:
         return str(self.sample) if isinstance(self.sample, model.Hole) else None
 
     @property
+    def placeholder(self) -> str | None:
+        """Why a placeholder member has no `AvpGenDef`."""
+        sample = self.sample
+        if not isinstance(sample, model.Placeholder):
+            return None
+        undefined = sample.undefined
+        return f"undefined in {undefined.reference} clause {undefined.section}"
+
+    @property
+    def supplied(self) -> str | None:
+        """Where a definition the consumer supplied came from."""
+        sample = self.sample
+        return sample.supplied if isinstance(sample, model.Avp) else None
+
+    @property
+    def dropped(self) -> tuple[model.Member, ...]:
+        sample = self.sample
+        return sample.dropped if isinstance(sample, model.Grouped) else ()
+
+    @property
     def wireshark_alias(self) -> str | None:
         """Wireshark's name where it is not the document's spelling."""
-        wireshark_name = self.sample.wireshark_name
+        sample = self.sample
+        if isinstance(sample, model.Placeholder):
+            return None
+        wireshark_name = sample.wireshark_name
         return None if wireshark_name == self.name else wireshark_name
 
     @property
@@ -419,7 +461,7 @@ class Definition:
         # defined (`model.FlagRules`, RFC 6733 section 4.1): in no column,
         # so None, and the library encodes the dictionary's default, as for
         # an M under May.
-        flag_rules = self.sample.flag_rules
+        flag_rules = self.flag_rules
         if flag_rules is None:
             return None
         if ast.AvpFlag.MANDATORY in flag_rules.must:
@@ -463,7 +505,9 @@ class Definitions:
         return iter(self._by_signature.values())
 
     def add(
-        self, found: model.Avp | model.Hole, reader: str | None = None
+        self,
+        found: model.Avp | model.Hole | model.Placeholder,
+        reader: str | None = None,
     ) -> Definition:
         """The definition for `found`, which `reader`'s dictionary view or
         commands name, if given."""
@@ -481,7 +525,11 @@ class Definitions:
             definition = Definition(found, members)
             self._by_signature[signature] = definition
         definition.documents.add(
-            found.defined_in if isinstance(found, model.Avp) else found.reference
+            found.defined_in
+            if isinstance(found, model.Avp)
+            else found.undefined.reference
+            if isinstance(found, model.Placeholder)
+            else found.reference
         )
         if reader is not None:
             definition.readers.add(reader)
@@ -497,6 +545,8 @@ class Definitions:
             return self.add(member.avp, reader)
         if member.hole is not None:
             return self.add(member.hole, reader)
+        if member.placeholder is not None:
+            return self.add(member.placeholder, reader)
         if member.name == "AVP":
             return None
         # A grouped AVP among its own descendants: the model stops there
@@ -505,9 +555,11 @@ class Definitions:
 
     @staticmethod
     def _signature(
-        found: model.Avp | model.Hole,
+        found: model.Avp | model.Hole | model.Placeholder,
         members: list[tuple[model.Member, Definition | None]],
     ) -> tuple:
+        if isinstance(found, model.Placeholder):
+            return ("placeholder", found.undefined.reference, found.name)
         flags = _flags(found.flag_rules)
         if isinstance(found, model.Hole):
             return ("hole", str(found), found.vendor_id, found.code, found.data_type)
@@ -517,6 +569,9 @@ class Definitions:
             else (type(value).__name__, value.first, value.last)
             for value in getattr(found, "values", ())
         )
+        dropped = tuple(spelled(member) for member in getattr(found, "dropped", ()))
+        # A supplied reading never merges with a corpus reading of the same
+        # identity: its comments and notes name another source.
         return (
             found.name,
             found.identity,
@@ -524,6 +579,8 @@ class Definitions:
             flags,
             _body_signature(members),
             values,
+            dropped,
+            found.supplied,
         )
 
 
@@ -536,8 +593,9 @@ def _order(definition: Definition) -> tuple:
         definition.name,
         min(definition.documents, default=""),
         not definition.own,
-        _flags(definition.sample.flag_rules) or (),
-        definition.hole or "",
+        _flags(definition.flag_rules) or (),
+        definition.hole or definition.placeholder or "",
+        definition.supplied or "",
         [(member.rule.presence.value, member.name) for member, _ in definition.members],
     )
 
@@ -599,6 +657,21 @@ def member_note(
         elif marks != ("All",):  # every access type restricts nothing
             spelled.append(f"{column.value}: {', '.join(marks)}")
     return "; ".join(spelled) or None
+
+
+def dropped_lines(dropped: tuple[model.Member, ...]) -> list[str]:
+    """One sentence per member `--undefined drop` took out of a body."""
+    lines = []
+    for member in dropped:
+        hole = member.hole
+        assert hole is not None and hole.undefined is not None
+        undefined = hole.undefined
+        required = ", required by the ABNF" if member.min_occurs > 0 else ""
+        lines.append(
+            f"Dropped, undefined in the corpus: {spelled(member)}"
+            f" ({undefined.reference} clause {undefined.section}){required}."
+        )
+    return lines
 
 
 @dataclass
@@ -704,6 +777,7 @@ def collect_unit(
             if _body_signature(command.members) == _body_signature(members)
             and command.notes == notes
             and command.message.flags == message.flags
+            and command.message.dropped == message.dropped
         ]
         if same:
             same[0].sections.append(message.section)
@@ -1059,7 +1133,11 @@ def gen_defs(
     entries = []
     for (member, target), note in zip(members, notes, strict=True):
         if target is None or target.identity is None:
-            reason = "" if target is None else f"  # hole: {target.hole}"
+            reason = ""
+            if target is not None and target.placeholder is not None:
+                reason = f"  # placeholder: {target.placeholder}"
+            elif target is not None:
+                reason = f"  # hole: {target.hole}"
             entries.append(Entry(None, f"# {spelled(member)}{reason}"))
             continue
         alike = grouped[target.identity]
@@ -1097,6 +1175,14 @@ def gen_defs(
                 comments.append(spelled(member))
         if target.hole is not None:
             comments.append(f"hole: {target.hole}")
+        if target.supplied is not None:
+            comments.append(f"supplied: {target.supplied}")
+        aliased = next((m.alias for m in alike if m.alias is not None), None)
+        if aliased is not None:
+            comments.append(
+                f"{spelled(member)} read as {aliased.reference} {aliased.name}:"
+                f" {aliased.source}"
+            )
         if note is not None:
             comments.append(note)
         addition = resolver.additions.get(target.identity)
@@ -1230,8 +1316,23 @@ def render_unit(unit: Unit, resolver: Resolver) -> str:
                 "",
                 "",
                 f"class {command.class_name}({base}):",
-                f'    """A {spelled_as} message, clause{plural} {clauses}{printed}."""',
             ]
+            summary = f"A {spelled_as} message, clause{plural} {clauses}{printed}."
+            dropped = dropped_lines(message.dropped)
+            if dropped:
+                body.append(f'    """{summary}')
+                for line in dropped:
+                    body.append("")
+                    body += textwrap.wrap(
+                        line,
+                        79,
+                        initial_indent="    ",
+                        subsequent_indent="    ",
+                        break_on_hyphens=False,
+                    )
+                body.append('    """')
+            else:
+                body.append(f'    """{summary}"""')
             for entry in entries:
                 if entry.attr is not None:
                     written = annotation(entry)
@@ -1346,6 +1447,16 @@ def render_grouped(added: GroupedAddition, resolver: Resolver) -> list[str]:
     ]
     if definition.hole is not None:
         lines.append(f"    Hole: {definition.hole}.")
+    if definition.supplied is not None:
+        lines.append(f"    Supplied: {definition.supplied}.")
+    for line in dropped_lines(definition.dropped):
+        lines += textwrap.wrap(
+            line,
+            79,
+            initial_indent="    ",
+            subsequent_indent="    ",
+            break_on_hyphens=False,
+        )
     lines.append('    """')
     for entry in entries:
         if entry.attr is None:
@@ -1523,6 +1634,8 @@ def _dictionaries(kind: str, additions: list[Addition]) -> list[str]:
         for reading in addition.readings:
             if reading.hole is not None:
                 notes.append(f"hole: {reading.hole}")
+            if reading.supplied is not None:
+                notes.append(f"supplied: {reading.supplied}")
             if reading.wireshark_alias is not None:
                 notes.append(f"Wireshark: {reading.wireshark_alias}")
         notes = list(dict.fromkeys(notes))
@@ -1542,7 +1655,11 @@ def _dictionaries(kind: str, additions: list[Addition]) -> list[str]:
 
 
 def render_init(
-    units: list[Unit], sources: list[str], counts: dict[str, int], version: str
+    units: list[Unit],
+    sources: list[str],
+    counts: dict[str, int],
+    version: str,
+    undefined: str | None = None,
 ) -> str:
     lines = [
         MARKER,
@@ -1553,6 +1670,10 @@ def render_init(
         "",
         *(f"- {source}" for source in sources),
         "",
+    ]
+    if undefined is not None:
+        lines += [*textwrap.wrap(undefined, 79, break_on_hyphens=False), ""]
+    lines += [
         "Modules:",
         "",
     ]
@@ -1620,6 +1741,12 @@ def generate(
     documents = {document for d in definitions for document in d.documents}
     documents |= set(references)
     sources = sorted(titles[document] for document in documents if document in titles)
+    answered = _answered(definitions, units)
+    # What the consumer supplied is an input as the documents are.
+    sources += sorted(
+        {d.supplied for d in definitions if d.supplied is not None}
+        | {alias.source for alias, _ in answered["alias"]}
+    )
     files = {}
     per_module: dict[str, set[str]] = {}
     for unit in units:
@@ -1641,9 +1768,75 @@ def generate(
                 needed |= per_module[unit.module]
         per_spec[reference] = needed
     counts = {module: len(needed) for module, needed in per_module.items()}
-    files["__init__.py"] = render_init(units, sources, counts, library.version)
+    files["__init__.py"] = render_init(
+        units,
+        sources,
+        counts,
+        library.version,
+        _undefined_line(built.undefined_policy, answered),
+    )
     files["additions.py"] = render_additions(resolver, sources)
     return Generated(files, per_spec)
+
+
+def _answered(
+    definitions: Definitions, units: list[Unit]
+) -> dict[str, list[tuple[model.Alias, str]] | list[str]]:
+    """The undefined names the generated set reaches, by what became of
+    them: "hole" and "placeholder" by reading, "dropped" by body, "supplied"
+    by definition, "alias" with the name the alias answers for."""
+    found: dict[str, dict] = {
+        "hole": {},
+        "dropped": {},
+        "placeholder": {},
+        "supplied": {},
+        "alias": {},
+    }
+
+    def body(members: list[tuple[model.Member, Definition | None]], dropped) -> None:
+        for member in dropped:
+            undefined = member.hole.undefined
+            found["dropped"][f"{undefined.reference} {undefined.name}"] = None
+        for member, _ in members:
+            if member.alias is not None:
+                found["alias"][member.alias, member.name] = None
+
+    for definition in definitions:
+        sample = definition.sample
+        if isinstance(sample, model.Hole) and sample.undefined is not None:
+            found["hole"][f"{sample.document} {sample.name}"] = None
+        elif isinstance(sample, model.Placeholder):
+            found["placeholder"][f"{sample.undefined.reference} {sample.name}"] = None
+        elif isinstance(sample, model.Avp) and sample.supplied is not None:
+            found["supplied"][f"{sample.defined_in} {sample.name}"] = None
+        body(definition.members, definition.dropped)
+    for unit in units:
+        for command in unit.commands:
+            body(command.members, command.message.dropped)
+    return {kind: list(names) for kind, names in found.items()}
+
+
+def _undefined_line(policy: model.UndefinedPolicy, answered: dict) -> str | None:
+    """The `__init__.py` sentence recording `--undefined`, naming what
+    became of each undefined name it reached; None where it reached none."""
+    kinds = {
+        "dropped": answered["dropped"],
+        "placeholders": answered["placeholder"],
+        "supplied": answered["supplied"],
+        "read as another AVP": [
+            f"{name} as {alias.reference} {alias.name}"
+            for alias, name in answered["alias"]
+        ],
+        "holes": answered["hole"],
+    }
+    parts = [
+        f"{kind}: {', '.join(sorted(set(names)))}"
+        for kind, names in kinds.items()
+        if names
+    ]
+    if not parts:
+        return None
+    return f"Undefined names, --undefined {policy.value}: {'; '.join(parts)}."
 
 
 def write(output: Path, files: dict[str, str]) -> None:
@@ -1691,11 +1884,37 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="a Wireshark dictionary directory, for Wireshark's AVP names",
     )
+    parser.add_argument(
+        "--undefined",
+        choices=[policy.value for policy in model.UndefinedPolicy],
+        default=model.UndefinedPolicy.HOLE.value,
+        help="what to make of the names the corpus declares defined nowhere"
+        " (default: hole)",
+    )
+    parser.add_argument(
+        "--supply",
+        type=Path,
+        action="append",
+        default=[],
+        metavar="PATH.dad",
+        help="a .dad sidecar supplying definitions, with --undefined supply;"
+        " repeatable",
+    )
     args = parser.parse_args(argv)
     if bool(args.specifications) == args.all:
         parser.error("name specifications or pass --all, not both")
+    policy = model.UndefinedPolicy(args.undefined)
+    if (policy is model.UndefinedPolicy.SUPPLY) != bool(args.supply):
+        parser.error("--supply goes with --undefined supply, and it with --supply")
     books = corpus.Corpus.load([args.corpus])
-    built = model.Model.build(books, dictionary=args.dictionary)
+    try:
+        supply = model.supplied_from(*args.supply) if args.supply else None
+        built = model.Model.build(
+            books, dictionary=args.dictionary, undefined=policy, supply=supply
+        )
+    except model.ModelError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
     if args.all:
         references = built.references()
     else:

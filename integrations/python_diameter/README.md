@@ -12,17 +12,21 @@ uv run integrations/python_diameter/validate.py TS29.229
 uv run integrations/python_diameter/generate.py TS29.229 TS29.272 -o out/cx_s6a
 uv run integrations/python_diameter/generate.py --all -o out/protocols \
     --dictionary specifications/wireshark
+uv run integrations/python_diameter/generate.py --all -o out/protocols \
+    --undefined supply --supply acme.dad
 ```
 
 `generate.py` takes references (`TS29.229`, `29.229`, `RFC6733`) or
-`--all`, `--corpus` for a corpus other than the repository's `dad/`, and
-`--dictionary` for Wireshark's AVP names. It reads the installed library
+`--all`, `--corpus` for a corpus other than the repository's `dad/`,
+`--dictionary` for Wireshark's AVP names, and `--undefined` with `--supply`
+for the names the corpus declares defined nowhere ([below](#undefined-names)).
+It reads the installed library
 for the names it references, replaces the output directory only if every
 file in it is one it wrote, and prints how many additions each
 specification needs (`TS29.229: 19 additions`). The output is a function
-of the corpus, the Wireshark dictionary and the library version alone,
-byte for byte: regenerating after a change to any of them gives a
-reviewable diff.
+of the corpus, the Wireshark dictionary, the library version and the
+options alone, byte for byte: regenerating after a change to any of them
+gives a reviewable diff.
 
 ## Output layout
 
@@ -214,6 +218,52 @@ generated ones are built by hand, as the library's are.
   typed `Avp` when no document states its type. A name that resolves to no
   identity, like `* [ AVP ]`, is a comment in its place; the library keeps
   such AVPs in the additional AVPs.
+- **A member without a code.** `AvpGenDef` needs one, so an undefined
+  name kept as a placeholder is a comment in its place, as a hole without
+  an identity is, labelled as the choice it is (below).
+
+## Undefined names
+
+Eight members the corpus's documents use are defined nowhere: RFC 4004's
+three SPIs, TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS
+29.154's `External-Group-Identifier`, TS 32.299's `Submission-Timestamp`
+and `Network-Element` ([consumers.md](../../docs/consumers.md#undefined-names)).
+`--undefined` is the model's policy for them, and `__init__.py`'s docstring
+records it with what became of each name the generated set reaches
+(`Undefined names, --undefined drop: dropped: RFC4004 MIP-HA-to-MN-SPI, …`):
+
+- **`hole`**, the default: as any hole, a comment in its place
+  (`# { MIP-HA-to-MN-SPI }  # hole: RFC4004 MIP-HA-to-MN-SPI: undefined
+  (clause 9.4)`), and a grouped class's docstring says `Hole:`.
+- **`drop`**: no `AvpGenDef` and no comment; the command or grouped class
+  the script writes says in its docstring what it dropped (`Dropped,
+  undefined in the corpus: { External-Group-Identifier } (TS29.154 clause
+  A.6.6.2), required by the ABNF.`). A grouped AVP the library's class
+  carries gets no class and so no such line; `__init__.py` lists every
+  dropped name. Nothing goes to `additions.py`; on decode the library puts
+  such an AVP in `additional_avps`. Four of the eight are required
+  members, so a command built so no longer carries what its ABNF requires.
+- **`placeholder`**: a comment in its place, as for `hole`, but labelled
+  as the consumer's choice (`# [ ProSe-Query-Code ]  # placeholder:
+  undefined in TS29.345 clause 6.3.53`). The library's shape allows no
+  more: a placeholder has no code. Nothing goes to `additions.py`.
+- **`supply`**, with one or more `--supply PATH.dad`: hand-authored `.dad`
+  sidecars stating the definitions, each complete in its file (an AVP
+  table row with code, type and flags, and a grouped or enumerated section
+  for a body or values; `model.supplied_from`). A supplied AVP is an
+  ordinary definition: an `AvpGenDef` with its constant, an
+  `additions.py` entry where the library lacks the identity, noted
+  `supplied: ACME ProSe dictionary (acme.dad)` there and on the member,
+  and the sidecar among the sources. A name no sidecar supplies stays a
+  hole. A sidecar claiming the identity of an AVP the corpus defines is
+  refused. `--supply` without `--undefined supply`, or the reverse, is
+  refused too.
+
+An `Alias` (TS 29.154's `External-Group-Identifier` read as TS 29.336's
+`External-Identifier`) is the model's, through `generate()` with a model
+built with one; the member takes the named AVP's constant, commented
+`{ External-Group-Identifier } read as TS29.336 External-Identifier:
+<source>`. No sidecar spells one.
 
 ## What the tables mark
 

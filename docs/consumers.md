@@ -415,7 +415,7 @@ What the model makes of such a name is the consumer's choice,
 | `DROP` | None | None | removed; `Grouped.dropped`, `Message.dropped` keep it, with its hole | no | builds |
 | `PLACEHOLDER` | None | None | in place, `Member.placeholder` a `model.Placeholder` | no; `placeholders()` | builds |
 | `SUPPLY`, supplied | the consumer's `Avp`, `supplied` its source | None | `Member.avp` | no | builds |
-| `SUPPLY`, `Alias` | the named AVP, unchanged | None | `Member.avp`, `rule.name` the document's | no | builds |
+| `SUPPLY`, `Alias` | the named AVP, unchanged | None | `Member.avp`, `rule.name` the document's, `Member.alias` the `Alias` | no | builds |
 | `SUPPLY`, neither | as `HOLE` | | | | |
 
 Only a name a block declares is open to the choice. A name resolving
@@ -514,7 +514,9 @@ whose `AvpGenDef` tables reference the library's `AVP_*`, `VENDOR_*` and
 grouped classes — so the library can carry them beside its merged classes.
 What its dictionary lacks, or types otherwise than the document, goes to an
 `additions.py` in the dictionary's shape rather than being papered over.
-Holes stay in the tables with their reason; an application's id is the
+Holes stay in the tables with their reason, and `--undefined` (with
+`--supply` sidecars) passes the model's policy for undefined names, which
+`__init__.py` records; an application's id is the
 model's, so a module whose document states it only in prose gets it, and
 only RFC 6733's clause 8 gets `None`. Where no application scope names the
 application, the `APPLICATION_ID` comment names it as the registry does

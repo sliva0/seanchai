@@ -1886,6 +1886,7 @@ def test_ts_29_154s_group_identifier_reads_as_ts_29_336s_by_alias():
     (member,) = [m for m in ecr.avps if m.name == "External-Group-Identifier"]
     assert member.avp == built.resolve("TS29.336", "External-Identifier")
     assert member.avp is not None and member.avp.identity == (10415, 3111)
+    assert member.alias == alias
 
 
 @pytest.mark.sources
@@ -2170,6 +2171,8 @@ class TestUndefinedNames:
         member = _holder(built).members[2]
         assert member.rule.name == "Missing-Opt"
         assert member.avp == built.resolve("TS29.900", "Known")
+        assert member.alias == alias
+        assert _holder(built).members[0].alias is None
         assert built.resolve("TS29.900", "Missing-Opt") == member.avp
 
     def test_a_document_key_wins_over_a_name_key(self):

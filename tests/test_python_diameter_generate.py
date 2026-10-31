@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from seanchai import model
+from seanchai import corpus, model
 from seanchai.dad import ast
 
 _ROOT = Path(__file__).parent.parent
@@ -599,3 +599,203 @@ def test_the_pinned_dictionary_names_import_cleanly(generator, tmp_path):
         """,
     )
     assert found == "ok\n"
+
+
+# --- undefined names -----------------------------------------------------------
+
+_UNDEFINED_SPECS = ["RFC4004", "TS29.345", "TS29.154"]
+
+_SIDECAR = """\
+; Specification: ACME ProSe dictionary
+; Vendor-ID: 10415
+
+
+; Type: AVP Table
+; Section: 1
+; Columns: Name              Code  Type         Must  May  S.not  M.not
+           ProSe-Query-Code  3899  OctetString  V     -    -      M
+"""
+
+
+def _generated(generator, output: Path, *options: str) -> Path:
+    assert generator.main([*_UNDEFINED_SPECS, "-o", str(output), *options]) == 0
+    return output
+
+
+@pytest.fixture(scope="module")
+def sidecar(tmp_path_factory) -> Path:
+    path = tmp_path_factory.mktemp("sidecar") / "acme.dad"
+    path.write_text(_SIDECAR, encoding="utf-8")
+    return path
+
+
+@pytest.fixture(scope="module")
+def policies(tmp_path_factory, generator, sidecar) -> dict[str, Path]:
+    """The three documents with undefined members, under each policy but
+    the default, which the `--all` package covers."""
+    root = tmp_path_factory.mktemp("policies")
+    return {
+        "drop": _generated(
+            generator, root / "drop" / "generated", "--undefined", "drop"
+        ),
+        "placeholder": _generated(
+            generator, root / "placeholder" / "generated", "--undefined", "placeholder"
+        ),
+        "supply": _generated(
+            generator,
+            root / "supply" / "generated",
+            "--undefined",
+            "supply",
+            "--supply",
+            str(sidecar),
+        ),
+    }
+
+
+def _imports(package: Path) -> None:
+    _run(
+        package,
+        """
+        import importlib, pkgutil
+        import generated
+        for info in pkgutil.iter_modules(generated.__path__):
+            importlib.import_module(f"generated.{info.name}")
+        generated.additions.register()
+        """,
+    )
+
+
+def test_the_default_records_the_undefined_names_it_leaves_holes(package):
+    init = _read(package, "__init__")
+    assert "Undefined names, --undefined hole: holes: RFC4004 MIP-HA-to-MN-SPI," in (
+        " ".join(init.split())
+    )
+    assert "TS32.299 Submission-Timestamp." in " ".join(init.split())
+
+
+def test_drop_leaves_no_member_line_and_names_the_dropped(policies):
+    package = policies["drop"]
+    _imports(package)
+    additions = _read(package, "additions")
+    # Neither a comment nor an `AvpGenDef` stands for the dropped members.
+    assert "# [ ProSe-Query-Code ]" not in additions
+    assert '"prose_query_code"' not in additions
+    request = additions.split("class DiscoveryAuthRequest:\n")[1].split('    """\n')[0]
+    assert " ".join(request.split()).endswith(
+        "Dropped, undefined in the corpus: [ ProSe-Query-Code ] (TS29.345 clause"
+        " 6.3.53). Dropped, undefined in the corpus: [ ProSe-Response-Code ]"
+        " (TS29.345 clause 6.3.53)."
+    )
+    ecr = _read(package, "ts29_154_a_6").split("class EcRequest(Ec):\n")[1]
+    docstring, body = ecr.split('    """\n', 1)
+    assert " ".join(docstring.split()).endswith(
+        "Dropped, undefined in the corpus: { External-Group-Identifier } (TS29.154"
+        " clause A.6.6.2), required by the ABNF."
+    )
+    assert "External-Group-Identifier" not in body.split("\n\n\nclass ")[0]
+    assert "MIP-HA-to-MN-SPI" not in _read(package, "rfc4004")
+    init = " ".join(_read(package, "__init__").split())
+    assert (
+        "Undefined names, --undefined drop: dropped: RFC4004 MIP-HA-to-MN-SPI," in init
+    )
+
+
+def test_a_placeholder_is_a_comment_in_place_with_no_addition(policies):
+    package = policies["placeholder"]
+    _imports(package)
+    ecr = _read(package, "ts29_154_a_6")
+    assert (
+        "        # { External-Group-Identifier }  # placeholder: undefined in"
+        " TS29.154 clause A.6.6.2\n"
+    ) in ecr
+    additions = _read(package, "additions")
+    assert (
+        "        # [ ProSe-Query-Code ]  # placeholder: undefined in TS29.345"
+        " clause 6.3.53\n"
+    ) in additions
+    assert "PROSE_QUERY_CODE" not in additions
+
+
+def test_a_supplied_definition_is_an_ordinary_one_with_its_source(policies):
+    package = policies["supply"]
+    _imports(package)
+    additions = _read(package, "additions")
+    assert "AVP_TGPP_PROSE_QUERY_CODE = 3899  # TS29.345 clause 6.3.53\n" in additions
+    assert (
+        '        AvpGenDef("prose_query_code", AVP_TGPP_PROSE_QUERY_CODE, VENDOR_TGPP,'
+        " is_mandatory=False),  # supplied: ACME ProSe dictionary (acme.dad)\n"
+    ) in additions
+    assert (
+        '    AVP_TGPP_PROSE_QUERY_CODE: {"name": "ProSe-Query-Code", "type":'
+        ' AvpOctetString, "vendor": 10415},  # TS29.345 clause 6.3.53; supplied:'
+        " ACME ProSe dictionary (acme.dad)\n"
+    ) in additions
+    # Supplied nothing for, the others stay holes.
+    assert "# [ ProSe-Response-Code ]  # hole: TS29.345" in additions
+    init = " ".join(_read(package, "__init__").split())
+    assert "- ACME ProSe dictionary (acme.dad)" in init
+    assert (
+        "Undefined names, --undefined supply: supplied: TS29.345 ProSe-Query-Code;"
+        " holes: RFC4004 MIP-HA-to-MN-SPI,"
+    ) in init
+
+
+def test_an_alias_writes_the_named_avps_constant(generator, tmp_path):
+    books = corpus.Corpus.load([_ROOT / "dad"])
+    alias = model.Alias("TS29.336", "External-Identifier", "TS 29.154 CR draft")
+    built = model.Model.build(
+        books,
+        undefined=model.UndefinedPolicy.SUPPLY,
+        supply={"External-Group-Identifier": alias},
+    )
+
+    generated = generator.generate(built, books, ["TS29.154"], generator.Library.load())
+
+    ecr = generated.files["ts29_154_a_6.py"].split("class EcRequest(Ec):\n")[1]
+    assert (
+        '        AvpGenDef("external_identifier", AVP_TGPP_EXTERNAL_IDENTIFIER,'
+        " VENDOR_TGPP, is_required=True, is_mandatory=True),  #"
+        " { External-Group-Identifier } read as TS29.336 External-Identifier:"
+        " TS 29.154 CR draft\n"
+    ) in ecr
+    assert "- TS 29.154 CR draft\n" in generated.files["__init__.py"]
+    generator.write(tmp_path / "generated", generated.files)
+    _imports(tmp_path / "generated")
+
+
+@pytest.mark.parametrize("policy", ["drop", "placeholder", "supply"])
+def test_the_output_is_a_function_of_its_inputs_per_policy(
+    generator, policies, sidecar, tmp_path, policy
+):
+    options = ["--undefined", policy]
+    if policy == "supply":
+        options += ["--supply", str(sidecar)]
+    again = _generated(generator, tmp_path / "generated", *options)
+    first = {path.name: path.read_bytes() for path in policies[policy].glob("*.py")}
+    second = {path.name: path.read_bytes() for path in again.glob("*.py")}
+    assert first == second
+
+
+@pytest.mark.parametrize(
+    "options",
+    [["--supply", "acme.dad"], ["--undefined", "supply"]],
+    ids=["supply-alone", "policy-alone"],
+)
+def test_supply_and_its_policy_go_together(generator, tmp_path, capsys, options):
+    with pytest.raises(SystemExit) as raised:
+        generator.main(["TS29.345", "-o", str(tmp_path / "out"), *options])
+    assert raised.value.code == 2
+    assert "--supply goes with --undefined supply" in capsys.readouterr().err
+
+
+def test_a_sidecar_the_model_refuses_is_an_error(generator, tmp_path, capsys):
+    """A sidecar claiming an identity the corpus defines: ProSe-Restricted-
+    Code's 3846."""
+    sidecar = tmp_path / "clash.dad"
+    sidecar.write_text(_SIDECAR.replace("3899", "3846"), encoding="utf-8")
+
+    options = ["--undefined", "supply", "--supply", str(sidecar)]
+    code = generator.main(["TS29.345", "-o", str(tmp_path / "out"), *options])
+
+    assert code == 2
+    assert "ProSe-Restricted-Code; an Alias reads one name" in capsys.readouterr().err

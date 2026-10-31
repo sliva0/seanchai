@@ -478,6 +478,9 @@ class Member:
     avp: Avp | None
     hole: Hole | None = None
     placeholder: Placeholder | None = None
+    # The `Alias` `avp` was read through, for an undefined name the
+    # consumer reads as another AVP: `avp.name` is then the alias's.
+    alias: Alias | None = None
 
     @property
     def name(self) -> str:
@@ -1426,13 +1429,16 @@ class Model:
             and self._older(view) == undefined.version
         )
 
+    def _answer(self, undefined: Undefined) -> Supplied | Alias | None:
+        """What `supply` says of a declared name, a document key first."""
+        answer = self._supply.get((undefined.reference, undefined.name))
+        return self._supply.get(undefined.name) if answer is None else answer
+
     def _answered(self, undefined: Undefined, stack: tuple) -> Avp | None:
         """What `supply` answers for a declared name: the `Supplied`
         definition read in the declaring document, or the AVP an `Alias`
         names; None where it says nothing of it."""
-        answer = self._supply.get((undefined.reference, undefined.name))
-        if answer is None:
-            answer = self._supply.get(undefined.name)
+        answer = self._answer(undefined)
         if answer is None:
             return None
         if isinstance(answer, Alias):
@@ -1786,10 +1792,21 @@ class Model:
             return Member(rule=rule, avp=None)
         found = self._final(view, rule.name, stack)
         if isinstance(found, Avp):
-            return Member(rule=rule, avp=found)
+            return Member(rule=rule, avp=found, alias=self._alias(view, rule.name))
         if found.undefined is not None and self._policy is UndefinedPolicy.PLACEHOLDER:
             return Member(rule=rule, avp=None, placeholder=Placeholder(found.undefined))
         return Member(rule=rule, avp=None, hole=found)
+
+    def _alias(self, view: _View, name: str) -> Alias | None:
+        """The `Alias` `name` resolves through in `view`, if it does."""
+        if self._policy is not UndefinedPolicy.SUPPLY:
+            return None
+        draft = self._resolved.get((view.entry.path, name))
+        hole = None if draft is None else draft.final
+        if not isinstance(hole, Hole) or hole.undefined is None:
+            return None
+        answer = self._answer(hole.undefined)
+        return answer if isinstance(answer, Alias) else None
 
     def _split(
         self, members: tuple[Member, ...]
