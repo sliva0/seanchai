@@ -823,3 +823,194 @@ CORRECTIONS += [
     )
     for name, (clause, oma) in _TYPED_HERE.items()
 ]
+
+# Clause 7.2.238: Type-Number "identifies the well-known media types. The
+# values are taken from OMNA WSP Content Type Numbers [210]", printing none.
+# The values are the whole list [210] numbers, its registered values
+# (0x0201 to 0x031E) with its Well-Known ones (0x00 to 0x5B), since the
+# clause names the list rather than a range of it; Wireshark's dictionary
+# has the Well-Known ones to 0x54. [210]'s
+# omna-wsp-content-type.aspx now redirects; the list is OMNA's "WSP Content
+# Type Numbers" page, https://www.openmobilealliance.org/omna/wsp/
+# wsp_content_type_codes.html, fetched 2026-10-31. The page is undated, and
+# the Wayback Machine has its list unchanged since the snapshot of
+# 2017-10-21, the first with 0x5B application/json. The page has lost six
+# entries the 2012-10-16 snapshot of the .aspx page holds, restored from it:
+# 0x0B and 0x39, missing; 0x0303 and 0x0304, printed without a number; 0x030B,
+# whose content-type cell holds the registrant's name; 0x0204, which repeats
+# 0x0205's name. With 0x0204 restored the list repeats no name, so none
+# needs its number appended to stay unique. The page's spellings are kept,
+# 0x0E's "multipart/byterantes" among them. Well-known values run to 0xFF,
+# registered ones from 0x0100, experimental ones from 0x010000; OMNA lists no
+# experimental one. Release 11's clause, of the same number, cites [210] in
+# the same words.
+_WSP_CONTENT_TYPES = (
+    (0x00, "*/*"),
+    (0x01, "text/*"),
+    (0x02, "text/html"),
+    (0x03, "text/plain"),
+    (0x04, "text/x-hdml"),
+    (0x05, "text/x-ttml"),
+    (0x06, "text/x-vCalendar"),
+    (0x07, "text/x-vCard"),
+    (0x08, "text/vnd.wap.wml"),
+    (0x09, "text/vnd.wap.wmlscript"),
+    (0x0A, "text/vnd.wap.wta-event"),
+    (0x0B, "multipart/*"),
+    (0x0C, "multipart/mixed"),
+    (0x0D, "multipart/form-data"),
+    (0x0E, "multipart/byterantes"),
+    (0x0F, "multipart/alternative"),
+    (0x10, "application/*"),
+    (0x11, "application/java-vm"),
+    (0x12, "application/x-www-form-urlencoded"),
+    (0x13, "application/x-hdmlc"),
+    (0x14, "application/vnd.wap.wmlc"),
+    (0x15, "application/vnd.wap.wmlscriptc"),
+    (0x16, "application/vnd.wap.wta-eventc"),
+    (0x17, "application/vnd.wap.uaprof"),
+    (0x18, "application/vnd.wap.wtls-ca-certificate"),
+    (0x19, "application/vnd.wap.wtls-user-certificate"),
+    (0x1A, "application/x-x509-ca-cert"),
+    (0x1B, "application/x-x509-user-cert"),
+    (0x1C, "image/*"),
+    (0x1D, "image/gif"),
+    (0x1E, "image/jpeg"),
+    (0x1F, "image/tiff"),
+    (0x20, "image/png"),
+    (0x21, "image/vnd.wap.wbmp"),
+    (0x22, "application/vnd.wap.multipart.*"),
+    (0x23, "application/vnd.wap.multipart.mixed"),
+    (0x24, "application/vnd.wap.multipart.form-data"),
+    (0x25, "application/vnd.wap.multipart.byteranges"),
+    (0x26, "application/vnd.wap.multipart.alternative"),
+    (0x27, "application/xml"),
+    (0x28, "text/xml"),
+    (0x29, "application/vnd.wap.wbxml"),
+    (0x2A, "application/x-x968-cross-cert"),
+    (0x2B, "application/x-x968-ca-cert"),
+    (0x2C, "application/x-x968-user-cert"),
+    (0x2D, "text/vnd.wap.si"),
+    (0x2E, "application/vnd.wap.sic"),
+    (0x2F, "text/vnd.wap.sl"),
+    (0x30, "application/vnd.wap.slc"),
+    (0x31, "text/vnd.wap.co"),
+    (0x32, "application/vnd.wap.coc"),
+    (0x33, "application/vnd.wap.multipart.related"),
+    (0x34, "application/vnd.wap.sia"),
+    (0x35, "text/vnd.wap.connectivity-xml"),
+    (0x36, "application/vnd.wap.connectivity-wbxml"),
+    (0x37, "application/pkcs7-mime"),
+    (0x38, "application/vnd.wap.hashed-certificate"),
+    (0x39, "application/vnd.wap.signed-certificate"),
+    (0x3A, "application/vnd.wap.cert-response"),
+    (0x3B, "application/xhtml+xml"),
+    (0x3C, "application/wml+xml"),
+    (0x3D, "text/css"),
+    (0x3E, "application/vnd.wap.mms-message"),
+    (0x3F, "application/vnd.wap.rollover-certificate"),
+    (0x40, "application/vnd.wap.locc+wbxml"),
+    (0x41, "application/vnd.wap.loc+xml"),
+    (0x42, "application/vnd.syncml.dm+wbxml"),
+    (0x43, "application/vnd.syncml.dm+xml"),
+    (0x44, "application/vnd.syncml.notification"),
+    (0x45, "application/vnd.wap.xhtml+xml"),
+    (0x46, "application/vnd.wv.csp.cir"),
+    (0x47, "application/vnd.oma.dd+xml"),
+    (0x48, "application/vnd.oma.drm.message"),
+    (0x49, "application/vnd.oma.drm.content"),
+    (0x4A, "application/vnd.oma.drm.rights+xml"),
+    (0x4B, "application/vnd.oma.drm.rights+wbxml"),
+    (0x4C, "application/vnd.wv.csp+xml"),
+    (0x4D, "application/vnd.wv.csp+wbxml"),
+    (0x4E, "application/vnd.syncml.ds.notification"),
+    (0x4F, "audio/*"),
+    (0x50, "video/*"),
+    (0x51, "application/vnd.oma.dd2+xml"),
+    (0x52, "application/mikey"),
+    (0x53, "application/vnd.oma.dcd"),
+    (0x54, "application/vnd.oma.dcdc"),
+    (0x55, "text/x-vMessage"),
+    (0x56, "application/vnd.omads-email+wbxml"),
+    (0x57, "text/x-vBookmark"),
+    (0x58, "application/vnd.syncml.dm.notification"),
+    (0x5A, "application/octet-stream"),
+    (0x5B, "application/json"),
+    (0x0201, "application/vnd.uplanet.cacheop-wbxml"),
+    (0x0202, "application/vnd.uplanet.signal"),
+    (0x0203, "application/vnd.uplanet.alert-wbxml"),
+    (0x0204, "application/vnd.uplanet.list-wbxml"),
+    (0x0205, "application/vnd.uplanet.listcmd-wbxml"),
+    (0x0206, "application/vnd.uplanet.channel-wbxml"),
+    (0x0207, "application/vnd.uplanet.provisioning-status-uri"),
+    (0x0208, "x-wap.multipart/vnd.uplanet.header-set"),
+    (0x0209, "application/vnd.uplanet.bearer-choice-wbxml"),
+    (0x020A, "application/vnd.phonecom.mmc-wbxml"),
+    (0x020B, "application/vnd.nokia.syncset+wbxml"),
+    (0x020C, "image/x-up-wpng"),
+    (0x0300, "application/iota.mmc-wbxml"),
+    (0x0301, "application/iota.mmc-xml"),
+    (0x0302, "application/vnd.syncml+xml"),
+    (0x0303, "application/vnd.syncml+wbxml"),
+    (0x0304, "text/vnd.wap.emn+xml"),
+    (0x0305, "text/calendar"),
+    (0x0306, "application/vnd.omads-email+xml"),
+    (0x0307, "application/vnd.omads-file+xml"),
+    (0x0308, "application/vnd.omads-folder+xml"),
+    (0x0309, "text/directory;profile=vCard"),
+    (0x030A, "application/vnd.wap.emn+wbxml"),
+    (0x030B, "application/vnd.nokia.ipdc-purchase-response"),
+    (0x030C, "application/vnd.motorola.screen3+xml"),
+    (0x030D, "application/vnd.motorola.screen3+gzip"),
+    (0x030E, "application/vnd.cmcc.setting+wbxml"),
+    (0x030F, "application/vnd.cmcc.bombing+wbxml"),
+    (0x0310, "application/vnd.docomo.pf"),
+    (0x0311, "application/vnd.docomo.ub"),
+    (0x0312, "application/vnd.omaloc-supl-init"),
+    (0x0313, "application/vnd.oma.group-usage-list+xml"),
+    (0x0314, "application/oma-directory+xml"),
+    (0x0315, "application/vnd.docomo.pf2"),
+    (0x0316, "application/vnd.oma.drm.roap-trigger+wbxml"),
+    (0x0317, "application/vnd.sbm.mid2"),
+    (0x0318, "application/vnd.wmf.bootstrap"),
+    (0x0319, "application/vnc.cmcc.dcd+xml"),
+    (0x031A, "application/vnd.sbm.cid"),
+    (0x031B, "application/vnd.oma.bcast.provisioningtrigger"),
+    (0x031C, "application/vnd.docomo.dm"),
+    (0x031D, "application/vnd.oma.scidm.messages+xml"),
+    (0x031E, "application/vnd.innopath.wamp.notification"),
+)
+
+_TYPE_NUMBER_VALUES = tuple(
+    ast.EnumValue(name=name, value=value) for value, name in _WSP_CONTENT_TYPES
+)
+_TYPE_NUMBER_REASON = (
+    "clause 7.2.238 cites OMNA WSP Content Type Numbers [210] for the values;"
+    " all of OMNA's WSP Content Type Numbers page"
+    " (openmobilealliance.org/omna/wsp/wsp_content_type_codes.html), fetched"
+    " 2026-10-31 and unchanged since the Wayback Machine's snapshot of"
+    " 2017-10-21, Well-Known and registered values, its numbers in decimal;"
+    " 0x0B, 0x39, 0x0204, 0x0303, 0x0304 and 0x030B, which the page has lost,"
+    " restored from the 2012-10-16 snapshot of [210]'s"
+    " omna-wsp-content-type.aspx; the list so restored repeats no name, so no"
+    " name has its number appended"
+)
+
+CORRECTIONS += [
+    Supply(
+        id="type-number-values",
+        target=definition("Type-Number"),
+        expect="OMNA WSP Content Type Numbers [210]",
+        values=_TYPE_NUMBER_VALUES,
+        reason=_TYPE_NUMBER_REASON,
+        versions="18.0.0",
+    ),
+    Supply(
+        id="rel11-type-number-values",
+        target=definition("Type-Number"),
+        expect="OMNA WSP Content Type Numbers [210]",
+        values=_TYPE_NUMBER_VALUES,
+        reason=_TYPE_NUMBER_REASON,
+        versions="11.20.0",
+    ),
+]
