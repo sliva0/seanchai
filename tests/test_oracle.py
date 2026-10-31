@@ -1,5 +1,6 @@
 """The Wireshark dictionary oracle: parsing and the cross-check rules."""
 
+import dataclasses
 from pathlib import Path
 
 import pytest
@@ -224,14 +225,179 @@ def test_name_for_reads_wireshark_spelling_by_identity(tmp_path):
     assert loaded.name_for(10415, 702, "Absent", u32) is None
 
 
-def _written(path, version, data_type):
+def _alias(name, wireshark="Vendor-AVP"):
+    return oracle.Alias(
+        specification="TS29.999", name=name, wireshark=wireshark, reason="kept apart"
+    )
+
+
+def _vendor_spec(name, data_type: ast.DataType | None = ast.DataType.UNSIGNED32):
+    return _spec(_table(_row(name, 700, data_type)), vendor_id=10415)
+
+
+def test_an_accepted_alias_is_agreement(tmp_path):
+    """The dictionary's `Vendor-AVP` is the document's `Spec-Name` under the
+    same vendor, code and type: listed, the rename is accepted, not a
+    disagreement; an alias for another document changes nothing."""
+    loaded = _dictionary(tmp_path)
+    spec = _vendor_spec("Spec-Name")
+
+    (finding,) = oracle.crosscheck(spec, loaded, [_alias("Spec-Name")])
+
+    assert (finding.rule, finding.accepted_by) == ("name-disagrees", "kept apart")
+    assert str(finding).startswith("accepted[name-disagrees] Spec-Name")
+    elsewhere = dataclasses.replace(_alias("Spec-Name"), specification="TS29.998")
+    (finding,) = oracle.crosscheck(spec, loaded, [elsewhere])
+    assert (finding.rule, finding.accepted_by) == ("name-disagrees", None)
+
+
+def test_an_alias_the_dictionary_no_longer_carries_is_stale(tmp_path):
+    """The identity under another name, the corpus's own spelling or none,
+    and an alias naming nothing the file defines: each is reported."""
+    loaded = _dictionary(tmp_path)
+
+    (renamed,) = oracle.crosscheck(
+        _vendor_spec("Spec-Name"), loaded, [_alias("Spec-Name", "Old-Name")]
+    )
+    (agrees,) = oracle.crosscheck(
+        _vendor_spec("Vendor-AVP"), loaded, [_alias("Vendor-AVP", "Old-Name")]
+    )
+    unclaimed = oracle.crosscheck(_vendor_spec("Vendor-AVP"), loaded, [_alias("Gone")])
+
+    assert renamed == oracle.Finding(
+        "stale-alias",
+        "Spec-Name (AVP table): the accepted rename Old-Name does not hold:"
+        " the dictionary calls (vendor 10415, code 700) Vendor-AVP",
+    )
+    assert agrees.rule == "stale-alias"
+    assert agrees.message.endswith("(vendor 10415, code 700) Vendor-AVP")
+    assert unclaimed == [
+        oracle.Finding(
+            "stale-alias",
+            "Gone: the accepted rename Vendor-AVP names no AVP the file defines"
+            " or tabulates",
+        )
+    ]
+
+
+def test_an_alias_typed_otherwise_still_reports(tmp_path):
+    """A rename is agreement only while the types agree too."""
+    loaded = _dictionary(tmp_path)
+    spec = _vendor_spec("Spec-Name", ast.DataType.UTF8_STRING)
+
+    (finding,) = oracle.crosscheck(spec, loaded, [_alias("Spec-Name")])
+
+    assert finding == oracle.Finding(
+        "stale-alias",
+        "Spec-Name (AVP table): the accepted rename Vendor-AVP does not hold:"
+        " corpus says UTF8String, the dictionary says Unsigned32",
+    )
+
+
+def test_an_alias_for_a_typeless_avp_is_not_accepted(tmp_path):
+    """A rename is accepted only on the types' positive agreement: a corpus
+    row stating no type confirms none, so the name disagreement stays a
+    finding, unaccepted and not stale."""
+    loaded = _dictionary(tmp_path)
+    spec = _vendor_spec("Spec-Name", None)
+
+    (finding,) = oracle.crosscheck(spec, loaded, [_alias("Spec-Name")])
+
+    assert finding == oracle.Finding(
+        "name-disagrees",
+        "Spec-Name (AVP table): the dictionary calls (vendor 10415, code 700)"
+        " Vendor-AVP; the accepted rename Vendor-AVP is unconfirmed, the corpus"
+        " stating no type",
+    )
+    assert finding.accepted_by is None
+
+
+def test_aliases_load_with_every_key_once_per_name(tmp_path):
+    path = tmp_path / "aliases.toml"
+    entry = (
+        '[[alias]]\nspecification = "TS29.999"\nname = "Spec-Name"\n'
+        'wireshark = "Vendor-AVP"\nreason = "kept apart"\n'
+    )
+    path.write_text(entry)
+    assert oracle.load_aliases(path) == (_alias("Spec-Name"),)
+    path.write_text(entry * 2)
+    with pytest.raises(oracle.OracleError, match="aliased twice"):
+        oracle.load_aliases(path)
+    path.write_text(entry.replace('reason = "kept apart"\n', ""))
+    with pytest.raises(oracle.OracleError, match="exactly the keys"):
+        oracle.load_aliases(path)
+
+
+@pytest.mark.sources
+def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
+    """Every entry of the repository's list accepts its rename once, and
+    none is stale: the nineteen `name-disagrees` findings it lists are
+    agreement, the other thirty-three still report."""
+    from seanchai import corpus
+
+    loaded = oracle.Oracle.load(_ROOT / "specifications" / "wireshark")
+    aliases = oracle.load_aliases(_ROOT / "integrations/wireshark/aliases.toml")
+    books = corpus.Corpus(corpus.Corpus.load([_ROOT / "dad"]))
+    findings = [
+        finding
+        for entry in books.newest()
+        for finding in oracle.crosscheck(entry.spec, loaded, aliases)
+    ]
+
+    accepted = [finding for finding in findings if finding.accepted_by]
+    assert len(accepted) == len(aliases) == 19
+    assert not [finding for finding in findings if finding.rule == "stale-alias"]
+    assert len(findings) - len(accepted) == 80
+    assert sum(finding.rule == "name-disagrees" for finding in findings) == 52
+
+
+def test_crosscheck_counts_accepted_renames_apart(tmp_path):
+    from click.testing import CliRunner
+
+    from seanchai.cli import main
+
+    (tmp_path / "dictionary").mkdir()
+    _dictionary(tmp_path / "dictionary")
+    _written(tmp_path / "29999-i00.dad", "18.0.0", ast.DataType.UNSIGNED32, "Spec")
+    aliases = tmp_path / "aliases.toml"
+    aliases.write_text(
+        '[[alias]]\nspecification = "TS29.999"\nname = "Spec"\n'
+        'wireshark = "Vendor-AVP"\nreason = "kept apart"\n'
+    )
+    arguments = [
+        "crosscheck",
+        "--dictionary",
+        str(tmp_path / "dictionary"),
+        "--aliases",
+        str(aliases),
+        str(tmp_path / "29999-i00.dad"),
+    ]
+
+    result = CliRunner().invoke(main, arguments)
+    shown = CliRunner().invoke(main, [*arguments, "--show-accepted"])
+
+    assert result.exit_code == 0, result.output
+    assert result.output.splitlines() == [
+        "checked 1 files against the dictionary: 0 findings, 1 accepted rename"
+    ]
+    assert shown.output.splitlines()[0] == (
+        f"{tmp_path}/29999-i00.dad: accepted[name-disagrees] Spec (AVP table):"
+        " the dictionary calls (vendor 10415, code 700) Vendor-AVP (kept apart)"
+    )
+    arguments[4] = str(tmp_path / "none.toml")
+    missing = CliRunner().invoke(main, arguments)
+    assert missing.exit_code != 0
+    assert "does not exist" in missing.output
+
+
+def _written(path, version, data_type, name="Vendor-AVP"):
     from seanchai.dad import formatter
 
     spec = ast.Specification(
         specification="3GPP TS 29.999",
         vendor_id=10415,
         version=version,
-        sections=(_table(_row("Vendor-AVP", 700, data_type)),),
+        sections=(_table(_row(name, 700, data_type)),),
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(formatter.format_spec(spec), encoding="utf-8")

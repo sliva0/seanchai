@@ -32,10 +32,3 @@ letter is not reused. What exists is described in the per-module documents.
     broken names; the model must present them as such and offer the
     consumer resolution options (skip, keep as an untyped placeholder,
     accept a supplied definition). Design pending.
-
-## Oracle
-
-- **S. Deliberate renames are not disagreements.** Wireshark's
-  disambiguations (`Cx-User-Data`, `Sh-User-Data`, …) count among the 52
-  `name-disagrees` findings. *Decided:* an accepted-aliases list; a
-  renamed AVP whose code, vendor and type agree is agreement.

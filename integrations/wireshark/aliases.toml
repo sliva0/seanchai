@@ -1,0 +1,132 @@
+# Wireshark's deliberate renames, accepted as agreement by `seanchai
+# crosscheck` (docs/oracle.md). Each entry is a document's AVP that the
+# dictionary names otherwise on purpose: to keep it apart from another
+# document's AVP of that name, the dictionary's `name` being an XML ID,
+# unique and starting with no digit; or under a prefix or abbreviation of
+# its own. An entry holds only while the dictionary's entry under the
+# AVP's vendor and code carries `wireshark` and agrees in type; otherwise
+# the crosscheck reports it as `stale-alias`.
+#
+# A misspelling is no rename: those are defects, patched in 0001-0025
+# beside this file. Nor is a name the document has since replaced
+# (`Wildcarded-PSI`, `NAF-Hostname`), which still reports, and neither is
+# a rename typed otherwise than the document (RFC 5778's
+# `Chargeable-User-Identity`, OctetString, which the dictionary calls `CUI`
+# and types UTF8String).
+#
+# `specification` is the document's SpecRef, `name` its spelling in the
+# corpus, `wireshark` the dictionary's.
+
+[[alias]]
+specification = "TS29.061"
+name = "TWAN-Identifier"
+wireshark = "3GPP-TWAN-Identifier"
+reason = "the 3GPP- prefix of every other code the table takes from clause 16.4.7's RADIUS sub-attributes"
+
+[[alias]]
+specification = "TS29.172"
+name = "Termination-Cause"
+wireshark = "Termination-Cause-3GPP"
+reason = "kept apart from RFC 6733's Termination-Cause (0, 295)"
+
+[[alias]]
+specification = "TS29.172"
+name = "1xRTT-RCID"
+wireshark = "OnexRTT-RCID"
+reason = "the dictionary's name is an XML ID, which cannot start with a digit"
+
+[[alias]]
+specification = "TS29.212"
+name = "3GPP-PS-Data-Off-Status"
+wireshark = "3GPP-PS-Data-Off-Status-Gx"
+reason = "kept apart from TS 32.299's 3GPP-PS-Data-Off-Status (10415, 4406)"
+
+[[alias]]
+specification = "TS29.229"
+name = "User-Data"
+wireshark = "Cx-User-Data"
+reason = "kept apart from TS 29.329's User-Data (10415, 702)"
+
+[[alias]]
+specification = "TS29.229"
+name = "SIP-Number-Auth-Items"
+wireshark = "3GPP-SIP-Number-Auth-Items"
+reason = "kept apart from RFC 4740's SIP-Number-Auth-Items (0, 382)"
+
+[[alias]]
+specification = "TS29.229"
+name = "SIP-Authentication-Scheme"
+wireshark = "3GPP-SIP-Authentication-Scheme"
+reason = "kept apart from RFC 4740's SIP-Authentication-Scheme (0, 377)"
+
+[[alias]]
+specification = "TS29.229"
+name = "SIP-Authenticate"
+wireshark = "3GPP-SIP-Authenticate"
+reason = "kept apart from RFC 4740's SIP-Authenticate (0, 379)"
+
+[[alias]]
+specification = "TS29.229"
+name = "SIP-Authorization"
+wireshark = "3GPP-SIP-Authorization"
+reason = "kept apart from RFC 4740's SIP-Authorization (0, 380)"
+
+[[alias]]
+specification = "TS29.229"
+name = "SIP-Auth-Data-Item"
+wireshark = "3GPP-SIP-Auth-Data-Item"
+reason = "kept apart from RFC 4740's SIP-Auth-Data-Item (0, 376)"
+
+[[alias]]
+specification = "TS29.229"
+name = "SIP-Item-Number"
+wireshark = "3GPP-SIP-Item-Number"
+reason = "kept apart from RFC 4740's SIP-Item-Number (0, 378)"
+
+[[alias]]
+specification = "TS29.272"
+name = "Service-Type"
+wireshark = "3GPP-Service-Type"
+reason = "kept apart from RADIUS's Service-Type (0, 6)"
+
+[[alias]]
+specification = "TS29.329"
+name = "User-Data"
+wireshark = "Sh-User-Data"
+reason = "kept apart from TS 29.229's User-Data (10415, 606)"
+
+[[alias]]
+specification = "TS29.336"
+name = "Service-ID"
+wireshark = "S6-Service-ID"
+reason = "kept apart from TS 32.299's Service-ID (10415, 855)"
+
+[[alias]]
+specification = "TS32.299"
+name = "Reporting-Reason"
+wireshark = "3GPP-Reporting-Reason"
+reason = "a 3GPP- prefix, which Starent.xml's grouped AVPs name as their member too"
+
+[[alias]]
+specification = "TS32.299"
+name = "SIP-Method"
+wireshark = "3GPP-SIP-Method"
+reason = "kept apart from RFC 4740's SIP-Method (0, 393)"
+
+[[alias]]
+specification = "TS29.140"
+name = "Sequence-Number"
+wireshark = "MM10-Sequence-Number"
+reason = "kept apart from TS 29.329's Sequence-Number (10415, 716)"
+
+[[alias]]
+specification = "TS29.140"
+name = "Recipient-Address"
+wireshark = "MM10-Recipient-Address"
+reason = "kept apart from TS 32.299's Recipient-Address (10415, 1201)"
+
+[[alias]]
+specification = "ETSI-TS183.017"
+name = "Service-Class"
+wireshark = "ETSI-Service-Class"
+reason = "ETSI-prefixed, as some of ETSI's entries are, to keep it apart from other Service-Class names (Cisco-Service-Class)"

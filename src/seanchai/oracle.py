@@ -27,8 +27,10 @@ Wireshark.
 from __future__ import annotations
 
 import re
+import tomllib
 import xml.etree.ElementTree as ElementTree
-from dataclasses import dataclass, field
+from collections.abc import Iterable
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from .dad import ast
@@ -214,9 +216,62 @@ class Oracle:
 class Finding:
     rule: str
     message: str
+    # The reason of the accepted alias acknowledging the finding, which
+    # makes it agreement rather than a disagreement (`Alias`).
+    accepted_by: str | None = None
 
     def __str__(self) -> str:
-        return f"[{self.rule}] {self.message}"
+        if self.accepted_by is None:
+            return f"[{self.rule}] {self.message}"
+        return f"accepted[{self.rule}] {self.message} ({self.accepted_by})"
+
+
+@dataclass(frozen=True)
+class Alias:
+    """One of Wireshark's deliberate renames, accepted as agreement: the
+    dictionary names the AVP a document calls `name` otherwise, to keep it
+    apart from another document's AVP of that name (TS 29.229's
+    `User-Data` is `Cx-User-Data`) or because an XML ID cannot start with a
+    digit. It holds only while the document's AVP and the dictionary's
+    entry agree in vendor, code and type."""
+
+    specification: str  # the `SpecRef` of the document, `TS29.229`
+    name: str
+    wireshark: str
+    reason: str
+
+
+_ALIAS_KEYS = frozenset({"specification", "name", "wireshark", "reason"})
+
+
+def load_aliases(path: Path) -> tuple[Alias, ...]:
+    """The `[[alias]]` entries of an accepted-aliases file
+    (`integrations/wireshark/aliases.toml`), each with every key and no
+    other, at most one per document and name."""
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        raise OracleError(f"cannot read the aliases at {path}: {error}") from error
+    if data.keys() - {"alias"}:
+        raise OracleError(f"{path}: only [[alias]] tables belong here")
+    aliases = []
+    seen: set[tuple[str, str]] = set()
+    for number, table in enumerate(data.get("alias", []), 1):
+        if not isinstance(table, dict) or table.keys() != _ALIAS_KEYS:
+            raise OracleError(
+                f"{path}: alias {number} needs exactly the keys"
+                f" {', '.join(sorted(_ALIAS_KEYS))}"
+            )
+        if not all(isinstance(value, str) and value for value in table.values()):
+            raise OracleError(f"{path}: alias {number} has an empty or non-text value")
+        alias = Alias(**table)
+        if (alias.specification, alias.name) in seen:
+            raise OracleError(
+                f"{path}: {alias.specification} {alias.name} is aliased twice"
+            )
+        seen.add((alias.specification, alias.name))
+        aliases.append(alias)
+    return tuple(aliases)
 
 
 def _acceptable(entry: DictionaryAvp) -> frozenset[ast.DataType] | None:
@@ -303,60 +358,93 @@ def claims(spec: ast.Specification) -> list[Claim]:
     return unique
 
 
-def crosscheck(spec: ast.Specification, oracle: Oracle) -> list[Finding]:
+def crosscheck(
+    spec: ast.Specification, oracle: Oracle, aliases: Iterable[Alias] = ()
+) -> list[Finding]:
     """Every disagreement between one file and the dictionary.
 
     Absence is reported apart from disagreement: an AVP the dictionary lacks
     may simply postdate the pinned Wireshark release, while an AVP whose code
     resolves to a differently-named or differently-typed entry means one of
     the two projects read the specification wrong.
+
+    A name disagreement an alias of `aliases` for this document accepts is
+    returned as accepted (`Finding.accepted_by`) when the entry under the
+    claim's vendor and code carries the alias's name and agrees in type:
+    the claim's type known and among those the entry's maps to. An alias
+    that does not hold, the dictionary naming the identity otherwise or
+    typing it differently, or the file claiming no AVP by its name, is a
+    `stale-alias` finding. A claim stating no type confirms no rename, and
+    stales none, the listing being right for all the file says: its name
+    disagreement stays a `name-disagrees` finding, unaccepted.
     """
+    mine: dict[str, Alias] = {}
+    for alias in aliases:
+        if alias.specification == ast.spec_ref(spec.specification):
+            mine[alias.name] = alias
     findings = []
     absent = []
+    claimed: set[str] = set()
     for claim in claims(spec):
+        alias = mine.get(claim.name)
+        claimed.add(claim.name)
         entries = oracle.avps.get((claim.vendor, claim.code))
+        identity = f"(vendor {claim.vendor}, code {claim.code})"
         if not entries:
             absent.append(claim.name)
+            if alias is not None:
+                findings.append(
+                    _stale(claim, alias, f"the dictionary has nothing at {identity}")
+                )
             continue
+        calls = (
+            f"the dictionary calls {identity}"
+            f" {', '.join(sorted({entry.name for entry in entries}))}"
+        )
         named = [entry for entry in entries if entry.name == claim.name]
-        if not named:
-            others = ", ".join(sorted({entry.name for entry in entries}))
+        if named:
+            if alias is not None:
+                findings.append(_stale(claim, alias, calls))
+            problem = _type_problem(claim, named)
+            if problem is not None:
+                where = f"{claim.name} ({claim.where})"
+                findings.append(replace(problem, message=f"{where}: {problem.message}"))
+            continue
+        if alias is None:
+            findings.append(
+                Finding("name-disagrees", f"{claim.name} ({claim.where}): {calls}")
+            )
+            continue
+        renamed = [entry for entry in entries if entry.name == alias.wireshark]
+        problem = _type_problem(claim, renamed) if renamed else None
+        if not renamed:
+            findings.append(_stale(claim, alias, calls))
+        elif problem is not None:
+            findings.append(_stale(claim, alias, problem.message))
+        elif claim.data_type is None:
             findings.append(
                 Finding(
                     "name-disagrees",
-                    f"{claim.name} ({claim.where}): the dictionary calls"
-                    f" (vendor {claim.vendor}, code {claim.code}) {others}",
+                    f"{claim.name} ({claim.where}): {calls}; the accepted rename"
+                    f" {alias.wireshark} is unconfirmed, the corpus stating no type",
                 )
             )
-            continue
-        if claim.data_type is None:
-            continue
-        acceptable = frozenset[ast.DataType]()
-        unmapped = None
-        for entry in named:
-            mapped = _acceptable(entry)
-            if mapped is None:
-                unmapped = entry.type_name
-                continue
-            acceptable |= mapped
-        if unmapped is not None and not acceptable:
+        else:
             findings.append(
                 Finding(
-                    "type-unmapped",
-                    f"{claim.name} ({claim.where}): dictionary type"
-                    f" {unmapped!r} is outside the mapped vocabulary",
+                    "name-disagrees",
+                    f"{claim.name} ({claim.where}): {calls}",
+                    accepted_by=alias.reason,
                 )
             )
-            continue
-        if claim.data_type not in acceptable:
-            spelled = ", ".join(sorted(entry.type_name or "Grouped" for entry in named))
-            findings.append(
-                Finding(
-                    "type-disagrees",
-                    f"{claim.name} ({claim.where}): corpus says"
-                    f" {claim.data_type.value}, the dictionary says {spelled}",
-                )
+    for name in sorted(mine.keys() - claimed):
+        findings.append(
+            Finding(
+                "stale-alias",
+                f"{name}: the accepted rename {mine[name].wireshark} names no AVP"
+                " the file defines or tabulates",
             )
+        )
     if absent:
         findings.append(
             Finding(
@@ -366,3 +454,39 @@ def crosscheck(spec: ast.Specification, oracle: Oracle) -> list[Finding]:
             )
         )
     return findings
+
+
+def _stale(claim: Claim, alias: Alias, why: str) -> Finding:
+    return Finding(
+        "stale-alias",
+        f"{claim.name} ({claim.where}): the accepted rename {alias.wireshark}"
+        f" does not hold: {why}",
+    )
+
+
+def _type_problem(claim: Claim, named: list[DictionaryAvp]) -> Finding | None:
+    """How the type of the entries `named` disagrees with the claim's, as a
+    finding whose message lacks the claim's name, or None where they agree
+    or the claim states no type."""
+    if claim.data_type is None:
+        return None
+    acceptable = frozenset[ast.DataType]()
+    unmapped = None
+    for entry in named:
+        mapped = _acceptable(entry)
+        if mapped is None:
+            unmapped = entry.type_name
+            continue
+        acceptable |= mapped
+    if unmapped is not None and not acceptable:
+        return Finding(
+            "type-unmapped",
+            f"dictionary type {unmapped!r} is outside the mapped vocabulary",
+        )
+    if claim.data_type in acceptable:
+        return None
+    spelled = ", ".join(sorted(entry.type_name or "Grouped" for entry in named))
+    return Finding(
+        "type-disagrees",
+        f"corpus says {claim.data_type.value}, the dictionary says {spelled}",
+    )

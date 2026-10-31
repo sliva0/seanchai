@@ -17,6 +17,14 @@ Both are `git format-patch` output against the release `specs.toml` pins
 (`v4.7.2`), touching only `resources/protocols/diameter/`, and each
 patch's commit message is the merge request's title and description.
 
+Beside them, [`aliases.toml`](aliases.toml) lists the renames that are no
+defect: nineteen names the dictionary gives an AVP on purpose, mostly to
+keep it apart from another document's AVP of the same name (`Cx-User-Data`
+for TS 29.229's `User-Data`). The oracle counts them as accepted renames
+while vendor, code and type agree
+([oracle.md](../../docs/oracle.md#accepted-renames)); no patch touches
+them.
+
 ## Defects
 
 | Patch | Dictionary says | Specification says | Where |
@@ -171,7 +179,7 @@ a test may refer to it. A renamed AVP also renames its display filter field
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter dad`
 over the corpus, the newest copy of each document and no other
 ([oracle.md](../../docs/oracle.md)), no longer reports a patched AVP.
-With the twenty-five defects applied to `v4.7.2` it reports 76 findings
-instead of 99; with the 30 additions, 76, the thirty-three absences above
+With the twenty-five defects applied to `v4.7.2` it reports 57 findings
+instead of 80; with the 30 additions, 57, the thirty-three absences above
 in nine notes, and none that the unpatched dictionary did not; with both
-series, 53.
+series, 34. The nineteen accepted renames hold against each.

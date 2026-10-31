@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 _DEFAULT_SOURCES = Path("edits") / "sources"
 _DEFAULT_CORRECTIONS = Path("edits") / "corrections"
 _DEFAULT_TRANSCRIPTIONS = Path("edits") / "transcriptions"
+# Wireshark's deliberate renames, which `crosscheck` accepts as agreement.
+_DEFAULT_ALIASES = Path("integrations") / "wireshark" / "aliases.toml"
 
 
 class _HelpFormatter(click.HelpFormatter):
@@ -800,7 +802,23 @@ def download(
     show_default=True,
     help="Directory holding Wireshark's Diameter dictionary files.",
 )
-def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
+@click.option(
+    "--aliases",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=_DEFAULT_ALIASES,
+    show_default=True,
+    help="Accepted-aliases file listing Wireshark's deliberate renames, which"
+    " are agreement while vendor, code and type agree. Defaulted for the"
+    " repository's own corpus; a missing default file is no aliases.",
+)
+@click.option(
+    "--show-accepted",
+    is_flag=True,
+    help="Also print the renames an alias accepts (always counted).",
+)
+def crosscheck(
+    sources: tuple[Path, ...], dictionary: Path, aliases: Path, show_accepted: bool
+) -> None:
     """Cross-check `.dad` files against Wireshark's Diameter dictionary.
 
     Reports where the two projects read the specifications differently:
@@ -816,17 +834,33 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
     for a citation (TS 32.299 V11.20.0) is no reading of the document the
     dictionary describes, and is listed as skipped. Two files of one
     document and version are refused.
+
+    A name disagreement the accepted-aliases file lists for the document is
+    agreement while the dictionary's entry carries the listed name and
+    agrees in type: it is counted as an accepted rename, printed only with
+    `--show-accepted`. A listed alias that no longer holds is a
+    `stale-alias` finding.
     """
     from .corpus import Corpus, CorpusError, Entry
     from .dad import parser
-    from .oracle import Oracle, OracleError
+    from .oracle import Oracle, OracleError, load_aliases
     from .oracle import crosscheck as check
 
+    explicit = (
+        click.get_current_context().get_parameter_source("aliases")
+        is not click.core.ParameterSource.DEFAULT
+    )
+    if explicit and not aliases.is_file():
+        raise click.BadParameter(
+            f"file {str(aliases)!r} does not exist", param_hint="'--aliases'"
+        )
     try:
         oracle = Oracle.load(dictionary)
+        accepted = load_aliases(aliases) if aliases.is_file() else ()
     except OracleError as error:
         raise click.ClickException(str(error)) from None
     total = 0
+    renames = 0
     with reported():
         entries: list[Entry] = []
         for source in sources:
@@ -859,14 +893,18 @@ def crosscheck(sources: tuple[Path, ...], dictionary: Path) -> None:
                     err=True,
                 )
         for entry in newest:
-            findings = check(entry.spec, oracle)
-            total += len(findings)
-            for finding in findings:
+            for finding in check(entry.spec, oracle, accepted):
+                if finding.accepted_by is None:
+                    total += 1
+                else:
+                    renames += 1
+                    if not show_accepted:
+                        continue
                 click.echo(f"{entry.path}: {finding}")
-    click.echo(
-        f"checked {len(newest)} files against the dictionary: {total} findings",
-        err=True,
-    )
+    summary = f"checked {len(newest)} files against the dictionary: {total} findings"
+    if renames:
+        summary += f", {renames} accepted rename{'' if renames == 1 else 's'}"
+    click.echo(summary, err=True)
 
 
 def _write(spec, output: Path | None, notes: Comments | None = None) -> None:

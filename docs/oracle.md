@@ -14,7 +14,7 @@ what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
-uv run seanchai crosscheck dad                    # 55 files, 99 findings
+uv run seanchai crosscheck dad    # 55 files, 80 findings, 19 accepted renames
 ```
 
 The check reads the newest copy of each document and no other: the
@@ -24,8 +24,9 @@ is no reading of it. `crosscheck` takes files or directories (a
 directory's raw files skipped, as the corpus loader skips them), lists
 each older copy it skips (TS 29.212 V11.19.0, TS 29.214 V7.12.0 and
 V11.16.0, TS 32.299 V11.20.0), and refuses two files of one document and
-version, so a count over every committed copy (118 findings in 59 files)
-cannot be reported by accident.
+version, so a count over every committed copy (98 findings and 21 accepted
+renames in 59 files, TS 29.212 V11.19.0's `stale-alias` for an AVP the copy
+predates among them) cannot be reported by accident.
 TS 29.140 V7.0.0 and TS 29.209 V6.8.0 are the newest copies of their
 documents and are checked.
 
@@ -43,6 +44,47 @@ anything is called a disagreement: `IPAddress` agrees with `Address` and
 `Result-Code`); `VendorId` and `AppId` stand for `Unsigned32`,
 `OctetStringOrUTF8` for either reading, `MIPRegistrationRequest` for
 `OctetString`. An unmapped dictionary type is reported, never guessed at.
+
+## Accepted renames
+
+Wireshark names some AVPs otherwise on purpose: its dictionary's `name` is
+an XML ID, unique across the dictionary and starting with no digit, and
+doubles as the display filter field, so of two documents' AVPs of one name
+one is renamed (TS 29.229's `User-Data` is `Cx-User-Data`, TS 29.329's
+`Sh-User-Data`). Such a rename is agreement, not a disagreement, when
+[`integrations/wireshark/aliases.toml`](../integrations/wireshark/aliases.toml)
+lists it: each `[[alias]]` gives the document's SpecRef, the corpus's name,
+the dictionary's and a one-line reason. `crosscheck` reads the file
+(`--aliases`, by default that path; a missing default file is no aliases)
+and counts a name disagreement an entry accepts in its summary line,
+`N accepted renames`, printing it as `accepted[name-disagrees]` with the
+reason only with `--show-accepted`. An entry accepts only while the
+dictionary's entry under the AVP's vendor and code carries the listed name
+and agrees in type, the corpus's type known and among those the
+dictionary's maps to, so a listed rename is reported as `stale-alias` when
+the dictionary names the identity otherwise (back to the corpus's
+spelling included) or has nothing there, when the types disagree, or when
+the file no longer defines or tabulates the name. A corpus AVP stating no
+type confirms no rename and stales none, the listing being right for all
+the file says: its name disagreement stays a `name-disagrees` finding,
+unaccepted, its message saying the listed rename is unconfirmed.
+
+The list holds nineteen: the `3GPP-SIP-*` prefixes of TS 29.229's six SIP
+AVPs and TS 32.299's `SIP-Method`, kept apart from RFC 4740's; `Cx-` and
+`Sh-User-Data`; `Termination-Cause-3GPP` (TS 29.172), `3GPP-Service-Type`
+(TS 29.272), `S6-Service-ID` (TS 29.336), `3GPP-PS-Data-Off-Status-Gx` (TS
+29.212, apart from TS 32.299's 4406) and TS 29.140's `MM10-Sequence-Number`
+and `MM10-Recipient-Address` (1107, 1108), each kept apart from another
+document's AVP of the name; `OnexRTT-RCID` for TS 29.172's `1xRTT-RCID`,
+an ID starting with a digit; the `3GPP-` prefixes of TS 29.061's
+`TWAN-Identifier` and TS 32.299's `Reporting-Reason`; and
+`ETSI-Service-Class` for ETSI TS 183 017's `Service-Class` (clause
+7.3.33; 13019, 459, UTF8String in both), ETSI-prefixed as the dictionary
+prefixes some of ETSI's entries (`ETSI-Experimental-Result-Code`, apart
+from RFC 6733's) to keep it apart from other Service-Class names
+(`Cisco-Service-Class`). A misspelling is no rename and is not listed:
+those are defects, patched. Nor is a name the document has since replaced,
+nor a rename the dictionary types otherwise (below).
 
 ## Findings are leads, not verdicts
 
@@ -79,15 +121,19 @@ corpus-side fixes are corrections (RFC 5777's `Treatment-Action`, 29.229's
 29.061's `MBMS-Flag`, where the dictionary agrees with clause 20.5a.9). What
 remains:
 
-- **Deliberate disambiguations and XML-imposed spellings**, correct on both
-  sides: `Cx-User-Data`/`Sh-User-Data`, the `3GPP-SIP-*` and `3GPP-*`
-  prefixes (32.299's `Reporting-Reason` and `SIP-Method` included),
-  `Termination-Cause-3GPP`, `Wildcarded-PSI`, `S6-Service-ID`,
-  `OnexRTT-RCID` (an XML name cannot start with a digit), `CUI`,
-  `Tunnel-Connection-ID`, `NAF-Hostname`, and TS 29.140's
-  `MM10-Sequence-Number` and `MM10-Recipient-Address` (1107, 1108), whose
-  document calls them `Sequence-Number` and `Recipient-Address`, names
-  TS 32.299 gives code 1201 too.
+- **Names the documents have replaced**, which the dictionary keeps:
+  `Wildcarded-PSI` (634) for TS 29.229's and TS 29.329's
+  `Wildcarded-Public-Identity`, the AVP's name before TS 29.229 extended
+  it from wildcarded PSIs to wildcarded public user identities (change
+  history: CR 0195, "Wildcarded Public Identity", V9.1.0); and
+  `NAF-Hostname` (402) for TS 29.109's `NAF-Id`, a name the document
+  replaced and TS 29.230's table 7.1 still prints, patched on input
+  ([linter.md](linter.md)). Not accepted renames: a merge request could
+  bring either up to date. Not staged.
+- **`CUI`** (89) for RFC 5778's `Chargeable-User-Identity`, RFC 4372's
+  own abbreviation, which would be an accepted rename but for its type:
+  the dictionary says UTF8String where RFC 5778 says OctetString, a
+  display convenience like those below.
 - **Wireshark-side defects**, each with a merge request staged under
   [`integrations/wireshark/`](../integrations/wireshark/README.md) and
   not yet submitted: `Call-Barring-Infor-List` for 29.272's
@@ -145,7 +191,8 @@ remains:
 - **Display conveniences the mapping does not tolerate**, corpus correct:
   `3GPP-NSAPI`, `Codec-Data`, `Framed-Pool`, `EAP-Key-Name` and 32.299's
   `Access-Network-Information` (the dictionary comments its OctetString
-  out) typed UTF8String where the specs say OctetString.
+  out) typed UTF8String where the specs say OctetString, and `CUI`
+  (above), which the oracle reports as a name disagreement.
 - **Absences**: AVPs newer than the pinned dictionary, one grouped note per
   file, 307 in 32 files, 306 AVPs. All but thirty-three have an addition
   staged under
@@ -171,14 +218,16 @@ remains:
 - **ETSI TS 183 017, untriaged**: `Binding-information` (450), the
   spelling of table 7.3.1, clause 7.3.1's heading and its rule name, where
   the clause's sentence and the AAR and AAA ABNFs write
-  `Binding-Information`, to which the corpus corrects it; and
-  `ETSI-Service-Class` (459), the publisher prefix the dictionary gives
-  some of ETSI's entries (`ETSI-Experimental-Result-Code` to keep apart
-  from RFC 6733's), against clause 7.3.33's `Service-Class`, which no
-  other entry in the pinned dictionary is named. The oracle compares no
-  flags: the dictionary sets `Port-Number` and `Reservation-Class` (455,
+  `Binding-Information`, to which the corpus corrects it. The oracle
+  compares no flags: the dictionary sets `Port-Number` and `Reservation-Class` (455,
   456) M to "may" and encryption off, where table 7.3.1 puts M in Must not
   and sets encryption.
+- **`Tunnel-Connection-ID`** (68) for RFC 4005's and RFC 7155's
+  `Acct-Tunnel-Connection`, its intent unverified: RFC 2867 section 4.1
+  and RFC 4005 both name the attribute `Acct-Tunnel-Connection`, so the
+  dictionary's is another name, not a clarified form of the documents',
+  and no accepted rename; nor is a defect staged, nothing yet saying
+  whether the dictionary means to rename it.
 - **Two untriaged leads from RFC 7155**: `Framed-IPX-Network` typed Unsigned32
   (clause 4.4.10.6.1's own sentence; RFC 4005 disagrees with itself here,
   clause 6.12.1 vs its table) against Wireshark's UTF8String; and
@@ -189,7 +238,10 @@ remains:
   Wireshark took the other reading — `EPDG-Address` (clause 7.2.62A; the
   PS-Information body writes `ePDG-Address`),
   `PoC-Session-Initiation-Type` and `PoC-User-Role-Info-Units` (headings;
-  table or body lower-case `type`/`info`), and the two Monitoring-Event
+  table or body lower-case `type`/`info`), `Service-ID` (855; clause
+  7.2.190, where table 7.2.0.1 and the IMS-Information body write
+  `Service-Id`, Wireshark's spelling, and the corpus corrects both to the
+  clause), and the two Monitoring-Event
   rows its corrections type Enumerated after their clauses where Wireshark
   follows table 7.2.0.1's Integer32; `MMTel-SService-Type`, which 32.299
   misprints consistently and Wireshark spells `MMTel-Service-Type`. Table
