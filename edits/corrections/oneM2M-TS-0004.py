@@ -4,6 +4,7 @@ from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Correction,
     Insert,
+    Supply,
     definition,
     flag_rules,
     header,
@@ -147,6 +148,106 @@ CORRECTIONS += [
             " IETF RFC 6733 [14]'; the ACR and ACA of clause A.2, 'Diameter"
             " Commands on Mch', print no id in their headers"
         ),
+        versions="2.35.0",
+    ),
+]
+
+# Values clause A.5 points at in the document's own data-type clauses,
+# which the extractor reads no AVPs from.
+_RESPONSE_STATUS_CODES = (
+    (1000, "ACCEPTED"),
+    (1001, "ACCEPTED for nonBlockingRequestSynch"),
+    (1002, "ACCEPTED for nonBlockingRequestAsynch"),
+    (2000, "OK"),
+    (2001, "CREATED"),
+    (2002, "DELETED"),
+    (2004, "UPDATED"),
+    (4000, "BAD_REQUEST"),
+    (4001, "RELEASE_VERSION_NOT_SUPPORTED"),
+    (4004, "NOT_FOUND"),
+    (4005, "OPERATION_NOT_ALLOWED"),
+    (4008, "REQUEST_TIMEOUT"),
+    (4015, "UNSUPPORTED_MEDIA_TYPE"),
+    (4101, "SUBSCRIPTION_CREATOR_HAS_NO_PRIVILEGE"),
+    (4103, "ORIGINATOR_HAS_NO_PRIVILEGE"),
+    (4104, "GROUP_REQUEST_IDENTIFIER_EXISTS"),
+    (4105, "CONFLICT"),
+    (4106, "ORIGINATOR_NOT_AUTHENTICATED"),
+    (4107, "SECURITY_ASSOCIATION_REQUIRED"),
+    (4108, "INVALID_CHILD_RESOURCE_TYPE"),
+    (4109, "NO_MEMBERS"),
+    (4110, "GROUP_MEMBER_TYPE_INCONSISTENT"),
+    (4111, "ESPRIM_UNSUPPORTED_OPTION"),
+    (4112, "ESPRIM_UNKNOWN_KEY_ID"),
+    (4113, "ESPRIM_UNKNOWN_ORIG_RAND_ID"),
+    (4114, "ESPRIM_UNKNOWN_RECV_RAND_ID"),
+    (4115, "ESPRIM_BAD_MAC"),
+    (4116, "ESPRIM_IMPERSONATION_ERROR"),
+    (4117, "ORIGINATOR_HAS_ALREADY_REGISTERED"),
+    (4125, "SPECIALIZATION_SCHEMA_NOT_FOUND"),
+    (4126, "APP_RULE_VALIDATION_FAILED"),
+    (4128, "SERVICE_SUBSCRIPTION_NOT_ESTABLISHED"),
+    (4143, "INVALID_SPARQL_QUERY"),
+    (5000, "INTERNAL_SERVER_ERROR"),
+    (5001, "NOT_IMPLEMENTED"),
+    (5103, "TARGET_NOT_REACHABLE"),
+    (5105, "RECEIVER_HAS_NO_PRIVILEGE"),
+    (5106, "ALREADY_EXISTS"),
+    (5203, "TARGET_NOT_SUBSCRIBABLE"),
+    (5204, "SUBSCRIPTION_VERIFICATION_INITIATION_FAILED"),
+    (5205, "SUBSCRIPTION_HOST_HAS_NO_PRIVILEGE"),
+    (5206, "NON_BLOCKING_SYNCH_REQUEST_NOT_SUPPORTED"),
+    (5207, "NOT_ACCEPTABLE"),
+    (5208, "DISCOVERY_DENIED_BY_IPE"),
+    (5209, "GROUP_MEMBERS_NOT_RESPONDED"),
+    (5210, "ESPRIM_DECRYPTION_ERROR"),
+    (5211, "ESPRIM_ENCRYPTION_ERROR"),
+    (5212, "SPARQL_UPDATE_ERROR"),
+    (5220, "UNABLE_TO_RECALL_REQUEST"),
+    (6003, "EXTERNAL_OBJECT_NOT_REACHABLE"),
+    (6005, "EXTERNAL_OBJECT_NOT_FOUND"),
+    (6010, "MAX_NUMBER_OF_MEMBER_EXCEEDED"),
+    (6020, "MGMT_SESSION_CANNOT_BE_ESTABLISHED"),
+    (6021, "MGMT_SESSION_ESTABLISHMENT_TIMEOUT"),
+    (6022, "INVALID_CMDTYPE"),
+    (6023, "INVALID_ARGUMENTS"),
+    (6024, "INSUFFICIENT_ARGUMENTS"),
+    (6025, "MGMT_CONVERSION_ERROR"),
+    (6026, "MGMT_CANCELLATION_FAILED"),
+    (6028, "ALREADY_COMPLETE"),
+    (6029, "MGMT_COMMAND_NOT_CANCELLABLE"),
+)
+
+CORRECTIONS += [
+    Supply(
+        id="request-operation-values",
+        target=definition("Request-Operation"),
+        expect="Table 6.3.4.2.5-6",
+        values=tuple(
+            ast.EnumValue(name=name, value=value)
+            for value, name in enumerate(
+                ("Create", "Retrieve", "Update", "Delete", "Notify"), start=1
+            )
+        ),
+        reason="clause 6.3.4.2.5's table 'Interpretation of m2m:operation'"
+        " (its caption numbers it -6, the list of tables 6.3.4.2.5-1) gives"
+        " 1 Create, 2 Retrieve, 3 Update, 4 Delete and 5 Notify",
+        versions="2.35.0",
+    ),
+    Supply(
+        id="response-status-code-values",
+        target=definition("Response-Status-Code"),
+        expect="clause 6.6.3",
+        values=tuple(
+            ast.EnumValue(name=name, value=value)
+            for value, name in _RESPONSE_STATUS_CODES
+        ),
+        reason="clauses 6.6.3.2 to 6.6.3.7 tabulate the response status codes"
+        " by class: informational 1000-1002, successful 2000-2004, none for"
+        " redirection (6.6.3.4: 'no values in this response class are"
+        " defined'), originator error 4000-4143, receiver error 5000-5220"
+        " and network system error 6003-6029; the names are the tables'"
+        " descriptions, as printed",
         versions="2.35.0",
     ),
 ]

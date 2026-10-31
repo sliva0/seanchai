@@ -1,7 +1,9 @@
 """Corrections for 3GPP TS 29.212 — see docs/corrections.md."""
 
+from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Correction,
+    Supply,
     avp_rule,
     definition,
     reused_row,
@@ -275,4 +277,36 @@ CORRECTIONS += [
         ("CC-Request", "5b.6.4"),
         ("CC-Answer", "5b.6.5"),
     )
+]
+
+# Values the document defines by pointing at another of its AVPs.
+CORRECTIONS += [
+    Supply(
+        id="default-access-values",
+        target=definition("Default-Access"),
+        expect="IP-CAN-Type AVP",
+        values=tuple(
+            ast.EnumValue(name=name, value=value)
+            for value, name in enumerate(
+                (
+                    "3GPP-GPRS",
+                    "DOCSIS",
+                    "xDSL",
+                    "WiMAX",
+                    "3GPP2",
+                    "3GPP-EPS",
+                    "Non-3GPP-EPS",
+                    "FBA",
+                    "3GPP-5GS",
+                    "Non-3GPP-5GS",
+                )
+            )
+        ),
+        reason="clause 5.3.120: 'The values defined in the Default-Access AVP"
+        " are the same as the ones defined in IP-CAN-Type AVP'; clause 5.3.27"
+        " of V18.2.0 defines IP-CAN-Type's 0 to 9, copied here. The clause's"
+        " NOTE makes only 3GPP-EPS and Non-3GPP-EPS applicable in this"
+        " release, which limits their use, not the list",
+        versions="18.2.0",
+    ),
 ]

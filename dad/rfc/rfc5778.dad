@@ -178,6 +178,7 @@ MIP-MN-HA-MSA ::= < AVP header: 492 >
 ; Page: 24
 ; Values: [RFC4004] that also fulfill current RFC 4285 requirements
 MIP-Algorithm-Type ::= < Enumerated AVP header: 345 >
+        HMAC-SHA-1 = 2 ;; supplied: (RFC5778.py#mip-algorithm-type-values)
 
 
 ; Type: Enumerated AVP

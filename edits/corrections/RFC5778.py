@@ -1,7 +1,14 @@
 """Corrections for RFC 5778 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, avp_rule, header
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    Supply,
+    avp_rule,
+    definition,
+    header,
+)
 
 CORRECTIONS = [
     Correction(
@@ -83,5 +90,19 @@ CORRECTIONS += [
             "Authentication Protocol, whose commands clause 5.2 defines; the "
             "MIR/MIA headers print none"
         ),
+    ),
+]
+
+# Values the document takes from another.
+CORRECTIONS += [
+    Supply(
+        id="mip-algorithm-type-values",
+        target=definition("MIP-Algorithm-Type"),
+        expect="[RFC4004] that also fulfill current RFC 4285 requirements",
+        values=(ast.EnumValue(name="HMAC-SHA-1", value=2),),
+        reason="RFC 4004 section 9.8 defines one value, '2 HMAC-SHA-1"
+        " [HMAC]', as the IANA MIP-Algorithm-Type registry"
+        " (aaa-parameters-19) still lists; RFC 4285's authentication is"
+        " HMAC-SHA-1 too, so its requirement removes nothing",
     ),
 ]

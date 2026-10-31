@@ -681,3 +681,8 @@ Acct-Authentic ::= < Enumerated AVP header: 45 >
 ; Page: 53
 ; Values: the Microsoft MS-Acct-Auth-Type vendor-specific RADIUS attribute [RFC2548]
 Accounting-Auth-Method ::= < Enumerated AVP header: 406 >
+        PAP       = 1 ;; supplied: (RFC7155.py#accounting-auth-method-values)
+        CHAP      = 2 ;; supplied: (RFC7155.py#accounting-auth-method-values)
+        MS-CHAP-1 = 3 ;; supplied: (RFC7155.py#accounting-auth-method-values)
+        MS-CHAP-2 = 4 ;; supplied: (RFC7155.py#accounting-auth-method-values)
+        EAP       = 5 ;; supplied: (RFC7155.py#accounting-auth-method-values)

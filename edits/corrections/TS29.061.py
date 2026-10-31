@@ -1,7 +1,14 @@
 """Corrections for 3GPP TS 29.061 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, avp_table, table_row
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    Supply,
+    avp_table,
+    definition,
+    table_row,
+)
 
 CORRECTIONS = [
     Correction(
@@ -29,6 +36,27 @@ CORRECTIONS = [
         " among the others table 9a lists, but the table skips it; TS 32.299"
         " table 7.2.0.1 re-uses it from here. Only the name, code and clause"
         " are stated: the clause gives no Diameter type or flags",
+        versions="18.1.0",
+    ),
+]
+
+# Values the document takes from another.
+CORRECTIONS += [
+    Supply(
+        id="mbms-hc-indicator-values",
+        target=definition("MBMS-HC-Indicator"),
+        expect="3GPP TS 25.413 [92]",
+        values=(
+            ast.EnumValue(name="uncompressed-header", value=0),
+            ast.EnumValue(name="compressed-header", value=1),
+        ),
+        reason="TS 25.413 V18.0.0 (2024-03), the only Release 18 version,"
+        " clause 9.2.1.84 types MBMS HC Indicator 'ENUMERATED (uncompressed"
+        " header, compressed header, ...)', and its ASN.1 MBMSHCIndicator"
+        " lists uncompressed-header, then compressed-header, then the"
+        " extension marker. The ASN.1 numbers nothing: 0 and 1 are"
+        " the declaration order, X.680's ordinal numbering, a judgement"
+        " Wireshark's dictionary shares; the names are the ASN.1 identifiers",
         versions="18.1.0",
     ),
 ]

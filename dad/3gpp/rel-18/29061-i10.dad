@@ -209,6 +209,8 @@ CN-IP-Multicast-Distribution ::= < Enumerated AVP header: 921 10415 >
 ; Page: 154
 ; Values: 3GPP TS 25.413 [92]
 MBMS-HC-Indicator ::= < Enumerated AVP header: 922 10415 >
+        uncompressed-header = 0 ;; supplied: (TS29.061.py#mbms-hc-indicator-values)
+        compressed-header   = 1 ;; supplied: (TS29.061.py#mbms-hc-indicator-values)
 
 
 ; Type: Enumerated AVP

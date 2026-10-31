@@ -1,7 +1,14 @@
 """Corrections for RFC 7155 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, avp_rule, header
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    Supply,
+    avp_rule,
+    definition,
+    header,
+)
 
 CORRECTIONS = [
     # The redirect family, inherited verbatim from RFC 4005's RAA and ASA
@@ -73,5 +80,26 @@ CORRECTIONS += [
             "(1)' in AAR, RAR, STR and ASR, and clause 1.6 recommends one (1) "
             "for ACR/ACA too; the command headers print none"
         ),
+    ),
+]
+
+# Values the document takes from another.
+CORRECTIONS += [
+    Supply(
+        id="accounting-auth-method-values",
+        target=definition("Accounting-Auth-Method"),
+        expect="the Microsoft MS-Acct-Auth-Type vendor-specific RADIUS"
+        " attribute [RFC2548]",
+        values=tuple(
+            ast.EnumValue(name=name, value=value)
+            for value, name in enumerate(
+                ("PAP", "CHAP", "MS-CHAP-1", "MS-CHAP-2", "EAP"), start=1
+            )
+        ),
+        reason="clause 4.6.7 calls the supported values 'identical' to"
+        " MS-Acct-Auth-Type's; RFC 2548 section 2.7.4 defines them, 1 PAP to"
+        " 5 EAP. IANA's Accounting-Auth-Method registry (aaa-parameters-26)"
+        " also lists None 7, from RFC 4005 clause 8.7, which RFC 4005's file"
+        " already holds and RFC 2548 does not define",
     ),
 ]

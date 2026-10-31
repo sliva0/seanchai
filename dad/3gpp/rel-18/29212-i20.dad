@@ -2180,6 +2180,16 @@ Routing-Rule-Report ::= < AVP header: 2835 10415 > ;; corrected: (TS29.212.py#ve
 ; Page: 177
 ; Values: IP-CAN-Type AVP
 Default-Access ::= < Enumerated AVP header: 2829 10415 >
+        3GPP-GPRS    = 0 ;; supplied: (TS29.212.py#default-access-values)
+        DOCSIS       = 1 ;; supplied: (TS29.212.py#default-access-values)
+        xDSL         = 2 ;; supplied: (TS29.212.py#default-access-values)
+        WiMAX        = 3 ;; supplied: (TS29.212.py#default-access-values)
+        3GPP2        = 4 ;; supplied: (TS29.212.py#default-access-values)
+        3GPP-EPS     = 5 ;; supplied: (TS29.212.py#default-access-values)
+        Non-3GPP-EPS = 6 ;; supplied: (TS29.212.py#default-access-values)
+        FBA          = 7 ;; supplied: (TS29.212.py#default-access-values)
+        3GPP-5GS     = 8 ;; supplied: (TS29.212.py#default-access-values)
+        Non-3GPP-5GS = 9 ;; supplied: (TS29.212.py#default-access-values)
 
 
 ; Type: Enumerated AVP
