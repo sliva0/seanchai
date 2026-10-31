@@ -267,7 +267,8 @@ reference means when the cited document ended before the citing
 document's release; the corpus reads it as the document's *final* version,
 its last in any release, the latest there is. So `corpus.Corpus.resolution`
 takes, in order: a specific reference's named version and no other; the
-newest copy in the citing document's major version; and failing one, the
+newest copy in the citing document's major version; and failing one, a
+later release's copy standing in by an evidenced entry (below), or the
 cited document's final version when it ended in an earlier release. A
 document outside 3GPP has no release, so its non-specific reference is the
 final version or nothing. The `.dad` grammar names no versions, so the two
@@ -289,18 +290,45 @@ only by an entry in `corpus.STAND_INS` that names it and states the
 evidence; without one the citation resolves to nothing. TS 29.212 cites
 "3GPP2 X.S0057-B" [24], and 3GPP2's library publishes X.S0057-0 V1.0 and
 V2.0 alone (checked 2026-10-30 at its X-series index), so revision 0 V2.0
-stands in. Six citations resolve across releases or revisions: TS
-32.299's TS 29.140 (`VAS-ID`, `VASP-ID`) and ES 283 034's TS 29.209
-(`Media-Type`, `AF-Application-Identifier`) as final versions, TS 183
-017's TS 29.209 and TS 29.214 and oneM2M TS-0004's TS 32.299 as the
-versions named, and TS 29.212's 3GPP2 X.S0057 (`3GPP2-BSID`) as the
-revision standing in. An `Avp` or `Hole` that took a field from such a
-copy carries `across_releases`, a `corpus.CrossRelease` naming the citing
-and cited documents, the version and the rule (`corpus.SPECIFIC`,
-`corpus.NON_SPECIFIC`, or `corpus.STAND_IN` with the cited and held
-revisions); `across_releases()` lists them for a reader to
-audit, and the linter's `cross-release-origin` note says the same per
-citing file. An older copy answers only through a citation:
+stands in.
+
+An older copy held for a citation cites in turn, and its non-specific
+references mean its own release's last versions. TS 32.299 V11.20.0,
+which oneM2M TS-0004 names, cites eight 3GPP documents so for what
+`Service-Information` reaches; the corpus holds two at Release 11, TS
+29.212 V11.19.0 and TS 29.214 V11.16.0, catalog pins verified as their
+release's last, because Release 18's differ where it matters: Release
+18's `QoS-Information` has seven members Release 11's lacks, and its
+`Flows` adds `Content-Version`, `Media-Component-Status` and `* [ AVP ]`
+to Release 11's closed body. The other six, TS 29.061, 29.173, 29.229,
+29.272, 29.273 and 29.329, define everything TS 32.299 V11.20.0 re-uses
+from them alike in Release 11 and Release 18: codes, vendors, types, each
+table row's flag rules, grouped bodies and enumerated values, members those
+bodies reach included. Their Release 18 copies stand in, each by an entry
+in `corpus.RELEASE_STAND_INS`, keyed by citing document, citing version
+and cited document, naming the version meant and the copy answering and
+stating that evidence, as `corpus.STAND_INS` does for a revision; without
+one, such a citation resolves to nothing. The pinned copies' own Release 11
+citations of TS 29.061, 29.229 and 29.272 have no entry, and stay
+unresolved: TS 29.212 V11.19.0 re-uses TS 29.272's `Trace-Data`, whose
+Release 11 body differs from Release 18's.
+
+Twelve citations resolve across releases or revisions: TS 32.299's TS
+29.140 (`VAS-ID`, `VASP-ID`) and ES 283 034's TS 29.209 (`Media-Type`,
+`AF-Application-Identifier`) as final versions, TS 183 017's TS 29.209 and
+TS 29.214 and oneM2M TS-0004's TS 32.299 as the versions named, TS
+29.212's 3GPP2 X.S0057 (`3GPP2-BSID`) as the revision standing in, and
+TS 32.299 V11.20.0's six as the Release 18 copies standing in. An `Avp`
+or `Hole` that took a field from such a copy carries `across_releases`, a
+`corpus.CrossRelease` naming the citing and cited documents, the version
+and the rule (`corpus.SPECIFIC`, `corpus.NON_SPECIFIC`, or
+`corpus.STAND_IN` with the cited and held revisions, or with `meant`, the
+version a release stand-in answers for); `across_releases()` lists them
+for a reader to audit, sixty-two, what an older copy reached across
+releases cites across releases in turn included (thirty-five through TS
+32.299 V11.20.0's stand-ins, under oneM2M TS-0004's
+`Service-Information`), and the linter's `cross-release-origin` note says
+the same per citing file. An older copy answers only through a citation:
 reference-level queries (`avps("TS32.299")`, `holes`, `references`) read
 the newest copy of each document, and Release 18's TS 32.299 never reads
 its Release 11 copy.
@@ -321,7 +349,10 @@ reads the AST, through `table_rows` or the file's `corpus.Entry.spec`.
 A reading's holes include those of the grouped AVPs it reaches in an
 older copy through a citation across releases, which no reading of that
 copy's own reports: such a hole carries the copy's `version`, and
-`Hole.document` reads "TS32.299 V11.20.0".
+`Hole.document` reads "TS32.299 V11.20.0". One reached in a newest copy,
+standing in or not, is that copy's reading's to report: TS 32.299
+V11.20.0's `PS-Information` reaches TS 29.061's
+`3GPP-Session-Stop-Indicator`, a hole of TS 29.061's own.
 
 **Wireshark's names.** Built with `dictionary=` a Wireshark dictionary
 directory, the model fills `Avp.wireshark_name` and `Hole.wireshark_name`
@@ -334,18 +365,19 @@ and never changes `name`, which is always the document's spelling;
 listing every hole, rather than build a model with any. The default is
 `strict=False` because the committed corpus does not build strictly, and
 every standing hole is a statement its source does not make.
-TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, the
+TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and the
 names that resolve nowhere are the linter's standing
-`unresolved-reference` cases, and
-oneM2M TS-0004's `Service-Information`, TS 32.299 V11.20.0's, reaches
-forty-one members that Release 11 copies of TS 29.061, 29.173, 29.212,
-29.214, 29.229, 29.272, 29.273 and 29.329 define, and three of
-OMA-DDS-Charging_Data's, none of which the corpus holds. TS 32.299's thirteen OMA rows are no
+`unresolved-reference` cases. oneM2M TS-0004 reaches no other: its
+`Service-Information`, TS 32.299 V11.20.0's, resolves through the pinned
+Release 11 copies and the Release 18 ones standing in (above), so
+`holes("oneM2M-TS-0004")` is empty. TS 32.299's thirteen OMA rows are no
 holes: their flags, and the types of the ten its clauses do not type, are
 supplied from OMA-DDS-Charging_Data
 ([corrections.md](corrections.md#operations)), and a grouped one is an
 `Avp` typed Grouped with no members, since the corpus holds no body for
-it. The pinned list in `tests/test_model.py`
+it. V11.20.0's three that `Service-Information` reaches, `DCD-Information`,
+`IM-Information` and `Service-Generic-Information`, are supplied the same
+way, their clauses and reference [223] reading as Release 18's do. The pinned list in `tests/test_model.py`
 (`_STANDING_HOLES`) is the full account: the strict build's failure is
 compared against it, so a hole worked off or a new one shows up as a diff.
 Roadmap item N lists them by cause.

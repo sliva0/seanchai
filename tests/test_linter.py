@@ -483,6 +483,11 @@ _RAW_ERRORS = {
     # printing no vendor where clause 5.3 (6.5) sets 3GPP's for every AVP.
     "29214-7c0.raw.dad": ["vendor-id-mismatch"] * 5,
     "29209-680.raw.dad": ["vendor-id-mismatch"] * 5,
+    # Release 11, the copies TS 32.299 V11.20.0 cites: thirty-one and six
+    # vendorless grouped headers, and TS 29.214's two Void values (5.3.13),
+    # as their Release 18 successors print.
+    "29212-bj0.raw.dad": ["vendor-id-mismatch"] * 31,
+    "29214-bg0.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 6,
     "29336-i20.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
@@ -1271,6 +1276,31 @@ def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
     assert "external-origin-not-in-corpus" not in _rules(findings)
 
 
+def test_a_later_release_standing_in_is_a_note_with_its_evidence():
+    """TS 32.299 V11.20.0 cites TS 29.329 non-specifically, meaning
+    V11.7.0, which the corpus lacks; V18.0.0 answers by its
+    `corpus.RELEASE_STAND_INS` entry, and the note quotes the evidence."""
+    spec = _spec(
+        _reused(ast.ReusedAvpRow(name="Borrowed", origin="TS29.329")),
+        specification="3GPP TS 32.299",
+        version="11.20.0",
+    )
+    origin = _origin_spec("3GPP TS 29.329", "18.0.0", _grouped_with("Borrowed", 700))
+
+    findings = linter.lint_with_corpus(spec, _books(origin))
+
+    (crossing,) = [f for f in findings if f.rule == "cross-release-origin"]
+    assert crossing.message == (
+        "TS29.329 is resolved across releases to 0.dad: 3GPP TS 32.299"
+        " V11.20.0 is the citing file, and it cites the document"
+        " non-specifically, meaning V11.7.0, which the corpus lacks, and"
+        " V18.0.0 stands in: "
+        + corpus.RELEASE_STAND_INS["TS32.299", "11.20.0", "TS29.329"].evidence
+        + " (corpus.RELEASE_STAND_INS)"
+    )
+    assert "origin-not-in-corpus" not in _rules(findings)
+
+
 def test_an_unresolvable_origin_is_one_note_and_keeps_the_single_file_answer():
     """A partial corpus must stay useful: the rules that needed the missing
     document are skipped, and the single-file note it would have superseded
@@ -1579,23 +1609,42 @@ _STANDING_CORPUS_NOTES = {
     },
     # The older releases the corpus holds for citations cite in turn
     # documents it holds at Release 18 only: TS 29.214 V7.12.0 re-uses Gx's
-    # and Gi's AVPs, TS 32.299 V11.20.0 Release 11's charging origins, and
-    # TS 29.140 non-specifically, which reads as V7.0.0 here too.
+    # and Gi's AVPs, and TS 29.140 non-specifically, which reads as V7.0.0
+    # here too. TS 32.299 V11.20.0's six other Release 11 citations read
+    # Release 18 copies standing in (corpus.RELEASE_STAND_INS), and its TS
+    # 29.212 and 29.214 are the pinned Release 11 copies, whose own Release
+    # 11 citations of TS 29.061, 29.229 and 29.272 nothing stands in for:
+    # TS 29.212 V11.19.0's Trace-Data, from TS 29.272, differs from Release
+    # 18's.
     "29214-7c0.dad": {
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0), TS29.212 (corpus has 18.2.0)"
+            "TS29.061 (corpus has 18.1.0), TS29.212 (corpus has 18.2.0, 11.19.0)"
+        ]
+    },
+    "29212-bj0.dad": {
+        "cross-release-origin": ["3GPP2-X.S0057"],
+        "origin-not-in-corpus": [
+            "TS29.061 (corpus has 18.1.0), TS29.229 (corpus has 18.1.0),"
+            " TS29.272 (corpus has 18.7.0)"
+        ],
+    },
+    "29214-bg0.dad": {
+        "origin-not-in-corpus": [
+            "TS29.061 (corpus has 18.1.0), TS29.229 (corpus has 18.1.0)"
         ]
     },
     "32299-bk0.dad": {
-        "cross-release-origin": ["TS29.140"],
-        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
-        "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0),"
-            " TS29.173 (corpus has 18.0.0), TS29.212 (corpus has 18.2.0),"
-            " TS29.214 (corpus has 18.4.0, 7.12.0), TS29.229 (corpus has 18.1.0),"
-            " TS29.272 (corpus has 18.7.0), TS29.273 (corpus has 18.6.0),"
-            " TS29.329 (corpus has 18.0.0)"
+        "cross-release-origin": [
+            "TS29.061",
+            "TS29.140",
+            "TS29.173",
+            "TS29.229",
+            "TS29.272",
+            "TS29.273",
+            "TS29.329",
         ],
+        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
+        "reused-origin-indirect": ["3GPP2-BSID"],
     },
     "rfc4004.dad": {
         "unresolved-reference": [

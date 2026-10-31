@@ -97,7 +97,7 @@ for catalog experiments, not for refreshing the corpus.
   do the derivation, so don't hand-build those URLs.
 - **Legacy `.doc` archives are converted, not skipped.** Ten catalogued
   archives (TS 32.299, 29.153, 29.154, 29.201, 29.215, 29.217, 29.219,
-  29.343, 29.368, 29.468) hold a `.doc` and no `.docx`, and so do all four
+  29.343, 29.368, 29.468) hold a `.doc` and no `.docx`, and so do all six
   pinned versions. Each run converts them into
   `converted/`, mirroring the extracted path
   (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`; TS 29.153's archive
@@ -149,16 +149,21 @@ for catalog experiments, not for refreshing the corpus.
   and TS 29.209 V6.8.0 are their documents' final versions, which TS
   32.299 and ETSI ES 283 034 cite non-specifically; TS 29.214 V7.12.0 and
   TS 32.299 V11.20.0 are the last of the releases ETSI TS 183 017 and
-  oneM2M TS-0004 name in their references. How the corpus resolves to them
-  is in [consumers.md](consumers.md). Every run lists the document's
+  oneM2M TS-0004 name in their references; TS 29.212 V11.19.0 and TS
+  29.214 V11.16.0 are Release 11's last, which TS 32.299 V11.20.0's
+  non-specific references mean, pinned because Release 18's
+  `QoS-Information` and `Flows` differ from theirs. How the corpus
+  resolves to them is in [consumers.md](consumers.md). Every run lists the document's
   archive across releases and checks the claim (`check_final`): a version
   archived later than the pin, in any release or in its own, fails the run
   naming it, before anything is downloaded, so a resolution never rests on
   a claim the archive stopped supporting. The version is then fetched as
   `--version` fetches one, never walked back, its exact ETSI rendering
-  attached (all four are published), into its own release's tree
+  attached (all six are published), into its own release's tree
   (`3gpp/Rel-7/TS_29.140/`, `3gpp/Rel-11/TS_32.299/` beside
   `3gpp/Rel-18/TS_32.299/`), its legacy `.doc` converted like any other.
+  TS 29.214 is held at three: V7.12.0, V11.16.0 and the catalog's
+  V18.4.0.
   Its record carries the claim in `final`, None for the catalog's release;
   a document the catalog holds at both releases has two records under one
   identifier, ordered by version. `regenerate` keys a copy by its

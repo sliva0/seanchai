@@ -328,7 +328,7 @@ Content-Type                                826    X     -     X     -     UTF8S
 Current-Tariff                              2056   -     -     X     X     Grouped       M,V    P     -       -       No
 CUG-Information                             2304   X     -     X     -     OctetString   M,V    P     -       -       No
 Data-Coding-Scheme                          2001   -     -     X     -     Integer32     M,V    P     -       -       No
-DCD-Information                             2115   X     -     X     -     -             -      -     -       -       -
+DCD-Information                             2115   X     -     X     -     Grouped       -      -     -       -       -
 Deferred-Location-Event-Type                1230   -     -     X     -     UTF8String    M,V    P     -       -       No
 Delivery-Report-Requested                   1216   -     -     X     -     Enumerated    M,V    P     -       -       No
 Delivery-Status                             2104   X     -     X     -     -             -      -     -       -       -
@@ -352,7 +352,7 @@ Flows                                       510    -     -     X     -     -    
 From-Address                                2708   X     -     X     -     UTF8String    M,V    P     -       -       No
 GGSN-Address                                847    X     -     X     -     Address       M,V    P     -       -       No
 Guaranteed-Bitrate-UL                       1026   X     -     X     -     -             -      -     -       -       -
-IM-Information                              2110   X     -     X     -     -             -      -     -       -       -
+IM-Information                              2110   X     -     X     -     Grouped       -      -     -       -       -
 IMS-Application-Reference-Identifier        2601   X     -     -     -     UTF8String    M,V    P     -       -       No
 IMS-Charging-Identifier                     841    X     -     X     -     UTF8String    M,V    P     -       -       No
 IMS-Communication-Service-Identifier        1281   X     -     X     -     UTF8String    M,V    P     -       -       No
@@ -514,7 +514,7 @@ Served-Party-IP-Address                     848    X     -     -     -     Addre
 Server-Capabilities                         603    X     -     -     -     -             -      -     -       -       -
 Server-Name                                 602    X     -     -     -     -             -      -     -       -       -
 Service-Data-Container                      2040   X     -     -     -     Grouped       M,V    P     -       -       No
-Service-Generic-Information                 1256   X     -     X     -     -             -      -     -       -       -
+Service-Generic-Information                 1256   X     -     X     -     Grouped       -      -     -       -       -
 Service-ID                                  855    X     -     X     -     UTF8String    M,V    P     -       -       No
 Service-Information                         873    X     -     X     X     Grouped       M,V    P     -       -       No
 Service-Mode                                2032   X     -     X     -     Unsigned32    M,V    P     -       -       No

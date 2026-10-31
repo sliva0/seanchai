@@ -16,8 +16,12 @@ as does a document outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M), whose
 versions are its publisher's and share no release axis with the citing
 document's, unless the citation names a 3GPP2 revision (`CITED_REVISIONS`):
 then only that revision answers it, or a held one an explicit entry lets
-stand in for it (`STAND_INS`). The reasoning, and what a resolution across
-releases reports, is in docs/consumers.md#resolution-across-releases and
+stand in for it (`STAND_INS`). A non-specific citation whose release's
+last version the corpus does not hold resolves to nothing, unless an entry
+in `RELEASE_STAND_INS` records the evidence that a held copy of a later
+release defines what the citing copy reaches the same way. The reasoning,
+and what a resolution across releases reports, is in
+docs/consumers.md#resolution-across-releases and
 docs/linter.md#resolving-an-origin.
 """
 
@@ -122,6 +126,88 @@ STAND_INS: dict[tuple[str, str], StandIn] = {
     ),
 }
 
+
+@dataclass(frozen=True)
+class ReleaseStandIn:
+    """A held copy of a later release answering a non-specific citation of
+    the version the corpus does not hold, and the evidence that what the
+    citing copy reaches is defined alike in both."""
+
+    meant: str  # "11.12.0", the version the citation means
+    version: str  # "18.1.0", the copy answering it
+    evidence: str
+
+
+# Non-specific citations from an older copy (TS 32.299 V11.20.0, which
+# oneM2M TS-0004 [31] names) that mean their release's last version of a
+# document the corpus holds only at a later release, by (citing reference,
+# citing version, cited reference). One entry per citation, each with the
+# evidence that the cited version and the held copy define alike everything
+# the citing copy re-uses from it, members its grouped AVPs reach in the
+# cited document included: code, vendor, type, every table row's flag
+# rules, grouped bodies and enumerated values. A citation without one
+# resolves to nothing while the corpus lacks its version. Where the two
+# versions differ the meant version is pinned instead (TS 29.212 V11.19.0,
+# TS 29.214 V11.16.0, src/seanchai/downloader/specs.toml).
+_REL11 = (
+    "compared 2026-10-31 with the Release 11 copy extracted from the 3GPP"
+    " archive, whose listing holds no later Release 11 version"
+)
+RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
+    # TS 32.299 V11.20.0 clause 2 [207].
+    ("TS32.299", "11.20.0", "TS29.061"): ReleaseStandIn(
+        "11.12.0",
+        "18.1.0",
+        "V11.12.0 tabulates the 22 AVPs TS 32.299 V11.20.0 re-uses from it"
+        " that either version tabulates with V18.1.0's codes, types and flag"
+        " rules on every row (3GPP-IMSI, 3GPP-MS-TimeZone, 3GPP-RAT-Type and"
+        " 3GPP-User-Location-Info on both of their rows), and prints"
+        " CN-IP-Multicast-Distribution's, MBMS-2G-3G-Indicator's and"
+        " MBMS-Service-Type's values as V18.1.0 does; neither tabulates"
+        " 3GPP-Session-Stop-Indicator, whose code-only row is V18.1.0's"
+        " correction; " + _REL11,
+    ),
+    # [229].
+    ("TS32.299", "11.20.0", "TS29.173"): ReleaseStandIn(
+        "11.1.0",
+        "18.0.0",
+        "V11.1.0 tabulates MME-Name (2402) and MME-Realm (2408) with"
+        " V18.0.0's types and flag rules; " + _REL11,
+    ),
+    # [204].
+    ("TS32.299", "11.20.0", "TS29.229"): ReleaseStandIn(
+        "11.5.0",
+        "18.1.0",
+        "V11.5.0 tabulates Server-Capabilities, Mandatory-Capability,"
+        " Optional-Capability, Server-Name, Session-Priority and User-Data"
+        " with V18.1.0's codes, types and flag rules, and prints"
+        " Server-Capabilities' body and Session-Priority's values as V18.1.0"
+        " does; " + _REL11,
+    ),
+    # [219], [230].
+    ("TS32.299", "11.20.0", "TS29.272"): ReleaseStandIn(
+        "11.14.0",
+        "18.7.0",
+        "V11.14.0 tabulates CSG-Id, MME-Number-for-MT-SMS, Terminal-Information"
+        " and its members IMEI, 3GPP2-MEID and Software-Version with V18.7.0's"
+        " codes, types and flag rules, and prints Terminal-Information's body"
+        " as V18.7.0 does; " + _REL11,
+    ),
+    # [237].
+    ("TS32.299", "11.20.0", "TS29.273"): ReleaseStandIn(
+        "11.11.0",
+        "18.6.0",
+        "V11.11.0 tabulates SSID (1524) on both of V18.6.0's rows with its"
+        " type and flag rules; " + _REL11,
+    ),
+    # [221].
+    ("TS32.299", "11.20.0", "TS29.329"): ReleaseStandIn(
+        "11.7.0",
+        "18.0.0",
+        "V11.7.0 tabulates MSISDN (701) with V18.0.0's type and flag rules; " + _REL11,
+    ),
+}
+
 # 3GPP2's name for a rendering, "X.S0057-0_v2.0_091215.pdf": number,
 # revision, version and publication date.
 TGPP2_RENDERING_RE = re.compile(
@@ -130,7 +216,8 @@ TGPP2_RENDERING_RE = re.compile(
 )
 
 # `CrossRelease.rule`'s values: the drafting rule a resolution followed, or
-# `STAND_IN`, the table entry that let another revision answer.
+# `STAND_IN`, the table entry that let another revision (`STAND_INS`) or a
+# later release's copy (`RELEASE_STAND_INS`) answer.
 SPECIFIC = "specific"
 NON_SPECIFIC = "non-specific"
 STAND_IN = "stand-in"
@@ -143,8 +230,10 @@ class CrossRelease:
     references name (`CITED_VERSIONS`), or `NON_SPECIFIC`, the cited
     document's final version (`FINAL_VERSIONS`). A document outside 3GPP
     has no release, so each of its 3GPP citations that resolves is one.
-    `STAND_IN` is a 3GPP2 revision answering a citation of another, a
-    revision being 3GPP2's release (`STAND_INS`)."""
+    `STAND_IN` is a held copy answering a citation of one the corpus cannot
+    hold: a 3GPP2 revision for another, a revision being 3GPP2's release
+    (`STAND_INS`), or a later release's copy for the version a non-specific
+    reference means (`RELEASE_STAND_INS`, `meant` set)."""
 
     citing: str  # "TS32.299"
     cited: str  # "TS29.140"
@@ -154,8 +243,17 @@ class CrossRelease:
     # the reference names ("B") and the one resolved to ("0").
     cited_revision: str | None = None
     revision: str | None = None
+    # For a `RELEASE_STAND_INS` entry, the version the non-specific
+    # reference means ("11.12.0"), which the corpus does not hold.
+    meant: str | None = None
 
     def __str__(self) -> str:
+        if self.rule == STAND_IN and self.meant is not None:
+            return (
+                f"{self.citing} cites {self.cited} non-specifically, meaning"
+                f" V{self.meant}, which the corpus lacks: V{self.version} stands"
+                " in (corpus.RELEASE_STAND_INS)"
+            )
         if self.rule == STAND_IN:
             return (
                 f"{self.citing} cites {self.cited} revision {self.cited_revision},"
@@ -310,8 +408,9 @@ class Corpus:
         reference (`CITED_VERSIONS`) is the version it names and no other.
         A 3GPP document's non-specific one is the newest copy in its own
         major version, and failing one, the cited document's final version
-        when that ended in an earlier release (`FINAL_VERSIONS`); the
-        corpus may lack the version of a release the document still had.
+        when that ended in an earlier release (`FINAL_VERSIONS`), or the
+        later release's copy a `RELEASE_STAND_INS` entry names; the corpus
+        may lack the version of a release the document still had.
         A document outside 3GPP has no release, so its non-specific
         reference is the final version or nothing.
         """
@@ -358,6 +457,21 @@ class Corpus:
                     and _major(entry.spec.version) == wanted
                 ):
                     return entry, None
+            stand_in = RELEASE_STAND_INS.get((citing, version, reference))
+            if stand_in is not None:
+                entry = next(
+                    (e for e in candidates if e.spec.version == stand_in.version),
+                    None,
+                )
+                if entry is None:
+                    return None, None
+                return entry, CrossRelease(
+                    citing,
+                    reference,
+                    stand_in.version,
+                    STAND_IN,
+                    meant=stand_in.meant,
+                )
         final = FINAL_VERSIONS.get(reference)
         if final is None or (not external and _major(final) >= _major(version or "0")):
             # An ETSI version is no 3GPP release, so it says nothing about

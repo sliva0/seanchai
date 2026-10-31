@@ -69,8 +69,9 @@ compare.
 A release is where 3GPP may change a document's template, and with it every
 quirk and typo, so a declaration speaks for the releases its range spans
 (`versions.reviewed_release`): TS 29.214's file declares for V18.4.0 and,
-below them, for V7.12.0, the copy ETSI TS 183 017 cites, and TS 32.299's
-for V18.0.0 and V11.20.0; neither copy gets the other's. A version is read
+below them, for V11.16.0, the copy TS 32.299 V11.20.0 cites, and V7.12.0,
+the copy ETSI TS 183 017 cites, TS 29.212's for V18.2.0 and V11.19.0, and
+TS 32.299's for V18.0.0 and V11.20.0; no copy gets another's. A version is read
 with the declarations of its own release when any spans it, else with
 those of the newest declared release below it, which is a release upgrade
 (Release 19 first read with Release 18's, each warning as within a
@@ -141,7 +142,8 @@ The declared vocabulary, with the document that forced each:
   `command-columns`. Its V11.20.0, the copy oneM2M TS-0004 cites, declares
   its own: `message-headings` (6.2.2–6.4.3 print "Accounting-Request
   Message", capitalized), `spaced-rule-operator`, `struck-rules-unused`,
-  `refer-type-cells` (table 7.2), `type-short-forms` and
+  `refer-type-cells` (table 7.2), `referred-type-sentences` (7.2.50,
+  7.2.69, 7.2.191, word for word as V18.0.0's), `type-short-forms` and
   `wildcard-avp-row` (table 7.1), `value-first-enums` (7.2.10's `0 TO`),
   `dotted-flags`, `command-columns`, `worded-enum-values` (7.2.1B),
   `external-enum-values` (7.2.238) and `value-last-enums`, whose
@@ -175,10 +177,18 @@ The declared vocabulary, with the document that forced each:
   application is defined as an IETF vendor specific Diameter application
   with application ID 16777222") and `abnf-comments` (a member line's
   trailing `; Ordinal number of the media comp.`, RFC 5234's comment, in
-  29.209 clauses 6.5.18 and 6.5.20 and 29.214 V7.12.0 clauses 5.3.16 and
-  5.3.18; unread, each body ended silently before its first member). TS 29.212 and 29.214 (both releases)
+  29.209 clauses 6.5.18 and 6.5.20 and 29.214 V7.12.0 and V11.16.0
+  clauses 5.3.16 and 5.3.18; unread, each body ended silently before its
+  first member). TS 29.212's and 29.214's Release 11 copies, V11.19.0 and
+  V11.16.0, declare their Release 18 readings that their text still
+  needs: 29.212's `prose-application-ids` (5.1, 5a.1, 5b.1, E.6.1),
+  `access-type-headings`, `access-type-column`, `applicability-column` and
+  `worded-enum-values`, 29.214's `prose-application-ids`,
+  `dashed-enum-values`, `hex-enum-values`, `worded-enum-values` and
+  `applicability-column`. TS 29.212 and 29.214 (every release)
   declare `origins-by-reference` (a From cell naming ETSI's document as
-  3GPP's, read through clause 2). oneM2M TS-0004 declares
+  3GPP's, read through clause 2; TS 29.212 V11.19.0 prints "ETSI 3GPP TS
+  283 034 [37]"). oneM2M TS-0004 declares
   `list-numbered-headings`, `reference-cells` and `prose-enum-values` of its
   own ([below](#onem2m-ts-0004)), with `message-headings`,
   `spaced-rule-operator`, `command-columns`, `type-short-forms`,
@@ -382,13 +392,17 @@ Conventions worth knowing:
   "Description" and "Comment" columns are dropped silently as prose; any
   other unmodelled column, or a mark column whose quirk the document does
   not declare, produces a warning. Standing: TS 29.212's label-less last
-  columns in tables 5b.4.0.1 and 5c.3.1.1.
+  columns in tables 5b.4.0.1 and 5c.3.1.1, and V11.19.0's in table 5b.4.
 - A flags cell holding a lone `-` is empty (TS 32.299). A clause cell that
   is no clause number fails naming its row (29.368's `6. 4.2`, patched).
 - The cover title is read from the cover table or a plain paragraph (29.061,
   29.212, 29.214). `attach_pages` reads the PDF's own cover and refuses a
   different specification or version, warns when the outline covers only
-  some sections, and errors when it covers none.
+  some sections, and errors when it covers none. A cover whose text does
+  not read falls back to the document information Title, which ETSI writes
+  with the same "(3GPP TS 29.214 version 11.16.0 Release 11)": TS 129 214
+  V11.16.0 draws its cover title as overlapping runs pypdf reads
+  interleaved.
 - A second AVP table or re-used table beyond a pairable set is rejected
   naming the sections. Missing captions and split tables have no collected case.
 
@@ -439,8 +453,9 @@ hyphenated on (29.214, patched); an underscore in a published name
 (29.109's `GBA_U-Awareness-Indicator`); `<AVP header: 632, 10415>` comma
 separator (29.229); the RFC 3588 `P` flag still printed (29.061, 29.212,
 29.214, 29.273); annex clause numbers (`E.6.3.6`); parenthesized note
-references on name cells (`(NOTE 3)`, two stacked); a label-less empty
-fourth column in a re-used table (29.212's 5b.4.0.1, dropped with a
+references on name cells (`(NOTE 3)`, two stacked, and TS 29.212
+V11.19.0's lower-case `(note 2)` in table 5a.4.1); a label-less empty
+fourth column in a re-used table (29.212's 5b.4.0.1, V11.19.0's 5b.4, dropped with a
 warning); one AVP
 printed with two bodies (29.336 §6.4.2 and §8.4.36, the second deleted by
 correction); "Void" as an enum value label (29.214, deleted by correction);

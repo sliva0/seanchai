@@ -140,3 +140,70 @@ CORRECTIONS += [
         ("Redirected-Max-Cache-Time", "Redirect-Max-Cache-Time"),
     )
 ]
+
+# Release 11, V11.16.0, which TS 32.299 V11.20.0 [214] cites
+# non-specifically within Release 11; neither Release 7's declarations nor
+# Release 18's reach it (src/seanchai/versions.py). Six grouped-AVP clauses
+# print no vendor-id where clause 5.3 says "The Vendor-Id header of all AVPs
+# defined in the present document shall be set to 3GPP (10415)" and table
+# 5.3.1 marks V mandatory.
+_VENDORLESS_REL11 = [
+    ("Access-Network-Charging-Identifier", "5.3.3"),
+    ("Flows", "5.3.10"),
+    ("Media-Component-Description", "5.3.16"),
+    ("Media-Sub-Component", "5.3.18"),
+    ("Acceptable-Service-Info", "5.3.24"),
+    ("Sponsored-Connectivity-Data", "5.3.27"),
+]
+
+CORRECTIONS += [
+    Correction(
+        id=f"rel11-vendor-id-{name.lower()}",
+        target=definition(name, section=section),
+        field="vendor_id",
+        expect=None,
+        replace=10415,
+        reason=f"clause {section}'s AVP header omits the vendor-id; clause 5.3"
+        " sets the Vendor-Id header of every AVP the document defines to 3GPP"
+        " (10415), and table 5.3.1 marks the V flag mandatory",
+        versions="11.16.0",
+    )
+    for name, section in _VENDORLESS_REL11
+]
+
+CORRECTIONS += [
+    Delete(
+        id=f"rel11-specific-action-void-{value}",
+        target=enum_value("Specific-Action", "Void", value=value),
+        expect=ast.EnumValue(name="Void", value=value),
+        reason="clause 5.3.13 prints 'Void' as the label of values 0 and 5, as"
+        " Release 18 does — a 3GPP editorial placeholder for removed values,"
+        " not an enumerated value a dictionary can carry, and one name cannot"
+        " label two values",
+        versions="11.16.0",
+    )
+    for value in (0, 5)
+]
+
+CORRECTIONS += [
+    Correction(
+        id="rel11-framed-ipv6-prefix-row-case",
+        target=reused_row("Framed-Ipv6-Prefix", section="5.4.0"),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason="table 5.4.0.1 lower-cases the 'v'; RFC 4005, which defines"
+        " the AVP, spells 'IPv6'",
+        versions="11.16.0",
+    ),
+    Correction(
+        id="rel11-aar-framed-ipv6-prefix-case",
+        target=avp_rule("AA-Request", "Framed-Ipv6-Prefix"),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason="the AAR ABNF (clause 5.6.1) lower-cases the 'v' as table"
+        " 5.4.0.1 does; RFC 4005, which defines the AVP, spells 'IPv6'",
+        versions="11.16.0",
+    ),
+]

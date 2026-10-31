@@ -48,8 +48,8 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   `"18.0.0..18.2.0"`, inclusive, `*` for an open bound, the same range type
   patches and quirks declare. A declaration applies to the releases its
   range spans and to none other ([extractor.md](extractor.md#releases)):
-  TS 32.299's module holds Release 18's corrections and Release 11's, each
-  for its copy. Within a release `regenerate` warns when the parsed version
+  TS 32.299's and TS 29.212's modules hold Release 18's corrections and
+  Release 11's, TS 29.214's Release 7's too, each for its copy. Within a release `regenerate` warns when the parsed version
   falls outside the range, and never gates application. `regenerate --expand-ranges` rewrites a string literal
   in place to cover a version the module applied cleanly to (see
   [workflow.md](workflow.md#version-upgrades)), which is why a range is best
@@ -153,7 +153,9 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   OMA's V1.0 states type and flags in table 11 of its clause 8.4, which
   each declaration cites. Three of the rows are typed by TS 32.299's own
   clauses (7.2.50, 7.2.69, 7.2.191: "is of type Grouped"), so their
-  declarations expect the type and supply the flags alone. A re-used row has no cells a model reads for
+  declarations expect the type and supply the flags alone; V11.20.0's
+  table 7.2 rows for the same three, under the same clauses and reference
+  [223], take the same flags by Release 11 declarations of their own. A re-used row has no cells a model reads for
   type or vendor, so an AVP only re-used from an absent document has
   nowhere to take a supplied type: the document has to enter the corpus,
   as 3GPP2 X.S0057 did, transcribed, for TS 29.212's `3GPP2-BSID`.

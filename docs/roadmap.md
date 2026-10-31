@@ -23,7 +23,8 @@ letter is not reused. What exists is described in the per-module documents.
   builds under `strict=True`. What stands in the way, by cause (the pinned
   `_STANDING_HOLES` in `tests/test_model.py`):
   - a type no source states: TS 29.061's `3GPP-Session-Stop-Indicator`
-    row prints only a code, flag cells included;
+    row prints only a code, flag cells included, in Release 11 as in
+    Release 18 (oneM2M TS-0004 reaches it through TS 32.299 V11.20.0);
   - names no corpus document defines: RFC 4004's three SPI members, TS
     29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's
     `External-Group-Identifier`, TS 32.299's `Submission-Timestamp` and
@@ -31,15 +32,6 @@ letter is not reused. What exists is described in the per-module documents.
     broken names; the model must present them as such and offer the
     consumer resolution options (skip, keep as an untyped placeholder,
     accept a supplied definition). Design pending.
-  - what oneM2M TS-0004's `Service-Information` reaches in TS 32.299
-    V11.20.0, the version its reference [31] names: forty-one members
-    re-used from Release 11's TS 29.061, 29.173, 29.212, 29.214, 29.229,
-    29.272, 29.273 and 29.329, and three OMA-DDS-Charging_Data rows.
-    Release 18 defines all forty-four names with the same codes; the three
-    OMA ones TS 32.299 itself now defines. *Decided:* resolve to the
-    Release 18 copies where code, type and flags agree, marked
-    `across_releases`; pin a Release 11 document only where a grouped
-    member list or flag rule differs materially. Comparison pending.
 
 ## Oracle
 

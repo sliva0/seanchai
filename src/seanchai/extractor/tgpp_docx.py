@@ -164,11 +164,12 @@ _TABLE_CAPTION_RE = re.compile(
 )
 # The spellings a table cell uses to point at a note below the table: bare
 # "NOTE 1" (29.272 and most others) and parenthesized "(NOTE 3)" / "(Note 2)"
-# (29.212, 29.214 name cells — 29.212 mixes both casings). The parenthesized
-# form must strip as a whole, or "3GPP-RAT-Type (NOTE 3)" would be left as
-# the non-name "3GPP-RAT-Type ()".
+# (29.212, 29.214 name cells — 29.212 mixes both casings, and V11.19.0's
+# table 5a.4.1 writes "(note 2)" too). The parenthesized form must strip as
+# a whole, or "3GPP-RAT-Type (NOTE 3)" would be left as the non-name
+# "3GPP-RAT-Type ()".
 _NOTE_REF_RE = re.compile(
-    r"\s*\(\s*(?:NOTE|Note)\s*(?P<number>\d+)\s*\)\s*"
+    r"\s*\(\s*(?:NOTE|Note|note)\s*(?P<number>\d+)\s*\)\s*"
     r"|\s*(?:NOTE|Note)\s*(?P<bare>\d+)\s*"
 )
 _NOTE_RFC_RE = re.compile(
@@ -2502,11 +2503,20 @@ def _spec_and_version(document: docx.document.Document) -> tuple[str, str]:
 
 def _pdf_spec_and_version(reader: pypdf.PdfReader) -> tuple[str, str]:
     """An ETSI rendering prints its own title on the cover, with the 3GPP
-    original in parentheses: "(3GPP TS 29.272 version 18.6.0 Release 18)"."""
+    original in parentheses: "(3GPP TS 29.272 version 18.6.0 Release 18)".
+
+    Failing the cover, the document information Title ETSI writes with the
+    same parenthesis: TS 129 214 V11.16.0 (2015-10) draws its cover title as
+    overlapping text runs pypdf reads interleaved, "(3GPP TS 29.21" and
+    ".214 version 11.16.0 Release 1", where its Title reads "... (3GPP TS
+    29.214 version 11.16.0 Release 11)". Either names the rendering, so a
+    neighbouring version is refused all the same."""
     if not reader.pages:
         raise ExtractionError("PDF has no pages")
     cover = _normalize(reader.pages[0].extract_text())
     match = _PDF_COVER_RE.search(cover)
+    if match is None and reader.metadata is not None and reader.metadata.title:
+        match = _PDF_COVER_RE.search(_normalize(reader.metadata.title))
     if match is None:
         raise ExtractionError("cannot find spec number/version on the PDF cover page")
     return f"3GPP {match['spec']}", match["version"]

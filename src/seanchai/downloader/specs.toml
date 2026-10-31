@@ -388,6 +388,25 @@ version = "11.20.0"
 final = "release"
 reason = "Defines Node-Id and Service-Information as oneM2M TS-0004 re-uses them."
 
+# TS 32.299 V11.20.0 clause 2 cites TS 29.212 [215] and TS 29.214 [214]
+# non-specifically, which in Release 11 means Release 11's last versions.
+# Their Release 18 copies differ where oneM2M TS-0004 reaches them through
+# Service-Information: Release 18's QoS-Information has seven members
+# Release 11's lacks, and Release 18's Flows three, `*[ AVP ]` among them.
+[[tgpp_pinned]]
+number = "29.212"
+title = "Policy and Charging Control (PCC); Reference points"
+version = "11.19.0"
+final = "release"
+reason = "Defines QoS-Information as TS 32.299 V11.20.0 re-uses it."
+
+[[tgpp_pinned]]
+number = "29.214"
+title = "Policy and charging control over Rx reference point"
+version = "11.16.0"
+final = "release"
+reason = "Defines Flows as TS 32.299 V11.20.0 re-uses it."
+
 # oneM2M specifications, each pinned to one version of one release: the
 # document library serves only a document id's latest revision, so the
 # version is stated here and the download fails when the file served carries

@@ -144,7 +144,9 @@ With `--corpus`, each re-used row is resolved against the document it cites.
 - `cross-release-origin` — an origin resolved outside the citing file's
   release ([below](#resolving-an-origin)), one note per cited document,
   naming the citing file, the cited file and the rule: a specific
-  reference's named version, or a non-specific one's final version. A
+  reference's named version, a non-specific one's final version, or a
+  held copy standing in for the revision or release version cited, with
+  the evidence its table entry states. A
   note: the rule is the corpus's reading of the citing document's
   references clause, and a reader audits it here.
 - `external-origin-not-in-corpus` — the same for origins outside 3GPP and
@@ -240,8 +242,12 @@ reference, whose version the citing document's references clause names
 29.214 Release 7, oneM2M TS-0004 V2.35.0's TS 32.299 Release 11), resolves
 to that version only, and a non-specific one to a document that ended
 before the citing release resolves to its final version
-(`corpus.FINAL_VERSIONS`: TS 29.140 V7.0.0, TS 29.209 V6.8.0); each such
-resolution is a `cross-release-origin` note. RFCs resolve to whatever the
+(`corpus.FINAL_VERSIONS`: TS 29.140 V7.0.0, TS 29.209 V6.8.0), or, from an
+older copy whose release's last version the corpus lacks, to a later
+release's copy where `corpus.RELEASE_STAND_INS` states the evidence that
+both define alike what the citing copy re-uses (TS 32.299 V11.20.0's TS
+29.061, 29.173, 29.229, 29.272, 29.273 and 29.329, at Release 18); each
+such resolution is a `cross-release-origin` note. RFCs resolve to whatever the
 corpus holds, and so does a document outside 3GPP and IETF, whose versions
 are its publisher's (ETSI TS 283 034 V2.2.0 is no Release 2). For the same
 reason such a document's non-specific citations of 3GPP documents resolve
@@ -297,7 +303,8 @@ why each stays:
   current; correcting either would invent an agreement. TS 29.330's `Load`
   goes through TS 29.229 to RFC 8583, an indirect origin, and TS 32.299's
   `3GPP2-BSID` (table 7.3.1, reference [215]) through TS 29.212 to
-  `3GPP2-X.S0057`. Six `reused-body-differs` stay open with clauses saying only
+  `3GPP2-X.S0057`, in both its copies, V11.20.0's through the pinned TS
+  29.212 V11.19.0. Six `reused-body-differs` stay open with clauses saying only
   where the AVP was "originally defined" before printing a body of their
   own: TS 29.128's `Terminal-Information` (6.4.30), TS 29.272's
   `ProSe-Subscription-Data` (7.3.180) and `Supported-Services` (7.3.199,
@@ -319,9 +326,13 @@ why each stays:
   `Globally-Unique-Address`, identical once ES 283 034's `Frame-*` members
   are corrected, and seven of its clauses 7.3.14-7.3.32 re-print V6.8.0's
   Gq AVPs as printed there.
-- **`cross-release-origin`**, seven, in six files. TS 32.299 cites TS
+- **`cross-release-origin`**, fourteen, in seven files. TS 32.299 cites TS
   29.140 non-specifically for `VAS-ID` and `VASP-ID` (clause 2, [213]),
-  which reads as its final version, V7.0.0, and so does TS 32.299 V11.20.0;
+  which reads as its final version, V7.0.0, and so does TS 32.299 V11.20.0,
+  whose non-specific TS 29.061, 29.173, 29.229, 29.272, 29.273 and 29.329
+  ([207], [229], [204], [219] and [230], [237], [221]) mean Release 11
+  versions the corpus lacks, for which the Release 18 copies stand in
+  (`corpus.RELEASE_STAND_INS`, each entry stating the evidence);
   ES 283 034 cites TS 29.209 non-specifically ([5]), V6.8.0, its final;
   TS 183 017 names "3GPP TS 29.209 Release 6" ([4]) and "3GPP TS 29.214
   Release 7" ([19]), V6.8.0 and V7.12.0; oneM2M TS-0004 names "3GPP TS
@@ -329,12 +340,15 @@ why each stays:
   `Service-Information`, whose rows print vendor, code, type and flags
   agreeing with it; TS 29.212 names "3GPP2 X.S0057-B" ([24]), a revision
   3GPP2's library does not publish, for which revision 0 V2.0 stands in
-  (`corpus.STAND_INS`).
-- **`origin-not-in-corpus`**, two. The older copies held for those
+  (`corpus.STAND_INS`), and so does its V11.19.0.
+- **`origin-not-in-corpus`**, three. The older copies held for those
   citations cite in turn what the corpus holds at Release 18 only, and a
   non-specific reference means the citing release's version: TS 29.214
-  V7.12.0 Release 7's TS 29.061 and 29.212, TS 32.299 V11.20.0 eight
-  Release 11 documents.
+  V7.12.0 Release 7's TS 29.061 and 29.212, TS 29.212 V11.19.0 Release
+  11's TS 29.061, 29.229 and 29.272, and TS 29.214 V11.16.0 Release 11's
+  TS 29.061 and 29.229. Nothing stands in for them: TS 29.212 V11.19.0's
+  `Trace-Data`, from TS 29.272, has a body Release 18's differs from, and
+  no citation reaches them from oneM2M TS-0004.
 - **`external-origin-not-in-corpus`**, two files: both copies of TS 32.299
   (`OMA-DDS-Charging_Data`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks

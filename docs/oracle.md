@@ -22,9 +22,10 @@ dictionary describes a document, and an older copy the corpus holds for a
 citation across releases ([consumers.md](consumers.md#resolution-across-releases))
 is no reading of it. `crosscheck` takes files or directories (a
 directory's raw files skipped, as the corpus loader skips them), lists
-each older copy it skips (TS 29.214 V7.12.0, TS 32.299 V11.20.0), and
-refuses two files of one document and version, so a count over every
-committed copy (117 findings in 57 files) cannot be reported by accident.
+each older copy it skips (TS 29.212 V11.19.0, TS 29.214 V7.12.0 and
+V11.16.0, TS 32.299 V11.20.0), and refuses two files of one document and
+version, so a count over every committed copy (118 findings in 59 files)
+cannot be reported by accident.
 TS 29.140 V7.0.0 and TS 29.209 V6.8.0 are the newest copies of their
 documents and are checked.
 

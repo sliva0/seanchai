@@ -1551,10 +1551,13 @@ class TestOverTheCommittedCorpus:
 # cause. Each is a statement its source does not make: RFC 4590 is a RADIUS
 # document with no Diameter types, TS 29.061's 3GPP-Session-Stop-Indicator
 # row prints only a code, every "resolves nowhere" is one of
-# docs/linter.md's standing unresolved references, and TS 32.299 V11.20.0's
-# rows are re-used from Release 11 copies and OMA-DDS-Charging_Data, which
-# the corpus lacks. A hole worked off shrinks this; a new one is a corpus
-# regression. Roadmap item N lists them by cause.
+# docs/linter.md's standing unresolved references. TS 32.299 V11.20.0,
+# which oneM2M TS-0004 reaches, holds none of its own: its Release 11
+# citations read the pinned TS 29.212 and 29.214 copies or Release 18
+# copies standing in, and its three OMA rows are supplied as Release 18's
+# are; TS 29.061's row is the one hole it reaches. A hole worked off shrinks
+# this; a new one is a corpus regression. Roadmap item N lists them by
+# cause.
 _STANDING_HOLES = {
     "RFC4004": {
         "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-to-HA-SPI"]
@@ -1566,76 +1569,6 @@ _STANDING_HOLES = {
         "resolves nowhere": [
             "Network-Element",
             "Submission-Timestamp",
-        ],
-    },
-    # oneM2M TS-0004's Service-Information is V11.20.0's ([31], "Release
-    # 11"), whose body reaches what Release 11's other documents define;
-    # the corpus holds them at Release 18, and their non-specific
-    # references mean Release 11's. The three OMA-DDS-Charging_Data rows
-    # are as Release 18's were before their types and flags were supplied.
-    "TS32.299 V11.20.0": {
-        "no data_type, no flag_rules (re-used from OMA-DDS-Charging_Data,"
-        " which the corpus lacks)": [
-            "DCD-Information",
-            "IM-Information",
-            "Service-Generic-Information",
-        ],
-        "no data_type, no flag_rules (re-used from TS29.061, which the corpus lacks)": [
-            "3GPP-Charging-Characteristics",
-            "3GPP-Charging-Id",
-            "3GPP-GGSN-MCC-MNC",
-            "3GPP-IMSI",
-            "3GPP-IMSI-MCC-MNC",
-            "3GPP-MS-TimeZone",
-            "3GPP-NSAPI",
-            "3GPP-PDP-Type",
-            "3GPP-RAT-Type",
-            "3GPP-SGSN-MCC-MNC",
-            "3GPP-Selection-Mode",
-            "3GPP-Session-Stop-Indicator",
-            "3GPP-User-Location-Info",
-            "CN-IP-Multicast-Distribution",
-            "MBMS-2G-3G-Indicator",
-            "MBMS-Data-Transfer-Start",
-            "MBMS-Data-Transfer-Stop",
-            "MBMS-Service-Area",
-            "MBMS-Service-Type",
-            "MBMS-Session-Identity",
-            "RAI",
-            "Required-MBMS-Bearer-Capabilities",
-            "TMGI",
-        ],
-        "no data_type, no flag_rules (re-used from TS29.173, which the corpus lacks)": [
-            "MME-Name",
-            "MME-Realm",
-        ],
-        "no data_type, no flag_rules (re-used from TS29.212, which the corpus lacks)": [
-            "3GPP2-BSID",
-            "Charging-Rule-Base-Name",
-            "QoS-Information",
-            "User-Location-Info-Time",
-        ],
-        "no data_type, no flag_rules (re-used from TS29.214, which the corpus lacks)": [
-            "AF-Charging-Identifier",
-            "Access-Network-Charging-Identifier-Value",
-            "Application-Service-Provider-Identity",
-            "Flows",
-            "Sponsor-Identity",
-        ],
-        "no data_type, no flag_rules (re-used from TS29.229, which the corpus lacks)": [
-            "Server-Capabilities",
-            "Session-Priority",
-        ],
-        "no data_type, no flag_rules (re-used from TS29.272, which the corpus lacks)": [
-            "CSG-Id",
-            "MME-Number-for-MT-SMS",
-            "Terminal-Information",
-        ],
-        "no data_type, no flag_rules (re-used from TS29.273, which the corpus lacks)": [
-            "SSID"
-        ],
-        "no data_type, no flag_rules (re-used from TS29.329, which the corpus lacks)": [
-            "MSISDN"
         ],
     },
 }
@@ -1718,8 +1651,10 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
     non-specific TS 29.140 [213] is its final version, V7.0.0; TS 183
     017's "TS 29.214 Release 7" [19] and oneM2M TS-0004's "TS 32.299
     (Release 11)" [31] are the versions they name; TS 29.212's "3GPP2
-    X.S0057-B" [24] is revision 0, standing in. Each AVP so reached says
-    so, and nothing else in the corpus resolves across releases."""
+    X.S0057-B" [24] is revision 0, standing in; and TS 32.299 V11.20.0's
+    six non-specific Release 11 citations the corpus holds no Release 11
+    copy of are Release 18's, standing in. Each AVP so reached says so,
+    and nothing else in the corpus resolves across releases."""
     built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
 
     vas = built.resolve("TS32.299", "VAS-ID")
@@ -1754,12 +1689,37 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("ETSI-TS183.017", "TS29.209"),
         ("ETSI-TS183.017", "TS29.214"),
         ("TS29.212", "3GPP2-X.S0057"),
+        ("TS32.299", "TS29.061"),
         ("TS32.299", "TS29.140"),
+        ("TS32.299", "TS29.173"),
+        ("TS32.299", "TS29.229"),
+        ("TS32.299", "TS29.272"),
+        ("TS32.299", "TS29.273"),
+        ("TS32.299", "TS29.329"),
         ("oneM2M-TS-0004", "TS32.299"),
     }
     # TS 29.212's and 32.299's 3GPP2-BSID are one Avp, revision 0 standing
-    # in for TS 29.212's revision B.
-    assert len(built.across_releases()) == 27
+    # in for TS 29.212's revision B. Thirty-five of the sixty-two are what
+    # oneM2M TS-0004's Service-Information reaches through TS 32.299
+    # V11.20.0's six release stand-ins, TS 29.061's
+    # 3GPP-Session-Stop-Indicator a hole among them.
+    assert len(built.across_releases()) == 62
+    # oneM2M's own two, those thirty-five, V11.20.0's VAS-ID and VASP-ID
+    # from TS 29.140 V7.0.0, and 3GPP2-BSID through TS 29.212 V11.19.0.
+    reached = built.across_releases("oneM2M-TS-0004")
+    assert len(reached) == 40
+    rules = {
+        (found.across_releases.cited, found.across_releases.rule)
+        for found in reached
+        if found.across_releases is not None
+        and found.across_releases.citing == "TS32.299"
+    }
+    assert rules == {
+        ("TS29.140", corpus.NON_SPECIFIC),
+        *((cited, corpus.STAND_IN) for cited in ("TS29.061", "TS29.173")),
+        *((cited, corpus.STAND_IN) for cited in ("TS29.229", "TS29.272")),
+        *((cited, corpus.STAND_IN) for cited in ("TS29.273", "TS29.329")),
+    }
 
 
 def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
@@ -1782,11 +1742,55 @@ def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
     assert members["Rating-Group"] == (0, 432)
     assert members["Node-Id"] == (10415, 2064)
     assert {identity[0] for identity in members.values()} == {0, 10415, 45687}
-    # Its own reading is complete; what it reaches in TS 32.299 V11.20.0
-    # through Service-Information is that copy's (`_STANDING_HOLES`).
-    assert {hole.document for hole in built.holes("oneM2M-TS-0004")} == {
-        "TS32.299 V11.20.0"
-    }
+    # Its own reading is complete, and so is what it reaches in TS 32.299
+    # V11.20.0 through Service-Information, but for TS 29.061's
+    # 3GPP-Session-Stop-Indicator, which TS 29.061's reading reports.
+    assert built.holes("oneM2M-TS-0004") == ()
+
+
+def test_onem2m_reaches_release_11s_bodies_through_ts_32_299_v11_20_0():
+    """oneM2M TS-0004's Service-Information is TS 32.299 V11.20.0's, whose
+    non-specific references mean Release 11's last versions: the pinned TS
+    29.212 V11.19.0's QoS-Information, nine members and the wildcard where
+    Release 18's has sixteen, and TS 29.214 V11.16.0's Flows, closed where
+    Release 18's adds three members, `*[ AVP ]` among them. TS 29.229's
+    Server-Capabilities is V18.1.0's, standing in for V11.5.0, which defines
+    it alike; IM-Information takes OMA's flags as Release 18's does. Flows
+    sits in PS-Information's Service-Data-Container's
+    AF-Correlation-Information."""
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+
+    def member(avp, name):
+        assert isinstance(avp, model.Grouped)
+        (found,) = [m.avp for m in avp.members if m.name == name]
+        assert found is not None, name
+        return found
+
+    service = built.resolve("oneM2M-TS-0004", "Service-Information")
+    qos = member(member(service, "PS-Information"), "QoS-Information")
+    current = built.resolve("TS29.212", "QoS-Information")
+    assert isinstance(qos, model.Grouped) and isinstance(current, model.Grouped)
+    assert qos.identity == current.identity == (10415, 1016)
+    assert (len(qos.members), len(current.members)) == (10, 17)
+    assert qos.across_releases is None
+    container = member(member(service, "PS-Information"), "Service-Data-Container")
+    flows = member(member(container, "AF-Correlation-Information"), "Flows")
+    assert isinstance(flows, model.Grouped)
+    assert [m.name for m in flows.members] == [
+        "Media-Component-Number",
+        "Flow-Number",
+        "Final-Unit-Action",
+    ]
+    capabilities = member(member(service, "IMS-Information"), "Server-Capabilities")
+    assert capabilities.across_releases == corpus.CrossRelease(
+        "TS32.299", "TS29.229", "18.1.0", corpus.STAND_IN, meant="11.5.0"
+    )
+    im = member(service, "IM-Information")
+    assert (im.identity, im.data_type) == ((10415, 2110), ast.DataType.GROUPED)
+    assert im.flag_rules == ast.AvpFlagRules(
+        must=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}),
+        may=frozenset({ast.AvpFlag.PROTECTED}),
+    )
 
 
 def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():

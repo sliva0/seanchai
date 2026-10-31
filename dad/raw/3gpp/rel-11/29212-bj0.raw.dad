@@ -1,0 +1,1721 @@
+; Specification: 3GPP TS 29.212
+; Version: 11.19.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129212/11.19.00_60/ts_129212v111900p.pdf
+
+
+; Type: Application Scope
+; Name: Gx
+; Section: 5.1
+; Page: 84
+; Application-ID: 16777238
+; Applies-To: 5.*
+
+
+; Type: Application Scope
+; Name: Gxx
+; Section: 5a.1
+; Page: 137
+; Application-ID: 16777266
+; Applies-To: 5a.*
+
+
+; Type: Application Scope
+; Name: Sd
+; Section: 5b.1
+; Page: 150
+; Application-ID: 16777303
+; Applies-To: 5b.*
+
+
+; Type: Application Scope
+; Name: S15
+; Section: E.6.1
+; Application-ID: 16777318
+; Applies-To: E.6.*
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 5.6.2
+; Page: 135
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Subscription-Id ]
+      * [ Supported-Features ]                    ; bold
+        [ TDF-Information ]                       ; bold
+        [ Network-Request-Support ]               ; bold
+      * [ Packet-Filter-Information ]             ; bold
+        [ Packet-Filter-Operation ]               ; bold
+        [ Bearer-Identifier ]                     ; bold
+        [ Bearer-Operation ]                      ; bold
+        [ Framed-IP-Address ]                     ; bold
+        [ Framed-Ipv6-Prefix ]                    ; bold
+        [ IP-CAN-Type ]                           ; bold
+        [ 3GPP-RAT-Type ]                         ; bold
+        [ RAT-Type ]                              ; bold
+        [ Termination-Cause ]
+        [ User-Equipment-Info ]
+        [ QoS-Information ]                       ; bold
+        [ QoS-Negotiation ]                       ; bold
+        [ QoS-Upgrade ]                           ; bold
+        [ Default-EPS-Bearer-QoS ]                ; bold
+     *2 [ AN-GW-Address ]                         ; bold
+        [ AN-GW-Status ]                          ; bold
+        [ 3GPP-SGSN-MCC-MNC ]                     ; bold
+        [ 3GPP-SGSN-Address ]                     ; bold
+        [ 3GPP-SGSN-Ipv6-Address ]                ; bold
+        [ 3GPP-GGSN-Address ]                     ; bold
+        [ 3GPP-GGSN-Ipv6-Address ]                ; bold
+        [ RAI ]                                   ; bold
+        [ 3GPP-User-Location-Info ]               ; bold
+        [ User-Location-Info-Time ]               ; bold
+        [ TWAN-Identifier ]                       ; bold
+        [ 3GPP-MS-TimeZone ]                      ; bold
+        [ Called-Station-Id ]
+        [ PDN-Connection-ID ]                     ; bold
+        [ Bearer-Usage ]                          ; bold
+        [ Online ]                                ; bold
+        [ Offline ]                               ; bold
+      * [ TFT-Packet-Filter-Information ]         ; bold
+      * [ Charging-Rule-Report ]                  ; bold
+      * [ Application-Detection-Information ]     ; bold
+      * [ Event-Trigger ]                         ; bold
+        [ Event-Report-Indication ]               ; bold
+        [ Access-Network-Charging-Address ]       ; bold
+      * [ Access-Network-Charging-Identifier-Gx ] ; bold
+      * [ CoA-Information ]                       ; bold
+      * [ Usage-Monitoring-Information ]          ; bold
+        [ Routing-Rule-Install ]                  ; bold
+        [ Routing-Rule-Remove ]                   ; bold
+        [ HeNB-Local-IP-Address ]                 ; bold
+        [ UE-Local-IP-Address ]                   ; bold
+        [ UDP-Source-Port ]                       ; bold
+        [ Logical-Access-ID ]
+        [ Physical-Access-ID ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: 5.6.3
+; Page: 136
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+      * [ Supported-Features ]           ; bold
+        [ Bearer-Control-Mode ]          ; bold
+      * [ Event-Trigger ]                ; bold
+        [ Event-Report-Indication ]      ; bold
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Charging-Rule-Remove ]         ; bold
+      * [ Charging-Rule-Install ]        ; bold
+        [ Charging-Information ]         ; bold
+        [ Online ]                       ; bold
+        [ Offline ]                      ; bold
+      * [ QoS-Information ]              ; bold
+        [ Revalidation-Time ]            ; bold
+        [ Default-EPS-Bearer-QoS ]       ; bold
+        [ Bearer-Usage ]                 ; bold
+      * [ Usage-Monitoring-Information ] ; bold
+      * [ CSG-Information-Reporting ]    ; bold
+        [ User-CSG-Information ]         ; bold
+        [ Error-Message ]                ; bold
+        [ Error-Reporting-Host ]         ; bold
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5.6.4
+; Page: 136
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Session-Release-Cause ]
+        [ Origin-State-Id ]
+      * [ Event-Trigger ]                ; bold
+        [ Event-Report-Indication ]      ; bold
+      * [ Charging-Rule-Remove ]         ; bold
+      * [ Charging-Rule-Install ]        ; bold
+        [ Default-EPS-Bearer-QoS ]       ; bold
+      * [ QoS-Information ]              ; bold
+        [ Revalidation-Time ]            ; bold
+      * [ Usage-Monitoring-Information ] ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5.6.5
+; Page: 137
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ IP-CAN-Type ]             ; bold
+        [ RAT-Type ]                ; bold
+     *2 [ AN-GW-Address ]           ; bold
+        [ 3GPP-SGSN-MCC-MNC ]       ; bold
+        [ 3GPP-SGSN-Address ]       ; bold
+        [ 3GPP-SGSN-Ipv6-Address ]  ; bold
+        [ RAI ]                     ; bold
+        [ 3GPP-User-Location-Info ] ; bold
+        [ User-Location-Info-Time ] ; bold
+        [ 3GPP-MS-TimeZone ]        ; bold
+        [ NetLoc-Access-Support ]   ; bold
+      * [ Charging-Rule-Report ]    ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 5a.6.2
+; Page: 148
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Supported-Features ]        ; bold
+      * [ Subscription-Id ]
+        [ Network-Request-Support ]   ; bold
+      * [ Packet-Filter-Information ] ; bold
+        [ Packet-Filter-Operation ]   ; bold
+        [ Framed-IP-Address ]         ; bold
+        [ Framed-Ipv6-Prefix ]        ; bold
+        [ IP-CAN-Type ]               ; bold
+        [ RAT-Type ]                  ; bold
+        [ Termination-Cause ]         ; bold
+        [ User-Equipment-Info ]
+        [ QoS-Information ]           ; bold
+        [ Default-EPS-Bearer-QoS ]    ; bold
+     *2 [ AN-GW-Address ]             ; bold
+        [ 3GPP-SGSN-MCC-MNC ]         ; bold
+        [ RAI ]                       ; bold
+        [ 3GPP-User-Location-Info ]   ; bold
+        [ User-Location-Info-Time ]   ; bold
+        [ 3GPP-MS-TimeZone ]          ; bold
+        [ 3GPP2-BSID ]                ; bold
+        [ User-CSG-Information ]      ; bold
+        [ HeNB-Local-IP-Address ]     ; bold
+        [ UE-Local-IP-Address ]       ; bold
+        [ UDP-Source-Port ]           ; bold
+        [ Called-Station-Id ]
+        [ PDN-Connection-ID ]         ; bold
+      * [ QoS-Rule-Report ]           ; bold
+      * [ Event-Trigger ]             ; bold
+        [ Session-Linking-Indicator ] ; bold
+        [ Trace-Data ]                ; bold
+        [ Trace-Reference ]           ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: 5a.6.3
+; Page: 149
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+      * [ Supported-Features ]      ; bold
+        [ Bearer-Control-Mode ]     ; bold
+      * [ Event-Trigger ]           ; bold
+        [ Framed-Ipv6-Prefix ]      ; bold
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ QoS-Rule-Remove ]         ; bold
+      * [ QoS-Rule-Install ]        ; bold
+        [ QoS-Information ]         ; bold
+        [ Default-EPS-Bearer-QoS ]  ; bold
+        [ Error-Message ]           ; bold
+        [ Error-Reporting-Host ]    ; bold
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5a.6.4
+; Page: 149
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Session-Release-Cause ]
+        [ Origin-State-Id ]
+      * [ Event-Trigger ]          ; bold
+      * [ QoS-Rule-Remove ]        ; bold
+      * [ QoS-Rule-Install ]       ; bold
+        [ QoS-Information ]        ; bold
+        [ Default-EPS-Bearer-QoS ] ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5a.6.5
+; Page: 150
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ RAT-Type ]                ; bold
+        [ 3GPP-SGSN-MCC-MNC ]       ; bold
+        [ RAI ]                     ; bold
+        [ 3GPP-User-Location-Info ] ; bold
+        [ User-Location-Info-Time ] ; bold
+        [ NetLoc-Access-Support ]   ; bold
+        [ User-CSG-Information ]    ; bold
+        [ 3GPP-MS-TimeZone ]        ; bold
+        [ 3GPP2-BSID ]              ; bold
+      * [ QoS-Rule-Report ]         ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: TS-Request, TSR
+; Section: 5b.6.2
+; Page: 161
+<TS-Request> ::= < Diameter Header: 8388637, REQ, PXY >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Subscription-Id ]
+      * [ Supported-Features ]             ; bold
+        [ Framed-IP-Address ]              ; bold
+        [ Framed-Ipv6-Prefix ]             ; bold
+        [ IP-CAN-Type ]                    ; bold
+        [ RAT-Type ]                       ; bold
+        [ User-Equipment-Info ]            ; bold
+     *2 [ AN-GW-Address ]                  ; bold
+        [ 3GPP-SGSN-Address ]              ; bold
+        [ 3GPP-SGSN-Ipv6-Address ]         ; bold
+        [ 3GPP-SGSN-MCC-MNC ]              ; bold
+        [ RAI ]                            ; bold
+        [ 3GPP-User-Location-Info ]        ; bold
+        [ TWAN-Identifier ]                ; bold
+        [ 3GPP-MS-TimeZone ]               ; bold
+        [ Called-Station-Id ]
+      * [ ADC-Rule-Install ]               ; bold
+        [ Revalidation-Time ]              ; bold
+      * [ Usage-Monitoring-Information ]   ; bold
+      * [ Event-Trigger ]                  ; bold
+        [ Logical-Access-ID ]
+        [ Physical-Access-ID ]
+        [ 3GPP2-BSID ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: TS-Answer, TSA
+; Section: 5b.6.3
+; Page: 161
+<TS-Answer> ::= < Diameter Header: 8388637, PXY >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+      * [ Supported-Features ]             ; bold
+      * [ ADC-Rule-Report ]                ; bold
+        [ Event-Report-Indication ]        ; bold
+        [ Error-Message ]                  ; bold
+        [ Error-Reporting-Host ]           ; bold
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 5b.6.4
+; Page: 162
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+        [ Framed-IP-Address ]                 ; bold
+        [ Framed-Ipv6-Prefix ]                ; bold
+      * [ ADC-Rule-Report ]                   ; bold
+      * [ Application-Detection-Information ] ; bold
+      * [ Event-Trigger ]                     ; bold
+        [ Event-Report-Indication ]           ; bold
+      * [ Usage-Monitoring-Information ]      ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Supported-Features ]                ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: 5b.6.5
+; Page: 162
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Framed-Ipv6-Prefix ]           ; bold
+      * [ Event-Trigger ]                ; bold
+        [ Event-Report-Indication ]      ; bold
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ ADC-Rule-Remove ]              ; bold
+      * [ ADC-Rule-Install ]             ; bold
+        [ Revalidation-Time ]            ; bold
+      * [ Usage-Monitoring-Information ] ; bold
+        [ Error-Message ]                ; bold
+        [ Error-Reporting-Host ]         ; bold
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Supported-Features ]           ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5b.6.6
+; Page: 163
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Session-Release-Cause ]
+        [ Origin-State-Id ]
+      * [ Event-Trigger ]                ; bold
+        [ Event-Report-Indication ]      ; bold
+      * [ ADC-Rule-Remove ]              ; bold
+      * [ ADC-Rule-Install ]             ; bold
+        [ Revalidation-Time ]            ; bold
+      * [ Usage-Monitoring-Information ] ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5b.6.7
+; Page: 163
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+      * [ ADC-Rule-Report ]         ; bold
+        [ Event-Report-Indication ] ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: E.6.6.2
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ CS-Service-QoS-Request-Identifier ] ; bold
+        [ CS-Service-QoS-Request-Operation ]  ; bold
+        [ Destination-Host ]
+        [ HeNB-Local-IP-Address ]             ; bold
+        [ Origin-State-Id ]
+        [ QoS-Information ]
+        [ UDP-Source-Port ]                   ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: E.6.6.3
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+        [ Error-Message ]           ; bold
+        [ Error-Reporting-Host ]    ; bold
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: E.6.6.4
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Origin-State-Id ]
+      * [ CS-Service-Resource-Report ] ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: E.6.6.5
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 5.3
+; Table: 5.3.1
+; Page: 85
+; Columns: Name                         Code   Section   Type               Must   May   S.not   M.not   Encrypt   Acc-Type                                           Applicability
+Access-Network-Charging-Identifier-Gx   1022   5.3.22    Grouped            M,V    P     -       -       Yes       All                                                CC
+Allocation-Retention-Priority           1034   5.3.32    Grouped            V      P     -       M       Yes       All                                                Both,Rel8
+AN-GW-Address                           1050   5.3.49    Address            V      P     -       M       Yes       All                                                Both,Rel8,EPC-routed
+AN-GW-Status                            2811   5.3.100   Enumerated         V      P     -       M       Yes       3GPP-EPS                                           Both,SGW-Rest
+APN-Aggregate-Max-Bitrate-DL            1040   5.3.39    Unsigned32         V      P     -       M       Yes       All                                                PC,Rel8
+APN-Aggregate-Max-Bitrate-UL            1041   5.3.40    Unsigned32         V      P     -       M       Yes       All                                                PC,Rel8
+Application-Detection-Information       1098   5.3.91    Grouped            V      P     -       M       Yes       All                                                ADC
+Bearer-Control-Mode                     1023   5.3.23    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS,3GPP-EPS,3GPP2,"Non-3GPP-EPS (NOTE 6)"   PC
+Bearer-Identifier                       1020   5.3.20    OctetString        M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+Bearer-Operation                        1021   5.3.21    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+Bearer-Usage                            1000   5.3.1     Enumerated         M,V    P     -       -       Yes       3GPP-GPRS,3GPP-EPS                                 Both
+Charging-Correlation-Indicator          1073   5.3.67    Enumerated         V      P     -       M       Yes       All                                                CC,Rel8
+Charging-Rule-Base-Name                 1004   5.3.5     UTF8String         M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Definition                1003   5.3.4     Grouped            M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Install                   1001   5.3.2     Grouped            M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Name                      1005   5.3.6     OctetString        M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Remove                    1002   5.3.3     Grouped            M,V    P     -       -       Yes       All                                                Both
+Charging-Rule-Report                    1018   5.3.18    Grouped            M,V    P     -       -       Yes       All                                                Both
+CoA-Information                         1039   5.3.37    Grouped            V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+CoA-IP-Address                          1035   5.3.33    Address            V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+CSG-Information-Reporting               1071   5.3.64    Enumerated         V      P     -       M       Yes       3GPP-GPRS,3GPP-EPS                                 CC,Rel9
+Default-EPS-Bearer-QoS                  1049   5.3.48    Grouped            V      P     -       M       Yes       "All (NOTE 5)"                                     PC,Rel8
+Event-Report-Indication                 1033   5.3.30    Grouped            V      P     -       M       Yes       All                                                Both,Rel8
+Event-Trigger                           1006   5.3.7     Enumerated         M,V    P     -       -       Yes       All                                                Both
+Flow-Direction                          1080   5.3.65    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+Flow-Information                        1058   5.3.53    Grouped            V      P     -       M       Yes       All                                                Both
+Flow-Label                              1057   5.3.52    OctetString        V      P     -       M       Yes       All                                                Both
+IP-CAN-Type                             1027   5.3.27    Enumerated         M,V    P     -       -       Yes       All                                                Both
+Guaranteed-Bitrate-DL                   1025   5.3.25    Unsigned32         M,V    P     -       -       Yes       All                                                PC
+Guaranteed-Bitrate-UL                   1026   5.3.26    Unsigned32         M,V    P     -       -       Yes       All                                                PC
+HeNB-Local-IP-Address                   2804   5.3.95    Address            V      P     -       M       Yes       3GPP-EPS                                           PC,EPC-routed
+Metering-Method                         1007   5.3.8     Enumerated         M,V    P     -       -       Yes       All                                                CC
+Monitoring-Key                          1066   5.3.59    OctetString        V      P     -       M       Yes       All                                                Both,Rel9
+Mute-Notification                       2809   5.3.98    Enumerated         V      P     -       M       Yes       All                                                ADC
+Monitoring-Time                         2810   5.3.99    Time               V      P     -       M       Yes       All                                                Both,UMCH
+NetLoc-Access-Support                   2824   5.3.102   Unsigned32         V      P     -       M       Yes       All                                                NetLoc
+Network-Request-Support                 1024   5.3.24    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS,3GPP-EPS,3GPP2,"Non-3GPP-EPS (NOTE 6)"   PC
+Offline                                 1008   5.3.9     Enumerated         M,V    P     -       -       Yes       All                                                CC
+Online                                  1009   5.3.10    Enumerated         M,V    P     -       -       Yes       All                                                CC
+Packet-Filter-Content                   1059   5.3.54    IPFilterRule       V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Identifier                1060   5.3.55    OctetString        V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Information               1061   5.3.56    Grouped            V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Operation                 1062   5.3.57    Enumerated         V      P     -       M       Yes       "All (NOTE 5)"                                     Both,Rel8
+Packet-Filter-Usage                     1072   5.3.66    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+PCC-Rule-Status                         1019   5.3.19    Enumerated         M,V    P     -       -       Yes       All                                                Both
+PDN-Connection-ID                       1065   5.3.58    OctetString        V      P     -       -       Yes       "All (NOTE 7)"                                     Both,Rel9
+RAT-Type                                1032   5.3.31    Enumerated         V      P     -       M       Yes       "All (NOTE 4)"                                     Both,Rel8
+Redirect-Information                    1085   5.3.82    Grouped            V      P     -       M       Yes       All                                                ADC
+Redirect-Support                        1086   5.3.83    Enumerated         V      P     -       M       Yes       All                                                ADC
+Reporting-Level                         1011   5.3.12    Enumerated         M,V    P     -       -       Yes       All                                                CC
+Resource-Allocation-Notification        1063   5.3.50    Enumerated         V      P     -       M       Yes       All                                                Both,Rel8
+Revalidation-Time                       1042   5.3.41    Time               M,V    P     -       -       Yes       All                                                Both
+Routing-Filter                          1078   5.3.72    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-IP-Address                      1079   5.3.73    Address            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Definition                 1076   5.3.70    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Identifier                 1077   5.3.71    OctetString        V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Install                    1081   5.3.68    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Routing-Rule-Remove                     1075   5.3.69    Grouped            V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              Both,IFOM
+Precedence                              1010   5.3.11    Unsigned32         M,V    P     -       -       Yes       All                                                Both
+Pre-emption-Capability                  1047   5.3.46    Enumerated         V      P     -       M       Yes       3GPP-EPS,3GPP-GPRS                                 Both,Rel8
+Pre-emption-Vulnerability               1048   5.3.47    Enumerated         V      P     -       M       Yes       3GPP-EPS,3GPP-GPRS                                 Both,Rel8
+Priority-Level                          1046   5.3.45    Unsigned32         V      P     -       M       Yes       All                                                Both,Rel8
+PS-to-CS-Session-Continuity             1099   5.3.84    Enumerated         V      P     -       -       Yes       3GPP-EPS                                           Both,vSRVCC
+Rule-Activation-Time                    1043   5.3.42    Time               M,V    P     -       -       Yes       All                                                Both
+Rule-Deactivation-Time                  1044   5.3.43    Time               M,V    P     -       -       Yes       All                                                Both
+Rule-Failure-Code                       1031   5.3.38    Enumerated         M,V    P     -       -       Yes       All                                                Both
+QoS-Class-Identifier                    1028   5.3.17    Enumerated         M,V    P     -       -       Yes       All                                                Both
+QoS-Information                         1016   5.3.16    Grouped            M,V    P     -       -       Yes       All                                                Both
+QoS-Negotiation                         1029   5.3.28    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS                                          PC
+QoS-Upgrade                             1030   5.3.29    Enumerated         M,V    P     -       -       Yes       3GPP-GPRS                                          PC
+Security-Parameter-Index                1056   5.3.51    OctetString        V      P     -       M       Yes       All                                                Both
+Session-Release-Cause                   1045   5.3.44    Enumerated         M,V    P     -       -       Yes       All                                                Both
+TDF-Information                         1087   5.3.78    Grouped            V      P     -       M       Yes       All                                                PC
+TDF-Application-Identifier              1088   5.3.77    OctetString        V      P     -       M       Yes       All                                                PC,ADC
+TDF-Application-Instance-Identifier     2802   5.3.92    OctetString        V      P     -       M       Yes       All                                                ADC
+TDF-Destination-Host                    1089   5.3.80    DiameterIdentity   V      P     -       M       Yes       All                                                PC
+TDF-Destination-Realm                   1090   5.3.79    DiameterIdentity   V      P     -       M       Yes       All                                                PC
+TDF-IP-Address                          1091   5.3.81    Address            V      P     -       M       Yes       All                                                PC
+TFT-Filter                              1012   5.3.13    IPFilterRule       M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+TFT-Packet-Filter-Information           1013   5.3.14    Grouped            M,V    P     -       -       Yes       3GPP-GPRS                                          Both
+ToS-Traffic-Class                       1014   5.3.15    OctetString        M,V    P     -       -       Yes       All                                                Both
+Tunnel-Header-Filter                    1036   5.3.34    IPFilterRule       V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+Tunnel-Header-Length                    1037   5.3.35    Unsigned32         V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+Tunnel-Information                      1038   5.3.36    Grouped            V      P     -       M       Yes       "All (NOTE 8)"                                     Both,Rel8
+UDP-Source-Port                         2806   5.3.97    Unsigned32         V      P     -       M       Yes       3GPP-EPS,Non-3GPP-EPS                              PC,EPC-routed
+UE-Local-IP-Address                     2805   5.3.96    Address            V      P     -       M       Yes       Non-3GPP-EPS                                       PC,BBAI
+Usage-Monitoring-Information            1067   5.3.60    Grouped            V      P     -       M       Yes       All                                                Both,Rel9
+Usage-Monitoring-Level                  1068   5.3.61    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+Usage-Monitoring-Report                 1069   5.3.62    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+Usage-Monitoring-Support                1070   5.3.63    Enumerated         V      P     -       M       Yes       All                                                Both,Rel9
+User-Location-Info-Time                 2812   5.3.101   Time               V      P     -       M       Yes       3GPP-GPRS,3GPP-EPS                                 CC,NetLoc
+
+
+; Type: Reused AVPs
+; Section: 5.4
+; Table: 5.4
+; Page: 125
+; Columns: Name                            From             Acc-Type             Applicability
+3GPP-GGSN-Address                          TS29.061         Non-3GPP-EPS         Both,EPC-routed
+3GPP-GGSN-Ipv6-Address                     TS29.061         Non-3GPP-EPS         Both,EPC-routed
+3GPP-MS-TimeZone                           TS29.061         All                  Both
+3GPP-RAT-Type                              TS29.061         3GPP-GPRS            Both
+3GPP-SGSN-Address                          TS29.061         3GPP-GPRS,3GPP-EPS   Both
+3GPP-SGSN-Ipv6-Address                     TS29.061         3GPP-GPRS,3GPP-EPS   Both
+3GPP-SGSN-MCC-MNC                          TS29.061         All                  Both
+3GPP-User-Location-Info                    TS29.061         3GPP-GPRS,3GPP-EPS   Both
+3GPP2-BSID                                 3GPP2-X.S0057    3GPP2,Non-3GPP-EPS   Both,Rel8
+Access-Network-Charging-Address            TS29.214         All                  CC
+Access-Network-Charging-Identifier-Value   TS29.214         All                  CC
+AF-Charging-Identifier                     TS29.214         All                  CC
+AF-Signalling-Protocol                     TS29.214         All                  Both,ProvAF-signalFlow
+Application-Service-Provider-Identity      TS29.214         All                  Both,Sponsored-Connectivity
+Called-Station-Id                          RFC4005          All                  Both
+CC-Request-Number                          RFC4006          All                  Both
+CC-Request-Type                            RFC4006          All                  Both
+Charging-Information                       TS29.229         All                  CC
+Final-Unit-Indication                      RFC4006          All                  CC
+Flow-Description                           TS29.214         All                  Both
+Flows                                      TS29.214         All                  CC
+Flow-Status                                TS29.214         All                  Both
+Framed-IP-Address                          RFC4005          All                  Both
+Framed-Ipv6-Prefix                         RFC4005          All                  Both
+Granted-Service-Unit                       RFC4006          All                  Both,Rel9
+Logical-Access-ID                          ETSI-TS283.034   xDSL                 Both,Rel10
+Max-Requested-Bandwidth-UL                 TS29.214         All                  PC
+Max-Requested-Bandwidth-DL                 TS29.214         All                  PC
+Physical-Access-ID                         ETSI-TS283.034   xDSL                 Both,Rel10
+RAI                                        TS29.061         3GPP-GPRS,3GPP-EPS   Both
+Rating-Group                               RFC4006          All                  CC
+Redirect-Address-Type                      RFC4006          All                  PC,ADC
+Redirect-Server-Address                    RFC4006          All                  PC,ADC
+Required-Access-Info                       TS29.214         3GPP-GPRS,3GPP-EPS   CC,NetLoc
+Service-Identifier                         RFC4006          All                  CC
+Sponsor-Identity                           TS29.214         All                  CC,Sponsored-Connectivity
+Subscription-Id                            RFC4006          All                  Both
+Supported-Features                         TS29.229         All                  Both,Rel8
+Trace-Data                                 TS29.272         3GPP-EPS             Both,Rel8
+Trace-Reference                            TS29.272         3GPP-EPS             Both,Rel8
+TWAN-Identifier                            TS29.061         Non-3GPP-EPS         Trusted-WLAN
+User-CSG-Information                       TS32.299         3GPP-EPS             CC,Rel9
+User-Equipment-Info                        RFC4006          All                  Both
+Used-Service-Unit                          RFC4006          All                  Both,Rel9
+
+
+; Type: AVP Table
+; Section: 5a.3
+; Table: 5a.3.1
+; Page: 138
+; Columns: Name             Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type        Applicability
+QoS-Rule-Install            1051   5a.3.1    Grouped       M,V    P     -       -       Yes       All             ""
+QoS-Rule-Remove             1052   5a.3.2    Grouped       M,V    P     -       -       Yes       All             ""
+QoS-Rule-Definition         1053   5a.3.3    Grouped       M,V    P     -       -       Yes       All             ""
+QoS-Rule-Name               1054   5a.3.4    OctetString   M,V    P     -       -       Yes       All             ""
+QoS-Rule-Base-Name          1074   5a.3.7    UTF8String    V      P     -       M       Yes       All             Rel9
+QoS-Rule-Report             1055   5a.3.5    Grouped       M,V    P     -       -       Yes       All             ""
+Session-Linking-Indicator   1064   5a.3.6    Enumerated    M,V    P     -       -       Yes       "All (NOTE4)"   ""
+
+
+; Type: Reused AVPs
+; Section: 5a.4
+; Table: 5a.4.1
+; Page: 141
+; Columns: Name                            From            Acc-Type                        Applicability
+3GPP-MS-TimeZone                           TS29.061        All                             ""
+3GPP-SGSN-MCC-MNC                          TS29.061        All                             ""
+3GPP-User-Location-Info                    TS29.061        3GPP-EPS                        ""
+3GPP2-BSID                                 3GPP2-X.S0057   3GPP2,Non-3GPP-EPS              ""
+Access-Network-Charging-Identifier-Value   TS29.214        "All (See NOTE 6)"              ""
+Allocation-Retention-Priority              TS29.212        All                             ""
+AN-GW-Address                              TS29.212        All                             "EPC-routed (See NOTE 8)"
+APN-Aggregate-Max-Bitrate-DL               TS29.212        All                             ""
+APN-Aggregate-Max-Bitrate-UL               TS29.212        All                             ""
+Bearer-Control-Mode                        TS29.212        "All (See NOTE 3)"              ""
+Called-Station-Id                          RFC4005         All                             ""
+CC-Request-Number                          RFC4006         All                             ""
+CC-Request-Type                            RFC4006         All                             ""
+Default-EPS-Bearer-QoS                     TS29.212        All                             ""
+Event-Trigger                              TS29.212        All                             ""
+Flow-Description                           TS29.214        All                             ""
+Flow-Information                           TS29.212        All                             ""
+Flow-Label                                 TS29.212        ""                              ""
+Framed-IP-Address                          RFC4005         All                             ""
+Framed-Ipv6-Prefix                         RFC4005         All                             ""
+Guaranteed-Bitrate-DL                      TS29.212        All                             ""
+Guaranteed-Bitrate-UL                      TS29.212        All                             ""
+HeNB-Local-IP-Address                      TS29.212        3GPP-EPS                        EPC-routed
+IP-CAN-Type                                TS29.212        All                             ""
+Max-Requested-Bandwidth-UL                 TS29.214        All                             ""
+Max-Requested-Bandwidth-DL                 TS29.214        All                             ""
+NetLoc-Access-Support                      TS29.212        All                             NetLoc
+Network-Request-Support                    TS29.212        "All (See NOTE 3)"              ""
+Packet-Filter-Content                      TS29.212        All                             ""
+Packet-Filter-Identifier                   TS29.212        All                             ""
+Packet-Filter-Information                  TS29.212        All                             ""
+Packet-Filter-Operation                    TS29.212        All                             ""
+Packet-Filter-Usage                        TS29.212        All                             Rel9
+PCC-Rule-Status                            TS29.212        All                             ""
+PDN-Connection-ID                          TS29.212        "All (See NOTE 4)"              Rel9
+Precedence                                 TS29.212        All                             ""
+PS-to-CS-Session-Continuity                TS29.212        3GPP-EPS                        vSRVCC
+QoS-Class-Identifier                       TS29.212        All                             ""
+QoS-Information                            TS29.212        All                             ""
+RAI                                        TS29.061        3GPP-EPS                        ""
+RAT-Type                                   TS29.212        All                             ""
+Required-Access-Info                       TS29.214        3GPP-EPS                        CC,NetLoc
+Resource-Allocation-Notification           TS29.212        All                             ""
+Rule-Activation-Time                       TS29.212        All                             ""
+Rule-Deactivation-Time                     TS29.212        All                             ""
+Rule-Failure-Code                          TS29.212        All                             ""
+Security-Parameter-Index                   TS29.212        All                             ""
+Session-Release-Cause                      TS29.212        All                             ""
+Subscription-Id                            RFC4006         All                             ""
+Supported-Features                         TS29.229        All                             ""
+ToS-Traffic-Class                          TS29.212        All                             ""
+Trace-Data                                 TS29.272        3GPP-EPS                        ""
+Trace-Reference                            TS29.272        3GPP-EPS                        ""
+Tunnel-Header-Filter                       TS29.212        "All (see NOTE 3 and NOTE 6)"   ""
+Tunnel-Header-Length                       TS29.212        "All (see NOTE 3 and NOTE 6)"   ""
+Tunnel-Information                         TS29.212        "All (see NOTE 3 and NOTE 6)"   ""
+UDP-Source-Port                            TS29.212        3GPP-EPS,Non-3GPP-EPS           EPC-routed
+UE-Local-IP-Address                        TS29.212        Non-3GPP-EPS                    BBAI
+User-CSG-Information                       TS32.299        3GPP-EPS                        Rel9
+User-Equipment-Info                        RFC4006         All                             ""
+User-Location-Info-Time                    TS29.212        3GPP-EPS                        CC,NetLoc
+
+
+; Type: AVP Table
+; Section: 5b.3
+; Table: 5b.3.1
+; Page: 150
+; Columns: Name       Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+ADC-Rule-Base-Name    1095   5b.3.4    UTF8String    M,V    P     -       -       Yes       All        ADC
+ADC-Rule-Definition   1094   5b.3.3    Grouped       M,V    P     -       -       Yes       All        ADC
+ADC-Rule-Install      1092   5b.3.1    Grouped       M,V    P     -       -       Yes       All        ADC
+ADC-Rule-Name         1096   5b.3.5    OctetString   M,V    P     -       -       Yes       All        ADC
+ADC-Rule-Remove       1093   5b.3.2    Grouped       M,V    P     -       -       Yes       All        ADC
+ADC-Rule-Report       1097   5b.3.6    Grouped       M,V    P     -       -       Yes       All        ADC
+
+
+; Type: Reused AVPs
+; Section: 5b.4
+; Table: 5b.4
+; Page: 152
+; Columns: Name                       From
+AN-GW-Address                         TS29.212
+Application-Detection-Information     TS29.212
+Called-Station-Id                     RFC4005
+CC-Request-Number                     RFC4006
+CC-Request-Type                       RFC4006
+Event-Report-Indication               TS29.212
+Event-Trigger                         TS29.212
+Flow-Description                      TS29.214
+Flow-Direction                        TS29.212
+Flow-Information                      TS29.212
+Flow-Status                           TS29.214
+Framed-IP-Address                     RFC4005
+Framed-Ipv6-Prefix                    RFC4005
+Granted-Service-Unit                  RFC4006
+IP-CAN-Type                           TS29.212
+Logical-Access-ID                     ETSI-TS283.034
+Max-Requested-Bandwidth-UL            TS29.214
+Max-Requested-Bandwidth-DL            TS29.214
+Monitoring-Key                        TS29.212
+Monitoring-Time                       TS29.212
+Mute-Notification                     TS29.212
+PCC-Rule-Status                       TS29.212
+Physical-Access-ID                    ETSI-TS283.034
+QoS-Information                       TS29.212
+RAI                                   TS29.061
+RAT-Type                              TS29.212
+Redirect-Address-Type                 RFC4006
+Redirect-Information                  TS29.212
+Redirect-Server-Address               RFC4006
+Redirect-Support                      TS29.212
+Revalidation-Time                     TS29.212
+Rule-Activation-Time                  TS29.212
+Rule-Deactivation-Time                TS29.212
+Rule-Failure-Code                     TS29.212
+Session-Release-Cause                 TS29.212
+Subscription-Id                       RFC4006
+Supported-Features                    TS29.229
+TDF-Application-Identifier            TS29.212
+TDF-Application-Instance-Identifier   TS29.212
+TWAN-Identifier                       TS29.061
+Usage-Monitoring-Information          TS29.212
+Usage-Monitoring-Level                TS29.212
+Usage-Monitoring-Report               TS29.212
+Usage-Monitoring-Support              TS29.212
+Used-Service-Unit                     RFC4006
+User-Equipment-Info                   RFC4006
+3GPP-MS-TimeZone                      TS29.061
+3GPP-SGSN-Address                     TS29.061
+3GPP-SGSN-Ipv6-Address                TS29.061
+3GPP-SGSN-MCC-MNC                     TS29.061
+3GPP-User-Location-Info               TS29.061
+3GPP2-BSID                            3GPP2-X.S0057
+
+
+; Type: AVP Table
+; Section: E.6.3.1
+; Table: E.6.3.1.1
+; Columns: Name                        Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+CS-Service-QoS-Request-Identifier      2807   E.6.3.2   OctetString   M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-QoS-Request-Operation       2808   E.6.3.3   Enumerated    M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-Resource-Report             2813   E.6.3.6   Grouped       M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-Resource-Failure-Cause      2814   E.6.3.5   Enumerated    M,V    P     -       -       Yes       3GPP-EPS   PC
+CS-Service-Resource-Result-Operation   2815   E.6.3.4   Enumerated    M,V    P     -       -       Yes       3GPP-EPS   PC
+
+
+; Type: Reused AVPs
+; Section: E.6.4.1
+; Table: E.6.4.1.1
+; Columns: Name         From       Acc-Type
+HeNB-Local-IP-Address   TS29.212   3GPP-EPS
+QoS-Information         TS29.212   3GPP-EPS
+UDP-Source-Port         TS29.212   3GPP-EPS
+
+
+; Type: Enumerated AVP
+; Name: Bearer-Usage
+; Section: 5.3.1
+; Page: 89
+Bearer-Usage ::= < Enumerated AVP header: 1000 10415 >
+        GENERAL        = 0
+        IMS_SIGNALLING = 1
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Install
+; Section: 5.3.2
+; Page: 90
+Charging-Rule-Install ::= < AVP header: 1001 >
+      * [ Charging-Rule-Definition ]
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+        [ Bearer-Identifier ]
+        [ Rule-Activation-Time ]
+        [ Rule-Deactivation-Time ]
+        [ Resource-Allocation-Notification ]
+        [ Charging-Correlation-Indicator ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Remove
+; Section: 5.3.3
+; Page: 90
+Charging-Rule-Remove ::= < AVP header: 1002 >
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+      * [ Required-Access-Info ]    ; bold
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Definition
+; Section: 5.3.4
+; Page: 91
+Charging-Rule-Definition ::= < AVP header: 1003 >
+        { Charging-Rule-Name }
+        [ Service-Identifier ]
+        [ Rating-Group ]
+      * [ Flow-Information ]
+        [ TDF-Application-Identifier ]
+        [ Flow-Status ]
+        [ QoS-Information ]
+        [ PS-to-CS-Session-Continuity ]
+        [ Reporting-Level ]
+        [ Online ]
+        [ Offline ]
+        [ Metering-Method ]
+        [ Precedence ]
+        [ AF-Charging-Identifier ]
+      * [ Flows ]
+        [ Monitoring-Key ]
+        [ Redirect-Information ]
+        [ Mute-Notification ]
+        [ AF-Signalling-Protocol ]
+        [ Sponsor-Identity ]
+        [ Application-Service-Provider-Identity ]
+      * [ Required-Access-Info ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Event-Trigger
+; Section: 5.3.7
+; Page: 92
+Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
+        SGSN_CHANGE                                     = 0
+        QOS_CHANGE                                      = 1
+        RAT_CHANGE                                      = 2
+        TFT_CHANGE                                      = 3
+        PLMN_CHANGE                                     = 4
+        LOSS_OF_BEARER                                  = 5
+        RECOVERY_OF_BEARER                              = 6
+        IP-CAN_CHANGE                                   = 7
+        QOS_CHANGE_EXCEEDING_AUTHORIZATION              = 11
+        RAI_CHANGE                                      = 12
+        USER_LOCATION_CHANGE                            = 13
+        NO_EVENT_TRIGGERS                               = 14
+        OUT_OF_CREDIT                                   = 15
+        REALLOCATION_OF_CREDIT                          = 16
+        REVALIDATION_TIMEOUT                            = 17
+        UE_IP_ADDRESS_ALLOCATE                          = 18
+        UE_IP_ADDRESS_RELEASE                           = 19
+        DEFAULT_EPS_BEARER_QOS_CHANGE                   = 20
+        AN_GW_CHANGE                                    = 21
+        SUCCESSFUL_RESOURCE_ALLOCATION                  = 22
+        RESOURCE_MODIFICATION_REQUEST                   = 23
+        PGW_TRACE_CONTROL                               = 24
+        UE_TIME_ZONE_CHANGE                             = 25
+        TAI_CHANGE                                      = 26
+        ECGI_CHANGE                                     = 27
+        CHARGING_CORRELATION_EXCHANGE                   = 28
+        APN-AMBR_MODIFICATION_FAILURE                   = 29
+        USER_CSG_INFORMATION_CHANGE                     = 30
+        USAGE_REPORT                                    = 33
+        DEFAULT-EPS-BEARER-QOS_MODIFICATION_FAILURE     = 34
+        USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE   = 35
+        USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE = 36
+        ROUTING_RULE_CHANGE                             = 37
+        APPLICATION_START                               = 39
+        APPLICATION_STOP                                = 40
+        CS_TO_PS_HANDOVER                               = 42
+        UE_LOCAL_IP_ADDRESS_CHANGE                      = 43
+        ACCESS_NETWORK_INFO_REPORT                      = 45
+
+
+; Type: Enumerated AVP
+; Name: Metering-Method
+; Section: 5.3.8
+; Page: 98
+Metering-Method ::= < Enumerated AVP header: 1007 10415 >
+        DURATION        = 0
+        VOLUME          = 1
+        DURATION_VOLUME = 2
+
+
+; Type: Enumerated AVP
+; Name: Offline
+; Section: 5.3.9
+; Page: 98
+Offline ::= < Enumerated AVP header: 1008 10415 >
+        DISABLE_OFFLINE = 0
+        ENABLE_OFFLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Online
+; Section: 5.3.10
+; Page: 98
+Online ::= < Enumerated AVP header: 1009 10415 >
+        DISABLE_ONLINE = 0
+        ENABLE_ONLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Reporting-Level
+; Section: 5.3.12
+; Page: 100
+Reporting-Level ::= < Enumerated AVP header: 1011 10415 >
+        SERVICE_IDENTIFIER_LEVEL     = 0
+        RATING_GROUP_LEVEL           = 1
+        SPONSORED_CONNECTIVITY_LEVEL = 2
+
+
+; Type: Grouped AVP
+; Name: TFT-Packet-Filter-Information
+; Section: 5.3.14
+; Page: 101
+TFT-Packet-Filter-Information ::= < AVP header: 1013 >
+        [ Precedence ]
+        [ TFT-Filter ]
+        [ ToS-Traffic-Class ]
+        [ Security-Parameter-Index ]
+        [ Flow-Label ]
+        [ Flow-Direction ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Information
+; Section: 5.3.16
+; Page: 101
+QoS-Information ::= < AVP header: 1016 >
+        [ QoS-Class-Identifier ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Guaranteed-Bitrate-UL ]
+        [ Guaranteed-Bitrate-DL ]
+        [ Bearer-Identifier ]
+        [ Allocation-Retention-Priority ]
+        [ APN-Aggregate-Max-Bitrate-UL ]
+        [ APN-Aggregate-Max-Bitrate-DL ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: QoS-Class-Identifier
+; Section: 5.3.17
+; Page: 102
+QoS-Class-Identifier ::= < Enumerated AVP header: 1028 10415 >
+        QCI_1 = 1
+        QCI_2 = 2
+        QCI_3 = 3
+        QCI_4 = 4
+        QCI_5 = 5
+        QCI_6 = 6
+        QCI_7 = 7
+        QCI_8 = 8
+        QCI_9 = 9
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Report
+; Section: 5.3.18
+; Page: 103
+Charging-Rule-Report ::= < AVP header: 1018 >
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+        [ Bearer-Identifier ]
+        [ PCC-Rule-Status ]
+        [ Rule-Failure-Code ]
+        [ Final-Unit-Indication ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: PCC-Rule-Status
+; Section: 5.3.19
+; Page: 103
+PCC-Rule-Status ::= < Enumerated AVP header: 1019 10415 >
+        ACTIVE                 = 0
+        INACTIVE               = 1
+        "TEMPORARILY INACTIVE" = 2
+
+
+; Type: Enumerated AVP
+; Name: Bearer-Operation
+; Section: 5.3.21
+; Page: 104
+Bearer-Operation ::= < Enumerated AVP header: 1021 10415 >
+        TERMINATION   = 0
+        ESTABLISHMENT = 1
+        MODIFICATION  = 2
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Charging-Identifier-Gx
+; Section: 5.3.22
+; Page: 104
+Access-Network-Charging-Identifier-Gx ::= < AVP header: 1022 >
+        { Access-Network-Charging-Identifier-Value }
+      * [ Charging-Rule-Base-Name ]
+      * [ Charging-Rule-Name ]
+
+
+; Type: Enumerated AVP
+; Name: Bearer-Control-Mode
+; Section: 5.3.23
+; Page: 105
+Bearer-Control-Mode ::= < Enumerated AVP header: 1023 10415 >
+        UE_ONLY  = 0
+        RESERVED = 1
+        UE_NW    = 2
+
+
+; Type: Enumerated AVP
+; Name: Network-Request-Support
+; Section: 5.3.24
+; Page: 105
+Network-Request-Support ::= < Enumerated AVP header: 1024 10415 >
+        "NETWORK_REQUEST NOT SUPPORTED" = 0
+        "NETWORK_REQUEST SUPPORTED"     = 1
+
+
+; Type: Enumerated AVP
+; Name: IP-CAN-Type
+; Section: 5.3.27
+; Page: 105
+IP-CAN-Type ::= < Enumerated AVP header: 1027 10415 >
+        3GPP-GPRS    = 0
+        DOCSIS       = 1
+        xDSL         = 2
+        WiMAX        = 3
+        3GPP2        = 4
+        3GPP-EPS     = 5
+        Non-3GPP-EPS = 6
+
+
+; Type: Enumerated AVP
+; Name: QoS-Negotiation
+; Section: 5.3.28
+; Page: 106
+QoS-Negotiation ::= < Enumerated AVP header: 1029 10415 >
+        NO_QoS_NEGOTIATION        = 0
+        QoS_NEGOTIATION_SUPPORTED = 1
+
+
+; Type: Enumerated AVP
+; Name: QoS-Upgrade
+; Section: 5.3.29
+; Page: 106
+QoS-Upgrade ::= < Enumerated AVP header: 1030 10415 >
+        QoS_UPGRADE_NOT_SUPPORTED = 0
+        QoS_UPGRADE_SUPPORTED     = 1
+
+
+; Type: Grouped AVP
+; Name: Event-Report-Indication
+; Section: 5.3.30
+; Page: 107
+Event-Report-Indication ::= < AVP header: 1033 >
+      * [ Event-Trigger ]
+        [ User-CSG-Information ]
+        [ IP-CAN-Type ]             ; bold
+     *2 [ AN-GW-Address ]           ; bold
+        [ 3GPP-SGSN-Address ]       ; bold
+        [ 3GPP-SGSN-Ipv6-Address ]  ; bold
+        [ 3GPP-SGSN-MCC-MNC ]       ; bold
+        [ Framed-IP-Address ]       ; bold
+        [ RAT-Type ]
+        [ RAI ]
+        [ 3GPP-User-Location-Info ]
+        [ Trace-Data ]
+        [ Trace-Reference ]
+        [ 3GPP2-BSID ]
+        [ 3GPP-MS-TimeZone ]
+        [ Routing-IP-Address ]
+        [ UE-Local-IP-Address ]
+        [ HeNB-Local-IP-Address ]
+        [ UDP-Source-Port ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: RAT-Type
+; Section: 5.3.31
+; Page: 108
+RAT-Type ::= < Enumerated AVP header: 1032 10415 >
+        WLAN           = 0
+        VIRTUAL        = 1
+        UTRAN          = 1000
+        GERAN          = 1001
+        GAN            = 1002
+        HSPA_EVOLUTION = 1003
+        EUTRAN         = 1004
+        CDMA2000_1X    = 2000
+        HRPD           = 2001
+        UMB            = 2002
+        EHRPD          = 2003
+
+
+; Type: Grouped AVP
+; Name: Allocation-Retention-Priority
+; Section: 5.3.32
+; Page: 109
+Allocation-Retention-Priority ::= < AVP header: 1034 >
+        { Priority-Level }
+        [ Pre-emption-Capability ]
+        [ Pre-emption-Vulnerability ]
+
+
+; Type: Grouped AVP
+; Name: Tunnel-Information
+; Section: 5.3.36
+; Page: 110
+Tunnel-Information ::= < AVP header: 1038 >
+        [ Tunnel-Header-Length ]
+
+
+; Type: Grouped AVP
+; Name: CoA-Information
+; Section: 5.3.37
+; Page: 110
+CoA-Information ::= < AVP header: 1039 >
+        { Tunnel-Information }
+        { CoA-IP-Address }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Rule-Failure-Code
+; Section: 5.3.38
+; Page: 110
+Rule-Failure-Code ::= < Enumerated AVP header: 1031 10415 >
+        UNKNOWN_RULE_NAME                = 1
+        RATING_GROUP_ERROR               = 2
+        SERVICE_IDENTIFIER_ERROR         = 3
+        RESOURCES_LIMITATION             = 5
+        MAX_NR_BEARERS_REACHED           = 6
+        UNKNOWN_BEARER_ID                = 7
+        MISSING_BEARER_ID                = 8
+        MISSING_FLOW_INFORMATION         = 9
+        RESOURCE_ALLOCATION_FAILURE      = 10
+        UNSUCCESSFUL_QOS_VALIDATION      = 11
+        INCORRECT_FLOW_INFORMATION       = 12
+        PS_TO_CS_HANDOVER                = 13
+        TDF_APPLICATION_IDENTIFIER_ERROR = 14
+        NO_BEARER_BOUND                  = 15
+        FILTER_RESTRICTIONS              = 16
+        AN_GW_FAILED                     = 17
+        MISSING_REDIRECT_SERVER_ADDRESS  = 18
+
+
+; Type: Enumerated AVP
+; Name: Session-Release-Cause
+; Section: 5.3.44
+; Page: 112
+Session-Release-Cause ::= < Enumerated AVP header: 1045 10415 >
+        UNSPECIFIED_REASON            = 0
+        UE_SUBSCRIPTION_REASON        = 1
+        INSUFFICIENT_SERVER_RESOURCES = 2
+        IP_CAN_SESSION_TERMINATION    = 3
+        UE_IP_ADDRESS_RELEASE         = 4
+
+
+; Type: Enumerated AVP
+; Name: Pre-emption-Capability
+; Section: 5.3.46
+; Page: 113
+Pre-emption-Capability ::= < Enumerated AVP header: 1047 10415 >
+        PRE-EMPTION_CAPABILITY_ENABLED  = 0
+        PRE-EMPTION_CAPABILITY_DISABLED = 1
+
+
+; Type: Enumerated AVP
+; Name: Pre-emption-Vulnerability
+; Section: 5.3.47
+; Page: 114
+Pre-emption-Vulnerability ::= < Enumerated AVP header: 1048 10415 >
+        PRE-EMPTION_VULNERABILITY_ENABLED  = 0
+        PRE-EMPTION_VULNERABILITY_DISABLED = 1
+
+
+; Type: Grouped AVP
+; Name: Default-EPS-Bearer-QoS
+; Section: 5.3.48
+; Page: 114
+Default-EPS-Bearer-QoS ::= < AVP header: 1049 >
+        [ QoS-Class-Identifier ]
+        [ Allocation-Retention-Priority ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Resource-Allocation-Notification
+; Section: 5.3.50
+; Page: 114
+Resource-Allocation-Notification ::= < Enumerated AVP header: 1063 10415 >
+        ENABLE_NOTIFICATION = 0
+
+
+; Type: Grouped AVP
+; Name: Flow-Information
+; Section: 5.3.53
+; Page: 115
+Flow-Information ::= < AVP header: 1058 >
+        [ Flow-Description ]
+        [ Packet-Filter-Identifier ]
+        [ Packet-Filter-Usage ]
+        [ ToS-Traffic-Class ]
+        [ Security-Parameter-Index ]
+        [ Flow-Label ]
+        [ Flow-Direction ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Packet-Filter-Information
+; Section: 5.3.56
+; Page: 116
+Packet-Filter-Information ::= < AVP header: 1061 >
+        [ Packet-Filter-Identifier ]
+        [ Precedence ]
+        [ Packet-Filter-Content ]
+        [ ToS-Traffic-Class ]
+        [ Security-Parameter-Index ]
+        [ Flow-Label ]
+        [ Flow-Direction ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Packet-Filter-Operation
+; Section: 5.3.57
+; Page: 116
+Packet-Filter-Operation ::= < Enumerated AVP header: 1062 10415 >
+        DELETION     = 0
+        ADDITION     = 1
+        MODIFICATION = 2
+
+
+; Type: Grouped AVP
+; Name: Usage-Monitoring-Information
+; Section: 5.3.60
+; Page: 117
+Usage-Monitoring-Information ::= < AVP header: 1067 >
+        [ Monitoring-Key ]
+     *2 [ Granted-Service-Unit ]
+     *2 [ Used-Service-Unit ]
+        [ Usage-Monitoring-Level ]
+        [ Usage-Monitoring-Report ]
+        [ Usage-Monitoring-Support ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Usage-Monitoring-Level
+; Section: 5.3.61
+; Page: 117
+Usage-Monitoring-Level ::= < Enumerated AVP header: 1068 10415 >
+        SESSION_LEVEL  = 0
+        PCC_RULE_LEVEL = 1
+        ADC_RULE_LEVEL = 2
+
+
+; Type: Enumerated AVP
+; Name: Usage-Monitoring-Report
+; Section: 5.3.62
+; Page: 118
+Usage-Monitoring-Report ::= < Enumerated AVP header: 1069 10415 >
+        USAGE_MONITORING_REPORT_REQUIRED = 0
+
+
+; Type: Enumerated AVP
+; Name: Usage-Monitoring-Support
+; Section: 5.3.63
+; Page: 118
+Usage-Monitoring-Support ::= < Enumerated AVP header: 1070 10415 >
+        USAGE_MONITORING_DISABLED = 0
+
+
+; Type: Enumerated AVP
+; Name: CSG-Information-Reporting
+; Section: 5.3.64
+; Page: 118
+CSG-Information-Reporting ::= < Enumerated AVP header: 1071 10415 >
+        CHANGE_CSG_CELL                     = 0
+        CHANGE_CSG_SUBSCRIBED_HYBRID_CELL   = 1
+        CHANGE_CSG_UNSUBSCRIBED_HYBRID_CELL = 2
+
+
+; Type: Enumerated AVP
+; Name: Flow-Direction
+; Section: 5.3.65
+; Page: 119
+Flow-Direction ::= < Enumerated AVP header: 1080 10415 >
+        UNSPECIFIED   = 0
+        DOWNLINK      = 1
+        UPLINK        = 2
+        BIDIRECTIONAL = 3
+
+
+; Type: Enumerated AVP
+; Name: Packet-Filter-Usage
+; Section: 5.3.66
+; Page: 119
+Packet-Filter-Usage ::= < Enumerated AVP header: 1072 10415 >
+        SEND_TO_UE = 1
+
+
+; Type: Enumerated AVP
+; Name: Charging-Correlation-Indicator
+; Section: 5.3.67
+; Page: 119
+Charging-Correlation-Indicator ::= < Enumerated AVP header: 1073 10415 >
+        CHARGING_IDENTIFIER_REQUIRED = 0
+
+
+; Type: Grouped AVP
+; Name: Routing-Rule-Install
+; Section: 5.3.68
+; Page: 119
+Routing-Rule-Install ::= < AVP header: 1081 >
+      * [ Routing-Rule-Definition ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Routing-Rule-Remove
+; Section: 5.3.69
+; Page: 120
+Routing-Rule-Remove ::= < AVP header: 1075 >
+      * [ Routing-Rule-Identifier ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Routing-Rule-Definition
+; Section: 5.3.70
+; Page: 120
+Routing-Rule-Definition ::= < AVP header: 1076 >
+        { Routing-Rule-Identifier }
+      * [ Routing-Filter ]
+        [ Precedence ]
+        [ Routing-IP-Address ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Routing-Filter
+; Section: 5.3.72
+; Page: 120
+Routing-Filter ::= < AVP header: 1078 >
+        { Flow-Description }
+        { Flow-Direction }
+        [ ToS-Traffic-Class ]
+        [ Security-Parameter-Index ]
+        [ Flow-Label ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: TDF-Information
+; Section: 5.3.78
+; Page: 121
+TDF-Information ::= < AVP header: 1087 >
+        [ TDF-Destination-Realm ]
+        [ TDF-Destination-Host ]
+        [ TDF-IP-Address ]
+
+
+; Type: Grouped AVP
+; Name: Redirect-Information
+; Section: 5.3.82
+; Page: 122
+Redirect-Information ::= < AVP header: 1085 >
+        [ Redirect-Support ]
+        [ Redirect-Address-Type ]
+        [ Redirect-Server-Address ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Redirect-Support
+; Section: 5.3.83
+; Page: 122
+Redirect-Support ::= < Enumerated AVP header: 1086 10415 >
+        REDIRECTION_DISABLED = 0
+        REDIRECTION_ENABLED  = 1
+
+
+; Type: Enumerated AVP
+; Name: PS-to-CS-Session-Continuity
+; Section: 5.3.84
+; Page: 122
+PS-to-CS-Session-Continuity ::= < Enumerated AVP header: 1099 10415 >
+        VIDEO_PS2CS_CONT_CANDIDATE = 0
+
+
+; Type: Grouped AVP
+; Name: Application-Detection-Information
+; Section: 5.3.91
+; Page: 123
+Application-Detection-Information ::= < AVP header: 1098 >
+        { TDF-Application-Identifier }
+        [ TDF-Application-Instance-Identifier ]
+      * [ Flow-Information ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Mute-Notification
+; Section: 5.3.98
+; Page: 124
+Mute-Notification ::= < Enumerated AVP header: 2809 10415 >
+        MUTE_REQUIRED = 0
+
+
+; Type: Enumerated AVP
+; Name: AN-GW-Status
+; Section: 5.3.100
+; Page: 124
+AN-GW-Status ::= < Enumerated AVP header: 2811 10415 >
+        AN_GW_FAILED = 0
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Install
+; Section: 5a.3.1
+; Page: 138
+QoS-Rule-Install ::= < AVP header: 1051 >
+      * [ QoS-Rule-Definition ]
+      * [ QoS-Rule-Name ]
+      * [ QoS-Rule-Base-Name ]
+        [ Tunnel-Information ]
+        [ Access-Network-Charging-Identifier-Value ]
+        [ Resource-Allocation-Notification ]
+        [ Rule-Activation-Time ]
+        [ Rule-Deactivation-Time ]
+        [ 3GPP-GGSN-Address ]
+        [ 3GPP-GGSN-Ipv6-Address ]
+     *2 [ AN-GW-Address ]
+        [ UDP-Source-Port ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Remove
+; Section: 5a.3.2
+; Page: 139
+QoS-Rule-Remove ::= < AVP header: 1052 >
+      * [ QoS-Rule-Name ]
+      * [ QoS-Rule-Base-Name ]
+      * [ Required-Access-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Definition
+; Section: 5a.3.3
+; Page: 139
+QoS-Rule-Definition ::= < AVP header: 1053 >
+        { QoS-Rule-Name }
+      * [ Flow-Information ]
+        [ QoS-Information ]
+        [ Precedence ]
+      * [ Required-Access-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Rule-Report
+; Section: 5a.3.5
+; Page: 140
+QoS-Rule-Report ::= < AVP header: 1055 >
+      * [ QoS-Rule-Name ]
+      * [ QoS-Rule-Base-Name ]
+        [ PCC-Rule-Status ]
+        [ Rule-Failure-Code ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Session-Linking-Indicator
+; Section: 5a.3.6
+; Page: 140
+Session-Linking-Indicator ::= < Enumerated AVP header: 1064 10415 >
+        SESSION_LINKING_IMMEDIATE = 0
+        SESSION_LINKING_DEFERRED  = 1
+
+
+; Type: Grouped AVP
+; Name: ADC-Rule-Install
+; Section: 5b.3.1
+; Page: 151
+ADC-Rule-Install ::= < AVP header: 1092 >
+      * [ ADC-Rule-Definition ]
+      * [ ADC-Rule-Name ]
+      * [ ADC-Rule-Base-Name ]
+        [ Rule-Activation-Time ]
+        [ Rule-Deactivation-Time ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ADC-Rule-Remove
+; Section: 5b.3.2
+; Page: 151
+ADC-Rule-Remove ::= < AVP header: 1093 >
+      * [ ADC-Rule-Name ]
+      * [ ADC-Rule-Base-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ADC-Rule-Definition
+; Section: 5b.3.3
+; Page: 152
+ADC-Rule-Definition ::= < AVP header: 1094 >
+        { ADC-Rule-Name }
+        [ TDF-Application-Identifier ]
+        [ Flow-Status ]
+        [ QoS-Information ]
+        [ Monitoring-Key ]
+        [ Redirect-Information ]
+        [ Mute-Notification ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ADC-Rule-Report
+; Section: 5b.3.6
+; Page: 152
+ADC-Rule-Report ::= < AVP header: 1097 >
+      * [ ADC-Rule-Name ]
+      * [ ADC-Rule-Base-Name ]
+        [ PCC-Rule-Status ]
+        [ Rule-Failure-Code ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: CS-Service-QoS-Request-Operation
+; Section: E.6.3.3
+CS-Service-QoS-Request-Operation ::= < Enumerated AVP header: 2808 10415 >
+        DELETION     = 0
+        MODIFICATION = 1
+
+
+; Type: Enumerated AVP
+; Name: CS-Service-Resource-Result-Operation
+; Section: E.6.3.4
+CS-Service-Resource-Result-Operation ::= < Enumerated AVP header: 2815 10415 >
+        DELETION = 0
+
+
+; Type: Enumerated AVP
+; Name: CS-Service-Resource-Failure-Cause
+; Section: E.6.3.5
+CS-Service-Resource-Failure-Cause ::= < Enumerated AVP header: 2814 10415 >
+        RESOURCE_MAINTENANCE_FAILURE = 0
+
+
+; Type: Grouped AVP
+; Name: CS-Service-Resource-Report
+; Section: E.6.3.6
+CS-Service-Resource-Report ::= < AVP header: 2813 >
+      * [ CS-Service-QoS-Request-Identifier ]
+        [ CS-Service-Resource-Result-Operation ]
+        [ CS-Service-Resource-Failure-Cause ]
+      * [ AVP ]

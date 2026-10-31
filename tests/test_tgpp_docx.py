@@ -3,6 +3,7 @@ from pathlib import Path
 
 import docx
 import docx.text.paragraph
+import pypdf
 import pytest
 
 from seanchai.dad import ast, formatter, parser
@@ -189,6 +190,30 @@ def test_attach_pages_rejects_a_pdf_without_a_usable_outline(make_bare_pdf):
     pdf = make_bare_pdf("no-outline.pdf", "3GPP TS 29.999 version 1.2.3 Release 18")
 
     with pytest.raises(tgpp_docx.ExtractionError, match="no numbered sections"):
+        tgpp_docx.attach_pages(_two_section_spec(), pdf)
+
+
+@pytest.mark.parametrize(
+    ("title", "expected"),
+    [
+        ("3GPP TS 29.999 version 1.2.3 Release 18", "no numbered sections"),
+        ("3GPP TS 29.999 version 1.2.4 Release 18", "PDF renders 3GPP TS 29.999"),
+    ],
+    ids=["same-version", "other-version"],
+)
+def test_attach_pages_reads_the_document_title_when_the_cover_is_unreadable(
+    make_bare_pdf, title, expected
+):
+    """ETSI TS 129 214 V11.16.0's cover text extracts interleaved; its
+    document information Title names the rendering instead, and is checked
+    against the specification as the cover would be."""
+    pdf = make_bare_pdf("title.pdf")
+    writer = pypdf.PdfWriter(clone_from=pdf)
+    writer.add_metadata({"/Title": f"TS 129 999 - V1.2.3 - Test ({title})"})
+    with pdf.open("wb") as stream:
+        writer.write(stream)
+
+    with pytest.raises(tgpp_docx.ExtractionError, match=re.escape(expected)):
         tgpp_docx.attach_pages(_two_section_spec(), pdf)
 
 

@@ -38,8 +38,9 @@ and the policy is deliberately small:
 - A citation means the copy the drafting rules on references say
   (`corpus.Corpus.resolution`): the newest in the citing document's
   release, the version a specific reference names, or the final version of
-  a document that ended before the citing release, or a 3GPP2 revision a
-  table entry lets stand in for the one cited (`corpus.STAND_INS`). An AVP
+  a document that ended before the citing release, or a 3GPP2 revision or
+  later release's copy a table entry lets stand in for the one cited
+  (`corpus.STAND_INS`, `corpus.RELEASE_STAND_INS`). An AVP
   reached outside the citing document's release, or revision, says so in
   `across_releases`; an older
   copy answers only through such a citation, never a reference-level query.
@@ -134,6 +135,25 @@ class FlagRules(ast.AvpFlagRules):
                 " application-defined"
             )
         return self
+
+
+def _reached_across(avp: Avp | Hole) -> Iterator[Avp | Hole]:
+    """The members, at any depth, of a grouped AVP reached across releases
+    that took a field from a document resolved across releases in turn."""
+    pending = [avp]
+    seen: set[int] = set()
+    while pending:
+        each = pending.pop()
+        if id(each) in seen or not isinstance(each, Grouped):
+            continue
+        seen.add(id(each))
+        for member in each.members:
+            found = member.avp or member.hole
+            if found is None:
+                continue
+            if found.across_releases is not None:
+                yield found
+            pending.append(found)
 
 
 def _by_citing_document(found: Avp | Hole) -> tuple[str, str]:
@@ -452,6 +472,9 @@ class _Draft:
     kind: type[Avp] | None
     name: str
     reference: str
+    # `reference`'s version when the reading is an older copy's, which a
+    # hole names (`Hole.version`).
+    version: str | None = None
     vendor_id: int | None = None
     # False for a table row whose V flag states no vendor space, so that the
     # vendor is the file's `; Vendor-ID:` rather than anything the row says.
@@ -580,6 +603,7 @@ class _Draft:
                 conflict=self.conflict,
                 wireshark_name=self.wireshark_name,
                 across_releases=self.across,
+                version=self.version,
             )
         common = (
             self.name,
@@ -846,12 +870,15 @@ class Model:
         return tuple(sorted(found, key=lambda hole: (hole.document, hole.name)))
 
     def _holes_across(self, reference: str) -> Iterator[Hole]:
-        """The holes in the grouped AVPs `reference`'s reading reaches
-        through a citation across releases, at any depth: oneM2M TS-0004's
-        `Service-Information` is TS 32.299 V11.20.0's, whose `PS-Information`
-        re-uses Release 11's TS 29.061, which the corpus lacks. No reading
-        of that older copy's own reports them, since reference-level
-        queries answer from the newest."""
+        """The holes of older copies in the grouped AVPs `reference`'s
+        reading reaches through a citation across releases, at any depth:
+        oneM2M TS-0004's `Service-Information` is TS 32.299 V11.20.0's, a
+        hole of whose would carry its version. No reading of that older
+        copy's own reports them, since reference-level queries answer from
+        the newest. A hole in a newest copy, reached through a later
+        release's copy standing in (TS 29.061's
+        `3GPP-Session-Stop-Indicator` from V11.20.0's `PS-Information`), is
+        that copy's own reading's to report."""
         pending = [*self.avps(reference)]
         pending += [
             member.avp
@@ -878,8 +905,12 @@ class Model:
         says by which drafting rule: TS 32.299's `VAS-ID` from TS 29.140
         V7.0.0, ETSI TS 183 017's `Codec-Data` from TS 29.214 V7.12.0. The
         audit list for a reader who wants to check the corpus's reading of
-        the citing documents' references (docs/consumers.md). Sorted by
-        citing document and name."""
+        the citing documents' references (docs/consumers.md). It includes
+        what an older copy reached across releases cites across releases in
+        turn, at any depth, which no reading of that copy's own lists:
+        oneM2M TS-0004's `Service-Information` is TS 32.299 V11.20.0's,
+        whose `Server-Capabilities` is TS 29.229 V18.1.0's, standing in.
+        Sorted by citing document and name."""
         references = self.references() if reference is None else [reference]
         found: dict[Avp | Hole, None] = {}
         for each in references:
@@ -888,6 +919,7 @@ class Model:
                 resolved = self._final(view, name)
                 if resolved.across_releases is not None:
                     found[resolved] = None
+                    found.update(dict.fromkeys(_reached_across(resolved)))
         return tuple(sorted(found, key=_by_citing_document))
 
     def table_rows(self, reference: str, name: str) -> tuple[ast.AvpTableRow, ...]:
@@ -961,14 +993,19 @@ class Model:
 
     def _final(self, view: _View, name: str, stack: tuple = ()) -> Avp | Hole:
         draft = self._resolve(view, name, stack)
-        found = (
-            Hole(view.entry.reference, name, (DEFINITION,))
-            if draft is None
-            else draft.final
-        )
-        if isinstance(found, Hole) and view is not self._views[view.entry.reference]:
-            return replace(found, version=view.entry.spec.version)
-        return found
+        if draft is None:
+            return Hole(
+                view.entry.reference, name, (DEFINITION,), version=self._older(view)
+            )
+        return draft.final
+
+    def _older(self, view: _View) -> str | None:
+        """`view`'s version when it is an older copy the corpus holds for a
+        citation, not the one reference-level queries answer from: the
+        version a hole falling short there names (TS 32.299 V11.20.0)."""
+        if view is self._views[view.entry.reference]:
+            return None
+        return view.entry.spec.version
 
     def _resolve(self, view: _View, name: str, stack: tuple) -> _Draft | None:
         key = (view.entry.path, name)
@@ -1166,7 +1203,9 @@ class Model:
             if cited is not None and (found := self._resolve(cited, name, stack)):
                 yield found if across is None else replace(found, across=across)
         if unread is not None:
-            yield _Draft(None, name, view.entry.reference, origin=unread)
+            yield _Draft(
+                None, name, view.entry.reference, self._older(view), origin=unread
+            )
 
     def _cited(
         self, view: _View, reference: str
@@ -1186,6 +1225,7 @@ class Model:
             Avp,
             name,
             view.entry.reference,
+            self._older(view),
             vendor_id=file_vendor if stated is None else stated,
             vendor_stated=stated is not None,
             code=row.code,
@@ -1208,6 +1248,7 @@ class Model:
             Grouped if isinstance(definition, ast.GroupedAvp) else Enumerated,
             definition.name,
             view.entry.reference,
+            self._older(view),
             # A definition written with no vendor-id is IETF-space; the wire
             # format calls that vendor 0.
             vendor_id=(

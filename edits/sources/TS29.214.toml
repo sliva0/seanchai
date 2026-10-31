@@ -153,3 +153,76 @@ name = "abnf-comments"
 reason = "clauses 5.3.16 and 5.3.18 comment three members of Media-Component-Description and Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of the media comp.'; unread, both bodies ended before their first member"
 first_version = "7.12.0"
 last_version = "7.12.0"
+
+# Release 11, V11.16.0: what TS 32.299 V11.20.0 [214] cites, non-specifically,
+# within Release 11. Its own release's declarations alone apply to it, as
+# for V7.12.0.
+
+[[patch]]
+find = "Service-Info-Status-AVP"
+replace = "Service-Info-Status AVP"
+exact = true
+section = "5.3.25"
+reason = "the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table 5.3.1 and the Rx ABNF call the AVP 'Service-Info-Status'"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[patch]]
+find = "AF-Signalling-Protocol-AVP"
+replace = "AF-Signalling-Protocol AVP"
+exact = true
+section = "5.3.26"
+reason = "the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; table 5.3.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[patch]]
+find = "SPONSORED_DATA_CONNECTIVITY_ DISALLOWED (4)"
+replace = "SPONSORED_DATA_CONNECTIVITY_DISALLOWED (4)"
+exact = true
+section = "5.3.1"
+reason = "Abort-Cause's value 4 prints a space after an underscore, which kept it out of the value list; every other value name in the clause is one underscore-joined token"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Rx application in the present release is 16777236'"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[quirk]]
+name = "dashed-enum-values"
+reason = "clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[quirk]]
+name = "hex-enum-values"
+reason = "clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER (0xFFFFFFFF)'"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[quirk]]
+name = "worded-enum-values"
+reason = "clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE INFORMATION (0)'"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[quirk]]
+name = "applicability-column"
+reason = "the AVP and re-used tables print an 'Applicability' column of supported features: table 5.3.1 note 3, 'AVPs marked with \"ProvAFsignalFlow\", \"SponsoredConnectivity\", \"Rel10\" or \"NetLoc\" are applicable as described in clause 5.4.1', and table 5.4.0.1 note 1 for \"Rel8\""
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[quirk]]
+name = "origins-by-reference"
+reason = "re-used table 5.4.0.1 cites Reservation-Priority's origin as 'TS 183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'"
+first_version = "11.16.0"
+last_version = "11.16.0"
+
+[[quirk]]
+name = "abnf-comments"
+reason = "clauses 5.3.16 and 5.3.18 comment members of Media-Component-Description and Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of the media comp.'; unread, both bodies ended before their first member"
+first_version = "11.16.0"
+last_version = "11.16.0"

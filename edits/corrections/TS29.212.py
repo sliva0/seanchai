@@ -150,3 +150,129 @@ CORRECTIONS += [
         ("TS-Request", "5c.6.2"),
     )
 ]
+
+# Release 11, V11.19.0, which TS 32.299 V11.20.0 [215] cites
+# non-specifically within Release 11; Release 18's declarations above do
+# not reach it (src/seanchai/versions.py). Its thirty-one vendorless
+# grouped-AVP headers, and the same 'Ipv6' spellings, are Release 18's
+# defects as printed then.
+_VENDORLESS_REL11 = [
+    ("Charging-Rule-Install", "5.3.2"),
+    ("Charging-Rule-Remove", "5.3.3"),
+    ("Charging-Rule-Definition", "5.3.4"),
+    ("TFT-Packet-Filter-Information", "5.3.14"),
+    ("QoS-Information", "5.3.16"),
+    ("Charging-Rule-Report", "5.3.18"),
+    ("Access-Network-Charging-Identifier-Gx", "5.3.22"),
+    ("Event-Report-Indication", "5.3.30"),
+    ("Allocation-Retention-Priority", "5.3.32"),
+    ("Tunnel-Information", "5.3.36"),
+    ("CoA-Information", "5.3.37"),
+    ("Default-EPS-Bearer-QoS", "5.3.48"),
+    ("Flow-Information", "5.3.53"),
+    ("Packet-Filter-Information", "5.3.56"),
+    ("Usage-Monitoring-Information", "5.3.60"),
+    ("Routing-Rule-Install", "5.3.68"),
+    ("Routing-Rule-Remove", "5.3.69"),
+    ("Routing-Rule-Definition", "5.3.70"),
+    ("Routing-Filter", "5.3.72"),
+    ("TDF-Information", "5.3.78"),
+    ("Redirect-Information", "5.3.82"),
+    ("Application-Detection-Information", "5.3.91"),
+    ("QoS-Rule-Install", "5a.3.1"),
+    ("QoS-Rule-Remove", "5a.3.2"),
+    ("QoS-Rule-Definition", "5a.3.3"),
+    ("QoS-Rule-Report", "5a.3.5"),
+    ("ADC-Rule-Install", "5b.3.1"),
+    ("ADC-Rule-Remove", "5b.3.2"),
+    ("ADC-Rule-Definition", "5b.3.3"),
+    ("ADC-Rule-Report", "5b.3.6"),
+    ("CS-Service-Resource-Report", "E.6.3.6"),
+]
+_IPV6_ROWS_REL11 = [
+    ("3GPP-GGSN-Ipv6-Address", "5.4"),
+    ("3GPP-SGSN-Ipv6-Address", "5.4"),
+    ("3GPP-SGSN-Ipv6-Address", "5b.4"),
+]
+_IPV6_RULES_REL11 = [
+    ("CC-Request", "5.6.2", "3GPP-SGSN-Ipv6-Address"),
+    ("CC-Request", "5.6.2", "3GPP-GGSN-Ipv6-Address"),
+    ("RA-Answer", "5.6.5", "3GPP-SGSN-Ipv6-Address"),
+    ("TS-Request", "5b.6.2", "3GPP-SGSN-Ipv6-Address"),
+    ("Event-Report-Indication", "5.3.30", "3GPP-SGSN-Ipv6-Address"),
+    ("QoS-Rule-Install", "5a.3.1", "3GPP-GGSN-Ipv6-Address"),
+]
+
+CORRECTIONS += [
+    Correction(
+        id=f"rel11-vendor-id-{name.lower()}",
+        target=definition(name, section=section),
+        field="vendor_id",
+        expect=None,
+        replace=10415,
+        reason=f"clause {section}'s AVP header omits the vendor-id; the AVP"
+        " table marks the V flag mandatory for it, as for every other AVP"
+        " the specification defines",
+        versions="11.19.0",
+    )
+    for name, section in _VENDORLESS_REL11
+]
+
+CORRECTIONS += [
+    Correction(
+        id=f"rel11-ipv6-case-row-{wrong.lower()}-{section.replace('.', '-')}",
+        target=reused_row(wrong, section=section),
+        field="name",
+        expect=wrong,
+        replace=dict(_IPV6)[wrong],
+        reason=f"the clause {section} re-used table spells the AVP 'Ipv6';"
+        " TS 29.061, which defines it, spells 'IPv6' throughout",
+        versions="11.19.0",
+    )
+    for wrong, section in _IPV6_ROWS_REL11
+] + [
+    Correction(
+        id=f"rel11-ipv6-case-rule-{parent.lower()}-{wrong.lower()}",
+        target=avp_rule(definition(parent, section=section), wrong),
+        field="name",
+        expect=wrong,
+        replace=dict(_IPV6)[wrong],
+        reason=f"clause {section}'s ABNF repeats the document's 'Ipv6'"
+        " spelling; TS 29.061, which defines the AVP, spells 'IPv6'",
+        versions="11.19.0",
+    )
+    for parent, section, wrong in _IPV6_RULES_REL11
+]
+
+CORRECTIONS += [
+    Correction(
+        id=f"rel11-framed-ipv6-prefix-row-{section.replace('.', '-')}",
+        target=reused_row("Framed-Ipv6-Prefix", section=section),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason=f"the clause {section} re-used table lower-cases the 'v';"
+        " RFC 4005, which defines the AVP, spells 'IPv6'",
+        versions="11.19.0",
+    )
+    for section in ("5.4", "5a.4", "5b.4")
+] + [
+    Correction(
+        id=f"rel11-framed-ipv6-prefix-rule-{section.replace('.', '-')}",
+        target=avp_rule(definition(parent, section=section), "Framed-Ipv6-Prefix"),
+        field="name",
+        expect="Framed-Ipv6-Prefix",
+        replace="Framed-IPv6-Prefix",
+        reason=f"clause {section}'s ABNF repeats the document's 'Ipv6'"
+        " spelling; RFC 4005, which defines the AVP, spells 'IPv6'",
+        versions="11.19.0",
+    )
+    for parent, section in (
+        ("CC-Request", "5.6.2"),
+        ("CC-Request", "5a.6.2"),
+        ("CC-Answer", "5a.6.3"),
+        ("TS-Request", "5b.6.2"),
+        ("CC-Request", "5b.6.4"),
+        ("CC-Answer", "5b.6.5"),
+    )
+]

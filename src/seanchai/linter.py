@@ -901,11 +901,21 @@ def _cross_release(
     """A re-used origin resolved outside the citing document's release, by
     the drafting rule `corpus.resolution` applied, so a reader can audit it:
     TS 32.299 V18.0.0's TS 29.140 is V7.0.0, the document's final version,
-    and TS 29.212's 3GPP2 X.S0057-B is revision 0 V2.0, standing in. A
+    TS 29.212's 3GPP2 X.S0057-B is revision 0 V2.0, standing in, and TS
+    32.299 V11.20.0's TS 29.061 is V18.1.0, standing in for V11.12.0. A
     note: the rule is the corpus's reading of the citing document's
     references, and only its editor knows whether it meant that."""
     citing = spec.specification + (f" V{spec.version}" if spec.version else "")
-    if across.rule == corpus.STAND_IN:
+    if across.rule == corpus.STAND_IN and across.meant is not None:
+        release = corpus.RELEASE_STAND_INS[
+            across.citing, spec.version or "", across.cited
+        ]
+        rule = (
+            f"it cites the document non-specifically, meaning V{across.meant},"
+            f" which the corpus lacks, and V{across.version} stands in:"
+            f" {release.evidence} (corpus.RELEASE_STAND_INS)"
+        )
+    elif across.rule == corpus.STAND_IN:
         stand_in = corpus.STAND_INS[across.citing, across.cited]
         rule = (
             f"its references name revision {across.cited_revision}, which the"

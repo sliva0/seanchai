@@ -788,3 +788,38 @@ CORRECTIONS += [
         for name, section in _VENDORLESS_REL11
     ),
 ]
+
+# The three OMA-DDS-Charging_Data rows TS-0004's Service-Information reaches
+# (through clause 7.2.192's body) print V18.0.0's codes in table 7.2, and
+# clauses 7.2.50, 7.2.69 and 7.2.191 type them Grouped word for word as
+# V18.0.0's do, read behind `referred-type-sentences`; reference [223] is
+# 'OMA-DDS-Charging_Data: "Charging Data".' in both. So OMA's V1.0 table 11
+# supplies their flags here as it does for V18.0.0 (`_OMA_TYPES` above).
+CORRECTIONS += [
+    Supply(
+        id=f"rel11-oma-{name.lower()}",
+        target=table_row(name, table="7.2"),
+        expect=ast.AvpTableRow(
+            name=name,
+            code=_OMA_TYPES[name][1],
+            data_type=ast.DataType.GROUPED,
+            marks={
+                ast.MarkColumn.ACR: ("X",),
+                ast.MarkColumn.ACA: (),
+                ast.MarkColumn.CCR: ("X",),
+                ast.MarkColumn.CCA: (),
+            },
+        ),
+        flag_rules=ast.AvpFlagRules(
+            must=frozenset({ast.AvpFlag.VENDOR, ast.AvpFlag.MANDATORY}),
+            may=frozenset({ast.AvpFlag.PROTECTED}),
+        ),
+        reason=f"table 7.2 types {name} 'refer [223]', OMA-DDS-Charging_Data,"
+        f" and leaves its flag cells blank; clause {clause} types it Grouped and"
+        " prints no body, as V18.0.0's does; OMA's V1.0 table 11 (clause 8.4)"
+        f" gives code {_OMA_TYPES[name][1]} flags Must V,M and May P, and its"
+        f" clause {oma} prints the body",
+        versions="11.20.0",
+    )
+    for name, (clause, oma) in _TYPED_HERE.items()
+]
