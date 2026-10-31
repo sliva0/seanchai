@@ -5,6 +5,7 @@ from seanchai.dad.corrections import (
     Accept,
     Correction,
     Insert,
+    Supply,
     avp_rule,
     definition,
     header,
@@ -230,4 +231,207 @@ CORRECTIONS += [
         "as following'",
         versions="18.7.0",
     ),
+]
+
+# Trace and MDT parameters whose values the clauses take from TS 32.422
+# ("those defined in TS 32.422 [23] for ..."), which numbers each value in
+# parentheses; a None is a code the list skips. Reference [23] is
+# non-specific, so Release 18's latest version answers, V18.7.0 (2025-12);
+# the version matters, because Release
+# 16 renumbered codes incompatibly: Report Interval LTE went from 15-27 to
+# 0-12, Measurement Period UMTS from 0-14 (250 to 64000 ms) to 0-12 (1000 to
+# 64000 ms). Report-Interval (clause 7.3.141) stays a citation: clause
+# 5.10.5 numbers UMTS, LTE and NR intervals from 0 each, so one flat list
+# would give 0 to 11 three meanings.
+_TS32422 = "TS 32.422 V18.7.0 (2025-12), Release 18's latest,"
+_TRACE_PARAMETERS = (
+    (
+        "Trace-Depth",
+        "7.3.67",
+        "Trace Depth",
+        "5.3",
+        (
+            "Minimum",
+            "Medium",
+            "Maximum",
+            "MinimumWithoutVendorSpecificExtension",
+            "MediumWithoutVendorSpecificExtension",
+            "MaximumWithoutVendorSpecificExtension",
+        ),
+        "; the names are its code list's, as the table above it misspells"
+        " MaximumWithoutVendorSpecifcExtension",
+    ),
+    (
+        "Job-Type",
+        "7.3.137",
+        "Job-Type",
+        "5.9a",
+        (
+            "IMMEDIATE_MDT_ONLY",
+            "LOGGED_MDT_ONLY",
+            "TRACE_ONLY",
+            "IMMEDIATE_MDT_AND_TRACE",
+            "RLF_REPORT_ONLY",
+            "RCEF_REPORT_ONLY",
+            "LOGGED_MBSFN_MDT",
+            "5GC_UE_LEVEL_MEASUREMENTS_ONLY",
+            "TRACE_AND_5GC_UE_LEVEL_MEASUREMENTS",
+            "IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS",
+            "TRACE_AND_IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS",
+        ),
+        "; its NOTEs 1 to 3 restrict where some apply, not the list",
+    ),
+    (
+        "Report-Amount",
+        "7.3.142",
+        "Report Amount",
+        "5.10.6.2",
+        ("1", "2", "4", "8", "16", "32", "64", "infinity"),
+        "; clauses 5.10.6.3 to 5.10.6.12 repeat the list per RAT and"
+        " measurement, NR's spelling INFINITY",
+    ),
+    (
+        "Logging-Interval",
+        "7.3.145",
+        "Logging Interval",
+        "5.10.8",
+        (
+            "1280 ms",
+            "2560 ms",
+            "5120 ms",
+            "10240 ms",
+            "20480 ms",
+            "30720 ms",
+            "40960 ms",
+            "61440 ms",
+            "320 ms",
+            "640 ms",
+            "Infinity",
+        ),
+        "; UMTS and LTE take 0 to 7, NR the same plus 8 to 10, so the list is NR's",
+    ),
+    (
+        "Logging-Duration",
+        "7.3.146",
+        "Logging Duration",
+        "5.10.9",
+        ("600 sec", "1200 sec", "2400 sec", "3600 sec", "5400 sec", "7200 sec"),
+        "",
+    ),
+    (
+        "Measurement-Period-LTE",
+        "7.3.166",
+        "Measurement period LTE",
+        "5.10.23",
+        ("1024 ms", None, "2048 ms", None, "5120 ms", "10240 ms", "1 min"),
+        "; 1 and 3 are unassigned, Release 16 having dropped 1280 ms and 2560 ms",
+    ),
+    (
+        "Measurement-Period-UMTS",
+        "7.3.167",
+        "Measurement period UMTS",
+        "5.10.22",
+        (
+            "1000 ms",
+            "2000 ms",
+            "3000 ms",
+            "4000 ms",
+            "6000 ms",
+            "8000 ms",
+            "12000 ms",
+            "16000 ms",
+            "20000 ms",
+            "24000 ms",
+            "28000 ms",
+            "32000 ms",
+            "64000 ms",
+        ),
+        "",
+    ),
+    (
+        "Collection-Period-RRM-LTE",
+        "7.3.168",
+        "Collection period for RRM measurements LTE",
+        "5.10.20",
+        (
+            "100 ms",
+            "1000 ms",
+            "1024 ms",
+            "1280 ms",
+            "2048 ms",
+            "2560 ms",
+            "5120 ms",
+            "10000 ms",
+            "10240 ms",
+            "1 min",
+        ),
+        "",
+    ),
+    (
+        "Collection-Period-RRM-UMTS",
+        "7.3.169",
+        "Collection period for RRM measurements UMTS",
+        "5.10.21",
+        (
+            "100ms",
+            "250 ms",
+            "500 ms",
+            "1000 ms",
+            "2000 ms",
+            "3000 ms",
+            "4000 ms",
+            "6000 ms",
+        ),
+        "; '100ms' is spelled as printed",
+    ),
+    (
+        "Collection-Period-RRM-NR",
+        "7.3.247",
+        "Collection period for RRM measurements NR",
+        "5.10.30",
+        ("1024 ms", "2048 ms", "5120 ms", "10240 ms", "60000 ms"),
+        "",
+    ),
+    (
+        "Collection-Period-M6-NR",
+        "7.3.248",
+        "Collection period M6 in NR",
+        "5.10.34",
+        (
+            "120 ms",
+            "240 ms",
+            "480 ms",
+            "640 ms",
+            "1024 ms",
+            "2048 ms",
+            "5120 ms",
+            "10240 ms",
+            "20480 ms",
+            "40960 ms",
+            "1 min",
+            "6 min",
+            "12 min",
+            "30 min",
+        ),
+        "",
+    ),
+)
+
+CORRECTIONS += [
+    Supply(
+        id=f"{avp.lower()}-values",
+        target=definition(avp),
+        expect=f"TS 32.422 [23] for {parameter}",
+        values=tuple(
+            ast.EnumValue(name=name, value=value)
+            for value, name in enumerate(names)
+            if name is not None
+        ),
+        reason=f"clause {clause} takes the values 'defined in TS 32.422 [23]"
+        f" for {parameter}'; {_TS32422} clause {cited} lists them with their"
+        f" codes{remark}. The version matters: Release 16 renumbered Report"
+        " Interval LTE's and Measurement Period UMTS's codes",
+        versions="18.7.0",
+    )
+    for avp, clause, parameter, cited, names, remark in _TRACE_PARAMETERS
 ]

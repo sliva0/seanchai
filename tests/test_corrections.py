@@ -1361,7 +1361,10 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     # field-level pin below in artifacts of renumbering; they are pinned
     # separately, by content, at the end.
     inserted = [c for c in declared if isinstance(c, corrections.Insert)]
-    declared = [c for c in declared if not isinstance(c, corrections.Insert)]
+    # Supplied values add nodes too, and are pinned by count at the end.
+    supplied = [c for c in declared if isinstance(c, corrections.Supply)]
+    edits = (corrections.Insert, corrections.Supply)
+    declared = [c for c in declared if not isinstance(c, edits)]
     corrected, _ = corrections.apply(spec, declared)
 
     before, labels = _fields(spec)
@@ -1421,6 +1424,24 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
         ("7.3.1/2", "Periodic-Time", "TS29.336"),
         ("7.3.1/2", "Scheduled-Communication-Time", "TS29.336"),
         ("7.3.1/2", "Stationary-Indication", "TS29.336"),
+    }
+    # TS 32.422's trace parameters, all but Report-Interval.
+    assert {
+        correction.target.name: len(correction.values)
+        for correction in supplied
+        if isinstance(correction.target, corrections.definition)
+    } == {
+        "Trace-Depth": 6,
+        "Job-Type": 11,
+        "Report-Amount": 8,
+        "Logging-Interval": 11,
+        "Logging-Duration": 6,
+        "Measurement-Period-LTE": 5,
+        "Measurement-Period-UMTS": 13,
+        "Collection-Period-RRM-LTE": 10,
+        "Collection-Period-RRM-UMTS": 8,
+        "Collection-Period-RRM-NR": 5,
+        "Collection-Period-M6-NR": 14,
     }
 
 

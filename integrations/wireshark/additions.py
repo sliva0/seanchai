@@ -96,6 +96,10 @@ class Addition:
     where: str
     members: tuple[str, ...] = ()
     values: tuple[ast.EnumValue, ...] = ()
+    # The `; Values:` citation where the clause points elsewhere for its
+    # values: those listed are the cited document's, supplied by a
+    # correction (TS 29.272's from TS 32.422).
+    values_source: str | None = None
 
 
 @dataclass(frozen=True)
@@ -204,6 +208,7 @@ def _addition(
     definition = _definition(entry.spec, claim.name)
     members: tuple[str, ...] = ()
     values: tuple[ast.EnumValue, ...] = ()
+    values_source = None
     if isinstance(definition, ast.GroupedAvp):
         names = dict.fromkeys(r.name for r in definition.avps if r.name != "AVP")
         members = tuple(names)
@@ -212,6 +217,7 @@ def _addition(
         return Skipped(reference, claim.name, "grouped, with no members stated here")
     elif isinstance(definition, ast.EnumeratedAvp):
         values = tuple(v for v in definition.values if isinstance(v, ast.EnumValue))
+        values_source = definition.values_source if values else None
     return Addition(
         reference=reference,
         name=claim.name,
@@ -223,6 +229,7 @@ def _addition(
         where=_where(entry.spec, claim.name, section),
         members=members,
         values=values,
+        values_source=values_source,
     )
 
 
@@ -386,6 +393,13 @@ def _message(document: Document) -> str:
         " document's, from its clauses and AVP tables, and so are its M and V"
         " bits where the document states them."
     ]
+    cited = [f'{a.name} ("{a.values_source}")' for a in additions if a.values_source]
+    if cited:
+        listed = ", ".join(cited[:-1]) + " and " if len(cited) > 1 else ""
+        notes.append(
+            f"The document cites the values of {listed}{cited[-1]} instead of"
+            " printing them; those entries carry the cited document's values."
+        )
     unstated = [a.name for a in additions if a.flag_rules is None]
     if unstated:
         notes.append(

@@ -1265,6 +1265,12 @@ Trace-Data ::= < AVP header: 1458 10415 >
 ; Page: 135
 ; Values: TS 32.422 [23] for Trace Depth
 Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
+        Minimum                               = 0 ;; supplied: (TS29.272.py#trace-depth-values)
+        Medium                                = 1 ;; supplied: (TS29.272.py#trace-depth-values)
+        Maximum                               = 2 ;; supplied: (TS29.272.py#trace-depth-values)
+        MinimumWithoutVendorSpecificExtension = 3 ;; supplied: (TS29.272.py#trace-depth-values)
+        MediumWithoutVendorSpecificExtension  = 4 ;; supplied: (TS29.272.py#trace-depth-values)
+        MaximumWithoutVendorSpecificExtension = 5 ;; supplied: (TS29.272.py#trace-depth-values)
 
 
 ; Type: Grouped AVP
@@ -1664,6 +1670,17 @@ MDT-Configuration ::= < AVP header: 1622 10415 >
 ; Page: 150
 ; Values: TS 32.422 [23] for Job-Type
 Job-Type ::= < Enumerated AVP header: 1623 10415 >
+        IMMEDIATE_MDT_ONLY                                    = 0 ;; supplied: (TS29.272.py#job-type-values)
+        LOGGED_MDT_ONLY                                       = 1 ;; supplied: (TS29.272.py#job-type-values)
+        TRACE_ONLY                                            = 2 ;; supplied: (TS29.272.py#job-type-values)
+        IMMEDIATE_MDT_AND_TRACE                               = 3 ;; supplied: (TS29.272.py#job-type-values)
+        RLF_REPORT_ONLY                                       = 4 ;; supplied: (TS29.272.py#job-type-values)
+        RCEF_REPORT_ONLY                                      = 5 ;; supplied: (TS29.272.py#job-type-values)
+        LOGGED_MBSFN_MDT                                      = 6 ;; supplied: (TS29.272.py#job-type-values)
+        5GC_UE_LEVEL_MEASUREMENTS_ONLY                        = 7 ;; supplied: (TS29.272.py#job-type-values)
+        TRACE_AND_5GC_UE_LEVEL_MEASUREMENTS                   = 8 ;; supplied: (TS29.272.py#job-type-values)
+        IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS           = 9 ;; supplied: (TS29.272.py#job-type-values)
+        TRACE_AND_IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS = 10 ;; supplied: (TS29.272.py#job-type-values)
 
 
 ; Type: Grouped AVP
@@ -1694,6 +1711,14 @@ Report-Interval ::= < Enumerated AVP header: 1627 10415 >
 ; Page: 150
 ; Values: TS 32.422 [23] for Report Amount
 Report-Amount ::= < Enumerated AVP header: 1628 10415 >
+        1        = 0 ;; supplied: (TS29.272.py#report-amount-values)
+        2        = 1 ;; supplied: (TS29.272.py#report-amount-values)
+        4        = 2 ;; supplied: (TS29.272.py#report-amount-values)
+        8        = 3 ;; supplied: (TS29.272.py#report-amount-values)
+        16       = 4 ;; supplied: (TS29.272.py#report-amount-values)
+        32       = 5 ;; supplied: (TS29.272.py#report-amount-values)
+        64       = 6 ;; supplied: (TS29.272.py#report-amount-values)
+        infinity = 7 ;; supplied: (TS29.272.py#report-amount-values)
 
 
 ; Type: Enumerated AVP
@@ -1702,6 +1727,17 @@ Report-Amount ::= < Enumerated AVP header: 1628 10415 >
 ; Page: 150
 ; Values: TS 32.422 [23] for Logging Interval
 Logging-Interval ::= < Enumerated AVP header: 1631 10415 >
+        "1280 ms"  = 0 ;; supplied: (TS29.272.py#logging-interval-values)
+        "2560 ms"  = 1 ;; supplied: (TS29.272.py#logging-interval-values)
+        "5120 ms"  = 2 ;; supplied: (TS29.272.py#logging-interval-values)
+        "10240 ms" = 3 ;; supplied: (TS29.272.py#logging-interval-values)
+        "20480 ms" = 4 ;; supplied: (TS29.272.py#logging-interval-values)
+        "30720 ms" = 5 ;; supplied: (TS29.272.py#logging-interval-values)
+        "40960 ms" = 6 ;; supplied: (TS29.272.py#logging-interval-values)
+        "61440 ms" = 7 ;; supplied: (TS29.272.py#logging-interval-values)
+        "320 ms"   = 8 ;; supplied: (TS29.272.py#logging-interval-values)
+        "640 ms"   = 9 ;; supplied: (TS29.272.py#logging-interval-values)
+        Infinity   = 10 ;; supplied: (TS29.272.py#logging-interval-values)
 
 
 ; Type: Enumerated AVP
@@ -1710,6 +1746,12 @@ Logging-Interval ::= < Enumerated AVP header: 1631 10415 >
 ; Page: 151
 ; Values: TS 32.422 [23] for Logging Duration
 Logging-Duration ::= < Enumerated AVP header: 1632 10415 >
+        "600 sec"  = 0 ;; supplied: (TS29.272.py#logging-duration-values)
+        "1200 sec" = 1 ;; supplied: (TS29.272.py#logging-duration-values)
+        "2400 sec" = 2 ;; supplied: (TS29.272.py#logging-duration-values)
+        "3600 sec" = 3 ;; supplied: (TS29.272.py#logging-duration-values)
+        "5400 sec" = 4 ;; supplied: (TS29.272.py#logging-duration-values)
+        "7200 sec" = 5 ;; supplied: (TS29.272.py#logging-duration-values)
 
 
 ; Type: Enumerated AVP
@@ -1793,6 +1835,11 @@ Daylight-Saving-Time ::= < Enumerated AVP header: 1650 10415 >
 ; Page: 155
 ; Values: TS 32.422 [23] for Measurement period LTE
 Measurement-Period-LTE ::= < Enumerated AVP header: 1655 10415 >
+        "1024 ms"  = 0 ;; supplied: (TS29.272.py#measurement-period-lte-values)
+        "2048 ms"  = 2 ;; supplied: (TS29.272.py#measurement-period-lte-values)
+        "5120 ms"  = 4 ;; supplied: (TS29.272.py#measurement-period-lte-values)
+        "10240 ms" = 5 ;; supplied: (TS29.272.py#measurement-period-lte-values)
+        "1 min"    = 6 ;; supplied: (TS29.272.py#measurement-period-lte-values)
 
 
 ; Type: Enumerated AVP
@@ -1801,6 +1848,19 @@ Measurement-Period-LTE ::= < Enumerated AVP header: 1655 10415 >
 ; Page: 155
 ; Values: TS 32.422 [23] for Measurement period UMTS
 Measurement-Period-UMTS ::= < Enumerated AVP header: 1656 10415 >
+        "1000 ms"  = 0 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "2000 ms"  = 1 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "3000 ms"  = 2 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "4000 ms"  = 3 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "6000 ms"  = 4 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "8000 ms"  = 5 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "12000 ms" = 6 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "16000 ms" = 7 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "20000 ms" = 8 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "24000 ms" = 9 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "28000 ms" = 10 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "32000 ms" = 11 ;; supplied: (TS29.272.py#measurement-period-umts-values)
+        "64000 ms" = 12 ;; supplied: (TS29.272.py#measurement-period-umts-values)
 
 
 ; Type: Enumerated AVP
@@ -1809,6 +1869,16 @@ Measurement-Period-UMTS ::= < Enumerated AVP header: 1656 10415 >
 ; Page: 155
 ; Values: TS 32.422 [23] for Collection period for RRM measurements LTE
 Collection-Period-RRM-LTE ::= < Enumerated AVP header: 1657 10415 >
+        "100 ms"   = 0 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "1000 ms"  = 1 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "1024 ms"  = 2 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "1280 ms"  = 3 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "2048 ms"  = 4 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "2560 ms"  = 5 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "5120 ms"  = 6 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "10000 ms" = 7 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "10240 ms" = 8 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
+        "1 min"    = 9 ;; supplied: (TS29.272.py#collection-period-rrm-lte-values)
 
 
 ; Type: Enumerated AVP
@@ -1817,6 +1887,14 @@ Collection-Period-RRM-LTE ::= < Enumerated AVP header: 1657 10415 >
 ; Page: 155
 ; Values: TS 32.422 [23] for Collection period for RRM measurements UMTS
 Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
+        100ms     = 0 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
+        "250 ms"  = 1 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
+        "500 ms"  = 2 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
+        "1000 ms" = 3 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
+        "2000 ms" = 4 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
+        "3000 ms" = 5 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
+        "4000 ms" = 6 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
+        "6000 ms" = 7 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
 
 
 ; Type: Grouped AVP
@@ -2145,6 +2223,11 @@ MDT-Configuration-NR ::= < AVP header: 1720 10415 >
 ; Page: 175
 ; Values: TS 32.422 [23] for Collection period for RRM measurements NR
 Collection-Period-RRM-NR ::= < Enumerated AVP header: 1722 10415 >
+        "1024 ms"  = 0 ;; supplied: (TS29.272.py#collection-period-rrm-nr-values)
+        "2048 ms"  = 1 ;; supplied: (TS29.272.py#collection-period-rrm-nr-values)
+        "5120 ms"  = 2 ;; supplied: (TS29.272.py#collection-period-rrm-nr-values)
+        "10240 ms" = 3 ;; supplied: (TS29.272.py#collection-period-rrm-nr-values)
+        "60000 ms" = 4 ;; supplied: (TS29.272.py#collection-period-rrm-nr-values)
 
 
 ; Type: Enumerated AVP
@@ -2153,6 +2236,20 @@ Collection-Period-RRM-NR ::= < Enumerated AVP header: 1722 10415 >
 ; Page: 175
 ; Values: TS 32.422 [23] for Collection period M6 in NR
 Collection-Period-M6-NR ::= < Enumerated AVP header: 1723 10415 >
+        "120 ms"   = 0 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "240 ms"   = 1 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "480 ms"   = 2 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "640 ms"   = 3 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "1024 ms"  = 4 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "2048 ms"  = 5 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "5120 ms"  = 6 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "10240 ms" = 7 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "20480 ms" = 8 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "40960 ms" = 9 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "1 min"    = 10 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "6 min"    = 11 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "12 min"   = 12 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
+        "30 min"   = 13 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
 
 
 ; Type: Enumerated AVP

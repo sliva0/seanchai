@@ -1387,14 +1387,19 @@ class TestOverTheCommittedCorpus:
         assert arp.flag_rules == row.flag_rules
 
     def test_an_externally_defined_enumeration_is_complete(self, built):
-        """TS 29.272 clause 7.3.67 defines Trace-Depth and points at TS
-        32.422 for its values: an AVP with no values and their source, not a
-        hole."""
+        """TS 29.272 clause 7.3.141 defines Report-Interval and points at TS
+        32.422 for its values, which no flat list holds: an AVP with no
+        values and their source, not a hole. Clause 7.3.67's Trace-Depth
+        points there too, and its supplied values keep the citation."""
+        report_interval = built.resolve("TS29.272", "Report-Interval")
+        assert isinstance(report_interval, model.Enumerated)
+        assert report_interval.values == ()
+        assert report_interval.values_source == "TS 32.422 [23] for Report Interval"
+        assert built.hole("TS29.272", "Report-Interval") is None
         trace_depth = built.resolve("TS29.272", "Trace-Depth")
         assert isinstance(trace_depth, model.Enumerated)
-        assert trace_depth.values == ()
+        assert trace_depth.values[0] == ast.EnumValue(name="Minimum", value=0)
         assert trace_depth.values_source == "TS 32.422 [23] for Trace Depth"
-        assert built.hole("TS29.272", "Trace-Depth") is None
         alert_reason = built.resolve("TS29.272", "Alert-Reason")
         assert isinstance(alert_reason, model.Enumerated)
         assert alert_reason.values_source is None

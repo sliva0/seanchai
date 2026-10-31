@@ -70,6 +70,10 @@ Each entry is written in the shape of the entries around it: name, code,
 `vendor-id`, a `<type>` with an `<enum>` per value of an enumerated AVP or a
 `<grouped>` with a `<gavp>` per member, `mandatory` and `vendor-bit` from the
 document's flag rules, and `may-encrypt` where its AVP table has the column.
+An enumerated AVP whose clause cites its values elsewhere instead of
+printing them (TS 29.272's `Collection-Period-RRM-NR`, "TS 32.422 [23] for
+...") carries the values a correction supplies from the cited document,
+and the description says which entries those are.
 Corpus types map to the dictionary's typedefns one to one, except `Address`,
 written `IPAddress` as the dictionary writes RFC 6733's `Host-IP-Address`. A
 member is named as the dictionary names it (`Cx-User-Data` for TS 29.229's
