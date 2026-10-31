@@ -1565,20 +1565,18 @@ class TestOverTheCommittedCorpus:
 # cause.
 _STANDING_HOLES = {
     "RFC4004": {
-        "resolves nowhere": [
-            "MIP-HA-to-MN-SPI",
-            "MIP-MN-to-FA-SPI",
-            "MIP-MN-to-HA-SPI",
-        ]
+        "undefined (clause 9.4)": ["MIP-HA-to-MN-SPI"],
+        "undefined (clause 9.5)": ["MIP-MN-to-FA-SPI"],
+        "undefined (clause 9.6)": ["MIP-MN-to-HA-SPI"],
     },
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
-    "TS29.154": {"resolves nowhere": ["External-Group-Identifier"]},
-    "TS29.345": {"resolves nowhere": ["ProSe-Query-Code", "ProSe-Response-Code"]},
+    "TS29.154": {"undefined (clause A.6.6.2)": ["External-Group-Identifier"]},
+    "TS29.345": {
+        "undefined (clause 6.3.53)": ["ProSe-Query-Code", "ProSe-Response-Code"]
+    },
     "TS32.299": {
-        "resolves nowhere": [
-            "Network-Element",
-            "Submission-Timestamp",
-        ],
+        "undefined (clause 7.2.66aA)": ["Network-Element"],
+        "undefined (clause 7.2.112aA)": ["Submission-Timestamp"],
     },
 }
 
@@ -1827,14 +1825,67 @@ def test_only_three_cited_enumerations_stay_without_values():
     }
 
 
-def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
-    with pytest.raises(model.IncompleteCorpusError) as raised:
-        model.Model.build(corpus.Corpus.load([_ROOT / "dad"]), strict=True)
+def _standing(raised: pytest.ExceptionInfo[model.IncompleteCorpusError]):
     actual: dict[str, dict[str, list[str]]] = {}
     for hole in raised.value.holes:
         why = str(hole).split(": ", 1)[1]
         actual.setdefault(hole.document, {}).setdefault(why, []).append(hole.name)
-    assert actual == _STANDING_HOLES
+    return actual
+
+
+def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
+    with pytest.raises(model.IncompleteCorpusError) as raised:
+        model.Model.build(corpus.Corpus.load([_ROOT / "dad"]), strict=True)
+    assert _standing(raised) == _STANDING_HOLES
+    assert "undefined=... answers for the undefined names" in str(raised.value)
+
+
+@pytest.mark.parametrize(
+    "policy",
+    [model.UndefinedPolicy.DROP, model.UndefinedPolicy.PLACEHOLDER],
+    ids=str,
+)
+def test_an_answer_for_the_undefined_names_leaves_the_field_hole(policy):
+    """With the eight undefined names answered for, the strict build still
+    refuses TS 29.061's row, which states no type, under every policy."""
+    with pytest.raises(model.IncompleteCorpusError) as raised:
+        model.Model.build(
+            corpus.Corpus.load([_ROOT / "dad"]), strict=True, undefined=policy
+        )
+    assert _standing(raised) == {"TS29.061": _STANDING_HOLES["TS29.061"]}
+
+
+def test_the_committed_corpus_declares_its_eight_undefined_names():
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    declared = {
+        (each.reference, each.name, each.section, each.cited_in)
+        for each in built.undefined()
+    }
+    assert declared == {
+        ("RFC4004", "MIP-HA-to-MN-SPI", "9.4", ("9.4",)),
+        ("RFC4004", "MIP-MN-to-FA-SPI", "9.5", ("9.5",)),
+        ("RFC4004", "MIP-MN-to-HA-SPI", "9.6", ("9.6",)),
+        ("TS29.154", "External-Group-Identifier", "A.6.6.2", ("A.6.6.2",)),
+        ("TS29.345", "ProSe-Query-Code", "6.3.53", ("6.3.53", "6.3.54")),
+        ("TS29.345", "ProSe-Response-Code", "6.3.53", ("6.3.53", "6.3.54")),
+        ("TS32.299", "Network-Element", "7.2.66aA", ("7.2.66aA",)),
+        ("TS32.299", "Submission-Timestamp", "7.2.112aA", ("7.2.112aA",)),
+    }
+
+
+def test_ts_29_154s_group_identifier_reads_as_ts_29_336s_by_alias():
+    books = corpus.Corpus.load([_ROOT / "dad"])
+    alias = model.Alias("TS29.336", "External-Identifier", "test")
+    built = model.Model.build(
+        books,
+        undefined=model.UndefinedPolicy.SUPPLY,
+        supply={("TS29.154", "External-Group-Identifier"): alias},
+    )
+
+    (ecr,) = [m for m in built.messages("TS29.154") if m.abbreviation == "ECR"]
+    (member,) = [m for m in ecr.avps if m.name == "External-Group-Identifier"]
+    assert member.avp == built.resolve("TS29.336", "External-Identifier")
+    assert member.avp is not None and member.avp.identity == (10415, 3111)
 
 
 @pytest.mark.sources
@@ -1857,3 +1908,461 @@ def test_the_pinned_dictionary_names_the_avps_it_spells_differently():
     hole = named.hole("TS29.061", "3GPP-Session-Stop-Indicator")
     assert hole is not None
     assert hole.wireshark_name == "3GPP-Session-Stop-Indicator"
+
+
+# --- undefined names ---------------------------------------------------------
+
+_REQUIRED = ast.Presence.REQUIRED
+_MV = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}))
+
+
+def _declared(name, section, note=None):
+    return ast.UndefinedAvp(
+        name=name, source=ast.SourceRef(section=section, page=9), note=note
+    )
+
+
+def _undefined_corpus(*, defects=True) -> corpus.Corpus:
+    """RFC 4004 clause 9.4's shape and TS 29.345 clause 6.3.53's in one
+    document: a grouped AVP with a required and an optional member nothing
+    defines, both declared, the optional one in a command too; and a second
+    document re-using both. With `defects`, also a name resolving nowhere
+    and a row stating no type, which no policy touches."""
+    holder = ast.GroupedAvp(
+        name="Holder",
+        source=ast.SourceRef(section="6.3.1"),
+        code=700,
+        vendor_id=10415,
+        avps=(_rule("Known"), _rule("Missing-Req", _REQUIRED), _rule("Missing-Opt")),
+    )
+    defective = ("Nowhere", "Stop") if defects else ()
+    own = _spec(
+        "3GPP TS 29.900",
+        [
+            _message("Test-Request", "Missing-Opt", "Holder", *defective),
+            holder,
+            _table(
+                _row("Holder", 700, ast.DataType.GROUPED),
+                _row("Known", 701),
+                *([ast.AvpTableRow(name="Stop", code=702)] if defects else []),
+            ),
+            _declared("Missing-Opt", "6.1.1", '"the request may carry it"'),
+            _declared("Missing-Req", "6.3.1"),
+        ],
+    )
+    citing = _spec(
+        "3GPP TS 29.901",
+        [
+            _message("Other-Request", "Holder", "Missing-Opt"),
+            ast.ReusedAvps(
+                table="1",
+                source=ast.SourceRef(section="6.3.0"),
+                rows=(
+                    ast.ReusedAvpRow(name="Holder", origin="TS29.900"),
+                    ast.ReusedAvpRow(name="Missing-Opt", origin="TS29.900"),
+                ),
+            ),
+        ],
+    )
+    return corpus.Corpus(_entry(spec) for spec in (own, citing))
+
+
+def _build(policy=model.UndefinedPolicy.HOLE, supply=None, *, defects=True, **kw):
+    return model.Model.build(
+        _undefined_corpus(defects=defects), undefined=policy, supply=supply, **kw
+    )
+
+
+def _holder(built: model.Model) -> model.Grouped:
+    holder = built.resolve("TS29.900", "Holder")
+    assert isinstance(holder, model.Grouped)
+    return holder
+
+
+def _test_request(built: model.Model) -> model.Message:
+    (message,) = built.messages("TS29.900")
+    return message
+
+
+_TEXT = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.MANDATORY}))
+
+
+def _supplied(code=710, data_type=ast.DataType.UTF8_STRING, vendor_id=10415, **kw):
+    return model.Supplied(
+        vendor_id=vendor_id,
+        code=code,
+        data_type=data_type,
+        flag_rules=_MV if vendor_id else _TEXT,
+        source="ACME dictionary",
+        **kw,
+    )
+
+
+class TestUndefinedNames:
+    def test_by_default_a_declared_name_is_an_undefined_hole(self):
+        built = _build()
+
+        assert built.undefined_policy is model.UndefinedPolicy.HOLE
+        assert built.resolve("TS29.900", "Missing-Opt") is None
+        hole = built.hole("TS29.900", "Missing-Opt")
+        assert hole is not None
+        assert hole.missing == (model.UNDEFINED,)
+        assert hole.undefined == model.Undefined(
+            reference="TS29.900",
+            name="Missing-Opt",
+            section="6.1.1",
+            page=9,
+            note='"the request may carry it"',
+            cited_in=("6.1.1", "6.3.1"),
+        )
+        assert str(hole) == "TS29.900 Missing-Opt: undefined (clause 6.1.1)"
+        assert hole in built.holes("TS29.900")
+        member = _holder(built).members[1]
+        assert member.hole is not None and member.hole.missing == (model.UNDEFINED,)
+        with pytest.raises(model.IncompleteCorpusError, match="undefined="):
+            _build(defects=False, strict=True)
+
+    def test_a_name_reached_through_an_origin_names_the_origins_block(self):
+        built = _build()
+
+        (message,) = built.messages("TS29.901")
+        hole = message.avps[1].hole
+        assert hole is not None
+        assert (hole.reference, hole.missing) == ("TS29.900", (model.UNDEFINED,))
+        assert built.hole("TS29.901", "Missing-Opt") == hole
+
+    def test_drop_takes_the_members_out_and_keeps_them_beside(self):
+        built = _build(model.UndefinedPolicy.DROP)
+
+        holder = _holder(built)
+        assert [member.name for member in holder.members] == ["Known"]
+        assert [member.name for member in holder.dropped] == [
+            "Missing-Req",
+            "Missing-Opt",
+        ]
+        required = holder.dropped[0]
+        assert required.min_occurs == 1
+        assert required.hole is not None and required.hole.undefined is not None
+        message = _test_request(built)
+        assert [member.name for member in message.avps] == ["Holder", "Nowhere", "Stop"]
+        assert [member.name for member in message.dropped] == ["Missing-Opt"]
+        assert built.hole("TS29.900", "Missing-Opt") is None
+        assert built.resolve("TS29.900", "Missing-Opt") is None
+        assert [each.name for each in built.undefined("TS29.900")] == [
+            "Missing-Opt",
+            "Missing-Req",
+        ]
+        assert built.placeholders() == ()
+        _build(model.UndefinedPolicy.DROP, defects=False, strict=True)
+
+    def test_placeholder_keeps_the_members_in_place_untyped(self):
+        built = _build(model.UndefinedPolicy.PLACEHOLDER)
+
+        member = _holder(built).members[1]
+        assert member.name == "Missing-Req"
+        assert (member.avp, member.hole) == (None, None)
+        assert member.placeholder is not None
+        assert member.placeholder.undefined.section == "6.3.1"
+        assert [each.name for each in built.placeholders("TS29.900")] == [
+            "Missing-Opt",
+            "Missing-Req",
+        ]
+        assert built.hole("TS29.900", "Missing-Req") is None
+        assert not any(hole.undefined for hole in built.holes())
+        _build(model.UndefinedPolicy.PLACEHOLDER, defects=False, strict=True)
+
+    @pytest.mark.parametrize("policy", list(model.UndefinedPolicy), ids=str)
+    def test_no_policy_touches_a_name_without_a_block_or_a_field_hole(self, policy):
+        """TS 29.061's `3GPP-Session-Stop-Indicator`, a row stating only a
+        code, stays a hole whatever the consumer answers for the declared
+        names, and so does a name resolving nowhere without a block."""
+        supply = {} if policy is model.UndefinedPolicy.SUPPLY else None
+        built = _build(policy, supply)
+
+        nowhere = built.hole("TS29.900", "Nowhere")
+        stop = built.hole("TS29.900", "Stop")
+        assert nowhere is not None and nowhere.missing == (model.DEFINITION,)
+        assert stop is not None and stop.missing == ("data_type", "flag_rules")
+        names = [member.name for member in _test_request(built).avps]
+        assert names[-2:] == ["Nowhere", "Stop"]
+        with pytest.raises(model.IncompleteCorpusError):
+            _build(policy, supply, strict=True)
+
+    def test_supply_reads_the_consumers_definition_in_the_declaring_document(self):
+        built = _build(
+            model.UndefinedPolicy.SUPPLY,
+            {"Missing-Opt": _supplied(), "Missing-Req": _supplied(711)},
+            defects=False,
+            strict=True,
+        )
+
+        avp = built.resolve("TS29.900", "Missing-Opt")
+        assert avp == model.Avp(
+            name="Missing-Opt",
+            vendor_id=10415,
+            code=710,
+            data_type=ast.DataType.UTF8_STRING,
+            flag_rules=_MV,
+            defined_in="TS29.900",
+            section="6.1.1",
+            wireshark_name=None,
+            supplied="ACME dictionary",
+        )
+        assert avp in built.avps("TS29.900")
+        assert _holder(built).members[2].avp == avp
+        (message,) = built.messages("TS29.901")
+        assert message.avps[1].avp == avp
+        assert built.hole("TS29.900", "Missing-Opt") is None
+
+    def test_a_supplied_ietf_avp_takes_rfc_6733s_rules(self):
+        built = _build(
+            model.UndefinedPolicy.SUPPLY, {"Missing-Opt": _supplied(vendor_id=0)}
+        )
+
+        avp = built.resolve("TS29.900", "Missing-Opt")
+        assert avp is not None
+        assert avp.flag_rules == model.FlagRules(
+            must=frozenset({ast.AvpFlag.MANDATORY}),
+            must_not=frozenset({ast.AvpFlag.VENDOR}),
+        )
+
+    def test_a_supplied_grouped_reads_its_members_by_the_policy(self):
+        grouped = _supplied(
+            711,
+            ast.DataType.GROUPED,
+            members=(_rule("Known"), _rule("Missing-Opt")),
+        )
+        built = _build(model.UndefinedPolicy.SUPPLY, {"Missing-Req": grouped})
+
+        avp = built.resolve("TS29.900", "Missing-Req")
+        assert isinstance(avp, model.Grouped) and avp.supplied == "ACME dictionary"
+        known, missing = avp.members
+        assert known.avp == built.resolve("TS29.900", "Known")
+        # Supplied nothing for, the nested name stays a hole.
+        assert missing.hole is not None and missing.hole.undefined is not None
+        assert built.hole("TS29.900", "Missing-Opt") is not None
+        with pytest.raises(model.IncompleteCorpusError, match="Missing-Opt"):
+            _build(
+                model.UndefinedPolicy.SUPPLY,
+                {"Missing-Req": grouped},
+                defects=False,
+                strict=True,
+            )
+
+    def test_a_supplied_enumeration_carries_its_values(self):
+        values = (ast.EnumValue(name="On", value=1),)
+        built = _build(
+            model.UndefinedPolicy.SUPPLY,
+            {
+                "Missing-Opt": _supplied(
+                    data_type=ast.DataType.ENUMERATED, values=values
+                )
+            },
+        )
+
+        avp = built.resolve("TS29.900", "Missing-Opt")
+        assert isinstance(avp, model.Enumerated) and avp.values == values
+
+    def test_an_alias_reads_the_member_as_an_avp_the_corpus_defines(self):
+        alias = model.Alias("TS29.900", "Known", "the editors meant Known")
+        built = _build(model.UndefinedPolicy.SUPPLY, {"Missing-Opt": alias})
+
+        member = _holder(built).members[2]
+        assert member.rule.name == "Missing-Opt"
+        assert member.avp == built.resolve("TS29.900", "Known")
+        assert built.resolve("TS29.900", "Missing-Opt") == member.avp
+
+    def test_a_document_key_wins_over_a_name_key(self):
+        built = _build(
+            model.UndefinedPolicy.SUPPLY,
+            {"Missing-Opt": _supplied(), ("TS29.900", "Missing-Opt"): _supplied(712)},
+        )
+
+        avp = built.resolve("TS29.900", "Missing-Opt")
+        assert avp is not None and avp.code == 712
+
+    @pytest.mark.parametrize(
+        ("policy", "supply", "message"),
+        [
+            (model.UndefinedPolicy.SUPPLY, None, "needs supply="),
+            (model.UndefinedPolicy.DROP, {}, "read only with undefined=SUPPLY"),
+            (
+                model.UndefinedPolicy.SUPPLY,
+                {"Missing-Optional": _supplied()},
+                "no Undefined AVP block declares",
+            ),
+            (
+                model.UndefinedPolicy.SUPPLY,
+                {("TS29.901", "Missing-Opt"): _supplied()},
+                "no Undefined AVP block declares",
+            ),
+            (
+                model.UndefinedPolicy.SUPPLY,
+                {"Missing-Opt": _supplied(701)},
+                r"claims \(vendor 10415, code 701\), which is TS29.900's Known",
+            ),
+            (
+                model.UndefinedPolicy.SUPPLY,
+                {"Missing-Opt": model.Alias("TS29.900", "Nowhere", "t")},
+                "does not complete",
+            ),
+            (
+                model.UndefinedPolicy.SUPPLY,
+                {"Missing-Opt": _supplied(members=(_rule("Known"),))},
+                "no Grouped",
+            ),
+        ],
+        ids=[
+            "supply-without-a-mapping",
+            "a-mapping-without-supply",
+            "unknown-name",
+            "unknown-document",
+            "identity-collision",
+            "alias-to-a-hole",
+            "members-on-a-leaf",
+        ],
+    )
+    def test_a_build_refuses_a_supply_that_does_not_fit(self, policy, supply, message):
+        with pytest.raises(model.ModelError, match=message):
+            _build(policy, supply)
+
+    def test_a_build_refuses_two_supplied_names_on_one_identity(self):
+        supply = {"Missing-Opt": _supplied(), "Missing-Req": _supplied()}
+
+        with pytest.raises(
+            model.ModelError,
+            match=(
+                r"TS29.900 Missing-Opt and for TS29.900 Missing-Req both claim"
+                r" \(vendor 10415, code 710\)"
+            ),
+        ):
+            _build(model.UndefinedPolicy.SUPPLY, supply, defects=False, strict=True)
+
+    def test_a_shadowed_name_key_claims_no_identity(self):
+        """A name key every document key overrides supplies nothing, so it
+        collides with nothing either."""
+        supply = {
+            "Missing-Opt": _supplied(711),
+            ("TS29.900", "Missing-Opt"): _supplied(710),
+            "Missing-Req": _supplied(711),
+        }
+
+        built = _build(model.UndefinedPolicy.SUPPLY, supply, defects=False)
+
+        assert [avp.name for avp in built.identified(10415, 711)] == ["Missing-Req"]
+
+    def test_a_cycle_of_aliases_is_refused(self):
+        supply = {
+            "Missing-Opt": model.Alias("TS29.900", "Missing-Req", "t"),
+            "Missing-Req": model.Alias("TS29.900", "Missing-Opt", "t"),
+        }
+
+        with pytest.raises(
+            model.ModelError,
+            match=(
+                r"supply aliases form a cycle: TS29\.900 Missing-Req -> TS29\.900"
+                r" Missing-Opt -> TS29\.900 Missing-Req"
+            ),
+        ):
+            _build(model.UndefinedPolicy.SUPPLY, supply)
+
+    def test_a_supplied_name_reached_across_releases_says_so(self):
+        """A name TS 29.140 V7.0.0 declares undefined, re-used by TS 32.299
+        V18.1.0, which reads TS 29.140 non-specifically as its final
+        version: supplied, it still says by which citation it was reached."""
+        origin = _spec(
+            "3GPP TS 29.140", [_declared("Missing-Opt", "6.1.1")], version="7.0.0"
+        )
+        citing = _spec("3GPP TS 32.299", [_reused("Missing-Opt", "TS29.140")])
+        books = corpus.Corpus(_entry(spec) for spec in (origin, citing))
+        across = corpus.CrossRelease(
+            "TS32.299", "TS29.140", "7.0.0", corpus.NON_SPECIFIC
+        )
+        hole = model.Model.build(books).hole("TS32.299", "Missing-Opt")
+        assert hole is not None and hole.across_releases == across
+
+        built = model.Model.build(
+            books,
+            undefined=model.UndefinedPolicy.SUPPLY,
+            supply={"Missing-Opt": _supplied()},
+        )
+
+        avp = built.resolve("TS32.299", "Missing-Opt")
+        assert avp is not None and avp.supplied == "ACME dictionary"
+        assert (avp.defined_in, avp.across_releases) == ("TS29.140", across)
+        assert built.across_releases("TS32.299") == (avp,)
+        origins = built.resolve("TS29.140", "Missing-Opt")
+        assert origins is not None and origins.across_releases is None
+
+
+_SIDECAR = """\
+; Specification: ACME HSS dictionary
+; Vendor-ID: 10415
+
+
+; Type: AVP Table
+; Section: 1
+; Columns: Name         Code  Type        Must  May  S.not  M.not
+           Missing-Req  711   Grouped     M,V   -    -      -
+           Missing-Opt  710   UTF8String  M     -    -      V
+
+
+; Type: Grouped AVP
+; Name: Missing-Req
+; Section: 2
+Missing-Req ::= < AVP header: 711 10415 >
+        { Known }
+"""
+
+
+class TestSuppliedFrom:
+    def test_a_sidecar_supplies_definitions_and_rows(self, tmp_path):
+        (tmp_path / "acme.dad").write_text(_SIDECAR)
+
+        supplied = model.supplied_from(tmp_path / "acme.dad")
+
+        source = "ACME HSS dictionary (acme.dad)"
+        assert supplied["Missing-Req"] == model.Supplied(
+            vendor_id=10415,
+            code=711,
+            data_type=ast.DataType.GROUPED,
+            flag_rules=_MV,
+            source=source,
+            members=(_rule("Known", _REQUIRED),),
+        )
+        opt = supplied["Missing-Opt"]
+        assert (opt.vendor_id, opt.code, opt.source) == (0, 710, source)
+        built = _build(model.UndefinedPolicy.SUPPLY, supplied, defects=False)
+        avp = built.resolve("TS29.900", "Missing-Req")
+        assert isinstance(avp, model.Grouped) and avp.members[0].avp is not None
+
+    def test_an_incomplete_sidecar_is_refused(self, tmp_path):
+        # Missing-Req's row places no flag.
+        (tmp_path / "bare.dad").write_text(_SIDECAR.replace("M,V   -", "-     -"))
+
+        with pytest.raises(model.ModelError, match="Missing-Req states no flag rules"):
+            model.supplied_from(tmp_path / "bare.dad")
+
+    def test_a_name_two_sidecars_supply_is_refused(self, tmp_path):
+        (tmp_path / "one.dad").write_text(_SIDECAR)
+        (tmp_path / "two.dad").write_text(_SIDECAR)
+
+        with pytest.raises(model.ModelError, match="Missing-Req is supplied twice"):
+            model.supplied_from(tmp_path / "one.dad", tmp_path / "two.dad")
+
+    def test_a_name_one_sidecar_tables_twice_is_refused(self, tmp_path):
+        last = "Missing-Opt  710   UTF8String  M     -    -      V\n"
+        again = last.replace("710", "999")
+        twice = _SIDECAR.replace(last, f"{last}           {again}")
+        assert twice.count("Missing-Opt") == 2
+        (tmp_path / "twice.dad").write_text(twice)
+
+        with pytest.raises(model.ModelError, match="Missing-Opt is tabled twice"):
+            model.supplied_from(tmp_path / "twice.dad")
+
+    def test_a_name_one_sidecar_defines_twice_is_refused(self, tmp_path):
+        definition = _SIDECAR[_SIDECAR.index("; Type: Grouped") :]
+        (tmp_path / "twice.dad").write_text(f"{_SIDECAR}\n\n{definition}")
+
+        with pytest.raises(model.ModelError, match="Missing-Req is defined twice"):
+            model.supplied_from(tmp_path / "twice.dad")

@@ -148,7 +148,8 @@ each starting with `; Type:`.
   finding, after checking later versions, errata, the registry and
   Wireshark's dictionary, so only a correction writes the block, citing
   that evidence; no extractor does. The block declares no type, code or
-  flags: what a consumer does about the name is the consumer's choice.
+  flags: what a consumer does about the name is the consumer's choice
+  ([consumers.md](consumers.md#undefined-names)).
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
 - **An origin names its publisher, unless it is 3GPP or IETF.** The corpus

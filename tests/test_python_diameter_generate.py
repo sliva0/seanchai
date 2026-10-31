@@ -384,7 +384,7 @@ def test_holes_stay_in_the_tables_with_their_reason(package):
     ) in additions
     assert (
         "        # [ Submission-Timestamp ]  # hole: TS32.299 Submission-Timestamp:"
-        " resolves nowhere\n"
+        " undefined (clause 7.2.112aA)\n"
     ) in additions
     # TS 29.229's Line-Identifier, ETSI's 500 by clause 6.3.42, resolves.
     assert (

@@ -33,6 +33,7 @@ built.identified(10415, 601)  # every AVP claiming an identity
 built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
 built.marks("TS29.212", "AN-GW-Address")  # what each table marks about it
 built.holes("TS32.299")  # what the corpus cannot complete
+built.undefined("TS29.345")  # the names its Undefined AVP blocks declare
 built.across_releases()  # what citations resolved across releases
 built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 ```
@@ -339,9 +340,10 @@ its Release 11 copy.
 document states, or RFC 6733's rule for an IETF AVP's unplaced bits, never
 `None`. A name the corpus cannot complete is a
 `model.Hole` instead, naming the document that falls short, the fields it
-leaves unstated (`code`, `data_type`, `flag_rules`), or `definition` when
-the name resolves nowhere, plus the re-used origin the corpus lacks or the
-disagreeing reading, if either applies. A flag-rule row with every cell
+leaves unstated (`code`, `data_type`, `flag_rules`), `definition` when
+the name resolves nowhere, or `undefined` when an `Undefined AVP` block
+declares it so ([below](#undefined-names)), plus the re-used origin the
+corpus lacks or the disagreeing reading, if either applies. A flag-rule row with every cell
 blank is unstated, not "no flags". `Member.avp` is `None` for a hole and
 `Member.hole` says which; the `* [ AVP ]` wildcard is the one `None` without
 a hole. A hole keeps the vendor, code, type and flag rules its document
@@ -368,8 +370,11 @@ listing every hole, rather than build a model with any. The default is
 `strict=False` because the committed corpus does not build strictly, and
 every standing hole is a statement its source does not make.
 TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and the
-names that resolve nowhere are the corpus's `Undefined AVP` blocks, the
-linter's standing `undefined-avp` notes. oneM2M TS-0004 reaches no other: its
+eight names that resolve nowhere are the corpus's `Undefined AVP` blocks,
+the linter's standing `undefined-avp` notes, holes under the default
+policy and the consumer's to answer for under another
+([below](#undefined-names)): with `undefined=DROP` or `PLACEHOLDER` a
+strict build refuses TS 29.061's row alone. oneM2M TS-0004 reaches no other: its
 `Service-Information`, TS 32.299 V11.20.0's, resolves through the pinned
 Release 11 copies and the Release 18 ones standing in (above), so
 `holes("oneM2M-TS-0004")` is empty. TS 32.299's thirteen OMA rows are no
@@ -383,6 +388,88 @@ way, their clauses and reference [223] reading as Release 18's do. The pinned li
 (`_STANDING_HOLES`) is the full account: the strict build's failure is
 compared against it, so a hole worked off or a new one shows up as a diff.
 Roadmap item N lists them by cause.
+
+### Undefined names
+
+Eight names the corpus's documents use as members are defined nowhere:
+RFC 4004's three SPIs, TS 29.345's `ProSe-Query-Code` and
+`ProSe-Response-Code`, TS 29.154's `External-Group-Identifier`, TS
+32.299's `Submission-Timestamp` and `Network-Element`. Each has an
+`Undefined AVP` block in its document's file, inserted by a correction
+citing what was searched ([dad-format.md](dad-format.md#design-intent)),
+and `undefined(reference)` returns them as `model.Undefined`: the name,
+the document, the clause the block cites, what the document says of the
+name (`note`), and `cited_in`, every clause whose body names it. A block
+is the last reading of its name, after the bases: it defines nothing, so
+a definition appearing upstream or in a base wins without it, and the
+linter's `undefined-avp-defined` reports the stale block. A name reached
+through an origin reads the origin's block, so the hole names the
+document that falls short, as every hole does.
+
+What the model makes of such a name is the consumer's choice,
+`Model.build(books, undefined=model.UndefinedPolicy.…)`:
+
+| Policy | `resolve` | `hole` | Body member | `holes()` | `strict=True` |
+|---|---|---|---|---|---|
+| `HOLE` (default) | None | missing `undefined`, `str` "… undefined (clause 9.4)" | `Member.hole` | lists it | refuses |
+| `DROP` | None | None | removed; `Grouped.dropped`, `Message.dropped` keep it, with its hole | no | builds |
+| `PLACEHOLDER` | None | None | in place, `Member.placeholder` a `model.Placeholder` | no; `placeholders()` | builds |
+| `SUPPLY`, supplied | the consumer's `Avp`, `supplied` its source | None | `Member.avp` | no | builds |
+| `SUPPLY`, `Alias` | the named AVP, unchanged | None | `Member.avp`, `rule.name` the document's | no | builds |
+| `SUPPLY`, neither | as `HOLE` | | | | |
+
+Only a name a block declares is open to the choice. A name resolving
+nowhere without one is a corpus defect (the linter's
+`unresolved-reference`, an error), and a field no reading states is a
+statement no document makes, so TS 29.061's `3GPP-Session-Stop-Indicator`
+stays a hole under every policy. A strict model's guarantee is that every
+member is an `Avp`, the wildcard, or what `undefined` asked for: a
+non-default policy is an explicit answer, so the answered names are no
+holes, and `strict=True, undefined=PLACEHOLDER` builds.
+
+`DROP` removes required members too: RFC 4004's `{ MIP-HA-to-MN-SPI }`
+and its siblings and TS 29.154's `{ External-Group-Identifier }` are
+required, so a command or grouped AVP built so no longer carries what its
+ABNF requires. `dropped` keeps each member's `rule`, `min_occurs`
+included, for a consumer that checks; where a dropped member is required,
+`SUPPLY` is the better answer.
+
+`SUPPLY` takes `supply=`, a mapping from a name, or `(reference, name)`,
+which wins over it, to a `model.Supplied` or a `model.Alias`. A
+`Supplied` states vendor, code, type, flag rules and `source`, mandatory
+provenance ("ACME HSS 4.2 dictionary"), with members for a Grouped AVP
+and values for an Enumerated one. Its `Avp` names the block's document in
+`defined_in` and its clause in `section`, carries the source in
+`supplied`, takes RFC 6733's rules for unplaced IETF bits as any reading
+does, and resolves its members in the block's document, a member itself
+declared undefined following the policy. `avps()` lists it. Reached
+through a citation across releases, it carries the citation in
+`across_releases` as any reading so reached does, and
+`across_releases()` lists it. An `Alias` reads the name as an AVP the
+corpus completes: TS 29.154's `External-Group-Identifier` as TS 29.336's
+`External-Identifier` (3111), which carries an external group identifier
+on S6t and is most likely what TS 29.154's editors meant, though the
+corpus does not assume it.
+`model.supplied_from(*paths)` reads `Supplied`s from hand-authored `.dad`
+sidecars: each `Grouped AVP` or `Enumerated AVP` section, its flags from
+its table row, and each AVP-table row alone, complete in its own file,
+its source the file's `; Specification:` and name. A name one sidecar
+defines twice or tables twice, or two sidecars both supply, is refused,
+since which one is meant is the consumer's to say. A sidecar joins no
+corpus, since nothing cites it.
+
+The build refuses, with `ModelError`, `SUPPLY` without `supply=` and
+`supply=` under another policy; a key naming no block, as a correction
+whose `expect` fails is refused, since it is a typo or upstream has since
+defined the name; an `Alias` to a name the corpus does not complete; and a
+`Supplied` claiming the `(vendor-id, code)` of an AVP the corpus defines,
+or two names' `Supplied`s claiming one, the error naming both, since a
+dictionary with two names on one identity is worse than a hole: an
+`Alias` is the way to say "this is that AVP". Only answers a block takes
+count, so a name key every document key overrides claims nothing. It
+refuses aliases leading back to a name already being answered, `A` to
+`B` to `A`, too, the error naming the cycle. `undefined_policy` reports
+the build's policy, which a generator records in its output.
 
 ## The integrations
 

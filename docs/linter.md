@@ -82,7 +82,7 @@ acknowledges as an override its document states on purpose
 - `undefined-avp` — one note per `Undefined AVP` block, naming the clauses
   whose bodies reference the name: a member the corpus declares defined
   nowhere, which every consumer has to decide about
-  ([consumers.md](consumers.md)).
+  ([consumers.md](consumers.md#undefined-names)).
 - `undefined-avp-unused` — a block whose name no body references, or
   whose `; Section:` holds no body naming it. An error: the block cites a
   use the file does not have.

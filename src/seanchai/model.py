@@ -76,19 +76,30 @@ resolves nowhere at all. `Model.build(..., strict=True)` refuses a corpus
 with any; otherwise `Model.holes` lists them and `Member.avp` is `None` with
 `Member.hole` saying why. `Member.avp` is also `None`, with no hole, for RFC
 6733's `* [ AVP ]` wildcard, which is grammar rather than a reference.
+
+A name an `Undefined AVP` block declares is the last reading along the
+order, after the bases: it explains the failure and defines nothing, so a
+definition that appears upstream or in a base wins without it. By default
+it is a `Hole` missing `UNDEFINED`; `Model.build(..., undefined=...)` takes
+the consumer's answer instead (`UndefinedPolicy`): drop the member, keep it
+as an untyped `Placeholder`, or read a definition the consumer `Supplied`
+(or an `Alias` for an AVP the corpus does define). Only a block's name is
+open to that choice: a name resolving nowhere without one, and a field no
+reading states, stay holes under every policy.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from dataclasses import dataclass, replace
+import enum
+from collections.abc import Iterator, Mapping
+from dataclasses import dataclass, field, replace
 from functools import cached_property
 from pathlib import Path
 
 import pydantic
 
 from . import corpus, oracle
-from .dad import ast
+from .dad import ast, parser
 
 
 class ModelError(ValueError):
@@ -101,9 +112,16 @@ class IncompleteCorpusError(ModelError):
     def __init__(self, holes: tuple[Hole, ...]) -> None:
         self.holes = holes
         listing = "".join(f"\n  {hole}" for hole in holes)
+        # Only an undefined name is the consumer's to answer for.
+        answer = (
+            ", and undefined=... answers for the undefined names"
+            if any(hole.undefined is not None for hole in holes)
+            else ""
+        )
         super().__init__(
             f"the corpus has {len(holes)} hole{'' if len(holes) == 1 else 's'}"
-            f" (Model.build(..., strict=False) builds the rest):{listing}"
+            f" (Model.build(..., strict=False) builds the rest{answer}):"
+            f"{listing}"
         )
 
 
@@ -187,8 +205,9 @@ class Avp:
     """One resolved AVP, as the specification `defined_in` states it.
 
     Every field is a fact some document in the corpus states, or for an
-    IETF-space AVP's unplaced M and V bits, RFC 6733's rule (`FlagRules`);
-    an AVP missing one is a `Hole` instead, never an `Avp` with a gap in it.
+    IETF-space AVP's unplaced M and V bits, RFC 6733's rule (`FlagRules`),
+    or, where `supplied` is set, the consumer's; an AVP missing one is a
+    `Hole` instead, never an `Avp` with a gap in it.
     """
 
     name: str
@@ -208,11 +227,96 @@ class Avp:
     # allowed it: TS 32.299's `VAS-ID` is TS 29.140 V7.0.0's, the final
     # version its non-specific reference means (docs/consumers.md).
     across_releases: corpus.CrossRelease | None = None
+    # Set for a definition the consumer supplied for a name an `Undefined
+    # AVP` block declares (`UndefinedPolicy.SUPPLY`): where it came from,
+    # "ACME HSS dictionary (acme.dad)". `defined_in` and `section` are then
+    # the block's, the document using the name.
+    supplied: str | None = None
 
     @property
     def identity(self) -> tuple[int, int]:
         """`(vendor-id, code)`, the pair that distinguishes AVPs on the wire."""
         return (self.vendor_id, self.code)
+
+
+def supplied_from(*paths: Path) -> dict[str, Supplied]:
+    """The definitions hand-authored `.dad` sidecars supply, by name, for
+    `Model.build(..., undefined=UndefinedPolicy.SUPPLY, supply=...)`.
+
+    A sidecar is an ordinary `.dad` file, the format's hand-authored
+    input, but no corpus document: nothing cites it, and only its own
+    statements count, so each entry must be complete in its file. Every
+    `Grouped AVP` and `Enumerated AVP` section and every AVP-table row is
+    one `Supplied`: a definition's code and vendor from its header rule (no
+    vendor-id is IETF space), its flag rules from the table row of its
+    name; a row alone gives code, type and flag rules, its vendor read as
+    `AvpTableRow.stated_vendor` reads it. The source is the file's `;
+    Specification:` and name. A missing field, a row and definition
+    disagreeing on the code, and a name given twice, defined or tabled
+    twice in one sidecar or supplied by two, raise `ModelError`.
+    """
+    found: dict[str, Supplied] = {}
+    for path in paths:
+        spec = parser.parse(path.read_text(encoding="utf-8"))
+        source = f"{spec.specification} ({path.name})"
+        defined: dict[str, ast.GroupedAvp | ast.EnumeratedAvp] = {}
+        rows: dict[str, ast.AvpTableRow] = {}
+        for section in spec.sections:
+            if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
+                if section.name in defined:
+                    raise ModelError(f"{path}: {section.name} is defined twice")
+                defined[section.name] = section
+            elif isinstance(section, ast.AvpTable):
+                for row in section.rows:
+                    if row.name in rows:
+                        raise ModelError(f"{path}: {row.name} is tabled twice")
+                    rows[row.name] = row
+        for name in dict.fromkeys((*defined, *rows)):
+            if name in found:
+                raise ModelError(f"{path}: {name} is supplied twice")
+            found[name] = _supplied(
+                spec, source, name, defined.get(name), rows.get(name)
+            )
+    return found
+
+
+def _supplied(
+    spec: ast.Specification,
+    source: str,
+    name: str,
+    definition: ast.GroupedAvp | ast.EnumeratedAvp | None,
+    row: ast.AvpTableRow | None,
+) -> Supplied:
+    if row is None or not _stated(row.flag_rules):
+        raise ModelError(f"{source}: {name} states no flag rules")
+    if definition is None:
+        if row.code is None or row.data_type is None:
+            raise ModelError(f"{source}: {name} states no code or no type")
+        stated = row.stated_vendor(spec.vendor_id)
+        return Supplied(
+            vendor_id=spec.vendor_id if stated is None else stated,
+            code=row.code,
+            data_type=row.data_type,
+            flag_rules=row.flag_rules,
+            source=source,
+        )
+    if row.code is not None and row.code != definition.code:
+        raise ModelError(
+            f"{source}: {name}'s row gives code {row.code}, its definition"
+            f" {definition.code}"
+        )
+    grouped = isinstance(definition, ast.GroupedAvp)
+    return Supplied(
+        vendor_id=(
+            ast.IETF_VENDOR if definition.vendor_id is None else definition.vendor_id
+        ),
+        code=definition.code,
+        data_type=ast.DataType.GROUPED if grouped else ast.DataType.ENUMERATED,
+        flag_rules=row.flag_rules,
+        source=source,
+        members=definition.avps if isinstance(definition, ast.GroupedAvp) else (),
+        values=definition.values if isinstance(definition, ast.EnumeratedAvp) else (),
+    )
 
 
 # `Avp` field names, as `Hole.missing` spells them.
@@ -221,6 +325,87 @@ DATA_TYPE = "data_type"
 FLAG_RULES = "flag_rules"
 # A name nothing in the corpus defines, tabulates or can be followed to.
 DEFINITION = "definition"
+# A name an `Undefined AVP` block declares defined nowhere.
+UNDEFINED = "undefined"
+# Marks a resolution stack entry as an `Alias` being followed, beside the
+# `(path, name)` entries of the names being resolved.
+_ALIASED = object()
+
+
+@dataclass(frozen=True)
+class Undefined:
+    """An `Undefined AVP` block, resolved: the name, the document using it,
+    the clause its block cites, what the document says of it, and every
+    clause whose body names it, in file order."""
+
+    reference: str
+    name: str
+    section: str
+    page: int | None
+    note: str | None
+    cited_in: tuple[str, ...]
+    # As `Hole.version`, for a block in an older copy.
+    version: str | None = None
+
+
+@dataclass(frozen=True)
+class Placeholder:
+    """An undefined name kept in its place untyped, by the consumer's
+    choice (`UndefinedPolicy.PLACEHOLDER`): no identity, type or flags, only
+    what the block says."""
+
+    undefined: Undefined
+
+    @property
+    def name(self) -> str:
+        return self.undefined.name
+
+
+@dataclass(frozen=True)
+class Supplied:
+    """A definition the consumer supplies for an undefined name
+    (`UndefinedPolicy.SUPPLY`). `source` is mandatory provenance: "ACME HSS
+    4.2 dictionary", a sidecar path. `members` only for a Grouped AVP,
+    resolved in the document using the name; `values` only for an
+    Enumerated one."""
+
+    vendor_id: int
+    code: int
+    data_type: ast.DataType
+    flag_rules: ast.AvpFlagRules
+    source: str
+    members: tuple[ast.AvpRule, ...] = ()
+    values: tuple[ast.EnumEntry, ...] = ()
+
+
+@dataclass(frozen=True)
+class Alias:
+    """An undefined name read as an AVP the corpus does define: TS 29.154's
+    `External-Group-Identifier` as TS 29.336's `External-Identifier`. The
+    member resolves to `reference`'s `name`, unchanged, under its own name;
+    `source` says on whose word."""
+
+    reference: str
+    name: str
+    source: str
+
+
+class UndefinedPolicy(enum.StrEnum):
+    """What the model makes of a name an `Undefined AVP` block declares."""
+
+    # A `Hole` missing `UNDEFINED`, as any name the corpus cannot complete.
+    HOLE = "hole"
+    # The member leaves its body; `Grouped.dropped` and `Message.dropped`
+    # keep it, with its hole.
+    DROP = "drop"
+    # The member stays in place, `Member.placeholder` set, no `Avp`.
+    PLACEHOLDER = "placeholder"
+    # The definition the consumer supplied, or the AVP an `Alias` names;
+    # a name it supplies nothing for stays a hole.
+    SUPPLY = "supply"
+
+
+type SupplyKey = str | tuple[str, str]
 
 
 @dataclass(frozen=True)
@@ -237,7 +422,8 @@ class Hole:
 
     reference: str
     name: str
-    # `CODE`, `DATA_TYPE`, `FLAG_RULES`, or `DEFINITION` alone.
+    # `CODE`, `DATA_TYPE`, `FLAG_RULES`, or `DEFINITION` or `UNDEFINED`
+    # alone.
     missing: tuple[str, ...]
     vendor_id: int | None = None
     code: int | None = None
@@ -258,8 +444,12 @@ class Hole:
     # the corpus holds for a citation (TS 32.299 V11.20.0, which oneM2M
     # TS-0004 cites), not the one reference-level queries answer from.
     version: str | None = None
+    # The block declaring the name, for a hole missing `UNDEFINED`.
+    undefined: Undefined | None = None
 
     def __str__(self) -> str:
+        if self.undefined is not None:
+            return f"{self.document} {self.name}: undefined (clause {self.section})"
         if self.missing == (DEFINITION,):
             what = "resolves nowhere"
         else:
@@ -282,10 +472,12 @@ class Member:
     """One line of an ABNF body, with the name resolved to an object."""
 
     rule: ast.AvpRule
-    # None for the `* [ AVP ]` wildcard and for a name the corpus cannot
-    # complete; `hole` says which of the two.
+    # None for the `* [ AVP ]` wildcard, for a name the corpus cannot
+    # complete, and for an undefined name kept as a placeholder; `hole` or
+    # `placeholder` says which.
     avp: Avp | None
     hole: Hole | None = None
+    placeholder: Placeholder | None = None
 
     @property
     def name(self) -> str:
@@ -313,6 +505,9 @@ class Member:
 @dataclass(frozen=True)
 class Grouped(Avp):
     members: tuple[Member, ...] = ()
+    # The undefined members `UndefinedPolicy.DROP` took out of `members`,
+    # each with its hole and rule, so what the ABNF requires stays readable.
+    dropped: tuple[Member, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -349,6 +544,8 @@ class Message:
     defined_in: str
     section: str
     avps: tuple[Member, ...]
+    # As `Grouped.dropped`.
+    dropped: tuple[Member, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -457,8 +654,14 @@ def _identity(member: Member) -> tuple[int, int] | None:
 
 def _cut(member: Member) -> bool:
     """Whether a member is a body among its own descendants, which `_body`
-    stops at: no reading and no hole, and not the wildcard."""
-    return member.avp is None and member.hole is None and member.name != "AVP"
+    stops at: no reading, no hole and no placeholder, and not the
+    wildcard."""
+    return (
+        member.avp is None
+        and member.hole is None
+        and member.placeholder is None
+        and member.name != "AVP"
+    )
 
 
 @dataclass
@@ -488,8 +691,13 @@ class _Draft:
     wireshark_name: str | None = None
     across: corpus.CrossRelease | None = None
     members: tuple[Member, ...] = ()
+    dropped: tuple[Member, ...] = ()
     values: tuple[ast.EnumEntry, ...] = ()
     values_source: str | None = None
+    # The block declaring the name, on a draft of kind None that only
+    # explains the failure.
+    undefined: Undefined | None = None
+    supplied: str | None = None
 
     def fill(self, other: _Draft) -> _Draft:
         """This reading with what it leaves unstated taken from `other`, the
@@ -508,7 +716,8 @@ class _Draft:
         """
         if self.kind is None:
             # Nothing here yet: any definition wins, and failing one, the
-            # first unreadable origin stays the explanation.
+            # first unreadable origin stays the explanation, then the block
+            # declaring the name undefined.
             return other if other.kind is not None or self.origin is None else self
         if other.kind is None or self.conflict is not None:
             return self
@@ -526,12 +735,12 @@ class _Draft:
             for mine, theirs in pairs
         ):
             return replace(self, conflict=other.reference)
-        kind, members = self.kind, self.members
+        kind, members, dropped = self.kind, self.members, self.dropped
         values, values_source = self.values, self.values_source
         if self.data_type is None and other.kind is not Avp:
             # A row printing no type, for an AVP another document defines
             # as grouped or enumerated, takes the definition's body too.
-            kind, members = other.kind, other.members
+            kind, members, dropped = other.kind, other.members, other.dropped
             values, values_source = other.values, other.values_source
         vendor_id, vendor_stated = self.vendor_id, self.vendor_stated
         if not vendor_stated and other.vendor_stated:
@@ -541,6 +750,7 @@ class _Draft:
             across=self.across or other.across,
             kind=kind,
             members=members,
+            dropped=dropped,
             values=values,
             values_source=values_source,
             vendor_id=vendor_id,
@@ -578,7 +788,7 @@ class _Draft:
             or flag_rules is None
         ):
             missing = (
-                (DEFINITION,)
+                ((DEFINITION,) if self.undefined is None else (UNDEFINED,))
                 if self.kind is None
                 else tuple(
                     name
@@ -604,6 +814,7 @@ class _Draft:
                 wireshark_name=self.wireshark_name,
                 across_releases=self.across,
                 version=self.version,
+                undefined=self.undefined if self.kind is None else None,
             )
         common = (
             self.name,
@@ -616,15 +827,22 @@ class _Draft:
             self.wireshark_name,
         )
         if self.kind is Grouped:
-            return Grouped(*common, across_releases=self.across, members=self.members)
+            return Grouped(
+                *common,
+                across_releases=self.across,
+                supplied=self.supplied,
+                members=self.members,
+                dropped=self.dropped,
+            )
         if self.kind is Enumerated:
             return Enumerated(
                 *common,
                 across_releases=self.across,
+                supplied=self.supplied,
                 values=self.values,
                 values_source=self.values_source,
             )
-        return Avp(*common, across_releases=self.across)
+        return Avp(*common, across_releases=self.across, supplied=self.supplied)
 
 
 @dataclass
@@ -645,6 +863,8 @@ class _View:
     # Every row of a table printing mark columns, per name, in file order.
     marked: dict[str, list[Marks]]
     registries: list[ast.Registry]
+    # `Undefined AVP` blocks by name; resolution reads one last.
+    undefined: dict[str, ast.UndefinedAvp] = field(default_factory=dict)
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
@@ -679,17 +899,39 @@ class _View:
                 view.applications.append(section)
             elif isinstance(section, ast.Registry):
                 view.registries.append(section)
+            elif isinstance(section, ast.UndefinedAvp):
+                view.undefined.setdefault(section.name, section)
         return view
+
+    def cited_in(self, name: str) -> tuple[str, ...]:
+        """The clauses whose message or grouped bodies name `name`, in file
+        order."""
+        return tuple(
+            dict.fromkeys(
+                section.source.section
+                for section in self.entry.spec.sections
+                if isinstance(section, ast.Message | ast.GroupedAvp)
+                and any(rule.name == name for rule in section.avps)
+            )
+        )
 
 
 class Model:
     """The resolved corpus. Build it once with `Model.build`."""
 
     def __init__(
-        self, books: corpus.Corpus, dictionary: oracle.Oracle | None = None
+        self,
+        books: corpus.Corpus,
+        dictionary: oracle.Oracle | None = None,
+        undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
+        supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> None:
         self._books = books
         self._dictionary = dictionary
+        self._policy = UndefinedPolicy(undefined)
+        self._supply: dict[SupplyKey, Supplied | Alias] = dict(supply or {})
+        # Supplied readings, by the copy declaring the name, built once.
+        self._supplied: dict[tuple[Path, str], Avp] = {}
         # One view per copy, and per reference the newest, which every
         # reference-level query answers from: the corpus sorts candidates
         # newest first. An older copy (TS 32.299 V11.20.0) is read only
@@ -714,6 +956,8 @@ class Model:
         *,
         strict: bool = False,
         dictionary: Path | None = None,
+        undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
+        supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> Model:
         """The model over `books`.
 
@@ -722,18 +966,105 @@ class Model:
         every AVP complete learns at build time rather than from a missing
         member later. Off by default because the committed corpus has
         standing holes (docs/consumers.md); without it, a name with a hole
-        resolves to no `Avp` and `holes` reports it.
+        resolves to no `Avp` and `holes` reports it. What a strict model
+        guarantees is that every member is an `Avp`, the wildcard, or what
+        `undefined` asked for.
 
         `dictionary` is a Wireshark dictionary directory (the downloader's
         `specifications/wireshark`); with one, every AVP and hole with an
         identity carries Wireshark's name for it in `wireshark_name`.
         Without one that field is None and nothing else changes.
+
+        `undefined` is the consumer's answer for the names `Undefined AVP`
+        blocks declare (`UndefinedPolicy`), and `supply` what `SUPPLY`
+        reads, keyed by name or, winning over it, by `(reference, name)`:
+        a `Supplied` definition (`supplied_from` reads them from a `.dad`
+        sidecar) or an `Alias`. `supply` is required with `SUPPLY` and
+        refused otherwise; a key naming no block is refused as a stale
+        correction is, since either it is a typo or upstream has defined
+        the name; so is a `Supplied` claiming the identity of an AVP the
+        corpus defines, which an `Alias` says instead, or of another name's
+        `Supplied`, and a cycle of `Alias`es.
         """
+        policy = UndefinedPolicy(undefined)
+        if policy is UndefinedPolicy.SUPPLY and supply is None:
+            raise ModelError("undefined=SUPPLY needs supply=")
+        if policy is not UndefinedPolicy.SUPPLY and supply is not None:
+            raise ModelError(
+                f"supply= is read only with undefined=SUPPLY, not {policy}"
+            )
         loaded = None if dictionary is None else oracle.Oracle.load(dictionary)
-        built = cls(books, loaded)
+        built = cls(books, loaded, policy, supply)
+        built._check_supply()
         if strict and (holes := built.holes()):
             raise IncompleteCorpusError(holes)
         return built
+
+    @property
+    def undefined_policy(self) -> UndefinedPolicy:
+        """What the model makes of the names `Undefined AVP` blocks
+        declare."""
+        return self._policy
+
+    def _check_supply(self) -> None:
+        """Every key names a block, every `Supplied` is shaped for its
+        type and claims no identity the corpus defines, and every `Alias`
+        names an AVP the corpus completes."""
+        declared = {
+            (view.entry.reference, name)
+            for view in self._copies.values()
+            for name in view.undefined
+        }
+        names = {name for _, name in declared}
+        for key, answer in self._supply.items():
+            if key not in (declared if isinstance(key, tuple) else names):
+                raise ModelError(
+                    f"supply names {key!r}, which no Undefined AVP block"
+                    " declares: a typo, or the corpus now defines it"
+                )
+            if isinstance(answer, Alias):
+                if self.resolve(answer.reference, answer.name) is None:
+                    raise ModelError(
+                        f"supply reads {key!r} as {answer.reference}"
+                        f" {answer.name}, which the corpus does not complete"
+                    )
+                continue
+            if answer.members and answer.data_type is not ast.DataType.GROUPED:
+                raise ModelError(f"supply for {key!r} has members but is no Grouped")
+            if answer.values and answer.data_type is not ast.DataType.ENUMERATED:
+                raise ModelError(f"supply for {key!r} has values but is no Enumerated")
+        for key, answer in self._supply.items():
+            if not isinstance(answer, Supplied):
+                continue
+            claimed = [
+                avp
+                for avp in self.identified(answer.vendor_id, answer.code)
+                if avp.supplied is None
+            ]
+            if claimed:
+                raise ModelError(
+                    f"supply for {key!r} claims (vendor {answer.vendor_id},"
+                    f" code {answer.code}), which is {claimed[0].defined_in}'s"
+                    f" {claimed[0].name}; an Alias reads one name as another"
+                )
+        # Two supplied names on one identity are as bad as a supplied name on
+        # a corpus AVP's. Only the answers a block takes count: a name key
+        # every document key shadows supplies nothing.
+        claimants: dict[tuple[int, int], tuple[str, str]] = {}
+        for reference, name in sorted(declared):
+            answer = self._supply.get((reference, name))
+            if answer is None:
+                answer = self._supply.get(name)
+            if not isinstance(answer, Supplied):
+                continue
+            identity = (answer.vendor_id, answer.code)
+            first = claimants.setdefault(identity, (reference, name))
+            if first[1] != name:
+                raise ModelError(
+                    f"supply for {first[0]} {first[1]} and for {reference} {name}"
+                    f" both claim (vendor {answer.vendor_id}, code {answer.code});"
+                    " two names on one identity are no dictionary"
+                )
 
     def references(self) -> list[str]:
         """Every specification the model answers for, `TS29.229`-spelled."""
@@ -757,9 +1088,53 @@ class Model:
                 application_id=message.application_id,
                 defined_in=view.entry.reference,
                 section=message.source.section,
-                avps=self._body(view, message.avps),
+                avps=avps,
+                dropped=dropped,
             )
             for message in view.messages
+            for avps, dropped in [self._split(self._body(view, message.avps))]
+        )
+
+    def undefined(self, reference: str | None = None) -> tuple[Undefined, ...]:
+        """Every `Undefined AVP` block in `reference`, or in the corpus,
+        under any policy, in file order."""
+        references = self.references() if reference is None else [reference]
+        return tuple(
+            self._undefined_of(view, block)
+            for each in references
+            for view in [self._view(each)]
+            for block in view.undefined.values()
+        )
+
+    def placeholders(self, reference: str | None = None) -> tuple[Placeholder, ...]:
+        """Every placeholder in `reference`'s reading, or in the whole
+        corpus's, as `holes` finds holes; none unless the model was built
+        with `UndefinedPolicy.PLACEHOLDER`. Sorted by document and name."""
+        if self._policy is not UndefinedPolicy.PLACEHOLDER:
+            return ()
+        references = self.references() if reference is None else [reference]
+        found: dict[Placeholder, None] = {}
+        for each in references:
+            view = self._view(each)
+            for name in self._names(each):
+                hole = self._final(view, name)
+                if isinstance(hole, Hole) and hole.undefined is not None:
+                    found[Placeholder(hole.undefined)] = None
+            for body in self._bodies(each):
+                found.update(
+                    (member.placeholder, None)
+                    for member in body
+                    if member.placeholder is not None
+                )
+        return tuple(
+            sorted(
+                found,
+                key=lambda each: (
+                    each.undefined.reference,
+                    each.undefined.version or "",
+                    each.name,
+                ),
+            )
         )
 
     def applications(self, reference: str) -> tuple[Application, ...]:
@@ -818,15 +1193,25 @@ class Model:
 
     def resolve(self, reference: str, name: str) -> Avp | None:
         """`name` as `reference` means it, or None when the corpus cannot
-        complete it — `hole` says why."""
+        complete it — `hole` says why — or the consumer chose to drop or
+        keep it untyped (`undefined` says what was declared)."""
         found = self._final(self._view(reference), name)
         return found if isinstance(found, Avp) else None
 
     def hole(self, reference: str, name: str) -> Hole | None:
         """What `reference`'s reading of `name` lacks, or None when it
-        resolves completely."""
+        resolves completely or is an undefined name the policy answers
+        for."""
         found = self._final(self._view(reference), name)
-        return found if isinstance(found, Hole) else None
+        return found if isinstance(found, Hole) and self._open(found) else None
+
+    def _open(self, hole: Hole) -> bool:
+        """Whether a hole stays one under the policy: every hole but an
+        undefined name the consumer drops or keeps as a placeholder."""
+        return hole.undefined is None or self._policy in (
+            UndefinedPolicy.HOLE,
+            UndefinedPolicy.SUPPLY,
+        )
 
     def holes(self, reference: str | None = None) -> tuple[Hole, ...]:
         """Every hole in `reference`'s reading, or in the whole corpus.
@@ -843,31 +1228,36 @@ class Model:
         references = self.references() if reference is None else [reference]
         found: dict[Hole, None] = {}
         for each in references:
-            view = self._view(each)
             for name in self._names(each):
                 hole = self.hole(each, name)
                 if hole is not None:
                     found[hole] = None
-            bodies = [message.avps for message in self.messages(each)]
-            bodies += [
-                avp.members
-                for avp in self.avps(each)
-                if isinstance(avp, Grouped) and avp.defined_in == each
-            ]
-            # A grouped definition with a hole is no `Grouped`, but its body
-            # is still this document's to resolve.
-            bodies += [
-                self._body(view, definition.avps)
-                for name, definition in view.defined.items()
-                if isinstance(definition, ast.GroupedAvp)
-                and self.hole(each, name) is not None
-            ]
-            for body in bodies:
+            for body in self._bodies(each):
                 found.update(
                     (member.hole, None) for member in body if member.hole is not None
                 )
             found.update(dict.fromkeys(self._holes_across(each)))
         return tuple(sorted(found, key=lambda hole: (hole.document, hole.name)))
+
+    def _bodies(self, reference: str) -> list[tuple[Member, ...]]:
+        """The command and grouped bodies `reference` defines, resolved,
+        without what the policy dropped."""
+        view = self._view(reference)
+        bodies = [message.avps for message in self.messages(reference)]
+        bodies += [
+            avp.members
+            for avp in self.avps(reference)
+            if isinstance(avp, Grouped) and avp.defined_in == reference
+        ]
+        # A grouped definition with a hole is no `Grouped`, but its body
+        # is still this document's to resolve.
+        bodies += [
+            self._split(self._body(view, definition.avps))[0]
+            for name, definition in view.defined.items()
+            if isinstance(definition, ast.GroupedAvp)
+            and self.hole(reference, name) is not None
+        ]
+        return bodies
 
     def _holes_across(self, reference: str) -> Iterator[Hole]:
         """The holes of older copies in the grouped AVPs `reference`'s
@@ -989,7 +1379,9 @@ class Model:
 
     def _names(self, reference: str) -> dict[str, None]:
         view = self._view(reference)
-        return dict.fromkeys((*view.defined, *view.tabled, *view.reused))
+        return dict.fromkeys(
+            (*view.defined, *view.tabled, *view.reused, *view.undefined)
+        )
 
     def _final(self, view: _View, name: str, stack: tuple = ()) -> Avp | Hole:
         draft = self._resolve(view, name, stack)
@@ -997,7 +1389,103 @@ class Model:
             return Hole(
                 view.entry.reference, name, (DEFINITION,), version=self._older(view)
             )
-        return draft.final
+        found = draft.final
+        if (
+            isinstance(found, Hole)
+            and found.undefined is not None
+            and self._policy is UndefinedPolicy.SUPPLY
+        ):
+            answered = self._answered(found.undefined, stack)
+            if answered is None:
+                return found
+            if answered.supplied is not None and found.across_releases is not None:
+                # The supplied definition is the declaring document's; the
+                # citation that reached it is this reading's, as it is for
+                # any field a reading takes across releases.
+                return replace(answered, across_releases=found.across_releases)
+            return answered
+        return found
+
+    def _undefined_of(self, view: _View, block: ast.UndefinedAvp) -> Undefined:
+        return Undefined(
+            reference=view.entry.reference,
+            name=block.name,
+            section=block.source.section,
+            page=block.source.page,
+            note=block.note,
+            cited_in=view.cited_in(block.name),
+            version=self._older(view),
+        )
+
+    def _declaring(self, undefined: Undefined) -> _View:
+        """The copy whose block `undefined` is."""
+        return next(
+            view
+            for view in self._copies.values()
+            if view.entry.reference == undefined.reference
+            and self._older(view) == undefined.version
+        )
+
+    def _answered(self, undefined: Undefined, stack: tuple) -> Avp | None:
+        """What `supply` answers for a declared name: the `Supplied`
+        definition read in the declaring document, or the AVP an `Alias`
+        names; None where it says nothing of it."""
+        answer = self._supply.get((undefined.reference, undefined.name))
+        if answer is None:
+            answer = self._supply.get(undefined.name)
+        if answer is None:
+            return None
+        if isinstance(answer, Alias):
+            # The stack carries each alias being followed, so one leading
+            # back to a name already being answered is refused rather than
+            # followed forever.
+            mark = (_ALIASED, undefined.reference, undefined.version, undefined.name)
+            if mark in stack:
+                chain = [each for each in stack if each[0] is _ALIASED]
+                cycle = [*chain[chain.index(mark) :], mark]
+                raise ModelError(
+                    "supply aliases form a cycle: "
+                    + " -> ".join(f"{each[1]} {each[3]}" for each in cycle)
+                )
+            found = self._final(
+                self._view(answer.reference), answer.name, (*stack, mark)
+            )
+            return found if isinstance(found, Avp) else None
+        view = self._declaring(undefined)
+        key = (view.entry.path, undefined.name)
+        if key in self._supplied:
+            return self._supplied[key]
+        kind = {
+            ast.DataType.GROUPED: Grouped,
+            ast.DataType.ENUMERATED: Enumerated,
+        }.get(answer.data_type, Avp)
+        draft = _Draft(
+            kind,
+            undefined.name,
+            undefined.reference,
+            undefined.version,
+            vendor_id=answer.vendor_id,
+            vendor_stated=True,
+            code=answer.code,
+            data_type=answer.data_type,
+            flag_rules=answer.flag_rules,
+            section=undefined.section,
+            values=answer.values,
+            supplied=answer.source,
+        )
+        if kind is Grouped:
+            # A member that is itself declared undefined follows the
+            # policy, and the name among its own members is cut.
+            members = self._body(view, answer.members, (*stack, key))
+            draft.members, draft.dropped = self._split(members)
+        if self._dictionary is not None:
+            draft.wireshark_name = self._dictionary.name_for(
+                answer.vendor_id, answer.code, undefined.name, answer.data_type
+            )
+        found = draft.final
+        assert isinstance(found, Avp)
+        self._supplied[key] = found
+        return found
 
     def _older(self, view: _View) -> str | None:
         """`view`'s version when it is an older copy the corpus holds for a
@@ -1206,6 +1694,16 @@ class Model:
             yield _Draft(
                 None, name, view.entry.reference, self._older(view), origin=unread
             )
+        if (block := view.undefined.get(name)) is not None:
+            # Last: it explains the failure and defines nothing.
+            yield _Draft(
+                None,
+                name,
+                view.entry.reference,
+                self._older(view),
+                section=block.source.section,
+                undefined=self._undefined_of(view, block),
+            )
 
     def _cited(
         self, view: _View, reference: str
@@ -1267,7 +1765,9 @@ class Model:
         if isinstance(definition, ast.GroupedAvp):
             draft.data_type = ast.DataType.GROUPED
             self._settle(stack[-1], draft.vendor_id, draft.code)
-            draft.members = self._body(view, definition.avps, stack)
+            draft.members, draft.dropped = self._split(
+                self._body(view, definition.avps, stack)
+            )
         else:
             draft.data_type = ast.DataType.ENUMERATED
             draft.values = definition.values
@@ -1287,7 +1787,23 @@ class Model:
         found = self._final(view, rule.name, stack)
         if isinstance(found, Avp):
             return Member(rule=rule, avp=found)
+        if found.undefined is not None and self._policy is UndefinedPolicy.PLACEHOLDER:
+            return Member(rule=rule, avp=None, placeholder=Placeholder(found.undefined))
         return Member(rule=rule, avp=None, hole=found)
+
+    def _split(
+        self, members: tuple[Member, ...]
+    ) -> tuple[tuple[Member, ...], tuple[Member, ...]]:
+        """A body's members, and those `UndefinedPolicy.DROP` takes out of
+        it: the undefined ones, required or not."""
+        if self._policy is not UndefinedPolicy.DROP:
+            return members, ()
+        kept: list[Member] = []
+        dropped: list[Member] = []
+        for member in members:
+            undefined = member.hole is not None and member.hole.undefined is not None
+            (dropped if undefined else kept).append(member)
+        return tuple(kept), tuple(dropped)
 
     # --- corpus-wide lookup -------------------------------------------------
 
