@@ -127,6 +127,13 @@ shapes of `dictionary.py`, `constants.py` and `grouped.py`:
   second reading of one AVP, or a reading the library's class does not
   serve, is suffixed with its first document (`ScscfRestorationInfo_TS29_229`,
   `SipAuthDataItem_TS29_229` beside the library's IETF `SipAuthDataItem`).
+  Readings of one AVP with one body share a class, the defining document's
+  own reading naming it: TS 29.272's re-used table clears M on TS 32.299's
+  `User-CSG-Information`, which is the `is_mandatory=False` on the rule
+  naming `UserCsgInformation_TS32_299`, not a class of its own. A citing
+  document's rules for the members make another body: TS 32.299's
+  `Supported-Features` sets M on Feature-List-ID and Feature-List, so its
+  reading is the library's `SupportedFeatures`.
 
 Importing `additions` changes nothing in the library. `register()` merges
 the new entries into the library's global dictionaries, which the command

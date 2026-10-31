@@ -375,6 +375,17 @@ class Definition:
     # Each member's target; None for the `* [ AVP ]` wildcard.
     members: list[tuple[model.Member, Definition | None]]
     documents: set[str] = field(default_factory=set)
+    # The documents whose dictionary view or commands name the reading
+    # directly. One the reading's own document is among is that document's
+    # reading; another may be a citing document's, whose tables set its own
+    # flag rules: TS 29.272's `User-CSG-Information`, M in Must not where TS
+    # 32.299's own reading sets it.
+    readers: set[str] = field(default_factory=set)
+
+    @property
+    def own(self) -> bool:
+        """Whether a document the reading is defined in reads it itself."""
+        return bool(self.documents & self.readers)
 
     @property
     def name(self) -> str:
@@ -451,9 +462,15 @@ class Definitions:
     def __iter__(self):
         return iter(self._by_signature.values())
 
-    def add(self, found: model.Avp | model.Hole) -> Definition:
+    def add(
+        self, found: model.Avp | model.Hole, reader: str | None = None
+    ) -> Definition:
+        """The definition for `found`, which `reader`'s dictionary view or
+        commands name, if given."""
         known = self._memo.get(id(found))
         if known is not None:
+            if reader is not None:
+                known.readers.add(reader)
             return known
         members = []
         if isinstance(found, model.Grouped):
@@ -466,16 +483,20 @@ class Definitions:
         definition.documents.add(
             found.defined_in if isinstance(found, model.Avp) else found.reference
         )
+        if reader is not None:
+            definition.readers.add(reader)
         self._memo[id(found)] = definition
         self._seen.append(found)
         return definition
 
-    def member(self, member: model.Member) -> Definition | None:
+    def member(
+        self, member: model.Member, reader: str | None = None
+    ) -> Definition | None:
         """The definition a body line points at; None for the wildcard."""
         if member.avp is not None:
-            return self.add(member.avp)
+            return self.add(member.avp, reader)
         if member.hole is not None:
-            return self.add(member.hole)
+            return self.add(member.hole, reader)
         if member.name == "AVP":
             return None
         # A grouped AVP among its own descendants: the model stops there
@@ -508,11 +529,13 @@ class Definitions:
 
 def _order(definition: Definition) -> tuple:
     """An order that does not depend on hashing: identity, first document,
-    flags, hole, then the members' names."""
+    the document's own reading ahead of citing documents', flags, hole,
+    then the members' names."""
     return (
         definition.identity or (2**32, 0),
         definition.name,
         min(definition.documents, default=""),
+        not definition.own,
         _flags(definition.sample.flag_rules) or (),
         definition.hole or "",
         [(member.rule.presence.value, member.name) for member, _ in definition.members],
@@ -660,7 +683,10 @@ def collect_unit(
             message.command_code, (class_name(base), base)
         )
         bases.setdefault(message.command_code, (base_class, base_name))
-        members = [(member, definitions.member(member)) for member in message.avps]
+        members = [
+            (member, definitions.member(member, application.reference))
+            for member in message.avps
+        ]
         notes = [
             member_note(built, application, message, member) for member in message.avps
         ]
@@ -911,7 +937,14 @@ class Resolver:
         not cover: the AVP's name in the library's spelling, with the
         reading's first document as a suffix where the library already binds
         the name or an earlier reading took it (`SipAuthDataItem_TS29_273`),
-        so an addition never shadows a name the star imports bring in."""
+        so an addition never shadows a name the star imports bring in.
+
+        Readings of one identity with one body share a class: a citing
+        document's reading differs from the defining document's only in its
+        own flag rules (TS 29.272's `User-CSG-Information`, M in Must not
+        where TS 32.299's own sets it), and the M bit is the `AvpGenDef`'s
+        naming the class, not the class's. Its rules for the members are
+        the members' own readings, so a body of their own."""
         sharing: dict[str, list[Definition]] = {}
         for definition in self.definitions:
             if not definition.is_grouped or definition.identity is None:
@@ -921,18 +954,26 @@ class Resolver:
             holder = self.library.grouped.get(definition.identity)
             base = holder.__name__ if holder else class_name(definition.name)
             sharing.setdefault(base, []).append(definition)
+        bodies: dict[tuple, GroupedAddition] = {}
         for base, readings in sharing.items():
             replaces = base if base in self.library.names else None
-            for index, definition in enumerate(readings):
+            index = 0
+            for definition in readings:
+                body = (definition.identity, _body_signature(definition.members))
+                if body in bodies:
+                    self.grouped[id(definition)] = bodies[body]
+                    continue
                 name = base
                 if index or replaces:
                     name = f"{base}_{slug(min(definition.documents)).upper()}"
+                index += 1
                 unique, number = name, 1
                 while unique in taken:
                     number += 1
                     unique = f"{name}_{number}"
                 taken.add(unique)
-                self.grouped[id(definition)] = GroupedAddition(definition, unique)
+                added = GroupedAddition(definition, unique)
+                self.grouped[id(definition)] = bodies[body] = added
 
     def type_class(self, definition: Definition) -> str | None:
         """The grouped class a grouped reading's rules name."""
@@ -1264,10 +1305,10 @@ def _grouped_order(resolver: Resolver) -> list[GroupedAddition]:
 
     def visit(definition: Definition) -> None:
         added = resolver.grouped.get(id(definition))
-        if added is None or id(definition) in done:
+        if added is None or id(added) in done:
             return
-        done.add(id(definition))
-        for _, target in definition.members:
+        done.add(id(added))
+        for _, target in added.definition.members:
             if target is not None:
                 visit(target)
         order.append(added)
@@ -1572,8 +1613,8 @@ def generate(
                     built, application, module, titles[reference], definitions, library
                 )
             )
-        view = [definitions.add(avp) for avp in built.avps(reference)]
-        view += [definitions.add(hole) for hole in built.holes(reference)]
+        view = [definitions.add(avp, reference) for avp in built.avps(reference)]
+        view += [definitions.add(hole, reference) for hole in built.holes(reference)]
         views[reference] = view
     resolver = Resolver(library, definitions)
     documents = {document for d in definitions for document in d.documents}

@@ -229,13 +229,45 @@ def test_a_library_grouped_class_with_other_m_bits_is_not_reused(package):
 def test_digest_qop_is_the_librarys_ietf_avp(package):
     """TS 29.229's table forbids V on Digest-QoP, so it is RFC 4590's code
     110 in vendor 0, which the library holds as `AVP_DIGEST_QOP`, not an
-    addition in vendor 10415. RFC 4590's stand-in rows, read first as the
-    origin's, leave M under May, so no `is_mandatory`."""
+    addition in vendor 10415. Its table's M in Must outranks RFC 4590's
+    stand-in May, so `is_mandatory=True`."""
     additions = _read(package, "additions")
     assert "DIGEST_QOP =" not in additions
     holder = additions.split("\nclass SipDigestAuthenticate_TS29_229:\n")[1]
     assert (
-        '        AvpGenDef("digest_qop", AVP_DIGEST_QOP, is_required=True),\n'
+        '        AvpGenDef("digest_qop", AVP_DIGEST_QOP, is_required=True,'
+        " is_mandatory=True),\n"
+    ) in holder.split("\n\n\n")[0]
+
+
+def test_a_citing_documents_flag_rules_share_the_origins_class(package):
+    """TS 29.272's re-used table marks TS 32.299's User-CSG-Information "Must
+    not set" where TS 32.299 sets M, and says nothing of its members: the
+    same body, so TS 32.299's class, named by a rule clearing M."""
+    additions = _read(package, "additions")
+    holder = additions.split("\nclass MmeLocationInformation_TS29_272:\n")[1]
+    assert (
+        '        AvpGenDef("user_csg_information", AVP_TGPP_USER_CSG_INFORMATION,'
+        " VENDOR_TGPP, is_mandatory=False, type_class=UserCsgInformation_TS32_299),\n"
+    ) in holder.split("\n\n\n")[0]
+    assert (
+        '        AvpGenDef("user_csg_information", AVP_TGPP_USER_CSG_INFORMATION,'
+        " VENDOR_TGPP, is_mandatory=True, type_class=UserCsgInformation_TS32_299),"
+    ) in _read(package, "ts29_212_5")
+
+
+def test_a_citing_documents_member_rules_are_the_librarys_class(package):
+    """TS 32.299 table 7.2.0.1 sets M on Supported-Features and its members,
+    which TS 29.229's table forbids on the members: TS 32.299's reading
+    encodes them as the library's `SupportedFeatures` does, so it is that
+    class, where TS 29.229's is `SupportedFeatures_TS29_229`."""
+    additions = _read(package, "additions")
+    assert "class SupportedFeatures_TS29_229:\n" in additions
+    assert "SupportedFeatures_TS29_229_2" not in additions
+    holder = additions.split("\nclass PsInformation")[1]
+    assert (
+        '        AvpGenDef("supported_features", AVP_TGPP_SUPPORTED_FEATURES,'
+        " VENDOR_TGPP, is_mandatory=True, type_class=SupportedFeatures),\n"
     ) in holder.split("\n\n\n")[0]
 
 

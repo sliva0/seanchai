@@ -65,9 +65,9 @@ then to a `; Bases:` document. Local-over-reused makes an *extension* mean
 what the extending document says, while a plain re-print resolves through
 the origin. A name tabulated in several of one file's AVP tables takes its
 table facts — flag rules, and type and code when no clause defines it — from
-the first row in file order; `table_rows` returns every copy, which matters
-where per-interface tables disagree (TS 29.061's `3GPP-IMSI`, the linter's
-`table-row-mismatch`). The model never reports the conflicts this order
+the first row in file order (a re-used name's flag rules per flag, below);
+`table_rows` returns every copy, which matters where per-interface tables
+disagree (TS 29.061's `3GPP-IMSI`, the linter's `table-row-mismatch`). The model never reports the conflicts this order
 papers over; run the linter for those. Vendor spaces follow the linter's
 reading. Origins and bases use `corpus.Corpus.resolve`, the
 drafting rules below ([resolution across releases](#resolution-across-releases);
@@ -80,6 +80,72 @@ TS 29.212's `3GPP2-X.S0057` goes to the 3GPP2 transcription, revision 0
 V2.0 standing in for the revision B its reference [24] names (below):
 `3GPP2-BSID` is (5535, 9010), and TS 32.299's row, re-used through TS
 29.212, the same.
+
+**The citing table's flag rules.** Flag rules are the application's: RFC
+6733 section 4.1 has the M bit set "according to the rules defined in the
+application specification that introduces or reuses this AVP", and
+section 4.5 has each application tabulate its AVPs' flags. So where a
+document re-uses an AVP and its own AVP tables state flag cells for it,
+those cells outrank every other reading's when the name resolves through
+that document. They count per flag: each flag is where the first of the
+document's rows placing it puts it, a row leaving a flag in no column
+saying nothing of it, so a later table's row is read for a flag no earlier
+row places. The origin still supplies the code, type and vendor, names
+the defining document, and supplies each flag no row places (rows of `-`
+cells place none and take the origin's rules whole). TS 29.229 table
+6.3.0.1 puts M in Must for `Digest-Realm`, `Digest-Algorithm`,
+`Digest-Qop` and `Digest-HA1`, so through TS 29.229 they are M in Must, P
+in May (RFC 4590's stand-in rules supplying P, which the row leaves out)
+and V in Must not, and through RFC 4590 M in May as RFC 4590's corrections
+give them. TS 32.299 table 7.2.0.1 sets M for the charging application on
+`Supported-Features`, `Feature-List` and `Feature-List-ID`, TS 29.229's.
+TS 29.229 and 29.329 forbid M on RFC 7944's `DRMP` and RFC 7683's
+`OC-OLR` and `OC-Supported-Features`, and TS 32.299 on six of RFC 7683's
+`OC-*`, where the RFCs leave M to the application; TS 29.330, citing TS
+29.229 for them, reads them TS 29.229's way. A re-used table's M-bit
+column is the citing interface's M rule too, ranked below its AVP-table
+cells and above the origin: `MUST` puts M in Must and `MUST-NOT` in Must
+not, and a `-` says nothing, so the first of the name's re-used rows
+whose cell states a rule is the one read. TS 29.272 table 7.3.1/2 marks
+TS 29.212's `RAT-Type` `MUST`, where TS 29.212 forbids M, and 21 of TS
+29.336's AVPs, `SCEF-ID` among them, `MUST-NOT`, where TS 29.336 sets it;
+TS 29.283, 29.344, 29.345, 29.388 and 29.389 set M on RFC 7683's `OC-OLR`
+and `OC-Supported-Features`, and ten documents forbid it on RFC 7944's
+`DRMP` or RFC 8583's `Load`. TS 29.336 prints `-` for `DRMP`, `Load`,
+`OC-OLR` and `OC-Supported-Features` in table 6.4.1/2 and `MUST-NOT` in
+table 8.4.1-2, so through TS 29.336 their M is in Must not, as TS 29.273's
+`OC-OLR` and `OC-Supported-Features` are by table 8.2.3.0/2 and TS
+29.338's `SGSN-Number`, TS 29.272's, by table 6.3.3.1/2. An
+IETF reading stating no flags takes the M-bit with RFC 6733's V rule (TS
+29.273's `Key`, from RFC 6734, which prints no flag columns, is M and V in
+Must not); a vendor reading stating none stays a hole rather than become M
+alone. Resolution through the origin is unchanged, so `identified` returns
+both readings of such an identity.
+
+A grouped AVP defined elsewhere keeps the defining document's body, which
+members and with what qualifiers, but each member the citing document
+defines, tabulates or re-uses is read through it, with the precedence
+above, where that reading is the same AVP, the same `(vendor-id, code)`;
+a member it says nothing of, or reads as another AVP or as none it can
+identify, keeps the origin's reading. The body names its members in the
+defining document's sense: TS 32.299's own `Originator` is (10415, 864)
+Enumerated, but its re-used `M2M-Information`, oneM2M TS-0004's, holds
+oneM2M's `Originator`, (45687, 1008) UTF8String, and TS 29.061's
+re-used `Local-M1-Information`, TS 29.468's, holds TS 29.468's
+`MBMS-GW-SSM-IP-Address` and `MBMS-GW-SSM-IPv6-Address`, 3522 and 3523
+Address, not TS 29.061's 924 and 925 OctetString. TS 32.299's
+`Supported-Features` is TS 29.229's body with TS 32.299's `Feature-List`
+and `Feature-List-ID`, M in Must, where through TS 29.229 they are M in
+Must not; TS 29.272's `Monitoring-Event-Configuration` holds TS 29.272's
+`SCEF-ID`, M in Must not as its re-used table says. A grouped member read
+through the citing document has its own members read the same way, and one
+among its own descendants is cut as any body cuts it, where the reading
+being resolved is the member's AVP: a citing document's own `Feature`
+holding a re-used `Bundle` whose `Feature` is another document's, another
+`(vendor-id, code)`, keeps that member, not a cut. The linter's
+`reused-row-mismatch` still reports each disagreement between an AVP-table
+row and its origin, saying which side the model follows for the disputed
+flag.
 
 **Filling through.** A field the first reading leaves unstated comes from
 the next reading along the order, if the two are the same AVP saying the
@@ -98,8 +164,9 @@ file's vendor, which agrees with any. TS 29.272's re-print of
 `Allocation-Retention-Priority` takes TS 29.212's flag rules this way, and
 TS 29.229's re-used `Digest-*` AVPs resolve to RFC 4590's rows, which
 its corrections type UTF8String with Wireshark's flag rules, RFC 4590
-being a RADIUS document, so M is under May where TS 29.229's own table
-puts it under Must (the linter's `reused-row-mismatch`). A reading that
+being a RADIUS document. The citing table's own flag cells, and its
+re-used row's M-bit, take no part in this: they are laid over the result,
+so they neither fill another reading nor disagree with one. A reading that
 disagrees fills nothing, nor does any after it: the name stays a hole that
 names the disagreeing document, rather than become one AVP assembled from
 two documents that disagree about it.

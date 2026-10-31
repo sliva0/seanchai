@@ -578,7 +578,7 @@ CORRECTIONS += [
         target=table_row("Supported-Features", table="7.2.0.1"),
         expect="Supported-Features is tabulated with flag rule M in Must in table "
         "7.2.0.1, but TS29.229, which it is re-used from, reads M in May in table "
-        "6.3.0.1",
+        "6.3.0.1; the model follows this row for M",
         reason="clause 6.5.10.3 answers a request whose Supported-Features the server "
         "does not support 'as per 'M' bit set rule', with DIAMETER_AVP_UNSUPPORTED, so "
         "the charging applications set M where TS 29.229 table 6.3.0.1 leaves it May; "

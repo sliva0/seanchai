@@ -19,6 +19,22 @@ and the policy is deliberately small:
   re-defines nine of RFC 6733's AVPs with extra members) mean what the
   extending document says; a plain re-print resolves to the origin's copy,
   which is also the copy the linter checks.
+- A re-used name's flag rules are the citing document's where its own AVP
+  table states them (RFC 6733 sections 4.1 and 4.5 leave them to the
+  application): through TS 29.229, RFC 4590's `Digest-Qop` is M in Must, as
+  table 6.3.0.1 says, and through RFC 4590 M in May. The origin supplies the
+  rest, each flag the row places in no column included, and its own reading
+  is untouched. The re-used table's M-bit cell ranks between the two: TS
+  29.272's `RAT-Type`, `MUST` there, is M in Must, where TS 29.212 forbids
+  it. The linter's `reused-row-mismatch` reports the disagreement between
+  table row and origin and says which side this follows.
+- A grouped AVP defined elsewhere keeps its defining document's body, but
+  each member the citing document defines, tabulates or re-uses is read
+  through the citing document, by the rules above, where that reading is
+  the same `(vendor-id, code)`; one it says nothing of, or reads as another
+  AVP, stays the origin's reading. TS 32.299's `Supported-Features` holds
+  TS 32.299's `Feature-List`, M in Must, where TS 29.229's holds M in Must
+  not; its `M2M-Information` holds oneM2M's `Originator`, not its own.
 - A citation means the copy the drafting rules on references say
   (`corpus.Corpus.resolution`): the newest in the citing document's
   release, the version a specific reference names, or the final version of
@@ -393,6 +409,38 @@ def _stated(flag_rules: ast.AvpFlagRules) -> bool:
     )
 
 
+def _overlay(
+    own: ast.AvpFlagRules, theirs: ast.AvpFlagRules | None
+) -> ast.AvpFlagRules:
+    """`own`'s placements, with each flag `own` places in no column placed
+    where `theirs` places it: TS 29.229's `Digest-Qop` row puts M in Must
+    and V in Must not, and RFC 4590's stand-in rules add P under May."""
+    if theirs is None:
+        return own
+    placed = own.must | own.may | own.should_not | own.must_not
+    return ast.AvpFlagRules(
+        must=own.must | (theirs.must - placed),
+        may=own.may | (theirs.may - placed),
+        should_not=own.should_not | (theirs.should_not - placed),
+        must_not=own.must_not | (theirs.must_not - placed),
+    )
+
+
+def _identity(member: Member) -> tuple[int, int] | None:
+    """The `(vendor-id, code)` a member's reading states, or None where it
+    states no code or is the wildcard."""
+    found = member.avp or member.hole
+    if found is None or found.vendor_id is None or found.code is None:
+        return None
+    return (found.vendor_id, found.code)
+
+
+def _cut(member: Member) -> bool:
+    """Whether a member is a body among its own descendants, which `_body`
+    stops at: no reading and no hole, and not the wildcard."""
+    return member.avp is None and member.hole is None and member.name != "AVP"
+
+
 @dataclass
 class _Draft:
     """One reading of a name while resolution assembles it: `Avp`'s fields,
@@ -565,6 +613,9 @@ class _View:
     # are other tables' copies, which may disagree (`table-row-mismatch`).
     tabled: dict[str, list[ast.AvpTableRow]]
     reused: dict[str, str]
+    # Every re-used row per name, in file order; `reused` takes the origin
+    # from the first.
+    reused_rows: dict[str, list[ast.ReusedAvpRow]]
     messages: list[ast.Message]
     applications: list[ast.ApplicationScope]
     # Every row of a table printing mark columns, per name, in file order.
@@ -573,7 +624,7 @@ class _View:
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
-        view = cls(entry, {}, {}, {}, [], [], {}, [])
+        view = cls(entry, {}, {}, {}, {}, [], [], {}, [])
         for section in entry.spec.sections:
             if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
                 view.defined.setdefault(section.name, section)
@@ -583,6 +634,7 @@ class _View:
             elif isinstance(section, ast.ReusedAvps):
                 for row in section.rows:
                     view.reused.setdefault(row.name, row.origin)
+                    view.reused_rows.setdefault(row.name, []).append(row)
             if isinstance(section, ast.AvpTable | ast.ReusedAvps):
                 columns = [
                     marked
@@ -626,6 +678,10 @@ class Model:
         }
         # Memo of resolved readings, keyed by the copy that reads the name.
         self._resolved: dict[tuple[Path, str], _Draft | None] = {}
+        # The identity each reading still being resolved has settled, which
+        # `_through` compares a cut member against: a key is resolved once,
+        # so an entry is read only while its key is on the stack.
+        self._settled: dict[tuple[Path, str], tuple[int, int]] = {}
 
     @classmethod
     def build(
@@ -890,7 +946,10 @@ class Model:
 
         More than one entry is the corpus disagreeing with itself — the
         linter's `duplicate-identity` — or two documents' differing copies of
-        one AVP surviving deduplication because their bodies differ.
+        one AVP surviving deduplication because their bodies differ, or
+        because a citing document's table sets its own flag rules: RFC
+        4590's code 110 is `Digest-Qop` M in May and, through TS 29.229, M
+        in Must.
         """
         return self._by_identity.get((vendor_id, code), ())
 
@@ -933,12 +992,45 @@ class Model:
         4590's RADIUS-derived `Digest-*` rows, uncorrected) takes it from
         the citing document's table. The first reading still names the defining
         document.
+
+        A re-used name whose row in the citing document's own AVP table
+        states flag cells takes those cells over every other reading's
+        (`_own_flags`), the others supplying only the flags the row places
+        in no column: TS 29.229's `Digest-Qop` is M in Must through TS
+        29.229 and M in May through RFC 4590. Below those cells and above
+        the origin ranks the M-bit cell of the citing document's re-used
+        row (`_own_m_bit`): TS 29.272's `RAT-Type` is M in Must, TS 29.212's
+        M in Must not.
+
+        A grouped AVP defined elsewhere keeps its defining document's body,
+        but each member this document says anything of is read through it
+        (`_through`): TS 32.299's `Supported-Features` is TS 29.229's, and
+        its `Feature-List` member TS 32.299's, M in Must.
         """
+        own = self._own_flags(view, name)
+        m_bit = self._own_m_bit(view, name)
         found: _Draft | None = None
-        for reading in self._readings(view, name, stack):
+        for reading in self._readings(view, name, stack, own is None):
             found = reading if found is None else found.fill(reading)
             if found.complete or found.conflict is not None:
                 break
+        if found is not None and found.kind is not None:
+            rules = found.flag_rules
+            if m_bit is not None and (
+                rules is not None or found.vendor_id == ast.IETF_VENDOR
+            ):
+                # Over an IETF reading stating no flags, RFC 6733's V rule
+                # completes the M-bit (`_ietf_rules`); anywhere else an M
+                # alone would complete rules nothing else states.
+                rules = _overlay(m_bit, rules)
+            if own is not None:
+                rules = _overlay(own, rules)
+            found = replace(found, flag_rules=rules)
+            if found.kind is Grouped and not isinstance(
+                view.defined.get(name), ast.GroupedAvp
+            ):
+                self._settle(stack[-1], found.vendor_id, found.code)
+                found.members = self._through(view, found.members, stack)
         if (
             found is not None
             and self._dictionary is not None
@@ -953,21 +1045,122 @@ class Model:
             found = replace(found, wireshark_name=wireshark_name)
         return found
 
-    def _readings(self, view: _View, name: str, stack: tuple) -> Iterator[_Draft]:
+    def _own_flags(self, view: _View, name: str) -> ast.AvpFlagRules | None:
+        """The flag rules `view`'s AVP-table rows state for a name it
+        re-uses, each flag where the first row placing it puts it, or None
+        when it re-uses no such name or no row places any flag.
+
+        RFC 6733 section 4.1 leaves the M bit to "the application
+        specification that introduces or reuses this AVP" and section 4.5
+        has each application state its AVPs' flag rules, so where the citing
+        table states them they are its application's, and resolution through
+        the citing document reads them rather than the origin's. Per flag,
+        since a row leaving a flag in no column says nothing of it: a later
+        row is read only for a flag no earlier row places. A file citing
+        itself (TS 29.212's Gxx tables, "from" TS 29.212) re-uses
+        nothing, and its rows are read as any other."""
+        rows = view.tabled.get(name)
+        origin = view.reused.get(name)
+        if origin is None or rows is None:
+            return None
+        if self._cited(view, origin)[0] is view:
+            return None
+        rules = rows[0].flag_rules
+        for row in rows[1:]:
+            rules = _overlay(rules, row.flag_rules)
+        return rules if _stated(rules) else None
+
+    def _own_m_bit(self, view: _View, name: str) -> ast.AvpFlagRules | None:
+        """The M rule the first of `view`'s re-used rows for a name whose
+        M-bit cell states one gives, as flag rules placing M alone, or None
+        when no row's cell does (a dash, a blank, no M-bit column) or the
+        rows cite `view` itself.
+
+        The column is the citing interface's own M setting (TS 29.272 table
+        7.3.1/2 marks TS 29.212's `RAT-Type` `MUST`), so it outranks the
+        origin's rule as `_own_flags` does, and ranks below the citing
+        document's AVP-table cells, the fuller statement. A row whose cell
+        says nothing is passed over: TS 29.336's `DRMP` rows read `-` for
+        its first interface and `MUST-NOT` for its second, so M is in Must
+        not."""
+        for row in view.reused_rows.get(name, ()):
+            if row.m_bit is None or self._cited(view, row.origin)[0] is view:
+                continue
+            if row.m_bit is ast.MBitOverride.MUST:
+                return ast.AvpFlagRules(must=frozenset({ast.AvpFlag.MANDATORY}))
+            return ast.AvpFlagRules(must_not=frozenset({ast.AvpFlag.MANDATORY}))
+        return None
+
+    def _through(
+        self, view: _View, members: tuple[Member, ...], stack: tuple
+    ) -> tuple[Member, ...]:
+        """A body another document resolved, with each member `view`
+        defines, tabulates or re-uses read through `view` instead, so that
+        its own rules for the member (`_own_flags`, `_own_m_bit`) hold
+        inside the grouped AVP as they do at top level. A member `view` says
+        nothing of keeps the other document's reading, and so does one
+        `view` reads as another AVP: the body names its members in the
+        defining document's sense, and a name is no identity. TS 32.299's
+        own `Originator` is (10415, 864) Enumerated, but the re-used
+        `M2M-Information` it reads through oneM2M TS-0004 holds oneM2M's,
+        (45687, 1008) UTF8String. Only a reading whose vendor and code are
+        both known and both the member's is read through `view`: two holes
+        stating no code are no evidence of one AVP. A grouped member read
+        through `view` has
+        its own members read the same way; one already being resolved
+        through `view` (a body among its own descendants) is cut as `_body`
+        cuts it, but only where the identity that reading has settled
+        (`_settled`) is known and the member's: a citing document's own
+        `Feature` holding a re-used `Bundle` whose `Feature` is the
+        origin's, another AVP, keeps the origin's member."""
+        says = view.defined.keys() | view.tabled.keys() | view.reused.keys()
+        read = []
+        for member in members:
+            mine = member
+            if member.name in says:
+                mine = self._member(view, member.rule, stack)
+                identity = (
+                    self._settled.get((view.entry.path, member.name))
+                    if _cut(mine)
+                    else _identity(mine)
+                )
+                if identity is None or identity != _identity(member):
+                    mine = member
+            read.append(mine)
+        return tuple(read)
+
+    def _settle(
+        self, key: tuple[Path, str], vendor_id: int | None, code: int | None
+    ) -> None:
+        """Record the identity the reading under `key`, still being
+        resolved, has settled before its members are read, if it is
+        known."""
+        if vendor_id is not None and code is not None:
+            self._settled[key] = (vendor_id, code)
+
+    def _readings(
+        self, view: _View, name: str, stack: tuple, own_flags: bool = True
+    ) -> Iterator[_Draft]:
         """Every document's reading of `name`, in resolution order, lazily:
         the local definition, the re-used origin, the local table row, the
-        `; Bases:` documents."""
+        `; Bases:` documents.
+
+        Without `own_flags` the local readings carry no flag rules, so that
+        flags the caller lays over the result (`_own_flags`) neither fill nor
+        disagree with another document's."""
         rows = view.tabled.get(name)
         origin = view.reused.get(name)
         theirs, across = (None, None) if origin is None else self._cited(view, origin)
         unread = origin if theirs is None else None
         definition = view.defined.get(name)
         if definition is not None:
-            yield self._from_definition(view, definition, rows, unread, stack)
+            draft = self._from_definition(view, definition, rows, unread, stack)
+            yield draft if own_flags else replace(draft, flag_rules=None)
         if theirs is not None and (found := self._resolve(theirs, name, stack)):
             yield found if across is None else replace(found, across=across)
         if rows is not None and definition is None:
-            yield self._from_row(view, name, rows[0], unread)
+            draft = self._from_row(view, name, rows[0], unread)
+            yield draft if own_flags else replace(draft, flag_rules=None)
         for base in view.entry.spec.bases:
             cited, across = self._cited(view, base)
             if cited is not None and (found := self._resolve(cited, name, stack)):
@@ -1032,6 +1225,7 @@ class Model:
         )
         if isinstance(definition, ast.GroupedAvp):
             draft.data_type = ast.DataType.GROUPED
+            self._settle(stack[-1], draft.vendor_id, draft.code)
             draft.members = self._body(view, definition.avps, stack)
         else:
             draft.data_type = ast.DataType.ENUMERATED
@@ -1042,18 +1236,17 @@ class Model:
     def _body(
         self, view: _View, rules: tuple[ast.AvpRule, ...], stack: tuple = ()
     ) -> tuple[Member, ...]:
-        members = []
-        for rule in rules:
-            # `AVP` is RFC 6733's any-AVP wildcard — grammar, not a name.
-            if rule.name == "AVP" or (view.entry.path, rule.name) in stack:
-                members.append(Member(rule=rule, avp=None))
-                continue
-            found = self._final(view, rule.name, stack)
-            if isinstance(found, Avp):
-                members.append(Member(rule=rule, avp=found))
-            else:
-                members.append(Member(rule=rule, avp=None, hole=found))
-        return tuple(members)
+        return tuple(self._member(view, rule, stack) for rule in rules)
+
+    def _member(self, view: _View, rule: ast.AvpRule, stack: tuple) -> Member:
+        """One body line, its name read through `view`."""
+        # `AVP` is RFC 6733's any-AVP wildcard — grammar, not a name.
+        if rule.name == "AVP" or (view.entry.path, rule.name) in stack:
+            return Member(rule=rule, avp=None)
+        found = self._final(view, rule.name, stack)
+        if isinstance(found, Avp):
+            return Member(rule=rule, avp=found)
+        return Member(rule=rule, avp=None, hole=found)
 
     # --- corpus-wide lookup -------------------------------------------------
 

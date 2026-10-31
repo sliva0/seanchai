@@ -6,6 +6,7 @@ committed files actually resolve to, so a policy change shows up as a
 concrete AVP moving between documents rather than as a green run.
 """
 
+import dataclasses
 from pathlib import Path
 
 import pytest
@@ -312,6 +313,524 @@ def _flagless_table(*rows):
         ),
         rows=tuple(rows),
     )
+
+
+_P = frozenset({ast.AvpFlag.PROTECTED})
+_UTF8 = ast.DataType.UTF8_STRING
+
+
+def _flagged(name, code, data_type: ast.DataType | None = _UTF8, **columns):
+    return ast.AvpTableRow(
+        name=name,
+        code=code,
+        data_type=data_type,
+        flag_rules=ast.AvpFlagRules(**columns),
+    )
+
+
+def _stand_in(*rows: ast.AvpTableRow) -> ast.Specification:
+    """RFC 4590's shape once corrected: IETF rows, M and P under May."""
+    rows = rows or (_flagged("Digest-Qop", 110, may=_M | _P, must_not=_V),)
+    return _spec("RFC4590", [_table(*rows)], vendor_id=0, version=None)
+
+
+class TestCitingFlagRules:
+    """RFC 6733 sections 4.1 and 4.5 leave flag rules to the application, so
+    a citing table's flag cells outrank the origin's through the citing
+    document; the origin supplies the rest."""
+
+    def test_a_citing_tables_must_m_outranks_the_origins_may_m(self):
+        """TS 29.229 table 6.3.0.1 puts M in Must for `Digest-Qop`, RFC
+        4590's stand-in rows in May; the citing row places no P, which the
+        origin's May supplies."""
+        citing = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(_flagged("Digest-Qop", 110, must=_M, must_not=_V)),
+                _reused("Digest-Qop", "RFC4590"),
+            ],
+        )
+        built = _model(_stand_in(), citing)
+        resolved = built.resolve("TS29.900", "Digest-Qop")
+        assert resolved is not None
+        assert (resolved.defined_in, resolved.identity) == ("RFC4590", (0, 110))
+        assert resolved.flag_rules == ast.AvpFlagRules(must=_M, may=_P, must_not=_V)
+        assert built.holes() == ()
+
+    def test_a_citing_row_of_dashes_falls_back_to_the_origin(self):
+        """A row whose flag cells are all `-` states no flag rule."""
+        citing = _spec(
+            "3GPP TS 29.900",
+            [_table(_flagged("Digest-Qop", 110)), _reused("Digest-Qop", "RFC4590")],
+        )
+        resolved = _model(_stand_in(), citing).resolve("TS29.900", "Digest-Qop")
+        assert resolved is not None
+        assert resolved.flag_rules == ast.AvpFlagRules(may=_M | _P, must_not=_V)
+
+    def test_the_origins_own_reading_keeps_its_flag_rules(self):
+        """Read after the citing document's, so a shared memo would show."""
+        citing = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(_flagged("Digest-Qop", 110, must=_M, must_not=_V)),
+                _reused("Digest-Qop", "RFC4590"),
+            ],
+        )
+        built = _model(_stand_in(), citing)
+        assert built.resolve("TS29.900", "Digest-Qop") is not None
+        origins = built.resolve("RFC4590", "Digest-Qop")
+        assert origins is not None
+        assert origins.flag_rules == ast.AvpFlagRules(may=_M | _P, must_not=_V)
+        assert len(built.identified(0, 110)) == 2
+
+    def test_citing_flags_fill_an_untyped_origin_without_disagreeing(self):
+        """An origin stating flags but no type takes the citing table's type;
+        the citing flags differ from the origin's, which is no conflict."""
+        origin = _stand_in(_flagged("Digest-Qop", 110, None, may=_M, must_not=_V))
+        citing = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(_flagged("Digest-Qop", 110, must=_M, must_not=_V)),
+                _reused("Digest-Qop", "RFC4590"),
+            ],
+        )
+        built = _model(origin, citing)
+        resolved = built.resolve("TS29.900", "Digest-Qop")
+        assert resolved is not None
+        assert resolved.data_type is _UTF8
+        assert resolved.flag_rules == ast.AvpFlagRules(must=_M, must_not=_V)
+        assert built.resolve("RFC4590", "Digest-Qop") is None
+
+    def test_an_extensions_table_flags_take_the_origins_unplaced_ones(self):
+        """TS 32.299 re-defines RFC 4006's Multiple-Services-Credit-Control,
+        its row placing no P, which RFC 4006's May supplies."""
+        origin = _spec(
+            "RFC4006",
+            [
+                _grouped("Thing", 1, "A", vendor_id=None),
+                _table(_flagged("Thing", 1, ast.DataType.GROUPED, must=_M, may=_P)),
+            ],
+            vendor_id=0,
+            version=None,
+        )
+        extender = _spec(
+            "3GPP TS 29.900",
+            [
+                _grouped("Thing", 1, "A", "B", vendor_id=None),
+                _table(
+                    _flagged("Thing", 1, ast.DataType.GROUPED, must=_M, must_not=_V)
+                ),
+                _reused("Thing", "RFC4006"),
+            ],
+        )
+        resolved = _model(origin, extender).resolve("TS29.900", "Thing")
+        assert isinstance(resolved, model.Grouped)
+        assert resolved.defined_in == "TS29.900"
+        assert [member.name for member in resolved.members] == ["A", "B"]
+        assert resolved.flag_rules == ast.AvpFlagRules(must=_M, may=_P, must_not=_V)
+
+
+_MUST = ast.MBitOverride.MUST
+_MUST_NOT = ast.MBitOverride.MUST_NOT
+
+
+def _vendor_rules(m: str) -> ast.AvpFlagRules:
+    """A vendor AVP's rules: V in Must, M under `m`."""
+    if m == "must":
+        return ast.AvpFlagRules(must=_M | _V)
+    return ast.AvpFlagRules(must=_V, **{m: _M})
+
+
+def _origin(*sections) -> ast.Specification:
+    """TS 29.800: `Bundle` holding `Feature` and `Other`, all three with M
+    in Must not, and whatever else a test adds."""
+    return _spec(
+        "3GPP TS 29.800",
+        [
+            _grouped("Bundle", 1, "Feature", "Other"),
+            _table(
+                _flagged("Bundle", 1, ast.DataType.GROUPED, must=_V, must_not=_M),
+                _flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_V, must_not=_M),
+                _flagged("Other", 3, ast.DataType.UNSIGNED32, must=_V, must_not=_M),
+            ),
+            *sections,
+        ],
+    )
+
+
+def _citing(*sections) -> ast.Specification:
+    return _spec("3GPP TS 29.900", sections)
+
+
+def _reused_from(origin: str, *rows: tuple[str, ast.MBitOverride | None]):
+    return ast.ReusedAvps(
+        type="Reused AVPs",
+        table="2",
+        source=ast.SourceRef(section="6.3.0"),
+        rows=tuple(
+            ast.ReusedAvpRow(name=name, origin=origin, m_bit=m_bit)
+            for name, m_bit in rows
+        ),
+    )
+
+
+class TestCitingMembers:
+    """A grouped AVP read through a citing document keeps the defining
+    document's body, each member the citing document says anything of read
+    through it, the rest the origin's."""
+
+    def test_a_member_the_citing_document_tabulates_is_read_through_it(self):
+        """TS 32.299's `Supported-Features`, TS 29.229's body, holds TS
+        32.299's `Feature-List`, M in Must."""
+        citing = _citing(
+            _table(
+                _flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_M | _V),
+            ),
+            _reused_from("TS29.800", ("Bundle", None), ("Feature", None)),
+        )
+        built = _model(_origin(), citing)
+        bundle = built.resolve("TS29.900", "Bundle")
+        assert isinstance(bundle, model.Grouped)
+        assert bundle.defined_in == "TS29.800"
+        assert bundle.flag_rules == _vendor_rules("must_not")
+        feature = bundle.members[0].avp
+        assert feature is not None and feature.defined_in == "TS29.800"
+        assert feature.flag_rules == _vendor_rules("must")
+        assert feature == built.resolve("TS29.900", "Feature")
+        # The body and its qualifiers are the defining document's.
+        theirs = built.resolve("TS29.800", "Bundle")
+        assert isinstance(theirs, model.Grouped)
+        assert [m.rule for m in bundle.members] == [m.rule for m in theirs.members]
+        member = theirs.members[0].avp
+        assert member is not None and member.flag_rules == _vendor_rules("must_not")
+
+    def test_a_member_the_citing_document_says_nothing_of_is_the_origins(self):
+        citing = _citing(
+            _table(
+                _flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_M | _V),
+            ),
+            _reused_from("TS29.800", ("Bundle", None), ("Feature", None)),
+        )
+        built = _model(_origin(), citing)
+        bundle = built.resolve("TS29.900", "Bundle")
+        assert isinstance(bundle, model.Grouped)
+        assert bundle.members[1].avp is built.resolve("TS29.800", "Other")
+        assert built.hole("TS29.900", "Other") is not None
+
+    def test_a_member_the_citing_document_reads_as_another_avp_is_the_origins(
+        self,
+    ):
+        """TS 32.299 defines its own `Originator`, (10415, 864) Enumerated,
+        and re-uses oneM2M's `M2M-Information`, whose `Originator` is
+        (45687, 1008) UTF8String: a name is no identity, so the body keeps
+        oneM2M's member. A member the citing document reads as the same AVP
+        is still read through it."""
+        origin = _spec(
+            "oneM2M TS-0004",
+            [
+                _grouped("Bundle", 1, "Originator", "Feature", vendor_id=45687),
+                _table(
+                    _flagged("Bundle", 1, ast.DataType.GROUPED, must=_M | _V),
+                    _flagged("Originator", 1008, must=_M | _V),
+                    _flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_M | _V),
+                ),
+            ],
+            vendor_id=45687,
+        )
+        citing = _citing(
+            _table(
+                _flagged("Originator", 864, ast.DataType.ENUMERATED, must=_M | _V),
+                _flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_V, must_not=_M),
+            ),
+            _reused_from("oneM2M-TS-0004", ("Bundle", None), ("Feature", None)),
+        )
+        built = _model(origin, citing)
+        bundle = built.resolve("TS29.900", "Bundle")
+        theirs = built.resolve("oneM2M-TS-0004", "Bundle")
+        assert isinstance(bundle, model.Grouped) and isinstance(theirs, model.Grouped)
+        originator, feature = (member.avp for member in bundle.members)
+        assert originator is theirs.members[0].avp
+        assert originator is not None
+        assert (originator.identity, originator.data_type) == ((45687, 1008), _UTF8)
+        mine = built.resolve("TS29.900", "Originator")
+        assert mine is not None and mine.identity == (10415, 864)
+        assert feature is not None and feature.identity == (45687, 2)
+        assert feature.flag_rules == ast.AvpFlagRules(must=_V, must_not=_M)
+        assert feature == built.resolve("TS29.900", "Feature")
+
+    def test_a_member_the_citing_document_cannot_identify_is_the_origins(self):
+        """A citing row stating no code reads as a hole with no identity,
+        which is no evidence it is the origin's member: the origin's stays."""
+        citing = _citing(
+            _table(_flagged("Feature", None, ast.DataType.UNSIGNED32, must=_M | _V)),
+            _reused_from("TS29.800", ("Bundle", None)),
+        )
+        built = _model(_origin(), citing)
+        bundle = built.resolve("TS29.900", "Bundle")
+        assert isinstance(bundle, model.Grouped)
+        assert bundle.members[0].avp is built.resolve("TS29.800", "Feature")
+
+    def test_two_holes_without_codes_are_not_one_avp(self):
+        """The origin's `Gap` is a hole in vendor 45687 with no code, the
+        citing document's a hole in 10415 with no code: two unknown
+        identities are no evidence of one AVP, so the origin's hole stays."""
+        origin = _spec(
+            "oneM2M TS-0004",
+            [
+                _grouped("Bundle", 1, "Gap", vendor_id=45687),
+                _table(
+                    _flagged("Bundle", 1, ast.DataType.GROUPED, must=_M | _V),
+                    _flagged("Gap", None, must=_M | _V),
+                ),
+            ],
+            vendor_id=45687,
+        )
+        citing = _citing(
+            _table(_flagged("Gap", None, must=_V, must_not=_M)),
+            _reused_from("oneM2M-TS-0004", ("Bundle", None)),
+        )
+        built = _model(origin, citing)
+        bundle = built.resolve("TS29.900", "Bundle")
+        assert isinstance(bundle, model.Grouped)
+        gap = bundle.members[0].hole
+        assert gap is not None and gap == built.hole("oneM2M-TS-0004", "Gap")
+        assert gap.vendor_id == 45687
+        mine = built.hole("TS29.900", "Gap")
+        assert mine is not None and mine.vendor_id == 10415
+
+    def test_a_grouped_members_own_members_are_read_through_it_too(self):
+        """`Outer` holds `Bundle`, both re-used: `Bundle`'s `Feature` is the
+        citing document's at depth two."""
+        origin = _origin(
+            _grouped("Outer", 4, "Bundle"),
+            _table(_flagged("Outer", 4, ast.DataType.GROUPED, must=_V, must_not=_M)),
+        )
+        citing = _citing(
+            _reused_from(
+                "TS29.800",
+                ("Outer", None),
+                ("Bundle", None),
+                ("Feature", _MUST),
+            ),
+        )
+        outer = _model(origin, citing).resolve("TS29.900", "Outer")
+        assert isinstance(outer, model.Grouped)
+        bundle = outer.members[0].avp
+        assert isinstance(bundle, model.Grouped)
+        feature = bundle.members[0].avp
+        assert feature is not None
+        assert feature.flag_rules == _vendor_rules("must")
+
+    def test_a_body_among_its_own_descendants_stops_through_the_citing_one(self):
+        """`Ping` holds `Pong` and `Pong` holds `Ping`, both re-used: read
+        through the citing document, the inner `Ping` is cut as `_body`
+        cuts it."""
+        origin = _spec(
+            "3GPP TS 29.800",
+            [
+                _grouped("Ping", 1, "Pong"),
+                _grouped("Pong", 2, "Ping"),
+                _table(
+                    _flagged("Ping", 1, ast.DataType.GROUPED, must=_V, must_not=_M),
+                    _flagged("Pong", 2, ast.DataType.GROUPED, must=_V, must_not=_M),
+                ),
+            ],
+        )
+        citing = _citing(
+            _reused_from("TS29.800", ("Ping", _MUST), ("Pong", _MUST)),
+        )
+        built = _model(origin, citing)
+        ping = built.resolve("TS29.900", "Ping")
+        assert isinstance(ping, model.Grouped)
+        pong = ping.members[0].avp
+        assert isinstance(pong, model.Grouped)
+        assert pong.flag_rules == _vendor_rules("must")
+        assert pong.members[0].avp is None and pong.members[0].hole is None
+        assert isinstance(built.resolve("TS29.900", "Pong"), model.Grouped)
+
+    def test_a_cut_is_the_citing_documents_own_body_only_when_one_identity(self):
+        """The citing document's own `Ping` (10415, 1) holds the re-used
+        `Pong`, whose `Ping` is the same AVP: read through the citing
+        document, that member is `Ping` among its own descendants and is
+        cut."""
+        origin = _spec(
+            "3GPP TS 29.800",
+            [
+                _grouped("Pong", 2, "Ping"),
+                _table(
+                    _flagged("Ping", 1, ast.DataType.UNSIGNED32, must=_V, must_not=_M),
+                    _flagged("Pong", 2, ast.DataType.GROUPED, must=_V, must_not=_M),
+                ),
+            ],
+        )
+        citing = _citing(
+            _grouped("Ping", 1, "Pong"),
+            _table(_flagged("Ping", 1, ast.DataType.GROUPED, must=_V, must_not=_M)),
+            _reused_from("TS29.800", ("Pong", None)),
+        )
+        ping = _model(origin, citing).resolve("TS29.900", "Ping")
+        assert isinstance(ping, model.Grouped)
+        pong = ping.members[0].avp
+        assert isinstance(pong, model.Grouped)
+        assert pong.members[0].avp is None and pong.members[0].hole is None
+
+    def test_a_cut_does_not_replace_another_avp_of_the_name(self):
+        """The citing document's own `Feature` (10415, 3) holds the re-used
+        `Bundle`, whose `Feature` is oneM2M's (45687, 2): the citing
+        document's `Feature` is being resolved when the member is read
+        through it, but that is another AVP, so the body keeps oneM2M's
+        member rather than a cut."""
+        origin = _spec(
+            "oneM2M TS-0004",
+            [
+                _grouped("Bundle", 1, "Feature", vendor_id=45687),
+                _table(
+                    _flagged("Bundle", 1, ast.DataType.GROUPED, must=_M | _V),
+                    _flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_M | _V),
+                ),
+            ],
+            vendor_id=45687,
+        )
+        citing = _citing(
+            _grouped("Feature", 3, "Bundle"),
+            _table(_flagged("Feature", 3, ast.DataType.GROUPED, must=_V, must_not=_M)),
+            _reused_from("oneM2M-TS-0004", ("Bundle", None)),
+        )
+        built = _model(origin, citing)
+        feature = built.resolve("TS29.900", "Feature")
+        assert isinstance(feature, model.Grouped)
+        assert feature.identity == (10415, 3)
+        bundle = feature.members[0].avp
+        assert isinstance(bundle, model.Grouped)
+        member = bundle.members[0].avp
+        assert member is not None and member.identity == (45687, 2)
+        assert member is built.resolve("oneM2M-TS-0004", "Feature")
+
+
+class TestReusedMBit:
+    """A re-used row's M-bit cell is the citing interface's M rule: it
+    outranks the origin's, and the citing AVP table's cells outrank it."""
+
+    def test_an_m_bit_outranks_the_origins_m_rule(self):
+        """TS 29.272 table 7.3.1/2 marks TS 29.212's `RAT-Type` `MUST`."""
+        citing = _citing(_reused_from("TS29.800", ("Feature", _MUST)))
+        built = _model(_origin(), citing)
+        ours = built.resolve("TS29.900", "Feature")
+        assert ours is not None and ours.defined_in == "TS29.800"
+        assert ours.flag_rules == _vendor_rules("must")
+        theirs = built.resolve("TS29.800", "Feature")
+        assert theirs is not None
+        assert theirs.flag_rules == _vendor_rules("must_not")
+
+    def test_must_not_clears_an_origins_must(self):
+        origin = _spec(
+            "3GPP TS 29.800",
+            [_table(_flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_M | _V))],
+        )
+        citing = _citing(_reused_from("TS29.800", ("Feature", _MUST_NOT)))
+        ours = _model(origin, citing).resolve("TS29.900", "Feature")
+        assert ours is not None
+        assert ours.flag_rules == _vendor_rules("must_not")
+
+    def test_the_citing_tables_cell_outranks_the_m_bit(self):
+        citing = _citing(
+            _table(
+                _flagged("Feature", 2, ast.DataType.UNSIGNED32, may=_M, must=_V),
+            ),
+            _reused_from("TS29.800", ("Feature", _MUST)),
+        )
+        ours = _model(_origin(), citing).resolve("TS29.900", "Feature")
+        assert ours is not None
+        assert ours.flag_rules == _vendor_rules("may")
+
+    def test_the_m_bit_outranks_the_origin_where_the_citing_row_leaves_m(self):
+        """A citing row placing V alone: M comes from the M-bit, ahead of
+        the origin's."""
+        citing = _citing(
+            _table(_flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_V)),
+            _reused_from("TS29.800", ("Feature", _MUST)),
+        )
+        ours = _model(_origin(), citing).resolve("TS29.900", "Feature")
+        assert ours is not None
+        assert ours.flag_rules == _vendor_rules("must")
+
+    def test_the_first_re_used_row_stating_m_is_read(self):
+        """TS 29.336's `DRMP`: `-` for its first interface, Must not for its
+        second; the first states nothing of M, so the second's rule stands,
+        and a third's is not read."""
+        citing = _citing(
+            _reused_from("TS29.800", ("Feature", None)),
+            _reused_from("TS29.800", ("Feature", _MUST)),
+            _reused_from("TS29.800", ("Feature", _MUST_NOT)),
+        )
+        ours = _model(_origin(), citing).resolve("TS29.900", "Feature")
+        assert ours is not None
+        assert ours.flag_rules == _vendor_rules("must")
+
+    def test_each_flag_is_the_first_citing_row_placing_it(self):
+        """A first row placing V alone and a later one placing M in Must and
+        V in May: V is the first row's, M the later one's, and the re-used
+        row's M-bit, ranked below both, is not read."""
+        citing = _citing(
+            _table(_flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_V)),
+            _table(_flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_M, may=_V)),
+            _reused_from("TS29.800", ("Feature", _MUST_NOT)),
+        )
+        ours = _model(_origin(), citing).resolve("TS29.900", "Feature")
+        assert ours is not None
+        assert ours.flag_rules == _vendor_rules("must")
+
+    def test_a_flag_no_citing_row_places_falls_to_the_m_bit_then_the_origin(self):
+        """Two rows placing V alone: M is the re-used row's M-bit where it
+        states one, and the origin's where none does."""
+        rows = (
+            _table(_flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_V)),
+            _table(_flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_V)),
+        )
+        stated = _citing(*rows, _reused_from("TS29.800", ("Feature", _MUST)))
+        ours = _model(_origin(), stated).resolve("TS29.900", "Feature")
+        assert ours is not None and ours.flag_rules == _vendor_rules("must")
+        silent = _citing(*rows, _reused_from("TS29.800", ("Feature", None)))
+        ours = _model(_origin(), silent).resolve("TS29.900", "Feature")
+        assert ours is not None and ours.flag_rules == _vendor_rules("must_not")
+
+    def test_an_m_bit_over_an_unflagged_ietf_avp_takes_rfc_6733s_v(self):
+        """TS 29.273's `Key`, from RFC 6734, which prints no flag columns."""
+        origin = _spec(
+            "RFC6734",
+            [_flagless_table(_flagged("Key", 581, ast.DataType.GROUPED))],
+            vendor_id=0,
+            version=None,
+        )
+        citing = _citing(_reused_from("RFC6734", ("Key", _MUST_NOT)))
+        built = _model(origin, citing)
+        ours = built.resolve("TS29.900", "Key")
+        assert ours is not None
+        assert ours.flag_rules == model.FlagRules(must_not=_M | _V)
+        theirs = dataclasses.replace(ours, flag_rules=_IETF_RULES)
+        assert built.resolve("RFC6734", "Key") == theirs
+
+    def test_an_m_bit_alone_completes_no_vendor_avp(self):
+        origin = _spec(
+            "3GPP TS 29.800",
+            [_flagless_table(_flagged("Feature", 2, ast.DataType.UNSIGNED32))],
+        )
+        citing = _citing(_reused_from("TS29.800", ("Feature", _MUST)))
+        hole = _model(origin, citing).hole("TS29.900", "Feature")
+        assert hole is not None and hole.missing == (model.FLAG_RULES,)
+
+    def test_a_file_citing_itself_reads_its_own_rules(self):
+        """TS 29.212's Gxx tables re-use TS 29.212's AVPs from TS 29.212."""
+        spec = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(_flagged("Feature", 2, ast.DataType.UNSIGNED32, must=_M | _V)),
+                _reused_from("TS29.900", ("Feature", _MUST_NOT)),
+            ],
+        )
+        ours = _model(spec).resolve("TS29.900", "Feature")
+        assert ours is not None
+        assert ours.flag_rules == _vendor_rules("must")
 
 
 class TestHoles:
@@ -899,21 +1418,115 @@ class TestOverTheCommittedCorpus:
             ast.EnumValue(name="PEER_REPORT", value=2),
         )
 
-    def test_the_digest_avps_take_rfc_4590s_stand_in_types(self, built):
+    def test_32299s_supported_features_holds_its_own_feature_list(self, built):
+        """TS 32.299 table 7.2.0.1 sets M on Supported-Features and on its
+        Feature-List-ID and Feature-List members, all TS 29.229's, whose table
+        6.3.0.1 forbids M on the two members: through TS 32.299 the body is
+        TS 29.229's and the members TS 32.299's."""
+        ours = built.resolve("TS32.299", "Supported-Features")
+        theirs = built.resolve("TS29.229", "Supported-Features")
+        assert isinstance(ours, model.Grouped) and isinstance(theirs, model.Grouped)
+        assert ours.defined_in == "TS29.229"
+        assert [m.rule for m in ours.members] == [m.rule for m in theirs.members]
+        for name in ("Feature-List-ID", "Feature-List"):
+            (mine,) = [m.avp for m in ours.members if m.name == name]
+            (other,) = [m.avp for m in theirs.members if m.name == name]
+            assert mine is not None and other is not None
+            assert mine.flag_rules == ast.AvpFlagRules(must=_M | _V)
+            assert other.flag_rules == ast.AvpFlagRules(must=_V, must_not=_M)
+            assert mine == built.resolve("TS32.299", name)
+        # Vendor-Id, which TS 32.299 tabulates with dashes, is RFC 6733's.
+        assert ours.members[0].name == "Vendor-Id"
+        assert ours.members[0].avp == built.resolve("TS32.299", "Vendor-Id")
+        assert ours.members[0].avp == theirs.members[0].avp
+
+    def test_32299s_m2m_information_keeps_onem2ms_originator(self, built):
+        """TS 32.299 defines its own Originator, (10415, 864) Enumerated; the
+        M2M-Information it re-uses from oneM2M TS-0004 holds oneM2M's, which
+        a name read through TS 32.299 must not replace."""
+        ours = built.resolve("TS32.299", "M2M-Information")
+        theirs = built.resolve("oneM2M-TS-0004", "M2M-Information")
+        assert isinstance(ours, model.Grouped) and isinstance(theirs, model.Grouped)
+        (mine,) = [m.avp for m in ours.members if m.name == "Originator"]
+        (other,) = [m.avp for m in theirs.members if m.name == "Originator"]
+        assert mine is other
+        assert mine is not None
+        assert (mine.identity, mine.data_type) == ((45687, 1008), _UTF8)
+        own = built.resolve("TS32.299", "Originator")
+        assert own is not None
+        assert (own.identity, own.data_type) == (
+            (10415, 864),
+            ast.DataType.ENUMERATED,
+        )
+
+    def test_29061s_local_m1_information_keeps_29468s_addresses(self, built):
+        """TS 29.061's own MBMS-GW-SSM-IP-Address and -IPv6-Address are 924
+        and 925 OctetString; the Local-M1-Information it re-uses from TS
+        29.468 holds TS 29.468's, 3522 and 3523 Address."""
+        ours = built.resolve("TS29.061", "Local-M1-Information")
+        assert isinstance(ours, model.Grouped)
+        found = {
+            m.name: (m.avp.identity, m.avp.data_type)
+            for m in ours.members
+            if m.avp is not None and m.name.startswith("MBMS-GW-SSM-")
+        }
+        assert found == {
+            "MBMS-GW-SSM-IP-Address": ((10415, 3522), ast.DataType.ADDRESS),
+            "MBMS-GW-SSM-IPv6-Address": ((10415, 3523), ast.DataType.ADDRESS),
+        }
+        own = built.resolve("TS29.061", "MBMS-GW-SSM-IP-Address")
+        assert own is not None and own.identity == (10415, 924)
+
+    @pytest.mark.parametrize(
+        ("reference", "name"),
+        [
+            ("TS29.336", "DRMP"),
+            ("TS29.336", "OC-OLR"),
+            ("TS29.273", "OC-Supported-Features"),
+            ("TS29.338", "SGSN-Number"),
+        ],
+    )
+    def test_a_later_re_used_rows_m_bit_counts_where_earlier_ones_say_nothing(
+        self, built, reference, name
+    ):
+        """TS 29.336 prints `-` for DRMP in table 6.4.1/2 and MUST-NOT in
+        8.4.1-2; TS 29.273 prints MUST-NOT for OC-Supported-Features in
+        8.2.3.0/2 alone of four tables, TS 29.338 for SGSN-Number in 6.3.3.1/2
+        alone of two: through each, M is in Must not."""
+        ours = built.resolve(reference, name)
+        assert ours is not None
+        assert ast.AvpFlag.MANDATORY in ours.flag_rules.must_not
+
+    def test_29272s_m_bit_sets_m_on_29212s_rat_type(self, built):
+        """TS 29.272 table 7.3.1/2 marks RAT-Type "Must" in its M-bit column
+        where TS 29.212 table 5.3.1 puts M in Must not: through TS 29.272 M
+        is in Must, at top level and inside TS 29.272's eDRX-Cycle-Length."""
+        ours = built.resolve("TS29.272", "RAT-Type")
+        theirs = built.resolve("TS29.212", "RAT-Type")
+        assert ours is not None and theirs is not None
+        assert (ours.defined_in, ours.identity) == ("TS29.212", theirs.identity)
+        assert ours.flag_rules == ast.AvpFlagRules(must=_M | _V, may=_P)
+        assert theirs.flag_rules == ast.AvpFlagRules(must=_V, may=_P, must_not=_M)
+        cycle = built.resolve("TS29.272", "eDRX-Cycle-Length")
+        assert isinstance(cycle, model.Grouped)
+        (member,) = [m.avp for m in cycle.members if m.name == "RAT-Type"]
+        assert member == ours
+
+    @pytest.mark.parametrize(
+        "name", ["Digest-Realm", "Digest-Algorithm", "Digest-Qop", "Digest-HA1"]
+    )
+    def test_the_digest_avps_take_rfc_4590s_stand_in_types(self, built, name):
         """RFC 4590 types nothing; its corrections type all twenty
-        UTF8String with Wireshark's flag rules, which TS 29.229's re-used
-        Digest-Realm resolves to, ahead of its own table's M in Must."""
-        realm = built.resolve("TS29.229", "Digest-Realm")
-        assert realm is not None
-        assert (realm.defined_in, realm.data_type) == (
-            "RFC4590",
-            ast.DataType.UTF8_STRING,
-        )
-        assert realm == built.resolve("RFC4590", "Digest-Realm")
-        assert realm.flag_rules == ast.AvpFlagRules(
-            may=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.PROTECTED}),
-            must_not=frozenset({ast.AvpFlag.VENDOR}),
-        )
+        UTF8String with Wireshark's flag rules, M in May. TS 29.229's re-used
+        Digest AVPs take RFC 4590's type and identity and their own table's
+        M in Must, RFC 4590's P in May filling the bit the table leaves."""
+        ours = built.resolve("TS29.229", name)
+        theirs = built.resolve("RFC4590", name)
+        assert ours is not None and theirs is not None
+        assert (ours.defined_in, ours.data_type) == ("RFC4590", _UTF8)
+        assert (ours.identity, ours.data_type) == (theirs.identity, theirs.data_type)
+        assert ours.flag_rules == ast.AvpFlagRules(must=_M, may=_P, must_not=_V)
+        assert theirs.flag_rules == ast.AvpFlagRules(may=_M | _P, must_not=_V)
         assert built.holes("RFC4590") == ()
 
     def test_the_registry_answers_by_code_beside_the_model(self, built):

@@ -1048,9 +1048,15 @@ def _reused_rows_agree_with_origin(
     a citing interface free to forbid it. A row agreeing with any of the
     origin's rows agrees, since the origin's own disagreements are its
     `table-row-mismatch`. A note, because a citing interface may set its own
-    flag rule on purpose. A re-used table's M-bit column is not compared: it
-    states this interface's setting, which is what the column is for. Codes are
-    `reused-code-conflict`'s.
+    flag rule on purpose, and evidence either way: the message says which
+    side the model follows, for the disputed flag the first of the citing
+    file's rows placing it (`_followed_for_flag`; RFC 6733 sections 4.1 and
+    4.5 leave flag rules to the application), the origin for the type
+    unless this file defines the AVP itself. A
+    re-used table's M-bit column is not compared: it states this
+    interface's setting, which is what the column is for, and the model
+    reads it so (`model.Model._own_m_bit`), below the citing file's rows.
+    Codes are `reused-code-conflict`'s.
 
     Only M and V are compared. RFC 6733 clause 4.1 reserves the P bit ("the
     'P' bit SHOULD be set to 0"), so documents written since drop it while
@@ -1074,23 +1080,54 @@ def _reused_rows_agree_with_origin(
         ]
         definition = resolved.defined.get(name)
         for table, row in ours[name]:
-            for label, compared in _row_comparisons(table, row, theirs, definition):
+            for label, flag, compared in _row_comparisons(
+                table, row, theirs, definition
+            ):
                 if not compared or any(mine == other for mine, other, _ in compared):
                     continue
                 spelled = "; ".join(
                     f"{other} in {where}" for _, other, where in compared
                 )
+                if flag is not None:
+                    followed = _followed_for_flag(ours[name], row, flag)
+                elif label == "encrypt":
+                    followed = "neither, carrying no encrypt rule"
+                elif any(each.name == name for each in index.definitions):
+                    followed = "this file's definition"
+                else:
+                    followed = origin
                 findings.append(
                     Finding(
                         Severity.NOTE,
                         "reused-row-mismatch",
                         f"{name} is tabulated with {label} {compared[0][0]} in"
                         f" {_table_labels([table])}, but {origin}, which it is"
-                        f" re-used from, reads {spelled}",
+                        f" re-used from, reads {spelled}; the model follows"
+                        f" {followed}",
                         paths=(index.path(row),),
                     )
                 )
     return findings
+
+
+def _followed_for_flag(
+    ours: list[tuple[ast.AvpTable, ast.AvpTableRow]],
+    row: ast.AvpTableRow,
+    flag: ast.AvpFlag,
+) -> str:
+    """The row the model reads `flag` of a re-used AVP from, as a
+    `reused-row-mismatch` message names it, `row` being the reported one:
+    the first of this file's rows placing the flag
+    (`model.Model._own_flags`). `row` places it, being compared on it, so
+    that is `row` or an earlier row, never a re-used row's M-bit or the
+    origin, which rank below. A first row placing V alone says nothing of
+    M, so a second row's M is what the model follows."""
+    for table, each in ours:
+        if each is row:
+            return f"this row for {flag.value}"
+        if _placement(table, each, flag) is not None:
+            return f"an earlier row for {flag.value}, in {_table_labels([table])}"
+    raise AssertionError(f"{row.name}'s row is not among its rows")
 
 
 def _reused_row_vendors_agree_with_origin(
@@ -1212,7 +1249,8 @@ def _reused_cells_agree_with_origin(
                     "reused-row-mismatch",
                     f"{row.name} is typed {row.data_type.value} in {where}, but"
                     f" {row.origin}, which it is re-used from, reads"
-                    f" {', '.join(sorted(each.value for each in types))}",
+                    f" {', '.join(sorted(each.value for each in types))};"
+                    f" the model follows {row.origin}",
                     block.source.section,
                     row.origin,
                     paths=(index.path(row),),
@@ -1235,8 +1273,9 @@ def _row_comparisons(
     row: ast.AvpTableRow,
     theirs: list[tuple[ast.AvpTable, ast.AvpTableRow]],
     definition: ast.GroupedAvp | ast.EnumeratedAvp | None,
-) -> list[tuple[str, list[tuple[str, str, str]]]]:
-    """Per reading, the (this row, origin row, where) pairs that both state."""
+) -> list[tuple[str, ast.AvpFlag | None, list[tuple[str, str, str]]]]:
+    """Per reading, the (this row, origin row, where) pairs that both state,
+    with the flag a flag rule's reading compares."""
     out = []
     for label, column in (
         ("type", ast.AvpColumn.TYPE),
@@ -1269,7 +1308,7 @@ def _row_comparisons(
                     f"its clause {definition.source.section}",
                 )
             ]
-        out.append((label, compared))
+        out.append((label, None, compared))
     for flag in _CROSS_FILE_FLAGS:
         mine = _placement(table, row, flag)
         compared = [
@@ -1278,7 +1317,7 @@ def _row_comparisons(
             if mine is not None
             and (other := _placement(t, their_row, flag)) is not None
         ]
-        out.append(("flag rule", compared))
+        out.append(("flag rule", flag, compared))
     return out
 
 

@@ -903,6 +903,74 @@ def test_a_tabulated_re_used_avp_is_compared_with_its_origin(ours, theirs, expec
     assert found == expected
 
 
+def test_a_re_used_rows_note_says_which_side_the_model_follows():
+    """Flag rules are the citing application's (RFC 6733 sections 4.1 and
+    4.5), so the model reads each flag from the citing file's first row
+    placing it; a second table's row names that one. The type stays the
+    origin's."""
+    origin = _origin_spec(
+        "3GPP TS 29.212",
+        "18.0.0",
+        _flag_table(_origin_row("Shared", 1032, ast.DataType.ENUMERATED, (_V,), (_M,))),
+    )
+    ours = _origin_row("Shared", 1032, ast.DataType.UNSIGNED32, (_M, _V))
+    spec = _origin_spec(
+        "3GPP TS 29.273",
+        "18.0.0",
+        _flag_table(ours, label="6.3.1"),
+        _flag_table(ours.model_copy(), label="6.3.2"),
+        _reused(ast.ReusedAvpRow(name="Shared", origin="TS29.212")),
+    )
+
+    found = sorted(
+        f.message.split("; the model follows ")[1]
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule == "reused-row-mismatch"
+    )
+
+    assert found == [
+        "TS29.212",
+        "TS29.212",
+        "an earlier row for M, in table 6.3.1",
+        "this row for M",
+    ]
+
+
+def test_a_re_used_rows_note_names_the_row_placing_the_disputed_flag():
+    """The origin sets M; the citing file's first row places V alone and its
+    second forbids M. The model reads M from the second row, the first
+    saying nothing of it, and the note on the second says so."""
+    origin = _origin_spec(
+        "3GPP TS 29.212",
+        "18.0.0",
+        _flag_table(_origin_row("Shared", 1032, ast.DataType.UNSIGNED32, (_M, _V))),
+    )
+    spec = _origin_spec(
+        "3GPP TS 29.273",
+        "18.0.0",
+        _flag_table(
+            _origin_row("Shared", 1032, ast.DataType.UNSIGNED32, (_V,)), label="6.3.1"
+        ),
+        _flag_table(
+            _origin_row("Shared", 1032, ast.DataType.UNSIGNED32, (_V,), (_M,)),
+            label="6.3.2",
+        ),
+        _reused(ast.ReusedAvpRow(name="Shared", origin="TS29.212")),
+    )
+
+    (found,) = [
+        f
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule == "reused-row-mismatch"
+    ]
+
+    assert found.message == (
+        "Shared is tabulated with flag rule M in M.not in table 6.3.2, but"
+        " TS29.212, which it is re-used from, reads M in Must in table 6.3.1;"
+        " the model follows this row for M"
+    )
+
+
 def test_a_re_used_avp_tabulated_nowhere_in_its_origin_is_typed_by_its_definition():
     origin = _origin_spec("3GPP TS 29.212", "18.0.0", _grouped_with("Shared", 1032))
     spec = _origin_spec(
@@ -1059,7 +1127,9 @@ def test_a_re_used_tables_code_and_type_cells_are_compared_with_the_origin():
     assert "typed Unsigned32 in re-used table 7.4.1-2" in (
         found["reused-row-mismatch"].message
     )
-    assert found["reused-row-mismatch"].message.endswith("reads Grouped")
+    assert found["reused-row-mismatch"].message.endswith(
+        "reads Grouped; the model follows TS29.272"
+    )
 
 
 def test_a_member_its_table_marks_unused_in_its_command_is_a_note():
@@ -1371,7 +1441,7 @@ _STANDING_CORPUS_NOTES = {
     # publish; revision 0 V2.0 stands in (corpus.STAND_INS).
     "29212-i20.dad": {"cross-release-origin": ["3GPP2-X.S0057"]},
     # Table 6.3.0.1 sets M in Must for the four Digest AVPs it re-uses; RFC
-    # 4590's stand-in flags, Wireshark's, put it in May.
+    # 4590's stand-in flags, Wireshark's, put it in May; the model follows the table.
     "29229-i10.dad": {
         "reused-row-mismatch": [
             "Digest-Algorithm",

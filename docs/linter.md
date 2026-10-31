@@ -110,8 +110,19 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   4.1 reserves the P bit, so a P cell records which side of RFC 6733 a
   document was written on. Agreeing with any one origin row agrees. A
   re-used table's M-bit column is not compared, being the interface's own
-  setting by design; its Type column (TS 29.172) is, against the origin's
-  rows or definition. A note: a citing interface may set its own rule.
+  setting by design, which the model reads as such, below the citing AVP
+  table's rows and above the origin; its Type column (TS 29.172) is,
+  against the origin's rows or definition. A note: a citing interface may
+  set its own rule, and the disagreement is evidence either way, so the
+  message says which side the model follows. For a flag rule that is,
+  for the disputed flag, the citing file's first row placing it ("this row
+  for M", or "an earlier row for M" and its table): RFC 6733 sections 4.1
+  and 4.5 leave flag rules to the application, and the model reads each of
+  a re-used AVP's flags from the first citing row placing it
+  ([consumers.md](consumers.md)). A first row placing V alone says
+  nothing of M, so a later row forbidding M is the row followed for M.
+  For a type it is the origin, or this file's definition where it has
+  one; encrypt the model does not carry.
 - `reused-row-vendor-mismatch` — such a row placing the AVP in another
   vendor space than the origin does. The row's vendor is read as
   [below](#vendor-spaces): its Vendor-ID cell, else its V flag, Must-not
@@ -356,7 +367,9 @@ why each stays:
   sets M in Must for `Digest-Realm`, `Digest-Algorithm`, `Digest-Qop` and
   `Digest-HA1`, re-used from RFC 4590, whose rows the corrections type
   for Diameter with Wireshark's flag rules, M in May; RFC 4590 states no
-  flag rule and no clause of TS 29.229 explains its own. Where the citing clause
+  flag rule and no clause of TS 29.229 explains its own. The model follows
+  the citing tables in all six flag notes, TS 32.299's and TS 29.229's, and
+  ES 283 034's own clause 7.3.11 for the type. Where the citing clause
   defers to the origin, the row was corrected instead: TS 29.273's three
   `RAT-Type` rows (M in Must; clauses 5.2.3.6 and 8.2.3.5 follow TS 29.212,
   whose table sets M in Must not, and the re-used tables print no M-bit
@@ -501,4 +514,6 @@ citing the clause that makes the override deliberate:
 - **`reused-row-mismatch`**, one.
   `TS32.299.py#supported-features-charging-m`: clause 6.5.10.3 answers a
   server not supporting Supported-Features "as per 'M' bit set rule" with
-  DIAMETER_AVP_UNSUPPORTED, where TS 29.229 leaves M in May.
+  DIAMETER_AVP_UNSUPPORTED, where TS 29.229 leaves M in May; the model
+  reads TS 32.299's `Supported-Features` with M in Must, as table 7.2.0.1
+  sets it.
