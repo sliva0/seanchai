@@ -64,7 +64,7 @@ ONEM2M_DOWNLOAD_URL = (
 )
 USER_AGENT = "diameter-spec-corpus-downloader/1.0"
 # LibreOffice, for the archives that still ship a legacy binary `.doc` (TS
-# 32.299 and seven more): the extractor reads only `.docx`.
+# 32.299 and nine more): the extractor reads only `.docx`.
 SOFFICE = "soffice"
 SOFFICE_TIMEOUT = 600
 

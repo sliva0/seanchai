@@ -49,9 +49,9 @@ patch's commit message is the merge request's title and description.
 
 ## Additions
 
-`seanchai crosscheck` reports 305 absences from the pinned dictionary, 304
+`seanchai crosscheck` reports 307 absences from the pinned dictionary, 306
 AVPs (TS 29.273 tabulates RFC 5777's `QoS-Capability`, which both report).
-`additions.py` turns 271 of them into 29 patches, one per document that
+`additions.py` turns 273 of them into 30 patches, one per document that
 defines them, numbered 3GPP documents first, then ETSI's, then the RFCs:
 
 ```sh
@@ -78,10 +78,10 @@ follows the vendor.
 
 An entry goes after the dictionary entry of its vendor with the nearest
 lower code, its own document's entries first, so most land beside their
-siblings: 137 in `TGPP.xml`, 132 in `dictionary.xml`, 2 in `etsie2e4.xml`.
+siblings: 137 in `TGPP.xml`, 134 in `dictionary.xml`, 2 in `etsie2e4.xml`.
 A place within three lines of another patch's, or of a line a defect patch
 changes, is passed over for the next, so every addition applies to
-`v4.7.2` on its own, all 29 apply in order, and all 29 apply after the
+`v4.7.2` on its own, all 30 apply in order, and all 30 apply after the
 twenty-five defects; the script
 checks the three before it writes, and its output is the same byte for byte
 on every run (`tests/test_wireshark_additions.py` pins it).
@@ -91,32 +91,33 @@ on every run (`tests/test_wireshark_additions.py` pins it).
 | 0001 | TS 29.061 | 4 | `TGPP.xml` |
 | 0002 | TS 29.109 | 1 | `dictionary.xml` |
 | 0003 | TS 29.128 | 4 | `TGPP.xml` |
-| 0004 | TS 29.154 | 15 | `dictionary.xml` |
-| 0005 | TS 29.172 | 1 | `dictionary.xml` |
-| 0006 | TS 29.212 | 1 | `dictionary.xml` |
-| 0007 | TS 29.214 | 19 | `TGPP.xml` |
-| 0008 | TS 29.215 | 4 | `TGPP.xml` |
-| 0009 | TS 29.217 | 12 | `dictionary.xml` |
-| 0010 | TS 29.219 | 1 | `dictionary.xml` |
-| 0011 | TS 29.229 | 8 | `TGPP.xml` |
-| 0012 | TS 29.272 | 8 | `dictionary.xml` |
-| 0013 | TS 29.273 | 1 | `dictionary.xml` |
-| 0014 | TS 29.283 | 15 | `dictionary.xml` |
-| 0015 | TS 29.329 | 3 | `TGPP.xml` |
-| 0016 | TS 29.336 | 2 | `dictionary.xml` |
-| 0017 | TS 29.338 | 3 | `TGPP.xml` |
-| 0018 | TS 29.343 | 13 | `TGPP.xml` |
-| 0019 | TS 29.345 | 65 | `TGPP.xml` |
-| 0020 | TS 29.368 | 1 | `dictionary.xml` |
-| 0021 | TS 29.388 | 5 | `dictionary.xml` |
-| 0022 | TS 29.389 | 3 | `dictionary.xml` |
-| 0023 | TS 29.468 | 14 | `TGPP.xml` |
-| 0024 | TS 32.299 | 46 | `dictionary.xml` |
-| 0025 | ETSI TS 183 017 | 2 | `etsie2e4.xml` |
-| 0026 | RFC 6734 | 6 | `dictionary.xml` |
-| 0027 | RFC 6942 | 2 | `dictionary.xml` |
-| 0028 | RFC 8506 | 11 | `dictionary.xml` |
-| 0029 | RFC 8582 | 1 | `dictionary.xml` |
+| 0004 | TS 29.153 | 2 | `dictionary.xml` |
+| 0005 | TS 29.154 | 15 | `dictionary.xml` |
+| 0006 | TS 29.172 | 1 | `dictionary.xml` |
+| 0007 | TS 29.212 | 1 | `dictionary.xml` |
+| 0008 | TS 29.214 | 19 | `TGPP.xml` |
+| 0009 | TS 29.215 | 4 | `TGPP.xml` |
+| 0010 | TS 29.217 | 12 | `dictionary.xml` |
+| 0011 | TS 29.219 | 1 | `dictionary.xml` |
+| 0012 | TS 29.229 | 8 | `TGPP.xml` |
+| 0013 | TS 29.272 | 8 | `dictionary.xml` |
+| 0014 | TS 29.273 | 1 | `dictionary.xml` |
+| 0015 | TS 29.283 | 15 | `dictionary.xml` |
+| 0016 | TS 29.329 | 3 | `TGPP.xml` |
+| 0017 | TS 29.336 | 2 | `dictionary.xml` |
+| 0018 | TS 29.338 | 3 | `TGPP.xml` |
+| 0019 | TS 29.343 | 13 | `TGPP.xml` |
+| 0020 | TS 29.345 | 65 | `TGPP.xml` |
+| 0021 | TS 29.368 | 1 | `dictionary.xml` |
+| 0022 | TS 29.388 | 5 | `dictionary.xml` |
+| 0023 | TS 29.389 | 3 | `dictionary.xml` |
+| 0024 | TS 29.468 | 14 | `TGPP.xml` |
+| 0025 | TS 32.299 | 46 | `dictionary.xml` |
+| 0026 | ETSI TS 183 017 | 2 | `etsie2e4.xml` |
+| 0027 | RFC 6734 | 6 | `dictionary.xml` |
+| 0028 | RFC 6942 | 2 | `dictionary.xml` |
+| 0029 | RFC 8506 | 11 | `dictionary.xml` |
+| 0030 | RFC 8582 | 1 | `dictionary.xml` |
 
 Thirty-three absences stay out, the first ten named in their document's
 description:
@@ -170,7 +171,7 @@ a test may refer to it. A renamed AVP also renames its display filter field
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter dad`
 over the corpus, the newest copy of each document and no other
 ([oracle.md](../../docs/oracle.md)), no longer reports a patched AVP.
-With the twenty-five defects applied to `v4.7.2` it reports 75 findings
-instead of 98; with the 29 additions, 76, the thirty-three absences above
+With the twenty-five defects applied to `v4.7.2` it reports 76 findings
+instead of 99; with the 30 additions, 76, the thirty-three absences above
 in nine notes, and none that the unpatched dictionary did not; with both
 series, 53.

@@ -14,7 +14,7 @@ what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
-uv run seanchai crosscheck dad                    # 54 files, 98 findings
+uv run seanchai crosscheck dad                    # 55 files, 99 findings
 ```
 
 The check reads the newest copy of each document and no other: the
@@ -24,7 +24,7 @@ is no reading of it. `crosscheck` takes files or directories (a
 directory's raw files skipped, as the corpus loader skips them), lists
 each older copy it skips (TS 29.214 V7.12.0, TS 32.299 V11.20.0), and
 refuses two files of one document and version, so a count over every
-committed copy (116 findings in 56 files) cannot be reported by accident.
+committed copy (117 findings in 57 files) cannot be reported by accident.
 TS 29.140 V7.0.0 and TS 29.209 V6.8.0 are the newest copies of their
 documents and are checked.
 
@@ -146,7 +146,7 @@ remains:
   `Access-Network-Information` (the dictionary comments its OctetString
   out) typed UTF8String where the specs say OctetString.
 - **Absences**: AVPs newer than the pinned dictionary, one grouped note per
-  file, 305 in 31 files, 304 AVPs. All but thirty-three have an addition
+  file, 307 in 32 files, 306 AVPs. All but thirty-three have an addition
   staged under
   [`integrations/wireshark/additions/`](../integrations/wireshark/README.md#additions),
   written by `integrations/wireshark/additions.py` from the corpus, one

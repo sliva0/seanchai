@@ -19,6 +19,10 @@ number = "29.128"
 title = "MME/SGSN interfaces to packet data networks and applications"
 
 [[tgpp]]
+number = "29.153"
+title = "Service capability exposure functionality over Ns reference point"
+
+[[tgpp]]
 number = "29.154"
 title = "Service capability exposure functionality over Nt reference point"
 

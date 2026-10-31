@@ -490,10 +490,11 @@ _RAW_ERRORS = {
     ],
     "29338-i20.raw.dad": ["duplicate-identity"],
     # Grouped headers printing no vendor while the AVP tables set V (all
-    # seven; 29.154's sixth, Time-window, misspells its own rule name, so no
+    # eight; 29.154's sixth, Time-window, misspells its own rule name, so no
     # row matches it); 29.468's clauses 6.4.28 and 6.4.31 print FEC-Request's
     # code, and table 6.4.1-1 types clause 6.4.35's Enumerated AVP
     # Unsigned32.
+    "29153-i00.raw.dad": ["vendor-id-mismatch"],
     "29154-i00.raw.dad": ["vendor-id-mismatch"] * 5,
     "29215-i00.raw.dad": ["vendor-id-mismatch"] * 2,
     "29217-i00.raw.dad": ["vendor-id-mismatch"] * 4,

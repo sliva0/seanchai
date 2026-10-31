@@ -6,13 +6,11 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **Q. Registry documents the corpus lacks.** TS 29.153 (Ns, current to
-  Rel-19) and TS 32.296 (Re, current to Rel-19) have current versions and
-  can be extracted the usual way. TS 29.211 (last V6.4.0), TS 29.210 (last
-  V6.7.0) and TS 29.234 (last V11.2.0) are retired and would be pinned.
-  Single rows for TS 29.228 and 29.328 are registry pointers at procedure
-  documents. *Decided:* extract 29.153 and 32.296; retired three only if a
-  corpus document resolves into them.
+- **Q. Registry documents the corpus lacks.** TS 29.211 (last V6.4.0), TS
+  29.210 (last V6.7.0) and TS 29.234 (last V11.2.0) are retired and would
+  be pinned. Nothing resolves into them: only TS 29.230's registry rows
+  name them. *Decided:* pin them only if a corpus document comes to
+  resolve into one.
 - **R. Fill `; Values:` lists pointed elsewhere.** 100 sections in 11
   files. *Decided:* fill from the cited source as a corrections-supplied
   list with the source and its date or version recorded; TS 32.422 trace

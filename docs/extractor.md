@@ -103,13 +103,13 @@ Vocabulary, RFC extractor: `prose-avp-codes` (RFC 7155), `clause-avp-table`
 `bare-name-continuation` (RFC 4004), `ragged-separator` (RFC 8583).
 The declared vocabulary, with the document that forced each:
 
-- Docx: `prose-application-ids` (29.154, 29.212, 29.214, 29.215, 29.217,
-  29.219, 29.343, 29.368, 29.468: the clause stating the application id the
-  command headers omit); `access-type-headings` (29.212, 29.214: `Event-Trigger
+- Docx: `prose-application-ids` (29.153, 29.154, 29.212, 29.214, 29.215,
+  29.217, 29.219, 29.343, 29.368, 29.468: the clause stating the
+  application id the command headers omit); `access-type-headings` (29.212, 29.214: `Event-Trigger
   AVP (All access types)`); the mark columns, each declaration naming the
   column's legend: `access-type-column` (29.212, 29.215),
-  `applicability-column` (29.061, 29.154, 29.212, 29.214, 29.215, 29.217,
-  29.219, 29.368, 29.468), `reference-points-column` (29.061) and
+  `applicability-column` (29.061, 29.153, 29.154, 29.212, 29.214, 29.215,
+  29.217, 29.219, 29.368, 29.468), `reference-points-column` (29.061) and
   `command-columns` (32.299), and `worded-marks` (29.061, 29.368, 29.468:
   marks of several words, separated by commas only);
   `note-defined-in-rfc` (29.229, 29.329: AVP-table
@@ -211,7 +211,7 @@ Walks paragraphs and tables in document order under numbered headings:
   command headers omit → `ApplicationScope`, applying to the interface
   clause the sentence sits in (`; Applies-To: 5.*` for TS 29.212's 5.1). Two wordings: "the Application-ID for the Gx
   Application in the present release is 16777238" (TS 29.212 clauses 5.1,
-  5a.1, 5b.1, 5c.1, E.6.1; 29.154, 29.214, 29.215, 29.217) and "The
+  5a.1, 5b.1, 5c.1, E.6.1; 29.153, 29.154, 29.214, 29.215, 29.217) and "The
   Diameter application identifier assigned to the Sy interface application
   is 16777302." (29.219 clause 5.1.5; 29.343, 29.368, 29.468). The file
   lists them first, before the commands.
@@ -475,6 +475,12 @@ TS 29.201 v18.0.0 (a legacy `.doc`) carries TS 29.214's Rx messages over
 REST: annex B is an XML Schema for 29.214's AVPs (B.1) and messages (B.2),
 with no ABNF, AVP codes or AVP table, and `regenerate --add` rejects it with
 `no AVP table found`. Nothing in the corpus cites it.
+TS 32.296 v18.0.0 is not catalogued, for the reason TR 29.909 was dropped:
+its Re interface (clause 7.1.4, the Rating Application) prints `xxx`
+command codes and `xxxx`/`TBD` AVP codes, its Editor's Notes leaving both to
+CT4 and TS 29.230, which allocates the application id 16777218 and nothing
+else for it, so there is nothing to extract; annex B re-prints RFC 4006's
+CCR/CCA for Rc.
 TS 29.230 v18.6.0 is an allocation registry rather than a definer, read
 behind two quirks of its own:
 

@@ -95,12 +95,14 @@ for catalog experiments, not for refreshing the corpus.
   version wins. Archive versions are base-36 (`i00` = 18.0.0); ETSI PDF
   filenames use two digits per component (`v180100`); the functions above
   do the derivation, so don't hand-build those URLs.
-- **Legacy `.doc` archives are converted, not skipped.** Nine catalogued
-  archives (TS 32.299, 29.154, 29.201, 29.215, 29.217, 29.219, 29.343,
-  29.368, 29.468) hold a `.doc` and no `.docx`, and so do all four pinned
-  versions. Each run converts them into
+- **Legacy `.doc` archives are converted, not skipped.** Ten catalogued
+  archives (TS 32.299, 29.153, 29.154, 29.201, 29.215, 29.217, 29.219,
+  29.343, 29.368, 29.468) hold a `.doc` and no `.docx`, and so do all four
+  pinned versions. Each run converts them into
   `converted/`, mirroring the extracted path
-  (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`), with `soffice
+  (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`; TS 29.153's archive
+  stores its `.doc` under `Temp/Promotion/Upgraded/`, and its conversion
+  sits under the same directories), with `soffice
   --headless --infilter='MS Word 97' --convert-to 'docx:Office Open XML
   Text'` in a private temporary profile. The `.doc` stays where it was
   extracted. The record's `conversions` list names the derived file and
