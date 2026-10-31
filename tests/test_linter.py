@@ -1370,6 +1370,16 @@ _STANDING_CORPUS_NOTES = {
     # Clause 2 [24] cites 3GPP2 X.S0057-B, which 3GPP2's library does not
     # publish; revision 0 V2.0 stands in (corpus.STAND_INS).
     "29212-i20.dad": {"cross-release-origin": ["3GPP2-X.S0057"]},
+    # Table 6.3.0.1 sets M in Must for the four Digest AVPs it re-uses; RFC
+    # 4590's stand-in flags, Wireshark's, put it in May.
+    "29229-i10.dad": {
+        "reused-row-mismatch": [
+            "Digest-Algorithm",
+            "Digest-HA1",
+            "Digest-Qop",
+            "Digest-Realm",
+        ]
+    },
     "29230-i60.dad": {
         "registry-range-overlap": [
             "318",

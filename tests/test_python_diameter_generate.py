@@ -229,13 +229,13 @@ def test_a_library_grouped_class_with_other_m_bits_is_not_reused(package):
 def test_digest_qop_is_the_librarys_ietf_avp(package):
     """TS 29.229's table forbids V on Digest-QoP, so it is RFC 4590's code
     110 in vendor 0, which the library holds as `AVP_DIGEST_QOP`, not an
-    addition in vendor 10415."""
+    addition in vendor 10415. RFC 4590's stand-in rows, read first as the
+    origin's, leave M under May, so no `is_mandatory`."""
     additions = _read(package, "additions")
     assert "DIGEST_QOP =" not in additions
     holder = additions.split("\nclass SipDigestAuthenticate_TS29_229:\n")[1]
     assert (
-        '        AvpGenDef("digest_qop", AVP_DIGEST_QOP, is_required=True,'
-        " is_mandatory=True),\n"
+        '        AvpGenDef("digest_qop", AVP_DIGEST_QOP, is_required=True),\n'
     ) in holder.split("\n\n\n")[0]
 
 

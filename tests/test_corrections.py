@@ -1115,6 +1115,21 @@ def test_correcting_a_node_inside_a_deleted_subtree_is_refused():
         )
 
 
+_MODULES = sorted((_ROOT / "edits" / "corrections").glob("*.py"))
+
+
+@pytest.mark.parametrize("path", _MODULES, ids=lambda path: path.name)
+def test_no_committed_reason_keeps_an_unformatted_placeholder(path):
+    """A reason built from a shared fragment needs its `f` prefix; without it
+    RFC 4590's forty flag-rule reasons cited a literal `{_WIRESHARK}`."""
+    declared = corrections.load(path.parent, path.stem)
+
+    unformatted = [each.id for each in declared if "{" in each.reason]
+
+    assert declared
+    assert unformatted == []
+
+
 @pytest.mark.parametrize("raw", _corpus(raw=True), ids=lambda path: path.name)
 def test_committed_corrections_still_apply_to_committed_raw_output(raw):
     """The rot check that makes the layer worth having: if a re-extraction or a

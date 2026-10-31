@@ -899,14 +899,22 @@ class TestOverTheCommittedCorpus:
             ast.EnumValue(name="PEER_REPORT", value=2),
         )
 
-    def test_29229_types_the_digest_avps_rfc_4590_leaves_untyped(self, built):
+    def test_the_digest_avps_take_rfc_4590s_stand_in_types(self, built):
+        """RFC 4590 types nothing; its corrections type all twenty
+        UTF8String with Wireshark's flag rules, which TS 29.229's re-used
+        Digest-Realm resolves to, ahead of its own table's M in Must."""
         realm = built.resolve("TS29.229", "Digest-Realm")
         assert realm is not None
         assert (realm.defined_in, realm.data_type) == (
             "RFC4590",
             ast.DataType.UTF8_STRING,
         )
-        assert built.resolve("RFC4590", "Digest-Realm") is None
+        assert realm == built.resolve("RFC4590", "Digest-Realm")
+        assert realm.flag_rules == ast.AvpFlagRules(
+            may=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.PROTECTED}),
+            must_not=frozenset({ast.AvpFlag.VENDOR}),
+        )
+        assert built.holes("RFC4590") == ()
 
     def test_the_registry_answers_by_code_beside_the_model(self, built):
         (cx,) = built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)
@@ -937,30 +945,6 @@ class TestOverTheCommittedCorpus:
 _STANDING_HOLES = {
     "RFC4004": {
         "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-to-HA-SPI"]
-    },
-    "RFC4590": {
-        "no data_type": [
-            "Digest-AKA-Auts",
-            "Digest-Algorithm",
-            "Digest-Auth-Param",
-            "Digest-CNonce",
-            "Digest-Domain",
-            "Digest-Entity-Body-Hash",
-            "Digest-HA1",
-            "Digest-Method",
-            "Digest-Nextnonce",
-            "Digest-Nonce",
-            "Digest-Nonce-Count",
-            "Digest-Opaque",
-            "Digest-Qop",
-            "Digest-Realm",
-            "Digest-Response",
-            "Digest-Response-Auth",
-            "Digest-Stale",
-            "Digest-URI",
-            "Digest-Username",
-            "SIP-AOR",
-        ]
     },
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
     "TS29.154": {"resolves nowhere": ["External-Group-Identifier"]},
@@ -1219,5 +1203,6 @@ def test_the_pinned_dictionary_names_the_avps_it_spells_differently():
         avp = named.resolve(reference, name)
         assert avp is not None
         assert (avp.name, avp.wireshark_name) == (name, wireshark_name)
-    hole = named.hole("RFC4590", "Digest-Realm")
-    assert hole is not None and hole.wireshark_name == "Digest-Realm"
+    hole = named.hole("TS29.061", "3GPP-Session-Stop-Indicator")
+    assert hole is not None
+    assert hole.wireshark_name == "3GPP-Session-Stop-Indicator"

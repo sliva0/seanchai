@@ -343,7 +343,7 @@ why each stays:
   and 6.2.3.1/1 but OctetString in 7.2.3.1/1; the tables' notes explain
   M-bit overrides for re-used AVPs only. Which reading an interface uses is the document's to
   say; the model reads the first row ([consumers.md](consumers.md)).
-- **`reused-row-mismatch`**, three. ETSI ES 283 034 table 13 types
+- **`reused-row-mismatch`**, seven. ETSI ES 283 034 table 13 types
   `Reservation-Priority` Unsigned32, where TS 183 017, which it imports
   it from, and its own clause 7.3.11 say Enumerated. TS 32.299 table
   7.2.0.1 types `Feature-List` and `Feature-List-ID` by `refer [204]` (TS
@@ -352,7 +352,11 @@ why each stays:
   29.229 puts it in Must not. Clause 7.2.0 refers to the origin for the
   description and gives the table "along with the AVP flag rules", but no
   clause says why charging sets M on these two, as clause 6.5.10.3 does
-  for `Supported-Features` (accepted, below). Where the citing clause
+  for `Supported-Features` (accepted, below). TS 29.229 table 6.3.0.1
+  sets M in Must for `Digest-Realm`, `Digest-Algorithm`, `Digest-Qop` and
+  `Digest-HA1`, re-used from RFC 4590, whose rows the corrections type
+  for Diameter with Wireshark's flag rules, M in May; RFC 4590 states no
+  flag rule and no clause of TS 29.229 explains its own. Where the citing clause
   defers to the origin, the row was corrected instead: TS 29.273's three
   `RAT-Type` rows (M in Must; clauses 5.2.3.6 and 8.2.3.5 follow TS 29.212,
   whose table sets M in Must not, and the re-used tables print no M-bit

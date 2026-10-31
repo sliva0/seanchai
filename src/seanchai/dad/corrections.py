@@ -244,9 +244,10 @@ class flag_rules(Selector):
 
 @dataclass(frozen=True)
 class avp_table(Selector):
-    """An AVP-table section, by its printed label."""
+    """An AVP-table section, by its printed label, or None for a table
+    printing none, as an RFC's do (RFC 4590's attribute table)."""
 
-    label: str
+    label: str | None
 
     def locate(self, spec: ast.Specification) -> _Located:
         """Each AVP table carrying the label, at `("sections", i)`."""
@@ -257,6 +258,8 @@ class avp_table(Selector):
         )
 
     def describe(self) -> str:
+        if self.label is None:
+            return "unlabelled AVP table"
         return f"AVP table {self.label!r}"
 
 

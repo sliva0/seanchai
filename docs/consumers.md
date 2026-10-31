@@ -96,8 +96,10 @@ its V flag says it (`ast.AvpTableRow.stated_vendor`, which the linter's
 under Must the file's `; Vendor-ID:`, and a row stating neither infers its
 file's vendor, which agrees with any. TS 29.272's re-print of
 `Allocation-Retention-Priority` takes TS 29.212's flag rules this way, and
-TS 29.229's re-used `Digest-*` AVPs take their Diameter types from TS
-29.229's own table, since RFC 4590 is a RADIUS document. A reading that
+TS 29.229's re-used `Digest-*` AVPs resolve to RFC 4590's rows, which
+its corrections type UTF8String with Wireshark's flag rules, RFC 4590
+being a RADIUS document, so M is under May where TS 29.229's own table
+puts it under Must (the linter's `reused-row-mismatch`). A reading that
 disagrees fills nothing, nor does any after it: the name stays a hole that
 names the disagreeing document, rather than become one AVP assembled from
 two documents that disagree about it.
@@ -264,9 +266,7 @@ and never changes `name`, which is always the document's spelling;
 `Model.build(books, strict=True)` raises `model.IncompleteCorpusError`,
 listing every hole, rather than build a model with any. The default is
 `strict=False` because the committed corpus does not build strictly, and
-every standing hole is a statement its source does not make. RFC 4590 is
-a RADIUS document with no Diameter types (TS 29.229's table types the four
-Digest AVPs it re-uses, for its own reading),
+every standing hole is a statement its source does not make.
 TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, the
 names that resolve nowhere are the linter's standing
 `unresolved-reference` cases, and

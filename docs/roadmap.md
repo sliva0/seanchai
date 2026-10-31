@@ -6,12 +6,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **O. Stand in for RFC 4590.** RFC 4590 is a RADIUS document and types
-  nothing; RFC 4740 imports its nineteen Digest AVPs and SIP-AOR by name
-  only. *Decided:* a hand-written stand-in `.dad` (like the TISPAN
-  transcriptions) typing all twenty UTF8String, each with its evidence:
-  RFC 4590's "text" fields, TS 29.229 clause 6.3.37-41 for the four it
-  re-uses, Wireshark's dictionary for the rest.
 - **Q. Registry documents the corpus lacks.** TS 29.153 (Ns, current to
   Rel-19) and TS 32.296 (Re, current to Rel-19) have current versions and
   can be extracted the usual way. TS 29.211 (last V6.4.0), TS 29.210 (last
@@ -30,9 +24,8 @@ letter is not reused. What exists is described in the per-module documents.
 - **N. Build the model strictly by default** once the committed corpus
   builds under `strict=True`. What stands in the way, by cause (the pinned
   `_STANDING_HOLES` in `tests/test_model.py`):
-  - types no source states: RFC 4590 (see O); TS 29.061's
-    `3GPP-Session-Stop-Indicator` row prints only a code, flag cells
-    included;
+  - a type no source states: TS 29.061's `3GPP-Session-Stop-Indicator`
+    row prints only a code, flag cells included;
   - names no corpus document defines: RFC 4004's three SPI members, TS
     29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's
     `External-Group-Identifier`, TS 32.299's `Submission-Timestamp` and

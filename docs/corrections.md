@@ -68,8 +68,8 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   Must to Must not is two), `reused_row(name, section=)`,
   `enum_value(avp, name, value=, occurrence=)`,
   `avp_rule(parent, name, occurrence=)`
-  (parent may be a whole `definition` selector), `avp_table(label)`,
-  `reused_avps(label)`, `application_scope(name)`, `header()`.
+  (parent may be a whole `definition` selector), `avp_table(label)`
+  (`None` for a table printing no label, as an RFC's), `reused_avps(label)`, `application_scope(name)`, `header()`.
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, counted from 1, for a body that prints a
   rule twice identically: TS 29.229 clause 6.1.10 prints RTA's
@@ -91,7 +91,14 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
 
 ## Operations
 
-- **`Correction`**: replace one field; expects the old value.
+- **`Correction`**: replace one field; expects the old value. A blank
+  field is replaced like any other, `expect=None`: RFC 4590, a RADIUS
+  document, states no Diameter type or flag rule for the twenty
+  attributes RFC 4740 imports as AVPs, and its module is a stand-in
+  typing them for Diameter, one correction giving its table Type and
+  flag-rule columns and three per row its type (UTF8String, for RFC
+  4590's "Text", as TS 29.229 and Wireshark's dictionary type them) and
+  Wireshark's flag rules, each citing that evidence.
 - **`Delete(id, target, expect=<the full node>, reason)`**: expects the node to
   equal `expect` in every field, so it fails when upstream removes *or*
   changes the row. Deleting a node while correcting anything inside it is

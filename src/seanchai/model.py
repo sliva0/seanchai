@@ -382,7 +382,7 @@ class Marks:
 
 def _stated(flag_rules: ast.AvpFlagRules) -> bool:
     """Whether a row's flag cells say anything. A table with no flag columns
-    (RFC 4072, 4590, 5447, 5777 and 6734 print none) and a row with every
+    (RFC 4072, 5447, 5777 and 6734 print none) and a row with every
     flag cell blank (TS 32.299 table 7.2.0.1 for most re-printed rows) both
     parse to empty rules, and neither is a claim that no flag applies."""
     return bool(
@@ -755,8 +755,9 @@ class Model:
         and grouped bodies cannot complete, and those of the grouped AVPs it
         reaches in an older copy through a citation across releases, which
         carry that copy's `version`. A hole belongs to the document that
-        falls short, so TS 29.229's reading reports RFC 4590's untyped
-        `Digest-*` rows only where TS 29.229's own table does not type them.
+        falls short, so a citing reading reports an origin's untyped rows
+        only where its own table does not type them (TS 29.229's did RFC
+        4590's `Digest-*` rows before RFC 4590's corrections typed them).
         Sorted by document and name.
         """
         references = self.references() if reference is None else [reference]
@@ -929,8 +930,8 @@ class Model:
         A re-print that tabulates no flag rules (TS 29.272's
         `Allocation-Retention-Priority`, re-used from TS 29.212) takes them
         from its origin, and an origin that states no Diameter type (RFC
-        4590's RADIUS-derived `Digest-*` rows) takes it from the citing
-        document's table. The first reading still names the defining
+        4590's RADIUS-derived `Digest-*` rows, uncorrected) takes it from
+        the citing document's table. The first reading still names the defining
         document.
         """
         found: _Draft | None = None

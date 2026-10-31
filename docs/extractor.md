@@ -645,7 +645,9 @@ Same definitions, different carrier:
   columns they have. **Clauses without tables** (RFC 4072, 5447) form the
   index behind `clause-avp-table`; RFC 4590's RADIUS attributes contribute
   Name, Code and Section behind `radius-attribute-table`, with no type
-  fabricated.
+  fabricated. The Diameter type and flag rules RFC 4590 never states are
+  its corrections' (`edits/corrections/RFC4590.py`), a stand-in on the
+  raw file.
 - **Tables without a Code column** (RFC 7155): `prose-avp-codes` follows each
   row's Section cell to the defining sentence ("The NAS-Port AVP (AVP Code 5)
   is of type Unsigned32") and completes the row, extending `; Columns:` with

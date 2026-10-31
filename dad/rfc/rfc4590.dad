@@ -7,24 +7,24 @@
 ; Type: AVP Table
 ; Section: 3.1
 ; Page: 12
-; Columns: Name           Code   Section
-Digest-Response           103    3.1
-Digest-Realm              104    3.2
-Digest-Nonce              105    3.3
-Digest-Response-Auth      106    3.4
-Digest-Nextnonce          107    3.5
-Digest-Method             108    3.6
-Digest-URI                109    3.7
-Digest-Qop                110    3.8
-Digest-Algorithm          111    3.9
-Digest-Entity-Body-Hash   112    3.10
-Digest-CNonce             113    3.11
-Digest-Nonce-Count        114    3.12
-Digest-Username           115    3.13
-Digest-Opaque             116    3.14
-Digest-Auth-Param         117    3.15
-Digest-AKA-Auts           118    3.16
-Digest-Domain             119    3.17
-Digest-Stale              120    3.18
-Digest-HA1                121    3.19
-SIP-AOR                   122    3.20
+; Columns: Name           Code   Section   Type         Must   May   S.not   M.not ;; corrected: (RFC4590.py#diameter-columns)
+Digest-Response           103    3.1       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-response-type) ;; corrected: (RFC4590.py#digest-response-may) ;; corrected: (RFC4590.py#digest-response-must-not)
+Digest-Realm              104    3.2       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-realm-type) ;; corrected: (RFC4590.py#digest-realm-may) ;; corrected: (RFC4590.py#digest-realm-must-not)
+Digest-Nonce              105    3.3       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-nonce-type) ;; corrected: (RFC4590.py#digest-nonce-may) ;; corrected: (RFC4590.py#digest-nonce-must-not)
+Digest-Response-Auth      106    3.4       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-response-auth-type) ;; corrected: (RFC4590.py#digest-response-auth-may) ;; corrected: (RFC4590.py#digest-response-auth-must-not)
+Digest-Nextnonce          107    3.5       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-nextnonce-type) ;; corrected: (RFC4590.py#digest-nextnonce-may) ;; corrected: (RFC4590.py#digest-nextnonce-must-not)
+Digest-Method             108    3.6       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-method-type) ;; corrected: (RFC4590.py#digest-method-may) ;; corrected: (RFC4590.py#digest-method-must-not)
+Digest-URI                109    3.7       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-uri-type) ;; corrected: (RFC4590.py#digest-uri-may) ;; corrected: (RFC4590.py#digest-uri-must-not)
+Digest-Qop                110    3.8       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-qop-type) ;; corrected: (RFC4590.py#digest-qop-may) ;; corrected: (RFC4590.py#digest-qop-must-not)
+Digest-Algorithm          111    3.9       UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-algorithm-type) ;; corrected: (RFC4590.py#digest-algorithm-may) ;; corrected: (RFC4590.py#digest-algorithm-must-not)
+Digest-Entity-Body-Hash   112    3.10      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-entity-body-hash-type) ;; corrected: (RFC4590.py#digest-entity-body-hash-may) ;; corrected: (RFC4590.py#digest-entity-body-hash-must-not)
+Digest-CNonce             113    3.11      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-cnonce-type) ;; corrected: (RFC4590.py#digest-cnonce-may) ;; corrected: (RFC4590.py#digest-cnonce-must-not)
+Digest-Nonce-Count        114    3.12      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-nonce-count-type) ;; corrected: (RFC4590.py#digest-nonce-count-may) ;; corrected: (RFC4590.py#digest-nonce-count-must-not)
+Digest-Username           115    3.13      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-username-type) ;; corrected: (RFC4590.py#digest-username-may) ;; corrected: (RFC4590.py#digest-username-must-not)
+Digest-Opaque             116    3.14      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-opaque-type) ;; corrected: (RFC4590.py#digest-opaque-may) ;; corrected: (RFC4590.py#digest-opaque-must-not)
+Digest-Auth-Param         117    3.15      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-auth-param-type) ;; corrected: (RFC4590.py#digest-auth-param-may) ;; corrected: (RFC4590.py#digest-auth-param-must-not)
+Digest-AKA-Auts           118    3.16      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-aka-auts-type) ;; corrected: (RFC4590.py#digest-aka-auts-may) ;; corrected: (RFC4590.py#digest-aka-auts-must-not)
+Digest-Domain             119    3.17      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-domain-type) ;; corrected: (RFC4590.py#digest-domain-may) ;; corrected: (RFC4590.py#digest-domain-must-not)
+Digest-Stale              120    3.18      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-stale-type) ;; corrected: (RFC4590.py#digest-stale-may) ;; corrected: (RFC4590.py#digest-stale-must-not)
+Digest-HA1                121    3.19      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#digest-ha1-type) ;; corrected: (RFC4590.py#digest-ha1-may) ;; corrected: (RFC4590.py#digest-ha1-must-not)
+SIP-AOR                   122    3.20      UTF8String   -      M,P   -       V ;; corrected: (RFC4590.py#sip-aor-type) ;; corrected: (RFC4590.py#sip-aor-may) ;; corrected: (RFC4590.py#sip-aor-must-not)
