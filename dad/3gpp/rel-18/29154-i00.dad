@@ -316,3 +316,9 @@ Event-Reports ::= < AVP header: 4215 10415 > ;; corrected: (TS29.154.py#vendor-i
         { Extended-SCEF-Reference-ID }
       * [ Access-Network-Reports ]
       * [ AVP ]
+
+
+; Type: Undefined AVP ;; inserted: (TS29.154.py#undefined-external-group-identifier)
+; Name: External-Group-Identifier
+; Section: A.6.6.2
+; Note: A.4.1 "the SCEF shall send an Event-Configuration-Request (ECR) command to the PCRF including the Event-Configuration AVP and the External-Group-Identifier AVP"

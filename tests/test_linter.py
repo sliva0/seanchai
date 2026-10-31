@@ -597,8 +597,19 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         # Table 7.1.0.1 marks ACA's Error-Message and Failed-AVP unused; the
         # corrections cite RFC origins for it, whose clauses 7.1.9, 7.1.14,
         # 7.1.17 and B.2.4 print bodies of their own.
+        # Plus, corrected, the Undefined AVP blocks the corrections insert:
+        # Submission-Timestamp and Network-Element.
         "32299-i00.raw": 2,
-        "32299-i00": 6,
+        "32299-i00": 8,
+        # Only the Undefined AVP blocks, one note each: RFC 4004's three
+        # SPIs, TS 29.345's ProSe-Query-Code and ProSe-Response-Code, TS
+        # 29.154's External-Group-Identifier.
+        "rfc4004.raw": 0,
+        "rfc4004": 3,
+        "29345-i00.raw": 0,
+        "29345-i00": 2,
+        "29154-i00.raw": 0,
+        "29154-i00": 1,
         # The transcriptions re-print what they import: ES 283 034 clause
         # 7.3.11 TS 183 017's Reservation-Priority, TS 183 017 clauses
         # 7.3.10-7.3.32 the Gq AVPs and ES 283 034's Globally-Unique-Address;
@@ -615,6 +626,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "member-marked-unused",
         "registry-range-overlap",
         "table-row-mismatch",
+        "undefined-avp",
     }
 
 
@@ -731,7 +743,10 @@ def test_an_accepted_note_is_reported_apart_citing_its_acceptance():
     assert finding.severity is linter.Severity.ACCEPTED
     assert finding.accepted_by == "borrowed-body"
     assert str(finding).startswith("accepted: [reused-body-differs]")
-    assert linter.Severity.ERROR not in {f.severity for f in findings}
+    # The fixture's members are names only; nothing else is an error.
+    assert {f.rule for f in findings if f.severity is linter.Severity.ERROR} == {
+        "unresolved-reference"
+    }
 
 
 @pytest.mark.parametrize(
@@ -1423,7 +1438,7 @@ def test_references_resolve_against_a_base_document():
     findings = linter.lint_with_corpus(spec, _books(base))
     (unresolved,) = [f for f in findings if f.rule == "unresolved-reference"]
 
-    assert unresolved.severity is linter.Severity.NOTE
+    assert unresolved.severity is linter.Severity.ERROR
     assert "Mystery" in unresolved.message
     assert "Session-Id" not in unresolved.message
 
@@ -1447,6 +1462,127 @@ def test_a_base_missing_from_the_corpus_is_a_note_and_turns_the_rule_off():
     assert "unresolved-reference" not in rules
 
 
+def _undefined(name="Mystery", section="6.3.1"):
+    return ast.UndefinedAvp(name=name, source=ast.SourceRef(section=section))
+
+
+def _naming_mystery(*sections):
+    """A grouped body in clause 6.3.1 naming a member nothing defines, and
+    in clause 6.3.2 another naming it again."""
+    return _spec(
+        _grouped_with("Holder", 700, "Mystery", section="6.3.1"),
+        _grouped_with("Other", 701, "Mystery", section="6.3.2"),
+        _table(_row("Holder", 700), _row("Other", 701)),
+        *sections,
+    )
+
+
+def test_an_undefined_avp_block_is_a_note_naming_where_it_is_referenced():
+    (finding,) = [
+        f for f in linter.lint(_naming_mystery(_undefined())) if "undefined" in f.rule
+    ]
+
+    assert finding.severity is linter.Severity.NOTE
+    assert str(finding) == (
+        "note: [undefined-avp] Mystery is referenced in clauses 6.3.1, 6.3.2"
+        " and declared undefined (clause 6.3.1)"
+    )
+    assert finding.paths == (("sections", 3),)
+
+
+@pytest.mark.parametrize(
+    ("block", "message"),
+    [
+        (
+            _undefined("Absent"),
+            "Absent is declared undefined, but no body references it",
+        ),
+        (
+            _undefined(section="6.3"),
+            "Mystery is declared undefined citing a clause whose bodies do not"
+            " reference it; it is referenced in clauses 6.3.1, 6.3.2",
+        ),
+    ],
+    ids=["by-name", "by-clause"],
+)
+def test_an_undefined_avp_block_nothing_references_is_an_error(block, message):
+    findings = [
+        f for f in linter.lint(_naming_mystery(block)) if f.rule.startswith("undefined")
+    ]
+
+    assert [(f.severity, f.rule, f.message) for f in findings] == [
+        (linter.Severity.ERROR, "undefined-avp-unused", message)
+    ]
+
+
+@pytest.mark.parametrize(
+    ("sections", "message"),
+    [
+        (
+            (_grouped_with("Mystery", 702),),
+            "Mystery is declared undefined, but the file defines, tabulates or"
+            " re-uses it",
+        ),
+        (
+            (_table(_row("Mystery", 702, ast.DataType.UTF8_STRING)),),
+            "Mystery is declared undefined, but the file defines, tabulates or"
+            " re-uses it",
+        ),
+        (
+            (_reused(ast.ReusedAvpRow(name="Mystery", origin="TS29.272")),),
+            "Mystery is declared undefined, but the file defines, tabulates or"
+            " re-uses it",
+        ),
+        ((_undefined(),), "Mystery is declared undefined 2 times"),
+    ],
+    ids=["defined", "tabulated", "re-used", "twice"],
+)
+def test_an_undefined_avp_block_for_a_name_the_file_knows_is_an_error(
+    sections, message
+):
+    findings = linter.lint(_naming_mystery(_undefined(), *sections))
+
+    assert message in [
+        f.message
+        for f in findings
+        if f.rule == "undefined-avp-defined" and f.severity is linter.Severity.ERROR
+    ]
+
+
+def test_an_undefined_avp_a_base_resolves_is_an_error_with_the_corpus():
+    base = _origin_spec("RFC 6733", None, _table(_row("Mystery", 9, ast.DataType.TIME)))
+    spec = _naming_mystery(_undefined()).model_copy(update={"bases": ("RFC6733",)})
+
+    assert "undefined-avp-defined" not in _rules(linter.lint(spec))
+    findings = linter.lint_with_corpus(spec, _books(base))
+
+    (stale,) = [f for f in findings if f.rule == "undefined-avp-defined"]
+    assert stale.severity is linter.Severity.ERROR
+    assert (
+        stale.message
+        == "Mystery is declared undefined, but a base document resolves it"
+    )
+
+
+def test_a_declared_name_is_no_unresolved_reference():
+    base = _origin_spec("RFC 6733", None, _table(_row("Session-Id", 263)))
+    undeclared = _naming_mystery().model_copy(update={"bases": ("RFC6733",)})
+    declared = _naming_mystery(_undefined()).model_copy(update={"bases": ("RFC6733",)})
+
+    (unresolved,) = [
+        f
+        for f in linter.lint_with_corpus(undeclared, _books(base))
+        if f.rule == "unresolved-reference"
+    ]
+    assert unresolved.severity is linter.Severity.ERROR
+    assert unresolved.message.startswith(
+        "Mystery is referenced in clauses 6.3.1, 6.3.2"
+    )
+    rules = _rules(linter.lint_with_corpus(declared, _books(base)))
+    assert "unresolved-reference" not in rules
+    assert "undefined-avp" in rules
+
+
 # Standing findings from docs/linter.md, plus the additional reprints,
 # body differences and indirect origins present in the committed corpus.
 _STANDING_CORPUS_NOTES = {
@@ -1466,7 +1602,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-origin-indirect": ["Service-Selection"],
     },
     "29154-i00.dad": {
-        "unresolved-reference": ["External-Group-Identifier"],
+        "undefined-avp": ["External-Group-Identifier"],
     },
     # Clause 2 [24] cites 3GPP2 X.S0057-B, which 3GPP2's library does not
     # publish; revision 0 V2.0 stands in (corpus.STAND_INS).
@@ -1544,7 +1680,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["Serving-Node"],
     },
     "29345-i00.dad": {
-        "unresolved-reference": ["ProSe-Query-Code", "ProSe-Response-Code"],
+        "undefined-avp": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
     "32299-i00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
@@ -1568,9 +1704,9 @@ _STANDING_CORPUS_NOTES = {
             "Feature-List",
             "Feature-List-ID",
         ],
-        "unresolved-reference": [
-            "Network-Element",
+        "undefined-avp": [
             "Submission-Timestamp",
+            "Network-Element",
         ],
     },
     # The transcriptions cite TS 29.209, which ends at V6.8.0, ES 283 034
@@ -1647,9 +1783,9 @@ _STANDING_CORPUS_NOTES = {
         "reused-origin-indirect": ["3GPP2-BSID"],
     },
     "rfc4004.dad": {
-        "unresolved-reference": [
+        "undefined-avp": [
             "MIP-HA-to-MN-SPI",
-            "MIP-MN-FA-SPI",
+            "MIP-MN-to-FA-SPI",
             "MIP-MN-to-HA-SPI",
         ],
     },

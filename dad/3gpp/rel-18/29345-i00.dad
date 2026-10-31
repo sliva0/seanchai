@@ -715,3 +715,17 @@ Code-Sending-Security-Material ::= < AVP header: 3861 10415 > ;; corrected: (TS2
 ; Page: 59
 ProSe-App-Code-Suffix-Range ::= < AVP header: 3867 10415 > ;; corrected: (TS29.345.py#prose-app-code-suffix-range-code)
         { Beginning-Suffix }
+
+
+; Type: Undefined AVP ;; inserted: (TS29.345.py#undefined-prose-query-code)
+; Name: ProSe-Query-Code
+; Section: 6.3.53
+; Page: 53
+; Note: "the Discovery-Auth-Request shall contain a UE identity, an Application Identifier, Requesting RPAUID, a ProSe Query Code"
+
+
+; Type: Undefined AVP ;; inserted: (TS29.345.py#undefined-prose-response-code)
+; Name: ProSe-Response-Code
+; Section: 6.3.53
+; Page: 53
+; Note: "the Discovery-Auth-Request shall contain a UE identity, an Application Identifier, Requesting RPAUID, a ProSe Response Code"

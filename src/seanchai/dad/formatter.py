@@ -225,6 +225,17 @@ def _format_application_scope(
     ]
 
 
+def _format_undefined_avp(
+    undefined: ast.UndefinedAvp, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    lines = _directives(undefined, undefined.name, path, notes)
+    if undefined.note is not None:
+        lines.extend(notes.line(f"; Note: {undefined.note}", (*path, "note")))
+    # No line states the block as a whole, so its own path is its end.
+    lines.extend(notes.standing_at(path))
+    return lines
+
+
 def _format_message(
     message: ast.Message, path: ast.TreePath, notes: Comments
 ) -> list[str]:
@@ -504,6 +515,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.AvpTable: _format_avp_table,
     ast.ReusedAvps: _format_reused,
     ast.Registry: _format_registry,
+    ast.UndefinedAvp: _format_undefined_avp,
 }
 
 

@@ -42,6 +42,7 @@ each starting with `; Type:`.
 | `AVP Table`         | the spec's own AVP table, one AVP per row                        |
 | `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
 | `Registry`          | codes a registry allocates, each to the documents defining it    |
+| `Undefined AVP`     | a name the document uses and the corpus finds defined nowhere    |
 
 ## Design intent
 
@@ -136,6 +137,18 @@ each starting with `; Type:`.
   purpose quoted as printed. Read as AVP definitions, the table would make
   the registry a second definer of every 3GPP AVP and lose which document
   defines each.
+- **A name defined nowhere says so.** RFC 4004 clause 9.4 makes
+  `MIP-HA-to-MN-SPI` a required member of `MIP-HA-to-MN-MSA`, and
+  neither the RFC, its errata nor IANA gives it a code or a clause; TS
+  29.345, 29.154 and 32.299 do the same for five names through V19.0.0.
+  An `Undefined AVP` block names each, cites the clause using it and
+  keeps what the document says of it, so the corpus states the defect
+  rather than leaving the reader to infer it from a failed lookup. The
+  document does not call the name undefined: that is the corpus's
+  finding, after checking later versions, errata, the registry and
+  Wireshark's dictionary, so only a correction writes the block, citing
+  that evidence; no extractor does. The block declares no type, code or
+  flags: what a consumer does about the name is the consumer's choice.
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
 - **An origin names its publisher, unless it is 3GPP or IETF.** The corpus

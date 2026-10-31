@@ -34,7 +34,7 @@ transcribed-line = "; Transcribed: by hand from " URI   ; the rendering copied
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
 section       = application-scope / message / grouped-avp / enumerated-avp
-              / avp-table / reused-avps / registry
+              / avp-table / reused-avps / registry / undefined-avp
 ```
 
 A `spec-ref` names a document without its version. A 3GPP or IETF
@@ -376,6 +376,28 @@ RESERVED 256..299 "future use"`). Rows and reservations keep the table's
 order, overlaps and all: TS 29.230 reserves 4703–4799 for TS 29.389 inside
 4605–4799 for TS 29.388.
 
+### Undefined AVP
+
+```abnf
+undefined-avp = "; Type: Undefined AVP" NL
+                "; Name: " avp-name NL
+                source-ref
+                ["; Note: " inline-text NL]
+```
+
+A name the document uses as a member of a message or grouped body and
+that nothing in the corpus defines: no clause, table row, re-used row or
+base document of its own, and no later version, erratum or sibling
+document either. `; Section:` is the clause whose ABNF first names it,
+in file order; `; Note:` is what the document says of the name, in its
+words and quoted, with the clause first where it is not `; Section:`'s
+(`; Note: A.4.1 "the SCEF shall send an Event-Configuration-Request (ECR)
+command to the PCRF including the Event-Configuration AVP and the
+External-Group-Identifier AVP"`). With no note, the document says nothing
+about the name beyond its ABNF. The block has no body: it states that
+the name is broken, not what it would be. A type the document states for
+a name without a code is a partial definition, a table row, not this.
+
 ## Text values
 
 ```abnf
@@ -400,6 +422,7 @@ Checked by the AST after parsing:
   mandatory; no duplicate column; tables are non-empty.
 - `; Name:` equals the name in the block's header rule.
 - `; Applies-To:` names a clause at most once.
+- `; Name:` of an Undefined AVP block is not `AVP`.
 - Command codes are 24-bit; codes, vendor ids, application ids and enum
   values are 32-bit; page numbers are 32-bit and at least 1.
 

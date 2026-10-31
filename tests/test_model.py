@@ -1565,7 +1565,11 @@ class TestOverTheCommittedCorpus:
 # cause.
 _STANDING_HOLES = {
     "RFC4004": {
-        "resolves nowhere": ["MIP-HA-to-MN-SPI", "MIP-MN-FA-SPI", "MIP-MN-to-HA-SPI"]
+        "resolves nowhere": [
+            "MIP-HA-to-MN-SPI",
+            "MIP-MN-to-FA-SPI",
+            "MIP-MN-to-HA-SPI",
+        ]
     },
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
     "TS29.154": {"resolves nowhere": ["External-Group-Identifier"]},

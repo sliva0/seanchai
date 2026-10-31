@@ -34,7 +34,8 @@ from the open findings. Applying a module skips them.
 Beside field replacement there are three narrow structural operations:
 `Delete` for a node that should not exist at all, `Insert` for an AVP-table row
 the source defines but omits from the table (or a body member a verified
-erratum restores, or an enumerated value a later document adds), and
+erratum restores, an enumerated value a later document adds, or the block
+declaring a name the corpus finds defined nowhere), and
 `Supply` for what a document defines in another: the value list of an
 enumerated AVP, or the type and flag rules of a table row typed by
 reference. All fail loudly when upstream changes
@@ -197,6 +198,24 @@ class application_scope(Selector):
 
     def describe(self) -> str:
         return f"application scope {self.name!r}"
+
+
+@dataclass(frozen=True)
+class undefined(Selector):
+    """An `Undefined AVP` block, by the name it declares."""
+
+    name: str
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching block, at `("sections", i)`."""
+        yield from (
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
+            if isinstance(section, ast.UndefinedAvp) and section.name == self.name
+        )
+
+    def describe(self) -> str:
+        return f"undefined AVP {self.name!r}"
 
 
 @dataclass(frozen=True)
@@ -535,6 +554,16 @@ class Insert:
     other application scopes, which lead the file, so `after` must be None;
     no other scope may carry its name.
 
+    Into `header()` it also inserts an `UndefinedAvp`, declaring a name the
+    document uses as a member that nothing in the corpus defines, its
+    `reason` citing what was searched: RFC 4004's `MIP-HA-to-MN-SPI`. The
+    block goes after the file's last section, after any inserted before it,
+    so `after` must be None. Checked against the corrected tree, so that a
+    member a correction renames is the name it declares: the file must
+    hold no definition, table row, re-used row or other block of that
+    name, and some message or grouped body in clause `source.section` must
+    name it. Once upstream defines the name, the first fails.
+
     Into a `definition()`, a message or grouped AVP, it inserts an
     `AvpRule`, a member the body omits and a verified erratum restores:
     RFC 5777's erratum 2333 adds three to `Time-Of-Day-Condition`. `after`
@@ -553,6 +582,7 @@ class Insert:
         ast.AvpTableRow
         | ast.ReusedAvpRow
         | ast.ApplicationScope
+        | ast.UndefinedAvp
         | ast.AvpRule
         | ast.EnumValue
     )
@@ -1036,24 +1066,32 @@ def _inserted_application_scope(
     origin: _Added,
 ) -> list[tuple[_Origin, Any]]:
     """The file's sections with the declared application scope placed after
-    the last one already there, each with its origin. `sections` holds what
-    earlier inserts made of them, None before the first."""
+    the last one already there, or the declared undefined AVP after the last
+    section, each with its origin. `sections` holds what earlier inserts
+    made of them, None before the first."""
     described = insert.into.describe()
     node = insert.node
-    if not isinstance(node, ast.ApplicationScope):
+    if not isinstance(node, ast.ApplicationScope | ast.UndefinedAvp):
         raise CorrectionError(
-            f"{described}: only an ApplicationScope can be inserted into the file,"
-            f" not a {type(node).__name__}"
-        )
-    if insert.after is not None:
-        raise CorrectionError(
-            f"{described}: an application scope follows the others; after must be None"
+            f"{described}: only an ApplicationScope or an UndefinedAvp can be"
+            f" inserted into the file, not a {type(node).__name__}"
         )
     if sections is None:
         sections = [
             (("sections", index), section)
             for index, section in enumerate(spec.sections)
         ]
+    if isinstance(node, ast.UndefinedAvp):
+        if insert.after is not None:
+            raise CorrectionError(
+                f"{described}: an undefined AVP ends the file; after must be None"
+            )
+        # What it expects is checked on the corrected tree (`_check_undefined`).
+        return [*sections, (origin, node)]
+    if insert.after is not None:
+        raise CorrectionError(
+            f"{described}: an application scope follows the others; after must be None"
+        )
     if any(
         isinstance(section, ast.ApplicationScope) and section.name == node.name
         for _, section in sections
@@ -1070,6 +1108,44 @@ def _inserted_application_scope(
         default=0,
     )
     return [*sections[:position], (origin, node), *sections[position:]]
+
+
+def _check_undefined(spec: ast.Specification, node: ast.UndefinedAvp) -> None:
+    """What an inserted `UndefinedAvp` expects of the corrected file: no
+    definition, table row, re-used row or second block of its name, and a
+    message or grouped body in its clause naming it."""
+    described = f"undefined AVP {node.name!r}"
+    for section in spec.sections:
+        if (
+            isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp)
+            and section.name == node.name
+        ):
+            raise CorrectionError(
+                f"{described}: clause {section.source.section} defines it"
+            )
+    for section in spec.sections:
+        if isinstance(section, ast.AvpTable | ast.ReusedAvps) and any(
+            row.name == node.name for row in section.rows
+        ):
+            raise CorrectionError(
+                f"{described}: the table of clause {section.source.section} lists it"
+            )
+    declared = sum(
+        isinstance(section, ast.UndefinedAvp) and section.name == node.name
+        for section in spec.sections
+    )
+    if declared > 1:
+        raise CorrectionError(f"{described}: declared {declared} times")
+    if not any(
+        isinstance(section, ast.Message | ast.GroupedAvp)
+        and section.source.section == node.source.section
+        and any(rule.name == node.name for rule in section.avps)
+        for section in spec.sections
+    ):
+        raise CorrectionError(
+            f"{described}: no message or grouped body in clause"
+            f" {node.source.section} names it"
+        )
 
 
 def _created_blocks(
@@ -1370,10 +1446,15 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
             plan.rows[("sections",)] = _inserted_application_scope(
                 tree, plan.rows.get(("sections",)), correction, _Added(index)
             )
+            kind = (
+                "undefined AVP"
+                if isinstance(correction.node, ast.UndefinedAvp)
+                else "application scope"
+            )
             results.append(
                 Result(
                     correction=correction,
-                    node=f"application scope {correction.node.name!r}",
+                    node=f"{kind} {correction.node.name!r}",
                     old=None,
                     new=correction.node,
                 )
@@ -1424,6 +1505,9 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
         )
         origins.append(path)
     rebuilt = _rebuilt(tree, (), (), plan)
+    for edit in corrections:
+        if isinstance(edit, Insert) and isinstance(edit.node, ast.UndefinedAvp):
+            _check_undefined(rebuilt, edit.node)
     for path, description in targets.items():
         if path not in plan.placed:
             raise CorrectionError(
@@ -1602,6 +1686,7 @@ _SECTION_TYPES = (
     ast.AvpTable,
     ast.ReusedAvps,
     ast.Registry,
+    ast.UndefinedAvp,
 )
 
 
@@ -1652,11 +1737,11 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
             )
             continue
         if isinstance(edit, Insert):
-            # An application scope has no line of its own, so the line that
-            # opens it carries the note.
+            # An application scope or undefined AVP has no line of its own,
+            # so the line that opens it carries the note.
             line = (
                 (*result.path, "type")
-                if isinstance(edit.node, ast.ApplicationScope)
+                if isinstance(edit.node, ast.ApplicationScope | ast.UndefinedAvp)
                 else result.path
             )
             yield "trailing", line, f"inserted: ({edit.cited})", index
@@ -1681,10 +1766,11 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
     """The path of the line a correction's note trails.
 
     A definition is cited on its header rule, the line that states it,
-    whichever field was corrected. The file header, a table and an
-    application scope have no such line: each field they let a correction
-    replace prints on a directive line of its own (`; Bases:`, `; Table:`,
-    `; Application-ID:`), so the note trails that line.
+    whichever field was corrected. The file header, a table, an
+    application scope and an undefined AVP have no such line: each field
+    they let a correction replace prints on a directive line of its own
+    (`; Bases:`, `; Table:`, `; Application-ID:`, `; Note:`), so the note
+    trails that line.
     A correction that removes the field's line altogether — a `; Table:`
     caption or the `; Bases:` dropped — is cited on the block's first line,
     the one left that names the block.
@@ -1693,7 +1779,8 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
         # The rules print as cells of their row's line.
         return result.path[:-1]
     if not isinstance(
-        correction.target, header | avp_table | reused_avps | application_scope
+        correction.target,
+        header | avp_table | reused_avps | application_scope | undefined,
     ):
         return result.path
     if result.new is not None and result.new != ():

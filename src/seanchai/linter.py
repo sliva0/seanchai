@@ -101,6 +101,8 @@ class _Index:
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = field(default_factory=list)
     messages: list[ast.Message] = field(default_factory=list)
     applications: list[ast.ApplicationScope] = field(default_factory=list)
+    # `Undefined AVP` blocks: names the file declares defined nowhere.
+    undefined: list[ast.UndefinedAvp] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
     # Names a re-used table cites from this file itself. TS 29.212's Gxx, S9,
@@ -150,6 +152,8 @@ def _index(spec: ast.Specification) -> _Index:
             index.messages.append(section)
         elif isinstance(section, ast.ApplicationScope):
             index.applications.append(section)
+        elif isinstance(section, ast.UndefinedAvp):
+            index.undefined.append(section)
         elif isinstance(section, ast.AvpTable):
             index.tables.append(section)
         elif isinstance(section, ast.ReusedAvps):
@@ -752,6 +756,104 @@ def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
     return findings
 
 
+def _references(index: _Index) -> dict[str, list[str]]:
+    """The clauses of the message and grouped bodies naming each member,
+    in file order, `* [ AVP ]` aside."""
+    cited_by: dict[str, list[str]] = defaultdict(list)
+    for section in (*index.messages, *index.definitions):
+        if not isinstance(section, ast.Message | ast.GroupedAvp):
+            continue
+        for rule in section.avps:
+            if rule.name != "AVP":
+                cited_by[rule.name].append(section.source.section)
+    return {name: list(dict.fromkeys(where)) for name, where in cited_by.items()}
+
+
+def _clauses(where: list[str]) -> str:
+    return f"clause{'s' if len(where) > 1 else ''} {', '.join(where)}"
+
+
+def _undefined_avps(index: _Index) -> list[Finding]:
+    """What each `Undefined AVP` block declares, checked against the file.
+
+    `undefined-avp`, a note per block a body references: the name is a
+    corpus finding a consumer has to decide about (docs/consumers.md).
+    `undefined-avp-unused`, an error: a block whose name no body
+    references, or whose clause holds no body naming it. And
+    `undefined-avp-defined`, an error: a block for a name the file defines,
+    tabulates, lists as re-used or declares twice, a stale claim the model
+    would quietly read past."""
+    referenced = _references(index)
+    known = (
+        {definition.name for definition in index.definitions}
+        | {row.name for row in index.rows}
+        | set(index.reused)
+        | set(index.self_cited)
+    )
+    declared: dict[str, int] = defaultdict(int)
+    for block in index.undefined:
+        declared[block.name] += 1
+    findings = []
+    for block in index.undefined:
+        name, clause = block.name, block.source.section
+        paths = (index.path(block),)
+        where = referenced.get(name)
+        if name in known:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "undefined-avp-defined",
+                    f"{name} is declared undefined, but the file defines,"
+                    " tabulates or re-uses it",
+                    clause,
+                    paths=paths,
+                )
+            )
+        if declared[name] > 1:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "undefined-avp-defined",
+                    f"{name} is declared undefined {declared[name]} times",
+                    clause,
+                    paths=paths,
+                )
+            )
+        if where is None:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "undefined-avp-unused",
+                    f"{name} is declared undefined, but no body references it",
+                    clause,
+                    paths=paths,
+                )
+            )
+        elif clause not in where:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "undefined-avp-unused",
+                    f"{name} is declared undefined citing a clause whose"
+                    f" bodies do not reference it; it is referenced in"
+                    f" {_clauses(where)}",
+                    clause,
+                    paths=paths,
+                )
+            )
+        else:
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "undefined-avp",
+                    f"{name} is referenced in {_clauses(where)} and declared undefined",
+                    clause,
+                    paths=paths,
+                )
+            )
+    return findings
+
+
 def _reservation_label(reservation: ast.RegistryReservation) -> str:
     purpose = "" if reservation.purpose is None else f" for {reservation.purpose!r}"
     return f"{reservation.first}..{reservation.last} (reserved{purpose})"
@@ -835,6 +937,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_local_and_reused(index),
         *_members_marked_unused(spec),
         *_registry_overlaps(spec),
+        *_undefined_avps(index),
     ]
     return _ordered(findings)
 
@@ -1449,13 +1552,14 @@ def _unresolved_references(
     corpus is incomplete, and a hundred spurious errors would bury the real
     findings.
 
-    A note rather than an error, for now: the corrected corpus still carries
-    34 of these — references to AVPs a document neither defines, tabulates
-    nor lists as re-used (29.337's `MME-Name` from TS 29.336, RFC 8581's
-    `OC-Report-Type` from RFC 7683) plus at least one outright source typo
-    (29.345's `WiFi-P2P-Assistance-Iinfo`). Each needs a correction, a wider
-    re-used table reading, or an extra `; Bases:` entry before the rule can
-    promote to an error without breaking the corpus's clean exit.
+    A name an `Undefined AVP` block declares is no unresolved reference:
+    `undefined-avp` reports it, and here `undefined-avp-defined` reports a
+    block whose name a base document resolves after all, the stale claim's
+    cross-file form.
+
+    An error: the corrected corpus resolves every reference or declares it
+    undefined, so one that does neither is a defect wanting a correction (a
+    block, a renamed member, a row or a `; Bases:` entry).
     """
     if missing_bases:
         return [
@@ -1473,25 +1577,31 @@ def _unresolved_references(
         | {row.name for row in index.rows}
         | set(index.reused)
     )
+    local = set(known)
     for base in bases.values():
         known |= base.defined.keys() | base.tabled.keys() | base.reused.keys()
-    cited_by: dict[str, list[str]] = defaultdict(list)
-    for section in (*index.messages, *index.definitions):
-        if not isinstance(section, ast.Message | ast.GroupedAvp):
-            continue
-        for rule in section.avps:
-            if rule.name == "AVP" or rule.name in known:
-                continue
-            cited_by[rule.name].append(section.source.section)
-    return [
+    declared = {block.name: block for block in index.undefined}
+    stale = [
         Finding(
-            Severity.NOTE,
-            "unresolved-reference",
-            f"{name} is referenced in clause{'s' if len(where) > 1 else ''}"
-            f" {', '.join(dict.fromkeys(where))} but resolves to no local"
-            " definition, table row, re-used entry or base document",
+            Severity.ERROR,
+            "undefined-avp-defined",
+            f"{name} is declared undefined, but a base document resolves it",
+            block.source.section,
+            paths=(index.path(block),),
         )
-        for name, where in sorted(cited_by.items())
+        for name, block in sorted(declared.items())
+        if name in known and name not in local
+    ]
+    return stale + [
+        Finding(
+            Severity.ERROR,
+            "unresolved-reference",
+            f"{name} is referenced in {_clauses(where)} but resolves to no"
+            " local definition, table row, re-used entry or base document,"
+            " and no Undefined AVP block declares it",
+        )
+        for name, where in sorted(_references(index).items())
+        if name not in known and name not in declared
     ]
 
 

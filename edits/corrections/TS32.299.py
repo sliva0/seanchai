@@ -1014,3 +1014,48 @@ CORRECTIONS += [
         versions="11.20.0",
     ),
 ]
+
+# Two members of Release 18's grouped bodies that nothing defines
+# (docs/linter.md#standing-findings). Searched: V18.0.0 and V19.0.0, the TS
+# 29.230 registry, TS 32.253 and 32.254 (Rel-19), and Wireshark's
+# dictionary.
+CORRECTIONS += [
+    Insert(
+        id="undefined-submission-timestamp",
+        into=header(),
+        node=ast.UndefinedAvp(
+            name="Submission-Timestamp",
+            source=ast.SourceRef(section="7.2.112aA", page=152),
+        ),
+        after=None,
+        reason="a member of NIDD-Submission (7.2.112aA), a clause ending"
+        " 'Editor's Note: AVP for result of NIDD submission is ffs.', that"
+        " no clause defines and table 7.2.0.1 does not list, in V18.0.0 as"
+        " in V19.0.0; TS 32.253 (Rel-19) defines the CDR field 'Submission"
+        " Timestamp' (6.1.3.4, 'when the NIDD submission request was sent to"
+        " the CPCN node') and binds it to an AVP Submission-Timestamp (6.4),"
+        " with no code or type; the TS 29.230 registry knows only"
+        " Submission-Time (1202, MMS-Information's, clause 7.2.217), and"
+        " nothing says that is meant; Wireshark's dictionary has no such"
+        " AVP",
+        versions="18.0.0",
+    ),
+    Insert(
+        id="undefined-network-element",
+        into=header(),
+        node=ast.UndefinedAvp(
+            name="Network-Element",
+            source=ast.SourceRef(section="7.2.66aA", page=136),
+        ),
+        after=None,
+        reason="a member of Exposure-Function-API-Information (7.2.66aA)"
+        " that no clause defines and table 7.2.0.1 does not list, in V18.0.0"
+        " as in V19.0.0; TS 32.254 (Rel-19) tables 6.3.1.2.1 and 6.4 have no"
+        " such field, only 'API Network Service Node', which this document"
+        " binds to API-Network-Service-Node (1315, clause 7.2.20eA), a member"
+        " of the same body, so the name cannot be read as it; the TS 29.230"
+        " registry allocates no such name and Wireshark's dictionary has no"
+        " such AVP",
+        versions="18.0.0",
+    ),
+]

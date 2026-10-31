@@ -3686,3 +3686,15 @@ OC-OLR ::= < AVP header: 623 >
         [ OC-Validity-Duration ]
       * [ 3GPP-OC-Specific-Reduction ]
       * [ AVP ]
+
+
+; Type: Undefined AVP ;; inserted: (TS32.299.py#undefined-submission-timestamp)
+; Name: Submission-Timestamp
+; Section: 7.2.112aA
+; Page: 152
+
+
+; Type: Undefined AVP ;; inserted: (TS32.299.py#undefined-network-element)
+; Name: Network-Element
+; Section: 7.2.66aA
+; Page: 136

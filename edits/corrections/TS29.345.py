@@ -1,7 +1,14 @@
 """Corrections for 3GPP TS 29.345 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, avp_rule, definition, table_row
+from seanchai.dad.corrections import (
+    Correction,
+    Insert,
+    avp_rule,
+    definition,
+    header,
+    table_row,
+)
 
 CORRECTIONS = [
     Correction(
@@ -102,4 +109,48 @@ CORRECTIONS = [
             ("Match-Report-Info", "User-Identity", "User-Identifier"),
         )
     ),
+]
+
+# Two members of clauses 6.3.53 and 6.3.54 that nothing defines
+# (docs/linter.md#standing-findings). Searched: V18.0.0 and V19.0.0, the TS
+# 29.230 registry, TS 29.343 and 29.344, and Wireshark's dictionary.
+_SEARCHED = (
+    " that no clause defines and table 6.3.1-1 does not list, in V18.0.0 as"
+    " in V19.0.0; TS 29.230 table 7.1 allocates TS 29.345 3800-3868, none"
+    " to it, and reserves 3869..3899; TS 29.343 (PC2) and 29.344 (PC4a) do"
+    " not name it, and Wireshark's dictionary has no such AVP. The DUSK,"
+    " DUIK and Encrypted-Bitmask clauses treat it as a discovery code like"
+    " ProSe-Restricted-Code (3846, OctetString, 6.3.67), which is analogy,"
+    " not a definition. Restricted discovery came with CR 0029r5"
+    " (CP-150772, V13.0.0), and every version since carries the gap"
+)
+
+CORRECTIONS += [
+    Insert(
+        id=f"undefined-{name.lower()}",
+        into=header(),
+        node=ast.UndefinedAvp(
+            name=name,
+            source=ast.SourceRef(section="6.3.53", page=53),
+            note=f'"the Discovery-Auth-Request shall contain a UE identity, an'
+            f' Application Identifier, Requesting RPAUID, a {words}"',
+        ),
+        after=None,
+        reason=f"an optional member of Discovery-Auth-Request (6.3.53) and"
+        f" Discovery-Auth-Response (6.3.54){_SEARCHED}; clause 6.3.53's prose"
+        f" asks for it for Discovery-Type {case}",
+        versions="18.0.0",
+    )
+    for name, words, case in (
+        (
+            "ProSe-Query-Code",
+            "ProSe Query Code",
+            "DISCOVERER_ANNOUNCING_REQUEST_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY",
+        ),
+        (
+            "ProSe-Response-Code",
+            "ProSe Response Code",
+            "DISCOVEREE_REQUEST_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY",
+        ),
+    )
 ]

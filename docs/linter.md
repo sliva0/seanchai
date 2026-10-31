@@ -79,6 +79,17 @@ acknowledges as an override its document states on purpose
   allocate, two reserved ranges that overlap, or a reserved range covering
   codes a row allocates. A note: a range reserved for a document may hold
   its codes, and which statement is meant is the registry editor's.
+- `undefined-avp` — one note per `Undefined AVP` block, naming the clauses
+  whose bodies reference the name: a member the corpus declares defined
+  nowhere, which every consumer has to decide about
+  ([consumers.md](consumers.md)).
+- `undefined-avp-unused` — a block whose name no body references, or
+  whose `; Section:` holds no body naming it. An error: the block cites a
+  use the file does not have.
+- `undefined-avp-defined` — a block for a name the file defines,
+  tabulates, lists as re-used or declares twice, and with `--corpus` one a
+  `; Bases:` document resolves. An error: the claim is stale, and the
+  model would quietly prefer the definition, so this is where it shows.
 
 A re-used row citing the file's own document is no re-use: TS 29.212's Gxx,
 S9, Sd and St tables list Gx's AVPs from TS 29.212, and 29.061's SGmb table
@@ -158,8 +169,11 @@ With `--corpus`, each re-used row is resolved against the document it cites.
   [extracted](extractor.md#onem2m-ts-0004)).
 - `unresolved-reference` — every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row, or a
-  `; Bases:` document. `* [ AVP ]` is grammar and is skipped. A note rather
-  than an error while the standing cases below exist.
+  `; Bases:` document, or be declared by an `Undefined AVP` block, which
+  `undefined-avp` reports instead. `* [ AVP ]` is grammar and is skipped.
+  An error: the corrected corpus resolves or declares every reference, so
+  one doing neither wants a correction — a block, a renamed member, a row
+  or a `; Bases:` entry.
 - `base-not-in-corpus` — a `; Bases:` document the corpus lacks; reference
   resolution is skipped for that file rather than reporting every base AVP.
 
@@ -452,23 +466,31 @@ why each stays:
 - **`registry-application-name`**, one. TS 29.272's VCSG application scope,
   inserted by correction citing clause 7.2.2, names 16777308 `S7a/S7d`;
   table 4.1 calls it "3GPP S7a".
-- **`unresolved-reference`**, eight. Six are AVPs no document defines,
-  tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`
-  and `MIP-MN-to-HA-SPI` (clauses 9.4–9.6; the prose and clause 11.1's
-  table call the second `MIP-MN-to-FA-SPI`, defined nowhere either, and
-  the third is verified erratum 1462's name for the printed
-  `MIP-MN-HA-SPI`, corrected so it no longer reads as RFC 5778's later
-  MIPv6 AVP of that name, code 491, as Wireshark's dictionary reads it),
-  TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code` (clauses
-  6.3.53, 6.3.54), and TS 29.154's `External-Group-Identifier` (the ECR
-  body, clause A.6.6.2; table A.6.4.1-1 does not list it, and Wireshark
-  has no such AVP either). Two are members of TS 32.299's grouped bodies
-  whose definition the document neither prints nor cites.
-  `Submission-Timestamp` (7.2.112aA) and `Network-Element` (7.2.66aA)
-  resolve nowhere; each has a near-name the document defines,
-  `Submission-Time` (7.2.217, MMS-Information's) and
-  `API-Network-Service-Node` (7.2.20eA, in the same body), but nothing in
-  TS 32.299 says either is meant. A third, `TCP-Source-Port` (7.2.242aaA),
+- **`undefined-avp`**, eight: members no corpus document defines,
+  tabulates, re-uses or allocates, each declared by an `Undefined AVP`
+  block a correction inserts, its reason listing what was searched — later
+  versions (V19.0.0 for the 3GPP documents), errata, the TS 29.230 and IANA
+  registries, sibling documents and Wireshark's dictionary. RFC 4004's
+  `MIP-HA-to-MN-SPI`, `MIP-MN-to-FA-SPI` and `MIP-MN-to-HA-SPI` (clauses
+  9.4–9.6, each "allocated" in its clause's prose and listed in clause
+  11.1's table without a code; the ABNFs print the second and third as
+  `MIP-MN-FA-SPI` and `MIP-MN-HA-SPI`, corrected to the names the prose and
+  table use, the third by verified erratum 1462, so it no longer reads as
+  RFC 5778's later MIPv6 AVP of that name, code 491, as Wireshark's
+  dictionary reads it). TS 29.345's `ProSe-Query-Code` and
+  `ProSe-Response-Code` (clauses 6.3.53, 6.3.54; no clause, no row in
+  table 6.3.1-1, no code in TS 29.230's 3800–3868). TS 29.154's
+  `External-Group-Identifier` (the ECR body, clause A.6.6.2; table
+  A.6.4.1-1 does not list it, and TS 29.336's `External-Identifier`, 3111,
+  which carries an external group identifier on S6t, is the likely intent,
+  which the block's reason records rather than the corpus assuming). TS
+  32.299's `Submission-Timestamp` (7.2.112aA, whose clause ends with an
+  editor's note) and `Network-Element` (7.2.66aA), each beside a near-name
+  the document defines, `Submission-Time` (7.2.217, MMS-Information's) and
+  `API-Network-Service-Node` (7.2.20eA, in the same body), with nothing in
+  TS 32.299 saying either is meant; TS 32.253 binds a CDR field to
+  `Submission-Timestamp` without defining it, and TS 32.254 has no field
+  `Network-Element` could carry. A third, `TCP-Source-Port` (7.2.242aaA),
   sits beside `UDP-Source-Port`, which table 7.2.0.1 refers to TS 29.212
   [215] for; TS 29.212 defines both (5.3.97, 5.3.129) and the table's
   omission of the one is the document's slip, so a correction inserts the
@@ -491,8 +513,9 @@ why each stays:
   blank in every printed row, so the row can state ETSI's vendor, V in
   Must by RFC 6733 section 4.1.1; neither ETSI transcription defines it,
   and Wireshark's dictionary has it, attributed to ETSI TS 183 033.
-  The rule promotes to an error when these are gone, which needs the
-  upstream documents to move.
+  With these declared, the corrected corpus has no `unresolved-reference`,
+  which is now an error. The notes stay until the upstream documents
+  define the names, when the blocks' corrections fail.
 
 Accepted, by acceptance (`edits/corrections/<SpecRef>.py#<id>`), each
 citing the clause that makes the override deliberate:

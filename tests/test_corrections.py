@@ -1008,7 +1008,7 @@ def test_an_application_insert_follows_the_files_own_and_fails_on_its_name():
         (
             ast.ReusedAvpRow(name="X", origin="RFC6733"),
             None,
-            "only an ApplicationScope",
+            "only an ApplicationScope or an UndefinedAvp",
         ),
     ],
     ids=["after", "not-an-application"],
@@ -1034,6 +1034,133 @@ def test_an_application_field_correction_is_cited_on_its_directive_line():
     text = formatter.format_spec(corrected, corrections.notes(results))
     (noted,) = [line for line in text.splitlines() if ";;" in line]
     assert noted == f"; Application-ID: 16777238 ;; corrected: ({correction.id})"
+
+
+def _with_mystery(spec: ast.Specification) -> ast.Specification:
+    """`_spec()` with a member its file defines nowhere: TS 29.345's
+    ProSe-Query-Code shape."""
+    message = _message(spec)
+    mystery = ast.AvpRule(name="Mystery", presence=ast.Presence.OPTIONAL)
+    sections = (
+        message.model_copy(update={"avps": (*message.avps, mystery)}),
+        *spec.sections[1:],
+    )
+    return spec.model_copy(update={"sections": sections})
+
+
+def _undefined(name="Mystery", section="6.1", note: str | None = '"a mystery"'):
+    return ast.UndefinedAvp(
+        name=name, source=ast.SourceRef(section=section, page=7), note=note
+    )
+
+
+def test_an_undefined_avp_inserted_into_the_file_ends_it():
+    spec = _with_mystery(_spec())
+    scope = _insert_application(_application("Own", 1))
+    undefined = _insert_application(_undefined())
+
+    corrected, results = corrections.apply(spec, [undefined, scope])
+
+    assert [type(s).__name__ for s in corrected.sections] == [
+        "ApplicationScope",
+        "Message",
+        "AvpTable",
+        "EnumeratedAvp",
+        "UndefinedAvp",
+    ]
+    assert results[0].node == "undefined AVP 'Mystery'"
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    assert text.endswith(
+        f"; Type: Undefined AVP ;; inserted: ({undefined.id})\n"
+        "; Name: Mystery\n"
+        "; Section: 6.1\n"
+        "; Page: 7\n"
+        '; Note: "a mystery"\n'
+    )
+    assert parser.parse_with_comments(text) == (corrected, corrections.notes(results))
+    # Correcting corrected output fails, as every other expectation does.
+    with pytest.raises(corrections.CorrectionError, match="declared 2 times"):
+        corrections.apply(corrected, [undefined])
+
+
+def test_an_undefined_avp_names_the_member_a_correction_renames():
+    """RFC 4004 clause 9.5's shape: the block declares the member's
+    corrected name, which only the corrected tree holds."""
+    rename = _correction(
+        corrections.avp_rule("Example-Request", "Mystery"),
+        "name",
+        "Mystery",
+        "Mystery-Renamed",
+    )
+
+    corrected, _ = corrections.apply(
+        _with_mystery(_spec()),
+        [_insert_application(_undefined("Mystery-Renamed")), rename],
+    )
+
+    assert corrected.sections[-1] == _undefined("Mystery-Renamed")
+
+
+def _tabulating_mystery(spec: ast.Specification) -> ast.Specification:
+    table = _table(spec)
+    row = ast.AvpTableRow(name="Mystery", code=1601)
+    sections = list(spec.sections)
+    sections[1] = table.model_copy(update={"rows": (*table.rows, row)})
+    return spec.model_copy(update={"sections": tuple(sections)})
+
+
+@pytest.mark.parametrize(
+    ("node", "after", "tabulated", "message"),
+    [
+        (_undefined(), "Own", False, "ends the file; after must be None"),
+        (_undefined("Example-Mode"), None, False, "clause 6.3.2 defines it"),
+        (_undefined(), None, True, "the table of clause 6.3 lists it"),
+        (_undefined(section="6.3"), None, False, "no message or grouped body"),
+        (_undefined("Absent"), None, False, "no message or grouped body in clause 6.1"),
+    ],
+    ids=["after", "defined", "tabulated", "other-clause", "unreferenced"],
+)
+def test_an_undefined_avp_insert_fails_where_the_file_says_otherwise(
+    node, after, tabulated, message
+):
+    spec = _with_mystery(_spec())
+    if tabulated:
+        spec = _tabulating_mystery(spec)
+
+    with pytest.raises(corrections.CorrectionError, match=message):
+        corrections.apply(spec, [_insert_application(node, after)])
+
+
+def test_an_undefined_avp_is_selected_by_name_for_correction_and_deletion():
+    spec = _with_mystery(_spec())
+    spec = spec.model_copy(update={"sections": (*spec.sections, _undefined())})
+    correction = _correction(
+        corrections.undefined("Mystery"), "note", '"a mystery"', '"clause 6.1 says"'
+    )
+
+    corrected, results = corrections.apply(spec, [correction])
+
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    (noted,) = [line for line in text.splitlines() if ";;" in line]
+    assert noted == f'; Note: "clause 6.1 says" ;; corrected: ({correction.id})'
+
+    removed, results = corrections.apply(
+        spec,
+        [_correction(corrections.undefined("Mystery"), "note", '"a mystery"', None)],
+    )
+    text = formatter.format_spec(removed, corrections.notes(results))
+    (noted,) = [line for line in text.splitlines() if ";;" in line]
+    assert noted.startswith("; Type: Undefined AVP ;; corrected:")
+
+    deleted, results = corrections.apply(
+        spec,
+        [_delete(corrections.undefined("Mystery"), _undefined())],
+    )
+    assert not any(isinstance(s, ast.UndefinedAvp) for s in deleted.sections)
+    text = formatter.format_spec(deleted, corrections.notes(results))
+    assert text.endswith(
+        f";; deleted: undefined AVP 'Mystery' ({results[0].correction.cited})\n"
+    )
 
 
 def _repeated_session_id(spec: ast.Specification) -> ast.Specification:

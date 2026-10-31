@@ -370,6 +370,72 @@ def test_an_application_scope_rejects_with_the_line(lines, lineno, message):
     assert error.value.lineno == lineno
 
 
+@pytest.mark.parametrize(
+    ("page", "note"),
+    [("53", '"a ProSe Query Code"'), (None, None)],
+    ids=["page-and-note", "bare"],
+)
+def test_an_undefined_avp_round_trips_with_its_comments(page, note):
+    # TS 29.345 clause 6.3.53 names ProSe-Query-Code, which nothing defines.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 29.345",
+            "; Version: 18.0.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Undefined AVP ;; inserted",
+            "; Name: ProSe-Query-Code",
+            "; Section: 6.3.53",
+            *([] if page is None else [f"; Page: {page}"]),
+            *([] if note is None else [f"; Note: {note}"]),
+            ";; after the block",
+            "",
+        ]
+    )
+
+    spec, comments = parser.parse_with_comments(text)
+
+    (undefined,) = spec.sections
+    assert undefined == ast.UndefinedAvp(
+        name="ProSe-Query-Code",
+        source=ast.SourceRef(section="6.3.53", page=None if page is None else 53),
+        note=note,
+    )
+    assert comments.trailing == {("sections", 0, "type"): ["inserted"]}
+    assert comments.standing == {("sections", 0): ["after the block"]}
+    assert formatter.format_spec(spec, comments) == text
+
+
+@pytest.mark.parametrize(
+    ("lines", "lineno", "message"),
+    [
+        (
+            ["; Name: X", "; Section: 1", "        [ X ]"],
+            8,
+            "unexpected content in undefined AVP",
+        ),
+        (["; Section: 1"], 5, "missing directive 'Name'"),
+        (["; Name: AVP", "; Section: 1"], 6, "wildcard"),
+        (["; Name: X", "; Section: 1", "; Values: 1"], 5, "unexpected directives"),
+        (["; Name: X", "; Note: said"], 5, "missing directive 'Section'"),
+    ],
+    ids=["a-body", "no-name", "the-wildcard", "unknown-directive", "no-section"],
+)
+def test_an_undefined_avp_rejects_with_the_line(lines, lineno, message):
+    text = _dad("; Type: Undefined AVP", *lines)
+
+    with pytest.raises(parser.DadParseError, match=message) as error:
+        parser.parse(text)
+
+    assert error.value.lineno == lineno
+
+
+def test_an_undefined_avp_note_cannot_hold_a_comment_start():
+    with pytest.raises(pydantic.ValidationError, match="starts a comment"):
+        ast.UndefinedAvp(name="X", source=ast.SourceRef(section="1"), note='"a ;; b"')
+
+
 def test_a_registry_round_trips_rows_and_reservations_with_its_comments():
     # TS 29.230 table 7.1: a row citing three documents, a blank type and
     # document, and reservations with and without the documents they name.

@@ -368,8 +368,8 @@ listing every hole, rather than build a model with any. The default is
 `strict=False` because the committed corpus does not build strictly, and
 every standing hole is a statement its source does not make.
 TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and the
-names that resolve nowhere are the linter's standing
-`unresolved-reference` cases. oneM2M TS-0004 reaches no other: its
+names that resolve nowhere are the corpus's `Undefined AVP` blocks, the
+linter's standing `undefined-avp` notes. oneM2M TS-0004 reaches no other: its
 `Service-Information`, TS 32.299 V11.20.0's, resolves through the pinned
 Release 11 copies and the Release 18 ones standing in (above), so
 `holes("oneM2M-TS-0004")` is empty. TS 32.299's thirteen OMA rows are no

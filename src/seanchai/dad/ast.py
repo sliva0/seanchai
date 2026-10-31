@@ -256,6 +256,34 @@ class ApplicationScope(Node):
         )
 
 
+class UndefinedAvp(Node):
+    """`; Type: Undefined AVP` — a name the document uses as a member and
+    the corpus finds defined nowhere, with the clause whose body first
+    names it and, optionally, what the document says of it.
+
+    RFC 4004 clause 9.4 makes `MIP-HA-to-MN-SPI` a required member of
+    `MIP-HA-to-MN-MSA`, and neither the RFC, its errata nor IANA gives it a
+    code or a clause. The document does not call the name undefined: that
+    is the corpus's finding, so only a correction writes the block, citing
+    its evidence. It declares no type, code or flags: it states that the
+    name is broken, not what it would be.
+    """
+
+    type: Literal["Undefined AVP"] = "Undefined AVP"
+    name: AvpName
+    source: SourceRef
+    # What the document says of the name, in its words and quoted, with the
+    # clause first where it is not `source`'s.
+    note: InlineText | None = None
+
+    @pydantic.field_validator("name")
+    @classmethod
+    def _not_the_wildcard(cls, name: str) -> str:
+        if name == "AVP":
+            raise ValueError("'AVP' is RFC 6733's wildcard, not a name")
+        return name
+
+
 class GroupedAvp(Node):
     """`; Type: Grouped AVP` — `Name ::= < AVP header: code vendor-id >` plus body."""
 
@@ -911,7 +939,8 @@ Section = Annotated[
     | EnumeratedAvp
     | AvpTable
     | ReusedAvps
-    | Registry,
+    | Registry
+    | UndefinedAvp,
     Field(discriminator="type"),
 ]
 

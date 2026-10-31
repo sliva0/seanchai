@@ -54,7 +54,7 @@
       }
     },
     "directive-text": {
-      "match": "^(; )(Specification|Name|Table|Values)(: )(.*?)(?=;;|$)",
+      "match": "^(; )(Specification|Name|Table|Values|Note)(: )(.*?)(?=;;|$)",
       "captures": {
         "2": { "name": "keyword.other.directive.dad" },
         "4": { "name": "string.unquoted.directive-value.dad" }
@@ -67,7 +67,7 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application Scope|Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
+              "match": "\\b(Application Scope|Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
               "name": "storage.type.section.dad"
             },
             {

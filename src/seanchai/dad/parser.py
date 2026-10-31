@@ -316,6 +316,29 @@ def _parse_application_scope(
         )
 
 
+def _parse_undefined_avp(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.UndefinedAvp:
+    name = _pop(directives, "Name", lineno)
+    source = _source_ref(directives, lineno)
+    # Optional: absent where the document says nothing of the name beyond
+    # its ABNF.
+    note = directives.pop("Note", None)
+    _no_leftovers(directives, lineno)
+    # The block states a finding, not a rule: nothing follows its directives.
+    if body:
+        raise DadParseError(body[0][0], "unexpected content in undefined AVP")
+    if note is not None:
+        with _validated(note.lineno):
+            _INLINE_TEXT.validate_python(note.value)
+    with _validated(name.lineno):
+        return ast.UndefinedAvp(
+            name=name.value,
+            source=source,
+            note=None if note is None else note.value,
+        )
+
+
 def _avp_header(
     body: list[tuple[int, str]], expected_kind: str, lineno: int
 ) -> tuple[str, int, int | None]:
@@ -766,6 +789,7 @@ _SECTION_PARSERS = {
     "AVP Table": _parse_avp_table,
     "Reused AVPs": _parse_reused,
     "Registry": _parse_registry,
+    "Undefined AVP": _parse_undefined_avp,
 }
 
 # Where each line's comments attach: the path of what the line states. A
@@ -794,9 +818,10 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Application-ID": ("application_id",),
     "Applies-To": ("applies_to",),
     "Registry": ("registry",),
+    "Note": ("note",),
 }
-# An application scope has no body: a whole-line comment after its last
-# line stands at the block's own path.
+# An application scope and an undefined AVP have no body: a whole-line
+# comment after the last line stands at the block's own path.
 _BODIES = {
     "Application Scope": ("", 0),
     "Message": ("avps", 1),
@@ -805,6 +830,7 @@ _BODIES = {
     "AVP Table": ("rows", 0),
     "Reused AVPs": ("rows", 0),
     "Registry": ("rows", 0),
+    "Undefined AVP": ("", 0),
 }
 
 

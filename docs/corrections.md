@@ -69,7 +69,8 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   `enum_value(avp, name, value=, occurrence=)`,
   `avp_rule(parent, name, occurrence=)`
   (parent may be a whole `definition` selector), `avp_table(label)`
-  (`None` for a table printing no label, as an RFC's), `reused_avps(label)`, `application_scope(name)`, `header()`.
+  (`None` for a table printing no label, as an RFC's), `reused_avps(label)`, `application_scope(name)`,
+  `undefined(name)` (an `Undefined AVP` block), `header()`.
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, counted from 1, for a body that prints a
   rule twice identically: TS 29.229 clause 6.1.10 prints RTA's
@@ -120,7 +121,20 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   7.1.6), TS 29.272 for its VCSG commands in the command table's clause
   (7.2.2, 16777308) and TS 29.273 for SWa by naming STa's application
   (4.2.1, with the id in 5.2.1), so their blocks are inserted citing the
-  clause. The command headers stay as printed. Into `definition(name)`, a
+  clause. The command headers stay as printed. Into `header()`, `Insert`
+  also adds an `Undefined AVP` block ([dad-format.md](dad-format.md#design-intent)),
+  after the file's last section and any block inserted before it (`after`
+  must be None), declaring a name the document uses as a member and
+  nothing in the corpus defines; its `reason` cites what was searched
+  (later versions, errata, the registry, Wireshark's dictionary) and
+  any near-name or analogy found, which stays evidence and goes into no
+  field. It expects, of the corrected tree, so that a member a correction
+  renames is the name it declares, no definition, table row, re-used row
+  or second block of that name, and a message or grouped body in its
+  clause naming it; the day upstream defines the name, it fails. Forcing
+  case: RFC 4004's three SPI members (clauses 9.4–9.6), after the
+  corrections give clause 9.5's and 9.6's the names their prose and
+  clause 11.1's table use. Into `definition(name)`, a
   message or grouped AVP, `Insert` adds an `ast.AvpRule`, `after` naming
   the member it follows, and expects no member of that name: RFC 5777's
   verified erratum 2333 restores three members `Time-Of-Day-Condition`'s
@@ -238,13 +252,14 @@ line, so a correction to one of their fields is cited on the directive line
 that field prints —
 `; Bases: RFC6733, RFC4005 ;; corrected: (RFC4006.py#bases-nasreq)`,
 `; Table:` for a table label, `; Columns:` for its columns,
-`; Application-ID:` for an application's id —
+`; Application-ID:` for an application's id, `; Note:` for an undefined
+AVP's note —
 and on the block's first line when it removes that line.
 
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
-inserted row is marked `;; inserted:`, an inserted application scope on its
-`; Type:` line, and every value or row a `Supply` fills `;; supplied:`. Notes are `;;` comments, so an
+inserted row is marked `;; inserted:`, an inserted application scope or
+undefined AVP on its `; Type:` line, and every value or row a `Supply` fills `;; supplied:`. Notes are `;;` comments, so an
 annotated file parses to exactly the corrected tree, and they are placed by
 the rules a hand-written comment follows ([dad-format.md](dad-format.md#comments)):
 `seanchai format` keeps every note where it is, and a corrected file is

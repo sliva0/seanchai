@@ -44,6 +44,19 @@ CORRECTIONS = [
         " 491)",
     ),
     Correction(
+        id="mn-to-fa-msa-spi-name",
+        target=avp_rule("MIP-MN-to-FA-MSA", "MIP-MN-FA-SPI"),
+        field="name",
+        expect="MIP-MN-FA-SPI",
+        replace="MIP-MN-to-FA-SPI",
+        reason="the MIP-MN-to-FA-MSA ABNF (clause 9.5) writes MIP-MN-FA-SPI,"
+        " where its prose says 'The FA allocates the MIP-MN-to-FA-SPI' and"
+        " the command AVP table of clause 11.1 lists MIP-MN-to-FA-SPI, as"
+        " erratum 1462 corrects clause 9.6's MIP-MN-HA-SPI to the"
+        " MIP-MN-to-HA-SPI its prose and table use. No clause defines either"
+        " spelling",
+    ),
+    Correction(
         id="mip-home-agent-host-type",
         target=table_row("MIP-Home-Agent-Host"),
         field="data_type",
@@ -72,4 +85,59 @@ CORRECTIONS += [
             "none"
         ),
     ),
+]
+
+# The three SPIs clauses 9.4-9.6 make required members of their MSAs, which
+# nothing defines (docs/linter.md#standing-findings). Searched: the RFC's
+# clause 9 AVP table and clause 11.1 table, its verified errata (1462
+# renames 9.6's member, 3234 retypes MIP-Home-Agent-Host), IANA's AVP Codes
+# registry and Wireshark's dictionary.
+_SEARCHED = (
+    "; the clause 9 AVP table lists only MIP-FA-to-HA-SPI (318),"
+    " MIP-FA-to-MN-SPI (319) and MIP-HA-to-FA-SPI (323), each defined in a"
+    " clause of its own (9.10, 9.11, 9.14), and clause 11.1's table lists"
+    " the name 0-1 in HAA with no code; neither verified erratum (1462,"
+    " 3234) defines it; IANA's AVP Codes registry leaves 324, 327 and 330"
+    " among the MSA codes unassigned, and nothing says any was meant for it;"
+    " Wireshark's dictionary has no such AVP. By analogy with 318, 319 and"
+    " 323 it would be Unsigned32, M in Must, P in May, V in Must not and"
+    " encryptable, which is analogy, not a definition"
+)
+
+CORRECTIONS += [
+    Insert(
+        id=f"undefined-{name.lower()}",
+        into=header(),
+        node=ast.UndefinedAvp(
+            name=name,
+            source=ast.SourceRef(section=section, page=page),
+            note=f'"{note}"',
+        ),
+        after=None,
+        reason=f"a required member of {parent} (clause {section}) that no"
+        f" clause defines{_SEARCHED}",
+    )
+    for name, parent, section, page, note in (
+        (
+            "MIP-HA-to-MN-SPI",
+            "MIP-HA-to-MN-MSA",
+            "9.4",
+            40,
+            "The MN allocates the MIP-HA-to-MN-SPI.",
+        ),
+        (
+            "MIP-MN-to-FA-SPI",
+            "MIP-MN-to-FA-MSA",
+            "9.5",
+            40,
+            "The FA allocates the MIP-MN-to-FA-SPI.",
+        ),
+        (
+            "MIP-MN-to-HA-SPI",
+            "MIP-MN-to-HA-MSA",
+            "9.6",
+            41,
+            "The HA allocates the MIP-MN-to-HA-SPI.",
+        ),
+    )
 ]

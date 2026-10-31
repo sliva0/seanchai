@@ -254,7 +254,7 @@ MIP-HA-to-MN-MSA ::= < AVP header: 332 >
 ; Section: 9.5
 ; Page: 40
 MIP-MN-to-FA-MSA ::= < AVP header: 325 >
-        { MIP-MN-FA-SPI }
+        { MIP-MN-to-FA-SPI } ;; corrected: (RFC4004.py#mn-to-fa-msa-spi-name)
         { MIP-Algorithm-Type }
         { MIP-Nonce } ;; corrected: (RFC4004.py#mip-nonce-case-mip-mn-to-fa-msa)
       * [ AVP ]
@@ -288,3 +288,24 @@ MIP-Replay-Mode ::= < Enumerated AVP header: 346 >
         None       = 1
         Timestamps = 2
         Nonces     = 3
+
+
+; Type: Undefined AVP ;; inserted: (RFC4004.py#undefined-mip-ha-to-mn-spi)
+; Name: MIP-HA-to-MN-SPI
+; Section: 9.4
+; Page: 40
+; Note: "The MN allocates the MIP-HA-to-MN-SPI."
+
+
+; Type: Undefined AVP ;; inserted: (RFC4004.py#undefined-mip-mn-to-fa-spi)
+; Name: MIP-MN-to-FA-SPI
+; Section: 9.5
+; Page: 40
+; Note: "The FA allocates the MIP-MN-to-FA-SPI."
+
+
+; Type: Undefined AVP ;; inserted: (RFC4004.py#undefined-mip-mn-to-ha-spi)
+; Name: MIP-MN-to-HA-SPI
+; Section: 9.6
+; Page: 41
+; Note: "The HA allocates the MIP-MN-to-HA-SPI."
