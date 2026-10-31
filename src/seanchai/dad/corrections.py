@@ -41,7 +41,8 @@ reference. All fail loudly when upstream changes
 the state that justified them: `Delete` expects the doomed node
 field-for-field, `Insert` expects the row to be absent, so it fails the day
 upstream adds it, and `Supply` expects the clause's `; Values:` citation and
-no values, or the blank row.
+no values (or, extending a printed list, none of the supplied names and
+numbers), or the blank row.
 """
 
 import dataclasses
@@ -582,6 +583,12 @@ class Supply:
     upstream re-words the citation and when it starts printing the list
     itself. The `; Values:` line stays, since the document still says it.
 
+    With `extend=True` the section must instead print some values, and the
+    supplied ones follow them: RFC 4005 clause 4.4 prints NAS-Port-Type's
+    values 0-25 as informational and cites the IANA registry, which has
+    added 26-43 since. Every supplied name and number must be new to the
+    list, so the declaration fails the day upstream prints one of them.
+
     Into an AVP-table row (`target=table_row(name, table=)`), the type and
     flag rules its cells leave blank because the document types the AVP by
     reference: TS 32.299 table 7.2.0.1 prints `refer [223]` for thirteen
@@ -600,6 +607,7 @@ class Supply:
     expect: str | ast.AvpTableRow
     reason: str
     values: tuple[ast.EnumEntry, ...] = ()
+    extend: bool = False
     data_type: ast.DataType | None = None
     flag_rules: ast.AvpFlagRules | None = None
     versions: str | VersionRange = "*..*"
@@ -611,6 +619,8 @@ class Supply:
         object.__setattr__(self, "values", tuple(self.values))
         described = self.target.describe()
         if isinstance(self.target, table_row):
+            if self.extend:
+                raise CorrectionError(f"{described}: a table row has no list to extend")
             self._check_row_form(described)
             return
         if not isinstance(self.target, definition) or not isinstance(self.expect, str):
@@ -742,6 +752,9 @@ class Result:
     # follows them: the path an edit was resolved by belongs to the input
     # tree.
     path: ast.TreePath = ()
+    # Where each value a `Supply` adds landed, in its declaration order:
+    # after the printed ones for `extend=True`.
+    supplied: tuple[ast.TreePath, ...] = ()
 
 
 def _holds_nodes(value: Any) -> bool:
@@ -841,12 +854,47 @@ def _checked_supply(
             f"{described}: expected values_source={supply.expect!r},"
             f" found {node.values_source!r}"
         )
-    if node.values:
+    if supply.extend:
+        if not node.values:
+            raise CorrectionError(
+                f"{described}: the section prints no values;"
+                " extend=True appends to a printed list"
+            )
+        _check_new_values(described, node.values, supply.values)
+    elif node.values:
         raise CorrectionError(
             f"{described}: the section already holds {len(node.values)} values;"
             " Supply fills only an empty list"
         )
     return None
+
+
+def _span(entry: ast.EnumEntry) -> tuple[int, int]:
+    if isinstance(entry, ast.EnumValue):
+        return entry.value, entry.value
+    return entry.first, entry.last
+
+
+def _check_new_values(
+    described: str,
+    printed: Sequence[ast.EnumEntry],
+    supplied: Sequence[ast.EnumEntry],
+) -> None:
+    """What `Supply(extend=True)` appends must share no name and no number
+    with what the section prints, reserved and vendor-specific ranges
+    included."""
+    names = {entry.name for entry in printed if isinstance(entry, ast.EnumValue)}
+    for entry in supplied:
+        if isinstance(entry, ast.EnumValue) and entry.name in names:
+            raise CorrectionError(
+                f"{described}: value {entry.name!r} is already present"
+            )
+        first, last = _span(entry)
+        for other in printed:
+            low, high = _span(other)
+            if first <= high and low <= last:
+                number = first if first == last else f"{first}-{last}"
+                raise CorrectionError(f"{described}: value {number} is already present")
 
 
 def _checked_deletion(node: ast.Node, delete: Delete) -> None:
@@ -1296,9 +1344,17 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
                 continue
             if (*path, "values") in plan.rows:
                 raise CorrectionError(f"{described}: values supplied more than once")
+            assert isinstance(node, ast.EnumeratedAvp)
+            printed = [
+                ((*path, "values", position), value)
+                for position, value in enumerate(node.values)
+            ]
             plan.rows[(*path, "values")] = [
-                (_Added(index, position), value)
-                for position, value in enumerate(correction.values)
+                *printed,
+                *(
+                    (_Added(index, position), value)
+                    for position, value in enumerate(correction.values)
+                ),
             ]
             results.append(
                 Result(
@@ -1374,7 +1430,8 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
                 f"{description}: the selected node sits inside a subtree another"
                 " edit deleted"
             )
-    for result, origin in zip(results, origins, strict=True):
+    # One result per edit, in declaration order.
+    for index, (result, origin) in enumerate(zip(results, origins, strict=True)):
         if origin not in plan.placed:
             # Reporting success for a row the output does not hold would be
             # the silent loss the `expect` contract exists to prevent.
@@ -1382,6 +1439,12 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
                 f"{result.node}: the inserted row is not in the corrected tree"
             )
         result.path = plan.placed[origin]
+        edit = result.correction
+        if isinstance(edit, Supply) and isinstance(edit.target, definition):
+            result.supplied = tuple(
+                plan.placed[_Added(index, position)]
+                for position in range(len(edit.values))
+            )
     return _Applied(rebuilt, results, tree, positions, plan, origins)
 
 
@@ -1603,15 +1666,8 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
                 # The supplied cells print on the row's line.
                 yield "trailing", result.path, f"supplied: ({edit.cited})", index
                 continue
-            # The list was empty before, so the supplied values are the
-            # section's values, from the first.
-            for position in range(len(edit.values)):
-                yield (
-                    "trailing",
-                    (*result.path, "values", position),
-                    f"supplied: ({edit.cited})",
-                    index,
-                )
+            for path in result.supplied:
+                yield "trailing", path, f"supplied: ({edit.cited})", index
             continue
         yield (
             "trailing",

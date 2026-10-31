@@ -732,6 +732,67 @@ def test_a_supply_expects_the_citation_and_no_values(spec, expect, message):
         corrections.apply(spec, [_supply(expect=expect)])
 
 
+_PRINTED = (
+    ast.EnumValue(name="Plain", value=0),
+    ast.ReservedValues(first=5, last=6),
+)
+
+
+def _extend(values):
+    return corrections.Supply(
+        id=next(_IDS),
+        target=corrections.definition("Example-Mode"),
+        expect="OMNA WSP Content Type Numbers [210]",
+        values=values,
+        extend=True,
+        reason="test",
+    )
+
+
+def test_an_extending_supply_follows_the_printed_values_and_marks_its_own():
+    # RFC 4005 clause 4.4's shape: an informational list the registry it
+    # cites has grown past.
+    spec = _externally_defined(_spec(), values=_PRINTED)
+    added = (ast.EnumValue(name="Fancy", value=7), ast.ReservedValues(first=8, last=9))
+    supply = _extend(added)
+
+    corrected, results = corrections.apply(spec, [supply])
+
+    enumerated = corrected.sections[2]
+    assert isinstance(enumerated, ast.EnumeratedAvp)
+    assert enumerated.values == (*_PRINTED, *added)
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    noted = [line for line in text.splitlines() if ";;" in line]
+    assert noted == [
+        f"        Fancy    = 7 ;; supplied: ({supply.id})",
+        f"      ; RESERVED = 8-9 ;; supplied: ({supply.id})",
+    ]
+    assert parser.parse_with_comments(text) == (
+        corrected,
+        corrections.notes(results),
+    )
+
+
+@pytest.mark.parametrize(
+    ("printed", "values", "message"),
+    [
+        (_PRINTED, (ast.EnumValue(name="Plain", value=7),), "'Plain' is already"),
+        (_PRINTED, (ast.EnumValue(name="Fancy", value=0),), "value 0 is already"),
+        # A number inside a printed reserved range is no new number.
+        (_PRINTED, (ast.EnumValue(name="Fancy", value=6),), "value 6 is already"),
+        (_PRINTED, (ast.ReservedValues(first=4, last=5),), "value 4-5 is already"),
+        # Nothing printed to extend: the plain form is the one that applies.
+        ((), (ast.EnumValue(name="Fancy", value=7),), "prints no values"),
+    ],
+    ids=["name", "number", "reserved-number", "reserved-range", "empty-list"],
+)
+def test_an_extending_supply_adds_only_new_names_and_numbers(printed, values, message):
+    spec = _externally_defined(_spec(), values=printed)
+
+    with pytest.raises(corrections.CorrectionError, match=message):
+        corrections.apply(spec, [_extend(values)])
+
+
 def test_a_supply_requires_an_enumerated_avp():
     supply = corrections.Supply(
         id=next(_IDS),
@@ -863,6 +924,18 @@ def test_a_row_supply_expects_the_blank_row_of_a_reused_avp(spec, supply, messag
 def test_a_row_supply_is_checked_when_declared(arguments, message):
     with pytest.raises(corrections.CorrectionError, match=message):
         _supply_row(**arguments)
+
+
+def test_a_row_supply_does_not_extend():
+    with pytest.raises(corrections.CorrectionError, match="no list to extend"):
+        corrections.Supply(
+            id=next(_IDS),
+            target=corrections.table_row("Borrowed"),
+            expect=_REFERRED,
+            data_type=ast.DataType.UTF8_STRING,
+            extend=True,
+            reason="test",
+        )
 
 
 def test_a_row_is_not_both_supplied_and_corrected():
@@ -1223,7 +1296,9 @@ def test_every_corrected_file_already_carries_its_corrections(path):
                         assert getattr(supplied, field) == value
                 continue
             assert isinstance(supplied, ast.EnumeratedAvp)
-            assert supplied.values == correction.values
+            # Extending, the supplied values follow the printed ones.
+            tail = supplied.values[len(supplied.values) - len(correction.values) :]
+            assert tail == correction.values
             continue
         if correction.field == "name":
             # A correction that rewrites a name also rewrites what the selector

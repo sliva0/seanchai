@@ -143,6 +143,16 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   the external document the values come from. No committed module declares
   this form: TS 32.299's `API-Network-Service-Node` cites TS 23.682, whose
   V18.0.0 names the network elements but numbers none of them.
+- **`Supply(..., extend=True)`**: the same, for a section that prints part
+  of the list it cites, the supplied values following the printed ones.
+  It expects the citation and at least one printed value, and refuses a
+  supplied name or number the section already holds, a number inside a
+  printed reserved or vendor-specific range included, so it fails the day
+  upstream prints one of them. Without `extend`, a section printing values
+  is refused as before. Forcing case: RFC 4005 clause 4.4 prints
+  NAS-Port-Type's values 0 to 25 and cites `[RADIUSTypes]`, whose registry
+  has added 26 to 43 since; one declaration appends them where
+  `Insert` would take one per value.
 - **`Supply(id, target=table_row(name, table=), expect=<the row>, data_type=, flag_rules=, reason)`**:
   fills the blank Type cell, flag cells or both of an AVP-table row whose
   document types it by reference to another document. It expects the whole
