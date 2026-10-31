@@ -38,7 +38,7 @@ each starting with `; Type:`.
 | `Application Scope` | an application id the document states in prose, and its clauses  |
 | `Message`           | a command-code ABNF rule with its Diameter header                |
 | `Grouped AVP`       | `Name ::= < AVP header: code vendor-id >` plus its body          |
-| `Enumerated AVP`    | the header rule plus values and reserved ranges, or their source |
+| `Enumerated AVP`    | the header rule plus values and value ranges, or their source    |
 | `AVP Table`         | the spec's own AVP table, one AVP per row                        |
 | `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
 | `Registry`          | codes a registry allocates, each to the documents defining it    |
@@ -47,9 +47,10 @@ each starting with `; Type:`.
 
 - **Directive comments are grammar.** A single `;` in a defined position is
   semantic (`; Key: value` headers, `; bold`, `; strikethrough`,
-  `; RESERVED`); a malformed one is a parse error. Free-text comments use
-  `;;` and carry no data; where they attach is still defined (see
-  [Comments](#comments)), so normalising a file keeps them.
+  `; RESERVED`, `; VENDOR-SPECIFIC`); a malformed one is a parse error.
+  Free-text comments use `;;` and carry no data; where they attach is
+  still defined (see [Comments](#comments)), so normalising a file keeps
+  them.
 - **The file states its own vendor-id.** `; Vendor-ID:` is the vendor space
   the document's own AVPs are defined in, and nothing else in the file
   supplies it: a clause header omits the vendor both for a genuine
@@ -111,6 +112,14 @@ each starting with `; Type:`.
   values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
   32.422 [23] for Trace Depth") prints `; Values:` with that citation and no
   values, which is distinct from a clause the extractor found nothing in.
+- **A range left to vendors is no reserved range.** TS 32.299's
+  SM-Service-Type closes its list with "11 .. 99 Reserved for 3GPP defined
+  SM services" and "100 .. 199 Vendor specific SM services", oneM2M
+  TS-0004's Protocol-Type with "100 .. 199 Operator and vendor specific
+  protocol types". The first is `; RESERVED = 11-99`, a value no
+  dictionary may assign; the others are `; VENDOR-SPECIFIC = 100-199 ;
+  Vendor specific SM services`, values any dictionary may assign under a
+  name of its own, with the document's words for the range.
 - **A registry allocates; it defines nothing.** TS 29.230 assigns each AVP
   code, command code and application id to the document defining it, so its
   tables are `Registry` blocks rather than AVP tables: a row is a code, the

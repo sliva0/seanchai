@@ -27,6 +27,12 @@ acknowledges as an override its document states on purpose
   names above command 8388713.
 - `duplicate-enum-value` — one enumerated AVP using a value or a value name
   twice.
+- `vendor-specific-overlap` — a `; VENDOR-SPECIFIC` range covering a value
+  its enumerated AVP names, a range it reserves, or another vendor-specific
+  range. An error: a value is either named, left to vendors under names of
+  their own, or illegal, never two of them. No corpus case: TS 32.299's
+  SM-Service-Type and oneM2M TS-0004's Protocol-Type leave 100-199 above
+  what they name and reserve.
 - `duplicate-identity` — two AVPs claiming one `(vendor-id, code)`. TS 29.272
   clause 7.3.138 printed `Area-Scope` with `Job-Type`'s code while every name
   stayed unique.

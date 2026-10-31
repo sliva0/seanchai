@@ -281,12 +281,24 @@ class Grouped(Avp):
 
 @dataclass(frozen=True)
 class Enumerated(Avp):
-    values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
+    values: tuple[ast.EnumEntry, ...] = ()
     # Where the defining clause says the values are defined instead, in its
     # words: TS 29.272's `Trace-Depth` takes "TS 32.422 [23] for Trace
     # Depth". With no values beside it that is the whole statement, not a
     # gap: the document defines the AVP and points elsewhere for the list.
     values_source: str | None = None
+
+    @property
+    def vendor_specific(self) -> tuple[ast.VendorSpecificValues, ...]:
+        """The ranges the document leaves to vendors or operators, in body
+        order: TS 32.299's SM-Service-Type 100-199, "Vendor specific SM
+        services". A value in one is legal under a name the document does
+        not give, so a consumer validating values allows it."""
+        return tuple(
+            value
+            for value in self.values
+            if isinstance(value, ast.VendorSpecificValues)
+        )
 
 
 @dataclass(frozen=True)
@@ -405,7 +417,7 @@ class _Draft:
     wireshark_name: str | None = None
     across: corpus.CrossRelease | None = None
     members: tuple[Member, ...] = ()
-    values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
+    values: tuple[ast.EnumEntry, ...] = ()
     values_source: str | None = None
 
     def fill(self, other: _Draft) -> _Draft:

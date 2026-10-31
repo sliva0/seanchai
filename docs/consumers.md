@@ -10,6 +10,11 @@ knowing its `(vendor-id, code)`, type, flag rules and defining document.
 An `Enumerated` whose clause defines its values elsewhere carries that
 citation in `values_source` (TS 29.272's `Trace-Depth`: "TS 32.422 [23] for
 Trace Depth"); with no values beside it the AVP is complete, not a hole.
+`values` holds the body as the file prints it, named values, reserved
+ranges and vendor-specific ranges in order; `vendor_specific` picks out the
+last, the ranges a consumer validating values must allow under names the
+document does not give (TS 32.299's `SM-Service-Type` 100-199, "Vendor
+specific SM services"), as it must refuse a reserved one.
 
 ```python
 from seanchai import corpus, model

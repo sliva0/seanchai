@@ -40,7 +40,7 @@ last_version = "2.35.0"
 
 [[quirk]]
 name = "value-first-enums"
-reason = "Clause A.5.17 lists Protocol-Type's values value first, '0 HTTP' to '3 WebSocket', with '4 .. 99 Reserved for oneM2M defined protocol types'."
+reason = "Clause A.5.17 lists Protocol-Type's values value first, '0 HTTP' to '3 WebSocket', with '4 .. 99 Reserved for oneM2M defined protocol types' and '100 .. 199 Operator and vendor specific protocol types'."
 first_version = "2.35.0"
 last_version = "2.35.0"
 

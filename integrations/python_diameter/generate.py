@@ -493,7 +493,7 @@ class Definitions:
         values = tuple(
             (value.name, value.value)
             if isinstance(value, ast.EnumValue)
-            else (value.first, value.last)
+            else (type(value).__name__, value.first, value.last)
             for value in getattr(found, "values", ())
         )
         return (
@@ -1332,7 +1332,9 @@ def render_grouped(added: GroupedAddition, resolver: Resolver) -> list[str]:
 
 def _enum_constants(addition: Addition, taken: set[str]) -> list[str]:
     """`E_` constants for a new enumerated AVP's values, as `constants.py`
-    spells them; the comment naming where a document defines them instead."""
+    spells them; the comment naming where a document defines them instead,
+    and one per range it leaves to vendors, whose values the library takes
+    as any other integer and a dictionary may name as it likes."""
     lines = []
     for definition in addition.readings:
         sample = definition.sample
@@ -1341,6 +1343,14 @@ def _enum_constants(addition: Addition, taken: set[str]) -> list[str]:
         if sample.values_source is not None:
             cited = f"{sample.defined_in} clause {sample.section}"
             comment = f"Values: {sample.values_source} ({cited})."
+            lines += [f"# {line}" for line in textwrap.wrap(comment, 86)]
+        for value in sample.vendor_specific:
+            cited = f"{sample.defined_in} clause {sample.section}"
+            words = "" if value.description is None else f' "{value.description}"'
+            comment = (
+                f"{addition.name} {value.first}-{value.last} is vendor-specific{words}"
+                f" ({cited}): legal, with no constant."
+            )
             lines += [f"# {line}" for line in textwrap.wrap(comment, 86)]
         for value in sample.values:
             if not isinstance(value, ast.EnumValue):

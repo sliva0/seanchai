@@ -19,7 +19,8 @@ What maps to what in a 3GPP Diameter spec docx:
 - `x.y.z Name AVP` headings whose intro says "is of type Enumerated" with
   `B1`-style `ValueName (n)` items → `EnumeratedAvp`; `B2` items are value
   descriptions, `NO`-style "Value n is reserved" notes → reserved values,
-  inserted in numeric order.
+  inserted in numeric order; behind `value-first-enums`, `a .. b` ranges
+  reserved or left vendor-specific → reserved or vendor-specific values.
 - The AVP-flags table (header "AVP Flag rules") → `AvpTable`; rows whose code
   cell is a NOTE reference get `code=None`, and note texts naming a defining
   RFC additionally produce `ReusedAvps` rows (the `note-defined-in-rfc`
@@ -1036,7 +1037,7 @@ def _extract_enumerated(
     warnings: list[str],
 ) -> ast.EnumeratedAvp:
     values: list[ast.EnumValue] = []
-    reserved: list[ast.ReservedValues] = []
+    ranges: list[ast.ReservedValues | ast.VendorSpecificValues] = []
     # A clause's explanatory prose is not captured as a value description; only
     # the value lines and the reserved-value notes are read.
     #
@@ -1088,7 +1089,7 @@ def _extract_enumerated(
             )
         elif paragraph.style == "NO" and (match := _RESERVED_NOTE_RE.search(text)):
             first = int(match["first"])
-            reserved.append(
+            ranges.append(
                 ast.ReservedValues(first=first, last=int(match["last"] or first))
             )
         elif any(
@@ -1123,14 +1124,28 @@ def _extract_enumerated(
                 elif match := _VALUE_RANGE_RE.fullmatch(line.text):
                     # SM-Service-Type (TS 32.299 clause 7.2.213) closes its
                     # list with "11 .. 99 Reserved for 3GPP defined SM
-                    # services" and "100 .. 199 Vendor specific SM services".
-                    # The first is a reserved range; the second allocates a
-                    # range rather than naming a value, which `.dad` has no
-                    # construct for, so it is reported instead.
+                    # services" and "100 .. 199 Vendor specific SM services",
+                    # oneM2M TS-0004's Protocol-Type (A.5.17) with "100 ..
+                    # 199 Operator and vendor specific protocol types". The
+                    # first is a reserved range, the others vendor-specific
+                    # ones, which keep the words. Vendor wording decides
+                    # before "Reserved" does: values reserved for vendor use
+                    # are allocated to vendors. Any negation in the words
+                    # ("Not for vendor-specific services") leaves the range
+                    # unread, as does a range allocated otherwise, which
+                    # names no value `.dad` can hold and is reported instead.
                     quirks.fire("value-first-enums")
                     first, last = int(match["first"]), int(match["last"])
-                    if match["label"].startswith("Reserved"):
-                        reserved.append(ast.ReservedValues(first=first, last=last))
+                    label = match["label"]
+                    vendor = _VENDOR_SPECIFIC_LABEL_RE.search(label)
+                    if vendor and not _NEGATION_RE.search(label):
+                        ranges.append(
+                            ast.VendorSpecificValues(
+                                first=first, last=last, description=label
+                            )
+                        )
+                    elif not vendor and label.startswith("Reserved"):
+                        ranges.append(ast.ReservedValues(first=first, last=last))
                     else:
                         warnings.append(
                             f"{section.number}: value range {first}..{last}"
@@ -1148,13 +1163,13 @@ def _extract_enumerated(
                     ast.EnumValue(name=match["name"], value=int(match["value"]))
                 )
     values_source = _values_source(section, quirks)
-    if not values and not reserved and values_source is None:
+    if not values and not ranges and values_source is None:
         # Kept empty rather than dropped: the clause still says the AVP is
         # enumerated, and a value line in a shape no declared reading takes
         # shows up here rather than as a silently shorter list.
         warnings.append(f"{section.number}: enumerated AVP {name} lists no values")
     merged = sorted(
-        [*values, *reserved],
+        [*values, *ranges],
         key=lambda item: item.value if isinstance(item, ast.EnumValue) else item.first,
     )
     return ast.EnumeratedAvp(
@@ -1236,6 +1251,12 @@ def _values_source(section: _Section, quirks: sources.Quirks) -> str | None:
 # what follows is the line's description ("2 High priority: Lower than
 # Pre-emptive priority", clause 7.2.132).
 _VALUE_RANGE_RE = re.compile(r"(?P<first>\d+) ?\.\. ?(?P<last>\d+) (?P<label>.+)")
+# A range's words allocating it to vendors or operators: "Vendor specific SM
+# services" (TS 32.299 clause 7.2.213), "Operator and vendor specific
+# protocol types" (oneM2M TS-0004 clause A.5.17).
+_VENDOR_SPECIFIC_LABEL_RE = re.compile(r"\b(?:vendor|operator)[ -]specific\b", re.I)
+# Words that turn the allocation around: "Not for vendor-specific services".
+_NEGATION_RE = re.compile(r"\b(?:not|no|never|except)\b", re.I)
 _VALUE_FIRST_RE = re.compile(
     r"(?P<value>\d+) (?P<label>[^:]+?)(?: ?:(?: (?P<description>.*))?)?"
 )

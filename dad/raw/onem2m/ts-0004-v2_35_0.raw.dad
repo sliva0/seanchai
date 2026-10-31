@@ -170,11 +170,12 @@ M2M-Information ::= < AVP header: 1011 >
 ; Name: Protocol-Type
 ; Section: A.5.17
 Protocol-Type ::= < Enumerated AVP header: 1013 45687 >
-        HTTP      = 0
-        CoAP      = 1
-        MQTT      = 2
-        WebSocket = 3
-      ; RESERVED  = 4-99
+        HTTP            = 0
+        CoAP            = 1
+        MQTT            = 2
+        WebSocket       = 3
+      ; RESERVED        = 4-99
+      ; VENDOR-SPECIFIC = 100-199 ; Operator and vendor specific protocol types
 
 
 ; Type: Enumerated AVP

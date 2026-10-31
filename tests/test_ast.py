@@ -49,6 +49,13 @@ def test_reserved_range_must_be_ordered():
         ast.ReservedValues(first=5, last=2)
 
 
+def test_vendor_specific_range_must_be_ordered():
+    with pytest.raises(
+        pydantic.ValidationError, match="vendor-specific range 5-2 is inverted"
+    ):
+        ast.VendorSpecificValues(first=5, last=2)
+
+
 def test_occurrence_range_must_be_ordered():
     with pytest.raises(pydantic.ValidationError, match=r"5\*2 is inverted"):
         ast.AvpRule(

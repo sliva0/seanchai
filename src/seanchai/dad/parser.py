@@ -19,7 +19,8 @@ import pydantic
 from . import abnf, ast, formatter
 
 # Keys carry hyphens (`; Vendor-ID:`), so the charset is wider than letters.
-# `; RESERVED = n` uses `=` rather than `:` and so is not a match either way.
+# `; RESERVED = n` and `; VENDOR-SPECIFIC = n` use `=` rather than `:` and so
+# are not a match either way.
 _DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z][A-Za-z-]*): (?P<value>.*)$")
 _MESSAGE_HEADER_RE = re.compile(
     r"^<(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)> ::= "
@@ -46,6 +47,11 @@ _ENUM_VALUE_RE = re.compile(
 )
 _ESCAPE_RE = re.compile(r'\\(["\\])')
 _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")
+# What the source calls the range follows as a value's description does.
+_VENDOR_SPECIFIC_RE = re.compile(
+    r"^\s*; VENDOR-SPECIFIC\s*= (?P<first>\d+)(?:-(?P<last>\d+))?"
+    r"(?:\s+; (?P<description>\S.*))?$"
+)
 
 # The file header's fields belong to three separate lines, so they are checked
 # one directive at a time rather than by constructing the model.
@@ -361,13 +367,21 @@ def _parse_enumerated(
         raise DadParseError(
             body[0][0], f"Name directive {name.value!r} != rule name {header_name!r}"
         )
-    values: list[ast.EnumValue | ast.ReservedValues] = []
+    values: list[ast.EnumEntry] = []
     for value_lineno, line in body[1:]:
         with _validated(value_lineno):
             if match := _RESERVED_RE.match(line):
                 first = int(match["first"])
                 last = int(match["last"]) if match["last"] else first
                 values.append(ast.ReservedValues(first=first, last=last))
+            elif match := _VENDOR_SPECIFIC_RE.match(line):
+                first = int(match["first"])
+                last = int(match["last"]) if match["last"] else first
+                values.append(
+                    ast.VendorSpecificValues(
+                        first=first, last=last, description=match["description"]
+                    )
+                )
             elif match := _ENUM_VALUE_RE.match(line):
                 values.append(
                     ast.EnumValue(

@@ -185,7 +185,7 @@ enumerated-avp = "; Type: Enumerated AVP" NL
                  source-ref
                  ["; Values: " inline-text NL]
                  enum-header-rule NL
-                 *((enum-value / reserved) NL)
+                 *((enum-value / reserved / vendor-specific) NL)
 enum-header-rule = avp-name " ::= < Enumerated AVP header: " code
                    [SP vendor-id] " >"
 enum-value    = *SP enum-name *SP "= " 1*DIGIT [1*SP "; " inline-text]
@@ -196,6 +196,8 @@ name-char     = %x21 / %x23-5B / %x5D-7E / %x80-10FFFF / escaped
                 ; neither SP, DQUOTE nor a bare "\"
 escaped       = "\" (DQUOTE / "\")
 reserved      = *SP "; RESERVED" *SP "= " 1*DIGIT ["-" 1*DIGIT]
+vendor-specific = *SP "; VENDOR-SPECIFIC" *SP "= " 1*DIGIT ["-" 1*DIGIT]
+                  [1*SP "; " inline-text]
 ```
 
 A value name that is not an `avp-name` is quoted: TS 32.299 labels its
@@ -216,9 +218,14 @@ words (`; Values: TS 32.422 [23] for Trace Depth`). With no values after
 it, the section is complete as it stands: the document points elsewhere for
 the list. Values may still follow, supplied by a correction.
 
-`; RESERVED` is the one `; Key:` line that may appear in a body. A reserved
-value is distinct from an unassigned one: a validator must reject a
-dictionary that assigns it.
+`; RESERVED` and `; VENDOR-SPECIFIC` are the only directive lines that may
+appear in a body. A reserved value is distinct from an unassigned one: a validator
+must reject a dictionary that assigns it. A vendor-specific range is the
+opposite: the document leaves its values to vendors or operators without
+naming any, so a dictionary may assign one under a name the standard does
+not give, and a validator must accept it. What the document calls the
+range follows as a value's description does (`; VENDOR-SPECIFIC = 100-199
+; Vendor specific SM services`, TS 32.299 clause 7.2.213).
 
 ### AVP table
 
@@ -383,7 +390,8 @@ survive, including values that look like directives.
 
 Checked by the AST after parsing:
 
-- `RESERVED first-last` and `RESERVED first..last` require `last >= first`;
+- `RESERVED first-last`, `RESERVED first..last` and `VENDOR-SPECIFIC
+  first-last` require `last >= first`;
   `min*max` requires `max >= min` when bounded.
 - A flag appears in at most one of Must, May, S.not, M.not.
 - Exactly one cell per declared column; no value for an undeclared column

@@ -563,6 +563,84 @@ def test_a_label_first_value_is_read_only_where_a_tab_sets_it_off(tabbed, values
     assert len(enum.values) == values
 
 
+@pytest.mark.parametrize(
+    ("text", "found", "warned"),
+    [
+        # TS 32.299 clause 7.2.213.
+        (
+            "11 .. 99 Reserved for 3GPP defined SM services",
+            ast.ReservedValues(first=11, last=99),
+            None,
+        ),
+        (
+            "100 .. 199 Vendor specific SM services",
+            ast.VendorSpecificValues(
+                first=100, last=199, description="Vendor specific SM services"
+            ),
+            None,
+        ),
+        # oneM2M TS-0004 clause A.5.17.
+        (
+            "100 .. 199 Operator and vendor specific protocol types",
+            ast.VendorSpecificValues(
+                first=100,
+                last=199,
+                description="Operator and vendor specific protocol types",
+            ),
+            None,
+        ),
+        (
+            "200 .. 299 Operator-specific services",
+            ast.VendorSpecificValues(
+                first=200, last=299, description="Operator-specific services"
+            ),
+            None,
+        ),
+        # Values reserved for vendor use are allocated to vendors.
+        (
+            "100 .. 199 Reserved for vendor specific services",
+            ast.VendorSpecificValues(
+                first=100,
+                last=199,
+                description="Reserved for vendor specific services",
+            ),
+            None,
+        ),
+        # A negation takes the range away from vendors.
+        (
+            "100 .. 199 Not for vendor-specific services",
+            None,
+            "6.3.1: value range 100..199 'Not for vendor-specific services'"
+            " names no value and was not recorded",
+        ),
+        # Allocated to someone the words do not leave it to vendors.
+        (
+            "100 .. 199 Allocated to partner networks",
+            None,
+            "6.3.1: value range 100..199 'Allocated to partner networks' names"
+            " no value and was not recorded",
+        ),
+    ],
+)
+def test_a_value_first_range_is_read_by_its_words(text, found, warned):
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="value-first-enums", reason="rejection")], None)
+    section = _enum_with("0 Off")
+    section.paragraphs[-1] = tgpp_docx._Para(
+        text=f"0 Off\n{text}", style="B1", lines=_abnf_lines("0 Off", text)
+    )
+    warnings = []
+
+    enum = tgpp_docx._extract_enumerated(
+        section, "Example-Mode", 1, 10415, quirks, warnings
+    )
+
+    off = ast.EnumValue(name="Off", value=0)
+    assert enum.values == ((off,) if found is None else (off, found))
+    assert warnings == ([] if warned is None else [warned])
+
+
 def _enum_lines(text, *, label=None):
     section = _enum_with(text)
     section.paragraphs[-1] = tgpp_docx._Para(

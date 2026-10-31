@@ -6,13 +6,6 @@ letter is not reused. What exists is described in the per-module documents.
 
 ## Sources
 
-- **K. Value ranges the format cannot hold.** SM-Service-Type's "100 ..
-  199 Vendor specific SM services", and oneM2M TS-0004's Protocol-Type
-  "100 .. 199 Operator and vendor specific protocol types", allocate a
-  range of enumerated values, which the format has no line for.
-  *Decided:* add a `; VENDOR-SPECIFIC = 100-199` body line beside
-  `; RESERVED`, with parser, formatter, linter overlap check and a model
-  field the generator can allow.
 - **O. Stand in for RFC 4590.** RFC 4590 is a RADIUS document and types
   nothing; RFC 4740 imports its nineteen Digest AVPs and SIP-AOR by name
   only. *Decided:* a hand-written stand-in `.dad` (like the TISPAN

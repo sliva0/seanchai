@@ -107,6 +107,21 @@ def _boundary_specs():
                 ),
             )
         ),
+        "enum-vendor-specific": _spec(
+            ast.EnumeratedAvp(
+                name="Mode",
+                source=source,
+                code=1,
+                values=(
+                    ast.EnumValue(name="Short", value=1, description="first"),
+                    ast.ReservedValues(first=2, last=99),
+                    ast.VendorSpecificValues(
+                        first=100, last=199, description="; Version: 9"
+                    ),
+                    ast.VendorSpecificValues(first=2**32 - 1, last=2**32 - 1),
+                ),
+            )
+        ),
         "enum-with-only-reserved": _spec(
             ast.EnumeratedAvp(
                 name="Mode",

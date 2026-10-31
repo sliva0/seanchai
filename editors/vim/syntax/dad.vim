@@ -69,6 +69,10 @@ syn match dadReserved "^\s*; RESERVED\s*= \d\+\%(-\d\+\)\?\s*\%(;;.*\)\?$" conta
 " A registry's reserved range: `; RESERVED 320..399 TS29.234 "TS 29.234"`.
 syn match dadRegistryReserved #^; RESERVED \d\+\.\.\d\+\%( [^ "]\+\)\?\%( "\%([^"\\]\|\\["\\]\)*"\)\?\s*\%(;;.*\)\?$# contains=dadReservedKw,dadRange,dadSpecRef,dadQuotedCell,dadComment
 syn match dadReservedKw "; RESERVED" contained
+" A range left to vendors: `; VENDOR-SPECIFIC = 100-199 ; Vendor specific SM services`.
+syn match dadVendorSpecific "^\s*; VENDOR-SPECIFIC\s*= \d\+\%(-\d\+\)\?\%(\s\+; [^;].\{-}\)\?\s*\%(;;.*\)\?$" contains=dadVendorSpecificKw,dadNumber,dadRange,dadVendorSpecificNote,dadComment
+syn match dadVendorSpecificKw "; VENDOR-SPECIFIC" contained
+syn match dadVendorSpecificNote "\%(\d\s\+\)\@<=; [^;].\{-}\ze\s*\%(;;.*\)\?$" contained
 syn match dadRange "\d\+-\d\+" contained
 syn match dadRange "\d\+\.\.\d\+" contained
 
@@ -121,5 +125,7 @@ hi def link dadEnumName       Identifier
 hi def link dadEnumNote       String
 hi def link dadQuotedCell     String
 hi def link dadReservedKw     Keyword
+hi def link dadVendorSpecificKw Keyword
+hi def link dadVendorSpecificNote String
 
 let b:current_syntax = 'dad'

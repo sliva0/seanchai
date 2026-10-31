@@ -98,6 +98,41 @@ def _message(name, *members):
     )
 
 
+def test_an_enumeration_exposes_the_ranges_it_leaves_to_vendors():
+    """TS 32.299 clause 7.2.213: values 0-10 named, 11-99 reserved, 100-199
+    left to vendors; only the last are `vendor_specific`."""
+    vendor = ast.VendorSpecificValues(
+        first=100, last=199, description="Vendor specific SM services"
+    )
+    values = (
+        ast.EnumValue(name="Off", value=0),
+        ast.ReservedValues(first=11, last=99),
+        vendor,
+    )
+    built = _model(
+        _spec(
+            "3GPP TS 29.999",
+            [
+                ast.EnumeratedAvp(
+                    name="Mode",
+                    source=ast.SourceRef(section="6.3.2"),
+                    code=700,
+                    vendor_id=10415,
+                    values=values,
+                ),
+                _table(_row("Mode", 700, ast.DataType.ENUMERATED)),
+            ],
+        )
+    )
+
+    mode = built.resolve("TS29.999", "Mode")
+
+    assert isinstance(mode, model.Enumerated)
+    assert mode.values == values
+    assert mode.vendor_specific == (vendor,)
+    assert vendor.covers(100) and vendor.covers(199) and not vendor.covers(99)
+
+
 class TestApplications:
     def _document(self, *sections):
         return _spec("3GPP TS 29.999", sections)
@@ -844,6 +879,15 @@ class TestOverTheCommittedCorpus:
         alert_reason = built.resolve("TS29.272", "Alert-Reason")
         assert isinstance(alert_reason, model.Enumerated)
         assert alert_reason.values_source is None
+
+    def test_sm_service_type_leaves_100_to_199_to_vendors(self, built):
+        sm_service_type = built.resolve("TS32.299", "SM-Service-Type")
+        assert isinstance(sm_service_type, model.Enumerated)
+        assert sm_service_type.vendor_specific == (
+            ast.VendorSpecificValues(
+                first=100, last=199, description="Vendor specific SM services"
+            ),
+        )
 
     def test_29229_types_the_digest_avps_rfc_4590_leaves_untyped(self, built):
         realm = built.resolve("TS29.229", "Digest-Realm")

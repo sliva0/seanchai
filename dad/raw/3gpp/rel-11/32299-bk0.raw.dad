@@ -2077,6 +2077,7 @@ SM-Service-Type ::= < Enumerated AVP header: 2029 10415 >
         "VAS4SMS Short Message Personal Signature"                = 9
         "VAS4SMS Short Message Deferred Delivery"                 = 10
       ; RESERVED                                                  = 11-99
+      ; VENDOR-SPECIFIC                                           = 100-199 ; Vendor specific SM services
 
 
 ; Type: Enumerated AVP

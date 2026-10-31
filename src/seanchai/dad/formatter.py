@@ -9,7 +9,8 @@ depends on stable diffs. Canonical rules:
   the longest ABNF body line of their own section;
 - enum bodies: a value name quoted exactly when it is not an identifier,
   with `"` and backslash escaped inside the quotes, `=` aligned per section
-  (RESERVED counts as a name);
+  (RESERVED and VENDOR-SPECIFIC count as names), a range's description
+  one space past its numbers;
 - tables: columns split by 3 spaces, each as wide as its widest cell or
   label (minimum 3), so labels sit at column starts. Both table kinds write
   their labels as a `; Columns:` directive, so the first label follows the
@@ -270,6 +271,12 @@ def _value_name(name: str) -> str:
     return f'"{escaped}"'
 
 
+def _range_keyword(value: ast.ReservedValues | ast.VendorSpecificValues) -> str:
+    if isinstance(value, ast.ReservedValues):
+        return "RESERVED"
+    return "VENDOR-SPECIFIC"
+
+
 def _format_enumerated(
     avp: ast.EnumeratedAvp, path: ast.TreePath, notes: Comments
 ) -> list[str]:
@@ -277,7 +284,7 @@ def _format_enumerated(
         (
             len(_value_name(value.name))
             if isinstance(value, ast.EnumValue)
-            else len("RESERVED")
+            else len(_range_keyword(value))
             for value in avp.values
         ),
         default=0,
@@ -311,7 +318,12 @@ def _format_enumerated(
                 if value.first == value.last
                 else f"{value.first}-{value.last}"
             )
-            line = f"      ; {'RESERVED':<{width}} = {numbers}"
+            line = f"      ; {_range_keyword(value):<{width}} = {numbers}"
+            if (
+                isinstance(value, ast.VendorSpecificValues)
+                and value.description is not None
+            ):
+                line += f" ; {value.description}"
         lines.extend(notes.line(line, (*path, "values", index), indent=" " * 8))
     lines.extend(notes.standing_at((*path, "values", len(avp.values)), " " * 8))
     return lines

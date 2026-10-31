@@ -253,11 +253,16 @@ Walks paragraphs and tables in document order under numbered headings:
   Behind `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are
   read too: the label ends at the first colon and the rest of the line is the
   value's description (`2 High priority: Lower than Pre-emptive priority`,
-  7.2.132); `11 .. 99 Reserved for …` is a reserved range, and a range
-  allocated otherwise (`100 .. 199 Vendor specific SM services`, 7.2.213)
-  names no value and is reported. Behind `external-enum-values`, a clause
-  that says where its values are defined instead of listing them gets that
-  citation as `; Values:`, in the document's words: TS 29.272's twelve
+  7.2.132); a range whose words leave it to vendors or operators, in
+  vendor- or operator-specific wording with no `not`, `no`, `never` or
+  `except` (`100 .. 199 Vendor specific SM services`, 7.2.213; `Reserved
+  for vendor specific …` too, values reserved for vendor use being
+  allocated to them), is a vendor-specific range keeping the words as its
+  description; `11 .. 99 Reserved for 3GPP defined SM services`, reserved
+  with no such wording, is a reserved range; and any other range, a
+  negated one included, names no value and is reported. Behind `external-enum-values`, a clause that says where its
+  values are defined instead of listing them gets that citation as
+  `; Values:`, in the document's words: TS 29.272's twelve
   trace and MDT AVPs ("The possible values are those defined in TS 32.422
   [23] for Trace Depth", 7.3.67), TS 29.061's `MBMS-HC-Indicator` ("The
   enumeration values are defined in 3GPP TS 25.413 [92]", 17.7.25), TS 29.212's `Default-Access` ("the same as
@@ -598,8 +603,8 @@ definition it recognises.
   `Accounting-Record-Type` is IETF space, `Protocol-Type` 45687.
   `Protocol-Type`'s values are value first (`value-first-enums`, "0 HTTP"
   to "3 WebSocket", "4 .. 99 Reserved for oneM2M defined protocol types";
-  "100 .. 199 Operator and vendor specific protocol types" allocates a
-  range and warns, as TS 32.299's SM-Service-Type does);
+  "100 .. 199 Operator and vendor specific protocol types" is a
+  vendor-specific range, as TS 32.299's SM-Service-Type's is);
   `Request-Operation` and `Response-Status-Code` cite where theirs are
   ("The values are defined in Table 6.3.4.2.5-6.", "... in clause 6.6.3.",
   `external-enum-values`); `Accounting-Record-Type` names its one value in

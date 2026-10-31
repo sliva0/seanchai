@@ -583,7 +583,7 @@ class Supply:
     target: definition | table_row
     expect: str | ast.AvpTableRow
     reason: str
-    values: tuple[ast.EnumValue | ast.ReservedValues, ...] = ()
+    values: tuple[ast.EnumEntry, ...] = ()
     data_type: ast.DataType | None = None
     flag_rules: ast.AvpFlagRules | None = None
     versions: str | VersionRange = "*..*"
@@ -609,11 +609,14 @@ class Supply:
         if not self.values:
             raise CorrectionError(f"{described}: Supply supplies no values")
         if not all(
-            isinstance(value, ast.EnumValue | ast.ReservedValues)
+            isinstance(
+                value, ast.EnumValue | ast.ReservedValues | ast.VendorSpecificValues
+            )
             for value in self.values
         ):
             raise CorrectionError(
-                f"{described}: Supply takes EnumValue and ReservedValues nodes"
+                f"{described}: Supply takes EnumValue, ReservedValues and"
+                " VendorSpecificValues nodes"
             )
 
     def _check_row_form(self, described: str) -> None:

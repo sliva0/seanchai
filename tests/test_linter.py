@@ -83,6 +83,48 @@ def test_duplicate_enum_values(values, expected):
     assert expected in finding.message
 
 
+def _vendor(first, last):
+    return ast.VendorSpecificValues(first=first, last=last)
+
+
+@pytest.mark.parametrize(
+    ("values", "expected"),
+    [
+        (
+            (ast.EnumValue(name="On", value=150), _vendor(100, 199)),
+            ["Mode's vendor-specific 100-199 overlaps 'On' = 150"],
+        ),
+        (
+            (ast.ReservedValues(first=11, last=120), _vendor(100, 199)),
+            ["Mode's vendor-specific 100-199 overlaps reserved 11-120"],
+        ),
+        (
+            (_vendor(100, 199), _vendor(150, 250)),
+            ["Mode's vendor-specific 100-199 overlaps vendor-specific 150-250"],
+        ),
+        # TS 32.299's SM-Service-Type: named, reserved and left to vendors,
+        # each its own values.
+        (
+            (
+                ast.EnumValue(name="On", value=10),
+                ast.ReservedValues(first=11, last=99),
+                _vendor(100, 199),
+            ),
+            [],
+        ),
+    ],
+    ids=["named-value", "reserved-range", "vendor-range", "disjoint"],
+)
+def test_a_vendor_specific_range_overlapping_another_line_is_an_error(values, expected):
+    spec = _spec(_enumerated("Mode", 700, *values))
+
+    findings = [f for f in linter.lint(spec) if f.rule == "vendor-specific-overlap"]
+
+    assert [f.message for f in findings] == expected
+    assert all(f.severity is linter.Severity.ERROR for f in findings)
+    assert all(f.section == "6.3.2" for f in findings)
+
+
 def test_the_file_vendor_is_what_local_avps_are_compared_in():
     """`; Vendor-ID:` supplies the half of an AVP's identity the rest of the file
     does not, so two files differing only in it disagree about collisions."""

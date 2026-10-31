@@ -1419,7 +1419,7 @@ def _registry_values(
             )
     quirks.fire("registry-enum-values")
     registry_prose = " ".join(" ".join(text.split()) for text in registry.texts)
-    values: list[ast.EnumValue | ast.ReservedValues] = [
+    values: list[ast.EnumEntry] = [
         ast.EnumValue(name=row["name"], value=int(row["value"])) for row in rows
     ]
     values += [
@@ -1435,7 +1435,7 @@ def _registry_values(
     )
 
 
-def _value_order(value: ast.EnumValue | ast.ReservedValues) -> int:
+def _value_order(value: ast.EnumEntry) -> int:
     return value.value if isinstance(value, ast.EnumValue) else value.first
 
 

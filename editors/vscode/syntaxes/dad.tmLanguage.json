@@ -6,6 +6,7 @@
     { "include": "#comment" },
     { "include": "#registry-reserved" },
     { "include": "#reserved" },
+    { "include": "#vendor-specific" },
     { "include": "#directive-text" },
     { "include": "#directive" },
     { "include": "#message-rule" },
@@ -38,6 +39,18 @@
         "5": { "name": "constant.numeric.dad" },
         "6": { "name": "keyword.operator.range.dad" },
         "7": { "name": "constant.numeric.dad" }
+      }
+    },
+    "vendor-specific": {
+      "match": "^(\\s*)(; VENDOR-SPECIFIC)(\\s*)(=)\\s*(\\d+)(?:(-)(\\d+))?(\\s+; [^;].*?)?(\\s*;;.*)?$",
+      "captures": {
+        "2": { "name": "keyword.other.vendor-specific.dad" },
+        "4": { "name": "keyword.operator.assignment.dad" },
+        "5": { "name": "constant.numeric.dad" },
+        "6": { "name": "keyword.operator.range.dad" },
+        "7": { "name": "constant.numeric.dad" },
+        "8": { "name": "string.unquoted.enum-note.dad" },
+        "9": { "name": "comment.line.double-semicolon.dad" }
       }
     },
     "directive-text": {

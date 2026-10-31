@@ -242,6 +242,55 @@ def _duplicate_enum_values(index: _Index) -> list[Finding]:
     return findings
 
 
+def _enum_entry_label(entry: ast.EnumEntry) -> str:
+    if isinstance(entry, ast.EnumValue):
+        return f"{entry.name!r} = {entry.value}"
+    kind = "reserved" if isinstance(entry, ast.ReservedValues) else "vendor-specific"
+    return f"{kind} {entry.first}-{entry.last}"
+
+
+def _vendor_specific_overlaps(index: _Index) -> list[Finding]:
+    """A `; VENDOR-SPECIFIC` range covering a value the AVP names, a range it
+    reserves, or another vendor-specific range.
+
+    A vendor-specific value is legal under a name the document does not
+    give, a named value means what its name says, and a reserved one is
+    illegal, so one value cannot be two of them. No corpus case: TS 32.299's
+    SM-Service-Type and oneM2M TS-0004's Protocol-Type leave 100-199 to
+    vendors above the ranges they name and reserve.
+    """
+    findings = []
+    for definition in index.definitions:
+        if not isinstance(definition, ast.EnumeratedAvp):
+            continue
+        entries = definition.values
+        for position, vendor in enumerate(entries):
+            if not isinstance(vendor, ast.VendorSpecificValues):
+                continue
+            for at, other in enumerate(entries):
+                # A pair of vendor-specific ranges is reported once.
+                if at == position or (
+                    at < position and isinstance(other, ast.VendorSpecificValues)
+                ):
+                    continue
+                first, last = (
+                    (other.value, other.value)
+                    if isinstance(other, ast.EnumValue)
+                    else (other.first, other.last)
+                )
+                if vendor.first <= last and first <= vendor.last:
+                    findings.append(
+                        Finding(
+                            Severity.ERROR,
+                            "vendor-specific-overlap",
+                            f"{definition.name}'s {_enum_entry_label(vendor)}"
+                            f" overlaps {_enum_entry_label(other)}",
+                            definition.source.section,
+                        )
+                    )
+    return findings
+
+
 def _applications_agree_with_headers(index: _Index) -> list[Finding]:
     """A command sits in at most one application scope, and a header that
     prints an id prints the scope's.
@@ -774,6 +823,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_duplicate_definitions(index),
         *_one_name_two_commands(index),
         *_duplicate_enum_values(index),
+        *_vendor_specific_overlaps(index),
         *_applications_agree_with_headers(index),
         *_duplicate_identities(index, spec.vendor_id),
         *_rows_without_codes(index),

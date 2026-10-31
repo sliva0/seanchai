@@ -291,6 +291,34 @@ class ReservedValues(Node):
         return self
 
 
+class VendorSpecificValues(Node):
+    """`; VENDOR-SPECIFIC = 100-199 ; Vendor specific SM services`: values
+    the spec allocates to vendors or operators without naming any, with
+    what it calls the range in its own words (TS 32.299 clause 7.2.213,
+    oneM2M TS-0004 clause A.5.17). The opposite of `ReservedValues`: a
+    value in the range is legal and may appear in a dictionary under a name
+    the standard does not supply, so validators must accept it."""
+
+    first: Unsigned32
+    last: Unsigned32
+    description: InlineText | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> VendorSpecificValues:
+        if self.last < self.first:
+            raise ValueError(
+                f"vendor-specific range {self.first}-{self.last} is inverted"
+            )
+        return self
+
+    def covers(self, value: int) -> bool:
+        return self.first <= value <= self.last
+
+
+# One line of an enumerated AVP's body.
+type EnumEntry = EnumValue | ReservedValues | VendorSpecificValues
+
+
 class EnumeratedAvp(Node):
     """`; Type: Enumerated AVP` — header rule plus value list in source order."""
 
@@ -306,7 +334,7 @@ class EnumeratedAvp(Node):
     # Numbers [210]". None when the clause names no other source. Values a
     # `Supply` correction fills in keep it, since the document still says it.
     values_source: InlineText | None = None
-    values: tuple[EnumValue | ReservedValues, ...]
+    values: tuple[EnumEntry, ...]
 
 
 class AvpFlag(enum.StrEnum):
