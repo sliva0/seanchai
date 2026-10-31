@@ -553,6 +553,50 @@ Acct-Tunnel-Packets-Lost    86     4.6.11    Unsigned32    M      V
 ; Page: 26
 ; Values: [RADIUSAttrVals]
 NAS-Port-Type ::= < Enumerated AVP header: 61 >
+        Async                                                               = 0 ;; supplied: (RFC7155.py#nas-port-type-values)
+        Sync                                                                = 1 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "ISDN Sync"                                                         = 2 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "ISDN Async V.120"                                                  = 3 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "ISDN Async V.110"                                                  = 4 ;; supplied: (RFC7155.py#nas-port-type-values)
+        Virtual                                                             = 5 ;; supplied: (RFC7155.py#nas-port-type-values)
+        PIAFS                                                               = 6 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "HDLC Clear Channel"                                                = 7 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "X.25"                                                              = 8 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "X.75"                                                              = 9 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "G.3 Fax"                                                           = 10 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "SDSL - Symmetric DSL"                                              = 11 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "ADSL-CAP - Asymmetric DSL, Carrierless Amplitude Phase Modulation" = 12 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "ADSL-DMT - Asymmetric DSL, Discrete Multi-Tone"                    = 13 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "IDSL - ISDN Digital Subscriber Line"                               = 14 ;; supplied: (RFC7155.py#nas-port-type-values)
+        Ethernet                                                            = 15 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "xDSL - Digital Subscriber Line of unknown type"                    = 16 ;; supplied: (RFC7155.py#nas-port-type-values)
+        Cable                                                               = 17 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - Other"                                                  = 18 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - IEEE 802.11"                                            = 19 ;; supplied: (RFC7155.py#nas-port-type-values)
+        Token-Ring                                                          = 20 ;; supplied: (RFC7155.py#nas-port-type-values)
+        FDDI                                                                = 21 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - CDMA2000"                                               = 22 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - UMTS"                                                   = 23 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - 1X-EV"                                                  = 24 ;; supplied: (RFC7155.py#nas-port-type-values)
+        IAPP                                                                = 25 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "FTTP - Fiber to the Premises"                                      = 26 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - IEEE 802.16"                                            = 27 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - IEEE 802.20"                                            = 28 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - IEEE 802.22"                                            = 29 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "PPPoA - PPP over ATM"                                              = 30 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "PPPoEoA - PPP over Ethernet over ATM"                              = 31 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "PPPoEoE - PPP over Ethernet over Ethernet"                         = 32 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "PPPoEoVLAN - PPP over Ethernet over VLAN"                          = 33 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "PPPoEoQinQ - PPP over Ethernet over IEEE 802.1QinQ"                = 34 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "xPON - Passive Optical Network"                                    = 35 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "Wireless - XGP"                                                    = 36 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "WiMAX Pre-Release 8 IWK Function"                                  = 37 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "WIMAX-WIFI-IWK: WiMAX WIFI Interworking"                           = 38 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "WIMAX-SFF: Signaling Forwarding Function for LTE/3GPP2"            = 39 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "WIMAX-HA-LMA: WiMAX HA and or LMA function"                        = 40 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "WIMAX-DHCP: WIMAX DCHP service"                                    = 41 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "WIMAX-LBS: WiMAX location based service"                           = 42 ;; supplied: (RFC7155.py#nas-port-type-values)
+        "WIMAX-WVS: WiMAX voice service"                                    = 43 ;; supplied: (RFC7155.py#nas-port-type-values)
 
 
 ; Type: Enumerated AVP
@@ -561,6 +605,8 @@ NAS-Port-Type ::= < Enumerated AVP header: 61 >
 ; Page: 29
 ; Values: [RADIUSAttrVals]
 Prompt ::= < Enumerated AVP header: 76 >
+        "No Echo" = 0 ;; supplied: (RFC7155.py#prompt-values)
+        Echo      = 1 ;; supplied: (RFC7155.py#prompt-values)
 
 
 ; Type: Grouped AVP
@@ -588,10 +634,25 @@ CHAP-Algorithm ::= < Enumerated AVP header: 403 >
 ; Page: 33
 ; Values: [RFC2865] and the relevant IANA registry [RADIUSAttrVals]
 Service-Type ::= < Enumerated AVP header: 6 >
-        Login             = 1
-        Framed            = 2
-        "Callback Login"  = 3
-        "Callback Framed" = 4
+        Login                     = 1
+        Framed                    = 2
+        "Callback Login"          = 3
+        "Callback Framed"         = 4
+        Outbound                  = 5 ;; supplied: (RFC7155.py#service-type-values)
+        Administrative            = 6 ;; supplied: (RFC7155.py#service-type-values)
+        "NAS Prompt"              = 7 ;; supplied: (RFC7155.py#service-type-values)
+        "Authenticate Only"       = 8 ;; supplied: (RFC7155.py#service-type-values)
+        "Callback NAS Prompt"     = 9 ;; supplied: (RFC7155.py#service-type-values)
+        "Call Check"              = 10 ;; supplied: (RFC7155.py#service-type-values)
+        "Callback Administrative" = 11 ;; supplied: (RFC7155.py#service-type-values)
+        Voice                     = 12 ;; supplied: (RFC7155.py#service-type-values)
+        Fax                       = 13 ;; supplied: (RFC7155.py#service-type-values)
+        "Modem Relay"             = 14 ;; supplied: (RFC7155.py#service-type-values)
+        IAPP-Register             = 15 ;; supplied: (RFC7155.py#service-type-values)
+        IAPP-AP-Check             = 16 ;; supplied: (RFC7155.py#service-type-values)
+        "Authorize Only"          = 17 ;; supplied: (RFC7155.py#service-type-values)
+        Framed-Management         = 18 ;; supplied: (RFC7155.py#service-type-values)
+        Additional-Authorization  = 19 ;; supplied: (RFC7155.py#service-type-values)
 
 
 ; Type: Enumerated AVP
@@ -600,6 +661,13 @@ Service-Type ::= < Enumerated AVP header: 6 >
 ; Page: 36
 ; Values: [RADIUSAttrVals]
 Framed-Protocol ::= < Enumerated AVP header: 7 >
+        PPP                                                 = 1 ;; supplied: (RFC7155.py#framed-protocol-values)
+        SLIP                                                = 2 ;; supplied: (RFC7155.py#framed-protocol-values)
+        "AppleTalk Remote Access Protocol (ARAP)"           = 3 ;; supplied: (RFC7155.py#framed-protocol-values)
+        "Gandalf proprietary SingleLink/MultiLink protocol" = 4 ;; supplied: (RFC7155.py#framed-protocol-values)
+        "Xylogics proprietary IPX/SLIP"                     = 5 ;; supplied: (RFC7155.py#framed-protocol-values)
+        "X.75 Synchronous"                                  = 6 ;; supplied: (RFC7155.py#framed-protocol-values)
+        "GPRS PDP Context"                                  = 7 ;; supplied: (RFC7155.py#framed-protocol-values)
 
 
 ; Type: Enumerated AVP
@@ -608,6 +676,10 @@ Framed-Protocol ::= < Enumerated AVP header: 7 >
 ; Page: 36
 ; Values: [RADIUSAttrVals]
 Framed-Routing ::= < Enumerated AVP header: 10 >
+        None                         = 0 ;; supplied: (RFC7155.py#framed-routing-values)
+        "Send routing packets"       = 1 ;; supplied: (RFC7155.py#framed-routing-values)
+        "Listen for routing packets" = 2 ;; supplied: (RFC7155.py#framed-routing-values)
+        "Send and Listen"            = 3 ;; supplied: (RFC7155.py#framed-routing-values)
 
 
 ; Type: Enumerated AVP
@@ -616,6 +688,10 @@ Framed-Routing ::= < Enumerated AVP header: 10 >
 ; Page: 37
 ; Values: [RADIUSAttrVals]
 Framed-Compression ::= < Enumerated AVP header: 13 >
+        None                           = 0 ;; supplied: (RFC7155.py#framed-compression-values)
+        "VJ TCP/IP header compression" = 1 ;; supplied: (RFC7155.py#framed-compression-values)
+        "IPX header compression"       = 2 ;; supplied: (RFC7155.py#framed-compression-values)
+        "Stac-LZS compression"         = 3 ;; supplied: (RFC7155.py#framed-compression-values)
 
 
 ; Type: Enumerated AVP
@@ -624,6 +700,10 @@ Framed-Compression ::= < Enumerated AVP header: 13 >
 ; Page: 41
 ; Values: [RADIUSAttrVals] and defined in [RFC2869]
 ARAP-Zone-Access ::= < Enumerated AVP header: 72 >
+        "Only allow access to default zone" = 1 ;; supplied: (RFC7155.py#arap-zone-access-values)
+        "Use zone filter inclusively"       = 2 ;; supplied: (RFC7155.py#arap-zone-access-values)
+        "Not used"                          = 3 ;; supplied: (RFC7155.py#arap-zone-access-values)
+        "Use zone filter exclusively"       = 4 ;; supplied: (RFC7155.py#arap-zone-access-values)
 
 
 ; Type: Enumerated AVP
@@ -632,6 +712,14 @@ ARAP-Zone-Access ::= < Enumerated AVP header: 72 >
 ; Page: 42
 ; Values: RFC 2869
 Login-Service ::= < Enumerated AVP header: 15 >
+        Telnet                                                          = 0 ;; supplied: (RFC7155.py#login-service-values)
+        Rlogin                                                          = 1 ;; supplied: (RFC7155.py#login-service-values)
+        "TCP Clear"                                                     = 2 ;; supplied: (RFC7155.py#login-service-values)
+        "PortMaster (proprietary)"                                      = 3 ;; supplied: (RFC7155.py#login-service-values)
+        LAT                                                             = 4 ;; supplied: (RFC7155.py#login-service-values)
+        X25-PAD                                                         = 5 ;; supplied: (RFC7155.py#login-service-values)
+        X25-T3POS                                                       = 6 ;; supplied: (RFC7155.py#login-service-values)
+        "TCP Clear Quiet (suppresses any NAS-generated connect string)" = 8 ;; supplied: (RFC7155.py#login-service-values)
 
 
 ; Type: Grouped AVP
@@ -657,6 +745,19 @@ Tunneling ::= < AVP header: 401 >
 ; Page: 46
 ; Values: [RADIUSAttrVals]
 Tunnel-Type ::= < Enumerated AVP header: 64 >
+        "Point-to-Point Tunneling Protocol (PPTP)"                   = 1 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Layer Two Forwarding (L2F)"                                 = 2 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Layer Two Tunneling Protocol (L2TP)"                        = 3 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Ascend Tunnel Management Protocol (ATMP)"                   = 4 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Virtual Tunneling Protocol (VTP)"                           = 5 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "IP Authentication Header in the Tunnel-mode (AH)"           = 6 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "IP-in-IP Encapsulation (IP-IP)"                             = 7 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Minimal IP-in-IP Encapsulation (MIN-IP-IP)"                 = 8 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "IP Encapsulating Security Payload in the Tunnel-mode (ESP)" = 9 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Generic Route Encapsulation (GRE)"                          = 10 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Bay Dial Virtual Services (DVS)"                            = 11 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "IP-in-IP Tunneling"                                         = 12 ;; supplied: (RFC7155.py#tunnel-type-values)
+        "Virtual LANs (VLAN)"                                        = 13 ;; supplied: (RFC7155.py#tunnel-type-values)
 
 
 ; Type: Enumerated AVP
@@ -665,6 +766,21 @@ Tunnel-Type ::= < Enumerated AVP header: 64 >
 ; Page: 46
 ; Values: [RADIUSAttrVals]
 Tunnel-Medium-Type ::= < Enumerated AVP header: 65 >
+        "IPv4 (IP version 4)"                                             = 1 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "IPv6 (IP version 6)"                                             = 2 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        NSAP                                                              = 3 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "HDLC (8-bit multidrop)"                                          = 4 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "BBN 1822"                                                        = 5 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "802 (includes all 802 media plus Ethernet \"canonical format\")" = 6 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "E.163 (POTS)"                                                    = 7 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "E.164 (SMDS, Frame Relay, ATM)"                                  = 8 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "F.69 (Telex)"                                                    = 9 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "X.121 (X.25, Frame Relay)"                                       = 10 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        IPX                                                               = 11 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        Appletalk                                                         = 12 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "Decnet IV"                                                       = 13 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "Banyan Vines"                                                    = 14 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
+        "E.164 with NSAP format subaddress"                               = 15 ;; supplied: (RFC7155.py#tunnel-medium-type-values)
 
 
 ; Type: Enumerated AVP
@@ -673,6 +789,10 @@ Tunnel-Medium-Type ::= < Enumerated AVP header: 65 >
 ; Page: 53
 ; Values: [RADIUSAttrVals]
 Acct-Authentic ::= < Enumerated AVP header: 45 >
+        RADIUS   = 1 ;; supplied: (RFC7155.py#acct-authentic-values)
+        Local    = 2 ;; supplied: (RFC7155.py#acct-authentic-values)
+        Remote   = 3 ;; supplied: (RFC7155.py#acct-authentic-values)
+        Diameter = 4 ;; supplied: (RFC7155.py#acct-authentic-values)
 
 
 ; Type: Enumerated AVP

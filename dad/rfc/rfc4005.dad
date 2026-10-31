@@ -594,6 +594,24 @@ NAS-Port-Type ::= < Enumerated AVP header: 61 >
         "Wireless - UMTS"                                                   = 23
         "Wireless - 1X-EV"                                                  = 24
         IAPP                                                                = 25
+        "FTTP - Fiber to the Premises"                                      = 26 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "Wireless - IEEE 802.16"                                            = 27 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "Wireless - IEEE 802.20"                                            = 28 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "Wireless - IEEE 802.22"                                            = 29 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "PPPoA - PPP over ATM"                                              = 30 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "PPPoEoA - PPP over Ethernet over ATM"                              = 31 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "PPPoEoE - PPP over Ethernet over Ethernet"                         = 32 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "PPPoEoVLAN - PPP over Ethernet over VLAN"                          = 33 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "PPPoEoQinQ - PPP over Ethernet over IEEE 802.1QinQ"                = 34 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "xPON - Passive Optical Network"                                    = 35 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "Wireless - XGP"                                                    = 36 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "WiMAX Pre-Release 8 IWK Function"                                  = 37 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "WIMAX-WIFI-IWK: WiMAX WIFI Interworking"                           = 38 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "WIMAX-SFF: Signaling Forwarding Function for LTE/3GPP2"            = 39 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "WIMAX-HA-LMA: WiMAX HA and or LMA function"                        = 40 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "WIMAX-DHCP: WIMAX DCHP service"                                    = 41 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "WIMAX-LBS: WiMAX location based service"                           = 42 ;; supplied: (RFC4005.py#nas-port-type-values)
+        "WIMAX-WVS: WiMAX voice service"                                    = 43 ;; supplied: (RFC4005.py#nas-port-type-values)
 
 
 ; Type: Enumerated AVP
@@ -650,6 +668,8 @@ Service-Type ::= < Enumerated AVP header: 6 >
         "Authorize Only"          = 17
         ;; deleted: value 'Callback Login' (= 3) (occurrence 2) (RFC4005.py#service-type-callback-login-requalified)
         ;; deleted: value 'Callback Framed' (= 4) (occurrence 2) (RFC4005.py#service-type-callback-framed-requalified)
+        Framed-Management         = 18 ;; supplied: (RFC4005.py#service-type-values)
+        Additional-Authorization  = 19 ;; supplied: (RFC4005.py#service-type-values)
 
 
 ; Type: Enumerated AVP
@@ -664,6 +684,7 @@ Framed-Protocol ::= < Enumerated AVP header: 7 >
         "Gandalf proprietary SingleLink/MultiLink protocol" = 4
         "Xylogics proprietary IPX/SLIP"                     = 5
         "X.75 Synchronous"                                  = 6
+        "GPRS PDP Context"                                  = 7 ;; supplied: (RFC4005.py#framed-protocol-values)
 
 
 ; Type: Enumerated AVP
@@ -696,6 +717,10 @@ Framed-Compression ::= < Enumerated AVP header: 13 >
 ; Page: 40
 ; Values: [RADIUSTypes] and defined in [RADIUSExt]
 ARAP-Zone-Access ::= < Enumerated AVP header: 72 >
+        "Only allow access to default zone" = 1 ;; supplied: (RFC4005.py#arap-zone-access-values)
+        "Use zone filter inclusively"       = 2 ;; supplied: (RFC4005.py#arap-zone-access-values)
+        "Not used"                          = 3 ;; supplied: (RFC4005.py#arap-zone-access-values)
+        "Use zone filter exclusively"       = 4 ;; supplied: (RFC4005.py#arap-zone-access-values)
 
 
 ; Type: Enumerated AVP

@@ -5,7 +5,9 @@ from seanchai.dad.corrections import (
     Correction,
     Delete,
     Insert,
+    Supply,
     avp_rule,
+    definition,
     enum_value,
     header,
     table_row,
@@ -138,4 +140,89 @@ CORRECTIONS += [
         " and repeats it under 'The following values are further qualified'",
     )
     for name, value in (("Callback Login", 3), ("Callback Framed", 4))
+]
+
+# The RADIUS-derived AVPs' values IANA's "RADIUS Types" registry, which
+# [RADIUSTypes] names (section 13.1), has added since: the clauses print
+# lists "for informational purposes", which match the registry's opening
+# values, and ARAP-Zone-Access none. The registry is open, so these are a
+# snapshot, of the file Last Updated 2026-10-09, fetched 2026-10-31.
+# Prompt, Framed-Routing, Framed-Compression, Login-Service, Tunnel-Type,
+# Tunnel-Medium-Type and Acct-Authentic print the registry's whole list.
+_RADIUS_ADDED = {
+    "NAS-Port-Type": (
+        "4.4",
+        "[RADIUSTypes]",
+        "Values for RADIUS Attribute 61, NAS-Port-Type",
+        "radius-types-13",
+        (
+            (26, "FTTP - Fiber to the Premises"),
+            (27, "Wireless - IEEE 802.16"),
+            (28, "Wireless - IEEE 802.20"),
+            (29, "Wireless - IEEE 802.22"),
+            (30, "PPPoA - PPP over ATM"),
+            (31, "PPPoEoA - PPP over Ethernet over ATM"),
+            (32, "PPPoEoE - PPP over Ethernet over Ethernet"),
+            (33, "PPPoEoVLAN - PPP over Ethernet over VLAN"),
+            (34, "PPPoEoQinQ - PPP over Ethernet over IEEE 802.1QinQ"),
+            (35, "xPON - Passive Optical Network"),
+            (36, "Wireless - XGP"),
+            (37, "WiMAX Pre-Release 8 IWK Function"),
+            (38, "WIMAX-WIFI-IWK: WiMAX WIFI Interworking"),
+            (39, "WIMAX-SFF: Signaling Forwarding Function for LTE/3GPP2"),
+            (40, "WIMAX-HA-LMA: WiMAX HA and or LMA function"),
+            (41, "WIMAX-DHCP: WIMAX DCHP service"),
+            (42, "WIMAX-LBS: WiMAX location based service"),
+            (43, "WIMAX-WVS: WiMAX voice service"),
+        ),
+    ),
+    "Service-Type": (
+        "6.1",
+        "[RADIUS] and [RADIUSTypes]",
+        "Values for RADIUS Attribute 6, Service-Type",
+        "radius-types-4",
+        (
+            (18, "Framed-Management"),
+            (19, "Additional-Authorization"),
+        ),
+    ),
+    "Framed-Protocol": (
+        "6.10.1",
+        "[RADIUSTypes]",
+        "Values for RADIUS Attribute 7, Framed-Protocol",
+        "radius-types-5",
+        ((7, "GPRS PDP Context"),),
+    ),
+    "ARAP-Zone-Access": (
+        "6.14.2",
+        "[RADIUSTypes] and defined in [RADIUSExt]",
+        "Values for RADIUS Attribute 72, ARAP-Zone-Access",
+        "radius-types-16",
+        (
+            (1, "Only allow access to default zone"),
+            (2, "Use zone filter inclusively"),
+            (3, "Not used"),
+            (4, "Use zone filter exclusively"),
+        ),
+    ),
+}
+
+CORRECTIONS += [
+    Supply(
+        id=f"{avp.lower()}-values",
+        target=definition(avp),
+        expect=citation,
+        values=tuple(ast.EnumValue(name=name, value=value) for value, name in values),
+        # ARAP-Zone-Access prints none.
+        extend=avp != "ARAP-Zone-Access",
+        reason=f"clause {clause} cites {citation} for the values; IANA's"
+        f" RADIUS Types registry, '{title}' ({registry}), as Last Updated"
+        " 2026-10-09, "
+        + (
+            "gives these, which it attributes to RFC 2869 ([RADIUSExt])"
+            if avp == "ARAP-Zone-Access"
+            else "adds these to the values the clause prints"
+        ),
+    )
+    for avp, (clause, citation, title, registry, values) in _RADIUS_ADDED.items()
 ]

@@ -437,6 +437,15 @@ Re-Auth-Request-Type ::= < Enumerated AVP header: 285 >
 ; Page: 120
 ; Values: the IANA registry for Termination-Cause AVP Values [IANATCV]
 Termination-Cause ::= < Enumerated AVP header: 295 >
+      ; RESERVED                      = 0 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_LOGOUT               = 1 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_SERVICE_NOT_PROVIDED = 2 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_BAD_ANSWER           = 3 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_ADMINISTRATIVE       = 4 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_LINK_BROKEN          = 5 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_AUTH_EXPIRED         = 6 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_USER_MOVED           = 7 ;; supplied: (RFC6733.py#termination-cause-values)
+        DIAMETER_SESSION_TIMEOUT      = 8 ;; supplied: (RFC6733.py#termination-cause-values)
 
 
 ; Type: Enumerated AVP
