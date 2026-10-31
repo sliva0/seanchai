@@ -351,7 +351,7 @@ def test_holes_stay_in_the_tables_with_their_reason(package):
         " 3GPP-Session-Stop-Indicator: no data_type, no flag_rules\n"
     ) in additions
     assert (
-        "        # [ TCP-Source-Port ]  # hole: TS32.299 TCP-Source-Port:"
+        "        # [ Submission-Timestamp ]  # hole: TS32.299 Submission-Timestamp:"
         " resolves nowhere\n"
     ) in additions
     # TS 29.229's Line-Identifier, ETSI's 500 by clause 6.3.42, resolves.

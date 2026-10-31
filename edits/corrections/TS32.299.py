@@ -655,6 +655,23 @@ CORRECTIONS += [
     for name, (data_type, code) in _OMA_TYPES.items()
 ]
 
+# UWAN-User-Location-Info (clause 7.2.242aaA) takes TCP-Source-Port as a
+# member, which TS 32.299 defines nowhere: table 7.2.0.1 refers to [215],
+# TS 29.212, for UDP-Source-Port beside it and omits TCP-Source-Port, which
+# TS 29.212 defines in clause 5.3.129.
+CORRECTIONS += [
+    Insert(
+        id="tcp-source-port-reused",
+        into=reused_avps("7.2.0.1"),
+        node=ast.ReusedAvpRow(name="TCP-Source-Port", origin="TS29.212"),
+        after="Target-App-Layer-User-Id",
+        reason="clause 7.2.242aaA's UWAN-User-Location-Info has a TCP-Source-Port"
+        " member; table 7.2.0.1 lists UDP-Source-Port from [215], TS 29.212, and"
+        " omits TCP-Source-Port, which TS 29.212 clause 5.3.129 defines",
+        versions="18.0.0",
+    ),
+]
+
 # Release 11, V11.20.0: the copy oneM2M TS-0004 [31] cites as "3GPP TS
 # 32.299 ... (Release 11)" for Node-Id and Service-Information. The Release
 # 18 declarations above do not reach it (src/seanchai/versions.py); these

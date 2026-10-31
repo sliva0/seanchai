@@ -46,11 +46,6 @@ letter is not reused. What exists is described in the per-module documents.
     broken names; the model must present them as such and offer the
     consumer resolution options (skip, keep as an untyped placeholder,
     accept a supplied definition). Design pending.
-  - a name undefined in the citing document, which another corpus document
-    defines under the same name without being cited: TS 32.299's
-    `TCP-Source-Port` (TS 29.212; table 7.2.0.1 refers to [215] for
-    `UDP-Source-Port` only). *Decided:* a correction adding the re-used
-    row.
   - what oneM2M TS-0004's `Service-Information` reaches in TS 32.299
     V11.20.0, the version its reference [31] names: forty-one members
     re-used from Release 11's TS 29.061, 29.173, 29.212, 29.214, 29.229,

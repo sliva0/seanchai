@@ -1460,7 +1460,6 @@ _STANDING_CORPUS_NOTES = {
         "unresolved-reference": [
             "Network-Element",
             "Submission-Timestamp",
-            "TCP-Source-Port",
         ],
     },
     # The transcriptions cite TS 29.209, which ends at V6.8.0, ES 283 034

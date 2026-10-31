@@ -1056,6 +1056,7 @@ Sponsor-Identity                           TS29.214                -
 SSID                                       TS29.273                -
 Supported-Features                         TS29.229                -
 Target-App-Layer-User-Id                   TS29.343                -
+TCP-Source-Port                            TS29.212                - ;; inserted: (TS32.299.py#tcp-source-port-reused)
 TDF-IP-Address                             TS29.212                -
 Terminal-Information                       TS29.272                -
 Time-Window                                TS29.345                -

@@ -421,7 +421,7 @@ why each stays:
 - **`registry-application-name`**, one. TS 29.272's VCSG application scope,
   inserted by correction citing clause 7.2.2, names 16777308 `S7a/S7d`;
   table 4.1 calls it "3GPP S7a".
-- **`unresolved-reference`**, nine. Six are AVPs no document defines,
+- **`unresolved-reference`**, eight. Six are AVPs no document defines,
   tabulates or allocates: RFC 4004's `MIP-HA-to-MN-SPI`, `MIP-MN-FA-SPI`
   and `MIP-MN-to-HA-SPI` (clauses 9.4–9.6; the prose and clause 11.1's
   table call the second `MIP-MN-to-FA-SPI`, defined nowhere either, and
@@ -431,16 +431,17 @@ why each stays:
   TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code` (clauses
   6.3.53, 6.3.54), and TS 29.154's `External-Group-Identifier` (the ECR
   body, clause A.6.6.2; table A.6.4.1-1 does not list it, and Wireshark
-  has no such AVP either). Three are members of TS 32.299's grouped bodies
+  has no such AVP either). Two are members of TS 32.299's grouped bodies
   whose definition the document neither prints nor cites.
   `Submission-Timestamp` (7.2.112aA) and `Network-Element` (7.2.66aA)
   resolve nowhere; each has a near-name the document defines,
   `Submission-Time` (7.2.217, MMS-Information's) and
   `API-Network-Service-Node` (7.2.20eA, in the same body), but nothing in
-  TS 32.299 says either is meant. `TCP-Source-Port` (7.2.242aaA) sits
-  beside `UDP-Source-Port`, which table 7.2.0.1 refers to TS 29.212 [215]
-  for. TS 29.212 defines a `TCP-Source-Port` too (5.3.129), but TS 32.299
-  cites it for only the one, and sharing a name is no citation.
+  TS 32.299 says either is meant. A third, `TCP-Source-Port` (7.2.242aaA),
+  sits beside `UDP-Source-Port`, which table 7.2.0.1 refers to TS 29.212
+  [215] for; TS 29.212 defines both (5.3.97, 5.3.129) and the table's
+  omission of the one is the document's slip, so a correction inserts the
+  re-used row citing TS 29.212.
   Where the document itself names the AVP a member means, the member was
   corrected instead. TS 32.299's ProSe-Information printed
   `Monitored-HPLMN-Identifier` and Monitoring-Event-Information

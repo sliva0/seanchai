@@ -959,7 +959,6 @@ _STANDING_HOLES = {
         "resolves nowhere": [
             "Network-Element",
             "Submission-Timestamp",
-            "TCP-Source-Port",
         ],
     },
     # oneM2M TS-0004's Service-Information is V11.20.0's ([31], "Release
