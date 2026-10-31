@@ -34,9 +34,10 @@ from the open findings. Applying a module skips them.
 Beside field replacement there are three narrow structural operations:
 `Delete` for a node that should not exist at all, `Insert` for an AVP-table row
 the source defines but omits from the table (or a body member a verified
-erratum restores), and `Supply` for what a document
-defines in another: the value list of an enumerated AVP, or the type and flag
-rules of a table row typed by reference. All fail loudly when upstream changes
+erratum restores, or an enumerated value a later document adds), and
+`Supply` for what a document defines in another: the value list of an
+enumerated AVP, or the type and flag rules of a table row typed by
+reference. All fail loudly when upstream changes
 the state that justified them: `Delete` expects the doomed node
 field-for-field, `Insert` expects the row to be absent, so it fails the day
 upstream adds it, and `Supply` expects the clause's `; Values:` citation and
@@ -534,11 +535,23 @@ class Insert:
     `AvpRule`, a member the body omits and a verified erratum restores:
     RFC 5777's erratum 2333 adds three to `Time-Of-Day-Condition`. `after`
     names the member it follows, as a row's does.
+
+    Into an enumerated AVP's `definition()`, it inserts an `EnumValue` a
+    later document adds to the list: RFC 8581 clause 7.2.1 defines
+    `PEER_REPORT` for RFC 7683's `OC-Report-Type`, in a clause of its own
+    that the defining file has no place for. `after` names the value it
+    follows; it expects neither the name nor the number to be in the list.
     """
 
     id: str
     into: avp_table | reused_avps | header | definition
-    node: ast.AvpTableRow | ast.ReusedAvpRow | ast.ApplicationScope | ast.AvpRule
+    node: (
+        ast.AvpTableRow
+        | ast.ReusedAvpRow
+        | ast.ApplicationScope
+        | ast.AvpRule
+        | ast.EnumValue
+    )
     after: str | None
     reason: str
     versions: str | VersionRange = "*..*"
@@ -883,16 +896,22 @@ def _inserted(
     described = insert.into.describe()
     field = _inserted_field(insert)
     row_type: type[ast.Node] = (
-        ast.AvpRule
+        ast.EnumValue
+        if isinstance(parent, ast.EnumeratedAvp)
+        else ast.AvpRule
         if isinstance(insert.into, definition)
         else ast.AvpTableRow
         if isinstance(insert.into, avp_table)
         else ast.ReusedAvpRow
     )
     if isinstance(insert.into, definition):
-        if not isinstance(parent, ast.Message | ast.GroupedAvp):
+        if not isinstance(parent, ast.Message | ast.GroupedAvp) and not (
+            isinstance(parent, ast.EnumeratedAvp)
+            and isinstance(insert.node, ast.EnumValue)
+        ):
             raise CorrectionError(
                 f"{described}: Insert requires a message or grouped AVP,"
+                " or an enumerated AVP for a value,"
                 f" matched {type(parent).__name__}"
             )
     elif not isinstance(parent, ast.AvpTable | ast.ReusedAvps):
@@ -909,16 +928,27 @@ def _inserted(
             ((*path, field, index), row)
             for index, row in enumerate(getattr(parent, field))
         ]
-    if any(row.name == insert.node.name for _, row in rows):
+    if any(getattr(row, "name", None) == insert.node.name for _, row in rows):
         raise CorrectionError(
             f"{described}: row {insert.node.name!r} is already present"
+        )
+    if isinstance(insert.node, ast.EnumValue) and any(
+        row.value == insert.node.value
+        if isinstance(row, ast.EnumValue)
+        else row.first <= insert.node.value <= row.last
+        for _, row in rows
+    ):
+        raise CorrectionError(
+            f"{described}: value {insert.node.value} is already present"
         )
     rows = list(rows)
     if insert.after is None:
         rows.append((origin, insert.node))
     else:
         positions = [
-            index for index, (_, row) in enumerate(rows) if row.name == insert.after
+            index
+            for index, (_, row) in enumerate(rows)
+            if getattr(row, "name", None) == insert.after
         ]
         if not positions:
             raise CorrectionError(
@@ -941,7 +971,10 @@ def _inserted(
 
 
 def _inserted_field(insert: Insert) -> str:
-    """The tuple field an `Insert` adds to: a body's members or a table's rows."""
+    """The tuple field an `Insert` adds to: a body's members, an enumerated
+    AVP's values or a table's rows."""
+    if isinstance(insert.node, ast.EnumValue):
+        return "values"
     return "avps" if isinstance(insert.into, definition) else "rows"
 
 
@@ -1297,7 +1330,7 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
                 _Added(index),
                 path,
             )
-            kind = "member" if field == "avps" else "row"
+            kind = {"avps": "member", "values": "value"}.get(field, "row")
             results.append(
                 Result(
                     correction=correction,

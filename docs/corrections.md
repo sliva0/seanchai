@@ -118,8 +118,13 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   the member it follows, and expects no member of that name: RFC 5777's
   verified erratum 2333 restores three members `Time-Of-Day-Condition`'s
   ABNF omits, each defined in a clause of its own and tabulated in section
-  10.1. A row stating a vendor its table prints no column for needs the
-  column first, a `Correction` to the table's `columns` adding `Vendor-ID`
+  10.1. Into an enumerated AVP's `definition(name)`, `Insert` adds an
+  `ast.EnumValue` another document defines for the list, `after` naming
+  the value it follows, and expects neither its name nor its number in the
+  list: RFC 8581 clause 7.2.1 adds `PEER_REPORT 2` to RFC 7683's
+  `OC-Report-Type`, and RFC 8581's file holds no definition of the AVP to
+  carry it, so RFC 7683's correction inserts it citing that clause. A row
+  stating a vendor its table prints no column for needs the column first, a `Correction` to the table's `columns` adding `Vendor-ID`
   with every printed row's cell blank: TS 29.229 clause 6.3.42 defines
   `Line-Identifier` in ETSI's vendor 13019, and table 6.3.0.1 omits it.
 - **`Supply(id, target=definition(name), expect=<the ; Values: text>, values=(...), reason)`**:

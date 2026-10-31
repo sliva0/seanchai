@@ -693,7 +693,8 @@ Same definitions, different carrier:
   attribute [RFC2548]", §4.6.7), and RFC 5778's `MIP-Algorithm-Type`
   ("defined in [RFC4004] that also fulfill current RFC 4285 requirements",
   §6.13). Warnings record a value list for a name not typed Enumerated (RFC
-  8581 extending 7683's `OC-Report-Type`, which `.dad` cannot express; RFC
+  8581 extending 7683's `OC-Report-Type`, whose `PEER_REPORT` a correction
+  on RFC 7683 inserts, [corrections.md](corrections.md#operations); RFC
   6733's `Inband-Security-Id` and `Session-Binding`), an Enumerated AVP
   with neither values nor a citation, and value-first lines an enumerated
   clause holds but the reading leaves out; no clause in the corpus has

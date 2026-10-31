@@ -12,12 +12,6 @@ letter is not reused. What exists is described in the per-module documents.
   transcriptions) typing all twenty UTF8String, each with its evidence:
   RFC 4590's "text" fields, TS 29.229 clause 6.3.37-41 for the four it
   re-uses, Wireshark's dictionary for the rest.
-- **P. One document extending another's enumeration.** RFC 8581 §7.2.1
-  adds `PEER_REPORT = 2` to RFC 7683's OC-Report-Type; the extractor
-  drops it with a warning because an Enumerated section's header rule
-  claims the definition. It is the only such case in the corpus.
-  *Decided:* a correction on RFC 7683 adding the value, its comment citing
-  RFC 8581 §7.2.1.
 - **Q. Registry documents the corpus lacks.** TS 29.153 (Ns, current to
   Rel-19) and TS 32.296 (Re, current to Rel-19) have current versions and
   can be extracted the usual way. TS 29.211 (last V6.4.0), TS 29.210 (last

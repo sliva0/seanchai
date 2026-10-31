@@ -889,6 +889,16 @@ class TestOverTheCommittedCorpus:
             ),
         )
 
+    def test_oc_report_type_holds_the_value_rfc_8581_adds(self, built):
+        """RFC 8581 clause 7.2.1 adds PEER_REPORT to RFC 7683's list."""
+        report_type = built.resolve("RFC7683", "OC-Report-Type")
+        assert isinstance(report_type, model.Enumerated)
+        assert report_type.values == (
+            ast.EnumValue(name="HOST_REPORT", value=0),
+            ast.EnumValue(name="REALM_REPORT", value=1),
+            ast.EnumValue(name="PEER_REPORT", value=2),
+        )
+
     def test_29229_types_the_digest_avps_rfc_4590_leaves_untyped(self, built):
         realm = built.resolve("TS29.229", "Digest-Realm")
         assert realm is not None

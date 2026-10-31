@@ -564,6 +564,50 @@ def test_a_member_insert_fails_where_its_body_cannot_take_it(edit, problem):
         corrections.apply(_spec(), [edit])
 
 
+def _value_insert(name, value, after: str | None = "Off"):
+    return _member_insert(
+        name,
+        after=after,
+        into="Example-Mode",
+        node=ast.EnumValue(name=name, value=value),
+    )
+
+
+def test_a_value_insert_extends_an_enumeration_and_is_noted():
+    """RFC 8581 clause 7.2.1 adds PEER_REPORT to RFC 7683's OC-Report-Type."""
+    edit = _value_insert("On", 1)
+
+    corrected, results = corrections.apply(_spec(), [edit])
+
+    enum = corrected.sections[2]
+    assert isinstance(enum, ast.EnumeratedAvp)
+    assert enum.values == (
+        ast.EnumValue(name="Off", value=0),
+        ast.EnumValue(name="On", value=1),
+    )
+    assert results[0].path == ("sections", 2, "values", 1)
+    assert corrections.notes(results).trailing[("sections", 2, "values", 1)] == [
+        f"inserted: ({edit.id})"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("edit", "problem"),
+    [
+        (_value_insert("Off", 1), "'Off' is already present"),
+        (_value_insert("On", 0), "value 0 is already present"),
+        (_value_insert("On", 1, after="Missing"), "is not present"),
+        (
+            _member_insert("Other", node=ast.EnumValue(name="Other", value=1)),
+            "must be a AvpRule",
+        ),
+    ],
+)
+def test_a_value_insert_fails_where_its_enumeration_cannot_take_it(edit, problem):
+    with pytest.raises(corrections.CorrectionError, match=problem):
+        corrections.apply(_spec(), [edit])
+
+
 def test_a_delete_whose_expect_differs_reports_the_changed_fields():
     with pytest.raises(corrections.CorrectionError, match=r"has changed.*origin"):
         corrections.apply(
@@ -1142,6 +1186,9 @@ def test_every_corrected_file_already_carries_its_corrections(path):
                 continue
             if isinstance(table, ast.Message | ast.GroupedAvp):
                 assert correction.node in table.avps
+                continue
+            if isinstance(table, ast.EnumeratedAvp):
+                assert correction.node in table.values
                 continue
             assert isinstance(table, ast.AvpTable | ast.ReusedAvps)
             assert correction.node in table.rows
