@@ -11,11 +11,6 @@ letter is not reused. What exists is described in the per-module documents.
   be pinned. Nothing resolves into them: only TS 29.230's registry rows
   name them. *Decided:* pin them only if a corpus document comes to
   resolve into one.
-- **R. Fill `; Values:` lists pointed elsewhere.** 100 sections in 11
-  files. *Decided:* fill from the cited source as a corrections-supplied
-  list with the source and its date or version recorded; TS 32.422 trace
-  parameters and ICMP types first, IANA RADIUS registries as a dated
-  snapshot, OMNA content types last.
 
 ## Consumers
 

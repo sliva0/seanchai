@@ -9,7 +9,9 @@ that enumerates its members, an `Enumerated` with its values, and every AVP
 knowing its `(vendor-id, code)`, type, flag rules and defining document.
 An `Enumerated` whose clause defines its values elsewhere carries that
 citation in `values_source` (TS 29.272's `Trace-Depth`: "TS 32.422 [23] for
-Trace Depth"); with no values beside it the AVP is complete, not a hole.
+Trace Depth"), its `values` those a correction supplies from the cited
+document; with no values beside it (TS 29.272's `Report-Interval`, whose
+source numbers each RAT apart) the AVP is complete, not a hole.
 `values` holds the body as the file prints it, named values, reserved
 ranges and vendor-specific ranges in order; `vendor_specific` picks out the
 last, the ranges a consumer validating values must allow under names the

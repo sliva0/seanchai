@@ -99,8 +99,9 @@ shapes of `dictionary.py`, `constants.py` and `grouped.py`:
   `AVP_DICTIONARY_ADDITIONS` and `AVP_VENDOR_DICTIONARY_ADDITIONS[10415]`,
   one `AvpInfo` per line with the defining clause as a comment. Where the
   dictionary has the name under another identity, the comment says so. A
-  new enumerated AVP gets `E_` constants for its values, or a comment
-  naming the document its clause defers them to, and a comment for each
+  new enumerated AVP gets `E_` constants for its values, those a
+  correction supplies included, a comment naming the document its clause
+  defers them to where it does, and a comment for each
   range its document leaves to vendors (`; VENDOR-SPECIFIC`), whose values
   are legal with no constant. The library checks no enumerated value, so
   nothing else stands in their way.

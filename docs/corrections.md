@@ -140,9 +140,14 @@ corrected (`bearer-identifier-spelling`, `bases-nasreq`), not where.
   `; Values:` citation, exactly, and no values, so it fails when upstream
   re-words the citation or starts printing the list itself; the citation
   stays, since the document still makes it. The reason cites the clause of
-  the external document the values come from. No committed module declares
-  this form: TS 32.299's `API-Network-Service-Node` cites TS 23.682, whose
-  V18.0.0 names the network elements but numbers none of them.
+  the external document the values come from, or, for a registry, its
+  name and the date it was Last Updated, since a registry still open makes
+  the list a snapshot. Forcing case: TS 29.272 clause 7.3.67 gives
+  `Trace-Depth` "those defined in TS 32.422 [23] for Trace Depth", which
+  TS 32.422 V18.7.0 clause 5.3 numbers. A citation whose source holds no
+  flat list stays unfilled ([dad-format.md](dad-format.md#design-intent)):
+  TS 32.299's `API-Network-Service-Node` cites TS 23.682, whose V18.0.0
+  names the network elements but numbers none of them.
 - **`Supply(..., extend=True)`**: the same, for a section that prints part
   of the list it cites, the supplied values following the printed ones.
   It expects the citation and at least one printed value, and refuses a

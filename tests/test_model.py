@@ -1798,6 +1798,31 @@ def test_onem2m_reaches_release_11s_bodies_through_ts_32_299_v11_20_0():
     )
 
 
+def test_only_three_cited_enumerations_stay_without_values():
+    """Every `; Values:` citation in the committed corpus has its values
+    supplied but three, which no flat list from the cited source can fill:
+    TS 32.422 numbers each RAT's report intervals from 0, the ICMP registry
+    numbers codes per type, and TS 23.682 numbers no network element."""
+    unfilled = {
+        (entry.reference, entry.spec.version, section.name, section.values_source)
+        for entry in corpus.Corpus.load([_ROOT / "dad"])
+        for section in entry.spec.sections
+        if isinstance(section, ast.EnumeratedAvp)
+        and section.values_source is not None
+        and not section.values
+    }
+    assert unfilled == {
+        ("TS29.272", "18.7.0", "Report-Interval", "TS 32.422 [23] for Report Interval"),
+        (
+            "RFC5777",
+            None,
+            "ICMP-Code",
+            "IANA under the ICMP Type Numbers registry as defined in [RFC2780]",
+        ),
+        ("TS32.299", "18.0.0", "API-Network-Service-Node", "TS 23.682[243]"),
+    }
+
+
 def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
     with pytest.raises(model.IncompleteCorpusError) as raised:
         model.Model.build(corpus.Corpus.load([_ROOT / "dad"]), strict=True)
