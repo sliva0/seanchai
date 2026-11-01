@@ -1762,33 +1762,32 @@ _STANDING_CORPUS_NOTES = {
     # 11 citations of TS 29.061, 29.229 and 29.272 nothing stands in for:
     # TS 29.212 V11.19.0's Trace-Data, from TS 29.272, differs from Release
     # 18's.
-    # TS 29.210 V6.7.0 and TS 29.234 V11.2.0, held for TS 29.230's rows, cite in
-    # their releases TS 29.061 and TS 29.229, held at Release 18 only.
-    "29210-670.dad": {
-        "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0), TS29.229 (corpus has 18.1.0)"
-        ]
-    },
+    # TS 29.210 V6.7.0 and TS 29.234 V11.2.0, held for TS 29.230's rows, cite
+    # TS 29.229 in their releases; V18.1.0 stands in for both. TS 29.234's
+    # clause 10.1.4 prints SIP-Auth-Data-Item's body with three members more and
+    # five fewer than TS 29.229's.
+    "29210-670.dad": {"cross-release-origin": ["TS29.229"]},
     "29234-b20.dad": {
-        "local-and-reused": ["SIP-Auth-Data-Item"],
-        "origin-not-in-corpus": ["TS29.229 (corpus has 18.1.0)"],
+        "cross-release-origin": ["TS29.229"],
+        "reused-body-differs": ["SIP-Auth-Data-Item"],
         "undefined-avp": ["Error-Cause"],
     },
     "29214-7c0.dad": {
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0), TS29.212 (corpus has 18.2.0, 11.19.0)"
+            "TS29.061 (corpus has 18.1.0, 6.15.0),"
+            " TS29.212 (corpus has 18.2.0, 11.19.0)"
         ]
     },
     "29212-bj0.dad": {
         "cross-release-origin": ["3GPP2-X.S0057"],
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0), TS29.229 (corpus has 18.1.0),"
+            "TS29.061 (corpus has 18.1.0, 6.15.0), TS29.229 (corpus has 18.1.0),"
             " TS29.272 (corpus has 18.7.0)"
         ],
     },
     "29214-bg0.dad": {
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0), TS29.229 (corpus has 18.1.0)"
+            "TS29.061 (corpus has 18.1.0, 6.15.0), TS29.229 (corpus has 18.1.0)"
         ]
     },
     "32299-bk0.dad": {

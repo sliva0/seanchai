@@ -407,6 +407,19 @@ version = "11.16.0"
 final = "release"
 reason = "Defines Flows as TS 32.299 V11.20.0 re-uses it."
 
+# TS 29.210 V6.7.0 clause 2 [11] cites TS 29.061 non-specifically, which in
+# Release 6 means Release 6's last version. Release 18's differs for what TS
+# 29.210 re-uses from it: its table 9a puts M in Must not on 3GPP-RAT-Type,
+# 3GPP-SGSN-Address and 3GPP-SGSN-IPv6-Address, where V6.15.0's table 10, the
+# only one tabulating them, puts it in Must. It tabulates TS 29.210's other
+# two, 3GPP-GPRS-Negotiated-QoS-Profile and 3GPP-SGSN-MCC-MNC, nowhere.
+[[tgpp_pinned]]
+number = "29.061"
+title = "PLMN interworking with packet data networks"
+version = "6.15.0"
+final = "release"
+reason = "Defines 3GPP-RAT-Type and 3GPP-SGSN-Address as TS 29.210 V6.7.0 re-uses them."
+
 # TS 29.230 tables 4.1 and 7.1 cite three retired documents no corpus
 # document resolves into; each is pinned at its last version so that the
 # registry's rows point at something the corpus holds.

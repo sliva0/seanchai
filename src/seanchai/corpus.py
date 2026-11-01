@@ -148,11 +148,15 @@ class ReleaseStandIn:
 # rules, grouped bodies and enumerated values. A citation without one
 # resolves to nothing while the corpus lacks its version. Where the two
 # versions differ the meant version is pinned instead (TS 29.212 V11.19.0,
-# TS 29.214 V11.16.0, src/seanchai/downloader/specs.toml).
-_REL11 = (
-    "compared 2026-10-31 with the Release 11 copy extracted from the 3GPP"
-    " archive, whose listing holds no later Release 11 version"
-)
+# TS 29.214 V11.16.0, TS 29.061 V6.15.0, src/seanchai/downloader/specs.toml).
+def _compared(date: str, release: int) -> str:
+    return (
+        f"compared {date} with the Release {release} copy extracted from the 3GPP"
+        f" archive, whose listing holds no later Release {release} version"
+    )
+
+
+_REL11 = _compared("2026-10-31", 11)
 RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
     # TS 32.299 V11.20.0 clause 2 [207].
     ("TS32.299", "11.20.0", "TS29.061"): ReleaseStandIn(
@@ -205,6 +209,31 @@ RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
         "11.7.0",
         "18.0.0",
         "V11.7.0 tabulates MSISDN (701) with V18.0.0's type and flag rules; " + _REL11,
+    ),
+    # TS 29.210 V6.7.0 clause 2 [16].
+    ("TS29.210", "6.7.0", "TS29.229"): ReleaseStandIn(
+        "6.11.0",
+        "18.1.0",
+        "V6.11.0 table 6.3.1 tabulates Charging-Information (618) and its members"
+        " Primary-Event-Charging-Function-Name, Secondary-Event-Charging-Function-"
+        "Name, Primary-Charging-Collection-Function-Name and Secondary-Charging-"
+        "Collection-Function-Name (619-622) with the codes, types and flag rules"
+        " of V18.1.0's table 6.3.0.1, and clause 6.3.19 prints Charging-"
+        "Information's body as V18.1.0 does; " + _compared("2026-11-01", 6),
+    ),
+    # TS 29.234 V11.2.0 clause 2 [6].
+    ("TS29.234", "11.2.0", "TS29.229"): ReleaseStandIn(
+        "11.5.0",
+        "18.1.0",
+        "V11.5.0 table 6.3.1 tabulates the 14 AVPs TS 29.234 V11.2.0 re-uses from"
+        " it, and Deregistration-Reason's members Reason-Code and Reason-Info, with"
+        " the codes, types and flag rules of V18.1.0's table 6.3.0.1, and prints"
+        " Deregistration-Reason's body and Server-Assignment-Type's and"
+        " Reason-Code's values as V18.1.0 does. V18.1.0's SIP-Digest-Authenticate,"
+        " a member of SIP-Auth-Data-Item, adds Alternate-Digest-Algorithm and"
+        " Alternate-Digest-HA1 to V11.5.0's, which TS 29.234 does not reach: its"
+        " clause 10.1.4 prints a SIP-Auth-Data-Item body of its own, without that"
+        " member; " + _compared("2026-11-01", 11),
     ),
 }
 

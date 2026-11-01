@@ -16,10 +16,10 @@ uv run basedpyright              # standard mode; the more trustworthy one
 catalog's legacy `.doc` files, unless it is run with `--no-convert`. The
 full sources test needs the conversions: TS 32.299, 29.153, 29.154,
 29.215, 29.217, 29.219, 29.343, 29.368, 29.468 and oneM2M TS-0004 are read
-from them, as are the pinned TS 29.140 V7.0.0, 29.209 V6.8.0, 29.210
+from them, as are the pinned TS 29.061 V6.15.0, 29.140 V7.0.0, 29.209 V6.8.0, 29.210
 V6.7.0, 29.211 V6.4.0, 29.212 V11.19.0, 29.214 V7.12.0 and V11.16.0, 29.234
 V11.2.0 and 32.299 V11.20.0, and a `--no-convert` manifest fails the test
-naming those nineteen.
+naming those twenty.
 
 CI runs the tests without sources plus ruff. Run everything locally before
 committing anyway; CI is a backstop, not the gate.

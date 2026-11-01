@@ -1570,43 +1570,19 @@ _STANDING_HOLES = {
         "undefined (clause 9.6)": ["MIP-MN-to-HA-SPI"],
     },
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
-    "TS29.154": {"undefined (clause A.6.6.2)": ["External-Group-Identifier"]},
-    # What the retired documents re-use from Release 6's and Release 11's TS
-    # 29.061 and 29.229, held at Release 18 only, with no stand-in; TS 29.234's
-    # clause 10.1.27 types Charging-Characteristics "Integer", no type.
-    "TS29.210": {
-        "resolves nowhere (re-used from TS29.061, which the corpus lacks)": [
+    # What TS 29.210 V6.7.0 re-uses that V6.15.0 only numbers as RADIUS
+    # sub-attributes (clause 16.4.7).
+    "TS29.061 V6.15.0": {
+        "no data_type, no flag_rules": [
             "3GPP-GPRS-Negotiated-QoS-Profile",
-            "3GPP-RAT-Type",
-            "3GPP-SGSN-Address",
-            "3GPP-SGSN-IPv6-Address",
             "3GPP-SGSN-MCC-MNC",
         ],
-        "resolves nowhere (re-used from TS29.229, which the corpus lacks)": [
-            "Charging-Information",
-        ],
     },
+    "TS29.154": {"undefined (clause A.6.6.2)": ["External-Group-Identifier"]},
+    # Clause 10.1.27 types Charging-Characteristics "Integer", no type.
     "TS29.234": {
         "no data_type": ["Charging-Characteristics"],
-        "resolves nowhere (re-used from TS29.229, which the corpus lacks)": [
-            "Confidentiality-Key",
-            "Deregistration-Reason",
-            "Integrity-Key",
-            "Primary-Charging-Collection-Function-Name",
-            "SIP-Authenticate",
-            "SIP-Authentication-Context",
-            "SIP-Authentication-Scheme",
-            "SIP-Authorization",
-            "SIP-Item-Number",
-            "SIP-Number-Auth-Items",
-            "Secondary-Charging-Collection-Function-Name",
-            "Server-Assignment-Type",
-            "Visited-Network-Identifier",
-        ],
         "undefined (clause 4.4.2.1)": ["Error-Cause"],
-        "no flag_rules (re-used from TS29.229, which the corpus lacks)": [
-            "SIP-Auth-Data-Item"
-        ],
     },
     "TS29.345": {
         "undefined (clause 6.3.53)": ["ProSe-Query-Code", "ProSe-Response-Code"]
@@ -1697,8 +1673,9 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
     (Release 11)" [31] are the versions they name; TS 29.212's "3GPP2
     X.S0057-B" [24] is revision 0, standing in; and TS 32.299 V11.20.0's
     six non-specific Release 11 citations the corpus holds no Release 11
-    copy of are Release 18's, standing in. Each AVP so reached says so,
-    and nothing else in the corpus resolves across releases."""
+    copy of, and TS 29.210 V6.7.0's and TS 29.234 V11.2.0's TS 29.229, are
+    Release 18's, standing in. Each AVP so reached says so, and nothing else
+    in the corpus resolves across releases."""
     built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
 
     vas = built.resolve("TS32.299", "VAS-ID")
@@ -1732,7 +1709,9 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("ETSI-ES283.034", "TS29.209"),
         ("ETSI-TS183.017", "TS29.209"),
         ("ETSI-TS183.017", "TS29.214"),
+        ("TS29.210", "TS29.229"),
         ("TS29.212", "3GPP2-X.S0057"),
+        ("TS29.234", "TS29.229"),
         ("TS32.299", "TS29.061"),
         ("TS32.299", "TS29.140"),
         ("TS32.299", "TS29.173"),
@@ -1743,11 +1722,12 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("oneM2M-TS-0004", "TS32.299"),
     }
     # TS 29.212's and 32.299's 3GPP2-BSID are one Avp, revision 0 standing
-    # in for TS 29.212's revision B. Thirty-five of the sixty-two are what
-    # oneM2M TS-0004's Service-Information reaches through TS 32.299
+    # in for TS 29.212's revision B. Thirty-five of the seventy-seven are
+    # what oneM2M TS-0004's Service-Information reaches through TS 32.299
     # V11.20.0's six release stand-ins, TS 29.061's
-    # 3GPP-Session-Stop-Indicator a hole among them.
-    assert len(built.across_releases()) == 62
+    # 3GPP-Session-Stop-Indicator a hole among them; fifteen are TS 29.210's
+    # and TS 29.234's.
+    assert len(built.across_releases()) == 77
     # oneM2M's own two, those thirty-five, V11.20.0's VAS-ID and VASP-ID
     # from TS 29.140 V7.0.0, and 3GPP2-BSID through TS 29.212 V11.19.0.
     reached = built.across_releases("oneM2M-TS-0004")
@@ -1764,6 +1744,35 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         *((cited, corpus.STAND_IN) for cited in ("TS29.229", "TS29.272")),
         *((cited, corpus.STAND_IN) for cited in ("TS29.273", "TS29.329")),
     }
+
+
+def test_the_retired_documents_read_their_releases_re_uses():
+    """TS 29.210 V6.7.0's TS 29.061 is the pinned V6.15.0, whose table 10 puts
+    M in Must where Release 18's table 9a puts it in Must not; its TS 29.229,
+    and TS 29.234 V11.2.0's, are V18.1.0, standing in for the V6.11.0 and
+    V11.5.0 that define alike what each re-uses. TS 29.234 keeps its own
+    SIP-Auth-Data-Item body, flag rules from TS 29.229."""
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+
+    rat = built.resolve("TS29.210", "3GPP-RAT-Type")
+    assert rat is not None
+    assert (rat.identity, rat.across_releases) == ((10415, 21), None)
+    assert ast.AvpFlag.MANDATORY in rat.flag_rules.must
+    current = built.resolve("TS29.061", "3GPP-RAT-Type")
+    assert current is not None and ast.AvpFlag.MANDATORY in current.flag_rules.must_not
+    charging = built.resolve("TS29.210", "Charging-Information")
+    assert charging is not None
+    assert charging.across_releases == corpus.CrossRelease(
+        "TS29.210", "TS29.229", "18.1.0", corpus.STAND_IN, meant="6.11.0"
+    )
+    item = built.resolve("TS29.234", "SIP-Auth-Data-Item")
+    assert isinstance(item, model.Grouped)
+    assert ast.AvpFlag.MANDATORY in item.flag_rules.must
+    assert item.defined_in == "TS29.234"
+    assert "SIP-Digest-Authenticate" not in {m.name for m in item.members}
+    assert item.across_releases == corpus.CrossRelease(
+        "TS29.234", "TS29.229", "18.1.0", corpus.STAND_IN, meant="11.5.0"
+    )
 
 
 def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
@@ -1884,9 +1893,8 @@ def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
 )
 def test_an_answer_for_the_undefined_names_leaves_the_field_hole(policy):
     """With the nine undefined names answered for, the strict build still
-    refuses, under every policy, TS 29.061's row and TS 29.234's type, which
-    state no type, and what TS 29.210 and 29.234 re-use from documents the
-    corpus does not hold in their releases."""
+    refuses, under every policy, the rows of TS 29.061 and TS 29.061 V6.15.0
+    and TS 29.234's type, which state no type."""
     with pytest.raises(model.IncompleteCorpusError) as raised:
         model.Model.build(
             corpus.Corpus.load([_ROOT / "dad"]), strict=True, undefined=policy

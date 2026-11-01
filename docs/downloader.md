@@ -100,7 +100,7 @@ for catalog experiments, not for refreshing the corpus.
   do the derivation, so don't hand-build those URLs.
 - **Legacy `.doc` archives are converted, not skipped.** Ten catalogued
   archives (TS 32.299, 29.153, 29.154, 29.201, 29.215, 29.217, 29.219,
-  29.343, 29.368, 29.468) hold a `.doc` and no `.docx`, and so do all nine
+  29.343, 29.368, 29.468) hold a `.doc` and no `.docx`, and so do all ten
   pinned versions. Each run converts them into
   `converted/`, mirroring the extracted path
   (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`; TS 29.153's archive
@@ -159,14 +159,16 @@ for catalog experiments, not for refreshing the corpus.
   29.211 V6.4.0 and TS 29.234 V11.2.0 are their documents' final versions,
   retired, and held because TS 29.230's tables cite them (Gx and Gx over
   Gy; Rx; Wx, Pr and table 7.1's 100-102 and 300-319), though no corpus
-  document resolves into them. How the corpus
+  document resolves into them; TS 29.061 V6.15.0 is Release 6's last, which
+  TS 29.210 V6.7.0's non-specific reference means, pinned because Release
+  18's flag rules for what it re-uses differ. How the corpus
   resolves to them is in [consumers.md](consumers.md). Every run lists the document's
   archive across releases and checks the claim (`check_final`): a version
   archived later than the pin, in any release or in its own, fails the run
   naming it, before anything is downloaded, so a resolution never rests on
   a claim the archive stopped supporting. The version is then fetched as
   `--version` fetches one, never walked back, its exact ETSI rendering
-  attached (all nine are published), into its own release's tree
+  attached (all ten are published), into its own release's tree
   (`3gpp/Rel-7/TS_29.140/`, `3gpp/Rel-11/TS_32.299/` beside
   `3gpp/Rel-18/TS_32.299/`), its legacy `.doc` converted like any other.
   TS 29.214 is held at three: V7.12.0, V11.16.0 and the catalog's

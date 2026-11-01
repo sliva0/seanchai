@@ -1,0 +1,73 @@
+; Specification: 3GPP TS 29.061
+; Version: 6.15.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129000_129099/129061/06.15.00_60/ts_129061v061500p.pdf
+
+
+; Type: AVP Table
+; Section: 17.7
+; Table: 10
+; Page: 87
+; Columns: Name                     Code   Section   Type          Must   May   S.not   M.not   Encrypt
+TMGI                                900    17.7.2    OctetString   M,V    P     -       -       Yes
+Required-MBMS-Bearer-Capabilities   901    17.7.3    UTF8String    M,V    P     -       -       Yes
+MBMS-StartStop-Indication           902    17.7.5    Enumerated    M,V    P     -       -       Yes
+MBMS-Service-Area                   903    17.7.6    OctetString   M,V    P     -       -       Yes
+MBMS-Session-Duration               904    17.7.7    OctetString   M,V    P     -       -       Yes
+3GPP-IMSI                           1      16.4.7    UTF8String    M,V    P     -       -       Yes
+Alternative-APN                     905    17.7.8    UTF8String    M,V    P     -       -       Yes
+MBMS-Service-Type                   906    17.7.9    Enumerated    M,V    P     -       -       Yes
+3GPP-SGSN-Address                   6      16.4.7    OctetString   M,V    P     -       -       Yes
+3GPP-SGSN-IPv6-Address              15     16.4.7    OctetString   M,V    P     -       -       Yes
+MBMS-2G-3G-Indicator                907    17.7.10   Enumerated    M,V    P     -       -       Yes
+MBMS-Session-Identity               908    17.7.11   OctetString   M,V    P     -       -       Yes
+RAI                                 909    17.7.12   UTF8String    M,V    P     -       -       Yes
+3GPP-IMEISV                         20     16.4.7    OctetString   M,V    P     -       -       Yes
+3GPP-RAT-Type                       21     16.4.7    OctetString   M,V    P     -       -       Yes
+3GPP-User-Location-Info             22     16.4.7    OctetString   M,V    P     -       -       Yes
+3GPP-MS-TimeZone                    23     16.4.7    OctetString   M,V    P     -       -       Yes
+Additional-MBMS-Trace-Info          910    17.7.13   OctetString   M,V    P     -       -       Yes
+MBMS-Time-To-Data-Transfer          911    17.7.14   OctetString   M,V    P     -       -       Yes
+MBMS-Session-Repetition-Number      912    17.7.15   OctetString   M,V    P     -       -       Yes
+MBMS-Required-QoS                   913    17.7.16   UTF8String    M,V    P     -       -       Yes
+MBMS-Counting-Information           914    17.7.17   Enumerated    M,V    P     -       -       Yes
+3GPP-SGSN-MCC-MNC                   18     16.4.7    -             -      -     -       -       - ;; inserted: (TS29.061.py#3gpp-sgsn-mcc-mnc-row)
+3GPP-GPRS-Negotiated-QoS-Profile    5      16.4.7    -             -      -     -       -       - ;; inserted: (TS29.061.py#3gpp-gprs-negotiated-qos-profile-row)
+
+
+; Type: Enumerated AVP
+; Name: MBMS-StartStop-Indication
+; Section: 17.7.5
+; Page: 89
+MBMS-StartStop-Indication ::= < Enumerated AVP header: 902 10415 >
+        START = 0
+        STOP  = 1
+
+
+; Type: Enumerated AVP
+; Name: MBMS-Service-Type
+; Section: 17.7.9
+; Page: 90
+MBMS-Service-Type ::= < Enumerated AVP header: 906 10415 >
+        MULTICAST = 0
+        BROADCAST = 1
+
+
+; Type: Enumerated AVP
+; Name: MBMS-2G-3G-Indicator
+; Section: 17.7.10
+; Page: 91
+MBMS-2G-3G-Indicator ::= < Enumerated AVP header: 907 10415 >
+        2G        = 0
+        3G        = 1
+        2G-AND-3G = 2
+
+
+; Type: Enumerated AVP
+; Name: MBMS-Counting-Information
+; Section: 17.7.17
+; Page: 92
+MBMS-Counting-Information ::= < Enumerated AVP header: 914 10415 >
+        COUNTING-NOT-APPLICABLE = 0
+        COUNTING-APPLICABLE     = 1

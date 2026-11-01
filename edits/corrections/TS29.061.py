@@ -40,6 +40,33 @@ CORRECTIONS = [
     ),
 ]
 
+# TS 29.210 V6.7.0 table 5.3 re-uses these two from here, meaning Release 6's
+# last version (its clause 2 [11] is non-specific). V6.15.0 tabulates neither:
+# table 10, its only AVP table, is Gmb's, and clause 16.4.7 lists them as RADIUS
+# sub-attributes, by number and with no Diameter type or flag rule.
+CORRECTIONS += [
+    Insert(
+        id=f"{name.lower()}-row",
+        into=avp_table("10"),
+        node=ast.AvpTableRow(
+            name=name,
+            code=code,
+            section="16.4.7",
+            flag_rules=ast.AvpFlagRules(),
+        ),
+        after="MBMS-Counting-Information",
+        reason=f"clause 16.4.7 codes sub-attribute {code}, {name}, and TS 29.210"
+        " V6.7.0 table 5.3 re-uses it from here, but table 10 skips it. Only the"
+        " name, code and clause are stated: the clause gives no Diameter type or"
+        " flags",
+        versions="6.15.0",
+    )
+    for name, code in (
+        ("3GPP-GPRS-Negotiated-QoS-Profile", 5),
+        ("3GPP-SGSN-MCC-MNC", 18),
+    )
+]
+
 # Values the document takes from another.
 CORRECTIONS += [
     Supply(

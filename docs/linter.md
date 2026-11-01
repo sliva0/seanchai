@@ -260,7 +260,8 @@ before the citing release resolves to its final version
 older copy whose release's last version the corpus lacks, to a later
 release's copy where `corpus.RELEASE_STAND_INS` states the evidence that
 both define alike what the citing copy re-uses (TS 32.299 V11.20.0's TS
-29.061, 29.173, 29.229, 29.272, 29.273 and 29.329, at Release 18); each
+29.061, 29.173, 29.229, 29.272, 29.273 and 29.329, and TS 29.210 V6.7.0's
+and TS 29.234 V11.2.0's TS 29.229, at Release 18); each
 such resolution is a `cross-release-origin` note. RFCs resolve to whatever the
 corpus holds, and so does a document outside 3GPP and IETF, whose versions
 are its publisher's (ETSI TS 283 034 V2.2.0 is no Release 2). For the same
@@ -339,14 +340,18 @@ why each stays:
   TS 183 017 clause 7.3.10 re-prints ES 283 034's
   `Globally-Unique-Address`, identical once ES 283 034's `Frame-*` members
   are corrected, and seven of its clauses 7.3.14-7.3.32 re-print V6.8.0's
-  Gq AVPs as printed there.
-- **`cross-release-origin`**, fourteen, in seven files. TS 32.299 cites TS
+  Gq AVPs as printed there. A tenth is TS 29.234's `SIP-Auth-Data-Item`
+  (10.1.4), which "is defined in 3GPP TS 29.229 [6]", to which "three new
+  more conditional AVPs are needed", and which also leaves out five of the
+  members TS 29.229's body lists, which the clause does not say.
+- **`cross-release-origin`**, sixteen, in nine files. TS 32.299 cites TS
   29.140 non-specifically for `VAS-ID` and `VASP-ID` (clause 2, [213]),
   which reads as its final version, V7.0.0, and so does TS 32.299 V11.20.0,
   whose non-specific TS 29.061, 29.173, 29.229, 29.272, 29.273 and 29.329
   ([207], [229], [204], [219] and [230], [237], [221]) mean Release 11
   versions the corpus lacks, for which the Release 18 copies stand in
-  (`corpus.RELEASE_STAND_INS`, each entry stating the evidence);
+  (`corpus.RELEASE_STAND_INS`, each entry stating the evidence), as V18.1.0
+  of TS 29.229 does for TS 29.210 V6.7.0's [16] and TS 29.234 V11.2.0's [6];
   ES 283 034 cites TS 29.209 non-specifically ([5]), V6.8.0, its final;
   TS 183 017 names "3GPP TS 29.209 Release 6" ([4]) and "3GPP TS 29.214
   Release 7" ([19]), V6.8.0 and V7.12.0; oneM2M TS-0004 names "3GPP TS
@@ -355,21 +360,14 @@ why each stays:
   agreeing with it; TS 29.212 names "3GPP2 X.S0057-B" ([24]), a revision
   3GPP2's library does not publish, for which revision 0 V2.0 stands in
   (`corpus.STAND_INS`), and so does its V11.19.0.
-- **`origin-not-in-corpus`**, five. The older copies held for those
+- **`origin-not-in-corpus`**, three. The older copies held for those
   citations cite in turn what the corpus holds at Release 18 only, and a
   non-specific reference means the citing release's version: TS 29.214
   V7.12.0 Release 7's TS 29.061 and 29.212, TS 29.212 V11.19.0 Release
   11's TS 29.061, 29.229 and 29.272, and TS 29.214 V11.16.0 Release 11's
   TS 29.061 and 29.229. Nothing stands in for them: TS 29.212 V11.19.0's
   `Trace-Data`, from TS 29.272, has a body Release 18's differs from, and
-  no citation reaches them from oneM2M TS-0004. The retired documents held
-  for TS 29.230's rows do the same: TS 29.210 V6.7.0 Release 6's TS 29.061
-  and 29.229, and TS 29.234 V11.2.0 Release 11's TS 29.229, for which no
-  stand-in's evidence has been sought.
-- **`local-and-reused`**, on TS 29.234's `SIP-Auth-Data-Item`, whose clause
-  10.1.4 says it "is defined in 3GPP TS 29.229 [6]" and that "three new more
-  conditional AVPs are needed": the comparison a reader would want needs the
-  Release 11 copy the corpus lacks.
+  no citation reaches them from oneM2M TS-0004.
 - **`external-origin-not-in-corpus`**, two files: both copies of TS 32.299
   (`OMA-DDS-Charging_Data`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
@@ -464,8 +462,7 @@ why each stays:
   11 file resolves no Release 18 TS 29.230, so TS 29.210, 29.211 and 29.234
   draw none of the `registry-*` notes below, and no rule compares a type:
   table 7.1's `"Integer"` for 314 agrees with TS 29.234's table 10.1.1 and
-  clause 10.1.27 anyway. Nor is any of their citations a
-  `cross-release-origin`.
+  clause 10.1.27 anyway.
 - **`registry-avp-document`**, ten. TS 29.329 table 6.3.1 lists nine of TS
   29.229's AVPs among its own (`Public-Identity`, `Server-Name`,
   `Supported-Features` and six more), and its clauses 6.3.9–6.3.21 refer to

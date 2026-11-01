@@ -317,24 +317,35 @@ unresolved: TS 29.212 V11.19.0 re-uses TS 29.272's `Trace-Data`, whose
 Release 11 body differs from Release 18's.
 
 TS 29.210 V6.7.0 and TS 29.234 V11.2.0, retired and held because TS 29.230
-lists them ([downloader.md](downloader.md)), cite in their own releases TS
-29.061 and 29.229, which the corpus holds at Release 18 only, and nothing
-stands in, so what they re-use from those are holes (below). TS 29.210's
-and TS 29.211's citations of TS 29.209 V6.8.0 stay within Release 6, so none
-of the three adds to the count here.
+lists them ([downloader.md](downloader.md)), cite TS 29.229 and, for TS
+29.210, TS 29.061 non-specifically, meaning their releases' last versions.
+TS 29.229 V6.11.0 and V11.5.0 define what the two re-use as V18.1.0 does, so
+V18.1.0 stands in for each, by the same kind of entry: TS 29.210's
+`Charging-Information` and its members, and TS 29.234's fourteen. V18.1.0's
+`SIP-Digest-Authenticate` adds two members to V11.5.0's, but TS 29.234 does
+not reach it: its clause 10.1.4 prints a `SIP-Auth-Data-Item` body of its
+own, without that member. TS 29.061 is pinned instead: V6.15.0's table 10,
+its only AVP table, puts M in Must on `3GPP-RAT-Type`, `3GPP-SGSN-Address`
+and `3GPP-SGSN-IPv6-Address`, where V18.1.0's first row for each, table 9a's,
+puts it in Must not. Of TS 29.210's other two from it,
+`3GPP-GPRS-Negotiated-QoS-Profile` and `3GPP-SGSN-MCC-MNC`, V6.15.0 states
+only a RADIUS sub-attribute number (clause 16.4.7), so they are holes
+(below). TS 29.210's and TS 29.211's citations of TS 29.209 V6.8.0 and TS
+29.210's of TS 29.061 V6.15.0 stay within Release 6.
 
-Twelve citations resolve across releases or revisions: TS 32.299's TS
+Fourteen citations resolve across releases or revisions: TS 32.299's TS
 29.140 (`VAS-ID`, `VASP-ID`) and ES 283 034's TS 29.209 (`Media-Type`,
 `AF-Application-Identifier`) as final versions, TS 183 017's TS 29.209 and
 TS 29.214 and oneM2M TS-0004's TS 32.299 as the versions named, TS
 29.212's 3GPP2 X.S0057 (`3GPP2-BSID`) as the revision standing in, and
-TS 32.299 V11.20.0's six as the Release 18 copies standing in. An `Avp`
+TS 32.299 V11.20.0's six, TS 29.210 V6.7.0's TS 29.229 and TS 29.234
+V11.2.0's TS 29.229 as the Release 18 copies standing in. An `Avp`
 or `Hole` that took a field from such a copy carries `across_releases`, a
 `corpus.CrossRelease` naming the citing and cited documents, the version
 and the rule (`corpus.SPECIFIC`, `corpus.NON_SPECIFIC`, or
 `corpus.STAND_IN` with the cited and held revisions, or with `meant`, the
 version a release stand-in answers for); `across_releases()` lists them
-for a reader to audit, sixty-two, what an older copy reached across
+for a reader to audit, seventy-seven, what an older copy reached across
 releases cites across releases in turn included (thirty-five through TS
 32.299 V11.20.0's stand-ins, under oneM2M TS-0004's
 `Service-Information`), and the linter's `cross-release-origin` note says
@@ -379,13 +390,10 @@ every standing hole is a statement its source does not make.
 TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and TS
 29.234's `Charging-Characteristics` is typed "Integer" (table 10.1.1, clause
 10.1.27), no Diameter type, so its model reading is a hole with no
-`data_type`. TS 29.210 V6.7.0's `3GPP-GPRS-Negotiated-QoS-Profile`,
-`3GPP-RAT-Type`, `3GPP-SGSN-Address`, `3GPP-SGSN-IPv6-Address` and
-`3GPP-SGSN-MCC-MNC` from Release 6's TS 29.061 and `Charging-Information`
-from Release 6's TS 29.229, and TS 29.234 V11.2.0's fourteen from Release
-11's TS 29.229, name origins the corpus lacks in those releases;
-`SIP-Auth-Data-Item`, whose clause 10.1.4 prints a body, keeps it in the
-AST and lacks flag rules. The nine names that resolve nowhere are the
+`data_type`. TS 29.061 V6.15.0, which TS 29.210 V6.7.0 cites, numbers
+`3GPP-GPRS-Negotiated-QoS-Profile` and `3GPP-SGSN-MCC-MNC` as RADIUS
+sub-attributes and tabulates neither, so its rows, inserted by correction,
+state only a code. The nine names that resolve nowhere are the
 corpus's `Undefined AVP` blocks, the linter's standing `undefined-avp`
 notes, holes under the default policy and the consumer's to answer for
 under another ([below](#undefined-names)): with `undefined=DROP` or
