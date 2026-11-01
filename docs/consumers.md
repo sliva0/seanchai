@@ -316,6 +316,13 @@ citations of TS 29.061, 29.229 and 29.272 have no entry, and stay
 unresolved: TS 29.212 V11.19.0 re-uses TS 29.272's `Trace-Data`, whose
 Release 11 body differs from Release 18's.
 
+TS 29.210 V6.7.0 and TS 29.234 V11.2.0, retired and held because TS 29.230
+lists them ([downloader.md](downloader.md)), cite in their own releases TS
+29.061 and 29.229, which the corpus holds at Release 18 only, and nothing
+stands in, so what they re-use from those are holes (below). TS 29.210's
+and TS 29.211's citations of TS 29.209 V6.8.0 stay within Release 6, so none
+of the three adds to the count here.
+
 Twelve citations resolve across releases or revisions: TS 32.299's TS
 29.140 (`VAS-ID`, `VASP-ID`) and ES 283 034's TS 29.209 (`Media-Type`,
 `AF-Application-Identifier`) as final versions, TS 183 017's TS 29.209 and
@@ -369,12 +376,20 @@ and never changes `name`, which is always the document's spelling;
 listing every hole, rather than build a model with any. The default is
 `strict=False` because the committed corpus does not build strictly, and
 every standing hole is a statement its source does not make.
-TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and the
-eight names that resolve nowhere are the corpus's `Undefined AVP` blocks,
-the linter's standing `undefined-avp` notes, holes under the default
-policy and the consumer's to answer for under another
-([below](#undefined-names)): with `undefined=DROP` or `PLACEHOLDER` a
-strict build refuses TS 29.061's row alone. oneM2M TS-0004 reaches no other: its
+TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and TS
+29.234's `Charging-Characteristics` is typed "Integer" (table 10.1.1, clause
+10.1.27), no Diameter type, so its model reading is a hole with no
+`data_type`. TS 29.210 V6.7.0's `3GPP-GPRS-Negotiated-QoS-Profile`,
+`3GPP-RAT-Type`, `3GPP-SGSN-Address`, `3GPP-SGSN-IPv6-Address` and
+`3GPP-SGSN-MCC-MNC` from Release 6's TS 29.061 and `Charging-Information`
+from Release 6's TS 29.229, and TS 29.234 V11.2.0's fourteen from Release
+11's TS 29.229, name origins the corpus lacks in those releases;
+`SIP-Auth-Data-Item`, whose clause 10.1.4 prints a body, keeps it in the
+AST and lacks flag rules. The nine names that resolve nowhere are the
+corpus's `Undefined AVP` blocks, the linter's standing `undefined-avp`
+notes, holes under the default policy and the consumer's to answer for
+under another ([below](#undefined-names)): with `undefined=DROP` or
+`PLACEHOLDER` a strict build refuses the others alone. oneM2M TS-0004 reaches no other: its
 `Service-Information`, TS 32.299 V11.20.0's, resolves through the pinned
 Release 11 copies and the Release 18 ones standing in (above), so
 `holes("oneM2M-TS-0004")` is empty. TS 32.299's thirteen OMA rows are no
@@ -391,10 +406,11 @@ Roadmap item N lists them by cause.
 
 ### Undefined names
 
-Eight names the corpus's documents use as members are defined nowhere:
+Nine names the corpus's documents use as members are defined nowhere:
 RFC 4004's three SPIs, TS 29.345's `ProSe-Query-Code` and
 `ProSe-Response-Code`, TS 29.154's `External-Group-Identifier`, TS
-32.299's `Submission-Timestamp` and `Network-Element`. Each has an
+32.299's `Submission-Timestamp` and `Network-Element`, TS 29.234's
+`Error-Cause`. Each has an
 `Undefined AVP` block in its document's file, inserted by a correction
 citing what was searched ([dad-format.md](dad-format.md#design-intent)),
 and `undefined(reference)` returns them as `model.Undefined`: the name,
@@ -518,7 +534,9 @@ Holes stay in the tables with their reason, and `--undefined` (with
 `--supply` sidecars) passes the model's policy for undefined names, which
 `__init__.py` records; an application's id is the
 model's, so a module whose document states it only in prose gets it, and
-only RFC 6733's clause 8 gets `None`. Where no application scope names the
+only RFC 6733's clause 8 and TS 29.234's Wa, Wd, Wm and Wg get `None`, TS
+29.234 saying each advertises "the EAP, NASREQ or Diameter Base Protocol
+Application-Id, depending on the command" (clauses 4.2, 5.2, 8.2, 9.2). Where no application scope names the
 application, the `APPLICATION_ID` comment names it as the registry does
 (`# 16777216, 3GPP Cx/Px, TS29.230 table 4.1`); the id stays the model's.
 TS 29.230 is a corpus document like any other, so `--all` lists "3GPP TS

@@ -1,0 +1,1265 @@
+; Specification: 3GPP TS 29.234
+; Version: 11.2.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129234/11.02.00_60/ts_129234v110200p.pdf
+
+
+; Type: Application Scope
+; Name: Wx
+; Section: 6.2
+; Page: 38
+; Application-ID: 16777219
+; Applies-To: 6.*
+
+
+; Type: Application Scope
+; Name: Pr
+; Section: 11.2
+; Page: 82
+; Application-ID: 16777230
+; Applies-To: 11.*
+
+
+; Type: Message
+; Name: Diameter-EAP-Request, DER
+; Section: 4.4.2.1
+; Page: 19
+<Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        { EAP-Payload }
+        [ Destination-Host ]
+        [ User-Name ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ Calling-Station-Id ]
+        [ QoS-Capability ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Operator-Name ]
+      * [ Location-Information ]
+      * [ Location-Data ]
+        [ Basic-Location-Policy-Rules ]
+        [ Extended-Location-Policy-Rules ]
+        [ Location-Capable ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Diameter-EAP-Answer, DEA
+; Section: 4.4.2.1
+; Page: 19
+<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Auth-Request-Type }
+        [ EAP-Payload ]
+        [ User-Name ]
+        [ Session-Timeout ]
+        [ Accounting-Interim-Interval ]
+        [ EAP-Master-Session-Key ]
+        [ QoS-Resources ]
+      * [ Filter-Id ]
+      * [ NAS-Filter-Rule ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+        [ Basic-Location-Policy-Rules ]
+        [ Extended-Location-Policy-Rules ]
+        [ Requested-Location-Info ]
+        [ Error-Cause ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 4.4.2.2
+; Page: 20
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ User-Name ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 4.4.2.2
+; Page: 20
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Request, STR
+; Section: 4.4.2.3
+; Page: 20
+<Session-Termination-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ User-Name ]
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Answer, STA
+; Section: 4.4.2.3
+; Page: 20
+<Session-Termination-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 4.4.2.4
+; Page: 21
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ User-Name ]
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Basic-Location-Policy-Rules ]
+        [ Extended-Location-Policy-Rules ]
+        [ Requested-Location-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 4.4.2.4
+; Page: 21
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Host-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AC-Request, ACR
+; Section: 4.5.2.2
+; Page: 24
+<AC-Request> ::= < Diameter Header: 271, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Origin-State-Id ]
+        [ Destination-Host ]
+        [ Event-Timestamp ]
+        [ Acct-Delay-Time ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ Acc-Terminate-Cause ]
+        [ Accounting-Session-Time ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Operator-Name ]
+      * [ Location-Information ]
+      * [ Location-Data ]
+        [ Basic-Location-Policy-Rules ]
+        [ Extended-Location-Policy-Rules ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AC-Answer, ACA
+; Section: 4.5.2.2
+; Page: 24
+<AC-Answer> ::= < Diameter Header: 271, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Event-Timestamp ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Service-Type ]
+        [ Termination-Cause ]
+        [ Accounting-Realtime-Required ]
+        [ Acct-Interim-Interval ]
+      * [ Class ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Diameter-EAP-Request, DER
+; Section: 5.5.1
+; Page: 32
+<Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        { EAP-Payload }
+        [ Destination-Host ]
+        [ User-Name ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ Calling-Station-Id ]
+        [ Visited-Network-Identifier ]
+        [ QoS-Capability ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Operator-Name ]
+      * [ Location-Information ]
+      * [ Location-Data ]
+        [ Basic-Location-Policy-Rules ]
+        [ Extended-Location-Policy-Rules ]
+        [ Location-Capable ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Diameter-EAP-Answer, DEA
+; Section: 5.5.1
+; Page: 32
+<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Auth-Request-Type }
+        [ EAP-Payload ]
+        [ User-Name ]
+     1* [ Subscription-ID ]
+        [ EAP-Master-Session-Key ]
+        [ QoS-Resources ]
+      * [ Proxy-Info ]
+        [ Basic-Location-Policy-Rules ]
+        [ Extended-Location-Policy-Rules ]
+        [ Requested-Location-Info ]
+        [ Error-Cause ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Multimedia-Authentication-Request, MAR
+; Section: 6.4.1
+; Page: 46
+<Multimedia-Authentication-Request> ::= < Diameter Header: 303, REQ, 16777219 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        { NAS-Port-Type }
+        { User-Name }
+        [ Visited-Network-Identifier ]
+        [ SIP-Auth-Data-Item ]
+        [ SIP-Number-Auth-Items ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Multimedia-Authentication-Answer, MAA
+; Section: 6.4.1
+; Page: 46
+<Multimedia-Authentication-Answer> ::= < Diameter Header: 303, 16777219 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { User-Name }
+        [ SIP-Number-Auth-Items ]
+        [ SIP-Auth-Data-Item ]
+        [ 3GPP-AAA-Server-Name ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Profile-Request, PPR
+; Section: 6.4.2
+; Page: 46
+<Push-Profile-Request> ::= < Diameter Header: 305, REQ, 16777219 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+        [ WLAN-User-Data ]
+        [ Charging-Data ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Profile-Answer, PAA
+; Section: 6.4.2
+; Page: 46
+<Push-Profile-Answer> ::= < Diameter Header: 305, 16777219 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Server-Assignment-Request, SAR
+; Section: 6.4.3
+; Page: 47
+<Server-Assignment-Request> ::= < Diameter Header: 301, REQ, PXY, 16777219 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+        { Server-Assignment-Type }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Server-Assignment-Answer, SAA
+; Section: 6.4.3
+; Page: 47
+<Server-Assignment-Answer> ::= < Diameter Header: 301, 16777219 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { User-Name }
+        [ WLAN-User-Data ]
+        [ Charging-Data ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Diameter-EAP-Request, DER
+; Section: 8.4.1
+; Page: 61
+<Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        { EAP-Payload }
+        [ Destination-Host ]
+        [ User-Name ]
+        [ Visited-Network-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ Calling-Station-Id ]
+        [ 3GPP-WLAN-APN-Id ]
+        [ QoS-Capability ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Diameter-EAP-Answer, DEA
+; Section: 8.4.1
+; Page: 61
+<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ EAP-Master-Session-Key ]
+        [ EAP-Payload ]
+     1* [ Subscription-ID-AVP ]
+        [ Max-Subscribed-Bandwidth ]
+        [ QoS-Resources ]
+        [ Charging-Data ]
+        [ Service-Type ]
+      * [ Class ]
+      * [ Configuration-Token ]
+        [ Acct-Interim-Interval ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Re-Auth-Request-Type ]
+        [ Session-Timeout ]
+        [ State ]
+      * [ Reply-Message ]
+        [ Origin-State-Id ]
+      * [ Filter-Id ]
+        [ Password-Retry ]
+        [ Port-Limit ]
+        [ User-Name ]
+        [ Prompt ]
+        [ ARAP-Challenge-Response ]
+        [ ARAP-Features ]
+        [ ARAP-Security ]
+      * [ ARAP-Security-Data ]
+        [ ARAP-Zone-Access ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+        [ Framed-AppleTalk-Link ]
+      * [ Framed-AppleTalk-Network ]
+        [ Framed-AppleTalk-Zone ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-Route ]
+        [ Framed-Pool ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ Framed-Routing ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+        [ Login-Service ]
+        [ Login-TCP-Port ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+      * [ Tunneling ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 8.4.2
+; Page: 62
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        { Destination-Host }
+        [ Session-Request-Type ]
+        [ Visited-Network-Identifier ]
+        [ 3GPP-WLAN-APN-Id ]
+        [ QoS-Capability ]
+      * [ Routing-Policy ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Origin-State-Id ]
+        [ Port-Limit ]
+        [ User-Name ]
+        [ User-Password ]
+        [ Service-Type ]
+        [ State ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Callback-Number ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Connect-Info ]
+        [ CHAP-Auth ]
+        [ CHAP-Challenge ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IP-Netmask ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ ARAP-Password ]
+        [ ARAP-Security ]
+      * [ ARAP-Security-Data ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 8.4.2
+; Page: 62
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+     1* [ Subscription-ID-AVP ]
+        [ Max-Subscribed-Bandwidth ]
+        [ QoS-Resources ]
+        [ Framed-IP-Address ]
+        [ Framed-IP-Prefix ]
+        [ Charging-Data ]
+        [ Service-Type ]
+      * [ Class ]
+      * [ Configuration-Token ]
+        [ Acct-Interim-Interval ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Re-Auth-Request-Type ]
+        [ Session-Timeout ]
+        [ State ]
+      * [ Reply-Message ]
+        [ Origin-State-Id ]
+      * [ Filter-Id ]
+        [ Password-Retry ]
+        [ Port-Limit ]
+        [ User-Name ]
+        [ Prompt ]
+        [ ARAP-Challenge-Response ]
+        [ ARAP-Features ]
+        [ ARAP-Security ]
+      * [ ARAP-Security-Data ]
+        [ ARAP-Zone-Access ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+        [ Framed-AppleTalk-Link ]
+      * [ Framed-AppleTalk-Network ]
+        [ Framed-AppleTalk-Zone ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-Route ]
+        [ Framed-Pool ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ Framed-Routing ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+        [ Login-Service ]
+        [ Login-TCP-Port ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+      * [ Tunneling ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Request, STR
+; Section: 8.4.3
+; Page: 64
+<Session-Termination-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ User-Name ]
+        [ 3GPP-WLAN-APN-Id ]
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Answer, STA
+; Section: 8.4.3
+; Page: 64
+<Session-Termination-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 8.4.4
+; Page: 65
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ User-Name ]
+        [ 3GPP-WLAN-APN-Id ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 8.4.4
+; Page: 65
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 9.4.1
+; Page: 69
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+      * [ Routing-Policy ]
+     1* [ Subscription-ID ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Origin-State-Id ]
+        [ Port-Limit ]
+        [ User-Name ]
+        [ User-Password ]
+        [ Service-Type ]
+        [ State ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Callback-Number ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Connect-Info ]
+        [ CHAP-Auth ]
+        [ CHAP-Challenge ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IP-Netmask ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ ARAP-Password ]
+        [ ARAP-Security ]
+      * [ ARAP-Security-Data ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 9.4.1
+; Page: 69
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Service-Type ]
+      * [ Class ]
+      * [ Configuration-Token ]
+        [ Acct-Interim-Interval ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Re-Auth-Request-Type ]
+        [ Session-Timeout ]
+        [ State ]
+      * [ Reply-Message ]
+        [ Origin-State-Id ]
+      * [ Filter-Id ]
+        [ Password-Retry ]
+        [ Port-Limit ]
+        [ Prompt ]
+        [ ARAP-Challenge-Response ]
+        [ ARAP-Features ]
+        [ ARAP-Security ]
+      * [ ARAP-Security-Data ]
+        [ ARAP-Zone-Access ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+        [ Framed-AppleTalk-Link ]
+      * [ Framed-AppleTalk-Network ]
+        [ Framed-AppleTalk-Zone ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-Route ]
+        [ Framed-Pool ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ Framed-Routing ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+        [ Login-Service ]
+        [ Login-TCP-Port ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+      * [ Tunneling ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 9.4.2
+; Page: 70
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ User-Name ]
+        [ 3GPP-WLAN-APN-Id ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 9.4.2
+; Page: 70
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Request, STR
+; Section: 9.4.3
+; Page: 71
+<Session-Termination-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ User-Name ]
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Session-Termination-Answer, STA
+; Section: 9.4.3
+; Page: 71
+<Session-Termination-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Server-Assignment-Request, SAR
+; Section: 11.4.1
+; Page: 85
+<Server-Assignment-Request> ::= < Diameter Header: 301, REQ, PXY >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ User-Name ]
+        [ Visited-Network-Identifier ]     ; bold
+        { Server-Assignment-Type }         ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Server-Assignment-Answer, SAA
+; Section: 11.4.1
+; Page: 85
+<Server-Assignment-Answer> ::= < Diameter Header: 301, PXY >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 11.4.2.1
+; Page: 86
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ Visited-Network-Identifier ]
+        { 3GPP-WLAN-APN-Id }
+        [ User-Name ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Framed-IP-Address ]
+        [ Framed-IP-Netmask ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 11.4.2.1
+; Page: 86
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Subscription-ID-AVP ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 11.4.2.2
+; Page: 87
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ User-Name ]
+        { 3GPP-WLAN-APN-Id }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 11.4.2.2
+; Page: 87
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 10.1
+; Table: 10.1.1
+; Page: 72
+; Columns: Name                        Code   Section   Type               Must   May   S.not   M.not   Encrypt
+3GPP-WLAN-APN-Id                       100    10.1.15   OctetString        M,V    -     -       -       No
+Authentication-Method                  300    10.1.5    Enumerated         M,V    -     -       -       No
+Authentication-Information-SIM         301    10.1.6    OctetString        M,V    -     -       -       No
+Authorization-Information-SIM          302    10.1.7    OctetString        M,V    -     -       -       No
+WLAN-User-Data                         303    10.1.8    Grouped            M,V    -     -       -       No
+Charging-Data                          304    10.1.10   Grouped            M,V    -     -       -       No
+WLAN-Access                            305    10.1.11   Enumerated         M,V    -     -       -       No
+WLAN-3GPP-IP-Access                    306    10.1.12   Enumerated         M,V    -     -       -       No
+APN-Authorized                         307    10.1.14   Grouped            M,V    -     -       -       No
+APN-Barring-Type                       309    10.1.16   Enumerated         M,V    -     -       -       No
+WLAN-Direct-IP-Access                  310    10.1.17   Enumerated         M,V    -     -       -       No
+Session-Request-Type                   311    10.1.23   Enumerated         M,V    -     -       -       No
+Routing-Policy                         312    10.1.24   IPFilterRule       M,V    -     -       -       No
+Max-Requested-Bandwidth                313    10.1.26   OctetString        M,V    -     -       -       No
+Charging-Characteristics               314    10.1.27   "Integer"          M,V    -     -       -       No
+Charging-Nodes                         315    10.1.28   Grouped            M,V    -     -       -       No
+Primary-OCS-Charging-Function-Name     316    10.1.29   DiameterIdentity   M,V    -     -       -       No
+Secondary-OCS-Charging-Function-Name   317    10.1.30   DiameterIdentity   M,V    -     -       -       No
+3GPP-AAA-Server-Name                   318    10.1.34   DiameterIdentity   M,V    -     -       -       No
+Maximum-Number-Accesses                319    10.1.38   Unsigned32         M,V    -     -       -       No
+
+
+; Type: Grouped AVP
+; Name: SIP-Auth-Data-Item
+; Section: 10.1.4
+; Page: 73
+SIP-Auth-Data-Item ::= < AVP header: 612 >
+        [ SIP-Item-Number ]
+        [ SIP-Authentication-Scheme ]
+        [ SIP-Authenticate ]
+        [ SIP-Authorization ]
+        [ SIP-Authentication-Context ]
+        [ Confidentiality-Key ]
+        [ Integrity-Key ]
+        [ Authentication-Method ]
+        [ Authentication-Information-SIM ]
+        [ Authorization-Information-SIM ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Authentication-Method
+; Section: 10.1.5
+; Page: 73
+Authentication-Method ::= < Enumerated AVP header: 300 10415 >
+        WLAN_EAP_SIM = 0
+        WLAN_EAP_AKA = 1
+
+
+; Type: Grouped AVP
+; Name: WLAN-User-Data
+; Section: 10.1.8
+; Page: 73
+WLAN-User-Data ::= < AVP header: 303 >
+        [ Subscription-ID ]
+        { WLAN-Access }
+        { WLAN-3GPP-IP-Access }
+        [ Session-Timeout ]
+      * [ APN-Authorized ]
+      * [ Maximum-Number-Accesses ]
+        { WLAN-Direct-IP-Access }
+        [ QoS-Resources ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Data
+; Section: 10.1.10
+; Page: 74
+Charging-Data ::= < AVP header: 304 >
+        { Charging-Characteristics }
+        { Charging-Nodes }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: WLAN-Access
+; Section: 10.1.11
+; Page: 74
+WLAN-Access ::= < Enumerated AVP header: 305 10415 >
+        WLAN_SUBSCRIPTION_ALLOWED = 0
+        WLAN_SUBSCRIPTION_BARRED  = 1
+
+
+; Type: Enumerated AVP
+; Name: WLAN-3GPP-IP-Access
+; Section: 10.1.12
+; Page: 74
+WLAN-3GPP-IP-Access ::= < Enumerated AVP header: 306 10415 >
+        WLAN_APNS_ENABLE  = 0
+        WLAN_APNS_DISABLE = 1
+
+
+; Type: Grouped AVP
+; Name: APN-Authorized
+; Section: 10.1.14
+; Page: 74
+APN-Authorized ::= < AVP header: 307 >
+        { 3GPP-WLAN-APN-Id }
+        { APN-Barring-Type }
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Max-Requested-Bandwidth ]
+        [ QoS-Resources ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: APN-Barring-Type
+; Section: 10.1.16
+; Page: 75
+APN-Barring-Type ::= < Enumerated AVP header: 309 10415 >
+        WLAN_APN_NO_BARRING               = 0
+        WLAN_APN_HOME_BARRED_WHEN_ROAMING = 1
+        WLAN_APN_VISITED_BARRED           = 2
+        WLAN_APN_HOME_BARRED              = 3
+        WLAN_APN_INTERNET_ACCESS_BARRED   = 4
+
+
+; Type: Enumerated AVP
+; Name: WLAN-Direct-IP-Access
+; Section: 10.1.17
+; Page: 75
+WLAN-Direct-IP-Access ::= < Enumerated AVP header: 310 10415 >
+        WLAN_DIRECT_IP_ACCESS    = 0
+        WLAN_NO_DIRECT_IP_ACCESS = 1
+
+
+; Type: Enumerated AVP
+; Name: Session-Request-Type
+; Section: 10.1.23
+; Page: 76
+Session-Request-Type ::= < Enumerated AVP header: 311 10415 >
+        "AUTHORIZATION REQUEST" = 0
+        "ROUTING POLICY"        = 1
+
+
+; Type: Grouped AVP
+; Name: Charging-Nodes
+; Section: 10.1.28
+; Page: 77
+Charging-Nodes ::= < AVP header: 315 >
+        [ Primary-OCS-Charging-Function-Name ]
+        [ Secondary-OCS-Charging-Function-Name ]
+        [ Primary-Charging-Collection-Function-Name ]
+        [ Secondary-Charging-Collection-Function-Name ]
+      * [ AVP ]

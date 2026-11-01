@@ -1571,6 +1571,43 @@ _STANDING_HOLES = {
     },
     "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
     "TS29.154": {"undefined (clause A.6.6.2)": ["External-Group-Identifier"]},
+    # What the retired documents re-use from Release 6's and Release 11's TS
+    # 29.061 and 29.229, held at Release 18 only, with no stand-in; TS 29.234's
+    # clause 10.1.27 types Charging-Characteristics "Integer", no type.
+    "TS29.210": {
+        "resolves nowhere (re-used from TS29.061, which the corpus lacks)": [
+            "3GPP-GPRS-Negotiated-QoS-Profile",
+            "3GPP-RAT-Type",
+            "3GPP-SGSN-Address",
+            "3GPP-SGSN-IPv6-Address",
+            "3GPP-SGSN-MCC-MNC",
+        ],
+        "resolves nowhere (re-used from TS29.229, which the corpus lacks)": [
+            "Charging-Information",
+        ],
+    },
+    "TS29.234": {
+        "no data_type": ["Charging-Characteristics"],
+        "resolves nowhere (re-used from TS29.229, which the corpus lacks)": [
+            "Confidentiality-Key",
+            "Deregistration-Reason",
+            "Integrity-Key",
+            "Primary-Charging-Collection-Function-Name",
+            "SIP-Authenticate",
+            "SIP-Authentication-Context",
+            "SIP-Authentication-Scheme",
+            "SIP-Authorization",
+            "SIP-Item-Number",
+            "SIP-Number-Auth-Items",
+            "Secondary-Charging-Collection-Function-Name",
+            "Server-Assignment-Type",
+            "Visited-Network-Identifier",
+        ],
+        "undefined (clause 4.4.2.1)": ["Error-Cause"],
+        "no flag_rules (re-used from TS29.229, which the corpus lacks)": [
+            "SIP-Auth-Data-Item"
+        ],
+    },
     "TS29.345": {
         "undefined (clause 6.3.53)": ["ProSe-Query-Code", "ProSe-Response-Code"]
     },
@@ -1846,16 +1883,28 @@ def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
     ids=str,
 )
 def test_an_answer_for_the_undefined_names_leaves_the_field_hole(policy):
-    """With the eight undefined names answered for, the strict build still
-    refuses TS 29.061's row, which states no type, under every policy."""
+    """With the nine undefined names answered for, the strict build still
+    refuses, under every policy, TS 29.061's row and TS 29.234's type, which
+    state no type, and what TS 29.210 and 29.234 re-use from documents the
+    corpus does not hold in their releases."""
     with pytest.raises(model.IncompleteCorpusError) as raised:
         model.Model.build(
             corpus.Corpus.load([_ROOT / "dad"]), strict=True, undefined=policy
         )
-    assert _standing(raised) == {"TS29.061": _STANDING_HOLES["TS29.061"]}
+    assert _standing(raised) == {
+        document: unanswered
+        for document, holes in _STANDING_HOLES.items()
+        if (
+            unanswered := {
+                why: names
+                for why, names in holes.items()
+                if not why.startswith("undefined")
+            }
+        )
+    }
 
 
-def test_the_committed_corpus_declares_its_eight_undefined_names():
+def test_the_committed_corpus_declares_its_nine_undefined_names():
     built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
     declared = {
         (each.reference, each.name, each.section, each.cited_in)
@@ -1866,6 +1915,7 @@ def test_the_committed_corpus_declares_its_eight_undefined_names():
         ("RFC4004", "MIP-MN-to-FA-SPI", "9.5", ("9.5",)),
         ("RFC4004", "MIP-MN-to-HA-SPI", "9.6", ("9.6",)),
         ("TS29.154", "External-Group-Identifier", "A.6.6.2", ("A.6.6.2",)),
+        ("TS29.234", "Error-Cause", "4.4.2.1", ("4.4.2.1", "5.5.1")),
         ("TS29.345", "ProSe-Query-Code", "6.3.53", ("6.3.53", "6.3.54")),
         ("TS29.345", "ProSe-Response-Code", "6.3.53", ("6.3.53", "6.3.54")),
         ("TS32.299", "Network-Element", "7.2.66aA", ("7.2.66aA",)),

@@ -1,0 +1,37 @@
+# Source declarations for 3GPP TS 29.210 (Charging rule provisioning over Gx
+# interface), V6.7.0, the document's final version. Applied to normalized
+# source text before parsing; see src/seanchai/extractor/sources.py for the
+# format.
+
+[[patch]]
+find = "draft-ietf-aaa-diameter-cc-06.txt [8]"
+replace = "IETF RFC 4006 [8]"
+exact = true
+section = "5.3"
+reason = "table 5.3's From cell for CC-Request-Type names the draft of the document clause 2's [8] lists: 'IETF RFC 4006: Diameter Credit-Control Application'; the table's other [8] rows print RFC 4006"
+first_version = "6.7.0"
+last_version = "6.7.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 6.1 states it for Gx and 6.2 for Gx over Gy: 'The Auth-Application-Id for the Gx Application is 16777224 as allocated by IANA.'"
+first_version = "6.7.0"
+last_version = "6.7.0"
+
+[[patch]]
+find = "Called-Station-ID"
+replace = "Called-Station-Id"
+exact = true
+section = "5.3"
+reason = "table 5.3's row misspells in case RFC 4005's Called-Station-Id, which it cites (clause 4.5)"
+first_version = "6.7.0"
+last_version = "6.7.0"
+
+[[patch]]
+find = "[ Called-Station-ID ]"
+replace = "[ Called-Station-Id ]"
+exact = true
+section = "6.1.1"
+reason = "the CCR format misspells in case RFC 4005's Called-Station-Id, which table 5.3 cites (clause 4.5)"
+first_version = "6.7.0"
+last_version = "6.7.0"

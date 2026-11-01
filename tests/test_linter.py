@@ -483,6 +483,11 @@ _RAW_ERRORS = {
     # printing no vendor where clause 5.3 (6.5) sets 3GPP's for every AVP.
     "29214-7c0.raw.dad": ["vendor-id-mismatch"] * 5,
     "29209-680.raw.dad": ["vendor-id-mismatch"] * 5,
+    # TS 29.210's four and TS 29.234's four grouped headers printing no vendor
+    # where clauses 5.2 and 10.1 set 3GPP's; clause 6.1's commands, which TS
+    # 29.210's two application statements (6.1, 6.2) both reach as clause 6's.
+    "29210-670.raw.dad": ["application-scope-overlap"] * 4 + ["vendor-id-mismatch"] * 4,
+    "29234-b20.raw.dad": ["vendor-id-mismatch"] * 4,
     # Release 11, the copies TS 32.299 V11.20.0 cites: thirty-one and six
     # vendorless grouped headers, and TS 29.214's two Void values (5.3.13),
     # as their Release 18 successors print.
@@ -610,6 +615,11 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29345-i00": 2,
         "29154-i00.raw": 0,
         "29154-i00": 1,
+        # TS 29.234 prints no re-used table; the corrections give it one, in
+        # which clause 10.1.4's SIP-Auth-Data-Item is defined here too, and
+        # declare Error-Cause.
+        "29234-b20.raw": 0,
+        "29234-b20": 2,
         # The transcriptions re-print what they import: ES 283 034 clause
         # 7.3.11 TS 183 017's Reservation-Priority, TS 183 017 clauses
         # 7.3.10-7.3.32 the Gq AVPs and ES 283 034's Globally-Unique-Address;
@@ -1752,6 +1762,18 @@ _STANDING_CORPUS_NOTES = {
     # 11 citations of TS 29.061, 29.229 and 29.272 nothing stands in for:
     # TS 29.212 V11.19.0's Trace-Data, from TS 29.272, differs from Release
     # 18's.
+    # TS 29.210 V6.7.0 and TS 29.234 V11.2.0, held for TS 29.230's rows, cite in
+    # their releases TS 29.061 and TS 29.229, held at Release 18 only.
+    "29210-670.dad": {
+        "origin-not-in-corpus": [
+            "TS29.061 (corpus has 18.1.0), TS29.229 (corpus has 18.1.0)"
+        ]
+    },
+    "29234-b20.dad": {
+        "local-and-reused": ["SIP-Auth-Data-Item"],
+        "origin-not-in-corpus": ["TS29.229 (corpus has 18.1.0)"],
+        "undefined-avp": ["Error-Cause"],
+    },
     "29214-7c0.dad": {
         "origin-not-in-corpus": [
             "TS29.061 (corpus has 18.1.0), TS29.212 (corpus has 18.2.0, 11.19.0)"

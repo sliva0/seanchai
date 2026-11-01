@@ -476,6 +476,95 @@ def test_reference_only_quirk_rejects_other_command_text(tmp_path, body):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
+def _procedure_section(*lines):
+    """A procedure clause printing the lines, as TS 29.234 clause 4.4.2.2 does."""
+    para = [
+        tgpp_docx._Para(
+            text=text,
+            style="",
+            lines=[
+                tgpp_docx._Line(
+                    text=text,
+                    style="",
+                    bold=frozenset({False}),
+                    struck=frozenset({False}),
+                )
+            ],
+        )
+        for text in lines
+    ]
+    return tgpp_docx._Section(number="4.4.2.2", title="Procedures", paragraphs=para)
+
+
+def _procedure_messages(section, *quirk_names):
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks(
+        [Quirk(name=name, reason="test") for name in quirk_names],
+        None,
+    )
+    return tgpp_docx._extract_messages(section, None, [], quirks, [])
+
+
+def test_rfc_command_rules_names_a_rule_from_its_command_code():
+    asr, dea = _procedure_messages(
+        _procedure_section(
+            "<ASR> ::= < Diameter Header: 274, REQ, PXY >",
+            "< Session-Id >",
+            "<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY >",
+            "< Session-Id >",
+        ),
+        "procedure-commands",
+        "rfc-command-rules",
+    )
+    assert (asr.name, asr.abbreviation) == ("Abort-Session-Request", "ASR")
+    assert (dea.name, dea.abbreviation) == ("Diameter-EAP-Answer", "DEA")
+
+
+@pytest.mark.parametrize(
+    ("rule", "quirk_names", "message"),
+    [
+        (
+            "<ASR> ::= < Diameter Header: 274, REQ, PXY >",
+            ("procedure-commands",),
+            "without a named intro",
+        ),
+        (
+            "<XYZ> ::= < Diameter Header: 999, REQ, PXY >",
+            ("procedure-commands", "rfc-command-rules"),
+            "none of the RFC commands",
+        ),
+        (
+            "<ASA> ::= < Diameter Header: 274, REQ, PXY >",
+            ("procedure-commands", "rfc-command-rules"),
+            "none of the RFC commands",
+        ),
+    ],
+    ids=["undeclared", "unknown-code", "another-abbreviation"],
+)
+def test_rfc_command_rules_rejects_what_no_rfc_names(rule, quirk_names, message):
+    with pytest.raises(tgpp_docx.ExtractionError, match=message):
+        _procedure_messages(_procedure_section(rule), *quirk_names)
+
+
+def test_an_avp_table_cell_naming_no_type_fails_undeclared(
+    tmp_path, synthetic_spec_docx
+):
+    document = docx.Document(str(synthetic_spec_docx))
+    cell = next(
+        cell
+        for table in document.tables
+        for row in table.rows
+        for cell in row.cells
+        if cell.text == "Grouped"
+    )
+    cell.text = "Integer"
+    path = tmp_path / "bad.docx"
+    document.save(path)
+    with pytest.raises(tgpp_docx.ExtractionError, match="Integer"):
+        tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
 def test_message_only_quirk_cannot_accept_a_document_without_commands():
     from seanchai.extractor.sources import Quirk, Quirks
 

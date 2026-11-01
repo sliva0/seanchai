@@ -224,10 +224,10 @@ generated ones are built by hand, as the library's are.
 
 ## Undefined names
 
-Eight members the corpus's documents use are defined nowhere: RFC 4004's
+Nine members the corpus's documents use are defined nowhere: RFC 4004's
 three SPIs, TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS
 29.154's `External-Group-Identifier`, TS 32.299's `Submission-Timestamp`
-and `Network-Element` ([consumers.md](../../docs/consumers.md#undefined-names)).
+and `Network-Element`, TS 29.234's `Error-Cause` ([consumers.md](../../docs/consumers.md#undefined-names)).
 `--undefined` is the model's policy for them, and `__init__.py`'s docstring
 records it with what became of each name the generated set reaches
 (`Undefined names, --undefined drop: dropped: RFC4004 MIP-HA-to-MN-SPI, …`):
@@ -241,7 +241,7 @@ records it with what became of each name the generated set reaches
   A.6.6.2), required by the ABNF.`). A grouped AVP the library's class
   carries gets no class and so no such line; `__init__.py` lists every
   dropped name. Nothing goes to `additions.py`; on decode the library puts
-  such an AVP in `additional_avps`. Four of the eight are required
+  such an AVP in `additional_avps`. Four of the nine are required
   members, so a command built so no longer carries what its ABNF requires.
 - **`placeholder`**: a comment in its place, as for `hole`, but labelled
   as the consumer's choice (`# [ ProSe-Query-Code ]  # placeholder:

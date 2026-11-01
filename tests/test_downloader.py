@@ -218,6 +218,20 @@ def test_artifact_validators_reject_plausible_looking_files(
         getattr(downloader, validator)(path)
 
 
+def test_validate_pdf_reads_a_pdf_encrypted_for_its_owner(tmp_path):
+    """ETSI's TS 129 234 V11.2.0 is AES-encrypted with an empty user password;
+    without pypdf's crypto extra it read as unpublished, and the run fell back
+    to V11.1.0's rendering."""
+    writer = pypdf.PdfWriter()
+    writer.add_blank_page(width=612, height=792)
+    writer.encrypt("", "owner", algorithm="AES-256")
+    path = tmp_path / "encrypted.pdf"
+    with path.open("wb") as handle:
+        writer.write(handle)
+
+    downloader.validate_pdf(path)
+
+
 def _tree(root: Path, label: bytes) -> None:
     """A published-looking tree whose every file says which run wrote it."""
     for name in ("3gpp/Rel-18/TS_29.999/spec.docx", "rfc/rfc9999.txt", "manifest.json"):

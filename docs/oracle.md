@@ -14,7 +14,7 @@ what makes disagreement informative.
 
 ```sh
 uv run seanchai download                          # fetches the dictionary too
-uv run seanchai crosscheck dad    # 55 files, 80 findings, 19 accepted renames
+uv run seanchai crosscheck dad    # 58 files, 81 findings, 19 accepted renames
 ```
 
 The check reads the newest copy of each document and no other: the
@@ -24,11 +24,15 @@ is no reading of it. `crosscheck` takes files or directories (a
 directory's raw files skipped, as the corpus loader skips them), lists
 each older copy it skips (TS 29.212 V11.19.0, TS 29.214 V7.12.0 and
 V11.16.0, TS 32.299 V11.20.0), and refuses two files of one document and
-version, so a count over every committed copy (98 findings and 21 accepted
-renames in 59 files, TS 29.212 V11.19.0's `stale-alias` for an AVP the copy
+version, so a count over every committed copy (99 findings and 21 accepted
+renames in 62 files, TS 29.212 V11.19.0's `stale-alias` for an AVP the copy
 predates among them) cannot be reported by accident.
-TS 29.140 V7.0.0 and TS 29.209 V6.8.0 are the newest copies of their
-documents and are checked.
+TS 29.140 V7.0.0, TS 29.209 V6.8.0, TS 29.210 V6.7.0, TS 29.211 V6.4.0 and
+TS 29.234 V11.2.0 are the newest copies of their documents and are checked:
+TS 29.211 tabulates no AVP, and TS 29.234's rows agree in name and type. The
+dictionary types `Charging-Characteristics` (314) OctetString and the
+document "Integer", which the oracle does not compare, the document
+stating no Diameter type.
 
 The `[wireshark]` entry in `specs.toml` pins a release tag; the downloader
 fetches the whole `resources/protocols/diameter/` directory (the dictionary
@@ -172,7 +176,10 @@ remains:
   `QoS-Profile-Description` (clauses 7.3.4, 7.3.5, table 10 and the
   ABNFs alike), and `Requested-Information-457` for TS 183 017's
   `Latching-Indication` (clause 7.3.8), an entry carrying its `LATCH` and
-  `RELATCH` values under a name copied from ES 283 035's AVP 353.
+  `RELATCH` values under a name copied from ES 283 035's AVP 353. And
+  `PDP-Session-operation` (1015) for TS 29.210's `PDP-Session-Operation`
+  (clause 5.2.21, table 5.2 and the CCR ABNF alike); no later document
+  defines the AVP.
 - **Leads not staged**, resting on a reading the corpus makes rather than
   on a document's statement, or on nothing a merge request changes:
   `Monitoring-Event-Information` (3921) lists TS 29.336's

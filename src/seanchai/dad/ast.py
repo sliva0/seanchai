@@ -602,11 +602,26 @@ class AvpTableRow(Node):
     code: Unsigned32 | None = None
     section: SectionNumber | None = None
     data_type: DataType | None = None
+    # A Type cell naming no Diameter type, as printed: TS 29.234 table 10.1.1
+    # types 314 "Integer". As `RegistryRow.printed_type`, kept apart from
+    # `data_type` so the statement survives without becoming a type.
+    printed_type: Mark | None = None
     flag_rules: AvpFlagRules = AvpFlagRules()
     may_encrypt: bool | None = None
     # Per mark column (`MarkColumn`), what the row marks: TS 29.212's
     # `Acc-Type` and `Applicability`, TS 32.299's per-command use.
     marks: Marks = Field(default_factory=dict)
+
+    @pydantic.model_validator(mode="after")
+    def _one_type(self) -> AvpTableRow:
+        if self.printed_type is not None and (
+            self.data_type is not None or self.printed_type in DataType
+        ):
+            raise ValueError(
+                f"{self.name}: printed_type {self.printed_type!r} is for a Type"
+                " cell naming no Diameter type"
+            )
+        return self
 
     def stated_vendor(self, file_vendor: int) -> int | None:
         """The vendor space the row places the AVP in, or None where the row
@@ -685,6 +700,10 @@ class AvpTable(Node):
             AvpColumn.TYPE: "data_type",
             AvpColumn.ENCRYPT: "may_encrypt",
         }
+        if AvpColumn.TYPE not in self.columns and any(
+            row.printed_type is not None for row in self.rows
+        ):
+            raise ValueError("printed_type set but the table has no Type column")
         flags = {
             AvpColumn.MUST: "must",
             AvpColumn.MAY: "may",

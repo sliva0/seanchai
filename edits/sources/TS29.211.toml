@@ -1,0 +1,34 @@
+# Source declarations for 3GPP TS 29.211 (Rx Interface and Rx/Gx signalling
+# flows), V6.4.0, the document's final version. Applied to normalized source
+# text before parsing; see src/seanchai/extractor/sources.py for the format.
+
+[[patch]]
+find = "Media-Sub-Component AVP"
+replace = "Media-Sub-Component"
+exact = true
+section = "7.4"
+reason = "table 7.3.1's name cell carries an ' AVP' suffix no other row prints; TS 29.209 V6.8.0, which it cites, names the AVP Media-Sub-Component (clause 6.5.20)"
+first_version = "6.4.0"
+last_version = "6.4.0"
+
+[[quirk]]
+name = "prose-application-ids"
+reason = "the command headers print no application id; clause 7.1 states it: 'The Application Identifier for the Rx application is 16777229 as allocated by IANA.'"
+first_version = "6.4.0"
+last_version = "6.4.0"
+
+[[quirk]]
+name = "message-only"
+reason = "the document defines no AVP of its own: clause 7.3 prints the commands and clause 7.4's table 7.3.1 lists what they re-use"
+first_version = "6.4.0"
+last_version = "6.4.0"
+
+[[patch]]
+find = "*[ Subscription-ID ]"
+replace = "*[ Subscription-Id ]"
+exact = true
+count = 2
+section = "7.3"
+reason = "the AAR and RAR formats (7.3.1, 7.3.3) misspell in case Subscription-Id, the spelling of table 7.3.1 and of RFC 4006, which it cites (clause 8.46)"
+first_version = "6.4.0"
+last_version = "6.4.0"

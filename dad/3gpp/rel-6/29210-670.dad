@@ -1,0 +1,280 @@
+; Specification: 3GPP TS 29.210
+; Version: 6.7.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129210/06.07.00_60/ts_129210v060700p.pdf
+
+
+; Type: Application Scope
+; Name: Gx
+; Section: 6.1
+; Page: 19
+; Application-ID: 16777224
+; Applies-To: 6.1.* ;; corrected: (TS29.210.py#applies-to-gx)
+
+
+; Type: Application Scope
+; Name: Gx over Gy
+; Section: 6.2
+; Page: 20
+; Application-ID: 16777225
+; Applies-To: 6.2.* ;; corrected: (TS29.210.py#applies-to-gx-over-gy)
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 6.1.1
+; Page: 19
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Subscription-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ 3GPP-RAT-Type ]
+        [ Termination-Cause ]
+        [ User-Equipment-Info ]
+        [ 3GPP-GPRS-Negotiated-QoS-Profile ]
+        [ 3GPP-SGSN-MCC-MNC ]
+        [ 3GPP-SGSN-Address ]
+        [ 3GPP-SGSN-IPv6-Address ]
+        [ Called-Station-Id ]
+        [ Bearer-Usage ]
+        [ PDP-Session-Operation ]
+      * [ TFT-Packet-Filter-Information ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: 6.1.2
+; Page: 19
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+      * [ Event-Trigger ]
+        [ Origin-State-Id ]
+      * [ Charging-Rule-Remove ]
+      * [ Charging-Rule-Install ]
+        [ Charging-Information ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 6.1.3
+; Page: 20
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 6.1.4
+; Page: 20
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 5.2
+; Table: 5.2
+; Page: 11
+; Columns: Name                 Code   Section   Type           Must   May   S.not   M.not   Encrypt
+Bearer-Usage                    1000   5.2.1     Enumerated     M,V    P     -       -       Yes
+Charging-Rule-Install           1001   5.2.2     Grouped        M,V    P     -       -       Yes
+Charging-Rule-Remove            1002   5.2.3     Grouped        M,V    P     -       -       Yes
+Charging-Rule-Definition        1003   5.2.4     Grouped        M,V    P     -       -       Yes
+Charging-Rule-Base-Name         1004   5.2.5     UTF8String     M,V    P     -       -       Yes
+Charging-Rule-Name              1005   5.2.6     OctetString    M,V    P     -       -       Yes
+Event-Trigger                   1006   5.2.7     Enumerated     M,V    P     -       -       Yes
+Metering-Method                 1007   5.2.8     Enumerated     M,V    P     -       -       Yes
+Offline                         1008   5.2.9     Enumerated     M,V    P     -       -       Yes
+Online                          1009   5.2.10    Enumerated     M,V    P     -       -       Yes
+Precedence                      1010   5.2.11    Unsigned32     M,V    P     -       -       Yes
+Reporting-Level                 1011   5.2.15    Enumerated     M,V    P     -       -       Yes
+PDP-Session-Operation           1015   5.2.21    Enumerated     M,V    P     -       -       Yes
+TFT-Filter                      1012   5.2.18    IPFilterRule   M,V    P     -       -       Yes
+TFT-Packet-Filter-Information   1013   5.2.19    Grouped        M,V    P     -       -       Yes
+ToS-Traffic-Class               1014   5.2.20    OctetString    M,V    P     -       -       Yes
+
+
+; Type: Reused AVPs
+; Section: 5.3
+; Table: 5.3
+; Page: 16
+; Columns: Name                    From
+3GPP-GPRS-Negotiated-QoS-Profile   TS29.061
+3GPP-RAT-Type                      TS29.061
+3GPP-SGSN-Address                  TS29.061
+3GPP-SGSN-IPv6-Address             TS29.061
+3GPP-SGSN-MCC-MNC                  TS29.061
+AF-Charging-Identifier             TS29.209
+Called-Station-Id                  RFC4005
+CC-Request-Number                  RFC4006
+CC-Request-Type                    RFC4006
+Charging-Information               TS29.229
+Flow-Description                   TS29.209
+Flows                              TS29.209
+Framed-IP-Address                  RFC4005
+Framed-IPv6-Prefix                 RFC4005
+Rating-Group                       RFC4006
+Service-Identifier                 RFC4006
+Subscription-Id                    RFC4006
+User-Equipment-Info                RFC4006
+
+
+; Type: Enumerated AVP
+; Name: Bearer-Usage
+; Section: 5.2.1
+; Page: 12
+Bearer-Usage ::= < Enumerated AVP header: 1000 10415 >
+        GENERAL        = 0
+        IMS_SIGNALLING = 1
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Install
+; Section: 5.2.2
+; Page: 12
+Charging-Rule-Install ::= < AVP header: 1001 10415 > ;; corrected: (TS29.210.py#vendor-id-charging-rule-install)
+      * [ Charging-Rule-Definition ]
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Remove
+; Section: 5.2.3
+; Page: 12
+Charging-Rule-Remove ::= < AVP header: 1002 10415 > ;; corrected: (TS29.210.py#vendor-id-charging-rule-remove)
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Definition
+; Section: 5.2.4
+; Page: 13
+Charging-Rule-Definition ::= < AVP header: 1003 10415 > ;; corrected: (TS29.210.py#vendor-id-charging-rule-definition)
+        { Charging-Rule-Name }
+        [ Service-Identifier ]
+        [ Rating-Group ]
+      * [ Flow-Description ]
+        [ Reporting-Level ]
+        [ Online ]
+        [ Offline ]
+        [ Metering-Method ]
+        [ Precedence ]
+        [ AF-Charging-Identifier ]
+      * [ Flows ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Event-Trigger
+; Section: 5.2.7
+; Page: 13
+Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
+        SGSN_CHANGE = 0
+        QOS_CHANGE  = 1
+        RAT_CHANGE  = 2
+        TFT_CHANGE  = 3
+        PLMN_CHANGE = 4
+
+
+; Type: Enumerated AVP
+; Name: Metering-Method
+; Section: 5.2.8
+; Page: 14
+Metering-Method ::= < Enumerated AVP header: 1007 10415 >
+        DURATION        = 0
+        VOLUME          = 1
+        DURATION_VOLUME = 2
+
+
+; Type: Enumerated AVP
+; Name: Offline
+; Section: 5.2.9
+; Page: 14
+Offline ::= < Enumerated AVP header: 1008 10415 >
+        DISABLE_OFFLINE = 0
+        ENABLE_OFFLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Online
+; Section: 5.2.10
+; Page: 14
+Online ::= < Enumerated AVP header: 1009 10415 >
+        DISABLE_ONLINE = 0
+        ENABLE_ONLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Reporting-Level
+; Section: 5.2.15
+; Page: 15
+Reporting-Level ::= < Enumerated AVP header: 1011 10415 >
+        CHARGING_RULE_LEVEL = 0
+        RATING_GROUP_LEVEL  = 1
+
+
+; Type: Grouped AVP
+; Name: TFT-Packet-Filter-Information
+; Section: 5.2.19
+; Page: 15
+TFT-Packet-Filter-Information ::= < AVP header: 1013 10415 > ;; corrected: (TS29.210.py#vendor-id-tft-packet-filter-information)
+        [ Precedence ]
+        [ TFT-Filter ]
+        [ ToS-Traffic-Class ]
+
+
+; Type: Enumerated AVP
+; Name: PDP-Session-Operation
+; Section: 5.2.21
+; Page: 16
+PDP-Session-Operation ::= < Enumerated AVP header: 1015 10415 >
+        PDP-SESSION-TERMINATION = 0

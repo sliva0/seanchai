@@ -355,14 +355,21 @@ why each stays:
   agreeing with it; TS 29.212 names "3GPP2 X.S0057-B" ([24]), a revision
   3GPP2's library does not publish, for which revision 0 V2.0 stands in
   (`corpus.STAND_INS`), and so does its V11.19.0.
-- **`origin-not-in-corpus`**, three. The older copies held for those
+- **`origin-not-in-corpus`**, five. The older copies held for those
   citations cite in turn what the corpus holds at Release 18 only, and a
   non-specific reference means the citing release's version: TS 29.214
   V7.12.0 Release 7's TS 29.061 and 29.212, TS 29.212 V11.19.0 Release
   11's TS 29.061, 29.229 and 29.272, and TS 29.214 V11.16.0 Release 11's
   TS 29.061 and 29.229. Nothing stands in for them: TS 29.212 V11.19.0's
   `Trace-Data`, from TS 29.272, has a body Release 18's differs from, and
-  no citation reaches them from oneM2M TS-0004.
+  no citation reaches them from oneM2M TS-0004. The retired documents held
+  for TS 29.230's rows do the same: TS 29.210 V6.7.0 Release 6's TS 29.061
+  and 29.229, and TS 29.234 V11.2.0 Release 11's TS 29.229, for which no
+  stand-in's evidence has been sought.
+- **`local-and-reused`**, on TS 29.234's `SIP-Auth-Data-Item`, whose clause
+  10.1.4 says it "is defined in 3GPP TS 29.229 [6]" and that "three new more
+  conditional AVPs are needed": the comparison a reader would want needs the
+  Release 11 copy the corpus lacks.
 - **`external-origin-not-in-corpus`**, two files: both copies of TS 32.299
   (`OMA-DDS-Charging_Data`).
 - **`member-marked-unused`**, two. TS 32.299 table 7.1.0.1 marks
@@ -452,13 +459,20 @@ why each stays:
     7.2.190; table 7.2.0.1 prints `Service-Id`, which a correction aligns
     with the clause). Wireshark's dictionary calls 855 `Service-Id` and
     3103 `S6-Service-ID`, a name no document prints, to keep the two apart.
+- **No registry note speaks for the retired documents.** A file is compared
+  with the registry the corpus resolves for it, and a Release 6 or Release
+  11 file resolves no Release 18 TS 29.230, so TS 29.210, 29.211 and 29.234
+  draw none of the `registry-*` notes below, and no rule compares a type:
+  table 7.1's `"Integer"` for 314 agrees with TS 29.234's table 10.1.1 and
+  clause 10.1.27 anyway. Nor is any of their citations a
+  `cross-release-origin`.
 - **`registry-avp-document`**, ten. TS 29.329 table 6.3.1 lists nine of TS
   29.229's AVPs among its own (`Public-Identity`, `Server-Name`,
   `Supported-Features` and six more), and its clauses 6.3.9–6.3.21 refer to
   TS 29.229 for each, as the registry does; the rows stay, since they also
   state the flag rules Sh uses. TS 29.273 defines `3GPP-AAA-Server-Name`
-  (318), which the registry's first row still gives TS 29.234, its second
-  row nothing.
+  (318), which the registry's first row still gives TS 29.234, as V11.2.0's
+  table 10.1.1 and clause 10.1.34 define it there, its second row nothing.
 - **`registry-reserved-code`**, two. TS 32.299 defines `PSCell-Info` (1324)
   and `Nr-Cgi` (1325) in a range table 7.1 reserves "for TS 32.229", most
   likely a misprint of TS 32.299, whose ranges surround it; reported as
@@ -466,7 +480,7 @@ why each stays:
 - **`registry-application-name`**, one. TS 29.272's VCSG application scope,
   inserted by correction citing clause 7.2.2, names 16777308 `S7a/S7d`;
   table 4.1 calls it "3GPP S7a".
-- **`undefined-avp`**, eight: members no corpus document defines,
+- **`undefined-avp`**, nine: members no corpus document defines,
   tabulates, re-uses or allocates, each declared by an `Undefined AVP`
   block a correction inserts, its reason listing what was searched — later
   versions (V19.0.0 for the 3GPP documents), errata, the TS 29.230 and IANA
@@ -484,6 +498,10 @@ why each stays:
   A.6.4.1-1 does not list it, and TS 29.336's `External-Identifier`, 3111,
   which carries an external group identifier on S6t, is the likely intent,
   which the block's reason records rather than the corpus assuming). TS
+  29.234's `Error-Cause` (the Wa and Wd DEA, clauses 4.4.2.1 and 5.5.1; RFC
+  5580 lists a RADIUS attribute of the name "defined in [RFC5176]", and no
+  Diameter document in the corpus defines it, though Wireshark's dictionary
+  carries RADIUS's number 101 under the name). TS
   32.299's `Submission-Timestamp` (7.2.112aA, whose clause ends with an
   editor's note) and `Network-Element` (7.2.66aA), each beside a near-name
   the document defines, `Submission-Time` (7.2.217, MMS-Information's) and

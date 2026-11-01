@@ -104,9 +104,9 @@ Vocabulary, RFC extractor: `prose-avp-codes` (RFC 7155), `clause-avp-table`
 `bare-name-continuation` (RFC 4004), `ragged-separator` (RFC 8583).
 The declared vocabulary, with the document that forced each:
 
-- Docx: `prose-application-ids` (29.153, 29.154, 29.212, 29.214, 29.215,
-  29.217, 29.219, 29.343, 29.368, 29.468: the clause stating the
-  application id the command headers omit); `access-type-headings` (29.212, 29.214: `Event-Trigger
+- Docx: `prose-application-ids` (29.153, 29.154, 29.210, 29.211, 29.212,
+  29.214, 29.215, 29.217, 29.219, 29.234, 29.343, 29.368, 29.468: the clause
+  stating the application id the command headers omit); `access-type-headings` (29.212, 29.214: `Event-Trigger
   AVP (All access types)`); the mark columns, each declaration naming the
   column's legend: `access-type-column` (29.212, 29.215),
   `applicability-column` (29.061, 29.153, 29.154, 29.212, 29.214, 29.215,
@@ -117,10 +117,11 @@ The declared vocabulary, with the document that forced each:
   notes naming a defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
   `vendor-id-sentence` (29.389: the V bit its table leaves blank, from the
   clause's sentence);
-  `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1: commands
-  and re-used rows, no local AVPs); and five from TS 29.273:
+  `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1, 29.211
+  clause 7: commands and re-used rows, no local AVPs); and five from TS 29.273:
   `command-reference-only` (clauses holding only a pointer),
-  `procedure-commands` (8.2.2.1–4 name commands in their intros),
+  `procedure-commands` (8.2.2.1–4 name commands in their intros; also
+  29.234's 6.4.1–6.4.3 and 11.4.1),
   `physical-reused-columns` (table 8.2.3.0/2 changes grid spans; also
   29.368 table 6.5.1.1 and 29.219 table 5.4, whose header and data rows
   merge a sliver grid column into different labels),
@@ -161,6 +162,15 @@ The declared vocabulary, with the document that forced each:
   `worded-enum-values` and `comma-enum-labels`, for clause 6.3.5's
   `MM1 Message Submission, Profile based (0)`, a quoted name with a comma
   ([grammar.md](grammar.md)).
+  TS 29.234 V11.2.0 declares `rfc-command-rules` (clauses 4.4.2, 4.5.2.2,
+  5.5.1, 8.4, 9.4 and 11.4.2 print RFC commands by rule alone, `<ASR> ::=`
+  or `<Diameter-EAP-Request> ::=`, under no intro naming them, which take
+  the RFC's names by command code; a code no RFC here defines or a rule
+  abbreviating the command otherwise fails), `spaced-heading-numbers`
+  (clause 4.5.2.2's heading prints a space before the tab; undeclared
+  elsewhere, since TS 32.299 V11.20.0 prints a heading so too, whose clause
+  its corrections read as printed), `spaced-rule-operator` (10.1.4),
+  `unknown-type-tokens` (below) and `worded-enum-values` (10.1.23).
   Enumerated value lines that depart from `NAME (n)` each need their own:
   `worded-enum-values` (29.368 6.4.6's `Device Trigger Request (1)`; also
   29.109, 29.172, 29.214), `dashed-enum-values` (a list dash printed as
@@ -219,7 +229,16 @@ Walks paragraphs and tables in document order under numbered headings:
 
 - Behind `prose-application-ids`, a sentence stating the application id the
   command headers omit → `ApplicationScope`, applying to the interface
-  clause the sentence sits in (`; Applies-To: 5.*` for TS 29.212's 5.1). Two wordings: "the Application-ID for the Gx
+  clause the sentence sits in (`; Applies-To: 5.*` for TS 29.212's 5.1).
+  Beside TS 29.209's third wording, the retired documents have two more:
+  "The Auth-Application-Id for the Gx over Gy Application is 16777225 as
+  allocated by IANA." (TS 29.210 clauses 6.1, 6.2, whose scopes corrections
+  narrow to `6.1.*` and `6.2.*`, clause 6 holding two applications; "The
+  Application Identifier for the Rx application is …", TS 29.211 clause 7.1)
+  and "The Wx reference point shall be Diameter based and shall have an
+  application ID defined for it. … The application identifier is to
+  16777219." (TS 29.234 clauses 6.2, 11.2). Two wordings the current
+  documents share: "the Application-ID for the Gx
   Application in the present release is 16777238" (TS 29.212 clauses 5.1,
   5a.1, 5b.1, 5c.1, E.6.1; 29.153, 29.154, 29.214, 29.215, 29.217) and "The
   Diameter application identifier assigned to the Sy interface application
@@ -496,7 +515,7 @@ command codes and `xxxx`/`TBD` AVP codes, its Editor's Notes leaving both to
 CT4 and TS 29.230, which allocates the application id 16777218 and nothing
 else for it, so there is nothing to extract; annex B re-prints RFC 4006's
 CCR/CCA for Rc.
-TS 29.230 v18.6.0 is an allocation registry rather than a definer, read
+<a id="the-registry-reading"></a>TS 29.230 v18.6.0 is an allocation registry rather than a definer, read
 behind two quirks of its own:
 
 - `registry-tables`: a table whose first column is "Application
@@ -515,11 +534,16 @@ behind two quirks of its own:
 - `unknown-type-tokens`: a Type cell naming no Diameter type is kept as
   printed, quoted, beside the closed set rather than patched to a guess:
   table 7.1 types code 314 (Charging-Characteristics, TS 29.234) `"Integer"`,
-  which could be Integer32, Integer64 or neither, and TS 29.234 is outside
-  the corpus. Undeclared, such a cell fails.
+  which could be Integer32, Integer64 or neither, and TS 29.234 agrees with it
+  ([below](#the-registry-reading)). Undeclared, such a cell fails. An AVP
+  table's Type cell reads the same behind the same quirk (TS 29.234 table
+  10.1.1): the row has `printed_type` and no `data_type`.
 
   No source settles 314's type, so the row stays as printed and no
-  correction supplies one. TS 29.234 clause 10.1.27 says "of type Integer"
+  correction supplies one, here or in TS 29.234 V11.2.0, now in the corpus,
+  whose table 10.1.1 prints the same word; its model reading is a hole
+  with no `data_type`, and a registry that copied it is not wrong. TS 29.234
+  clause 10.1.27 says "of type Integer"
   in every version that has the AVP, V6.1.0 to its last, V11.2.0, never
   with a width; it carries "the charging mode … as described in 3GPP TS
   32.215", whose information element (clause 6.1 and annex A, and TS

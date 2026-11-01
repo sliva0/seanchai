@@ -352,6 +352,9 @@ def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
             return "-" if row.code is None else str(row.code)
         case ast.AvpColumn.SECTION:
             return "-" if row.section is None else row.section
+        case ast.AvpColumn.TYPE if row.printed_type is not None:
+            # Always quoted: bare, a Type cell is a Diameter data type.
+            return _quoted(row.printed_type)
         case ast.AvpColumn.TYPE:
             return "-" if row.data_type is None else row.data_type.value
         case ast.AvpColumn.MUST:

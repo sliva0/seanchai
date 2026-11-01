@@ -256,7 +256,7 @@ name-cell     = avp-name
 vendor-cell   = 1*DIGIT / "-"           ; < 2^32; 0 is the IETF space
 code-cell     = 1*DIGIT / "-"
 section-cell  = section-number / "-"
-type-cell     = data-type / "-"
+type-cell     = data-type / quoted / "-"
 flags-cell    = avp-flag *("," [SP] avp-flag) / "-"
 avp-flag      = "M" / "V" / "P"   ; P is RFC 3588's deprecated protected bit
 encrypt-cell  = "Yes" / "No" / "-"
@@ -274,6 +274,11 @@ data-type     = "OctetString" / "Integer32" / "Integer64" / "Unsigned32"
 
 `data-type` is closed: RFC 6733 §4.2 and §4.3.1 plus RFC 3588's
 `QoSFilterRule` used by RFC 4005.
+
+A Type cell is a `data-type` or, quoted, a type the closed set lacks, kept
+as printed: TS 29.234 table 10.1.1 types code 314 `"Integer"`. Such a row
+has no type to the model, and a quoted data type parses as that type, as
+in a registry table.
 
 A Vendor-ID cell is the row's vendor as its table prints it, for a
 document tabulating several vendors' AVPs in one table: oneM2M TS-0004

@@ -2,11 +2,14 @@
 
 `src/seanchai/downloader/` fetches the catalog in its `specs.toml` — 3GPP
 archives with their ETSI PDF renderings, the older 3GPP versions citing
-documents mean, pinned, the plain-text RFCs, oneM2M's Word
+documents mean and the retired ones TS 29.230 still lists, pinned, the
+plain-text RFCs, oneM2M's Word
 originals at a pinned version, and Wireshark's Diameter dictionary — into the
 git-ignored `specifications/`, converts every legacy binary `.doc` to `.docx`
 with headless LibreOffice, and writes `specifications/manifest.json` with
-sha256 and size per artifact. Standard library plus pypdf and python-docx for validation and
+sha256 and size per artifact. Standard library plus pypdf, with its crypto
+extra (ETSI's TS 129 234 V11.2.0 is AES-encrypted with an empty user
+password), and python-docx for validation and
 the `soffice` executable (unless `--no-convert`); the module returns records, reports progress through a callback and raises
 `DownloadError`, and the CLI does the printing.
 
@@ -97,7 +100,7 @@ for catalog experiments, not for refreshing the corpus.
   do the derivation, so don't hand-build those URLs.
 - **Legacy `.doc` archives are converted, not skipped.** Ten catalogued
   archives (TS 32.299, 29.153, 29.154, 29.201, 29.215, 29.217, 29.219,
-  29.343, 29.368, 29.468) hold a `.doc` and no `.docx`, and so do all six
+  29.343, 29.368, 29.468) hold a `.doc` and no `.docx`, and so do all nine
   pinned versions. Each run converts them into
   `converted/`, mirroring the extracted path
   (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`; TS 29.153's archive
@@ -152,14 +155,18 @@ for catalog experiments, not for refreshing the corpus.
   oneM2M TS-0004 name in their references; TS 29.212 V11.19.0 and TS
   29.214 V11.16.0 are Release 11's last, which TS 32.299 V11.20.0's
   non-specific references mean, pinned because Release 18's
-  `QoS-Information` and `Flows` differ from theirs. How the corpus
+  `QoS-Information` and `Flows` differ from theirs. TS 29.210 V6.7.0, TS
+  29.211 V6.4.0 and TS 29.234 V11.2.0 are their documents' final versions,
+  retired, and held because TS 29.230's tables cite them (Gx and Gx over
+  Gy; Rx; Wx, Pr and table 7.1's 100-102 and 300-319), though no corpus
+  document resolves into them. How the corpus
   resolves to them is in [consumers.md](consumers.md). Every run lists the document's
   archive across releases and checks the claim (`check_final`): a version
   archived later than the pin, in any release or in its own, fails the run
   naming it, before anything is downloaded, so a resolution never rests on
   a claim the archive stopped supporting. The version is then fetched as
   `--version` fetches one, never walked back, its exact ETSI rendering
-  attached (all six are published), into its own release's tree
+  attached (all nine are published), into its own release's tree
   (`3gpp/Rel-7/TS_29.140/`, `3gpp/Rel-11/TS_32.299/` beside
   `3gpp/Rel-18/TS_32.299/`), its legacy `.doc` converted like any other.
   TS 29.214 is held at three: V7.12.0, V11.16.0 and the catalog's

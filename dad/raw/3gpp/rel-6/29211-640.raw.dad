@@ -1,0 +1,197 @@
+; Specification: 3GPP TS 29.211
+; Version: 6.4.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129211/06.04.00_60/ts_129211v060400p.pdf
+
+
+; Type: Application Scope
+; Name: Rx
+; Section: 7.1
+; Page: 13
+; Application-ID: 16777229
+; Applies-To: 7.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 7.3.1
+; Page: 14
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+      * [ Media-Component-Description ] ; bold
+      * [ Flow-Grouping ]               ; bold
+        [ AF-Charging-Identifier ]      ; bold
+        [ SIP-Forking-Indication ]      ; bold
+      * [ Specific-Action ]             ; bold
+      * [ Subscription-Id ]             ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 7.3.2
+; Page: 14
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 7.3.3
+; Page: 14
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Specific-Action }     ; bold
+      * [ Flows ]               ; bold
+      * [ Subscription-Id ]     ; bold
+        [ Abort-Cause ]         ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 7.3.4
+; Page: 15
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 7.3.5
+; Page: 15
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 7.3.6
+; Page: 15
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Request, ASR
+; Section: 7.3.7
+; Page: 16
+<AS-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Abort-Cause }         ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Answer, ASA
+; Section: 7.3.8
+; Page: 16
+<AS-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Reused AVPs
+; Section: 7.4
+; Table: 7.3.1
+; Page: 16
+; Columns: Name               From
+Abort-Cause                   TS29.209
+AF-Application-Identifier     TS29.209
+AF-Charging-Identifier        TS29.209
+Flow-Description              TS29.209
+Flow-Number                   TS29.209
+Flows                         TS29.209
+Flow-Status                   TS29.209
+Flow-Usage                    TS29.209
+Flow-Grouping                 TS29.209
+Max-Requested-Bandwidth-DL    TS29.209
+Max-Requested-Bandwidth-UL    TS29.209
+Media-Component-Description   TS29.209
+Media-Component-Number        TS29.209
+Media-Sub-Component           TS29.209
+Media-Type                    TS29.209
+RR-Bandwidth                  TS29.209
+RS-Bandwidth                  TS29.209
+SIP-Forking-Indication        TS29.209
+Specific-Action               TS29.209
+Subscription-Id               RFC4006

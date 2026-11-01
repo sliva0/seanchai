@@ -527,6 +527,7 @@ def _avp_table_row(
     code: int | None = None
     section: str | None = None
     data_type: ast.DataType | None = None
+    printed_type: str | None = None
     may_encrypt: bool | None = None
     must = may = should_not = must_not = frozenset[ast.AvpFlag]()
     for column, text in zip(columns, cells, strict=True):
@@ -541,6 +542,14 @@ def _avp_table_row(
                 code = None if text == "-" else _number(text, lineno, "Code cell")
             case ast.AvpColumn.SECTION:
                 section = None if text == "-" else text
+            case ast.AvpColumn.TYPE if text.startswith('"'):
+                # A type the closed set lacks, quoted as printed; a quoted
+                # data type is that type.
+                printed = _text_cell(text, lineno, "Type")
+                if printed in ast.DataType:
+                    data_type = ast.DataType(printed)
+                else:
+                    printed_type = printed
             case ast.AvpColumn.TYPE:
                 data_type = None if text == "-" else _data_type(text, lineno)
             case ast.AvpColumn.ENCRYPT:
@@ -564,6 +573,7 @@ def _avp_table_row(
             code=code,
             section=section,
             data_type=data_type,
+            printed_type=printed_type,
             flag_rules=ast.AvpFlagRules(
                 must=must, may=may, should_not=should_not, must_not=must_not
             ),

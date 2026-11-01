@@ -128,7 +128,7 @@ def test_every_module_imports_as_library_classes_and_registers_nothing(package):
         """,
     )
     modules, directions = map(int, output.split())
-    assert modules == 61
+    assert modules == 69
     assert directions > 300
 
 
@@ -497,14 +497,22 @@ def test_a_member_its_tables_mark_unused_stays_with_the_mark_as_comment(package)
 
 def test_only_commands_no_document_gives_an_id_generate_none(package):
     """RFC 6733's RAR, STR and ASR carry the using application's id (clause
-    2.5); every other module's document states one, in a header or in an
-    application scope."""
+    2.5), and TS 29.234's Wa, Wd, Wm and Wg advertise "the EAP, NASREQ or
+    Diameter Base Protocol Application-Id, depending on the command" (clauses
+    4.2, 5.2, 8.2, 9.2); every other module's document states one, in a header
+    or in an application scope."""
     without = sorted(
         path.stem
         for path in package.glob("*.py")
         if "\nAPPLICATION_ID = None\n" in path.read_text(encoding="utf-8")
     )
-    assert without == ["rfc6733_8"]
+    assert without == [
+        "rfc6733_8",
+        "ts29_234_4",
+        "ts29_234_5",
+        "ts29_234_8",
+        "ts29_234_9",
+    ]
     gx = _read(package, "ts29_212_5")
     assert (
         "The command headers print no application id; clause 5.1 states Gx's."

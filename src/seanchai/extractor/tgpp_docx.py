@@ -62,6 +62,12 @@ from .sources import Patcher
 _HEADING_RE = re.compile(
     r"^(?P<number>(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*)\t(?P<title>.+)$"
 )
+# Behind `spaced-heading-numbers`: a space before the tab, TS 29.234 V11.2.0's
+# clause "4.5.2.2 \tInformation Element Contents". Declared, since a heading the
+# plain reading misses leaves its body in the clause before.
+_SPACED_HEADING_RE = re.compile(
+    r"^(?P<number>(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*) +\t(?P<title>.+)$"
+)
 # TS 29.343 clauses 6.6.2-6.6.5 lower-case the keyword
 # ("ProXimity-Action-Request (PXR) command").
 _COMMAND_TITLE_RE = re.compile(
@@ -685,6 +691,13 @@ def _sections(
                 quirks.fire("list-numbered-headings")
                 heading = f"{label}\t{heading}"
             match = _HEADING_RE.match(heading)
+            if (
+                match is None
+                and quirks is not None
+                and quirks.enabled("spaced-heading-numbers")
+                and (match := _SPACED_HEADING_RE.match(heading))
+            ):
+                quirks.fire("spaced-heading-numbers")
             if match:
                 current = _Section(
                     number=match["number"],
@@ -857,6 +870,52 @@ def _find_rule_header(
     return None
 
 
+# Behind `rfc-command-rules`, the RFCs' names of the commands a procedure clause
+# prints by rule alone, keyed by command code and whether the R bit is set: RFC
+# 6733 section 3.1 (Re-Auth, Accounting, Abort-Session, Session-Termination),
+# RFC 7155 section 3 (AA) and RFC 4072 section 3 (Diameter-EAP). TS 29.234
+# V11.2.0 clause 4.4.2.2 prints "ABNF for the ASR and ASA commands are as
+# follows:" over `<ASR> ::=`, and 4.4.2.1 `<Diameter-EAP-Request> ::=` under
+# "DER and DEA Commands".
+_RFC_COMMANDS = {
+    (258, True): ("Re-Auth-Request", "RAR"),
+    (258, False): ("Re-Auth-Answer", "RAA"),
+    (265, True): ("AA-Request", "AAR"),
+    (265, False): ("AA-Answer", "AAA"),
+    (268, True): ("Diameter-EAP-Request", "DER"),
+    (268, False): ("Diameter-EAP-Answer", "DEA"),
+    (271, True): ("Accounting-Request", "ACR"),
+    (271, False): ("Accounting-Answer", "ACA"),
+    (274, True): ("Abort-Session-Request", "ASR"),
+    (274, False): ("Abort-Session-Answer", "ASA"),
+    (275, True): ("Session-Termination-Request", "STR"),
+    (275, False): ("Session-Termination-Answer", "STA"),
+}
+
+
+def _rfc_command(
+    section: _Section, header: re.Match, quirks: sources.Quirks
+) -> re.Match | None:
+    """What an intro would say of a rule no intro names, read as a title.
+    None without the quirk, and an error for a code no RFC here defines or a
+    rule abbreviating the command otherwise."""
+    if not quirks.enabled("rfc-command-rules"):
+        return None
+    try:
+        code, flags, _ = abnf.diameter_header(header["items"])
+    except abnf.AbnfError as error:
+        raise ExtractionError(f"{section.number}: {error}") from None
+    known = _RFC_COMMANDS.get((code, ast.CommandFlag.REQUEST in flags))
+    rule = header["name"].replace(" ", "")
+    if known is None or (rule.isupper() and rule != known[1]):
+        raise ExtractionError(
+            f"{section.number}: rule {rule!r} over command {code} is none of"
+            " the RFC commands `rfc-command-rules` reads"
+        )
+    quirks.fire("rfc-command-rules")
+    return _COMMAND_INTRO_RE.match(f"The {known[0]} ({known[1]}) command,")
+
+
 def _extract_messages(
     section: _Section,
     title: re.Match | None,
@@ -888,12 +947,17 @@ def _extract_messages(
         if header is None:
             raise ExtractionError(f"{section.number}: malformed rule header {text!r}")
         if title is None:
+            title = _rfc_command(section, header, quirks)
+        if title is None:
             raise ExtractionError(
                 f"{section.number}: command ABNF without a named intro"
             )
         if prose_title:
             quirks.fire("procedure-commands")
         rule_name = header["name"].replace(" ", "")
+        if prose_title and rule_name == title["abbr"]:
+            # `<ASR> ::=`, as RFC 6733 prints it: the long name is the title's.
+            rule_name = title["name"]
         if message_heading:
             quirks.fire("message-headings")
             if not re.fullmatch(r"[A-Z]{2,5}", rule_name) or (
@@ -958,7 +1022,8 @@ def _extract_messages(
 
 
 # Behind `prose-application-ids`: a 3GPP document stating the application id
-# its command headers omit. Two wordings, each used by several documents.
+# its command headers omit. The first two wordings are each used by several
+# documents; the retired documents have wordings of their own.
 _APPLICATION_ID_RES = (
     # TS 29.212 clause 5.1, and 29.154, 29.214, 29.215, 29.217 likewise:
     # "... and the Application-ID for the Gx Application in the present
@@ -980,6 +1045,22 @@ _APPLICATION_ID_RES = (
     re.compile(
         r"^The (?P<name>\S+) application is defined as an IETF vendor specific"
         r" Diameter application with application ID (?P<id>\d+)\b"
+    ),
+    # TS 29.210 V6.7.0 clauses 6.1 and 6.2: "The Auth-Application-Id for the
+    # Gx over Gy Application is 16777225 as allocated by IANA."; TS 29.211
+    # V6.4.0 clause 7.1: "The Application Identifier for the Rx application is
+    # 16777229 as allocated by IANA."
+    re.compile(
+        r"The (?:Auth-Application-Id|Application Identifier) for the"
+        r" (?P<name>.+?) [Aa]pplication is (?P<id>\d+) as allocated by IANA"
+    ),
+    # TS 29.234 V11.2.0 clauses 6.2 and 11.2: "The Wx reference point shall be
+    # Diameter based and shall have an application ID defined for it. ... The
+    # application identifier is to 16777219."
+    re.compile(
+        r"^The (?P<name>\S+) [Rr]eference [Pp]oint shall be Diameter based and"
+        r" shall have an application ID defined for it\..*"
+        r"The application identifier is to (?P<id>\d+)\."
     ),
 )
 
@@ -1715,6 +1796,7 @@ def _extract_avp_table(
         code_value: int | None = None
         section_value: str | None = None
         type_value: str | None = None
+        printed_type: str | None = None
         encrypt: bool | None = None
         must = may = should_not = must_not = frozenset[ast.AvpFlag]()
         note: str | None = None
@@ -1792,6 +1874,15 @@ def _extract_avp_table(
                             )
                         quirks.fire("type-short-forms")
                         type_value = _TYPE_SHORT_FORMS[type_value]
+                    elif (
+                        type_value is not None
+                        and type_value not in ast.DataType
+                        and quirks.enabled("unknown-type-tokens")
+                    ):
+                        # TS 29.234 V11.2.0 table 10.1.1 and clause 10.1.27
+                        # type code 314 "Integer", which names no width.
+                        quirks.fire("unknown-type-tokens")
+                        printed_type, type_value = type_value, None
                 case ast.AvpColumn.ENCRYPT:
                     encrypt = _encrypt_cell(text)
                 case ast.AvpColumn.MUST:
@@ -1816,6 +1907,7 @@ def _extract_avp_table(
                 code=code_value,
                 section=section_value,
                 data_type=_data_type(type_value),
+                printed_type=printed_type,
                 flag_rules=ast.AvpFlagRules(
                     must=must, may=may, should_not=should_not, must_not=must_not
                 ),
@@ -3106,11 +3198,11 @@ QUIRKS: dict[str, str] = {
         " a tab or a run of spaces (TS 32.299 V11.20.0)"
     ),
     "prose-application-ids": (
-        "read 'the Application-ID for the Gx Application ... is n' and 'The"
+        "read 'the Application-ID for the Gx Application ... is n', 'The"
         " Diameter application identifier assigned to the Sy interface"
-        " application is n' into an application scope applying to the"
-        " statement's interface clause (TS 29.212 clause 5.1, TS 29.219"
-        " clause 5.1.5)"
+        " application is n' and the retired documents' wordings into an"
+        " application scope applying to the statement's interface clause (TS"
+        " 29.212 clause 5.1, TS 29.219 clause 5.1.5)"
     ),
     "external-enum-values": (
         "read where an enumerated clause says its values are defined ('The"
@@ -3160,6 +3252,16 @@ QUIRKS: dict[str, str] = {
     "procedure-commands": (
         "read command names and abbreviations from intros under procedure"
         " headings (TS 29.273 clauses 8.2.2.1-4)"
+    ),
+    "spaced-heading-numbers": (
+        "read a heading printing a space before the tab after its number (TS"
+        " 29.234 clause 4.5.2.2)"
+    ),
+    "rfc-command-rules": (
+        "name a rule no intro names, under a procedure heading, by its command"
+        " code as the RFC defining the command does: '<ASR> ::=', and"
+        " '<Diameter-EAP-Request> ::=' (TS 29.234 clauses 4.4.2, 5.5, 8.4,"
+        " 9.4, 11.4)"
     ),
     "conflicting-avp-codes": (
         "keep disagreeing table codes, refusing to derive an enum code"
@@ -3228,8 +3330,9 @@ QUIRKS: dict[str, str] = {
         " registries (TS 29.230 clauses 4.1, 5.1, 7.1, 8.1)"
     ),
     "unknown-type-tokens": (
-        "keep a registry Type cell naming no Diameter type as printed,"
-        " quoted, rather than fail (TS 29.230 table 7.1 code 314, 'Integer')"
+        "keep a registry or AVP table Type cell naming no Diameter type as"
+        " printed, quoted, rather than fail (TS 29.230 table 7.1 and TS 29.234"
+        " table 10.1.1 code 314, 'Integer')"
     ),
     "reserved-range-notes": (
         "read full-width 'The AVP codes from a to b are reserved for ...'"

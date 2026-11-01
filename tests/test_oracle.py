@@ -332,7 +332,7 @@ def test_aliases_load_with_every_key_once_per_name(tmp_path):
 def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
     """Every entry of the repository's list accepts its rename once, and
     none is stale: the nineteen `name-disagrees` findings it lists are
-    agreement, the other thirty-three still report."""
+    agreement, the other thirty-four still report."""
     from seanchai import corpus
 
     loaded = oracle.Oracle.load(_ROOT / "specifications" / "wireshark")
@@ -347,8 +347,8 @@ def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
     accepted = [finding for finding in findings if finding.accepted_by]
     assert len(accepted) == len(aliases) == 19
     assert not [finding for finding in findings if finding.rule == "stale-alias"]
-    assert len(findings) - len(accepted) == 80
-    assert sum(finding.rule == "name-disagrees" for finding in findings) == 52
+    assert len(findings) - len(accepted) == 81
+    assert sum(finding.rule == "name-disagrees" for finding in findings) == 53
 
 
 def test_crosscheck_counts_accepted_renames_apart(tmp_path):

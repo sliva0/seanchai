@@ -4,7 +4,7 @@ Merge requests for Wireshark's Diameter dictionary, staged from the
 [oracle](../../docs/oracle.md)'s findings, in two series. None has been
 submitted.
 
-- **Defects**, `0001`–`0025` here: entries the dictionary holds wrongly, a
+- **Defects**, `0001`–`0026` here: entries the dictionary holds wrongly, a
   misspelt name, a wrong type or a member list short of the document's,
   each checked by hand against the clause of the specification that
   defines the AVP, or the verified erratum correcting it, which its commit
@@ -54,6 +54,7 @@ them.
 | 0023 | `Initial-Gate-Setting` | `Initial-Gate-Setting-Description` | ETSI ES 283 034 clause 7.3.4 |
 | 0024 | `QoS-Profile` | `QoS-Profile-Description` | ETSI ES 283 034 clause 7.3.5 |
 | 0025 | `Requested-Information-457` | `Latching-Indication` | ETSI TS 183 017 clause 7.3.8 |
+| 0026 | `PDP-Session-operation` | `PDP-Session-Operation` | TS 29.210 clause 5.2.21 |
 
 ## Additions
 
@@ -94,7 +95,7 @@ siblings: 137 in `TGPP.xml`, 134 in `dictionary.xml`, 2 in `etsie2e4.xml`.
 A place within three lines of another patch's, or of a line a defect patch
 changes, is passed over for the next, so every addition applies to
 `v4.7.2` on its own, all 30 apply in order, and all 30 apply after the
-twenty-five defects; the script
+twenty-six defects; the script
 checks the three before it writes, and its output is the same byte for byte
 on every run (`tests/test_wireshark_additions.py` pins it).
 
@@ -169,7 +170,7 @@ git am -3 /path/to/seanchai/integrations/wireshark/0001-call-barring-info.patch
 ```
 
 An addition is applied the same way, from `additions/`. Every defect
-patch applies on its own to `v4.7.2`, and all twenty-five apply in order as
+patch applies on its own to `v4.7.2`, and all twenty-six apply in order as
 one series; `-3` lets `git am` merge through context that has moved
 on master since. `git am` keeps the patch's author; use
 `git commit --amend --reset-author` to submit under your own.
@@ -183,7 +184,7 @@ a test may refer to it. A renamed AVP also renames its display filter field
 `seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter dad`
 over the corpus, the newest copy of each document and no other
 ([oracle.md](../../docs/oracle.md)), no longer reports a patched AVP.
-With the twenty-five defects applied to `v4.7.2` it reports 57 findings
-instead of 80; with the 30 additions, 57, the thirty-three absences above
+With the twenty-six defects applied to `v4.7.2` it reports 57 findings
+instead of 81; with the 30 additions, 58, the thirty-three absences above
 in nine notes, and none that the unpatched dictionary did not; with both
 series, 34. The nineteen accepted renames hold against each.

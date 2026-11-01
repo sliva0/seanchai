@@ -521,6 +521,51 @@ def test_a_registry_type_cell_is_a_data_type_bare_and_a_printed_token_quoted():
         parser.parse(text.replace('"Integer"', "Integer"))
 
 
+def test_an_avp_table_type_cell_is_a_data_type_bare_and_a_printed_token_quoted():
+    """TS 29.234 table 10.1.1 types Charging-Characteristics "Integer"."""
+    text = "\n".join(
+        (
+            "; Specification: 3GPP TS 29.234",
+            "; Version: 11.2.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: AVP Table",
+            "; Section: 10.1",
+            "; Columns: Name Code Type",
+            'Charging-Characteristics 314 "Integer"',
+            'Charging-Data 304 "Grouped"',
+            "",
+        )
+    )
+
+    (table,) = parser.parse(text).sections
+    assert isinstance(table, ast.AvpTable)
+    integer, grouped = table.rows
+    assert (integer.data_type, integer.printed_type) == (None, "Integer")
+    assert (grouped.data_type, grouped.printed_type) == (ast.DataType.GROUPED, None)
+    formatted = formatter.format_spec(parser.parse(text))
+    assert [line.split() for line in formatted.splitlines()[-2:]] == [
+        ["Charging-Characteristics", "314", '"Integer"'],
+        ["Charging-Data", "304", "Grouped"],
+    ]
+    assert parser.parse(formatted) == parser.parse(text)
+    with pytest.raises(parser.DadParseError, match="unknown Diameter data type"):
+        parser.parse(text.replace('"Integer"', "Integer"))
+
+
+def test_a_printed_type_needs_a_type_column_and_no_type_beside_it():
+    row = ast.AvpTableRow(name="Charging-Characteristics", printed_type="Integer")
+    with pytest.raises(pydantic.ValidationError, match="no Type column"):
+        ast.AvpTable(
+            columns=(ast.AvpColumn.NAME,),
+            rows=(row,),
+            source=ast.SourceRef(section="10.1"),
+        )
+    with pytest.raises(pydantic.ValidationError, match="naming no Diameter type"):
+        ast.AvpTableRow(name="X", printed_type="Grouped")
+
+
 @pytest.mark.parametrize(
     ("lines", "lineno", "message"),
     [

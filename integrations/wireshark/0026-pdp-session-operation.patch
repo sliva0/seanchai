@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sliva0 <sliva0mk@gmail.com>
+Date: Thu, 29 Oct 2026 18:22:32 +0000
+Subject: [PATCH] Diameter: Spell PDP-Session-Operation as TS 29.210 does
+
+3GPP TS 29.210 clause 5.2.21 defines AVP 1015 as PDP-Session-Operation;
+table 5.2 and the CCR ABNF in clause 6.1.1 spell it the same way. Checked
+against V6.7.0, the document's last version.
+
+Renaming an AVP renames its display filter field
+(diameter.PDP-Session-operation becomes diameter.PDP-Session-Operation),
+so saved filters and profiles using the old name need updating.
+---
+ resources/protocols/diameter/dictionary.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/resources/protocols/diameter/dictionary.xml b/resources/protocols/diameter/dictionary.xml
+index 56a8586..4dd8da7 100644
+--- a/resources/protocols/diameter/dictionary.xml
++++ b/resources/protocols/diameter/dictionary.xml
+@@ -3902,7 +3902,7 @@
+ 		<avp name="ToS-Traffic-Class" code="1014" mandatory="must" may-encrypt="yes" protected="may" vendor-bit="must" vendor-id="TGPP">
+ 			<type type-name="OctetString"/>
+ 		</avp>
+-		<avp name="PDP-Session-operation" code="1015" vendor-id="TGPP" protected="may" mandatory="must"	may-encrypt="yes" vendor-bit="must">
++		<avp name="PDP-Session-Operation" code="1015" vendor-id="TGPP" protected="may" mandatory="must"	may-encrypt="yes" vendor-bit="must">
+ 			<type type-name="Enumerated" />
+ 			<enum name="PDP-SESSION-TERMINATION" code="0"/>
+ 		</avp>

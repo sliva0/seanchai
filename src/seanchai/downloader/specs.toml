@@ -407,6 +407,30 @@ version = "11.16.0"
 final = "release"
 reason = "Defines Flows as TS 32.299 V11.20.0 re-uses it."
 
+# TS 29.230 tables 4.1 and 7.1 cite three retired documents no corpus
+# document resolves into; each is pinned at its last version so that the
+# registry's rows point at something the corpus holds.
+[[tgpp_pinned]]
+number = "29.210"
+title = "Charging rule provisioning over Gx interface"
+version = "6.7.0"
+final = "document"
+reason = "Defines 3GPP Gx and Gx over Gy, which TS 29.230 table 4.1 cites."
+
+[[tgpp_pinned]]
+number = "29.211"
+title = "Rx Interface and Rx/Gx signalling flows"
+version = "6.4.0"
+final = "document"
+reason = "Defines 3GPP Rx, which TS 29.230 table 4.1 cites."
+
+[[tgpp_pinned]]
+number = "29.234"
+title = "3GPP system to Wireless Local Area Network (WLAN) interworking; Stage 3"
+version = "11.2.0"
+final = "document"
+reason = "Defines Wx and Pr, which TS 29.230 tables 4.1 and 7.1 cite."
+
 # oneM2M specifications, each pinned to one version of one release: the
 # document library serves only a document id's latest revision, so the
 # version is stated here and the download fails when the file served carries
