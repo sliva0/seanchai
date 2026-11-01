@@ -72,10 +72,13 @@ and the policy is deliberately small:
 
 An `Avp` has every field; a name the corpus cannot complete is a `Hole`
 instead, whether a field is unstated everywhere along the order or the name
-resolves nowhere at all. `Model.build(..., strict=True)` refuses a corpus
-with any; otherwise `Model.holes` lists them and `Member.avp` is `None` with
-`Member.hole` saying why. `Member.avp` is also `None`, with no hole, for RFC
-6733's `* [ AVP ]` wildcard, which is grammar rather than a reference.
+resolves nowhere at all. `Model.build` refuses any hole the corpus's record
+of known holes does not list (`corpus.HoleRecord`), and any entry naming a
+hole that no longer exists; `strict=True` refuses recorded holes too, and
+`strict=False` builds anything. `Model.holes` lists them and `Member.avp` is
+`None` with `Member.hole` saying why. `Member.avp` is also `None`, with no
+hole, for RFC 6733's `* [ AVP ]` wildcard, which is grammar rather than a
+reference.
 
 A name an `Undefined AVP` block declares is the last reading along the
 order, after the bases: it explains the failure and defines nothing, so a
@@ -107,9 +110,11 @@ class ModelError(ValueError):
 
 
 class IncompleteCorpusError(ModelError):
-    """A strict build over a corpus with holes; `holes` lists every one."""
+    """A build over a corpus with holes it refuses: every hole under
+    `strict=True`, and by default those its record does not list. `holes`
+    lists every one."""
 
-    def __init__(self, holes: tuple[Hole, ...]) -> None:
+    def __init__(self, holes: tuple[Hole, ...], *, unrecorded: bool = False) -> None:
         self.holes = holes
         listing = "".join(f"\n  {hole}" for hole in holes)
         # Only an undefined name is the consumer's to answer for.
@@ -118,11 +123,31 @@ class IncompleteCorpusError(ModelError):
             if any(hole.undefined is not None for hole in holes)
             else ""
         )
+        count = f"{len(holes)} hole{'' if len(holes) == 1 else 's'}"
+        what = f"{count} its record does not list" if unrecorded else count
         super().__init__(
-            f"the corpus has {len(holes)} hole{'' if len(holes) == 1 else 's'}"
+            f"the corpus has {what}"
             f" (Model.build(..., strict=False) builds the rest{answer}):"
             f"{listing}"
         )
+
+
+class StaleHoleRecordError(ModelError):
+    """A record of known holes listing what no longer is one, so that working
+    a hole off shrinks the record; `entries` lists every stale one."""
+
+    def __init__(self, entries: tuple[corpus.KnownHole, ...]) -> None:
+        self.entries = entries
+        listing = "".join(f"\n  {_known(entry)}" for entry in entries)
+        count = f"{len(entries)} entr{'y' if len(entries) == 1 else 'ies'}"
+        super().__init__(
+            f"the corpus's record of known holes has {count} naming no hole, which"
+            f" belong{'s' if len(entries) == 1 else ''} out of it:{listing}"
+        )
+
+
+def _known(entry: corpus.KnownHole) -> str:
+    return f"{entry.document} {entry.name}: missing {', '.join(entry.missing)}"
 
 
 class FlagRules(ast.AvpFlagRules):
@@ -446,6 +471,9 @@ class Hole:
     version: str | None = None
     # The block declaring the name, for a hole missing `UNDEFINED`.
     undefined: Undefined | None = None
+    # Why the hole stands, from the entry of the corpus's record of known
+    # holes that lists it; None for a hole no entry lists as it is.
+    recorded: str | None = None
 
     def __str__(self) -> str:
         if self.undefined is not None:
@@ -933,6 +961,10 @@ class Model:
         self._dictionary = dictionary
         self._policy = UndefinedPolicy(undefined)
         self._supply: dict[SupplyKey, Supplied | Alias] = dict(supply or {})
+        self._known: dict[tuple[str, str], corpus.KnownHole] = {
+            (entry.document, entry.name): entry
+            for entry in (() if books.record is None else books.record.holes)
+        }
         # Supplied readings, by the copy declaring the name, built once.
         self._supplied: dict[tuple[Path, str], Avp] = {}
         # One view per copy, and per reference the newest, which every
@@ -957,21 +989,26 @@ class Model:
         cls,
         books: corpus.Corpus,
         *,
-        strict: bool = False,
+        strict: bool | None = None,
         dictionary: Path | None = None,
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> Model:
         """The model over `books`.
 
-        `strict` refuses a corpus with any hole, raising
-        `IncompleteCorpusError` with all of them, so a consumer that needs
-        every AVP complete learns at build time rather than from a missing
-        member later. Off by default because the committed corpus has
-        standing holes (docs/consumers.md); without it, a name with a hole
-        resolves to no `Avp` and `holes` reports it. What a strict model
-        guarantees is that every member is an `Avp`, the wildcard, or what
-        `undefined` asked for.
+        By default the build holds the corpus to its record of known holes
+        (`corpus.Corpus.record`, docs/consumers.md): a hole the record does
+        not list raises `IncompleteCorpusError` with all such, and an entry
+        naming no hole raises `StaleHoleRecordError`, unless the entry is an
+        undefined name `undefined` answered for. A corpus with no record has
+        no known holes. A recorded hole stays one: the name resolves to no
+        `Avp`, `holes` reports it and `Hole.recorded` says why it stands.
+
+        `strict=True` refuses every hole, recorded or not, so a consumer that
+        needs every AVP complete learns at build time rather than from a
+        missing member later; what it guarantees is that every member is an
+        `Avp`, the wildcard, or what `undefined` asked for. `strict=False`
+        holds the corpus to nothing, for a partial or foreign one.
 
         `dictionary` is a Wireshark dictionary directory (the downloader's
         `specifications/wireshark`); with one, every AVP and hole with an
@@ -999,7 +1036,12 @@ class Model:
         loaded = None if dictionary is None else oracle.Oracle.load(dictionary)
         built = cls(books, loaded, policy, supply)
         built._check_supply()
-        if strict and (holes := built.holes()):
+        if strict is None:
+            if unrecorded := built.unrecorded_holes():
+                raise IncompleteCorpusError(unrecorded, unrecorded=True)
+            if stale := built.stale_record_entries():
+                raise StaleHoleRecordError(stale)
+        elif strict and (holes := built.holes()):
             raise IncompleteCorpusError(holes)
         return built
 
@@ -1242,6 +1284,28 @@ class Model:
             found.update(dict.fromkeys(self._holes_across(each)))
         return tuple(sorted(found, key=lambda hole: (hole.document, hole.name)))
 
+    def unrecorded_holes(self) -> tuple[Hole, ...]:
+        """Every hole the corpus's record of known holes does not list as it
+        is: no entry names it, or the entry names other missing fields."""
+        return tuple(hole for hole in self.holes() if hole.recorded is None)
+
+    def stale_record_entries(self) -> tuple[corpus.KnownHole, ...]:
+        """Every entry of the record naming no hole: its document is gone, the
+        name is defined upstream, or a stand-in resolved it. An entry that
+        lists a hole of the corpus's own, the reading with no consumer's
+        answer, and goes unused only because `undefined` answered for it is
+        not stale; one no such reading has is, under every policy."""
+        present = {(hole.document, hole.name) for hole in self.holes()}
+        unanswered = (
+            self if self._policy is UndefinedPolicy.HOLE else Model(self._books)
+        ).holes()
+        listed = {(hole.document, hole.name, hole.missing) for hole in unanswered}
+        return tuple(
+            entry
+            for key, entry in self._known.items()
+            if key not in present and (*key, entry.missing) not in listed
+        )
+
     def _bodies(self, reference: str) -> list[tuple[Member, ...]]:
         """The command and grouped bodies `reference` defines, resolved,
         without what the policy dropped."""
@@ -1389,8 +1453,10 @@ class Model:
     def _final(self, view: _View, name: str, stack: tuple = ()) -> Avp | Hole:
         draft = self._resolve(view, name, stack)
         if draft is None:
-            return Hole(
-                view.entry.reference, name, (DEFINITION,), version=self._older(view)
+            return self._on_record(
+                Hole(
+                    view.entry.reference, name, (DEFINITION,), version=self._older(view)
+                )
             )
         found = draft.final
         if (
@@ -1400,14 +1466,22 @@ class Model:
         ):
             answered = self._answered(found.undefined, stack)
             if answered is None:
-                return found
+                return self._on_record(found)
             if answered.supplied is not None and found.across_releases is not None:
                 # The supplied definition is the declaring document's; the
                 # citation that reached it is this reading's, as it is for
                 # any field a reading takes across releases.
                 return replace(answered, across_releases=found.across_releases)
             return answered
-        return found
+        return self._on_record(found) if isinstance(found, Hole) else found
+
+    def _on_record(self, hole: Hole) -> Hole:
+        """`hole` with the reason the record states for it, when an entry
+        lists it as it is."""
+        entry = self._known.get((hole.document, hole.name))
+        if entry is None or entry.missing != hole.missing:
+            return hole
+        return replace(hole, recorded=entry.reason)
 
     def _undefined_of(self, view: _View, block: ast.UndefinedAvp) -> Undefined:
         return Undefined(

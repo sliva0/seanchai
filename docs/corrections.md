@@ -229,6 +229,18 @@ rest as `not widened, stale`. The linter checks it, with `--corpus`, against the
 corrected file ([linter.md](linter.md#acceptances)); the accepted findings
 are listed by id under the linter's standing findings.
 
+## The record of known holes
+
+A correction changes a file; `dad/holes.toml` changes none, and records what
+no correction can state: a name the corpus cannot complete
+([consumers.md](consumers.md#known-holes)). Its entries follow this layer's
+contract. `reason` cites the spec version and clause and what was searched,
+as a correction's does, naming the correction involved as `module#id` where
+one inserted the block or row (`TS29.061.py#3gpp-sgsn-mcc-mnc-row`), and
+`missing` is checked as `expect` is: an entry that no longer matches fails
+the default build, the same signal that the corpus moved and the declaration
+should go.
+
 ## Output
 
 ```text

@@ -77,6 +77,7 @@ click.exceptions.UsageError.show = _show_usage_error  # type: ignore[method-assi
 @contextlib.contextmanager
 def reported() -> Iterator[None]:
     """Present a library failure as a CLI error, not as a traceback."""
+    from .corpus import CorpusError
     from .dad.corrections import CorrectionError
     from .dad.parser import DadParseError
     from .downloader import DownloadError
@@ -84,7 +85,13 @@ def reported() -> Iterator[None]:
 
     try:
         yield
-    except (DadParseError, ExtractionError, CorrectionError, DownloadError) as error:
+    except (
+        CorpusError,
+        DadParseError,
+        ExtractionError,
+        CorrectionError,
+        DownloadError,
+    ) as error:
         raise click.ClickException(str(error)) from None
 
 
@@ -554,12 +561,14 @@ def lint(
     read too: a note one of its acceptances acknowledges is reported as
     `accepted`, hidden unless `--show-accepted`, and an acceptance matching
     no finding is an error. A raw (`.raw.dad`) file is linted without them,
-    since they describe the corrected one.
+    since they describe the corrected one. A corpus directory's record of known
+    holes is linted once, as a file of its own: a hole it does not list and an
+    entry naming no hole are errors.
     """
     from .corpus import Corpus
     from .dad import corrections as corrections_module
     from .dad import parser
-    from .linter import Severity, lint_with_corpus
+    from .linter import Severity, lint_record, lint_with_corpus
     from .linter import lint as lint_spec
 
     explicit = (
@@ -574,6 +583,20 @@ def lint(
     directory = corrections if corrections.is_dir() else None
     counts = dict.fromkeys(Severity, 0)
     checked = 0
+
+    def report(source: Path, findings: list) -> None:
+        if not notes:
+            findings = [f for f in findings if f.severity is Severity.ERROR]
+        for finding in findings:
+            counts[finding.severity] += 1
+        if not show_accepted:
+            findings = [f for f in findings if f.severity is not Severity.ACCEPTED]
+        if output_format == "concise":
+            for finding in findings:
+                click.echo(f"{source}: {finding}")
+        elif findings:
+            _echo_findings(source, findings)
+
     with reported():
         books = Corpus.load(corpus_paths) if corpus_paths else None
         for source in sources:
@@ -592,18 +615,10 @@ def lint(
                     )
                 )
                 findings = lint_with_corpus(spec, books, accepts)
-            if not notes:
-                findings = [f for f in findings if f.severity is Severity.ERROR]
             checked += 1
-            for finding in findings:
-                counts[finding.severity] += 1
-            if not show_accepted:
-                findings = [f for f in findings if f.severity is not Severity.ACCEPTED]
-            if output_format == "concise":
-                for finding in findings:
-                    click.echo(f"{source}: {finding}")
-            elif findings:
-                _echo_findings(source, findings)
+            report(source, findings)
+        if books is not None and books.record is not None:
+            report(books.record.path, lint_record(books))
     if output_format == "full" and any(counts.values()):
         click.echo(_summary(counts, checked))
     if counts[Severity.ERROR]:

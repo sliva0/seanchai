@@ -1900,6 +1900,78 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
     assert accepted == _ACCEPTED_CORPUS_NOTES
 
 
+def test_the_committed_record_matches_the_corpus():
+    books = corpus.Corpus.load([Path(__file__).parent.parent / "dad"])
+
+    assert books.record is not None
+    assert linter.lint_record(books) == []
+
+
+def _recorded_books(*holes):
+    spec = _origin_spec(
+        "3GPP TS 29.900",
+        "18.1.0",
+        ast.AvpTable(
+            source=ast.SourceRef(section="6.3.1"),
+            columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE),
+            rows=(ast.AvpTableRow(name="Thing", code=1),),
+        ),
+    )
+    return corpus.Corpus(
+        [corpus.Entry(path=Path("29900.dad"), spec=spec)],
+        corpus.HoleRecord(Path("holes.toml"), holes),
+    )
+
+
+def test_a_hole_the_record_does_not_list_is_an_error():
+    (finding,) = linter.lint_record(_recorded_books())
+
+    assert finding.severity is linter.Severity.ERROR
+    assert finding.rule == "unrecorded-hole"
+    assert finding.message == (
+        "TS29.900 Thing: no data_type, no flag_rules, which the record does not list"
+    )
+
+
+def test_a_hole_the_record_lists_otherwise_is_an_error():
+    wrong = corpus.KnownHole("TS29.900", "Thing", ("data_type",), "clause 6.3.1")
+
+    (finding,) = linter.lint_record(_recorded_books(wrong))
+
+    assert finding.rule == "unrecorded-hole"
+    assert finding.message.endswith("which the record lists missing data_type")
+
+
+def test_an_entry_naming_no_hole_is_an_error():
+    right = corpus.KnownHole(
+        "TS29.900", "Thing", ("data_type", "flag_rules"), "clause 6.3.1"
+    )
+    stale = corpus.KnownHole("TS29.900", "Worked-Off", ("definition",), "clause 6.3.2")
+
+    (finding,) = linter.lint_record(_recorded_books(right, stale))
+
+    assert finding.severity is linter.Severity.ERROR
+    assert finding.rule == "stale-hole-record"
+    assert finding.message.startswith(
+        "TS29.900 Worked-Off is recorded missing definition"
+    )
+
+
+def test_a_corpus_with_no_record_draws_no_record_rule():
+    spec = _origin_spec(
+        "3GPP TS 29.900",
+        "18.1.0",
+        ast.AvpTable(
+            source=ast.SourceRef(section="6.3.1"),
+            columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE),
+            rows=(ast.AvpTableRow(name="Thing", code=1),),
+        ),
+    )
+    books = corpus.Corpus([corpus.Entry(path=Path("29900.dad"), spec=spec)])
+
+    assert linter.lint_record(books) == []
+
+
 def _registry_spec(*sections):
     return _origin_spec("3GPP TS 29.230", "18.6.0", *sections)
 

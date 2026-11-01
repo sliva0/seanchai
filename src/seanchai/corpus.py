@@ -23,14 +23,20 @@ release defines what the citing copy reaches the same way. The reasoning,
 and what a resolution across releases reports, is in
 docs/consumers.md#resolution-across-releases and
 docs/linter.md#resolving-an-origin.
+
+A directory holding a corpus may hold its record of known holes too
+(`HOLE_RECORD`): what the corpus cannot complete, each with its evidence,
+which the model builds strictly against (docs/consumers.md#known-holes).
 """
 
 from __future__ import annotations
 
 import re
+import tomllib
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from .dad import ast, parser
 
@@ -337,6 +343,87 @@ def _external(spec: ast.Specification) -> bool:
         return False
 
 
+# A corpus directory's record of known holes, beside its `.dad` files.
+HOLE_RECORD = "holes.toml"
+
+
+@dataclass(frozen=True)
+class KnownHole:
+    """A hole the record lists: what `model.Hole` will say of it, and why it
+    stands."""
+
+    # `Hole.document`: "TS29.234", or "TS29.061 V6.15.0" for an older copy.
+    document: str
+    name: str
+    # `Hole.missing`, compared exactly.
+    missing: tuple[str, ...]
+    # The evidence, as a correction's reason states it: spec version and
+    # clause, and what was searched.
+    reason: str
+
+
+@dataclass(frozen=True)
+class HoleRecord:
+    """A corpus's known holes, hand-maintained: `regenerate` writes `.dad`
+    files only, and nothing but the model and the linter reads this."""
+
+    path: Path
+    holes: tuple[KnownHole, ...]
+
+    @classmethod
+    def load(cls, path: Path) -> HoleRecord:
+        """Read `path`, refusing what the model could not hold a build to: an
+        unknown key, a missing or empty field, a hole listed twice."""
+        try:
+            data = tomllib.loads(path.read_text(encoding="utf-8"))
+        except tomllib.TOMLDecodeError as error:
+            raise CorpusError(f"{path}: {error}") from error
+        tables = data.get("hole", [])
+        if set(data) - {"hole"} or not isinstance(tables, list):
+            raise CorpusError(f"{path}: only [[hole]] tables belong in a hole record")
+        holes = tuple(cls._entry(path, entry) for entry in tables)
+        seen: set[tuple[str, str]] = set()
+        for hole in holes:
+            key = (hole.document, hole.name)
+            if key in seen:
+                raise CorpusError(
+                    f"{path}: {hole.document} {hole.name} is listed twice"
+                )
+            seen.add(key)
+        return cls(path, holes)
+
+    @staticmethod
+    def _entry(path: Path, entry: Any) -> KnownHole:
+        fields = {"document", "name", "missing", "reason"}
+        if not isinstance(entry, dict) or set(entry) != fields:
+            raise CorpusError(
+                f"{path}: a [[hole]] states exactly {', '.join(sorted(fields))};"
+                f" this one is {entry!r}"
+            )
+        document, name, missing, reason = (
+            entry["document"],
+            entry["name"],
+            entry["missing"],
+            entry["reason"],
+        )
+        texts = [
+            document,
+            name,
+            reason,
+            *(missing if isinstance(missing, list) else []),
+        ]
+        if (
+            not isinstance(missing, list)
+            or not missing
+            or not all(isinstance(text, str) and text.strip() for text in texts)
+        ):
+            raise CorpusError(
+                f"{path}: {document} {name}: document, name and reason must be"
+                " non-empty text, and missing a non-empty list of it"
+            )
+        return KnownHole(document, name, tuple(missing), reason)
+
+
 @dataclass(frozen=True)
 class Entry:
     """One parsed file and where it came from."""
@@ -353,7 +440,11 @@ class Entry:
 class Corpus:
     """Parsed `.dad` files, indexed by the reference re-used rows cite."""
 
-    def __init__(self, entries: Iterable[Entry]) -> None:
+    def __init__(
+        self, entries: Iterable[Entry], record: HoleRecord | None = None
+    ) -> None:
+        # None for a corpus with no record: a partial or foreign one, or raw.
+        self.record = record
         self._by_reference: dict[str, list[Entry]] = {}
         for entry in entries:
             self._by_reference.setdefault(entry.reference, []).append(entry)
@@ -368,7 +459,23 @@ class Corpus:
         copies of one specification would hold two versions of the same
         document that disagree on purpose, and resolution would pick between
         them by version number — which they share.
+
+        A directory in `paths` holding `HOLE_RECORD` directly gives the corpus
+        its record, so a consumer loading `dad/` gets it with no argument; a
+        file list or a subdirectory has none, since a record describes the
+        whole corpus it sits beside, and neither has a raw corpus, which the
+        record does not describe. Two directories holding one are refused.
         """
+        paths = list(paths)
+        records = [
+            path / HOLE_RECORD
+            for path in paths
+            if not raw and path.is_dir() and (path / HOLE_RECORD).is_file()
+        ]
+        if len(records) > 1:
+            raise CorpusError(
+                f"two hole records in one corpus: {', '.join(map(str, records))}"
+            )
         entries = []
         for path in cls._files(paths):
             if path.name.endswith(".raw.dad") != raw:
@@ -378,7 +485,7 @@ class Corpus:
             except ValueError as error:  # DadParseError and pydantic alike
                 raise CorpusError(f"{path}: {error}") from error
             entries.append(Entry(path=path, spec=spec))
-        return cls(entries)
+        return cls(entries, HoleRecord.load(records[0]) if records else None)
 
     @staticmethod
     def _files(paths: Iterable[Path]) -> Iterator[Path]:

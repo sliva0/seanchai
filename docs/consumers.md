@@ -23,7 +23,8 @@ from seanchai import corpus, model
 from seanchai.dad import ast
 
 built = model.Model.build(corpus.Corpus.load([Path("dad")]))
-# or with dictionary=Path("specifications/wireshark") for Avp.wireshark_name
+# strict against dad/holes.toml; or with dictionary=Path("specifications/wireshark")
+# for Avp.wireshark_name
 built.messages("TS29.229")  # bodies resolved
 built.applications("TS29.212")  # commands per application and interface
 built.avps("TS29.229")  # a spec's dictionary view
@@ -383,21 +384,58 @@ with Wireshark's name for the identity (`Cx-User-Data` for TS 29.229's
 and never changes `name`, which is always the document's spelling;
 [oracle.md](oracle.md#in-the-model) has the lookup rule.
 
-`Model.build(books, strict=True)` raises `model.IncompleteCorpusError`,
-listing every hole, rather than build a model with any. The default is
-`strict=False` because the committed corpus does not build strictly, and
-every standing hole is a statement its source does not make.
-TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code, and TS
-29.234's `Charging-Characteristics` is typed "Integer" (table 10.1.1, clause
-10.1.27), no Diameter type, so its model reading is a hole with no
-`data_type`. TS 29.061 V6.15.0, which TS 29.210 V6.7.0 cites, numbers
-`3GPP-GPRS-Negotiated-QoS-Profile` and `3GPP-SGSN-MCC-MNC` as RADIUS
-sub-attributes and tabulates neither, so its rows, inserted by correction,
-state only a code. The nine names that resolve nowhere are the
-corpus's `Undefined AVP` blocks, the linter's standing `undefined-avp`
-notes, holes under the default policy and the consumer's to answer for
-under another ([below](#undefined-names)): with `undefined=DROP` or
-`PLACEHOLDER` a strict build refuses the others alone. oneM2M TS-0004 reaches no other: its
+### Known holes
+
+Thirteen names stand as holes, each a statement its source does not make, and the
+committed record `dad/holes.toml` lists them, by `Hole.document`, name,
+`Hole.missing` and a reason stating the spec version and clause and what was
+searched, as a correction's reason does
+([corrections.md](corrections.md#the-record-of-known-holes)). The file sits
+beside the `.dad` files rather than in `edits/` because a consumer loads the
+corpus, not the edit layers: `corpus.Corpus.load([Path("dad")])` reads it
+into `Corpus.record`, with no argument, for the directory holding it
+directly. A file list or a subdirectory has no record, being partial, and
+neither has a raw corpus; two directories each holding one are refused.
+`regenerate` and `format` read `.dad` files only, so nothing writes it but a
+person.
+
+| `strict` | A hole the record lists | A hole it does not | An entry naming no hole |
+|---|---|---|---|
+| `None` (default) | builds; `Hole.recorded` its reason | `IncompleteCorpusError` | `StaleHoleRecordError` |
+| `True` | `IncompleteCorpusError` | `IncompleteCorpusError` | not read |
+| `False` | builds; `Hole.recorded` its reason | builds | not read |
+
+A recorded hole stays a hole: `holes()` reports it, `resolve` returns None,
+`Member.hole` says why, and `Hole.recorded` holds the entry's reason. An
+entry listing other `missing` fields than the hole lists no such hole, so
+that hole counts as unrecorded and its `recorded` is None. The default fails
+on a stale entry so that working a hole off forces the record to shrink: its
+document gone, its name defined upstream or a stand-in resolving it. An
+entry going unused only because the build's `undefined` policy answered for
+its name is not stale: `undefined=DROP` over the committed corpus builds and
+reports four holes. `strict=True` is absolute, recorded or not, and
+`strict=False` is for a consumer loading a partial or foreign corpus, which
+has no record and so, by default, no known holes.
+`unrecorded_holes()` and `stale_record_entries()` return what the default
+would refuse, under any `strict`; the linter's `unrecorded-hole` and
+`stale-hole-record` report the same ([linter.md](linter.md#the-record-of-known-holes)).
+
+The thirteen, by cause:
+
+- A field no source states, under every policy. TS 29.061's
+  `3GPP-Session-Stop-Indicator` row states only a code. TS 29.061 V6.15.0,
+  which TS 29.210 V6.7.0 cites, numbers `3GPP-GPRS-Negotiated-QoS-Profile`
+  and `3GPP-SGSN-MCC-MNC` as RADIUS sub-attributes and tabulates neither, so
+  its rows, inserted by correction, state only a code too. TS 29.234's
+  `Charging-Characteristics` is typed "Integer" (table 10.1.1, clause
+  10.1.27), no Diameter type, so its model reading has no `data_type`.
+- The nine names that resolve nowhere, the corpus's `Undefined AVP` blocks,
+  the linter's standing `undefined-avp` notes, holes under the default policy
+  and the consumer's to answer for under another ([below](#undefined-names)):
+  with `undefined=DROP` or `PLACEHOLDER` a strict build refuses the others
+  alone.
+
+oneM2M TS-0004 reaches no other: its
 `Service-Information`, TS 32.299 V11.20.0's, resolves through the pinned
 Release 11 copies and the Release 18 ones standing in (above), so
 `holes("oneM2M-TS-0004")` is empty. TS 32.299's thirteen OMA rows are no
@@ -407,10 +445,7 @@ supplied from OMA-DDS-Charging_Data
 `Avp` typed Grouped with no members, since the corpus holds no body for
 it. V11.20.0's three that `Service-Information` reaches, `DCD-Information`,
 `IM-Information` and `Service-Generic-Information`, are supplied the same
-way, their clauses and reference [223] reading as Release 18's do. The pinned list in `tests/test_model.py`
-(`_STANDING_HOLES`) is the full account: the strict build's failure is
-compared against it, so a hole worked off or a new one shows up as a diff.
-Roadmap item N lists them by cause.
+way, their clauses and reference [223] reading as Release 18's do.
 
 ### Undefined names
 
@@ -449,7 +484,10 @@ statement no document makes, so TS 29.061's `3GPP-Session-Stop-Indicator`
 stays a hole under every policy. A strict model's guarantee is that every
 member is an `Avp`, the wildcard, or what `undefined` asked for: a
 non-default policy is an explicit answer, so the answered names are no
-holes, and `strict=True, undefined=PLACEHOLDER` builds.
+holes, and `strict=True, undefined=PLACEHOLDER` builds wherever nothing but
+such names is a hole. Each of the nine has an entry in the record of known
+holes ([above](#known-holes)), so the default `strict` builds under every
+policy; an answered name's entry just goes unused.
 
 `DROP` removes required members too: RFC 4004's `{ MIP-HA-to-MN-SPI }`
 and its siblings and TS 29.154's `{ External-Group-Identifier }` are
@@ -515,7 +553,8 @@ ABNF's members matched by `(vendor-id, code)`, `is_required` must agree with
 the brackets, and the document's own AVPs must be right — name, type,
 mandatory default — in the library's global dictionary. An "extra AVP" may
 be another specification's legitimate use of the same command class. The
-model is built non-strictly: a hole is checked on what its document states
+model is built by default, strict against the record, and a known hole is
+checked on what its document states
 (TS 29.061's `3GPP-Session-Stop-Indicator` has an identity but no type),
 and one with no `(vendor-id, code)` is reported as unchecked.
 

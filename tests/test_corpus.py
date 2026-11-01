@@ -318,3 +318,103 @@ def test_load_names_the_file_it_could_not_parse(tmp_path):
 
     with pytest.raises(corpus.CorpusError, match=r"broken\.dad"):
         corpus.Corpus.load([tmp_path])
+
+
+_RECORDED = """
+[[hole]]
+document = "TS29.900"
+name = "Thing"
+missing = ["data_type", "flag_rules"]
+reason = "clause 6.3.1 states no type"
+"""
+
+
+def _corpus_directory(tmp_path, record: str | None = _RECORDED) -> Path:
+    tree = tmp_path / "dad" / "3gpp"
+    tree.mkdir(parents=True)
+    (tree / "29900.dad").write_text(
+        formatter.format_spec(_spec("3GPP TS 29.900", "18.0.0")), encoding="utf-8"
+    )
+    if record is not None:
+        (tmp_path / "dad" / corpus.HOLE_RECORD).write_text(record, encoding="utf-8")
+    return tmp_path / "dad"
+
+
+def test_a_corpus_directory_brings_its_record_of_known_holes(tmp_path):
+    directory = _corpus_directory(tmp_path)
+
+    books = corpus.Corpus.load([directory])
+
+    assert books.record == corpus.HoleRecord(
+        directory / "holes.toml",
+        (
+            corpus.KnownHole(
+                "TS29.900",
+                "Thing",
+                ("data_type", "flag_rules"),
+                "clause 6.3.1 states no type",
+            ),
+        ),
+    )
+    assert len(books) == 1
+
+
+def test_only_a_whole_corrected_corpus_has_the_record(tmp_path):
+    """A subdirectory or a file list is partial, and raw files are not what
+    the record describes."""
+    directory = _corpus_directory(tmp_path)
+
+    assert corpus.Corpus.load([directory / "3gpp"]).record is None
+    assert corpus.Corpus.load([directory / "3gpp" / "29900.dad"]).record is None
+    assert corpus.Corpus.load([directory], raw=True).record is None
+    assert (
+        corpus.Corpus.load([_corpus_directory(tmp_path / "bare", None)]).record is None
+    )
+
+
+def test_two_records_in_one_corpus_are_refused(tmp_path):
+    one = _corpus_directory(tmp_path / "one")
+    two = _corpus_directory(tmp_path / "two")
+
+    with pytest.raises(corpus.CorpusError, match="two hole records"):
+        corpus.Corpus.load([one, two])
+
+
+@pytest.mark.parametrize(
+    ("record", "message"),
+    [
+        ("[[hole]\n", "holes.toml"),
+        ('[[gap]]\nname = "Thing"\n', "only .*hole.* tables"),
+        (_RECORDED + _RECORDED, "TS29.900 Thing is listed twice"),
+        (_RECORDED + 'extra = "no"\n', "states exactly"),
+        (_RECORDED.replace('reason = "clause 6.3.1 states no type"', ""), "states"),
+        (_RECORDED.replace("clause 6.3.1 states no type", " "), "non-empty"),
+        (_RECORDED.replace('["data_type", "flag_rules"]', "[]"), "non-empty"),
+        (_RECORDED.replace('["data_type", "flag_rules"]', "1"), "non-empty"),
+        (_RECORDED.replace('["data_type", "flag_rules"]', '"undefined"'), "non-empty"),
+        (_RECORDED.replace('["data_type", "flag_rules"]', "[1]"), "non-empty"),
+        ("hole = 1\n", "only .*hole.* tables"),
+        ('[hole]\nname = "Thing"\n', "only .*hole.* tables"),
+        ("hole = [1]\n", "states exactly"),
+    ],
+    ids=[
+        "toml",
+        "table",
+        "twice",
+        "extra",
+        "no-reason",
+        "blank-reason",
+        "no-missing",
+        "missing-number",
+        "missing-text",
+        "missing-of-numbers",
+        "hole-number",
+        "hole-table",
+        "hole-of-numbers",
+    ],
+)
+def test_a_malformed_record_fails_the_load(tmp_path, record, message):
+    directory = _corpus_directory(tmp_path, record)
+
+    with pytest.raises(corpus.CorpusError, match=message):
+        corpus.Corpus.load([directory])

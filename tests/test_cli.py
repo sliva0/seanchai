@@ -282,6 +282,58 @@ def test_lint_counts_accepted_findings_apart_and_prints_them_on_request():
     assert line.endswith("(TS29.388.py#v2x-subscription-data-v4-body)")
 
 
+def test_lint_reports_the_corpus_record_once_as_a_file_of_its_own(tmp_path):
+    """A corpus directory's record is part of what `--corpus` lints: an entry
+    naming no hole fails the run, however many files are linted, and the record
+    counts as no linted file."""
+    root = Path(__file__).parent.parent
+    corpus_dir = tmp_path / "dad"
+    corpus_dir.mkdir()
+    source = corpus_dir / "rfc6733.dad"
+    source.write_bytes((root / "dad" / "rfc" / "rfc6733.dad").read_bytes())
+    record = corpus_dir / "holes.toml"
+    record.write_text(
+        '[[hole]]\ndocument = "RFC6733"\nname = "Worked-Off"\n'
+        'missing = ["definition"]\nreason = "clause 1"\n',
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "lint",
+            "--no-notes",
+            "--output-format",
+            "concise",
+            "--corpus",
+            str(corpus_dir),
+            str(source),
+            str(source),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert result.output.count("stale-hole-record") == 1
+    assert result.output.startswith(f"{record}: error: [stale-hole-record]")
+
+
+def test_lint_reports_a_malformed_record_as_a_usage_error(tmp_path):
+    corpus_dir = tmp_path / "dad"
+    corpus_dir.mkdir()
+    source = corpus_dir / "rfc6733.dad"
+    source.write_bytes((_REPO / "dad" / "rfc" / "rfc6733.dad").read_bytes())
+    record = corpus_dir / "holes.toml"
+    record.write_text("[[hole]]\n", encoding="utf-8")
+
+    result = CliRunner().invoke(
+        main, ["lint", "--corpus", str(corpus_dir), str(source)]
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, SystemExit)
+    assert str(record) in result.output
+
+
 def test_lint_reads_no_acceptances_for_a_raw_file():
     result = _lint_v2x("--output-format", "concise", raw=True)
 

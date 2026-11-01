@@ -45,7 +45,7 @@ from collections import defaultdict
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
-from . import corpus
+from . import corpus, model
 from .dad import ast, corrections, formatter
 
 
@@ -1955,6 +1955,44 @@ def lint_with_corpus(
         *_against_registry(spec, index, books),
     ]
     return accept(spec, _ordered(findings), acceptances)
+
+
+def lint_record(books: corpus.Corpus) -> list[Finding]:
+    """What the corpus's record of known holes says against the corpus, read as
+    a default `model.Model.build` holds it to the record, policy aside: a hole
+    no entry lists as it is, and an entry naming no hole. One finding per
+    corpus, not per file. Silent for a corpus with no record, as the registry
+    rules are for one with no registry; the model refuses that corpus's holes
+    itself."""
+    if books.record is None:
+        return []
+    built = model.Model.build(books, strict=False)
+    known = {(entry.document, entry.name): entry for entry in books.record.holes}
+    findings = []
+    for hole in built.unrecorded_holes():
+        entry = known.get((hole.document, hole.name))
+        findings.append(
+            Finding(
+                Severity.ERROR,
+                "unrecorded-hole",
+                f"{hole}, which the record does not list"
+                if entry is None
+                else f"{hole}, which the record lists missing"
+                f" {', '.join(entry.missing)}",
+                section=hole.section,
+            )
+        )
+    findings += [
+        Finding(
+            Severity.ERROR,
+            "stale-hole-record",
+            f"{entry.document} {entry.name} is recorded missing"
+            f" {', '.join(entry.missing)}, but the corpus has no such hole: its"
+            " entry belongs out of the record",
+        )
+        for entry in built.stale_record_entries()
+    ]
+    return findings
 
 
 # --- acceptances ------------------------------------------------------------

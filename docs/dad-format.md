@@ -150,6 +150,11 @@ each starting with `; Type:`.
   that evidence; no extractor does. The block declares no type, code or
   flags: what a consumer does about the name is the consumer's choice
   ([consumers.md](consumers.md#undefined-names)).
+- **What the corpus cannot complete is recorded beside it.** No `.dad` file
+  says a name is a known hole, since a hole is the corpus's reading of
+  several files together: `dad/holes.toml`, hand-maintained and written by
+  no tool, lists each with its evidence, and `corpus.Corpus.load` reads it
+  from the directory it loads ([consumers.md](consumers.md#known-holes)).
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
 - **An origin names its publisher, unless it is 3GPP or IETF.** The corpus

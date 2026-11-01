@@ -1,0 +1,89 @@
+# The corpus's record of known holes: every name `model.Model.build` cannot
+# complete and the corpus cannot complete either, with the evidence. Maintained
+# by hand; `seanchai regenerate` does not write it. A default build refuses a
+# hole this does not list and an entry naming no hole, and so does `seanchai
+# lint --corpus dad`, so working a hole off means removing its entry
+# (docs/consumers.md#known-holes).
+#
+# `document` is `Hole.document`, the version only for an older copy; `missing`
+# is `Hole.missing`, compared exactly; `reason` follows a correction's: spec
+# version and clause, and what was searched. An undefined name's block says the
+# rest, in the correction its reason cites.
+
+[[hole]]
+document = "RFC4004"
+name = "MIP-HA-to-MN-SPI"
+missing = ["undefined"]
+reason = "a required member of MIP-HA-to-MN-MSA (clause 9.4) no clause defines; clause 11.1's table lists it with no code, neither verified erratum (1462, 3234) defines it, IANA's AVP Codes registry assigns it nothing and Wireshark's dictionary has no such AVP (RFC4004.py#undefined-mip-ha-to-mn-spi)"
+
+[[hole]]
+document = "RFC4004"
+name = "MIP-MN-to-FA-SPI"
+missing = ["undefined"]
+reason = "a required member of MIP-MN-to-FA-MSA (clause 9.5) no clause defines; clause 11.1's table lists it with no code, neither verified erratum (1462, 3234) defines it, IANA's AVP Codes registry assigns it nothing and Wireshark's dictionary has no such AVP (RFC4004.py#undefined-mip-mn-to-fa-spi)"
+
+[[hole]]
+document = "RFC4004"
+name = "MIP-MN-to-HA-SPI"
+missing = ["undefined"]
+reason = "a required member of MIP-MN-to-HA-MSA (clause 9.6) no clause defines; clause 11.1's table lists it with no code, neither verified erratum (1462, 3234) defines it, IANA's AVP Codes registry assigns it nothing and Wireshark's dictionary has no such AVP (RFC4004.py#undefined-mip-mn-to-ha-spi)"
+
+[[hole]]
+document = "TS29.061"
+name = "3GPP-Session-Stop-Indicator"
+missing = ["data_type", "flag_rules"]
+reason = "V18.1.0 clause 16.4.7.2 codes sub-attribute 11 and gives no Diameter type or flags, and table 9a skips it (TS29.061.py#session-stop-indicator-row); V11.12.0 tabulates it in no table either (corpus.RELEASE_STAND_INS), and TS 32.299 table 7.2.0.1 re-uses it from here"
+
+[[hole]]
+document = "TS29.061 V6.15.0"
+name = "3GPP-GPRS-Negotiated-QoS-Profile"
+missing = ["data_type", "flag_rules"]
+reason = "TS 29.210 V6.7.0 table 5.3 re-uses it from Release 6's TS 29.061, whose last version, V6.15.0, numbers it RADIUS sub-attribute 5 in clause 16.4.7, with no Diameter type or flags, and tabulates it nowhere: table 10, its only AVP table, is Gmb's (TS29.061.py#3gpp-gprs-negotiated-qos-profile-row). Release 18's table 9a types it, a release later than the citation means"
+
+[[hole]]
+document = "TS29.061 V6.15.0"
+name = "3GPP-SGSN-MCC-MNC"
+missing = ["data_type", "flag_rules"]
+reason = "TS 29.210 V6.7.0 table 5.3 re-uses it from Release 6's TS 29.061, whose last version, V6.15.0, numbers it RADIUS sub-attribute 18 in clause 16.4.7, with no Diameter type or flags, and tabulates it nowhere: table 10, its only AVP table, is Gmb's (TS29.061.py#3gpp-sgsn-mcc-mnc-row). Release 18's table 9a types it, a release later than the citation means"
+
+[[hole]]
+document = "TS29.154"
+name = "External-Group-Identifier"
+missing = ["undefined"]
+reason = "a required member of the ECR (clause A.6.6.2) no clause defines and table A.6.4.1-1 does not list, in V18.0.0 as in V19.0.0; the TS 29.230 registry allocates no such name and Wireshark's dictionary has no such AVP. TS 29.336's External-Identifier (3111) is the likely intent, which stays evidence (TS29.154.py#undefined-external-group-identifier)"
+
+[[hole]]
+document = "TS29.234"
+name = "Charging-Characteristics"
+missing = ["data_type"]
+reason = "V11.2.0, the document's last version, types it \"Integer\", no Diameter type, in table 10.1.1 and clause 10.1.27 alike, and TS 29.230 table 7.1 repeats the word for code 314; which of Integer32 or Integer64 is meant no source says, so printed_type keeps the word"
+
+[[hole]]
+document = "TS29.234"
+name = "Error-Cause"
+missing = ["undefined"]
+reason = "an optional member of Wa's and Wd's DEA (clauses 4.4.2.1, 5.5.1) no clause defines and V11.2.0, the document's last version, leaves so; RFC 5580 lists a RADIUS attribute of the name, no Diameter document in the corpus defines it and the TS 29.230 registry allocates no such name; Wireshark's dictionary carries RADIUS's number under no citation, which stays evidence (TS29.234.py#undefined-error-cause)"
+
+[[hole]]
+document = "TS29.345"
+name = "ProSe-Query-Code"
+missing = ["undefined"]
+reason = "an optional member of Discovery-Auth-Request (clause 6.3.53) and Discovery-Auth-Response (6.3.54) no clause defines and table 6.3.1-1 does not list, in V18.0.0 as in V19.0.0; TS 29.230 table 7.1 allocates it nothing, TS 29.343 and 29.344 do not name it and Wireshark's dictionary has no such AVP (TS29.345.py#undefined-prose-query-code)"
+
+[[hole]]
+document = "TS29.345"
+name = "ProSe-Response-Code"
+missing = ["undefined"]
+reason = "an optional member of Discovery-Auth-Request (clause 6.3.53) and Discovery-Auth-Response (6.3.54) no clause defines and table 6.3.1-1 does not list, in V18.0.0 as in V19.0.0; TS 29.230 table 7.1 allocates it nothing, TS 29.343 and 29.344 do not name it and Wireshark's dictionary has no such AVP (TS29.345.py#undefined-prose-response-code)"
+
+[[hole]]
+document = "TS32.299"
+name = "Network-Element"
+missing = ["undefined"]
+reason = "a member of Exposure-Function-API-Information (clause 7.2.66aA) no clause defines and table 7.2.0.1 does not list, in V18.0.0 as in V19.0.0; TS 32.254 has no such field, the TS 29.230 registry allocates no such name and Wireshark's dictionary has no such AVP (TS32.299.py#undefined-network-element)"
+
+[[hole]]
+document = "TS32.299"
+name = "Submission-Timestamp"
+missing = ["undefined"]
+reason = "a member of NIDD-Submission (clause 7.2.112aA) no clause defines and table 7.2.0.1 does not list, in V18.0.0 as in V19.0.0; TS 32.253 binds a CDR field to it with no code or type, the TS 29.230 registry knows only Submission-Time and nothing says that is meant, and Wireshark's dictionary has no such AVP (TS32.299.py#undefined-submission-timestamp)"

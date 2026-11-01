@@ -11,6 +11,8 @@ dad/
   onem2m/        oneM2M documents; versions are oneM2M's
   raw/           unedited extractor output, mirroring the five trees
                  above
+  holes.toml     the record of known holes, hand-maintained: what the corpus
+                 cannot complete, with the evidence (docs/consumers.md)
 ```
 
 The corrected trees are what tools and consumers read. `raw/` mirrors them

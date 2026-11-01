@@ -180,6 +180,22 @@ With `--corpus`, each re-used row is resolved against the document it cites.
 With `--corpus`, `duplicate-identity` also runs over re-used rows, since the
 origin's `; Vendor-ID:` is readable then.
 
+## The record of known holes
+
+With `--corpus`, a directory holding a record (`dad/holes.toml`;
+[consumers.md](consumers.md#known-holes)) has the record linted too, once,
+under its own path rather than per file, as a default `Model.build` holds
+the corpus to it, policy aside. Silent for a corpus with no record, a partial
+one included, whose holes the model's default refuses anyway.
+
+- `unrecorded-hole` — a hole the record does not list, or lists with other
+  `missing` fields. An error: the corpus can no longer build by default, so
+  either the regression gets fixed or the hole earns an entry and its
+  evidence.
+- `stale-hole-record` — an entry naming no hole: its document is gone, its
+  name defined upstream, or a stand-in resolved it. An error: working a hole
+  off shrinks the record.
+
 ## Registry rules
 
 With `--corpus`, a file is also compared with the TS 29.230 registry the

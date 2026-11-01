@@ -39,7 +39,8 @@ checker-specific form (`# pyright: ignore[...]`) when they do.
 - Everything else runs on committed files and small synthetic fixtures
   (`tests/conftest.py`): every committed `.dad` round-trips by glob, every
   committed correction re-applies to the committed raw output, the linter's
-  findings over the corpus are pinned, and the remaining tests cover error
+  findings over the corpus are pinned, `dad/holes.toml` pins its holes, and
+  the remaining tests cover error
   paths and shapes the corpus does not contain.
 - `tests/test_python_diameter_generate.py` generates the python-diameter
   modules from the committed corpus, imports them in a fresh interpreter

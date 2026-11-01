@@ -40,7 +40,10 @@ download that converted the legacy `.doc` archives.
    not make undeclared (quirk), or wrong data (correction); see the table
    below.
 3. Declare the fixes, regenerate again, and commit the raw and corrected pair
-   with the edit files.
+   with the edit files. A hole the new document brings fails a default
+   `Model.build` and `seanchai lint --corpus dad`: fix it, or give it an entry
+   in `dad/holes.toml` with its evidence
+   ([consumers.md](consumers.md#known-holes)).
 
 ## Version upgrades
 

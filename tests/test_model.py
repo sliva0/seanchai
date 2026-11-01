@@ -39,7 +39,11 @@ def _entry(spec: ast.Specification) -> corpus.Entry:
 
 
 def _model(*specs: ast.Specification) -> model.Model:
-    return model.Model.build(corpus.Corpus(_entry(spec) for spec in specs))
+    """A fixture's model; these corpora have no record, and many hold a hole on
+    purpose."""
+    return model.Model.build(
+        corpus.Corpus(_entry(spec) for spec in specs), strict=False
+    )
 
 
 def _rule(name, presence=ast.Presence.OPTIONAL):
@@ -1136,7 +1140,7 @@ class TestHoles:
             " rest):\n  TS29.900 Nowhere: resolves nowhere"
             "\n  TS29.900 Thing: no flag_rules"
         )
-        assert raised.value.holes == model.Model.build(books).holes()
+        assert raised.value.holes == model.Model.build(books, strict=False).holes()
 
     def test_a_complete_corpus_builds_strictly(self):
         spec = _spec(
@@ -1552,48 +1556,6 @@ class TestOverTheCommittedCorpus:
         assert len(built.registry(ast.RegistryKind.APPLICATION_IDS)) == 54
 
 
-# What keeps the committed corpus from building strictly, by document and
-# cause. Each is a statement its source does not make: RFC 4590 is a RADIUS
-# document with no Diameter types, TS 29.061's 3GPP-Session-Stop-Indicator
-# row prints only a code, every "resolves nowhere" is one of
-# docs/linter.md's standing unresolved references. TS 32.299 V11.20.0,
-# which oneM2M TS-0004 reaches, holds none of its own: its Release 11
-# citations read the pinned TS 29.212 and 29.214 copies or Release 18
-# copies standing in, and its three OMA rows are supplied as Release 18's
-# are; TS 29.061's row is the one hole it reaches. A hole worked off shrinks
-# this; a new one is a corpus regression. Roadmap item N lists them by
-# cause.
-_STANDING_HOLES = {
-    "RFC4004": {
-        "undefined (clause 9.4)": ["MIP-HA-to-MN-SPI"],
-        "undefined (clause 9.5)": ["MIP-MN-to-FA-SPI"],
-        "undefined (clause 9.6)": ["MIP-MN-to-HA-SPI"],
-    },
-    "TS29.061": {"no data_type, no flag_rules": ["3GPP-Session-Stop-Indicator"]},
-    # What TS 29.210 V6.7.0 re-uses that V6.15.0 only numbers as RADIUS
-    # sub-attributes (clause 16.4.7).
-    "TS29.061 V6.15.0": {
-        "no data_type, no flag_rules": [
-            "3GPP-GPRS-Negotiated-QoS-Profile",
-            "3GPP-SGSN-MCC-MNC",
-        ],
-    },
-    "TS29.154": {"undefined (clause A.6.6.2)": ["External-Group-Identifier"]},
-    # Clause 10.1.27 types Charging-Characteristics "Integer", no type.
-    "TS29.234": {
-        "no data_type": ["Charging-Characteristics"],
-        "undefined (clause 4.4.2.1)": ["Error-Cause"],
-    },
-    "TS29.345": {
-        "undefined (clause 6.3.53)": ["ProSe-Query-Code", "ProSe-Response-Code"]
-    },
-    "TS32.299": {
-        "undefined (clause 7.2.66aA)": ["Network-Element"],
-        "undefined (clause 7.2.112aA)": ["Submission-Timestamp"],
-    },
-}
-
-
 def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
     """3GPP cites ES 283 034 as "ETSI TS 283 034" and TS 183 017 under its
     own number; each row resolves to the transcribed document's AVP, in
@@ -1657,7 +1619,7 @@ def test_without_its_stand_in_entry_3gpp2_bsid_is_a_hole(monkeypatch):
     `corpus.STAND_INS` entry letting revision 0 answer, the AVP resolves
     nowhere, as it did before the transcription."""
     monkeypatch.delitem(corpus.STAND_INS, ("TS29.212", "3GPP2-X.S0057"))
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]), strict=False)
 
     assert built.resolve("TS29.212", "3GPP2-BSID") is None
     assert (
@@ -1871,18 +1833,58 @@ def test_only_three_cited_enumerations_stay_without_values():
     }
 
 
-def _standing(raised: pytest.ExceptionInfo[model.IncompleteCorpusError]):
-    actual: dict[str, dict[str, list[str]]] = {}
-    for hole in raised.value.holes:
-        why = str(hole).split(": ", 1)[1]
-        actual.setdefault(hole.document, {}).setdefault(why, []).append(hole.name)
-    return actual
+def _committed() -> corpus.Corpus:
+    return corpus.Corpus.load([_ROOT / "dad"])
 
 
-def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
+# The field holes of the record: the ones no undefined policy answers for.
+_FIELD_HOLES = {
+    ("TS29.061", "3GPP-Session-Stop-Indicator"),
+    ("TS29.061 V6.15.0", "3GPP-GPRS-Negotiated-QoS-Profile"),
+    ("TS29.061 V6.15.0", "3GPP-SGSN-MCC-MNC"),
+    ("TS29.234", "Charging-Characteristics"),
+}
+
+
+def test_the_committed_corpus_builds_against_its_record():
+    books = _committed()
+    built = model.Model.build(books)
+
+    assert books.record is not None and books.record.path == _ROOT / "dad/holes.toml"
+    known = {(each.document, each.name): each for each in books.record.holes}
+    assert {(hole.document, hole.name): hole for hole in built.holes()}.keys() == (
+        known.keys()
+    )
+    for hole in built.holes():
+        entry = known[(hole.document, hole.name)]
+        assert hole.missing == entry.missing
+        assert hole.recorded == entry.reason
+    assert built.unrecorded_holes() == built.stale_record_entries() == ()
+    # A recorded hole stays one, and a member reached carries the reason too.
+    assert built.resolve("TS29.234", "Charging-Characteristics") is None
+    hole = built.hole("TS29.234", "Charging-Characteristics")
+    assert hole is not None and hole.recorded is not None
+    assert '"Integer"' in hole.recorded
+    (member,) = [
+        member
+        for avp in built.avps("TS29.234")
+        if avp.name == "Charging-Data" and isinstance(avp, model.Grouped)
+        for member in avp.members
+        if member.name == "Charging-Characteristics"
+    ]
+    assert member.avp is None and member.hole == hole
+
+
+def test_a_strict_build_refuses_exactly_the_recorded_holes():
+    books = _committed()
+    assert books.record is not None
+
     with pytest.raises(model.IncompleteCorpusError) as raised:
-        model.Model.build(corpus.Corpus.load([_ROOT / "dad"]), strict=True)
-    assert _standing(raised) == _STANDING_HOLES
+        model.Model.build(books, strict=True)
+
+    assert {(hole.document, hole.name) for hole in raised.value.holes} == {
+        (each.document, each.name) for each in books.record.holes
+    }
     assert "undefined=... answers for the undefined names" in str(raised.value)
 
 
@@ -1891,25 +1893,217 @@ def test_the_committed_corpus_does_not_build_strictly_for_its_standing_holes():
     [model.UndefinedPolicy.DROP, model.UndefinedPolicy.PLACEHOLDER],
     ids=str,
 )
-def test_an_answer_for_the_undefined_names_leaves_the_field_hole(policy):
-    """With the nine undefined names answered for, the strict build still
-    refuses, under every policy, the rows of TS 29.061 and TS 29.061 V6.15.0
-    and TS 29.234's type, which state no type."""
+def test_an_answer_for_the_undefined_names_leaves_the_field_holes(policy):
+    """With the nine undefined names answered for, `strict=True` still refuses
+    what states no type, under every policy, and the default build takes the
+    nine entries' going unused as no staleness."""
+    books = _committed()
+
     with pytest.raises(model.IncompleteCorpusError) as raised:
-        model.Model.build(
-            corpus.Corpus.load([_ROOT / "dad"]), strict=True, undefined=policy
+        model.Model.build(books, strict=True, undefined=policy)
+    assert {(hole.document, hole.name) for hole in raised.value.holes} == (_FIELD_HOLES)
+
+    built = model.Model.build(books, undefined=policy)
+    assert {(hole.document, hole.name) for hole in built.holes()} == _FIELD_HOLES
+
+
+def test_a_supply_answering_part_of_the_record_builds_by_default():
+    """A name `SUPPLY` answers is no hole and its entry goes unused; a name it
+    says nothing of stays a recorded hole."""
+    alias = model.Alias("TS29.336", "External-Identifier", "test")
+    built = model.Model.build(
+        _committed(),
+        undefined=model.UndefinedPolicy.SUPPLY,
+        supply={("TS29.154", "External-Group-Identifier"): alias},
+    )
+
+    assert built.hole("TS29.154", "External-Group-Identifier") is None
+    assert built.resolve("TS29.154", "External-Group-Identifier") is not None
+    hole = built.hole("RFC4004", "MIP-HA-to-MN-SPI")
+    assert hole is not None and hole.recorded is not None
+
+
+def _recorded_corpus(*holes: corpus.KnownHole) -> corpus.Corpus:
+    """A document with one hole with a code (`Thing`), one undefined name
+    (`Missing-Opt`) and otherwise complete, and a record of `holes`."""
+    spec = _spec(
+        "3GPP TS 29.900",
+        [
+            _message("Test-Request", "Thing", "Missing-Opt"),
+            _flagless_table(
+                ast.AvpTableRow(name="Thing", code=1, data_type=ast.DataType.TIME)
+            ),
+            ast.UndefinedAvp(name="Missing-Opt", source=ast.SourceRef(section="6.1.1")),
+        ],
+    )
+    return corpus.Corpus([_entry(spec)], corpus.HoleRecord(Path("holes.toml"), holes))
+
+
+_THING = corpus.KnownHole("TS29.900", "Thing", ("flag_rules",), "clause 6.3.1 says so")
+_MISSING = corpus.KnownHole(
+    "TS29.900", "Missing-Opt", ("undefined",), "no clause defines it"
+)
+
+
+class TestTheRecord:
+    def test_a_recorded_hole_builds_and_carries_its_reason(self):
+        built = model.Model.build(_recorded_corpus(_THING, _MISSING))
+
+        hole = built.hole("TS29.900", "Thing")
+        assert hole is not None and hole.recorded == "clause 6.3.1 says so"
+        assert built.resolve("TS29.900", "Thing") is None
+
+    def test_an_unrecorded_hole_fails_naming_only_it(self):
+        books = _recorded_corpus(_MISSING)
+
+        with pytest.raises(model.IncompleteCorpusError) as raised:
+            model.Model.build(books)
+
+        assert [hole.name for hole in raised.value.holes] == ["Thing"]
+        assert str(raised.value) == (
+            "the corpus has 1 hole its record does not list"
+            " (Model.build(..., strict=False) builds the rest):"
+            "\n  TS29.900 Thing: no flag_rules"
         )
-    assert _standing(raised) == {
-        document: unanswered
-        for document, holes in _STANDING_HOLES.items()
-        if (
-            unanswered := {
-                why: names
-                for why, names in holes.items()
-                if not why.startswith("undefined")
-            }
+
+    def test_an_entry_naming_other_missing_fields_lists_no_such_hole(self):
+        wrong = corpus.KnownHole("TS29.900", "Thing", ("data_type",), "wrong")
+
+        with pytest.raises(model.IncompleteCorpusError) as raised:
+            model.Model.build(_recorded_corpus(wrong, _MISSING))
+
+        assert [hole.name for hole in raised.value.holes] == ["Thing"]
+        assert raised.value.holes[0].recorded is None
+
+    @pytest.mark.parametrize(
+        "entry",
+        [
+            corpus.KnownHole("TS29.900", "Worked-Off", ("definition",), "gone"),
+            corpus.KnownHole("TS29.999", "Thing", ("flag_rules",), "document gone"),
+            corpus.KnownHole("TS29.900 V1.0.0", "Thing", ("flag_rules",), "old copy"),
+        ],
+        ids=["name", "document", "version"],
+    )
+    def test_a_stale_entry_fails_naming_it(self, entry):
+        books = _recorded_corpus(_THING, _MISSING, entry)
+
+        with pytest.raises(model.StaleHoleRecordError) as raised:
+            model.Model.build(books)
+
+        assert raised.value.entries == (entry,)
+        assert f"{entry.document} {entry.name}" in str(raised.value)
+
+    def test_an_unrecorded_hole_is_reported_before_a_stale_entry(self):
+        stale = corpus.KnownHole("TS29.900", "Worked-Off", ("definition",), "gone")
+
+        with pytest.raises(model.IncompleteCorpusError):
+            model.Model.build(_recorded_corpus(_MISSING, stale))
+
+    @pytest.mark.parametrize(
+        "policy",
+        [model.UndefinedPolicy.DROP, model.UndefinedPolicy.PLACEHOLDER],
+        ids=str,
+    )
+    def test_an_entry_the_policy_answered_is_not_stale(self, policy):
+        built = model.Model.build(_recorded_corpus(_THING, _MISSING), undefined=policy)
+
+        assert built.hole("TS29.900", "Missing-Opt") is None
+        assert built.stale_record_entries() == ()
+
+    def test_a_policy_excuses_only_a_name_a_block_declares(self):
+        """`Worked-Off` is defined nowhere and declared by no block, so no
+        policy explains its entry going unused; nor does one explain an entry
+        for `Thing` under a document that does not hold it."""
+        stale = corpus.KnownHole("TS29.900", "Worked-Off", ("undefined",), "gone")
+
+        with pytest.raises(model.StaleHoleRecordError) as raised:
+            model.Model.build(
+                _recorded_corpus(_THING, _MISSING, stale),
+                undefined=model.UndefinedPolicy.DROP,
+            )
+
+        assert raised.value.entries == (stale,)
+
+    def test_a_supply_answering_nothing_excuses_no_entry(self):
+        """An older copy's block no reading reaches is no hole of the corpus's,
+        so its entry is stale, and an empty supply answered nothing for it."""
+        older = _spec(
+            "3GPP TS 29.900",
+            [ast.UndefinedAvp(name="Gone", source=ast.SourceRef(section="6.1.1"))],
+            version="17.0.0",
         )
-    }
+        newer = _spec("3GPP TS 29.900", [_table(_row("Known", 1))])
+        entry = corpus.KnownHole("TS29.900 V17.0.0", "Gone", ("undefined",), "old")
+        books = corpus.Corpus(
+            [
+                corpus.Entry(Path("older.dad"), older),
+                corpus.Entry(Path("newer.dad"), newer),
+            ],
+            corpus.HoleRecord(Path("holes.toml"), (entry,)),
+        )
+
+        for policy, supply in (
+            (model.UndefinedPolicy.HOLE, None),
+            (model.UndefinedPolicy.DROP, None),
+            (model.UndefinedPolicy.SUPPLY, {}),
+        ):
+            with pytest.raises(model.StaleHoleRecordError):
+                model.Model.build(books, undefined=policy, supply=supply)
+
+    def test_an_answered_entry_must_still_list_the_hole_as_it_is(self):
+        wrong = corpus.KnownHole("TS29.900", "Missing-Opt", ("definition",), "wrong")
+
+        with pytest.raises(model.StaleHoleRecordError) as raised:
+            model.Model.build(
+                _recorded_corpus(_THING, wrong), undefined=model.UndefinedPolicy.DROP
+            )
+
+        assert raised.value.entries == (wrong,)
+
+    def test_a_name_defined_upstream_goes_stale_under_every_policy(self):
+        """The block stands, but a definition wins over it, so the entry is
+        stale and no policy answered for anything."""
+        spec = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(_row("Known", 1)),
+                ast.UndefinedAvp(name="Known", source=ast.SourceRef(section="6.1.1")),
+            ],
+        )
+        entry = corpus.KnownHole("TS29.900", "Known", ("undefined",), "was undefined")
+        books = corpus.Corpus(
+            [_entry(spec)], corpus.HoleRecord(Path("holes.toml"), (entry,))
+        )
+
+        for policy in (model.UndefinedPolicy.HOLE, model.UndefinedPolicy.DROP):
+            with pytest.raises(model.StaleHoleRecordError):
+                model.Model.build(books, undefined=policy)
+
+    def test_strict_true_refuses_a_recorded_hole(self):
+        with pytest.raises(model.IncompleteCorpusError) as raised:
+            model.Model.build(_recorded_corpus(_THING, _MISSING), strict=True)
+        assert {hole.name for hole in raised.value.holes} == {"Thing", "Missing-Opt"}
+
+    def test_strict_false_holds_the_corpus_to_nothing(self):
+        stale = corpus.KnownHole("TS29.900", "Worked-Off", ("definition",), "gone")
+
+        built = model.Model.build(_recorded_corpus(stale), strict=False)
+
+        assert built.stale_record_entries() == (stale,)
+        assert {hole.name for hole in built.unrecorded_holes()} == {
+            "Thing",
+            "Missing-Opt",
+        }
+
+    def test_a_corpus_with_no_record_has_no_known_holes(self):
+        spec = _spec(
+            "3GPP TS 29.900",
+            [
+                _message("Test-Request", "Nowhere"),
+            ],
+        )
+        with pytest.raises(model.IncompleteCorpusError, match="its record does not"):
+            model.Model.build(corpus.Corpus([_entry(spec)]))
 
 
 def test_the_committed_corpus_declares_its_nine_undefined_names():
@@ -2027,6 +2221,7 @@ def _undefined_corpus(*, defects=True) -> corpus.Corpus:
 
 
 def _build(policy=model.UndefinedPolicy.HOLE, supply=None, *, defects=True, **kw):
+    kw.setdefault("strict", False)
     return model.Model.build(
         _undefined_corpus(defects=defects), undefined=policy, supply=supply, **kw
     )
@@ -2339,7 +2534,7 @@ class TestUndefinedNames:
         across = corpus.CrossRelease(
             "TS32.299", "TS29.140", "7.0.0", corpus.NON_SPECIFIC
         )
-        hole = model.Model.build(books).hole("TS32.299", "Missing-Opt")
+        hole = model.Model.build(books, strict=False).hole("TS32.299", "Missing-Opt")
         assert hole is not None and hole.across_releases == across
 
         built = model.Model.build(
