@@ -16,7 +16,7 @@ reason a committed pair whose legacy `.doc` the manifest holds unconverted
 from pathlib import Path
 
 import pytest
-from conftest import _corpus
+from conftest import _CORPUS_DIR, _corpus
 
 from seanchai import regenerate
 from seanchai.dad import ast, parser
@@ -42,7 +42,7 @@ def regenerated(tmp_path_factory):
     )
     report = regenerate.regenerate(
         _MANIFEST,
-        _ROOT / "dad",
+        _CORPUS_DIR,
         tmp_path_factory.mktemp("dad"),
         sources_dir=_ROOT / "edits" / "sources",
         corrections_dir=_ROOT / "edits" / "corrections",

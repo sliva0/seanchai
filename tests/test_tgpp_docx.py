@@ -5,6 +5,7 @@ import docx
 import docx.text.paragraph
 import pypdf
 import pytest
+from conftest import _CORPUS_DIR
 
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
@@ -1426,9 +1427,7 @@ def test_a_value_named_in_a_sentence_is_read_behind_its_quirk():
 
 # --- documents the corpus holds at an older release -------------------------
 
-_RELEASE_11_TS_32_299 = (
-    Path(__file__).parent.parent / "dad/raw/3gpp/rel-11/32299-bk0.raw.dad"
-)
+_RELEASE_11_TS_32_299 = _CORPUS_DIR / "raw/3gpp/rel-11/32299-bk0.raw.dad"
 
 
 def test_ts_32_299_release_11_reads_its_own_template():

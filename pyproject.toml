@@ -18,7 +18,7 @@ dependencies = [
 seanchai = "seanchai.cli:main"
 
 [build-system]
-requires = ["uv_build>=0.10.2,<0.12.0"]
+requires = ["uv_build>=0.10.2,<0.14.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
@@ -28,8 +28,15 @@ dev = [
     "python-diameter>=0.9.0",
     "ruff>=0.16.0",
     "rumdl>=0.3.2",
+    "seanchai-corpus",
     "ty>=0.0.63",
 ]
+
+[tool.uv.workspace]
+members = ["packages/seanchai-corpus"]
+
+[tool.uv.sources]
+seanchai-corpus = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -66,10 +73,10 @@ length-mode = "chars"
 python = ".venv"
 
 [tool.ty.src]
-include = ["src", "tests"]
+include = ["src", "packages/seanchai-corpus/src", "tests"]
 
 [tool.basedpyright]
 typeCheckingMode = "standard"
-include = ["src", "tests"]
+include = ["src", "packages/seanchai-corpus/src", "tests"]
 venvPath = "."
 venv = ".venv"

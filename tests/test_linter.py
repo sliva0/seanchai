@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pydantic
 import pytest
-from conftest import _corpus
+from conftest import _CORPUS_DIR, _corpus
 
 from seanchai import corpus, linter
 from seanchai.dad import ast, corrections, parser
@@ -1901,7 +1901,7 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
 
 
 def test_the_committed_record_matches_the_corpus():
-    books = corpus.Corpus.load([Path(__file__).parent.parent / "dad"])
+    books = corpus.Corpus.load([_CORPUS_DIR])
 
     assert books.record is not None
     assert linter.lint_record(books) == []

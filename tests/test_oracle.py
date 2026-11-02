@@ -4,6 +4,7 @@ import dataclasses
 from pathlib import Path
 
 import pytest
+from conftest import _CORPUS_DIR
 
 from seanchai import oracle
 from seanchai.dad import ast
@@ -184,7 +185,7 @@ def test_the_pinned_dictionary_loads_and_the_base_protocol_agrees():
 
     loaded = oracle.Oracle.load(_ROOT / "specifications" / "wireshark")
     spec = parser.parse(
-        (_ROOT / "dad" / "rfc" / "rfc6733.dad").read_text(encoding="utf-8")
+        (_CORPUS_DIR / "rfc" / "rfc6733.dad").read_text(encoding="utf-8")
     )
 
     findings = oracle.crosscheck(spec, loaded)
@@ -337,7 +338,7 @@ def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
 
     loaded = oracle.Oracle.load(_ROOT / "specifications" / "wireshark")
     aliases = oracle.load_aliases(_ROOT / "integrations/wireshark/aliases.toml")
-    books = corpus.Corpus(corpus.Corpus.load([_ROOT / "dad"]))
+    books = corpus.Corpus(corpus.Corpus.load([_CORPUS_DIR]))
     findings = [
         finding
         for entry in books.newest()

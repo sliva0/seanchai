@@ -10,7 +10,7 @@ disagreement informative. A row's vendor is read as the model reads it
 
 ```sh
 uv run seanchai download          # fetches the dictionary too
-uv run seanchai crosscheck dad
+uv run seanchai crosscheck packages/seanchai-corpus/src/seanchai_corpus/dad
 ```
 
 The check reads the newest copy of each document and no other: the

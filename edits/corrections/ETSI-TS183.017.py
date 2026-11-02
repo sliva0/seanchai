@@ -1,6 +1,6 @@
 """Corrections for ETSI TS 183 017 — see docs/corrections.md.
 
-The input is the transcription (`dad/raw/etsi/ts183017-030201.raw.dad`),
+The input is the transcription (`raw/etsi/ts183017-030201.raw.dad`),
 which records what the PDF prints. The document's clause headings
 sentence-case AVP names ("Port-number AVP", "Flow-description AVP"), so a
 clause's defining sentence and the ABNFs are what name an AVP here."""

@@ -4,7 +4,7 @@ import itertools
 from pathlib import Path
 
 import pytest
-from conftest import _corpus
+from conftest import _CORPUS_DIR, _corpus
 
 from seanchai.dad import ast, corrections, formatter, parser
 
@@ -1360,7 +1360,7 @@ def test_correction_notes_mark_the_same_lines_in_a_copied_or_reparsed_tree(raw):
         spec.version,
     )
     corrected, _, notes = corrections.apply_with_comments(spec, comments, declared)
-    committed = (_ROOT / "dad" / raw.relative_to(_ROOT / "dad" / "raw")).with_name(
+    committed = (_CORPUS_DIR / raw.relative_to(_CORPUS_DIR / "raw")).with_name(
         raw.name.removesuffix(".raw.dad") + ".dad"
     )
     text = committed.read_text(encoding="utf-8")
@@ -1477,7 +1477,7 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     and the VCSG application scope — so changing what the corrections do has
     to be a deliberate edit here too.
     """
-    raw = _ROOT / "dad" / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
+    raw = _CORPUS_DIR / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
     declared = corrections.in_release(
         corrections.load(_ROOT / "edits" / "corrections", spec.specification),

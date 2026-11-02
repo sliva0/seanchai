@@ -1876,8 +1876,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--corpus",
         type=Path,
-        default=_HERE.parents[1] / "dad",
-        help="the corpus directory (default: the repository's dad/)",
+        default=_HERE.parents[1] / "packages/seanchai-corpus/src/seanchai_corpus/dad",
+        help="the corpus directory (default: the repository's)",
     )
     parser.add_argument(
         "--dictionary",

@@ -7,9 +7,9 @@ or download again), so they are pinned here.
 
 import json
 import shutil
-from pathlib import Path
 
 import pytest
+from conftest import _CORPUS_DIR
 
 from seanchai import regenerate
 
@@ -102,7 +102,7 @@ def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
     manifest, document = _manifest(tmp_path / "specifications", "29999-110")
     shutil.copy(synthetic_spec_docx, document)
     _run(manifest, corpus, corpus, add=["TS29.999"])
-    other = Path(__file__).parent.parent / "dad" / "rfc" / "rfc4004.dad"
+    other = _CORPUS_DIR / "rfc" / "rfc4004.dad"
     shutil.copy(other, corpus / "rfc4004.dad")
     committed = {path: path.read_bytes() for path in corpus.rglob("*.dad")}
     older, document = _manifest(

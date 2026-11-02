@@ -1,0 +1,14 @@
+[project]
+name = "seanchai-corpus"
+version = "2026.11.2"
+description = "Diameter command ABNFs and AVP definitions as .dad files"
+readme = "README.md"
+authors = [
+    { name = "sliva0", email = "sliva0mk@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.10.2,<0.14.0"]
+build-backend = "uv_build"

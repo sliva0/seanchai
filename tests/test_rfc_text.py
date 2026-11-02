@@ -1,7 +1,7 @@
 """RFC extraction smoke test, rejected shapes and quirk declarations."""
 
 import pytest
-from conftest import _ROOT, _declare
+from conftest import _CORPUS_DIR, _declare
 
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import rfc_text, tgpp_docx
@@ -65,7 +65,7 @@ def test_the_extractors_never_mark_their_output_transcribed(
     committed = [
         parser.parse(path.read_text(encoding="utf-8"))
         for tree in ("3gpp", "rfc")
-        for path in sorted((_ROOT / "dad" / "raw" / tree).rglob("*.raw.dad"))
+        for path in sorted((_CORPUS_DIR / "raw" / tree).rglob("*.raw.dad"))
     ]
 
     assert committed

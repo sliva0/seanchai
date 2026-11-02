@@ -2,7 +2,7 @@
 files, as they stand between a 3GPP document and its extraction."""
 
 import pytest
-from conftest import _ROOT
+from conftest import _CORPUS_DIR, _ROOT
 
 from seanchai.dad import formatter, parser
 from seanchai.extractor import transcription
@@ -10,9 +10,9 @@ from seanchai.extractor.sources import PatchError
 
 _TRANSCRIPTIONS = sorted((_ROOT / "edits" / "transcriptions").glob("*.dad"))
 _RAW = {
-    "3GPP2-X.S0057": _ROOT / "dad" / "raw" / "3gpp2" / "xs0057-0_v2.0.raw.dad",
-    "ETSI-ES283.034": _ROOT / "dad" / "raw" / "etsi" / "es283034-020200.raw.dad",
-    "ETSI-TS183.017": _ROOT / "dad" / "raw" / "etsi" / "ts183017-030201.raw.dad",
+    "3GPP2-X.S0057": _CORPUS_DIR / "raw" / "3gpp2" / "xs0057-0_v2.0.raw.dad",
+    "ETSI-ES283.034": _CORPUS_DIR / "raw" / "etsi" / "es283034-020200.raw.dad",
+    "ETSI-TS183.017": _CORPUS_DIR / "raw" / "etsi" / "ts183017-030201.raw.dad",
 }
 
 

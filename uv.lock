@@ -2,6 +2,12 @@ version = 1
 revision = 5
 requires-python = ">=3.14"
 
+[manifest]
+members = [
+    "seanchai",
+    "seanchai-corpus",
+]
+
 [[package]]
 name = "annotated-types"
 version = "0.8.0"
@@ -437,6 +443,7 @@ dev = [
     { name = "python-diameter" },
     { name = "ruff" },
     { name = "rumdl" },
+    { name = "seanchai-corpus" },
     { name = "ty" },
 ]
 
@@ -455,8 +462,14 @@ dev = [
     { name = "python-diameter", specifier = ">=0.9.0" },
     { name = "ruff", specifier = ">=0.16.0" },
     { name = "rumdl", specifier = ">=0.3.2" },
+    { name = "seanchai-corpus", editable = "packages/seanchai-corpus" },
     { name = "ty", specifier = ">=0.0.63" },
 ]
+
+[[package]]
+name = "seanchai-corpus"
+version = "2026.11.2"
+source = { editable = "packages/seanchai-corpus" }
 
 [[package]]
 name = "ty"

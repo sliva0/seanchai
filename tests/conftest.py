@@ -234,6 +234,8 @@ def local_http_server():
 
 
 _ROOT = Path(__file__).parent.parent
+# The workspace copy. The tests pin this one, whatever else is installed.
+_CORPUS_DIR = _ROOT / "packages" / "seanchai-corpus" / "src" / "seanchai_corpus" / "dad"
 
 
 def _corpus(*, raw: bool):
@@ -241,7 +243,7 @@ def _corpus(*, raw: bool):
     so the two are told apart by suffix rather than by glob."""
     paths = [
         path
-        for path in sorted((_ROOT / "dad").rglob("*.dad"))
+        for path in sorted(_CORPUS_DIR.rglob("*.dad"))
         if path.name.endswith(".raw.dad") == raw
     ]
     assert paths, "no committed .dad files found — these tests would pass vacuously"

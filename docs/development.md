@@ -35,7 +35,8 @@ checker-specific form (`# pyright: ignore[...]`).
 - Everything else runs on committed files and small synthetic fixtures
   (`tests/conftest.py`): every committed `.dad` round-trips, every committed
   correction re-applies to the committed raw output, the linter's findings
-  over the corpus are pinned, and `dad/holes.toml` pins the known holes.
+  over the corpus are pinned, and the corpus's `holes.toml` pins the known
+  holes.
 - `tests/test_python_diameter_generate.py` generates the python-diameter
   modules from the corpus, imports them in a fresh interpreter against the
   real library and round-trips a Cx UAR through the library's codec. The
@@ -66,13 +67,14 @@ covers it; add a synthetic case only for a rejection path.
 
 ## Rebuilding the corpus
 
-The corpus under `dad/` is derived output. One command rebuilds all of it
+The corpus under `packages/seanchai-corpus/src/seanchai_corpus/dad/` is
+derived output. One command rebuilds all of it
 from the downloaded sources and the two edit layers:
 
 ```sh
 uv run seanchai download      # the catalog into specifications/
 uv run seanchai regenerate    # every committed document, raw mirror included
-git diff --stat dad           # what changed, if anything
+git diff --stat packages/seanchai-corpus   # what changed, if anything
 ```
 
 `regenerate` prints one line per document: `unchanged`, `changed`,
@@ -89,13 +91,14 @@ manifest record and are rebuilt from `edits/transcriptions/` alongside.
 1. `uv run seanchai regenerate --add TS29.305`. The document must be in the
    downloader's catalog (`src/seanchai/downloader/specs.toml`) and readable
    by the extractor; a shape it rejects fails with the reason.
-2. Lint the raw file: `uv run seanchai lint dad/raw/... --corpus dad`. Every
-   error is a source typo (input patch), a reading the extractor should not
-   make undeclared (quirk) or wrong data (correction).
+2. Lint the raw file, under the corpus's `raw/`, with `uv run seanchai lint`
+   and `--corpus` naming the corpus directory. Every error is a source typo
+   (input patch), a reading the extractor should not make undeclared (quirk)
+   or wrong data (correction).
 3. Declare the fixes, regenerate again, and commit the raw and corrected
    pair with the edit files. A hole the new document brings fails the
-   default `Model.build` and `seanchai lint --corpus dad`: fix it, or record
-   it in `dad/holes.toml` with its evidence
+   default `Model.build` and `seanchai lint --corpus`: fix it, or record it in
+   the corpus's `holes.toml` with its evidence
    ([consumers.md](consumers.md#known-holes)).
 
 | Layer | Fixes | Where |
@@ -125,11 +128,11 @@ uv run seanchai download --spec TS29.272 --version 18.6.0
 uv run seanchai regenerate --spec TS29.272 -o /tmp/old \
     --manifest specifications/versions/TS29.272/18.6.0/manifest.json
 diff -u /tmp/old/raw/3gpp/rel-18/29272-i60.raw.dad \
-    dad/raw/3gpp/rel-18/29272-i70.raw.dad
+    packages/seanchai-corpus/src/seanchai_corpus/dad/raw/3gpp/rel-18/29272-i70.raw.dad
 ```
 
 `--spec` limits the rebuild to that document and `-o` keeps the older pair
-out of `dad/`. A document the corpus holds in two releases is two copies,
+out of the corpus. A document the corpus holds in two releases is two copies,
 each rebuilt in its own tree.
 
 Once the diffs are reviewed,

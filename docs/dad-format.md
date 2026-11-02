@@ -119,7 +119,7 @@ section, each starting with `; Type:`.
   ([consumers.md](consumers.md#undefined-names)).
 - **What the corpus cannot complete is recorded beside it.** No `.dad`
   file says a name is a known hole, since a hole is the corpus's reading of
-  several files together. `dad/holes.toml` lists each with its evidence
+  several files together. The corpus's `holes.toml` lists each with its evidence
   ([consumers.md](consumers.md#known-holes)).
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
@@ -183,6 +183,9 @@ bracket pair to presence, `min*max` to occurrence counts, Diameter-header
 items, flag cells.
 
 ## The corpus
+
+The corpus is the data of the `seanchai-corpus` package, at
+`packages/seanchai-corpus/src/seanchai_corpus/dad/` in the repository:
 
 ```
 dad/

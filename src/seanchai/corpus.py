@@ -462,7 +462,7 @@ class Corpus:
         them by version number — which they share.
 
         A directory in `paths` holding `HOLE_RECORD` directly gives the corpus
-        its record, so a consumer loading `dad/` gets it with no argument; a
+        its record, so a consumer loading the corpus gets it with no argument; a
         file list or a subdirectory has none, since a record describes the
         whole corpus it sits beside, and neither has a raw corpus, which the
         record does not describe. Two directories holding one are refused.

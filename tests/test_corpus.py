@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from conftest import _CORPUS_DIR
 
 from seanchai import corpus
 from seanchai.dad import ast, formatter
@@ -72,7 +73,7 @@ def test_onem2m_ts_0004_resolves_for_ts_32_299_from_the_committed_corpus():
     """TS 32.299 table 7.5.1 cites `oneM2M-TS-0004` ([301], Release 2 by no
     version); the corpus holds V2.35.0, oneM2M's own numbering, which a
     Release 18 citation reads as any external document's."""
-    books = corpus.Corpus.load([Path(__file__).parent.parent / "dad"])
+    books = corpus.Corpus.load([_CORPUS_DIR])
     citing = _spec("3GPP TS 32.299", "18.0.0")
 
     resolved = books.resolve("oneM2M-TS-0004", like=citing)
@@ -88,7 +89,7 @@ def test_3gpp2_x_s0057_resolves_for_ts_29_212_from_the_committed_corpus():
     revision letter, and the corpus holds revision 0 V2.0, the last 3GPP2's
     library publishes, which a Release 18 citation reads as any external
     document's."""
-    books = corpus.Corpus.load([Path(__file__).parent.parent / "dad"])
+    books = corpus.Corpus.load([_CORPUS_DIR])
     citing = _spec("3GPP TS 29.212", "18.2.0")
 
     resolved = books.resolve("3GPP2-X.S0057", like=citing)

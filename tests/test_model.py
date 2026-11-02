@@ -10,6 +10,7 @@ import dataclasses
 from pathlib import Path
 
 import pytest
+from conftest import _CORPUS_DIR
 
 from seanchai import corpus, model
 from seanchai.dad import ast
@@ -1263,7 +1264,7 @@ def test_a_dictionary_adds_wireshark_names_beside_the_documents(tmp_path):
 
 @pytest.fixture(scope="module")
 def built() -> model.Model:
-    return model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    return model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
 
 class TestOverTheCommittedCorpus:
@@ -1560,7 +1561,7 @@ def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
     """3GPP cites ES 283 034 as "ETSI TS 283 034" and TS 183 017 under its
     own number; each row resolves to the transcribed document's AVP, in
     ETSI's vendor space, and the transcriptions cite each other too."""
-    books = corpus.Corpus.load([_ROOT / "dad"])
+    books = corpus.Corpus.load([_CORPUS_DIR])
     built = model.Model.build(books)
     cited = [
         (entry.reference, row.name, row.origin)
@@ -1591,7 +1592,7 @@ def test_3gpp2_bsid_resolves_to_the_3gpp2_transcription():
     29.212; both reach table 1 of the transcription, in 3GPP2's vendor
     space, with the flag rules it prints, and say that revision 0 stands
     in for the revision B TS 29.212 [24] cites."""
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
     for reference in ("TS29.212", "TS32.299"):
         avp = built.resolve(reference, "3GPP2-BSID")
@@ -1619,7 +1620,7 @@ def test_without_its_stand_in_entry_3gpp2_bsid_is_a_hole(monkeypatch):
     `corpus.STAND_INS` entry letting revision 0 answer, the AVP resolves
     nowhere, as it did before the transcription."""
     monkeypatch.delitem(corpus.STAND_INS, ("TS29.212", "3GPP2-X.S0057"))
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]), strict=False)
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]), strict=False)
 
     assert built.resolve("TS29.212", "3GPP2-BSID") is None
     assert (
@@ -1638,7 +1639,7 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
     copy of, and TS 29.210 V6.7.0's and TS 29.234 V11.2.0's TS 29.229, are
     Release 18's, standing in. Each AVP so reached says so, and nothing else
     in the corpus resolves across releases."""
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
     vas = built.resolve("TS32.299", "VAS-ID")
     codec = built.resolve("ETSI-TS183.017", "Codec-Data")
@@ -1714,7 +1715,7 @@ def test_the_retired_documents_read_their_releases_re_uses():
     and TS 29.234 V11.2.0's, are V18.1.0, standing in for the V6.11.0 and
     V11.5.0 that define alike what each re-uses. TS 29.234 keeps its own
     SIP-Auth-Data-Item body, flag rules from TS 29.229."""
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
     rat = built.resolve("TS29.210", "3GPP-RAT-Type")
     assert rat is not None
@@ -1742,7 +1743,7 @@ def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
     ([301]), which the corpus extracts from oneM2M's Word file: vendor
     45687 per clause A.4, every member resolving, oneM2M's own in 45687
     and the rest in the space table A.4-1 gives each."""
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
     avp = built.resolve("TS32.299", "M2M-Information")
 
@@ -1773,7 +1774,7 @@ def test_onem2m_reaches_release_11s_bodies_through_ts_32_299_v11_20_0():
     it alike; IM-Information takes OMA's flags as Release 18's does. Flows
     sits in PS-Information's Service-Data-Container's
     AF-Correlation-Information."""
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
     def member(avp, name):
         assert isinstance(avp, model.Grouped)
@@ -1815,7 +1816,7 @@ def test_only_three_cited_enumerations_stay_without_values():
     numbers codes per type, and TS 23.682 numbers no network element."""
     unfilled = {
         (entry.reference, entry.spec.version, section.name, section.values_source)
-        for entry in corpus.Corpus.load([_ROOT / "dad"])
+        for entry in corpus.Corpus.load([_CORPUS_DIR])
         for section in entry.spec.sections
         if isinstance(section, ast.EnumeratedAvp)
         and section.values_source is not None
@@ -1834,7 +1835,7 @@ def test_only_three_cited_enumerations_stay_without_values():
 
 
 def _committed() -> corpus.Corpus:
-    return corpus.Corpus.load([_ROOT / "dad"])
+    return corpus.Corpus.load([_CORPUS_DIR])
 
 
 # The field holes of the record: the ones no undefined policy answers for.
@@ -1850,7 +1851,7 @@ def test_the_committed_corpus_builds_against_its_record():
     books = _committed()
     built = model.Model.build(books)
 
-    assert books.record is not None and books.record.path == _ROOT / "dad/holes.toml"
+    assert books.record is not None and books.record.path == _CORPUS_DIR / "holes.toml"
     known = {(each.document, each.name): each for each in books.record.holes}
     assert {(hole.document, hole.name): hole for hole in built.holes()}.keys() == (
         known.keys()
@@ -2107,7 +2108,7 @@ class TestTheRecord:
 
 
 def test_the_committed_corpus_declares_its_nine_undefined_names():
-    built = model.Model.build(corpus.Corpus.load([_ROOT / "dad"]))
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
     declared = {
         (each.reference, each.name, each.section, each.cited_in)
         for each in built.undefined()
@@ -2126,7 +2127,7 @@ def test_the_committed_corpus_declares_its_nine_undefined_names():
 
 
 def test_ts_29_154s_group_identifier_reads_as_ts_29_336s_by_alias():
-    books = corpus.Corpus.load([_ROOT / "dad"])
+    books = corpus.Corpus.load([_CORPUS_DIR])
     alias = model.Alias("TS29.336", "External-Identifier", "test")
     built = model.Model.build(
         books,
@@ -2146,7 +2147,7 @@ def test_the_pinned_dictionary_names_the_avps_it_spells_differently():
     """Wireshark's deliberate disambiguations and its own defects both
     arrive as `wireshark_name`, beside the specifications' spelling."""
     named = model.Model.build(
-        corpus.Corpus.load([_ROOT / "dad"]),
+        corpus.Corpus.load([_CORPUS_DIR]),
         dictionary=_ROOT / "specifications" / "wireshark",
     )
     for reference, name, wireshark_name in [

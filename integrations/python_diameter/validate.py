@@ -251,7 +251,9 @@ def main() -> int:
 
     from diameter.message.avp.dictionary import AVP_DICTIONARY, AVP_VENDOR_DICTIONARY
 
-    built = model.Model.build(corpus.Corpus.load([Path(__file__).parents[2] / "dad"]))
+    root = Path(__file__).parents[2]
+    directory = root / "packages/seanchai-corpus/src/seanchai_corpus/dad"
+    built = model.Model.build(corpus.Corpus.load([directory]))
     try:
         messages = built.messages(reference)
     except model.ModelError as error:

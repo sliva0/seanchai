@@ -6,6 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from conftest import _CORPUS_DIR
 
 from seanchai import ranges
 from seanchai.prose import collapse, collapse_fields
@@ -66,7 +67,7 @@ def test_every_toml_file_keeps_to_80_columns():
     files = list(_toml_files(_ROOT))
     assert {
         _ROOT / "pyproject.toml",
-        _ROOT / "dad" / "holes.toml",
+        _CORPUS_DIR / "holes.toml",
         _ROOT / "edits" / "sources" / "TS29.272.toml",
         _ROOT / "integrations" / "wireshark" / "aliases.toml",
         _ROOT / "src" / "seanchai" / "downloader" / "specs.toml",

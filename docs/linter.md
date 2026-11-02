@@ -5,10 +5,10 @@ true. It is the counterpart to the extractor's rule: the extractor records
 contradictions, the linter says them out loud.
 
 ```sh
-uv run seanchai lint dad/3gpp/rel-18/*.dad
+uv run seanchai lint packages/seanchai-corpus/src/seanchai_corpus/dad/3gpp/rel-18/*.dad
 uv run seanchai lint --no-notes FILE.dad          # errors only
-uv run seanchai lint --corpus dad FILE.dad        # also the cross-file rules
-uv run seanchai lint --corpus dad --show-accepted FILE.dad
+uv run seanchai lint --corpus DIR FILE.dad        # also the cross-file rules
+uv run seanchai lint --corpus DIR --show-accepted FILE.dad
 uv run seanchai lint --output-format concise ...  # file: severity: [rule] message
 ```
 
@@ -110,7 +110,7 @@ With `--corpus`, `duplicate-identity` also runs over re-used rows.
 
 ## The record of known holes
 
-With `--corpus`, a directory holding `dad/holes.toml`
+With `--corpus`, a directory holding `holes.toml`
 ([consumers.md](consumers.md#known-holes)) has the record linted once,
 under its own path, as a default `Model.build` holds the corpus to it.
 

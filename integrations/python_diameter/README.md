@@ -17,7 +17,7 @@ uv run integrations/python_diameter/generate.py --all -o out/protocols \
 ```
 
 `generate.py` takes references (`TS29.229`, `29.229`, `RFC6733`) or
-`--all`, `--corpus` for a corpus other than the repository's `dad/`,
+`--all`, `--corpus` for a corpus other than the repository's,
 `--dictionary` for Wireshark's AVP names, and `--undefined` with `--supply`
 for the names the corpus declares defined nowhere
 ([below](#undefined-names)). It reads the installed library for the names

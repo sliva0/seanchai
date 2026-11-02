@@ -16,7 +16,7 @@ pinned dictionary in its own XML shape: name, code, vendor, the type (an
 one) and the M and V bits from the flag rules.
 
     uv run integrations/wireshark/additions.py
-    uv run integrations/wireshark/additions.py --dictionary DIR --corpus dad \\
+    uv run integrations/wireshark/additions.py --dictionary DIR --corpus DIR \\
         -o integrations/wireshark/additions
 
 An entry goes after the dictionary entry of its vendor with the nearest
@@ -701,7 +701,11 @@ def _check(tree: Path, base: str, patches: list[Path], defects: Sequence[Path]) 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--corpus", type=Path, default=_ROOT / "dad")
+    parser.add_argument(
+        "--corpus",
+        type=Path,
+        default=_ROOT / "packages/seanchai-corpus/src/seanchai_corpus/dad",
+    )
     parser.add_argument(
         "--dictionary", type=Path, default=_ROOT / "specifications" / "wireshark"
     )

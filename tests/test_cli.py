@@ -3,7 +3,7 @@ from pathlib import Path
 import docx
 import pytest
 from click.testing import CliRunner
-from conftest import _corpus
+from conftest import _CORPUS_DIR, _corpus
 
 from seanchai.cli import main
 from seanchai.dad import ast, formatter, parser
@@ -252,16 +252,16 @@ def _lint_v2x(*options, corrections=_REPO / "edits" / "corrections", raw=False):
     """TS 29.388 against the committed corpus, whose module accepts clause
     6.3.2's V4 body for V2X-Subscription-Data, its one cross-file note."""
     source = (
-        _REPO / "dad" / "raw" / "3gpp" / "rel-18" / "29388-i10.raw.dad"
+        _CORPUS_DIR / "raw" / "3gpp" / "rel-18" / "29388-i10.raw.dad"
         if raw
-        else _REPO / "dad" / "3gpp" / "rel-18" / "29388-i10.dad"
+        else _CORPUS_DIR / "3gpp" / "rel-18" / "29388-i10.dad"
     )
     return CliRunner().invoke(
         main,
         [
             "lint",
             "--corpus",
-            str(_REPO / "dad"),
+            str(_CORPUS_DIR),
             "--corrections",
             str(corrections),
             *options,
@@ -286,11 +286,10 @@ def test_lint_reports_the_corpus_record_once_as_a_file_of_its_own(tmp_path):
     """A corpus directory's record is part of what `--corpus` lints: an entry
     naming no hole fails the run, however many files are linted, and the record
     counts as no linted file."""
-    root = Path(__file__).parent.parent
     corpus_dir = tmp_path / "dad"
     corpus_dir.mkdir()
     source = corpus_dir / "rfc6733.dad"
-    source.write_bytes((root / "dad" / "rfc" / "rfc6733.dad").read_bytes())
+    source.write_bytes((_CORPUS_DIR / "rfc" / "rfc6733.dad").read_bytes())
     record = corpus_dir / "holes.toml"
     record.write_text(
         '[[hole]]\ndocument = "RFC6733"\nname = "Worked-Off"\n'
@@ -321,7 +320,7 @@ def test_lint_reports_a_malformed_record_as_a_usage_error(tmp_path):
     corpus_dir = tmp_path / "dad"
     corpus_dir.mkdir()
     source = corpus_dir / "rfc6733.dad"
-    source.write_bytes((_REPO / "dad" / "rfc" / "rfc6733.dad").read_bytes())
+    source.write_bytes((_CORPUS_DIR / "rfc" / "rfc6733.dad").read_bytes())
     record = corpus_dir / "holes.toml"
     record.write_text("[[hole]]\n", encoding="utf-8")
 

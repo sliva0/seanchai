@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 _DEFAULT_SOURCES = Path("edits") / "sources"
 _DEFAULT_CORRECTIONS = Path("edits") / "corrections"
 _DEFAULT_TRANSCRIPTIONS = Path("edits") / "transcriptions"
+# What `regenerate` rebuilds in place: the repository's copy, the package's data.
+_DEFAULT_CORPUS = Path("packages/seanchai-corpus/src/seanchai_corpus/dad")
 # Wireshark's deliberate renames, which `crosscheck` accepts as agreement.
 _DEFAULT_ALIASES = Path("integrations") / "wireshark" / "aliases.toml"
 
@@ -233,9 +235,10 @@ def extract_rfc(
 @click.option(
     "--corpus",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    default=Path("dad"),
+    default=_DEFAULT_CORPUS,
     show_default=True,
-    help="The committed corpus: decides which specifications to rebuild.",
+    help="The committed corpus: decides which specifications to rebuild."
+    " Defaulted for the repository's own workspace copy, never an installed one.",
 )
 @click.option(
     "-o",
@@ -844,7 +847,7 @@ def crosscheck(
     verdict — so findings never fail the run.
 
     SOURCES are files or directories, a directory's raw files skipped as
-    the corpus loader skips them (`seanchai crosscheck dad`). Only the
+    the corpus loader skips them (`seanchai crosscheck DIR`). Only the
     newest copy of each document is checked: an older one the corpus holds
     for a citation (TS 32.299 V11.20.0) is no reading of the document the
     dictionary describes, and is listed as skipped. Two files of one

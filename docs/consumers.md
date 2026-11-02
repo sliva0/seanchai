@@ -10,11 +10,12 @@ every AVP knowing its `(vendor-id, code)`, type, flag rules and defining
 document.
 
 ```python
+import seanchai_corpus
 from seanchai import corpus, model
 from seanchai.dad import ast
 
-built = model.Model.build(corpus.Corpus.load([Path("dad")]))
-# strict against dad/holes.toml; dictionary=Path("specifications/wireshark")
+built = model.Model.build(corpus.Corpus.load([seanchai_corpus.CORPUS_DIR]))
+# strict against the corpus's holes.toml; dictionary=Path("specifications/wireshark")
 # adds Avp.wireshark_name
 built.messages("TS29.229")  # bodies resolved
 built.applications("TS29.212")  # commands per application and interface
@@ -198,13 +199,14 @@ the identity. `name` is always the document's spelling
 ### Known holes
 
 Thirteen names stand as holes, each a statement its source does not make.
-The committed record `dad/holes.toml` lists them by `Hole.document`, name,
-`Hole.missing` and a reason citing the version and clause and what was
-searched ([corrections.md](corrections.md#the-record-of-known-holes)). The
-file sits beside the `.dad` files because a consumer loads the corpus, not
-the edit layers: `corpus.Corpus.load([Path("dad")])` reads it into
-`Corpus.record` for the directory holding it directly. A file list or a
-subdirectory has no record, and neither has a raw corpus.
+The committed record, the corpus's `holes.toml`, lists them by
+`Hole.document`, name, `Hole.missing` and a reason citing the version and
+clause and what was searched
+([corrections.md](corrections.md#the-record-of-known-holes)). The file sits
+beside the `.dad` files because a consumer loads the corpus, not the edit
+layers: `corpus.Corpus.load` reads it into `Corpus.record` for the directory
+holding it directly. A file list or a subdirectory has no record, and neither
+has a raw corpus.
 
 | `strict` | A hole the record lists | A hole it does not | An entry naming no hole |
 |---|---|---|---|

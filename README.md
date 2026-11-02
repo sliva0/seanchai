@@ -39,14 +39,14 @@ independent reading of the same documents.
 seanchai download                       # fetch the catalog into specifications/
 seanchai download --no-convert          # without LibreOffice; legacy .doc unread
 seanchai download --spec SPECREF --version X.Y.Z   # one older version, for diffs
-seanchai regenerate [--add SPECREF]     # rebuild dad/ from the downloads
+seanchai regenerate [--add SPECREF]     # rebuild the corpus from the downloads
 seanchai regenerate --expand-ranges     # also widen stale declaration ranges
 seanchai extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
 seanchai extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
 seanchai correct RAW.dad --corrections DIR -o OUT.dad
 seanchai format [--check] FILE.dad...   # canonical form, ;; comments kept
-seanchai lint [--corpus dad [--show-accepted]] FILE.dad...
-seanchai crosscheck dad                 # against Wireshark's dictionary
+seanchai lint [--corpus DIR [--show-accepted]] FILE.dad...
+seanchai crosscheck DIR                 # against Wireshark's dictionary
 ```
 
 ## Repository layout
@@ -54,9 +54,10 @@ seanchai crosscheck dad                 # against Wireshark's dictionary
 - `src/seanchai/`: `dad/` (AST, parser, formatter, corrections),
   `extractor/`, `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`,
   `oracle.py`, `corpus.py`, `model.py`, `cli.py`.
-- `dad/`: the committed corpus, one directory per 3GPP release plus `rfc/`,
-  `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under `dad/raw/`, and the
-  record of known holes
+- `packages/seanchai-corpus/`: the corpus package. Its
+  `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
+  release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
+  `raw/`, and the record of known holes
   ([docs/dad-format.md](docs/dad-format.md#the-corpus)).
 - `edits/sources/<SpecRef>.toml`: input patches and quirks per document.
 - `edits/corrections/<SpecRef>.py`: corrections per document.

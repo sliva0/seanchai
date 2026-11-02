@@ -14,6 +14,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
+from conftest import _CORPUS_DIR
 
 from seanchai import corpus, model
 from seanchai.dad import ast
@@ -749,7 +750,7 @@ def test_a_supplied_definition_is_an_ordinary_one_with_its_source(policies):
 
 
 def test_an_alias_writes_the_named_avps_constant(generator, tmp_path):
-    books = corpus.Corpus.load([_ROOT / "dad"])
+    books = corpus.Corpus.load([_CORPUS_DIR])
     alias = model.Alias("TS29.336", "External-Identifier", "TS 29.154 CR draft")
     built = model.Model.build(
         books,

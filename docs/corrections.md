@@ -158,8 +158,8 @@ checks it with `--corpus` ([linter.md](linter.md#acceptances)).
 
 ## The record of known holes
 
-A correction changes a file; `dad/holes.toml` changes none, and records what
-no correction can state: a name the corpus cannot complete
+A correction changes a file; the corpus's `holes.toml` changes none, and
+records what no correction can state: a name the corpus cannot complete
 ([consumers.md](consumers.md#known-holes)). Its entries follow this layer's
 contract. `reason` cites the version and clause and what was searched,
 naming the correction involved as `module#id` where one inserted the block

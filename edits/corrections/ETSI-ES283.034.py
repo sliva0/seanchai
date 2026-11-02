@@ -1,6 +1,6 @@
 """Corrections for ETSI ES 283 034 — see docs/corrections.md.
 
-The input is the transcription (`dad/raw/etsi/es283034-020200.raw.dad`),
+The input is the transcription (`raw/etsi/es283034-020200.raw.dad`),
 which records what the PDF prints."""
 
 from seanchai.dad.corrections import Correction, avp_rule, definition, table_row

@@ -1,6 +1,6 @@
 """Rebuild the committed corpus from the downloaded sources.
 
-`dad/` is derived output: every file in it is one extraction, one page
+The corpus is derived output: every file in it is one extraction, one page
 attachment and one correction pass over a document the downloader fetched.
 This module does that for every specification the corpus holds, in one call,
 driven by `specifications/manifest.json`, so that the corpus can never quietly
