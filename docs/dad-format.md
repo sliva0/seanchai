@@ -136,9 +136,10 @@ section, each starting with `; Type:`.
   ([extractor.md](extractor.md#transcriptions)).
 - **The parser is strict; the formatter defines canonical form.** Hand
   edits are normalised by `seanchai format`, not by the parser guessing.
-- **Round-trip is exact and idempotent.** `format_spec(parse(text)) ==
-  text` for every canonical file, which keeps re-extraction diffs stable.
-  Every committed file is a fixed point of `seanchai format`.
+- **Round-trip is exact and idempotent.** Parsing a canonical file with
+  its comments and formatting it back gives the same text, which keeps
+  re-extraction diffs stable. Every committed file is a fixed point of
+  `seanchai format`.
 - **A hand-authored file is a first-class input.** Someone with a
   proprietary extension can write a `.dad` file and have the parser, linter
   and consumers treat it like an extracted one.

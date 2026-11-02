@@ -47,7 +47,8 @@ corrected file cites, so name what is corrected
 - **`versions` is advisory within its release**: `"18.6.0"` or
   `"18.0.0..18.2.0"`, inclusive, `*` for an open bound, the same range type
   patches and quirks declare. A declaration applies to the releases its
-  range spans and to none other ([extractor.md](extractor.md#releases)).
+  range spans, and to a newer undeclared release as a release upgrade
+  ([extractor.md](extractor.md#releases)).
   Within a release `regenerate` warns when the parsed version falls outside
   the range and never gates application; `regenerate --expand-ranges`
   rewrites the string literal in place

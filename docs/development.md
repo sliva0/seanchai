@@ -145,5 +145,6 @@ widens the version ranges of every declaration that applied cleanly:
 by replacing that value's text, so layout and comments stay as they were.
 An `Accept` is widened only while it still matches its finding; otherwise
 it is printed as `not widened, stale`. A literal outside the top-level
-`CORRECTIONS` statements, or a range built by an expression, is printed as
+`CORRECTIONS` statements, inside a lambda, conditional or filtered
+comprehension, split by comments, or built by an expression, is printed as
 `not widened` for a person to handle.

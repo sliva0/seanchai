@@ -56,9 +56,10 @@ experiments, not for refreshing the corpus.
 - **A run publishes all of it or nothing.** Every entry is extracted,
   converted and linked from the cache into `.staging/`, and the staged tree
   and manifest are swapped in only once every entry succeeded. A failed
-  run leaves the previous tree and manifest as they were. A `.previous/`
-  left behind by a failed rollback holds the last published tree, and the
-  next run refuses to start until someone moves it back or deletes it.
+  run leaves the previous tree and manifest as they were, unless the swap
+  itself fails halfway: then the rollback restores what it can, writes no
+  manifest, and the error names what `.previous/` still holds. The next
+  run refuses to start until someone moves it back or deletes it.
 - **3GPP versions come from `Specs/archive/`**, which keeps every version.
   The manifest's `url` is the archive's.
 - **Version selection prefers page attachment over newness.** When the

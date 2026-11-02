@@ -1,7 +1,8 @@
 # The Wireshark oracle
 
 `src/seanchai/oracle.py` cross-checks every AVP a file defines, its
-definitions and own AVP-table rows, against Wireshark's Diameter dictionary
+definitions and own AVP-table rows, skipping any name the file also lists
+as re-used, against Wireshark's Diameter dictionary
 by `(vendor-id, code)`, comparing name and type. The dictionary is an
 independent reading of the same specifications, which is what makes
 disagreement informative. A row's vendor is read as the model reads it
@@ -68,8 +69,9 @@ dictionary is. The corpus always keeps the specification's own spelling.
 gives every AVP, and every hole with an identity, Wireshark's name for its
 `(vendor-id, code)` in `wireshark_name`. `name` stays the document's. Where
 the identity collides in the dictionary, an entry spelled like the corpus
-wins, then the one whose type agrees; an identity the dictionary lacks is
-None. `Oracle.name_for` is the lookup.
+wins, then the one whose type agrees; an identity the dictionary lacks,
+or cannot settle between several names, is None. `Oracle.name_for` is the
+lookup.
 
 ## What still reports
 
@@ -81,10 +83,11 @@ None. `Oracle.name_for` is the lookup.
   abbreviation, which would be an accepted rename but for its type.
 - **Wireshark-side defects**, each with a merge request staged under
   [`integrations/wireshark/`](../integrations/wireshark/README.md): misspelt
-  names, wrong types and member lists short of the document's. Two the
+  names, wrong types and member lists short of the document's. Three the
   oracle cannot see, since the AVP is re-used or the defect is a member
   list: `Application-Server-ID` typed Unsigned32 where OMA's table says
-  UTF8String, and `UWAN-User-Location-Info` missing four members.
+  UTF8String, `UWAN-User-Location-Info` missing four members, and
+  `Time-Of-Day-Condition` missing the three members erratum 2333 restores.
 - **Leads not staged**, resting on a reading the corpus makes rather than a
   document's statement: `Monitoring-Event-Information` listing TS 29.336's
   `Monitoring-Event-Report` where the corpus corrects the member to TS

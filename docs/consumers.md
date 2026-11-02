@@ -30,17 +30,16 @@ built.across_releases()  # what citations resolved across releases
 built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 ```
 
-The query set is thin on purpose: each query exists because a real consumer
-needed it. `applications` groups a document's commands by application id
-and the clause they sit under, since documents share one id between
-interfaces (TS 29.273's SWa, STa and SWd). The id is the header's, or, for
-commands whose headers print none, the one an `Application Scope` block
+The query set is small on purpose. `applications` groups a document's commands
+by application id and the clause they sit under, since documents share one id
+between interfaces (TS 29.273's SWa, STa and SWd). The id is the header's, or,
+for commands whose headers print none, the one an `Application Scope` block
 covering their clause states. A `Member` carries the ABNF rule as spelled,
-markers included, and `min_occurs`/`max_occurs` as RFC 6733 section 3.2
-reads them. An `Enumerated` whose clause defines its values elsewhere
-carries the citation in `values_source` and whatever values a correction
-supplied; `vendor_specific` picks out the ranges a validator must allow
-under names the document does not give.
+markers included, and `min_occurs`/`max_occurs` as RFC 6733 section 3.2 reads
+them. An `Enumerated` whose clause defines its values elsewhere carries the
+citation in `values_source` and whatever values a correction supplied;
+`vendor_specific` picks out the ranges a validator must allow under names the
+document does not give.
 
 The AST stays public underneath: `parser.parse(text)` reads one file,
 discarding `;;` comments, and `parser.parse_with_comments(text)` returns the
@@ -70,7 +69,9 @@ Must, `MUST-NOT` in Must not, and `-` says nothing. The origin still
 supplies the code, type and vendor, names the defining document, and
 supplies each flag no citing row places. An IETF reading stating no flags
 takes the M bit as application-defined and V as Must not (RFC 6733 sections
-4.1 and 4.1.1); a vendor reading stating none stays a hole. Resolution
+4.1 and 4.1.1): its rules are a `model.FlagRules`, an `ast.AvpFlagRules`
+with a fifth column, `application_defined`, holding M there rather than
+guessing Must or May. A vendor reading stating none stays a hole. Resolution
 through the origin is unchanged, so `identified` returns both readings of
 such an identity. Examples: TS 29.229 table 6.3.0.1 puts M in Must for four
 `Digest-*` AVPs RFC 4590 states no rule for; TS 29.272 table 7.3.1/2 marks
@@ -89,7 +90,10 @@ disagreement, saying which side the model follows.
 
 **Filling through.** A field the first reading leaves unstated comes from
 the next reading along the order, if the two are the same AVP saying the
-same thing: every field both state must be equal. A table row's vendor is
+same thing: every field both state must be equal. The citing table's own
+flag cells and its re-used row's M-bit take no part in this: they are laid
+over the result afterwards, so they neither fill another reading nor
+disagree with one. A table row's vendor is
 its Vendor-ID cell where the table prints one, else its V flag: V under
 Must not is IETF space, V under Must the file's `; Vendor-ID:`, and a row
 stating neither agrees with any. A reading that disagrees fills nothing,
@@ -180,7 +184,8 @@ naming the document that falls short and the fields it leaves unstated
 nowhere, or `undefined` when an `Undefined AVP` block declares it so, plus
 the re-used origin the corpus lacks or the disagreeing reading, if either
 applies. `Member.avp` is `None` for a hole and `Member.hole` says which;
-the `* [ AVP ]` wildcard is the one `None` without a hole. A hole keeps the
+the `* [ AVP ]` wildcard, and a placeholder under that policy, are the
+only `None`s without a hole. A hole keeps the
 vendor, code, type and flag rules its document states, but not a grouped
 AVP's members or an enumerated AVP's values; a consumer that wants those
 reads the AST through `table_rows` or `corpus.Entry.spec`.
