@@ -31,6 +31,8 @@ jobs:
       - run: ~/.local/bin/uv run pytest -m "not sources"
       - run: ~/.local/bin/uv run ruff check .
       - run: ~/.local/bin/uv run ruff format --check .
+      - run: ~/.local/bin/uv run ty check
+      - run: ~/.local/bin/uv run basedpyright
       # Drop anything sync no longer references, so the saved cache tracks
       # the lockfile instead of accreting every wheel ever downloaded.
       - run: ~/.local/bin/uv cache prune --ci

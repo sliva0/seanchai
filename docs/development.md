@@ -21,8 +21,8 @@ V6.7.0, 29.211 V6.4.0, 29.212 V11.19.0, 29.214 V7.12.0 and V11.16.0, 29.234
 V11.2.0 and 32.299 V11.20.0, and a `--no-convert` manifest fails the test
 naming those twenty.
 
-CI runs the tests without sources plus ruff. Run everything locally before
-committing anyway; CI is a backstop, not the gate.
+CI runs the tests without sources, ruff and both type checkers. Run everything
+locally before committing anyway; CI is a backstop, not the gate.
 
 Type-checker suppressions are allowed in the narrowest form that works, with
 the reason written next to them. The two checkers sometimes disagree; use the
