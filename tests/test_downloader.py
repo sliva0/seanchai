@@ -1133,6 +1133,8 @@ def test_a_timed_out_conversion_kills_the_whole_process_group(tmp_path, monkeypa
     monkeypatch.setattr(downloader.os, "killpg", recording_killpg)
     monkeypatch.setattr(downloader, "SOFFICE", "sh")
     monkeypatch.setattr(downloader, "SOFFICE_TIMEOUT", 0.5)
+    # From before the call: waiting the 30 s sleep out would also end the child.
+    deadline = time.monotonic() + 5
 
     with pytest.raises(downloader.DownloadError, match=r"timed out after 0\.5 s"):
         downloader.run_soffice(
@@ -1141,11 +1143,11 @@ def test_a_timed_out_conversion_kills_the_whole_process_group(tmp_path, monkeypa
 
     assert [sig for _, sig in killed] == [downloader.signal.SIGKILL]
     child = int(pidfile.read_text())
-    deadline = time.monotonic() + 5
     while _is_running(child):
         if time.monotonic() >= deadline:
             pytest.fail(f"the launcher's child {child} outlived the timeout")
         time.sleep(0.05)
+    assert time.monotonic() < deadline, "the child was waited out, not killed"
 
 
 ONEM2M = downloader.OneM2MSpec(
