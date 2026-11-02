@@ -1,3 +1,8 @@
+import json
+import os
+import subprocess
+import sys
+
 import pydantic
 import pytest
 
@@ -256,3 +261,25 @@ def test_marks_need_their_column_and_are_no_dash():
     _table(columns, (ast.AvpTableRow(name="E", marks=applicability),))
     dash = {ast.MarkColumn.APPLICABILITY: ()}
     _table(columns, (ast.AvpTableRow(name="E", marks=dash),))
+
+
+@pytest.mark.parametrize("seed", ["1", "2", "3"])
+def test_flag_rules_dump_in_cell_order_under_any_hash_seed(seed):
+    script = """
+from seanchai.dad import ast
+from seanchai.model import FlagRules
+
+flags = frozenset(ast.AvpFlag)
+print(ast.AvpFlagRules(must=flags).model_dump_json())
+print(FlagRules(application_defined=flags).model_dump_json())
+"""
+    run = subprocess.run(
+        [sys.executable, "-c", script],
+        env={**os.environ, "PYTHONHASHSEED": seed},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    plain, defined = map(json.loads, run.stdout.splitlines())
+    assert plain["must"] == ["M", "V", "P"]
+    assert defined["application_defined"] == ["M", "V", "P"]

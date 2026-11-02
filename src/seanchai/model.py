@@ -169,6 +169,13 @@ class FlagRules(ast.AvpFlagRules):
 
     application_defined: frozenset[ast.AvpFlag] = frozenset()
 
+    @pydantic.field_serializer("application_defined", when_used="json")
+    def _application_defined_in_cell_order(
+        self, flags: frozenset[ast.AvpFlag]
+    ) -> list[ast.AvpFlag]:
+        """As `AvpFlagRules`' columns."""
+        return [flag for flag in ast.AvpFlag if flag in flags]
+
     @pydantic.model_validator(mode="after")
     def _defined_once(self) -> FlagRules:
         placed = self.must | self.may | self.should_not | self.must_not

@@ -447,6 +447,14 @@ class AvpFlagRules(Node):
                 seen[flag] = column
         return self
 
+    @pydantic.field_serializer(
+        "must", "may", "should_not", "must_not", when_used="json"
+    )
+    def _in_cell_order(self, flags: frozenset[AvpFlag]) -> list[AvpFlag]:
+        """A frozenset's order changes with `PYTHONHASHSEED`, so anything
+        written from these has to be given one."""
+        return [flag for flag in AvpFlag if flag in flags]
+
 
 class MarkColumn(enum.StrEnum):
     """Columns in which a table marks where its row applies, each cell a
