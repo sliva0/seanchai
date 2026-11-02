@@ -145,9 +145,10 @@ def test_a_source_distribution_holds_the_package_and_its_metadata_only(dist, pre
     with tarfile.open(sdist) as archive:
         top = {part for member in archive.getnames() for part in member.split("/")[1:2]}
 
-    assert {"PKG-INFO", "README.md", "src", "pyproject.toml"} <= top
+    assert {"PKG-INFO", "README.md", "LICENSE", "src", "pyproject.toml"} <= top
     assert all(
-        name in {"PKG-INFO", "README.md", "src"} or name.startswith("pyproject.toml")
+        name in {"PKG-INFO", "README.md", "LICENSE", "src"}
+        or name.startswith("pyproject.toml")
         for name in top
     )
 

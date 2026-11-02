@@ -7,6 +7,8 @@ authors = [
     { name = "sliva0", email = "sliva0mk@gmail.com" }
 ]
 requires-python = ">=3.14"
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
 classifiers = [
     "Development Status :: 3 - Alpha",

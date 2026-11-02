@@ -106,6 +106,12 @@ uv run ty check && uv run basedpyright
 
 See [docs/development.md][development].
 
+## License
+
+MIT, see [LICENSE](LICENSE). The corpus packages text taken from 3GPP, ETSI,
+3GPP2, oneM2M and IETF documents; those documents stay under their
+publishers' terms.
+
 [consumers]: https://github.com/sliva0/senchai/blob/main/docs/consumers.md
 [corrections]: https://github.com/sliva0/senchai/blob/main/docs/corrections.md
 [dad-format]: https://github.com/sliva0/senchai/blob/main/docs/dad-format.md

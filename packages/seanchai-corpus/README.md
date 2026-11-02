@@ -31,3 +31,8 @@ leading zeros. The
 [format](https://github.com/sliva0/senchai/blob/main/docs/dad-format.md) and
 [grammar](https://github.com/sliva0/senchai/blob/main/docs/grammar.md) are
 documented in the repository.
+
+## License
+
+MIT, see [LICENSE](LICENSE). The definitions are taken from 3GPP, ETSI, 3GPP2,
+oneM2M and IETF documents, which stay under their publishers' terms.
