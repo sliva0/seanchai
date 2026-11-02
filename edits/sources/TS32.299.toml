@@ -979,3 +979,12 @@ reason = """
     """
 first_version = "11.20.0"
 last_version = "11.20.0"
+
+[[quirk]]
+name = "prose-avp-origins"
+reason = """
+    clauses 7.1.10, 7.1.12 and 7.1.13 explicitly cite RFC 4006 for
+    Rating-Group, Service-Context-Id and Service-Identifier
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"

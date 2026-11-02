@@ -1672,6 +1672,8 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("ETSI-ES283.034", "TS29.209"),
         ("ETSI-TS183.017", "TS29.209"),
         ("ETSI-TS183.017", "TS29.214"),
+        ("TS29.140", "TS29.061"),
+        ("TS29.140", "TS29.329"),
         ("TS29.210", "TS29.229"),
         ("TS29.212", "3GPP2-X.S0057"),
         ("TS29.234", "TS29.229"),
@@ -1685,12 +1687,12 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("oneM2M-TS-0004", "TS32.299"),
     }
     # TS 29.212's and 32.299's 3GPP2-BSID are one Avp, revision 0 standing
-    # in for TS 29.212's revision B. Thirty-five of the seventy-seven are
+    # in for TS 29.212's revision B. Thirty-five of the seventy-nine are
     # what oneM2M TS-0004's Service-Information reaches through TS 32.299
     # V11.20.0's six release stand-ins, TS 29.061's
     # 3GPP-Session-Stop-Indicator a hole among them; fifteen are TS 29.210's
-    # and TS 29.234's.
-    assert len(built.across_releases()) == 77
+    # and TS 29.234's, and two are TS 29.140's definition citations.
+    assert len(built.across_releases()) == 79
     # oneM2M's own two, those thirty-five, V11.20.0's VAS-ID and VASP-ID
     # from TS 29.140 V7.0.0, and 3GPP2-BSID through TS 29.212 V11.19.0.
     reached = built.across_releases("oneM2M-TS-0004")

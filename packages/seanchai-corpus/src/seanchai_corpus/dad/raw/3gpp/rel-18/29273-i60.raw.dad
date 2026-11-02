@@ -1049,6 +1049,14 @@ IMEI-Check-In-VPLMN-Result     1540   5.2.3.35    Unsigned32    V      -     -  
 High-Priority-Access-Info      1542   5.2.3.36    Unsigned32    V      -     -       M,P
 
 
+; Type: Reused AVPs
+; Section: 5.2.3.1
+; Table: 5.2.3.1/1
+; Page: 71
+; Columns: Name   From      M-bit
+QoS-Capability    RFC5777   -
+
+
 ; Type: AVP Table
 ; Section: 6.2.3.1
 ; Table: 6.2.3.1/1
@@ -1080,6 +1088,14 @@ TWAN-S2a-Failure-Cause         1533   5.2.3.31    Unsigned32    V      -     -  
 High-Priority-Access-Info      1542   5.2.3.36    Unsigned32    V      -     -       M,P
 
 
+; Type: Reused AVPs
+; Section: 6.2.3.1
+; Table: 6.2.3.1/1
+; Page: 91
+; Columns: Name   From      M-bit
+QoS-Capability    RFC5777   -
+
+
 ; Type: AVP Table
 ; Section: 7.2.3.1
 ; Table: 7.2.3.1/1
@@ -1098,6 +1114,14 @@ Emergency-Services           1538   7.2.3.4     Unsigned32    V      -     -    
 Access-Network-Info          1526   5.2.3.24    Grouped       V      -     -       M,P
 AAR-Flags                    1539   7.2.3.5     Unsigned32    V      -     -       M,P
 High-Priority-Access-Info    1542   5.2.3.36    Unsigned32    V      -     -       M,P
+
+
+; Type: Reused AVPs
+; Section: 7.2.3.1
+; Table: 7.2.3.1/1
+; Page: 122
+; Columns: Name   From      M-bit
+QoS-Capability    RFC5777   -
 
 
 ; Type: AVP Table
@@ -1141,6 +1165,15 @@ AAA-Failure-Indication       1518   8.2.3.21    Unsigned32    V      -     -    
 DER-S6b-Flags                1523   9.2.3.7     Unsigned32    V      -     -       M,P
 
 
+; Type: Reused AVPs
+; Section: 9.2.3.1.1
+; Table: 9.2.3.1.1/1
+; Page: 188
+; Columns: Name   From      M-bit
+QoS-Capability    RFC5777   -
+QoS-Resources     RFC5777   -
+
+
 ; Type: AVP Table
 ; Section: 9.2.3.2.1
 ; Table: 9.2.3.2.1/1
@@ -1158,6 +1191,15 @@ Maximum-Wait-Time            1537   9.2.3.2.7   Unsigned32    V      -     -    
 Emergency-Services           1538   7.2.3.5     Unsigned32    V      -     -       M,P
 
 
+; Type: Reused AVPs
+; Section: 9.2.3.2.1
+; Table: 9.2.3.2.1/1
+; Page: 190
+; Columns: Name   From      M-bit
+QoS-Capability    RFC5777   -
+QoS-Resources     RFC5777   -
+
+
 ; Type: AVP Table
 ; Section: 9.2.3.6.1
 ; Table: 9.2.3.6.1/1
@@ -1170,6 +1212,17 @@ QoS-Resources         508    9.2.3.6.5   Grouped       M      -     -       V,P
 MIP-MN-HA-SPI         491    9.2.3.6.6   Unsigned32    M      -     -       V,P
 MIP-Session-Key       343    9.2.3.6.7   OctetString   M      -     -       V,P
 Service-Selection     493    5.2.3.5     UTF8String    M      -     -       V,P
+
+
+; Type: Reused AVPs
+; Section: 9.2.3.6.1
+; Table: 9.2.3.6.1/1
+; Page: 192
+; Columns: Name   From      M-bit
+QoS-Capability    RFC5777   -
+QoS-Resources     RFC5777   -
+MIP-MN-HA-SPI     RFC5778   -
+MIP-Session-Key   RFC4004   -
 
 
 ; Type: Reused AVPs

@@ -1,6 +1,10 @@
 # Source declarations for RFC 8583 (Diameter Load Information).
 
 [[quirk]]
+name = "prose-avp-origins"
+reason = "section 7.4 explicitly defines SourceID by reference to RFC 8581"
+
+[[quirk]]
 name = "ragged-separator"
 reason = """
     the table's closing horizontal rule prints one stray space inside the dashes

@@ -240,6 +240,9 @@ Vendor-Specific-Application-Id     260    -     -     -     -     Grouped       
 Location-Data          RFC5580   -
 Location-Information   RFC5580   -
 Operator-Name          RFC5580   -
+Rating-Group           RFC4006   -
+Service-Context-Id     RFC4006   -
+Service-Identifier     RFC4006   -
 
 
 ; Type: AVP Table

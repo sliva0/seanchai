@@ -352,6 +352,7 @@ Supported-Applications                        -           631    6.3.32     Grou
 Associated-Identities                         -           632    6.3.33     Grouped            V      -     -       M       No
 Originating-Request                           -           633    6.3.34     Enumerated         M,V    -     -       -       No
 Wildcarded-Public-Identity                    -           634    6.3.35     UTF8String         V      -     -       M       No
+Wildcarded-IMPU                               -           636    6.3.43     UTF8String         V      -     -       M       No ;; inserted: (TS29.229.py#wildcarded-impu-row-missing)
 SIP-Digest-Authenticate                       -           635    6.3.36     Grouped            V      -     -       M       No
 Digest-Realm                                  -           104    6.3.37     UTF8String         M      -     -       V       No
 Digest-Algorithm                              -           111    6.3.39     UTF8String         M      -     -       V       No

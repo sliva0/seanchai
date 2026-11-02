@@ -169,6 +169,27 @@ def _compared(date: str, release: int) -> str:
 
 _REL11 = _compared("2026-10-31", 11)
 RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
+    # TS 29.140 V7.0.0 clause 2 [12], reached only for 3GPP-IMSI (6.3.6).
+    ("TS29.140", "7.0.0", "TS29.061"): ReleaseStandIn(
+        "7.12.0",
+        "18.1.0",
+        "compared 2026-11-02 with V7.12.0 extracted from the 3GPP archive,"
+        " whose listing holds no later Release 7 version: both define"
+        " 3GPP-IMSI as code 1, vendor 10415, UTF8String in clause 16.4.7;"
+        " both tables 9a and 10 give identical flag rules and encryption"
+        " cells (including their disagreement on M); the AVP is scalar,"
+        " with no grouped body or enumerated values",
+    ),
+    # TS 29.140 V7.0.0 clause 2 [11], reached only for MSISDN (6.3.2).
+    ("TS29.140", "7.0.0", "TS29.329"): ReleaseStandIn(
+        "7.8.0",
+        "18.0.0",
+        "compared 2026-11-02 with V7.8.0 extracted from the 3GPP archive,"
+        " whose listing holds no later Release 7 version: both table 6.3.1"
+        " rows give MSISDN code 701, vendor 10415, OctetString, M and V in"
+        " Must, no other flag rules and No encryption; both clauses 6.3.2"
+        " define that scalar AVP, with no grouped body or enumerated values",
+    ),
     # TS 32.299 V11.20.0 clause 2 [207].
     ("TS32.299", "11.20.0", "TS29.061"): ReleaseStandIn(
         "11.12.0",

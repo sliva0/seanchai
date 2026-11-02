@@ -5,6 +5,17 @@ from seanchai.dad.corrections import Correction, Delete, reused_row
 
 CORRECTIONS = [
     Delete(
+        id="sequence-number-origin-is-another-avp",
+        target=reused_row("Sequence-Number"),
+        expect=ast.ReusedAvpRow(name="Sequence-Number", origin="TS29.329"),
+        reason="clause 7.3.21 cites TS 29.329, but table 7.3.1-1 gives"
+        " this MC service profile's Sequence-Number code 4512; TS 29.230"
+        " allocates 4512 to TS 29.283 and separately allocates 716 to"
+        " TS 29.329's Sh Sequence-Number, so the citation does not identify"
+        " this AVP's origin and following it would change its wire identity",
+        versions="18.0.0",
+    ),
+    Delete(
         id="feature-id-row-not-in-origin",
         target=reused_row("Feature-Id"),
         expect=ast.ReusedAvpRow(name="Feature-Id", origin="TS29.229"),

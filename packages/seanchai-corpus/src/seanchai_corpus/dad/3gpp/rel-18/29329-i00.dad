@@ -273,12 +273,21 @@ DRMP                         301    6.3.34    Enumerated    -      -     -      
 ; Section: 6.3
 ; Table: 6.3/2
 ; Page: 17
-; Columns: Name         From       M-bit
-External-Identifier     TS29.336   MUST
-OC-Supported-Features   RFC7683    -
-OC-OLR                  RFC7683    -
-DRMP                    RFC7944    -
-Load                    RFC8583    -
+; Columns: Name              From       M-bit
+External-Identifier          TS29.336   MUST
+OC-Supported-Features        RFC7683    -
+OC-OLR                       RFC7683    -
+DRMP                         RFC7944    -
+Load                         RFC8583    -
+Server-Name                  TS29.229   -
+Supported-Features           TS29.229   -
+Feature-List-ID              TS29.229   -
+Feature-List                 TS29.229   -
+Supported-Applications       TS29.229   -
+Public-Identity              TS29.229   -
+Wildcarded-Public-Identity   TS29.229   -
+Wildcarded-IMPU              TS29.229   -
+Session-Priority             TS29.229   -
 
 
 ; Type: Grouped AVP

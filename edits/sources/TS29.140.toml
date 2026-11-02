@@ -20,3 +20,12 @@ reason = """
     """
 first_version = "7.0.0"
 last_version = "7.0.0"
+
+[[quirk]]
+name = "prose-avp-origins"
+reason = """
+    clauses 6.3.2 and 6.3.6 refer to TS 29.329 and TS 29.061 for the
+    definitions of MSISDN and 3GPP-IMSI
+    """
+first_version = "7.0.0"
+last_version = "7.0.0"

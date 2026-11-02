@@ -2836,6 +2836,8 @@ def _collect(
                 )
             elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
                 collected.pending_enums.append((section, title["name"]))
+    if quirks.enabled("prose-avp-origins"):
+        _prose_avp_origins(collected, sections, quirks)
     return collected
 
 
@@ -2849,6 +2851,81 @@ def _avp_title(title: str, quirks: sources.Quirks) -> re.Match | None:
         quirks.fire("access-type-headings")
         return match
     return None
+
+
+def _prose_avp_origins(
+    collected: _Collected, sections: list[_Section], quirks: sources.Quirks
+) -> None:
+    """Keep explicit definition citations alongside the citing AVP table.
+
+    Like NOTE-derived origins, these supplement the table rather than erase
+    its local code, type or application flag rules. References to encodings,
+    value lists or another AVP do not define this AVP's origin.
+    """
+    rows = [row for table in collected.avp_tables for row in table.table.rows]
+    names = {row.name for row in rows}
+    origins: dict[str, str] = {}
+    for section in sections:
+        # TS 29.140 6.3.6 misspells its heading as 3GGPP-IMSI; the table's
+        # clause cell still identifies the AVP unambiguously.
+        candidates = {row.name for row in rows if row.section == section.number}
+        if (title := _avp_title(section.title, quirks)) and title["name"] in names:
+            candidates.add(title["name"])
+        for name in candidates:
+            subject = rf"(?:The {re.escape(name)} AVP(?: \(AVP code \d+\))?,?|This AVP)"
+            for paragraph in section.paragraphs:
+                text = paragraph.text
+                citations = [
+                    match[1]
+                    for match in re.finditer(
+                        rf"\b{subject} is defined in (?:the )?(.+?)\s*\[\d+\]",
+                        text,
+                    )
+                ]
+                # TS 29.329 6.3.11-21: a bare clause citation, or an
+                # explicit 'for the definition' qualifier. Coding-only
+                # citations (TS 29.272 7.3.185) must not match.
+                citations.extend(
+                    match[1]
+                    for match in re.finditer(
+                        r"\bSee (.+?) (?:for (?:the definition|further description)"
+                        r" of this AVP\.|"
+                        r"clause \d+(?:\.\d+)+ for the definition\b)",
+                        text,
+                    )
+                )
+                if match := re.fullmatch(r"See (.+?) clause \d+(?:\.\d+)+\.", text):
+                    citations.append(match[1])
+                # TS 29.140 6.3.2/6 ('For is' is printed in 6.3.2).
+                citations.extend(
+                    match[1]
+                    for match in re.finditer(
+                        r"For (?:is )?the definition of this AVP refer to (.+)", text
+                    )
+                )
+                for citation in citations:
+                    origin = _named_document(citation)
+                    if origin is None or origin == collected.own_reference:
+                        continue
+                    if name in origins and origins[name] != origin:
+                        raise ExtractionError(
+                            f"{section.number}: conflicting prose origins for {name}:"
+                            f" {origins[name]} and {origin}"
+                        )
+                    origins[name] = origin
+                    quirks.fire("prose-avp-origins")
+    known = {
+        (row.name, row.origin)
+        for table in [*collected.reused_tables, *collected.vendor_reused]
+        for row in table.rows
+    }
+    for entry in collected.avp_tables:
+        for row in entry.table.rows:
+            origin = origins.get(row.name)
+            if origin is not None and (row.name, origin) not in known:
+                inferred = ast.ReusedAvpRow(name=row.name, origin=origin)
+                if inferred not in entry.note_reused:
+                    entry.note_reused.append(inferred)
 
 
 def _resolve(
@@ -3116,6 +3193,10 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
 # "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit short forms
 # cannot mean anything else, where a dotted flags cell or a prose note can.
 QUIRKS: dict[str, str] = {
+    "prose-avp-origins": (
+        "read explicit AVP definition citations in prose as re-used origins,"
+        " retaining the citing AVP table's own facts (TS 29.329 6.3.21)"
+    ),
     "list-numbered-headings": (
         "number a heading printing no clause number with the number Word's"
         " list numbering renders for it (word/numbering.xml), replayed over"

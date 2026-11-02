@@ -244,6 +244,10 @@ IETF_VENDOR = ast.IETF_VENDOR
 # are also per-document knowledge, but an unrecognized spelling fails loudly
 # on its own, where an unwanted prose harvest would succeed silently.
 QUIRKS: dict[str, str] = {
+    "prose-avp-origins": (
+        "read explicit AVP definition citations as re-used origins"
+        " (RFC 8583 section 7.4's SourceID)"
+    ),
     "prose-cleared-flags": (
         "read explicit cleared M/V bits in AVP clauses (RFC 6942 clauses 8.1-8.2)"
     ),
@@ -1636,6 +1640,40 @@ def sources_file_name(specification: str) -> str:
     return f"{ast.spec_ref(specification)}.toml"
 
 
+def _prose_avp_origins(
+    sections: list[_DocSection],
+    tables: tuple[ast.AvpTable, ...],
+    quirks: sources.Quirks,
+) -> list[ast.ReusedAvps]:
+    """Explicit definition citations, retaining the citing table's facts."""
+    reused = []
+    for table in tables:
+        rows = []
+        for row in table.rows:
+            for section in sections:
+                if section.number != row.section:
+                    continue
+                text = " ".join(line.strip() for line in section.texts)
+                match = re.match(
+                    rf"\s*The {re.escape(row.name)} AVP"
+                    r"(?: \(AVP Code \d+\))? is defined in \[(RFC\d+)\]",
+                    text,
+                )
+                if match is not None:
+                    rows.append(ast.ReusedAvpRow(name=row.name, origin=match[1]))
+                    quirks.fire("prose-avp-origins")
+        if rows:
+            reused.append(
+                ast.ReusedAvps(
+                    table=table.table or table.source.section,
+                    source=table.source,
+                    columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+                    rows=tuple(rows),
+                )
+            )
+    return reused
+
+
 def extract(
     text_path: Path | str,
     link: str | None = None,
@@ -1740,6 +1778,11 @@ def extract(
         messages, definitions = _extract_definitions(
             document_sections, tables, warnings, quirks
         )
+        reused = (
+            _prose_avp_origins(document_sections, tables, quirks)
+            if quirks.enabled("prose-avp-origins")
+            else []
+        )
         quirks.finish()
         # File order matches the docx extractor's: messages in document order,
         # the AVP table, then every definition in document order.
@@ -1758,6 +1801,7 @@ def extract(
             sections=(
                 *messages,
                 *tables,
+                *reused,
                 *definitions,
             ),
         )

@@ -1660,20 +1660,9 @@ _STANDING_CORPUS_NOTES = {
         "registry-avp-name": ["Data", "MCVideo-ID"],
         "reused-body-differs": ["User-Identifier"],
     },
-    # Clauses 6.3.9-6.3.21 refer to TS 29.229 for nine AVPs table 6.3.1
-    # lists among 29.329's own.
-    "29329-i00.dad": {
-        "registry-avp-document": [
-            "Feature-List",
-            "Feature-List-ID",
-            "Public-Identity",
-            "Server-Name",
-            "Session-Priority",
-            "Supported-Applications",
-            "Supported-Features",
-            "Wildcarded-IMPU",
-            "Wildcarded-Public-Identity",
-        ],
+    "29140-700.dad": {
+        "cross-release-origin": ["TS29.061", "TS29.329"],
+        "reused-row-mismatch": ["3GPP-IMSI"],
     },
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
