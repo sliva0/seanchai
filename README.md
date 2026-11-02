@@ -91,7 +91,7 @@ seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
   [extractor][extractor], [corrections][corrections],
   [downloader][downloader], [linter][linter],
   [oracle][oracle], [consumers][consumers],
-  [development][development].
+  [development][development], and the [website plan][website].
 
 ## Development
 
@@ -116,3 +116,4 @@ See [docs/development.md][development].
 [grammar]: https://github.com/sliva0/senchai/blob/main/docs/grammar.md
 [linter]: https://github.com/sliva0/senchai/blob/main/docs/linter.md
 [oracle]: https://github.com/sliva0/senchai/blob/main/docs/oracle.md
+[website]: https://github.com/sliva0/senchai/blob/main/docs/website.md
