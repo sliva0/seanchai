@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import docx
@@ -185,7 +186,7 @@ def test_lint_command_is_quiet_and_succeeds_on_a_clean_file(tmp_path):
         )
     )
 
-    result = CliRunner().invoke(main, ["lint", str(source)])
+    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
 
     assert result.exit_code == 0
     assert result.output == ""
@@ -209,8 +210,10 @@ def test_lint_notes_do_not_fail_the_run_and_can_be_silenced(tmp_path):
         )
     )
 
-    reported = CliRunner().invoke(main, ["lint", str(source)])
-    silenced = CliRunner().invoke(main, ["lint", "--no-notes", str(source)])
+    reported = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
+    silenced = CliRunner().invoke(
+        main, ["lint", "--no-corpus", "--no-notes", str(source)]
+    )
 
     assert reported.exit_code == 0
     assert "local-and-reused" in reported.output
@@ -235,7 +238,7 @@ def test_lint_default_output_groups_findings_under_the_file_with_a_summary(tmp_p
         )
     )
 
-    result = CliRunner().invoke(main, ["lint", str(source)])
+    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
 
     assert result.exit_code == 1
     lines = result.output.splitlines()
@@ -316,6 +319,107 @@ def test_lint_reports_the_corpus_record_once_as_a_file_of_its_own(tmp_path):
     assert result.output.startswith(f"{record}: error: [stale-hole-record]")
 
 
+def _borrowing(tmp_path):
+    """A file only a corpus can judge: it re-uses a name its origin lacks."""
+    source = tmp_path / "borrowing.dad"
+    source.write_text(
+        _dad_with(
+            "; Type: Reused AVPs",
+            "; Section: 6.3",
+            "; Table: 6.3/2",
+            "; Columns: Name From",
+            "No-Such-Avp TS29.229",
+        )
+    )
+    return source
+
+
+def test_lint_without_a_corpus_uses_the_installed_one(tmp_path):
+    source = _borrowing(tmp_path)
+
+    defaulted = CliRunner().invoke(main, ["lint", str(source)])
+    named = CliRunner().invoke(
+        main, ["lint", "--corpus", str(_CORPUS_DIR), str(source)]
+    )
+    alone = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
+
+    assert defaulted.output == named.output
+    assert defaulted.output != alone.output
+
+
+def test_lint_without_the_package_lints_each_file_alone(tmp_path, monkeypatch):
+    source = _borrowing(tmp_path)
+    alone = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
+
+    monkeypatch.setitem(sys.modules, "seanchai_corpus", None)
+    result = CliRunner().invoke(main, ["lint", str(source)])
+
+    assert result.exit_code == alone.exit_code
+    assert result.output == alone.output
+
+
+def test_lint_refuses_a_corpus_and_no_corpus_together(tmp_path):
+    source = _borrowing(tmp_path)
+
+    result = CliRunner().invoke(
+        main, ["lint", "--no-corpus", "--corpus", str(_CORPUS_DIR), str(source)]
+    )
+
+    assert result.exit_code != 0
+    assert "--no-corpus" in result.output
+
+
+def _untrusted_checkout(tmp_path, monkeypatch):
+    """A working directory holding a corrections module for the linted file,
+    which leaves a mark when it runs."""
+    source = _borrowing(tmp_path)
+    modules = tmp_path / "edits" / "corrections"
+    modules.mkdir(parents=True)
+    ran = tmp_path / "ran"
+    (modules / "TS29.329.py").write_text(
+        f"from pathlib import Path\nPath({str(ran)!r}).touch()\nCORRECTIONS = []\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    return source, modules, ran
+
+
+def test_plain_lint_runs_no_module_from_the_working_directory(tmp_path, monkeypatch):
+    source, _, ran = _untrusted_checkout(tmp_path, monkeypatch)
+
+    CliRunner().invoke(main, ["lint", str(source)])
+
+    assert not ran.exists()
+
+
+def test_a_symlink_to_the_installed_corpus_is_not_the_repository(tmp_path, monkeypatch):
+    source, _, ran = _untrusted_checkout(tmp_path, monkeypatch)
+    link = tmp_path / "packages" / "seanchai-corpus" / "src" / "seanchai_corpus" / "dad"
+    link.parent.mkdir(parents=True)
+    link.symlink_to(_CORPUS_DIR)
+
+    CliRunner().invoke(main, ["lint", str(source)])
+
+    assert not ran.exists()
+
+
+def test_lint_runs_the_module_a_named_directory_holds(tmp_path, monkeypatch):
+    source, modules, ran = _untrusted_checkout(tmp_path, monkeypatch)
+
+    CliRunner().invoke(main, ["lint", "--corrections", str(modules), str(source)])
+
+    assert ran.exists()
+
+
+def test_plain_lint_in_the_repository_reads_its_acceptances(monkeypatch):
+    monkeypatch.chdir(_REPO)
+    source = _CORPUS_DIR / "3gpp" / "rel-18" / "29388-i10.dad"
+
+    result = CliRunner().invoke(main, ["lint", str(source)])
+
+    assert result.exit_code == 0
+    assert result.output == "found 1 accepted in 1 file\n"
+
+
 def test_lint_reports_a_malformed_record_as_a_usage_error(tmp_path):
     corpus_dir = tmp_path / "dad"
     corpus_dir.mkdir()
@@ -378,7 +482,7 @@ def test_lint_concise_output_keeps_the_one_line_per_finding_shape(tmp_path):
     )
 
     result = CliRunner().invoke(
-        main, ["lint", "--output-format", "concise", str(source)]
+        main, ["lint", "--no-corpus", "--output-format", "concise", str(source)]
     )
 
     (line,) = result.output.splitlines()

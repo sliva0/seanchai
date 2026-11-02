@@ -154,7 +154,7 @@ deliberate; where no clause says so, the note stays open. An acceptance
 changes no data: `apply` skips it, and a module declaring only acceptances
 is one `seanchai correct` refuses. `regenerate --expand-ranges` widens an
 acceptance's range only while it still matches its finding. The linter
-checks it with `--corpus` ([linter.md](linter.md#acceptances)).
+checks it against a corpus ([linter.md](linter.md#acceptances)).
 
 ## The record of known holes
 
@@ -209,7 +209,7 @@ them merged with the notes.
 ## CLI
 
 `seanchai regenerate` rebuilds the corpus with `edits/corrections`, and
-`seanchai lint --corpus` reads its acceptances from there. For one file:
+`seanchai lint` reads its acceptances from there. For one file:
 `seanchai extract … --corrections DIR` and `seanchai correct RAW.dad
 --corrections DIR -o OUT.dad`, where the directory is explicit because
 loading it executes Python. `extract` tolerates a document with no module;

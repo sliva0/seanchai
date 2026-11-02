@@ -7,10 +7,16 @@ contradictions, the linter says them out loud.
 ```sh
 uv run seanchai lint packages/seanchai-corpus/src/seanchai_corpus/dad/3gpp/rel-18/*.dad
 uv run seanchai lint --no-notes FILE.dad          # errors only
-uv run seanchai lint --corpus DIR FILE.dad        # also the cross-file rules
-uv run seanchai lint --corpus DIR --show-accepted FILE.dad
+uv run seanchai lint --corpus DIR FILE.dad        # against another corpus
+uv run seanchai lint --no-corpus FILE.dad         # each file alone
+uv run seanchai lint --show-accepted FILE.dad
 uv run seanchai lint --output-format concise ...  # file: severity: [rule] message
 ```
+
+The cross-file rules run against a corpus: the one `--corpus` names, or else
+the installed `seanchai-corpus`
+([consumers.md](consumers.md#installing-the-corpus)). `--no-corpus`, or no such
+package, lints each file alone.
 
 Errors exit non-zero; notes do not. **Error** means the file asserts two
 things that cannot both be true. **Note** means something a single file
@@ -61,7 +67,7 @@ acknowledges as an override its document states on purpose
   ([consumers.md](consumers.md#undefined-names)).
 - `undefined-avp-unused`: a block whose name no body references. An error.
 - `undefined-avp-defined`: a block for a name the file defines, tabulates
-  or lists as re-used, or, with `--corpus`, one a `; Bases:` document
+  or lists as re-used, or, with a corpus, one a `; Bases:` document
   resolves. An error: the claim is stale.
 
 A re-used row citing the file's own document is no re-use: those AVPs are
@@ -69,7 +75,7 @@ the file's own to every rule.
 
 ## Cross-file rules
 
-With `--corpus`, each re-used row is resolved against the document it
+With a corpus, each re-used row is resolved against the document it
 cites.
 
 - `reused-reprint` / `reused-extension` / `reused-body-differs`: what a
@@ -106,11 +112,11 @@ cites.
 - `base-not-in-corpus`: a `; Bases:` document the corpus lacks; reference
   resolution is skipped for that file.
 
-With `--corpus`, `duplicate-identity` also runs over re-used rows.
+With a corpus, `duplicate-identity` also runs over re-used rows.
 
 ## The record of known holes
 
-With `--corpus`, a directory holding `holes.toml`
+With a corpus, a directory holding `holes.toml`
 ([consumers.md](consumers.md#known-holes)) has the record linted once,
 under its own path, as a default `Model.build` holds the corpus to it.
 
@@ -121,7 +127,7 @@ under its own path, as a default `Model.build` holds the corpus to it.
 
 ## Registry rules
 
-With `--corpus`, a file is also compared with the TS 29.230 registry the
+With a corpus, a file is also compared with the TS 29.230 registry the
 corpus resolves for it. The registry is evidence, not a definer, so every
 rule is a note, and a corpus file is corrected only where its own defining
 clause supports the registry.
@@ -145,11 +151,13 @@ A note can be a document saying deliberately what another says otherwise:
 TS 29.336 clause 6.4.12 says `Serving-Node` "is originally defined in 3GPP
 TS 29.173" and then prints the body T4-triggering uses. An `Accept` in the
 document's corrections module ([corrections.md](corrections.md#acceptances))
-acknowledges such a note, citing the clause. With `--corpus`, `seanchai
+acknowledges such a note, citing the clause. With a corpus, `seanchai
 lint` reads the module (`--corrections`, by default `edits/corrections`)
 for every file but a raw one and reports each acknowledged note as
 `accepted[rule]`, counted apart in the summary and printed only with
-`--show-accepted`.
+`--show-accepted`. Loading a module executes it, so against the installed
+corpus outside this repository the default directory goes unread:
+`--corrections` has to name one.
 
 An acceptance matches one finding: its rule, its message exactly, and the
 node its target selects. One matching none is a `stale-acceptance` error,

@@ -519,7 +519,13 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
     multiple=True,
     type=click.Path(exists=True, path_type=Path),
     help="Directory or file to resolve re-used AVPs against. Enables the"
-    " cross-file rules; repeatable.",
+    " cross-file rules; repeatable. Default: the installed seanchai-corpus"
+    " package, if there is one.",
+)
+@click.option(
+    "--no-corpus",
+    is_flag=True,
+    help="Lint each file alone, even with seanchai-corpus installed.",
 )
 @click.option(
     "--output-format",
@@ -535,9 +541,10 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
     default=_DEFAULT_CORRECTIONS,
     show_default=True,
     help="Directory with per-spec correction modules, whose acceptances mark"
-    " deliberate overrides among a corrected file's findings; read with"
-    " --corpus only. Defaulted, like regenerate's, for the repository's own"
-    " corpus; a missing default directory is no acceptances.",
+    " deliberate overrides among a corrected file's findings; read with a"
+    " corpus only. Defaulted, like regenerate's, for the repository's own"
+    " corpus; a missing default directory is no acceptances, and an installed"
+    " corpus read outside the repository leaves the default unread.",
 )
 @click.option(
     "--show-accepted",
@@ -548,6 +555,7 @@ def lint(
     sources: tuple[Path, ...],
     notes: bool,
     corpus_paths: tuple[Path, ...],
+    no_corpus: bool,
     output_format: str,
     corrections: Path,
     show_accepted: bool,
@@ -558,9 +566,11 @@ def lint(
     they are things a single file cannot decide rather than defects.
 
     With `--corpus`, re-used AVPs are resolved against the other files it names
-    and the cross-file rules run too. An origin the corpus does not hold is
-    reported as a note and its rules are skipped, so a partial corpus is
-    useful rather than an error. The specification's corrections module is
+    and the cross-file rules run too. Without it the installed seanchai-corpus
+    package is the corpus; with no such package, or with `--no-corpus`, each
+    file is linted alone. An origin the corpus does not hold is reported as a
+    note and its rules are skipped, so a partial corpus is useful rather than
+    an error. The specification's corrections module is
     read too: a note one of its acceptances acknowledges is reported as
     `accepted`, hidden unless `--show-accepted`, and an acceptance matching
     no finding is an error. A raw (`.raw.dad`) file is linted without them,
@@ -568,12 +578,14 @@ def lint(
     holes is linted once, as a file of its own: a hole it does not list and an
     entry naming no hole are errors.
     """
-    from .corpus import Corpus
+    from .corpus import Corpus, CorpusNotInstalledError, installed_directory
     from .dad import corrections as corrections_module
     from .dad import parser
     from .linter import Severity, lint_record, lint_with_corpus
     from .linter import lint as lint_spec
 
+    if no_corpus and corpus_paths:
+        raise click.UsageError("--corpus and --no-corpus exclude each other")
     explicit = (
         click.get_current_context().get_parameter_source("corrections")
         is not click.core.ParameterSource.DEFAULT
@@ -601,7 +613,24 @@ def lint(
             _echo_findings(source, findings)
 
     with reported():
-        books = Corpus.load(corpus_paths) if corpus_paths else None
+        books = None
+        if corpus_paths:
+            books = Corpus.load(corpus_paths)
+        elif not no_corpus:
+            with contextlib.suppress(CorpusNotInstalledError):
+                books = Corpus.installed()
+                # A plain `lint` must not execute what the working directory
+                # holds, so the default directory counts only in the repository
+                # whose copy is the installed corpus. Naming a corpus or
+                # `--corrections` is the asking `corrections.load` requires. The
+                # path stays unresolved below the working directory, where a
+                # symlink to the installed corpus would otherwise pass for it.
+                in_repository = (
+                    installed_directory().resolve()
+                    == Path.cwd().resolve() / _DEFAULT_CORPUS
+                )
+                if not (explicit or in_repository):
+                    directory = None
         for source in sources:
             spec = parser.parse(source.read_text(encoding="utf-8"))
             if books is None:
@@ -810,7 +839,6 @@ def download(
 @click.argument(
     "sources",
     nargs=-1,
-    required=True,
     type=click.Path(exists=True, path_type=Path),
 )
 @click.option(
@@ -847,7 +875,8 @@ def crosscheck(
     verdict — so findings never fail the run.
 
     SOURCES are files or directories, a directory's raw files skipped as
-    the corpus loader skips them (`seanchai crosscheck DIR`). Only the
+    the corpus loader skips them; none means the corpus the seanchai-corpus
+    package installed. Only the
     newest copy of each document is checked: an older one the corpus holds
     for a citation (TS 32.299 V11.20.0) is no reading of the document the
     dictionary describes, and is listed as skipped. Two files of one
@@ -859,7 +888,7 @@ def crosscheck(
     `--show-accepted`. A listed alias that no longer holds is a
     `stale-alias` finding.
     """
-    from .corpus import Corpus, CorpusError, Entry
+    from .corpus import Corpus, CorpusError, Entry, installed_directory
     from .dad import parser
     from .oracle import Oracle, OracleError, load_aliases
     from .oracle import crosscheck as check
@@ -881,7 +910,7 @@ def crosscheck(
     renames = 0
     with reported():
         entries: list[Entry] = []
-        for source in sources:
+        for source in sources or (installed_directory(),):
             if source.is_dir():
                 try:
                     entries.extend(Corpus.load([source]))

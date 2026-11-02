@@ -45,8 +45,8 @@ seanchai extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
 seanchai extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
 seanchai correct RAW.dad --corrections DIR -o OUT.dad
 seanchai format [--check] FILE.dad...   # canonical form, ;; comments kept
-seanchai lint [--corpus DIR [--show-accepted]] FILE.dad...
-seanchai crosscheck DIR                 # against Wireshark's dictionary
+seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] FILE.dad...
+seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
 ```
 
 ## Repository layout

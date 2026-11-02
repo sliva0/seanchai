@@ -1,8 +1,10 @@
 """Loading several `.dad` files, and choosing which one an origin means."""
 
+import sys
 from pathlib import Path
 
 import pytest
+import seanchai_corpus
 from conftest import _CORPUS_DIR
 
 from seanchai import corpus
@@ -435,3 +437,32 @@ def test_a_hole_reads_its_reason_as_prose_and_the_rest_exactly(tmp_path):
     assert hole == corpus.KnownHole(
         "TS29.900", "Thing", ("data_type", "flag_rules"), "clause 6.3.1 states no type"
     )
+
+
+def test_the_installed_corpus_is_the_workspace_copy_here():
+    assert corpus.installed_directory() == _CORPUS_DIR
+    assert seanchai_corpus.CORPUS_DIR == _CORPUS_DIR
+
+
+def test_installed_loads_as_load_loads_its_directory():
+    installed = corpus.Corpus.installed()
+    loaded = corpus.Corpus.load([_CORPUS_DIR])
+
+    assert [entry.path for entry in installed] == [entry.path for entry in loaded]
+    assert installed.record == loaded.record is not None
+    assert not any(entry.path.name.endswith(".raw.dad") for entry in installed)
+
+
+def test_installed_raw_is_the_raw_mirror_and_has_no_record():
+    raw = corpus.Corpus.installed(raw=True)
+
+    assert raw.record is None
+    assert all(entry.path.name.endswith(".raw.dad") for entry in raw)
+    assert len(raw) == len(corpus.Corpus.installed())
+
+
+def test_installed_without_the_package_names_it(monkeypatch):
+    monkeypatch.setitem(sys.modules, "seanchai_corpus", None)
+
+    with pytest.raises(corpus.CorpusNotInstalledError, match="seanchai-corpus"):
+        corpus.Corpus.installed()

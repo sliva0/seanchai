@@ -1,10 +1,11 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.14"
-# dependencies = ["python-diameter", "seanchai"]
+# dependencies = ["python-diameter", "seanchai", "seanchai-corpus"]
 #
 # [tool.uv.sources]
 # seanchai = { path = "../..", editable = true }
+# seanchai-corpus = { path = "../../packages/seanchai-corpus", editable = true }
 # ///
 """Validate the python-diameter library against one specification's `.dad`.
 
@@ -51,7 +52,6 @@ from __future__ import annotations
 import inspect
 import re
 import sys
-from pathlib import Path
 
 from seanchai import corpus, model
 from seanchai.dad import ast
@@ -251,9 +251,7 @@ def main() -> int:
 
     from diameter.message.avp.dictionary import AVP_DICTIONARY, AVP_VENDOR_DICTIONARY
 
-    root = Path(__file__).parents[2]
-    directory = root / "packages/seanchai-corpus/src/seanchai_corpus/dad"
-    built = model.Model.build(corpus.Corpus.load([directory]))
+    built = model.Model.build(corpus.Corpus.installed())
     try:
         messages = built.messages(reference)
     except model.ModelError as error:

@@ -91,13 +91,13 @@ manifest record and are rebuilt from `edits/transcriptions/` alongside.
 1. `uv run seanchai regenerate --add TS29.305`. The document must be in the
    downloader's catalog (`src/seanchai/downloader/specs.toml`) and readable
    by the extractor; a shape it rejects fails with the reason.
-2. Lint the raw file, under the corpus's `raw/`, with `uv run seanchai lint`
-   and `--corpus` naming the corpus directory. Every error is a source typo
-   (input patch), a reading the extractor should not make undeclared (quirk)
-   or wrong data (correction).
+2. Lint the raw file, under the corpus's `raw/`, with `uv run seanchai lint`,
+   which reads the committed corpus for the cross-file rules. Every error is a
+   source typo (input patch), a reading the extractor should not make
+   undeclared (quirk) or wrong data (correction).
 3. Declare the fixes, regenerate again, and commit the raw and corrected
    pair with the edit files. A hole the new document brings fails the
-   default `Model.build` and `seanchai lint --corpus`: fix it, or record it in
+   default `Model.build` and `seanchai lint`: fix it, or record it in
    the corpus's `holes.toml` with its evidence
    ([consumers.md](consumers.md#known-holes)).
 

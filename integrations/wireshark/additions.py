@@ -1,10 +1,11 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.14"
-# dependencies = ["seanchai"]
+# dependencies = ["seanchai", "seanchai-corpus"]
 #
 # [tool.uv.sources]
 # seanchai = { path = "../..", editable = true }
+# seanchai-corpus = { path = "../../packages/seanchai-corpus", editable = true }
 # ///
 """Stage Wireshark dictionary patches adding the AVPs the oracle finds absent.
 
@@ -704,7 +705,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--corpus",
         type=Path,
-        default=_ROOT / "packages/seanchai-corpus/src/seanchai_corpus/dad",
+        help="the corpus directory (default: the installed seanchai-corpus)",
     )
     parser.add_argument(
         "--dictionary", type=Path, default=_ROOT / "specifications" / "wireshark"
@@ -726,7 +727,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     arguments = parser.parse_args(argv)
     documents, skipped = stage(
-        arguments.corpus,
+        arguments.corpus or corpus.installed_directory(),
         arguments.dictionary,
         arguments.output,
         arguments.author,

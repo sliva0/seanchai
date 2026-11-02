@@ -1,6 +1,7 @@
 """The Wireshark dictionary oracle: parsing and the cross-check rules."""
 
 import dataclasses
+import sys
 from pathlib import Path
 
 import pytest
@@ -460,3 +461,40 @@ def test_an_alias_reads_its_reason_as_prose(tmp_path):
     path.write_text(entry.format(reason='"""\n    """'))
     with pytest.raises(oracle.OracleError, match="empty or non-text"):
         oracle.load_aliases(path)
+
+
+def test_crosscheck_without_sources_checks_the_installed_corpus(tmp_path, monkeypatch):
+    from click.testing import CliRunner
+
+    from seanchai import corpus
+    from seanchai.cli import main
+
+    (tmp_path / "dictionary").mkdir()
+    _dictionary(tmp_path / "dictionary")
+    installed = tmp_path / "installed"
+    _written(installed / "29999-i00.dad", "18.0.0", ast.DataType.UNSIGNED32)
+    monkeypatch.setattr(corpus, "installed_directory", lambda: installed)
+
+    result = CliRunner().invoke(
+        main, ["crosscheck", "--dictionary", str(tmp_path / "dictionary")]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert result.output == "checked 1 files against the dictionary: 0 findings\n"
+
+
+def test_crosscheck_without_sources_or_the_package_names_it(tmp_path, monkeypatch):
+    from click.testing import CliRunner
+
+    from seanchai.cli import main
+
+    (tmp_path / "dictionary").mkdir()
+    _dictionary(tmp_path / "dictionary")
+    monkeypatch.setitem(sys.modules, "seanchai_corpus", None)
+
+    result = CliRunner().invoke(
+        main, ["crosscheck", "--dictionary", str(tmp_path / "dictionary")]
+    )
+
+    assert result.exit_code == 1
+    assert "seanchai-corpus" in result.output

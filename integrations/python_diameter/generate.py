@@ -1,10 +1,11 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.14"
-# dependencies = ["python-diameter", "seanchai"]
+# dependencies = ["python-diameter", "seanchai", "seanchai-corpus"]
 #
 # [tool.uv.sources]
 # seanchai = { path = "../..", editable = true }
+# seanchai-corpus = { path = "../../packages/seanchai-corpus", editable = true }
 # ///
 """Generate python-diameter command modules, in the library's own shape.
 
@@ -1876,8 +1877,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--corpus",
         type=Path,
-        default=_HERE.parents[1] / "packages/seanchai-corpus/src/seanchai_corpus/dad",
-        help="the corpus directory (default: the repository's)",
+        help="the corpus directory (default: the installed seanchai-corpus)",
     )
     parser.add_argument(
         "--dictionary",
@@ -1906,7 +1906,8 @@ def main(argv: list[str] | None = None) -> int:
     policy = model.UndefinedPolicy(args.undefined)
     if (policy is model.UndefinedPolicy.SUPPLY) != bool(args.supply):
         parser.error("--supply goes with --undefined supply, and it with --supply")
-    books = corpus.Corpus.load([args.corpus])
+    directory = args.corpus or corpus.installed_directory()
+    books = corpus.Corpus.load([directory])
     try:
         supply = model.supplied_from(*args.supply) if args.supply else None
         built = model.Model.build(

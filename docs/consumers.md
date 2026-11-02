@@ -1,5 +1,25 @@
 # Consumers: the model and the integrations
 
+## Installing the corpus
+
+The library and the corpus are two packages. `seanchai` holds no data, and
+`seanchai-corpus` holds nothing else and depends on nothing, so a consumer's
+CI pins each on its own:
+
+```sh
+pip install seanchai seanchai-corpus   # or seanchai[corpus]
+```
+
+`corpus.Corpus.installed()` loads the installed corpus with no path, record
+of known holes included, and `installed(raw=True)` its raw mirror. Without the
+package it raises `corpus.CorpusNotInstalledError`, naming the package.
+`corpus.Corpus.load([path])` loads any other directory.
+
+`seanchai_corpus.CORPUS_DIR` is the directory itself and
+`seanchai_corpus.__version__` the corpus's version, the date it was regenerated.
+In this repository the package is installed from the workspace, so the installed
+corpus is the committed one.
+
 ## The model
 
 The AST mirrors a file one-to-one and may contradict itself. `model.Model`
@@ -10,11 +30,10 @@ every AVP knowing its `(vendor-id, code)`, type, flag rules and defining
 document.
 
 ```python
-import seanchai_corpus
 from seanchai import corpus, model
 from seanchai.dad import ast
 
-built = model.Model.build(corpus.Corpus.load([seanchai_corpus.CORPUS_DIR]))
+built = model.Model.build(corpus.Corpus.installed())
 # strict against the corpus's holes.toml; dictionary=Path("specifications/wireshark")
 # adds Avp.wireshark_name
 built.messages("TS29.229")  # bodies resolved
@@ -306,6 +325,9 @@ inline metadata naming their dependencies, so uv supplies everything:
 uv run integrations/python_diameter/validate.py TS29.229
 uv run integrations/python_diameter/generate.py TS29.229 -o out/
 ```
+
+The scripts name `seanchai` and `seanchai-corpus` from this repository, so
+they read the committed corpus unless `--corpus` names another.
 
 ### python-diameter
 

@@ -46,6 +46,10 @@ class CorpusError(ValueError):
     pass
 
 
+class CorpusNotInstalledError(CorpusError):
+    """No path was given and the `seanchai-corpus` package is not installed."""
+
+
 # A document its citers number otherwise than its publisher does, by the
 # reference a From cell carries. TS 29.212 (clause 2, [37]: "ETSI TS 283 034
 # v2.2.0"), 29.219, 29.273 and 32.299 cite the e4 document as a Technical
@@ -425,6 +429,22 @@ class HoleRecord:
         return KnownHole(document, name, tuple(missing), collapse(reason))
 
 
+def installed_directory() -> Path:
+    """The directory the `seanchai-corpus` package put the corpus in.
+
+    The package is an optional dependency (`seanchai[corpus]`), so it is looked
+    for only when asked for. Inside this repository it is the workspace copy.
+    """
+    try:
+        import seanchai_corpus
+    except ModuleNotFoundError as error:
+        raise CorpusNotInstalledError(
+            "the seanchai-corpus package is not installed: install it"
+            " (`pip install seanchai[corpus]`) or name a corpus directory"
+        ) from error
+    return seanchai_corpus.CORPUS_DIR
+
+
 @dataclass(frozen=True)
 class Entry:
     """One parsed file and where it came from."""
@@ -487,6 +507,13 @@ class Corpus:
                 raise CorpusError(f"{path}: {error}") from error
             entries.append(Entry(path=path, spec=spec))
         return cls(entries, HoleRecord.load(records[0]) if records else None)
+
+    @classmethod
+    def installed(cls, *, raw: bool = False) -> Corpus:
+        """Load the corpus the `seanchai-corpus` package installed, record and
+        all, as `load` loads a directory. `CorpusNotInstalledError` without it.
+        """
+        return cls.load([installed_directory()], raw=raw)
 
     @staticmethod
     def _files(paths: Iterable[Path]) -> Iterator[Path]:
