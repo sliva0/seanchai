@@ -11,8 +11,30 @@ jobs:
       # actions/checkout is a Node action, so the job image has to ship node.
       # uv is installed by script instead and brings its own Python 3.14.
       image: code.forgejo.org/oci/node:22-bookworm
+    env:
+      DIAG_TOKEN: ${{ github.token }}
+      DIAG_API: ${{ github.api_url }}
     steps:
       - uses: https://code.forgejo.org/actions/checkout@v4
+      # Temporary: the job log needs a web session, so each step posts its
+      # output as a commit status that the API can read.
+      - run: |
+          cat > /tmp/step.sh <<'SCRIPT'
+          #!/bin/bash
+          name=$1; shift; start=$SECONDS
+          "$@" > /tmp/step.log 2>&1; rc=$?
+          cat /tmp/step.log
+          state=success; [ $rc = 0 ] || { state=failure; echo "$name" >> /tmp/failed; }
+          STATE=$state NAME=$name RC=$rc SECS=$((SECONDS-start)) node -e '
+            const log = require("fs").readFileSync("/tmp/step.log", "utf8").slice(-6000);
+            const e = process.env;
+            console.log(JSON.stringify({ state: e.STATE, context: "diag/" + e.NAME,
+              description: `rc=${e.RC} ${e.SECS}s\n${log}` }));' > /tmp/body.json
+          curl -sS -m 30 -o /dev/null -w "status post %{http_code}\n" -X POST \
+            -H "Authorization: token $DIAG_TOKEN" -H 'Content-Type: application/json' \
+            -d @/tmp/body.json "$DIAG_API/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"
+          exit 0
+          SCRIPT
       # The wheel cache and the managed CPython, keyed by the lockfile; a
       # restore-key means a lockfile bump still starts from the old cache
       # rather than from nothing. Falls back to a plain miss if the runner
@@ -26,14 +48,16 @@ jobs:
           restore-keys: |
             uv-
       - run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - run: ~/.local/bin/uv sync --locked
+      - run: bash /tmp/step.sh system bash -c 'id; pwd; uname -a; nproc; free -m; df -h / /tmp "$HOME"; ulimit -a; ls -la; ls -la ~/.cache/uv ~/.local/share/uv/python; cat /sys/fs/cgroup/memory.max'
+      - run: bash /tmp/step.sh sync ~/.local/bin/uv sync --locked
       # No source documents in CI: the tests that need them are deselected.
-      - run: ~/.local/bin/uv run pytest -m "not sources"
-      - run: ~/.local/bin/uv run ruff check .
-      - run: ~/.local/bin/uv run ruff format --check .
-      - run: ~/.local/bin/uv run rumdl check .
-      - run: ~/.local/bin/uv run ty check
-      - run: ~/.local/bin/uv run basedpyright
+      - run: bash /tmp/step.sh pytest ~/.local/bin/uv run pytest -m "not sources"
+      - run: bash /tmp/step.sh ruff-check ~/.local/bin/uv run ruff check .
+      - run: bash /tmp/step.sh ruff-format ~/.local/bin/uv run ruff format --check .
+      - run: bash /tmp/step.sh rumdl ~/.local/bin/uv run rumdl check .
+      - run: bash /tmp/step.sh ty ~/.local/bin/uv run ty check
+      - run: bash /tmp/step.sh basedpyright ~/.local/bin/uv run basedpyright
       # Drop anything sync no longer references, so the saved cache tracks
       # the lockfile instead of accreting every wheel ever downloaded.
-      - run: ~/.local/bin/uv cache prune --ci
+      - run: bash /tmp/step.sh prune ~/.local/bin/uv cache prune --ci
+      - run: test ! -e /tmp/failed
