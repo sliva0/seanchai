@@ -1,0 +1,86 @@
+name: release
+
+# Never runs on its own: a person starts it, and only on a tag does it publish
+# (docs/development.md#releases). Publishing on the tag's push, later, is adding
+# `push: tags: ["seanchai-v*", "corpus-*"]` here; the jobs below allow for it.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: The package to publish to PyPI, from a run on its tag
+        type: choice
+        default: none
+        options:
+          - none
+          - seanchai
+          - seanchai-corpus
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # No cache: what is published is built from nothing a previous run left.
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: false
+      - run: uv build --all-packages --no-sources
+      - name: A tag names the version built
+        if: github.ref_type == 'tag'
+        run: |
+          library="seanchai-v$(uv version --package seanchai --short)"
+          corpus="corpus-$(uv version --package seanchai-corpus --short)"
+          case "$GITHUB_REF_NAME" in
+            "$library" | "$corpus") ;;
+            *) echo "$GITHUB_REF_NAME is neither $library nor $corpus"; exit 1 ;;
+          esac
+      - run: uv venv /tmp/wheels
+      - run: uv pip install --python /tmp/wheels dist/*.whl
+      - run: /tmp/wheels/bin/python -I tests/smoke_installed.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seanchai
+          path: dist/seanchai-*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seanchai-corpus
+          path: dist/seanchai_corpus-*
+          if-no-files-found: error
+
+  publish-seanchai:
+    needs: build
+    if: >-
+      startsWith(github.ref, 'refs/tags/seanchai-v')
+      && (github.event_name == 'push' || inputs.publish == 'seanchai')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: seanchai
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-corpus:
+    needs: build
+    if: >-
+      startsWith(github.ref, 'refs/tags/corpus-')
+      && (github.event_name == 'push' || inputs.publish == 'seanchai-corpus')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: seanchai-corpus
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

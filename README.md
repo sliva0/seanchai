@@ -15,23 +15,43 @@ Seanchaí does that transcription once, with every edit declared and reviewed.
 1. **Extract.** Source documents become raw `.dad` files. 3GPP specifications
    are read from their `.docx` (legacy `.doc` files are converted with
    LibreOffice), with page numbers from the matching ETSI PDF; RFCs are read
-   from their plain text. See [docs/extractor.md](docs/extractor.md).
+   from their plain text. See [docs/extractor.md][extractor].
 2. **Correct.** Three things are committed per document: the raw output, the
    corrections declared against it, and the corrected file they produce.
    Every corrected line carries a `;;` note naming its correction. See
-   [docs/corrections.md](docs/corrections.md).
+   [docs/corrections.md][corrections].
 3. **Consume.** The parser turns `.dad` back into an AST, and `seanchai.model`
    resolves the corpus into messages whose members point at real AVP
-   objects. See [docs/consumers.md](docs/consumers.md).
+   objects. See [docs/consumers.md][consumers].
 
 The rule everything rests on: **a `.dad` file records everything its source
 document says about a definition**, including where the document is
 redundant, self-contradictory or wrong. The extractor translates and never
 curates. The only edits are the two declared layers, input patches for
 source typos and corrections for wrong data, and both are reviewable. The
-[linter](docs/linter.md) reports the contradictions, and the
-[Wireshark oracle](docs/oracle.md) cross-checks values against an
+[linter][linter] reports the contradictions, and the
+[Wireshark oracle][oracle] cross-checks values against an
 independent reading of the same documents.
+
+## Installing
+
+The library and the corpus are two packages, each versioned on its own:
+`seanchai` follows semantic versioning, and `seanchai-corpus` is versioned by
+the date the corpus was regenerated.
+
+```sh
+pip install seanchai[corpus]   # or seanchai and seanchai-corpus, pinned apart
+```
+
+```python
+from seanchai import corpus, model
+
+built = model.Model.build(corpus.Corpus.installed())
+built.resolve("TS29.229", "Public-Identity")
+```
+
+Working on Seanchaí itself is a clone and `uv sync` ([below](#development)),
+which installs both from the repository, the corpus included.
 
 ## Commands
 
@@ -54,11 +74,11 @@ seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
 - `src/seanchai/`: `dad/` (AST, parser, formatter, corrections),
   `extractor/`, `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`,
   `oracle.py`, `corpus.py`, `model.py`, `cli.py`.
-- `packages/seanchai-corpus/`: the corpus package. Its
+- `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
   `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
   release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
   `raw/`, and the record of known holes
-  ([docs/dad-format.md](docs/dad-format.md#the-corpus)).
+  ([docs/dad-format.md][dad-format-the-corpus]).
 - `edits/sources/<SpecRef>.toml`: input patches and quirks per document.
 - `edits/corrections/<SpecRef>.py`: corrections per document.
 - `edits/transcriptions/<SpecRef>.dad`: documents no extractor reads, copied
@@ -67,11 +87,11 @@ seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
   dictionary patches.
 - `editors/`: `.dad` syntax highlighting for VS Code, Vim and Neovim.
 - `specifications/`: downloaded sources, git-ignored.
-- `docs/`: [dad-format](docs/dad-format.md), [grammar](docs/grammar.md),
-  [extractor](docs/extractor.md), [corrections](docs/corrections.md),
-  [downloader](docs/downloader.md), [linter](docs/linter.md),
-  [oracle](docs/oracle.md), [consumers](docs/consumers.md),
-  [development](docs/development.md).
+- `docs/`: [dad-format][dad-format], [grammar][grammar],
+  [extractor][extractor], [corrections][corrections],
+  [downloader][downloader], [linter][linter],
+  [oracle][oracle], [consumers][consumers],
+  [development][development].
 
 ## Development
 
@@ -84,4 +104,15 @@ uv run rumdl check .
 uv run ty check && uv run basedpyright
 ```
 
-See [docs/development.md](docs/development.md).
+See [docs/development.md][development].
+
+[consumers]: https://github.com/sliva0/senchai/blob/main/docs/consumers.md
+[corrections]: https://github.com/sliva0/senchai/blob/main/docs/corrections.md
+[dad-format]: https://github.com/sliva0/senchai/blob/main/docs/dad-format.md
+[dad-format-the-corpus]: https://github.com/sliva0/senchai/blob/main/docs/dad-format.md#the-corpus
+[development]: https://github.com/sliva0/senchai/blob/main/docs/development.md
+[downloader]: https://github.com/sliva0/senchai/blob/main/docs/downloader.md
+[extractor]: https://github.com/sliva0/senchai/blob/main/docs/extractor.md
+[grammar]: https://github.com/sliva0/senchai/blob/main/docs/grammar.md
+[linter]: https://github.com/sliva0/senchai/blob/main/docs/linter.md
+[oracle]: https://github.com/sliva0/senchai/blob/main/docs/oracle.md

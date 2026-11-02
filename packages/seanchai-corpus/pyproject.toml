@@ -7,7 +7,23 @@ authors = [
     { name = "sliva0", email = "sliva0mk@gmail.com" }
 ]
 requires-python = ">=3.14"
+keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Telecommunications Industry",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Communications :: Telephony",
+    "Topic :: System :: Networking",
+    "Typing :: Typed",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/sliva0/senchai"
+Documentation = "https://github.com/sliva0/senchai/blob/main/docs/dad-format.md"
+Issues = "https://github.com/sliva0/senchai/issues"
 
 [build-system]
 requires = ["uv_build>=0.10.2,<0.14.0"]

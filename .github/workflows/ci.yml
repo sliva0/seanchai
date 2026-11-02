@@ -30,3 +30,8 @@ jobs:
       - run: uv run rumdl check .
       - run: uv run ty check
       - run: uv run basedpyright
+      - run: uv build --all-packages --no-sources
+      # The wheels alone, with their declared dependencies from the index.
+      - run: uv venv /tmp/wheels
+      - run: uv pip install --python /tmp/wheels dist/*.whl
+      - run: /tmp/wheels/bin/python -I tests/smoke_installed.py

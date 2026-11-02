@@ -34,6 +34,11 @@ jobs:
       - run: ~/.local/bin/uv run rumdl check .
       - run: ~/.local/bin/uv run ty check
       - run: ~/.local/bin/uv run basedpyright
+      - run: ~/.local/bin/uv build --all-packages --no-sources
+      # The wheels alone, with their declared dependencies from the index.
+      - run: ~/.local/bin/uv venv /tmp/wheels
+      - run: ~/.local/bin/uv pip install --python /tmp/wheels dist/*.whl
+      - run: /tmp/wheels/bin/python -I tests/smoke_installed.py
       # Drop pre-built wheels before saving, since downloading them again is
       # about as quick; only wheels built from source are kept.
       - run: ~/.local/bin/uv cache prune --ci

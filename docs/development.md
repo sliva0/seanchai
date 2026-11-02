@@ -3,6 +3,17 @@
 Everything runs through [uv](https://docs.astral.sh/uv/); `uv sync` installs
 the dev group.
 
+The repository is a uv workspace of the two packages published to PyPI:
+
+- `seanchai`, the library, at the root: `pyproject.toml` and `src/seanchai/`.
+- `seanchai-corpus`, the data, at `packages/seanchai-corpus/`. The `.dad` files
+  and the record of known holes sit under
+  `src/seanchai_corpus/dad/`, inside the module, since the wheel ships what is
+  in the module. The module itself only says where they are and their version.
+
+`uv sync` installs both from the working tree, so in a checkout the installed
+corpus is the committed one, and the tests live at the root for both.
+
 ```sh
 uv run pytest -m "not sources"   # tests that need no downloaded documents
 uv run pytest                    # all tests; needs `seanchai download` first
@@ -18,8 +29,10 @@ catalog's legacy `.doc` files, unless run with `--no-convert`. The full
 `sources` test needs the conversions and fails, naming them, on a
 `--no-convert` manifest.
 
-CI runs the tests without sources, ruff, rumdl and both type checkers. Run
-everything locally before committing; CI is a backstop.
+CI runs the tests without sources, ruff, rumdl and both type checkers, then
+builds both packages and runs `tests/smoke_installed.py` over the wheels,
+installed with their dependencies from the index. Run everything locally
+before committing; CI is a backstop.
 
 Type-checker suppressions are allowed in the narrowest form that works, with
 the reason beside them. Where the two checkers disagree, use the
@@ -37,6 +50,9 @@ checker-specific form (`# pyright: ignore[...]`).
   correction re-applies to the committed raw output, the linter's findings
   over the corpus are pinned, and the corpus's `holes.toml` pins the known
   holes.
+- `tests/test_packaging.py` builds both packages, pins what each distribution
+  holds, and runs the wheels from a scratch environment with nothing of the
+  repository importable. It needs `uv` and no network.
 - `tests/test_python_diameter_generate.py` generates the python-diameter
   modules from the corpus, imports them in a fresh interpreter against the
   real library and round-trips a Cx UAR through the library's codec. The
@@ -85,6 +101,9 @@ Under each document it prints the extractor's warnings and a warning for
 every declaration whose version range does not cover the parsed version.
 Transcriptions ([extractor.md](extractor.md#transcriptions)) have no
 manifest record and are rebuilt from `edits/transcriptions/` alongside.
+
+`regenerate` leaves the corpus's version alone; cutting a release sets it
+([below](#releases)).
 
 ## Adding a document
 
@@ -151,3 +170,41 @@ it is printed as `not widened, stale`. A literal outside the top-level
 `CORRECTIONS` statements, inside a lambda, conditional or filtered
 comprehension, split by comments, or built by an expression, is printed as
 `not widened` for a person to handle.
+
+## Releases
+
+The two packages are released apart, each from a tag of its own:
+
+| Package | Version | Tag |
+|---|---|---|
+| `seanchai` | semantic, `0.1.0` | `seanchai-v0.1.0` |
+| `seanchai-corpus` | the date the corpus was regenerated, `2026.11.2` | `corpus-2026.11.2` |
+
+Each version lives once, in its package's `pyproject.toml`, and `uv version`
+sets it and the lockfile together. `tests/test_packaging.py` holds the corpus's
+to a real date with no leading zeros, as PEP 440 normalizes them away. PyPI
+takes a version once, so a second corpus release waits for the next date. The
+`corpus` extra of the library names the oldest corpus it reads; raise it when
+the library stops reading an older one.
+
+To cut a corpus release, from a commit holding the regenerated corpus:
+
+```sh
+version=$(date +%Y.%-m.%-d)
+uv version --package seanchai-corpus "$version"
+git commit -am "release corpus $version"
+git tag "corpus-$version"
+git push github main "corpus-$version"
+gh workflow run release.yml --ref "corpus-$version" -f publish=seanchai-corpus
+```
+
+A library release is the same with `uv version --package seanchai 0.2.0`, the
+tag `seanchai-v0.2.0` and `-f publish=seanchai`.
+
+`.github/workflows/release.yml` runs only when started by hand. It builds both
+packages, checks that a tag names the version it built, and runs the smoke test
+over the wheels. It publishes only from a run on a package's tag with `publish`
+naming that package, so a run anywhere else, or with the default `none`, is a
+dry run. Publishing uses PyPI trusted publishing, so no token is stored: each
+PyPI project trusts the repository `sliva0/senchai`, the workflow `release.yml`
+and the environment `pypi`, which has to exist on GitHub.

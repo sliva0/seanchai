@@ -1,12 +1,25 @@
 [project]
 name = "seanchai"
 version = "0.1.0"
-description = "Missing machine-readable schema (generator) for Diameter"
+description = "Machine-readable Diameter schemas from 3GPP documents and RFCs"
 readme = "README.md"
 authors = [
     { name = "sliva0", email = "sliva0mk@gmail.com" }
 ]
 requires-python = ">=3.14"
+keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Telecommunications Industry",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Communications :: Telephony",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: System :: Networking",
+    "Typing :: Typed",
+]
 dependencies = [
     "click>=8.4.2",
     "pydantic>=2.13.4",
@@ -19,6 +32,11 @@ corpus = ["seanchai-corpus>=2026.11.2"]
 
 [project.scripts]
 seanchai = "seanchai.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/sliva0/senchai"
+Documentation = "https://github.com/sliva0/senchai/tree/main/docs"
+Issues = "https://github.com/sliva0/senchai/issues"
 
 [build-system]
 requires = ["uv_build>=0.10.2,<0.14.0"]
