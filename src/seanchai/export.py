@@ -1,8 +1,11 @@
+import contextlib
 import dataclasses
 import difflib
 import json
 import re
 import shutil
+import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
@@ -272,6 +275,57 @@ class _Declarations:
         return found
 
 
+def _refuse_foreign(output: Path) -> None:
+    """Refuse to replace what is not a previous export: `output` has to be
+    absent, empty, or hold the `index.json` an export writes."""
+    if not output.exists():
+        return
+    if not output.is_dir():
+        raise CorpusError(f"{output} exists and is not a directory")
+    if not any(output.iterdir()):
+        return
+    try:
+        index = json.loads((output / "index.json").read_bytes())
+    except OSError, ValueError:
+        index = None
+    if not (isinstance(index, dict) and "schema_version" in index):
+        raise CorpusError(
+            f"{output} is not empty and holds no export's index.json; an export"
+            " replaces its whole output directory, so name another"
+        )
+
+
+@contextlib.contextmanager
+def _replacing(output: Path) -> Iterator[Path]:
+    """A directory to build the export in, which replaces `output` when the
+    block ends and is removed if it raises.
+
+    It sits beside `output`, on the same file system, so the swap is two
+    renames: a reader sees the old export or the new one, except in the moment
+    between them, and never a mix. A directory `mkdtemp` makes is private, so
+    the export is a directory inside it, with the mode a plain `mkdir` gives,
+    or the old export's.
+    """
+    output = output.resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(
+        prefix=f".{output.name}.", dir=output.parent
+    ) as scratch:
+        staged = Path(scratch) / "new"
+        staged.mkdir()
+        yield staged
+        previous = Path(scratch) / "old"
+        if output.exists():
+            shutil.copymode(output, staged)
+            output.rename(previous)
+        try:
+            staged.rename(output)
+        except OSError:
+            if previous.exists():
+                previous.rename(output)
+            raise
+
+
 def export_corpus(
     books: Corpus,
     output: Path,
@@ -280,6 +334,35 @@ def export_corpus(
     corrections_directory: Path | None = None,
     specifications: Path | None = None,
     include_pdfs: bool = False,
+) -> dict:
+    """Write `books` as the JSON a static site reads, replacing `output` whole.
+
+    Nothing of `output` changes until the export has succeeded. A directory
+    holding anything but a previous export is refused, and so is an empty
+    corpus.
+    """
+    if not len(books):
+        raise CorpusError("nothing to export: the corpus holds no documents")
+    _refuse_foreign(output)
+    with _replacing(output) as staged:
+        return _write_export(
+            books,
+            staged,
+            dictionary=dictionary,
+            corrections_directory=corrections_directory,
+            specifications=specifications,
+            include_pdfs=include_pdfs,
+        )
+
+
+def _write_export(
+    books: Corpus,
+    output: Path,
+    *,
+    dictionary: Path | None,
+    corrections_directory: Path | None,
+    specifications: Path | None,
+    include_pdfs: bool,
 ) -> dict:
     entries = sorted(books, key=document_id)
     ids = [document_id(entry) for entry in entries]

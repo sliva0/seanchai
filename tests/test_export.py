@@ -357,3 +357,142 @@ def test_commands_carry_the_application_their_scope_states(exported):
     assert gx["identity"] == [272, 16777238]
     assert gx["header_application_id"] is None
     assert entries["E.6.6.2"]["identity"] == [272, 16777318]
+
+
+_ETSI = ROOT / "packages/seanchai-corpus/src/seanchai_corpus/dad/etsi"
+
+
+def _tree(path):
+    return {
+        file.relative_to(path).as_posix(): file.read_bytes()
+        for file in path.rglob("*")
+        if file.is_file()
+    }
+
+
+def _with_pdfs(books, tmp_path):
+    sources = tmp_path / "specifications"
+    sources.mkdir()
+    for entry in books:
+        (sources / str(entry.spec.link).rsplit("/", 1)[-1]).write_bytes(b"%PDF-test")
+    return sources
+
+
+def test_a_public_export_replaces_a_self_hosted_one_whole(tmp_path):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(
+        books, output, include_pdfs=True, specifications=_with_pdfs(books, tmp_path)
+    )
+    assert list((output / "sources").glob("*.pdf"))
+
+    export_corpus(books, output)
+
+    index = json.loads((output / "index.json").read_text("utf-8"))
+    assert index["mode"] == "public"
+    assert not (output / "sources").exists()
+    fresh = tmp_path / "fresh"
+    export_corpus(books, fresh)
+    assert _tree(output) == _tree(fresh)
+    assert [p.name for p in tmp_path.iterdir() if p.name.startswith(".")] == []
+
+
+def test_a_self_hosted_export_replaces_a_public_one(tmp_path):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    export_corpus(
+        books, output, include_pdfs=True, specifications=_with_pdfs(books, tmp_path)
+    )
+    index = json.loads((output / "index.json").read_text("utf-8"))
+    assert index["mode"] == "self-hosted"
+    assert len(list((output / "sources").glob("*.pdf"))) == len(books)
+
+
+def test_a_removed_document_leaves_the_export(tmp_path):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    first = next(iter(sorted(e.path.stem for e in books)))
+    assert (output / "documents" / f"{first}.json").is_file()
+
+    smaller = Corpus(e for e in books if e.path.stem != first)
+    export_corpus(smaller, output)
+
+    assert not (output / "documents" / f"{first}.json").exists()
+
+
+def test_a_failed_export_leaves_the_previous_one_as_it_was(tmp_path):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    before = _tree(output)
+    empty = tmp_path / "specifications"
+    empty.mkdir()
+
+    with pytest.raises(CorpusError, match="no downloaded PDF"):
+        export_corpus(books, output, include_pdfs=True, specifications=empty)
+
+    assert _tree(output) == before
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["out", "specifications"]
+
+
+def test_an_export_keeps_to_the_mode_of_a_new_or_replaced_directory(tmp_path):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    assert output.stat().st_mode & 0o777 != 0o700
+    output.chmod(0o750)
+    export_corpus(books, output)
+    assert output.stat().st_mode & 0o777 == 0o750
+
+
+def test_an_export_follows_a_symlinked_output(tmp_path):
+    books = Corpus.load([_ETSI])
+    real = tmp_path / "real"
+    link = tmp_path / "link"
+    link.symlink_to(real, target_is_directory=True)
+    export_corpus(books, link)
+    assert link.is_symlink()
+    assert (real / "index.json").is_file()
+
+
+@pytest.mark.parametrize("name", ["notes.txt", "index.json"])
+def test_a_directory_holding_anything_else_is_refused(tmp_path, name):
+    output = tmp_path / "out"
+    output.mkdir()
+    (output / name).write_text("mine", "utf-8")
+    before = _tree(output)
+    with pytest.raises(CorpusError, match="not empty"):
+        export_corpus(Corpus.load([_ETSI]), output)
+    assert _tree(output) == before
+
+
+def test_a_file_as_output_is_refused(tmp_path):
+    output = tmp_path / "out"
+    output.write_text("mine", "utf-8")
+    with pytest.raises(CorpusError, match="not a directory"):
+        export_corpus(Corpus.load([_ETSI]), output)
+    assert output.read_text("utf-8") == "mine"
+
+
+def test_an_empty_output_directory_is_used(tmp_path):
+    output = tmp_path / "out"
+    output.mkdir()
+    export_corpus(Corpus.load([_ETSI]), output)
+    assert (output / "index.json").is_file()
+
+
+def test_an_empty_corpus_is_refused(tmp_path):
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    output = tmp_path / "out"
+    with pytest.raises(CorpusError, match="no documents"):
+        export_corpus(Corpus.load([empty]), output)
+    assert not output.exists()
+    result = CliRunner().invoke(
+        main, ["export", "--corpus", str(empty), "-o", str(output)]
+    )
+    assert result.exit_code == 1
+    assert "no documents" in result.output
+    assert not output.exists()
