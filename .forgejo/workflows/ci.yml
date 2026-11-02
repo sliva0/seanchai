@@ -13,7 +13,7 @@ jobs:
       image: code.forgejo.org/oci/node:22-bookworm
     steps:
       - uses: https://code.forgejo.org/actions/checkout@v4
-      # The wheel cache and the managed CPython, keyed by the lockfile; a
+      # The uv cache and the managed CPython, keyed by the lockfile; a
       # restore-key means a lockfile bump still starts from the old cache
       # rather than from nothing. Falls back to a plain miss if the runner
       # has no cache server configured.
@@ -34,6 +34,6 @@ jobs:
       - run: ~/.local/bin/uv run rumdl check .
       - run: ~/.local/bin/uv run ty check
       - run: ~/.local/bin/uv run basedpyright
-      # Drop anything sync no longer references, so the saved cache tracks
-      # the lockfile instead of accreting every wheel ever downloaded.
+      # Drop pre-built wheels before saving, since downloading them again is
+      # about as quick; only wheels built from source are kept.
       - run: ~/.local/bin/uv cache prune --ci
