@@ -11,7 +11,7 @@ import shutil
 import pytest
 from conftest import _CORPUS_DIR
 
-from seanchai import regenerate
+from seanchai import correction_record, regenerate
 
 
 def _manifest(root, stem):
@@ -343,6 +343,109 @@ def test_ranges_warn_for_all_layers_without_gating_application(
     assert any(
         isinstance(s, ast.GroupedAvp) and s.code == 12 for s in corrected.sections
     )
+
+
+_MODULE = """
+from seanchai.dad.corrections import Correction, table_row
+
+CORRECTIONS = [
+    Correction(
+        id="mode-code",
+        target=table_row("Example-Mode"),
+        field="code",
+        expect=11,
+        replace=12,
+        reason="the reason",
+        versions="1.2.3",
+    ),
+]
+"""
+
+
+def test_a_rebuild_records_its_corrections_beside_the_documents(
+    tmp_path, synthetic_spec_docx
+):
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    shutil.copyfile(synthetic_spec_docx, document)
+    modules = tmp_path / "edits"
+    modules.mkdir()
+    (modules / "TS29.999.py").write_text(_MODULE)
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+
+    report = regenerate.regenerate(
+        manifest,
+        corpus,
+        corpus,
+        sources_dir=None,
+        corrections_dir=modules,
+        add=["TS29.999"],
+    )
+
+    assert report.record == corpus / correction_record.RECORD_NAME
+    record = correction_record.load(report.record)
+    edit = record.documents["29999-123"].edits["TS29.999.py#mode-code"]
+    assert (edit.kind, edit.reason) == ("correction", "the reason")
+
+
+def test_a_failed_rebuild_leaves_the_corrections_record_alone(
+    tmp_path, synthetic_spec_docx
+):
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    shutil.copyfile(synthetic_spec_docx, document)
+    modules = tmp_path / "edits"
+    modules.mkdir()
+    (modules / "TS29.999.py").write_text(_MODULE)
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    kept = regenerate.regenerate(
+        manifest,
+        corpus,
+        corpus,
+        sources_dir=None,
+        corrections_dir=modules,
+        add=["TS29.999"],
+    ).record
+    assert kept is not None
+    before = kept.read_bytes()
+    (modules / "TS29.999.py").write_text(_MODULE.replace("the reason", "another"))
+    document.write_bytes(b"not a docx")
+
+    report = regenerate.regenerate(
+        manifest, corpus, corpus, sources_dir=None, corrections_dir=modules
+    )
+
+    assert report.failed
+    assert report.record is None
+    assert kept.read_bytes() == before
+
+
+def test_a_corrections_record_that_cannot_be_built_fails_the_run(
+    tmp_path, synthetic_spec_docx
+):
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    shutil.copyfile(synthetic_spec_docx, document)
+    modules = tmp_path / "edits"
+    modules.mkdir()
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    # A corpus file with a module the rebuild did not read: `--spec` picks one.
+    shutil.copy(_CORPUS_DIR / "rfc" / "rfc4004.dad", corpus / "rfc4004.dad")
+    (modules / "RFC4004.py").write_text("raise ValueError('broken')\n")
+
+    report = regenerate.regenerate(
+        manifest,
+        corpus,
+        corpus,
+        sources_dir=None,
+        corrections_dir=modules,
+        add=["TS29.999"],
+        only=["TS29.999"],
+    )
+
+    assert report.record is None
+    (failed,) = report.failed
+    assert failed.reference == correction_record.RECORD_NAME
 
 
 def test_declarations_for_another_release_do_not_apply(tmp_path, synthetic_spec_docx):

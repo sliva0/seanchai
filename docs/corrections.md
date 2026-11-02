@@ -166,6 +166,23 @@ naming the correction involved as `module#id` where one inserted the block
 or row, and `missing` is checked as `expect` is: an entry that no longer
 matches fails the default build.
 
+## The corrections record
+
+A module is Python, and nothing that reads a corpus should have to run it, or
+can: no wheel ships `edits/`. So `seanchai regenerate` also writes the corpus's
+`corrections.json`, next to `holes.toml`, from the modules and the corrected
+files. Per document file stem it holds the document's reference and version,
+each declaration by citation with its kind and reason, what each acceptance
+accepts (rule, message, and the tree paths its target reaches), and the name
+corrections, in declaration order, that `seanchai export` links a raw file's
+spellings through. A document whose module declares nothing for its release has
+no entry. It is generated: sorted JSON with one field per line, so a changed
+reason is a one-line diff.
+
+`tests/test_correction_record.py` fails when the committed record is not what
+the modules say, so a changed correction needs `seanchai regenerate`, as a
+changed `.dad` file does. A run where anything failed leaves the record alone.
+
 ## Output
 
 ```text
@@ -208,8 +225,9 @@ them merged with the notes.
 
 ## CLI
 
-`seanchai regenerate` rebuilds the corpus with `edits/corrections`, and
-`seanchai lint` reads its acceptances from there. For one file:
+`seanchai regenerate` rebuilds the corpus and its record with
+`edits/corrections`, and `seanchai lint` reads its acceptances from there. For
+one file:
 `seanchai extract … --corrections DIR` and `seanchai correct RAW.dad
 --corrections DIR -o OUT.dad`, where the directory is explicit because
 loading it executes Python. `extract` tolerates a document with no module;

@@ -385,6 +385,10 @@ def regenerate(
     cannot read fails on its own and the run continues; the exit status is
     non-zero if anything failed.
 
+    Beside the documents it rewrites `corrections.json`, the record of every
+    correction's reason an installed corpus is read with, unless something
+    failed.
+
     With --expand-ranges, a declaration whose advisory version range does not
     cover the version it just applied cleanly to has the range rewritten in
     its edit file, comments and layout kept; the widened ranges print under

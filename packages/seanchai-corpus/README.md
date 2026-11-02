@@ -2,7 +2,8 @@
 
 The corpus of [Seanchaí](https://github.com/sliva0/senchai): Diameter command
 ABNFs and AVP definitions from 3GPP specifications, RFCs and a few other
-documents, as `.dad` files, corrected and raw, with the record of known holes.
+documents, as `.dad` files, corrected and raw, with the record of known holes
+and of each correction's reason.
 It holds the data and nothing else, and depends on nothing.
 
 ```sh

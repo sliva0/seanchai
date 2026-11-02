@@ -30,8 +30,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from . import linter, ranges
-from .corpus import TGPP2_RENDERING_RE, Corpus
+from . import correction_record, linter, ranges
+from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
@@ -65,6 +65,9 @@ class Outcome:
 @dataclass
 class Report:
     outcomes: list[Outcome]
+    # The corrections record written, under the output directory; None with no
+    # corrections directory, or when a failure left the corpus part rebuilt.
+    record: Path | None = None
 
     @property
     def failed(self) -> list[Outcome]:
@@ -127,6 +130,10 @@ def regenerate(
 
     `transcriptions_dir` holds the hand transcriptions of documents no
     extractor reads, each a source like a manifest record.
+
+    With `corrections_dir`, a run nothing failed in also rewrites `output`'s
+    corrections record, over whatever corrected files `output` then holds
+    (`seanchai.correction_record`).
     """
     listed = _sources(manifest) | _transcriptions(transcriptions_dir)
     committed = _committed(corpus)
@@ -147,7 +154,17 @@ def regenerate(
         )
         outcomes.append(outcome)
         report(outcome)
-    return Report(outcomes)
+    result = Report(outcomes)
+    if corrections_dir is not None and not result.failed:
+        try:
+            result.record = correction_record.write(output, corrections_dir)
+        except (CorrectionError, CorpusError, OSError) as error:
+            failed = Outcome(
+                correction_record.RECORD_NAME, "failed", error=f"writing: {error}"
+            )
+            outcomes.append(failed)
+            report(failed)
+    return result
 
 
 # A corpus file's place: its reference and the corpus subdirectory it sits

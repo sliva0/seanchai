@@ -197,6 +197,7 @@ dad/
   onem2m/        oneM2M documents
   raw/           unedited extractor output, mirroring the trees above
   holes.toml     the record of known holes, hand-maintained
+  corrections.json  each correction's reason, written by `seanchai regenerate`
 ```
 
 The corrected trees are what tools and consumers read. `raw/` mirrors them

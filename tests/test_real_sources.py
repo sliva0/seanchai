@@ -19,6 +19,7 @@ import pytest
 from conftest import _CORPUS_DIR, _corpus
 
 from seanchai import regenerate
+from seanchai.correction_record import RECORD_NAME
 from seanchai.dad import ast, parser
 
 _ROOT = Path(__file__).parent.parent
@@ -35,12 +36,12 @@ _COPIES = sorted(
 
 
 @pytest.fixture(scope="module")
-def regenerated(tmp_path_factory):
+def report(tmp_path_factory):
     assert _MANIFEST.is_file(), (
         f"{_MANIFEST} not present — run `seanchai download`"
         ' or deselect with `pytest -m "not sources"`'
     )
-    report = regenerate.regenerate(
+    return regenerate.regenerate(
         _MANIFEST,
         _CORPUS_DIR,
         tmp_path_factory.mktemp("dad"),
@@ -48,6 +49,10 @@ def regenerated(tmp_path_factory):
         corrections_dir=_ROOT / "edits" / "corrections",
         transcriptions_dir=_ROOT / "edits" / "transcriptions",
     )
+
+
+@pytest.fixture(scope="module")
+def regenerated(report):
     # A legacy `.doc` left unconverted writes nothing, so has no tree.
     return {
         (
@@ -99,3 +104,9 @@ def test_the_real_sources_still_produce_the_committed_output(
         )
         pytest.fail(f"{diff}: run `seanchai regenerate` and review the diff")
     assert outcome.status == "unchanged"
+
+
+@pytest.mark.sources
+def test_the_real_sources_still_produce_the_committed_record(report):
+    assert report.record is not None
+    assert report.record.read_bytes() == (_CORPUS_DIR / RECORD_NAME).read_bytes()

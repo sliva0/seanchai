@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
 
+from . import correction_record
 from .corpus import CITED_AS, Corpus, CorpusError, Entry
 from .dad import ast, corrections, parser
 from .downloader import load_catalog
@@ -207,6 +208,58 @@ def _json(path: Path, value: Any) -> None:
     )
 
 
+def _corpus_root(entry: Entry) -> Path | None:
+    """The corpus directory a file sits in, the one holding the raw mirror or
+    the corrections record, however deep below it `entry` was loaded from."""
+    return next(
+        (
+            parent
+            for parent in entry.path.parents
+            if (parent / "raw").is_dir()
+            or (parent / correction_record.RECORD_NAME).is_file()
+        ),
+        None,
+    )
+
+
+class _Declarations:
+    """What an export knows of the corrections: the corpus's record, or with
+    a directory the modules there, which it executes."""
+
+    def __init__(self, directory: Path | None) -> None:
+        self._directory = directory
+        self._records: dict[Path, correction_record.CorrectionRecord] = {}
+
+    def of(self, entry: Entry) -> correction_record.RecordedDocument | None:
+        """`entry`'s record, None when its module declares nothing or nothing
+        says what it declares."""
+        spec = entry.spec
+        if self._directory is not None:
+            declared = corrections.in_release(
+                corrections.load(self._directory, spec.specification), spec.version
+            )
+            return (
+                correction_record.RecordedDocument.of(spec, declared)
+                if declared
+                else None
+            )
+        root = _corpus_root(entry)
+        if root is None or not (root / correction_record.RECORD_NAME).is_file():
+            return None
+        record = self._records.get(root)
+        if record is None:
+            record = correction_record.load(root / correction_record.RECORD_NAME)
+            self._records[root] = record
+        found = record.documents.get(entry.path.stem)
+        if found is not None and found.version != spec.version:
+            raise CorpusError(
+                f"{root / correction_record.RECORD_NAME} records {entry.path.stem}"
+                f" at {found.version}, the file is {spec.version}: run"
+                " `seanchai regenerate`"
+            )
+        return found
+
+
 def export_corpus(
     books: Corpus,
     output: Path,
@@ -246,6 +299,7 @@ def export_corpus(
             raise CorpusError("including PDFs needs a specifications directory")
         for path in sorted(specifications.rglob("*.pdf")):
             pdfs.setdefault(path.name, []).append(path)
+    known = _Declarations(corrections_directory)
     documents = []
     search = []
     mentions = []
@@ -349,12 +403,12 @@ def export_corpus(
                                 "across_releases": None,
                             }
                         )
-        declarations = corrections.in_release(
-            corrections.load(corrections_directory, spec.specification),
-            spec.version,
+        declared = known.of(entry)
+        reasons = (
+            {cited: edit.reason for cited, edit in declared.edits.items()}
+            if declared
+            else {}
         )
-        module = corrections.module_path(Path("."), spec.specification).name
-        reasons = {f"{module}#{edit.id}": edit.reason for edit in declarations}
         raw_path = next(
             (
                 parent / "raw" / entry.path.relative_to(parent).with_suffix(".raw.dad")
@@ -368,19 +422,12 @@ def export_corpus(
             raw_text = raw_path.read_text(encoding="utf-8")
             raw_names = names.copy()
             raw_references = row_references.copy()
-            for edit in reversed(declarations):
-                if (
-                    isinstance(edit, corrections.Correction)
-                    and edit.field == "name"
-                    and isinstance(edit.expect, str)
-                    and isinstance(edit.replace, str)
-                    and not raw_names.get(edit.expect)
-                    and edit.replace in raw_names
-                ):
-                    raw_names[edit.expect] = raw_names[edit.replace]
+            for rename in reversed(declared.renames if declared else ()):
+                if not raw_names.get(rename.expect) and rename.replace in raw_names:
+                    raw_names[rename.expect] = raw_names[rename.replace]
                     for (reference, name), target in list(raw_references.items()):
-                        if name == edit.replace:
-                            raw_references[reference, edit.expect] = target
+                        if name == rename.replace:
+                            raw_references[reference, rename.expect] = target
             raw = _tokens(
                 raw_text, parser.parse(raw_text), raw_names, references, raw_references
             )
@@ -467,7 +514,7 @@ def export_corpus(
             "findings": [
                 dataclasses.asdict(f)
                 for f in lint_with_corpus(
-                    spec, books, corrections.acceptances(declarations)
+                    spec, books, declared.acceptances() if declared else ()
                 )
             ],
         }

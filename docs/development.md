@@ -6,8 +6,8 @@ the dev group.
 The repository is a uv workspace of the two packages published to PyPI:
 
 - `seanchai`, the library, at the root: `pyproject.toml` and `src/seanchai/`.
-- `seanchai-corpus`, the data, at `packages/seanchai-corpus/`. The `.dad` files
-  and the record of known holes sit under
+- `seanchai-corpus`, the data, at `packages/seanchai-corpus/`. The `.dad` files,
+  the record of known holes and the corrections record sit under
   `src/seanchai_corpus/dad/`, inside the module, since the wheel ships what is
   in the module. The module itself only says where they are and their version.
 
@@ -59,8 +59,8 @@ between runs; without it each run starts cold and still passes.
 - Everything else runs on committed files and small synthetic fixtures
   (`tests/conftest.py`): every committed `.dad` round-trips, every committed
   correction re-applies to the committed raw output, the linter's findings
-  over the corpus are pinned, and the corpus's `holes.toml` pins the known
-  holes.
+  over the corpus are pinned, the corpus's `holes.toml` pins the known holes,
+  and its `corrections.json` must be what `edits/corrections` says.
 - `tests/test_packaging.py` builds both packages, pins what each distribution
   holds, and runs the wheels from a scratch environment with nothing of the
   repository importable. It needs `uv` and no network.
@@ -100,7 +100,7 @@ from the downloaded sources and the two edit layers:
 
 ```sh
 uv run seanchai download      # the catalog into specifications/
-uv run seanchai regenerate    # every committed document, raw mirror included
+uv run seanchai regenerate    # every document, raw mirror and record included
 git diff --stat packages/seanchai-corpus   # what changed, if anything
 ```
 
@@ -112,6 +112,11 @@ Under each document it prints the extractor's warnings and a warning for
 every declaration whose version range does not cover the parsed version.
 Transcriptions ([extractor.md](extractor.md#transcriptions)) have no
 manifest record and are rebuilt from `edits/transcriptions/` alongside.
+
+A run nothing failed in also rewrites the corpus's `corrections.json`
+([corrections.md](corrections.md#the-corrections-record)), which an installed
+corpus is read with. Commit it with the edits it records: editing a correction,
+even only its reason, without regenerating fails `uv run pytest`.
 
 `regenerate` leaves the corpus's version alone; cutting a release sets it
 ([below](#releases)).
