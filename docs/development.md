@@ -29,14 +29,25 @@ catalog's legacy `.doc` files, unless run with `--no-convert`. The full
 `sources` test needs the conversions and fails, naming them, on a
 `--no-convert` manifest.
 
-CI runs the tests without sources, ruff, rumdl and both type checkers, then
-builds both packages and runs `tests/smoke_installed.py` over the wheels,
-installed with their dependencies from the index. Run everything locally
-before committing; CI is a backstop.
-
 Type-checker suppressions are allowed in the narrowest form that works, with
 the reason beside them. Where the two checkers disagree, use the
 checker-specific form (`# pyright: ignore[...]`).
+
+## CI
+
+`.github/workflows/ci.yml` runs the tests without sources, ruff, rumdl and both
+type checkers, then builds both packages and runs `tests/smoke_installed.py`
+over the wheels, installed with their dependencies from the index. Run
+everything locally before committing; CI is a backstop.
+
+The one workflow runs on GitHub and on Forgejo, which reads `.github/workflows/`
+while `.forgejo/workflows/` does not exist. A Forgejo instance needs a runner
+with the label `node22` on an image with node in it, as
+`node22:docker://docker.io/library/node:22-bookworm`, since `runs-on` picks that
+label off `github.server_url`. `DEFAULT_ACTIONS_URL` under `[actions]` has to
+reach every action the workflow names; the default `https://data.forgejo.org`
+mirrors them. `cache.enabled: true` in the runner's config keeps the cache
+between runs; without it each run starts cold and still passes.
 
 ## Tests
 
@@ -201,10 +212,11 @@ gh workflow run release.yml --ref "corpus-$version" -f publish=seanchai-corpus
 A library release is the same with `uv version --package seanchai 0.2.0`, the
 tag `seanchai-v0.2.0` and `-f publish=seanchai`.
 
-`.github/workflows/release.yml` runs only when started by hand. It builds both
-packages, checks that a tag names the version it built, and runs the smoke test
-over the wheels. It publishes only from a run on a package's tag with `publish`
-naming that package, so a run anywhere else, or with the default `none`, is a
-dry run. Publishing uses PyPI trusted publishing, so no token is stored: each
-PyPI project trusts the repository `sliva0/senchai`, the workflow `release.yml`
-and the environment `pypi`, which has to exist on GitHub.
+`.github/workflows/release.yml` runs only when started by hand, and on Forgejo
+all of its jobs are skipped. It builds both packages, checks that a tag names
+the version it built, and runs the smoke test over the wheels. It publishes only
+from a run on a package's tag with `publish` naming that package, so a run
+anywhere else, or with the default `none`, is a dry run. Publishing uses PyPI
+trusted publishing, so no token is stored: each PyPI project trusts the
+repository `sliva0/senchai`, the workflow `release.yml` and the environment
+`pypi`, which has to exist on GitHub.

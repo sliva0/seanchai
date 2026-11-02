@@ -3,6 +3,11 @@ name: release
 # Never runs on its own: a person starts it, and only on a tag does it publish
 # (docs/development.md#releases). Publishing on the tag's push, later, is adding
 # `push: tags: ["seanchai-v*", "corpus-*"]` here; the jobs below allow for it.
+#
+# GitHub only. Forgejo reads this file too, and PyPI trusts GitHub's OIDC alone,
+# so every job is skipped there, build included: ci.yml already builds on Forgejo.
+# The jobs still name a label its runner serves, since the runner is what
+# evaluates a job's `if`, and a job no runner can take waits forever.
 on:
   workflow_dispatch:
     inputs:
@@ -20,7 +25,8 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    if: github.server_url == 'https://github.com'
+    runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'node22' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,9 +62,10 @@ jobs:
   publish-seanchai:
     needs: build
     if: >-
-      startsWith(github.ref, 'refs/tags/seanchai-v')
+      github.server_url == 'https://github.com'
+      && startsWith(github.ref, 'refs/tags/seanchai-v')
       && (github.event_name == 'push' || inputs.publish == 'seanchai')
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'node22' }}
     environment: pypi
     permissions:
       id-token: write
@@ -72,9 +79,10 @@ jobs:
   publish-corpus:
     needs: build
     if: >-
-      startsWith(github.ref, 'refs/tags/corpus-')
+      github.server_url == 'https://github.com'
+      && startsWith(github.ref, 'refs/tags/corpus-')
       && (github.event_name == 'push' || inputs.publish == 'seanchai-corpus')
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'node22' }}
     environment: pypi
     permissions:
       id-token: write

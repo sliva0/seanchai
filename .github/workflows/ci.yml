@@ -1,5 +1,8 @@
 name: ci
 
+# Runs on GitHub Actions and on Forgejo Actions, which reads this directory for
+# as long as .forgejo/workflows/ does not exist. docs/development.md#ci says what
+# a Forgejo instance needs. Forgejo ignores `permissions`.
 on:
   push:
   pull_request:
@@ -9,15 +12,20 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # The Forgejo runner serves no ubuntu-latest. Its node22 label is a container
+    # with node in it, which the actions below need.
+    runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'node22' }}
     steps:
       - uses: actions/checkout@v4
       # uv brings its own Python 3.14, from .python-version. The action caches
       # the managed CPython and the uv cache, keyed by the lockfile. Pruning
       # drops pre-built wheels before saving, since downloading them again is
-      # about as quick, so only wheels built from source are kept.
+      # about as quick, so only wheels built from source are kept. A host without
+      # a cache server starts cold. Forgejo's job token means nothing to
+      # github.com, the action's fallback for downloading uv, so it is withheld.
       - uses: astral-sh/setup-uv@v10.3.3
         with:
+          github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
           enable-cache: true
           cache-dependency-glob: uv.lock
           cache-python: true
