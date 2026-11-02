@@ -37,16 +37,16 @@ section       = application-scope / message / grouped-avp / enumerated-avp
               / avp-table / reused-avps / registry / undefined-avp
 ```
 
-A `spec-ref` names a document without its version. A 3GPP or IETF
-document is its number; a document outside them leads with its publisher
-and keeps the publisher's numbering, written as one token: ETSI's
-"TS 183 017" dotted as a 3GPP number is, 3GPP2's "X.S0057" without its
-revision letter (a citation's revision is recorded beside the corpus,
-[linter.md](linter.md#resolving-an-origin)), OMA's name as OMA prints it, oneM2M's "TS-0004". Every
-publisher has one spelling, since resolution compares references exactly.
-A From cell keeps the citing document's reference even where it misnames
-the publisher's: 3GPP cites ETSI ES 283 034 as "ETSI TS 283 034", so its
-cells read `ETSI-TS283.034`, which the corpus maps to the `ETSI-ES283.034`
+A `spec-ref` names a document without its version. A 3GPP or IETF document is
+its number; a document outside them leads with its publisher and keeps the
+publisher's numbering, written as one token: ETSI's "TS 183 017" dotted as a
+3GPP number is, 3GPP2's "X.S0057" without its revision letter (a citation's
+revision is recorded beside the corpus,
+[linter.md](linter.md#resolving-an-origin)), OMA's name as OMA prints it,
+oneM2M's "TS-0004". Every publisher has one spelling, since resolution compares
+references exactly. A From cell keeps the citing document's reference even where
+it misnames the publisher's: 3GPP cites ETSI ES 283 034 as "ETSI TS 283 034", so
+its cells read `ETSI-TS283.034`, which the corpus maps to the `ETSI-ES283.034`
 the transcription's title gives, one listed misnaming at a time
 ([linter.md](linter.md#resolving-an-origin)).
 
@@ -219,13 +219,14 @@ it, the section is complete as it stands: the document points elsewhere for
 the list. Values may still follow, supplied by a correction.
 
 `; RESERVED` and `; VENDOR-SPECIFIC` are the only directive lines that may
-appear in a body. A reserved value is distinct from an unassigned one: a validator
-must reject a dictionary that assigns it. A vendor-specific range is the
-opposite: the document leaves its values to vendors or operators without
-naming any, so a dictionary may assign one under a name the standard does
-not give, and a validator must accept it. What the document calls the
-range follows as a value's description does (`; VENDOR-SPECIFIC = 100-199
-; Vendor specific SM services`, TS 32.299 clause 7.2.213).
+appear in a body. A reserved value is distinct from an unassigned one: a
+validator must reject a dictionary that assigns it. A vendor-specific range is
+the opposite: the document leaves its values to vendors or operators without
+naming any, so a dictionary may assign one under a name the standard does not
+give, and a validator must accept it. What the document calls the range follows
+as a value's description does
+(`; VENDOR-SPECIFIC = 100-199 ; Vendor specific SM services`, TS 32.299 clause
+7.2.213).
 
 ### AVP table
 

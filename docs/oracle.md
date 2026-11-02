@@ -17,22 +17,21 @@ uv run seanchai download                          # fetches the dictionary too
 uv run seanchai crosscheck dad    # 58 files, 81 findings, 19 accepted renames
 ```
 
-The check reads the newest copy of each document and no other: the
-dictionary describes a document, and an older copy the corpus holds for a
-citation across releases ([consumers.md](consumers.md#resolution-across-releases))
-is no reading of it. `crosscheck` takes files or directories (a
-directory's raw files skipped, as the corpus loader skips them), lists
-each older copy it skips (TS 29.212 V11.19.0, TS 29.214 V7.12.0 and
-V11.16.0, TS 32.299 V11.20.0), and refuses two files of one document and
-version, so a count over every committed copy (99 findings and 21 accepted
-renames in 62 files, TS 29.212 V11.19.0's `stale-alias` for an AVP the copy
-predates among them) cannot be reported by accident.
-TS 29.140 V7.0.0, TS 29.209 V6.8.0, TS 29.210 V6.7.0, TS 29.211 V6.4.0 and
-TS 29.234 V11.2.0 are the newest copies of their documents and are checked:
-TS 29.211 tabulates no AVP, and TS 29.234's rows agree in name and type. The
-dictionary types `Charging-Characteristics` (314) OctetString and the
-document "Integer", which the oracle does not compare, the document
-stating no Diameter type.
+The check reads the newest copy of each document and no other: the dictionary
+describes a document, and an older copy the corpus holds for a citation across
+releases ([consumers.md](consumers.md#resolution-across-releases)) is no reading
+of it. `crosscheck` takes files or directories (a directory's raw files skipped,
+as the corpus loader skips them), lists each older copy it skips (TS 29.212
+V11.19.0, TS 29.214 V7.12.0 and V11.16.0, TS 32.299 V11.20.0), and refuses two
+files of one document and version, so a count over every committed copy (99
+findings and 21 accepted renames in 62 files, TS 29.212 V11.19.0's `stale-alias`
+for an AVP the copy predates among them) cannot be reported by accident. TS
+29.140 V7.0.0, TS 29.209 V6.8.0, TS 29.210 V6.7.0, TS 29.211 V6.4.0 and TS
+29.234 V11.2.0 are the newest copies of their documents and are checked: TS
+29.211 tabulates no AVP, and TS 29.234's rows agree in name and type. The
+dictionary types `Charging-Characteristics` (314) OctetString and the document
+"Integer", which the oracle does not compare, the document stating no Diameter
+type.
 
 The `[wireshark]` entry in `specs.toml` pins a release tag; the downloader
 fetches the whole `resources/protocols/diameter/` directory (the dictionary
@@ -224,11 +223,11 @@ remains:
   transcription unchanged and it agrees in name and type; the entry's
   flags (M and V must, P may, no encryption) are table 1's too, though
   the oracle compares none. Nothing is staged.
-- **ETSI TS 183 017, untriaged**: `Binding-information` (450), the
-  spelling of table 7.3.1, clause 7.3.1's heading and its rule name, where
-  the clause's sentence and the AAR and AAA ABNFs write
-  `Binding-Information`, to which the corpus corrects it. The oracle
-  compares no flags: the dictionary sets `Port-Number` and `Reservation-Class` (455,
+- **ETSI TS 183 017, untriaged**: `Binding-information` (450), the spelling of
+  table 7.3.1, clause 7.3.1's heading and its rule name, where the clause's
+  sentence and the AAR and AAA ABNFs write `Binding-Information`, to which the
+  corpus corrects it. The oracle compares no flags: the dictionary sets
+  `Port-Number` and `Reservation-Class` (455,
   456) M to "may" and encryption off, where table 7.3.1 puts M in Must not
   and sets encryption.
 - **`Tunnel-Connection-ID`** (68) for RFC 4005's and RFC 7155's

@@ -69,12 +69,12 @@ seanchai crosscheck dad                 # against Wireshark's dictionary
   and the staged Wireshark dictionary patches.
 - `editors/` — `.dad` syntax highlighting for VS Code, Vim and Neovim.
 - `specifications/` — downloaded sources (git-ignored).
-- `docs/` — format ([dad-format](docs/dad-format.md), [grammar](docs/grammar.md)),
-  pipeline ([extractor](docs/extractor.md), [corrections](docs/corrections.md),
-  [downloader](docs/downloader.md)), checks ([linter](docs/linter.md),
-  [oracle](docs/oracle.md)), [consumers](docs/consumers.md),
-  [workflow](docs/workflow.md), [development](docs/development.md) and the
-  [roadmap](docs/roadmap.md).
+- `docs/` — format ([dad-format](docs/dad-format.md),
+  [grammar](docs/grammar.md)), pipeline ([extractor](docs/extractor.md),
+  [corrections](docs/corrections.md), [downloader](docs/downloader.md)), checks
+  ([linter](docs/linter.md), [oracle](docs/oracle.md)),
+  [consumers](docs/consumers.md), [workflow](docs/workflow.md),
+  [development](docs/development.md) and the [roadmap](docs/roadmap.md).
 
 ## Development
 
@@ -84,6 +84,7 @@ uv run pytest -m "not sources"   # without the downloaded documents
 uv run pytest                    # everything, needs `seanchai download`
                                  # with LibreOffice (not --no-convert)
 uv run ruff check . && uv run ruff format .
+uv run rumdl check .
 uv run ty check && uv run basedpyright
 ```
 

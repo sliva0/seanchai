@@ -8,21 +8,21 @@ uv run pytest -m "not sources"   # tests that need no downloaded documents
 uv run pytest                    # all tests; needs `seanchai download` first
 uv run ruff check .              # lint — findings get fixed, not suppressed
 uv run ruff format .
+uv run rumdl check .             # Markdown, line length only
 uv run ty check                  # fast, alpha; may be wrong
 uv run basedpyright              # standard mode; the more trustworthy one
 ```
 
 `seanchai download` needs LibreOffice's `soffice` on PATH to convert the
-catalog's legacy `.doc` files, unless it is run with `--no-convert`. The
-full sources test needs the conversions: TS 32.299, 29.153, 29.154,
-29.215, 29.217, 29.219, 29.343, 29.368, 29.468 and oneM2M TS-0004 are read
-from them, as are the pinned TS 29.061 V6.15.0, 29.140 V7.0.0, 29.209 V6.8.0, 29.210
-V6.7.0, 29.211 V6.4.0, 29.212 V11.19.0, 29.214 V7.12.0 and V11.16.0, 29.234
-V11.2.0 and 32.299 V11.20.0, and a `--no-convert` manifest fails the test
-naming those twenty.
+catalog's legacy `.doc` files, unless it is run with `--no-convert`. The full
+sources test needs the conversions: TS 32.299, 29.153, 29.154, 29.215, 29.217,
+29.219, 29.343, 29.368, 29.468 and oneM2M TS-0004 are read from them, as are the
+pinned TS 29.061 V6.15.0, 29.140 V7.0.0, 29.209 V6.8.0, 29.210 V6.7.0, 29.211
+V6.4.0, 29.212 V11.19.0, 29.214 V7.12.0 and V11.16.0, 29.234 V11.2.0 and 32.299
+V11.20.0, and a `--no-convert` manifest fails the test naming those twenty.
 
-CI runs the tests without sources, ruff and both type checkers. Run everything
-locally before committing anyway; CI is a backstop, not the gate.
+CI runs the tests without sources, ruff, rumdl and both type checkers. Run
+everything locally before committing anyway; CI is a backstop, not the gate.
 
 Type-checker suppressions are allowed in the narrowest form that works, with
 the reason written next to them. The two checkers sometimes disagree; use the
@@ -68,3 +68,6 @@ covers it; add a synthetic case only for a rejection path.
   field (`find`, `replace`) cannot wrap, its whitespace being significant,
   so it stays on one line, the only lines `tests/test_toml_files.py` lets run
   long.
+- Markdown prose keeps to 80 columns too, and `rumdl` holds it there. Tables,
+  fenced code and a line that is one unbroken token or one whole link may run
+  long. A long code span wraps at a space; it renders the same.

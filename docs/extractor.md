@@ -117,105 +117,98 @@ Vocabulary, RFC extractor: `prose-avp-codes` (RFC 7155), `clause-avp-table`
 `bare-name-continuation` (RFC 4004), `ragged-separator` (RFC 8583).
 The declared vocabulary, with the document that forced each:
 
-- Docx: `prose-application-ids` (29.153, 29.154, 29.210, 29.211, 29.212,
-  29.214, 29.215, 29.217, 29.219, 29.234, 29.343, 29.368, 29.468: the clause
-  stating the application id the command headers omit); `access-type-headings` (29.212, 29.214: `Event-Trigger
-  AVP (All access types)`); the mark columns, each declaration naming the
-  column's legend: `access-type-column` (29.212, 29.215),
+- Docx: `prose-application-ids` (29.153, 29.154, 29.210, 29.211, 29.212, 29.214,
+  29.215, 29.217, 29.219, 29.234, 29.343, 29.368, 29.468: the clause stating the
+  application id the command headers omit); `access-type-headings` (29.212,
+  29.214: `Event-Trigger AVP (All access types)`); the mark columns, each
+  declaration naming the column's legend: `access-type-column` (29.212, 29.215),
   `applicability-column` (29.061, 29.153, 29.154, 29.212, 29.214, 29.215,
   29.217, 29.219, 29.368, 29.468), `reference-points-column` (29.061) and
-  `command-columns` (32.299), and `worded-marks` (29.061, 29.368, 29.468:
-  marks of several words, separated by commas only);
-  `note-defined-in-rfc` (29.229, 29.329: AVP-table
-  notes naming a defining RFC become re-used rows); `dotted-flags` (29.061, 29.212);
-  `vendor-id-sentence` (29.389: the V bit its table leaves blank, from the
-  clause's sentence);
-  `clause-parenthetical` (29.061); `message-only` (29.330 §6.3.1, 29.211
-  clause 7: commands and re-used rows, no local AVPs); and five from TS 29.273:
-  `command-reference-only` (clauses holding only a pointer),
-  `procedure-commands` (8.2.2.1–4 name commands in their intros; also
-  29.234's 6.4.1–6.4.3 and 11.4.1),
-  `physical-reused-columns` (table 8.2.3.0/2 changes grid spans; also
-  29.368 table 6.5.1.1 and 29.219 table 5.4, whose header and data rows
-  merge a sliver grid column into different labels),
-  `independent-avp-tables` (no one-to-one table pairing; also 29.215,
-  whose clause 5.4.0 states S9's re-use in prose),
-  `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows
-  kept, no enum code derived from them). TS 29.230 declares
-  `registry-tables`, `unknown-type-tokens` and `reserved-range-notes`
-  (below). TS 32.299 declares fourteen for V18.0.0:
-  `message-headings` (6.2.2–6.4.5 head commands "Accounting-Request
-  message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =` in clause 7.2;
-  also 29.229's four grouped rules), `struck-rules-unused`,
+  `command-columns` (32.299), and `worded-marks` (29.061, 29.368, 29.468: marks
+  of several words, separated by commas only); `note-defined-in-rfc` (29.229,
+  29.329: AVP-table notes naming a defining RFC become re-used rows);
+  `dotted-flags` (29.061, 29.212); `vendor-id-sentence` (29.389: the V bit its
+  table leaves blank, from the clause's sentence); `clause-parenthetical`
+  (29.061); `message-only` (29.330 §6.3.1, 29.211 clause 7: commands and re-used
+  rows, no local AVPs); and five from TS 29.273: `command-reference-only`
+  (clauses holding only a pointer), `procedure-commands` (8.2.2.1–4 name
+  commands in their intros; also 29.234's 6.4.1–6.4.3 and 11.4.1),
+  `physical-reused-columns` (table 8.2.3.0/2 changes grid spans; also 29.368
+  table 6.5.1.1 and 29.219 table 5.4, whose header and data rows merge a sliver
+  grid column into different labels), `independent-avp-tables` (no one-to-one
+  table pairing; also 29.215, whose clause 5.4.0 states S9's re-use in prose),
+  `conflicting-avp-codes` (table 8.2.3.0/1 contradicts 5.2.3.24; both rows kept,
+  no enum code derived from them). TS 29.230 declares `registry-tables`,
+  `unknown-type-tokens` and `reserved-range-notes` (below). TS 32.299 declares
+  fourteen for V18.0.0: `message-headings` (6.2.2–6.4.5 head commands
+  "Accounting-Request message" over `<ACR> ::=`), `spaced-rule-operator` (`:: =`
+  in clause 7.2; also 29.229's four grouped rules), `struck-rules-unused`,
   `physical-avp-columns` (table 7.2.0.1), `refer-type-cells`,
-  `referred-type-sentences` (7.2.50, 7.2.69, 7.2.191), `type-short-forms` (`DiamIdent`, `DiamURI` in table 7.1.0.1),
-  `wildcard-avp-row` (7.1.0.1's `AVP` row with code `*`),
-  `value-first-enums`, `body-clause-headings` (7.2.135C), `dotted-flags`,
-  `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
+  `referred-type-sentences` (7.2.50, 7.2.69, 7.2.191), `type-short-forms`
+  (`DiamIdent`, `DiamURI` in table 7.1.0.1), `wildcard-avp-row` (7.1.0.1's `AVP`
+  row with code `*`), `value-first-enums`, `body-clause-headings` (7.2.135C),
+  `dotted-flags`, `external-enum-values` (7.2.238, 7.2.20eA; also 29.061, 29.212
   and 29.272), `vendor-avp-tables` (tables 7.3.1, 7.4.1, 7.5.1) and
-  `command-columns`. Its V11.20.0, the copy oneM2M TS-0004 cites, declares
-  its own: `message-headings` (6.2.2–6.4.3 print "Accounting-Request
-  Message", capitalized), `spaced-rule-operator`, `struck-rules-unused`,
-  `refer-type-cells` (table 7.2), `referred-type-sentences` (7.2.50,
-  7.2.69, 7.2.191, word for word as V18.0.0's), `type-short-forms` and
+  `command-columns`. Its V11.20.0, the copy oneM2M TS-0004 cites, declares its
+  own: `message-headings` (6.2.2–6.4.3 print "Accounting-Request Message",
+  capitalized), `spaced-rule-operator`, `struck-rules-unused`,
+  `refer-type-cells` (table 7.2), `referred-type-sentences` (7.2.50, 7.2.69,
+  7.2.191, word for word as V18.0.0's), `type-short-forms` and
   `wildcard-avp-row` (table 7.1), `value-first-enums` (7.2.10's `0 TO`),
   `dotted-flags`, `command-columns`, `worded-enum-values` (7.2.1B),
   `external-enum-values` (7.2.238) and `value-last-enums`, whose
-  `MONETARY<tabs>0` lines (7.2.14 and nineteen more) are read only where
-  the printed line sets the number off with a tab or a run of spaces,
-  which normalizing would erase (`_Line.tabbed_number`), so a sentence
-  ending in a number is never a value; `bracketed-enum-values` (7.2.101's
-  `[0] called party`), `dotted-enum-values` (7.2.207's `0. SUBMISSION`,
-  7.2.218) and `list-numbered-enum-values`, for the lists of clauses
-  7.2.132, 7.2.145, 7.2.147, 7.2.148 and 7.2.151 whose numbers exist only
-  in Word's list numbering, replayed as for oneM2M's headings and checked
-  against the ETSI PDF, which prints them (`0 Participating PoC Server`,
-  `1. Moderator`). A level that gives no `w:start` counts from 0 (ECMA-376
-  part 1, 17.9.25), as those two lists do. TS 29.140 V7.0.0 declares
-  `worded-enum-values` and `comma-enum-labels`, for clause 6.3.5's
+  `MONETARY<tabs>0` lines (7.2.14 and nineteen more) are read only where the
+  printed line sets the number off with a tab or a run of spaces, which
+  normalizing would erase (`_Line.tabbed_number`), so a sentence ending in a
+  number is never a value; `bracketed-enum-values` (7.2.101's
+  `[0] called party`), `dotted-enum-values` (7.2.207's `0. SUBMISSION`, 7.2.218)
+  and `list-numbered-enum-values`, for the lists of clauses 7.2.132, 7.2.145,
+  7.2.147, 7.2.148 and 7.2.151 whose numbers exist only in Word's list
+  numbering, replayed as for oneM2M's headings and checked against the ETSI PDF,
+  which prints them (`0 Participating PoC Server`, `1. Moderator`). A level that
+  gives no `w:start` counts from 0 (ECMA-376 part 1, 17.9.25), as those two
+  lists do. TS 29.140 V7.0.0 declares `worded-enum-values` and
+  `comma-enum-labels`, for clause 6.3.5's
   `MM1 Message Submission, Profile based (0)`, a quoted name with a comma
-  ([grammar.md](grammar.md)).
-  TS 29.234 V11.2.0 declares `rfc-command-rules` (clauses 4.4.2, 4.5.2.2,
-  5.5.1, 8.4, 9.4 and 11.4.2 print RFC commands by rule alone, `<ASR> ::=`
-  or `<Diameter-EAP-Request> ::=`, under no intro naming them, which take
-  the RFC's names by command code; a code no RFC here defines or a rule
-  abbreviating the command otherwise fails), `spaced-heading-numbers`
-  (clause 4.5.2.2's heading prints a space before the tab; undeclared
-  elsewhere, since TS 32.299 V11.20.0 prints a heading so too, whose clause
-  its corrections read as printed), `spaced-rule-operator` (10.1.4),
-  `unknown-type-tokens` (below) and `worded-enum-values` (10.1.23).
-  Enumerated value lines that depart from `NAME (n)` each need their own:
-  `worded-enum-values` (29.368 6.4.6's `Device Trigger Request (1)`; also
-  29.109, 29.172, 29.214), `dashed-enum-values` (a list dash printed as
-  text, `- AUDIO (0)`: 29.109, 29.214, 29.272, 29.338), `hex-enum-values`
-  (29.214 5.3.19's `OTHER (0xFFFFFFFF)`), `punctuated-enum-values` (a list's
-  comma or full stop after the value: 29.109, 29.338),
-  `described-enum-values` and `label-after-enum-value` (29.109: `NO (0) The
-  sending node is not GBA_U aware`, `- (0) Private user identity.`) and
-  `run-on-enum-values` (29.229 6.3.58, two values in one paragraph);
-  29.061 and 29.212 declare `worded-enum-values` too. TS 29.214 V7.12.0
-  declares `dashed-enum-values`, `hex-enum-values` and `worded-enum-values`
-  as V18.4.0 does, and TS 29.209 V6.8.0 and TS 29.214 V7.12.0
-  `prose-application-ids` (29.209 clause 6.1's third wording, "The Gq
-  application is defined as an IETF vendor specific Diameter application
-  with application ID 16777222") and `abnf-comments` (a member line's
-  trailing `; Ordinal number of the media comp.`, RFC 5234's comment, in
-  29.209 clauses 6.5.18 and 6.5.20 and 29.214 V7.12.0 and V11.16.0
-  clauses 5.3.16 and 5.3.18; unread, each body ended silently before its
-  first member). TS 29.212's and 29.214's Release 11 copies, V11.19.0 and
-  V11.16.0, declare their Release 18 readings that their text still
-  needs: 29.212's `prose-application-ids` (5.1, 5a.1, 5b.1, E.6.1),
-  `access-type-headings`, `access-type-column`, `applicability-column` and
-  `worded-enum-values`, 29.214's `prose-application-ids`,
-  `dashed-enum-values`, `hex-enum-values`, `worded-enum-values` and
-  `applicability-column`. TS 29.212 and 29.214 (every release)
-  declare `origins-by-reference` (a From cell naming ETSI's document as
-  3GPP's, read through clause 2; TS 29.212 V11.19.0 prints "ETSI 3GPP TS
-  283 034 [37]"). oneM2M TS-0004 declares
-  `list-numbered-headings`, `reference-cells` and `prose-enum-values` of its
-  own ([below](#onem2m-ts-0004)), with `message-headings`,
-  `spaced-rule-operator`, `command-columns`, `type-short-forms`,
-  `value-first-enums` and `external-enum-values`.
+  ([grammar.md](grammar.md)). TS 29.234 V11.2.0 declares `rfc-command-rules`
+  (clauses 4.4.2, 4.5.2.2, 5.5.1, 8.4, 9.4 and 11.4.2 print RFC commands by rule
+  alone, `<ASR> ::=` or `<Diameter-EAP-Request> ::=`, under no intro naming
+  them, which take the RFC's names by command code; a code no RFC here defines
+  or a rule abbreviating the command otherwise fails), `spaced-heading-numbers`
+  (clause 4.5.2.2's heading prints a space before the tab; undeclared elsewhere,
+  since TS 32.299 V11.20.0 prints a heading so too, whose clause its corrections
+  read as printed), `spaced-rule-operator` (10.1.4), `unknown-type-tokens`
+  (below) and `worded-enum-values` (10.1.23). Enumerated value lines that depart
+  from `NAME (n)` each need their own: `worded-enum-values` (29.368 6.4.6's
+  `Device Trigger Request (1)`; also 29.109, 29.172, 29.214),
+  `dashed-enum-values` (a list dash printed as text, `- AUDIO (0)`: 29.109,
+  29.214, 29.272, 29.338), `hex-enum-values` (29.214 5.3.19's
+  `OTHER (0xFFFFFFFF)`), `punctuated-enum-values` (a list's comma or full stop
+  after the value: 29.109, 29.338), `described-enum-values` and
+  `label-after-enum-value` (29.109:
+  `NO (0) The sending node is not GBA_U aware`, `- (0) Private user identity.`)
+  and `run-on-enum-values` (29.229 6.3.58, two values in one paragraph); 29.061
+  and 29.212 declare `worded-enum-values` too. TS 29.214 V7.12.0 declares
+  `dashed-enum-values`, `hex-enum-values` and `worded-enum-values` as V18.4.0
+  does, and TS 29.209 V6.8.0 and TS 29.214 V7.12.0 `prose-application-ids`
+  (29.209 clause 6.1's third wording, "The Gq application is defined as an IETF
+  vendor specific Diameter application with application ID 16777222") and
+  `abnf-comments` (a member line's trailing
+  `; Ordinal number of the media comp.`, RFC 5234's comment, in 29.209 clauses
+  6.5.18 and 6.5.20 and 29.214 V7.12.0 and V11.16.0 clauses 5.3.16 and 5.3.18;
+  unread, each body ended silently before its first member). TS 29.212's and
+  29.214's Release 11 copies, V11.19.0 and V11.16.0, declare their Release 18
+  readings that their text still needs: 29.212's `prose-application-ids` (5.1,
+  5a.1, 5b.1, E.6.1), `access-type-headings`, `access-type-column`,
+  `applicability-column` and `worded-enum-values`, 29.214's
+  `prose-application-ids`, `dashed-enum-values`, `hex-enum-values`,
+  `worded-enum-values` and `applicability-column`. TS 29.212 and 29.214 (every
+  release) declare `origins-by-reference` (a From cell naming ETSI's document as
+  3GPP's, read through clause 2; TS 29.212 V11.19.0 prints "ETSI 3GPP TS 283 034
+  [37]"). oneM2M TS-0004 declares `list-numbered-headings`, `reference-cells`
+  and `prose-enum-values` of its own ([below](#onem2m-ts-0004)), with
+  `message-headings`, `spaced-rule-operator`, `command-columns`,
+  `type-short-forms`, `value-first-enums` and `external-enum-values`.
 - RFC: `clause-avp-table` (6734, 6942: no table; Name/Code/Type from the
   defining clauses); `parenthesized-enum-values` (6734 §3.1.1, mixed-case
   `rRK (1)`; 7155 §4.4.1, `Login (1)`); `worded-enum-values` (4005 §5.5 and
@@ -276,43 +269,43 @@ Walks paragraphs and tables in document order under numbered headings:
   rule name may be bracketed (`<Event-Type>::=`, `< Participant-Group > ::=`)
   and the keyword spaced (`AVP Header : 612`, 29.229).
 - `x.y.z Name AVP` heading whose intro says "is of type Enumerated", with
-  `ValueName (n)` items → `EnumeratedAvp`. Values are classified by content,
-  not paragraph style (29.229 §6.3.34 inverts the B1/B2 convention).
-  "Value n is reserved" notes become reserved ranges, inserted by value.
-  Each departure from `NAME (n)` is read only where its quirk is declared,
-  and a line needing two is read only with both: a label of several words
-  keeps its spaces (`worded-enum-values`, TS 29.368's `Device Trigger
-  Request (1)`); a leading list dash is dropped (`dashed-enum-values`), as
-  is a comma or full stop after the value (`punctuated-enum-values`); a
-  hexadecimal value is read as its number (`hex-enum-values`, TS 29.214's
-  `OTHER (0xFFFFFFFF)` is 4294967295); the rest of the line after the value
-  is its description (`described-enum-values`, TS 29.109's `NO (0) The
-  sending node is not GBA_U aware`), the document's own one-line gloss, or,
-  with no name before the value, its name less a closing full stop
-  (`label-after-enum-value`, 29.109's `- (0) Private user identity.`, the
-  label Wireshark records too); several values run together in one
-  paragraph are each read (`run-on-enum-values`, TS 29.229 clause 6.3.58).
-  Behind `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are
-  read too: the label ends at the first colon and the rest of the line is the
-  value's description (`2 High priority: Lower than Pre-emptive priority`,
-  7.2.132); a range whose words leave it to vendors or operators, in
-  vendor- or operator-specific wording with no `not`, `no`, `never` or
-  `except` (`100 .. 199 Vendor specific SM services`, 7.2.213; `Reserved
-  for vendor specific …` too, values reserved for vendor use being
+  `ValueName (n)` items → `EnumeratedAvp`. Values are classified by content, not
+  paragraph style (29.229 §6.3.34 inverts the B1/B2 convention). "Value n is
+  reserved" notes become reserved ranges, inserted by value. Each departure from
+  `NAME (n)` is read only where its quirk is declared, and a line needing two is
+  read only with both: a label of several words keeps its spaces
+  (`worded-enum-values`, TS 29.368's `Device Trigger Request (1)`); a leading
+  list dash is dropped (`dashed-enum-values`), as is a comma or full stop after
+  the value (`punctuated-enum-values`); a hexadecimal value is read as its
+  number (`hex-enum-values`, TS 29.214's `OTHER (0xFFFFFFFF)` is 4294967295);
+  the rest of the line after the value is its description
+  (`described-enum-values`, TS 29.109's
+  `NO (0) The sending node is not GBA_U aware`), the document's own one-line
+  gloss, or, with no name before the value, its name less a closing full stop
+  (`label-after-enum-value`, 29.109's `- (0) Private user identity.`, the label
+  Wireshark records too); several values run together in one paragraph are each
+  read (`run-on-enum-values`, TS 29.229 clause 6.3.58). Behind
+  `value-first-enums`, TS 32.299's `0 PS to CS Transfer` lines are read too: the
+  label ends at the first colon and the rest of the line is the value's
+  description (`2 High priority: Lower than Pre-emptive priority`, 7.2.132); a
+  range whose words leave it to vendors or operators, in vendor- or
+  operator-specific wording with no `not`, `no`, `never` or `except`
+  (`100 .. 199 Vendor specific SM services`, 7.2.213;
+  `Reserved for vendor specific …` too, values reserved for vendor use being
   allocated to them), is a vendor-specific range keeping the words as its
-  description; `11 .. 99 Reserved for 3GPP defined SM services`, reserved
-  with no such wording, is a reserved range; and any other range, a
-  negated one included, names no value and is reported. Behind `external-enum-values`, a clause that says where its
-  values are defined instead of listing them gets that citation as
-  `; Values:`, in the document's words: TS 29.272's twelve
-  trace and MDT AVPs ("The possible values are those defined in TS 32.422
-  [23] for Trace Depth", 7.3.67), TS 29.061's `MBMS-HC-Indicator` ("The
-  enumeration values are defined in 3GPP TS 25.413 [92]", 17.7.25), TS 29.212's `Default-Access` ("the same as
-  the ones defined in IP-CAN-Type AVP", 5.3.120), TS 32.299's `Type-Number`
-  (OMNA WSP Content Type Numbers, 7.2.238) and `API-Network-Service-Node`
-  (TS 23.682, 7.2.20eA). An enumerated clause yielding neither values nor a
-  citation keeps an empty definition and warns; no clause in the corpus
-  does today.
+  description; `11 .. 99 Reserved for 3GPP defined SM services`, reserved with
+  no such wording, is a reserved range; and any other range, a negated one
+  included, names no value and is reported. Behind `external-enum-values`, a
+  clause that says where its values are defined instead of listing them gets
+  that citation as `; Values:`, in the document's words: TS 29.272's twelve
+  trace and MDT AVPs ("The possible values are those defined in TS 32.422 [23]
+  for Trace Depth", 7.3.67), TS 29.061's `MBMS-HC-Indicator` ("The enumeration
+  values are defined in 3GPP TS 25.413 [92]", 17.7.25), TS 29.212's
+  `Default-Access` ("the same as the ones defined in IP-CAN-Type AVP", 5.3.120),
+  TS 32.299's `Type-Number` (OMNA WSP Content Type Numbers, 7.2.238) and
+  `API-Network-Service-Node` (TS 23.682, 7.2.20eA). An enumerated clause
+  yielding neither values nor a citation keeps an empty definition and warns; no
+  clause in the corpus does today.
 - The table with the "AVP Flag rules" header → `AvpTable`. A row whose code
   cell is a NOTE reference gets `code=None`; a note naming a defining RFC also
   produces a `ReusedAvps` row (`note-defined-in-rfc`). Behind
@@ -474,39 +467,35 @@ the words and loses the strike, so text extracted from the PDF shows them as
 ordinary optional members; the docx's run formatting is what records them as
 struck.
 
-Real-document cases handled in code or by patch, kept as evidence: heading
-and rule-name mismatches (29.329 §6.1.8); Diameter headers omitting the
-application id (29.272 VCSG → `application_id` optional); two ABNFs under
-one command heading (29.272 IDR/DSR/RSR, S6a + S7a); empty clause cells
-(29.272 3GPP2-MEID → `AvpTableRow.section` optional); merged rows
-duplicating cell text; the H6 heading style (29.273 §6.2.2.1.1); headings
-without " AVP" (29.272) or with it
-hyphenated on (29.214, patched); an underscore in a published name
-(29.109's `GBA_U-Awareness-Indicator`); `<AVP header: 632, 10415>` comma
-separator (29.229); the RFC 3588 `P` flag still printed (29.061, 29.212,
-29.214, 29.273); annex clause numbers (`E.6.3.6`); parenthesized note
-references on name cells (`(NOTE 3)`, two stacked, and TS 29.212
-V11.19.0's lower-case `(note 2)` in table 5a.4.1); a label-less empty
-fourth column in a re-used table (29.212's 5b.4.0.1, V11.19.0's 5b.4, dropped with a
-warning); one AVP
-printed with two bodies (29.336 §6.4.2 and §8.4.36, the second deleted by
-correction); "Void" as an enum value label (29.214, deleted by correction);
-a clause heading printed as a body paragraph (32.299 §7.2.135C,
-`body-clause-headings`); names broken by a space after a hyphen (32.299,
-29.343's heading 6.4.10, 29.154's table 5.4.1; a re-used name cell with a
-space fails like an AVP table's), an en dash, a Symbol-font dash and `V/M`, `VM` flag
-cells (32.299, patched); a trailing comma in a flags cell (29.217
-table 5.3.1.1, patched); a brace closing an optional member (29.343 §6.6.4,
-patched); a From cell dropping "RFC" (29.219 table 5.4, patched); a
-drafting placeholder `5.3.x` for a clause number, "is of type of
-Enumerated" in an enumerated clause's intro and an `Octetstring` type
-(29.215, patched; "is of type of Enumerated" and "is type of Enumerated" in
-29.212 too); "is of type enumerated" in lower case (29.338 §6.3.3.6,
-patched); a space inside an enumerated value name
-(`SIPTO_above_RAN _ALLOWED` in 29.272 §7.3.135, also 29.172 §7.4.9, 29.212
-§5.3.7 and §5.3.31, 29.214 §5.3.1 and 29.338 §5.3.3.19, patched; unpatched, the value was silently not
-a value).
-Everything patched is listed with its reason in `edits/sources/`.
+Real-document cases handled in code or by patch, kept as evidence: heading and
+rule-name mismatches (29.329 §6.1.8); Diameter headers omitting the application
+id (29.272 VCSG → `application_id` optional); two ABNFs under one command
+heading (29.272 IDR/DSR/RSR, S6a + S7a); empty clause cells (29.272 3GPP2-MEID →
+`AvpTableRow.section` optional); merged rows duplicating cell text; the H6
+heading style (29.273 §6.2.2.1.1); headings without " AVP" (29.272) or with it
+hyphenated on (29.214, patched); an underscore in a published name (29.109's
+`GBA_U-Awareness-Indicator`); `<AVP header: 632, 10415>` comma separator
+(29.229); the RFC 3588 `P` flag still printed (29.061, 29.212, 29.214, 29.273);
+annex clause numbers (`E.6.3.6`); parenthesized note references on name cells
+(`(NOTE 3)`, two stacked, and TS 29.212 V11.19.0's lower-case `(note 2)` in
+table 5a.4.1); a label-less empty fourth column in a re-used table (29.212's
+5b.4.0.1, V11.19.0's 5b.4, dropped with a warning); one AVP printed with two
+bodies (29.336 §6.4.2 and §8.4.36, the second deleted by correction); "Void" as
+an enum value label (29.214, deleted by correction); a clause heading printed as
+a body paragraph (32.299 §7.2.135C, `body-clause-headings`); names broken by a
+space after a hyphen (32.299, 29.343's heading 6.4.10, 29.154's table 5.4.1; a
+re-used name cell with a space fails like an AVP table's), an en dash, a
+Symbol-font dash and `V/M`, `VM` flag cells (32.299, patched); a trailing comma
+in a flags cell (29.217 table 5.3.1.1, patched); a brace closing an optional
+member (29.343 §6.6.4, patched); a From cell dropping "RFC" (29.219 table 5.4,
+patched); a drafting placeholder `5.3.x` for a clause number, "is of type of
+Enumerated" in an enumerated clause's intro and an `Octetstring` type (29.215,
+patched; "is of type of Enumerated" and "is type of Enumerated" in 29.212 too);
+"is of type enumerated" in lower case (29.338 §6.3.3.6, patched); a space inside
+an enumerated value name (`SIPTO_above_RAN _ALLOWED` in 29.272 §7.3.135, also
+29.172 §7.4.9, 29.212 §5.3.7 and §5.3.31, 29.214 §5.3.1 and 29.338 §5.3.3.19,
+patched; unpatched, the value was silently not a value). Everything patched is
+listed with its reason in `edits/sources/`.
 
 TS 29.228 v18.0.0 and TS 29.328 v18.2.0 contain procedure/IE mappings,
 not Diameter ABNF or AVP definition tables. In both, annex A.1 assigns the
@@ -517,19 +506,18 @@ a message-only convention cannot supply those missing definitions. TS 29.213
 also has no ABNF or definition tables and is outside this extractor's scope.
 
 TS 29.305 v18.0.0 describes MAP/Diameter interworking (clause 1 and annex A)
-without command ABNF or AVP definition tables, so it is also outside scope.
-TS 29.201 v18.0.0 (a legacy `.doc`) carries TS 29.214's Rx messages over
-REST: annex B is an XML Schema for 29.214's AVPs (B.1) and messages (B.2),
-with no ABNF, AVP codes or AVP table, and `regenerate --add` rejects it with
-`no AVP table found`. Nothing in the corpus cites it.
-TS 32.296 v18.0.0 is not catalogued, for the reason TR 29.909 was dropped:
-its Re interface (clause 7.1.4, the Rating Application) prints `xxx`
-command codes and `xxxx`/`TBD` AVP codes, its Editor's Notes leaving both to
-CT4 and TS 29.230, which allocates the application id 16777218 and nothing
-else for it, so there is nothing to extract; annex B re-prints RFC 4006's
-CCR/CCA for Rc.
-<a id="the-registry-reading"></a>TS 29.230 v18.6.0 is an allocation registry rather than a definer, read
-behind two quirks of its own:
+without command ABNF or AVP definition tables, so it is also outside scope. TS
+29.201 v18.0.0 (a legacy `.doc`) carries TS 29.214's Rx messages over REST:
+annex B is an XML Schema for 29.214's AVPs (B.1) and messages (B.2), with no
+ABNF, AVP codes or AVP table, and `regenerate --add` rejects it with
+`no AVP table found`. Nothing in the corpus cites it. TS 32.296 v18.0.0 is not
+catalogued, for the reason TR 29.909 was dropped: its Re interface (clause
+7.1.4, the Rating Application) prints `xxx` command codes and `xxxx`/`TBD` AVP
+codes, its Editor's Notes leaving both to CT4 and TS 29.230, which allocates the
+application id 16777218 and nothing else for it, so there is nothing to extract;
+annex B re-prints RFC 4006's CCR/CCA for Rc. <a id="the-registry-reading"></a>TS
+29.230 v18.6.0 is an allocation registry rather than a definer, read behind two
+quirks of its own:
 
 - `registry-tables`: a table whose first column is "Application
   identifier" (4.1), "Command code value" (5.1/1–5.1/4), "AVP Code" (7.1)
@@ -552,22 +540,21 @@ behind two quirks of its own:
   table's Type cell reads the same behind the same quirk (TS 29.234 table
   10.1.1): the row has `printed_type` and no `data_type`.
 
-  No source settles 314's type, so the row stays as printed and no
-  correction supplies one, here or in TS 29.234 V11.2.0, now in the corpus,
-  whose table 10.1.1 prints the same word; its model reading is a hole
-  with no `data_type`, and a registry that copied it is not wrong. TS 29.234
-  clause 10.1.27 says "of type Integer"
-  in every version that has the AVP, V6.1.0 to its last, V11.2.0, never
-  with a width; it carries "the charging mode … as described in 3GPP TS
-  32.215", whose information element (clause 6.1 and annex A, and TS
-  32.298's ASN.1 on 3GPP Forge today) is `OCTET STRING (SIZE(2))`, a
-  16-bit string of Profile and Behaviour bits. Wireshark types 314
-  OctetString since MR !4102 (commit `61e1e69218`, 2021), which states no
-  rationale and rewrote `dictionary.xml`'s comment to `314
-  Charging-Characteristics Integer [3GPP 29.234]`; freeDiameter, and Open5GS through
-  it, and EasyDiameter read Integer32, python-diameter OctetString.
-  OctetString fits the information element and Integer32 the document's
-  word; neither is the document's statement.
+  No source settles 314's type, so the row stays as printed and no correction
+  supplies one, here or in TS 29.234 V11.2.0, now in the corpus, whose table
+  10.1.1 prints the same word; its model reading is a hole with no `data_type`,
+  and a registry that copied it is not wrong. TS 29.234 clause 10.1.27 says "of
+  type Integer" in every version that has the AVP, V6.1.0 to its last, V11.2.0,
+  never with a width; it carries "the charging mode … as described in 3GPP TS
+  32.215", whose information element (clause 6.1 and annex A, and TS 32.298's
+  ASN.1 on 3GPP Forge today) is `OCTET STRING (SIZE(2))`, a 16-bit string of
+  Profile and Behaviour bits. Wireshark types 314 OctetString since MR !4102
+  (commit `61e1e69218`, 2021), which states no rationale and rewrote
+  `dictionary.xml`'s comment to
+  `314 Charging-Characteristics Integer [3GPP 29.234]`; freeDiameter, and
+  Open5GS through it, and EasyDiameter read Integer32, python-diameter
+  OctetString. OctetString fits the information element and Integer32 the
+  document's word; neither is the document's statement.
 - `reserved-range-notes`: a full-width note row → a reserved range per
   line reading "The AVP codes from a to b are reserved for P" or "The
   Experimental Result Codes from a to b …", P less its closing full stop the
@@ -577,14 +564,14 @@ behind two quirks of its own:
 
 The input patches repair what fails these readings: three reference cells
 (`29.153[37]`, `29.154[38]`, `29.109 [7`), `723 to799`, three type typos
-(`OctectString`, `Groupe`, `UTF8Str`) and six names broken beside a hyphen (`Redirect- Support`, `Authentication- Information
--Request/Answer`). Forty-seven more respell table 7.1's names to the
-defining clause's, twenty-one differing only in case (`Role-of-Node`, TS
-32.299's `Role-Of-Node`) and the rest otherwise (`"Visited PLMN Id"`, TS
-29.272's `Visited-PLMN-Id`); see [linter.md](linter.md#standing-findings).
-A name with spaces no patch respells stays as printed, quoted
-(`"SGSN-Absent-User-Subscriber-Diagnostic SM"`, whose defining clause
-prints two names).
+(`OctectString`, `Groupe`, `UTF8Str`) and six names broken beside a hyphen
+(`Redirect- Support`, `Authentication- Information -Request/Answer`).
+Forty-seven more respell table 7.1's names to the defining clause's, twenty-one
+differing only in case (`Role-of-Node`, TS 32.299's `Role-Of-Node`) and the rest
+otherwise (`"Visited PLMN Id"`, TS 29.272's `Visited-PLMN-Id`); see
+[linter.md](linter.md#standing-findings). A name with spaces no patch respells
+stays as printed, quoted (`"SGSN-Absent-User-Subscriber-Diagnostic SM"`, whose
+defining clause prints two names).
 
 ## oneM2M TS-0004
 
@@ -725,40 +712,40 @@ Same definitions, different carrier:
 - **Grouped AVPs** may write the rule name bracketed or bare, and `1* {AVP}`
   without inner spaces. A body printed for another document's AVP is kept
   (RFC 8581/8582 re-print 7683's `OC-OLR`), for the linter to compare.
-- **Enumerated AVPs**: a value list under a name-titled section, when the
-  local table types the name Enumerated. Both layouts are read (value alone
-  with description below; description on the value's line and wrapping) plus
-  older `2 HMAC-SHA-1` and `0 | IN - …` forms. Value names are all-caps in
-  every collected RFC and requiring that keeps prose out; RFC 6734's
-  mixed-case `rRK (1)` is a declared quirk, as are names of several words
+- **Enumerated AVPs**: a value list under a name-titled section, when the local
+  table types the name Enumerated. Both layouts are read (value alone with
+  description below; description on the value's line and wrapping) plus older
+  `2 HMAC-SHA-1` and `0 | IN - …` forms. Value names are all-caps in every
+  collected RFC and requiring that keeps prose out; RFC 6734's mixed-case
+  `rRK (1)` is a declared quirk, as are names of several words
   (`"CHAP with MD5" = 5`, RFC 4005 §5.5, 7155 §4.3.5) and RFC 5777's
-  `(0): QoS-Desired`. With `worded-enum-values`, RFC 4005's informational
-  lists (§4.4, 5.3, 6.1, 6.10.1, 6.10.2, 6.10.4, 6.15.3, 7.2, 7.3) are read
-  whole: a value-first line's label is every word after the number, a
-  closing reference tag dropped as it is after a one-word label (`17
-  Authorize Only  [RADDynAuth]`), and a line indented past the label's first
-  character continues it (`12   ADSL-CAP - Asymmetric DSL, Carrierless
-  Amplitude Phase` over `Modulation`). §7.3's `802 (includes all 802 media
-  plus Ethernet "canonical format")` is written with the quotes escaped
-  ([grammar.md](grammar.md#enumerated-avp)). §6.1 then re-lists four values
-  it qualifies, two worded ones reading a second time; the raw file keeps
-  both copies and corrections delete the repeats. Behind `external-enum-values`, a clause that says
-  where its values are listed gets that citation as `; Values:`, in the
-  document's words up to the sentence's end, with or without a list beside
-  it: RFC 6733's `Termination-Cause` ("can be found in the IANA registry
-  for Termination-Cause AVP Values [IANATCV]", §8.15), RFC 5777's six
-  "managed by IANA under the … registry" AVPs, RFC 4005's and 7155's
-  `[RADIUSTypes]` and `[RADIUSAttrVals]` (7155's `Accounting-Auth-Method`:
-  "identical, to the Microsoft MS-Acct-Auth-Type vendor-specific RADIUS
-  attribute [RFC2548]", §4.6.7), and RFC 5778's `MIP-Algorithm-Type`
-  ("defined in [RFC4004] that also fulfill current RFC 4285 requirements",
-  §6.13). Warnings record a value list for a name not typed Enumerated (RFC
-  8581 extending 7683's `OC-Report-Type`, whose `PEER_REPORT` a correction
-  on RFC 7683 inserts, [corrections.md](corrections.md#operations); RFC
-  6733's `Inband-Security-Id` and `Session-Binding`), an Enumerated AVP
-  with neither values nor a citation, and value-first lines an enumerated
-  clause holds but the reading leaves out; no clause in the corpus has
-  neither today.
+  `(0): QoS-Desired`. With `worded-enum-values`, RFC 4005's informational lists
+  (§4.4, 5.3, 6.1, 6.10.1, 6.10.2, 6.10.4, 6.15.3, 7.2, 7.3) are read whole: a
+  value-first line's label is every word after the number, a closing reference
+  tag dropped as it is after a one-word label
+  (`17 Authorize Only  [RADDynAuth]`), and a line indented past the label's
+  first character continues it
+  (`12   ADSL-CAP - Asymmetric DSL, Carrierless Amplitude Phase` over
+  `Modulation`). §7.3's
+  `802 (includes all 802 media plus Ethernet "canonical format")` is written
+  with the quotes escaped ([grammar.md](grammar.md#enumerated-avp)). §6.1 then
+  re-lists four values it qualifies, two worded ones reading a second time; the
+  raw file keeps both copies and corrections delete the repeats. Behind
+  `external-enum-values`, a clause that says where its values are listed gets
+  that citation as `; Values:`, in the document's words up to the sentence's
+  end, with or without a list beside it: RFC 6733's `Termination-Cause` ("can be
+  found in the IANA registry for Termination-Cause AVP Values [IANATCV]",
+  §8.15), RFC 5777's six "managed by IANA under the … registry" AVPs, RFC 4005's
+  and 7155's `[RADIUSTypes]` and `[RADIUSAttrVals]` (7155's
+  `Accounting-Auth-Method`: "identical, to the Microsoft MS-Acct-Auth-Type
+  vendor-specific RADIUS attribute [RFC2548]", §4.6.7), and RFC 5778's
+  `MIP-Algorithm-Type` ("defined in [RFC4004] that also fulfill current RFC 4285
+  requirements", §6.13). Warnings record a value list for a name not typed
+  Enumerated (RFC 8581 extending 7683's `OC-Report-Type`, whose `PEER_REPORT` a
+  correction on RFC 7683 inserts, [corrections.md](corrections.md#operations);
+  RFC 6733's `Inband-Security-Id` and `Session-Binding`), an Enumerated AVP with
+  neither values nor a citation, and value-first lines an enumerated clause
+  holds but the reading leaves out; no clause in the corpus has neither today.
 - **Values printed outside a value list.** An Enumerated row whose own
   clause yields nothing is read in two more shapes, each behind its quirk.
   `cause-mapping-table`: RFC 4005's `Termination-Cause` row cites §9.3.5,
@@ -845,31 +832,30 @@ A transcription gives each construct the shape the 3GPP extractor gives it:
   `[ Address-Realm ]` for `[Address-Realm]`), spellings the 3GPP extractor
   reads in code.
 
-3GPP2 X.S0057-0 V2.0 ("E-UTRAN – eHRPD Connectivity and Interworking:
-Core Network Aspects"), which TS 29.212 cites for `3GPP2-BSID`, is
-transcribed the same way from the PDF that is 3GPP2's only rendering of
-it. Its one Diameter clause is 5.6.2.1, "Gxa 3GPP2 AVPs": table 1 is an
-`AVP Table` in the clause it is printed in, 5.6.2.1.1, its NOTE a `;;`
-comment, and clause 5.6.2.1.1's sentence, a simple type's, is not
-transcribed. Two of the table's cells are copied as printed and patched
-on input (`edits/sources/3GPP2-X.S0057.toml`): the first flag column's
-header "Shall", no column name the extractor reads, to `Must`, RFC 3588's
-[48] heading for it, and the code cell `5535/9010`, vendor and code as
-the clause's sentence prints them too, to `9010`. The vendor is the file's
-`; Vendor-ID: 5535`, 3GPP2's, which the document states nowhere else
-(TS 29.212 table 5.4.0.1: "The Vendor-Id shall be set to 3GPP2 (5535)").
-A 3GPP2 page is the number its footer prints: the front matter is
-numbered in roman, so clause 5.6.2's page 61 is the PDF's 71st. The pair
-is `dad/3gpp2/xs0057-0_v2.0.dad`, 3GPP2's file name for the rendering,
-`X.S0057-0_v2.0_091215.pdf`, lower-cased and less its series dot and
-date. 3GPP2 numbers revisions of a document (X.S0057-0, -A, -B), each
-with versions of its own, and a spec-ref keeps no revision letter, so
-the rendering's name in `; Transcribed:` is where a transcription states
-its revision; `regenerate` checks it against the file's number and
-`; Version:`, and `corpus.revision` reads it for a citation naming a
-revision ([linter.md](linter.md#resolving-an-origin)). The rest of the document defines no AVP: every other line
-naming an AVP or Diameter uses or points to what TS 29.212, 29.273 and
-the RFCs define.
+3GPP2 X.S0057-0 V2.0 ("E-UTRAN – eHRPD Connectivity and Interworking: Core
+Network Aspects"), which TS 29.212 cites for `3GPP2-BSID`, is transcribed the
+same way from the PDF that is 3GPP2's only rendering of it. Its one Diameter
+clause is 5.6.2.1, "Gxa 3GPP2 AVPs": table 1 is an `AVP Table` in the clause it
+is printed in, 5.6.2.1.1, its NOTE a `;;` comment, and clause 5.6.2.1.1's
+sentence, a simple type's, is not transcribed. Two of the table's cells are
+copied as printed and patched on input (`edits/sources/3GPP2-X.S0057.toml`): the
+first flag column's header "Shall", no column name the extractor reads, to
+`Must`, RFC 3588's [48] heading for it, and the code cell `5535/9010`, vendor
+and code as the clause's sentence prints them too, to `9010`. The vendor is the
+file's `; Vendor-ID: 5535`, 3GPP2's, which the document states nowhere else (TS
+29.212 table 5.4.0.1: "The Vendor-Id shall be set to 3GPP2 (5535)"). A 3GPP2
+page is the number its footer prints: the front matter is numbered in roman, so
+clause 5.6.2's page 61 is the PDF's 71st. The pair is
+`dad/3gpp2/xs0057-0_v2.0.dad`, 3GPP2's file name for the rendering,
+`X.S0057-0_v2.0_091215.pdf`, lower-cased and less its series dot and date. 3GPP2
+numbers revisions of a document (X.S0057-0, -A, -B), each with versions of its
+own, and a spec-ref keeps no revision letter, so the rendering's name in
+`; Transcribed:` is where a transcription states its revision; `regenerate`
+checks it against the file's number and `; Version:`, and `corpus.revision`
+reads it for a citation naming a revision
+([linter.md](linter.md#resolving-an-origin)). The rest of the document defines
+no AVP: every other line naming an AVP or Diameter uses or points to what TS
+29.212, 29.273 and the RFCs define.
 
 Not transcribed, as an extractor reads none of it: clause prose, the
 defining sentence of an AVP of a simple type (its AVP-table row carries

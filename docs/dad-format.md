@@ -110,16 +110,15 @@ each starting with `; Type:`.
   format")`). Quoting only where needed keeps the identifiers reading as the
   ABNF does.
 - **An enumeration defined elsewhere says where.** A clause that gives its
-  values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
-  32.422 [23] for Trace Depth") prints `; Values:` with that citation and no
-  values, which is distinct from a clause the extractor found nothing in.
-  A corrected file keeps the citation and lists the cited document's values
-  beside it, each marked `;; supplied:` ([corrections.md](corrections.md#operations)).
-  Three stay citations alone, since no flat list from their source fills
-  them: TS 29.272's `Report-Interval` (TS 32.422 numbers each RAT's intervals
-  from 0), RFC 5777's `ICMP-Code` (the ICMP registry numbers codes per type)
-  and TS 32.299's `API-Network-Service-Node` (TS 23.682 numbers no network
-  element).
+  values by reference (TS 29.272's `Trace-Depth`, "those defined in TS 32.422
+  [23] for Trace Depth") prints `; Values:` with that citation and no values,
+  which is distinct from a clause the extractor found nothing in. A corrected
+  file keeps the citation and lists the cited document's values beside it, each
+  marked `;; supplied:` ([corrections.md](corrections.md#operations)). Three
+  stay citations alone, since no flat list from their source fills them: TS
+  29.272's `Report-Interval` (TS 32.422 numbers each RAT's intervals from 0),
+  RFC 5777's `ICMP-Code` (the ICMP registry numbers codes per type) and TS
+  32.299's `API-Network-Service-Node` (TS 23.682 numbers no network element).
 - **A range left to vendors is no reserved range.** TS 32.299's
   SM-Service-Type closes its list with "11 .. 99 Reserved for 3GPP defined
   SM services" and "100 .. 199 Vendor specific SM services", oneM2M

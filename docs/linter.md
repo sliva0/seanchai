@@ -60,11 +60,11 @@ acknowledges as an override its document states on purpose
   under Must. RFC 6733 section 4.1.1 sets V exactly when the header
   carries a Vendor-ID, which is never 0. oneM2M TS-0004 table A.4-1 puts V
   under Must-not for each of its own 45687 AVPs.
-- `application-scope-overlap` / `application-header-mismatch` — a command
-  two `Application Scope` blocks apply to, or one whose header prints an id
-  the block applying to it does not state. Errors with no case in the corpus: the model would
-  otherwise settle them quietly, taking the first block and the header's
-  id.
+- `application-scope-overlap` / `application-header-mismatch` — a command two
+  `Application Scope` blocks apply to, or one whose header prints an id the
+  block applying to it does not state. Errors with no case in the corpus: the
+  model would otherwise settle them quietly, taking the first block and the
+  header's id.
 - `local-and-reused` — an AVP both defined locally and listed as re-used.
   A note, because a re-print and an extension look the same from one file;
   superseded by the cross-file rules when the origin is readable.
@@ -307,14 +307,14 @@ order.
 
 ## Vendor spaces
 
-An AVP's identity is `(vendor-id, code)`, and a `.dad` file supplies only
-half of it in most tables: no vendor column, and clause headers omit the vendor
-both for genuine IETF-space AVPs and when the document forgot. The file's own
-`; Vendor-ID:` supplies the other half for local rows, except that a row
-whose V flag is Must-not is IETF space, vendor 0, as the model reads it
-(TS 29.229's `Digest-Qop` row is RFC 4590's code 110), and a row printing a
-Vendor-ID cell states its own (oneM2M TS-0004 table A.4-1), whatever its V
-flag says; `vendor-flag-mismatch` reports where the two disagree. TS 29.229 gives 621 to
+An AVP's identity is `(vendor-id, code)`, and a `.dad` file supplies only half
+of it in most tables: no vendor column, and clause headers omit the vendor both
+for genuine IETF-space AVPs and when the document forgot. The file's own
+`; Vendor-ID:` supplies the other half for local rows, except that a row whose V
+flag is Must-not is IETF space, vendor 0, as the model reads it (TS 29.229's
+`Digest-Qop` row is RFC 4590's code 110), and a row printing a Vendor-ID cell
+states its own (oneM2M TS-0004 table A.4-1), whatever its V flag says;
+`vendor-flag-mismatch` reports where the two disagree. TS 29.229 gives 621 to
 its own `Primary-Charging-Collection-Function-Name` and lists RFC 7683's
 `OC-Supported-Features` at 621 too; without the vendor those are a false
 collision. Vendor 0 (the IETF space, spelled as an absent vendor in header
@@ -391,40 +391,38 @@ why each stays:
   ABNF lists both (and table 6.2.3.1 marks them OC). The generator keeps
   them, following the ABNF, with the mark as a comment.
 - **`table-row-mismatch`**, nine. TS 29.061 prints `3GPP-IMSI`,
-  `3GPP-SGSN-Address`, `3GPP-SGSN-IPv6-Address`, `3GPP-IMEISV`,
-  `3GPP-RAT-Type`, `3GPP-User-Location-Info` and `3GPP-MS-TimeZone` with M
-  in M.not in table 9a (clause 16a.5, Gi/SGi) and in Must in table 10
-  (clause 17.7.0, Gmb). Clause 17.7.0's "All AVPs in table 10 are
-  mandatory within Gmb interface unless otherwise stated" follows "The Gmb
-  specific AVPs require to be supported to be compliant": it is about
-  support, not the M bit, so nothing makes the difference deliberate. TS
-  29.273 sets M for `AN-Trusted` in tables 5.2.3.1/1 and 6.2.3.1/1 but not
-  in 8.2.3.0/1, and types `Mobile-Node-Identifier` UTF8String in 5.2.3.1/1
-  and 6.2.3.1/1 but OctetString in 7.2.3.1/1; the tables' notes explain
-  M-bit overrides for re-used AVPs only. Which reading an interface uses is the document's to
-  say; the model reads the first row ([consumers.md](consumers.md)).
+  `3GPP-SGSN-Address`, `3GPP-SGSN-IPv6-Address`, `3GPP-IMEISV`, `3GPP-RAT-Type`,
+  `3GPP-User-Location-Info` and `3GPP-MS-TimeZone` with M in M.not in table 9a
+  (clause 16a.5, Gi/SGi) and in Must in table 10 (clause 17.7.0, Gmb). Clause
+  17.7.0's "All AVPs in table 10 are mandatory within Gmb interface unless
+  otherwise stated" follows "The Gmb specific AVPs require to be supported to be
+  compliant": it is about support, not the M bit, so nothing makes the
+  difference deliberate. TS 29.273 sets M for `AN-Trusted` in tables 5.2.3.1/1
+  and 6.2.3.1/1 but not in 8.2.3.0/1, and types `Mobile-Node-Identifier`
+  UTF8String in 5.2.3.1/1 and 6.2.3.1/1 but OctetString in 7.2.3.1/1; the
+  tables' notes explain M-bit overrides for re-used AVPs only. Which reading an
+  interface uses is the document's to say; the model reads the first row
+  ([consumers.md](consumers.md)).
 - **`reused-row-mismatch`**, seven. ETSI ES 283 034 table 13 types
-  `Reservation-Priority` Unsigned32, where TS 183 017, which it imports
-  it from, and its own clause 7.3.11 say Enumerated. TS 32.299 table
-  7.2.0.1 types `Feature-List` and `Feature-List-ID` by `refer [204]` (TS
-  29.229) and
-  prints its own flags, setting M for the charging application where
-  29.229 puts it in Must not. Clause 7.2.0 refers to the origin for the
-  description and gives the table "along with the AVP flag rules", but no
-  clause says why charging sets M on these two, as clause 6.5.10.3 does
-  for `Supported-Features` (accepted, below). TS 29.229 table 6.3.0.1
-  sets M in Must for `Digest-Realm`, `Digest-Algorithm`, `Digest-Qop` and
-  `Digest-HA1`, re-used from RFC 4590, whose rows the corrections type
-  for Diameter with Wireshark's flag rules, M in May; RFC 4590 states no
-  flag rule and no clause of TS 29.229 explains its own. The model follows
-  the citing tables in all six flag notes, TS 32.299's and TS 29.229's, and
-  ES 283 034's own clause 7.3.11 for the type. Where the citing clause
-  defers to the origin, the row was corrected instead: TS 29.273's three
+  `Reservation-Priority` Unsigned32, where TS 183 017, which it imports it from,
+  and its own clause 7.3.11 say Enumerated. TS 32.299 table 7.2.0.1 types
+  `Feature-List` and `Feature-List-ID` by `refer [204]` (TS 29.229) and prints
+  its own flags, setting M for the charging application where 29.229 puts it in
+  Must not. Clause 7.2.0 refers to the origin for the description and gives the
+  table "along with the AVP flag rules", but no clause says why charging sets M
+  on these two, as clause 6.5.10.3 does for `Supported-Features` (accepted,
+  below). TS 29.229 table 6.3.0.1 sets M in Must for `Digest-Realm`,
+  `Digest-Algorithm`, `Digest-Qop` and `Digest-HA1`, re-used from RFC 4590,
+  whose rows the corrections type for Diameter with Wireshark's flag rules, M in
+  May; RFC 4590 states no flag rule and no clause of TS 29.229 explains its own.
+  The model follows the citing tables in all six flag notes, TS 32.299's and TS
+  29.229's, and ES 283 034's own clause 7.3.11 for the type. Where the citing
+  clause defers to the origin, the row was corrected instead: TS 29.273's three
   `RAT-Type` rows (M in Must; clauses 5.2.3.6 and 8.2.3.5 follow TS 29.212,
   whose table sets M in Must not, and the re-used tables print no M-bit
-  override), and TS 32.299 table 7.1.0.1's `Acct-Multi-Session-Id` (Unsigned32 against RFC
-  6733's UTF8String) and `Experimental-Result`/`-Code` (M in Must not, the
-  cell RFC 6733's table gives the Error-Reporting-Host row above them).
+  override), and TS 32.299 table 7.1.0.1's `Acct-Multi-Session-Id` (Unsigned32
+  against RFC 6733's UTF8String) and `Experimental-Result`/`-Code` (M in Must
+  not, the cell RFC 6733's table gives the Error-Reporting-Host row above them).
 - **`registry-range-overlap`**, six, all in TS 29.230 as printed: table
   7.1 allocates 318 (3GPP-AAA-Server-Name) in TS 29.234's block and again,
   citing nothing, in TS 29.273's, beside a note that the definition moved

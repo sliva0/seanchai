@@ -39,41 +39,40 @@ built.across_releases()  # what citations resolved across releases
 built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 ```
 
-The query set is thin on purpose: each query was written because a real
-consumer needed it. `applications` groups a document's commands by
-application id and the clause they sit under, since documents share one id
-between interfaces (TS 29.273's SWa, STa and SWd). The id is the header's,
-or, for commands whose headers print none, the one an `Application Scope`
-block covering their clause states: TS 29.212's Gx, Gxx, Sd and St take
-theirs from clauses 5.1, 5a.1, 5b.1 and 5c.1, applying to `5.*`, `5a.*`,
-`5b.*` and `5c.*`, and TS 32.299's Rf (3) and Ro (4) split its clause 6
-between `6.2.*` and `6.4.*`. `Application.name` and `stated_in` name the
-block and its clause; both are None for an id the headers print. RFC
-6733's RAR, STR and ASR carry the using application's id (clause 2.5), so
-their group's id stays None. A `Member` carries the ABNF rule as spelled,
-markers included (a struck member with no legend saying otherwise is still
-a member, `rule.strikethrough` set; TS 32.299's commented-out ones are
-none), and `min_occurs`/`max_occurs` as RFC 6733 §3.2 reads them: `[ X ]`
-may be absent, `* { X }` appears at least once. RFC 6733 §3.2 forbids a non-zero explicit minimum on an optional rule, so the
-model reads `1*2 [ X ]` as `0*2`. The AST stays public underneath: `parser.parse(text)`
-reads one file into it, discarding `;;` comments, and
-`parser.parse_with_comments(text)` returns the comments too, as a
-`formatter.Comments` (trailing, standing and detached, each keyed by
-`ast.TreePath`) that `formatter.format_spec(spec, comments)` writes back in
-place.
+The query set is thin on purpose: each query was written because a real consumer
+needed it. `applications` groups a document's commands by application id and the
+clause they sit under, since documents share one id between interfaces (TS
+29.273's SWa, STa and SWd). The id is the header's, or, for commands whose
+headers print none, the one an `Application Scope` block covering their clause
+states: TS 29.212's Gx, Gxx, Sd and St take theirs from clauses 5.1, 5a.1, 5b.1
+and 5c.1, applying to `5.*`, `5a.*`, `5b.*` and `5c.*`, and TS 32.299's Rf (3)
+and Ro (4) split its clause 6 between `6.2.*` and `6.4.*`. `Application.name`
+and `stated_in` name the block and its clause; both are None for an id the
+headers print. RFC 6733's RAR, STR and ASR carry the using application's id
+(clause 2.5), so their group's id stays None. A `Member` carries the ABNF rule
+as spelled, markers included (a struck member with no legend saying otherwise is
+still a member, `rule.strikethrough` set; TS 32.299's commented-out ones are
+none), and `min_occurs`/`max_occurs` as RFC 6733 §3.2 reads them: `[ X ]` may be
+absent, `* { X }` appears at least once. RFC 6733 §3.2 forbids a non-zero
+explicit minimum on an optional rule, so the model reads `1*2 [ X ]` as `0*2`.
+The AST stays public underneath: `parser.parse(text)` reads one file into it,
+discarding `;;` comments, and `parser.parse_with_comments(text)` returns the
+comments too, as a `formatter.Comments` (trailing, standing and detached, each
+keyed by `ast.TreePath`) that `formatter.format_spec(spec, comments)` writes
+back in place.
 
 **Resolution policy.** A name resolves, in order, to the specification's own
 definition, then to the origin its re-used table cites (recursively, so an
-indirect citation lands on the real definition), then to an AVP-table row,
-then to a `; Bases:` document. Local-over-reused makes an *extension* mean
-what the extending document says, while a plain re-print resolves through
-the origin. A name tabulated in several of one file's AVP tables takes its
-table facts — flag rules, and type and code when no clause defines it — from
-the first row in file order (a re-used name's flag rules per flag, below);
-`table_rows` returns every copy, which matters where per-interface tables
-disagree (TS 29.061's `3GPP-IMSI`, the linter's `table-row-mismatch`). The model never reports the conflicts this order
-papers over; run the linter for those. Vendor spaces follow the linter's
-reading. Origins and bases use `corpus.Corpus.resolve`, the
+indirect citation lands on the real definition), then to an AVP-table row, then
+to a `; Bases:` document. Local-over-reused makes an *extension* mean what the
+extending document says, while a plain re-print resolves through the origin. A
+name tabulated in several of one file's AVP tables takes its table facts — flag
+rules, and type and code when no clause defines it — from the first row in file
+order (a re-used name's flag rules per flag, below); `table_rows` returns every
+copy, which matters where per-interface tables disagree (TS 29.061's
+`3GPP-IMSI`, the linter's `table-row-mismatch`). The model never reports the
+conflicts this order papers over; run the linter for those. Vendor spaces follow
+the linter's reading. Origins and bases use `corpus.Corpus.resolve`, the
 drafting rules below ([resolution across releases](#resolution-across-releases);
 within a release, the match-major-take-newest rule in
 [linter.md](linter.md#resolving-an-origin)),
@@ -240,61 +239,56 @@ bit staying in no column, as TS 29.212 leaves `PDN-Connection-ID`'s. The
 python-diameter generator writes an application-defined M as no
 `is_mandatory`, the dictionary's default.
 
-**Resolution across releases.** The corpus holds one copy of each
-document per release tree, and a citation means the copy the drafting rules
-on references say it means. A *specific* reference, one whose entry in the
-citing document's references clause names a version or a release, means
-that version (3GPP TR 21.801 V19.1.0 clause 6.6.6.5.2, references
-"identified by date of publication, edition number, version number,
-etc."; the ETSI Drafting Rules as published in ETSI SR 001 262 V2.0.0,
-clause 12: "For a specific reference, subsequent revisions do not apply";
-and the citing documents' own clause 2, ETSI TS 183 017 V3.2.1's "For
-dated references, only the edition cited applies" and oneM2M TS-0004
-V2.35.0's "For specific references, only the cited version applies"). A
-reference naming a release means its last version. A *non-specific*
-reference, one naming neither, means "the latest version of the referenced
-TS or TR in the Release in question", the citing document's release (TR
-21.801 clause 6.6.6.5.3, and every 3GPP document's clause 2: "a
-non-specific reference implicitly refers to the latest version of that
-document in the same Release as the present document"), which is the
-match-major-take-newest rule; and for a document outside 3GPP the latest
-version of the referenced document (SR 001 262 clause 12: "For a
-non-specific reference, subsequent revisions do apply", conditions in
+**Resolution across releases.** The corpus holds one copy of each document per
+release tree, and a citation means the copy the drafting rules on references say
+it means. A *specific* reference, one whose entry in the citing document's
+references clause names a version or a release, means that version (3GPP TR
+21.801 V19.1.0 clause 6.6.6.5.2, references "identified by date of publication,
+edition number, version number, etc."; the ETSI Drafting Rules as published in
+ETSI SR 001 262 V2.0.0, clause 12: "For a specific reference, subsequent
+revisions do not apply"; and the citing documents' own clause 2, ETSI TS 183 017
+V3.2.1's "For dated references, only the edition cited applies" and oneM2M
+TS-0004 V2.35.0's "For specific references, only the cited version applies"). A
+reference naming a release means its last version. A *non-specific* reference,
+one naming neither, means "the latest version of the referenced TS or TR in the
+Release in question", the citing document's release (TR 21.801 clause 6.6.6.5.3,
+and every 3GPP document's clause 2: "a non-specific reference implicitly refers
+to the latest version of that document in the same Release as the present
+document"), which is the match-major-take-newest rule; and for a document
+outside 3GPP the latest version of the referenced document (SR 001 262 clause
+12: "For a non-specific reference, subsequent revisions do apply", conditions in
 clause 12.4; TS 183 017's clause 2: "the latest edition of the referenced
-document (including any amendments) applies"). The Drafting Rules in force
-today are part of the ETSI Directives, which are not public; the clause 2
-boilerplate ETSI's drafts quote from them, citing EDR clause 2.10.1, reads
-"For specific references, only the cited version applies. For
-non-specific references, the latest version of the referenced document
-(including any amendments) applies", as oneM2M's does. Neither rule says what a non-specific 3GPP
-reference means when the cited document ended before the citing
-document's release; the corpus reads it as the document's *final* version,
-its last in any release, the latest there is. So `corpus.Corpus.resolution`
-takes, in order: a specific reference's named version and no other; the
-newest copy in the citing document's major version; and failing one, a
-later release's copy standing in by an evidenced entry (below), or the
-cited document's final version when it ended in an earlier release. A
-document outside 3GPP has no release, so its non-specific reference is the
-final version or nothing. The `.dad` grammar names no versions, so the two
-facts this needs live beside `corpus.CITED_AS`, each entry citing its
-source: `corpus.CITED_VERSIONS`, the version a specific reference names
-keyed by (citing, cited) reference and read from the citing document's
-references clause (ETSI TS 183 017's "3GPP TS 29.209 Release 6" [4] and
-"3GPP TS 29.214 Release 7" [19], oneM2M TS-0004's "3GPP TS 32.299 ...
-(Release 11)" [31]), and `corpus.FINAL_VERSIONS` (TS 29.140 V7.0.0, TS
-29.209 V6.8.0). Every version either names is a catalog pin the downloader
-checks against the 3GPP archive on each download, so a later version
-appearing fails the download rather than the reading
-([downloader.md](downloader.md)). A 3GPP2 revision letter (X.S0057-0,
--A, -B) is 3GPP2's release, which a spec-ref does not keep either: a
-reference naming one is specific to it, recorded in
-`corpus.CITED_REVISIONS`, and resolves to a copy of that revision only.
-Where the corpus cannot hold the cited revision, a copy of another answers
-only by an entry in `corpus.STAND_INS` that names it and states the
-evidence; without one the citation resolves to nothing. TS 29.212 cites
-"3GPP2 X.S0057-B" [24], and 3GPP2's library publishes X.S0057-0 V1.0 and
-V2.0 alone (checked 2026-10-30 at its X-series index), so revision 0 V2.0
-stands in.
+document (including any amendments) applies"). The Drafting Rules in force today
+are part of the ETSI Directives, which are not public; the clause 2 boilerplate
+ETSI's drafts quote from them, citing EDR clause 2.10.1, reads "For specific
+references, only the cited version applies. For non-specific references, the
+latest version of the referenced document (including any amendments) applies",
+as oneM2M's does. Neither rule says what a non-specific 3GPP reference means
+when the cited document ended before the citing document's release; the corpus
+reads it as the document's *final* version, its last in any release, the latest
+there is. So `corpus.Corpus.resolution` takes, in order: a specific reference's
+named version and no other; the newest copy in the citing document's major
+version; and failing one, a later release's copy standing in by an evidenced
+entry (below), or the cited document's final version when it ended in an earlier
+release. A document outside 3GPP has no release, so its non-specific reference
+is the final version or nothing. The `.dad` grammar names no versions, so the
+two facts this needs live beside `corpus.CITED_AS`, each entry citing its
+source: `corpus.CITED_VERSIONS`, the version a specific reference names keyed by
+(citing, cited) reference and read from the citing document's references clause
+(ETSI TS 183 017's "3GPP TS 29.209 Release 6" [4] and "3GPP TS 29.214 Release 7"
+[19], oneM2M TS-0004's "3GPP TS 32.299 ... (Release 11)" [31]), and
+`corpus.FINAL_VERSIONS` (TS 29.140 V7.0.0, TS 29.209 V6.8.0). Every version
+either names is a catalog pin the downloader checks against the 3GPP archive on
+each download, so a later version appearing fails the download rather than the
+reading ([downloader.md](downloader.md)). A 3GPP2 revision letter (X.S0057-0,
+-A, -B) is 3GPP2's release, which a spec-ref does not keep either: a reference
+naming one is specific to it, recorded in `corpus.CITED_REVISIONS`, and resolves
+to a copy of that revision only. Where the corpus cannot hold the cited
+revision, a copy of another answers only by an entry in `corpus.STAND_INS` that
+names it and states the evidence; without one the citation resolves to nothing.
+TS 29.212 cites "3GPP2 X.S0057-B" [24], and 3GPP2's library publishes X.S0057-0
+V1.0 and V2.0 alone (checked 2026-10-30 at its X-series index), so revision 0
+V2.0 stands in.
 
 An older copy held for a citation cites in turn, and its non-specific
 references mean its own release's last versions. TS 32.299 V11.20.0,
@@ -357,24 +351,22 @@ its Release 11 copy.
 
 **Holes.** An `Avp` has every field: code, type and flag rules are facts some
 document states, or RFC 6733's rule for an IETF AVP's unplaced bits, never
-`None`. A name the corpus cannot complete is a
-`model.Hole` instead, naming the document that falls short, the fields it
-leaves unstated (`code`, `data_type`, `flag_rules`), `definition` when
-the name resolves nowhere, or `undefined` when an `Undefined AVP` block
-declares it so ([below](#undefined-names)), plus the re-used origin the
-corpus lacks or the disagreeing reading, if either applies. A flag-rule row with every cell
-blank is unstated, not "no flags". `Member.avp` is `None` for a hole and
-`Member.hole` says which; the `* [ AVP ]` wildcard is the one `None` without
-a hole. A hole keeps the vendor, code, type and flag rules its document
-states, but not a grouped AVP's members or an enumerated AVP's values: RFC
-5777's `Classifier` is a hole with no members. A consumer that wants those
-reads the AST, through `table_rows` or the file's `corpus.Entry.spec`.
-A reading's holes include those of the grouped AVPs it reaches in an
-older copy through a citation across releases, which no reading of that
-copy's own reports: such a hole carries the copy's `version`, and
-`Hole.document` reads "TS32.299 V11.20.0". One reached in a newest copy,
-standing in or not, is that copy's reading's to report: TS 32.299
-V11.20.0's `PS-Information` reaches TS 29.061's
+`None`. A name the corpus cannot complete is a `model.Hole` instead, naming the
+document that falls short, the fields it leaves unstated (`code`, `data_type`,
+`flag_rules`), `definition` when the name resolves nowhere, or `undefined` when
+an `Undefined AVP` block declares it so ([below](#undefined-names)), plus the
+re-used origin the corpus lacks or the disagreeing reading, if either applies. A
+flag-rule row with every cell blank is unstated, not "no flags". `Member.avp` is
+`None` for a hole and `Member.hole` says which; the `* [ AVP ]` wildcard is the
+one `None` without a hole. A hole keeps the vendor, code, type and flag rules
+its document states, but not a grouped AVP's members or an enumerated AVP's
+values: RFC 5777's `Classifier` is a hole with no members. A consumer that wants
+those reads the AST, through `table_rows` or the file's `corpus.Entry.spec`. A
+reading's holes include those of the grouped AVPs it reaches in an older copy
+through a citation across releases, which no reading of that copy's own reports:
+such a hole carries the copy's `version`, and `Hole.document` reads "TS32.299
+V11.20.0". One reached in a newest copy, standing in or not, is that copy's
+reading's to report: TS 32.299 V11.20.0's `PS-Information` reaches TS 29.061's
 `3GPP-Session-Stop-Indicator`, a hole of TS 29.061's own.
 
 **Wireshark's names.** Built with `dictionary=` a Wireshark dictionary
@@ -386,20 +378,19 @@ and never changes `name`, which is always the document's spelling;
 
 ### Known holes
 
-Thirteen names stand as holes, each a statement its source does not make, and the
-committed record `dad/holes.toml` lists them, by `Hole.document`, name,
+Thirteen names stand as holes, each a statement its source does not make, and
+the committed record `dad/holes.toml` lists them, by `Hole.document`, name,
 `Hole.missing` and a reason stating the spec version and clause and what was
 searched, as a correction's reason does
 ([corrections.md](corrections.md#the-record-of-known-holes)). The file sits
 beside the `.dad` files rather than in `edits/` because a consumer loads the
-corpus, not the edit layers: `corpus.Corpus.load([Path("dad")])` reads it
-into `Corpus.record`, with no argument, for the directory holding it
-directly. A file list or a subdirectory has no record, being partial, and
-neither has a raw corpus; two directories each holding one are refused.
-`regenerate` and `format` read `.dad` files only, so nothing writes it but a
-person. `reason` is prose, wrapped in a multi-line string and read with its
-whitespace collapsed to single spaces; `document`, `name` and `missing` are
-compared exactly.
+corpus, not the edit layers: `corpus.Corpus.load([Path("dad")])` reads it into
+`Corpus.record`, with no argument, for the directory holding it directly. A file
+list or a subdirectory has no record, being partial, and neither has a raw
+corpus; two directories each holding one are refused. `regenerate` and `format`
+read `.dad` files only, so nothing writes it but a person. `reason` is prose,
+wrapped in a multi-line string and read with its whitespace collapsed to single
+spaces; `document`, `name` and `missing` are compared exactly.
 
 | `strict` | A hole the record lists | A hole it does not | An entry naming no hole |
 |---|---|---|---|
@@ -408,19 +399,19 @@ compared exactly.
 | `False` | builds; `Hole.recorded` its reason | builds | not read |
 
 A recorded hole stays a hole: `holes()` reports it, `resolve` returns None,
-`Member.hole` says why, and `Hole.recorded` holds the entry's reason. An
-entry listing other `missing` fields than the hole lists no such hole, so
-that hole counts as unrecorded and its `recorded` is None. The default fails
-on a stale entry so that working a hole off forces the record to shrink: its
-document gone, its name defined upstream or a stand-in resolving it. An
-entry going unused only because the build's `undefined` policy answered for
-its name is not stale: `undefined=DROP` over the committed corpus builds and
-reports four holes. `strict=True` is absolute, recorded or not, and
-`strict=False` is for a consumer loading a partial or foreign corpus, which
-has no record and so, by default, no known holes.
-`unrecorded_holes()` and `stale_record_entries()` return what the default
-would refuse, under any `strict`; the linter's `unrecorded-hole` and
-`stale-hole-record` report the same ([linter.md](linter.md#the-record-of-known-holes)).
+`Member.hole` says why, and `Hole.recorded` holds the entry's reason. An entry
+listing other `missing` fields than the hole lists no such hole, so that hole
+counts as unrecorded and its `recorded` is None. The default fails on a stale
+entry so that working a hole off forces the record to shrink: its document gone,
+its name defined upstream or a stand-in resolving it. An entry going unused only
+because the build's `undefined` policy answered for its name is not stale:
+`undefined=DROP` over the committed corpus builds and reports four holes.
+`strict=True` is absolute, recorded or not, and `strict=False` is for a consumer
+loading a partial or foreign corpus, which has no record and so, by default, no
+known holes. `unrecorded_holes()` and `stale_record_entries()` return what the
+default would refuse, under any `strict`; the linter's `unrecorded-hole` and
+`stale-hole-record` report the same
+([linter.md](linter.md#the-record-of-known-holes)).
 
 The thirteen, by cause:
 
@@ -572,29 +563,28 @@ extractor silently dropped (29.229's RTR prints `RTR-Flags ]` with no opening
 bracket, now input-patched) and the `Load` rows that became the linter's
 `row-without-code` rule.
 
-`generate.py` is the other direction: one module per application and
-interface, whose command classes carry that document's own members and are
-written the way the library writes its own — `DefinedMessage` subclasses
-whose `AvpGenDef` tables reference the library's `AVP_*`, `VENDOR_*` and
-grouped classes — so the library can carry them beside its merged classes.
-What its dictionary lacks, or types otherwise than the document, goes to an
-`additions.py` in the dictionary's shape rather than being papered over.
-Holes stay in the tables with their reason, and `--undefined` (with
-`--supply` sidecars) passes the model's policy for undefined names, which
-`__init__.py` records; an application's id is the
-model's, so a module whose document states it only in prose gets it, and
-only RFC 6733's clause 8 and TS 29.234's Wa, Wd, Wm and Wg get `None`, TS
-29.234 saying each advertises "the EAP, NASREQ or Diameter Base Protocol
-Application-Id, depending on the command" (clauses 4.2, 5.2, 8.2, 9.2). Where no application scope names the
-application, the `APPLICATION_ID` comment names it as the registry does
-(`# 16777216, 3GPP Cx/Px, TS29.230 table 4.1`); the id stays the model's.
-TS 29.230 is a corpus document like any other, so `--all` lists "3GPP TS
-29.230 V18.6.0" among the sources in `__init__.py` and `additions.py`,
-though it contributes no module and no addition; and since TS 29.273's
-`Trust-Relationship-Update` row is corrected away (clause 9.2.3.1.4 is
-"Void"), `additions.py` no longer carries its 1515 constant. The ABNF decides a class's members,
-and the tables' marks are comments on them: TS 32.299's per command, the
-others from the command's interface clause. The
+`generate.py` is the other direction: one module per application and interface,
+whose command classes carry that document's own members and are written the way
+the library writes its own — `DefinedMessage` subclasses whose `AvpGenDef`
+tables reference the library's `AVP_*`, `VENDOR_*` and grouped classes — so the
+library can carry them beside its merged classes. What its dictionary lacks, or
+types otherwise than the document, goes to an `additions.py` in the dictionary's
+shape rather than being papered over. Holes stay in the tables with their
+reason, and `--undefined` (with `--supply` sidecars) passes the model's policy
+for undefined names, which `__init__.py` records; an application's id is the
+model's, so a module whose document states it only in prose gets it, and only
+RFC 6733's clause 8 and TS 29.234's Wa, Wd, Wm and Wg get `None`, TS 29.234
+saying each advertises "the EAP, NASREQ or Diameter Base Protocol
+Application-Id, depending on the command" (clauses 4.2, 5.2, 8.2, 9.2). Where no
+application scope names the application, the `APPLICATION_ID` comment names it
+as the registry does (`# 16777216, 3GPP Cx/Px, TS29.230 table 4.1`); the id
+stays the model's. TS 29.230 is a corpus document like any other, so `--all`
+lists "3GPP TS 29.230 V18.6.0" among the sources in `__init__.py` and
+`additions.py`, though it contributes no module and no addition; and since TS
+29.273's `Trust-Relationship-Update` row is corrected away (clause 9.2.3.1.4 is
+"Void"), `additions.py` no longer carries its 1515 constant. The ABNF decides a
+class's members, and the tables' marks are comments on them: TS 32.299's per
+command, the others from the command's interface clause. The
 [README](../integrations/python_diameter/README.md) covers the layout, the
-additions, how the library would adopt the modules, and what its shape
-cannot carry.
+additions, how the library would adopt the modules, and what its shape cannot
+carry.

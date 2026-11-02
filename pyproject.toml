@@ -27,6 +27,7 @@ dev = [
     "pytest>=9.1.1",
     "python-diameter>=0.9.0",
     "ruff>=0.16.0",
+    "rumdl>=0.3.2",
     "ty>=0.0.63",
 ]
 
@@ -42,6 +43,24 @@ target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.rumdl]
+# Line length only: the check is about formatting, not Markdown style.
+enable = ["MD013"]
+cache = false
+
+# Tables and fenced code may run long, and so may a line that is one unbroken
+# token or one whole link, even a link whose label could wrap. That is `stern`:
+# rumdl's default also passes a line whose last word merely crosses the limit,
+# and `strict` flags tables and code as well. Link targets count and columns are
+# plain characters, so 80 means what `len` says.
+[tool.rumdl.MD013]
+line-length = 80
+code-blocks = false
+tables = false
+stern = true
+ignore-link-urls = false
+length-mode = "chars"
 
 [tool.ty.environment]
 python = ".venv"

@@ -118,27 +118,26 @@ shapes of `dictionary.py`, `constants.py` and `grouped.py`:
   corrected AVP says so in a comment. An identity whose documents disagree
   on its type, one of them as the library holds it, is listed in a closing
   comment instead (RFC 4005 and RFC 7155 on `Framed-IPX-Network`).
-- **Grouped classes**, `grouped.py` dataclasses for every grouped reading
-  the library's class does not carry as the document says. The library's
-  class is reused only when its members' identities, their nesting and
-  their M bits all agree with the reading: it must hold every member the
-  reading names, each grouped member in a class that itself agrees, and
-  encode each member's M bit as the reading's flag rules fix it (its
-  `is_mandatory`, or failing that the dictionary default; a member whose
-  rules leave M open accepts either). TS 29.229's `Supported-Features`
-  gets `SupportedFeatures_TS29_229`, since the library's `SupportedFeatures`
-  sets M on Feature-List-ID and Feature-List, which TS 29.229's table
-  forbids. The docstring says which of these failed. A class never takes a name the library binds: a
-  second reading of one AVP, or a reading the library's class does not
-  serve, is suffixed with its first document (`ScscfRestorationInfo_TS29_229`,
-  `SipAuthDataItem_TS29_229` beside the library's IETF `SipAuthDataItem`).
-  Readings of one AVP with one body share a class, the defining document's
-  own reading naming it: TS 29.272's re-used table clears M on TS 32.299's
-  `User-CSG-Information`, which is the `is_mandatory=False` on the rule
-  naming `UserCsgInformation_TS32_299`, not a class of its own. A citing
-  document's rules for the members make another body: TS 32.299's
-  `Supported-Features` sets M on Feature-List-ID and Feature-List, so its
-  reading is the library's `SupportedFeatures`.
+- **Grouped classes**, `grouped.py` dataclasses for every grouped reading the
+  library's class does not carry as the document says. The library's class is
+  reused only when its members' identities, their nesting and their M bits all
+  agree with the reading: it must hold every member the reading names, each
+  grouped member in a class that itself agrees, and encode each member's M bit
+  as the reading's flag rules fix it (its `is_mandatory`, or failing that the
+  dictionary default; a member whose rules leave M open accepts either). TS
+  29.229's `Supported-Features` gets `SupportedFeatures_TS29_229`, since the
+  library's `SupportedFeatures` sets M on Feature-List-ID and Feature-List,
+  which TS 29.229's table forbids. The docstring says which of these failed. A
+  class never takes a name the library binds: a second reading of one AVP, or a
+  reading the library's class does not serve, is suffixed with its first
+  document (`ScscfRestorationInfo_TS29_229`, `SipAuthDataItem_TS29_229` beside
+  the library's IETF `SipAuthDataItem`). Readings of one AVP with one body share
+  a class, the defining document's own reading naming it: TS 29.272's re-used
+  table clears M on TS 32.299's `User-CSG-Information`, which is the
+  `is_mandatory=False` on the rule naming `UserCsgInformation_TS32_299`, not a
+  class of its own. A citing document's rules for the members make another body:
+  TS 32.299's `Supported-Features` sets M on Feature-List-ID and Feature-List,
+  so its reading is the library's `SupportedFeatures`.
 
 Importing `additions` changes nothing in the library. `register()` merges
 the new entries into the library's global dictionaries, which the command
@@ -224,12 +223,13 @@ generated ones are built by hand, as the library's are.
 
 ## Undefined names
 
-Nine members the corpus's documents use are defined nowhere: RFC 4004's
-three SPIs, TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS
-29.154's `External-Group-Identifier`, TS 32.299's `Submission-Timestamp`
-and `Network-Element`, TS 29.234's `Error-Cause` ([consumers.md](../../docs/consumers.md#undefined-names)).
-`--undefined` is the model's policy for them, and `__init__.py`'s docstring
-records it with what became of each name the generated set reaches
+Nine members the corpus's documents use are defined nowhere: RFC 4004's three
+SPIs, TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's
+`External-Group-Identifier`, TS 32.299's `Submission-Timestamp` and
+`Network-Element`, TS 29.234's `Error-Cause`
+([consumers.md](../../docs/consumers.md#undefined-names)). `--undefined` is the
+model's policy for them, and `__init__.py`'s docstring records it with what
+became of each name the generated set reaches
 (`Undefined names, --undefined drop: dropped: RFC4004 MIP-HA-to-MN-SPI, …`):
 
 - **`hole`**, the default: as any hole, a comment in its place
@@ -302,22 +302,22 @@ module shows them.
 ## What the documents leave to the reader
 
 **Application ids.** The application id comes from the command header the
-document prints, or, where the headers print none, from the
-`Application Scope` block that records the document's statement in prose;
-such a module's docstring names the clause (`The command headers print no
-application id; clause 5.1 states Gx's.`). Where no block names the
-application, the `APPLICATION_ID` comment gives TS 29.230 table 4.1's name
-for the id, which the id itself never comes from. The 3GPP blocks are read from
-the documents (TS 29.153, 29.154, 29.212, 29.214, 29.215, 29.217, 29.219,
-29.343, 29.368, 29.468); those for RFC 4004, 4005, 4006, 4072, 5778, 6733, 7155,
-8506, TS 32.299 and oneM2M TS-0004 are corrections citing the clause, since
-each words it differently. Two readings are worth knowing: RFC 4005 clause 1.3 gives the
-commands it takes from the base protocol "the Base application id value",
-and the block follows clause 11.3 and RFC 7155 in giving all of clause 3
-the NASREQ id 1; RFC 6733's ACR is the base accounting application's 3, the
-split accounting model of clause 9.3, where coupled accounting carries the
-using application's id. `APPLICATION_ID` is the library's `APP_` constant
-for the id where it has one.
+document prints, or, where the headers print none, from the `Application Scope`
+block that records the document's statement in prose; such a module's docstring
+names the clause
+(`The command headers print no application id; clause 5.1 states Gx's.`). Where
+no block names the application, the `APPLICATION_ID` comment gives TS 29.230
+table 4.1's name for the id, which the id itself never comes from. The 3GPP
+blocks are read from the documents (TS 29.153, 29.154, 29.212, 29.214, 29.215,
+29.217, 29.219, 29.343, 29.368, 29.468); those for RFC 4004, 4005, 4006, 4072,
+5778, 6733, 7155, 8506, TS 32.299 and oneM2M TS-0004 are corrections citing the
+clause, since each words it differently. Two readings are worth knowing: RFC
+4005 clause 1.3 gives the commands it takes from the base protocol "the Base
+application id value", and the block follows clause 11.3 and RFC 7155 in giving
+all of clause 3 the NASREQ id 1; RFC 6733's ACR is the base accounting
+application's 3, the split accounting model of clause 9.3, where coupled
+accounting carries the using application's id. `APPLICATION_ID` is the library's
+`APP_` constant for the id where it has one.
 
 `rfc6733_8` alone has `APPLICATION_ID = None`: clause 2.5 says RAR, STR and
 ASR "MUST carry the Application Id of the application" they serve.
