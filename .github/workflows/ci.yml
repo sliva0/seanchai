@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # uv brings its own Python 3.14, from .python-version. The action caches
+      # the wheels and the managed CPython, keyed by the lockfile, and prunes
+      # anything sync no longer references before saving, so the cache tracks
+      # the lockfile instead of accreting every wheel ever downloaded.
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+          cache-python: true
+          prune-cache: true
+      - run: uv sync --locked
+      # No source documents in CI: the tests that need them are deselected.
+      - run: uv run pytest -m "not sources"
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run rumdl check .
+      - run: uv run ty check
+      - run: uv run basedpyright
