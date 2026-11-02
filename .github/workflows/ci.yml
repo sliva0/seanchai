@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # uv brings its own Python 3.14, from .python-version. The action caches
-      # the wheels and the managed CPython, keyed by the lockfile, and prunes
-      # anything sync no longer references before saving, so the cache tracks
-      # the lockfile instead of accreting every wheel ever downloaded.
+      # the managed CPython and the uv cache, keyed by the lockfile. Pruning
+      # drops pre-built wheels before saving, since downloading them again is
+      # about as quick, so only wheels built from source are kept.
       - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
