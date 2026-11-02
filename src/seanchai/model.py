@@ -1115,7 +1115,15 @@ class Model:
         """Every specification the model answers for, `TS29.229`-spelled."""
         return sorted(self._views)
 
-    def _view(self, reference: str) -> _View:
+    def _view(self, reference: str, version: str | None = None) -> _View:
+        if version is not None:
+            for view in self._copies.values():
+                if (
+                    view.entry.reference == reference
+                    and view.entry.spec.version == version
+                ):
+                    return view
+            raise ModelError(f"the corpus holds no copy of {reference} V{version}")
         try:
             return self._views[reference]
         except KeyError:
@@ -1236,18 +1244,22 @@ class Model:
         found = (self.resolve(reference, name) for name in self._names(reference))
         return tuple(avp for avp in found if avp is not None)
 
-    def resolve(self, reference: str, name: str) -> Avp | None:
+    def resolve(
+        self, reference: str, name: str, *, version: str | None = None
+    ) -> Avp | None:
         """`name` as `reference` means it, or None when the corpus cannot
         complete it — `hole` says why — or the consumer chose to drop or
         keep it untyped (`undefined` says what was declared)."""
-        found = self._final(self._view(reference), name)
+        found = self._final(self._view(reference, version), name)
         return found if isinstance(found, Avp) else None
 
-    def hole(self, reference: str, name: str) -> Hole | None:
+    def hole(
+        self, reference: str, name: str, *, version: str | None = None
+    ) -> Hole | None:
         """What `reference`'s reading of `name` lacks, or None when it
         resolves completely or is an undefined name the policy answers
         for."""
-        found = self._final(self._view(reference), name)
+        found = self._final(self._view(reference, version), name)
         return found if isinstance(found, Hole) and self._open(found) else None
 
     def _open(self, hole: Hole) -> bool:

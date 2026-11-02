@@ -102,6 +102,48 @@ def main() -> None:
     """Seanchaí: Diameter specifications as reviewable `.dad` files."""
 
 
+@main.command("export")
+@click.option(
+    "-o", "--output", required=True, type=click.Path(file_okay=False, path_type=Path)
+)
+@click.option(
+    "--corpus",
+    "corpus_paths",
+    multiple=True,
+    type=click.Path(exists=True, path_type=Path),
+)
+@click.option(
+    "--dictionary", type=click.Path(exists=True, file_okay=False, path_type=Path)
+)
+@click.option(
+    "--corrections", type=click.Path(exists=True, file_okay=False, path_type=Path)
+)
+@click.option(
+    "--specifications", type=click.Path(exists=True, file_okay=False, path_type=Path)
+)
+@click.option("--include-pdfs", is_flag=True)
+def export_command(
+    output, corpus_paths, dictionary, corrections, specifications, include_pdfs
+) -> None:
+    from .corpus import Corpus
+    from .export import export_corpus
+    from .model import ModelError
+
+    with reported():
+        try:
+            books = Corpus.load(corpus_paths) if corpus_paths else Corpus.installed()
+            export_corpus(
+                books,
+                output,
+                dictionary=dictionary,
+                corrections_directory=corrections,
+                specifications=specifications,
+                include_pdfs=include_pdfs,
+            )
+        except (ModelError, OSError) as error:
+            raise click.ClickException(str(error)) from None
+
+
 @main.command()
 @click.argument("docx", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option(
