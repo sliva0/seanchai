@@ -2,4 +2,7 @@
 
 [[quirk]]
 name = "ragged-separator"
-reason = "the table's closing horizontal rule prints one stray space inside the dashes (page 15) — a publisher artefact, still unambiguously box drawing"
+reason = """
+    the table's closing horizontal rule prints one stray space inside the dashes
+    (page 15) — a publisher artefact, still unambiguously box drawing
+    """

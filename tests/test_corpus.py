@@ -418,3 +418,19 @@ def test_a_malformed_record_fails_the_load(tmp_path, record, message):
 
     with pytest.raises(corpus.CorpusError, match=message):
         corpus.Corpus.load([directory])
+
+
+def test_a_hole_reads_its_reason_as_prose_and_the_rest_exactly(tmp_path):
+    path = tmp_path / "holes.toml"
+    path.write_text(
+        _RECORDED.replace(
+            '"clause 6.3.1 states no type"',
+            '"""\n    clause 6.3.1\n    states   no type\n    """',
+        )
+    )
+
+    (hole,) = corpus.HoleRecord.load(path).holes
+
+    assert hole == corpus.KnownHole(
+        "TS29.900", "Thing", ("data_type", "flag_rules"), "clause 6.3.1 states no type"
+    )

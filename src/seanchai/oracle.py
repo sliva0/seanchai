@@ -34,6 +34,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from .dad import ast
+from .prose import collapse_fields
 
 _ENTITY_RE = re.compile(
     r'<!ENTITY\s+(?P<name>[A-Za-z0-9_]+)\s+SYSTEM\s+"(?P<file>[^"]+)"\s*>'
@@ -262,9 +263,11 @@ def load_aliases(path: Path) -> tuple[Alias, ...]:
                 f"{path}: alias {number} needs exactly the keys"
                 f" {', '.join(sorted(_ALIAS_KEYS))}"
             )
-        if not all(isinstance(value, str) and value for value in table.values()):
+        if not all(
+            isinstance(value, str) and value.strip() for value in table.values()
+        ):
             raise OracleError(f"{path}: alias {number} has an empty or non-text value")
-        alias = Alias(**table)
+        alias = Alias(**collapse_fields(table, {"reason"}))
         if (alias.specification, alias.name) in seen:
             raise OracleError(
                 f"{path}: {alias.specification} {alias.name} is aliased twice"

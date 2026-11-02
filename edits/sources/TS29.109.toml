@@ -1,5 +1,5 @@
-# Source declarations for 3GPP TS 29.109 (GAA; Zh and Zn interfaces based on Diameter).
-# Applied to normalized source text before parsing; see
+# Source declarations for 3GPP TS 29.109 (GAA; Zh and Zn interfaces based on
+# Diameter). Applied to normalized source text before parsing; see
 # src/seanchai/extractor/sources.py for the format.
 
 [[patch]]
@@ -8,36 +8,55 @@ replace = "OctetString"
 count = 6
 exact = true
 section = "6.3"
-reason = "table 6.1 misspells OctetString for six AVPs; their defining clauses describe octet strings and OctedString is not a Diameter data type"
+reason = """
+    table 6.1 misspells OctetString for six AVPs; their defining clauses
+    describe octet strings and OctedString is not a Diameter data type
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "dashed-enum-values"
-reason = "clauses 6.3.1.11, 6.3.1.13, 6.3.1.15 and 6.3.1.17 print their values as dashed list items, '- GBA_ME (0) GBA_ME shall be run.'; unread, their lists were empty"
+reason = """
+    clauses 6.3.1.11, 6.3.1.13, 6.3.1.15 and 6.3.1.17 print their values as
+    dashed list items, '- GBA_ME (0) GBA_ME shall be run.'; unread, their lists
+    were empty
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clauses 6.3.1.11 and 6.3.1.17 label values in words, '- 3G GBA (0)', '- Private identity requested (0) .'"
+reason = """
+    clauses 6.3.1.11 and 6.3.1.17 label values in words, '- 3G GBA (0)', '-
+    Private identity requested (0) .'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "described-enum-values"
-reason = "clauses 6.3.1.8, 6.3.1.11, 6.3.1.15 and 6.3.1.22 gloss each value on its own line, 'NO (0) The sending node is not GBA_U aware'"
+reason = """
+    clauses 6.3.1.8, 6.3.1.11, 6.3.1.15 and 6.3.1.22 gloss each value on its own
+    line, 'NO (0) The sending node is not GBA_U aware'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "label-after-enum-value"
-reason = "clause 6.3.1.13 prints no name before the value and labels it after, '- (0) Private user identity.'"
+reason = """
+    clause 6.3.1.13 prints no name before the value and labels it after, '- (0)
+    Private user identity.'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "punctuated-enum-values"
-reason = "clause 6.3.1.17 closes its first value with a stray full stop, '- Private identity requested (0) .'"
+reason = """
+    clause 6.3.1.17 closes its first value with a stray full stop, '- Private
+    identity requested (0) .'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"

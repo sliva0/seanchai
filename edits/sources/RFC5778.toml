@@ -2,12 +2,25 @@
 
 [[quirk]]
 name = "prose-catchall-row"
-reason = "the application AVP table closes with 'Rest of the AVPs' spanning three physical rows — prose about imported AVPs, not an AVP definition"
+reason = """
+    the application AVP table closes with 'Rest of the AVPs' spanning three
+    physical rows — prose about imported AVPs, not an AVP definition
+    """
 
 [[quirk]]
 name = "external-enum-values"
-reason = "clause 6.13 re-uses MIP-Algorithm-Type and lists no values: 'Existing algorithm types are defined in [RFC4004] that also fulfill current RFC 4285 requirements'"
+reason = """
+    clause 6.13 re-uses MIP-Algorithm-Type and lists no values: 'Existing
+    algorithm types are defined in [RFC4004] that also fulfill current RFC 4285
+    requirements'
+    """
 
 [[quirk]]
 name = "registry-enum-values"
-reason = "clause 6.20 names MIP6-Auth-Mode's one value, MIP6_AUTH_MN_AAA, without numbering it; the IANA section 9.5 creates the 'MIP6 Authentication Mode Registry' 'for use with the enumerated MIP6-Auth-Mode AVP' and numbers it in a 'Token | Value | Description' table ('MIP6_AUTH_MN_AAA | 1 | RFC 5778'), and its policy reserves 'The value 0 (zero)'"
+reason = """
+    clause 6.20 names MIP6-Auth-Mode's one value, MIP6_AUTH_MN_AAA, without
+    numbering it; the IANA section 9.5 creates the 'MIP6 Authentication Mode
+    Registry' 'for use with the enumerated MIP6-Auth-Mode AVP' and numbers it in
+    a 'Token | Value | Description' table ('MIP6_AUTH_MN_AAA | 1 | RFC 5778'),
+    and its policy reserves 'The value 0 (zero)'
+    """

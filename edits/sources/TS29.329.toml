@@ -13,4 +13,8 @@ last_version = "18.0.0"
 
 [[quirk]]
 name = "note-defined-in-rfc"
-reason = "the AVP table's note reads 'The value of this attribute is defined in IETF RFC ...' for a code-less row, which is where that AVP's re-used origin comes from"
+reason = """
+    the AVP table's note reads 'The value of this attribute is defined in IETF
+    RFC ...' for a code-less row, which is where that AVP's re-used origin comes
+    from
+    """

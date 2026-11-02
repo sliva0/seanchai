@@ -1,13 +1,16 @@
-# Source declarations for ETSI TS 183 017 (Gq' interface, DIAMETER protocol
-# for session based policy set-up information exchange between the AF and
-# the SPDF). Applied to the lines of the hand transcription in
-# edits/transcriptions/ before parsing; see src/seanchai/extractor/transcription.py.
+# Source declarations for ETSI TS 183 017 (Gq' interface, DIAMETER protocol for
+# session based policy set-up information exchange between the AF and the SPDF).
+# Applied to the lines of the hand transcription in edits/transcriptions/ before
+# parsing; see src/seanchai/extractor/transcription.py.
 
 [[patch]]
 find = "< AVP header: x >"
 replace = "< AVP header: 510 >"
 section = "7.3.20"
-reason = "clause 7.3.20's AVP format prints the code as 'x'; the clause's sentence ('The Flows AVP (AVP code 510)') and table 7.3.3's Flows row give 510"
+reason = """
+    clause 7.3.20's AVP format prints the code as 'x'; the clause's sentence
+    ('The Flows AVP (AVP code 510)') and table 7.3.3's Flows row give 510
+    """
 first_version = "3.2.1"
 last_version = "3.2.1"
 
@@ -15,7 +18,11 @@ last_version = "3.2.1"
 find = "Media-Sub-Component AVP"
 replace = "Media-Sub-Component"
 section = "7.3"
-reason = "table 7.3.3's name cell carries the ' AVP' of a clause heading; clause 7.3.28's sentence and the Media-Component-Description format (7.3.26) name the AVP Media-Sub-Component"
+reason = """
+    table 7.3.3's name cell carries the ' AVP' of a clause heading; clause
+    7.3.28's sentence and the Media-Component-Description format (7.3.26) name
+    the AVP Media-Sub-Component
+    """
 first_version = "3.2.1"
 last_version = "3.2.1"
 
@@ -24,6 +31,12 @@ find = "Octet String"
 replace = "OctetString"
 count = 5
 section = "7.3"
-reason = "tables 7.3.2, 7.3.3 and 7.3.4 write the type 'Octet String' for Address-Realm, AF-Application-Identifier, AF-Charging-Identifier, Framed-IP-Address and Framed-IPv6-Prefix; RFC 3588's basic type, which note 2 of table 7.3.3 says the value types are, is OctetString, as table 7.3.2's Logical-Access-Id row writes it"
+reason = """
+    tables 7.3.2, 7.3.3 and 7.3.4 write the type 'Octet String' for
+    Address-Realm, AF-Application-Identifier, AF-Charging-Identifier,
+    Framed-IP-Address and Framed-IPv6-Prefix; RFC 3588's basic type, which note
+    2 of table 7.3.3 says the value types are, is OctetString, as table 7.3.2's
+    Logical-Access-Id row writes it
+    """
 first_version = "3.2.1"
 last_version = "3.2.1"

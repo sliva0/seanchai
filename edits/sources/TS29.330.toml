@@ -1,5 +1,8 @@
 [[quirk]]
 name = "message-only"
-reason = "Clause 6.3.1 has no local AVPs: table 6.3.1-1 is blank and table 6.3.1-2 re-uses AVPs for the commands in clauses 6.2.3–6.2.6."
+reason = """
+    Clause 6.3.1 has no local AVPs: table 6.3.1-1 is blank and table 6.3.1-2
+    re-uses AVPs for the commands in clauses 6.2.3–6.2.6.
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"

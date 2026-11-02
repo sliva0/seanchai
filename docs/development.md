@@ -61,3 +61,10 @@ covers it; add a synthetic case only for a rejection path.
 - Docs describe what exists. Planned work goes in [roadmap.md](roadmap.md)
   as one short item; finished work leaves it. No status tables, ticket IDs
   or acceptance-criteria blocks.
+- TOML files keep to 80 columns, comments included. A long prose field (a
+  `reason`, a `title`) is a multi-line basic string, with no backslash line
+  continuations, and every reader collapses its whitespace to single spaces
+  (`seanchai.prose`), so the value is one line whatever the wrapping. An exact
+  field (`find`, `replace`) cannot wrap, its whitespace being significant,
+  so it stays on one line, the only lines `tests/test_toml_files.py` lets run
+  long.

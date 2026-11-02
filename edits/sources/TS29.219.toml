@@ -5,7 +5,11 @@
 
 [[quirk]]
 name = "physical-reused-columns"
-reason = "Table 5.4 has a 4-twip sliver grid column after the name column; the header merges it into Reference, every data row into the name, so only the physical cells line up with the labels."
+reason = """
+    Table 5.4 has a 4-twip sliver grid column after the name column; the header
+    merges it into Reference, every data row into the name, so only the physical
+    cells line up with the labels.
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
@@ -15,18 +19,29 @@ replace = "IETF RFC 7683 [20]"
 exact = true
 count = 2
 section = "5.4"
-reason = "table 5.4 drops 'RFC' from the OC-OLR and OC-Supported-Features references; clause 2's reference [20] is IETF RFC 7683"
+reason = """
+    table 5.4 drops 'RFC' from the OC-OLR and OC-Supported-Features references;
+    clause 2's reference [20] is IETF RFC 7683
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clause 5.1.5 states it: 'The Diameter application identifier assigned to the Sy interface application is 16777302.'"
+reason = """
+    the command headers print no application id; clause 5.1.5 states it: 'The
+    Diameter application identifier assigned to the Sy interface application is
+    16777302.'
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "table 5.3.0.1 prints an 'Applicability' column of supported features ('ASR'): note 2, 'AVPs marked with a supported feature are applicable as described in clause 5.1.6'"
+reason = """
+    table 5.3.0.1 prints an 'Applicability' column of supported features
+    ('ASR'): note 2, 'AVPs marked with a supported feature are applicable as
+    described in clause 5.1.6'
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"

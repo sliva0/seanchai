@@ -4,13 +4,22 @@
 
 [[quirk]]
 name = "registry-tables"
-reason = "the document allocates codes rather than defining them: tables 4.1 (application identifiers), 5.1/1-5.1/4 (command codes), 7.1 (AVP codes) and 8.1.2-8.1.4 (experimental result codes) give each code the 3GPP TS 'specified in'"
+reason = """
+    the document allocates codes rather than defining them: tables 4.1
+    (application identifiers), 5.1/1-5.1/4 (command codes), 7.1 (AVP codes) and
+    8.1.2-8.1.4 (experimental result codes) give each code the 3GPP TS
+    'specified in'
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
 [[quirk]]
 name = "reserved-range-notes"
-reason = "tables 7.1 and 8.1.2-8.1.4 reserve ranges in full-width note rows, 'Note: The AVP codes from 320 to 399 are reserved for TS 29.234'; annex A.3 and A.4 describe the allocation of such ranges"
+reason = """
+    tables 7.1 and 8.1.2-8.1.4 reserve ranges in full-width note rows, 'Note:
+    The AVP codes from 320 to 399 are reserved for TS 29.234'; annex A.3 and A.4
+    describe the allocation of such ranges
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -20,7 +29,10 @@ replace = "29.153 [37]"
 exact = true
 count = 1
 section = "4.1"
-reason = "table 4.1's Ns row runs the reference into the document number; clause 2's reference [37] is TS 29.153"
+reason = """
+    table 4.1's Ns row runs the reference into the document number; clause 2's
+    reference [37] is TS 29.153
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -30,13 +42,21 @@ replace = "29.154 [38]"
 exact = true
 count = 1
 section = "4.1"
-reason = "table 4.1's Nt row runs the reference into the document number; clause 2's reference [38] is TS 29.154"
+reason = """
+    table 4.1's Nt row runs the reference into the document number; clause 2's
+    reference [38] is TS 29.154
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
 [[quirk]]
 name = "unknown-type-tokens"
-reason = "table 7.1 types Charging-Characteristics (314, TS 29.234 [6]) 'Integer', which names no Diameter type and could be Integer32, Integer64 or neither; TS 29.234 is outside the corpus, so the cell is kept as printed rather than patched to a guess (Wireshark's TGPP.xml types 314 OctetString)"
+reason = """
+    table 7.1 types Charging-Characteristics (314, TS 29.234 [6]) 'Integer',
+    which names no Diameter type and could be Integer32, Integer64 or neither;
+    TS 29.234 is outside the corpus, so the cell is kept as printed rather than
+    patched to a guess (Wireshark's TGPP.xml types 314 OctetString)
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -46,7 +66,9 @@ replace = "OctetString"
 exact = true
 count = 2
 section = "7.1"
-reason = "table 7.1 misspells OctetString for TMGI (900) and MBMS-Service-Area (903)"
+reason = """
+    table 7.1 misspells OctetString for TMGI (900) and MBMS-Service-Area (903)
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -76,7 +98,10 @@ replace = "29.109 [7]"
 exact = true
 count = 3
 section = "8.1.4"
-reason = "table 8.1.4's rows 5401-5403 drop the reference's closing bracket; clause 2's reference [7] is TS 29.109"
+reason = """
+    table 8.1.4's rows 5401-5403 drop the reference's closing bracket; clause
+    2's reference [7] is TS 29.109
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -85,7 +110,10 @@ find = "from 723 to799"
 replace = "from 723 to 799"
 count = 1
 section = "7.1"
-reason = "table 7.1's note reserving TS 29.329's range runs the range's last number into 'to'"
+reason = """
+    table 7.1's note reserving TS 29.329's range runs the range's last number
+    into 'to'
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -95,7 +123,10 @@ replace = "Authorization-Information-SIM"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1's code 302 (TS 29.234) breaks the name with a space beside a hyphen"
+reason = """
+    table 7.1's code 302 (TS 29.234) breaks the name with a space beside a
+    hyphen
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -105,7 +136,10 @@ replace = "WLAN-3GPP-IP-Access"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1's code 306 (TS 29.234) breaks the name with a space beside a hyphen"
+reason = """
+    table 7.1's code 306 (TS 29.234) breaks the name with a space beside a
+    hyphen
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -115,7 +149,10 @@ replace = "Redirect-Support"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1's code 1086 (TS 29.212 clause 5.3.83) breaks the name with a space beside a hyphen"
+reason = """
+    table 7.1's code 1086 (TS 29.212 clause 5.3.83) breaks the name with a space
+    beside a hyphen
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -125,7 +162,10 @@ replace = "Requested-UTRAN-GERAN-Authentication-Info"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1's code 1409 (TS 29.272 clause 7.3.12) breaks the name with a space beside a hyphen"
+reason = """
+    table 7.1's code 1409 (TS 29.272 clause 7.3.12) breaks the name with a space
+    beside a hyphen
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -135,7 +175,10 @@ replace = "SM-Delivery-Failure-Cause"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1's code 3303 (TS 29.338 clause 6.3.3.5) breaks the name with a space beside a hyphen"
+reason = """
+    table 7.1's code 3303 (TS 29.338 clause 6.3.3.5) breaks the name with a
+    space beside a hyphen
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -145,7 +188,10 @@ replace = "Authentication-Information-Request/Answer"
 exact = true
 count = 1
 section = "5.1"
-reason = "table 5.1/3's command 318 (TS 29.272) breaks the name with a space beside a hyphen"
+reason = """
+    table 5.1/3's command 318 (TS 29.272) breaks the name with a space beside a
+    hyphen
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -158,7 +204,11 @@ replace = "Role-Of-Node"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 829 'Role-of-Node'; the defining document spells it Role-Of-Node: TS 32.299 clause 7.2.177, table 7.2.0.1 and IMS-Information's rule (7.2.77)"
+reason = """
+    table 7.1 spells code 829 'Role-of-Node'; the defining document spells it
+    Role-Of-Node: TS 32.299 clause 7.2.177, table 7.2.0.1 and IMS-Information's
+    rule (7.2.77)
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -168,7 +218,11 @@ replace = "Application-Provided-Called-Party-Address"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 837 'Application-provided-called-party-address'; the defining document spells it Application-Provided-Called-Party-Address: TS 32.299 clause 7.2.22 and table 7.2.0.1"
+reason = """
+    table 7.1 spells code 837 'Application-provided-called-party-address'; the
+    defining document spells it Application-Provided-Called-Party-Address: TS
+    32.299 clause 7.2.22 and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -178,7 +232,12 @@ replace = "Trunk-Group-ID"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 851 'Trunk-Group-Id'; the defining document spells it Trunk-Group-ID: TS 32.299 clause 7.2.237's heading, prose and rule and IMS-Information's rule (7.2.77); table 7.2.0.1's 'Trunk-Group-Id' is patched in TS 32.299 too"
+reason = """
+    table 7.1 spells code 851 'Trunk-Group-Id'; the defining document spells it
+    Trunk-Group-ID: TS 32.299 clause 7.2.237's heading, prose and rule and
+    IMS-Information's rule (7.2.77); table 7.2.0.1's 'Trunk-Group-Id' is patched
+    in TS 32.299 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -188,7 +247,12 @@ replace = "Incoming-Trunk-Group-ID"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 852 'Incoming-Trunk-Group-Id'; the defining document spells it Incoming-Trunk-Group-ID: TS 32.299 clause 7.2.79 and Trunk-Group-ID's rule (7.2.237); table 7.2.0.1's 'Incoming-Trunk-Group-Id' is patched in TS 32.299 too"
+reason = """
+    table 7.1 spells code 852 'Incoming-Trunk-Group-Id'; the defining document
+    spells it Incoming-Trunk-Group-ID: TS 32.299 clause 7.2.79 and
+    Trunk-Group-ID's rule (7.2.237); table 7.2.0.1's 'Incoming-Trunk-Group-Id'
+    is patched in TS 32.299 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -198,7 +262,12 @@ replace = "Outgoing-Trunk-Group-ID"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 853 'Outgoing-Trunk-Group-Id'; the defining document spells it Outgoing-Trunk-Group-ID: TS 32.299 clause 7.2.129 and Trunk-Group-ID's rule (7.2.237); table 7.2.0.1's 'Outgoing-Trunk-Group-Id' is patched in TS 32.299 too"
+reason = """
+    table 7.1 spells code 853 'Outgoing-Trunk-Group-Id'; the defining document
+    spells it Outgoing-Trunk-Group-ID: TS 32.299 clause 7.2.129 and
+    Trunk-Group-ID's rule (7.2.237); table 7.2.0.1's 'Outgoing-Trunk-Group-Id'
+    is patched in TS 32.299 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -208,7 +277,11 @@ replace = "Rule-Deactivation-Time"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 1044 'Rule-DeActivation-Time'; the defining document spells it Rule-Deactivation-Time: TS 29.212 clause 5.3.43, table 5.3.0.1 and every rule citing it"
+reason = """
+    table 7.1 spells code 1044 'Rule-DeActivation-Time'; the defining document
+    spells it Rule-Deactivation-Time: TS 29.212 clause 5.3.43, table 5.3.0.1 and
+    every rule citing it
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -218,7 +291,10 @@ replace = "TDF-IP-Address"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 1091 'TDF-IP-address'; the defining document spells it TDF-IP-Address: TS 29.212 clause 5.3.81 and table 5.3.0.1"
+reason = """
+    table 7.1 spells code 1091 'TDF-IP-address'; the defining document spells it
+    TDF-IP-Address: TS 29.212 clause 5.3.81 and table 5.3.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -228,7 +304,12 @@ replace = "LCS-Client-ID"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 1232 'LCS-Client-Id'; the defining document spells it LCS-Client-ID: TS 32.299 clause 7.2.84's heading and rule (its prose once writes 'LCS-Client-Id') and LCS-Information's rule (7.2.89); table 7.2.0.1's 'LCS-Client-Id' is patched in TS 32.299 too"
+reason = """
+    table 7.1 spells code 1232 'LCS-Client-Id'; the defining document spells it
+    LCS-Client-ID: TS 32.299 clause 7.2.84's heading and rule (its prose once
+    writes 'LCS-Client-Id') and LCS-Information's rule (7.2.89); table 7.2.0.1's
+    'LCS-Client-Id' is patched in TS 32.299 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -238,7 +319,10 @@ replace = "LCS-Requestor-ID"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 1239 'LCS-Requestor-Id'; the defining document spells it LCS-Requestor-ID: TS 32.299 clause 7.2.91 and table 7.2.0.1"
+reason = """
+    table 7.1 spells code 1239 'LCS-Requestor-Id'; the defining document spells
+    it LCS-Requestor-ID: TS 32.299 clause 7.2.91 and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -248,7 +332,10 @@ replace = "LCS-Requestor-ID-String"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 1240 'LCS-Requestor-Id-String'; the defining document spells it LCS-Requestor-ID-String: TS 32.299 clause 7.2.92 and table 7.2.0.1"
+reason = """
+    table 7.1 spells code 1240 'LCS-Requestor-Id-String'; the defining document
+    spells it LCS-Requestor-ID-String: TS 32.299 clause 7.2.92 and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -258,7 +345,12 @@ replace = "PoC-User-Role-Info-Units"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 1254 'PoC-User-Role-info-Units'; the defining document spells it PoC-User-Role-Info-Units: TS 32.299 clause 7.2.151 and table 7.2.0.1; PoC-User-Role's rule (7.2.149) lower-cases the word and is patched in TS 32.299 too"
+reason = """
+    table 7.1 spells code 1254 'PoC-User-Role-info-Units'; the defining document
+    spells it PoC-User-Role-Info-Units: TS 32.299 clause 7.2.151 and table
+    7.2.0.1; PoC-User-Role's rule (7.2.149) lower-cases the word and is patched
+    in TS 32.299 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -268,7 +360,12 @@ replace = "PoC-Session-Initiation-Type"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 1277 'PoC-Session-Initiation-type'; the defining document spells it PoC-Session-Initiation-Type: TS 32.299 clause 7.2.147, whose spelling the TS 32.299 patch gives table 7.2.0.1 and PoC-Information's rule (7.2.144)"
+reason = """
+    table 7.1 spells code 1277 'PoC-Session-Initiation-type'; the defining
+    document spells it PoC-Session-Initiation-Type: TS 32.299 clause 7.2.147,
+    whose spelling the TS 32.299 patch gives table 7.2.0.1 and PoC-Information's
+    rule (7.2.144)
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -278,7 +375,11 @@ replace = "Number-Of-Messages-Sent"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 2019 'Number-of-Messages-Sent'; the defining document spells it Number-Of-Messages-Sent: TS 32.299 clause 7.2.116 and table 7.2.0.1"
+reason = """
+    table 7.1 spells code 2019 'Number-of-Messages-Sent'; the defining document
+    spells it Number-Of-Messages-Sent: TS 32.299 clause 7.2.116 and table
+    7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -288,7 +389,10 @@ replace = "MMTel-SService-Type"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 2031 'MMTel-Sservice-Type'; the defining document spells it MMTel-SService-Type: TS 32.299 clause 7.2.111A and table 7.2.0.1"
+reason = """
+    table 7.1 spells code 2031 'MMTel-Sservice-Type'; the defining document
+    spells it MMTel-SService-Type: TS 32.299 clause 7.2.111A and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -298,7 +402,12 @@ replace = "CS-Service-QoS-Request-Identifier"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 2807 'CS-Service-Qos-Request-Identifier'; the defining document spells it CS-Service-QoS-Request-Identifier: TS 29.212 clause E.6.3.2's heading and prose and the E.6.3.6 and E.6.6.2 rules; table E.6.3.1.1's 'CS-Service-Qos-Request-Identifier' is patched in TS 29.212 too"
+reason = """
+    table 7.1 spells code 2807 'CS-Service-Qos-Request-Identifier'; the defining
+    document spells it CS-Service-QoS-Request-Identifier: TS 29.212 clause
+    E.6.3.2's heading and prose and the E.6.3.6 and E.6.6.2 rules; table
+    E.6.3.1.1's 'CS-Service-Qos-Request-Identifier' is patched in TS 29.212 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -308,7 +417,11 @@ replace = "Event-Handling"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 3149 'Event-handling'; the defining document spells it Event-Handling: TS 29.336 clause 8.4.43's heading, table 8.4.1-1 and the 8.4.3 and 8.4.62 rules; the clause's prose once writes 'Event-handling'"
+reason = """
+    table 7.1 spells code 3149 'Event-handling'; the defining document spells it
+    Event-Handling: TS 29.336 clause 8.4.43's heading, table 8.4.1-1 and the
+    8.4.3 and 8.4.62 rules; the clause's prose once writes 'Event-handling'
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -318,7 +431,12 @@ replace = "Assistance-Info"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 3802 'Assistance-info'; the defining document spells it Assistance-Info: TS 29.345 clause 6.3.3's rule and prose and the ALR rule (6.2.15); table 6.3.1-1's 'Assistance-info' is patched in TS 29.345 too, the clause heading also printing it"
+reason = """
+    table 7.1 spells code 3802 'Assistance-info'; the defining document spells
+    it Assistance-Info: TS 29.345 clause 6.3.3's rule and prose and the ALR rule
+    (6.2.15); table 6.3.1-1's 'Assistance-info' is patched in TS 29.345 too, the
+    clause heading also printing it
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -328,7 +446,12 @@ replace = "MIC-Check-Indicator"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 3865 'MIC-Check-indicator'; the defining document spells it MIC-Check-Indicator: TS 29.345 clause 6.3.80's heading and prose and the 6.3.75 rule; table 6.3.1-1's 'MIC-Check-indicator' is patched in TS 29.345 too"
+reason = """
+    table 7.1 spells code 3865 'MIC-Check-indicator'; the defining document
+    spells it MIC-Check-Indicator: TS 29.345 clause 6.3.80's heading and prose
+    and the 6.3.75 rule; table 6.3.1-1's 'MIC-Check-indicator' is patched in TS
+    29.345 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -338,7 +461,11 @@ replace = "Extended-eNodeB-Id"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 4013 'Extended-eNodeB-ID'; the defining document spells it Extended-eNodeB-Id: TS 29.217 clause 5.3.15 and table 5.3.1.1, as TS 29.272 and 29.336 re-use it"
+reason = """
+    table 7.1 spells code 4013 'Extended-eNodeB-ID'; the defining document
+    spells it Extended-eNodeB-Id: TS 29.217 clause 5.3.15 and table 5.3.1.1, as
+    TS 29.272 and 29.336 re-use it
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -348,7 +475,12 @@ replace = "Number-Of-UE-Per-Location-Configuration"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 4306 'Number-of-UE-Per-Location-Configuration'; the defining document spells it Number-Of-UE-Per-Location-Configuration: TS 29.128 clause 6.4.11's heading and prose, table 6.4.1-1 and the 6.4.2 rule; the clause's rule name lower-cases the word and is patched in TS 29.128 too"
+reason = """
+    table 7.1 spells code 4306 'Number-of-UE-Per-Location-Configuration'; the
+    defining document spells it Number-Of-UE-Per-Location-Configuration: TS
+    29.128 clause 6.4.11's heading and prose, table 6.4.1-1 and the 6.4.2 rule;
+    the clause's rule name lower-cases the word and is patched in TS 29.128 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -358,7 +490,12 @@ replace = "Number-Of-UE-Per-Location-Report"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 spells code 4307 'Number-of-UE-Per-Location-Report'; the defining document spells it Number-Of-UE-Per-Location-Report: TS 29.128 clause 6.4.12's heading and prose, table 6.4.1-1 and the 6.4.3 rule; the clause's rule name lower-cases the word and is patched in TS 29.128 too"
+reason = """
+    table 7.1 spells code 4307 'Number-of-UE-Per-Location-Report'; the defining
+    document spells it Number-Of-UE-Per-Location-Report: TS 29.128 clause
+    6.4.12's heading and prose, table 6.4.1-1 and the 6.4.3 rule; the clause's
+    rule name lower-cases the word and is patched in TS 29.128 too
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -371,7 +508,12 @@ replace = "MBMS-Session-Repetition-Number"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 912 'MBMS-Session-Identity-Repetition-Number'; the defining document names it MBMS-Session-Repetition-Number: TS 29.061 clause 17.7.15 ('The MBMS-Session-Repetition-Number AVP (AVP code 912)') and table 10"
+reason = """
+    table 7.1 names code 912 'MBMS-Session-Identity-Repetition-Number'; the
+    defining document names it MBMS-Session-Repetition-Number: TS 29.061 clause
+    17.7.15 ('The MBMS-Session-Repetition-Number AVP (AVP code 912)') and table
+    10
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -381,7 +523,12 @@ replace = "NAF-Id"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 402 'NAF-Hostname'; the defining document names it NAF-Id: TS 29.109 clause 6.3.1.3 ('The NAF-Id AVP (AVP code 402)'), table 6.1 and the Bootstrapping-Info-Request ABNF of clause 5.2; the document never prints NAF-Hostname"
+reason = """
+    table 7.1 names code 402 'NAF-Hostname'; the defining document names it
+    NAF-Id: TS 29.109 clause 6.3.1.3 ('The NAF-Id AVP (AVP code 402)'), table
+    6.1 and the Bootstrapping-Info-Request ABNF of clause 5.2; the document
+    never prints NAF-Hostname
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -391,7 +538,11 @@ replace = "Media-Sub-Component"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 519 'Media-Sub-Component AVP'; the defining document names it Media-Sub-Component: TS 29.214 clause 5.3.18 and table 5.3.0.1; the cell carries the word AVP from the clause heading"
+reason = """
+    table 7.1 names code 519 'Media-Sub-Component AVP'; the defining document
+    names it Media-Sub-Component: TS 29.214 clause 5.3.18 and table 5.3.0.1; the
+    cell carries the word AVP from the clause heading
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -401,7 +552,10 @@ replace = "Event-Threshold-RSRP"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1629 'Event-ThresholdRSRP'; the defining document names it Event-Threshold-RSRP: TS 29.272 clause 7.3.143 and table 7.3.1/1"
+reason = """
+    table 7.1 names code 1629 'Event-ThresholdRSRP'; the defining document names
+    it Event-Threshold-RSRP: TS 29.272 clause 7.3.143 and table 7.3.1/1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -411,7 +565,10 @@ replace = "Event-Threshold-RSRQ"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1630 'Event-ThresholdRSRQ'; the defining document names it Event-Threshold-RSRQ: TS 29.272 clause 7.3.144 and table 7.3.1/1"
+reason = """
+    table 7.1 names code 1630 'Event-ThresholdRSRQ'; the defining document names
+    it Event-Threshold-RSRQ: TS 29.272 clause 7.3.144 and table 7.3.1/1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -421,7 +578,10 @@ replace = "Third-Context-Identifier"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1719 'Third-Context-ID'; the defining document names it Third-Context-Identifier: TS 29.272 clause 7.3.244 and table 7.3.1/1"
+reason = """
+    table 7.1 names code 1719 'Third-Context-ID'; the defining document names it
+    Third-Context-Identifier: TS 29.272 clause 7.3.244 and table 7.3.1/1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -431,7 +591,10 @@ replace = "Visited-PLMN-Id"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1407 'Visited PLMN Id'; the defining document names it Visited-PLMN-Id: TS 29.272 clause 7.3.9 and table 7.3.1/1"
+reason = """
+    table 7.1 names code 1407 'Visited PLMN Id'; the defining document names it
+    Visited-PLMN-Id: TS 29.272 clause 7.3.9 and table 7.3.1/1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -441,7 +604,11 @@ replace = "Supported-Monitoring-Events"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3144 'Supported-Monitoring-Event'; the defining document names it Supported-Monitoring-Events: TS 29.336 clause 8.4.41 and table 8.4.1-1"
+reason = """
+    table 7.1 names code 3144 'Supported-Monitoring-Event'; the defining
+    document names it Supported-Monitoring-Events: TS 29.336 clause 8.4.41 and
+    table 8.4.1-1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -451,7 +618,10 @@ replace = "Supported-Services"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3143 'Supported-Service'; the defining document names it Supported-Services: TS 29.336 clause 8.4.40 and table 8.4.1-1"
+reason = """
+    table 7.1 names code 3143 'Supported-Service'; the defining document names
+    it Supported-Services: TS 29.336 clause 8.4.40 and table 8.4.1-1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -461,7 +631,11 @@ replace = "MME-Absent-User-Diagnostic-SM"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3313 'MME-Absent-User-Subscriber-Diagnostic-SM'; the defining document names it MME-Absent-User-Diagnostic-SM: TS 29.338 clause 5.3.3.9 and table 5.3.3.1/1"
+reason = """
+    table 7.1 names code 3313 'MME-Absent-User-Subscriber-Diagnostic-SM'; the
+    defining document names it MME-Absent-User-Diagnostic-SM: TS 29.338 clause
+    5.3.3.9 and table 5.3.3.1/1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -471,7 +645,11 @@ replace = "MSC-Absent-User-Diagnostic-SM"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3314 'MSC-Absent-User-Subscriber-Diagnostic-SM'; the defining document names it MSC-Absent-User-Diagnostic-SM: TS 29.338 clause 5.3.3.10 and table 5.3.3.1/1"
+reason = """
+    table 7.1 names code 3314 'MSC-Absent-User-Subscriber-Diagnostic-SM'; the
+    defining document names it MSC-Absent-User-Diagnostic-SM: TS 29.338 clause
+    5.3.3.10 and table 5.3.3.1/1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -481,7 +659,11 @@ replace = "Authorised-QoS"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 849 'Authorized-QoS'; the defining document names it Authorised-QoS: TS 32.299 clause 7.2.27 and table 7.2.0.1; CR 0325 (V9.6.0) replaced 'the Authorized-QoS AVP name with Authorised-QoS'"
+reason = """
+    table 7.1 names code 849 'Authorized-QoS'; the defining document names it
+    Authorised-QoS: TS 32.299 clause 7.2.27 and table 7.2.0.1; CR 0325 (V9.6.0)
+    replaced 'the Authorized-QoS AVP name with Authorised-QoS'
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -491,7 +673,11 @@ replace = "Charging-Characteristics-Selection-Mode"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 2066 'Charging-Characteristic-Selection-Mode'; the defining document names it Charging-Characteristics-Selection-Mode: TS 32.299 clause 7.2.39A and table 7.2.0.1"
+reason = """
+    table 7.1 names code 2066 'Charging-Characteristic-Selection-Mode'; the
+    defining document names it Charging-Characteristics-Selection-Mode: TS
+    32.299 clause 7.2.39A and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -501,7 +687,12 @@ replace = "Deferred-Location-Event-Type"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1230 'Deferred-Location-Even-Type'; the defining document names it Deferred-Location-Event-Type: TS 32.299 clause 7.2.51's heading, table 7.2.0.1 and LCS-Information's rule; the clause's first sentence drops the 't'"
+reason = """
+    table 7.1 names code 1230 'Deferred-Location-Even-Type'; the defining
+    document names it Deferred-Location-Event-Type: TS 32.299 clause 7.2.51's
+    heading, table 7.2.0.1 and LCS-Information's rule; the clause's first
+    sentence drops the 't'
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -511,7 +702,11 @@ replace = "IP-Realm-Default-Indication"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 2603 'IP-Realm-Default-Indicator'; the defining document names it IP-Realm-Default-Indication: TS 32.299 clause 7.2.80A and table 7.2.0.1"
+reason = """
+    table 7.1 names code 2603 'IP-Realm-Default-Indicator'; the defining
+    document names it IP-Realm-Default-Indication: TS 32.299 clause 7.2.80A and
+    table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -521,7 +716,10 @@ replace = "ISUP-Cause"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3416 'ISUP-Release-Cause'; the defining document names it ISUP-Cause: TS 32.299 clause 7.2.80B and table 7.2.0.1"
+reason = """
+    table 7.1 names code 3416 'ISUP-Release-Cause'; the defining document names
+    it ISUP-Cause: TS 32.299 clause 7.2.80B and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -531,7 +729,11 @@ replace = "Local-GW-Inserted-Indication"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 2604 'Local-GW-Inserted-Indicator'; the defining document names it Local-GW-Inserted-Indication: TS 32.299 clause 7.2.92A and table 7.2.0.1"
+reason = """
+    table 7.1 names code 2604 'Local-GW-Inserted-Indicator'; the defining
+    document names it Local-GW-Inserted-Indication: TS 32.299 clause 7.2.92A and
+    table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -541,7 +743,10 @@ replace = "MBMS-GW-Address"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 2307 'MBMS GW-Address'; the defining document names it MBMS-GW-Address: TS 32.299 clause 7.2.98 and table 7.2.0.1"
+reason = """
+    table 7.1 names code 2307 'MBMS GW-Address'; the defining document names it
+    MBMS-GW-Address: TS 32.299 clause 7.2.98 and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -551,7 +756,10 @@ replace = "Originator-SCCP-Address"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 2008 'Originating-SCCP-Address'; the defining document names it Originator-SCCP-Address: TS 32.299 clause 7.2.128 and table 7.2.0.1"
+reason = """
+    table 7.1 names code 2008 'Originating-SCCP-Address'; the defining document
+    names it Originator-SCCP-Address: TS 32.299 clause 7.2.128 and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -561,7 +769,11 @@ replace = "PC3-Control-Protocol-Cause"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3434 'ProSe-PC3-Control-Protocol-Cause'; the defining document names it PC3-Control-Protocol-Cause: TS 32.299 clause 7.2.135A and table 7.2.0.1"
+reason = """
+    table 7.1 names code 3434 'ProSe-PC3-Control-Protocol-Cause'; the defining
+    document names it PC3-Control-Protocol-Cause: TS 32.299 clause 7.2.135A and
+    table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -571,7 +783,11 @@ replace = "PC3-EPC-Control-Protocol-Cause"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3435 'ProSe-PC3-EPC-Control-Protocol-Cause'; the defining document names it PC3-EPC-Control-Protocol-Cause: TS 32.299 clause 7.2.135B and table 7.2.0.1"
+reason = """
+    table 7.1 names code 3435 'ProSe-PC3-EPC-Control-Protocol-Cause'; the
+    defining document names it PC3-EPC-Control-Protocol-Cause: TS 32.299 clause
+    7.2.135B and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -581,7 +797,10 @@ replace = "PoC-Change-Condition"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1261 'PoC-Change-Conditions'; the defining document names it PoC-Change-Condition: TS 32.299 clause 7.2.139 and table 7.2.0.1"
+reason = """
+    table 7.1 names code 1261 'PoC-Change-Conditions'; the defining document
+    names it PoC-Change-Condition: TS 32.299 clause 7.2.139 and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -591,7 +810,11 @@ replace = "ProSe-Group-IP-Multicast-Address"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 3446 'ProSe-Group-IP-Multicast-Addresses'; the defining document names it ProSe-Group-IP-Multicast-Address: TS 32.299 clause 7.2.154H and table 7.2.0.1"
+reason = """
+    table 7.1 names code 3446 'ProSe-Group-IP-Multicast-Addresses'; the defining
+    document names it ProSe-Group-IP-Multicast-Address: TS 32.299 clause
+    7.2.154H and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -601,7 +824,11 @@ replace = "RAN-End-Timestamp"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1301 'RAN-End-Time'; the defining document names it RAN-End-Timestamp: TS 32.299 clause 7.2.160Da; table 7.2.0.1's RAN-End-Time row, which table 7.1 copied, is corrected to the clause"
+reason = """
+    table 7.1 names code 1301 'RAN-End-Time'; the defining document names it
+    RAN-End-Timestamp: TS 32.299 clause 7.2.160Da; table 7.2.0.1's RAN-End-Time
+    row, which table 7.1 copied, is corrected to the clause
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -611,7 +838,11 @@ replace = "RAN-Start-Timestamp"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 1303 'RAN-Start-Time'; the defining document names it RAN-Start-Timestamp: TS 32.299 clause 7.2.160Dc; table 7.2.0.1's RAN-Start-Time row, which table 7.1 copied, is corrected to the clause"
+reason = """
+    table 7.1 names code 1303 'RAN-Start-Time'; the defining document names it
+    RAN-Start-Timestamp: TS 32.299 clause 7.2.160Dc; table 7.2.0.1's
+    RAN-Start-Time row, which table 7.1 copied, is corrected to the clause
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"
 
@@ -621,6 +852,10 @@ replace = "Transcoder-Inserted-Indication"
 exact = true
 count = 1
 section = "7.1"
-reason = "table 7.1 names code 2605 'Transcoder-Inserted-Indicator'; the defining document names it Transcoder-Inserted-Indication: TS 32.299 clause 7.2.233A and table 7.2.0.1"
+reason = """
+    table 7.1 names code 2605 'Transcoder-Inserted-Indicator'; the defining
+    document names it Transcoder-Inserted-Indication: TS 32.299 clause 7.2.233A
+    and table 7.2.0.1
+    """
 first_version = "18.6.0"
 last_version = "18.6.0"

@@ -334,3 +334,23 @@ def test_every_committed_range_is_one_the_rewrite_can_reach(tmp_path, path):
     after = copy.read_bytes().splitlines()
     changed = [old for old, new in zip(before, after, strict=True) if old != new]
     assert all(b"versions=" in line for line in changed)
+
+
+def test_a_wrapped_reason_hides_no_bound_and_opens_no_table(tmp_path):
+    """TS 29.214's wrapped reasons really do start lines with "[15]": read as
+    a table header it would end the block before the bound below it, and the
+    range would be reported as impossible to widen."""
+    wrapped = _TOML.replace(
+        'reason = "flags cell typo"',
+        'reason = """\n    flags cell typo, TS 29.234\n    [6]\n'
+        '    [[patch]]\n    last_version = "1.0.0"\n    """',
+    )
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(wrapped, encoding="utf-8")
+
+    expansion = ranges.expand_sources(path, "18.7.0")
+
+    assert path.read_text(encoding="utf-8") == wrapped.replace(
+        'last_version = "18.6.0"', 'last_version = "18.7.0"'
+    )
+    assert expansion.remaining == []

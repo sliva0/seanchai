@@ -7,7 +7,11 @@
 find = "Shall"
 replace = "Must"
 section = "5.6.2.1.1"
-reason = "table 1 heads its first flag column 'Shall' under 'AVP Flag rules'; RFC 3588 [48], to which the table's NOTE refers, heads that column of its flag rules table MUST (clause 4.5), as TS 29.212 [21]'s AVP tables head it Must"
+reason = """
+    table 1 heads its first flag column 'Shall' under 'AVP Flag rules'; RFC 3588
+    [48], to which the table's NOTE refers, heads that column of its flag rules
+    table MUST (clause 4.5), as TS 29.212 [21]'s AVP tables head it Must
+    """
 first_version = "2.0"
 last_version = "2.0"
 
@@ -15,6 +19,12 @@ last_version = "2.0"
 find = "5535/9010"
 replace = "9010"
 section = "5.6.2.1.1"
-reason = "table 1's AVP Code cell prints vendor and code, '5535/9010', as clause 5.6.2.1.1's sentence does ('Code 5535/9010'); the code is 9010, which TS 32.299 table 7.3.1 tabulates for 3GPP2-BSID, and 5535 the file's vendor-id, 3GPP2's (TS 29.212 table 5.4.0.1: 'The Vendor-Id shall be set to 3GPP2 (5535) [24]')"
+reason = """
+    table 1's AVP Code cell prints vendor and code, '5535/9010', as clause
+    5.6.2.1.1's sentence does ('Code 5535/9010'); the code is 9010, which TS
+    32.299 table 7.3.1 tabulates for 3GPP2-BSID, and 5535 the file's vendor-id,
+    3GPP2's (TS 29.212 table 5.4.0.1: 'The Vendor-Id shall be set to 3GPP2
+    (5535) [24]')
+    """
 first_version = "2.0"
 last_version = "2.0"

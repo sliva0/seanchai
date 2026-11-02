@@ -2,8 +2,16 @@
 
 [[quirk]]
 name = "type-short-forms"
-reason = "§4.5 declares its own convention — 'Due to space constraints, the short form DiamIdent is used to represent DiameterIdentity' — and the table then also prints DiamURI"
+reason = """
+    §4.5 declares its own convention — 'Due to space constraints, the short form
+    DiamIdent is used to represent DiameterIdentity' — and the table then also
+    prints DiamURI
+    """
 
 [[quirk]]
 name = "external-enum-values"
-reason = "clause 8.15 lists no Termination-Cause values: 'The currently assigned values for this AVP can be found in the IANA registry for Termination-Cause AVP Values [IANATCV]'"
+reason = """
+    clause 8.15 lists no Termination-Cause values: 'The currently assigned
+    values for this AVP can be found in the IANA registry for Termination-Cause
+    AVP Values [IANATCV]'
+    """

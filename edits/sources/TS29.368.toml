@@ -7,7 +7,10 @@ find = "6. 4.2"
 replace = "6.4.2"
 exact = true
 section = "6.4.1"
-reason = "table 6.4.1.1 prints Device-Action's clause with a stray space; the AVP is defined in clause 6.4.2"
+reason = """
+    table 6.4.1.1 prints Device-Action's clause with a stray space; the AVP is
+    defined in clause 6.4.2
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
@@ -16,36 +19,59 @@ find = "Feature-Supported-In-Final-Target AVP"
 replace = "Feature-Supported-In-Final-Target"
 exact = true
 section = "6.4.1"
-reason = "table 6.4.1.1 prints the ' AVP' suffix in one name cell; clause 6.4.13 defines Feature-Supported-In-Final-Target"
+reason = """
+    table 6.4.1.1 prints the ' AVP' suffix in one name cell; clause 6.4.13
+    defines Feature-Supported-In-Final-Target
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "physical-reused-columns"
-reason = "Table 6.5.1.1 has a 4-twip sliver grid column after the name column; the header merges it into Reference, every data row into the name, so only the physical cells line up with the labels."
+reason = """
+    Table 6.5.1.1 has a 4-twip sliver grid column after the name column; the
+    header merges it into Reference, every data row into the name, so only the
+    physical cells line up with the labels.
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "Clause 6.4.6 labels Action-Type's values in words ('Device Trigger Request (1)', 'MSISDN-less MO-SMS Delivery (5)'); the other enumerated clauses print identifiers."
+reason = """
+    Clause 6.4.6 labels Action-Type's values in words ('Device Trigger Request
+    (1)', 'MSISDN-less MO-SMS Delivery (5)'); the other enumerated clauses print
+    identifiers.
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clause 6.1.3 states it: 'The Diameter application identifier assigned to the Tsp interface application is 16777309.'"
+reason = """
+    the command headers print no application id; clause 6.1.3 states it: 'The
+    Diameter application identifier assigned to the Tsp interface application is
+    16777309.'
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "tables 6.4.1.1 and 6.5.1.1 print an 'Applicability' column of supported features ('Device-Trigger-Recall-Replace', 'MSISDN-less MO-SMS Delivery'): note 2 of 6.4.1.1, 'AVPs marked with a supported feature ... are applicable as described in clause 6.4.12'"
+reason = """
+    tables 6.4.1.1 and 6.5.1.1 print an 'Applicability' column of supported
+    features ('Device-Trigger-Recall-Replace', 'MSISDN-less MO-SMS Delivery'):
+    note 2 of 6.4.1.1, 'AVPs marked with a supported feature ... are applicable
+    as described in clause 6.4.12'
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "worded-marks"
-reason = "the 'MSISDN-less MO-SMS Delivery' feature is named in words (clause 5.9), so a space is no separator"
+reason = """
+    the 'MSISDN-less MO-SMS Delivery' feature is named in words (clause 5.9), so
+    a space is no separator
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"

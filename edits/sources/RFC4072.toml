@@ -2,4 +2,8 @@
 
 [[quirk]]
 name = "clause-avp-table"
-reason = "the document prints no summary AVP table; its AVPs are defined clause-by-clause with regular defining sentences carrying the Name/Code/Type facts"
+reason = """
+    the document prints no summary AVP table; its AVPs are defined
+    clause-by-clause with regular defining sentences carrying the Name/Code/Type
+    facts
+    """

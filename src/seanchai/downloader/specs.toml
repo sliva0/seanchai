@@ -8,7 +8,9 @@
 [[tgpp]]
 number = "29.061"
 title = "PLMN interworking with packet data networks"
-reason = "Defines Diameter NASREQ/accounting command formats and 3GPP AVPs for Gi/SGi."
+reason = """
+    Defines Diameter NASREQ/accounting command formats and 3GPP AVPs for Gi/SGi.
+    """
 
 [[tgpp]]
 number = "29.109"
@@ -37,7 +39,10 @@ title = "Diameter-based SLh interface for Control Plane LCS"
 [[tgpp]]
 number = "29.201"
 title = "REST reference point between AF and Protocol Converter"
-reason = "Defines mappings between Diameter AVP base formats and XML/REST representations."
+reason = """
+    Defines mappings between Diameter AVP base formats and XML/REST
+    representations.
+    """
 
 [[tgpp]]
 number = "29.212"
@@ -46,7 +51,10 @@ title = "Policy and Charging Control (PCC) reference points"
 [[tgpp]]
 number = "29.213"
 title = "PCC signalling flows and QoS parameter mapping"
-reason = "Companion PCC specification containing Diameter AVP usage and parameter mappings."
+reason = """
+    Companion PCC specification containing Diameter AVP usage and parameter
+    mappings.
+    """
 
 [[tgpp]]
 number = "29.214"
@@ -67,7 +75,10 @@ title = "PCC spending-limit reporting over Sy"
 [[tgpp]]
 number = "29.228"
 title = "Cx/Dx signalling flows and message contents"
-reason = "Defines application-level AVP presence rules that override the protocol ABNF."
+reason = """
+    Defines application-level AVP presence rules that override the protocol
+    ABNF.
+    """
 
 [[tgpp]]
 number = "29.229"
@@ -76,7 +87,9 @@ title = "Cx and Dx interfaces based on Diameter"
 [[tgpp]]
 number = "29.230"
 title = "Diameter applications; 3GPP-specific codes and identifiers"
-reason = "Registry of 3GPP Diameter application IDs, command codes, and AVP codes."
+reason = """
+    Registry of 3GPP Diameter application IDs, command codes, and AVP codes.
+    """
 
 [[tgpp]]
 number = "29.272"
@@ -98,7 +111,10 @@ reason = "Contains mappings between MAP parameters and Diameter AVPs."
 [[tgpp]]
 number = "29.328"
 title = "Sh signalling flows and message contents"
-reason = "Companion Sh specification containing Diameter message and AVP content rules."
+reason = """
+    Companion Sh specification containing Diameter message and AVP content
+    rules.
+    """
 
 [[tgpp]]
 number = "29.329"
@@ -386,7 +402,9 @@ number = "32.299"
 title = "Charging management; Diameter charging applications"
 version = "11.20.0"
 final = "release"
-reason = "Defines Node-Id and Service-Information as oneM2M TS-0004 re-uses them."
+reason = """
+    Defines Node-Id and Service-Information as oneM2M TS-0004 re-uses them.
+    """
 
 # TS 32.299 V11.20.0 clause 2 cites TS 29.212 [215] and TS 29.214 [214]
 # non-specifically, which in Release 11 means Release 11's last versions.
@@ -418,7 +436,10 @@ number = "29.061"
 title = "PLMN interworking with packet data networks"
 version = "6.15.0"
 final = "release"
-reason = "Defines 3GPP-RAT-Type and 3GPP-SGSN-Address as TS 29.210 V6.7.0 re-uses them."
+reason = """
+    Defines 3GPP-RAT-Type and 3GPP-SGSN-Address as TS 29.210 V6.7.0 re-uses
+    them.
+    """
 
 # TS 29.230 tables 4.1 and 7.1 cite three retired documents no corpus
 # document resolves into; each is pinned at its last version so that the
@@ -439,7 +460,9 @@ reason = "Defines 3GPP Rx, which TS 29.230 table 4.1 cites."
 
 [[tgpp_pinned]]
 number = "29.234"
-title = "3GPP system to Wireless Local Area Network (WLAN) interworking; Stage 3"
+title = """
+    3GPP system to Wireless Local Area Network (WLAN) interworking; Stage 3
+    """
 version = "11.2.0"
 final = "document"
 reason = "Defines Wx and Pr, which TS 29.230 tables 4.1 and 7.1 cite."
@@ -456,7 +479,10 @@ title = "Service Layer Core Protocol"
 release = 2
 version = "2.35.0"
 document_id = 36771
-reason = "Annex A binds Mch to Diameter accounting; TS 32.299 re-uses its M2M-Information."
+reason = """
+    Annex A binds Mch to Diameter accounting; TS 32.299 re-uses its
+    M2M-Information.
+    """
 
 # Wireshark's Diameter dictionary — the independent oracle `seanchai
 # crosscheck` compares extracted codes, vendor-ids and types against. The

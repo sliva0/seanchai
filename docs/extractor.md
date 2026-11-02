@@ -37,6 +37,19 @@ fire exactly as declared — a declaration that stops matching fails the
 extraction, because a silently dropped fix is the rot the accounting exists
 to catch.
 
+`reason` is prose: a long one is a multi-line string, and the loader strips it
+and collapses every run of whitespace to one space. Everything else is exact.
+`find` and `replace` in particular match and write character for character, so
+they stay on one line however long, the only lines exempt from the 80 columns
+the TOML files keep to ([development.md](development.md#conventions)).
+
+```toml
+reason = """
+    table 8.4.1-1 loses the hyphen in Maximum-Latency; clause 8.4.13 and the
+    UE-Reachability-Configuration ABNF use the hyphenated AVP name
+    """
+```
+
 ### Input patches
 
 Typos in the source that break extraction, or that misspell a name only in

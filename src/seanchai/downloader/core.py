@@ -42,6 +42,8 @@ from typing import NamedTuple
 import docx
 import pypdf
 
+from ..prose import collapse_fields
+
 THREE_GPP_ARCHIVE = "https://www.3gpp.org/ftp/Specs/archive/{series}_series/{number}/"
 ETSI_DELIVER = "https://www.etsi.org/deliver"
 RFC_TEXT_URL = "https://www.rfc-editor.org/rfc/rfc{number}.txt"
@@ -205,6 +207,12 @@ class DownloadError(RuntimeError):
     """Anything that stops the corpus being fetched as asked."""
 
 
+def _prose(entry: dict) -> dict:
+    """A catalog entry with `title` and `reason` read as prose; its numbers,
+    versions and the Wireshark tag and path are exact."""
+    return collapse_fields(entry, {"title", "reason"})
+
+
 def load_catalog(path: Path | None = None) -> Catalog:
     """Read the curated specification catalog from specs.toml.
 
@@ -215,12 +223,12 @@ def load_catalog(path: Path | None = None) -> Catalog:
     try:
         with path.open("rb") as stream:
             data = tomllib.load(stream)
-        tgpp = tuple(ThreeGppSpec(**entry) for entry in data["tgpp"])
-        rfc = tuple(RfcSpec(**entry) for entry in data["rfc"])
+        tgpp = tuple(ThreeGppSpec(**_prose(entry)) for entry in data["tgpp"])
+        rfc = tuple(RfcSpec(**_prose(entry)) for entry in data["rfc"])
         wireshark = WiresharkDictionary(**data["wireshark"])
-        onem2m = tuple(OneM2MSpec(**entry) for entry in data.get("onem2m", ()))
+        onem2m = tuple(OneM2MSpec(**_prose(entry)) for entry in data.get("onem2m", ()))
         pinned = tuple(
-            PinnedThreeGppSpec(**entry) for entry in data.get("tgpp_pinned", ())
+            PinnedThreeGppSpec(**_prose(entry)) for entry in data.get("tgpp_pinned", ())
         )
     except (
         OSError,

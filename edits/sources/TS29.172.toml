@@ -7,12 +7,18 @@ find = "VERTICAL_COORDINATE_IS_NOT REQUESTED (0)"
 replace = "VERTICAL_COORDINATE_IS_NOT_REQUESTED (0)"
 exact = true
 section = "7.4.9"
-reason = "Vertical-Requested's value 0 prints a space for an underscore, which kept it out of the value list; the clause's own default sentence spells it VERTICAL_COORDINATE_IS_NOT_REQUESTED (0)"
+reason = """
+    Vertical-Requested's value 0 prints a space for an underscore, which kept it
+    out of the value list; the clause's own default sentence spells it
+    VERTICAL_COORDINATE_IS_NOT_REQUESTED (0)
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 7.4.27 labels LCS-QoS-Class's value 1 in words, 'BEST EFFORT (1)'"
+reason = """
+    clause 7.4.27 labels LCS-QoS-Class's value 1 in words, 'BEST EFFORT (1)'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"

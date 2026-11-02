@@ -4,13 +4,22 @@
 
 [[quirk]]
 name = "list-numbered-headings"
-reason = "The headings print no clause numbers: annex A's carry a numPr pointing at word/numbering.xml (level text 'A.%1', 'A.%1.%2'), so 'Accounting Request Command' is A.2.1 only as Word renders it; ETSI TS 118 104 V2.7.1 and V5.2.0's Word file print the same numbers as text."
+reason = """
+    The headings print no clause numbers: annex A's carry a numPr pointing at
+    word/numbering.xml (level text 'A.%1', 'A.%1.%2'), so 'Accounting Request
+    Command' is A.2.1 only as Word renders it; ETSI TS 118 104 V2.7.1 and
+    V5.2.0's Word file print the same numbers as text.
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
 [[quirk]]
 name = "message-headings"
-reason = "Clauses A.2.1 and A.2.2 head the commands 'Accounting Request Command' and 'Accounting Answer Command' and spell each rule with its abbreviation, '<ACR> ::='."
+reason = """
+    Clauses A.2.1 and A.2.2 head the commands 'Accounting Request Command' and
+    'Accounting Answer Command' and spell each rule with its abbreviation,
+    '<ACR> ::='.
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
@@ -22,37 +31,62 @@ last_version = "2.35.0"
 
 [[quirk]]
 name = "reference-cells"
-reason = "Table A.4-1's Reference column is 'a reference to where this AVP is defined' (clause A.4): '[A.5.1]' for a clause of the present document, 'IETF RFC 6733 [14]', 'IETF RFC 4006 [32]' and '3GPP TS 32.299 [31]' for the AVPs it takes from those documents."
+reason = """
+    Table A.4-1's Reference column is 'a reference to where this AVP is defined'
+    (clause A.4): '[A.5.1]' for a clause of the present document, 'IETF RFC 6733
+    [14]', 'IETF RFC 4006 [32]' and '3GPP TS 32.299 [31]' for the AVPs it takes
+    from those documents.
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
 [[quirk]]
 name = "command-columns"
-reason = "Table A.4-1's 'Used in' columns ACR, ACA, CCR and CCA mark each AVP M, O or '-' per command; clause A.4: 'columns \"Used in ACR\" and \"Used in ACA\" identify at a protocol level if the AVP is mandatory, optional, or not allowed', CCR and CCA 'Not in the present document'."
+reason = """
+    Table A.4-1's 'Used in' columns ACR, ACA, CCR and CCA mark each AVP M, O or
+    '-' per command; clause A.4: 'columns \"Used in ACR\" and \"Used in ACA\"
+    identify at a protocol level if the AVP is mandatory, optional, or not
+    allowed', CCR and CCA 'Not in the present document'.
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
 [[quirk]]
 name = "type-short-forms"
-reason = "Table A.4-1 copies RFC 6733's DiamIdent type abbreviation (Destination-Host, Origin-Host, Origin-Realm, Route-Record)."
+reason = """
+    Table A.4-1 copies RFC 6733's DiamIdent type abbreviation (Destination-Host,
+    Origin-Host, Origin-Realm, Route-Record).
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
 [[quirk]]
 name = "value-first-enums"
-reason = "Clause A.5.17 lists Protocol-Type's values value first, '0 HTTP' to '3 WebSocket', with '4 .. 99 Reserved for oneM2M defined protocol types' and '100 .. 199 Operator and vendor specific protocol types'."
+reason = """
+    Clause A.5.17 lists Protocol-Type's values value first, '0 HTTP' to '3
+    WebSocket', with '4 .. 99 Reserved for oneM2M defined protocol types' and
+    '100 .. 199 Operator and vendor specific protocol types'.
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
 [[quirk]]
 name = "prose-enum-values"
-reason = "Clause A.5.3 names Accounting-Record-Type's one value in a sentence: 'The following value is currently defined for the Accounting-Record-Type AVP: EVENT_RECORD (value 1) for an Event Based request.'"
+reason = """
+    Clause A.5.3 names Accounting-Record-Type's one value in a sentence: 'The
+    following value is currently defined for the Accounting-Record-Type AVP:
+    EVENT_RECORD (value 1) for an Event Based request.'
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
 [[quirk]]
 name = "external-enum-values"
-reason = "Clauses A.5.22 and A.5.25 say where Request-Operation's and Response-Status-Code's values are: 'The values are defined in Table 6.3.4.2.5-6.', 'The values are defined in clause 6.6.3.'"
+reason = """
+    Clauses A.5.22 and A.5.25 say where Request-Operation's and
+    Response-Status-Code's values are: 'The values are defined in Table
+    6.3.4.2.5-6.', 'The values are defined in clause 6.6.3.'
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
@@ -61,7 +95,11 @@ find = "Accounting Request Command"
 replace = "Accounting-Request Command"
 exact = true
 section = "A.2.1"
-reason = "clause A.2.1 names the command in words over its '<ACR> ::=' rule; the clause defines the format 'according to the Diameter Base Protocol in IETF RFC 6733 [14]', whose clause 9.7.1 names it Accounting-Request"
+reason = """
+    clause A.2.1 names the command in words over its '<ACR> ::=' rule; the
+    clause defines the format 'according to the Diameter Base Protocol in IETF
+    RFC 6733 [14]', whose clause 9.7.1 names it Accounting-Request
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"
 
@@ -70,6 +108,10 @@ find = "Accounting Answer Command"
 replace = "Accounting-Answer Command"
 exact = true
 section = "A.2.2"
-reason = "clause A.2.2 names the command in words over its '<ACA> ::=' rule; the clause defines the format 'according to the Diameter Base Protocol in IETF RFC 6733 [14]', whose clause 9.7.2 names it Accounting-Answer"
+reason = """
+    clause A.2.2 names the command in words over its '<ACA> ::=' rule; the
+    clause defines the format 'according to the Diameter Base Protocol in IETF
+    RFC 6733 [14]', whose clause 9.7.2 names it Accounting-Answer
+    """
 first_version = "2.35.0"
 last_version = "2.35.0"

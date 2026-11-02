@@ -13,6 +13,10 @@ password), and python-docx for validation and
 the `soffice` executable (unless `--no-convert`); the module returns records, reports progress through a callback and raises
 `DownloadError`, and the CLI does the printing.
 
+In `specs.toml`, `title` and `reason` are prose, wrapped in a multi-line string
+when long and read with their whitespace collapsed to single spaces; every other
+field (`number`, `version`, `final`, the Wireshark `tag` and `path`) is exact.
+
 ```sh
 uv run seanchai download --list     # show the catalog
 uv run seanchai download            # fetch it, ETSI PDFs included

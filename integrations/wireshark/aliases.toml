@@ -21,7 +21,10 @@
 specification = "TS29.061"
 name = "TWAN-Identifier"
 wireshark = "3GPP-TWAN-Identifier"
-reason = "the 3GPP- prefix of every other code the table takes from clause 16.4.7's RADIUS sub-attributes"
+reason = """
+    the 3GPP- prefix of every other code the table takes from clause 16.4.7's
+    RADIUS sub-attributes
+    """
 
 [[alias]]
 specification = "TS29.172"
@@ -105,7 +108,9 @@ reason = "kept apart from TS 32.299's Service-ID (10415, 855)"
 specification = "TS32.299"
 name = "Reporting-Reason"
 wireshark = "3GPP-Reporting-Reason"
-reason = "a 3GPP- prefix, which Starent.xml's grouped AVPs name as their member too"
+reason = """
+    a 3GPP- prefix, which Starent.xml's grouped AVPs name as their member too
+    """
 
 [[alias]]
 specification = "TS32.299"
@@ -129,4 +134,7 @@ reason = "kept apart from TS 32.299's Recipient-Address (10415, 1201)"
 specification = "ETSI-TS183.017"
 name = "Service-Class"
 wireshark = "ETSI-Service-Class"
-reason = "ETSI-prefixed, as some of ETSI's entries are, to keep it apart from other Service-Class names (Cisco-Service-Class)"
+reason = """
+    ETSI-prefixed, as some of ETSI's entries are, to keep it apart from other
+    Service-Class names (Cisco-Service-Class)
+    """

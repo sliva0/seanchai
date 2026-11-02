@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from seanchai.extractor import rfc_text, tgpp_docx
-from seanchai.extractor.sources import Patch, Patcher, PatchError
+from seanchai.extractor.sources import Patch, Patcher, PatchError, load
 from seanchai.versions import VersionRange
 
 _PATCHES = Path(__file__).parent.parent / "edits" / "sources"
@@ -180,3 +180,42 @@ def test_real_source_patches_are_fully_accounted(reference, version, units):
 
     patcher.finish()
     assert all(output != text for output, (text, _) in zip(outputs, units, strict=True))
+
+
+def test_a_reason_reads_as_prose_and_a_find_exactly(tmp_path):
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(
+        '''
+[[patch]]
+find = "two  spaces"
+replace = "two\\tspaces "
+reason = """
+    flags cell typo
+      in   table 7.3.1/1
+    """
+
+[[quirk]]
+name = "prose-avp-codes"
+reason = """
+    the AVP tables
+    print no Code column
+    """
+'''
+    )
+
+    patcher, quirks = load(path, None, {"prose-avp-codes": ""})
+
+    (patch,) = patcher.patches
+    assert patch.reason == "flags cell typo in table 7.3.1/1"
+    assert (patch.find, patch.replace) == ("two  spaces", "two\tspaces ")
+    assert quirks.quirks["prose-avp-codes"].reason == (
+        "the AVP tables print no Code column"
+    )
+
+
+def test_a_reason_of_only_whitespace_is_no_reason(tmp_path):
+    path = tmp_path / "TS29.999.toml"
+    path.write_text('[[patch]]\nfind = "a"\nreplace = "b"\nreason = """\n    """\n')
+
+    with pytest.raises(PatchError, match="no `reason`"):
+        Patcher.load(path, None)

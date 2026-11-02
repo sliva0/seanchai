@@ -39,6 +39,7 @@ from pathlib import Path
 from typing import Any
 
 from .dad import ast, parser
+from .prose import collapse
 
 
 class CorpusError(ValueError):
@@ -421,7 +422,7 @@ class HoleRecord:
                 f"{path}: {document} {name}: document, name and reason must be"
                 " non-empty text, and missing a non-empty list of it"
             )
-        return KnownHole(document, name, tuple(missing), reason)
+        return KnownHole(document, name, tuple(missing), collapse(reason))
 
 
 @dataclass(frozen=True)

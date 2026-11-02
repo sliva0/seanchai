@@ -2,4 +2,8 @@
 
 [[quirk]]
 name = "radius-attribute-table"
-reason = "a RADIUS document cited by Diameter applications: each attribute clause's Type field assigns the Diameter-compatible code, and no Diameter data type is assigned anywhere"
+reason = """
+    a RADIUS document cited by Diameter applications: each attribute clause's
+    Type field assigns the Diameter-compatible code, and no Diameter data type
+    is assigned anywhere
+    """

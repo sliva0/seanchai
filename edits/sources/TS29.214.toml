@@ -7,7 +7,10 @@ find = "Service-Info-Status-AVP"
 replace = "Service-Info-Status AVP"
 exact = true
 section = "5.3.25"
-reason = "the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table 5.3.0.1 and the Rx ABNF call the AVP 'Service-Info-Status'"
+reason = """
+    the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table
+    5.3.0.1 and the Rx ABNF call the AVP 'Service-Info-Status'
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
@@ -16,7 +19,10 @@ find = "AF-Signalling-Protocol-AVP"
 replace = "AF-Signalling-Protocol AVP"
 exact = true
 section = "5.3.26"
-reason = "the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; table 5.3.0.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'"
+reason = """
+    the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; table
+    5.3.0.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
@@ -25,7 +31,11 @@ find = "SPONSORED_DATA_CONNECTIVITY_ DISALLOWED (4)"
 replace = "SPONSORED_DATA_CONNECTIVITY_DISALLOWED (4)"
 exact = true
 section = "5.3.1"
-reason = "Abort-Cause's value 4 prints a space after an underscore (docx and PDF alike), which kept it out of the value list; every other value name in the clause is one underscore-joined token"
+reason = """
+    Abort-Cause's value 4 prints a space after an underscore (docx and PDF
+    alike), which kept it out of the value list; every other value name in the
+    clause is one underscore-joined token
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
@@ -33,49 +43,75 @@ last_version = "18.4.0"
 find = "NetLoc- "
 replace = "NetLoc-"
 count = 1
-reason = "the TWAN-Identifier row's Applicability cell in table 5.4.0.1 line-wraps 'NetLoc-Untrusted-WLAN' with a space after the first hyphen"
+reason = """
+    the TWAN-Identifier row's Applicability cell in table 5.4.0.1 line-wraps
+    'NetLoc-Untrusted-WLAN' with a space after the first hyphen
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Rx application in the present release is 16777236'"
+reason = """
+    the command headers print no application id; clause 5.1 states it: 'the
+    Application-ID for the Rx application in the present release is 16777236'
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
 [[quirk]]
 name = "dashed-enum-values"
-reason = "clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'; unread, the list was empty"
+reason = """
+    clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO
+    (0)'; unread, the list was empty
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
 [[quirk]]
 name = "hex-enum-values"
-reason = "clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER (0xFFFFFFFF)'"
+reason = """
+    clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER
+    (0xFFFFFFFF)'
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE INFORMATION (0)', and its intro names the default by that label"
+reason = """
+    clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE
+    INFORMATION (0)', and its intro names the default by that label
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
 [[quirk]]
 name = "access-type-headings"
-reason = "the clause 5.3.69 heading names the access types after the AVP, '(3GPP-5GS and Non-3GPP-5GS access type)'; unread, the grouped definition was missing"
+reason = """
+    the clause 5.3.69 heading names the access types after the AVP, '(3GPP-5GS
+    and Non-3GPP-5GS access type)'; unread, the grouped definition was missing
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "the AVP and re-used tables print an 'Applicability' column of supported features, separated by spaces or commas ('NetLoc RAN-NAS-Cause'): table 5.3.0.1 note 3, 'AVPs marked with a supported feature ... are applicable as described in clause 5.4.1'"
+reason = """
+    the AVP and re-used tables print an 'Applicability' column of supported
+    features, separated by spaces or commas ('NetLoc RAN-NAS-Cause'): table
+    5.3.0.1 note 3, 'AVPs marked with a supported feature ... are applicable as
+    described in clause 5.4.1'
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
 [[quirk]]
 name = "origins-by-reference"
-reason = "re-used table 5.4.0.1 cites Reservation-Priority's origin as '3GPP TS 183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'"
+reason = """
+    re-used table 5.4.0.1 cites Reservation-Priority's origin as '3GPP TS
+    183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'
+    """
 first_version = "18.4.0"
 last_version = "18.4.0"
 
@@ -89,13 +125,21 @@ replace = "Media-Sub-Component"
 exact = true
 count = 2
 section = "5.3"
-reason = "table 5.3.1's row for clause 5.3.18 prints the name with an ' AVP' suffix, which no other row carries; the clause's sentence and the ABNFs call it 'Media-Sub-Component'. The clause heading's text is the same and is patched with it, as the heading reads alike either way"
+reason = """
+    table 5.3.1's row for clause 5.3.18 prints the name with an ' AVP' suffix,
+    which no other row carries; the clause's sentence and the ABNFs call it
+    'Media-Sub-Component'. The clause heading's text is the same and is patched
+    with it, as the heading reads alike either way
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
 [[quirk]]
 name = "origins-by-reference"
-reason = "re-used table 5.4.1 cites Reservation-Priority's origin as 'TS 183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017'"
+reason = """
+    re-used table 5.4.1 cites Reservation-Priority's origin as 'TS 183.017
+    [15]'; clause 2's [15] is 'ETSI TS 183 017'
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
@@ -104,25 +148,36 @@ find = "Service-Info-Status-AVP"
 replace = "Service-Info-Status AVP"
 exact = true
 section = "5.3.25"
-reason = "the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table 5.3.1 and the Rx ABNF call the AVP 'Service-Info-Status'"
+reason = """
+    the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table
+    5.3.1 and the Rx ABNF call the AVP 'Service-Info-Status'
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
 [[quirk]]
 name = "dashed-enum-values"
-reason = "clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'"
+reason = """
+    clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
 [[quirk]]
 name = "hex-enum-values"
-reason = "clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER (0xFFFFFFFF)'"
+reason = """
+    clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER
+    (0xFFFFFFFF)'
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE INFORMATION (0)'"
+reason = """
+    clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE
+    INFORMATION (0)'
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
@@ -130,13 +185,21 @@ last_version = "7.12.0"
 find = "Reservation-priority"
 replace = "Reservation-Priority"
 count = 2
-reason = "table 5.4.1 and Media-Component-Description's body (clause 5.3.16) lower-case the 'p' of the name the table re-uses from ETSI TS 183 017 [15], whose clause 7.3.9 defines Reservation-Priority, as this document's AAR ABNF (clause 5.6.1) spells it"
+reason = """
+    table 5.4.1 and Media-Component-Description's body (clause 5.3.16)
+    lower-case the 'p' of the name the table re-uses from ETSI TS 183 017 [15],
+    whose clause 7.3.9 defines Reservation-Priority, as this document's AAR ABNF
+    (clause 5.6.1) spells it
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Rx application in the present release is 16777236'"
+reason = """
+    the command headers print no application id; clause 5.1 states it: 'the
+    Application-ID for the Rx application in the present release is 16777236'
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
@@ -144,13 +207,22 @@ last_version = "7.12.0"
 find = "Subscription-ID"
 replace = "Subscription-Id"
 count = 2
-reason = "the AAR and RAR ABNFs (clauses 5.6.1, 5.6.3) upper-case the last letter of the AVP table 5.4.1 re-uses from RFC 4006 [14], which defines Subscription-Id"
+reason = """
+    the AAR and RAR ABNFs (clauses 5.6.1, 5.6.3) upper-case the last letter of
+    the AVP table 5.4.1 re-uses from RFC 4006 [14], which defines
+    Subscription-Id
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
 [[quirk]]
 name = "abnf-comments"
-reason = "clauses 5.3.16 and 5.3.18 comment three members of Media-Component-Description and Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of the media comp.'; unread, both bodies ended before their first member"
+reason = """
+    clauses 5.3.16 and 5.3.18 comment three members of
+    Media-Component-Description and Media-Sub-Component, '{
+    Media-Component-Number } ; Ordinal number of the media comp.'; unread, both
+    bodies ended before their first member
+    """
 first_version = "7.12.0"
 last_version = "7.12.0"
 
@@ -163,7 +235,10 @@ find = "Service-Info-Status-AVP"
 replace = "Service-Info-Status AVP"
 exact = true
 section = "5.3.25"
-reason = "the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table 5.3.1 and the Rx ABNF call the AVP 'Service-Info-Status'"
+reason = """
+    the clause 5.3.25 heading hyphenates the ' AVP' suffix onto the name; table
+    5.3.1 and the Rx ABNF call the AVP 'Service-Info-Status'
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
@@ -172,7 +247,10 @@ find = "AF-Signalling-Protocol-AVP"
 replace = "AF-Signalling-Protocol AVP"
 exact = true
 section = "5.3.26"
-reason = "the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; table 5.3.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'"
+reason = """
+    the clause 5.3.26 heading hyphenates the ' AVP' suffix onto the name; table
+    5.3.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
@@ -181,48 +259,75 @@ find = "SPONSORED_DATA_CONNECTIVITY_ DISALLOWED (4)"
 replace = "SPONSORED_DATA_CONNECTIVITY_DISALLOWED (4)"
 exact = true
 section = "5.3.1"
-reason = "Abort-Cause's value 4 prints a space after an underscore, which kept it out of the value list; every other value name in the clause is one underscore-joined token"
+reason = """
+    Abort-Cause's value 4 prints a space after an underscore, which kept it out
+    of the value list; every other value name in the clause is one
+    underscore-joined token
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Rx application in the present release is 16777236'"
+reason = """
+    the command headers print no application id; clause 5.1 states it: 'the
+    Application-ID for the Rx application in the present release is 16777236'
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
 [[quirk]]
 name = "dashed-enum-values"
-reason = "clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'"
+reason = """
+    clause 5.3.19 prints Media-Type's values as dashed list items, '- AUDIO (0)'
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
 [[quirk]]
 name = "hex-enum-values"
-reason = "clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER (0xFFFFFFFF)'"
+reason = """
+    clause 5.3.19 gives Media-Type's last value in hexadecimal, '- OTHER
+    (0xFFFFFFFF)'
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE INFORMATION (0)'"
+reason = """
+    clause 5.3.25 labels Service-Info-Status's values in words, 'FINAL SERVICE
+    INFORMATION (0)'
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "the AVP and re-used tables print an 'Applicability' column of supported features: table 5.3.1 note 3, 'AVPs marked with \"ProvAFsignalFlow\", \"SponsoredConnectivity\", \"Rel10\" or \"NetLoc\" are applicable as described in clause 5.4.1', and table 5.4.0.1 note 1 for \"Rel8\""
+reason = """
+    the AVP and re-used tables print an 'Applicability' column of supported
+    features: table 5.3.1 note 3, 'AVPs marked with \"ProvAFsignalFlow\",
+    \"SponsoredConnectivity\", \"Rel10\" or \"NetLoc\" are applicable as
+    described in clause 5.4.1', and table 5.4.0.1 note 1 for \"Rel8\"
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
 [[quirk]]
 name = "origins-by-reference"
-reason = "re-used table 5.4.0.1 cites Reservation-Priority's origin as 'TS 183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'"
+reason = """
+    re-used table 5.4.0.1 cites Reservation-Priority's origin as 'TS 183.017
+    [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"
 
 [[quirk]]
 name = "abnf-comments"
-reason = "clauses 5.3.16 and 5.3.18 comment members of Media-Component-Description and Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of the media comp.'; unread, both bodies ended before their first member"
+reason = """
+    clauses 5.3.16 and 5.3.18 comment members of Media-Component-Description and
+    Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of the
+    media comp.'; unread, both bodies ended before their first member
+    """
 first_version = "11.16.0"
 last_version = "11.16.0"

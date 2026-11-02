@@ -4,25 +4,46 @@
 find = "The Accounting-Input-Packets (AVP"
 replace = "The Accounting-Input-Packets AVP (AVP"
 section = "4.6.3"
-reason = "the defining sentence drops the word 'AVP' after the name; the other 75 defining clauses of this document all print it"
+reason = """
+    the defining sentence drops the word 'AVP' after the name; the other 75
+    defining clauses of this document all print it
+    """
 
 [[patch]]
 find = "The Accounting-Output-Packets (AVP"
 replace = "The Accounting-Output-Packets AVP (AVP"
 section = "4.6.4"
-reason = "the defining sentence drops the word 'AVP' after the name; the other 75 defining clauses of this document all print it"
+reason = """
+    the defining sentence drops the word 'AVP' after the name; the other 75
+    defining clauses of this document all print it
+    """
 
 [[quirk]]
 name = "prose-avp-codes"
-reason = "the per-category AVP tables print no Code or Type column — the codes are RADIUS attribute numbers, stated once per AVP in its defining clause ('The NAS-Port AVP (AVP Code 5) is of type Unsigned32'), the clause each row's Section cell already points at"
+reason = """
+    the per-category AVP tables print no Code or Type column — the codes are
+    RADIUS attribute numbers, stated once per AVP in its defining clause ('The
+    NAS-Port AVP (AVP Code 5) is of type Unsigned32'), the clause each row's
+    Section cell already points at
+    """
 
 [[quirk]]
 name = "external-enum-values"
-reason = "enumerated clauses say where their values are listed instead of listing them: 'The supported values are listed in [RADIUSAttrVals]' (4.2.4, 4.3.3, 4.4.10.x, 4.4.11.3, 4.5.x, 4.6.6), 'can be found in [RFC2865] and the relevant IANA registry [RADIUSAttrVals]' (4.4.1), 'the supported values are identical, to the Microsoft MS-Acct-Auth-Type vendor-specific RADIUS attribute [RFC2548]' (4.6.7)"
+reason = """
+    enumerated clauses say where their values are listed instead of listing
+    them: 'The supported values are listed in [RADIUSAttrVals]' (4.2.4, 4.3.3,
+    4.4.10.x, 4.4.11.3, 4.5.x, 4.6.6), 'can be found in [RFC2865] and the
+    relevant IANA registry [RADIUSAttrVals]' (4.4.1), 'the supported values are
+    identical, to the Microsoft MS-Acct-Auth-Type vendor-specific RADIUS
+    attribute [RFC2548]' (4.6.7)
+    """
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 4.3.5 labels CHAP-Algorithm's one value in words, 'CHAP with MD5       5', and clause 4.4.1 two of Service-Type's four, 'Callback Login (3)'"
+reason = """
+    clause 4.3.5 labels CHAP-Algorithm's one value in words, 'CHAP with MD5 5',
+    and clause 4.4.1 two of Service-Type's four, 'Callback Login (3)'
+    """
 
 [[quirk]]
 name = "parenthesized-enum-values"

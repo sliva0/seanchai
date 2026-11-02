@@ -397,7 +397,9 @@ into `Corpus.record`, with no argument, for the directory holding it
 directly. A file list or a subdirectory has no record, being partial, and
 neither has a raw corpus; two directories each holding one are refused.
 `regenerate` and `format` read `.dad` files only, so nothing writes it but a
-person.
+person. `reason` is prose, wrapped in a multi-line string and read with its
+whitespace collapsed to single spaces; `document`, `name` and `missing` are
+compared exactly.
 
 | `strict` | A hole the record lists | A hole it does not | An entry naming no hole |
 |---|---|---|---|

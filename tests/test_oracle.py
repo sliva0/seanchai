@@ -446,3 +446,16 @@ def test_crosscheck_reads_the_newest_copy_of_each_document_only(tmp_path):
     )
     assert twice.exit_code != 0
     assert "give one copy" in twice.output
+
+
+def test_an_alias_reads_its_reason_as_prose(tmp_path):
+    path = tmp_path / "aliases.toml"
+    entry = (
+        '[[alias]]\nspecification = "TS29.999"\nname = "Spec-Name"\n'
+        'wireshark = "Vendor-AVP"\nreason = {reason}\n'
+    )
+    path.write_text(entry.format(reason='"""\n    kept\n    apart\n    """'))
+    assert oracle.load_aliases(path) == (_alias("Spec-Name"),)
+    path.write_text(entry.format(reason='"""\n    """'))
+    with pytest.raises(oracle.OracleError, match="empty or non-text"):
+        oracle.load_aliases(path)

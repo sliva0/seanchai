@@ -5,25 +5,40 @@
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "clauses 6.2 and 11.2 state the Wx and Pr ids: 'The Wx reference point shall be Diameter based and shall have an application ID defined for it. ... The application identifier is to 16777219.'; clause 11.4's command headers print none"
+reason = """
+    clauses 6.2 and 11.2 state the Wx and Pr ids: 'The Wx reference point shall
+    be Diameter based and shall have an application ID defined for it. ... The
+    application identifier is to 16777219.'; clause 11.4's command headers print
+    none
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
 [[quirk]]
 name = "procedure-commands"
-reason = "commands sit under procedure headings, 6.4.1-6.4.3 and 11.4.1 naming them in intros: 'The Server-Assignment-Request (SAR) command, indicated by ...'"
+reason = """
+    commands sit under procedure headings, 6.4.1-6.4.3 and 11.4.1 naming them in
+    intros: 'The Server-Assignment-Request (SAR) command, indicated by ...'
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
 [[quirk]]
 name = "rfc-command-rules"
-reason = "clauses 4.4.2, 4.5.2.2, 5.5.1, 8.4, 9.4 and 11.4.2 print RFC commands by rule alone, under intros such as 'ABNF for the ASR and ASA commands are as follows:' or none (4.4.2.3): '<ASR> ::=', '<Diameter-EAP-Request> ::='"
+reason = """
+    clauses 4.4.2, 4.5.2.2, 5.5.1, 8.4, 9.4 and 11.4.2 print RFC commands by
+    rule alone, under intros such as 'ABNF for the ASR and ASA commands are as
+    follows:' or none (4.4.2.3): '<ASR> ::=', '<Diameter-EAP-Request> ::='
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
 [[quirk]]
 name = "spaced-heading-numbers"
-reason = "clause 4.5.2.2's heading prints a space before its tab; unread, the ACR and ACA would read as clause 4.5.2.1's"
+reason = """
+    clause 4.5.2.2's heading prints a space before its tab; unread, the ACR and
+    ACA would read as clause 4.5.2.1's
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -35,13 +50,20 @@ last_version = "11.2.0"
 
 [[quirk]]
 name = "unknown-type-tokens"
-reason = "table 10.1.1 types Charging-Characteristics 'Integer', as clause 10.1.27 does, naming no width; RFC 6733 has no such type, so the cell stays as printed"
+reason = """
+    table 10.1.1 types Charging-Characteristics 'Integer', as clause 10.1.27
+    does, naming no width; RFC 6733 has no such type, so the cell stays as
+    printed
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 10.1.23 prints Session-Request-Type's values 'AUTHORIZATION REQUEST (0)' and 'ROUTING POLICY (1)'"
+reason = """
+    clause 10.1.23 prints Session-Request-Type's values 'AUTHORIZATION REQUEST
+    (0)' and 'ROUTING POLICY (1)'
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -50,7 +72,11 @@ find = "Shall"
 replace = "Must"
 exact = true
 section = "10.1"
-reason = "table 10.1.1's first flag column is headed 'Shall', no column name the extractor reads; RFC 3588's [7] AVP table, which its note cites, heads it 'Must', as the document's fourth column 'Must not' implies"
+reason = """
+    table 10.1.1's first flag column is headed 'Shall', no column name the
+    extractor reads; RFC 3588's [7] AVP table, which its note cites, heads it
+    'Must', as the document's fourth column 'Must not' implies
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -60,7 +86,10 @@ replace = "Authorization-Information-SIM"
 exact = true
 count = 2
 section = "10.1"
-reason = "a space breaks the name in table 10.1.1's row and clause 10.1.7's heading; the SIP-Auth-Data-Item format in 10.1.4 prints it whole"
+reason = """
+    a space breaks the name in table 10.1.1's row and clause 10.1.7's heading;
+    the SIP-Auth-Data-Item format in 10.1.4 prints it whole
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -69,7 +98,10 @@ find = "WLAN- 3GPP-IP-Access"
 replace = "WLAN-3GPP-IP-Access"
 exact = true
 section = "10.1"
-reason = "a space breaks the name in table 10.1.1's row; clause 10.1.12's heading and the WLAN-User-Data format print it whole"
+reason = """
+    a space breaks the name in table 10.1.1's row; clause 10.1.12's heading and
+    the WLAN-User-Data format print it whole
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -79,7 +111,10 @@ replace = "Session-Request-Type"
 exact = true
 count = 2
 section = "10.1"
-reason = "a space breaks the name in table 10.1.1's row and clause 10.1.23's heading; the AAR format of clause 8.4.2 prints it whole"
+reason = """
+    a space breaks the name in table 10.1.1's row and clause 10.1.23's heading;
+    the AAR format of clause 8.4.2 prints it whole
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -87,7 +122,9 @@ last_version = "11.2.0"
 find = "The Session-Request -Type AVP is of type Enumerated"
 replace = "The Session-Request-Type AVP is of type Enumerated"
 section = "10.1.23"
-reason = "the sentence opening clause 10.1.23 breaks the name as its heading does"
+reason = """
+    the sentence opening clause 10.1.23 breaks the name as its heading does
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -96,7 +133,10 @@ find = "WLAN Direct IP Access"
 replace = "WLAN-Direct-IP-Access"
 exact = true
 section = "10.1.17"
-reason = "clause 10.1.17's heading writes with spaces the name table 10.1.1 and the WLAN-User-Data format hyphenate"
+reason = """
+    clause 10.1.17's heading writes with spaces the name table 10.1.1 and the
+    WLAN-User-Data format hyphenate
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -104,7 +144,10 @@ last_version = "11.2.0"
 find = "The Push-Profile-Request -Request (PPR) command,"
 replace = "The Push-Profile-Request (PPR) command,"
 section = "6.4.2"
-reason = "clause 6.4.2's intro repeats '-Request', and its rule prints Push-Profile-Request"
+reason = """
+    clause 6.4.2's intro repeats '-Request', and its rule prints
+    Push-Profile-Request
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -122,7 +165,11 @@ find = "<Server-Assignment-Request> ::= < Diameter Header: 301, REQ, PXY, XXXX>"
 replace = "<Server-Assignment-Request> ::= < Diameter Header: 301, REQ, PXY >"
 exact = true
 section = "11.4.1"
-reason = "clause 11.4.1's header prints the drafting placeholder 'XXXX' for an application id; clause 11.2 states Pr's, 16777230, which the application scope carries"
+reason = """
+    clause 11.4.1's header prints the drafting placeholder 'XXXX' for an
+    application id; clause 11.2 states Pr's, 16777230, which the application
+    scope carries
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -131,7 +178,11 @@ find = "<Server-Assignment-Answer> ::= < Diameter Header: 301, PXY, XXXX >"
 replace = "<Server-Assignment-Answer> ::= < Diameter Header: 301, PXY >"
 exact = true
 section = "11.4.1"
-reason = "clause 11.4.1's header prints the drafting placeholder 'XXXX' for an application id; clause 11.2 states Pr's, 16777230, which the application scope carries"
+reason = """
+    clause 11.4.1's header prints the drafting placeholder 'XXXX' for an
+    application id; clause 11.2 states Pr's, 16777230, which the application
+    scope carries
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -140,7 +191,10 @@ find = "WLAN_ APNS _ENABLE (0)"
 replace = "WLAN_APNS_ENABLE (0)"
 exact = true
 section = "10.1.12"
-reason = "clause 10.1.12 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.12 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -149,7 +203,10 @@ find = "WLAN_ APNS _DISABLE (1)"
 replace = "WLAN_APNS_DISABLE (1)"
 exact = true
 section = "10.1.12"
-reason = "clause 10.1.12 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.12 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -158,7 +215,10 @@ find = "WLAN_ APN_ NO_BARRING (0)"
 replace = "WLAN_APN_NO_BARRING (0)"
 exact = true
 section = "10.1.16"
-reason = "clause 10.1.16 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.16 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -167,7 +227,10 @@ find = "WLAN_ APN_HOME_BARRED_WHEN_ROAMING (1)"
 replace = "WLAN_APN_HOME_BARRED_WHEN_ROAMING (1)"
 exact = true
 section = "10.1.16"
-reason = "clause 10.1.16 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.16 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -176,7 +239,10 @@ find = "WLAN_ APN_VISITED _BARRED (2)"
 replace = "WLAN_APN_VISITED_BARRED (2)"
 exact = true
 section = "10.1.16"
-reason = "clause 10.1.16 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.16 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -185,7 +251,10 @@ find = "WLAN_ APN_HOME_BARRED (3)"
 replace = "WLAN_APN_HOME_BARRED (3)"
 exact = true
 section = "10.1.16"
-reason = "clause 10.1.16 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.16 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -194,7 +263,10 @@ find = "WLAN_ APN_INTERNET_ACCESS_BARRED (4)"
 replace = "WLAN_APN_INTERNET_ACCESS_BARRED (4)"
 exact = true
 section = "10.1.16"
-reason = "clause 10.1.16 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.16 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -203,7 +275,10 @@ find = "WLAN_ DIRECT_IP_ACCESS (0)"
 replace = "WLAN_DIRECT_IP_ACCESS (0)"
 exact = true
 section = "10.1.17"
-reason = "clause 10.1.17 breaks the value name with stray spaces; unpatched the value is silently no value"
+reason = """
+    clause 10.1.17 breaks the value name with stray spaces; unpatched the value
+    is silently no value
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -213,7 +288,10 @@ replace = "[ QoS-Resources ]"
 exact = true
 count = 2
 section = "10.1"
-reason = "the WLAN-User-Data and APN-Authorized formats (10.1.8, 10.1.14) break the name clause 10.1.42 heads"
+reason = """
+    the WLAN-User-Data and APN-Authorized formats (10.1.8, 10.1.14) break the
+    name clause 10.1.42 heads
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -240,7 +318,10 @@ find = "[ Calling Station-ID ]"
 replace = "[ Calling-Station-Id ]"
 exact = true
 count = 3
-reason = "the DER formats (4.4.2.1, 5.5.1, 8.4.1) write RFC 4005's Calling-Station-Id with a space, and in another case; 8.4.2's AAR prints it right"
+reason = """
+    the DER formats (4.4.2.1, 5.5.1, 8.4.1) write RFC 4005's Calling-Station-Id
+    with a space, and in another case; 8.4.2's AAR prints it right
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -259,7 +340,10 @@ replace = "[3GPP-WLAN-APN-Id]"
 exact = true
 count = 2
 section = "8.4"
-reason = "the DER and AAR formats (8.4.1, 8.4.2) misspell in case the name table 10.1.1 and clause 10.1.15 print"
+reason = """
+    the DER and AAR formats (8.4.1, 8.4.2) misspell in case the name table
+    10.1.1 and clause 10.1.15 print
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -268,7 +352,11 @@ find = "[ Framed-Appletalk-Link ]"
 replace = "[ Framed-AppleTalk-Link ]"
 exact = true
 count = 3
-reason = "the DEA and AAA formats of clauses 8.4.1, 8.4.2 and 9.4.1 misspell in case RFC 4005's name, whose NASREQ messages clauses 8.2 and 9.2 use (RFC 4005 clause 6)"
+reason = """
+    the DEA and AAA formats of clauses 8.4.1, 8.4.2 and 9.4.1 misspell in case
+    RFC 4005's name, whose NASREQ messages clauses 8.2 and 9.2 use (RFC 4005
+    clause 6)
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -277,7 +365,11 @@ find = "* [ Framed-Appletalk-Network ]"
 replace = "* [ Framed-AppleTalk-Network ]"
 exact = true
 count = 3
-reason = "the DEA and AAA formats of clauses 8.4.1, 8.4.2 and 9.4.1 misspell in case RFC 4005's name, whose NASREQ messages clauses 8.2 and 9.2 use (RFC 4005 clause 6)"
+reason = """
+    the DEA and AAA formats of clauses 8.4.1, 8.4.2 and 9.4.1 misspell in case
+    RFC 4005's name, whose NASREQ messages clauses 8.2 and 9.2 use (RFC 4005
+    clause 6)
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"
 
@@ -286,6 +378,10 @@ find = "[ Framed-Appletalk-Zone ]"
 replace = "[ Framed-AppleTalk-Zone ]"
 exact = true
 count = 3
-reason = "the DEA and AAA formats of clauses 8.4.1, 8.4.2 and 9.4.1 misspell in case RFC 4005's name, whose NASREQ messages clauses 8.2 and 9.2 use (RFC 4005 clause 6)"
+reason = """
+    the DEA and AAA formats of clauses 8.4.1, 8.4.2 and 9.4.1 misspell in case
+    RFC 4005's name, whose NASREQ messages clauses 8.2 and 9.2 use (RFC 4005
+    clause 6)
+    """
 first_version = "11.2.0"
 last_version = "11.2.0"

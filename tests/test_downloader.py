@@ -1248,3 +1248,68 @@ def test_a_onem2m_zip_must_hold_exactly_one_clean_document(tmp_path):
 
     with pytest.raises(downloader.DownloadError, match="holds 0 clean TS-0004"):
         downloader.check_onem2m_archive(ONEM2M, archive)
+
+
+def test_catalog_titles_and_reasons_read_as_prose_and_the_rest_exactly(tmp_path):
+    catalog = tmp_path / "specs.toml"
+    wrapped = '"""\n    Two\n      lines\n    """'
+    catalog.write_text(
+        f"""
+[[tgpp]]
+number = "29.999"
+title = {wrapped}
+reason = {wrapped}
+
+[[tgpp_pinned]]
+number = "29.998"
+title = {wrapped}
+version = "7.0.0"
+final = "document"
+reason = {wrapped}
+
+[[rfc]]
+number = 9999
+title = {wrapped}
+
+[[onem2m]]
+number = "0004"
+title = {wrapped}
+release = 2
+version = "2.35.0"
+document_id = 36771
+reason = {wrapped}
+
+[wireshark]
+tag = "v9.9.9"
+path = "resources/protocols/ diameter"
+"""
+    )
+
+    loaded = downloader.load_catalog(catalog)
+
+    (tgpp,), (rfc,), (onem2m,), (pin,) = (
+        loaded.tgpp,
+        loaded.rfc,
+        loaded.onem2m,
+        loaded.pinned,
+    )
+    assert {
+        tgpp.title,
+        tgpp.reason,
+        rfc.title,
+        onem2m.title,
+        onem2m.reason,
+        pin.title,
+        pin.reason,
+    } == {"Two lines"}
+    assert loaded.wireshark.path == "resources/protocols/ diameter"
+
+
+def test_a_catalog_entry_that_is_no_table_is_a_download_error(tmp_path):
+    catalog = tmp_path / "specs.toml"
+    catalog.write_text(
+        'tgpp = ["29.999"]\nrfc = []\n[wireshark]\ntag = "t"\npath = "p"\n'
+    )
+
+    with pytest.raises(downloader.DownloadError, match="cannot read"):
+        downloader.load_catalog(catalog)

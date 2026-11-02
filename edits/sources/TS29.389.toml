@@ -4,6 +4,12 @@
 
 [[quirk]]
 name = "vendor-id-sentence"
-reason = "table 6.3.1-1 leaves every flag cell of its three rows blank (V14.0.0 to V19.0.0 alike); clause 6.3.1 above it says 'The Vendor-ID header of all AVPs defined in this specification shall be set to 3GPP (10415).', and the clauses' headers print 10415, which RFC 6733 section 4.1.1 makes the V bit set; the M bit is stated nowhere"
+reason = """
+    table 6.3.1-1 leaves every flag cell of its three rows blank (V14.0.0 to
+    V19.0.0 alike); clause 6.3.1 above it says 'The Vendor-ID header of all AVPs
+    defined in this specification shall be set to 3GPP (10415).', and the
+    clauses' headers print 10415, which RFC 6733 section 4.1.1 makes the V bit
+    set; the M bit is stated nowhere
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"

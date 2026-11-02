@@ -57,6 +57,16 @@ class Expansion:
 _BLOCK = re.compile(r"^[ \t]*\[\[[ \t]*(patch|quirk)[ \t]*\]\]", re.MULTILINE)
 _ANY_TABLE = re.compile(r"^[ \t]*\[", re.MULTILINE)
 _KINDS = {"patch": "input patch", "quirk": "quirk"}
+# Comments and one-line strings are matched so that a `"""` inside one opens
+# nothing; only the multi-line strings are blanked.
+_TOML_TEXT = re.compile(
+    r'"""(?:[^\\]|\\.)*?"""+'
+    r"|'''.*?'''+"
+    r"|#[^\n]*"
+    r'|"(?:[^"\\\n]|\\.)*"'
+    r"|'[^'\n]*'",
+    re.DOTALL,
+)
 
 
 def expand_sources(path: Path, version: str) -> Expansion:
@@ -67,7 +77,8 @@ def expand_sources(path: Path, version: str) -> Expansion:
     # are.
     text = path.read_bytes().decode("utf-8")
     data = tomllib.loads(text)
-    regions = _block_regions(text)
+    structure = without_multiline_strings(text)
+    regions = _block_regions(structure)
     replacements: list[tuple[int, int, str]] = []
     expected = {kind: [dict(entry) for entry in data.get(kind, ())] for kind in _KINDS}
     widened = []
@@ -91,7 +102,9 @@ def expand_sources(path: Path, version: str) -> Expansion:
             )
             if value != old
         ]
-        spans = [_bound_span(text, regions, kind, index, key) for key, _value in moved]
+        spans = [
+            _bound_span(structure, regions, kind, index, key) for key, _value in moved
+        ]
         if any(span is None for span in spans):
             # Reported below, as still uncovered.
             continue
@@ -118,6 +131,20 @@ def expand_sources(path: Path, version: str) -> Expansion:
     return Expansion(
         widened, _uncovered_sources(path, data, version, "bound not found in the text")
     )
+
+
+def without_multiline_strings(text: str) -> str:
+    """`text` with each multi-line string blanked, offsets and lines kept: a
+    wrapped `reason` may put TS 29.214's "[15]" or a key-like word at the start
+    of a line, and that is no table header or bound."""
+
+    def blanked(match: re.Match[str]) -> str:
+        found = match[0]
+        if found.startswith(('"""', "'''")):
+            return re.sub(r"[^\n]", " ", found)
+        return found
+
+    return _TOML_TEXT.sub(blanked, text)
 
 
 def _block_regions(text: str) -> dict[str, list[tuple[int, int]]]:

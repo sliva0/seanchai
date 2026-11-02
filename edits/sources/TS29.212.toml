@@ -1,6 +1,6 @@
-# Source declarations for 3GPP TS 29.212 (Policy and charging control over Gx/Sd/St
-# reference points). Applied to normalized source text before parsing; see
-# src/seanchai/extractor/sources.py for the format.
+# Source declarations for 3GPP TS 29.212 (Policy and charging control over
+# Gx/Sd/St reference points). Applied to normalized source text before parsing;
+# see src/seanchai/extractor/sources.py for the format.
 
 [[patch]]
 find = "Enumarated"
@@ -13,7 +13,10 @@ last_version = "18.2.0"
 find = "Allocation- Retention-Priority"
 replace = "Allocation-Retention-Priority"
 exact = true
-reason = "one table name cell line-wraps with a space after the first hyphen; every other occurrence spells 'Allocation-Retention-Priority'"
+reason = """
+    one table name cell line-wraps with a space after the first hyphen; every
+    other occurrence spells 'Allocation-Retention-Priority'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -21,7 +24,10 @@ last_version = "18.2.0"
 find = "Monitoring- Flags"
 replace = "Monitoring-Flags"
 exact = true
-reason = "one table name cell line-wraps with a space after the hyphen; the defining clause 5.3.115 and the ABNF spell 'Monitoring-Flags'"
+reason = """
+    one table name cell line-wraps with a space after the hyphen; the defining
+    clause 5.3.115 and the ABNF spell 'Monitoring-Flags'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -29,7 +35,10 @@ last_version = "18.2.0"
 find = "Redirect- Address-Type"
 replace = "Redirect-Address-Type"
 exact = true
-reason = "one table name cell line-wraps with a space after the first hyphen; RFC 4006 and the rest of the document spell 'Redirect-Address-Type'"
+reason = """
+    one table name cell line-wraps with a space after the first hyphen; RFC 4006
+    and the rest of the document spell 'Redirect-Address-Type'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -37,7 +46,10 @@ last_version = "18.2.0"
 find = "Resource-Allocation- Notification"
 replace = "Resource-Allocation-Notification"
 exact = true
-reason = "one table name cell line-wraps with a space after the second hyphen; the defining clause 5.3.50 and the ABNF spell 'Resource-Allocation-Notification'"
+reason = """
+    one table name cell line-wraps with a space after the second hyphen; the
+    defining clause 5.3.50 and the ABNF spell 'Resource-Allocation-Notification'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -45,7 +57,11 @@ last_version = "18.2.0"
 find = "NetLoc- "
 replace = "NetLoc-"
 count = 5
-reason = "five Applicability cells of tables 5.3.0.1 and 5.4.0.1 line-wrap 'NetLoc-Trusted-WLAN' and 'NetLoc-Untrusted-WLAN' with a space after the first hyphen; the feature lists of clause 5.4.1 spell them unbroken"
+reason = """
+    five Applicability cells of tables 5.3.0.1 and 5.4.0.1 line-wrap
+    'NetLoc-Trusted-WLAN' and 'NetLoc-Untrusted-WLAN' with a space after the
+    first hyphen; the feature lists of clause 5.4.1 spell them unbroken
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -53,7 +69,10 @@ last_version = "18.2.0"
 find = "3GPP- EPS"
 replace = "3GPP-EPS"
 count = 3
-reason = "three Acc. Type cells of tables 5.3.0.1 and 5a.4.0.1 line-wrap '3GPP-EPS' with a space after the hyphen"
+reason = """
+    three Acc. Type cells of tables 5.3.0.1 and 5a.4.0.1 line-wrap '3GPP-EPS'
+    with a space after the hyphen
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -61,35 +80,57 @@ last_version = "18.2.0"
 find = "3GPP-GPRS. 3GPP-EPS"
 replace = "3GPP-GPRS, 3GPP-EPS"
 count = 5
-reason = "five Acc. Type cells of tables 5.3.0.1 and 5.4.0.1 separate two access types with a full stop where the rest use a comma or a space"
+reason = """
+    five Acc. Type cells of tables 5.3.0.1 and 5.4.0.1 separate two access types
+    with a full stop where the rest use a comma or a space
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
 [[quirk]]
 name = "dotted-flags"
-reason = "seven flags cells write the separator as a period ('M.V'); the space-less form is this document's convention, unlike the 'M. V' typo class that goes through patches"
+reason = """
+    seven flags cells write the separator as a period ('M.V'); the space-less
+    form is this document's convention, unlike the 'M. V' typo class that goes
+    through patches
+    """
 
 [[quirk]]
 name = "external-enum-values"
-reason = "clause 5.3.120 gives Default-Access no values of its own: 'The values defined in the Default-Access AVP are the same as the ones defined in IP-CAN-Type AVP.'"
+reason = """
+    clause 5.3.120 gives Default-Access no values of its own: 'The values
+    defined in the Default-Access AVP are the same as the ones defined in
+    IP-CAN-Type AVP.'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clauses 5.1 (Gx), 5a.1 (Gxx), 5b.1 (Sd), 5c.1 (St) and E.6.1 (S15) each state one: 'the Application-ID for the Gx Application in the present release is 16777238'"
+reason = """
+    the command headers print no application id; clauses 5.1 (Gx), 5a.1 (Gxx),
+    5b.1 (Sd), 5c.1 (St) and E.6.1 (S15) each state one: 'the Application-ID for
+    the Gx Application in the present release is 16777238'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
 [[quirk]]
 name = "access-type-headings"
-reason = "69 AVP clause headings in 5.3 and 5a.3 name the access types the AVP applies to after it, 'Event-Trigger AVP (All access types)'; unread, 22 enumerated and 21 grouped definitions were missing"
+reason = """
+    69 AVP clause headings in 5.3 and 5a.3 name the access types the AVP applies
+    to after it, 'Event-Trigger AVP (All access types)'; unread, 22 enumerated
+    and 21 grouped definitions were missing
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 5.3.19 labels PCC-Rule-Status's value 2 in words, 'TEMPORARILY INACTIVE (2)'"
+reason = """
+    clause 5.3.19 labels PCC-Rule-Status's value 2 in words, 'TEMPORARILY
+    INACTIVE (2)'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -98,7 +139,11 @@ find = "is of type of Enumerated"
 replace = "is of type Enumerated"
 count = 7
 section = "5.3"
-reason = "seven enumerated clauses (5.3.21, 5.3.23, 5.3.24, 5.3.57, 5.3.66, 5.3.116, 5.3.117) say 'is of type of Enumerated', which kept them from being read as definitions; every other clause says 'is of type Enumerated'"
+reason = """
+    seven enumerated clauses (5.3.21, 5.3.23, 5.3.24, 5.3.57, 5.3.66, 5.3.116,
+    5.3.117) say 'is of type of Enumerated', which kept them from being read as
+    definitions; every other clause says 'is of type Enumerated'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -107,7 +152,10 @@ find = "is type of Enumerated"
 replace = "is of type Enumerated"
 count = 3
 section = "E.6.3"
-reason = "clauses E.6.3.3-E.6.3.5 say 'is type of Enumerated', which kept them from being read as definitions"
+reason = """
+    clauses E.6.3.3-E.6.3.5 say 'is type of Enumerated', which kept them from
+    being read as definitions
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -116,7 +164,11 @@ find = "USER_CSG_ HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (36)"
 replace = "USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (36)"
 exact = true
 section = "5.3.7"
-reason = "Event-Trigger's value 36 prints a space after an underscore, which kept it out of the value list; value 35 beside it is USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE"
+reason = """
+    Event-Trigger's value 36 prints a space after an underscore, which kept it
+    out of the value list; value 35 beside it is
+    USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -125,19 +177,36 @@ find = "TRUSTED- N3GA (2)"
 replace = "TRUSTED-N3GA (2)"
 exact = true
 section = "5.3.31"
-reason = "RAT-Type's value 2 prints a space after a hyphen, which kept it out of the value list; the neighbouring values are single tokens (VIRTUAL, WIRELINE-CABLE)"
+reason = """
+    RAT-Type's value 2 prints a space after a hyphen, which kept it out of the
+    value list; the neighbouring values are single tokens (VIRTUAL,
+    WIRELINE-CABLE)
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
 [[quirk]]
 name = "access-type-column"
-reason = "the AVP and re-used tables of clauses 5, 5a, 5b and E.6 print an 'Acc. Type' column naming the IP-CAN access types each AVP applies to, separated by commas or spaces ('All', '3GPP-EPS, Non-3GPP-EPS', '3GPP-GPRS 3GPP-EPS'); notes 4-8 and 11 of table 5.3.0.1 qualify some cells in prose"
+reason = """
+    the AVP and re-used tables of clauses 5, 5a, 5b and E.6 print an 'Acc. Type'
+    column naming the IP-CAN access types each AVP applies to, separated by
+    commas or spaces ('All', '3GPP-EPS, Non-3GPP-EPS', '3GPP-GPRS 3GPP-EPS');
+    notes 4-8 and 11 of table 5.3.0.1 qualify some cells in prose
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "the AVP and re-used tables print an 'Applicability' column marking each AVP with the function it serves and the supported features it belongs to, separated by spaces or commas ('Both Rel8'): table 5.3.0.1 note 3 ('AVPs marked with \"CC\" are applicable to charging control, AVPs marked with \"PC\" are applicable to policy control and AVPs marked with \"Both\" are applicable to both', also ADC and ABC) and note 9 (supported features, clause 5.4.1)"
+reason = """
+    the AVP and re-used tables print an 'Applicability' column marking each AVP
+    with the function it serves and the supported features it belongs to,
+    separated by spaces or commas ('Both Rel8'): table 5.3.0.1 note 3 ('AVPs
+    marked with \"CC\" are applicable to charging control, AVPs marked with
+    \"PC\" are applicable to policy control and AVPs marked with \"Both\" are
+    applicable to both', also ADC and ABC) and note 9 (supported features,
+    clause 5.4.1)
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -146,13 +215,21 @@ find = "CS-Service-Qos-Request-Identifier"
 replace = "CS-Service-QoS-Request-Identifier"
 exact = true
 section = "E.6.3.1"
-reason = "table E.6.3.1.1 lower-cases the S of QoS; clause E.6.3.2's heading and prose and the E.6.3.6 and E.6.6.2 rules write CS-Service-QoS-Request-Identifier, as every sibling CS-Service-QoS-* row does"
+reason = """
+    table E.6.3.1.1 lower-cases the S of QoS; clause E.6.3.2's heading and prose
+    and the E.6.3.6 and E.6.6.2 rules write CS-Service-QoS-Request-Identifier,
+    as every sibling CS-Service-QoS-* row does
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
 [[quirk]]
 name = "origins-by-reference"
-reason = "the re-used tables cite ETSI TS 283 034 once as '3GPP TS 283 034 [37]' (table 5.4.0.1's Logical-Access-ID row) beside 'ETSI TS 283 034 [37]'; clause 2's [37] is 'ETSI TS 283 034 v2.2.0'"
+reason = """
+    the re-used tables cite ETSI TS 283 034 once as '3GPP TS 283 034 [37]'
+    (table 5.4.0.1's Logical-Access-ID row) beside 'ETSI TS 283 034 [37]';
+    clause 2's [37] is 'ETSI TS 283 034 v2.2.0'
+    """
 first_version = "18.2.0"
 last_version = "18.2.0"
 
@@ -163,7 +240,10 @@ last_version = "18.2.0"
 [[patch]]
 find = "Enumarated"
 replace = "Enumerated"
-reason = "table 5.3.1's Usage-Monitoring-Level row misspells 'Enumerated' in its Value Type cell"
+reason = """
+    table 5.3.1's Usage-Monitoring-Level row misspells 'Enumerated' in its Value
+    Type cell
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -171,7 +251,10 @@ last_version = "11.19.0"
 find = "Allocation- Retention-Priority"
 replace = "Allocation-Retention-Priority"
 exact = true
-reason = "table 5a.4.1's name cell line-wraps with a space after the first hyphen; every other occurrence spells 'Allocation-Retention-Priority'"
+reason = """
+    table 5a.4.1's name cell line-wraps with a space after the first hyphen;
+    every other occurrence spells 'Allocation-Retention-Priority'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -179,7 +262,10 @@ last_version = "11.19.0"
 find = "Redirect- Address-Type"
 replace = "Redirect-Address-Type"
 exact = true
-reason = "table 5b.4's name cell line-wraps with a space after the first hyphen; RFC 4006 and the rest of the document spell 'Redirect-Address-Type'"
+reason = """
+    table 5b.4's name cell line-wraps with a space after the first hyphen; RFC
+    4006 and the rest of the document spell 'Redirect-Address-Type'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -187,7 +273,11 @@ last_version = "11.19.0"
 find = "Resource-Allocation- Notification"
 replace = "Resource-Allocation-Notification"
 exact = true
-reason = "table 5a.4.1's name cell line-wraps with a space after the second hyphen; the defining clause 5.3.50 and the ABNF spell 'Resource-Allocation-Notification'"
+reason = """
+    table 5a.4.1's name cell line-wraps with a space after the second hyphen;
+    the defining clause 5.3.50 and the ABNF spell
+    'Resource-Allocation-Notification'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -195,7 +285,10 @@ last_version = "11.19.0"
 find = "Monitoring-key"
 replace = "Monitoring-Key"
 exact = true
-reason = "table 5b.4 lower-cases the 'k' of the AVP it re-uses from this document; the defining clause 5.3.59, table 5.3.1 and the ABNFs spell 'Monitoring-Key'"
+reason = """
+    table 5b.4 lower-cases the 'k' of the AVP it re-uses from this document; the
+    defining clause 5.3.59, table 5.3.1 and the ABNFs spell 'Monitoring-Key'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -203,7 +296,11 @@ last_version = "11.19.0"
 find = "3GPP- EPS"
 replace = "3GPP-EPS"
 count = 3
-reason = "three Acc. Type cells, table 5.3.1's Pre-emption-Capability and Pre-emption-Vulnerability and table 5a.4.1's PS-to-CS-Session-Continuity, line-wrap '3GPP-EPS' with a space after the hyphen"
+reason = """
+    three Acc. Type cells, table 5.3.1's Pre-emption-Capability and
+    Pre-emption-Vulnerability and table 5a.4.1's PS-to-CS-Session-Continuity,
+    line-wrap '3GPP-EPS' with a space after the hyphen
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -211,7 +308,11 @@ last_version = "11.19.0"
 find = "3GPP-GPRS. 3GPP-EPS"
 replace = "3GPP-GPRS, 3GPP-EPS"
 count = 4
-reason = "four Acc. Type cells of table 5.4 (3GPP-SGSN-Ipv6-Address, 3GPP-User-Location-Info, RAI, Required-Access-Info) separate two access types with a full stop where the rest use a comma or a space"
+reason = """
+    four Acc. Type cells of table 5.4 (3GPP-SGSN-Ipv6-Address,
+    3GPP-User-Location-Info, RAI, Required-Access-Info) separate two access
+    types with a full stop where the rest use a comma or a space
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -220,7 +321,11 @@ find = "is of type of Enumerated"
 replace = "is of type Enumerated"
 count = 5
 section = "5.3"
-reason = "five enumerated clauses (5.3.21, 5.3.23, 5.3.24, 5.3.57, 5.3.66) say 'is of type of Enumerated', which kept them from being read as definitions; every other clause says 'is of type Enumerated'"
+reason = """
+    five enumerated clauses (5.3.21, 5.3.23, 5.3.24, 5.3.57, 5.3.66) say 'is of
+    type of Enumerated', which kept them from being read as definitions; every
+    other clause says 'is of type Enumerated'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -229,7 +334,10 @@ find = "is type of Enumerated"
 replace = "is of type Enumerated"
 count = 3
 section = "E.6.3"
-reason = "clauses E.6.3.3-E.6.3.5 say 'is type of Enumerated', which kept them from being read as definitions"
+reason = """
+    clauses E.6.3.3-E.6.3.5 say 'is type of Enumerated', which kept them from
+    being read as definitions
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -238,7 +346,11 @@ find = "USER_CSG_ HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (36)"
 replace = "USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (36)"
 exact = true
 section = "5.3.7"
-reason = "Event-Trigger's value 36 prints a space after an underscore, which kept it out of the value list; value 35 beside it is USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE"
+reason = """
+    Event-Trigger's value 36 prints a space after an underscore, which kept it
+    out of the value list; value 35 beside it is
+    USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
@@ -247,42 +359,72 @@ find = "CS-Service-Qos-Request-Identifier"
 replace = "CS-Service-QoS-Request-Identifier"
 exact = true
 section = "E.6.3.1"
-reason = "table E.6.3.1.1 lower-cases the S of QoS; clause E.6.3.2's heading and prose and the E.6.3.6 and E.6.6.2 rules write CS-Service-QoS-Request-Identifier, as every sibling CS-Service-QoS-* row does"
+reason = """
+    table E.6.3.1.1 lower-cases the S of QoS; clause E.6.3.2's heading and prose
+    and the E.6.3.6 and E.6.6.2 rules write CS-Service-QoS-Request-Identifier,
+    as every sibling CS-Service-QoS-* row does
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clauses 5.1 (Gx), 5a.1 (Gxx), 5b.1 (Sd) and E.6.1 (S15) each state one: 'the Application-ID for the Gx Application in the present release is 16777238'"
+reason = """
+    the command headers print no application id; clauses 5.1 (Gx), 5a.1 (Gxx),
+    5b.1 (Sd) and E.6.1 (S15) each state one: 'the Application-ID for the Gx
+    Application in the present release is 16777238'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
 [[quirk]]
 name = "access-type-headings"
-reason = "52 AVP clause headings in 5.3 and 5a.3 name the access types the AVP applies to after it, 'Event-Trigger AVP (All access types)'"
+reason = """
+    52 AVP clause headings in 5.3 and 5a.3 name the access types the AVP applies
+    to after it, 'Event-Trigger AVP (All access types)'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 5.3.19 labels PCC-Rule-Status's value 2 in words, 'TEMPORARILY INACTIVE (2)'"
+reason = """
+    clause 5.3.19 labels PCC-Rule-Status's value 2 in words, 'TEMPORARILY
+    INACTIVE (2)'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
 [[quirk]]
 name = "access-type-column"
-reason = "the AVP and re-used tables of clauses 5, 5a and E.6 print an 'Acc. Type' column naming the IP-CAN access types each AVP applies to, separated by commas or spaces ('All', '3GPP-EPS, Non-3GPP-EPS'); notes 4-8 of table 5.3.1 qualify some cells in prose"
+reason = """
+    the AVP and re-used tables of clauses 5, 5a and E.6 print an 'Acc. Type'
+    column naming the IP-CAN access types each AVP applies to, separated by
+    commas or spaces ('All', '3GPP-EPS, Non-3GPP-EPS'); notes 4-8 of table 5.3.1
+    qualify some cells in prose
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "the AVP and re-used tables print an 'Applicability' column marking each AVP with the function it serves and the supported features it belongs to: table 5.3.1 note 3 ('AVPs marked with \"CC\" are applicable to charging control, AVPs marked with \"PC\" are applicable to policy control and AVPs marked with \"Both\" are applicable to both charging control and policy control', and ADC) and table 5.4 note 4 ('AVPs marked with \"Rel8\", \"Rel9\", ... are applicable as described in clause 5.4.1')"
+reason = """
+    the AVP and re-used tables print an 'Applicability' column marking each AVP
+    with the function it serves and the supported features it belongs to: table
+    5.3.1 note 3 ('AVPs marked with \"CC\" are applicable to charging control,
+    AVPs marked with \"PC\" are applicable to policy control and AVPs marked
+    with \"Both\" are applicable to both charging control and policy control',
+    and ADC) and table 5.4 note 4 ('AVPs marked with \"Rel8\", \"Rel9\", ... are
+    applicable as described in clause 5.4.1')
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"
 
 [[quirk]]
 name = "origins-by-reference"
-reason = "tables 5.4 and 5b.4 cite Logical-Access-ID's and Physical-Access-ID's origin as 'ETSI 3GPP TS 283 034 [37]'; clause 2's [37] is 'ETSI TS 283 034 v2.2.0'"
+reason = """
+    tables 5.4 and 5b.4 cite Logical-Access-ID's and Physical-Access-ID's origin
+    as 'ETSI 3GPP TS 283 034 [37]'; clause 2's [37] is 'ETSI TS 283 034 v2.2.0'
+    """
 first_version = "11.19.0"
 last_version = "11.19.0"

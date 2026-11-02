@@ -2,38 +2,65 @@
 
 [[quirk]]
 name = "dotted-flags"
-reason = "eleven flags cells write the separator as a period ('M.V'); the space-less form is this document's convention, unlike the 'M. V' typo class that goes through patches"
+reason = """
+    eleven flags cells write the separator as a period ('M.V'); the space-less
+    form is this document's convention, unlike the 'M. V' typo class that goes
+    through patches
+    """
 
 [[quirk]]
 name = "clause-parenthetical"
-reason = "the Gmb and SGmb tables annotate 37 clause cells as '16.4.7 (see Note)', pointing at the note about RADIUS VSAs carried as Diameter vendor AVPs per RFC 7155"
+reason = """
+    the Gmb and SGmb tables annotate 37 clause cells as '16.4.7 (see Note)',
+    pointing at the note about RADIUS VSAs carried as Diameter vendor AVPs per
+    RFC 7155
+    """
 
 [[quirk]]
 name = "worded-enum-values"
-reason = "clause 17.7.18 labels MBMS-User-Data-Mode-Indication's value 1 in words, 'Multicast and Unicast (1)'"
+reason = """
+    clause 17.7.18 labels MBMS-User-Data-Mode-Indication's value 1 in words,
+    'Multicast and Unicast (1)'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "external-enum-values"
-reason = "clause 17.7.25 prints no values for MBMS-HC-Indicator and says 'The enumeration values are defined in 3GPP TS 25.413 [92].'"
+reason = """
+    clause 17.7.25 prints no values for MBMS-HC-Indicator and says 'The
+    enumeration values are defined in 3GPP TS 25.413 [92].'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "reference-points-column"
-reason = "table 9a (clause 16a.5, Gi/SGi specific AVPs) prints an 'Applicable Reference Points' column naming the reference points each AVP is used on, separated by commas ('Gi, Sgi')"
+reason = """
+    table 9a (clause 16a.5, Gi/SGi specific AVPs) prints an 'Applicable
+    Reference Points' column naming the reference points each AVP is used on,
+    separated by commas ('Gi, Sgi')
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "table 20.5a.1 (SGmb specific AVPs) prints an 'Applicability' column of supported features, 'MBMS Heartbeat', 'MBMS Cell List': its note, 'AVPs marked with a supported feature are applicable as described in subclause 20.7'"
+reason = """
+    table 20.5a.1 (SGmb specific AVPs) prints an 'Applicability' column of
+    supported features, 'MBMS Heartbeat', 'MBMS Cell List': its note, 'AVPs
+    marked with a supported feature are applicable as described in subclause
+    20.7'
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "worded-marks"
-reason = "the SGmb features are named in words ('MBMS Cell List', table 20.7.1), so a space is no separator; table 9a's reference points are separated by commas ('Gi, Sgi')"
+reason = """
+    the SGmb features are named in words ('MBMS Cell List', table 20.7.1), so a
+    space is no separator; table 9a's reference points are separated by commas
+    ('Gi, Sgi')
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"

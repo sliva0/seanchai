@@ -58,7 +58,9 @@ one is renamed (TS 29.229's `User-Data` is `Cx-User-Data`, TS 29.329's
 `Sh-User-Data`). Such a rename is agreement, not a disagreement, when
 [`integrations/wireshark/aliases.toml`](../integrations/wireshark/aliases.toml)
 lists it: each `[[alias]]` gives the document's SpecRef, the corpus's name,
-the dictionary's and a one-line reason. `crosscheck` reads the file
+the dictionary's and a reason, prose that a multi-line string may wrap, read
+with its whitespace collapsed to single spaces, the three names being exact.
+`crosscheck` reads the file
 (`--aliases`, by default that path; a missing default file is no aliases)
 and counts a name disagreement an entry accepts in its summary line,
 `N accepted renames`, printing it as `accepted[name-disagrees]` with the

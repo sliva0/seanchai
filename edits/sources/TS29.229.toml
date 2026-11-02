@@ -1,26 +1,43 @@
-# Source declarations for 3GPP TS 29.229 (Cx and Dx interfaces based on Diameter).
-# Applied to normalized source text before parsing; see
+# Source declarations for 3GPP TS 29.229 (Cx and Dx interfaces based on
+# Diameter). Applied to normalized source text before parsing; see
 # src/seanchai/extractor/sources.py for the format.
 
 [[patch]]
 find = "RTR-Flags ]"
 replace = "[ RTR-Flags ]"
 section = "6.1.9"
-reason = "the RTR ABNF prints the line without its opening bracket (docx and PDF alike), which silently truncated the body there — the extractor stops an ABNF at the first line that is not one; clause 6.3.69 defines RTR-Flags and every other command spells such members '[ Name ]'"
+reason = """
+    the RTR ABNF prints the line without its opening bracket (docx and PDF
+    alike), which silently truncated the body there — the extractor stops an
+    ABNF at the first line that is not one; clause 6.3.69 defines RTR-Flags and
+    every other command spells such members '[ Name ]'
+    """
 first_version = "18.1.0"
 
 [[quirk]]
 name = "note-defined-in-rfc"
-reason = "the AVP table's note reads 'The value of this attribute is defined in IETF RFC ...' for a code-less row, which is where that AVP's re-used origin comes from"
+reason = """
+    the AVP table's note reads 'The value of this attribute is defined in IETF
+    RFC ...' for a code-less row, which is where that AVP's re-used origin comes
+    from
+    """
 
 [[quirk]]
 name = "spaced-rule-operator"
-reason = "Clauses 6.3.13, 6.3.16, 6.3.19 and 6.3.64 spell the grouped rule operator ':: =' (and 'AVP Header :'); unread, those four definitions were silently missing."
+reason = """
+    Clauses 6.3.13, 6.3.16, 6.3.19 and 6.3.64 spell the grouped rule operator
+    ':: =' (and 'AVP Header :'); unread, those four definitions were silently
+    missing.
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
 name = "run-on-enum-values"
-reason = "clause 6.3.58 prints both Priviledged-Sender-Indication values in one paragraph with nothing between, 'NOT_PRIVILEDGED_SENDER (0)PRIVILEDGED_SENDER (1)' (one run in the docx, one line in the PDF)"
+reason = """
+    clause 6.3.58 prints both Priviledged-Sender-Indication values in one
+    paragraph with nothing between, 'NOT_PRIVILEDGED_SENDER
+    (0)PRIVILEDGED_SENDER (1)' (one run in the docx, one line in the PDF)
+    """
 first_version = "18.1.0"
 last_version = "18.1.0"

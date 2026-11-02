@@ -7,18 +7,29 @@ find = "Applicablity"
 replace = "Applicability"
 count = 1
 section = "5.4"
-reason = "re-used table 5.4.1.1 misspells its supported-features column header 'Applicablity'; table 5.3.1.1 spells it 'Applicability'"
+reason = """
+    re-used table 5.4.1.1 misspells its supported-features column header
+    'Applicablity'; table 5.3.1.1 spells it 'Applicability'
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
-reason = "the command headers print no application id; clause 5.1 states it: 'the Application-ID for the Ns Application in the present release is 16777347'"
+reason = """
+    the command headers print no application id; clause 5.1 states it: 'the
+    Application-ID for the Ns Application in the present release is 16777347'
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"
 
 [[quirk]]
 name = "applicability-column"
-reason = "the AVP and re-used tables print an 'Applicability' column of supported features, every cell blank in this version: table 5.3.1.1 NOTE 3, 'AVPs marked with a supported feature are applicable as described in subclause 5.4.1'"
+reason = """
+    the AVP and re-used tables print an 'Applicability' column of supported
+    features, every cell blank in this version: table 5.3.1.1 NOTE 3, 'AVPs
+    marked with a supported feature are applicable as described in subclause
+    5.4.1'
+    """
 first_version = "18.0.0"
 last_version = "18.0.0"

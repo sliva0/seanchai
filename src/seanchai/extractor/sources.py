@@ -39,6 +39,9 @@ versions. A quirk carries no parameters by design: it is a named boolean
 with a reason, and the behavior it names lives in extractor code — TOML that
 carried logic would make the extractor an interpreter and the declaration
 unreviewable.
+
+A `reason` is prose and may wrap in a multi-line string, read back as one line
+(`prose.collapse`). Every other field is exact, `find` and `replace` above all.
 """
 
 import tomllib
@@ -46,6 +49,7 @@ from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from pathlib import Path
 
+from ..prose import collapse_fields
 from ..versions import VersionRange, applies, reviewed_release
 from .errors import ExtractionError
 
@@ -301,8 +305,11 @@ def load(
 
 
 def _ranged(entry: dict) -> dict:
-    """Translate the TOML bounds into the same type corrections declare."""
-    fields = dict(entry)
+    """Translate the TOML bounds into the same type corrections declare, and
+    read `reason` as prose. Nothing else collapses: `find` and `replace` are
+    matched and written character for character, `section` and `name` compared
+    exactly."""
+    fields = collapse_fields(entry, {"reason"})
     if "versions" in fields:
         raise ValueError("TOML ranges use first_version and last_version")
     versions = VersionRange(
