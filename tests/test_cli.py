@@ -1,6 +1,8 @@
+import subprocess
 import sys
 from pathlib import Path
 
+import click
 import docx
 import pytest
 from click.testing import CliRunner
@@ -714,3 +716,75 @@ def test_correct_command_keeps_a_comment_block_ending_the_file(tmp_path):
         "Example ::= < AVP header: 701 10415 > ;; corrected:"
         " (TS29.329.py#example-code)\n\n\n;; end of file\n"
     )
+
+
+def test_importing_the_cli_leaves_other_click_apps_alone():
+    """Run apart, since this process has imported `seanchai.cli` already."""
+    script = """
+import click
+from click.testing import CliRunner
+
+before = (
+    click.Context.formatter_class,
+    click.ClickException.show,
+    click.UsageError.show,
+)
+import seanchai.cli
+
+assert before == (
+    click.Context.formatter_class,
+    click.ClickException.show,
+    click.UsageError.show,
+)
+
+
+@click.command()
+def other():
+    "Help."
+    raise click.ClickException("broken")
+
+
+@click.command()
+def plain():
+    "Help."
+
+
+context = click.Context(plain)
+assert type(context.make_formatter()) is click.HelpFormatter
+assert context.command.context_class is click.Context
+result = CliRunner().invoke(other, color=True)
+assert result.exit_code == 1
+assert result.stderr == "Error: broken\\n", result.stderr
+help_text = CliRunner().invoke(plain, ["--help"], color=True).output
+assert help_text.startswith("Usage: "), help_text
+"""
+    run = subprocess.run(
+        [sys.executable, "-c", script], capture_output=True, text=True, check=False
+    )
+    assert run.returncode == 0, run.stderr
+
+
+def test_the_cli_renders_its_own_failures_and_help():
+    runner = CliRunner()
+
+    failed = runner.invoke(main, ["lint", "/nonexistent.dad"], color=True)
+    assert failed.exit_code == 2
+    assert "\x1b[" in failed.stderr
+    assert "for help." in failed.stderr
+    assert "\nerror: " in click.unstyle(failed.stderr)
+    assert click.unstyle(failed.stderr).startswith("Usage: main lint")
+
+    assert runner.invoke(main, ["format", "--help"], color=True).output.startswith(
+        click.style("Usage", fg="green", bold=True)
+    )
+    assert main.commands["format"].context_class is not click.Context
+
+
+def test_an_exit_keeps_its_status_and_a_clean_run_exits_zero(tmp_path):
+    source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
+    copied = tmp_path / "file.dad"
+    copied.write_text(source.read_text("utf-8") + "\n\n", "utf-8")
+
+    runner = CliRunner()
+    assert runner.invoke(main, ["format", "--check", str(copied)]).exit_code == 1
+    assert runner.invoke(main, ["format", str(copied)]).exit_code == 0

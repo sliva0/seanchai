@@ -9,9 +9,10 @@ user's document.
 """
 
 import contextlib
+import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import click
 
@@ -49,31 +50,64 @@ class _HelpFormatter(click.HelpFormatter):
         super().write_heading(click.style(heading, fg="green", bold=True))
 
 
-def _show_error(self: click.ClickException, file=None) -> None:
+def _show_error(error: click.ClickException) -> None:
+    """Click's message, with a cargo-style `error:` prefix."""
     prefix = click.style("error", fg="red", bold=True)
-    click.echo(f"{prefix}: {self.format_message()}", file=file, err=file is None)
+    click.echo(f"{prefix}: {error.format_message()}", err=True)
 
 
-def _show_usage_error(self: click.UsageError, file=None) -> None:
-    if self.ctx is not None:
+def _show_usage_error(error: click.UsageError) -> None:
+    """Click's usage block and help hint, then the message, restyled."""
+    if error.ctx is not None:
         hint = ""
-        if self.ctx.command.get_help_option(self.ctx) is not None:
-            option = max(self.ctx.command.get_help_option_names(self.ctx), key=len)
+        if error.ctx.command.get_help_option(error.ctx) is not None:
+            option = max(error.ctx.command.get_help_option_names(error.ctx), key=len)
             hint = click.style(
-                f"Try '{self.ctx.command_path} {option}' for help.", dim=True
+                f"Try '{error.ctx.command_path} {option}' for help.", dim=True
             )
             hint = f"{hint}\n"
-        click.echo(f"{self.ctx.get_usage()}\n{hint}", file=file, err=file is None)
-    _show_error(self, file)
+        click.echo(f"{error.ctx.get_usage()}\n{hint}", err=True)
+    _show_error(error)
 
 
-# Click renders help through `Context.formatter_class` — a documented hook —
-# but gives no equivalent for its exception rendering, so the two `show`
-# methods are replaced directly. Both keep Click's structure (usage block,
-# help hint, message) and change only the styling, cargo-style.
-click.Context.formatter_class = _HelpFormatter
-click.ClickException.show = _show_error  # type: ignore[method-assign]
-click.exceptions.UsageError.show = _show_usage_error  # type: ignore[method-assign]
+class _Context(click.Context):
+    formatter_class = _HelpFormatter
+
+
+class _Command(click.Command):
+    context_class = _Context
+
+
+class _Group(click.Group):
+    """The `seanchai` group: its help through `_HelpFormatter`, its failures
+    through `_show_error`, and nobody else's.
+
+    Click renders a failure with the exception's own `show`, offering no hook
+    for it, and only in standalone mode. So this runs Click's non-standalone
+    `main`, which raises the failure instead, and does what standalone mode
+    would around it.
+    """
+
+    context_class = _Context
+    command_class = _Command
+
+    def main(self, *args: Any, standalone_mode: bool = True, **extra: Any) -> Any:
+        if not standalone_mode:
+            return super().main(*args, standalone_mode=False, **extra)
+        try:
+            # Non-standalone `main` returns an `Exit`'s code as its value, and
+            # no command here returns anything else.
+            status = super().main(*args, standalone_mode=False, **extra)
+        except click.UsageError as error:
+            _show_usage_error(error)
+            sys.exit(error.exit_code)
+        except click.ClickException as error:
+            _show_error(error)
+            sys.exit(error.exit_code)
+        except click.Abort:
+            click.echo("Aborted!", err=True)
+            sys.exit(1)
+        sys.exit(status if isinstance(status, int) else 0)
 
 
 @contextlib.contextmanager
@@ -97,7 +131,7 @@ def reported() -> Iterator[None]:
         raise click.ClickException(str(error)) from None
 
 
-@click.group()
+@click.group(cls=_Group)
 def main() -> None:
     """Seanchaí: Diameter specifications as reviewable `.dad` files."""
 
