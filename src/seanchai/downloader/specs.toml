@@ -369,7 +369,10 @@ title = "Diameter group signaling"
 # release means it.
 [[tgpp_pinned]]
 number = "29.140"
-title = "MM10 interface based on Diameter protocol; Stage 3"
+title = """
+    Multimedia Messaging Service (MMS); MM10 interface based on Diameter
+    protocol; Stage 3
+    """
 version = "7.0.0"
 final = "document"
 reason = "Defines VAS-ID and VASP-ID, which TS 32.299 re-uses."
@@ -483,6 +486,31 @@ reason = """
     Annex A binds Mch to Diameter accounting; TS 32.299 re-uses its
     M2M-Information.
     """
+
+# Documents no extractor reads, copied by hand into `edits/transcriptions/`.
+# Nothing downloads them for the corpus; each is here for its title, as the
+# document's cover prints it.
+[[transcribed]]
+reference = "ETSI-ES283.034"
+title = """
+    Telecommunications and Internet converged Services and Protocols for
+    Advanced Networking (TISPAN); Network Attachment Sub-System (NASS); e4
+    interface based on the DIAMETER protocol
+    """
+
+[[transcribed]]
+reference = "ETSI-TS183.017"
+title = """
+    Telecommunications and Internet converged Services and Protocols for
+    Advanced Networking (TISPAN); Resource and Admission Control: DIAMETER
+    protocol for session based policy set-up information exchange between the
+    Application Function (AF) and the Service Policy Decision Function (SPDF);
+    Protocol specification
+    """
+
+[[transcribed]]
+reference = "3GPP2-X.S0057"
+title = "E-UTRAN - eHRPD Connectivity and Interworking: Core Network Aspects"
 
 # Wireshark's Diameter dictionary — the independent oracle `seanchai
 # crosscheck` compares extracted codes, vendor-ids and types against. The

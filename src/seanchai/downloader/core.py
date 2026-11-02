@@ -190,6 +190,15 @@ class PinnedThreeGppSpec:
         return parse_version(self.version)[0]
 
 
+@dataclass(frozen=True)
+class TranscribedDocument:
+    """A document the corpus holds as a hand transcription (`edits/
+    transcriptions/`), which no download fetches: only its title is here."""
+
+    reference: str  # "ETSI-ES283.034"
+    title: str
+
+
 class Catalog(NamedTuple):
     """`specs.toml`, read."""
 
@@ -198,6 +207,7 @@ class Catalog(NamedTuple):
     wireshark: WiresharkDictionary
     onem2m: tuple[OneM2MSpec, ...] = ()
     pinned: tuple[PinnedThreeGppSpec, ...] = ()
+    transcribed: tuple[TranscribedDocument, ...] = ()
 
 
 CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
@@ -230,6 +240,10 @@ def load_catalog(path: Path | None = None) -> Catalog:
         pinned = tuple(
             PinnedThreeGppSpec(**_prose(entry)) for entry in data.get("tgpp_pinned", ())
         )
+        transcribed = tuple(
+            TranscribedDocument(**_prose(entry))
+            for entry in data.get("transcribed", ())
+        )
     except (
         OSError,
         tomllib.TOMLDecodeError,
@@ -241,7 +255,7 @@ def load_catalog(path: Path | None = None) -> Catalog:
             f"cannot read the specification catalog {path}:"
             f" {type(error).__name__}: {error}"
         ) from error
-    return Catalog(tgpp, rfc, wireshark, onem2m, pinned)
+    return Catalog(tgpp, rfc, wireshark, onem2m, pinned, transcribed)
 
 
 @dataclass

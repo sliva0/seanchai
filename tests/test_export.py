@@ -289,3 +289,15 @@ def test_export_cli_uses_explicit_corpus_and_reports_missing_sources(tmp_path):
     )
     assert result.exit_code == 1
     assert "specifications directory" in result.output
+
+
+def test_every_document_has_its_catalog_title(exported):
+    _, _, index, _ = exported
+    untitled = [
+        doc["id"] for doc in index["documents"] if doc["title"] == doc["specification"]
+    ]
+    assert not untitled
+    titles = {doc["id"]: doc["title"] for doc in index["documents"]}
+    assert titles["29209-680"] == "Policy control over Gq interface"
+    assert titles["xs0057-0_v2.0"].startswith("E-UTRAN - eHRPD")
+    assert "e4 interface" in titles["es283034-020200"]

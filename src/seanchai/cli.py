@@ -858,7 +858,9 @@ def download(
     # specs.toml is a user-facing error, not a traceback.
     with reported():
         catalog = load_catalog()
-        tgpp_specs, rfc_specs, wireshark, onem2m_specs, pinned_specs = catalog
+        tgpp_specs, rfc_specs, wireshark, onem2m_specs, pinned_specs, transcribed = (
+            catalog
+        )
         if list_only:
             click.echo(f"3GPP specifications ({len(tgpp_specs)}):")
             for entry in tgpp_specs:
@@ -883,6 +885,9 @@ def download(
                     f"  {onem2m.identifier} V{onem2m.version} (Release"
                     f" {onem2m.release}): {onem2m.title}"
                 )
+            click.echo(f"\nHand transcriptions, not downloaded ({len(transcribed)}):")
+            for document in transcribed:
+                click.echo(f"  {document.reference}: {document.title}")
             click.echo(
                 f"\nWireshark Diameter dictionary: {wireshark.path} at {wireshark.tag}"
             )

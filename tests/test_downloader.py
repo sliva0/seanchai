@@ -77,7 +77,10 @@ path = "resources/protocols/diameter"
 """.strip()
     )
 
-    tgpp, rfcs, wireshark, onem2m, pinned = downloader.load_catalog(catalog)
+    tgpp, rfcs, wireshark, onem2m, pinned, transcribed = downloader.load_catalog(
+        catalog
+    )
+    assert transcribed == ()
 
     assert tgpp == (
         downloader.ThreeGppSpec(

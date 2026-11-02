@@ -234,9 +234,11 @@ def export_corpus(
                 for row in section.rows:
                     places.setdefault(row.name, row.section or section.source.section)
     catalog = load_catalog()
-    titles = {f"{s.document_type}{s.number}": s.title for s in catalog.tgpp}
+    titles = {f"{s.document_type}{s.number}": s.title for s in catalog.pinned}
+    titles.update({f"{s.document_type}{s.number}": s.title for s in catalog.tgpp})
     titles.update({f"RFC{s.number}": s.title for s in catalog.rfc})
     titles.update({ast.spec_ref(s.identifier): s.title for s in catalog.onem2m})
+    titles.update({s.reference: s.title for s in catalog.transcribed})
     pinned = {(f"TS{s.number}", s.version): s.reason for s in catalog.pinned}
     pdfs: dict[str, list[Path]] = {}
     if include_pdfs:
