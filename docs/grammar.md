@@ -2,12 +2,11 @@
 
 What is and is not a well-formed file, in enough detail to write a second
 implementation. [dad-format.md](dad-format.md) explains why the pieces are
-shaped this way. The grammar is not stable until publication; see the notice
-there.
+shaped this way.
 
-Not covered here: semantic constraints the AST enforces (listed at the end)
-and canonical layout, which is the formatter's business — the grammar accepts
-any spacing the productions allow, the formatter produces exactly one.
+Not covered here: canonical layout, which is the formatter's business. The
+grammar accepts any spacing the productions allow; the formatter produces
+exactly one.
 
 Notation is RFC 5234 ABNF. `SP` is one space, `NL` one line feed; the format
 has no tabs, carriage returns or trailing spaces. Productions ending in
@@ -51,13 +50,10 @@ the transcription's title gives, one listed misnaming at a time
 ([linter.md](linter.md#resolving-an-origin)).
 
 `; Transcribed:` marks a file a person copied from a rendering, for a
-document no extractor reads (ETSI ES 283 034, TS 183 017 and 3GPP2
-X.S0057 exist only as PDF), and names that rendering; no extractor writes
-it. It is written in
-the transcription, which is no `.dad` file until its input patches have
-applied (transcription → input patches → raw → corrections → corrected,
-[extractor.md](extractor.md#transcriptions)), and the raw and corrected
-files carry it from there.
+document no extractor reads (ETSI ES 283 034, TS 183 017 and 3GPP2 X.S0057
+exist only as PDF), and names that rendering. It is written in the
+transcription ([extractor.md](extractor.md#transcriptions)), and the raw and
+corrected files carry it from there.
 
 `; Version:` is present when the source has a version axis (3GPP yes, RFC
 no). `; Bases:` is optional only because RFC 6733, the base of the tree, has

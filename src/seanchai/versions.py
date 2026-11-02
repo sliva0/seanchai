@@ -101,7 +101,7 @@ def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | N
     declaration made for Release 18 says nothing about Release 7 (TS 29.214
     V7.12.0 beside V18.4.0). Within a release a range is advisory, so the
     next version of a release still gets every declaration and a warning
-    (docs/workflow.md#version-upgrades). The release is `version`'s own
+    (docs/development.md#version-upgrades). The release is `version`'s own
     when some range spans it, else the newest declared release below it,
     which is a release upgrade: Release 19 is first read with Release 18's
     declarations, as within a release. A version below every declared
