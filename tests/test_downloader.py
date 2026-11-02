@@ -1104,6 +1104,21 @@ def test_download_corpus_converts_a_legacy_doc_unless_asked_not_to(
         )
 
 
+def _is_running(pid: int) -> bool:
+    """False once the process is gone or a zombie: a zombie is already dead,
+    waiting on a PID 1 that in a job container may never reap it."""
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    try:
+        stat = Path(f"/proc/{pid}/stat").read_text()
+    except OSError:
+        # No procfs here, or it exited just now: the next look settles it.
+        return True
+    return stat.rpartition(")")[2].split()[0] != "Z"
+
+
 def test_a_timed_out_conversion_kills_the_whole_process_group(tmp_path, monkeypatch):
     # `soffice` is a launcher whose `soffice.bin` child does the converting;
     # a shell that backgrounds a sleep stands in for the pair.
@@ -1127,14 +1142,10 @@ def test_a_timed_out_conversion_kills_the_whole_process_group(tmp_path, monkeypa
     assert [sig for _, sig in killed] == [downloader.signal.SIGKILL]
     child = int(pidfile.read_text())
     deadline = time.monotonic() + 5
-    while time.monotonic() < deadline:
-        try:
-            os.kill(child, 0)
-        except ProcessLookupError:
-            break
+    while _is_running(child):
+        if time.monotonic() >= deadline:
+            pytest.fail(f"the launcher's child {child} outlived the timeout")
         time.sleep(0.05)
-    else:
-        pytest.fail(f"the launcher's child {child} outlived the timeout")
 
 
 ONEM2M = downloader.OneM2MSpec(
