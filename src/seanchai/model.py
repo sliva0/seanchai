@@ -1136,9 +1136,12 @@ class Model:
         except KeyError:
             raise ModelError(f"the corpus holds no copy of {reference}") from None
 
-    def messages(self, reference: str) -> tuple[Message, ...]:
-        """Every command `reference` defines, bodies resolved."""
-        view = self._view(reference)
+    def messages(
+        self, reference: str, *, version: str | None = None
+    ) -> tuple[Message, ...]:
+        """Every command `reference` defines, bodies resolved; `version` reads
+        an older copy the corpus holds."""
+        view = self._view(reference, version)
         return tuple(
             Message(
                 name=message.name,
@@ -1197,7 +1200,9 @@ class Model:
             )
         )
 
-    def applications(self, reference: str) -> tuple[Application, ...]:
+    def applications(
+        self, reference: str, *, version: str | None = None
+    ) -> tuple[Application, ...]:
         """`reference`'s commands, grouped by application id and the clause
         they sit under, in file order.
 
@@ -1211,11 +1216,13 @@ class Model:
         One group can still define a command twice: TS 29.273 prints the
         STa Session-Termination-Request in clauses 5.2.2.2.3 and 5.2.2.4.1,
         once per procedure. Which copy a consumer keeps is its business.
+
+        `version` reads an older copy the corpus holds.
         """
-        view = self._view(reference)
+        view = self._view(reference, version)
         groups: dict[tuple[int | None, str], list[Message]] = {}
         stating: dict[tuple[int | None, str], ast.ApplicationScope] = {}
-        for message in self.messages(reference):
+        for message in self.messages(reference, version=version):
             block = next(
                 (each for each in view.applications if each.covers(message.section)),
                 None,

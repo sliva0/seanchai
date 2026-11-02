@@ -56,6 +56,7 @@ def _target(entry: Entry, section: str | None) -> dict:
 
 
 def _tokens(
+    entry: Entry,
     text: str,
     spec: ast.Specification,
     names: dict,
@@ -75,6 +76,13 @@ def _tokens(
         directive = re.match(r"; ([\w-]+):", line)
         key = directive[1] if directive else None
         rule = re.match(r"\s*\d*\*?\d*\s*([<{\[]) ([\w-]+) ([>}\]])", line)
+        # A command or application names its own clause, whatever else in the
+        # file shares its name: TS 29.212 defines CC-Request once per interface.
+        own = (
+            {section.name: _target(entry, section.source.section)}
+            if isinstance(section, ast.Message | ast.ApplicationScope)
+            else {}
+        )
         enumeration = isinstance(section, ast.EnumeratedAvp) and " = " in line
         row = None
         if isinstance(section, ast.AvpTable | ast.ReusedAvps) and not line.startswith(
@@ -125,8 +133,12 @@ def _tokens(
                     token["target"] = (row_references or {}).get(
                         (value, row_name), token["target"]
                     )
-            elif value in names and key in (None, "Name") and not enumeration:
-                if target := names[value]:
+            elif (
+                (value in own or value in names)
+                and key in (None, "Name")
+                and not enumeration
+            ):
+                if target := own.get(value) or names[value]:
                     token["target"] = target
                 if key == "Name":
                     token["class"] = "string.unquoted.directive-value.dad"
@@ -364,10 +376,22 @@ def export_corpus(
                     else None,
                 }
             )
+        # A mention outside its own clause links only if the name means one.
+        clauses: dict[str, set[str]] = {}
+        for section in spec.sections:
+            if isinstance(section, ast.Message | ast.ApplicationScope):
+                clauses.setdefault(section.name, set()).add(section.source.section)
+        for name, places in clauses.items():
+            if len(places) == 1:
+                names.setdefault(name, _target(entry, next(iter(places))))
+        resolved = {
+            (message.name, message.section, message.command_code): application
+            for application in model.applications(entry.reference, version=spec.version)
+            for message in application.messages
+        }
         for section in spec.sections:
             if isinstance(section, ast.Message | ast.ApplicationScope):
                 target = _target(entry, section.source.section)
-                names[section.name] = target
                 search.append(
                     {
                         "name": section.name,
@@ -376,9 +400,19 @@ def export_corpus(
                         else "Application",
                         "document": identifier,
                         "target": target,
-                        "identity": [section.command_code, section.application_id]
+                        "identity": [
+                            section.command_code,
+                            resolved[
+                                section.name,
+                                section.source.section,
+                                section.command_code,
+                            ].application_id,
+                        ]
                         if isinstance(section, ast.Message)
                         else [section.application_id],
+                        "header_application_id": section.application_id
+                        if isinstance(section, ast.Message)
+                        else None,
                         "defined_in": entry.reference,
                         "alias": section.abbreviation
                         if isinstance(section, ast.Message)
@@ -429,7 +463,12 @@ def export_corpus(
                         if name == rename.replace:
                             raw_references[reference, rename.expect] = target
             raw = _tokens(
-                raw_text, parser.parse(raw_text), raw_names, references, raw_references
+                entry,
+                raw_text,
+                parser.parse(raw_text),
+                raw_names,
+                references,
+                raw_references,
             )
 
             def normalized(text: str) -> str:
@@ -502,6 +541,7 @@ def export_corpus(
             **metadata,
             "sections": list(sections[identifier].values()),
             "lines": _tokens(
+                entry,
                 entry.path.read_text(encoding="utf-8"),
                 spec,
                 names,

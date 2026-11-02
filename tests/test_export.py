@@ -301,3 +301,59 @@ def test_every_document_has_its_catalog_title(exported):
     assert titles["29209-680"] == "Policy control over Gq interface"
     assert titles["xs0057-0_v2.0"].startswith("E-UTRAN - eHRPD")
     assert "e4 interface" in titles["es283034-020200"]
+
+
+def test_repeated_command_names_link_to_their_own_interface(exported):
+    _, _, _, docs = exported
+    for variant in ("lines", "raw"):
+        found = {}
+        for line in docs["29212-i20"][variant]:
+            for token in line["tokens"]:
+                if token["text"] == "CC-Request" and line["section"]:
+                    found.setdefault(line["section"], token.get("target"))
+        assert len(found) > 1
+        for section, target in found.items():
+            assert target == {"document": "29212-i20", "section": section}
+
+
+def test_repeated_names_in_a_synthetic_file_keep_their_clauses(tmp_path):
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    body = """; Type: Message
+; Section: {section}
+; Name: Example-Request, EXR
+<Example-Request> ::= < Diameter Header: 321, REQ, PXY, {application} >
+  < Session-Id >
+"""
+    (corpus / "rfc9999.dad").write_text(
+        "; Specification: RFC 9999\n; Vendor-ID: 0\n\n"
+        + body.format(section="5.1", application=7)
+        + "\n"
+        + body.format(section="6.1", application=8),
+        "utf-8",
+    )
+    output = tmp_path / "out"
+    export_corpus(Corpus.load([corpus]), output)
+    doc = json.loads((output / "documents/rfc9999.json").read_text("utf-8"))
+    targets = {
+        line["section"]: token["target"]["section"]
+        for line in doc["lines"]
+        for token in line["tokens"]
+        if token["text"] == "Example-Request"
+    }
+    assert targets == {"5.1": "5.1", "6.1": "6.1"}
+
+
+def test_commands_carry_the_application_their_scope_states(exported):
+    _, _, index, _ = exported
+    entries = {
+        e["target"]["section"]: e
+        for e in index["search"]
+        if e["document"] == "29212-i20"
+        and e["kind"] == "Command"
+        and e["name"] == "CC-Request"
+    }
+    gx = entries["5.6.2"]
+    assert gx["identity"] == [272, 16777238]
+    assert gx["header_application_id"] is None
+    assert entries["E.6.6.2"]["identity"] == [272, 16777318]
