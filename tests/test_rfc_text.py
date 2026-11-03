@@ -392,3 +392,19 @@ def test_a_six_letter_abbreviation_titles_a_command(tmp_path):
     assert _of(spec, ast.Message)[0].abbreviation == "IKESKR"
 
 
+def test_an_allocation_table_may_head_its_names_avp_name(tmp_path):
+    """RFC 5624 clause 5.1."""
+    spec = _read(
+        tmp_path,
+        "5.1.  AVP Codes\n\n"
+        "   +-----------------------------------------------+\n"
+        "   |                     AVP  Section              |\n"
+        "   |AVP Name             Code Defined   Data Type  |\n"
+        "   +-----------------------------------------------+\n"
+        "   |Token-Rate           496  3.1.1     Float32    |\n"
+        "   +-----------------------------------------------+\n",
+    )
+    row = _of(spec, ast.AvpTable)[0].rows[0]
+    assert (row.name, row.code, row.section) == ("Token-Rate", 496, "3.1.1")
+
+
