@@ -73,6 +73,18 @@ value table's row the dictionary names otherwise, and
 an AVP it enumerates. An AVP it enumerates none of draws neither. They are read
 as the rest are: a report, and the corpus keeps the document's spelling.
 
+What these report on the committed corpus is the dictionary's or the document's
+to settle: TS 29.283's `DIAMETER_ERROR_UNKNOWN_DATA` against the dictionary's
+`UNKNKOWN`, which copies TS 29.230's misprint; its `_` in
+`DIAMETER_ERROR_TRANSPARENT_DATA_OUT_OF_SYNC` where TS 29.283, 29.329, 29.330
+and TS 29.230 print a space; its `LCS_CLIENT` tail on TS 29.219's
+`DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS`; `DIAMETER_ELECTION_LOST` for RFC
+6733's `ELECTION_LOST`; `PROSE_NOT_ALLOWED` for TS 29.344's name; a mangled
+`DIAMETER_ERROR_W-DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION` for TS
+29.234's; TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`, where the dictionary
+keeps the registry's `IMPI`; and bit 0 of TS 29.212's
+`Presence-Reporting-Area-Node`, `OCS`, which the dictionary calls `PCRF`.
+
 ## In the model
 
 `model.Model.build(books, dictionary=Path("specifications/wireshark"))`
