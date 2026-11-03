@@ -1,7 +1,14 @@
 """Corrections for 3GPP TS 29.344 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, avp_table, definition
+from seanchai.dad.corrections import (
+    Accept,
+    Correction,
+    Insert,
+    avp_table,
+    definition,
+    value_row,
+)
 
 # Clauses 6.2.11 and 6.2.12 head "ProSe-Initial-Location-Information-Request"
 # and "-Answer" and carry command code 8388713 with the abbreviations PSR/PSA,
@@ -48,4 +55,45 @@ CORRECTIONS += [
         " rules follow every locally defined PC4a AVP in the table",
         versions="18.1.0",
     )
+]
+
+CORRECTIONS += [
+    Correction(
+        id="prose-not-allowed-result-spelling",
+        target=value_row(
+            "Experimental-Result-Code", "DIAMETER_ERROR_ PROSE_NOT_ALLOWED"
+        ),
+        field="name",
+        expect="DIAMETER_ERROR_ PROSE_NOT_ALLOWED",
+        replace="DIAMETER_ERROR_PROSE_NOT_ALLOWED",
+        reason="clause 6.4.3.4's heading prints a space inside the name; TS 29.230 "
+        "table 8.1.4 allocates 5611 under the name without it",
+        versions="18.1.0",
+    ),
+    Correction(
+        id="ue-location-unknown-result-spelling",
+        target=value_row(
+            "Experimental-Result-Code", "DIAMETER_ERROR_ UE_LOCATION_UNKNOWN"
+        ),
+        field="name",
+        expect="DIAMETER_ERROR_ UE_LOCATION_UNKNOWN",
+        replace="DIAMETER_ERROR_UE_LOCATION_UNKNOWN",
+        reason="clause 6.4.3.5's heading prints a space inside the name; TS 29.230 "
+        "table 8.1.4 allocates 5612 under the name without it",
+        versions="18.1.0",
+    ),
+]
+
+# The codes clauses say are defined elsewhere, as the registry allocates them.
+CORRECTIONS += [
+    Accept(
+        id="user-unknown-result-code-reused",
+        rule="registry-result-code-document",
+        target=value_row("Experimental-Result-Code", "DIAMETER_ERROR_USER_UNKNOWN"),
+        expect="DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 "
+        "table 8.1.4 allocates the code to TS29.229",
+        reason="clause 6.4.3.2 says 'This error code is defined in TS 29.229 [6].': "
+        "the document lists a code it re-uses",
+        versions="18.1.0",
+    ),
 ]

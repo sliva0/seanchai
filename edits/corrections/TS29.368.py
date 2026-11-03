@@ -1,6 +1,12 @@
 """Corrections for 3GPP TS 29.368 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, avp_rule, definition, reused_row
+from seanchai.dad.corrections import (
+    Correction,
+    avp_rule,
+    definition,
+    reused_row,
+    value_table,
+)
 
 # The three grouped-AVP clauses print `< AVP Header: nnn >` with no vendor-id,
 # while clause 6.4.1 sets "the Vendor-Id header of all AVPs defined in the
@@ -56,3 +62,18 @@ CORRECTIONS = (
         )
     ]
 )
+
+CORRECTIONS += [
+    Correction(
+        id="feature-list-avp",
+        target=value_table("Supported-Feature-List"),
+        field="avp",
+        expect="Supported-Feature-List",
+        replace="Feature-List",
+        reason="clause 6.5.2.2 is headed 'Supported-Feature-List AVP', which no table "
+        "lists and no body names; the document's Supported-Features is TS "
+        "29.229's, holding Feature-List-ID and Feature-List, and the clause's "
+        "table is captioned 'Features of Feature-List-ID 1'",
+        versions="18.0.0",
+    ),
+]

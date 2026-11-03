@@ -9,6 +9,7 @@ from seanchai.dad.corrections import (
     definition,
     header,
     reused_avps,
+    value_row,
 )
 
 # Clauses 4.2, 5.2, 8.2 and 9.2 build Wa, Wd, Wm and Wg on these, whose AVPs
@@ -305,4 +306,19 @@ CORRECTIONS += [
         " citation, which stays evidence",
         versions="11.2.0",
     )
+]
+
+CORRECTIONS += [
+    Correction(
+        id="no-wlan-subscription-result-spelling",
+        target=value_row(
+            "Experimental-Result-Code", "DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTON"
+        ),
+        field="name",
+        expect="DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTON",
+        replace="DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTION",
+        reason="clause 10.3.1.1's heading drops a letter; TS 29.230 table 8.1.4 "
+        "allocates 5041 under the full word",
+        versions="11.2.0",
+    ),
 ]

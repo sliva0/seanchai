@@ -1405,7 +1405,7 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             if isinstance(table, ast.EnumeratedAvp):
                 assert correction.node in table.values
                 continue
-            assert isinstance(table, ast.AvpTable | ast.ReusedAvps)
+            assert isinstance(table, ast.AvpTable | ast.ReusedAvps | ast.ValueTable)
             assert correction.node in table.rows
             continue
         target = correction.target
@@ -1433,6 +1433,10 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             # replacement. 29.172, 29.344 and 29.388 all fix a copied-in rule
             # name this way.
             target = dataclasses.replace(target, name=correction.replace)
+        elif correction.field == "avp":
+            # The same for the AVP a value table's selector matches on: TS
+            # 29.337 corrects the "Supported-Feature-List" its clause heads.
+            target = dataclasses.replace(target, avp=correction.replace)
         elif target in renamed:
             target = dataclasses.replace(target, name=renamed[target])
         matches = list(target.find(spec))
@@ -1473,9 +1477,9 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     testing, so a wrong `expect`/`replace`/reason changed together stays green.
     This one names the outcome — one AVP code, one missing vendor-id, two
     respelled names and TS 29.217's two eNodeB spellings (each in a re-used
-    row and a body, one label here), nothing else, plus the inserted rows
-    and the VCSG application scope — so changing what the corrections do has
-    to be a deliberate edit here too.
+    row and a body, one label here), the feature and bit names a wrapped cell
+    spaces, nothing else, plus the inserted rows and the VCSG application scope
+    — so changing what the corrections do has to be a deliberate edit here too.
     """
     raw = _CORPUS_DIR / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
@@ -1526,6 +1530,19 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
         ),
         ("eNodeB-ID", "name", "eNodeB-ID", "eNodeB-Id"),
         ("Extended-eNodeB-ID", "name", "Extended-eNodeB-ID", "Extended-eNodeB-Id"),
+        *(
+            (spaced, "name", spaced, spaced.replace("- ", "-").replace(" -", "-"))
+            for spaced in (
+                "ODB-all- InternationalOG",
+                "LCS- BasicSelfLocation",
+                "LCS- AutonomousSelfLocation",
+                "LCS- TransferToThirdParty",
+                "Dia-LCS- BasicSelfLocation",
+                "Dia-LCS- AutonomousSelfLocation",
+                "Dia-LCS- TransferToThirdParty",
+                "eDRX-Cycle-Length -Withdrawal",
+            )
+        ),
     }
     (block,) = [c.node for c in inserted if isinstance(c.into, corrections.header)]
     assert block == ast.ApplicationScope(
@@ -1894,3 +1911,92 @@ def test_comments_on_a_directive_line_a_correction_removes_survive():
         "; Version: 1.2.3",
         "; Vendor-ID: 10415",
     ]
+
+
+def _value_tables_spec():
+    return ast.Specification(
+        specification="3GPP TS 29.999",
+        version="1.2.3",
+        vendor_id=10415,
+        sections=(
+            ast.ValueTable(
+                avp="Supported-Feature-List",
+                kind=ast.ValueKind.FEATURES,
+                feature_list_id=1,
+                application="T4",
+                table="6.3.5",
+                source=ast.SourceRef(section="6.3.5"),
+                rows=(ast.ValueRow(name="LCS- Basic", value=0, mark="O"),),
+            ),
+            ast.ValueTable(
+                avp="Experimental-Result-Code",
+                kind=ast.ValueKind.RESULT_CODES,
+                source=ast.SourceRef(section="7"),
+                rows=(
+                    ast.ValueRow(name="DIAMETER_ERROR_ X", value=5001, section="7.1"),
+                ),
+            ),
+        ),
+    )
+
+
+def test_a_value_table_and_its_rows_are_corrected_and_cited_on_their_lines():
+    edits = [
+        corrections.Correction(
+            id="avp",
+            target=corrections.value_table("Supported-Feature-List", feature_list_id=1),
+            field="avp",
+            expect="Supported-Feature-List",
+            replace="Feature-List",
+            reason="r",
+        ),
+        corrections.Correction(
+            id="spelling",
+            target=corrections.value_row(
+                corrections.value_table("Experimental-Result-Code", section="7"),
+                "DIAMETER_ERROR_ X",
+                5001,
+            ),
+            field="name",
+            expect="DIAMETER_ERROR_ X",
+            replace="DIAMETER_ERROR_X",
+            reason="r",
+        ),
+        corrections.Insert(
+            id="row",
+            into=corrections.value_table("Experimental-Result-Code"),
+            node=ast.ValueRow(name="DIAMETER_ERROR_Y", value=5002),
+            after="DIAMETER_ERROR_ X",
+            reason="r",
+        ),
+    ]
+
+    corrected, results = corrections.apply(_value_tables_spec(), edits)
+
+    features, codes = [
+        section for section in corrected.sections if isinstance(section, ast.ValueTable)
+    ]
+    assert features.avp == "Feature-List"
+    assert [row.name for row in codes.rows] == [
+        "DIAMETER_ERROR_X",
+        "DIAMETER_ERROR_Y",
+    ]
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    assert "; AVP: Feature-List ;; corrected: (avp)" in text
+    assert "DIAMETER_ERROR_X = 5001 ; 7.1 ;; corrected: (spelling)" in text
+    assert "DIAMETER_ERROR_Y = 5002 ;; inserted: (row)" in text
+    assert parser.parse(text) == corrected
+
+
+def test_a_value_row_correction_expects_what_the_row_holds():
+    wrong = corrections.Correction(
+        id="spelling",
+        target=corrections.value_row("Experimental-Result-Code", "DIAMETER_ERROR_ X"),
+        field="value",
+        expect=9,
+        replace=5001,
+        reason="r",
+    )
+
+    with pytest.raises(corrections.CorrectionError, match="expect"):
+        corrections.apply(_value_tables_spec(), [wrong])

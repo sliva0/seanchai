@@ -2,11 +2,13 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     avp_rule,
     definition,
     reused_row,
     table_row,
+    value_row,
 )
 
 CORRECTIONS = [
@@ -64,6 +66,32 @@ CORRECTIONS = [
         replace="LCS-Requestor-ID-String",
         reason="TS 32.299 clause 7.2.92 defines LCS-Requestor-ID-String; the"
         " body spells it as the re-used table does",
+        versions="18.1.0",
+    ),
+]
+
+# The codes clauses say are defined elsewhere, as the registry allocates them.
+CORRECTIONS += [
+    Accept(
+        id="user-unknown-result-code-reused",
+        rule="registry-result-code-document",
+        target=value_row("Experimental-Result-Code", "DIAMETER_ERROR_USER_UNKNOWN"),
+        expect="DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 "
+        "table 8.1.4 allocates the code to TS29.229",
+        reason="clause 7.5.3.1 says 'This error code is defined in 3GPP TS 29.229 "
+        "[17]': the document lists a code it re-uses",
+        versions="18.1.0",
+    ),
+    Accept(
+        id="unauthorized-requesting-network-result-code-reused",
+        rule="registry-result-code-document",
+        target=value_row(
+            "Experimental-Result-Code", "DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK"
+        ),
+        expect="DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK (code 5490) is listed "
+        "here, but TS29.230 table 8.1.4 allocates the code to TS29.173",
+        reason="clause 7.5.3.2 says 'This error code is defined in 3GPP TS 29.173 "
+        "[18]': the document lists a code it re-uses",
         versions="18.1.0",
     ),
 ]

@@ -1,7 +1,12 @@
 """Corrections for 3GPP TS 29.468 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, definition, table_row
+from seanchai.dad.corrections import (
+    Correction,
+    definition,
+    table_row,
+    value_table,
+)
 
 # Every grouped-AVP clause prints `< AVP Header: nnn >` with no vendor-id,
 # while clause 6.4.1 sets "the Vendor-Id header of all AVPs defined in the
@@ -64,6 +69,18 @@ CORRECTIONS = [
         replace=ast.DataType.ENUMERATED,
         reason="clause 6.4.35 defines the AVP as of type Enumerated and lists"
         " its values; table 6.4.1-1 alone says Unsigned32",
+        versions="18.0.0",
+    ),
+    Correction(
+        id="feature-list-avp",
+        target=value_table("Supported-Feature-List"),
+        field="avp",
+        expect="Supported-Feature-List",
+        replace="Feature-List",
+        reason="clause 6.5.2.2 is headed 'Supported-Feature-List AVP', which no table "
+        "lists and no body names; the document's Supported-Features is TS "
+        "29.229's, holding Feature-List-ID and Feature-List, and the clause's "
+        "table is captioned 'Features of Feature-List-ID 1'",
         versions="18.0.0",
     ),
 ]
