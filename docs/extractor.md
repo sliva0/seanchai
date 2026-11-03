@@ -112,7 +112,7 @@ The vocabulary, with the document that forced each:
 - `message-headings`: an `x.y.z Name message` heading over a rule spelled
   with the abbreviation, `<ACR> ::=` (TS 32.299, oneM2M TS-0004).
 - `rfc-command-rules`: RFC commands printed by rule alone under no intro
-  naming them, named from the RFC by command code (TS 29.234, 29.061).
+  naming them, named from the RFC by command code (TS 29.234, 29.061, 29.561).
 - `access-type-headings`: `Event-Trigger AVP (All access types)` (TS
   29.212, 29.214).
 - `spaced-rule-operator`: `:: =` (TS 32.299, 29.229, 29.234, oneM2M).
@@ -142,7 +142,7 @@ The vocabulary, with the document that forced each:
   `AAR Command` over `<AA-Request> ::=`), or in a procedure step's sentence
   (TS 29.109's "a Bootstrapping-Info-Request message (BIR)").
 - `clause-parenthetical`: a trailing parenthetical in a clause cell,
-  `16.4.7 (see Note)`, stripped as prose (TS 29.061).
+  `16.4.7 (see Note)`, stripped as prose (TS 29.061, 29.561).
 
 **Docx, tables.**
 
@@ -166,12 +166,15 @@ The vocabulary, with the document that forced each:
   kept quoted (TS 29.230 and 29.234's `"Integer"`).
 - `reference-cells`: a Reference column mixing clauses and documents
   (oneM2M).
+- `document-clause-cells`: a clause column whose cell may name another document,
+  `3GPP TS 29.061 [5]`, read as a re-used row citing it (TS 29.561 table 12.4-1,
+  [below](#radius-attributes-as-avps)).
 - `origins-by-reference`: a From cell naming ETSI's document as 3GPP's,
   read through clause 2 (TS 29.212, 29.214).
 - Mark columns, each naming the column's legend: `access-type-column`,
   `applicability-column`, `reference-points-column`, `command-columns`,
   and `worded-marks` for marks of several words split at commas only (TS
-  29.061, 29.368, 29.468).
+  29.061, 29.368, 29.468, 29.561).
 - `registry-tables`, `reserved-range-notes`: TS 29.230's allocation tables
   ([below](#the-registry-reading)).
 
@@ -355,9 +358,10 @@ Conventions worth knowing:
   does not read.
 
 ABNF is read line by line: a paragraph is split at its manual line breaks,
-and bold and strikethrough belong to the line. Blank lines inside a body are
-skipped when another member follows, and a line made entirely of several
-members is read as several.
+and bold and strikethrough belong to the line. A run holding only a repetition
+says neither, since TS 29.561 clause 12.6.3 prints a plain `0*16 ` before a bold
+member. Blank lines inside a body are skipped when another member follows, and a
+line made entirely of several members is read as several.
 
 A body ends at a blank line, the next rule, a sentence, or a change of paragraph
 style on a line with no ABNF in it. A sentence counts because prose follows a
@@ -467,6 +471,23 @@ a published name (`GBA_U-Awareness-Indicator`), the RFC 3588 `P` flag still
 printed, parenthesised note references on name cells, one AVP printed with
 two bodies, and "Void" as an enum value label. Everything patched is listed
 with its reason in `edits/sources/`.
+
+### RADIUS attributes as AVPs
+
+TS 29.561 defines its AVPs as RADIUS vendor-specific sub-attributes. Clause 11.3
+tabulates them, with octet layouts and prose, in tables no reading here
+recognises (`Attr #`, `Sub-attr #`, `Octets`), so those stay unread. What makes
+them AVPs is table 12.4-1, whose caption says "re-used" and whose rows say which
+are: `Section defined` is `11.3.1` for the 25 this document adds, and a document
+for the 31 it takes from TS 29.061 and TS 29.229. Every row stays in the `AVP
+Table` as printed, and `document-clause-cells` adds a re-used row for each of
+the 31, so `Model.definition` answers those from their origin. Table 17.4-1 adds
+`3GPP-S-NSSAI` the same way, from clause 16.3.1.
+
+Sub-attribute 117, `3GPP-Supported-Features`, has no row: it is RADIUS's, and
+Diameter uses `Supported-Features`. Tables 12.4-1 and 17.4-1 give codes 135 and
+200, which TS 29.230 V19.3.0 allocates to no document by name, inside the 1 to
+255 it reserves for TS 29.061, 29.561 and 29.234.
 
 ### Out of scope
 

@@ -416,7 +416,7 @@ the identity. `name` is always the document's spelling
 
 ### Known holes
 
-Seventeen names stand as holes, each a statement its source does not make.
+Nineteen names stand as holes, each a statement its source does not make.
 The committed record, the corpus's `holes.toml`, lists them by
 `Hole.document`, name, `Hole.missing` and a reason citing the version and
 clause and what was searched
@@ -441,7 +441,7 @@ consumer loading a partial or foreign corpus. `unrecorded_holes()` and
 `stale_record_entries()` return what the default would refuse; the linter's
 `unrecorded-hole` and `stale-hole-record` report the same.
 
-The seventeen, by cause:
+The nineteen, by cause:
 
 - **A field no source states**, under every policy. TS 29.061's
   `3GPP-Session-Stop-Indicator` row states only a code, and TS 29.061
@@ -460,14 +460,13 @@ The seventeen, by cause:
 
 ### Undefined names
 
-Eleven names the corpus's documents use as members are defined nowhere: RFC
+Twelve names the corpus's documents use as members are defined nowhere: RFC
 4004's three SPIs, RFC 5866's `Authorization-Session-Volume`, TS 29.345's
 `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's
 `External-Group-Identifier`, TS 32.299's
-`Submission-Timestamp` and `Network-Element`, TS 29.234's `Error-Cause` and TS
-29.061's
-`Delegated-IPv6-Prefix`, a RADIUS attribute of RFC 4818, which the corpus does
-not hold. Each has an
+`Submission-Timestamp` and `Network-Element`, TS 29.234's `Error-Cause`, and TS
+29.061's and TS 29.561's `Delegated-IPv6-Prefix`, a RADIUS attribute of RFC
+4818, which the corpus does not hold. Each has an
 `Undefined AVP` block in its document's file, inserted by a correction
 citing what was searched, and `undefined(reference)` returns them as
 `model.Undefined`: the name, the document, the clause, what the document

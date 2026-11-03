@@ -260,6 +260,10 @@ What still reports, and why each stays:
   `Serving-Node`, TS 29.234's `SIP-Auth-Data-Item`, and the ETSI
   transcriptions' re-prints of each other's and TS 29.209's values, ES 283
   026's `Reservation-Priority` stopping at seven of TS 183 017's fifteen).
+  TS 29.561's indirect `External-Identifier` is more than a citation: table
+  12.4-1 prints code 28, its RADIUS sub-attribute number, typed OctetString, and
+  TS 29.061 re-uses the AVP from TS 29.336, code 3111, UTF8String. The row stays
+  as printed and the model follows the origin.
 - **`cross-release-origin`.** TS 32.299 cites TS 29.140 non-specifically,
   which reads as its final version; TS 32.299 V11.20.0's non-specific
   Release 11 references, and TS 29.210's and TS 29.234's of TS 29.229, are
@@ -319,7 +323,7 @@ What still reports, and why each stays:
   space misprinted in a heading is corrected.
 - **`registry-application-name`.** TS 29.272's VCSG scope names 16777308
   `S7a/S7d`; table 4.1 calls it "3GPP S7a".
-- **`undefined-avp`.** The eleven names
+- **`undefined-avp`.** The twelve names
   ([consumers.md](consumers.md#undefined-names)), each declared by a block
   whose reason lists what was searched. Where the document itself names the
   AVP a member means, the member was corrected instead (TS 32.299's
