@@ -9,6 +9,7 @@ from seanchai.dad.corrections import (
     definition,
     reused_avps,
     reused_row,
+    value_table,
 )
 
 # The T4-specific Serving-Node and Additional-Serving-Node bodies (clauses
@@ -106,6 +107,18 @@ CORRECTIONS += [
         reason="clause 6.3.4 says the AVP 'is originally defined in 3GPP TS 29.173 "
         "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
         "name every member its body adds and none it leaves out",
+        versions="18.0.0",
+    ),
+    Correction(
+        id="feature-list-avp",
+        target=value_table("Supported-Feature-List"),
+        field="avp",
+        expect="Supported-Feature-List",
+        replace="Feature-List",
+        reason="clause 6.3.5 is headed 'Supported-Feature-List AVP', which no table "
+        "lists and no body names; the document's Supported-Features is TS "
+        "29.229's, holding Feature-List-ID and Feature-List, and the clause's "
+        "table is captioned 'Features of Feature-List-ID 1'",
         versions="18.0.0",
     ),
 ]

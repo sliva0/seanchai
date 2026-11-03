@@ -14,6 +14,8 @@ from seanchai.dad.corrections import (
     reused_avps,
     reused_row,
     table_row,
+    value_row,
+    value_table,
 )
 
 # Table 7.1.0.1 ("Use Of IETF Diameter AVPs") tabulates the IETF AVPs the
@@ -1098,6 +1100,32 @@ CORRECTIONS += [
         " of the same body, so the name cannot be read as it; the TS 29.230"
         " registry allocates no such name and Wireshark's dictionary has no"
         " such AVP",
+        versions="18.0.0",
+    ),
+    Insert(
+        id="credit-limit-reached-result-code",
+        into=value_table("Result-Code", section="7.1.11"),
+        node=ast.ValueRow(name="DIAMETER_CREDIT_LIMIT_REACHED", value=4012),
+        after="DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE",
+        reason="clause 7.1.11 prints the code at the end of the paragraph describing"
+        " DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE, where no line reads it; the"
+        " description after it is the code's",
+        versions="11.20.0",
+    ),
+]
+
+# The codes clauses say are defined elsewhere, as the registry allocates them.
+CORRECTIONS += [
+    Accept(
+        id="feature-unsupported-result-code-reused",
+        rule="registry-result-code-document",
+        target=value_row(
+            "Experimental-Result-Code", "DIAMETER_ERROR_FEATURE_UNSUPPORTED"
+        ),
+        expect="DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but "
+        "TS29.230 table 8.1.4 allocates the code to TS29.229",
+        reason="clause 7.1.8A says 'This value is defined in TS 29.229 [204]': the "
+        "document lists a code it re-uses",
         versions="18.0.0",
     ),
 ]

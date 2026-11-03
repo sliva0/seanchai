@@ -282,7 +282,7 @@ def test_lint_counts_accepted_findings_apart_and_prints_them_on_request():
     shown = _lint_v2x("--show-accepted")
 
     assert hidden.exit_code == 0
-    assert hidden.output == "found 1 accepted in 1 file\n"
+    assert hidden.output == "found 2 accepted in 1 file\n"
     assert shown.exit_code == 0
     (line,) = [line for line in shown.output.splitlines() if _V2X in line]
     assert line.startswith("  accepted[reused-body-differs]")
@@ -421,7 +421,7 @@ def test_plain_lint_in_the_repository_reads_its_acceptances(monkeypatch):
     result = CliRunner().invoke(main, ["lint", str(source)])
 
     assert result.exit_code == 0
-    assert result.output == "found 1 accepted in 1 file\n"
+    assert result.output == "found 2 accepted in 1 file\n"
 
 
 def test_lint_reports_a_malformed_record_as_a_usage_error(tmp_path):

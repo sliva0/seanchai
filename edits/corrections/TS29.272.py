@@ -12,6 +12,8 @@ from seanchai.dad.corrections import (
     reused_avps,
     reused_row,
     table_row,
+    value_row,
+    value_table,
 )
 
 # The VCSG command headers print "< Diameter Header: 8388638, REQ, PXY, >" with
@@ -446,4 +448,111 @@ CORRECTIONS += [
         versions="18.7.0",
     )
     for avp, clause, parameter, cited, names, remark in _TRACE_PARAMETERS
+]
+
+CORRECTIONS += [
+    Correction(
+        id="odb-all-international-og-feature-spelling",
+        target=value_row(
+            value_table("Feature-List", feature_list_id=1), "ODB-all- InternationalOG"
+        ),
+        field="name",
+        expect="ODB-all- InternationalOG",
+        replace="ODB-all-InternationalOG",
+        reason="the cell prints a space after the hyphen, where the column wraps the "
+        "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
+        "feature bit 4)",
+        versions="18.7.0",
+    ),
+    Correction(
+        id="lcs-basic-self-location-feature-spelling",
+        target=value_row(
+            value_table("Feature-List", feature_list_id=1), "LCS- BasicSelfLocation"
+        ),
+        field="name",
+        expect="LCS- BasicSelfLocation",
+        replace="LCS-BasicSelfLocation",
+        reason="the cell prints a space after the hyphen, where the column wraps the "
+        "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
+        "feature bit 18)",
+        versions="18.7.0",
+    ),
+    Correction(
+        id="lcs-autonomous-self-location-feature-spelling",
+        target=value_row(
+            value_table("Feature-List", feature_list_id=1),
+            "LCS- AutonomousSelfLocation",
+        ),
+        field="name",
+        expect="LCS- AutonomousSelfLocation",
+        replace="LCS-AutonomousSelfLocation",
+        reason="the cell prints a space after the hyphen, where the column wraps the "
+        "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
+        "feature bit 19)",
+        versions="18.7.0",
+    ),
+    Correction(
+        id="lcs-transfer-to-third-party-feature-spelling",
+        target=value_row(
+            value_table("Feature-List", feature_list_id=1), "LCS- TransferToThirdParty"
+        ),
+        field="name",
+        expect="LCS- TransferToThirdParty",
+        replace="LCS-TransferToThirdParty",
+        reason="the cell prints a space after the hyphen, where the column wraps the "
+        "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
+        "feature bit 20)",
+        versions="18.7.0",
+    ),
+    Correction(
+        id="dia-lcs-basic-self-location-feature-spelling",
+        target=value_row(
+            value_table("Feature-List", feature_list_id=2), "Dia-LCS- BasicSelfLocation"
+        ),
+        field="name",
+        expect="Dia-LCS- BasicSelfLocation",
+        replace="Dia-LCS-BasicSelfLocation",
+        reason="the cell prints a space after the hyphen, where the column wraps the "
+        "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, "
+        "feature bit 9)",
+        versions="18.7.0",
+    ),
+    Correction(
+        id="dia-lcs-autonomous-self-location-feature-spelling",
+        target=value_row(
+            value_table("Feature-List", feature_list_id=2),
+            "Dia-LCS- AutonomousSelfLocation",
+        ),
+        field="name",
+        expect="Dia-LCS- AutonomousSelfLocation",
+        replace="Dia-LCS-AutonomousSelfLocation",
+        reason="the cell prints a space after the hyphen, where the column wraps the "
+        "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, "
+        "feature bit 10)",
+        versions="18.7.0",
+    ),
+    Correction(
+        id="dia-lcs-transfer-to-third-party-feature-spelling",
+        target=value_row(
+            value_table("Feature-List", feature_list_id=2),
+            "Dia-LCS- TransferToThirdParty",
+        ),
+        field="name",
+        expect="Dia-LCS- TransferToThirdParty",
+        replace="Dia-LCS-TransferToThirdParty",
+        reason="the cell prints a space after the hyphen, where the column wraps the "
+        "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, "
+        "feature bit 11)",
+        versions="18.7.0",
+    ),
+    Correction(
+        id="edrx-cycle-length-withdrawal-spelling",
+        target=value_row("DSR-Flags", "eDRX-Cycle-Length -Withdrawal"),
+        field="name",
+        expect="eDRX-Cycle-Length -Withdrawal",
+        replace="eDRX-Cycle-Length-Withdrawal",
+        reason="table 7.3.25/1 bit 30 prints a space before the hyphen, where the "
+        "column wraps the name, unlike the bit's every other Withdrawal",
+        versions="18.7.0",
+    ),
 ]
