@@ -8,6 +8,7 @@ import pytest
 from click.testing import CliRunner
 from conftest import _CORPUS_DIR, _corpus
 
+import seanchai
 from seanchai.cli import main
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor.errors import ExtractionError
@@ -788,3 +789,10 @@ def test_an_exit_keeps_its_status_and_a_clean_run_exits_zero(tmp_path):
     runner = CliRunner()
     assert runner.invoke(main, ["format", "--check", str(copied)]).exit_code == 1
     assert runner.invoke(main, ["format", str(copied)]).exit_code == 0
+
+
+def test_version_names_the_installed_library():
+    result = CliRunner().invoke(main, ["--version"])
+
+    assert result.exit_code == 0
+    assert seanchai.__version__ in result.output

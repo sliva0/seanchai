@@ -132,6 +132,7 @@ def reported() -> Iterator[None]:
 
 
 @click.group(cls=_Group)
+@click.version_option(package_name="seanchai")
 def main() -> None:
     """Seanchaí: Diameter specifications as reviewable `.dad` files."""
 

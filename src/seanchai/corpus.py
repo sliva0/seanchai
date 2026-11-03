@@ -458,14 +458,18 @@ def installed_directory() -> Path:
     The package is an optional dependency (`seanchai[corpus]`), so it is looked
     for only when asked for. Inside this repository it is the workspace copy.
     """
+    return _installed_package().CORPUS_DIR
+
+
+def _installed_package() -> Any:
     try:
         import seanchai_corpus
     except ModuleNotFoundError as error:
         raise CorpusNotInstalledError(
             "the seanchai-corpus package is not installed: install it"
-            " (`pip install seanchai[corpus]`) or name a corpus directory"
+            """ (`pip install "seanchai[corpus]"`) or name a corpus directory"""
         ) from error
-    return seanchai_corpus.CORPUS_DIR
+    return seanchai_corpus
 
 
 @dataclass(frozen=True)
@@ -490,14 +494,20 @@ class Corpus:
     """Parsed `.dad` files, indexed by the reference re-used rows cite.
 
     A file named twice counts once. Two files claiming one reference, version
-    and revision raise `CorpusError`.
+    and revision raise `CorpusError`. `version` is the installed package's
+    version when `installed` loaded it, and None for any other corpus, which
+    has no one version to name.
     """
 
     def __init__(
-        self, entries: Iterable[Entry], record: HoleRecord | None = None
+        self,
+        entries: Iterable[Entry],
+        record: HoleRecord | None = None,
+        version: str | None = None,
     ) -> None:
         # None for a corpus with no record: a partial or foreign one, or raw.
         self.record = record
+        self.version = version
         self._by_reference: dict[str, list[Entry]] = {}
         # A file reached twice is one copy; two files claiming one copy would
         # leave `newest` and `resolve` to the order they were named in.
@@ -571,7 +581,10 @@ class Corpus:
         """Load the corpus the `seanchai-corpus` package installed, record and
         all, as `load` loads a directory. `CorpusNotInstalledError` without it.
         """
-        return cls.load([installed_directory()], raw=raw)
+        package = _installed_package()
+        books = cls.load([package.CORPUS_DIR], raw=raw)
+        books.version = package.__version__
+        return books
 
     @staticmethod
     def _files(paths: Iterable[Path]) -> Iterator[Path]:

@@ -1,11 +1,12 @@
 """Loading several `.dad` files, and choosing which one an origin means."""
 
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
 import seanchai_corpus
-from conftest import _CORPUS_DIR
+from conftest import _CORPUS_DIR, _ROOT
 
 import seanchai
 from seanchai import corpus, model, oracle
@@ -578,3 +579,15 @@ def test_load_refuses_what_is_no_corpus_with_its_own_error(given, says):
 )
 def test_every_error_shares_one_base(error):
     assert issubclass(error, seanchai.SeanchaiError)
+
+
+def test_an_installed_corpus_knows_its_version_and_a_loaded_one_does_not():
+    assert corpus.Corpus.installed().version == seanchai_corpus.__version__
+    assert corpus.Corpus.installed(raw=True).version == seanchai_corpus.__version__
+    assert corpus.Corpus.load(_CORPUS_DIR).version is None
+
+
+def test_the_library_knows_its_version():
+    pyproject = tomllib.loads((_ROOT / "pyproject.toml").read_text("utf-8"))
+
+    assert seanchai.__version__ == pyproject["project"]["version"]
