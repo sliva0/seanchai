@@ -334,7 +334,7 @@ def test_aliases_load_with_every_key_once_per_name(tmp_path):
 @pytest.mark.sources
 def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
     """Every entry of the repository's list accepts its rename once, and
-    none is stale: the twenty-nine `name-disagrees` findings it lists are
+    none is stale: the thirty-six `name-disagrees` findings it lists are
     agreement, the other thirty-four name disagreements still report."""
     from seanchai import corpus
 
@@ -348,10 +348,10 @@ def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
     ]
 
     accepted = [finding for finding in findings if finding.accepted_by]
-    assert len(accepted) == len(aliases) == 29
+    assert len(accepted) == len(aliases) == 36
     assert not [finding for finding in findings if finding.rule == "stale-alias"]
-    assert len(findings) - len(accepted) == 101
-    assert sum(finding.rule == "name-disagrees" for finding in findings) == 63
+    assert len(findings) - len(accepted) == 102
+    assert sum(finding.rule == "name-disagrees" for finding in findings) == 70
     assert sum(finding.rule.startswith("value-") for finding in findings) == 15
 
 

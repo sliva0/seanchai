@@ -129,7 +129,7 @@ def test_every_module_imports_as_library_classes_and_registers_nothing(package):
         """,
     )
     modules, directions = map(int, output.split())
-    assert modules == 86
+    assert modules == 88
     assert directions > 300
 
 
@@ -220,7 +220,7 @@ def test_a_library_grouped_class_with_other_m_bits_is_not_reused(package):
         """,
     )
     assert output.splitlines() == [
-        "SupportedFeatures_TS29_229 False",
+        "SupportedFeatures_3GPP2_X_S0013_006 False",
         "Vendor-Id True",
         "Feature-List-ID False",
         "Feature-List False",
@@ -261,10 +261,11 @@ def test_a_citing_documents_member_rules_are_the_librarys_class(package):
     """TS 32.299 table 7.2.0.1 sets M on Supported-Features and its members,
     which TS 29.229's table forbids on the members: TS 32.299's reading
     encodes them as the library's `SupportedFeatures` does, so it is that
-    class, where TS 29.229's is `SupportedFeatures_TS29_229`."""
+    class, where TS 29.229's, which 3GPP2 X.S0013-006 prints too, is
+    `SupportedFeatures_3GPP2_X_S0013_006`."""
     additions = _read(package, "additions")
-    assert "class SupportedFeatures_TS29_229:\n" in additions
-    assert "SupportedFeatures_TS29_229_2" not in additions
+    assert "class SupportedFeatures_3GPP2_X_S0013_006:\n" in additions
+    assert "SupportedFeatures_3GPP2_X_S0013_006_2" not in additions
     holder = additions.split("\nclass PsInformation")[1]
     assert (
         '        AvpGenDef("supported_features", AVP_TGPP_SUPPORTED_FEATURES,'

@@ -254,8 +254,7 @@ What still reports, and why each stays:
   stands in for them: TS 29.212 V11.19.0's `Trace-Data` has a body Release
   18's differs from, and no citation reaches them from oneM2M TS-0004.
 - **`external-origin-not-in-corpus`.** Both copies of TS 32.299, for
-  `OMA-DDS-Charging_Data`; TS 183 066, for TS 183 020 and TS 183 059-1; and
-  3GPP2 X.S0013-014, for X.S0013-006. Those three leave recorded holes.
+  `OMA-DDS-Charging_Data`.
 - **`member-marked-unused`.** TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
   ABNF lists both.

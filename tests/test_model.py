@@ -1921,10 +1921,7 @@ def _committed() -> corpus.Corpus:
 
 # The field holes of the record: the ones no undefined policy answers for.
 _FIELD_HOLES = {
-    ("3GPP2-X.S0013-014", "Charging-Information"),
-    ("ETSI-TS183.066", "CNGCF-Address"),
-    ("ETSI-TS183.066", "Privacy-Indicator"),
-    ("ETSI-TS183.066", "SIP-Outbound-Proxy"),
+    ("ETSI-TS183.020", "Privacy-Indicator"),
     ("RFC6736", "Egress-VLANID"),
     ("TS29.061", "3GPP-Session-Stop-Indicator"),
     ("TS29.061 V6.15.0", "3GPP-GPRS-Negotiated-QoS-Profile"),

@@ -105,8 +105,9 @@ both where it was generated and inside the library.
   the library's class does not carry as the document says. The library's
   class is reused only when its members' identities, their nesting and
   their M bits all agree with the reading; otherwise the class is suffixed
-  with its first document (`SupportedFeatures_TS29_229`, since the library's
-  `SupportedFeatures` sets M on two members TS 29.229's table forbids).
+  with its first document (`SupportedFeatures_3GPP2_X_S0013_006`, since the
+  library's `SupportedFeatures` sets M on two members the tables of 3GPP2
+  X.S0013-006 and TS 29.229 forbid).
   Readings of one AVP with one body share a class.
 
 Importing `additions` changes nothing in the library. `register()` merges

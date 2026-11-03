@@ -8,6 +8,9 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- `seanchai regenerate` names an ETSI document in parts as ETSI does
+  (`ts18305901-020101`), and the catalog gains ETSI TS 183 020, TS 183 059-1 and
+  3GPP2 X.S0013-006.
 - A `Value Table` block for what a numeric AVP's numbers are named:
   `result-codes`, `bits` and `features`, read from 3GPP clause headings, lines
   and tables and from RFC text, with `value_table` and `value_row` selectors for
