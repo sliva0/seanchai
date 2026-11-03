@@ -546,6 +546,7 @@ WLAN-Assistance-Info ::= < AVP header: 3820 10415 >
 ; Page: 49
 WLAN-Link-Layer-Id ::= < AVP header: 3821 10415 >
         [ MAC-Address ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -554,6 +555,7 @@ WLAN-Link-Layer-Id ::= < AVP header: 3821 10415 >
 ; Page: 50
 WLAN-Link-Layer-Id-List ::= < AVP header: 3822 10415 >
       * [ WLAN-Link-Layer-Id ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -645,6 +647,12 @@ Discovery-Auth-Response ::= < AVP header: 3855 10415 >
         [ ProSe-Restricted-Code ]
         [ ProSe-Query-Code ]
         [ ProSe-Response-Code ]
+        [ ProSe-Validity-Timer ]
+        [ Code-Sending-Security-Material ]
+        [ Code-Receiving-Security-Material ]
+        [ DUIK ]
+        [ PC5-tech ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -653,6 +661,11 @@ Discovery-Auth-Response ::= < AVP header: 3855 10415 >
 ; Page: 55
 Match-Request ::= < AVP header: 3856 10415 >
         { Discovery-Type }
+        [ User-Identity ]
+        [ Visited-PLMN-ID ]
+      * [ ProSe-App-Code-Info ]
+        [ PC5-tech ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -682,6 +695,8 @@ App-Identifier ::= < AVP header: 3840 10415 >
 ; Page: 57
 ProSe-Restricted-Code-Suffix-Range ::= < AVP header: 3847 10415 >
         { Beginning-Suffix }
+        [ Ending-Suffix ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -715,3 +730,5 @@ Code-Sending-Security-Material ::= < AVP header: 3847 10415 >
 ; Page: 59
 ProSe-App-Code-Suffix-Range ::= < AVP header: 3847 10415 >
         { Beginning-Suffix }
+        [ Ending-Suffix ]
+      * [ AVP ]

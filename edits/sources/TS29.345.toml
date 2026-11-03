@@ -51,3 +51,55 @@ reason = """
     """
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[patch]]
+find = "*AVP"
+replace = "*[ AVP ]"
+exact = true
+count = 2
+reason = """
+    clauses 6.3.32 and 6.3.33 print the extension member without its
+    brackets, '*AVP'; the document's other grouped AVPs print '*[AVP]'.
+    Unread, each body lost it.
+    """
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "[ ProSe-Validity Timer ]"
+replace = "[ ProSe-Validity-Timer ]"
+exact = true
+section = "6.3.54"
+reason = """
+    clause 6.3.54's Discovery-Auth-Response prints a space for a hyphen,
+    docx and PDF alike; the clause defining ProSe-Validity-Timer has none.
+    Unread, the body ended there, dropping the members after it.
+    """
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "[ User Identity ]"
+replace = "[ User-Identity ]"
+exact = true
+section = "6.3.55"
+reason = """
+    clause 6.3.55's Match-Request prints a space for a hyphen, docx and PDF
+    alike; the document's other bodies print '[ User-Identity ]'. Unread,
+    the body ended there, dropping the members after it.
+    """
+first_version = "18.0.0"
+last_version = "18.0.0"
+
+[[patch]]
+find = "[ Ending–Suffix ]"
+replace = "[ Ending-Suffix ]"
+exact = true
+count = 2
+reason = """
+    clauses 6.3.68 and 6.3.82 print an en dash in the name, docx and PDF
+    alike; Beginning-Suffix beside it and the AVP table's Ending-Suffix have
+    a hyphen. Unread, each body lost it.
+    """
+first_version = "18.0.0"
+last_version = "18.0.0"
