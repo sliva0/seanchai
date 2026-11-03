@@ -838,6 +838,47 @@ def test_a_partial_download_refuses_a_manifest_whose_files_have_gone(
     assert (output / "manifest.json").read_bytes() == before
     assert not (output / "rfc").exists()
 
+    # A converted DOCX is in its record's `conversions` and not its `files`.
+    document = "3gpp/Rel-18/TS_29.999/29999-i00.doc"
+    converted = "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx"
+    (output / document).parent.mkdir(parents=True)
+    (output / document).write_bytes(b"doc")
+    before = json.dumps(
+        {
+            "artifacts": [
+                {
+                    "family": "3GPP",
+                    "identifier": "TS 29.999",
+                    "title": "Test TS",
+                    "url": "http://example.com",
+                    "sha256": "0",
+                    "size": 3,
+                    "files": [document],
+                    "conversions": [
+                        {
+                            "file": converted,
+                            "source": document,
+                            "source_sha256": "0",
+                            "converter": "soffice",
+                            "command": ["soffice"],
+                            "sha256": "0",
+                            "size": 4,
+                        }
+                    ],
+                }
+            ]
+        }
+    )
+    (output / "manifest.json").write_text(before)
+
+    with pytest.raises(
+        downloader.DownloadError, match=rf"{converted}, which is gone.*--only 3gpp"
+    ):
+        downloader.download_corpus(output, only=["rfc"], catalog=catalog)
+
+    assert (output / "manifest.json").read_text() == before
+    assert not (output / "rfc").exists()
+
 
 def test_a_partial_download_refuses_a_manifest_it_cannot_read(tmp_path):
     output = tmp_path / "corpus"

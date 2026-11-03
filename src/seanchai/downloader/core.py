@@ -1226,7 +1226,8 @@ def _kept(destination: Path, selected: frozenset[str]) -> _Kept:
         ) from error
     for record in records:
         source = SOURCE_OF_FAMILY[record.family]
-        for name in record.files:
+        converted = [conversion.file for conversion in record.conversions or ()]
+        for name in (*record.files, *converted):
             if not (destination / name).is_file():
                 raise DownloadError(
                     f"{path} lists {name}, which is gone: run"
