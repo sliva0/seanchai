@@ -29,15 +29,24 @@ up grammar changes.
 
 ## Neovim
 
-`.nvim.lua` at the repo root adds `editors/vim/` to the runtimepath, so with
-`exrc` enabled (`vim.o.exrc = true`; off by default) opening Neovim from the
-repo root is enough; you will be prompted once to trust the file.
+`editors/vim/` is a plugin: `ftdetect/` sets the filetype for `*.dad`, and
+`ftplugin/` and `syntax/` do the rest. Load it as a local plugin from a
+checkout, with lazy.nvim:
 
-Without `exrc`, add the directory yourself:
+```lua
+{ dir = "/path/to/seanchai/editors/vim", name = "seanchai-dad", lazy = false }
+```
+
+or add it to the runtimepath before startup finishes, so `ftdetect/` is
+read:
 
 ```lua
 vim.opt.runtimepath:prepend("/path/to/seanchai/editors/vim")
 ```
+
+With `exrc` enabled (`vim.o.exrc = true`; off by default), `.nvim.lua` at the
+repo root does the same when Neovim starts from the repo root; you will be
+prompted once to trust the file.
 
 Striping uses the `DadTableStripe` highlight group (defaults to
 `CursorLine`); override it with `vim.api.nvim_set_hl`.
