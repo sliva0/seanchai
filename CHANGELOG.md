@@ -8,6 +8,12 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- `; VOID = N` and `; VOID = N-M` are enumerated body lines (`ast.VoidValues`,
+  kind `void`): a value the document assigned and withdrew, which no dictionary
+  may assign. The docx extractor reads a `Void` label as one, so TS 29.214's
+  Specific-Action keeps the values corrections used to delete, and Release 7's
+  `Void = 0` stops being a name. `seanchai lint` gains `void-overlap`. Export
+  schema version 6, dictionary format version 3.
 - `[[exclude]]` in a source declaration leaves a clause of a 3GPP docx out of
   both files, with a reason, a `;;` block after the header naming it and
   must-fire accounting: TS 29.329 V19.1.0's unfinished clause 8, Sh-ee.
