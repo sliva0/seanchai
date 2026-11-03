@@ -200,7 +200,7 @@ class Message(Node):
 
     type: Literal["Message"] = "Message"
     name: AvpName
-    abbreviation: Annotated[str, Field(pattern=r"^[A-Z]{2,5}$")]
+    abbreviation: Annotated[str, Field(pattern=r"^[A-Z]{2,6}$")]
     source: SourceRef
     command_code: Unsigned24
     flags: frozenset[CommandFlag]
