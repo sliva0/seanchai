@@ -1,0 +1,30 @@
+# Source declarations for ETSI TS 183 033 (Diameter based protocol for the
+# interfaces between the Call Session Control Function and the User Profile
+# Server Function/Subscription Locator Function; 3GPP TS 29.228 and TS 29.229
+# modified). Applied to the lines of the hand transcription in
+# edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = ":: ="
+replace = "::="
+count = 2
+section = "ZA.2"
+reason = """
+    the AVP formats of SIP-Auth-Data-Item and ETSI-SIP-Authorization print a
+    space inside the '::=' that ETSI-SIP-Authenticate's and
+    ETSI-SIP-Authentication-Info's print whole, in the same clause
+    """
+first_version = "1.2.0"
+last_version = "1.2.0"
+
+[[patch]]
+find = ":: ="
+replace = "::="
+section = "6.3.13"
+reason = """
+    clause 6.3.13's AVP format prints a space inside the '::=', as clause ZA.2's
+    copy of it does
+    """
+first_version = "1.2.0"
+last_version = "1.2.0"

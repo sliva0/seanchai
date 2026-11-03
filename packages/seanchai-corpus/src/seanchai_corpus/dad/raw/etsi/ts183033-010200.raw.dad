@@ -1,0 +1,141 @@
+; Specification: ETSI TS 183 033
+; Version: 1.2.0
+; Vendor-ID: 13019
+; Bases: RFC6733, TS29.229
+; Link: https://www.etsi.org/deliver/etsi_ts/183000_183099/183033/01.02.00_60/ts_183033v010200p.pdf
+; Transcribed: by hand from https://www.etsi.org/deliver/etsi_ts/183000_183099/183033/01.02.00_60/ts_183033v010200p.pdf
+
+
+;; The document endorses TS 29.228 and TS 29.229 with modifications, so it
+;; prints only what it adds, under the endorsed documents' clause numbers:
+;; clause 6's "6.3" is TS 29.229's clause 6.3 (V6.6.0, clause 2.1 [2]). Clause
+;; 4's note says "Underlining and/or strike-out are used to highlight detailed
+;; modifications"; what is underlined is marked so in a ;; comment. V1.3.0
+;; and V2.0.0 hold no definitions: each says "The provisions of the present
+;; document are contained in TS 129 433".
+; Type: AVP Table
+; Section: 6.3
+; Table: 6.3.1
+; Page: 13
+; Columns: Name   Code   Section   Type          Must   May   S.not   M.not   Encrypt
+;; Table 6.3.1 is endorsed with this addition; its other rows print "…".
+Line-Identifier   500    6.3.34    OctetString   V      -     -       M       No
+;; NOTE 1: The AVP header bit denoted as "M" indicates whether support of the AVP is required. The AVP header bit denoted as "V" indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see IETF RFC 3588 [6].
+;; NOTE 2: Depending on the concrete command.
+
+
+; Type: Grouped AVP
+; Name: SIP-Auth-Data-Item
+; Section: 6.3.13
+; Page: 14
+SIP-Auth-Data-Item ::= < AVP header: 612 10415 >
+        [ SIP-Item-Number ]
+        [ SIP-Authentication-Scheme ]
+        [ SIP-Authenticate ]
+        [ SIP-Authorization ]
+        [ SIP-Authentication-Context ]
+        [ Confidentiality-Key ]
+        [ Integrity-Key ]
+      * [ Line-Identifier ] ;; underlined
+      * [ AVP ]
+
+
+;; Annex ZA is informative and holds the only definitions of its 21 AVPs,
+;; which no other document in the corpus defines, so it is transcribed.
+; Type: AVP Table
+; Section: ZA.2
+; Table: ZA.2.1
+; Page: 17
+; Columns: Name                Code   Section   Type         Must   May   S.not   M.not   Encrypt
+ETSI-SIP-Authenticate          501    -         Grouped      V      -     -       M       No
+ETSI-SIP-Authorization         502    -         Grouped      V      -     -       M       No
+ETSI-SIP-Authentication-Info   503    -         Grouped      V      -     -       M       No
+ETSI-Digest-Realm              504    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Nonce              505    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Domain             506    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Opaque             507    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Stale              508    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Algorithm          509    -         UTF8String   V      -     -       M       No
+ETSI-Digest-QoP                510    -         UTF8String   V      -     -       M       No
+ETSI-Digest-HA1                511    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Auth-Param         512    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Username           513    -         UTF8String   V      -     -       M       No
+ETSI-Digest-URI                514    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Response           515    -         UTF8String   V      -     -       M       No
+ETSI-Digest-CNonce             516    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Nonce-Count        517    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Method             518    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Entity-Body-Hash   519    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Nextnonce          520    -         UTF8String   V      -     -       M       No
+ETSI-Digest-Response-Auth      521    -         UTF8String   V      -     -       M       No
+;; NOTE 1: The AVP header bit denoted as "M", indicates whether support of the AVP is required. The AVP header bit denoted as "V", indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see IETF RFC 3588 [5].
+;; NOTE 2: Depending on the concrete command.
+
+
+; Type: Grouped AVP
+; Name: SIP-Auth-Data-Item
+; Section: ZA.2
+; Page: 18
+SIP-Auth-Data-Item ::= < AVP header: 612 10415 >
+        [ SIP-Item-Number ]
+        [ SIP-Authentication-Scheme ]
+        [ SIP-Authenticate ]
+        [ SIP-Authorization ]
+        [ SIP-Authentication-Context ]
+        [ Confidentiality-Key ]
+        [ Integrity-Key ]
+        [ ETSI-SIP-Authorization ] ;; underlined
+        [ ETSI-SIP-Authenticate ] ;; underlined
+        [ ETSI-SIP-Authentication-Info ] ;; underlined
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ETSI-SIP-Authenticate
+; Section: ZA.2
+; Page: 18
+ETSI-SIP-Authenticate ::= < AVP header: 501 13019 >
+        { ETSI-Digest-Realm }
+        { ETSI-Digest-Nonce }
+        [ ETSI-Digest-Domain ]
+        [ ETSI-Digest-Opaque ]
+        [ ETSI-Digest-Stale ]
+        [ ETSI-Digest-Algorithm ]
+        [ ETSI-Digest-QoP ]
+        [ ETSI-Digest-HA1 ]
+      * [ ETSI-Digest-Auth-Param ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ETSI-SIP-Authorization
+; Section: ZA.2
+; Page: 19
+ETSI-SIP-Authorization ::= < AVP header: 502 13019 >
+        { ETSI-Digest-Username }
+        { ETSI-Digest-Realm }
+        { ETSI-Digest-Nonce }
+        { ETSI-Digest-URI }
+        { ETSI-Digest-Response }
+        [ ETSI-Digest-Algorithm ]
+        [ ETSI-Digest-CNonce ]
+        [ ETSI-Digest-Opaque ]
+        [ ETSI-Digest-QoP ]
+        [ ETSI-Digest-Nonce-Count ]
+        [ ETSI-Digest-Method ]
+        [ ETSI-Digest-Entity-Body-Hash ]
+      * [ ETSI-Digest-Auth-Param ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: ETSI-SIP-Authentication-Info
+; Section: ZA.2
+; Page: 19
+ETSI-SIP-Authentication-Info ::= < AVP header: 503 13019 >
+        { ETSI-Digest-Nextnonce }
+        [ ETSI-Digest-QoP ]
+        [ ETSI-Digest-Response-Auth ]
+        [ ETSI-Digest-CNonce ]
+        [ ETSI-Digest-Nonce-Count ]
+      * [ AVP ]
