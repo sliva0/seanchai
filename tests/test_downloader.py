@@ -151,7 +151,7 @@ def test_a_pinned_final_version_is_checked_against_every_release():
 
 def test_a_release_final_version_is_checked_against_its_release_only():
     pin = downloader.PinnedThreeGppSpec("29.214", "Rx", "7.12.0", "release")
-    listing = _listing("7.11.0", "7.12.0", "8.0.0", "18.4.0")
+    listing = _listing("7.11.0", "7.12.0", "8.0.0", "19.4.0")
 
     assert sorted(downloader.check_final(pin, listing)) == [(7, 11, 0), (7, 12, 0)]
     with pytest.raises(downloader.DownloadError, match="Release 7's final"):
@@ -237,7 +237,7 @@ def test_validate_pdf_reads_a_pdf_encrypted_for_its_owner(tmp_path):
 
 def _tree(root: Path, label: bytes) -> None:
     """A published-looking tree whose every file says which run wrote it."""
-    for name in ("3gpp/Rel-18/TS_29.999/spec.docx", "rfc/rfc9999.txt", "manifest.json"):
+    for name in ("3gpp/Rel-19/TS_29.999/spec.docx", "rfc/rfc9999.txt", "manifest.json"):
         (root / name).parent.mkdir(parents=True, exist_ok=True)
         (root / name).write_bytes(label)
 
@@ -265,7 +265,7 @@ def test_publish_swaps_the_whole_tree_and_drops_what_staging_lacks(tmp_path):
     # The cache is not a published entry and stays; `converted/` was not
     # staged this time, so the tree no longer has it.
     assert _snapshot(destination) == {
-        "3gpp/Rel-18/TS_29.999/spec.docx": b"new",
+        "3gpp/Rel-19/TS_29.999/spec.docx": b"new",
         "archives/cache.zip": b"cache",
         "manifest.json": b"new",
         "rfc/rfc9999.txt": b"new",
@@ -298,7 +298,7 @@ def test_a_failed_swap_restores_the_previous_tree_and_manifest(tmp_path, monkeyp
     with pytest.raises(downloader.DownloadError, match="cannot publish"):
         downloader.publish(staging, destination, ("3gpp", "rfc"))
 
-    names = ["3gpp/Rel-18/TS_29.999/spec.docx", "manifest.json", "rfc/rfc9999.txt"]
+    names = ["3gpp/Rel-19/TS_29.999/spec.docx", "manifest.json", "rfc/rfc9999.txt"]
     assert _snapshot(destination) == {name: b"old" for name in names} | {
         f".staging/{name}": b"new" for name in names
     }
@@ -351,7 +351,7 @@ def test_a_directory_the_rollback_cannot_restore_keeps_the_manifest_out(
     assert "holds manifest.json, rfc" in str(raised.value)
     snapshot = _snapshot(destination)
     assert "manifest.json" not in snapshot
-    assert snapshot["3gpp/Rel-18/TS_29.999/spec.docx"] == b"old"
+    assert snapshot["3gpp/Rel-19/TS_29.999/spec.docx"] == b"old"
     assert snapshot[".previous/manifest.json"] == b"old"
     assert snapshot[".previous/rfc/rfc9999.txt"] == b"old"
     monkeypatch.undo()
@@ -381,26 +381,26 @@ def test_discover_3gpp_archive_urls_matches_release_and_resolves_relative_links(
     # releases too: selection is by decoded version, never by position.
     local_http_server.route(
         "/archive/29_series/29.999/",
-        b'<a href="29999-i10.zip">new</a><a href="../files/29999-i00.zip">old</a>'
+        b'<a href="29999-j10.zip">new</a><a href="../files/29999-j00.zip">old</a>'
         b'<a href="/files/29999-h99.zip">wrong release</a>',
     )
 
     urls = downloader.discover_3gpp_archive_urls(
-        downloader.ThreeGppSpec("29.999", "First"), 18
+        downloader.ThreeGppSpec("29.999", "First"), 19
     )
 
     base = local_http_server.base_url
     assert urls == {
-        (18, 1, 0): f"{base}/archive/29_series/29.999/29999-i10.zip",
-        (18, 0, 0): f"{base}/archive/29_series/files/29999-i00.zip",
+        (19, 1, 0): f"{base}/archive/29_series/29.999/29999-j10.zip",
+        (19, 0, 0): f"{base}/archive/29_series/files/29999-j00.zip",
     }
 
 
 @pytest.mark.parametrize(
     ("url", "version"),
     [
-        ("https://example.test/29272-i00.zip", (18, 0, 0)),
-        ("https://example.test/29272-i1a.zip", (18, 1, 10)),
+        ("https://example.test/29272-j00.zip", (19, 0, 0)),
+        ("https://example.test/29272-j1a.zip", (19, 1, 10)),
         ("https://example.test/spec.zip", None),
     ],
 )
@@ -443,17 +443,17 @@ def test_download_3gpp_falls_back_to_latest_earlier_etsi_pdf(
 ):
     base = local_http_server.base_url
     monkeypatch.setattr(downloader, "ETSI_DELIVER", base)
-    archive_url = local_http_server.route("/29329-i10.zip", _zip_bytes(spec=b"body"))
+    archive_url = local_http_server.route("/29329-j10.zip", _zip_bytes(spec=b"body"))
     local_http_server.route(
-        "/etsi_ts/129300_129399/129329/18.01.00_60/ts_129329v180100p.pdf",
+        "/etsi_ts/129300_129399/129329/19.01.00_60/ts_129329v190100p.pdf",
         (404, b"not published"),
     )
     local_http_server.route(
         "/etsi_ts/129300_129399/129329/",
-        b"18.00.00_60/ 18.01.00_60/ 18.02.00_60/ 17.09.00_60/ 18.01.00_60/",
+        b"19.00.00_60/ 19.01.00_60/ 19.02.00_60/ 17.09.00_60/ 19.01.00_60/",
     )
     local_http_server.route(
-        "/etsi_ts/129300_129399/129329/18.00.00_60/ts_129329v180000p.pdf",
+        "/etsi_ts/129300_129399/129329/19.00.00_60/ts_129329v190000p.pdf",
         _pdf_bytes(),
     )
     spec = downloader.ThreeGppSpec("29.329", "Sh")
@@ -461,38 +461,38 @@ def test_download_3gpp_falls_back_to_latest_earlier_etsi_pdf(
     directory = f"{base}/etsi_ts/129300_129399/129329"
     assert downloader.discover_etsi_editions(spec) == {
         (17, 9, 0): f"{directory}/17.09.00_60/",
-        (18, 0, 0): f"{directory}/18.00.00_60/",
-        (18, 1, 0): f"{directory}/18.01.00_60/",
-        (18, 2, 0): f"{directory}/18.02.00_60/",
+        (19, 0, 0): f"{directory}/19.00.00_60/",
+        (19, 1, 0): f"{directory}/19.01.00_60/",
+        (19, 2, 0): f"{directory}/19.02.00_60/",
     }
 
     record = downloader.download_3gpp(
         spec,
-        {(18, 1, 0): archive_url},
-        release=18,
+        {(19, 1, 0): archive_url},
+        release=19,
         output=tmp_path,
         tree=tmp_path / ".staging",
         extract=False,
         pdfs=True,
     )
 
-    assert record.source_version == "18.1.0"
-    assert record.pdf_version == "18.0.0"
+    assert record.source_version == "19.1.0"
+    assert record.pdf_version == "19.0.0"
     assert record.pdf_url is not None
-    assert record.pdf_url.endswith("18.00.00_60/ts_129329v180000p.pdf")
+    assert record.pdf_url.endswith("19.00.00_60/ts_129329v190000p.pdf")
     assert record.files == [
-        "archives/3gpp-rel-18/29329-i10.zip",
-        "3gpp/Rel-18/PDF/ts_129329v180000p.pdf",
+        "archives/3gpp-rel-19/29329-j10.zip",
+        "3gpp/Rel-19/PDF/ts_129329v190000p.pdf",
     ]
     assert (
         local_http_server.counts[
-            "/etsi_ts/129300_129399/129329/18.01.00_60/ts_129329v180100p.pdf"
+            "/etsi_ts/129300_129399/129329/19.01.00_60/ts_129329v190100p.pdf"
         ]
         == 1
     )
     assert (
         local_http_server.counts[
-            "/etsi_ts/129300_129399/129329/18.00.00_60/ts_129329v180000p.pdf"
+            "/etsi_ts/129300_129399/129329/19.00.00_60/ts_129329v190000p.pdf"
         ]
         == 1
     )
@@ -505,20 +505,20 @@ def test_the_etsi_link_is_the_pdf_its_edition_directory_lists(
     monkeypatch.setattr(downloader, "ETSI_DELIVER", base)
     directory = "/etsi_ts/129200_129299/129272"
     # Shaped like the real listing: absolute upper-case HREFs, every
-    # directory named twice. 18.7.0 has a second edition here, which the
+    # directory named twice. 19.7.0 has a second edition here, which the
     # `_60` derivation cannot reach.
     local_http_server.route(
         f"{directory}/",
         "".join(
             f'<A HREF="{directory}/{name}/">{name}</A><br>'
-            for name in ("18.06.00_60", "18.07.00_60", "18.07.00_61")
+            for name in ("19.06.00_60", "19.07.00_60", "19.07.00_61")
         ).encode(),
     )
-    listed = f"{directory}/18.07.00_61/ts_129272v180700p1.pdf"
+    listed = f"{directory}/19.07.00_61/ts_129272v190700p1.pdf"
     local_http_server.route(
-        f"{directory}/18.07.00_61/",
+        f"{directory}/19.07.00_61/",
         f'<A HREF="{directory}/">[To Parent Directory]</A><br>'
-        f'<A HREF="{listed}">ts_129272v180700p1.pdf</A>'.encode(),
+        f'<A HREF="{listed}">ts_129272v190700p1.pdf</A>'.encode(),
     )
     local_http_server.route(listed, _pdf_bytes())
     spec = downloader.ThreeGppSpec("29.272", "S6a")
@@ -526,26 +526,26 @@ def test_the_etsi_link_is_the_pdf_its_edition_directory_lists(
     editions = downloader.discover_etsi_editions(spec)
 
     assert editions == {
-        (18, 6, 0): f"{base}{directory}/18.06.00_60/",
-        (18, 7, 0): f"{base}{directory}/18.07.00_61/",
+        (19, 6, 0): f"{base}{directory}/19.06.00_60/",
+        (19, 7, 0): f"{base}{directory}/19.07.00_61/",
     }
-    assert downloader.etsi_listed_pdf_url(spec, (18, 7, 0), editions) == (
+    assert downloader.etsi_listed_pdf_url(spec, (19, 7, 0), editions) == (
         f"{base}{listed}"
     )
     # An edition directory that cannot be listed: the derived file name in it.
-    assert downloader.etsi_listed_pdf_url(spec, (18, 6, 0), editions) == (
-        f"{base}{directory}/18.06.00_60/ts_129272v180600p.pdf"
+    assert downloader.etsi_listed_pdf_url(spec, (19, 6, 0), editions) == (
+        f"{base}{directory}/19.06.00_60/ts_129272v190600p.pdf"
     )
     # No deliver listing at all: the `_60` derivation.
-    derived = f"{base}{directory}/18.07.00_60/ts_129272v180700p.pdf"
-    assert downloader.etsi_listed_pdf_url(spec, (18, 7, 0), None) == derived
-    assert downloader.etsi_pdf_url(spec, (18, 7, 0)) == derived
+    derived = f"{base}{directory}/19.07.00_60/ts_129272v190700p.pdf"
+    assert downloader.etsi_listed_pdf_url(spec, (19, 7, 0), None) == derived
+    assert downloader.etsi_pdf_url(spec, (19, 7, 0)) == derived
 
-    archive_url = local_http_server.route("/29272-i70.zip", _zip_bytes(spec=b"body"))
+    archive_url = local_http_server.route("/29272-j70.zip", _zip_bytes(spec=b"body"))
     record = downloader.download_3gpp(
         spec,
-        {(18, 7, 0): archive_url},
-        release=18,
+        {(19, 7, 0): archive_url},
+        release=19,
         output=tmp_path,
         tree=tmp_path / ".staging",
         extract=False,
@@ -554,8 +554,8 @@ def test_the_etsi_link_is_the_pdf_its_edition_directory_lists(
 
     # The manifest's `pdf_url` is what `regenerate` writes as `; Link:`.
     assert record.pdf_url == f"{base}{listed}"
-    assert record.pdf_version == "18.7.0"
-    assert record.files[-1] == "3gpp/Rel-18/PDF/ts_129272v180700p1.pdf"
+    assert record.pdf_version == "19.7.0"
+    assert record.files[-1] == "3gpp/Rel-19/PDF/ts_129272v190700p1.pdf"
 
 
 def test_a_new_edition_of_a_cached_pdf_is_fetched_not_served_from_the_cache(
@@ -566,12 +566,12 @@ def test_a_new_edition_of_a_cached_pdf_is_fetched_not_served_from_the_cache(
     base = local_http_server.base_url
     monkeypatch.setattr(downloader, "ETSI_DELIVER", base)
     directory = "/etsi_ts/129200_129299/129272"
-    name = "ts_129272v180700p.pdf"
+    name = "ts_129272v190700p.pdf"
     first, second = _pdf_bytes(), _pdf_bytes(pages=2)
     assert first != second
-    for edition, body in (("18.07.00_60", first), ("18.07.00_61", second)):
+    for edition, body in (("19.07.00_60", first), ("19.07.00_61", second)):
         local_http_server.route(f"{directory}/{edition}/{name}", body)
-    archive_url = local_http_server.route("/29272-i70.zip", _zip_bytes(spec=b"body"))
+    archive_url = local_http_server.route("/29272-j70.zip", _zip_bytes(spec=b"body"))
     spec = downloader.ThreeGppSpec("29.272", "S6a")
 
     def fetch(*editions):
@@ -580,21 +580,21 @@ def test_a_new_edition_of_a_cached_pdf_is_fetched_not_served_from_the_cache(
         )
         return downloader.download_3gpp(
             spec,
-            {(18, 7, 0): archive_url},
-            release=18,
+            {(19, 7, 0): archive_url},
+            release=19,
             output=tmp_path,
             tree=tmp_path / ".staging" / editions[-1],
             extract=False,
             pdfs=True,
         )
 
-    fetch("18.07.00_60")
-    record = fetch("18.07.00_60", "18.07.00_61")
+    fetch("19.07.00_60")
+    record = fetch("19.07.00_60", "19.07.00_61")
 
-    assert record.pdf_url == f"{base}{directory}/18.07.00_61/{name}"
+    assert record.pdf_url == f"{base}{directory}/19.07.00_61/{name}"
     assert record.pdf_sha256 == hashlib.sha256(second).hexdigest()
-    assert local_http_server.counts[f"{directory}/18.07.00_61/{name}"] == 1
-    assert (tmp_path / "archives" / "etsi" / "18.07.00_60" / name).read_bytes() == (
+    assert local_http_server.counts[f"{directory}/19.07.00_61/{name}"] == 1
+    assert (tmp_path / "archives" / "etsi" / "19.07.00_60" / name).read_bytes() == (
         first
     )
 
@@ -642,7 +642,7 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     base = _serve(local_http_server, monkeypatch)
     output = tmp_path / "corpus"
     archive = _zip_bytes(spec=b"body")
-    _archive_listing(local_http_server, "29.999", **{"29999-i00": archive})
+    _archive_listing(local_http_server, "29.999", **{"29999-j00": archive})
     monkeypatch.setattr(downloader.time, "time", lambda: 1234.9)
     progress = []
 
@@ -662,7 +662,7 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     assert any("Downloaded TS 29.999" in line for line in progress)
 
     manifest = json.loads((output / "manifest.json").read_text())
-    assert manifest["3gpp_release"] == 18
+    assert manifest["3gpp_release"] == 19
     assert manifest["generated_at_epoch"] == 1234
     assert manifest["artifact_count"] == 3
     assert [artifact["identifier"] for artifact in manifest["artifacts"]] == [
@@ -672,11 +672,11 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     ]
     # The archive URL, which stays valid after a newer version lands.
     assert manifest["artifacts"][0]["url"] == (
-        f"{base}/archive/29_series/29.999/29999-i00.zip"
+        f"{base}/archive/29_series/29.999/29999-j00.zip"
     )
     assert (output / "wireshark" / "dictionary.xml").read_bytes() == b"<dictionary/>"
     assert (
-        output / "archives" / "3gpp-rel-18" / "29999-i00.zip"
+        output / "archives" / "3gpp-rel-19" / "29999-j00.zip"
     ).read_bytes() == archive
     assert (output / "rfc" / "rfc9999.txt").read_bytes() == RFC_TEXT
     for artifact in manifest["artifacts"]:
@@ -804,7 +804,7 @@ def test_a_partial_download_keeps_the_other_sources_and_a_full_one_refetches_not
     _serve(local_http_server, monkeypatch)
     output = tmp_path / "corpus"
     _archive_listing(
-        local_http_server, "29.999", **{"29999-i00": _zip_bytes(spec=b"body")}
+        local_http_server, "29.999", **{"29999-j00": _zip_bytes(spec=b"body")}
     )
     catalog = _partial_catalog()
 
@@ -827,7 +827,7 @@ def test_a_partial_download_keeps_the_other_sources_and_a_full_one_refetches_not
     )
     for path, count in fetched.items():
         assert local_http_server.counts[path] == count, path
-    assert (output / "archives" / "3gpp-rel-18" / "29999-i00.zip").is_file()
+    assert (output / "archives" / "3gpp-rel-19" / "29999-j00.zip").is_file()
     assert (output / "rfc" / "rfc9999.txt").is_file()
 
 
@@ -839,8 +839,8 @@ def test_a_partial_download_keeps_another_sources_conversions(
     _serve(local_http_server, monkeypatch)
     output = tmp_path / "corpus"
     kept = {
-        "3gpp/Rel-18/TS_29.999/29999-i00.doc": b"doc",
-        "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx": b"docx",
+        "3gpp/Rel-19/TS_29.999/29999-j00.doc": b"doc",
+        "converted/3gpp/Rel-19/TS_29.999/29999-j00.docx": b"docx",
         "onem2m/Release-2/TS-0004/TS-0004.doc": b"onem2m doc",
         "converted/onem2m/Release-2/TS-0004/TS-0004.docx": b"onem2m docx",
     }
@@ -848,8 +848,8 @@ def test_a_partial_download_keeps_another_sources_conversions(
         (output / name).parent.mkdir(parents=True, exist_ok=True)
         (output / name).write_bytes(content)
     conversion = {
-        "file": "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx",
-        "source": "3gpp/Rel-18/TS_29.999/29999-i00.doc",
+        "file": "converted/3gpp/Rel-19/TS_29.999/29999-j00.docx",
+        "source": "3gpp/Rel-19/TS_29.999/29999-j00.doc",
         "source_sha256": "0",
         "converter": "soffice",
         "command": ["soffice"],
@@ -869,8 +869,8 @@ def test_a_partial_download_keeps_another_sources_conversions(
                         "url": "http://example.com",
                         "sha256": "0",
                         "size": 3,
-                        "files": ["3gpp/Rel-18/TS_29.999/29999-i00.doc"],
-                        "source_version": "18.0.0",
+                        "files": ["3gpp/Rel-19/TS_29.999/29999-j00.doc"],
+                        "source_version": "19.0.0",
                         "conversions": [conversion],
                     },
                     {
@@ -917,8 +917,8 @@ def test_a_partial_download_refuses_a_manifest_whose_files_have_gone(
     assert not (output / "rfc").exists()
 
     # A converted DOCX is in its record's `conversions` and not its `files`.
-    document = "3gpp/Rel-18/TS_29.999/29999-i00.doc"
-    converted = "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx"
+    document = "3gpp/Rel-19/TS_29.999/29999-j00.doc"
+    converted = "converted/3gpp/Rel-19/TS_29.999/29999-j00.docx"
     (output / document).parent.mkdir(parents=True)
     (output / document).write_bytes(b"doc")
     before = json.dumps(
@@ -1008,23 +1008,23 @@ def test_a_failed_run_leaves_the_previous_tree_and_manifest_as_they_were(
     for number in ("29.998", "29.999"):
         stem = number.replace(".", "")
         _archive_listing(
-            local_http_server, number, **{f"{stem}-i00": _zip_bytes(old_docx=b"old")}
+            local_http_server, number, **{f"{stem}-j00": _zip_bytes(old_docx=b"old")}
         )
     downloader.download_corpus(output, catalog=catalog)
     before = _snapshot(output)
 
-    # Both move to 18.1.0; 29.998's download succeeds, 29.999's is truncated.
+    # Both move to 19.1.0; 29.998's download succeeds, 29.999's is truncated.
     _archive_listing(
-        local_http_server, "29.998", **{"29998-i10": _zip_bytes(new_docx=b"new")}
+        local_http_server, "29.998", **{"29998-j10": _zip_bytes(new_docx=b"new")}
     )
-    _archive_listing(local_http_server, "29.999", **{"29999-i10": b"PK\x03\x04 cut"})
+    _archive_listing(local_http_server, "29.999", **{"29999-j10": b"PK\x03\x04 cut"})
 
     with pytest.raises(downloader.DownloadError, match="not a readable ZIP"):
         downloader.download_corpus(output, catalog=catalog)
 
     # Only the cache grew: 29.998's new archive is kept for the next run.
     assert _snapshot(output) == before | {
-        "archives/3gpp-rel-18/29998-i10.zip": _zip_bytes(new_docx=b"new")
+        "archives/3gpp-rel-19/29998-j10.zip": _zip_bytes(new_docx=b"new")
     }
     assert not (output / ".staging").exists()
 
@@ -1047,40 +1047,40 @@ def test_download_3gpp_prefers_the_highest_version_with_a_published_pdf(
     the highest archived version whose PDF exists rather than pairing the
     newest source with a mismatched fallback PDF."""
     _serve(local_http_server, monkeypatch)
-    # ETSI has published only the 18.0.0 rendering.
-    local_http_server.route("/etsi_ts/129300_129399/129388/", b"18.00.00_60/")
+    # ETSI has published only the 19.0.0 rendering.
+    local_http_server.route("/etsi_ts/129300_129399/129388/", b"19.00.00_60/")
     local_http_server.route(
-        "/etsi_ts/129300_129399/129388/18.00.00_60/ts_129388v180000p.pdf",
+        "/etsi_ts/129300_129399/129388/19.00.00_60/ts_129388v190000p.pdf",
         _pdf_bytes(),
     )
     _archive_listing(
         local_http_server,
         "29.388",
-        **{"29388-i10": _zip_bytes(spec=b"new"), "29388-i00": _zip_bytes(spec=b"old")},
+        **{"29388-j10": _zip_bytes(spec=b"new"), "29388-j00": _zip_bytes(spec=b"old")},
     )
     spec = downloader.ThreeGppSpec("29.388", "V2X")
 
     record = downloader.download_3gpp(
         spec,
-        downloader.discover_3gpp_archive_urls(spec, 18),
-        release=18,
+        downloader.discover_3gpp_archive_urls(spec, 19),
+        release=19,
         output=tmp_path,
         tree=tmp_path / ".staging",
         extract=False,
         pdfs=True,
     )
 
-    assert record.source_version == "18.0.0"
-    assert record.pdf_version == "18.0.0"
-    assert record.newer_source_version == "18.1.0"
-    assert record.url.endswith("/archive/29_series/29.388/29388-i00.zip")
+    assert record.source_version == "19.0.0"
+    assert record.pdf_version == "19.0.0"
+    assert record.newer_source_version == "19.1.0"
+    assert record.url.endswith("/archive/29_series/29.388/29388-j00.zip")
     assert record.files == [
-        "archives/3gpp-rel-18/29388-i00.zip",
-        "3gpp/Rel-18/PDF/ts_129388v180000p.pdf",
+        "archives/3gpp-rel-19/29388-j00.zip",
+        "3gpp/Rel-19/PDF/ts_129388v190000p.pdf",
     ]
     # The newest archive was never fetched.
     assert (
-        local_http_server.counts.get("/archive/29_series/29.388/29388-i10.zip", 0) == 0
+        local_http_server.counts.get("/archive/29_series/29.388/29388-j10.zip", 0) == 0
     )
 
 
@@ -1119,7 +1119,7 @@ def test_a_failed_fetch_of_the_exact_pdf_takes_no_earlier_rendering(
 def test_a_pinned_version_is_published_in_its_releases_tree_beside_the_catalogs(
     tmp_path, local_http_server, monkeypatch
 ):
-    """TS 29.999 at Release 18 and its pinned Release 7 last version share
+    """TS 29.999 at Release 19 and its pinned Release 7 last version share
     an identifier and live in two trees, the manifest listing both, the
     pinned one with what it claims."""
     _serve(local_http_server, monkeypatch)
@@ -1130,15 +1130,15 @@ def test_a_pinned_version_is_published_in_its_releases_tree_beside_the_catalogs(
         **{
             "29999-7b0": _zip_bytes(**{"29999-7b0.docx": b"eleventh"}),
             "29999-7c0": _zip_bytes(**{"29999-7c0.docx": b"last"}),
-            "29999-i00": _zip_bytes(**{"29999-i00.docx": b"now"}),
+            "29999-j00": _zip_bytes(**{"29999-j00.docx": b"now"}),
         },
     )
     local_http_server.route(
-        "/etsi_ts/129900_129999/129999/", b"07.12.00_60/ 18.00.00_60/"
+        "/etsi_ts/129900_129999/129999/", b"07.12.00_60/ 19.00.00_60/"
     )
     for name in (
         "07.12.00_60/ts_129999v071200p.pdf",
-        "18.00.00_60/ts_129999v180000p.pdf",
+        "19.00.00_60/ts_129999v190000p.pdf",
     ):
         local_http_server.route(f"/etsi_ts/129900_129999/129999/{name}", _pdf_bytes())
     spec = downloader.ThreeGppSpec("29.999", "Test TS")
@@ -1154,7 +1154,7 @@ def test_a_pinned_version_is_published_in_its_releases_tree_beside_the_catalogs(
     tgpp = [a for a in manifest["artifacts"] if a["family"] == "3GPP"]
     assert [(a["source_version"], a["final"]) for a in tgpp] == [
         ("7.12.0", "release"),
-        ("18.0.0", None),
+        ("19.0.0", None),
     ]
     assert tgpp[0]["files"] == [
         "archives/3gpp-rel-7/29999-7c0.zip",
@@ -1173,7 +1173,7 @@ def test_a_pinned_version_is_published_in_its_releases_tree_beside_the_catalogs(
         **{
             "29999-7c0": _zip_bytes(**{"29999-7c0.docx": b"last"}),
             "29999-7d0": _zip_bytes(**{"29999-7d0.docx": b"later"}),
-            "29999-i00": _zip_bytes(**{"29999-i00.docx": b"now"}),
+            "29999-j00": _zip_bytes(**{"29999-j00.docx": b"now"}),
         },
     )
     with pytest.raises(downloader.DownloadError, match=r"lists 7\.13\.0"):
@@ -1194,15 +1194,15 @@ def test_download_version_fetches_one_older_version_into_its_own_tree(
         local_http_server,
         "29.999",
         **{
-            "29999-i60": _zip_bytes(**{"29999-i60.docx": b"old"}),
-            "29999-i70": _zip_bytes(**{"29999-i70.docx": b"new"}),
+            "29999-j60": _zip_bytes(**{"29999-j60.docx": b"old"}),
+            "29999-j70": _zip_bytes(**{"29999-j70.docx": b"new"}),
         },
     )
     local_http_server.route(
-        "/etsi_ts/129900_129999/129999/", b"18.06.00_60/ 18.07.00_60/"
+        "/etsi_ts/129900_129999/129999/", b"19.06.00_60/ 19.07.00_60/"
     )
     local_http_server.route(
-        "/etsi_ts/129900_129999/129999/18.06.00_60/ts_129999v180600p.pdf",
+        "/etsi_ts/129900_129999/129999/19.06.00_60/ts_129999v190600p.pdf",
         _pdf_bytes(),
     )
     catalog = downloader.Catalog(
@@ -1210,42 +1210,42 @@ def test_download_version_fetches_one_older_version_into_its_own_tree(
     )
 
     manifest_path = downloader.download_version(
-        "TS29.999", "18.6.0", output, catalog=catalog
+        "TS29.999", "19.6.0", output, catalog=catalog
     )
 
-    tree = output / "versions" / "TS29.999" / "18.6.0"
+    tree = output / "versions" / "TS29.999" / "19.6.0"
     assert manifest_path == tree / "manifest.json"
     (record,) = json.loads(manifest_path.read_text())["artifacts"]
-    assert record["source_version"] == "18.6.0"
+    assert record["source_version"] == "19.6.0"
     assert record["newer_source_version"] is None
     assert record["files"] == [
-        "archives/3gpp-rel-18/29999-i60.zip",
-        "3gpp/Rel-18/TS_29.999/29999-i60.docx",
-        "3gpp/Rel-18/PDF/ts_129999v180600p.pdf",
+        "archives/3gpp-rel-19/29999-j60.zip",
+        "3gpp/Rel-19/TS_29.999/29999-j60.docx",
+        "3gpp/Rel-19/PDF/ts_129999v190600p.pdf",
     ]
     # Self-contained, so `regenerate --manifest` reads it, and the archive is
     # the cache's own file.
     assert all((tree / name).is_file() for name in record["files"])
-    cached = output / "archives" / "3gpp-rel-18" / "29999-i60.zip"
+    cached = output / "archives" / "3gpp-rel-19" / "29999-j60.zip"
     assert cached.samefile(tree / record["files"][0])
-    # The corpus itself is not touched, and 18.7.0 was never fetched.
+    # The corpus itself is not touched, and 19.7.0 was never fetched.
     assert sorted(path.name for path in output.iterdir()) == ["archives", "versions"]
     assert not (tree.parent / ".staging").exists()
-    assert "/archive/29_series/29.999/29999-i70.zip" not in local_http_server.counts
+    assert "/archive/29_series/29.999/29999-j70.zip" not in local_http_server.counts
 
     # Asked again, the archive comes from the cache.
-    downloader.download_version("29.999", "18.6.0", output, catalog=catalog)
-    assert local_http_server.counts["/archive/29_series/29.999/29999-i60.zip"] == 1
+    downloader.download_version("29.999", "19.6.0", output, catalog=catalog)
+    assert local_http_server.counts["/archive/29_series/29.999/29999-j60.zip"] == 1
 
     with pytest.raises(
         downloader.DownloadError,
-        match=r"TS 29\.999 18\.5\.0 is not archived; Release 18 has 18\.6\.0, 18\.7\.0",
+        match=r"TS 29\.999 19\.5\.0 is not archived; Release 19 has 19\.6\.0, 19\.7\.0",
     ):
-        downloader.download_version("TS 29.999", "18.5.0", output, catalog=catalog)
+        downloader.download_version("TS 29.999", "19.5.0", output, catalog=catalog)
     with pytest.raises(downloader.DownloadError, match="not a catalogued"):
-        downloader.download_version("TS29.000", "18.6.0", output, catalog=catalog)
+        downloader.download_version("TS29.000", "19.6.0", output, catalog=catalog)
     with pytest.raises(downloader.DownloadError, match="not a 3GPP version"):
-        downloader.download_version("TS29.999", "18.36.0", output, catalog=catalog)
+        downloader.download_version("TS29.999", "19.36.0", output, catalog=catalog)
     assert (tree / "manifest.json").is_file()
 
 
@@ -1288,32 +1288,32 @@ def _fake_soffice(monkeypatch, *, returncode=0, package: bytes | None = None):
 
 def test_download_3gpp_converts_a_legacy_doc_archive(tmp_path, monkeypatch):
     calls = _fake_soffice(monkeypatch)
-    url = "https://example.test/29999-i00.zip"
-    archive = tmp_path / "archives" / "3gpp-rel-18" / "29999-i00.zip"
+    url = "https://example.test/29999-j00.zip"
+    archive = tmp_path / "archives" / "3gpp-rel-19" / "29999-j00.zip"
     archive.parent.mkdir(parents=True)
     # The Temp/Promotion/Upgraded/ nesting is real (TS 29.215, 29.217).
     archive.write_bytes(
-        _zip_bytes(**{"Temp/Upgraded/29999-i00.doc": b"\xd0\xcf\x11\xe0"})
+        _zip_bytes(**{"Temp/Upgraded/29999-j00.doc": b"\xd0\xcf\x11\xe0"})
     )
     spec = downloader.ThreeGppSpec("29.999", "Test TS")
     tree = tmp_path / ".staging"
 
     record = downloader.download_3gpp(
         spec,
-        {(18, 0, 0): url},
-        release=18,
+        {(19, 0, 0): url},
+        release=19,
         output=tmp_path,
         tree=tree,
         extract=True,
         pdfs=False,
     )
 
-    source = "3gpp/Rel-18/TS_29.999/Temp/Upgraded/29999-i00.doc"
+    source = "3gpp/Rel-19/TS_29.999/Temp/Upgraded/29999-j00.doc"
     assert record.conversions is not None
     (conversion,) = record.conversions
     assert conversion.source == source
     assert conversion.file == (
-        "converted/3gpp/Rel-18/TS_29.999/Temp/Upgraded/29999-i00.docx"
+        "converted/3gpp/Rel-19/TS_29.999/Temp/Upgraded/29999-j00.docx"
     )
     assert conversion.converter == "LibreOffice 9.9.9.9 0123abc"
     assert conversion.source_sha256 == downloader.sha256_file(tree / source)
@@ -1329,7 +1329,7 @@ def test_download_3gpp_converts_a_legacy_doc_archive(tmp_path, monkeypatch):
 
 def test_an_archive_with_its_own_docx_is_not_converted(tmp_path, monkeypatch):
     calls = _fake_soffice(monkeypatch)
-    extracted = [tmp_path / "spec" / "29999-i00.docx", tmp_path / "spec" / "a.doc"]
+    extracted = [tmp_path / "spec" / "29999-j00.docx", tmp_path / "spec" / "a.doc"]
 
     conversions = downloader.convert_legacy_documents(
         "TS 29.999", extracted, tmp_path / "spec", tmp_path
@@ -1348,8 +1348,8 @@ def test_an_archive_with_its_own_docx_is_not_converted(tmp_path, monkeypatch):
             r".*; `seanchai download --no-convert` downloads without converting",
         ),
         ("failing", r"TS 29\.999: `.*` exited 1: Error: source file could not be"),
-        ("silent", r"TS 29\.999: LibreOffice wrote no 29999-i00\.docx"),
-        ("broken", r"29999-i00\.docx is not a readable \.docx"),
+        ("silent", r"TS 29\.999: LibreOffice wrote no 29999-j00\.docx"),
+        ("broken", r"29999-j00\.docx is not a readable \.docx"),
     ],
 )
 def test_a_failed_conversion_fails_the_run_and_publishes_nothing(
@@ -1375,7 +1375,7 @@ def test_a_failed_conversion_fails_the_run_and_publishes_nothing(
     _archive_listing(
         local_http_server,
         "29.999",
-        **{"29999-i00": _zip_bytes(**{"29999-i00.doc": b"word"})},
+        **{"29999-j00": _zip_bytes(**{"29999-j00.doc": b"word"})},
     )
 
     with pytest.raises(downloader.DownloadError, match=message):
@@ -1408,7 +1408,7 @@ def test_download_corpus_converts_a_legacy_doc_unless_asked_not_to(
     _archive_listing(
         local_http_server,
         "29.999",
-        **{"29999-i00": _zip_bytes(**{"29999-i00.doc": b"word"})},
+        **{"29999-j00": _zip_bytes(**{"29999-j00.doc": b"word"})},
     )
     progress = []
 
@@ -1425,11 +1425,11 @@ def test_download_corpus_converts_a_legacy_doc_unless_asked_not_to(
     record = manifest["artifacts"][0]
     assert record["identifier"] == "TS 29.999"
     # The `.doc` is extracted and listed either way.
-    assert "3gpp/Rel-18/TS_29.999/29999-i00.doc" in record["files"]
-    assert (output / "3gpp" / "Rel-18" / "TS_29.999" / "29999-i00.doc").is_file()
+    assert "3gpp/Rel-19/TS_29.999/29999-j00.doc" in record["files"]
+    assert (output / "3gpp" / "Rel-19" / "TS_29.999" / "29999-j00.doc").is_file()
     if convert:
         assert [conversion["file"] for conversion in record["conversions"]] == [
-            "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx"
+            "converted/3gpp/Rel-19/TS_29.999/29999-j00.docx"
         ]
         assert (output / record["conversions"][0]["file"]).is_file()
         assert len(calls) == 2

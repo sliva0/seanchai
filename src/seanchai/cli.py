@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any
 
 import click
 
-from .downloader.catalog import SOURCES
+from .downloader.catalog import RELEASE, SOURCES
 from .errors import SeanchaiError
 
 if TYPE_CHECKING:
@@ -1277,7 +1277,7 @@ def _summary(counts, checked: int) -> str:
 
 
 @main.command()
-@click.option("--release", type=int, default=18, help="3GPP release.")
+@click.option("--release", type=int, default=RELEASE, help="3GPP release.")
 @click.option(
     "-o",
     "--output",

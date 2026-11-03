@@ -259,9 +259,9 @@ def _lint_v2x(*options, corrections=_REPO / "edits" / "corrections", raw=False):
     """TS 29.388 against the committed corpus, whose module accepts clause
     6.3.2's V4 body for V2X-Subscription-Data, its one cross-file note."""
     source = (
-        _CORPUS_DIR / "raw" / "3gpp" / "rel-18" / "29388-i10.raw.dad"
+        _CORPUS_DIR / "raw" / "3gpp" / "rel-19" / "29388-j10.raw.dad"
         if raw
-        else _CORPUS_DIR / "3gpp" / "rel-18" / "29388-i10.dad"
+        else _CORPUS_DIR / "3gpp" / "rel-19" / "29388-j10.dad"
     )
     return CliRunner().invoke(
         main,
@@ -416,7 +416,7 @@ def test_lint_runs_the_module_a_named_directory_holds(tmp_path, monkeypatch):
 
 def test_plain_lint_in_the_repository_reads_its_acceptances(monkeypatch):
     monkeypatch.chdir(_REPO)
-    source = _CORPUS_DIR / "3gpp" / "rel-18" / "29388-i10.dad"
+    source = _CORPUS_DIR / "3gpp" / "rel-19" / "29388-j10.dad"
 
     result = CliRunner().invoke(main, ["lint", str(source)])
 
@@ -884,7 +884,7 @@ def test_no_help_text_spells_its_own_default():
     ("arguments", "shown"),
     [
         (["download", "--help"], "[default: specifications]"),
-        (["download", "--help"], "[default: 18]"),
+        (["download", "--help"], "[default: 19]"),
         (["download", "--help"], "[default: pdfs]"),
         (["extract", "--help"], "[default: (stdout)]"),
         (["lint", "--help"], "[default: full]"),

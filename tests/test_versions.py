@@ -66,7 +66,15 @@ def test_declarations_apply_per_release(version, release):
     assert len(applied) == {7: 1, 18: 1, -1: 0, None: 2}[release]
 
 
-def test_open_ranges_span_every_release():
-    """An unranged declaration (most RFCs') applies wherever it is read."""
+def test_open_ranges_say_nothing_of_what_was_reviewed():
+    """An unranged declaration (most RFCs') applies wherever it is read, and
+    neither it nor an open upper bound makes a new release one its document's
+    declarations were reviewed for: TS 29.061 declares some quirks with no
+    range beside the rest at V18.1.0, TS 29.229 a patch from V18.1.0 on."""
     assert reviewed_release([VersionRange()], "18.4.0") is None
-    assert reviewed_release([VersionRange(), *_TS29_214], "6.8.0") == 6
+    assert reviewed_release([VersionRange(), *_TS29_214], "6.8.0") == -1
+    assert applies(VersionRange(), -1)
+    assert reviewed_release([VersionRange(), *_TS29_214], "19.1.0") == 18
+    assert reviewed_release([VersionRange("18.1.0"), *_TS29_214], "19.1.0") == 18
+    assert reviewed_release([VersionRange("18.1.0")], "18.4.0") == 18
+    assert applies(VersionRange("18.1.0"), 18)

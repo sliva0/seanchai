@@ -15,8 +15,8 @@ from seanchai import correction_record, regenerate
 from seanchai.downloader import load_catalog
 
 
-def _manifest(root, stem):
-    document = root / "3gpp" / "Rel-18" / "TS_29.999" / f"{stem}.docx"
+def _manifest(root, stem, release=18):
+    document = root / "3gpp" / f"Rel-{release}" / "TS_29.999" / f"{stem}.docx"
     document.parent.mkdir(parents=True, exist_ok=True)
     path = root / "manifest.json"
     path.write_text(
@@ -91,6 +91,37 @@ def test_a_rebuild_follows_the_manifest_version_and_reports_what_it_did(
     (orphan,) = _run(manifest, corpus, corpus).outcomes
     assert orphan.status == "not-in-manifest"
     assert (corpus / "3gpp" / "rel-18" / "29999-110.dad").is_file()
+
+
+def test_a_rebuild_follows_a_document_into_a_later_releases_tree(
+    tmp_path, synthetic_spec_docx
+):
+    sources = tmp_path / "specifications"
+    manifest, document = _manifest(sources, "29999-100")
+    shutil.copy(synthetic_spec_docx, document)
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    _run(manifest, corpus, corpus, add=["TS29.999"])
+
+    # The manifest moves to the next release: the committed copy is replaced
+    # there and its tree goes, rather than the document being reported lost.
+    manifest, newer = _manifest(sources, "29999-110", release=19)
+    shutil.copy(synthetic_spec_docx, newer)
+    (replaced,) = _run(manifest, corpus, corpus).outcomes
+    assert replaced.status == "new"
+    assert replaced.replaced_version == "1.2.3"
+    assert sorted(p.relative_to(corpus).as_posix() for p in corpus.rglob("*.dad")) == [
+        "3gpp/rel-19/29999-110.dad",
+        "raw/3gpp/rel-19/29999-110.raw.dad",
+    ]
+    assert not (corpus / "3gpp" / "rel-18").exists()
+
+    # An earlier release's manifest, an older version's say, moves nothing.
+    manifest, older = _manifest(sources, "29999-100", release=18)
+    shutil.copy(synthetic_spec_docx, older)
+    (orphan,) = _run(manifest, corpus, corpus).outcomes
+    assert orphan.status == "not-in-manifest"
+    assert (corpus / "3gpp" / "rel-19" / "29999-110.dad").is_file()
 
 
 def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
