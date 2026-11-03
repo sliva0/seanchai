@@ -1862,7 +1862,7 @@
      "targets": [
       [
        "sections",
-       114
+       115
       ]
      ]
     },
@@ -1874,13 +1874,17 @@
      "targets": [
       [
        "sections",
-       115
+       116
       ]
      ]
     },
     "TS29.272.py#re-synchronization-info-case": {
      "kind": "correction",
      "reason": "clause 7.3.15's heading and table 7.3.1/1 both spell it Re-Synchronization-Info; clause 7.3.11's ABNF lower-cases the S"
+    },
+    "TS29.272.py#re-synchronization-info-utran-geran-case": {
+     "kind": "correction",
+     "reason": "clause 7.3.15's heading and table 7.3.1/1 both spell it Re-Synchronization-Info; clause 7.3.12's ABNF lower-cases the S"
     },
     "TS29.272.py#report-amount-values": {
      "kind": "supply",
@@ -1898,7 +1902,7 @@
      "targets": [
       [
        "sections",
-       116
+       117
       ]
      ]
     },
@@ -1912,6 +1916,10 @@
     {
      "expect": "Additional-Context-ID",
      "replace": "Additional-Context-Identifier"
+    },
+    {
+     "expect": "Re-synchronization-Info",
+     "replace": "Re-Synchronization-Info"
     },
     {
      "expect": "Re-synchronization-Info",

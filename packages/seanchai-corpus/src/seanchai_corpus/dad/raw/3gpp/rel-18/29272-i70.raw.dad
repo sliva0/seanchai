@@ -178,6 +178,11 @@
         { User-Name }
       * [ Supported-Features ]
         { Subscription-Data }
+        [ IDR-Flags ]
+      * [ Reset-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
 
 
 ; Type: Message
@@ -1034,6 +1039,17 @@ Requested-EUTRAN-Authentication-Info ::= < AVP header: 1408 10415 >
 
 
 ; Type: Grouped AVP
+; Name: Requested-UTRAN-GERAN-Authentication-Info
+; Section: 7.3.12
+; Page: 117
+Requested-UTRAN-GERAN-Authentication-Info ::= < AVP header: 1409 10415 >
+        [ Number-Of-Requested-Vectors ]
+        [ Immediate-Response-Preferred ]
+        [ Re-synchronization-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
 ; Name: Authentication-Info
 ; Section: 7.3.17
 ; Page: 117
@@ -1142,6 +1158,33 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
 ; Page: 126
 APN-Configuration ::= < AVP header: 1430 10415 >
         { Context-Identifier }
+     *2 [ Served-Party-IP-Address ]
+        { PDN-Type }
+        { Service-Selection }
+        [ EPS-Subscribed-QoS-Profile ]
+        [ VPLMN-Dynamic-Address-Allowed ]
+        [ MIP6-Agent-Info ]
+        [ Visited-Network-Identifier ]
+        [ PDN-GW-Allocation-Type ]
+        [ 3GPP-Charging-Characteristics ]
+        [ AMBR ]
+      * [ Specific-APN-Info ]
+        [ APN-OI-Replacement ]
+        [ SIPTO-Permission ]
+        [ LIPA-Permission ]
+        [ Restoration-Priority ]
+        [ SIPTO-Local-Network-Permission ]
+        [ WLAN-offloadability ]
+        [ Non-IP-PDN-Type-Indicator ]
+        [ Non-IP-Data-Delivery-Mechanism ]
+        [ SCEF-ID ]
+        [ SCEF-Realm ]
+        [ Preferred-Data-Mode ]
+        [ PDN-Connection-Continuity ]
+        [ RDS-Indicator ]
+        [ Interworking-5GS-Indicator ]
+        [ Ethernet-PDN-Type-Indicator ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -1430,6 +1473,8 @@ MO-LR ::= < AVP header: 1485 10415 >
 ; Section: 7.3.99
 ; Page: 141
 Teleservice-List ::= < AVP header: 1486 10415 >
+     1* { TS-Code }
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -1641,6 +1686,15 @@ MDT-Configuration ::= < AVP header: 1622 10415 >
         [ Logging-Duration ]
         [ Measurement-Period-LTE ]
         [ Measurement-Period-UMTS ]
+        [ Collection-Period-RRM-LTE ]
+        [ Collection-Period-RRM-UMTS ]
+        [ Positioning-Method ]
+        [ Measurement-Quantity ]
+        [ Event-Threshold-Event-1F ]
+        [ Event-Threshold-Event-1I ]
+      * [ MDT-Allowed-PLMN-Id ]
+      * [ MBSFN-Area ]
+      * [ AVP ]
 
 
 ; Type: Enumerated AVP
@@ -2031,6 +2085,8 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
 ; Section: 7.3.229
 ; Page: 172
 eDRX-Related-RAT ::= < AVP header: 1705 10415 >
+     1* { RAT-Type }
+      * [ AVP ]
 
 
 ; Type: Enumerated AVP
