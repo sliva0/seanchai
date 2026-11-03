@@ -1,0 +1,2729 @@
+; Specification: 3GPP TS 29.272
+; Version: 19.6.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129272/19.06.00_60/ts_129272v190600p.pdf
+
+
+; Type: Message
+; Name: Update-Location-Request, ULR
+; Section: 7.2.3
+; Page: 75
+<Update-Location-Request> ::= < Diameter Header: 316, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        [ Terminal-Information ]
+        { RAT-Type }
+        { ULR-Flags }
+        [ UE-SRVCC-Capability ]
+        { Visited-PLMN-Id }
+        [ SGSN-Number ]
+        [ Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ]
+        [ GMLC-Address ]
+      * [ Active-APN ]
+        [ Equivalent-PLMN-List ]
+        [ MME-Number-for-MT-SMS ]
+        [ SMS-Register-Request ]
+        [ SGs-MME-Identity ]
+        [ Coupled-Node-Diameter-ID ]
+        [ Adjacent-PLMNs ]
+        [ Supported-Services ]
+        [ SF-ULR-Timestamp ]
+        [ SF-Provisional-Indication ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Update-Location-Answer, ULA
+; Section: 7.2.4
+; Page: 76
+<Update-Location-Answer> ::= < Diameter Header: 316, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Diagnostic ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+        [ ULA-Flags ]
+        [ Subscription-Data ]
+      * [ Reset-ID ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Authentication-Information-Request, AIR
+; Section: 7.2.5
+; Page: 76
+<Authentication-Information-Request> ::= < Diameter Header: 318, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        [ Requested-EUTRAN-Authentication-Info ]
+        [ Requested-UTRAN-GERAN-Authentication-Info ]
+        { Visited-PLMN-Id }
+        [ AIR-Flags ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Authentication-Information-Answer, AIA
+; Section: 7.2.6
+; Page: 77
+<Authentication-Information-Answer> ::= < Diameter Header: 318, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Diagnostic ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+        [ Authentication-Info ]
+        [ UE-Usage-Type ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Cancel-Location-Request, CLR
+; Section: 7.2.7
+; Page: 77
+<Cancel-Location-Request> ::= < Diameter Header: 317, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        { Cancellation-Type }
+        [ CLR-Flags ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Cancel-Location-Answer, CLA
+; Section: 7.2.8
+; Page: 77
+<Cancel-Location-Answer> ::= < Diameter Header: 317, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Insert-Subscriber-Data-Request, IDR
+; Section: 7.2.9
+; Page: 78
+<Insert-Subscriber-Data-Request> ::= < Diameter Header: 319, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        { Subscription-Data }
+        [ IDR-Flags ]
+      * [ Reset-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Insert-Subscriber-Data-Request, IDR
+; Section: 7.2.9
+; Page: 78
+<Insert-Subscriber-Data-Request> ::= < Diameter Header: 319, REQ, PXY, 16777308 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+      * { VPLMN-CSG-Subscription-Data }
+      * [ Reset-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Insert-Subscriber-Data-Answer, IDA
+; Section: 7.2.10
+; Page: 78
+<Insert-Subscriber-Data-Answer> ::= < Diameter Header: 319, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ IMS-Voice-Over-PS-Sessions-Supported ]
+        [ Last-UE-Activity-Time ]
+        [ RAT-Type ]
+        [ IDA-Flags ]
+        [ EPS-User-State ]
+        [ EPS-Location-Information ]
+        [ Local-Time-Zone ]
+        [ Supported-Services ]
+      * [ Monitoring-Event-Report ]
+      * [ Monitoring-Event-Config-Status ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Insert-Subscriber-Data-Answer, IDA
+; Section: 7.2.10
+; Page: 78
+<Insert-Subscriber-Data-Answer> ::= < Diameter Header: 319, PXY, 16777308 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Delete-Subscriber-Data-Request, DSR
+; Section: 7.2.11
+; Page: 79
+<Delete-Subscriber-Data-Request> ::= < Diameter Header: 320, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        { DSR-Flags }
+        [ SCEF-ID ]
+      * [ Context-Identifier ]
+        [ Trace-Reference ]
+      * [ TS-Code ]
+      * [ SS-Code ]
+        [ eDRX-Related-RAT ]
+      * [ External-Identifier ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Delete-Subscriber-Data-Request, DSR
+; Section: 7.2.11
+; Page: 79
+<Delete-Subscriber-Data-Request> ::= < Diameter Header: 320, REQ, PXY, 16777308 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        { DSR-Flags }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Delete-Subscriber-Data-Answer, DSA
+; Section: 7.2.12
+; Page: 80
+<Delete-Subscriber-Data-Answer> ::= < Diameter Header: 320, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ DSA-Flags ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Delete-Subscriber-Data-Answer, DSA
+; Section: 7.2.12
+; Page: 80
+<Delete-Subscriber-Data-Answer> ::= < Diameter Header: 320, PXY, 16777308 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Purge-UE-Request, PUR
+; Section: 7.2.13
+; Page: 81
+<Purge-UE-Request> ::= < Diameter Header: 321, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+        [ OC-Supported-Features ]
+        [ PUR-Flags ]
+      * [ Supported-Features ]
+        [ EPS-Location-Information ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Purge-UE-Answer, PUA
+; Section: 7.2.14
+; Page: 81
+<Purge-UE-Answer> ::= < Diameter Header: 321, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+        [ PUA-Flags ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Reset-Request, RSR
+; Section: 7.2.15
+; Page: 82
+<Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+      * [ Supported-Features ]
+      * [ User-Id ]
+      * [ Reset-ID ]
+        [ Subscription-Data ]
+        [ Subscription-Data-Deletion ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Reset-Request, RSR
+; Section: 7.2.15
+; Page: 82
+<Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777308 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+      * [ Supported-Features ]
+      * [ Reset-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Reset-Answer, RSA
+; Section: 7.2.16
+; Page: 82
+<Reset-Answer> ::= < Diameter Header: 322, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Reset-Answer, RSA
+; Section: 7.2.16
+; Page: 82
+<Reset-Answer> ::= < Diameter Header: 322, PXY, 16777308 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Notify-Request, NOR
+; Section: 7.2.17
+; Page: 83
+<Notify-Request> ::= < Diameter Header: 323, REQ, PXY, 16777251 >
+        < Session-Id >
+        [ Vendor-Specific-Application-Id ]
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        [ Terminal-Information ]
+        [ MIP6-Agent-Info ]
+        [ Visited-Network-Identifier ]
+        [ Context-Identifier ]
+        [ Service-Selection ]
+        [ Alert-Reason ]
+        [ UE-SRVCC-Capability ]
+        [ NOR-Flags ]
+        [ Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ]
+        [ Maximum-UE-Availability-Time ]
+      * [ Monitoring-Event-Config-Status ]
+        [ Emergency-Services ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Notify-Answer, NOA
+; Section: 7.2.18
+; Page: 83
+<Notify-Answer> ::= < Diameter Header: 323, PXY, 16777251 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ME-Identity-Check-Request, ECR
+; Section: 7.2.19
+; Page: 84
+<ME-Identity-Check-Request> ::= < Diameter Header: 324, REQ, PXY, 16777252 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { Terminal-Information }
+        [ User-Name ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ME-Identity-Check-Answer, ECA
+; Section: 7.2.20
+; Page: 84
+<ME-Identity-Check-Answer> ::= < Diameter Header: 324, PXY, 16777252 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Equipment-Status ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Update-VCSG-Location-Request, UVR
+; Section: 7.2.21
+; Page: 85
+<Update-VCSG-Location-Request> ::= < Diameter Header: 8388638, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+        [ MSISDN ]
+        [ SGSN-Number ]
+      * [ Supported-Features ]
+        { UVR-Flags }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Update-VCSG-Location-Answer, UVA
+; Section: 7.2.22
+; Page: 85
+<Update-VCSG-Location-Answer> ::= < Diameter Header: 8388638, PXY >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Diagnostic ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+      * [ VPLMN-CSG-Subscription-Data ]
+        [ UVA-Flags ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Cancel-VCSG-Location-Request, CVR
+; Section: 7.2.23
+; Page: 85
+<Cancel-VCSG-Location-Request> ::= < Diameter Header: 8388642, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        { Cancellation-Type }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Cancel-VCSG-Location-Answer, CVA
+; Section: 7.2.24
+; Page: 86
+<Cancel-VCSG-Location-Answer> ::= < Diameter Header: 8388642, PXY >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 7.3.1
+; Table: 7.3.1/1
+; Page: 87
+; Columns: Name                                     Code   Section   Type               Must   May   S.not   M.not   Encrypt
+Subscription-Data                                   1400   7.3.2     Grouped            M,V    -     -       -       No
+Terminal-Information                                1401   7.3.3     Grouped            M,V    -     -       -       No
+IMEI                                                1402   7.3.4     UTF8String         M,V    -     -       -       No
+Software-Version                                    1403   7.3.5     UTF8String         M,V    -     -       -       No
+QoS-Subscribed                                      1404   7.3.77    OctetString        M,V    -     -       -       No
+ULR-Flags                                           1405   7.3.7     Unsigned32         M,V    -     -       -       No
+ULA-Flags                                           1406   7.3.8     Unsigned32         M,V    -     -       -       No
+Visited-PLMN-Id                                     1407   7.3.9     OctetString        M,V    -     -       -       No
+Requested-EUTRAN-Authentication-Info                1408   7.3.11    Grouped            M,V    -     -       -       No
+Requested-UTRAN-GERAN-Authentication-Info           1409   7.3.12    Grouped            M,V    -     -       -       No
+Number-Of-Requested-Vectors                         1410   7.3.14    Unsigned32         M,V    -     -       -       No
+Re-Synchronization-Info                             1411   7.3.15    OctetString        M,V    -     -       -       No
+Immediate-Response-Preferred                        1412   7.3.16    Unsigned32         M,V    -     -       -       No
+Authentication-Info                                 1413   7.3.17    Grouped            M,V    -     -       -       No
+E-UTRAN-Vector                                      1414   7.3.18    Grouped            M,V    -     -       -       No
+UTRAN-Vector                                        1415   7.3.19    Grouped            M,V    -     -       -       No
+GERAN-Vector                                        1416   7.3.20    Grouped            M,V    -     -       -       No
+Network-Access-Mode                                 1417   7.3.21    Enumerated         M,V    -     -       -       No
+HPLMN-ODB                                           1418   7.3.22    Unsigned32         M,V    -     -       -       No
+Item-Number                                         1419   7.3.23    Unsigned32         M,V    -     -       -       No
+Cancellation-Type                                   1420   7.3.24    Enumerated         M,V    -     -       -       No
+DSR-Flags                                           1421   7.3.25    Unsigned32         M,V    -     -       -       No
+DSA-Flags                                           1422   7.3.26    Unsigned32         M,V    -     -       -       No
+Context-Identifier                                  1423   7.3.27    Unsigned32         M,V    -     -       -       No
+Subscriber-Status                                   1424   7.3.29    Enumerated         M,V    -     -       -       No
+Operator-Determined-Barring                         1425   7.3.30    Unsigned32         M,V    -     -       -       No
+Access-Restriction-Data                             1426   7.3.31    Unsigned32         M,V    -     -       -       No
+APN-OI-Replacement                                  1427   7.3.32    UTF8String         M,V    -     -       -       No
+All-APN-Configurations-Included-Indicator           1428   7.3.33    Enumerated         M,V    -     -       -       No
+APN-Configuration-Profile                           1429   7.3.34    Grouped            M,V    -     -       -       No
+APN-Configuration                                   1430   7.3.35    Grouped            M,V    -     -       -       No
+EPS-Subscribed-QoS-Profile                          1431   7.3.37    Grouped            M,V    -     -       -       No
+VPLMN-Dynamic-Address-Allowed                       1432   7.3.38    Enumerated         M,V    -     -       -       No
+STN-SR                                              1433   7.3.39    OctetString        M,V    -     -       -       No
+Alert-Reason                                        1434   7.3.83    Enumerated         M,V    -     -       -       No
+AMBR                                                1435   7.3.41    Grouped            M,V    -     -       -       No
+CSG-Subscription-Data                               1436   7.3.78    Grouped            M,V    -     -       -       No
+CSG-Id                                              1437   7.3.79    Unsigned32         M,V    -     -       -       No
+PDN-GW-Allocation-Type                              1438   7.3.44    Enumerated         M,V    -     -       -       No
+Expiration-Date                                     1439   7.3.80    Time               M,V    -     -       -       No
+RAT-Frequency-Selection-Priority-ID                 1440   7.3.46    Unsigned32         M,V    -     -       -       No
+IDA-Flags                                           1441   7.3.47    Unsigned32         M,V    -     -       -       No
+PUA-Flags                                           1442   7.3.48    Unsigned32         M,V    -     -       -       No
+NOR-Flags                                           1443   7.3.49    Unsigned32         M,V    -     -       -       No
+User-Id                                             1444   7.3.50    UTF8String         V      -     -       M       No
+Equipment-Status                                    1445   7.3.51    Enumerated         M,V    -     -       -       No
+Regional-Subscription-Zone-Code                     1446   7.3.52    OctetString        M,V    -     -       -       No
+RAND                                                1447   7.3.53    OctetString        M,V    -     -       -       No
+XRES                                                1448   7.3.54    OctetString        M,V    -     -       -       No
+AUTN                                                1449   7.3.55    OctetString        M,V    -     -       -       No
+KASME                                               1450   7.3.56    OctetString        M,V    -     -       -       No
+Trace-Collection-Entity                             1452   7.3.98    Address            M,V    -     -       -       No
+Kc                                                  1453   7.3.59    OctetString        M,V    -     -       -       No
+SRES                                                1454   7.3.60    OctetString        M,V    -     -       -       No
+PDN-Type                                            1456   7.3.62    Enumerated         M,V    -     -       -       No
+Roaming-Restricted-Due-To-Unsupported-Feature       1457   7.3.81    Enumerated         M,V    -     -       -       No
+Trace-Data                                          1458   7.3.63    Grouped            M,V    -     -       -       No
+Trace-Reference                                     1459   7.3.64    OctetString        M,V    -     -       -       No
+Trace-Depth                                         1462   7.3.67    Enumerated         M,V    -     -       -       No
+Trace-NE-Type-List                                  1463   7.3.68    OctetString        M,V    -     -       -       No
+Trace-Interface-List                                1464   7.3.69    OctetString        M,V    -     -       -       No
+Trace-Event-List                                    1465   7.3.70    OctetString        M,V    -     -       -       No
+OMC-Id                                              1466   7.3.71    OctetString        M,V    -     -       -       No
+GPRS-Subscription-Data                              1467   7.3.72    Grouped            M,V    -     -       -       No
+Complete-Data-List-Included-Indicator               1468   7.3.73    Enumerated         M,V    -     -       -       No
+PDP-Context                                         1469   7.3.74    Grouped            M,V    -     -       -       No
+PDP-Type                                            1470   7.3.75    OctetString        M,V    -     -       -       No
+3GPP2-MEID                                          1471   7.3.6     OctetString        M,V    -     -       -       No
+Specific-APN-Info                                   1472   7.3.82    Grouped            M,V    -     -       -       No
+LCS-Info                                            1473   7.3.84    Grouped            M,V    -     -       -       No
+GMLC-Number                                         1474   7.3.85    OctetString        M,V    -     -       -       No
+LCS-PrivacyException                                1475   7.3.86    Grouped            M,V    -     -       -       No
+SS-Code                                             1476   7.3.87    OctetString        M,V    -     -       -       No
+SS-Status                                           1477   7.3.88    OctetString        M,V    -     -       -       No
+Notification-To-UE-User                             1478   7.3.89    Enumerated         M,V    -     -       -       No
+External-Client                                     1479   7.3.90    Grouped            M,V    -     -       -       No
+Client-Identity                                     1480   7.3.91    OctetString        M,V    -     -       -       No
+GMLC-Restriction                                    1481   7.3.92    Enumerated         M,V    -     -       -       No
+PLMN-Client                                         1482   7.3.93    Enumerated         M,V    -     -       -       No
+Service-Type                                        1483   7.3.94    Grouped            M,V    -     -       -       No
+ServiceTypeIdentity                                 1484   7.3.95    Unsigned32         M,V    -     -       -       No
+MO-LR                                               1485   7.3.96    Grouped            M,V    -     -       -       No
+Teleservice-List                                    1486   7.3.99    Grouped            M,V    -     -       -       No
+TS-Code                                             1487   7.3.100   OctetString        M,V    -     -       -       No
+Call-Barring-Info                                   1488   7.3.101   Grouped            M,V    -     -       -       No
+SGSN-Number                                         1489   7.3.102   OctetString        M,V    -     -       -       No
+IDR-Flags                                           1490   7.3.103   Unsigned32         M,V    -     -       -       No
+ICS-Indicator                                       1491   7.3.104   Enumerated         V      -     -       M       No
+IMS-Voice-Over-PS-Sessions-Supported                1492   7.3.106   Enumerated         V      -     -       M       No
+Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions   1493   7.3.107   Enumerated         V      -     -       M       No
+Last-UE-Activity-Time                               1494   7.3.108   Time               V      -     -       M       No
+EPS-User-State                                      1495   7.3.110   Grouped            V      -     -       M       No
+EPS-Location-Information                            1496   7.3.111   Grouped            V      -     -       M       No
+MME-User-State                                      1497   7.3.112   Grouped            V      -     -       M       No
+SGSN-User-State                                     1498   7.3.113   Grouped            V      -     -       M       No
+User-State                                          1499   7.3.114   Enumerated         V      -     -       M       No
+MME-Location-Information                            1600   7.3.115   Grouped            V      -     -       M       No
+SGSN-Location-Information                           1601   7.3.116   Grouped            V      -     -       M       No
+E-UTRAN-Cell-Global-Identity                        1602   7.3.117   OctetString        V      -     -       M       No
+Tracking-Area-Identity                              1603   7.3.118   OctetString        V      -     -       M       No
+Cell-Global-Identity                                1604   7.3.119   OctetString        V      -     -       M       No
+Routing-Area-Identity                               1605   7.3.120   OctetString        V      -     -       M       No
+Location-Area-Identity                              1606   7.3.121   OctetString        V      -     -       M       No
+Service-Area-Identity                               1607   7.3.122   OctetString        V      -     -       M       No
+Geographical-Information                            1608   7.3.123   OctetString        V      -     -       M       No
+Geodetic-Information                                1609   7.3.124   OctetString        V      -     -       M       No
+Current-Location-Retrieved                          1610   7.3.125   Enumerated         V      -     -       M       No
+Age-Of-Location-Information                         1611   7.3.126   Unsigned32         V      -     -       M       No
+Active-APN                                          1612   7.3.127   Grouped            V      -     -       M       No
+Error-Diagnostic                                    1614   7.3.128   Enumerated         V      -     -       M       No
+Ext-PDP-Address                                     1621   7.3.129   Address            V      -     -       M       No
+UE-SRVCC-Capability                                 1615   7.3.130   Enumerated         V      -     -       M       No
+MPS-Priority                                        1616   7.3.131   Unsigned32         V      -     -       M       No
+VPLMN-LIPA-Allowed                                  1617   7.3.132   Enumerated         V      -     -       M       No
+LIPA-Permission                                     1618   7.3.133   Enumerated         V      -     -       M       No
+Subscribed-Periodic-RAU-TAU-Timer                   1619   7.3.134   Unsigned32         V      -     -       M       No
+Ext-PDP-Type                                        1620   7.3.75A   OctetString        V      -     -       M       No
+SIPTO-Permission                                    1613   7.3.135   Enumerated         V      -     -       M       No
+MDT-Configuration                                   1622   7.3.136   Grouped            V      -     -       M       No
+Job-Type                                            1623   7.3.137   Enumerated         V      -     -       M       No
+Area-Scope                                          1624   7.3.138   Grouped            V      -     -       M       No
+List-Of-Measurements                                1625   7.3.139   Unsigned32         V      -     -       M       No
+Reporting-Trigger                                   1626   7.3.140   Unsigned32         V      -     -       M       No
+Report-Interval                                     1627   7.3.141   Enumerated         V      -     -       M       No
+Report-Amount                                       1628   7.3.142   Enumerated         V      -     -       M       No
+Event-Threshold-RSRP                                1629   7.3.143   Unsigned32         V      -     -       M       No
+Event-Threshold-RSRQ                                1630   7.3.144   Unsigned32         V      -     -       M       No
+Logging-Interval                                    1631   7.3.145   Enumerated         V      -     -       M       No
+Logging-Duration                                    1632   7.3.146   Enumerated         V      -     -       M       No
+Relay-Node-Indicator                                1633   7.3.147   Enumerated         V      -     -       M       No
+MDT-User-Consent                                    1634   7.3.148   Enumerated         V      -     -       M       No
+PUR-Flags                                           1635   7.3.149   Unsigned32         V      -     -       M       No
+Subscribed-VSRVCC                                   1636   7.3.150   Enumerated         V      -     -       M       No
+Equivalent-PLMN-List                                1637   7.3.151   Grouped            V      -     -       M       No
+CLR-Flags                                           1638   7.3.152   Unsigned32         V      -     -       M       No
+UVR-Flags                                           1639   7.3.153   Unsigned32         M,V    -     -       -       No
+UVA-Flags                                           1640   7.3.154   Unsigned32         M,V    -     -       -       No
+VPLMN-CSG-Subscription-Data                         1641   7.3.155   Grouped            M,V    -     -       -       No
+Time-Zone                                           1642   7.3.163   UTF8String         V      -     -       M       No
+A-MSISDN                                            1643   7.3.157   OctetString        V      -     -       M       No
+MME-Number-for-MT-SMS                               1645   7.3.159   OctetString        V      -     -       M       No
+SMS-Register-Request                                1648   7.3.162   Enumerated         V      -     -       M       No
+Local-Time-Zone                                     1649   7.3.156   Grouped            V      -     -       M       No
+Daylight-Saving-Time                                1650   7.3.164   Enumerated         V      -     -       M       No
+Subscription-Data-Flags                             1654   7.3.165   Unsigned32         V      -     -       M       No
+Measurement-Period-LTE                              1655   7.3.166   Enumerated         V      -     -       M       No
+Measurement-Period-UMTS                             1656   7.3.167   Enumerated         V      -     -       M       No
+Collection-Period-RRM-LTE                           1657   7.3.168   Enumerated         V      -     -       M       No
+Collection-Period-RRM-UMTS                          1658   7.3.169   Enumerated         V      -     -       M       No
+Positioning-Method                                  1659   7.3.170   OctetString        V      -     -       M       No
+Measurement-Quantity                                1660   7.3.171   OctetString        V      -     -       M       No
+Event-Threshold-Event-1F                            1661   7.3.172   Integer32          V      -     -       M       No
+Event-Threshold-Event-1I                            1662   7.3.173   Integer32          V      -     -       M       No
+Restoration-Priority                                1663   7.3.174   Unsigned32         V      -     -       M       No
+SGs-MME-Identity                                    1664   7.3.175   UTF8String         V      -     -       M       No
+SIPTO-Local-Network-Permission                      1665   7.3.176   Unsigned32         V      -     -       M       No
+Coupled-Node-Diameter-ID                            1666   7.3.177   DiameterIdentity   V      -     -       M       No
+WLAN-offloadability                                 1667   7.3.181   Grouped            V      -     -       M       No
+WLAN-offloadability-EUTRAN                          1668   7.3.182   Unsigned32         V      -     -       M       No
+WLAN-offloadability-UTRAN                           1669   7.3.183   Unsigned32         V      -     -       M       No
+Reset-ID                                            1670   7.3.184   OctetString        V      -     -       M       No
+MDT-Allowed-PLMN-Id                                 1671   7.3.185   OctetString        V      -     -       M       No
+Adjacent-PLMNs                                      1672   7.3.186   Grouped            V      -     -       M       No
+Adjacent-Access-Restriction-Data                    1673   7.3.187   Grouped            V      -     -       M       No
+DL-Buffering-Suggested-Packet-Count                 1674   7.3.188   Integer32          V      -     -       M       No
+IMSI-Group-Id                                       1675   7.3.189   Grouped            V      -     -       M       No
+Group-Service-Id                                    1676   7.3.190   Unsigned32         V      -     -       M       No
+Group-PLMN-Id                                       1677   7.3.191   OctetString        V      -     -       M       No
+Local-Group-Id                                      1678   7.3.192   OctetString        V      -     -       M       No
+AIR-Flags                                           1679   7.3.201   Unsigned32         V      -     -       M       No
+UE-Usage-Type                                       1680   7.3.202   Unsigned32         V      -     -       M       No
+Non-IP-PDN-Type-Indicator                           1681   7.3.204   Enumerated         V      -     -       M       No
+Non-IP-Data-Delivery-Mechanism                      1682   7.3.205   Unsigned32         V      -     -       M       No
+Additional-Context-ID                               1683   7.3.206   Unsigned32         V      -     -       M       No
+SCEF-Realm                                          1684   7.3.207   DiameterIdentity   V      -     -       M       No
+Subscription-Data-Deletion                          1685   7.3.208   Grouped            V      -     -       M       No
+Preferred-Data-Mode                                 1686   7.3.209   Unsigned32         V      -     -       M       No
+Emergency-Info                                      1687   7.3.210   Grouped            V      -     -       M       No
+V2X-Subscription-Data                               1688   7.3.212   Grouped            V      -     -       M       No
+V2X-Permission                                      1689   7.3.213   Unsigned32         V      -     -       M       No
+PDN-Connection-Continuity                           1690   7.3.214   Unsigned32         V      -     -       M       No
+eDRX-Cycle-Length                                   1691   7.3.215   Grouped            V      -     -       M       No
+eDRX-Cycle-Length-Value                             1692   7.3.216   OctetString        V      -     -       M       No
+UE-PC5-AMBR                                         1693   7.3.217   Unsigned32         V      -     -       M       No
+MBSFN-Area                                          1694   7.3.219   Grouped            V      -     -       M       No
+MBSFN-Area-ID                                       1695   7.3.220   Unsigned32         V      -     -       M       No
+Carrier-Frequency                                   1696   7.3.221   Unsigned32         V      -     -       M       No
+RDS-Indicator                                       1697   7.3.222   Enumerated         V      -     -       M       No
+Service-Gap-Time                                    1698   7.3.223   Unsigned32         V      -     -       M       No
+Aerial-UE-Subscription-Information                  1699   7.3.224   Unsigned32         V      -     -       M       No
+Broadcast-Location-Assistance-Data-Types            1700   7.3.225   Unsigned64         V      -     -       M       No
+Paging-Time-Window                                  1701   7.3.226   Grouped            V      -     -       M       No
+Operation-Mode                                      1702   7.3.227   Unsigned32         V      -     -       M       No
+Paging-Time-Window-Length                           1703   7.3.228   OctetString        V      -     -       M       No
+Core-Network-Restrictions                           1704   7.3.230   Unsigned32         V      -     -       M       No
+eDRX-Related-RAT                                    1705   7.3.229   Grouped            V      -     -       M       No
+Interworking-5GS-Indicator                          1706   7.3.231   Enumerated         V      -     -       M       No
+Ethernet-PDN-Type-Indicator                         1707   7.3.232   Enumerated         V      -     -       M       No
+Subscribed-ARPI                                     1708   7.3.233   Unsigned32         V      -     -       M       No
+IAB-Operation-Permission                            1709   7.3.234   Enumerated         V      -     -       M       No
+V2X-Subscription-Data-Nr                            1710   7.3.235   Grouped            V      -     -       M       No
+UE-PC5-QoS                                          1711   7.3.236   Grouped            V      -     -       M       No
+PC5-QoS-Flow                                        1712   7.3.237   Grouped            V      -     -       M       No
+5QI                                                 1713   7.3.238   Integer32          V      -     -       M       No
+PC5-Flow-Bitrates                                   1714   7.3.239   Grouped            V      -     -       M       No
+Guaranteed-Flow-Bitrates                            1715   7.3.240   Integer32          V      -     -       M       No
+Maximum-Flow-Bitrates                               1716   7.3.241   Integer32          V      -     -       M       No
+PC5-Range                                           1717   7.3.242   Integer32          V      -     -       M       No
+PC5-Link-AMBR                                       1718   7.3.243   Integer32          V      -     -       M       No
+Third-Context-Identifier                            1719   7.3.244   Unsigned32         V      -     -       M       No
+MDT-Configuration-NR                                1720   7.3.245   Grouped            V      -     -       M       No
+Event-Threshold-SINR                                1721   7.3.246   Unsigned32         V      -     -       M       No
+Collection-Period-RRM-NR                            1722   7.3.247   Enumerated         V      -     -       M       No
+Collection-Period-M6-NR                             1723   7.3.248   Enumerated         V      -     -       M       No
+Collection-Period-M7-NR                             1724   7.3.249   Unsigned32         V      -     -       M       No
+Sensor-Measurement                                  1725   7.3.250   Enumerated         V      -     -       M       No
+NR-Cell-Global-Identity                             1726   7.3.251   OctetString        V      -     -       M       No
+Trace-Reporting-Consumer-Uri                        1727   7.3.252   DiameterURI        V      -     -       M       No
+PLMN-RAT-Usage-Control                              1728   7.3.253   Unsigned32         V      -     -       M       No
+SF-ULR-Timestamp                                    1729   7.3.254   Time               V      -     -       M       No
+SF-Provisional-Indication                           1730   7.3.255   Enumerated         V      -     -       M       No
+
+
+; Type: Reused AVPs
+; Section: 7.3.1
+; Table: 7.3.1/2
+; Page: 87
+; Columns: Name                         From       M-bit
+Service-Selection                       RFC5778    -
+3GPP-Charging-Characteristics           TS29.061   -
+Supported-Features                      TS29.229   -
+Feature-List-ID                         TS29.229   -
+Feature-List                            TS29.229   -
+Served-Party-IP-Address                 TS32.299   -
+QoS-Class-Identifier                    TS29.212   -
+Allocation-Retention-Priority           TS29.212   -
+Priority-Level                          TS29.212   -
+Pre-emption-Capability                  TS29.212   -
+Pre-emption-Vulnerability               TS29.212   -
+Max-Requested-Bandwidth-DL              TS29.214   -
+Max-Requested-Bandwidth-UL              TS29.214   -
+Extended-Max-Requested-BW-DL            TS29.214   -
+Extended-Max-Requested-BW-UL            TS29.214   -
+RAT-Type                                TS29.212   MUST
+MSISDN                                  TS29.329   -
+MIP6-Agent-Info                         RFC5447    -
+MIP-Home-Agent-Address                  RFC4004    -
+MIP-Home-Agent-Host                     RFC4004    -
+PDP-Address                             TS32.299   -
+Confidentiality-Key                     TS29.229   -
+Integrity-Key                           TS29.229   -
+Visited-Network-Identifier              TS29.229   MUST-NOT
+GMLC-Address                            TS29.173   MUST-NOT
+User-CSG-Information                    TS32.299   MUST-NOT
+ProSe-Subscription-Data                 TS29.344   MUST-NOT
+OC-Supported-Features                   RFC7683    MUST-NOT
+OC-OLR                                  RFC7683    MUST-NOT
+SCEF-Reference-ID                       TS29.336   MUST-NOT
+SCEF-ID                                 TS29.336   MUST-NOT
+AESE-Communication-Pattern              TS29.336   MUST-NOT
+Communication-Pattern-Set               TS29.336   MUST-NOT
+Monitoring-Event-Configuration          TS29.336   MUST-NOT
+Monitoring-Event-Report                 TS29.336   MUST-NOT
+UE-Reachability-Configuration           TS29.336   MUST-NOT
+eNodeB-ID                               TS29.217   MUST-NOT
+SCEF-Reference-ID-for-Deletion          TS29.336   MUST-NOT
+Monitoring-Type                         TS29.336   MUST-NOT
+Maximum-Number-of-Reports               TS29.336   MUST-NOT
+Monitoring-Duration                     TS29.336   MUST-NOT
+Charged-Party                           TS29.336   MUST-NOT
+Location-Information-Configuration      TS29.336   MUST-NOT
+Reachability-Type                       TS29.336   MUST-NOT
+Maximum-Response-Time                   TS29.336   MUST-NOT
+Reachability-Information                TS29.336   MUST-NOT
+Reachability-Cause                      TS29.128   MUST-NOT
+Monitoring-Event-Config-Status          TS29.336   MUST-NOT
+Supported-Services                      TS29.336   MUST-NOT
+Supported-Monitoring-Events             TS29.336   MUST-NOT
+DRMP                                    RFC7944    MUST-NOT
+Reference-ID-Validity-Time              TS29.336   MUST-NOT
+Maximum-UE-Availability-Time            TS29.338   MUST-NOT
+Emergency-Services                      TS29.273   -
+Load                                    RFC8583    MUST-NOT
+Extended-eNodeB-ID                      TS29.217   MUST-NOT
+External-Identifier                     TS29.336   MUST-NOT
+Loss-Of-Connectivity-Reason             TS29.336   MUST-NOT
+Active-Time                             TS29.128   MUST-NOT
+Idle-Status-Indication                  TS29.128   MUST-NOT
+MTC-Provider-Info                       TS29.336   MUST-NOT
+Traffic-Profile                         TS29.336   MUST-NOT
+PDN-Connectivity-Status-Configuration   TS29.336   MUST-NOT
+PDN-Connectivity-Status-Report          TS29.336   MUST-NOT
+Battery-Indicator                       TS29.336   -
+SCEF-Reference-ID-Ext                   TS29.336   MUST-NOT
+SCEF-Reference-ID-for-Deletion-Ext      TS29.336   MUST-NOT
+
+
+; Type: Grouped AVP
+; Name: Subscription-Data
+; Section: 7.3.2
+; Page: 98
+Subscription-Data ::= < AVP header: 1400 10415 >
+        [ Subscriber-Status ]
+        [ MSISDN ]
+        [ A-MSISDN ]
+        [ STN-SR ]
+        [ ICS-Indicator ]
+        [ Network-Access-Mode ]
+        [ Operator-Determined-Barring ]
+        [ HPLMN-ODB ]
+    *10 [ Regional-Subscription-Zone-Code ]
+        [ Access-Restriction-Data ]
+        [ APN-OI-Replacement ]
+        [ LCS-Info ]
+        [ Teleservice-List ]
+      * [ Call-Barring-Info ]
+        [ 3GPP-Charging-Characteristics ]
+        [ AMBR ]
+        [ APN-Configuration-Profile ]
+        [ RAT-Frequency-Selection-Priority-ID ]
+        [ Trace-Data ]
+        [ GPRS-Subscription-Data ]
+      * [ CSG-Subscription-Data ]
+        [ Roaming-Restricted-Due-To-Unsupported-Feature ]
+        [ Subscribed-Periodic-RAU-TAU-Timer ]
+        [ MPS-Priority ]
+        [ VPLMN-LIPA-Allowed ]
+        [ Relay-Node-Indicator ]
+        [ MDT-User-Consent ]
+        [ Subscribed-VSRVCC ]
+        [ ProSe-Subscription-Data ]
+        [ Subscription-Data-Flags ]
+      * [ Adjacent-Access-Restriction-Data ]
+        [ DL-Buffering-Suggested-Packet-Count ]
+      * [ IMSI-Group-Id ]
+        [ UE-Usage-Type ]
+      * [ AESE-Communication-Pattern ]
+      * [ Monitoring-Event-Configuration ]
+        [ Emergency-Info ]
+        [ V2X-Subscription-Data ]
+        [ V2X-Subscription-Data-Nr ]
+      * [ eDRX-Cycle-Length ]
+        [ External-Identifier ]
+        [ Active-Time ]
+        [ Service-Gap-Time ]
+        [ Broadcast-Location-Assistance-Data-Types ]
+        [ Aerial-UE-Subscription-Information ]
+        [ Core-Network-Restrictions ]
+      * [ Paging-Time-Window ]
+        [ Subscribed-ARPI ]
+        [ IAB-Operation-Permission ]
+        [ PLMN-RAT-Usage-Control ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Terminal-Information
+; Section: 7.3.3
+; Page: 99
+Terminal-Information ::= < AVP header: 1401 10415 >
+        [ IMEI ]
+        [ 3GPP2-MEID ]
+        [ Software-Version ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: ULR-Flags
+; Kind: bits
+; Section: 7.3.7
+; Table: 7.3.7/1
+; Page: 100
+Single-Registration-Indication               = 0
+"S6a/S6d-Indicator"                          = 1
+"Skip Subscriber Data"                       = 2
+GPRS-Subscription-Data-Indicator             = 3
+Node-Type-Indicator                          = 4
+Initial-Attach-Indicator                     = 5
+PS-LCS-Not-Supported-By-UE                   = 6
+SMS-Only-Indication                          = 7
+Dual-Registration-5G-Indicator               = 8
+"Inter-PLMN-inter-MME handover"              = 9
+"Intra-PLMN-inter-MME handover"              = 10
+"PDN Context Sync Up With UDM not requested" = 11
+Disaster-Roaming-service-in-EPS-Indication   = 12
+
+
+; Type: Value Table
+; AVP: ULA-Flags
+; Kind: bits
+; Section: 7.3.8
+; Table: 7.3.8/1
+; Page: 103
+"Separation Indication"  = 0
+"MME Registered for SMS" = 1
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S6a/S6d
+; Section: 7.3.10.1
+; Table: 7.3.10/1
+; Page: 103
+ODB-all-APN                                              = 0  ; O
+ODB-HPLMN-APN                                            = 1  ; O
+ODB-VPLMN-APN                                            = 2  ; O
+ODB-all-OG                                               = 3  ; O
+"ODB-all- InternationalOG"                               = 4  ; O
+ODB-all-InternationalOGNotToHPLMN-Country                = 5  ; O
+ODB-all-InterzonalOG                                     = 6  ; O
+ODB-all-InterzonalOGNotToHPLMN-Country                   = 7  ; O
+ODB-all-InterzonalOGAndInternationalOGNotToHPLMN-Country = 8  ; O
+RegSub                                                   = 9  ; O
+Trace                                                    = 10 ; O
+LCS-all-PrivExcep                                        = 11 ; O
+LCS-Universal                                            = 12 ; O
+LCS-CallSessionRelated                                   = 13 ; O
+LCS-CallSessionUnrelated                                 = 14 ; O
+LCS-PLMNOperator                                         = 15 ; O
+LCS-ServiceType                                          = 16 ; O
+LCS-all-MOLR-SS                                          = 17 ; O
+"LCS- BasicSelfLocation"                                 = 18 ; O
+"LCS- AutonomousSelfLocation"                            = 19 ; O
+"LCS- TransferToThirdParty"                              = 20 ; O
+SM-MO-PP                                                 = 21 ; O
+Barring-OutgoingCalls                                    = 22 ; O
+BAOC                                                     = 23 ; O
+BOIC                                                     = 24 ; O
+BOICExHC                                                 = 25 ; O
+UE-Reachability-Notification                             = 26 ; O
+"T-ADS Data Retrieval"                                   = 27 ; O
+"State/Location-Information-Retrieval"                   = 28 ; O
+"Partial Purge"                                          = 29 ; O
+"Local Time Zone Retrieval"                              = 30 ; O
+"Additional MSISDN"                                      = 31 ; O
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 2
+; Application: S6a/S6d
+; Section: 7.3.10.1
+; Table: 7.3.10/2
+; Page: 103
+"SMS in MME"                           = 0  ; O
+"SMS in SGSN"                          = 1  ; O
+Dia-LCS-all-PrivExcep                  = 2  ; O
+Dia-LCS-Universal                      = 3  ; O
+Dia-LCS-CallSessionRelated             = 4  ; O
+Dia-LCS-CallSessionUnrelated           = 5  ; O
+Dia-LCS-PLMNOperator                   = 6  ; O
+Dia-LCS-ServiceType                    = 7  ; O
+Dia-LCS-all-MOLR-SS                    = 8  ; O
+"Dia-LCS- BasicSelfLocation"           = 9  ; O
+"Dia-LCS- AutonomousSelfLocation"      = 10 ; O
+"Dia-LCS- TransferToThirdParty"        = 11 ; O
+Gdd-in-SGSN                            = 12 ; O
+Optimized-LCS-Proc-Support             = 13 ; O
+"SGSN CAMEL Capability"                = 14 ; O
+"ProSe Capability"                     = 15 ; O
+"P-CSCF Restoration"                   = 16 ; O
+Reset-IDs                              = 17 ; O
+Communication-Pattern                  = 18 ; O
+Monitoring-Event                       = 19 ; O
+"Dedicated Core Networks"              = 20 ; O
+"Non-IP PDN Type APNs"                 = 21 ; O
+"Non-IP PDP Type APNs"                 = 22 ; O
+"Removal of MSISDN"                    = 23 ; O
+"Emergency Service Continuity"         = 24 ; O
+"V2X Capability"                       = 25 ; O
+External-Identifier                    = 26 ; O
+"NR as Secondary RAT"                  = 27 ; O
+"Unlicensed Spectrum as Secondary RAT" = 28 ; O
+"Ethernet PDN Type APNs"               = 29 ; O
+"Extended Reference IDs"               = 30 ; O
+"Satellite S&F"                        = 31 ; O
+
+
+; Type: Grouped AVP
+; Name: Requested-EUTRAN-Authentication-Info
+; Section: 7.3.11
+; Page: 118
+Requested-EUTRAN-Authentication-Info ::= < AVP header: 1408 10415 >
+        [ Number-Of-Requested-Vectors ]
+        [ Immediate-Response-Preferred ]
+        [ Re-synchronization-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Requested-UTRAN-GERAN-Authentication-Info
+; Section: 7.3.12
+; Page: 119
+Requested-UTRAN-GERAN-Authentication-Info ::= < AVP header: 1409 10415 >
+        [ Number-Of-Requested-Vectors ]
+        [ Immediate-Response-Preferred ]
+        [ Re-synchronization-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Authentication-Info
+; Section: 7.3.17
+; Page: 119
+Authentication-Info ::= < AVP header: 1413 10415 >
+      * [ E-UTRAN-Vector ]
+      * [ UTRAN-Vector ]
+      * [ GERAN-Vector ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: E-UTRAN-Vector
+; Section: 7.3.18
+; Page: 120
+E-UTRAN-Vector ::= < AVP header: 1414 10415 >
+        [ Item-Number ]
+        { RAND }
+        { XRES }
+        { AUTN }
+        { KASME }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: UTRAN-Vector
+; Section: 7.3.19
+; Page: 120
+UTRAN-Vector ::= < AVP header: 1415 10415 >
+        [ Item-Number ]
+        { RAND }
+        { XRES }
+        { AUTN }
+        { Confidentiality-Key }
+        { Integrity-Key }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: GERAN-Vector
+; Section: 7.3.20
+; Page: 120
+GERAN-Vector ::= < AVP header: 1416 10415 >
+        [ Item-Number ]
+        { RAND }
+        { SRES }
+        { Kc }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Network-Access-Mode
+; Section: 7.3.21
+; Page: 121
+Network-Access-Mode ::= < Enumerated AVP header: 1417 10415 >
+        PACKET_AND_CIRCUIT = 0
+        Reserved           = 1
+        ONLY_PACKET        = 2
+
+
+; Type: Value Table
+; AVP: HPLMN-ODB
+; Kind: bits
+; Section: 7.3.22
+; Table: 7.3.22/1
+; Page: 121
+"HPLMN specific barring type 1" = 0
+"HPLMN specific barring type 2" = 1
+"HPLMN specific barring type 3" = 2
+"HPLMN specific barring type 4" = 3
+
+
+; Type: Enumerated AVP
+; Name: Cancellation-Type
+; Section: 7.3.24
+; Page: 121
+Cancellation-Type ::= < Enumerated AVP header: 1420 10415 >
+        MME_UPDATE_PROCEDURE          = 0
+        SGSN_UPDATE_PROCEDURE         = 1
+        SUBSCRIPTION_WITHDRAWAL       = 2
+        UPDATE_PROCEDURE_IWF          = 3
+        INITIAL_ATTACH_PROCEDURE      = 4
+        DISASTER_CONDITION_TERMINATED = 5
+
+
+; Type: Value Table
+; AVP: DSR-Flags
+; Kind: bits
+; Section: 7.3.25
+; Table: 7.3.25/1
+; Page: 122
+"Regional Subscription Withdrawal"               = 0
+"Complete APN Configuration Profile Withdrawal"  = 1
+"Subscribed Charging Characteristics Withdrawal" = 2
+"PDN subscription contexts Withdrawal"           = 3
+STN-SR                                           = 4
+"Complete PDP context list Withdrawal"           = 5
+"PDP contexts Withdrawal"                        = 6
+"Roaming Restricted due to unsupported feature"  = 7
+"Trace Data Withdrawal"                          = 8
+"CSG Deleted"                                    = 9
+APN-OI-Replacement                               = 10
+"GMLC List Withdrawal"                           = 11
+"LCS Withdrawal"                                 = 12
+"SMS Withdrawal"                                 = 13
+"Subscribed periodic RAU-TAU Timer Withdrawal"   = 14
+"Subscribed VSRVCC Withdrawal"                   = 15
+"A-MSISDN Withdrawal"                            = 16
+"ProSe Withdrawal"                               = 17
+Reset-IDs                                        = 18
+"DL-Buffering-Suggested-Packet-Count Withdrawal" = 19
+"Subscribed IMSI-Group-Id Withdrawal"            = 20
+"Delete monitoring events"                       = 21
+"User Plane Integrity Protection Withdrawal"     = 22
+"MSISDN Withdrawal"                              = 23
+"UE Usage Type Withdrawal"                       = 24
+"V2X Withdrawal"                                 = 25
+External-Identifier-Withdrawal                   = 26
+"Aerial-UE-Subscription Withdrawal"              = 27
+"Paging Time Window Subscription Withdrawal"     = 28
+Active-Time-Withdrawal                           = 29
+"eDRX-Cycle-Length -Withdrawal"                  = 30
+Service-Gap-Time-Withdrawal                      = 31
+
+
+; Type: Value Table
+; AVP: DSA-Flags
+; Kind: bits
+; Section: 7.3.26
+; Table: 7.3.26/1
+; Page: 125
+"Network Node area restricted" = 0
+
+
+; Type: Enumerated AVP
+; Name: Subscriber-Status
+; Section: 7.3.29
+; Page: 126
+Subscriber-Status ::= < Enumerated AVP header: 1424 10415 >
+        SERVICE_GRANTED             = 0
+        OPERATOR_DETERMINED_BARRING = 1
+
+
+; Type: Value Table
+; AVP: Operator-Determined-Barring
+; Kind: bits
+; Section: 7.3.30
+; Table: 7.3.30/1
+; Page: 126
+"All Packet Oriented Services Barred"                                                                                                      = 0
+"Roamer Access HPLMN-AP Barred"                                                                                                            = 1
+"Roamer Access to VPLMN-AP Barred"                                                                                                         = 2
+"Barring of all outgoing calls"                                                                                                            = 3
+"Barring of all outgoing international calls"                                                                                              = 4
+"Barring of all outgoing international calls except those directed to the home PLMN country"                                               = 5
+"Barring of all outgoing inter-zonal calls"                                                                                                = 6
+"Barring of all outgoing inter-zonal calls except those directed to the home PLMN country"                                                 = 7
+"Barring of all outgoing international calls except those directed to the home PLMN country and Barring of all outgoing inter-zonal calls" = 8
+
+
+; Type: Value Table
+; AVP: Access-Restriction-Data
+; Kind: bits
+; Section: 7.3.31
+; Table: 7.3.31/1
+; Page: 126
+"UTRAN Not Allowed"                                                                                           = 0
+"GERAN Not Allowed"                                                                                           = 1
+"GAN Not Allowed"                                                                                             = 2
+"I-HSPA-Evolution Not Allowed"                                                                                = 3
+"WB-E-UTRAN Not Allowed"                                                                                      = 4
+"HO-To-Non-3GPP-Access Not Allowed"                                                                           = 5
+"NB-IoT Not Allowed"                                                                                          = 6
+"Enhanced Coverage Not Allowed"                                                                               = 7
+"NR as Secondary RAT in E-UTRAN Not Allowed"                                                                  = 8
+"Unlicensed Spectrum as Secondary RAT Not Allowed"                                                            = 9
+"NR in 5GS Not Allowed but the access types linked to bits 25-30 are allowed unless restricted by those bits" = 10
+"LTE-M Not Allowed"                                                                                           = 11
+"WB-E-UTRAN Except LTE-M Not Allowed"                                                                         = 12
+"WB-E-UTRAN(LEO) Not Allowed"                                                                                 = 13
+"WB-E-UTRAN(MEO) Not Allowed"                                                                                 = 14
+"WB-E-UTRAN(GEO) Not Allowed"                                                                                 = 15
+"WB-E-UTRAN(OTHERSAT) Not Allowed"                                                                            = 16
+"NB-IoT(LEO) Not Allowed"                                                                                     = 17
+"NB-IoT(MEO) Not Allowed"                                                                                     = 18
+"NB-IoT(GEO) Not Allowed"                                                                                     = 19
+"NB-IoT(OTHERSAT) Not Allowed"                                                                                = 20
+"LTE-M(LEO) Not Allowed"                                                                                      = 21
+"LTE-M(MEO) Not Allowed"                                                                                      = 22
+"LTE-M(GEO) Not Allowed"                                                                                      = 23
+"LTE-M(OTHERSAT) Not Allowed"                                                                                 = 24
+"NR (LEO) Not Allowed"                                                                                        = 25
+"NR (MEO) Not Allowed"                                                                                        = 26
+"NR (GEO) Not Allowed"                                                                                        = 27
+"NR (OTHERSAT) Not Allowed"                                                                                   = 28
+"NR RedCap not allowed as primary RAT"                                                                        = 29
+"NR eRedCap not allowed as primary RAT"                                                                       = 30
+
+
+; Type: Enumerated AVP
+; Name: All-APN-Configurations-Included-Indicator
+; Section: 7.3.33
+; Page: 128
+All-APN-Configurations-Included-Indicator ::= < Enumerated AVP header: 1428 10415 >
+        All_APN_CONFIGURATIONS_INCLUDED            = 0
+        MODIFIED_ADDED_APN_CONFIGURATIONS_INCLUDED = 1
+
+
+; Type: Grouped AVP
+; Name: APN-Configuration-Profile
+; Section: 7.3.34
+; Page: 128
+APN-Configuration-Profile ::= < AVP header: 1429 10415 >
+        { Context-Identifier }
+        [ Additional-Context-Identifier ]
+        [ Third-Context-Identifier ]
+        { All-APN-Configurations-Included-Indicator }
+     1* { APN-Configuration }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+APN-Configuration ::= < AVP header: 1430 10415 >
+        { Context-Identifier }
+     *2 [ Served-Party-IP-Address ]
+        { PDN-Type }
+        { Service-Selection }
+        [ EPS-Subscribed-QoS-Profile ]
+        [ VPLMN-Dynamic-Address-Allowed ]
+        [ MIP6-Agent-Info ]
+        [ Visited-Network-Identifier ]
+        [ PDN-GW-Allocation-Type ]
+        [ 3GPP-Charging-Characteristics ]
+        [ AMBR ]
+      * [ Specific-APN-Info ]
+        [ APN-OI-Replacement ]
+        [ SIPTO-Permission ]
+        [ LIPA-Permission ]
+        [ Restoration-Priority ]
+        [ SIPTO-Local-Network-Permission ]
+        [ WLAN-offloadability ]
+        [ Non-IP-PDN-Type-Indicator ]
+        [ Non-IP-Data-Delivery-Mechanism ]
+        [ SCEF-ID ]
+        [ SCEF-Realm ]
+        [ Preferred-Data-Mode ]
+        [ PDN-Connection-Continuity ]
+        [ RDS-Indicator ]
+        [ Interworking-5GS-Indicator ]
+        [ Ethernet-PDN-Type-Indicator ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: EPS-Subscribed-QoS-Profile
+; Section: 7.3.37
+; Page: 130
+EPS-Subscribed-QoS-Profile ::= < AVP header: 1431 10415 >
+        { QoS-Class-Identifier }
+        { Allocation-Retention-Priority }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: VPLMN-Dynamic-Address-Allowed
+; Section: 7.3.38
+; Page: 130
+VPLMN-Dynamic-Address-Allowed ::= < Enumerated AVP header: 1432 10415 >
+        NOTALLOWED = 0
+        ALLOWED    = 1
+
+
+; Type: Grouped AVP
+; Name: Allocation-Retention-Priority
+; Section: 7.3.40
+; Page: 131
+Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
+        { Priority-Level }
+        [ Pre-emption-Capability ]
+        [ Pre-emption-Vulnerability ]
+
+
+; Type: Grouped AVP
+; Name: AMBR
+; Section: 7.3.41
+; Page: 131
+AMBR ::= < AVP header: 1435 10415 >
+        { Max-Requested-Bandwidth-UL }
+        { Max-Requested-Bandwidth-DL }
+        [ Extended-Max-Requested-BW-UL ]
+        [ Extended-Max-Requested-BW-DL ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: PDN-GW-Allocation-Type
+; Section: 7.3.44
+; Page: 132
+PDN-GW-Allocation-Type ::= < Enumerated AVP header: 1438 10415 >
+        STATIC  = 0
+        DYNAMIC = 1
+
+
+; Type: Grouped AVP
+; Name: MIP6-Agent-Info
+; Section: 7.3.45
+; Page: 132
+MIP6-Agent-Info ::= < AVP header: 486 >
+     *2 [ MIP-Home-Agent-Address ]
+        [ MIP-Home-Agent-Host ]
+        [ MIP6-Home-Link-Prefix ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: IDA-Flags
+; Kind: bits
+; Section: 7.3.47
+; Table: 7.3.47/1
+; Page: 133
+"Network Node area restricted" = 0
+
+
+; Type: Value Table
+; AVP: PUA-Flags
+; Kind: bits
+; Section: 7.3.48
+; Table: 7.3.48/1
+; Page: 133
+"Freeze M-TMSI" = 0
+"Freeze P-TMSI" = 1
+
+
+; Type: Value Table
+; AVP: NOR-Flags
+; Kind: bits
+; Section: 7.3.49
+; Table: 7.3.49/1
+; Page: 133
+Single-Registration-Indication                      = 0
+"SGSN area restricted"                              = 1
+"Ready for SM from SGSN"                            = 2
+"UE Reachable from MME"                             = 3
+Reserved                                            = 4
+"UE Reachable from SGSN"                            = 5
+"Ready for SM from MME"                             = 6
+"Homogeneous Support of IMS Voice Over PS Sessions" = 7
+"S6a/S6d-Indicator"                                 = 8
+"Removal of MME Registration for SMS"               = 9
+
+
+; Type: Enumerated AVP
+; Name: Equipment-Status
+; Section: 7.3.51
+; Page: 134
+Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
+        PERMITTEDLISTED  = 0
+        PROHIBITEDLISTED = 1
+        TRACKINGLISTED   = 2
+
+
+; Type: Enumerated AVP
+; Name: PDN-Type
+; Section: 7.3.62
+; Page: 135
+PDN-Type ::= < Enumerated AVP header: 1456 10415 >
+        IPv4         = 0
+        IPv6         = 1
+        IPv4v6       = 2
+        IPv4_OR_IPv6 = 3
+
+
+; Type: Grouped AVP
+; Name: Trace-Data
+; Section: 7.3.63
+; Page: 136
+Trace-Data ::= < AVP header: 1458 10415 >
+        { Trace-Reference }
+        { Trace-Depth }
+        { Trace-NE-Type-List }
+        [ Trace-Interface-List ]
+        { Trace-Event-List }
+        [ OMC-Id ]
+        { Trace-Collection-Entity }
+        [ MDT-Configuration ]
+        [ MDT-Configuration-NR ]
+        [ Trace-Reporting-Consumer-Uri ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Trace-Depth
+; Section: 7.3.67
+; Page: 137
+; Values: TS 32.422 [23] for Trace Depth
+Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
+
+
+; Type: Grouped AVP
+; Name: GPRS-Subscription-Data
+; Section: 7.3.72
+; Page: 137
+GPRS-Subscription-Data ::= < AVP header: 1467 10415 >
+        { Complete-Data-List-Included-Indicator }
+   1*50 { PDP-Context }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Complete-Data-List-Included-Indicator
+; Section: 7.3.73
+; Page: 138
+Complete-Data-List-Included-Indicator ::= < Enumerated AVP header: 1468 10415 >
+        All_PDP_CONTEXTS_INCLUDED            = 0
+        MODIFIED_ADDED_PDP_CONTEXTS_INCLUDED = 1
+
+
+; Type: Grouped AVP
+; Name: PDP-Context
+; Section: 7.3.74
+; Page: 138
+PDP-Context ::= < AVP header: 1469 10415 >
+        { Context-Identifier }
+        { PDP-Type }
+        [ PDP-Address ]
+        { QoS-Subscribed }
+        [ VPLMN-Dynamic-Address-Allowed ]
+        { Service-Selection }
+        [ 3GPP-Charging-Characteristics ]
+        [ Ext-PDP-Type ]
+        [ Ext-PDP-Address ]
+        [ AMBR ]
+        [ APN-OI-Replacement ]
+        [ SIPTO-Permission ]
+        [ LIPA-Permission ]
+        [ Restoration-Priority ]
+        [ SIPTO-Local-Network-Permission ]
+        [ Non-IP-Data-Delivery-Mechanism ]
+        [ SCEF-ID ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: CSG-Subscription-Data
+; Section: 7.3.78
+; Page: 139
+CSG-Subscription-Data ::= < AVP header: 1436 10415 >
+        { CSG-Id }
+        [ Expiration-Date ]
+      * [ Service-Selection ]
+        [ Visited-PLMN-Id ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Roaming-Restricted-Due-To-Unsupported-Feature
+; Section: 7.3.81
+; Page: 139
+Roaming-Restricted-Due-To-Unsupported-Feature ::= < Enumerated AVP header: 1457 10415 >
+        Roaming-Restricted-Due-To-Unsupported-Feature = 0
+
+
+; Type: Grouped AVP
+; Name: Specific-APN-Info
+; Section: 7.3.82
+; Page: 140
+Specific-APN-Info ::= < AVP header: 1472 10415 >
+        { Service-Selection }
+        { MIP6-Agent-Info }
+        [ Visited-Network-Identifier ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Alert-Reason
+; Section: 7.3.83
+; Page: 140
+Alert-Reason ::= < Enumerated AVP header: 1434 10415 >
+        UE_PRESENT          = 0
+        UE_MEMORY_AVAILABLE = 1
+
+
+; Type: Grouped AVP
+; Name: LCS-Info
+; Section: 7.3.84
+; Page: 140
+LCS-Info ::= < AVP header: 1473 10415 >
+      * [ GMLC-Number ]
+      * [ LCS-PrivacyException ]
+      * [ MO-LR ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: LCS-PrivacyException
+; Section: 7.3.86
+; Page: 140
+LCS-PrivacyException ::= < AVP header: 1475 10415 >
+        { SS-Code }
+        { SS-Status }
+        [ Notification-To-UE-User ]
+      * [ External-Client ]
+      * [ PLMN-Client ]
+      * [ Service-Type ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Notification-To-UE-User
+; Section: 7.3.89
+; Page: 141
+Notification-To-UE-User ::= < Enumerated AVP header: 1478 10415 >
+        NOTIFY_LOCATION_ALLOWED                             = 0
+        NOTIFYANDVERIFY_LOCATION_ALLOWED_IF_NO_RESPONSE     = 1
+        NOTIFYANDVERIFY_LOCATION_NOT_ALLOWED_IF_NO_RESPONSE = 2
+        LOCATION_NOT_ALLOWED                                = 3
+
+
+; Type: Grouped AVP
+; Name: External-Client
+; Section: 7.3.90
+; Page: 141
+External-Client ::= < AVP header: 1479 10415 >
+        { Client-Identity }
+        [ GMLC-Restriction ]
+        [ Notification-To-UE-User ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: GMLC-Restriction
+; Section: 7.3.92
+; Page: 142
+GMLC-Restriction ::= < Enumerated AVP header: 1481 10415 >
+        GMLC_LIST    = 0
+        HOME_COUNTRY = 1
+
+
+; Type: Enumerated AVP
+; Name: PLMN-Client
+; Section: 7.3.93
+; Page: 142
+PLMN-Client ::= < Enumerated AVP header: 1482 10415 >
+        BROADCAST_SERVICE            = 0
+        O_AND_M_HPLMN                = 1
+        O_AND_M_VPLMN                = 2
+        ANONYMOUS_LOCATION           = 3
+        TARGET_UE_SUBSCRIBED_SERVICE = 4
+
+
+; Type: Grouped AVP
+; Name: Service-Type
+; Section: 7.3.94
+; Page: 142
+Service-Type ::= < AVP header: 1483 10415 >
+        { ServiceTypeIdentity }
+        [ GMLC-Restriction ]
+        [ Notification-To-UE-User ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: MO-LR
+; Section: 7.3.96
+; Page: 142
+MO-LR ::= < AVP header: 1485 10415 >
+        { SS-Code }
+        { SS-Status }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Teleservice-List
+; Section: 7.3.99
+; Page: 143
+Teleservice-List ::= < AVP header: 1486 10415 >
+     1* { TS-Code }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Call-Barring-Info
+; Section: 7.3.101
+; Page: 143
+Call-Barring-Info ::= < AVP header: 1488 10415 >
+        { SS-Code }
+        { SS-Status }
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: IDR-Flags
+; Kind: bits
+; Section: 7.3.103
+; Table: 7.3.103/1
+; Page: 143
+"UE Reachability Request"          = 0
+"T-ADS Data Request"               = 1
+"EPS User State Request"           = 2
+"EPS Location Information Request" = 3
+"Current Location Request"         = 4
+"Local Time Zone Request"          = 5
+"Remove SMS Registration"          = 6
+"RAT-Type Requested"               = 7
+"P-CSCF Restoration Request"       = 8
+
+
+; Type: Enumerated AVP
+; Name: ICS-Indicator
+; Section: 7.3.104
+; Page: 144
+ICS-Indicator ::= < Enumerated AVP header: 1491 10415 >
+        FALSE = 0
+        TRUE  = 1
+
+
+; Type: Enumerated AVP
+; Name: IMS-Voice-Over-PS-Sessions-Supported
+; Section: 7.3.106
+; Page: 145
+IMS-Voice-Over-PS-Sessions-Supported ::= < Enumerated AVP header: 1492 10415 >
+        NOT_SUPPORTED = 0
+        SUPPORTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions
+; Section: 7.3.107
+; Page: 145
+Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ::= < Enumerated AVP header: 1493 10415 >
+        NOT_SUPPORTED = 0
+        SUPPORTED     = 1
+
+
+; Type: Grouped AVP
+; Name: EPS-User-State
+; Section: 7.3.110
+; Page: 145
+EPS-User-State ::= < AVP header: 1495 10415 >
+        [ MME-User-State ]
+        [ SGSN-User-State ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: EPS-Location-Information
+; Section: 7.3.111
+; Page: 146
+EPS-Location-Information ::= < AVP header: 1496 10415 >
+        [ MME-Location-Information ]
+        [ SGSN-Location-Information ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: MME-User-State
+; Section: 7.3.112
+; Page: 146
+MME-User-State ::= < AVP header: 1497 10415 >
+        [ User-State ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: SGSN-User-State
+; Section: 7.3.113
+; Page: 146
+SGSN-User-State ::= < AVP header: 1498 10415 >
+        [ User-State ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: User-State
+; Section: 7.3.114
+; Page: 146
+User-State ::= < Enumerated AVP header: 1499 10415 >
+        DETACHED                           = 0
+        ATTACHED_NOT_REACHABLE_FOR_PAGING  = 1
+        ATTACHED_REACHABLE_FOR_PAGING      = 2
+        CONNECTED_NOT_REACHABLE_FOR_PAGING = 3
+        CONNECTED_REACHABLE_FOR_PAGING     = 4
+        RESERVED                           = 5
+
+
+; Type: Grouped AVP
+; Name: MME-Location-Information
+; Section: 7.3.115
+; Page: 147
+MME-Location-Information ::= < AVP header: 1600 10415 >
+        [ E-UTRAN-Cell-Global-Identity ]
+        [ Tracking-Area-Identity ]
+        [ Geographical-Information ]
+        [ Geodetic-Information ]
+        [ Current-Location-Retrieved ]
+        [ Age-Of-Location-Information ]
+        [ User-CSG-Information ]
+        [ eNodeB-ID ]
+        [ Extended-eNodeB-ID ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: SGSN-Location-Information
+; Section: 7.3.116
+; Page: 147
+SGSN-Location-Information ::= < AVP header: 1601 10415 >
+        [ Cell-Global-Identity ]
+        [ Location-Area-Identity ]
+        [ Service-Area-Identity ]
+        [ Routing-Area-Identity ]
+        [ Geographical-Information ]
+        [ Geodetic-Information ]
+        [ Current-Location-Retrieved ]
+        [ Age-Of-Location-Information ]
+        [ User-CSG-Information ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Current-Location-Retrieved
+; Section: 7.3.125
+; Page: 148
+Current-Location-Retrieved ::= < Enumerated AVP header: 1610 10415 >
+        ACTIVE-LOCATION-RETRIEVAL = 0
+
+
+; Type: Grouped AVP
+; Name: Active-APN
+; Section: 7.3.127
+; Page: 149
+Active-APN ::= < AVP header: 1612 10415 >
+        { Context-Identifier }
+        [ Service-Selection ]
+        [ MIP6-Agent-Info ]
+        [ Visited-Network-Identifier ]
+      * [ Specific-APN-Info ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Error-Diagnostic
+; Section: 7.3.128
+; Page: 149
+Error-Diagnostic ::= < Enumerated AVP header: 1614 10415 >
+        GPRS_DATA_SUBSCRIBED    = 0
+        NO_GPRS_DATA_SUBSCRIBED = 1
+        ODB_ALL_APN             = 2
+        ODB_HPLMN_APN           = 3
+        ODB_VPLMN_APN           = 4
+
+
+; Type: Enumerated AVP
+; Name: UE-SRVCC-Capability
+; Section: 7.3.130
+; Page: 150
+UE-SRVCC-Capability ::= < Enumerated AVP header: 1615 10415 >
+        UE-SRVCC-NOT-SUPPORTED = 0
+        UE-SRVCC-SUPPORTED     = 1
+
+
+; Type: Value Table
+; AVP: MPS-Priority
+; Kind: bits
+; Section: 7.3.131
+; Table: 7.3.131/1
+; Page: 150
+MPS-CS-Priority   = 0
+MPS-EPS-Priority  = 1
+MPS-for-Messaging = 2
+
+
+; Type: Enumerated AVP
+; Name: VPLMN-LIPA-Allowed
+; Section: 7.3.132
+; Page: 150
+VPLMN-LIPA-Allowed ::= < Enumerated AVP header: 1617 10415 >
+        LIPA_NOTALLOWED = 0
+        LIPA_ALLOWED    = 1
+
+
+; Type: Enumerated AVP
+; Name: LIPA-Permission
+; Section: 7.3.133
+; Page: 150
+LIPA-Permission ::= < Enumerated AVP header: 1618 10415 >
+        LIPA_PROHIBITED  = 0
+        LIPA_ONLY        = 1
+        LIPA_CONDITIONAL = 2
+
+
+; Type: Enumerated AVP
+; Name: SIPTO-Permission
+; Section: 7.3.135
+; Page: 151
+SIPTO-Permission ::= < Enumerated AVP header: 1613 10415 >
+        SIPTO_above_RAN_ALLOWED    = 0
+        SIPTO_above_RAN_NOTALLOWED = 1
+
+
+; Type: Grouped AVP
+; Name: MDT-Configuration
+; Section: 7.3.136
+; Page: 151
+MDT-Configuration ::= < AVP header: 1622 10415 >
+        { Job-Type }
+        [ Area-Scope ]
+        [ List-Of-Measurements ]
+        [ Reporting-Trigger ]
+        [ Report-Interval ]
+        [ Report-Amount ]
+        [ Event-Threshold-RSRP ]
+        [ Event-Threshold-RSRQ ]
+        [ Logging-Interval ]
+        [ Logging-Duration ]
+        [ Measurement-Period-LTE ]
+        [ Measurement-Period-UMTS ]
+        [ Collection-Period-RRM-LTE ]
+        [ Collection-Period-RRM-UMTS ]
+        [ Positioning-Method ]
+        [ Measurement-Quantity ]
+        [ Event-Threshold-Event-1F ]
+        [ Event-Threshold-Event-1I ]
+      * [ MDT-Allowed-PLMN-Id ]
+      * [ MBSFN-Area ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Job-Type
+; Section: 7.3.137
+; Page: 152
+; Values: TS 32.422 [23] for Job-Type
+Job-Type ::= < Enumerated AVP header: 1623 10415 >
+
+
+; Type: Grouped AVP
+; Name: Area-Scope
+; Section: 7.3.138
+; Page: 152
+Area-Scope ::= < AVP header: 1623 10415 >
+      * [ Cell-Global-Identity ]
+      * [ E-UTRAN-Cell-Global-Identity ]
+      * [ Routing-Area-Identity ]
+      * [ Location-Area-Identity ]
+      * [ Tracking-Area-Identity ]
+      * [ NR-Cell-Global-Identity ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Report-Interval
+; Section: 7.3.141
+; Page: 152
+; Values: TS 32.422 [23] for Report Interval
+Report-Interval ::= < Enumerated AVP header: 1627 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Report-Amount
+; Section: 7.3.142
+; Page: 152
+; Values: TS 32.422 [23] for Report Amount
+Report-Amount ::= < Enumerated AVP header: 1628 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Logging-Interval
+; Section: 7.3.145
+; Page: 153
+; Values: TS 32.422 [23] for Logging Interval
+Logging-Interval ::= < Enumerated AVP header: 1631 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Logging-Duration
+; Section: 7.3.146
+; Page: 153
+; Values: TS 32.422 [23] for Logging Duration
+Logging-Duration ::= < Enumerated AVP header: 1632 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Relay-Node-Indicator
+; Section: 7.3.147
+; Page: 153
+Relay-Node-Indicator ::= < Enumerated AVP header: 1633 10415 >
+        NOT_RELAY_NODE = 0
+        RELAY_NODE     = 1
+
+
+; Type: Enumerated AVP
+; Name: MDT-User-Consent
+; Section: 7.3.148
+; Page: 153
+MDT-User-Consent ::= < Enumerated AVP header: 1634 10415 >
+        CONSENT_NOT_GIVEN = 0
+        CONSENT_GIVEN     = 1
+
+
+; Type: Value Table
+; AVP: PUR-Flags
+; Kind: bits
+; Section: 7.3.149
+; Table: 7.3.149/1
+; Page: 153
+"UE Purged in MME"  = 0
+"UE Purged in SGSN" = 1
+
+
+; Type: Enumerated AVP
+; Name: Subscribed-VSRVCC
+; Section: 7.3.150
+; Page: 153
+Subscribed-VSRVCC ::= < Enumerated AVP header: 1636 10415 >
+        VSRVCC_SUBSCRIBED = 0
+
+
+; Type: Grouped AVP
+; Name: Equivalent-PLMN-List
+; Section: 7.3.151
+; Page: 154
+Equivalent-PLMN-List ::= < AVP header: 1637 10415 >
+     1* { Visited-PLMN-Id }
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: CLR-Flags
+; Kind: bits
+; Section: 7.3.152
+; Table: 7.3.152/1
+; Page: 154
+"S6a/S6d-Indicator" = 0
+Reattach-Required   = 1
+
+
+; Type: Value Table
+; AVP: UVR-Flags
+; Kind: bits
+; Section: 7.3.153
+; Table: 7.3.154/1
+; Page: 154
+"Skip Subscriber Data" = 0
+
+
+; Type: Value Table
+; AVP: UVA-Flags
+; Kind: bits
+; Section: 7.3.154
+; Table: 7.3.156/1
+; Page: 155
+"Temporary Empty VPLMN CSG Subscription Data" = 0
+
+
+; Type: Grouped AVP
+; Name: VPLMN-CSG-Subscription-Data
+; Section: 7.3.155
+; Page: 155
+VPLMN-CSG-Subscription-Data ::= < AVP header: 1641 10415 >
+        { CSG-Id }
+        [ Expiration-Date ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Local-Time-Zone
+; Section: 7.3.156
+; Page: 155
+Local-Time-Zone ::= < AVP header: 1649 10415 >
+        { Time-Zone }
+        { Daylight-Saving-Time }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: SMS-Register-Request
+; Section: 7.3.162
+; Page: 156
+SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
+        SMS_REGISTRATION_REQUIRED      = 0
+        SMS_REGISTRATION_NOT_PREFERRED = 1
+        NO_PREFERENCE                  = 2
+
+
+; Type: Enumerated AVP
+; Name: Daylight-Saving-Time
+; Section: 7.3.164
+; Page: 156
+Daylight-Saving-Time ::= < Enumerated AVP header: 1650 10415 >
+        NO_ADJUSTMENT             = 0
+        PLUS_ONE_HOUR_ADJUSTMENT  = 1
+        PLUS_TWO_HOURS_ADJUSTMENT = 2
+
+
+; Type: Value Table
+; AVP: Subscription-Data-Flags
+; Kind: bits
+; Section: 7.3.165
+; Table: 7.3.165/1
+; Page: 157
+PS-And-SMS-Only-Service-Provision-Indication         = 0
+SMS-In-SGSN-Allowed-Indication                       = 1
+"User Plane Integrity Protection"                    = 2
+PDN-Connection-Restricted                            = 3
+"Acknowledgement-Of-Downlink-NAS-Data PDUs disabled" = 4
+Time-Reference-Information-Distribution-Indication   = 5
+Store-Forward-Satellite-Operation-Allowed-Indication = 6
+
+
+; Type: Enumerated AVP
+; Name: Measurement-Period-LTE
+; Section: 7.3.166
+; Page: 157
+; Values: TS 32.422 [23] for Measurement period LTE
+Measurement-Period-LTE ::= < Enumerated AVP header: 1655 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Measurement-Period-UMTS
+; Section: 7.3.167
+; Page: 157
+; Values: TS 32.422 [23] for Measurement period UMTS
+Measurement-Period-UMTS ::= < Enumerated AVP header: 1656 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Collection-Period-RRM-LTE
+; Section: 7.3.168
+; Page: 157
+; Values: TS 32.422 [23] for Collection period for RRM measurements LTE
+Collection-Period-RRM-LTE ::= < Enumerated AVP header: 1657 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Collection-Period-RRM-UMTS
+; Section: 7.3.169
+; Page: 158
+; Values: TS 32.422 [23] for Collection period for RRM measurements UMTS
+Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
+
+
+; Type: Grouped AVP
+; Name: ProSe-Subscription-Data
+; Section: 7.3.180
+; Page: 159
+ProSe-Subscription-Data ::= < AVP header: 3701 10415 >
+        { ProSe-Permission }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: WLAN-offloadability
+; Section: 7.3.181
+; Page: 159
+WLAN-offloadability ::= < AVP header: 1667 >
+        [ WLAN-offloadability-EUTRAN ]
+        [ WLAN-offloadability-UTRAN ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: WLAN-offloadability-EUTRAN
+; Kind: bits
+; Section: 7.3.182
+; Table: 7.3.182/1
+; Page: 159
+"WLAN offloadability for E-UTRAN" = 0
+
+
+; Type: Value Table
+; AVP: WLAN-offloadability-UTRAN
+; Kind: bits
+; Section: 7.3.183
+; Table: 7.3.183/1
+; Page: 159
+"WLAN offloadability for UTRAN" = 0
+
+
+; Type: Grouped AVP
+; Name: Adjacent-PLMNs
+; Section: 7.3.186
+; Page: 160
+Adjacent-PLMNs ::= < AVP header: 1672 10415 >
+     1* { Visited-PLMN-Id }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Adjacent-Access-Restriction-Data
+; Section: 7.3.187
+; Page: 160
+Adjacent-Access-Restriction-Data ::= < AVP header: 1673 10415 >
+        { Visited-PLMN-Id }
+        { Access-Restriction-Data }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: IMSI-Group-Id
+; Section: 7.3.189
+; Page: 161
+IMSI-Group-Id ::= < AVP header: 1675 10415 >
+        { Group-Service-Id }
+        { Group-PLMN-Id }
+        { Local-Group-Id }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: AESE-Communication-Pattern
+; Section: 7.3.193
+; Page: 162
+AESE-Communication-Pattern ::= < AVP header: 3113 10415 >
+        [ SCEF-Reference-ID ]
+        [ SCEF-Reference-ID-Ext ]
+        { SCEF-ID }
+      * [ SCEF-Reference-ID-for-Deletion ]
+      * [ SCEF-Reference-ID-for-Deletion-Ext ]
+      * [ Communication-Pattern-Set ]
+        [ MTC-Provider-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Communication-Pattern-Set
+; Section: 7.3.194
+; Page: 162
+Communication-Pattern-Set ::= < AVP header: 3114 10415 >
+        [ Periodic-Communication-Indicator ]
+        [ Communication-Duration-Time ]
+        [ Periodic-Time ]
+      * [ Scheduled-Communication-Time ]
+        [ Stationary-Indication ]
+        [ Reference-ID-Validity-Time ]
+        [ Traffic-Profile ]
+        [ Battery-Indicator ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Monitoring-Event-Configuration
+; Section: 7.3.195
+; Page: 163
+Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
+        [ SCEF-Reference-ID ]
+        [ SCEF-Reference-ID-Ext ]
+        { SCEF-ID }
+        { Monitoring-Type }
+      * [ SCEF-Reference-ID-for-Deletion ]
+      * [ SCEF-Reference-ID-for-Deletion-Ext ]
+        [ Maximum-Number-of-Reports ]
+        [ Monitoring-Duration ]
+        [ Charged-Party ]
+        [ UE-Reachability-Configuration ]
+        [ Location-Information-Configuration ]
+        [ SCEF-Realm ]
+        [ External-Identifier ]
+        [ MTC-Provider-Info ]
+        [ PDN-Connectivity-Status-Configuration ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Monitoring-Event-Report
+; Section: 7.3.196
+; Page: 164
+Monitoring-Event-Report ::= < AVP header: 3123 10415 >
+        { SCEF-Reference-ID }
+        [ SCEF-Reference-ID-Ext ]
+        [ SCEF-ID ]
+        [ Reachability-Information ]
+        [ Reachability-Cause ]
+        [ EPS-Location-Information ]
+        [ Monitoring-Type ]
+        [ Loss-Of-Connectivity-Reason ]
+        [ Idle-Status-Indication ]
+        [ Maximum-UE-Availability-Time ]
+      * [ PDN-Connectivity-Status-Report ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: UE-Reachability-Configuration
+; Section: 7.3.197
+; Page: 165
+UE-Reachability-Configuration ::= < AVP header: 3129 10415 >
+        [ Reachability-Type ]
+        [ Maximum-Response-Time ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Supported-Services
+; Section: 7.3.199
+; Page: 165
+Supported-Services ::= < AVP header: 3143 10415 >
+        [ Supported-Monitoring-Events ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Supported-Monitoring-Events
+; Kind: bits
+; Section: 7.3.200
+; Table: 7.3.200-1
+; Page: 165
+"UE and UICC and/or new IMSI-IMEI-SV association" = 0
+UE-reachability                                   = 1
+Location-of-the-UE                                = 2
+Loss-of-connectivity                              = 3
+Communication-failure                             = 4
+Roaming-status                                    = 5
+"Availability after DDN failure"                  = 6
+"Idle Status Indication"                          = 7
+"PDN Connectivity Status"                         = 8
+SAT-SF-Operation                                  = 9
+
+
+; Type: Value Table
+; AVP: AIR-Flags
+; Kind: bits
+; Section: 7.3.201
+; Table: 7.3.201/1
+; Page: 166
+"Send UE Usage Type"                       = 0
+Disaster-Roaming-service-in-EPS-Indication = 1
+
+
+; Type: Enumerated AVP
+; Name: Non-IP-PDN-Type-Indicator
+; Section: 7.3.204
+; Page: 167
+Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
+        FALSE = 0
+        TRUE  = 1
+
+
+; Type: Grouped AVP
+; Name: Subscription-Data-Deletion
+; Section: 7.3.208
+; Page: 167
+Subscription-Data-Deletion ::= < AVP header: 1685 10415 >
+        { DSR-Flags }
+        [ SCEF-ID ]
+      * [ Context-Identifier ]
+        [ Trace-Reference ]
+      * [ TS-Code ]
+      * [ SS-Code ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Preferred-Data-Mode
+; Kind: bits
+; Section: 7.3.209
+; Table: 7.3.209/1
+; Page: 168
+"Data over User Plane Preferred"    = 0
+"Data over Control Plane Preferred" = 1
+
+
+; Type: Grouped AVP
+; Name: Emergency-Info
+; Section: 7.3.210
+; Page: 168
+Emergency-Info ::= < AVP header: 1687 10415 >
+        [ MIP6-Agent-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: V2X-Subscription-Data
+; Section: 7.3.212
+; Page: 168
+V2X-Subscription-Data ::= < AVP header: 1688 10415 >
+        [ V2X-Permission ]
+        [ UE-PC5-AMBR ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: V2X-Permission
+; Kind: bits
+; Section: 7.3.213
+; Table: 7.3.x2-1
+; Page: 169
+"Allow V2X communication over PC5 as Vehicle UE"    = 0
+"Allow V2X communication over PC5 as Pedestrian UE" = 1
+
+
+; Type: Grouped AVP
+; Name: eDRX-Cycle-Length
+; Section: 7.3.215
+; Page: 169
+eDRX-Cycle-Length ::= < AVP header: 1691 10415 >
+        { RAT-Type }
+        { eDRX-Cycle-Length-Value }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: MBSFN-Area
+; Section: 7.3.219
+; Page: 170
+MBSFN-Area ::= < AVP header: 1694 10415 >
+        [ MBSFN-Area-ID ]
+        [ Carrier-Frequency ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: RDS-Indicator
+; Section: 7.3.222
+; Page: 170
+RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
+        DISABLED = 0
+        ENABLED  = 1
+
+
+; Type: Value Table
+; AVP: Broadcast-Location-Assistance-Data-Types
+; Kind: bits
+; Section: 7.3.225
+; Table: 7.3.225-1
+; Page: 171
+"Positioning SIB Type 1-1"   = 0
+"Positioning SIB Type 1-2"   = 1
+"Positioning SIB Type 1-3"   = 2
+"Positioning SIB Type 1-4"   = 3
+"Positioning SIB Type 1-5"   = 4
+"Positioning SIB Type 1-6"   = 5
+"Positioning SIB Type 1-7"   = 6
+"Positioning SIB Type 2-1"   = 7
+"Positioning SIB Type 2-2"   = 8
+"Positioning SIB Type 2-3"   = 9
+"Positioning SIB Type 2-4"   = 10
+"Positioning SIB Type 2-5"   = 11
+"Positioning SIB Type 2-6"   = 12
+"Positioning SIB Type 2-7"   = 13
+"Positioning SIB Type 2-8"   = 14
+"Positioning SIB Type 2-9"   = 15
+"Positioning SIB Type 2-10"  = 16
+"Positioning SIB Type 2-11"  = 17
+"Positioning SIB Type 2-12"  = 18
+"Positioning SIB Type 2-13"  = 19
+"Positioning SIB Type 2-14"  = 20
+"Positioning SIB Type 2-15"  = 21
+"Positioning SIB Type 2-16"  = 22
+"Positioning SIB Type 2-17"  = 23
+"Positioning SIB Type 2-18"  = 24
+"Positioning SIB Type 2-19"  = 25
+"Positioning SIB Type 3-1"   = 26
+"Positioning SIB Type 1-8"   = 27
+"Positioning SIB Type 2-20"  = 28
+"Positioning SIB Type 2-21"  = 29
+"Positioning SIB Type 2-22"  = 30
+"Positioning SIB Type 2-23"  = 31
+"Positioning SIB Type 2-24"  = 32
+"Positioning SIB Type 2-25"  = 33
+"Positioning SIB Type 4-1"   = 34
+"Positioning SIB Type 5-1"   = 35
+"Positioning SIB Type 1-9"   = 36
+"Positioning SIB Type 1-10"  = 37
+"Positioning SIB Type 2-17a" = 38
+"Positioning SIB Type 2-18a" = 39
+"Positioning SIB Type 2-20a" = 40
+"Positioning SIB Type 1-11"  = 41
+"Positioning SIB Type 1-12"  = 42
+"Positioning SIB Type 2-26"  = 43
+"Positioning SIB Type 2-27"  = 44
+
+
+; Type: Grouped AVP
+; Name: Paging-Time-Window
+; Section: 7.3.226
+; Page: 174
+Paging-Time-Window ::= < AVP header: 1701 10415 >
+        { Operation-Mode }
+        { Paging-Time-Window-Length }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: eDRX-Related-RAT
+; Section: 7.3.229
+; Page: 175
+eDRX-Related-RAT ::= < AVP header: 1705 10415 >
+     1* { RAT-Type }
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Core-Network-Restrictions
+; Kind: bits
+; Section: 7.3.230
+; Table: 7.3.230-1
+; Page: 175
+Reserved          = 0
+"5GC not allowed" = 1
+
+
+; Type: Enumerated AVP
+; Name: Interworking-5GS-Indicator
+; Section: 7.3.231
+; Page: 175
+Interworking-5GS-Indicator ::= < Enumerated AVP header: 1706 10415 >
+        NOT-SUBSCRIBED = 0
+        SUBSCRIBED     = 1
+
+
+; Type: Enumerated AVP
+; Name: Ethernet-PDN-Type-Indicator
+; Section: 7.3.232
+; Page: 175
+Ethernet-PDN-Type-Indicator ::= < Enumerated AVP header: 1707 10415 >
+        FALSE = 0
+        TRUE  = 1
+
+
+; Type: Enumerated AVP
+; Name: IAB-Operation-Permission
+; Section: 7.3.234
+; Page: 176
+IAB-Operation-Permission ::= < Enumerated AVP header: 1709 10415 >
+        IAB_OPERATION_ALLOWED    = 0
+        IAB_OPERATION_NOTALLOWED = 1
+
+
+; Type: Grouped AVP
+; Name: V2X-Subscription-Data-Nr
+; Section: 7.3.235
+; Page: 176
+V2X-Subscription-Data-Nr ::= < AVP header: 1710 10415 >
+        [ V2X-Permission ]
+        [ UE-PC5-AMBR ]
+        [ UE-PC5-QoS ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: UE-PC5-QoS
+; Section: 7.3.236
+; Page: 176
+UE-PC5-QoS ::= < AVP header: 1711 10415 >
+     1* { PC5-QoS-Flow }
+        [ PC5-Link-AMBR ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: PC5-QoS-Flow
+; Section: 7.3.237
+; Page: 176
+PC5-QoS-Flow ::= < AVP header: 1712 10415 >
+        { 5QI }
+        [ PC5-Flow-Bitrates ]
+        [ PC5-Range ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: PC5-Flow-Bitrates
+; Section: 7.3.239
+; Page: 177
+PC5-Flow-Bitrates ::= < AVP header: 1714 10415 >
+        [ Guaranteed-Flow-Bitrates ]
+        [ Maximum-Flow-Bitrates ]
+
+
+; Type: Grouped AVP
+; Name: MDT-Configuration-NR
+; Section: 7.3.245
+; Page: 177
+MDT-Configuration-NR ::= < AVP header: 1720 10415 >
+        { Job-Type }
+        [ Area-Scope ]
+        [ List-Of-Measurements ]
+        [ Reporting-Trigger ]
+        [ Report-Interval ]
+        [ Report-Amount ]
+        [ Event-Threshold-RSRP ]
+        [ Event-Threshold-RSRQ ]
+        [ Event-Threshold-SINR ]
+        [ Collection-Period-RRM-NR ]
+        [ Collection-Period-M6-NR ]
+        [ Collection-Period-M7-NR ]
+        [ Positioning-Method ]
+      * [ Sensor-Measurement ]
+      * [ MDT-Allowed-PLMN-Id ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Collection-Period-RRM-NR
+; Section: 7.3.247
+; Page: 178
+; Values: TS 32.422 [23] for Collection period for RRM measurements NR
+Collection-Period-RRM-NR ::= < Enumerated AVP header: 1722 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Collection-Period-M6-NR
+; Section: 7.3.248
+; Page: 178
+; Values: TS 32.422 [23] for Collection period M6 in NR
+Collection-Period-M6-NR ::= < Enumerated AVP header: 1723 10415 >
+
+
+; Type: Enumerated AVP
+; Name: Sensor-Measurement
+; Section: 7.3.250
+; Page: 178
+Sensor-Measurement ::= < Enumerated AVP header: 1725 10415 >
+        BAROMETRIC_PRESSURE = 0
+        UE_SPEED            = 1
+        UE_ORIENTATION      = 2
+
+
+; Type: Value Table
+; AVP: PLMN-RAT-Usage-Control
+; Kind: bits
+; Section: 7.3.253
+; Table: 7.3.253/1
+; Page: 179
+"Restriction to GERAN access subjected to the serving PLMN operator policy"                  = 0
+"Restriction to UTRAN access subjected to the serving PLMN operator policy"                  = 1
+"Restriction to E-UTRAN access subjected to the serving PLMN operator policy"                = 2
+"Restriction to NR access subjected to the serving PLMN operator policy"                     = 3
+"Restriction to E-UTRAN over satellite access subjected to the serving PLMN operator policy" = 4
+"Restriction to NR over satellite access subjected to the serving PLMN operator policy"      = 5
+
+
+; Type: Enumerated AVP
+; Name: SF-Provisional-Indication
+; Section: 7.3.255
+; Page: 179
+SF-Provisional-Indication ::= < Enumerated AVP header: 1730 10415 >
+        PROVISIONAL_ULR = 0
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.4
+; Page: 180
+DIAMETER_ERROR_USER_UNKNOWN               = 5001 ; 7.4.3.1
+DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION   = 5420 ; 7.4.3.2
+DIAMETER_ERROR_RAT_NOT_ALLOWED            = 5421 ; 7.4.3.3
+DIAMETER_ERROR_ROAMING_NOT_ALLOWED        = 5004 ; 7.4.3.4
+DIAMETER_ERROR_EQUIPMENT_UNKNOWN          = 5422 ; 7.4.3.5
+DIAMETER_ERROR_UNKNOWN_SERVING_NODE       = 5423 ; 7.4.3.6
+DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE  = 4181 ; 7.4.4.1
+DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT = 4182 ; 7.4.4.2

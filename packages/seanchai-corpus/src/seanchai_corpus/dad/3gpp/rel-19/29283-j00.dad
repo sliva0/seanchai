@@ -1,0 +1,289 @@
+; Specification: 3GPP TS 29.283
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129283/19.00.00_60/ts_129283v190000p.pdf
+
+
+; Type: Message
+; Name: Data-Pull-Request, DPR
+; Section: 7.2.3
+; Page: 24
+<Data-Pull-Request> ::= < Diameter Header: 8388728, REQ, PXY, 16777351 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ User-Identifier ]
+      * [ Data-Identification ]
+        [ DPR-Flags ]
+        [ User-Data-Id ]
+        [ OC-Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Data-Pull-Answer, DPA
+; Section: 7.2.4
+; Page: 25
+<Data-Pull-Answer> ::= < Diameter Header: 8388728, PXY, 16777351 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+      * [ Data ]
+      * [ Data-Identification ]
+        [ DPA-Flags ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+        [ Route-Record ]
+
+
+; Type: Message
+; Name: Data-Update-Request, DUR
+; Section: 7.2.5
+; Page: 25
+<Data-Update-Request> ::= < Diameter Header: 8388729, REQ, PXY, 16777351 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ User-Identifier ]
+        [ Data ]
+        [ DUR-Flags ]
+        [ OC-Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Data-Update-Answer, DUA
+; Section: 7.2.6
+; Page: 25
+<Data-Update-Answer> ::= < Diameter Header: 8388729, PXY, 16777351 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Data-Identification ]
+      * [ MC-Service-User-Profile-Data ]
+        [ DUA-Flags ]
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Notification-Data-Request, PDR
+; Section: 7.2.7
+; Page: 26
+<Notification-Data-Request> ::= < Diameter Header: 8388730, REQ, PXY, 16777351 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ User-Identifier ]
+        [ Data ]
+        [ NDR-Flags ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Notification-Data-Answer, PDA
+; Section: 7.2.8
+; Page: 26
+<Notification-Data-Answer> ::= < Diameter Header: 8388730, PXY, 16777351 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Data-Identification ]
+        [ NDA-Flags ]
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 7.3.1
+; Table: 7.3.1-1
+; Page: 27
+; Columns: Name                Code   Section   Type         Must   May   S.not   M.not   Encrypt
+MCPTT-ID                       4500   7.3.2     UTF8String   M,V    -     -       -       No
+Data-Identification            4501   7.3.3     Grouped      M,V    -     -       -       No
+Data-Identification-Prefix     4502   7.3.11    Unsigned32   M,V    -     -       -       No
+Data-Identification-Flags      4503   7.3.12    Unsigned64   M,V    -     -       -       No
+DPR-Flags                      4504   7.3.13    Unsigned32   M,V    -     -       -       No
+DPA-Flags                      4505   7.3.14    Unsigned32   M,V    -     -       -       No
+DUR-Flags                      4506   7.3.15    Unsigned32   M,V    -     -       -       No
+DUA-Flags                      4507   7.3.16    Unsigned32   M,V    -     -       -       No
+NDR-Flags                      4508   7.3.17    Unsigned32   M,V    -     -       -       No
+NDA-Flags                      4509   7.3.18    Unsigned32   M,V    -     -       -       No
+User-Data-Id                   4510   7.3.19    Unsigned32   M,V    -     -       -       No
+MC-Service-User-Profile-Data   4511   7.3.20    Grouped      M,V    -     -       -       No
+Sequence-Number                4512   7.3.21    Unsigned32   M,V    -     -       -       No
+Data                           4513   7.3.22    Grouped      M,V    -     -       -       No
+MCVideo-ID                     4514   7.3.24    UTF8String   V      -     -       M       No
+MCData-ID                      4515   7.3.25    UTF8String   V      -     -       M       No
+
+
+; Type: Reused AVPs
+; Section: 7.3.1
+; Table: 7.3.1-2
+; Page: 27
+; Columns: Name         From       M-bit
+Supported-Features      TS29.229   -
+DRMP                    RFC7944    MUST ;; corrected: (TS29.283.py#drmp-origin-rfc)
+Feature-List-ID         TS29.229   -
+Feature-List            TS29.229   -
+;; deleted: re-used AVPs row 'Feature-Id' (TS29.283.py#feature-id-row-not-in-origin)
+User-Data               TS29.329   -
+User-Identifier         TS29.336   -
+OC-Supported-Features   RFC7683    MUST
+OC-OLR                  RFC7683    MUST
+Load                    RFC8583    MUST-NOT
+;; deleted: re-used AVPs row 'Sequence-Number' (TS29.283.py#sequence-number-origin-is-another-avp)
+
+
+; Type: Grouped AVP
+; Name: Data-Identification
+; Section: 7.3.3
+; Page: 28
+Data-Identification ::= < AVP header: 4501 10415 >
+        { Data-Identification-Prefix }
+        { Data-Identification-Flags }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: User-Identifier
+; Section: 7.3.8
+; Page: 29
+User-Identifier ::= < AVP header: 3102 10415 >
+        [ MCPTT-ID ]
+        [ MCVideo-ID ]
+        [ MCData-ID ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Data-Identification-Flags
+; Kind: bits
+; Section: 7.3.12
+; Table: 7.3.12-1
+; Page: 29
+"MCPTT User Profile"   = 0
+"MCVideo User Profile" = 1
+"MCData User Profile"  = 2
+
+
+; Type: Value Table
+; AVP: DPR-Flags
+; Kind: bits
+; Section: 7.3.13
+; Table: 7.3.13-1
+; Page: 30
+"Subscription to notifications" = 0
+
+
+; Type: Value Table
+; AVP: DPA-Flags
+; Kind: bits
+; Section: 7.3.14
+; Table: 7.3.14-1
+; Page: 30
+"Notification service status" = 0
+
+
+; Type: Value Table
+; AVP: DUR-Flags
+; Kind: bits
+; Section: 7.3.15
+; Table: 7.3.15-1
+; Page: 30
+Atomicity = 0
+
+
+; Type: Grouped AVP
+; Name: MC-Service-User-Profile-Data
+; Section: 7.3.20
+; Page: 31
+MC-Service-User-Profile-Data ::= < AVP header: 4511 10415 >
+        [ User-Data ]
+        [ Sequence-Number ]
+        [ User-Data-Id ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Data
+; Section: 7.3.22
+; Page: 32
+Data ::= < AVP header: 4513 10415 >
+      * [ MC-Service-User-Profile-Data ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.4
+; Page: 32
+DIAMETER_ERROR_USER_UNKNOWN                 = 5001 ; 7.4.3.2
+DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED     = 5100 ; 7.4.3.3
+DIAMETER_ERROR_OPERATION_NOT_ALLOWED        = 5101 ; 7.4.3.4
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ     = 5102 ; 7.4.3.5
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED = 5103 ; 7.4.3.6
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED = 5104 ; 7.4.3.7
+DIAMETER_ERROR_TOO_MUCH_DATA                = 5008 ; 7.4.3.8
+"DIAMETER_ERROR_DATA OUT_OF_SYNC"           = 5105 ; 7.4.3.9
+DIAMETER_ERROR_FEATURE_UNSUPPORTED          = 5011 ; 7.4.3.10
+DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA      = 5107 ; 7.4.3.11
+DIAMETER_ERROR_UNKNOWN_DATA                 = 5670 ; 7.4.3.12 ;; corrected: (TS29.283.py#unknown-data-result-spelling)
+DIAMETER_ERROR_REQUIRED_KEY_NOT_PROVIDED    = 5671 ; 7.4.3.13
+DIAMETER_USER_DATA_NOT_AVAILABLE            = 4100 ; 7.4.4.2
+DIAMETER_PRIOR_UPDATE_IN_PROGRESS           = 4101 ; 7.4.4.3

@@ -1,0 +1,138 @@
+; Specification: 3GPP TS 29.173
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129100_129199/129173/19.00.00_60/ts_129173v190000p.pdf
+
+
+; Type: Message
+; Name: LCS-Routing-Info-Request, RIR
+; Section: 6.2.3
+; Page: 14
+<LCS-Routing-Info-Request> ::= < Diameter Header: 8388622, REQ, PXY, 16777291 >
+        < Session-Id >
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ User-Name ]
+        [ MSISDN ]
+        [ GMLC-Number ]
+      * [ Supported-Features ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: LCS-Routing-Info-Answer, RIA
+; Section: 6.2.4
+; Page: 15
+<LCS-Routing-Info-Answer> ::= < Diameter Header: 8388622, PXY, 16777291 >
+        < Session-Id >
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ User-Name ]
+        [ MSISDN ]
+        [ LMSI ]
+        [ Serving-Node ]
+      * [ Additional-Serving-Node ]
+        [ GMLC-Address ]
+        [ PPR-Address ]
+        [ RIA-Flags ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.4.1
+; Table: 6.4.1/1
+; Page: 16
+; Columns: Name           Code   Section   Type               Must   May   S.not   M.not   Encrypt
+LMSI                      2400   6.4.2     OctetString        M,V    -     -       -       No
+Serving-Node              2401   6.4.3     Grouped            M,V    -     -       -       No
+MME-Name                  2402   6.4.4     DiameterIdentity   M,V    -     -       -       No
+MSC-Number                2403   6.4.5     OctetString        M,V    -     -       -       No
+LCS-Capabilities-Sets     2404   6.4.6     Unsigned32         M,V    -     -       -       No
+GMLC-Address              2405   6.4.7     Address            M,V    -     -       -       No
+Additional-Serving-Node   2406   6.4.8     Grouped            M,V    -     -       -       No
+PPR-Address               2407   6.4.9     Address            M,V    -     -       -       No
+MME-Realm                 2408   6.4.12    DiameterIdentity   V      -     -       M       No
+SGSN-Name                 2409   6.4.13    DiameterIdentity   V      -     -       M       No
+SGSN-Realm                2410   6.4.14    DiameterIdentity   V      -     -       M       No
+RIA-Flags                 2411   6.4.15    Unsigned32         V      -     -       M       No
+
+
+; Type: Reused AVPs
+; Section: 6.4.1
+; Table: 6.4.1/2
+; Page: 16
+; Columns: Name        From
+MSISDN                 TS29.329
+SGSN-Number            TS29.272
+Supported-Features     TS29.229
+Feature-List-ID        TS29.229
+Feature-List           TS29.229
+GMLC-Number            TS29.272
+3GPP-AAA-Server-Name   TS29.273
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.3
+; Page: 16
+DIAMETER_ERROR_USER_UNKNOWN                    = 5001 ; 6.3.3.1
+DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK = 5490 ; 6.3.3.2
+DIAMETER_ERROR_ABSENT_USER                     = 4201 ; 6.3.4.1
+
+
+; Type: Grouped AVP
+; Name: Serving-Node
+; Section: 6.4.3
+; Page: 17
+Serving-Node ::= < AVP header: 2401 10415 >
+        [ SGSN-Number ]
+        [ SGSN-Name ]
+        [ SGSN-Realm ]
+        [ MME-Name ]
+        [ MME-Realm ]
+        [ MSC-Number ]
+        [ 3GPP-AAA-Server-Name ]
+        [ LCS-Capabilities-Sets ]
+        [ GMLC-Address ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Additional-Serving-Node
+; Section: 6.4.8
+; Page: 18
+Additional-Serving-Node ::= < AVP header: 2406 10415 >
+        [ SGSN-Number ]
+        [ MME-Name ]
+        [ SGSN-Name ]
+        [ SGSN-Realm ]
+        [ MME-Realm ]
+        [ MSC-Number ]
+        [ 3GPP-AAA-Server-Name ]
+        [ LCS-Capabilities-Sets ]
+        [ GMLC-Address ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: RIA-Flags
+; Kind: bits
+; Section: 6.4.15
+; Table: 6.4.15/1
+"Combined-MME/SGSN-Supporting-Optimized-LCS-Proc" = 0

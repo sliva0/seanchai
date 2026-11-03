@@ -1,0 +1,648 @@
+; Specification: 3GPP TS 29.172
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129100_129199/129172/19.00.00_60/ts_129172v190000p.pdf
+
+
+; Type: Message
+; Name: Provide-Location-Request, PLR
+; Section: 7.3.1
+; Page: 26
+<Provide-Location-Request> ::= < Diameter Header: 8388620, REQ, PXY, 16777255 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { SLg-Location-Type }
+        [ User-Name ]
+        [ MSISDN ]
+        [ IMEI ]
+        { LCS-EPS-Client-Name }
+        { LCS-Client-Type }
+        [ LCS-Requestor-Name ]
+        [ LCS-Priority ]
+        [ LCS-QoS ]
+        [ Velocity-Requested ]
+        [ LCS-Supported-GAD-Shapes ]
+        [ LCS-Service-Type-ID ]
+        [ LCS-Codeword ]
+        [ LCS-Privacy-Check-Non-Session ]
+        [ LCS-Privacy-Check-Session ]
+        [ Service-Selection ]
+        [ Deferred-Location-Type ]
+        [ LCS-Reference-Number ]
+        [ Area-Event-Info ]
+        [ GMLC-Address ]
+        [ PLR-Flags ]
+        [ Periodic-LDR-Information ]
+        [ Reporting-PLMN-List ]
+        [ Motion-Event-Info ]
+      * [ Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Provide-Location-Answer, PLA
+; Section: 7.3.2
+; Page: 27
+<Provide-Location-Answer> ::= < Diameter Header: 8388620, PXY, 16777255 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Location-Estimate ]
+        [ Accuracy-Fulfilment-Indicator ]
+        [ Age-Of-Location-Estimate ]
+        [ Velocity-Estimate ]
+        [ EUTRAN-Positioning-Data ]
+        [ ECGI ]
+        [ GERAN-Positioning-Info ]
+        [ Cell-Global-Identity ]
+        [ UTRAN-Positioning-Info ]
+        [ Service-Area-Identity ]
+        [ Serving-Node ]
+        [ PLA-Flags ]
+        [ ESMLC-Cell-Info ]
+        [ Civic-Address ]
+        [ Barometric-Pressure ]
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Location-Report-Request, LRR
+; Section: 7.3.3
+; Page: 28
+<Location-Report-Request> ::= < Diameter Header: 8388621, REQ, PXY, 16777255 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { Location-Event }
+        [ LCS-EPS-Client-Name ]
+        [ User-Name ]
+        [ MSISDN ]
+        [ IMEI ]
+        [ Location-Estimate ]
+        [ Accuracy-Fulfilment-Indicator ]
+        [ Age-Of-Location-Estimate ]
+        [ Velocity-Estimate ]
+        [ EUTRAN-Positioning-Data ]
+        [ ECGI ]
+        [ GERAN-Positioning-Info ]
+        [ Cell-Global-Identity ]
+        [ UTRAN-Positioning-Info ]
+        [ Service-Area-Identity ]
+        [ LCS-Service-Type-ID ]
+        [ Pseudonym-Indicator ]
+        [ LCS-QoS-Class ]
+        [ Serving-Node ]
+        [ LRR-Flags ]
+        [ LCS-Reference-Number ]
+        [ Deferred-MT-LR-Data ]
+        [ GMLC-Address ]
+        [ Reporting-Amount ]
+        [ Periodic-LDR-Information ]
+        [ ESMLC-Cell-Info ]
+        [ 1xRTT-RCID ]
+        [ Delayed-Location-Reporting-Data ]
+        [ Civic-Address ]
+        [ Barometric-Pressure ]
+      * [ Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Location-Report-Answer, LRA
+; Section: 7.3.4
+; Page: 28
+<Location-Report-Answer> ::= < Diameter Header: 8388621, PXY, 16777255 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ GMLC-Address ]
+        [ LRA-Flags ]
+        [ Reporting-PLMN-List ]
+        [ LCS-Reference-Number ]
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 7.4.1
+; Table: 7.4.1-1
+; Page: 29
+; Columns: Name                       Code   Section   Type          Must   May   S.not   M.not   Encrypt
+SLg-Location-Type                     2500   7.4.2     Enumerated    M,V    -     -       -       No
+LCS-EPS-Client-Name                   2501   7.4.3     Grouped       M,V    -     -       -       No
+LCS-Requestor-Name                    2502   7.4.4     Grouped       M,V    -     -       -       No
+LCS-Priority                          2503   7.4.5     Unsigned32    M,V    -     -       -       No
+LCS-QoS                               2504   7.4.6     Grouped       M,V    -     -       -       No
+Horizontal-Accuracy                   2505   7.4.7     Unsigned32    M,V    -     -       -       No
+Vertical-Accuracy                     2506   7.4.8     Unsigned32    M,V    -     -       -       No
+Vertical-Requested                    2507   7.4.9     Enumerated    M,V    -     -       -       No
+Velocity-Requested                    2508   7.4.10    Enumerated    M,V    -     -       -       No
+Response-Time                         2509   7.4.11    Enumerated    M,V    -     -       -       No
+Supported-GAD-Shapes                  2510   7.4.12    Unsigned32    M,V    -     -       -       No
+LCS-Codeword                          2511   7.4.13    UTF8String    M,V    -     -       -       No
+LCS-Privacy-Check                     2512   7.4.14    Enumerated    M,V    -     -       -       No
+Accuracy-Fulfilment-Indicator         2513   7.4.15    Enumerated    M,V    -     -       -       No
+Age-Of-Location-Estimate              2514   7.4.16    Unsigned32    M,V    -     -       -       No
+Velocity-Estimate                     2515   7.4.17    OctetString   M,V    -     -       -       No
+EUTRAN-Positioning-Data               2516   7.4.18    OctetString   M,V    -     -       -       No
+ECGI                                  2517   7.4.19    OctetString   M,V    -     -       -       No
+Location-Event                        2518   7.4.20    Enumerated    M,V    -     -       -       No
+Pseudonym-Indicator                   2519   7.4.21    Enumerated    M,V    -     -       -       No
+LCS-Service-Type-ID                   2520   7.4.22    Unsigned32    M,V    -     -       -       No
+LCS-Privacy-Check-Non-Session         2521   7.4.23    Grouped       M,V    -     -       -       No
+LCS-Privacy-Check-Session             2522   7.4.24    Grouped       M,V    -     -       -       No
+LCS-QoS-Class                         2523   7.4.27    Enumerated    M,V    -     -       -       No
+GERAN-Positioning-Info                2524   7.4.29    Grouped       V      -     -       M       No
+GERAN-Positioning-Data                2525   7.4.30    OctetString   V      -     -       M       No
+GERAN-GANSS-Positioning-Data          2526   7.4.31    OctetString   V      -     -       M       No
+UTRAN-Positioning-Info                2527   7.4.32    Grouped       V      -     -       M       No
+UTRAN-Positioning-Data                2528   7.4.33    OctetString   V      -     -       M       No
+UTRAN-GANSS-Positioning-Data          2529   7.4.34    OctetString   V      -     -       M       No
+LRR-Flags                             2530   7.4.35    Unsigned32    V      -     -       M       No
+LCS-Reference-Number                  2531   7.4.37    OctetString   V      -     -       M       No
+Deferred-Location-Type                2532   7.4.36    Unsigned32    V      -     -       M       No
+Area-Event-Info                       2533   7.4.38    Grouped       V      -     -       M       No
+Area-Definition                       2534   7.4.39    Grouped       V      -     -       M       No
+Area                                  2535   7.4.40    Grouped       V      -     -       M       No
+Area-Type                             2536   7.4.41    Unsigned32    V      -     -       M       No
+Area-Identification                   2537   7.4.42    Grouped       V      -     -       M       No
+Occurrence-Info                       2538   7.4.43    Enumerated    V      -     -       M       No
+Interval-Time                         2539   7.4.44    Unsigned32    V      -     -       M       No
+Periodic-LDR-Information              2540   7.4.45    Grouped       V      -     -       M       No
+Reporting-Amount                      2541   7.4.46    Unsigned32    V      -     -       M       No
+Reporting-Interval                    2542   7.4.47    Unsigned32    V      -     -       M       No
+Reporting-PLMN-List                   2543   7.4.48    Grouped       V      -     -       M       No
+PLMN-ID-List                          2544   7.4.49    Grouped       V      -     -       M       No
+PLR-Flags                             2545   7.4.52    Unsigned32    V      -     -       M       No
+PLA-Flags                             2546   7.4.53    Unsigned32    V      -     -       M       No
+Deferred-MT-LR-Data                   2547   7.4.54    Grouped       V      -     -       M       No
+Termination-Cause                     2548   7.4.55    Unsigned32    V      -     -       M       No
+LRA-Flags                             2549   7.4.56    Unsigned32    V      -     -       M       No
+Periodic-Location-Support-Indicator   2550   7.4.50    Enumerated    V      -     -       M       No
+Prioritized-List-Indicator            2551   7.4.51    Enumerated    V      -     -       M       No
+ESMLC-Cell-Info                       2552   7.4.57    Grouped       V      -     -       M       No
+Cell-Portion-ID                       2553   7.4.58    Unsigned32    V      -     -       M       No
+1xRTT-RCID                            2554   7.4.59    OctetString   V      -     -       M       No
+Delayed-Location-Reporting-Data       2555   7.4.60    Grouped       V      -     -       M       No
+Civic-Address                         2556   7.4.61    UTF8String    V      -     -       M       No
+Barometric-Pressure                   2557   7.4.62    Unsigned32    V      -     -       M       No
+UTRAN-Additional-Positioning-Data     2558   7.4.63    OctetString   V      -     -       M       No
+Motion-Event-Info                     2559   7.4.64    Grouped       V      -     -       M       No
+Linear-Distance                       2560   7.4.65    Unsigned32    V      -     -       M       No
+Maximum-Interval                      2561   7.4.66    Unsigned32    V      -     -       M       No
+Sampling-Interval                     2562   7.4.67    Unsigned32    V      -     -       M       No
+Reporting-Duration                    2563   7.4.68    Unsigned32    V      -     -       M       No
+Reporting-Location-Requirements       2564   7.4.69    Unsigned32    V      -     -       M       No
+Additional-Area                       2565   7.4.70    Grouped       V      -     -       M       No
+AMF-Instance-Id                       2566   7.4.71    UTF8String    V      -     -       M       No
+
+
+; Type: Reused AVPs
+; Section: 7.4.1
+; Table: 7.4.1-2
+; Page: 29
+; Columns: Name           Code   From       Type
+LCS-Format-Indicator      1237   TS32.299   Enumerated
+LCS-Name-String           1238   TS32.299   UTF8String
+LCS-Client-Type           1241   TS32.299   Enumerated
+LCS-Requestor-Id-String   1240   TS32.299   UTF8String
+Location-Estimate         1242   TS32.299   OctetString
+IMEI                      1402   TS29.272   UTF8String
+MSISDN                    701    TS29.329   OctetString
+Service-Selection         493    TS29.272   UTF8String
+User-Name                 1      RFC6733    UTF8String
+Supported-Features        628    TS29.229   Grouped
+Feature-List-ID           629    TS29.229   Unsigned32
+Feature-List              630    TS29.229   Unsigned32
+Serving-Node              2401   TS29.173   Grouped
+Cell-Global-Identity      1604   TS29.272   OctetString
+Service-Area-Identity     1607   TS29.272   OctetString
+GMLC-Address              2405   TS29.173   Address
+Visited-PLMN-Id           1407   TS29.272   OctetString
+DRMP                      301    RFC7944    Enumerated
+
+
+; Type: Enumerated AVP
+; Name: SLg-Location-Type
+; Section: 7.4.2
+; Page: 32
+SLg-Location-Type ::= < Enumerated AVP header: 2500 10415 >
+        CURRENT_LOCATION               = 0
+        CURRENT_OR_LAST_KNOWN_LOCATION = 1
+        INITIAL_LOCATION               = 2
+        ACTIVATE_DEFERRED_LOCATION     = 3
+        CANCEL_DEFERRED_LOCATION       = 4
+        NOTIFICATION_VERIFICATION_ONLY = 5
+
+
+; Type: Grouped AVP
+; Name: LCS-EPS-Client-Name
+; Section: 7.4.3
+; Page: 32
+LCS-EPS-Client-Name ::= < AVP header: 2501 10415 >
+        [ LCS-Name-String ]
+        [ LCS-Format-Indicator ]
+
+
+; Type: Grouped AVP
+; Name: LCS-Requestor-Name
+; Section: 7.4.4
+; Page: 33
+LCS-Requestor-Name ::= < AVP header: 2502 10415 >
+        [ LCS-Requestor-Id-String ]
+        [ LCS-Format-Indicator ]
+
+
+; Type: Grouped AVP
+; Name: LCS-QoS
+; Section: 7.4.6
+; Page: 33
+LCS-QoS ::= < AVP header: 2504 10415 >
+        [ LCS-QoS-Class ]
+        [ Horizontal-Accuracy ]
+        [ Vertical-Accuracy ]
+        [ Vertical-Requested ]
+        [ Response-Time ]
+
+
+; Type: Enumerated AVP
+; Name: Vertical-Requested
+; Section: 7.4.9
+; Page: 33
+Vertical-Requested ::= < Enumerated AVP header: 2507 10415 >
+        VERTICAL_COORDINATE_IS_NOT_REQUESTED = 0
+        VERTICAL_COORDINATE_IS_REQUESTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: Velocity-Requested
+; Section: 7.4.10
+; Page: 34
+Velocity-Requested ::= < Enumerated AVP header: 2508 10415 >
+        VELOCITY_IS_NOT_REQUESTED = 0
+        VELOCITY_IS_REQUESTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: Response-Time
+; Section: 7.4.11
+; Page: 34
+Response-Time ::= < Enumerated AVP header: 2509 10415 >
+        LOW_DELAY      = 0
+        DELAY_TOLERANT = 1
+
+
+; Type: Enumerated AVP
+; Name: LCS-Privacy-Check
+; Section: 7.4.14
+; Page: 34
+LCS-Privacy-Check ::= < Enumerated AVP header: 2512 10415 >
+        ALLOWED_WITHOUT_NOTIFICATION = 0
+        ALLOWED_WITH_NOTIFICATION    = 1
+        ALLOWED_IF_NO_RESPONSE       = 2
+        RESTRICTED_IF_NO_RESPONSE    = 3
+        NOT_ALLOWED                  = 4
+
+
+; Type: Enumerated AVP
+; Name: Accuracy-Fulfilment-Indicator
+; Section: 7.4.15
+; Page: 35
+Accuracy-Fulfilment-Indicator ::= < Enumerated AVP header: 2513 10415 >
+        REQUESTED_ACCURACY_FULFILLED     = 0
+        REQUESTED_ACCURACY_NOT_FULFILLED = 1
+
+
+; Type: Enumerated AVP
+; Name: Location-Event
+; Section: 7.4.20
+; Page: 35
+Location-Event ::= < Enumerated AVP header: 2518 10415 >
+        EMERGENCY_CALL_ORIGINATION     = 0
+        EMERGENCY_CALL_RELEASE         = 1
+        MO_LR                          = 2
+        EMERGENCY_CALL_HANDOVER        = 3
+        DEFERRED_MT_LR_RESPONSE        = 4
+        DEFERRED_MO_LR_TTTP_INITIATION = 5
+        DELAYED_LOCATION_REPORTING     = 6
+        HANDOVER_TO_5GC                = 7
+
+
+; Type: Enumerated AVP
+; Name: Pseudonym-Indicator
+; Section: 7.4.21
+; Page: 36
+Pseudonym-Indicator ::= < Enumerated AVP header: 2519 10415 >
+        PSEUDONYM_NOT_REQUESTED = 0
+        PSEUDONYM_REQUESTED     = 1
+
+
+; Type: Grouped AVP
+; Name: LCS-Privacy-Check-Non-Session
+; Section: 7.4.23
+; Page: 36
+LCS-Privacy-Check-Non-Session ::= < AVP header: 2521 10415 >
+        { LCS-Privacy-Check }
+
+
+; Type: Grouped AVP
+; Name: LCS-Privacy-Check-Session
+; Section: 7.4.24
+; Page: 36
+LCS-Privacy-Check-Session ::= < AVP header: 2522 10415 >
+        { LCS-Privacy-Check }
+
+
+; Type: Enumerated AVP
+; Name: LCS-QoS-Class
+; Section: 7.4.27
+; Page: 36
+LCS-QoS-Class ::= < Enumerated AVP header: 2523 10415 >
+        ASSURED       = 0
+        "BEST EFFORT" = 1
+
+
+; Type: Grouped AVP
+; Name: GERAN-Positioning-Info
+; Section: 7.4.29
+; Page: 37
+GERAN-Positioning-Info ::= < AVP header: 2524 10415 >
+        [ GERAN-Positioning-Data ]
+        [ GERAN-GANSS-Positioning-Data ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: UTRAN-Positioning-Info
+; Section: 7.4.32
+; Page: 37
+UTRAN-Positioning-Info ::= < AVP header: 2527 10415 >
+        [ UTRAN-Positioning-Data ]
+        [ UTRAN-GANSS-Positioning-Data ]
+        [ UTRAN-Additional-Positioning-Data ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: LRR-Flags
+; Kind: bits
+; Section: 7.4.35
+; Table: 7.4.35/1
+; Page: 38
+"Lgd/SLg-Indicator"          = 0
+MO-LR-ShortCircuit-Indicator = 1
+MO-LR-ShortCircuit-Requested = 2
+
+
+; Type: Value Table
+; AVP: Deferred-Location-Type
+; Kind: bits
+; Section: 7.4.36
+; Table: 7.4.36/1
+; Page: 38
+UE-Available                = 0
+Entering-Into-Area          = 1
+Leaving-From-Area           = 2
+Being-Inside-Area           = 3
+Periodic-LDR                = 4
+Motion-Event                = 5
+LDR-Activated               = 6
+Maximum-Interval-Expiration = 7
+
+
+; Type: Grouped AVP
+; Name: Area-Event-Info
+; Section: 7.4.38
+; Page: 38
+Area-Event-Info ::= < AVP header: 2533 10415 >
+        { Area-Definition }
+        [ Occurrence-Info ]
+        [ Interval-Time ]
+        [ Maximum-Interval ]
+        [ Sampling-Interval ]
+        [ Reporting-Duration ]
+        [ Reporting-Location-Requirements ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Area-Definition
+; Section: 7.4.39
+; Page: 39
+Area-Definition ::= < AVP header: 2534 10415 >
+   1*10 { Area }
+   *240 [ Additional-Area ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Area
+; Section: 7.4.40
+; Page: 39
+Area ::= < AVP header: 2535 10415 >
+        { Area-Type }
+        { Area-Identification }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Occurrence-Info
+; Section: 7.4.43
+; Page: 40
+Occurrence-Info ::= < Enumerated AVP header: 2538 10415 >
+        ONE_TIME_EVENT      = 0
+        MULTIPLE_TIME_EVENT = 1
+
+
+; Type: Grouped AVP
+; Name: Periodic-LDR-Info
+; Section: 7.4.45
+; Page: 40
+Periodic-LDR-Info ::= < AVP header: 2540 10415 >
+        { Reporting-Amount }
+        { Reporting-Interval }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Reporting-PLMN-List
+; Section: 7.4.48
+; Page: 40
+Reporting-PLMN-List ::= < AVP header: 2543 10415 >
+   1*20 { PLMN-ID-List }
+        [ Prioritized-List-Indicator ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: PLMN-ID-List
+; Section: 7.4.49
+; Page: 41
+PLMN-ID-List ::= < AVP header: 2544 10415 >
+        { Visited-PLMN-Id }
+        [ Periodic-Location-Support-Indicator ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Periodic-Location-Support-Indicator
+; Section: 7.4.50
+; Page: 41
+Periodic-Location-Support-Indicator ::= < Enumerated AVP header: 2550 10415 >
+        NOT_SUPPORTED = 0
+        SUPPORTED     = 1
+
+
+; Type: Enumerated AVP
+; Name: Prioritized-List-Indicator
+; Section: 7.4.51
+; Page: 41
+Prioritized-List-Indicator ::= < Enumerated AVP header: 2551 10415 >
+        NOT_PRIORITIZED = 0
+        PRIORITIZED     = 1
+
+
+; Type: Value Table
+; AVP: PLR-Flags
+; Kind: bits
+; Section: 7.4.52
+; Table: 7.4.52/1
+; Page: 41
+MO-LR-ShortCircuit-Indicator                 = 0
+Optimized-LCS-Proc-Req                       = 1
+Delayed-Location-Reporting-Support-Indicator = 2
+
+
+; Type: Value Table
+; AVP: PLA-Flags
+; Kind: bits
+; Section: 7.4.53
+; Table: 7.4.53/1
+; Page: 42
+Deferred-MT-LR-Response-Indicator      = 0
+MO-LR-ShortCircuit-Indicator           = 1
+Optimized-LCS-Proc-Performed           = 2
+UE-Transiently-Not-Reachable-Indicator = 3
+
+
+; Type: Grouped AVP
+; Name: Deferred-MT-LR-Data
+; Section: 7.4.54
+; Page: 42
+Deferred-MT-LR-Data ::= < AVP header: 2547 10415 >
+        { Deferred-Location-Type }
+        [ Termination-Cause ]
+        [ Serving-Node ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: LRA-Flags
+; Kind: bits
+; Section: 7.4.56
+; Table: 7.4.56/1
+; Page: 43
+MO-LR-ShortCircuit-Indicator = 0
+
+
+; Type: Grouped AVP
+; Name: ESMLC-Cell-Info
+; Section: 7.4.57
+; Page: 43
+ESMLC-Cell-Info ::= < AVP header: 2552 10415 >
+        [ ECGI ]
+        [ Cell-Portion-ID ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Delayed-Location-Reporting-Data
+; Section: 7.4.60
+; Page: 44
+Delayed-Location-Reporting-Data ::= < AVP header: 2555 10415 >
+        [ Termination-Cause ]
+        [ Serving-Node ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Motion-Event-Info
+; Section: 7.4.64
+; Page: 44
+Motion-Event-Info ::= < AVP header: 2559 10415 >
+        { Linear-Distance }
+        [ Occurrence-Info ]
+        [ Interval-Time ]
+        [ Maximum-Interval ]
+        [ Sampling-Interval ]
+        [ Reporting-Duration ]
+        [ Reporting-Location-Requirements ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Reporting-Location-Requirements
+; Kind: bits
+; Section: 7.4.69
+; Table: 7.4.69/1
+; Page: 45
+Location-Estimate = 0
+;; 1-31 None
+
+
+; Type: Grouped AVP
+; Name: Additional-Area
+; Section: 7.4.70
+; Page: 45
+Additional-Area ::= < AVP header: 2565 10415 >
+        { Area-Type }
+        { Area-Identification }
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.5
+; Page: 46
+DIAMETER_ERROR_USER_UNKNOWN                     = 5001 ; 7.5.3.1
+DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK  = 5490 ; 7.5.3.2
+DIAMETER_ERROR_UNREACHABLE_USER                 = 4221 ; 7.5.4.1
+DIAMETER_ERROR_SUSPENDED_USER                   = 4222 ; 7.5.4.2
+DIAMETER_ERROR_DETACHED_USER                    = 4223 ; 7.5.4.3
+DIAMETER_ERROR_POSITIONING_DENIED               = 4224 ; 7.5.4.4
+DIAMETER_ERROR_POSITIONING_FAILED               = 4225 ; 7.5.4.5
+"DIAMETER_ERROR_UNKNOWN_UNREACHABLE LCS_CLIENT" = 4226 ; 7.5.4.6

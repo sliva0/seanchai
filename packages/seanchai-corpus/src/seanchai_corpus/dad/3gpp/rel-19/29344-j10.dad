@@ -1,0 +1,377 @@
+; Specification: 3GPP TS 29.344
+; Version: 19.1.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129344/19.01.00_60/ts_129344v190100p.pdf
+
+
+; Type: Message
+; Name: ProSe-Subscriber-Information-Request, PIR
+; Section: 6.2.3
+; Page: 19
+<ProSe-Subscriber-Information-Request> ::= < Diameter Header: 8388664, REQ, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Subscriber-Information-Answer, PIA
+; Section: 6.2.4
+; Page: 19
+<ProSe-Subscriber-Information-Answer> ::= < Diameter Header: 8388664, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ ProSe-Subscription-Data ]
+        [ MSISDN ]
+        [ Visited-PLMN-Id ]
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+      * [ Reset-ID ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Update-ProSe-Subscriber-Data-Request, UPR
+; Section: 6.2.5
+; Page: 20
+<Update-ProSe-Subscriber-Data-Request> ::= < Diameter Header: 8388665, REQ, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+        [ ProSe-Subscription-Data ]
+        [ Visited-PLMN-Id ]
+        { UPR-Flags }
+      * [ Reset-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Update-ProSe-Subscriber-Data-Answer, UPA
+; Section: 6.2.6
+; Page: 20
+<Update-ProSe-Subscriber-Data-Answer> ::= < Diameter Header: 8388665, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Notify-Request, PNR
+; Section: 6.2.7
+; Page: 21
+<ProSe-Notify-Request> ::= < Diameter Header: 8388666, REQ, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ User-Name ]
+        [ ProSe-Permission ]
+        [ Visited-PLMN-Id ]
+        [ PNR-Flags ]
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Notify-Answer, PNA
+; Section: 6.2.8
+; Page: 21
+<ProSe-Notify-Answer> ::= < Diameter Header: 8388666, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Reset-Request, RSR
+; Section: 6.2.9
+; Page: 21
+<Reset-Request> ::= < Diameter Header: 322, REQ, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+      * [ Supported-Features ]
+      * [ User-Id ]
+      * [ Reset-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Reset-Answer, RSA
+; Section: 6.2.10
+; Page: 22
+<Reset-Answer> ::= < Diameter Header: 322, PXY, 16777336 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+      * [ Supported-Features ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Initial-Location-Information-Request, PSR
+; Section: 6.2.11
+; Page: 22
+<ProSe-Initial-Location-Information-Request> ::= < Diameter Header: 8388713, REQ, PXY, 16777336 > ;; corrected: (TS29.344.py#psr-psa-rule-name-request)
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Initial-Location-Information-Answer, PSA
+; Section: 6.2.12
+; Page: 22
+<ProSe-Initial-Location-Information-Answer> ::= < Diameter Header: 8388713, PXY, 16777336 > ;; corrected: (TS29.344.py#psr-psa-rule-name-answer)
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ ProSe-Initial-Location-Information ]
+        [ Visited-PLMN-Id ]
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.3.1
+; Table: 6.3.1-1
+; Page: 23
+; Columns: Name                      Code   Section   Type         Must   May   S.not   M.not   Encrypt
+ProSe-Subscription-Data              3701   6.3.2     Grouped      M,V    -     -       -       No
+ProSe-Permission                     3702   6.3.3     Unsigned32   M,V    -     -       -       No
+ProSe-Allowed-PLMN                   3703   6.3.4     Grouped      M,V    -     -       -       No
+ProSe-Direct-Allowed                 3704   6.3.5     Unsigned32   M,V    -     -       -       No
+UPR-Flags                            3705   6.3.6     Unsigned32   M,V    -     -       -       No
+PNR-Flags                            3706   6.3.7     Unsigned32   M,V    -     -       -       No
+ProSe-Initial-Location-Information   3707   6.3.9     Grouped      M,V    -     -       -       No
+Authorized-Discovery-Range           3708   6.3.13    Unsigned32   M,V    -     -       -       No ;; inserted: (TS29.344.py#authorized-discovery-range-row-missing)
+
+
+; Type: Reused AVPs
+; Section: 6.3.1
+; Table: 6.3.1-2
+; Page: 23
+; Columns: Name                 From       M-bit
+Visited-PLMN-Id                 TS29.272   -
+Supported-Features              TS29.229   -
+Feature-List-ID                 TS29.229   -
+Feature-List                    TS29.229   -
+User-Id                         TS29.272   -
+Reset-ID                        TS29.272   -
+MSISDN                          TS29.329   -
+MME-Name                        TS29.173   -
+E-UTRAN-Cell-Global-Identity    TS29.272   -
+Tracking-Area-Identity          TS29.272   -
+Age-Of-Location-Information     TS29.272   -
+3GPP-Charging-Characteristics   TS29.061   MUST
+OC-Supported-Features           RFC7683    MUST
+OC-OLR                          RFC7683    MUST
+DRMP                            RFC7944    MUST-NOT
+Load                            RFC8583    MUST-NOT
+
+
+; Type: Grouped AVP
+; Name: ProSe-Subscription-Data
+; Section: 6.3.2
+; Page: 24
+ProSe-Subscription-Data ::= < AVP header: 3701 10415 >
+        { ProSe-Permission }
+      * [ ProSe-Allowed-PLMN ]
+        [ 3GPP-Charging-Characteristics ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: ProSe-Permission
+; Kind: bits
+; Section: 6.3.3
+; Table: 6.3.3-1
+; Page: 24
+"ProSe Direct Discovery"                              = 0
+"EPC-level ProSe Discovery"                           = 1
+"EPC support WLAN Direct Discovery and Communication" = 2
+"one-to-many ProSe Direct Communication"              = 3
+"one-to-one ProSe Direct Communication"               = 4
+"UE-to-Network Relay"                                 = 5
+Remote-UE-access                                      = 6
+"Restricted ProSe Direct Discovery"                   = 7
+
+
+; Type: Grouped AVP
+; Name: ProSe-Allowed-PLMN
+; Section: 6.3.4
+; Page: 25
+ProSe-Allowed-PLMN ::= < AVP header: 3703 10415 >
+        [ Visited-PLMN-Id ]
+        [ Authorized-Discovery-Range ]
+        [ ProSe-Direct-Allowed ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: ProSe-Direct-Allowed
+; Kind: bits
+; Section: 6.3.5
+; Table: 6.3.5-1
+; Page: 25
+Announce                           = 0
+Monitor                            = 1
+Communication                      = 2
+"One-to-one Communication"         = 3
+Discoverer                         = 4
+Discoveree                         = 5
+Restricted-announce                = 6
+Restricted-monitoring              = 7
+"Application-controlled extension" = 8
+"On-demand announcing"             = 9
+
+
+; Type: Value Table
+; AVP: UPR-Flags
+; Kind: bits
+; Section: 6.3.6
+; Table: 6.3.6-1
+; Page: 26
+Update             = 0
+Removal            = 1
+"Reset-ID Update"  = 2
+"Reset-ID Removal" = 3
+
+
+; Type: Value Table
+; AVP: PNR-Flags
+; Kind: bits
+; Section: 6.3.7
+; Table: 6.3.7-1
+; Page: 26
+"Direct Discovery Revoked"     = 0
+"Direct Communication Revoked" = 1
+"Purged UE"                    = 2
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: PC4a
+; Section: 6.3.8
+; Table: 6.3.8/1
+; Page: 27
+Reset-IDs = 0 ; O
+
+
+; Type: Grouped AVP
+; Name: ProSe-Initial-Location-Information
+; Section: 6.3.9
+; Page: 27
+ProSe-Initial-Location-Information ::= < AVP header: 3707 10415 >
+        [ MME-Name ]
+        [ E-UTRAN-Cell-Global-Identity ]
+        [ Tracking-Area-Identity ]
+        [ Age-Of-Location-Information ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 28
+DIAMETER_ERROR_USER_UNKNOWN               = 5001 ; 6.4.3.2
+DIAMETER_ERROR_UNKNOWN_PROSE_SUBSCRIPTION = 5610 ; 6.4.3.3
+DIAMETER_ERROR_PROSE_NOT_ALLOWED          = 5611 ; 6.4.3.4 ;; corrected: (TS29.344.py#prose-not-allowed-result-spelling)
+DIAMETER_ERROR_UE_LOCATION_UNKNOWN        = 5612 ; 6.4.3.5 ;; corrected: (TS29.344.py#ue-location-unknown-result-spelling)
