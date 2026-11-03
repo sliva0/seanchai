@@ -1,0 +1,52 @@
+# Source declarations for 3GPP2 X.S0013-006 (Cx Interface Based on the Diameter
+# Protocol; Protocol Details). Applied to the lines of the hand transcription in
+# edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "SIP-Auth-Data-Item :: = < AVP Header : 612 10415 >"
+replace = "SIP-Auth-Data-Item ::= < AVP header: 612 10415 >"
+section = "6.3.13"
+reason = """
+    clause 6.3.13's AVP format prints '::' and '=' apart and a space before the
+    header's colon; Server-Capabilities' format in clause 6.3.4 prints them
+    whole
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "Deregistration-Reason :: = < AVP Header : 615 10415 >"
+replace = "Deregistration-Reason ::= < AVP header: 615 10415 >"
+section = "6.3.16"
+reason = """
+    clause 6.3.16's AVP format prints '::' and '=' apart and a space before the
+    header's colon; Server-Capabilities' format in clause 6.3.4 prints them
+    whole
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "Charging-Information :: = < AVP Header : 618 10415 >"
+replace = "Charging-Information ::= < AVP header: 618 10415 >"
+section = "6.3.19"
+reason = """
+    clause 6.3.19's AVP format prints '::' and '=' apart and a space before the
+    header's colon; Server-Capabilities' format in clause 6.3.4 prints them
+    whole
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "< AVP header: 632, 10415 >"
+replace = "< AVP header: 632 10415 >"
+section = "6.3.33"
+reason = """
+    clause 6.3.33's AVP format puts a comma between code and vendor-id, which no
+    other AVP format of the document does; table 6.3.1 gives code 632 and clause
+    6.3 the vendor 10415
+    """
+first_version = "1.0"
+last_version = "1.0"

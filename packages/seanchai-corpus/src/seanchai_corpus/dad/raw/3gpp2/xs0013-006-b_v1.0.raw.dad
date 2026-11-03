@@ -1,0 +1,447 @@
+; Specification: 3GPP2 X.S0013-006
+; Version: 1.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: http://www.3gpp2.org/Public_html/Specs/X.S0013-006-B_v1.0_080224.pdf
+; Transcribed: by hand from http://www.3gpp2.org/Public_html/Specs/X.S0013-006-B_v1.0_080224.pdf
+
+
+;; The cover prints "3GPP2 X.S0013-006-B Version 1.0", dated December 2007: part
+;; 006 of the series X.S0013, revision B, which the rendering's name keeps. The
+;; foreword: "This document contains portions of material copied from 3GPP
+;; document number TS 29.229 6.a.0." Clause 6.1 prints the id in every command,
+;; and clause 6.4.4 repeats it. Clause 7.3.1 prints an <answer-message> "based
+;; on [6], section 7.2", for any command code, which is no command of this
+;; application; it adds [ Supported-Applications ] after [ Proxy-Info ].
+; Type: Application Scope
+; Name: Cx
+; Section: 6
+; Page: 7
+; Application-ID: 16777216
+; Applies-To: 6.*
+
+
+; Type: Message
+; Name: User-Authorization-Request, UAR
+; Section: 6.1.1
+; Page: 8
+<User-Authorization-Request> ::= < Diameter Header: 300, REQ, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        { Visited-Network-Identifier }     ; bold
+        [ User-Authorization-Type ]        ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: User-Authorization-Answer, UAA
+; Section: 6.1.2
+; Page: 8
+<User-Authorization-Answer> ::= < Diameter Header: 300, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ] ;; Required if Experimental-Result not present - Otherwise not present.
+        [ Experimental-Result ] ;; Required if Result-Code not present - Otherwise not present.
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]             ; bold
+        [ Server-Name ]                    ; bold
+        [ Server-Capabilities ]            ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Server-Assignment-Request, SAR
+; Section: 6.1.3
+; Page: 9
+<Server-Assignment-Request> ::= < Diameter Header: 301, REQ, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ User-Name ]
+      * [ Supported-Features ]             ; bold
+      * [ Public-Identity ]                ; bold
+        [ Server-Name ]                    ; bold
+        { Server-Assignment-Type }         ; bold
+        { User-Data-Already-Available }    ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Server-Assignment-Answer, SAA
+; Section: 6.1.4
+; Page: 9
+<Server-Assignment-Answer> ::= < Diameter Header: 301, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ] ;; Required if Experimental-Result not present - Otherwise not present.
+        [ Experimental-Result ] ;; Required if Result-Code not present - Otherwise not present
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Supported-Features ]             ; bold
+        [ User-Data ]                      ; bold
+        [ Charging-Information ]           ; bold
+        [ Associated-Identities ]          ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Location-Info-Request, LIR
+; Section: 6.1.5
+; Page: 10
+<Location-Info-Request> ::= < Diameter Header: 302, REQ, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Location-Info-Answer, LIA
+; Section: 6.1.6
+; Page: 10
+<Location-Info-Answer> ::= < Diameter Header: 302, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ] ;; Required if Experimental-Result not present - Otherwise not present.
+        [ Experimental-Result ] ;; Required if Result-Code not present - Otherwise not present
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]             ; bold
+        [ Server-Name ]                    ; bold
+        [ Server-Capabilities ]            ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Multimedia-Auth-Request, MAR
+; Section: 6.1.7
+; Page: 10
+<Multimedia-Auth-Request> ::= < Diameter Header: 303, REQ, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        { User-Name }
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        { SIP-Auth-Data-Item }             ; bold
+        { SIP-Number-Auth-Items }          ; bold
+        { Server-Name }                    ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Multimedia-Auth-Answer, MAA
+; Section: 6.1.8
+; Page: 11
+<Multimedia-Auth-Answer> ::= < Diameter Header: 303, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ] ;; Required if Experimental-Result not present - Otherwise not present.
+        [ Experimental-Result ] ;; Required if Result-Code not present - Otherwise not present
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Supported-Features ]             ; bold
+        [ Public-Identity ]                ; bold
+        [ SIP-Number-Auth-Items ]          ; bold
+      * [ SIP-Auth-Data-Item ]             ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Registration-Termination-Request, RTR
+; Section: 6.1.9
+; Page: 11
+<Registration-Termination-Request> ::= < Diameter Header: 304, REQ, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+        [ Associated-Identities ]          ; bold
+      * [ Supported-Features ]             ; bold
+      * [ Public-Identity ]                ; bold
+        { Deregistration-Reason }          ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Registration-Termination-Answer, RTA
+; Section: 6.1.10
+; Page: 12
+<Registration-Termination-Answer> ::= < Diameter Header: 304, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ] ;; Required if Experimental-Result not present - Otherwise not present.
+        [ Experimental-Result ] ;; Required if Result-Code not present - Otherwise not present
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Associated-Identities ]          ; bold
+      * [ Supported-Features ]             ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Profile-Request, PPR
+; Section: 6.1.11
+; Page: 12
+<Push-Profile-Request> ::= < Diameter Header: 305, REQ, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]             ; bold
+        [ User-Data ]                      ; bold
+        [ Charging-Information ]           ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Profile-Answer, PPA
+; Section: 6.1.12
+; Page: 13
+<Push-Profile-Answer> ::= < Diameter Header: 305, PXY, 16777216 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ] ;; Required if Experimental-Result not present - Otherwise not present.
+        [ Experimental-Result ] ;; Required if Result-Code not present - Otherwise not present.
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]             ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.3
+; Table: 6.3.1
+; Page: 15
+; Columns: Name                               Code   Section   Type          Must   May   S.not   M.not   Encrypt
+Visited-Network-Identifier                    600    6.3.1     OctetString   M,V    -     -       -       No
+Public-Identity                               601    6.3.2     UTF8String    M,V    -     -       -       No
+Server-Name                                   602    6.3.3     UTF8String    M,V    -     -       -       No
+Server-Capabilities                           603    6.3.4     Grouped       M,V    -     -       -       No
+Mandatory-Capability                          604    6.3.5     Unsigned32    M,V    -     -       -       No
+Optional-Capability                           605    6.3.6     Unsigned32    M,V    -     -       -       No
+User-Data                                     606    6.3.7     OctetString   M,V    -     -       -       No
+SIP-Number-Auth-Items                         607    6.3.8     Unsigned32    M,V    -     -       -       No
+SIP-Authentication-Scheme                     608    6.3.9     UTF8String    M,V    -     -       -       No
+SIP-Authenticate                              609    6.3.10    OctetString   M,V    -     -       -       No
+SIP-Authorization                             610    6.3.11    OctetString   M,V    -     -       -       No
+SIP-Authentication-Context                    611    6.3.12    OctetString   M,V    -     -       -       No
+SIP-Auth-Data-Item                            612    6.3.13    Grouped       M,V    -     -       -       No
+SIP-Item-Number                               613    6.3.14    Unsigned32    M,V    -     -       -       No
+Server-Assignment-Type                        614    6.3.15    Enumerated    M,V    -     -       -       No
+Deregistration-Reason                         615    6.3.16    Grouped       M,V    -     -       -       No
+Reason-Code                                   616    6.3.17    Enumerated    M,V    -     -       -       No
+Reason-Info                                   617    6.3.18    UTF8String    M,V    -     -       -       No
+Charging-Information                          618    6.3.19    Grouped       M,V    -     -       -       No
+Primary-Event-Charging-Function-Name          619    6.3.20    DiameterURI   M,V    -     -       -       No
+Secondary-Event-Charging-Function-Name        620    6.3.21    DiameterURI   M,V    -     -       -       No
+Primary-Charging-Collection-Function-Name     621    6.3.22    DiameterURI   M,V    -     -       -       No
+Secondary-Charging-Collection-Function-Name   622    6.3.23    DiameterURI   M,V    -     -       -       No
+User-Authorization-Type                       623    6.3.24    Enumerated    M,V    -     -       -       No
+User-Data-Already-Available                   624    6.3.26    Enumerated    M,V    -     -       -       No
+Confidentiality-Key                           625    6.3.27    OctetString   M,V    -     -       -       No
+Integrity-Key                                 626    6.3.28    OctetString   M,V    -     -       -       No
+Supported-Features                            628    6.3.29    Grouped       V      M     -       -       No
+Feature-List-ID                               629    6.3.30    Unsigned32    V      -     -       M       No
+Feature-List                                  630    6.3.31    Unsigned32    V      -     -       M       No
+Supported-Applications                        631    6.3.32    Grouped       V      -     -       M       No
+Associated-Identities                         632    6.3.33    Grouped       V      -     -       M       No
+;; NOTE 1: The AVP header bit denoted as 'M', indicates whether support of the AVP is required. The AVP header bit denoted as 'V', indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see [6].
+;; NOTE 2: Depending on the concrete command.
+
+
+; Type: Grouped AVP
+; Name: Server-Capabilities
+; Section: 6.3.4
+; Page: 16
+Server-Capabilities ::= < AVP header: 603 10415 >
+      * [ Mandatory-Capability ]
+      * [ Optional-Capability ]
+      * [ Server-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: SIP-Auth-Data-Item
+; Section: 6.3.13
+; Page: 18
+SIP-Auth-Data-Item ::= < AVP header: 612 10415 >
+        [ SIP-Item-Number ]
+        [ SIP-Authentication-Scheme ]
+        [ SIP-Authenticate ]
+        [ SIP-Authorization ]
+        [ SIP-Authentication-Context ]
+        [ Confidentiality-Key ]
+        [ Integrity-Key ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Server-Assignment-Type
+; Section: 6.3.15
+; Page: 18
+Server-Assignment-Type ::= < Enumerated AVP header: 614 10415 >
+        NO_ASSIGNMENT                            = 0
+        REGISTRATION                             = 1
+        RE_REGISTRATION                          = 2
+        UNREGISTERED_USER                        = 3
+        TIMEOUT_DEREGISTRATION                   = 4
+        USER_DEREGISTRATION                      = 5
+        TIMEOUT_DEREGISTRATION_STORE_SERVER_NAME = 6
+        USER_DEREGISTRATION_STORE_SERVER_NAME    = 7
+        ADMINISTRATIVE_DEREGISTRATION            = 8
+        AUTHENTICATION_FAILURE                   = 9
+        AUTHENTICATION_TIMEOUT                   = 10
+        DEREGISTRATION_TOO_MUCH_DATA             = 11
+
+
+; Type: Grouped AVP
+; Name: Deregistration-Reason
+; Section: 6.3.16
+; Page: 19
+Deregistration-Reason ::= < AVP header: 615 10415 >
+        { Reason-Code }
+        [ Reason-Info ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Reason-Code
+; Section: 6.3.17
+; Page: 19
+Reason-Code ::= < Enumerated AVP header: 616 10415 >
+        PERMANENT_TERMINATION = 0
+        NEW_SERVER_ASSIGNED   = 1
+        SERVER_CHANGE         = 2
+        REMOVE_S-CSCF         = 3
+
+
+; Type: Grouped AVP
+; Name: Charging-Information
+; Section: 6.3.19
+; Page: 19
+Charging-Information ::= < AVP header: 618 10415 >
+        [ Primary-Event-Charging-Function-Name ]
+        [ Secondary-Event-Charging-Function-Name ]
+        [ Primary-Charging-Collection-Function-Name ]
+        [ Secondary-Charging-Collection-Function-Name ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: User-Authorization-Type
+; Section: 6.3.24
+; Page: 20
+User-Authorization-Type ::= < Enumerated AVP header: 623 10415 >
+        REGISTRATION                  = 0
+        DE_REGISTRATION               = 1
+        REGISTRATION_AND_CAPABILITIES = 2
+
+
+; Type: Enumerated AVP
+; Name: User-Data-Already-Available
+; Section: 6.3.26
+; Page: 20
+User-Data-Already-Available ::= < Enumerated AVP header: 624 10415 >
+        USER_DATA_NOT_AVAILABLE     = 0
+        USER_DATA_ALREADY_AVAILABLE = 1
+
+
+; Type: Grouped AVP
+; Name: Supported-Features
+; Section: 6.3.29
+; Page: 21
+Supported-Features ::= < AVP header: 628 10415 >
+        { Vendor-Id }
+        { Feature-List-ID }
+        { Feature-List }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Supported-Applications
+; Section: 6.3.32
+; Page: 21
+Supported-Applications ::= < AVP header: 631 10415 >
+      * [ Auth-Application-Id ]
+      * [ Acct-Application-Id ]
+      * [ Vendor-Specific-Application-Id ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Associated-Identities
+; Section: 6.3.33
+; Page: 22
+Associated-Identities ::= < AVP header: 632 10415 >
+      * [ User-Name ]
+      * [ AVP ]
