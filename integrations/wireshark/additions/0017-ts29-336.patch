@@ -6,7 +6,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.336 V18.2.0 defines these AVPs in vendor 10415, which the
+3GPP TS 29.336 V19.1.0 defines these AVPs in vendor 10415, which the
 dictionary has no entry for at their codes:
 
   Exclude-Identifiers (3188): Grouped, 2 members, clause 8.4.84

@@ -159,7 +159,7 @@ class ReleaseStandIn:
     citing copy reaches is defined alike in both."""
 
     meant: str  # "11.12.0", the version the citation means
-    version: str  # "18.1.0", the copy answering it
+    version: str  # "19.1.0", the copy answering it
     evidence: str
     # The citing document names `meant`, where the corpus cannot pin it: TS 183
     # 033's V6.6.0 is no release's last, which is what the catalog pins.

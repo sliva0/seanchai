@@ -7,7 +7,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.368 V18.0.0 defines this AVP in vendor 10415, which the
+3GPP TS 29.368 V19.0.0 defines this AVP in vendor 10415, which the
 dictionary has no entry for at its code:
 
   Feature-Supported-In-Final-Target (3012): Unsigned32, clause 6.4.13

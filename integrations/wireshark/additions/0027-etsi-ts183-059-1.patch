@@ -1,12 +1,12 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: sliva0 <sliva0mk@gmail.com>
 Date: Fri, 30 Oct 2026 00:00:00 +0000
-Subject: [PATCH] Diameter: Add 4 AVPs from ETSI-TS183.059-1
+Subject: [PATCH] Diameter: Add 4 AVPs from ETSI TS 183 059-1
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-ETSI-TS183.059-1 V2.1.1 defines these AVPs in vendor 13019, which the
+ETSI TS 183 059-1 V2.1.1 defines these AVPs in vendor 13019, which the
 dictionary has no entry for at their codes:
 
   CNGCF-Address (600): Grouped, 2 members, clause 7.3.5

@@ -6,7 +6,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.172 V18.1.0 defines this AVP in vendor 10415, which the
+3GPP TS 29.172 V19.0.0 defines this AVP in vendor 10415, which the
 dictionary has no entry for at its code:
 
   AMF-Instance-Id (2566): UTF8String, clause 7.4.71

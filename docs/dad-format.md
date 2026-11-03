@@ -216,7 +216,7 @@ The corpus is the data of the `seanchai-corpus` package, at
 
 ```
 dad/
-  3gpp/rel-18/   one directory per 3GPP release; rel-6, rel-7 and rel-11
+  3gpp/rel-19/   one directory per 3GPP release; rel-6, rel-7 and rel-11
                  hold the older versions citing documents mean
   rfc/           RFCs have no release axis
   etsi/          ETSI documents transcribed by hand; versions are ETSI's
@@ -233,8 +233,8 @@ diff raw against raw with the correction layer held still, corrections can
 be re-checked without re-downloading, and the linter has something to fire
 on.
 
-Files are named as their publisher names them: `29272-i70` for TS 29.272
-V18.7.0 (3GPP's archive naming), `rfc6733` for an RFC, `es283034-020200`
+Files are named as their publisher names them: `29272-j60` for TS 29.272
+V19.6.0 (3GPP's archive naming), `rfc6733` for an RFC, `es283034-020200`
 for ETSI ES 283 034 V2.2.0, `xs0057-0_v2.0` for 3GPP2 X.S0057 revision 0
 V2.0, `xs0013-014-0_v1.0` for part 014 of its series, `ts-0004-v2_35_0` for
 oneM2M TS-0004 V2.35.0. RFC files carry no
@@ -242,8 +242,8 @@ oneM2M TS-0004 V2.35.0. RFC files carry no
 
 Each document is committed twice:
 
-- `29272-i70.dad`, the **corrected** file, the one to use.
-- `raw/3gpp/rel-18/29272-i70.raw.dad`, what the document said, mistakes
+- `29272-j60.dad`, the **corrected** file, the one to use.
+- `raw/3gpp/rel-19/29272-j60.raw.dad`, what the document said, mistakes
   included. The `.raw.dad` suffix is what the corpus loader and tests key
   on.
 

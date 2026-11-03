@@ -43,7 +43,7 @@ DIR/
   sources/                RFC texts and, self-hosted, the source PDFs
 ```
 
-`<id>` is the file's stem, `29272-i70`. The files are compact JSON with sorted
+`<id>` is the file's stem, `29272-j60`. The files are compact JSON with sorted
 keys, the grammar aside, which is copied as it stands. `seanchai.export_schema`
 holds their shape as pydantic models and `SCHEMA_VERSION`, now 5, written into
 every file but `schema.json` and the grammar; it changes when a reader would
@@ -138,7 +138,7 @@ preferred once it is cheap.
 - **Search.** Client-side over `search.json`: substring on names, aliases
   included, with a per-name panel showing definer, identity and every
   document that re-uses or tabulates it.
-- **Deep links.** `#29272-i70/7.3.138` opens the document at the section
+- **Deep links.** `#29272-j60/7.3.138` opens the document at the section
   and the pane at its page.
 
 ## Build and deployment
@@ -149,7 +149,7 @@ preferred once it is cheap.
   `seanchai download --only rfc --only wireshark` adds RFC texts and Wireshark's
   names, with no `seanchai[extract]`.
 - Self-hosted: the same build with `--include-pdfs --specifications
-  specifications`, copying the PDFs (about 27 MB for the current corpus), and
+  specifications`, copying the PDFs (about 24 MB for the current corpus), and
   the PDF.js viewer into the output. `seanchai download --only 3gpp` fetches the
   3GPP ones and `--only transcribed` what the hand transcriptions were copied
   from, into `specifications/transcriptions/`.

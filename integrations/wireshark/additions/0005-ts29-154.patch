@@ -6,7 +6,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.154 V18.0.0 defines these AVPs in vendor 10415, which the
+3GPP TS 29.154 V19.0.0 defines these AVPs in vendor 10415, which the
 dictionary has no entry for at their codes:
 
   Network-Area-Info-List (4201): OctetString, clause 5.3.2

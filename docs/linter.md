@@ -6,7 +6,7 @@ contradictions, the linter says them out loud.
 
 ```sh
 uv run seanchai lint                              # the whole installed corpus
-uv run seanchai lint packages/seanchai-corpus/src/seanchai_corpus/dad/3gpp/rel-18
+uv run seanchai lint packages/seanchai-corpus/src/seanchai_corpus/dad/3gpp/rel-19
 uv run seanchai lint --raw DIR                    # with the raw mirror under DIR
 uv run seanchai lint --no-notes FILE.dad          # errors only
 uv run seanchai lint --corpus DIR FILE.dad        # against another corpus
@@ -244,15 +244,15 @@ What still reports, and why each stays:
 - **`cross-release-origin`.** TS 32.299 cites TS 29.140 non-specifically,
   which reads as its final version; TS 32.299 V11.20.0's non-specific
   Release 11 references, and TS 29.210's and TS 29.234's of TS 29.229, are
-  answered by Release 18 copies standing in; ES 283 034, ES 283 035 and ES 283
+  answered by Release 19 copies standing in; ES 283 034, ES 283 035 and ES 283
   026 cite TS 29.209's final version; TS 183 017 and oneM2M TS-0004 name
   releases; TS 29.212 names 3GPP2 X.S0057-B, for which revision 0 stands in; TS
-  183 033 names TS 29.229 V6.6.0, for which V18.1.0 stands in; and ES 283 035's
+  183 033 names TS 29.229 V6.6.0, for which V19.1.0 stands in; and ES 283 035's
   TS 29.329 is the latest edition, as its clause 2.1 says.
 - **`origin-not-in-corpus`.** The older copies held for those citations
-  cite in turn what the corpus holds at Release 18 only, and nothing
+  cite in turn what the corpus holds at Release 19 only, and nothing
   stands in for them: TS 29.212 V11.19.0's `Trace-Data` has a body Release
-  18's differs from, and no citation reaches them from oneM2M TS-0004.
+  19's differs from, and no citation reaches them from oneM2M TS-0004.
 - **`external-origin-not-in-corpus`.** Both copies of TS 32.299, for
   `OMA-DDS-Charging_Data`.
 - **`member-marked-unused`.** TS 32.299 table 7.1.0.1 marks
@@ -270,13 +270,14 @@ What still reports, and why each stays:
   rule. The model follows the citing tables. Where the citing clause defers
   to the origin, the row was corrected instead.
 - **`registry-range-overlap`.** TS 29.230 as printed: 318 allocated twice,
-  1..255 reserved over its own 100 to 102, and nested ranges.
+  1..255 reserved over its own 100 to 102 and 110 to 134, and nested ranges.
 - **`registry-avp-name`.** Table 7.1's names are patched on input to the
   defining clause's wherever the clause settles the spelling. What stays is
   no spelling the clause settles: TS 29.336's 3176 and 3177 swapped, TS
   29.283's 4513 to 4515 shifted, TS 29.338's 3315 printed with two names,
-  and TS 32.299's 855, where case is all that tells `Service-ID` from TS
-  29.336's `Service-Id`.
+  TS 29.329's 735, `Event-Report` where clause 8.3.13 and its commands print
+  `Ims-Event-Report`, and TS 32.299's 855, where case is all that tells
+  `Service-ID` from TS 29.336's `Service-Id`.
 - **`registry-avp-document`.** TS 29.329 lists nine of TS 29.229's AVPs
   among its own, each clause referring to TS 29.229; TS 29.273 defines
   `3GPP-AAA-Server-Name` (318), which the registry's first row still gives
@@ -297,10 +298,15 @@ What still reports, and why each stays:
   against table 8.1.4's `DIAMETER_ERROR_IMPI_UNKNOWN`, and TS 29.283's
   `DIAMETER_ERROR_DATA OUT_OF_SYNC` against TS 29.329's
   `DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC`: no clause settles either. A
-  space misprinted in a heading is corrected.
+  space misprinted in a heading is corrected. TS 29.329 V19.1.0 clause 8.2.2.1
+  lists base `DIAMETER_INVALID_AVP_VALUE` (5004) among Sh-ee's codes, which
+  table 8.1.4 allocates to `DIAMETER_ERROR_ROAMING_NOT_ALLOWED`.
+- **`registry-command-name`, for Sh-ee.** TS 29.329 V19.1.0 clause 8.1 gives its
+  four commands 310 and 311, which table 5.1/1 allocates to `Boostrapping-Info`
+  and `Message-Process`, while table 5.1/4 prints `xx1` and `xx2` for them.
 - **`registry-application-name`.** TS 29.272's VCSG scope names 16777308
   `S7a/S7d`; table 4.1 calls it "3GPP S7a".
-- **`undefined-avp`.** The eleven names
+- **`undefined-avp`.** The twelve names
   ([consumers.md](consumers.md#undefined-names)), each declared by a block
   whose reason lists what was searched. Where the document itself names the
   AVP a member means, the member was corrected instead (TS 32.299's
@@ -308,7 +314,7 @@ What still reports, and why each stays:
   the document defines the member in prose alone, the row was inserted (TS
   29.229's `Line-Identifier`).
 - **Retired documents draw no `registry-*` notes.** A Release 6 or 11 file
-  resolves no Release 18 TS 29.230.
+  resolves no Release 19 TS 29.230.
 
 Accepted, by acceptance (`edits/corrections/<SpecRef>.py#<id>`), each
 citing the clause that makes the override deliberate:

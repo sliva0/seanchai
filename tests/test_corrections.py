@@ -1481,7 +1481,7 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
     spaces, nothing else, plus the inserted rows and the VCSG application scope
     — so changing what the corrections do has to be a deliberate edit here too.
     """
-    raw = _CORPUS_DIR / "raw" / "3gpp" / "rel-18" / "29272-i70.raw.dad"
+    raw = _CORPUS_DIR / "raw" / "3gpp" / "rel-19" / "29272-j60.raw.dad"
     spec = parser.parse(raw.read_text(encoding="utf-8"))
     declared = corrections.in_release(
         corrections.load(_ROOT / "edits" / "corrections", spec.specification),
@@ -1575,8 +1575,8 @@ def test_the_ts29272_corrections_change_exactly_the_declared_fields():
         for correction in supplied
         if isinstance(correction.target, corrections.definition)
     } == {
-        "Trace-Depth": 6,
-        "Job-Type": 11,
+        "Trace-Depth": 9,
+        "Job-Type": 13,
         "Report-Amount": 8,
         "Logging-Interval": 11,
         "Logging-Duration": 6,

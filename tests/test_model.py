@@ -1704,7 +1704,7 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
     X.S0057-B" [24] is revision 0, standing in; and TS 32.299 V11.20.0's
     six non-specific Release 11 citations the corpus holds no Release 11
     copy of, TS 29.210 V6.7.0's and TS 29.234 V11.2.0's TS 29.229, and TS 183
-    033's "TS 29.229 (V6.6.0)" [2], are Release 18's, standing in; ES 283 035's
+    033's "TS 29.229 (V6.6.0)" [2], are Release 19's, standing in; ES 283 035's
     TS 29.329 [7] is the latest edition, as its clause 2.1 says. Each AVP so
     reached says so, and nothing else in the corpus resolves across releases."""
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
@@ -1728,7 +1728,7 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
     assert node.across_releases == corpus.CrossRelease(
         "oneM2M-TS-0004", "TS32.299", "11.20.0", corpus.SPECIFIC
     )
-    # The Release 18 reading of TS 32.299 is untouched by its older copy.
+    # The Release 19 reading of TS 32.299 is untouched by its older copy.
     current = built.resolve("TS32.299", "Node-Id")
     assert current is not None and current.across_releases is None
     crossings = {
@@ -1792,8 +1792,8 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
 
 def test_the_retired_documents_read_their_releases_re_uses():
     """TS 29.210 V6.7.0's TS 29.061 is the pinned V6.15.0, whose table 10 puts
-    M in Must where Release 18's table 9a puts it in Must not; its TS 29.229,
-    and TS 29.234 V11.2.0's, are V18.1.0, standing in for the V6.11.0 and
+    M in Must where Release 19's table 9a puts it in Must not; its TS 29.229,
+    and TS 29.234 V11.2.0's, are V19.1.0, standing in for the V6.11.0 and
     V11.5.0 that define alike what each re-uses. TS 29.234 keeps its own
     SIP-Auth-Data-Item body, flag rules from TS 29.229."""
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
@@ -1807,7 +1807,7 @@ def test_the_retired_documents_read_their_releases_re_uses():
     charging = built.resolve("TS29.210", "Charging-Information")
     assert charging is not None
     assert charging.across_releases == corpus.CrossRelease(
-        "TS29.210", "TS29.229", "18.1.0", corpus.STAND_IN, meant="6.11.0"
+        "TS29.210", "TS29.229", "19.1.0", corpus.STAND_IN, meant="6.11.0"
     )
     item = built.resolve("TS29.234", "SIP-Auth-Data-Item")
     assert isinstance(item, model.Grouped)
@@ -1815,7 +1815,7 @@ def test_the_retired_documents_read_their_releases_re_uses():
     assert item.defined_in == "TS29.234"
     assert "SIP-Digest-Authenticate" not in {m.name for m in item.members}
     assert item.across_releases == corpus.CrossRelease(
-        "TS29.234", "TS29.229", "18.1.0", corpus.STAND_IN, meant="11.5.0"
+        "TS29.234", "TS29.229", "19.1.0", corpus.STAND_IN, meant="11.5.0"
     )
 
 
@@ -1849,10 +1849,10 @@ def test_onem2m_reaches_release_11s_bodies_through_ts_32_299_v11_20_0():
     """oneM2M TS-0004's Service-Information is TS 32.299 V11.20.0's, whose
     non-specific references mean Release 11's last versions: the pinned TS
     29.212 V11.19.0's QoS-Information, nine members and the wildcard where
-    Release 18's has sixteen, and TS 29.214 V11.16.0's Flows, closed where
-    Release 18's adds three members, `*[ AVP ]` among them. TS 29.229's
-    Server-Capabilities is V18.1.0's, standing in for V11.5.0, which defines
-    it alike; IM-Information takes OMA's flags as Release 18's does. Flows
+    Release 19's has sixteen, and TS 29.214 V11.16.0's Flows, closed where
+    Release 19's adds three members, `*[ AVP ]` among them. TS 29.229's
+    Server-Capabilities is V19.1.0's, standing in for V11.5.0, which defines
+    it alike; IM-Information takes OMA's flags as Release 19's does. Flows
     sits in PS-Information's Service-Data-Container's
     AF-Correlation-Information."""
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
@@ -1880,7 +1880,7 @@ def test_onem2m_reaches_release_11s_bodies_through_ts_32_299_v11_20_0():
     ]
     capabilities = member(member(service, "IMS-Information"), "Server-Capabilities")
     assert capabilities.across_releases == corpus.CrossRelease(
-        "TS32.299", "TS29.229", "18.1.0", corpus.STAND_IN, meant="11.5.0"
+        "TS32.299", "TS29.229", "19.1.0", corpus.STAND_IN, meant="11.5.0"
     )
     im = member(service, "IM-Information")
     assert (im.identity, im.data_type) == ((10415, 2110), ast.DataType.GROUPED)
@@ -1904,14 +1904,14 @@ def test_only_three_cited_enumerations_stay_without_values():
         and not section.values
     }
     assert unfilled == {
-        ("TS29.272", "18.7.0", "Report-Interval", "TS 32.422 [23] for Report Interval"),
+        ("TS29.272", "19.6.0", "Report-Interval", "TS 32.422 [23] for Report Interval"),
         (
             "RFC5777",
             None,
             "ICMP-Code",
             "IANA under the ICMP Type Numbers registry as defined in [RFC2780]",
         ),
-        ("TS32.299", "18.0.0", "API-Network-Service-Node", "TS 23.682[243]"),
+        ("TS32.299", "19.0.0", "API-Network-Service-Node", "TS 23.682[243]"),
     }
 
 
@@ -1979,7 +1979,7 @@ def test_a_strict_build_refuses_exactly_the_recorded_holes():
     ids=str,
 )
 def test_an_answer_for_the_undefined_names_leaves_the_field_holes(policy):
-    """With the eleven undefined names answered for, `strict=True` still refuses
+    """With the twelve undefined names answered for, `strict=True` still refuses
     what states no type, under every policy, and the default build takes the
     nine entries' going unused as no staleness."""
     books = _committed()
@@ -2191,7 +2191,7 @@ class TestTheRecord:
             model.Model.build(corpus.Corpus([_entry(spec)]))
 
 
-def test_the_committed_corpus_declares_its_eleven_undefined_names():
+def test_the_committed_corpus_declares_its_twelve_undefined_names():
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
     declared = {
         (each.reference, each.name, each.section, each.cited_in)
@@ -2199,6 +2199,7 @@ def test_the_committed_corpus_declares_its_eleven_undefined_names():
     }
     assert declared == {
         ("RFC4004", "MIP-HA-to-MN-SPI", "9.4", ("9.4",)),
+        ("TS29.329", "Request-Current-Status", "8.3.10", ("8.3.10",)),
         ("RFC4004", "MIP-MN-to-FA-SPI", "9.5", ("9.5",)),
         ("RFC4004", "MIP-MN-to-HA-SPI", "9.6", ("9.6",)),
         ("RFC5866", "Authorization-Session-Volume", "5.3", ("5.3", "5.5")),
@@ -2800,14 +2801,14 @@ def test_every_reading_has_one_flag_rules_type():
 
 class TestWhatCommandsUse:
     def test_an_application_holds_what_its_commands_use_at_any_depth(self, built):
-        """Cx's tables list 77 AVPs, its commands use 103: the base protocol's
+        """Cx's tables list 82 AVPs, its commands use 104: the base protocol's
         Destination-Host and Failed-AVP are in no table of TS 29.229's."""
         (cx,) = built.applications("TS29.229", application_id=16777216)
 
         members = cx.avps()
         identities = {member.avp.identity for member in members if member.avp}
 
-        assert len(identities) == 103
+        assert len(identities) == 104
         assert {"Destination-Host", "Auth-Session-State", "Failed-AVP"} <= {
             member.name for member in members
         }
@@ -3239,6 +3240,6 @@ def test_a_table_read_through_the_origin_is_the_origin_s(built):
     avp = built.resolve("TS29.336", "Supported-Monitoring-Events")
     assert avp.value_table.reference == "TS29.336"
     assert avp.data_type is model.DataType.UNSIGNED64
-    assert max(row.value for row in avp.value_table.rows) == 8
+    assert max(row.value for row in avp.value_table.rows) == 9
     reused = built.resolve("TS29.272", "Supported-Monitoring-Events")
     assert reused.value_table.reference in {"TS29.272", "TS29.336"}

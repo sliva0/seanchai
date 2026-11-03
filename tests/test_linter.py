@@ -510,26 +510,21 @@ def test_the_corrected_corpus_has_no_errors(path):
 # corrections exist to fix. Every entry was confirmed against the source clause
 # before it was written down; a file absent from here must lint clean raw.
 _RAW_ERRORS = {
-    "29273-i60.raw.dad": [
-        "duplicate-definition",
-        "duplicate-identity",
-        "duplicate-identity",
-        "table-definition-mismatch",
-    ],
-    "29172-i10.raw.dad": ["duplicate-identity"],
-    "29272-i70.raw.dad": [
+    "29273-j20.raw.dad": ["duplicate-definition", "duplicate-identity"],
+    "29172-j00.raw.dad": ["duplicate-identity"],
+    "29272-j60.raw.dad": [
         "duplicate-identity",
         "table-definition-mismatch",
         "vendor-id-mismatch",
     ],
-    "29344-i10.raw.dad": ["one-name-two-commands", "one-name-two-commands"],
-    "29388-i10.raw.dad": [
+    "29344-j10.raw.dad": ["one-name-two-commands", "one-name-two-commands"],
+    "29388-j10.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
         "table-definition-mismatch",
     ],
-    "29212-i20.raw.dad": ["vendor-id-mismatch"] * 39,
-    "29214-i40.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 11,
+    "29212-j10.raw.dad": ["vendor-id-mismatch"] * 39,
+    "29214-j30.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 11,
     # Release 7 and TS 29.209, its Release 6 predecessor: grouped headers
     # printing no vendor where clause 5.3 (6.5) sets 3GPP's for every AVP.
     "29214-7c0.raw.dad": ["vendor-id-mismatch"] * 5,
@@ -541,35 +536,35 @@ _RAW_ERRORS = {
     "29234-b20.raw.dad": ["vendor-id-mismatch"] * 4,
     # Release 11, the copies TS 32.299 V11.20.0 cites: thirty-one and six
     # vendorless grouped headers, and TS 29.214's two Void values (5.3.13),
-    # as their Release 18 successors print.
+    # as their Release 19 successors print.
     "29212-bj0.raw.dad": ["vendor-id-mismatch"] * 31,
     "29214-bg0.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 6,
-    "29336-i20.raw.dad": [
+    "29336-j10.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",
         "duplicate-identity",
     ],
-    "29338-i20.raw.dad": ["duplicate-identity"],
+    "29338-j30.raw.dad": ["duplicate-identity"],
     # Grouped headers printing no vendor while the AVP tables set V (all
     # eight; 29.154's sixth, Time-window, misspells its own rule name, so no
     # row matches it); 29.468's clauses 6.4.28 and 6.4.31 print FEC-Request's
     # code, and table 6.4.1-1 types clause 6.4.35's Enumerated AVP
     # Unsigned32.
-    "29153-i00.raw.dad": ["vendor-id-mismatch"],
-    "29154-i00.raw.dad": ["vendor-id-mismatch"] * 5,
-    "29215-i00.raw.dad": ["vendor-id-mismatch"] * 2,
-    "29217-i00.raw.dad": ["vendor-id-mismatch"] * 4,
-    "29219-i00.raw.dad": ["vendor-id-mismatch"] * 2,
-    "29343-i00.raw.dad": ["vendor-id-mismatch"] * 3,
-    "29368-i00.raw.dad": ["vendor-id-mismatch"] * 3,
-    "29468-i00.raw.dad": ["duplicate-identity"]
+    "29153-j00.raw.dad": ["vendor-id-mismatch"],
+    "29154-j00.raw.dad": ["vendor-id-mismatch"] * 5,
+    "29215-j00.raw.dad": ["vendor-id-mismatch"] * 2,
+    "29217-j00.raw.dad": ["vendor-id-mismatch"] * 4,
+    "29219-j00.raw.dad": ["vendor-id-mismatch"] * 2,
+    "29343-j00.raw.dad": ["vendor-id-mismatch"] * 3,
+    "29368-j00.raw.dad": ["vendor-id-mismatch"] * 3,
+    "29468-j00.raw.dad": ["duplicate-identity"]
     + ["table-definition-mismatch"] * 3
     + ["vendor-id-mismatch"] * 12,
     # Both tabulate RFC 8583's Load among their own AVPs, with no code —
     # their Load clauses define it only by reference to RFC 8583.
-    "29229-i10.raw.dad": ["row-without-code"],
-    "29329-i00.raw.dad": ["row-without-code"],
-    "29345-i00.raw.dad": [
+    "29229-j10.raw.dad": ["row-without-code"],
+    "29329-j10.raw.dad": ["duplicate-identity", "row-without-code"],
+    "29345-j00.raw.dad": [
         "duplicate-identity",
         "table-definition-mismatch",
         "table-definition-mismatch",
@@ -609,7 +604,7 @@ _RAW_ERRORS = {
     # The wildcard row of table 7.1.0.1; two Integer32 rows clauses 7.2.111AaA
     # and 7.2.111AaB define as Enumerated; and every grouped header in clause
     # 7.2 printing no vendor while table 7.2.0.1 sets V.
-    "32299-i00.raw.dad": ["row-without-code"]
+    "32299-j00.raw.dad": ["row-without-code"]
     + ["table-definition-mismatch"] * 2
     + ["vendor-id-mismatch"] * 96,
     # Release 11: table 7.1's wildcard row, and the grouped headers of clause
@@ -652,42 +647,46 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     # `_STANDING_CORPUS_NOTES`; 29.273's two).
     expected = {
         # The Undefined AVP block of Delegated-IPv6-Prefix is a correction's.
-        "29061-i10.raw": 7,
-        "29061-i10": 8,
-        "29128-i00": 3,
-        # The row clause 6.3.43's Wildcarded-IMPU is corrected into.
-        "29229-i10.raw": 0,
-        "29229-i10": 1,
-        "29272-i70": 9,
-        "29273-i60": 5,
-        "29283-i00": 1,
-        "29336-i20": 5,
-        "29337-i00": 2,
-        "29338-i20": 2,
-        "29388-i10": 1,
+        "29061-j10.raw": 7,
+        "29061-j10": 8,
+        "29128-j20": 3,
+        # OC-OLR, which clause 6.3.61 prints as well as re-uses, and, corrected,
+        # the row clause 6.3.43's Wildcarded-IMPU is corrected into.
+        "29229-j10.raw": 1,
+        "29229-j10": 2,
+        "29272-j60": 9,
+        "29273-j20": 5,
+        "29283-j00": 1,
+        "29336-j10": 5,
+        "29337-j00": 2,
+        "29338-j30": 2,
+        "29388-j10": 1,
         # TS 29.230's registry: 318 allocated twice, four reservations
         # covering allocated codes, and 4703-4799 inside 4605-4799.
-        "29230-i60": 6,
+        "29230-j30": 6,
         # Table 7.1.0.1 marks ACA's Error-Message and Failed-AVP unused; the
         # corrections cite RFC origins for it, whose clauses 7.1.9, 7.1.14,
         # 7.1.17 and B.2.4 print bodies of their own.
         # Plus, corrected, the Undefined AVP blocks the corrections insert:
         # Submission-Timestamp and Network-Element.
-        "32299-i00.raw": 2,
-        "32299-i00": 8,
+        "32299-j00.raw": 2,
+        "32299-j00": 8,
         # Only the Undefined AVP blocks, one note each: RFC 4004's three
         # SPIs, TS 29.345's ProSe-Query-Code and ProSe-Response-Code, TS
-        # 29.154's External-Group-Identifier.
+        # 29.154's External-Group-Identifier, TS 29.329's
+        # Request-Current-Status.
         "rfc4004.raw": 0,
         "rfc4004": 3,
         "rfc5866.raw": 0,
         "rfc5866": 1,
         # Clause 5.1 extends RFC 5447's MIP6-Agent-Info.
         "rfc5779": 1,
-        "29345-i00.raw": 0,
-        "29345-i00": 2,
-        "29154-i00.raw": 0,
-        "29154-i00": 1,
+        "29345-j00.raw": 0,
+        "29345-j00": 2,
+        "29154-j00.raw": 0,
+        "29154-j00": 1,
+        "29329-j10.raw": 0,
+        "29329-j10": 1,
         # TS 29.234 prints no re-used table; the corrections give it one, in
         # which clause 10.1.4's SIP-Auth-Data-Item is defined here too, and
         # declare Error-Cause.
@@ -1321,7 +1320,7 @@ def test_an_origin_that_borrows_the_avp_itself_is_a_note_not_an_error():
 
 
 def test_an_origin_resolved_across_releases_is_a_note_naming_the_rule():
-    """TS 29.140 ends at V7.0.0; a Release 18 document's non-specific
+    """TS 29.140 ends at V7.0.0; a Release 19 document's non-specific
     reference reads as that final version (`corpus.FINAL_VERSIONS`), the
     cross-file rules run against it, and a note says so for audit."""
     spec = _spec(
@@ -1382,14 +1381,14 @@ def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
 
 def test_a_later_release_standing_in_is_a_note_with_its_evidence():
     """TS 32.299 V11.20.0 cites TS 29.329 non-specifically, meaning
-    V11.7.0, which the corpus lacks; V18.0.0 answers by its
+    V11.7.0, which the corpus lacks; V19.1.0 answers by its
     `corpus.RELEASE_STAND_INS` entry, and the note quotes the evidence."""
     spec = _spec(
         _reused(ast.ReusedAvpRow(name="Borrowed", origin="TS29.329")),
         specification="3GPP TS 32.299",
         version="11.20.0",
     )
-    origin = _origin_spec("3GPP TS 29.329", "18.0.0", _grouped_with("Borrowed", 700))
+    origin = _origin_spec("3GPP TS 29.329", "19.1.0", _grouped_with("Borrowed", 700))
 
     findings = linter.lint_with_corpus(spec, _books(origin))
 
@@ -1398,7 +1397,7 @@ def test_a_later_release_standing_in_is_a_note_with_its_evidence():
         "TS29.329 is resolved across releases to 0.dad: 3GPP TS 32.299"
         " V11.20.0 is the citing file, and it cites the document"
         " non-specifically, meaning V11.7.0, which the corpus lacks, and"
-        " V18.0.0 stands in: "
+        " V19.1.0 stands in: "
         + corpus.RELEASE_STAND_INS["TS32.299", "11.20.0", "TS29.329"].evidence
         + " (corpus.RELEASE_STAND_INS)"
     )
@@ -1754,7 +1753,7 @@ def test_a_declared_name_is_no_unresolved_reference():
 # Standing findings from docs/linter.md, plus the additional reprints,
 # body differences and indirect origins present in the committed corpus.
 _STANDING_CORPUS_NOTES = {
-    "29061-i10.dad": {
+    "29061-j10.dad": {
         "table-row-mismatch": [
             "3GPP-IMSI",
             "3GPP-SGSN-Address",
@@ -1766,33 +1765,34 @@ _STANDING_CORPUS_NOTES = {
         ],
         "undefined-avp": ["Delegated-IPv6-Prefix"],
     },
-    "29128-i00.dad": {
+    "29128-j20.dad": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN",
         ],
         "reused-body-differs": ["Terminal-Information"],
     },
-    "29172-i10.dad": {
+    "29172-j00.dad": {
         "reused-origin-indirect": ["Service-Selection"],
     },
-    "29154-i00.dad": {
+    "29154-j00.dad": {
         "undefined-avp": ["External-Group-Identifier"],
     },
     # Clause 2 [24] cites 3GPP2 X.S0057-B, which 3GPP2's library does not
     # publish; revision 0 V2.0 stands in (corpus.STAND_INS).
-    "29212-i20.dad": {"cross-release-origin": ["3GPP2-X.S0057"]},
+    "29212-j10.dad": {"cross-release-origin": ["3GPP2-X.S0057"]},
     # Table 6.3.0.1 sets M in Must for the four Digest AVPs it re-uses; RFC
     # 4590's stand-in flags, Wireshark's, put it in May; the model follows the table.
-    "29229-i10.dad": {
+    "29229-j10.dad": {
         "reused-row-mismatch": [
             "Digest-Algorithm",
             "Digest-HA1",
             "Digest-Qop",
             "Digest-Realm",
         ],
+        "reused-extension": ["OC-OLR"],
         "row-without-code": ["Wildcarded-IMPU"],
     },
-    "29230-i60.dad": {
+    "29230-j30.dad": {
         "registry-range-overlap": [
             "318",
             "1..255",
@@ -1802,7 +1802,7 @@ _STANDING_CORPUS_NOTES = {
             "5455..5469",
         ],
     },
-    "29272-i70.dad": {
+    "29272-j60.dad": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
             "DIAMETER_ERROR_ROAMING_NOT_ALLOWED",
@@ -1820,7 +1820,7 @@ _STANDING_CORPUS_NOTES = {
             "MIP6-Agent-Info",
         ],
     },
-    "29273-i60.dad": {
+    "29273-j20.dad": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_ILLEGAL_EQUIPMENT",
         ],
@@ -1828,7 +1828,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
     },
-    "29283-i00.dad": {
+    "29283-j00.dad": {
         "registry-result-code-name": [
             "DIAMETER_ERROR_DATA",
         ],
@@ -1839,8 +1839,20 @@ _STANDING_CORPUS_NOTES = {
         "cross-release-origin": ["TS29.061", "TS29.329"],
         "reused-row-mismatch": ["3GPP-IMSI"],
     },
-    "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
-    "29336-i20.dad": {
+    "29329-j10.dad": {
+        "registry-avp-name": ["Ims-Event-Report"],
+        "registry-command-name": [
+            "Event-Subscribe-Request",
+            "Event-Subscribe-Answer",
+            "Event-Notification-Request",
+            "Event-Notification-Answer",
+        ],
+        "registry-result-code-document": ["DIAMETER_INVALID_AVP_VALUE"],
+        "registry-result-code-name": ["DIAMETER_INVALID_AVP_VALUE"],
+        "undefined-avp": ["Request-Current-Status"],
+    },
+    "29330-j00.dad": {"reused-origin-indirect": ["Load"]},
+    "29336-j10.dad": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION",
         ],
@@ -1852,21 +1864,21 @@ _STANDING_CORPUS_NOTES = {
         "reused-origin-indirect": ["User-CSG-Information"],
         "reused-reprint": ["EPS-Location-Information"],
     },
-    "29338-i20.dad": {
+    "29338-j30.dad": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
         ],
         "registry-avp-name": ["SGSN-Absent-User-Diagnostic-SM"],
         "reused-body-differs": ["Serving-Node"],
     },
-    "29345-i00.dad": {
+    "29345-j00.dad": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
             "DIAMETER_ERROR_UNAUTHORIZED_SERVICE",
         ],
         "undefined-avp": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
-    "32299-i00.dad": {
+    "32299-j00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
         "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
@@ -1952,10 +1964,10 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     # The older releases the corpus holds for citations cite in turn
-    # documents it holds at Release 18 only: TS 29.214 V7.12.0 re-uses Gx's
+    # documents it holds at Release 19 only: TS 29.214 V7.12.0 re-uses Gx's
     # and Gi's AVPs, and TS 29.140 non-specifically, which reads as V7.0.0
     # here too. TS 32.299 V11.20.0's six other Release 11 citations read
-    # Release 18 copies standing in (corpus.RELEASE_STAND_INS), and its TS
+    # Release 19 copies standing in (corpus.RELEASE_STAND_INS), and its TS
     # 29.212 and 29.214 are the pinned Release 11 copies, whose own Release
     # 11 citations of TS 29.061, 29.229 and 29.272 nothing stands in for:
     # TS 29.212 V11.19.0's Trace-Data, from TS 29.272, differs from Release
@@ -1972,20 +1984,20 @@ _STANDING_CORPUS_NOTES = {
     },
     "29214-7c0.dad": {
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0, 6.15.0),"
-            " TS29.212 (corpus has 18.2.0, 11.19.0)"
+            "TS29.061 (corpus has 19.1.0, 6.15.0),"
+            " TS29.212 (corpus has 19.1.0, 11.19.0)"
         ]
     },
     "29212-bj0.dad": {
         "cross-release-origin": ["3GPP2-X.S0057"],
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0, 6.15.0), TS29.229 (corpus has 18.1.0),"
-            " TS29.272 (corpus has 18.7.0)"
+            "TS29.061 (corpus has 19.1.0, 6.15.0), TS29.229 (corpus has 19.1.0),"
+            " TS29.272 (corpus has 19.6.0)"
         ],
     },
     "29214-bg0.dad": {
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 18.1.0, 6.15.0), TS29.229 (corpus has 18.1.0)"
+            "TS29.061 (corpus has 19.1.0, 6.15.0), TS29.229 (corpus has 19.1.0)"
         ]
     },
     "32299-bk0.dad": {
@@ -2012,12 +2024,12 @@ _STANDING_CORPUS_NOTES = {
     "rfc5866.dad": {"undefined-avp": ["Authorization-Session-Volume"]},
     "rfc6736.dad": {"origin-not-in-corpus": ["RFC4675"]},
     "rfc6738.dad": {"reused-row-mismatch": ["Key-Lifetime"]},
-    "29109-i10.dad": {
+    "29109-j00.dad": {
         "registry-result-code-name": [
             "DIAMETER_ERROR_IDENTITY_UNKNOWN",
         ],
     },
-    "29337-i00.dad": {
+    "29337-j00.dad": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
         ],
@@ -2037,7 +2049,7 @@ _ACCEPTED_CORPUS_NOTES = {
     "ts183017-030201.dad": {
         "reused-extension": ["ETSI-TS183.017.py#media-component-description-extension"],
     },
-    "29128-i00.dad": {
+    "29128-j20.dad": {
         "registry-result-code-document": [
             "TS29.128.py#unauthorized-requesting-entity-result-code-reused",
             "TS29.128.py#unauthorized-service-result-code-reused",
@@ -2052,14 +2064,14 @@ _ACCEPTED_CORPUS_NOTES = {
             "TS29.128.py#monitoring-event-report-t6a-body",
         ],
     },
-    "29272-i70.dad": {
+    "29272-j60.dad": {
         "reused-body-differs": [
             "TS29.272.py#monitoring-event-configuration-s6a-body",
             "TS29.272.py#monitoring-event-report-s6a-body",
             "TS29.272.py#ue-reachability-configuration-s6a-body",
         ],
     },
-    "29273-i60.dad": {
+    "29273-j20.dad": {
         "registry-result-code-document": [
             "TS29.273.py#user-unknown-result-code-reused",
             "TS29.273.py#identity-not-registered-result-code-reused",
@@ -2068,7 +2080,7 @@ _ACCEPTED_CORPUS_NOTES = {
         ],
         "reused-body-differs": ["TS29.273.py#sip-auth-data-item-swx-body"],
     },
-    "29336-i20.dad": {
+    "29336-j10.dad": {
         "registry-result-code-document": [
             "TS29.336.py#user-unknown-result-code-reused-6-3",
             "TS29.336.py#user-unknown-result-code-reused-8-3",
@@ -2078,22 +2090,22 @@ _ACCEPTED_CORPUS_NOTES = {
             "TS29.336.py#serving-node-t4-body",
         ],
     },
-    "29337-i00.dad": {
+    "29337-j00.dad": {
         "reused-body-differs": [
             "TS29.337.py#additional-serving-node-t4-body",
             "TS29.337.py#serving-node-t4-body",
         ],
     },
-    "29338-i20.dad": {
+    "29338-j30.dad": {
         "reused-body-differs": ["TS29.338.py#additional-serving-node-body"],
     },
-    "29388-i10.dad": {
+    "29388-j10.dad": {
         "registry-result-code-document": [
             "TS29.388.py#user-unknown-result-code-reused",
         ],
         "reused-body-differs": ["TS29.388.py#v2x-subscription-data-v4-body"],
     },
-    "32299-i00.dad": {
+    "32299-j00.dad": {
         "registry-result-code-document": [
             "TS32.299.py#feature-unsupported-result-code-reused",
         ],
@@ -2104,34 +2116,34 @@ _ACCEPTED_CORPUS_NOTES = {
         "reused-extension": ["TS32.299.py#oc-olr-extension"],
         "reused-row-mismatch": ["TS32.299.py#supported-features-charging-m"],
     },
-    "29172-i10.dad": {
+    "29172-j00.dad": {
         "registry-result-code-document": [
             "TS29.172.py#user-unknown-result-code-reused",
             "TS29.172.py#unauthorized-requesting-network-result-code-reused",
         ],
     },
-    "29173-i00.dad": {
+    "29173-j00.dad": {
         "registry-result-code-document": [
             "TS29.173.py#user-unknown-result-code-reused",
         ],
     },
-    "29212-i20.dad": {
+    "29212-j10.dad": {
         "registry-result-code-document": [
             "TS29.212.py#late-overlapping-request-result-code-reused",
             "TS29.212.py#timed-out-request-result-code-reused",
         ],
     },
-    "29215-i00.dad": {
+    "29215-j00.dad": {
         "registry-result-code-document": [
             "TS29.215.py#pending-transaction-result-code-reused",
         ],
     },
-    "29217-i00.dad": {
+    "29217-j00.dad": {
         "registry-result-code-document": [
             "TS29.217.py#pending-transaction-result-code-reused",
         ],
     },
-    "29283-i00.dad": {
+    "29283-j00.dad": {
         "registry-result-code-document": [
             "TS29.283.py#user-unknown-result-code-reused",
             "TS29.283.py#user-data-not-recognized-result-code-reused",
@@ -2146,14 +2158,14 @@ _ACCEPTED_CORPUS_NOTES = {
             "TS29.283.py#user-data-not-available-result-code-reused",
         ],
     },
-    "29329-i00.dad": {
+    "29329-j10.dad": {
         "registry-result-code-document": [
             "TS29.329.py#too-much-data-result-code-reused",
             "TS29.329.py#feature-unsupported-result-code-reused",
             "TS29.329.py#identities-dont-match-result-code-reused",
         ],
     },
-    "29330-i10.dad": {
+    "29330-j00.dad": {
         "registry-result-code-document": [
             "TS29.330.py#user-unknown-result-code-reused",
             "TS29.330.py#operation-not-allowed-result-code-reused",
@@ -2165,12 +2177,12 @@ _ACCEPTED_CORPUS_NOTES = {
             "TS29.330.py#user-data-not-available-result-code-reused",
         ],
     },
-    "29344-i10.dad": {
+    "29344-j10.dad": {
         "registry-result-code-document": [
             "TS29.344.py#user-unknown-result-code-reused",
         ],
     },
-    "29389-i00.dad": {
+    "29389-j00.dad": {
         "registry-result-code-document": [
             "TS29.389.py#user-unknown-result-code-reused",
             "TS29.389.py#unknown-v2x-subscription-result-code-reused",

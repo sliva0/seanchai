@@ -83,7 +83,9 @@ and TS 29.230 print a space; its `LCS_CLIENT` tail on TS 29.219's
 `DIAMETER_ERROR_W-DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION` for TS
 29.234's; TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`, where the dictionary
 keeps the registry's `IMPI`; and bit 0 of TS 29.212's
-`Presence-Reporting-Area-Node`, `OCS`, which the dictionary calls `PCRF`.
+`Presence-Reporting-Area-Node`, `OCS`, which the dictionary calls `PCRF`; and TS
+29.329 V19.1.0's Sh-ee codes, which list base `DIAMETER_INVALID_AVP_VALUE` at
+5004, the dictionary's `DIAMETER_ERROR_ROAMING_NOT_ALLOWED`.
 
 ## In the model
 

@@ -49,7 +49,7 @@ def test_the_record_replays_every_acceptance_as_its_module_does(books):
 
 
 def test_a_stale_recorded_acceptance_reads_as_a_stale_acceptance(books):
-    entry = next(e for e in books if e.path.stem == "29229-i10")
+    entry = next(e for e in books if e.path.stem == "29229-j10")
     stale = correction_record.RecordedDocument(
         reference="TS29.229",
         version=entry.spec.version,

@@ -25,7 +25,7 @@ from seanchai.dad import ast, parser
 _ROOT = Path(__file__).parent.parent
 _MANIFEST = _ROOT / "specifications" / "manifest.json"
 # Each committed copy, by reference and corpus tree: TS 32.299 is two,
-# `rel-18` and the pinned `rel-11`.
+# `rel-19` and the pinned `rel-11`.
 _COPIES = sorted(
     (
         ast.spec_ref(parser.parse(path.read_text(encoding="utf-8")).specification),

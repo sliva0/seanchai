@@ -205,7 +205,7 @@ def test_a_stale_record_is_refused(tmp_path):
 
 
 def test_export_prefers_definition_page_to_earlier_table_row(exported):
-    entry = next(e for e in exported.books if e.path.stem == "29272-i70")
+    entry = next(e for e in exported.books if e.path.stem == "29272-j60")
     section = next(
         s for s in entry.spec.sections if getattr(s, "name", None) == "Area-Scope"
     )
@@ -227,7 +227,7 @@ def test_export_carries_specific_release_resolution_and_diagnostics(exported):
     assert entry["target"]["document"] == "32299-bk0"
     assert entry["across_releases"]["version"] == "11.20.0"
     assert any(doc["holes"] for doc in exported.docs.values())
-    assert "TS29.272.py#area-scope-code" in exported.docs["29272-i70"]["corrections"]
+    assert "TS29.272.py#area-scope-code" in exported.docs["29272-j60"]["corrections"]
     assert all(d["source"]["local"] is None for d in exported.docs.values())
     assert all(
         e["target"] and e["target"]["section"]
@@ -238,8 +238,8 @@ def test_export_carries_specific_release_resolution_and_diagnostics(exported):
 
 def test_table_names_keep_row_locations_and_definition_targets(exported):
     for lines in (
-        exported.docs["29329-i00"]["lines"],
-        exported.raws["29329-i00"]["lines"],
+        exported.docs["29329-j10"]["lines"],
+        exported.raws["29329-j10"]["lines"],
     ):
         line = next(
             line
@@ -252,33 +252,33 @@ def test_table_names_keep_row_locations_and_definition_targets(exported):
         name = next(t for t in line["tokens"] if t["text"] == "Supported-Features")
         assert name["source"] == {
             "section": "6.3",
-            "page": 17,
+            "page": 18,
             "name": "Supported-Features",
             "row": True,
         }
-        assert name["target"] == {"document": "29229-i10", "section": "6.3.29"}
+        assert name["target"] == {"document": "29229-j10", "section": "6.3.29"}
         section = next(t for t in line["tokens"] if t["text"] == "6.3.11")
-        assert section["source"] == {"section": "6.3.11", "page": 17}
+        assert section["source"] == {"section": "6.3.11", "page": 18}
 
 
 @pytest.mark.parametrize(
     ("document", "name", "target"),
     [
         (
-            "29329-i00",
+            "29329-j10",
             "Session-Priority",
-            {"document": "29229-i10", "section": "6.3.56"},
+            {"document": "29229-j10", "section": "6.3.56"},
         ),
         (
-            "29329-i00",
+            "29329-j10",
             "Wildcarded-IMPU",
-            {"document": "29229-i10", "section": "6.3.43"},
+            {"document": "29229-j10", "section": "6.3.43"},
         ),
         ("rfc8583", "SourceID", {"document": "rfc8581", "section": "7.3"}),
         (
-            "29283-i00",
+            "29283-j00",
             "Sequence-Number",
-            {"document": "29283-i00", "section": "7.3.21"},
+            {"document": "29283-j00", "section": "7.3.21"},
         ),
     ],
 )
@@ -317,7 +317,7 @@ def test_from_cells_target_the_named_avp_and_raw_changes_are_marked(exported):
     document = next(
         d
         for d in exported.docs.values()
-        if d["reference"] == "TS29.214" and d["version"] == "18.4.0"
+        if d["reference"] == "TS29.214" and d["version"] == "19.3.0"
     )
     line = next(
         line
@@ -329,7 +329,7 @@ def test_from_cells_target_the_named_avp_and_raw_changes_are_marked(exported):
     assert reference["target"]["name"] == "3GPP-MS-TimeZone"
     assert reference["target"]["section"]
     assert exported.docs[reference["target"]["document"]]["reference"] == "TS29.061"
-    raw = exported.raws["29229-i10"]["lines"]
+    raw = exported.raws["29229-j10"]["lines"]
     renamed = [
         line
         for line in raw
@@ -351,7 +351,7 @@ def test_from_cells_target_the_named_avp_and_raw_changes_are_marked(exported):
 
 
 def test_raw_spelling_links_through_its_declared_name_correction(exported):
-    raw = exported.raws["29229-i10"]["lines"]
+    raw = exported.raws["29229-j10"]["lines"]
     tokens = [t for line in raw for t in line["tokens"] if t["text"] == "Digest-QoP"]
     assert len(tokens) == 3
     assert all(t["target"] == {"document": "rfc4590", "section": "3.8"} for t in tokens)
@@ -386,8 +386,8 @@ def test_repeated_command_names_link_to_their_own_interface(exported):
     """TS 29.212 prints CC-Request once per interface, with one spelling."""
     sections = {"5.6.2", "5a.6.2", "5b.6.4", "E.6.6.2"}
     for lines in (
-        exported.docs["29212-i20"]["lines"],
-        exported.raws["29212-i20"]["lines"],
+        exported.docs["29212-j10"]["lines"],
+        exported.raws["29212-j10"]["lines"],
     ):
         found: dict[str, list[dict]] = {}
         for line in lines:
@@ -398,7 +398,7 @@ def test_repeated_command_names_link_to_their_own_interface(exported):
         for section, targets in found.items():
             assert targets
             assert all(
-                target == {"document": "29212-i20", "section": section}
+                target == {"document": "29212-j10", "section": section}
                 for target in targets
             )
 
@@ -435,7 +435,7 @@ def test_commands_carry_the_application_their_scope_states(exported):
     entries = {
         e["target"]["section"]: e
         for e in exported.search["entries"]
-        if e["document"] == "29212-i20"
+        if e["document"] == "29212-j10"
         and e["kind"] == "command"
         and e["name"] == "CC-Request"
     }
@@ -468,7 +468,7 @@ def test_one_clause_printing_a_command_per_application_keeps_both(exported):
     identities = [
         e["identity"]
         for e in exported.search["entries"]
-        if e["document"] == "29272-i70"
+        if e["document"] == "29272-j60"
         and e["name"] == "Insert-Subscriber-Data-Request"
         and e["target"]["section"] == "7.2.9"
     ]
@@ -534,7 +534,7 @@ def test_every_document_has_its_catalog_title(exported):
 
 def test_the_source_says_what_kind_it_is(exported):
     kinds = {d["id"]: d["source"]["kind"] for d in exported.index["documents"]}
-    assert kinds["29212-i20"] == "etsi-pdf"
+    assert kinds["29212-j10"] == "etsi-pdf"
     assert kinds["es283034-020200"] == "etsi-pdf"
     assert kinds["rfc6733"] == "rfc-text"
     assert kinds["xs0057-0_v2.0"] == "other"
@@ -599,12 +599,12 @@ def test_each_section_says_what_the_file_places_there(exported):
         (found,) = (each for each in sections if each["section"] == clause)
         return found["title"]
 
-    assert titled("29229-i10", "6.1.1") == "Message User-Authorization-Request"
-    assert titled("29229-i10", "6.3.0") == "AVP Table, Reused AVPs"
-    assert titled("29229-i10", "6.3.4") == "Grouped AVP Server-Capabilities"
+    assert titled("29229-j10", "6.1.1") == "Message User-Authorization-Request"
+    assert titled("29229-j10", "6.3.0") == "AVP Table, Reused AVPs"
+    assert titled("29229-j10", "6.3.4") == "Grouped AVP Server-Capabilities"
     # One kind named once: four registries, and one message printed twice.
-    assert titled("29230-i60", "5.1") == "Registry"
-    assert titled("29272-i70", "7.2.9") == "Message Insert-Subscriber-Data-Request"
+    assert titled("29230-j30", "5.1") == "Registry"
+    assert titled("29272-j60", "7.2.9") == "Message Insert-Subscriber-Data-Request"
     for doc in exported.docs.values():
         assert all(each["title"] for each in doc["sections"]), doc["id"]
 
@@ -615,8 +615,8 @@ def test_a_clause_only_table_rows_name_takes_its_first_rows_name(exported):
         (found,) = (each for each in sections if each["section"] == clause)
         return found["title"]
 
-    assert titled("29229-i10", "6.3.75") == "AVP PCSCF-FQDN"
-    assert titled("29061-i10", "16.4.7") == "AVP 3GPP-IMSI and 37 more"
+    assert titled("29229-j10", "6.3.75") == "AVP PCSCF-FQDN"
+    assert titled("29061-j10", "16.4.7") == "AVP 3GPP-IMSI and 37 more"
 
 
 def test_sections_run_in_document_order(exported):
@@ -767,7 +767,7 @@ def test_the_pin_is_sorted_with_one_file_per_line():
     names = [line.split("  ", 1)[1] for line in lines]
     assert names == sorted(names)
     assert "index.json" in names
-    assert "documents/29212-i20.raw.json" in names
+    assert "documents/29212-j10.raw.json" in names
 
 
 def test_local_export_copies_matching_pdfs_and_rejects_missing_ones(tmp_path):
@@ -1181,9 +1181,9 @@ def test_a_value_table_s_names_are_searchable_and_link_to_their_clauses(exported
     code = next(
         e
         for e in entries
-        if e["document"] == "29229-i10" and e["name"] == "DIAMETER_ERROR_USER_UNKNOWN"
+        if e["document"] == "29229-j10" and e["name"] == "DIAMETER_ERROR_USER_UNKNOWN"
     )
-    assert code["target"] == {"document": "29229-i10", "section": "6.2.2.1"}
+    assert code["target"] == {"document": "29229-j10", "section": "6.2.2.1"}
     assert code["identity"] == {
         "kind": "value",
         "value_kind": "result-codes",
@@ -1195,12 +1195,12 @@ def test_a_value_table_s_names_are_searchable_and_link_to_their_clauses(exported
     feature = next(
         e
         for e in entries
-        if e["document"] == "29272-i70" and e["name"] == "ODB-all-APN"
+        if e["document"] == "29272-j60" and e["name"] == "ODB-all-APN"
     )
     assert feature["identity"]["application"] == "S6a/S6d"
     assert feature["identity"]["feature_list_id"] == 1
 
-    document = exported.docs["29272-i70"]
+    document = exported.docs["29272-j60"]
     assert any(
         section["section"] == "7.3.7" and "Value Table ULR-Flags" in section["title"]
         for section in document["sections"]
@@ -1213,13 +1213,13 @@ def test_a_value_table_s_names_are_searchable_and_link_to_their_clauses(exported
         for token in line["tokens"]
         if token["text"] == "ULR-Flags"
     )
-    assert avp["target"] == {"document": "29272-i70", "section": "7.3.7"}
+    assert avp["target"] == {"document": "29272-j60", "section": "7.3.7"}
     assert any(
         token["text"] == "Single-Registration-Indication"
-        and token.get("target") == {"document": "29272-i70", "section": "7.3.7"}
+        and token.get("target") == {"document": "29272-j60", "section": "7.3.7"}
         for token in tokens
     )
-    cx = exported.docs["29229-i10"]
+    cx = exported.docs["29229-j10"]
     row = next(
         line
         for line in cx["lines"]
