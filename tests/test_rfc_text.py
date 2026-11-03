@@ -824,14 +824,27 @@ def test_result_codes_are_read_from_the_result_code_clause(tmp_path):
             "   DIAMETER_NOT_THE_CLAUSE 1001\n\n"
             "9.  Result Code AVP Values\n\n"
             "      DIAMETER_ERROR_EAP_CODE_UNKNOWN (5048)\n\n"
-            "   DIAMETER_SUCCESS_RELOCATE_HA (Status Code 2009)\n"
+            "   DIAMETER_SUCCESS_RELOCATE_HA (Status Code 2009)\n\n"
+            "10.  Extension to the Result-Code AVP Values\n\n"
+            "   o  DIAMETER_USER_NAME_REQUIRED 4013\n\n"
+            "11.  DIAMETER_REALM_REDIRECT_INDICATION Protocol Error Code\n\n"
+            "   The DIAMETER_REALM_REDIRECT_INDICATION (3011) Protocol error code\n"
         ),
         encoding="utf-8",
     )
 
     spec = rfc_text.extract(path)
 
-    first, second = [s for s in spec.sections if isinstance(s, ast.ValueTable)]
+    first, second, third, fourth = [
+        s for s in spec.sections if isinstance(s, ast.ValueTable)
+    ]
+    assert [(r.name, r.value) for r in third.rows] == [
+        ("DIAMETER_USER_NAME_REQUIRED", 4013)
+    ]
+    assert fourth.source.section == "11"
+    assert fourth.rows == (
+        ast.ValueRow(name="DIAMETER_REALM_REDIRECT_INDICATION", value=3011),
+    )
     assert (first.avp, first.kind, first.source.section) == (
         "Result-Code",
         ast.ValueKind.RESULT_CODES,

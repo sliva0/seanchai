@@ -2113,15 +2113,27 @@ def _prose_avp_origins(
 
 
 # The clause holding an RFC's result codes: RFC 6733 clause 7.1 "Result-Code AVP",
-# RFC 4006 clause 9 "Result Code AVP Values". Spelled out, since a code's other
-# appearances are examples and IANA tables.
-_RESULT_CLAUSE_RE = re.compile(r"Result[- ]Code(?: AVP)?(?: [Vv]alues)?")
+# RFC 4006 clause 9 "Result Code AVP Values", RFC 4740 clause 10.1 "Extension to
+# the Result-Code AVP Values", RFC 6736 clause 8.2 "Additional Result-Code AVP
+# Values". Spelled out, since a code's other appearances are examples and IANA
+# tables.
+_RESULT_CLAUSE_RE = re.compile(
+    r"(?:Extension to the |Additional )?Result[- ]Code(?: AVP)?(?: [Vv]alues)?"
+)
+_RESULT_NAME = r"[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+"
 # "DIAMETER_SUCCESS 2001" with any run of spaces (RFC 6733, 4004, 4006), RFC 6942's
-# "DIAMETER_ERROR_EAP_CODE_UNKNOWN (5048)" and RFC 5778's "(Status Code 2009)". An
-# underscore tells a name from a word. RFC 6733's ELECTION_LOST has no DIAMETER_.
+# "DIAMETER_ERROR_EAP_CODE_UNKNOWN (5048)", RFC 5778's "(Status Code 2009)" and RFC
+# 4740's list items, "o  DIAMETER_FIRST_REGISTRATION 2003". An underscore tells a
+# name from a word. RFC 6733's ELECTION_LOST has no DIAMETER_.
 _RESULT_VALUE_RE = re.compile(
-    r"\s*(?P<name>[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)"
+    rf"\s*(?:o\s+)?(?P<name>{_RESULT_NAME})"
     r"\s+(?:(?P<value>\d+)|\((?:Status Code )?(?P<parenthesized>\d+)\))"
+)
+# RFC 7075 clause 3.4 gives its one code a clause of its own, headed with its name
+# and stating the number in its first sentence.
+_RESULT_NAME_CLAUSE_RE = re.compile(rf"(?P<name>{_RESULT_NAME}) Protocol Error Code")
+_RESULT_NAME_SENTENCE_RE = re.compile(
+    rf"The (?P<name>{_RESULT_NAME}) \((?P<value>\d+)\)"
 )
 
 
@@ -2134,6 +2146,30 @@ def _result_tables(sections: list[_DocSection]) -> list[ast.ValueTable]:
     while position < len(sections):
         root = sections[position]
         position += 1
+        if named := _RESULT_NAME_CLAUSE_RE.fullmatch(root.title):
+            sentence = next(
+                (
+                    match
+                    for text in root.texts
+                    if (match := _RESULT_NAME_SENTENCE_RE.search(text))
+                    and match["name"] == named["name"]
+                ),
+                None,
+            )
+            if sentence is not None:
+                tables.append(
+                    ast.ValueTable(
+                        avp="Result-Code",
+                        kind=ast.ValueKind.RESULT_CODES,
+                        source=ast.SourceRef(section=root.number, page=root.page),
+                        rows=(
+                            ast.ValueRow(
+                                name=sentence["name"], value=int(sentence["value"])
+                            ),
+                        ),
+                    )
+                )
+            continue
         if not _RESULT_CLAUSE_RE.fullmatch(root.title):
             continue
         tree = [root]
