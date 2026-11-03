@@ -667,6 +667,10 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         # 29.154's External-Group-Identifier.
         "rfc4004.raw": 0,
         "rfc4004": 3,
+        "rfc5866.raw": 0,
+        "rfc5866": 1,
+        # Clause 5.1 extends RFC 5447's MIP6-Agent-Info.
+        "rfc5779": 1,
         "29345-i00.raw": 0,
         "29345-i00": 2,
         "29154-i00.raw": 0,
@@ -1858,6 +1862,10 @@ _STANDING_CORPUS_NOTES = {
             "MIP-MN-to-HA-SPI",
         ],
     },
+    "rfc5779.dad": {"reused-extension": ["MIP6-Agent-Info"]},
+    "rfc5866.dad": {"undefined-avp": ["Authorization-Session-Volume"]},
+    "rfc6736.dad": {"origin-not-in-corpus": ["RFC4675"]},
+    "rfc6738.dad": {"reused-row-mismatch": ["Key-Lifetime"]},
 }
 
 

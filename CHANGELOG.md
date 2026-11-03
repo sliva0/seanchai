@@ -8,6 +8,15 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- The RFC extractor fails on a line in an ABNF body that is no member, where it
+  stopped reading in silence, and keeps a lone `…` or `...` as a comment behind
+  `elided-members`. RFC 5778's DER and DEA and RFC 6738's commands gain the
+  members they lost. A command abbreviation may have six letters, as RFC 6738's
+  IKESKR does.
+- The RFC extractor reads tables boxing every column, stacked captions, codes
+  and flags in two tables, tables of re-used AVPs, and rules under a prose title
+  a table row cites. RFC 4740, 5624, 5779, 5866, 6736, 6737, 6738 and 7075 join
+  the corpus, and RFC 5777 gains `QoS-Capability`'s body.
 - `Model.definition`, `find`, `identified`, `avps()` and `seanchai show` know an
   identity only an older copy holds, where a citation reaches it, so every
   identity `seanchai dictionary` writes resolves.
