@@ -644,3 +644,35 @@ def test_a_note_must_name_the_row_citing_it(tmp_path):
         _read(tmp_path, _NOTED_TABLE + note, "note-avp-origins")
 
 
+def _bulleted(*values: str) -> str:
+    return (
+        "9.  AVPs\n\n"
+        + _CODES_TABLE.replace("SIP-Server-URI ", "Scheme         ")
+        .replace("Section 9.2  ", "Section 9.1  ")
+        .replace("UTF8S", "E    ")
+        + "9.1.  Scheme AVP\n\n"
+        + "".join(f"   {value}\n" for value in values)
+    )
+
+
+def test_bulleted_enum_values_keep_only_the_name_and_number(tmp_path):
+    """RFC 4740 clause 9.5.1, whose description wraps onto "RFC 2617 [RFC2617]
+    Section 3.2.1", which reads as a value but for the citation it is."""
+    body = _bulleted(
+        "o  DIGEST (0) to indicate HTTP Digest authentication as specified in",
+        "   RFC 2617 [RFC2617] Section 3.2.1.  Derivative work is also",
+        "o  NO_ASSIGNMENT (1)",
+    )
+    spec = _read(tmp_path, body, "type-short-forms", "bulleted-enum-values")
+    values = _of(spec, ast.EnumeratedAvp)[0].values
+    assert [(v.name, v.value) for v in values if isinstance(v, ast.EnumValue)] == [
+        ("DIGEST", 0),
+        ("NO_ASSIGNMENT", 1),
+    ]
+
+
+def test_bulleted_enum_values_need_their_quirk(tmp_path):
+    spec = _read(tmp_path, _bulleted("o  DIGEST (0)"), "type-short-forms")
+    assert not _of(spec, ast.EnumeratedAvp)
+
+

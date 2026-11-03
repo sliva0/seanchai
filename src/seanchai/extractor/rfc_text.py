@@ -106,8 +106,10 @@ _ABNF_LINE_RE = re.compile(
 # Names are all-caps in every collected RFC, and requiring that is what keeps
 # prose lines out; a wrapped description line never has digits as its second
 # token, so continuations cannot match.
+# "RFC 2617" opening a wrapped line is a citation, whatever follows it (RFC 4740
+# clause 9.5.1: "RFC 2617 [RFC2617] Section 3.2.1.").
 _ENUM_VALUE_RE = re.compile(
-    r"^(?P<name>[A-Z][A-Z0-9_-]*)\s+(?P<value>\d+):?(?:\s+\S.*)?$"
+    r"^(?!RFC\s)(?P<name>[A-Z][A-Z0-9_-]*)\s+(?P<value>\d+):?(?:\s+\S.*)?$"
 )
 _ENUM_VALUE_FIRST_RE = re.compile(
     r"^(?P<value>\d+)\s+(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)"
@@ -364,6 +366,10 @@ QUIRKS: dict[str, str] = {
         "read a table's rows whose Defined cell cites 'Note 1' as re-used rows,"
         " their origin from the note's 'are defined in [RFC...]' (RFC 6738"
         " clause 8)"
+    ),
+    "bulleted-enum-values": (
+        "read 'o  NAME (n)' list items as enum values, with what follows on the"
+        " line as description (RFC 4740 clauses 9.4-9.13)"
     ),
     "ragged-separator": (
         "accept a horizontal rule with a stray space inside it as box"
@@ -1850,6 +1856,12 @@ def _quirk_enum_value(text: str, quirks: sources.Quirks | None) -> ast.EnumValue
         match := re.fullmatch(rf"(?P<name>{_WORDED_NAME}) {{2,}}(?P<value>\d+)", text)
     ):
         fired = ("worded-enum-values",)
+    elif quirks.enabled("bulleted-enum-values") and (
+        match := re.fullmatch(
+            r"o\s+(?P<name>[A-Z][A-Z0-9_-]*) \((?P<value>\d+)\)(?:\s+\S.*)?", text
+        )
+    ):
+        fired = ("bulleted-enum-values",)
     elif quirks.enabled("parenthesized-value-first") and (
         match := re.fullmatch(
             r"\((?P<value>\d+)\): (?P<name>[A-Za-z][A-Za-z0-9_-]*)", text
