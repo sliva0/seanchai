@@ -25,3 +25,11 @@ Nothing has been published to PyPI yet.
   missing.
 - `seanchai show`, `commands` and `dictionary`, for a stack not in Python
   (docs/consumers.md). `Model.canonical` is public.
+- `lint` and `format` take directories, leaving out the raw mirror unless
+  `--raw`, and `lint` with none reads the installed corpus. A file that does not
+  parse is named by `lint` and `correct` too.
+- A missing `specifications/` or Wireshark dictionary says which `seanchai
+  download` to run. `regenerate --manifest`, `crosscheck --dictionary`, `export
+  --specifications` and `--dictionary` given a missing path exit 1 saying so,
+  and `export --include-pdfs` without `--specifications` is a usage error.
+- Help shows every default the same way.

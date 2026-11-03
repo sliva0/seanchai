@@ -686,7 +686,10 @@ class _Sources:
         self, output: Path, specifications: Path | None, include_pdfs: bool
     ) -> None:
         if include_pdfs and (specifications is None or not specifications.is_dir()):
-            raise CorpusError("including PDFs needs a specifications directory")
+            raise CorpusError(
+                "including PDFs needs a specifications directory: run"
+                " `seanchai download --only 3gpp`"
+            )
         self._output = output
         self._specifications = specifications
         self._include_pdfs = include_pdfs
@@ -716,7 +719,10 @@ class _Sources:
         if self._include_pdfs and urlparse(link).path.lower().endswith(".pdf"):
             candidates = self._pdfs.get(unquote(urlparse(link).path.rsplit("/", 1)[-1]))
             if not candidates:
-                raise CorpusError(f"{identifier}: no downloaded PDF matches {link}")
+                raise CorpusError(
+                    f"{identifier}: no downloaded PDF matches {link}: run"
+                    " `seanchai download --only 3gpp`"
+                )
             if len({hashlib.sha256(p.read_bytes()).digest() for p in candidates}) > 1:
                 raise CorpusError(f"{identifier}: conflicting PDF copies for {link}")
             local = self._copy(candidates[0], f"{identifier}.pdf")

@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -125,7 +126,7 @@ def test_correct_command_reports_a_malformed_dad_as_an_error_not_a_traceback(
             "--corrections",
             str(_corrections_dir(tmp_path)),
         ]
-        message = "error: line 2:"
+        message = f"error: {broken}: line 2:"
     else:
         broken = tmp_path / "not-really.docx"
         broken.write_bytes(b"this is not a Word document")
@@ -841,6 +842,347 @@ def test_an_exit_keeps_its_status_and_a_clean_run_exits_zero(tmp_path):
     runner = CliRunner()
     assert runner.invoke(main, ["format", "--check", str(copied)]).exit_code == 1
     assert runner.invoke(main, ["format", str(copied)]).exit_code == 0
+
+
+def _options_and_commands():
+    for name, command in main.commands.items():
+        yield name, command
+        for parameter in command.params:
+            if isinstance(parameter, click.Option):
+                yield f"{name} {parameter.opts[0]}", parameter
+
+
+def test_every_command_and_option_says_what_it_is_for():
+    missing = [
+        name for name, each in _options_and_commands() if not (each.help or "").strip()
+    ]
+
+    assert not missing
+
+
+def test_no_help_text_spells_its_own_default():
+    """`show_default` on the group shows them, one way."""
+    spelled = [
+        name
+        for name, each in _options_and_commands()
+        if isinstance(each, click.Option)
+        and re.search(r"[(\[]default\b|\bdefault:", each.help or "", re.IGNORECASE)
+    ]
+
+    assert not spelled
+
+
+@pytest.mark.parametrize(
+    ("arguments", "shown"),
+    [
+        (["download", "--help"], "[default: specifications]"),
+        (["download", "--help"], "[default: 18]"),
+        (["download", "--help"], "[default: pdfs]"),
+        (["extract", "--help"], "[default: (stdout)]"),
+        (["lint", "--help"], "[default: full]"),
+        (["crosscheck", "--help"], "specifications/wireshark]"),
+    ],
+)
+def test_help_shows_the_defaults(arguments, shown):
+    result = CliRunner().invoke(main, arguments, terminal_width=200)
+
+    assert result.exit_code == 0
+    assert shown in result.stdout
+
+
+def _malformed(tmp_path) -> Path:
+    path = tmp_path / "bad.dad"
+    path.write_text("not a dad file\n", encoding="utf-8")
+    return path
+
+
+def _corpus_directory(tmp_path) -> Path:
+    """A directory shaped as the corpus is: a file, and its raw mirror."""
+    root = tmp_path / "corpus"
+    (root / "rfc").mkdir(parents=True)
+    (root / "raw" / "rfc").mkdir(parents=True)
+    text = (_CORPUS_DIR / "rfc" / "rfc6733.dad").read_text("utf-8")
+    (root / "rfc" / "rfc6733.dad").write_text(text, "utf-8")
+    (root / "raw" / "rfc" / "rfc6733.raw.dad").write_text(text, "utf-8")
+    return root
+
+
+@pytest.mark.parametrize("command", ["lint", "format", "correct"])
+def test_a_file_that_does_not_parse_is_named(tmp_path, command):
+    bad = _malformed(tmp_path)
+    arguments = [command, str(bad)]
+    if command == "correct":
+        arguments += ["--corrections", str(tmp_path)]
+
+    result = CliRunner().invoke(main, arguments)
+
+    assert result.exit_code == 1, result.output
+    assert result.stderr.startswith(f"error: {bad}: ")
+    assert not result.stdout
+
+
+def test_a_file_that_is_no_text_is_named(tmp_path):
+    binary = tmp_path / "binary.dad"
+    binary.write_bytes(b"\xff\xfe\x00")
+
+    result = CliRunner().invoke(main, ["lint", str(binary)])
+
+    assert result.exit_code == 1, result.output
+    assert result.stderr.startswith(f"error: {binary}: ")
+
+
+def test_lint_recurses_into_a_directory_leaving_the_raw_mirror_out(tmp_path):
+    root = _corpus_directory(tmp_path)
+    (root / "rfc" / "broken.raw.dad").write_text("nope\n", "utf-8")
+
+    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(root)])
+    assert result.exit_code == 0, result.output
+
+    (root / "raw" / "rfc" / "broken.raw.dad").write_text("nope\n", "utf-8")
+    asked = CliRunner().invoke(main, ["lint", "--no-corpus", "--raw", str(root)])
+    assert asked.exit_code == 1, asked.output
+    assert "broken.raw.dad" in asked.stderr
+
+
+def test_naming_the_raw_mirror_is_asking_for_it(tmp_path):
+    root = _corpus_directory(tmp_path)
+    (root / "raw" / "rfc" / "broken.raw.dad").write_text("nope\n", "utf-8")
+
+    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(root / "raw")])
+
+    assert result.exit_code == 1, result.output
+    assert "broken.raw.dad" in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("arguments", "status", "says"),
+    [
+        (["lint"], 1, "holds no .dad files"),
+        (["format"], 1, "holds no .dad files"),
+        (["lint", "--raw"], 1, "holds no .dad files"),
+    ],
+)
+def test_a_directory_with_nothing_to_read_is_refused(tmp_path, arguments, status, says):
+    (tmp_path / "empty").mkdir()
+
+    result = CliRunner().invoke(main, [*arguments, str(tmp_path / "empty")])
+
+    assert result.exit_code == status, result.output
+    assert says in result.stderr
+
+
+def test_a_directory_holding_only_raw_files_says_how_to_read_them(tmp_path):
+    root = tmp_path / "rfc"
+    root.mkdir()
+    (root / "rfc6733.raw.dad").write_text("", "utf-8")
+
+    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(root)])
+
+    assert result.exit_code == 1
+    assert "--raw reads its raw files" in result.stderr
+
+
+def test_a_file_named_twice_counts_once(tmp_path):
+    root = _corpus_directory(tmp_path)
+    source = root / "rfc" / "rfc6733.dad"
+
+    result = CliRunner().invoke(main, ["format", "--check", str(root), str(source)])
+
+    assert result.exit_code == 0, result.output
+    assert "would reformat 0 of 1 files" in result.stderr
+
+
+def test_format_rewrites_a_directory_and_leaves_its_raw_mirror_alone(tmp_path):
+    root = _corpus_directory(tmp_path)
+    corrected = root / "rfc" / "rfc6733.dad"
+    mirror = root / "raw" / "rfc" / "rfc6733.raw.dad"
+    corrected.write_text(corrected.read_text("utf-8") + "\n\n", "utf-8")
+    mirror.write_text(mirror.read_text("utf-8") + "\n\n", "utf-8")
+    before = mirror.read_text("utf-8")
+
+    result = CliRunner().invoke(main, ["format", str(root)])
+
+    assert result.exit_code == 0, result.output
+    assert "reformatted 1 of 1 files" in result.stderr
+    assert mirror.read_text("utf-8") == before
+    assert not corrected.read_text("utf-8").endswith("\n\n")
+
+    asked = CliRunner().invoke(main, ["format", "--raw", str(root)])
+    assert "reformatted 1 of 2 files" in asked.stderr
+    assert not mirror.read_text("utf-8").endswith("\n\n")
+
+
+def test_lint_with_nothing_named_reads_the_installed_corpus(monkeypatch):
+    monkeypatch.chdir(Path(__file__).parent.parent)
+
+    named = CliRunner().invoke(
+        main, ["lint", "--output-format", "concise", "--no-notes"]
+    )
+    whole = CliRunner().invoke(
+        main,
+        ["lint", "--output-format", "concise", "--no-notes", str(_CORPUS_DIR)],
+    )
+
+    assert named.exit_code == whole.exit_code == 0, named.output
+    assert named.stdout == whole.stdout
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["regenerate", "--manifest", "absent/manifest.json"],
+        ["regenerate"],
+    ],
+)
+def test_regenerate_says_to_download_what_it_lacks(tmp_path, monkeypatch, arguments):
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(main, arguments)
+
+    assert result.exit_code == 1, result.output
+    assert "does not exist: run `seanchai download`" in result.stderr
+
+
+def test_crosscheck_says_a_dictionary_is_all_it_needs(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(main, ["crosscheck"])
+
+    assert result.exit_code == 1, result.output
+    assert "run `seanchai download --only wireshark`" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("arguments", "status", "says"),
+    [
+        (["--include-pdfs"], 2, "--include-pdfs needs --specifications"),
+        (
+            ["--include-pdfs", "--specifications", "absent"],
+            1,
+            "run `seanchai download --only 3gpp`",
+        ),
+        (["--specifications", "absent"], 1, "run `seanchai download --only rfc`"),
+        (["--dictionary", "absent"], 1, "run `seanchai download --only wireshark`"),
+    ],
+)
+def test_export_says_to_download_what_it_lacks(
+    tmp_path, monkeypatch, arguments, status, says
+):
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(main, ["export", "-o", "out", *arguments])
+
+    assert result.exit_code == status, result.output
+    assert says in result.stderr
+    assert not (tmp_path / "out").exists()
+
+
+def test_export_with_pdfs_says_to_download_the_ones_it_lacks(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "specifications").mkdir()
+
+    result = CliRunner().invoke(
+        main,
+        ["export", "-o", "out", "--include-pdfs", "--specifications", "specifications"],
+    )
+
+    assert result.exit_code == 1, result.output
+    assert "run `seanchai download --only 3gpp`" in result.stderr
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        [],
+        ["no-such-command"],
+        ["--no-such-option"],
+        ["lint", "--no-such-option"],
+        ["lint", "/no/such/file.dad"],
+        ["format"],
+        ["lint", "--corpus", ".", "--no-corpus"],
+        ["correct", "/no/such/file.dad", "--corrections", "."],
+        ["download", "--spec", "TS29.272"],
+        ["download", "--only", "pdfs"],
+        ["export"],
+        ["show"],
+        ["show", "1:x"],
+        ["show", "Session-Id", "--version", "1"],
+        ["commands", "--application", "cx"],
+        ["dictionary"],
+    ],
+    ids=" ".join,
+)
+def test_a_usage_error_exits_2(arguments):
+    result = CliRunner().invoke(main, arguments)
+
+    assert result.exit_code == 2, result.output
+    assert "Traceback" not in result.output
+
+
+def test_a_bare_command_prints_its_help_and_no_error():
+    result = CliRunner().invoke(main, [])
+
+    assert result.exit_code == 2
+    assert "Commands" in result.stderr
+    assert "error:" not in result.stderr
+
+
+def test_a_finding_or_an_error_exits_1(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    unformatted = tmp_path / "unformatted.dad"
+    unformatted.write_text(
+        (_CORPUS_DIR / "rfc" / "rfc6733.dad").read_text("utf-8") + "\n\n", "utf-8"
+    )
+    conflicted = tmp_path / "conflicted.dad"
+    conflicted.write_text(
+        "; Specification: RFC 9999\n"
+        "; Vendor-ID: 0\n"
+        "\n"
+        "\n"
+        "; Type: AVP Table\n"
+        "; Section: 1\n"
+        "; Columns: Name  Code  Type    Must  May  S.not  M.not\n"
+        "           One   1     Float32 M     -    -      V\n"
+        "           Two   1     Float32 M     -    -      V\n",
+        "utf-8",
+    )
+
+    for arguments in (
+        ["format", "--check", str(unformatted)],
+        ["lint", "--no-corpus", str(conflicted)],
+        ["show", "no-such-avp"],
+        ["commands", "--application", "9"],
+    ):
+        result = CliRunner().invoke(main, arguments)
+        assert result.exit_code == 1, (arguments, result.output)
+
+
+def test_notes_and_crosscheck_findings_are_no_failure(tmp_path, monkeypatch):
+    """A report for a reader with the documents open, not a verdict
+    (docs/oracle.md), so the one kind of finding exiting 0."""
+    monkeypatch.chdir(tmp_path)
+    dictionary = tmp_path / "dictionary"
+    dictionary.mkdir()
+    (dictionary / "dictionary.xml").write_text(
+        '<?xml version="1.0"?><dictionary><base name="base">'
+        '<avp name="Renamed" code="263"><type type-name="UTF8String"/></avp>'
+        "</base></dictionary>",
+        "utf-8",
+    )
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "crosscheck",
+            "--dictionary",
+            str(dictionary),
+            str(_CORPUS_DIR / "rfc" / "rfc6733.dad"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Session-Id" in result.stdout
 
 
 def test_version_names_the_installed_library():

@@ -16,7 +16,7 @@ import contextlib
 import difflib
 import json
 import sys
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -108,6 +108,10 @@ class _Group(click.Group):
             # Non-standalone `main` returns an `Exit`'s code as its value, and
             # no command here returns anything else.
             status = super().main(*args, standalone_mode=False, **extra)
+        except click.exceptions.NoArgsIsHelpError as error:
+            # Its message is the help, which is no error to prefix.
+            click.echo(error.format_message(), err=True)
+            sys.exit(error.exit_code)
         except click.UsageError as error:
             _show_usage_error(error)
             sys.exit(error.exit_code)
@@ -129,6 +133,55 @@ def reported() -> Iterator[None]:
         raise click.ClickException(str(error)) from None
 
 
+@contextlib.contextmanager
+def _naming(source: Path) -> Iterator[None]:
+    """A `.dad` file that does not parse, or is no text, as an error naming it."""
+    from .dad.parser import DadParseError
+
+    try:
+        yield
+    except (DadParseError, UnicodeDecodeError) as error:
+        raise click.ClickException(f"{source}: {error}") from None
+
+
+def _dad_files(sources: Iterable[Path], *, raw: bool = False) -> list[Path]:
+    """The files `sources` name, a directory standing for the `.dad` files under
+    it, and a file named twice counting once. A directory's raw mirror is left
+    out unless `raw`, as the corpus loader leaves it out; naming the mirror
+    itself is asking for it."""
+    files: dict[Path, None] = {}
+    for source in sources:
+        if not source.is_dir():
+            files[source] = None
+            continue
+        found = sorted(source.rglob("*.dad"))
+        kept = (
+            found
+            if raw or source.name == "raw"
+            else [
+                path
+                for path in found
+                if not path.name.endswith(".raw.dad")
+                and "raw" not in path.relative_to(source).parts
+            ]
+        )
+        if not kept:
+            hint = "; --raw reads its raw files" if found else ""
+            raise click.ClickException(f"{source} holds no .dad files{hint}")
+        files.update(dict.fromkeys(kept))
+    return list(files)
+
+
+def _need_dictionary(directory: Path) -> None:
+    """Refuse a Wireshark dictionary directory that holds none, saying where one
+    comes from: all `crosscheck` and the export's names need of a download."""
+    if not (directory / "dictionary.xml").is_file():
+        raise click.ClickException(
+            f"{directory} holds no Wireshark dictionary: run"
+            " `seanchai download --only wireshark`"
+        )
+
+
 def _require_extract() -> None:
     """Refuse a command reading source documents without `seanchai[extract]`,
     before it does anything else."""
@@ -138,7 +191,7 @@ def _require_extract() -> None:
         require_extra()
 
 
-@click.group(cls=_Group)
+@click.group(cls=_Group, context_settings={"show_default": True})
 @click.version_option(package_name="seanchai")
 def main() -> None:
     """Seanchaí: Diameter specifications as reviewable `.dad` files."""
@@ -163,10 +216,10 @@ def main() -> None:
 )
 @click.option(
     "--dictionary",
-    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    type=click.Path(file_okay=False, path_type=Path),
     help="Wireshark's Diameter dictionary, for its AVP names in the search index:"
-    " specifications/wireshark after `seanchai download`. Without it the names"
-    " are left out.",
+    " specifications/wireshark after `seanchai download --only wireshark`. Without"
+    " it the names are left out.",
 )
 @click.option(
     "--corrections",
@@ -177,7 +230,7 @@ def main() -> None:
 )
 @click.option(
     "--specifications",
-    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    type=click.Path(file_okay=False, path_type=Path),
     help="A `seanchai download` directory. RFC texts found there are copied into"
     " the export; --include-pdfs reads it too.",
 )
@@ -220,6 +273,17 @@ def export_command(
     from .corpus import Corpus
     from .export import export_corpus
 
+    if include_pdfs and specifications is None:
+        raise click.UsageError(
+            "--include-pdfs needs --specifications, a `seanchai download` directory"
+        )
+    if dictionary is not None:
+        _need_dictionary(dictionary)
+    if specifications is not None and not specifications.is_dir():
+        fetch = "--only 3gpp" if include_pdfs else "--only rfc"
+        raise click.ClickException(
+            f"{specifications} does not exist: run `seanchai download {fetch}`"
+        )
     with reported():
         try:
             books = Corpus.load(corpus_paths) if corpus_paths else Corpus.installed()
@@ -567,8 +631,8 @@ def dictionary_command(
 @click.option(
     "--sources",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with source-declaration TOML files — input patches and"
-    " quirks (default: ./edits/sources if present).",
+    show_default="./edits/sources, if present",
+    help="Directory with source-declaration TOML files — input patches and quirks.",
 )
 @click.option(
     "--corrections",
@@ -581,7 +645,8 @@ def dictionary_command(
     "-o",
     "--output",
     type=click.Path(dir_okay=False, path_type=Path),
-    help="Output .dad path (default: stdout).",
+    show_default="stdout",
+    help="Output .dad path.",
 )
 def extract(
     docx: Path,
@@ -628,8 +693,8 @@ def extract(
 @click.option(
     "--sources",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with source-declaration TOML files — input patches and"
-    " quirks (default: ./edits/sources if present).",
+    show_default="./edits/sources, if present",
+    help="Directory with source-declaration TOML files — input patches and quirks.",
 )
 @click.option(
     "--corrections",
@@ -642,7 +707,8 @@ def extract(
     "-o",
     "--output",
     type=click.Path(dir_okay=False, path_type=Path),
-    help="Output .dad path (default: stdout).",
+    show_default="stdout",
+    help="Output .dad path.",
 )
 def extract_rfc(
     text: Path,
@@ -685,14 +751,12 @@ def extract_rfc(
     "--manifest",
     type=click.Path(dir_okay=False, path_type=Path),
     default=Path("specifications") / "manifest.json",
-    show_default=True,
     help="The downloader's manifest; its files are the sources.",
 )
 @click.option(
     "--corpus",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORPUS,
-    show_default=True,
     help="The committed corpus: decides which specifications to rebuild."
     " Defaulted for the repository's own workspace copy, never an installed one.",
 )
@@ -700,20 +764,19 @@ def extract_rfc(
     "-o",
     "--output",
     type=click.Path(file_okay=False, path_type=Path),
-    help="Where to write (default: the corpus itself).",
+    show_default="the corpus itself",
+    help="Where to write.",
 )
 @click.option(
     "--sources",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_SOURCES,
-    show_default=True,
     help="Directory with source-declaration TOML files.",
 )
 @click.option(
     "--corrections",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORRECTIONS,
-    show_default=True,
     help="Directory with per-spec correction modules. Defaulted here, unlike"
     " extract's and correct's, because this one exists to rebuild the repository's"
     " own corpus from its own edit layers.",
@@ -722,7 +785,6 @@ def extract_rfc(
     "--transcriptions",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_TRANSCRIPTIONS,
-    show_default=True,
     help="Directory with hand transcriptions of documents no extractor reads.",
 )
 @click.option(
@@ -863,7 +925,8 @@ def _echo_outcome(outcome) -> None:
     "-o",
     "--output",
     type=click.Path(dir_okay=False, path_type=Path),
-    help="Output .dad path (default: stdout).",
+    show_default="stdout",
+    help="Output .dad path.",
 )
 def correct(source: Path, corrections: Path, output: Path | None) -> None:
     """Apply a specification's corrections to a raw `.dad` file.
@@ -887,7 +950,9 @@ def correct(source: Path, corrections: Path, output: Path | None) -> None:
         # spec title with a non-ASCII character survives the round trip.
         # The raw file's own comments — struck members commented out — move
         # with their lines.
-        spec, comments = parser.parse_with_comments(source.read_text(encoding="utf-8"))
+        with _naming(source):
+            text = source.read_text(encoding="utf-8")
+            spec, comments = parser.parse_with_comments(text)
         corrected, notes = _correct(spec, comments, corrections, required=True)
     _write(corrected, output, notes)
 
@@ -931,7 +996,7 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
     "sources",
     nargs=-1,
     required=True,
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    type=click.Path(exists=True, path_type=Path),
 )
 @click.option(
     "--check",
@@ -939,11 +1004,18 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
     help="Print a diff for each file not in canonical form instead of"
     " rewriting it, and exit non-zero if there is one.",
 )
-def format_command(sources: tuple[Path, ...], check: bool) -> None:
+@click.option(
+    "--raw",
+    is_flag=True,
+    help="Also read the raw files under a directory named in SOURCES.",
+)
+def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
     """Rewrite `.dad` files in canonical form, keeping their `;;` comments.
 
-    Every file is parsed before any is written, so one that does not parse
-    leaves all of them as they were. A trailing comment stays on its line,
+    SOURCES are files or directories, a directory standing for the `.dad` files
+    under it, less its raw mirror unless --raw. Every file is parsed before any
+    is written, so one that does not parse leaves all of them as they were. A
+    trailing comment stays on its line,
     a whole-line comment stays before the line that followed it, and a
     block of comments stays before the section that followed it.
     """
@@ -951,16 +1023,15 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
 
     from .dad import formatter, parser
 
+    files = _dad_files(sources, raw=raw)
     changed: list[tuple[Path, str, str]] = []
-    for source in sources:
+    for source in files:
         # Untranslated both ways: canonical form ends lines with "\n" alone,
         # and a file with "\r\n" endings is one to rewrite, not one that
         # reads as canonical because the newlines were translated away.
-        text = source.read_text(encoding="utf-8", newline="")
-        try:
+        with _naming(source):
+            text = source.read_text(encoding="utf-8", newline="")
             spec, comments = parser.parse_with_comments(text)
-        except parser.DadParseError as error:
-            raise click.ClickException(f"{source}: {error}") from None
         canonical = formatter.format_spec(spec, comments)
         if canonical != text:
             changed.append((source, text, canonical))
@@ -981,7 +1052,7 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
             source.write_text(canonical, encoding="utf-8", newline="")
     verb = "would reformat" if check else "reformatted"
     click.echo(
-        f"{verb} {len(changed)} of {len(sources)} files",
+        f"{verb} {len(changed)} of {len(files)} files",
         err=True,
     )
     if check and changed:
@@ -992,22 +1063,26 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
 @click.argument(
     "sources",
     nargs=-1,
-    required=True,
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    type=click.Path(exists=True, path_type=Path),
+)
+@click.option(
+    "--raw",
+    is_flag=True,
+    help="Also read the raw files under a directory named in SOURCES.",
 )
 @click.option(
     "--notes/--no-notes",
     default=True,
-    help="Report findings a single file cannot judge (default: report them).",
+    help="Report findings a single file cannot judge.",
 )
 @click.option(
     "--corpus",
     "corpus_paths",
     multiple=True,
     type=click.Path(exists=True, path_type=Path),
+    show_default="the installed seanchai-corpus, if any",
     help="Directory or file to resolve re-used AVPs against. Enables the"
-    " cross-file rules; repeatable. Default: the installed seanchai-corpus"
-    " package, if there is one.",
+    " cross-file rules; repeatable.",
 )
 @click.option(
     "--no-corpus",
@@ -1018,7 +1093,7 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
     "--output-format",
     type=click.Choice(["full", "concise"]),
     default="full",
-    help="`full` groups findings under their file with a summary (default);"
+    help="`full` groups findings under their file with a summary;"
     " `concise` prints one greppable `file: severity: [rule] ...` line per"
     " finding.",
 )
@@ -1026,7 +1101,6 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
     "--corrections",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORRECTIONS,
-    show_default=True,
     help="Directory with per-spec correction modules, whose acceptances mark"
     " deliberate overrides among a corrected file's findings; read with a"
     " corpus only. Defaulted, like regenerate's, for the repository's own"
@@ -1040,6 +1114,7 @@ def format_command(sources: tuple[Path, ...], check: bool) -> None:
 )
 def lint(
     sources: tuple[Path, ...],
+    raw: bool,
     notes: bool,
     corpus_paths: tuple[Path, ...],
     no_corpus: bool,
@@ -1049,8 +1124,11 @@ def lint(
 ) -> None:
     """Report structural inconsistencies in `.dad` files.
 
-    Exits non-zero when any error is found; notes alone do not fail, because
-    they are things a single file cannot decide rather than defects.
+    SOURCES are files or directories, a directory standing for the `.dad` files
+    under it, less its raw mirror unless --raw; none means the corpus the
+    seanchai-corpus package installed. Exits non-zero when any error is found;
+    notes alone do not fail, because they are things a single file cannot decide
+    rather than defects.
 
     With `--corpus`, re-used AVPs are resolved against the other files it names
     and the cross-file rules run too. Without it the installed seanchai-corpus
@@ -1118,8 +1196,9 @@ def lint(
                 )
                 if not (explicit or in_repository):
                     directory = None
-        for source in sources:
-            spec = parser.parse(source.read_text(encoding="utf-8"))
+        for source in _dad_files(sources or (installed_directory(),), raw=raw):
+            with _naming(source):
+                spec = parser.parse(source.read_text(encoding="utf-8"))
             if books is None:
                 findings = lint_spec(spec)
             else:
@@ -1190,15 +1269,15 @@ def _summary(counts, checked: int) -> str:
 
 
 @main.command()
-@click.option("--release", type=int, default=18, help="3GPP release (default: 18).")
+@click.option("--release", type=int, default=18, help="3GPP release.")
 @click.option(
     "-o",
     "--output",
     type=click.Path(file_okay=False, path_type=Path),
     default=Path("specifications"),
-    help="Directory for downloaded sources (default: ./specifications).",
+    help="Directory for downloaded sources.",
 )
-@click.option("--workers", type=int, default=6, help="Parallel downloads (default: 6).")
+@click.option("--workers", type=int, default=6, help="Parallel downloads.")
 @click.option(
     "--no-extract",
     is_flag=True,
@@ -1216,7 +1295,7 @@ def _summary(counts, checked: int) -> str:
     "--pdfs/--no-pdfs",
     default=True,
     help="Download the ETSI PDF renderings and prefer the newest version"
-    " whose PDF is published (default: on). --no-pdfs is for catalog"
+    " whose PDF is published. --no-pdfs is for catalog"
     " experiments only: it strips pdf_url from the manifest and lets"
     " the newest archive replace a committed spec's docx with a version whose"
     " PDF is unpublished.",
@@ -1364,16 +1443,15 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
 )
 @click.option(
     "--dictionary",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    type=click.Path(file_okay=False, path_type=Path),
     default=Path("specifications") / "wireshark",
-    show_default=True,
-    help="Directory holding Wireshark's Diameter dictionary files.",
+    help="Directory holding Wireshark's Diameter dictionary files, which"
+    " `seanchai download --only wireshark` fetches.",
 )
 @click.option(
     "--aliases",
     type=click.Path(dir_okay=False, path_type=Path),
     default=_DEFAULT_ALIASES,
-    show_default=True,
     help="Accepted-aliases file listing Wireshark's deliberate renames, which"
     " are agreement while vendor, code and type agree. Defaulted for the"
     " repository's own corpus; a missing default file is no aliases.",
@@ -1422,6 +1500,7 @@ def crosscheck(
         raise click.BadParameter(
             f"file {str(aliases)!r} does not exist", param_hint="'--aliases'"
         )
+    _need_dictionary(dictionary)
     try:
         oracle = Oracle.load(dictionary)
         accepted = load_aliases(aliases) if aliases.is_file() else ()
@@ -1438,7 +1517,8 @@ def crosscheck(
                 except CorpusError as error:
                     raise click.ClickException(str(error)) from None
             else:
-                spec = parser.parse(source.read_text(encoding="utf-8"))
+                with _naming(source):
+                    spec = parser.parse(source.read_text(encoding="utf-8"))
                 entries.append(Entry(path=source, spec=spec))
         books = Corpus(entries)
         newest = sorted(books.newest(), key=lambda entry: entry.path.as_posix())
