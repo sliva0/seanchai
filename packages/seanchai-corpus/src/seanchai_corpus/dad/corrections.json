@@ -3601,6 +3601,29 @@
    "renames": [],
    "version": "19.0.0"
   },
+  "29561-j60": {
+   "edits": {
+    "TS29.561.py#application-id-eap": {
+     "kind": "insert",
+     "reason": "clause 12.1.1 advertises the NASREQ and EAP applications, 'the value (1 and 5) of the application identifier', and clauses 12.6.2 and 12.6.3 say DER and DEA are 'defined in IETF RFC 4072 [25]', whose section 2.1 gives five. The command headers print none"
+    },
+    "TS29.561.py#application-id-nasreq": {
+     "kind": "insert",
+     "reason": "clause 12.1.1 advertises the NASREQ and EAP applications, 'the value (1 and 5) of the application identifier', and clauses 12.6.4 and 12.6.5 say RAR and RAA are 'defined in IETF RFC 7155 [23]', whose section 1.5 gives one. The command headers print none"
+    },
+    "TS29.561.py#bases-nasreq-eap": {
+     "kind": "correction",
+     "reason": "clause 12.6.1 names the bodies' other AVPs 'as defined in IETF RFC 4072 [25] and IETF RFC 7155 [23]', and table 12.4-1 lists none of them"
+    },
+    "TS29.561.py#undefined-delegated-ipv6-prefix": {
+     "kind": "insert",
+     "reason": "a member of the DER and DEA bodies (clauses 12.6.2, 12.6.3) in no table of this document; clause 2 cites RFC 4818 [10], which defines the RADIUS attribute with no Diameter type or flags and which the corpus does not hold. Wireshark's dictionary has code 123, OctetString, with may-M"
+    }
+   },
+   "reference": "TS29.561",
+   "renames": [],
+   "version": "19.6.0"
+  },
   "32299-bk0": {
    "edits": {
     "TS32.299.py#credit-limit-reached-result-code": {
