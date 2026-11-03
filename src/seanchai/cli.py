@@ -729,21 +729,16 @@ def extract_rfc(
     warnings: list[str] = []
     with reported():
         try:
-            spec = rfc_text.extract(
+            spec, comments = rfc_text.extract_with_comments(
                 text, link=link, warnings=warnings, sources_dir=sources
             )
         finally:
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        notes = None
         if corrections is not None:
-            from .dad import formatter
-
-            spec, notes = _correct(
-                spec, formatter.Comments(), corrections, required=False
-            )
-    _write(spec, output, notes)
+            spec, comments = _correct(spec, comments, corrections, required=False)
+    _write(spec, output, comments)
 
 
 @main.command()

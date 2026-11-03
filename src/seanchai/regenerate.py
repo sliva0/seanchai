@@ -395,7 +395,7 @@ def _produce(
     if source.transcribed:
         spec, comments = transcription.read(source.document, sources_dir, warnings)
     elif source.document.suffix == ".txt":
-        spec = rfc_text.extract(
+        spec, comments = rfc_text.extract_with_comments(
             source.document,
             link=source.link,
             warnings=warnings,
