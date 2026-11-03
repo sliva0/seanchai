@@ -139,7 +139,10 @@ preferred once it is cheap.
   names, with no `seanchai[extract]`.
 - Self-hosted: the same build with `--include-pdfs --specifications
   specifications`, copying the PDFs (about 27 MB for the current corpus), and
-  the PDF.js viewer into the output.
+  the PDF.js viewer into the output. `seanchai download --only 3gpp` fetches the
+  3GPP ones; no download fetches what the hand transcriptions were copied from
+  (ETSI ES 283 034, TS 183 017, 3GPP2 X.S0057), so those go in by hand, under
+  `specifications/transcriptions/`.
 
 ## Order of work
 

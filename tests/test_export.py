@@ -802,6 +802,21 @@ def test_export_copies_available_rfc_text_without_pdfs(tmp_path):
     assert all(d.source.text is None for d in index.documents if d is not doc)
 
 
+def test_a_transcriptions_missing_pdf_is_not_sent_to_the_downloader(tmp_path):
+    empty = tmp_path / "specifications"
+    empty.mkdir()
+
+    with pytest.raises(CorpusError, match="no download fetches") as refused:
+        export_corpus(
+            Corpus.load([_ETSI]),
+            tmp_path / "out",
+            include_pdfs=True,
+            specifications=empty,
+        )
+
+    assert "seanchai download" not in str(refused.value)
+
+
 def test_export_cli_uses_explicit_corpus_and_reports_missing_sources(tmp_path):
     result = CliRunner().invoke(
         main, ["export", "--corpus", str(_ETSI), "-o", str(tmp_path / "data")]

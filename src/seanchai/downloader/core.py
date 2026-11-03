@@ -276,7 +276,9 @@ def _extra(module: str) -> Any:
     try:
         return importlib.import_module(module)
     except ImportError as error:
-        raise MissingExtraError(f"validating a download needs {module}") from error
+        raise MissingExtraError(
+            "reading source documents needs python-docx and pypdf"
+        ) from error
 
 
 def require_extra() -> None:
