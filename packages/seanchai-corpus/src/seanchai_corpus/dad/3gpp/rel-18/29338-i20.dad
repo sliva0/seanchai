@@ -381,6 +381,17 @@ SM-RP-MTI ::= < Enumerated AVP header: 3308 10415 >
         SM_STATUS_REPORT = 1
 
 
+; Type: Value Table
+; AVP: SRR-Flags
+; Kind: bits
+; Section: 5.3.3.4
+; Table: 5.3.3.4/1
+; Page: 30
+GPRS-Indicator          = 0
+SM-RP-PRI               = 1
+Single-Attempt-Delivery = 2
+
+
 ; Type: Enumerated AVP
 ; Name: SM-Delivery-Not-Intended
 ; Section: 5.3.3.5
@@ -422,6 +433,30 @@ Additional-Serving-Node ::= < AVP header: 2406 10415 >
         [ MME-Number-for-MT-SMS ]
         [ MSC-Number ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: MWD-Status
+; Kind: bits
+; Section: 5.3.3.8
+; Table: 5.3.3.8/1
+; Page: 31
+"SC-Address Not included" = 0
+MNRF-Set                  = 1
+MCEF-Set                  = 2
+MNRG-Set                  = 3
+MNR5G-Set                 = 4
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S6c
+; Section: 5.3.3.13
+; Table: 5.3.3.13/1
+; Page: 32
+SMSF-Support = 0 ; O
 
 
 ; Type: Grouped AVP
@@ -482,6 +517,25 @@ SM-Delivery-Cause ::= < Enumerated AVP header: 3321 10415 >
         UE_MEMORY_CAPACITY_EXCEEDED = 0
         ABSENT_USER                 = 1
         SUCCESSFUL_TRANSFER         = 2
+
+
+; Type: Value Table
+; AVP: RDR-Flags
+; Kind: bits
+; Section: 5.3.3.21
+; Table: 5.3.3.21/1
+; Page: 34
+Single-Attempt-Delivery = 0
+
+
+; Type: Value Table
+; AVP: SMS-GMSC-Alert-Event
+; Kind: bits
+; Section: 5.3.3.23
+; Table: 5.3.3.23/1
+; Page: 34
+UE-Available-For-MT-SMS   = 0
+UE-Under-New-Serving-Node = 1
 
 
 ; Type: Grouped AVP
@@ -553,6 +607,15 @@ IP-SM-GW-SBI-Support-Indicator ::= < Enumerated AVP header: 3348 10415 >
         SUPPORT_SBI     = 1
 
 
+; Type: Value Table
+; AVP: TFR-Flags
+; Kind: bits
+; Section: 6.3.3.4
+; Table: 6.3.3.4/1
+; Page: 51
+More-Messages-To-Send = 0
+
+
 ; Type: Grouped AVP
 ; Name: SM-Delivery-Failure-Cause
 ; Section: 6.3.3.5
@@ -577,6 +640,15 @@ SM-Enumerated-Delivery-Failure-Cause ::= < Enumerated AVP header: 3304 10415 >
         USER_NOT_SC-USER          = 6
 
 
+; Type: Value Table
+; AVP: OFR-Flags
+; Kind: bits
+; Section: 6.3.3.12
+; Table: 6.3.3.12/1
+; Page: 53
+"S6a/S6d-Indicator" = 0
+
+
 ; Type: Grouped AVP
 ; Name: SMSMI-Correlation-ID
 ; Section: 6.3.3.13
@@ -586,3 +658,20 @@ SMSMI-Correlation-ID ::= < AVP header: 3324 10415 > ;; corrected: (TS29.338.py#s
         [ Originating-SIP-URI ]
         [ Destination-SIP-URI ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7
+; Page: 54
+DIAMETER_ERROR_USER_UNKNOWN           = 5001 ; 7.3.2
+DIAMETER_ERROR_ABSENT_USER            = 5550 ; 7.3.3
+DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS   = 5551 ; 7.3.4
+DIAMETER_ERROR_FACILITY_NOT_SUPPORTED = 5552 ; 7.3.5
+DIAMETER_ERROR_ILLEGAL_USER           = 5553 ; 7.3.6
+DIAMETER_ERROR_ILLEGAL_EQUIPMENT      = 5554 ; 7.3.7
+DIAMETER_ERROR_SM_DELIVERY_FAILURE    = 5555 ; 7.3.8
+DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED = 5556 ; 7.3.9
+DIAMETER_ERROR_SERVICE_BARRED         = 5557 ; 7.3.10
+DIAMETER_ERROR_MWD_LIST_FULL          = 5558 ; 7.3.11

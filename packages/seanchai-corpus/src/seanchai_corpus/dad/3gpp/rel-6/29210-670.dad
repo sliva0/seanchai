@@ -278,3 +278,12 @@ TFT-Packet-Filter-Information ::= < AVP header: 1013 10415 > ;; corrected: (TS29
 ; Page: 16
 PDP-Session-Operation ::= < Enumerated AVP header: 1015 10415 >
         PDP-SESSION-TERMINATION = 0
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.4
+; Page: 18
+DIAMETER_ERROR_INITIAL_PARAMETERS = 5140 ; 5.4.2
+DIAMETER_ERROR_TRIGGER_EVENT      = 5141 ; 5.4.2

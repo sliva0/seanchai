@@ -209,3 +209,27 @@ Additional-Serving-Node ::= < AVP header: 2406 10415 >
         [ MME-Number-for-MT-SMS ]
         [ MSC-Number ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Supported-Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: T4
+; Section: 6.3.5
+; Table: 6.3.5
+; Page: 23
+Device-Trigger-Recall-Replace = 0 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7
+; Page: 24
+DIAMETER_ERROR_USER_UNKNOWN                 = 5001 ; 7.3.1
+DIAMETER_ERROR_INVALID_SME_ADDRESS          = 5530 ; 7.3.2
+DIAMETER_ERROR_SC_CONGESTION                = 5531 ; 7.3.3
+DIAMETER_ERROR_TRIGGER_REPLACE_FAILURE      = 5533 ; 7.3.5
+DIAMETER_ERROR_TRIGGER_RECALL_FAILURE       = 5534 ; 7.3.6
+DIAMETER_ERROR_ORIGINAL_MESSAGE_NOT_PENDING = 5535 ; 7.3.7

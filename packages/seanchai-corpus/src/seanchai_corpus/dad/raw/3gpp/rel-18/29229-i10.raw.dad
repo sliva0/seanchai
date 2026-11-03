@@ -407,6 +407,28 @@ OC-OLR                  RFC7683   -
 DRMP                    RFC7944   -
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.2
+; Page: 19
+DIAMETER_FIRST_REGISTRATION                     = 2001 ; 6.2.1.1
+DIAMETER_SUBSEQUENT_REGISTRATION                = 2002 ; 6.2.1.2
+DIAMETER_UNREGISTERED_SERVICE                   = 2003 ; 6.2.1.3
+DIAMETER_SUCCESS_SERVER_NAME_NOT_STORED         = 2004 ; 6.2.1.4
+DIAMETER_ERROR_USER_UNKNOWN                     = 5001 ; 6.2.2.1
+DIAMETER_ERROR_IDENTITIES_DONT_MATCH            = 5002 ; 6.2.2.2
+DIAMETER_ERROR_IDENTITY_NOT_REGISTERED          = 5003 ; 6.2.2.3
+DIAMETER_ERROR_ROAMING_NOT_ALLOWED              = 5004 ; 6.2.2.4
+DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED      = 5005 ; 6.2.2.5
+DIAMETER_ERROR_AUTH_SCHEME_NOT_SUPPORTED        = 5006 ; 6.2.2.6
+DIAMETER_ERROR_IN_ASSIGNMENT_TYPE               = 5007 ; 6.2.2.7
+DIAMETER_ERROR_TOO_MUCH_DATA                    = 5008 ; 6.2.2.8
+DIAMETER_ERROR_NOT_SUPPORTED_USER_DATA          = 5009 ; 6.2.2.9
+DIAMETER_ERROR_FEATURE_UNSUPPORTED              = 5011 ; 6.2.2.11
+DIAMETER_ERROR_SERVING_NODE_FEATURE_UNSUPPORTED = 5012 ; 6.2.2.12
+
+
 ; Type: Grouped AVP
 ; Name: Server-Capabilities
 ; Section: 6.3.4
@@ -565,6 +587,15 @@ SIP-Digest-Authenticate ::= < AVP header: 635 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: UAR-Flags
+; Kind: bits
+; Section: 6.3.44
+; Table: 6.3.44.1
+; Page: 32
+"IMS Emergency Registration" = 0
+
+
 ; Type: Enumerated AVP
 ; Name: Loose-Route-Indication
 ; Section: 6.3.45
@@ -662,6 +693,24 @@ Priviledged-Sender-Indication ::= < Enumerated AVP header: 652 10415 >
         PRIVILEDGED_SENDER     = 1
 
 
+; Type: Value Table
+; AVP: LIA-Flags
+; Kind: bits
+; Section: 6.3.59
+; Table: 6.3.59.1
+; Page: 36
+"PSI Direct Routing Indication" = 0
+
+
+; Type: Value Table
+; AVP: SAR-Flags
+; Kind: bits
+; Section: 6.3.63
+; Table: 6.3.63.1
+; Page: 36
+"P-CSCF Restoration Indication" = 0
+
+
 ; Type: Grouped AVP
 ; Name: Allowed-WAF-WWSF-Identities
 ; Section: 6.3.64
@@ -670,6 +719,15 @@ Allowed-WAF-WWSF-Identities ::= < AVP header: 656 10415 >
       * [ WebRTC-Authentication-Function-Name ]
       * [ WebRTC-Web-Server-Function-Name ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: RTR-Flags
+; Kind: bits
+; Section: 6.3.69
+; Table: 6.3.69.1
+; Page: 37
+"Reference Location Information change" = 0
 
 
 ; Type: Grouped AVP
@@ -692,3 +750,17 @@ Failed-PCSCF ::= < AVP header: 664 10415 >
         [ PCSCF-FQDN ]
       * [ PCSCF-IP-Address ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Cx
+; Section: 7.1.1
+; Table: 7.1.1
+; Page: 39
+SiFC                         = 0 ; O
+AliasInd                     = 1 ; M
+IMSRestorationInd            = 2 ; O
+P-CSCF-Restoration-mechanism = 3 ; O

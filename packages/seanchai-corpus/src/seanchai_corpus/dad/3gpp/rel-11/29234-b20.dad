@@ -1291,6 +1291,17 @@ Charging-Nodes ::= < AVP header: 315 10415 > ;; corrected: (TS29.234.py#vendor-i
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 10.3
+; Page: 80
+DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTION          = 5041 ; 10.3.1.1 ;; corrected: (TS29.234.py#no-wlan-subscription-result-spelling)
+DIAMETER_ERROR_W-APN_UNUSED_BY_USER               = 5042 ; 10.3.1.2
+DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION = 5043 ; 10.3.1.3
+DIAMETER_ERROR_USER_NO_W-APN_SUBSCRIPTION         = 5044 ; 10.3.1.4
+
+
 ; Type: Undefined AVP ;; inserted: (TS29.234.py#undefined-error-cause)
 ; Name: Error-Cause
 ; Section: 4.4.2.1

@@ -103,3 +103,19 @@ OC-Supported-Features   TS29.229   -
 OC-OLR                  TS29.229   -
 Load                    TS29.229   -
 DRMP                    TS29.229   -
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 20
+DIAMETER_ERROR_USER_UNKNOWN                   = 5001 ; 6.4.3.1
+DIAMETER_ERROR_OPERATION_NOT_ALLOWED          = 5101 ; 6.4.3.2
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ       = 5102 ; 6.4.3.3
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED   = 5103 ; 6.4.3.4
+DIAMETER_ERROR_TOO_MUCH_DATA                  = 5008 ; 6.4.3.5
+"DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC" = 5105 ; 6.4.3.6
+DIAMETER_ERROR_FEATURE_UNSUPPORTED            = 5011 ; 6.4.3.7
+DIAMETER_USER_DATA_NOT_AVAILABLE              = 4100 ; 6.4.4.1
+DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.4.4.2

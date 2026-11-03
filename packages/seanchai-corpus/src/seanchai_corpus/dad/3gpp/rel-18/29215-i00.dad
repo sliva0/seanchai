@@ -682,3 +682,41 @@ DRA-Deployment ::= < Enumerated AVP header: 2206 10415 >
 ; Page: 42
 DRA-Binding ::= < Enumerated AVP header: 2208 10415 >
         DRA_BINDING_DELETION = 0
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S9
+; Section: 5.4.1
+; Table: 5.4.1.1
+; Page: 42
+Rel9               = 0  ; M
+Rel10              = 1  ; M
+MAPCON             = 2  ; O
+IFOM               = 3  ; O
+SADC               = 4  ; O
+USADC              = 5  ; O
+vSRVCC             = 6  ; O
+EPC-routed         = 7  ; O
+NSWO               = 8  ; O
+NetLoc             = 9  ; O
+TimeBasedUM        = 10 ; O
+PendingTransaction = 11 ; O
+ABC                = 12 ; O
+SGW-Rest           = 13 ; O
+ExUsage            = 14
+ResShare           = 15 ; O
+NBIFOM             = 16 ; O
+Extended-BW-NR     = 17 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.6
+; Page: 48
+DIAMETER_ERROR_SUBSESSION                    = 5470 ; 5.6.3
+DIAMETER_ERROR_ONGOING_SESSION_ESTABLISHMENT = 5471 ; 5.6.3
+DIAMETER_PENDING_TRANSACTION                 = 4144 ; 5.6.4

@@ -174,6 +174,18 @@ Restart-Counter             TS29.061   Heartbeat
 MBMS-Cell-List              TS29.061   "MBMS Cell List"
 
 
+; Type: Value Table
+; AVP: MBMS-Bearer-Event
+; Kind: bits
+; Section: 6.4.4
+; Table: 6.4.4-1
+; Page: 20
+"Bearer Terminated"         = 0
+"Bearer Activated"          = 1
+"Userplane Event"           = 2
+"Bearer Activation Failure" = 3
+
+
 ; Type: Grouped AVP
 ; Name: MBMS-Bearer-Event-Notification
 ; Section: 6.4.5
@@ -225,6 +237,28 @@ MBMS-Bearer-Response ::= < AVP header: 3505 10415 > ;; corrected: (TS29.468.py#v
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: MBMS-Bearer-Result
+; Kind: bits
+; Section: 6.4.8
+; Table: 6.4.8-1
+; Page: 21
+Success                                    = 0
+"Authorization rejected"                   = 1
+"Resources exceeded"                       = 2
+"Unknown TMGI"                             = 3
+"TMGI not in use"                          = 4
+"Overlapping MBMS-Service-Area"            = 5
+"Unknown Flow Identifier"                  = 6
+"QoS Authorization Rejected"               = 7
+"Unknown MBMS-Service-Area"                = 8
+"MBMS-Service-Area Authorization Rejected" = 9
+MBMS-Start-Time                            = 10
+"Invalid AVP combination"                  = 11
+"System error"                             = 12
+"Activation ongoing"                       = 13
+
+
 ; Type: Grouped AVP
 ; Name: TMGI-Allocation-Request
 ; Section: 6.4.11
@@ -246,6 +280,20 @@ TMGI-Allocation-Response ::= < AVP header: 3510 10415 > ;; corrected: (TS29.468.
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: TMGI-Allocation-Result
+; Kind: bits
+; Section: 6.4.13
+; Table: 6.4.13-1
+; Page: 23
+Success                    = 0
+"Authorization rejected"   = 1
+"Resources exceeded"       = 2
+"Unknown TMGI"             = 3
+"Too many TMGIs requested" = 4
+"System error"             = 5
+
+
 ; Type: Grouped AVP
 ; Name: TMGI-Deallocation-Request
 ; Section: 6.4.14
@@ -263,6 +311,18 @@ TMGI-Deallocation-Response ::= < AVP header: 3513 10415 > ;; corrected: (TS29.46
         { TMGI }
         [ TMGI-Deallocation-Result ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: TMGI-Deallocation-Result
+; Kind: bits
+; Section: 6.4.16
+; Table: 6.4.16-1
+; Page: 24
+Success                  = 0
+"Authorization rejected" = 1
+"Unknown TMGI"           = 2
+"System error"           = 3
 
 
 ; Type: Grouped AVP
@@ -317,6 +377,37 @@ Userplane-Protocol-Result ::= < AVP header: 3529 10415 > ;; corrected: (TS29.468
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: ROHC-Result
+; Kind: bits
+; Section: 6.4.32
+; Table: 6.4.32-1
+; Page: 26
+Success                  = 0
+Trying                   = 1
+"Authorization rejected" = 2
+"Resources exceeded"     = 3
+"Unknown Profile"        = 4
+"System error"           = 5
+"No Traffic"             = 6
+
+
+; Type: Value Table
+; AVP: FEC-Result
+; Kind: bits
+; Section: 6.4.33
+; Table: 6.4.33-1
+; Page: 27
+Success                  = 0
+Trying                   = 1
+"Authorization rejected" = 2
+"Resources exceeded"     = 3
+"Unknown Configuration"  = 4
+"Invalid SDP"            = 5
+"System error"           = 6
+"No Traffic"             = 7
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-Bearer-Event-Diagnostic-Info
 ; Section: 6.4.35
@@ -329,3 +420,19 @@ MBMS-Bearer-Event-Diagnostic-Info ::= < Enumerated AVP header: 3533 10415 >
         MBMS-GW-User-Plane-Failure      = 4
         MBMS-GW-Permanent-Error         = 5
         MBMS-GW-Transient-Error         = 6
+
+
+; Type: Value Table
+; AVP: Feature-List ;; corrected: (TS29.468.py#feature-list-avp)
+; Kind: features
+; Feature-List-ID: 1
+; Application: MB2-C
+; Section: 6.5.2.2
+; Table: 6.5.2.2-1
+; Page: 30
+Heartbeat                  = 0 ; O
+"MBMS Cell List"           = 1 ; M
+"V2X Localized User Plane" = 2 ; O
+FEC                        = 3 ; O
+ROHC                       = 4 ; O
+IPv4v6                     = 5 ; O

@@ -205,6 +205,15 @@ RS-Bandwidth                               522    6.5.23    Unsigned32     M,V  
 SIP-Forking-Indication                     523    6.5.24    Enumerated     M,V    P     -       -       Yes
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 17
+INVALID_SERVICE_INFORMATION = 5061
+FILTER_RESTRICTIONS         = 5062
+
+
 ; Type: Enumerated AVP
 ; Name: Abort-Cause
 ; Section: 6.5.1

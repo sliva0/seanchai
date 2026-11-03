@@ -210,6 +210,44 @@ User-Identifier ::= < AVP header: 3102 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Data-Identification-Flags
+; Kind: bits
+; Section: 7.3.12
+; Table: 7.3.12-1
+; Page: 29
+"MCPTT User Profile"   = 0
+"MCVideo User Profile" = 1
+"MCData User Profile"  = 2
+
+
+; Type: Value Table
+; AVP: DPR-Flags
+; Kind: bits
+; Section: 7.3.13
+; Table: 7.3.13-1
+; Page: 30
+"Subscription to notifications" = 0
+
+
+; Type: Value Table
+; AVP: DPA-Flags
+; Kind: bits
+; Section: 7.3.14
+; Table: 7.3.14-1
+; Page: 30
+"Notification service status" = 0
+
+
+; Type: Value Table
+; AVP: DUR-Flags
+; Kind: bits
+; Section: 7.3.15
+; Table: 7.3.15-1
+; Page: 30
+Atomicity = 0
+
+
 ; Type: Grouped AVP
 ; Name: MC-Service-User-Profile-Data
 ; Section: 7.3.20
@@ -228,3 +266,24 @@ MC-Service-User-Profile-Data ::= < AVP header: 4511 10415 >
 Data ::= < AVP header: 4513 10415 >
       * [ MC-Service-User-Profile-Data ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.4
+; Page: 32
+DIAMETER_ERROR_USER_UNKNOWN                 = 5001 ; 7.4.3.2
+DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED     = 5100 ; 7.4.3.3
+DIAMETER_ERROR_OPERATION_NOT_ALLOWED        = 5101 ; 7.4.3.4
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ     = 5102 ; 7.4.3.5
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED = 5103 ; 7.4.3.6
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED = 5104 ; 7.4.3.7
+DIAMETER_ERROR_TOO_MUCH_DATA                = 5008 ; 7.4.3.8
+"DIAMETER_ERROR_DATA OUT_OF_SYNC"           = 5105 ; 7.4.3.9
+DIAMETER_ERROR_FEATURE_UNSUPPORTED          = 5011 ; 7.4.3.10
+DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA      = 5107 ; 7.4.3.11
+"DIAMETER_ERROR_ UNKNOWN _DATA"             = 5670 ; 7.4.3.12
+DIAMETER_ERROR_REQUIRED_KEY_NOT_PROVIDED    = 5671 ; 7.4.3.13
+DIAMETER_USER_DATA_NOT_AVAILABLE            = 4100 ; 7.4.4.2
+DIAMETER_PRIOR_UPDATE_IN_PROGRESS           = 4101 ; 7.4.4.3

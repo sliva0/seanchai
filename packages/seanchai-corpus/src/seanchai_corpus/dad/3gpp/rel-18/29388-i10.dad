@@ -234,6 +234,28 @@ V2X-PC5-Allowed-PLMN ::= < AVP header: 4600 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: V2X-Update-Flags
+; Kind: bits
+; Section: 6.3.4
+; Table: 6.3.4-1
+; Page: 22
+Update             = 0
+Removal            = 1
+"Reset-ID Update"  = 2
+"Reset-ID Removal" = 3
+
+
+; Type: Value Table
+; AVP: V2X-Notify-Flags
+; Kind: bits
+; Section: 6.3.5
+; Table: 6.3.5-1
+; Page: 22
+"V2X communication over PC5 Revoked" = 0
+"Purged UE"                          = 1
+
+
 ; Type: Grouped AVP
 ; Name: PLMN-Allowed-PC5-RATs
 ; Section: 6.3.10
@@ -251,3 +273,13 @@ PLMN-Allowed-PC5-RATs ::= < AVP header: 4603 10415 > ;; corrected: (TS29.388.py#
 PC5-RAT-Type ::= < Enumerated AVP header: 4604 10415 >
         LTE = 0
         NR  = 1
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 23
+DIAMETER_ERROR_USER_UNKNOWN             = 5001 ; 6.4.3.2
+DIAMETER_ERROR_UNKNOWN_V2X_SUBSCRIPTION = 5690 ; 6.4.3.3
+DIAMETER_ERROR_V2X_NOT_ALLOWED          = 5691 ; 6.4.3.4

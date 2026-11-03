@@ -385,6 +385,16 @@ Served-Party-IP-Address               TS32.299   MUST-NOT
 Reachability-Cause                    TS29.128   MUST-NOT
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.3
+; Page: 21
+DIAMETER_ERROR_USER_UNKNOWN                   = 5001 ; 6.3.3.1
+DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY = 5510 ; 6.3.3.2
+DIAMETER_ERROR_UNAUTHORIZED_SERVICE           = 5511 ; 6.3.3.3
+
+
 ; Type: Grouped AVP
 ; Name: User-Identifier
 ; Section: 6.4.2
@@ -446,6 +456,26 @@ T4-Data ::= < AVP header: 3108 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: HSS-Cause
+; Kind: bits
+; Section: 6.4.9
+; Table: 6.4.9/1
+; Page: 25
+"Absent Subscriber"           = 0
+"Teleservice Not Provisioned" = 1
+"Call Barred"                 = 2
+
+
+; Type: Value Table
+; AVP: SIR-Flags
+; Kind: bits
+; Section: 6.4.10
+; Table: 6.4.10/1
+; Page: 25
+"S6m/S6n Indicator" = 0
+
+
 ; Type: Grouped AVP
 ; Name: Serving-Node
 ; Section: 6.4.12
@@ -477,6 +507,21 @@ Additional-Serving-Node ::= < AVP header: 2406 10415 >
         [ MME-Number-for-MT-SMS ]
         [ MSC-Number ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 8.3
+; Page: 47
+DIAMETER_ERROR_USER_UNKNOWN                                  = 5001 ; 8.3.3.1
+DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY                = 5510 ; 8.3.3.2
+DIAMETER_ERROR_UNAUTHORIZED_SERVICE                          = 5511 ; 8.3.3.3
+"DIAMETER_ERROR_REQUESTED_RANGE_IS_NOT ALLOWED"              = 5512 ; 8.3.3.4
+"DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_ SUCCESSFUL" = 5513 ; 8.3.3.5
+DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT              = 5514 ; 8.3.3.6
+DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION                      = 5451 ; 8.3.3.7
+DIAMETER_ERROR_UNAUTHORIZED_MTC_PROVIDER                     = 5516 ; 8.3.3.8
 
 
 ; Type: Grouped AVP
@@ -545,6 +590,16 @@ UE-Reachability-Configuration ::= < AVP header: 3129 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Reachability-Type
+; Kind: bits
+; Section: 8.4.12
+; Table: 8.4.12-1
+; Page: 57
+"Reachability for SMS"  = 0
+"Reachability for Data" = 1
+
+
 ; Type: Grouped AVP
 ; Name: Location-Information-Configuration
 ; Section: 8.4.15
@@ -564,6 +619,36 @@ EPS-Location-Information ::= < AVP header: 1496 10415 >
         [ MME-Location-Information ]
         [ SGSN-Location-Information ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: IMEI-Change
+; Kind: bits
+; Section: 8.4.22
+; Table: 8.4.22-1
+; Page: 59
+IMEI   = 0
+IMEISV = 1
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Application: S6t
+; Section: 8.4.23.1
+; Table: 8.4.23-1
+; Page: 59
+MONTE                                 = 0  ; O
+AESE-Communication-Pattern            = 1  ; O
+NIDD-Authorization                    = 2  ; O
+Enhanced-Coverage-Restriction-Control = 3  ; O
+"NIDD Authorization Update"           = 4  ; O
+Report-Eff-MONTE                      = 5  ; O
+"Event Cancellation Report"           = 6  ; O
+Config-Eff-CP                         = 7  ; O
+Config-Eff-NP                         = 8  ; O
+"Extended Reference IDs"              = 9  ; O
+Dynamic-Group-Event-Monitoring        = 10
 
 
 ; Type: Grouped AVP
@@ -692,6 +777,19 @@ Service-Result ::= < AVP header: 3146 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: CIR-Flags
+; Kind: bits
+; Section: 8.4.39
+; Table: 8.4.39-1
+; Page: 66
+"Delete all Monitoring events"                = 0
+"Enhanced Coverage Query"                     = 1
+"IMSI Group Id retrieval"                     = 2
+"Delete all Communication Pattern"            = 3
+"Delete all Network Parameter Configurations" = 4
+
+
 ; Type: Grouped AVP
 ; Name: Supported-Services
 ; Section: 8.4.40
@@ -700,6 +798,23 @@ Supported-Services ::= < AVP header: 3143 10415 >
         [ Supported-Monitoring-Events ]
         [ Node-Type ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Supported-Monitoring-Events
+; Kind: bits
+; Section: 8.4.41
+; Table: 8.4.41-1
+; Page: 67
+"UE and UICC and/or new IMSI-IMEI-SV association" = 0
+UE-reachability                                   = 1
+Location-of-the-UE                                = 2
+Loss-of-connectivity                              = 3
+Communication-failure                             = 4
+Roaming-status                                    = 5
+"Availability after DDN failure"                  = 6
+"Idle Status Indication"                          = 7
+"PDN Connectivity Status"                         = 8
 
 
 ; Type: Grouped AVP
@@ -732,6 +847,16 @@ Service-Report ::= < AVP header: 3152 10415 >
         [ Service-Result ]
         [ Node-Type ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: S6t-HSS-Cause
+; Kind: bits
+; Section: 8.4.50
+; Table: 8.4.50-1
+; Page: 70
+"Absent Subscriber"                       = 0
+"Group Event Monitoring Partially Cancel" = 1
 
 
 ; Type: Grouped AVP
@@ -781,6 +906,15 @@ NIDD-Authorization-Update ::= < AVP header: 3161 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: CIA-Flags
+; Kind: bits
+; Section: 8.4.60
+; Table: 8.4.60-1
+; Page: 72
+Group-Configuration-In-Progress = 0
+
+
 ; Type: Grouped AVP
 ; Name: Group-Report
 ; Section: 8.4.61
@@ -817,6 +951,19 @@ Group-Report-Item ::= < AVP header: 3166 10415 >
         [ Loss-Of-Connectivity-Reason ]
       * [ PDN-Connectivity-Status-Report ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: RIR-Flags
+; Kind: bits
+; Section: 8.4.63
+; Table: 8.4.63-1
+; Page: 73
+Group-Configuration-In-Progress               = 0
+All-Monitoring-Events-Cancelled               = 1
+Change-Of-Authorized-Monitoring-Events        = 2
+All-Communication-Pattern-Cancelled           = 3
+All-Suggested-Network-Configuration-Cancelled = 4
 
 
 ; Type: Grouped AVP
@@ -877,6 +1024,24 @@ AdditionalIdentifiers ::= < AVP header: 3173 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: NIR-Flags
+; Kind: bits
+; Section: 8.4.70
+; Table: 8.4.70-1
+; Page: 75
+"Incomplete Group-User-Identifier-List" = 0
+
+
+; Type: Value Table
+; AVP: NIA-Flags
+; Kind: bits
+; Section: 8.4.72
+; Table: 8.4.72-1
+; Page: 76
+"Incomplete Group-User-Identifier-List" = 0
+
+
 ; Type: Grouped AVP
 ; Name: Group-User-Identifier
 ; Section: 8.4.73
@@ -934,6 +1099,17 @@ Updated-Network-Configuration ::= < AVP header: 3184 10415 >
         [ Active-Time ]
         [ DL-Buffering-Suggested-Packet-Count ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Battery-Indicator
+; Kind: bits
+; Section: 8.4.81
+; Table: 8.4.81-1
+; Page: 79
+NO_BATTERY                      = 0
+BATTERY_REPLACEABLE_INDICATION  = 1
+BATTERY_RECHARGEABLE_INDICATION = 2
 
 
 ; Type: Grouped AVP

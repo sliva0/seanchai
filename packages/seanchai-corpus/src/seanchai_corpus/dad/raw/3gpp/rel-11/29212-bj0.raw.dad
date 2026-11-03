@@ -1576,6 +1576,56 @@ AN-GW-Status ::= < Enumerated AVP header: 2811 10415 >
         AN_GW_FAILED = 0
 
 
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Gx
+; Section: 5.4.1
+; Table: 5.4.1.1
+; Page: 130
+Rel8                  = 0  ; M
+Rel9                  = 1  ; M
+ProvAFsignalFlow      = 2  ; O
+Rel10                 = 3  ; M
+SponsoredConnectivity = 4  ; O
+IFOM                  = 5  ; O
+ADC                   = 6  ; O
+vSRVCC                = 7  ; O
+EPC-routed            = 8  ; O
+rSRVCC                = 9  ; O
+NetLoc                = 10 ; O
+UMCH                  = 11 ; O
+ExtendedFilter        = 12 ; O
+Trusted-WLAN          = 13 ; O
+SGW-Rest              = 14 ; O
+void                  = 18
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 133
+DIAMETER_ERROR_INITIAL_PARAMETERS            = 5140 ; 5.5.3
+DIAMETER_ERROR_TRIGGER_EVENT                 = 5141 ; 5.5.3
+DIAMETER_PCC_RULE_EVENT                      = 5142 ; 5.5.3
+DIAMETER_ERROR_BEARER_NOT_AUTHORIZED         = 5143 ; 5.5.3
+DIAMETER_ERROR_TRAFFIC_MAPPING_INFO_REJECTED = 5144 ; 5.5.3
+DIAMETER_ERROR_CONFLICTING_REQUEST           = 5147 ; 5.5.3
+DIAMETER_ADC_RULE_EVENT                      = 5148 ; 5.5.3
+DIAMETER_PCC_BEARER_EVENT                    = 4141 ; 5.5.4
+DIAMETER_AN_GW_FAILED                        = 4143 ; 5.5.4
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 133
+DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3
+
+
 ; Type: Grouped AVP
 ; Name: QoS-Rule-Install
 ; Section: 5a.3.1
@@ -1641,6 +1691,31 @@ Session-Linking-Indicator ::= < Enumerated AVP header: 1064 10415 >
         SESSION_LINKING_DEFERRED  = 1
 
 
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Gxx
+; Section: 5a.4.1
+; Table: 5a.4.1.1
+; Page: 146
+Rel9           = 0 ; M
+vSRVCC         = 1 ; O
+EPC-routed     = 2 ; O
+NetLoc         = 3 ; O
+ExtendedFilter = 4 ; O
+void           = 6
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5a.5
+; Page: 147
+DIAMETER_QOS_RULE_EVENT = 5145
+DIAMETER_BEARER_EVENT   = 4142
+
+
 ; Type: Grouped AVP
 ; Name: ADC-Rule-Install
 ; Section: 5b.3.1
@@ -1689,6 +1764,18 @@ ADC-Rule-Report ::= < AVP header: 1097 >
         [ PCC-Rule-Status ]
         [ Rule-Failure-Code ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Sd
+; Section: 5b.4.1
+; Table: 5b.4.1.1
+; Page: 159
+UMCH         = 0 ; O
+Trusted-WLAN = 1 ; O
 
 
 ; Type: Enumerated AVP

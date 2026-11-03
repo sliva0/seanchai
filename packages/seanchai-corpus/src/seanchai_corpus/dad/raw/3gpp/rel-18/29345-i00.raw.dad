@@ -503,6 +503,15 @@ Match-Report ::= < AVP header: 3807 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: P2P-Features
+; Kind: bits
+; Section: 6.3.15
+; Table: 6.3.15-1
+; Page: 47
+"Group Owner Indication" = 0
+
+
 ; Type: Grouped AVP
 ; Name: ProSe-Discovery-Filter
 ; Section: 6.3.20
@@ -514,6 +523,15 @@ ProSe-Discovery-Filter ::= < AVP header: 3813 10415 >
         { ProSe-App-Code }
       * [ ProSe-App-Mask ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: PRR-Flags
+; Kind: bits
+; Section: 6.3.21
+; Table: 6.3.21-1
+; Page: 48
+"WLAN Indication" = 0
 
 
 ; Type: Grouped AVP
@@ -679,6 +697,15 @@ Match-Report-Info ::= < AVP header: 3857 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: PMR-Flags
+; Kind: bits
+; Section: 6.3.57
+; Table: 6.3.57/1
+; Page: 56
+"Metadata Requested" = 0
+
+
 ; Type: Grouped AVP
 ; Name: App-Identifier
 ; Section: 6.3.61
@@ -732,3 +759,26 @@ ProSe-App-Code-Suffix-Range ::= < AVP header: 3847 10415 >
         { Beginning-Suffix }
         [ Ending-Suffix ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 60
+DIAMETER_ERROR_USER_UNKNOWN                      = 5001 ; 6.4.3.1
+DIAMETER_ERROR_UNAUTHORIZED_SERVICE              = 5511 ; 6.4.3.2
+DIAMETER_ERROR_NO_ASSOCIATED_DISCOVERY_FILTER    = 5630 ; 6.4.3.3
+DIAMETER_ERROR_ANNOUNCING_UNAUTHORIZED_IN_PLMN   = 5631 ; 6.4.3.4
+DIAMETER_ERROR_INVALID_APPLICATION_CODE          = 5632 ; 6.4.3.5
+DIAMETER_ERROR_PROXIMITY_UNAUTHORIZED            = 5633 ; 6.4.3.6
+DIAMETER_ERROR_PROXIMITY_REJECTED                = 5634 ; 6.4.3.7
+DIAMETER_ERROR_NO_PROXIMITY_REQUEST              = 5635 ; 6.4.3.8
+DIAMETER_ERROR_UNAUTHORIZED_SERVICE_IN_THIS_PLMN = 5636 ; 6.4.3.9
+DIAMETER_ERROR_PROXIMITY_CANCELLED               = 5637 ; 6.4.3.10
+DIAMETER_ERROR_INVALID_DISCOVERY_TYPE            = 5641 ; 6.4.3.11
+DIAMETER_ERROR_INVALID_TARGET_PDUID              = 5638 ; 6.4.3.12
+DIAMETER_ERROR_INVALID_TARGET_RPAUID             = 5639 ; 6.4.3.13
+DIAMETER_ERROR_NO_ASSOCIATED_RESTRICTED_CODE     = 5640 ; 6.4.3.14
+;; DIAMETER_ERROR_REVOCATION_FAILURE (56x1) ; 6.4.3.15
+;; DIAMETER_ERROR_ALREADY_BANNED (56x2) ; 6.4.3.16

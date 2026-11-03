@@ -2089,6 +2089,21 @@ AN-GW-Status ::= < Enumerated AVP header: 2811 10415 >
         AN_GW_FAILED = 0
 
 
+; Type: Value Table
+; AVP: Credit-Management-Status
+; Kind: bits
+; Section: 5.3.102
+; Table: 5.3.102
+; Page: 172
+"End User Service Denied"             = 0
+"Credit Control Not Applicable"       = 1
+"Authorization Rejected"              = 2
+"User Unknown"                        = 3
+"Rating Failed"                       = 4
+"No Gyn Session, service allowed"     = 5
+"No Gyn Session, service not allowed" = 6
+
+
 ; Type: Grouped AVP
 ; Name: Default-QoS-Information
 ; Section: 5.3.103
@@ -2145,6 +2160,15 @@ Fixed-User-Location-Info ::= < AVP header: 2825 >
 ; Page: 175
 IP-CAN-Session-Charging-Scope ::= < Enumerated AVP header: 2827 10415 >
         IP-CAN_SESSION_SCOPE = 0
+
+
+; Type: Value Table
+; AVP: Monitoring-Flags
+; Kind: bits
+; Section: 5.3.115
+; Table: 5.3.115
+; Page: 175
+"Enable/disable excluding service data flow(s) from the usage monitoring for all traffic of the IP-CAN session" = 0
 
 
 ; Type: Enumerated AVP
@@ -2251,6 +2275,112 @@ Default-Bearer-Indication ::= < Enumerated AVP header: 2844 10415 >
         INACTIVE = 1
 
 
+; Type: Value Table
+; AVP: Presence-Reporting-Area-Node
+; Kind: bits
+; Section: 5.3.141
+; Table: 5.3.141
+; Page: 181
+OCS  = 0
+PCRF = 1
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Gx
+; Section: 5.4.1
+; Table: 5.4.1.1
+; Page: 190
+Rel8                          = 0  ; M
+Rel9                          = 1  ; M
+ProvAFsignalFlow              = 2  ; O
+Rel10                         = 3  ; M
+SponsoredConnectivity         = 4  ; O
+IFOM                          = 5  ; O
+ADC                           = 6  ; O
+vSRVCC                        = 7  ; O
+EPC-routed                    = 8  ; O
+rSRVCC                        = 9  ; O
+NetLoc                        = 10 ; O
+UMCH                          = 11 ; O
+ExtendedFilter                = 12 ; O
+Trusted-WLAN                  = 13 ; O
+SGW-Rest                      = 14 ; O
+TimeBasedUM                   = 15 ; O
+PendingTransaction            = 16 ; O
+ABC                           = 17 ; O
+void                          = 18
+NetLoc-Trusted-WLAN           = 19 ; O
+FBAC                          = 20 ; O
+ConditionalAPNPolicyInfo      = 21 ; O
+RAN-NAS-Cause                 = 22 ; O
+CNO-ULI                       = 23 ; O
+PCSCF-Restoration-Enhancement = 24 ; O
+MissionCriticalQCIs           = 25 ; O
+ResShare                      = 26 ; O
+ExUsage                       = 27 ; O
+NBIFOM                        = 28 ; O
+TSC                           = 29 ; O
+NetLoc-Untrusted-WLAN         = 30 ; O
+CondPolicyInfo                = 31 ; O
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 2
+; Application: Gx
+; Section: 5.4.1
+; Table: 5.4.1.2
+; Page: 190
+Enh-RAN-NAS-Cause             = 0  ; O
+ENB-Change                    = 1  ; O
+RuleVersioning                = 2  ; O
+Multiple-PRA                  = 3  ; O
+CondPolicyInfo-DefaultQoS     = 4  ; O
+Rule-Bound-to-Default-Bearer  = 5  ; O
+3GPP-PS-Data-Off              = 6  ; O
+Extended-BW-NR                = 7  ; O
+RAN-Support-Info              = 8  ; O
+MCVideoQCI                    = 9  ; O
+UE-Status-Change              = 10 ; O
+ADC-Add-Redirection           = 11 ; O
+VBCLTE                        = 12 ; O
+MPSforDTS                     = 13 ; O
+User-Equipment-Info-Extension = 14 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 196
+DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST      = 5453 ; 5.5.3
+DIAMETER_ERROR_TIMED_OUT_REQUEST             = 5454 ; 5.5.3
+DIAMETER_ERROR_INITIAL_PARAMETERS            = 5140 ; 5.5.3
+DIAMETER_ERROR_TRIGGER_EVENT                 = 5141 ; 5.5.3
+DIAMETER_PCC_RULE_EVENT                      = 5142 ; 5.5.3
+DIAMETER_ERROR_BEARER_NOT_AUTHORIZED         = 5143 ; 5.5.3
+DIAMETER_ERROR_TRAFFIC_MAPPING_INFO_REJECTED = 5144 ; 5.5.3
+DIAMETER_ERROR_CONFLICTING_REQUEST           = 5147 ; 5.5.3
+DIAMETER_ADC_RULE_EVENT                      = 5148 ; 5.5.3
+DIAMETER_ERROR_NBIFOM_NOT_AUTHORIZED         = 5149 ; 5.5.3
+DIAMETER_PCC_BEARER_EVENT                    = 4141 ; 5.5.4
+DIAMETER_AN_GW_FAILED                        = 4143 ; 5.5.4
+DIAMETER_PENDING_TRANSACTION                 = 4144 ; 5.5.4
+DIAMETER_UE_STATUS_SUSPEND                   = 4145 ; 5.5.4
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 196
+DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3
+
+
 ; Type: Grouped AVP
 ; Name: QoS-Rule-Install
 ; Section: 5a.3.1
@@ -2320,6 +2450,37 @@ Session-Linking-Indicator ::= < Enumerated AVP header: 1064 10415 >
         SESSION_LINKING_DEFERRED  = 1
 
 
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Gxx
+; Section: 5a.4.1
+; Table: 5a.4.1.1
+; Page: 211
+Rel9                          = 0  ; M
+vSRVCC                        = 1  ; O
+EPC-routed                    = 2  ; O
+NetLoc                        = 3  ; O
+ExtendedFilter                = 4  ; O
+PendingTransaction            = 5  ; O
+void                          = 6
+ResShare                      = 7  ; O
+RuleVersioning                = 8  ; O
+Extended-BW-NR                = 9  ; O
+MPSforDTS                     = 10 ; O
+User-Equipment-Info-Extension = 11 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5a.5
+; Page: 213
+DIAMETER_QOS_RULE_EVENT = 5145
+DIAMETER_BEARER_EVENT   = 4142
+
+
 ; Type: Grouped AVP
 ; Name: ADC-Rule-Install
 ; Section: 5b.3.1
@@ -2383,6 +2544,30 @@ ADC-Rule-Report ::= < AVP header: 1097 >
         [ Rule-Failure-Code ]
         [ Final-Unit-Indication ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Sd
+; Section: 5b.4.1
+; Table: 5b.4.1.1
+; Page: 228
+UMCH                          = 0  ; O
+Trusted-WLAN                  = 1  ; O
+TimeBasedUM                   = 2  ; O
+PendingTransaction            = 3  ; O
+ABC                           = 4  ; O
+CNO-ULI                       = 5  ; O
+ExUsage                       = 6  ; O
+DLDSCPMarking                 = 7  ; O
+TSC                           = 8  ; O
+ENB-Change                    = 9  ; O
+SponsoredConnectivity-Sd      = 10 ; O
+Extended-BW-NR                = 11 ; O
+ADC-Add-Redirection           = 12 ; O
+User-Equipment-Info-Extension = 13 ; O
 
 
 ; Type: Enumerated AVP

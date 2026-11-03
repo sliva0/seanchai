@@ -93,6 +93,16 @@ V2X-Authorization-Data ::= < AVP header: 4700 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: V2X-Permission-in-VPLMN
+; Kind: bits
+; Section: 6.3.3
+; Table: 6.3.3-1
+; Page: 16
+"V2X communication over PC5 Allowed"  = 0
+"V2X communication over MBMS Allowed" = 1
+
+
 ; Type: Grouped AVP
 ; Name: V2X-Application-Server
 ; Section: 6.3.4
@@ -101,3 +111,13 @@ V2X-Application-Server ::= < AVP header: 4702 10415 >
         { Application-Server }
       * [ Geographical-Information ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 17
+DIAMETER_ERROR_USER_UNKNOWN             = 5001 ; 6.4.3.2
+DIAMETER_ERROR_UNKNOWN_V2X_SUBSCRIPTION = 5690 ; 6.4.3.3
+DIAMETER_ERROR_V2X_NOT_ALLOWED          = 5691 ; 6.4.3.4

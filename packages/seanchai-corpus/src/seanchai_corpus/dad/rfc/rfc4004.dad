@@ -172,6 +172,19 @@ MIP-Replay-Mode      346    9.9       Enumerated    M      P     -       V      
 MIP-MSA-Lifetime     367    9.13      Unsigned32    M      P     -       V       Yes
 
 
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 6
+; Page: 27
+DIAMETER_ERROR_MIP_REPLY_FAILURE             = 4005 ; 6.1
+DIAMETER_ERROR_HA_NOT_AVAILABLE              = 4006 ; 6.1
+DIAMETER_ERROR_BAD_KEY                       = 4007 ; 6.1
+DIAMETER_ERROR_MIP_FILTER_NOT_SUPPORTED      = 4008 ; 6.1
+DIAMETER_ERROR_NO_FOREIGN_HA_SERVICE         = 5024 ; 6.2
+DIAMETER_ERROR_END_TO_END_MIP_KEY_ENCRYPTION = 5025 ; 6.2
+
+
 ; Type: Grouped AVP
 ; Name: MIP-MN-AAA-Auth
 ; Section: 7.6

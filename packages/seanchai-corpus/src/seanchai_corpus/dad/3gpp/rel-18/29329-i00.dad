@@ -290,6 +290,27 @@ Wildcarded-IMPU              TS29.229   -
 Session-Priority             TS29.229   -
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.2
+; Page: 15
+DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED       = 5100 ; 6.2.2.1
+DIAMETER_ERROR_OPERATION_NOT_ALLOWED          = 5101 ; 6.2.2.2
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ       = 5102 ; 6.2.2.3
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED   = 5103 ; 6.2.2.4
+DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED   = 5104 ; 6.2.2.5
+DIAMETER_ERROR_TOO_MUCH_DATA                  = 5008 ; 6.2.2.6
+"DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC" = 5105 ; 6.2.2.7
+DIAMETER_ERROR_FEATURE_UNSUPPORTED            = 5011 ; 6.2.2.8
+DIAMETER_ERROR_SUBS_DATA_ABSENT               = 5106 ; 6.2.2.9
+DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA        = 5107 ; 6.2.2.10
+DIAMETER_ERROR_DSAI_NOT_AVAILABLE             = 5108 ; 6.2.2.11
+DIAMETER_ERROR_IDENTITIES_DONT_MATCH          = 5002 ; 6.2.2.12
+DIAMETER_USER_DATA_NOT_AVAILABLE              = 4100 ; 6.2.3.1
+DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
+
+
 ; Type: Grouped AVP
 ; Name: User-Identity
 ; Section: 6.3.1
@@ -351,6 +372,18 @@ Subs-Req-Type ::= < Enumerated AVP header: 705 10415 >
 Requested-Domain ::= < Enumerated AVP header: 706 10415 >
         CS-Domain = 0
         PS-Domain = 1
+
+
+; Type: Value Table
+; AVP: Requested-Nodes
+; Kind: bits
+; Section: 6.3.7A
+; Table: 6.3.7A/1
+; Page: 20
+MME                  = 0
+SGSN                 = 1
+3GPP-AAA-SERVER-TWAN = 2
+AMF                  = 3
 
 
 ; Type: Enumerated AVP
@@ -426,6 +459,16 @@ Local-Time-Zone-Indication ::= < Enumerated AVP header: 718 10415 >
         LOCAL_TIME_ZONE_WITH_LOCATION_INFO_REQUESTED = 1
 
 
+; Type: Value Table
+; AVP: UDR-Flags
+; Kind: bits
+; Section: 6.3.28
+; Table: 6.3.28/1
+; Page: 22
+Location-Information-EPS-Supported = 0
+RAT-Type-Requested                 = 1
+
+
 ; Type: Grouped AVP
 ; Name: Call-Reference-Info
 ; Section: 6.3.29
@@ -434,3 +477,17 @@ Call-Reference-Info ::= < AVP header: 720 10415 >
         { Call-Reference-Number }
         { AS-Number }
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Sh
+; Section: 7.1
+; Table: 7.1.1
+; Page: 25
+Notif-Eff          = 0 ; M
+Update-Eff         = 1 ; O
+Update-Eff-Enhance = 2 ; O
+Additional-MSISDN  = 3 ; O

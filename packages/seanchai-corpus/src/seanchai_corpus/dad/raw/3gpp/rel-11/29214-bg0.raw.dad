@@ -476,3 +476,35 @@ Rx-Request-Type ::= < Enumerated AVP header: 533 10415 >
 Required-Access-Info ::= < Enumerated AVP header: 536 10415 >
         USER_LOCATION = 0
         MS_TIME_ZONE  = 1
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Rx
+; Section: 5.4.1
+; Table: 5.4.1.1
+; Page: 37
+Rel8                  = 0 ; M
+Rel9                  = 1 ; M
+ProvAFsignalFlow      = 2 ; O
+SponsoredConnectivity = 3 ; O
+Rel10                 = 4 ; M
+NetLoc                = 5 ; O
+ExtendedFilter        = 6 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 38
+INVALID_SERVICE_INFORMATION              = 5061
+FILTER_RESTRICTIONS                      = 5062
+REQUESTED_SERVICE_NOT_AUTHORIZED         = 5063
+DUPLICATED_AF_SESSION                    = 5064
+IP-CAN_SESSION_NOT_AVAILABLE             = 5065
+UNAUTHORIZED_NON_EMERGENCY_SESSION       = 5066
+UNAUTHORIZED_SPONSORED_DATA_CONNECTIVITY = 5067
+TEMPORARY_NETWORK_FAILURE                = 5068

@@ -982,6 +982,14 @@ Physical-Access-ID   313    X     -     X     -     ETSI-TS283.034
 M2M-Information   1011   X     -     -     -     oneM2M-TS-0004
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.1.8A
+; Page: 98
+DIAMETER_ERROR_FEATURE_UNSUPPORTED = 5011
+
+
 ; Type: Grouped AVP
 ; Name: Multiple-Services-Credit-Control
 ; Section: 7.1.9
@@ -1016,6 +1024,19 @@ Multiple-Services-Credit-Control ::= < AVP header: 456 >
         [ 3GPP-RAT-Type ]
         [ Related-Trigger ]
 ;;    * [ AVP ]                             ; strikethrough
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 7.1.11
+; Page: 99
+DIAMETER_END_USER_SERVICE_DENIED       = 4010
+DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE = 4011
+DIAMETER_CREDIT_LIMIT_REACHED          = 4012
+DIAMETER_AUTHORIZATION_REJECTED        = 5003
+DIAMETER_USER_UNKNOWN                  = 5030
+DIAMETER_RATING_FAILED                 = 5031
 
 
 ; Type: Grouped AVP

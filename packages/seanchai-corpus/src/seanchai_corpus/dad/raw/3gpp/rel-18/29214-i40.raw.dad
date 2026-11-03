@@ -659,6 +659,17 @@ Sponsoring-Action ::= < Enumerated AVP header: 542 10415 >
         ENABLE_SPONSORING  = 1
 
 
+; Type: Value Table
+; AVP: Service-Authorization-Info
+; Kind: bits
+; Section: 5.3.46
+; Table: 5.3.46
+; Page: 52
+"The transfer policy is known/unknown."                                    = 0
+"The transfer policy has expired/has not expired"                          = 1
+"The time window of the transfer policy has occurred/has not yet occurred" = 2
+
+
 ; Type: Enumerated AVP
 ; Name: Priority-Sharing-Indicator
 ; Section: 5.3.47
@@ -666,6 +677,26 @@ Sponsoring-Action ::= < Enumerated AVP header: 542 10415 >
 Priority-Sharing-Indicator ::= < Enumerated AVP header: 550 10415 >
         PRIORITY_SHARING_ENABLED  = 0
         PRIORITY_SHARING_DISABLED = 1
+
+
+; Type: Value Table
+; AVP: AF-Requested-Data
+; Kind: bits
+; Section: 5.3.50
+; Table: 5.3.50.1
+; Page: 53
+"EPC-level identities required" = 0
+
+
+; Type: Value Table
+; AVP: Pre-emption-Control-Info
+; Kind: bits
+; Section: 5.3.51
+; Table: 5.3.51
+; Page: 53
+"Most recent added flow"  = 0
+"Least recent added flow" = 1
+"Highest bandwidth flow"  = 2
 
 
 ; Type: Enumerated AVP
@@ -740,3 +771,80 @@ MPS-Action ::= < Enumerated AVP header: 582 10415 >
         ENABLE_MPS_FOR_DTS                         = 1
         AUTHORIZE_AND_ENABLE_MPS_FOR_DTS           = 2
         AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING = 3
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Rx
+; Section: 5.4.1
+; Table: 5.4.1.1
+; Page: 63
+Rel8                     = 0  ; M
+Rel9                     = 1  ; M
+ProvAFsignalFlow         = 2  ; O
+SponsoredConnectivity    = 3  ; O
+Rel10                    = 4  ; M
+NetLoc                   = 5  ; O
+ExtendedFilter           = 6  ; O
+SCTimeBasedUM            = 7  ; O
+Netloc-Trusted-WLAN      = 8  ; O
+RAN-NAS-Cause            = 9  ; O
+GroupComService          = 10 ; O
+ResShare                 = 11 ; O
+DeferredService          = 12 ; O
+DSCP                     = 13 ; O
+SponsorChange            = 14 ; O
+E2EQOSMTSI               = 15 ; O
+NetLoc-Untrusted-WLAN    = 16 ; O
+MCPTT                    = 17 ; O
+PrioritySharing          = 18 ; O
+PLMNInfo                 = 19 ; O
+MediaComponentVersioning = 20 ; O
+MCPTT-Preemption         = 21 ; O
+MCVideo                  = 22 ; O
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 2
+; Application: Rx
+; Section: 5.4.1
+; Table: 5.4.1.2
+; Page: 63
+PCSCF-Restoration-Enhancement = 0  ; O
+Extended-Max-Requested-BW-NR  = 1  ; O
+Extended-Min-Requested-BW-NR  = 2  ; O
+Extended-BW-E2EQOSMTSI-NR     = 3  ; O
+VBC                           = 4  ; O
+CHEM                          = 5  ; O
+VBCLTE                        = 6  ; O
+FLUS                          = 7  ; O
+EPSFallbackReport             = 8  ; O
+ATSSS                         = 9  ; O
+QoSHint                       = 10 ; O
+ReallocationOfCredit          = 11 ; O
+Netloc-Trusted-N3GA           = 12 ; O
+NetLoc-Wireline               = 13 ; O
+MPSforDTS                     = 14 ; O
+User-Equipment-Info-Extension = 15 ; O
+AuthorizationForMpsSignalling = 16 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 68
+INVALID_SERVICE_INFORMATION                  = 5061 ; 5.5.1
+FILTER_RESTRICTIONS                          = 5062 ; 5.5.1
+REQUESTED_SERVICE_NOT_AUTHORIZED             = 5063 ; 5.5.1
+DUPLICATED_AF_SESSION                        = 5064 ; 5.5.1
+IP-CAN_SESSION_NOT_AVAILABLE                 = 5065 ; 5.5.1
+UNAUTHORIZED_NON_EMERGENCY_SESSION           = 5066 ; 5.5.1
+UNAUTHORIZED_SPONSORED_DATA_CONNECTIVITY     = 5067 ; 5.5.1
+TEMPORARY_NETWORK_FAILURE                    = 5068 ; 5.5.1
+UNAUTHORIZED_NON_RLOS_SESSION                = 5069 ; 5.5.1
+REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED = 4261 ; 5.5.2
