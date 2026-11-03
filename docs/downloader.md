@@ -83,7 +83,9 @@ experiments, not for refreshing the corpus.
   in `newer_source_version`. Only when no version of the release has a PDF
   does it take the newest archive with an earlier-version PDF, recorded in
   `pdf_version`; `attach_pages` checks the cover and refuses such a PDF. A
-  `--version` is never walked back.
+  `--version` is never walked back. An earlier rendering answers only ETSI's
+  404 for the exact one: any other failure to fetch it fails the run, since a
+  mismatched PDF is a document that cannot be regenerated.
 - **The ETSI URL is read off the deliver listing**, since a version
   directory carries an edition suffix (`18.07.00_60`) the version does not
   determine. That URL is the manifest's `pdf_url` and the `.dad` file's

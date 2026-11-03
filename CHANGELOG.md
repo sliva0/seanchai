@@ -8,6 +8,8 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- A download takes an earlier ETSI rendering only on a 404 for the exact one,
+  and fails on any other error fetching it.
 - The docx extractor reads a command printed as a category table under
   `message-tables`, TS 32.299 V11.20.0's RAR, and fails on a caption naming a
   command over a table it cannot read.

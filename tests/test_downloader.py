@@ -1084,6 +1084,38 @@ def test_download_3gpp_prefers_the_highest_version_with_a_published_pdf(
     )
 
 
+@pytest.mark.parametrize(
+    "exact",
+    [(403, b"refused"), b"not a pdf"],
+    ids=["refused", "broken"],
+)
+def test_a_failed_fetch_of_the_exact_pdf_takes_no_earlier_rendering(
+    tmp_path, local_http_server, monkeypatch, exact
+):
+    # TS 129 329 V11.7.0 is published; a fetch failing once recorded V11.6.0's PDF.
+    monkeypatch.setattr(downloader, "ETSI_DELIVER", local_http_server.base_url)
+    archive_url = local_http_server.route("/29329-b70.zip", _zip_bytes(spec=b"body"))
+    directory = "/etsi_ts/129300_129399/129329"
+    local_http_server.route(f"{directory}/", b"11.06.00_60/ 11.07.00_60/")
+    local_http_server.route(f"{directory}/11.07.00_60/ts_129329v110700p.pdf", exact)
+    earlier = f"{directory}/11.06.00_60/ts_129329v110600p.pdf"
+    local_http_server.route(earlier, _pdf_bytes())
+
+    with pytest.raises(downloader.DownloadError) as raised:
+        downloader.download_3gpp(
+            downloader.ThreeGppSpec("29.329", "Sh"),
+            {(11, 7, 0): archive_url},
+            release=11,
+            output=tmp_path,
+            tree=tmp_path / ".staging",
+            extract=False,
+            pdfs=True,
+        )
+
+    assert not isinstance(raised.value, downloader.NotPublishedError)
+    assert local_http_server.counts.get(earlier, 0) == 0
+
+
 def test_a_pinned_version_is_published_in_its_releases_tree_beside_the_catalogs(
     tmp_path, local_http_server, monkeypatch
 ):
