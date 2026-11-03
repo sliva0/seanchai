@@ -1,0 +1,8 @@
+# Source declarations for RFC 7075 (Realm-Based Redirection In Diameter).
+
+[[quirk]]
+name = "clause-avp-table"
+reason = """
+    the document prints no AVP table; clause 3.3 defines Redirect-Realm in
+    prose, 'The Redirect-Realm AVP (620) is of type DiameterIdentity'
+    """

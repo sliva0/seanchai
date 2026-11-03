@@ -870,9 +870,15 @@ def _simple_avp_tables(
     return tuple(tables)
 
 
+# RFC 7075 clause 3.3 is titled "The Redirect-Realm AVP". Only a defining
+# sentence reads this title: its clause holds no rule to anchor.
+_CLAUSE_TITLE_RE = re.compile(
+    r"^(?:The )?(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)(?: AVP)?$"
+)
 _CLAUSE_AVP_RE = re.compile(
     r"\b(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) AVP\s*"
-    r"\((?P<identity>[^)]*?(?:Code|Type)\s+(?P<code>\d+)[^)]*)\)"
+    # RFC 7075 clause 3.3 prints the code alone: "The Redirect-Realm AVP (620)".
+    r"\((?P<identity>(?:[^)]*?(?:Code|Type)\s+)?(?P<code>\d+)[^)]*)\)"
     # RFC 7155 cites the RADIUS document its attribute number comes from
     # between the identity and the type ("(AVP Code 8) [RFC2865] is of
     # type"). A citation *here* marks heritage, not an import — the AVP is
@@ -906,7 +912,7 @@ def _clause_facts(
     # RFC 6734 clause 3.1.5 titles Key-SPI without the optional AVP suffix.
     facts = []
     for section in sections:
-        title = _TITLE_RE.match(section.title)
+        title = _CLAUSE_TITLE_RE.match(section.title)
         if title is None:
             continue
         prose = " ".join(text.strip() for text in section.texts)

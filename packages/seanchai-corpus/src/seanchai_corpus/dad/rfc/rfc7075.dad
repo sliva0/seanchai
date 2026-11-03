@@ -1,0 +1,11 @@
+; Specification: RFC 7075
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc7075.txt
+
+
+; Type: AVP Table
+; Section: 3.3
+; Page: 7
+; Columns: Name   Code   Section   Type
+Redirect-Realm    620    3.3       DiameterIdentity

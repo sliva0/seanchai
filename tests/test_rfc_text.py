@@ -408,3 +408,16 @@ def test_an_allocation_table_may_head_its_names_avp_name(tmp_path):
     assert (row.name, row.code, row.section) == ("Token-Rate", 496, "3.1.1")
 
 
+def test_a_defining_sentence_may_print_its_code_alone(tmp_path):
+    """RFC 7075 clause 3.3: title "The Redirect-Realm AVP", sentence "(620)"."""
+    spec = _read(
+        tmp_path,
+        "3.3.  The Redirect-Realm AVP\n\n"
+        "   The Redirect-Realm AVP (620) is of type DiameterIdentity.  It says.\n",
+        "clause-avp-table",
+    )
+    row = _of(spec, ast.AvpTable)[0].rows[0]
+    assert (row.name, row.code) == ("Redirect-Realm", 620)
+    assert row.data_type is ast.DataType.DIAMETER_IDENTITY
+
+
