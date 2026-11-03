@@ -1,0 +1,134 @@
+; Specification: RFC 6738
+; Vendor-ID: 0
+; Bases: RFC6733, RFC4005 ;; corrected: (RFC6738.py#bases-nasreq)
+; Link: https://www.rfc-editor.org/rfc/rfc6738.txt
+
+
+; Type: Application Scope ;; inserted: (RFC6738.py#application-id)
+; Name: Diameter IKE SK
+; Section: 3
+; Page: 5
+; Application-ID: 11
+; Applies-To: 5.*
+
+
+; Type: Message
+; Name: IKEv2-SK-Request, IKESKR
+; Section: 5.1
+; Page: 8
+<IKEv2-SK-Request> ::= < Diameter Header: 329, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ Origin-State-Id ]
+        [ User-Name ]
+        [ Key-SPI ]
+        { IKEv2-Identity }
+        [ Auth-Session-State ]
+        { IKEv2-Nonces }
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+;; ...
+      * [ AVP ]
+
+
+; Type: Message
+; Name: IKEv2-SK-Answer, IKESKA
+; Section: 5.2
+; Page: 9
+<IKEv2-SK-Answer> ::= < Diameter Header: 329, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Key ]
+        [ Responder-Identity ]
+        [ Auth-Session-State ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+;; ...
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 8
+; Page: 13
+; Columns: Name       Code   Section   Type          Must   M.not
+IKEv2-Nonces          587    6.1       Grouped       M      V
+Ni                    588    6.1.1     OctetString   M      V
+Nr                    589    6.1.2     OctetString   M      V
+IKEv2-Identity        590    6.2       Grouped       M      V
+Initiator-Identity    591    6.2.1     Grouped       M      V
+ID-Type               592    6.2.1.1   Enumerated    M      V
+Identification-Data   593    6.2.1.2   OctetString   M      V
+Responder-Identity    594    6.2.2     Grouped       M      V
+
+
+; Type: Reused AVPs
+; Section: 8
+; Table: 8
+; Page: 13
+; Columns: Name   Code   From      Type
+Key               581    RFC6734   Grouped
+Keying-Material   583    RFC6734   OctetString
+Key-Lifetime      584    RFC6734   Integer64
+Key-SPI           585    RFC6734   Unsigned32
+Key-Type          582    RFC6734   Enumerated
+
+
+; Type: Grouped AVP
+; Name: IKEv2-Nonces
+; Section: 6.1
+; Page: 10
+IKEv2-Nonces ::= < AVP header: 587 >
+        { Ni }
+        { Nr }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: IKEv2-Identity
+; Section: 6.2
+; Page: 10
+IKEv2-Identity ::= < AVP header: 590 >
+        { Initiator-Identity }
+        [ Responder-Identity ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Initiator-Identity
+; Section: 6.2.1
+; Page: 10
+Initiator-Identity ::= < AVP header: 591 >
+        { ID-Type }
+        { Identification-Data }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Responder-Identity
+; Section: 6.2.2
+; Page: 11
+Responder-Identity ::= < AVP header: 594 >
+        { ID-Type }
+        { Identification-Data }
+      * [ AVP ]

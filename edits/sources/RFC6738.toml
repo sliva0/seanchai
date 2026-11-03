@@ -1,0 +1,16 @@
+# Source declarations for RFC 6738 (Diameter IKEv2 SK).
+
+[[quirk]]
+name = "note-avp-origins"
+reason = """
+    clause 8's table cites 'Note 1' for its Key rows, under which 'The Key,
+    Keying-Material, Key-Lifetime, Key-SPI, and Key-Type AVPs are defined in
+    [RFC6734]'
+    """
+
+[[quirk]]
+name = "elided-members"
+reason = """
+    clauses 5.1 and 5.2 print '...' in IKESKR's and IKESKA's bodies, before the
+    members they go on to list
+    """
