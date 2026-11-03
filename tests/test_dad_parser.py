@@ -35,6 +35,58 @@ def test_parses_enumerated_values_descriptions_and_reserved_ranges():
     )
 
 
+def test_void_values_parse_and_round_trip_in_one_spelling():
+    # TS 29.214 clause 5.3.13 prints `Void (0)` and `Void (5)`.
+    text = _dad(
+        "; Type: Enumerated AVP",
+        "; Name: Example-Mode",
+        "; Section: 5.2",
+        "Example-Mode ::= < Enumerated AVP header: 100 10415 >",
+        "      ; VOID = 0",
+        "        On   = 1",
+        "      ; VOID = 5-7",
+    )
+
+    spec = parser.parse(text)
+
+    (enumerated,) = spec.sections
+    assert enumerated.values == (
+        ast.VoidValues(first=0, last=0),
+        ast.EnumValue(name="On", value=1),
+        ast.VoidValues(first=5, last=7),
+    )
+    canonical = formatter.format_spec(spec)
+    assert canonical.endswith(
+        "      ; VOID = 0\n        On   = 1\n      ; VOID = 5-7\n"
+    )
+    assert parser.parse(canonical) == spec
+    loose = text.replace("      ; VOID = 5-7", "  ; VOID   = 5-7")
+    assert parser.parse(loose) == spec
+    assert formatter.format_spec(parser.parse(loose)) == canonical
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "      ; VOID = 5..7",
+        "      ; VOID = 5-7 ; withdrawn",
+        "      ; VOID = 7-5",
+        "      ; VOID",
+    ],
+)
+def test_a_malformed_void_line_is_a_parse_error(line):
+    with pytest.raises(parser.DadParseError, match="line 9:"):
+        parser.parse(
+            _dad(
+                "; Type: Enumerated AVP",
+                "; Name: Example",
+                "; Section: 1",
+                "Example ::= < Enumerated AVP header: 1 >",
+                line,
+            )
+        )
+
+
 def test_vendor_specific_ranges_parse_and_round_trip_in_one_spelling():
     # TS 32.299 clause 7.2.213 and oneM2M TS-0004 clause A.5.17 leave
     # 100-199 to vendors.

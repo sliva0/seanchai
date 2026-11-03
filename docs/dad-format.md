@@ -45,7 +45,7 @@ section, each starting with `; Type:`.
 
 - **Directive comments are grammar.** A single `;` in a defined position is
   semantic (`; Key: value` headers, `; bold`, `; strikethrough`,
-  `; RESERVED`, `; VENDOR-SPECIFIC`); a malformed one is a parse error.
+  `; RESERVED`, `; VOID`, `; VENDOR-SPECIFIC`); a malformed one is a parse error.
   Free-text comments use `;;` and carry no data. Where they attach is still
   defined ([Comments](#comments)), so normalising a file keeps them.
 - **The file states its own vendor-id.** `; Vendor-ID:` is the vendor space
@@ -118,6 +118,11 @@ section, each starting with `; Type:`.
   `; RESERVED = 11-99`, a value no dictionary may assign; the second is
   `; VENDOR-SPECIFIC = 100-199 ; Vendor specific SM services`, values any
   dictionary may assign under a name of its own.
+- **A withdrawn value is no reserved value.** TS 29.214's Specific-Action prints
+  `Void (0)` and `Void (5)`: values the document once assigned and has
+  withdrawn. They are `; VOID = 0` and `; VOID = 5`, which no dictionary may
+  assign, distinct from `; RESERVED`, which was never assigned, and neither is a
+  value named `Void`: the word replaces a label, it is none.
 - **A registry allocates; it defines nothing.** TS 29.230 assigns each AVP
   code, command code and application id to the document defining it, so
   its tables are `Registry` blocks: a row is a code, the name the registry

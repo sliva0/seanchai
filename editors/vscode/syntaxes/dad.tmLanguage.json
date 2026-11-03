@@ -6,6 +6,7 @@
     { "include": "#comment" },
     { "include": "#registry-reserved" },
     { "include": "#reserved" },
+    { "include": "#void" },
     { "include": "#vendor-specific" },
     { "include": "#directive-text" },
     { "include": "#directive" },
@@ -35,6 +36,16 @@
       "match": "^(\\s*)(; RESERVED)(\\s*)(=)\\s*(\\d+)(?:(-)(\\d+))?",
       "captures": {
         "2": { "name": "keyword.other.reserved.dad" },
+        "4": { "name": "keyword.operator.assignment.dad" },
+        "5": { "name": "constant.numeric.dad" },
+        "6": { "name": "keyword.operator.range.dad" },
+        "7": { "name": "constant.numeric.dad" }
+      }
+    },
+    "void": {
+      "match": "^(\\s*)(; VOID)(\\s*)(=)\\s*(\\d+)(?:(-)(\\d+))?",
+      "captures": {
+        "2": { "name": "keyword.other.void.dad" },
         "4": { "name": "keyword.operator.assignment.dad" },
         "5": { "name": "constant.numeric.dad" },
         "6": { "name": "keyword.operator.range.dad" },
