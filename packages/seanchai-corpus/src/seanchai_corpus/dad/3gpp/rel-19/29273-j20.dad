@@ -1443,7 +1443,7 @@ BSSID                     TS32.299         -
 Location-Information      RFC5580          -
 Location-Data             RFC5580          -
 Operator-Name             RFC5580          -
-Logical-Access-ID         ETSI-TS283.034   -
+Logical-Access-ID         ETSI-ES283.034   - ;; corrected: (TS29.273.py#logical-access-id-etsi-standard)
 Local-Time-Zone           TS29.272         -
 PDN-Type                  TS29.272         -
 Served-Party-IP-Address   TS32.299         -

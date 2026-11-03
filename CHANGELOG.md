@@ -19,6 +19,10 @@ Nothing has been published to PyPI yet.
   TS 32.299 cites for thirteen AVPs in each copy; `seanchai export` knows OMA as
   a publisher, and table 11's use marks are the `SI`, `CCR-MSCC` and `CCA-MSCC`
   mark columns.
+- `registry_reservation(first, last)` selects a registry's reserved range in a
+  correction: TS 29.230 table 7.1's 1324..1399 misprints TS 32.299. Corrected
+  files name `ETSI-ES283.034` where 3GPP prints "ETSI TS 283 034"; `CITED_AS`
+  answers the raw files.
 - `seanchai regenerate` names an ETSI document in parts as ETSI does
   (`ts18305901-020101`), and the catalog gains ETSI TS 183 020, TS 183 059-1 and
   3GPP2 X.S0013-006.

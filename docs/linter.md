@@ -228,7 +228,8 @@ held copy of another answers it only where `corpus.STAND_INS` says so. TS
 stands in. A reference the citing documents spell otherwise than the
 publisher resolves through a table in `corpus.py` with one entry per
 misnaming: 3GPP cites "ETSI TS 283 034", which ETSI publishes as ES 283
-034. Raw files are excluded from a corpus by default.
+034, so a raw file's cell still resolves, and corrections name ES 283 034 in the
+corrected files. Raw files are excluded from a corpus by default.
 
 ## Vendor spaces
 
@@ -306,9 +307,6 @@ What still reports, and why each stays:
   among its own, each clause referring to TS 29.229; TS 29.273 defines
   `3GPP-AAA-Server-Name` (318), which the registry's first row still gives
   TS 29.234.
-- **`registry-reserved-code`.** TS 32.299 defines `PSCell-Info` and `Nr-Cgi`
-  in a range table 7.1 reserves "for TS 32.229", most likely a misprint of
-  TS 32.299.
 - **`registry-result-code-document`.** A clause listing a code the registry
   gives another document without saying so: TS 29.272's
   `DIAMETER_ERROR_USER_UNKNOWN` and `DIAMETER_ERROR_ROAMING_NOT_ALLOWED`, TS

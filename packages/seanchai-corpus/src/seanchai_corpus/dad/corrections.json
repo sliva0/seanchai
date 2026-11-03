@@ -671,6 +671,22 @@
   },
   "29212-bj0": {
    "edits": {
+    "TS29.212.py#logical-access-id-etsi-standard-5-4": {
+     "kind": "correction",
+     "reason": "the clause 5.4 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
+    "TS29.212.py#logical-access-id-etsi-standard-5b-4": {
+     "kind": "correction",
+     "reason": "the clause 5b.4 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
+    "TS29.212.py#physical-access-id-etsi-standard-5-4": {
+     "kind": "correction",
+     "reason": "the clause 5.4 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
+    "TS29.212.py#physical-access-id-etsi-standard-5b-4": {
+     "kind": "correction",
+     "reason": "the clause 5b.4 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
     "TS29.212.py#rel11-framed-ipv6-prefix-row-5-4": {
      "kind": "correction",
      "reason": "the clause 5.4 re-used table lower-cases the 'v'; RFC 4005, which defines the AVP, spells 'IPv6'"
@@ -1052,6 +1068,30 @@
        0
       ]
      ]
+    },
+    "TS29.212.py#logical-access-id-etsi-standard-5-4-0": {
+     "kind": "correction",
+     "reason": "the clause 5.4.0 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
+    "TS29.212.py#logical-access-id-etsi-standard-5b-4-0": {
+     "kind": "correction",
+     "reason": "the clause 5b.4.0 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
+    "TS29.212.py#oc-olr-origin-5c-4-1": {
+     "kind": "correction",
+     "reason": "table 5c.4.1.1 cites 'IETF RFC 7863 [49]' for OC-OLR; clause 2's [49] is IETF RFC 7683, 'Diameter Overload Indication Conveyance', which defines it and the other tables cite, and RFC 7863 concerns NFS"
+    },
+    "TS29.212.py#oc-supported-features-origin-5c-4-1": {
+     "kind": "correction",
+     "reason": "table 5c.4.1.1 cites 'IETF RFC 7863 [49]' for OC-Supported-Features; clause 2's [49] is IETF RFC 7683, 'Diameter Overload Indication Conveyance', which defines it and the other tables cite, and RFC 7863 concerns NFS"
+    },
+    "TS29.212.py#physical-access-id-etsi-standard-5-4-0": {
+     "kind": "correction",
+     "reason": "the clause 5.4.0 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
+    "TS29.212.py#physical-access-id-etsi-standard-5b-4-0": {
+     "kind": "correction",
+     "reason": "the clause 5b.4.0 table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
     },
     "TS29.212.py#timed-out-request-result-code-reused": {
      "expect": "DIAMETER_ERROR_TIMED_OUT_REQUEST (code 5454) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.273",
@@ -1604,6 +1644,14 @@
   },
   "29219-j00": {
    "edits": {
+    "TS29.219.py#logical-access-id-etsi-standard": {
+     "kind": "correction",
+     "reason": "table 5.4 cites [17], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
+    "TS29.219.py#physical-access-id-etsi-standard": {
+     "kind": "correction",
+     "reason": "table 5.4 cites [17], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
     "TS29.219.py#vendor-id-pending-policy-counter-information": {
      "kind": "correction",
      "reason": "clause 5.3.5's AVP header omits the vendor-id; clause 5.3.0 gives every AVP the document defines vendor 10415 and table 5.3.0.1 marks the V flag mandatory"
@@ -1700,6 +1748,21 @@
     }
    ],
    "version": "19.1.0"
+  },
+  "29230-j30": {
+   "edits": {
+    "TS29.230.py#reserved-1324-document": {
+     "kind": "correction",
+     "reason": "table 7.1's note reserves 1324 to 1399 'for TS 32.229', which clause 2 does not list; [5] is TS 32.299, every row before the range cites it and it defines PSCell-Info and Nr-Cgi inside the range"
+    },
+    "TS29.230.py#reserved-1324-purpose": {
+     "kind": "correction",
+     "reason": "the same note's words: 'reserved for TS 32.229' transposes clause 2's [5], TS 32.299"
+    }
+   },
+   "reference": "TS29.230",
+   "renames": [],
+   "version": "19.3.0"
   },
   "29234-b20": {
    "edits": {
@@ -2326,6 +2389,10 @@
        1
       ]
      ]
+    },
+    "TS29.273.py#logical-access-id-etsi-standard": {
+     "kind": "correction",
+     "reason": "table 5.2.3.1/2 cites 'ETSI TS 283 034 [48]', as clause 2's [48] does; the document's own prose cites 'ETSI ES 283 034 [48]', which is how ETSI publishes that title, and it has no TS 283 034"
     },
     "TS29.273.py#mip-home-agent-address-reused": {
      "kind": "insert",
@@ -4391,6 +4458,10 @@
      "kind": "insert",
      "reason": "table 7.1.0.1 lists IETF AVPs without per-row origins; clause 7.1.0 points at RFC 6733 [401], whose AVP table defines this one"
     },
+    "TS32.299.py#logical-access-id-etsi-standard": {
+     "kind": "correction",
+     "reason": "table 7.4.1 cites [300], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
+    },
     "TS32.299.py#member-change-condition": {
      "kind": "correction",
      "reason": "clause 7.2.37 defines Change-Condition; the body of Traffic-Data-Volumes spells it Change-condition"
@@ -4502,6 +4573,10 @@
     "TS32.299.py#oma-total-number-of-messages-sent": {
      "kind": "supply",
      "reason": "table 7.2.0.1 types Total-Number-Of-Messages-Sent 'refer [223]', OMA-DDS-Charging_Data; its V1.0 table 11 (clause 8.4) gives code 2114 type Unsigned32, flags Must V,M and May P"
+    },
+    "TS32.299.py#physical-access-id-etsi-standard": {
+     "kind": "correction",
+     "reason": "table 7.4.1 cites [300], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
     },
     "TS32.299.py#raa-redirect-max-cache-time": {
      "kind": "correction",

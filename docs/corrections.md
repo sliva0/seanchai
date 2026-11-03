@@ -65,7 +65,8 @@ corrected file cites, so name what is corrected
   name, occurrence=)`, `avp_table(label)` (`None` for a table printing no
   label), `reused_avps(label)`, `application_scope(name)`, `undefined(name)`,
   `value_table(avp, section=, feature_list_id=)`, `value_row(parent, name,
-  value=)` (`parent` a `value_table` or the AVP's name), `header()`.
+  value=)` (`parent` a `value_table` or the AVP's name),
+  `registry_reservation(first, last)`, `header()`.
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, for a body that prints a rule twice
   identically (TS 29.229's RTA prints `< Session-Id >` on two lines), or

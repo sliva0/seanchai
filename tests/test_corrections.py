@@ -161,6 +161,44 @@ def test_two_corrections_to_the_same_field_are_rejected():
         corrections.apply(_spec(), [correction, correction])
 
 
+def test_a_registry_reservation_is_corrected_by_its_range():
+    """TS 29.230 table 7.1 reserves 1324-1399 "for TS 32.229", TS 32.299."""
+    spec = parser.parse(
+        "; Specification: 3GPP TS 29.230\n; Version: 19.3.0\n; Vendor-ID: 10415\n"
+        "; Bases: RFC6733\n\n\n"
+        "; Type: Registry\n; Registry: AVP Codes\n; Section: 7\n; Table: 7.1\n"
+        "; Columns: Code Name Defined-In\n"
+        '1323 VoLTE-Information TS32.299\n; RESERVED 1324..1399 TS32.229 "TS 32.229"\n'
+    )
+    edits = [
+        corrections.Correction(
+            id="reserved-document",
+            target=corrections.registry_reservation(1324, 1399),
+            field="defined_in",
+            expect=("TS32.229",),
+            replace=("TS32.299",),
+            reason="r",
+        ),
+    ]
+
+    corrected, _ = corrections.apply(spec, edits)
+
+    (registry,) = corrected.sections
+    assert isinstance(registry, ast.Registry)
+    assert registry.rows[1] == ast.RegistryReservation(
+        first=1324, last=1399, defined_in=("TS32.299",), purpose="TS 32.229"
+    )
+    with pytest.raises(corrections.CorrectionError, match=r"1324\.\.1400"):
+        corrections.apply(
+            spec,
+            [
+                dataclasses.replace(
+                    edits[0], target=corrections.registry_reservation(1324, 1400)
+                )
+            ],
+        )
+
+
 def test_a_correction_that_replaces_a_value_with_itself_is_rejected():
     with pytest.raises(corrections.CorrectionError, match="with itself"):
         _correction(corrections.table_row("Example-Mode"), "code", 1600, 1600)

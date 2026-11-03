@@ -56,8 +56,10 @@ class CorpusNotInstalledError(CorpusError):
 # reference a From cell carries. TS 29.212 (clause 2, [37]: "ETSI TS 283 034
 # v2.2.0"), 29.219, 29.273 and 32.299 cite the e4 document as a Technical
 # Specification; ETSI publishes V2.2.0 as an ETSI Standard, ES 283 034, the
-# title its transcription carries, and has no TS 283 034. One entry per
-# misnaming, never a fuzzy match.
+# title its transcription carries, and has no TS 283 034. Corrections name the
+# publisher's document in each corrected file, so this answers a raw file's
+# From cell, which keeps what is printed. One entry per misnaming, never a fuzzy
+# match.
 CITED_AS = {"ETSI-TS283.034": "ETSI-ES283.034"}
 
 

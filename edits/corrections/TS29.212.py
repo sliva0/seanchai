@@ -342,3 +342,54 @@ CORRECTIONS += [
         versions="18.2.0..19.1.0",
     ),
 ]
+
+# Clause 2 [37] prints "ETSI TS 283 034 v2.2.0" and the Gx and Sd tables cite it
+# so. ETSI publishes that document as an ETSI Standard, ES 283 034 V2.2.0, whose
+# title is the title [37] gives, and has no TS 283 034.
+CORRECTIONS += [
+    Correction(
+        id=f"{name.lower()}-etsi-standard-{section.replace('.', '-')}",
+        target=reused_row(name, section=section),
+        field="origin",
+        expect="ETSI-TS283.034",
+        replace="ETSI-ES283.034",
+        reason=f"the clause {section} table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI"
+        " publishes that title and version as ES 283 034, and has no TS 283 034",
+        versions="19.1.0",
+    )
+    for section in ("5.4.0", "5b.4.0")
+    for name in ("Logical-Access-ID", "Physical-Access-ID")
+]
+
+CORRECTIONS += [
+    Correction(
+        id=f"{name.lower()}-etsi-standard-{section.replace('.', '-')}",
+        target=reused_row(name, section=section),
+        field="origin",
+        expect="ETSI-TS283.034",
+        replace="ETSI-ES283.034",
+        reason=f"the clause {section} table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI"
+        " publishes that title and version as ES 283 034, and has no TS 283 034",
+        versions="11.19.0",
+    )
+    for section in ("5.4", "5b.4")
+    for name in ("Logical-Access-ID", "Physical-Access-ID")
+]
+
+# Table 5c.4.1.1 cites "IETF RFC 7863 [49]" for the two overload AVPs, and clause
+# 2's [49] is IETF RFC 7683, as the same rows of the document's other re-used
+# tables read it. RFC 7863 concerns NFS and defines no AVP.
+CORRECTIONS += [
+    Correction(
+        id=f"{name.lower()}-origin-5c-4-1",
+        target=reused_row(name, section="5c.4.1"),
+        field="origin",
+        expect="RFC7863",
+        replace="RFC7683",
+        reason=f"table 5c.4.1.1 cites 'IETF RFC 7863 [49]' for {name}; clause 2's"
+        " [49] is IETF RFC 7683, 'Diameter Overload Indication Conveyance', which"
+        " defines it and the other tables cite, and RFC 7863 concerns NFS",
+        versions="19.1.0",
+    )
+    for name in ("OC-OLR", "OC-Supported-Features")
+]

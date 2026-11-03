@@ -1041,7 +1041,7 @@ Framed-IP-Address                          RFC4005          All                 
 Framed-IPv6-Prefix                         RFC4005          All                  Both ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5-4-0)
 Granted-Service-Unit                       RFC8506          All                  Both,Rel9,TimeBasedUM
 Load                                       RFC8583          All                  ""
-Logical-Access-ID                          ETSI-TS283.034   xDSL                 Both,Rel10
+Logical-Access-ID                          ETSI-ES283.034   xDSL                 Both,Rel10 ;; corrected: (TS29.212.py#logical-access-id-etsi-standard-5-4-0)
 Max-Requested-Bandwidth-UL                 TS29.214         All                  PC
 Max-Requested-Bandwidth-DL                 TS29.214         All                  PC
 Maximum-Wait-Time                          TS29.273         All                  ""
@@ -1050,7 +1050,7 @@ OC-Supported-Features                      RFC7683          All                 
 Origination-Time-Stamp                     TS29.273         All                  ""
 PC-Session-Recovery-Status                 TS29.214         3GPP-EPS             CnHealthMonitor
 PDN-Connection-Charging-ID                 TS32.299         All                  ABC
-Physical-Access-ID                         ETSI-TS283.034   xDSL                 Both,Rel10
+Physical-Access-ID                         ETSI-ES283.034   xDSL                 Both,Rel10 ;; corrected: (TS29.212.py#physical-access-id-etsi-standard-5-4-0)
 Quota-Consumption-Time                     TS32.299         All                  TimeBasedUM
 RAI                                        TS29.061         3GPP-GPRS,3GPP-EPS   Both
 Rating-Group                               RFC8506          All                  CC
@@ -1216,7 +1216,7 @@ Framed-IPv6-Prefix                      RFC4005 ;; corrected: (TS29.212.py#frame
 Granted-Service-Unit                    RFC8506
 IP-CAN-Type                             TS29.212
 Load                                    RFC8583
-Logical-Access-ID                       ETSI-TS283.034
+Logical-Access-ID                       ETSI-ES283.034 ;; corrected: (TS29.212.py#logical-access-id-etsi-standard-5b-4-0)
 Max-Requested-Bandwidth-UL              TS29.214
 Max-Requested-Bandwidth-DL              TS29.214
 Metering-Method                         TS29.212
@@ -1230,7 +1230,7 @@ Offline                                 TS29.212
 Online                                  TS29.212
 PCC-Rule-Status                         TS29.212
 PDN-Connection-Charging-ID              TS32.299
-Physical-Access-ID                      ETSI-TS283.034
+Physical-Access-ID                      ETSI-ES283.034 ;; corrected: (TS29.212.py#physical-access-id-etsi-standard-5b-4-0)
 Precedence                              TS29.212
 Presence-Reporting-Area-Identifier      TS29.212
 Presence-Reporting-Area-Information     TS29.212
@@ -1309,8 +1309,8 @@ Flow-Information                        TS29.212   ""
 Framed-IP-Address                       RFC4005    ""
 Framed-IPv6-Prefix                      RFC4005    "" ;; corrected: (TS29.212.py#framed-ipv6-prefix-row-5c-4-1)
 Load                                    RFC8583    ""
-OC-OLR                                  RFC7863    ""
-OC-Supported-Features                   RFC7863    ""
+OC-OLR                                  RFC7683    "" ;; corrected: (TS29.212.py#oc-olr-origin-5c-4-1)
+OC-Supported-Features                   RFC7683    "" ;; corrected: (TS29.212.py#oc-supported-features-origin-5c-4-1)
 PCC-Rule-Status                         TS29.212   ""
 Precedence                              TS29.212   ""
 Rule-Failure-Code                       TS29.212   ""

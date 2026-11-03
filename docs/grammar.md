@@ -47,12 +47,13 @@ publisher's numbering, written as one token: ETSI's "TS 183 017" dotted as a
 beside the corpus, [linter.md](linter.md#resolving-an-origin)) and with its part
 ("X.S0013-014", part 014 being another document, not a revision), OMA's name as
 OMA prints it, oneM2M's "TS-0004". Every publisher has one spelling, since
-resolution compares references exactly. A From cell keeps the citing document's
-reference even where it misnames the publisher's: 3GPP cites ETSI ES 283 034 as
-"ETSI TS 283 034", so
-its cells read `ETSI-TS283.034`, which the corpus maps to the `ETSI-ES283.034`
-the transcription's title gives, one listed misnaming at a time
-([linter.md](linter.md#resolving-an-origin)).
+resolution compares references exactly. A raw file's From cell keeps the citing
+document's reference even where it misnames the publisher's: 3GPP cites ETSI ES
+283 034 as "ETSI TS 283 034", so its raw cells read `ETSI-TS283.034`, which the
+corpus maps to the `ETSI-ES283.034` the transcription's title gives, one listed
+misnaming at a time
+([linter.md](linter.md#resolving-an-origin)), and a correction names
+`ETSI-ES283.034` in the corrected file.
 
 `; Transcribed:` marks a file a person copied from a rendering, for a
 document no extractor reads (ETSI's, 3GPP2's and OMA's exist only as PDF), and
@@ -350,7 +351,7 @@ m-bit         = "MUST" / "MUST-NOT" / "-"
 
 A From cell may name a document outside 3GPP and IETF: TS 29.212 re-uses
 `3GPP2-BSID` from `3GPP2-X.S0057` and `Logical-Access-ID` from
-`ETSI-TS283.034`, TS 32.299 types thirteen rows by `OMA-DDS-Charging_Data`
+`ETSI-ES283.034`, TS 32.299 types thirteen rows by `OMA-DDS-Charging_Data`
 and tabulates `M2M-Information` from `oneM2M-TS-0004`.
 
 Name and From are required; M-bit is not (TS 29.128, 29.173, 29.336 print no

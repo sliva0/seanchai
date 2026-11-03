@@ -536,3 +536,17 @@ CORRECTIONS += [
         versions="19.2.0",
     ),
 ]
+
+CORRECTIONS += [
+    Correction(
+        id="logical-access-id-etsi-standard",
+        target=reused_row("Logical-Access-ID"),
+        field="origin",
+        expect="ETSI-TS283.034",
+        replace="ETSI-ES283.034",
+        reason="table 5.2.3.1/2 cites 'ETSI TS 283 034 [48]', as clause 2's [48] does;"
+        " the document's own prose cites 'ETSI ES 283 034 [48]', which is how ETSI"
+        " publishes that title, and it has no TS 283 034",
+        versions="19.2.0",
+    ),
+]

@@ -335,6 +335,30 @@ class reused_row(Selector):
 
 
 @dataclass(frozen=True)
+class registry_reservation(Selector):
+    """A range a registry table reserves, by its first and last code: TS
+    29.230 table 7.1's `; RESERVED 1324..1399`."""
+
+    first: int
+    last: int
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching reservation, at `("sections", i, "rows", j)`."""
+        for index, section in enumerate(spec.sections):
+            if not isinstance(section, ast.Registry):
+                continue
+            for row_index, row in enumerate(section.rows):
+                if isinstance(row, ast.RegistryReservation) and (
+                    row.first,
+                    row.last,
+                ) == (self.first, self.last):
+                    yield ("sections", index, "rows", row_index), row
+
+    def describe(self) -> str:
+        return f"registry reservation {self.first}..{self.last}"
+
+
+@dataclass(frozen=True)
 class enum_value(Selector):
     """One named value of an enumerated AVP.
 

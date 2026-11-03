@@ -657,6 +657,21 @@ CORRECTIONS += [
     for name, (data_type, code) in _OMA_TYPES.items()
 ]
 
+# Clause 2 [300] prints "ETSI TS 283 034 v2.2.0"; ETSI publishes it as ES 283 034.
+CORRECTIONS += [
+    Correction(
+        id=f"{name.lower()}-etsi-standard",
+        target=reused_row(name, section="7.4"),
+        field="origin",
+        expect="ETSI-TS283.034",
+        replace="ETSI-ES283.034",
+        reason="table 7.4.1 cites [300], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that"
+        " title and version as ES 283 034, and has no TS 283 034",
+        versions="19.0.0",
+    )
+    for name in ("Logical-Access-ID", "Physical-Access-ID")
+]
+
 # UWAN-User-Location-Info (clause 7.2.242aaA) takes TCP-Source-Port as a
 # member, which TS 32.299 defines nowhere: table 7.2.0.1 refers to [215],
 # TS 29.212, for UDP-Source-Port beside it and omits TCP-Source-Port, which
