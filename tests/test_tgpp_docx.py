@@ -595,6 +595,48 @@ def test_a_bare_command_heading_is_read_through_the_rfc_command():
     assert (asr.name, asr.abbreviation) == ("Abort-Session-Request", "ASR")
 
 
+def test_a_procedure_step_names_the_command_printed_under_it():
+    # TS 29.109 clauses 4.2 and 5.2, whose commands have no clause of their own:
+    # the re-printed grouped rule between them is no command, and a body's
+    # comments are read past a blank line.
+    mar, bia = _procedure_messages(
+        _procedure_section(
+            "The BSF shall send the following request in the format of"
+            " Multimedia-Auth-Request (MAR) message.",
+            "<Multimedia-Auth-Request> ::=<Diameter Header: 303, REQ, PXY, 16777221 >",
+            "< Session-Id >",
+            "",
+            "{ Origin-Host } ; Address of BSF",
+            "The content of Vendor-Specific-Application-Id is:",
+            "<Vendor-Specific-Application-Id>::=<AVP header: 260>",
+            "1* [Vendor-Id] ; 3GPP is 10415",
+            "After that the BSF shall send a Bootstrapping-Info-Answer message (BIA)"
+            " back to the NAF.",
+            "< Bootstrapping-Info-Answer> ::= < Diameter Header: 310, PXY, 16777220 >",
+            "< Session-Id >",
+        ),
+        "procedure-commands",
+        "abnf-comments",
+    )
+    assert (mar.name, mar.abbreviation) == ("Multimedia-Auth-Request", "MAR")
+    assert [rule.name for rule in mar.avps] == ["Session-Id", "Origin-Host"]
+    assert (bia.name, bia.abbreviation) == ("Bootstrapping-Info-Answer", "BIA")
+
+
+def test_a_grouped_rule_in_a_command_clause_stays_malformed():
+    section = _procedure_section("<Group> ::= < AVP header: 260 >")
+    from seanchai.extractor.sources import Quirks
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="malformed rule header"):
+        tgpp_docx._extract_messages(
+            section,
+            tgpp_docx._COMMAND_TITLE_RE.match("Example-Request (EXR) Command"),
+            [],
+            Quirks([], None),
+            [],
+        )
+
+
 def test_application_id_stated_as_the_value_iana_assigned():
     # TS 29.061 clause 17.
     section = _procedure_section(

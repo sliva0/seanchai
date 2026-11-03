@@ -115,15 +115,16 @@ The vocabulary, with the document that forced each:
   32.299 clause 7.2.135C).
 - `struck-rules-unused`: TS 32.299's legend for struck members (below).
 - `abnf-comments`: a member line's trailing `; comment` (TS 29.209, 29.061,
-  29.214 Release 7 and 11).
+  29.109, 29.214 Release 7 and 11).
 - `list-numbered-headings`: clause numbers that exist only in Word's list
   numbering (oneM2M TS-0004).
 - `message-only`: commands and re-used rows, no local AVPs (TS 29.330,
   29.211).
 - `command-reference-only`, `procedure-commands`: clauses holding only a
   pointer, and commands named in a procedure clause's intro (TS 29.273,
-  29.234), or under a heading no other reading names them by (TS 29.061's
-  `AAR Command` over `<AA-Request> ::=`).
+  29.234), under a heading no other reading names them by (TS 29.061's
+  `AAR Command` over `<AA-Request> ::=`), or in a procedure step's sentence
+  (TS 29.109's "a Bootstrapping-Info-Request message (BIR)").
 - `clause-parenthetical`: a trailing parenthetical in a clause cell,
   `16.4.7 (see Note)`, stripped as prose (TS 29.061).
 
@@ -241,6 +242,9 @@ blank.
 
 Conventions worth knowing:
 
+- A command code is a number. TS 29.109 clause 5.4 prints `xxx` for GBA push's
+  code and `xxxxxxxx` for its id, and states both in clauses 6.0 and 6.1, so
+  input patches print them in the rule, citing those clauses and TS 29.230.
 - `Page:` is where the section starts in the PDF bookmark outline; a table
   inherits its section's page.
 - An enumerated AVP listed as re-used, or referenced from an AVP-table NOTE,
