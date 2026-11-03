@@ -5,6 +5,22 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/132200_132299/132299/11.20.00_60/ts_132299v112000p.pdf
 
 
+; Type: Application Scope ;; inserted: (TS32.299.py#rel11-application-id-rf)
+; Name: Rf
+; Section: 7.1.5
+; Page: 84
+; Application-ID: 3
+; Applies-To: 6.2.*
+
+
+; Type: Application Scope ;; inserted: (TS32.299.py#rel11-application-id-ro)
+; Name: Ro
+; Section: 7.1.6
+; Page: 85
+; Application-ID: 4
+; Applies-To: 6.4.*
+
+
 ; Type: Message
 ; Name: Accounting-Request, ACR
 ; Section: 6.2.2
