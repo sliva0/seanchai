@@ -106,6 +106,7 @@ class _Index:
     # `Reprinted AVP` blocks: another document's rule, as this one prints it.
     reprints: list[ast.ReprintedAvp] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
+    value_tables: list[ast.ValueTable] = field(default_factory=list)
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
     # Names a re-used table cites from this file itself. TS 29.212's Gxx, S9,
     # Sd and St tables list Gx's AVPs "from" TS 29.212: those are this file's
@@ -145,7 +146,7 @@ def _index(spec: ast.Specification) -> _Index:
         if isinstance(section, ast.Message | ast.GroupedAvp | ast.ReprintedAvp):
             for number, rule in enumerate(section.avps):
                 index.paths[id(rule)] = (*at, "avps", number)
-        if isinstance(section, ast.AvpTable | ast.ReusedAvps):
+        if isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.ValueTable):
             for number, row in enumerate(section.rows):
                 index.paths[id(row)] = (*at, "rows", number)
         if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
@@ -160,6 +161,8 @@ def _index(spec: ast.Specification) -> _Index:
             index.reprints.append(section)
         elif isinstance(section, ast.AvpTable):
             index.tables.append(section)
+        elif isinstance(section, ast.ValueTable):
+            index.value_tables.append(section)
         elif isinstance(section, ast.ReusedAvps):
             for row in section.rows:
                 index.reused_paths[row.name].append(index.path(row))
@@ -247,6 +250,56 @@ def _duplicate_enum_values(index: _Index) -> list[Finding]:
                         definition.source.section,
                     )
                 )
+    return findings
+
+
+def _duplicate_values(index: _Index) -> list[Finding]:
+    """One value table giving one number twice: a number means one thing in
+    one table, whether the names agree or not."""
+    findings = []
+    for table in index.value_tables:
+        by_value: dict[int, list[ast.ValueRow]] = defaultdict(list)
+        for row in table.rows:
+            by_value[row.value].append(row)
+        for value, rows in by_value.items():
+            if len(rows) > 1:
+                names = ", ".join(repr(name) for name in {r.name: None for r in rows})
+                findings.append(
+                    Finding(
+                        Severity.ERROR,
+                        "duplicate-value",
+                        f"{table.avp}'s {table.kind} table gives {value} to {names},"
+                        f" {len(rows)} rows",
+                        table.source.section,
+                        paths=tuple(index.path(row) for row in rows),
+                    )
+                )
+    return findings
+
+
+def _values_out_of_range(index: _Index) -> list[Finding]:
+    """A bit past what its AVP holds: 31 for an Unsigned32, the type every bit
+    mask but a few has, and 63 for one the file's own table types Unsigned64
+    (TS 29.272's `Broadcast-Location-Assistance-Data-Types`)."""
+    typed = {row.name: row.data_type for row in index.rows if row.data_type}
+    findings = []
+    for table in index.value_tables:
+        if table.kind is ast.ValueKind.RESULT_CODES:
+            continue
+        data_type = typed.get(table.avp, ast.DataType.UNSIGNED32)
+        last = 63 if data_type is ast.DataType.UNSIGNED64 else 31
+        findings.extend(
+            Finding(
+                Severity.ERROR,
+                "value-bit-out-of-range",
+                f"{table.avp}'s {table.kind} table numbers {row.name!r} bit"
+                f" {row.value}, past the {last} a {data_type} holds",
+                table.source.section,
+                paths=(index.path(row),),
+            )
+            for row in table.rows
+            if row.value > last
+        )
     return findings
 
 
@@ -948,6 +1001,8 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_duplicate_definitions(index),
         *_one_name_two_commands(index),
         *_duplicate_enum_values(index),
+        *_duplicate_values(index),
+        *_values_out_of_range(index),
         *_vendor_specific_overlaps(index),
         *_applications_agree_with_headers(index),
         *_duplicate_identities(index, spec.vendor_id),
@@ -1876,6 +1931,57 @@ def _registry_avps(
     return findings
 
 
+def _registry_result_codes(
+    spec: ast.Specification, index: _Index, registry: _Registered, own_reference: str
+) -> list[Finding]:
+    """Every experimental result code the file lists in the registry's vendor
+    space against the registry's rows: the name a row gives it and the documents
+    it cites. A plain Result-Code is the IETF's, which table 8.1 does not hold,
+    and a code no row allocates is left alone: TS 29.230 lists a document's code
+    from whichever version allocated it, so its absence says little."""
+    if spec.vendor_id != registry.vendor_id:
+        return []
+    kind = ast.RegistryKind.RESULT_CODES
+    findings = []
+    for table in index.value_tables:
+        if (
+            table.kind is not ast.ValueKind.RESULT_CODES
+            or table.avp != "Experimental-Result-Code"
+        ):
+            continue
+        for row in table.rows:
+            found = registry.allocations(kind, row.value)
+            clause = row.section or table.source.section
+            names = [each.name for _, each in found if each.name is not None]
+            if names and row.name not in names:
+                findings.append(
+                    Finding(
+                        Severity.NOTE,
+                        "registry-result-code-name",
+                        f"{row.name} has code {row.value}, which {REGISTRY}"
+                        f" {_tables(found)} allocates to {_allocated_to(found)}",
+                        clause,
+                        origin=REGISTRY,
+                        paths=(index.path(row),),
+                    )
+                )
+            documents = _documents_of(found)
+            if documents and own_reference not in documents:
+                findings.append(
+                    Finding(
+                        Severity.NOTE,
+                        "registry-result-code-document",
+                        f"{row.name} (code {row.value}) is listed here, but"
+                        f" {REGISTRY} {_tables(found)} allocates the code to"
+                        f" {', '.join(documents)}",
+                        clause,
+                        origin=REGISTRY,
+                        paths=(index.path(row),),
+                    )
+                )
+    return findings
+
+
 def _command_names(name: str | None) -> set[str]:
     """The two names a registry's command row gives: table 5.1/1 writes
     `User-Authorization-Request/-Answer`, table 5.1/4
@@ -2014,6 +2120,7 @@ def _against_registry(
         *_registry_avps(spec, index, registry, own),
         *_registry_commands(index, registry),
         *_registry_applications(index, registry, own),
+        *_registry_result_codes(spec, index, registry, own),
     ]
 
 
