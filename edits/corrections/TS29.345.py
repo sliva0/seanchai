@@ -89,7 +89,9 @@ CORRECTIONS = [
     # AVP their information-element tables name and which table 6.3.1-2
     # lists as re-used — no AVP named User-Identity exists in this document
     # or its citations, and the listed User-Identifier row is otherwise
-    # referenced by nothing.
+    # referenced by nothing. The Match-Request body (clause 6.3.55) does the
+    # same, as an input patch prints it, and capitalizes the d of
+    # Visited-PLMN-Id, which table 6.3.1-2 lists.
     *(
         Correction(
             id=f"{parent.lower()}-{wrong.lower()}",
@@ -107,6 +109,8 @@ CORRECTIONS = [
             ("ProSe-Authorization-Request", "User-Identity", "User-Identifier"),
             ("Discovery-Auth-Request", "User-Identity", "User-Identifier"),
             ("Match-Report-Info", "User-Identity", "User-Identifier"),
+            ("Match-Request", "User-Identity", "User-Identifier"),
+            ("Match-Request", "Visited-PLMN-ID", "Visited-PLMN-Id"),
         )
     ),
 ]

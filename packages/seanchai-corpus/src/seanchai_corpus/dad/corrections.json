@@ -2524,6 +2524,14 @@
      "kind": "correction",
      "reason": "the Match-Report-Info body writes User-Identity; the AVP is User-Identifier — see the block comment above"
     },
+    "TS29.345.py#match-request-user-identity": {
+     "kind": "correction",
+     "reason": "the Match-Request body writes User-Identity; the AVP is User-Identifier — see the block comment above"
+    },
+    "TS29.345.py#match-request-visited-plmn-id": {
+     "kind": "correction",
+     "reason": "the Match-Request body writes Visited-PLMN-ID; the AVP is Visited-PLMN-Id — see the block comment above"
+    },
     "TS29.345.py#prose-app-code-suffix-range-code": {
      "kind": "correction",
      "reason": "table 6.3.1/1 assigns this AVP code 3867; clause 6.3.82's rule repeats code 3847 from ProSe-Restricted-Code-Suffix-Range"
@@ -2582,6 +2590,14 @@
     {
      "expect": "User-Identity",
      "replace": "User-Identifier"
+    },
+    {
+     "expect": "User-Identity",
+     "replace": "User-Identifier"
+    },
+    {
+     "expect": "Visited-PLMN-ID",
+     "replace": "Visited-PLMN-Id"
     }
    ],
    "version": "18.0.0"
