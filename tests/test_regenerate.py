@@ -808,7 +808,7 @@ def test_an_etsi_document_in_parts_keeps_its_part_in_its_name(tmp_path):
     transcriptions = tmp_path / "transcriptions"
     transcriptions.mkdir()
     (transcriptions / "ETSI-TS183.059-1.dad").write_text(
-        "; Specification: ETSI-TS183.059-1\n; Version: 2.1.1\n", encoding="utf-8"
+        "; Specification: ETSI TS 183 059-1\n; Version: 2.1.1\n", encoding="utf-8"
     )
 
     (source,) = regenerate._transcriptions(transcriptions).values()

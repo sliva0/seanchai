@@ -1,8 +1,4 @@
-;; The cover prints "ETSI TS 183 059-1 V2.1.1"; the title is written as its
-;; spec-ref, since `ast.spec_ref` reads no part in a spaced ETSI title.
-
-
-; Specification: ETSI-TS183.059-1
+; Specification: ETSI TS 183 059-1
 ; Version: 2.1.1
 ; Vendor-ID: 13019
 ; Bases: RFC6733
