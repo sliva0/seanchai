@@ -335,9 +335,9 @@ records it.
 TS 32.299 V11.20.0 clause 6.4.4 prints RAR as table 6.4.4, a row per member with
 its category and a description, and no ABNF. The document states no command code
 for it, nor flags: clause 6.4.1.1 says only that RAR/RAA "are used according to"
-RFC 3588 [401]. TS 29.230 has no row for RFC 6733's 258 either, allocating 3GPP's
-commands alone. So an input patch supplies the header line, citing RFC 6733
-clause 8.3.1, and the extractor fails without it, rather than pass over a
+RFC 3588 [401]. TS 29.230 has no row for RFC 6733's 258 either, allocating
+3GPP's commands alone. So an input patch supplies the header line, citing RFC
+6733 clause 8.3.1, and the extractor fails without it, rather than pass over a
 command the document prints. Clause 6.4.1.2's symbols read M as `{ }` and OC as
 `[ ]`; a dash, "Not used in 3GPP", reads as a strike, the member commented out;
 a row a tab sets off is the grouped AVP's above it, kept as a comment and no
