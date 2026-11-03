@@ -1245,7 +1245,7 @@ def render_unit(unit: Unit, resolver: Resolver) -> str:
         )
     stated = ""
     if application.stated_in is not None and all(
-        message.application_id is None for message in application.messages
+        message.header_application_id is None for message in application.messages
     ):
         # The id is the document's statement in prose, not any header's.
         stated = (

@@ -623,12 +623,36 @@ class Message:
     abbreviation: str
     command_code: int
     flags: frozenset[ast.CommandFlag]
+    # The id on the wire: the header's, or for a header printing none, the one
+    # an application scope covering the command's clause states (TS 29.212's
+    # bare `272, REQ, PXY` CCR, 16777238 from clause 5.1). None when neither
+    # says.
     application_id: int | None
     defined_in: str
     section: str
     avps: tuple[Member, ...]
     # As `Grouped.dropped`.
     dropped: tuple[Member, ...] = ()
+    # The id the header prints, None where it prints none.
+    header_application_id: int | None = None
+
+    @property
+    def is_request(self) -> bool:
+        """Whether the header's R bit is set: the request of a command code,
+        and not its answer."""
+        return ast.CommandFlag.REQUEST in self.flags
+
+    def walk(self) -> tuple[Member, ...]:
+        """The members of this command at every depth, each reading once, in
+        definition order: a grouped member comes before its own members.
+
+        `Member.avp`, `hole` and `placeholder` mean what they do in `avps`,
+        and the `* [ AVP ]` wildcard appears once. A body among its own
+        descendants is not walked twice, and what the policy dropped stays in
+        `dropped`. Two readings of one name are two entries: a grouped AVP
+        read through another document may hold another reading of a member.
+        """
+        return tuple(_walk(self.avps, set()))
 
 
 @dataclass(frozen=True)
@@ -657,6 +681,16 @@ class Application:
     # its name for the application ("Gx") and the clause stating the id.
     name: str | None = None
     stated_in: str | None = None
+
+    def avps(self) -> tuple[Member, ...]:
+        """Every AVP this application's commands use at any depth, as
+        `Message.walk` reads them, each reading once, in definition order.
+        What a dictionary generator wants: unlike `Model.avps`, it holds what
+        the commands take from documents the tables do not list."""
+        seen: set[tuple[str, object]] = set()
+        return tuple(
+            member for message in self.messages for member in _walk(message.avps, seen)
+        )
 
 
 @dataclass(frozen=True)
@@ -745,6 +779,41 @@ def _cut(member: Member) -> bool:
         and member.placeholder is None
         and member.name != "AVP"
     )
+
+
+def _walk(
+    members: tuple[Member, ...], seen: set[tuple[str, object]]
+) -> Iterator[Member]:
+    """`members` and those of their grouped AVPs, depth first, passing over
+    what `seen` holds. A member keeps its own name in the key: an `Alias` reads
+    two names as one AVP, and each is still a member."""
+    for member in members:
+        if _cut(member):
+            continue
+        key = (member.name, member.avp or member.hole or member.placeholder)
+        if key in seen:
+            continue
+        seen.add(key)
+        yield member
+        if isinstance(member.avp, Grouped):
+            yield from _walk(member.avp.members, seen)
+
+
+def _scope(view: _View, message: ast.Message) -> ast.ApplicationScope | None:
+    """The application scope covering `message`'s clause: the first, where
+    they overlap."""
+    return next(
+        (each for each in view.applications if each.covers(message.source.section)),
+        None,
+    )
+
+
+def _effective_id(
+    message: ast.Message, block: ast.ApplicationScope | None
+) -> int | None:
+    if message.application_id is None and block is not None:
+        return block.application_id
+    return message.application_id
 
 
 @dataclass
@@ -1210,18 +1279,36 @@ class Model:
             raise ModelError(f"the corpus holds no copy of {reference}") from None
 
     def messages(
-        self, reference: str, *, version: str | None = None
+        self, reference: str | None = None, *, version: str | None = None
     ) -> tuple[Message, ...]:
-        """Every command `reference` defines, bodies resolved; `version` reads
-        an older copy the corpus holds."""
-        view = self._view(reference, version)
+        """Every command `reference` defines, or the whole corpus does, bodies
+        resolved; `version` reads an older copy of `reference` the corpus
+        holds."""
+        return tuple(
+            message
+            for view in self._selected_views(reference, version)
+            for message in self._messages_of(view)
+        )
+
+    def _selected_views(
+        self, reference: str | None, version: str | None
+    ) -> tuple[_View, ...]:
+        """The views a query over `reference`, or over the corpus, reads."""
+        if reference is not None:
+            return (self._view(reference, version),)
+        if version is not None:
+            raise ModelError(f"version={version!r} reads one document: name it")
+        return tuple(self._view(each) for each in self.references())
+
+    def _messages_of(self, view: _View) -> tuple[Message, ...]:
         return tuple(
             Message(
                 name=message.name,
                 abbreviation=message.abbreviation,
                 command_code=message.command_code,
                 flags=message.flags,
-                application_id=message.application_id,
+                application_id=_effective_id(message, _scope(view, message)),
+                header_application_id=message.application_id,
                 defined_in=view.entry.reference,
                 section=message.source.section,
                 avps=avps,
@@ -1274,10 +1361,15 @@ class Model:
         )
 
     def applications(
-        self, reference: str, *, version: str | None = None
+        self,
+        reference: str | None = None,
+        *,
+        application_id: int | None = None,
+        version: str | None = None,
     ) -> tuple[Application, ...]:
-        """`reference`'s commands, grouped by application id and the clause
-        they sit under, in file order.
+        """`reference`'s commands, or the whole corpus's, grouped by
+        application id and the clause they sit under, in file order;
+        `application_id` keeps the groups of that id.
 
         A command whose header prints no id takes the one an `Application
         Scope` block covering its clause states (the first, where scopes
@@ -1290,26 +1382,29 @@ class Model:
         STa Session-Termination-Request in clauses 5.2.2.2.3 and 5.2.2.4.1,
         once per procedure. Which copy a consumer keeps is its business.
 
-        `version` reads an older copy the corpus holds.
+        `version` reads an older copy of `reference` the corpus holds.
         """
-        view = self._view(reference, version)
+        return tuple(
+            application
+            for view in self._selected_views(reference, version)
+            for application in self._applications_of(view)
+            if application_id is None or application.application_id == application_id
+        )
+
+    def _applications_of(self, view: _View) -> tuple[Application, ...]:
         groups: dict[tuple[int | None, str], list[Message]] = {}
         stating: dict[tuple[int | None, str], ast.ApplicationScope] = {}
-        for message in self.messages(reference, version=version):
-            block = next(
-                (each for each in view.applications if each.covers(message.section)),
-                None,
-            )
-            application_id = message.application_id
-            if application_id is None and block is not None:
-                application_id = block.application_id
-            key = (application_id, ast.interface_clause(message.section))
+        for message, printed in zip(
+            self._messages_of(view), view.messages, strict=True
+        ):
+            block = _scope(view, printed)
+            key = (message.application_id, ast.interface_clause(message.section))
             groups.setdefault(key, []).append(message)
-            if block is not None and block.application_id == application_id:
+            if block is not None and block.application_id == message.application_id:
                 stating.setdefault(key, block)
         return tuple(
             Application(
-                reference,
+                view.entry.reference,
                 application_id,
                 clause,
                 tuple(messages),
@@ -1320,14 +1415,27 @@ class Model:
             for block in [stating.get((application_id, clause))]
         )
 
-    def avps(self, reference: str) -> tuple[Avp, ...]:
-        """Every AVP `reference` defines, tabulates or re-uses, resolved.
+    def avps(self, reference: str | None = None) -> tuple[Avp, ...]:
+        """Every AVP `reference` defines, tabulates or re-uses, resolved, or
+        with no `reference` every distinct reading in the corpus, sorted by
+        defining document and name.
 
-        This is the specification's dictionary view: a re-printed or re-used
-        AVP appears with the origin's `defined_in`, so a consumer that wants
-        only the document's own AVPs filters on that field. A name with a
-        hole is left out; `holes` lists it.
+        A re-printed or re-used AVP appears with the origin's `defined_in`, so
+        a consumer that wants only the document's own AVPs filters on that
+        field. A name with a hole is left out; `holes` lists it.
+
+        This is what a document's tables say, not what its commands use: an
+        AVP a body names that no table lists, as most of RFC 6733's in TS
+        29.229's commands, is missing here. `Application.avps` and
+        `Message.walk` are what a dictionary generator wants.
         """
+        if reference is None:
+            return tuple(
+                sorted(self._everything, key=lambda avp: (avp.defined_in, avp.name))
+            )
+        return self._avps_of(reference)
+
+    def _avps_of(self, reference: str) -> tuple[Avp, ...]:
         found = (self.resolve(reference, name) for name in self._names(reference))
         return tuple(avp for avp in found if avp is not None)
 
@@ -2008,7 +2116,7 @@ class Model:
     def _everything(self) -> list[Avp]:
         found: dict[Avp, None] = {}
         for reference in self._views:
-            found.update(dict.fromkeys(self.avps(reference)))
+            found.update(dict.fromkeys(self._avps_of(reference)))
         return list(found)
 
     @cached_property

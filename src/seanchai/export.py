@@ -542,13 +542,13 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
     identifier = document_id(entry)
     # The header's id is part of the key: TS 29.272 clause 7.2.9 prints
     # Insert-Subscriber-Data-Request twice, once per application.
-    effective = {
+    resolved = {
         (
             message.name,
             message.section,
             message.command_code,
-            message.application_id,
-        ): application
+            message.header_application_id,
+        ): (message, application)
         for application in corpus.model.applications(
             entry.reference, version=spec.version
         )
@@ -580,7 +580,7 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
     search = []
     for section in spec.sections:
         if isinstance(section, ast.Message):
-            application = effective[
+            message, application = resolved[
                 section.name,
                 section.source.section,
                 section.command_code,
@@ -594,8 +594,8 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
                     CommandIdentity(
                         kind="command",
                         command_code=section.command_code,
-                        application_id=application.application_id,
-                        header_application_id=section.application_id,
+                        application_id=message.application_id,
+                        header_application_id=message.header_application_id,
                         application=application.name,
                     ),
                     abbreviation=section.abbreviation,

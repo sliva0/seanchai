@@ -2752,3 +2752,130 @@ def test_every_reading_has_one_flag_rules_type():
         if found.flag_rules is not None
     )
     assert any(avp.flag_rules.application_defined for avp in avps)
+
+
+class TestWhatCommandsUse:
+    def test_an_application_holds_what_its_commands_use_at_any_depth(self, built):
+        """Cx's tables list 77 AVPs, its commands use 103: the base protocol's
+        Destination-Host and Failed-AVP are in no table of TS 29.229's."""
+        (cx,) = built.applications("TS29.229", application_id=16777216)
+
+        members = cx.avps()
+        identities = {member.avp.identity for member in members if member.avp}
+
+        assert len(identities) == 103
+        assert {"Destination-Host", "Auth-Session-State", "Failed-AVP"} <= {
+            member.name for member in members
+        }
+        assert not {"Destination-Host", "Failed-AVP"} & {
+            avp.name for avp in built.avps("TS29.229")
+        }
+
+    def test_a_walk_is_in_definition_order_and_holds_each_reading_once(self, built):
+        (uar, *_) = built.messages("TS29.229")
+
+        names = [member.name for member in uar.walk()]
+
+        assert names[0] == "Session-Id"
+        assert len(names) == len(set(names))
+        # A grouped member comes right before its own members.
+        place = names.index("Supported-Features")
+        assert names[place + 1 : place + 3] == ["Feature-List-ID", "Feature-List"]
+
+    def test_a_walk_keeps_the_wildcard_once_and_passes_over_a_cut(self):
+        spec = _spec(
+            "3GPP TS 29.900",
+            [
+                ast.GroupedAvp(
+                    name="Loop",
+                    source=ast.SourceRef(section="6.1"),
+                    code=1,
+                    vendor_id=10415,
+                    avps=(_rule("Loop"), _rule("AVP"), _rule("Missing")),
+                ),
+                _table(_flagged("Loop", 1, ast.DataType.GROUPED, must=_V)),
+                ast.Message(
+                    name="Thing-Request",
+                    abbreviation="THR",
+                    source=ast.SourceRef(section="6.2"),
+                    command_code=300,
+                    flags=frozenset({ast.CommandFlag.REQUEST}),
+                    application_id=7,
+                    avps=(_rule("Loop"), _rule("AVP")),
+                ),
+            ],
+        )
+        (message,) = _model(spec).messages("TS29.900")
+
+        walked = message.walk()
+
+        assert [member.name for member in walked] == ["Loop", "AVP", "Missing"]
+        assert walked[1].avp is None and walked[1].hole is None
+        assert walked[2].hole is not None
+
+    def test_a_hole_is_a_member_of_the_closure(self, built):
+        holes = [
+            member.hole
+            for application in built.applications("TS29.234")
+            for member in application.avps()
+            if member.hole is not None
+        ]
+
+        assert "Charging-Characteristics" in {hole.name for hole in holes}
+
+
+class TestCorpusWideQueries:
+    def test_messages_cover_every_document(self, built):
+        everything = built.messages()
+
+        assert len(everything) == sum(
+            len(built.messages(each)) for each in built.references()
+        )
+        assert {"TS29.229", "RFC6733"} <= {each.defined_in for each in everything}
+
+    def test_applications_filter_by_id_across_documents(self, built):
+        everything = built.applications()
+        gx = built.applications(application_id=16777238)
+
+        assert {each.reference for each in gx} >= {"TS29.212"}
+        assert all(each.application_id == 16777238 for each in gx)
+        assert set(gx) < set(everything)
+        assert built.applications("TS29.229", application_id=1) == ()
+
+    def test_avps_list_every_distinct_reading(self, built):
+        everything = built.avps()
+
+        assert len(everything) == len(set(everything))
+        assert set(built.avps("TS29.229")) <= set(everything)
+        assert built.find("Session-Id")[0] in everything
+        order = [(each.defined_in, each.name) for each in everything]
+        assert order == sorted(order)
+
+    def test_a_version_names_one_document(self, built):
+        with pytest.raises(model.ModelError, match="name it"):
+            built.messages(version="1.0.0")
+        with pytest.raises(model.ModelError, match="name it"):
+            built.applications(version="1.0.0")
+
+
+class TestEffectiveApplicationId:
+    def test_a_bare_header_takes_its_application_scope(self, built):
+        (ccr, *_) = (
+            message
+            for message in built.messages("TS29.212")
+            if message.abbreviation == "CCR"
+        )
+
+        assert (ccr.application_id, ccr.header_application_id) == (16777238, None)
+        assert ccr.is_request
+
+    def test_a_printed_id_is_both(self, built):
+        (uar, uaa, *_) = built.messages("TS29.229")
+
+        assert uar.application_id == uar.header_application_id == 16777216
+        assert uar.is_request and not uaa.is_request
+
+    def test_a_message_and_its_application_agree(self, built):
+        for application in built.applications():
+            for message in application.messages:
+                assert message.application_id == application.application_id
