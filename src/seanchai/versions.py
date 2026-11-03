@@ -105,14 +105,23 @@ def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | N
     when some range spans it, else the newest declared release below it,
     which is a release upgrade: Release 19 is first read with Release 18's
     declarations, as within a release. A version below every declared
-    release gets none. None, meaning every declaration, for a version-less
-    document (an RFC) and for a file whose ranges are all open.
+    release gets none. An open upper bound says nothing about the releases
+    past its lower one, so a declaration in force from V18.1.0 on (TS 29.229's
+    RTR patch) does not make V19.1.0 reviewed, and a wholly open range takes no
+    part in choosing: TS 29.061 declares some quirks without a range and the
+    rest for V18.1.0, and V19.1.0 gets both. None, meaning every declaration,
+    for a version-less document (an RFC) and for a file whose ranges are all
+    open.
     """
     if version is None:
         return None
     wanted = _major(version)
-    spans = [_releases(versions) for versions in ranges]
-    if not spans or all(first is None and last is None for first, last in spans):
+    spans = [
+        (first, first if last is None else last)
+        for first, last in (_releases(versions) for versions in ranges)
+        if (first, last) != (None, None)
+    ]
+    if not spans:
         return None
     if any(
         (first is None or first <= wanted) and (last is None or wanted <= last)

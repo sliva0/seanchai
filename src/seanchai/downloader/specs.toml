@@ -434,9 +434,9 @@ reason = """
 
 # TS 32.299 V11.20.0 clause 2 cites TS 29.212 [215] and TS 29.214 [214]
 # non-specifically, which in Release 11 means Release 11's last versions.
-# Their Release 18 copies differ where oneM2M TS-0004 reaches them through
-# Service-Information: Release 18's QoS-Information has seven members
-# Release 11's lacks, and Release 18's Flows three, `*[ AVP ]` among them.
+# Their Release 19 copies differ where oneM2M TS-0004 reaches them through
+# Service-Information: Release 19's QoS-Information has seven members
+# Release 11's lacks, and Release 19's Flows three, `*[ AVP ]` among them.
 [[tgpp_pinned]]
 number = "29.212"
 title = "Policy and Charging Control (PCC); Reference points"
@@ -452,7 +452,7 @@ final = "release"
 reason = "Defines Flows as TS 32.299 V11.20.0 re-uses it."
 
 # TS 29.210 V6.7.0 clause 2 [11] cites TS 29.061 non-specifically, which in
-# Release 6 means Release 6's last version. Release 18's differs for what TS
+# Release 6 means Release 6's last version. Release 19's differs for what TS
 # 29.210 re-uses from it: its table 9a puts M in Must not on 3GPP-RAT-Type,
 # 3GPP-SGSN-Address and 3GPP-SGSN-IPv6-Address, where V6.15.0's table 10, the
 # only one tabulating them, puts it in Must. It tabulates TS 29.210's other

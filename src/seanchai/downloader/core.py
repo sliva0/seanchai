@@ -41,6 +41,7 @@ from typing import Any
 
 from ..errors import MissingExtraError
 from .catalog import (
+    RELEASE,
     SOURCES,
     Catalog,
     DownloadError,
@@ -576,7 +577,7 @@ def convert_legacy_documents(
 
     Only an archive with no `.docx` of its own is converted. The results go
     to `converted/` beside the extracted archive in the staged `tree`
-    (`converted/3gpp/Rel-18/TS_32.299/32299-i00.docx`), not into it, so the
+    (`converted/3gpp/Rel-19/TS_32.299/32299-j00.docx`), not into it, so the
     extracted directory holds the archive's contents and nothing else. They
     are rebuilt on every run, like the extraction they derive from, and the
     manifest is the only way `regenerate` finds them; a run that fails here
@@ -1313,7 +1314,7 @@ def staged(directory: Path) -> Iterator[Path]:
 
 def download_corpus(
     output: Path,
-    release: int = 18,
+    release: int = RELEASE,
     workers: int = 6,
     extract: bool = True,
     pdfs: bool = False,

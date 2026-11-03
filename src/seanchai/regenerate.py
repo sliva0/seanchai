@@ -87,7 +87,7 @@ class _Source:
     document: Path
     pdf: Path | None
     link: str
-    # "3gpp/rel-18" or "rfc": the corpus subdirectory the pair belongs in.
+    # "3gpp/rel-19" or "rfc": the corpus subdirectory the pair belongs in.
     tree: str
     # A legacy `.doc` the download did not convert (`--no-convert`);
     # `document` is the `.doc` itself, which the extractor cannot read.
@@ -163,11 +163,12 @@ def regenerate(
             outcomes.append(refused)
             report(refused)
     readable = [reference for reference in add if reference not in out_of_scope]
+    moves = {_followed(key, listed, committed): key for key in committed}
     for key in _selected(listed, committed, only, readable):
         outcome = _one(
             key[0],
             listed.get(key),
-            committed.get(key),
+            committed.get(moves.get(key, key)),
             corpus,
             output,
             sources_dir,
@@ -208,9 +209,9 @@ class ManifestError(SeanchaiError):
 
 
 # A corpus file's place: its reference and the corpus subdirectory it sits
-# in, `("TS29.214", "3gpp/rel-18")`. The corpus holds one copy of a document
+# in, `("TS29.214", "3gpp/rel-19")`. The corpus holds one copy of a document
 # per release tree, so TS 29.214 V7.12.0, which ETSI TS 183 017 cites as
-# "Release 7", sits in `3gpp/rel-7` beside V18.4.0 in `3gpp/rel-18`.
+# "Release 7", sits in `3gpp/rel-7` beside V19.3.0 in `3gpp/rel-19`.
 _Key = tuple[str, str | None]
 
 
@@ -237,12 +238,41 @@ def _selected(
                 of(reference, listed) or of(reference, committed) or [(reference, None)]
             )
     else:
-        keys = list(committed)
+        keys = [_followed(key, listed, committed) for key in committed]
     for reference in add:
         keys += [key for key in of(reference, listed) if key not in committed] or (
             [] if of(reference, committed) else [(reference, None)]
         )
     return sorted(set(keys), key=lambda key: (key[0], key[1] or ""))
+
+
+def _followed(
+    key: _Key, listed: dict[_Key, _Source], committed: dict[_Key, _Committed]
+) -> _Key:
+    """Where a committed copy goes: its own place, unless the manifest no longer
+    lists it and lists its document in one later release's tree, with nothing
+    committed there. That is a release upgrade (TS 29.214 V18.4.0 in
+    `3gpp/rel-18`, V19.3.0 in `3gpp/rel-19`), which replaces the copy as a new
+    version in its own tree does, and `_one` is handed the old pair to take out.
+    An older version's one-record manifest, whose tree is an earlier release's,
+    moves nothing."""
+    if key in listed or (own := _release(key[1])) is None:
+        return key
+    later = [
+        other
+        for other in listed
+        if other[0] == key[0]
+        and other not in committed
+        and (release := _release(other[1])) is not None
+        and release > own
+    ]
+    return later[0] if len(later) == 1 else key
+
+
+def _release(tree: str | None) -> int | None:
+    """The release of a corpus subdirectory, as `3gpp/rel-19` names it."""
+    match = None if tree is None else re.fullmatch(r"3gpp/rel-(\d+)", tree)
+    return None if match is None else int(match[1])
 
 
 def _one(
@@ -317,6 +347,9 @@ def _one(
             relocated = output / old.relative_to(corpus)
             outcome.replaced.append(relocated)
             relocated.unlink(missing_ok=True)
+            # The last copy out of a release's tree takes the tree with it.
+            if relocated.parent.is_dir() and not any(relocated.parent.iterdir()):
+                relocated.parent.rmdir()
     elif (
         _read(committed.corrected) != corrected_text or _read(committed.raw) != raw_text
     ):
@@ -504,7 +537,7 @@ def _read_sources(manifest_path: Path) -> dict[_Key, _Source]:
                 # and has no reference a corpus file could carry.
                 continue
             pdfs = [f for f in files if f.suffix == ".pdf"]
-            # "3gpp/Rel-18/TS_29.388/29388-i10.docx" → "3gpp/rel-18".
+            # "3gpp/Rel-19/TS_29.388/29388-j10.docx" → "3gpp/rel-19".
             release = Path(record["files"][files.index(archived)]).parts[1]
             tree = f"3gpp/{release.lower()}"
             sources[reference, tree] = _Source(

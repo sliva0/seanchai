@@ -18,6 +18,11 @@ from ..prose import collapse_fields
 # What `seanchai download --only` selects, and a manifest says it holds.
 SOURCES = ("3gpp", "onem2m", "rfc", "transcribed", "wireshark")
 
+# The 3GPP release the catalog's `[[tgpp]]` entries are fetched at, unless a run
+# asks for another. Moving it is a version upgrade
+# (docs/development.md#version-upgrades).
+RELEASE = 19
+
 
 class DownloadError(SeanchaiError, RuntimeError):
     """Anything that stops the corpus being fetched as asked."""

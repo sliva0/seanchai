@@ -21,6 +21,7 @@ needs the `seanchai[extract]` extra, to validate what it fetched.
 
 from .catalog import (
     CATALOG_PATH,
+    RELEASE,
     SOURCES,
     Catalog,
     DownloadError,
@@ -35,6 +36,7 @@ from .core import Conversion, DownloadRecord, download_corpus, download_version
 
 __all__ = [
     "CATALOG_PATH",
+    "RELEASE",
     "SOURCES",
     "Catalog",
     "Conversion",
