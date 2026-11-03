@@ -1032,8 +1032,9 @@ def _cross_release(
         release = corpus.RELEASE_STAND_INS[
             across.citing, spec.version or "", across.cited
         ]
+        how = "by version, naming" if across.specific else "non-specifically, meaning"
         rule = (
-            f"it cites the document non-specifically, meaning V{across.meant},"
+            f"it cites the document {how} V{across.meant},"
             f" which the corpus lacks, and V{across.version} stands in:"
             f" {release.evidence} (corpus.RELEASE_STAND_INS)"
         )
@@ -1048,6 +1049,13 @@ def _cross_release(
         rule = (
             f"its references name V{across.version} (a specific reference;"
             " corpus.CITED_VERSIONS)"
+        )
+    elif across.rule == corpus.LATEST_EDITION:
+        evidence = corpus.LATEST_EDITIONS[across.citing, across.cited]
+        rule = (
+            f"it cites the document non-specifically, which reads as its latest"
+            f" edition, V{across.version} of the corpus's copies: {evidence}"
+            " (corpus.LATEST_EDITIONS)"
         )
     else:
         rule = (

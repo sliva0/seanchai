@@ -1,6 +1,6 @@
 """Reader for a transcription: a document no extractor reads, copied by hand.
 
-ETSI ES 283 034, TS 183 017 and 3GPP2 X.S0057 exist only as PDF. A person
+The ETSI and 3GPP2 documents the corpus holds exist only as PDF. A person
 writes each in `.dad` notation under `edits/transcriptions/<SpecRef>.dad`,
 copying what the document prints, misprints included, even where the
 grammar cannot hold it (TS 183 017's `< AVP Header: x >`, X.S0057's

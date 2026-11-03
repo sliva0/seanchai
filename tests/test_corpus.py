@@ -276,6 +276,52 @@ def test_the_final_version_answers_no_citation_from_its_own_release_or_earlier()
     assert alive.resolve("TS29.229", like=_spec("ETSI ES 283 034", "2.2.0")) is None
 
 
+def test_a_clause_saying_the_latest_edition_applies_reads_the_newest_copy():
+    """ES 283 035 clause 2.1: 'For non-specific references, the latest edition
+    of the referenced document (including any amendments) applies'."""
+    books = corpus.Corpus(
+        [_entry("3GPP TS 29.329", "18.0.0"), _entry("3GPP TS 29.329", "11.0.0")]
+    )
+
+    entry, across = books.resolution("TS29.329", like=_spec("ETSI ES 283 035", "2.5.1"))
+
+    assert entry is not None and entry.spec.version == "18.0.0"
+    assert across == corpus.CrossRelease(
+        "ETSI-ES283.035", "TS29.329", "18.0.0", corpus.LATEST_EDITION
+    )
+    assert "latest edition" in str(across)
+    # Nothing says so for another document, whose citation stays unanswered.
+    assert books.resolution("TS29.329", like=_spec("ETSI TS 183 066", "2.1.1")) == (
+        None,
+        None,
+    )
+
+
+def test_a_version_an_etsi_document_names_is_answered_by_its_stand_in_alone():
+    """TS 183 033 clause 2.1 [2] names TS 29.229 V6.6.0, which the catalog cannot
+    pin, being no release's last, and V18.1.0 stands in on the entry's evidence."""
+    citing = _spec("ETSI TS 183 033", "1.2.0")
+
+    entry, across = corpus.Corpus([_entry("3GPP TS 29.229", "18.1.0")]).resolution(
+        "TS29.229", like=citing
+    )
+
+    assert entry is not None and entry.spec.version == "18.1.0"
+    assert across == corpus.CrossRelease(
+        "ETSI-TS183.033",
+        "TS29.229",
+        "18.1.0",
+        corpus.STAND_IN,
+        meant="6.6.0",
+        specific=True,
+    )
+    assert "naming V6.6.0" in str(across)
+    # The evidence is about that copy, so no other answers.
+    assert corpus.Corpus([_entry("3GPP TS 29.229", "17.0.0")]).resolution(
+        "TS29.229", like=citing
+    ) == (None, None)
+
+
 def test_the_tables_name_only_versions_the_catalog_pins_and_verifies():
     """A specific reference's version and a final version are the catalog's
     pins, which every download checks against the 3GPP archive (`final`):

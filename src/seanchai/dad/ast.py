@@ -71,11 +71,13 @@ EnumValueName = Annotated[
 # Single-token reference to a defining document: "TS29.336", "RFC7683".
 # A document outside 3GPP and IETF leads with its publisher and keeps the
 # publisher's own numbering: ETSI's "ETSI-TS283.034" (29.212's TISPAN
-# origin, dotted as a 3GPP number is), 3GPP2's "3GPP2-X.S0057", OMA's
-# "OMA-DDS-Charging_Data", whose name already leads with it, and oneM2M's
+# origin, dotted as a 3GPP number is; ETSI TS 183 066 cites the part
+# "ETSI-TS183.059-1"), 3GPP2's "3GPP2-X.S0057" and, for a document in parts,
+# "3GPP2-X.S0013-014" (the part is another document, as a revision is not),
+# OMA's "OMA-DDS-Charging_Data", whose name already leads with it, and oneM2M's
 # "oneM2M-TS-0004" (TS 32.299 tables 7.2.0.1 and 7.5.1).
 EXTERNAL_REF_PATTERN = (
-    r"ETSI-(?:TS|ES)\d{3}\.\d{3}|3GPP2-[A-Z]\.[A-Z]\d{4}"
+    r"ETSI-(?:TS|ES)\d{3}\.\d{3}(?:-\d+)?|3GPP2-[A-Z]\.[A-Z]\d{4}(?:-\d{3})?"
     r"|OMA-[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*|oneM2M-TS-\d{4}"
 )
 SPEC_REF_PATTERN = rf"^(TS\d{{2}}\.\d{{3}}|RFC\d+|{EXTERNAL_REF_PATTERN})$"
@@ -1006,7 +1008,7 @@ _EXTERNAL_TITLE_RE = re.compile(
 
 def is_external(reference: str) -> bool:
     """Whether a `SpecRef` names a document outside 3GPP and IETF, which the
-    corpus holds only as a hand transcription (ETSI) or where the catalog
+    corpus holds only as a hand transcription (ETSI, 3GPP2) or where the catalog
     lists it for the extractor (oneM2M TS-0004)."""
     return EXTERNAL_REF_RE.match(reference) is not None
 

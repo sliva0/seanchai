@@ -84,6 +84,18 @@ CITED_VERSIONS: dict[tuple[str, str], str] = {
     ("oneM2M-TS-0004", "TS32.299"): "11.20.0",
 }
 
+# A non-specific citation by a document outside 3GPP whose own references clause
+# says what one means, by (citing, cited) reference: the latest edition, which
+# is the newest copy the corpus holds. One entry per citation, quoting the
+# clause; a citation without one means the document's final version or nothing.
+LATEST_EDITIONS: dict[tuple[str, str], str] = {
+    ("ETSI-ES283.035", "TS29.329"): (
+        "clause 2.1: 'For non-specific references, the latest edition of the"
+        " referenced document (including any amendments) applies', and [7] ETSI TS"
+        " 129 329 names no version"
+    ),
+}
+
 # A document's final version: the last 3GPP published, in any release. A
 # non-specific reference from a release after it means it, there being no
 # version in the citing document's release to mean (the extension of TR
@@ -149,6 +161,9 @@ class ReleaseStandIn:
     meant: str  # "11.12.0", the version the citation means
     version: str  # "18.1.0", the copy answering it
     evidence: str
+    # The citing document names `meant`, where the corpus cannot pin it: TS 183
+    # 033's V6.6.0 is no release's last, which is what the catalog pins.
+    specific: bool = False
 
 
 # Non-specific citations from an older copy (TS 32.299 V11.20.0, which
@@ -171,6 +186,17 @@ def _compared(date: str, release: int) -> str:
 
 _REL11 = _compared("2026-10-31", 11)
 RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
+    # ETSI TS 183 033 V1.2.0 clause 2.1 [2] names V6.6.0, of which clause 6.3.13
+    # reaches seven AVPs, printing SIP-Auth-Data-Item's body itself.
+    ("ETSI-TS183.033", "1.2.0", "TS29.229"): ReleaseStandIn(
+        "6.6.0",
+        "18.1.0",
+        "SIP-Authentication-Scheme, SIP-Authenticate, SIP-Authorization,"
+        " SIP-Authentication-Context, SIP-Item-Number, Confidentiality-Key and"
+        " Integrity-Key compared 2026-11-03 with table 6.3.1 of V6.6.0 from the"
+        " 3GPP archive: the same codes, types, flag rules and May Encr.",
+        specific=True,
+    ),
     # TS 29.140 V7.0.0 clause 2 [12], reached only for 3GPP-IMSI (6.3.6).
     ("TS29.140", "7.0.0", "TS29.061"): ReleaseStandIn(
         "7.12.0",
@@ -271,10 +297,11 @@ RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
     ),
 }
 
-# 3GPP2's name for a rendering, "X.S0057-0_v2.0_091215.pdf": number,
-# revision, version and publication date.
+# 3GPP2's name for a rendering, "X.S0057-0_v2.0_091215.pdf": number, part
+# where the document has parts ("X.S0013-014-0_v1.0_080224.pdf"), revision,
+# version and publication date.
 TGPP2_RENDERING_RE = re.compile(
-    r"^(?P<number>[A-Z]\.[A-Z]\d{4})-(?P<revision>[0-9A-Z])"
+    r"^(?P<number>[A-Z]\.[A-Z]\d{4}(?:-\d{3})?)-(?P<revision>[0-9A-Z])"
     r"_v(?P<version>\d+\.\d+)_\d{6}\.pdf$"
 )
 
@@ -283,6 +310,7 @@ TGPP2_RENDERING_RE = re.compile(
 # later release's copy (`RELEASE_STAND_INS`) answer.
 SPECIFIC = "specific"
 NON_SPECIFIC = "non-specific"
+LATEST_EDITION = "latest-edition"
 STAND_IN = "stand-in"
 
 
@@ -290,13 +318,15 @@ STAND_IN = "stand-in"
 class CrossRelease:
     """A citation resolved outside the citing document's release, and the
     rule that allowed it: `SPECIFIC`, the version the citing document's
-    references name (`CITED_VERSIONS`), or `NON_SPECIFIC`, the cited
-    document's final version (`FINAL_VERSIONS`). A document outside 3GPP
+    references name (`CITED_VERSIONS`), `NON_SPECIFIC`, the cited
+    document's final version (`FINAL_VERSIONS`), or `LATEST_EDITION`, the
+    newest copy, where the citing document's clause 2 says a non-specific
+    reference means it (`LATEST_EDITIONS`). A document outside 3GPP
     has no release, so each of its 3GPP citations that resolves is one.
     `STAND_IN` is a held copy answering a citation of one the corpus cannot
     hold: a 3GPP2 revision for another, a revision being 3GPP2's release
-    (`STAND_INS`), or a later release's copy for the version a non-specific
-    reference means (`RELEASE_STAND_INS`, `meant` set)."""
+    (`STAND_INS`), or a later release's copy for the version a reference
+    means (`RELEASE_STAND_INS`, `meant` set)."""
 
     citing: str  # "TS32.299"
     cited: str  # "TS29.140"
@@ -306,14 +336,17 @@ class CrossRelease:
     # the reference names ("B") and the one resolved to ("0").
     cited_revision: str | None = None
     revision: str | None = None
-    # For a `RELEASE_STAND_INS` entry, the version the non-specific
-    # reference means ("11.12.0"), which the corpus does not hold.
+    # For a `RELEASE_STAND_INS` entry, the version the reference means
+    # ("11.12.0"), which the corpus does not hold, and whether the citing
+    # document names it.
     meant: str | None = None
+    specific: bool = False
 
     def __str__(self) -> str:
         if self.rule == STAND_IN and self.meant is not None:
+            how = "naming" if self.specific else "non-specifically, meaning"
             return (
-                f"{self.citing} cites {self.cited} non-specifically, meaning"
+                f"{self.citing} cites {self.cited} {how}"
                 f" V{self.meant}, which the corpus lacks: V{self.version} stands"
                 " in (corpus.RELEASE_STAND_INS)"
             )
@@ -325,6 +358,11 @@ class CrossRelease:
             )
         if self.rule == SPECIFIC:
             why = f"the reference names V{self.version} (corpus.CITED_VERSIONS)"
+        elif self.rule == LATEST_EDITION:
+            why = (
+                f"the reference is non-specific and V{self.version} is the latest"
+                " edition the corpus holds (corpus.LATEST_EDITIONS)"
+            )
         else:
             why = (
                 f"the reference is non-specific and V{self.version} is the"
@@ -647,7 +685,10 @@ class Corpus:
         later release's copy a `RELEASE_STAND_INS` entry names; the corpus
         may lack the version of a release the document still had.
         A document outside 3GPP has no release, so its non-specific
-        reference is the final version or nothing.
+        reference is the newest copy where its references clause says so
+        (`LATEST_EDITIONS`), the final version, or nothing, and a version it
+        names that the corpus lacks is answered only by a `RELEASE_STAND_INS`
+        entry.
         """
         candidates = self._candidates(reference)
         citing = _reference(like)
@@ -692,21 +733,13 @@ class Corpus:
                     and _major(entry.spec.version) == wanted
                 ):
                     return entry, None
-            stand_in = RELEASE_STAND_INS.get((citing, version, reference))
-            if stand_in is not None:
-                entry = next(
-                    (e for e in candidates if e.spec.version == stand_in.version),
-                    None,
-                )
-                if entry is None:
-                    return None, None
-                return entry, CrossRelease(
-                    citing,
-                    reference,
-                    stand_in.version,
-                    STAND_IN,
-                    meant=stand_in.meant,
-                )
+        if (citing, version or "", reference) in RELEASE_STAND_INS:
+            return self._release_stand_in(citing, version, reference, candidates)
+        if external and (citing, reference) in LATEST_EDITIONS and candidates:
+            newest = candidates[0]
+            return newest, CrossRelease(
+                citing, reference, newest.spec.version or "", LATEST_EDITION
+            )
         final = FINAL_VERSIONS.get(reference)
         if final is None or (not external and _major(final) >= _major(version or "0")):
             # An ETSI version is no 3GPP release, so it says nothing about
@@ -719,6 +752,28 @@ class Corpus:
         if entry is None:
             return None, None
         return entry, CrossRelease(citing, reference, final, NON_SPECIFIC)
+
+    @staticmethod
+    def _release_stand_in(
+        citing: str, version: str | None, reference: str, candidates: list[Entry]
+    ) -> tuple[Entry | None, CrossRelease | None]:
+        """The copy a `RELEASE_STAND_INS` entry names, or nothing."""
+        stand_in = RELEASE_STAND_INS.get((citing, version or "", reference))
+        if stand_in is None:
+            return None, None
+        entry = next(
+            (e for e in candidates if e.spec.version == stand_in.version), None
+        )
+        if entry is None:
+            return None, None
+        return entry, CrossRelease(
+            citing,
+            reference,
+            stand_in.version,
+            STAND_IN,
+            meant=stand_in.meant,
+            specific=stand_in.specific,
+        )
 
     @staticmethod
     def _revision(

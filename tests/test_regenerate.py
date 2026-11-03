@@ -790,6 +790,19 @@ def test_a_3gpp2_transcription_is_named_for_its_rendering(tmp_path):
     ]
 
 
+def test_a_3gpp2_document_in_parts_keeps_its_part_in_its_name(tmp_path):
+    """X.S0013-013 and X.S0013-014 are two documents, whatever their series."""
+    transcriptions = tmp_path / "transcriptions"
+    transcriptions.mkdir()
+    (transcriptions / "3GPP2-X.S0013-014.dad").write_text(
+        _TGPP2_TRANSCRIPTION.replace("X.S0057", "X.S0013-014"), encoding="utf-8"
+    )
+
+    (source,) = regenerate._transcriptions(transcriptions).values()
+
+    assert (source.stem, source.tree) == ("xs0013-014-0_v2.0", "3gpp2")
+
+
 def test_a_3gpp2_transcription_from_another_versions_rendering_is_refused(
     tmp_path,
 ):

@@ -131,7 +131,8 @@ section, each starting with `; Type:`.
 - **An origin names its publisher, unless it is 3GPP or IETF.** Their
   documents are bare numbers (`TS29.272`, `RFC6733`); anything else leads
   with its publisher and keeps the publisher's numbering (`ETSI-TS283.034`,
-  `3GPP2-X.S0057`, `OMA-DDS-Charging_Data`, `oneM2M-TS-0004`).
+  `ETSI-TS183.059-1`, `3GPP2-X.S0057`, `3GPP2-X.S0013-014`,
+  `OMA-DDS-Charging_Data`, `oneM2M-TS-0004`).
 - **A transcription says so.** A document no extractor reads is copied by
   hand from its rendering, and its header says which
   (`; Transcribed: by hand from <url>`). A transcription records what the
@@ -214,7 +215,8 @@ on.
 Files are named as their publisher names them: `29272-i70` for TS 29.272
 V18.7.0 (3GPP's archive naming), `rfc6733` for an RFC, `es283034-020200`
 for ETSI ES 283 034 V2.2.0, `xs0057-0_v2.0` for 3GPP2 X.S0057 revision 0
-V2.0, `ts-0004-v2_35_0` for oneM2M TS-0004 V2.35.0. RFC files carry no
+V2.0, `xs0013-014-0_v1.0` for part 014 of its series, `ts-0004-v2_35_0` for
+oneM2M TS-0004 V2.35.0. RFC files carry no
 `; Version:` header, since an RFC number names one immutable document.
 
 Each document is committed twice:

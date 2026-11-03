@@ -316,7 +316,9 @@ ETSI SR 001 262 clause 12). A reference naming a release means its last
 version. A *non-specific* reference means the latest version in the citing
 document's release (TR 21.801 clause 6.6.6.5.3, and every 3GPP document's
 clause 2), which is the match-major-take-newest rule; for a document
-outside 3GPP, the latest version there is. Neither rule says what a
+outside 3GPP, the latest version there is. ETSI's clause 2.1 says the same of
+the documents it cites ("the latest edition of the referenced document"), and
+`LATEST_EDITIONS` reads that citation by citation. Neither rule says what a
 non-specific 3GPP reference means when the cited document ended before the
 citing document's release; the corpus reads it as the document's final
 version.
@@ -343,7 +345,9 @@ needs live in `corpus.py`, each entry citing its source:
   corpus lacks, with the evidence that both define alike everything the
   citing copy re-uses. TS 32.299 V11.20.0's six Release 11 references, and
   TS 29.210's and TS 29.234's of TS 29.229, are answered by Release 18
-  copies so. Where the releases differ, the older version is pinned
+  copies so, as is ETSI TS 183 033's of TS 29.229 V6.6.0, a version it names
+  that the catalog cannot pin, being no release's last. Where the releases
+  differ, the older version is pinned
   instead: TS 29.212 V11.19.0 and TS 29.214 V11.16.0 for TS 32.299
   V11.20.0, and TS 29.061 V6.15.0 for TS 29.210, whose table puts M in
   Must on three AVPs Release 18 forbids it on.

@@ -17,10 +17,15 @@ Nothing has been published to PyPI yet.
   and flags in two tables, tables of re-used AVPs, and rules under a prose title
   a table row cites. RFC 4740, 5624, 5779, 5866, 6736, 6737, 6738 and 7075 join
   the corpus, and RFC 5777 gains `QoS-Capability`'s body.
+- `seanchai lint` and the model resolve a non-specific citation by a document
+  saying "the latest edition" applies to the newest copy, by citation
+  (`corpus.LATEST_EDITIONS`), and `RELEASE_STAND_INS` answers a version an ETSI
+  document names; `CrossRelease.specific` says which. A spec-ref keeps the part
+  of a document in parts: `3GPP2-X.S0013-014`, `ETSI-TS183.059-1`.
 - `seanchai download --only transcribed` fetches the PDFs the hand
-  transcriptions were copied from into `specifications/transcriptions/`, recorded
-  in the manifest, where `export --include-pdfs` finds them; a full download does
-  too.
+  transcriptions were copied from into `specifications/transcriptions/`,
+  recorded in the manifest, where `export --include-pdfs` finds them; a full
+  download does too.
 - `Model.definition`, `find`, `identified`, `avps()` and `seanchai show` know an
   identity only an older copy holds, where a citation reaches it, so every
   identity `seanchai dictionary` writes resolves.

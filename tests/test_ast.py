@@ -142,6 +142,7 @@ def test_inline_text_fields_reject_values_that_cannot_round_trip(build, text):
         ("ETSI TS 283 034", "ETSI-TS283.034"),
         ("ETSI ES 283 034", "ETSI-ES283.034"),
         ("3GPP2 X.S0057", "3GPP2-X.S0057"),
+        ("3GPP2 X.S0013-014", "3GPP2-X.S0013-014"),
         ("OMA-DDS-Charging_Data", "OMA-DDS-Charging_Data"),
         ("oneM2M TS-0004", "oneM2M-TS-0004"),
     ],
