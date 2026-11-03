@@ -1764,6 +1764,8 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 > ;; corrected: (TS29
 ; Page: 155
 Tunnel-Information ::= < AVP header: 1038 10415 > ;; corrected: (TS29.212.py#vendor-id-tunnel-information)
         [ Tunnel-Header-Length ]
+    2*2 [ Tunnel-Header-Filter ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP

@@ -39,3 +39,17 @@ reason = """
     """
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[patch]]
+find = "**[ Proxy-Info ]"
+replace = "*[ Proxy-Info ]"
+exact = true
+section = "6.2.5"
+reason = """
+    clause 6.2.5's Reporting-Information-Request prints '**[ Proxy-Info ]',
+    docx and PDF alike, with a doubled star; every other command of the
+    document prints '*[ Proxy-Info ]'. Unread, the body ended there,
+    dropping the members after it.
+    """
+first_version = "18.0.0"
+last_version = "18.0.0"

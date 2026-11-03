@@ -134,6 +134,7 @@ last_version = "1.1.0"
                 ("OctetSstring", "6.4.1"),
                 ("Number-of-UE-Per-Location-Configuration ::=", "6.4.11"),
                 ("Number-of-UE-Per-Location-Report ::=", "6.4.12"),
+                ("**[ Proxy-Info ]", "6.2.5"),
             ],
         ),
         (

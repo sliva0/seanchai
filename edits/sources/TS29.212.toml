@@ -428,3 +428,33 @@ reason = """
     """
 first_version = "11.19.0"
 last_version = "11.19.0"
+
+[[patch]]
+find = "2[ Tunnel-Header-Filter ]"
+replace = "2*2[ Tunnel-Header-Filter ]"
+exact = true
+section = "5.3.36"
+reason = """
+    clause 5.3.36 prints '2[ Tunnel-Header-Filter ]', RFC 5234 section 3.7's
+    specific repetition, which RFC 6733's 'qual' has no spelling for:
+    '<n>element' is '<n>*<n>element'. Unread, the body ended there and lost
+    both members after Tunnel-Header-Length. The clause's 'may include only
+    the Tunnel-Header-Length AVP' is what the optional brackets say.
+    """
+first_version = "11.19.0"
+last_version = "11.19.0"
+
+[[patch]]
+find = "2 [ Tunnel-Header-Filter ]"
+replace = "2*2 [ Tunnel-Header-Filter ]"
+exact = true
+section = "5.3.36"
+reason = """
+    clause 5.3.36 prints '2 [ Tunnel-Header-Filter ]', RFC 5234 section
+    3.7's specific repetition, which RFC 6733's 'qual' has no spelling for:
+    '<n>element' is '<n>*<n>element'. Unread, the body ended there and lost
+    both members after Tunnel-Header-Length. The clause's 'may include only
+    the Tunnel-Header-Length AVP' is what the optional brackets say.
+    """
+first_version = "18.2.0"
+last_version = "18.2.0"

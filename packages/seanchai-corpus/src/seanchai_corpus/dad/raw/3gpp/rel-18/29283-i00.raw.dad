@@ -35,6 +35,24 @@
 ; Page: 25
 <Data-Pull-Answer> ::= < Diameter Header: 8388728, PXY, 16777351 >
         < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+      * [ Data ]
+      * [ Data-Identification ]
+        [ DPA-Flags ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+        [ Route-Record ]
 
 
 ; Type: Message

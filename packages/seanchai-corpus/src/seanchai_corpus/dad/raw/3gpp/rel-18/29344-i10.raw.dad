@@ -68,6 +68,13 @@
         { Destination-Realm }
         { User-Name }
       * [ Supported-Features ]
+        [ ProSe-Subscription-Data ]
+        [ Visited-PLMN-Id ]
+        { UPR-Flags }
+      * [ Reset-ID ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
 
 
 ; Type: Message
