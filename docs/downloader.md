@@ -102,6 +102,10 @@ experiments, not for refreshing the corpus.
   (`3gpp/Rel-11/TS_32.299/` beside `3gpp/Rel-18/TS_32.299/`). How the
   corpus resolves to the pinned copies is in
   [consumers.md](consumers.md#resolution-across-releases).
+- **Hand transcriptions are in the catalog for their titles only.** A
+  `[[transcribed]]` entry names a document under `edits/transcriptions/` and the
+  title its cover prints. Nothing downloads it for the corpus; `seanchai export`
+  reads the title.
 - **oneM2M documents are pinned by the catalog, not discovered.** The
   document library serves a document id's latest revision with no archive,
   so the version is the catalog's to state and the download's to check: a

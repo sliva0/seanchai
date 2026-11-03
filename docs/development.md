@@ -61,6 +61,13 @@ between runs; without it each run starts cold and still passes.
   correction re-applies to the committed raw output, the linter's findings
   over the corpus are pinned, the corpus's `holes.toml` pins the known holes,
   and its `corrections.json` must be what `edits/corrections` says.
+- `tests/test_export.py` runs `seanchai export` over the committed corpus in
+  subprocesses, from a directory holding nothing of the repository and under two
+  hash seeds, which must agree byte for byte. `tests/export.sha256` pins a
+  digest per file, leaving the two versions out of `index.json` so that a
+  release need not move it, and a failure names the files that changed. After
+  reviewing a change to the export or the corpus, rewrite it with
+  `uv run pytest tests/test_export.py --update-export-pin`.
 - `tests/test_packaging.py` builds both packages, pins what each distribution
   holds, and runs the wheels from a scratch environment with nothing of the
   repository importable. It needs `uv` and no network.
@@ -116,7 +123,8 @@ manifest record and are rebuilt from `edits/transcriptions/` alongside.
 A run nothing failed in also rewrites the corpus's `corrections.json`
 ([corrections.md](corrections.md#the-corrections-record)), which an installed
 corpus is read with. Commit it with the edits it records: editing a correction,
-even only its reason, without regenerating fails `uv run pytest`.
+even only its reason, without regenerating fails `uv run pytest`. A changed
+corpus usually moves the export's pin too ([above](#tests)).
 
 `regenerate` leaves the corpus's version alone; cutting a release sets it
 ([below](#releases)).

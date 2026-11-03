@@ -316,6 +316,14 @@ dictionary with two names on one identity is worse than a hole; and a cycle
 of aliases. `undefined_policy` reports the build's policy, which a
 generator records in its output.
 
+## The export
+
+`seanchai export -o DIR` writes the resolved corpus as JSON for a consumer with
+no Python, the static site first. Run from an installed `seanchai[corpus]`, it
+needs no checkout and no downloads. `seanchai.export.export_corpus(books,
+output)` is the same from Python, and `seanchai.export_schema` holds the shape.
+The file layout and fields are in [website.md](website.md#data-boundary).
+
 ## The integrations
 
 Each target gets a directory under `integrations/`; scripts carry PEP 723

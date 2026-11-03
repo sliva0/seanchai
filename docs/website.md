@@ -4,7 +4,8 @@ A static site over the corpus: every `.dad` file as a page with syntax
 highlighting, every AVP name a link to its definition, every page number a
 link into the source document, and search. Hosted on GitHub Pages for the
 public site, and buildable for self-hosting with the source PDFs beside it.
-Nothing here is built yet; this records the design and its decisions.
+The export it reads exists; the site does not yet, and the rest of this records
+its design and decisions.
 
 ## Two deployments
 
@@ -28,20 +29,68 @@ Only a copy on the site's own origin can be framed.
 
 ## Data boundary
 
-Seanchaí gains an export command, `seanchai export -o DIR`, that writes
-the resolved model as JSON. The site is a frontend over that JSON and holds
-no Python. The export carries, per document: the file's text split into
-token spans with a highlighting class each, taken from the AST so the
-classes are exact and match the editor grammars; every name's resolution
-target (document, section) from `Model.resolve`, including re-used names
-and cross-release citations; the holes with their recorded reasons; the
-linter's findings and accepted notes; each correction's id and reason;
-the source link, version and page per section. Plus a search index of
-every AVP, command and application name with its definer, identity and
-Wireshark alias.
+`seanchai export -o DIR` writes the resolved model as JSON. The site is a
+frontend over that JSON and holds no Python.
 
-The export is tested like the generators: byte for byte over the committed
-corpus, with every link target checked to exist.
+```text
+DIR/
+  index.json              versions, mode, and every document's summary
+  search.json             search entries and line mentions, for the search page
+  schema.json             JSON Schema of the other files
+  documents/<id>.json     one corrected file and what its page shows
+  documents/<id>.raw.json its raw mirror, for the raw view
+  sources/                RFC texts and, self-hosted, the source PDFs
+```
+
+`<id>` is the file's stem, `29272-i70`. The files are compact JSON with sorted
+keys. `seanchai.export_schema` holds their shape as pydantic models and
+`SCHEMA_VERSION`, now 2, written into every file but `schema.json`; it changes
+when a reader would have to. A fixture can be validated against `schema.json`,
+whose root is one of the four file shapes. A field with no default is always
+written, null where it says nothing; the mostly empty `Token`, `Line`, `Target`
+and `Citation` fields are left out while they hold their default.
+
+`index.json` also carries `seanchai_version` and `corpus_version`, the second
+null for a corpus other than the installed one. There are no timestamps: the
+same inputs give the same bytes under any hash seed.
+
+A document carries the file's text split into tokens, its holes with their
+recorded reasons, the linter's findings and accepted notes, each correction's
+kind and reason by citation, and its source. `source.kind` is `etsi-pdf`,
+`rfc-text` or `other`, so the client need not infer what it can open.
+
+A token holds its text, and every token joined gives the file, byte for byte.
+It holds what a link needs: `target` (document, section, and for a re-used row's
+origin the AVP's `name`) from `Model.resolve`, re-used names and cross-release
+citations included; `source` (section, page) for a link into the source; `avp`;
+and `correction`, a note's citation. `kind` marks the one thing the client
+needs structurally: `comment` for a `;;` comment, `correction-note` for one
+citing a declaration. Highlighting is not in the export: the site runs the
+TextMate grammar in `editors/`, so it cannot disagree with the editors. A line
+holds `anchor`, the clause it is the link target of, `section`, and `warning` on
+a raw line the corrected file changes.
+
+A search entry is one name as one document means it: an AVP, command,
+application or registry row, with its target, `defined_in`, and an `identity`
+naming its fields per kind (`vendor_id` and `code` for an AVP). A command's
+`application_id` is the effective one, from its header or from the Application
+Scope block covering its clause, and `header_application_id` what its header
+prints. `abbreviation` is a command's own and `wireshark_name` Wireshark's name
+for an AVP, filled with `--dictionary specifications/wireshark`.
+
+Correction reasons come from the corpus's `corrections.json`, so a plain
+`pip install` has them
+([corrections.md](corrections.md#the-corrections-record)). A note citing what
+the record does not hold is refused as a stale record.
+
+An export owns its output directory. It is built beside it and replaces it whole
+once it has succeeded, so nothing of an earlier mode or generation lingers and a
+failed run changes nothing. A directory holding anything but a previous export
+is refused, and so is a corpus with no documents.
+
+The export is tested over the committed corpus: every byte preserved, every
+link target checked to exist, and a digest per file pinned
+([development.md](development.md#tests)).
 
 ## The site
 
@@ -50,8 +99,8 @@ the export as input. Static hosting as a single-page app with hash routes,
 or prerendered per document for shareable deep links; prerendering is
 preferred once it is cheap.
 
-- **Document page.** The `.dad` text verbatim, each token a span with its
-  class. Names link to their definition, in this file or another. A
+- **Document page.** The `.dad` text verbatim, highlighted with the grammar.
+  Names link to their definition, in this file or another. A
   `; Section:` and a `; Page:` link into the source as the deployment mode
   allows. A `;; corrected:` note expands the correction's reason inline.
   `; Bases:` and From cells link to document pages. A raw/corrected
@@ -64,7 +113,7 @@ preferred once it is cheap.
 - **Index.** Documents by publisher and release, with versions and the
   catalog's titles. Older pinned releases listed under their release with
   a note on why they are held.
-- **Search.** Client-side over the index: substring on names, aliases
+- **Search.** Client-side over `search.json`: substring on names, aliases
   included, with a per-name panel showing definer, identity and every
   document that re-uses or tabulates it.
 - **Deep links.** `#29272-i70/7.3.138` opens the document at the section
@@ -76,14 +125,13 @@ preferred once it is cheap.
   `seanchai` and `seanchai-corpus` from PyPI, runs the export, builds the
   site and deploys with the Pages actions. No source documents are
   downloaded.
-- Self-hosted: the same build with a flag and a path to `specifications/`,
-  copying the 3GPP PDFs (about 27 MB for the current corpus) and the
-  PDF.js viewer into the output.
+- Self-hosted: the same build with `--include-pdfs --specifications
+  specifications`, copying the PDFs (about 27 MB for the current corpus), and
+  the PDF.js viewer into the output.
 
 ## Order of work
 
-1. The export command and its tests.
-2. The site: document page with highlighting and links, index, search.
-3. The pane for RFCs.
-4. The self-hosted mode with PDF.js.
-5. Raw view, findings, corrections inline.
+1. The site: document page with highlighting and links, index, search.
+2. The pane for RFCs.
+3. The self-hosted mode with PDF.js.
+4. Raw view, findings, corrections inline.

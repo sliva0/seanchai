@@ -67,17 +67,20 @@ seanchai correct RAW.dad --corrections DIR -o OUT.dad
 seanchai format [--check] FILE.dad...   # canonical form, ;; comments kept
 seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] FILE.dad...
 seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
+seanchai export -o DIR                  # the corpus as JSON for the static site
+seanchai export -o DIR --include-pdfs --specifications specifications
 ```
 
 ## Repository layout
 
 - `src/seanchai/`: `dad/` (AST, parser, formatter, corrections),
   `extractor/`, `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`,
-  `oracle.py`, `corpus.py`, `model.py`, `cli.py`.
+  `oracle.py`, `corpus.py`, `model.py`, `correction_record.py`, `export.py`,
+  `export_schema.py`, `cli.py`.
 - `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
   `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
   release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
-  `raw/`, and the record of known holes
+  `raw/`, the record of known holes and the record of corrections
   ([docs/dad-format.md][dad-format-the-corpus]).
 - `edits/sources/<SpecRef>.toml`: input patches and quirks per document.
 - `edits/corrections/<SpecRef>.py`: corrections per document.
@@ -91,7 +94,7 @@ seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
   [extractor][extractor], [corrections][corrections],
   [downloader][downloader], [linter][linter],
   [oracle][oracle], [consumers][consumers],
-  [development][development], and the [website plan][website].
+  [development][development], and the [website][website], plan and export.
 
 ## Development
 
