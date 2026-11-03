@@ -535,6 +535,17 @@ title = """
 url = "https://www.etsi.org/deliver/etsi_ts/183000_183099/183017/03.02.01_60/ts_183017v030201p.pdf"
 
 [[transcribed]]
+reference = "ETSI-TS183.033"
+title = """
+    Telecommunications and Internet converged Services and Protocols for
+    Advanced Networking (TISPAN); IP Multimedia; Diameter based protocol for the
+    interfaces between the Call Session Control Function and the User Profile
+    Server Function/Subscription Locator Function; Signalling flows and protocol
+    details [3GPP TS 29.228 V6.8.0 and 3GPP TS 29.229 V6.6.0, modified]
+    """
+url = "https://www.etsi.org/deliver/etsi_ts/183000_183099/183033/01.02.00_60/ts_183033v010200p.pdf"
+
+[[transcribed]]
 reference = "3GPP2-X.S0057"
 title = "E-UTRAN - eHRPD Connectivity and Interworking: Core Network Aspects"
 url = "http://www.3gpp2.org/Public_html/Specs/X.S0057-0_v2.0_091215.pdf"

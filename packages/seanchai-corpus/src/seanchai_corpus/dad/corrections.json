@@ -5639,6 +5639,45 @@
     }
    ],
    "version": "3.2.1"
+  },
+  "ts183033-010200": {
+   "edits": {
+    "ETSI-TS183.033.py#sip-auth-data-item-annex-body": {
+     "kind": "delete",
+     "reason": "clauses 6.3.13 and ZA.2 each print the AVP as TS 29.229 modified, the one adding Line-Identifier and the other, for HTTP Digest, three ETSI-SIP- members; one AVP has one body, and both changes apply, so clause 6.3.13's carries clause ZA.2's additions"
+    },
+    "ETSI-TS183.033.py#sip-auth-data-item-endorsed-change": {
+     "expect": "SIP-Auth-Data-Item's body, against TS29.229's definition: adds ETSI-SIP-Authenticate, ETSI-SIP-Authentication-Info, ETSI-SIP-Authorization, missing Framed-IP-Address, Framed-IPv6-Prefix, Framed-Interface-Id, SIP-Digest-Authenticate",
+     "kind": "accept",
+     "reason": "clause 6.3.13 is 'Endorsed with the following change' and clause ZA.2 says the AVP 'is modified compared to 3GPP TS 29.229 [2] as follows'; the members it lacks are later than V6.6.0, the version clause 2.1 [2] names, whose body prints none of them",
+     "rule": "reused-body-differs",
+     "targets": [
+      [
+       "sections",
+       2
+      ]
+     ]
+    },
+    "ETSI-TS183.033.py#sip-auth-data-item-etsi-sip-authenticate": {
+     "kind": "insert",
+     "reason": "clause ZA.2 (HTTP Digest) adds the member to the AVP clause 6.3.13 also modifies, and prints it underlined, the mark clause 4's note gives a modification"
+    },
+    "ETSI-TS183.033.py#sip-auth-data-item-etsi-sip-authentication-info": {
+     "kind": "insert",
+     "reason": "clause ZA.2 (HTTP Digest) adds the member to the AVP clause 6.3.13 also modifies, and prints it underlined, the mark clause 4's note gives a modification"
+    },
+    "ETSI-TS183.033.py#sip-auth-data-item-etsi-sip-authorization": {
+     "kind": "insert",
+     "reason": "clause ZA.2 (HTTP Digest) adds the member to the AVP clause 6.3.13 also modifies, and prints it underlined, the mark clause 4's note gives a modification"
+    },
+    "ETSI-TS183.033.py#sip-auth-data-item-reused": {
+     "kind": "insert",
+     "reason": "clause 4: 'The elements of 3GPP TS 29.228 [1] and 3GPP TS 29.229 [2] apply, with the following modifications'; clause 6.3.13 prints the AVP's body under TS 29.229's vendor and code, 612 10415, which is no definition of the file's own, and table 6.3.1 prints only the addition"
+    }
+   },
+   "reference": "ETSI-TS183.033",
+   "renames": [],
+   "version": "1.2.0"
   }
  },
  "note": "Written by `seanchai regenerate` from edits/corrections; do not edit."
