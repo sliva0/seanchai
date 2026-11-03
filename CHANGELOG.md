@@ -8,6 +8,9 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- `Model.definition`, `find`, `identified`, `avps()` and `seanchai show` know an
+  identity only an older copy holds, where a citation reaches it, so every
+  identity `seanchai dictionary` writes resolves.
 - The docx extractor reads the text inside Word's smart tags, command headings
   spacing a name's words, TS 29.061's and TS 29.109's commands, and a command
   printed as a table, so 41 commands the corpus lacked are `Message` blocks.

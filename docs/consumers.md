@@ -356,7 +356,10 @@ documents, the version and the rule; `across_releases()` lists them for a
 reader to audit, and the linter's `cross-release-origin` note says the same
 per file. An older copy answers only through a citation: reference-level
 queries (`avps`, `holes`, `references`) read the newest copy of each
-document.
+document. Corpus-wide lookups (`find`, `definition`, `identified`, `avps()`)
+also know an identity only an older copy holds, where a citation reaches it, so
+`show` answers for every identity `seanchai dictionary` writes: TS 32.299
+V11.20.0's `WLAN-Information`, through oneM2M TS-0004's `Service-Information`.
 
 **Holes.** An `Avp` has every field: code, type and flag rules are facts
 some document states, or RFC 6733's rule for an IETF AVP's unplaced bits,

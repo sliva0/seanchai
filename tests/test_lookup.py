@@ -11,6 +11,7 @@ from click.testing import CliRunner
 import seanchai
 from seanchai.cli import main
 from seanchai.corpus import Corpus
+from seanchai.dad import ast
 from seanchai.dictionary import FORMAT_VERSION, Dictionary, build
 from seanchai.model import Model, UndefinedPolicy
 
@@ -297,6 +298,78 @@ def test_every_identity_has_one_reading_with_no_suffix(tmp_path):
             int(each.partition("#")[2] or 1),
         ),
     )
+
+
+def test_a_printed_id_reaches_the_commands_whose_headers_omit_it():
+    """TS 32.299 V11.20.0 states them in clauses 7.1.5 and 7.1.6, as V18.0.0."""
+    built = Model.installed()
+
+    assert [
+        (each.name, message.abbreviation, message.application_id)
+        for each in built.applications("TS32.299", version="11.20.0")
+        for message in each.messages
+    ] == [
+        ("Rf", "ACR", 3),
+        ("Rf", "ACA", 3),
+        ("Ro", "CCR", 4),
+        ("Ro", "CCA", 4),
+        ("Ro", "RAA", 4),
+    ]
+
+
+def test_an_application_printing_no_command_still_states_its_id():
+    """RFC 6942 runs RFC 4072's commands under id 13, and prints none."""
+    entry = next(
+        each for each in Corpus.installed().newest() if each.reference == "RFC6942"
+    )
+
+    assert [
+        (section.name, section.application_id, section.source.section)
+        for section in entry.spec.sections
+        if isinstance(section, ast.ApplicationScope)
+    ] == [("Diameter ERP", 13, "7")]
+
+
+def test_every_identity_resolves_through_the_definition(tmp_path):
+    data = _dictionary(tmp_path)
+    built = Model.installed()
+
+    assert not [
+        avp["id"]
+        for avp in data["avps"]
+        if built.definition((avp["vendor_id"], avp["code"])) is None
+    ]
+    assert not [
+        avp["id"]
+        for avp in data["avps"]
+        if "#" not in avp["id"] and not avp["defining"]
+    ]
+
+
+def test_show_answers_for_an_identity_only_an_older_copy_holds():
+    """oneM2M TS-0004's Service-Information is TS 32.299 V11.20.0's, whose
+    WLAN-Information later releases removed."""
+    built = Model.installed()
+
+    found = built.definition((10415, 875))
+    assert found is not None
+    assert (found.name, found.read_through) == (
+        "WLAN-Information",
+        "TS32.299 V11.20.0",
+    )
+    assert _run("show", "10415:875").exit_code == 0
+    assert _run("show", "WLAN-Information").exit_code == 0
+
+
+def test_a_v11_table_row_reads_its_definition_under_the_clauses_spelling():
+    """Table 7.2 spells it LCS-Client-Id; left apart from clause 7.2.84's
+    LCS-Client-ID, the body read as an IETF AVP, (0, 1232)."""
+    built = Model.installed()
+
+    assert built.identified(0, 1232) == ()
+    avp = built.resolve("TS32.299", "LCS-Client-ID", version="11.20.0")
+    assert avp is not None
+    assert avp.identity == (10415, 1232)
 
 
 def test_a_cited_reading_is_what_the_citing_documents_commands_name(tmp_path):

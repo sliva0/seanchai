@@ -98,7 +98,7 @@ import enum
 import os
 import re
 from collections import Counter
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field, fields, is_dataclass, replace
 from functools import cached_property
 from pathlib import Path
@@ -1678,7 +1678,9 @@ class Model:
 
         A re-printed or re-used AVP appears with the origin's `defined_in`, so
         a consumer that wants only the document's own AVPs filters on that
-        field. A name with a hole is left out; `holes` lists it.
+        field. A name with a hole is left out; `holes` lists it. With no
+        `reference`, an identity only an older copy holds counts too, where a
+        citation reaches it.
 
         This is what a document's tables say, not what its commands use: an
         AVP a body names that no table lists, as most of RFC 6733's in TS
@@ -2438,7 +2440,40 @@ class Model:
         found: dict[Avp, None] = {}
         for reference in self._views:
             found.update(dict.fromkeys(self._avps_of(reference)))
+        known = {avp.identity for avp in found}
+        found.update(
+            (avp, None) for avp in self._reached(found) if avp.identity not in known
+        )
         return list(found)
+
+    def _reached(self, avps: Iterable[Avp]) -> dict[Avp, None]:
+        """Every reading `avps` and the newest copies' commands hold at any
+        depth. A citation can reach an AVP only an older copy defines: oneM2M
+        TS-0004's Service-Information is TS 32.299 V11.20.0's, whose
+        WLAN-Information later releases removed."""
+        reached: dict[Avp, None] = {}
+        pending = [
+            *avps,
+            *(
+                member.avp
+                for view in self._views.values()
+                for message in self._messages_of(view)
+                for member in (*message.avps, *message.dropped)
+                if member.avp is not None
+            ),
+        ]
+        while pending:
+            avp = pending.pop()
+            if avp in reached:
+                continue
+            reached[avp] = None
+            if isinstance(avp, Grouped):
+                pending.extend(
+                    member.avp
+                    for member in (*avp.members, *avp.dropped)
+                    if member.avp is not None
+                )
+        return reached
 
     @cached_property
     def _citations(self) -> Counter[tuple[tuple[int, int], str]]:
