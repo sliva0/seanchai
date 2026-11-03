@@ -19,6 +19,9 @@ Nothing has been published to PyPI yet.
   (`ts18305901-020101`), and the catalog gains ETSI TS 183 020, TS 183 059-1 and
   3GPP2 X.S0013-006.
 - `seanchai download` fetches the catalog at Release 19 (`downloader.RELEASE`).
+- The catalog gains TS 29.561, the docx extractor's `document-clause-cells`
+  reads a clause cell naming another document as a re-used row, and a run
+  holding only a repetition no longer makes an ABNF line mixed bold.
 - A plain `regenerate` follows a committed copy into a later release's tree when
   the manifest no longer lists its own, reporting it `replaced` and leaving no
   empty tree behind.
