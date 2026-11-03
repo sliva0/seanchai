@@ -1,5 +1,94 @@
 # Consumers: the model and the integrations
 
+`seanchai` needs Python 3.14. Install it with the corpus and every snippet here
+runs as it stands:
+
+```sh
+pip install "seanchai[corpus]"
+```
+
+## Recipes
+
+### Generate a dictionary
+
+`Application.avps()` is the closure of what an application's commands use, at
+any depth, whichever document defines it. `Model.avps(reference)` is something
+else: what a document's own tables list. Cx's commands use 103 AVPs and TS
+29.229's tables list 77: RFC 6733's `Destination-Host` is in no table of TS
+29.229's. Generate a dictionary from `Application.avps()`, or from
+`Message.walk()` for one command.
+
+```python
+import seanchai
+from seanchai import corpus, model
+
+books = corpus.Corpus.installed()
+built = model.Model.build(books)
+(cx,) = built.applications("TS 29.229", application_id=16777216)
+
+# Record both versions: the generated output depends on both.
+print(f"# seanchai {seanchai.__version__}, corpus {books.version}")
+
+dictionary = {}
+for member in cx.avps():
+    if member.avp is not None:
+        # A citing table can read one AVP two ways: keep one per identity.
+        dictionary.setdefault(member.avp.identity, member.avp)
+    elif member.hole is not None:
+        # A name the corpus cannot complete; the hole says what it lacks.
+        print(f"# skipped: {member.hole}")
+    # Neither: the `* [ AVP ]` wildcard, which is grammar and not an AVP.
+
+for (vendor_id, code), avp in sorted(dictionary.items()):
+    rules = avp.flag_rules
+    # M is in Must, May or Must not; or RFC 6733 leaves it to the application.
+    open_m = model.AvpFlag.MANDATORY in rules.application_defined
+    mandatory = "app" if open_m else model.AvpFlag.MANDATORY in rules.must
+    print(vendor_id, code, avp.name, avp.data_type, mandatory)
+    if isinstance(avp, model.Grouped):
+        print("  holds", [member.name for member in avp.members])
+    elif isinstance(avp, model.Enumerated):
+        print("  values", len(avp.values))
+```
+
+### Look up one AVP
+
+`definition` takes a name or a `(vendor-id, code)` and returns the defining
+document's reading. `find` returns every reading, since a citing document's
+table can change the flags; `Avp.read_through` names the table that did.
+
+```python
+from seanchai import model
+
+built = model.Model.installed()
+
+avp = built.definition("Session-Id")
+print(avp.identity, avp.data_type, avp.defined_in, avp.flag_rules.to_dict())
+
+for reading in built.find("Session-Id"):
+    print(reading.read_through, reading.flag_rules.to_dict())
+
+# As one document means it, which is the reading its commands hold:
+print(built.resolve("TS29.229", "Session-Id"))
+
+# A name two AVPs claim raises `ModelError`; ask by identity instead.
+print(built.definition((45687, 1008)))
+```
+
+### List an application's commands
+
+```python
+from seanchai import model
+
+built = model.Model.installed()
+
+for application in built.applications("TS 29.212"):
+    print(application.name, application.application_id, application.clause)
+    for message in application.messages:
+        kind = "request" if message.is_request else "answer"
+        print(" ", message.abbreviation, message.command_code, kind)
+```
+
 ## Installing the corpus
 
 The library and the corpus are two packages. `seanchai` holds no data, and
@@ -7,21 +96,24 @@ The library and the corpus are two packages. `seanchai` holds no data, and
 CI pins each on its own:
 
 ```sh
-pip install seanchai seanchai-corpus   # or seanchai[corpus]
+pip install seanchai seanchai-corpus   # or "seanchai[corpus]"
 ```
 
 `corpus.Corpus.installed()` loads the installed corpus with no path, record
 of known holes included, and `installed(raw=True)` its raw mirror. Without the
 package it raises `corpus.CorpusNotInstalledError`, naming the package.
-`corpus.Corpus.load([path])` loads any other directory. A file named twice
-counts once, and two files claiming one document, version and 3GPP2 revision
-raise `corpus.CorpusError` naming both, since which one answers would depend on
-the order they were given in.
+`corpus.Corpus.load(path)` loads any other directory or file, or a list of them.
+A file named twice counts once, and two files claiming one document, version and
+3GPP2 revision raise `corpus.CorpusError` naming both, since which one answers
+would depend on the order they were given in.
 
-`seanchai_corpus.CORPUS_DIR` is the directory itself and
-`seanchai_corpus.__version__` the corpus's version, the date it was regenerated.
-In this repository the package is installed from the workspace, so the installed
+`seanchai_corpus.CORPUS_DIR` is the directory itself. `Corpus.version` is the
+corpus package's version, the date it was regenerated, when `installed()` loaded
+it, and None for any other corpus. `seanchai.__version__` is the library's. In
+this repository the package is installed from the workspace, so the installed
 corpus is the committed one.
+
+Everything the library refuses derives from `seanchai.SeanchaiError`.
 
 ## The model
 
@@ -33,36 +125,43 @@ every AVP knowing its `(vendor-id, code)`, type, flag rules and defining
 document.
 
 ```python
-from seanchai import corpus, model
-from seanchai.dad import ast
+from seanchai import model
 
-built = model.Model.build(corpus.Corpus.installed())
-# strict against the corpus's holes.toml; dictionary=Path("specifications/wireshark")
-# adds Avp.wireshark_name
-built.messages("TS29.229")  # bodies resolved
+# Strict against the corpus's holes.toml; dictionary="specifications/wireshark"
+# adds Avp.wireshark_name. `Model.build(books)` is the same over any corpus.
+built = model.Model.installed()
+built.references()  # every document, a tuple as every query returns
+built.messages("TS29.229")  # bodies resolved; no reference: the whole corpus
 built.applications("TS29.212")  # commands per application and interface
-built.avps("TS29.229")  # a document's dictionary view
+built.applications(application_id=16777216)  # one id, across documents
+built.avps("TS29.229")  # what a document's tables list; no reference: all
 built.resolve("TS29.229", "DRMP")  # one name in one document's reading
-built.find("Public-Identity")  # every AVP under a name
-built.identified(10415, 601)  # every AVP claiming an identity
+built.definition("Public-Identity")  # the defining document's reading
+built.find("Public-Identity")  # every reading under a name
+built.identified(10415, 601)  # every reading claiming an identity
 built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
 built.marks("TS29.212", "AN-GW-Address")  # what each table marks about it
-built.holes("TS32.299")  # what the corpus cannot complete
+built.holes("TS32.299")  # what the corpus cannot complete; no reference: all
 built.undefined("TS29.345")  # the names its Undefined AVP blocks declare
 built.across_releases()  # what citations resolved across releases
-built.registry(ast.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
+built.registry(model.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 ```
 
-The query set is small on purpose. `applications` groups a document's commands
+The query set is small on purpose. A reference may be spelled "TS 29.229",
+"ts29.229" or "3GPP TS 29.229"; one the corpus lacks raises `ModelError`
+suggesting close ones. `applications` groups a document's commands
 by application id and the clause they sit under, since documents share one id
-between interfaces (TS 29.273's SWa, STa and SWd). The id is the header's, or,
-for commands whose headers print none, the one an `Application Scope` block
-covering their clause states. A `Member` carries the ABNF rule as spelled,
+between interfaces (TS 29.273's SWa, STa and SWd). `Message.application_id` is
+the id on the wire: the header's, or, for commands whose headers print none, the
+one an `Application Scope` block covering their clause states.
+`header_application_id` keeps what the header prints, and `is_request` reads its
+R bit. A `Member` carries the ABNF rule as spelled,
 markers included, and `min_occurs`/`max_occurs` as RFC 6733 section 3.2 reads
 them. An `Enumerated` whose clause defines its values elsewhere carries the
 citation in `values_source` and whatever values a correction supplied;
 `vendor_specific` picks out the ranges a validator must allow under names the
-document does not give.
+document does not give. Every model type has a one-line `repr` and a `to_dict()`
+for `json.dumps`, with its flags sorted.
 
 The AST stays public underneath: `parser.parse(text)` reads one file,
 discarding `;;` comments, and `parser.parse_with_comments(text)` returns the
@@ -309,10 +408,34 @@ states vendor, code, type, flag rules and `source`, mandatory provenance
 ("ACME HSS 4.2 dictionary"), with members for a Grouped AVP and values for
 an Enumerated one. Its `Avp` names the block's document in `defined_in`,
 carries the source in `supplied`, and resolves its members in the block's
-document. An `Alias` reads the name as an AVP the corpus completes: TS
-29.154's `External-Group-Identifier` as TS 29.336's `External-Identifier`,
-which carries an external group identifier on S6t and is most likely what
-TS 29.154's editors meant, though the corpus does not assume it.
+document. An `Alias` reads the name as an AVP the corpus completes, with its
+`source` too: TS 29.154's `External-Group-Identifier` as TS 29.336's
+`External-Identifier`, which carries an external group identifier on S6t and is
+most likely what TS 29.154's editors meant, though the corpus does not assume
+it.
+
+```python
+from seanchai import model
+
+built = model.Model.installed(
+    undefined=model.UndefinedPolicy.SUPPLY,
+    supply={
+        "External-Group-Identifier": model.Alias(
+            "TS29.336", "External-Identifier", source="our reading of TS 29.154"
+        ),
+        ("TS29.345", "ProSe-Query-Code"): model.Supplied(
+            vendor_id=10415,
+            code=59999,
+            data_type=model.DataType.OCTET_STRING,
+            flag_rules=model.FlagRules(must=frozenset({model.AvpFlag.VENDOR})),
+            source="ACME HSS 4.2 dictionary",
+        ),
+    },
+)
+print(built.resolve("TS29.154", "External-Group-Identifier"))
+print(built.resolve("TS29.345", "ProSe-Query-Code").supplied)
+```
+
 `model.supplied_from(*paths)` reads `Supplied`s from hand-authored `.dad`
 sidecars: each `Grouped AVP` or `Enumerated AVP` section with its table
 row, and each AVP-table row alone. A name two sidecars both supply is

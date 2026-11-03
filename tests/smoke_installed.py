@@ -23,6 +23,8 @@ for module in (seanchai, seanchai_corpus):
 books = corpus.Corpus.installed()
 assert books.record is not None, "the installed corpus lost its record of holes"
 assert len(corpus.Corpus.installed(raw=True)) == len(books)
+assert books.version == seanchai_corpus.__version__
+assert seanchai.__version__
 
 avp = model.Model.build(books).resolve("TS29.229", "Public-Identity")
 assert avp is not None
