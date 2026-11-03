@@ -9,3 +9,11 @@
 ; Page: 7
 ; Columns: Name   Code   Section   Type
 Redirect-Realm    620    3.3       DiameterIdentity
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 3.4
+; Page: 7
+DIAMETER_REALM_REDIRECT_INDICATION = 3011

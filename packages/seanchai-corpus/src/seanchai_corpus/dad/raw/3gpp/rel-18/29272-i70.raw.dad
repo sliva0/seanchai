@@ -1027,6 +1027,119 @@ Terminal-Information ::= < AVP header: 1401 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: ULR-Flags
+; Kind: bits
+; Section: 7.3.7
+; Table: 7.3.7/1
+; Page: 99
+Single-Registration-Indication               = 0
+"S6a/S6d-Indicator"                          = 1
+"Skip Subscriber Data"                       = 2
+GPRS-Subscription-Data-Indicator             = 3
+Node-Type-Indicator                          = 4
+Initial-Attach-Indicator                     = 5
+PS-LCS-Not-Supported-By-UE                   = 6
+SMS-Only-Indication                          = 7
+Dual-Registration-5G-Indicator               = 8
+"Inter-PLMN-inter-MME handover"              = 9
+"Intra-PLMN-inter-MME handover"              = 10
+"PDN Context Sync Up With UDM not requested" = 11
+
+
+; Type: Value Table
+; AVP: ULA-Flags
+; Kind: bits
+; Section: 7.3.8
+; Table: 7.3.8/1
+; Page: 102
+"Separation Indication"  = 0
+"MME Registered for SMS" = 1
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S6a/S6d
+; Section: 7.3.10.1
+; Table: 7.3.10/1
+; Page: 102
+ODB-all-APN                                              = 0  ; O
+ODB-HPLMN-APN                                            = 1  ; O
+ODB-VPLMN-APN                                            = 2  ; O
+ODB-all-OG                                               = 3  ; O
+"ODB-all- InternationalOG"                               = 4  ; O
+ODB-all-InternationalOGNotToHPLMN-Country                = 5  ; O
+ODB-all-InterzonalOG                                     = 6  ; O
+ODB-all-InterzonalOGNotToHPLMN-Country                   = 7  ; O
+ODB-all-InterzonalOGAndInternationalOGNotToHPLMN-Country = 8  ; O
+RegSub                                                   = 9  ; O
+Trace                                                    = 10 ; O
+LCS-all-PrivExcep                                        = 11 ; O
+LCS-Universal                                            = 12 ; O
+LCS-CallSessionRelated                                   = 13 ; O
+LCS-CallSessionUnrelated                                 = 14 ; O
+LCS-PLMNOperator                                         = 15 ; O
+LCS-ServiceType                                          = 16 ; O
+LCS-all-MOLR-SS                                          = 17 ; O
+"LCS- BasicSelfLocation"                                 = 18 ; O
+"LCS- AutonomousSelfLocation"                            = 19 ; O
+"LCS- TransferToThirdParty"                              = 20 ; O
+SM-MO-PP                                                 = 21 ; O
+Barring-OutgoingCalls                                    = 22 ; O
+BAOC                                                     = 23 ; O
+BOIC                                                     = 24 ; O
+BOICExHC                                                 = 25 ; O
+UE-Reachability-Notification                             = 26 ; O
+"T-ADS Data Retrieval"                                   = 27 ; O
+"State/Location-Information-Retrieval"                   = 28 ; O
+"Partial Purge"                                          = 29 ; O
+"Local Time Zone Retrieval"                              = 30 ; O
+"Additional MSISDN"                                      = 31 ; O
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 2
+; Application: S6a/S6d
+; Section: 7.3.10.1
+; Table: 7.3.10/2
+; Page: 102
+"SMS in MME"                           = 0  ; O
+"SMS in SGSN"                          = 1  ; O
+Dia-LCS-all-PrivExcep                  = 2  ; O
+Dia-LCS-Universal                      = 3  ; O
+Dia-LCS-CallSessionRelated             = 4  ; O
+Dia-LCS-CallSessionUnrelated           = 5  ; O
+Dia-LCS-PLMNOperator                   = 6  ; O
+Dia-LCS-ServiceType                    = 7  ; O
+Dia-LCS-all-MOLR-SS                    = 8  ; O
+"Dia-LCS- BasicSelfLocation"           = 9  ; O
+"Dia-LCS- AutonomousSelfLocation"      = 10 ; O
+"Dia-LCS- TransferToThirdParty"        = 11 ; O
+Gdd-in-SGSN                            = 12 ; O
+Optimized-LCS-Proc-Support             = 13 ; O
+"SGSN CAMEL Capability"                = 14 ; O
+"ProSe Capability"                     = 15 ; O
+"P-CSCF Restoration"                   = 16 ; O
+Reset-IDs                              = 17 ; O
+Communication-Pattern                  = 18 ; O
+Monitoring-Event                       = 19 ; O
+"Dedicated Core Networks"              = 20 ; O
+"Non-IP PDN Type APNs"                 = 21 ; O
+"Non-IP PDP Type APNs"                 = 22 ; O
+"Removal of MSISDN"                    = 23 ; O
+"Emergency Service Continuity"         = 24 ; O
+"V2X Capability"                       = 25 ; O
+External-Identifier                    = 26 ; O
+"NR as Secondary RAT"                  = 27 ; O
+"Unlicensed Spectrum as Secondary RAT" = 28 ; O
+"Ethernet PDN Type APNs"               = 29 ; O
+"Extended Reference IDs"               = 30 ; O
+
+
 ; Type: Grouped AVP
 ; Name: Requested-EUTRAN-Authentication-Info
 ; Section: 7.3.11
@@ -1109,6 +1222,18 @@ Network-Access-Mode ::= < Enumerated AVP header: 1417 10415 >
         ONLY_PACKET        = 2
 
 
+; Type: Value Table
+; AVP: HPLMN-ODB
+; Kind: bits
+; Section: 7.3.22
+; Table: 7.3.22/1
+; Page: 119
+"HPLMN specific barring type 1" = 0
+"HPLMN specific barring type 2" = 1
+"HPLMN specific barring type 3" = 2
+"HPLMN specific barring type 4" = 3
+
+
 ; Type: Enumerated AVP
 ; Name: Cancellation-Type
 ; Section: 7.3.24
@@ -1121,6 +1246,55 @@ Cancellation-Type ::= < Enumerated AVP header: 1420 10415 >
         INITIAL_ATTACH_PROCEDURE = 4
 
 
+; Type: Value Table
+; AVP: DSR-Flags
+; Kind: bits
+; Section: 7.3.25
+; Table: 7.3.25/1
+; Page: 120
+"Regional Subscription Withdrawal"               = 0
+"Complete APN Configuration Profile Withdrawal"  = 1
+"Subscribed Charging Characteristics Withdrawal" = 2
+"PDN subscription contexts Withdrawal"           = 3
+STN-SR                                           = 4
+"Complete PDP context list Withdrawal"           = 5
+"PDP contexts Withdrawal"                        = 6
+"Roaming Restricted due to unsupported feature"  = 7
+"Trace Data Withdrawal"                          = 8
+"CSG Deleted"                                    = 9
+APN-OI-Replacement                               = 10
+"GMLC List Withdrawal"                           = 11
+"LCS Withdrawal"                                 = 12
+"SMS Withdrawal"                                 = 13
+"Subscribed periodic RAU-TAU Timer Withdrawal"   = 14
+"Subscribed VSRVCC Withdrawal"                   = 15
+"A-MSISDN Withdrawal"                            = 16
+"ProSe Withdrawal"                               = 17
+Reset-IDs                                        = 18
+"DL-Buffering-Suggested-Packet-Count Withdrawal" = 19
+"Subscribed IMSI-Group-Id Withdrawal"            = 20
+"Delete monitoring events"                       = 21
+"User Plane Integrity Protection Withdrawal"     = 22
+"MSISDN Withdrawal"                              = 23
+"UE Usage Type Withdrawal"                       = 24
+"V2X Withdrawal"                                 = 25
+External-Identifier-Withdrawal                   = 26
+"Aerial-UE-Subscription Withdrawal"              = 27
+"Paging Time Window Subscription Withdrawal"     = 28
+Active-Time-Withdrawal                           = 29
+"eDRX-Cycle-Length -Withdrawal"                  = 30
+Service-Gap-Time-Withdrawal                      = 31
+
+
+; Type: Value Table
+; AVP: DSA-Flags
+; Kind: bits
+; Section: 7.3.26
+; Table: 7.3.26/1
+; Page: 123
+"Network Node area restricted" = 0
+
+
 ; Type: Enumerated AVP
 ; Name: Subscriber-Status
 ; Section: 7.3.29
@@ -1128,6 +1302,62 @@ Cancellation-Type ::= < Enumerated AVP header: 1420 10415 >
 Subscriber-Status ::= < Enumerated AVP header: 1424 10415 >
         SERVICE_GRANTED             = 0
         OPERATOR_DETERMINED_BARRING = 1
+
+
+; Type: Value Table
+; AVP: Operator-Determined-Barring
+; Kind: bits
+; Section: 7.3.30
+; Table: 7.3.30/1
+; Page: 124
+"All Packet Oriented Services Barred"                                                                                                      = 0
+"Roamer Access HPLMN-AP Barred"                                                                                                            = 1
+"Roamer Access to VPLMN-AP Barred"                                                                                                         = 2
+"Barring of all outgoing calls"                                                                                                            = 3
+"Barring of all outgoing international calls"                                                                                              = 4
+"Barring of all outgoing international calls except those directed to the home PLMN country"                                               = 5
+"Barring of all outgoing inter-zonal calls"                                                                                                = 6
+"Barring of all outgoing inter-zonal calls except those directed to the home PLMN country"                                                 = 7
+"Barring of all outgoing international calls except those directed to the home PLMN country and Barring of all outgoing inter-zonal calls" = 8
+
+
+; Type: Value Table
+; AVP: Access-Restriction-Data
+; Kind: bits
+; Section: 7.3.31
+; Table: 7.3.31/1
+; Page: 124
+"UTRAN Not Allowed"                                                                                           = 0
+"GERAN Not Allowed"                                                                                           = 1
+"GAN Not Allowed"                                                                                             = 2
+"I-HSPA-Evolution Not Allowed"                                                                                = 3
+"WB-E-UTRAN Not Allowed"                                                                                      = 4
+"HO-To-Non-3GPP-Access Not Allowed"                                                                           = 5
+"NB-IoT Not Allowed"                                                                                          = 6
+"Enhanced Coverage Not Allowed"                                                                               = 7
+"NR as Secondary RAT in E-UTRAN Not Allowed"                                                                  = 8
+"Unlicensed Spectrum as Secondary RAT Not Allowed"                                                            = 9
+"NR in 5GS Not Allowed but the access types linked to bits 25-30 are allowed unless restricted by those bits" = 10
+"LTE-M Not Allowed"                                                                                           = 11
+"WB-E-UTRAN Except LTE-M Not Allowed"                                                                         = 12
+"WB-E-UTRAN(LEO) Not Allowed"                                                                                 = 13
+"WB-E-UTRAN(MEO) Not Allowed"                                                                                 = 14
+"WB-E-UTRAN(GEO) Not Allowed"                                                                                 = 15
+"WB-E-UTRAN(OTHERSAT) Not Allowed"                                                                            = 16
+"NB-IoT(LEO) Not Allowed"                                                                                     = 17
+"NB-IoT(MEO) Not Allowed"                                                                                     = 18
+"NB-IoT(GEO) Not Allowed"                                                                                     = 19
+"NB-IoT(OTHERSAT) Not Allowed"                                                                                = 20
+"LTE-M(LEO) Not Allowed"                                                                                      = 21
+"LTE-M(MEO) Not Allowed"                                                                                      = 22
+"LTE-M(GEO) Not Allowed"                                                                                      = 23
+"LTE-M(OTHERSAT) Not Allowed"                                                                                 = 24
+"NR (LEO) Not Allowed"                                                                                        = 25
+"NR (MEO) Not Allowed"                                                                                        = 26
+"NR (GEO) Not Allowed"                                                                                        = 27
+"NR (OTHERSAT) Not Allowed"                                                                                   = 28
+"NR RedCap not allowed as primary RAT"                                                                        = 29
+"NR eRedCap not allowed as primary RAT"                                                                       = 30
 
 
 ; Type: Enumerated AVP
@@ -1246,6 +1476,43 @@ MIP6-Agent-Info ::= < AVP header: 486 >
         [ MIP-Home-Agent-Host ]
         [ MIP6-Home-Link-Prefix ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: IDA-Flags
+; Kind: bits
+; Section: 7.3.47
+; Table: 7.3.47/1
+; Page: 131
+"Network Node area restricted" = 0
+
+
+; Type: Value Table
+; AVP: PUA-Flags
+; Kind: bits
+; Section: 7.3.48
+; Table: 7.3.48/1
+; Page: 131
+"Freeze M-TMSI" = 0
+"Freeze P-TMSI" = 1
+
+
+; Type: Value Table
+; AVP: NOR-Flags
+; Kind: bits
+; Section: 7.3.49
+; Table: 7.3.49/1
+; Page: 131
+Single-Registration-Indication                      = 0
+"SGSN area restricted"                              = 1
+"Ready for SM from SGSN"                            = 2
+"UE Reachable from MME"                             = 3
+Reserved                                            = 4
+"UE Reachable from SGSN"                            = 5
+"Ready for SM from MME"                             = 6
+"Homogeneous Support of IMS Voice Over PS Sessions" = 7
+"S6a/S6d-Indicator"                                 = 8
+"Removal of MME Registration for SMS"               = 9
 
 
 ; Type: Enumerated AVP
@@ -1487,6 +1754,23 @@ Call-Barring-Info ::= < AVP header: 1488 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: IDR-Flags
+; Kind: bits
+; Section: 7.3.103
+; Table: 7.3.103/1
+; Page: 141
+"UE Reachability Request"          = 0
+"T-ADS Data Request"               = 1
+"EPS User State Request"           = 2
+"EPS Location Information Request" = 3
+"Current Location Request"         = 4
+"Local Time Zone Request"          = 5
+"Remove SMS Registration"          = 6
+"RAT-Type Requested"               = 7
+"P-CSCF Restoration Request"       = 8
+
+
 ; Type: Enumerated AVP
 ; Name: ICS-Indicator
 ; Section: 7.3.104
@@ -1641,6 +1925,16 @@ UE-SRVCC-Capability ::= < Enumerated AVP header: 1615 10415 >
         UE-SRVCC-SUPPORTED     = 1
 
 
+; Type: Value Table
+; AVP: MPS-Priority
+; Kind: bits
+; Section: 7.3.131
+; Table: 7.3.131/1
+; Page: 148
+MPS-CS-Priority  = 0
+MPS-EPS-Priority = 1
+
+
 ; Type: Enumerated AVP
 ; Name: VPLMN-LIPA-Allowed
 ; Section: 7.3.132
@@ -1769,6 +2063,16 @@ MDT-User-Consent ::= < Enumerated AVP header: 1634 10415 >
         CONSENT_GIVEN     = 1
 
 
+; Type: Value Table
+; AVP: PUR-Flags
+; Kind: bits
+; Section: 7.3.149
+; Table: 7.3.149/1
+; Page: 151
+"UE Purged in MME"  = 0
+"UE Purged in SGSN" = 1
+
+
 ; Type: Enumerated AVP
 ; Name: Subscribed-VSRVCC
 ; Section: 7.3.150
@@ -1784,6 +2088,34 @@ Subscribed-VSRVCC ::= < Enumerated AVP header: 1636 10415 >
 Equivalent-PLMN-List ::= < AVP header: 1637 10415 >
      1* { Visited-PLMN-Id }
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: CLR-Flags
+; Kind: bits
+; Section: 7.3.152
+; Table: 7.3.152/1
+; Page: 152
+"S6a/S6d-Indicator" = 0
+Reattach-Required   = 1
+
+
+; Type: Value Table
+; AVP: UVR-Flags
+; Kind: bits
+; Section: 7.3.153
+; Table: 7.3.154/1
+; Page: 152
+"Skip Subscriber Data" = 0
+
+
+; Type: Value Table
+; AVP: UVA-Flags
+; Kind: bits
+; Section: 7.3.154
+; Table: 7.3.156/1
+; Page: 152
+"Temporary Empty VPLMN CSG Subscription Data" = 0
 
 
 ; Type: Grouped AVP
@@ -1824,6 +2156,19 @@ Daylight-Saving-Time ::= < Enumerated AVP header: 1650 10415 >
         NO_ADJUSTMENT             = 0
         PLUS_ONE_HOUR_ADJUSTMENT  = 1
         PLUS_TWO_HOURS_ADJUSTMENT = 2
+
+
+; Type: Value Table
+; AVP: Subscription-Data-Flags
+; Kind: bits
+; Section: 7.3.165
+; Table: 7.3.165/1
+; Page: 154
+PS-And-SMS-Only-Service-Provision-Indication         = 0
+SMS-In-SGSN-Allowed-Indication                       = 1
+"User Plane Integrity Protection"                    = 2
+PDN-Connection-Restricted                            = 3
+"Acknowledgement-Of-Downlink-NAS-Data PDUs disabled" = 4
 
 
 ; Type: Enumerated AVP
@@ -1875,6 +2220,24 @@ WLAN-offloadability ::= < AVP header: 1667 >
         [ WLAN-offloadability-EUTRAN ]
         [ WLAN-offloadability-UTRAN ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: WLAN-offloadability-EUTRAN
+; Kind: bits
+; Section: 7.3.182
+; Table: 7.3.182/1
+; Page: 157
+"WLAN offloadability for E-UTRAN" = 0
+
+
+; Type: Value Table
+; AVP: WLAN-offloadability-UTRAN
+; Kind: bits
+; Section: 7.3.183
+; Table: 7.3.183/1
+; Page: 157
+"WLAN offloadability for UTRAN" = 0
 
 
 ; Type: Grouped AVP
@@ -1999,6 +2362,32 @@ Supported-Services ::= < AVP header: 3143 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Supported-Monitoring-Events
+; Kind: bits
+; Section: 7.3.200
+; Table: 7.3.200-1
+; Page: 163
+"UE and UICC and/or new IMSI-IMEI-SV association" = 0
+UE-reachability                                   = 1
+Location-of-the-UE                                = 2
+Loss-of-connectivity                              = 3
+Communication-failure                             = 4
+Roaming-status                                    = 5
+"Availability after DDN failure"                  = 6
+"Idle Status Indication"                          = 7
+"PDN Connectivity Status"                         = 8
+
+
+; Type: Value Table
+; AVP: AIR-Flags
+; Kind: bits
+; Section: 7.3.201
+; Table: 7.3.201/1
+; Page: 163
+"Send UE Usage Type" = 0
+
+
 ; Type: Enumerated AVP
 ; Name: Non-IP-PDN-Type-Indicator
 ; Section: 7.3.204
@@ -2022,6 +2411,16 @@ Subscription-Data-Deletion ::= < AVP header: 1685 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Preferred-Data-Mode
+; Kind: bits
+; Section: 7.3.209
+; Table: 7.3.209/1
+; Page: 165
+"Data over User Plane Preferred"    = 0
+"Data over Control Plane Preferred" = 1
+
+
 ; Type: Grouped AVP
 ; Name: Emergency-Info
 ; Section: 7.3.210
@@ -2039,6 +2438,16 @@ V2X-Subscription-Data ::= < AVP header: 1688 10415 >
         [ V2X-Permission ]
         [ UE-PC5-AMBR ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: V2X-Permission
+; Kind: bits
+; Section: 7.3.213
+; Table: 7.3.x2-1
+; Page: 166
+"Allow V2X communication over PC5 as Vehicle UE"    = 0
+"Allow V2X communication over PC5 as Pedestrian UE" = 1
 
 
 ; Type: Grouped AVP
@@ -2070,6 +2479,59 @@ RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
         ENABLED  = 1
 
 
+; Type: Value Table
+; AVP: Broadcast-Location-Assistance-Data-Types
+; Kind: bits
+; Section: 7.3.225
+; Table: 7.3.225-1
+; Page: 168
+"Positioning SIB Type 1-1"   = 0
+"Positioning SIB Type 1-2"   = 1
+"Positioning SIB Type 1-3"   = 2
+"Positioning SIB Type 1-4"   = 3
+"Positioning SIB Type 1-5"   = 4
+"Positioning SIB Type 1-6"   = 5
+"Positioning SIB Type 1-7"   = 6
+"Positioning SIB Type 2-1"   = 7
+"Positioning SIB Type 2-2"   = 8
+"Positioning SIB Type 2-3"   = 9
+"Positioning SIB Type 2-4"   = 10
+"Positioning SIB Type 2-5"   = 11
+"Positioning SIB Type 2-6"   = 12
+"Positioning SIB Type 2-7"   = 13
+"Positioning SIB Type 2-8"   = 14
+"Positioning SIB Type 2-9"   = 15
+"Positioning SIB Type 2-10"  = 16
+"Positioning SIB Type 2-11"  = 17
+"Positioning SIB Type 2-12"  = 18
+"Positioning SIB Type 2-13"  = 19
+"Positioning SIB Type 2-14"  = 20
+"Positioning SIB Type 2-15"  = 21
+"Positioning SIB Type 2-16"  = 22
+"Positioning SIB Type 2-17"  = 23
+"Positioning SIB Type 2-18"  = 24
+"Positioning SIB Type 2-19"  = 25
+"Positioning SIB Type 3-1"   = 26
+"Positioning SIB Type 1-8"   = 27
+"Positioning SIB Type 2-20"  = 28
+"Positioning SIB Type 2-21"  = 29
+"Positioning SIB Type 2-22"  = 30
+"Positioning SIB Type 2-23"  = 31
+"Positioning SIB Type 2-24"  = 32
+"Positioning SIB Type 2-25"  = 33
+"Positioning SIB Type 4-1"   = 34
+"Positioning SIB Type 5-1"   = 35
+"Positioning SIB Type 1-9"   = 36
+"Positioning SIB Type 1-10"  = 37
+"Positioning SIB Type 2-17a" = 38
+"Positioning SIB Type 2-18a" = 39
+"Positioning SIB Type 2-20a" = 40
+"Positioning SIB Type 1-11"  = 41
+"Positioning SIB Type 1-12"  = 42
+"Positioning SIB Type 2-26"  = 43
+"Positioning SIB Type 2-27"  = 44
+
+
 ; Type: Grouped AVP
 ; Name: Paging-Time-Window
 ; Section: 7.3.226
@@ -2087,6 +2549,16 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
 eDRX-Related-RAT ::= < AVP header: 1705 10415 >
      1* { RAT-Type }
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Core-Network-Restrictions
+; Kind: bits
+; Section: 7.3.230
+; Table: 7.3.230-1
+; Page: 172
+Reserved          = 0
+"5GC not allowed" = 1
 
 
 ; Type: Enumerated AVP
@@ -2204,3 +2676,18 @@ Sensor-Measurement ::= < Enumerated AVP header: 1725 10415 >
         BAROMETRIC_PRESSURE = 0
         UE_SPEED            = 1
         UE_ORIENTATION      = 2
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.4
+; Page: 176
+DIAMETER_ERROR_USER_UNKNOWN               = 5001 ; 7.4.3.1
+DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION   = 5420 ; 7.4.3.2
+DIAMETER_ERROR_RAT_NOT_ALLOWED            = 5421 ; 7.4.3.3
+DIAMETER_ERROR_ROAMING_NOT_ALLOWED        = 5004 ; 7.4.3.4
+DIAMETER_ERROR_EQUIPMENT_UNKNOWN          = 5422 ; 7.4.3.5
+DIAMETER_ERROR_UNKNOWN_SERVING_NODE       = 5423 ; 7.4.3.6
+DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE  = 4181 ; 7.4.4.1
+DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT = 4182 ; 7.4.4.2

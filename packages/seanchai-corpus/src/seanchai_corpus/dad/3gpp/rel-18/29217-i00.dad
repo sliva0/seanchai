@@ -242,6 +242,17 @@ Congestion-Level-Definition ::= < AVP header: 4002 10415 > ;; corrected: (TS29.2
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Congestion-Level-Range
+; Kind: bits
+; Section: 5.3.5
+; Table: 5.3.5.1
+; Page: 15
+"No congestion"      = 0
+"Congestion level 1" = 1
+;; 1+n Congestion level 1+n
+
+
 ; Type: Grouped AVP
 ; Name: Congestion-Location-Id
 ; Section: 5.3.8
@@ -251,3 +262,39 @@ Congestion-Location-Id ::= < AVP header: 4006 10415 > ;; corrected: (TS29.217.py
         [ eNodeB-Id ]
         [ Extended-eNodeB-Id ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Conditional-Restriction
+; Kind: bits
+; Section: 5.3.9
+; Table: 5.3.9.1
+; Page: 16
+"UE location info not included in RUCI" = 0
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Np
+; Section: 5.4.2
+; Table: 5.4.2.1
+; Page: 19
+ReportRestriction = 0 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 20
+DIAMETER_PENDING_TRANSACTION = 4144 ; 5.5.4
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 20
+DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3

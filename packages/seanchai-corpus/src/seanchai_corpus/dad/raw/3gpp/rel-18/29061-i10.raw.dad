@@ -865,6 +865,14 @@ QoS-Information                  TS29.212
 Supported-Features               TS29.229
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 16a.6
+; Page: 132
+DIAMETER_PDP_CONTEXT_DELETION_INDICATION = 2021
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-StartStop-Indication
 ; Section: 17.7.5
@@ -930,6 +938,26 @@ CN-IP-Multicast-Distribution ::= < Enumerated AVP header: 921 10415 >
 MBMS-HC-Indicator ::= < Enumerated AVP header: 922 10415 >
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 17.8
+; Page: 155
+DIAMETER_ERROR_START_INDICATION            = 5120 ; 17.8.2
+DIAMETER_ERROR_STOP_INDICATION             = 5121 ; 17.8.2
+DIAMETER_ERROR_UNKNOWN_MBMS_BEARER_SERVICE = 5122 ; 17.8.2
+DIAMETER_ERROR_SERVICE_AREA                = 5123 ; 17.8.2
+DIAMETER_ERROR_OUT_OF_RESOURCES            = 4121 ; 17.8.3
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 19.5
+; Page: 163
+DIAMETER_ERROR_UNKNOWN_MBMS_BEARER_SERVICE = 5122 ; 19.5.2
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-Access-Indicator
 ; Section: 20.5a.1
@@ -946,3 +974,34 @@ MBMS-Access-Indicator ::= < Enumerated AVP header: 923 10415 >
 ; Page: 176
 MBMS-GW-UDP-Port-Indicator ::= < Enumerated AVP header: 928 10415 >
         UDP-PORT-REQUIRED = 1
+
+
+; Type: Value Table
+; AVP: MBMS-Flags
+; Kind: bits
+; Section: 20.5a.9
+; Table: 20.5a.9.1
+; Page: 176
+MSRI   = 0
+LMBCRI = 1
+
+
+; Type: Value Table
+; AVP: Diagnostic-Info
+; Kind: bits
+; Section: 20.5a.11
+; Table: 20.5a.11.1
+; Page: 177
+UPFAIL = 0
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: SGmb
+; Section: 20.7
+; Table: 20.7.1
+; Page: 178
+"MBMS Heartbeat" = 0 ; O
+"MBMS Cell List" = 1 ; O

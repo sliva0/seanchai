@@ -211,6 +211,15 @@ MIP-Replay-Mode ::= < Enumerated AVP header: 346 >
         Timestamp = 2
 
 
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 7
+; Page: 27
+DIAMETER_SUCCESS_RELOCATE_HA  = 2009 ; 7.1
+DIAMETER_ERROR_MIP6_AUTH_MODE = 5041 ; 7.2
+
+
 ; Type: Enumerated AVP
 ; Name: MIP6-Auth-Mode
 ; Section: 9.5

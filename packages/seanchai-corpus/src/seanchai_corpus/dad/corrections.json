@@ -234,6 +234,38 @@
      "kind": "correction",
      "reason": "table 6.4.1/2 cites 'Bearer-Identity' from TS 29.212, which defines no such AVP; 29.212's table 5.3.0.1 and this document's own command ABNFs (clauses 6.2.3, 6.2.6, 6.2.7) spell it 'Bearer-Identifier' (code 1020)"
     },
+    "TS29.128.py#configuration-event-non-existant-result-code-reused": {
+     "expect": "DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT (code 5514) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.336",
+     "kind": "accept",
+     "reason": "clause 6.3.3.4 says 'This error code is defined in 3GPP TS 29.336 [5].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       3
+      ]
+     ]
+    },
+    "TS29.128.py#configuration-event-storage-not-successful-result-code-reused": {
+     "expect": "DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL (code 5513) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.336",
+     "kind": "accept",
+     "reason": "clause 6.3.3.3 says 'This error code is defined in 3GPP TS 29.336 [5].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       2
+      ]
+     ]
+    },
+    "TS29.128.py#configuration-event-storage-result-spelling": {
+     "kind": "correction",
+     "reason": "clause 6.3.3.3's heading prints a space inside the name; clause 6.3.3.3 says the code is TS 29.336's and TS 29.230 table 8.1.4 allocates 5513 under the name without it"
+    },
     "TS29.128.py#missing-row-imei": {
      "kind": "insert",
      "reason": "the Terminal-Information body (clause 6.4.30) uses IMEI but table 6.4.1-2 omits the row; TS 29.272 defines the AVP"
@@ -250,7 +282,7 @@
      "targets": [
       [
        "sections",
-       12
+       13
       ]
      ]
     },
@@ -262,7 +294,21 @@
      "targets": [
       [
        "sections",
-       13
+       14
+      ]
+     ]
+    },
+    "TS29.128.py#operation-not-allowed-result-code-reused": {
+     "expect": "DIAMETER_ERROR_OPERATION_NOT_ALLOWED (code 5101) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 6.3.3.7 says 'This error code is defined in 3GPP TS 29.329 [17].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       6
       ]
      ]
     },
@@ -273,6 +319,66 @@
     "TS29.128.py#pdn-connection-charging-id-reused-case": {
      "kind": "correction",
      "reason": "the row cites TS 32.299, whose clause 7.2.136 and table 7.2.0.1 spell the AVP PDN-Connection-Charging-ID"
+    },
+    "TS29.128.py#scef-reference-id-result-spelling": {
+     "kind": "correction",
+     "reason": "clause 6.3.3.10's heading prints a space inside the name; TS 29.230 table 8.1.4 allocates 5515 under the name without it"
+    },
+    "TS29.128.py#unauthorized-requesting-entity-result-code-reused": {
+     "expect": "DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY (code 5510) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.336",
+     "kind": "accept",
+     "reason": "clause 6.3.3.1 says 'This error code is defined in 3GPP TS 29.336 [5].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       0
+      ]
+     ]
+    },
+    "TS29.128.py#unauthorized-service-result-code-reused": {
+     "expect": "DIAMETER_ERROR_UNAUTHORIZED_SERVICE (code 5511) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.336",
+     "kind": "accept",
+     "reason": "clause 6.3.3.2 says 'This error code is defined in 3GPP TS 29.336 [5].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       1
+      ]
+     ]
+    },
+    "TS29.128.py#unreachable-user-result-code-reused": {
+     "expect": "DIAMETER_ERROR_UNREACHABLE_USER (code 4221) is listed here, but TS29.230 table 8.1.3 allocates the code to TS29.172",
+     "kind": "accept",
+     "reason": "clause 6.3.3.12 says 'This error code is defined in 3GPP TS 29.172 [26].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       11
+      ]
+     ]
+    },
+    "TS29.128.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.3.3.6 says 'This error code is defined in 3GPP TS 29.229 [4].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       5
+      ]
+     ]
     }
    },
    "reference": "TS29.128",
@@ -288,6 +394,14 @@
     {
      "expect": "PDN-Connection-Charging-Id",
      "replace": "PDN-Connection-Charging-ID"
+    },
+    {
+     "expect": "DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_ SUCCESSFUL",
+     "replace": "DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL"
+    },
+    {
+     "expect": "DIAMETER_ERROR_ SCEF_REFERENCE_ID_UNKNOWN",
+     "replace": "DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN"
     }
    ],
    "version": "18.0.0"
@@ -368,6 +482,34 @@
     "TS29.172.py#plr-supported-gad-shapes": {
      "kind": "correction",
      "reason": "the PLR ABNF (clause 7.3.1) and its information-element table prefix the name with LCS-; clause 7.4.12's heading and prose, table 7.4.1-1 and Wireshark's dictionary all define the AVP at code 2510 as Supported-GAD-Shapes"
+    },
+    "TS29.172.py#unauthorized-requesting-network-result-code-reused": {
+     "expect": "DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK (code 5490) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.173",
+     "kind": "accept",
+     "reason": "clause 7.5.3.2 says 'This error code is defined in 3GPP TS 29.173 [18]': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       42,
+       "rows",
+       1
+      ]
+     ]
+    },
+    "TS29.172.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 7.5.3.1 says 'This error code is defined in 3GPP TS 29.229 [17]': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       42,
+       "rows",
+       0
+      ]
+     ]
     }
    },
    "reference": "TS29.172",
@@ -390,6 +532,27 @@
     }
    ],
    "version": "18.1.0"
+  },
+  "29173-i00": {
+   "edits": {
+    "TS29.173.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.3.3.1 says 'This error code is defined in 3GPP TS 29.229 [8]': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       4,
+       "rows",
+       0
+      ]
+     ]
+    }
+   },
+   "reference": "TS29.173",
+   "renames": [],
+   "version": "18.0.0"
   },
   "29209-680": {
    "edits": {
@@ -876,6 +1039,34 @@
      "kind": "correction",
      "reason": "clause 5b.6.2's ABNF repeats the document's 'Ipv6' spelling; TS 29.061, which defines the AVP, spells 'IPv6'"
     },
+    "TS29.212.py#late-overlapping-request-result-code-reused": {
+     "expect": "DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST (code 5453) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.273",
+     "kind": "accept",
+     "reason": "clause 5.5.3 says 'Further as an addition the following Experimental-Result AVP values defined in 3GPP TS 29.273 [48] are applicable:': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       114,
+       "rows",
+       0
+      ]
+     ]
+    },
+    "TS29.212.py#timed-out-request-result-code-reused": {
+     "expect": "DIAMETER_ERROR_TIMED_OUT_REQUEST (code 5454) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.273",
+     "kind": "accept",
+     "reason": "clause 5.5.3 says 'Further as an addition the following Experimental-Result AVP values defined in 3GPP TS 29.273 [48] are applicable:': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       114,
+       "rows",
+       1
+      ]
+     ]
+    },
     "TS29.212.py#vendor-id-access-network-charging-identifier-gx": {
      "kind": "correction",
      "reason": "clause 5.3.22's AVP header omits the vendor-id; the AVP table marks the V flag mandatory for it, as for every other AVP the specification defines"
@@ -1324,6 +1515,20 @@
      "kind": "correction",
      "reason": "clause 5.4.0: 'The S9 reference point re-uses all of the Gx and Gxx AVPs specified in 3GPP TS 29.212', including the AVPs Gx and Gxx re-use, and prints no re-used table for S9"
     },
+    "TS29.215.py#pending-transaction-result-code-reused": {
+     "expect": "DIAMETER_PENDING_TRANSACTION (code 4144) is listed here, but TS29.230 table 8.1.3 allocates the code to TS29.212",
+     "kind": "accept",
+     "reason": "clause 5.6.4 says 'Additional handling for the following Experimental-Result-Code defined in 3GPP TS 29.212 [3] is specified:': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       31,
+       "rows",
+       2
+      ]
+     ]
+    },
     "TS29.215.py#subsession-decision-info-framed-ipv6-prefix-case": {
      "kind": "correction",
      "reason": "the Subsession-Decision-Info body (clause 5.3.1) lower-cases the 'v'; Subsession-Enforcement-Info and the CCR and RAA ABNFs spell Framed-IPv6-Prefix, the AVP TS 29.212 re-uses from RFC 4005"
@@ -1348,6 +1553,20 @@
   },
   "29217-i00": {
    "edits": {
+    "TS29.217.py#pending-transaction-result-code-reused": {
+     "expect": "DIAMETER_PENDING_TRANSACTION (code 4144) is listed here, but TS29.230 table 8.1.3 allocates the code to TS29.212",
+     "kind": "accept",
+     "reason": "clause 5.5.4 says 'As an addition the following Experimental-Result-Code value defined in 3GPP TS 29.212 [14] is applicable:': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       0
+      ]
+     ]
+    },
     "TS29.217.py#vendor-id-aggregated-congestion-info": {
      "kind": "correction",
      "reason": "clause 5.3.2's AVP header omits the vendor-id; clause 5.3.1 gives every AVP the document defines vendor 10415 and table 5.3.1.1 marks the V flag mandatory"
@@ -1529,6 +1748,10 @@
     "TS29.234.py#max-requested-bandwidth-8-4-2": {
      "kind": "correction",
      "reason": "table 8.3.2.2 maps the information element Max-Subscribed-Bandwidth to the Max-Requested-Bandwidth AVP (table 10.1.1, clause 10.1.26)"
+    },
+    "TS29.234.py#no-wlan-subscription-result-spelling": {
+     "kind": "correction",
+     "reason": "clause 10.3.1.1's heading drops a letter; TS 29.230 table 8.1.4 allocates 5041 under the full word"
     },
     "TS29.234.py#redirect-host-cache-time": {
      "kind": "correction",
@@ -1756,6 +1979,10 @@
     {
      "expect": "Redirected-Max-Cache-Time",
      "replace": "Redirect-Max-Cache-Time"
+    },
+    {
+     "expect": "DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTON",
+     "replace": "DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTION"
     }
    ],
    "version": "11.2.0"
@@ -1790,6 +2017,22 @@
      "kind": "supply",
      "reason": "clause 7.3.169 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements UMTS'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.21 lists them with their codes; '100ms' is spelled as printed. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
+    "TS29.272.py#dia-lcs-autonomous-self-location-feature-spelling": {
+     "kind": "correction",
+     "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, feature bit 10)"
+    },
+    "TS29.272.py#dia-lcs-basic-self-location-feature-spelling": {
+     "kind": "correction",
+     "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, feature bit 9)"
+    },
+    "TS29.272.py#dia-lcs-transfer-to-third-party-feature-spelling": {
+     "kind": "correction",
+     "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, feature bit 11)"
+    },
+    "TS29.272.py#edrx-cycle-length-withdrawal-spelling": {
+     "kind": "correction",
+     "reason": "table 7.3.25/1 bit 30 prints a space before the hyphen, where the column wraps the name, unlike the bit's every other Withdrawal"
+    },
     "TS29.272.py#enodeb-id-in-mme-location-information": {
      "kind": "correction",
      "reason": "the MME-Location-Information body (clause 7.3.115) uses the re-used row's spelling; TS 29.217 defines eNodeB-Id"
@@ -1809,6 +2052,18 @@
     "TS29.272.py#job-type-values": {
      "kind": "supply",
      "reason": "clause 7.3.137 takes the values 'defined in TS 32.422 [23] for Job-Type'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.9a lists them with their codes; its NOTEs 1 to 3 restrict where some apply, not the list. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+    },
+    "TS29.272.py#lcs-autonomous-self-location-feature-spelling": {
+     "kind": "correction",
+     "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 19)"
+    },
+    "TS29.272.py#lcs-basic-self-location-feature-spelling": {
+     "kind": "correction",
+     "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 18)"
+    },
+    "TS29.272.py#lcs-transfer-to-third-party-feature-spelling": {
+     "kind": "correction",
+     "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 20)"
     },
     "TS29.272.py#logging-duration-values": {
      "kind": "supply",
@@ -1862,7 +2117,7 @@
      "targets": [
       [
        "sections",
-       115
+       136
       ]
      ]
     },
@@ -1874,9 +2129,13 @@
      "targets": [
       [
        "sections",
-       116
+       137
       ]
      ]
+    },
+    "TS29.272.py#odb-all-international-og-feature-spelling": {
+     "kind": "correction",
+     "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 4)"
     },
     "TS29.272.py#re-synchronization-info-case": {
      "kind": "correction",
@@ -1902,7 +2161,7 @@
      "targets": [
       [
        "sections",
-       117
+       138
       ]
      ]
     },
@@ -1940,6 +2199,38 @@
     {
      "expect": "Extended-eNodeB-ID",
      "replace": "Extended-eNodeB-Id"
+    },
+    {
+     "expect": "ODB-all- InternationalOG",
+     "replace": "ODB-all-InternationalOG"
+    },
+    {
+     "expect": "LCS- BasicSelfLocation",
+     "replace": "LCS-BasicSelfLocation"
+    },
+    {
+     "expect": "LCS- AutonomousSelfLocation",
+     "replace": "LCS-AutonomousSelfLocation"
+    },
+    {
+     "expect": "LCS- TransferToThirdParty",
+     "replace": "LCS-TransferToThirdParty"
+    },
+    {
+     "expect": "Dia-LCS- BasicSelfLocation",
+     "replace": "Dia-LCS-BasicSelfLocation"
+    },
+    {
+     "expect": "Dia-LCS- AutonomousSelfLocation",
+     "replace": "Dia-LCS-AutonomousSelfLocation"
+    },
+    {
+     "expect": "Dia-LCS- TransferToThirdParty",
+     "replace": "Dia-LCS-TransferToThirdParty"
+    },
+    {
+     "expect": "eDRX-Cycle-Length -Withdrawal",
+     "replace": "eDRX-Cycle-Length-Withdrawal"
     }
    ],
    "version": "18.7.0"
@@ -1981,6 +2272,34 @@
     "TS29.273.py#emergency-services-clause": {
      "kind": "correction",
      "reason": "Emergency-Services is defined in clause 7.2.3.4; clause 7.2.3.5 defines AAR-Flags."
+    },
+    "TS29.273.py#identity-already-registered-result-code-reused": {
+     "expect": "DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED (code 5005) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 10.3.5 says 'This result code shall be sent by the HSS to indicate that the node identity trying to be registered by a 3GPP AAA Server is already registered for a specific user (see 3GPP TS 29.229 [24]).': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       99,
+       "rows",
+       3
+      ]
+     ]
+    },
+    "TS29.273.py#identity-not-registered-result-code-reused": {
+     "expect": "DIAMETER_ERROR_IDENTITY_NOT_REGISTERED (code 5003) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 10.3.3 says 'This result code shall be sent by the HSS to indicate that there is currently no 3GPP AAA Server registered for the user (see 3GPP TS 29.229 [24]).': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       99,
+       "rows",
+       1
+      ]
+     ]
     },
     "TS29.273.py#mip-home-agent-address-reused": {
      "kind": "insert",
@@ -2026,6 +2345,20 @@
      "kind": "correction",
      "reason": "table 7.2.3.1/1 sets M in Must for RAT-Type, which clause 5.2.3.6 says follows TS 29.212 and the re-used tables list from it with no M-bit override; TS 29.212 table 5.3.0.1 puts M in Must not"
     },
+    "TS29.273.py#roaming-not-allowed-result-code-reused": {
+     "expect": "DIAMETER_ERROR_ROAMING_NOT_ALLOWED (code 5004) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 10.3.4 says 'This result code shall be sent by the HSS to indicate that the subscriber is not allowed to roam in a certain non-3GPP V-PLMN (see 3GPP TS 29.229 [24]).': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       99,
+       "rows",
+       2
+      ]
+     ]
+    },
     "TS29.273.py#sip-auth-data-item-swx-body": {
      "expect": "SIP-Auth-Data-Item's body, against TS29.229's definition: missing Framed-IP-Address, Framed-IPv6-Prefix, Framed-Interface-Id, Line-Identifier, SIP-Authentication-Context, SIP-Digest-Authenticate",
      "kind": "accept",
@@ -2034,7 +2367,7 @@
      "targets": [
       [
        "sections",
-       81
+       88
       ]
      ]
     },
@@ -2093,6 +2426,20 @@
     "TS29.273.py#trust-relationship-update-void": {
      "kind": "delete",
      "reason": "the row's clause 9.2.3.1.4 is 'Void', and TS 29.230 table 7.1 allocates 1515 to 'Reserved' (TS 29.273); table 9.2.3.1.5/1 carries the indication as RAR-Flags bit 0"
+    },
+    "TS29.273.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 10.3.2 says 'This result code shall be sent by the HSS to indicate that the user identified by the IMSI is unknown (see 3GPP TS 29.229 [24]).': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       99,
+       "rows",
+       0
+      ]
+     ]
     }
    },
    "reference": "TS29.273",
@@ -2166,6 +2513,20 @@
   },
   "29283-i00": {
    "edits": {
+    "TS29.283.py#data-out-of-sync-result-code-reused": {
+     "expect": "DIAMETER_ERROR_DATA OUT_OF_SYNC (code 5105) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.3.9 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       7
+      ]
+     ]
+    },
     "TS29.283.py#drmp-origin-rfc": {
      "kind": "correction",
      "reason": "RFC 7844 is about DHCP anonymity and defines no DRMP AVP; RFC 7944 defines DRMP with code 301"
@@ -2174,25 +2535,335 @@
      "kind": "delete",
      "reason": "table 7.3.1-2 cites Feature-Id from TS 29.229, which neither defines nor tabulates any such AVP in any version; the Supported-Features mechanism's real AVPs (Feature-List-ID, Feature-List) are already listed on the adjacent rows"
     },
+    "TS29.283.py#feature-unsupported-result-code-reused": {
+     "expect": "DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 7.4.3.10 says 'This error code is defined in 3GPP TS 29.229 [6].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       8
+      ]
+     ]
+    },
+    "TS29.283.py#no-subscription-to-data-result-code-reused": {
+     "expect": "DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA (code 5107) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.3.11 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       9
+      ]
+     ]
+    },
+    "TS29.283.py#operation-not-allowed-result-code-reused": {
+     "expect": "DIAMETER_ERROR_OPERATION_NOT_ALLOWED (code 5101) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.3.4 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       2
+      ]
+     ]
+    },
     "TS29.283.py#sequence-number-origin-is-another-avp": {
      "kind": "delete",
      "reason": "clause 7.3.21 cites TS 29.329, but table 7.3.1-1 gives this MC service profile's Sequence-Number code 4512; TS 29.230 allocates 4512 to TS 29.283 and separately allocates 716 to TS 29.329's Sh Sequence-Number, so the citation does not identify this AVP's origin and following it would change its wire identity"
+    },
+    "TS29.283.py#too-much-data-result-code-reused": {
+     "expect": "DIAMETER_ERROR_TOO_MUCH_DATA (code 5008) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 7.4.3.8 says 'This error code is defined in 3GPP TS 29.229 [6].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       6
+      ]
+     ]
+    },
+    "TS29.283.py#unknown-data-result-spelling": {
+     "kind": "correction",
+     "reason": "clause 7.4.3.12's heading prints two spaces inside the name; TS 29.230 table 8.1.4 allocates 5670 to it, whose own misprint is patched on input"
+    },
+    "TS29.283.py#user-data-cannot-be-modified-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED (code 5103) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.3.6 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       4
+      ]
+     ]
+    },
+    "TS29.283.py#user-data-cannot-be-notified-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED (code 5104) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.3.7 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       5
+      ]
+     ]
+    },
+    "TS29.283.py#user-data-cannot-be-read-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ (code 5102) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.3.5 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       3
+      ]
+     ]
+    },
+    "TS29.283.py#user-data-not-available-result-code-reused": {
+     "expect": "DIAMETER_USER_DATA_NOT_AVAILABLE (code 4100) is listed here, but TS29.230 table 8.1.3 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.4.2 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       12
+      ]
+     ]
+    },
+    "TS29.283.py#user-data-not-recognized-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED (code 5100) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 7.4.3.3 says 'This error code is defined in 3GPP TS 29.329 [9].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       1
+      ]
+     ]
+    },
+    "TS29.283.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 7.4.3.2 says 'This error code is defined in 3GPP TS 29.229 [6].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       0
+      ]
+     ]
     }
    },
    "reference": "TS29.283",
-   "renames": [],
+   "renames": [
+    {
+     "expect": "DIAMETER_ERROR_ UNKNOWN _DATA",
+     "replace": "DIAMETER_ERROR_UNKNOWN_DATA"
+    }
+   ],
    "version": "18.0.0"
   },
   "29329-i00": {
    "edits": {
+    "TS29.329.py#feature-unsupported-result-code-reused": {
+     "expect": "DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.2.2.8 says 'See 3GPP TS 29.229 [6] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       10,
+       "rows",
+       7
+      ]
+     ]
+    },
+    "TS29.329.py#identities-dont-match-result-code-reused": {
+     "expect": "DIAMETER_ERROR_IDENTITIES_DONT_MATCH (code 5002) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.2.2.12 says 'See 3GPP TS 29.229 [6]': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       10,
+       "rows",
+       11
+      ]
+     ]
+    },
     "TS29.329.py#load-row-not-local": {
      "kind": "delete",
      "reason": "table 6.3.1 prints Load with no AVP code because it is not this document's AVP: clause 6.3.35 says it is defined in RFC 8583, and table 6.3/2 already lists it as re-used from there — the code-less table row is the same fact printed in the wrong table"
+    },
+    "TS29.329.py#too-much-data-result-code-reused": {
+     "expect": "DIAMETER_ERROR_TOO_MUCH_DATA (code 5008) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.2.2.6 says 'This error code is defined in 3GPP TS 29.229 [6].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       10,
+       "rows",
+       5
+      ]
+     ]
     }
    },
    "reference": "TS29.329",
    "renames": [],
    "version": "18.0.0"
+  },
+  "29330-i10": {
+   "edits": {
+    "TS29.330.py#feature-unsupported-result-code-reused": {
+     "expect": "DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.4.3.7 says 'The error code is defined in 3GPP TS 29.229 [6] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       6
+      ]
+     ]
+    },
+    "TS29.330.py#operation-not-allowed-result-code-reused": {
+     "expect": "DIAMETER_ERROR_OPERATION_NOT_ALLOWED (code 5101) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 6.4.3.2 says 'This error code is defined in 3GPP TS 29.329 [12] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       1
+      ]
+     ]
+    },
+    "TS29.330.py#too-much-data-result-code-reused": {
+     "expect": "DIAMETER_ERROR_TOO_MUCH_DATA (code 5008) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.4.3.5 says 'This error code is defined in 3GPP TS 29.229 [6] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       4
+      ]
+     ]
+    },
+    "TS29.330.py#transparent-data-out-of-sync-result-code-reused": {
+     "expect": "DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC (code 5105) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 6.4.3.6 says 'This error code is defined in 3GPP TS 29.329 [12] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       5
+      ]
+     ]
+    },
+    "TS29.330.py#user-data-cannot-be-modified-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED (code 5103) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 6.4.3.4 says 'This error code is defined in 3GPP TS 29.329 [12] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       3
+      ]
+     ]
+    },
+    "TS29.330.py#user-data-cannot-be-read-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ (code 5102) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 6.4.3.3 says 'This error code is defined in 3GPP TS 29.329 [12] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       2
+      ]
+     ]
+    },
+    "TS29.330.py#user-data-not-available-result-code-reused": {
+     "expect": "DIAMETER_USER_DATA_NOT_AVAILABLE (code 4100) is listed here, but TS29.230 table 8.1.3 allocates the code to TS29.329",
+     "kind": "accept",
+     "reason": "clause 6.4.4.1 says 'This error code is defined in 3GPP TS 29.329 [12] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       7
+      ]
+     ]
+    },
+    "TS29.330.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.4.3.1 says 'This error code is defined in 3GPP TS 29.229 [6] clause 6.': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       5,
+       "rows",
+       0
+      ]
+     ]
+    }
+   },
+   "reference": "TS29.330",
+   "renames": [],
+   "version": "18.1.0"
   },
   "29336-i20": {
    "edits": {
@@ -2204,13 +2875,17 @@
      "targets": [
       [
        "sections",
-       19
+       22
       ]
      ]
     },
     "TS29.336.py#cia-number-of-ues-spelling": {
      "kind": "correction",
      "reason": "the CIA ABNF (clause 8.2.4) uses the re-used row's spelling; TS 29.154 clause 5.3.10 defines Number-Of-UEs"
+    },
+    "TS29.336.py#configuration-event-storage-result-spelling": {
+     "kind": "correction",
+     "reason": "clause 8.3.3.5's heading prints a space inside the name; TS 29.230 table 8.1.4 allocates 5513 under the name without it"
     },
     "TS29.336.py#enodeb-id-in-mme-location-information": {
      "kind": "correction",
@@ -2276,13 +2951,41 @@
      "targets": [
       [
        "sections",
-       18
+       21
       ]
      ]
     },
     "TS29.336.py#user-identifier-duplicate-body": {
      "kind": "delete",
      "reason": "clause 8.4.36 opens with 'This AVP is defined in clause 6.4.2' and then prints a second, S6t-specific format for the same (vendor 10415, code 3102) identity — swapping 6.4.2's LMSI member for Type-Of-External-Identifier. One identity cannot carry two bodies in a dictionary, and the document's own words make 6.4.2 the definition, which table 8.4.1-2's re-used row also cites; the S6t variant stays readable in the source behind that row's clause pointer"
+    },
+    "TS29.336.py#user-unknown-result-code-reused-6-3": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.3.3.1 says 'This error code is defined in 3GPP TS 29.229 [7].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       12,
+       "rows",
+       0
+      ]
+     ]
+    },
+    "TS29.336.py#user-unknown-result-code-reused-8-3": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 8.3.3.1 says 'This error code is defined in 3GPP TS 29.229 [7].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       23,
+       "rows",
+       0
+      ]
+     ]
     }
    },
    "reference": "TS29.336",
@@ -2318,6 +3021,10 @@
     {
      "expect": "Number-of-UEs",
      "replace": "Number-Of-UEs"
+    },
+    {
+     "expect": "DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_ SUCCESSFUL",
+     "replace": "DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL"
     }
    ],
    "version": "18.2.0"
@@ -2343,6 +3050,10 @@
     "TS29.337.py#dtr-application-port-identifier": {
      "kind": "correction",
      "reason": "the DTR ABNF (clause 6.2.3) uses table 6.3.1/2's SMS-Application-Port-ID; TS 29.368 clause 6.4.11 defines the AVP as Application-Port-Identifier"
+    },
+    "TS29.337.py#feature-list-avp": {
+     "kind": "correction",
+     "reason": "clause 6.3.5 is headed 'Supported-Feature-List AVP', which no table lists and no body names; the document's Supported-Features is TS 29.229's, holding Feature-List-ID and Feature-List, and the clause's table is captioned 'Features of Feature-List-ID 1'"
     },
     "TS29.337.py#missing-row-mme-name": {
      "kind": "insert",
@@ -2404,7 +3115,7 @@
      "targets": [
       [
        "sections",
-       17
+       18
       ]
      ]
     },
@@ -2484,6 +3195,10 @@
      "kind": "insert",
      "reason": "clause 6.3.13 defines this Unsigned32 AVP and TS 29.230 assigns it code 3708, but table 6.3.1-1 accidentally omits the row; its flag rules follow every locally defined PC4a AVP in the table"
     },
+    "TS29.344.py#prose-not-allowed-result-spelling": {
+     "kind": "correction",
+     "reason": "clause 6.4.3.4's heading prints a space inside the name; TS 29.230 table 8.1.4 allocates 5611 under the name without it"
+    },
     "TS29.344.py#psr-psa-rule-name-answer": {
      "kind": "correction",
      "reason": "clauses 6.2.11/6.2.12 re-print the rule names of 6.2.3/6.2.4; the headings, the PSR/PSA abbreviations and command code 8388713 all name ProSe-Initial-Location-Information instead"
@@ -2491,6 +3206,24 @@
     "TS29.344.py#psr-psa-rule-name-request": {
      "kind": "correction",
      "reason": "clauses 6.2.11/6.2.12 re-print the rule names of 6.2.3/6.2.4; the headings, the PSR/PSA abbreviations and command code 8388713 all name ProSe-Initial-Location-Information instead"
+    },
+    "TS29.344.py#ue-location-unknown-result-spelling": {
+     "kind": "correction",
+     "reason": "clause 6.4.3.5's heading prints a space inside the name; TS 29.230 table 8.1.4 allocates 5612 under the name without it"
+    },
+    "TS29.344.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.4.3.2 says 'This error code is defined in TS 29.229 [6].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       20,
+       "rows",
+       0
+      ]
+     ]
     }
    },
    "reference": "TS29.344",
@@ -2502,6 +3235,14 @@
     {
      "expect": "ProSe-Subscriber-Information-Answer",
      "replace": "ProSe-Initial-Location-Information-Answer"
+    },
+    {
+     "expect": "DIAMETER_ERROR_ PROSE_NOT_ALLOWED",
+     "replace": "DIAMETER_ERROR_PROSE_NOT_ALLOWED"
+    },
+    {
+     "expect": "DIAMETER_ERROR_ UE_LOCATION_UNKNOWN",
+     "replace": "DIAMETER_ERROR_UE_LOCATION_UNKNOWN"
     }
    ],
    "version": "18.1.0"
@@ -2624,6 +3365,10 @@
      "kind": "correction",
      "reason": "table 6.5.1.1 cites TS 29.336 for External-Id; TS 29.336 defines the AVP as External-Identifier (clause 6.4.11, code 3111)"
     },
+    "TS29.368.py#feature-list-avp": {
+     "kind": "correction",
+     "reason": "clause 6.5.2.2 is headed 'Supported-Feature-List AVP', which no table lists and no body names; the document's Supported-Features is TS 29.229's, holding Feature-List-ID and Feature-List, and the clause's table is captioned 'Features of Feature-List-ID 1'"
+    },
     "TS29.368.py#vendor-id-device-action": {
      "kind": "correction",
      "reason": "clause 6.4.2's AVP header omits the vendor-id; clause 6.4.1 gives every AVP the document defines vendor 10415 and table 6.4.1.1 marks the V flag mandatory"
@@ -2660,6 +3405,20 @@
      "kind": "correction",
      "reason": "clause 6.3.10's AVP format re-prints clause 6.3.3's rule name; the heading, the clause prose and table 6.3.1-1 all call the AVP at code 4603 'PLMN-Allowed-PC5-RATs', and 6.3.3's own AVP is 4600"
     },
+    "TS29.388.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.4.3.2 says 'This error code is defined in TS 29.229 [6].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       16,
+       "rows",
+       0
+      ]
+     ]
+    },
     "TS29.388.py#v2x-subscription-data-v4-body": {
      "expect": "V2X-Subscription-Data's body, against TS29.272's definition: adds V2X-PC5-Allowed-PLMN, missing UE-PC5-AMBR, V2X-Permission",
      "kind": "accept",
@@ -2682,8 +3441,61 @@
    ],
    "version": "18.1.0"
   },
+  "29389-i00": {
+   "edits": {
+    "TS29.389.py#unknown-v2x-subscription-result-code-reused": {
+     "expect": "DIAMETER_ERROR_UNKNOWN_V2X_SUBSCRIPTION (code 5690) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.388",
+     "kind": "accept",
+     "reason": "clause 6.4.3.3 says 'This error code is defined in 3GPP TS 29.388 [16].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       7,
+       "rows",
+       1
+      ]
+     ]
+    },
+    "TS29.389.py#user-unknown-result-code-reused": {
+     "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 6.4.3.2 says 'This error code is defined in 3GPP TS 29.229 [6].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       7,
+       "rows",
+       0
+      ]
+     ]
+    },
+    "TS29.389.py#v2x-not-allowed-result-code-reused": {
+     "expect": "DIAMETER_ERROR_V2X_NOT_ALLOWED (code 5691) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.388",
+     "kind": "accept",
+     "reason": "clause 6.4.3.4 says 'This error code is defined in 3GPP TS 29.388 [16].': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       7,
+       "rows",
+       2
+      ]
+     ]
+    }
+   },
+   "reference": "TS29.389",
+   "renames": [],
+   "version": "18.0.0"
+  },
   "29468-i00": {
    "edits": {
+    "TS29.468.py#feature-list-avp": {
+     "kind": "correction",
+     "reason": "clause 6.5.2.2 is headed 'Supported-Feature-List AVP', which no table lists and no body names; the document's Supported-Features is TS 29.229's, holding Feature-List-ID and Feature-List, and the clause's table is captioned 'Features of Feature-List-ID 1'"
+    },
     "TS29.468.py#mbms-bearer-event-diagnostic-info-type": {
      "kind": "correction",
      "reason": "clause 6.4.35 defines the AVP as of type Enumerated and lists its values; table 6.4.1-1 alone says Unsigned32"
@@ -2751,6 +3563,10 @@
   },
   "32299-bk0": {
    "edits": {
+    "TS32.299.py#credit-limit-reached-result-code": {
+     "kind": "insert",
+     "reason": "clause 7.1.11 prints the code at the end of the paragraph describing DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE, where no line reads it; the description after it is the code's"
+    },
     "TS32.299.py#rel11-application-id-rf": {
      "kind": "insert",
      "reason": "clause 7.1.5: 'The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 3588 [401]'; clause 6.2.1.2 bases the offline charging messages of clause 6.2 on that application, and their headers print no id"
@@ -3117,6 +3933,20 @@
     "TS32.299.py#experimental-result-m-flag-must-not": {
      "kind": "correction",
      "reason": "table 7.1.0.1 puts M in Must not for Experimental-Result, which its NOTE 2 says RFC 6733 defines; RFC 6733's table in clause 4.5 sets M in Must, and gives M,V in Must not to Error-Reporting-Host, the row above Experimental-Result there"
+    },
+    "TS32.299.py#feature-unsupported-result-code-reused": {
+     "expect": "DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
+     "kind": "accept",
+     "reason": "clause 7.1.8A says 'This value is defined in TS 29.229 [204]': the document lists a code it re-uses",
+     "rule": "registry-result-code-document",
+     "targets": [
+      [
+       "sections",
+       15,
+       "rows",
+       0
+      ]
+     ]
     },
     "TS32.299.py#ietf-origin-accounting-input-octets": {
      "kind": "insert",
@@ -3542,7 +4372,7 @@
      "targets": [
       [
        "sections",
-       15
+       16
       ]
      ]
     },
@@ -3554,7 +4384,7 @@
      "targets": [
       [
        "sections",
-       210
+       212
       ]
      ]
     },
@@ -3680,7 +4510,7 @@
      "targets": [
       [
        "sections",
-       16
+       18
       ]
      ]
     },

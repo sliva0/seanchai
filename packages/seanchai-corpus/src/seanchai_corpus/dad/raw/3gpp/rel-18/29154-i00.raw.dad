@@ -299,6 +299,14 @@ Event-Configuration ::= < AVP header: 4211 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Event-Configuration-State
+; Kind: bits
+; Section: A.6.3.4
+; Table: A.6.3.4-1
+"Final report" = 0
+
+
 ; Type: Grouped AVP
 ; Name: Event-Configuration-Status
 ; Section: A.6.3.5
@@ -306,6 +314,14 @@ Event-Configuration-Status ::= < AVP header: 4213 >
         { Event-Configuration-State }
         { Extended-SCEF-Reference-ID }
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Event-Reporting-Results
+; Kind: bits
+; Section: A.6.3.6
+; Table: A.6.3.6-1
+"Final report" = 0
 
 
 ; Type: Grouped AVP

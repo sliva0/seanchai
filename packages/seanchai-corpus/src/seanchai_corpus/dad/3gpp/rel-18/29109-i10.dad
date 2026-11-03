@@ -207,6 +207,16 @@ Security-Feature-Response   420    6.3.1.21   OctetString   M,V    -     -      
 SHA-256-Indication          421    6.3.1.22   Enumerated    M,V    -     -       -       No
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.2
+; Page: 37
+DIAMETER_ERROR_IDENTITY_UNKNOWN               = 5401 ; 6.2.2.1
+DIAMETER_ERROR_NOT_AUTHORIZED                 = 5402 ; 6.2.2.2
+DIAMETER_ERROR_TRANSACTION_IDENTIFIER_INVALID = 5403 ; 6.2.2.3
+
+
 ; Type: Enumerated AVP
 ; Name: GBA_U-Awareness-Indicator
 ; Section: 6.3.1.8

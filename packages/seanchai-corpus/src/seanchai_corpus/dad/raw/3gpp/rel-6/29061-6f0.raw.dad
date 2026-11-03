@@ -255,3 +255,15 @@ MBMS-2G-3G-Indicator ::= < Enumerated AVP header: 907 10415 >
 MBMS-Counting-Information ::= < Enumerated AVP header: 914 10415 >
         COUNTING-NOT-APPLICABLE = 0
         COUNTING-APPLICABLE     = 1
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 17.8
+; Page: 92
+DIAMETER_ERROR_START_INDICATION            = 5120 ; 17.8.2
+DIAMETER_ERROR_STOP_INDICATION             = 5121 ; 17.8.2
+DIAMETER_ERROR_UNKNOWN_MBMS_BEARER_SERVICE = 5122 ; 17.8.2
+DIAMETER_ERROR_SERVICE_AREA                = 5123 ; 17.8.2
+DIAMETER_ERROR_OUT_OF_RESOURCES            = 4121 ; 17.8.3

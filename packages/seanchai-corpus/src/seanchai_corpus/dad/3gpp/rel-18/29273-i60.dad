@@ -1627,6 +1627,32 @@ Transport-Access-Type ::= < Enumerated AVP header: 1519 10415 >
         BBF = 0
 
 
+; Type: Value Table
+; AVP: DER-Flags
+; Kind: bits
+; Section: 5.2.3.20
+; Table: 5.2.3.20/1
+; Page: 76
+NSWO-Capability-Indication      = 0
+TWAN-S2a-Connectivity-Indicator = 1
+IMEI-Check-Required-In-VPLMN    = 2
+IMEI-Check-Request-In-VPLMN     = 3
+Emergency-Capability-Indication = 4
+ERP-Support-Indication          = 5
+ERP-Re-Authentication           = 6
+
+
+; Type: Value Table
+; AVP: DEA-Flags
+; Kind: bits
+; Section: 5.2.3.21
+; Table: 5.2.3.21/1
+; Page: 77
+NSWO-Authorization              = 0
+TWAN-S2a-Connectivity-Indicator = 1
+IMEI-Check-Request-In-VPLMN     = 2
+
+
 ; Type: Grouped AVP
 ; Name: Access-Network-Info
 ; Section: 5.2.3.24
@@ -1639,6 +1665,17 @@ Access-Network-Info ::= < AVP header: 1526 10415 >
         [ Operator-Name ]
         [ Logical-Access-ID ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: TWAN-Connection-Mode
+; Kind: bits
+; Section: 5.2.3.25
+; Table: 5.2.3.25/1
+; Page: 79
+TSC-MODE = 0
+SC-MODE  = 1
+MC-MODE  = 2
 
 
 ; Type: Grouped AVP
@@ -1655,6 +1692,42 @@ TWAN-Connectivity-Parameters ::= < AVP header: 1528 10415 >
         [ TWAN-S2a-Failure-Cause ]
         [ SM-Back-Off-Timer ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Connectivity-Flags
+; Kind: bits
+; Section: 5.2.3.27
+; Table: 5.2.3.26/1
+; Page: 80
+Initial-Attach-Indicator = 0
+
+
+; Type: Value Table
+; AVP: High-Priority-Access-Info
+; Kind: bits
+; Section: 5.2.3.36
+; Table: 5.2.3.36/1
+; Page: 82
+HPA_Configured = 0
+
+
+; Type: Value Table
+; AVP: Emergency-Services
+; Kind: bits
+; Section: 7.2.3.4
+; Table: 7.2.3.4/1
+; Page: 124
+Emergency-Indication = 0
+
+
+; Type: Value Table
+; AVP: AAR-Flags
+; Kind: bits
+; Section: 7.2.3.5
+; Table: 7.2.3.5/1
+; Page: 125
+WLAN-Location-Info-Request = 0
 
 
 ; Type: Grouped AVP
@@ -1735,6 +1808,35 @@ Trace-Info ::= < AVP header: 1505 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: SWx
+; Section: 8.2.3.16
+; Table: 8.2.3.16/1
+; Page: 150
+"HSS Restoration"                    = 0 ; O
+Access-Network-Information-Retrieval = 1 ; O
+"UE Local Time Zone Retrieval"       = 2 ; O
+"P-CSCF Restoration for WLAN"        = 3 ; O
+"Emergency Services Continuity"      = 4 ; O
+ERP                                  = 5 ; O
+"Dedicated Core Networks"            = 6 ; O
+
+
+; Type: Value Table
+; AVP: PPR-Flags
+; Kind: bits
+; Section: 8.2.3.17
+; Table: 8.2.3.17/1
+; Page: 153
+Reset-Indication             = 0
+Access-Network-Info-Request  = 1
+UE-Local-Time-Zone-Request   = 2
+"P-CSCF Restoration Request" = 3
+
+
 ; Type: Grouped AVP
 ; Name: TWAN-Access-Info
 ; Section: 8.2.3.19
@@ -1743,6 +1845,35 @@ TWAN-Access-Info ::= < AVP header: 1510 10415 >
         [ Access-Authorization-Flags ]
         [ WLAN-Identifier ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Access-Authorization-Flags
+; Kind: bits
+; Section: 8.2.3.20
+; Table: 8.2.3.20/1
+; Page: 154
+EPC-Access-Authorization  = 0
+NSWO-Access-Authorization = 1
+
+
+; Type: Value Table
+; AVP: AAA-Failure-Indication
+; Kind: bits
+; Section: 8.2.3.21
+; Table: 8.2.3.21/1
+; Page: 154
+"AAA Failure" = 0
+
+
+; Type: Value Table
+; AVP: RAR-Flags
+; Kind: bits
+; Section: 9.2.3.1.5
+; Table: 9.2.3.1.5/1
+; Page: 189
+Trust-Relationship-Update-indication = 0
+"P-CSCF Restoration Request"         = 1
 
 
 ; Type: Grouped AVP
@@ -1756,4 +1887,43 @@ MIP6-Agent-Info ::= < AVP header: 486 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S6b
+; Section: 9.2.3.5
+; Table: 9.2.3.5/1
+; Page: 191
+"P-CSCF Restoration for WLAN" = 0 ; O
+
+
 ;; deleted: definition 'MIP6-Agent-Info' (clause 9.2.3.6.2) (TS29.273.py#mip6-agent-info-duplicate)
+
+
+; Type: Value Table
+; AVP: DER-S6b-Flags
+; Kind: bits
+; Section: 9.2.3.7
+; Table: 9.2.3.7/1
+; Page: 193
+Initial-Attach-Indicator = 0
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 10
+; Page: 194
+DIAMETER_ERROR_USER_UNKNOWN                          = 5001 ; 10.3.2
+DIAMETER_ERROR_IDENTITY_NOT_REGISTERED               = 5003 ; 10.3.3
+DIAMETER_ERROR_ROAMING_NOT_ALLOWED                   = 5004 ; 10.3.4
+DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED           = 5005 ; 10.3.5
+DIAMETER_ERROR_USER_NO_NON_3GPP_SUBSCRIPTION         = 5450 ; 10.3.6
+DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION              = 5451 ; 10.3.7
+DIAMETER_ERROR_RAT_TYPE_NOT_ALLOWED                  = 5452 ; 10.3.8
+DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST              = 5453 ; 10.3.9
+DIAMETER_ERROR_TIMED_OUT_REQUEST                     = 5454 ; 10.3.10
+DIAMETER_ERROR_ILLEGAL_EQUIPMENT                     = 5554 ; 10.3.11
+DIAMETER_ERROR_TRUSTED_NON_3GPP_ACCESS_NOT_ALLOWED   = 5455 ; 10.3.12
+DIAMETER_ERROR_UNTRUSTED_NON_3GPP_ACCESS_NOT_ALLOWED = 5456 ; 10.3.13

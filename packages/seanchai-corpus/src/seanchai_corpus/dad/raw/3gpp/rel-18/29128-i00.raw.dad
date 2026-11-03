@@ -328,6 +328,25 @@ SCEF-Reference-ID-Ext                 TS29.336
 SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 
 
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.3
+; Page: 38
+DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY                = 5510 ; 6.3.3.1
+DIAMETER_ERROR_UNAUTHORIZED_SERVICE                          = 5511 ; 6.3.3.2
+"DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_ SUCCESSFUL" = 5513 ; 6.3.3.3
+DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT              = 5514 ; 6.3.3.4
+DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED                 = 5650 ; 6.3.3.5
+DIAMETER_ERROR_USER_UNKNOWN                                  = 5001 ; 6.3.3.6
+DIAMETER_ERROR_OPERATION_NOT_ALLOWED                         = 5101 ; 6.3.3.7
+DIAMETER_ERROR_INVALID_EPS_BEARER                            = 5651 ; 6.3.3.8
+DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE              = 5652 ; 6.3.3.9
+"DIAMETER_ERROR_ SCEF_REFERENCE_ID_UNKNOWN"                  = 5515 ; 6.3.3.10
+DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE                  = 5653 ; 6.3.3.11
+DIAMETER_ERROR_UNREACHABLE_USER                              = 4221 ; 6.3.3.12
+
+
 ; Type: Grouped AVP
 ; Name: Monitoring-Event-Configuration
 ; Section: 6.4.2
@@ -406,6 +425,19 @@ Number-Of-UE-Per-Location-Report ::= < AVP header: 4307 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Application: T6a/b
+; Section: 6.4.14.1
+; Table: 6.4.14.1-1
+; Page: 46
+MONTE                    = 0 ; O
+NIDD                     = 1 ; O
+Filtering                = 2 ; O
+"Extended Reference IDs" = 3 ; O
+
+
 ; Type: Grouped AVP
 ; Name: Serving-PLMN-Rate-Control
 ; Section: 6.4.21
@@ -414,6 +446,15 @@ Serving-PLMN-Rate-Control ::= < AVP header: 4310 10415 >
         [ Uplink-Rate-Limit ]
         [ Downlink-Rate-Limit ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: CMR-Flags
+; Kind: bits
+; Section: 6.4.25
+; Table: 6.4.25/1
+; Page: 48
+UE-Reachable-Indicator = 0
 
 
 ; Type: Grouped AVP
@@ -434,6 +475,15 @@ Terminal-Information ::= < AVP header: 1401 10415 >
         [ IMEI ]
         [ Software-Version ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: TDA-Flags
+; Kind: bits
+; Section: 6.4.31
+; Table: 6.4.31-1
+; Page: 49
+"Acknowledged Delivery" = 0
 
 
 ; Type: Grouped AVP

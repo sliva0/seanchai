@@ -184,6 +184,17 @@ Physical-Access-ID      ETSI-TS283.034
 Supported-Features      TS29.229
 
 
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Sy
+; Section: 5.1.6
+; Table: 5.1.6-1
+; Page: 15
+ASR = 0 ; O
+
+
 ; Type: Grouped AVP
 ; Name: Policy-Counter-Status-Report
 ; Section: 5.3.3
@@ -212,3 +223,30 @@ Pending-Policy-Counter-Information ::= < AVP header: 2905 10415 > ;; corrected: 
         { Policy-Counter-Status }
         { Pending-Policy-Counter-Change-Time }
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: SN-Request-Type
+; Kind: bits
+; Section: 5.3.7
+; Table: 5.3.7-1
+; Page: 18
+"Normal Request"        = 0
+"Abort Session Request" = 1
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 19
+DIAMETER_ERROR_UNKNOWN_POLICY_COUNTERS      = 5570 ; 5.5.2
+DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS = 4241 ; 5.5.3
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 19
+DIAMETER_USER_UNKNOWN = 5030 ; 5.5.2

@@ -144,6 +144,20 @@ Logical-Access-ID    302    ETSI-ES283.034   OctetString
 Physical-Access-ID   313    ETSI-ES283.034   UTF8String
 
 
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 8.2
+; Page: 30
+RESOURCE_FAILURE                      = 4014 ; 8.2.2
+UNKNOWN_BINDING_TEMPLATE_NAME         = 5042 ; 8.2.3
+BINDING_FAILURE                       = 5043 ; 8.2.3
+MAX_BINDINGS_SET_FAILURE              = 5044 ; 8.2.3
+MAXIMUM_BINDINGS_REACHED_FOR_ENDPOINT = 5045 ; 8.2.3
+SESSION_EXISTS                        = 5046 ; 8.2.3
+INSUFFICIENT_CLASSIFIERS              = 5047 ; 8.2.3
+
+
 ; Type: Enumerated AVP
 ; Name: NC-Request-Type
 ; Section: 8.7.1

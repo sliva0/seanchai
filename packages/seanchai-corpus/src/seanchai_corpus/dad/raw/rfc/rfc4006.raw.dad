@@ -417,3 +417,15 @@ User-Equipment-Info-Type ::= < Enumerated AVP header: 459 >
         MAC            = 1
         EUI64          = 2
         MODIFIED_EUI64 = 3
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 9
+; Page: 79
+DIAMETER_END_USER_SERVICE_DENIED       = 4010 ; 9.1
+DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE = 4011 ; 9.1
+DIAMETER_CREDIT_LIMIT_REACHED          = 4012 ; 9.1
+DIAMETER_USER_UNKNOWN                  = 5030 ; 9.2
+DIAMETER_RATING_FAILED                 = 5031 ; 9.2

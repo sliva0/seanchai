@@ -783,6 +783,19 @@ Multiple-Services-Credit-Control ::= < AVP header: 456 >
 ;;    * [ AVP ]                             ; strikethrough
 
 
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 7.1.11
+; Page: 86
+DIAMETER_END_USER_SERVICE_DENIED       = 4010
+DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE = 4011
+DIAMETER_CREDIT_LIMIT_REACHED          = 4012 ;; inserted: (TS32.299.py#credit-limit-reached-result-code)
+DIAMETER_AUTHORIZATION_REJECTED        = 5003
+DIAMETER_USER_UNKNOWN                  = 5030
+DIAMETER_RATING_FAILED                 = 5031
+
+
 ; Type: Grouped AVP
 ; Name: Used-Service-Unit
 ; Section: 7.1.14

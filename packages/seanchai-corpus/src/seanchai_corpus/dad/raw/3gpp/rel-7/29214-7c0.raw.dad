@@ -373,3 +373,15 @@ Acceptable-Service-Info ::= < AVP header: 526 >
 Service-Info-Status ::= < Enumerated AVP header: 527 10415 >
         "FINAL SERVICE INFORMATION"       = 0
         "PRELIMINARY SERVICE INFORMATION" = 1
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.5
+; Page: 26
+INVALID_SERVICE_INFORMATION      = 5061
+FILTER_RESTRICTIONS              = 5062
+REQUESTED_SERVICE_NOT_AUTHORIZED = 5063
+DUPLICATED_AF_SESSION            = 5064
+IP-CAN_SESSION_NOT_AVAILABLE     = 5065

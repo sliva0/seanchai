@@ -27,3 +27,11 @@ ERP-Realm         619    8.2       DiameterIdentity   M,V
 ERP-RK-Request ::= < AVP header: 618 >
         { ERP-Realm }
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 9
+; Page: 14
+DIAMETER_ERROR_EAP_CODE_UNKNOWN = 5048 ; 9.1

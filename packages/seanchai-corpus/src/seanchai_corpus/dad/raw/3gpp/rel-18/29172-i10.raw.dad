@@ -416,6 +416,33 @@ UTRAN-Positioning-Info ::= < AVP header: 2527 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: LRR-Flags
+; Kind: bits
+; Section: 7.4.35
+; Table: 7.4.35/1
+; Page: 38
+"Lgd/SLg-Indicator"          = 0
+MO-LR-ShortCircuit-Indicator = 1
+MO-LR-ShortCircuit-Requested = 2
+
+
+; Type: Value Table
+; AVP: Deferred-Location-Type
+; Kind: bits
+; Section: 7.4.36
+; Table: 7.4.36/1
+; Page: 38
+UE-Available                = 0
+Entering-Into-Area          = 1
+Leaving-From-Area           = 2
+Being-Inside-Area           = 3
+Periodic-LDR                = 4
+Motion-Event                = 5
+LDR-Activated               = 6
+Maximum-Interval-Expiration = 7
+
+
 ; Type: Grouped AVP
 ; Name: Area-Event-Info
 ; Section: 7.4.38
@@ -508,6 +535,29 @@ Prioritized-List-Indicator ::= < Enumerated AVP header: 2551 10415 >
         PRIORITIZED     = 1
 
 
+; Type: Value Table
+; AVP: PLR-Flags
+; Kind: bits
+; Section: 7.4.52
+; Table: 7.4.52/1
+; Page: 41
+MO-LR-ShortCircuit-Indicator                 = 0
+Optimized-LCS-Proc-Req                       = 1
+Delayed-Location-Reporting-Support-Indicator = 2
+
+
+; Type: Value Table
+; AVP: PLA-Flags
+; Kind: bits
+; Section: 7.4.53
+; Table: 7.4.53/1
+; Page: 42
+Deferred-MT-LR-Response-Indicator      = 0
+MO-LR-ShortCircuit-Indicator           = 1
+Optimized-LCS-Proc-Performed           = 2
+UE-Transiently-Not-Reachable-Indicator = 3
+
+
 ; Type: Grouped AVP
 ; Name: Deferred-MT-LR-Data
 ; Section: 7.4.54
@@ -517,6 +567,15 @@ Deferred-MT-LR-Data ::= < AVP header: 2547 10415 >
         [ Termination-Cause ]
         [ Serving-Node ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: LRA-Flags
+; Kind: bits
+; Section: 7.4.56
+; Table: 7.4.56/1
+; Page: 43
+MO-LR-ShortCircuit-Indicator = 0
 
 
 ; Type: Grouped AVP
@@ -554,6 +613,16 @@ Motion-Event-Info ::= < AVP header: 2559 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Reporting-Location-Requirements
+; Kind: bits
+; Section: 7.4.69
+; Table: 7.4.69/1
+; Page: 45
+Location-Estimate = 0
+;; 1-31 None
+
+
 ; Type: Grouped AVP
 ; Name: Additional-Area
 ; Section: 7.4.70
@@ -562,3 +631,18 @@ Additional-Area ::= < AVP header: 2565 10415 >
         { Area-Type }
         { Area-Identification }
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.5
+; Page: 46
+DIAMETER_ERROR_USER_UNKNOWN                     = 5001 ; 7.5.3.1
+DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK  = 5490 ; 7.5.3.2
+DIAMETER_ERROR_UNREACHABLE_USER                 = 4221 ; 7.5.4.1
+DIAMETER_ERROR_SUSPENDED_USER                   = 4222 ; 7.5.4.2
+DIAMETER_ERROR_DETACHED_USER                    = 4223 ; 7.5.4.3
+DIAMETER_ERROR_POSITIONING_DENIED               = 4224 ; 7.5.4.4
+DIAMETER_ERROR_POSITIONING_FAILED               = 4225 ; 7.5.4.5
+"DIAMETER_ERROR_UNKNOWN_UNREACHABLE LCS_CLIENT" = 4226 ; 7.5.4.6

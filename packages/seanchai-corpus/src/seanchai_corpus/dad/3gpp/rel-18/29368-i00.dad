@@ -233,3 +233,24 @@ Delivery-Outcome ::= < Enumerated AVP header: 3009 10415 >
         TEMPORARYERROR = 2
         UNDELIVERABLE  = 3
         UNCONFIRMED    = 4
+
+
+; Type: Value Table
+; AVP: Feature-Supported-In-Final-Target
+; Kind: features
+; Section: 6.4.13
+; Table: 6.4.13.1
+; Page: 20
+"Device-Trigger-Recall-Replace supported in SMS-SC" = 0
+
+
+; Type: Value Table
+; AVP: Feature-List ;; corrected: (TS29.368.py#feature-list-avp)
+; Kind: features
+; Feature-List-ID: 1
+; Application: Tsp
+; Section: 6.5.2.2
+; Table: 6.5.2.2/1
+; Page: 22
+Device-Trigger-Recall-Replace = 0 ; O
+"MSISDN-less MO-SMS Delivery" = 1 ; O

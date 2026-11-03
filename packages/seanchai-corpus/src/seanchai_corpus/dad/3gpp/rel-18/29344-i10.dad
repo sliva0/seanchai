@@ -275,6 +275,22 @@ ProSe-Subscription-Data ::= < AVP header: 3701 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: ProSe-Permission
+; Kind: bits
+; Section: 6.3.3
+; Table: 6.3.3-1
+; Page: 24
+"ProSe Direct Discovery"                              = 0
+"EPC-level ProSe Discovery"                           = 1
+"EPC support WLAN Direct Discovery and Communication" = 2
+"one-to-many ProSe Direct Communication"              = 3
+"one-to-one ProSe Direct Communication"               = 4
+"UE-to-Network Relay"                                 = 5
+Remote-UE-access                                      = 6
+"Restricted ProSe Direct Discovery"                   = 7
+
+
 ; Type: Grouped AVP
 ; Name: ProSe-Allowed-PLMN
 ; Section: 6.3.4
@@ -284,6 +300,58 @@ ProSe-Allowed-PLMN ::= < AVP header: 3703 10415 >
         [ Authorized-Discovery-Range ]
         [ ProSe-Direct-Allowed ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: ProSe-Direct-Allowed
+; Kind: bits
+; Section: 6.3.5
+; Table: 6.3.5-1
+; Page: 25
+Announce                           = 0
+Monitor                            = 1
+Communication                      = 2
+"One-to-one Communication"         = 3
+Discoverer                         = 4
+Discoveree                         = 5
+Restricted-announce                = 6
+Restricted-monitoring              = 7
+"Application-controlled extension" = 8
+"On-demand announcing"             = 9
+
+
+; Type: Value Table
+; AVP: UPR-Flags
+; Kind: bits
+; Section: 6.3.6
+; Table: 6.3.6-1
+; Page: 26
+Update             = 0
+Removal            = 1
+"Reset-ID Update"  = 2
+"Reset-ID Removal" = 3
+
+
+; Type: Value Table
+; AVP: PNR-Flags
+; Kind: bits
+; Section: 6.3.7
+; Table: 6.3.7-1
+; Page: 26
+"Direct Discovery Revoked"     = 0
+"Direct Communication Revoked" = 1
+"Purged UE"                    = 2
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: PC4a
+; Section: 6.3.8
+; Table: 6.3.8/1
+; Page: 27
+Reset-IDs = 0 ; O
 
 
 ; Type: Grouped AVP
@@ -296,3 +364,14 @@ ProSe-Initial-Location-Information ::= < AVP header: 3707 10415 >
         [ Tracking-Area-Identity ]
         [ Age-Of-Location-Information ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 28
+DIAMETER_ERROR_USER_UNKNOWN               = 5001 ; 6.4.3.2
+DIAMETER_ERROR_UNKNOWN_PROSE_SUBSCRIPTION = 5610 ; 6.4.3.3
+DIAMETER_ERROR_PROSE_NOT_ALLOWED          = 5611 ; 6.4.3.4 ;; corrected: (TS29.344.py#prose-not-allowed-result-spelling)
+DIAMETER_ERROR_UE_LOCATION_UNKNOWN        = 5612 ; 6.4.3.5 ;; corrected: (TS29.344.py#ue-location-unknown-result-spelling)
