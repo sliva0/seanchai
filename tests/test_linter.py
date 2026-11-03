@@ -601,7 +601,7 @@ _RAW_ERRORS = {
     + ["vendor-id-mismatch"] * 96,
     # Release 11: table 7.1's wildcard row, and the grouped headers of clause
     # 7.2 printing no vendor while table 7.2 sets V.
-    "32299-bk0.raw.dad": ["row-without-code"] + ["vendor-id-mismatch"] * 65,
+    "32299-bk0.raw.dad": ["row-without-code"] + ["vendor-id-mismatch"] * 66,
     # Table A.4-1 puts V under Must not for its 45687 rows and 3GPP's
     # Service-Information, and clause A.5.14 prints M2M-Information's
     # header with no vendor-id.
