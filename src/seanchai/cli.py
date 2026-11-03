@@ -14,17 +14,19 @@ the `seanchai[extract]` extra: the commands that do it import it themselves.
 
 import contextlib
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
 
+from .downloader.catalog import SOURCES
 from .errors import SeanchaiError
 
 if TYPE_CHECKING:
     # The `dad` modules are imported only by the commands that use them.
     from .dad.formatter import Comments
+    from .downloader.catalog import Catalog
 
 # The two declared edit layers live side by side; only the source
 # declarations (input patches and quirks) are discovered automatically by
@@ -496,6 +498,12 @@ def regenerate(
         counts[outcome.status] = counts.get(outcome.status, 0) + 1
     summary = ", ".join(f"{n} {status}" for status, n in sorted(counts.items()))
     click.echo(f"{len(report.outcomes)} specifications: {summary}", err=True)
+    if report.missing_sources:
+        fetch = " ".join(f"--only {name}" for name in report.missing_sources)
+        raise click.ClickException(
+            f"{manifest} holds no {', '.join(report.missing_sources)}: run"
+            f" `seanchai download {fetch}`, or name what it holds with --spec"
+        )
     if report.failed:
         raise click.exceptions.Exit(1)
 
@@ -894,6 +902,13 @@ def _summary(counts, checked: int) -> str:
 )
 @click.option("--list", "list_only", is_flag=True, help="Print the catalog and exit.")
 @click.option(
+    "--only",
+    multiple=True,
+    type=click.Choice(SOURCES),
+    help="Fetch only this source, keeping what the manifest holds of the others;"
+    " `wireshark` and `rfc` are small and need no extra. Repeatable.",
+)
+@click.option(
     "--spec",
     metavar="SPECREF",
     help="With --version: fetch one catalogued 3GPP specification"
@@ -914,6 +929,7 @@ def download(
     no_convert: bool,
     pdfs: bool,
     list_only: bool,
+    only: tuple[str, ...],
     spec: str | None,
     spec_version: str | None,
 ) -> None:
@@ -931,6 +947,10 @@ def download(
     `versions/<SPECREF>/<VERSION>/` with a manifest of its own, for
     `seanchai regenerate --manifest ... --spec ... -o SCRATCH`.
 
+    With --only, one source is fetched and the manifest keeps what it holds of
+    the others. What the download cache holds is not fetched again, by this run
+    or a later full one.
+
     A 3GPP or oneM2M download needs the `seanchai[extract]` extra, to validate
     what it fetched.
     """
@@ -938,44 +958,15 @@ def download(
 
     if (spec is None) != (spec_version is None):
         raise click.UsageError("--spec and --version go together")
+    if spec is not None and only:
+        raise click.UsageError("--only and --spec exclude each other")
 
     # Catalog loading is inside the boundary too: an unreadable or malformed
     # specs.toml is a user-facing error, not a traceback.
     with reported():
         catalog = load_catalog()
-        tgpp_specs, rfc_specs, wireshark, onem2m_specs, pinned_specs, transcribed = (
-            catalog
-        )
         if list_only:
-            click.echo(f"3GPP specifications ({len(tgpp_specs)}):")
-            for entry in tgpp_specs:
-                click.echo(f"  {entry.document_type} {entry.number}: {entry.title}")
-            click.echo(f"\nRFCs ({len(rfc_specs)}):")
-            for rfc in rfc_specs:
-                click.echo(f"  RFC {rfc.number}: {rfc.title}")
-            click.echo(f"\n3GPP versions pinned beside it ({len(pinned_specs)}):")
-            for pin in pinned_specs:
-                last = (
-                    "final version"
-                    if pin.final == "document"
-                    else f"Release {pin.release}'s last"
-                )
-                click.echo(
-                    f"  {pin.document_type} {pin.number} V{pin.version}"
-                    f" ({last}): {pin.title}"
-                )
-            click.echo(f"\noneM2M specifications ({len(onem2m_specs)}):")
-            for onem2m in onem2m_specs:
-                click.echo(
-                    f"  {onem2m.identifier} V{onem2m.version} (Release"
-                    f" {onem2m.release}): {onem2m.title}"
-                )
-            click.echo(f"\nHand transcriptions, not downloaded ({len(transcribed)}):")
-            for document in transcribed:
-                click.echo(f"  {document.reference}: {document.title}")
-            click.echo(
-                f"\nWireshark Diameter dictionary: {wireshark.path} at {wireshark.tag}"
-            )
+            _echo_catalog(catalog, only or SOURCES)
             return
         if spec is not None and spec_version is not None:
             download_version(
@@ -998,6 +989,49 @@ def download(
             catalog=catalog,
             report=lambda message: click.echo(message, err=True),
             convert=not no_convert,
+            only=only or None,
+        )
+
+
+def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
+    """What `sources` of the catalog hold, the hand transcriptions with a full
+    listing, since no download fetches them."""
+    if "3gpp" in sources:
+        click.echo(f"3GPP specifications ({len(catalog.tgpp)}):")
+        for entry in catalog.tgpp:
+            click.echo(f"  {entry.document_type} {entry.number}: {entry.title}")
+        click.echo(f"\n3GPP versions pinned beside it ({len(catalog.pinned)}):")
+        for pin in catalog.pinned:
+            last = (
+                "final version"
+                if pin.final == "document"
+                else f"Release {pin.release}'s last"
+            )
+            click.echo(
+                f"  {pin.document_type} {pin.number} V{pin.version}"
+                f" ({last}): {pin.title}"
+            )
+    if "rfc" in sources:
+        click.echo(f"\nRFCs ({len(catalog.rfc)}):")
+        for rfc in catalog.rfc:
+            click.echo(f"  RFC {rfc.number}: {rfc.title}")
+    if "onem2m" in sources:
+        click.echo(f"\noneM2M specifications ({len(catalog.onem2m)}):")
+        for onem2m in catalog.onem2m:
+            click.echo(
+                f"  {onem2m.identifier} V{onem2m.version} (Release"
+                f" {onem2m.release}): {onem2m.title}"
+            )
+    if len(sources) == len(SOURCES):
+        click.echo(
+            f"\nHand transcriptions, not downloaded ({len(catalog.transcribed)}):"
+        )
+        for document in catalog.transcribed:
+            click.echo(f"  {document.reference}: {document.title}")
+    if "wireshark" in sources:
+        click.echo(
+            f"\nWireshark Diameter dictionary: {catalog.wireshark.path}"
+            f" at {catalog.wireshark.tag}"
         )
 
 

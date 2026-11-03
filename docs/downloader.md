@@ -18,6 +18,7 @@ uv run seanchai download --list     # show the catalog
 uv run seanchai download            # fetch it, ETSI PDFs included
 uv run seanchai download --no-convert   # without LibreOffice
 uv run seanchai download --spec TS29.272 --version 18.6.0   # one older version
+uv run seanchai download --only wireshark --only rfc   # the small sources alone
 ```
 
 ## Layout
@@ -50,6 +51,16 @@ experiments, not for refreshing the corpus.
 
 ## Behaviour
 
+- **`--only` fetches some of the sources and keeps the rest.** The sources are
+  `3gpp`, with its pinned versions, `onem2m`, `rfc` and `wireshark`; the last
+  two need no `seanchai[extract]`. What the manifest holds of the others is
+  linked into the staged tree and swapped back with it, and its `sources` says
+  what the manifest and the tree hold. `3gpp_release` and `include_pdfs`
+  describe its 3GPP documents, null with none. A record whose files have gone
+  refuses the run. A later full download fetches nothing the cache holds, the
+  dictionary's listing included. `regenerate` over a partial manifest reports
+  each document it lacks as `not-in-manifest` and fails naming what to download;
+  with `--spec` it rebuilds what the manifest holds.
 - **Every artifact is validated by opening it**, fresh or cached: ZIP
   member CRCs, the PDF page tree, the "Request for Comments:" header. A
   cached file that fails validation is deleted.

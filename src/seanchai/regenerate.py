@@ -35,7 +35,7 @@ from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
-from .downloader.catalog import load_catalog
+from .downloader.catalog import SOURCES, load_catalog
 from .errors import SeanchaiError
 from .extractor import rfc_text, transcription
 from .extractor.errors import ExtractionError
@@ -70,6 +70,9 @@ class Report:
     # The corrections record written, under the output directory; None with no
     # corrections directory, or when a failure left the corpus part rebuilt.
     record: Path | None = None
+    # The sources a partial download left out that this run needed, as
+    # `seanchai download --only` names them.
+    missing_sources: tuple[str, ...] = ()
 
     @property
     def failed(self) -> list[Outcome]:
@@ -144,6 +147,7 @@ def regenerate(
         failed = Outcome(manifest.name, "failed", error=str(error))
         report(failed)
         return Report([failed])
+    absent = _absent_sources(manifest)
     listed = sources | _transcriptions(transcriptions_dir)
     committed = _committed(corpus)
     # Acceptances are checked against the committed corpus's origins before
@@ -169,10 +173,23 @@ def regenerate(
             sources_dir,
             corrections_dir,
             books,
+            absent,
         )
         outcomes.append(outcome)
         report(outcome)
-    result = Report(outcomes)
+    result = Report(
+        outcomes,
+        missing_sources=tuple(
+            sorted(
+                {
+                    _source_of(outcome.reference)
+                    for outcome in outcomes
+                    if outcome.status == "not-in-manifest"
+                }
+                & absent
+            )
+        ),
+    )
     if corrections_dir is not None and not result.failed:
         try:
             result.record = correction_record.write(output, corrections_dir)
@@ -237,7 +254,16 @@ def _one(
     sources_dir: Path | None,
     corrections_dir: Path | None,
     books: Corpus | None,
+    absent: frozenset[str] = frozenset(),
 ) -> Outcome:
+    if source is None and _source_of(reference) in absent:
+        name = _source_of(reference)
+        return Outcome(
+            reference,
+            "not-in-manifest",
+            error=f"{name} is not downloaded (`seanchai download --only {name}`);"
+            " the committed files were left alone",
+        )
     if source is None:
         return Outcome(
             reference,
@@ -424,6 +450,21 @@ def _sources(manifest_path: Path) -> dict[_Key, _Source]:
             f"{manifest_path} is no download manifest"
             f" ({type(error).__name__}: {error}); run `seanchai download`"
         ) from error
+
+
+def _source_of(reference: str) -> str:
+    """The `seanchai download --only` source a document comes from. The hand
+    transcriptions come from none, and are always listed."""
+    if reference.startswith("RFC"):
+        return "rfc"
+    return "onem2m" if reference.startswith("oneM2M") else "3gpp"
+
+
+def _absent_sources(manifest_path: Path) -> frozenset[str]:
+    """What a partial download left out of the manifest. One with no `sources`
+    predates partial downloads, and holds the whole catalog."""
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return frozenset(SOURCES) - frozenset(manifest.get("sources", SOURCES))
 
 
 def _read_sources(manifest_path: Path) -> dict[_Key, _Source]:

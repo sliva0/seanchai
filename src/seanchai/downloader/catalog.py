@@ -14,6 +14,9 @@ from typing import NamedTuple
 from ..errors import SeanchaiError
 from ..prose import collapse_fields
 
+# What `seanchai download --only` selects, and a manifest says it holds.
+SOURCES = ("3gpp", "onem2m", "rfc", "wireshark")
+
 
 class DownloadError(SeanchaiError, RuntimeError):
     """Anything that stops the corpus being fetched as asked."""

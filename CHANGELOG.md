@@ -20,3 +20,6 @@ Nothing has been published to PyPI yet.
   the model, the export and `lint` do not.
 - `extractor/__init__.py` no longer imports `tgpp_docx`, and the catalog moved
   to `downloader/catalog.py`.
+- `seanchai download --only {wireshark,rfc,3gpp,onem2m}`, keeping the manifest
+  whole; its `sources` says what it holds, and `regenerate` names what is
+  missing.

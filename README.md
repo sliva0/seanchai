@@ -60,6 +60,7 @@ built.resolve("TS29.229", "Public-Identity")
 ```sh
 seanchai download                       # fetch the catalog into specifications/
 seanchai download --no-convert          # without LibreOffice; legacy .doc unread
+seanchai download --only wireshark      # one source, keeping the others
 seanchai download --spec SPECREF --version X.Y.Z   # one older version, for diffs
 seanchai regenerate [--add SPECREF]     # rebuild the corpus from the downloads
 seanchai regenerate --expand-ranges     # also widen stale declaration ranges
