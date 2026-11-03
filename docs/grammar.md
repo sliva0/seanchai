@@ -36,7 +36,7 @@ version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
 section       = application-scope / message / grouped-avp / reprinted-avp
               / enumerated-avp / avp-table / reused-avps / registry
-              / undefined-avp
+              / undefined-avp / value-table
 ```
 
 A `spec-ref` names a document without its version. A 3GPP or IETF document is
@@ -423,6 +423,72 @@ about the name beyond its ABNF. The block has no body: it states that
 the name is broken, not what it would be. A type the document states for
 a name without a code is a partial definition, a table row, not this.
 
+### Value Table
+
+```abnf
+value-table   = "; Type: Value Table" NL
+                "; AVP: " avp-name NL
+                "; Kind: " value-kind NL
+                ["; Feature-List-ID: " 1*DIGIT NL]
+                ["; Application: " inline-text NL]
+                "; Section: " section-number NL
+                ["; Table: " inline-text NL]
+                ["; Page: " 1*DIGIT NL]
+                1*(value-row NL)
+value-kind    = "result-codes" / "bits" / "features"
+value-row     = enum-name *SP "= " 1*DIGIT [1*SP "; " value-tail]
+value-tail    = section-number / mark
+                ; a result code's own clause, a feature's M/O mark
+```
+
+The numbers a document names for a numeric AVP that is no `Enumerated`:
+
+```dad
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.2
+; Page: 17
+DIAMETER_FIRST_REGISTRATION = 2001 ; 6.2.1.1
+
+
+; Type: Value Table
+; AVP: ULR-Flags
+; Kind: bits
+; Section: 7.3.7
+; Table: 7.3.7/1
+; Page: 40
+Single-Registration-Indication = 0
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S6a/S6d
+; Section: 7.3.10.1
+; Table: 7.3.10/1
+; Page: 44
+ODB-all-APN = 0 ; O
+```
+
+The `kind` says what a number is. `result-codes` are the values of the AVP
+named, with a tail only where a row sits in a subclause of `; Section:` and that
+subclause's number is the tail. `bits` number the bits of a bit mask, least
+significant first as every table does, with no tail. `features` number the bits
+of one feature list, which `; Application:` and `; Feature-List-ID:` name as the
+table's caption does, and the tail is the M/O cell, none where it is blank or
+the table has no such column; `; Application:` and `; Feature-List-ID:` appear
+only here, each only where the caption says it.
+
+A name is written as an enum value's is ([Enumerated AVP](#enumerated-avp)),
+quoted where it is no `avp-name`. A mark is written as a table's is, quoted
+where it is no plain token, and `-` is no mark. What a row prints beyond this
+is prose, as an enum value's description would be were one worth keeping.
+
+A row printing no such pair, TS 29.172's "1-31 None" or a heading's
+`DIAMETER_ERROR_ALREADY_BANNED (56x2)`, is a `;;` comment where it stood.
+
 ## Text values
 
 ```abnf
@@ -448,8 +514,12 @@ Checked by the AST after parsing:
 - `; Name:` equals the name in the block's header rule.
 - `; Applies-To:` names a clause at most once.
 - `; Name:` of an Undefined AVP block is not `AVP`.
-- Command codes are 24-bit; codes, vendor ids, application ids and enum
-  values are 32-bit; page numbers are 32-bit and at least 1.
+- A Value Table has at least one row; a row's clause is a result code's and its
+  mark a feature's; `; Application:` and `; Feature-List-ID:` are a features
+  table's.
+- Command codes are 24-bit; codes, vendor ids, application ids, enum values
+  and a value table's numbers and Feature-List-IDs are 32-bit; page numbers are
+  32-bit and at least 1.
 
 ## Extending the format
 

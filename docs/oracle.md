@@ -64,6 +64,15 @@ goes where the mistake is: a corpus correction when the document's own
 table or the extractor was wrong, a merge request into Wireshark when the
 dictionary is. The corpus always keeps the specification's own spelling.
 
+## Value tables
+
+The dictionary holds `<enum>`s for `Result-Code` and `Experimental-Result-Code`,
+and for a few bit masks, as the mask each bit sets. `value-disagrees` reports a
+value table's row the dictionary names otherwise, and
+`value-absent-from-dictionary`, one finding per table, the numbers it lacks for
+an AVP it enumerates. An AVP it enumerates none of draws neither. They are read
+as the rest are: a report, and the corpus keeps the document's spelling.
+
 ## In the model
 
 `model.Model.build(books, dictionary=Path("specifications/wireshark"))`
@@ -108,8 +117,8 @@ lookup.
 - **Absences**: AVPs newer than the pinned dictionary, one grouped note per
   file. Most have an addition staged under
   [`integrations/wireshark/additions/`](../integrations/wireshark/README.md#additions).
-  oneM2M's are not among them: the dictionary declares no vendor 45687,
-  and adding one is a merge request of another shape.
+  oneM2M's are not among them: the dictionary declares no vendor 45687, and
+  adding one is a merge request of another shape.
 - **Untriaged**: RFC 7155's `Framed-IPX-Network` typed Unsigned32 against
   Wireshark's UTF8String, where RFC 4005 disagrees with itself; RFC 7155's
   `Framed-Appletalk-*` against everyone else's `AppleTalk`;
