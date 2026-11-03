@@ -140,6 +140,7 @@ def test_inline_text_fields_reject_values_that_cannot_round_trip(build, text):
         ("3GPP TS 29.272", "TS29.272"),
         ("RFC 6733", "RFC6733"),
         ("ETSI TS 283 034", "ETSI-TS283.034"),
+        ("ETSI TS 183 059-1", "ETSI-TS183.059-1"),
         ("ETSI ES 283 034", "ETSI-ES283.034"),
         ("3GPP2 X.S0057", "3GPP2-X.S0057"),
         ("3GPP2 X.S0013-014", "3GPP2-X.S0013-014"),

@@ -1092,7 +1092,7 @@ EXTERNAL_REF_RE = re.compile(rf"^(?:{EXTERNAL_REF_PATTERN})$")
 # it ("ETSI TS 283 034", "3GPP2 X.S0057", "oneM2M TS-0004"); OMA's names
 # carry no spaces and need no rule.
 _EXTERNAL_TITLE_RE = re.compile(
-    r"^(?:ETSI (?P<etsi>TS|ES) (?P<series>\d{3}) (?P<number>\d{3})"
+    r"^(?:ETSI (?P<etsi>TS|ES) (?P<series>\d{3}) (?P<number>\d{3})(?P<part>-\d+)?"
     r"|(?P<publisher>3GPP2|oneM2M) (?P<document>\S+))$"
 )
 
@@ -1118,6 +1118,7 @@ def spec_ref(specification: str) -> str:
     if match := _EXTERNAL_TITLE_RE.match(specification):
         reference = (
             f"ETSI-{match['etsi']}{match['series']}.{match['number']}"
+            f"{match['part'] or ''}"
             if match["etsi"]
             else f"{match['publisher']}-{match['document']}"
         )

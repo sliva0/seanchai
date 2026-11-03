@@ -804,8 +804,7 @@ def _publisher(entry: Entry) -> Any:
         return "3GPP"
     if entry.reference.startswith("RFC"):
         return "IETF"
-    # ETSI TS 183 059-1's title is its spec-ref, a part being no spaced title.
-    return re.split(r"[\s-]", specification, maxsplit=1)[0]
+    return specification.split(" ", 1)[0]
 
 
 def _source_kind(entry: Entry, link: str) -> Literal["etsi-pdf", "rfc-text", "other"]:
