@@ -90,11 +90,14 @@ def _avp_names(spec: ast.Specification) -> set[str]:
     """Every name `spec` uses as an AVP."""
     names = set()
     for section in spec.sections:
-        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp | ast.UndefinedAvp):
+        if isinstance(
+            section,
+            ast.GroupedAvp | ast.ReprintedAvp | ast.EnumeratedAvp | ast.UndefinedAvp,
+        ):
             names.add(section.name)
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
             names.update(row.name for row in section.rows)
-        if isinstance(section, ast.GroupedAvp | ast.Message):
+        if isinstance(section, ast.GroupedAvp | ast.ReprintedAvp | ast.Message):
             names.update(rule.name for rule in section.avps if rule.name != "AVP")
     return names
 
@@ -290,7 +293,7 @@ def _tokens(
             pass
         elif key in ("Section", "Page") and source:
             fields["source"] = Citation(section=source.section, page=source.page)
-        elif value in links.references and key in ("Bases", None):
+        elif value in links.references and key in ("Bases", "From", None):
             fields["target"] = links.references[value]
             if isinstance(section, ast.ReusedAvps) and key is None:
                 row_name = line.split(maxsplit=1)[0]

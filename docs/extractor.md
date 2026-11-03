@@ -119,6 +119,8 @@ The vocabulary, with the document that forced each:
   (TS 32.299 V11.20.0 clause 6.4.5).
 - `abnf-comments`: a member line's trailing `; comment` (TS 29.209, 29.061,
   29.109, 29.214).
+- `reprinted-avps`: a grouped rule in a procedure clause, under "The content of
+  X according IETF RFC n [m] is:" (TS 29.109, [below](#re-printed-rules)).
 - `elided-members`: a body's lone `…` or `...` line (TS 29.273, below).
 - `list-numbered-headings`: clause numbers that exist only in Word's list
   numbering (oneM2M TS-0004).
@@ -325,6 +327,38 @@ says where the document said it, as printed:
 
 A PDF's text layer loses the strike, so the docx's run formatting is what
 records it.
+
+### Re-printed rules
+
+TS 29.109 clauses 4.2, 5.2 and 5.4 follow MAR, BIR and GPR with "The content of
+Vendor-Specific-Application-ID according IETF RFC 6733 [33] is:" and that rule,
+differing only in what they gloss (the application id, `xxxxxxxx` in 5.4). The
+document says of them only what RFC 6733 says, and the file still records it,
+in one `Reprinted AVP` block per copy:
+
+```dad
+; Type: Reprinted AVP
+; Name: Vendor-Specific-Application-Id
+; Section: 4.2
+; Page: 15
+; From: RFC6733
+Vendor-Specific-Application-Id ::= < AVP header: 260 >
+     1* [ Vendor-Id ] ;; 3GPP is 10415
+     *1 { Auth-Application-Id } ;; 16777221
+     *1 { Acct-Application-Id } ;; Omitted
+```
+
+A `Grouped AVP` with a directive would have had every reader of definitions
+filter it out; a type of its own keeps it out of them by default, so
+`Model.definition((0, 260))` still answers RFC 6733, `Model.avps("TS29.109")`
+does not list it, and three blocks of one name are no duplicates. The linter
+holds a copy to the document it names
+([linter.md](linter.md#cross-file-rules)). The glosses stay, as `;;` comments on
+their members, since they are all that tells one copy from another; a command's
+glosses in the same clauses are still dropped under `abnf-comments`.
+
+A grouped rule in a procedure clause with no such sentence fails, naming its
+clause, as one under a document not declaring the quirk does.
 
 Real-document cases handled in code, kept as evidence in the code's
 comments: heading and rule-name mismatches, Diameter headers omitting the

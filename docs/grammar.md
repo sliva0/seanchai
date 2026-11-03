@@ -34,8 +34,9 @@ link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 transcribed-line = "; Transcribed: by hand from " URI   ; the rendering copied
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
-section       = application-scope / message / grouped-avp / enumerated-avp
-              / avp-table / reused-avps / registry / undefined-avp
+section       = application-scope / message / grouped-avp / reprinted-avp
+              / enumerated-avp / avp-table / reused-avps / registry
+              / undefined-avp
 ```
 
 A `spec-ref` names a document without its version. A 3GPP or IETF document is
@@ -157,6 +158,24 @@ avp-header-rule = avp-name " ::= < AVP header: " code [SP vendor-id] " >"
 code          = 1*DIGIT                 ; < 2^32
 vendor-id     = 1*DIGIT                 ; < 2^32; absent for IETF-space AVPs
 ```
+
+### Reprinted AVP
+
+```abnf
+reprinted-avp = "; Type: Reprinted AVP" NL
+                "; Name: " avp-name NL
+                source-ref
+                "; From: " spec-ref NL
+                avp-header-rule NL
+                *(avp-rule NL)
+```
+
+Another document's grouped AVP as this one prints it, under a sentence naming
+that document. It defines nothing, so a file can hold any number of blocks of
+one name: TS 29.109 prints RFC 6733's `Vendor-Specific-Application-Id` in
+clauses 4.2, 5.2 and 5.4, one block each. What the document glosses about a
+member is a trailing comment on it, as printed
+(`*1 { Auth-Application-Id } ;; 16777221`).
 
 ### AVP rule
 

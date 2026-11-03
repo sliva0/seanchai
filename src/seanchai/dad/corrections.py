@@ -1683,6 +1683,7 @@ _SECTION_TYPES = (
     ast.ApplicationScope,
     ast.Message,
     ast.GroupedAvp,
+    ast.ReprintedAvp,
     ast.EnumeratedAvp,
     ast.AvpTable,
     ast.ReusedAvps,

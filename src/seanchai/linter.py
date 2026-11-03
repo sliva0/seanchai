@@ -103,6 +103,8 @@ class _Index:
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     # `Undefined AVP` blocks: names the file declares defined nowhere.
     undefined: list[ast.UndefinedAvp] = field(default_factory=list)
+    # `Reprinted AVP` blocks: another document's rule, as this one prints it.
+    reprints: list[ast.ReprintedAvp] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
     # Names a re-used table cites from this file itself. TS 29.212's Gxx, S9,
@@ -140,7 +142,7 @@ def _index(spec: ast.Specification) -> _Index:
     for position, section in enumerate(spec.sections):
         at: ast.TreePath = ("sections", position)
         index.paths[id(section)] = at
-        if isinstance(section, ast.Message | ast.GroupedAvp):
+        if isinstance(section, ast.Message | ast.GroupedAvp | ast.ReprintedAvp):
             for number, rule in enumerate(section.avps):
                 index.paths[id(rule)] = (*at, "avps", number)
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
@@ -154,6 +156,8 @@ def _index(spec: ast.Specification) -> _Index:
             index.applications.append(section)
         elif isinstance(section, ast.UndefinedAvp):
             index.undefined.append(section)
+        elif isinstance(section, ast.ReprintedAvp):
+            index.reprints.append(section)
         elif isinstance(section, ast.AvpTable):
             index.tables.append(section)
         elif isinstance(section, ast.ReusedAvps):
@@ -1000,6 +1004,12 @@ class _Origin:
         )
 
 
+def _cited(index: _Index) -> list[str]:
+    """Every document the file names as an origin, by a re-used row or a
+    re-print."""
+    return sorted({*index.reused.values(), *(r.origin for r in index.reprints)})
+
+
 def _resolve_origins(
     spec: ast.Specification, index: _Index, books: corpus.Corpus
 ) -> tuple[dict[str, _Origin], list[Finding]]:
@@ -1007,7 +1017,7 @@ def _resolve_origins(
     for each it resolved outside `spec`'s release."""
     origins = {}
     crossings = []
-    for origin in sorted(set(index.reused.values())):
+    for origin in _cited(index):
         entry, across = books.resolution(origin, like=spec)
         if entry is None:
             continue
@@ -1093,7 +1103,7 @@ def _unresolved_origins(
     closes the gap, only a hand-written file or a catalogued document an
     extractor reads (oneM2M TS-0004).
     """
-    cited = sorted(set(index.reused.values()))
+    cited = _cited(index)
     missing: list[str] = []
     external: list[str] = []
     for origin in cited:
@@ -1513,6 +1523,75 @@ def _reprint_or_extension(index: _Index, origins: dict[str, _Origin]) -> list[Fi
                 Severity.NOTE, rule, message, where, paths=(index.path(definition),)
             )
         )
+    return findings
+
+
+def _reprints_agree_with_origin(
+    index: _Index, origins: dict[str, _Origin]
+) -> list[Finding]:
+    """What a `Reprinted AVP` block says against the document it names.
+
+    A re-print defines nothing, so it never meets the duplicate rules: TS 29.109
+    prints RFC 6733's `Vendor-Specific-Application-Id` three times. Its claim is
+    that it copies the origin, and that is what is checked. An origin that has
+    never heard of the name, or two codes for one AVP, is an error, as for a
+    re-used row. A body naming other members is a note: only the origin's editor
+    knows which copy is current. Occurrence qualifiers are not compared, since TS
+    29.109 prints `0*1 { Auth-Application-Id }`, the form RFC 3588 used, for what
+    RFC 6733 writes `[ Auth-Application-Id ]`.
+    """
+    findings = []
+    for reprint in index.reprints:
+        origin = reprint.origin
+        resolved = origins.get(origin)
+        if resolved is None:
+            continue
+        where = reprint.source.section
+        theirs = resolved.defined.get(reprint.name)
+        row = resolved.tabled.get(reprint.name)
+        if theirs is None and row is None:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "reprint-not-in-origin",
+                    f"{reprint.name} is printed as {origin}'s, which does not"
+                    " define it",
+                    where,
+                    origin,
+                )
+            )
+            continue
+        code = theirs.code if theirs is not None else row.code if row else None
+        if code is not None and code != reprint.code:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "reused-code-conflict",
+                    f"{reprint.name} is code {reprint.code} here and {code} in"
+                    f" {origin}",
+                    where,
+                    origin,
+                )
+            )
+            continue
+        if not isinstance(theirs, ast.GroupedAvp):
+            continue
+        ours = {rule.name for rule in reprint.avps}
+        base = {rule.name for rule in theirs.avps}
+        if ours != base:
+            added = ", ".join(sorted(ours - base)) or "nothing"
+            dropped = ", ".join(sorted(base - ours)) or "nothing"
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "reprint-differs",
+                    f"{reprint.name}'s body, against {origin}'s definition: adds"
+                    f" {added}, missing {dropped}",
+                    where,
+                    origin,
+                    paths=(index.path(reprint),),
+                )
+            )
     return findings
 
 
@@ -1974,6 +2053,7 @@ def lint_with_corpus(
         *_unresolved_origins(spec, index, origins, books),
         *_reused_avp_exists(index, origins),
         *_reprint_or_extension(index, origins),
+        *_reprints_agree_with_origin(index, origins),
         *_reused_rows_agree_with_origin(index, origins),
         *_reused_row_vendors_agree_with_origin(index, spec.vendor_id, origins),
         *_reused_cells_agree_with_origin(index, origins),

@@ -1551,6 +1551,85 @@ def test_a_base_missing_from_the_corpus_is_a_note_and_turns_the_rule_off():
     assert "unresolved-reference" not in rules
 
 
+def _reprinted(
+    name="Base-Grouped", code=260, *members, origin="RFC6733", section="4.2"
+):
+    return ast.ReprintedAvp(
+        name=name,
+        source=ast.SourceRef(section=section),
+        origin=origin,
+        code=code,
+        avps=tuple(
+            ast.AvpRule(name=member, presence=ast.Presence.OPTIONAL)
+            for member in members
+        ),
+    )
+
+
+def _rfc6733(*sections):
+    return ast.Specification(specification="RFC 6733", vendor_id=0, sections=sections)
+
+
+def test_a_reprint_printed_three_times_is_no_duplicate():
+    # TS 29.109 prints RFC 6733's rule in clauses 4.2, 5.2 and 5.4.
+    spec = _spec(
+        _reprinted("Base-Grouped", 260, "Member", section="4.2"),
+        _reprinted("Base-Grouped", 260, "Member", section="5.2"),
+        _reprinted("Base-Grouped", 260, "Member", section="5.4"),
+    )
+    origin = _rfc6733(_grouped_with("Base-Grouped", 260, "Member"))
+
+    assert linter.lint(spec) == []
+    assert not [
+        f
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule.startswith(("duplicate", "reprint", "reused"))
+    ]
+
+
+@pytest.mark.parametrize(
+    ("origin", "severity", "rule", "message"),
+    [
+        (
+            _grouped_with("Other", 261),
+            linter.Severity.ERROR,
+            "reprint-not-in-origin",
+            "Base-Grouped is printed as RFC6733's, which does not define it",
+        ),
+        (
+            _grouped_with("Base-Grouped", 299, "Member"),
+            linter.Severity.ERROR,
+            "reused-code-conflict",
+            "Base-Grouped is code 260 here and 299 in RFC6733",
+        ),
+        (
+            _grouped_with("Base-Grouped", 260, "Gone"),
+            linter.Severity.NOTE,
+            "reprint-differs",
+            "Base-Grouped's body, against RFC6733's definition: adds Member,"
+            " missing Gone",
+        ),
+    ],
+    ids=["undefined", "another-code", "other-members"],
+)
+def test_a_reprint_is_held_to_the_document_it_names(origin, severity, rule, message):
+    spec = _spec(_reprinted("Base-Grouped", 260, "Member"))
+
+    (finding,) = [
+        f
+        for f in linter.lint_with_corpus(spec, _books(_rfc6733(origin)))
+        if f.rule == rule
+    ]
+
+    assert (finding.severity, finding.message) == (severity, message)
+
+
+def test_a_reprint_of_a_document_the_corpus_lacks_says_so():
+    spec = _spec(_reprinted("Base-Grouped", 260, "Member"))
+
+    assert "origin-not-in-corpus" in _rules(linter.lint_with_corpus(spec, _books()))
+
+
 def _undefined(name="Mystery", section="6.3.1"):
     return ast.UndefinedAvp(name=name, source=ast.SourceRef(section=section))
 

@@ -610,7 +610,9 @@ def _procedure_messages(section, *quirk_names):
         [Quirk(name=name, reason="test") for name in quirk_names],
         None,
     )
-    return tgpp_docx._extract_messages(section, None, [], quirks, [])
+    return tgpp_docx._extract_messages(
+        section, None, [], quirks, [], reprints=[], glosses=[]
+    )
 
 
 def test_rfc_command_rules_names_a_rule_from_its_command_code():
@@ -659,7 +661,8 @@ def test_a_procedure_step_names_the_command_printed_under_it():
             "< Session-Id >",
             "",
             "{ Origin-Host } ; Address of BSF",
-            "The content of Vendor-Specific-Application-Id is:",
+            "The content of mandatory Vendor-Specific-Application-ID according IETF"
+            " RFC 6733 [33] is:",
             "<Vendor-Specific-Application-Id>::=<AVP header: 260>",
             "1* [Vendor-Id] ; 3GPP is 10415",
             "After that the BSF shall send a Bootstrapping-Info-Answer message (BIA)"
@@ -669,10 +672,68 @@ def test_a_procedure_step_names_the_command_printed_under_it():
         ),
         "procedure-commands",
         "abnf-comments",
+        "reprinted-avps",
     )
     assert (mar.name, mar.abbreviation) == ("Multimedia-Auth-Request", "MAR")
     assert [rule.name for rule in mar.avps] == ["Session-Id", "Origin-Host"]
     assert (bia.name, bia.abbreviation) == ("Bootstrapping-Info-Answer", "BIA")
+
+
+_REPRINT_LINES = (
+    "The content of Vendor-Specific-Application-ID according IETF RFC 6733 [33] is:",
+    "<Vendor-Specific-Application-Id>::=<AVP header: 260>",
+    "1* [Vendor-Id] ; 3GPP is 10415",
+    "0*1 {Auth-Application-Id} ; 16777220",
+)
+
+
+def test_a_reprinted_rule_keeps_its_clause_origin_and_glosses():
+    # TS 29.109 clause 5.2.
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    reprints, glosses = [], []
+    tgpp_docx._extract_messages(
+        _procedure_section(
+            "The NAF shall send a Example-Request message (EXR) to the BSF.",
+            "<Example-Request> ::= < Diameter Header: 321, REQ >",
+            "< Session-Id >",
+            *_REPRINT_LINES,
+        ),
+        None,
+        [],
+        Quirks(
+            [
+                Quirk(name=name, reason="test")
+                for name in ("procedure-commands", "abnf-comments", "reprinted-avps")
+            ],
+            None,
+        ),
+        [],
+        reprints=reprints,
+        glosses=glosses,
+    )
+
+    (reprint,) = reprints
+    assert reprint.origin == "RFC6733"
+    assert reprint.source.section == "4.4.2.2"
+    assert [(position, gloss) for _, position, gloss in glosses] == [
+        (0, "3GPP is 10415"),
+        (1, "16777220"),
+    ]
+
+
+def test_a_grouped_rule_in_a_procedure_clause_needs_the_quirk():
+    with pytest.raises(tgpp_docx.ExtractionError, match="`reprinted-avps` quirk"):
+        _procedure_messages(_procedure_section(*_REPRINT_LINES), "abnf-comments")
+
+
+def test_a_reprinted_rule_needs_the_sentence_naming_its_origin():
+    with pytest.raises(tgpp_docx.ExtractionError, match="saying what it copies"):
+        _procedure_messages(
+            _procedure_section("Then:", *_REPRINT_LINES[1:]),
+            "abnf-comments",
+            "reprinted-avps",
+        )
 
 
 def test_a_grouped_rule_in_a_command_clause_stays_malformed():

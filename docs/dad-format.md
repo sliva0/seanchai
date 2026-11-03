@@ -33,6 +33,7 @@ section, each starting with `; Type:`.
 | `Application Scope` | an application id the document states in prose, and its clauses  |
 | `Message`           | a command-code ABNF rule with its Diameter header                |
 | `Grouped AVP`       | `Name ::= < AVP header: code vendor-id >` plus its body          |
+| `Reprinted AVP`     | another document's grouped rule as this one prints it; no definition |
 | `Enumerated AVP`    | the header rule plus values and value ranges, or their source    |
 | `AVP Table`         | the document's own AVP table, one AVP per row                    |
 | `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
@@ -113,6 +114,16 @@ section, each starting with `; Type:`.
   `; RESERVED` line with the documents its note names and its purpose
   quoted as printed. Read as AVP definitions, the registry would become a
   second definer of every 3GPP AVP.
+- **A copy names what it copies.** TS 29.109 follows MAR, BIR and GPR with "The
+  content of Vendor-Specific-Application-ID according IETF RFC 6733 [33] is:"
+  and that rule, glossing what its members hold there (`; 3GPP is 10415`,
+  `; Omitted`). Each copy is a `Reprinted AVP` block with its clause, page and
+  `; From: RFC6733`, its glosses `;;` comments on its members. It is no
+  definition, which its type states: a reader of `Grouped AVP` blocks never
+  meets it, the document defining the AVP is still the only one answering for
+  it, and the three copies are no duplicates. A clause printing its own body
+  for an AVP it re-uses, with no sentence saying it copies, stays a `Grouped
+  AVP`, since that is a claim the linter weighs.
 - **A name defined nowhere says so.** RFC 4004 clause 9.4 makes
   `MIP-HA-to-MN-SPI` a required member of `MIP-HA-to-MN-MSA`, and neither
   the RFC, its errata nor IANA gives it a code or a clause. An `Undefined

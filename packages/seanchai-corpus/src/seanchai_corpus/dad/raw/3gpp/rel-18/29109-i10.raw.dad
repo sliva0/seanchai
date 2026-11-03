@@ -145,6 +145,39 @@
       * [ Route-Record ]
 
 
+; Type: Reprinted AVP
+; Name: Vendor-Specific-Application-Id
+; Section: 4.2
+; Page: 15
+; From: RFC6733
+Vendor-Specific-Application-Id ::= < AVP header: 260 >
+     1* [ Vendor-Id ] ;; 3GPP is 10415
+     *1 { Auth-Application-Id } ;; 16777221
+     *1 { Acct-Application-Id } ;; Omitted
+
+
+; Type: Reprinted AVP
+; Name: Vendor-Specific-Application-Id
+; Section: 5.2
+; Page: 24
+; From: RFC6733
+Vendor-Specific-Application-Id ::= < AVP header: 260 >
+     1* [ Vendor-Id ] ;; 3GPP is 10415
+     *1 { Auth-Application-Id } ;; 16777220
+     *1 { Acct-Application-Id } ;; Omitted
+
+
+; Type: Reprinted AVP
+; Name: Vendor-Specific-Application-Id
+; Section: 5.4
+; Page: 30
+; From: RFC6733
+Vendor-Specific-Application-Id ::= < AVP header: 260 >
+     1* [ Vendor-Id ] ;; 3GPP is 10415
+     *1 { Auth-Application-Id } ;; xxxxxxxx
+     *1 { Acct-Application-Id } ;; Omitted
+
+
 ; Type: AVP Table
 ; Section: 6.3
 ; Table: 6.1

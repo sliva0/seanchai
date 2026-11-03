@@ -87,6 +87,17 @@ first_version = "18.1.0"
 last_version = "18.1.0"
 
 [[quirk]]
+name = "reprinted-avps"
+reason = """
+    clauses 4.2, 5.2 and 5.4 follow MAR, BIR and GPR with 'The content of
+    Vendor-Specific-Application-ID according IETF RFC 6733 [33] is:' and that
+    rule, glossing what its members hold in each ('; 3GPP is 10415',
+    '; Omitted')
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[quirk]]
 name = "abnf-comments"
 reason = """
     those bodies gloss most members, '{ Origin-Host } ; Address of BSF'; unread,

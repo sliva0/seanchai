@@ -1313,6 +1313,13 @@ def built() -> model.Model:
 
 
 class TestOverTheCommittedCorpus:
+    def test_a_reprint_defines_nothing(self, built):
+        # TS 29.109 prints RFC 6733's rule three times, and RFC 6733 answers.
+        definition = built.definition((0, 260))
+        assert definition is not None
+        assert definition.defined_in == "RFC6733"
+        assert 260 not in {avp.code for avp in built.avps("TS29.109")}
+
     def test_29229s_commands_resolve_completely(self, built):
         """Every name in every Cx command body resolves; the only bare
         member is the any-AVP wildcard."""

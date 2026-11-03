@@ -40,7 +40,7 @@ import contextlib
 import dataclasses
 import enum
 import re
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -106,6 +106,13 @@ _MESSAGE_CAPTION_RE = re.compile(
     r"\b(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Message Contents\b"
 )
 _MESSAGE_ROW_RE = re.compile(r"^<\s*Diameter Header:\s*(?P<items>[0-9A-Z, ]+?)\s*>$")
+# Behind `reprinted-avps`, the sentence saying a rule copies another document's:
+# TS 29.109 clause 4.2, "The content of mandatory Vendor-Specific-Application-ID
+# according IETF RFC 6733 [33] is:".
+_REPRINT_INTRO_RE = re.compile(
+    r"^The content of (?:mandatory )?[A-Za-z-]+ according IETF RFC ?(?P<rfc>\d+)"
+    r" \[\d+\] is:$"
+)
 # Behind `procedure-commands`, a procedure step naming the command printed under
 # it: TS 29.109 clause 4.2, "... in the format of Multimedia-Auth-Request (MAR)
 # message.", and clause 5.2, "The NAF shall send a Bootstrapping-Info-Request
@@ -757,6 +764,8 @@ def _sections(
 # `elided-members`, by the message or grouped AVP they stood in: each the note
 # standing for it, with the number of members before it.
 type _Commented = list[tuple[ast.Message | ast.GroupedAvp, list[tuple[int, str]]]]
+# What a re-printed rule glosses (`reprinted-avps`), by the block and the member.
+type _Glosses = list[tuple[ast.ReprintedAvp, int, str]]
 
 
 def _abnf_body(
@@ -1047,6 +1056,8 @@ def _extract_messages(
     quirks: sources.Quirks,
     commented: _Commented,
     message_heading: bool = False,
+    reprints: list[ast.ReprintedAvp] | None = None,
+    glosses: _Glosses | None = None,
 ) -> list[ast.Message]:
     """A command section usually holds one ABNF, but can hold several — the
     same command under different application ids (TS 29.272 defines IDR/DSR/RSR
@@ -1069,10 +1080,15 @@ def _extract_messages(
             continue
         header = _DIAMETER_HEADER_RE.match(text)
         if header is None:
-            # TS 29.109 clauses 4.2, 5.2 and 5.4 print RFC 6733's
-            # `<Vendor-Specific-Application-Id>` between their commands, glossing
-            # what its members hold there: no command, and no clause of its own.
-            if prose_title and _AVP_HEADER_RE.match(text):
+            if (
+                prose_title
+                and reprints is not None
+                and glosses is not None
+                and (rule := _AVP_HEADER_RE.match(text))
+            ):
+                index = _extract_reprint(
+                    section, rule, lines, index, quirks, warnings, reprints, glosses
+                )
                 continue
             raise ExtractionError(f"{section.number}: malformed rule header {text!r}")
         if title is None:
@@ -1150,6 +1166,57 @@ def _extract_messages(
             return []
         raise ExtractionError(f"{section.number}: command section without ABNF")
     return messages
+
+
+def _extract_reprint(
+    section: _Section,
+    header: re.Match,
+    lines: list[_Line],
+    index: int,
+    quirks: sources.Quirks,
+    warnings: list[str],
+    reprints: list[ast.ReprintedAvp],
+    glosses: _Glosses,
+) -> int:
+    """A grouped rule printed in a procedure clause, under a sentence saying it
+    copies another document's: TS 29.109 clauses 4.2, 5.2 and 5.4 print RFC
+    6733's `<Vendor-Specific-Application-Id>` between their commands, glossing
+    what its members hold there. No command and no definition, so a block of its
+    own, its glosses kept. Returns the index after its body."""
+    name = header["name"]
+    if not quirks.enabled("reprinted-avps"):
+        raise ExtractionError(
+            f"{section.number}: grouped rule {name!r} printed in a procedure clause,"
+            " which this document's source declaration does not read (the"
+            " `reprinted-avps` quirk)"
+        )
+    intro = _REPRINT_INTRO_RE.match(lines[index - 2].text) if index > 1 else None
+    if intro is None:
+        raise ExtractionError(
+            f"{section.number}: grouped rule {name!r} under no sentence saying what"
+            " it copies"
+        )
+    quirks.fire("reprinted-avps")
+    avps, end, _ = _abnf_body(lines, index, name, section.number, quirks, warnings)
+    printed = [line.text for line in lines[index:end] if line.text]
+    if len(printed) != len(avps):
+        raise ExtractionError(
+            f"{section.number}: {name}'s body is not one member a line, so its"
+            " comments have no member to stay with"
+        )
+    reprint = ast.ReprintedAvp(
+        name=name,
+        source=ast.SourceRef(section=section.number),
+        origin=f"RFC{intro['rfc']}",
+        code=int(header["code"]),
+        vendor_id=None if header["vendor"] is None else int(header["vendor"]),
+        avps=avps,
+    )
+    reprints.append(reprint)
+    for position, text in enumerate(printed):
+        if gloss := text.partition(";")[2].strip():
+            glosses.append((reprint, position, gloss))
+    return end
 
 
 def _extract_table_message(
@@ -2891,6 +2958,9 @@ class _Collected:
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     grouped: list[ast.GroupedAvp] = field(default_factory=list)
     commented: _Commented = field(default_factory=list)
+    # Behind `reprinted-avps`: another document's rule, as printed here.
+    reprints: list[ast.ReprintedAvp] = field(default_factory=list)
+    glosses: _Glosses = field(default_factory=list)
     # Behind `vendor-avp-tables`: re-used blocks read from tables of other
     # vendors' AVPs, which pair with no AVP table (TS 32.299 7.3.1-7.5.1).
     vendor_reused: list[_ReusedTable] = field(default_factory=list)
@@ -2995,7 +3065,15 @@ def _collect(
             _DIAMETER_HEADER_RE.match(line.text) for line in section.lines
         ):
             collected.messages.extend(
-                _extract_messages(section, None, warnings, quirks, collected.commented)
+                _extract_messages(
+                    section,
+                    None,
+                    warnings,
+                    quirks,
+                    collected.commented,
+                    reprints=collected.reprints,
+                    glosses=collected.glosses,
+                )
             )
             continue
         for table in section.tables:
@@ -3446,13 +3524,16 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp], publisher: int) -> int:
     return vendors[0]
 
 
-def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
-    """File order: applications, messages and registries, then each
-    definition set's AVP table followed by its re-used table, then every
-    definition in document order."""
+def _assemble(
+    resolved: _Resolved, reprints: Sequence[ast.ReprintedAvp] = ()
+) -> tuple[ast.Section, ...]:
+    """File order: applications, messages, what the document re-prints and
+    registries, then each definition set's AVP table followed by its re-used
+    table, then every definition in document order."""
     sections: list[ast.Section] = [
         *resolved.applications,
         *resolved.messages,
+        *reprints,
         *resolved.registries,
     ]
     for avp_table, reused in resolved.pairs:
@@ -3562,6 +3643,12 @@ QUIRKS: dict[str, str] = {
         "keep a body's lone '…' or '...' line, where a rule leaves out what it"
         " does not change, as a comment where it stood (TS 29.273 clause"
         " 4.2.2.1.1)"
+    ),
+    "reprinted-avps": (
+        "read a grouped rule printed in a procedure clause, under 'The content"
+        " of X according IETF RFC n [m] is:', as a re-print of that RFC's rule,"
+        " keeping what its members' comments gloss (TS 29.109 clauses 4.2, 5.2"
+        " and 5.4)"
     ),
     "abnf-comments": (
         "read an ABNF member line's trailing '; comment' (RFC 5234 section"
@@ -3796,7 +3883,7 @@ def extract_with_comments(
             _publisher_vendor(specification),
         )
         patcher.finish()
-        sections = _assemble(_resolve(collected, quirks, warnings))
+        sections = _assemble(_resolve(collected, quirks, warnings), collected.reprints)
         quirks.finish()
         spec = ast.Specification(
             specification=specification,
@@ -3806,29 +3893,35 @@ def extract_with_comments(
             link=None if link is None else pydantic.HttpUrl(link),
             sections=sections,
         )
-        return spec, _comments(sections, collected.commented)
+        return spec, _comments(sections, collected.commented, collected.glosses)
 
 
 def _comments(
-    sections: tuple[ast.Section, ...], commented: _Commented
+    sections: tuple[ast.Section, ...], commented: _Commented, glosses: _Glosses
 ) -> formatter.Comments:
     """The commented-out lines, keyed by the path of what follows each:
-    the member after it in its body, or the body's end. A body is found by
-    identity, since it is the very object the file holds."""
+    the member after it in its body, or the body's end, and each gloss on its
+    member. A body is found by identity, since it is the very object the file
+    holds."""
+
+    def position_of(body: ast.Message | ast.GroupedAvp | ast.ReprintedAvp) -> int:
+        for index, section in enumerate(sections):
+            if section is body:
+                return index
+        raise ExtractionError(
+            f"{body.name}: the body its comments belong to is not in the file"
+        )
+
     standing: dict[ast.TreePath, list[str]] = {}
     for body, notes in commented:
-        index = next(
-            (index for index, section in enumerate(sections) if section is body),
-            None,
-        )
-        if index is None:
-            raise ExtractionError(
-                f"{body.name}: the body its lines were commented out of is not in"
-                " the file"
-            )
+        index = position_of(body)
         for position, note in notes:
             standing.setdefault(("sections", index, "avps", position), []).append(note)
-    return formatter.Comments(standing=standing)
+    trailing: dict[ast.TreePath, list[str]] = {
+        ("sections", position_of(body), "avps", position): [gloss]
+        for body, position, gloss in glosses
+    }
+    return formatter.Comments(standing=standing, trailing=trailing)
 
 
 def attach_pages(
