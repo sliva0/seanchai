@@ -9,7 +9,7 @@ disagreement informative. A row's vendor is read as the model reads it
 ([linter.md](linter.md#vendor-spaces)).
 
 ```sh
-uv run seanchai download          # fetches the dictionary too
+uv run seanchai download --only wireshark   # all this needs of a download
 uv run seanchai crosscheck        # the installed corpus, or name files
 ```
 
