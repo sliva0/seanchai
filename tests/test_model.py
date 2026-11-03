@@ -1696,9 +1696,10 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
     (Release 11)" [31] are the versions they name; TS 29.212's "3GPP2
     X.S0057-B" [24] is revision 0, standing in; and TS 32.299 V11.20.0's
     six non-specific Release 11 citations the corpus holds no Release 11
-    copy of, and TS 29.210 V6.7.0's and TS 29.234 V11.2.0's TS 29.229, are
-    Release 18's, standing in. Each AVP so reached says so, and nothing else
-    in the corpus resolves across releases."""
+    copy of, TS 29.210 V6.7.0's and TS 29.234 V11.2.0's TS 29.229, and TS 183
+    033's "TS 29.229 (V6.6.0)" [2], are Release 18's, standing in; ES 283 035's
+    TS 29.329 [7] is the latest edition, as its clause 2.1 says. Each AVP so
+    reached says so, and nothing else in the corpus resolves across releases."""
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
     vas = built.resolve("TS32.299", "VAS-ID")
@@ -1729,7 +1730,11 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         if found.across_releases is not None
     }
     assert crossings == {
+        ("ETSI-ES283.026", "TS29.209"),
         ("ETSI-ES283.034", "TS29.209"),
+        ("ETSI-ES283.035", "TS29.209"),
+        ("ETSI-ES283.035", "TS29.329"),
+        ("ETSI-TS183.033", "TS29.229"),
         ("ETSI-TS183.017", "TS29.209"),
         ("ETSI-TS183.017", "TS29.214"),
         ("TS29.140", "TS29.061"),
@@ -1909,7 +1914,10 @@ def _committed() -> corpus.Corpus:
 
 # The field holes of the record: the ones no undefined policy answers for.
 _FIELD_HOLES = {
-    ("RFC6736", "Egress-VLANID"),
+    ("3GPP2-X.S0013-014", "Charging-Information"),
+    ("ETSI-TS183.066", "CNGCF-Address"),
+    ("ETSI-TS183.066", "Privacy-Indicator"),
+    ("ETSI-TS183.066", "SIP-Outbound-Proxy"),
     ("TS29.061", "3GPP-Session-Stop-Indicator"),
     ("TS29.061 V6.15.0", "3GPP-GPRS-Negotiated-QoS-Profile"),
     ("TS29.061 V6.15.0", "3GPP-SGSN-MCC-MNC"),
@@ -1966,9 +1974,9 @@ def test_a_strict_build_refuses_exactly_the_recorded_holes():
     ids=str,
 )
 def test_an_answer_for_the_undefined_names_leaves_the_field_holes(policy):
-    """With the undefined names answered for, `strict=True` still refuses what
-    states no type or cites a document the corpus lacks, under every policy, and
-    the default build takes their entries' going unused as no staleness."""
+    """With the nine undefined names answered for, `strict=True` still refuses
+    what states no type, under every policy, and the default build takes the
+    nine entries' going unused as no staleness."""
     books = _committed()
 
     with pytest.raises(model.IncompleteCorpusError) as raised:
@@ -2178,7 +2186,7 @@ class TestTheRecord:
             model.Model.build(corpus.Corpus([_entry(spec)]))
 
 
-def test_the_committed_corpus_declares_its_eleven_undefined_names():
+def test_the_committed_corpus_declares_its_ten_undefined_names():
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
     declared = {
         (each.reference, each.name, each.section, each.cited_in)
@@ -2188,7 +2196,6 @@ def test_the_committed_corpus_declares_its_eleven_undefined_names():
         ("RFC4004", "MIP-HA-to-MN-SPI", "9.4", ("9.4",)),
         ("RFC4004", "MIP-MN-to-FA-SPI", "9.5", ("9.5",)),
         ("RFC4004", "MIP-MN-to-HA-SPI", "9.6", ("9.6",)),
-        ("RFC5866", "Authorization-Session-Volume", "5.3", ("5.3", "5.5")),
         (
             "TS29.061",
             "Delegated-IPv6-Prefix",
@@ -2973,7 +2980,8 @@ class TestReadingsOfOneAvp:
             # RFC 8506 obsoletes RFC 4006.
             ("CC-Request-Type", "RFC8506"),
             # TS 29.212 cites itself from its Gxx tables, which is no re-use.
-            ("Charging-Rule-Install", "TS29.212"),
+            # By identity: 3GPP2 X.S0013-014 has one of that name in its space.
+            ((10415, 1001), "TS29.212"),
         ],
     )
     def test_definition_picks_among_documents_redefining_a_name(

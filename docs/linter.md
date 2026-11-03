@@ -222,19 +222,23 @@ What still reports, and why each stays:
   mention (TS 29.128's `Terminal-Information`, TS 29.272's
   `ProSe-Subscription-Data`, TS 29.283's `User-Identifier`, TS 29.338's
   `Serving-Node`, TS 29.234's `SIP-Auth-Data-Item`, and the ETSI
-  transcriptions' re-prints of each other's and TS 29.209's values).
+  transcriptions' re-prints of each other's and TS 29.209's values, ES 283
+  026's `Reservation-Priority` stopping at seven of TS 183 017's fifteen).
 - **`cross-release-origin`.** TS 32.299 cites TS 29.140 non-specifically,
   which reads as its final version; TS 32.299 V11.20.0's non-specific
   Release 11 references, and TS 29.210's and TS 29.234's of TS 29.229, are
-  answered by Release 18 copies standing in; ES 283 034 cites TS 29.209's
-  final version; TS 183 017 and oneM2M TS-0004 name releases; TS 29.212
-  names 3GPP2 X.S0057-B, for which revision 0 stands in.
+  answered by Release 18 copies standing in; ES 283 034, ES 283 035 and ES 283
+  026 cite TS 29.209's final version; TS 183 017 and oneM2M TS-0004 name
+  releases; TS 29.212 names 3GPP2 X.S0057-B, for which revision 0 stands in; TS
+  183 033 names TS 29.229 V6.6.0, for which V18.1.0 stands in; and ES 283 035's
+  TS 29.329 is the latest edition, as its clause 2.1 says.
 - **`origin-not-in-corpus`.** The older copies held for those citations
   cite in turn what the corpus holds at Release 18 only, and nothing
   stands in for them: TS 29.212 V11.19.0's `Trace-Data` has a body Release
   18's differs from, and no citation reaches them from oneM2M TS-0004.
 - **`external-origin-not-in-corpus`.** Both copies of TS 32.299, for
-  `OMA-DDS-Charging_Data`.
+  `OMA-DDS-Charging_Data`; TS 183 066, for TS 183 020 and TS 183 059-1; and
+  3GPP2 X.S0013-014, for X.S0013-006. Those three leave recorded holes.
 - **`member-marked-unused`.** TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
   ABNF lists both.
@@ -288,5 +292,9 @@ citing the clause that makes the override deliberate:
 - **`reused-extension`**: TS 32.299's `OC-OLR` ("It has been extended
   compared to the IETF RFC 7683") and TS 183 017's
   `Media-Component-Description` (table 7.3.3 NOTE 3).
+- **`reused-body-differs`, for an endorsement or an interface's own events**: TS
+  183 033's `SIP-Auth-Data-Item` ("is modified compared to 3GPP TS 29.229 [2] as
+  follows") and ES 283 026's `Specific-Action` (clause 6.4.13's "two new
+  events").
 - **`reused-row-mismatch`**: TS 32.299's `Supported-Features`, whose clause
   6.5.10.3 answers a server not supporting it "as per 'M' bit set rule".

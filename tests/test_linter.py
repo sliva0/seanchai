@@ -583,6 +583,19 @@ _RAW_ERRORS = {
     # sentence-cased names against the clauses' own six, and two Gq AVPs
     # whose sentences name them otherwise than table 7.3.3 does, so their
     # 3GPP vendor-id reads as the document's own.
+    # Clauses 6.3.13 and ZA.2 each print SIP-Auth-Data-Item as TS 29.229
+    # modified, in 3GPP's vendor space.
+    "ts183033-010200.raw.dad": [
+        "duplicate-definition",
+        "duplicate-identity",
+        "vendor-id-mismatch",
+        "vendor-id-mismatch",
+    ],
+    # Table 5.1-1's AVPs are 3GPP's in a file of 3GPP2's vendor, which clause
+    # 5.5 says in prose, and grouped formats print no vendor-id at all.
+    "xs0013-013-0_v1.0.raw.dad": ["vendor-id-mismatch"] * 11,
+    # The same, in clause 5.2.2.
+    "xs0013-014-0_v1.0.raw.dad": ["vendor-id-mismatch"] * 16,
     "ts183017-030201.raw.dad": [
         "duplicate-definition",
         "duplicate-enum-value",
@@ -685,6 +698,11 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         # 7.3.10-7.3.32 the Gq AVPs and ES 283 034's Globally-Unique-Address;
         # two of TS 183 017's carry another name until corrected.
         "es283034-020200": 1,
+        # ES 283 026 re-prints Gq's and e4's and Gq' AVPs it imports; TS 183
+        # 033's corrections give SIP-Auth-Data-Item the re-used row it lacks.
+        "es283026-010600": 11,
+        "ts183033-010200.raw": 0,
+        "ts183033-010200": 1,
         "ts183017-030201.raw": 9,
         "ts183017-030201": 11,
     }
@@ -1782,6 +1800,36 @@ _STANDING_CORPUS_NOTES = {
         "reused-body-differs": ["Reservation-Priority"],
         "reused-row-mismatch": ["Reservation-Priority"],
     },
+    # ES 283 026 cites TS 29.209 non-specifically and re-prints what it
+    # imports from it, ES 283 034 and TS 183 017. Clause 6.4.23 stops
+    # Reservation-Priority at PRIORITY-SEVEN where TS 183 017 goes on to
+    # FIFTEEN; clause 6.4.16 adds three members to Media-Component-Description
+    # without saying so; and Media-Type adds OTHER, as TS 183 017 does.
+    "es283026-010600.dad": {
+        "cross-release-origin": ["TS29.209"],
+        "reused-body-differs": ["Reservation-Priority"],
+        "reused-extension": ["Media-Component-Description", "Media-Type"],
+        "reused-reprint": [
+            "Abort-Cause",
+            "Flow-Grouping",
+            "Flow-Status",
+            "Flow-Usage",
+            "Flows",
+            "Globally-Unique-Address",
+            "Media-Sub-Component",
+        ],
+    },
+    # ES 283 035 cites TS 29.209, which ends at V6.8.0, and TS 29.329, whose
+    # latest edition its clause 2.1 says it means.
+    "es283035-020501.dad": {"cross-release-origin": ["TS29.209", "TS29.329"]},
+    # TS 183 033 names TS 29.229 V6.6.0, which V18.1.0 stands in for.
+    "ts183033-010200.dad": {"cross-release-origin": ["TS29.229"]},
+    # TS 183 066 imports from two documents the corpus does not hold, and 3GPP2
+    # X.S0013-014 from one.
+    "ts183066-020101.dad": {
+        "external-origin-not-in-corpus": ["ETSI-TS183.020, ETSI-TS183.059-1"]
+    },
+    "xs0013-014-0_v1.0.dad": {"external-origin-not-in-corpus": ["3GPP2-X.S0013-006"]},
     # oneM2M cites TS 32.299 [31], "Release 11", for Node-Id and
     # Service-Information: V11.20.0.
     "ts-0004-v2_35_0.dad": {"cross-release-origin": ["TS32.299"]},
@@ -1872,6 +1920,12 @@ _STANDING_CORPUS_NOTES = {
 # Notes the specifications' corrections modules accept as overrides their
 # documents state, by acceptance (docs/linter.md#standing-findings).
 _ACCEPTED_CORPUS_NOTES = {
+    "es283026-010600.dad": {
+        "reused-body-differs": ["ETSI-ES283.026.py#specific-action-rq-events"]
+    },
+    "ts183033-010200.dad": {
+        "reused-body-differs": ["ETSI-TS183.033.py#sip-auth-data-item-endorsed-change"]
+    },
     "ts183017-030201.dad": {
         "reused-extension": ["ETSI-TS183.017.py#media-component-description-extension"],
     },

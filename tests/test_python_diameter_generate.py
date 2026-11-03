@@ -129,7 +129,7 @@ def test_every_module_imports_as_library_classes_and_registers_nothing(package):
         """,
     )
     modules, directions = map(int, output.split())
-    assert modules == 81
+    assert modules == 80
     assert directions > 300
 
 
