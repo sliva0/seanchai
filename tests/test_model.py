@@ -2208,6 +2208,7 @@ def test_the_committed_corpus_declares_its_twelve_undefined_names():
             "16a.4.1",
             ("16a.4.1", "16a.4.2", "16a.4.3"),
         ),
+        ("TS29.561", "Delegated-IPv6-Prefix", "12.6.2", ("12.6.2", "12.6.3")),
         ("TS29.154", "External-Group-Identifier", "A.6.6.2", ("A.6.6.2",)),
         ("TS29.234", "Error-Cause", "4.4.2.1", ("4.4.2.1", "5.5.1")),
         ("TS29.345", "ProSe-Query-Code", "6.3.53", ("6.3.53", "6.3.54")),
