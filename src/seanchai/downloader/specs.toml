@@ -555,6 +555,17 @@ title = """
 url = "https://www.etsi.org/deliver/etsi_es/283000_283099/283035/02.05.01_60/es_283035v020501p.pdf"
 
 [[transcribed]]
+reference = "ETSI-ES283.026"
+title = """
+    Telecommunications and Internet converged Services and Protocols for
+    Advanced Networking (TISPAN); Resource and Admission Control; Protocol for
+    QoS reservation information exchange between the Service Policy Decision
+    Function (SPDF) and the Access-Resource and Admission Control Function
+    (A-RACF) in the Resource and Protocol specification
+    """
+url = "https://www.etsi.org/deliver/etsi_es/283000_283099/283026/01.06.00_60/es_283026v010600p.pdf"
+
+[[transcribed]]
 reference = "3GPP2-X.S0057"
 title = "E-UTRAN - eHRPD Connectivity and Interworking: Core Network Aspects"
 url = "http://www.3gpp2.org/Public_html/Specs/X.S0057-0_v2.0_091215.pdf"

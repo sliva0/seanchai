@@ -1,0 +1,50 @@
+# Source declarations for ETSI ES 283 026 (Protocol for QoS reservation
+# information exchange between the SPDF and the A-RACF in the Resource and
+# Protocol specification; the Rq interface). Applied to the lines of the hand
+# transcription in edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "< AVP header: x >"
+replace = "< AVP header: 510 >"
+section = "6.4.10"
+reason = """
+    clause 6.4.10's AVP format prints the code as 'x'; the clause's sentence
+    ('The Flows AVP (AVP code 510)') and table 6's Flows row give 510
+    """
+first_version = "1.6.0"
+last_version = "1.6.0"
+
+[[patch]]
+find = "Media-Sub-Component AVP"
+replace = "Media-Sub-Component"
+section = "6.4.2"
+reason = """
+    table 6's name cell carries the ' AVP' of a clause heading; clause 6.4.18's
+    sentence and the Media-Component-Description format (6.4.16) name the AVP
+    Media-Sub-Component
+    """
+first_version = "1.6.0"
+last_version = "1.6.0"
+
+[[patch]]
+find = "OTHER       = 0xFFFFFFFF"
+replace = "OTHER       = 4294967295"
+section = "6.4.19"
+reason = """
+    clause 6.4.19 alone writes a value in hexadecimal, OTHER (0xFFFFFFFF); the
+    grammar's value is decimal, and TS 183 017 clause 7.3.29 tabulates the same
+    value
+    """
+first_version = "1.6.0"
+last_version = "1.6.0"
+
+[[patch]]
+find = "P     -       -       Y"
+replace = "P     -       -       Yes"
+section = "6.4.1"
+reason = """
+    table 5 writes 'Y' under May Encr.; the grammar's cell is Yes or No
+    """
+first_version = "1.6.0"
+last_version = "1.6.0"
