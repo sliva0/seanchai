@@ -41,6 +41,7 @@ from typing import Any
 
 from ..errors import MissingExtraError
 from .catalog import (
+    SOURCES,
     Catalog,
     DownloadError,
     OneM2MSpec,
@@ -90,6 +91,22 @@ MANIFEST = "manifest.json"
 STAGING = ".staging"
 PREVIOUS = ".previous"
 VERSIONS = "versions"
+# The dictionary's listing, in the tag's cache beside its files.
+WIRESHARK_LISTING = ".listing.json"
+# Under the published tree, what each source holds. `converted/` mirrors the
+# extracted path, so it is split between the two sources that have conversions.
+SOURCE_TREES = {
+    "3gpp": ("3gpp", "converted/3gpp"),
+    "onem2m": ("onem2m", "converted/onem2m"),
+    "rfc": ("rfc",),
+    "wireshark": ("wireshark",),
+}
+SOURCE_OF_FAMILY = {
+    "3GPP": "3gpp",
+    "oneM2M": "onem2m",
+    "IETF": "rfc",
+    "Wireshark": "wireshark",
+}
 
 
 @dataclass
@@ -250,7 +267,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-Validator = Callable[[Path], None]
+Validator = Callable[[Path], object]
 
 
 def _extra(module: str) -> Any:
@@ -1011,6 +1028,22 @@ def validate_wireshark_file(path: Path) -> None:
         raise DownloadError(f"{path.name} contains no markup")
 
 
+def wireshark_names(listing: Path) -> list[str]:
+    """The dictionary's file names, from a saved GitLab tree listing."""
+    try:
+        entries = json.loads(listing.read_bytes().decode("utf-8"))
+        names = sorted(
+            entry["name"] for entry in entries if entry.get("type") == "blob"
+        )
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        raise DownloadError(
+            f"cannot read the Wireshark dictionary listing: {error}"
+        ) from error
+    if not names:
+        raise DownloadError("the Wireshark dictionary listing is empty")
+    return names
+
+
 def download_wireshark(
     dictionary: WiresharkDictionary, output: Path, tree: Path
 ) -> DownloadRecord:
@@ -1019,25 +1052,16 @@ def download_wireshark(
     One record for the whole directory: the files only mean anything
     together (dictionary.xml includes the vendor files as XML entities), so
     the manifest treats them as one artifact whose hash is the hash of the
-    per-file hashes in name order. The cache keeps one directory per tag, and
-    the published `wireshark/` holds the pinned tag's files and no other's.
+    per-file hashes in name order. The cache keeps one directory per tag, the
+    listing included since a tag does not move, and the published `wireshark/`
+    holds the pinned tag's files and no other's.
     """
     tree_url = WIRESHARK_TREE_URL.format(
         path=urllib.parse.quote(dictionary.path, safe=""), tag=dictionary.tag
     )
-    try:
-        entries = json.loads(request_bytes(tree_url).decode("utf-8"))
-        names = sorted(
-            entry["name"] for entry in entries if entry.get("type") == "blob"
-        )
-    except (ValueError, KeyError, TypeError) as error:
-        raise DownloadError(
-            f"cannot read the Wireshark dictionary listing: {error}"
-        ) from error
-    if not names:
-        raise DownloadError(
-            f"the Wireshark dictionary listing at {dictionary.tag} is empty"
-        )
+    listing = output / CACHE / "wireshark" / dictionary.tag / WIRESHARK_LISTING
+    atomic_download(tree_url, listing, validate=wireshark_names)
+    names = wireshark_names(listing)
     files = []
     digest = hashlib.sha256()
     total = 0
@@ -1099,10 +1123,17 @@ def describe(record: DownloadRecord) -> str:
 
 
 def write_manifest(
-    tree: Path, release: int, pdfs: bool, records: list[DownloadRecord]
+    tree: Path,
+    release: int | None,
+    pdfs: bool | None,
+    records: list[DownloadRecord],
+    sources: Iterable[str] = SOURCES,
 ) -> Path:
     """Write `tree`'s manifest.json. `tree` is staged, so no temporary file:
-    a half-written manifest is never published."""
+    a half-written manifest is never published.
+
+    `sources` is what the tree holds, and `release` and `pdfs` describe its 3GPP
+    documents, None without any."""
     # A pinned version shares its identifier with the catalog's release of
     # the same document; the version keeps the order stable.
     records = sorted(
@@ -1121,6 +1152,7 @@ def write_manifest(
         "include_pdfs": pdfs,
         "artifact_count": len(records),
         "artifacts": [asdict(record) for record in records],
+        "sources": sorted(sources),
     }
     path = tree / MANIFEST
     try:
@@ -1143,6 +1175,78 @@ def refuse_failed_swap(destination: Path) -> None:
             f"{destination / PREVIOUS} holds the tree a failed swap could not"
             f" restore; move its entries back into {destination} or delete it"
         )
+
+
+@dataclass(frozen=True)
+class _Kept:
+    """What a partial download keeps of the manifest it replaces."""
+
+    records: list[DownloadRecord]
+    sources: frozenset[str]
+    release: int | None
+    pdfs: bool | None
+
+
+def _record(artifact: dict) -> DownloadRecord:
+    record = DownloadRecord(**artifact)
+    if artifact.get("conversions") is not None:
+        record.conversions = [Conversion(**each) for each in artifact["conversions"]]
+    return record
+
+
+def _kept(destination: Path, selected: frozenset[str]) -> _Kept:
+    """What `destination`'s manifest holds beyond the sources `selected`.
+
+    Read before anything is fetched: a record whose files have gone would
+    publish a manifest describing what is not there, so it stops the run.
+    """
+    path = destination / MANIFEST
+    # A full run replaces the manifest whatever it holds, readable or not.
+    if selected == frozenset(SOURCES) or not path.exists():
+        return _Kept([], frozenset(), None, None)
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        artifacts = manifest["artifacts"]
+        # A manifest with no `sources` predates partial downloads, so whatever
+        # its records come from is what it holds.
+        held = manifest.get("sources") or {
+            SOURCE_OF_FAMILY[artifact["family"]] for artifact in artifacts
+        }
+        records = [
+            _record(artifact)
+            for artifact in artifacts
+            if SOURCE_OF_FAMILY[artifact["family"]] not in selected
+        ]
+    except (OSError, ValueError, LookupError, TypeError, AttributeError) as error:
+        raise DownloadError(
+            f"cannot read {path} to keep what it holds: {error}; a full"
+            " `seanchai download` replaces it"
+        ) from error
+    for record in records:
+        source = SOURCE_OF_FAMILY[record.family]
+        for name in record.files:
+            if not (destination / name).is_file():
+                raise DownloadError(
+                    f"{path} lists {name}, which is gone: run"
+                    f" `seanchai download --only {source}`"
+                )
+    keeps_3gpp = "3gpp" in held and "3gpp" not in selected
+    return _Kept(
+        records,
+        frozenset(held) - selected,
+        manifest.get("3gpp_release") if keeps_3gpp else None,
+        manifest.get("include_pdfs") if keeps_3gpp else None,
+    )
+
+
+def _link_kept(destination: Path, tree: Path, sources: Iterable[str]) -> None:
+    """Link what `sources` hold from the published tree into the staged one, so
+    that the swap replaces the tree whole as it does for a full download."""
+    for source in sources:
+        for name in SOURCE_TREES[source]:
+            for path in sorted((destination / name).rglob("*")):
+                if path.is_file():
+                    link_file(path, tree / path.relative_to(destination))
 
 
 @contextlib.contextmanager
@@ -1172,6 +1276,7 @@ def download_corpus(
     catalog: Catalog | None = None,
     report: Callable[[str], None] = lambda message: None,
     convert: bool = True,
+    only: Iterable[str] | None = None,
 ) -> Path:
     """Download the catalog into `output` and publish it with `manifest.json`.
 
@@ -1183,26 +1288,43 @@ def download_corpus(
     printing means; anything that stops the download raises `DownloadError`.
     `convert=False` leaves legacy `.doc` archives unconverted, so LibreOffice
     is not needed; see `download_3gpp`.
+
+    `only` limits the run to those of `SOURCES`. What the manifest already holds
+    of the others is kept in it and in the tree, and its `sources` says what the
+    two hold. The cache makes a later run cheap: a file fetched by a partial run
+    is not fetched again by a full one. Without `seanchai[extract]`, only `rfc`
+    and `wireshark` can run.
     """
     if workers < 1:
         raise DownloadError("workers must be at least 1")
     release_marker(release)
-    require_extra()
+    selected = frozenset(SOURCES if only is None else only)
+    if unknown := selected - frozenset(SOURCES):
+        raise DownloadError(
+            f"no such source: {', '.join(sorted(unknown))};"
+            f" the sources are {', '.join(SOURCES)}"
+        )
+    if selected & {"3gpp", "onem2m"}:
+        require_extra()
 
     catalog = catalog if catalog is not None else load_catalog()
-    tgpp_specs, rfc_specs, wireshark, onem2m_specs = catalog[:4]
-    pinned_specs = catalog.pinned
+    tgpp_specs = catalog.tgpp if "3gpp" in selected else ()
+    pinned_specs = catalog.pinned if "3gpp" in selected else ()
+    rfc_specs = catalog.rfc if "rfc" in selected else ()
+    onem2m_specs = catalog.onem2m if "onem2m" in selected else ()
     try:
         output = output.resolve()
         output.mkdir(parents=True, exist_ok=True)
     except OSError as error:
         raise DownloadError(f"cannot create the corpus directory: {error}") from error
     refuse_failed_swap(output)
+    kept = _kept(output, selected)
     with (
         staged(output) as tree,
         concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor,
     ):
-        report(f"Resolving 3GPP Release {release} artifacts...")
+        if "3gpp" in selected:
+            report(f"Resolving 3GPP Release {release} artifacts...")
         # Discovery is inside the boundary too: one archive listing per
         # specification, all of them before any download starts, so a
         # release missing several catalogued specifications names them all.
@@ -1258,7 +1380,10 @@ def download_corpus(
             executor.submit(download_onem2m, spec, output, tree, extract, convert)
             for spec in onem2m_specs
         )
-        jobs.append(executor.submit(download_wireshark, wireshark, output, tree))
+        if "wireshark" in selected:
+            jobs.append(
+                executor.submit(download_wireshark, catalog.wireshark, output, tree)
+            )
 
         records: list[DownloadRecord] = []
         for future in concurrent.futures.as_completed(jobs):
@@ -1270,7 +1395,16 @@ def download_corpus(
                 raise DownloadError(str(error)) from error
             records.append(record)
             report(describe(record))
-        write_manifest(tree, release, pdfs, records)
+        _link_kept(output, tree, kept.sources)
+        records.extend(kept.records)
+        fetched_3gpp = "3gpp" in selected
+        write_manifest(
+            tree,
+            release if fetched_3gpp else kept.release,
+            pdfs if fetched_3gpp else kept.pdfs,
+            records,
+            selected | kept.sources,
+        )
         publish(tree, output, PUBLISHED)
     manifest_path = output / MANIFEST
     report(f"Wrote {len(records)} artifacts and {manifest_path}")
@@ -1343,7 +1477,7 @@ def download_version(
             convert=convert,
         )
         report(describe(record))
-        write_manifest(tree, release, pdfs, [record])
+        write_manifest(tree, release, pdfs, [record], ("3gpp",))
         publish(staging, parent, [name])
     manifest_path = parent / name / MANIFEST
     report(f"Wrote {manifest_path}")

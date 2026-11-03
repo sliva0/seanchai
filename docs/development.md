@@ -22,10 +22,10 @@ The library's own are `pydantic` and `click`: `click` stays core because the
 `pypdf` are the `seanchai[extract]` extra, which the dev group installs. Only
 `extractor/tgpp_docx.py` and two validators in `downloader/core.py` touch them,
 and nothing imports either on the way to the model or the export: the catalog,
-which the export reads, is its own module, `downloader/catalog.py`. Without the extra, `MissingExtraError` names it, and
-`extract`, `regenerate` and a 3GPP or oneM2M `download` say so before doing
-anything. `extract-rfc` and `download --only rfc`, `--only wireshark` need no
-extra.
+which the export reads, is its own module, `downloader/catalog.py`. Without the
+extra, `MissingExtraError` names it, and `extract`, `regenerate` and a 3GPP or
+oneM2M `download` say so before doing anything. `extract-rfc` and `download
+--only rfc`, `--only wireshark` need no extra.
 
 ## Repository layout
 

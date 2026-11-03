@@ -685,6 +685,190 @@ def test_download_corpus_writes_a_sorted_manifest_end_to_end(
     assert not (output / ".staging").exists()
 
 
+def _partial_catalog(onem2m=()):
+    return downloader.Catalog(
+        (downloader.ThreeGppSpec("29.999", "Test TS"),),
+        (downloader.RfcSpec(9999, "Test RFC"),),
+        SHARK,
+        onem2m,
+    )
+
+
+def _sources_and_identifiers(output) -> tuple[list[str], list[str]]:
+    manifest = json.loads((output / "manifest.json").read_text())
+    return manifest["sources"], [each["identifier"] for each in manifest["artifacts"]]
+
+
+def test_a_partial_download_fetches_only_what_it_names(
+    tmp_path, local_http_server, monkeypatch
+):
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+
+    downloader.download_corpus(
+        output, only=["wireshark"], catalog=_partial_catalog(), extract=False
+    )
+
+    assert _sources_and_identifiers(output) == (["wireshark"], ["Wireshark v9.9.9"])
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["3gpp_release"] is None
+    assert manifest["include_pdfs"] is None
+    assert (output / "wireshark" / "dictionary.xml").is_file()
+    assert not (output / "3gpp").exists()
+    assert not (output / "rfc").exists()
+    assert not any("archive" in path for path, _ in local_http_server.requests)
+    assert not any("rfc" in path for path, _ in local_http_server.requests)
+
+
+def test_a_partial_download_keeps_the_other_sources_and_a_full_one_refetches_nothing(
+    tmp_path, local_http_server, monkeypatch
+):
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+    _archive_listing(
+        local_http_server, "29.999", **{"29999-i00": _zip_bytes(spec=b"body")}
+    )
+    catalog = _partial_catalog()
+
+    downloader.download_corpus(output, only=["wireshark"], catalog=catalog)
+    downloader.download_corpus(output, only=["rfc"], catalog=catalog)
+
+    assert _sources_and_identifiers(output) == (
+        ["rfc", "wireshark"],
+        ["RFC 9999", "Wireshark v9.9.9"],
+    )
+    assert (output / "wireshark" / "dictionary.xml").is_file()
+    assert (output / "rfc" / "rfc9999.txt").is_file()
+
+    fetched = dict(local_http_server.counts)
+    downloader.download_corpus(output, catalog=catalog, extract=False)
+
+    assert _sources_and_identifiers(output) == (
+        ["3gpp", "onem2m", "rfc", "wireshark"],
+        ["TS 29.999", "RFC 9999", "Wireshark v9.9.9"],
+    )
+    for path, count in fetched.items():
+        assert local_http_server.counts[path] == count, path
+    assert (output / "archives" / "3gpp-rel-18" / "29999-i00.zip").is_file()
+    assert (output / "rfc" / "rfc9999.txt").is_file()
+
+
+def test_a_partial_download_keeps_another_sources_conversions(
+    tmp_path, local_http_server, monkeypatch
+):
+    """`converted/` is one directory shared by two sources, so fetching one of
+    them must leave the other's half standing."""
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+    kept = {
+        "3gpp/Rel-18/TS_29.999/29999-i00.doc": b"doc",
+        "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx": b"docx",
+        "onem2m/Release-2/TS-0004/TS-0004.doc": b"onem2m doc",
+        "converted/onem2m/Release-2/TS-0004/TS-0004.docx": b"onem2m docx",
+    }
+    for name, content in kept.items():
+        (output / name).parent.mkdir(parents=True, exist_ok=True)
+        (output / name).write_bytes(content)
+    conversion = {
+        "file": "converted/3gpp/Rel-18/TS_29.999/29999-i00.docx",
+        "source": "3gpp/Rel-18/TS_29.999/29999-i00.doc",
+        "source_sha256": "0",
+        "converter": "soffice",
+        "command": ["soffice"],
+        "sha256": "0",
+        "size": 4,
+    }
+    (output / "manifest.json").write_text(
+        json.dumps(
+            {
+                "3gpp_release": 17,
+                "include_pdfs": False,
+                "artifacts": [
+                    {
+                        "family": "3GPP",
+                        "identifier": "TS 29.999",
+                        "title": "Test TS",
+                        "url": "http://example.com",
+                        "sha256": "0",
+                        "size": 3,
+                        "files": ["3gpp/Rel-18/TS_29.999/29999-i00.doc"],
+                        "source_version": "18.0.0",
+                        "conversions": [conversion],
+                    },
+                    {
+                        "family": "oneM2M",
+                        "identifier": "oneM2M TS-0004",
+                        "title": "Test",
+                        "url": "http://example.com",
+                        "sha256": "0",
+                        "size": 3,
+                        "files": ["onem2m/Release-2/TS-0004/TS-0004.doc"],
+                    },
+                ],
+            }
+        )
+    )
+
+    downloader.download_corpus(output, only=["rfc"], catalog=_partial_catalog())
+
+    for name, content in kept.items():
+        assert (output / name).read_bytes() == content
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["sources"] == ["3gpp", "onem2m", "rfc"]
+    # What the kept 3GPP documents were fetched under stays what it was.
+    assert manifest["3gpp_release"] == 17
+    assert manifest["include_pdfs"] is False
+    (kept_3gpp,) = (a for a in manifest["artifacts"] if a["family"] == "3GPP")
+    assert kept_3gpp["conversions"] == [conversion]
+
+
+def test_a_partial_download_refuses_a_manifest_whose_files_have_gone(
+    tmp_path, local_http_server, monkeypatch
+):
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+    catalog = _partial_catalog()
+    downloader.download_corpus(output, only=["wireshark"], catalog=catalog)
+    (output / "wireshark" / "dictionary.xml").unlink()
+    before = (output / "manifest.json").read_bytes()
+
+    with pytest.raises(downloader.DownloadError, match=r"--only wireshark"):
+        downloader.download_corpus(output, only=["rfc"], catalog=catalog)
+
+    assert (output / "manifest.json").read_bytes() == before
+    assert not (output / "rfc").exists()
+
+
+def test_a_partial_download_refuses_a_manifest_it_cannot_read(tmp_path):
+    output = tmp_path / "corpus"
+    output.mkdir()
+    (output / "manifest.json").write_text("not json")
+
+    with pytest.raises(downloader.DownloadError, match="cannot read"):
+        downloader.download_corpus(output, only=["rfc"], catalog=_partial_catalog())
+
+
+def test_a_partial_download_names_a_source_it_does_not_know(tmp_path):
+    with pytest.raises(downloader.DownloadError, match="no such source: pdfs"):
+        downloader.download_corpus(tmp_path, only=["pdfs"], catalog=_partial_catalog())
+
+
+def test_a_manifest_older_than_partial_downloads_keeps_what_its_records_say(
+    tmp_path, local_http_server, monkeypatch
+):
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+    catalog = _partial_catalog()
+    downloader.download_corpus(output, only=["wireshark"], catalog=catalog)
+    manifest = json.loads((output / "manifest.json").read_text())
+    del manifest["sources"]
+    (output / "manifest.json").write_text(json.dumps(manifest))
+
+    downloader.download_corpus(output, only=["rfc"], catalog=catalog)
+
+    assert _sources_and_identifiers(output)[0] == ["rfc", "wireshark"]
+
+
 def test_a_failed_run_leaves_the_previous_tree_and_manifest_as_they_were(
     tmp_path, local_http_server, monkeypatch
 ):

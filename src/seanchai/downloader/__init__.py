@@ -20,6 +20,7 @@ here is what the boundary promises. Only a 3GPP or oneM2M download needs the
 
 from .catalog import (
     CATALOG_PATH,
+    SOURCES,
     Catalog,
     DownloadError,
     OneM2MSpec,
@@ -33,6 +34,7 @@ from .core import Conversion, DownloadRecord, download_corpus, download_version
 
 __all__ = [
     "CATALOG_PATH",
+    "SOURCES",
     "Catalog",
     "Conversion",
     "DownloadError",

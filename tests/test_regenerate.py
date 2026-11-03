@@ -859,3 +859,42 @@ def test_adding_an_out_of_scope_document_says_why(tmp_path, reference):
     assert (refused.reference, refused.status) == (reference, "failed")
     assert "out of scope: " in regenerate.describe(refused)
     assert "no Diameter ABNF or AVP tables" in regenerate.describe(refused)
+
+
+_ORPHAN = "; Specification: 3GPP TS 29.999\n; Version: 1.0.0\n; Vendor-ID: 10415\n"
+
+
+def _rfc_only_manifest(root):
+    """What `seanchai download --only rfc` leaves, of an RFC the corpus lacks."""
+    (root / "rfc").mkdir(parents=True)
+    (root / "manifest.json").write_text(
+        json.dumps({"artifacts": [], "sources": ["rfc", "wireshark"]})
+    )
+    return root / "manifest.json"
+
+
+def test_a_partial_manifest_names_the_source_it_lacks(tmp_path):
+    manifest = _rfc_only_manifest(tmp_path / "specifications")
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "29999-100.dad").write_text(_ORPHAN)
+
+    report = _run(manifest, corpus, corpus)
+
+    assert report.missing_sources == ("3gpp",)
+    (outcome,) = report.failed
+    assert outcome.status == "not-in-manifest"
+    assert "seanchai download --only 3gpp" in (outcome.error or "")
+
+
+def test_a_whole_manifest_lacking_a_document_names_no_source(tmp_path):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"artifacts": []}))
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "29999-100.dad").write_text(_ORPHAN)
+
+    report = _run(manifest, corpus, corpus)
+
+    assert report.missing_sources == ()
+    assert report.failed[0].status == "not-in-manifest"

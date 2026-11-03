@@ -637,6 +637,58 @@ def test_download_takes_spec_and_version_together(tmp_path, arguments):
     assert not list(tmp_path.iterdir())
 
 
+def test_download_refuses_only_beside_spec_and_a_source_it_does_not_know():
+    for arguments in (
+        ["--only", "rfc", "--spec", "TS29.272", "--version", "18.6.0"],
+        ["--only", "pdfs"],
+    ):
+        result = CliRunner().invoke(main, ["download", *arguments])
+        assert result.exit_code == 2, result.output
+
+
+def test_download_lists_what_only_names():
+    result = CliRunner().invoke(main, ["download", "--list", "--only", "rfc"])
+
+    assert result.exit_code == 0
+    assert "RFC 6733" in result.stdout
+    assert "3GPP specifications" not in result.stdout
+    assert "Wireshark" not in result.stdout
+
+
+def test_regenerate_names_the_source_a_partial_download_lacks(tmp_path):
+    specifications = tmp_path / "specifications"
+    specifications.mkdir()
+    manifest = specifications / "manifest.json"
+    manifest.write_text('{"artifacts": [], "sources": ["wireshark"]}')
+    corpus = tmp_path / "corpus"
+    (corpus / "rfc").mkdir(parents=True)
+    source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
+    (corpus / "rfc" / "rfc6733.dad").write_text(source.read_text("utf-8"), "utf-8")
+    for option in ("sources", "corrections", "transcriptions"):
+        (tmp_path / option).mkdir()
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "regenerate",
+            "--manifest",
+            str(manifest),
+            "--corpus",
+            str(corpus),
+            "--sources",
+            str(tmp_path / "sources"),
+            "--corrections",
+            str(tmp_path / "corrections"),
+            "--transcriptions",
+            str(tmp_path / "transcriptions"),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "not-in-manifest" in result.stdout
+    assert "holds no rfc: run `seanchai download --only rfc`" in result.stderr
+
+
 def test_correct_command_keeps_the_raw_files_commented_out_members(tmp_path):
     # TS 32.299's struck members are commented out in its raw file.
     raw = tmp_path / "raw.dad"
