@@ -1,0 +1,19 @@
+[[quirk]]
+name = "body-clause-headings"
+reason = """
+clause 6.4.15's heading is printed as a body paragraph inside clause 6.4.14, so
+RIA-Flags' bit table would read as SGSN-Realm's
+"""
+
+[[patch]]
+find = "6.4.15 RIA-Flags"
+replace = "6.4.15 RIA-Flags AVP"
+exact = true
+count = 1
+section = "6.4.14"
+reason = """
+a heading printed as a body paragraph reads with its keyword; the table of
+contents and the AVP table name clause 6.4.15 RIA-Flags
+"""
+first_version = "18.0.0"
+last_version = "18.0.0"

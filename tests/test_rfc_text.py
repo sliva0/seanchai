@@ -805,3 +805,56 @@ def test_a_table_row_citing_its_clause_anchors_a_grouped_rule(tmp_path):
 def test_a_rule_under_a_prose_title_no_row_cites_is_an_illustration(tmp_path):
     spec = _read(tmp_path, _PROSE_TITLED + _ALLOCATION.format("7"))
     assert not _of(spec, ast.GroupedAvp)
+
+
+def test_result_codes_are_read_from_the_result_code_clause(tmp_path):
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(
+        _rfc(
+            "7.  Error Handling\n\n"
+            "   See DIAMETER_SUCCESS 2001 in prose, and\n\n"
+            "   DIAMETER_NOT_THE_CLAUSE 1000\n\n"
+            "7.1.  Result-Code AVP\n\n"
+            "   The Result-Code AVP (AVP Code 268) is of type Unsigned32.\n\n"
+            "7.1.1.  Success\n\n"
+            "   DIAMETER_SUCCESS 2001\n\n"
+            "      The request was successfully completed.\n\n"
+            "   ELECTION_LOST                       4003\n\n"
+            "7.2.  Other\n\n"
+            "   DIAMETER_NOT_THE_CLAUSE 1001\n\n"
+            "9.  Result Code AVP Values\n\n"
+            "      DIAMETER_ERROR_EAP_CODE_UNKNOWN (5048)\n\n"
+            "   DIAMETER_SUCCESS_RELOCATE_HA (Status Code 2009)\n"
+        ),
+        encoding="utf-8",
+    )
+
+    spec = rfc_text.extract(path)
+
+    first, second = [s for s in spec.sections if isinstance(s, ast.ValueTable)]
+    assert (first.avp, first.kind, first.source.section) == (
+        "Result-Code",
+        ast.ValueKind.RESULT_CODES,
+        "7.1",
+    )
+    assert [(r.name, r.value, r.section) for r in first.rows] == [
+        ("DIAMETER_SUCCESS", 2001, "7.1.1"),
+        ("ELECTION_LOST", 4003, "7.1.1"),
+    ]
+    assert [(r.name, r.value, r.section) for r in second.rows] == [
+        ("DIAMETER_ERROR_EAP_CODE_UNKNOWN", 5048, None),
+        ("DIAMETER_SUCCESS_RELOCATE_HA", 2009, None),
+    ]
+    assert parser.parse(formatter.format_spec(spec)) == spec
+
+
+def test_the_committed_rfc_6733_holds_every_clause_7_1_code():
+    spec = parser.parse((_CORPUS_DIR / "rfc" / "rfc6733.dad").read_text("utf-8"))
+
+    (table,) = [s for s in spec.sections if isinstance(s, ast.ValueTable)]
+    assert table.source.section == "7.1"
+    assert len(table.rows) == 33
+    assert table.rows[0] == ast.ValueRow(
+        name="DIAMETER_MULTI_ROUND_AUTH", value=1001, section="7.1.1"
+    )
+    assert ("ELECTION_LOST", 4003) in {(row.name, row.value) for row in table.rows}

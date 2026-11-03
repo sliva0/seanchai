@@ -2112,6 +2112,58 @@ def _prose_avp_origins(
     ]
 
 
+# The clause holding an RFC's result codes: RFC 6733 clause 7.1 "Result-Code AVP",
+# RFC 4006 clause 9 "Result Code AVP Values". Spelled out, since a code's other
+# appearances are examples and IANA tables.
+_RESULT_CLAUSE_RE = re.compile(r"Result[- ]Code(?: AVP)?(?: [Vv]alues)?")
+# "DIAMETER_SUCCESS 2001" with any run of spaces (RFC 6733, 4004, 4006), RFC 6942's
+# "DIAMETER_ERROR_EAP_CODE_UNKNOWN (5048)" and RFC 5778's "(Status Code 2009)". An
+# underscore tells a name from a word. RFC 6733's ELECTION_LOST has no DIAMETER_.
+_RESULT_VALUE_RE = re.compile(
+    r"\s*(?P<name>[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)"
+    r"\s+(?:(?P<value>\d+)|\((?:Status Code )?(?P<parenthesized>\d+)\))"
+)
+
+
+def _result_tables(sections: list[_DocSection]) -> list[ast.ValueTable]:
+    """A value table per result-code clause printing any code, its subclauses'
+    included. An RFC's codes are Result-Code's: Experimental-Result-Code holds
+    what others allocate (RFC 6733 clause 7.7)."""
+    tables = []
+    position = 0
+    while position < len(sections):
+        root = sections[position]
+        position += 1
+        if not _RESULT_CLAUSE_RE.fullmatch(root.title):
+            continue
+        tree = [root]
+        while position < len(sections) and sections[position].number.startswith(
+            f"{root.number}."
+        ):
+            tree.append(sections[position])
+            position += 1
+        rows = [
+            ast.ValueRow(
+                name=match["name"],
+                value=int(match["value"] or match["parenthesized"]),
+                section=None if section is root else section.number,
+            )
+            for section in tree
+            for text in section.texts
+            if (match := _RESULT_VALUE_RE.fullmatch(text))
+        ]
+        if rows:
+            tables.append(
+                ast.ValueTable(
+                    avp="Result-Code",
+                    kind=ast.ValueKind.RESULT_CODES,
+                    source=ast.SourceRef(section=root.number, page=root.page),
+                    rows=tuple(rows),
+                )
+            )
+    return tables
+
+
 def extract(
     text_path: Path | str,
     link: str | None = None,
@@ -2274,9 +2326,10 @@ def extract_with_comments(
         )
         quirks.finish()
         # File order matches the docx extractor's: messages in document order,
-        # the AVP table, then every definition in document order.
-        definitions.sort(
-            key=lambda definition: ast.section_sort_key(definition.source.section)
+        # the AVP table, then every definition and value table in document order.
+        ordered = sorted(
+            (*definitions, *_result_tables(document_sections)),
+            key=lambda definition: ast.section_sort_key(definition.source.section),
         )
         file_sections: tuple[ast.Section, ...] = (
             *messages,
@@ -2284,7 +2337,7 @@ def extract_with_comments(
             *moved,
             *noted,
             *reused,
-            *definitions,
+            *ordered,
         )
         spec = ast.Specification(
             specification=specification,

@@ -859,3 +859,16 @@ reason = """
     """
 first_version = "18.6.0"
 last_version = "18.6.0"
+
+[[patch]]
+find = "DIAMETER_ERROR_UNKNKOWN_DATA"
+replace = "DIAMETER_ERROR_UNKNOWN_DATA"
+exact = true
+count = 1
+section = "8.1.4"
+reason = """
+    table 8.1.4 misspells 5670, whose defining clause, TS 29.283's 7.4.3.12,
+    spells the word
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"

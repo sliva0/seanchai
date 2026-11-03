@@ -165,3 +165,12 @@ reason = """
     """
 first_version = "6.15.0"
 last_version = "6.15.0"
+
+[[quirk]]
+name = "spaced-heading-numbers"
+reason = """
+    clause 17.8, Gmb's Experimental-Result-Code values, is headed with a space
+    before its tab, so its codes read under no such clause
+    """
+first_version = "6.15.0"
+last_version = "6.15.0"
