@@ -35,23 +35,21 @@ independent reading of the same documents.
 
 ## Installing
 
-The library and the corpus are two packages, each versioned on its own:
-`seanchai` follows semantic versioning, and `seanchai-corpus` is versioned by
-the date the corpus was regenerated.
+Seanchaí needs Python 3.14 or newer. The library and the corpus are two
+packages, each versioned on its own: `seanchai` follows semantic versioning, and
+`seanchai-corpus`, which also installs alone on Python 3.10 or newer, is
+versioned by the date the corpus was regenerated.
 
 ```sh
-pip install seanchai[corpus]   # or seanchai and seanchai-corpus, pinned apart
+pip install "seanchai[corpus]"   # or seanchai and seanchai-corpus, pinned apart
 ```
 
 ```python
-from seanchai import corpus, model
+from seanchai import model
 
-built = model.Model.build(corpus.Corpus.installed())
+built = model.Model.installed()
 built.resolve("TS29.229", "Public-Identity")
 ```
-
-Working on Seanchaí itself is a clone and `uv sync` ([below](#development)),
-which installs both from the repository, the corpus included.
 
 ## Commands
 
@@ -71,58 +69,21 @@ seanchai export -o DIR                  # the corpus as JSON for the static site
 seanchai export -o DIR --include-pdfs --specifications specifications
 ```
 
-## Repository layout
-
-- `src/seanchai/`: `dad/` (AST, parser, formatter, corrections),
-  `extractor/`, `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`,
-  `oracle.py`, `corpus.py`, `model.py`, `correction_record.py`, `export.py`,
-  `export_schema.py`, `cli.py`.
-- `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
-  `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
-  release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
-  `raw/`, the record of known holes and the record of corrections
-  ([docs/dad-format.md][dad-format-the-corpus]).
-- `edits/sources/<SpecRef>.toml`: input patches and quirks per document.
-- `edits/corrections/<SpecRef>.py`: corrections per document.
-- `edits/transcriptions/<SpecRef>.dad`: documents no extractor reads, copied
-  by hand (ETSI ES 283 034, TS 183 017, 3GPP2 X.S0057).
-- `integrations/`: consumer scripts over the model, and staged Wireshark
-  dictionary patches.
-- `editors/`: `.dad` syntax highlighting for VS Code, Vim and Neovim.
-- `specifications/`: downloaded sources, git-ignored.
-- `docs/`: [dad-format][dad-format], [grammar][grammar],
-  [extractor][extractor], [corrections][corrections],
-  [downloader][downloader], [linter][linter],
-  [oracle][oracle], [consumers][consumers],
-  [development][development], and the [website][website], plan and export.
-
 ## Development
 
-```sh
-uv sync
-uv run pytest -m "not sources"   # without the downloaded documents
-uv run pytest                    # everything; needs `seanchai download`
-uv run ruff check . && uv run ruff format .
-uv run rumdl check .
-uv run ty check && uv run basedpyright
-```
-
-See [docs/development.md][development].
+The repository layout and how to work on Seanchaí itself are in
+[docs/development.md][development].
 
 ## License
 
-MIT, see [LICENSE](LICENSE). The corpus packages text taken from 3GPP, ETSI,
+MIT, see [LICENSE][license]. The corpus packages text taken from 3GPP, ETSI,
 3GPP2, oneM2M and IETF documents; those documents stay under their
 publishers' terms.
 
 [consumers]: https://github.com/sliva0/senchai/blob/main/docs/consumers.md
 [corrections]: https://github.com/sliva0/senchai/blob/main/docs/corrections.md
-[dad-format]: https://github.com/sliva0/senchai/blob/main/docs/dad-format.md
-[dad-format-the-corpus]: https://github.com/sliva0/senchai/blob/main/docs/dad-format.md#the-corpus
 [development]: https://github.com/sliva0/senchai/blob/main/docs/development.md
-[downloader]: https://github.com/sliva0/senchai/blob/main/docs/downloader.md
 [extractor]: https://github.com/sliva0/senchai/blob/main/docs/extractor.md
-[grammar]: https://github.com/sliva0/senchai/blob/main/docs/grammar.md
+[license]: https://github.com/sliva0/senchai/blob/main/LICENSE
 [linter]: https://github.com/sliva0/senchai/blob/main/docs/linter.md
 [oracle]: https://github.com/sliva0/senchai/blob/main/docs/oracle.md
-[website]: https://github.com/sliva0/senchai/blob/main/docs/website.md

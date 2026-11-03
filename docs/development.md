@@ -14,6 +14,32 @@ The repository is a uv workspace of the two packages published to PyPI:
 `uv sync` installs both from the working tree, so in a checkout the installed
 corpus is the committed one, and the tests live at the root for both.
 
+## Repository layout
+
+- `src/seanchai/`: `dad/` (AST, parser, formatter, corrections), `extractor/`,
+  `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`, `oracle.py`,
+  `corpus.py`, `model.py`, `correction_record.py`, `export.py`,
+  `export_schema.py`, `errors.py`, `cli.py`.
+- `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
+  `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
+  release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
+  `raw/`, the record of known holes and the record of corrections
+  ([dad-format.md](dad-format.md#the-corpus)).
+- `edits/sources/<SpecRef>.toml`: input patches and quirks per document.
+- `edits/corrections/<SpecRef>.py`: corrections per document.
+- `edits/transcriptions/<SpecRef>.dad`: documents no extractor reads, copied
+  by hand (ETSI ES 283 034, TS 183 017, 3GPP2 X.S0057).
+- `integrations/`: consumer scripts over the model, and staged Wireshark
+  dictionary patches.
+- `editors/`: `.dad` syntax highlighting for VS Code, Vim and Neovim.
+- `specifications/`: downloaded sources, git-ignored.
+- `docs/`: [dad-format](dad-format.md), [grammar](grammar.md),
+  [extractor](extractor.md), [corrections](corrections.md),
+  [downloader](downloader.md), [linter](linter.md), [oracle](oracle.md),
+  [consumers](consumers.md), and the [website](website.md), plan and export.
+
+## Commands
+
 ```sh
 uv run pytest -m "not sources"   # tests that need no downloaded documents
 uv run pytest                    # all tests; needs `seanchai download` first
@@ -131,18 +157,33 @@ corpus usually moves the export's pin too ([above](#tests)).
 
 ## Adding a document
 
-1. `uv run seanchai regenerate --add TS29.305`. The document must be in the
-   downloader's catalog (`src/seanchai/downloader/specs.toml`) and readable
-   by the extractor; a shape it rejects fails with the reason.
-2. Lint the raw file, under the corpus's `raw/`, with `uv run seanchai lint`,
+`<SpecRef>` is the document's reference, as `TS29.272` or `RFC6733`.
+
+1. Give it an entry in the downloader's catalog,
+   `src/seanchai/downloader/specs.toml`: a `[[tgpp]]` or `[[rfc]]` table with
+   its number and title, and a `reason` unless the default says it. Then
+   `uv run seanchai download`.
+2. `uv run seanchai regenerate --add <SpecRef>`. The extractor has to be able to
+   read it: a shape it rejects fails with the reason, and an entry the catalog
+   marks `out_of_scope` (TS 29.305, say) is refused with that field's words
+   ([extractor.md](extractor.md#out-of-scope)).
+3. Lint the raw file, under the corpus's `raw/`, with `uv run seanchai lint`,
    which reads the committed corpus for the cross-file rules. Every error is a
    source typo (input patch), a reading the extractor should not make
    undeclared (quirk) or wrong data (correction).
-3. Declare the fixes, regenerate again, and commit the raw and corrected
-   pair with the edit files. A hole the new document brings fails the
-   default `Model.build` and `seanchai lint`: fix it, or record it in
+4. Declare the fixes in `edits/` and run `uv run seanchai regenerate` again,
+   which also rewrites the corrections record. A hole the new document brings
+   fails the default `Model.build` and `seanchai lint`: fix it, or record it in
    the corpus's `holes.toml` with its evidence
    ([consumers.md](consumers.md#known-holes)).
+5. Review what moved in the export and rewrite its pin:
+   `uv run pytest tests/test_export.py --update-export-pin`.
+6. Run `uv run pytest`. A document citing another across releases adds to the
+   citation pairs `tests/test_model.py` lists, and the corpus's findings are
+   pinned in `tests/test_linter.py`; read what each failure says before moving
+   its pin.
+7. Commit the raw and corrected pair with the edit files, the catalog entry, the
+   corrections record and the export pin.
 
 | Layer | Fixes | Where |
 |---|---|---|
@@ -226,10 +267,23 @@ A library release is the same with `uv version --package seanchai 0.2.0`, the
 tag `seanchai-v0.2.0` and `-f publish=seanchai`.
 
 `.github/workflows/release.yml` runs only when started by hand, and on Forgejo
-all of its jobs are skipped. It builds both packages, checks that a tag names
-the version it built, and runs the smoke test over the wheels. It publishes only
-from a run on a package's tag with `publish` naming that package, so a run
-anywhere else, or with the default `none`, is a dry run. Publishing uses PyPI
-trusted publishing, so no token is stored: each PyPI project trusts the
-repository `sliva0/senchai`, the workflow `release.yml` and the environment
-`pypi`, which has to exist on GitHub.
+all of its jobs are skipped. It runs the tests without sources, builds both
+packages, checks that a tag names the version it built, and runs the smoke test
+over the wheels. It publishes only from a run on a package's tag with `publish`
+naming that package. Publishing uses PyPI trusted publishing, so no token is
+stored: each PyPI project trusts the repository `sliva0/senchai`, the workflow
+`release.yml` and the environment `pypi`, which has to exist on GitHub.
+
+**A dry run** is every step but publishing, and is how to try a release before
+tagging it. A run anywhere but a package's tag, or with the default `none`,
+publishes nothing, and leaves the built distributions as artifacts of the run:
+
+```sh
+gh workflow run release.yml --ref main
+```
+
+**The first release** of each package needs its PyPI project first, and a
+project that does not exist yet takes a *pending* trusted publisher, added under
+"Publishing" in the PyPI account with the names above; it becomes an ordinary
+trusted publisher on the first upload. Publish `seanchai-corpus` first: the
+library's `corpus` extra cannot install until the package it names exists.
