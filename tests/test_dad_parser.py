@@ -1129,3 +1129,98 @@ def test_a_commented_out_member_is_no_member_and_keeps_its_place():
         ],
     }
     assert formatter.format_spec(spec, comments) == text
+
+
+_VALUE_TABLES = """\
+; Specification: 3GPP TS 29.999
+; Version: 1.2.3
+; Vendor-ID: 10415
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.2
+; Page: 17
+DIAMETER_FIRST_REGISTRATION = 2001 ; 6.2.1.1
+"DIAMETER_ERROR_DATA SYNC"  = 5105 ; 6.2.2.1
+DIAMETER_LISTED             = 5999
+
+
+; Type: Value Table
+; AVP: ULR-Flags
+; Kind: bits
+; Section: 7.3.7
+; Table: 7.3.7/1
+; Page: 40
+Single-Registration-Indication = 0
+"S6a/S6d-Indicator"            = 1
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S6a/S6d
+; Section: 7.3.10.1
+; Table: 7.3.10/1
+SiFC          = 0  ; M
+"SMS in MME"  = 10 ; "O (NOTE 1)"
+Blank-Mark    = 11
+"""
+
+
+def test_value_tables_parse_with_their_directives_and_rows():
+    spec = parser.parse(_VALUE_TABLES)
+    codes, bits, features = [
+        section for section in spec.sections if isinstance(section, ast.ValueTable)
+    ]
+
+    assert (codes.avp, codes.kind) == (
+        "Experimental-Result-Code",
+        ast.ValueKind.RESULT_CODES,
+    )
+    assert codes.table is None
+    assert codes.source == ast.SourceRef(section="6.2", page=17)
+    assert codes.rows[0] == ast.ValueRow(
+        name="DIAMETER_FIRST_REGISTRATION", value=2001, section="6.2.1.1"
+    )
+    assert codes.rows[1].name == "DIAMETER_ERROR_DATA SYNC"
+    assert codes.rows[2].section is None
+    assert (bits.table, bits.kind) == ("7.3.7/1", ast.ValueKind.BITS)
+    assert bits.rows[1] == ast.ValueRow(name="S6a/S6d-Indicator", value=1)
+    assert (features.feature_list_id, features.application) == (1, "S6a/S6d")
+    assert [row.mark for row in features.rows] == ["M", "O (NOTE 1)", None]
+
+
+@pytest.mark.parametrize(
+    ("rows", "directives", "message"),
+    [
+        ("Name = x", "; AVP: A\n; Kind: bits", "malformed value row"),
+        ("Name = 1 ; M", "; AVP: A\n; Kind: bits", "a bit takes no"),
+        ("Name = 1 ; not a clause", "; AVP: A\n; Kind: result-codes", "section"),
+        ("Name = 1 ; -", "; AVP: A\n; Kind: features", "no mark"),
+        ("Name = 1", "; AVP: A\n; Kind: enum", "unknown kind"),
+        ("Name = 1", "; Kind: bits", "missing directive 'AVP'"),
+        ("Name = 1", "; AVP: A", "missing directive 'Kind'"),
+        ("", "; AVP: A\n; Kind: bits", "rows"),
+        (
+            "Name = 1",
+            "; AVP: A\n; Kind: bits\n; Application: Gx",
+            "features table's",
+        ),
+        (
+            "Name = 1",
+            "; AVP: A\n; Kind: features\n; Feature-List-ID: x",
+            "must be a number",
+        ),
+    ],
+)
+def test_malformed_value_tables_are_refused(rows, directives, message):
+    text = (
+        "; Specification: RFC 9999\n; Vendor-ID: 0\n\n\n; Type: Value Table\n"
+        f"{directives}\n; Section: 1\n{rows}\n"
+    )
+
+    with pytest.raises(parser.DadParseError, match=message):
+        parser.parse(text)
