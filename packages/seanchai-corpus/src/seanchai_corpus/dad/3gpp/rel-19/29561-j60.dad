@@ -1,0 +1,380 @@
+; Specification: 3GPP TS 29.561
+; Version: 19.6.0
+; Vendor-ID: 10415
+; Bases: RFC6733, RFC7155, RFC4072 ;; corrected: (TS29.561.py#bases-nasreq-eap)
+; Link: https://www.etsi.org/deliver/etsi_ts/129500_129599/129561/19.06.00_60/ts_129561v190600p.pdf
+
+
+; Type: Application Scope ;; inserted: (TS29.561.py#application-id-eap)
+; Name: Diameter EAP
+; Section: 12.1.1
+; Page: 58
+; Application-ID: 5
+; Applies-To: 12.6.2.*, 12.6.3.*
+
+
+; Type: Application Scope ;; inserted: (TS29.561.py#application-id-nasreq)
+; Name: NASREQ
+; Section: 12.1.1
+; Page: 58
+; Application-ID: 1
+; Applies-To: 12.6.4.*, 12.6.5.*
+
+
+; Type: Message
+; Name: Diameter-EAP-Request, DER
+; Section: 12.6.2
+; Page: 77
+<Diameter-EAP-Request> ::= < Diameter Header: 268, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Origin-State-Id ]
+        [ Port-Limit ]
+        [ User-Name ]
+        { EAP-Payload }
+        [ EAP-Key-Name ]
+        [ Service-Type ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Callback-Number ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Connect-Info ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+      * [ Delegated-IPv6-Prefix ]
+        [ Framed-IP-Netmask ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ External-Identifier ]              ; bold
+        [ 3GPP-IMSI ]                        ; bold
+        [ 3GPP-NAI ]                         ; bold
+      * [ 3GPP-UE-MAC-Address ]              ; bold
+        [ 3GPP-Charging-Id ]                 ; bold
+        [ 3GPP-Charging-Id-v2 ]
+        [ 3GPP-PDP-Type ]                    ; bold
+        [ 3GPP-CG-Address ]                  ; bold
+        [ 3GPP-CHF-FQDN ]                    ; bold
+        [ 3GPP-GPRS-Negotiated-QoS-Profile ] ; bold
+        [ 3GPP-SGSN-Address ]                ; bold
+        [ 3GPP-GGSN-Address ]                ; bold
+        [ 3GPP-Session-S-NSSAI ]             ; bold
+        [ 3GPP-Session-Id ]                  ; bold
+        [ 3GPP-IMSI-MCC-MNC ]                ; bold
+        [ 3GPP-GGSN-MCC-MNC ]                ; bold
+        [ 3GPP-NSAPI ]                       ; bold
+        [ 3GPP-Selection-Mode ]              ; bold
+        [ 3GPP-Charging-Characteristics ]    ; bold
+        [ 3GPP-CG-IPv6-Address ]             ; bold
+        [ 3GPP-SGSN-IPv6-Address ]           ; bold
+        [ 3GPP-Serving-NF-FQDN ]             ; bold
+        [ 3GPP-GGSN-IPv6-Address ]           ; bold
+        [ 3GPP-SGSN-MCC-MNC ]                ; bold
+        [ 3GPP-NID ]                         ; bold
+        [ 3GPP-User-Location-Info ]          ; bold
+        [ 3GPP-RAT-Type ]                    ; bold
+        [ 3GPP-Negotiated-DSCP ]             ; bold
+        [ 3GPP-Allocate-IP-Type ]            ; bold
+        [ TWAN-Identifier ]                  ; bold
+        [ 3GPP-TNAP-Identifier ]             ; bold
+        [ 3GPP-HFC-NodeId ]                  ; bold
+        [ 3GPP-GCI ]                         ; bold
+        [ 3GPP-GLI ]                         ; bold
+        [ 3GPP-Line-Type ]                   ; bold
+        [ 3GPP-UE-Local-IP-Address ]         ; bold
+        [ 3GPP-UE-Source-Port ]              ; bold
+      * [ 3GPP-IP-Address-Pool-Info ]        ; bold
+      * [ Supported-Features ]               ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Diameter-EAP-Answer, DEA
+; Section: 12.6.3
+; Page: 78
+<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ EAP-Payload ]
+        [ EAP-Reissued-Payload ]
+        [ EAP-Master-Session-Key ]
+        [ EAP-Key-Name ]
+        [ Multi-Round-Time-Out ]
+        [ Accounting-EAP-Auth-Method ]
+        [ Service-Type ]
+      * [ Class ]
+        [ Acct-Interim-Interval ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Re-Auth-Request-Type ]
+        [ Session-Timeout ]
+      * [ Reply-Message ]
+        [ Origin-State-Id ]
+      * [ Filter-Id ]
+        [ Port-Limit ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+      * [ Delegated-IPv6-Prefix ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-Route ]
+        [ Framed-Pool ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ Framed-Routing ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+      * [ Tunneling ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ External-Identifier ]          ; bold
+        [ 3GPP-IPv6-DNS-Servers ]        ; bold
+        [ 3GPP-Notification ]            ; bold
+    *16 [ 3GPP-UE-MAC-Address ]          ; bold
+    *16 [ 3GPP-VLAN-Id ]                 ; bold
+        [ 3GPP-VLAN-Handling ]           ; bold
+        [ 3GPP-Authorization-Reference ] ; bold
+        [ 3GPP-Policy-Reference ]        ; bold
+        [ 3GPP-Session-AMBR ]            ; bold
+        [ 3GPP-Session-AMBR-v2 ]         ; bold
+     *2 [ 3GPP-IP-Address-Pool-Info ]    ; bold
+        [ 3GPP-MSK ]                     ; bold
+      * [ Supported-Features ]           ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 12.6.4
+; Page: 79
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Service-Type ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Acct-Session-Id ]
+      * [ Class ]
+        [ Reply-Message ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+    *16 [ 3GPP-UE-MAC-Address ]          ; bold
+    *16 [ 3GPP-VLAN-Id ]                 ; bold
+        [ 3GPP-VLAN-Handling ]           ; bold
+        [ 3GPP-Authorization-Reference ] ; bold
+        [ 3GPP-Policy-Reference ]        ; bold
+        [ 3GPP-Session-AMBR ]            ; bold
+        [ 3GPP-Session-AMBR-v2 ]         ; bold
+        [ 3GPP-MSK ]                     ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 12.6.5
+; Page: 80
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+        [ Service-Type ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Re-Auth-Request-Type ]
+      * [ Class ]
+      * [ Reply-Message ]
+      * [ Proxy-Info ]
+        [ 3GPP-RAT-Type ]           ; bold
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 12.4.0
+; Table: 12.4-1
+; Page: 72
+; Columns: Name                    Code   Section   Type          Must   May   S.not   M.not   Encrypt   Applicability
+3GPP-IMSI                          1      -         UTF8String    V      P     -       M       Yes       ""
+3GPP-Charging-Id                   2      -         OctetString   V      P     -       M       Yes       ""
+3GPP-PDP-Type                      3      -         Enumerated    V      P     -       M       Yes       ""
+3GPP-CG-Address                    4      -         OctetString   V      P     -       M       Yes       ""
+3GPP-GPRS-Negotiated-QoS-Profile   5      -         UTF8String    V      P     -       M       Yes       ""
+3GPP-SGSN-Address                  6      -         OctetString   V      P     -       M       Yes       ""
+3GPP-GGSN-Address                  7      -         OctetString   V      P     -       M       Yes       ""
+3GPP-IMSI-MCC-MNC                  8      -         UTF8String    V      P     -       M       Yes       ""
+3GPP-GGSN-MCC-MNC                  9      -         UTF8String    V      P     -       M       Yes       ""
+3GPP-NSAPI                         10     -         OctetString   V      P     -       M       Yes       ""
+3GPP-Selection-Mode                12     -         UTF8String    V      P     -       M       Yes       ""
+3GPP-Charging-Characteristics      13     -         UTF8String    V      P     -       M       Yes       ""
+3GPP-CG-IPv6-Address               14     -         OctetString   V      P     -       M       Yes       ""
+3GPP-SGSN-IPv6-Address             15     -         OctetString   V      P     -       M       Yes       ""
+3GPP-GGSN-IPv6-Address             16     -         OctetString   V      P     -       M       Yes       ""
+3GPP-IPv6-DNS-Servers              17     -         OctetString   V      P     -       M       Yes       ""
+3GPP-SGSN-MCC-MNC                  18     -         UTF8String    V      P     -       M       Yes       ""
+3GPP-IMEISV                        20     -         OctetString   V      P     -       M       Yes       ""
+3GPP-RAT-Type                      21     -         OctetString   V      P     -       M       Yes       ""
+3GPP-User-Location-Info            22     -         OctetString   V      P     -       M       Yes       ""
+3GPP-MS-TimeZone                   23     -         OctetString   V      P     -       M       Yes       ""
+3GPP-Packet-Filter                 25     -         OctetString   V      P     -       M       Yes       ""
+3GPP-Negotiated-DSCP               26     -         OctetString   V      P     -       M       Yes       ""
+3GPP-Allocate-IP-Type              27     -         OctetString   V      P     -       M       Yes       ""
+External-Identifier                28     -         OctetString   V      P     -       M       Yes       ""
+TWAN-Identifier                    29     -         OctetString   V      P     -       M       Yes       ""
+3GPP-User-Location-Info-Time       30     -         OctetString   V      P     -       M       Yes       ""
+3GPP-Secondary-RAT-Usage           31     -         OctetString   V      P     -       M       Yes       ""
+3GPP-UE-Local-IP-Address           32     -         OctetString   V      P     -       M       Yes       ""
+3GPP-UE-Source-Port                33     -         OctetString   V      P     -       M       Yes       ""
+3GPP-Notification                  110    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-UE-MAC-Address                111    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Authorization-Reference       112    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Policy-Reference              113    11.3.1    OctetString   V      P     -       M       Yes       "NOTE 4"
+3GPP-Session-AMBR                  114    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-NAI                           115    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Session-AMBR-v2               116    11.3.1    OctetString   V      P     -       M       Yes       eSessionAMBR
+3GPP-IP-Address-Pool-Info          118    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-VLAN-Id                       119    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-TNAP-Identifier               120    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-HFC-NodeId                    121    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-GLI                           122    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Line-Type                     123    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-NID                           124    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Session-S-NSSAI               125    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-CHF-FQDN                      126    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Serving-NF-FQDN               127    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Session-Id                    128    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-GCI                           129    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-DNAI                          130    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-RSN                           131    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Session-Pair-Id               132    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-Charging-Id-v2                133    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-VLAN-Handling                 134    11.3.1    OctetString   V      P     -       M       Yes       ""
+3GPP-MSK                           135    11.3.1    OctetString   V      P     -       M       Yes       ""
+Supported-Features                 628    -         Grouped       V      M     -       -       No        ""
+
+
+; Type: Reused AVPs
+; Section: 12.4.0
+; Table: 12.4-1
+; Page: 72
+; Columns: Name                    From       M-bit
+3GPP-IMSI                          TS29.061   -
+3GPP-Charging-Id                   TS29.061   -
+3GPP-PDP-Type                      TS29.061   -
+3GPP-CG-Address                    TS29.061   -
+3GPP-GPRS-Negotiated-QoS-Profile   TS29.061   -
+3GPP-SGSN-Address                  TS29.061   -
+3GPP-GGSN-Address                  TS29.061   -
+3GPP-IMSI-MCC-MNC                  TS29.061   -
+3GPP-GGSN-MCC-MNC                  TS29.061   -
+3GPP-NSAPI                         TS29.061   -
+3GPP-Selection-Mode                TS29.061   -
+3GPP-Charging-Characteristics      TS29.061   -
+3GPP-CG-IPv6-Address               TS29.061   -
+3GPP-SGSN-IPv6-Address             TS29.061   -
+3GPP-GGSN-IPv6-Address             TS29.061   -
+3GPP-IPv6-DNS-Servers              TS29.061   -
+3GPP-SGSN-MCC-MNC                  TS29.061   -
+3GPP-IMEISV                        TS29.061   -
+3GPP-RAT-Type                      TS29.061   -
+3GPP-User-Location-Info            TS29.061   -
+3GPP-MS-TimeZone                   TS29.061   -
+3GPP-Packet-Filter                 TS29.061   -
+3GPP-Negotiated-DSCP               TS29.061   -
+3GPP-Allocate-IP-Type              TS29.061   -
+External-Identifier                TS29.061   -
+TWAN-Identifier                    TS29.061   -
+3GPP-User-Location-Info-Time       TS29.061   -
+3GPP-Secondary-RAT-Usage           TS29.061   -
+3GPP-UE-Local-IP-Address           TS29.061   -
+3GPP-UE-Source-Port                TS29.061   -
+Supported-Features                 TS29.229   -
+
+
+; Type: AVP Table
+; Section: 17.4.1
+; Table: 17.4-1
+; Page: 92
+; Columns: Name   Code   Section   Type         Must   May   S.not   M.not   Encrypt   Applicability
+3GPP-S-NSSAI      200    16.3.1    UTF8String   V      P     -       M       Yes       ""
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: N6
+; Section: 12.4.1
+; Table: 12.4.1-1
+; Page: 75
+eSessionAMBR = 0 ; M
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 12.5
+; Page: 76
+DIAMETER_QOS_FLOW_DELETION_INDICATION = 2421
+
+
+; Type: Undefined AVP ;; inserted: (TS29.561.py#undefined-delegated-ipv6-prefix)
+; Name: Delegated-IPv6-Prefix
+; Section: 12.6.2
+; Page: 77
+; Note: "clause 2: [10] IETF RFC 4818: RADIUS Delegated-IPv6-Prefix Attribute"

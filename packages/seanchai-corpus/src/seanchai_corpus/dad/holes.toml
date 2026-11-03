@@ -207,6 +207,17 @@ reason = """
     """
 
 [[hole]]
+document = "TS29.561"
+name = "Delegated-IPv6-Prefix"
+missing = ["undefined"]
+reason = """
+    V19.6.0 clauses 12.6.2 and 12.6.3 list it in the DER and DEA bodies and no
+    table of the document holds it; clause 2 cites RFC 4818 [10], a RADIUS
+    attribute with no Diameter type or flags, which the corpus does not hold
+    (TS29.561.py#undefined-delegated-ipv6-prefix)
+    """
+
+[[hole]]
 document = "ETSI-TS183.020"
 name = "Privacy-Indicator"
 missing = ["flag_rules"]
