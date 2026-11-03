@@ -10,12 +10,13 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
+from urllib.parse import unquote, urlparse
 
 from ..errors import SeanchaiError
 from ..prose import collapse_fields
 
 # What `seanchai download --only` selects, and a manifest says it holds.
-SOURCES = ("3gpp", "onem2m", "rfc", "wireshark")
+SOURCES = ("3gpp", "onem2m", "rfc", "transcribed", "wireshark")
 
 
 class DownloadError(SeanchaiError, RuntimeError):
@@ -146,10 +147,26 @@ class PinnedThreeGppSpec:
 @dataclass(frozen=True)
 class TranscribedDocument:
     """A document the corpus holds as a hand transcription (`edits/
-    transcriptions/`), which no download fetches: only its title is here."""
+    transcriptions/`), and the PDF it was copied from.
+
+    No extractor reads the PDF, so `regenerate` never asks for it; the
+    self-hosted export carries it. `url` is the `; Transcribed:` of the file,
+    which `tests/test_transcription.py` holds them to.
+    """
 
     reference: str  # "ETSI-ES283.034"
     title: str
+    url: str
+
+    @property
+    def publisher(self) -> str:
+        """Who publishes it, the manifest's `family`: "ETSI" or "3GPP2"."""
+        return self.reference.split("-", 1)[0]
+
+    @property
+    def file_name(self) -> str:
+        """The rendering's name, which is what the export looks it up by."""
+        return unquote(urlparse(self.url).path).rsplit("/", 1)[-1]
 
 
 class Catalog(NamedTuple):

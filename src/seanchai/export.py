@@ -730,7 +730,7 @@ class _Sources:
         if include_pdfs and (specifications is None or not specifications.is_dir()):
             raise CorpusError(
                 "including PDFs needs a specifications directory: run"
-                " `seanchai download --only 3gpp`"
+                " `seanchai download --only 3gpp --only transcribed`"
             )
         self._output = output
         self._specifications = specifications
@@ -761,10 +761,8 @@ class _Sources:
         if self._include_pdfs and urlparse(link).path.lower().endswith(".pdf"):
             candidates = self._pdfs.get(unquote(urlparse(link).path.rsplit("/", 1)[-1]))
             if not candidates:
-                # No download fetches what a transcription was copied from.
                 remedy = (
-                    f"no download fetches a transcription's source, so put it"
-                    f" under {self._specifications}"
+                    "run `seanchai download --only transcribed`"
                     if spec.transcribed
                     else "run `seanchai download --only 3gpp`"
                 )

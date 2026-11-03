@@ -48,6 +48,7 @@ from .catalog import (
     PinnedThreeGppSpec,
     RfcSpec,
     ThreeGppSpec,
+    TranscribedDocument,
     WiresharkDictionary,
     load_catalog,
     parse_version,
@@ -86,25 +87,30 @@ SOFFICE_TIMEOUT = 600
 # swaps it in whole (`publish`). `versions/<SpecRef>/<version>/` holds an
 # older version fetched on request, as a tree of the same shape.
 CACHE = "archives"
-PUBLISHED = ("3gpp", "converted", "onem2m", "rfc", "wireshark")
+PUBLISHED = ("3gpp", "converted", "onem2m", "rfc", "transcriptions", "wireshark")
 MANIFEST = "manifest.json"
 STAGING = ".staging"
 PREVIOUS = ".previous"
 VERSIONS = "versions"
 # The dictionary's listing, in the tag's cache beside its files.
 WIRESHARK_LISTING = ".listing.json"
+# The PDFs the hand transcriptions were copied from, flat under their names.
+TRANSCRIPTIONS = "transcriptions"
 # Under the published tree, what each source holds. `converted/` mirrors the
 # extracted path, so it is split between the two sources that have conversions.
 SOURCE_TREES = {
     "3gpp": ("3gpp", "converted/3gpp"),
     "onem2m": ("onem2m", "converted/onem2m"),
     "rfc": ("rfc",),
+    "transcribed": (TRANSCRIPTIONS,),
     "wireshark": ("wireshark",),
 }
 SOURCE_OF_FAMILY = {
     "3GPP": "3gpp",
     "oneM2M": "onem2m",
     "IETF": "rfc",
+    "ETSI": "transcribed",
+    "3GPP2": "transcribed",
     "Wireshark": "wireshark",
 }
 
@@ -1018,6 +1024,30 @@ def download_rfc(spec: RfcSpec, output: Path, tree: Path) -> DownloadRecord:
     )
 
 
+def download_transcribed(
+    document: TranscribedDocument, output: Path, tree: Path
+) -> DownloadRecord:
+    """Fetch the PDF a hand transcription was copied from.
+
+    Its URL is the catalog's rather than one read off a listing, since the
+    transcription names that exact rendering: ETSI's deliver directory lists
+    later versions of these documents, and 3GPP2's archive no listing at all.
+    """
+    relative = Path(TRANSCRIPTIONS) / document.file_name
+    cached = output / CACHE / relative
+    atomic_download(document.url, cached, validate=validate_pdf)
+    link_file(cached, tree / relative)
+    return DownloadRecord(
+        family=document.publisher,
+        identifier=document.reference,
+        title=document.title,
+        url=document.url,
+        sha256=sha256_file(cached),
+        size=cached.stat().st_size,
+        files=[str(relative)],
+    )
+
+
 def validate_wireshark_file(path: Path) -> None:
     """The dictionary files are XML documents and XML entity fragments; an
     entity fragment has no prolog, so well-formedness cannot be required.
@@ -1297,6 +1327,9 @@ def download_corpus(
     two hold. The cache makes a later run cheap: a file fetched by a partial run
     is not fetched again by a full one. Without `seanchai[extract]`, only `rfc`
     and `wireshark` can run.
+
+    A `transcriptions/` from before this source existed, its PDFs placed by hand
+    and in no manifest, stays where it is until a run fetches `transcribed`.
     """
     if workers < 1:
         raise DownloadError("workers must be at least 1")
@@ -1307,7 +1340,7 @@ def download_corpus(
             f"no such source: {', '.join(sorted(unknown))};"
             f" the sources are {', '.join(SOURCES)}"
         )
-    if selected & {"3gpp", "onem2m"}:
+    if selected & {"3gpp", "onem2m", "transcribed"}:
         require_extra()
 
     catalog = catalog if catalog is not None else load_catalog()
@@ -1315,6 +1348,7 @@ def download_corpus(
     pinned_specs = catalog.pinned if "3gpp" in selected else ()
     rfc_specs = catalog.rfc if "rfc" in selected else ()
     onem2m_specs = catalog.onem2m if "onem2m" in selected else ()
+    transcribed = catalog.transcribed if "transcribed" in selected else ()
     try:
         output = output.resolve()
         output.mkdir(parents=True, exist_ok=True)
@@ -1383,6 +1417,10 @@ def download_corpus(
             executor.submit(download_onem2m, spec, output, tree, extract, convert)
             for spec in onem2m_specs
         )
+        jobs.extend(
+            executor.submit(download_transcribed, document, output, tree)
+            for document in transcribed
+        )
         if "wireshark" in selected:
             jobs.append(
                 executor.submit(download_wireshark, catalog.wireshark, output, tree)
@@ -1401,14 +1439,23 @@ def download_corpus(
         _link_kept(output, tree, kept.sources)
         records.extend(kept.records)
         fetched_3gpp = "3gpp" in selected
+        held = selected | kept.sources
         write_manifest(
             tree,
             release if fetched_3gpp else kept.release,
             pdfs if fetched_3gpp else kept.pdfs,
             records,
-            selected | kept.sources,
+            held,
         )
-        publish(tree, output, PUBLISHED)
+        publish(
+            tree,
+            output,
+            [
+                name
+                for name in PUBLISHED
+                if name != TRANSCRIPTIONS or "transcribed" in held
+            ],
+        )
     manifest_path = output / MANIFEST
     report(f"Wrote {len(records)} artifacts and {manifest_path}")
     return manifest_path

@@ -17,6 +17,7 @@ from conftest import _CORPUS_DIR
 from seanchai import export_schema
 from seanchai.cli import main
 from seanchai.corpus import Corpus, CorpusError
+from seanchai.downloader.catalog import load_catalog
 from seanchai.export import SYNTAX_FILE, export_corpus
 from seanchai.model import Model, ModelError
 
@@ -803,11 +804,11 @@ def test_export_copies_available_rfc_text_without_pdfs(tmp_path):
     assert all(d.source.text is None for d in index.documents if d is not doc)
 
 
-def test_a_transcriptions_missing_pdf_is_not_sent_to_the_downloader(tmp_path):
+def test_a_transcriptions_missing_pdf_names_its_download(tmp_path):
     empty = tmp_path / "specifications"
     empty.mkdir()
 
-    with pytest.raises(CorpusError, match="no download fetches") as refused:
+    with pytest.raises(CorpusError, match=r"seanchai download --only transcribed"):
         export_corpus(
             Corpus.load([_ETSI]),
             tmp_path / "out",
@@ -815,7 +816,21 @@ def test_a_transcriptions_missing_pdf_is_not_sent_to_the_downloader(tmp_path):
             specifications=empty,
         )
 
-    assert "seanchai download" not in str(refused.value)
+
+def test_an_export_finds_a_transcriptions_pdf_where_the_download_puts_it(tmp_path):
+    books = Corpus.load([_ETSI])
+    specifications = tmp_path / "specifications"
+    fetched = specifications / "transcriptions"
+    fetched.mkdir(parents=True)
+    for document in load_catalog().transcribed:
+        (fetched / document.file_name).write_bytes(b"%PDF-test")
+
+    output = tmp_path / "out"
+    index = export_corpus(
+        books, output, include_pdfs=True, specifications=specifications
+    )
+
+    assert all(doc.source.local for doc in index.documents)
 
 
 def test_export_cli_uses_explicit_corpus_and_reports_missing_sources(tmp_path):

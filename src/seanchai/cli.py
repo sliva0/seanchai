@@ -1301,7 +1301,8 @@ def _summary(counts, checked: int) -> str:
     multiple=True,
     type=click.Choice(SOURCES),
     help="Fetch only this source, keeping what the manifest holds of the others;"
-    " `wireshark` and `rfc` are small and need no extra. Repeatable.",
+    " `wireshark` and `rfc` are small and need no extra, and `transcribed` is"
+    " the PDFs the hand transcriptions were copied from. Repeatable.",
 )
 @click.option(
     "--spec",
@@ -1328,7 +1329,8 @@ def download(
     spec: str | None,
     spec_version: str | None,
 ) -> None:
-    """Download the curated 3GPP, RFC and oneM2M specification corpus.
+    """Download the curated specification corpus: 3GPP, RFC, oneM2M, and the
+    PDFs the hand transcriptions were copied from.
 
     Every entry is staged and the whole set replaces the previous download
     only when all of it succeeded; a failed run leaves the previous one and
@@ -1346,8 +1348,8 @@ def download(
     the others. What the download cache holds is not fetched again, by this run
     or a later full one.
 
-    A 3GPP or oneM2M download needs the `seanchai[extract]` extra, to validate
-    what it fetched.
+    A 3GPP, oneM2M or `transcribed` download needs the `seanchai[extract]`
+    extra, to validate what it fetched.
     """
     from .downloader import download_corpus, download_version, load_catalog
 
@@ -1389,8 +1391,7 @@ def download(
 
 
 def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
-    """What `sources` of the catalog hold, the hand transcriptions with a full
-    listing, since no download fetches them."""
+    """What `sources` of the catalog hold."""
     if "3gpp" in sources:
         click.echo(f"3GPP specifications ({len(catalog.tgpp)}):")
         for entry in catalog.tgpp:
@@ -1417,10 +1418,8 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
                 f"  {onem2m.identifier} V{onem2m.version} (Release"
                 f" {onem2m.release}): {onem2m.title}"
             )
-    if len(sources) == len(SOURCES):
-        click.echo(
-            f"\nHand transcriptions, not downloaded ({len(catalog.transcribed)}):"
-        )
+    if "transcribed" in sources:
+        click.echo(f"\nHand transcriptions' PDFs ({len(catalog.transcribed)}):")
         for document in catalog.transcribed:
             click.echo(f"  {document.reference}: {document.title}")
     if "wireshark" in sources:

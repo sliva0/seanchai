@@ -720,6 +720,84 @@ def test_a_partial_download_fetches_only_what_it_names(
     assert not any("rfc" in path for path, _ in local_http_server.requests)
 
 
+def _transcribed_catalog(base: str, name: str = "es_283034v020200p.pdf"):
+    return downloader.Catalog(
+        (),
+        (downloader.RfcSpec(9999, "Test RFC"),),
+        SHARK,
+        transcribed=(
+            downloader.TranscribedDocument(
+                "ETSI-ES283.034", "Test ES", f"{base}/deliver/{name}"
+            ),
+        ),
+    )
+
+
+def test_the_transcriptions_pdfs_are_a_source_of_their_own(
+    tmp_path, local_http_server, monkeypatch
+):
+    base = _serve(local_http_server, monkeypatch)
+    pdf = _pdf_bytes()
+    local_http_server.route("/deliver/es_283034v020200p.pdf", pdf)
+    output = tmp_path / "corpus"
+    catalog = _transcribed_catalog(base)
+
+    downloader.download_corpus(output, only=["transcribed"], catalog=catalog)
+
+    assert _sources_and_identifiers(output) == (["transcribed"], ["ETSI-ES283.034"])
+    (record,) = json.loads((output / "manifest.json").read_text())["artifacts"]
+    assert record["family"] == "ETSI"
+    assert record["url"] == f"{base}/deliver/es_283034v020200p.pdf"
+    assert record["sha256"] == hashlib.sha256(pdf).hexdigest()
+    assert record["files"] == ["transcriptions/es_283034v020200p.pdf"]
+    assert (output / "transcriptions" / "es_283034v020200p.pdf").read_bytes() == pdf
+    assert not (output / "rfc").exists()
+
+    # Kept by a run that fetches something else, and served from the cache after.
+    downloader.download_corpus(output, only=["rfc"], catalog=catalog)
+    assert (output / "transcriptions" / "es_283034v020200p.pdf").read_bytes() == pdf
+    downloader.download_corpus(output, catalog=catalog)
+    assert local_http_server.counts["/deliver/es_283034v020200p.pdf"] == 1
+    assert "transcribed" in _sources_and_identifiers(output)[0]
+
+
+def test_what_a_transcription_url_serves_must_open_as_a_pdf(
+    tmp_path, local_http_server, monkeypatch
+):
+    base = _serve(local_http_server, monkeypatch)
+    local_http_server.route("/deliver/es_283034v020200p.pdf", b"<html>not it</html>")
+    output = tmp_path / "corpus"
+
+    with pytest.raises(downloader.DownloadError, match="not a readable PDF"):
+        downloader.download_corpus(
+            output, only=["transcribed"], catalog=_transcribed_catalog(base)
+        )
+
+    assert not (output / "manifest.json").exists()
+    assert not (output / "transcriptions").exists()
+
+
+def test_a_partial_download_leaves_pdfs_placed_by_hand_until_it_fetches_them(
+    tmp_path, local_http_server, monkeypatch
+):
+    """Before the source existed `export --include-pdfs` took them from
+    `transcriptions/`, placed by hand and in no manifest."""
+    base = _serve(local_http_server, monkeypatch)
+    pdf = _pdf_bytes()
+    local_http_server.route("/deliver/es_283034v020200p.pdf", pdf)
+    output = tmp_path / "corpus"
+    placed = output / "transcriptions" / "es_283034v020200p.pdf"
+    placed.parent.mkdir(parents=True)
+    placed.write_bytes(b"placed by hand")
+    catalog = _transcribed_catalog(base)
+
+    downloader.download_corpus(output, only=["rfc"], catalog=catalog)
+    assert placed.read_bytes() == b"placed by hand"
+
+    downloader.download_corpus(output, only=["transcribed"], catalog=catalog)
+    assert placed.read_bytes() == pdf
+
+
 def test_a_partial_download_keeps_the_other_sources_and_a_full_one_refetches_nothing(
     tmp_path, local_http_server, monkeypatch
 ):
@@ -744,7 +822,7 @@ def test_a_partial_download_keeps_the_other_sources_and_a_full_one_refetches_not
     downloader.download_corpus(output, catalog=catalog, extract=False)
 
     assert _sources_and_identifiers(output) == (
-        ["3gpp", "onem2m", "rfc", "wireshark"],
+        ["3gpp", "onem2m", "rfc", "transcribed", "wireshark"],
         ["TS 29.999", "RFC 9999", "Wireshark v9.9.9"],
     )
     for path, count in fetched.items():
