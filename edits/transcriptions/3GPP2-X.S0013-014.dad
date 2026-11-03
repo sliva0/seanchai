@@ -1,0 +1,463 @@
+; Specification: 3GPP2 X.S0013-014
+; Version: 1.0
+; Vendor-ID: 5535
+; Bases: RFC6733
+; Link: http://www.3gpp2.org/Public_html/Specs/X.S0013-014-0_v1.0_080224.pdf
+; Transcribed: by hand from http://www.3gpp2.org/Public_html/Specs/X.S0013-014-0_v1.0_080224.pdf
+
+
+;; The cover prints "3GPP2 X.S0013-014-0 Version 1.0": part 014 of the series
+;; X.S0013, revision 0, which the rendering's name keeps. Its date, "December
+;; 2007", is on the cover too; the name's 080224 is the publication's.
+; Type: Application Scope
+; Name: Ty
+; Section: 5.2
+; Page: 12
+; Application-ID: 16777237
+; Applies-To: 5.2.*
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 5.2.1.1
+; Page: 12
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Subscription-Id ]
+        [ Flow-Operation ]                           ; bold
+      * [ Flow-Info ]                                ; bold
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ RAT-Type ]                                 ; bold
+        [ Termination-Cause ]
+        [ User-Equipment-Info ]
+        [ AGW-MCC-MNC ]                              ; bold
+        [ AGW-IP-Address ]                           ; bold
+        [ AGW-IPv6-Address ]                         ; bold
+        [ Called-Station-ID ]
+      * [ Charging-Rule-Report ]                     ; bold
+      * [ Event-Trigger ]                            ; bold
+        [ Access-Network-Charging-Address ]          ; bold
+      * [ Access-Network-Charging-Identifier-Ty ]    ; bold
+        [ Access-Network-Physical-Access-ID ]        ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: 5.2.1.2
+; Page: 13
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+      * [ Event-Trigger ]            ; bold
+        [ Origin-State-Id ]
+      * [ Charging-Rule-Remove ]     ; bold
+      * [ Charging-Rule-Install ]    ; bold
+        [ Charging-Information ]     ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5.2.1.3
+; Page: 13
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Origin-State-Id ]
+      * [ Class ]
+      * [ Event-Trigger ]            ; bold
+      * [ Charging-Rule-Remove ]     ; bold
+      * [ Charging-Rule-Install ]    ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5.2.1.4
+; Page: 14
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+      * [ Class ]
+        [ Event-Trigger ]                            ; bold
+      * [ Charging-Rule-Report ]                     ; bold
+        [ Access-Network-Charging-Address ]          ; bold
+      * [ Access-Network-Charging-Identifier-Ty ]    ; bold
+        [ Access-Network-Physical-Access-ID ]        ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Flow-Info ]                                ; bold
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Experimental-Result
+; Section: 5.2.1.5.1
+; Page: 15
+<Experimental-Result> ::= < AVP header: 297 >
+        { Vendor-ID }
+        { Experimental-Result-Code }
+
+
+;; Clause 5.2.2: "The Vendor-Id header of all AVPs defined in the present
+;; document shall be set to 10415 (3GPP) unless specified otherwise. In other
+;; cases, as specified, the Vendor-Id shall be set to 5535 (3GPP2)." Table 5.1-1
+;; is the 3GPP AVPs; the file's vendor-id is table 5.1-2's.
+; Type: AVP Table
+; Section: 5.2.2
+; Table: 5.1-1
+; Page: 15
+; Columns: Name     Code   Section    Type         Must   May   S.not   M.not   Encrypt   Acc-Type
+Charging-Rule-Remove      1002   5.2.2.3    Grouped      M,V    P     -       -       Y   All
+Charging-Rule-Base-Name   1004   5.2.2.5    UTF8String   M,V    P     -       -       Y   All
+Charging-Rule-Name        1005   5.2.2.6    OctetString  M,V    P     -       -       Y   All
+Metering-Method           1007   5.2.2.8    Enumerated   M,V    P     -       -       Y   All
+Offline                   1008   5.2.2.9    Enumerated   M,V    P     -       -       Y   All
+Online                    1009   5.2.2.10   Enumerated   M,V    P     -       -       Y   All
+Precedence                1010   5.2.2.11   Unsigned32   M,V    P     -       -       Y   All
+Reporting-Level           1011   5.2.2.12   Enumerated   M,V    P     -       -       Y   All
+QoS-Class-Identifier      1028   5.2.2.17   Enumerated   M,V    P     -       -       Y   All
+"Access- Network-Charging-Identifier-Ty (note 3)" 1022 5.2.2.29 Grouped M,V    P     -       -       Y   All
+PCC-Rule-Status           1019   5.2.2.24   Enumerated   M,V    P     -       -       Y   All
+Guaranteed-Bitrate-UL     1026   5.2.2.27   Unsigned32   M,V    P     -       -       Y   All
+Guaranteed-Bitrate-DL     1025   5.2.2.28   Unsigned32   M,V    P     -       -       Y   All
+;; NOTE 1: The AVP header bit denoted as 'M', indicates whether support of the AVP is required. The AVP header bit denoted as 'V', indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see [RFC3588].
+;; NOTE 2: The value types are defined in [RFC3588].
+;; NOTE 3: This AVP has a different name (Ty rather than Gx) but otherwise is identical to the 3GPP AVP with the same AVP code.
+
+
+; Type: AVP Table
+; Section: 5.2.2
+; Table: 5.1-2
+; Page: 16
+; Columns: Name            Code   Section    Type          Must   May   S.not   M.not   Encrypt   Acc-Type
+Flow-Operation             800    5.2.2.1    Enumerated    M,V    P     -       -       Y   All
+Charging-Rule-Install      801    5.2.2.2    Grouped       M,V    P     -       -       Y   All
+Charging-Rule-Definition   802    5.2.2.4    Grouped       M,V    P     -       -       Y   All
+Event-Trigger              803    5.2.2.7    Enumerated    M,V    P     -       -       Y   All
+QoS-Information            804    5.2.2.16   Grouped       M,V    P     -       -       Y   All
+Charging-Rule-Report       805    5.2.2.18   Grouped       M,V    P     -       -       Y   All
+AGW-IP-Address             806    5.2.2.19   OctetString   M,V    P     -       -       Y   All
+AGW-IPv6-Address           807    5.2.2.20   OctetString   M,V    P     -       -       Y   All
+RAT-Type                   808    5.2.2.21   Enumerated    M,V    P     -       -       Y   All
+Flow-Info                  809    5.2.2.22   Grouped       M,V    P     -       -       Y   All
+Flow-Identifier            810    5.2.2.23   OctetString   M,V    P     -       -       Y   PDS
+Granted-QoS                811    5.2.2.25   Grouped       M,V    P     -       -       Y   PDS
+Requested-QoS              812    5.2.2.26   Grouped       M,V    P     -       -       Y   PDS
+Flow-Description-Info      813    5.2.2.30   Grouped       M,V    P     -       -       Y   All
+Rule-Reason-Code           814    5.2.2.31   Enumerated    M,V    P     -       -       Y   All
+AGW-MCC-MNC                815    5.2.2.32   UTF8String    M,V    P     -       -       Y   All
+;; NOTE 1: The AVP header bit denoted as 'M', indicates whether support of the AVP is required. The AVP header bit denoted as 'V', indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see [RFC3588].
+;; NOTE 2: The value types are defined in [RFC3588].
+
+
+; Type: Enumerated AVP
+; Name: Flow-Operation
+; Section: 5.2.2.1
+; Page: 16
+Flow-Operation ::= < Enumerated AVP header: 800 5535 >
+        TERMINATION   = 0
+        ESTABLISHMENT = 1
+        MODIFICATION  = 2
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Install
+; Section: 5.2.2.2
+; Page: 16
+Charging-Rule-Install ::= < AVP header: 801 >
+      * [ Charging-Rule-Definition ]
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Remove
+; Section: 5.2.2.3
+; Page: 17
+Charging-Rule-Remove ::= < AVP header: 1002 >
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Definition
+; Section: 5.2.2.4
+; Page: 17
+Charging-Rule-Definition ::= < AVP header: 802 >
+        { Charging-Rule-Name }
+        [ Service-Identifier ]
+        [ Rating-Group ]
+        [ Flow-Identifier ]        ; bold
+      * [ Flow-Description ]
+        [ Flow-Status ]
+        [ QoS-Information ]
+        [ Reporting-Level ]
+        [ Online ]
+        [ Offline ]
+        [ Metering-Method ]
+        [ Precedence ]
+        [ AF-Charging-Identifier ]
+      * [ Flows ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Event-Trigger
+; Section: 5.2.2.7
+; Page: 18
+Event-Trigger ::= < Enumerated AVP header: 803 5535 >
+        PCF_CHANGE                               = 0
+        QOS_CHANGE                               = 1
+        RAT_CHANGE                               = 2
+        TFT_CHANGE                               = 3
+        PLMN_CHANGE                              = 4
+        LOSS_OF_FLOW                             = 5
+        RECOVERY_OF_FLOW                         = 6
+        IP-CAN_CHANGE                            = 7
+        PCC_RULE_FAILURE                         = 8
+        ACCESS_NETWORK_PHYSICAL_ACCESS_ID_CHANGE = 9
+
+
+; Type: Enumerated AVP
+; Name: Metering-Method
+; Section: 5.2.2.8
+; Page: 19
+Metering-Method ::= < Enumerated AVP header: 1007 10415 >
+        DURATION        = 0
+        VOLUME          = 1
+        DURATION_VOLUME = 2
+
+
+; Type: Enumerated AVP
+; Name: Offline
+; Section: 5.2.2.9
+; Page: 19
+Offline ::= < Enumerated AVP header: 1008 10415 >
+        DISABLE_OFFLINE = 0
+        ENABLE_OFFLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Online
+; Section: 5.2.2.10
+; Page: 20
+Online ::= < Enumerated AVP header: 1009 10415 >
+        DISABLE_ONLINE = 0
+        ENABLE_ONLINE  = 1
+
+
+; Type: Enumerated AVP
+; Name: Reporting-Level
+; Section: 5.2.2.12
+; Page: 20
+Reporting-Level ::= < Enumerated AVP header: 1011 10415 >
+        "SERVICE_IDENTIFIER _LEVEL" = 0
+        RATING_GROUP_LEVEL          = 1
+
+
+; Type: Grouped AVP
+; Name: QoS-Information
+; Section: 5.2.2.16
+; Page: 20
+QoS-Information ::= < AVP header: 804 >
+        [ QoS-Class-Identifier ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Guaranteed-Bitrate-UL ]
+        [ Guaranteed-Bitrate-DL ]
+
+
+;; Clause 5.2.2.17 says "The following values are defined:" and prints no list;
+;; table 5.2 maps each value to Traffic Class, Traffic Handling Priority,
+;; Signaling Indication and Source Statistics Descriptor. A value printed with
+;; no name takes its row, cells in that order. NOTE on values 1 and 3: The QCI
+;; values that map to "speech" should be selected for service data flows
+;; consisting of speech (and the associated RTCP) only.
+; Type: Enumerated AVP
+; Name: QoS-Class-Identifier
+; Section: 5.2.2.17
+; Page: 21
+QoS-Class-Identifier ::= < Enumerated AVP header: 1028 10415 >
+        "Conversational, n/a, n/a, speech"  = 1
+        "Conversational, n/a, n/a, unknown" = 2
+        "Streaming, n/a, n/a, speech"       = 3
+        "Streaming, n/a, n/a, unknown"      = 4
+        "Interactive, 1, Yes, n/a"          = 5
+        "Interactive, 1, No, n/a"           = 6
+        "Interactive, 2, No, n/a"           = 7
+        "Interactive, 3, No, n/a"           = 8
+        "Background, n/a, n/a, n/a"         = 9
+
+
+; Type: Grouped AVP
+; Name: Charging-Rule-Report
+; Section: 5.2.2.18
+; Page: 21
+Charging-Rule-Report ::= < AVP header: 805 >
+      * [ Charging-Rule-Name ]
+      * [ Charging-Rule-Base-Name ]
+        [ PCC-Rule-Status ]
+        [ Rule-Reason-Code ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: RAT-Type
+; Section: 5.2.2.21
+; Page: 22
+RAT-Type ::= < Enumerated AVP header: 808 5535 >
+        "CDMA2000 1X" = 0
+        HRPD          = 1
+        WLAN          = 2
+        UMB           = 3
+
+
+; Type: Grouped AVP
+; Name: Flow-Info
+; Section: 5.2.2.22
+; Page: 22
+Flow-Info ::= < AVP header: 809 >
+        { Flow-Identifier }
+      * [ Flow-Description-Info ]
+      * [ Requested QoS ]
+        [ Granted QoS ]
+        [ Flow-Status ]
+
+
+; Type: Enumerated AVP
+; Name: PCC-Rule-Status
+; Section: 5.2.2.24
+; Page: 23
+PCC-Rule-Status ::= < Enumerated AVP header: 1019 10415 >
+        ACTIVE               = 0
+        INACTIVE             = 1
+        "TEMPORARY INACTIVE" = 2
+
+
+; Type: Grouped AVP
+; Name: Granted-QoS
+; Section: 5.2.2.25
+; Page: 23
+Granted-QoS ::= < AVP header: 811 >
+        [ QoS-Class-Identifier ]
+        [ Guaranteed-Bitrate-UL ]
+        [ Guaranteed-Bitrate-DL ]
+
+
+; Type: Grouped AVP
+; Name: Requested-QoS
+; Section: 5.2.2.26
+; Page: 23
+Requested-QoS ::= < AVP header: 812 >
+        [ QoS-Class-Identifier ]
+        [ Guaranteed-Bitrate-UL ]
+        [ Guaranteed-Bitrate-DL ]
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Charging-Identifier-Ty
+; Section: 5.2.2.29
+; Page: 24
+Access-Network-Charging-Identifier-Ty ::= < AVP header: 1022 >
+        { Access-Network-Charging-Identifier-Value }
+      * [ Charging-Rule-Base-Name ]
+      * [ Charging-Rule-Name ]
+
+
+; Type: Grouped AVP
+; Name: Flow-Description-Info
+; Section: 5.2.2.30
+; Page: 24
+Flow-Description-Info ::= < AVP header: 813 >
+        { Flow-Description }
+        [ Precedence ]
+
+
+; Type: Enumerated AVP
+; Name: Rule-Reason-Code
+; Section: 5.2.2.31
+; Page: 24
+Rule-Reason-Code ::= < Enumerated AVP header: 814 5535 >
+        UNKNOWN_FLOW_IDENTIFIER  = 0
+        UNKNOWN_RULE_NAME        = 1
+        RATING_GROUP_ERROR       = 2
+        SERVICE_IDENTIFIER_ERROR = 3
+        AGW_MALFUNCTION          = 4
+        RESOURCES_LIMITATION     = 5
+
+
+;; Clause 5.2.3 names the table "table 5.2" and its caption "Table 5.3", the
+;; caption 5.2 being QoS-Class-Identifier's. It prints a Reference and a
+;; Description column and no codes. Charging-Information's description cell
+;; lists its members: Primary-Event-Charging-Function-Name,
+;; Secondary-Event-Charging-Function-Name, Primary-Charging-Collection-Function-Name
+;; and Secondary-Charging-Collection-Function-Name, each of type DiameterURI.
+; Type: Reused AVPs
+; Section: 5.2.3
+; Table: 5.3
+; Page: 26
+; Columns: Name                         From
+Access-Network-Charging-Address         3GPP2-X.S0013-013
+Access-Network-Charging-Identifier-Value 3GPP2-X.S0013-013
+Access-Network-Physical-Access-ID       3GPP2-X.S0013-013
+AF-Charging-Identifier                  3GPP2-X.S0013-013
+Called-Station-ID                       RFC4005
+CC-Request-Number                       RFC4006
+CC-Request-Type                         RFC4006
+Charging-Information                    3GPP2-X.S0013-006
+Flow-Description                        3GPP2-X.S0013-013
+Flow-Status                             3GPP2-X.S0013-013
+Flows                                   3GPP2-X.S0013-013
+Framed-IP-Address                       RFC4005
+Framed-IPv6-Prefix                      RFC4005
+Max-Requested-Bandwidth-UL              3GPP2-X.S0013-013
+Max-Requested-Bandwidth-DL              3GPP2-X.S0013-013
+Rating-Group                            RFC4006
+Service-Identifier                      RFC4006
+Subscription-Id                         RFC4006
+User-Equipment-Info                     RFC4006
