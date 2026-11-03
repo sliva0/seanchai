@@ -183,3 +183,15 @@ reason = """
     """
 first_version = "18.7.0"
 last_version = "18.7.0"
+
+[[patch]]
+find = "Table 7.3.200 -1:"
+replace = "Table 7.3.200-1:"
+count = 1
+section = "7.3.200"
+reason = """
+a stray space in the caption of the Supported-Monitoring-Events bit table, which
+no caption reading takes; 7.3.200-1 is the label clause 7.3.200 cites
+"""
+first_version = "18.7.0"
+last_version = "18.7.0"

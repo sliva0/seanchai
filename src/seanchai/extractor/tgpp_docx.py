@@ -327,6 +327,8 @@ class _Row:
 class _Table:
     caption: str | None
     rows: list[_Row]
+    # The caption's whole text: a feature table's says which list it is.
+    caption_text: str | None = None
 
 
 @dataclass
@@ -607,6 +609,7 @@ def _sections(
     sections: list[_Section] = []
     current: _Section | None = None
     caption: str | None = None
+    caption_text: str | None = None
     numbering = (
         _ListNumbering(document.part.numbering_part.element, document.styles.element)
         if quirks is not None
@@ -710,8 +713,10 @@ def _sections(
                         if sliver and row_spans[-1] == 1 and starts[-1] == "":
                             starts.pop()
                         row.cells = starts
-                current.tables.append(_Table(caption=caption, rows=rows))
-            caption = None
+                current.tables.append(
+                    _Table(caption=caption, rows=rows, caption_text=caption_text)
+                )
+            caption = caption_text = None
             continue
         style = (item.style.name or "") if item.style else ""
         label = None if numbering is None else numbering.advance(item._p)
@@ -756,6 +761,7 @@ def _sections(
             continue
         if match := _TABLE_CAPTION_RE.match(text):
             caption = match["label"]
+            caption_text = text
         if current is not None:
             lines = _lines(item, style, patcher, number)
             current.paragraphs.append(
@@ -2958,6 +2964,247 @@ def _reserved_ranges(
     return reservations
 
 
+# --- value tables ------------------------------------------------------------
+#
+# The numbers a document names for a numeric AVP that is no Enumerated: result
+# codes, bits, features. The pass reads the sections on its own, so that nothing
+# the rest of the extractor does with a clause bears on it.
+
+# The clause holding a document's result codes, and its subclauses. Spelled out,
+# so that "Service-Result-Code" (TS 29.336 clause 8.4.38) and "API-Result-Code
+# AVP" (TS 32.299 clause 7.2.20fA), AVPs holding such values, are no such clause.
+_RESULT_CLAUSE_RE = re.compile(
+    r"(?:\S+ specific )?(?:Result[- ]Codes?|Experimental-Result(?:-Code)?)(?: AVP)?"
+    r"(?: and Experimental-Result(?:-Code)?(?: AVP)?)?(?: [Vv]alues)?"
+)
+_RESULT_NAME = r"[A-Z][A-Z0-9_-]*(?: [A-Z0-9_-]+)*"
+# Each wording a code takes, on a heading or on a line of its own: "DIAMETER_X
+# (5001)" mostly, with a colon in TS 29.217 clause 5.5.3, "DIAMETER_X 4010" in TS
+# 32.299 V11.20.0 clause 7.1.11 and "4010 DIAMETER_X" in its Release 18. A name
+# may hold a space the document misprints in it (TS 29.128 clause 6.3.3.10).
+# TS 29.345 clauses 6.4.3.15 and 6.4.3.16 head a code whose number is unallocated:
+# "DIAMETER_ERROR_REVOCATION_FAILURE (56x1)".
+_UNNUMBERED_RESULT_RE = re.compile(rf"{_RESULT_NAME} ?\(\d*x+\d*\)")
+_RESULT_VALUE_RES = (
+    re.compile(rf"(?P<name>{_RESULT_NAME}) ?\((?P<value>\d+)\):?"),
+    re.compile(rf"(?P<name>{_RESULT_NAME}) (?P<value>\d{{4}})"),
+    re.compile(rf"(?P<value>\d{{4}}) (?P<name>{_RESULT_NAME})"),
+)
+_BIT_LABELS = frozenset({"bit"})
+# What a bit table's second column heads: TS 29.172 clause 7.4.36 "Event Type",
+# clause 7.4.69 "Requirement". TS 29.272's "Bit | Description" tables have the
+# name in the description (clause 7.3.31, "UTRAN Not Allowed").
+_BIT_NAME_LABELS = frozenset({"name", "event type", "requirement", "description"})
+_FEATURE_LABELS = frozenset({"feature bit"})
+_FEATURE_NAME_LABELS = frozenset({"feature", "remote target feature"})
+# "Table 7.3.10/1: Features of Feature-List-ID 1 used in S6a/S6d", TS 29.329's
+# "Features of feature list 1 used in Sh", TS 29.336's with no number, and what
+# the rest print after the application: TS 29.219's "used on the Sy interface",
+# TS 29.468's "used for MB2-C application", TS 29.212 clause 5c.4.2's "used in St
+# Protocol".
+_FEATURE_CAPTION_RE = re.compile(
+    r"^Table [^:]+: ?Features of (?:Feature-List-ID|feature list)(?: (?P<id>\d+))?"
+    r" used (?:in|on|for) (?:the )?(?P<application>.+?)"
+    r"(?: (?:interface|application|Protocol))?$"
+)
+# TS 29.272 clause 7.3.10.1 "Feature-List AVP for the S6a/S6d application", TS
+# 29.337 clause 6.3.5 "Supported-Feature-List AVP for the T4 application", TS
+# 29.368 clause 6.4.13 "Feature-Supported-In-Final-Target AVP". Every other
+# feature table sits under a clause naming no AVP ("Use of the Supported-Features
+# AVP on the Gx reference point") and numbers the bits of its Feature-List.
+_FEATURE_AVP_RE = re.compile(r"^(?P<name>[A-Za-z0-9-]*Feature[A-Za-z0-9-]*) AVP\b")
+_FEATURE_LIST = "Feature-List"
+_EXPERIMENTAL_RESULT = "Experimental-Result"
+_RESULT_CODE_INTRO = "following Result-Code AVP value"
+
+
+def _result_row(text: str, section: str | None) -> ast.ValueRow | None:
+    """The result code `text` states and nothing else, if it does. A name has an
+    underscore, which is what tells it from the words of a sentence, and from TS
+    32.299 V11.20.0's "Permanent Failures (5xxx):"."""
+    for pattern in _RESULT_VALUE_RES:
+        match = pattern.fullmatch(text)
+        if match and "_" in match["name"]:
+            return ast.ValueRow(
+                name=match["name"], value=int(match["value"]), section=section
+            )
+    return None
+
+
+type _ValueNotes = list[tuple[ast.ValueTable, list[tuple[int, str]]]]
+
+
+def _result_tables(
+    sections: list[_Section],
+) -> tuple[list[ast.ValueTable], _ValueNotes]:
+    """A value table per result-code clause printing any code: its subclause
+    headings and its lines. TS 29.229 heads each code's clause (6.2.2.1
+    "DIAMETER_ERROR_USER_UNKNOWN (5001)"), TS 29.212 lists them (clause 5.5.3).
+    A heading printing no number is a note where it stood.
+
+    The document says which AVP carries them. "Result-Code AVP values" still go
+    "inside an Experimental-Result AVP" (TS 29.229 clause 6.2), so a clause
+    naming it anywhere holds experimental codes, and only TS 32.299's Result-Code
+    AVP (clause 7.1.11) names it nowhere. In such a clause "the following
+    Result-Code AVP value defined in IETF RFC 8506" (TS 29.212 clause 5.5.3) lists
+    what is no experimental code, in a table of its own, until a line names the
+    experimental ones again.
+    """
+    tables = []
+    commented: _ValueNotes = []
+    position = 0
+    while position < len(sections):
+        root = sections[position]
+        position += 1
+        if not _RESULT_CLAUSE_RE.fullmatch(root.title):
+            continue
+        tree = [root]
+        while position < len(sections) and sections[position].number.startswith(
+            f"{root.number}."
+        ):
+            tree.append(sections[position])
+            position += 1
+        rows: list[ast.ValueRow] = []
+        plain: list[ast.ValueRow] = []
+        notes: list[tuple[int, str]] = []
+        for section in tree:
+            clause = None if section is root else section.number
+            if (row := _result_row(section.title, clause)) is not None:
+                rows.append(row)
+            elif _UNNUMBERED_RESULT_RE.fullmatch(section.title):
+                notes.append((len(rows), f"{section.title} ; {section.number}"))
+            of_result_code = False
+            for line in section.lines:
+                if _RESULT_CODE_INTRO in line.text:
+                    of_result_code = True
+                elif _EXPERIMENTAL_RESULT in line.text:
+                    of_result_code = False
+                if (row := _result_row(line.text, clause)) is not None:
+                    (plain if of_result_code else rows).append(row)
+        experimental = _EXPERIMENTAL_RESULT in root.title or any(
+            _EXPERIMENTAL_RESULT in line.text
+            for section in tree
+            for line in section.lines
+        )
+        for avp, found in (
+            ("Experimental-Result-Code" if experimental else "Result-Code", rows),
+            ("Result-Code", plain),
+        ):
+            if found:
+                tables.append(
+                    ast.ValueTable(
+                        avp=avp,
+                        kind=ast.ValueKind.RESULT_CODES,
+                        source=ast.SourceRef(section=root.number),
+                        rows=tuple(found),
+                    )
+                )
+                if found is rows and notes:
+                    commented.append((tables[-1], notes))
+    return tables, commented
+
+
+def _value_columns(
+    table: _Table, labels: frozenset[str], names: frozenset[str]
+) -> tuple[int, int, int | None] | None:
+    """The positions of a value table's number, name and M/O columns, or None for
+    any other table: a header is read as the labels it prints, its note
+    references aside (TS 29.468's "Feature bit (NOTE 1)")."""
+    header = [
+        _COLUMN_NOTE_RE.sub("", cell).strip().casefold() for cell in table.rows[0].cells
+    ]
+    if header[0] not in labels or len(header) < 2:
+        return None
+    # The first label other than the number's: a merged cell repeats.
+    name = next((i for i, label in enumerate(header) if label in names), None)
+    if name is None:
+        return None
+    mark = next((i for i, label in enumerate(header) if label == "m/o"), None)
+    return 0, name, mark
+
+
+def _value_rows(
+    table: _Table, columns: tuple[int, int, int | None]
+) -> tuple[list[ast.ValueRow], list[tuple[int, str]]]:
+    """A table's rows that name a number, and each row printing no such pair as
+    the note that stands for it, with the number of rows before it: TS 29.172
+    clause 7.4.69's "1-31 None", TS 29.217 clause 5.3.5's "1+n Congestion level
+    1+n", TS 29.283 clause 7.3.16's "0" and nothing else. A full-width row is a
+    note on the table, and prose."""
+    number, name, mark = columns
+    rows: list[ast.ValueRow] = []
+    notes: list[tuple[int, str]] = []
+    for row in table.rows[1:]:
+        cells = row.cells
+        if len(set(cells)) == 1 or max(number, name) >= len(cells):
+            continue
+        label, _ = _strip_note_ref(cells[name])
+        if cells[number].isdecimal() and label:
+            marked = cells[mark] if mark is not None and mark < len(cells) else ""
+            rows.append(
+                ast.ValueRow(name=label, value=int(cells[number]), mark=marked or None)
+            )
+        else:
+            printed = f"{cells[number]} {label}".strip()
+            notes.append((len(rows), printed))
+    return rows, notes
+
+
+def _value_tables(
+    sections: list[_Section], warnings: list[str], quirks: sources.Quirks
+) -> tuple[list[ast.ValueTable], _ValueNotes]:
+    """Every value table of the document, with the notes each prints beside its
+    rows (`_value_rows`)."""
+    tables, commented = _result_tables(sections)
+    for section in sections:
+        for table in section.tables:
+            bits = _value_columns(table, _BIT_LABELS, _BIT_NAME_LABELS)
+            features = _value_columns(table, _FEATURE_LABELS, _FEATURE_NAME_LABELS)
+            columns = bits or features
+            if columns is None:
+                continue
+            rows, notes = _value_rows(table, columns)
+            where = f"{section.number}: table {table.caption}"
+            if not rows:
+                # TS 29.153 clause 5.4.2's table has its header and a blank row.
+                warnings.append(f"{where} defines no value")
+                continue
+            if features is not None:
+                found = _feature_table(section, table, rows)
+            else:
+                title = _avp_title(section.title, quirks)
+                if title is None:
+                    warnings.append(f"{where} is under no AVP's clause")
+                    continue
+                found = ast.ValueTable(
+                    avp=title["name"],
+                    kind=ast.ValueKind.BITS,
+                    table=table.caption,
+                    source=ast.SourceRef(section=section.number),
+                    rows=tuple(rows),
+                )
+            tables.append(found)
+            if notes:
+                commented.append((found, notes))
+    return tables, commented
+
+
+def _feature_table(
+    section: _Section, table: _Table, rows: list[ast.ValueRow]
+) -> ast.ValueTable:
+    avp = _FEATURE_AVP_RE.match(section.title)
+    caption = _FEATURE_CAPTION_RE.match(table.caption_text or "")
+    return ast.ValueTable(
+        avp=avp["name"] if avp else _FEATURE_LIST,
+        kind=ast.ValueKind.FEATURES,
+        feature_list_id=int(caption["id"]) if caption and caption["id"] else None,
+        application=caption["application"] if caption else None,
+        table=table.caption,
+        source=ast.SourceRef(section=section.number),
+        rows=tuple(rows),
+    )
+
+
 def _unwrap_smart_tags(document: docx.document.Document) -> None:
     """Put the runs of Word's smart tags back in their paragraphs.
 
@@ -3650,11 +3897,13 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp], publisher: int) -> int:
 
 
 def _assemble(
-    resolved: _Resolved, reprints: Sequence[ast.ReprintedAvp] = ()
+    resolved: _Resolved,
+    reprints: Sequence[ast.ReprintedAvp] = (),
+    value_tables: Sequence[ast.ValueTable] = (),
 ) -> tuple[ast.Section, ...]:
     """File order: applications, messages, what the document re-prints and
     registries, then each definition set's AVP table followed by its re-used
-    table, then every definition in document order."""
+    table, then every definition and value table in document order."""
     sections: list[ast.Section] = [
         *resolved.applications,
         *resolved.messages,
@@ -3683,7 +3932,7 @@ def _assemble(
         )
     sections.extend(
         sorted(
-            resolved.definitions,
+            (*resolved.definitions, *value_tables),
             key=lambda definition: ast.section_sort_key(definition.source.section),
         )
     )
@@ -4001,15 +4250,19 @@ def extract_with_comments(
         )
         patcher, quirks = sources.load(declarations_path, version, QUIRKS, warnings)
 
+        read = _sections(document, patcher, quirks)
         collected = _collect(
-            _sections(document, patcher, quirks),
+            read,
             warnings,
             ast.spec_ref(specification),
             quirks,
             _publisher_vendor(specification),
         )
+        value_tables, value_notes = _value_tables(read, warnings, quirks)
         patcher.finish()
-        sections = _assemble(_resolve(collected, quirks, warnings), collected.reprints)
+        sections = _assemble(
+            _resolve(collected, quirks, warnings), collected.reprints, value_tables
+        )
         quirks.finish()
         spec = ast.Specification(
             specification=specification,
@@ -4019,23 +4272,31 @@ def extract_with_comments(
             link=None if link is None else pydantic.HttpUrl(link),
             sections=sections,
         )
-        return spec, _comments(sections, collected.commented, collected.glosses)
+        return spec, _comments(
+            sections, collected.commented, collected.glosses, value_notes
+        )
 
 
 def _comments(
-    sections: tuple[ast.Section, ...], commented: _Commented, glosses: _Glosses
+    sections: tuple[ast.Section, ...],
+    commented: _Commented,
+    glosses: _Glosses,
+    value_notes: _ValueNotes | None = None,
 ) -> formatter.Comments:
     """The commented-out lines, keyed by the path of what follows each:
     the member after it in its body, or the body's end, and each gloss on its
     member. A body is found by identity, since it is the very object the file
-    holds."""
+    holds. A value table's notes stand among its rows the same way."""
 
-    def position_of(body: ast.Message | ast.GroupedAvp | ast.ReprintedAvp) -> int:
+    def position_of(
+        body: ast.Message | ast.GroupedAvp | ast.ReprintedAvp | ast.ValueTable,
+    ) -> int:
         for index, section in enumerate(sections):
             if section is body:
                 return index
         raise ExtractionError(
-            f"{body.name}: the body its comments belong to is not in the file"
+            f"{getattr(body, 'name', body.type)}: the body its comments belong to"
+            " is not in the file"
         )
 
     standing: dict[ast.TreePath, list[str]] = {}
@@ -4043,6 +4304,11 @@ def _comments(
         index = position_of(body)
         for position, note in notes:
             standing.setdefault(("sections", index, "avps", position), []).append(note)
+    for table, notes in value_notes or ():
+        for position, note in notes:
+            standing.setdefault(
+                ("sections", position_of(table), "rows", position), []
+            ).append(note)
     trailing: dict[ast.TreePath, list[str]] = {
         ("sections", position_of(body), "avps", position): [gloss]
         for body, position, gloss in glosses

@@ -2028,3 +2028,185 @@ def test_ts_32_299_release_11_reads_its_own_template():
         ("DELIVERY_REPORT", 1),
         ("SM Service Request", 2),
     ]
+
+
+def _value_tables_docx(tmp_path, base, build):
+    path = tmp_path / "values.docx"
+    document = docx.Document(base)
+    build(document)
+    document.save(path)
+    return path
+
+
+def _heading(document, text, level=1):
+    document.add_paragraph(style=f"Heading {level}").add_run(text)
+
+
+def _table(document, *rows):
+    table = document.add_table(rows=len(rows), cols=len(rows[0]))
+    for row, values in zip(table.rows, rows, strict=True):
+        for cell, value in zip(row.cells, values, strict=True):
+            cell.text = value
+    return table
+
+
+def _value_tables(spec):
+    return [s for s in spec.sections if isinstance(s, ast.ValueTable)]
+
+
+def test_a_bit_table_is_read_under_its_clause(tmp_path, synthetic_spec_docx):
+    def build(document):
+        _heading(document, "7.3.7\tULR-Flags")
+        document.add_paragraph(
+            "The ULR-Flags AVP is of type Unsigned32 and it shall contain a bit mask."
+        )
+        document.add_paragraph("Table 7.3.7/1: ULR-Flags")
+        table = _table(
+            document,
+            ("Bit", "Name", "Description"),
+            ("0", "Single-Registration-Indication", "This bit, when set, ..."),
+            ("1", "S6a/S6d-Indicator (NOTE 1)", "This bit, when set, ..."),
+            ("2-31", "None", "Spare"),
+            ("1+n", "Congestion level 1+n", "A level."),
+        )
+        note = table.add_row().cells
+        note[0].merge(note[2]).text = "NOTE 1: Bits not defined shall be cleared."
+        _heading(document, "7.3.22\tHPLMN-ODB AVP")
+        document.add_paragraph("Table 7.3.22/1: HPLMN-ODB")
+        _table(
+            document,
+            ("Bit", "Description"),
+            ("0", "HPLMN specific barring type 1"),
+        )
+
+    path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
+    spec, comments = tgpp_docx.extract_with_comments(path)
+
+    flags, odb = _value_tables(spec)
+    assert (flags.avp, flags.kind, flags.table) == (
+        "ULR-Flags",
+        ast.ValueKind.BITS,
+        "7.3.7/1",
+    )
+    assert flags.source.section == "7.3.7"
+    assert [(row.name, row.value) for row in flags.rows] == [
+        ("Single-Registration-Indication", 0),
+        ("S6a/S6d-Indicator", 1),
+    ]
+    assert (odb.avp, odb.rows[0].name) == ("HPLMN-ODB", "HPLMN specific barring type 1")
+    text = formatter.format_spec(spec, comments)
+    assert ";; 2-31 None\n;; 1+n Congestion level 1+n\n" in text
+    assert parser.parse(text) == spec
+
+
+def test_a_feature_table_says_which_list_it_is(tmp_path, synthetic_spec_docx):
+    def build(document):
+        _heading(document, "7.3.10.1\tFeature-List AVP for the S6a/S6d application")
+        document.add_paragraph(
+            "Table 7.3.10/1: Features of Feature-List-ID 1 used in S6a/S6d"
+        )
+        _table(
+            document,
+            ("Feature bit", "Feature", "M/O", "Description"),
+            ("0", "SMS in MME", "O", "This feature ..."),
+            ("1", "Plain", "", "This feature ..."),
+        )
+        _heading(document, "5.1.6\tUse of the Supported-Features AVP")
+        document.add_paragraph(
+            "Table 5.1.6-1: Features of Feature-List-ID 2 used on the Sy interface"
+        )
+        _table(
+            document,
+            ("Feature bit (NOTE 1)", "Feature (NOTE 2)", "M/O (NOTE 3)", "Description"),
+            ("0", "ASR", "M", "Sy Session Termination"),
+        )
+        _heading(document, "8.4.23\tFeature-List AVP for the S6t application")
+        document.add_paragraph(
+            "Table 8.4.23-1: Features of Feature-List-ID used in S6t"
+        )
+        _table(
+            document,
+            ("Feature bit", "Feature", "M/O", "Description"),
+            ("0", "MONTE", "O", "Configuration ..."),
+        )
+        _heading(document, "9.1\tUse of the Supported-Features AVP on the Ns point")
+        document.add_paragraph("Table 9.1.1: Features of Feature-List-ID 1 used in Ns")
+        _table(
+            document, ("Feature bit", "Feature", "M/O", "Description"), ("", "", "", "")
+        )
+
+    warnings = []
+    spec = tgpp_docx.extract(
+        _value_tables_docx(tmp_path, synthetic_spec_docx, build), warnings=warnings
+    )
+
+    tables = {table.application: table for table in _value_tables(spec)}
+    assert set(tables) == {"S6a/S6d", "Sy", "S6t"}
+    s6a = tables["S6a/S6d"]
+    assert (s6a.avp, s6a.feature_list_id, s6a.kind) == (
+        "Feature-List",
+        1,
+        ast.ValueKind.FEATURES,
+    )
+    assert [(r.name, r.value, r.mark) for r in s6a.rows] == [
+        ("SMS in MME", 0, "O"),
+        ("Plain", 1, None),
+    ]
+    assert (tables["Sy"].feature_list_id, tables["Sy"].avp) == (2, "Feature-List")
+    assert tables["S6t"].feature_list_id is None
+    assert "9.1: table 9.1.1 defines no value" in warnings
+
+
+def test_result_codes_are_read_from_headings_and_lines(tmp_path, synthetic_spec_docx):
+    def build(document):
+        _heading(document, "6.2\tResult-Code AVP values")
+        document.add_paragraph(
+            "When one of the result codes defined here is included in a response,"
+            " it shall be inside an Experimental-Result AVP."
+        )
+        _heading(document, "6.2.1\tSuccess", 2)
+        _heading(document, "6.2.1.1\tDIAMETER_FIRST_REGISTRATION (2001)", 3)
+        document.add_paragraph("The HSS informs ... DIAMETER_OTHER (1234) in prose.")
+        _heading(document, "6.2.2\tPermanent Failures", 2)
+        document.add_paragraph(
+            "as an addition the following Result-Code AVP value defined in IETF"
+            " RFC 8506 [66] is applicable:"
+        )
+        document.add_paragraph("DIAMETER_USER_UNKNOWN (5030)")
+        document.add_paragraph("Also the following Experimental-Result-Code values:")
+        document.add_paragraph("INVALID_SERVICE_INFORMATION (5061):")
+        document.add_paragraph("DIAMETER_ERROR_DATA OUT_OF_SYNC (5105)")
+        _heading(document, "6.2.2.2\tDIAMETER_ERROR_UNALLOCATED (56x1)", 3)
+        _heading(document, "6.2.2.3\tVoid", 3)
+        _heading(document, "7.1.11\tResult-Code AVP")
+        document.add_paragraph("This subclause defines new Result-Code AVP values.")
+        document.add_paragraph("Transient Failures (4xxx):")
+        document.add_paragraph("DIAMETER_END_USER_SERVICE_DENIED 4010")
+        document.add_paragraph("5030 DIAMETER_USER_UNKNOWN")
+        _heading(document, "8.4.38\tService-Result-Code")
+        document.add_paragraph("DIAMETER_NOT_A_LIST (2)")
+
+    spec, comments = tgpp_docx.extract_with_comments(
+        _value_tables_docx(tmp_path, synthetic_spec_docx, build)
+    )
+
+    experimental, plain, charging = _value_tables(spec)
+    assert (experimental.avp, experimental.source.section) == (
+        "Experimental-Result-Code",
+        "6.2",
+    )
+    assert [(r.name, r.value, r.section) for r in experimental.rows] == [
+        ("DIAMETER_FIRST_REGISTRATION", 2001, "6.2.1.1"),
+        ("INVALID_SERVICE_INFORMATION", 5061, "6.2.2"),
+        ("DIAMETER_ERROR_DATA OUT_OF_SYNC", 5105, "6.2.2"),
+    ]
+    assert (plain.avp, plain.source.section) == ("Result-Code", "6.2")
+    assert [(r.name, r.value) for r in plain.rows] == [("DIAMETER_USER_UNKNOWN", 5030)]
+    assert charging.avp == "Result-Code"
+    assert [(r.name, r.value, r.section) for r in charging.rows] == [
+        ("DIAMETER_END_USER_SERVICE_DENIED", 4010, None),
+        ("DIAMETER_USER_UNKNOWN", 5030, None),
+    ]
+    text = formatter.format_spec(spec, comments)
+    assert ";; DIAMETER_ERROR_UNALLOCATED (56x1) ; 6.2.2.2\n" in text
+    assert parser.parse(text) == spec
