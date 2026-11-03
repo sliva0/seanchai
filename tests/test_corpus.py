@@ -167,25 +167,25 @@ def test_another_revision_stands_in_only_by_its_table_entry(monkeypatch):
 
 def test_a_later_release_stands_in_only_by_its_table_entry(monkeypatch):
     """TS 32.299 V11.20.0 cites TS 29.229 non-specifically, meaning V11.5.0,
-    Release 11's last, which the corpus lacks; V18.1.0 answers by its
+    Release 11's last, which the corpus lacks; V19.1.0 answers by its
     `RELEASE_STAND_INS` entry and says so. Another release's copy of the
     citing document, or the held copy at another version, gets nothing,
     and without the entry nor does V11.20.0."""
     citing = _spec("3GPP TS 32.299", "11.20.0")
-    books = corpus.Corpus([_entry("3GPP TS 29.229", "18.1.0")])
+    books = corpus.Corpus([_entry("3GPP TS 29.229", "19.1.0")])
 
     entry, across = books.resolution("TS29.229", like=citing)
 
-    assert entry is not None and entry.spec.version == "18.1.0"
+    assert entry is not None and entry.spec.version == "19.1.0"
     assert across == corpus.CrossRelease(
-        "TS32.299", "TS29.229", "18.1.0", corpus.STAND_IN, meant="11.5.0"
+        "TS32.299", "TS29.229", "19.1.0", corpus.STAND_IN, meant="11.5.0"
     )
     assert str(across) == (
         "TS32.299 cites TS29.229 non-specifically, meaning V11.5.0, which the"
-        " corpus lacks: V18.1.0 stands in (corpus.RELEASE_STAND_INS)"
+        " corpus lacks: V19.1.0 stands in (corpus.RELEASE_STAND_INS)"
     )
     # A Release 11 copy, were the corpus to hold one, is the answer itself.
-    held = corpus.Corpus([_entry("3GPP TS 29.229", v) for v in ("11.5.0", "18.1.0")])
+    held = corpus.Corpus([_entry("3GPP TS 29.229", v) for v in ("11.5.0", "19.1.0")])
     assert held.resolution("TS29.229", like=citing)[1] is None
     assert corpus.Corpus([_entry("3GPP TS 29.229", "18.2.0")]).resolution(
         "TS29.229", like=citing
@@ -299,18 +299,18 @@ def test_a_clause_saying_the_latest_edition_applies_reads_the_newest_copy():
 
 def test_a_version_an_etsi_document_names_is_answered_by_its_stand_in_alone():
     """TS 183 033 clause 2.1 [2] names TS 29.229 V6.6.0, which the catalog cannot
-    pin, being no release's last, and V18.1.0 stands in on the entry's evidence."""
+    pin, being no release's last, and V19.1.0 stands in on the entry's evidence."""
     citing = _spec("ETSI TS 183 033", "1.2.0")
 
-    entry, across = corpus.Corpus([_entry("3GPP TS 29.229", "18.1.0")]).resolution(
+    entry, across = corpus.Corpus([_entry("3GPP TS 29.229", "19.1.0")]).resolution(
         "TS29.229", like=citing
     )
 
-    assert entry is not None and entry.spec.version == "18.1.0"
+    assert entry is not None and entry.spec.version == "19.1.0"
     assert across == corpus.CrossRelease(
         "ETSI-TS183.033",
         "TS29.229",
-        "18.1.0",
+        "19.1.0",
         corpus.STAND_IN,
         meant="6.6.0",
         specific=True,

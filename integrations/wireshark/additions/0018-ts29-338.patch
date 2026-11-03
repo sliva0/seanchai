@@ -6,7 +6,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.338 V18.2.0 defines these AVPs in vendor 10415, which the
+3GPP TS 29.338 V19.3.0 defines these AVPs in vendor 10415, which the
 dictionary has no entry for at their codes:
 
   HSS-ID (3325): UTF8String, clause 6.3.3.14

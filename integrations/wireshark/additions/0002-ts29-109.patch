@@ -6,7 +6,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.109 V18.1.0 defines this AVP in vendor 10415, which the
+3GPP TS 29.109 V19.0.0 defines this AVP in vendor 10415, which the
 dictionary has no entry for at its code:
 
   SHA-256-Indication (421): Enumerated, 2 values, clause 6.3.1.22

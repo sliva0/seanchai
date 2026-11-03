@@ -28,8 +28,8 @@ uv run seanchai download --only transcribed   # the transcriptions' PDFs alone
 ```
 specifications/
   manifest.json            what the published tree below holds
-  3gpp/Rel-18/TS_29.272/   extracted archives          ┐
-  3gpp/Rel-18/PDF/         ETSI renderings             │ published tree,
+  3gpp/Rel-19/TS_29.272/   extracted archives          ┐
+  3gpp/Rel-19/PDF/         ETSI renderings             │ published tree,
   3gpp/Rel-7/TS_29.140/    a pinned version, its release's │
   converted/               LibreOffice conversions     │ swapped in whole
   onem2m/Release-2/TS-0004/  the oneM2M document       │
@@ -116,7 +116,7 @@ experiments, not for refreshing the corpus.
   the document's archive and checks the claim before downloading anything,
   so a resolution never rests on a claim the archive stopped supporting.
   The version is fetched into its own release's tree
-  (`3gpp/Rel-11/TS_32.299/` beside `3gpp/Rel-18/TS_32.299/`). How the
+  (`3gpp/Rel-11/TS_32.299/` beside `3gpp/Rel-19/TS_32.299/`). How the
   corpus resolves to the pinned copies is in
   [consumers.md](consumers.md#resolution-across-releases).
 - **A catalog entry can be downloaded and still be out of scope.** A `[[tgpp]]`

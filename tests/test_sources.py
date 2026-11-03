@@ -116,7 +116,7 @@ last_version = "1.1.0"
     [
         (
             "TS29.109",
-            "18.1.0",
+            "19.0.0",
             [
                 *[("OctedString", "6.3")] * 6,
                 ("Synchronization Failure", "4.2"),
@@ -128,7 +128,7 @@ last_version = "1.1.0"
         ),
         (
             "TS29.128",
-            "18.0.0",
+            "19.2.0",
             # The rule lines carry only the name the patches target.
             [
                 ("OctetSstring", "6.4.1"),
@@ -139,22 +139,21 @@ last_version = "1.1.0"
         ),
         (
             "TS29.336",
-            "18.2.0",
+            "19.1.0",
             [
                 ("Maximum Latency", "8.4.1"),
                 ("Maximum Response Time", "8.4.1"),
                 ("Visited PLMN Id", "8.4.1"),
-                ("<AVP header: xxxx 10415>", "8.4.85"),
             ],
         ),
         (
             "TS29.337",
-            "18.0.0",
+            "19.0.0",
             [("Old-Rference-Number", "6.2.3")],
         ),
         (
             "TS29.338",
-            "18.2.0",
+            "19.3.0",
             # The header-line units carry only the substring the patch targets;
             # the full rule lines around it belong to the source document, and
             # transcribing them here would pin text the patch never asserts.
@@ -169,7 +168,7 @@ last_version = "1.1.0"
         ),
         (
             "TS29.345",
-            "18.0.0",
+            "19.0.0",
             [
                 ("M. V", "6.3.1"),
                 ("M. V", "6.3.1"),

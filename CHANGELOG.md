@@ -11,6 +11,19 @@ Nothing has been published to PyPI yet.
 - `seanchai regenerate` names an ETSI document in parts as ETSI does
   (`ts18305901-020101`), and the catalog gains ETSI TS 183 020, TS 183 059-1 and
   3GPP2 X.S0013-006.
+- `seanchai download` fetches the catalog at Release 19 (`downloader.RELEASE`).
+- A plain `regenerate` follows a committed copy into a later release's tree when
+  the manifest no longer lists its own, reporting it `replaced` and leaving no
+  empty tree behind.
+- A declaration ranged with no upper bound, or none at all, no longer counts as
+  having reviewed a later release: a file mixing them with closed ranges keeps
+  all of its declarations through a release upgrade.
+- A registry row's Code cell may print a placeholder, kept quoted as
+  `RegistryRow.printed_code` with `code` None, behind the extractor's
+  `placeholder-codes`: TS 29.230 V19.3.0 allocates TS 29.329's Sh-ee `"zz"`.
+- The docx extractor reads a table whose every row merges a column across grid
+  columns no cell starts in, and retires `conflicting-avp-codes`, TS 29.273
+  V19.2.0 having settled the code it was for.
 - A `Value Table` block for what a numeric AVP's numbers are named:
   `result-codes`, `bits` and `features`, read from 3GPP clause headings, lines
   and tables and from RFC text, with `value_table` and `value_row` selectors for

@@ -227,11 +227,11 @@ re-extract the old version with today's code, so the diff shows the
 specification's changes and not the extractor's:
 
 ```sh
-uv run seanchai download --spec TS29.272 --version 18.6.0
+uv run seanchai download --spec TS29.272 --version 19.5.0
 uv run seanchai regenerate --spec TS29.272 -o /tmp/old \
-    --manifest specifications/versions/TS29.272/18.6.0/manifest.json
-diff -u /tmp/old/raw/3gpp/rel-18/29272-i60.raw.dad \
-    packages/seanchai-corpus/src/seanchai_corpus/dad/raw/3gpp/rel-18/29272-i70.raw.dad
+    --manifest specifications/versions/TS29.272/19.5.0/manifest.json
+diff -u /tmp/old/raw/3gpp/rel-19/29272-j50.raw.dad \
+    packages/seanchai-corpus/src/seanchai_corpus/dad/raw/3gpp/rel-19/29272-j60.raw.dad
 ```
 
 `--spec` limits the rebuild to that document and `-o` keeps the older pair
@@ -254,6 +254,25 @@ it is printed as `not widened, stale`. A literal outside the top-level
 `CORRECTIONS` statements, inside a lambda, conditional or filtered
 comprehension, split by comments, or built by an expression, is printed as
 `not widened` for a person to handle.
+
+**A new release** is an upgrade of every document at once. `RELEASE` in
+`downloader/catalog.py` names the one `seanchai download` fetches the catalog
+at. A plain `regenerate` then follows each committed copy into the new tree,
+reporting it `replaced` and removing the old pair and any tree left empty, and
+reads each document with the declarations of the release below it
+([extractor.md](extractor.md#releases)). What a release moves beyond the
+declarations is the corpus's own reading of it:
+
+- A declaration whose stale `find` or `expect` fails is usually an adopted fix,
+  to retire; a new shape is an extractor change or a new declaration.
+- Run `--expand-ranges` once the corpus holds the new copies, since an
+  acceptance is checked against them.
+- `corpus.RELEASE_STAND_INS` names held versions: each is a comparison to redo
+  against the new copy of the document it answers for. Where the two differ for
+  what the citing copy reaches, pin the older version it means.
+- A `Supply` cites another document's values, and a non-specific reference moves
+  to that document's latest version of the new release (TS 29.272's TS 32.422
+  gained values in Release 19). Re-read those clauses.
 
 ## Releases
 

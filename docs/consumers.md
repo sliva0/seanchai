@@ -13,8 +13,8 @@ pip install "seanchai[corpus]"
 
 `Application.avps()` is the closure of what an application's commands use, at
 any depth, whichever document defines it. `Model.avps(reference)` is something
-else: what a document's own tables list. Cx's commands use 103 AVPs and TS
-29.229's tables list 77: RFC 6733's `Destination-Host` is in no table of TS
+else: what a document's own tables list. Cx's commands use 104 AVPs and TS
+29.229's tables list 82: RFC 6733's `Destination-Host` is in no table of TS
 29.229's. Generate a dictionary from `Application.avps()`, or from
 `Message.walk()` for one command.
 
@@ -374,13 +374,13 @@ needs live in `corpus.py`, each entry citing its source:
   document, a later release's copy answering for a release version the
   corpus lacks, with the evidence that both define alike everything the
   citing copy re-uses. TS 32.299 V11.20.0's six Release 11 references, and
-  TS 29.210's and TS 29.234's of TS 29.229, are answered by Release 18
+  TS 29.210's and TS 29.234's of TS 29.229, are answered by Release 19
   copies so, as is ETSI TS 183 033's of TS 29.229 V6.6.0, a version it names
   that the catalog cannot pin, being no release's last. Where the releases
   differ, the older version is pinned
   instead: TS 29.212 V11.19.0 and TS 29.214 V11.16.0 for TS 32.299
   V11.20.0, and TS 29.061 V6.15.0 for TS 29.210, whose table puts M in
-  Must on three AVPs Release 18 forbids it on.
+  Must on three AVPs Release 19 forbids it on.
 
 Every version these name is a catalog pin the downloader checks against
 the 3GPP archive on each download ([downloader.md](downloader.md)). An
@@ -454,17 +454,18 @@ The eighteen, by cause:
   for its own interface.
 - **An origin the corpus does not hold.** RFC 6736 table 3 re-uses
   `Egress-VLANID` from RFC 4675, a RADIUS document.
-- **The eleven names that resolve nowhere**, the corpus's `Undefined AVP`
+- **The twelve names that resolve nowhere**, the corpus's `Undefined AVP`
   blocks ([below](#undefined-names)), holes under the default policy and
   the consumer's to answer for under another.
 
 ### Undefined names
 
-Eleven names the corpus's documents use as members are defined nowhere: RFC
+Twelve names the corpus's documents use as members are defined nowhere: RFC
 4004's three SPIs, RFC 5866's `Authorization-Session-Volume`, TS 29.345's
 `ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's
-`External-Group-Identifier`, TS 32.299's `Submission-Timestamp` and
-`Network-Element`, TS 29.234's `Error-Cause` and TS 29.061's
+`External-Group-Identifier`, TS 29.329's `Request-Current-Status`, TS 32.299's
+`Submission-Timestamp` and `Network-Element`, TS 29.234's `Error-Cause` and TS
+29.061's
 `Delegated-IPv6-Prefix`, a RADIUS attribute of RFC 4818, which the corpus does
 not hold. Each has an
 `Undefined AVP` block in its document's file, inserted by a correction

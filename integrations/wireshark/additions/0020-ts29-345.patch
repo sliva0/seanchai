@@ -6,7 +6,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.345 V18.0.0 defines these AVPs in vendor 10415, which the
+3GPP TS 29.345 V19.0.0 defines these AVPs in vendor 10415, which the
 dictionary has no entry for at their codes:
 
   App-Layer-User-Id (3801): UTF8String, clause 6.3.2

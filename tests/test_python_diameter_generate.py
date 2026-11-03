@@ -129,7 +129,7 @@ def test_every_module_imports_as_library_classes_and_registers_nothing(package):
         """,
     )
     modules, directions = map(int, output.split())
-    assert modules == 88
+    assert modules == 89
     assert directions > 300
 
 
@@ -523,6 +523,7 @@ def test_only_commands_no_document_gives_an_id_generate_none(package):
         "ts29_234_5",
         "ts29_234_8",
         "ts29_234_9",
+        "ts29_329_8",
     ]
     gx = _read(package, "ts29_212_5")
     assert (
@@ -534,10 +535,10 @@ def test_only_commands_no_document_gives_an_id_generate_none(package):
 
 def test_each_specification_reports_its_additions(generator, tmp_path, capsys):
     assert generator.main(["TS29.229", "-o", str(tmp_path / "cx")]) == 0
-    assert capsys.readouterr().out == "TS29.229: 19 additions\n"
+    assert capsys.readouterr().out == "TS29.229: 21 additions\n"
     init = (tmp_path / "cx" / "__init__.py").read_text(encoding="utf-8")
     assert (
-        "- `ts29_229`: 3GPP TS 29.229 clause 6, application 16777216; 18 additions\n"
+        "- `ts29_229`: 3GPP TS 29.229 clause 6, application 16777216; 20 additions\n"
     ) in init
 
 

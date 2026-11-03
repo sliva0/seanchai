@@ -6,7 +6,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-3GPP TS 29.388 V18.1.0 defines these AVPs in vendor 10415, which the
+3GPP TS 29.388 V19.1.0 defines these AVPs in vendor 10415, which the
 dictionary has no entry for at their codes:
 
   V2X-PC5-Allowed-PLMN (4600): Grouped, 2 members, clause 6.3.3
