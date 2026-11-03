@@ -4802,6 +4802,17 @@
    "renames": [],
    "version": null
   },
+  "rfc6942": {
+   "edits": {
+    "RFC6942.py#application-id": {
+     "kind": "insert",
+     "reason": "clause 7 defines 'Diameter ERP, with an Application Id value of 13' and clause 10.1 records IANA's allocation; clauses 5.2 and 6 send the ERP/DER and ERP/DEA that clause 2 says carry it"
+    }
+   },
+   "reference": "RFC6942",
+   "renames": [],
+   "version": null
+  },
   "rfc7155": {
    "edits": {
     "RFC7155.py#abort-session-answer-redirected-host": {

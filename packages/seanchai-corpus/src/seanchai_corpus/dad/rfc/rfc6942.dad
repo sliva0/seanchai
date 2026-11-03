@@ -4,6 +4,14 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc6942.txt
 
 
+; Type: Application Scope ;; inserted: (RFC6942.py#application-id)
+; Name: Diameter ERP
+; Section: 7
+; Page: 12
+; Application-ID: 13
+; Applies-To: 5.2.*, 6.*
+
+
 ; Type: AVP Table
 ; Section: 8.1
 ; Page: 13
