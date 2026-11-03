@@ -355,6 +355,9 @@ def _is_bold(line: _Line) -> bool:
 
 
 _TABBED_NUMBER_RE = re.compile(r"\S(?:\t|[ \xa0]{2,})[\s\xa0]*\d+[\s\xa0]*$")
+# A run holding only a repetition spells no name: TS 29.561 clause 12.6.3 prints
+# a plain "0*16 " before a bold "[ 3GPP-UE-MAC-Address ]".
+_REPETITION_RUN_RE = re.compile(r"\s*\d*\*\d*\s*")
 
 
 def _lines(
@@ -379,7 +382,9 @@ def _lines(
                     bold.append(set())
                     struck.append(set())
                 texts[-1].append(piece)
-                if any(char.isalnum() for char in piece):
+                if any(char.isalnum() for char in piece) and (
+                    not _REPETITION_RUN_RE.fullmatch(piece)
+                ):
                     bold[-1].add(bool(run.bold))
                     struck[-1].add(bool(run.font.strike or run.font.double_strike))
     lines = [
@@ -2277,6 +2282,17 @@ def _extract_avp_table(
                         referred.append(ast.ReusedAvpRow(name=name, origin=origin))
                 case ast.AvpColumn.SECTION:
                     section_value = _clause_cell(text, quirks) or None
+                    # TS 29.561 table 12.4-1's "Section defined" holds its own
+                    # clause ("11.3.1") or another document ("3GPP TS 29.061
+                    # [5]"), a re-use, as a `reference-cells` document is.
+                    if (
+                        section_value is not None
+                        and quirks.enabled("document-clause-cells")
+                        and (origin := _named_document(section_value)) is not None
+                    ):
+                        quirks.fire("document-clause-cells")
+                        referred.append(ast.ReusedAvpRow(name=name, origin=origin))
+                        section_value = None
                     # Checked here so a typo (TS 29.368 table 6.4.1.1's
                     # "6. 4.2") names its row, not a pydantic pattern.
                     if section_value is not None and not _SECTION_REF_RE.match(
@@ -4209,6 +4225,11 @@ QUIRKS: dict[str, str] = {
         "read an AVP table's 'Reference' column: a bracketed clause number"
         " ('[A.5.1]') as the row's defining clause, a document ('IETF RFC 6733"
         " [14]') as a re-used row citing it (oneM2M TS-0004 table A.4-1)"
+    ),
+    "document-clause-cells": (
+        "read an AVP table's clause cell naming another document ('3GPP TS"
+        " 29.061 [5]') as a re-used row citing it, no clause of the row's own"
+        " (TS 29.561 table 12.4-1)"
     ),
     "reference-points-column": (
         "read an 'Applicable Reference Points' column's cells as reference"
