@@ -3156,3 +3156,92 @@ class TestEntryPoints:
         )
         assert "ast" not in model.__all__
         assert all(hasattr(model, name) for name in model.__all__)
+
+
+def test_a_bit_mask_avp_exposes_its_bits_through_its_definition(built):
+    avp = built.definition("ULR-Flags")
+
+    assert type(avp) is model.Avp
+    assert avp.data_type is model.DataType.UNSIGNED32
+    table = avp.value_table
+    assert table is not None
+    assert (table.kind, table.reference, table.section, table.table) == (
+        model.ValueKind.BITS,
+        "TS29.272",
+        "7.3.7",
+        "7.3.7/1",
+    )
+    assert table.vendor_id == 10415
+    assert (table.rows[0].name, table.rows[0].value) == (
+        "Single-Registration-Indication",
+        0,
+    )
+    assert avp.to_dict()["value_tables"][0]["rows"][0] == {
+        "name": "Single-Registration-Indication",
+        "value": 0,
+        "section": None,
+        "mark": None,
+    }
+
+
+def test_an_avp_with_no_value_table_says_so(built):
+    avp = built.definition("Session-Id")
+
+    assert avp.value_table is None
+    assert avp.value_tables == ()
+
+
+def test_result_codes_read_through_the_reading_document(built):
+    rfc = built.definition("Result-Code")
+    assert (rfc.value_table.reference, rfc.value_table.vendor_id) == ("RFC6733", 0)
+    assert built.definition("Experimental-Result-Code").value_tables == ()
+
+    cx = built.resolve("TS29.229", "Experimental-Result-Code")
+    assert cx.defined_in == "RFC6733"
+    assert cx.value_table.reference == "TS29.229"
+    assert cx.value_table.vendor_id == 10415
+    assert {row.value: row.name for row in cx.value_table.rows}[5001] == (
+        "DIAMETER_ERROR_USER_UNKNOWN"
+    )
+    # A document's table makes no second reading of RFC 6733's AVP.
+    assert cx == built.definition("Experimental-Result-Code")
+
+
+def test_value_tables_filter_by_document_avp_and_kind(built):
+    everything = built.value_tables()
+    assert {table.kind for table in everything} == set(model.ValueKind)
+    assert all(
+        table.reference == "TS29.272" for table in built.value_tables("ts 29.272")
+    )
+    (flags,) = built.value_tables("TS29.272", avp="ULR-Flags")
+    assert flags.kind is model.ValueKind.BITS
+    features = built.value_tables("TS29.272", kind=model.ValueKind.FEATURES)
+    assert [(t.application, t.feature_list_id) for t in features] == [
+        ("S6a/S6d", 1),
+        ("S6a/S6d", 2),
+    ]
+    assert built.value_tables(avp="No-Such-AVP") == ()
+    older = built.value_tables("TS29.212", version="11.19.0", avp="Feature-List")
+    assert {table.version for table in older} == {"11.19.0"}
+
+
+def test_feature_lists_are_keyed_by_application_and_list_id(built):
+    lists = built.feature_lists()
+
+    assert lists["S6a/S6d", 1].rows[0].name == "ODB-all-APN"
+    assert lists["S6a/S6d", 1].rows[0].mark == "O"
+    assert lists["S6a/S6d", 2].table == "7.3.10/2"
+    assert lists["S6t", None].reference == "TS29.336"
+    assert lists["Cx", 1].rows[1].mark == "M"
+    assert set(built.feature_lists("TS29.273")) == {("SWx", 1), ("S6b", 1)}
+    # A feature table's AVP is corrected where its clause misnames it.
+    assert lists["T4", 1].avp == "Feature-List"
+
+
+def test_a_table_read_through_the_origin_is_the_origin_s(built):
+    avp = built.resolve("TS29.336", "Supported-Monitoring-Events")
+    assert avp.value_table.reference == "TS29.336"
+    assert avp.data_type is model.DataType.UNSIGNED64
+    assert max(row.value for row in avp.value_table.rows) == 8
+    reused = built.resolve("TS29.272", "Supported-Monitoring-Events")
+    assert reused.value_table.reference in {"TS29.272", "TS29.336"}
