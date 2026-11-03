@@ -28,7 +28,9 @@ The rule everything rests on: **a `.dad` file records everything its source
 document says about a definition**, including where the document is
 redundant, self-contradictory or wrong. The extractor translates and never
 curates. The only edits are the two declared layers, input patches for
-source typos and corrections for wrong data, and both are reviewable. The
+source typos and corrections for wrong data, and both are reviewable. The one
+thing left out is a clause the document has not finished, declared with its
+reason and named in the file. The
 [linter][linter] reports the contradictions, and the
 [Wireshark oracle][oracle] cross-checks values against an
 independent reading of the same documents.

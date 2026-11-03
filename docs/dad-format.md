@@ -147,6 +147,12 @@ section, each starting with `; Type:`.
   file says a name is a known hole, since a hole is the corpus's reading of
   several files together. The corpus's `holes.toml` lists each with its evidence
   ([consumers.md](consumers.md#known-holes)).
+- **A file says less than its document only by a declared exclusion.** It is
+  the only way to, always with a reason: a `[[exclude]]` in
+  `edits/sources/<SpecRef>.toml` names a clause the document has not finished,
+  which neither file holds, and both print a comment block after the header
+  saying so, `;; excluded: clause 8 (Sh-ee), see TS29.329.toml`
+  ([extractor.md](extractor.md#exclusions)).
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
 - **An origin names its publisher, unless it is 3GPP or IETF.** Their

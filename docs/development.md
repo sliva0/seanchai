@@ -40,7 +40,8 @@ wireshark` need no extra.
   release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
   `raw/`, the record of known holes and the record of corrections
   ([dad-format.md](dad-format.md#the-corpus)).
-- `edits/sources/<SpecRef>.toml`: input patches and quirks per document.
+- `edits/sources/<SpecRef>.toml`: input patches, quirks and exclusions per
+  document.
 - `edits/corrections/<SpecRef>.py`: corrections per document.
 - `edits/transcriptions/<SpecRef>.dad`: documents no extractor reads, copied
   by hand (ETSI ES 283 026, ES 283 034, ES 283 035, TS 183 017, TS 183 020, TS
@@ -209,6 +210,7 @@ corpus usually moves the export's pin too ([above](#tests)).
 | transcriptions | documents no extractor reads, copied by hand as printed | `edits/transcriptions/<SpecRef>.dad` |
 | input patches | typos in the source text that break extraction, and case-only misspellings of a name | `edits/sources/<SpecRef>.toml`, `[[patch]]` |
 | quirks | readings too heuristic to run undeclared | same file, `[[quirk]]` |
+| exclusions | clauses the document has not finished, left out of both files | same file, `[[exclude]]` |
 | extractor code | exact-match structure that fails loudly on its own | `src/seanchai/extractor/` |
 | corrections | data that parses fine but is wrong | `edits/corrections/<SpecRef>.py` |
 | acceptances | linter notes a clause makes deliberate; no data changes | same file, `Accept` |
@@ -267,6 +269,9 @@ declarations is the corpus's own reading of it:
   to retire; a new shape is an extractor change or a new declaration.
 - Run `--expand-ranges` once the corpus holds the new copies, since an
   acceptance is checked against them.
+- An `[[exclude]]` stays silent while its clause exists, so re-read each
+  excluded clause in the new copy, and remove the declaration if the version
+  settles it ([extractor.md](extractor.md#exclusions)).
 - `corpus.RELEASE_STAND_INS` names held versions: each is a comparison to redo
   against the new copy of the document it answers for. Where the two differ for
   what the citing copy reaches, pin the older version it means.
