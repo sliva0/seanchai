@@ -1419,14 +1419,6 @@
      "kind": "correction",
      "reason": "table 5.4.0.1 lower-cases the 'v'; RFC 4005, which defines the AVP, spells 'IPv6'"
     },
-    "TS29.214.py#rel11-specific-action-void-0": {
-     "kind": "delete",
-     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5, as Release 19 does — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
-    },
-    "TS29.214.py#rel11-specific-action-void-5": {
-     "kind": "delete",
-     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5, as Release 19 does — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
-    },
     "TS29.214.py#rel11-vendor-id-acceptable-service-info": {
      "kind": "correction",
      "reason": "clause 5.3.24's AVP header omits the vendor-id; clause 5.3 sets the Vendor-Id header of every AVP the document defines to 3GPP (10415), and table 5.3.1 marks the V flag mandatory"
@@ -1488,14 +1480,6 @@
        61
       ]
      ]
-    },
-    "TS29.214.py#specific-action-void-0": {
-     "kind": "delete",
-     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5 — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
-    },
-    "TS29.214.py#specific-action-void-5": {
-     "kind": "delete",
-     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5 — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
     },
     "TS29.214.py#sta-netloc-access-support-case": {
      "kind": "correction",

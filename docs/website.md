@@ -45,7 +45,7 @@ DIR/
 
 `<id>` is the file's stem, `29272-j60`. The files are compact JSON with sorted
 keys, the grammar aside, which is copied as it stands. `seanchai.export_schema`
-holds their shape as pydantic models and `SCHEMA_VERSION`, now 5, written into
+holds their shape as pydantic models and `SCHEMA_VERSION`, now 6, written into
 every file but `schema.json` and the grammar; it changes when a reader would
 have to. A fixture can be validated against `schema.json`, whose root is one of
 the four file shapes. A field with no default is always written, null where it

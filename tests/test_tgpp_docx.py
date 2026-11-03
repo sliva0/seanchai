@@ -1046,6 +1046,12 @@ def test_a_label_first_value_is_read_only_where_a_tab_sets_it_off(tabbed, values
             ),
             None,
         ),
+        # The word a document prints where it withdrew values.
+        (
+            "5 .. 9 Void",
+            ast.VoidValues(first=5, last=9),
+            None,
+        ),
         # A negation takes the range away from vendors.
         (
             "100 .. 199 Not for vendor-specific services",
@@ -1087,6 +1093,57 @@ def _enum_lines(text, *, label=None):
         text=text, style="B1", lines=_abnf_lines(text), label=label
     )
     return section
+
+
+@pytest.mark.parametrize(
+    ("text", "declared", "found"),
+    [
+        # TS 29.214 clause 5.3.13.
+        ("Void (5)", [], ast.VoidValues(first=5, last=5)),
+        ("void (5)", [], ast.VoidValues(first=5, last=5)),
+        ("VOID (5)", [], ast.VoidValues(first=5, last=5)),
+        ("- Void (5)", ["dashed-enum-values"], ast.VoidValues(first=5, last=5)),
+        ("5 Void", ["value-first-enums"], ast.VoidValues(first=5, last=5)),
+        # Only the word alone is a withdrawal.
+        (
+            "Void (5) Was the old mode",
+            ["described-enum-values"],
+            ast.EnumValue(name="Void", value=5, description="Was the old mode"),
+        ),
+        ("Void-Mode (5)", [], ast.EnumValue(name="Void-Mode", value=5)),
+    ],
+)
+def test_a_value_labelled_void_is_a_void_value(text, declared, found):
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name=name, reason="rejection") for name in declared], None)
+
+    enum = tgpp_docx._extract_enumerated(
+        _enum_lines(text), "Example-Mode", 1, 10415, quirks, []
+    )
+
+    assert enum.values == (found,)
+
+
+def test_void_values_keep_their_place_among_the_named_ones():
+    from seanchai.extractor.sources import Quirks
+
+    section = _enum_with("Void (0)")
+    section.paragraphs.extend(
+        tgpp_docx._Para(text=text, style="B1", lines=section.paragraphs[0].lines)
+        for text in ("ON (1)", "Void (2)", "OFF (3)")
+    )
+
+    enum = tgpp_docx._extract_enumerated(
+        section, "Example-Mode", 1, 10415, Quirks([], None), []
+    )
+
+    assert enum.values == (
+        ast.VoidValues(first=0, last=0),
+        ast.EnumValue(name="ON", value=1),
+        ast.VoidValues(first=2, last=2),
+        ast.EnumValue(name="OFF", value=3),
+    )
 
 
 @pytest.mark.parametrize(

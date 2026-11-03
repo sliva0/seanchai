@@ -484,12 +484,12 @@ Flow-Usage ::= < Enumerated AVP header: 512 10415 >
 ; Section: 5.3.13
 ; Page: 43
 Specific-Action ::= < Enumerated AVP header: 513 10415 >
-        ;; deleted: value 'Void' (= 0) (TS29.214.py#specific-action-void-0)
+      ; VOID                                                = 0
         CHARGING_CORRELATION_EXCHANGE                       = 1
         INDICATION_OF_LOSS_OF_BEARER                        = 2
         INDICATION_OF_RECOVERY_OF_BEARER                    = 3
         INDICATION_OF_RELEASE_OF_BEARER                     = 4
-        ;; deleted: value 'Void' (= 5) (TS29.214.py#specific-action-void-5)
+      ; VOID                                                = 5
         IP-CAN_CHANGE                                       = 6
         INDICATION_OF_OUT_OF_CREDIT                         = 7
         INDICATION_OF_SUCCESSFUL_RESOURCES_ALLOCATION       = 8

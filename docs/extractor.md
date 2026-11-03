@@ -273,9 +273,15 @@ blank.
   reserved ranges. A range whose words leave it to vendors or operators,
   with no `not`, `no`, `never` or `except`, is a vendor-specific range
   keeping the words as its description; a range reserved with no such
-  wording is a reserved range; any other range is reported. A clause that
+  wording is a reserved range; any other range is reported. A value or range
+  labelled `Void`, in any case, is a `; VOID` line (TS 29.214 clause 5.3.13's
+  `Void (0)`, in all three copies). A clause that
   says where its values are defined instead of listing them gets that
   citation as `; Values:`, in the document's words.
+- A feature table's `void` row stays a row (`void = 18`, TS 29.212 tables
+  5.4.1.1 and 5a.4.1.1, in both copies): `; VOID` is an enumeration's line, a
+  `Value Table` holds names and numbers, and the row's blank M/O cell is what
+  tells it apart. No other value table prints the word.
 - The table with the "AVP Flag rules" header becomes an `AvpTable`. A row
   whose code cell is a NOTE reference gets `code=None`. A table whose
   labelled header is followed only by blank cells contributes nothing and
@@ -468,9 +474,8 @@ comments: heading and rule-name mismatches, Diameter headers omitting the
 application id, two ABNFs under one command heading, empty clause cells,
 merged rows duplicating cell text, headings without " AVP", an underscore in
 a published name (`GBA_U-Awareness-Indicator`), the RFC 3588 `P` flag still
-printed, parenthesised note references on name cells, one AVP printed with
-two bodies, and "Void" as an enum value label. Everything patched is listed
-with its reason in `edits/sources/`.
+printed, parenthesised note references on name cells, and one AVP printed with
+two bodies. Everything patched is listed with its reason in `edits/sources/`.
 
 ### RADIUS attributes as AVPs
 

@@ -50,6 +50,7 @@ def test_void_values_parse_and_round_trip_in_one_spelling():
     spec = parser.parse(text)
 
     (enumerated,) = spec.sections
+    assert isinstance(enumerated, ast.EnumeratedAvp)
     assert enumerated.values == (
         ast.VoidValues(first=0, last=0),
         ast.EnumValue(name="On", value=1),

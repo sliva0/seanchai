@@ -3161,6 +3161,19 @@ class TestPrintingAndSerialising:
 
         assert kinds >= {"value", "vendor-specific"}
 
+    def test_specific_action_keeps_the_values_ts_29_214_withdrew(self, built):
+        """Clause 5.3.13 prints `Void (0)` and `Void (5)`."""
+        values = built.resolve("TS29.214", "Specific-Action").values
+
+        assert [value for value in values if isinstance(value, ast.VoidValues)] == [
+            ast.VoidValues(first=0, last=0),
+            ast.VoidValues(first=5, last=5),
+        ]
+        assert not any(
+            isinstance(value, ast.EnumValue) and value.name.lower() == "void"
+            for value in values
+        )
+
 
 class TestEntryPoints:
     @pytest.mark.parametrize(

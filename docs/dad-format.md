@@ -45,7 +45,8 @@ section, each starting with `; Type:`.
 
 - **Directive comments are grammar.** A single `;` in a defined position is
   semantic (`; Key: value` headers, `; bold`, `; strikethrough`,
-  `; RESERVED`, `; VOID`, `; VENDOR-SPECIFIC`); a malformed one is a parse error.
+  `; RESERVED`, `; VOID`, `; VENDOR-SPECIFIC`); a malformed one is a parse
+  error.
   Free-text comments use `;;` and carry no data. Where they attach is still
   defined ([Comments](#comments)), so normalising a file keeps them.
 - **The file states its own vendor-id.** `; Vendor-ID:` is the vendor space

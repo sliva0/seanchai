@@ -1,13 +1,10 @@
 """Corrections for 3GPP TS 29.214 — see docs/corrections.md."""
 
-from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Accept,
     Correction,
-    Delete,
     avp_rule,
     definition,
-    enum_value,
     reused_row,
     table_row,
 )
@@ -42,17 +39,6 @@ CORRECTIONS = [
         versions="18.4.0..19.3.0",
     )
     for name, section in _VENDORLESS
-] + [
-    Delete(
-        id=f"specific-action-void-{value}",
-        target=enum_value("Specific-Action", "Void", value=value),
-        expect=ast.EnumValue(name="Void", value=value),
-        reason="clause 5.3.13 prints 'Void' as the label of values 0 and 5 —"
-        " a 3GPP editorial placeholder for removed values, not an enumerated"
-        " value a dictionary can carry, and one name cannot label two values",
-        versions="18.4.0..19.3.0",
-    )
-    for value in (0, 5)
 ]
 
 CORRECTIONS += [
@@ -171,20 +157,6 @@ CORRECTIONS += [
         versions="11.16.0",
     )
     for name, section in _VENDORLESS_REL11
-]
-
-CORRECTIONS += [
-    Delete(
-        id=f"rel11-specific-action-void-{value}",
-        target=enum_value("Specific-Action", "Void", value=value),
-        expect=ast.EnumValue(name="Void", value=value),
-        reason="clause 5.3.13 prints 'Void' as the label of values 0 and 5, as"
-        " Release 19 does — a 3GPP editorial placeholder for removed values,"
-        " not an enumerated value a dictionary can carry, and one name cannot"
-        " label two values",
-        versions="11.16.0",
-    )
-    for value in (0, 5)
 ]
 
 CORRECTIONS += [
