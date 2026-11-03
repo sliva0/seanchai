@@ -518,3 +518,48 @@ def test_policy_names_are_the_models():
         "placeholder",
         "supply",
     }
+
+
+def test_show_prints_a_bit_mask_s_bits():
+    result = _run("show", "ULR-Flags")
+
+    assert result.exit_code == 0, result.output
+    assert "bits (TS29.272, clause 7.3.7, table 7.3.7/1):" in result.stdout
+    assert "    0 Single-Registration-Indication\n" in result.stdout
+
+
+def test_show_prints_result_codes_and_marks():
+    result = _run("show", "Result-Code")
+    assert "result-codes (RFC6733, clause 7.1):" in result.stdout
+    assert "    2001 DIAMETER_SUCCESS ; 7.1.2\n" in result.stdout
+
+    cx = _run("show", "Feature-List", "--document", "TS29.229")
+    assert "features of Cx list 1 (TS29.229, clause 7.1.1, table 7.1.1):" in cx.stdout
+    assert "    0 SiFC ; O\n" in cx.stdout
+
+
+def test_the_dictionary_holds_the_selected_documents_value_tables():
+    built = Model.build(Corpus.installed())
+
+    selected = build(built, documents=("TS29.272",))
+    assert {table.reference for table in selected.value_tables} == {"TS29.272"}
+    flags = next(table for table in selected.value_tables if table.avp == "ULR-Flags")
+    assert (flags.kind, flags.table, flags.vendor_id) == (
+        ast.ValueKind.BITS,
+        "7.3.7/1",
+        10415,
+    )
+    assert flags.avp_id == next(
+        avp.id for avp in selected.avps if avp.name == "ULR-Flags"
+    )
+    features = [t for t in selected.value_tables if t.kind is ast.ValueKind.FEATURES]
+    assert [(t.application, t.feature_list_id) for t in features] == [
+        ("S6a/S6d", 1),
+        ("S6a/S6d", 2),
+    ]
+    assert features[0].rows[0].mark == "O"
+    assert features[0].avp_id is None or features[0].avp_id.endswith(":630")
+
+    by_application = build(built, application_ids=(16777216,))
+    assert {table.reference for table in by_application.value_tables} == {"TS29.229"}
+    assert Dictionary.model_validate(by_application.model_dump()) == by_application
