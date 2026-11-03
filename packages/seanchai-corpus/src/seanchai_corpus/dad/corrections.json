@@ -1243,7 +1243,7 @@
     },
     "TS29.229.py#wildcarded-impu-row-missing": {
      "kind": "insert",
-     "reason": "clause 6.3.43 defines Wildcarded-IMPU as UTF8String and notes that it is used by Sh, but table 6.3.0.1 omits it; TS 29.329 table 6.3.1 supplies code 636, V in Must, M in Must not and No encryption, and clause 6.3.20 cites this defining clause"
+     "reason": "clause 6.3.43 defines Wildcarded-IMPU as UTF8String, but table 6.3.0.1 omits it; the clause states no code, flag rule or encryption, so the row leaves those cells blank"
     }
    },
    "reference": "TS29.229",
