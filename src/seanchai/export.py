@@ -40,6 +40,7 @@ from .corpus import (
 from .dad import ast, corrections, parser
 from .downloader.catalog import Catalog, load_catalog
 from .export_schema import (
+    GENERATOR,
     SCHEMA_VERSION,
     ApplicationIdentity,
     AvpIdentity,
@@ -809,6 +810,30 @@ def _corpus_version(books: Corpus) -> str | None:
     return None
 
 
+# The keys of `index.json` in the versions from before it said `generator`.
+_UNMARKED_INDEX_KEYS = {
+    1: {"schema_version", "mode", "documents", "search", "mentions"},
+    2: {"schema_version", "seanchai_version", "corpus_version", "mode", "documents"},
+    3: {"schema_version", "seanchai_version", "corpus_version", "mode", "documents"},
+}
+
+
+def _is_export_index(index: Any) -> bool:
+    """Whether a parsed `index.json` is an export's: it says so, or it has exactly
+    the shape of a version from before it did."""
+    if not isinstance(index, dict):
+        return False
+    if "generator" in index:
+        return index["generator"] == GENERATOR
+    version = index.get("schema_version")
+    return (
+        type(version) is int
+        and index.keys() == _UNMARKED_INDEX_KEYS.get(version)
+        and index["mode"] in ("public", "self-hosted")
+        and isinstance(index["documents"], list)
+    )
+
+
 def _refuse_foreign(output: Path) -> None:
     """Refuse to replace what is not a previous export: `output` has to be
     absent, empty, or hold the `index.json` an export writes."""
@@ -822,10 +847,10 @@ def _refuse_foreign(output: Path) -> None:
         index = json.loads((output / "index.json").read_bytes())
     except OSError, ValueError:
         index = None
-    if not (isinstance(index, dict) and "schema_version" in index):
+    if not _is_export_index(index):
         raise CorpusError(
-            f"{output} is not empty and holds no export's index.json; an export"
-            " replaces its whole output directory, so name another"
+            f"{output} is not empty and holds no Seanchaí export's index.json; an"
+            " export replaces its whole output directory, so name another"
         )
 
 
@@ -968,6 +993,7 @@ def _write_export(
     )
     index = Index(
         schema_version=SCHEMA_VERSION,
+        generator=GENERATOR,
         seanchai_version=_distribution_version("seanchai"),
         corpus_version=_corpus_version(books),
         mode="self-hosted" if include_pdfs else "public",

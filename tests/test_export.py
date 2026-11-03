@@ -529,8 +529,10 @@ def test_the_source_says_what_kind_it_is(exported):
 
 
 def test_the_files_are_split_as_their_pages_need_them(exported):
+    assert exported.index["generator"] == "seanchai"
     assert set(exported.index) == {
         "schema_version",
+        "generator",
         "seanchai_version",
         "corpus_version",
         "mode",
@@ -1053,6 +1055,68 @@ def test_a_directory_holding_anything_else_is_refused(tmp_path, name):
     with pytest.raises(CorpusError, match="not empty"):
         export_corpus(Corpus.load([_ETSI]), output)
     assert _tree(output) == before
+
+
+_V2_INDEX = {
+    "schema_version": 2,
+    "seanchai_version": None,
+    "corpus_version": None,
+    "mode": "public",
+    "documents": [],
+}
+
+
+@pytest.mark.parametrize(
+    "index",
+    [
+        {"schema_version": None},
+        {"schema_version": 3},
+        {"name": "my-package", "version": "1.0.0"},
+        ["schema_version"],
+        {"generator": "someone-else", "schema_version": 4},
+        {**_V2_INDEX, "schema_version": 4},
+        {**_V2_INDEX, "schema_version": None},
+        {**_V2_INDEX, "schema_version": True},
+        {**_V2_INDEX, "schema_version": [2]},
+        {**_V2_INDEX, "mode": "other"},
+        {**_V2_INDEX, "documents": {}},
+        {**_V2_INDEX, "extra": 1},
+    ],
+)
+def test_an_unrelated_index_is_refused(tmp_path, index):
+    output = tmp_path / "out"
+    output.mkdir()
+    (output / "index.json").write_text(json.dumps(index), "utf-8")
+    (output / "mine.txt").write_text("mine", "utf-8")
+    before = _tree(output)
+    with pytest.raises(CorpusError, match="no Seanchaí export"):
+        export_corpus(Corpus.load([_ETSI]), output)
+    assert _tree(output) == before
+
+
+@pytest.mark.parametrize(
+    "index",
+    [
+        {
+            "schema_version": 1,
+            "mode": "self-hosted",
+            "documents": [],
+            "search": [],
+            "mentions": [],
+        },
+        _V2_INDEX,
+        {**_V2_INDEX, "schema_version": 3},
+        {"schema_version": 99, "generator": "seanchai"},
+    ],
+)
+def test_an_export_of_any_version_is_replaced(tmp_path, index):
+    output = tmp_path / "out"
+    output.mkdir()
+    (output / "index.json").write_text(json.dumps(index), "utf-8")
+    (output / "stale.json").write_text("{}", "utf-8")
+    export_corpus(Corpus.load([_ETSI]), output)
+    assert not (output / "stale.json").exists()
+    assert json.loads((output / "index.json").read_text("utf-8"))["generator"]
 
 
 def test_a_file_as_output_is_refused(tmp_path):

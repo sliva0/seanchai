@@ -34,7 +34,7 @@ frontend over that JSON and holds no Python.
 
 ```text
 DIR/
-  index.json              versions, mode, and every document's summary
+  index.json              generator, versions, mode, every document's summary
   search.json             search entries and line mentions, for the search page
   schema.json             JSON Schema of the other files
   syntax/dad.tmLanguage.json   the editors' TextMate grammar, for highlighting
@@ -45,16 +45,21 @@ DIR/
 
 `<id>` is the file's stem, `29272-i70`. The files are compact JSON with sorted
 keys, the grammar aside, which is copied as it stands. `seanchai.export_schema`
-holds their shape as pydantic models and `SCHEMA_VERSION`, now 3, written into
+holds their shape as pydantic models and `SCHEMA_VERSION`, now 4, written into
 every file but `schema.json` and the grammar; it changes when a reader would
 have to. A fixture can be validated against `schema.json`, whose root is one of
 the four file shapes. A field with no default is always written, null where it
 says nothing; the mostly empty `Token`, `Line`, `Target` and `Citation` fields
 are left out while they hold their default.
 
-`index.json` also carries `seanchai_version` and `corpus_version`, the second
-null for a corpus other than the installed one. There are no timestamps: the
-same inputs give the same bytes under any hash seed.
+`index.json` also carries `generator`, always `"seanchai"`, and
+`seanchai_version` and `corpus_version`, the second null for a corpus other than
+the installed one. There are no timestamps: the same inputs give the same bytes
+under any hash seed.
+
+An export replaces its whole output directory, so it refuses one that is not
+empty unless its `index.json` says that `generator`, or has exactly the shape of
+schema version 1, 2 or 3, which came before the marker.
 
 A document carries the file's text split into tokens, its `sections` for a table
 of contents, its holes with their recorded reasons, the linter's findings and

@@ -34,9 +34,12 @@ Nothing has been published to PyPI yet.
   and `export --include-pdfs` without `--specifications` is a usage error.
 - Help shows every default the same way.
 - `seanchai export` writes `syntax/dad.tmLanguage.json`, and each entry of a
-  document's `sections` has a `title` and runs in document order;
-  `SCHEMA_VERSION` is 3. The grammar's source moved to
-  `src/seanchai/dad/syntax/`, with `editors/vscode/` holding a copy.
+  document's `sections` has a `title` and runs in document order. The grammar's
+  source moved to `src/seanchai/dad/syntax/`, with `editors/vscode/` holding a
+  copy.
+- `index.json` says `generator`, which is what lets a later `seanchai export`
+  replace its directory; a directory with any other `index.json` is refused,
+  except the exact shape an earlier version wrote. `SCHEMA_VERSION` is 4.
 - A failed `seanchai export` swap can no longer lose the previous export: it
   waits in `<output>.previous-<pid>` until replaced or restored, and an error
   names it if it cannot be restored.
