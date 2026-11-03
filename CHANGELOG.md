@@ -8,6 +8,9 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- The docx extractor reads the text inside Word's smart tags, command headings
+  spacing a name's words, TS 29.061's and TS 29.109's commands, and a command
+  printed as a table, so 41 commands the corpus lacked are `Message` blocks.
 - `Model.definition`, `Avp.read_through`, `Message.walk`, `Application.avps` and
   `Model.installed`; `messages`, `applications` and `avps` work corpus-wide.
 - `Message.application_id` is the id on the wire; the header's is

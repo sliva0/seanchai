@@ -445,6 +445,16 @@ first_version = "11.20.0"
 last_version = "11.20.0"
 
 [[quirk]]
+name = "message-tables"
+reason = """
+    clause 6.4.5 prints RAA as table 6.4.5, its first row '<Diameter Header:
+    258, PXY>' and every other an ABNF member, with a 'Used in 3GPP' column
+    clause 6.4.1.2 reads as the strike ('in grey in the tables')
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
 name = "refer-type-cells"
 reason = """
     Table 7.2 types borrowed AVPs 'refer [n]'; clause 7.2 says only the
