@@ -1,0 +1,40 @@
+# Source declarations for ETSI TS 183 059-1 (NASS a2 interface based on the
+# DIAMETER protocol). Applied to the lines of the hand transcription in
+# edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "< User-Data -Request >"
+replace = "<User-Data-Request>"
+section = "7.1.3"
+reason = """
+    clause 7.1.3's message format prints a space inside the rule name, '<
+    User-Data -Request >'; the clause's heading and sentence name the command
+    User-Data-Request, as TS 29.329 does
+    """
+first_version = "2.1.1"
+last_version = "2.1.1"
+
+[[patch]]
+find = "128    [8]"
+replace = "128    RFC5580"
+section = "7.3"
+reason = """
+    table 7.4's Clause cell prints '[8]', and clause 2.1 [8] is
+    draft-ietf-geopriv-radius-lo-24, 'Carrying Location Objects in RADIUS and
+    Diameter', which a From cell cannot name; RFC 5580 published that draft
+    under that title and clause 4.3 and table 6 give Location-Data code 128
+    """
+first_version = "2.1.1"
+last_version = "2.1.1"
+
+[[patch]]
+find = "< AVP Header: 600 13019 >"
+replace = "< AVP header: 600 13019 >"
+section = "7.3.5"
+reason = """
+    clause 7.3.5's AVP format capitalizes 'Header'; the grammar's AVP header is
+    lower case, which is otherwise only spelling
+    """
+first_version = "2.1.1"
+last_version = "2.1.1"
