@@ -436,7 +436,7 @@ def _hole(hole: model.Hole) -> Hole:
     )
 
 
-class _Corpus:
+class _Lookups:
     """What every document's page and search entries look things up in."""
 
     def __init__(self, books: Corpus, built: model.Model) -> None:
@@ -501,7 +501,7 @@ class _Corpus:
 
 
 def _avps(
-    corpus: _Corpus, entry: Entry
+    corpus: _Lookups, entry: Entry
 ) -> tuple[dict[str, Target | None], list[Hole], list[SearchEntry]]:
     """`entry`'s AVP names: their targets, holes and search entries."""
     spec = entry.spec
@@ -538,7 +538,7 @@ def _avps(
     return names, holes, search
 
 
-def _sections_search(corpus: _Corpus, entry: Entry) -> list[SearchEntry]:
+def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
     """`entry`'s commands, applications and registry rows, as search entries."""
     spec = entry.spec
     identifier = document_id(entry)
@@ -659,6 +659,7 @@ def _titles(catalog: Catalog) -> dict[str, str]:
 
 
 def _publisher(entry: Entry) -> Any:
+    """Who publishes `entry`; `DocumentSummary.publisher` checks the spelling."""
     specification = entry.spec.specification
     if specification.startswith("3GPP "):
         return "3GPP"
@@ -837,7 +838,7 @@ def _write_export(
     specifications: Path | None,
     include_pdfs: bool,
 ) -> Index:
-    corpus = _Corpus(
+    corpus = _Lookups(
         books, model.Model.build(books, strict=False, dictionary=dictionary)
     )
     ids = [document_id(entry) for entry in corpus.entries]
@@ -890,7 +891,7 @@ def _write_export(
 
 
 def _write_document(
-    corpus: _Corpus,
+    corpus: _Lookups,
     entry: Entry,
     output: Path,
     declarations: _Declarations,
