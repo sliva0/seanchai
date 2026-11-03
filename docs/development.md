@@ -14,6 +14,19 @@ The repository is a uv workspace of the two packages published to PyPI:
 `uv sync` installs both from the working tree, so in a checkout the installed
 corpus is the committed one, and the tests live at the root for both.
 
+## Dependencies
+
+The library's own are `pydantic` and `click`: `click` stays core because the
+`seanchai` entry point is installed with the library, and `export`, `lint` and
+`crosscheck` need nothing else. `python-docx` (and through it `lxml`) and
+`pypdf` are the `seanchai[extract]` extra, which the dev group installs. Only
+`extractor/tgpp_docx.py` and two validators in `downloader/core.py` touch them,
+and nothing imports either on the way to the model or the export: the catalog,
+which the export reads, is its own module, `downloader/catalog.py`. Without the extra, `MissingExtraError` names it, and
+`extract`, `regenerate` and a 3GPP or oneM2M `download` say so before doing
+anything. `extract-rfc` and `download --only rfc`, `--only wireshark` need no
+extra.
+
 ## Repository layout
 
 - `src/seanchai/`: `dad/` (AST, parser, formatter, corrections), `extractor/`,
@@ -63,7 +76,8 @@ checker-specific form (`# pyright: ignore[...]`).
 
 `.github/workflows/ci.yml` runs the tests without sources, ruff, rumdl and both
 type checkers, then builds both packages and runs `tests/smoke_installed.py`
-over the wheels, installed with their dependencies from the index. Run
+over the wheels, installed with their dependencies from the index, without the
+`extract` extra and then with it, adding `tests/smoke_extract.py`. Run
 everything locally before committing; CI is a backstop.
 
 The one workflow runs on GitHub and on Forgejo, which reads `.github/workflows/`
@@ -96,7 +110,8 @@ between runs; without it each run starts cold and still passes.
   `uv run pytest tests/test_export.py --update-export-pin`.
 - `tests/test_packaging.py` builds both packages, pins what each distribution
   holds, and runs the wheels from a scratch environment with nothing of the
-  repository importable. It needs `uv` and no network.
+  repository importable, and from one without the `extract` extra's packages. It
+  needs `uv` and no network.
 - `tests/test_python_diameter_generate.py` generates the python-diameter
   modules from the corpus, imports them in a fresh interpreter against the
   real library and round-trips a Cx UAR through the library's codec. The

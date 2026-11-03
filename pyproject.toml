@@ -25,12 +25,16 @@ classifiers = [
 dependencies = [
     "click>=8.4.2",
     "pydantic>=2.13.4",
-    "pypdf[crypto]>=6.14.2",
-    "python-docx>=1.2.0",
 ]
 
 [project.optional-dependencies]
 corpus = ["seanchai-corpus>=2026.11.2"]
+# What reading and validating source documents takes (and lxml, through
+# python-docx). The model, the export and the lookup commands import neither.
+extract = [
+    "pypdf[crypto]>=6.14.2",
+    "python-docx>=1.2.0",
+]
 
 [project.scripts]
 seanchai = "seanchai.cli:main"
@@ -52,6 +56,7 @@ dev = [
     "ruff>=0.16.0",
     "rumdl>=0.3.2",
     "seanchai-corpus",
+    "seanchai[extract]",
     "ty>=0.0.63",
 ]
 

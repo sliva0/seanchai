@@ -35,9 +35,9 @@ from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
-from .downloader import load_catalog
+from .downloader.catalog import load_catalog
 from .errors import SeanchaiError
-from .extractor import rfc_text, tgpp_docx, transcription
+from .extractor import rfc_text, transcription
 from .extractor.errors import ExtractionError
 from .versions import RangeWarning, VersionRange
 
@@ -376,6 +376,9 @@ def _produce(
             sources_dir=sources_dir,
         )
     else:
+        # Here, not at the top: importing this module asks for no extra.
+        from .extractor import tgpp_docx
+
         spec, comments = tgpp_docx.extract_with_comments(
             source.document,
             link=source.link,

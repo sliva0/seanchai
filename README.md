@@ -42,7 +42,11 @@ versioned by the date the corpus was regenerated.
 
 ```sh
 pip install "seanchai[corpus]"   # or seanchai and seanchai-corpus, pinned apart
+pip install "seanchai[extract]"  # to rebuild a corpus from source documents
 ```
+
+The `extract` extra is `python-docx` and `pypdf`, which `seanchai extract`,
+`regenerate` and a 3GPP or oneM2M `download` need and a consumer does not.
 
 ```python
 from seanchai import model

@@ -51,6 +51,8 @@ jobs:
       - run: uv venv /tmp/wheels
       - run: uv pip install --python /tmp/wheels dist/*.whl
       - run: /tmp/wheels/bin/python -I tests/smoke_installed.py
+      - run: uv pip install --python /tmp/wheels "$(echo dist/seanchai-*.whl)[extract]"
+      - run: /tmp/wheels/bin/python -I tests/smoke_extract.py
       - uses: actions/upload-artifact@v4
         with:
           name: seanchai

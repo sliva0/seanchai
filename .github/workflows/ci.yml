@@ -39,7 +39,11 @@ jobs:
       - run: uv run ty check
       - run: uv run basedpyright
       - run: uv build --all-packages --no-sources
-      # The wheels alone, with their declared dependencies from the index.
+      # The wheels alone, with their declared dependencies from the index: what a
+      # consumer installs, then the same with what the extractor needs.
       - run: uv venv /tmp/wheels
       - run: uv pip install --python /tmp/wheels dist/*.whl
       - run: /tmp/wheels/bin/python -I tests/smoke_installed.py
+      - run: uv pip install --python /tmp/wheels "$(echo dist/seanchai-*.whl)[extract]"
+      - run: /tmp/wheels/bin/python -I tests/smoke_installed.py
+      - run: /tmp/wheels/bin/python -I tests/smoke_extract.py
