@@ -157,3 +157,48 @@ name = "Event-Type"
 wireshark = "ETSI-Event-Type-354"
 reason = "kept apart from TS 32.299's Event-Type (10415, 823)"
 
+[[alias]]
+specification = "3GPP2-X.S0013-014"
+name = "Access-Network-Charging-Identifier-Ty"
+wireshark = "Access-Network-Charging-Identifier-Gx"
+reason = """
+    table 5.1-1 note 3: 'a different name (Ty rather than Gx) but otherwise is
+    identical to the 3GPP AVP with the same AVP code', which the dictionary
+    names
+    """
+
+[[alias]]
+specification = "3GPP2-X.S0013-014"
+name = "Charging-Rule-Install"
+wireshark = "3GPP2-Charging-Rule-Install"
+reason = "kept apart from TS 29.212's Charging-Rule-Install (10415, 1001)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-014"
+name = "Charging-Rule-Definition"
+wireshark = "3GPP2-Charging-Rule-Definition"
+reason = "kept apart from TS 29.212's Charging-Rule-Definition (10415, 1003)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-014"
+name = "Event-Trigger"
+wireshark = "3GPP2-Event-Trigger"
+reason = "kept apart from TS 29.212's Event-Trigger (10415, 1006)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-014"
+name = "QoS-Information"
+wireshark = "3GPP2-QoS-Information"
+reason = "kept apart from TS 29.212's QoS-Information (10415, 1016)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-014"
+name = "Charging-Rule-Report"
+wireshark = "3GPP2-Charging-Rule-Report"
+reason = "kept apart from TS 29.212's Charging-Rule-Report (10415, 1018)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-014"
+name = "RAT-Type"
+wireshark = "3GPP2-RAT-Type"
+reason = "kept apart from TS 29.212's RAT-Type (10415, 1032)"

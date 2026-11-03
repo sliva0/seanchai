@@ -6158,6 +6158,142 @@
     }
    ],
    "version": "1.0"
+  },
+  "xs0013-014-0_v1.0": {
+   "edits": {
+    "3GPP2-X.S0013-014.py#access-network-charging-identifier-ty-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#access-network-charging-identifier-ty-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.29's AVP format omits the vendor-id; clause 5.2.2 sets it to '10415 (3GPP) unless specified otherwise', and the clause specifies nothing else"
+    },
+    "3GPP2-X.S0013-014.py#called-station-id-row-case": {
+     "kind": "correction",
+     "reason": "table 5.3 upper-cases the 'D'; RFC 4005, which it cites, defines Called-Station-Id"
+    },
+    "3GPP2-X.S0013-014.py#ccr-called-station-id-case": {
+     "kind": "correction",
+     "reason": "the CCR format (clause 5.2.1.1) upper-cases the 'D'; RFC 4005, which table 5.3 cites for it, defines Called-Station-Id"
+    },
+    "3GPP2-X.S0013-014.py#charging-rule-base-name-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#charging-rule-definition-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.4's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#charging-rule-install-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.2's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#charging-rule-name-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#charging-rule-remove-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#charging-rule-remove-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.3's AVP format omits the vendor-id; clause 5.2.2 sets it to '10415 (3GPP) unless specified otherwise', and the clause specifies nothing else"
+    },
+    "3GPP2-X.S0013-014.py#charging-rule-report-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.18's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#experimental-result-vendor-id-case": {
+     "kind": "correction",
+     "reason": "clause 5.2.1.5.1's format upper-cases the 'D'; its next sentence writes Vendor-Id AVP, as RFC 3588, which it cites for the AVP, defines it"
+    },
+    "3GPP2-X.S0013-014.py#flow-description-info-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.30's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#flow-info-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.22's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#granted-qos-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.25's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#guaranteed-bitrate-dl-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#guaranteed-bitrate-ul-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#metering-method-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#offline-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#online-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#pcc-rule-status-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#precedence-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#qos-class-identifier-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#qos-information-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.16's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#reporting-level-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-014.py#requested-qos-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.26's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-014.py#service-identifier-level-spelling": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.12 prints a space inside the value's name; its other value is RATING_GROUP_LEVEL, and the value names of the document hold none but RAT-Type's and PCC-Rule-Status's two words"
+    },
+    "3GPP2-X.S0013-014.py#vendor-id-column": {
+     "kind": "correction",
+     "reason": "clause 5.2.2: table 5.1-1 'describes the 3GPP Diameter AVPs' and their Vendor-Id header 'shall be set to 10415 (3GPP)', which no cell of the table can state in a file of 3GPP2's vendor"
+    }
+   },
+   "reference": "3GPP2-X.S0013-014",
+   "renames": [
+    {
+     "expect": "Vendor-ID",
+     "replace": "Vendor-Id"
+    },
+    {
+     "expect": "Called-Station-ID",
+     "replace": "Called-Station-Id"
+    },
+    {
+     "expect": "Called-Station-ID",
+     "replace": "Called-Station-Id"
+    },
+    {
+     "expect": "SERVICE_IDENTIFIER _LEVEL",
+     "replace": "SERVICE_IDENTIFIER_LEVEL"
+    }
+   ],
+   "version": "1.0"
   }
  },
  "note": "Written by `seanchai regenerate` from edits/corrections; do not edit."

@@ -1,0 +1,61 @@
+# Source declarations for 3GPP2 X.S0013-014 (Service Based Bearer Control - Ty
+# Interface Stage 3). Applied to the lines of the hand transcription in
+# edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "<Experimental-Result>"
+replace = "Experimental-Result"
+section = "5.2.1.5.1"
+reason = """
+    clause 5.2.1.5.1 brackets the rule name as a command's is, and the clause
+    prints an AVP format, 'AVP Header: 297', as every other grouped AVP's is
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = '"Access- Network-Charging-Identifier-Ty (note 3)"'
+replace = "Access-Network-Charging-Identifier-Ty"
+section = "5.2.2"
+reason = """
+    table 5.1-1's name cell prints a space after 'Access-' and carries its note
+    mark; clause 5.2.2.29 heads and defines the AVP as
+    Access-Network-Charging-Identifier-Ty, and note 3 stays with the table
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "P     -       -       Y   "
+replace = "P     -       -       Yes   "
+count = 29
+section = "5.2.2"
+reason = """
+    tables 5.1-1 and 5.1-2 write 'Y' under May Encr. for all their rows; the
+    grammar's cell is Yes or No
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "* [ Requested QoS ]"
+replace = "* [ Requested-QoS ]"
+section = "5.2.2.22"
+reason = """
+    the Flow-Info format prints a space for the hyphen; table 5.1-2, clause
+    5.2.2.26's heading and its sentence name the AVP Requested-QoS
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "[ Granted QoS ]"
+replace = "[ Granted-QoS ]"
+section = "5.2.2.22"
+reason = """
+    the Flow-Info format prints a space for the hyphen; table 5.1-2, clause
+    5.2.2.25's heading and its sentence name the AVP Granted-QoS
+    """
+first_version = "1.0"
+last_version = "1.0"
