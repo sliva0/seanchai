@@ -154,7 +154,9 @@ Accept(
 `rule` is the linter rule, `target` the node the finding is about, and
 `expect` the finding's message exactly, so a document that changes what it
 says fails the acceptance. `reason` cites the clause that makes the override
-deliberate; where no clause says so, the note stays open. An acceptance
+deliberate; where no clause says so, the note stays open. A misprinted clause
+citation (`section-mismatch`) is accepted too, its reason citing the real
+clause, since the corpus records what is printed. An acceptance
 changes no data: `apply` skips it, and a module declaring only acceptances
 is one `seanchai correct` refuses. `regenerate --expand-ranges` widens an
 acceptance's range only while it still matches its finding. The linter
