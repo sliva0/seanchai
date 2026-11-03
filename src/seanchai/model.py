@@ -95,6 +95,8 @@ from __future__ import annotations
 
 import enum
 import os
+import re
+from collections import Counter
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field, replace
 from functools import cached_property
@@ -287,6 +289,14 @@ class Avp:
     # are its table 6.3.1's. Provenance only: two readings stating the same
     # facts are one AVP.
     completed_by: tuple[tuple[str, str], ...] = field(default=(), compare=False)
+    # The document whose table produced this reading, spelled as
+    # `Hole.document` for an older copy: `defined_in`, unless a table elsewhere
+    # changed the flag rules or a grouped member. TS 29.229 reads RFC 6733's
+    # `Session-Id` as RFC 6733 does, so that reading names RFC 6733; oneM2M
+    # TS-0004's table adds P under May, so its reading names it. Provenance
+    # only, as `completed_by`: two documents giving one reading are one AVP,
+    # which names the first in corpus order.
+    read_through: str = field(default="", compare=False)
 
     @property
     def identity(self) -> tuple[int, int]:
@@ -799,6 +809,14 @@ def _walk(
             yield from _walk(member.avp.members, seen)
 
 
+def _generation(spec: ast.Specification) -> int:
+    """How late a document is, for telling a successor from what it succeeds:
+    its major version, its 3GPP release, or for an RFC, its number."""
+    if spec.version is not None:
+        return int(spec.version.split(".")[0])
+    return int(re.sub(r"\D", "", spec.specification) or 0)
+
+
 def _scope(view: _View, message: ast.Message) -> ast.ApplicationScope | None:
     """The application scope covering `message`'s clause: the first, where
     they overlap."""
@@ -851,6 +869,13 @@ class _Draft:
     undefined: Undefined | None = None
     supplied: str | None = None
     completed_by: tuple[tuple[str, str], ...] = ()
+    # `Avp.read_through`, where it is no longer `reference`.
+    read_through: str | None = None
+
+    @property
+    def document(self) -> str:
+        """As `Hole.document`."""
+        return self.reference + ("" if self.version is None else f" V{self.version}")
 
     def stating(self, name: str) -> str:
         """The document stating this reading's field `name`."""
@@ -911,6 +936,11 @@ class _Draft:
             self,
             across=self.across or other.across,
             completed_by=tuple(completed.items()),
+            read_through=(
+                other.read_through or other.document
+                if self.flag_rules is None and other.flag_rules is not None
+                else self.read_through
+            ),
             kind=kind,
             members=members,
             dropped=dropped,
@@ -997,6 +1027,7 @@ class _Draft:
                 across_releases=self.across,
                 supplied=self.supplied,
                 completed_by=self.completed_by,
+                read_through=self.read_through or self.document,
                 members=self.members,
                 dropped=self.dropped,
             )
@@ -1006,6 +1037,7 @@ class _Draft:
                 across_releases=self.across,
                 supplied=self.supplied,
                 completed_by=self.completed_by,
+                read_through=self.read_through or self.document,
                 values=self.values,
                 values_source=self.values_source,
             )
@@ -1014,6 +1046,7 @@ class _Draft:
             across_releases=self.across,
             supplied=self.supplied,
             completed_by=self.completed_by,
+            read_through=self.read_through or self.document,
         )
 
 
@@ -1634,8 +1667,56 @@ class Model:
         )
 
     def find(self, name: str) -> tuple[Avp, ...]:
-        """Every distinct AVP the corpus knows under `name`."""
+        """Every distinct reading the corpus holds under `name`: a citing
+        document's table may read another's AVP differently, and
+        `Avp.read_through` says whose table gives which. `definition` is the
+        one reading to take for a name."""
         return self._by_name.get(name, ())
+
+    def definition(self, name_or_identity: str | tuple[int, int]) -> Avp | None:
+        """The defining document's reading of a name or a `(vendor-id, code)`,
+        None when the corpus completes no reading of it.
+
+        Documents print each other's AVPs and succeed each other: TS 29.272
+        extends TS 29.212's `Allocation-Retention-Priority`, TS 29.212 succeeds
+        TS 29.210, RFC 8506 RFC 4006. So the defining document is, among those
+        readings say `defined_in`, one that does not itself re-use the name
+        from elsewhere, then the newest (latest release, or higher RFC number),
+        then the one most documents' readings name. A name two AVPs claim
+        (`Originator` is TS 32.299's and oneM2M's) raises `ModelError` listing
+        them: the identity is the way to ask.
+        """
+        if isinstance(name_or_identity, str):
+            readings = self.find(name_or_identity)
+            identities = sorted({avp.identity for avp in readings})
+            if len(identities) > 1:
+                raise ModelError(
+                    f"{name_or_identity} names {len(identities)} AVPs,"
+                    f" {', '.join(map(str, identities))}: ask for one of them"
+                )
+        else:
+            vendor_id, code = name_or_identity
+            readings = self.identified(vendor_id, code)
+        if not readings:
+            return None
+        identity = readings[0].identity
+        name = readings[0].name
+        document = max(
+            {avp.defined_in for avp in readings},
+            key=lambda each: (
+                # TS 29.212's Gxx tables cite TS 29.212 itself, which is no re-use.
+                self._views[each].reused.get(name, each) == each,
+                _generation(self._views[each].entry.spec),
+                self._citations[identity, each],
+                each,
+            ),
+        )
+        ours = [avp for avp in readings if avp.defined_in == document]
+        own = self.resolve(document, ours[0].name)
+        if own is not None and (own.identity, own.defined_in) == (identity, document):
+            return own
+        # An older copy's definition, or a name the newest copy reads otherwise.
+        return next((avp for avp in ours if avp.read_through == document), ours[0])
 
     def identified(self, vendor_id: int, code: int) -> tuple[Avp, ...]:
         """Every distinct AVP claiming `(vendor-id, code)`.
@@ -1782,6 +1863,11 @@ class Model:
             return None
         return view.entry.spec.version
 
+    def _document(self, view: _View) -> str:
+        """`view`'s reference, spelled as `Hole.document`."""
+        version = self._older(view)
+        return view.entry.reference + ("" if version is None else f" V{version}")
+
     def _resolve(self, view: _View, name: str, stack: tuple) -> _Draft | None:
         key = (view.entry.path, name)
         if key in self._resolved:
@@ -1844,12 +1930,24 @@ class Model:
                 and found.reference != view.entry.reference
             ):
                 completed += ((FLAG_RULES, view.entry.reference),)
-            found = replace(found, flag_rules=rules, completed_by=completed)
+            found = replace(
+                found,
+                flag_rules=rules,
+                completed_by=completed,
+                read_through=(
+                    self._document(view)
+                    if rules != found.flag_rules
+                    else found.read_through
+                ),
+            )
             if found.kind is Grouped and not isinstance(
                 view.defined.get(name), ast.GroupedAvp
             ):
                 self._settle(stack[-1], found.vendor_id, found.code)
-                found.members = self._through(view, found.members, stack)
+                members = self._through(view, found.members, stack)
+                if members != found.members:
+                    found.read_through = self._document(view)
+                found.members = members
         if (
             found is not None
             and self._dictionary is not None
@@ -2118,6 +2216,15 @@ class Model:
         for reference in self._views:
             found.update(dict.fromkeys(self._avps_of(reference)))
         return list(found)
+
+    @cached_property
+    def _citations(self) -> Counter[tuple[tuple[int, int], str]]:
+        """How many documents read each identity as each `defined_in`."""
+        return Counter(
+            (avp.identity, avp.defined_in)
+            for reference in self._views
+            for avp in self._avps_of(reference)
+        )
 
     @cached_property
     def _by_name(self) -> dict[str, tuple[Avp, ...]]:

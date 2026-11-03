@@ -2879,3 +2879,89 @@ class TestEffectiveApplicationId:
         for application in built.applications():
             for message in application.messages:
                 assert message.application_id == application.application_id
+
+
+class TestReadingsOfOneAvp:
+    def test_a_reading_names_the_table_that_produced_it(self, built):
+        """oneM2M TS-0004's table adds P under May to RFC 6733's Session-Id."""
+        readings = {
+            ast.AvpFlag.PROTECTED in avp.flag_rules.may: avp
+            for avp in built.find("Session-Id")
+        }
+
+        assert readings[False].read_through == "RFC6733"
+        assert readings[True].read_through == "oneM2M-TS-0004"
+        assert built.resolve("oneM2M-TS-0004", "Session-Id") == readings[True]
+        assert built.resolve("TS29.229", "Session-Id") == readings[False]
+
+    def test_a_table_agreeing_with_the_origin_produces_nothing_new(self, built):
+        avp = built.resolve("TS29.229", "Session-Id")
+
+        assert avp is not None and avp.read_through == avp.defined_in == "RFC6733"
+
+    def test_an_older_copys_table_is_named_with_its_version(self, built):
+        """Two copies of TS 29.061 read 3GPP-RAT-Type apart, so the reference
+        alone would not tell the readings apart."""
+        names = {avp.read_through for avp in built.find("3GPP-RAT-Type")}
+
+        assert "TS29.061" in names
+        assert any(name.startswith("TS29.061 V") for name in names)
+
+    def test_every_reading_of_an_identity_says_where_it_came_from(self, built):
+        for avp in built.avps():
+            assert avp.read_through
+        for identity, readings in built._by_identity.items():
+            told = {
+                (avp.defined_in, avp.read_through, avp.across_releases)
+                for avp in readings
+            }
+            assert len(told) == len(readings), identity
+
+    def test_a_member_read_through_a_citing_table_names_it(self, built):
+        """TS 32.299's Supported-Features holds its own Feature-List."""
+        avp = built.resolve("TS32.299", "Supported-Features")
+
+        assert avp is not None and avp.defined_in == "TS29.229"
+        assert avp.read_through == "TS32.299"
+
+    def test_definition_is_the_defining_documents_reading(self, built):
+        avp = built.definition("Session-Id")
+
+        assert avp is not None
+        assert (avp.defined_in, avp.read_through) == ("RFC6733", "RFC6733")
+        assert ast.AvpFlag.PROTECTED not in avp.flag_rules.may
+        assert built.definition((0, 263)) == avp
+
+    @pytest.mark.parametrize(
+        ("name", "document"),
+        [
+            # Extended from TS 29.212 by a local copy TS 29.272 also re-uses.
+            ("Allocation-Retention-Priority", "TS29.212"),
+            # TS 29.214 succeeds TS 29.209, and ETSI's copy cites them.
+            ("Flows", "TS29.214"),
+            # RFC 8506 obsoletes RFC 4006.
+            ("CC-Request-Type", "RFC8506"),
+            # TS 29.212 cites itself from its Gxx tables, which is no re-use.
+            ("Charging-Rule-Install", "TS29.212"),
+        ],
+    )
+    def test_definition_picks_among_documents_redefining_a_name(
+        self, built, name, document
+    ):
+        avp = built.definition(name)
+
+        assert avp is not None and avp.defined_in == document
+
+    def test_definition_of_nothing_is_none(self, built):
+        assert built.definition("No-Such-AVP") is None
+        assert built.definition((1, 1)) is None
+        # A hole has no reading to give; `hole` says why.
+        assert built.definition("Charging-Characteristics") is None
+        assert built.hole("TS29.234", "Charging-Characteristics") is not None
+
+    def test_definition_refuses_a_name_two_avps_claim(self, built):
+        with pytest.raises(model.ModelError, match=r"\(10415, 864\), \(45687, 1008\)"):
+            built.definition("Originator")
+
+        avp = built.definition((45687, 1008))
+        assert avp is not None and avp.name == "Originator"
