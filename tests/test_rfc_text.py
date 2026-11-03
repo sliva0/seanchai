@@ -776,3 +776,32 @@ def test_blank_lines_inside_a_body_are_page_break_residue(tmp_path):
     ]
 
 
+# --- a rule under a prose title ----------------------------------------------
+
+_PROSE_TITLED = (
+    "6.  QoS Capability Indication\n\n"
+    "   QoS-Capability ::= < AVP Header: 578 >\n"
+    "                    1*{ QoS-Profile-Template }\n"
+    "                    * [ AVP ]\n\n"
+)
+_ALLOCATION = (
+    "9.  IANA\n\n"
+    "   +-----------------------------------------------+\n"
+    "   | Attribute Name       Code Defined   Data Type |\n"
+    "   +-----------------------------------------------+\n"
+    "   | QoS-Capability       578  {}         Grouped   |\n"
+    "   +-----------------------------------------------+\n"
+)
+
+
+def test_a_table_row_citing_its_clause_anchors_a_grouped_rule(tmp_path):
+    """RFC 5777 clause 6; a prose title alone keeps illustrations out."""
+    spec = _read(tmp_path, _PROSE_TITLED + _ALLOCATION.format("6"))
+    grouped = _of(spec, ast.GroupedAvp)[0]
+    assert (grouped.name, grouped.source.section) == ("QoS-Capability", "6")
+    assert [rule.name for rule in grouped.avps] == ["QoS-Profile-Template", "AVP"]
+
+
+def test_a_rule_under_a_prose_title_no_row_cites_is_an_illustration(tmp_path):
+    spec = _read(tmp_path, _PROSE_TITLED + _ALLOCATION.format("7"))
+    assert not _of(spec, ast.GroupedAvp)

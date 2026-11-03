@@ -1534,6 +1534,27 @@ def _no_member_after(texts: list[str], rule: str, section: str) -> None:
             )
 
 
+def _title_by_row(
+    section: _DocSection, tables: tuple[ast.AvpTable, ...]
+) -> re.Match[str] | None:
+    """What anchors a grouped rule under a prose title: the local table's row
+    typing it Grouped and citing this clause. RFC 5777 prints QoS-Capability's
+    rule under "QoS Capability Indication" (clause 6, its row's Section). The
+    grammar's own illustrations have no such row."""
+    printed = {
+        header["name"]
+        for text in section.texts
+        if (header := _AVP_HEADER_RE.match(text.strip())) is not None
+    }
+    for table in tables:
+        for row in table.rows:
+            if (
+                row.name in printed
+                and row.section == section.number
+                and row.data_type is ast.DataType.GROUPED
+            ):
+                return _TITLE_RE.match(row.name)
+    return None
 
 
 def _extract_definitions(
@@ -1567,7 +1588,9 @@ def _extract_definitions(
         )
         command_title = _COMMAND_TITLE_RE.match(section.title)
         if title is None and command_title is None:
-            continue
+            title = _title_by_row(section, tables)
+            if title is None:
+                continue
         if command_title is not None:
             definition_name = command_title["name"]
         else:
