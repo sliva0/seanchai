@@ -1,0 +1,41 @@
+;; Clause 5.5.1 prints no table for its members and says "The
+;; Requested-Information AVP is defined in ES 283 035 [11] while the
+;; AF-Application-Identifier AVP is defined in TS 183 017 [10]", the two
+;; documents the header's bases add to the base protocol.
+
+
+; Specification: ETSI TS 183 020
+; Version: 1.1.1
+; Vendor-ID: 13019
+; Bases: RFC6733, ETSI-ES283.035, ETSI-TS183.017
+; Link: https://www.etsi.org/deliver/etsi_ts/183000_183099/183020/01.01.01_60/ts_183020v010101p.pdf
+; Transcribed: by hand from https://www.etsi.org/deliver/etsi_ts/183000_183099/183020/01.01.01_60/ts_183020v010101p.pdf
+
+
+;; Table 1 maps information elements to Diameter attributes, printing no code,
+;; type or flag rule, and heads its last column "Defined in". Its rows name the
+;; elements SubscriberID, GloballyUniqueAddress, InitialGateSetting, QoSProfile
+;; (NOTE 1) and PrivacyIndicator (see note), and Privacy-Indicator's cell reads
+;; "The present document (clause 5.5.1)". The NOTE: This information element may
+;; be repeated.
+; Type: Reused AVPs
+; Section: 5.5
+; Table: 1
+; Page: 13
+; Columns: Name           From
+User-Name                 RFC3588
+Globally-Unique-Address   ETSI-ES283.034
+Initiate-Gate-Setting     ETSI-ES283.034
+QoS-Profile               ETSI-ES283.034
+Privacy-Indicator         ETSI-TS183.020
+
+
+;; No table of the document gives Privacy-Indicator's flag rules; the clause
+;; states its code, vendor and type alone.
+; Type: Grouped AVP
+; Name: Privacy-Indicator
+; Section: 5.5.1
+; Page: 14
+Privacy-Indicator ::= < AVP header: 440 13019 >
+      * { Requested-Information }
+      * [ AF-Application-Identifier ]

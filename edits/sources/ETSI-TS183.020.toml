@@ -1,0 +1,15 @@
+# Source declarations for ETSI TS 183 020 (Network Attachment: Roaming in TISPAN
+# NGN Network Accesses; Interface Protocol Definition). Applied to the lines of
+# the hand transcription in edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "< AVP Header: 440 13019 >"
+replace = "< AVP header: 440 13019 >"
+section = "5.5.1"
+reason = """
+    clause 5.5.1's AVP format capitalizes 'Header'; the grammar's AVP header is
+    lower case, which is otherwise only spelling
+    """
+first_version = "1.1.1"
+last_version = "1.1.1"
