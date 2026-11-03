@@ -76,6 +76,22 @@ acknowledges as an override its document states on purpose
 - `undefined-avp-defined`: a block for a name the file defines, tabulates
   or lists as re-used, or, with a corpus, one a `; Bases:` document
   resolves. An error: the claim is stale.
+- `section-mismatch`: a row citing a clause for an AVP a block here holds
+  elsewhere: TS 29.214 V19.3.0's table 5.3.0.1 cites 5.3.142 for
+  `PC-Session-Recovery-Status`, which clause 5.3.81 defines. A definition, a
+  re-print and a bit table hold an AVP, and a row may cite any block of its AVP
+  or a clause above one. A result code or feature table holds none: TS 29.229
+  tabulates `Feature-List` at clause 6.3.31 and prints its features in 7.1.1.
+- `section-unknown`: an `; Applies-To:` or a bare `; Values: clause N` naming a
+  clause no block sits at or under.
+
+Both are notes, and both say what the file holds, not what the document does:
+the known clauses are the `; Section:` values, a value row's clause, and their
+parents. A row whose AVP no block holds is not checked, since a simple-typed AVP
+has no block. Against the documents' own headings, such a check reports 1249 of
+2257 citations and one is wrong, `PC-Session-Recovery-Status`, which
+`section-mismatch` reports anyway. A re-used row, a registry row and `; From:`
+cite documents and no clause.
 
 A re-used row citing the file's own document is no re-use: those AVPs are
 the file's own to every rule.
@@ -178,6 +194,9 @@ for every file but a raw one and reports each acknowledged note as
 `--show-accepted`. Loading a module executes it, so against the installed
 corpus outside this repository the default directory goes unread:
 `--corrections` has to name one.
+
+A clause citation is the other case: the corpus records what is printed, so a
+misprinted one stays, and its acceptance cites the real clause.
 
 An acceptance matches one finding: its rule, its message exactly, and the
 node its target selects. One matching none is a `stale-acceptance` error,
@@ -332,3 +351,11 @@ citing the clause that makes the override deliberate:
   is defined, "This error code is defined in 3GPP TS 29.229 [4]" (TS 29.128,
   29.172, 29.173, 29.212, 29.215, 29.217, 29.273, 29.283, 29.329, 29.330,
   29.336, 29.344, 29.388, 29.389, 32.299): the document lists a code it re-uses.
+- **`section-mismatch`**: TS 29.214's `PC-Session-Recovery-Status`, a misprint
+  the corpus keeps as printed, whose acceptance cites the real clause, 5.3.81;
+  TS 29.273's `MIP6-Agent-Info`, whose row is right and whose clause 9.2.3.6.2
+  copy `TS29.273.py#mip6-agent-info-duplicate` deletes; RFC 5778's
+  `MIP6-Auth-Mode`, defined in clause 6.20 with its values in clause 9.5.
+- **`section-unknown`**: RFC 6942's scope over clauses 5.2 and 6, which are
+  prose, and oneM2M TS-0004's clause 6.6.3, outside its Diameter annex. Each
+  clause exists, and the file has no block there.
