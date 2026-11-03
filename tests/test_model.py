@@ -1918,6 +1918,7 @@ _FIELD_HOLES = {
     ("ETSI-TS183.066", "CNGCF-Address"),
     ("ETSI-TS183.066", "Privacy-Indicator"),
     ("ETSI-TS183.066", "SIP-Outbound-Proxy"),
+    ("RFC6736", "Egress-VLANID"),
     ("TS29.061", "3GPP-Session-Stop-Indicator"),
     ("TS29.061 V6.15.0", "3GPP-GPRS-Negotiated-QoS-Profile"),
     ("TS29.061 V6.15.0", "3GPP-SGSN-MCC-MNC"),
@@ -1974,7 +1975,7 @@ def test_a_strict_build_refuses_exactly_the_recorded_holes():
     ids=str,
 )
 def test_an_answer_for_the_undefined_names_leaves_the_field_holes(policy):
-    """With the nine undefined names answered for, `strict=True` still refuses
+    """With the eleven undefined names answered for, `strict=True` still refuses
     what states no type, under every policy, and the default build takes the
     nine entries' going unused as no staleness."""
     books = _committed()
@@ -2186,7 +2187,7 @@ class TestTheRecord:
             model.Model.build(corpus.Corpus([_entry(spec)]))
 
 
-def test_the_committed_corpus_declares_its_ten_undefined_names():
+def test_the_committed_corpus_declares_its_eleven_undefined_names():
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
     declared = {
         (each.reference, each.name, each.section, each.cited_in)
@@ -2196,6 +2197,7 @@ def test_the_committed_corpus_declares_its_ten_undefined_names():
         ("RFC4004", "MIP-HA-to-MN-SPI", "9.4", ("9.4",)),
         ("RFC4004", "MIP-MN-to-FA-SPI", "9.5", ("9.5",)),
         ("RFC4004", "MIP-MN-to-HA-SPI", "9.6", ("9.6",)),
+        ("RFC5866", "Authorization-Session-Volume", "5.3", ("5.3", "5.5")),
         (
             "TS29.061",
             "Delegated-IPv6-Prefix",
