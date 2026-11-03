@@ -1,0 +1,22 @@
+# Source declarations for RFC 4740 (Diameter SIP Application).
+
+[[quirk]]
+name = "split-avp-tables"
+reason = """
+    table 2 prints name, code, clause and type, and table 3, which 'expands' it,
+    the same 26 names with flag rules and Encr
+    """
+
+[[quirk]]
+name = "type-short-forms"
+reason = """
+    clause 9 lists table 2's abbreviations for its Data-Type column: DURI, E, G,
+    OS, UTF8S, U32
+    """
+
+[[quirk]]
+name = "bulleted-enum-values"
+reason = """
+    clauses 9.4, 9.5.1, 9.7.1, 9.10 and 9.13 print their values as list items,
+    'o  NO_ASSIGNMENT (0)'
+    """

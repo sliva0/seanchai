@@ -4716,6 +4716,46 @@
    "renames": [],
    "version": null
   },
+  "rfc4740": {
+   "edits": {
+    "RFC4740.py#application-id": {
+     "kind": "insert",
+     "reason": "clause 13.1 records ID value 6 for the 'Diameter Session Initiation Protocol (SIP) Application', the value clause 7 says Auth-Application-Id advertises; clause 8's twelve commands print no id in their headers"
+    },
+    "RFC4740.py#bases-rfc4590": {
+     "kind": "correction",
+     "reason": "clause 9.5.6 lists the Digest-* AVPs, and clause 9.8 SIP-AOR, as RADIUS attributes imported from RFC 4590, in no table of this document"
+    },
+    "RFC4740.py#digest-qop-case-sip-authenticate": {
+     "kind": "correction",
+     "reason": "the SIP-Authenticate ABNF (clause 9.5.3) capitalizes the P; RFC 4590 clause 3.8 defines Digest-Qop, and verified erratum 6028 corrects the spelling throughout this document"
+    },
+    "RFC4740.py#digest-qop-case-sip-authentication-info": {
+     "kind": "correction",
+     "reason": "the SIP-Authentication-Info ABNF (clause 9.5.5) capitalizes the P; RFC 4590 clause 3.8 defines Digest-Qop, and verified erratum 6028 corrects the spelling throughout this document"
+    },
+    "RFC4740.py#digest-qop-case-sip-authorization": {
+     "kind": "correction",
+     "reason": "the SIP-Authorization ABNF (clause 9.5.4) capitalizes the P; RFC 4590 clause 3.8 defines Digest-Qop, and verified erratum 6028 corrects the spelling throughout this document"
+    }
+   },
+   "reference": "RFC4740",
+   "renames": [
+    {
+     "expect": "Digest-QoP",
+     "replace": "Digest-Qop"
+    },
+    {
+     "expect": "Digest-QoP",
+     "replace": "Digest-Qop"
+    },
+    {
+     "expect": "Digest-QoP",
+     "replace": "Digest-Qop"
+    }
+   ],
+   "version": null
+  },
   "rfc5447": {
    "edits": {
     "RFC5447.py#bases-rfc4004": {
