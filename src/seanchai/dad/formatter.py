@@ -9,7 +9,7 @@ depends on stable diffs. Canonical rules:
   the longest ABNF body line of their own section;
 - enum bodies: a value name quoted exactly when it is not an identifier,
   with `"` and backslash escaped inside the quotes, `=` aligned per section
-  (RESERVED and VENDOR-SPECIFIC count as names), a range's description
+  (RESERVED, VOID and VENDOR-SPECIFIC count as names), a range's description
   one space past its numbers;
 - tables: columns split by 3 spaces, each as wide as its widest cell or
   label (minimum 3), so labels sit at column starts. Both table kinds write
@@ -317,9 +317,13 @@ def value_name(name: str) -> str:
     return f'"{escaped}"'
 
 
-def _range_keyword(value: ast.ReservedValues | ast.VendorSpecificValues) -> str:
+def _range_keyword(
+    value: ast.ReservedValues | ast.VoidValues | ast.VendorSpecificValues,
+) -> str:
     if isinstance(value, ast.ReservedValues):
         return "RESERVED"
+    if isinstance(value, ast.VoidValues):
+        return "VOID"
     return "VENDOR-SPECIFIC"
 
 

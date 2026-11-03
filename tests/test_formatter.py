@@ -122,6 +122,18 @@ def _boundary_specs():
                 ),
             )
         ),
+        "enum-void": _spec(
+            ast.EnumeratedAvp(
+                name="Mode",
+                source=source,
+                code=1,
+                values=(
+                    ast.VoidValues(first=0, last=0),
+                    ast.EnumValue(name="Short", value=1),
+                    ast.VoidValues(first=2, last=2**32 - 1),
+                ),
+            )
+        ),
         "enum-with-only-reserved": _spec(
             ast.EnumeratedAvp(
                 name="Mode",

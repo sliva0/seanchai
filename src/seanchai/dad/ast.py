@@ -346,6 +346,22 @@ class ReservedValues(Node):
         return self
 
 
+class VoidValues(Node):
+    """`; VOID = 0` / `; VOID = 5-7` directive: value(s) the document once
+    assigned and has withdrawn, printing "Void" where the label was (TS 29.214
+    clause 5.3.13's `Void (0)`). `ReservedValues` were never assigned; these
+    were. Either way validators must reject dictionaries that assign them."""
+
+    first: Unsigned32
+    last: Unsigned32
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> VoidValues:
+        if self.last < self.first:
+            raise ValueError(f"void range {self.first}-{self.last} is inverted")
+        return self
+
+
 class VendorSpecificValues(Node):
     """`; VENDOR-SPECIFIC = 100-199 ; Vendor specific SM services`: values
     the spec allocates to vendors or operators without naming any, with
@@ -371,7 +387,7 @@ class VendorSpecificValues(Node):
 
 
 # One line of an enumerated AVP's body.
-type EnumEntry = EnumValue | ReservedValues | VendorSpecificValues
+type EnumEntry = EnumValue | ReservedValues | VoidValues | VendorSpecificValues
 
 
 class EnumeratedAvp(Node):

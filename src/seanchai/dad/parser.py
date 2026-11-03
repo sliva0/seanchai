@@ -20,8 +20,8 @@ from ..errors import SeanchaiError
 from . import abnf, ast, formatter
 
 # Keys carry hyphens (`; Vendor-ID:`), so the charset is wider than letters.
-# `; RESERVED = n` and `; VENDOR-SPECIFIC = n` use `=` rather than `:` and so
-# are not a match either way.
+# `; RESERVED = n`, `; VOID = n` and `; VENDOR-SPECIFIC = n` use `=` rather than
+# `:` and so are not a match either way.
 _DIRECTIVE_RE = re.compile(r"^; (?P<key>[A-Za-z][A-Za-z-]*): (?P<value>.*)$")
 _MESSAGE_HEADER_RE = re.compile(
     r"^<(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)> ::= "
@@ -48,6 +48,7 @@ _ENUM_VALUE_RE = re.compile(
 )
 _ESCAPE_RE = re.compile(r'\\(["\\])')
 _RESERVED_RE = re.compile(r"^\s*; RESERVED\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")
+_VOID_RE = re.compile(r"^\s*; VOID\s*= (?P<first>\d+)(?:-(?P<last>\d+))?$")
 # What the source calls the range follows as a value's description does.
 _VENDOR_SPECIFIC_RE = re.compile(
     r"^\s*; VENDOR-SPECIFIC\s*= (?P<first>\d+)(?:-(?P<last>\d+))?"
@@ -422,6 +423,10 @@ def _parse_enumerated(
                 first = int(match["first"])
                 last = int(match["last"]) if match["last"] else first
                 values.append(ast.ReservedValues(first=first, last=last))
+            elif match := _VOID_RE.match(line):
+                first = int(match["first"])
+                last = int(match["last"]) if match["last"] else first
+                values.append(ast.VoidValues(first=first, last=last))
             elif match := _VENDOR_SPECIFIC_RE.match(line):
                 first = int(match["first"])
                 last = int(match["last"]) if match["last"] else first

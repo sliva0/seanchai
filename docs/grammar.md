@@ -205,7 +205,7 @@ enumerated-avp = "; Type: Enumerated AVP" NL
                  source-ref
                  ["; Values: " inline-text NL]
                  enum-header-rule NL
-                 *((enum-value / reserved / vendor-specific) NL)
+                 *((enum-value / reserved / void / vendor-specific) NL)
 enum-header-rule = avp-name " ::= < Enumerated AVP header: " code
                    [SP vendor-id] " >"
 enum-value    = *SP enum-name *SP "= " 1*DIGIT [1*SP "; " inline-text]
@@ -216,6 +216,7 @@ name-char     = %x21 / %x23-5B / %x5D-7E / %x80-10FFFF / escaped
                 ; neither SP, DQUOTE nor a bare "\"
 escaped       = "\" (DQUOTE / "\")
 reserved      = *SP "; RESERVED" *SP "= " 1*DIGIT ["-" 1*DIGIT]
+void          = *SP "; VOID" *SP "= " 1*DIGIT ["-" 1*DIGIT]
 vendor-specific = *SP "; VENDOR-SPECIFIC" *SP "= " 1*DIGIT ["-" 1*DIGIT]
                   [1*SP "; " inline-text]
 ```
@@ -238,9 +239,12 @@ words (`; Values: TS 32.422 [23] for Trace Depth`). With no values after
 it, the section is complete as it stands: the document points elsewhere for
 the list. Values may still follow, supplied by a correction.
 
-`; RESERVED` and `; VENDOR-SPECIFIC` are the only directive lines that may
-appear in a body. A reserved value is distinct from an unassigned one: a
-validator must reject a dictionary that assigns it. A vendor-specific range is
+`; RESERVED`, `; VOID` and `; VENDOR-SPECIFIC` are the only directive lines that
+may appear in a body. A reserved value is distinct from an unassigned one: a
+validator must reject a dictionary that assigns it. A void value is one the
+document once assigned and has withdrawn, printing "Void" where its label was
+(`; VOID = 0`, TS 29.214 clause 5.3.13's `Void (0)`). A validator treats it as
+it does a reserved value. A vendor-specific range is
 the opposite: the document leaves its values to vendors or operators without
 naming any, so a dictionary may assign one under a name the standard does not
 give, and a validator must accept it. What the document calls the range follows
