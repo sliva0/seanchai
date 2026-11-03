@@ -677,6 +677,9 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         # raw, table A.4-1 cites clause 5.4.2 for Accounting-Record-Type.
         "ts-0004-v2_35_0.raw": 2,
         "ts-0004-v2_35_0": 1,
+        # The Undefined AVP block of Delegated-IPv6-Prefix is a correction's.
+        "29561-j60.raw": 0,
+        "29561-j60": 1,
         # TS 29.230's registry: 318 allocated twice, four reservations
         # covering allocated codes, and 4703-4799 inside 4605-4799.
         "29230-j30": 6,
@@ -2074,6 +2077,12 @@ _STANDING_CORPUS_NOTES = {
             "DIAMETER_ERROR_UNAUTHORIZED_SERVICE",
         ],
         "undefined-avp": ["ProSe-Query-Code", "ProSe-Response-Code"],
+    },
+    "29561-j60.dad": {
+        # Table 12.4-1 cites TS 29.061 for code 28, sub-attribute 28 of its
+        # RADIUS VSA; TS 29.061's table 9b re-uses the AVP from TS 29.336, 3111.
+        "reused-origin-indirect": ["External-Identifier"],
+        "undefined-avp": ["Delegated-IPv6-Prefix"],
     },
     "32299-j00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.

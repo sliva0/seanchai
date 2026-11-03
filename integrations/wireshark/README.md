@@ -104,17 +104,18 @@ its output is the same byte for byte on every run
 | 0022 | TS 29.388 | 5 | `dictionary.xml` |
 | 0023 | TS 29.389 | 3 | `dictionary.xml` |
 | 0024 | TS 29.468 | 14 | `TGPP.xml` |
-| 0025 | TS 32.299 | 46 | `dictionary.xml` |
-| 0026 | ETSI TS 183 017 | 2 | `etsie2e4.xml` |
-| 0027 | ETSI TS 183 059-1 | 4 | `etsie2e4.xml` |
-| 0028 | RFC 5777 | 1 | `dictionary.xml` |
-| 0029 | RFC 5866 | 2 | `dictionary.xml` |
-| 0030 | RFC 6734 | 6 | `dictionary.xml` |
-| 0031 | RFC 6736 | 13 | `dictionary.xml` |
-| 0032 | RFC 6738 | 8 | `dictionary.xml` |
-| 0033 | RFC 6942 | 2 | `dictionary.xml` |
-| 0034 | RFC 8506 | 11 | `dictionary.xml` |
-| 0035 | RFC 8582 | 1 | `dictionary.xml` |
+| 0025 | TS 29.561 | 26 | `TGPP.xml` |
+| 0026 | TS 32.299 | 46 | `dictionary.xml` |
+| 0027 | ETSI TS 183 017 | 2 | `etsie2e4.xml` |
+| 0028 | ETSI TS 183 059-1 | 4 | `etsie2e4.xml` |
+| 0029 | RFC 5777 | 1 | `dictionary.xml` |
+| 0030 | RFC 5866 | 2 | `dictionary.xml` |
+| 0031 | RFC 6734 | 6 | `dictionary.xml` |
+| 0032 | RFC 6736 | 13 | `dictionary.xml` |
+| 0033 | RFC 6738 | 8 | `dictionary.xml` |
+| 0034 | RFC 6942 | 2 | `dictionary.xml` |
+| 0035 | RFC 8506 | 11 | `dictionary.xml` |
+| 0036 | RFC 8582 | 1 | `dictionary.xml` |
 
 Some absences stay out, named in their document's description:
 
