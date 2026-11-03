@@ -978,6 +978,72 @@ class Registry(Node):
         ]
 
 
+class ValueKind(enum.StrEnum):
+    """What the numbers of a `ValueTable` are, as `; Kind:` writes it."""
+
+    # A `Result-Code` or `Experimental-Result-Code` value, RFC 6733 clause 7.1
+    # and every TS's "Result-Code AVP values" clause.
+    RESULT_CODES = "result-codes"
+    # A bit index of an Unsigned32 or Unsigned64 bit mask: TS 29.272 table
+    # 7.3.7/1's ULR-Flags.
+    BITS = "bits"
+    # A feature bit of a Feature-List, one table per application and
+    # Feature-List-ID: TS 29.272 table 7.3.10/1.
+    FEATURES = "features"
+
+
+class ValueRow(Node):
+    """`DIAMETER_ERROR_USER_UNKNOWN = 5001 ; 6.2.2.1`: a name the document gives
+    a number, in its spelling, as an enum value's name. `section` is the clause
+    of a result code printed in a subclause of the block's, and `mark` a
+    feature's M/O cell; what the row says of the value beyond that is prose."""
+
+    name: EnumValueName
+    value: Unsigned32
+    section: SectionNumber | None = None
+    mark: Mark | None = None
+
+
+class ValueTable(Node):
+    """`; Type: Value Table`: the numbers a numeric AVP's document names, for an
+    AVP whose values are no `Enumerated`: result codes, the bits of a bit mask,
+    the features of a feature list.
+
+    `application` and `feature_list_id` say which feature list a `features`
+    table is, as its caption does, "Features of Feature-List-ID 1 used in
+    S6a/S6d"; TS 29.336's "Features of Feature-List-ID used in S6t" prints no
+    id. `table` is absent where the source prints no caption, as for all result
+    codes."""
+
+    type: Literal["Value Table"] = "Value Table"
+    avp: AvpName
+    kind: ValueKind
+    feature_list_id: Unsigned32 | None = None
+    application: InlineText | None = None
+    table: TableLabel | None = None
+    source: SourceRef
+    rows: Annotated[tuple[ValueRow, ...], Field(min_length=1)]
+
+    @pydantic.model_validator(mode="after")
+    def _fields_of_kind(self) -> ValueTable:
+        if self.kind is not ValueKind.FEATURES and (
+            self.application is not None
+            or self.feature_list_id is not None
+            or any(row.mark is not None for row in self.rows)
+        ):
+            raise ValueError(
+                "application, feature_list_id and row marks are a features"
+                f" table's, not a {self.kind.value} table's"
+            )
+        if self.kind is not ValueKind.RESULT_CODES and any(
+            row.section is not None for row in self.rows
+        ):
+            raise ValueError(
+                f"a row's own clause is a result code's, not a {self.kind.value} row's"
+            )
+        return self
+
+
 def node_at(root: Node, path: TreePath) -> Any:
     """What `path` names under `root`: a node, or a field's value."""
     found: Any = root
@@ -995,7 +1061,8 @@ Section = Annotated[
     | AvpTable
     | ReusedAvps
     | Registry
-    | UndefinedAvp,
+    | UndefinedAvp
+    | ValueTable,
     Field(discriminator="type"),
 ]
 

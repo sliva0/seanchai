@@ -284,3 +284,35 @@ print(FlagRules(application_defined=flags).model_dump_json())
     plain, defined = map(json.loads, run.stdout.splitlines())
     assert plain["must"] == ["M", "V", "P"]
     assert defined["application_defined"] == ["M", "V", "P"]
+
+
+def test_a_value_table_holds_each_kind_s_fields_only():
+    source = ast.SourceRef(section="1")
+    plain = ast.ValueRow(name="A", value=0)
+
+    with pytest.raises(pydantic.ValidationError, match="features table's"):
+        ast.ValueTable(
+            avp="A",
+            kind=ast.ValueKind.BITS,
+            source=source,
+            rows=(plain,),
+            application="X",
+        )
+    with pytest.raises(pydantic.ValidationError, match="features table's"):
+        ast.ValueTable(
+            avp="A",
+            kind=ast.ValueKind.RESULT_CODES,
+            source=source,
+            rows=(ast.ValueRow(name="A", value=0, mark="M"),),
+        )
+    with pytest.raises(pydantic.ValidationError, match="result code's"):
+        ast.ValueTable(
+            avp="A",
+            kind=ast.ValueKind.BITS,
+            source=source,
+            rows=(ast.ValueRow(name="A", value=0, section="1.1"),),
+        )
+    with pytest.raises(pydantic.ValidationError):
+        ast.ValueTable(avp="A", kind=ast.ValueKind.BITS, source=source, rows=())
+    with pytest.raises(pydantic.ValidationError):
+        ast.ValueRow(name="A", value=0, mark="-")

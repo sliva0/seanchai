@@ -20,6 +20,8 @@ depends on stable diffs. Canonical rules:
 - registries: a table, its text cells quoted as marks are and `-` for a
   blank cell; a reserved range is a `; RESERVED a..b` line among the rows,
   at column 0 and widening no column, its purpose always quoted.
+- value tables: names at column 0, quoted as enum bodies quote them, `=` and
+  a row's `;` aligned per section.
 """
 
 import re
@@ -143,13 +145,31 @@ def _directives(
     lines = notes.line(f"; Type: {section.type}", (*path, "type"))
     if isinstance(section, ast.Registry):
         lines.extend(notes.line(f"; Registry: {section.registry}", (*path, "registry")))
+    if isinstance(section, ast.ValueTable):
+        lines.extend(notes.line(f"; AVP: {section.avp}", (*path, "avp")))
+        lines.extend(notes.line(f"; Kind: {section.kind}", (*path, "kind")))
+        if section.feature_list_id is not None:
+            lines.extend(
+                notes.line(
+                    f"; Feature-List-ID: {section.feature_list_id}",
+                    (*path, "feature_list_id"),
+                )
+            )
+        if section.application is not None:
+            lines.extend(
+                notes.line(
+                    f"; Application: {section.application}", (*path, "application")
+                )
+            )
     if name is not None:
         lines.extend(notes.line(f"; Name: {name}", (*path, "name")))
     lines.extend(
         notes.line(f"; Section: {section.source.section}", (*path, "source", "section"))
     )
     if (
-        isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry)
+        isinstance(
+            section, ast.AvpTable | ast.ReusedAvps | ast.Registry | ast.ValueTable
+        )
         and section.table is not None
     ):
         lines.extend(notes.line(f"; Table: {section.table}", (*path, "table")))
@@ -287,7 +307,7 @@ def _format_reprinted(
 _IDENTIFIER_RE = re.compile(ast.AVP_NAME_PATTERN)
 
 
-def _value_name(name: str) -> str:
+def value_name(name: str) -> str:
     """A value name as a file spells it: quoted exactly when it is not an
     identifier, so each name has one spelling, and inside the quotes a
     backslash and `"` escaped, the only two characters that are."""
@@ -308,7 +328,7 @@ def _format_enumerated(
 ) -> list[str]:
     width = max(
         (
-            len(_value_name(value.name))
+            len(value_name(value.name))
             if isinstance(value, ast.EnumValue)
             else len(_range_keyword(value))
             for value in avp.values
@@ -333,7 +353,7 @@ def _format_enumerated(
     )
     for index, value in enumerate(avp.values):
         if isinstance(value, ast.EnumValue):
-            name = _value_name(value.name)
+            name = value_name(value.name)
             line = f"        {name:<{width}} = {value.value:<{value_width}}"
             if value.description is not None:
                 line += f" ; {value.description}"
@@ -522,6 +542,23 @@ def _format_registry(
     ]
 
 
+def _format_value_table(
+    table: ast.ValueTable, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    width = max(len(value_name(row.name)) for row in table.rows)
+    value_width = max(len(str(row.value)) for row in table.rows)
+    lines = _directives(table, None, path, notes)
+    for index, row in enumerate(table.rows):
+        line = f"{value_name(row.name):<{width}} = {row.value:<{value_width}}"
+        if row.section is not None:
+            line += f" ; {row.section}"
+        elif row.mark is not None:
+            line += f" ; {_mark(row.mark)}"
+        lines.extend(notes.line(line.rstrip(), (*path, "rows", index)))
+    lines.extend(notes.standing_at((*path, "rows", len(table.rows))))
+    return lines
+
+
 # Keyed by exact type, not matched by isinstance: a subclass of `Message`
 # would otherwise be written out as a plain `Message`, silently dropping
 # whatever it added, and `.dad` output has to be exact.
@@ -535,6 +572,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.ReusedAvps: _format_reused,
     ast.Registry: _format_registry,
     ast.UndefinedAvp: _format_undefined_avp,
+    ast.ValueTable: _format_value_table,
 }
 
 

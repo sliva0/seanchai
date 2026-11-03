@@ -421,3 +421,72 @@ def test_a_label_wider_than_its_cells_widens_its_column():
         "QoS-Rule-Base-Name   All        Rel9",
         'QoS-Rule-Name        ""         ""',
     ]
+
+
+_VALUE_TABLE = """\
+; Specification: 3GPP TS 29.999
+; Version: 1.2.3
+; Vendor-ID: 10415
+;; a block of its own
+
+
+; Type: Value Table
+; AVP: Feature-List ;; the AVP
+; Kind: features ;; the kind
+; Feature-List-ID: 1 ;; the list
+; Application: S6a/S6d ;; the application
+; Section: 7.3.10.1
+; Table: 7.3.10/1
+;; before a row
+SiFC         = 0  ; M ;; trailing
+"SMS in MME" = 10 ; O
+Bare         = 11
+;; at the end
+
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 7.1
+DIAMETER_SUCCESS = 2001 ; 7.1.2
+;; DIAMETER_UNNUMBERED (56x1) ; 7.1.3
+ELECTION_LOST    = 4003
+"""
+
+
+def test_a_value_table_round_trips_exactly_with_its_comments():
+    spec, comments = parser.parse_with_comments(_VALUE_TABLE)
+
+    text = formatter.format_spec(spec, comments)
+
+    assert text == _VALUE_TABLE
+    assert parser.parse(text) == spec
+    again, comments = parser.parse_with_comments(text)
+    assert formatter.format_spec(again, comments) == text
+
+
+def test_a_value_table_aligns_and_quotes_as_an_enum_body_does():
+    spec = ast.Specification(
+        specification="RFC 9999",
+        vendor_id=0,
+        sections=(
+            ast.ValueTable(
+                avp="Result-Code",
+                kind=ast.ValueKind.RESULT_CODES,
+                source=ast.SourceRef(section="7.1"),
+                rows=(
+                    ast.ValueRow(name="SHORT_NAME", value=1, section="7.1.1"),
+                    ast.ValueRow(name='A "quoted" name', value=2001),
+                ),
+            ),
+        ),
+    )
+
+    text = formatter.format_spec(spec)
+
+    assert text.endswith(
+        "; Section: 7.1\n"
+        "SHORT_NAME          = 1    ; 7.1.1\n"
+        '"A \\"quoted\\" name" = 2001\n'
+    )
+    assert parser.parse(text) == spec

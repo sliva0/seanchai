@@ -391,6 +391,75 @@ class enum_value(Selector):
 
 
 @dataclass(frozen=True)
+class value_table(Selector):
+    """A value table, by its AVP and clause, and for a features table its
+    application and Feature-List-ID, which tell apart one AVP's tables in one
+    clause: TS 29.272 clause 7.3.10.1 prints Feature-List-ID 1 and 2."""
+
+    avp: str
+    section: str | None = None
+    feature_list_id: int | None = None
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching block, at `("sections", i)`."""
+        yield from (
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
+            if isinstance(section, ast.ValueTable)
+            and section.avp == self.avp
+            and (self.section is None or section.source.section == self.section)
+            and (
+                self.feature_list_id is None
+                or section.feature_list_id == self.feature_list_id
+            )
+        )
+
+    def describe(self) -> str:
+        described = f"value table of {self.avp!r}"
+        if self.section is not None:
+            described += f" (clause {self.section})"
+        if self.feature_list_id is not None:
+            described += f" (Feature-List-ID {self.feature_list_id})"
+        return described
+
+
+@dataclass(frozen=True)
+class value_row(Selector):
+    """One row of a value table, by name, and by number where one name is
+    printed for two. `parent` is a whole `value_table` selector, or as a bare
+    string the AVP's."""
+
+    parent: str | value_table
+    name: str
+    value: int | None = None
+
+    @property
+    def _parent(self) -> value_table:
+        if isinstance(self.parent, str):
+            return value_table(self.parent)
+        return self.parent
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching row, at `("sections", i, "rows", j)`."""
+        for path, section in self._parent.locate(spec):
+            assert isinstance(section, ast.ValueTable)
+            yield from (
+                ((*path, "rows", index), row)
+                for index, row in enumerate(section.rows)
+                if row.name == self.name
+                and (self.value is None or row.value == self.value)
+            )
+
+    def describe(self) -> str:
+        return f"{self.describe_in_place()} of {self._parent.describe()}"
+
+    def describe_in_place(self) -> str:
+        # The note stands among the table's own rows.
+        suffix = "" if self.value is None else f" (= {self.value})"
+        return f"value {self.name!r}{suffix}"
+
+
+@dataclass(frozen=True)
 class avp_rule(Selector):
     """One AVP reference inside a message or grouped-AVP body.
 
@@ -575,12 +644,16 @@ class Insert:
     `PEER_REPORT` for RFC 7683's `OC-Report-Type`, in a clause of its own
     that the defining file has no place for. `after` names the value it
     follows; it expects neither the name nor the number to be in the list.
+
+    Into a `value_table()`, it inserts a `ValueRow` the document states where
+    no reading finds it, as a row into a table.
     """
 
     id: str
-    into: avp_table | reused_avps | header | definition
+    into: avp_table | reused_avps | header | definition | value_table
     node: (
         ast.AvpTableRow
+        | ast.ValueRow
         | ast.ReusedAvpRow
         | ast.ApplicationScope
         | ast.UndefinedAvp
@@ -984,6 +1057,8 @@ def _inserted(
         if isinstance(insert.into, definition)
         else ast.AvpTableRow
         if isinstance(insert.into, avp_table)
+        else ast.ValueRow
+        if isinstance(insert.into, value_table)
         else ast.ReusedAvpRow
     )
     if isinstance(insert.into, definition):
@@ -996,7 +1071,7 @@ def _inserted(
                 " or an enumerated AVP for a value,"
                 f" matched {type(parent).__name__}"
             )
-    elif not isinstance(parent, ast.AvpTable | ast.ReusedAvps):
+    elif not isinstance(parent, ast.AvpTable | ast.ReusedAvps | ast.ValueTable):
         raise CorrectionError(
             f"{described}: Insert requires a table, matched {type(parent).__name__}"
         )
@@ -1689,6 +1764,7 @@ _SECTION_TYPES = (
     ast.ReusedAvps,
     ast.Registry,
     ast.UndefinedAvp,
+    ast.ValueTable,
 )
 
 
@@ -1782,7 +1858,7 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
         return result.path[:-1]
     if not isinstance(
         correction.target,
-        header | avp_table | reused_avps | application_scope | undefined,
+        header | avp_table | reused_avps | application_scope | undefined | value_table,
     ):
         return result.path
     if result.new is not None and result.new != ():

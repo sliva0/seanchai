@@ -67,8 +67,12 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application Scope|Message|Grouped AVP|Reprinted AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
+              "match": "\\b(Application Scope|Message|Grouped AVP|Reprinted AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
               "name": "storage.type.section.dad"
+            },
+            {
+              "match": "\\b(result-codes|bits|features)$",
+              "name": "constant.language.value-kind.dad"
             },
             {
               "match": "\\b(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4})\\b",

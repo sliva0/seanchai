@@ -816,6 +816,73 @@ def _parse_registry(
         )
 
 
+def _value_row(kind: ast.ValueKind, line: str, lineno: int) -> ast.ValueRow:
+    """A value table's line, `name = number`, with what follows it by `kind`:
+    a result code's clause, a feature's M/O mark, and after a bit nothing."""
+    match = _ENUM_VALUE_RE.match(line)
+    if match is None:
+        raise DadParseError(lineno, f"malformed value row: {line.strip()!r}")
+    tail = match["description"]
+    section = mark = None
+    if tail is not None:
+        if kind is ast.ValueKind.BITS:
+            raise DadParseError(lineno, f"a bit takes no {tail!r}")
+        if kind is ast.ValueKind.RESULT_CODES:
+            section = tail
+        else:
+            # `_text_cell` reads a dash as a blank cell, which here is no tail.
+            if tail == "-":
+                raise DadParseError(lineno, "a blank M/O cell is written as no mark")
+            mark = _text_cell(tail, lineno, "M/O")
+    with _validated(lineno):
+        return ast.ValueRow(
+            name=match["name"] or _ESCAPE_RE.sub(r"\1", match["quoted"]),
+            value=int(match["value"]),
+            section=section,
+            mark=mark,
+        )
+
+
+def _parse_value_table(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.ValueTable:
+    avp = _pop(directives, "AVP", lineno)
+    kind = _pop(directives, "Kind", lineno)
+    list_id = directives.pop("Feature-List-ID", None)
+    application = directives.pop("Application", None)
+    # Optional: result codes print under a heading, in no table.
+    table = directives.pop("Table", None)
+    source = _source_ref(directives, lineno)
+    _no_leftovers(directives, lineno)
+    try:
+        value_kind = ast.ValueKind(kind.value)
+    except ValueError:
+        known = ", ".join(member.value for member in ast.ValueKind)
+        raise DadParseError(
+            kind.lineno, f"unknown kind {kind.value!r} (expected one of {known})"
+        ) from None
+    number = None
+    if list_id is not None:
+        number = _number(list_id.value, list_id.lineno, "Feature-List-ID")
+        with _validated(list_id.lineno):
+            _UNSIGNED32.validate_python(number)
+    for directive in (application, table):
+        if directive is not None:
+            with _validated(directive.lineno):
+                _INLINE_TEXT.validate_python(directive.value)
+    rows = [_value_row(value_kind, line, row_lineno) for row_lineno, line in body]
+    with _validated(lineno):
+        return ast.ValueTable(
+            avp=avp.value,
+            kind=value_kind,
+            feature_list_id=number,
+            application=None if application is None else application.value,
+            table=None if table is None else table.value,
+            source=source,
+            rows=tuple(rows),
+        )
+
+
 _SECTION_PARSERS = {
     "Application Scope": _parse_application_scope,
     "Message": _parse_message,
@@ -826,6 +893,7 @@ _SECTION_PARSERS = {
     "Reused AVPs": _parse_reused,
     "Registry": _parse_registry,
     "Undefined AVP": _parse_undefined_avp,
+    "Value Table": _parse_value_table,
 }
 
 # Where each line's comments attach: the path of what the line states. A
@@ -856,6 +924,10 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Registry": ("registry",),
     "Note": ("note",),
     "From": ("origin",),
+    "AVP": ("avp",),
+    "Kind": ("kind",),
+    "Feature-List-ID": ("feature_list_id",),
+    "Application": ("application",),
 }
 # An application scope and an undefined AVP have no body: a whole-line
 # comment after the last line stands at the block's own path.
@@ -869,6 +941,7 @@ _BODIES = {
     "Reused AVPs": ("rows", 0),
     "Registry": ("rows", 0),
     "Undefined AVP": ("", 0),
+    "Value Table": ("rows", 0),
 }
 
 
