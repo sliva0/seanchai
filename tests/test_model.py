@@ -1889,6 +1889,7 @@ _FIELD_HOLES = {
     ("TS29.061", "3GPP-Session-Stop-Indicator"),
     ("TS29.061 V6.15.0", "3GPP-GPRS-Negotiated-QoS-Profile"),
     ("TS29.061 V6.15.0", "3GPP-SGSN-MCC-MNC"),
+    ("TS29.229", "Wildcarded-IMPU"),
     ("TS29.234", "Charging-Characteristics"),
 }
 

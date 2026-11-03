@@ -223,7 +223,7 @@ the identity. `name` is always the document's spelling
 
 ### Known holes
 
-Thirteen names stand as holes, each a statement its source does not make.
+Fourteen names stand as holes, each a statement its source does not make.
 The committed record, the corpus's `holes.toml`, lists them by
 `Hole.document`, name, `Hole.missing` and a reason citing the version and
 clause and what was searched
@@ -248,13 +248,15 @@ consumer loading a partial or foreign corpus. `unrecorded_holes()` and
 `stale_record_entries()` return what the default would refuse; the linter's
 `unrecorded-hole` and `stale-hole-record` report the same.
 
-The thirteen, by cause:
+The fourteen, by cause:
 
 - **A field no source states**, under every policy. TS 29.061's
   `3GPP-Session-Stop-Indicator` row states only a code, and TS 29.061
   V6.15.0 numbers `3GPP-GPRS-Negotiated-QoS-Profile` and
   `3GPP-SGSN-MCC-MNC` as RADIUS sub-attributes without tabulating them. TS
-  29.234's `Charging-Characteristics` is typed "Integer", no Diameter type.
+  29.234's `Charging-Characteristics` is typed "Integer", no Diameter type. TS
+  29.229's `Wildcarded-IMPU` states a type alone, though TS 29.329's reading of
+  it is complete.
 - **The nine names that resolve nowhere**, the corpus's `Undefined AVP`
   blocks ([below](#undefined-names)), holes under the default policy and
   the consumer's to answer for under another.

@@ -640,6 +640,9 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     expected = {
         "29061-i10": 7,
         "29128-i00": 3,
+        # The row clause 6.3.43's Wildcarded-IMPU is corrected into.
+        "29229-i10.raw": 0,
+        "29229-i10": 1,
         "29272-i70": 9,
         "29273-i60": 5,
         "29283-i00": 1,
@@ -686,6 +689,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "local-and-reused",
         "member-marked-unused",
         "registry-range-overlap",
+        "row-without-code",
         "table-row-mismatch",
         "undefined-avp",
     }
@@ -1676,7 +1680,8 @@ _STANDING_CORPUS_NOTES = {
             "Digest-HA1",
             "Digest-Qop",
             "Digest-Realm",
-        ]
+        ],
+        "row-without-code": ["Wildcarded-IMPU"],
     },
     "29230-i60.dad": {
         "registry-range-overlap": [

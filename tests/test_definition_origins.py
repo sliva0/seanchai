@@ -71,6 +71,33 @@ def test_citations_recover_the_body_and_values(built):
     assert resources.members
 
 
+def test_the_citing_table_completes_what_the_origin_leaves_unstated(built):
+    """TS 29.229 clause 6.3.43 states a name and a type. TS 29.329's table
+    prints the rest for its own reading, and says so; TS 29.229's own reading
+    stays the hole it is."""
+    (row,) = built.table_rows("TS29.229", "Wildcarded-IMPU")
+    assert row.code is None and row.may_encrypt is None
+    assert row.flag_rules == ast.AvpFlagRules() and row.vendor_id is None
+    hole = built.hole("TS29.229", "Wildcarded-IMPU")
+    assert hole is not None and hole.missing == ("code", "flag_rules")
+    assert built.resolve("TS29.229", "Wildcarded-IMPU") is None
+
+    avp = built.resolve("TS29.329", "Wildcarded-IMPU")
+    assert avp is not None
+    assert avp.identity == (10415, 636)
+    assert avp.data_type is ast.DataType.UTF8_STRING
+    assert avp.flag_rules == ast.AvpFlagRules(
+        must=frozenset({ast.AvpFlag.VENDOR}),
+        must_not=frozenset({ast.AvpFlag.MANDATORY}),
+    )
+    assert (avp.defined_in, avp.section) == ("TS29.229", "6.3.43")
+    assert dict(avp.completed_by) == {
+        "code": "TS29.329",
+        "vendor_id": "TS29.329",
+        "flag_rules": "TS29.329",
+    }
+
+
 def test_an_erroneous_citation_does_not_change_the_wire_identity(built):
     mc = built.resolve("TS29.283", "Sequence-Number")
     sh = built.resolve("TS29.329", "Sequence-Number")

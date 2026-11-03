@@ -91,6 +91,18 @@ reason = """
     """
 
 [[hole]]
+document = "TS29.229"
+name = "Wildcarded-IMPU"
+missing = ["code", "flag_rules"]
+reason = """
+    V18.1.0 clause 6.3.43 gives the name and UTF8String and states no code or
+    flag rule, and table 6.3.0.1 omits the AVP
+    (TS29.229.py#wildcarded-impu-row-missing); TS 29.230 table 7.1 allocates
+    code 636 to it and TS 29.329 table 6.3.1 tabulates it with code and flags,
+    so TS 29.329's reading is complete where this document's own is not
+    """
+
+[[hole]]
 document = "TS29.234"
 name = "Charging-Characteristics"
 missing = ["data_type"]

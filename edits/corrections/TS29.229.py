@@ -18,20 +18,13 @@ CORRECTIONS = [
         into=avp_table("6.3.0.1"),
         node=ast.AvpTableRow(
             name="Wildcarded-IMPU",
-            code=636,
             section="6.3.43",
             data_type=ast.DataType.UTF8_STRING,
-            flag_rules=ast.AvpFlagRules(
-                must=frozenset({ast.AvpFlag.VENDOR}),
-                must_not=frozenset({ast.AvpFlag.MANDATORY}),
-            ),
-            may_encrypt=False,
         ),
         after="Wildcarded-Public-Identity",
-        reason="clause 6.3.43 defines Wildcarded-IMPU as UTF8String and notes"
-        " that it is used by Sh, but table 6.3.0.1 omits it; TS 29.329"
-        " table 6.3.1 supplies code 636, V in Must, M in Must not and No"
-        " encryption, and clause 6.3.20 cites this defining clause",
+        reason="clause 6.3.43 defines Wildcarded-IMPU as UTF8String, but table"
+        " 6.3.0.1 omits it; the clause states no code, flag rule or encryption,"
+        " so the row leaves those cells blank",
         versions="18.1.0",
     ),
     Delete(
