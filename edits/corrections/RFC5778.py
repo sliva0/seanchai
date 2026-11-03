@@ -2,12 +2,14 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Insert,
     Supply,
     avp_rule,
     definition,
     header,
+    table_row,
 )
 
 CORRECTIONS = [
@@ -104,5 +106,19 @@ CORRECTIONS += [
         " [HMAC]', as the IANA MIP-Algorithm-Type registry"
         " (aaa-parameters-19) still lists; RFC 4285's authentication is"
         " HMAC-SHA-1 too, so its requirement removes nothing",
+    ),
+]
+
+# The block sits where the RFC prints the values, not where it defines the AVP.
+CORRECTIONS += [
+    Accept(
+        id="mip6-auth-mode-clause",
+        rule="section-mismatch",
+        target=table_row("MIP6-Auth-Mode", table=None),
+        expect="MIP6-Auth-Mode is cited at clause 6.20 in table (clause 6), but the"
+        " file holds it at clause 9.5, and nothing at clause 6.20",
+        reason="both are right: clause 6.20 is headed 'MIP6-Auth-Mode AVP' and defines"
+        " it in prose, as the table says, and clause 9.5's IANA registry is the only"
+        " place that prints its values, which is what the block holds",
     ),
 ]

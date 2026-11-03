@@ -2,12 +2,14 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Delete,
     avp_rule,
     definition,
     enum_value,
     reused_row,
+    table_row,
 )
 
 # Eleven grouped-AVP clauses print `<AVP header: nnn>` with no vendor-id while
@@ -205,5 +207,20 @@ CORRECTIONS += [
         reason="the AAR ABNF (clause 5.6.1) lower-cases the 'v' as table"
         " 5.4.0.1 does; RFC 4005, which defines the AVP, spells 'IPv6'",
         versions="11.16.0",
+    ),
+]
+
+# The linter's clause citations: what is printed stays.
+CORRECTIONS += [
+    Accept(
+        id="pc-session-recovery-status-clause",
+        rule="section-mismatch",
+        target=table_row("PC-Session-Recovery-Status", table="5.3.0.1"),
+        expect="PC-Session-Recovery-Status is cited at clause 5.3.142 in table"
+        " 5.3.0.1, but the file holds it at clause 5.3.81, and nothing at clause"
+        " 5.3.142",
+        reason="a misprint in table 5.3.0.1: the document has no clause 5.3.142, and"
+        " clause 5.3.81 is headed 'PC-Session-Recovery-Status AVP' and defines it",
+        versions="19.3.0",
     ),
 ]

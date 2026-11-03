@@ -520,3 +520,19 @@ CORRECTIONS += [
         versions="18.6.0..19.2.0",
     ),
 ]
+
+# Clause 9.2.3.6.2 prints the AVP the table says it does; the block is gone
+# because one definition stays.
+CORRECTIONS += [
+    Accept(
+        id="mip6-agent-info-row-clause",
+        rule="section-mismatch",
+        target=table_row("MIP6-Agent-Info", table="9.2.3.6.1/1"),
+        expect="MIP6-Agent-Info is cited at clause 9.2.3.6.2 in table 9.2.3.6.1/1, but"
+        " the file holds it at clause 9.2.3.2.2, and nothing at clause 9.2.3.6.2",
+        reason="the row is right: clause 9.2.3.6.2 prints MIP6-Agent-Info again for its"
+        " interface, and TS29.273.py#mip6-agent-info-duplicate deletes that copy, so"
+        " the file holds only clause 9.2.3.2.2's",
+        versions="19.2.0",
+    ),
+]

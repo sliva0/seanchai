@@ -2030,7 +2030,6 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29273-j20.dad": {
-        "section-mismatch": ["MIP6-Agent-Info"],
         "registry-result-code-document": [
             "DIAMETER_ERROR_ILLEGAL_EQUIPMENT",
         ],
@@ -2140,13 +2139,7 @@ _STANDING_CORPUS_NOTES = {
     "ts183033-010200.dad": {"cross-release-origin": ["TS29.229"]},
     # oneM2M cites TS 32.299 [31], "Release 11", for Node-Id and
     # Service-Information: V11.20.0.
-    "ts-0004-v2_35_0.dad": {
-        "cross-release-origin": ["TS32.299"],
-        "section-unknown": ["Response-Status-Code"],
-    },
-    "29214-j30.dad": {"section-mismatch": ["PC-Session-Recovery-Status"]},
-    "rfc5778.dad": {"section-mismatch": ["MIP6-Auth-Mode"]},
-    "rfc6942.dad": {"section-unknown": ["Diameter", "Diameter"]},
+    "ts-0004-v2_35_0.dad": {"cross-release-origin": ["TS32.299"]},
     "ts183017-030201.dad": {
         "cross-release-origin": ["TS29.209", "TS29.214"],
         # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports
@@ -2244,6 +2237,19 @@ _STANDING_CORPUS_NOTES = {
 # Notes the specifications' corrections modules accept as overrides their
 # documents state, by acceptance (docs/linter.md#standing-findings).
 _ACCEPTED_CORPUS_NOTES = {
+    "29214-j30.dad": {
+        "section-mismatch": ["TS29.214.py#pc-session-recovery-status-clause"]
+    },
+    "rfc5778.dad": {"section-mismatch": ["RFC5778.py#mip6-auth-mode-clause"]},
+    "rfc6942.dad": {
+        "section-unknown": [
+            "RFC6942.py#application-scope-clause-5-2",
+            "RFC6942.py#application-scope-clause-6",
+        ]
+    },
+    "ts-0004-v2_35_0.dad": {
+        "section-unknown": ["oneM2M-TS-0004.py#response-status-code-values-clause"]
+    },
     "es283026-010600.dad": {
         "reused-body-differs": ["ETSI-ES283.026.py#specific-action-rq-events"]
     },
@@ -2276,6 +2282,7 @@ _ACCEPTED_CORPUS_NOTES = {
         ],
     },
     "29273-j20.dad": {
+        "section-mismatch": ["TS29.273.py#mip6-agent-info-row-clause"],
         "registry-result-code-document": [
             "TS29.273.py#user-unknown-result-code-reused",
             "TS29.273.py#identity-not-registered-result-code-reused",
