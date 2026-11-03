@@ -99,6 +99,14 @@ _BODY_HEADING_RE = re.compile(
 _COMMAND_INTRO_RE = re.compile(
     r"^The (?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) command,"
 )
+# Behind `procedure-commands`, a procedure step naming the command printed under
+# it: TS 29.109 clause 4.2, "... in the format of Multimedia-Auth-Request (MAR)
+# message.", and clause 5.2, "The NAF shall send a Bootstrapping-Info-Request
+# message (BIR) to the BSF."
+_STEP_INTRO_RES = (
+    re.compile(r"(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) message\b"),
+    re.compile(r"(?P<name>[A-Za-z-]+) message \((?P<abbr>[A-Z]{2,5})\)"),
+)
 # The " AVP" suffix is spec-dependent: 29.329 titles are "MSISDN AVP",
 # 29.272 mostly bare "Subscription-Data". Bare titles like "General" also
 # match — harmless, since a section only becomes a definition when its body
@@ -765,22 +773,17 @@ def _abnf_body(
             # first member (clauses 6.2.2-6.4.5) and inside CCA's body
             # (6.4.3); a blank line followed by anything else ends the body.
             following = next((later for later in lines[index:] if later.text), None)
-            if following is None or not _abnf_members(following.text):
+            if following is None or not _commented_members(following.text, quirks):
                 break
             index += 1
             continue
         matches = _abnf_members(line.text)
-        if (
-            not matches
-            and quirks.enabled("abnf-comments")
-            and (commented := _ABNF_COMMENT_RE.fullmatch(line.text))
-            and (matches := _abnf_members(commented["rule"]))
-        ):
+        if not matches and (matches := _commented_members(line.text, quirks)):
             # TS 29.209 V6.8.0 clause 6.5.18: "{ Media-Component-Number } ;
             # Ordinal number of the media comp." The comment is RFC 5234's
             # (section 3.9) and prose, which a `.dad` body does not keep.
             quirks.fire("abnf-comments")
-            line = dataclasses.replace(line, text=commented["rule"])
+            line = dataclasses.replace(line, text=line.text.partition(";")[0].rstrip())
         if not matches:
             break
         index += 1
@@ -810,6 +813,18 @@ def _abnf_body(
 
 # An ABNF line with a trailing comment, read behind `abnf-comments`.
 _ABNF_COMMENT_RE = re.compile(r"(?P<rule>[^;]*\S) ?;.*")
+
+
+def _commented_members(text: str, quirks: sources.Quirks) -> list[re.Match]:
+    """A line's members, its trailing comment set aside where the document
+    declares `abnf-comments`."""
+    if matches := _abnf_members(text):
+        return matches
+    if quirks.enabled("abnf-comments") and (
+        commented := _ABNF_COMMENT_RE.fullmatch(text)
+    ):
+        return _abnf_members(commented["rule"])
+    return []
 
 
 def _abnf_members(text: str) -> list[re.Match]:
@@ -926,6 +941,13 @@ def _rfc_command(
     return _COMMAND_INTRO_RE.match(f"The {known[0]} ({known[1]}) command,")
 
 
+def _procedure_intro(text: str) -> re.Match | None:
+    """The command a procedure clause's line introduces, if it does."""
+    if match := _COMMAND_INTRO_RE.match(text):
+        return match
+    return next(filter(None, (rule.search(text) for rule in _STEP_INTRO_RES)), None)
+
+
 def _extract_messages(
     section: _Section,
     title: re.Match | None,
@@ -949,12 +971,17 @@ def _extract_messages(
     while index < len(lines):
         text = _rule_text(lines[index].text, quirks)
         index += 1
-        if prose_title and (intro := _COMMAND_INTRO_RE.match(text)):
+        if prose_title and (intro := _procedure_intro(text)):
             title = intro
         if "::=" not in text:
             continue
         header = _DIAMETER_HEADER_RE.match(text)
         if header is None:
+            # TS 29.109 clauses 4.2, 5.2 and 5.4 print RFC 6733's
+            # `<Vendor-Specific-Application-Id>` between their commands, glossing
+            # what its members hold there: no command, and no clause of its own.
+            if prose_title and _AVP_HEADER_RE.match(text):
+                continue
             raise ExtractionError(f"{section.number}: malformed rule header {text!r}")
         if title is None:
             title = _rfc_command(section, header, quirks)
