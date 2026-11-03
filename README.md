@@ -91,10 +91,10 @@ MIT, see [LICENSE][license]. The corpus packages text taken from 3GPP, ETSI,
 3GPP2, oneM2M and IETF documents; those documents stay under their
 publishers' terms.
 
-[consumers]: https://github.com/sliva0/senchai/blob/main/docs/consumers.md
-[corrections]: https://github.com/sliva0/senchai/blob/main/docs/corrections.md
-[development]: https://github.com/sliva0/senchai/blob/main/docs/development.md
-[extractor]: https://github.com/sliva0/senchai/blob/main/docs/extractor.md
-[license]: https://github.com/sliva0/senchai/blob/main/LICENSE
-[linter]: https://github.com/sliva0/senchai/blob/main/docs/linter.md
-[oracle]: https://github.com/sliva0/senchai/blob/main/docs/oracle.md
+[consumers]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md
+[corrections]: https://github.com/sliva0/seanchai/blob/main/docs/corrections.md
+[development]: https://github.com/sliva0/seanchai/blob/main/docs/development.md
+[extractor]: https://github.com/sliva0/seanchai/blob/main/docs/extractor.md
+[license]: https://github.com/sliva0/seanchai/blob/main/LICENSE
+[linter]: https://github.com/sliva0/seanchai/blob/main/docs/linter.md
+[oracle]: https://github.com/sliva0/seanchai/blob/main/docs/oracle.md

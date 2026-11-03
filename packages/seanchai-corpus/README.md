@@ -1,6 +1,6 @@
 # seanchai-corpus
 
-The corpus of [Seanchaí](https://github.com/sliva0/senchai): Diameter command
+The corpus of [Seanchaí](https://github.com/sliva0/seanchai): Diameter command
 ABNFs and AVP definitions from 3GPP specifications, RFCs and a few other
 documents, as `.dad` files, corrected and raw, with the record of known holes
 and of each correction's reason.
@@ -30,15 +30,15 @@ built.resolve("TS29.229", "Public-Identity")
 
 The version is the date the corpus was regenerated, as `YEAR.MONTH.DAY` with no
 leading zeros. The
-[format](https://github.com/sliva0/senchai/blob/main/docs/dad-format.md) and
-[grammar](https://github.com/sliva0/senchai/blob/main/docs/grammar.md) are
+[format](https://github.com/sliva0/seanchai/blob/main/docs/dad-format.md) and
+[grammar](https://github.com/sliva0/seanchai/blob/main/docs/grammar.md) are
 documented in the repository.
 
 ## License
 
 MIT, see
-[LICENSE](https://github.com/sliva0/senchai/blob/main/packages/seanchai-corpus/LICENSE).
+[LICENSE](https://github.com/sliva0/seanchai/blob/main/packages/seanchai-corpus/LICENSE).
 The definitions are taken from 3GPP, ETSI, 3GPP2, oneM2M and IETF documents,
 which stay under their publishers' terms, as
-[NOTICE](https://github.com/sliva0/senchai/blob/main/packages/seanchai-corpus/NOTICE)
+[NOTICE](https://github.com/sliva0/seanchai/blob/main/packages/seanchai-corpus/NOTICE)
 says.
