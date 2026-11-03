@@ -9,14 +9,75 @@
     "TS29.061.py#3gpp-sgsn-mcc-mnc-row": {
      "kind": "insert",
      "reason": "clause 16.4.7 codes sub-attribute 18, 3GPP-SGSN-MCC-MNC, and TS 29.210 V6.7.0 table 5.3 re-uses it from here, but table 10 skips it. Only the name, code and clause are stated: the clause gives no Diameter type or flags"
+    },
+    "TS29.061.py#rel6-bases-nasreq": {
+     "kind": "correction",
+     "reason": "clause 17.6 says the bodies' other AVPs are 'Diameter NASREQ (IETF RFC 4005 [67]) AVPs' and prints no re-used table for them; the corpus reads the base protocol as RFC 6733, which obsoletes RFC 3588 [66]"
+    },
+    "TS29.061.py#rel6-redirected-host-17-6-6": {
+     "kind": "correction",
+     "reason": "clause 17.6.6's body prints Redirected-Host; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host, and no document defines the printed name"
+    },
+    "TS29.061.py#rel6-redirected-host-17-6-8": {
+     "kind": "correction",
+     "reason": "clause 17.6.8's body prints Redirected-Host; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host, and no document defines the printed name"
+    },
+    "TS29.061.py#rel6-redirected-host-cache-time-17-6-6": {
+     "kind": "correction",
+     "reason": "clause 17.6.6's body prints Redirected-Host-Cache-Time; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Max-Cache-Time, and no document defines the printed name"
+    },
+    "TS29.061.py#rel6-redirected-host-usage-17-6-6": {
+     "kind": "correction",
+     "reason": "clause 17.6.6's body prints Redirected-Host-Usage; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host-Usage, and no document defines the printed name"
+    },
+    "TS29.061.py#rel6-redirected-host-usage-17-6-8": {
+     "kind": "correction",
+     "reason": "clause 17.6.8's body prints Redirected-Host-Usage; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host-Usage, and no document defines the printed name"
     }
    },
    "reference": "TS29.061",
-   "renames": [],
+   "renames": [
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    },
+    {
+     "expect": "Redirected-Host-Cache-Time",
+     "replace": "Redirect-Max-Cache-Time"
+    },
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    }
+   ],
    "version": "6.15.0"
   },
   "29061-i10": {
    "edits": {
+    "TS29.061.py#acr-connect-info-spelling": {
+     "kind": "correction",
+     "reason": "clause 16a.4.3's ACR body copies the typo of RFC 4005's and RFC 7155's ACR (RFC 7155's verified erratum 5995); the AVP is Connect-Info, code 77, and the AAR body of clause 16a.4.1 spells it so"
+    },
+    "TS29.061.py#acr-ms-timezone-spelling": {
+     "kind": "correction",
+     "reason": "clause 16a.4.3's body alone hyphenates the name; tables 9a and 10 and clause 16.4.7's sub-attribute name print 3GPP-MS-TimeZone"
+    },
+    "TS29.061.py#application-id-nasreq": {
+     "kind": "insert",
+     "reason": "clause 16a.1: 'shall advertise the support of the Diameter NASREQ Application', used 'according to RFC 7155 [120]', and 16a.2 uses its accounting the same way; RFC 7155 clauses 1.5 and 1.6 give one (1) for every command clause 16a.4 prints. The command headers print none"
+    },
+    "TS29.061.py#bases-nasreq": {
+     "kind": "correction",
+     "reason": "clauses 16a.4, 17.6 and 20.4 say the bodies' other AVPs are 'Diameter NASREQ (IETF RFC 7155 [120]) AVPs' and print no re-used table for them; the ACR and ACA of 16a.4.3 and 16a.4.4 also list NAS-IP-Address, NAS-IPv6-Address and NAS-Identifier, which RFC 7155 takes from RFC 4005 (RFC7155.py#bases-nasreq)"
+    },
     "TS29.061.py#mbms-flags-name": {
      "kind": "correction",
      "reason": "only the table cell drops the s; clause 20.5a.9's heading, prose and value table all write MBMS-Flags, and Wireshark's dictionary reads it the same way"
@@ -25,9 +86,61 @@
      "kind": "supply",
      "reason": "TS 25.413 V18.0.0 (2024-03), the only Release 18 version, clause 9.2.1.84 types MBMS HC Indicator 'ENUMERATED (uncompressed header, compressed header, ...)', and its ASN.1 MBMSHCIndicator lists uncompressed-header, then compressed-header, then the extension marker. The ASN.1 numbers nothing: 0 and 1 are the declaration order, X.680's ordinal numbering, a judgement Wireshark's dictionary shares; the names are the ASN.1 identifiers"
     },
+    "TS29.061.py#redirected-host-16a-4-8": {
+     "kind": "correction",
+     "reason": "clause 16a.4.8's body prints Redirected-Host; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-17-6-6": {
+     "kind": "correction",
+     "reason": "clause 17.6.6's body prints Redirected-Host; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-17-6-8": {
+     "kind": "correction",
+     "reason": "clause 17.6.8's body prints Redirected-Host; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-20-4-2": {
+     "kind": "correction",
+     "reason": "clause 20.4.2's body prints Redirected-Host; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-20-4-6": {
+     "kind": "correction",
+     "reason": "clause 20.4.6's body prints Redirected-Host; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-cache-time-17-6-6": {
+     "kind": "correction",
+     "reason": "clause 17.6.6's body prints Redirected-Host-Cache-Time; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Max-Cache-Time, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-cache-time-20-4-2": {
+     "kind": "correction",
+     "reason": "clause 20.4.2's body prints Redirected-Host-Cache-Time; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Max-Cache-Time, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-usage-16a-4-8": {
+     "kind": "correction",
+     "reason": "clause 16a.4.8's body prints Redirected-Host-Usage; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host-Usage, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-usage-17-6-6": {
+     "kind": "correction",
+     "reason": "clause 17.6.6's body prints Redirected-Host-Usage; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host-Usage, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-usage-17-6-8": {
+     "kind": "correction",
+     "reason": "clause 17.6.8's body prints Redirected-Host-Usage; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host-Usage, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-usage-20-4-2": {
+     "kind": "correction",
+     "reason": "clause 20.4.2's body prints Redirected-Host-Usage; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host-Usage, and no document defines the printed name"
+    },
+    "TS29.061.py#redirected-host-usage-20-4-6": {
+     "kind": "correction",
+     "reason": "clause 20.4.6's body prints Redirected-Host-Usage; RFC 6733 section 6 and the bodies of the other answers name the AVP Redirect-Host-Usage, and no document defines the printed name"
+    },
     "TS29.061.py#session-stop-indicator-row": {
      "kind": "insert",
      "reason": "clause 16.4.7.2 codes sub-attribute 11, 3GPP-Session-Stop-Indicator, among the others table 9a lists, but the table skips it; TS 32.299 table 7.2.0.1 re-uses it from here. Only the name, code and clause are stated: the clause gives no Diameter type or flags"
+    },
+    "TS29.061.py#undefined-delegated-ipv6-prefix": {
+     "kind": "insert",
+     "reason": "a member of the AAR, AAA and ACR bodies (clauses 16a.4.1 to 16a.4.3) in no table of this document; clause 2 cites RFC 4818 [97], which defines the RADIUS attribute with no Diameter type or flags and which the corpus does not hold. Wireshark's dictionary has code 123, OctetString, with may-M"
     }
    },
    "reference": "TS29.061",
@@ -35,6 +148,62 @@
     {
      "expect": "MBMS-Flag",
      "replace": "MBMS-Flags"
+    },
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    },
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    },
+    {
+     "expect": "Redirected-Host-Cache-Time",
+     "replace": "Redirect-Max-Cache-Time"
+    },
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    },
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    },
+    {
+     "expect": "Redirected-Host-Cache-Time",
+     "replace": "Redirect-Max-Cache-Time"
+    },
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    },
+    {
+     "expect": "3GPP-MS-Time-Zone",
+     "replace": "3GPP-MS-TimeZone"
+    },
+    {
+     "expect": "Connection-Info",
+     "replace": "Connect-Info"
     }
    ],
    "version": "18.1.0"

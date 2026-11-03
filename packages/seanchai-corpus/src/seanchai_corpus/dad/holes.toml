@@ -45,6 +45,17 @@ reason = """
 
 [[hole]]
 document = "TS29.061"
+name = "Delegated-IPv6-Prefix"
+missing = ["undefined"]
+reason = """
+    V18.1.0 clauses 16a.4.1 to 16a.4.3 list it in the AAR, AAA and ACR bodies
+    and no table of the document holds it; clause 2 cites RFC 4818 [97], a
+    RADIUS attribute with no Diameter type or flags, which the corpus does not
+    hold (TS29.061.py#undefined-delegated-ipv6-prefix)
+    """
+
+[[hole]]
+document = "TS29.061"
 name = "3GPP-Session-Stop-Indicator"
 missing = ["data_type", "flag_rules"]
 reason = """

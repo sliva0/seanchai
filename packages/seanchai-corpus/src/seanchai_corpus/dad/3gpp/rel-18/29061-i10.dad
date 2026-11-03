@@ -1,8 +1,735 @@
 ; Specification: 3GPP TS 29.061
 ; Version: 18.1.0
 ; Vendor-ID: 10415
-; Bases: RFC6733
+; Bases: RFC6733, RFC7155, RFC4005 ;; corrected: (TS29.061.py#bases-nasreq)
 ; Link: https://www.etsi.org/deliver/etsi_ts/129000_129099/129061/18.01.00_60/ts_129061v180100p.pdf
+
+
+; Type: Application Scope
+; Name: Gmb
+; Section: 17
+; Page: 132
+; Application-ID: 16777223
+; Applies-To: 17.*
+
+
+; Type: Application Scope
+; Name: SGmb
+; Section: 20.1
+; Page: 163
+; Application-ID: 16777292
+; Applies-To: 20.*
+
+
+; Type: Application Scope ;; inserted: (TS29.061.py#application-id-nasreq)
+; Name: NASREQ
+; Section: 16a.1
+; Application-ID: 1
+; Applies-To: 16a.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 16a.4.1
+; Page: 123
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Origin-State-Id ]
+        [ Port-Limit ]
+        [ User-Name ]
+        [ User-Password ]
+        [ Service-Type ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Callback-Number ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Originating-Line-Info ]
+        [ Connect-Info ]
+        [ CHAP-Auth ]
+        [ CHAP-Challenge ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+      * [ Delegated-IPv6-Prefix ]
+        [ Framed-IP-Netmask ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ 3GPP-IMSI ]                        ; bold
+        [ External-Identifier ]              ; bold
+        [ 3GPP-Charging-Id ]                 ; bold
+        [ 3GPP-PDP-Type ]                    ; bold
+        [ 3GPP-CG-Address ]                  ; bold
+        [ 3GPP-GPRS-Negotiated-QoS-Profile ] ; bold
+        [ 3GPP-SGSN-Address ]                ; bold
+        [ 3GPP-GGSN-Address ]                ; bold
+        [ 3GPP-IMSI-MCC-MNC ]                ; bold
+        [ 3GPP-GGSN-MCC-MNC ]                ; bold
+        [ 3GPP-NSAPI ]                       ; bold
+        [ 3GPP-Selection-Mode ]              ; bold
+        [ 3GPP-Charging-Characteristics ]    ; bold
+        [ 3GPP-CG-IPv6-Address ]             ; bold
+        [ 3GPP-SGSN-IPv6-Address ]           ; bold
+        [ 3GPP-GGSN-IPv6-Address ]           ; bold
+        [ 3GPP-SGSN-MCC-MNC ]                ; bold
+        [ 3GPP-User-Location-Info ]          ; bold
+        [ 3GPP-RAT-Type ]                    ; bold
+        [ 3GPP-CAMEL-Charging-Info ]         ; bold
+        [ 3GPP-Negotiated-DSCP ]             ; bold
+        [ 3GPP-Allocate-IP-Type ]            ; bold
+        [ TWAN-Identifier ]                  ; bold
+        [ 3GPP-UE-Local-IP-Address ]         ; bold
+        [ 3GPP-UE-Source-Port ]              ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 16a.4.2
+; Page: 124
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Service-Type ]
+      * [ Class ]
+        [ Acct-Interim-Interval ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Idle-Timeout ]
+        [ Authorization-Lifetime ]
+        [ Auth-Grace-Period ]
+        [ Auth-Session-State ]
+        [ Re-Auth-Request-Type ]
+        [ Multi-Round-Time-Out ]
+        [ Session-Timeout ]
+      * [ Reply-Message ]
+        [ Origin-State-Id ]
+      * [ Filter-Id ]
+        [ Port-Limit ]
+        [ Prompt ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+      * [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+      * [ Delegated-IPv6-Prefix ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-Route ]
+        [ Framed-Pool ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Protocol ]
+        [ Framed-Routing ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+        [ Login-Service ]
+        [ Login-TCP-Port ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+      * [ Tunneling ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        [ 3GPP-IPv6-DNS-Servers ]   ; bold
+      * [ External-Identifier ]     ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AC-Request, ACR
+; Section: 16a.4.3
+; Page: 125
+<AC-Request> ::= < Diameter Header: 271, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Destination-Host ]
+        [ Event-Timestamp ]
+        [ Acct-Delay-Time ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+      * [ Class ]
+        [ Service-Type ]
+        [ Accounting-Input-Octets ]
+        [ Accounting-Input-Packets ]
+        [ Accounting-Output-Octets ]
+        [ Accounting-Output-Packets ]
+        [ Acct-Authentic ]
+        [ Accounting-Auth-Method ]
+        [ Acct-Session-Time ]
+        [ Acct-Tunnel-Connection ]
+        [ Acct-Tunnel-Packets-Lost ]
+        [ Callback-Id ]
+        [ Callback-Number ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+      * [ Connect-Info ] ;; corrected: (TS29.061.py#acr-connect-info-spelling)
+        [ Originating-Line-Info ]
+        [ Authorization-Lifetime ]
+        [ Session-Timeout ]
+        [ Idle-Timeout ]
+        [ Port-Limit ]
+        [ Accounting-Realtime-Required ]
+        [ Acct-Interim-Interval ]
+      * [ Filter-Id ]
+      * [ NAS-Filter-Rule ]
+      * [ QoS-Filter-Rule ]
+        [ Framed-Compression ]
+        [ Framed-Interface-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IP-Netmask ]
+      * [ Framed-IPv6-Prefix ]
+        [ Framed-IPv6-Pool ]
+      * [ Framed-IPv6-Route ]
+      * [ Delegated-IPv6-Prefix ]
+        [ Framed-IPX-Network ]
+        [ Framed-MTU ]
+        [ Framed-Pool ]
+        [ Framed-Protocol ]
+      * [ Framed-Route ]
+        [ Framed-Routing ]
+      * [ Login-IP-Host ]
+      * [ Login-IPv6-Host ]
+        [ Login-LAT-Group ]
+        [ Login-LAT-Node ]
+        [ Login-LAT-Port ]
+        [ Login-LAT-Service ]
+        [ Login-Service ]
+        [ Login-TCP-Port ]
+      * [ Tunneling ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ 3GPP-IMSI ]                        ; bold
+        [ External-Identifier ]              ; bold
+        [ 3GPP-Charging-Id ]                 ; bold
+        [ 3GPP-PDP-Type ]                    ; bold
+        [ 3GPP-CG-Address ]                  ; bold
+        [ 3GPP-GPRS-Negotiated-QoS-Profile ] ; bold
+        [ 3GPP-SGSN-Address ]                ; bold
+        [ 3GPP-GGSN-Address ]                ; bold
+        [ 3GPP-IMSI-MCC-MNC ]                ; bold
+        [ 3GPP-GGSN-MCC-MNC ]                ; bold
+        [ 3GPP-NSAPI ]                       ; bold
+        [ 3GPP-Selection-Mode ]              ; bold
+        [ 3GPP-Charging-Characteristics ]    ; bold
+        [ 3GPP-CG-IPv6-Address ]             ; bold
+        [ 3GPP-SGSN-IPv6-Address ]           ; bold
+        [ 3GPP-GGSN-IPv6-Address ]           ; bold
+        [ 3GPP-SGSN-MCC-MNC ]                ; bold
+        [ 3GPP-IMEISV ]                      ; bold
+        [ 3GPP-RAT-Type ]                    ; bold
+        [ 3GPP-User-Location-Info ]          ; bold
+        [ 3GPP-MS-TimeZone ]                 ; bold ;; corrected: (TS29.061.py#acr-ms-timezone-spelling)
+        [ 3GPP-CAMEL-Charging-Info ]         ; bold
+        [ 3GPP-Packet-Filter ]               ; bold
+        [ 3GPP-Negotiated-DSCP ]             ; bold
+        [ TWAN-Identifier ]                  ; bold
+        [ 3GPP-User-Location-Info-Time ]     ; bold
+      * [ 3GPP-Secondary-RAT-Usage ]         ; bold
+        [ 3GPP-UE-Local-IP-Address ]         ; bold
+        [ 3GPP-UE-Source-Port ]              ; bold
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AC-Answer, ACA
+; Section: 16a.4.4
+; Page: 127
+<AC-Answer> ::= < Diameter Header: 271, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ User-Name ]
+        [ Event-Timestamp ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+        [ NAS-Identifier ]
+        [ NAS-IP-Address ]
+        [ NAS-IPv6-Address ]
+        [ NAS-Port ]
+        [ NAS-Port-Id ]
+        [ NAS-Port-Type ]
+        [ Service-Type ]
+        [ Accounting-Realtime-Required ]
+        [ Acct-Interim-Interval ]
+      * [ Class ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 16a.4.5
+; Page: 127
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ User-Name ]
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 16a.4.6
+; Page: 127
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 16a.4.7
+; Page: 128
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+        [ 3GPP-NSAPI ]          ; bold
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 16a.4.8
+; Page: 128
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Experimental-Result ]     ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ] ;; corrected: (TS29.061.py#redirected-host-16a-4-8)
+        [ Redirect-Host-Usage ] ;; corrected: (TS29.061.py#redirected-host-usage-16a-4-8)
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 17.6.1
+; Page: 143
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ 3GPP-IMSI ]                  ; bold
+        [ RAI ]                        ; bold
+        [ 3GPP-IMEISV ]                ; bold
+        [ 3GPP-RAT-Type ]              ; bold
+        [ 3GPP-User-Location-Info ]    ; bold
+        [ 3GPP-MS-TimeZone ]           ; bold
+        [ Additional-MBMS-Trace-Info ] ; bold
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 17.6.2
+; Page: 144
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+        [ Alternative-APN ]                   ; bold
+        [ 3GPP-IMSI ]                         ; bold
+        [ TMGI ]                              ; bold
+        [ Required-MBMS-Bearer-Capabilities ] ; bold
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 17.6.3
+; Page: 144
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Additional-MBMS-Trace-Info ] ; bold
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 17.6.4
+; Page: 145
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+
+
+; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 17.6.5
+; Page: 145
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ Called-Station-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+        [ MBMS-StartStop-Indication ]      ; bold
+        [ MBMS-Service-Area ]              ; bold
+        [ MBMS-Required-QoS ]              ; bold
+        [ MBMS-Session-Duration ]          ; bold
+        [ MBMS-Service-Type ]              ; bold
+        [ MBMS-Counting-Information ]      ; bold
+        [ MBMS-Session-Identity ]          ; bold
+        [ MBMS-Session-Repetition-Number ] ; bold
+        [ TMGI ]                           ; bold
+      * [ 3GPP-SGSN-Address ]              ; bold
+      * [ 3GPP-SGSN-IPv6-Address ]         ; bold
+        [ MBMS-2G-3G-Indicator ]           ; bold
+        [ MBMS-Time-To-Data-Transfer ]     ; bold
+        [ MBMS-User-Data-Mode-Indication ] ; bold
+        [ MBMS-BMSC-SSM-IP-Address ]       ; bold
+        [ MBMS-BMSC-SSM-IPv6-Address ]     ; bold
+        [ MBMS-Flow-Identifier ]           ; bold
+        [ CN-IP-Multicast-Distribution ]   ; bold
+        [ MBMS-HC-Indicator ]              ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 17.6.6
+; Page: 147
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ MBMS-StartStop-Indication ]      ; bold
+        [ MBMS-GGSN-Address ]              ; bold
+        [ MBMS-GGSN-IPv6-Address ]         ; bold
+        [ MBMS-GW-UDP-Port ]               ; bold
+        [ MBMS-User-Data-Mode-Indication ] ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ] ;; corrected: (TS29.061.py#redirected-host-17-6-6)
+        [ Redirect-Host-Usage ] ;; corrected: (TS29.061.py#redirected-host-usage-17-6-6)
+        [ Redirect-Max-Cache-Time ] ;; corrected: (TS29.061.py#redirected-host-cache-time-17-6-6)
+      * [ Proxy-Info ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 17.6.7
+; Page: 147
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 17.6.8
+; Page: 147
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ] ;; corrected: (TS29.061.py#redirected-host-17-6-8)
+        [ Redirect-Host-Usage ] ;; corrected: (TS29.061.py#redirected-host-usage-17-6-8)
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+
+
+; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 20.4.1
+; Page: 168
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ Called-Station-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+        [ MBMS-Access-Indicator ]          ; bold
+        [ MBMS-StartStop-Indication ]      ; bold
+        [ MBMS-Service-Area ]              ; bold
+        [ QoS-Information ]                ; bold
+        [ MBMS-Session-Duration ]          ; bold
+        [ MBMS-Session-Identity ]          ; bold
+        [ MBMS-Session-Repetition-Number ] ; bold
+        [ TMGI ]                           ; bold
+      * [ 3GPP-SGSN-Address ]              ; bold
+      * [ 3GPP-SGSN-IPv6-Address ]         ; bold
+        [ MBMS-Time-To-Data-Transfer ]     ; bold
+        [ MBMS-Data-Transfer-Start ]       ; bold
+        [ MBMS-Data-Transfer-Stop ]        ; bold
+        [ MBMS-Flags ]                     ; bold
+        [ MBMS-User-Data-Mode-Indication ] ; bold
+        [ MBMS-BMSC-SSM-IP-Address ]       ; bold
+        [ MBMS-BMSC-SSM-IPv6-Address ]     ; bold
+        [ MBMS-Flow-Identifier ]           ; bold
+        [ CN-IP-Multicast-Distribution ]   ; bold
+        [ MBMS-HC-Indicator ]              ; bold
+        [ MBMS-GW-UDP-Port-Indicator ]     ; bold
+        [ MBMS-GW-SSM-IP-Address ]         ; bold
+        [ MBMS-GW-SSM-IPv6-Address ]       ; bold
+        [ MBMS-BMSC-SSM-UDP-Port ]         ; bold
+        [ MBMS-Cell-List ]                 ; bold
+        [ Local-M1-Information ]           ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Supported-Features ]             ; bold
+        [ Restart-Counter ]
+
+
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 20.4.2
+; Page: 170
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ MBMS-StartStop-Indication ]      ; bold
+        [ MBMS-GGSN-Address ]              ; bold
+        [ MBMS-GGSN-IPv6-Address ]         ; bold
+        [ MBMS-User-Data-Mode-Indication ] ; bold
+        [ MBMS-GW-UDP-Port ]               ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ] ;; corrected: (TS29.061.py#redirected-host-20-4-2)
+        [ Redirect-Host-Usage ] ;; corrected: (TS29.061.py#redirected-host-usage-20-4-2)
+        [ Redirect-Max-Cache-Time ] ;; corrected: (TS29.061.py#redirected-host-cache-time-20-4-2)
+        [ Proxy-Info ]
+      * [ Supported-Features ]
+        [ Restart-Counter ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 20.4.3
+; Page: 171
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Diagnostic-Info ]
+        [ Restart-Counter ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 20.4.4
+; Page: 171
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        [ Restart-Counter ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 20.4.5
+; Page: 171
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Restart-Counter ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 20.4.6
+; Page: 172
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Redirect-Host ] ;; corrected: (TS29.061.py#redirected-host-20-4-6)
+        [ Redirect-Host-Usage ] ;; corrected: (TS29.061.py#redirected-host-usage-20-4-6)
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        [ Restart-Counter ]
 
 
 ; Type: AVP Table
@@ -229,3 +956,9 @@ MBMS-Access-Indicator ::= < Enumerated AVP header: 923 10415 >
 ; Page: 176
 MBMS-GW-UDP-Port-Indicator ::= < Enumerated AVP header: 928 10415 >
         UDP-PORT-REQUIRED = 1
+
+
+; Type: Undefined AVP ;; inserted: (TS29.061.py#undefined-delegated-ipv6-prefix)
+; Name: Delegated-IPv6-Prefix
+; Section: 16a.4.1
+; Note: "clause 2: [97] IETF RFC 4818 (2007): RADIUS Delegated-IPv6-Prefix Attribute"

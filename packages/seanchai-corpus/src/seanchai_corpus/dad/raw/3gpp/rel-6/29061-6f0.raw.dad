@@ -5,6 +5,192 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129000_129099/129061/06.15.00_60/ts_129061v061500p.pdf
 
 
+; Type: Application Scope
+; Name: Gmb
+; Section: 17
+; Page: 73
+; Application-ID: 16777223
+; Applies-To: 17.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 17.6.1
+; Page: 82
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ Called-Station-Id ]
+        [ Calling-Station-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ 3GPP-IMSI ]                  ; bold
+        [ RAI ]                        ; bold
+        [ 3GPP-IMEISV ]                ; bold
+        [ 3GPP-RAT-Type ]              ; bold
+        [ 3GPP-User-Location-Info ]    ; bold
+        [ 3GPP-MS-TimeZone ]           ; bold
+        [ Additional-MBMS-Trace-Info ] ; bold
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 17.6.2
+; Page: 83
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+        [ Alternative-APN ]                   ; bold
+        [ 3GPP-IMSI ]                         ; bold
+        [ TMGI ]                              ; bold
+        [ Required-MBMS-Bearer-Capabilities ] ; bold
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 17.6.3
+; Page: 84
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Termination-Cause }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Additional-MBMS-Trace-Info ] ; bold
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 17.6.4
+; Page: 84
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+
+
+; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 17.6.5
+; Page: 85
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ Called-Station-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+        [ MBMS-StartStop-Indication ]      ; bold
+        [ MBMS-Service-Area ]              ; bold
+        [ MBMS-Required-QoS ]              ; bold
+        [ MBMS-Session-Duration ]          ; bold
+        [ MBMS-Service-Type ]              ; bold
+        [ MBMS-Counting-Information ]      ; bold
+        [ MBMS-Session-Identity ]          ; bold
+        [ MBMS-Session-Repetition-Number ] ; bold
+        [ TMGI ]                           ; bold
+      * [ 3GPP-SGSN-Address ]              ; bold
+      * [ 3GPP-SGSN-IPv6-Address ]         ; bold
+        [ MBMS-2G-3G-Indicator ]           ; bold
+        [ MBMS-Time-To-Data-Transfer ]     ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 17.6.6
+; Page: 86
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ MBMS-StartStop-Indication ]  ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Host-Cache-Time ]
+      * [ Proxy-Info ]
+
+
+; Type: Message
+; Name: Abort-Session-Request, ASR
+; Section: 17.6.7
+; Page: 87
+<Abort-Session-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Abort-Session-Answer, ASA
+; Section: 17.6.8
+; Page: 87
+<Abort-Session-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+
+
 ; Type: AVP Table
 ; Section: 17.7
 ; Table: 10

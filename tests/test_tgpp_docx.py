@@ -576,6 +576,40 @@ def test_rfc_command_rules_names_a_rule_from_its_command_code():
     assert (dea.name, dea.abbreviation) == ("Diameter-EAP-Answer", "DEA")
 
 
+def test_a_bare_command_heading_is_read_through_the_rfc_command():
+    # TS 29.061 clause 17.6.1, "AAR Command", over `<AA-Request> ::=`: the rule
+    # keeps the document's spelling, the abbreviation comes from RFC 7155.
+    aar, asr = _procedure_messages(
+        _procedure_section(
+            "The AAR command, defined in Diameter NASREQ, is indicated by code 265.",
+            "<AA-Request> ::= < Diameter Header: 265, REQ, PXY >",
+            "< Session-Id >",
+            "The Abort-Session-Request (ASR) command, defined in IETF RFC 6733, ...",
+            "<ASR> ::= < Diameter Header: 274, REQ, PXY >",
+            "< Session-Id >",
+        ),
+        "procedure-commands",
+        "rfc-command-rules",
+    )
+    assert (aar.name, aar.abbreviation) == ("AA-Request", "AAR")
+    assert (asr.name, asr.abbreviation) == ("Abort-Session-Request", "ASR")
+
+
+def test_application_id_stated_as_the_value_iana_assigned():
+    # TS 29.061 clause 17.
+    section = _procedure_section(
+        "The Gmb application is defined as an IETF vendor specific Diameter"
+        " application, where the vendor is 3GPP. The vendor identifier assigned by"
+        " IANA to 3GPP is 10415. The Gmb application identifier value assigned by"
+        " IANA is 16777223.",
+    )
+    from seanchai.extractor.sources import Quirk, Quirks
+
+    quirks = Quirks([Quirk(name="prose-application-ids", reason="test")], None)
+    (scope,) = tgpp_docx._stated_applications(section, quirks)
+    assert (scope.name, scope.application_id) == ("Gmb", 16777223)
+
+
 @pytest.mark.parametrize(
     ("rule", "quirk_names", "message"),
     [

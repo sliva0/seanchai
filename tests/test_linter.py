@@ -638,7 +638,9 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     # tables print differently (29.061's tables 9a and 10, see
     # `_STANDING_CORPUS_NOTES`; 29.273's two).
     expected = {
-        "29061-i10": 7,
+        # The Undefined AVP block of Delegated-IPv6-Prefix is a correction's.
+        "29061-i10.raw": 7,
+        "29061-i10": 8,
         "29128-i00": 3,
         # The row clause 6.3.43's Wildcarded-IMPU is corrected into.
         "29229-i10.raw": 0,
@@ -1661,6 +1663,7 @@ _STANDING_CORPUS_NOTES = {
             "3GPP-User-Location-Info",
             "3GPP-MS-TimeZone",
         ],
+        "undefined-avp": ["Delegated-IPv6-Prefix"],
     },
     "29128-i00.dad": {"reused-body-differs": ["Terminal-Information"]},
     "29172-i10.dad": {

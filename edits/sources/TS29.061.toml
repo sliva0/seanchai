@@ -1,6 +1,37 @@
 # Source declarations for 3GPP TS 29.061 (Gn/Gi/Sgi interworking).
 
 [[quirk]]
+name = "procedure-commands"
+reason = """
+    the command clauses are headed 'AAR Command' or 'Re-Auth-Request Command',
+    naming a command by one of its two names, and only some intros print both,
+    'The Abort-Session-Request (ASR) command, defined in IETF RFC 6733'
+    """
+
+[[quirk]]
+name = "rfc-command-rules"
+reason = """
+    the other intros print the abbreviation alone, 'The AAR command, defined in
+    Diameter NASREQ', over '<AA-Request>', and clause 20.4.3 has none; every
+    command is RFC 6733's or RFC 7155's, which name them by command code
+    """
+
+[[quirk]]
+name = "abnf-comments"
+reason = """
+    the bodies of the Gmb and SGmb RAR and RAA (clauses 17.6.5, 17.6.6, 20.4.1,
+    20.4.2) gloss members, '[ MBMS-GGSN-Address ] ; for unicast encapsulated
+    user data'; unread, each body ends at the first
+    """
+
+[[quirk]]
+name = "prose-application-ids"
+reason = """
+    the command headers print no application id; clauses 17 and 20.1 state
+    Gmb's and SGmb's
+    """
+
+[[quirk]]
 name = "dotted-flags"
 reason = """
     eleven flags cells write the separator as a period ('M.V'); the space-less
@@ -64,3 +95,73 @@ reason = """
     """
 first_version = "18.1.0"
 last_version = "18.1.0"
+
+[[patch]]
+find = "3GPP-Charging-ID"
+replace = "3GPP-Charging-Id"
+count = 2
+section = "16a.4"
+reason = """
+    the AAR and ACR bodies (clauses 16a.4.1, 16a.4.3) misspell in case the name
+    table 9a prints
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[patch]]
+find = "Qos-Filter-Rule"
+replace = "QoS-Filter-Rule"
+count = 1
+section = "16a.4"
+reason = """
+    the ACR body (clause 16a.4.3) misspells in case the name the AAR body and
+    RFC 7155 print
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[patch]]
+find = "MBMS-GGSN-Ipv6-Address"
+replace = "MBMS-GGSN-IPv6-Address"
+count = 1
+section = "20.4"
+reason = """
+    the SGmb RAA body (clause 20.4.2) misspells in case the name table 10
+    prints; clause 17.7.20 heads the AVP with the same misspelling, which is no
+    rule and stays
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[patch]]
+find = "MBMS-Session-Repetition-number"
+replace = "MBMS-Session-Repetition-Number"
+count = 1
+section = "17.6"
+reason = """
+    the Gmb RAR body (clause 17.6.5) misspells in case the name table 10 prints
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[patch]]
+find = "MBMS-Session-Repetition-number"
+replace = "MBMS-Session-Repetition-Number"
+count = 1
+section = "20.4"
+reason = """
+    the SGmb RAR body (clause 20.4.1) misspells in case the name table 10 prints
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"
+
+[[patch]]
+find = "MBMS-Session-Repetition-number"
+replace = "MBMS-Session-Repetition-Number"
+count = 1
+section = "17.6"
+reason = """
+    the Gmb RAR body (clause 17.6.5) misspells in case the name table 10 prints
+    """
+first_version = "6.15.0"
+last_version = "6.15.0"
