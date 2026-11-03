@@ -5,6 +5,7 @@ import pytest
 from conftest import _CORPUS_DIR, _ROOT
 
 from seanchai.dad import formatter, parser
+from seanchai.downloader import load_catalog
 from seanchai.extractor import transcription
 from seanchai.extractor.sources import PatchError
 
@@ -37,6 +38,17 @@ def test_a_transcription_holds_what_the_document_prints(path):
         parser.parse(transcription.patched(path))
 
     parser.parse(transcription.patched(path, _ROOT / "edits" / "sources"))
+
+
+def test_the_catalog_fetches_what_each_transcription_was_copied_from():
+    """`seanchai download` reads the catalog's URL and the export looks the
+    file up by the name in the transcription's header, so the two are one."""
+    catalog = {document.reference: document for document in load_catalog().transcribed}
+
+    assert sorted(catalog) == [path.stem for path in _TRANSCRIPTIONS]
+    for path in _TRANSCRIPTIONS:
+        spec = parser.parse(transcription.patched(path, _ROOT / "edits" / "sources"))
+        assert str(spec.transcribed) == catalog[path.stem].url
 
 
 def test_a_patch_that_stops_matching_fails_the_reading(tmp_path):

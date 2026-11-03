@@ -511,8 +511,9 @@ reason = """
     """
 
 # Documents no extractor reads, copied by hand into `edits/transcriptions/`.
-# Nothing downloads them for the corpus; each is here for its title, as the
-# document's cover prints it.
+# Each is here for its title, as the document's cover prints it, and for the
+# PDF it was copied from, the file's `; Transcribed:`, which `seanchai download`
+# fetches for the self-hosted export; `regenerate` reads only the transcription.
 [[transcribed]]
 reference = "ETSI-ES283.034"
 title = """
@@ -520,6 +521,7 @@ title = """
     Advanced Networking (TISPAN); Network Attachment Sub-System (NASS); e4
     interface based on the DIAMETER protocol
     """
+url = "https://www.etsi.org/deliver/etsi_es/283000_283099/283034/02.02.00_60/es_283034v020200p.pdf"
 
 [[transcribed]]
 reference = "ETSI-TS183.017"
@@ -530,10 +532,12 @@ title = """
     Application Function (AF) and the Service Policy Decision Function (SPDF);
     Protocol specification
     """
+url = "https://www.etsi.org/deliver/etsi_ts/183000_183099/183017/03.02.01_60/ts_183017v030201p.pdf"
 
 [[transcribed]]
 reference = "3GPP2-X.S0057"
 title = "E-UTRAN - eHRPD Connectivity and Interworking: Core Network Aspects"
+url = "http://www.3gpp2.org/Public_html/Specs/X.S0057-0_v2.0_091215.pdf"
 
 # Wireshark's Diameter dictionary — the independent oracle `seanchai
 # crosscheck` compares extracted codes, vendor-ids and types against. The

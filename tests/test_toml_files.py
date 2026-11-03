@@ -15,8 +15,8 @@ _ROOT = Path(__file__).parent.parent
 _COLUMNS = 80
 # Fields whose whitespace is significant cannot wrap: a line break in a `find`
 # is a different string to look for, and a line continuation would hide a
-# trailing space.
-_EXACT_FIELD = re.compile(r"""(?:find|replace) = (?:"(?:[^"\\]|\\.)*"|'[^']*')""")
+# trailing space. A catalog's `url` has none, and no place to break.
+_EXACT_FIELD = re.compile(r"""(?:find|replace|url) = (?:"(?:[^"\\]|\\.)*"|'[^']*')""")
 # What `.gitignore` names, none of it ours to hold to a line length.
 _IGNORED_DIRECTORIES = frozenset(
     {

@@ -656,6 +656,14 @@ def test_download_lists_what_only_names():
     assert "Wireshark" not in result.stdout
 
 
+def test_download_lists_the_transcriptions_pdfs_under_their_source():
+    result = CliRunner().invoke(main, ["download", "--list", "--only", "transcribed"])
+
+    assert result.exit_code == 0
+    assert "ETSI-ES283.034" in result.stdout
+    assert "RFC 6733" not in result.stdout
+
+
 def test_regenerate_names_the_source_a_partial_download_lacks(tmp_path):
     specifications = tmp_path / "specifications"
     specifications.mkdir()

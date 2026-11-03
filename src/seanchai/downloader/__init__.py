@@ -6,7 +6,8 @@ a legacy DOC is converted to DOCX with headless LibreOffice. oneM2M's
 specifications come from its document library at a catalogued version, as
 a ZIP holding a legacy DOC converted the same way.
 RFCs are downloaded as canonical plain text from the RFC Editor, and the
-official ETSI PDF renditions alongside the 3GPP sources.
+official ETSI PDF renditions alongside the 3GPP sources. The PDFs the hand
+transcriptions were copied from come from ETSI and 3GPP2 at the catalog's URLs.
 
 The curated specification catalog lives in ``specs.toml`` next to this package;
 the CLI downloads into the git-ignored ``specifications/`` directory by default.
@@ -14,8 +15,8 @@ the CLI downloads into the git-ignored ``specifications/`` directory by default.
 This package is a library: it returns records and raises `DownloadError`, and
 the `seanchai download` command owns the printing and the exit status. The
 catalog lives in `catalog` and the implementation in `core`; what is re-exported
-here is what the boundary promises. Only a 3GPP or oneM2M download needs the
-`seanchai[extract]` extra, to validate what it fetched.
+here is what the boundary promises. Only a 3GPP, oneM2M or `transcribed` download
+needs the `seanchai[extract]` extra, to validate what it fetched.
 """
 
 from .catalog import (

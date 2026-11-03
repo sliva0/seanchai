@@ -3,9 +3,10 @@
 `src/seanchai/downloader/` fetches the catalog in its `specs.toml` into the
 git-ignored `specifications/`: 3GPP archives with their ETSI PDF
 renderings, pinned older 3GPP versions, the plain-text RFCs, oneM2M's Word
-original at a pinned version, and Wireshark's Diameter dictionary. It
-converts every legacy `.doc` to `.docx` with headless LibreOffice and
-writes `specifications/manifest.json` with sha256 and size per artifact.
+original at a pinned version, the PDFs the hand transcriptions were copied
+from, and Wireshark's Diameter dictionary. It converts every legacy `.doc` to
+`.docx` with headless LibreOffice and writes `specifications/manifest.json` with
+sha256 and size per artifact.
 Dependencies: the `seanchai[extract]` extra, which is pypdf with its crypto
 extra (ETSI's TS 129 234 V11.2.0 is AES-encrypted with an empty password) and
 python-docx for validation, and the `soffice` executable unless `--no-convert`.
@@ -19,6 +20,7 @@ uv run seanchai download            # fetch it, ETSI PDFs included
 uv run seanchai download --no-convert   # without LibreOffice
 uv run seanchai download --spec TS29.272 --version 18.6.0   # one older version
 uv run seanchai download --only wireshark --only rfc   # the small sources alone
+uv run seanchai download --only transcribed   # the transcriptions' PDFs alone
 ```
 
 ## Layout
@@ -31,6 +33,7 @@ specifications/
   3gpp/Rel-7/TS_29.140/    a pinned version, its release's │
   converted/               LibreOffice conversions     │ swapped in whole
   onem2m/Release-2/TS-0004/  the oneM2M document       │
+  transcriptions/          the transcriptions' PDFs    │
   rfc/  wireshark/         RFC texts, the dictionary   ┘
   archives/                download cache: every file fetched, never pruned
   versions/TS29.272/18.6.0/   an older version, on request
@@ -52,8 +55,9 @@ experiments, not for refreshing the corpus.
 ## Behaviour
 
 - **`--only` fetches some of the sources and keeps the rest.** The sources are
-  `3gpp`, with its pinned versions, `onem2m`, `rfc` and `wireshark`; the last
-  two need no `seanchai[extract]`. What the manifest holds of the others is
+  `3gpp`, with its pinned versions, `onem2m`, `rfc`, `transcribed` and
+  `wireshark`; `rfc` and `wireshark` need no `seanchai[extract]`. What the
+  manifest holds of the others is
   linked into the staged tree and swapped back with it, and its `sources` says
   what the manifest and the tree hold. `3gpp_release` and `include_pdfs`
   describe its 3GPP documents, null with none. A record whose files have gone
@@ -117,10 +121,18 @@ experiments, not for refreshing the corpus.
   entry's `out_of_scope` says why the extractor has nothing to read in it; the
   document is fetched for reference, and `regenerate --add` refuses it with
   those words ([extractor.md](extractor.md#out-of-scope)).
-- **Hand transcriptions are in the catalog for their titles only.** A
-  `[[transcribed]]` entry names a document under `edits/transcriptions/` and the
-  title its cover prints. Nothing downloads it for the corpus; `seanchai export`
-  reads the title.
+- **A hand transcription's PDF is a source of its own.** A `[[transcribed]]`
+  entry names a document under `edits/transcriptions/`, the title its cover
+  prints, which `seanchai export` reads, and `url`, the exact rendering its
+  `; Transcribed:` names, a test holding the two together. The URL is the
+  catalog's and not one read off a listing: ETSI's deliver directory lists later
+  versions, and 3GPP2's archive lists nothing. The PDF goes to
+  `specifications/transcriptions/` under its own name and into the manifest with
+  the publisher as `family` (`ETSI`, `3GPP2`), and is validated like any other.
+  `seanchai export --include-pdfs` finds it there by name. `regenerate` reads
+  the transcription, never the PDF, so a manifest without this source rebuilds
+  the whole corpus. A `transcriptions/` placed by hand, in no manifest, stays
+  until a run fetches this source.
 - **oneM2M documents are pinned by the catalog, not discovered.** The
   document library serves a document id's latest revision with no archive,
   so the version is the catalog's to state and the download's to check: a

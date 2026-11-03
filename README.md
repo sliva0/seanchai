@@ -46,7 +46,8 @@ pip install "seanchai[extract]"  # to rebuild a corpus from source documents
 ```
 
 The `extract` extra is `python-docx` and `pypdf`, which `seanchai extract`,
-`regenerate` and a 3GPP or oneM2M `download` need and a consumer does not.
+`regenerate` and a 3GPP, oneM2M or `transcribed` `download` need and a consumer
+does not.
 
 ```python
 from seanchai import model
@@ -64,6 +65,7 @@ seanchai dictionary -o OUT.json         # the corpus as JSON, to generate from
 seanchai download                       # fetch the catalog into specifications/
 seanchai download --no-convert          # without LibreOffice; legacy .doc unread
 seanchai download --only wireshark      # one source, keeping the others
+seanchai download --only transcribed    # the hand transcriptions' PDFs
 seanchai download --spec SPECREF --version X.Y.Z   # one older version, for diffs
 seanchai regenerate [--add SPECREF]     # rebuild the corpus from the downloads
 seanchai regenerate --expand-ranges     # also widen stale declaration ranges

@@ -24,9 +24,9 @@ dev group installs. Only `extractor/tgpp_docx.py` and two validators in
 `downloader/core.py` touch them, and nothing imports either on the way to the
 model or the export: the catalog, which the export reads, is its own module,
 `downloader/catalog.py`. Without the extra, `MissingExtraError` names it, and
-`extract`, `regenerate` and a 3GPP or oneM2M `download` say so before doing
-anything. `extract-rfc` and `download --only rfc`, `--only wireshark` need no
-extra.
+`extract`, `regenerate` and a 3GPP, oneM2M or `transcribed` `download` say so
+before doing anything. `extract-rfc` and `download --only rfc`, `--only
+wireshark` need no extra.
 
 ## Repository layout
 
@@ -135,9 +135,9 @@ covers it; add a synthetic case only for a rejection path.
 - TOML files keep to 80 columns, comments included. A long prose field (a
   `reason`, a `title`) is a multi-line basic string with no backslash
   continuations, and every reader collapses its whitespace to single spaces
-  (`seanchai.prose`). An exact field (`find`, `replace`) cannot wrap, since
-  its whitespace is significant, so it stays on one line; those are the
-  only lines `tests/test_toml_files.py` lets run long.
+  (`seanchai.prose`). An exact field (`find`, `replace`, a catalog's `url`)
+  cannot wrap, since its whitespace is significant, so it stays on one line;
+  those are the only lines `tests/test_toml_files.py` lets run long.
 - Markdown prose keeps to 80 columns, and `rumdl` holds it there. Tables,
   fenced code and a line that is one unbroken token or one link may run
   long. A long code span wraps at a space; it renders the same.
