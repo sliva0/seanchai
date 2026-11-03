@@ -142,19 +142,41 @@ def test_the_library_wheel_holds_the_library_and_no_data(dist):
     assert not any(name.endswith(".dad") for name in files)
 
 
-@pytest.mark.parametrize("prefix", ["seanchai", "seanchai_corpus"])
-def test_a_source_distribution_holds_the_package_and_its_metadata_only(dist, prefix):
+@pytest.mark.parametrize(
+    ("prefix", "files"),
+    [
+        ("seanchai", {"PKG-INFO", "README.md", "LICENSE", "src"}),
+        ("seanchai_corpus", {"PKG-INFO", "README.md", "LICENSE", "NOTICE", "src"}),
+    ],
+)
+def test_a_source_distribution_holds_the_package_and_its_metadata_only(
+    dist, prefix, files
+):
     (sdist,) = dist.glob(f"{prefix}-*.tar.gz")
 
     with tarfile.open(sdist) as archive:
         top = {part for member in archive.getnames() for part in member.split("/")[1:2]}
 
-    assert {"PKG-INFO", "README.md", "LICENSE", "src", "pyproject.toml"} <= top
+    assert {*files, "pyproject.toml"} <= top
+    assert all(name in files or name.startswith("pyproject.toml") for name in top)
+
+
+def test_the_corpus_wheel_carries_its_notice(dist):
+    with zipfile.ZipFile(_wheel(dist, "seanchai_corpus")) as archive:
+        (name,) = (n for n in archive.namelist() if n.endswith("/licenses/NOTICE"))
+        notice = archive.read(name).decode("utf-8")
+
     assert all(
-        name in {"PKG-INFO", "README.md", "LICENSE", "src"}
-        or name.startswith("pyproject.toml")
-        for name in top
+        publisher in notice for publisher in ("3GPP", "ETSI", "3GPP2", "oneM2M", "IETF")
     )
+    assert "publishers'" in notice
+
+
+def test_the_corpus_package_asks_for_no_recent_python():
+    """It only reads files, so a generator on an older Python can hold the data
+    without the library."""
+    assert _project(_PACKAGE / "pyproject.toml")["requires-python"] == ">=3.10"
+    assert _project(_ROOT / "pyproject.toml")["requires-python"] == ">=3.14"
 
 
 def test_the_corpus_version_is_the_date_it_names():

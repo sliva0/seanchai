@@ -6,15 +6,19 @@ readme = "README.md"
 authors = [
     { name = "sliva0", email = "sliva0mk@gmail.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 license = "MIT"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Telecommunications Industry",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Communications :: Telephony",
     "Topic :: System :: Networking",
