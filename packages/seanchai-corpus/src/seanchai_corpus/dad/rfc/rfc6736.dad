@@ -1,0 +1,246 @@
+; Specification: RFC 6736
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc6736.txt
+
+
+; Type: Application Scope ;; inserted: (RFC6736.py#application-id)
+; Name: Diameter NAT Control Application
+; Section: 8.1
+; Page: 29
+; Application-ID: 12
+; Applies-To: 6.*
+
+
+; Type: Message
+; Name: NAT-Control-Request, NCR
+; Section: 6.1
+; Page: 25
+<NAT-Control-Request> ::= < Diameter Header: 330, REQ, PXY >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { NC-Request-Type }
+        [ Session-Id ]
+        [ Origin-State-Id ]
+     *1 [ NAT-Control-Remove ]
+     *1 [ NAT-Control-Install ]
+        [ NAT-External-Address ]
+        [ User-Name ]
+        [ Logical-Access-ID ]
+        [ Physical-Access-ID ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+        [ Egress-VLANID ]
+        [ NAS-Port-Id ]
+        [ Address-Realm ]
+        [ Calling-Station-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: NAT-Control-Answer, NCA
+; Section: 6.2
+; Page: 26
+<NAT-Control-Answer> ::= < Diameter Header: 330, PXY >
+        { Origin-Host }
+        { Origin-Realm }
+        { Result-Code }
+        [ Session-Id ]
+        [ NC-Request-Type ]
+      * [ NAT-Control-Definition ]
+        [ Current-NAT-Bindings ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+        [ Duplicate-Session-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Failed-AVP ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 8.7
+; Page: 35
+; Columns: Name                Code   Section   Type          Must   May   Encrypt
+NC-Request-Type                595    8.7.1     Enumerated    M      P     Yes
+NAT-Control-Install            596    8.7.2     Grouped       M      P     Yes
+NAT-Control-Remove             597    8.7.3     Grouped       M      P     Yes
+NAT-Control-Definition         598    8.7.4     Grouped       M      P     Yes
+NAT-Internal-Address           599    8.7.5     Grouped       M      P     Yes
+NAT-External-Address           600    8.7.6     Grouped       M      P     Yes
+Max-NAT-Bindings               601    8.7.7     Unsigned32    M      P     Yes
+NAT-Control-Binding-Template   602    8.7.8     OctetString   M      P     Yes
+Duplicate-Session-Id           603    8.7.9     UTF8String    M      P     Yes
+NAT-External-Port-Style        604    8.7.10    Enumerated    M      P     Yes
+NAT-Control-Record             605    9.2.1     Grouped       M      P     Yes
+NAT-Control-Binding-Status     606    9.2.2     Enumerated    M      P     Yes
+Current-NAT-Bindings           607    9.2.3     Unsigned32    M      P     Yes
+
+
+; Type: Reused AVPs
+; Section: 8.1
+; Table: 8.1
+; Page: 29
+; Columns: Name         Code   From      Type
+Acct-Interim-Interval   85     RFC6733   Unsigned32
+Auth-Application-Id     258    RFC6733   Unsigned32
+Destination-Host        293    RFC6733   DiameterIdentity
+Destination-Realm       283    RFC6733   DiameterIdentity
+Error-Message           281    RFC6733   UTF8String
+Error-Reporting-Host    294    RFC6733   DiameterIdentity
+Failed-AVP              279    RFC6733   Grouped
+Origin-Host             264    RFC6733   DiameterIdentity
+Origin-Realm            296    RFC6733   DiameterIdentity
+Origin-State-Id         278    RFC6733   Unsigned32
+Proxy-Info              284    RFC6733   Grouped
+Result-Code             268    RFC6733   Unsigned32
+Route-Record            282    RFC6733   DiameterIdentity
+Session-Id              263    RFC6733   UTF8String
+User-Name               1      RFC6733   UTF8String
+
+
+; Type: Reused AVPs
+; Section: 8.3
+; Table: 8.3
+; Page: 32
+; Columns: Name       Code   From      Type
+NAS-Port              5      RFC4005   Unsigned32
+NAS-Port-Id           87     RFC4005   UTF8String
+Calling-Station-Id    31     RFC4005   UTF8String
+Framed-IP-Address     8      RFC4005   OctetString
+Framed-Interface-Id   96     RFC4005   Unsigned64
+Framed-IPv6-Prefix    97     RFC4005   OctetString
+
+
+; Type: Reused AVPs
+; Section: 8.4
+; Table: 8.4
+; Page: 33
+; Columns: Name   Code   From      Type
+Egress-VLANID     56     RFC4675   OctetString
+
+
+; Type: Reused AVPs
+; Section: 8.5
+; Table: 8.5
+; Page: 33
+; Columns: Name   Code   From      Type
+Port              530    RFC5777   Integer32
+Protocol          513    RFC5777   Enumerated
+Direction         514    RFC5777   Enumerated
+
+
+; Type: Reused AVPs
+; Section: 8.6
+; Table: 8.6
+; Page: 34
+; Columns: Name      Code   From             Type
+Address-Realm        301    ETSI-ES283.034   OctetString
+Logical-Access-ID    302    ETSI-ES283.034   OctetString
+Physical-Access-ID   313    ETSI-ES283.034   UTF8String
+
+
+; Type: Enumerated AVP
+; Name: NC-Request-Type
+; Section: 8.7.1
+; Page: 36
+NC-Request-Type ::= < Enumerated AVP header: 595 >
+        INITIAL_REQUEST = 1
+        UPDATE_REQUEST  = 2
+        QUERY_REQUEST   = 3
+
+
+; Type: Grouped AVP
+; Name: NAT-Control-Install
+; Section: 8.7.2
+; Page: 36
+NAT-Control-Install ::= < AVP header: 596 >
+      * [ NAT-Control-Definition ]
+        [ NAT-Control-Binding-Template ]
+        [ Max-NAT-Bindings ]
+        [ NAT-External-Port-Style ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: NAT-Control-Remove
+; Section: 8.7.3
+; Page: 37
+NAT-Control-Remove ::= < AVP header: 597 >
+      * [ NAT-Control-Definition ]
+        [ NAT-Control-Binding-Template ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: NAT-Control-Definition
+; Section: 8.7.4
+; Page: 37
+NAT-Control-Definition ::= < AVP header: 598 >
+        { NAT-Internal-Address }
+        [ Protocol ]
+        [ Direction ]
+        [ NAT-External-Address ]
+        [ Session-Id ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: NAT-Internal-Address
+; Section: 8.7.5
+; Page: 38
+NAT-Internal-Address ::= < AVP header: 599 >
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Port ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: NAT-External-Address
+; Section: 8.7.6
+; Page: 38
+NAT-External-Address ::= < AVP header: 600 >
+        [ Framed-IP-Address ]
+        [ Port ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: NAT-External-Port-Style
+; Section: 8.7.10
+; Page: 39
+NAT-External-Port-Style ::= < Enumerated AVP header: 604 >
+        FOLLOW_INTERNAL_PORT_STYLE = 1
+
+
+; Type: Grouped AVP
+; Name: NAT-Control-Record
+; Section: 9.2.1
+; Page: 41
+NAT-Control-Record ::= < AVP header: 605 >
+        { NAT-Control-Definition }
+        { NAT-Control-Binding-Status }
+        [ Event-Timestamp ]
+
+
+; Type: Enumerated AVP
+; Name: NAT-Control-Binding-Status
+; Section: 9.2.2
+; Page: 41
+NAT-Control-Binding-Status ::= < Enumerated AVP header: 606 >
+        Created = 1
+        Active  = 2
+        Removed = 3
