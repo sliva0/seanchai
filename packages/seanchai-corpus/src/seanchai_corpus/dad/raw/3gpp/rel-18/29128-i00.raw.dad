@@ -6,6 +6,27 @@
 
 
 ; Type: Message
+; Name: Configuration-Information-Request, CIR
+; Section: 6.2.3
+; Page: 32
+<Configuration-Information-Request> ::= < Diameter Header: 8388718, REQ, PXY, 16777346 >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+      * [ Monitoring-Event-Configuration ]
+      * [ Monitoring-Event-Report ]
+        [ User-Identifier ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
 ; Name: Configuration-Information-Answer, CIA
 ; Section: 6.2.4
 ; Page: 33
