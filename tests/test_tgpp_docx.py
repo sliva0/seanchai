@@ -458,6 +458,22 @@ def test_extract_reads_text_inside_smart_tags(tmp_path, synthetic_spec_docx):
     assert table.rows[0].section == "6.3.1"
 
 
+def test_a_spaced_command_heading_keeps_the_rule_s_name(tmp_path, synthetic_spec_docx):
+    # TS 29.336 clause 8.2.7: "NIDD Information Request (NIR) Command".
+    spaced = tmp_path / "spaced.docx"
+    document = docx.Document(synthetic_spec_docx)
+    heading = _paragraph(document, "6.1\tExample-Request (EXR) Command")
+    heading.runs[0].text = "6.1\tExample Request (EXR) Command"
+    document.save(spaced)
+
+    warnings = []
+    spec = tgpp_docx.extract(spaced, warnings=warnings)
+
+    message = next(s for s in spec.sections if isinstance(s, ast.Message))
+    assert (message.name, message.abbreviation) == ("Example-Request", "EXR")
+    assert any("'Example Request' != rule name" in w for w in warnings)
+
+
 def test_extract_rejects_an_avp_table_whose_caption_it_cannot_read(
     tmp_path, synthetic_spec_docx
 ):

@@ -76,9 +76,12 @@ _SPACED_HEADING_RE = re.compile(
     r"^(?P<number>(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*) +\t(?P<title>.+)$"
 )
 # TS 29.343 clauses 6.6.2-6.6.5 lower-case the keyword
-# ("ProXimity-Action-Request (PXR) command").
+# ("ProXimity-Action-Request (PXR) command"). TS 29.336 clauses 8.2.3 and 8.2.7
+# and TS 29.128 clause 6.2.3 space the name's words ("NIDD Information Request
+# (NIR) Command") over a rule hyphenating them; the rule's name wins, as it does
+# over any heading.
 _COMMAND_TITLE_RE = re.compile(
-    r"^(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) [Cc]ommand$"
+    r"^(?P<name>[A-Za-z-]+(?: [A-Za-z-]+)*) \((?P<abbr>[A-Z]{2,5})\) [Cc]ommand$"
 )
 # TS 32.299 clauses 6.2.2-6.4.13: "Accounting-Request message",
 # "Accounting-Answer (ACA) message"; oneM2M TS-0004 clauses A.2.1-A.2.2,
