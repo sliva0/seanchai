@@ -1974,32 +1974,39 @@ def _prose_avp_origins(
     quirks: sources.Quirks,
 ) -> list[ast.ReusedAvps]:
     """Explicit definition citations, retaining the citing table's facts."""
-    reused = []
-    for table in tables:
-        rows = []
-        for row in table.rows:
-            for section in sections:
-                if section.number != row.section:
-                    continue
-                text = " ".join(line.strip() for line in section.texts)
-                match = re.match(
-                    rf"\s*The {re.escape(row.name)} AVP"
-                    r"(?: \(AVP Code \d+\))? is defined in \[(RFC\d+)\]",
-                    text,
-                )
-                if match is not None:
-                    rows.append(ast.ReusedAvpRow(name=row.name, origin=match[1]))
-                    quirks.fire("prose-avp-origins")
-        if rows:
-            reused.append(
-                ast.ReusedAvps(
-                    table=table.table or table.source.section,
-                    source=table.source,
-                    columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
-                    rows=tuple(rows),
-                )
-            )
-    return reused
+    if not tables:
+        return []
+    rows = []
+    for section in sections:
+        title = _TITLE_RE.match(section.title)
+        if title is None:
+            continue
+        text = " ".join(line.strip() for line in section.texts)
+        name = re.escape(title["name"])
+        match = re.match(
+            # RFC 8583 clause 7.4; RFC 5779 clauses 5.1, 5.3 and 5.5.
+            rf"\s*The {name}(?: grouped)? AVP(?: \(AVP Code \d+\))?"
+            r" is (?:originally )?defined in \[(RFC\d+)\]",
+            text,
+        ) or re.search(
+            # RFC 5779 clause 5.8.
+            rf"^\s*The {name} AVP .*?\. *This AVP is re-used from \[(RFC\d+)\]",
+            text,
+        )
+        if match is not None:
+            rows.append(ast.ReusedAvpRow(name=title["name"], origin=match[1]))
+            quirks.fire("prose-avp-origins")
+    if not rows:
+        return []
+    table = tables[0]
+    return [
+        ast.ReusedAvps(
+            table=table.table or table.source.section,
+            source=table.source,
+            columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+            rows=tuple(rows),
+        )
+    ]
 
 
 def extract(

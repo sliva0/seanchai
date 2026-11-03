@@ -1,0 +1,49 @@
+; Specification: RFC 5779
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc5779.txt
+
+
+; Type: AVP Table
+; Section: 5.2
+; Page: 10
+; Columns: Name             Code   Section   Type
+PMIP6-IPv4-Home-Address     505    5.2       Address
+PMIP6-DHCP-Server-Address   504    5.4       Address
+Mobile-Node-Identifier      506    5.6       UTF8String
+Calling-Station-Id          31     5.7       UTF8String
+Service-Selection           493    5.8       UTF8String
+Service-Configuration       507    5.9       Grouped
+
+
+; Type: Reused AVPs
+; Section: 5.2
+; Table: 5.2
+; Page: 10
+; Columns: Name         From
+MIP6-Agent-Info         RFC5447
+MIP6-Home-Link-Prefix   RFC5447
+MIP6-Feature-Vector     RFC5447
+Service-Selection       RFC5778
+
+
+; Type: Grouped AVP
+; Name: MIP6-Agent-Info
+; Section: 5.1
+; Page: 9
+MIP6-Agent-Info ::= < AVP header: 486 >
+     *2 [ MIP-Home-Agent-Address ]
+        [ MIP-Home-Agent-Host ]
+        [ MIP6-Home-Link-Prefix ]
+        [ PMIP6-IPv4-Home-Address ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Service-Configuration
+; Section: 5.9
+; Page: 13
+Service-Configuration ::= < AVP header: 507 >
+        [ MIP6-Agent-Info ]
+        [ Service-Selection ]
+      * [ AVP ]

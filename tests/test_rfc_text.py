@@ -676,3 +676,22 @@ def test_bulleted_enum_values_need_their_quirk(tmp_path):
     assert not _of(spec, ast.EnumeratedAvp)
 
 
+def test_prose_origins_read_every_wording_rfc_5779_uses(tmp_path):
+    body = (
+        "5.1.  MIP6-Agent-Info AVP\n\n"
+        "   The MIP6-Agent-Info grouped AVP (AVP Code 486) is defined in\n"
+        "   [RFC5447].\n\n"
+        "5.3.  MIP6-Feature-Vector AVP\n\n"
+        "   The MIP6-Feature-Vector AVP is originally defined in [RFC5447].\n\n"
+        "5.8.  Service-Selection AVP\n\n"
+        "   The Service-Selection AVP (AVP Code 493) is of type UTF8String and\n"
+        "   carries an identifier.  This AVP is re-used from [RFC5778].\n"
+    )
+    spec = _read(tmp_path, body, "clause-avp-table", "prose-avp-origins")
+    assert [(row.name, row.origin) for row in _of(spec, ast.ReusedAvps)[0].rows] == [
+        ("MIP6-Agent-Info", "RFC5447"),
+        ("MIP6-Feature-Vector", "RFC5447"),
+        ("Service-Selection", "RFC5778"),
+    ]
+
+
