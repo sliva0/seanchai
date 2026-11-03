@@ -11,9 +11,15 @@ from seanchai.extractor.sources import PatchError
 
 _TRANSCRIPTIONS = sorted((_ROOT / "edits" / "transcriptions").glob("*.dad"))
 _RAW = {
+    "3GPP2-X.S0013-013": _CORPUS_DIR / "raw" / "3gpp2" / "xs0013-013-0_v1.0.raw.dad",
+    "3GPP2-X.S0013-014": _CORPUS_DIR / "raw" / "3gpp2" / "xs0013-014-0_v1.0.raw.dad",
     "3GPP2-X.S0057": _CORPUS_DIR / "raw" / "3gpp2" / "xs0057-0_v2.0.raw.dad",
+    "ETSI-ES283.026": _CORPUS_DIR / "raw" / "etsi" / "es283026-010600.raw.dad",
     "ETSI-ES283.034": _CORPUS_DIR / "raw" / "etsi" / "es283034-020200.raw.dad",
+    "ETSI-ES283.035": _CORPUS_DIR / "raw" / "etsi" / "es283035-020501.raw.dad",
     "ETSI-TS183.017": _CORPUS_DIR / "raw" / "etsi" / "ts183017-030201.raw.dad",
+    "ETSI-TS183.033": _CORPUS_DIR / "raw" / "etsi" / "ts183033-010200.raw.dad",
+    "ETSI-TS183.066": _CORPUS_DIR / "raw" / "etsi" / "ts183066-020101.raw.dad",
 }
 
 

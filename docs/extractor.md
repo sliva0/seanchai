@@ -480,8 +480,13 @@ Same definitions, different carrier:
 ETSI ES 283 034 V2.2.0 and TS 183 017 V3.2.1, which 3GPP documents cite for
 `Logical-Access-ID`, `Physical-Access-ID` and `Reservation-Priority`, and
 3GPP2 X.S0057-0 V2.0, which TS 29.212 cites for `3GPP2-BSID`, are published
-as PDF alone. No extractor reads them: each is copied by hand into
-`edits/transcriptions/<SpecRef>.dad` in `.dad` notation, and its header
+as PDF alone. So are the documents behind the rest of the AVPs Wireshark's
+dictionary holds in ETSI's and 3GPP2's vendor spaces: ETSI TS 183 033 V1.2.0,
+the last version printing its AVPs, V1.3.0 and V2.0.0 pointing at TS 129 433
+instead; ES 283 035 V2.5.1; ES 283 026 V1.6.0; TS 183 066 V2.1.1; and 3GPP2
+X.S0013-013-0 and X.S0013-014-0 V1.0. No extractor reads them: each is copied
+by hand into `edits/transcriptions/<SpecRef>.dad` in `.dad` notation, and its
+header
 says so (`; Transcribed: by hand from <the PDF>`). The transcription stands
 where the document does, and the pipeline is the extractor's:
 
@@ -504,15 +509,18 @@ as `Reused AVPs` with Name, Code, From and Type, and flag rules the table
 restates kept in a `;;` comment above it, since a re-used table has no
 column for them; an application id stated in prose as an
 `Application Scope`. Not transcribed: clause prose, the defining sentence
-of a simple-typed AVP, result codes and informative annexes.
+of a simple-typed AVP, result codes and informative annexes, unless an annex
+is the only definition of what it prints (TS 183 033's Annex ZA, whose 21 AVPs
+no other document defines).
 
 3GPP2 numbers revisions of a document (X.S0057-0, -A, -B), each with
 versions of its own, and a spec-ref keeps no revision letter, so the
 rendering's name in `; Transcribed:` is where a transcription states its
 revision; `regenerate` checks it against the file's number and version,
 and `corpus.revision` reads it for a citation naming a revision
-([linter.md](linter.md#resolving-an-origin)). A 3GPP2 page is the number
-its footer prints, after a front matter numbered in roman.
+([linter.md](linter.md#resolving-an-origin)). A part of a series is a document
+of its own, which a spec-ref keeps: X.S0013-013 and X.S0013-014 are two. A 3GPP2
+page is the number its footer prints, after a front matter numbered in roman.
 
 ## Strictness
 

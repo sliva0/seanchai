@@ -515,6 +515,8 @@ def test_every_document_has_its_catalog_title(exported):
     assert titles["29140-700"].endswith("Stage 3")
     assert titles["29234-b20"].endswith("Stage 3")
     assert titles["xs0057-0_v2.0"].startswith("E-UTRAN - eHRPD")
+    assert titles["xs0013-014-0_v1.0"].endswith("Ty Interface Stage 3")
+    assert "a4 interface" in titles["ts183066-020101"]
     assert "e4 interface" in titles["es283034-020200"]
     assert "Service Policy Decision Function" in titles["ts183017-030201"]
 

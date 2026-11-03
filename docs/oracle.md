@@ -49,7 +49,8 @@ stating no type confirms no rename: its name disagreement stays a finding.
 
 The list holds the `3GPP-SIP-*` prefixes TS 29.229's and TS 32.299's SIP
 AVPs take to stay apart from RFC 4740's, `Cx-` and `Sh-User-Data`,
-`OnexRTT-RCID` for an ID starting with a digit, `ETSI-Service-Class`, and
+`OnexRTT-RCID` for an ID starting with a digit, `ETSI-Service-Class`, the
+`3GPP2-` prefixes that keep X.S0013-014's AVPs apart from TS 29.212's, and
 a dozen more of the same kind. A misspelling is no rename and is not
 listed: those are defects, patched. Nor is a name the document has since
 replaced.
@@ -75,6 +76,13 @@ lookup.
 
 ## What still reports
 
+- **A name no document gives**: the dictionary calls ETSI TS 183 066's
+  `Data-Operation-Indicator` (13019, 420) `ETSI-Event-Type-420`, though the
+  dictionary cites that document for it. Neither a rename to keep it apart nor a
+  name the document replaced, so it is a merge request's to fix.
+- **What a document types otherwise than the dictionary**: 3GPP2 X.S0013-014's
+  `Flow-Identifier`, OctetString in its table and its clause, UTF8String in the
+  dictionary.
 - **Names the documents have replaced**, which the dictionary keeps:
   `Wildcarded-PSI` for TS 29.229's `Wildcarded-Public-Identity` and
   `NAF-Hostname` for TS 29.109's `NAF-Id`. Not accepted renames; a merge
