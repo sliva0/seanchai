@@ -93,20 +93,60 @@ reading states, stay holes under every policy.
 
 from __future__ import annotations
 
+import difflib
 import enum
 import os
 import re
 from collections import Counter
 from collections.abc import Iterator, Mapping
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, fields, is_dataclass, replace
 from functools import cached_property
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, cast
 
 import pydantic
 
 from . import corpus, oracle
 from .dad import ast, parser
+from .dad.ast import AvpFlag, CommandFlag, DataType, RegistryKind
 from .errors import SeanchaiError
+
+if TYPE_CHECKING:
+    from _typeshed import DataclassInstance
+
+__all__ = [
+    "CODE",
+    "DATA_TYPE",
+    "DEFINITION",
+    "FLAG_RULES",
+    "UNDEFINED",
+    "VENDOR_ID",
+    "Alias",
+    "Allocation",
+    "Application",
+    "Avp",
+    "AvpFlag",
+    "CommandFlag",
+    "DataType",
+    "Enumerated",
+    "FlagRules",
+    "Grouped",
+    "Hole",
+    "IncompleteCorpusError",
+    "Marks",
+    "Member",
+    "Message",
+    "Model",
+    "ModelError",
+    "Placeholder",
+    "RegistryKind",
+    "StaleHoleRecordError",
+    "Supplied",
+    "SupplyKey",
+    "Undefined",
+    "UndefinedPolicy",
+    "supplied_from",
+]
 
 
 class ModelError(SeanchaiError, ValueError):
@@ -150,6 +190,40 @@ class StaleHoleRecordError(ModelError):
         )
 
 
+def _plain(value: Any) -> Any:
+    """`value` as JSON holds it: an enum its value, a set a sorted list, and a
+    model or dataclass a dict of its fields."""
+    if isinstance(value, _Plain | FlagRules):
+        return value.to_dict()
+    if isinstance(value, enum.Enum):
+        return value.value
+    if isinstance(value, set | frozenset):
+        return sorted(_plain(each) for each in value)
+    if isinstance(value, list | tuple):
+        return [_plain(each) for each in value]
+    if isinstance(value, Mapping):
+        return {str(_plain(key)): _plain(each) for key, each in value.items()}
+    if isinstance(value, pydantic.BaseModel):
+        return {name: _plain(getattr(value, name)) for name in type(value).model_fields}
+    if is_dataclass(value):
+        return {each.name: _plain(getattr(value, each.name)) for each in fields(value)}
+    if value is None or isinstance(value, str | int | float):
+        return value
+    return str(value)
+
+
+class _Plain:
+    """What the model's dataclasses share: `to_dict`."""
+
+    def to_dict(self) -> dict[str, Any]:
+        """This object's fields as JSON holds them, sorted flags and nested
+        objects included, for `json.dumps`."""
+        return {
+            each.name: _plain(getattr(self, each.name))
+            for each in fields(cast("DataclassInstance", self))
+        }
+
+
 def _known(entry: corpus.KnownHole) -> str:
     return f"{entry.document} {entry.name}: missing {', '.join(entry.missing)}"
 
@@ -187,6 +261,13 @@ class FlagRules(ast.AvpFlagRules):
             should_not=rules.should_not,
             must_not=rules.must_not,
         )
+
+    def to_dict(self) -> dict[str, list[str]]:
+        """The five columns, each a sorted list of flags."""
+        return {
+            name: sorted(flag.value for flag in getattr(self, name))
+            for name in type(self).model_fields
+        }
 
     @pydantic.field_serializer("application_defined", when_used="json")
     def _application_defined_in_cell_order(
@@ -252,7 +333,7 @@ def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> FlagRules:
 
 
 @dataclass(frozen=True)
-class Avp:
+class Avp(_Plain):
     """One resolved AVP, as the specification `defined_in` states it.
 
     Every field is a fact some document in the corpus states, or for an
@@ -302,6 +383,15 @@ class Avp:
     def identity(self) -> tuple[int, int]:
         """`(vendor-id, code)`, the pair that distinguishes AVPs on the wire."""
         return (self.vendor_id, self.code)
+
+    def _repr_tail(self) -> str:
+        return ""
+
+    def __repr__(self) -> str:
+        return (
+            f"<{type(self).__name__} {self.name} {self.identity} {self.data_type}"
+            f" in {self.defined_in}{self._repr_tail()}>"
+        )
 
 
 def supplied_from(*paths: Path) -> dict[str, Supplied]:
@@ -420,7 +510,7 @@ _ALIASED = object()
 
 
 @dataclass(frozen=True)
-class Undefined:
+class Undefined(_Plain):
     """An `Undefined AVP` block, resolved: the name, the document using it,
     the clause its block cites, what the document says of it, and every
     clause whose body names it, in file order."""
@@ -434,9 +524,12 @@ class Undefined:
     # As `Hole.version`, for a block in an older copy.
     version: str | None = None
 
+    def __repr__(self) -> str:
+        return f"<Undefined {self.reference} {self.name}, clause {self.section}>"
+
 
 @dataclass(frozen=True)
-class Placeholder:
+class Placeholder(_Plain):
     """An undefined name kept in its place untyped, by the consumer's
     choice (`UndefinedPolicy.PLACEHOLDER`): no identity, type or flags, only
     what the block says."""
@@ -447,9 +540,12 @@ class Placeholder:
     def name(self) -> str:
         return self.undefined.name
 
+    def __repr__(self) -> str:
+        return f"<Placeholder {self.undefined.reference} {self.name}>"
+
 
 @dataclass(frozen=True)
-class Supplied:
+class Supplied(_Plain):
     """A definition the consumer supplies for an undefined name
     (`UndefinedPolicy.SUPPLY`). `source` is mandatory provenance: "ACME HSS
     4.2 dictionary", a sidecar path. `members` only for a Grouped AVP,
@@ -464,9 +560,13 @@ class Supplied:
     members: tuple[ast.AvpRule, ...] = ()
     values: tuple[ast.EnumEntry, ...] = ()
 
+    def __repr__(self) -> str:
+        identity = (self.vendor_id, self.code)
+        return f"<Supplied {identity} {self.data_type} from {self.source!r}>"
+
 
 @dataclass(frozen=True)
-class Alias:
+class Alias(_Plain):
     """An undefined name read as an AVP the corpus does define: TS 29.154's
     `External-Group-Identifier` as TS 29.336's `External-Identifier`. The
     member resolves to `reference`'s `name`, unchanged, under its own name;
@@ -475,6 +575,9 @@ class Alias:
     reference: str
     name: str
     source: str
+
+    def __repr__(self) -> str:
+        return f"<Alias {self.reference} {self.name} from {self.source!r}>"
 
 
 class UndefinedPolicy(enum.StrEnum):
@@ -496,7 +599,7 @@ type SupplyKey = str | tuple[str, str]
 
 
 @dataclass(frozen=True)
-class Hole:
+class Hole(_Plain):
     """A name the corpus cannot turn into a complete `Avp`.
 
     `reference` is the document whose statement falls short: the one that
@@ -550,6 +653,9 @@ class Hole:
             what += f"; {self.conflict}'s reading, which states it, disagrees"
         return f"{self.document} {self.name}: {what}"
 
+    def __repr__(self) -> str:
+        return f"<Hole {self}>"
+
     @property
     def document(self) -> str:
         """`reference`, with the version when it is an older copy's:
@@ -558,7 +664,7 @@ class Hole:
 
 
 @dataclass(frozen=True)
-class Member:
+class Member(_Plain):
     """One line of an ABNF body, with the name resolved to an object."""
 
     rule: ast.AvpRule
@@ -594,16 +700,43 @@ class Member:
         """The most times the member may appear; None is unbounded."""
         return self.rule.max_occurs
 
+    def to_dict(self) -> dict[str, Any]:
+        """As `_Plain.to_dict`, with the occurrences as RFC 6733 reads them."""
+        return {
+            "name": self.name,
+            "min_occurs": self.min_occurs,
+            "max_occurs": self.max_occurs,
+            **super().to_dict(),
+        }
 
-@dataclass(frozen=True)
+    def __repr__(self) -> str:
+        most = "*" if self.max_occurs is None else self.max_occurs
+        if self.avp is not None:
+            what = str(self.avp.identity)
+        elif self.hole is not None:
+            what = "hole"
+        elif self.placeholder is not None:
+            what = "placeholder"
+        else:
+            what = "wildcard" if self.name == "AVP" else "cut"
+        return (
+            f"<Member {self.name} {self.rule.presence}"
+            f" {self.min_occurs}..{most}: {what}>"
+        )
+
+
+@dataclass(frozen=True, repr=False)
 class Grouped(Avp):
     members: tuple[Member, ...] = ()
     # The undefined members `UndefinedPolicy.DROP` took out of `members`,
     # each with its hole and rule, so what the ABNF requires stays readable.
     dropped: tuple[Member, ...] = ()
 
+    def _repr_tail(self) -> str:
+        return f", {len(self.members)} members"
 
-@dataclass(frozen=True)
+
+@dataclass(frozen=True, repr=False)
 class Enumerated(Avp):
     values: tuple[ast.EnumEntry, ...] = ()
     # Where the defining clause says the values are defined instead, in its
@@ -624,9 +757,26 @@ class Enumerated(Avp):
             if isinstance(value, ast.VendorSpecificValues)
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        """As `_Plain.to_dict`, each value saying which kind of line it is."""
+        kinds: dict[type, str] = {
+            ast.EnumValue: "value",
+            ast.ReservedValues: "reserved",
+            ast.VendorSpecificValues: "vendor-specific",
+        }
+        return {
+            **super().to_dict(),
+            "values": [
+                {"kind": kinds[type(value)], **_plain(value)} for value in self.values
+            ],
+        }
+
+    def _repr_tail(self) -> str:
+        return f", {len(self.values)} values"
+
 
 @dataclass(frozen=True)
-class Message:
+class Message(_Plain):
     """One command, its header numbers and its body resolved."""
 
     name: str
@@ -664,9 +814,21 @@ class Message:
         """
         return tuple(_walk(self.avps, set()))
 
+    def to_dict(self) -> dict[str, Any]:
+        """As `_Plain.to_dict`, with `is_request`."""
+        return {**super().to_dict(), "is_request": self.is_request}
+
+    def __repr__(self) -> str:
+        flags = ",".join(sorted(self.flags))
+        return (
+            f"<Message {self.defined_in} {self.abbreviation} {self.command_code}"
+            f" {flags or '-'} application {self.application_id},"
+            f" {len(self.avps)} members>"
+        )
+
 
 @dataclass(frozen=True)
-class Application:
+class Application(_Plain):
     """The commands one document defines for one application on one
     interface: what a protocol-specific consumer generates one unit from.
 
@@ -702,9 +864,16 @@ class Application:
             member for message in self.messages for member in _walk(message.avps, seen)
         )
 
+    def __repr__(self) -> str:
+        named = "" if self.name is None else f" {self.name}"
+        return (
+            f"<Application {self.reference} {self.application_id}{named}, clause"
+            f" {self.clause}, {len(self.messages)} messages>"
+        )
+
 
 @dataclass(frozen=True)
-class Allocation:
+class Allocation(_Plain):
     """What a registry says of a code: a row allocating it, or a range
     reserving it, with the registry table it sits in.
 
@@ -718,9 +887,12 @@ class Allocation:
     section: str
     entry: ast.RegistryRow | ast.RegistryReservation
 
+    def __repr__(self) -> str:
+        return f"<Allocation {self.reference} table {self.table}: {self.entry!r}>"
+
 
 @dataclass(frozen=True)
-class Marks:
+class Marks(_Plain):
     """What one table row marks about where its AVP applies: per mark
     column its table prints, the row's marks in the document's spelling,
     `()` where the cell prints a dash and None where it is blank.
@@ -738,6 +910,9 @@ class Marks:
     table: str | None
     section: str
     marks: dict[ast.MarkColumn, tuple[str, ...] | None]
+
+    def __repr__(self) -> str:
+        return f"<Marks table {self.table}, clause {self.section}: {self.marks}>"
 
 
 def _stated(flag_rules: ast.AvpFlagRules) -> bool:
@@ -807,6 +982,13 @@ def _walk(
         yield member
         if isinstance(member.avp, Grouped):
             yield from _walk(member.avp.members, seen)
+
+
+def _folded(reference: str) -> str:
+    """A reference however it is spelled, for comparing: "3GPP TS 29.229",
+    "ts29229" and `TS29.229` fold alike."""
+    folded = re.sub(r"[\s.\-_]", "", reference).casefold()
+    return re.sub(r"^3gpp(?=t[rs])", "", folded)
 
 
 def _generation(spec: ast.Specification) -> int:
@@ -1151,6 +1333,7 @@ class Model:
         self._views: dict[str, _View] = {
             entry.reference: self._copies[entry.path] for entry in books.newest()
         }
+        self._spellings = {_folded(each): each for each in self._views}
         # Memo of resolved readings, keyed by the copy that reads the name.
         self._resolved: dict[tuple[Path, str], _Draft | None] = {}
         # The identity each reading still being resolved has settled, which
@@ -1227,6 +1410,25 @@ class Model:
             raise IncompleteCorpusError(holes)
         return built
 
+    @classmethod
+    def installed(
+        cls,
+        *,
+        strict: bool | None = None,
+        dictionary: str | os.PathLike[str] | None = None,
+        undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
+        supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
+    ) -> Model:
+        """The model over the installed corpus (`corpus.Corpus.installed`), as
+        `build` builds one."""
+        return cls.build(
+            corpus.Corpus.installed(),
+            strict=strict,
+            dictionary=dictionary,
+            undefined=undefined,
+            supply=supply,
+        )
+
     @property
     def undefined_policy(self) -> UndefinedPolicy:
         """What the model makes of the names `Undefined AVP` blocks
@@ -1293,23 +1495,44 @@ class Model:
                     " two names on one identity are no dictionary"
                 )
 
-    def references(self) -> list[str]:
-        """Every specification the model answers for, `TS29.229`-spelled."""
-        return sorted(self._views)
+    def references(self) -> tuple[str, ...]:
+        """Every specification the model answers for, `TS29.229`-spelled, in
+        sort order. Every query taking a reference reads it however it is
+        spelled: "TS 29.229", "ts29.229", "3GPP TS 29.229"."""
+        return tuple(sorted(self._views))
+
+    def _canonical(self, reference: str) -> str:
+        """The reference `reference` spells, or `ModelError` suggesting the
+        close ones."""
+        if reference in self._views:
+            return reference
+        folded = _folded(str(reference))
+        found = self._spellings.get(folded)
+        if found is not None:
+            return found
+        close = difflib.get_close_matches(folded, self._spellings, n=3)
+        hint = (
+            f"; did you mean {', '.join(self._spellings[each] for each in close)}?"
+            if close
+            else "; Model.references() lists what it holds"
+        )
+        raise ModelError(f"the corpus holds no copy of {reference}{hint}")
+
+    def _chosen(self, reference: str | None) -> tuple[str, ...]:
+        """The references a query over `reference`, or over the corpus, reads."""
+        return self.references() if reference is None else (self._canonical(reference),)
 
     def _view(self, reference: str, version: str | None = None) -> _View:
-        if version is not None:
-            for view in self._copies.values():
-                if (
-                    view.entry.reference == reference
-                    and view.entry.spec.version == version
-                ):
-                    return view
-            raise ModelError(f"the corpus holds no copy of {reference} V{version}")
-        try:
+        reference = self._canonical(reference)
+        if version is None:
             return self._views[reference]
-        except KeyError:
-            raise ModelError(f"the corpus holds no copy of {reference}") from None
+        for view in self._copies.values():
+            if view.entry.reference == reference and view.entry.spec.version == version:
+                return view
+        held = ", ".join(self._books.versions(reference))
+        raise ModelError(
+            f"the corpus holds no copy of {reference} V{version}; it holds {held}"
+        )
 
     def messages(
         self, reference: str | None = None, *, version: str | None = None
@@ -1354,7 +1577,7 @@ class Model:
     def undefined(self, reference: str | None = None) -> tuple[Undefined, ...]:
         """Every `Undefined AVP` block in `reference`, or in the corpus,
         under any policy, in file order."""
-        references = self.references() if reference is None else [reference]
+        references = self._chosen(reference)
         return tuple(
             self._undefined_of(view, block)
             for each in references
@@ -1368,7 +1591,7 @@ class Model:
         with `UndefinedPolicy.PLACEHOLDER`. Sorted by document and name."""
         if self._policy is not UndefinedPolicy.PLACEHOLDER:
             return ()
-        references = self.references() if reference is None else [reference]
+        references = self._chosen(reference)
         found: dict[Placeholder, None] = {}
         for each in references:
             view = self._view(each)
@@ -1466,7 +1689,7 @@ class Model:
             return tuple(
                 sorted(self._everything, key=lambda avp: (avp.defined_in, avp.name))
             )
-        return self._avps_of(reference)
+        return self._avps_of(self._canonical(reference))
 
     def _avps_of(self, reference: str) -> tuple[Avp, ...]:
         found = (self.resolve(reference, name) for name in self._names(reference))
@@ -1510,7 +1733,7 @@ class Model:
         4590's `Digest-*` rows before RFC 4590's corrections typed them).
         Sorted by document and name.
         """
-        references = self.references() if reference is None else [reference]
+        references = self._chosen(reference)
         found: dict[Hole, None] = {}
         for each in references:
             for name in self._names(each):
@@ -1608,7 +1831,7 @@ class Model:
         oneM2M TS-0004's `Service-Information` is TS 32.299 V11.20.0's,
         whose `Server-Capabilities` is TS 29.229 V18.1.0's, standing in.
         Sorted by citing document and name."""
-        references = self.references() if reference is None else [reference]
+        references = self._chosen(reference)
         found: dict[Avp | Hole, None] = {}
         for each in references:
             view = self._view(each)

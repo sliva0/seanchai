@@ -7,6 +7,7 @@ concrete AVP moving between documents rather than as a green run.
 """
 
 import dataclasses
+import json
 from pathlib import Path
 
 import pytest
@@ -2965,3 +2966,146 @@ class TestReadingsOfOneAvp:
 
         avp = built.definition((45687, 1008))
         assert avp is not None and avp.name == "Originator"
+
+
+class TestPrintingAndSerialising:
+    def test_a_repr_says_what_it_is_in_a_line(self, built):
+        message = next(
+            each for each in built.messages("TS32.299") if each.abbreviation == "CCR"
+        )
+        (application, *_) = built.applications("TS29.229")
+        everything = [
+            message,
+            application,
+            *message.avps,
+            *built.avps("TS32.299"),
+            *built.holes(),
+            *built.undefined(),
+            *built.registry(ast.RegistryKind.APPLICATION_IDS),
+            *built.marks("TS29.212", "AN-GW-Address"),
+            model.Alias("TS29.336", "External-Identifier", "source"),
+            model.Placeholder(built.undefined()[0]),
+            model.Supplied(
+                1, 2, model.DataType.UTF8_STRING, model.FlagRules(), "source"
+            ),
+        ]
+
+        for each in everything:
+            assert len(repr(each)) < 300, repr(each)
+        assert repr(built.definition("Session-Id")) == (
+            "<Avp Session-Id (0, 263) UTF8String in RFC6733>"
+        )
+        assert repr(application) == (
+            "<Application TS29.229 16777216, clause 6, 12 messages>"
+        )
+        grouped = built.definition("Supported-Features")
+        assert repr(grouped).endswith(", 4 members>")
+        enumerated = built.definition("DRMP")
+        assert repr(enumerated).endswith(", 16 values>")
+
+    def test_a_message_serialises_to_json_with_sorted_flags(self, built):
+        (uar, *_) = built.messages("TS29.229")
+
+        plain = uar.to_dict()
+
+        assert json.loads(json.dumps(plain)) == plain
+        assert plain["flags"] == ["PXY", "REQ"]
+        assert plain["is_request"] is True
+        session = plain["avps"][0]
+        assert (session["name"], session["min_occurs"]) == ("Session-Id", 1)
+        assert session["avp"]["flag_rules"]["must"] == ["M"]
+        assert session["avp"]["flag_rules"]["must_not"] == ["V"]
+        assert session["avp"]["read_through"] == "RFC6733"
+
+    def test_every_public_type_serialises(self, built):
+        placeholder = model.Placeholder(built.undefined()[0])
+        supplied = model.Supplied(
+            1, 2, model.DataType.UTF8_STRING, model.FlagRules(), "source"
+        )
+        for each in (
+            *built.applications("TS29.229"),
+            *built.avps("TS32.299"),
+            *built.holes(),
+            *built.undefined(),
+            *built.registry(ast.RegistryKind.APPLICATION_IDS),
+            *built.marks("TS29.212", "AN-GW-Address"),
+            *built.across_releases("oneM2M-TS-0004"),
+            model.Alias("TS29.336", "External-Identifier", "source"),
+            placeholder,
+            supplied,
+            model.FlagRules(must=frozenset({model.AvpFlag.VENDOR})),
+        ):
+            plain = each.to_dict()
+            assert json.loads(json.dumps(plain)) == plain
+
+    def test_an_enumerated_says_which_kind_each_value_is(self, built):
+        plain = built.resolve("TS32.299", "SM-Service-Type").to_dict()
+
+        kinds = {value["kind"] for value in plain["values"]}
+
+        assert kinds >= {"value", "vendor-specific"}
+
+
+class TestEntryPoints:
+    @pytest.mark.parametrize(
+        ("spelling", "reference"),
+        [
+            ("TS 29.229", "TS29.229"),
+            ("ts29.229", "TS29.229"),
+            ("3GPP TS 29.229", "TS29.229"),
+            ("rfc6733", "RFC6733"),
+            ("RFC 6733", "RFC6733"),
+            ("ETSI TS 183 017", "ETSI-TS183.017"),
+            ("3gpp2 x.s0057", "3GPP2-X.S0057"),
+            ("onem2m ts-0004", "oneM2M-TS-0004"),
+        ],
+    )
+    def test_a_reference_is_read_however_it_is_spelled(
+        self, built, spelling, reference
+    ):
+        assert built.applications(spelling) == built.applications(reference)
+        assert built.holes(spelling) == built.holes(reference)
+        assert {each.reference for each in built.applications(spelling)} <= {reference}
+
+    def test_every_query_takes_the_spelling(self, built):
+        spelling = "ts 29.229"
+
+        avp = built.resolve(spelling, "Public-Identity")
+        assert avp is not None and avp.defined_in == "TS29.229"
+        assert built.messages(spelling) == built.messages("TS29.229")
+        assert built.avps(spelling) == built.avps("TS29.229")
+        assert built.table_rows(spelling, "Public-Identity")
+        assert built.undefined("ts 29.345") == built.undefined("TS29.345")
+        assert built.across_releases("ts 32.299") == built.across_releases("TS32.299")
+
+    def test_an_unknown_reference_suggests_close_ones(self, built):
+        with pytest.raises(model.ModelError, match=r"did you mean .*TS29\.229"):
+            built.resolve("TS 29.299", "Public-Identity")
+        with pytest.raises(model.ModelError, match="no copy of Nonsense"):
+            built.messages("Nonsense")
+
+    def test_an_unknown_version_lists_the_held_ones(self, built):
+        with pytest.raises(model.ModelError, match=r"V1\.0\.0.*holds.*11\.20\.0"):
+            built.messages("TS32.299", version="1.0.0")
+
+    def test_installed_builds_over_the_installed_corpus(self, built):
+        assert model.Model.installed().references() == built.references()
+
+    def test_installed_passes_the_build_options(self):
+        rebuilt = model.Model.installed(undefined=model.UndefinedPolicy.DROP)
+
+        assert rebuilt.undefined_policy is model.UndefinedPolicy.DROP
+
+    def test_references_is_a_tuple_as_every_query_returns(self, built):
+        assert isinstance(built.references(), tuple)
+
+    def test_the_consumers_types_need_no_module_named_ast(self):
+        assert model.DataType is ast.DataType
+        assert model.AvpFlag is ast.AvpFlag
+        assert model.CommandFlag is ast.CommandFlag
+        assert model.RegistryKind is ast.RegistryKind
+        assert {"DataType", "AvpFlag", "CommandFlag", "RegistryKind"} <= set(
+            model.__all__
+        )
+        assert "ast" not in model.__all__
+        assert all(hasattr(model, name) for name in model.__all__)
