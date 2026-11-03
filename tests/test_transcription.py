@@ -23,6 +23,10 @@ _RAW = {
     "ETSI-TS183.033": _CORPUS_DIR / "raw" / "etsi" / "ts183033-010200.raw.dad",
     "ETSI-TS183.059-1": _CORPUS_DIR / "raw" / "etsi" / "ts18305901-020101.raw.dad",
     "ETSI-TS183.066": _CORPUS_DIR / "raw" / "etsi" / "ts183066-020101.raw.dad",
+    "OMA-DDS-Charging_Data": _CORPUS_DIR
+    / "raw"
+    / "oma"
+    / "dds-charging_data-v1_0-20110201-a.raw.dad",
 }
 
 

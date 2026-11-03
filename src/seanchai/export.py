@@ -806,6 +806,9 @@ def _publisher(entry: Entry) -> Any:
         return "3GPP"
     if entry.reference.startswith("RFC"):
         return "IETF"
+    # OMA's names lead with the publisher and carry no space.
+    if entry.reference.startswith("OMA-"):
+        return "OMA"
     return specification.split(" ", 1)[0]
 
 

@@ -55,8 +55,8 @@ the transcription's title gives, one listed misnaming at a time
 ([linter.md](linter.md#resolving-an-origin)).
 
 `; Transcribed:` marks a file a person copied from a rendering, for a
-document no extractor reads (ETSI's and 3GPP2's exist only as PDF), and names
-that rendering. It is written in the
+document no extractor reads (ETSI's, 3GPP2's and OMA's exist only as PDF), and
+names that rendering. It is written in the
 transcription ([extractor.md](extractor.md#transcriptions)), and the raw and
 corrected files carry it from there.
 
@@ -261,7 +261,7 @@ column        = "Name" / "Vendor-ID" / "Code" / "Section" / "Type"
               / "Must" / "May" / "S.not" / "M.not" / "Encrypt"
               / mark-column
 mark-column   = "Acc-Type" / "Applicability" / "Reference-Points"
-              / "ACR" / "ACA" / "CCR" / "CCA"
+              / "ACR" / "ACA" / "SI" / "CCR" / "CCR-MSCC" / "CCA" / "CCA-MSCC"
 table-row     = cell *(1*SP cell)
 cell          = 1*(quoted / %x21 / %x23-10FFFF)   ; spaces only inside quotes
 quoted        = DQUOTE *(name-char / SP) DQUOTE
@@ -303,7 +303,8 @@ in a registry table.
 A Vendor-ID cell is the row's vendor as its table prints it, for a
 document tabulating several vendors' AVPs in one table: oneM2M TS-0004
 table A.4-1 gives IETF rows 0, `Node-Id` 3GPP's 10415 and its own AVPs
-45687. Where the column is present the cell is the row's vendor, its V
+45687, and OMA-DDS-Charging_Data table 11 gives IETF rows 0 and the rest 10415.
+Where the column is present the cell is the row's vendor, its V
 flag notwithstanding; a table without it, or a dash in it, leaves the
 vendor to the file's `; Vendor-ID:` and the V flag
 ([linter.md](linter.md#vendor-spaces)). TS 29.229 table 6.3.0.1 gains the
@@ -315,7 +316,10 @@ each mark in the document's spelling: the IP-CAN access types under
 `Acc-Type` (`3GPP-EPS,Non-3GPP-EPS`, TS 29.212 and 29.215), functions and
 supported features under `Applicability` (`Both,Rel8`), reference points
 under `Reference-Points` (`Gi,Sgi`, TS 29.061), and TS 32.299's use mark per
-command under `ACR`, `ACA`, `CCR` and `CCA` (`M`, `OM`, `OC`, `X`). The
+command under `ACR`, `ACA`, `CCR` and `CCA` (`M`, `OM`, `OC`, `X`), with
+OMA-DDS-Charging_Data table 11's for the Service-Information AVP and the
+Multiple-Services-Credit-Control AVP of each command under `SI`, `CCR-MSCC` and
+`CCA-MSCC`. The
 vocabulary is the document's, so the grammar does not close it. A mark keeps
 what the document prints beside it, a note reference mostly, and a mark
 that is not a plain token is quoted with the rules of a quoted enum value

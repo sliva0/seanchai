@@ -761,6 +761,13 @@ def test_the_transcriptions_pdfs_are_a_source_of_their_own(
     assert "transcribed" in _sources_and_identifiers(output)[0]
 
 
+def test_every_transcribed_publisher_is_a_family_a_partial_download_can_keep():
+    """A later `--only` reads each record's family back to its source, so a
+    publisher the map lacks makes the manifest unreadable."""
+    for document in downloader.load_catalog().transcribed:
+        assert downloader.SOURCE_OF_FAMILY[document.publisher] == "transcribed"
+
+
 def test_what_a_transcription_url_serves_must_open_as_a_pdf(
     tmp_path, local_http_server, monkeypatch
 ):

@@ -38,7 +38,8 @@ documented in the repository.
 
 MIT, see
 [LICENSE](https://github.com/sliva0/seanchai/blob/main/packages/seanchai-corpus/LICENSE).
-The definitions are taken from 3GPP, ETSI, 3GPP2, oneM2M and IETF documents,
+The definitions are taken from 3GPP, ETSI, 3GPP2, OMA, oneM2M and IETF
+documents,
 which stay under their publishers' terms, as
 [NOTICE](https://github.com/sliva0/seanchai/blob/main/packages/seanchai-corpus/NOTICE)
 says.

@@ -503,6 +503,10 @@ class MarkColumn(enum.StrEnum):
       command: `M`, `OM` or `OC` (table 7.1.0.1, clause 7.1.0) or `X`
       (tables 7.2.0.1 and 7.3.1-7.5.1) where the AVP is used in it, a dash
       where it is not.
+    - `SI`, `CCR-MSCC`, `CCA-MSCC`: OMA-DDS-Charging_Data table 11's "Used
+      In" columns for the Service-Information AVP and for the
+      Multiple-Services-Credit-Control AVP in each command, beside its `ACR`
+      to `CCA`.
     """
 
     ACCESS_TYPES = "Acc-Type"
@@ -510,8 +514,11 @@ class MarkColumn(enum.StrEnum):
     REFERENCE_POINTS = "Reference-Points"
     ACR = "ACR"
     ACA = "ACA"
+    SI = "SI"
     CCR = "CCR"
+    CCR_MSCC = "CCR-MSCC"
     CCA = "CCA"
+    CCA_MSCC = "CCA-MSCC"
 
 
 class AvpColumn(enum.StrEnum):
@@ -535,8 +542,11 @@ class AvpColumn(enum.StrEnum):
     REFERENCE_POINTS = MarkColumn.REFERENCE_POINTS.value
     ACR = MarkColumn.ACR.value
     ACA = MarkColumn.ACA.value
+    SI = MarkColumn.SI.value
     CCR = MarkColumn.CCR.value
+    CCR_MSCC = MarkColumn.CCR_MSCC.value
     CCA = MarkColumn.CCA.value
+    CCA_MSCC = MarkColumn.CCA_MSCC.value
 
 
 class ReusedColumn(enum.StrEnum):
@@ -1108,7 +1118,7 @@ _EXTERNAL_TITLE_RE = re.compile(
 
 def is_external(reference: str) -> bool:
     """Whether a `SpecRef` names a document outside 3GPP and IETF, which the
-    corpus holds only as a hand transcription (ETSI, 3GPP2) or where the catalog
+    corpus holds only as a hand transcription (ETSI, 3GPP2, OMA) or where the catalog
     lists it for the extractor (oneM2M TS-0004)."""
     return EXTERNAL_REF_RE.match(reference) is not None
 

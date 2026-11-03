@@ -386,7 +386,7 @@ CN-IP-Multicast-Distribution                921    X     -     -     -     -    
 Content-Class                               1220   -     -     X     -     Enumerated    M,V    P     -       -       No
 Content-Disposition                         828    X     -     X     -     UTF8String    M,V    P     -       -       No
 Content-ID                                  2116   X     -     X     -     -             -      -     -       -       -
-Content-Provider-ID                         2117   X     -     X     -     -             -      -     -       -       -
+Content-provider-ID                         2117   X     -     X     -     -             -      -     -       -       -
 Content-Length                              827    X     -     X     -     Unsigned32    M,V    P     -       -       No
 Content-Size                                1206   -     -     X     -     Unsigned32    M,V    P     -       -       No
 CSG-Access-Mode                             2317   X     -     X     -     Enumerated    M,V    P     -       -       No
@@ -690,7 +690,7 @@ Application-Session-ID                     OMA-DDS-Charging_Data   -
 Charging-Rule-Base-Name                    TS29.212                -
 CN-IP-Multicast-Distribution               TS29.061                -
 Content-ID                                 OMA-DDS-Charging_Data   -
-Content-Provider-ID                        OMA-DDS-Charging_Data   -
+Content-provider-ID                        OMA-DDS-Charging_Data   -
 CSG-Id                                     TS29.272                -
 DCD-Information                            OMA-DDS-Charging_Data   -
 Delivery-Status                            OMA-DDS-Charging_Data   -

@@ -130,7 +130,8 @@ experiments, not for refreshing the corpus.
   catalog's and not one read off a listing: ETSI's deliver directory lists later
   versions, and 3GPP2's archive lists nothing. The PDF goes to
   `specifications/transcriptions/` under its own name and into the manifest with
-  the publisher as `family` (`ETSI`, `3GPP2`), and is validated like any other.
+  the publisher as `family` (`ETSI`, `3GPP2`, `OMA`), and is validated like any
+  other.
   `seanchai export --include-pdfs` finds it there by name. `regenerate` reads
   the transcription, never the PDF, so a manifest without this source rebuilds
   the whole corpus. A `transcriptions/` placed by hand, in no manifest, stays

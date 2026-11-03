@@ -1,5 +1,5 @@
 seanchai-corpus packages text taken from documents published by 3GPP, ETSI,
-3GPP2, oneM2M and the IETF: Diameter command ABNFs and AVP definitions, each file
-naming the document it came from. Those documents stay under their publishers'
-terms; the MIT license in LICENSE covers this package's own work and grants no
+3GPP2, OMA, oneM2M and the IETF: Diameter command ABNFs and AVP definitions,
+each file naming the document it came from. Those documents stay under their
+publishers' terms; the MIT license in LICENSE covers this package's own work and grants no
 rights in them.

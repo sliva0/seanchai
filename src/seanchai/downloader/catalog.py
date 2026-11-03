@@ -165,7 +165,7 @@ class TranscribedDocument:
 
     @property
     def publisher(self) -> str:
-        """Who publishes it, the manifest's `family`: "ETSI" or "3GPP2"."""
+        """Who publishes it, the manifest's `family`: "ETSI", "3GPP2" or "OMA"."""
         return self.reference.split("-", 1)[0]
 
     @property

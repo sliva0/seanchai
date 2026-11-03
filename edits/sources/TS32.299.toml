@@ -426,6 +426,21 @@ last_version = "19.0.0"
 # alone and the Release 19 ones above do not (src/seanchai/versions.py).
 
 [[patch]]
+find = "Content-Provider-ID"
+replace = "Content-provider-ID"
+exact = true
+count = 1
+section = "7.2"
+reason = """
+    table 7.2 spells the row Content-Provider-ID and types it 'refer [223]'; the
+    defining document, OMA-DDS-Charging_Data V1.0, writes Content-provider-ID in
+    its table 11 (clause 8.4), its data mapping and DCD-Information's ABNF, as
+    the same row of V19.0.0 is patched
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
 find = "LCS-Client-Id"
 replace = "LCS-Client-ID"
 exact = true

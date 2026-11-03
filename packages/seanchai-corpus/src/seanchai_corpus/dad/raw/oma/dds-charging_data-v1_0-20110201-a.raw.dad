@@ -1,0 +1,577 @@
+; Specification: OMA-DDS-Charging_Data
+; Version: 1.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.openmobilealliance.org/release/Charging_Data/V1_0-20110201-A/OMA-DDS-Charging_Data-V1_0-20110201-A.pdf
+; Transcribed: by hand from https://www.openmobilealliance.org/release/Charging_Data/V1_0-20110201-A/OMA-DDS-Charging_Data-V1_0-20110201-A.pdf
+
+
+;; The cover prints "Charging Data, Approved Version 1.0 - 01 Feb 2011" and
+;; "OMA-DDS-Charging_Data-V1_0-20110201-A". The page is the number its header
+;; prints, "Page 36 (46)". Clause 6 lists OMA Charging Data Elements, which
+;; clause 8.3's table 10 maps to AVPs: a value list of clause 6.2 is held below
+;; under the AVP table 10 maps its element to, where table 11 types that AVP
+;; Enumerated.
+;; Clause 6.2.44, table 7 "Role of User Values" (service context SIMPLE_IM):
+;; NORMAL_PARTICIPANT 4, SESSION_OWNER 3. Table 10 maps Role of User to
+;; PoC-User-Role, which table 11 types Grouped, so no Enumerated block holds
+;; them.
+;; Clause 6.2.46, table 9 "Service Identifier Values": BCAST SUBSCRIBE 100,
+;; SUBSCRIPTION_UPDATE 101, UNSUBSCRIBE 102, TOKEN_PURCHASE 103,
+;; SERVICE_INTERACTION 104; SIMPLE_IM PAGER_MODE 200, LARGE_MESSAGE_MODE 201,
+;; SESSION_MODE 202, CONVERSATION_HISTORY 203. Table 11 types Service-Identifier
+;; Unsigned32, from RFC 4006, so no Enumerated block holds them.
+
+
+;; Table 5, service context SIMPLE_IM; table 11 gives the code and vendor.
+; Type: Enumerated AVP
+; Name: Application-Service-Type
+; Section: 6.2.4
+; Page: 26
+Application-Service-Type ::= < Enumerated AVP header: 2102 10415 >
+        SENDING   = 100
+        RECEIVING = 101
+        RETRIEVAL = 102
+        INVITING  = 103
+        LEAVING   = 104
+        JOINING   = 105
+
+
+;; Table 6, service context SIMPLE_IM, for the data element Role of Node, which
+;; table 10 maps to PoC-Server-Role; table 11 gives the code and vendor.
+; Type: Enumerated AVP
+; Name: PoC-Server-Role
+; Section: 6.2.43
+; Page: 30
+PoC-Server-Role ::= < Enumerated AVP header: 883 10415 >
+        PARTICIPATING_FUNCTION = 0
+        CONTROLING_FUNCTION    = 1
+
+
+;; For the data element AoC Request Type, which table 10 maps to AoC-Request-Type;
+;; table 11 gives the code and vendor.
+; Type: Enumerated AVP
+; Name: AoC-Request-Type
+; Section: 6.2.74
+; Page: 33
+AoC-Request-Type ::= < Enumerated AVP header: 2055 10415 >
+        AoC_NOT_REQUESTED = 0
+        AoC_FULL          = 1
+        AoC_COST_ONLY     = 2
+        AoC_TARIFF_ONLY   = 3
+
+
+; Type: Application Scope
+; Name: CH-1
+; Section: 8.5.1
+; Page: 43
+; Application-ID: 3
+; Applies-To: 8.1.*
+
+
+; Type: Application Scope
+; Name: CH-2
+; Section: 8.5.3
+; Page: 44
+; Application-ID: 4
+; Applies-To: 8.2.*
+
+
+; Type: Message
+; Name: Accounting-Request, ACR
+; Section: 8.1.1
+; Page: 36
+<Accounting-Request> ::= < Diameter Header: 271, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Acct-Interim-Interval ]
+        [ Accounting-Realtime-Required ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Service-Context-Id ]
+        [ Service-Information ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Accounting-Answer, ACA
+; Section: 8.1.2
+; Page: 36
+<Accounting-Answer> ::= < Diameter Header: 271, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Accounting-Record-Type }
+        { Accounting-Record-Number }
+        [ Acct-Application-Id ]
+        [ Vendor-Specific-Application-Id ]
+        [ User-Name ]
+        [ Accounting-Sub-Session-Id ]
+        [ Acct-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Error-Reporting-Host ]
+        [ Acct-Interim-Interval ]
+        [ Accounting-Realtime-Required ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Credit-Control-Request, CCR
+; Section: 8.2.1
+; Page: 37
+<Credit-Control-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-Id }
+        { Service-Context-Id }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ User-Name ]
+        [ CC-Sub-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+      * [ Subscription-Id ]
+        [ Service-Identifier ]
+        [ Termination-Cause ]
+        [ Requested-Service-Unit ]
+        [ Requested-Action ]
+        [ AoC-Request-Type ]
+      * [ Used-Service-Unit ]
+        [ AoC-Request-Type ]
+        [ Multiple-Services-Indicator ]
+      * [ Multiple-Services-Credit-Control ]
+      * [ Service-Parameter-Info ]
+        [ CC-Correlation-Id ]
+        [ User-Equipment-Info ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ Service-Information ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Credit-Control-Answer, CCA
+; Section: 8.2.2
+; Page: 37
+<Credit-Control-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        { Auth-Application-Id }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ User-Name ]
+        [ CC-Session-Failover ]
+        [ CC-Sub-Session-Id ]
+        [ Acct-Multi-Session-Id ]
+        [ Origin-State-Id ]
+        [ Event-Timestamp ]
+        [ Granted-Service-Unit ]
+      * [ Multiple-Services-Credit-Control ]
+        [ Cost-Information ]
+        [ Low-Balance-Indication ]
+        [ Final-Unit-Indication ]
+        [ Check-Balance-Result ]
+        [ Credit-Control-Failure-Handling ]
+        [ Direct-Debiting-Failure-Handling ]
+        [ Validity-Time ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Failed-AVP ]
+        [ Service-Information ]
+      * [ AVP ]
+
+
+;; Table 11 prints "Should not" and "Must not" blank for Time-Stamps, each a
+;; dash here, since a flag cell has no blank. Its SI cell for Accumulated-Cost
+;; is blank too, "" here. Its Reference column cites another document or a
+;; clause of this one: the clause is the Section cell, and each row citing a
+;; document is a row of the Reused AVPs block below.
+; Type: AVP Table
+; Section: 8.4
+; Table: 11
+; Page: 41
+; Columns: Name                            Vendor-ID   Code   ACR   ACA   SI    CCR   CCR-MSCC   CCA   CCA-MSCC   Section   Type               Must   May   S.not   M.not   Encrypt
+Access-Network-Charging-Identifier-Value   10415       503    -     -     O     -     -          -     -          -         OctetString        M,V    P     -       -       Yes
+Accounting-Input-Octets                    0           363    -     -     O     -     -          -     -          -         Unsigned64         M      P     -       V       Yes
+Accounting-Output-Octets                   0           364    -     -     O     -     -          -     -          -         Unsigned64         M      P     -       V       Yes
+Accounting-Record-Number                   0           485    M     M     -     -     -          -     -          -         Unsigned32         M      P     -       V       Yes
+Accounting-Record-Type                     0           480    M     M     -     -     -          -     -          8.5.11    Enumerated         M      P     -       V       Yes
+Acct-Application-Id                        0           259    O     O     -     -     -          -     -          8.5.11    Unsigned32         M      P     -       V       No
+Acct-Interim-Interval                      0           85     O     O     -     -     -          -     -          -         Unsigned32         M      P     -       V       Yes
+Acct-Session-Time                          0           46     -     -     O     -     -          -     -          -         Unsigned32         M      P     -       V       Yes
+Accumulated-Cost                           10415       2052   -     -     ""    O     -          -     -          -         Grouped            M,V    P     -       -       No
+AoC-Cost-Information                       10415       2053   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+AoC-Format                                 10415       2310   -     -     O     -     -          -     -          -         Enumerated         M,V    P     -       -       No
+AoC-Information                            10415       2054   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+AoC-Request-Type                           10415       2055   -     -     O     -     -          -     -          -         Enumerated         M,V    P     -       -       No
+AoC-Service                                10415       2311   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+AoC-Service-Obligatory-Type                10415       2312   -     -     O     -     -          -     -          -         Enumerated         M,V    P     -       -       No
+AoC-Service-Type                           10415       2313   -     -     O     -     -          -     -          -         Enumerated         M,V    P     -       -       No
+AoC-Subscription-Information               10415       2314   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Application-Server-ID                      10415       2101   -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       Yes
+Application-Service-Type                   10415       2102   -     -     O     -     -          -     -          -         Enumerated         M,V    P     -       -       Yes
+Application-Session-ID                     10415       2103   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       Yes
+Auth-Application-Id                        0           258    -     -     -     M     -          M     -          8.5.11    Unsigned32         M      P     -       V       No
+Billing-Information                        10415       1115   -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       Yes
+Called-Party-Address                       10415       832    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Calling-Party-Address                      10415       831    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Cause-Code                                 10415       861    -     -     O     -     -          -     -          -         Integer32          M,V    P     -       -       No
+CC-Input-Octets                            0           412    -     -     -     -     O          -     O          -         Unsigned64         M      P     -       V       Yes
+CC-Money                                   0           413    -     -     O     -     O          -     O          -         Grouped            M      P     -       V       Yes
+CC-Output-Octets                           0           414    -     -     -     -     O          -     O          -         Unsigned64         M      P     -       V       Yes
+CC-Request-Number                          0           415    -     -     -     M     -          M     -          -         Unsigned32         M      P     -       V       Yes
+CC-Request-Type                            0           416    -     -     -     M     -          M     -          8.5.11    Enumerated         M      P     -       V       Yes
+CC-Service-Specific-Units                  0           417    -     -     O     -     O          -     O          -         Unsigned64         M      P     -       V       Yes
+CC-Session-Failover                        0           418    -     -     -     -     -          O     -          -         Enumerated         M      P     -       V       Yes
+CC-Time                                    0           420    -     -     -     -     O          -     O          -         Unsigned32         M      P     -       V       Yes
+CC-Total-Octets                            0           421    -     -     -     -     O          -     O          -         Unsigned64         M      P     -       V       Yes
+CC-Unit-Type                               0           454    -     -     M     -     -          -     O          -         Enumerated         M      P     -       V       Yes
+Check-Balance-Result                       0           422    -     -     -     -     -          O     -          -         Enumerated         M      P     -       V       Yes
+Content-Disposition                        10415       828    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Content-ID                                 10415       2116   -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       Yes
+Content-Length                             10415       827    -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       No
+Content-provider-ID                        10415       2117   -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       Yes
+Content-Type                               10415       826    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Cost-Information                           0           423    -     -     -     -     -          O     -          -         Grouped            M      P     -       V       Yes
+Cost-Unit                                  0           424    -     -     -     -     -          -     O          -         UTF8String         M      P     -       V       Yes
+Credit-Control-Failure-Handling            0           427    -     -     -     -     -          O     -          -         Enumerated         M      P     -       V       Yes
+Current-Tariff                             10415       2056   -     -     M     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Currency-Code                              0           425    -     -     O     -     M          -     M          -         Unsigned32         M      P     -       V       Yes
+DCD-Information                            10415       2115   -     -     O     -     -          -     -          8.5.11    Grouped            M,V    P     -       -       Yes
+Delivery-Status                            10415       2104   -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       Yes
+Destination-Host                           0           293    -     -     -     O     -          -     -          -         DiameterIdentity   M      P     -       V       No
+Destination-Realm                          0           283    M     -     -     M     -          -     -          -         DiameterIdentity   M      P     -       V       No
+Direct-Debiting-Failure-Handling           0           428    -     -     -     -     -          O     -          -         Enumerated         M      P     -       V       Yes
+Event-Timestamp                            0           55     O     O     -     O     -          -     -          -         Time               M      P     -       V       No
+Expires                                    10415       888    -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       No
+Exponent                                   0           429    -     -     O     -     O          -     O          -         Integer32          M      P     -       V       Yes
+Failed-AVP                                 0           279    -     -     -     -     -          O     -          -         Grouped            M      P     -       V       No
+Final-Unit-Action                          0           449    -     -     -     -     -          -     O          -         Enumerated         M      P     -       V       Yes
+Final-Unit-Indication                      0           430    -     -     -     -     -          -     O          -         Grouped            M      P     -       V       Yes
+Granted-Service-Unit                       0           431    -     -     -     -     -          -     O          -         Grouped            M      P     -       V       Yes
+G-S-U-Pool-Identifier                      0           453    -     -     -     -     -          -     O          -         Unsigned32         M      P     -       V       Yes
+G-S-U-Pool-Reference                       0           457    -     -     -     -     -          -     O          -         Grouped            M      P     -       V       Yes
+IM-Information                             10415       2110   -     -     O     -     -          -     -          8.5.7     Grouped            M,V    P     -       -       Yes
+IMS-Charging-Identifier                    10415       841    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Inter-Operator-Identifier                  10415       838    -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Incremental-Cost                           10415       2062   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Low-Balance-Indication                     10415       2020   -     -     -     -     -          O     -          -         Grouped            M,V    P     -       -       No
+Message-Body                               10415       889    -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Multiple-Services-Credit-Control           0           456    -     -     -     O     -          O     -          8.5.7     Grouped            M      P     -       V       Yes
+Multiple-Services-Indicator                0           455    -     -     -     O     -          -     -          -         Enumerated         M      P     -       V       Yes
+Next-Tariff                                10415       2057   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Number-Of-Messages-Successfully-Exploded   10415       2111   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       Yes
+Number-Of-Messages-Successfully-Sent       10415       2112   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       Yes
+Number-Of-Participants                     10415       885    -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       No
+Originating-IOI                            10415       839    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Origin-Host                                0           264    M     M     -     M     -          M     -          -         DiameterIdentity   M      P     -       V       No
+Origin-Realm                               0           296    M     M     -     M     -          M     -          -         DiameterIdentity   M      P     -       V       No
+Origin-State-Id                            0           278    O     O     -     O     -          -     -          -         Unsigned32         M      P     -       V       No
+Originator                                 10415       864    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Participant-Group                          10415       1260   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+PoC-Group-Name                             10415       859    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+PoC-Server-Role                            10415       883    -     -     O     -     -          -     -          -         Enumerated         M,V    P     -       -       Yes
+PoC-User-Role                              10415       1252   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       Yes
+Preferred-AoC-Currency                     10415       2315   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       No
+Proxy-Host                                 0           280    M     M     -     M     -          M     -          -         DiameterIdentity   M      -     -       V,P     No
+Proxy-Info                                 0           284    O     O     -     O     -          O     -          -         Grouped            M      -     -       V,P     No
+Proxy-State                                0           33     M     M     -     M     -          M     -          -         OctetString        M      -     -       V,P     No
+Quota-Consumption-Time                     10415       881    -     -     -     -     -          -     O          -         Unsigned32         M,V    P     -       -       No
+Quota-Holding-Time                         10415       871    -     -     -     -     -          -     O          -         Unsigned32         M,V    P     -       -       No
+Rate-Element                               10415       2058   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Rating-Group                               0           432    -     -     -     -     O          -     O          -         Unsigned32         M      P     -       V       Yes
+Reason-Code                                10415       2316   -     -     O     -     -          -     -          -         Enumerated         M,V    P     -       -       No
+Redirect-Address-Type                      0           433    -     -     -     -     -          -     M          -         Enumerated         M      P     -       V       Yes
+Redirect-Host                              0           292    -     -     -     -     -          O     -          -         DiameterURI        M      P     -       V       No
+Redirect-Host-Usage                        0           261    -     -     -     -     -          O     -          -         Enumerated         M      P     -       V       No
+Redirect-Max-Cache-Time                    0           262    -     -     -     -     -          O     -          -         Unsigned32         M      P     -       V       No
+Redirect-Server                            0           434    -     -     -     -     -          -     O          -         Grouped            M      P     -       V       Yes
+Redirect-Server-Address                    0           435    -     -     -     -     -          -     M          -         UTF8String         M      P     -       V       Yes
+Reporting-Reason                           10415       872    -     -     -     -     O          -     -          -         Enumerated         M,V    P     -       -       No
+Requested-Action                           0           436    -     -     -     O     -          -     -          8.5.11    Enumerated         M      P     -       V       Yes
+Requested-Service-Unit                     0           437    -     -     -     -     O          -     -          -         Grouped            M      P     -       V       Yes
+Result-Code                                0           268    -     M     -     -     -          M     O          -         Unsigned32         M      P     -       V       No
+Route-Record                               0           282    O     -     -     O     -          O     -          -         DiameterIdentity   M      -     -       V,P     No
+Scale-Factor                               10415       2059   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Service-Context-Id                         0           461    O     -     -     M     -          -     -          8.5.11    UTF8String         M      P     -       V       Yes
+Service-Generic-Information                10415       1256   -     -     O     -     -          -     -          8.5.11    Grouped            M,V    P     -       -       Yes
+Service-Identifier                         0           439    -     -     O     -     O          -     O          -         Unsigned32         M      P     -       V       Yes
+Service-Information                        10415       873    O     -     -     O     -          O     -          -         Grouped            M,V    P     -       -       No
+Service-Key                                10415       1114   -     -     O     -     -          -     -          -         UTF8String         M,V    -     -       -       Yes
+Session-Id                                 0           263    M     M     -     M     -          M     -          -         UTF8String         M      P     -       V       Yes
+SIP-Method                                 10415       824    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+SIP-Request-Timestamp                      10415       834    -     -     O     -     -          -     -          -         Time               M,V    P     -       -       No
+SIP-Request-Timestamp-Fraction             10415       2301   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       No
+SIP-Response-Timestamp                     10415       835    -     -     O     -     -          -     -          -         Time               M,V    P     -       -       No
+SIP-Response-Timestamp-Fraction            10415       2302   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       No
+Subscription-Id                            0           443    -     -     O     O     -          -     -          -         Grouped            M      P     -       V       Yes
+Subscription-Id-Data                       0           444    -     -     M     M     -          -     -          -         UTF8String         M      P     -       V       Yes
+Subscription-Id-Type                       0           450    -     -     M     M     -          -     -          -         Enumerated         M      P     -       V       Yes
+Tariff-Change-Usage                        0           452    -     -     -     -     -          -     O          -         Enumerated         M      P     -       V       Yes
+Tariff-Information                         10415       2060   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Tariff-Time-Change                         0           451    -     -     O     -     -          -     O          -         Time               M      P     -       V       Yes
+Terminating-IOI                            10415       840    -     -     O     -     -          -     -          -         UTF8String         M,V    P     -       -       No
+Termination-Cause                          0           295    -     -     -     O     -          -     -          -         Enumerated         M      P     -       V       No
+Time-Quota-Threshold                       10415       868    -     -     -     -     -          -     O          -         Unsigned64         M,V    P     -       -       No
+Time-Stamps                                10415       833    -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Total-Number-Of-Messages-Exploded          10415       2113   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       Yes
+Total-Number-Of-Messages-Sent              10415       2114   -     -     O     -     -          -     -          -         Unsigned32         M,V    P     -       -       Yes
+Trigger                                    10415       1264   -     -     -     -     O          -     O          -         Grouped            M,V    P     -       -       No
+Trigger-Type                               10415       870    -     -     -     -     O          -     O          -         Enumerated         M,V    P     -       -       No
+Unit-Cost                                  10415       2061   -     -     O     -     -          -     -          -         Grouped            M,V    P     -       -       No
+Unit-Quota-Threshold                       10415       1226   -     -     O     -     -          -     O          -         Unsigned32         M,V    P     -       -       No
+Unit-Value                                 0           445    -     -     O     -     M          -     M          -         Grouped            M      P     -       V       Yes
+Used-Service-Unit                          0           446    -     -     -     -     O          -     -          -         Grouped            M      P     -       V       Yes
+User-Equipment-Info                        0           458    -     -     O     O     -          -     -          -         Grouped            -      M,P   -       V       Yes
+User-Equipment-Info-Type                   0           459    -     -     M     M     -          -     -          -         Enumerated         -      M,P   -       V       Yes
+User-Equipment-Info-Value                  0           460    -     -     M     M     -          -     -          -         OctetString        -      M,P   -       V       Yes
+User-Name                                  0           1      O     O     -     O     -          -     -          -         UTF8String         M      P     -       V       Yes
+Validity-Time                              0           448    -     -     -     -     -          -     O          -         Unsigned32         M      P     -       V       Yes
+Volume-Quota-Threshold                     10415       869    -     -     -     -     -          -     O          -         Unsigned64         M,V    P     -       -       No
+
+
+; Type: Reused AVPs
+; Section: 8.4
+; Table: 11
+; Page: 41
+; Columns: Name                            From
+Access-Network-Charging-Identifier-Value   TS29.214
+Accounting-Input-Octets                    RFC4005
+Accounting-Output-Octets                   RFC4005
+Accounting-Record-Number                   RFC3588
+Acct-Interim-Interval                      RFC3588
+Acct-Session-Time                          RFC4005
+Accumulated-Cost                           TS32.299
+AoC-Cost-Information                       TS32.299
+AoC-Format                                 TS32.299
+AoC-Information                            TS32.299
+AoC-Request-Type                           TS32.299
+AoC-Service                                TS32.299
+AoC-Service-Obligatory-Type                TS32.299
+AoC-Service-Type                           TS32.299
+AoC-Subscription-Information               TS32.299
+Application-Server-ID                      TS32.299
+Application-Service-Type                   TS32.299
+Application-Session-ID                     TS32.299
+Billing-Information                        TS29.140
+Called-Party-Address                       TS32.299
+Calling-Party-Address                      TS32.299
+Cause-Code                                 TS32.299
+CC-Input-Octets                            RFC4006
+CC-Money                                   RFC4006
+CC-Output-Octets                           RFC4006
+CC-Request-Number                          RFC4006
+CC-Service-Specific-Units                  RFC4006
+CC-Session-Failover                        RFC4006
+CC-Time                                    RFC4006
+CC-Total-Octets                            RFC4006
+CC-Unit-Type                               RFC4006
+Check-Balance-Result                       RFC4006
+Content-Disposition                        TS32.299
+Content-ID                                 TS32.299
+Content-Length                             TS32.299
+Content-provider-ID                        TS32.299
+Content-Type                               TS32.299
+Cost-Information                           RFC4006
+Cost-Unit                                  RFC4006
+Credit-Control-Failure-Handling            RFC4006
+Current-Tariff                             TS32.299
+Currency-Code                              RFC4006
+Delivery-Status                            TS32.299
+Destination-Host                           RFC3588
+Destination-Realm                          RFC3588
+Direct-Debiting-Failure-Handling           RFC4006
+Event-Timestamp                            RFC3588
+Expires                                    TS32.299
+Exponent                                   RFC4006
+Failed-AVP                                 RFC3588
+Final-Unit-Action                          RFC4006
+Final-Unit-Indication                      RFC4006
+Granted-Service-Unit                       RFC4006
+G-S-U-Pool-Identifier                      RFC4006
+G-S-U-Pool-Reference                       RFC4006
+IMS-Charging-Identifier                    TS32.299
+Inter-Operator-Identifier                  TS32.299
+Incremental-Cost                           TS32.299
+Low-Balance-Indication                     TS32.299
+Message-Body                               TS32.299
+Multiple-Services-Indicator                RFC4006
+Next-Tariff                                TS32.299
+Number-Of-Messages-Successfully-Exploded   TS32.299
+Number-Of-Messages-Successfully-Sent       TS32.299
+Number-Of-Participants                     TS32.299
+Originating-IOI                            TS32.299
+Origin-Host                                RFC3588
+Origin-Realm                               RFC3588
+Origin-State-Id                            RFC3588
+Originator                                 TS32.299
+Participant-Group                          TS32.299
+PoC-Group-Name                             TS32.299
+PoC-Server-Role                            TS32.299
+PoC-User-Role                              TS32.299
+Preferred-AoC-Currency                     TS32.299
+Proxy-Host                                 RFC3588
+Proxy-Info                                 RFC3588
+Proxy-State                                RFC3588
+Quota-Consumption-Time                     TS32.299
+Quota-Holding-Time                         TS32.299
+Rate-Element                               TS32.299
+Rating-Group                               RFC4006
+Reason-Code                                TS32.299
+Redirect-Address-Type                      RFC4006
+Redirect-Host                              RFC3588
+Redirect-Host-Usage                        RFC3588
+Redirect-Max-Cache-Time                    RFC3588
+Redirect-Server                            RFC4006
+Redirect-Server-Address                    RFC4006
+Reporting-Reason                           TS32.299
+Requested-Service-Unit                     RFC4006
+Result-Code                                RFC3588
+Route-Record                               RFC3588
+Scale-Factor                               TS32.299
+Service-Identifier                         RFC4006
+Service-Information                        TS32.299
+Service-Key                                TS29.140
+Session-Id                                 RFC3588
+SIP-Method                                 TS32.299
+SIP-Request-Timestamp                      TS32.299
+SIP-Request-Timestamp-Fraction             TS32.299
+SIP-Response-Timestamp                     TS32.299
+SIP-Response-Timestamp-Fraction            TS32.299
+Subscription-Id                            RFC4006
+Subscription-Id-Data                       RFC4006
+Subscription-Id-Type                       RFC4006
+Tariff-Change-Usage                        RFC4006
+Tariff-Information                         TS32.299
+Tariff-Time-Change                         RFC4006
+Terminating-IOI                            TS32.299
+Termination-Cause                          RFC3588
+Time-Quota-Threshold                       TS32.299
+Time-Stamps                                TS32.299
+Total-Number-Of-Messages-Exploded          TS32.299
+Total-Number-Of-Messages-Sent              TS32.299
+Trigger                                    TS32.299
+Trigger-Type                               TS32.299
+Unit-Cost                                  TS32.299
+Unit-Quota-Threshold                       TS32.299
+Unit-Value                                 RFC4006
+Used-Service-Unit                          RFC4006
+User-Equipment-Info                        RFC4006
+User-Equipment-Info-Type                   RFC4006
+User-Equipment-Info-Value                  RFC4006
+User-Name                                  RFC3588
+Validity-Time                              RFC4006
+Volume-Quota-Threshold                     TS32.299
+
+
+; Type: Enumerated AVP
+; Name: Accounting-Record-Type
+; Section: 8.5.2
+; Page: 43
+Accounting-Record-Type ::= < Enumerated AVP header: 480 >
+        EVENT_RECORD   = 1
+        START_RECORD   = 2
+        INTERIM_RECORD = 3
+        STOP_RECORD    = 4
+
+
+; Type: Enumerated AVP
+; Name: CC-Request-Type
+; Section: 8.5.4
+; Page: 44
+CC-Request-Type ::= < Enumerated AVP header: 416 >
+        INITIAL_REQUEST     = 1
+        UPDATE_REQUEST      = 2
+        TERMINATION_REQUEST = 3
+        EVENT_REQUEST       = 4
+
+
+; Type: Grouped AVP
+; Name: DCD-Information
+; Section: 8.5.5
+; Page: 44
+DCD-Information ::= < AVP header: 2115 >
+        [ Content-ID ]
+        [ Content-provider-ID ]
+
+
+; Type: Grouped AVP
+; Name: IM-Information
+; Section: 8.5.6
+; Page: 44
+IM-Information ::= < AVP header: 2110 >
+        [ Total-Number-Of-Messages-Sent ]
+        [ Total-Number-Of-Messages-Exploded ]
+        [ Number-Of-Messages-Successfully-Sent ]
+        [ Number-Of-Messages-Successfully-Exploded ]
+
+
+; Type: Grouped AVP
+; Name: Multiple-Services-Credit-Control
+; Section: 8.5.7
+; Page: 44
+Multiple-Services-Credit-Control ::= < AVP header: 456 >
+        [ Granted-Service-Unit ]
+        [ Requested-Service-Unit ]
+      * [ Used-Service-Unit ]
+        [ Tariff-Change-Usage ]
+      * [ Service-Identifier ]
+        [ Rating-Group ]
+      * [ G-S-U-Pool-Reference ]
+        [ Validity-Time ]
+        [ Result-Code ]
+        [ Final-Unit-Indication ]
+        [ Time-Quota-Threshold ]
+        [ Volume-Quota-Threshold ]
+        [ Quota-Holding-Time ]
+        [ Quota-Consumption-Time ]
+      * [ Reporting-Reason ]
+        [ Trigger ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Requested-Action
+; Section: 8.5.8
+; Page: 45
+Requested-Action ::= < Enumerated AVP header: 436 >
+        DIRECT_DEBITING = 0
+        REFUND_ACCOUNT  = 1
+        CHECK_BALANCE   = 2
+        PRICE_ENQUIRY   = 3
+
+
+; Type: Grouped AVP
+; Name: Services-Generic-Information
+; Section: 8.5.10
+; Page: 45
+Services-Generic-Information ::= < AVP header: 1256 >
+        [ Application-Server-ID ]
+        [ Application-Service-Type ]
+        [ Application-Session-ID ]
+        [ Delivery-Status ]
