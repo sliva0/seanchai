@@ -1,0 +1,17 @@
+# Source declarations for 3GPP TS 29.344 (ProSe function to HSS aspects).
+# Applied to normalized source text before parsing; see
+# src/seanchai/extractor/sources.py for the format.
+
+[[patch]]
+find = "[ ProSe Subscription-Data ]"
+replace = "[ ProSe-Subscription-Data ]"
+exact = true
+section = "6.2.5"
+reason = """
+    clause 6.2.5's Update-ProSe-Subscriber-Data-Request prints a space for a
+    hyphen, docx and PDF alike; the same clause's AVP table names ProSe-
+    Subscription-Data. Unread, the body ended there, dropping the members
+    after it.
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"

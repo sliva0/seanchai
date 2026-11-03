@@ -22,3 +22,16 @@ reason = """
     """
 first_version = "18.1.0"
 last_version = "18.1.0"
+
+[[patch]]
+find = "[ 1xRTT-RCID ] ]"
+replace = "[ 1xRTT-RCID ]"
+exact = true
+section = "7.3.3"
+reason = """
+    clause 7.3.3's Location-Report-Request closes the member's bracket
+    twice, '[ 1xRTT-RCID ] ]', docx and PDF alike. Unread, the body ended
+    there, dropping the members after it.
+    """
+first_version = "18.1.0"
+last_version = "18.1.0"

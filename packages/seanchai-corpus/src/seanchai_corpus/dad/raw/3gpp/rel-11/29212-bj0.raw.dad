@@ -1265,6 +1265,8 @@ Allocation-Retention-Priority ::= < AVP header: 1034 >
 ; Page: 110
 Tunnel-Information ::= < AVP header: 1038 >
         [ Tunnel-Header-Length ]
+    2*2 [ Tunnel-Header-Filter ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP

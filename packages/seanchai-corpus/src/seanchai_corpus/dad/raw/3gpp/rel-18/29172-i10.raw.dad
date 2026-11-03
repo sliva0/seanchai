@@ -122,6 +122,14 @@
         [ Reporting-Amount ]
         [ Periodic-LDR-Information ]
         [ ESMLC-Cell-Info ]
+        [ 1xRTT-RCID ]
+        [ Delayed-Location-Reporting-Data ]
+        [ Civic-Address ]
+        [ Barometric-Pressure ]
+      * [ Supported-Features ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
 
 
 ; Type: Message

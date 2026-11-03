@@ -63,6 +63,9 @@
       * [ Supported-Features ]
         [ User-Identifier ]
       * [ Monitoring-Event-Report ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
 
 
 ; Type: Message

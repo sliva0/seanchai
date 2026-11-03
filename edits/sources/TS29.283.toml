@@ -5,3 +5,16 @@ reason = """
     """
 first_version = "18.0.0"
 last_version = "18.0.0"
+
+[[patch]]
+find = "DRMP ]"
+replace = "[ DRMP ]"
+exact = true
+section = "7.2.4"
+reason = """
+    clause 7.2.4's Data-Pull-Answer loses the member's opening bracket,
+    'DRMP ]', docx and PDF alike; every other command of the document prints
+    '[ DRMP ]'. Unread, the body held only '< Session-Id >'.
+    """
+first_version = "18.0.0"
+last_version = "18.0.0"
