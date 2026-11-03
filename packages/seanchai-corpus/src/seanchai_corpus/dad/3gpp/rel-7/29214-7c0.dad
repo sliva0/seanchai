@@ -290,7 +290,7 @@ Flow-Usage ::= < Enumerated AVP header: 512 10415 >
 ; Section: 5.3.13
 ; Page: 20
 Specific-Action ::= < Enumerated AVP header: 513 10415 >
-        Void                                  = 0
+      ; VOID                                  = 0
         CHARGING_CORRELATION_EXCHANGE         = 1
         INDICATION_OF_LOSS_OF_BEARER          = 2
         INDICATION_OF_RECOVERY_OF_BEARER      = 3

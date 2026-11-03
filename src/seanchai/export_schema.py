@@ -19,7 +19,7 @@ from pydantic.json_schema import models_json_schema
 from .dad import ast
 from .linter import Severity
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 # What `index.json` says wrote it, and so what an export may replace.
 GENERATOR: Literal["seanchai"] = "seanchai"

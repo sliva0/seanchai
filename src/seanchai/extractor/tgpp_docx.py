@@ -20,7 +20,8 @@ What maps to what in a 3GPP Diameter spec docx:
   `B1`-style `ValueName (n)` items → `EnumeratedAvp`; `B2` items are value
   descriptions, `NO`-style "Value n is reserved" notes → reserved values,
   inserted in numeric order; behind `value-first-enums`, `a .. b` ranges
-  reserved or left vendor-specific → reserved or vendor-specific values.
+  reserved or left vendor-specific → reserved or vendor-specific values, a
+  value labelled "Void" → a void value.
 - The AVP-flags table (header "AVP Flag rules") → `AvpTable`; rows whose code
   cell is a NOTE reference get `code=None`, and note texts naming a defining
   RFC additionally produce `ReusedAvps` rows (the `note-defined-in-rfc`
@@ -184,6 +185,10 @@ _LOOSE_ENUM_VALUE_RE = re.compile(
 # `run-on-enum-values`: TS 29.229 clause 6.3.58's "NOT_PRIVILEDGED_SENDER
 # (0)PRIVILEDGED_SENDER (1)", one run in the docx and one line in the PDF.
 _RUN_ON_ENUM_VALUES_RE = re.compile(r"(?:[A-Za-z0-9_-]+\s*\(\d+\)\s*){2,}")
+# The word a document prints where it withdrew a value's label, in lower case:
+# TS 29.214 clause 5.3.13's "Void (0)". Whichever reading found the value, the
+# word is no name.
+_VOID_LABEL = "void"
 _RUN_ON_ENUM_VALUE_RE = re.compile(r"(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)")
 _RESERVED_NOTE_RE = re.compile(
     r"[Vv]alues? (?P<first>\d+)(?:\s*(?:-|to)\s*(?P<last>\d+))?\s+(?:is|are) reserved"
@@ -1561,7 +1566,7 @@ def _extract_enumerated(
     warnings: list[str],
 ) -> ast.EnumeratedAvp:
     values: list[ast.EnumValue] = []
-    ranges: list[ast.ReservedValues | ast.VendorSpecificValues] = []
+    ranges: list[ast.ReservedValues | ast.VoidValues | ast.VendorSpecificValues] = []
     # A clause's explanatory prose is not captured as a value description; only
     # the value lines and the reserved-value notes are read.
     #
@@ -1670,6 +1675,8 @@ def _extract_enumerated(
                         )
                     elif not vendor and label.startswith("Reserved"):
                         ranges.append(ast.ReservedValues(first=first, last=last))
+                    elif label.lower() == _VOID_LABEL:
+                        ranges.append(ast.VoidValues(first=first, last=last))
                     else:
                         warnings.append(
                             f"{section.number}: value range {first}..{last}"
@@ -1692,8 +1699,16 @@ def _extract_enumerated(
         # enumerated, and a value line in a shape no declared reading takes
         # shows up here rather than as a silently shorter list.
         warnings.append(f"{section.number}: enumerated AVP {name} lists no values")
+    # A label with a gloss after it says more than the word does, and stays
+    # the value it was printed as.
     merged = sorted(
-        [*values, *ranges],
+        [
+            ast.VoidValues(first=value.value, last=value.value)
+            if value.name.lower() == _VOID_LABEL and value.description is None
+            else value
+            for value in values
+        ]
+        + ranges,
         key=lambda item: item.value if isinstance(item, ast.EnumValue) else item.first,
     )
     return ast.EnumeratedAvp(

@@ -567,7 +567,7 @@ _RAW_ERRORS = {
         "table-definition-mismatch",
     ],
     "29212-j10.raw.dad": ["vendor-id-mismatch"] * 39,
-    "29214-j30.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 11,
+    "29214-j30.raw.dad": ["vendor-id-mismatch"] * 11,
     # Release 7 and TS 29.209, its Release 6 predecessor: grouped headers
     # printing no vendor where clause 5.3 (6.5) sets 3GPP's for every AVP.
     "29214-7c0.raw.dad": ["vendor-id-mismatch"] * 5,
@@ -578,10 +578,9 @@ _RAW_ERRORS = {
     "29210-670.raw.dad": ["application-scope-overlap"] * 4 + ["vendor-id-mismatch"] * 4,
     "29234-b20.raw.dad": ["vendor-id-mismatch"] * 4,
     # Release 11, the copies TS 32.299 V11.20.0 cites: thirty-one and six
-    # vendorless grouped headers, and TS 29.214's two Void values (5.3.13),
-    # as their Release 19 successors print.
+    # vendorless grouped headers, as their Release 19 successors print.
     "29212-bj0.raw.dad": ["vendor-id-mismatch"] * 31,
-    "29214-bg0.raw.dad": ["duplicate-enum-value"] + ["vendor-id-mismatch"] * 6,
+    "29214-bg0.raw.dad": ["vendor-id-mismatch"] * 6,
     "29336-j10.raw.dad": [
         "duplicate-definition",
         "duplicate-identity",

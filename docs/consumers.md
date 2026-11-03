@@ -142,8 +142,8 @@ value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
   document's. A generator wanting one entry per identity takes those with no
   `#`, as [the recipe](#generate-a-dictionary) does.
 - `values[]` holds `kind` (`value`, `reserved`, `void`, `vendor-specific`),
-  `name`, `value`, `first`, `last`, `description`. `void` is a value the document
-  withdrew; like `reserved`, no dictionary may assign it.
+  `name`, `value`, `first`, `last`, `description`. `void` is a value the
+  document withdrew; like `reserved`, no dictionary may assign it.
 - `dropped` is what `--policy drop` took out, each naming its hole.
 - `value_tables[]` are the selected documents', and with `--application` those
   of the documents holding one. `avp_id` names the `avps[]` entry the document's
@@ -230,8 +230,9 @@ citation in `values_source` and whatever values a correction supplied;
 `vendor_specific` picks out the ranges a validator must allow under names the
 document does not give, and `values` holds `ast.ReservedValues` and
 `ast.VoidValues` beside them, which it must refuse: a void value is one the
-document assigned and withdrew, a reserved one was never assigned. Every model type has a one-line `repr` and a `to_dict()`
-for `json.dumps`, with its flags sorted.
+document assigned and withdrew, a reserved one was never assigned. Every model
+type has a one-line `repr` and a `to_dict()` for `json.dumps`, with its flags
+sorted.
 
 The AST stays public underneath: `parser.parse(text)` reads one file,
 discarding `;;` comments, and `parser.parse_with_comments(text)` returns the
