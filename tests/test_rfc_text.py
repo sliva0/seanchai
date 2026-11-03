@@ -421,3 +421,226 @@ def test_a_defining_sentence_may_print_its_code_alone(tmp_path):
     assert row.data_type is ast.DataType.DIAMETER_IDENTITY
 
 
+_FLUSH_TABLE = (
+    "7.2.  Defined AVPs\n\n"
+    "                                                  +-------------------+\n"
+    "                                                  |    AVP Flag rules |\n"
+    "   +----------------------------------------------|----+--------+-----+\n"
+    "   |                       AVP  Section           |    |    SHLD| MUST|\n"
+    "   | Attribute Name        Code Defined Data Type |MUST|     NOT|  NOT|\n"
+    "   +----------------------------------------------+----+--------+-----+\n"
+    "   |QoS-Authorization-Data 579    7.2  OctetString| M  |        |  V  |\n"
+    "   |Bound-Auth-Session-    580    7.2  UTF8String | M  |        |  V  |\n"
+    "   | Id                                           |    |        |     |\n"
+    "   +----------------------------------------------+----+--------+-----+\n"
+)
+_LEGEND = (
+    "   |M - Mandatory bit. An AVP with the M bit set and its value MUST   |\n"
+    "   +------------------------------------------------------------------+\n"
+)
+
+
+def test_names_start_where_the_first_row_does_not_at_the_header_label(tmp_path):
+    """RFC 5866 clause 7.2 and RFC 6736 print rows flush against the box, one
+    column left of "Attribute Name", and a wrapped name at the label's column."""
+    rows = _of(_read(tmp_path, _FLUSH_TABLE), ast.AvpTable)[0].rows
+    assert [row.name for row in rows] == [
+        "QoS-Authorization-Data",
+        "Bound-Auth-Session-Id",
+    ]
+
+
+def test_a_boxed_legend_under_a_table_needs_its_quirk(tmp_path):
+    with pytest.raises(ExtractionError, match="flag cells"):
+        _read(tmp_path, _FLUSH_TABLE + _LEGEND)
+    spec = _read(tmp_path, _FLUSH_TABLE + _LEGEND, "boxed-table-legend")
+    assert len(_of(spec, ast.AvpTable)[0].rows) == 2
+
+
+_CODES_TABLE = (
+    "   +-----------------------+------+---------------+-------+\n"
+    "   | Attribute Name        | AVP  | Reference     | Data- |\n"
+    "   |                       | Code |               | Type  |\n"
+    "   +-----------------------+------+---------------+-------+\n"
+    "   | SIP-Server-URI        |  371 | Section 9.2   | UTF8S |\n"
+    "   | SIP-Item-Number       |  378 | Section 9.5.2 | U32   |\n"
+    "   +-----------------------+------+---------------+-------+\n"
+    "\n"
+    "                   Table 2: Defined AVPs\n"
+    "\n"
+)
+
+
+def _flags_table(*names: str) -> str:
+    return (
+        "   +-----------------------+------+-----+-----+------+------+\n"
+        "   | Attribute Name        | MUST | MAY | SHD | MUST | Encr |\n"
+        "   |                       |      |     | NOT |  NOT |      |\n"
+        "   +-----------------------+------+-----+-----+------+------+\n"
+        + "".join(
+            f"   | {name:<21} |   M  |  P  |     |   V  |   N  |\n" for name in names
+        )
+        + "   +-----------------------+------+-----+-----+------+------+\n"
+    )
+
+
+def test_a_flags_only_table_joins_the_table_before_it(tmp_path):
+    """RFC 4740 tables 2 and 3, with table 2's abbreviated types."""
+    body = (
+        "9.  AVPs\n\n"
+        + _CODES_TABLE
+        + _flags_table("SIP-Item-Number", "SIP-Server-URI")
+    )
+    table = _of(
+        _read(tmp_path, body, "split-avp-tables", "type-short-forms"), ast.AvpTable
+    )
+    assert len(table) == 1
+    row = table[0].rows[1]
+    assert (row.name, row.code, row.section) == ("SIP-Item-Number", 378, "9.5.2")
+    assert row.data_type is ast.DataType.UNSIGNED32
+    assert row.flag_rules.must == {ast.AvpFlag.MANDATORY}
+    assert row.may_encrypt is False
+    assert ast.AvpColumn.SHOULD_NOT in table[0].columns
+
+
+def test_a_flags_only_table_needs_its_quirk(tmp_path):
+    body = (
+        "9.  AVPs\n\n"
+        + _CODES_TABLE
+        + _flags_table("SIP-Item-Number", "SIP-Server-URI")
+    )
+    with pytest.raises(ExtractionError, match="split-avp-tables"):
+        _read(tmp_path, body, "type-short-forms")
+
+
+def test_a_flags_only_table_must_name_what_the_table_before_it_does(tmp_path):
+    body = "9.  AVPs\n\n" + _CODES_TABLE + _flags_table("SIP-Item-Number")
+    with pytest.raises(ExtractionError, match="SIP-Server-URI"):
+        _read(tmp_path, body, "split-avp-tables", "type-short-forms")
+
+
+def test_type_abbreviations_need_their_quirk(tmp_path):
+    body = "9.  AVPs\n\n" + _CODES_TABLE
+    with pytest.raises(ExtractionError, match="type-short-forms"):
+        _read(tmp_path, body)
+
+
+def _reused_clause(table: str, origin: str = "[RFC4005]") -> str:
+    return (
+        "8.3.  Reused NASREQ AVPs\n\n"
+        f"   The following table describes the AVPs reused from NASREQ {origin};\n"
+        "   their AVP Code values and types.\n\n" + table
+    )
+
+
+_BOXED_TABLE = (
+    "                                       +---------------------+\n"
+    "                                       |    AVP Flag Rules   |\n"
+    "   +------------------+------+---------|----+-----+----+-----|----+\n"
+    "   |                  | AVP  |         |    |     |SHLD| MUST|    |\n"
+    "   | Attribute Name   | Code |Value Type|MUST| MAY| NOT|  NOT|Encr|\n"
+    "   |------------------|------|---------|----+-----+----+-----|----|\n"
+    "   | Calling-Station- |  31  |UTF8String| M  |  P |    |  V  | Y  |\n"
+    "   |   Id             |      |          |    |    |    |     |    |\n"
+    "   +------------------+------+---------|----+-----+----+-----|----+\n"
+)
+_STACKED_TABLE = (
+    "                                                  +---------+\n"
+    "                                                  |  AVP    |\n"
+    "                                                  |  Flag   |\n"
+    "                                                  |  rules  |\n"
+    "   +----------------------------------------------|-----+---+---------+\n"
+    "   |                           AVP                |     |   |         |\n"
+    "   | Attribute Name            Code     Data Type |MUST |MAY|   Encr  |\n"
+    "   +----------------------------------------------+-----+---+---------+\n"
+    "   |Logical-Access-ID          302     OctetString|   V | M |    Y    |\n"
+    "   +----------------------------------------------+-----+---+---------+\n"
+)
+
+
+def test_a_table_boxing_every_column_reads_a_wrapped_name(tmp_path):
+    """RFC 6736 table 2: the continuation is the line with its cells blank."""
+    spec = _read(tmp_path, "8.3.  Some AVPs\n\n" + _BOXED_TABLE)
+    row = _of(spec, ast.AvpTable)[0].rows[0]
+    assert (row.name, row.code) == ("Calling-Station-Id", 31)
+    assert row.data_type is ast.DataType.UTF8_STRING
+    assert row.may_encrypt is True
+
+
+def test_a_stacked_caption_opens_a_table_with_no_section_column(tmp_path):
+    """RFC 6736 stacks "AVP", "Flag", "rules", so no line says "AVP Flag"."""
+    spec = _read(tmp_path, "8.6.  Some AVPs\n\n" + _STACKED_TABLE)
+    table = _of(spec, ast.AvpTable)[0]
+    assert ast.AvpColumn.SECTION not in table.columns
+    assert (table.rows[0].code, table.rows[0].section) == (302, None)
+
+
+def test_an_occurrence_table_opens_no_avp_table(tmp_path):
+    """RFC 6736's `| Attribute Name  NCR  NCA |`, and RFC 4005's bare one."""
+    spec = _read(
+        tmp_path,
+        "9.  Occurrence\n\n"
+        "   +---------------------------------------------+\n"
+        "   | Attribute Name                  NCR    NCA  |\n"
+        "   +---------------------------------------------+\n"
+        "   | Session-Id                      1      1    |\n"
+        "   +---------------------------------------------+\n",
+    )
+    assert not _of(spec, ast.AvpTable)
+
+
+def test_a_table_under_a_reused_clause_is_a_reused_block(tmp_path):
+    spec = _read(tmp_path, _reused_clause(_BOXED_TABLE), "reused-avp-tables")
+    assert not _of(spec, ast.AvpTable)
+    block = _of(spec, ast.ReusedAvps)[0]
+    assert block.table == "8.3"
+    row = block.rows[0]
+    assert (row.name, row.origin, row.code) == ("Calling-Station-Id", "RFC4005", 31)
+    assert row.data_type is ast.DataType.UTF8_STRING
+
+
+def test_a_reused_clause_reads_a_publisher_tag_as_its_reference(tmp_path):
+    body = _reused_clause(_STACKED_TABLE, "[ETSIES283034]")
+    block = _of(_read(tmp_path, body, "reused-avp-tables"), ast.ReusedAvps)[0]
+    assert block.rows[0].origin == "ETSI-ES283.034"
+
+
+def test_a_reused_clause_naming_no_origin_is_an_error(tmp_path):
+    body = "8.3.  Reused NASREQ AVPs\n\n   Nothing cited here.\n\n" + _BOXED_TABLE
+    with pytest.raises(ExtractionError, match="names no origin"):
+        _read(tmp_path, body, "reused-avp-tables")
+
+
+_NOTED_TABLE = (
+    "8.  AVP Flag Rules\n\n"
+    "                                                 +---------+\n"
+    "                                                 |AVP Flag |\n"
+    "                                                 |  Rules  |\n"
+    "                                                 +----+----+\n"
+    "                       AVP  Section              |    |MUST|\n"
+    "    Attribute Name     Code Defined   Value Type |MUST| NOT|\n"
+    "   +---------------------------------------------+----+----+\n"
+    "   |Key-Lifetime        584  Note 1   Integer64  |  M | V  |\n"
+    "   +---------------------------------------------+----+----+\n"
+    "   |Ni                  588  6.1.1    OctetString|  M | V  |\n"
+    "   +---------------------------------------------+----+----+\n\n"
+)
+
+
+def test_a_row_citing_a_note_becomes_reused_under_its_quirk(tmp_path):
+    """RFC 6738 clause 8. Without the quirk such a row is dropped, as RFC 5778's
+    are: its AVP is not this document's."""
+    note = "   Note 1: The Key and Key-Lifetime AVPs are defined in [RFC6734].\n"
+    spec = _read(tmp_path, _NOTED_TABLE + note, "note-avp-origins")
+    assert [row.name for row in _of(spec, ast.AvpTable)[0].rows] == ["Ni"]
+    row = _of(spec, ast.ReusedAvps)[0].rows[0]
+    assert (row.name, row.origin, row.code) == ("Key-Lifetime", "RFC6734", 584)
+    assert row.data_type is ast.DataType.INTEGER64
+
+
+def test_a_note_must_name_the_row_citing_it(tmp_path):
+    note = "   Note 1: The Key AVP is defined in [RFC6734].\n"
+    with pytest.raises(ExtractionError, match="does not name Key-Lifetime"):
+        _read(tmp_path, _NOTED_TABLE + note, "note-avp-origins")
+
+

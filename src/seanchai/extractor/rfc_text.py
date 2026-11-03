@@ -164,6 +164,29 @@ _LEFT_HEADERS: dict[tuple[str, ...], tuple[ast.AvpColumn, ...]] = {
         ast.AvpColumn.NAME,
         ast.AvpColumn.SECTION,
     ),
+    # RFC 6736 clauses 8.1, 8.5 and 8.6 print no defining-clause column for the
+    # AVPs they re-use; its clause 8.7 shortens the column to "Sect.".
+    ("AVP", "Attribute Name Code Data Type"): (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.TYPE,
+    ),
+    ("AVP", "Attribute Name Code Sect. Data Type"): (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+        ast.AvpColumn.TYPE,
+    ),
+}
+# A table boxing every column (RFC 4740 tables 2 and 3, RFC 6736 tables 2 and
+# 3) leaves only the name left of the first pipe, and prints its other data
+# columns in cells of their own, labelled by these spellings, ahead of the flags.
+_CELL_HEADER = ("Attribute Name",)
+_CELL_COLUMNS = {
+    "AVP Code": ast.AvpColumn.CODE,
+    "Reference": ast.AvpColumn.SECTION,
+    "Data- Type": ast.AvpColumn.TYPE,
+    "Value Type": ast.AvpColumn.TYPE,
 }
 # Flag-column labels, stacked vertically per pipe cell ("MUST" over "NOT"),
 # are unambiguous and read generically.
@@ -172,6 +195,7 @@ _FLAG_COLUMNS = {
     "MAY": ast.AvpColumn.MAY,
     "SHOULD NOT": ast.AvpColumn.SHOULD_NOT,
     "SHLD NOT": ast.AvpColumn.SHOULD_NOT,
+    "SHD NOT": ast.AvpColumn.SHOULD_NOT,
     "MUST NOT": ast.AvpColumn.MUST_NOT,
     "ENCR": ast.AvpColumn.ENCRYPT,
     "MAY ENCR": ast.AvpColumn.ENCRYPT,
@@ -232,6 +256,13 @@ _TYPE_SHORT_FORMS = {
     "IPFiltrRule": ast.DataType.IP_FILTER_RULE,
     "IPFltrRule": ast.DataType.IP_FILTER_RULE,
     "QoSFltrRule": ast.DataType.QOS_FILTER_RULE,
+    # RFC 4740 clause 9's legend for its table 2.
+    "DURI": ast.DataType.DIAMETER_URI,
+    "E": ast.DataType.ENUMERATED,
+    "G": ast.DataType.GROUPED,
+    "OS": ast.DataType.OCTET_STRING,
+    "UTF8S": ast.DataType.UTF8_STRING,
+    "U32": ast.DataType.UNSIGNED32,
 }
 
 # Every AVP an RFC defines is in the IETF's vendor space. Like the docx
@@ -304,7 +335,8 @@ QUIRKS: dict[str, str] = {
     "type-short-forms": (
         "accept the space-constrained Data Type spellings some RFC tables"
         " declare and print — DiamIdent, DiamURI, IPFiltrRule/IPFltrRule,"
-        " QoSFltrRule (RFC 6733, 4004, 4005, 4006)"
+        " QoSFltrRule (RFC 6733, 4004, 4005, 4006, 6736), and RFC 4740's DURI,"
+        " E, G, OS, UTF8S, U32"
     ),
     "prose-catchall-row": (
         "ignore the 'Rest of the AVPs' prose catch-all RFC 5778 prints as"
@@ -313,6 +345,25 @@ QUIRKS: dict[str, str] = {
     "bare-name-continuation": (
         "accept a wrapped name's continuation line printed without its"
         " otherwise-empty flag cells, outside the table box (RFC 4004)"
+    ),
+    "boxed-table-legend": (
+        "skip the one-cell boxed rows printing a legend under a table's closing"
+        " rule (RFC 5866 clause 7.2)"
+    ),
+    "split-avp-tables": (
+        "join a table printing only flag rules onto the table before it, name"
+        " by name, where a document prints codes and flags apart (RFC 4740"
+        " tables 2 and 3)"
+    ),
+    "reused-avp-tables": (
+        "read a table under a 'Reused ... AVPs' clause as a re-used block, its"
+        " origin the reference after the clause's 'reused from' (RFC 6736"
+        " clauses 8.1, 8.3-8.6)"
+    ),
+    "note-avp-origins": (
+        "read a table's rows whose Defined cell cites 'Note 1' as re-used rows,"
+        " their origin from the note's 'are defined in [RFC...]' (RFC 6738"
+        " clause 8)"
     ),
     "ragged-separator": (
         "accept a horizontal rule with a stray space inside it as box"
@@ -385,6 +436,10 @@ class _Columns:
     columns: tuple[ast.AvpColumn, ...]
     flag_count: int
     name_indent: int  # column where the Attribute Name label (and names) start
+    # Every column boxed: the data columns printed in pipe cells of their own,
+    # after the name (none in a table of names and flags alone).
+    boxed: bool = False
+    cell_columns: tuple[ast.AvpColumn, ...] = ()
 
 
 def _flag_labels(label_lines: list[str]) -> list[str]:
@@ -418,7 +473,7 @@ def _read_header(label_lines: list[str]) -> _Columns:
         for line in label_lines
         if (collapsed := " ".join(line.split("|", 1)[0].split()))
     )
-    left_columns = _LEFT_HEADERS.get(spelled)
+    left_columns = () if spelled == _CELL_HEADER else _LEFT_HEADERS.get(spelled)
     if left_columns is None:
         raise ExtractionError(f"unrecognized AVP table header {spelled!r}")
     # Names start where the header's own fixed-width area does — the leftmost
@@ -430,8 +485,16 @@ def _read_header(label_lines: list[str]) -> _Columns:
         if left.strip():
             indents.append(len(left) - len(left.lstrip()))
     name_indent = min(indents)
-    columns = list(left_columns)
     flag_labels = _flag_labels(label_lines)
+    cell_columns: tuple[ast.AvpColumn, ...] = ()
+    if spelled == _CELL_HEADER:
+        left_columns = (ast.AvpColumn.NAME,)
+        count = 0
+        while count < len(flag_labels) and flag_labels[count] in _CELL_COLUMNS:
+            count += 1
+        cell_columns = tuple(_CELL_COLUMNS[label] for label in flag_labels[:count])
+        flag_labels = flag_labels[count:]
+    columns = [*left_columns, *cell_columns]
     for label in flag_labels:
         column = _FLAG_COLUMNS.get(label.upper())
         if column is None:
@@ -441,6 +504,8 @@ def _read_header(label_lines: list[str]) -> _Columns:
         columns=tuple(columns),
         flag_count=len(flag_labels),
         name_indent=name_indent,
+        boxed=spelled == _CELL_HEADER,
+        cell_columns=cell_columns,
     )
 
 
@@ -485,6 +550,9 @@ class _PendingRow:
     data: tuple[str, str, str] | None = None  # code, section, type as printed
     flags: list[str] = field(default_factory=list)
     ignored: bool = False
+    # Rows whose Defined cell cites a note, for `note-avp-origins`: the note,
+    # name, code and type as printed. Shared with the table reader.
+    noted: list[tuple[str, str, int | None, str]] = field(default_factory=list)
 
     def add_left(self, tokens: list[str], line: str, shape: _Columns) -> None:
         if self.ignored:
@@ -517,6 +585,13 @@ class _PendingRow:
                 raise ExtractionError(f"malformed AVP table row {line!r}")
         elif len(tokens) == 1:
             self.name_parts.append(tokens[0])
+        elif len(tokens) == 3 and left_columns == (
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.TYPE,
+        ):
+            self.name_parts.append(tokens[0])
+            self._set_data((tokens[1], "", tokens[2]), line)
         elif len(tokens) == 2 and (
             tokens[1] in _TYPE_SHORT_FORMS
             or tokens[1] in {data_type.value for data_type in ast.DataType}
@@ -541,6 +616,26 @@ class _PendingRow:
             self._set_data((tokens[0], tokens[1], tokens[2]), line)
         elif tokens:
             raise ExtractionError(f"malformed AVP table row {line!r}")
+
+    def add_cells(self, name: str, cells: list[str], shape: _Columns) -> None:
+        """One physical line of a table boxing every column: the name cell,
+        then its data cells, all blank on a wrapped name's continuation."""
+        self.name_parts.append(name)
+        printed = {
+            column: cell.strip()
+            for column, cell in zip(shape.cell_columns, cells, strict=True)
+        }
+        if self.data is not None and not any(printed.values()):
+            return
+        self._set_data(
+            (
+                printed.get(ast.AvpColumn.CODE, ""),
+                # RFC 4740 table 2's Reference column: "Section 9.1".
+                printed.get(ast.AvpColumn.SECTION, "").removeprefix("Section "),
+                printed.get(ast.AvpColumn.TYPE, ""),
+            ),
+            name,
+        )
 
     def _set_data(self, tokens: tuple[str, str, str], line: str) -> None:
         if self.data is None:
@@ -591,6 +686,12 @@ class _PendingRow:
         if section and not re.fullmatch(
             r"([A-Za-z]+|\d+[A-Za-z]*)(\.\d+[A-Za-z]*)*", section
         ):
+            if re.fullmatch(r"Note \d+", section) and self.quirks.enabled(
+                "note-avp-origins"
+            ):
+                self.noted.append(
+                    (section, name, int(code) if code else None, data_type)
+                )
             return None
         flag_columns = shape.columns[len(shape.columns) - shape.flag_count :]
         flag_rules = {
@@ -640,6 +741,8 @@ class _TableReader:
         self.source: tuple[str | None, int | None] | None = None
         self.closed = False
         self.after_table_prose = False
+        self.row_indent: int | None = None
+        self.noted: list[tuple[str, str, int | None, str]] = []
 
     @property
     def open(self) -> bool:
@@ -674,6 +777,7 @@ class _TableReader:
                         )
                     self.shape = shape
                     self.header_lines = None
+                    self.row_indent = None
             elif "|" in text:
                 left, *right = text.replace("+", "|").split("|")
                 if right and right[-1] == "":
@@ -716,22 +820,49 @@ class _TableReader:
         left, *cells = text.split("|")
         if cells and cells[-1] == "":
             cells.pop()  # the trailing pipe
-        if len(cells) != self.shape.flag_count:
+        count = len(self.shape.cell_columns)
+        if len(cells) != count + self.shape.flag_count:
+            if (
+                len(cells) == 1
+                and not left.strip()
+                and self.pending is None
+                and self.quirks.enabled("boxed-table-legend")
+            ):
+                self.quirks.fire("boxed-table-legend")
+                return
             raise ExtractionError(
-                f"AVP table row with {len(cells)} flag cells for"
+                f"AVP table row with {len(cells) - count} flag cells for"
                 f" {self.shape.flag_count} flag columns: {text!r}"
             )
+        data, flags = cells[:count], cells[count:]
         indent = len(left) - len(left.lstrip())
-        if (
-            left.strip()
-            and indent == self.shape.name_indent
-            and not (self.pending is not None and self.pending.ignored)
-        ):
+        # Names start where the first row does, which RFC 5866 clause 7.2 and
+        # RFC 6736 print one column left of the header's label: flush against
+        # the box, so that a wrapped name's continuation there sits at the
+        # label's own column (`|NAT-Control-  602` over `| Binding-Template`).
+        if self.row_indent is None and left.strip():
+            self.row_indent = min(indent, self.shape.name_indent)
+        if self.shape.boxed:
+            # Every column boxed, a wrapped name's continuation is the line
+            # with its other cells blank (RFC 6736 table 2).
+            starts = bool(left.strip()) and any(
+                cell.strip() for cell in [*data, *flags]
+            )
+        else:
+            starts = (
+                bool(left.strip())
+                and self.row_indent is not None
+                and indent <= self.row_indent
+            )
+        if starts and not (self.pending is not None and self.pending.ignored):
             self._finish_pending()
         if self.pending is None:
-            self.pending = _PendingRow(self.quirks)
-        self.pending.add_left(left.split(), text, self.shape)
-        self.pending.add_flags(cells, text)
+            self.pending = _PendingRow(self.quirks, noted=self.noted)
+        if self.shape.boxed:
+            self.pending.add_cells(left.strip(), data, self.shape)
+        else:
+            self.pending.add_left(left.split(), text, self.shape)
+        self.pending.add_flags(flags, text)
 
     def _finish_pending(self) -> None:
         if self.pending is not None:
@@ -803,6 +934,11 @@ def _doc_sections(lines: list[_Line], headings: dict[str, _Line]) -> list[_DocSe
     return sections
 
 
+# A boxed header naming no caption: RFC 4740's tables 2 and 3 are captioned
+# below the table, and RFC 6736 stacks "AVP", "Flag", "rules" over its flags,
+# so no line of theirs says "AVP Flag". What makes one a table of AVPs and not
+# of occurrences (RFC 6736's `| Attribute Name  NCR  NCA |`) is its next cell.
+_BOXED_HEADER_RE = re.compile(r"^\s*\|\s*Attribute Name\b[^|]*\|\s*(?:MUST|AVP)\b")
 _SIMPLE_TABLE_HEADER_RE = re.compile(
     # RFC 5624 clause 5.1 heads the name column "AVP Name".
     r"\|\s*(?:Attribute|AVP) Name\s+(?:AVP\s+)?Code\s+Defined\s+Data Type\s*\|",
@@ -1051,6 +1187,183 @@ def _complete_rows_from_prose(
             f" (code {facts[name].code}) matches no code-less table row"
         )
     return tuple(completed)
+
+
+def _flags_only(table: ast.AvpTable) -> bool:
+    """A table stating no fact of a row but its flag rules (RFC 4740 table 3)."""
+    return not {
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.SECTION,
+        ast.AvpColumn.TYPE,
+    } & set(table.columns)
+
+
+def _join_split_tables(
+    tables: tuple[ast.AvpTable, ...], quirks: sources.Quirks
+) -> tuple[ast.AvpTable, ...]:
+    """Fold a flags-only table onto the table before it, name by name (the
+    `split-avp-tables` quirk). RFC 4740 prints codes, clauses and types in
+    table 2 and "expands" them with flag rules in table 3, one AVP per row in
+    both; read apart, neither is a whole row. Every name must be in both."""
+    joined: list[ast.AvpTable] = []
+    for table in tables:
+        if not _flags_only(table):
+            joined.append(table)
+            continue
+        if not quirks.enabled("split-avp-tables"):
+            raise ExtractionError(
+                f"{table.source.section}: a table of names and flag rules alone,"
+                " which this document's source declaration does not join onto"
+                " the table before it (the `split-avp-tables` quirk)"
+            )
+        if not joined:
+            raise ExtractionError(
+                f"{table.source.section}: a flag-rules table with no table before it"
+            )
+        target = joined[-1]
+        flags = {row.name: row for row in table.rows}
+        names = [row.name for row in target.rows]
+        if sorted(flags) != sorted(names) or len(flags) != len(table.rows):
+            raise ExtractionError(
+                f"{table.source.section}: the flag-rules table's names differ from"
+                f" those of the table in {target.source.section}:"
+                f" {sorted(set(flags) ^ set(names))}"
+            )
+        quirks.fire("split-avp-tables")
+        joined[-1] = target.model_copy(
+            update={
+                "columns": (*target.columns, *table.columns[1:]),
+                "rows": tuple(
+                    row.model_copy(
+                        update={
+                            "flag_rules": flags[row.name].flag_rules,
+                            "may_encrypt": flags[row.name].may_encrypt,
+                        }
+                    )
+                    for row in target.rows
+                ),
+            }
+        )
+    return tuple(joined)
+
+
+# Behind `reused-avp-tables`, RFC 6736 clause 8.3: "the AVPs reused from the
+# Diameter Network Access Server Application [RFC4005]". The reference tag is the
+# clause's own; a tag naming a document by publisher is read into a reference.
+_REUSED_TITLE_RE = re.compile(r"^Reused\b.*\bAVPs\b")
+_REUSED_FROM_RE = re.compile(r"\bAVPs reused from\b[^.]*?\[(?P<tag>[^\]]+)\]")
+_ETSI_TAG_RE = re.compile(r"^ETSI(?P<series>ES|TS)(?P<a>\d{3})(?P<b>\d{3})$")
+
+
+def _origin_of_tag(tag: str) -> str:
+    """The `SpecRef` a clause's reference tag names: `[ETSIES283034]` is
+    `ETSI-ES283.034`, as a re-used row cites it."""
+    if match := _ETSI_TAG_RE.match(tag):
+        return f"ETSI-{match['series']}{match['a']}.{match['b']}"
+    return tag
+
+
+def _reused_row(
+    name: str, origin: str, code: int | None, data_type: str, quirks: sources.Quirks
+) -> ast.ReusedAvpRow:
+    return ast.ReusedAvpRow(
+        name=name,
+        origin=origin,
+        code=code,
+        data_type=_data_type(data_type, quirks) if data_type else None,
+    )
+
+
+def _reused_tables(
+    tables: tuple[ast.AvpTable, ...],
+    sections: list[_DocSection],
+    quirks: sources.Quirks,
+) -> tuple[tuple[ast.AvpTable, ...], list[ast.ReusedAvps]]:
+    """Move the tables under a `Reused ... AVPs` clause to re-used blocks (the
+    `reused-avp-tables` quirk). What a row says of its AVP's code and type stays
+    on the row, for the linter to compare; a re-used block has no column for
+    the flags these tables restate, so they stay in the document."""
+    by_number = {section.number: section for section in sections}
+    own: list[ast.AvpTable] = []
+    reused: list[ast.ReusedAvps] = []
+    for table in tables:
+        section = by_number.get(table.source.section)
+        if section is None or not _REUSED_TITLE_RE.match(section.title):
+            own.append(table)
+            continue
+        prose = " ".join(" ".join(text.split()) for text in section.texts)
+        match = _REUSED_FROM_RE.search(prose)
+        if match is None:
+            raise ExtractionError(
+                f"{section.number}: a re-used AVP table whose clause names no origin"
+            )
+        origin = _origin_of_tag(match["tag"])
+        quirks.fire("reused-avp-tables")
+        reused.append(
+            ast.ReusedAvps(
+                table=section.number,
+                source=table.source,
+                columns=(
+                    ast.ReusedColumn.NAME,
+                    ast.ReusedColumn.CODE,
+                    ast.ReusedColumn.FROM,
+                    ast.ReusedColumn.TYPE,
+                ),
+                rows=tuple(
+                    ast.ReusedAvpRow(
+                        name=row.name,
+                        origin=origin,
+                        code=row.code,
+                        data_type=row.data_type,
+                    )
+                    for row in table.rows
+                ),
+            )
+        )
+    return tuple(own), reused
+
+
+# Behind `note-avp-origins`, RFC 6738 clause 8: "Note 1: The Key, Keying-Material,
+# Key-Lifetime, Key-SPI, and Key-Type AVPs are defined in [RFC6734]."
+_NOTE_ORIGIN_RE = re.compile(
+    r"(?P<note>Note \d+): The (?P<names>[^.]+?) AVPs? (?:is|are) defined in"
+    r" \[(?P<origin>RFC\d+)\]"
+)
+
+
+def _noted_origins(
+    reader: _TableReader,
+    table: ast.AvpTable,
+    sections: list[_DocSection],
+    quirks: sources.Quirks,
+) -> ast.ReusedAvps | None:
+    """The rows a table's Defined column points at a note for, read as re-used
+    (the `note-avp-origins` quirk). The note must name every such row."""
+    if not reader.noted:
+        return None
+    section = next(s for s in sections if s.number == table.source.section)
+    prose = " ".join(" ".join(text.split()) for text in section.texts)
+    notes: dict[str, tuple[str, str]] = {}
+    for match in _NOTE_ORIGIN_RE.finditer(prose):
+        for name in re.split(r",\s*(?:and\s+)?|\s+and\s+", match["names"]):
+            notes[name] = (match["note"], match["origin"])
+    rows = []
+    for note, name, code, data_type in reader.noted:
+        if notes.get(name, (None, ""))[0] != note:
+            raise ExtractionError(f"{section.number}: {note} does not name {name}")
+        rows.append(_reused_row(name, notes[name][1], code, data_type, quirks))
+        quirks.fire("note-avp-origins")
+    return ast.ReusedAvps(
+        table=section.number,
+        source=table.source,
+        columns=(
+            ast.ReusedColumn.NAME,
+            ast.ReusedColumn.CODE,
+            ast.ReusedColumn.FROM,
+            ast.ReusedColumn.TYPE,
+        ),
+        rows=tuple(rows),
+    )
 
 
 _RADIUS_ATTRIBUTE_TITLE_RE = re.compile(
@@ -1706,8 +2019,12 @@ def extract(
         readers: list[_TableReader] = []
         reader: _TableReader | None = None
         lines, headings = _content_lines(raw, patcher)
-        for line in lines:
-            if "avp flag" in line.text.casefold() and "|" in line.text:
+        for number, line in enumerate(lines):
+            caption = "avp flag" in line.text.casefold() and "|" in line.text
+            boxed = _BOXED_HEADER_RE.match(line.text) is not None and (
+                reader is None or reader.header_lines is None
+            )
+            if caption or boxed:
                 # `; Page:` is where the section starts, not where the table
                 # does — the two differ when a table opens on the next page.
                 if reader is not None and reader.open and reader.after_table_prose:
@@ -1717,6 +2034,14 @@ def extract(
                     readers.append(reader)
                 heading = headings.get(line.section or "")
                 reader.start_header(line, heading.page if heading else line.page)
+                if caption:
+                    continue
+                # A label stacked above the first line this one opens with:
+                # RFC 6736 prints "AVP" over "Code" there.
+                above = lines[number - 1].text if number else ""
+                if above.lstrip().startswith("|"):
+                    reader.read(lines[number - 1])
+                reader.read(line)
                 continue
             if reader is not None and reader.open:
                 if _HEADING_RE.match(line.text):
@@ -1730,6 +2055,17 @@ def extract(
             for candidate in readers
             if (table := candidate.result_optional()) is not None
         )
+        noted = [
+            origin
+            for candidate in readers
+            if (table := candidate.result_optional()) is not None
+            and (origin := _noted_origins(candidate, table, document_sections, quirks))
+            is not None
+        ]
+        tables = _join_split_tables(tables, quirks)
+        moved: list[ast.ReusedAvps] = []
+        if quirks.enabled("reused-avp-tables"):
+            tables, moved = _reused_tables(tables, document_sections, quirks)
         tables += _simple_avp_tables(lines, headings, quirks)
         if quirks.enabled("prose-avp-codes"):
             tables = _complete_rows_from_prose(
@@ -1804,6 +2140,8 @@ def extract(
             sections=(
                 *messages,
                 *tables,
+                *moved,
+                *noted,
                 *reused,
                 *definitions,
             ),
