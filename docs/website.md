@@ -45,7 +45,7 @@ DIR/
 
 `<id>` is the file's stem, `29272-i70`. The files are compact JSON with sorted
 keys, the grammar aside, which is copied as it stands. `seanchai.export_schema`
-holds their shape as pydantic models and `SCHEMA_VERSION`, now 4, written into
+holds their shape as pydantic models and `SCHEMA_VERSION`, now 5, written into
 every file but `schema.json` and the grammar; it changes when a reader would
 have to. A fixture can be validated against `schema.json`, whose root is one of
 the four file shapes. A field with no default is always written, null where it
@@ -91,7 +91,13 @@ naming its fields per kind (`vendor_id` and `code` for an AVP). A command's
 `application_id` is the effective one, from its header or from the Application
 Scope block covering its clause, and `header_application_id` what its header
 prints. `abbreviation` is a command's own and `wireshark_name` Wireshark's name
-for an AVP, filled with `--dictionary specifications/wireshark`.
+for an AVP, filled with `--dictionary specifications/wireshark`. A value table's
+name is an entry of its own, `kind` `value`: its target is its clause, and its
+`identity` holds `value_kind` (`result-codes`, `bits`, `features`), the `avp`,
+the `value` and a feature's `application` and `feature_list_id`. In the text the
+name's token targets the clause too, its `; AVP:` line the AVP, and a result
+code's clause a `source`; a row in a subclause is that clause's `anchor`, and a
+clause only such rows name reads "Value DIAMETER_SUCCESS" in `sections`.
 
 Correction reasons come from the corpus's `corrections.json`, so a plain
 `pip install` has them

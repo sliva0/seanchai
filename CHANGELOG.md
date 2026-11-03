@@ -8,6 +8,17 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- A `Value Table` block for what a numeric AVP's numbers are named:
+  `result-codes`, `bits` and `features`, read from 3GPP clause headings, lines
+  and tables and from RFC text, with `value_table` and `value_row` selectors for
+  corrections.
+- `Model.value_tables`, `Model.feature_lists`, `Avp.value_tables` and
+  `Avp.value_table`; `seanchai show` prints them, and `seanchai dictionary`
+  format 2 holds them.
+- The export's schema version 5 has search entries of kind `value` and links
+  their names; `lint` has `duplicate-value`, `value-bit-out-of-range` and two
+  `registry-result-code-*` notes; `crosscheck` compares the tables with
+  Wireshark's `<enum>`s.
 - A download takes an earlier ETSI rendering only on a 404 for the exact one,
   and fails on any other error fetching it.
 - The docx extractor reads a command printed as a category table under

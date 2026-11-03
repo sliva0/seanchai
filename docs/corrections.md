@@ -64,7 +64,8 @@ corrected file cites, so name what is corrected
   section=)`, `enum_value(avp, name, value=, occurrence=)`, `avp_rule(parent,
   name, occurrence=)`, `avp_table(label)` (`None` for a table printing no
   label), `reused_avps(label)`, `application_scope(name)`, `undefined(name)`,
-  `header()`.
+  `value_table(avp, section=, feature_list_id=)`, `value_row(parent, name,
+  value=)` (`parent` a `value_table` or the AVP's name), `header()`.
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, for a body that prints a rule twice
   identically (TS 29.229's RTA prints `< Session-Id >` on two lines), or
@@ -93,7 +94,10 @@ corrected file cites, so name what is corrected
   to exist. `into` is `avp_table(label)` or `reused_avps(label)` for a row,
   `definition(name)` for an `ast.AvpRule` or an `ast.EnumValue` (`after`
   naming the member or value it follows), or `header()` for an
-  `Application Scope` or `Undefined AVP` block (`after` must be None). A
+  `Application Scope` or `Undefined AVP` block (`after` must be None), or
+  `value_table()` for an `ast.ValueRow` (TS 32.299 V11.20.0 prints
+  `DIAMETER_CREDIT_LIMIT_REACHED 4012` at the end of a paragraph, where no line
+  reads it). A
   `reused_avps(label)` matching no block, where an AVP table carries that
   label, creates the table's re-used block after it. An inserted
   `Undefined AVP` block expects, of the corrected tree, no definition,

@@ -34,6 +34,10 @@ acknowledges as an override its document states on purpose
   for S6a and S7a).
 - `duplicate-enum-value`: one enumerated AVP using a value or a value name
   twice.
+- `duplicate-value`: one value table giving one number twice. An error: a
+  number means one thing in one table.
+- `value-bit-out-of-range`: a bit past what the AVP holds: 31 for an Unsigned32,
+  63 where the file's own table types it Unsigned64. An error.
 - `vendor-specific-overlap`: a `; VENDOR-SPECIFIC` range covering a value
   its AVP names, a range it reserves, or another vendor-specific range. An
   error: a value is named, left to vendors, or illegal, never two of them.
@@ -153,6 +157,13 @@ clause supports the registry.
 - `registry-application-document` / `registry-application-name`: an
   application id the registry allocates to other documents, or names
   otherwise than the file's scope does.
+
+- `registry-result-code-document`: an experimental result code the file lists
+  in the registry's vendor space, where the rows allocating the code cite
+  documents and none is the file.
+- `registry-result-code-name`: such a code the registry allocates under another
+  name, compared exactly. A plain `Result-Code` value is the IETF's, which TS
+  29.230 does not hold, and a code no row allocates is left alone.
 
 ## Acceptances
 
@@ -274,6 +285,20 @@ What still reports, and why each stays:
 - **`registry-reserved-code`.** TS 32.299 defines `PSCell-Info` and `Nr-Cgi`
   in a range table 7.1 reserves "for TS 32.229", most likely a misprint of
   TS 32.299.
+- **`registry-result-code-document`.** A clause listing a code the registry
+  gives another document without saying so: TS 29.272's
+  `DIAMETER_ERROR_USER_UNKNOWN` and `DIAMETER_ERROR_ROAMING_NOT_ALLOWED`, TS
+  29.337, 29.338 and 29.345's `DIAMETER_ERROR_USER_UNKNOWN`, TS 29.345's
+  `DIAMETER_ERROR_UNAUTHORIZED_SERVICE`, TS 29.128's
+  `DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN`, TS 29.273's
+  `DIAMETER_ERROR_ILLEGAL_EQUIPMENT` and TS 29.336's
+  `DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION`. A clause that does say so is
+  accepted.
+- **`registry-result-code-name`.** TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`
+  against table 8.1.4's `DIAMETER_ERROR_IMPI_UNKNOWN`, and TS 29.283's
+  `DIAMETER_ERROR_DATA OUT_OF_SYNC` against TS 29.329's
+  `DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC`: no clause settles either. A
+  space misprinted in a heading is corrected.
 - **`registry-application-name`.** TS 29.272's VCSG scope names 16777308
   `S7a/S7d`; table 4.1 calls it "3GPP S7a".
 - **`undefined-avp`.** The eleven names
@@ -304,3 +329,7 @@ citing the clause that makes the override deliberate:
   events").
 - **`reused-row-mismatch`**: TS 32.299's `Supported-Features`, whose clause
   6.5.10.3 answers a server not supporting it "as per 'M' bit set rule".
+- **`registry-result-code-document`**: a result code whose clause says where it
+  is defined, "This error code is defined in 3GPP TS 29.229 [4]" (TS 29.128,
+  29.172, 29.173, 29.212, 29.215, 29.217, 29.273, 29.283, 29.329, 29.330,
+  29.336, 29.344, 29.388, 29.389, 32.299): the document lists a code it re-uses.

@@ -39,6 +39,7 @@ section, each starting with `; Type:`.
 | `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |
 | `Registry`          | codes a registry allocates, each to the documents defining it    |
 | `Undefined AVP`     | a name the document uses that the corpus finds defined nowhere   |
+| `Value Table`       | the names a document gives a numeric AVP's numbers: result codes, bits of a bit mask, features of a feature list |
 
 ## Design
 
@@ -94,6 +95,15 @@ section, each starting with `; Type:`.
   (`DELIVERY_REPORT`), but TS 32.299 labels values in words, so a name that
   is not an identifier is quoted (`"PS to CS Transfer"`), with `\"` and
   `\\` for a double quote and a backslash inside.
+- **A numeric AVP's named numbers are a table of their own.** A result code is
+  a subclause heading (TS 29.229's `6.2.2.1 DIAMETER_ERROR_USER_UNKNOWN (5001)`)
+  or a paragraph (RFC 6733's `DIAMETER_SUCCESS 2001`), a bit a row of a "Bit |
+  Name | Description" table under an Unsigned32 clause, a feature a row of a
+  "Feature bit | Feature | M/O | Description" table. None is an `Enumerated`, so
+  one `Value Table` holds them: `; Kind:` says which, and each row is a name and
+  a number, with a result code's own clause or a feature's M/O after it. The
+  description is prose and is dropped. A plain Result-Code value is the IETF's;
+  an experimental one lives in the file's `; Vendor-ID:`.
 - **An enumeration defined elsewhere says where.** A clause that gives its
   values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
   32.422 [23] for Trace Depth") prints `; Values:` with that citation. A

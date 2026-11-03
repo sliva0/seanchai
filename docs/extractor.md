@@ -246,6 +246,30 @@ blank.
 - `bare-avp-citations` adds TS 29.329's pointers, which say no "definition":
   "See 3GPP TS 29.229 [6] clause 6.3.56." where it is all a clause headed by
   the AVP holds, and "for further description of this AVP".
+- A "Bit | Name | Description" table, or "Bit | Description" whose description
+  is the name (TS 29.272 clause 7.3.31, `UTRAN Not Allowed`), or "Event Type"
+  and "Requirement" for the name (TS 29.172), becomes a `bits` `ValueTable` for
+  the AVP its clause heads. A "Feature bit | Feature | M/O | Description" table
+  becomes a `features` one, its application and Feature-List-ID from the caption
+  ("Features of Feature-List-ID 1 used in S6a/S6d", the application's noun
+  dropped where the caption prints one, "used on the Sy interface"), its AVP the
+  `Feature-List` unless the clause heads another. A table is read positionally
+  by its labels, note references aside. A full-width row is a note, and prose. A
+  row naming no number (`1-31 None`, `1+n Congestion level 1+n`) is a `;;`
+  comment where it stood. A table with nothing else warns and is no block (TS
+  29.153 clause 5.4.2, TS 29.283 clause 7.3.16).
+- A clause titled "Result-Code AVP values", "Rx specific
+  Experimental-Result-Code AVP values" or the like, and everything under it,
+  becomes a `result-codes` `ValueTable`: each subclause heading or line of its
+  own that is a name with an underscore and a number, `DIAMETER_X (5001)`,
+  `DIAMETER_X (5001):`, `DIAMETER_X 4010` or `4010 DIAMETER_X`. The row's clause
+  is the subclause it sits in. A clause naming the Experimental-Result AVP
+  anywhere holds experimental codes, whatever its title says (TS 29.229 clause
+  6.2), and in such a clause "the following Result-Code AVP value defined in
+  IETF RFC 8506" starts a `Result-Code` table of its own, until a line names the
+  experimental ones again (TS 29.212 clause 5.5.3). A heading whose number is
+  unallocated (TS 29.345 clause 6.4.3.15, `(56x1)`) is a `;;` comment.
+  Exact-match structure: neither reading is behind a quirk.
 - Mark columns' cells become the row's marks. A cell is split at commas and
   spaces (at commas only under `worded-marks`); a parenthetical stays with
   the mark it follows. A printed dash is no marks and a blank cell is none
@@ -534,6 +558,12 @@ Same definitions, different carrier:
   `2 HMAC-SHA-1` forms. Value names are all-caps unless a quirk says
   otherwise, which keeps prose out. A clause that says where its values are
   listed gets that citation as `; Values:`.
+- **Result codes**: a line of a clause titled `Result-Code AVP` or `Result Code
+  AVP Values`, or its subclauses, that is a name with an underscore and a
+  number: `DIAMETER_SUCCESS 2001` (RFC 6733, 4004, 4006, 8506), `DIAMETER_X
+  (5048)` (RFC 6942), `DIAMETER_X (Status Code 2009)` (RFC 5778). An RFC's are
+  all `Result-Code`'s. Its bit masks are prose (RFC 7683's `OC-Feature-Vector`,
+  RFC 5778's `MIP6-Feature-Vector`), and no table reads them.
 - **Values printed outside a value list**, each behind its quirk: RFC
   4005's `Termination-Cause` values in a RADIUS-to-Diameter mapping table
   (`cause-mapping-table`), and RFC 5778's `MIP6-Auth-Mode` value numbered

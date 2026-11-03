@@ -112,7 +112,7 @@ always written, null or empty where it says nothing, and `seanchai.dictionary`
 holds the shape as pydantic models.
 
 ```text
-format_version     1, changes when a reader would have to
+format_version     2, changes when a reader would have to
 seanchai_version, corpus_version, undefined_policy
 documents, application_ids    what was selected; no ids is every application
 applications[]     reference, application_id, clause, name, stated_in
@@ -125,6 +125,9 @@ avps[]             id, defining, kind (plain, grouped, enumerated), name,
                    members[], dropped[], values[], values_source
 holes[]            id, name, reference, version, missing, what it does state,
                    recorded (the reason)
+value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
+                   version, vendor_id, section, page, table, application,
+                   feature_list_id, rows[]
 ```
 
 - A member is `name`, `presence` (`fixed`, `required`, `optional`),
@@ -141,6 +144,12 @@ holes[]            id, name, reference, version, missing, what it does state,
 - `values[]` holds `kind` (`value`, `reserved`, `vendor-specific`), `name`,
   `value`, `first`, `last`, `description`.
 - `dropped` is what `--policy drop` took out, each naming its hole.
+- `value_tables[]` are the selected documents', and with `--application` those
+  of the documents holding one. `avp_id` names the `avps[]` entry the document's
+  reading of `avp` is, null where the selection holds none: TS 29.212 numbers
+  the bits of a `Feature-List` it never names otherwise. A row of `rows[]` holds
+  `name`, `value`, a result code's own `section`, and a feature's `mark`, the
+  M/O column.
 
 ## Installing the corpus
 
@@ -199,6 +208,10 @@ built.holes("TS32.299")  # what the corpus cannot complete; no reference: all
 built.undefined("TS29.345")  # the names its Undefined AVP blocks declare
 built.across_releases()  # what citations resolved across releases
 built.registry(model.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
+built.value_tables("TS29.272", avp="ULR-Flags")  # the numbers a document names
+built.value_tables(kind=model.ValueKind.FEATURES)  # one kind, the whole corpus
+built.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list id
+built.definition("ULR-Flags").value_table  # the bits, read through resolution
 ```
 
 The query set is small on purpose. A reference may be spelled "TS 29.229",
@@ -299,6 +312,23 @@ is the document's legend, per label:
 
 None of these names an interface. A document tabulating several interfaces
 gives each its own tables, so a row's interface is its table's clause.
+
+**Value tables.** `value_tables` returns what a document names a numeric AVP's
+numbers, as `model.ValueTable`s: `kind` (`ValueKind.RESULT_CODES`, `BITS` or
+`FEATURES`), the `avp`, the document, its clause and page, the table's label,
+and `rows`, each an `ast.ValueRow` with a `name`, a `value` and, for a result
+code in a subclause its `section`, for a feature its M/O `mark`. A plain
+`Result-Code` table's `vendor_id` is 0 and any other's the file's `;
+Vendor-ID:`, the space an experimental code lives in. A plain AVP reads them
+through resolution: `Avp.value_tables` holds the tables the reading document
+prints for the name, or failing any its origin's, and `Avp.value_table` the
+first. `definition("ULR-Flags")` exposes its bits, `definition("Result-Code")`
+RFC 6733's codes, and `resolve("TS29.229", "Experimental-Result-Code")` TS
+29.229's, though RFC 6733's AVP is the one it reads. A document's table is no
+part of the AVP's identity, and makes no second reading of it. `feature_lists`
+keys the feature tables naming an application by `(application,
+feature_list_id)`, spelled as the caption does, and of two documents printing
+one list the first in reference order answers.
 
 **The registry.** `registry(kind, code)` returns what the corpus's
 registries say of a code, as `model.Allocation`s naming the registry
