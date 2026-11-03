@@ -104,3 +104,82 @@ reason = """
     """
 first_version = "18.7.0"
 last_version = "18.7.0"
+
+[[patch]]
+find = "[ IDR- Flags ]"
+replace = "[ IDR-Flags ]"
+exact = true
+section = "7.2.9"
+reason = """
+    clause 7.2.9's Insert-Subscriber-Data-Request (the first of its two
+    copies, S6a/S6d) prints a space inside the name, docx and PDF alike;
+    clause 7.3.103 defines IDR-Flags. Unread, the body ended there, dropping
+    the members after it.
+    """
+first_version = "18.7.0"
+last_version = "18.7.0"
+
+[[patch]]
+find = "* 2 [ Served-Party-IP-Address ]"
+replace = "*2 [ Served-Party-IP-Address ]"
+exact = true
+section = "7.3.35"
+reason = """
+    clause 7.3.35's APN-Configuration spaces the qualifier, '* 2', docx and
+    PDF alike, which RFC 6733's 'qual' does not. Unread, the body ended
+    after Context-Identifier.
+    """
+first_version = "18.7.0"
+last_version = "18.7.0"
+
+[[patch]]
+find = "1 * { TS-Code }* [ AVP ]"
+replace = "1*{ TS-Code } *[ AVP ]"
+exact = true
+section = "7.3.99"
+reason = """
+    clause 7.3.99's Teleservice-List prints its two members on one line with
+    its qualifiers spaced, '1 * { TS-Code }* [ AVP ]', docx and PDF alike.
+    Unread, the body was empty.
+    """
+first_version = "18.7.0"
+last_version = "18.7.0"
+
+[[patch]]
+find = "[ Collection-Period- RRM-LTE ]"
+replace = "[ Collection-Period-RRM-LTE ]"
+exact = true
+section = "7.3.136"
+reason = """
+    clause 7.3.136's MDT-Configuration prints a space inside the name, docx
+    and PDF alike; the clause defining Collection-Period-RRM-LTE has none.
+    Unread, the body ended there, dropping the members after it.
+    """
+first_version = "18.7.0"
+last_version = "18.7.0"
+
+[[patch]]
+find = "1 * { RAT-Type }"
+replace = "1*{ RAT-Type }"
+exact = true
+section = "7.3.229"
+reason = """
+    clause 7.3.229's eDRX-Related-RAT spaces the qualifier, '1 * { RAT-Type
+    }', docx and PDF alike, which RFC 6733's 'qual' does not. Unread, the
+    body was empty.
+    """
+first_version = "18.7.0"
+last_version = "18.7.0"
+
+[[patch]]
+find = "Requested-UTRAN- GERAN-Authentication-Info"
+replace = "Requested-UTRAN-GERAN-Authentication-Info"
+exact = true
+section = "7.3.12"
+reason = """
+    clause 7.3.12's heading prints a space inside the name, docx and PDF alike;
+    table 7.3.1/1 and the clause's own rule print none. Unread, the heading
+    named no AVP and its grouped rule was not read at all.
+    """
+first_version = "18.7.0"
+last_version = "18.7.0"

@@ -89,6 +89,18 @@ CORRECTIONS += [
         " Re-Synchronization-Info; clause 7.3.11's ABNF lower-cases the S",
         versions="18.6.0..18.7.0",
     ),
+    Correction(
+        id="re-synchronization-info-utran-geran-case",
+        target=avp_rule(
+            "Requested-UTRAN-GERAN-Authentication-Info", "Re-synchronization-Info"
+        ),
+        field="name",
+        expect="Re-synchronization-Info",
+        replace="Re-Synchronization-Info",
+        reason="clause 7.3.15's heading and table 7.3.1/1 both spell it"
+        " Re-Synchronization-Info; clause 7.3.12's ABNF lower-cases the S",
+        versions="18.7.0",
+    ),
     # Three re-printed grouped bodies use member AVPs that table 7.3.1/2
     # omits while listing the grouped AVPs themselves and, for
     # Communication-Pattern-Set, three of its eight members
