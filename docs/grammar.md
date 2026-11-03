@@ -376,7 +376,7 @@ registry-reserved = "; RESERVED " 1*DIGIT ".." 1*DIGIT
                     [SP defined-in-cell] [SP quoted]
 defined-in-cell = spec-ref *("," spec-ref) / "-"
 registry-type-cell = data-type / quoted / "-"
-; a Code cell is 1*DIGIT; Name and Abbreviation cells are a mark or "-"
+; a Code cell is 1*DIGIT / quoted; Name and Abbreviation cells are a mark or "-"
 ```
 
 A table allocating codes to the documents defining them, rather than
@@ -387,7 +387,9 @@ documents it cites (`TS29.228,TS29.229` where table 4.1 prints "29.228 [1]
 and 29.229 [2]"). A Name or Abbreviation cell is written as a mark is,
 quoted where it is not a plain token (`"3GPP Cx/Px"`, `"Deprecated
 value"`); in every registry column `-` is a blank cell, the Code column's
-excepted, which has none. A Type cell is a `data-type`, or, quoted, a type
+excepted, which has none. A Code cell printing a placeholder rather than a code
+is quoted and keeps it: TS 29.230 V19.3.0 table 4.1 allocates Sh-ee `"zz"`. A
+Type cell is a `data-type`, or, quoted, a type
 the closed set lacks, kept as printed: TS 29.230 table 7.1 types code 314
 `"Integer"`. Bare, a Type cell is always a data type, so the quotes stay on
 a plain token; a quoted data type parses as that type, and the formatter

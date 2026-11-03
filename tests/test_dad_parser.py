@@ -509,6 +509,8 @@ def test_a_registry_round_trips_rows_and_reservations_with_its_comments():
             "; RESERVED 320..399",
             # A type outside the closed set, kept quoted as printed.
             '314               Charging-Characteristics  "Integer"     TS29.234',
+            # A placeholder printed where the code goes, kept quoted.
+            '"zz"              Sh-ee                     -             TS29.329',
             "",
         ]
     )
@@ -527,6 +529,9 @@ def test_a_registry_round_trips_rows_and_reservations_with_its_comments():
     assert registry.rows[3] == ast.RegistryRow(code=308, name="APN-Id")
     assert registry.rows[4].defined_in == ("TS29.209", "TS29.211", "TS29.214")
     assert registry.rows[5] == ast.RegistryReservation(first=320, last=399)
+    assert registry.rows[7] == ast.RegistryRow(
+        printed_code="zz", name="Sh-ee", defined_in=("TS29.329",)
+    )
     assert registry.rows[6] == ast.RegistryRow(
         code=314,
         name="Charging-Characteristics",

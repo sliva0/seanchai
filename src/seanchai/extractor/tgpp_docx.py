@@ -601,6 +601,27 @@ class _ListNumbering:
         return re.sub(r"%([1-9])", rendered, own.text)
 
 
+def _drop_unstarted_columns(rows: list[_Row], spans: list[tuple[int, ...]]) -> None:
+    """Take out the grid columns no row's cell starts in, which hold nothing of
+    their own. TS 29.153 V19.0.0 table 5.3.1.1, TS 29.217 V19.0.0's, TS 29.219
+    V19.0.0's and TS 29.368 V19.0.0's merge the name column across two grid
+    columns in every row and the spanning header's other cells differently, so
+    read by the grid each data row would repeat its name and read as a header."""
+    if len({sum(row_spans) for row_spans in spans}) != 1:
+        return
+    width = sum(spans[0])
+    starts = set()
+    for row_spans in spans:
+        position = 0
+        for span in row_spans:
+            starts.add(position)
+            position += span
+    if len(starts) == width:
+        return
+    for row in rows:
+        row.cells = [row.cells[position] for position in sorted(starts)]
+
+
 def _sections(
     document: docx.document.Document,
     patcher: Patcher,
@@ -713,6 +734,8 @@ def _sections(
                         if sliver and row_spans[-1] == 1 and starts[-1] == "":
                             starts.pop()
                         row.cells = starts
+                else:
+                    _drop_unstarted_columns(rows, spans)
                 current.tables.append(
                     _Table(caption=caption, rows=rows, caption_text=caption_text)
                 )
@@ -1168,7 +1191,8 @@ def _extract_messages(
             and len(paragraphs) == 1
             and re.fullmatch(
                 r"(?:Refer to|See) clause \d+(?:\.\d+)+"
-                r"(?: of 3GPP TS \d{2}\.\d{3} \[\d+\])?\.?",
+                # TS 29.273 V19.2.0 clause 11.2.2.1.1 drops the "3GPP".
+                r"(?: of (?:3GPP )?TS \d{2}\.\d{3} \[\d+\])?\.?",
                 paragraphs[0],
             )
         ):
@@ -1310,7 +1334,7 @@ def _extract_category_message(
     commented: _Commented,
 ) -> ast.Message:
     """A command printed as a table of its members' categories and no rule: TS
-    32.299 V11.20.0 clause 6.4.4 prints RAR so, where V18.0.0 prints the rule.
+    32.299 V11.20.0 clause 6.4.4 prints RAR so, where V19.0.0 prints the rule.
     Clause 6.4.1.2's symbols make M `{ }` and OC `[ ]`; a dash, "Not used in 3GPP",
     reads as a strike; a row set off by a tab is the grouped AVP above its own,
     kept as a comment. No Diameter header is printed anywhere, so a line an input
@@ -1693,7 +1717,7 @@ _VALUES_SOURCE_RES = (
     re.compile(r"(?:^|\. )The values are defined in (?P<source>.+?)\.?$"),
     # TS 32.299 clause 7.2.20eA: "... and holds the identifier of the network
     # element as defined in TS 23.682[243], that triggers the API
-    # notification." TS 23.682 V18.0.0 names the network elements but
+    # notification." TS 23.682 V19.3.0 names the network elements but
     # numbers none of them.
     re.compile(
         r"holds the identifier of the network element as defined in"
@@ -2880,8 +2904,15 @@ def _extract_registry(
                     f" {' '.join(cell for cell in cells if cell)!r}; not read"
                 )
             continue
+        printed_code = None
         if not code.isdigit():
-            raise ExtractionError(f"table {table.caption}: code cell {code!r}")
+            # TS 29.230 V19.3.0 allocates Sh-ee's application id "zz" in table
+            # 4.1 and its command codes "xx1" and "xx2" in table 5.1/4, as TS
+            # 29.329 V19.1.0 clause 8 awaits IANA's value.
+            if not quirks.enabled("placeholder-codes"):
+                raise ExtractionError(f"table {table.caption}: code cell {code!r}")
+            quirks.fire("placeholder-codes")
+            printed_code = code
         label = f"table {table.caption} code {code}"
         defined_in = _registry_documents(
             by_column.get(ast.RegistryColumn.DEFINED_IN, ""),
@@ -2905,7 +2936,8 @@ def _extract_registry(
         try:
             rows.append(
                 ast.RegistryRow(
-                    code=int(code),
+                    code=None if printed_code is not None else int(code),
+                    printed_code=printed_code,
                     name=by_column.get(ast.RegistryColumn.NAME) or None,
                     abbreviation=by_column.get(ast.RegistryColumn.ABBREVIATION) or None,
                     # The registry's type is informational: a dash and a
@@ -2980,7 +3012,7 @@ _RESULT_CLAUSE_RE = re.compile(
 _RESULT_NAME = r"[A-Z][A-Z0-9_-]*(?: [A-Z0-9_-]+)*"
 # Each wording a code takes, on a heading or on a line of its own: "DIAMETER_X
 # (5001)" mostly, with a colon in TS 29.217 clause 5.5.3, "DIAMETER_X 4010" in TS
-# 32.299 V11.20.0 clause 7.1.11 and "4010 DIAMETER_X" in its Release 18. A name
+# 32.299 V11.20.0 clause 7.1.11 and "4010 DIAMETER_X" in its Release 19. A name
 # may hold a space the document misprints in it (TS 29.128 clause 6.3.3.10).
 # TS 29.345 clauses 6.4.3.15 and 6.4.3.16 head a code whose number is unallocated:
 # "DIAMETER_ERROR_REVOCATION_FAILURE (56x1)".
@@ -3797,13 +3829,6 @@ def _resolve(
     for entry in collected.avp_tables:
         for row in entry.table.rows:
             if row.name in codes and codes[row.name] != row.code:
-                if quirks.enabled("conflicting-avp-codes"):
-                    # TS 29.273 table 8.2.3.0/1 disagrees with
-                    # clause 5.2.3.24 and the other tables. Keep both statements;
-                    # no enum may derive its code from an ambiguous index.
-                    quirks.fire("conflicting-avp-codes")
-                    codes[row.name] = None
-                    continue
                 raise ExtractionError(
                     f"AVP table code conflict for {row.name!r}:"
                     f" {codes[row.name]} vs {row.code}"
@@ -3971,6 +3996,10 @@ QUIRKS: dict[str, str] = {
         " Description' table under a line stating the header, as a 'Name"
         " message' heading's command (TS 32.299 V11.20.0 clauses 6.4.4, 6.4.5)"
     ),
+    "placeholder-codes": (
+        "keep a registry row whose code cell prints a placeholder rather than"
+        " a code, quoted as printed (TS 29.230 V19.3.0 tables 4.1, 5.1/4)"
+    ),
     "spaced-rule-operator": (
         "read the rule operator spelled ':: =' as '::=' (TS 32.299 clause 7.2,"
         " TS 29.229)"
@@ -4118,10 +4147,6 @@ QUIRKS: dict[str, str] = {
         " code as the RFC defining the command does: '<ASR> ::=', and"
         " '<Diameter-EAP-Request> ::=' (TS 29.234 clauses 4.4.2, 5.5, 8.4,"
         " 9.4, 11.4)"
-    ),
-    "conflicting-avp-codes": (
-        "keep disagreeing table codes, refusing to derive an enum code"
-        " from them (TS 29.273)"
     ),
     "physical-reused-columns": (
         "read physical cells in a re-used table with ragged grid spans (TS"

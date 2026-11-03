@@ -955,7 +955,7 @@ def _registry_overlaps(spec: ast.Specification) -> list[Finding]:
         reservations = [
             row for row in section.rows if isinstance(row, ast.RegistryReservation)
         ]
-        for code in _repeats(row.code for row in rows):
+        for code in _repeats(row.code for row in rows if row.code is not None):
             findings.append(
                 Finding(
                     Severity.NOTE,
@@ -978,7 +978,11 @@ def _registry_overlaps(spec: ast.Specification) -> list[Finding]:
                         )
                     )
             allocated = sorted(
-                {row.code for row in rows if reservation.covers(row.code)}
+                {
+                    row.code
+                    for row in rows
+                    if row.code is not None and reservation.covers(row.code)
+                }
             )
             if allocated:
                 codes = ", ".join(map(str, allocated))
@@ -1087,9 +1091,9 @@ def _cross_release(
 ) -> Finding:
     """A re-used origin resolved outside the citing document's release, by
     the drafting rule `corpus.resolution` applied, so a reader can audit it:
-    TS 32.299 V18.0.0's TS 29.140 is V7.0.0, the document's final version,
+    TS 32.299 V19.0.0's TS 29.140 is V7.0.0, the document's final version,
     TS 29.212's 3GPP2 X.S0057-B is revision 0 V2.0, standing in, and TS
-    32.299 V11.20.0's TS 29.061 is V18.1.0, standing in for V11.12.0. A
+    32.299 V11.20.0's TS 29.061 is V19.1.0, standing in for V11.12.0. A
     note: the rule is the corpus's reading of the citing document's
     references, and only its editor knows whether it meant that."""
     citing = spec.specification + (f" V{spec.version}" if spec.version else "")
@@ -1148,7 +1152,7 @@ def _unresolved_origins(
     nothing for such a row, and a rule that is quiet because it had nothing to
     read looks exactly like a rule that found nothing wrong.
 
-    One note per file rather than per origin. A Rel-18 corpus without an RFC
+    One note per file rather than per origin. A Rel-19 corpus without an RFC
     extractor cannot resolve a single RFC, and 29.272 alone cites eighteen
     origins — reported individually they would bury every real finding, and
     they all say the same thing.

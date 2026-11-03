@@ -860,9 +860,12 @@ class RegistryRow(Node):
     Every field but the code is None, or empty, where the cell is blank: TS
     29.230 table 5.1/2 allocates command code 313 to nothing yet ("allocated
     to 3GPP, but they have not been used yet"), and table 7.1's TS 29.273
-    rows 1530-1542 print no document."""
+    rows 1530-1542 print no document. A row printing a placeholder where its
+    code goes has no code and keeps what it prints: TS 29.230 V19.3.0 table 4.1
+    allocates Sh-ee "zz"."""
 
-    code: Unsigned32
+    code: Unsigned32 | None = None
+    printed_code: RegistryText | None = None
     # "User-Authorization-Request/-Answer", "3GPP Gx", as printed.
     name: RegistryText | None = None
     abbreviation: RegistryText | None = None
@@ -876,6 +879,12 @@ class RegistryRow(Node):
     # Cx "29.228 [1] and 29.229 [2]", and table 7.1 gives codes 500-581
     # "29.209 [8], 29.211 [17], 29.214 [18]".
     defined_in: tuple[SpecRef, ...] = ()
+
+    @pydantic.model_validator(mode="after")
+    def _one_code(self) -> RegistryRow:
+        if (self.code is None) == (self.printed_code is None):
+            raise ValueError("a registry row has a code or prints a placeholder")
+        return self
 
     @pydantic.model_validator(mode="after")
     def _one_type(self) -> RegistryRow:

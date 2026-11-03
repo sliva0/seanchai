@@ -1388,7 +1388,7 @@ def in_release(
 ) -> list[Declaration]:
     """The declarations that apply to `version`: those of its release
     (`versions.reviewed_release`), each range advisory within it. A module
-    holding TS 32.299's Release 18 corrections says nothing about the
+    holding TS 32.299's Release 19 corrections says nothing about the
     Release 11 copy the corpus holds beside it."""
     release = reviewed_release(
         [VersionRange.parse(item.versions) for item in declarations], version
