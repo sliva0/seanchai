@@ -30,7 +30,7 @@ CORRECTIONS = [
         expect=f"ProSe-Subscriber-Information-{kind}",
         replace=f"ProSe-Initial-Location-Information-{kind}",
         reason=_PSR_PSA,
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     )
     for kind, section in (("Request", "6.2.11"), ("Answer", "6.2.12"))
 ]
@@ -53,7 +53,7 @@ CORRECTIONS += [
         reason="clause 6.3.13 defines this Unsigned32 AVP and TS 29.230 assigns"
         " it code 3708, but table 6.3.1-1 accidentally omits the row; its flag"
         " rules follow every locally defined PC4a AVP in the table",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     )
 ]
 
@@ -68,7 +68,7 @@ CORRECTIONS += [
         replace="DIAMETER_ERROR_PROSE_NOT_ALLOWED",
         reason="clause 6.4.3.4's heading prints a space inside the name; TS 29.230 "
         "table 8.1.4 allocates 5611 under the name without it",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
     Correction(
         id="ue-location-unknown-result-spelling",
@@ -80,7 +80,7 @@ CORRECTIONS += [
         replace="DIAMETER_ERROR_UE_LOCATION_UNKNOWN",
         reason="clause 6.4.3.5's heading prints a space inside the name; TS 29.230 "
         "table 8.1.4 allocates 5612 under the name without it",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]
 
@@ -94,6 +94,6 @@ CORRECTIONS += [
         "table 8.1.4 allocates the code to TS29.229",
         reason="clause 6.4.3.2 says 'This error code is defined in TS 29.229 [6].': "
         "the document lists a code it re-uses",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]

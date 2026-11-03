@@ -5,7 +5,7 @@ reason = """
     rule with the abbreviation, '<ACR> ::='.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "spaced-rule-operator"
@@ -14,7 +14,7 @@ reason = """
     7.2.192 and on).
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "struck-rules-unused"
@@ -24,7 +24,7 @@ reason = """
     strike such members.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "physical-avp-columns"
@@ -33,7 +33,7 @@ reason = """
     span patterns, and 313 rows end in an empty sliver cell.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "refer-type-cells"
@@ -42,7 +42,7 @@ reason = """
     reference to the defining document is given for them.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "referred-type-sentences"
@@ -54,7 +54,7 @@ reason = """
     OMA-DDS-Charging_Data [223].'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "type-short-forms"
@@ -62,7 +62,7 @@ reason = """
     Table 7.1.0.1 copies RFC 6733's DiamIdent and DiamURI type abbreviations.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "wildcard-avp-row"
@@ -71,7 +71,7 @@ reason = """
     '*'.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "value-first-enums"
@@ -80,7 +80,7 @@ reason = """
     some with a description after a colon (7.2.132).
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "body-clause-headings"
@@ -89,7 +89,7 @@ reason = """
     Normal paragraph inside 7.2.135B.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "dotted-flags"
@@ -97,7 +97,7 @@ reason = """
     Table 7.2.0.1 writes some flag cells 'V.M' with a period for the comma.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "V/M"
@@ -107,7 +107,7 @@ count = 2
 section = "7.2.0"
 reason = "Table 7.2.0.1 separates two Must cells' flags with a slash."
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "ProSe-Direct-Communication- Transmission-Data-Container"
@@ -118,7 +118,7 @@ reason = """
     space; the heading spells it whole.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Related- Change-Condition- Information"
@@ -129,7 +129,7 @@ reason = """
     spaces; the heading, table 7.2.0.1 and the rule using it spell it whole.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = ""
@@ -142,7 +142,7 @@ reason = """
     Symbol-font dash, which the conversion carries as U+F02D.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Status- AS-Code"
@@ -153,7 +153,7 @@ reason = """
     space; clause 7.2.215A spells it whole.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Charge- Reason-Code"
@@ -165,7 +165,7 @@ reason = """
     with a space, which ends the ABNF body there.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "VM"
@@ -177,7 +177,7 @@ reason = """
     Table 7.2.0.1's Target-IP-Address row runs its Must flags together, 'VM'.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "User–Session-Id"
@@ -190,7 +190,7 @@ reason = """
     clause 7.2.242 spells it with hyphens.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "0 Normal;"
@@ -202,7 +202,7 @@ reason = """
     with a semicolon: list punctuation, not part of the label.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "1 Instant Ppersonal Aalert event;"
@@ -214,7 +214,7 @@ reason = """
     a trailing semicolon.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "2 PoC Group Advertisement event;"
@@ -226,7 +226,7 @@ reason = """
     with a semicolon: list punctuation, not part of the label.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "3 Early Ssession Setting-up event;"
@@ -238,7 +238,7 @@ reason = """
     and a trailing semicolon.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "PoC-Session-Initiation-type"
@@ -250,7 +250,7 @@ reason = """
     table code to its definition.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "PoC-User-Role-info-Units"
@@ -261,7 +261,7 @@ reason = """
     7.2.0.1 write PoC-User-Role-Info-Units
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Trunk-Group-Id"
@@ -273,7 +273,7 @@ reason = """
     IMS-Information's rule (7.2.77) write Trunk-Group-ID
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Incoming-Trunk-Group-Id"
@@ -285,7 +285,7 @@ reason = """
     7.2.79 and Trunk-Group-ID's rule (7.2.237) write Incoming-Trunk-Group-ID
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Outgoing-Trunk-Group-Id"
@@ -297,7 +297,7 @@ reason = """
     7.2.129 and Trunk-Group-ID's rule (7.2.237) write Outgoing-Trunk-Group-ID
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Content-Provider-ID"
@@ -313,7 +313,7 @@ reason = """
     Content-provider-ID
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "LCS-Client-Id"
@@ -326,7 +326,7 @@ reason = """
     rule (7.2.89) write LCS-Client-ID
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "0 4xx;"
@@ -338,7 +338,7 @@ reason = """
     semicolon: list punctuation, not part of the label.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "1 5xx;"
@@ -350,7 +350,7 @@ reason = """
     semicolon: list punctuation, not part of the label.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "[ Serving Node Identity ]"
@@ -362,7 +362,7 @@ reason = """
     7.2.197a) with spaces, which ends the ABNF body there.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "external-enum-values"
@@ -373,7 +373,7 @@ reason = """
     prints a list.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "vendor-avp-tables"
@@ -383,7 +383,7 @@ reason = """
     the detailed definition and description, is referred to'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "command-columns"
@@ -395,7 +395,7 @@ reason = """
     marking use with 'X'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "VAS-Id"
@@ -407,7 +407,7 @@ reason = """
     as TS 29.230 table 7.1 allocates 1102
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "VASP-Id"
@@ -419,11 +419,11 @@ reason = """
     as TS 29.230 table 7.1 allocates 1101
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 # Release 11, V11.20.0: what oneM2M TS-0004 [31] cites as "3GPP TS 32.299
 # ... (Release 11)". A release's template is its own, so these apply to it
-# alone and the Release 18 ones above do not (src/seanchai/versions.py).
+# alone and the Release 19 ones above do not (src/seanchai/versions.py).
 
 [[patch]]
 find = "LCS-Client-Id"
@@ -477,7 +477,7 @@ reason = """
     clause 6.4.4 prints RAR with no Diameter header anywhere, and a command
     needs its code. Clause 6.4.1.1 uses RAR/RAA 'according to' RFC 3588 [401],
     whose successor RFC 6733 clause 8.3.1 prints '<RAR> ::= < Diameter Header:
-    258, REQ, PXY >'; clause 6.4.5 prints RAA's as 258, PXY, and V18.0.0 clause
+    258, REQ, PXY >'; clause 6.4.5 prints RAA's as 258, PXY, and V19.0.0 clause
     6.4.4
     prints RAR's as here. TS 29.230 allocates 3GPP's commands and has no row for
     RFC 6733's 258. The application id stays out, as for the clause's other
@@ -502,7 +502,7 @@ reason = """
     clauses of their own printing no body: 7.2.50, 7.2.69 and 7.2.191 open 'The
     DCD-Information AVP (AVP code 2115) is of type Grouped.' (and IM-Information
     2110, Service-Generic-Information 1256), then say 'The AVP is defined in
-    OMA-DDS-Charging_Data [223].', as V18.0.0's do word for word
+    OMA-DDS-Charging_Data [223].', as V19.0.0's do word for word
     """
 first_version = "11.20.0"
 last_version = "11.20.0"
@@ -802,7 +802,7 @@ section = "7.2.213"
 reason = """
     clause 7.2.213 follows SM-Service-Type's values 0 to 10 with a citation it
     opens and never closes, '(as defined in TS 22.142 [217]', which no value
-    label can hold; Release 18's clause prints the same labels without it
+    label can hold; Release 19's clause prints the same labels without it
     """
 first_version = "11.20.0"
 last_version = "11.20.0"

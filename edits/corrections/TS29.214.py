@@ -37,7 +37,7 @@ CORRECTIONS = [
         reason=f"clause {section}'s AVP header omits the vendor-id; table"
         " 5.3.0.1 marks the V flag mandatory for it, as for every other AVP"
         " the specification defines",
-        versions="18.4.0",
+        versions="18.4.0..19.3.0",
     )
     for name, section in _VENDORLESS
 ] + [
@@ -48,7 +48,7 @@ CORRECTIONS = [
         reason="clause 5.3.13 prints 'Void' as the label of values 0 and 5 —"
         " a 3GPP editorial placeholder for removed values, not an enumerated"
         " value a dictionary can carry, and one name cannot label two values",
-        versions="18.4.0",
+        versions="18.4.0..19.3.0",
     )
     for value in (0, 5)
 ]
@@ -62,7 +62,7 @@ CORRECTIONS += [
         replace="Framed-IPv6-Prefix",
         reason="table 5.4.0.1 lower-cases the 'v'; RFC 4005, which defines"
         " the AVP, spells 'IPv6'",
-        versions="18.4.0",
+        versions="18.4.0..19.3.0",
     )
 ]
 
@@ -75,7 +75,7 @@ CORRECTIONS += [
         replace="Framed-IPv6-Prefix",
         reason="the AAR ABNF (clause 5.6.1) lower-cases the 'v' as table"
         " 5.4.0.1 does; RFC 4005, which defines the AVP, spells 'IPv6'",
-        versions="18.4.0",
+        versions="18.4.0..19.3.0",
     ),
     Correction(
         id="sta-netloc-access-support-case",
@@ -86,12 +86,12 @@ CORRECTIONS += [
         reason="the STA ABNF (clause 5.6.6) lower-cases the 'L'; table 5.4.0.1"
         " re-uses NetLoc-Access-Support from TS 29.212 and the AAA and RAR"
         " ABNFs spell it the same way",
-        versions="18.4.0",
+        versions="18.4.0..19.3.0",
     ),
 ]
 
 # Release 7, V7.12.0, the copy ETSI TS 183 017 [19] cites as "3GPP TS 29.214
-# Release 7"; the Release 18 declarations above do not reach it
+# Release 7"; the Release 19 declarations above do not reach it
 # (src/seanchai/versions.py). Five grouped-AVP clauses print no vendor-id
 # where clause 5.3 says "The Vendor-Id header of all AVPs defined in the
 # present document shall be set to 3GPP (10415)" and table 5.3.1 marks V
@@ -143,7 +143,7 @@ CORRECTIONS += [
 
 # Release 11, V11.16.0, which TS 32.299 V11.20.0 [214] cites
 # non-specifically within Release 11; neither Release 7's declarations nor
-# Release 18's reach it (src/seanchai/versions.py). Six grouped-AVP clauses
+# Release 19's reach it (src/seanchai/versions.py). Six grouped-AVP clauses
 # print no vendor-id where clause 5.3 says "The Vendor-Id header of all AVPs
 # defined in the present document shall be set to 3GPP (10415)" and table
 # 5.3.1 marks V mandatory.
@@ -177,7 +177,7 @@ CORRECTIONS += [
         target=enum_value("Specific-Action", "Void", value=value),
         expect=ast.EnumValue(name="Void", value=value),
         reason="clause 5.3.13 prints 'Void' as the label of values 0 and 5, as"
-        " Release 18 does — a 3GPP editorial placeholder for removed values,"
+        " Release 19 does — a 3GPP editorial placeholder for removed values,"
         " not an enumerated value a dictionary can carry, and one name cannot"
         " label two values",
         versions="11.16.0",

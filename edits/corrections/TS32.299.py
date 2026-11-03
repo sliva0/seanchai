@@ -284,7 +284,7 @@ CORRECTIONS = [
         replace=("RFC6733", "RFC4006", "RFC4005"),
         reason="clause 7.1.0 names RFC 6733 [401], RFC 4006 [402] and RFC 4005"
         " [407] as where the IETF AVPs it uses are defined",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Delete(
         id="wildcard-row",
@@ -299,7 +299,7 @@ CORRECTIONS = [
         ),
         reason="table 7.1.0.1 tabulates the '* [ AVP ]' wildcard with code '*';"
         " it is ABNF grammar, not an AVP",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     *(
         Insert(
@@ -308,7 +308,7 @@ CORRECTIONS = [
             node=ast.ReusedAvpRow(name=name, origin=origin),
             after=None,
             reason=_IETF_REASONS[origin],
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         )
         for origin, names in _IETF_ORIGINS.items()
         for name in names
@@ -322,7 +322,7 @@ CORRECTIONS = [
             replace=10415,
             reason="clause 7.2.0 gives the 3GPP charging AVPs vendor 10415; the"
             " grouped header prints only the code",
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         )
         for name in _VENDORLESS_3GPP_GROUPED
     ),
@@ -335,7 +335,7 @@ CORRECTIONS = [
             replace=right,
             reason=f"clause {clause} defines {right}; the body of {parent}"
             f" spells it {wrong}",
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         )
         for parent, wrong, right, clause in _MEMBER_SPELLINGS
     ),
@@ -347,7 +347,7 @@ CORRECTIONS = [
         replace="Redirect-Max-Cache-Time",
         reason="RFC 6733 and table 7.1.0.1 name the AVP Redirect-Max-Cache-Time;"
         " no document defines Redirect-Host-Cache-Time",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     *(
         Correction(
@@ -357,7 +357,7 @@ CORRECTIONS = [
             expect=wrong,
             replace=right,
             reason=f"clause {clause} defines {right}; table 7.2.0.1 spells it {wrong}",
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         )
         for wrong, right, clause in _ROW_SPELLINGS
     ),
@@ -369,7 +369,7 @@ CORRECTIONS = [
         replace="Application-Port-Identifier",
         reason="table 7.2.0.1 drops an 'i' from the TS 29.337 AVP it refers to;"
         " clauses 7.2.205B and 7.2.211 spell it Application-Port-Identifier",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="reused-application-port-identifier",
@@ -378,7 +378,7 @@ CORRECTIONS = [
         expect="Application-Port-Identifer",
         replace="Application-Port-Identifier",
         reason="the re-used row comes from the same misspelt table 7.2.0.1 row",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="application-port-identifier-origin",
@@ -389,7 +389,7 @@ CORRECTIONS = [
         reason="table 7.2.0.1 refers to [231], TS 29.337, which does not define"
         " Application-Port-Identifier; TS 29.368 does, and TS 29.336 re-uses it"
         " from there",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     *(
         Correction(
@@ -400,7 +400,7 @@ CORRECTIONS = [
             replace=ast.DataType.ENUMERATED,
             reason=f"clause {clause} defines {name} as Enumerated with a value"
             " list; table 7.2.0.1 types it Integer32, the same encoding",
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         )
         for name, clause in (
             ("Monitoring-Event-Configuration-Activity", "7.2.111AaA"),
@@ -426,7 +426,7 @@ CORRECTIONS += [
             " references; TS 32.298's ProSe CDR field is"
             " monitoredPLMNIdentifier, and TS 29.230 allocates 3430 to it"
         ),
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="monitoring-event-report-data-member",
@@ -443,7 +443,7 @@ CORRECTIONS += [
             " carries listofMonitoringEventReportData, a SEQUENCE OF"
             " MonitoringEventReportData"
         ),
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 
@@ -465,7 +465,7 @@ CORRECTIONS += [
             "charging ACR/ACA of clause 6.2 use the Diameter Base Protocol "
             "Accounting application (6.2.1.1), and their headers print no id"
         ),
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Insert(
         id="application-id-ro",
@@ -483,7 +483,7 @@ CORRECTIONS += [
             "charging commands of clause 6.4 use the Diameter Credit-Control "
             "Application (6.3.2.1), and their headers print no id"
         ),
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 
@@ -502,7 +502,7 @@ CORRECTIONS += [
             " which clause 7.1.0 names for these AVPs, defines it as"
             " UTF8String (clause 9.8.5 and the table in 4.5)"
         ),
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 CORRECTIONS += [
@@ -518,7 +518,7 @@ CORRECTIONS += [
             " Must, and gives M,V in Must not to Error-Reporting-Host, the row"
             " above Experimental-Result there"
         ),
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name in ("Experimental-Result", "Experimental-Result-Code")
     # Out of Must not first: each field is validated as it is replaced.
@@ -550,7 +550,7 @@ CORRECTIONS += [
         "contains additional 3GPP specific charging parameters.'; the members it "
         "leaves out, Tariff-Change-Usage and the * [ AVP ] wildcard, are struck, which "
         "clauses 6.2.1.2 and 6.4.1.2 read as not used by 3GPP",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Accept(
         id="used-service-unit-charging-body",
@@ -562,7 +562,7 @@ CORRECTIONS += [
         "contains additional 3GPP specific charging parameters.'; the members it "
         "leaves out, CC-Money and the * [ AVP ] wildcard, are struck, which clauses "
         "6.2.1.2 and 6.4.1.2 read as not used by 3GPP",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Accept(
         id="oc-olr-extension",
@@ -572,7 +572,7 @@ CORRECTIONS += [
         "3GPP-OC-Specific-Reduction",
         reason="clause B.2.4: 'It has been extended compared to the IETF RFC 7683 "
         "[403].'",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Accept(
         id="supported-features-charging-m",
@@ -585,7 +585,7 @@ CORRECTIONS += [
         "does not support 'as per 'M' bit set rule', with DIAMETER_AVP_UNSUPPORTED, so "
         "the charging applications set M where TS 29.229 table 6.3.0.1 leaves it May; "
         "clause 7.2.0 gives table 7.2.0.1 'along with the AVP flag rules'",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 
@@ -652,7 +652,7 @@ CORRECTIONS += [
                 f" {data_type}, flags Must V,M and May P"
             )
         ),
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name, (data_type, code) in _OMA_TYPES.items()
 ]
@@ -670,7 +670,7 @@ CORRECTIONS += [
         reason="clause 7.2.242aaA's UWAN-User-Location-Info has a TCP-Source-Port"
         " member; table 7.2.0.1 lists UDP-Source-Port from [215], TS 29.212, and"
         " omits TCP-Source-Port, which TS 29.212 clause 5.3.129 defines",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 
@@ -793,7 +793,7 @@ CORRECTIONS += [
 ]
 
 # Application ids the command headers omit and the prose states, as for
-# V18.0.0 above.
+# V19.0.0 above.
 CORRECTIONS += [
     Insert(
         id="rel11-application-id-rf",
@@ -834,11 +834,11 @@ CORRECTIONS += [
 ]
 
 # The three OMA-DDS-Charging_Data rows TS-0004's Service-Information reaches
-# (through clause 7.2.192's body) print V18.0.0's codes in table 7.2, and
+# (through clause 7.2.192's body) print V19.0.0's codes in table 7.2, and
 # clauses 7.2.50, 7.2.69 and 7.2.191 type them Grouped word for word as
-# V18.0.0's do, read behind `referred-type-sentences`; reference [223] is
+# V19.0.0's do, read behind `referred-type-sentences`; reference [223] is
 # 'OMA-DDS-Charging_Data: "Charging Data".' in both. So OMA's V1.0 table 11
-# supplies their flags here as it does for V18.0.0 (`_OMA_TYPES` above).
+# supplies their flags here as it does for V19.0.0 (`_OMA_TYPES` above).
 CORRECTIONS += [
     Supply(
         id=f"rel11-oma-{name.lower()}",
@@ -860,7 +860,7 @@ CORRECTIONS += [
         ),
         reason=f"table 7.2 types {name} 'refer [223]', OMA-DDS-Charging_Data,"
         f" and leaves its flag cells blank; clause {clause} types it Grouped and"
-        " prints no body, as V18.0.0's does; OMA's V1.0 table 11 (clause 8.4)"
+        " prints no body, as V19.0.0's does; OMA's V1.0 table 11 (clause 8.4)"
         f" gives code {_OMA_TYPES[name][1]} flags Must V,M and May P, and its"
         f" clause {oma} prints the body",
         versions="11.20.0",
@@ -1047,7 +1047,7 @@ CORRECTIONS += [
         expect="OMNA WSP Content Type Numbers [210]",
         values=_TYPE_NUMBER_VALUES,
         reason=_TYPE_NUMBER_REASON,
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Supply(
         id="rel11-type-number-values",
@@ -1059,7 +1059,7 @@ CORRECTIONS += [
     ),
 ]
 
-# Two members of Release 18's grouped bodies that nothing defines
+# Two members of Release 19's grouped bodies that nothing defines
 # (docs/linter.md#standing-findings). Searched: V18.0.0 and V19.0.0, the TS
 # 29.230 registry, TS 32.253 and 32.254 (Rel-19), and Wireshark's
 # dictionary.
@@ -1082,7 +1082,7 @@ CORRECTIONS += [
         " Submission-Time (1202, MMS-Information's, clause 7.2.217), and"
         " nothing says that is meant; Wireshark's dictionary has no such"
         " AVP",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Insert(
         id="undefined-network-element",
@@ -1100,7 +1100,7 @@ CORRECTIONS += [
         " of the same body, so the name cannot be read as it; the TS 29.230"
         " registry allocates no such name and Wireshark's dictionary has no"
         " such AVP",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Insert(
         id="credit-limit-reached-result-code",
@@ -1126,7 +1126,7 @@ CORRECTIONS += [
         "TS29.230 table 8.1.4 allocates the code to TS29.229",
         reason="clause 7.1.8A says 'This value is defined in TS 29.229 [204]': the "
         "document lists a code it re-uses",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 
@@ -1134,7 +1134,7 @@ CORRECTIONS += [
 # whether a member is mandatory and neither where it stands nor how often.
 _REL11_RAR = (
     "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC"
-    " 6733 clause 8.3.1 prints '{}', as V18.0.0 clause 6.4.4 does; table 6.4.4's"
+    " 6733 clause 8.3.1 prints '{}', as V19.0.0 clause 6.4.4 does; table 6.4.4's"
     " category column has no way to say so"
 )
 CORRECTIONS += [

@@ -36,7 +36,7 @@ CORRECTIONS = [
         reason=f"clause {section}'s AVP header omits the vendor-id; clause"
         " 6.4.1 gives every AVP the document defines vendor 10415 and table"
         " 6.4.1-1 marks the V flag mandatory",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name, section in _VENDORLESS
 ] + [
@@ -48,7 +48,7 @@ CORRECTIONS = [
         replace=3526,
         reason="the clause 6.4.28 rule header prints FEC-Request's code 3525;"
         " the clause's own sentence and table 6.4.1-1 give ROHC-Request 3526",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="userplane-protocol-result-code",
@@ -59,7 +59,7 @@ CORRECTIONS = [
         reason="the clause 6.4.31 rule header prints FEC-Request's code 3525;"
         " the clause's own sentence and table 6.4.1-1 give"
         " Userplane-Protocol-Result 3529",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="mbms-bearer-event-diagnostic-info-type",
@@ -69,7 +69,7 @@ CORRECTIONS = [
         replace=ast.DataType.ENUMERATED,
         reason="clause 6.4.35 defines the AVP as of type Enumerated and lists"
         " its values; table 6.4.1-1 alone says Unsigned32",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="feature-list-avp",
@@ -81,6 +81,6 @@ CORRECTIONS = [
         "lists and no body names; the document's Supported-Features is TS "
         "29.229's, holding Feature-List-ID and Feature-List, and the clause's "
         "table is captioned 'Features of Feature-List-ID 1'",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

@@ -6,7 +6,7 @@ reason = """
     is 16777335.'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -16,7 +16,7 @@ reason = """
     with a supported feature are applicable as described in clause 6.5.2'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "worded-marks"
@@ -26,4 +26,4 @@ reason = """
     FEC')
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

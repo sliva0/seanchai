@@ -13,7 +13,7 @@ reason = """
     ProSe-App-Code-Info and UTC-based-Counter
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Group"
@@ -25,7 +25,7 @@ reason = """
     Grouped and Group is not a Diameter data type
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Assistance-info"
@@ -38,7 +38,7 @@ reason = """
     Assistance-Info
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "MIC-Check-indicator"
@@ -50,7 +50,7 @@ reason = """
     the Match-Report rule (6.3.75) write MIC-Check-Indicator
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "*AVP"
@@ -63,7 +63,7 @@ reason = """
     Unread, each body lost it.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "[ ProSe-Validity Timer ]"
@@ -76,7 +76,7 @@ reason = """
     Unread, the body ended there, dropping the members after it.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "[ User Identity ]"
@@ -89,7 +89,7 @@ reason = """
     the body ended there, dropping the members after it.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "[ Ending–Suffix ]"
@@ -102,4 +102,4 @@ reason = """
     a hyphen. Unread, each body lost it.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

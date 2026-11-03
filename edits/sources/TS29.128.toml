@@ -12,7 +12,7 @@ reason = """
     OctetString and OctetSstring is not a Diameter data type
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "Number-of-UE-Per-Location-Configuration"
@@ -25,7 +25,7 @@ reason = """
     rule's spelling)
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "Number-of-UE-Per-Location-Report"
@@ -38,7 +38,7 @@ reason = """
     spelling)
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "**[ Proxy-Info ]"
@@ -52,4 +52,4 @@ reason = """
     dropping the members after it.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.2.0"

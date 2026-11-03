@@ -17,7 +17,7 @@ CORRECTIONS = [
         reason="clause 6.3.10's AVP format re-prints clause 6.3.3's rule name;"
         " the heading, the clause prose and table 6.3.1-1 all call the AVP at"
         " code 4603 'PLMN-Allowed-PC5-RATs', and 6.3.3's own AVP is 4600",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]
 
@@ -32,7 +32,7 @@ CORRECTIONS += [
         "V2X-PC5-Allowed-PLMN, missing UE-PC5-AMBR, V2X-Permission",
         reason="clause 6.3.2: 'The V2X-Subscription-Data is originally defined in TS "
         "29.272 [10]. AVP format when used over V4 interface'",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]
 
@@ -46,6 +46,6 @@ CORRECTIONS += [
         "table 8.1.4 allocates the code to TS29.229",
         reason="clause 6.4.3.2 says 'This error code is defined in TS 29.229 [6].': "
         "the document lists a code it re-uses",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]

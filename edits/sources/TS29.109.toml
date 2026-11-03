@@ -13,7 +13,7 @@ reason = """
     describe octet strings and OctedString is not a Diameter data type
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Synchronization Failure"
@@ -26,7 +26,7 @@ reason = """
     end the body before GUSS-Timestamp and the rest
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Diameter Header: xxx, REQ, PXY, xxxxxxxx"
@@ -40,7 +40,7 @@ reason = """
     and 16777268'; TS 29.230 tables 5.1/1 and 4.1 allocate the same two
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Diameter Header: xxx, PXY, xxxxxxxx"
@@ -51,7 +51,7 @@ reason = """
     for the request, from clauses 6.0 and 6.1 and TS 29.230 tables 5.1/1 and 4.1
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "GBA-Push-Info-Request message to the BSF"
@@ -62,7 +62,7 @@ reason = """
     TS 29.230 table 5.1/1 allocates code 312 as 'GPR/GPI'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "GBA-Push-Info-Answer message back to the NAF"
@@ -74,7 +74,7 @@ reason = """
     GPI is the GBA Push Information, an AVP's content, not a command
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "procedure-commands"
@@ -84,7 +84,7 @@ reason = """
     'The NAF shall send a Bootstrapping-Info-Request message (BIR) to the BSF'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "reprinted-avps"
@@ -95,7 +95,7 @@ reason = """
     '; Omitted')
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "abnf-comments"
@@ -104,7 +104,7 @@ reason = """
     each body ends at the first
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "dashed-enum-values"
@@ -114,7 +114,7 @@ reason = """
     were empty
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "worded-enum-values"
@@ -123,7 +123,7 @@ reason = """
     Private identity requested (0) .'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "described-enum-values"
@@ -132,7 +132,7 @@ reason = """
     line, 'NO (0) The sending node is not GBA_U aware'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "label-after-enum-value"
@@ -141,7 +141,7 @@ reason = """
     Private user identity.'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "punctuated-enum-values"
@@ -150,4 +150,4 @@ reason = """
     identity requested (0) .'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"

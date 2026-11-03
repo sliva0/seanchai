@@ -30,7 +30,7 @@ reason = """
     missing.
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "run-on-enum-values"
@@ -40,4 +40,4 @@ reason = """
     (0)PRIVILEDGED_SENDER (1)' (one run in the docx, one line in the PDF)
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"

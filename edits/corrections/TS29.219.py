@@ -20,7 +20,7 @@ CORRECTIONS = [
         reason=f"clause {section}'s AVP header omits the vendor-id; clause"
         " 5.3.0 gives every AVP the document defines vendor 10415 and table"
         " 5.3.0.1 marks the V flag mandatory",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name, section in _VENDORLESS
 ]

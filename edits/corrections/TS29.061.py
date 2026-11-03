@@ -22,7 +22,7 @@ CORRECTIONS = [
         reason="only the table cell drops the s; clause 20.5a.9's heading,"
         " prose and value table all write MBMS-Flags, and Wireshark's"
         " dictionary reads it the same way",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
     Insert(
         id="session-stop-indicator-row",
@@ -38,7 +38,7 @@ CORRECTIONS = [
         " among the others table 9a lists, but the table skips it; TS 32.299"
         " table 7.2.0.1 re-uses it from here. Only the name, code and clause"
         " are stated: the clause gives no Diameter type or flags",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]
 
@@ -82,7 +82,7 @@ CORRECTIONS += [
         " for them; the ACR and ACA of 16a.4.3 and 16a.4.4 also list"
         " NAS-IP-Address, NAS-IPv6-Address and NAS-Identifier, which RFC 7155"
         " takes from RFC 4005 (RFC7155.py#bases-nasreq)",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
     Correction(
         id="rel6-bases-nasreq",
@@ -109,7 +109,7 @@ CORRECTIONS += [
         " Application', used 'according to RFC 7155 [120]', and 16a.2 uses its"
         " accounting the same way; RFC 7155 clauses 1.5 and 1.6 give one (1) for"
         " every command clause 16a.4 prints. The command headers print none",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]
 
@@ -141,7 +141,7 @@ CORRECTIONS += [
         expect=printed,
         replace=_REDIRECTS[printed],
         reason=_redirect_reason(section, printed),
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     )
     for command, section, printed_names in (
         ("Abort-Session-Answer", "16a.4.8", _SHORT),
@@ -177,7 +177,7 @@ CORRECTIONS += [
         replace="3GPP-MS-TimeZone",
         reason="clause 16a.4.3's body alone hyphenates the name; tables 9a and 10"
         " and clause 16.4.7's sub-attribute name print 3GPP-MS-TimeZone",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
     Correction(
         id="acr-connect-info-spelling",
@@ -188,7 +188,7 @@ CORRECTIONS += [
         reason="clause 16a.4.3's ACR body copies the typo of RFC 4005's and RFC"
         " 7155's ACR (RFC 7155's verified erratum 5995); the AVP is Connect-Info,"
         " code 77, and the AAR body of clause 16a.4.1 spells it so",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
     Insert(
         id="undefined-delegated-ipv6-prefix",
@@ -205,7 +205,7 @@ CORRECTIONS += [
         " which defines the RADIUS attribute with no Diameter type or flags and"
         " which the corpus does not hold. Wireshark's dictionary has code 123,"
         " OctetString, with may-M",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]
 
@@ -219,13 +219,13 @@ CORRECTIONS += [
             ast.EnumValue(name="uncompressed-header", value=0),
             ast.EnumValue(name="compressed-header", value=1),
         ),
-        reason="TS 25.413 V18.0.0 (2024-03), the only Release 18 version,"
+        reason="TS 25.413 V19.0.0 (2025-09), the only Release 19 version,"
         " clause 9.2.1.84 types MBMS HC Indicator 'ENUMERATED (uncompressed"
         " header, compressed header, ...)', and its ASN.1 MBMSHCIndicator"
         " lists uncompressed-header, then compressed-header, then the"
         " extension marker. The ASN.1 numbers nothing: 0 and 1 are"
         " the declaration order, X.680's ordinal numbering, a judgement"
         " Wireshark's dictionary shares; the names are the ASN.1 identifiers",
-        versions="18.1.0",
+        versions="18.1.0..19.1.0",
     ),
 ]

@@ -12,7 +12,7 @@ reason = """
     'Applicablity'; table 5.3.1.1 spells it 'Applicability'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -21,7 +21,7 @@ reason = """
     Application-ID for the Ns Application in the present release is 16777347'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -32,4 +32,4 @@ reason = """
     5.4.1'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

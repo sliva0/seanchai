@@ -12,7 +12,7 @@ reason = """
     6.4.1-1 and the PXA ABNF call the AVP 'ProSe-Code-Suffix-Mask'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "*[ Banned-User-Target}"
@@ -24,7 +24,7 @@ reason = """
     ABNF prints the same member as '*[ Banned-User-Target ]'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -35,4 +35,4 @@ reason = """
     read)
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

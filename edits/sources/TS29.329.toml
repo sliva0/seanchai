@@ -9,7 +9,7 @@ count = 2  # section heading + intro prose (the ABNF rule name is correct)
 section = "6.1.8"
 reason = "command name pluralized in the heading and prose, but not in the rule"
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "note-defined-in-rfc"
@@ -19,7 +19,7 @@ reason = """
     from
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "prose-avp-origins"
@@ -28,7 +28,7 @@ reason = """
     while table 6.3.1 only records their use on Sh
     """
 first_version = "7.8.0"
-last_version = "18.0.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "bare-avp-citations"
@@ -39,4 +39,97 @@ reason = """
     allocates each to TS 29.229, and table 6.3.1 only records their use on Sh
     """
 first_version = "7.8.0"
-last_version = "18.0.0"
+last_version = "19.1.0"
+
+# Sh-ee, which Release 19 adds.
+[[patch]]
+find = "< Diameter Header: 310, REQ, PXY, xx1 >"
+replace = "< Diameter Header: 310, REQ, PXY >"
+section = "8.1.1"
+reason = """
+    clause 8.1.1 prints a placeholder 'xx1' for the application id, and a header
+    holds a number. The document states none: clause 8 says the id 'is xx1
+    (allocated by IANA)' under 'Editor's Note: The value will be allocated by
+    IANA', and TS 29.230 V19.3.0 table 4.1 prints 'zz', so the header goes
+    without one
+    """
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[patch]]
+find = "< Diameter Header: 310, PXY, xx1 >"
+replace = "< Diameter Header: 310, PXY >"
+section = "8.1.2"
+reason = "clause 8.1.2's placeholder for the application id, as in clause 8.1.1"
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[patch]]
+find = "< Diameter Header: 311, PXY, xx1 >"
+replace = "< Diameter Header: 311, PXY >"
+section = "8.1.3"
+reason = "clause 8.1.3's placeholder for the application id, as in clause 8.1.1"
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[patch]]
+find = "< Diameter Header: 311, PXY, xx1 >"
+replace = "< Diameter Header: 311, PXY >"
+section = "8.1.4"
+reason = "clause 8.1.4's placeholder for the application id, as in clause 8.1.1"
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[patch]]
+find = "[ Expiry Time ]"
+replace = "[ Expiry-Time ]"
+section = "8.3.5"
+reason = """
+    Event-Reporting-Options' body spaces the name its clause's prose spells
+    'Expiry Time AVP'; table 6.3.1 and clause 6.3.16 name Expiry-Time
+    """
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[patch]]
+find = "[ Request Current Status ]"
+replace = "[ Request-Current-Status ]"
+section = "8.3.10"
+reason = """
+    Event-List's body spaces the name; a member is one token and no other clause
+    spells this one, so the hyphens are the document's own convention
+    """
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[patch]]
+find = "*[ Ims Event Filter ]"
+replace = "*[ Ims-Event-Filter ]"
+section = "8.3.10"
+reason = """
+    Event-List's body spaces the name table 8.3.1 and clause 8.3.12 spell
+    Ims-Event-Filter
+    """
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[quirk]]
+name = "independent-avp-tables"
+reason = """
+    Sh's clause 6.3 tabulates its own AVPs and the ones it re-uses, and Sh-ee's
+    table 8.3.1 only its own: Release 19 adds that table and no re-used table
+    for it, so no one-to-one pairing holds
+    """
+first_version = "19.1.0"
+last_version = "19.1.0"
+
+[[patch]]
+find = "ANY_UE_ APPLICABLE (1)"
+replace = "ANY_UE_APPLICABLE (1)"
+section = "8.3.1"
+reason = """
+    clause 8.3.1 spaces the name after its second underscore; its sibling prints
+    ANY_UE_NOT_APPLICABLE (0)
+    """
+first_version = "19.1.0"
+last_version = "19.1.0"

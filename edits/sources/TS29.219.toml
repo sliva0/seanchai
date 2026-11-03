@@ -3,16 +3,6 @@
 # source text before parsing; see src/seanchai/extractor/sources.py for the
 # format.
 
-[[quirk]]
-name = "physical-reused-columns"
-reason = """
-    Table 5.4 has a 4-twip sliver grid column after the name column; the header
-    merges it into Reference, every data row into the name, so only the physical
-    cells line up with the labels.
-    """
-first_version = "18.0.0"
-last_version = "18.0.0"
-
 [[patch]]
 find = "IETF 7683 [20]"
 replace = "IETF RFC 7683 [20]"
@@ -24,7 +14,7 @@ reason = """
     clause 2's reference [20] is IETF RFC 7683
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -34,7 +24,7 @@ reason = """
     16777302.'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -44,4 +34,4 @@ reason = """
     described in clause 5.1.6'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

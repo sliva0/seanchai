@@ -12,7 +12,7 @@ reason = """
     '5.3.x'; the AVP is defined in clause 5.3.8
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "is of type of Enumerated"
@@ -25,7 +25,7 @@ reason = """
     clause by 'is of type Enumerated', the spelling the other clauses use
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Octetstring"
@@ -37,7 +37,7 @@ reason = """
     6733's basic type is OctetString, as every other row spells it
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "independent-avp-tables"
@@ -47,7 +47,7 @@ reason = """
     in prose instead of a table, so document order cannot pair them.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -57,7 +57,7 @@ reason = """
     the present release is 16777267'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "access-type-column"
@@ -67,7 +67,7 @@ reason = """
     by spaces ('Non-3GPP-EPS 3GPP-EPS'), as TS 29.212's does
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -79,4 +79,4 @@ reason = """
     table A.7.4.1.1 note 1
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

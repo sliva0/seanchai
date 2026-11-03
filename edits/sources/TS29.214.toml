@@ -12,7 +12,7 @@ reason = """
     5.3.0.1 and the Rx ABNF call the AVP 'Service-Info-Status'
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "AF-Signalling-Protocol-AVP"
@@ -24,7 +24,7 @@ reason = """
     5.3.0.1 and the Rx ABNF call the AVP 'AF-Signalling-Protocol'
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "SPONSORED_DATA_CONNECTIVITY_ DISALLOWED (4)"
@@ -37,7 +37,7 @@ reason = """
     clause is one underscore-joined token
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "NetLoc- "
@@ -48,7 +48,7 @@ reason = """
     'NetLoc-Untrusted-WLAN' with a space after the first hyphen
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -57,7 +57,7 @@ reason = """
     Application-ID for the Rx application in the present release is 16777236'
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "dashed-enum-values"
@@ -66,7 +66,7 @@ reason = """
     (0)'; unread, the list was empty
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "hex-enum-values"
@@ -75,7 +75,7 @@ reason = """
     (0xFFFFFFFF)'
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "worded-enum-values"
@@ -84,7 +84,7 @@ reason = """
     INFORMATION (0)', and its intro names the default by that label
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "access-type-headings"
@@ -93,7 +93,7 @@ reason = """
     and Non-3GPP-5GS access type)'; unread, the grouped definition was missing
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -104,7 +104,7 @@ reason = """
     described in clause 5.4.1'
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "origins-by-reference"
@@ -113,11 +113,11 @@ reason = """
     183.017 [15]'; clause 2's [15] is 'ETSI TS 183 017 v3.2.1'
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"
 
 # Release 7, V7.12.0: what ETSI TS 183 017 [19] cites as "3GPP TS 29.214
 # Release 7". A release's template is its own, so these apply to it alone
-# and the Release 18 ones above do not (src/seanchai/versions.py).
+# and the Release 19 ones above do not (src/seanchai/versions.py).
 
 [[patch]]
 find = "Media-Sub-Component AVP"
@@ -340,4 +340,4 @@ reason = """
     the media comp.'; unread, both bodies ended before their first member
     """
 first_version = "18.4.0"
-last_version = "18.4.0"
+last_version = "19.3.0"

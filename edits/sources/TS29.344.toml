@@ -14,4 +14,4 @@ reason = """
     after it.
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"

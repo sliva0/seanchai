@@ -9,7 +9,7 @@ exact = true
 section = "7.3.1"
 reason = "AVP-table flags cell uses '.' instead of ',' as separator"
 first_version = "18.6.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "v"
@@ -18,7 +18,7 @@ exact = true
 section = "7.3.1"
 reason = "AVP-table flags cell written in lowercase"
 first_version = "18.6.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "MME-Location Information"
@@ -27,7 +27,7 @@ exact = true
 section = "7.3.1"
 reason = "AVP-table name cell line-wrapped, losing a hyphen"
 first_version = "18.6.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "MODIFIED_ADDED_PDP CONTEXTS_INCLUDED"
@@ -38,7 +38,7 @@ reason = """
     stops it being recognised as a value at all
     """
 first_version = "18.6.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "Communication-Pattern-set"
@@ -50,7 +50,7 @@ reason = """
     29.336 and this document's own clause 7.3.194
     """
 first_version = "18.6.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "Monitoring Event Report::="
@@ -58,7 +58,7 @@ replace = "Monitoring-Event-Report ::="
 section = "7.3.196"
 reason = "grouped-AVP rule name written with spaces instead of hyphens"
 first_version = "18.6.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "Enumerate"
@@ -71,7 +71,7 @@ reason = """
     29.230 registry
     """
 first_version = "18.6.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "SIPTO_above_RAN _"
@@ -84,7 +84,7 @@ reason = """
     in the document is one underscore-joined token
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[quirk]]
 name = "dashed-enum-values"
@@ -93,7 +93,7 @@ reason = """
     GPRS_DATA_SUBSCRIBED (0)'; unread, the list was empty
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[quirk]]
 name = "external-enum-values"
@@ -103,7 +103,7 @@ reason = """
     values are those defined in TS 32.422 [23] for ...'
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "[ IDR- Flags ]"
@@ -117,7 +117,7 @@ reason = """
     the members after it.
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "* 2 [ Served-Party-IP-Address ]"
@@ -130,7 +130,7 @@ reason = """
     after Context-Identifier.
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "1 * { TS-Code }* [ AVP ]"
@@ -143,7 +143,7 @@ reason = """
     Unread, the body was empty.
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "[ Collection-Period- RRM-LTE ]"
@@ -156,7 +156,7 @@ reason = """
     Unread, the body ended there, dropping the members after it.
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "1 * { RAT-Type }"
@@ -169,7 +169,7 @@ reason = """
     body was empty.
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "Requested-UTRAN- GERAN-Authentication-Info"
@@ -182,7 +182,7 @@ reason = """
     named no AVP and its grouped rule was not read at all.
     """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"
 
 [[patch]]
 find = "Table 7.3.200 -1:"
@@ -194,4 +194,4 @@ a stray space in the caption of the Supported-Monitoring-Events bit table, which
 no caption reading takes; 7.3.200-1 is the label clause 7.3.200 cites
 """
 first_version = "18.7.0"
-last_version = "18.7.0"
+last_version = "19.6.0"

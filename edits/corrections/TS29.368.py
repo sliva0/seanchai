@@ -28,7 +28,7 @@ CORRECTIONS = (
             reason=f"clause {section}'s AVP header omits the vendor-id; clause"
             " 6.4.1 gives every AVP the document defines vendor 10415 and table"
             " 6.4.1.1 marks the V flag mandatory",
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         )
         for name, section in _VENDORLESS
     ]
@@ -41,7 +41,7 @@ CORRECTIONS = (
             replace="External-Identifier",
             reason="table 6.5.1.1 cites TS 29.336 for External-Id; TS 29.336"
             " defines the AVP as External-Identifier (clause 6.4.11, code 3111)",
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         ),
     ]
     + [
@@ -54,7 +54,7 @@ CORRECTIONS = (
             reason=f"the {parent} body (clause {section}) uses table 6.5.1.1's"
             " External-Id; TS 29.336 clause 6.4.11 defines the AVP as"
             " External-Identifier",
-            versions="18.0.0",
+            versions="18.0.0..19.0.0",
         )
         for parent, section in (
             ("Device-Action", "6.4.2"),
@@ -74,6 +74,6 @@ CORRECTIONS += [
         "lists and no body names; the document's Supported-Features is TS "
         "29.229's, holding Feature-List-ID and Feature-List, and the clause's "
         "table is captioned 'Features of Feature-List-ID 1'",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

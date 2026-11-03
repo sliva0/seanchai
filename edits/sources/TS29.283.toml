@@ -4,7 +4,7 @@ reason = """
     clause 7.3.21 states that Sequence-Number is defined in TS 29.329
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "DRMP ]"
@@ -17,4 +17,4 @@ reason = """
     '[ DRMP ]'. Unread, the body held only '< Session-Id >'.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

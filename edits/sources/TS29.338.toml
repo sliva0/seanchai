@@ -12,7 +12,7 @@ reason = """
     clause 5.3.3.11 and the SM-Delivery-Outcome ABNF use the hyphenated AVP name
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "10415>>"
@@ -24,7 +24,7 @@ reason = """
     grammar and every neighbouring definition use one
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "UE_ MEMORY_CAPACITY_EXCEEDED"
@@ -37,7 +37,7 @@ reason = """
     spells the same cause MEMORY_CAPACITY_EXCEEDED
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "is of type enumerated"
@@ -50,7 +50,7 @@ reason = """
     table 6.3.3.1/1 types it Enumerated
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "dashed-enum-values"
@@ -59,7 +59,7 @@ reason = """
     dashed list items, '- SM_DELIVER (0)'; unread, the lists were empty
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "punctuated-enum-values"
@@ -68,4 +68,4 @@ reason = """
     comma or full stop, '- ONLY_IMSI_REQUESTED (0),'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.3.0"

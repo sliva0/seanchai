@@ -11,7 +11,18 @@ reason = """
     'specified in'
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
+
+[[quirk]]
+name = "placeholder-codes"
+reason = """
+    table 4.1 allocates 3GPP Sh-ee 'zz' and table 5.1/4 Event-Subscribe 'xx1'
+    and Event-Notification 'xx2' while TS 29.329 V19.1.0 clause 8 prints the id
+    'xx1' under 'Editor's Note: The value will be allocated by IANA', so the
+    document states no value to patch in and the row keeps what it prints
+    """
+first_version = "19.3.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "reserved-range-notes"
@@ -21,7 +32,7 @@ reason = """
     describe the allocation of such ranges
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "29.153[37]"
@@ -34,7 +45,7 @@ reason = """
     reference [37] is TS 29.153
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "29.154[38]"
@@ -47,7 +58,7 @@ reason = """
     reference [38] is TS 29.154
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[quirk]]
 name = "unknown-type-tokens"
@@ -58,7 +69,7 @@ reason = """
     patched to a guess (Wireshark's TGPP.xml types 314 OctetString)
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "OctectString"
@@ -70,7 +81,7 @@ reason = """
     table 7.1 misspells OctetString for TMGI (900) and MBMS-Service-Area (903)
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Groupe"
@@ -80,7 +91,7 @@ count = 1
 section = "7.1"
 reason = "table 7.1 truncates Grouped for Served-User-Identity (1100)"
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "UTF8Str"
@@ -90,7 +101,7 @@ count = 1
 section = "7.1"
 reason = "table 7.1 truncates UTF8String for VASP-ID (1101)"
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "29.109 [7"
@@ -103,19 +114,7 @@ reason = """
     2's reference [7] is TS 29.109
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
-
-[[patch]]
-find = "from 723 to799"
-replace = "from 723 to 799"
-count = 1
-section = "7.1"
-reason = """
-    table 7.1's note reserving TS 29.329's range runs the range's last number
-    into 'to'
-    """
-first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Authorization -Information-SIM"
@@ -128,7 +127,7 @@ reason = """
     hyphen
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "WLAN- 3GPP-IP-Access"
@@ -141,7 +140,7 @@ reason = """
     hyphen
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Redirect- Support"
@@ -154,7 +153,7 @@ reason = """
     beside a hyphen
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Requested-UTRAN- GERAN-Authentication-Info"
@@ -167,7 +166,7 @@ reason = """
     beside a hyphen
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "SM-Delivery- Failure-Cause"
@@ -180,7 +179,7 @@ reason = """
     space beside a hyphen
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Authentication- Information -Request/Answer"
@@ -193,7 +192,7 @@ reason = """
     hyphen
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 # Table 7.1 names differing only in case from the document defining the
 # AVP; the defining clause is the primary source for its own AVP's name.
@@ -210,7 +209,7 @@ reason = """
     rule (7.2.77)
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Application-provided-called-party-address"
@@ -224,7 +223,7 @@ reason = """
     32.299 clause 7.2.22 and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Trunk-Group-Id"
@@ -239,7 +238,7 @@ reason = """
     in TS 32.299 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Incoming-Trunk-Group-Id"
@@ -254,7 +253,7 @@ reason = """
     is patched in TS 32.299 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Outgoing-Trunk-Group-Id"
@@ -269,7 +268,7 @@ reason = """
     is patched in TS 32.299 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Rule-DeActivation-Time"
@@ -283,7 +282,7 @@ reason = """
     every rule citing it
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "TDF-IP-address"
@@ -296,7 +295,7 @@ reason = """
     TDF-IP-Address: TS 29.212 clause 5.3.81 and table 5.3.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "LCS-Client-Id"
@@ -311,7 +310,7 @@ reason = """
     'LCS-Client-Id' is patched in TS 32.299 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "LCS-Requestor-Id"
@@ -324,7 +323,7 @@ reason = """
     it LCS-Requestor-ID: TS 32.299 clause 7.2.91 and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "LCS-Requestor-Id-String"
@@ -337,7 +336,7 @@ reason = """
     spells it LCS-Requestor-ID-String: TS 32.299 clause 7.2.92 and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "PoC-User-Role-info-Units"
@@ -352,7 +351,7 @@ reason = """
     in TS 32.299 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "PoC-Session-Initiation-type"
@@ -367,7 +366,7 @@ reason = """
     rule (7.2.144)
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Number-of-Messages-Sent"
@@ -381,7 +380,7 @@ reason = """
     7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "MMTel-Sservice-Type"
@@ -394,7 +393,7 @@ reason = """
     spells it MMTel-SService-Type: TS 32.299 clause 7.2.111A and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "CS-Service-Qos-Request-Identifier"
@@ -409,7 +408,7 @@ reason = """
     E.6.3.1.1's 'CS-Service-Qos-Request-Identifier' is patched in TS 29.212 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Event-handling"
@@ -423,7 +422,7 @@ reason = """
     8.4.3 and 8.4.62 rules; the clause's prose once writes 'Event-handling'
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Assistance-info"
@@ -438,7 +437,7 @@ reason = """
     clause heading also printing it
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "MIC-Check-indicator"
@@ -453,7 +452,7 @@ reason = """
     29.345 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Extended-eNodeB-ID"
@@ -467,7 +466,7 @@ reason = """
     TS 29.272 and 29.336 re-use it
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Number-of-UE-Per-Location-Configuration"
@@ -482,7 +481,7 @@ reason = """
     the clause's rule name lower-cases the word and is patched in TS 29.128 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Number-of-UE-Per-Location-Report"
@@ -497,7 +496,7 @@ reason = """
     rule name lower-cases the word and is patched in TS 29.128 too
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 # Names table 7.1 gives otherwise than the clause defining the AVP, beyond
 # case: the defining document is the primary source for its AVP's name.
@@ -515,7 +514,7 @@ reason = """
     10
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "NAF-Hostname"
@@ -530,7 +529,7 @@ reason = """
     never prints NAF-Hostname
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Media-Sub-Component AVP"
@@ -544,7 +543,7 @@ reason = """
     cell carries the word AVP from the clause heading
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Event-ThresholdRSRP"
@@ -557,7 +556,7 @@ reason = """
     it Event-Threshold-RSRP: TS 29.272 clause 7.3.143 and table 7.3.1/1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Event-ThresholdRSRQ"
@@ -570,7 +569,7 @@ reason = """
     it Event-Threshold-RSRQ: TS 29.272 clause 7.3.144 and table 7.3.1/1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Third-Context-ID"
@@ -583,7 +582,7 @@ reason = """
     Third-Context-Identifier: TS 29.272 clause 7.3.244 and table 7.3.1/1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Visited PLMN Id"
@@ -596,7 +595,7 @@ reason = """
     Visited-PLMN-Id: TS 29.272 clause 7.3.9 and table 7.3.1/1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Supported-Monitoring-Event"
@@ -610,7 +609,7 @@ reason = """
     table 8.4.1-1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Supported-Service"
@@ -623,7 +622,7 @@ reason = """
     it Supported-Services: TS 29.336 clause 8.4.40 and table 8.4.1-1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "MME-Absent-User-Subscriber-Diagnostic-SM"
@@ -637,7 +636,7 @@ reason = """
     5.3.3.9 and table 5.3.3.1/1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "MSC-Absent-User-Subscriber-Diagnostic-SM"
@@ -651,7 +650,7 @@ reason = """
     5.3.3.10 and table 5.3.3.1/1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Authorized-QoS"
@@ -665,7 +664,7 @@ reason = """
     replaced 'the Authorized-QoS AVP name with Authorised-QoS'
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Charging-Characteristic-Selection-Mode"
@@ -679,7 +678,7 @@ reason = """
     32.299 clause 7.2.39A and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Deferred-Location-Even-Type"
@@ -694,7 +693,7 @@ reason = """
     sentence drops the 't'
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "IP-Realm-Default-Indicator"
@@ -708,7 +707,7 @@ reason = """
     table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "ISUP-Release-Cause"
@@ -721,7 +720,7 @@ reason = """
     it ISUP-Cause: TS 32.299 clause 7.2.80B and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Local-GW-Inserted-Indicator"
@@ -735,7 +734,7 @@ reason = """
     table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "MBMS GW-Address"
@@ -748,7 +747,7 @@ reason = """
     MBMS-GW-Address: TS 32.299 clause 7.2.98 and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Originating-SCCP-Address"
@@ -761,7 +760,7 @@ reason = """
     names it Originator-SCCP-Address: TS 32.299 clause 7.2.128 and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "ProSe-PC3-Control-Protocol-Cause"
@@ -775,7 +774,7 @@ reason = """
     table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "ProSe-PC3-EPC-Control-Protocol-Cause"
@@ -789,7 +788,7 @@ reason = """
     7.2.135B and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "PoC-Change-Conditions"
@@ -802,7 +801,7 @@ reason = """
     names it PoC-Change-Condition: TS 32.299 clause 7.2.139 and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "ProSe-Group-IP-Multicast-Addresses"
@@ -816,7 +815,7 @@ reason = """
     7.2.154H and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "RAN-End-Time"
@@ -830,7 +829,7 @@ reason = """
     row, which table 7.1 copied, is corrected to the clause
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "RAN-Start-Time"
@@ -844,7 +843,7 @@ reason = """
     RAN-Start-Time row, which table 7.1 copied, is corrected to the clause
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "Transcoder-Inserted-Indicator"
@@ -858,7 +857,7 @@ reason = """
     and table 7.2.0.1
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
 
 [[patch]]
 find = "DIAMETER_ERROR_UNKNKOWN_DATA"
@@ -871,4 +870,16 @@ reason = """
     spells the word
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.3.0"
+
+[[patch]]
+find = "from 748 to799"
+replace = "from 748 to 799"
+count = 1
+section = "7.1"
+reason = """
+    table 7.1's note reserving TS 29.329's range runs the range's last number
+    into 'to'
+    """
+first_version = "19.3.0"
+last_version = "19.3.0"
