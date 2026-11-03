@@ -47,13 +47,13 @@ dictionary's entry under the AVP's vendor and code carries the listed name
 and agrees in type; otherwise it is reported as `stale-alias`. A corpus AVP
 stating no type confirms no rename: its name disagreement stays a finding.
 
-The list holds the `3GPP-SIP-*` prefixes TS 29.229's and TS 32.299's SIP
-AVPs take to stay apart from RFC 4740's, `Cx-` and `Sh-User-Data`,
-`OnexRTT-RCID` for an ID starting with a digit, `ETSI-Service-Class`, the
-`3GPP2-` prefixes that keep X.S0013-014's AVPs apart from TS 29.212's, and
-a dozen more of the same kind. A misspelling is no rename and is not
-listed: those are defects, patched. Nor is a name the document has since
-replaced.
+The list holds the `3GPP-SIP-*` prefixes TS 29.229's, 3GPP2 X.S0013-006's and
+TS 32.299's SIP AVPs take to stay apart from RFC 4740's, `Cx-` and
+`Sh-User-Data`, `OnexRTT-RCID` for an ID starting with a digit,
+`ETSI-Service-Class`, the `3GPP2-` prefixes that keep X.S0013-014's AVPs apart
+from TS 29.212's, and a dozen more of the same kind. A misspelling is no rename
+and is not listed: those are defects, patched. Nor is a name the document has
+since replaced.
 
 ## Findings are leads, not verdicts
 

@@ -33,7 +33,7 @@ def test_show_prints_the_defining_reading_and_how_the_others_differ():
 
 
 def test_show_says_nothing_of_other_readings_where_there_are_none():
-    result = _run("show", "Public-Identity")
+    result = _run("show", "Data-Reference")
 
     assert result.exit_code == 0, result.output
     assert "other readings" not in result.stdout

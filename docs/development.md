@@ -43,8 +43,9 @@ wireshark` need no extra.
 - `edits/sources/<SpecRef>.toml`: input patches and quirks per document.
 - `edits/corrections/<SpecRef>.py`: corrections per document.
 - `edits/transcriptions/<SpecRef>.dad`: documents no extractor reads, copied
-  by hand (ETSI ES 283 026, ES 283 034, ES 283 035, TS 183 017, TS 183 033, TS
-  183 066; 3GPP2 X.S0013-013, X.S0013-014, X.S0057).
+  by hand (ETSI ES 283 026, ES 283 034, ES 283 035, TS 183 017, TS 183 020, TS
+  183 033, TS 183 059-1, TS 183 066; 3GPP2 X.S0013-006, X.S0013-013,
+  X.S0013-014, X.S0057).
 - `integrations/`: consumer scripts over the model, and staged Wireshark
   dictionary patches.
 - `editors/`: `.dad` syntax highlighting for VS Code, Vim and Neovim.

@@ -1928,12 +1928,6 @@ _STANDING_CORPUS_NOTES = {
     "es283035-020501.dad": {"cross-release-origin": ["TS29.209", "TS29.329"]},
     # TS 183 033 names TS 29.229 V6.6.0, which V18.1.0 stands in for.
     "ts183033-010200.dad": {"cross-release-origin": ["TS29.229"]},
-    # TS 183 066 imports from two documents the corpus does not hold, and 3GPP2
-    # X.S0013-014 from one.
-    "ts183066-020101.dad": {
-        "external-origin-not-in-corpus": ["ETSI-TS183.020, ETSI-TS183.059-1"]
-    },
-    "xs0013-014-0_v1.0.dad": {"external-origin-not-in-corpus": ["3GPP2-X.S0013-006"]},
     # oneM2M cites TS 32.299 [31], "Release 11", for Node-Id and
     # Service-Information: V11.20.0.
     "ts-0004-v2_35_0.dad": {"cross-release-origin": ["TS32.299"]},

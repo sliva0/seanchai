@@ -803,6 +803,19 @@ def test_a_3gpp2_document_in_parts_keeps_its_part_in_its_name(tmp_path):
     assert (source.stem, source.tree) == ("xs0013-014-0_v2.0", "3gpp2")
 
 
+def test_an_etsi_document_in_parts_keeps_its_part_in_its_name(tmp_path):
+    """TS 183 059-1 is `ts_18305901v020101p.pdf` at ETSI, the part in its digits."""
+    transcriptions = tmp_path / "transcriptions"
+    transcriptions.mkdir()
+    (transcriptions / "ETSI-TS183.059-1.dad").write_text(
+        "; Specification: ETSI-TS183.059-1\n; Version: 2.1.1\n", encoding="utf-8"
+    )
+
+    (source,) = regenerate._transcriptions(transcriptions).values()
+
+    assert (source.stem, source.tree) == ("ts18305901-020101", "etsi")
+
+
 def test_a_3gpp2_transcription_from_another_versions_rendering_is_refused(
     tmp_path,
 ):

@@ -416,7 +416,7 @@ the identity. `name` is always the document's spelling
 
 ### Known holes
 
-Sixteen names stand as holes, each a statement its source does not make.
+Eighteen names stand as holes, each a statement its source does not make.
 The committed record, the corpus's `holes.toml`, lists them by
 `Hole.document`, name, `Hole.missing` and a reason citing the version and
 clause and what was searched
@@ -441,7 +441,7 @@ consumer loading a partial or foreign corpus. `unrecorded_holes()` and
 `stale_record_entries()` return what the default would refuse; the linter's
 `unrecorded-hole` and `stale-hole-record` report the same.
 
-The sixteen, by cause:
+The eighteen, by cause:
 
 - **A field no source states**, under every policy. TS 29.061's
   `3GPP-Session-Stop-Indicator` row states only a code, and TS 29.061
@@ -449,7 +449,9 @@ The sixteen, by cause:
   `3GPP-SGSN-MCC-MNC` as RADIUS sub-attributes without tabulating them. TS
   29.234's `Charging-Characteristics` is typed "Integer", no Diameter type. TS
   29.229's `Wildcarded-IMPU` states a type alone, though TS 29.329's reading of
-  it is complete.
+  it is complete. ETSI TS 183 020's `Privacy-Indicator` states a code, a type
+  and members and no flag rule, TS 183 066's table 7.4 printing its own only
+  for its own interface.
 - **An origin the corpus does not hold.** RFC 6736 table 3 re-uses
   `Egress-VLANID` from RFC 4675, a RADIUS document.
 - **The eleven names that resolve nowhere**, the corpus's `Undefined AVP`

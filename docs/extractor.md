@@ -580,8 +580,11 @@ ETSI ES 283 034 V2.2.0 and TS 183 017 V3.2.1, which 3GPP documents cite for
 as PDF alone. So are the documents behind the rest of the AVPs Wireshark's
 dictionary holds in ETSI's and 3GPP2's vendor spaces: ETSI TS 183 033 V1.2.0,
 the last version printing its AVPs, V1.3.0 and V2.0.0 pointing at TS 129 433
-instead; ES 283 035 V2.5.1; ES 283 026 V1.6.0; TS 183 066 V2.1.1; and 3GPP2
-X.S0013-013-0 and X.S0013-014-0 V1.0. No extractor reads them: each is copied
+instead; ES 283 035 V2.5.1; ES 283 026 V1.6.0; TS 183 066 V2.1.1, with the two
+documents it imports from, TS 183 020 V1.1.1 and TS 183 059-1 V2.1.1; and 3GPP2
+X.S0013-013-0 and X.S0013-014-0 V1.0, with X.S0013-006-B V1.0, the revision of
+the Cx document published with them, which X.S0013-014 cites by no revision. No
+extractor reads them: each is copied
 by hand into `edits/transcriptions/<SpecRef>.dad` in `.dad` notation, and its
 header
 says so (`; Transcribed: by hand from <the PDF>`). The transcription stands
@@ -616,7 +619,8 @@ rendering's name in `; Transcribed:` is where a transcription states its
 revision; `regenerate` checks it against the file's number and version,
 and `corpus.revision` reads it for a citation naming a revision
 ([linter.md](linter.md#resolving-an-origin)). A part of a series is a document
-of its own, which a spec-ref keeps: X.S0013-013 and X.S0013-014 are two. A 3GPP2
+of its own, which a spec-ref keeps: X.S0013-013 and X.S0013-014 are two, and
+ETSI's TS 183 059-1 is `ts18305901-020101`, as ETSI runs its digits. A 3GPP2
 page is the number its footer prints, after a front matter numbered in roman.
 
 ## Strictness
