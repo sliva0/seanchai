@@ -301,12 +301,11 @@ def test_version_specific_model_queries_read_the_selected_copy(exported):
     old = model.resolve("TS32.299", "Service-Information", version="11.20.0")
     assert old is not None
     assert old.across_releases is None
-    old_identifier = model.resolve(
-        "TS32.299", "AF-Charging-Identifier", version="11.20.0"
-    )
-    new_identifier = model.resolve("TS32.299", "AF-Charging-Identifier")
-    assert old_identifier is not None and old_identifier.section == "5.3.6"
-    assert new_identifier is not None and new_identifier.section is None
+    # V11.20.0 lists this AVP in its own tables, V18.0.0 re-uses RFC 6733's.
+    old_type = model.resolve("TS32.299", "Accounting-Record-Type", version="11.20.0")
+    new_type = model.resolve("TS32.299", "Accounting-Record-Type")
+    assert old_type is not None and old_type.section is None
+    assert new_type is not None and new_type.section == "9.8.1"
     with pytest.raises(ModelError, match=r"V99\.0\.0"):
         model.resolve("TS32.299", "Service-Information", version="99.0.0")
     assert model.applications("TS32.299", version="11.20.0")

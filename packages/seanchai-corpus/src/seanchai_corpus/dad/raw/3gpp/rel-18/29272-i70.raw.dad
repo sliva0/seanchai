@@ -727,7 +727,7 @@ GPRS-Subscription-Data                              1467   7.3.72    Grouped    
 Complete-Data-List-Included-Indicator               1468   7.3.73    Enumerated         M,V    -     -       -       No
 PDP-Context                                         1469   7.3.74    Grouped            M,V    -     -       -       No
 PDP-Type                                            1470   7.3.75    OctetString        M,V    -     -       -       No
-3GPP2-MEID                                          1471   -         OctetString        M,V    -     -       -       No
+3GPP2-MEID                                          1471   7.3.6     OctetString        M,V    -     -       -       No
 Specific-APN-Info                                   1472   7.3.82    Grouped            M,V    -     -       -       No
 LCS-Info                                            1473   7.3.84    Grouped            M,V    -     -       -       No
 GMLC-Number                                         1474   7.3.85    OctetString        M,V    -     -       -       No

@@ -6,6 +6,8 @@ import docx.text.paragraph
 import pypdf
 import pytest
 from conftest import _CORPUS_DIR
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
@@ -418,6 +420,42 @@ def test_extract_rejects_an_abnf_line_with_mixed_bold(tmp_path, synthetic_spec_d
 
     with pytest.raises(tgpp_docx.ExtractionError, match="mixed bold in ABNF line"):
         tgpp_docx.extract(malformed)
+
+
+def test_extract_reads_text_inside_smart_tags(tmp_path, synthetic_spec_docx):
+    # TS 29.338 clause 5.3.2.6 tags the abbreviation in its heading, which
+    # python-docx would read as "Alert-Service-Centre-Answer () Command", and
+    # TS 29.214's clause cells are tagged whole.
+    tagged = tmp_path / "tagged.docx"
+    document = docx.Document(synthetic_spec_docx)
+
+    def tag(run):
+        element = OxmlElement("w:smartTag")
+        element.set(qn("w:element"), "stockticker")
+        element.append(OxmlElement("w:smartTagPr"))
+        run._r.addprevious(element)
+        element.append(run._r)
+
+    heading = _paragraph(document, "6.1\tExample-Request (EXR) Command")
+    heading.runs[0].text = "6.1\tExample-Request ("
+    tag(heading.add_run("EXR"))
+    heading.add_run(") Command")
+    rule = _paragraph(document, "< Session-Id >")
+    rule.runs[0].text = "< Session-"
+    tag(rule.add_run("Id"))
+    rule.add_run(" >")
+    cell = document.tables[1].cell(2, 2).paragraphs[0]
+    cell.runs[0].text = ""
+    tag(cell.add_run("6.3.1"))
+    document.save(tagged)
+
+    spec = tgpp_docx.extract(tagged)
+
+    message = next(s for s in spec.sections if isinstance(s, ast.Message))
+    assert message.abbreviation == "EXR"
+    assert message.avps[0].name == "Session-Id"
+    table = next(s for s in spec.sections if isinstance(s, ast.AvpTable))
+    assert table.rows[0].section == "6.3.1"
 
 
 def test_extract_rejects_an_avp_table_whose_caption_it_cannot_read(
