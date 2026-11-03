@@ -188,6 +188,16 @@ number = "29.468"
 title = "GCSE_LTE MB2 reference point"
 
 [[tgpp]]
+number = "29.561"
+title = """
+    5G System; Interworking between 5G Network and external Data Networks
+    """
+reason = """
+    Defines the DN-AAA AVPs at 3GPP codes 110 to 134 that TS 29.230 table 4.1
+    cites.
+    """
+
+[[tgpp]]
 number = "32.299"
 title = "Diameter charging applications"
 
