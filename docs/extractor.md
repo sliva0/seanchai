@@ -118,7 +118,8 @@ The vocabulary, with the document that forced each:
   PXY>` and then its members, with a "Used in 3GPP" column read as the strike
   (TS 32.299 V11.20.0 clause 6.4.5).
 - `abnf-comments`: a member line's trailing `; comment` (TS 29.209, 29.061,
-  29.109, 29.214 Release 7 and 11).
+  29.109, 29.214).
+- `elided-members`: a body's lone `…` or `...` line (TS 29.273, below).
 - `list-numbered-headings`: clause numbers that exist only in Word's list
   numbering (oneM2M TS-0004).
 - `message-only`: commands and re-used rows, no local AVPs (TS 29.330,
@@ -278,13 +279,23 @@ Conventions worth knowing:
 
 ABNF is read line by line: a paragraph is split at its manual line breaks,
 and bold and strikethrough belong to the line. Blank lines inside a body are
-skipped when another member follows; a line made entirely of several
-members is read as several; any other line ends the body. A struck member
-carries `; strikethrough`, as a bold one carries `; bold`, and a line only
-partly struck fails. Without a legend the extractor reads, a struck member
-stays a member and warns. Under `struck-rules-unused`, TS 32.299's own
-legend ("not used by 3GPP") makes it no member, and the line is commented
-out where it stood, marker kept:
+skipped when another member follows, and a line made entirely of several
+members is read as several.
+
+A body ends at a blank line, the next rule, a sentence, or a change of paragraph
+style on a line with no ABNF in it. A sentence counts because prose follows a
+body directly and in its own style in dozens of clauses (TS 29.336's "The
+following combinations are allowed:"). Any other line fails, naming its section
+and text, and so does a member printed after the body ended and before the next
+rule: `[ OC-OLR ] ]` once ended TS 29.273's Multimedia-Auth-Answer there and
+took the members after it out of the file. A typo is an input patch, and a
+reading a quirk.
+
+A struck member carries `; strikethrough`, as a bold one carries `; bold`, and a
+line only partly struck fails. Without a legend the extractor reads, a struck
+member stays a member and warns. Under `struck-rules-unused`, TS 32.299's own
+legend ("not used by 3GPP") makes it no member, and the line is commented out
+where it stood, marker kept:
 
 ```dad
 <Accounting-Request> ::= < Diameter Header: 271, REQ, PXY >
@@ -293,6 +304,19 @@ out where it stood, marker kept:
         [ Acct-Application-Id ]
 ;;      [ Vendor-Specific-Application-Id ] ; strikethrough
         [ User-Name ]
+```
+
+Under `elided-members`, a `…` or `...` on a line of its own is kept the same
+way. TS 29.273 prints one in 47 commands, between members and before `*[ AVP ]`,
+where a rule leaves out what it does not change. It is no member, and the file
+says where the document said it, as printed:
+
+```dad
+<Diameter-EAP-Answer> ::= < Diameter Header: 268, PXY, 16777250 >
+        < Session-Id >
+        [ MPS-Priority ]
+;; …
+      * [ AVP ]
 ```
 
 A PDF's text layer loses the strike, so the docx's run formatting is what

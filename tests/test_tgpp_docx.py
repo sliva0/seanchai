@@ -1029,10 +1029,12 @@ def _abnf_lines(*texts):
 def test_a_blank_line_before_a_line_of_several_members_does_not_end_the_body():
     # The corpus has blank lines inside bodies (TS 32.299's CCA) and lines of
     # several members (its 7.2.154I), but never one right after the other.
-    lines = _abnf_lines("[ First ]", "", "[ Second ] [ Third ]", "[ Fourth ]", "Prose")
+    lines = _abnf_lines(
+        "[ First ]", "", "[ Second ] [ Third ]", "[ Fourth ]", "A closing sentence."
+    )
 
     rules, end, _ = tgpp_docx._abnf_body(
-        lines, 0, "Example", tgpp_docx.sources.Quirks([], None), []
+        lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
     )
 
     assert [rule.name for rule in rules] == ["First", "Second", "Third", "Fourth"]
@@ -1049,7 +1051,12 @@ def test_a_struck_member_without_a_legend_stays_a_member_with_its_marker():
     warnings: list[str] = []
 
     rules, _, commented = tgpp_docx._abnf_body(
-        _struck_lines(), 0, "Example", tgpp_docx.sources.Quirks([], None), warnings
+        _struck_lines(),
+        0,
+        "Example",
+        "1.1",
+        tgpp_docx.sources.Quirks([], None),
+        warnings,
     )
 
     assert [(rule.name, rule.strikethrough) for rule in rules] == [
@@ -1069,7 +1076,7 @@ def test_behind_its_legend_a_struck_member_is_commented_out_in_place():
     warnings: list[str] = []
 
     rules, _, commented = tgpp_docx._abnf_body(
-        _struck_lines(), 0, "Example", quirks, warnings
+        _struck_lines(), 0, "Example", "1.1", quirks, warnings
     )
 
     assert [rule.name for rule in rules] == ["First", "Last"]
@@ -1083,8 +1090,222 @@ def test_a_partly_struck_line_still_fails():
 
     with pytest.raises(tgpp_docx.ExtractionError, match="partly struck"):
         tgpp_docx._abnf_body(
-            lines, 0, "Example", tgpp_docx.sources.Quirks([], None), []
+            lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
         )
+
+
+def _with_body_lines(tmp_path, synthetic_spec_docx, *texts):
+    """The synthetic document with `texts` printed after its command's body."""
+    path = tmp_path / "body.docx"
+    document = docx.Document(synthetic_spec_docx)
+    previous = _paragraph(document, "* [ Local-AVP ]")
+    for text in texts:
+        paragraph = document.add_paragraph(text)
+        previous._p.addnext(paragraph._p)
+        previous = paragraph
+    document.save(path)
+    return path
+
+
+def _members(spec):
+    message = next(s for s in spec.sections if isinstance(s, ast.Message))
+    return [rule.name for rule in message.avps]
+
+
+def _quirk_file(tmp_path, name):
+    (tmp_path / "TS29.999.toml").write_text(
+        f'[[quirk]]\nname = "{name}"\nreason = "the document prints it"\n',
+        encoding="utf-8",
+    )
+    return tmp_path
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        # Each of these ended a real body, taking the members after it along:
+        # TS 29.128 clause 6.2.5, 29.172 7.3.3, 29.212 5.3.36, 29.272 7.3.35,
+        # 29.272 7.2.9, 29.283 7.2.4, 29.344 6.2.5, 29.345 6.3.32 and 6.3.68.
+        "**[ Proxy-Info ]",
+        "[ 1xRTT-RCID ] ]",
+        "2 [ Tunnel-Header-Filter ]",
+        "* 2 [ Served-Party-IP-Address ]",
+        "[ IDR- Flags ]",
+        "DRMP ]",
+        "[ ProSe Subscription-Data ]",
+        "*AVP",
+        "[ Ending\u2013Suffix ]",
+    ],
+)
+def test_a_line_that_is_no_member_inside_a_body_fails(
+    tmp_path, synthetic_spec_docx, line
+):
+    path = _with_body_lines(tmp_path, synthetic_spec_docx, line, "[ Later ]")
+
+    with pytest.raises(
+        tgpp_docx.ExtractionError,
+        match=rf"6\.1: line {re.escape(repr(line))} inside Example-Request's body",
+    ):
+        tgpp_docx.extract(path)
+
+
+def test_an_input_patch_repairs_a_line_inside_a_body(tmp_path, synthetic_spec_docx):
+    path = _with_body_lines(tmp_path, synthetic_spec_docx, "DRMP ]", "[ Later ]")
+    (tmp_path / "TS29.999.toml").write_text(
+        '[[patch]]\nfind = "DRMP ]"\nreplace = "[ DRMP ]"\nexact = true\n'
+        'section = "6.1"\nreason = "the opening bracket is lost"\n',
+        encoding="utf-8",
+    )
+
+    spec = tgpp_docx.extract(path, sources_dir=tmp_path)
+
+    assert _members(spec) == ["Session-Id", "Local-AVP", "DRMP", "Later"]
+
+
+@pytest.mark.parametrize("elided", ["…", "..."])
+def test_an_elided_line_undeclared_fails_naming_its_quirk(
+    tmp_path, synthetic_spec_docx, elided
+):
+    path = _with_body_lines(tmp_path, synthetic_spec_docx, elided, "* [ AVP ]")
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="`elided-members`"):
+        tgpp_docx.extract(path)
+
+
+@pytest.mark.parametrize("elided", ["…", "..."])
+def test_an_elided_line_declared_stays_a_comment_where_it_stood(
+    tmp_path, synthetic_spec_docx, elided
+):
+    # TS 29.273 clause 4.2.2.1.1 prints one between members and one before
+    # `*[ AVP ]`; the last here stands at the body's end.
+    path = _with_body_lines(
+        tmp_path, synthetic_spec_docx, elided, "[ Later ]", elided, "* [ AVP ]", elided
+    )
+
+    spec, comments = tgpp_docx.extract_with_comments(
+        path, sources_dir=_quirk_file(tmp_path, "elided-members")
+    )
+
+    assert _members(spec) == ["Session-Id", "Local-AVP", "Later", "AVP"]
+    text = formatter.format_spec(spec, comments)
+    body = text[text.index("< Session-Id >") :].splitlines()[:7]
+    assert [line.partition(" ; ")[0].strip() for line in body] == [
+        "< Session-Id >",
+        "* [ Local-AVP ]",
+        f";; {elided}",
+        "[ Later ]",
+        f";; {elided}",
+        "* [ AVP ]",
+        f";; {elided}",
+    ]
+    assert parser.parse(text) == spec
+    assert formatter.format_spec(*parser.parse_with_comments(text)) == text
+
+
+def test_a_blank_line_before_an_elided_line_does_not_end_the_body():
+    quirks = tgpp_docx.sources.Quirks(
+        [tgpp_docx.sources.Quirk(name="elided-members", reason="printed")], None
+    )
+
+    rules, _, commented = tgpp_docx._abnf_body(
+        _abnf_lines("[ First ]", "", "…", "[ Last ]"),
+        0,
+        "Example",
+        "1.1",
+        quirks,
+        [],
+    )
+
+    assert [rule.name for rule in rules] == ["First", "Last"]
+    assert commented == [(1, "…")]
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        # As TS 29.336, 29.234 and 29.272 follow a body, in its own style.
+        "The following combinations are allowed:",
+        "For the response:",
+        "NOTE: Multiple instances are allowed.",
+        "See clause 5.",
+        "For details see TS 23.003 [3], clause 19.9).",
+    ],
+)
+def test_a_sentence_after_a_body_ends_it(line):
+    rules, end, _ = tgpp_docx._abnf_body(
+        _abnf_lines("[ First ]", line),
+        0,
+        "Example",
+        "1.1",
+        tgpp_docx.sources.Quirks([], None),
+        [],
+    )
+
+    assert [rule.name for rule in rules] == ["First"]
+    assert end == 1
+
+
+def test_a_word_in_another_paragraph_style_ends_a_body():
+    lines = _abnf_lines("[ First ]", "Definitions")
+    lines[1].style = "Heading 8"
+
+    rules, end, _ = tgpp_docx._abnf_body(
+        lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
+    )
+
+    assert [rule.name for rule in rules] == ["First"]
+    assert end == 1
+
+
+def test_a_broken_member_in_another_paragraph_style_still_fails():
+    # TS 29.345 clause 6.3.54 changes style inside its body, at a broken line.
+    lines = _abnf_lines("[ First ]", "[ ProSe-Validity Timer ]", "[ Last ]")
+    lines[1].style = "Normal"
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="ProSe-Validity Timer"):
+        tgpp_docx._abnf_body(
+            lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
+        )
+
+
+@pytest.mark.parametrize(
+    "lines",
+    [
+        ("[ First ]", "NOTE: A note wedged in the rule.", "[ Last ]"),
+        ("[ First ]", "", "A sentence between its members.", "[ Last ]"),
+        ("[ First ]", "A sentence before a broken member.", "[ Last ] ]"),
+        ("[ First ]", "A sentence before an elided line.", "…"),
+    ],
+)
+def test_a_member_printed_after_a_body_ended_fails(lines):
+    with pytest.raises(tgpp_docx.ExtractionError, match="follows the end of Example"):
+        tgpp_docx._abnf_body(
+            _abnf_lines(*lines),
+            0,
+            "Example",
+            "1.1",
+            tgpp_docx.sources.Quirks([], None),
+            [],
+        )
+
+
+def test_the_next_rule_ends_a_body_and_the_search_for_stray_members():
+    rules, end, _ = tgpp_docx._abnf_body(
+        _abnf_lines(
+            "[ First ]",
+            "The answer's rule is:",
+            "<Answer> ::= < Diameter Header: 1, PXY >",
+            "[ Member ]",
+        ),
+        0,
+        "Example",
+        "1.1",
+        tgpp_docx.sources.Quirks([], None),
+        [],
+    )
+
+    assert [rule.name for rule in rules] == ["First"]
+    assert end == 1
 
 
 def _vendor_table(reference):

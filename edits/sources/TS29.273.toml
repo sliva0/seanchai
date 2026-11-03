@@ -77,3 +77,79 @@ reason = """
     """
 first_version = "18.6.0"
 last_version = "18.6.0"
+
+[[quirk]]
+name = "elided-members"
+reason = """
+    the commands of clauses 4 to 9 print '…' or '...' on a line of its own
+    where a rule leaves out what it does not change, between members and
+    before '*[ AVP ]'.
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "* 2 [ Served-Party-IP-Address ]"
+replace = "*2 [ Served-Party-IP-Address ]"
+exact = true
+section = "5.2.3.26"
+reason = """
+    clause 5.2.3.26's TWAN-Connectivity-Parameters spaces the qualifier, '*
+    2', docx and PDF alike, which RFC 6733's 'qual' does not. Unread, the
+    body ended there, dropping the members after it.
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "* 2 [ TWAG-CP-Address ]"
+replace = "*2 [ TWAG-CP-Address ]"
+exact = true
+count = 2
+reason = """
+    two Diameter-EAP-Requests space the qualifier, '* 2', docx and PDF
+    alike, which RFC 6733's 'qual' does not. Unread, each body ended there,
+    dropping the members after it.
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "*[ Redirect-Host ] ]"
+replace = "*[ Redirect-Host ]"
+exact = true
+section = "6.2.2.1.1.2"
+reason = """
+    clause 6.2.2.1.1.2's Diameter-EAP-Answer closes the member's bracket
+    twice, docx and PDF alike. Unread, the body ended there, dropping the
+    members after it.
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "[ Emergency- Services ]"
+replace = "[ Emergency-Services ]"
+exact = true
+count = 2
+reason = """
+    clauses 7.2.2.1.1 and 9.2.2.2.1 insert a space into the member's name,
+    as tables 7.2.3.1/1 and 9.2.3.2.1/1 do, docx and PDF alike; clause
+    7.2.3.4 defines Emergency-Services. Unread, each body ended there,
+    dropping the members after it.
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
+find = "[ OC-OLR ] ]"
+replace = "[ OC-OLR ]"
+exact = true
+count = 2
+section = "8.2.2"
+reason = """
+    clauses 8.2.2.1 and 8.2.2.3 close the member's bracket twice, docx and
+    PDF alike. Unread, each body ended there, dropping the members after it.
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"

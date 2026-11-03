@@ -8,9 +8,16 @@ record.
 
 Nothing has been published to PyPI yet.
 
+<<<<<<< HEAD
 - `Model.definition`, `find`, `identified`, `avps()` and `seanchai show` know an
   identity only an older copy holds, where a citation reaches it, so every
   identity `seanchai dictionary` writes resolves.
+=======
+- The docx extractor fails on a line inside an ABNF body that is no member,
+  rather than ending the body there, and keeps a `…` line as a comment behind
+  `elided-members`, which restores the members TS 29.273's, and 8 more
+  documents', bodies lost.
+>>>>>>> 394760a (fail on abnf body line that is no member, keep ts 29.273's elided lines as comments)
 - The docx extractor reads the text inside Word's smart tags, command headings
   spacing a name's words, TS 29.061's and TS 29.109's commands, and a command
   printed as a table, so 41 commands the corpus lacked are `Message` blocks.

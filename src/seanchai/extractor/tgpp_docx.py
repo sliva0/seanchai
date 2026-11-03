@@ -753,9 +753,9 @@ def _sections(
     return sections
 
 
-# The members commented out of a body behind `struck-rules-unused`, by the
-# message or grouped AVP they were struck from: each the note standing for it,
-# with the number of members before it.
+# The lines commented out of a body behind `struck-rules-unused` and
+# `elided-members`, by the message or grouped AVP they stood in: each the note
+# standing for it, with the number of members before it.
 type _Commented = list[tuple[ast.Message | ast.GroupedAvp, list[tuple[int, str]]]]
 
 
@@ -763,15 +763,22 @@ def _abnf_body(
     lines: list[_Line],
     start: int,
     rule: str,
+    section: str,
     quirks: sources.Quirks,
     warnings: list[str],
 ) -> tuple[tuple[ast.AvpRule, ...], int, list[tuple[int, str]]]:
     """Parse `[qual] bracket Name bracket` lines starting at `start`.
 
-    Also returns the members commented out behind `struck-rules-unused`,
-    each as the note standing for it with the number of members before it."""
+    Also returns the lines commented out of the body, behind
+    `struck-rules-unused` and `elided-members`, each as the note standing for
+    it with the number of members before it.
+
+    A body ends at a blank line, a sentence, another paragraph style or the
+    next rule. Any other line is a member this reading cannot hold, and fails
+    rather than taking the members after it out of the file (`_body_ends`)."""
     rules: list[ast.AvpRule] = []
-    struck: list[tuple[int, ast.AvpRule]] = []
+    notes: list[tuple[int, ast.AvpRule | str]] = []
+    style = None
     index = start
     while index < len(lines):
         line = lines[index]
@@ -780,8 +787,27 @@ def _abnf_body(
             # first member (clauses 6.2.2-6.4.5) and inside CCA's body
             # (6.4.3); a blank line followed by anything else ends the body.
             following = next((later for later in lines[index:] if later.text), None)
-            if following is None or not _commented_members(following.text, quirks):
+            if following is None or not (
+                _commented_members(following.text, quirks)
+                or _ELIDED_LINE_RE.fullmatch(following.text)
+            ):
                 break
+            index += 1
+            continue
+        if _ELIDED_LINE_RE.fullmatch(line.text):
+            # TS 29.273's commands print "…" or "..." where a rule leaves out
+            # what it does not change (clause 4.2.2.1.1, between members and
+            # before `*[ AVP ]`). It is no member, and it is what the document
+            # says of the rule, so it stays where it stood.
+            if not quirks.enabled("elided-members"):
+                raise ExtractionError(
+                    f"{section}: {line.text!r} inside {rule}'s body, which this"
+                    " document's source declaration does not read (the"
+                    " `elided-members` quirk)"
+                )
+            quirks.fire("elided-members")
+            notes.append((len(rules), line.text))
+            style = line.style
             index += 1
             continue
         matches = _abnf_members(line.text)
@@ -792,7 +818,14 @@ def _abnf_body(
             quirks.fire("abnf-comments")
             line = dataclasses.replace(line, text=line.text.partition(";")[0].rstrip())
         if not matches:
+            if not _body_ends(line, style):
+                raise ExtractionError(
+                    f"{section}: line {line.text!r} inside {rule}'s body is no ABNF"
+                    " member; an input patch repairs a typo, a quirk declares a"
+                    " reading"
+                )
             break
+        style = line.style
         index += 1
         if len(matches) > 1 and True in line.struck:
             raise ExtractionError(f"struck line with several members: {line.text!r}")
@@ -805,17 +838,69 @@ def _abnf_body(
                 # not part of its rule, so it is no member; it stays in the
                 # file as a comment, where the reader still sees it.
                 quirks.fire("struck-rules-unused")
-                struck.append((len(rules), member))
+                notes.append((len(rules), member))
             else:
                 rules.append(member)
+    _no_member_after(lines[index:], rule, section)
     # Aligned over the struck members too, so a body's markers stay one
     # column whichever kind of line is longest.
-    members = [*rules, *(member for _, member in struck)]
+    members = [
+        *rules,
+        *(note for _, note in notes if isinstance(note, ast.AvpRule)),
+    ]
     commented = [
-        (position, formatter.commented_avp_rule(member, members))
-        for position, member in struck
+        (
+            position,
+            (
+                note
+                if isinstance(note, str)
+                else formatter.commented_avp_rule(note, members)
+            ),
+        )
+        for position, note in notes
     ]
     return tuple(rules), index, commented
+
+
+# A line standing for members a rule leaves out, read behind `elided-members`.
+_ELIDED_LINE_RE = re.compile(r"…|\.{3}")
+# ABNF's own punctuation, which no line ending a body by its style holds.
+_ABNF_PUNCTUATION_RE = re.compile(r"[\[\]{}<>*]")
+# A sentence after a body: "NOTE: ...", "The following combinations are
+# allowed:". It opens on a word and runs to several, or closes as sentences do;
+# a closing bracket last is a member's ("DRMP ]", TS 29.283 clause 6.2.2).
+_BODY_SENTENCE_RE = re.compile(r"[A-Za-z]\S*(?:\s+\S+){2,}(?<![>}\]])|[A-Za-z].*[.:]")
+# What a member looks like when it cannot be read: qualifiers, then brackets.
+_MEMBER_SHAPE_RE = re.compile(r"[\d\s*]*[<{\[].*[>}\]]")
+
+
+def _body_ends(line: _Line, style: str | None) -> bool:
+    """Whether a line no reading makes a member ends a body rather than
+    breaking it. Prose follows a body directly and in its own style in dozens
+    of clauses (TS 29.336's, 29.272's), so a boundary is a sentence, the next
+    rule, or a change of paragraph style on a line with no ABNF in it."""
+    return (
+        "::=" in line.text
+        or ":: =" in line.text
+        or bool(_BODY_SENTENCE_RE.fullmatch(line.text))
+        or (line.style != style and not _ABNF_PUNCTUATION_RE.search(line.text))
+    )
+
+
+def _no_member_after(lines: list[_Line], rule: str, section: str) -> None:
+    """Fail on a member printed after its body ended and before the next rule,
+    whichever line ended it: a note wedged between members reads as the
+    sentence it is, and the members after it would be gone."""
+    for line in lines:
+        if "::=" in line.text or ":: =" in line.text:
+            return
+        if _MEMBER_SHAPE_RE.fullmatch(line.text) or _ELIDED_LINE_RE.fullmatch(
+            line.text
+        ):
+            raise ExtractionError(
+                f"{section}: line {line.text!r} follows the end of {rule}'s body"
+                " and reads as one of its members"
+            )
 
 
 # An ABNF line with a trailing comment, read behind `abnf-comments`.
@@ -1031,7 +1116,9 @@ def _extract_messages(
             warnings.append(
                 f"{section.number}: {rule_name} header omits the application id"
             )
-        avps, index, struck = _abnf_body(lines, index, rule_name, quirks, warnings)
+        avps, index, struck = _abnf_body(
+            lines, index, rule_name, section.number, quirks, warnings
+        )
         message = ast.Message(
             name=rule_name,
             abbreviation=abbreviation,
@@ -1109,7 +1196,9 @@ def _extract_table_message(
                 struck=frozenset({used == "no"}),
             )
         )
-    avps, end, struck = _abnf_body(lines, 0, title["name"], quirks, warnings)
+    avps, end, struck = _abnf_body(
+        lines, 0, title["name"], section.number, quirks, warnings
+    )
     if end != len(lines):
         raise ExtractionError(
             f"{section.number}: table row {lines[end].text!r} is no ABNF member"
@@ -1230,7 +1319,9 @@ def _extract_grouped(
     commented: _Commented,
 ) -> ast.GroupedAvp:
     vendor = header["vendor"]
-    avps, _, struck = _abnf_body(section.lines, body_start, name, quirks, warnings)
+    avps, _, struck = _abnf_body(
+        section.lines, body_start, name, section.number, quirks, warnings
+    )
     grouped = ast.GroupedAvp(
         name=name,
         source=ast.SourceRef(section=section.number),
@@ -3467,6 +3558,11 @@ QUIRKS: dict[str, str] = {
         "read 'n Label' enumerated values, the label ending at the first"
         " colon and the rest of the line its description (TS 32.299)"
     ),
+    "elided-members": (
+        "keep a body's lone '…' or '...' line, where a rule leaves out what it"
+        " does not change, as a comment where it stood (TS 29.273 clause"
+        " 4.2.2.1.1)"
+    ),
     "abnf-comments": (
         "read an ABNF member line's trailing '; comment' (RFC 5234 section"
         " 3.9) as the member, dropping the comment (TS 29.209 V6.8.0 clauses"
@@ -3665,8 +3761,8 @@ def extract(
     normalized source text before parsing, and quirks to the readings the
     extractor uses.
 
-    Members commented out behind `struck-rules-unused` are not in the tree;
-    `extract_with_comments` returns them too."""
+    Lines commented out behind `struck-rules-unused` and `elided-members` are
+    not in the tree; `extract_with_comments` returns them too."""
     return extract_with_comments(docx_path, link, warnings, sources_dir)[0]
 
 
@@ -3677,9 +3773,9 @@ def extract_with_comments(
     sources_dir: Path | None = None,
 ) -> tuple[ast.Specification, formatter.Comments]:
     """`extract`, plus the `;;` lines the file prints beside the tree, as the
-    `formatter.Comments` `format_spec` takes: each member commented out
-    behind `struck-rules-unused`, standing before the member that followed
-    it, or at its body's end."""
+    `formatter.Comments` `format_spec` takes: each line commented out behind
+    `struck-rules-unused` or `elided-members`, standing before the member that
+    followed it, or at its body's end."""
     warnings = warnings if warnings is not None else []
     with boundary(f"extracting {docx_path}"):
         document = docx.Document(str(docx_path))
@@ -3716,7 +3812,7 @@ def extract_with_comments(
 def _comments(
     sections: tuple[ast.Section, ...], commented: _Commented
 ) -> formatter.Comments:
-    """The commented-out members, keyed by the path of what follows each:
+    """The commented-out lines, keyed by the path of what follows each:
     the member after it in its body, or the body's end. A body is found by
     identity, since it is the very object the file holds."""
     standing: dict[ast.TreePath, list[str]] = {}
@@ -3727,8 +3823,8 @@ def _comments(
         )
         if index is None:
             raise ExtractionError(
-                f"{body.name}: the body its struck members were commented out"
-                " of is not in the file"
+                f"{body.name}: the body its lines were commented out of is not in"
+                " the file"
             )
         for position, note in notes:
             standing.setdefault(("sections", index, "avps", position), []).append(note)
