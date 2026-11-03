@@ -749,8 +749,8 @@ def test_export_cli_uses_explicit_corpus_and_reports_missing_sources(tmp_path):
             str(tmp_path / "invalid"),
         ],
     )
-    assert result.exit_code == 1
-    assert "specifications directory" in result.output
+    assert result.exit_code == 2
+    assert "--include-pdfs needs --specifications" in result.output
     assert not (tmp_path / "invalid").exists()
 
 

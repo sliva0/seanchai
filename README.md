@@ -70,12 +70,15 @@ seanchai regenerate --expand-ranges     # also widen stale declaration ranges
 seanchai extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
 seanchai extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
 seanchai correct RAW.dad --corrections DIR -o OUT.dad
-seanchai format [--check] FILE.dad...   # canonical form, ;; comments kept
-seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] FILE.dad...
+seanchai format [--check] [FILE.dad | DIR]...  # canonical form, ;; comments kept
+seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] [FILE.dad | DIR]...
 seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
 seanchai export -o DIR                  # the corpus as JSON for the static site
 seanchai export -o DIR --include-pdfs --specifications specifications
 ```
+
+A command exits 1 on an error or a finding and 2 on a usage error. `crosscheck`
+reports disagreement for a reader to judge, so its findings exit 0.
 
 ## Development
 
