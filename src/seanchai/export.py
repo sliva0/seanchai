@@ -725,7 +725,9 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
                     data_type=row.data_type,
                 )
                 for row in section.rows
-                if isinstance(row, ast.RegistryRow) and row.name
+                if isinstance(row, ast.RegistryRow)
+                and row.name
+                and row.code is not None
             )
         elif isinstance(section, ast.ValueTable):
             search.extend(

@@ -1576,14 +1576,37 @@ def _registry_quirks(*names):
             ),
             "'Integer' names no Diameter type",
         ),
+        (_registry_table(("zz", "A", "29.229 [2]")), "code cell 'zz'"),
     ],
-    ids=["bare-number", "unknown-column", "undeclared-notes", "undeclared-type"],
+    ids=[
+        "bare-number",
+        "unknown-column",
+        "undeclared-notes",
+        "undeclared-type",
+        "undeclared-placeholder",
+    ],
 )
 def test_a_registry_table_rejects_what_it_cannot_read(table, message):
     with pytest.raises(tgpp_docx.ExtractionError, match=message):
         tgpp_docx._extract_registry(
             table, "7.1", [], _registry_quirks("registry-tables"), {"2": "TS 29.229"}
         )
+
+
+def test_a_declared_placeholder_code_is_kept_as_printed():
+    quirks = _registry_quirks("registry-tables", "placeholder-codes")
+
+    registry = tgpp_docx._extract_registry(
+        _registry_table(("zz", "A", "29.229 [2]")),
+        "4.1",
+        [],
+        quirks,
+        {"2": "TS 29.229"},
+    )
+
+    assert registry.rows == (
+        ast.RegistryRow(printed_code="zz", name="A", defined_in=("TS29.229",)),
+    )
 
 
 # --- list-numbered headings (oneM2M TS-0004) --------------------------------

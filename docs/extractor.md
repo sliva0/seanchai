@@ -75,8 +75,13 @@ spans. A document the corpus holds in several releases declares for each
 copy, and no copy gets another's declarations. A version is read with the
 declarations of its own release when any spans it, else with those of the
 newest declared release below it (a release upgrade, each warning as within
-a release so `--expand-ranges` widens them), else with none. Corrections
-and acceptances are scoped the same way, per module.
+a release so `--expand-ranges` widens them), else with none. A range with no
+upper bound spans only its lower bound's release for this choice, and one with
+no bounds spans none, since neither says a later release was reviewed; both
+apply to every copy they cover. A declaration naming the new release alone,
+written before the rest are widened, takes them all out of its reading. Write it
+unranged until `--expand-ranges` has run. Corrections and acceptances are scoped
+the same way, per module.
 
 ### Quirks
 
@@ -110,6 +115,8 @@ The vocabulary, with the document that forced each:
 - `access-type-headings`: `Event-Trigger AVP (All access types)` (TS
   29.212, 29.214).
 - `spaced-rule-operator`: `:: =` (TS 32.299, 29.229, 29.234, oneM2M).
+- `placeholder-codes`: a registry row whose code cell prints a placeholder,
+  quoted as printed (TS 29.230 V19.3.0's `zz`, `xx1`, `xx2`).
 - `spaced-heading-numbers`: a space before the heading's tab (TS 29.234).
 - `body-clause-headings`: a clause heading printed as a body paragraph (TS
   32.299 clause 7.2.135C).
@@ -143,8 +150,6 @@ The vocabulary, with the document that forced each:
   29.273, 29.368, 29.219).
 - `independent-avp-tables`: no one-to-one pairing of AVP and re-used tables
   (TS 29.273, 29.215).
-- `conflicting-avp-codes`: one name with two codes across tables, both kept
-  (TS 29.273).
 - `vendor-avp-tables`: tables of other vendors' AVPs read as re-used blocks
   (TS 32.299 tables 7.3.1 to 7.5.1).
 - `refer-type-cells`, `referred-type-sentences`: a `refer [n]` type cell
@@ -368,7 +373,7 @@ a row a tab sets off is the grouped AVP's above it, kept as a comment and no
 member.
 
 The category says neither a fixed position nor a repetition, which RFC 6733's
-rule states and V18.0.0's clause 6.4.4 prints. Those are corrections
+rule states and V19.0.0's clause 6.4.4 prints. Those are corrections
 (`rel11-rar-session-id-position`, `rel11-rar-repeats-*`), so the file shows both
 the reading and the edit:
 

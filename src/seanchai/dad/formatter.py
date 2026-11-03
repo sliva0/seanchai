@@ -489,6 +489,8 @@ def _documents(documents: tuple[str, ...]) -> str:
 
 def _registry_cell(row: ast.RegistryRow, column: ast.RegistryColumn) -> str:
     match column:
+        case ast.RegistryColumn.CODE if row.printed_code is not None:
+            return _quoted(row.printed_code)
         case ast.RegistryColumn.CODE:
             return str(row.code)
         case ast.RegistryColumn.NAME:

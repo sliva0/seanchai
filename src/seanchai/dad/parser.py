@@ -729,6 +729,7 @@ def _registry_row(
     columns: tuple[ast.RegistryColumn, ...], cells: list[str], lineno: int
 ) -> ast.RegistryRow:
     code: int | None = None
+    printed_code: str | None = None
     name: str | None = None
     abbreviation: str | None = None
     data_type: ast.DataType | None = None
@@ -736,6 +737,8 @@ def _registry_row(
     defined_in: tuple[str, ...] = ()
     for column, text in zip(columns, cells, strict=True):
         match column:
+            case ast.RegistryColumn.CODE if text.startswith('"'):
+                printed_code = _text_cell(text, lineno, "Code")
             case ast.RegistryColumn.CODE:
                 code = _number(text, lineno, "Code cell")
             case ast.RegistryColumn.NAME:
@@ -754,10 +757,13 @@ def _registry_row(
                 data_type = None if text == "-" else _data_type(text, lineno)
             case ast.RegistryColumn.DEFINED_IN:
                 defined_in = _documents(text, lineno)
-    assert code is not None, "a registry without a Code column is rejected first"
+    assert code is not None or printed_code is not None, (
+        "a registry without a Code column is rejected first"
+    )
     with _validated(lineno):
         return ast.RegistryRow(
             code=code,
+            printed_code=printed_code,
             name=name,
             abbreviation=abbreviation,
             data_type=data_type,

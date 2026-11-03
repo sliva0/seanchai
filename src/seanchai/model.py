@@ -1904,7 +1904,7 @@ class Model:
         what an older copy reached across releases cites across releases in
         turn, at any depth, which no reading of that copy's own lists:
         oneM2M TS-0004's `Service-Information` is TS 32.299 V11.20.0's,
-        whose `Server-Capabilities` is TS 29.229 V18.1.0's, standing in.
+        whose `Server-Capabilities` is TS 29.229 V19.1.0's, standing in.
         Sorted by citing document and name."""
         references = self._chosen(reference)
         found: dict[Avp | Hole, None] = {}
