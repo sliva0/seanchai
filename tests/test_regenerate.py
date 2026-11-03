@@ -834,6 +834,28 @@ def test_a_3gpp2_document_in_parts_keeps_its_part_in_its_name(tmp_path):
     assert (source.stem, source.tree) == ("xs0013-014-0_v2.0", "3gpp2")
 
 
+def test_an_oma_transcription_is_named_for_its_rendering(tmp_path):
+    """OMA's rendering name holds the approval date and status its version
+    does not, and a transcription of another version is refused."""
+    transcriptions = tmp_path / "transcriptions"
+    transcriptions.mkdir()
+    path = transcriptions / "OMA-DDS-Charging_Data.dad"
+    url = "https://example.org/OMA-DDS-Charging_Data-V1_0-20110201-A.pdf"
+    text = (
+        "; Specification: OMA-DDS-Charging_Data\n"
+        f"; Version: 1.0\n; Transcribed: by hand from {url}\n"
+    )
+    path.write_text(text, encoding="utf-8")
+
+    (source,) = regenerate._transcriptions(transcriptions).values()
+
+    assert (source.stem, source.tree) == ("dds-charging_data-v1_0-20110201-a", "oma")
+
+    path.write_text(text.replace("; Version: 1.0", "; Version: 1.1"), encoding="utf-8")
+    with pytest.raises(ValueError, match="OMA's rendering of its name and version"):
+        regenerate._transcriptions(transcriptions)
+
+
 def test_an_etsi_document_in_parts_keeps_its_part_in_its_name(tmp_path):
     """TS 183 059-1 is `ts_18305901v020101p.pdf` at ETSI, the part in its digits."""
     transcriptions = tmp_path / "transcriptions"

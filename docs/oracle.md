@@ -103,7 +103,8 @@ lookup.
   name the document replaced, so it is a merge request's to fix.
 - **What a document types otherwise than the dictionary**: 3GPP2 X.S0013-014's
   `Flow-Identifier`, OctetString in its table and its clause, UTF8String in the
-  dictionary.
+  dictionary; OMA-DDS-Charging_Data's `Application-Server-ID`, UTF8String in its
+  table 11, Unsigned32 in the dictionary.
 - **Names the documents have replaced**, which the dictionary keeps:
   `Wildcarded-PSI` for TS 29.229's `Wildcarded-Public-Identity` and
   `NAF-Hostname` for TS 29.109's `NAF-Id`. Not accepted renames; a merge
@@ -112,10 +113,9 @@ lookup.
   abbreviation, which would be an accepted rename but for its type.
 - **Wireshark-side defects**, each with a merge request staged under
   [`integrations/wireshark/`](../integrations/wireshark/README.md): misspelt
-  names, wrong types and member lists short of the document's. Three the
-  oracle cannot see, since the AVP is re-used or the defect is a member
-  list: `Application-Server-ID` typed Unsigned32 where OMA's table says
-  UTF8String, `UWAN-User-Location-Info` missing four members, and
+  names, wrong types and member lists short of the document's. Two the
+  oracle cannot see, since the defect is a member list:
+  `UWAN-User-Location-Info` missing four members, and
   `Time-Of-Day-Condition` missing the three members erratum 2333 restores.
 - **Leads not staged**, resting on a reading the corpus makes rather than a
   document's statement: `Monitoring-Event-Information` listing TS 29.336's

@@ -179,7 +179,8 @@ def test_the_corpus_wheel_carries_its_notice(dist):
         notice = archive.read(name).decode("utf-8")
 
     assert all(
-        publisher in notice for publisher in ("3GPP", "ETSI", "3GPP2", "oneM2M", "IETF")
+        publisher in notice
+        for publisher in ("3GPP", "ETSI", "3GPP2", "OMA", "oneM2M", "IETF")
     )
     assert "publishers'" in notice
 

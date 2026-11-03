@@ -112,6 +112,7 @@ SOURCE_OF_FAMILY = {
     "IETF": "rfc",
     "ETSI": "transcribed",
     "3GPP2": "transcribed",
+    "OMA": "transcribed",
     "Wireshark": "wireshark",
 }
 

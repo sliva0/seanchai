@@ -29,7 +29,7 @@ def test_show_prints_the_defining_reading_and_how_the_others_differ():
     assert "flags: must M; must not V" in result.stdout
     assert "defined in: RFC6733, clause 8.8" in result.stdout
     assert "other readings:" in result.stdout
-    assert "oneM2M-TS-0004: flags must M; may P; must not V" in result.stdout
+    assert "OMA-DDS-Charging_Data: flags must M; may P; must not V" in result.stdout
 
 
 def test_show_says_nothing_of_other_readings_where_there_are_none():
@@ -69,7 +69,7 @@ def test_show_as_json_is_to_dict_and_the_other_readings():
 
     others = printed.pop("other_readings")
     assert printed == avp.to_dict()
-    assert [each["read_through"] for each in others] == ["oneM2M-TS-0004"]
+    assert [each["read_through"] for each in others] == ["OMA-DDS-Charging_Data"]
 
 
 def test_show_reads_it_as_a_document_does_and_at_an_older_copy():

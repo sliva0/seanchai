@@ -1,0 +1,145 @@
+# Source declarations for OMA-DDS-Charging_Data (Charging Data). Applied to the
+# lines of the hand transcription in edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "–"
+replace = "-"
+count = 1283
+section = "8.4"
+reason = """
+    table 11 prints most AVP names and dash cells with en dashes, 'Session–Id',
+    beside hyphens in the rows added later, 'Content-ID'; the name of the same
+    AVP takes hyphens in the document's ABNF and table 10, and a dash cell means
+    the same under either
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "Originating IOI"
+replace = "Originating-IOI"
+count = 2
+section = "8.4"
+reason = """
+    table 11 prints a space inside the row's name; table 10 maps the data
+    element to Originating-IOI, as TS 32.299 clause 7.2 spells the AVP
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "Application-Server-Id"
+replace = "Application-Server-ID"
+count = 2
+section = "8.4"
+reason = """
+    table 11 and table 10 write -Id where Service-Generic-Information's ABNF
+    (clause 8.5.10) and TS 32.299 table 7.2.0.1 write Application-Server-ID
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "Application-Session-Id"
+replace = "Application-Session-ID"
+count = 2
+section = "8.4"
+reason = """
+    table 11 and table 10 write -Id where Service-Generic-Information's ABNF
+    (clause 8.5.10) and TS 32.299 table 7.2.0.1 write Application-Session-ID
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "Number-of-Participants"
+replace = "Number-Of-Participants"
+count = 2
+section = "8.4"
+reason = """
+    table 11 and table 10 lower-case 'of', where TS 32.299, the row's reference,
+    spells Number-Of-Participants
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "V.M"
+replace = "V,M"
+count = 4
+section = "8.4"
+reason = """
+    table 11's Must cell for AoC-Format, AoC-Request-Type,
+    AoC-Service-Obligatory-Type and AoC-Service-Type prints a full stop for the
+    comma every other row's has
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "DiamIdent"
+replace = "DiameterIdentity"
+count = 6
+section = "8.4"
+reason = """
+    table 11 copies RFC 3588's DiamIdent type abbreviation
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "DiamURI"
+replace = "DiameterURI"
+section = "8.4"
+reason = """
+    table 11 copies RFC 3588's DiamURI type abbreviation
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "   Y"
+replace = "   Yes"
+count = 69
+section = "8.4"
+reason = """
+    table 11 writes 'Y' under May Encrypt; the grammar's cell is Yes or No
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "   N"
+replace = "   No"
+count = 68
+section = "8.4"
+reason = """
+    table 11 writes 'N' under May Encrypt; the grammar's cell is Yes or No
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "<ACR> ::="
+replace = "<Accounting-Request> ::="
+section = "8.1.1"
+reason = """
+    clause 8.1.1's rule names the command by its abbreviation; the clause's
+    heading is 'Accounting Request Command', and RFC 3588's Accounting-Request,
+    whose ABNF this restates, is command 271
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "<ACA> ::="
+replace = "<Accounting-Answer> ::="
+section = "8.1.2"
+reason = """
+    clause 8.1.2's rule names the command by its abbreviation; the clause's
+    heading is 'Accounting Answer Command', and RFC 3588's Accounting-Answer,
+    whose ABNF this restates, is command 271
+    """
+first_version = "1.0"
+last_version = "1.0"

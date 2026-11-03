@@ -84,7 +84,8 @@ section, each starting with `; Type:`.
 - **Where a row applies is the document's marks.** TS 29.212's "Acc. Type"
   and "Applicability", TS 29.061's "Applicable Reference Points" and TS
   32.299's per-command "Used in" columns are mark columns (`Acc-Type`,
-  `Applicability`, `Reference-Points`, `ACR` to `CCA`). A cell lists the
+  `Applicability`, `Reference-Points`, `ACR` to `CCA`; OMA-DDS-Charging_Data
+  table 11's `SI`, `CCR-MSCC` and `CCA-MSCC` beside them). A cell lists the
   marks the document prints, comma-separated, uninterpreted, each with
   what the document prints beside it (`"All (NOTE 5)"`). A printed dash is
   `-` and a blank cell `""`, since TS 32.299 gives the dash a meaning and
@@ -227,6 +228,7 @@ dad/
   rfc/           RFCs have no release axis
   etsi/          ETSI documents transcribed by hand; versions are ETSI's
   3gpp2/         3GPP2 documents transcribed by hand
+  oma/           OMA documents transcribed by hand
   onem2m/        oneM2M documents
   raw/           unedited extractor output, mirroring the trees above
   holes.toml     the record of known holes, hand-maintained
@@ -243,7 +245,8 @@ Files are named as their publisher names them: `29272-j60` for TS 29.272
 V19.6.0 (3GPP's archive naming), `rfc6733` for an RFC, `es283034-020200`
 for ETSI ES 283 034 V2.2.0, `xs0057-0_v2.0` for 3GPP2 X.S0057 revision 0
 V2.0, `xs0013-014-0_v1.0` for part 014 of its series, `ts-0004-v2_35_0` for
-oneM2M TS-0004 V2.35.0. RFC files carry no
+oneM2M TS-0004 V2.35.0, `dds-charging_data-v1_0-20110201-a` for
+OMA-DDS-Charging_Data V1.0, approved 1 February 2011. RFC files carry no
 `; Version:` header, since an RFC number names one immutable document.
 
 Each document is committed twice:

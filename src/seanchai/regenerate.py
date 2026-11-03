@@ -599,10 +599,14 @@ def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
         elif match := _TGPP2_STEM_RE.match(path.stem):
             tree = "3gpp2"
             stem = _tgpp2_stem(path, text, match["number"], version["value"])
+        elif path.stem.startswith("OMA-"):
+            tree = "oma"
+            stem = _oma_stem(path, text, version["value"])
         else:
             raise ValueError(
-                f"{path}: a transcription is named for an ETSI or 3GPP2 document"
-                " (ETSI-ES283.034.dad, 3GPP2-X.S0057.dad)"
+                f"{path}: a transcription is named for an ETSI, 3GPP2 or OMA"
+                " document (ETSI-ES283.034.dad, 3GPP2-X.S0057.dad,"
+                " OMA-DDS-Charging_Data.dad)"
             )
         found[path.stem, tree] = _Source(
             path.stem, path, None, "", tree, transcribed=True, stem=stem
@@ -633,6 +637,22 @@ def _tgpp2_stem(path: Path, text: str, number: str, version: str) -> str:
             f"_v{version}_<date>.pdf"
         )
     return f"{number.replace('.', '')}-{rendering['revision']}_v{version}".lower()
+
+
+def _oma_stem(path: Path, text: str, version: str) -> str:
+    """`dds-charging_data-v1_0-20110201-a` for OMA-DDS-Charging_Data V1.0, from
+    the rendering's name, `OMA-DDS-Charging_Data-V1_0-20110201-A.pdf`, less the
+    publisher as a oneM2M stem is. The name holds the approval date and status
+    the version does not."""
+    transcribed = _TRANSCRIBED_LINE_RE.search(text)
+    name = transcribed["value"].rsplit("/", 1)[-1] if transcribed is not None else ""
+    expected = f"{path.stem}-V{version.replace('.', '_')}-"
+    if not (name.startswith(expected) and name.endswith(".pdf")):
+        raise ValueError(
+            f"{path}: an OMA transcription is transcribed from OMA's rendering of"
+            f" its name and version, {expected}<date>-<status>.pdf"
+        )
+    return name.removeprefix("OMA-").removesuffix(".pdf").lower()
 
 
 _ETSI_STEM_RE = re.compile(

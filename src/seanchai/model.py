@@ -688,7 +688,7 @@ class Hole(_Plain):
     flag_rules: FlagRules | None = None
     section: str | None = None
     # The re-used origin the corpus holds no copy of, when one is cited:
-    # TS 32.299 V11.20.0's `DCD-Information` from OMA-DDS-Charging_Data.
+    # RFC 6736's `Egress-VLANID` from RFC 4675.
     origin: str | None = None
     # The document whose reading states a missing field but disagrees with
     # this one on a field both state, so nothing was taken from it or from

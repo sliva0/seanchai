@@ -5035,6 +5035,214 @@
    ],
    "version": "19.0.0"
   },
+  "dds-charging_data-v1_0-20110201-a": {
+   "edits": {
+    "OMA-DDS-Charging_Data.py#accounting-record-number-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Accounting-Record-Number; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#accounting-record-type-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for Accounting-Record-Type, which clause 8.5.2 heads"
+    },
+    "OMA-DDS-Charging_Data.py#acct-application-id-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for Acct-Application-Id, which clause 8.5.1 heads"
+    },
+    "OMA-DDS-Charging_Data.py#acct-interim-interval-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Acct-Interim-Interval; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#accumulated-cost-used-in": {
+     "kind": "correction",
+     "reason": "table 11 leaves SI blank and marks CCR O for Accumulated-Cost; clause 6.1.4's table 4 holds it under AoC Information, and every other AoC row of table 11 (Incremental-Cost, AoC-Cost-Information) is O under SI and '-' under CCR"
+    },
+    "OMA-DDS-Charging_Data.py#application-server-id-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Application-Server-ID, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#application-service-type-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Application-Service-Type, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#application-session-id-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Application-Session-ID, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#auth-application-id-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for Auth-Application-Id, which clause 8.5.3 heads"
+    },
+    "OMA-DDS-Charging_Data.py#bases-dcca": {
+     "kind": "correction",
+     "reason": "clauses 8.2.1 and 8.2.2 print CCR and CCA with RFC 4006's CC-Sub-Session-Id, CC-Correlation-Id and Service-Parameter-Info, which table 11 omits; clause 8.5.3 says 'the protocol used on CH-2 is Diameter Credit Control', [RFC4006]"
+    },
+    "OMA-DDS-Charging_Data.py#cc-request-type-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for CC-Request-Type, which clause 8.5.4 heads"
+    },
+    "OMA-DDS-Charging_Data.py#content-id-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Content-ID, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#content-provider-id-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Content-provider-ID, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#dcd-information-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for DCD-Information, which clause 8.5.5 heads"
+    },
+    "OMA-DDS-Charging_Data.py#dcd-information-vendor": {
+     "kind": "correction",
+     "reason": "clause 8.5.5's header prints only the code; table 11 gives the AVP vendor 10415"
+    },
+    "OMA-DDS-Charging_Data.py#delivery-status-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Delivery-Status, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#destination-host-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Destination-Host; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#destination-realm-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Destination-Realm; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#event-timestamp-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Event-Timestamp; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#failed-avp-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Failed-AVP; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#im-information-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.7] for IM-Information, which clause 8.5.6 heads"
+    },
+    "OMA-DDS-Charging_Data.py#im-information-vendor": {
+     "kind": "correction",
+     "reason": "clause 8.5.6's header prints only the code; table 11 gives the AVP vendor 10415"
+    },
+    "OMA-DDS-Charging_Data.py#low-balance-indication-type": {
+     "kind": "correction",
+     "reason": "table 11 types Low-Balance-Indication Grouped and cites [TS32.299], whose table 7.2 (V11.20.0) and table 7.2.0.1 (V19.0.0) both type it Enumerated"
+    },
+    "OMA-DDS-Charging_Data.py#number-of-messages-successfully-exploded-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Number-Of-Messages-Successfully-Exploded, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#number-of-messages-successfully-sent-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Number-Of-Messages-Successfully-Sent, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#origin-host-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Origin-Host; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#origin-realm-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Origin-Realm; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#origin-state-id-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Origin-State-Id; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#originator-type": {
+     "kind": "correction",
+     "reason": "table 11 types Originator UTF8String and cites [TS32.299], whose table 7.2 (V11.20.0) and table 7.2.0.1 (V19.0.0) both type it Enumerated"
+    },
+    "OMA-DDS-Charging_Data.py#proxy-host-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Proxy-Host; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#proxy-info-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Proxy-Info; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#proxy-state-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Proxy-State; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#redirect-host-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Redirect-Host; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#redirect-host-usage-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Redirect-Host-Usage; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#redirect-max-cache-time-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Redirect-Max-Cache-Time; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#requested-action-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for Requested-Action, which clause 8.5.8 heads"
+    },
+    "OMA-DDS-Charging_Data.py#result-code-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Result-Code; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#route-record-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Route-Record; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#service-context-id-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for Service-Context-Id, which clause 8.5.9 heads"
+    },
+    "OMA-DDS-Charging_Data.py#service-generic-information-clause": {
+     "kind": "correction",
+     "reason": "table 11 cites [8.5.11] for Service-Generic-Information, which clause 8.5.10 heads"
+    },
+    "OMA-DDS-Charging_Data.py#service-generic-information-name": {
+     "kind": "correction",
+     "reason": "clause 8.5.10's rule prints 'Services-'; its heading and sentence, table 11 and TS 32.299 table 7.2.0.1 name the AVP Service-Generic-Information"
+    },
+    "OMA-DDS-Charging_Data.py#service-generic-information-vendor": {
+     "kind": "correction",
+     "reason": "clause 8.5.10's header prints only the code; table 11 gives the AVP vendor 10415"
+    },
+    "OMA-DDS-Charging_Data.py#session-id-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Session-Id; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#termination-cause-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for Termination-Cause; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#time-quota-threshold-type": {
+     "kind": "correction",
+     "reason": "table 11 types Time-Quota-Threshold Unsigned64 and cites [TS32.299], whose table 7.2 (V11.20.0) and table 7.2.0.1 (V19.0.0) both type it Unsigned32"
+    },
+    "OMA-DDS-Charging_Data.py#total-number-of-messages-exploded-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Total-Number-Of-Messages-Exploded, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#total-number-of-messages-sent-borrowed-back": {
+     "kind": "delete",
+     "reason": "table 11 cites [TS32.299] for Total-Number-Of-Messages-Sent, and TS 32.299 table 7.2.0.1 prints only 'refer [223]', this document, with no clause of its own; table 11's row is the definition either citation reaches"
+    },
+    "OMA-DDS-Charging_Data.py#user-name-origin": {
+     "kind": "correction",
+     "reason": "table 11 cites [RFC3588] for User-Name; the corpus reads the base protocol as RFC 6733, which obsoletes it and defines the AVP"
+    },
+    "OMA-DDS-Charging_Data.py#volume-quota-threshold-type": {
+     "kind": "correction",
+     "reason": "table 11 types Volume-Quota-Threshold Unsigned64 and cites [TS32.299], whose table 7.2 (V11.20.0) and table 7.2.0.1 (V19.0.0) both type it Unsigned32"
+    }
+   },
+   "reference": "OMA-DDS-Charging_Data",
+   "renames": [
+    {
+     "expect": "Services-Generic-Information",
+     "replace": "Service-Generic-Information"
+    }
+   ],
+   "version": "1.0"
+  },
   "es283026-010600": {
    "edits": {
     "ETSI-ES283.026.py#aa-answer-auth-application-id-case": {

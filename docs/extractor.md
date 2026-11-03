@@ -649,7 +649,9 @@ the last version printing its AVPs, V1.3.0 and V2.0.0 pointing at TS 129 433
 instead; ES 283 035 V2.5.1; ES 283 026 V1.6.0; TS 183 066 V2.1.1, with the two
 documents it imports from, TS 183 020 V1.1.1 and TS 183 059-1 V2.1.1; and 3GPP2
 X.S0013-013-0 and X.S0013-014-0 V1.0, with X.S0013-006-B V1.0, the revision of
-the Cx document published with them, which X.S0013-014 cites by no revision. No
+the Cx document published with them, which X.S0013-014 cites by no revision.
+OMA-DDS-Charging_Data V1.0, approved 1 February 2011, which TS 32.299 cites for
+thirteen AVPs in each copy the corpus holds, is published the same way. No
 extractor reads them: each is copied
 by hand into `edits/transcriptions/<SpecRef>.dad` in `.dad` notation, and its
 header
@@ -688,6 +690,14 @@ and `corpus.revision` reads it for a citation naming a revision
 of its own, which a spec-ref keeps: X.S0013-013 and X.S0013-014 are two, and
 ETSI's TS 183 059-1 is `ts18305901-020101`, as ETSI runs its digits. A 3GPP2
 page is the number its footer prints, after a front matter numbered in roman.
+
+OMA-DDS-Charging_Data's table 11 tabulates IETF and 3GPP AVPs side by side with
+a Reference column, which becomes as TS 32.299's `refer [nnn]` does: a clause in
+the row's Section cell, a document a row of a `Reused AVPs` block of the same
+label. Its clause 6.2 lists Charging Data Elements and table 10 maps each to an
+AVP, so a value list there is an `Enumerated AVP` under the AVP table 10 names,
+where table 11 types that AVP Enumerated. The other two, under a Grouped and an
+Unsigned32 AVP, are comments.
 
 ## Strictness
 

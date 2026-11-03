@@ -15,6 +15,10 @@ Nothing has been published to PyPI yet.
   notes `section-mismatch`, for a table row citing another clause than its AVP's
   block, and `section-unknown`, for an `; Applies-To:` or `; Values:` naming a
   clause with no block.
+- The catalog gains OMA-DDS-Charging_Data V1.0, transcribed under `oma/`, which
+  TS 32.299 cites for thirteen AVPs in each copy; `seanchai export` knows OMA as
+  a publisher, and table 11's use marks are the `SI`, `CCR-MSCC` and `CCA-MSCC`
+  mark columns.
 - `seanchai regenerate` names an ETSI document in parts as ETSI does
   (`ts18305901-020101`), and the catalog gains ETSI TS 183 020, TS 183 059-1 and
   3GPP2 X.S0013-006.

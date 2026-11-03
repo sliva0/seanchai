@@ -525,6 +525,11 @@ reason = """
 # PDF it was copied from, the file's `; Transcribed:`, which `seanchai download`
 # fetches for the self-hosted export; `regenerate` reads only the transcription.
 [[transcribed]]
+reference = "OMA-DDS-Charging_Data"
+title = "Charging Data"
+url = "https://www.openmobilealliance.org/release/Charging_Data/V1_0-20110201-A/OMA-DDS-Charging_Data-V1_0-20110201-A.pdf"
+
+[[transcribed]]
 reference = "ETSI-ES283.034"
 title = """
     Telecommunications and Internet converged Services and Protocols for

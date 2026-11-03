@@ -92,7 +92,7 @@ The repository layout and how to work on Seanchaí itself are in
 ## License
 
 MIT, see [LICENSE][license]. The corpus packages text taken from 3GPP, ETSI,
-3GPP2, oneM2M and IETF documents; those documents stay under their
+3GPP2, OMA, oneM2M and IETF documents; those documents stay under their
 publishers' terms.
 
 [consumers]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md

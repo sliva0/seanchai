@@ -7,7 +7,7 @@ specifications come from its document library at a catalogued version, as
 a ZIP holding a legacy DOC converted the same way.
 RFCs are downloaded as canonical plain text from the RFC Editor, and the
 official ETSI PDF renditions alongside the 3GPP sources. The PDFs the hand
-transcriptions were copied from come from ETSI and 3GPP2 at the catalog's URLs.
+transcriptions were copied from come from ETSI, 3GPP2 and OMA at the catalog's URLs.
 
 The curated specification catalog lives in ``specs.toml`` next to this package;
 the CLI downloads into the git-ignored ``specifications/`` directory by default.

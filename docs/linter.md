@@ -133,7 +133,7 @@ cites.
   release ([below](#resolving-an-origin)), one note per cited document,
   naming the rule and the evidence.
 - `external-origin-not-in-corpus`: the same for origins outside 3GPP and
-  IETF (`OMA-DDS-Charging_Data`), apart because no download closes the gap.
+  IETF, apart because no download closes the gap.
 - `unresolved-reference`: every AVP referenced in a message or grouped body
   must resolve to a local definition, a table row, a re-used row or a
   `; Bases:` document, or be declared by an `Undefined AVP` block. An
@@ -276,11 +276,13 @@ What still reports, and why each stays:
   cite in turn what the corpus holds at Release 19 only, and nothing
   stands in for them: TS 29.212 V11.19.0's `Trace-Data` has a body Release
   19's differs from, and no citation reaches them from oneM2M TS-0004.
-- **`external-origin-not-in-corpus`.** Both copies of TS 32.299, for
-  `OMA-DDS-Charging_Data`.
+  OMA-DDS-Charging_Data cites TS 32.299 and TS 29.214 by no version and its
+  clause 2 does not say what that means, so neither resolves from it, and table
+  11's own rows answer for what they tabulate.
 - **`member-marked-unused`.** TS 32.299 table 7.1.0.1 marks
   `Error-Message` and `Failed-AVP` "-" under ACA, while clause 6.2.3's ACA
-  ABNF lists both.
+  ABNF lists both. OMA-DDS-Charging_Data table 11 marks eleven members of clause
+  8.2's CCR and CCA "-".
 - **`table-row-mismatch`.** TS 29.061 prints seven AVPs with M in Must not
   in table 9a (Gi/SGi) and in Must in table 10 (Gmb); TS 29.273 sets M for
   `AN-Trusted` in two tables and not a third, and types

@@ -614,6 +614,8 @@ _RAW_ERRORS = {
     # Service-Information, and clause A.5.14 prints M2M-Information's
     # header with no vendor-id.
     "ts-0004-v2_35_0.raw.dad": ["vendor-flag-mismatch"] * 24 + ["vendor-id-mismatch"],
+    # Clauses 8.5.5 and 8.5.6 print only the code; table 11 gives vendor 10415.
+    "dds-charging_data-v1_0-20110201-a.raw.dad": ["vendor-id-mismatch"] * 2,
 }
 
 
@@ -713,6 +715,12 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         # 7.3.10-7.3.32 the Gq AVPs and ES 283 034's Globally-Unique-Address;
         # two of TS 183 017's carry another name until corrected.
         "es283034-020200": 1,
+        # Clauses 6.2.4, 6.2.43 and 6.2.74 print values for what table 11 lists
+        # as re-used, and a correction drops the first's re-used row. Table 11
+        # marks 11 members of clause 8.2's ABNF unused, and its raw Reference
+        # cells cite the wrong clause for what clauses 8.5.1 to 8.5.10 head.
+        "dds-charging_data-v1_0-20110201-a.raw": 19,
+        "dds-charging_data-v1_0-20110201-a": 13,
         # ES 283 026 re-prints Gq's and e4's and Gq' AVPs it imports; TS 183
         # 033's corrections give SIP-Auth-Data-Item the re-used row it lacks.
         "es283026-010600": 11,
@@ -2087,7 +2095,6 @@ _STANDING_CORPUS_NOTES = {
     "32299-j00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
-        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
         # Clause 2 [213] cites TS 29.140 non-specifically for VAS-ID and
         # VASP-ID; V7.0.0 is its final version.
         "cross-release-origin": ["TS29.140"],
@@ -2149,6 +2156,35 @@ _STANDING_CORPUS_NOTES = {
     # oneM2M cites TS 32.299 [31], "Release 11", for Node-Id and
     # Service-Information: V11.20.0.
     "ts-0004-v2_35_0.dad": {"cross-release-origin": ["TS32.299"]},
+    "dds-charging_data-v1_0-20110201-a.dad": {
+        # Clause 2's [TS29.140], non-specific; V7.0.0 is its final version.
+        "cross-release-origin": ["TS29.140"],
+        # Clauses 6.2.43 and 6.2.74 print values table 11 cites TS 32.299 for.
+        "local-and-reused": ["AoC-Request-Type", "PoC-Server-Role"],
+        # Table 11 marks them "-" under CCR and CCA, clauses 8.2.1 and 8.2.2
+        # print them, the first five of CCR under its MSCC columns.
+        "member-marked-unused": [
+            "Service-Identifier",
+            "Requested-Service-Unit",
+            "AoC-Request-Type",
+            "Used-Service-Unit",
+            "AoC-Request-Type",
+            "User-Name",
+            "Origin-State-Id",
+            "Event-Timestamp",
+            "Granted-Service-Unit",
+            "Final-Unit-Indication",
+            "Validity-Time",
+        ],
+        # Clause 2's [TS32.299] and [TS29.214] name no version and clause 2
+        # says nothing of what such a reference means.
+        "origin-not-in-corpus": [
+            "TS29.214 (corpus has 19.3.0, 11.16.0, 7.12.0), TS32.299"
+            " (corpus has 19.0.0, 11.20.0)"
+        ],
+        # Table 11 May Encrypt Y where TS 29.140 table 6.3.1 reads No.
+        "reused-row-mismatch": ["Billing-Information", "Service-Key"],
+    },
     "ts183017-030201.dad": {
         "cross-release-origin": ["TS29.209", "TS29.214"],
         # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports
@@ -2216,7 +2252,6 @@ _STANDING_CORPUS_NOTES = {
             "TS29.273",
             "TS29.329",
         ],
-        "external-origin-not-in-corpus": ["OMA-DDS-Charging_Data"],
         "reused-origin-indirect": ["3GPP2-BSID"],
     },
     "rfc4004.dad": {

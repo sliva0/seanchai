@@ -37,8 +37,8 @@ wireshark` need no extra.
   `export_schema.py`, `dictionary.py`, `errors.py`, `cli.py`.
 - `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
   `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
-  release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
-  `raw/`, the record of known holes and the record of corrections
+  release plus `rfc/`, `etsi/`, `3gpp2/`, `oma/` and `onem2m/`, a raw mirror
+  under `raw/`, the record of known holes and the record of corrections
   ([dad-format.md](dad-format.md#the-corpus)).
 - `edits/sources/<SpecRef>.toml`: input patches, quirks and exclusions per
   document.
@@ -46,7 +46,7 @@ wireshark` need no extra.
 - `edits/transcriptions/<SpecRef>.dad`: documents no extractor reads, copied
   by hand (ETSI ES 283 026, ES 283 034, ES 283 035, TS 183 017, TS 183 020, TS
   183 033, TS 183 059-1, TS 183 066; 3GPP2 X.S0013-006, X.S0013-013,
-  X.S0013-014, X.S0057).
+  X.S0013-014, X.S0057; OMA-DDS-Charging_Data).
 - `integrations/`: consumer scripts over the model, and staged Wireshark
   dictionary patches.
 - `editors/`: `.dad` syntax highlighting for VS Code, Vim and Neovim.

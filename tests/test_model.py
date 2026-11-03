@@ -1654,6 +1654,42 @@ def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
         assert avp.defined_in in {reference, corpus.CITED_AS.get(origin, origin)}
 
 
+@pytest.mark.parametrize("version", ["19.0.0", "11.20.0"])
+def test_ts_32_299s_oma_rows_resolve_to_the_oma_transcription(version):
+    """TS 32.299 types thirteen rows `refer [223]`, in each copy the corpus
+    holds, and prints no body for the three it types Grouped; OMA's table 11 and
+    clauses 8.5.5, 8.5.6 and 8.5.10 state them."""
+    books = corpus.Corpus.load([_CORPUS_DIR])
+    built = model.Model.build(books)
+
+    def resolve(name):
+        avp = built.resolve("TS32.299", name, version=version)
+        assert avp is not None and avp.defined_in == "OMA-DDS-Charging_Data", name
+        assert avp.vendor_id == 10415, name
+        return avp
+
+    assert resolve("Application-Server-ID").data_type is ast.DataType.UTF8_STRING
+    assert resolve("Application-Service-Type").data_type is ast.DataType.ENUMERATED
+    for name, members in {
+        "DCD-Information": ["Content-ID", "Content-provider-ID"],
+        "IM-Information": [
+            "Total-Number-Of-Messages-Sent",
+            "Total-Number-Of-Messages-Exploded",
+            "Number-Of-Messages-Successfully-Sent",
+            "Number-Of-Messages-Successfully-Exploded",
+        ],
+        "Service-Generic-Information": [
+            "Application-Server-ID",
+            "Application-Service-Type",
+            "Application-Session-ID",
+            "Delivery-Status",
+        ],
+    }.items():
+        avp = resolve(name)
+        assert isinstance(avp, model.Grouped)
+        assert [member.name for member in avp.members] == members
+
+
 def test_3gpp2_bsid_resolves_to_the_3gpp2_transcription():
     """TS 29.212 re-uses 3GPP2-BSID from 3GPP2 X.S0057 and TS 32.299 from TS
     29.212; both reach table 1 of the transcription, in 3GPP2's vendor
@@ -1705,8 +1741,9 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
     six non-specific Release 11 citations the corpus holds no Release 11
     copy of, TS 29.210 V6.7.0's and TS 29.234 V11.2.0's TS 29.229, and TS 183
     033's "TS 29.229 (V6.6.0)" [2], are Release 19's, standing in; ES 283 035's
-    TS 29.329 [7] is the latest edition, as its clause 2.1 says. Each AVP so
-    reached says so, and nothing else in the corpus resolves across releases."""
+    TS 29.329 [7] is the latest edition, as its clause 2.1 says; and
+    OMA-DDS-Charging_Data's non-specific TS 29.140 is its final version. Each AVP
+    so reached says so, and nothing else in the corpus resolves across releases."""
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
     vas = built.resolve("TS32.299", "VAS-ID")
@@ -1741,6 +1778,7 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("ETSI-ES283.034", "TS29.209"),
         ("ETSI-ES283.035", "TS29.209"),
         ("ETSI-ES283.035", "TS29.329"),
+        ("OMA-DDS-Charging_Data", "TS29.140"),
         ("ETSI-TS183.033", "TS29.229"),
         ("ETSI-TS183.017", "TS29.209"),
         ("ETSI-TS183.017", "TS29.214"),
@@ -2928,15 +2966,16 @@ class TestEffectiveApplicationId:
 
 class TestReadingsOfOneAvp:
     def test_a_reading_names_the_table_that_produced_it(self, built):
-        """oneM2M TS-0004's table adds P under May to RFC 6733's Session-Id."""
+        """OMA-DDS-Charging_Data's table 11 adds P under May to RFC 6733's
+        Session-Id, as oneM2M TS-0004's does."""
         readings = {
             ast.AvpFlag.PROTECTED in avp.flag_rules.may: avp
             for avp in built.find("Session-Id")
         }
 
         assert readings[False].read_through == "RFC6733"
-        assert readings[True].read_through == "oneM2M-TS-0004"
-        assert built.resolve("oneM2M-TS-0004", "Session-Id") == readings[True]
+        assert readings[True].read_through == "OMA-DDS-Charging_Data"
+        assert built.resolve("OMA-DDS-Charging_Data", "Session-Id") == readings[True]
         assert built.resolve("TS29.229", "Session-Id") == readings[False]
 
     def test_a_table_agreeing_with_the_origin_produces_nothing_new(self, built):
