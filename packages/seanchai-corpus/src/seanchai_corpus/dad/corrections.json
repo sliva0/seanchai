@@ -4827,6 +4827,21 @@
    ],
    "version": null
   },
+  "rfc5779": {
+   "edits": {
+    "RFC5779.py#bases-rfc4004": {
+     "kind": "correction",
+     "reason": "clause 5.1's MIP6-Agent-Info body extends RFC 5447's, whose MIP-Home-Agent-Address and MIP-Home-Agent-Host RFC 4004 defines"
+    },
+    "RFC5779.py#calling-station-id-reused": {
+     "kind": "insert",
+     "reason": "clause 5.7 gives Calling-Station-Id's code 31 and type without citing a document, but clause 9.1 lists only codes 504 to 507 as new and clause 5 says some AVPs are re-used; clause 4 names NASREQ [RFC4005] as the kind of application carrying them, and it defines the AVP"
+    }
+   },
+   "reference": "RFC5779",
+   "renames": [],
+   "version": null
+  },
   "rfc6733": {
    "edits": {
     "RFC6733.py#application-id-accounting": {
