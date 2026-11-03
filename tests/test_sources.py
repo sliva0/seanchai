@@ -117,7 +117,14 @@ last_version = "1.1.0"
         (
             "TS29.109",
             "18.1.0",
-            [("OctedString", "6.3")] * 6,
+            [
+                *[("OctedString", "6.3")] * 6,
+                ("Synchronization Failure", "4.2"),
+                ("Diameter Header: xxx, REQ, PXY, xxxxxxxx", "5.4"),
+                ("Diameter Header: xxx, PXY, xxxxxxxx", "5.4"),
+                ("GBA-Push-Info-Request message to the BSF", "5.4"),
+                ("GBA-Push-Info-Answer message back to the NAF", "5.4"),
+            ],
         ),
         (
             "TS29.128",

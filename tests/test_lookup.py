@@ -346,7 +346,7 @@ def test_a_document_keeps_what_its_tables_list_and_what_its_commands_use(tmp_pat
 def test_a_document_defining_avps_alone_still_gives_them():
     built = Model.installed()
 
-    written = build(built, documents=["TS29.061"])
+    written = build(built, documents=["RFC7683"])
 
     assert not written.applications
     assert written.avps
