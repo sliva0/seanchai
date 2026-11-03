@@ -299,6 +299,29 @@ class GroupedAvp(Node):
     avps: tuple[AvpRule, ...]
 
 
+class ReprintedAvp(Node):
+    """`; Type: Reprinted AVP` — another document's grouped AVP as this one
+    prints it, naming the document it says it copies.
+
+    TS 29.109 clauses 4.2, 5.2 and 5.4 each follow a command with "The content
+    of Vendor-Specific-Application-ID according IETF RFC 6733 [33] is:" and that
+    rule, glossing what its members hold there. A file records what its document
+    says, and this says nothing new about the AVP, so the block defines nothing:
+    its own type keeps it out of everything that reads `GroupedAvp`, and one
+    document can print it any number of times. What a copy glosses is a trailing
+    `;;` comment on its member.
+    """
+
+    type: Literal["Reprinted AVP"] = "Reprinted AVP"
+    name: AvpName
+    source: SourceRef
+    # The document the clause says it copies, the same reference a From cell holds.
+    origin: SpecRef
+    code: Unsigned32
+    vendor_id: Unsigned32 | None = None
+    avps: tuple[AvpRule, ...]
+
+
 class EnumValue(Node):
     """`SomeName = 7` line of an enumerated AVP body, optionally annotated
     with the spec's one-line description: `Subscribe = 0 ; This value ...`."""
@@ -967,6 +990,7 @@ Section = Annotated[
     ApplicationScope
     | Message
     | GroupedAvp
+    | ReprintedAvp
     | EnumeratedAvp
     | AvpTable
     | ReusedAvps

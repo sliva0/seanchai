@@ -8,6 +8,10 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- `; Type: Reprinted AVP` records a rule a document prints as another's, naming
+  it with `; From:`, and defines nothing: TS 29.109's three copies of RFC 6733's
+  `Vendor-Specific-Application-Id`. `ast.ReprintedAvp`; the linter's
+  `reprint-not-in-origin` and `reprint-differs`.
 - The RFC extractor fails on a line in an ABNF body that is no member, where it
   stopped reading in silence, and keeps a lone `…` or `...` as a comment behind
   `elided-members`. RFC 5778's DER and DEA and RFC 6738's commands gain the

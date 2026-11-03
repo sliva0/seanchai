@@ -377,6 +377,30 @@ def _parse_grouped(
         )
 
 
+def _parse_reprinted(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.ReprintedAvp:
+    name = _pop(directives, "Name", lineno)
+    source = _source_ref(directives, lineno)
+    origin = _pop(directives, "From", lineno)
+    _no_leftovers(directives, lineno)
+    header_name, code, vendor_id = _avp_header(body, "AVP", lineno)
+    if header_name != name.value:
+        raise DadParseError(
+            body[0][0], f"Name directive {name.value!r} != rule name {header_name!r}"
+        )
+    avps = _avp_rules(body[1:])
+    with _validated(origin.lineno):
+        return ast.ReprintedAvp(
+            name=name.value,
+            source=source,
+            origin=origin.value,
+            code=code,
+            vendor_id=vendor_id,
+            avps=avps,
+        )
+
+
 def _parse_enumerated(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.EnumeratedAvp:
@@ -796,6 +820,7 @@ _SECTION_PARSERS = {
     "Application Scope": _parse_application_scope,
     "Message": _parse_message,
     "Grouped AVP": _parse_grouped,
+    "Reprinted AVP": _parse_reprinted,
     "Enumerated AVP": _parse_enumerated,
     "AVP Table": _parse_avp_table,
     "Reused AVPs": _parse_reused,
@@ -830,6 +855,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Applies-To": ("applies_to",),
     "Registry": ("registry",),
     "Note": ("note",),
+    "From": ("origin",),
 }
 # An application scope and an undefined AVP have no body: a whole-line
 # comment after the last line stands at the block's own path.
@@ -837,6 +863,7 @@ _BODIES = {
     "Application Scope": ("", 0),
     "Message": ("avps", 1),
     "Grouped AVP": ("avps", 1),
+    "Reprinted AVP": ("avps", 1),
     "Enumerated AVP": ("values", 1),
     "AVP Table": ("rows", 0),
     "Reused AVPs": ("rows", 0),

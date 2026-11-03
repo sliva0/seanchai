@@ -80,7 +80,7 @@ syn match dadRange "\d\+\.\.\d\+" contained
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue
 syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
 syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadClauseWildcard,dadNumber,dadLink,dadComment
-syn match dadTypeValue "\%(Application Scope\|Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\)$" contained
+syn match dadTypeValue "\%(Application Scope\|Message\|Grouped AVP\|Reprinted AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\)$" contained
 " `; Registry:` kinds.
 syn match dadTypeValue "\%(Application IDs\|Command Codes\|AVP Codes\|Result Codes\)$" contained
 syn match dadLink "https\?://\S\+" contained

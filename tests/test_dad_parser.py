@@ -370,6 +370,53 @@ def test_an_application_scope_rejects_with_the_line(lines, lineno, message):
     assert error.value.lineno == lineno
 
 
+def test_a_reprinted_avp_round_trips_with_its_glosses():
+    # TS 29.109 clause 4.2 prints RFC 6733's rule, glossing what each member holds.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 29.109",
+            "; Version: 18.1.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Reprinted AVP",
+            "; Name: Vendor-Specific-Application-Id",
+            "; Section: 4.2",
+            "; Page: 15",
+            "; From: RFC6733",
+            "Vendor-Specific-Application-Id ::= < AVP header: 260 >",
+            "     1* [ Vendor-Id ] ;; 3GPP is 10415",
+            "     *1 { Auth-Application-Id } ;; 16777221",
+            "",
+        ]
+    )
+
+    spec, comments = parser.parse_with_comments(text)
+
+    (reprint,) = spec.sections
+    assert isinstance(reprint, ast.ReprintedAvp)
+    assert (reprint.origin, reprint.code, reprint.vendor_id) == ("RFC6733", 260, None)
+    assert [rule.name for rule in reprint.avps] == ["Vendor-Id", "Auth-Application-Id"]
+    assert comments.trailing[("sections", 0, "avps", 0)] == ["3GPP is 10415"]
+    assert formatter.format_spec(spec, comments) == text
+
+
+@pytest.mark.parametrize(
+    ("lines", "message"),
+    [
+        (["; Section: 4.2", "X ::= < AVP header: 1 >"], "From"),
+        (["; Section: 4.2", "; From: RFC 6733", "X ::= < AVP header: 1 >"], "origin"),
+        (["; Section: 4.2", "; From: RFC6733", "Y ::= < AVP header: 1 >"], "!= rule"),
+        (["; Section: 4.2", "; From: RFC6733"], "no body"),
+    ],
+    ids=["no-origin", "origin-no-reference", "another-rule", "no-rule"],
+)
+def test_a_reprinted_avp_rejects_with_the_line(lines, message):
+    text = _dad("; Type: Reprinted AVP", "; Name: X", *lines)
+    with pytest.raises(parser.DadParseError, match=message):
+        parser.parse(text)
+
+
 @pytest.mark.parametrize(
     ("page", "note"),
     [("53", '"a ProSe Query Code"'), (None, None)],

@@ -269,6 +269,21 @@ def _format_grouped(
     ]
 
 
+def _format_reprinted(
+    avp: ast.ReprintedAvp, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    return [
+        *_directives(avp, avp.name, path, notes),
+        *notes.line(f"; From: {avp.origin}", (*path, "origin")),
+        *notes.line(
+            f"{avp.name} ::= < AVP header:"
+            f" {_avp_header_items(avp.code, avp.vendor_id)} >",
+            path,
+        ),
+        *_abnf_body(avp.avps, path, notes),
+    ]
+
+
 _IDENTIFIER_RE = re.compile(ast.AVP_NAME_PATTERN)
 
 
@@ -514,6 +529,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.ApplicationScope: _format_application_scope,
     ast.Message: _format_message,
     ast.GroupedAvp: _format_grouped,
+    ast.ReprintedAvp: _format_reprinted,
     ast.EnumeratedAvp: _format_enumerated,
     ast.AvpTable: _format_avp_table,
     ast.ReusedAvps: _format_reused,

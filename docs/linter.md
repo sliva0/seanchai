@@ -85,8 +85,14 @@ cites.
   local-and-reused AVP is doing, decided by comparing bodies. All notes:
   only the origin's editor knows which copy is current.
 - `reused-code-conflict`: two documents giving one AVP two codes, also
-  where a re-used table prints a code of its own that the origin does not
-  give. An error: an AVP is its `(vendor-id, code)`.
+  where a re-used table or a `Reprinted AVP` block prints a code of its own
+  that the origin does not give. An error: an AVP is its `(vendor-id, code)`.
+- `reprint-not-in-origin`: a `Reprinted AVP` block naming a document that does
+  not define the AVP. An error.
+- `reprint-differs`: such a block listing other members than the document it
+  names. Occurrence qualifiers are not compared, since TS 29.109 prints RFC
+  3588's `0*1 { Auth-Application-Id }` for what RFC 6733 writes
+  `[ Auth-Application-Id ]`. A note.
 - `reused-row-mismatch`: a row this file tabulates for an AVP it re-uses,
   reading its type, flag rules or encrypt differently from the origin's. A
   cell is compared where both tables declare the column and both say
