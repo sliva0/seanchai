@@ -425,6 +425,19 @@ last_version = "18.0.0"
 # ... (Release 11)". A release's template is its own, so these apply to it
 # alone and the Release 18 ones above do not (src/seanchai/versions.py).
 
+[[patch]]
+find = "LCS-Client-Id"
+replace = "LCS-Client-ID"
+exact = true
+section = "7.2"
+reason = """
+    table 7.2 spells the row LCS-Client-Id; the defining clause 7.2.84's heading
+    and rule (its prose writes LCS-Client-Id) and LCS-Information's rule
+    (7.2.89) write LCS-Client-ID
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
 [[quirk]]
 name = "spaced-rule-operator"
 reason = """

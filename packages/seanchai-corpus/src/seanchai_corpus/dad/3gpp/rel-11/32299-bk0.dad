@@ -414,7 +414,7 @@ IP-Realm-Default-Indication                 2603   X     -     -     -     Enume
 LCS-APN                                     1231   -     -     X     -     UTF8String    M,V    P     -       -       No
 LCS-Client-Dialed-By-MS                     1233   -     -     X     -     UTF8String    M,V    P     -       -       No
 LCS-Client-External-ID                      1234   -     -     X     -     UTF8String    M,V    P     -       -       No
-LCS-Client-Id                               1232   -     -     X     -     Grouped       M,V    P     -       -       No
+LCS-Client-ID                               1232   -     -     X     -     Grouped       M,V    P     -       -       No
 LCS-Client-Name                             1235   -     -     X     -     Grouped       M,V    P     -       -       No
 LCS-Client-Type                             1241   -     -     X     -     Enumerated    M,V    P     -       -       No
 LCS-Data-Coding-Scheme                      1236   -     -     X     -     UTF8String    M,V    P     -       -       No
@@ -1238,7 +1238,7 @@ IP-Realm-Default-Indication ::= < Enumerated AVP header: 2603 10415 >
 ; Name: LCS-Client-ID
 ; Section: 7.2.84
 ; Page: 113
-LCS-Client-ID ::= < AVP header: 1232 >
+LCS-Client-ID ::= < AVP header: 1232 10415 > ;; corrected: (TS32.299.py#rel11-vendor-lcs-client-id)
         [ LCS-Client-Type ]
         [ LCS-Client-External-ID ]
         [ LCS-Client-Dialed-By-MS ]

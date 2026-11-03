@@ -699,6 +699,7 @@ _VENDORLESS_REL11 = [
     ("Incremental-Cost", "7.2.70"),
     ("IMS-Information", "7.2.77"),
     ("Inter-Operator-Identifier", "7.2.80"),
+    ("LCS-Client-ID", "7.2.84"),
     ("LCS-Client-Name", "7.2.85"),
     ("LCS-Information", "7.2.89"),
     ("LCS-Requestor-ID", "7.2.91"),

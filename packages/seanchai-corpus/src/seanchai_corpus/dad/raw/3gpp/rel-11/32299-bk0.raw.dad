@@ -398,7 +398,7 @@ IP-Realm-Default-Indication                 2603   X     -     -     -     Enume
 LCS-APN                                     1231   -     -     X     -     UTF8String    M,V    P     -       -       No
 LCS-Client-Dialed-By-MS                     1233   -     -     X     -     UTF8String    M,V    P     -       -       No
 LCS-Client-External-ID                      1234   -     -     X     -     UTF8String    M,V    P     -       -       No
-LCS-Client-Id                               1232   -     -     X     -     Grouped       M,V    P     -       -       No
+LCS-Client-ID                               1232   -     -     X     -     Grouped       M,V    P     -       -       No
 LCS-Client-Name                             1235   -     -     X     -     Grouped       M,V    P     -       -       No
 LCS-Client-Type                             1241   -     -     X     -     Enumerated    M,V    P     -       -       No
 LCS-Data-Coding-Scheme                      1236   -     -     X     -     UTF8String    M,V    P     -       -       No

@@ -2819,6 +2819,10 @@
      "kind": "correction",
      "reason": "clause 7.2 gives the 3GPP charging AVPs vendor 10415; the grouped header of clause 7.2.80 prints only the code"
     },
+    "TS32.299.py#rel11-vendor-lcs-client-id": {
+     "kind": "correction",
+     "reason": "clause 7.2 gives the 3GPP charging AVPs vendor 10415; the grouped header of clause 7.2.84 prints only the code"
+    },
     "TS32.299.py#rel11-vendor-lcs-client-name": {
      "kind": "correction",
      "reason": "clause 7.2 gives the 3GPP charging AVPs vendor 10415; the grouped header of clause 7.2.85 prints only the code"
