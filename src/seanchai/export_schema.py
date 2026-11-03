@@ -19,7 +19,10 @@ from pydantic.json_schema import models_json_schema
 from .dad import ast
 from .linter import Severity
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
+
+# What `index.json` says wrote it, and so what an export may replace.
+GENERATOR: Literal["seanchai"] = "seanchai"
 
 _Version = Annotated[int, pydantic.Field(ge=SCHEMA_VERSION, le=SCHEMA_VERSION)]
 
@@ -204,10 +207,12 @@ class RawDocument(_Model):
 
 
 class Index(_Model):
-    """`index.json`: what the export is and which documents it holds.
+    """`index.json`: what the export is and which documents it holds. `generator`
+    marks the directory as an export, which a later export may replace.
     `corpus_version` is null for a corpus other than the installed one."""
 
     schema_version: _Version
+    generator: Literal["seanchai"]
     seanchai_version: str | None
     corpus_version: str | None
     mode: Literal["public", "self-hosted"]
