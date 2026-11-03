@@ -56,6 +56,21 @@ def test_a_source_declaration_keeps_everything_but_the_moved_bound(tmp_path):
     assert expansion.remaining == []
 
 
+def test_an_exclusion_widens_as_the_other_declarations_do(tmp_path):
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(
+        '[[quirk]]\nname = "a"\nreason = "x"\nfirst_version = "18.6.0"\n\n'
+        '[[exclude]]\nsection = "8"\nname = "A"\nreason = "x"\n'
+        'first_version = "18.6.0"\n',
+        encoding="utf-8",
+    )
+
+    expansion = ranges.expand_sources(path, "18.5.0")
+
+    assert path.read_text(encoding="utf-8").count('first_version = "18.5.0"') == 2
+    assert "TS29.999.toml: exclusion '8' 18.6.0..* -> 18.5.0..*" in expansion.widened
+
+
 def test_an_older_version_moves_the_first_bound(tmp_path):
     path = tmp_path / "TS29.999.toml"
     path.write_text(_TOML, encoding="utf-8")

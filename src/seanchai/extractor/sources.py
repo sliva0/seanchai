@@ -1,7 +1,7 @@
 """Source declarations: everything declared about reading one source document.
 
 One TOML file per specification, named by its reference ("TS29.272.toml"),
-holding two kinds of block. `[[patch]]` fixes a genuine typo in the source
+holding three kinds of block. `[[patch]]` fixes a genuine typo in the source
 *text* before parsing — a 3GPP docx's "M. V" flag cell, "Monitoring Event
 Report" with spaces for hyphens — by patching the normalized
 paragraph/cell/title text, not the raw docx XML, which has arbitrary run
@@ -12,7 +12,8 @@ document that prints no AVP table at all — and that therefore stays off
 unless the document declares it. Exact-match structural vocabulary (table
 header spellings, rule grammars) stays in extractor code, where unrecognized
 input fails loudly on its own; semantic corrections to data that parses fine
-stay in `edits/corrections/`.
+stay in `edits/corrections/`. `[[exclude]]` leaves a whole clause of a 3GPP docx
+unread, which is the only way a file says less than its document.
 
     [[patch]]
     find = "M. V"
@@ -28,17 +29,23 @@ stay in `edits/corrections/`.
     name = "prose-avp-codes"   # must be one the extractor defines
     reason = "AVP tables carry no Code column; each clause prints its code"
 
-Both block kinds carry the same declaration contract: a required `reason`
+    [[exclude]]
+    section = "8"              # the clause and every clause under it
+    name = "Sh-ee"             # what the file's note calls it
+    reason = "the document leaves the application id to be allocated"
+    first_version = "19.1.0"
+
+All block kinds carry the same declaration contract: a required `reason`
 (a declaration asserts something about the source document, and without the
 reason the next reader cannot check that claim), a version range scoping it
 to the releases it spans and advisory within them (`versions.reviewed_release`),
 and must-fire accounting — a patch that applies more or fewer times than
-`count`, or a declared quirk that never changed anything, fails the
-extraction rather than rotting silently when the source changes between
-versions. A quirk carries no parameters by design: it is a named boolean
-with a reason, and the behavior it names lives in extractor code — TOML that
-carried logic would make the extractor an interpreter and the declaration
-unreviewable.
+`count`, a declared quirk that never changed anything, or an exclusion that
+left nothing out fails the extraction rather than rotting silently when the
+source changes between versions. A quirk carries no parameters by design: it is
+a named boolean with a reason, and the behavior it names lives in extractor code
+— TOML that carried logic would make the extractor an interpreter and the
+declaration unreviewable.
 
 A `reason` is prose and may wrap in a multi-line string, read back as one line
 (`prose.collapse`). Every other field is exact, `find` and `replace` above all.
@@ -60,6 +67,13 @@ class PatchError(ExtractionError):
 
 class QuirkError(ExtractionError):
     pass
+
+
+def _in_clause(section: str | None, clause: str) -> bool:
+    """Whether `section` is `clause` or a clause under it."""
+    if section is None:
+        return False
+    return section == clause or section.startswith(clause + ".")
 
 
 @dataclass
@@ -101,11 +115,7 @@ class Patch:
             )
 
     def _in_scope(self, section: str | None) -> bool:
-        if self.section is None:
-            return True
-        if section is None:
-            return False
-        return section == self.section or section.startswith(self.section + ".")
+        return self.section is None or _in_clause(section, self.section)
 
     def apply(self, text: str, section: str | None, record: bool = True) -> str:
         if not self._in_scope(section):
@@ -124,14 +134,43 @@ class Patch:
         return text
 
 
-class Patcher:
-    """Applies one spec's input patches and accounts for every application."""
+@dataclass
+class Exclusion:
+    """A clause of the document no reading looks at, and whatever is under it.
 
-    def __init__(self, patches: list[Patch], version: str | None):
+    It says more than a patch does: the file will not hold what the clause
+    states, so `reason` has to say why the document cannot be read there, and
+    the file says that it left the clause out (`Patcher.exclusion_notes`).
+    """
+
+    section: str
+    name: str
+    reason: str | None = None
+    versions: VersionRange = dataclass_field(default_factory=VersionRange)
+    skipped: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.section or not self.name:
+            raise PatchError("an exclusion needs a `section` and a `name`")
+        if not self.reason:
+            raise PatchError(f"exclusion of clause {self.section} has no `reason`")
+
+
+class Patcher:
+    """Applies one spec's input patches and exclusions, and accounts for every
+    application."""
+
+    def __init__(
+        self,
+        patches: list[Patch],
+        version: str | None,
+        exclusions: list[Exclusion] | None = None,
+    ):
         # `version` is only for messages; None for a version-less document
         # (an RFC), whose patches have no version range to compare against.
         self.patches = patches
         self.version = version
+        self.exclusions = exclusions or []
 
     @classmethod
     def load(cls, path: Path | None, version: str | None) -> Patcher:
@@ -140,16 +179,41 @@ class Patcher:
         data = _read(path)
         try:
             patches = [Patch(**_ranged(entry)) for entry in data.get("patch", ())]
+            exclusions = [
+                Exclusion(**_ranged(entry)) for entry in data.get("exclude", ())
+            ]
         except (TypeError, ValueError) as error:
             # A misspelled or missing key in the TOML is the user's file being
             # wrong, not this program: report it like every other patch problem.
             raise PatchError(f"{path}: {error}") from None
         release = reviewed_release(
-            [patch.versions for patch in patches]
+            [declared.versions for declared in [*patches, *exclusions]]
             + [_ranged(entry)["versions"] for entry in data.get("quirk", ())],
             version,
         )
-        return cls([p for p in patches if applies(p.versions, release)], version)
+        return cls(
+            [p for p in patches if applies(p.versions, release)],
+            version,
+            [e for e in exclusions if applies(e.versions, release)],
+        )
+
+    def excludes(self, section: str) -> bool:
+        """Whether a declared exclusion leaves out the clause headed `section`;
+        asked once per heading, which is what an exclusion's accounting counts."""
+        excluded = False
+        for exclusion in self.exclusions:
+            if _in_clause(section, exclusion.section):
+                exclusion.skipped += 1
+                excluded = True
+        return excluded
+
+    def exclusion_notes(self, file_name: str) -> list[str]:
+        """What the file says of each clause it left out, naming the file
+        `file_name` of declarations that says why."""
+        return [
+            f"excluded: clause {exclusion.section} ({exclusion.name}), see {file_name}"
+            for exclusion in self.exclusions
+        ]
 
     def apply(self, text: str, section: str | None = None, record: bool = True) -> str:
         """Apply all patches to one text unit. `record=False` applies without
@@ -167,7 +231,9 @@ class Patcher:
         it aborts the extraction rather than adding to the warning list nobody
         has to act on. `first_version`/`last_version` only sharpen the message:
         they say where the patch is known to be needed, and never gate whether
-        it is applied.
+        it is applied. An exclusion that left nothing out fails the same way,
+        which also refuses one declared for a document whose reading does not
+        ask (`excludes`): only the docx extractor does.
         """
         problems = []
         for patch in self.patches:
@@ -182,6 +248,16 @@ class Patcher:
                 message += (
                     f"; it was needed on version {known}, currently parsing"
                     f" {self.version} — the source may have changed"
+                )
+            problems.append(message)
+        for exclusion in self.exclusions:
+            if exclusion.skipped:
+                continue
+            message = f"exclusion of clause {exclusion.section} left nothing out"
+            if exclusion.versions != VersionRange() and self.version is not None:
+                message += (
+                    f"; it was needed on version {exclusion.versions}, currently"
+                    f" parsing {self.version} — the source may have changed"
                 )
             problems.append(message)
         if problems:
@@ -271,8 +347,9 @@ def load(
         quirks = [Quirk(**_ranged(entry)) for entry in data.get("quirk", ())]
     except (TypeError, ValueError) as error:
         raise QuirkError(f"{path}: {error}") from None
+    declared = Patcher.load(path, None)
     release = reviewed_release(
-        [patch.versions for patch in Patcher.load(path, None).patches]
+        [each.versions for each in [*declared.patches, *declared.exclusions]]
         + [quirk.versions for quirk in quirks],
         version,
     )
@@ -283,17 +360,22 @@ def load(
             raise QuirkError(
                 f"{path}: unknown quirk {quirk.name!r}; this extractor defines: {known}"
             )
-    unexpected = set(data) - {"patch", "quirk"}
+    unexpected = set(data) - {"patch", "quirk", "exclude"}
     if unexpected:
         raise PatchError(
             f"{path}: unknown block {', '.join(sorted(unexpected))!r};"
-            " a source declaration holds [[patch]] and [[quirk]] blocks"
+            " a source declaration holds [[patch]], [[quirk]] and [[exclude]] blocks"
         )
     quirks = [quirk for quirk in quirks if applies(quirk.versions, release)]
     if warnings is not None:
         for patch in patcher.patches:
             if warning := patch.versions.warning(
                 version, f"{path}: input patch {patch.find!r}"
+            ):
+                warnings.append(warning)
+        for exclusion in patcher.exclusions:
+            if warning := exclusion.versions.warning(
+                version, f"{path}: exclusion of clause {exclusion.section}"
             ):
                 warnings.append(warning)
         for quirk in quirks:

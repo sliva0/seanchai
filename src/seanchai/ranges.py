@@ -54,9 +54,9 @@ class Expansion:
 
 # --- source declarations ----------------------------------------------------
 
-_BLOCK = re.compile(r"^[ \t]*\[\[[ \t]*(patch|quirk)[ \t]*\]\]", re.MULTILINE)
+_BLOCK = re.compile(r"^[ \t]*\[\[[ \t]*(patch|quirk|exclude)[ \t]*\]\]", re.MULTILINE)
 _ANY_TABLE = re.compile(r"^[ \t]*\[", re.MULTILINE)
-_KINDS = {"patch": "input patch", "quirk": "quirk"}
+_KINDS = {"patch": "input patch", "quirk": "quirk", "exclude": "exclusion"}
 # Comments and one-line strings are matched so that a `"""` inside one opens
 # nothing; only the multi-line strings are blanked.
 _TOML_TEXT = re.compile(
@@ -70,7 +70,8 @@ _TOML_TEXT = re.compile(
 
 
 def expand_sources(path: Path, version: str) -> Expansion:
-    """Widen every `[[patch]]` and `[[quirk]]` range in `path` to `version`."""
+    """Widen every `[[patch]]`, `[[quirk]]` and `[[exclude]]` range in `path` to
+    `version`."""
     if not path.is_file():
         return Expansion([], [])
     # TOML is UTF-8 by definition; bytes in and out keep line endings as they
@@ -148,8 +149,8 @@ def without_multiline_strings(text: str) -> str:
 
 
 def _block_regions(text: str) -> dict[str, list[tuple[int, int]]]:
-    """Each `[[patch]]`/`[[quirk]]` block's text span, per kind in file
-    order — the order `tomllib` lists them in."""
+    """Each `[[patch]]`/`[[quirk]]`/`[[exclude]]` block's text span, per kind in
+    file order — the order `tomllib` lists them in."""
     regions: dict[str, list[tuple[int, int]]] = {kind: [] for kind in _KINDS}
     for header in _BLOCK.finditer(text):
         following = _ANY_TABLE.search(text, header.end())
@@ -176,7 +177,7 @@ def _bound_span(
 
 
 def _source_entries(data: dict) -> Iterator[tuple[str, str, int, dict]]:
-    for kind, label in (("patch", "find"), ("quirk", "name")):
+    for kind, label in (("patch", "find"), ("quirk", "name"), ("exclude", "section")):
         for index, entry in enumerate(data.get(kind, ())):
             yield kind, str(entry[label]), index, entry
 

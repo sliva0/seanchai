@@ -226,6 +226,72 @@ reason = """
     )
 
 
+def test_an_exclusion_holds_its_clause_and_what_is_under_it(tmp_path):
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(
+        '[[exclude]]\nsection = "8"\nname = "Sh-ee"\nreason = """\n    not\n'
+        '    finished\n    """\nfirst_version = "19.1.0"\n'
+    )
+
+    patcher, _ = load(path, "19.1.0", {})
+
+    assert patcher.exclusions[0].reason == "not finished"
+    assert [patcher.excludes(each) for each in ("8", "8.3.1", "80", "8A", "7.8")] == [
+        True,
+        True,
+        False,
+        False,
+        False,
+    ]
+    assert patcher.exclusion_notes("TS29.999.toml") == [
+        "excluded: clause 8 (Sh-ee), see TS29.999.toml"
+    ]
+    patcher.finish()
+
+
+def test_an_exclusion_stays_with_the_release_of_its_lower_bound(tmp_path):
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(
+        '[[exclude]]\nsection = "8"\nname = "A"\nreason = "x"\n'
+        'first_version = "19.1.0"\n'
+    )
+
+    assert Patcher.load(path, "18.0.0").exclusions == []
+    assert len(Patcher.load(path, "19.2.0").exclusions) == 1
+    assert len(Patcher.load(path, "20.0.0").exclusions) == 1
+
+
+def test_an_exclusion_that_left_nothing_out_fails(tmp_path):
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(
+        '[[exclude]]\nsection = "8"\nname = "A"\nreason = "x"\n'
+        'first_version = "19.1.0"\n'
+    )
+
+    with pytest.raises(PatchError, match=r"clause 8 left nothing out.*19\.1\.0"):
+        Patcher.load(path, "19.1.0").finish()
+
+
+@pytest.mark.parametrize(
+    ("declaration", "complaint"),
+    [
+        ('section = "8"\nname = "A"\n', "no `reason`"),
+        ('section = "8"\nreason = "x"\n', "name"),
+        ('name = "A"\nreason = "x"\n', "section"),
+        ('section = ""\nname = "A"\nreason = "x"\n', "needs a `section`"),
+        ('section = "8"\nname = "A"\nreason = "x"\nfind = "y"\n', "find"),
+    ],
+)
+def test_an_exclusion_declares_what_it_leaves_out_and_why(
+    tmp_path, declaration, complaint
+):
+    path = tmp_path / "TS29.999.toml"
+    path.write_text(f"[[exclude]]\n{declaration}")
+
+    with pytest.raises(PatchError, match=complaint):
+        Patcher.load(path, None)
+
+
 def test_a_reason_of_only_whitespace_is_no_reason(tmp_path):
     path = tmp_path / "TS29.999.toml"
     path.write_text('[[patch]]\nfind = "a"\nreplace = "b"\nreason = """\n    """\n')
