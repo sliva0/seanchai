@@ -450,3 +450,12 @@ Excess-Treatment ::= < AVP header: 577 >
         [ QoS-Profile-Template ]
         [ QoS-Parameters ]
       * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: QoS-Capability
+; Section: 6
+; Page: 29
+QoS-Capability ::= < AVP header: 578 >
+     1* { QoS-Profile-Template }
+      * [ AVP ]
