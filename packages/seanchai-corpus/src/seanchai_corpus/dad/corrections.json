@@ -2066,6 +2066,10 @@
      "kind": "correction",
      "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
     },
+    "TS29.273.py#subscription-id-rule-6-2-2-1-1-2-diameter-eap-answer": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
     "TS29.273.py#subscription-id-rule-7-2-2-1-2-diameter-eap-answer": {
      "kind": "correction",
      "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
@@ -2116,6 +2120,10 @@
     {
      "expect": "Accounting-Interim-Interval",
      "replace": "Acct-Interim-Interval"
+    },
+    {
+     "expect": "Subscription-ID",
+     "replace": "Subscription-Id"
     },
     {
      "expect": "Subscription-ID",

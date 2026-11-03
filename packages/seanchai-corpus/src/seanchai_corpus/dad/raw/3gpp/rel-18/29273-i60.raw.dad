@@ -21,6 +21,19 @@
         [ User-Name ]
         [ Calling-Station-Id ]
         [ RAT-Type ]
+;; …
+        [ ANID ]
+        [ Full-Network-Name ]
+        [ Short-Network-Name ]
+      * [ Supported-Features ]
+        [ AAA-Failure-Indication ]
+        [ Transport-Access-Type ]
+        [ OC-Supported-Features ]
+        [ Access-Network-Info ]
+        [ User-Location-Info-Time ]
+        [ High-Priority-Access-Info ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -49,6 +62,8 @@
         [ OC-OLR ]
       * [ Load ]
         [ MPS-Priority ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -65,6 +80,8 @@
         { Auth-Application-Id }
         { Re-Auth-Request-Type }
         [ User-Name ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -77,6 +94,8 @@
         { Result-Code }
         { Origin-Host }
         { Origin-Realm }
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -95,6 +114,28 @@
         { EAP-Payload }
         [ User-Name ]
         [ Calling-Station-Id ]
+;; …
+        [ RAT-Type ]
+        [ ANID ]
+        [ Full-Network-Name ]
+        [ Short-Network-Name ]
+        [ QoS-Capability ]
+        [ MIP6-Feature-Vector ]
+        [ Visited-Network-Identifier ]   ; bold
+        [ Service-Selection ]
+        [ Terminal-Information ]
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]
+        [ AAA-Failure-Indication ]
+        [ WLAN-Identifier ]
+        [ DER-Flags ]
+        [ TWAN-Connection-Mode ]
+        [ TWAN-Connectivity-Parameters ]
+     *2 [ TWAG-CP-Address ]
+        [ ERP-RK-Request ]
+        [ High-Priority-Access-Info ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -145,6 +186,8 @@
         [ Key ]
         [ ERP-Realm ]
         [ MPS-Priority ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -161,6 +204,8 @@
         { Auth-Application-Id }
         [ User-Name ]
         [ Auth-Session-State ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -173,6 +218,8 @@
         { Result-Code }
         { Origin-Host }
         { Origin-Realm }
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -190,6 +237,8 @@
         { Termination-Cause }
         [ User-Name ]
         [ OC-Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -222,6 +271,8 @@
         { Auth-Application-Id }
         { Re-Auth-Request-Type }
         [ User-Name ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -234,6 +285,8 @@
         { Result-Code }
         { Origin-Host }
         { Origin-Realm }
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -255,6 +308,8 @@
         [ Local-Time-Zone ]
         [ OC-Supported-Features ]
         [ High-Priority-Access-Info ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -284,6 +339,8 @@
         [ Emergency-Info ]
       * [ Load ]
         [ MPS-Priority ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -301,6 +358,8 @@
         { Termination-Cause }
         [ User-Name ]
         [ OC-Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -334,6 +393,28 @@
         { EAP-Payload }
         [ User-Name ]
         [ Calling-Station-Id ]
+;; …
+        [ RAT-Type ]
+        [ ANID ]
+        [ QoS-Capability ]
+        [ MIP6-Feature-Vector ]
+        [ Visited-Network-Identifier ]   ; bold
+        [ Service-Selection ]
+        [ Terminal-Information ]
+        [ AN-Trusted ]
+        [ Full-Network-Name ]
+        [ Short-Network-Name ]
+      * [ Supported-Features ]
+        [ WLAN-Identifier ]
+        [ DER-Flags ]
+        [ TWAN-Connection-Mode ]
+        [ TWAN-Connectivity-Parameters ]
+     *2 [ TWAG-CP-Address ]
+        [ TWAN-S2a-Failure-Cause ]
+        [ ERP-RK-Request ]
+        [ High-Priority-Access-Info ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -344,7 +425,7 @@
         [ DRMP ]
         { Auth-Application-Id }
         { Result-Code }
-        [ Experimental-Result ]         ; bold
+        [ Experimental-Result ]          ; bold
         { Origin-Host }
         { Origin-Realm }
         { Auth-Request-Type }
@@ -355,9 +436,22 @@
         [ EAP-Master-Session-Key ]
         [ Context-Identifier ]
         [ APN-OI-Replacement ]
-      * [ APN-Configuration ]           ; bold
+      * [ APN-Configuration ]            ; bold
         [ MIP6-Feature-Vector ]
         [ Mobile-Node-Identifier ]
+      * [ Redirect-Host ]
+        [ Trace-Info ]
+        [ Subscription-ID ]
+      * [ Supported-Features ]
+        [ DEA-Flags ]
+        [ TWAN-Connection-Mode ]
+        [ TWAN-Connectivity-Parameters ]
+        [ Terminal-Information ]
+        [ Key ]
+        [ ERP-Realm ]
+        [ MPS-Priority ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -385,6 +479,10 @@
         [ UE-Local-IP-Address ]
         [ OC-Supported-Features ]
         [ Terminal-Information ]
+        [ Emergency-Services ]
+        [ High-Priority-Access-Info ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -422,6 +520,8 @@
         [ Emergency-Info ]
         [ Core-Network-Restrictions ]
         [ MPS-Priority ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -442,6 +542,8 @@
         [ AAR-Flags ]
         [ UE-Local-IP-Address ]
         [ High-Priority-Access-Info ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -470,6 +572,8 @@
         [ User-Location-Info-Time ]
         [ Core-Network-Restrictions ]
         [ MPS-Priority ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -487,6 +591,8 @@
         { Termination-Cause }
         [ User-Name ]
         [ OC-Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -502,6 +608,8 @@
         [ OC-Supported-Features ]
         [ OC-OLR ]
       * [ Load ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -518,6 +626,8 @@
         { Auth-Application-Id }
         [ User-Name ]
         [ Auth-Session-State ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -530,6 +640,8 @@
         { Result-Code }
         { Origin-Host }
         { Origin-Realm }
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -547,6 +659,8 @@
         { Termination-Cause }
         [ User-Name ]
         [ OC-Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -579,6 +693,8 @@
         { Auth-Application-Id }
         { Re-Auth-Request-Type }
         [ User-Name ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -592,6 +708,8 @@
         { Origin-Host }
         { Origin-Realm }
         [ User-Name ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -618,6 +736,8 @@
         [ AAA-Failure-Indication ]
         [ OC-Supported-Features ]
       * [ Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -638,6 +758,11 @@
       * [ SIP-Auth-Data-Item ]
         [ 3GPP-AAA-Server-Name ]
         [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -657,6 +782,8 @@
         [ Non-3GPP-User-Data ]
         [ PPR-Flags ]
       * [ Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -675,6 +802,8 @@
         [ Access-Network-Info ]
         [ Local-Time-Zone ]
       * [ Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -701,6 +830,8 @@
       * [ Supported-Features ]
         [ Terminal-Information ]
         [ Emergency-Services ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -720,6 +851,11 @@
         [ Non-3GPP-User-Data ]
         [ 3GPP-AAA-Server-Name ]
         [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -738,6 +874,8 @@
         { User-Name }
         { Deregistration-Reason }
       * [ Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -754,6 +892,8 @@
         { Origin-Host }
         { Origin-Realm }
       * [ Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -781,6 +921,8 @@
       * [ Supported-Features ]
         [ DER-S6b-Flags ]
         [ UE-Local-IP-Address ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -807,6 +949,8 @@
       * [ Redirect-Host ]
         [ Trace-Info ]
       * [ Supported-Features ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -831,6 +975,9 @@
         [ Origination-Time-Stamp ]
         [ Maximum-Wait-Time ]
       * [ Supported-Features ]
+        [ Emergency-Services ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -845,6 +992,20 @@
         { Result-Code }
         { Origin-Host }
         { Origin-Realm }
+;; ...
+        [ MIP6-Feature-Vector ]
+        [ Session-Timeout ]
+        [ APN-Configuration ]
+        [ QoS-Resources ]
+        [ AN-Trusted ]
+      * [ Redirect-Host ]
+        [ Trace-Info ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -861,6 +1022,8 @@
         { Termination-Cause }
         [ User-Name ]
         [ OC-Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -893,6 +1056,8 @@
         { Auth-Application-Id }
         [ User-Name ]
         [ Auth-Session-State ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -905,6 +1070,8 @@
         { Result-Code }
         { Origin-Host }
         { Origin-Realm }
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -921,6 +1088,8 @@
         { Termination-Cause }
         [ User-Name ]
         [ OC-Supported-Features ]
+;; …
+      * [ AVP ]
 
 
 ; Type: Message
@@ -960,6 +1129,8 @@
       * [ Supported-Features ]
         [ MIP-MN-HA-SPI ]
         [ OC-Supported-Features ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -977,6 +1148,16 @@
         [ OC-Supported-Features ]
         [ OC-OLR ]
       * [ Load ]
+;; ...
+        [ MIP6-Feature-Vector ]
+        [ Session-Timeout ]
+        [ APN-Configuration ]
+        [ QoS-Resources ]
+      * [ Redirect-Host ]
+      * [ Supported-Features ]
+        [ MIP-Session-Key ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -994,6 +1175,8 @@
         { Re-Auth-Request-Type }
         [ User-Name ]
         [ RAR-Flags ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -1007,6 +1190,8 @@
         { Origin-Host }
         { Origin-Realm }
         [ User-Name ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: AVP Table
@@ -1451,6 +1636,12 @@ TWAN-Connectivity-Parameters ::= < AVP header: 1528 10415 >
         [ Connectivity-Flags ]
         [ Service-Selection ]
         [ PDN-Type ]
+     *2 [ Served-Party-IP-Address ]
+        [ TWAN-PCO ]
+        [ TWAG-UP-Address ]
+        [ TWAN-S2a-Failure-Cause ]
+        [ SM-Back-Off-Timer ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP

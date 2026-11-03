@@ -98,6 +98,17 @@ CORRECTIONS = [
         versions="18.6.0",
     ),
     Correction(
+        id="subscription-id-rule-6-2-2-1-1-2-diameter-eap-answer",
+        target=avp_rule(
+            definition("Diameter-EAP-Answer", section="6.2.2.1.1.2"), "Subscription-ID"
+        ),
+        field="name",
+        expect="Subscription-ID",
+        replace="Subscription-Id",
+        reason="RFC 4006 clause 8.46 spells its AVP Subscription-Id.",
+        versions="18.6.0",
+    ),
+    Correction(
         id="subscription-id-rule-7-2-2-1-2-diameter-eap-answer",
         target=avp_rule(
             definition("Diameter-EAP-Answer", section="7.2.2.1.2"), "Subscription-ID"
