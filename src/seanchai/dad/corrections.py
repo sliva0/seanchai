@@ -362,9 +362,8 @@ class registry_reservation(Selector):
 class enum_value(Selector):
     """One named value of an enumerated AVP.
 
-    `value` disambiguates when one name labels several values — 29.214's
-    Specific-Action prints "Void" at both 0 and 5, and a deletion has to name
-    which one it dooms.
+    `value` disambiguates when one name labels several values, and a
+    correction has to name which one it means.
 
     `occurrence` picks the n-th (from 1) of several matching values in one
     AVP, as `avp_rule`'s does, for a list printing the same value twice: RFC
@@ -764,13 +763,17 @@ class Supply:
             raise CorrectionError(f"{described}: Supply supplies no values")
         if not all(
             isinstance(
-                value, ast.EnumValue | ast.ReservedValues | ast.VendorSpecificValues
+                value,
+                ast.EnumValue
+                | ast.ReservedValues
+                | ast.VoidValues
+                | ast.VendorSpecificValues,
             )
             for value in self.values
         ):
             raise CorrectionError(
-                f"{described}: Supply takes EnumValue, ReservedValues and"
-                " VendorSpecificValues nodes"
+                f"{described}: Supply takes EnumValue, ReservedValues, VoidValues"
+                " and VendorSpecificValues nodes"
             )
 
     def _check_row_form(self, described: str) -> None:
@@ -1009,7 +1012,7 @@ def _check_new_values(
     supplied: Sequence[ast.EnumEntry],
 ) -> None:
     """What `Supply(extend=True)` appends must share no name and no number
-    with what the section prints, reserved and vendor-specific ranges
+    with what the section prints, reserved, void and vendor-specific ranges
     included."""
     names = {entry.name for entry in printed if isinstance(entry, ast.EnumValue)}
     for entry in supplied:

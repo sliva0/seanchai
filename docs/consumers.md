@@ -112,7 +112,7 @@ always written, null or empty where it says nothing, and `seanchai.dictionary`
 holds the shape as pydantic models.
 
 ```text
-format_version     2, changes when a reader would have to
+format_version     3, changes when a reader would have to
 seanchai_version, corpus_version, undefined_policy
 documents, application_ids    what was selected; no ids is every application
 applications[]     reference, application_id, clause, name, stated_in
@@ -141,8 +141,9 @@ value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
   selection holds is `vendor:code#2` and on. `defining` marks the defining
   document's. A generator wanting one entry per identity takes those with no
   `#`, as [the recipe](#generate-a-dictionary) does.
-- `values[]` holds `kind` (`value`, `reserved`, `vendor-specific`), `name`,
-  `value`, `first`, `last`, `description`.
+- `values[]` holds `kind` (`value`, `reserved`, `void`, `vendor-specific`),
+  `name`, `value`, `first`, `last`, `description`. `void` is a value the document
+  withdrew; like `reserved`, no dictionary may assign it.
 - `dropped` is what `--policy drop` took out, each naming its hole.
 - `value_tables[]` are the selected documents', and with `--application` those
   of the documents holding one. `avp_id` names the `avps[]` entry the document's
@@ -227,7 +228,9 @@ markers included, and `min_occurs`/`max_occurs` as RFC 6733 section 3.2 reads
 them. An `Enumerated` whose clause defines its values elsewhere carries the
 citation in `values_source` and whatever values a correction supplied;
 `vendor_specific` picks out the ranges a validator must allow under names the
-document does not give. Every model type has a one-line `repr` and a `to_dict()`
+document does not give, and `values` holds `ast.ReservedValues` and
+`ast.VoidValues` beside them, which it must refuse: a void value is one the
+document assigned and withdrew, a reserved one was never assigned. Every model type has a one-line `repr` and a `to_dict()`
 for `json.dumps`, with its flags sorted.
 
 The AST stays public underneath: `parser.parse(text)` reads one file,

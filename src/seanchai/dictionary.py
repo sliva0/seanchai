@@ -20,7 +20,7 @@ from .export import cross_release_entry, hole_entry
 from .export_schema import CrossRelease, FlagRules, UndefinedBlock
 
 # Changes when a reader would have to.
-FORMAT_VERSION = 2
+FORMAT_VERSION = 3
 
 
 class _Model(pydantic.BaseModel):
@@ -55,10 +55,10 @@ class Member(_Model):
 
 class Value(_Model):
     """One line of an enumerated AVP. `kind` is `value`, with `name` and `value`;
-    or `reserved` or `vendor-specific`, a range from `first` to `last`.
+    or `reserved`, `void` or `vendor-specific`, a range from `first` to `last`.
     `description` is the document's words."""
 
-    kind: Literal["value", "reserved", "vendor-specific"]
+    kind: Literal["value", "reserved", "void", "vendor-specific"]
     name: str | None
     value: int | None
     first: int | None

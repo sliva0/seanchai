@@ -39,8 +39,12 @@ acknowledges as an override its document states on purpose
 - `value-bit-out-of-range`: a bit past what the AVP holds: 31 for an Unsigned32,
   63 where the file's own table types it Unsigned64. An error.
 - `vendor-specific-overlap`: a `; VENDOR-SPECIFIC` range covering a value
-  its AVP names, a range it reserves, or another vendor-specific range. An
-  error: a value is named, left to vendors, or illegal, never two of them.
+  its AVP names, a range it reserves or voids, or another vendor-specific
+  range. An error: a value is named, left to vendors, or illegal, never two of
+  them.
+- `void-overlap`: a `; VOID` line covering a value its AVP names, a range it
+  reserves, or another void line. An error: a withdrawn value is neither
+  assigned now nor never assigned.
 - `duplicate-identity`: two AVPs claiming one `(vendor-id, code)`.
 - `row-without-code`: a table that declares a Code column printing a row
   without one. A note where the row has a clause and no flag or Encrypt cell,

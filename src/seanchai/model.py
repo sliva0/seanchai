@@ -829,6 +829,7 @@ class Enumerated(Avp):
         kinds: dict[type, str] = {
             ast.EnumValue: "value",
             ast.ReservedValues: "reserved",
+            ast.VoidValues: "void",
             ast.VendorSpecificValues: "vendor-specific",
         }
         return {

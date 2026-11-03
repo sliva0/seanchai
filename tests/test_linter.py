@@ -102,6 +102,10 @@ def _vendor(first, last):
             (_vendor(100, 199), _vendor(150, 250)),
             ["Mode's vendor-specific 100-199 overlaps vendor-specific 150-250"],
         ),
+        (
+            (ast.VoidValues(first=150, last=150), _vendor(100, 199)),
+            ["Mode's vendor-specific 100-199 overlaps void 150-150"],
+        ),
         # TS 32.299's SM-Service-Type: named, reserved and left to vendors,
         # each its own values.
         (
@@ -113,12 +117,51 @@ def _vendor(first, last):
             [],
         ),
     ],
-    ids=["named-value", "reserved-range", "vendor-range", "disjoint"],
+    ids=["named-value", "reserved-range", "vendor-range", "void-value", "disjoint"],
 )
 def test_a_vendor_specific_range_overlapping_another_line_is_an_error(values, expected):
     spec = _spec(_enumerated("Mode", 700, *values))
 
     findings = [f for f in linter.lint(spec) if f.rule == "vendor-specific-overlap"]
+
+    assert [f.message for f in findings] == expected
+    assert all(f.severity is linter.Severity.ERROR for f in findings)
+    assert all(f.section == "6.3.2" for f in findings)
+
+
+def _void(first, last=None):
+    return ast.VoidValues(first=first, last=first if last is None else last)
+
+
+@pytest.mark.parametrize(
+    ("values", "expected"),
+    [
+        (
+            (ast.EnumValue(name="On", value=5), _void(5)),
+            ["Mode's void 5-5 overlaps 'On' = 5"],
+        ),
+        (
+            (_void(5, 9), ast.ReservedValues(first=9, last=20)),
+            ["Mode's void 5-9 overlaps reserved 9-20"],
+        ),
+        (
+            (_void(5), _void(5)),
+            ["Mode's void 5-5 overlaps void 5-5"],
+        ),
+        # `vendor-specific-overlap` reports this one.
+        ((_void(150), _vendor(100, 199)), []),
+        # TS 29.214's Specific-Action, whose named values are others.
+        (
+            (_void(0), ast.EnumValue(name="On", value=1), _void(5)),
+            [],
+        ),
+    ],
+    ids=["named-value", "reserved-range", "void-value", "vendor-range", "disjoint"],
+)
+def test_a_void_value_overlapping_another_line_is_an_error(values, expected):
+    spec = _spec(_enumerated("Mode", 700, *values))
+
+    findings = [f for f in linter.lint(spec) if f.rule == "void-overlap"]
 
     assert [f.message for f in findings] == expected
     assert all(f.severity is linter.Severity.ERROR for f in findings)
