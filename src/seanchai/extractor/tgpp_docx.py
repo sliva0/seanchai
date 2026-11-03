@@ -40,7 +40,7 @@ import contextlib
 import dataclasses
 import enum
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -2853,6 +2853,57 @@ def _avp_title(title: str, quirks: sources.Quirks) -> re.Match | None:
     return None
 
 
+# The document a citation names, up to the end of its sentence, so that an
+# encoding reference in one sentence is not read as the next one's origin.
+_CITED = r"((?:(?!\. )[^,;])+?)"
+_CLAUSE = r"clause \d+(?:\.\d+)+"
+# Definition language whose subject is the clause's AVP, unnamed.
+_THIS_AVP_DEFINED = (
+    rf"\bThis AVP is defined in (?:the )?{_CITED}\s*\[\d+\]",
+    rf"\bSee {_CITED}(?: {_CLAUSE})? for the definition of this AVP\b",
+    # TS 29.140 6.3.2/6 ('For is' is printed in 6.3.2).
+    r"\bFor (?:is )?the definition of this AVP refer to (.+)",
+)
+# TS 29.329 6.3.9 and 6.3.11-21: pointers that say no "definition".
+_THIS_AVP_DESCRIBED = rf"\bSee {_CITED} for further description of this AVP\."
+_BARE_CITATION = rf"See {_CITED} {_CLAUSE}\."
+
+
+def _named_citations(name: str, text: str) -> Iterator[str]:
+    """What `text` cites as defining the AVP it calls `name`."""
+    named = re.escape(name)
+    for pattern in (
+        rf"\bThe {named} AVP(?: \(AVP code \d+\))?,? is defined in"
+        rf" (?:the )?{_CITED}\s*\[\d+\]",
+        # TS 29.329 6.3.19 prints "theWildcarded-Public-Identity".
+        rf"\bSee {_CITED} {_CLAUSE} for the definition of the ?{named} AVP\b",
+    ):
+        for match in re.finditer(pattern, text):
+            yield match[1]
+
+
+def _unnamed_citations(
+    section: _Section, headed: bool, text: str, quirks: sources.Quirks
+) -> Iterator[tuple[re.Match, str]]:
+    """What `text` cites for an AVP only its clause identifies, each with the
+    quirk reading it. A bare citation is read only as the whole of a clause
+    headed by the AVP: with anything beside it, it is as likely an encoding
+    reference (TS 29.272 7.3.185's "See TS 23.003 [3].")."""
+    for pattern in _THIS_AVP_DEFINED:
+        for match in re.finditer(pattern, text):
+            yield match, "prose-avp-origins"
+    if not quirks.enabled("bare-avp-citations"):
+        return
+    for match in re.finditer(_THIS_AVP_DESCRIBED, text):
+        yield match, "bare-avp-citations"
+    if (
+        headed
+        and len(section.paragraphs) == 1
+        and (match := re.fullmatch(_BARE_CITATION, text))
+    ):
+        yield match, "bare-avp-citations"
+
+
 def _prose_avp_origins(
     collected: _Collected, sections: list[_Section], quirks: sources.Quirks
 ) -> None:
@@ -2860,60 +2911,57 @@ def _prose_avp_origins(
 
     Like NOTE-derived origins, these supplement the table rather than erase
     its local code, type or application flag rules. References to encodings,
-    value lists or another AVP do not define this AVP's origin.
+    value lists or another AVP do not define this AVP's origin, and neither
+    does a citation that could be any of a clause's several AVPs: that fails
+    rather than picks one.
     """
     rows = [row for table in collected.avp_tables for row in table.table.rows]
     names = {row.name for row in rows}
     origins: dict[str, str] = {}
+
+    def cited(citation: str) -> str | None:
+        origin = _named_document(citation)
+        return None if origin == collected.own_reference else origin
+
+    def record(section: _Section, name: str, origin: str, quirk: str) -> None:
+        if origins.setdefault(name, origin) != origin:
+            raise ExtractionError(
+                f"{section.number}: conflicting prose origins for {name}:"
+                f" {origins[name]} and {origin}"
+            )
+        quirks.fire(quirk)
+
     for section in sections:
         # TS 29.140 6.3.6 misspells its heading as 3GGPP-IMSI; the table's
         # clause cell still identifies the AVP unambiguously.
         candidates = {row.name for row in rows if row.section == section.number}
-        if (title := _avp_title(section.title, quirks)) and title["name"] in names:
+        title = _avp_title(section.title, quirks)
+        headed = title is not None and title["name"] in names
+        if title is not None and headed:
             candidates.add(title["name"])
-        for name in candidates:
-            subject = rf"(?:The {re.escape(name)} AVP(?: \(AVP code \d+\))?,?|This AVP)"
-            for paragraph in section.paragraphs:
-                text = paragraph.text
-                citations = [
-                    match[1]
-                    for match in re.finditer(
-                        rf"\b{subject} is defined in (?:the )?(.+?)\s*\[\d+\]",
-                        text,
+        if not candidates:
+            continue
+        for paragraph in section.paragraphs:
+            text = paragraph.text
+            for name in sorted(candidates):
+                for citation in _named_citations(name, text):
+                    if origin := cited(citation):
+                        record(section, name, origin, "prose-avp-origins")
+            for match, quirk in _unnamed_citations(section, headed, text, quirks):
+                origin = cited(match[1])
+                if origin is None:
+                    continue
+                if len(candidates) > 1:
+                    raise ExtractionError(
+                        f"{section.number}: {origin} is cited for an unnamed AVP,"
+                        f" which could be {' or '.join(sorted(candidates))}"
                     )
-                ]
-                # TS 29.329 6.3.11-21: a bare clause citation, or an
-                # explicit 'for the definition' qualifier. Coding-only
-                # citations (TS 29.272 7.3.185) must not match.
-                citations.extend(
-                    match[1]
-                    for match in re.finditer(
-                        r"\bSee (.+?) (?:for (?:the definition|further description)"
-                        r" of this AVP\.|"
-                        r"clause \d+(?:\.\d+)+ for the definition\b)",
-                        text,
-                    )
-                )
-                if match := re.fullmatch(r"See (.+?) clause \d+(?:\.\d+)+\.", text):
-                    citations.append(match[1])
-                # TS 29.140 6.3.2/6 ('For is' is printed in 6.3.2).
-                citations.extend(
-                    match[1]
-                    for match in re.finditer(
-                        r"For (?:is )?the definition of this AVP refer to (.+)", text
-                    )
-                )
-                for citation in citations:
-                    origin = _named_document(citation)
-                    if origin is None or origin == collected.own_reference:
-                        continue
-                    if name in origins and origins[name] != origin:
-                        raise ExtractionError(
-                            f"{section.number}: conflicting prose origins for {name}:"
-                            f" {origins[name]} and {origin}"
-                        )
-                    origins[name] = origin
-                    quirks.fire("prose-avp-origins")
+                # "The Other AVP is ... This AVP is defined in ..." is Other's.
+                before = text[: match.start()]
+                mentioned = re.findall(r"\bThe ([\w-]+) AVP\b", before)
+                (name,) = candidates
+                if not mentioned or mentioned[-1] == name:
+                    record(section, name, origin, quirk)
     known = {
         (row.name, row.origin)
         for table in [*collected.reused_tables, *collected.vendor_reused]
@@ -3195,7 +3243,12 @@ def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
 QUIRKS: dict[str, str] = {
     "prose-avp-origins": (
         "read explicit AVP definition citations in prose as re-used origins,"
-        " retaining the citing AVP table's own facts (TS 29.329 6.3.21)"
+        " retaining the citing AVP table's own facts (TS 29.329 6.3.15)"
+    ),
+    "bare-avp-citations": (
+        "under prose-avp-origins, read 'See <doc> clause N.' as the whole of an"
+        " AVP's clause, and 'for further description of this AVP', as origins"
+        " (TS 29.329 6.3.9, 6.3.11-21)"
     ),
     "list-numbered-headings": (
         "number a heading printing no clause number with the number Word's"

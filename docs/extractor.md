@@ -216,13 +216,18 @@ Walks paragraphs and tables in document order under numbered headings:
   warns (TS 29.330 table 6.3.1-1).
 - The "re-used Diameter AVPs" table becomes `ReusedAvps` with M-bit
   overrides, and the code and type where the table prints them.
-- `prose-avp-origins` keeps explicit definition citations such as TS
-  29.329's "See 3GPP TS 29.229 [6] clause 6.3.56" as re-used rows beside
-  the citing AVP table, like NOTE-derived origins. The local table's code,
-  type and flag rules remain intact. References to encodings or value
-  meanings do not establish an AVP's origin. RFC 8583 uses the same quirk
-  for "The SourceID AVP is defined in [RFC8581]"; its re-used block takes
-  the citing table's section as its label when the table has no caption.
+- `prose-avp-origins` keeps definition citations ("The X AVP is defined in",
+  "See ... for the definition of this AVP") as re-used rows beside the citing
+  AVP table, like NOTE-derived origins. The local table's code, type and flag
+  rules remain intact. References to encodings or value meanings do not
+  establish an AVP's origin. An unnamed "this AVP" takes the clause's AVP: a
+  clause with several candidates fails, and a sentence after another AVP's name
+  is skipped. RFC 8583 uses the same quirk for "The SourceID AVP is defined in
+  [RFC8581]"; its re-used block takes the citing table's section as its label
+  when the table has no caption.
+- `bare-avp-citations` adds TS 29.329's pointers, which say no "definition":
+  "See 3GPP TS 29.229 [6] clause 6.3.56." where it is all a clause headed by
+  the AVP holds, and "for further description of this AVP".
 - Mark columns' cells become the row's marks. A cell is split at commas and
   spaces (at commas only under `worded-marks`); a parenthetical stays with
   the mark it follows. A printed dash is no marks and a blank cell is none
