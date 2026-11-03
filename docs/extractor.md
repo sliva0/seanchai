@@ -114,6 +114,9 @@ The vocabulary, with the document that forced each:
 - `body-clause-headings`: a clause heading printed as a body paragraph (TS
   32.299 clause 7.2.135C).
 - `struck-rules-unused`: TS 32.299's legend for struck members (below).
+- `message-tables`: a command printed as a table, `<Diameter Header: 258,
+  PXY>` and then its members, with a "Used in 3GPP" column read as the strike
+  (TS 32.299 V11.20.0 clause 6.4.5).
 - `abnf-comments`: a member line's trailing `; comment` (TS 29.209, 29.061,
   29.109, 29.214 Release 7 and 11).
 - `list-numbered-headings`: clause numbers that exist only in Word's list

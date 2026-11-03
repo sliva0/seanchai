@@ -531,6 +531,58 @@ def test_reference_only_quirk_rejects_other_command_text(tmp_path, body):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
+def _message_table_docx(tmp_path, spec_docx, marks=("yes", "No")):
+    """TS 32.299 V11.20.0 clause 6.4.5's shape."""
+    document = docx.Document(spec_docx)
+    document.add_paragraph("6.4.5\tExample-Answer Message", style="Heading 1")
+    document.add_paragraph("Table 6.4.5: Example-Answer (EXA) Message Contents")
+    table = document.add_table(rows=2, cols=2)
+    table.cell(0, 0).merge(table.cell(0, 1)).text = "Example Application AVPs"
+    table.cell(1, 0).text, table.cell(1, 1).text = "AVP", "Used in 3GPP"
+    for member, mark in zip(
+        ("<Diameter Header: 321, PXY>", "<Session-Id>", "* [Proxy-Info]"),
+        ("yes", *marks),
+        strict=True,
+    ):
+        row = table.add_row()
+        row.cells[0].text, row.cells[1].text = member, mark
+    path = tmp_path / "table.docx"
+    document.save(path)
+    (tmp_path / "TS29.999.toml").write_text(
+        '[[quirk]]\nname = "message-tables"\nreason = "test"\n'
+        '[[quirk]]\nname = "struck-rules-unused"\nreason = "test"\n'
+    )
+    return path
+
+
+def test_a_command_printed_as_a_table_is_a_message(tmp_path, synthetic_spec_docx):
+    path = _message_table_docx(tmp_path, synthetic_spec_docx)
+
+    spec, comments = tgpp_docx.extract_with_comments(path, sources_dir=tmp_path)
+
+    message = next(
+        s
+        for s in spec.sections
+        if isinstance(s, ast.Message) and s.name == "Example-Answer"
+    )
+    assert message.abbreviation == "EXA"
+    assert message.command_code == 321
+    assert message.flags == frozenset({ast.CommandFlag.PROXIABLE})
+    assert [rule.name for rule in message.avps] == ["Session-Id"]
+    # "No" reads as the strike, commented out where it stood.
+    assert re.search(
+        r"^;;.*\[ Proxy-Info \] +; strikethrough$",
+        formatter.format_spec(spec, comments),
+        re.M,
+    )
+
+
+def test_a_command_table_with_another_mark_fails(tmp_path, synthetic_spec_docx):
+    path = _message_table_docx(tmp_path, synthetic_spec_docx, ("yes", "maybe"))
+    with pytest.raises(tgpp_docx.ExtractionError, match="neither yes nor no"):
+        tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
 def _procedure_section(*lines):
     """A procedure clause printing the lines, as TS 29.234 clause 4.4.2.2 does."""
     para = [
@@ -1575,7 +1627,7 @@ def test_ts_32_299_release_11_reads_its_own_template():
         message.abbreviation
         for message in spec.sections
         if isinstance(message, ast.Message)
-    ] == ["ACR", "ACA", "CCR", "CCA"]
+    ] == ["ACR", "ACA", "CCR", "CCA", "RAA"]
     aoc_format = sections["AoC-Format"]
     assert isinstance(aoc_format, ast.EnumeratedAvp)
     assert aoc_format.values == (

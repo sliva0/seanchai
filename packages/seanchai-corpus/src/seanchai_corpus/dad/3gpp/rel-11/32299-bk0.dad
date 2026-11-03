@@ -135,6 +135,29 @@
       * [ AVP ]
 
 
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 6.4.5
+; Page: 75
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+;;    * [ Proxy-Info ]              ; strikethrough
+;;      { Proxy-Host }              ; strikethrough
+;;      { Proxy-State }             ; strikethrough
+      * [ AVP ]
+
+
 ; Type: AVP Table
 ; Section: 7.1
 ; Table: 7.1

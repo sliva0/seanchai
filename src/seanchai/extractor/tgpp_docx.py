@@ -99,6 +99,13 @@ _BODY_HEADING_RE = re.compile(
 _COMMAND_INTRO_RE = re.compile(
     r"^The (?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) command,"
 )
+# Behind `message-tables`: the caption naming the command a table prints, TS
+# 32.299 V11.20.0 "Table 6.4.5: Re-Auth-Answer (RAA) Message Contents for Online
+# Charging", and the table's header row, as the rule's right side prints it.
+_MESSAGE_CAPTION_RE = re.compile(
+    r"\b(?P<name>[A-Za-z-]+) \((?P<abbr>[A-Z]{2,5})\) Message Contents\b"
+)
+_MESSAGE_ROW_RE = re.compile(r"^<\s*Diameter Header:\s*(?P<items>[0-9A-Z, ]+?)\s*>$")
 # Behind `procedure-commands`, a procedure step naming the command printed under
 # it: TS 29.109 clause 4.2, "... in the format of Multimedia-Auth-Request (MAR)
 # message.", and clause 5.2, "The NAF shall send a Bootstrapping-Info-Request
@@ -1056,6 +1063,87 @@ def _extract_messages(
             return []
         raise ExtractionError(f"{section.number}: command section without ABNF")
     return messages
+
+
+def _extract_table_message(
+    section: _Section,
+    table: _Table,
+    start: int,
+    title: re.Match,
+    warnings: list[str],
+    quirks: sources.Quirks,
+    commented: _Commented,
+) -> ast.Message:
+    """A command printed as a table of its rule's lines and whether 3GPP uses
+    each: TS 32.299 V11.20.0 clause 6.4.5, the one such rule in the document,
+    with `<Diameter Header: 258, PXY>` as its first row. Clause 6.4.1.2 reads
+    a member not used as it reads a strike ("in grey in the tables"), so `No`
+    is a struck line."""
+    quirks.fire("message-tables")
+    caption = next(
+        (
+            match
+            for paragraph in section.paragraphs
+            if (match := _MESSAGE_CAPTION_RE.search(paragraph.text))
+            and match["name"] == title["name"]
+        ),
+        None,
+    )
+    if caption is None:
+        raise ExtractionError(
+            f"{section.number}: no caption abbreviates {title['name']!r}"
+        )
+    lines = []
+    for row in table.rows[start + 1 :]:
+        used = row.cells[-1].lower()
+        if used not in ("yes", "no"):
+            raise ExtractionError(
+                f"{section.number}: {row.cells[0]!r} marked {row.cells[-1]!r},"
+                " neither yes nor no"
+            )
+        lines.append(
+            _Line(
+                text=row.cells[0],
+                style="",
+                bold=frozenset(),
+                struck=frozenset({used == "no"}),
+            )
+        )
+    avps, end, struck = _abnf_body(lines, 0, title["name"], quirks, warnings)
+    if end != len(lines):
+        raise ExtractionError(
+            f"{section.number}: table row {lines[end].text!r} is no ABNF member"
+        )
+    header = _MESSAGE_ROW_RE.match(table.rows[start].cells[0])
+    assert header is not None
+    try:
+        command_code, flags, application_id = abnf.diameter_header(header["items"])
+    except abnf.AbnfError as error:
+        raise ExtractionError(f"{section.number}: {error}") from None
+    message = ast.Message(
+        name=title["name"],
+        abbreviation=caption["abbr"],
+        source=ast.SourceRef(section=section.number),
+        command_code=command_code,
+        flags=flags,
+        application_id=application_id,
+        avps=avps,
+    )
+    if struck:
+        commented.append((message, struck))
+    return message
+
+
+def _table_message_row(table: _Table) -> int | None:
+    """The row printing a table's command header, if one does."""
+    return next(
+        (
+            index
+            for index, row in enumerate(table.rows)
+            if _MESSAGE_ROW_RE.match(row.cells[0])
+        ),
+        None,
+    )
 
 
 # Behind `prose-application-ids`: a 3GPP document stating the application id
@@ -2790,6 +2878,28 @@ def _collect(
                 )
             )
             continue
+        if quirks.enabled("message-tables") and (
+            title := _MESSAGE_TITLE_RE.match(section.title)
+        ):
+            printed = [
+                (table, start)
+                for table in section.tables
+                if (start := _table_message_row(table)) is not None
+            ]
+            for table, start in printed:
+                collected.messages.append(
+                    _extract_table_message(
+                        section,
+                        table,
+                        start,
+                        title,
+                        warnings,
+                        quirks,
+                        collected.commented,
+                    )
+                )
+            if printed:
+                continue
         if quirks.enabled("procedure-commands") and any(
             _DIAMETER_HEADER_RE.match(line.text) for line in section.lines
         ):
@@ -3308,6 +3418,11 @@ QUIRKS: dict[str, str] = {
         "read a 'Name message' or 'Name Command' heading over a rule spelled"
         " with the abbreviation ('<ACR> ::=') as the command's long name (TS"
         " 32.299 clauses 6.2.2-6.4.5, oneM2M TS-0004 clauses A.2.1-A.2.2)"
+    ),
+    "message-tables": (
+        "read a table whose first column prints a Diameter header and members"
+        " and whose second says if 3GPP uses them as a 'Name message' heading's"
+        " command (TS 32.299 V11.20.0 clause 6.4.5)"
     ),
     "spaced-rule-operator": (
         "read the rule operator spelled ':: =' as '::=' (TS 32.299 clause 7.2,"
