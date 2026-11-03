@@ -136,6 +136,32 @@
 
 
 ; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 6.4.4
+; Page: 74
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+;; patched: the table prints no Diameter header
+        { Session-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Proxy-Info ]
+;;      { Proxy-Host }
+;;      { Proxy-State }
+        [ Route-Record ]
+;;      [ CC-Sub-Session-Id ]     ; strikethrough
+        [ G-S-U-Pool-Identifier ]
+        [ Service-Identifier ]
+        [ Rating-Group ]
+        [ AVP ]
+
+
+; Type: Message
 ; Name: Re-Auth-Answer, RAA
 ; Section: 6.4.5
 ; Page: 75

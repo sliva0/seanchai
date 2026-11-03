@@ -318,6 +318,9 @@ class _Row:
     # The first cell's individual lines (normalized+patched) — merged
     # full-width NOTE rows hold one note per line.
     first_cell_lines: list[str]
+    # Whether the first cell opens on a tab, which normalizing removes: TS 32.299
+    # table 6.4.4 sets a grouped AVP's members off under it so.
+    indented: bool = False
 
 
 @dataclass
@@ -643,6 +646,7 @@ def _sections(
                                 patcher.apply(_normalize(line), number, record=False)
                                 for line in row.cells[0].text.splitlines()
                             ],
+                            indented=row.cells[0].text.startswith("\t"),
                         )
                     )
                 # A table whose every row merges cells in the same pattern is
@@ -1234,15 +1238,7 @@ def _extract_table_message(
     a member not used as it reads a strike ("in grey in the tables"), so `No`
     is a struck line."""
     quirks.fire("message-tables")
-    caption = next(
-        (
-            match
-            for paragraph in section.paragraphs
-            if (match := _MESSAGE_CAPTION_RE.search(paragraph.text))
-            and match["name"] == title["name"]
-        ),
-        None,
-    )
+    caption = _message_caption(section, title)
     if caption is None:
         raise ExtractionError(
             f"{section.number}: no caption abbreviates {title['name']!r}"
@@ -1288,6 +1284,109 @@ def _extract_table_message(
     if struck:
         commented.append((message, struck))
     return message
+
+
+# What a category table's row says of its member, TS 32.299 table 6.4.4 under
+# clause 6.4.1.2's symbols: the dash is its "Not used in 3GPP".
+_CATEGORY_PRESENCE = {
+    "M": ast.Presence.REQUIRED,
+    "OC": ast.Presence.OPTIONAL,
+    "-": ast.Presence.OPTIONAL,
+}
+
+
+def _extract_category_message(
+    section: _Section,
+    table: _Table,
+    caption: re.Match,
+    title: re.Match,
+    quirks: sources.Quirks,
+    commented: _Commented,
+) -> ast.Message:
+    """A command printed as a table of its members' categories and no rule: TS
+    32.299 V11.20.0 clause 6.4.4 prints RAR so, where V18.0.0 prints the rule.
+    Clause 6.4.1.2's symbols make M `{ }` and OC `[ ]`; a dash, "Not used in 3GPP",
+    reads as a strike; a row set off by a tab is the grouped AVP above its own,
+    kept as a comment. No Diameter header is printed anywhere, so a line an input
+    patch supplies states it, and the file says so."""
+    header = next(
+        (
+            match
+            for line in section.lines
+            if (match := _MESSAGE_ROW_RE.match(line.text))
+        ),
+        None,
+    )
+    if header is None:
+        raise ExtractionError(
+            f"{section.number}: table prints {title['name']} with no Diameter"
+            " header; an input patch supplies one"
+        )
+    quirks.fire("message-tables")
+    rules: list[ast.AvpRule] = []
+    notes: list[tuple[int, ast.AvpRule]] = []
+    for row in table.rows[1:]:
+        name, category = row.cells[0], row.cells[1]
+        presence = _CATEGORY_PRESENCE.get(category)
+        if presence is None:
+            raise ExtractionError(
+                f"{section.number}: {name!r} has category {category!r}, none of M,"
+                " OC or a dash"
+            )
+        struck = category == "-"
+        if struck:
+            if not quirks.enabled("struck-rules-unused"):
+                raise ExtractionError(
+                    f"{section.number}: {name!r} marked unused, which this"
+                    " document's source declaration does not read (the"
+                    " `struck-rules-unused` quirk)"
+                )
+            quirks.fire("struck-rules-unused")
+        rule = ast.AvpRule(name=name, presence=presence, strikethrough=struck)
+        if struck or row.indented:
+            notes.append((len(rules), rule))
+        else:
+            rules.append(rule)
+    try:
+        command_code, flags, application_id = abnf.diameter_header(header["items"])
+    except abnf.AbnfError as error:
+        raise ExtractionError(f"{section.number}: {error}") from None
+    message = ast.Message(
+        name=title["name"],
+        abbreviation=caption["abbr"],
+        source=ast.SourceRef(section=section.number),
+        command_code=command_code,
+        flags=flags,
+        application_id=application_id,
+        avps=tuple(rules),
+    )
+    members = [*rules, *(rule for _, rule in notes)]
+    commented.append(
+        (
+            message,
+            [
+                (0, "patched: the table prints no Diameter header"),
+                *(
+                    (position, formatter.commented_avp_rule(rule, members))
+                    for position, rule in notes
+                ),
+            ],
+        )
+    )
+    return message
+
+
+def _message_caption(section: _Section, title: re.Match) -> re.Match | None:
+    """The caption naming the command a clause prints as a table."""
+    return next(
+        (
+            match
+            for paragraph in section.paragraphs
+            if (match := _MESSAGE_CAPTION_RE.search(paragraph.text))
+            and match["name"] == title["name"]
+        ),
+        None,
+    )
 
 
 def _table_message_row(table: _Table) -> int | None:
@@ -3025,7 +3124,10 @@ def _collect(
         if (
             quirks.enabled("message-headings")
             and (title := _MESSAGE_TITLE_RE.match(section.title))
-            and any("Diameter Header" in line.text for line in section.lines)
+            and any(
+                "Diameter Header" in line.text and "::" in line.text
+                for line in section.lines
+            )
         ):
             # Only the clauses printing a rule: 6.4.6-6.4.13 point at RFC 6733.
             collected.messages.extend(
@@ -3060,6 +3162,29 @@ def _collect(
                     )
                 )
             if printed:
+                continue
+            # Named by a caption and no row prints its header: read, or failed
+            # on, never passed over. 6.4.6-6.4.13 point at RFC 6733, and print
+            # no such caption.
+            if caption := _message_caption(section, title):
+                table = next(
+                    (
+                        table
+                        for table in section.tables
+                        if table.rows[0].cells == ["AVP", "Category", "Description"]
+                    ),
+                    None,
+                )
+                if table is None:
+                    raise ExtractionError(
+                        f"{section.number}: {caption[0]!r} over no table a"
+                        " `message-tables` reading knows"
+                    )
+                collected.messages.append(
+                    _extract_category_message(
+                        section, table, caption, title, quirks, collected.commented
+                    )
+                )
                 continue
         if quirks.enabled("procedure-commands") and any(
             _DIAMETER_HEADER_RE.match(line.text) for line in section.lines
@@ -3593,8 +3718,9 @@ QUIRKS: dict[str, str] = {
     ),
     "message-tables": (
         "read a table whose first column prints a Diameter header and members"
-        " and whose second says if 3GPP uses them as a 'Name message' heading's"
-        " command (TS 32.299 V11.20.0 clause 6.4.5)"
+        " and whose second says if 3GPP uses them, or an 'AVP, Category,"
+        " Description' table under a line stating the header, as a 'Name"
+        " message' heading's command (TS 32.299 V11.20.0 clauses 6.4.4, 6.4.5)"
     ),
     "spaced-rule-operator": (
         "read the rule operator spelled ':: =' as '::=' (TS 32.299 clause 7.2,"

@@ -116,7 +116,9 @@ The vocabulary, with the document that forced each:
 - `struck-rules-unused`: TS 32.299's legend for struck members (below).
 - `message-tables`: a command printed as a table, `<Diameter Header: 258,
   PXY>` and then its members, with a "Used in 3GPP" column read as the strike
-  (TS 32.299 V11.20.0 clause 6.4.5).
+  (TS 32.299 V11.20.0 clause 6.4.5), or as an `AVP`, `Category`, `Description`
+  table and no rule (clause 6.4.4, [below](#commands-printed-by-category)). A
+  caption naming the command over any other table fails.
 - `abnf-comments`: a member line's trailing `; comment` (TS 29.209, 29.061,
   29.109, 29.214).
 - `reprinted-avps`: a grouped rule in a procedure clause, under "The content of
@@ -327,6 +329,33 @@ says where the document said it, as printed:
 
 A PDF's text layer loses the strike, so the docx's run formatting is what
 records it.
+
+### Commands printed by category
+
+TS 32.299 V11.20.0 clause 6.4.4 prints RAR as table 6.4.4, a row per member with
+its category and a description, and no ABNF. The document states no command code
+for it, nor flags: clause 6.4.1.1 says only that RAR/RAA "are used according to"
+RFC 3588 [401]. TS 29.230 has no row for RFC 6733's 258 either, allocating 3GPP's
+commands alone. So an input patch supplies the header line, citing RFC 6733
+clause 8.3.1, and the extractor fails without it, rather than pass over a command
+the document prints. Clause 6.4.1.2's symbols read M as `{ }` and OC as `[ ]`; a
+dash, "Not used in 3GPP", reads as a strike, the member commented out; a row a tab
+sets off is the grouped AVP's above it, kept as a comment and no member.
+
+The category says neither a fixed position nor a repetition, which RFC 6733's rule
+states and V18.0.0's clause 6.4.4 prints. Those are corrections
+(`rel11-rar-session-id-position`, `rel11-rar-repeats-*`), so the file shows both the
+reading and the edit:
+
+```dad
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+;; patched: the table prints no Diameter header
+        < Session-Id > ;; corrected: (TS32.299.py#rel11-rar-session-id-position)
+        { Origin-Host }
+```
+
+The application id stays out of the header, as for the clause's other commands:
+the `Ro` scope clause 7.1.6 states applies to clause 6.4.
 
 ### Re-printed rules
 

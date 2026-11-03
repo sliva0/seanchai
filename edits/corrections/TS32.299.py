@@ -1101,3 +1101,35 @@ CORRECTIONS += [
         versions="18.0.0",
     ),
 ]
+
+# TS 32.299 V11.20.0 clause 6.4.4 prints RAR as a table of categories, which say
+# whether a member is mandatory and neither where it stands nor how often.
+_REL11_RAR = (
+    "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC"
+    " 6733 clause 8.3.1 prints '{}', as V18.0.0 clause 6.4.4 does; table 6.4.4's"
+    " category column has no way to say so"
+)
+CORRECTIONS += [
+    Correction(
+        id="rel11-rar-session-id-position",
+        target=avp_rule("Re-Auth-Request", "Session-Id"),
+        field="presence",
+        expect=ast.Presence.REQUIRED,
+        replace=ast.Presence.FIXED,
+        reason=_REL11_RAR.format("< Session-Id >"),
+        versions="11.20.0",
+    ),
+    *(
+        Correction(
+            id=f"rel11-rar-repeats-{member.lower()}-{bound}",
+            target=avp_rule("Re-Auth-Request", member),
+            field=f"{bound}_occurs",
+            expect=1,
+            replace=replace,
+            reason=_REL11_RAR.format(f"* [ {member} ]"),
+            versions="11.20.0",
+        )
+        for member in ("Proxy-Info", "Route-Record", "AVP")
+        for bound, replace in (("min", 0), ("max", None))
+    ),
+]

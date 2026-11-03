@@ -462,7 +462,26 @@ name = "message-tables"
 reason = """
     clause 6.4.5 prints RAA as table 6.4.5, its first row '<Diameter Header:
     258, PXY>' and every other an ABNF member, with a 'Used in 3GPP' column
-    clause 6.4.1.2 reads as the strike ('in grey in the tables')
+    clause 6.4.1.2 reads as the strike ('in grey in the tables'); clause 6.4.4
+    prints RAR as table 6.4.4, a member and its category a row and no ABNF
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Table 6.4.4 illustrates the basic structure of a Diameter Credit Control Re-Auth-Request message as used for online charging."
+replace = "<Diameter Header: 258, REQ, PXY>"
+exact = true
+section = "6.4.4"
+reason = """
+    clause 6.4.4 prints RAR with no Diameter header anywhere, and a command
+    needs its code. Clause 6.4.1.1 uses RAR/RAA 'according to' RFC 3588 [401],
+    whose
+    successor RFC 6733 clause 8.3.1 prints '<RAR> ::= < Diameter Header: 258,
+    REQ, PXY >'; clause 6.4.5 prints RAA's as 258, PXY, and V18.0.0 clause 6.4.4
+    prints RAR's as here. TS 29.230 allocates 3GPP's commands and has no row for
+    RFC 6733's 258. The application id stays out, as for the clause's other
+    headers: clause 7.1.6's Ro scope applies to them
     """
 first_version = "11.20.0"
 last_version = "11.20.0"
