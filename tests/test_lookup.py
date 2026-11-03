@@ -313,6 +313,7 @@ def test_a_printed_id_reaches_the_commands_whose_headers_omit_it():
         ("Rf", "ACA", 3),
         ("Ro", "CCR", 4),
         ("Ro", "CCA", 4),
+        ("Ro", "RAR", 4),
         ("Ro", "RAA", 4),
     ]
 

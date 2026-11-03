@@ -577,6 +577,88 @@ def test_a_command_printed_as_a_table_is_a_message(tmp_path, synthetic_spec_docx
     )
 
 
+def _category_table_docx(tmp_path, spec_docx, patch=True, rows=None):
+    """TS 32.299 V11.20.0 clause 6.4.4's shape."""
+    document = docx.Document(spec_docx)
+    document.add_paragraph("6.4.4\tSample-Request Message", style="Heading 1")
+    document.add_paragraph("Table 6.4.4 illustrates the structure.")
+    document.add_paragraph("Table 6.4.4: Sample-Request (SMR) Message Contents")
+    table = document.add_table(rows=1, cols=3)
+    for cell, text in zip(
+        table.rows[0].cells, ("AVP", "Category", "Description"), strict=True
+    ):
+        cell.text = text
+    for name, category in rows or (
+        ("Session-Id", "M"),
+        ("Proxy-Info", "OC"),
+        ("\tProxy-Host", "M"),
+        ("Old-Thing", "-"),
+    ):
+        row = table.add_row()
+        row.cells[0].text, row.cells[1].text = name, category
+    path = tmp_path / "category.docx"
+    document.save(path)
+    declaration = (
+        '[[quirk]]\nname = "message-tables"\nreason = "test"\n'
+        '[[quirk]]\nname = "struck-rules-unused"\nreason = "test"\n'
+    )
+    if patch:
+        declaration += (
+            '[[patch]]\nfind = "Table 6.4.4 illustrates the structure."\n'
+            'replace = "<Diameter Header: 321, REQ, PXY>"\nexact = true\n'
+            'reason = "test"\n'
+        )
+    (tmp_path / "TS29.999.toml").write_text(declaration)
+    return path
+
+
+def test_a_command_printed_by_category_is_a_message(tmp_path, synthetic_spec_docx):
+    path = _category_table_docx(tmp_path, synthetic_spec_docx)
+
+    spec, comments = tgpp_docx.extract_with_comments(path, sources_dir=tmp_path)
+
+    message = next(
+        s
+        for s in spec.sections
+        if isinstance(s, ast.Message) and s.name == "Sample-Request"
+    )
+    assert (message.abbreviation, message.command_code) == ("SMR", 321)
+    assert [(rule.name, rule.presence) for rule in message.avps] == [
+        ("Session-Id", ast.Presence.REQUIRED),
+        ("Proxy-Info", ast.Presence.OPTIONAL),
+    ]
+    printed = formatter.format_spec(spec, comments)
+    assert ";; patched: the table prints no Diameter header\n" in printed
+    assert re.search(r"^;;.*\{ Proxy-Host \}$", printed, re.M)
+    assert re.search(r"^;;.*\[ Old-Thing \] +; strikethrough$", printed, re.M)
+
+
+def test_a_command_printed_by_category_needs_its_header(tmp_path, synthetic_spec_docx):
+    path = _category_table_docx(tmp_path, synthetic_spec_docx, patch=False)
+    with pytest.raises(tgpp_docx.ExtractionError, match="no Diameter header"):
+        tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
+def test_a_command_printed_by_another_category_fails(tmp_path, synthetic_spec_docx):
+    path = _category_table_docx(tmp_path, synthetic_spec_docx, rows=[("Odd", "X")])
+    with pytest.raises(tgpp_docx.ExtractionError, match="category 'X'"):
+        tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
+def test_a_captioned_command_over_an_unknown_table_fails(tmp_path, synthetic_spec_docx):
+    document = docx.Document(synthetic_spec_docx)
+    document.add_paragraph("6.4.4\tSample-Request Message", style="Heading 1")
+    document.add_paragraph("Table 6.4.4: Sample-Request (SMR) Message Contents")
+    document.add_table(rows=1, cols=2)
+    path = tmp_path / "unknown.docx"
+    document.save(path)
+    (tmp_path / "TS29.999.toml").write_text(
+        '[[quirk]]\nname = "message-tables"\nreason = "test"\n'
+    )
+    with pytest.raises(tgpp_docx.ExtractionError, match="over no table"):
+        tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
 def test_a_command_table_with_another_mark_fails(tmp_path, synthetic_spec_docx):
     path = _message_table_docx(tmp_path, synthetic_spec_docx, ("yes", "maybe"))
     with pytest.raises(tgpp_docx.ExtractionError, match="neither yes nor no"):
@@ -1909,7 +1991,7 @@ def test_ts_32_299_release_11_reads_its_own_template():
         message.abbreviation
         for message in spec.sections
         if isinstance(message, ast.Message)
-    ] == ["ACR", "ACA", "CCR", "CCA", "RAA"]
+    ] == ["ACR", "ACA", "CCR", "CCA", "RAR", "RAA"]
     aoc_format = sections["AoC-Format"]
     assert isinstance(aoc_format, ast.EnumeratedAvp)
     assert aoc_format.values == (

@@ -152,6 +152,32 @@
 
 
 ; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 6.4.4
+; Page: 74
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+;; patched: the table prints no Diameter header
+        < Session-Id > ;; corrected: (TS32.299.py#rel11-rar-session-id-position)
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ User-Name ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ] ;; corrected: (TS32.299.py#rel11-rar-repeats-proxy-info-min) ;; corrected: (TS32.299.py#rel11-rar-repeats-proxy-info-max)
+;;      { Proxy-Host }
+;;      { Proxy-State }
+      * [ Route-Record ] ;; corrected: (TS32.299.py#rel11-rar-repeats-route-record-min) ;; corrected: (TS32.299.py#rel11-rar-repeats-route-record-max)
+;;      [ CC-Sub-Session-Id ]     ; strikethrough
+        [ G-S-U-Pool-Identifier ]
+        [ Service-Identifier ]
+        [ Rating-Group ]
+      * [ AVP ] ;; corrected: (TS32.299.py#rel11-rar-repeats-avp-min) ;; corrected: (TS32.299.py#rel11-rar-repeats-avp-max)
+
+
+; Type: Message
 ; Name: Re-Auth-Answer, RAA
 ; Section: 6.4.5
 ; Page: 75

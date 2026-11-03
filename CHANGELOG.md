@@ -8,6 +8,9 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- The docx extractor reads a command printed as a category table under
+  `message-tables`, TS 32.299 V11.20.0's RAR, and fails on a caption naming a
+  command over a table it cannot read.
 - `; Type: Reprinted AVP` records a rule a document prints as another's, naming
   it with `; From:`, and defines nothing: TS 29.109's three copies of RFC 6733's
   `Vendor-Specific-Application-Id`. `ast.ReprintedAvp`; the linter's
