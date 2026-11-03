@@ -15,6 +15,7 @@ import difflib
 import hashlib
 import importlib.metadata
 import json
+import os
 import re
 import shutil
 import tempfile
@@ -847,16 +848,40 @@ def _replacing(output: Path) -> Iterator[Path]:
         staged = Path(scratch) / "new"
         staged.mkdir()
         yield staged
-        previous = Path(scratch) / "old"
-        if output.exists():
-            shutil.copymode(output, staged)
-            output.rename(previous)
-        try:
-            staged.rename(output)
-        except OSError:
-            if previous.exists():
-                previous.rename(output)
-            raise
+        _publish(staged, output)
+
+
+def _publish(staged: Path, output: Path) -> None:
+    """Put `staged` where `output` is.
+
+    The previous export waits in `<output>.previous-<pid>`, outside anything
+    removed automatically, until the new one is in place or it is back: however
+    the swap ends, one of the two is whole on disk. An error from a failed
+    restoration names where it is.
+    """
+    if not output.exists():
+        staged.rename(output)
+        return
+    shutil.copymode(output, staged)
+    backup = output.with_name(f"{output.name}.previous-{os.getpid()}")
+    try:
+        output.rename(backup)
+        staged.rename(output)
+    except BaseException as error:
+        # With `output` in place nothing was moved aside, or the new export
+        # arrived just before an interruption, so there is nothing to restore.
+        if backup.exists() and not output.exists():
+            try:
+                backup.rename(output)
+            except OSError as failure:
+                raise CorpusError(
+                    f"cannot replace {output}: {error}; nor could the previous"
+                    f" export be restored: {failure}. It is kept in {backup};"
+                    f" move it back to {output}"
+                ) from failure
+        raise
+    # The new export is published, so a backup left here fails nothing.
+    shutil.rmtree(backup, ignore_errors=True)
 
 
 def export_corpus(
