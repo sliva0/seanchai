@@ -546,6 +546,15 @@ title = """
 url = "https://www.etsi.org/deliver/etsi_ts/183000_183099/183033/01.02.00_60/ts_183033v010200p.pdf"
 
 [[transcribed]]
+reference = "ETSI-ES283.035"
+title = """
+    Telecommunications and Internet converged Services and Protocols for
+    Advanced Networking (TISPAN); Network Attachment Sub-System (NASS); e2
+    interface based on the DIAMETER protocol
+    """
+url = "https://www.etsi.org/deliver/etsi_es/283000_283099/283035/02.05.01_60/es_283035v020501p.pdf"
+
+[[transcribed]]
 reference = "3GPP2-X.S0057"
 title = "E-UTRAN - eHRPD Connectivity and Interworking: Core Network Aspects"
 url = "http://www.3gpp2.org/Public_html/Specs/X.S0057-0_v2.0_091215.pdf"
