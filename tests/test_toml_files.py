@@ -27,7 +27,6 @@ _IGNORED_DIRECTORIES = frozenset(
         "__pycache__",
         "build",
         "dist",
-        "external",
         "specifications",
         "wheels",
     }

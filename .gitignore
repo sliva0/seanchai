@@ -15,8 +15,3 @@ wheels/
 
 # Downloaded specification sources (recreate with `seanchai download`)
 specifications/
-
-# Third-party checkouts used while working: Wireshark's Diameter dictionary and
-# mensonen/diameter. Neither is vendored — see docs/roadmap.md for the plan to
-# fetch Wireshark's through the downloader instead.
-external/
