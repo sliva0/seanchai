@@ -1,0 +1,74 @@
+# Source declarations for 3GPP2 X.S0013-013 (Service Based Bearer Control - Tx
+# Interface Stage-3). Applied to the lines of the hand transcription in
+# edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "<Experimental-Result>"
+replace = "Experimental-Result"
+section = "5.4.1"
+reason = """
+    clause 5.4.1 brackets the rule name as a command's is, and the clause prints
+    an AVP format, 'AVP Header: 297', as every other grouped AVP's is
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "< AVP header: x >"
+replace = "< AVP header: 510 >"
+section = "5.5.10"
+reason = """
+    clause 5.5.10's AVP format prints the code as 'x'; the clause's sentence
+    ('The Flows AVP (AVP code 510)') and table 5.1-1's Flows row give 510
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "Media-Sub-Component AVP"
+replace = "Media-Sub-Component"
+section = "5.5"
+reason = """
+    table 5.1-1's name cell carries the ' AVP' of a clause heading; clause
+    5.5.18's sentence and the Media-Component-Description format (5.5.16) name
+    the AVP Media-Sub-Component
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "P     -       -       Y"
+replace = "P     -       -       Yes"
+count = 22
+section = "5.5"
+reason = """
+    table 5.1-1 writes 'Y' under May Encr. for all its rows; the grammar's cell
+    is Yes or No
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "P     -       M       Y"
+replace = "P     -       M       Yes"
+count = 3
+section = "5.5"
+reason = """
+    table 5.1-2 writes 'Y' under May Encr. for all its rows; the grammar's cell
+    is Yes or No
+    """
+first_version = "1.0"
+last_version = "1.0"
+
+[[patch]]
+find = "OTHER       = 0xFFFFFFFF"
+replace = "OTHER       = 4294967295"
+section = "5.5.19"
+reason = """
+    clause 5.5.19 alone writes a value in hexadecimal, OTHER (0xFFFFFFFF); the
+    grammar's value is decimal, and TS 183 017 clause 7.3.29 tabulates the same
+    value
+    """
+first_version = "1.0"
+last_version = "1.0"

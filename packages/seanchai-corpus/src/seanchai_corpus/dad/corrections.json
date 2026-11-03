@@ -5950,6 +5950,214 @@
     }
    ],
    "version": "2.1.1"
+  },
+  "xs0013-013-0_v1.0": {
+   "edits": {
+    "3GPP2-X.S0013-013.py#aa-request-subscription-id-case": {
+     "kind": "correction",
+     "reason": "the format of clause 5.3.1 upper-cases the 'd'; table 5.6.1 and RFC 4006, which it cites, spell Subscription-Id"
+    },
+    "3GPP2-X.S0013-013.py#abort-cause-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#access-network-charging-address-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#access-network-charging-identifier-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#access-network-charging-identifier-value-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#access-network-charging-identifier-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5.3's AVP format omits the vendor-id; clause 5.5 sets that of 'all 3GPP Diameter AVPs defined in the present document' to 10415 (3GPP), and table 5.1-1 lists the AVP"
+    },
+    "3GPP2-X.S0013-013.py#access-network-physical-access-id-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5.23's AVP format omits the vendor-id; its sentence says 'The 3GPP2 vendor ID 5535 shall be used for this AVP'"
+    },
+    "3GPP2-X.S0013-013.py#af-application-identifier-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#af-charging-identifier-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#codec-data-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#experimental-result-vendor-id-case": {
+     "kind": "correction",
+     "reason": "clause 5.4.1's format upper-cases the 'D'; its next sentence writes Vendor-Id AVP, as RFC 3588, which it cites for the AVP, defines it"
+    },
+    "3GPP2-X.S0013-013.py#flow-description-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#flow-number-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.10, which heads another AVP or none; clause 5.5.9 heads and defines Flow-Number"
+    },
+    "3GPP2-X.S0013-013.py#flow-number-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#flow-status-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.12, which heads another AVP or none; clause 5.5.11 heads and defines Flow-Status"
+    },
+    "3GPP2-X.S0013-013.py#flow-status-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#flow-usage-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.13, which heads another AVP or none; clause 5.5.12 heads and defines Flow-Usage"
+    },
+    "3GPP2-X.S0013-013.py#flow-usage-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#flows-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.11, which heads another AVP or none; clause 5.5.10 heads and defines Flows"
+    },
+    "3GPP2-X.S0013-013.py#flows-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#flows-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5.10's AVP format omits the vendor-id; clause 5.5 sets that of 'all 3GPP Diameter AVPs defined in the present document' to 10415 (3GPP), and table 5.1-1 lists the AVP"
+    },
+    "3GPP2-X.S0013-013.py#max-requested-bandwidth-dl-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.16, which heads another AVP or none; clause 5.5.14 heads and defines Max-Requested-Bandwidth-DL"
+    },
+    "3GPP2-X.S0013-013.py#max-requested-bandwidth-dl-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#max-requested-bandwidth-ul-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.17, which heads another AVP or none; clause 5.5.15 heads and defines Max-Requested-Bandwidth-UL"
+    },
+    "3GPP2-X.S0013-013.py#max-requested-bandwidth-ul-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#media-component-description-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.18, which heads another AVP or none; clause 5.5.16 heads and defines Media-Component-Description"
+    },
+    "3GPP2-X.S0013-013.py#media-component-description-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#media-component-description-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5.16's AVP format omits the vendor-id; clause 5.5 sets that of 'all 3GPP Diameter AVPs defined in the present document' to 10415 (3GPP), and table 5.1-1 lists the AVP"
+    },
+    "3GPP2-X.S0013-013.py#media-component-number-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.19, which heads another AVP or none; clause 5.5.17 heads and defines Media-Component-Number"
+    },
+    "3GPP2-X.S0013-013.py#media-component-number-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#media-sub-component-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.20, which heads another AVP or none; clause 5.5.18 heads and defines Media-Sub-Component"
+    },
+    "3GPP2-X.S0013-013.py#media-sub-component-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#media-sub-component-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5.18's AVP format omits the vendor-id; clause 5.5 sets that of 'all 3GPP Diameter AVPs defined in the present document' to 10415 (3GPP), and table 5.1-1 lists the AVP"
+    },
+    "3GPP2-X.S0013-013.py#media-type-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.21, which heads another AVP or none; clause 5.5.19 heads and defines Media-Type"
+    },
+    "3GPP2-X.S0013-013.py#media-type-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#ra-request-subscription-id-case": {
+     "kind": "correction",
+     "reason": "the format of clause 5.3.3 upper-cases the 'd'; table 5.6.1 and RFC 4006, which it cites, spell Subscription-Id"
+    },
+    "3GPP2-X.S0013-013.py#rr-bandwidth-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.22, which heads another AVP or none; clause 5.5.20 heads and defines RR-Bandwidth"
+    },
+    "3GPP2-X.S0013-013.py#rr-bandwidth-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#rs-bandwidth-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.23, which heads another AVP or none; clause 5.5.21 heads and defines RS-Bandwidth"
+    },
+    "3GPP2-X.S0013-013.py#rs-bandwidth-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#sip-forking-indication-name": {
+     "kind": "correction",
+     "reason": "clause 5.5.22's sentence names the AVP SIP_Forking; its heading, table 5.1-1 (code 523) and the AAR format name SIP-Forking-Indication"
+    },
+    "3GPP2-X.S0013-013.py#sip-forking-indication-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.24, which heads another AVP or none; clause 5.5.22 heads and defines SIP-Forking-Indication"
+    },
+    "3GPP2-X.S0013-013.py#sip-forking-indication-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#specific-action-row-clause": {
+     "kind": "correction",
+     "reason": "table 5.1-1 prints clause 5.5.14, which heads another AVP or none; clause 5.5.13 heads and defines Specific-Action"
+    },
+    "3GPP2-X.S0013-013.py#specific-action-row-vendor": {
+     "kind": "correction",
+     "reason": "clause 5.5: table 5.1-1's AVPs are 3GPP's, whose Vendor-Id header 'shall be set to 10415 (3GPP)'"
+    },
+    "3GPP2-X.S0013-013.py#vendor-id-column": {
+     "kind": "correction",
+     "reason": "clause 5.5: 'The Vendor-Id header of all 3GPP Diameter AVPs defined in the present document shall be set to 10415 (3GPP)', which no cell of table 5.1-1 can state in a file of 3GPP2's vendor"
+    }
+   },
+   "reference": "3GPP2-X.S0013-013",
+   "renames": [
+    {
+     "expect": "Vendor-ID",
+     "replace": "Vendor-Id"
+    },
+    {
+     "expect": "SIP_Forking",
+     "replace": "SIP-Forking-Indication"
+    },
+    {
+     "expect": "Subscription-ID",
+     "replace": "Subscription-Id"
+    },
+    {
+     "expect": "Subscription-ID",
+     "replace": "Subscription-Id"
+    }
+   ],
+   "version": "1.0"
   }
  },
  "note": "Written by `seanchai regenerate` from edits/corrections; do not edit."

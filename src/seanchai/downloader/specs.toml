@@ -579,6 +579,14 @@ reference = "3GPP2-X.S0057"
 title = "E-UTRAN - eHRPD Connectivity and Interworking: Core Network Aspects"
 url = "http://www.3gpp2.org/Public_html/Specs/X.S0057-0_v2.0_091215.pdf"
 
+[[transcribed]]
+reference = "3GPP2-X.S0013-013"
+title = """
+    All-IP Core Network Multimedia Domain; Service Based Bearer Control - Tx
+    Interface Stage-3
+    """
+url = "http://www.3gpp2.org/Public_html/Specs/X.S0013-013-0_v1.0_080224.pdf"
+
 # Wireshark's Diameter dictionary — the independent oracle `seanchai
 # crosscheck` compares extracted codes, vendor-ids and types against. The
 # whole directory is needed, not just dictionary.xml: the dictionary is split
