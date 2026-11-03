@@ -16,8 +16,10 @@ next one uncovered, so the public entry points close the set instead.
 import contextlib
 from collections.abc import Iterator
 
+from ..errors import SeanchaiError
 
-class ExtractionError(ValueError):
+
+class ExtractionError(SeanchaiError, ValueError):
     pass
 
 

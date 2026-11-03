@@ -42,6 +42,7 @@ from typing import NamedTuple
 import docx
 import pypdf
 
+from ..errors import SeanchaiError
 from ..prose import collapse_fields
 
 THREE_GPP_ARCHIVE = "https://www.3gpp.org/ftp/Specs/archive/{series}_series/{number}/"
@@ -213,7 +214,7 @@ class Catalog(NamedTuple):
 CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
 
 
-class DownloadError(RuntimeError):
+class DownloadError(SeanchaiError, RuntimeError):
     """Anything that stops the corpus being fetched as asked."""
 
 

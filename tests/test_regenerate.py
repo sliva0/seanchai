@@ -798,3 +798,35 @@ def test_a_3gpp2_transcription_from_another_versions_rendering_is_refused(
 
     with pytest.raises(ValueError, match=r"X\.S0057-<revision>_v1\.0_<date>\.pdf"):
         run()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "not json",
+        "{}",
+        "[]",
+        '{"artifacts": 7}',
+        '{"artifacts": [{}]}',
+        '{"artifacts": [{"files": [], "family": "IETF"}, 7]}',
+    ],
+)
+def test_a_malformed_manifest_fails_the_run_and_names_the_file(tmp_path, text):
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(text)
+
+    report = _run(manifest, corpus, corpus)
+
+    (failed,) = report.outcomes
+    assert report.failed
+    assert failed.status == "failed"
+    assert failed.reference == "manifest.json"
+    assert "no download manifest" in regenerate.describe(failed)
+
+
+def test_a_missing_manifest_fails_the_run(tmp_path):
+    report = _run(tmp_path / "manifest.json", tmp_path, tmp_path)
+
+    assert report.failed

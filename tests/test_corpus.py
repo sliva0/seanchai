@@ -7,8 +7,12 @@ import pytest
 import seanchai_corpus
 from conftest import _CORPUS_DIR
 
-from seanchai import corpus
-from seanchai.dad import ast, formatter
+import seanchai
+from seanchai import corpus, model, oracle
+from seanchai.dad import abnf, ast, corrections, formatter, parser
+from seanchai.downloader import DownloadError
+from seanchai.extractor import errors, sources
+from seanchai.regenerate import ManifestError
 
 
 def _spec(specification, version, *sections):
@@ -527,3 +531,50 @@ def test_installed_without_the_package_names_it(monkeypatch):
 
     with pytest.raises(corpus.CorpusNotInstalledError, match="seanchai-corpus"):
         corpus.Corpus.installed()
+
+
+def test_load_takes_one_path_as_a_path_or_a_string():
+    rfc = _CORPUS_DIR / "rfc" / "rfc6733.dad"
+
+    for given in (rfc, str(rfc), [str(rfc)], (rfc,)):
+        assert [entry.reference for entry in corpus.Corpus.load(given)] == ["RFC6733"]
+
+
+@pytest.mark.parametrize(
+    ("given", "says"),
+    [
+        (Path("/nonexistent/corpus"), "no such file"),
+        ("/nonexistent/corpus", "no such file"),
+        ([Path("/nonexistent/corpus")], "no such file"),
+        (None, "a path or a list of paths"),
+        (7, "a path or a list of paths"),
+        ([7], "a path or a list of paths"),
+    ],
+)
+def test_load_refuses_what_is_no_corpus_with_its_own_error(given, says):
+    with pytest.raises(corpus.CorpusError, match=says):
+        corpus.Corpus.load(given)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        corpus.CorpusError,
+        corpus.CorpusNotInstalledError,
+        model.ModelError,
+        model.IncompleteCorpusError,
+        model.StaleHoleRecordError,
+        oracle.OracleError,
+        abnf.AbnfError,
+        ast.SpecRefError,
+        corrections.CorrectionError,
+        parser.DadParseError,
+        errors.ExtractionError,
+        sources.PatchError,
+        sources.QuirkError,
+        DownloadError,
+        ManifestError,
+    ],
+)
+def test_every_error_shares_one_base(error):
+    assert issubclass(error, seanchai.SeanchaiError)

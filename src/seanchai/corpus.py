@@ -31,6 +31,7 @@ which the model builds strictly against (docs/consumers.md#known-holes).
 
 from __future__ import annotations
 
+import os
 import re
 import tomllib
 from collections.abc import Iterable, Iterator
@@ -39,10 +40,11 @@ from pathlib import Path
 from typing import Any
 
 from .dad import ast, parser
+from .errors import SeanchaiError
 from .prose import collapse
 
 
-class CorpusError(ValueError):
+class CorpusError(SeanchaiError, ValueError):
     pass
 
 
@@ -516,8 +518,15 @@ class Corpus:
             candidates.sort(key=lambda e: _version_key(e.spec.version), reverse=True)
 
     @classmethod
-    def load(cls, paths: Iterable[Path], *, raw: bool = False) -> Corpus:
-        """Parse every `.dad` file in `paths`, recursing into directories.
+    def load(
+        cls,
+        paths: str | os.PathLike[str] | Iterable[str | os.PathLike[str]],
+        *,
+        raw: bool = False,
+    ) -> Corpus:
+        """Parse every `.dad` file in `paths`, one path or several, recursing
+        into directories. A path that does not exist, or that is no path,
+        raises `CorpusError`, as a file that does not parse does.
 
         Raw files are skipped by default. A corpus mixing raw and corrected
         copies of one specification would hold two versions of the same
@@ -532,12 +541,14 @@ class Corpus:
         directory named twice is one directory.
         """
         unique: dict[Path, Path] = {}
-        for path in paths:
+        for path in _as_paths(paths):
+            if not path.exists():
+                raise CorpusError(f"{path}: no such file or directory")
             unique.setdefault(path.resolve(), path)
-        paths = list(unique.values())
+        given = list(unique.values())
         records = [
             path / HOLE_RECORD
-            for path in paths
+            for path in given
             if not raw and path.is_dir() and (path / HOLE_RECORD).is_file()
         ]
         if len(records) > 1:
@@ -545,12 +556,12 @@ class Corpus:
                 f"two hole records in one corpus: {', '.join(map(str, records))}"
             )
         entries = []
-        for path in cls._files(paths):
+        for path in cls._files(given):
             if path.name.endswith(".raw.dad") != raw:
                 continue
             try:
                 spec = parser.parse(path.read_text(encoding="utf-8"))
-            except ValueError as error:  # DadParseError and pydantic alike
+            except (OSError, ValueError) as error:  # DadParseError, pydantic alike
                 raise CorpusError(f"{path}: {error}") from error
             entries.append(Entry(path=path, spec=spec))
         return cls(entries, HoleRecord.load(records[0]) if records else None)
@@ -727,6 +738,19 @@ class Corpus:
             cited_revision=cited,
             revision=stand_in.revision,
         )
+
+
+def _as_paths(paths: Any) -> list[Path]:
+    """What `Corpus.load` was given, as a list: a lone string is one path, not
+    an iterable of characters."""
+    if isinstance(paths, str | os.PathLike):
+        paths = [paths]
+    try:
+        return [Path(path) for path in paths]
+    except TypeError as error:
+        raise CorpusError(
+            f"Corpus.load takes a path or a list of paths, not {paths!r}"
+        ) from error
 
 
 def _reference(spec: ast.Specification) -> str:

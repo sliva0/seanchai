@@ -21,6 +21,8 @@ from typing import Annotated, Any, Literal
 import pydantic
 from pydantic import Field
 
+from ..errors import SeanchaiError
+
 # AVP and message names as they appear in specs: "User-Data", "3GPP-Charging-Id".
 # RFC 6733's name-fmt excludes "_", but TS 29.109 consistently publishes
 # GBA_U-Awareness-Indicator in its heading, ABNF, table and defining prose.
@@ -972,7 +974,7 @@ Section = Annotated[
 ]
 
 
-class SpecRefError(ValueError):
+class SpecRefError(SeanchaiError, ValueError):
     """A specification title that names no supported document."""
 
 

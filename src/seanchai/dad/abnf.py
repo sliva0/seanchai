@@ -18,6 +18,7 @@ side that knows whether the context is a line number or a document section.
 
 import re
 
+from ..errors import SeanchaiError
 from . import ast
 
 _PRESENCE_BY_BRACKETS = {
@@ -38,7 +39,7 @@ _COMMAND_FLAG_ORDER = [
 ]
 
 
-class AbnfError(ValueError):
+class AbnfError(SeanchaiError, ValueError):
     pass
 
 

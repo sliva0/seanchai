@@ -35,6 +35,7 @@ from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
+from .errors import SeanchaiError
 from .extractor import rfc_text, tgpp_docx, transcription
 from .extractor.errors import ExtractionError
 from .versions import RangeWarning, VersionRange
@@ -135,7 +136,14 @@ def regenerate(
     corrections record, over whatever corrected files `output` then holds
     (`seanchai.correction_record`).
     """
-    listed = _sources(manifest) | _transcriptions(transcriptions_dir)
+    try:
+        sources = _sources(manifest)
+    except ManifestError as error:
+        # As any failure of a run: reported, with the corpus left alone.
+        failed = Outcome(manifest.name, "failed", error=str(error))
+        report(failed)
+        return Report([failed])
+    listed = sources | _transcriptions(transcriptions_dir)
     committed = _committed(corpus)
     # Acceptances are checked against the committed corpus's origins before
     # their ranges are widened; loaded once, and only then.
@@ -165,6 +173,11 @@ def regenerate(
             outcomes.append(failed)
             report(failed)
     return result
+
+
+class ManifestError(SeanchaiError):
+    """A `manifest.json` that is missing or is not what `seanchai download`
+    writes."""
 
 
 # A corpus file's place: its reference and the corpus subdirectory it sits
@@ -390,6 +403,17 @@ def _sources(manifest_path: Path) -> dict[_Key, _Source]:
     "not in manifest" — which is what it is, as far as regeneration is
     concerned.
     """
+    try:
+        return _read_sources(manifest_path)
+    except (OSError, ValueError, LookupError, TypeError, AttributeError) as error:
+        # JSON that is no manifest fails wherever the walk first trips on it.
+        raise ManifestError(
+            f"{manifest_path} is no download manifest"
+            f" ({type(error).__name__}: {error}); run `seanchai download`"
+        ) from error
+
+
+def _read_sources(manifest_path: Path) -> dict[_Key, _Source]:
     root = manifest_path.parent
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     sources: dict[_Key, _Source] = {}

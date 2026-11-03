@@ -26,6 +26,7 @@ Wireshark.
 
 from __future__ import annotations
 
+import os
 import re
 import tomllib
 import xml.etree.ElementTree as ElementTree
@@ -34,6 +35,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from .dad import ast
+from .errors import SeanchaiError
 from .prose import collapse_fields
 
 _ENTITY_RE = re.compile(
@@ -44,7 +46,7 @@ _DOCTYPE_RE = re.compile(r"<!DOCTYPE.*?\]>", re.DOTALL)
 _PI_RE = re.compile(r"<\?[^>]*\?>")
 
 
-class OracleError(ValueError):
+class OracleError(SeanchaiError, ValueError):
     """The dictionary directory cannot be read as Wireshark's dictionary."""
 
 
@@ -105,7 +107,7 @@ class Oracle:
     avps: dict[tuple[int, int], list[DictionaryAvp]] = field(default_factory=dict)
 
     @classmethod
-    def load(cls, directory: Path) -> Oracle:
+    def load(cls, directory: str | os.PathLike[str]) -> Oracle:
         """Parse `dictionary.xml` with its vendor entity files inlined.
 
         The dictionary splits itself across files with XML entities, which
@@ -114,8 +116,9 @@ class Oracle:
         the stdlib parser and drops nothing.
         """
         try:
+            directory = Path(directory)
             text = (directory / "dictionary.xml").read_text(encoding="utf-8")
-        except OSError as error:
+        except (OSError, TypeError) as error:
             raise OracleError(
                 f"cannot read the dictionary at {directory}: {error}"
             ) from error

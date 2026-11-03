@@ -56,11 +56,12 @@ from typing import Any
 
 import pydantic
 
+from ..errors import SeanchaiError
 from ..versions import VersionRange, applies, reviewed_release
 from . import ast, formatter
 
 
-class CorrectionError(ValueError):
+class CorrectionError(SeanchaiError, ValueError):
     pass
 
 

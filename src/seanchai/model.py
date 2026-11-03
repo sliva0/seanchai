@@ -94,6 +94,7 @@ reading states, stay holes under every policy.
 from __future__ import annotations
 
 import enum
+import os
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field, replace
 from functools import cached_property
@@ -103,9 +104,10 @@ import pydantic
 
 from . import corpus, oracle
 from .dad import ast, parser
+from .errors import SeanchaiError
 
 
-class ModelError(ValueError):
+class ModelError(SeanchaiError, ValueError):
     pass
 
 
@@ -1043,7 +1045,7 @@ class Model:
         books: corpus.Corpus,
         *,
         strict: bool | None = None,
-        dictionary: Path | None = None,
+        dictionary: str | os.PathLike[str] | None = None,
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> Model:
@@ -1066,7 +1068,8 @@ class Model:
         `dictionary` is a Wireshark dictionary directory (the downloader's
         `specifications/wireshark`); with one, every AVP and hole with an
         identity carries Wireshark's name for it in `wireshark_name`.
-        Without one that field is None and nothing else changes.
+        Without one that field is None and nothing else changes. One that
+        cannot be read raises `ModelError`.
 
         `undefined` is the consumer's answer for the names `Undefined AVP`
         blocks declare (`UndefinedPolicy`), and `supply` what `SUPPLY`
@@ -1086,7 +1089,14 @@ class Model:
             raise ModelError(
                 f"supply= is read only with undefined=SUPPLY, not {policy}"
             )
-        loaded = None if dictionary is None else oracle.Oracle.load(dictionary)
+        try:
+            loaded = None if dictionary is None else oracle.Oracle.load(dictionary)
+        except (ValueError, LookupError) as error:
+            # An `OracleError`, or a dictionary whose XML parses but lacks an
+            # attribute or holds no number where the wire format needs one.
+            raise ModelError(
+                f"cannot read the dictionary at {dictionary}: {error!r}"
+            ) from error
         built = cls(books, loaded, policy, supply)
         built._check_supply()
         if strict is None:

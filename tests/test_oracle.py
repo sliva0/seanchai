@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from conftest import _CORPUS_DIR
 
-from seanchai import oracle
+from seanchai import corpus, model, oracle
 from seanchai.dad import ast
 
 _ROOT = Path(__file__).parent.parent
@@ -498,3 +498,11 @@ def test_crosscheck_without_sources_or_the_package_names_it(tmp_path, monkeypatc
 
     assert result.exit_code == 1
     assert "seanchai-corpus" in result.output
+
+
+@pytest.mark.parametrize("dictionary", ["/nonexistent", Path("/nonexistent"), 7])
+def test_a_model_build_over_an_unreadable_dictionary_raises_a_model_error(dictionary):
+    books = corpus.Corpus.load(_CORPUS_DIR / "rfc" / "rfc6733.dad")
+
+    with pytest.raises(model.ModelError, match="cannot read the dictionary"):
+        model.Model.build(books, strict=False, dictionary=dictionary)

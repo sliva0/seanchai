@@ -16,6 +16,7 @@ from typing import NamedTuple
 
 import pydantic
 
+from ..errors import SeanchaiError
 from . import abnf, ast, formatter
 
 # Keys carry hyphens (`; Vendor-ID:`), so the charset is wider than letters.
@@ -60,7 +61,7 @@ _INLINE_TEXT = pydantic.TypeAdapter(ast.InlineText)
 _UNSIGNED32 = pydantic.TypeAdapter(ast.Unsigned32)
 
 
-class DadParseError(ValueError):
+class DadParseError(SeanchaiError, ValueError):
     def __init__(self, lineno: int, message: str):
         super().__init__(f"line {lineno}: {message}")
         self.lineno = lineno
