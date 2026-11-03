@@ -58,6 +58,9 @@ built.resolve("TS29.229", "Public-Identity")
 ## Commands
 
 ```sh
+seanchai show NAME_OR_IDENTITY [--json] # one AVP, from the installed corpus
+seanchai commands [REF | --application ID] [--json]
+seanchai dictionary -o OUT.json         # the corpus as JSON, to generate from
 seanchai download                       # fetch the catalog into specifications/
 seanchai download --no-convert          # without LibreOffice; legacy .doc unread
 seanchai download --only wireshark      # one source, keeping the others

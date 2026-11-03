@@ -23,3 +23,5 @@ Nothing has been published to PyPI yet.
 - `seanchai download --only {wireshark,rfc,3gpp,onem2m}`, keeping the manifest
   whole; its `sources` says what it holds, and `regenerate` names what is
   missing.
+- `seanchai show`, `commands` and `dictionary`, for a stack not in Python
+  (docs/consumers.md). `Model.canonical` is public.

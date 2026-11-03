@@ -7,6 +7,7 @@ The CI step installing the wheels from the index covers the declared ones.
 """
 
 import datetime
+import json
 import os
 import shutil
 import subprocess
@@ -260,6 +261,18 @@ def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
 
     smoke = run(bin_dir / "python", "-I", _SMOKE)
     assert smoke.returncode == 0, smoke.stderr
+
+    # The lookups, from a directory with no specifications/ and no edits/.
+    shown = run(bin_dir / "seanchai", "show", "Session-Id")
+    assert shown.returncode == 0, shown.stderr
+    assert "0:263" in shown.stdout
+    listed = run(bin_dir / "seanchai", "commands", "TS29.229")
+    assert listed.returncode == 0, listed.stderr
+    assert "User-Authorization-Request" in listed.stdout
+    written = run(bin_dir / "seanchai", "dictionary", "-o", tmp_path / "out.json")
+    assert written.returncode == 0, written.stderr
+    dictionary = json.loads((tmp_path / "out.json").read_text("utf-8"))
+    assert dictionary["corpus_version"] == seanchai_corpus.__version__
 
     source = tmp_path / "spec.docx"
     source.touch()
