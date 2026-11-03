@@ -10,6 +10,11 @@ which vocabulary a cell uses depends on the `; Columns:` declaration,
 which regex-based highlighters cannot track. In practice the vocabularies
 barely collide.
 
+The TextMate grammar's source is `src/seanchai/dad/syntax/dad.tmLanguage.json`,
+package data that `seanchai export` copies out for the site.
+`editors/vscode/syntaxes/dad.tmLanguage.json` is a byte-identical copy: edit the
+source, copy it over, and `tests/test_export.py` holds the two together.
+
 ## VS Code
 
 VS Code only loads grammars from installed extensions, so symlink the

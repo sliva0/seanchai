@@ -1,0 +1,215 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Diameter AVP Dictionary",
+  "scopeName": "source.dad",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#registry-reserved" },
+    { "include": "#reserved" },
+    { "include": "#vendor-specific" },
+    { "include": "#directive-text" },
+    { "include": "#directive" },
+    { "include": "#message-rule" },
+    { "include": "#avp-header-rule" },
+    { "include": "#avp-rule" },
+    { "include": "#enum-value" },
+    { "include": "#table-row" }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.double-semicolon.dad",
+      "match": ";;.*$"
+    },
+    "registry-reserved": {
+      "match": "^(; RESERVED) (\\d+)(\\.\\.)(\\d+)(?: ([^\\s\"]+))?(?: (\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"))?",
+      "captures": {
+        "1": { "name": "keyword.other.reserved.dad" },
+        "2": { "name": "constant.numeric.dad" },
+        "3": { "name": "keyword.operator.range.dad" },
+        "4": { "name": "constant.numeric.dad" },
+        "5": { "name": "entity.name.tag.spec-ref.dad" },
+        "6": { "name": "string.quoted.double.mark.dad" }
+      }
+    },
+    "reserved": {
+      "match": "^(\\s*)(; RESERVED)(\\s*)(=)\\s*(\\d+)(?:(-)(\\d+))?",
+      "captures": {
+        "2": { "name": "keyword.other.reserved.dad" },
+        "4": { "name": "keyword.operator.assignment.dad" },
+        "5": { "name": "constant.numeric.dad" },
+        "6": { "name": "keyword.operator.range.dad" },
+        "7": { "name": "constant.numeric.dad" }
+      }
+    },
+    "vendor-specific": {
+      "match": "^(\\s*)(; VENDOR-SPECIFIC)(\\s*)(=)\\s*(\\d+)(?:(-)(\\d+))?(\\s+; [^;].*?)?(\\s*;;.*)?$",
+      "captures": {
+        "2": { "name": "keyword.other.vendor-specific.dad" },
+        "4": { "name": "keyword.operator.assignment.dad" },
+        "5": { "name": "constant.numeric.dad" },
+        "6": { "name": "keyword.operator.range.dad" },
+        "7": { "name": "constant.numeric.dad" },
+        "8": { "name": "string.unquoted.enum-note.dad" },
+        "9": { "name": "comment.line.double-semicolon.dad" }
+      }
+    },
+    "directive-text": {
+      "match": "^(; )(Specification|Name|Table|Values|Note)(: )(.*?)(?=;;|$)",
+      "captures": {
+        "2": { "name": "keyword.other.directive.dad" },
+        "4": { "name": "string.unquoted.directive-value.dad" }
+      }
+    },
+    "directive": {
+      "match": "^(; )([A-Za-z][A-Za-z-]*)(: )(.*?)(?=;;|$)",
+      "captures": {
+        "2": { "name": "keyword.other.directive.dad" },
+        "4": {
+          "patterns": [
+            {
+              "match": "\\b(Application Scope|Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
+              "name": "storage.type.section.dad"
+            },
+            {
+              "match": "\\b(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}|3GPP2-[A-Z]\\.[A-Z]\\d{4}|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4})\\b",
+              "name": "entity.name.tag.spec-ref.dad"
+            },
+            {
+              "match": "https?://\\S+",
+              "name": "markup.underline.link.dad"
+            },
+            {
+              "match": "(?<=^|[ ,])(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=[ ,]|$)",
+              "name": "constant.other.section.dad"
+            },
+            {
+              "match": "(?<=^|[ ,])(?:\\d+[A-Za-z]*|[A-Za-z]+)(?:\\.\\d+[A-Za-z]*)*\\.\\*(?=[ ,]|$)",
+              "name": "constant.other.section.wildcard.dad"
+            },
+            {
+              "match": "(?<=^|[ ,])\\d+(?=[ ,]|$)",
+              "name": "constant.numeric.dad"
+            },
+            {
+              "match": ".+",
+              "name": "string.unquoted.directive-value.dad"
+            }
+          ]
+        }
+      }
+    },
+    "message-rule": {
+      "match": "^(<)([A-Za-z0-9][A-Za-z0-9_-]*)(>) (::=) (<) (Diameter Header)(:) ([^>]*)(>)",
+      "captures": {
+        "1": { "name": "punctuation.definition.bracket.fixed.dad" },
+        "2": { "name": "entity.name.function.message.dad" },
+        "3": { "name": "punctuation.definition.bracket.fixed.dad" },
+        "4": { "name": "keyword.operator.definition.dad" },
+        "5": { "name": "punctuation.definition.bracket.fixed.dad" },
+        "6": { "name": "keyword.other.header.dad" },
+        "7": { "name": "punctuation.separator.dad" },
+        "8": {
+          "patterns": [
+            {
+              "match": "\\b(REQ|PXY|ERR)\\b",
+              "name": "constant.language.command-flag.dad"
+            },
+            {
+              "match": "\\b\\d+\\b",
+              "name": "constant.numeric.dad"
+            }
+          ]
+        },
+        "9": { "name": "punctuation.definition.bracket.fixed.dad" }
+      }
+    },
+    "avp-header-rule": {
+      "match": "^([A-Za-z0-9][A-Za-z0-9_-]*) (::=) (<) ((?:Enumerated )?AVP header)(:) ([^>]*)(>)",
+      "captures": {
+        "1": { "name": "entity.name.function.avp.dad" },
+        "2": { "name": "keyword.operator.definition.dad" },
+        "3": { "name": "punctuation.definition.bracket.fixed.dad" },
+        "4": { "name": "keyword.other.header.dad" },
+        "5": { "name": "punctuation.separator.dad" },
+        "6": {
+          "patterns": [
+            {
+              "match": "\\b\\d+\\b",
+              "name": "constant.numeric.dad"
+            }
+          ]
+        },
+        "7": { "name": "punctuation.definition.bracket.fixed.dad" }
+      }
+    },
+    "avp-rule": {
+      "match": "^(\\s*)(\\d*\\*\\d*)?(\\s*)(?:(<) ([A-Za-z0-9][A-Za-z0-9_-]*) (>)|(\\{) ([A-Za-z0-9][A-Za-z0-9_-]*) (\\})|(\\[) ([A-Za-z0-9][A-Za-z0-9_-]*) (\\]))(\\s*; bold)?(\\s*; strikethrough)?\\s*(;;.*)?$",
+      "captures": {
+        "2": { "name": "keyword.operator.occurrences.dad" },
+        "4": { "name": "punctuation.definition.bracket.fixed.dad" },
+        "5": { "name": "support.class.avp.fixed.dad" },
+        "6": { "name": "punctuation.definition.bracket.fixed.dad" },
+        "7": { "name": "punctuation.definition.bracket.required.dad" },
+        "8": { "name": "support.function.avp.required.dad" },
+        "9": { "name": "punctuation.definition.bracket.required.dad" },
+        "10": { "name": "punctuation.definition.bracket.optional.dad" },
+        "11": { "name": "variable.other.avp.optional.dad" },
+        "12": { "name": "punctuation.definition.bracket.optional.dad" },
+        "13": { "name": "storage.modifier.bold.dad" },
+        "14": { "name": "storage.modifier.strikethrough.dad" },
+        "15": { "name": "comment.line.double-semicolon.dad" }
+      }
+    },
+    "enum-value": {
+      "match": "^(\\s*)([A-Za-z0-9][A-Za-z0-9_-]*|\"(?:[^\"\\\\]|\\\\[\"\\\\])*\")(\\s*)(= )(\\d+)(\\s+; [^;].*?)?(\\s*;;.*)?$",
+      "captures": {
+        "2": { "name": "variable.other.enum.dad" },
+        "4": { "name": "keyword.operator.assignment.dad" },
+        "5": { "name": "constant.numeric.dad" },
+        "6": { "name": "string.unquoted.enum-note.dad" },
+        "7": { "name": "comment.line.double-semicolon.dad" }
+      }
+    },
+    "table-row": {
+      "match": "^(?!;)(\\S.*)$",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
+              "name": "string.quoted.double.mark.dad"
+            },
+            {
+              "match": "(?<=\\s|^)(OctetString|Integer32|Integer64|Unsigned32|Unsigned64|Float32|Float64|Grouped|Address|Time|UTF8String|DiameterIdentity|DiameterURI|Enumerated|IPFilterRule|QoSFilterRule)(?=\\s|$)",
+              "name": "storage.type.data-type.dad"
+            },
+            {
+              "match": "(?<=\\s|^)(MUST-NOT|MUST|Yes|No)(?=\\s|$)",
+              "name": "constant.language.dad"
+            },
+            {
+              "match": "(?<=\\s|^|,)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}|3GPP2-[A-Z]\\.[A-Z]\\d{4}|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4})(?=\\s|$|,)",
+              "name": "entity.name.tag.spec-ref.dad"
+            },
+            {
+              "match": "(?<=\\s|^)[MVP](?:,\\s?[MVP])*(?=\\s|$)",
+              "name": "constant.language.avp-flag.dad"
+            },
+            {
+              "match": "(?<=\\s|^)(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=\\s|$)",
+              "name": "constant.other.section.dad"
+            },
+            {
+              "match": "(?<=\\s|^)\\d+(?=\\s|$)",
+              "name": "constant.numeric.dad"
+            },
+            {
+              "match": "(?<=\\s|^)-(?=\\s|$)",
+              "name": "punctuation.definition.empty-cell.dad"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

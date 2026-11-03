@@ -250,9 +250,9 @@ def export_command(
 ) -> None:
     """Export the corpus as JSON for the static site.
 
-    Writes index.json, search.json, schema.json and, per document,
-    documents/<id>.json and documents/<id>.raw.json (docs/website.md). The same
-    corpus gives the same bytes.
+    Writes index.json, search.json, schema.json, syntax/dad.tmLanguage.json and,
+    per document, documents/<id>.json and documents/<id>.raw.json
+    (docs/website.md). The same corpus gives the same bytes.
 
     \b
     Public site, no source PDFs:

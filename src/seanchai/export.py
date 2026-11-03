@@ -5,8 +5,8 @@ text in token spans, each name's resolution target, the holes, the linter's
 findings, each correction's reason, and a search index. The shape is
 `export_schema`'s; docs/website.md says what it is for.
 
-The output is a pure function of the corpus, its corrections record and the
-catalog: no timestamps, no absolute paths, and the same bytes under any hash
+The output is a pure function of the corpus, its corrections record, the catalog
+and the grammar: no timestamps, no absolute paths, and the same bytes under any hash
 seed. An export replaces its output directory whole.
 """
 
@@ -56,6 +56,7 @@ from .export_schema import (
     RegistryIdentity,
     Search,
     SearchEntry,
+    Section,
     Source,
     Target,
     Token,
@@ -72,6 +73,10 @@ _WORD = re.compile(
 )
 _CORRECTION = re.compile(r"\(([\w.-]+\.py#[\w-]+)\)")
 _DIRECTIVE = re.compile(r"; ([\w-]+):")
+# The TextMate grammar's source of truth, package data as `specs.toml` is.
+_GRAMMAR = Path(__file__).resolve().parent / "dad" / "syntax" / "dad.tmLanguage.json"
+# Where an export carries it.
+SYNTAX_FILE = "syntax/dad.tmLanguage.json"
 
 
 def document_id(entry: Entry) -> str:
@@ -111,6 +116,41 @@ def _citations(spec: ast.Specification) -> dict[str, Citation]:
                         Citation(section=row.section, page=section.source.page),
                     )
     return found
+
+
+def _block_title(section: ast.Section) -> str:
+    """A block's `; Type:` and, for a definition, its `; Name:`."""
+    name = getattr(section, "name", None)
+    return section.type if name is None else f"{section.type} {name}"
+
+
+def _sections(
+    spec: ast.Specification, citations: dict[str, Citation]
+) -> tuple[Section, ...]:
+    """`citations` in document order, each saying what the file places there. A
+    clause holding several blocks names each kind once: TS 29.272 clause 7.2.9
+    prints one message twice, and TS 29.230 clause 5.1 four registries. A clause
+    only table rows name has no block to name, so it takes its first row's."""
+    blocks: dict[str, dict[str, None]] = {}
+    for section in spec.sections:
+        blocks.setdefault(section.source.section, {})[_block_title(section)] = None
+    rows: dict[str, list[str]] = {}
+    for section in spec.sections:
+        if isinstance(section, ast.AvpTable):
+            for row in section.rows:
+                if row.section:
+                    rows.setdefault(row.section, []).append(row.name)
+
+    def title(clause: str) -> str:
+        if clause in blocks:
+            return ", ".join(blocks[clause])
+        first, *others = rows[clause]
+        return f"AVP {first}" + (f" and {len(others)} more" if others else "")
+
+    return tuple(
+        Section(section=clause, page=citations[clause].page, title=title(clause))
+        for clause in sorted(citations, key=ast.section_sort_key)
+    )
 
 
 def _locations(spec: ast.Specification) -> dict[str, str]:
@@ -736,6 +776,14 @@ def _write(path: Path, value: pydantic.BaseModel) -> None:
     path.write_text(export_schema.dumps(value), encoding="utf-8")
 
 
+def _write_grammar(output: Path) -> None:
+    """The editors' TextMate grammar, for the site to highlight with, so that the
+    two cannot disagree."""
+    path = output / SYNTAX_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(_GRAMMAR, path)
+
+
 def _distribution_version(name: str) -> str | None:
     try:
         return importlib.metadata.version(name)
@@ -876,6 +924,7 @@ def _write_export(
             mentions=tuple(mentions),
         ),
     )
+    _write_grammar(output)
     (output / "schema.json").write_text(
         json.dumps(
             export_schema.json_schema(),
@@ -955,7 +1004,7 @@ def _write_document(
         title=titles.get(entry.reference, spec.specification),
         pinned=pinned.get((entry.reference, spec.version)) if spec.version else None,
         source=sources.source(entry),
-        sections=tuple(corpus.citations[identifier].values()),
+        sections=_sections(spec, corpus.citations[identifier]),
         lines=lines,
         corrections={
             cited: export_schema.Correction(kind=edit.kind, reason=edit.reason)

@@ -19,7 +19,7 @@ from pydantic.json_schema import models_json_schema
 from .dad import ast
 from .linter import Severity
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 _Version = Annotated[int, pydantic.Field(ge=SCHEMA_VERSION, le=SCHEMA_VERSION)]
 
@@ -45,6 +45,16 @@ class Citation(_Model):
     page: int | None = None
     name: str | None = None
     row: bool = False
+
+
+class Section(_Model):
+    """A clause of the file, for its table of contents. `title` is what the file
+    places there: "Message User-Data-Request", "AVP Table", "Grouped AVP
+    Server-Capabilities", or "AVP PCSCF-FQDN" for a clause only a table row names."""
+
+    section: str
+    page: int | None
+    title: str
 
 
 class Token(_Model):
@@ -178,7 +188,7 @@ class Document(DocumentSummary):
     it. `corrections` is keyed by citation, `TS29.272.py#area-scope-code`."""
 
     schema_version: _Version
-    sections: tuple[Citation, ...]
+    sections: tuple[Section, ...]
     lines: tuple[Line, ...]
     corrections: dict[str, Correction]
     holes: tuple[Hole, ...]
