@@ -36,6 +36,6 @@ with tempfile.TemporaryDirectory() as scratch:
     document = json.loads((output / "documents" / "29229-i10.json").read_text("utf-8"))
 reasons = document["corrections"]
 assert reasons, "the installed corpus lost its corrections record"
-assert all(reasons.values()), reasons
+assert all(item["reason"] for item in reasons.values()), reasons
 
 print(f"seanchai-corpus {seanchai_corpus.__version__}: {len(books)} documents")

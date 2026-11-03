@@ -1,34 +1,86 @@
+"""`seanchai export`: the resolved corpus as JSON for the static site.
+
+The site holds no Python, so this is its whole view of Seanchaí: every file's
+text in token spans, each name's resolution target, the holes, the linter's
+findings, each correction's reason, and a search index. The shape is
+`export_schema`'s; docs/website.md says what it is for.
+
+The output is a pure function of the corpus, its corrections record and the
+catalog: no timestamps, no absolute paths, and the same bytes under any hash
+seed. An export replaces its output directory whole.
+"""
+
 import contextlib
-import dataclasses
 import difflib
+import hashlib
+import importlib.metadata
 import json
 import re
 import shutil
 import tempfile
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import unquote, urlparse
 
-from . import correction_record
-from .corpus import CITED_AS, Corpus, CorpusError, Entry
-from .dad import ast, corrections, parser
-from .downloader import load_catalog
-from .linter import lint_with_corpus
-from .model import Model
+import pydantic
 
-_LEXEME = re.compile(
-    r';;[^\n]*?(?=;;|\n|$)|https?://[^\s]+|"(?:[^"\\]|\\.)*"|::='
-    r"|[A-Za-z0-9_]+(?:[.\-/][A-Za-z0-9_*]+)*|[^\w\s]"
+from . import correction_record, export_schema, model
+from .corpus import (
+    CITED_AS,
+    Corpus,
+    CorpusError,
+    CorpusNotInstalledError,
+    CrossRelease,
+    Entry,
+    installed_directory,
+)
+from .dad import ast, corrections, parser
+from .downloader import Catalog, load_catalog
+from .export_schema import (
+    SCHEMA_VERSION,
+    ApplicationIdentity,
+    AvpIdentity,
+    Citation,
+    CommandIdentity,
+    Document,
+    DocumentSummary,
+    Finding,
+    FlagRules,
+    Hole,
+    Index,
+    Line,
+    Mention,
+    RawDocument,
+    RegistryIdentity,
+    Search,
+    SearchEntry,
+    Source,
+    Target,
+    Token,
+    UndefinedBlock,
+)
+from .linter import lint_with_corpus
+
+# What a line is split on to find the spans worth marking. A comment, a URL and
+# a quoted string come first, so that nothing inside them is taken for a name.
+# Everything between matches stays plain text; classing it is the grammar's job.
+_WORD = re.compile(
+    r';;[^\n]*?(?=;;|\n|$)|https?://[^\s]+|"(?:[^"\\]|\\.)*"'
+    r"|[A-Za-z0-9_]+(?:[.\-/][A-Za-z0-9_*]+)*"
 )
 _CORRECTION = re.compile(r"\(([\w.-]+\.py#[\w-]+)\)")
+_DIRECTIVE = re.compile(r"; ([\w-]+):")
 
 
 def document_id(entry: Entry) -> str:
+    """A document's name in the export, and in its URLs: its file's stem."""
     return entry.path.stem
 
 
-def _names(spec: ast.Specification) -> set[str]:
+def _avp_names(spec: ast.Specification) -> set[str]:
+    """Every name `spec` uses as an AVP."""
     names = set()
     for section in spec.sections:
         if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp | ast.UndefinedAvp):
@@ -40,186 +92,209 @@ def _names(spec: ast.Specification) -> set[str]:
     return names
 
 
-def _sections(spec: ast.Specification) -> dict[str, dict]:
-    found: dict[str, dict] = {}
+def _citations(spec: ast.Specification) -> dict[str, Citation]:
+    """Every clause `spec` places something in, with its page. A clause only a
+    table row names takes its table's page, and never overrides the page of a
+    clause with a section of its own."""
+    found: dict[str, Citation] = {}
     for section in spec.sections:
-        source = section.source.model_dump()
-        found.setdefault(source["section"], source)
+        source = section.source
+        found.setdefault(
+            source.section, Citation(section=source.section, page=source.page)
+        )
     for section in spec.sections:
-        source = section.source.model_dump()
         if isinstance(section, ast.AvpTable):
             for row in section.rows:
                 if row.section:
-                    found.setdefault(row.section, {**source, "section": row.section})
+                    found.setdefault(
+                        row.section,
+                        Citation(section=row.section, page=section.source.page),
+                    )
     return found
 
 
-def _target(entry: Entry, section: str | None) -> dict:
-    return {"document": document_id(entry), "section": section}
+def _locations(spec: ast.Specification) -> dict[str, str]:
+    """Where each AVP `spec` places is defined, a definition over a table row."""
+    places: dict[str, str] = {}
+    for section in spec.sections:
+        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
+            places[section.name] = section.source.section
+    for section in spec.sections:
+        if isinstance(section, ast.AvpTable):
+            for row in section.rows:
+                places.setdefault(row.name, row.section or section.source.section)
+    return places
 
 
-def _tokens(
-    entry: Entry,
+@dataclass(frozen=True)
+class _Links:
+    """What the names in one document's text link to."""
+
+    entry: Entry
+    # An AVP's target, None for a hole; a command or application named outside
+    # its own clause, where its name means one clause.
+    names: dict[str, Target | None]
+    # A cited document's page.
+    references: dict[str, Target]
+    # A re-used row's origin cell, by (origin, row name): the AVP there.
+    row_references: dict[tuple[str, str], Target]
+
+    def spelled_as_raw(self, renames: tuple[correction_record.Rename, ...]) -> _Links:
+        """These links for the raw file, whose names a correction later renames
+        link through it."""
+        names = dict(self.names)
+        row_references = dict(self.row_references)
+        for rename in reversed(renames):
+            if not names.get(rename.expect) and rename.replace in names:
+                names[rename.expect] = names[rename.replace]
+                for (reference, name), target in list(row_references.items()):
+                    if name == rename.replace:
+                        row_references[reference, rename.expect] = target
+        return _Links(self.entry, names, self.references, row_references)
+
+
+def _table_row(
+    section: ast.Section | None, line: str
+) -> ast.AvpTableRow | ast.ReusedAvpRow | None:
+    """The table row `line` prints, if `section` is a table and it prints one."""
+    if not isinstance(section, ast.AvpTable | ast.ReusedAvps) or line.startswith(
+        (";", " ", "\n")
+    ):
+        return None
+    return next((row for row in section.rows if line.startswith(row.name + " ")), None)
+
+
+def _lines(
     text: str,
     spec: ast.Specification,
-    names: dict,
-    references: dict,
-    row_references: dict | None = None,
-) -> list:
+    links: _Links,
+    changed: frozenset[int] = frozenset(),
+) -> tuple[Line, ...]:
+    """`text`, which `spec` is the parse of, line by line in token spans.
+
+    Each `; Type:` line starts the next section of `spec`, so every line knows
+    its section without reading the grammar again. `changed` is the raw lines
+    the corrected file changes, by index.
+    """
     lines = []
     block = -1
-    anchored = set()
+    anchored: set[str] = set()
     defined_sections = {section.source.section for section in spec.sections}
-    avp_names = _names(spec)
-    for line in text.splitlines(keepends=True):
+    avp_names = _avp_names(spec)
+    for index, line in enumerate(text.splitlines(keepends=True)):
         if line.startswith("; Type:"):
             block += 1
         section = spec.sections[block] if block >= 0 else None
         source = section.source if section is not None else None
-        directive = re.match(r"; ([\w-]+):", line)
-        key = directive[1] if directive else None
-        rule = re.match(r"\s*\d*\*?\d*\s*([<{\[]) ([\w-]+) ([>}\]])", line)
-        # A command or application names its own clause, whatever else in the
-        # file shares its name: TS 29.212 defines CC-Request once per interface.
-        own = (
-            {section.name: _target(entry, section.source.section)}
-            if isinstance(section, ast.Message | ast.ApplicationScope)
-            else {}
-        )
-        enumeration = isinstance(section, ast.EnumeratedAvp) and " = " in line
-        row = None
-        if isinstance(section, ast.AvpTable | ast.ReusedAvps) and not line.startswith(
-            (";", " ", "\n")
-        ):
-            row = next(
-                (row for row in section.rows if line.startswith(row.name + " ")), None
-            )
+        row = _table_row(section, line)
         anchor = None
         if source and line.startswith("; Type:"):
             anchor = source.section
-        elif isinstance(section, ast.AvpTable) and isinstance(row, ast.AvpTableRow):
-            anchor = (
-                row.section if row and row.section not in defined_sections else None
-            )
+        elif isinstance(row, ast.AvpTableRow) and row.section not in defined_sections:
+            anchor = row.section
         if anchor in anchored:
             anchor = None
         if anchor:
             anchored.add(anchor)
-        tokens = []
-        end = 0
-        for match in _LEXEME.finditer(line):
-            if match.start() > end:
-                tokens.append({"text": line[end : match.start()], "class": ""})
-            value = match[0]
-            token: dict[str, Any] = {"text": value, "class": ""}
-            if value in avp_names and key in (None, "Name") and not enumeration:
-                token["avp"] = value
-            if value.startswith(";;"):
-                token["class"] = "comment.line.double-semicolon.dad"
-                if correction := _CORRECTION.search(value):
-                    token["correction"] = correction[1]
-            elif key and directive and match.start() < directive.end():
-                if value == key:
-                    token["class"] = "keyword.other.directive.dad"
-            elif key in ("Section", "Page") and source:
-                token["class"] = (
-                    "constant.other.section.dad"
-                    if key == "Section"
-                    else "constant.numeric.dad"
-                )
-                token["source"] = source.model_dump()
-            elif value in references and (key == "Bases" or key is None):
-                token["class"] = "entity.name.tag.spec-ref.dad"
-                token["target"] = references[value]
-                if isinstance(section, ast.ReusedAvps) and key is None:
-                    row_name = line.split(maxsplit=1)[0]
-                    token["target"] = (row_references or {}).get(
-                        (value, row_name), token["target"]
-                    )
-            elif (
-                (value in own or value in names)
-                and key in (None, "Name")
-                and not enumeration
-            ):
-                if target := own.get(value) or names[value]:
-                    token["target"] = target
-                if key == "Name":
-                    token["class"] = "string.unquoted.directive-value.dad"
-                elif rule and value == rule[2] and "::=" not in line:
-                    token["class"] = {
-                        "<": "support.class.avp.fixed.dad",
-                        "{": "support.function.avp.required.dad",
-                        "[": "variable.other.avp.optional.dad",
-                    }[rule[1]]
-                elif isinstance(section, ast.Message) and "::=" in line:
-                    token["class"] = "entity.name.function.message.dad"
-                elif (
-                    isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp)
-                    and "::=" in line
-                ):
-                    token["class"] = "entity.name.function.avp.dad"
-            elif (
-                enumeration
-                and match.start() < line.index(" = ")
-                and not value.startswith(";")
-            ):
-                token["class"] = "variable.other.enum.dad"
-            elif value in ast.DataType:
-                token["class"] = "storage.type.data-type.dad"
-            elif key == "Type":
-                token["class"] = "storage.type.section.dad"
-            elif value in ("REQ", "PXY", "ERR"):
-                token["class"] = "constant.language.command-flag.dad"
-            elif value.isdigit():
-                token["class"] = "constant.numeric.dad"
-            elif value == "::=":
-                token["class"] = "keyword.operator.definition.dad"
-            elif value == "=":
-                token["class"] = "keyword.operator.assignment.dad"
-            elif value == "*":
-                token["class"] = "keyword.operator.occurrences.dad"
-            elif value in ("<", ">", "{", "}", "[", "]"):
-                kind = {
-                    "<": "fixed",
-                    ">": "fixed",
-                    "{": "required",
-                    "}": "required",
-                    "[": "optional",
-                    "]": "optional",
-                }[value]
-                token["class"] = f"punctuation.definition.bracket.{kind}.dad"
-            elif value.startswith('"') or key:
-                token["class"] = "string.unquoted.directive-value.dad"
-            if row and source and match.start() == 0 and value == row.name:
-                token["source"] = {**source.model_dump(), "name": value, "row": True}
-            elif isinstance(row, ast.AvpTableRow) and source and value == row.section:
-                token["source"] = {**source.model_dump(), "section": row.section}
-            tokens.append(token)
-            end = match.end()
-        if end < len(line):
-            tokens.append({"text": line[end:], "class": ""})
         lines.append(
-            {
-                "tokens": tokens,
-                "anchor": anchor,
-                "section": source.section if source else None,
-            }
+            Line(
+                tokens=_tokens(line, section, row, avp_names, links),
+                anchor=anchor,
+                section=source.section if source else None,
+                warning=index in changed,
+            )
         )
-    return lines
+    return tuple(lines)
 
 
-def _json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(
-            value,
-            ensure_ascii=False,
-            sort_keys=True,
-            indent=2,
-            default=lambda item: item.model_dump(mode="json"),
-        )
-        + "\n",
-        encoding="utf-8",
+def _tokens(
+    line: str,
+    section: ast.Section | None,
+    row: ast.AvpTableRow | ast.ReusedAvpRow | None,
+    avp_names: set[str],
+    links: _Links,
+) -> tuple[Token, ...]:
+    """One line's spans: what links or says something, and plain text between."""
+    source = section.source if section is not None else None
+    directive = _DIRECTIVE.match(line)
+    key = directive[1] if directive else None
+    naming = key in (None, "Name") and not (
+        isinstance(section, ast.EnumeratedAvp) and " = " in line
+    )
+    # A command or application names its own clause, whatever else in the file
+    # shares its name: TS 29.212 defines CC-Request once per interface.
+    own = (
+        {
+            section.name: Target(
+                document=document_id(links.entry), section=section.source.section
+            )
+        }
+        if isinstance(section, ast.Message | ast.ApplicationScope)
+        else {}
+    )
+    tokens: list[Token] = []
+    end = 0
+    for match in _WORD.finditer(line):
+        value = match[0]
+        fields: dict[str, Any] = {}
+        if value in avp_names and naming:
+            fields["avp"] = value
+        if value.startswith(";;"):
+            correction = _CORRECTION.search(value)
+            fields["kind"] = "correction-note" if correction else "comment"
+            if correction:
+                fields["correction"] = correction[1]
+        elif directive and match.start() < directive.end():
+            pass
+        elif key in ("Section", "Page") and source:
+            fields["source"] = Citation(section=source.section, page=source.page)
+        elif value in links.references and key in ("Bases", None):
+            fields["target"] = links.references[value]
+            if isinstance(section, ast.ReusedAvps) and key is None:
+                row_name = line.split(maxsplit=1)[0]
+                fields["target"] = links.row_references.get(
+                    (value, row_name), fields["target"]
+                )
+        elif naming and (target := own.get(value) or links.names.get(value)):
+            fields["target"] = target
+        if row and source and match.start() == 0 and value == row.name:
+            fields["source"] = Citation(
+                section=source.section, page=source.page, name=value, row=True
+            )
+        elif (
+            isinstance(row, ast.AvpTableRow)
+            and source
+            and row.section
+            and value == row.section
+        ):
+            fields["source"] = Citation(section=row.section, page=source.page)
+        if fields:
+            if match.start() > end:
+                tokens.append(Token(text=line[end : match.start()]))
+            tokens.append(Token(text=value, **fields))
+            end = match.end()
+    if end < len(line):
+        tokens.append(Token(text=line[end:]))
+    return tuple(tokens)
+
+
+def _changed_lines(raw: str, corrected: str) -> frozenset[int]:
+    """The raw file's lines the corrected file replaces or deletes, comments and
+    layout aside."""
+
+    def normalized(text: str) -> str:
+        return " ".join(text.split(";;", 1)[0].split())
+
+    old = [normalized(line) for line in raw.splitlines()]
+    new = [normalized(line) for line in corrected.splitlines()]
+    return frozenset(
+        index
+        for tag, first, last, _, _ in difflib.SequenceMatcher(
+            None, old, new, autojunk=False
+        ).get_opcodes()
+        if tag in ("replace", "delete")
+        for index in range(first, last)
+        if old[index]
     )
 
 
@@ -237,6 +312,15 @@ def _corpus_root(entry: Entry) -> Path | None:
     )
 
 
+def _raw_path(entry: Entry) -> Path | None:
+    """`entry`'s raw mirror, if its corpus holds one."""
+    root = _corpus_root(entry)
+    if root is None:
+        return None
+    path = root / "raw" / entry.path.relative_to(root).with_suffix(".raw.dad")
+    return path if path.is_file() else None
+
+
 class _Declarations:
     """What an export knows of the corrections: the corpus's record, or with
     a directory the modules there, which it executes."""
@@ -244,6 +328,16 @@ class _Declarations:
     def __init__(self, directory: Path | None) -> None:
         self._directory = directory
         self._records: dict[Path, correction_record.CorrectionRecord] = {}
+
+    def _record_path(self, entry: Entry) -> Path | None:
+        root = _corpus_root(entry)
+        path = root / correction_record.RECORD_NAME if root is not None else None
+        return path if path is not None and path.is_file() else None
+
+    def answers(self, entry: Entry) -> bool:
+        """Whether anything says what `entry`'s citations mean. A corpus with
+        no record, and no directory given, says nothing."""
+        return self._directory is not None or self._record_path(entry) is not None
 
     def of(self, entry: Entry) -> correction_record.RecordedDocument | None:
         """`entry`'s record, None when its module declares nothing or nothing
@@ -258,21 +352,398 @@ class _Declarations:
                 if declared
                 else None
             )
-        root = _corpus_root(entry)
-        if root is None or not (root / correction_record.RECORD_NAME).is_file():
+        path = self._record_path(entry)
+        if path is None:
             return None
-        record = self._records.get(root)
+        record = self._records.get(path)
         if record is None:
-            record = correction_record.load(root / correction_record.RECORD_NAME)
-            self._records[root] = record
-        found = record.documents.get(entry.path.stem)
+            record = self._records[path] = correction_record.load(path)
+        found = record.documents.get(document_id(entry))
         if found is not None and found.version != spec.version:
             raise CorpusError(
-                f"{root / correction_record.RECORD_NAME} records {entry.path.stem}"
-                f" at {found.version}, the file is {spec.version}: run"
-                " `seanchai regenerate`"
+                f"{path} records {document_id(entry)} at V{found.version}, the"
+                f" file is V{spec.version}: run `seanchai regenerate`"
             )
         return found
+
+
+def _check_citations(
+    entry: Entry, lines: tuple[Line, ...], known: dict[str, Any]
+) -> None:
+    """Refuse a note citing what the record does not hold: the page would show a
+    correction with no reason, and the record is stale."""
+    unknown = sorted(
+        {
+            token.correction
+            for line in lines
+            for token in line.tokens
+            if token.correction is not None
+        }
+        - known.keys()
+    )
+    if unknown:
+        raise CorpusError(
+            f"{entry.path} cites {', '.join(unknown)}, which the corrections"
+            " record does not hold: run `seanchai regenerate`"
+        )
+
+
+def _cross_release(
+    crossing: CrossRelease | None,
+) -> export_schema.CrossRelease | None:
+    if crossing is None:
+        return None
+    return export_schema.CrossRelease(
+        citing=crossing.citing,
+        cited=crossing.cited,
+        version=crossing.version,
+        rule=crossing.rule,
+        cited_revision=crossing.cited_revision,
+        revision=crossing.revision,
+        meant=crossing.meant,
+    )
+
+
+def _hole(hole: model.Hole) -> Hole:
+    block = hole.undefined
+    return Hole(
+        name=hole.name,
+        reference=hole.reference,
+        version=hole.version,
+        missing=hole.missing,
+        vendor_id=hole.vendor_id,
+        code=hole.code,
+        data_type=hole.data_type,
+        flag_rules=None
+        if hole.flag_rules is None
+        else FlagRules.model_validate(
+            {"application_defined": (), **hole.flag_rules.model_dump(mode="json")}
+        ),
+        section=hole.section,
+        origin=hole.origin,
+        conflict=hole.conflict,
+        wireshark_name=hole.wireshark_name,
+        across_releases=_cross_release(hole.across_releases),
+        undefined=None
+        if block is None
+        else UndefinedBlock(
+            section=block.section,
+            page=block.page,
+            note=block.note,
+            cited_in=block.cited_in,
+        ),
+        recorded=hole.recorded,
+    )
+
+
+class _Corpus:
+    """What every document's page and search entries look things up in."""
+
+    def __init__(self, books: Corpus, built: model.Model) -> None:
+        self.books = books
+        self.model = built
+        self.entries = sorted(books, key=document_id)
+        self.by_copy = {
+            (entry.reference, entry.spec.version): entry for entry in self.entries
+        }
+        self.citations = {
+            document_id(entry): _citations(entry.spec) for entry in self.entries
+        }
+        self.locations = {
+            document_id(entry): _locations(entry.spec) for entry in self.entries
+        }
+
+    def references(self, spec: ast.Specification) -> dict[str, Target]:
+        """Each document `spec` can cite, as `spec`'s release reads it."""
+        found = {}
+        for reference in sorted({e.reference for e in self.entries} | set(CITED_AS)):
+            resolved = self.books.resolve(reference, like=spec)
+            if resolved is not None:
+                found[reference] = Target(document=document_id(resolved))
+        return found
+
+    def row_references(self, spec: ast.Specification) -> dict[tuple[str, str], Target]:
+        """Each re-used row's origin cell, at the AVP it names there."""
+        found = {}
+        for section in spec.sections:
+            if isinstance(section, ast.ReusedAvps):
+                for row in section.rows:
+                    origin = self.books.resolve(row.origin, like=spec)
+                    if origin is not None:
+                        identifier = document_id(origin)
+                        found[row.origin, row.name] = Target(
+                            document=identifier,
+                            section=self.locations[identifier].get(row.name),
+                            name=row.name,
+                        )
+        return found
+
+    def avp_target(self, entry: Entry, avp: model.Avp) -> Target | None:
+        """Where `avp`, as `entry` reads it, is defined."""
+        spec = entry.spec
+        origin = (
+            entry
+            if avp.defined_in == entry.reference
+            else self.books.resolve(avp.defined_in, like=spec)
+        )
+        crossing = avp.across_releases
+        if crossing and crossing.cited == avp.defined_in:
+            origin = self.by_copy.get((avp.defined_in, crossing.version), origin)
+        if origin is None:
+            return None
+        identifier = document_id(origin)
+        clause = (
+            avp.section
+            if avp.section in self.citations[identifier]
+            else self.locations[identifier].get(avp.name)
+        )
+        return Target(document=identifier, section=clause)
+
+
+def _avps(
+    corpus: _Corpus, entry: Entry
+) -> tuple[dict[str, Target | None], list[Hole], list[SearchEntry]]:
+    """`entry`'s AVP names: their targets, holes and search entries."""
+    spec = entry.spec
+    names: dict[str, Target | None] = {}
+    holes = []
+    search = []
+    for name in sorted(_avp_names(spec)):
+        avp = corpus.model.resolve(entry.reference, name, version=spec.version)
+        hole = corpus.model.hole(entry.reference, name, version=spec.version)
+        target = corpus.avp_target(entry, avp) if avp is not None else None
+        if hole is not None:
+            holes.append(_hole(hole))
+        names[name] = target
+        search.append(
+            SearchEntry(
+                name=name,
+                kind="avp",
+                document=document_id(entry),
+                target=target,
+                identity=AvpIdentity(
+                    kind="avp", vendor_id=avp.identity[0], code=avp.identity[1]
+                )
+                if avp
+                else None,
+                defined_in=(avp.defined_in,) if avp else (),
+                abbreviation=None,
+                wireshark_name=avp.wireshark_name
+                if avp
+                else (hole.wireshark_name if hole else None),
+                data_type=avp.data_type if avp else None,
+                across_releases=_cross_release(avp.across_releases if avp else None),
+            )
+        )
+    return names, holes, search
+
+
+def _sections_search(corpus: _Corpus, entry: Entry) -> list[SearchEntry]:
+    """`entry`'s commands, applications and registry rows, as search entries."""
+    spec = entry.spec
+    identifier = document_id(entry)
+    # The header's id is part of the key: TS 29.272 clause 7.2.9 prints
+    # Insert-Subscriber-Data-Request twice, once per application.
+    effective = {
+        (
+            message.name,
+            message.section,
+            message.command_code,
+            message.application_id,
+        ): application
+        for application in corpus.model.applications(
+            entry.reference, version=spec.version
+        )
+        for message in application.messages
+    }
+
+    def named(
+        name: str,
+        kind: Literal["command", "application", "registry"],
+        section: ast.Section,
+        identity: CommandIdentity | ApplicationIdentity | RegistryIdentity,
+        defined_in: tuple[str, ...] = (entry.reference,),
+        abbreviation: str | None = None,
+        data_type: ast.DataType | None = None,
+    ) -> SearchEntry:
+        return SearchEntry(
+            name=name,
+            kind=kind,
+            document=identifier,
+            target=Target(document=identifier, section=section.source.section),
+            identity=identity,
+            defined_in=defined_in,
+            abbreviation=abbreviation,
+            wireshark_name=None,
+            data_type=data_type,
+            across_releases=None,
+        )
+
+    search = []
+    for section in spec.sections:
+        if isinstance(section, ast.Message):
+            application = effective[
+                section.name,
+                section.source.section,
+                section.command_code,
+                section.application_id,
+            ]
+            search.append(
+                named(
+                    section.name,
+                    "command",
+                    section,
+                    CommandIdentity(
+                        kind="command",
+                        command_code=section.command_code,
+                        application_id=application.application_id,
+                        header_application_id=section.application_id,
+                        application=application.name,
+                    ),
+                    abbreviation=section.abbreviation,
+                )
+            )
+        elif isinstance(section, ast.ApplicationScope):
+            search.append(
+                named(
+                    section.name,
+                    "application",
+                    section,
+                    ApplicationIdentity(
+                        kind="application", application_id=section.application_id
+                    ),
+                )
+            )
+        elif isinstance(section, ast.Registry):
+            search.extend(
+                named(
+                    row.name,
+                    "registry",
+                    section,
+                    RegistryIdentity(
+                        kind="registry", registry=section.registry, code=row.code
+                    ),
+                    defined_in=row.defined_in,
+                    abbreviation=row.abbreviation,
+                    data_type=row.data_type,
+                )
+                for row in section.rows
+                if isinstance(row, ast.RegistryRow) and row.name
+            )
+    return search
+
+
+def _clause_names(entry: Entry) -> dict[str, Target]:
+    """The commands and applications named in one clause only, which a mention
+    outside it can link to. A name with several means nothing there."""
+    clauses: dict[str, set[str]] = {}
+    for section in entry.spec.sections:
+        if isinstance(section, ast.Message | ast.ApplicationScope):
+            clauses.setdefault(section.name, set()).add(section.source.section)
+    return {
+        name: Target(document=document_id(entry), section=clause)
+        for name, places in clauses.items()
+        if len(places) == 1
+        for clause in places
+    }
+
+
+def _titles(catalog: Catalog) -> dict[str, str]:
+    """Each catalogued document's title, by reference."""
+    titles = {f"{s.document_type}{s.number}": s.title for s in catalog.pinned}
+    titles.update({f"{s.document_type}{s.number}": s.title for s in catalog.tgpp})
+    titles.update({f"RFC{s.number}": s.title for s in catalog.rfc})
+    titles.update({ast.spec_ref(s.identifier): s.title for s in catalog.onem2m})
+    titles.update({s.reference: s.title for s in catalog.transcribed})
+    return titles
+
+
+def _publisher(entry: Entry) -> Any:
+    specification = entry.spec.specification
+    if specification.startswith("3GPP "):
+        return "3GPP"
+    if entry.reference.startswith("RFC"):
+        return "IETF"
+    return specification.split()[0]
+
+
+def _source_kind(entry: Entry, link: str) -> Literal["etsi-pdf", "rfc-text", "other"]:
+    url = urlparse(link)
+    path = url.path.lower()
+    if entry.reference.startswith("RFC") and path.endswith(".txt"):
+        return "rfc-text"
+    if (url.hostname or "").endswith("etsi.org") and path.endswith(".pdf"):
+        return "etsi-pdf"
+    return "other"
+
+
+class _Sources:
+    """The source documents an export copies in, from a `seanchai download`."""
+
+    def __init__(
+        self, output: Path, specifications: Path | None, include_pdfs: bool
+    ) -> None:
+        if include_pdfs and (specifications is None or not specifications.is_dir()):
+            raise CorpusError("including PDFs needs a specifications directory")
+        self._output = output
+        self._specifications = specifications
+        self._include_pdfs = include_pdfs
+        self._pdfs: dict[str, list[Path]] = {}
+        if include_pdfs and specifications is not None:
+            for path in sorted(specifications.rglob("*.pdf")):
+                self._pdfs.setdefault(path.name, []).append(path)
+
+    def _copy(self, path: Path, name: str) -> str:
+        relative = f"sources/{name}"
+        destination = self._output / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, destination)
+        return relative
+
+    def source(self, entry: Entry) -> Source:
+        """Where `entry` was read from, copying what the export carries of it."""
+        spec = entry.spec
+        identifier = document_id(entry)
+        link = str(spec.link or spec.transcribed or "")
+        text = None
+        if entry.reference.startswith("RFC") and self._specifications is not None:
+            path = self._specifications / "rfc" / f"{entry.reference.lower()}.txt"
+            if path.is_file():
+                text = self._copy(path, f"{identifier}.txt")
+        local = None
+        if self._include_pdfs and urlparse(link).path.lower().endswith(".pdf"):
+            candidates = self._pdfs.get(unquote(urlparse(link).path.rsplit("/", 1)[-1]))
+            if not candidates:
+                raise CorpusError(f"{identifier}: no downloaded PDF matches {link}")
+            if len({hashlib.sha256(p.read_bytes()).digest() for p in candidates}) > 1:
+                raise CorpusError(f"{identifier}: conflicting PDF copies for {link}")
+            local = self._copy(candidates[0], f"{identifier}.pdf")
+        return Source(
+            kind=_source_kind(entry, link), url=link or None, local=local, text=text
+        )
+
+
+def _write(path: Path, value: pydantic.BaseModel) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(export_schema.dumps(value), encoding="utf-8")
+
+
+def _distribution_version(name: str) -> str | None:
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return None
+
+
+def _corpus_version(books: Corpus) -> str | None:
+    """The installed corpus's version, if `books` is read from it."""
+    try:
+        directory = installed_directory().resolve()
+    except CorpusNotInstalledError:
+        return None
+    if all(entry.path.resolve().is_relative_to(directory) for entry in books):
+        return _distribution_version("seanchai-corpus")
+    return None
 
 
 def _refuse_foreign(output: Path) -> None:
@@ -334,12 +805,15 @@ def export_corpus(
     corrections_directory: Path | None = None,
     specifications: Path | None = None,
     include_pdfs: bool = False,
-) -> dict:
+) -> Index:
     """Write `books` as the JSON a static site reads, replacing `output` whole.
 
-    Nothing of `output` changes until the export has succeeded. A directory
-    holding anything but a previous export is refused, and so is an empty
-    corpus.
+    `dictionary` fills in Wireshark's names. `corrections_directory` reads the
+    corrections from modules there, which executes them, instead of from the
+    corpus's record. `specifications` is a `seanchai download`, from which RFC
+    texts are copied, and with `include_pdfs` the source PDFs, for a self-hosted
+    site. Nothing of `output` changes until the export has succeeded. A directory
+    holding anything but a previous export is refused, and so is an empty corpus.
     """
     if not len(books):
         raise CorpusError("nothing to export: the corpus holds no documents")
@@ -348,321 +822,169 @@ def export_corpus(
         return _write_export(
             books,
             staged,
-            dictionary=dictionary,
-            corrections_directory=corrections_directory,
-            specifications=specifications,
-            include_pdfs=include_pdfs,
+            dictionary,
+            _Declarations(corrections_directory),
+            specifications,
+            include_pdfs,
         )
 
 
 def _write_export(
     books: Corpus,
     output: Path,
-    *,
     dictionary: Path | None,
-    corrections_directory: Path | None,
+    declarations: _Declarations,
     specifications: Path | None,
     include_pdfs: bool,
-) -> dict:
-    entries = sorted(books, key=document_id)
-    ids = [document_id(entry) for entry in entries]
+) -> Index:
+    corpus = _Corpus(
+        books, model.Model.build(books, strict=False, dictionary=dictionary)
+    )
+    ids = [document_id(entry) for entry in corpus.entries]
     if len(set(ids)) != len(ids):
         raise CorpusError("export needs unique document file names")
-    model = Model.build(books, strict=False, dictionary=dictionary)
-    by_copy = {(entry.reference, entry.spec.version): entry for entry in entries}
-    sections = {document_id(entry): _sections(entry.spec) for entry in entries}
-    locations: dict[str, dict[str, str]] = {}
-    for entry in entries:
-        locations[document_id(entry)] = places = {}
-        for section in entry.spec.sections:
-            if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
-                places[section.name] = section.source.section
-        for section in entry.spec.sections:
-            if isinstance(section, ast.AvpTable):
-                for row in section.rows:
-                    places.setdefault(row.name, row.section or section.source.section)
     catalog = load_catalog()
-    titles = {f"{s.document_type}{s.number}": s.title for s in catalog.pinned}
-    titles.update({f"{s.document_type}{s.number}": s.title for s in catalog.tgpp})
-    titles.update({f"RFC{s.number}": s.title for s in catalog.rfc})
-    titles.update({ast.spec_ref(s.identifier): s.title for s in catalog.onem2m})
-    titles.update({s.reference: s.title for s in catalog.transcribed})
+    titles = _titles(catalog)
     pinned = {(f"TS{s.number}", s.version): s.reason for s in catalog.pinned}
-    pdfs: dict[str, list[Path]] = {}
-    if include_pdfs:
-        if specifications is None or not specifications.is_dir():
-            raise CorpusError("including PDFs needs a specifications directory")
-        for path in sorted(specifications.rglob("*.pdf")):
-            pdfs.setdefault(path.name, []).append(path)
-    known = _Declarations(corrections_directory)
-    documents = []
+    sources = _Sources(output, specifications, include_pdfs)
+    summaries = []
     search = []
     mentions = []
-    for entry in entries:
-        spec = entry.spec
-        identifier = document_id(entry)
-        names = {}
-        holes = []
-        references = {}
-        for reference in sorted({e.reference for e in entries} | set(CITED_AS)):
-            resolved = books.resolve(reference, like=spec)
-            if resolved is not None:
-                references[reference] = _target(resolved, None)
-        row_references = {}
-        for section in spec.sections:
-            if isinstance(section, ast.ReusedAvps):
-                for row in section.rows:
-                    origin = books.resolve(row.origin, like=spec)
-                    if origin is not None:
-                        clause = locations[document_id(origin)].get(row.name)
-                        row_references[row.origin, row.name] = {
-                            **_target(origin, clause),
-                            "name": row.name,
-                        }
-        for name in sorted(_names(spec)):
-            avp = model.resolve(entry.reference, name, version=spec.version)
-            hole = model.hole(entry.reference, name, version=spec.version)
-            target = None
-            if avp is not None:
-                origin = (
-                    entry
-                    if avp.defined_in == entry.reference
-                    else books.resolve(avp.defined_in, like=spec)
-                )
-                crossing = avp.across_releases
-                if crossing and crossing.cited == avp.defined_in:
-                    origin = by_copy.get((avp.defined_in, crossing.version), origin)
-                if origin is not None:
-                    clause = (
-                        avp.section
-                        if avp.section in sections[document_id(origin)]
-                        else locations[document_id(origin)].get(avp.name)
+    for entry in corpus.entries:
+        document = _write_document(
+            corpus, entry, output, declarations, sources, titles, pinned, search
+        )
+        summaries.append(
+            DocumentSummary.model_validate(
+                {name: getattr(document, name) for name in DocumentSummary.model_fields}
+            )
+        )
+        mentions.extend(_mentions(document))
+    _write(
+        output / "search.json",
+        Search(
+            schema_version=SCHEMA_VERSION,
+            entries=tuple(search),
+            mentions=tuple(mentions),
+        ),
+    )
+    (output / "schema.json").write_text(
+        json.dumps(
+            export_schema.json_schema(),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    index = Index(
+        schema_version=SCHEMA_VERSION,
+        seanchai_version=_distribution_version("seanchai"),
+        corpus_version=_corpus_version(books),
+        mode="self-hosted" if include_pdfs else "public",
+        documents=tuple(summaries),
+    )
+    _write(output / "index.json", index)
+    return index
+
+
+def _write_document(
+    corpus: _Corpus,
+    entry: Entry,
+    output: Path,
+    declarations: _Declarations,
+    sources: _Sources,
+    titles: dict[str, str],
+    pinned: dict[tuple[str, str], str],
+    search: list[SearchEntry],
+) -> Document:
+    """Write `entry`'s files, add its names to `search`, and return its page."""
+    spec = entry.spec
+    identifier = document_id(entry)
+    names, holes, entries = _avps(corpus, entry)
+    search.extend(entries)
+    search.extend(_sections_search(corpus, entry))
+    for name, target in _clause_names(entry).items():
+        names.setdefault(name, target)
+    links = _Links(entry, names, corpus.references(spec), corpus.row_references(spec))
+    declared = declarations.of(entry)
+    edits = dict(declared.edits) if declared else {}
+    text = entry.path.read_text(encoding="utf-8")
+    lines = _lines(text, spec, links)
+    raw_path = _raw_path(entry)
+    raw = None
+    if raw_path is not None:
+        raw_text = raw_path.read_text(encoding="utf-8")
+        raw = f"documents/{identifier}.raw.json"
+        raw_lines = _lines(
+            raw_text,
+            parser.parse(raw_text),
+            links.spelled_as_raw(declared.renames if declared else ()),
+            _changed_lines(raw_text, text),
+        )
+        if declarations.answers(entry):
+            _check_citations(entry, raw_lines, edits)
+        _write(
+            output / raw,
+            RawDocument(schema_version=SCHEMA_VERSION, id=identifier, lines=raw_lines),
+        )
+    if declarations.answers(entry):
+        _check_citations(entry, lines, edits)
+    path = f"documents/{identifier}.json"
+    document = Document(
+        schema_version=SCHEMA_VERSION,
+        id=identifier,
+        path=path,
+        raw=raw,
+        reference=entry.reference,
+        specification=spec.specification,
+        version=spec.version,
+        publisher=_publisher(entry),
+        release=int(spec.version.split(".")[0])
+        if spec.specification.startswith("3GPP ") and spec.version
+        else None,
+        title=titles.get(entry.reference, spec.specification),
+        pinned=pinned.get((entry.reference, spec.version)) if spec.version else None,
+        source=sources.source(entry),
+        sections=tuple(corpus.citations[identifier].values()),
+        lines=lines,
+        corrections={
+            cited: export_schema.Correction(kind=edit.kind, reason=edit.reason)
+            for cited, edit in edits.items()
+        },
+        holes=tuple(holes),
+        findings=tuple(
+            Finding(
+                severity=finding.severity,
+                rule=finding.rule,
+                message=finding.message,
+                section=finding.section,
+                origin=finding.origin,
+                accepted_by=finding.accepted_by,
+            )
+            for finding in lint_with_corpus(
+                spec, corpus.books, declared.acceptances() if declared else ()
+            )
+        ),
+    )
+    _write(output / path, document)
+    return document
+
+
+def _mentions(document: Document) -> Iterator[Mention]:
+    """The document's non-blank lines, with the AVPs each names."""
+    for index, line in enumerate(document.lines):
+        text = "".join(token.text for token in line.tokens).strip()
+        if text:
+            yield Mention(
+                document=document.id,
+                section=line.section,
+                line=index,
+                text=text,
+                avps=tuple(
+                    sorted(
+                        {token.avp for token in line.tokens if token.avp is not None}
                     )
-                    target = _target(origin, clause)
-            if hole is not None:
-                holes.append(dataclasses.asdict(hole))
-            names[name] = target
-            search.append(
-                {
-                    "name": name,
-                    "kind": "AVP",
-                    "document": identifier,
-                    "target": target,
-                    "identity": list(avp.identity) if avp else None,
-                    "defined_in": avp.defined_in if avp else None,
-                    "alias": avp.wireshark_name
-                    if avp
-                    else (hole.wireshark_name if hole else None),
-                    "data_type": avp.data_type if avp else None,
-                    "across_releases": dataclasses.asdict(avp.across_releases)
-                    if avp and avp.across_releases
-                    else None,
-                }
+                ),
             )
-        # A mention outside its own clause links only if the name means one.
-        clauses: dict[str, set[str]] = {}
-        for section in spec.sections:
-            if isinstance(section, ast.Message | ast.ApplicationScope):
-                clauses.setdefault(section.name, set()).add(section.source.section)
-        for name, places in clauses.items():
-            if len(places) == 1:
-                names.setdefault(name, _target(entry, next(iter(places))))
-        resolved = {
-            (message.name, message.section, message.command_code): application
-            for application in model.applications(entry.reference, version=spec.version)
-            for message in application.messages
-        }
-        for section in spec.sections:
-            if isinstance(section, ast.Message | ast.ApplicationScope):
-                target = _target(entry, section.source.section)
-                search.append(
-                    {
-                        "name": section.name,
-                        "kind": "Command"
-                        if isinstance(section, ast.Message)
-                        else "Application",
-                        "document": identifier,
-                        "target": target,
-                        "identity": [
-                            section.command_code,
-                            resolved[
-                                section.name,
-                                section.source.section,
-                                section.command_code,
-                            ].application_id,
-                        ]
-                        if isinstance(section, ast.Message)
-                        else [section.application_id],
-                        "header_application_id": section.application_id
-                        if isinstance(section, ast.Message)
-                        else None,
-                        "defined_in": entry.reference,
-                        "alias": section.abbreviation
-                        if isinstance(section, ast.Message)
-                        else None,
-                        "data_type": None,
-                        "across_releases": None,
-                    }
-                )
-            elif isinstance(section, ast.Registry):
-                for row in section.rows:
-                    if isinstance(row, ast.RegistryRow) and row.name:
-                        search.append(
-                            {
-                                "name": row.name,
-                                "kind": section.registry.value,
-                                "document": identifier,
-                                "target": _target(entry, section.source.section),
-                                "identity": [row.code],
-                                "defined_in": ", ".join(row.defined_in),
-                                "alias": row.abbreviation,
-                                "data_type": row.data_type,
-                                "across_releases": None,
-                            }
-                        )
-        declared = known.of(entry)
-        reasons = (
-            {cited: edit.reason for cited, edit in declared.edits.items()}
-            if declared
-            else {}
-        )
-        raw_path = next(
-            (
-                parent / "raw" / entry.path.relative_to(parent).with_suffix(".raw.dad")
-                for parent in entry.path.parents
-                if (parent / "raw").is_dir()
-            ),
-            None,
-        )
-        raw = None
-        if raw_path is not None and raw_path.is_file():
-            raw_text = raw_path.read_text(encoding="utf-8")
-            raw_names = names.copy()
-            raw_references = row_references.copy()
-            for rename in reversed(declared.renames if declared else ()):
-                if not raw_names.get(rename.expect) and rename.replace in raw_names:
-                    raw_names[rename.expect] = raw_names[rename.replace]
-                    for (reference, name), target in list(raw_references.items()):
-                        if name == rename.replace:
-                            raw_references[reference, rename.expect] = target
-            raw = _tokens(
-                entry,
-                raw_text,
-                parser.parse(raw_text),
-                raw_names,
-                references,
-                raw_references,
-            )
-
-            def normalized(text: str) -> str:
-                return " ".join(text.split(";;", 1)[0].split())
-
-            old = [normalized(line) for line in raw_text.splitlines()]
-            new = [
-                normalized(line)
-                for line in entry.path.read_text(encoding="utf-8").splitlines()
-            ]
-            for tag, first, last, _, _ in difflib.SequenceMatcher(
-                None, old, new, autojunk=False
-            ).get_opcodes():
-                if tag in ("replace", "delete"):
-                    for index in range(first, last):
-                        if old[index]:
-                            raw[index]["warning"] = True
-        link = str(spec.link or spec.transcribed or "")
-        source: dict[str, Any] = {"url": link, "local": None}
-        if entry.reference.startswith("RFC") and specifications is not None:
-            text_source = specifications / "rfc" / f"{entry.reference.lower()}.txt"
-            if text_source.is_file():
-                source["text"] = f"sources/{identifier}.txt"
-                destination = output / source["text"]
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(text_source, destination)
-        if include_pdfs and urlparse(link).path.lower().endswith(".pdf"):
-            candidates = pdfs.get(unquote(urlparse(link).path.rsplit("/", 1)[-1]), [])
-            if not candidates:
-                raise CorpusError(f"{identifier}: no downloaded PDF matches {link}")
-            if len(candidates) > 1:
-                import hashlib
-
-                if (
-                    len({hashlib.sha256(p.read_bytes()).digest() for p in candidates})
-                    != 1
-                ):
-                    raise CorpusError(
-                        f"{identifier}: conflicting PDF copies for {link}"
-                    )
-            source["local"] = f"sources/{identifier}.pdf"
-            destination = output / source["local"]
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(candidates[0], destination)
-        publisher = (
-            "3GPP"
-            if spec.specification.startswith("3GPP ")
-            else (
-                "IETF"
-                if entry.reference.startswith("RFC")
-                else spec.specification.split()[0]
-            )
-        )
-        metadata = {
-            "id": identifier,
-            "reference": entry.reference,
-            "specification": spec.specification,
-            "version": spec.version,
-            "publisher": publisher,
-            "release": spec.version.split(".")[0]
-            if publisher == "3GPP" and spec.version
-            else None,
-            "title": titles.get(entry.reference, spec.specification),
-            "pinned": pinned.get((entry.reference, spec.version))
-            if spec.version
-            else None,
-            "source": source,
-        }
-        document = {
-            **metadata,
-            "sections": list(sections[identifier].values()),
-            "lines": _tokens(
-                entry,
-                entry.path.read_text(encoding="utf-8"),
-                spec,
-                names,
-                references,
-                row_references,
-            ),
-            "raw": raw,
-            "corrections": reasons,
-            "holes": holes,
-            "findings": [
-                dataclasses.asdict(f)
-                for f in lint_with_corpus(
-                    spec, books, declared.acceptances() if declared else ()
-                )
-            ],
-        }
-        _json(output / "documents" / f"{identifier}.json", document)
-        for index, line in enumerate(document["lines"]):
-            text = "".join(t["text"] for t in line["tokens"]).strip()
-            if text:
-                mentions.append(
-                    {
-                        "document": identifier,
-                        "section": line["section"],
-                        "line": index,
-                        "text": text,
-                        "avps": sorted(
-                            {t["avp"] for t in line["tokens"] if "avp" in t}
-                        ),
-                    }
-                )
-        documents.append(metadata)
-    result = {
-        "schema_version": 1,
-        "mode": "self-hosted" if include_pdfs else "public",
-        "documents": documents,
-        "search": search,
-        "mentions": mentions,
-    }
-    _json(output / "index.json", result)
-    return result

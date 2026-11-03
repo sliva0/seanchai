@@ -138,27 +138,77 @@ def main() -> None:
 
 @main.command("export")
 @click.option(
-    "-o", "--output", required=True, type=click.Path(file_okay=False, path_type=Path)
+    "-o",
+    "--output",
+    required=True,
+    type=click.Path(file_okay=False, path_type=Path),
+    help="Directory to write, replaced whole. It must be absent, empty or a"
+    " previous export.",
 )
 @click.option(
     "--corpus",
     "corpus_paths",
     multiple=True,
     type=click.Path(exists=True, path_type=Path),
+    help="Directory or file to export instead of the installed seanchai-corpus"
+    " package. Repeatable.",
 )
 @click.option(
-    "--dictionary", type=click.Path(exists=True, file_okay=False, path_type=Path)
+    "--dictionary",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Wireshark's Diameter dictionary, for its AVP names in the search index:"
+    " specifications/wireshark after `seanchai download`. Without it the names"
+    " are left out.",
 )
 @click.option(
-    "--corrections", type=click.Path(exists=True, file_okay=False, path_type=Path)
+    "--corrections",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Read correction reasons and acceptances from the modules in this"
+    " directory (<SpecRef>.py) instead of the corpus's corrections.json. Loading"
+    " one executes Python from that directory, as `correct` does.",
 )
 @click.option(
-    "--specifications", type=click.Path(exists=True, file_okay=False, path_type=Path)
+    "--specifications",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="A `seanchai download` directory. RFC texts found there are copied into"
+    " the export; --include-pdfs reads it too.",
 )
-@click.option("--include-pdfs", is_flag=True)
+@click.option(
+    "--include-pdfs",
+    is_flag=True,
+    help="Self-hosted mode: copy every source PDF into the export. Needs"
+    " --specifications. ETSI's renderings are not for public redistribution.",
+)
 def export_command(
-    output, corpus_paths, dictionary, corrections, specifications, include_pdfs
+    output: Path,
+    corpus_paths: tuple[Path, ...],
+    dictionary: Path | None,
+    corrections: Path | None,
+    specifications: Path | None,
+    include_pdfs: bool,
 ) -> None:
+    """Export the corpus as JSON for the static site.
+
+    Writes index.json, search.json, schema.json and, per document,
+    documents/<id>.json and documents/<id>.raw.json (docs/website.md). The same
+    corpus gives the same bytes.
+
+    \b
+    Public site, no source PDFs:
+        seanchai export -o site/data
+    Self-hosted, source PDFs beside it:
+        seanchai export -o site/data \\
+            --include-pdfs --specifications specifications
+
+    The export is built beside the output directory and replaces it whole, once
+    it has succeeded: files of an earlier export do not linger, and a failed
+    run leaves the earlier one as it was. A directory holding anything else is
+    refused, and so is a corpus with no documents.
+
+    Correction reasons come from the corpus's corrections.json, which needs no
+    checkout. --corrections reads edits/corrections while working inside one,
+    before `seanchai regenerate` has recorded them.
+    """
     from .corpus import Corpus
     from .export import export_corpus
     from .model import ModelError

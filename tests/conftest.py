@@ -256,3 +256,11 @@ def _declare(tmp_path, toml: str, reference="RFC9999"):
     sources.mkdir(exist_ok=True)
     (sources / f"{reference}.toml").write_text(toml, encoding="utf-8")
     return sources
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--update-export-pin",
+        action="store_true",
+        help="Rewrite tests/export.sha256 from the export before comparing.",
+    )

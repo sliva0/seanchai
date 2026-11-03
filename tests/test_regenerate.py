@@ -382,6 +382,7 @@ def test_a_rebuild_records_its_corrections_beside_the_documents(
         add=["TS29.999"],
     )
 
+    assert report.record is not None
     assert report.record == corpus / correction_record.RECORD_NAME
     record = correction_record.load(report.record)
     edit = record.documents["29999-123"].edits["TS29.999.py#mode-code"]
