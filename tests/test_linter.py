@@ -655,12 +655,28 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29229-j10.raw": 1,
         "29229-j10": 2,
         "29272-j60": 9,
-        "29273-j20": 5,
+        # Each with one row citing another clause than the block's: raw, table
+        # 9.2.3.2.1/1's Emergency-Services, a misprint corrected; corrected,
+        # MIP6-Agent-Info, whose second block a correction deletes.
+        "29273-j20": 6,
         "29283-j00": 1,
         "29336-j10": 5,
         "29337-j00": 2,
         "29338-j30": 2,
         "29388-j10": 1,
+        # Table 5.3.0.1 cites 5.3.142 for clause 5.3.81's AVP.
+        "29214-j30": 1,
+        # Clause 6.20 defines MIP6-Auth-Mode, clause 9.5 prints its values.
+        "rfc5778": 1,
+        # Clauses 5.2 and 6 are prose, under the scope a correction inserts.
+        "rfc6942.raw": 0,
+        "rfc6942": 2,
+        # Table 5.1-1's clauses run ahead of the document's, until corrected.
+        "xs0013-013-0_v1.0.raw": 7,
+        # Clause A.5.25 cites clause 6.6.3, outside the Diameter annex, and,
+        # raw, table A.4-1 cites clause 5.4.2 for Accounting-Record-Type.
+        "ts-0004-v2_35_0.raw": 2,
+        "ts-0004-v2_35_0": 1,
         # TS 29.230's registry: 318 allocated twice, four reservations
         # covering allocated codes, and 4703-4799 inside 4605-4799.
         "29230-j30": 6,
@@ -710,6 +726,8 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "member-marked-unused",
         "registry-range-overlap",
         "row-without-code",
+        "section-mismatch",
+        "section-unknown",
         "table-row-mismatch",
         "undefined-avp",
     }
@@ -1728,6 +1746,200 @@ def test_an_undefined_avp_a_base_resolves_is_an_error_with_the_corpus():
     )
 
 
+def _cited_row(name="Mapped", section: str | None = "6.3.1"):
+    return ast.AvpTableRow(
+        name=name, code=1, data_type=ast.DataType.OCTET_STRING, section=section
+    )
+
+
+def _cited_table(*rows):
+    return ast.AvpTable(
+        table="6.3/1",
+        columns=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.SECTION,
+            ast.AvpColumn.TYPE,
+        ),
+        source=ast.SourceRef(section="6.3"),
+        rows=rows,
+    )
+
+
+def _section_findings(*sections):
+    return [
+        (f.rule, f.message)
+        for f in linter.lint(_spec(*sections))
+        if f.rule.startswith("section-")
+    ]
+
+
+def _values_at(*rows, kind=ast.ValueKind.BITS, section="6.3.9"):
+    return ast.ValueTable(
+        avp="Mapped",
+        kind=kind,
+        source=ast.SourceRef(section=section),
+        rows=rows or (ast.ValueRow(name="ONE", value=1),),
+    )
+
+
+_REPRINT = ast.ReprintedAvp(
+    name="Mapped",
+    source=ast.SourceRef(section="6.3.9"),
+    origin="RFC6733",
+    code=1,
+    avps=(),
+)
+
+
+@pytest.mark.parametrize(
+    ("cited", "holder"),
+    [
+        pytest.param("6.3.9", _grouped("Mapped", 1, section="6.3.9"), id="its clause"),
+        pytest.param("6.3", _grouped("Mapped", 1, section="6.3.9"), id="a parent"),
+        pytest.param("6", _enumerated("Mapped", 1, section="6.3.9"), id="the top"),
+        pytest.param("6.3.9", _REPRINT, id="a re-print"),
+        pytest.param("6.3.9", _values_at(), id="a bit table"),
+    ],
+)
+def test_a_row_citing_what_holds_its_avp_reports_nothing(cited, holder):
+    assert _section_findings(_cited_table(_cited_row(section=cited)), holder) == []
+
+
+def test_a_row_citing_another_clause_than_its_block_is_a_note():
+    table = _cited_table(_cited_row(section="6.3.1"))
+    holder = _grouped("Mapped", 1, section="6.3.9")
+    other = _grouped("Other", 2, section="6.3.1")
+
+    assert _section_findings(table, holder, other) == [
+        (
+            "section-mismatch",
+            "Mapped is cited at clause 6.3.1 in table 6.3/1, but the file holds it"
+            " at clause 6.3.9",
+        )
+    ]
+
+
+def test_a_row_citing_a_clause_the_file_lacks_says_so():
+    """TS 29.214 V19.3.0's table 5.3.0.1 and its clause 5.3.81."""
+    table = _cited_table(_cited_row(section="6.3.142"))
+
+    assert _section_findings(table, _grouped("Mapped", 1, section="6.3.9")) == [
+        (
+            "section-mismatch",
+            "Mapped is cited at clause 6.3.142 in table 6.3/1, but the file holds it"
+            " at clause 6.3.9, and nothing at clause 6.3.142",
+        )
+    ]
+
+
+def test_a_row_agreeing_with_any_block_of_its_avp_reports_nothing():
+    """TS 29.273 points each interface's row at its own clause's copy."""
+    table = _cited_table(_cited_row(section="6.3.9"))
+    defined = _grouped("Mapped", 1, section="6.3.1")
+
+    assert _section_findings(table, defined, _REPRINT) == []
+
+
+def test_a_row_is_not_held_to_a_feature_or_result_code_table():
+    """TS 29.229 tabulates `Feature-List` at clause 6.3.31 and prints its
+    features in clause 7.1.1, both as they should."""
+    table = _cited_table(_cited_row(section="6.3.1"))
+    features = _values_at(kind=ast.ValueKind.FEATURES, section="7.1.1")
+    codes = _values_at(kind=ast.ValueKind.RESULT_CODES, section="7.1.2")
+
+    assert _section_findings(table, features, codes) == []
+
+
+def test_a_row_whose_avp_no_block_holds_is_not_checked():
+    """A simple-typed AVP has no block, so its clause is absent from any file."""
+    assert _section_findings(_cited_table(_cited_row(section="99.1"))) == []
+
+
+def test_a_row_citing_no_clause_reports_nothing():
+    table = _cited_table(_cited_row(section=None))
+
+    assert _section_findings(table, _grouped("Mapped", 1, section="6.3.9")) == []
+
+
+def test_an_application_scope_naming_a_clause_the_file_lacks_is_a_note():
+    scope = _application("Sh", 1, "6.*", "9.*")
+    command = _command("6.1.1")
+
+    assert _section_findings(scope, command) == [
+        (
+            "section-unknown",
+            "Sh applies to clause 9.*, under which the file holds no block",
+        )
+    ]
+
+
+def _values_cited(source):
+    return ast.EnumeratedAvp(
+        name="Mapped",
+        source=ast.SourceRef(section="6.3.9"),
+        code=1,
+        vendor_id=10415,
+        values_source=source,
+        values=(),
+    )
+
+
+def test_values_citing_a_clause_the_file_lacks_are_a_note():
+    assert _section_findings(_values_cited("clause 9.9")) == [
+        (
+            "section-unknown",
+            "Mapped's values are cited from clause 9.9, where the file holds no block",
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    "source",
+    ["clause 6.3", "TS 32.422 [23] for Trace Depth", "Table 6.3.4.2.5-6", None],
+)
+def test_values_citing_a_held_clause_or_another_document_report_nothing(source):
+    assert _section_findings(_values_cited(source)) == []
+
+
+def test_a_misprinted_clause_can_be_accepted():
+    spec = _spec(
+        _cited_table(_cited_row(section="6.3.142")),
+        _grouped("Mapped", 1, section="6.3.9"),
+    )
+    acceptance = corrections.Accept(
+        id="mapped-clause",
+        rule="section-mismatch",
+        target=corrections.table_row("Mapped", table="6.3/1"),
+        expect="Mapped is cited at clause 6.3.142 in table 6.3/1, but the file holds"
+        " it at clause 6.3.9, and nothing at clause 6.3.142",
+        reason="a misprint: the document has no clause 6.3.142",
+        origin="TS29.329.py",
+    )
+
+    findings = linter.lint_with_corpus(spec, _books(spec), [acceptance])
+
+    (accepted,) = [f for f in findings if f.rule == "section-mismatch"]
+    assert accepted.severity is linter.Severity.ACCEPTED
+
+
+def test_the_motivating_misprint_is_reported_raw_and_corrected():
+    release = _CORPUS_DIR / "3gpp" / "rel-19"
+    message = (
+        "PC-Session-Recovery-Status is cited at clause 5.3.142 in table 5.3.0.1, but"
+        " the file holds it at clause 5.3.81, and nothing at clause 5.3.142"
+    )
+    for path in (
+        release / "29214-j30.dad",
+        _CORPUS_DIR / "raw" / "3gpp" / "rel-19" / "29214-j30.raw.dad",
+    ):
+        findings = linter.lint(parser.parse(path.read_text(encoding="utf-8")))
+
+        assert [f.message for f in findings if f.rule == "section-mismatch"] == [
+            message
+        ]
+
+
 def test_a_declared_name_is_no_unresolved_reference():
     base = _origin_spec("RFC 6733", None, _table(_row("Session-Id", 263)))
     undeclared = _naming_mystery().model_copy(update={"bases": ("RFC6733",)})
@@ -1818,6 +2030,7 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29273-j20.dad": {
+        "section-mismatch": ["MIP6-Agent-Info"],
         "registry-result-code-document": [
             "DIAMETER_ERROR_ILLEGAL_EQUIPMENT",
         ],
@@ -1927,7 +2140,13 @@ _STANDING_CORPUS_NOTES = {
     "ts183033-010200.dad": {"cross-release-origin": ["TS29.229"]},
     # oneM2M cites TS 32.299 [31], "Release 11", for Node-Id and
     # Service-Information: V11.20.0.
-    "ts-0004-v2_35_0.dad": {"cross-release-origin": ["TS32.299"]},
+    "ts-0004-v2_35_0.dad": {
+        "cross-release-origin": ["TS32.299"],
+        "section-unknown": ["Response-Status-Code"],
+    },
+    "29214-j30.dad": {"section-mismatch": ["PC-Session-Recovery-Status"]},
+    "rfc5778.dad": {"section-mismatch": ["MIP6-Auth-Mode"]},
+    "rfc6942.dad": {"section-unknown": ["Diameter", "Diameter"]},
     "ts183017-030201.dad": {
         "cross-release-origin": ["TS29.209", "TS29.214"],
         # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports
