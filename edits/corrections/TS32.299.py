@@ -789,6 +789,47 @@ CORRECTIONS += [
     ),
 ]
 
+# Application ids the command headers omit and the prose states, as for
+# V18.0.0 above.
+CORRECTIONS += [
+    Insert(
+        id="rel11-application-id-rf",
+        into=header(),
+        node=ast.ApplicationScope(
+            name="Rf",
+            source=ast.SourceRef(section="7.1.5", page=84),
+            application_id=3,
+            applies_to=("6.2.*",),
+        ),
+        after=None,
+        reason=(
+            "clause 7.1.5: 'The Acct-Application-Id AVP (AVP code 259) shall "
+            "contain the value of 3 as defined in RFC 3588 [401]'; clause "
+            "6.2.1.2 bases the offline charging messages of clause 6.2 on "
+            "that application, and their headers print no id"
+        ),
+        versions="11.20.0",
+    ),
+    Insert(
+        id="rel11-application-id-ro",
+        into=header(),
+        node=ast.ApplicationScope(
+            name="Ro",
+            source=ast.SourceRef(section="7.1.6", page=85),
+            application_id=4,
+            applies_to=("6.4.*",),
+        ),
+        after=None,
+        reason=(
+            "clause 7.1.6: 'The Auth-Application-Id AVP (AVP code 258) shall "
+            "contain the value of 4 as defined in RFC 4006 [402]'; the online "
+            "charging commands of clause 6.4 use the Diameter Credit Control "
+            "Application (6.3.2.1), and their headers print no id"
+        ),
+        versions="11.20.0",
+    ),
+]
+
 # The three OMA-DDS-Charging_Data rows TS-0004's Service-Information reaches
 # (through clause 7.2.192's body) print V18.0.0's codes in table 7.2, and
 # clauses 7.2.50, 7.2.69 and 7.2.191 type them Grouped word for word as

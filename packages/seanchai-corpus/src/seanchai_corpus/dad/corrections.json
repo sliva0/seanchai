@@ -2719,6 +2719,14 @@
   },
   "32299-bk0": {
    "edits": {
+    "TS32.299.py#rel11-application-id-rf": {
+     "kind": "insert",
+     "reason": "clause 7.1.5: 'The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 3588 [401]'; clause 6.2.1.2 bases the offline charging messages of clause 6.2 on that application, and their headers print no id"
+    },
+    "TS32.299.py#rel11-application-id-ro": {
+     "kind": "insert",
+     "reason": "clause 7.1.6: 'The Auth-Application-Id AVP (AVP code 258) shall contain the value of 4 as defined in RFC 4006 [402]'; the online charging commands of clause 6.4 use the Diameter Credit Control Application (6.3.2.1), and their headers print no id"
+    },
     "TS32.299.py#rel11-bases-dcca-nasreq": {
      "kind": "correction",
      "reason": "clause 7.1 says the IETF AVPs it does not specify 'can be found from RFC 3588 [401], RFC 4006 [402] and and RFC 4005 [407]'; the corpus reads the base protocol as RFC 6733, which obsoletes RFC 3588"
