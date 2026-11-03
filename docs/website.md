@@ -134,8 +134,9 @@ preferred once it is cheap.
 
 - Public: a GitHub Actions job in the site repository installs
   `seanchai` and `seanchai-corpus` from PyPI, runs the export, builds the
-  site and deploys with the Pages actions. No source documents are
-  downloaded.
+  site and deploys with the Pages actions. No source documents are needed;
+  `seanchai download --only rfc --only wireshark` adds RFC texts and Wireshark's
+  names, with no `seanchai[extract]`.
 - Self-hosted: the same build with `--include-pdfs --specifications
   specifications`, copying the PDFs (about 27 MB for the current corpus), and
   the PDF.js viewer into the output.
