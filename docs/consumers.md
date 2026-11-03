@@ -92,9 +92,12 @@ Must, `MUST-NOT` in Must not, and `-` says nothing. The origin still
 supplies the code, type and vendor, names the defining document, and
 supplies each flag no citing row places. An IETF reading stating no flags
 takes the M bit as application-defined and V as Must not (RFC 6733 sections
-4.1 and 4.1.1): its rules are a `model.FlagRules`, an `ast.AvpFlagRules`
-with a fifth column, `application_defined`, holding M there rather than
-guessing Must or May. A vendor reading stating none stays a hole. Resolution
+4.1 and 4.1.1). `Avp.flag_rules` and `Hole.flag_rules` are always a
+`model.FlagRules`: an `ast.AvpFlagRules` with a fifth column,
+`application_defined`, holding M there rather than guessing Must or May and
+empty everywhere else. A table row's rules stay the AST's and compare equal only
+through `model.FlagRules.printed(row.flag_rules)`. A vendor reading stating
+none stays a hole. Resolution
 through the origin is unchanged, so `identified` returns both readings of
 such an identity. Examples: TS 29.229 table 6.3.0.1 puts M in Must for four
 `Digest-*` AVPs RFC 4590 states no rule for; TS 29.272 table 7.3.1/2 marks

@@ -165,11 +165,26 @@ class FlagRules(ast.AvpFlagRules):
     each be a guess. Its V bit is no guess: section 4.1.1 forbids a Vendor-ID
     of zero, so an IETF-space AVP carries none and its V bit is Must-not.
 
-    The model builds these only for vendor 0 (`_ietf_rules`); every other
-    `Avp.flag_rules` is the document's `ast.AvpFlagRules` as printed.
+    Every `Avp.flag_rules` and `Hole.flag_rules` is one of these, so a consumer
+    reads one type. `application_defined` is set only on vendor 0's
+    (`_ietf_rules`); everywhere else it is empty and the columns are the
+    document's as printed.
     """
 
     application_defined: frozenset[ast.AvpFlag] = frozenset()
+
+    @classmethod
+    def printed(cls, rules: ast.AvpFlagRules) -> FlagRules:
+        """A table's four columns as the model's type; rules already of it are
+        returned as they are."""
+        if isinstance(rules, cls):
+            return rules
+        return cls(
+            must=rules.must,
+            may=rules.may,
+            should_not=rules.should_not,
+            must_not=rules.must_not,
+        )
 
     @pydantic.field_serializer("application_defined", when_used="json")
     def _application_defined_in_cell_order(
@@ -213,7 +228,7 @@ def _by_citing_document(found: Avp | Hole) -> tuple[str, str]:
     return ("" if across is None else across.citing, found.name)
 
 
-def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> ast.AvpFlagRules:
+def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> FlagRules:
     """An IETF-space AVP's flag rules with RFC 6733's rule for each of M and
     V that no reading places: V under Must-not (section 4.1.1), M
     application-defined (section 4.1). Rules placing both are returned as
@@ -224,7 +239,7 @@ def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> ast.AvpFlagRules:
     rules = ast.AvpFlagRules() if flag_rules is None else flag_rules
     placed = rules.must | rules.may | rules.should_not | rules.must_not
     if {ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR} <= placed:
-        return rules
+        return FlagRules.printed(rules)
     return FlagRules(
         must=rules.must,
         may=rules.may,
@@ -248,7 +263,7 @@ class Avp:
     vendor_id: int
     code: int
     data_type: ast.DataType
-    flag_rules: ast.AvpFlagRules
+    flag_rules: FlagRules
     # The reference re-used rows cite: `TS29.229`, `RFC6733`.
     defined_in: str
     section: str | None
@@ -490,7 +505,7 @@ class Hole:
     vendor_id: int | None = None
     code: int | None = None
     data_type: ast.DataType | None = None
-    flag_rules: ast.AvpFlagRules | None = None
+    flag_rules: FlagRules | None = None
     section: str | None = None
     # The re-used origin the corpus holds no copy of, when one is cited:
     # TS 32.299 V11.20.0's `DCD-Information` from OMA-DDS-Charging_Data.
@@ -856,9 +871,11 @@ class _Draft:
 
     @cached_property
     def final(self) -> Avp | Hole:
-        flag_rules = self.flag_rules
+        flag_rules = (
+            None if self.flag_rules is None else FlagRules.printed(self.flag_rules)
+        )
         if self.kind is not None and self.vendor_id == ast.IETF_VENDOR:
-            flag_rules = _ietf_rules(flag_rules)
+            flag_rules = _ietf_rules(self.flag_rules)
         if (
             self.kind is None
             or self.vendor_id is None

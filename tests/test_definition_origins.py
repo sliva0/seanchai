@@ -7,7 +7,7 @@ from seanchai.dad import ast
 from seanchai.extractor import tgpp_docx
 from seanchai.extractor.errors import ExtractionError
 from seanchai.extractor.sources import Quirk, Quirks
-from seanchai.model import Enumerated, Grouped, Model
+from seanchai.model import Enumerated, FlagRules, Grouped, Model
 
 
 @pytest.fixture(scope="module")
@@ -86,7 +86,7 @@ def test_the_citing_table_completes_what_the_origin_leaves_unstated(built):
     assert avp is not None
     assert avp.identity == (10415, 636)
     assert avp.data_type is ast.DataType.UTF8_STRING
-    assert avp.flag_rules == ast.AvpFlagRules(
+    assert avp.flag_rules == FlagRules(
         must=frozenset({ast.AvpFlag.VENDOR}),
         must_not=frozenset({ast.AvpFlag.MANDATORY}),
     )

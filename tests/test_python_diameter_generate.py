@@ -409,7 +409,16 @@ def _member(presence, minimum, maximum):
     )
     flag_rules = ast.AvpFlagRules(must=frozenset({ast.AvpFlag.MANDATORY}))
     utf8 = ast.DataType.UTF8_STRING
-    target = model.Avp("Session-Id", 0, 263, utf8, flag_rules, "RFC6733", None, None)
+    target = model.Avp(
+        "Session-Id",
+        0,
+        263,
+        utf8,
+        model.FlagRules.printed(flag_rules),
+        "RFC6733",
+        None,
+        None,
+    )
     return model.Member(rule=rule, avp=target), target
 
 

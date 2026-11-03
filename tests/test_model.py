@@ -359,7 +359,7 @@ class TestCitingFlagRules:
         resolved = built.resolve("TS29.900", "Digest-Qop")
         assert resolved is not None
         assert (resolved.defined_in, resolved.identity) == ("RFC4590", (0, 110))
-        assert resolved.flag_rules == ast.AvpFlagRules(must=_M, may=_P, must_not=_V)
+        assert resolved.flag_rules == model.FlagRules(must=_M, may=_P, must_not=_V)
         assert built.holes() == ()
 
     def test_a_citing_row_of_dashes_falls_back_to_the_origin(self):
@@ -370,7 +370,7 @@ class TestCitingFlagRules:
         )
         resolved = _model(_stand_in(), citing).resolve("TS29.900", "Digest-Qop")
         assert resolved is not None
-        assert resolved.flag_rules == ast.AvpFlagRules(may=_M | _P, must_not=_V)
+        assert resolved.flag_rules == model.FlagRules(may=_M | _P, must_not=_V)
 
     def test_the_origins_own_reading_keeps_its_flag_rules(self):
         """Read after the citing document's, so a shared memo would show."""
@@ -385,7 +385,7 @@ class TestCitingFlagRules:
         assert built.resolve("TS29.900", "Digest-Qop") is not None
         origins = built.resolve("RFC4590", "Digest-Qop")
         assert origins is not None
-        assert origins.flag_rules == ast.AvpFlagRules(may=_M | _P, must_not=_V)
+        assert origins.flag_rules == model.FlagRules(may=_M | _P, must_not=_V)
         assert len(built.identified(0, 110)) == 2
 
     def test_citing_flags_fill_an_untyped_origin_without_disagreeing(self):
@@ -403,7 +403,7 @@ class TestCitingFlagRules:
         resolved = built.resolve("TS29.900", "Digest-Qop")
         assert resolved is not None
         assert resolved.data_type is _UTF8
-        assert resolved.flag_rules == ast.AvpFlagRules(must=_M, must_not=_V)
+        assert resolved.flag_rules == model.FlagRules(must=_M, must_not=_V)
         assert built.resolve("RFC4590", "Digest-Qop") is None
 
     def test_an_extensions_table_flags_take_the_origins_unplaced_ones(self):
@@ -432,18 +432,18 @@ class TestCitingFlagRules:
         assert isinstance(resolved, model.Grouped)
         assert resolved.defined_in == "TS29.900"
         assert [member.name for member in resolved.members] == ["A", "B"]
-        assert resolved.flag_rules == ast.AvpFlagRules(must=_M, may=_P, must_not=_V)
+        assert resolved.flag_rules == model.FlagRules(must=_M, may=_P, must_not=_V)
 
 
 _MUST = ast.MBitOverride.MUST
 _MUST_NOT = ast.MBitOverride.MUST_NOT
 
 
-def _vendor_rules(m: str) -> ast.AvpFlagRules:
+def _vendor_rules(m: str) -> model.FlagRules:
     """A vendor AVP's rules: V in Must, M under `m`."""
     if m == "must":
-        return ast.AvpFlagRules(must=_M | _V)
-    return ast.AvpFlagRules(must=_V, **{m: _M})
+        return model.FlagRules(must=_M | _V)
+    return model.FlagRules(must=_V, **{m: _M})
 
 
 def _origin(*sections) -> ast.Specification:
@@ -560,7 +560,7 @@ class TestCitingMembers:
         mine = built.resolve("TS29.900", "Originator")
         assert mine is not None and mine.identity == (10415, 864)
         assert feature is not None and feature.identity == (45687, 2)
-        assert feature.flag_rules == ast.AvpFlagRules(must=_V, must_not=_M)
+        assert feature.flag_rules == model.FlagRules(must=_V, must_not=_M)
         assert feature == built.resolve("TS29.900", "Feature")
 
     def test_a_member_the_citing_document_cannot_identify_is_the_origins(self):
@@ -951,7 +951,7 @@ class TestHoles:
         resolved = built.resolve("RFC5777", "Port")
         assert resolved is not None
         assert resolved.flag_rules == _IETF_RULES
-        assert resolved.flag_rules != ast.AvpFlagRules(must_not=_V)
+        assert resolved.flag_rules != model.FlagRules(must_not=_V)
 
     def test_a_citing_tables_m_bit_comes_before_rfc_6733s_rule(self):
         """TS 29.273 sets M for RFC 5777's `QoS-Capability` in its own table;
@@ -962,7 +962,7 @@ class TestHoles:
             vendor_id=0,
             version=None,
         )
-        rules = ast.AvpFlagRules(must=_M, must_not=_V)
+        rules = model.FlagRules(must=_M, must_not=_V)
         row = ast.AvpTableRow(name="Port", code=530, data_type=_I32, flag_rules=rules)
         citing = _spec("3GPP TS 29.900", [_table(row), _reused("Port", "RFC5777")])
         built = _model(origin, citing)
@@ -992,7 +992,7 @@ class TestHoles:
             "TS29.900", "Thing"
         )
         assert resolved is not None
-        assert type(resolved.flag_rules) is ast.AvpFlagRules
+        assert not resolved.flag_rules.application_defined
 
     def test_a_bit_cannot_be_both_placed_and_application_defined(self):
         with pytest.raises(ValueError, match="both placed and application-defined"):
@@ -1395,7 +1395,7 @@ class TestOverTheCommittedCorpus:
         assert imsi.flag_rules is not None
         assert ast.AvpFlag.MANDATORY in imsi.flag_rules.must_not
         first, second = built.table_rows("TS29.061", "3GPP-IMSI")
-        assert first.flag_rules == imsi.flag_rules
+        assert model.FlagRules.printed(first.flag_rules) == imsi.flag_rules
         assert ast.AvpFlag.MANDATORY in second.flag_rules.must
         assert built.table_rows("TS29.061", "No-Such-AVP") == ()
 
@@ -1433,7 +1433,7 @@ class TestOverTheCommittedCorpus:
         assert arp.defined_in == "TS29.272"
         assert built.table_rows("TS29.272", "Allocation-Retention-Priority") == ()
         (row, *_) = built.table_rows("TS29.212", "Allocation-Retention-Priority")
-        assert arp.flag_rules == row.flag_rules
+        assert arp.flag_rules == model.FlagRules.printed(row.flag_rules)
 
     def test_an_externally_defined_enumeration_is_complete(self, built):
         """TS 29.272 clause 7.3.141 defines Report-Interval and points at TS
@@ -1486,8 +1486,8 @@ class TestOverTheCommittedCorpus:
             (mine,) = [m.avp for m in ours.members if m.name == name]
             (other,) = [m.avp for m in theirs.members if m.name == name]
             assert mine is not None and other is not None
-            assert mine.flag_rules == ast.AvpFlagRules(must=_M | _V)
-            assert other.flag_rules == ast.AvpFlagRules(must=_V, must_not=_M)
+            assert mine.flag_rules == model.FlagRules(must=_M | _V)
+            assert other.flag_rules == model.FlagRules(must=_V, must_not=_M)
             assert mine == built.resolve("TS32.299", name)
         # Vendor-Id, which TS 32.299 tabulates with dashes, is RFC 6733's.
         assert ours.members[0].name == "Vendor-Id"
@@ -1559,8 +1559,8 @@ class TestOverTheCommittedCorpus:
         theirs = built.resolve("TS29.212", "RAT-Type")
         assert ours is not None and theirs is not None
         assert (ours.defined_in, ours.identity) == ("TS29.212", theirs.identity)
-        assert ours.flag_rules == ast.AvpFlagRules(must=_M | _V, may=_P)
-        assert theirs.flag_rules == ast.AvpFlagRules(must=_V, may=_P, must_not=_M)
+        assert ours.flag_rules == model.FlagRules(must=_M | _V, may=_P)
+        assert theirs.flag_rules == model.FlagRules(must=_V, may=_P, must_not=_M)
         cycle = built.resolve("TS29.272", "eDRX-Cycle-Length")
         assert isinstance(cycle, model.Grouped)
         (member,) = [m.avp for m in cycle.members if m.name == "RAT-Type"]
@@ -1579,8 +1579,8 @@ class TestOverTheCommittedCorpus:
         assert ours is not None and theirs is not None
         assert (ours.defined_in, ours.data_type) == ("RFC4590", _UTF8)
         assert (ours.identity, ours.data_type) == (theirs.identity, theirs.data_type)
-        assert ours.flag_rules == ast.AvpFlagRules(must=_M, may=_P, must_not=_V)
-        assert theirs.flag_rules == ast.AvpFlagRules(may=_M | _P, must_not=_V)
+        assert ours.flag_rules == model.FlagRules(must=_M, may=_P, must_not=_V)
+        assert theirs.flag_rules == model.FlagRules(may=_M | _P, must_not=_V)
         assert built.holes("RFC4590") == ()
 
     def test_the_registry_answers_by_code_beside_the_model(self, built):
@@ -1849,7 +1849,7 @@ def test_onem2m_reaches_release_11s_bodies_through_ts_32_299_v11_20_0():
     )
     im = member(service, "IM-Information")
     assert (im.identity, im.data_type) == ((10415, 2110), ast.DataType.GROUPED)
-    assert im.flag_rules == ast.AvpFlagRules(
+    assert im.flag_rules == model.FlagRules(
         must=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}),
         may=frozenset({ast.AvpFlag.PROTECTED}),
     )
@@ -2404,7 +2404,7 @@ class TestUndefinedNames:
             vendor_id=10415,
             code=710,
             data_type=ast.DataType.UTF8_STRING,
-            flag_rules=_MV,
+            flag_rules=model.FlagRules.printed(_MV),
             defined_in="TS29.900",
             section="6.1.1",
             wireshark_name=None,
@@ -2736,3 +2736,19 @@ class TestSuppliedFrom:
 
         with pytest.raises(model.ModelError, match="Missing-Req is defined twice"):
             model.supplied_from(tmp_path / "twice.dad")
+
+
+def test_every_reading_has_one_flag_rules_type():
+    """A consumer reads `application_defined` off any AVP or hole, so an M-bit
+    check cannot silently differ by which document states the rules."""
+    built = model.Model.build(corpus.Corpus.load(_CORPUS_DIR))
+
+    avps = [avp for each in built.references() for avp in built.avps(each)]
+    readings = [*avps, *built.holes()]
+
+    assert all(
+        isinstance(found.flag_rules, model.FlagRules)
+        for found in readings
+        if found.flag_rules is not None
+    )
+    assert any(avp.flag_rules.application_defined for avp in avps)

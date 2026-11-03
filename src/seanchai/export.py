@@ -416,9 +416,7 @@ def _hole(hole: model.Hole) -> Hole:
         data_type=hole.data_type,
         flag_rules=None
         if hole.flag_rules is None
-        else FlagRules.model_validate(
-            {"application_defined": (), **hole.flag_rules.model_dump(mode="json")}
-        ),
+        else FlagRules.model_validate(hole.flag_rules.model_dump(mode="json")),
         section=hole.section,
         origin=hole.origin,
         conflict=hole.conflict,
