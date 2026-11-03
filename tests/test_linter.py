@@ -2104,8 +2104,6 @@ _STANDING_CORPUS_NOTES = {
             "Reference-Number",
         ],
         "registry-avp-name": ["Service-ID"],
-        # Table 7.1 reserves 1324-1399 for "TS 32.229", likely TS 32.299.
-        "registry-reserved-code": ["Nr-Cgi", "PSCell-Info"],
         "reused-reprint": ["User-Equipment-Info"],
         # Table 7.2.0.1 sets M for the charging application on AVPs it
         # refers to TS 29.229 for, which leaves M out of Must.

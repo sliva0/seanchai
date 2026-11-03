@@ -806,7 +806,7 @@
 1321              3GPP-OC-Rating-Group                                     Unsigned32         TS32.299
 1322              3GPP-OC-Request-Type                                     Enumerated         TS32.299
 1323              VoLTE-Information                                        Grouped            TS32.299
-; RESERVED 1324..1399 TS32.229 "TS 32.229"
+; RESERVED 1324..1399 TS32.299 "TS 32.299" ;; corrected: (TS29.230.py#reserved-1324-document) ;; corrected: (TS29.230.py#reserved-1324-purpose)
 1400              Subscription-Data                                        Grouped            TS29.272
 1401              Terminal-Information                                     Grouped            TS29.272
 1402              IMEI                                                     UTF8String         TS29.272

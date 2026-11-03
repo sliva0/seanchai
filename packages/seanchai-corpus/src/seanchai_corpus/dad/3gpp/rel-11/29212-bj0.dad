@@ -718,10 +718,10 @@ Flow-Status                                TS29.214         All                 
 Framed-IP-Address                          RFC4005          All                  Both
 Framed-IPv6-Prefix                         RFC4005          All                  Both ;; corrected: (TS29.212.py#rel11-framed-ipv6-prefix-row-5-4)
 Granted-Service-Unit                       RFC4006          All                  Both,Rel9
-Logical-Access-ID                          ETSI-TS283.034   xDSL                 Both,Rel10
+Logical-Access-ID                          ETSI-ES283.034   xDSL                 Both,Rel10 ;; corrected: (TS29.212.py#logical-access-id-etsi-standard-5-4)
 Max-Requested-Bandwidth-UL                 TS29.214         All                  PC
 Max-Requested-Bandwidth-DL                 TS29.214         All                  PC
-Physical-Access-ID                         ETSI-TS283.034   xDSL                 Both,Rel10
+Physical-Access-ID                         ETSI-ES283.034   xDSL                 Both,Rel10 ;; corrected: (TS29.212.py#physical-access-id-etsi-standard-5-4)
 RAI                                        TS29.061         3GPP-GPRS,3GPP-EPS   Both
 Rating-Group                               RFC4006          All                  CC
 Redirect-Address-Type                      RFC4006          All                  PC,ADC
@@ -854,14 +854,14 @@ Framed-IP-Address                     RFC4005
 Framed-IPv6-Prefix                    RFC4005 ;; corrected: (TS29.212.py#rel11-framed-ipv6-prefix-row-5b-4)
 Granted-Service-Unit                  RFC4006
 IP-CAN-Type                           TS29.212
-Logical-Access-ID                     ETSI-TS283.034
+Logical-Access-ID                     ETSI-ES283.034 ;; corrected: (TS29.212.py#logical-access-id-etsi-standard-5b-4)
 Max-Requested-Bandwidth-UL            TS29.214
 Max-Requested-Bandwidth-DL            TS29.214
 Monitoring-Key                        TS29.212
 Monitoring-Time                       TS29.212
 Mute-Notification                     TS29.212
 PCC-Rule-Status                       TS29.212
-Physical-Access-ID                    ETSI-TS283.034
+Physical-Access-ID                    ETSI-ES283.034 ;; corrected: (TS29.212.py#physical-access-id-etsi-standard-5b-4)
 QoS-Information                       TS29.212
 RAI                                   TS29.061
 RAT-Type                              TS29.212

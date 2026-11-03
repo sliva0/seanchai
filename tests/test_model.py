@@ -1636,11 +1636,10 @@ def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
         for section in entry.spec.sections
         if isinstance(section, ast.ReusedAvps)
         for row in section.rows
-        if row.origin in {"ETSI-TS283.034", "ETSI-ES283.034", "ETSI-TS183.017"}
+        if row.origin in {"ETSI-ES283.034", "ETSI-TS183.017"}
     ]
 
     assert {origin for _, _, origin in cited} == {
-        "ETSI-TS283.034",
         "ETSI-ES283.034",
         "ETSI-TS183.017",
     }
@@ -1651,7 +1650,7 @@ def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
         # A transcription that re-prints what it imports reads its own copy
         # first (ES 283 034's Reservation-Priority, TS 183 017's
         # Globally-Unique-Address).
-        assert avp.defined_in in {reference, corpus.CITED_AS.get(origin, origin)}
+        assert avp.defined_in in {reference, origin}
 
 
 @pytest.mark.parametrize("version", ["19.0.0", "11.20.0"])

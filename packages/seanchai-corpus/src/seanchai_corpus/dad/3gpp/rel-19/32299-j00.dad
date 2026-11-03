@@ -1089,8 +1089,8 @@ WLAN-Link-Layer-Id                         TS29.345                -
 ; Table: 7.4.1
 ; Page: 202
 ; Columns: Name      Code   ACR   ACA   CCR   CCA   From
-Logical-Access-ID    302    X     -     X     -     ETSI-TS283.034
-Physical-Access-ID   313    X     -     X     -     ETSI-TS283.034
+Logical-Access-ID    302    X     -     X     -     ETSI-ES283.034 ;; corrected: (TS32.299.py#logical-access-id-etsi-standard)
+Physical-Access-ID   313    X     -     X     -     ETSI-ES283.034 ;; corrected: (TS32.299.py#physical-access-id-etsi-standard)
 
 
 ; Type: Reused AVPs
