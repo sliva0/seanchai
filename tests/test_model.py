@@ -2199,7 +2199,6 @@ def test_the_committed_corpus_declares_its_twelve_undefined_names():
     }
     assert declared == {
         ("RFC4004", "MIP-HA-to-MN-SPI", "9.4", ("9.4",)),
-        ("TS29.329", "Request-Current-Status", "8.3.10", ("8.3.10",)),
         ("RFC4004", "MIP-MN-to-FA-SPI", "9.5", ("9.5",)),
         ("RFC4004", "MIP-MN-to-HA-SPI", "9.6", ("9.6",)),
         ("RFC5866", "Authorization-Session-Volume", "5.3", ("5.3", "5.5")),

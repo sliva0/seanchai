@@ -563,7 +563,7 @@ _RAW_ERRORS = {
     # Both tabulate RFC 8583's Load among their own AVPs, with no code —
     # their Load clauses define it only by reference to RFC 8583.
     "29229-j10.raw.dad": ["row-without-code"],
-    "29329-j10.raw.dad": ["duplicate-identity", "row-without-code"],
+    "29329-j10.raw.dad": ["row-without-code"],
     "29345-j00.raw.dad": [
         "duplicate-identity",
         "table-definition-mismatch",
@@ -673,8 +673,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "32299-j00": 8,
         # Only the Undefined AVP blocks, one note each: RFC 4004's three
         # SPIs, TS 29.345's ProSe-Query-Code and ProSe-Response-Code, TS
-        # 29.154's External-Group-Identifier, TS 29.329's
-        # Request-Current-Status.
+        # 29.154's External-Group-Identifier.
         "rfc4004.raw": 0,
         "rfc4004": 3,
         "rfc5866.raw": 0,
@@ -685,8 +684,6 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29345-j00": 2,
         "29154-j00.raw": 0,
         "29154-j00": 1,
-        "29329-j10.raw": 0,
-        "29329-j10": 1,
         # TS 29.234 prints no re-used table; the corrections give it one, in
         # which clause 10.1.4's SIP-Auth-Data-Item is defined here too, and
         # declare Error-Cause.
@@ -1838,18 +1835,6 @@ _STANDING_CORPUS_NOTES = {
     "29140-700.dad": {
         "cross-release-origin": ["TS29.061", "TS29.329"],
         "reused-row-mismatch": ["3GPP-IMSI"],
-    },
-    "29329-j10.dad": {
-        "registry-avp-name": ["Ims-Event-Report"],
-        "registry-command-name": [
-            "Event-Subscribe-Request",
-            "Event-Subscribe-Answer",
-            "Event-Notification-Request",
-            "Event-Notification-Answer",
-        ],
-        "registry-result-code-document": ["DIAMETER_INVALID_AVP_VALUE"],
-        "registry-result-code-name": ["DIAMETER_INVALID_AVP_VALUE"],
-        "undefined-avp": ["Request-Current-Status"],
     },
     "29330-j00.dad": {"reused-origin-indirect": ["Load"]},
     "29336-j10.dad": {
