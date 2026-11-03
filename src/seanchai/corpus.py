@@ -479,8 +479,17 @@ class Entry:
         return ast.spec_ref(self.spec.specification)
 
 
+# What one copy of a document is: its reference, its version and, for a 3GPP2
+# document, the revision its spec-ref does not keep.
+type _CopyKey = tuple[str, str | None, str | None]
+
+
 class Corpus:
-    """Parsed `.dad` files, indexed by the reference re-used rows cite."""
+    """Parsed `.dad` files, indexed by the reference re-used rows cite.
+
+    A file named twice counts once. Two files claiming one reference, version
+    and revision raise `CorpusError`.
+    """
 
     def __init__(
         self, entries: Iterable[Entry], record: HoleRecord | None = None
@@ -488,8 +497,21 @@ class Corpus:
         # None for a corpus with no record: a partial or foreign one, or raw.
         self.record = record
         self._by_reference: dict[str, list[Entry]] = {}
+        # A file reached twice is one copy; two files claiming one copy would
+        # leave `newest` and `resolve` to the order they were named in.
+        claimed: dict[_CopyKey, Path] = {}
         for entry in entries:
-            self._by_reference.setdefault(entry.reference, []).append(entry)
+            key = (entry.reference, entry.spec.version, revision(entry.spec))
+            first = claimed.get(key)
+            if first is None:
+                claimed[key] = entry.path
+                self._by_reference.setdefault(entry.reference, []).append(entry)
+            elif first.resolve() != entry.path.resolve():
+                version = "" if entry.spec.version is None else f" {entry.spec.version}"
+                raise CorpusError(
+                    f"{first} and {entry.path} are both"
+                    f" {entry.reference}{version}; give one copy"
+                )
         for candidates in self._by_reference.values():
             candidates.sort(key=lambda e: _version_key(e.spec.version), reverse=True)
 
@@ -506,9 +528,13 @@ class Corpus:
         its record, so a consumer loading the corpus gets it with no argument; a
         file list or a subdirectory has none, since a record describes the
         whole corpus it sits beside, and neither has a raw corpus, which the
-        record does not describe. Two directories holding one are refused.
+        record does not describe. Two directories holding one are refused; one
+        directory named twice is one directory.
         """
-        paths = list(paths)
+        unique: dict[Path, Path] = {}
+        for path in paths:
+            unique.setdefault(path.resolve(), path)
+        paths = list(unique.values())
         records = [
             path / HOLE_RECORD
             for path in paths

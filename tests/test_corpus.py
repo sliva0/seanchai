@@ -383,6 +383,67 @@ def test_two_records_in_one_corpus_are_refused(tmp_path):
         corpus.Corpus.load([one, two])
 
 
+def test_a_directory_named_twice_is_one_directory(tmp_path):
+    directory = _corpus_directory(tmp_path)
+    spelled = directory / "3gpp" / ".."
+
+    books = corpus.Corpus.load([directory, spelled, directory / "3gpp"])
+
+    assert len(books) == 1
+    assert books.record is not None
+
+
+def test_two_files_claiming_one_copy_are_refused_in_either_order(tmp_path):
+    (tmp_path / "one").mkdir()
+    (tmp_path / "two").mkdir()
+    text = formatter.format_spec(_spec("3GPP TS 29.229", "18.1.0"))
+    one, two = tmp_path / "one" / "a.dad", tmp_path / "two" / "b.dad"
+    one.write_text(text, encoding="utf-8")
+    two.write_text(text, encoding="utf-8")
+
+    for paths in ([one, two], [two, one]):
+        with pytest.raises(corpus.CorpusError) as raised:
+            corpus.Corpus.load(paths)
+        assert str(one) in str(raised.value) and str(two) in str(raised.value)
+        assert "TS29.229 18.1.0" in str(raised.value)
+
+
+def test_a_file_reached_through_a_symlink_is_one_copy(tmp_path):
+    (tmp_path / "real").mkdir()
+    path = tmp_path / "real" / "a.dad"
+    path.write_text(
+        formatter.format_spec(_spec("3GPP TS 29.229", "18.1.0")), encoding="utf-8"
+    )
+    (tmp_path / "link").symlink_to(tmp_path / "real")
+
+    books = corpus.Corpus.load([path, tmp_path / "link" / "a.dad"])
+
+    assert [entry.path for entry in books] == [path]
+
+
+def test_one_entry_given_twice_is_one_copy():
+    entry = _entry("3GPP TS 29.229", "18.1.0")
+
+    assert len(corpus.Corpus([entry, entry])) == 1
+
+
+def test_3gpp2_revisions_of_one_version_are_two_documents():
+    """A spec-ref keeps no revision letter, so version alone does not identify
+    a 3GPP2 copy: X.S0057-0 and -B may both print V2.0."""
+    books = corpus.Corpus([_tgpp2_entry("0"), _tgpp2_entry("B")])
+    assert len(books) == 2
+
+    twin = corpus.Entry(Path("twin.dad"), _tgpp2_entry("0").spec)
+    with pytest.raises(corpus.CorpusError, match=r"xs0057-0\.dad and twin\.dad"):
+        corpus.Corpus([_tgpp2_entry("0"), twin])
+
+
+def test_rfc_copies_conflict_without_a_version():
+    rfc = _spec("RFC 6733", None)
+    with pytest.raises(corpus.CorpusError, match="are both RFC6733; give one copy"):
+        corpus.Corpus([corpus.Entry(Path(n), rfc) for n in ("a.dad", "b.dad")])
+
+
 @pytest.mark.parametrize(
     ("record", "message"),
     [

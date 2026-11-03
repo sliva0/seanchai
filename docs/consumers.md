@@ -13,7 +13,10 @@ pip install seanchai seanchai-corpus   # or seanchai[corpus]
 `corpus.Corpus.installed()` loads the installed corpus with no path, record
 of known holes included, and `installed(raw=True)` its raw mirror. Without the
 package it raises `corpus.CorpusNotInstalledError`, naming the package.
-`corpus.Corpus.load([path])` loads any other directory.
+`corpus.Corpus.load([path])` loads any other directory. A file named twice
+counts once, and two files claiming one document, version and 3GPP2 revision
+raise `corpus.CorpusError` naming both, since which one answers would depend on
+the order they were given in.
 
 `seanchai_corpus.CORPUS_DIR` is the directory itself and
 `seanchai_corpus.__version__` the corpus's version, the date it was regenerated.

@@ -1054,17 +1054,7 @@ def crosscheck(
             else:
                 spec = parser.parse(source.read_text(encoding="utf-8"))
                 entries.append(Entry(path=source, spec=spec))
-        seen: dict[tuple[str, str | None], Path] = {}
-        for entry in entries:
-            key = (entry.reference, entry.spec.version)
-            if key in seen and seen[key] != entry.path:
-                version = f" {entry.spec.version}" if entry.spec.version else ""
-                raise click.ClickException(
-                    f"{seen[key]} and {entry.path} are both"
-                    f" {entry.reference}{version}; give one copy"
-                )
-            seen[key] = entry.path
-        books = Corpus({entry.path: entry for entry in entries}.values())
+        books = Corpus(entries)
         newest = sorted(books.newest(), key=lambda entry: entry.path.as_posix())
         checked = {entry.path for entry in newest}
         for entry in sorted(books, key=lambda entry: entry.path.as_posix()):
