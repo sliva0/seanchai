@@ -35,6 +35,9 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: false
+      # No source documents here either: nothing is published that fails these.
+      - run: uv sync --locked
+      - run: uv run pytest -m "not sources"
       - run: uv build --all-packages --no-sources
       - name: A tag names the version built
         if: github.ref_type == 'tag'
