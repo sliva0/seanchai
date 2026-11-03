@@ -695,3 +695,84 @@ def test_prose_origins_read_every_wording_rfc_5779_uses(tmp_path):
     ]
 
 
+# --- where a rule's body ends ------------------------------------------------
+
+
+def _ruled(*lines: str) -> str:
+    return (
+        "5.1.  Foo-Request (FOR) Command\n\n"
+        "   <Foo-Request> ::= < Diameter Header: 268, REQ, PXY >\n"
+        "                     < Session-Id >\n"
+        + "".join(f"                     {line}\n" if line else "\n" for line in lines)
+    )
+
+
+@pytest.mark.parametrize("elided", ["…", "..."])
+def test_an_elided_line_undeclared_fails_naming_its_quirk(tmp_path, elided):
+    with pytest.raises(ExtractionError, match="`elided-members`"):
+        _read(tmp_path, _ruled(elided, "* [ AVP ]"))
+
+
+@pytest.mark.parametrize("elided", ["…", "..."])
+def test_an_elided_line_declared_stays_a_comment_where_it_stood(tmp_path, elided):
+    """RFC 5778 clause 5.1.1, where it took nine of DER's members out."""
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(
+        _rfc(_ruled(elided, "[ Later ]", elided, "* [ AVP ]", elided)), encoding="utf-8"
+    )
+    sources = _declare(tmp_path, '[[quirk]]\nname = "elided-members"\nreason = "x"\n')
+    spec, comments = rfc_text.extract_with_comments(path, sources_dir=sources)
+    message = _of(spec, ast.Message)[0]
+    assert [rule.name for rule in message.avps] == ["Session-Id", "Later", "AVP"]
+    assert formatter.format_spec(spec, comments).splitlines()[-6:] == [
+        "        < Session-Id >",
+        f";; {elided}",
+        "        [ Later ]",
+        f";; {elided}",
+        "      * [ AVP ]",
+        f";; {elided}",
+    ]
+
+
+def test_an_elided_line_declared_and_absent_fails_like_any_quirk(tmp_path):
+    with pytest.raises(ExtractionError, match="elided-members"):
+        _read(tmp_path, _ruled("* [ AVP ]"), "elided-members")
+
+
+def test_a_line_that_is_no_member_fails_rather_than_ending_the_body(tmp_path):
+    with pytest.raises(ExtractionError, match="is no ABNF member"):
+        _read(tmp_path, _ruled("[ OC-OLR ] ]", "* [ AVP ]"))
+
+
+def test_a_member_after_the_body_ended_fails(tmp_path):
+    body = _ruled("[ First ]", "This sentence ends the body too soon.", "[ Later ]")
+    with pytest.raises(ExtractionError, match="follows the end of"):
+        _read(tmp_path, body)
+
+
+def test_a_sentence_a_blank_line_or_the_next_rule_ends_a_body(tmp_path):
+    for ending in (
+        ("This sentence ends the body.",),
+        ("", "Prose after a blank line ends it, as a word alone does:", "word"),
+        ("<Bar> ::= < Diameter Header: 269, PXY >",),
+    ):
+        spec = _read(tmp_path, _ruled("* [ AVP ]", *ending))
+        assert [r.name for r in _of(spec, ast.Message)[0].avps] == ["Session-Id", "AVP"]
+
+
+def test_a_reference_tag_alone_on_a_line_is_no_member(tmp_path):
+    spec = _read(
+        tmp_path, _ruled("* [ AVP ]", "", "A wrapped citation of", "[RFC6733]")
+    )
+    assert len(_of(spec, ast.Message)[0].avps) == 2
+
+
+def test_blank_lines_inside_a_body_are_page_break_residue(tmp_path):
+    spec = _read(tmp_path, _ruled("[ First ]", "", "", "[ Later ]"))
+    assert [r.name for r in _of(spec, ast.Message)[0].avps] == [
+        "Session-Id",
+        "First",
+        "Later",
+    ]
+
+

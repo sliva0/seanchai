@@ -37,6 +37,18 @@
         [ NAS-IPv6-Address ]
         [ NAS-Port-Type ]
         [ User-Name ]
+;; ...
+        { EAP-Payload }
+;; ...
+        [ MIP6-Feature-Vector ]
+        [ MIP6-Agent-Info ]
+     *2 [ MIP-Mobile-Node-Address ]
+        [ Chargeable-User-Identity ]
+        [ Service-Selection ]
+        [ QoS-Capability ]
+      * [ QoS-Resources ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message
@@ -56,6 +68,15 @@
         [ EAP-Master-Session-Key ]
         [ EAP-Key-Name ]
         [ Multi-Round-Time-Out ] ;; corrected: (RFC5778.py#dea-multi-round-time-out)
+;; ...
+     *2 [ MIP-Mobile-Node-Address ]
+        [ MIP6-Feature-Vector ]
+        [ MIP6-Agent-Info ]
+        [ Service-Selection ]
+      * [ QoS-Resources ]
+        [ Chargeable-User-Identity ]
+;; ...
+      * [ AVP ]
 
 
 ; Type: Message

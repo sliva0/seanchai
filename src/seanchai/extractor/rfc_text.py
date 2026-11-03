@@ -56,7 +56,7 @@ from pathlib import Path
 
 import pydantic
 
-from ..dad import abnf, ast
+from ..dad import abnf, ast, formatter
 from . import sources
 from .errors import ExtractionError, boundary
 
@@ -370,6 +370,11 @@ QUIRKS: dict[str, str] = {
     "bulleted-enum-values": (
         "read 'o  NAME (n)' list items as enum values, with what follows on the"
         " line as description (RFC 4740 clauses 9.4-9.13)"
+    ),
+    "elided-members": (
+        "keep a body's lone '…' or '...' line, where a rule leaves out what it"
+        " does not change, as a comment where it stood (RFC 5778 clauses 5.1.1,"
+        " 5.1.2)"
     ),
     "ragged-separator": (
         "accept a horizontal rule with a stray space inside it as box"
@@ -1435,15 +1440,59 @@ def _radius_attribute_table(sections: list[_DocSection]) -> ast.AvpTable | None:
     )
 
 
-def _abnf_body(texts: list[str], start: int) -> tuple[tuple[ast.AvpRule, ...], int]:
-    """Parse `[qual] bracket Name bracket` lines starting at `start`. Blank
-    lines inside the body are page-break residue and are skipped; the first
-    non-blank line that is not a rule closes the body."""
+# A line standing for members a rule leaves out, read behind `elided-members`.
+_ELIDED_LINE_RE = re.compile(r"…|\.{3}")
+# A sentence after a body: it opens on a word and runs to several, or closes as
+# sentences do; a closing bracket last is a member's.
+_BODY_SENTENCE_RE = re.compile(r"[A-Za-z]\S*(?:\s+\S+){2,}(?<![>}\]])|[A-Za-z].*[.:]")
+# What a member looks like when it cannot be read: qualifiers, then brackets. A
+# lone reference tag wrapped onto its own line of prose is no member.
+_MEMBER_SHAPE_RE = re.compile(r"(?!\[RFC\d+\])[\d\s*]*[<{\[].*[>}\]]")
+
+# The lines commented out of a body behind `elided-members`, each with the number
+# of members before it.
+type _BodyNotes = list[tuple[int, str]]
+
+
+def _abnf_body(
+    texts: list[str],
+    start: int,
+    rule: str,
+    section: str,
+    quirks: sources.Quirks | None,
+) -> tuple[tuple[ast.AvpRule, ...], int, _BodyNotes]:
+    """Parse `[qual] bracket Name bracket` lines starting at `start`, and return
+    the members, where reading stopped and the lines commented out behind
+    `elided-members`.
+
+    Blank lines inside the body are page-break residue and are skipped when
+    another member follows. A body ends at a blank line, the next rule or a
+    sentence. Any other line is a member this reading cannot hold, and fails
+    rather than taking the members after it out of the file, as RFC 5778 clause
+    5.1.1's `...` once took nine of DER's."""
     rules = []
+    notes: _BodyNotes = []
+    after_blank = False
     index = start
     while index < len(texts):
         text = texts[index].strip()
         if not text:
+            after_blank = True
+            index += 1
+            continue
+        if _ELIDED_LINE_RE.fullmatch(text):
+            # RFC 5778 clauses 5.1.1 and 5.1.2 print "..." where a rule leaves
+            # out what it does not change. It is no member, and it is what the
+            # document says of the rule, so it stays where it stood.
+            if quirks is None or not quirks.enabled("elided-members"):
+                raise ExtractionError(
+                    f"{section}: {text!r} inside {rule}'s body, which this"
+                    " document's source declaration does not read (the"
+                    " `elided-members` quirk)"
+                )
+            quirks.fire("elided-members")
+            notes.append((len(rules), text))
+            after_blank = False
             index += 1
             continue
         # Some RFC ABNF blocks carry explanatory semicolon comments between
@@ -1454,13 +1503,37 @@ def _abnf_body(texts: list[str], start: int) -> tuple[tuple[ast.AvpRule, ...], i
             continue
         match = _ABNF_LINE_RE.match(text)
         if match is None:
+            if not (after_blank or "::=" in text or _BODY_SENTENCE_RE.fullmatch(text)):
+                raise ExtractionError(
+                    f"{section}: line {text!r} inside {rule}'s body is no ABNF"
+                    " member; an input patch repairs a typo, a quirk declares a"
+                    " reading"
+                )
             break
         try:
             rules.append(abnf.avp_rule(match))
         except abnf.AbnfError as error:
             raise ExtractionError(f"{error} in {text!r}") from None
+        after_blank = False
         index += 1
-    return tuple(rules), index
+    _no_member_after(texts[index:], rule, section)
+    return tuple(rules), index, notes
+
+
+def _no_member_after(texts: list[str], rule: str, section: str) -> None:
+    """Fail on a member printed after its body ended and before the next rule,
+    whichever line ended it: the members after it would be gone."""
+    for raw in texts:
+        text = raw.strip()
+        if "::=" in text:
+            return
+        if _MEMBER_SHAPE_RE.fullmatch(text) or _ELIDED_LINE_RE.fullmatch(text):
+            raise ExtractionError(
+                f"{section}: line {text!r} follows the end of {rule}'s body and"
+                " reads as one of its members"
+            )
+
+
 
 
 def _extract_definitions(
@@ -1468,6 +1541,7 @@ def _extract_definitions(
     tables: tuple[ast.AvpTable, ...],
     warnings: list[str],
     quirks: sources.Quirks | None = None,
+    commented: list[tuple[ast.Message | ast.GroupedAvp, _BodyNotes]] | None = None,
 ) -> tuple[list[ast.Message], list[ast.GroupedAvp | ast.EnumeratedAvp]]:
     """Messages, grouped and enumerated AVPs from the definition sections.
 
@@ -1518,25 +1592,28 @@ def _extract_definitions(
                     code, flags, application_id = abnf.diameter_header(header["items"])
                 except abnf.AbnfError as error:
                     raise ExtractionError(f"{section.number}: {error}") from None
-                avps, index = _abnf_body(section.texts, index)
-                messages.append(
-                    ast.Message(
-                        # The heading holds the long name, the rule the
-                        # abbreviation — the reverse of a 3GPP heading, which
-                        # prints both in "Name (ABBR) Command" form.
-                        name=definition_name,
-                        abbreviation=(
-                            command_title["abbreviation"]
-                            if command_title is not None
-                            else _message_abbreviation(section, header["name"])
-                        ),
-                        source=source,
-                        command_code=code,
-                        flags=flags,
-                        application_id=application_id,
-                        avps=avps,
-                    )
+                avps, index, notes = _abnf_body(
+                    section.texts, index, header["name"], section.number, quirks
                 )
+                message = ast.Message(
+                    # The heading holds the long name, the rule the
+                    # abbreviation — the reverse of a 3GPP heading, which
+                    # prints both in "Name (ABBR) Command" form.
+                    name=definition_name,
+                    abbreviation=(
+                        command_title["abbreviation"]
+                        if command_title is not None
+                        else _message_abbreviation(section, header["name"])
+                    ),
+                    source=source,
+                    command_code=code,
+                    flags=flags,
+                    application_id=application_id,
+                    avps=avps,
+                )
+                messages.append(message)
+                if notes and commented is not None:
+                    commented.append((message, notes))
             else:
                 if title is None:
                     raise ExtractionError(
@@ -1553,16 +1630,19 @@ def _extract_definitions(
                         f" != rule name {header['name']!r}, using the rule name"
                     )
                 vendor = header["vendor"]
-                avps, index = _abnf_body(section.texts, index)
-                definitions.append(
-                    ast.GroupedAvp(
-                        name=header["name"],
-                        source=source,
-                        code=int(header["code"]),
-                        vendor_id=None if vendor is None else int(vendor),
-                        avps=avps,
-                    )
+                avps, index, notes = _abnf_body(
+                    section.texts, index, header["name"], section.number, quirks
                 )
+                grouped = ast.GroupedAvp(
+                    name=header["name"],
+                    source=source,
+                    code=int(header["code"]),
+                    vendor_id=None if vendor is None else int(vendor),
+                    avps=avps,
+                )
+                definitions.append(grouped)
+                if notes and commented is not None:
+                    commented.append((grouped, notes))
         if command_title is not None:
             continue
         assert title is not None
@@ -2015,7 +2095,34 @@ def extract(
     warnings: list[str] | None = None,
     sources_dir: Path | None = None,
 ) -> ast.Specification:
-    """Extract a `Specification` from an RFC's plain-text rendering.
+    """`extract_with_comments`'s tree alone: lines commented out behind
+    `elided-members` are not in it."""
+    return extract_with_comments(text_path, link, warnings, sources_dir)[0]
+
+
+def _comments(
+    sections: tuple[ast.Section, ...],
+    commented: list[tuple[ast.Message | ast.GroupedAvp, _BodyNotes]],
+) -> formatter.Comments:
+    """The commented-out lines, keyed by the path of what follows each: the
+    member after it in its body, or the body's end. A body is found by identity,
+    since it is the very object the file holds."""
+    standing: dict[ast.TreePath, list[str]] = {}
+    for body, notes in commented:
+        index = next(index for index, section in enumerate(sections) if section is body)
+        for position, note in notes:
+            standing.setdefault(("sections", index, "avps", position), []).append(note)
+    return formatter.Comments(standing=standing)
+
+
+def extract_with_comments(
+    text_path: Path | str,
+    link: str | None = None,
+    warnings: list[str] | None = None,
+    sources_dir: Path | None = None,
+) -> tuple[ast.Specification, formatter.Comments]:
+    """Extract a `Specification` from an RFC's plain-text rendering, with the
+    `;;` lines the file prints beside the tree, as `format_spec` takes them.
 
     `; Page:` numbers are the RFC's own printed pages — the text is its sole
     rendering, so there is no separate PDF step. When `sources_dir` is given,
@@ -2133,8 +2240,9 @@ def extract(
                     )
                 )
             tables = tuple(completed)
+        commented: list[tuple[ast.Message | ast.GroupedAvp, _BodyNotes]] = []
         messages, definitions = _extract_definitions(
-            document_sections, tables, warnings, quirks
+            document_sections, tables, warnings, quirks, commented
         )
         reused = (
             _prose_avp_origins(document_sections, tables, quirks)
@@ -2147,7 +2255,15 @@ def extract(
         definitions.sort(
             key=lambda definition: ast.section_sort_key(definition.source.section)
         )
-        return ast.Specification(
+        file_sections: tuple[ast.Section, ...] = (
+            *messages,
+            *tables,
+            *moved,
+            *noted,
+            *reused,
+            *definitions,
+        )
+        spec = ast.Specification(
             specification=specification,
             version=None,
             vendor_id=IETF_VENDOR,
@@ -2156,12 +2272,6 @@ def extract(
             if ast.spec_ref(specification) == ast.BASE_PROTOCOL
             else (ast.BASE_PROTOCOL,),
             link=None if link is None else pydantic.HttpUrl(link),
-            sections=(
-                *messages,
-                *tables,
-                *moved,
-                *noted,
-                *reused,
-                *definitions,
-            ),
+            sections=file_sections,
         )
+        return spec, _comments(file_sections, commented)

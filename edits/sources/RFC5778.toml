@@ -24,3 +24,10 @@ reason = """
     a 'Token | Value | Description' table ('MIP6_AUTH_MN_AAA | 1 | RFC 5778'),
     and its policy reserves 'The value 0 (zero)'
     """
+
+[[quirk]]
+name = "elided-members"
+reason = """
+    clauses 5.1.1 and 5.1.2 print '...' between DER's and DEA's members, where
+    each extends RFC 4072's rule and leaves out what it does not change
+    """
