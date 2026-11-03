@@ -1,0 +1,56 @@
+# Source declarations for RFC 6736 (Diameter NAT Control Application).
+
+[[quirk]]
+name = "type-short-forms"
+reason = "tables 1, 4 and 5 print DiamIdent, as RFC 6733's own table does"
+
+[[quirk]]
+name = "reused-avp-tables"
+reason = """
+    clauses 8.1 and 8.3 to 8.6 tabulate 'the AVPs reused from' RFC 6733, RFC
+    4005, RFC 4675, RFC 5777 and ETSI ES 283 034; only clause 8.7's table
+    defines this document's own
+    """
+
+[[quirk]]
+name = "parenthesized-enum-values"
+reason = "clauses 8.7.1, 8.7.10 and 9.2.2 print 'INITIAL_REQUEST (1)'"
+
+[[patch]]
+find = "[ Logical-Access-Id ]"
+replace = "[ Logical-Access-ID ]"
+section = "6.1"
+reason = """
+    case only: ETSI ES 283 034, the origin clause 8.6 cites, names it
+    Logical-Access-ID, as this document's own prose spells Physical-Access-ID
+    """
+
+[[patch]]
+find = "|Logical-Access-Id          302"
+replace = "|Logical-Access-ID          302"
+section = "8.6"
+reason = """
+    case only: table 5 re-uses ETSI ES 283 034's Logical-Access-ID, code 302
+    """
+
+[[patch]]
+find = "[ EGRESS-VLANID]"
+replace = "[ Egress-VLANID]"
+section = "6.1"
+reason = """
+    case only: table 3 prints the AVP the NCR body lists as Egress-VLANID
+    """
+
+[[patch]]
+find = "[ NAS-Port-ID]"
+replace = "[ NAS-Port-Id]"
+section = "6.1"
+reason = "case only: table 2 prints the AVP the NCR body lists as NAS-Port-Id"
+
+[[patch]]
+find = "[ Calling-Station-ID ]"
+replace = "[ Calling-Station-Id ]"
+section = "6.1"
+reason = """
+    case only: table 2 prints the AVP the NCR body lists as Calling-Station-Id
+    """

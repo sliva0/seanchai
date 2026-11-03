@@ -55,6 +55,16 @@ reason = """
     """
 
 [[hole]]
+document = "RFC6736"
+name = "Egress-VLANID"
+missing = ["definition"]
+reason = """
+    clause 8.4's table 3 re-uses it from RFC 4675 with code 56, type OctetString
+    and flag rules; RFC 4675 is a RADIUS document, which the corpus does not
+    hold and which defines the attribute for no Diameter reading
+    """
+
+[[hole]]
 document = "TS29.061"
 name = "Delegated-IPv6-Prefix"
 missing = ["undefined"]

@@ -4949,6 +4949,17 @@
    "renames": [],
    "version": null
   },
+  "rfc6736": {
+   "edits": {
+    "RFC6736.py#application-id": {
+     "kind": "insert",
+     "reason": "clause 8.1 says 'The value of the Auth-Application-Id for the Diameter NAT Control Application is 12' and clause 11.1 records IANA's allocation; clause 6 prints NCR and NCA with no id in their headers"
+    }
+   },
+   "reference": "RFC6736",
+   "renames": [],
+   "version": null
+  },
   "rfc6737": {
    "edits": {
     "RFC6737.py#application-id": {
