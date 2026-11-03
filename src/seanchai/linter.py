@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import dataclasses
 import enum
+import re
 from collections import defaultdict
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -930,6 +931,109 @@ def _undefined_avps(index: _Index) -> list[Finding]:
     return findings
 
 
+def _with_parents(clause: str) -> set[str]:
+    """`clause` and every clause above it: 5.3.81, 5.3 and 5."""
+    parts = clause.split(".")
+    return {".".join(parts[:count]) for count in range(1, len(parts) + 1)}
+
+
+# A `; Values:` naming a clause and no document, so a clause of this one:
+# oneM2M TS-0004 clause A.5.25's "clause 6.6.3".
+_OWN_CLAUSE = re.compile(r"^(?:clause|section) (\S+)$", re.IGNORECASE)
+
+
+def _section_references(spec: ast.Specification, index: _Index) -> list[Finding]:
+    """A clause the file cites against the clauses the file holds.
+
+    `section-mismatch`: a row citing a clause for an AVP a block here holds
+    elsewhere. TS 29.214 V19.3.0's table 5.3.0.1 cites 5.3.142 for
+    `PC-Session-Recovery-Status`, which clause 5.3.81 defines and no 5.3.142
+    exists. A definition, a re-print and a bit table are what hold an AVP, and
+    a row may cite any of them or a clause above one, as a table may. A result
+    code or feature table is not: TS 29.229 tabulates `Feature-List` at its
+    clause 6.3.31 and lists the features in clause 7.1.1, both as they should.
+
+    `section-unknown`: an `; Applies-To:` or a `; Values:` naming a clause no
+    block sits at or under, each a sentence about a clause in particular.
+
+    A row whose AVP no block holds is not checked. A simple-typed AVP has no
+    block, so its clause is absent from any file: against the documents' own
+    headings, the 1249 of 2257 citations such a check reports held one wrong,
+    `PC-Session-Recovery-Status`, which the first rule finds anyway. A re-used
+    row, a registry row and `; From:` cite documents and no clause.
+
+    Notes: a file holds what its document prints, so a misprint stays, and a
+    clause may exist that the file has no block for.
+    """
+    known: set[str] = set()
+    holding: dict[str, list[str]] = defaultdict(list)
+    for section in spec.sections:
+        known |= _with_parents(section.source.section)
+        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp | ast.ReprintedAvp):
+            holding[section.name].append(section.source.section)
+        elif isinstance(section, ast.ValueTable):
+            known.update(
+                clause
+                for row in section.rows
+                if row.section is not None
+                for clause in _with_parents(row.section)
+            )
+            if section.kind is ast.ValueKind.BITS:
+                holding[section.avp].append(section.source.section)
+    findings = []
+    for table in index.tables:
+        for row in table.rows:
+            cited, held = row.section, holding.get(row.name)
+            if (
+                cited is None
+                or held is None
+                or any(cited in _with_parents(clause) for clause in held)
+            ):
+                continue
+            absent = "" if cited in known else f", and nothing at clause {cited}"
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "section-mismatch",
+                    f"{row.name} is cited at clause {cited} in"
+                    f" {_table_labels([table])}, but the file holds it at"
+                    f" {_clauses(list(dict.fromkeys(held)))}{absent}",
+                    table.source.section,
+                    paths=(index.path(row),),
+                )
+            )
+    for block in index.applications:
+        for entry in block.applies_to:
+            clause = entry.removesuffix(".*")
+            if clause not in known:
+                findings.append(
+                    Finding(
+                        Severity.NOTE,
+                        "section-unknown",
+                        f"{block.name} applies to clause {entry}, under which the"
+                        " file holds no block",
+                        block.source.section,
+                        paths=(index.path(block),),
+                    )
+                )
+    for definition in index.definitions:
+        if not isinstance(definition, ast.EnumeratedAvp):
+            continue
+        cited = _OWN_CLAUSE.match(definition.values_source or "")
+        if cited is not None and cited[1] not in known:
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "section-unknown",
+                    f"{definition.name}'s values are cited from clause {cited[1]},"
+                    " where the file holds no block",
+                    definition.source.section,
+                    paths=(index.path(definition),),
+                )
+            )
+    return findings
+
+
 def _reservation_label(reservation: ast.RegistryReservation) -> str:
     purpose = "" if reservation.purpose is None else f" for {reservation.purpose!r}"
     return f"{reservation.first}..{reservation.last} (reserved{purpose})"
@@ -1020,6 +1124,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_members_marked_unused(spec),
         *_registry_overlaps(spec),
         *_undefined_avps(index),
+        *_section_references(spec, index),
     ]
     return _ordered(findings)
 
