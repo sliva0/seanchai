@@ -400,6 +400,57 @@ def test_a_row_forbidding_v_is_compared_in_ietf_space():
     assert "vendor 10415, code 110" in finding.message
 
 
+def _full_table(row):
+    return ast.AvpTable(
+        table="6.3.1",
+        columns=(
+            ast.AvpColumn.NAME,
+            ast.AvpColumn.CODE,
+            ast.AvpColumn.SECTION,
+            ast.AvpColumn.TYPE,
+            ast.AvpColumn.MUST,
+            ast.AvpColumn.MUST_NOT,
+            ast.AvpColumn.ENCRYPT,
+        ),
+        source=ast.SourceRef(section="6.3"),
+        rows=(row,),
+    )
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        ast.AvpTableRow(
+            name="Load",
+            section="6.3.68",
+            flag_rules=ast.AvpFlagRules(must_not=frozenset({ast.AvpFlag.MANDATORY})),
+        ),
+        ast.AvpTableRow(name="Sealed", section="6.3.69", may_encrypt=False),
+        ast.AvpTableRow(name="AVP"),
+    ],
+    ids=lambda row: row.name,
+)
+def test_a_code_less_row_stating_flags_or_no_clause_is_an_error(row):
+    (finding,) = linter.lint(_spec(_full_table(row)))
+
+    assert (finding.severity, finding.rule) == (
+        linter.Severity.ERROR,
+        "row-without-code",
+    )
+
+
+def test_a_code_less_row_stating_only_its_clause_is_a_note():
+    row = ast.AvpTableRow(name="Thing", section="6.3.43")
+
+    (finding,) = linter.lint(_spec(_full_table(row)))
+
+    assert (finding.severity, finding.rule) == (
+        linter.Severity.NOTE,
+        "row-without-code",
+    )
+    assert finding.section == "6.3.43"
+
+
 def test_two_tables_disagreeing_on_a_code_is_an_error():
     """A row with no clause behind it is only caught here: neither code
     collides with anything, so `duplicate-identity` stays silent."""

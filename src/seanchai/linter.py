@@ -413,6 +413,11 @@ def _rows_without_codes(index: _Index) -> list[Finding]:
     declare a Code column are checked: RFC 7155's tables carry no such
     column at all, which is a statement about the document's layout rather
     than about any one AVP.
+
+    A row with a clause and no code, flag or Encrypt cell is no such slip but
+    the whole of what its clause states, inserted for a table omitting the
+    AVP: TS 29.229's `Wildcarded-IMPU`, clause 6.3.43. The file cannot give
+    the code it does not state, so that is a note, and the model's hole.
     """
     findings = []
     for table in index.tables:
@@ -420,6 +425,20 @@ def _rows_without_codes(index: _Index) -> list[Finding]:
             continue
         for row in table.rows:
             if row.code is not None:
+                continue
+            flags = row.flag_rules
+            placed = flags.must | flags.may | flags.should_not | flags.must_not
+            if row.section is not None and not placed and row.may_encrypt is None:
+                findings.append(
+                    Finding(
+                        Severity.NOTE,
+                        "row-without-code",
+                        f"{row.name} is tabulated with no AVP code: clause"
+                        f" {row.section} states none, so it has no wire identity"
+                        " in this document",
+                        row.section,
+                    )
+                )
                 continue
             findings.append(
                 Finding(

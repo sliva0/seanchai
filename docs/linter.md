@@ -37,7 +37,8 @@ acknowledges as an override its document states on purpose
   error: a value is named, left to vendors, or illegal, never two of them.
 - `duplicate-identity`: two AVPs claiming one `(vendor-id, code)`.
 - `row-without-code`: a table that declares a Code column printing a row
-  without one.
+  without one. A note where the row has a clause and no flag or Encrypt cell,
+  the whole of what its clause states (TS 29.229's `Wildcarded-IMPU`).
 - `table-definition-mismatch`: a row disagreeing with the local clause that
   defines the same AVP, on code or type.
 - `table-row-mismatch`: one AVP printed in two of the file's AVP tables
