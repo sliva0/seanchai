@@ -159,18 +159,6 @@ reason = """
     """
 
 [[hole]]
-document = "TS29.329"
-name = "Request-Current-Status"
-missing = ["undefined"]
-reason = """
-    a member of Event-List (clause 8.3.10) no clause defines and table 8.3.1
-    does not list, in V19.1.0, which adds the Sh-ee application; TS 29.230
-    V19.3.0 allocates no such name, and neither Wireshark's dictionary nor any
-    other document here defines it
-    (TS29.329.py#undefined-request-current-status)
-    """
-
-[[hole]]
 document = "TS29.345"
 name = "ProSe-Query-Code"
 missing = ["undefined"]
