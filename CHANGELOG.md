@@ -33,3 +33,7 @@ Nothing has been published to PyPI yet.
   --specifications` and `--dictionary` given a missing path exit 1 saying so,
   and `export --include-pdfs` without `--specifications` is a usage error.
 - Help shows every default the same way.
+- `seanchai export` writes `syntax/dad.tmLanguage.json`, and each entry of a
+  document's `sections` has a `title` and runs in document order;
+  `SCHEMA_VERSION` is 3. The grammar's source moved to
+  `src/seanchai/dad/syntax/`, with `editors/vscode/` holding a copy.

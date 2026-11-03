@@ -36,6 +36,7 @@ with tempfile.TemporaryDirectory() as scratch:
     output = Path(scratch) / "export"
     export.export_corpus(corpus.Corpus.load([seanchai_corpus.CORPUS_DIR]), output)
     document = json.loads((output / "documents" / "29229-i10.json").read_text("utf-8"))
+    assert (output / "syntax" / "dad.tmLanguage.json").is_file()
 reasons = document["corrections"]
 assert reasons, "the installed corpus lost its corrections record"
 assert all(item["reason"] for item in reasons.values()), reasons

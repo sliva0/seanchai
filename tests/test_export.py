@@ -17,7 +17,7 @@ from conftest import _CORPUS_DIR
 from seanchai import export_schema
 from seanchai.cli import main
 from seanchai.corpus import Corpus, CorpusError
-from seanchai.export import export_corpus
+from seanchai.export import SYNTAX_FILE, export_corpus
 from seanchai.model import Model, ModelError
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -550,6 +550,8 @@ def test_the_files_are_split_as_their_pages_need_them(exported):
 
 def test_every_file_is_compact_sorted_and_says_its_schema_version(exported):
     for name, data in _tree(exported.path).items():
+        if name == SYNTAX_FILE:  # The editors' grammar, as it stands.
+            continue
         text = data.decode("utf-8")
         value = json.loads(text)
         compact = json.dumps(
@@ -558,6 +560,74 @@ def test_every_file_is_compact_sorted_and_says_its_schema_version(exported):
         assert text == compact + "\n", name
         if name != "schema.json":
             assert value["schema_version"] == export_schema.SCHEMA_VERSION
+
+
+def test_the_export_carries_the_grammar_the_editors_use(exported):
+    source = ROOT / "src" / "seanchai" / "dad" / "syntax" / "dad.tmLanguage.json"
+
+    assert SYNTAX_FILE == "syntax/dad.tmLanguage.json"
+    assert (exported.path / SYNTAX_FILE).read_bytes() == source.read_bytes()
+    assert json.loads(source.read_bytes())["scopeName"] == "source.dad"
+
+
+def test_the_editors_copy_of_the_grammar_is_the_package_data():
+    """`src/seanchai/dad/syntax/` is the source (editors/README.md): copy it."""
+    source = ROOT / "src" / "seanchai" / "dad" / "syntax" / "dad.tmLanguage.json"
+    copy = ROOT / "editors" / "vscode" / "syntaxes" / "dad.tmLanguage.json"
+
+    assert copy.read_bytes() == source.read_bytes()
+
+
+def test_each_section_says_what_the_file_places_there(exported):
+    def titled(document: str, clause: str) -> str:
+        sections = exported.docs[document]["sections"]
+        (found,) = (each for each in sections if each["section"] == clause)
+        return found["title"]
+
+    assert titled("29229-i10", "6.1.1") == "Message User-Authorization-Request"
+    assert titled("29229-i10", "6.3.0") == "AVP Table, Reused AVPs"
+    assert titled("29229-i10", "6.3.4") == "Grouped AVP Server-Capabilities"
+    # One kind named once: four registries, and one message printed twice.
+    assert titled("29230-i60", "5.1") == "Registry"
+    assert titled("29272-i70", "7.2.9") == "Message Insert-Subscriber-Data-Request"
+    for doc in exported.docs.values():
+        assert all(each["title"] for each in doc["sections"]), doc["id"]
+
+
+def test_a_clause_only_table_rows_name_takes_its_first_rows_name(exported):
+    def titled(document: str, clause: str) -> str:
+        sections = exported.docs[document]["sections"]
+        (found,) = (each for each in sections if each["section"] == clause)
+        return found["title"]
+
+    assert titled("29229-i10", "6.3.75") == "AVP PCSCF-FQDN"
+    assert titled("29061-i10", "16.4.7") == "AVP 3GPP-IMSI and 37 more"
+
+
+def test_sections_run_in_document_order(exported):
+    from seanchai.dad.ast import section_sort_key
+
+    for doc in exported.docs.values():
+        clauses = [each["section"] for each in doc["sections"]]
+        assert clauses == sorted(clauses, key=section_sort_key), doc["id"]
+        assert len(clauses) == len(set(clauses)), doc["id"]
+
+
+def test_section_order_is_natural():
+    from seanchai.dad.ast import section_sort_key
+
+    clauses = ["E.6.3.6", "6.3.10", "6.3.7A", "6.3.4", "6.3.7", "A.1", "5a", "5.1"]
+
+    assert sorted(clauses, key=section_sort_key) == [
+        "5.1",
+        "5a",
+        "6.3.4",
+        "6.3.7",
+        "6.3.7A",
+        "6.3.10",
+        "A.1",
+        "E.6.3.6",
+    ]
 
 
 def test_every_file_validates_against_its_model(exported):

@@ -37,36 +37,46 @@ DIR/
   index.json              versions, mode, and every document's summary
   search.json             search entries and line mentions, for the search page
   schema.json             JSON Schema of the other files
+  syntax/dad.tmLanguage.json   the editors' TextMate grammar, for highlighting
   documents/<id>.json     one corrected file and what its page shows
   documents/<id>.raw.json its raw mirror, for the raw view
   sources/                RFC texts and, self-hosted, the source PDFs
 ```
 
 `<id>` is the file's stem, `29272-i70`. The files are compact JSON with sorted
-keys. `seanchai.export_schema` holds their shape as pydantic models and
-`SCHEMA_VERSION`, now 2, written into every file but `schema.json`; it changes
-when a reader would have to. A fixture can be validated against `schema.json`,
-whose root is one of the four file shapes. A field with no default is always
-written, null where it says nothing; the mostly empty `Token`, `Line`, `Target`
-and `Citation` fields are left out while they hold their default.
+keys, the grammar aside, which is copied as it stands. `seanchai.export_schema`
+holds their shape as pydantic models and `SCHEMA_VERSION`, now 3, written into
+every file but `schema.json` and the grammar; it changes when a reader would
+have to. A fixture can be validated against `schema.json`, whose root is one of
+the four file shapes. A field with no default is always written, null where it
+says nothing; the mostly empty `Token`, `Line`, `Target` and `Citation` fields
+are left out while they hold their default.
 
 `index.json` also carries `seanchai_version` and `corpus_version`, the second
 null for a corpus other than the installed one. There are no timestamps: the
 same inputs give the same bytes under any hash seed.
 
-A document carries the file's text split into tokens, its holes with their
-recorded reasons, the linter's findings and accepted notes, each correction's
-kind and reason by citation, and its source. `source.kind` is `etsi-pdf`,
-`rfc-text` or `other`, so the client need not infer what it can open.
+A document carries the file's text split into tokens, its `sections` for a table
+of contents, its holes with their recorded reasons, the linter's findings and
+accepted notes, each correction's kind and reason by citation, and its source.
+`source.kind` is `etsi-pdf`, `rfc-text` or `other`, so the client need not infer
+what it can open.
 
-A token holds its text, and every token joined gives the file, byte for byte.
-It holds what a link needs: `target` (document, section, and for a re-used row's
+An entry of `sections` holds `section`, `page` and `title`, in document order
+(6.3.4, 6.3.7A, 6.3.10, then annexes). The title is what the file places in the
+clause: its `; Type:` and `; Name:`, as "Message User-Data-Request", "AVP Table"
+or "Grouped AVP Server-Capabilities". Several blocks name each kind once, and a
+clause only table rows name reads "AVP PCSCF-FQDN" or "AVP 3GPP-IMSI and 37
+more".
+
+A token holds its text, and every token joined gives the file, byte for byte. It
+holds what a link needs: `target` (document, section, and for a re-used row's
 origin the AVP's `name`) from `Model.resolve`, re-used names and cross-release
 citations included; `source` (section, page) for a link into the source; `avp`;
-and `correction`, a note's citation. `kind` marks the one thing the client
-needs structurally: `comment` for a `;;` comment, `correction-note` for one
-citing a declaration. Highlighting is not in the export: the site runs the
-TextMate grammar in `editors/`, so it cannot disagree with the editors. A line
+and `correction`, a note's citation. `kind` marks the one thing the client needs
+structurally: `comment` for a `;;` comment, `correction-note` for one citing a
+declaration. Highlighting is not in the tokens: the site runs the export's
+`syntax/dad.tmLanguage.json`, so it cannot disagree with the editors. A line
 holds `anchor`, the clause it is the link target of, `section`, and `warning` on
 a raw line the corrected file changes.
 
@@ -99,7 +109,8 @@ the export as input. Static hosting as a single-page app with hash routes,
 or prerendered per document for shareable deep links; prerendering is
 preferred once it is cheap.
 
-- **Document page.** The `.dad` text verbatim, highlighted with the grammar.
+- **Document page.** The `.dad` text verbatim, highlighted with the export's
+  grammar.
   Names link to their definition, in this file or another. A
   `; Section:` and a `; Page:` link into the source as the deployment mode
   allows. A `;; corrected:` note expands the correction's reason inline.

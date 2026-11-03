@@ -150,6 +150,7 @@ def test_the_library_wheel_holds_the_library_and_no_data(dist):
 
     assert files == expected
     assert "seanchai/downloader/specs.toml" in files
+    assert "seanchai/dad/syntax/dad.tmLanguage.json" in files
     assert not any(name.endswith(".dad") for name in files)
 
 

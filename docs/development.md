@@ -30,7 +30,8 @@ extra.
 
 ## Repository layout
 
-- `src/seanchai/`: `dad/` (AST, parser, formatter, corrections), `extractor/`,
+- `src/seanchai/`: `dad/` (AST, parser, formatter, corrections, the TextMate
+  grammar under `syntax/`), `extractor/`,
   `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`, `oracle.py`,
   `corpus.py`, `model.py`, `correction_record.py`, `export.py`,
   `export_schema.py`, `dictionary.py`, `errors.py`, `cli.py`.
