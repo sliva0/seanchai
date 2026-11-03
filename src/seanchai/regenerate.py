@@ -559,7 +559,10 @@ def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
         if match := _ETSI_STEM_RE.match(path.stem):
             code = "".join(f"{int(part):02d}" for part in version["value"].split("."))
             tree = "etsi"
-            stem = f"{match['kind'].lower()}{match['series']}{match['number']}-{code}"
+            # A part keeps ETSI's own run of digits: ts_18305901v020101p.pdf.
+            part = f"{int(match['part']):02d}" if match["part"] else ""
+            number = f"{match['series']}{match['number']}{part}"
+            stem = f"{match['kind'].lower()}{number}-{code}"
         elif match := _TGPP2_STEM_RE.match(path.stem):
             tree = "3gpp2"
             stem = _tgpp2_stem(path, text, match["number"], version["value"])
@@ -600,7 +603,7 @@ def _tgpp2_stem(path: Path, text: str, number: str, version: str) -> str:
 
 
 _ETSI_STEM_RE = re.compile(
-    r"^ETSI-(?P<kind>TS|ES)(?P<series>\d{3})\.(?P<number>\d{3})$"
+    r"^ETSI-(?P<kind>TS|ES)(?P<series>\d{3})\.(?P<number>\d{3})(?:-(?P<part>\d+))?$"
 )
 _TGPP2_STEM_RE = re.compile(r"^3GPP2-(?P<number>[A-Z]\.[A-Z]\d{4}(?:-\d{3})?)$")
 _VERSION_LINE_RE = re.compile(r"^; Version: (?P<value>[0-9.]+)$", re.MULTILINE)
