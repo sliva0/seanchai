@@ -76,7 +76,8 @@ _TITLE_RE = re.compile(r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)(?P<avp_suffix> AVP
 # immediately before the ABNF instead.
 _COMMAND_TITLE_RE = re.compile(
     r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)"
-    r"\s+\((?P<abbreviation>[A-Z]{2,5})\)(?: Command)?$"
+    # RFC 6738 clause 5.1's IKESKR is six letters.
+    r"\s+\((?P<abbreviation>[A-Z]{2,6})\)(?: Command)?$"
 )
 _AVP_TITLE_WITH_ABBR_RE = re.compile(
     r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)(?P<avp_suffix> AVP)"
@@ -1603,17 +1604,17 @@ def _values_source(section: _DocSection, quirks: sources.Quirks) -> str | None:
 
 
 def _message_abbreviation(section: _DocSection, rule_name: str) -> str:
-    """Find the 2-5 letter command abbreviation for a plain command title.
+    """Find the 2-6 letter command abbreviation for a plain command title.
 
     Base-protocol RFCs put the abbreviation on the left-hand side of the rule
     (``<CER> ::=``).  Application RFCs commonly put the long name there and
     introduce ``(DER)`` or ``(MIR)`` in the prose above it.
     """
-    if re.fullmatch(r"[A-Z]{2,5}", rule_name):
+    if re.fullmatch(r"[A-Z]{2,6}", rule_name):
         return rule_name
     name = re.escape(section.title)
     prose = " ".join(text.strip() for text in section.texts)
-    if match := re.search(rf"\b{name}\s+\((?P<abbr>[A-Z]{{2,5}})\)", prose):
+    if match := re.search(rf"\b{name}\s+\((?P<abbr>[A-Z]{{2,6}})\)", prose):
         return match["abbr"]
     raise ExtractionError(
         f"{section.number}: cannot find an abbreviation for command {section.title!r}"

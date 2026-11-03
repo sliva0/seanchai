@@ -129,7 +129,7 @@ message       = "; Type: Message" NL
                 source-ref
                 message-rule NL
                 *(avp-rule NL)
-abbreviation  = 2*5(%x41-5A)
+abbreviation  = 2*6(%x41-5A)
 message-rule  = "<" avp-name "> ::= < Diameter Header: " header-items " >"
 header-items  = command-code *(", " command-flag) [", " application-id]
 command-code  = 1*DIGIT                 ; < 2^24

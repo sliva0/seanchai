@@ -364,3 +364,31 @@ def test_a_registry_value_its_clause_does_not_name_is_an_error(tmp_path):
 
     with pytest.raises(ExtractionError, match="'NO_ECHO' is not named"):
         rfc_text.extract(path, sources_dir=sources)
+
+
+# --- document shapes the corpus's later RFCs print ---------------------------
+
+
+def _read(tmp_path, body: str, *quirks: str, warnings: list[str] | None = None):
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(_rfc(body), encoding="utf-8")
+    declarations = "".join(f'[[quirk]]\nname = "{q}"\nreason = "x"\n' for q in quirks)
+    sources = _declare(tmp_path, declarations) if quirks else None
+    return rfc_text.extract(path, sources_dir=sources, warnings=warnings)
+
+
+def _of[T](spec: ast.Specification, kind: type[T]) -> list[T]:
+    return [section for section in spec.sections if isinstance(section, kind)]
+
+
+def test_a_six_letter_abbreviation_titles_a_command(tmp_path):
+    """RFC 6738 clause 5.1's IKESKR."""
+    spec = _read(
+        tmp_path,
+        "5.1.  IKEv2-SK-Request (IKESKR) Command\n\n"
+        "      <IKEv2-SK-Request> ::= < Diameter Header: 329, REQ, PXY >\n"
+        "                             < Session-Id >\n",
+    )
+    assert _of(spec, ast.Message)[0].abbreviation == "IKESKR"
+
+
