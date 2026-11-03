@@ -804,7 +804,8 @@ def _doc_sections(lines: list[_Line], headings: dict[str, _Line]) -> list[_DocSe
 
 
 _SIMPLE_TABLE_HEADER_RE = re.compile(
-    r"\|\s*Attribute Name\s+(?:AVP\s+)?Code\s+Defined\s+Data Type\s*\|",
+    # RFC 5624 clause 5.1 heads the name column "AVP Name".
+    r"\|\s*(?:Attribute|AVP) Name\s+(?:AVP\s+)?Code\s+Defined\s+Data Type\s*\|",
     re.IGNORECASE,
 )
 
@@ -814,8 +815,8 @@ def _simple_avp_tables(
 ) -> tuple[ast.AvpTable, ...]:
     """Read IANA-style AVP allocation tables that have no flag columns.
 
-    RFC 5777 prints one wide pipe-delimited table with Name, Code, Section,
-    and Data Type.  It is every bit as authoritative as an application AVP
+    RFC 5777 and RFC 5624 print one wide pipe-delimited table with Name, Code,
+    Section, and Data Type.  It is every bit as authoritative as an application AVP
     flag table; it simply has fewer columns.
     """
     tables: list[ast.AvpTable] = []

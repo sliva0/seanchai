@@ -1,0 +1,43 @@
+; Specification: RFC 5624
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc5624.txt
+
+
+; Type: AVP Table
+; Section: 5.1
+; Page: 7
+; Columns: Name        Code   Section   Type
+TMOD-1                 495    3.1       Grouped
+Token-Rate             496    3.1.1     Float32
+Bucket-Depth           497    3.1.2     Float32
+Peak-Traffic-Rate      498    3.1.3     Float32
+Minimum-Policed-Unit   499    3.1.4     Unsigned32
+Maximum-Packet-Size    500    3.1.5     Unsigned32
+TMOD-2                 501    3.2       Grouped
+Bandwidth              502    3.3       Float32
+PHB-Class              503    3.4       Unsigned32
+
+
+; Type: Grouped AVP
+; Name: TMOD-1
+; Section: 3.1
+; Page: 4
+TMOD-1 ::= < AVP header: 495 >
+        { Token-Rate }
+        { Bucket-Depth }
+        { Peak-Traffic-Rate }
+        { Minimum-Policed-Unit }
+        { Maximum-Packet-Size }
+
+
+; Type: Grouped AVP
+; Name: TMOD-2
+; Section: 3.2
+; Page: 4
+TMOD-2 ::= < AVP header: 501 >
+        { Token-Rate }
+        { Bucket-Depth }
+        { Peak-Traffic-Rate }
+        { Minimum-Policed-Unit }
+        { Maximum-Packet-Size }
