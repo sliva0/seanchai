@@ -181,7 +181,7 @@ def test_reused_avps_are_the_origins_to_check_not_this_files(tmp_path):
 def test_the_pinned_dictionary_loads_and_the_base_protocol_agrees():
     """The real dictionary parses, and RFC 6733's `.dad` — the file
     hand-verification started from — reports no disagreements beyond the
-    two known dictionary-side quirks."""
+    three known dictionary-side quirks."""
     from seanchai.dad import parser
 
     loaded = oracle.Oracle.load(_ROOT / "specifications" / "wireshark")
@@ -194,10 +194,11 @@ def test_the_pinned_dictionary_loads_and_the_base_protocol_agrees():
     # Both sides of each are pinned: Wireshark names code 50
     # Accounting-Multi-Session-Id where the RFC says Acct-Multi-Session-Id,
     # and types Authorization-Lifetime Integer32 where the RFC says
-    # Unsigned32.
+    # Unsigned32; and it prefixes clause 7.1.4's ELECTION_LOST.
     assert sorted(finding.rule for finding in findings) == [
         "name-disagrees",
         "type-disagrees",
+        "value-disagrees",
     ]
 
 
@@ -349,8 +350,9 @@ def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
     accepted = [finding for finding in findings if finding.accepted_by]
     assert len(accepted) == len(aliases) == 29
     assert not [finding for finding in findings if finding.rule == "stale-alias"]
-    assert len(findings) - len(accepted) == 83
+    assert len(findings) - len(accepted) == 101
     assert sum(finding.rule == "name-disagrees" for finding in findings) == 63
+    assert sum(finding.rule.startswith("value-") for finding in findings) == 15
 
 
 def test_crosscheck_counts_accepted_renames_apart(tmp_path):
