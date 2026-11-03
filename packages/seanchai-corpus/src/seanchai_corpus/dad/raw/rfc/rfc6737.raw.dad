@@ -1,0 +1,35 @@
+; Specification: RFC 6737
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc6737.txt
+
+
+; Type: Message
+; Name: Capabilities-Update-Request, CUR
+; Section: 4.1.1
+; Page: 4
+<Capabilities-Update-Request> ::= < Diameter Header: 328, REQ >
+        { Origin-Host }
+        { Origin-Realm }
+     1* { Host-IP-Address }
+        { Vendor-Id }
+        { Product-Name }
+        [ Origin-State-Id ]
+      * [ Supported-Vendor-Id ]
+      * [ Auth-Application-Id ]
+      * [ Acct-Application-Id ]
+      * [ Vendor-Specific-Application-Id ]
+        [ Firmware-Revision ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Capabilities-Update-Answer, CUA
+; Section: 4.1.2
+; Page: 5
+<Capabilities-Update-Answer> ::= < Diameter Header: 328 >
+        { Origin-Host }
+        { Origin-Realm }
+        { Result-Code }
+        [ Error-Message ]
+      * [ AVP ]
