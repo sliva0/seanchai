@@ -122,7 +122,10 @@ Must not is IETF space, V under Must the file's `; Vendor-ID:`, and a row
 stating neither agrees with any. A reading that disagrees fills nothing,
 nor does any after it: the name stays a hole naming the disagreeing
 document, rather than become one AVP assembled from two documents that
-disagree about it.
+disagree about it. `Avp.completed_by` names the document stating each field
+`defined_in`'s reading leaves unstated: through TS 29.329, `Wildcarded-IMPU` is
+TS 29.229's, whose clause states no code, vendor or flags, and those are TS
+29.329 table 6.3.1's.
 
 **Marks.** `marks` returns, per row of a table printing mark columns, the
 table's label and clause and the row's marks per column: a tuple of marks,

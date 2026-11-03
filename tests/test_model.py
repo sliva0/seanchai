@@ -855,6 +855,50 @@ class TestHoles:
         assert resolved.defined_in == "TS29.900"
         assert ast.AvpFlag.VENDOR in resolved.flag_rules.must
 
+    def test_completed_by_names_who_states_what_the_origin_does_not(self):
+        origin = _spec(
+            "3GPP TS 29.901",
+            [_table(ast.AvpTableRow(name="Thing", data_type=ast.DataType.UTF8_STRING))],
+        )
+        citing = _spec(
+            "3GPP TS 29.900",
+            [
+                _table(_row("Thing", 7, ast.DataType.UTF8_STRING)),
+                _reused("Thing", "TS29.901"),
+            ],
+        )
+        built = _model(origin, citing)
+
+        resolved = built.resolve("TS29.900", "Thing")
+
+        assert resolved is not None and resolved.defined_in == "TS29.901"
+        assert dict(resolved.completed_by) == {
+            "code": "TS29.900",
+            "vendor_id": "TS29.900",
+            "flag_rules": "TS29.900",
+        }
+        hole = built.hole("TS29.901", "Thing")
+        assert hole is not None and hole.missing == ("code", "flag_rules")
+
+    def test_completed_by_follows_a_field_to_the_document_stating_it(self):
+        """A reprint takes its flags through its origin's reading, and the
+        origin's complete reading has nothing to name."""
+        origin = _spec(
+            "3GPP TS 29.901",
+            [_grouped("Thing", 1, "A"), _table(_row("Thing", 1, ast.DataType.GROUPED))],
+        )
+        reprint = _spec(
+            "3GPP TS 29.900",
+            [_grouped("Thing", 1, "A"), _reused("Thing", "TS29.901")],
+        )
+        built = _model(origin, reprint)
+
+        resolved = built.resolve("TS29.900", "Thing")
+        assert resolved is not None
+        assert dict(resolved.completed_by) == {"flag_rules": "TS29.901"}
+        theirs = built.resolve("TS29.901", "Thing")
+        assert theirs is not None and theirs.completed_by == ()
+
     def test_an_origin_without_a_type_takes_the_citing_tables(self):
         """RFC 4590 is a RADIUS document and types none of its attributes;
         TS 29.229's own table types the Digest AVPs it re-uses. The origin's

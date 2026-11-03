@@ -264,6 +264,12 @@ class Avp:
     # "ACME HSS dictionary (acme.dad)". `defined_in` and `section` are then
     # the block's, the document using the name.
     supplied: str | None = None
+    # The fields `defined_in`'s reading leaves unstated, each with the
+    # document that states it instead: TS 29.229's clause 6.3.43 gives
+    # `Wildcarded-IMPU` no code, vendor or flags, so through TS 29.329 they
+    # are its table 6.3.1's. Provenance only: two readings stating the same
+    # facts are one AVP.
+    completed_by: tuple[tuple[str, str], ...] = field(default=(), compare=False)
 
     @property
     def identity(self) -> tuple[int, int]:
@@ -372,7 +378,8 @@ def _refuse_conflicts(source: str, name: str, conflicts: list[str]) -> None:
         raise ModelError(f"{source}: {name}: {'; '.join(conflicts)}")
 
 
-# `Avp` field names, as `Hole.missing` spells them.
+# `Avp` field names, as `Hole.missing` and `Avp.completed_by` spell them.
+VENDOR_ID = "vendor_id"
 CODE = "code"
 DATA_TYPE = "data_type"
 FLAG_RULES = "flag_rules"
@@ -757,6 +764,11 @@ class _Draft:
     # explains the failure.
     undefined: Undefined | None = None
     supplied: str | None = None
+    completed_by: tuple[tuple[str, str], ...] = ()
+
+    def stating(self, name: str) -> str:
+        """The document stating this reading's field `name`."""
+        return dict(self.completed_by).get(name, self.reference)
 
     def fill(self, other: _Draft) -> _Draft:
         """This reading with what it leaves unstated taken from `other`, the
@@ -801,12 +813,18 @@ class _Draft:
             # as grouped or enumerated, takes the definition's body too.
             kind, members, dropped = other.kind, other.members, other.dropped
             values, values_source = other.values, other.values_source
+        completed = dict(self.completed_by)
+        for each in (CODE, DATA_TYPE, FLAG_RULES):
+            if getattr(self, each) is None and getattr(other, each) is not None:
+                completed[each] = other.stating(each)
         vendor_id, vendor_stated = self.vendor_id, self.vendor_stated
         if not vendor_stated and other.vendor_stated:
             vendor_id, vendor_stated = other.vendor_id, True
+            completed[VENDOR_ID] = other.stating(VENDOR_ID)
         return replace(
             self,
             across=self.across or other.across,
+            completed_by=tuple(completed.items()),
             kind=kind,
             members=members,
             dropped=dropped,
@@ -890,6 +908,7 @@ class _Draft:
                 *common,
                 across_releases=self.across,
                 supplied=self.supplied,
+                completed_by=self.completed_by,
                 members=self.members,
                 dropped=self.dropped,
             )
@@ -898,10 +917,16 @@ class _Draft:
                 *common,
                 across_releases=self.across,
                 supplied=self.supplied,
+                completed_by=self.completed_by,
                 values=self.values,
                 values_source=self.values_source,
             )
-        return Avp(*common, across_releases=self.across, supplied=self.supplied)
+        return Avp(
+            *common,
+            across_releases=self.across,
+            supplied=self.supplied,
+            completed_by=self.completed_by,
+        )
 
 
 @dataclass
@@ -1677,7 +1702,14 @@ class Model:
                 rules = _overlay(m_bit, rules)
             if own is not None:
                 rules = _overlay(own, rules)
-            found = replace(found, flag_rules=rules)
+            completed = found.completed_by
+            if (
+                rules is not None
+                and found.flag_rules is None
+                and found.reference != view.entry.reference
+            ):
+                completed += ((FLAG_RULES, view.entry.reference),)
+            found = replace(found, flag_rules=rules, completed_by=completed)
             if found.kind is Grouped and not isinstance(
                 view.defined.get(name), ast.GroupedAvp
             ):
