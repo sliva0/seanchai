@@ -424,6 +424,19 @@ def _echo_avp(avp, others) -> None:
                 click.echo(f"    reserved {value.first}-{value.last}")
             else:
                 click.echo(f"    vendor-specific {value.first}-{value.last}")
+    for table in avp.value_tables:
+        which = f" of {table.application}" if table.application else ""
+        if table.feature_list_id is not None:
+            which += f" list {table.feature_list_id}"
+        label = f", table {table.table}" if table.table else ""
+        click.echo(
+            f"  {table.kind}{which} ({table.reference}, clause {table.section}{label}):"
+        )
+        for row in table.rows:
+            tail = row.section or row.mark
+            click.echo(
+                f"    {row.value} {row.name}" + ("" if tail is None else f" ; {tail}")
+            )
     if others:
         click.echo("  other readings:")
         for other in others:

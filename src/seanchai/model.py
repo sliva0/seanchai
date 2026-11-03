@@ -108,7 +108,7 @@ import pydantic
 
 from . import corpus, oracle
 from .dad import ast, parser
-from .dad.ast import AvpFlag, CommandFlag, DataType, RegistryKind
+from .dad.ast import AvpFlag, CommandFlag, DataType, RegistryKind, ValueKind
 from .errors import SeanchaiError
 
 if TYPE_CHECKING:
@@ -145,6 +145,8 @@ __all__ = [
     "SupplyKey",
     "Undefined",
     "UndefinedPolicy",
+    "ValueKind",
+    "ValueTable",
     "supplied_from",
 ]
 
@@ -333,6 +335,58 @@ def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> FlagRules:
 
 
 @dataclass(frozen=True)
+class ValueTable(_Plain):
+    """The numbers one document names for a numeric AVP: result codes, the bits
+    of a bit mask, the features of a feature list (`ast.ValueKind`).
+
+    `rows` are the document's, each a name and a number (`ast.ValueRow`): a
+    result code's `section` where it has a clause of its own, a feature's `mark`
+    the M/O column. `vendor_id` is the space an experimental result code or a
+    vendor AVP's bit lives in, the file's; a plain Result-Code value is the
+    IETF's whichever document prints it. `application` and `feature_list_id`
+    say which list a feature table is, as its caption does."""
+
+    kind: ast.ValueKind
+    avp: str
+    reference: str
+    version: str | None
+    vendor_id: int
+    section: str
+    page: int | None
+    table: str | None
+    application: str | None
+    feature_list_id: int | None
+    rows: tuple[ast.ValueRow, ...]
+
+    def __repr__(self) -> str:
+        which = f" {self.application}" if self.application else ""
+        if self.feature_list_id is not None:
+            which += f" list {self.feature_list_id}"
+        return (
+            f"<ValueTable {self.avp} {self.kind}{which} in {self.reference},"
+            f" {len(self.rows)} rows>"
+        )
+
+
+def _value_table(entry: corpus.Entry, table: ast.ValueTable) -> ValueTable:
+    return ValueTable(
+        kind=table.kind,
+        avp=table.avp,
+        reference=entry.reference,
+        version=entry.spec.version,
+        vendor_id=ast.IETF_VENDOR
+        if table.avp == "Result-Code"
+        else entry.spec.vendor_id,
+        section=table.source.section,
+        page=table.source.page,
+        table=table.table,
+        application=table.application,
+        feature_list_id=table.feature_list_id,
+        rows=table.rows,
+    )
+
+
+@dataclass(frozen=True)
 class Avp(_Plain):
     """One resolved AVP, as the specification `defined_in` states it.
 
@@ -378,11 +432,24 @@ class Avp(_Plain):
     # only, as `completed_by`: two documents giving one reading are one AVP,
     # which names the first in corpus order.
     read_through: str = field(default="", compare=False)
+    # What the reading document names this AVP's numbers, its own tables, or
+    # failing any the origin's: TS 29.272's `ULR-Flags` bits, the features of
+    # each of a `Feature-List`'s lists. Not a fact of the AVP's: every document
+    # numbering its result codes reads RFC 6733's `Experimental-Result-Code`,
+    # one AVP.
+    value_tables: tuple[ValueTable, ...] = field(default=(), compare=False)
 
     @property
     def identity(self) -> tuple[int, int]:
         """`(vendor-id, code)`, the pair that distinguishes AVPs on the wire."""
         return (self.vendor_id, self.code)
+
+    @property
+    def value_table(self) -> ValueTable | None:
+        """The first of `value_tables`, the only one but for a document printing
+        several: one feature list per Feature-List-ID, or a code list per
+        interface."""
+        return self.value_tables[0] if self.value_tables else None
 
     def _repr_tail(self) -> str:
         return ""
@@ -1053,6 +1120,7 @@ class _Draft:
     completed_by: tuple[tuple[str, str], ...] = ()
     # `Avp.read_through`, where it is no longer `reference`.
     read_through: str | None = None
+    value_tables: tuple[ValueTable, ...] = ()
 
     @property
     def document(self) -> str:
@@ -1229,6 +1297,7 @@ class _Draft:
             supplied=self.supplied,
             completed_by=self.completed_by,
             read_through=self.read_through or self.document,
+            value_tables=self.value_tables,
         )
 
 
@@ -1252,6 +1321,8 @@ class _View:
     registries: list[ast.Registry]
     # `Undefined AVP` blocks by name; resolution reads one last.
     undefined: dict[str, ast.UndefinedAvp] = field(default_factory=dict)
+    # Every value table, in file order.
+    value_tables: list[ValueTable] = field(default_factory=list)
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
@@ -1288,6 +1359,8 @@ class _View:
                 view.registries.append(section)
             elif isinstance(section, ast.UndefinedAvp):
                 view.undefined.setdefault(section.name, section)
+            elif isinstance(section, ast.ValueTable):
+                view.value_tables.append(_value_table(entry, section))
         return view
 
     def cited_in(self, name: str) -> tuple[str, ...]:
@@ -1891,6 +1964,41 @@ class Model:
             or (isinstance(row, ast.RegistryReservation) and row.covers(code))
         )
 
+    def value_tables(
+        self,
+        reference: str | None = None,
+        *,
+        avp: str | None = None,
+        kind: ast.ValueKind | None = None,
+        version: str | None = None,
+    ) -> tuple[ValueTable, ...]:
+        """The value tables `reference` prints, or the whole corpus does, in
+        file order, of one AVP or one kind; `version` reads an older copy of
+        `reference` the corpus holds. TS 29.336 prints its result codes once per
+        interface, and each is a table."""
+        return tuple(
+            table
+            for view in self._selected_views(reference, version)
+            for table in view.value_tables
+            if (avp is None or table.avp == avp)
+            and (kind is None or table.kind is kind)
+        )
+
+    def feature_lists(
+        self, reference: str | None = None
+    ) -> dict[tuple[str, int | None], ValueTable]:
+        """The feature tables naming an application, by that application as the
+        caption spells it and the Feature-List-ID: `("S6a/S6d", 1)`,
+        `("S6t", None)` for TS 29.336's, which numbers none. A table naming no
+        application is left to `value_tables` (TS 29.368's
+        `Feature-Supported-In-Final-Target`), and of two documents printing one
+        list the first in reference order answers."""
+        found: dict[tuple[str, int | None], ValueTable] = {}
+        for table in self.value_tables(reference, kind=ast.ValueKind.FEATURES):
+            if table.application is not None:
+                found.setdefault((table.application, table.feature_list_id), table)
+        return found
+
     def find(self, name: str) -> tuple[Avp, ...]:
         """Every distinct reading the corpus holds under `name`: a citing
         document's table may read another's AVP differently, and
@@ -2173,6 +2281,11 @@ class Model:
                 if members != found.members:
                     found.read_through = self._document(view)
                 found.members = members
+        if found is not None and found.kind is Avp:
+            tables = tuple(
+                table for table in view.value_tables if table.avp == found.name
+            )
+            found = replace(found, value_tables=tables or found.value_tables)
         if (
             found is not None
             and self._dictionary is not None
