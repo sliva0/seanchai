@@ -2233,3 +2233,89 @@ def test_result_codes_are_read_from_headings_and_lines(tmp_path, synthetic_spec_
     text = formatter.format_spec(spec, comments)
     assert ";; DIAMETER_ERROR_UNALLOCATED (56x1) ; 6.2.2.2\n" in text
     assert parser.parse(text) == spec
+
+
+_EXCLUSION = """
+[[exclude]]
+section = "8"
+name = "Sh-ee"
+reason = "the document leaves its application id to be allocated"
+first_version = "1.2.0"
+"""
+
+
+def _with_unfinished_clause(path):
+    """TS 29.329 V19.1.0's shape: a clause no reading could take, then an annex
+    with no number, then a clause outside it."""
+    document = docx.Document(path)
+    document.add_paragraph(style="Heading 1").add_run("8\tSh-ee")
+    document.add_paragraph("The application id is xx1 (allocated by IANA).")
+    document.add_paragraph(style="Heading 2").add_run("8.1\tGone-Request (GR) Command")
+    document.add_paragraph("< Gone-Request > ::= < Diameter Header: 310, REQ, xx1 >")
+    document.add_paragraph("Table 8.3.1: AVP definitions")
+    document.add_table(rows=1, cols=1).cell(0, 0).text = "AVP Flag rules"
+    document.add_paragraph(style="Heading 8").add_run("Annex A (informative):\nHistory")
+    document.add_paragraph("unexcluded prose")
+    document.add_paragraph(style="Heading 1").add_run("80.1\tKept-Request (KR) Command")
+    document.add_paragraph("< Kept-Request > ::= < Diameter Header: 322, REQ, 42 >")
+    document.add_paragraph("< Session-Id >")
+    document.save(path)
+    return path
+
+
+def test_an_excluded_clause_is_read_by_nothing_and_named_in_the_file(
+    tmp_path, synthetic_spec_docx
+):
+    path = _with_unfinished_clause(synthetic_spec_docx)
+    with pytest.raises(tgpp_docx.ExtractionError, match="xx1"):
+        tgpp_docx.extract(path)
+    (tmp_path / "TS29.999.toml").write_text(_EXCLUSION, encoding="utf-8")
+
+    spec, comments = tgpp_docx.extract_with_comments(path, sources_dir=tmp_path)
+
+    assert not any(s.source.section.startswith("8.") for s in spec.sections)
+    assert "Gone-Request" not in formatter.format_spec(spec)
+    assert any(getattr(s, "name", None) == "Kept-Request" for s in spec.sections)
+    text = formatter.format_spec(spec, comments)
+    note = ";; excluded: clause 8 (Sh-ee), see TS29.999.toml"
+    assert text.split("\n\n\n")[1] == note
+    # The formatter and the parser keep it, so both files hold it.
+    assert formatter.format_spec(*parser.parse_with_comments(text)) == text
+
+
+def test_an_excluded_clause_counts_for_no_patch(tmp_path, synthetic_spec_docx):
+    path = _with_unfinished_clause(synthetic_spec_docx)
+    patch = """
+[[patch]]
+find = "xx1"
+replace = "1"
+count = 2
+section = "8"
+reason = "a patch written for the clause goes with it"
+"""
+    (tmp_path / "TS29.999.toml").write_text(_EXCLUSION + patch, encoding="utf-8")
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="applied 0 times"):
+        tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
+def test_a_patch_after_an_unnumbered_heading_still_counts(
+    tmp_path, synthetic_spec_docx
+):
+    path = _with_unfinished_clause(synthetic_spec_docx)
+    patch = """
+[[patch]]
+find = "unexcluded"
+replace = "plain"
+reason = "the annex ends the exclusion"
+"""
+    (tmp_path / "TS29.999.toml").write_text(_EXCLUSION + patch, encoding="utf-8")
+
+    tgpp_docx.extract(path, sources_dir=tmp_path)
+
+
+def test_an_exclusion_with_no_such_clause_fails(tmp_path, synthetic_spec_docx):
+    (tmp_path / "TS29.999.toml").write_text(_EXCLUSION, encoding="utf-8")
+
+    with pytest.raises(tgpp_docx.ExtractionError, match="left nothing out"):
+        tgpp_docx.extract(synthetic_spec_docx, sources_dir=tmp_path)

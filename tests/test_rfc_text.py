@@ -871,3 +871,18 @@ def test_the_committed_rfc_6733_holds_every_clause_7_1_code():
         name="DIAMETER_MULTI_ROUND_AUTH", value=1001, section="7.1.1"
     )
     assert ("ELECTION_LOST", 4003) in {(row.name, row.value) for row in table.rows}
+
+
+def test_an_exclusion_declared_for_an_rfc_fails(tmp_path):
+    """Only the docx extractor leaves clauses out: a declaration no reading asks
+    about must not pass for one in force."""
+    path = tmp_path / "rfc9999.txt"
+    path.write_text(_rfc(_CODELESS_RFC), encoding="utf-8")
+    sources = _declare(
+        tmp_path,
+        '[[quirk]]\nname = "prose-avp-codes"\nreason = "codes in prose"\n\n'
+        '[[exclude]]\nsection = "8"\nname = "A"\nreason = "x"\n',
+    )
+
+    with pytest.raises(ExtractionError, match="left nothing out"):
+        rfc_text.extract(path, sources_dir=sources)

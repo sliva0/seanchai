@@ -631,6 +631,9 @@ def _sections(
     current: _Section | None = None
     caption: str | None = None
     caption_text: str | None = None
+    # Inside a clause a declared exclusion leaves out: nothing in it is looked
+    # at, so no patch counts its text and no reading sees it.
+    excluded = False
     numbering = (
         _ListNumbering(document.part.numbering_part.element, document.styles.element)
         if quirks is not None
@@ -763,12 +766,22 @@ def _sections(
             ):
                 quirks.fire("spaced-heading-numbers")
             if match:
+                excluded = patcher.excludes(match["number"])
+                if excluded:
+                    current = None
+                    continue
                 current = _Section(
                     number=match["number"],
                     title=patcher.apply(_normalize(match["title"]), match["number"]),
                 )
                 sections.append(current)
                 continue
+            # TS 29.329's clause 8 ends at "Annex A (informative):", which has
+            # no number to read: what follows belongs to no clause, as what
+            # precedes the first heading does.
+            excluded = False
+        if excluded:
+            continue
         text = patcher.apply(_normalize(item.text), number)
         # TS 32.299 prints the heading of clause 7.2.135C as a Normal
         # paragraph inside 7.2.135B; without reading it, PC5-Radio-Technology's
@@ -779,6 +792,10 @@ def _sections(
             and (match := _BODY_HEADING_RE.match(text))
         ):
             quirks.fire("body-clause-headings")
+            if patcher.excludes(match["number"]):
+                excluded = True
+                current = None
+                continue
             current = _Section(number=match["number"], title=match["title"])
             sections.append(current)
             continue
@@ -4298,7 +4315,13 @@ def extract_with_comments(
             sections=sections,
         )
         return spec, _comments(
-            sections, collected.commented, collected.glosses, value_notes
+            sections,
+            collected.commented,
+            collected.glosses,
+            value_notes,
+            []
+            if declarations_path is None
+            else patcher.exclusion_notes(declarations_path.name),
         )
 
 
@@ -4307,11 +4330,13 @@ def _comments(
     commented: _Commented,
     glosses: _Glosses,
     value_notes: _ValueNotes | None = None,
+    excluded: list[str] | None = None,
 ) -> formatter.Comments:
     """The commented-out lines, keyed by the path of what follows each:
     the member after it in its body, or the body's end, and each gloss on its
     member. A body is found by identity, since it is the very object the file
-    holds. A value table's notes stand among its rows the same way."""
+    holds. A value table's notes stand among its rows the same way. What the
+    file leaves out is a block of its own after the header."""
 
     def position_of(
         body: ast.Message | ast.GroupedAvp | ast.ReprintedAvp | ast.ValueTable,
@@ -4338,7 +4363,11 @@ def _comments(
         ("sections", position_of(body), "avps", position): [gloss]
         for body, position, gloss in glosses
     }
-    return formatter.Comments(standing=standing, trailing=trailing)
+    return formatter.Comments(
+        standing=standing,
+        trailing=trailing,
+        detached={("sections", 0): excluded} if excluded else {},
+    )
 
 
 def attach_pages(
