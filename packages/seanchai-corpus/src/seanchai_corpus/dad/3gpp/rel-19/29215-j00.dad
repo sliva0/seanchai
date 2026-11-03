@@ -1,0 +1,722 @@
+; Specification: 3GPP TS 29.215
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733, TS29.212 ;; corrected: (TS29.215.py#bases-gx)
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129215/19.00.00_60/ts_129215v190000p.pdf
+
+
+; Type: Application Scope
+; Name: S9
+; Section: 5.1
+; Page: 38
+; Application-ID: 16777267
+; Applies-To: 5.*
+
+
+; Type: Application Scope
+; Name: S9a
+; Section: A.7.1
+; Application-ID: 16777319
+; Applies-To: A.7.*
+
+
+; Type: Application Scope
+; Name: S9a*
+; Section: A.8.1
+; Application-ID: 16777320
+; Applies-To: A.8.*
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 5.5.2
+; Page: 45
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+      * [ Subscription-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+      * [ Supported-Features ]          ; bold
+        [ OC-Supported-Features ]       ; bold
+        [ QoS-Information ]             ; bold
+      * [ QoS-Rule-Report ]             ; bold
+     *2 [ AN-GW-Address ]               ; bold
+        [ Network-Request-Support ]     ; bold
+      * [ Packet-Filter-Information ]   ; bold
+        [ Packet-Filter-Operation ]     ; bold
+      * [ Subsession-Enforcement-Info ] ; bold
+        [ IP-CAN-Type ]                 ; bold
+        [ RAT-Type ]                    ; bold
+        [ Termination-Cause ]
+        [ User-Equipment-Info ]
+        [ QoS-Negotiation ]             ; bold
+        [ QoS-Upgrade ]                 ; bold
+        [ 3GPP-SGSN-MCC-MNC ]           ; bold
+        [ 3GPP-SGSN-Address ]           ; bold
+        [ 3GPP-SGSN-IPv6-Address ]      ; bold
+        [ RAI ]                         ; bold
+        [ 3GPP-User-Location-Info ]     ; bold
+        [ 3GPP-MS-TimeZone ]            ; bold
+        [ 3GPP2-BSID ]                  ; bold
+      * [ Event-Trigger ]               ; bold
+        [ Multiple-BBERF-Action ]       ; bold
+        [ User-CSG-Information ]        ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: 5.5.3
+; Page: 46
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+      * [ Supported-Features ]        ; bold
+        [ OC-Supported-Features ]     ; bold
+        [ OC-OLR ]                    ; bold
+      * [ QoS-Rule-Install ]          ; bold
+      * [ QoS-Rule-Remove ]           ; bold
+      * [ QoS-Information ]           ; bold
+        [ Bearer-Control-Mode ]       ; bold
+      * [ Event-Trigger ]             ; bold
+        [ Charging-Information ]      ; bold
+      * [ Subsession-Decision-Info ]  ; bold
+      * [ CSG-Information-Reporting ] ; bold
+     *2 [ AN-GW-Address ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5.5.4
+; Page: 46
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ]    ; bold
+      * [ QoS-Rule-Install ]         ; bold
+      * [ QoS-Rule-Remove ]          ; bold
+      * [ QoS-Information ]          ; bold
+      * [ Event-Trigger ]            ; bold
+      * [ Subsession-Decision-Info ] ; bold
+     *2 [ AN-GW-Address ]            ; bold
+        [ Session-Release-Cause ]    ; bold
+        [ HeNB-Local-IP-Address ]
+        [ UE-Local-IP-Address ]
+        [ UDP-Source-Port ]
+      * [ Proxy-Info ]
+        [ Called-Station-Id ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5.5.5
+; Page: 47
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ IP-CAN-Type ]                 ; bold
+        [ RAT-Type ]                    ; bold
+        [ 3GPP-SGSN-MCC-MNC ]           ; bold
+        [ 3GPP-SGSN-Address ]           ; bold
+        [ 3GPP-SGSN-IPv6-Address ]      ; bold
+        [ RAI ]                         ; bold
+        [ 3GPP-User-Location-Info ]     ; bold
+        [ 3GPP-MS-TimeZone ]            ; bold
+        [ 3GPP2-BSID ]                  ; bold
+        [ OC-Supported-Features ]       ; bold
+        [ OC-OLR ]                      ; bold
+        [ QoS-Information ]             ; bold
+      * [ QoS-Rule-Report ]             ; bold
+     *2 [ AN-GW-Address ]               ; bold
+      * [ Subsession-Enforcement-Info ] ; bold
+        [ User-CSG-Information ]        ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: TE-Request, TER
+; Section: 5.5.7
+; Page: 47
+<TE-Request> ::= < Diameter Header: 8388656, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        [ Auth-Session-State ]
+        [ Origin-State-Id ]
+        [ Subscription-Id ]       ; bold
+        [ OC-Supported-Features ] ; bold
+        [ Called-Station-Id ]     ; bold
+        [ UE-Local-IP-Address ]   ; bold
+        [ HeNB-Local-IP-Address ] ; bold
+        [ DRA-Binding ]
+        [ UDP-Source-Port ]       ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: TE-Answer, TEA
+; Section: 5.5.8
+; Page: 48
+<TE-Answer> ::= < Diameter Header: 8388656, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ DRA-Deployment ]        ; bold
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: A.7.6.2
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+        [ Subscription-Id ]
+        [ Called-Station-Id ]
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]    ; bold
+        [ QoS-Information ]       ; bold
+      * [ QoS-Rule-Report ]       ; bold
+        [ UE-Local-IP-Address ]   ; bold
+        [ HeNB-Local-IP-Address ] ; bold
+        [ Termination-Cause ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: A.7.6.3
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Supported-Features ]      ; bold
+      * [ QoS-Rule-Install ]        ; bold
+      * [ QoS-Rule-Remove ]         ; bold
+        [ Event-Report-Indication ] ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: A.7.6.4
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ]   ; bold
+      * [ QoS-Rule-Install ]        ; bold
+      * [ QoS-Rule-Remove ]         ; bold
+        [ Event-Report-Indication ] ; bold
+        [ Session-Release-Cause ]   ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: A.7.6.5
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ] ; bold
+        [ OC-OLR ]                ; bold
+        [ QoS-Information ]       ; bold
+      * [ QoS-Rule-Report ]       ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: TE-Request, TER
+; Section: A.7.6.6
+<TE-Request> ::= < Diameter Header: 8388656, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        [ Auth-Session-State ]
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ] ; bold
+        [ Subscription-Id ]       ; bold
+        [ Called-Station-Id ]     ; bold
+        [ PCRF-Address ]          ; bold
+        [ UE-Local-IP-Address ]   ; bold
+        [ HeNB-Local-IP-Address ] ; bold
+        [ UDP-Source-Port ]       ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: TE-Answer, TEA
+; Section: A.7.6.7
+<TE-Answer> ::= < Diameter Header: 8388656, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: A.8.6.2
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ Destination-Host ]
+        [ Origin-State-Id ]
+        [ Subscription-Id ]
+        [ Called-Station-Id ]
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]    ; bold
+      * [ Charging-Rule-Report ]  ; bold
+        [ UE-Local-IP-Address ]   ; bold
+        [ UE-Local-IPv6-Prefix ]
+        [ QoS-Information ]       ; bold
+        [ TDF-Information ]       ; bold
+        [ Termination-Cause ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: CC-Answer, CCA
+; Section: A.8.6.3
+<CC-Answer> ::= < Diameter Header: 272, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { CC-Request-Type }
+        { CC-Request-Number }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Supported-Features ]    ; bold
+      * [ Charging-Rule-Install ] ; bold
+      * [ Charging-Rule-Remove ]  ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ Load ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: A.8.6.4
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Re-Auth-Request-Type }
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ] ; bold
+      * [ Charging-Rule-Install ] ; bold
+      * [ Charging-Rule-Remove ]  ; bold
+        [ Session-Release-Cause ] ; bold
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: A.8.6.5
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        [ DRMP ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ OC-Supported-Features ] ; bold
+        [ OC-OLR ]                ; bold
+        [ QoS-Information ]       ; bold
+      * [ Charging-Rule-Report ]  ; bold
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 5.3.0
+; Table: 5.3.0.1
+; Page: 39
+; Columns: Name               Code   Section   Type         Must   May   S.not   M.not   Encrypt   Acc-Type                Applicability
+DRA-Deployment                2206   5.3.7     Enumerated   V      P     -       M       Yes       Non-3GPP-EPS,3GPP-EPS   PC,EPC-routed
+Multiple-BBERF-Action         2204   5.3.6     Enumerated   M,V    P     -       -       Yes       All                     PC
+Subsession-Decision-Info      2200   5.3.1     Grouped      M,V    P     -       -       Yes       All                     Both
+Subsession-Enforcement-Info   2201   5.3.2     Grouped      M,V    P     -       -       Yes       All                     Both
+Subsession-Id                 2202   5.3.3     Unsigned32   M,V    P     -       -       Yes       All                     Both
+Subsession-Operation          2203   5.3.4     Enumerated   M,V    P     -       -       Yes       All                     Both
+DRA-Binding                   2208   5.3.8     Enumerated   V      P     -       M       Yes       Non-3GPP-EPS,3GPP-EPS   PC,EPC-routed
+
+
+; Type: AVP Table
+; Section: A.7.3.1
+; Table: A.7.3.1.1
+; Columns: Name   Code   Section     Type               Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+PCRF-Address      2207   A.7.3.1.1   DiameterIdentity   M,V    P     -       -       Yes       ""         PC,EPC-routed
+
+
+; Type: AVP Table
+; Section: A.8.3.1
+; Table: A.8.3.1.1
+; Columns: Name        Code   Section   Type          Must   May   S.not   M.not   Encrypt   Acc-Type   Applicability
+UE-Local-IPv6-Prefix   2205   A.8.3.1   OctetString   M,V    P     -       -       Yes       ""         PC,NSWO
+
+
+; Type: Reused AVPs
+; Section: A.7.4.1
+; Table: A.7.4.1.1
+; Columns: Name           From       Acc-Type                           Applicability
+Called-Station-Id         RFC4005    Non-3GPP-EPS,3GPP-EPS              PC
+CC-Request-Number         RFC4006    Non-3GPP-EPS,3GPP-EPS              PC
+CC-Request-Type           RFC4006    Non-3GPP-EPS,3GPP-EPS              PC
+DRMP                      RFC7944    Non-3GPP-EPS,3GPP-EPS              PC
+Event-Report-Indication   TS29.212   Non-3GPP-EPS,"3GPP-EPS (NOTE x)"   PC
+Load                      RFC8583    Non-3GPP-EPS,3GPP-EPS              PC
+OC-OLR                    RFC7683    Non-3GPP-EPS,3GPP-EPS              PC
+OC-Supported-Features     RFC7683    Non-3GPP-EPS,3GPP-EPS              PC
+QoS-Information           TS29.212   Non-3GPP-EPS                       PC
+QoS-Rule-Install          TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+QoS-Rule-Remove           TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+QoS-Rule-Report           TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+Session-Release-Cause     TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+Subscription-Id           RFC4006    Non-3GPP-EPS                       PC
+Supported-Features        TS29.229   Non-3GPP-EPS,3GPP-EPS              PC
+HeNB-Local-IP-Address     TS29.212   3GPP-EPS                           PC
+UE-Local-IP-Address       TS29.212   Non-3GPP-EPS                       PC
+UDP-Source-Port           TS29.212   Non-3GPP-EPS,3GPP-EPS              PC
+
+
+; Type: Reused AVPs
+; Section: A.8.4.1
+; Table: A.8.4.1.1
+; Columns: Name         From       Acc-Type   Applicability
+Called-Station-Id       RFC4005    ""         PC
+CC-Request-Number       RFC4006    ""         PC
+CC-Request-Type         RFC4006    ""         PC
+DRMP                    RFC7944    ""         PC
+OC-OLR                  RFC7683    ""         PC
+OC-Supported-Features   RFC7683    ""         PC
+QoS-Information         TS29.212   ""         PC
+Charging-Rule-Install   TS29.212   ""         PC
+Charging-Rule-Remove    TS29.212   ""         PC
+Charging-Rule-Report    TS29.212   ""         PC
+Load                    RFC8583    ""         PC
+Session-Release-Cause   TS29.212   ""         PC
+Subscription-Id         RFC4006    ""         PC
+Supported-Features      TS29.229   ""         PC
+TDF-Information         TS29.212   ""         PC
+UE-Local-IP-Address     TS29.212   ""         PC
+
+
+; Type: Grouped AVP
+; Name: Subsession-Decision-Info
+; Section: 5.3.1
+; Page: 39
+Subsession-Decision-Info ::= < AVP header: 2200 10415 > ;; corrected: (TS29.215.py#vendor-id-subsession-decision-info)
+        { Subsession-Id }
+     *2 [ AN-GW-Address ]
+        [ Result-Code ]
+        [ Experimental-Result-Code ]
+      * [ Charging-Rule-Remove ]
+      * [ Charging-Rule-Install ]
+        [ Event-Report-Indication ]
+      * [ QoS-Rule-Install ]
+      * [ QoS-Rule-Remove ]
+        [ Default-EPS-Bearer-QoS ]
+        [ Framed-IPv6-Prefix ] ;; corrected: (TS29.215.py#subsession-decision-info-framed-ipv6-prefix-case)
+      * [ Usage-Monitoring-Information ]
+        [ Session-Release-Cause ]
+        [ Bearer-Control-Mode ]
+      * [ Event-Trigger ]
+        [ Revalidation-Time ]
+        [ Default-Access ]
+        [ NBIFOM-Support ]
+        [ NBIFOM-Mode ]
+        [ RAN-Rule-Support ]
+      * [ Routing-Rule-Report ]
+        [ Removal-Of-Access ]
+        [ IP-CAN-Type ]
+        [ Online ]
+        [ Offline ]
+      * [ QoS-Information ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Subsession-Enforcement-Info
+; Section: 5.3.2
+; Page: 40
+Subsession-Enforcement-Info ::= < AVP header: 2201 10415 > ;; corrected: (TS29.215.py#vendor-id-subsession-enforcement-info)
+        { Subsession-Id }
+        [ Subsession-Operation ]
+     *2 [ AN-GW-Address ]
+        [ Bearer-Identifier ]
+        [ Bearer-Operation ]
+      * [ Packet-Filter-Information ]
+        [ Packet-Filter-Operation ]
+        [ QoS-Information ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+      * [ CoA-Information ]
+        [ Called-Station-Id ]
+        [ PDN-Connection-ID ]                     ; bold
+        [ Bearer-Usage ]
+      * [ TFT-Packet-Filter-Information ]
+        [ Online ]
+        [ Offline ]
+        [ Result-Code ]
+        [ Experimental-Result-Code ]
+      * [ Charging-Rule-Report ]
+        [ Credit-Management-Status ]
+      * [ QoS-Rule-Report ]
+      * [ Application-Detection-Information ]     ; bold
+        [ IP-CAN-Type ]                           ; bold
+        [ RAT-Type ]                              ; bold
+        [ 3GPP-SGSN-MCC-MNC ]                     ; bold
+        [ 3GPP-SGSN-Address ]                     ; bold
+        [ 3GPP-SGSN-IPv6-Address ]                ; bold
+        [ RAI ]                                   ; bold
+        [ 3GPP-User-Location-Info ]               ; bold
+        [ 3GPP2-BSID ]                            ; bold
+        [ User-CSG-Information ]                  ; bold
+        [ Default-EPS-Bearer-QoS ]                ; bold
+        [ Default-Access ]
+        [ NBIFOM-Support ]
+        [ NBIFOM-Mode ]
+        [ Access-Availability-Change-Reason ]
+        [ Network-Request-Support ]
+        [ Routing-Rule-Install ]                  ; bold
+        [ Routing-Rule-Remove ]                   ; bold
+        [ User-Location-Info-Time ]               ; bold
+        [ Logical-Access-ID ]
+        [ Physical-Access-ID ]
+      * [ Usage-Monitoring-Information ]
+        [ Multiple-BBERF-Action ]
+      * [ Event-Trigger ]
+        [ Access-Network-Charging-Address ]
+      * [ Access-Network-Charging-Identifier-Gx ]
+        [ Session-Linking-Indicator ]
+        [ HeNB-Local-IP-Address ]
+        [ UE-Local-IP-Address ]
+        [ UE-Local-IPv6-Prefix ]
+        [ UDP-Source-Port ]
+        [ AN-GW-Status ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Subsession-Operation
+; Section: 5.3.4
+; Page: 41
+Subsession-Operation ::= < Enumerated AVP header: 2203 10415 >
+        TERMINATION   = 0
+        ESTABLISHMENT = 1
+        MODIFICATION  = 2
+
+
+; Type: Enumerated AVP
+; Name: Multiple-BBERF-Action
+; Section: 5.3.6
+; Page: 41
+Multiple-BBERF-Action ::= < Enumerated AVP header: 2204 10415 >
+        ESTABLISHMENT = 0
+        TERMINATION   = 1
+
+
+; Type: Enumerated AVP
+; Name: DRA-Deployment
+; Section: 5.3.7
+; Page: 42
+DRA-Deployment ::= < Enumerated AVP header: 2206 10415 >
+        DRA_Deployed = 0
+
+
+; Type: Enumerated AVP
+; Name: DRA-Binding
+; Section: 5.3.8
+; Page: 42
+DRA-Binding ::= < Enumerated AVP header: 2208 10415 >
+        DRA_BINDING_DELETION = 0
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: S9
+; Section: 5.4.1
+; Table: 5.4.1.1
+; Page: 42
+Rel9               = 0  ; M
+Rel10              = 1  ; M
+MAPCON             = 2  ; O
+IFOM               = 3  ; O
+SADC               = 4  ; O
+USADC              = 5  ; O
+vSRVCC             = 6  ; O
+EPC-routed         = 7  ; O
+NSWO               = 8  ; O
+NetLoc             = 9  ; O
+TimeBasedUM        = 10 ; O
+PendingTransaction = 11 ; O
+ABC                = 12 ; O
+SGW-Rest           = 13 ; O
+ExUsage            = 14
+ResShare           = 15 ; O
+NBIFOM             = 16 ; O
+Extended-BW-NR     = 17 ; O
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 5.6
+; Page: 48
+DIAMETER_ERROR_SUBSESSION                    = 5470 ; 5.6.3
+DIAMETER_ERROR_ONGOING_SESSION_ESTABLISHMENT = 5471 ; 5.6.3
+DIAMETER_PENDING_TRANSACTION                 = 4144 ; 5.6.4

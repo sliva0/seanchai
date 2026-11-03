@@ -1,0 +1,123 @@
+; Specification: 3GPP TS 29.389
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129389/19.00.00_60/ts_129389v190000p.pdf
+
+
+; Type: Message
+; Name: ProSe-Authorization-Request, PAR
+; Section: 6.2.3
+; Page: 13
+<ProSe-Authorization-Request> ::= < Diameter Header: 8388668, REQ, PXY, 16777356 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        { User-Identifier }
+        { Visited-PLMN-Id }
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: ProSe-Authorization-Answer, PAA
+; Section: 6.2.4
+; Page: 14
+<ProSe-Authorization-Answer> ::= < Diameter Header: 8388668, PXY, 16777356 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+        [ V2X-Authorization-Data ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.3.1
+; Table: 6.3.1-1
+; Page: 14
+; Columns: Name           Code   Section   Type         Must   May   S.not   M.not   Encrypt
+V2X-Authorization-Data    4700   6.3.2     Grouped      V      -     -       -       -
+V2X-Permission-in-VPLMN   4701   6.3.3     Unsigned32   V      -     -       -       -
+V2X-Application-Server    4702   6.3.4     Grouped      V      -     -       -       -
+
+
+; Type: Reused AVPs
+; Section: 6.3.1
+; Table: 6.3.1-2
+; Page: 14
+; Columns: Name            From       M-bit
+Application-Server         TS32.299   -
+Geographical-Information   TS29.272   -
+Visited-PLMN-Id            TS29.272   -
+User-Identifier            TS29.336   -
+User-Name                  RFC6733    -
+MSISDN                     TS29.329   -
+Supported-Features         TS29.229   -
+Feature-List-ID            TS29.229   -
+Feature-List               TS29.229   -
+OC-Supported-Features      RFC7683    MUST
+OC-OLR                     RFC7683    MUST
+DRMP                       RFC7944    MUST-NOT
+Load                       RFC8583    MUST-NOT
+PC5-RAT-Type               TS29.388   MUST-NOT
+
+
+; Type: Grouped AVP
+; Name: V2X-Authorization-Data
+; Section: 6.3.2
+; Page: 15
+V2X-Authorization-Data ::= < AVP header: 4700 10415 >
+        [ V2X-Permission-in-VPLMN ]
+      * [ PC5-RAT-Type ]
+      * [ V2X-Application-Server ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: V2X-Permission-in-VPLMN
+; Kind: bits
+; Section: 6.3.3
+; Table: 6.3.3-1
+; Page: 16
+"V2X communication over PC5 Allowed"  = 0
+"V2X communication over MBMS Allowed" = 1
+
+
+; Type: Grouped AVP
+; Name: V2X-Application-Server
+; Section: 6.3.4
+; Page: 16
+V2X-Application-Server ::= < AVP header: 4702 10415 >
+        { Application-Server }
+      * [ Geographical-Information ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+; Page: 17
+DIAMETER_ERROR_USER_UNKNOWN             = 5001 ; 6.4.3.2
+DIAMETER_ERROR_UNKNOWN_V2X_SUBSCRIPTION = 5690 ; 6.4.3.3
+DIAMETER_ERROR_V2X_NOT_ALLOWED          = 5691 ; 6.4.3.4

@@ -60,7 +60,7 @@
    ],
    "version": "6.15.0"
   },
-  "29061-i10": {
+  "29061-j10": {
    "edits": {
     "TS29.061.py#acr-connect-info-spelling": {
      "kind": "correction",
@@ -84,7 +84,7 @@
     },
     "TS29.061.py#mbms-hc-indicator-values": {
      "kind": "supply",
-     "reason": "TS 25.413 V18.0.0 (2024-03), the only Release 18 version, clause 9.2.1.84 types MBMS HC Indicator 'ENUMERATED (uncompressed header, compressed header, ...)', and its ASN.1 MBMSHCIndicator lists uncompressed-header, then compressed-header, then the extension marker. The ASN.1 numbers nothing: 0 and 1 are the declaration order, X.680's ordinal numbering, a judgement Wireshark's dictionary shares; the names are the ASN.1 identifiers"
+     "reason": "TS 25.413 V19.0.0 (2025-09), the only Release 19 version, clause 9.2.1.84 types MBMS HC Indicator 'ENUMERATED (uncompressed header, compressed header, ...)', and its ASN.1 MBMSHCIndicator lists uncompressed-header, then compressed-header, then the extension marker. The ASN.1 numbers nothing: 0 and 1 are the declaration order, X.680's ordinal numbering, a judgement Wireshark's dictionary shares; the names are the ASN.1 identifiers"
     },
     "TS29.061.py#redirected-host-16a-4-8": {
      "kind": "correction",
@@ -206,9 +206,9 @@
      "replace": "Connect-Info"
     }
    ],
-   "version": "18.1.0"
+   "version": "19.1.0"
   },
-  "29109-i10": {
+  "29109-j00": {
    "edits": {
     "TS29.109.py#bases-cx": {
      "kind": "correction",
@@ -226,9 +226,9 @@
      "replace": "Bootstrapping-Info-Answer"
     }
    ],
-   "version": "18.1.0"
+   "version": "19.0.0"
   },
-  "29128-i00": {
+  "29128-j20": {
    "edits": {
     "TS29.128.py#bearer-identifier-spelling": {
      "kind": "correction",
@@ -287,7 +287,7 @@
      ]
     },
     "TS29.128.py#monitoring-event-report-t6a-body": {
-     "expect": "Monitoring-Event-Report's body, against TS29.336's definition: adds Communication-Failure-Information, Number-Of-UE-Per-Location-Report, Reporting-Time-Stamp, missing Event-Handling, IMEI-Change, Roaming-Information, SCEF-Reference-ID-for-Deletion, SCEF-Reference-ID-for-Deletion-Ext, Service-Report, Terminal-Information",
+     "expect": "Monitoring-Event-Report's body, against TS29.336's definition: adds Communication-Failure-Information, Number-Of-UE-Per-Location-Report, Reporting-Time-Stamp, SAT-SF-Operation-Info, missing Event-Handling, IMEI-Change, Roaming-Information, SCEF-Reference-ID-for-Deletion, SCEF-Reference-ID-for-Deletion-Ext, Service-Report, Terminal-Information",
      "kind": "accept",
      "reason": "clause 6.4.3: 'It is originally defined in 3GPP TS 29.336 [5]. For the T6a/T6b interface, the Monitoring-Event-Report AVP format is specified as following'",
      "rule": "reused-body-differs",
@@ -404,9 +404,9 @@
      "replace": "DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.2.0"
   },
-  "29153-i00": {
+  "29153-j00": {
    "edits": {
     "TS29.153.py#vendor-id-network-congestion-area-report": {
      "kind": "correction",
@@ -415,9 +415,9 @@
    },
    "reference": "TS29.153",
    "renames": [],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29154-i00": {
+  "29154-j00": {
    "edits": {
     "TS29.154.py#time-window-rule-case": {
      "kind": "correction",
@@ -459,9 +459,9 @@
      "replace": "Time-Window"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29172-i10": {
+  "29172-j00": {
    "edits": {
     "TS29.172.py#area-identification-type": {
      "kind": "correction",
@@ -531,9 +531,9 @@
      "replace": "LCS-Requestor-ID-String"
     }
    ],
-   "version": "18.1.0"
+   "version": "19.0.0"
   },
-  "29173-i00": {
+  "29173-j00": {
    "edits": {
     "TS29.173.py#user-unknown-result-code-reused": {
      "expect": "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
@@ -552,7 +552,7 @@
    },
    "reference": "TS29.173",
    "renames": [],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
   "29209-680": {
    "edits": {
@@ -945,11 +945,11 @@
    ],
    "version": "11.19.0"
   },
-  "29212-i20": {
+  "29212-j10": {
    "edits": {
     "TS29.212.py#default-access-values": {
      "kind": "supply",
-     "reason": "clause 5.3.120: 'The values defined in the Default-Access AVP are the same as the ones defined in IP-CAN-Type AVP'; clause 5.3.27 of V18.2.0 defines IP-CAN-Type's 0 to 9, copied here. The clause's NOTE makes only 3GPP-EPS and Non-3GPP-EPS applicable in this release, which limits their use, not the list"
+     "reason": "clause 5.3.120: 'The values defined in the Default-Access AVP are the same as the ones defined in IP-CAN-Type AVP'; clause 5.3.27 of V19.1.0 defines IP-CAN-Type's 0 to 9, copied here. The clause's NOTE makes only 3GPP-EPS and Non-3GPP-EPS applicable in this release, which limits their use, not the list"
     },
     "TS29.212.py#framed-ipv6-prefix-row-5-4-0": {
      "kind": "correction",
@@ -1315,7 +1315,7 @@
      "replace": "Framed-IPv6-Prefix"
     }
    ],
-   "version": "18.2.0"
+   "version": "19.1.0"
   },
   "29214-7c0": {
    "edits": {
@@ -1381,11 +1381,11 @@
     },
     "TS29.214.py#rel11-specific-action-void-0": {
      "kind": "delete",
-     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5, as Release 18 does — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
+     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5, as Release 19 does — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
     },
     "TS29.214.py#rel11-specific-action-void-5": {
      "kind": "delete",
-     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5, as Release 18 does — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
+     "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5, as Release 19 does — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
     },
     "TS29.214.py#rel11-vendor-id-acceptable-service-info": {
      "kind": "correction",
@@ -1425,7 +1425,7 @@
    ],
    "version": "11.16.0"
   },
-  "29214-i40": {
+  "29214-j30": {
    "edits": {
     "TS29.214.py#aar-framed-ipv6-prefix-case": {
      "kind": "correction",
@@ -1507,9 +1507,9 @@
      "replace": "NetLoc-Access-Support"
     }
    ],
-   "version": "18.4.0"
+   "version": "19.3.0"
   },
-  "29215-i00": {
+  "29215-j00": {
    "edits": {
     "TS29.215.py#bases-gx": {
      "kind": "correction",
@@ -1549,9 +1549,9 @@
      "replace": "Framed-IPv6-Prefix"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29217-i00": {
+  "29217-j00": {
    "edits": {
     "TS29.217.py#pending-transaction-result-code-reused": {
      "expect": "DIAMETER_PENDING_TRANSACTION (code 4144) is listed here, but TS29.230 table 8.1.3 allocates the code to TS29.212",
@@ -1586,9 +1586,9 @@
    },
    "reference": "TS29.217",
    "renames": [],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29219-i00": {
+  "29219-j00": {
    "edits": {
     "TS29.219.py#vendor-id-pending-policy-counter-information": {
      "kind": "correction",
@@ -1601,9 +1601,9 @@
    },
    "reference": "TS29.219",
    "renames": [],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29229-i10": {
+  "29229-j10": {
    "edits": {
     "TS29.229.py#digest-qop-case": {
      "kind": "correction",
@@ -1641,6 +1641,22 @@
      "kind": "insert",
      "reason": "clause 6.3.68 defines Load only by reference to RFC 8583, the same wording DRMP's clause uses for RFC 7944, but table 6.3.0.1 lists DRMP as re-used and prints Load as a code-less local row"
     },
+    "TS29.229.py#oc-reduction-percentage-reused": {
+     "kind": "insert",
+     "reason": "clause 6.3.61 prints OC-OLR 'extended from the format defined in IETF RFC 7683 [23]', whose member OC-Reduction-Percentage is; table 6.3.0.1 lists OC-OLR's origin and none of its members'"
+    },
+    "TS29.229.py#oc-report-type-reused": {
+     "kind": "insert",
+     "reason": "clause 6.3.61 prints OC-OLR 'extended from the format defined in IETF RFC 7683 [23]', whose member OC-Report-Type is; table 6.3.0.1 lists OC-OLR's origin and none of its members'"
+    },
+    "TS29.229.py#oc-sequence-number-reused": {
+     "kind": "insert",
+     "reason": "clause 6.3.61 prints OC-OLR 'extended from the format defined in IETF RFC 7683 [23]', whose member OC-Sequence-Number is; table 6.3.0.1 lists OC-OLR's origin and none of its members'"
+    },
+    "TS29.229.py#oc-validity-duration-reused": {
+     "kind": "insert",
+     "reason": "clause 6.3.61 prints OC-OLR 'extended from the format defined in IETF RFC 7683 [23]', whose member OC-Validity-Duration is; table 6.3.0.1 lists OC-OLR's origin and none of its members'"
+    },
     "TS29.229.py#rta-session-id-repeated": {
      "kind": "delete",
      "reason": "clause 6.1.10 prints RTA's '< Session-Id >' on two consecutive lines; RFC 6733 section 8.8 says a message MUST include only one Session-Id, and every other Cx command prints it once"
@@ -1669,7 +1685,7 @@
      "replace": "Digest-Qop"
     }
    ],
-   "version": "18.1.0"
+   "version": "19.1.0"
   },
   "29234-b20": {
    "edits": {
@@ -1987,7 +2003,7 @@
    ],
    "version": "11.2.0"
   },
-  "29272-i70": {
+  "29272-j60": {
    "edits": {
     "TS29.272.py#additional-context-identifier-name": {
      "kind": "correction",
@@ -2003,19 +2019,19 @@
     },
     "TS29.272.py#collection-period-m6-nr-values": {
      "kind": "supply",
-     "reason": "clause 7.3.248 takes the values 'defined in TS 32.422 [23] for Collection period M6 in NR'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.34 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.248 takes the values 'defined in TS 32.422 [23] for Collection period M6 in NR'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.34 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#collection-period-rrm-lte-values": {
      "kind": "supply",
-     "reason": "clause 7.3.168 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements LTE'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.20 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.168 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements LTE'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.20 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#collection-period-rrm-nr-values": {
      "kind": "supply",
-     "reason": "clause 7.3.247 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements NR'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.30 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.247 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements NR'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.30 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#collection-period-rrm-umts-values": {
      "kind": "supply",
-     "reason": "clause 7.3.169 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements UMTS'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.21 lists them with their codes; '100ms' is spelled as printed. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.169 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements UMTS'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.21 lists them with their codes; '100ms' is spelled as printed. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#dia-lcs-autonomous-self-location-feature-spelling": {
      "kind": "correction",
@@ -2051,7 +2067,7 @@
     },
     "TS29.272.py#job-type-values": {
      "kind": "supply",
-     "reason": "clause 7.3.137 takes the values 'defined in TS 32.422 [23] for Job-Type'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.9a lists them with their codes; its NOTEs 1 to 3 restrict where some apply, not the list. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.137 takes the values 'defined in TS 32.422 [23] for Job-Type'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.9a lists them with their codes, Release 19 adding the last two; its NOTEs 1 to 5 restrict where some apply, not the list, and it spaces the last name after AND_, which its other names do not. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#lcs-autonomous-self-location-feature-spelling": {
      "kind": "correction",
@@ -2067,19 +2083,19 @@
     },
     "TS29.272.py#logging-duration-values": {
      "kind": "supply",
-     "reason": "clause 7.3.146 takes the values 'defined in TS 32.422 [23] for Logging Duration'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.9 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.146 takes the values 'defined in TS 32.422 [23] for Logging Duration'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.9 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#logging-interval-values": {
      "kind": "supply",
-     "reason": "clause 7.3.145 takes the values 'defined in TS 32.422 [23] for Logging Interval'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.8 lists them with their codes; UMTS and LTE take 0 to 7, NR the same plus 8 to 10, so the list is NR's. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.145 takes the values 'defined in TS 32.422 [23] for Logging Interval'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.8 lists them with their codes; UMTS and LTE take 0 to 7, NR the same plus 8 to 10, so the list is NR's. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#measurement-period-lte-values": {
      "kind": "supply",
-     "reason": "clause 7.3.166 takes the values 'defined in TS 32.422 [23] for Measurement period LTE'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.23 lists them with their codes; 1 and 3 are unassigned, Release 16 having dropped 1280 ms and 2560 ms. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.166 takes the values 'defined in TS 32.422 [23] for Measurement period LTE'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.23 lists them with their codes; 1 and 3 are unassigned, Release 16 having dropped 1280 ms and 2560 ms. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#measurement-period-umts-values": {
      "kind": "supply",
-     "reason": "clause 7.3.167 takes the values 'defined in TS 32.422 [23] for Measurement period UMTS'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.22 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.167 takes the values 'defined in TS 32.422 [23] for Measurement period UMTS'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.22 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#missing-row-communication-duration-time": {
      "kind": "insert",
@@ -2147,11 +2163,11 @@
     },
     "TS29.272.py#report-amount-values": {
      "kind": "supply",
-     "reason": "clause 7.3.142 takes the values 'defined in TS 32.422 [23] for Report Amount'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.10.6.2 lists them with their codes; clauses 5.10.6.3 to 5.10.6.12 repeat the list per RAT and measurement, NR's spelling INFINITY. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.142 takes the values 'defined in TS 32.422 [23] for Report Amount'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.6.2 lists them with their codes; clauses 5.10.6.3 to 5.10.6.12 repeat the list per RAT and measurement, NR's spelling INFINITY. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#trace-depth-values": {
      "kind": "supply",
-     "reason": "clause 7.3.67 takes the values 'defined in TS 32.422 [23] for Trace Depth'; TS 32.422 V18.7.0 (2025-12), Release 18's latest, clause 5.3 lists them with their codes; the names are its code list's, as the table above it misspells MaximumWithoutVendorSpecifcExtension. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
+     "reason": "clause 7.3.67 takes the values 'defined in TS 32.422 [23] for Trace Depth'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.3 lists them with their codes, Release 19 adding the last three. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
     "TS29.272.py#ue-reachability-configuration-s6a-body": {
      "expect": "UE-Reachability-Configuration's body, against TS29.336's definition: missing DL-Buffering-Suggested-Packet-Count, Maximum-Latency",
@@ -2233,14 +2249,10 @@
      "replace": "eDRX-Cycle-Length-Withdrawal"
     }
    ],
-   "version": "18.7.0"
+   "version": "19.6.0"
   },
-  "29273-i60": {
+  "29273-j20": {
    "edits": {
-    "TS29.273.py#access-network-info-code": {
-     "kind": "correction",
-     "reason": "Table 8.2.3.0/1 contradicts the defining header in clause 5.2.3.24 and tables 5.2.3.1/1 and 7.2.3.1/1: Access-Network-Info is 1526; 1524 is SSID."
-    },
     "TS29.273.py#accounting-interim-interval-row-5-2-3-1": {
      "kind": "correction",
      "reason": "Table 5.2.3.1/2 misspells the AVP; its cited origin defines Acct- Interim-Interval."
@@ -2509,9 +2521,9 @@
      "replace": "Subscription-Id"
     }
    ],
-   "version": "18.6.0"
+   "version": "19.2.0"
   },
-  "29283-i00": {
+  "29283-j00": {
    "edits": {
     "TS29.283.py#data-out-of-sync-result-code-reused": {
      "expect": "DIAMETER_ERROR_DATA OUT_OF_SYNC (code 5105) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.329",
@@ -2691,10 +2703,14 @@
      "replace": "DIAMETER_ERROR_UNKNOWN_DATA"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29329-i00": {
+  "29329-j10": {
    "edits": {
+    "TS29.329.py#enr-request-flag": {
+     "kind": "correction",
+     "reason": "clause 8.1.3 says the command is 'indicated by the Command-Code field set to 311 and the 'R' bit set in the Command Flags field', and its rule prints '311, PXY', the answer's header, for the request"
+    },
     "TS29.329.py#feature-unsupported-result-code-reused": {
      "expect": "DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
      "kind": "accept",
@@ -2703,7 +2719,7 @@
      "targets": [
       [
        "sections",
-       10,
+       17,
        "rows",
        7
       ]
@@ -2717,15 +2733,23 @@
      "targets": [
       [
        "sections",
-       10,
+       17,
        "rows",
        11
       ]
      ]
     },
+    "TS29.329.py#ims-event-report-row-name": {
+     "kind": "correction",
+     "reason": "table 8.3.1 prints code 735 as Event-Report, and TS 29.230 V19.3.0 table 7.1 allocates it so; the table's own clause 8.3.13 defines Ims-Event-Report under that header code, and the ESA and ENR rules name it; no other clause prints the shorter name"
+    },
     "TS29.329.py#load-row-not-local": {
      "kind": "delete",
      "reason": "table 6.3.1 prints Load with no AVP code because it is not this document's AVP: clause 6.3.35 says it is defined in RFC 8583, and table 6.3/2 already lists it as re-used from there — the code-less table row is the same fact printed in the wrong table"
+    },
+    "TS29.329.py#notification-correlation-identity-spelling": {
+     "kind": "correction",
+     "reason": "clause 8.1.3 misspells the AVP table 8.3.1 and clause 8.3.4 define (726), which the ESR rule names and whose value the ENR returns"
     },
     "TS29.329.py#too-much-data-result-code-reused": {
      "expect": "DIAMETER_ERROR_TOO_MUCH_DATA (code 5008) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
@@ -2735,18 +2759,31 @@
      "targets": [
       [
        "sections",
-       10,
+       17,
        "rows",
        5
       ]
      ]
+    },
+    "TS29.329.py#undefined-request-current-status": {
+     "kind": "insert",
+     "reason": "a member of Event-List (8.3.10) no clause defines and table 8.3.1 does not list, in V19.1.0, the document that adds it; the TS 29.230 V19.3.0 registry allocates no such name, none of the corpus's documents defines it, and Wireshark's dictionary has no such AVP"
     }
    },
    "reference": "TS29.329",
-   "renames": [],
-   "version": "18.0.0"
+   "renames": [
+    {
+     "expect": "Event-Report",
+     "replace": "Ims-Event-Report"
+    },
+    {
+     "expect": "Notification-Correction-Identity",
+     "replace": "Notification-Correlation-Identity"
+    }
+   ],
+   "version": "19.1.0"
   },
-  "29330-i10": {
+  "29330-j00": {
    "edits": {
     "TS29.330.py#feature-unsupported-result-code-reused": {
      "expect": "DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
@@ -2863,9 +2900,9 @@
    },
    "reference": "TS29.330",
    "renames": [],
-   "version": "18.1.0"
+   "version": "19.0.0"
   },
-  "29336-i20": {
+  "29336-j10": {
    "edits": {
     "TS29.336.py#additional-serving-node-t4-body": {
      "expect": "Additional-Serving-Node's body, against TS29.173's definition: adds MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
@@ -3027,9 +3064,9 @@
      "replace": "DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL"
     }
    ],
-   "version": "18.2.0"
+   "version": "19.1.0"
   },
-  "29337-i00": {
+  "29337-j00": {
    "edits": {
     "TS29.337.py#additional-serving-node-t4-body": {
      "expect": "Additional-Serving-Node's body, against TS29.173's definition: adds MME-Number-for-MT-SMS, SMSF-3GPP-Name, SMSF-3GPP-Number, SMSF-3GPP-Realm, SMSF-Non-3GPP-Name, SMSF-Non-3GPP-Number, SMSF-Non-3GPP-Realm, missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
@@ -3103,9 +3140,9 @@
      "replace": "Application-Port-Identifier"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29338-i20": {
+  "29338-j30": {
    "edits": {
     "TS29.338.py#additional-serving-node-body": {
      "expect": "Additional-Serving-Node's body, against TS29.173's definition: adds MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
@@ -3143,9 +3180,9 @@
      "replace": "SMSMI-Correlation-ID"
     }
    ],
-   "version": "18.2.0"
+   "version": "19.3.0"
   },
-  "29343-i00": {
+  "29343-j00": {
    "edits": {
     "TS29.343.py#prose-app-code-suffix-range-row-name": {
      "kind": "correction",
@@ -3187,9 +3224,9 @@
      "replace": "ProSe-App-Code-Suffix-Range"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29344-i10": {
+  "29344-j10": {
    "edits": {
     "TS29.344.py#authorized-discovery-range-row-missing": {
      "kind": "insert",
@@ -3245,9 +3282,9 @@
      "replace": "DIAMETER_ERROR_UE_LOCATION_UNKNOWN"
     }
    ],
-   "version": "18.1.0"
+   "version": "19.1.0"
   },
-  "29345-i00": {
+  "29345-j00": {
    "edits": {
     "TS29.345.py#code-receiving-security-material-code": {
      "kind": "correction",
@@ -3349,9 +3386,9 @@
      "replace": "Visited-PLMN-Id"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29368-i00": {
+  "29368-j00": {
    "edits": {
     "TS29.368.py#external-identifier-in-device-action": {
      "kind": "correction",
@@ -3397,9 +3434,9 @@
      "replace": "External-Identifier"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29388-i10": {
+  "29388-j10": {
    "edits": {
     "TS29.388.py#plmn-allowed-pc5-rats-rule-name": {
      "kind": "correction",
@@ -3439,9 +3476,9 @@
      "replace": "PLMN-Allowed-PC5-RATs"
     }
    ],
-   "version": "18.1.0"
+   "version": "19.1.0"
   },
-  "29389-i00": {
+  "29389-j00": {
    "edits": {
     "TS29.389.py#unknown-v2x-subscription-result-code-reused": {
      "expect": "DIAMETER_ERROR_UNKNOWN_V2X_SUBSCRIPTION (code 5690) is listed here, but TS29.230 table 8.1.4 allocates the code to TS29.388",
@@ -3488,9 +3525,9 @@
    },
    "reference": "TS29.389",
    "renames": [],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
-  "29468-i00": {
+  "29468-j00": {
    "edits": {
     "TS29.468.py#feature-list-avp": {
      "kind": "correction",
@@ -3559,7 +3596,7 @@
    },
    "reference": "TS29.468",
    "renames": [],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
   "32299-bk0": {
    "edits": {
@@ -3581,43 +3618,43 @@
     },
     "TS32.299.py#rel11-oma-dcd-information": {
      "kind": "supply",
-     "reason": "table 7.2 types DCD-Information 'refer [223]', OMA-DDS-Charging_Data, and leaves its flag cells blank; clause 7.2.50 types it Grouped and prints no body, as V18.0.0's does; OMA's V1.0 table 11 (clause 8.4) gives code 2115 flags Must V,M and May P, and its clause 8.5.5 prints the body"
+     "reason": "table 7.2 types DCD-Information 'refer [223]', OMA-DDS-Charging_Data, and leaves its flag cells blank; clause 7.2.50 types it Grouped and prints no body, as V19.0.0's does; OMA's V1.0 table 11 (clause 8.4) gives code 2115 flags Must V,M and May P, and its clause 8.5.5 prints the body"
     },
     "TS32.299.py#rel11-oma-im-information": {
      "kind": "supply",
-     "reason": "table 7.2 types IM-Information 'refer [223]', OMA-DDS-Charging_Data, and leaves its flag cells blank; clause 7.2.69 types it Grouped and prints no body, as V18.0.0's does; OMA's V1.0 table 11 (clause 8.4) gives code 2110 flags Must V,M and May P, and its clause 8.5.6 prints the body"
+     "reason": "table 7.2 types IM-Information 'refer [223]', OMA-DDS-Charging_Data, and leaves its flag cells blank; clause 7.2.69 types it Grouped and prints no body, as V19.0.0's does; OMA's V1.0 table 11 (clause 8.4) gives code 2110 flags Must V,M and May P, and its clause 8.5.6 prints the body"
     },
     "TS32.299.py#rel11-oma-service-generic-information": {
      "kind": "supply",
-     "reason": "table 7.2 types Service-Generic-Information 'refer [223]', OMA-DDS-Charging_Data, and leaves its flag cells blank; clause 7.2.191 types it Grouped and prints no body, as V18.0.0's does; OMA's V1.0 table 11 (clause 8.4) gives code 1256 flags Must V,M and May P, and its clause 8.5.10 prints the body"
+     "reason": "table 7.2 types Service-Generic-Information 'refer [223]', OMA-DDS-Charging_Data, and leaves its flag cells blank; clause 7.2.191 types it Grouped and prints no body, as V19.0.0's does; OMA's V1.0 table 11 (clause 8.4) gives code 1256 flags Must V,M and May P, and its clause 8.5.10 prints the body"
     },
     "TS32.299.py#rel11-rar-repeats-avp-max": {
      "kind": "correction",
-     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ AVP ]', as V18.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
+     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ AVP ]', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
     },
     "TS32.299.py#rel11-rar-repeats-avp-min": {
      "kind": "correction",
-     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ AVP ]', as V18.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
+     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ AVP ]', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
     },
     "TS32.299.py#rel11-rar-repeats-proxy-info-max": {
      "kind": "correction",
-     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Proxy-Info ]', as V18.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
+     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Proxy-Info ]', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
     },
     "TS32.299.py#rel11-rar-repeats-proxy-info-min": {
      "kind": "correction",
-     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Proxy-Info ]', as V18.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
+     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Proxy-Info ]', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
     },
     "TS32.299.py#rel11-rar-repeats-route-record-max": {
      "kind": "correction",
-     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Route-Record ]', as V18.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
+     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Route-Record ]', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
     },
     "TS32.299.py#rel11-rar-repeats-route-record-min": {
      "kind": "correction",
-     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Route-Record ]', as V18.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
+     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ Route-Record ]', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
     },
     "TS32.299.py#rel11-rar-session-id-position": {
      "kind": "correction",
-     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '< Session-Id >', as V18.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
+     "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '< Session-Id >', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
     },
     "TS32.299.py#rel11-type-number-values": {
      "kind": "supply",
@@ -3896,7 +3933,7 @@
    "renames": [],
    "version": "11.20.0"
   },
-  "32299-i00": {
+  "32299-j00": {
    "edits": {
     "TS32.299.py#acct-multi-session-id-type": {
      "kind": "correction",
@@ -4970,7 +5007,7 @@
      "replace": "Monitoring-Event-Report-Data"
     }
    ],
-   "version": "18.0.0"
+   "version": "19.0.0"
   },
   "es283026-010600": {
    "edits": {

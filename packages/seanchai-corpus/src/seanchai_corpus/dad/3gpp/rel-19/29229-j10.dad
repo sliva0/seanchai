@@ -1,0 +1,790 @@
+; Specification: 3GPP TS 29.229
+; Version: 19.1.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129200_129299/129229/19.01.00_60/ts_129229v190100p.pdf
+
+
+; Type: Message
+; Name: User-Authorization-Request, UAR
+; Section: 6.1.1
+; Page: 13
+<User-Authorization-Request> ::= < Diameter Header: 300, REQ, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { User-Name }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        { Visited-Network-Identifier }     ; bold
+        [ User-Authorization-Type ]        ; bold
+        [ UAR-Flags ]                      ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: User-Authorization-Answer, UAA
+; Section: 6.1.2
+; Page: 14
+<User-Authorization-Answer> ::= < Diameter Header: 300, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]             ; bold
+        [ Server-Name ]                    ; bold
+        [ Server-Capabilities ]            ; bold
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Server-Assignment-Request, SAR
+; Section: 6.1.3
+; Page: 14
+<Server-Assignment-Request> ::= < Diameter Header: 301, REQ, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ User-Name ]
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]               ; bold
+      * [ Public-Identity ]                  ; bold
+        [ Wildcarded-Public-Identity ]       ; bold
+        { Server-Name }                      ; bold
+        { Server-Assignment-Type }           ; bold
+        { User-Data-Already-Available }      ; bold
+        [ SCSCF-Restoration-Info ]           ; bold
+        [ Multiple-Registration-Indication ] ; bold
+        [ Session-Priority ]                 ; bold
+        [ SAR-Flags ]                        ; bold
+        [ Failed-PCSCF ]                     ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Server-Assignment-Answer, SAA
+; Section: 6.1.4
+; Page: 15
+<Server-Assignment-Answer> ::= < Diameter Header: 301, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]               ; bold
+        [ User-Data ]                        ; bold
+        [ Charging-Information ]             ; bold
+        [ Associated-Identities ]            ; bold
+        [ Loose-Route-Indication ]           ; bold
+      * [ SCSCF-Restoration-Info ]           ; bold
+        [ Associated-Registered-Identities ] ; bold
+        [ Server-Name ]                      ; bold
+        [ Wildcarded-Public-Identity ]       ; bold
+        [ Priviledged-Sender-Indication ]    ; bold
+        [ Allowed-WAF-WWSF-Identities ]      ; bold
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Location-Info-Request, LIR
+; Section: 6.1.5
+; Page: 16
+<Location-Info-Request> ::= < Diameter Header: 302, REQ, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ Originating-Request ]
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        [ User-Authorization-Type ]        ; bold
+        [ Session-Priority ]               ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Location-Info-Answer, LIA
+; Section: 6.1.6
+; Page: 16
+<Location-Info-Answer> ::= < Diameter Header: 302, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]             ; bold
+        [ Server-Name ]                    ; bold
+        [ Server-Capabilities ]            ; bold
+        [ Wildcarded-Public-Identity ]     ; bold
+        [ LIA-Flags ]                      ; bold
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Multimedia-Auth-Request, MAR
+; Section: 6.1.7
+; Page: 16
+<Multimedia-Auth-Request> ::= < Diameter Header: 303, REQ, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+        { User-Name }
+        [ OC-Supported-Features ]
+      * [ Supported-Features ]             ; bold
+        { Public-Identity }                ; bold
+        { SIP-Auth-Data-Item }             ; bold
+        { SIP-Number-Auth-Items }          ; bold
+        { Server-Name }                    ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Multimedia-Auth-Answer, MAA
+; Section: 6.1.8
+; Page: 17
+<Multimedia-Auth-Answer> ::= < Diameter Header: 303, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ OC-Supported-Features ]
+        [ OC-OLR ]
+      * [ Load ]
+      * [ Supported-Features ]             ; bold
+        [ Public-Identity ]                ; bold
+        [ SIP-Number-Auth-Items ]          ; bold
+      * [ SIP-Auth-Data-Item ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Registration-Termination-Request, RTR
+; Section: 6.1.9
+; Page: 17
+<Registration-Termination-Request> ::= < Diameter Header: 304, REQ, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { User-Name }
+        [ Associated-Identities ]          ; bold
+      * [ Supported-Features ]             ; bold
+      * [ Public-Identity ]                ; bold
+        { Deregistration-Reason }          ; bold
+        [ RTR-Flags ]                      ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Registration-Termination-Answer, RTA
+; Section: 6.1.10
+; Page: 18
+<Registration-Termination-Answer> ::= < Diameter Header: 304, PXY, 16777216 >
+        < Session-Id >
+;; deleted: AVP rule 'Session-Id' (occurrence 2) (TS29.229.py#rta-session-id-repeated)
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Associated-Identities ]                ; bold
+      * [ Supported-Features ]                   ; bold
+      * [ Identity-with-Emergency-Registration ] ; bold
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Profile-Request, PPR
+; Section: 6.1.11
+; Page: 18
+<Push-Profile-Request> ::= < Diameter Header: 305, REQ, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        { User-Name }
+      * [ Supported-Features ]             ; bold
+        [ User-Data ]                      ; bold
+        [ Charging-Information ]           ; bold
+        [ SIP-Auth-Data-Item ]
+        [ Allowed-WAF-WWSF-Identities ]
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Profile-Answer, PPA
+; Section: 6.1.12
+; Page: 19
+<Push-Profile-Answer> ::= < Diameter Header: 305, PXY, 16777216 >
+        < Session-Id >
+        [ DRMP ]
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]             ; bold
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 6.3.0
+; Table: 6.3.0.1
+; Page: 21
+; Columns: Name                               Vendor-ID   Code   Section    Type               Must   May   S.not   M.not   Encrypt ;; corrected: (TS29.229.py#vendor-id-column)
+Visited-Network-Identifier                    -           600    6.3.1      OctetString        M,V    -     -       -       No
+Public-Identity                               -           601    6.3.2      UTF8String         M,V    -     -       -       No
+Server-Name                                   -           602    6.3.3      UTF8String         M,V    -     -       -       No
+Server-Capabilities                           -           603    6.3.4      Grouped            M,V    -     -       -       No
+Mandatory-Capability                          -           604    6.3.5      Unsigned32         M,V    -     -       -       No
+Optional-Capability                           -           605    6.3.6      Unsigned32         M,V    -     -       -       No
+User-Data                                     -           606    6.3.7      OctetString        M,V    -     -       -       No
+SIP-Number-Auth-Items                         -           607    6.3.8      Unsigned32         M,V    -     -       -       No
+SIP-Authentication-Scheme                     -           608    6.3.9      UTF8String         M,V    -     -       -       No
+SIP-Authenticate                              -           609    6.3.10     OctetString        M,V    -     -       -       No
+SIP-Authorization                             -           610    6.3.11     OctetString        M,V    -     -       -       No
+SIP-Authentication-Context                    -           611    6.3.12     OctetString        M,V    -     -       -       No
+SIP-Auth-Data-Item                            -           612    6.3.13     Grouped            M,V    -     -       -       No
+SIP-Item-Number                               -           613    6.3.14     Unsigned32         M,V    -     -       -       No
+Server-Assignment-Type                        -           614    6.3.15     Enumerated         M,V    -     -       -       No
+Deregistration-Reason                         -           615    6.3.16     Grouped            M,V    -     -       -       No
+Reason-Code                                   -           616    6.3.17     Enumerated         M,V    -     -       -       No
+Reason-Info                                   -           617    6.3.18     UTF8String         M,V    -     -       -       No
+Charging-Information                          -           618    6.3.19     Grouped            M,V    -     -       -       No
+Primary-Event-Charging-Function-Name          -           619    6.3.20     DiameterURI        M,V    -     -       -       No
+Secondary-Event-Charging-Function-Name        -           620    6.3.21     DiameterURI        M,V    -     -       -       No
+Primary-Charging-Collection-Function-Name     -           621    6.3.22     DiameterURI        M,V    -     -       -       No
+Secondary-Charging-Collection-Function-Name   -           622    6.3.23     DiameterURI        M,V    -     -       -       No
+User-Authorization-Type                       -           623    6.3.24     Enumerated         M,V    -     -       -       No
+User-Data-Already-Available                   -           624    6.3.26     Enumerated         M,V    -     -       -       No
+Confidentiality-Key                           -           625    6.3.27     OctetString        M,V    -     -       -       No
+Integrity-Key                                 -           626    6.3.28     OctetString        M,V    -     -       -       No
+Supported-Features                            -           628    6.3.29     Grouped            V      M     -       -       No
+Feature-List-ID                               -           629    6.3.30     Unsigned32         V      -     -       M       No
+Feature-List                                  -           630    6.3.31     Unsigned32         V      -     -       M       No
+Supported-Applications                        -           631    6.3.32     Grouped            V      -     -       M       No
+Associated-Identities                         -           632    6.3.33     Grouped            V      -     -       M       No
+Originating-Request                           -           633    6.3.34     Enumerated         M,V    -     -       -       No
+Wildcarded-Public-Identity                    -           634    6.3.35     UTF8String         V      -     -       M       No
+Wildcarded-IMPU                               -           -      6.3.43     UTF8String         -      -     -       -       - ;; inserted: (TS29.229.py#wildcarded-impu-row-missing)
+SIP-Digest-Authenticate                       -           635    6.3.36     Grouped            V      -     -       M       No
+Digest-Realm                                  -           104    6.3.37     UTF8String         M      -     -       V       No
+Digest-Algorithm                              -           111    6.3.39     UTF8String         M      -     -       V       No
+Digest-Qop                                    -           110    6.3.40     UTF8String         M      -     -       V       No ;; corrected: (TS29.229.py#digest-qop-row-case)
+Digest-HA1                                    -           121    6.3.41     UTF8String         M      -     -       V       No
+Line-Identifier                               13019       500    6.3.42     OctetString        V      -     -       -       - ;; inserted: (TS29.229.py#line-identifier-row-missing)
+UAR-Flags                                     -           637    6.3.44     Unsigned32         V      -     -       M       No
+Loose-Route-Indication                        -           638    6.3.45     Enumerated         V      -     -       M       No
+SCSCF-Restoration-Info                        -           639    6.3.46     Grouped            V      -     -       M       No
+Path                                          -           640    6.3.47     OctetString        V      -     -       M       No
+Contact                                       -           641    6.3.48     OctetString        V      -     -       M       No
+Subscription-Info                             -           642    6.3.49     Grouped            V      -     -       M       No
+Call-ID-SIP-Header                            -           643    6.3.49.1   OctetString        V      -     -       M       No
+From-SIP-Header                               -           644    6.3.49.2   OctetString        V      -     -       M       No
+To-SIP-Header                                 -           645    6.3.49.3   OctetString        V      -     -       M       No
+Record-Route                                  -           646    6.3.49.4   OctetString        V      -     -       M       No
+Associated-Registered-Identities              -           647    6.3.50     Grouped            V      -     -       M       No
+Multiple-Registration-Indication              -           648    6.3.51     Enumerated         V      -     -       M       No
+Restoration-Info                              -           649    6.3.52     Grouped            V      -     -       M       No
+Session-Priority                              -           650    6.3.56     Enumerated         V      -     -       M       No
+Identity-with-Emergency-Registration          -           651    6.3.57     Grouped            V      -     -       M       No
+Priviledged-Sender-Indication                 -           652    6.3.58     Enumerated         V      -     -       M       No
+LIA-Flags                                     -           653    6.3.59     Unsigned32         V      -     -       M       No
+OC-Supported-Features                         -           621    6.3.60     Grouped            -      -     -       M,V     No
+OC-OLR                                        -           623    6.3.61     Grouped            -      -     -       M,V     No
+Initial-CSeq-Sequence-Number                  -           654    6.3.62     Unsigned32         V      -     -       M       No
+SAR-Flags                                     -           655    6.3.63     Unsigned32         V      -     -       M       No
+Allowed-WAF-WWSF-Identities                   -           656    6.3.64     Grouped            V      -     -       M       No
+WebRTC-Authentication-Function-Name           -           657    6.3.65     UTF8String         V      -     -       M       No
+WebRTC-Web-Server-Function-Name               -           658    6.3.66     UTF8String         V      -     -       M       No
+DRMP                                          -           301    6.3.67     Enumerated         -      -     -       M,V     No
+;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)
+RTR-Flags                                     -           659    6.3.69     Unsigned32         V      -     -       M       No
+P-CSCF-Subscription-Info                      -           660    6.3.70     Grouped            V      -     -       M       No
+Registration-Time-Out                         -           661    6.3.71     Time               V      -     -       M       No
+Alternate-Digest-Algorithm                    -           662    6.3.72     UTF8String         V      -     -       M       No
+Alternate-Digest-HA1                          -           663    6.3.73     UTF8String         V      -     -       M       No
+Failed-PCSCF                                  -           664    6.3.74     Grouped            V      -     -       M       No
+PCSCF-FQDN                                    -           665    6.3.75     DiameterIdentity   V      -     -       M       No
+PCSCF-IP-Address                              -           666    6.3.76     Address            V      -     -       M       No
+OC-Reg-Timer-Ext                              -           667    6.3.77     Unsigned32         V      -     -       M       No
+
+
+; Type: Reused AVPs
+; Section: 6.3.0
+; Table: 6.3.0.1
+; Page: 21
+; Columns: Name           From      M-bit
+Digest-Realm              RFC4590   -
+Digest-Algorithm          RFC4590   -
+Digest-Qop                RFC4590   - ;; corrected: (TS29.229.py#digest-qop-case)
+Digest-HA1                RFC4590   -
+OC-Supported-Features     RFC7683   -
+OC-OLR                    RFC7683   -
+DRMP                      RFC7944   -
+Load                      RFC8583   - ;; inserted: (TS29.229.py#load-row-reused)
+Framed-IP-Address         RFC4005   - ;; inserted: (TS29.229.py#framed-ip-address-reused)
+Framed-IPv6-Prefix        RFC4005   - ;; inserted: (TS29.229.py#framed-ipv6-prefix-reused)
+Framed-Interface-Id       RFC4005   - ;; inserted: (TS29.229.py#framed-interface-id-reused)
+OC-Sequence-Number        RFC7683   - ;; inserted: (TS29.229.py#oc-sequence-number-reused)
+OC-Report-Type            RFC7683   - ;; inserted: (TS29.229.py#oc-report-type-reused)
+OC-Reduction-Percentage   RFC7683   - ;; inserted: (TS29.229.py#oc-reduction-percentage-reused)
+OC-Validity-Duration      RFC7683   - ;; inserted: (TS29.229.py#oc-validity-duration-reused)
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.2
+; Page: 19
+DIAMETER_FIRST_REGISTRATION                     = 2001 ; 6.2.1.1
+DIAMETER_SUBSEQUENT_REGISTRATION                = 2002 ; 6.2.1.2
+DIAMETER_UNREGISTERED_SERVICE                   = 2003 ; 6.2.1.3
+DIAMETER_SUCCESS_SERVER_NAME_NOT_STORED         = 2004 ; 6.2.1.4
+DIAMETER_ERROR_USER_UNKNOWN                     = 5001 ; 6.2.2.1
+DIAMETER_ERROR_IDENTITIES_DONT_MATCH            = 5002 ; 6.2.2.2
+DIAMETER_ERROR_IDENTITY_NOT_REGISTERED          = 5003 ; 6.2.2.3
+DIAMETER_ERROR_ROAMING_NOT_ALLOWED              = 5004 ; 6.2.2.4
+DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED      = 5005 ; 6.2.2.5
+DIAMETER_ERROR_AUTH_SCHEME_NOT_SUPPORTED        = 5006 ; 6.2.2.6
+DIAMETER_ERROR_IN_ASSIGNMENT_TYPE               = 5007 ; 6.2.2.7
+DIAMETER_ERROR_TOO_MUCH_DATA                    = 5008 ; 6.2.2.8
+DIAMETER_ERROR_NOT_SUPPORTED_USER_DATA          = 5009 ; 6.2.2.9
+DIAMETER_ERROR_FEATURE_UNSUPPORTED              = 5011 ; 6.2.2.11
+DIAMETER_ERROR_SERVING_NODE_FEATURE_UNSUPPORTED = 5012 ; 6.2.2.12
+
+
+; Type: Grouped AVP
+; Name: Server-Capabilities
+; Section: 6.3.4
+; Page: 25
+Server-Capabilities ::= < AVP header: 603 10415 >
+      * [ Mandatory-Capability ]
+      * [ Optional-Capability ]
+      * [ Server-Name ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: SIP-Auth-Data-Item
+; Section: 6.3.13
+; Page: 26
+SIP-Auth-Data-Item ::= < AVP header: 612 10415 >
+        [ SIP-Item-Number ]
+        [ SIP-Authentication-Scheme ]
+        [ SIP-Authenticate ]
+        [ SIP-Authorization ]
+        [ SIP-Authentication-Context ]
+        [ Confidentiality-Key ]
+        [ Integrity-Key ]
+        [ SIP-Digest-Authenticate ]
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Framed-Interface-Id ]
+      * [ Line-Identifier ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Server-Assignment-Type
+; Section: 6.3.15
+; Page: 27
+Server-Assignment-Type ::= < Enumerated AVP header: 614 10415 >
+        NO_ASSIGNMENT                            = 0
+        REGISTRATION                             = 1
+        RE_REGISTRATION                          = 2
+        UNREGISTERED_USER                        = 3
+        TIMEOUT_DEREGISTRATION                   = 4
+        USER_DEREGISTRATION                      = 5
+        TIMEOUT_DEREGISTRATION_STORE_SERVER_NAME = 6
+        USER_DEREGISTRATION_STORE_SERVER_NAME    = 7
+        ADMINISTRATIVE_DEREGISTRATION            = 8
+        AUTHENTICATION_FAILURE                   = 9
+        AUTHENTICATION_TIMEOUT                   = 10
+        DEREGISTRATION_TOO_MUCH_DATA             = 11
+        AAA_USER_DATA_REQUEST                    = 12
+        PGW_UPDATE                               = 13
+        RESTORATION                              = 14
+
+
+; Type: Grouped AVP
+; Name: Deregistration-Reason
+; Section: 6.3.16
+; Page: 28
+Deregistration-Reason ::= < AVP header: 615 10415 >
+        { Reason-Code }
+        [ Reason-Info ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Reason-Code
+; Section: 6.3.17
+; Page: 28
+Reason-Code ::= < Enumerated AVP header: 616 10415 >
+        PERMANENT_TERMINATION = 0
+        NEW_SERVER_ASSIGNED   = 1
+        SERVER_CHANGE         = 2
+        REMOVE_S-CSCF         = 3
+
+
+; Type: Grouped AVP
+; Name: Charging-Information
+; Section: 6.3.19
+; Page: 29
+Charging-Information ::= < AVP header: 618 10415 >
+        [ Primary-Event-Charging-Function-Name ]
+        [ Secondary-Event-Charging-Function-Name ]
+        [ Primary-Charging-Collection-Function-Name ]
+        [ Secondary-Charging-Collection-Function-Name ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: User-Authorization-Type
+; Section: 6.3.24
+; Page: 29
+User-Authorization-Type ::= < Enumerated AVP header: 623 10415 >
+        REGISTRATION                  = 0
+        DE_REGISTRATION               = 1
+        REGISTRATION_AND_CAPABILITIES = 2
+
+
+; Type: Enumerated AVP
+; Name: User-Data-Already-Available
+; Section: 6.3.26
+; Page: 30
+User-Data-Already-Available ::= < Enumerated AVP header: 624 10415 >
+        USER_DATA_NOT_AVAILABLE     = 0
+        USER_DATA_ALREADY_AVAILABLE = 1
+
+
+; Type: Grouped AVP
+; Name: Supported-Features
+; Section: 6.3.29
+; Page: 30
+Supported-Features ::= < AVP header: 628 10415 >
+        { Vendor-Id }
+        { Feature-List-ID }
+        { Feature-List }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Supported-Applications
+; Section: 6.3.32
+; Page: 31
+Supported-Applications ::= < AVP header: 631 10415 >
+      * [ Auth-Application-Id ]
+      * [ Acct-Application-Id ]
+      * [ Vendor-Specific-Application-Id ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Associated-Identities
+; Section: 6.3.33
+; Page: 31
+Associated-Identities ::= < AVP header: 632 10415 >
+      * [ User-Name ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Originating-Request
+; Section: 6.3.34
+; Page: 31
+Originating-Request ::= < Enumerated AVP header: 633 10415 >
+        ORIGINATING = 0
+
+
+; Type: Grouped AVP
+; Name: SIP-Digest-Authenticate
+; Section: 6.3.36
+; Page: 31
+SIP-Digest-Authenticate ::= < AVP header: 635 10415 >
+        { Digest-Realm }
+        [ Digest-Algorithm ]
+        { Digest-Qop } ;; corrected: (TS29.229.py#digest-qop-member-case)
+        { Digest-HA1 }
+        [ Alternate-Digest-Algorithm ]
+        [ Alternate-Digest-HA1 ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: UAR-Flags
+; Kind: bits
+; Section: 6.3.44
+; Table: 6.3.44.1
+; Page: 32
+"IMS Emergency Registration" = 0
+
+
+; Type: Enumerated AVP
+; Name: Loose-Route-Indication
+; Section: 6.3.45
+; Page: 33
+Loose-Route-Indication ::= < Enumerated AVP header: 638 10415 >
+        LOOSE_ROUTE_NOT_REQUIRED = 0
+        LOOSE_ROUTE_REQUIRED     = 1
+
+
+; Type: Grouped AVP
+; Name: SCSCF-Restoration-Info
+; Section: 6.3.46
+; Page: 33
+SCSCF-Restoration-Info ::= < AVP header: 639 10415 >
+        { User-Name }
+     1* { Restoration-Info }
+        [ Registration-Time-Out ]
+        [ SIP-Authentication-Scheme ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Subscription-Info
+; Section: 6.3.49
+; Page: 33
+Subscription-Info ::= < AVP header: 642 10415 >
+        { Call-ID-SIP-Header }
+        { From-SIP-Header }
+        { To-SIP-Header }
+        { Record-Route }
+        { Contact }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Associated-Registered-Identities
+; Section: 6.3.50
+; Page: 34
+Associated-Registered-Identities ::= < AVP header: 647 10415 >
+      * [ User-Name ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Multiple-Registration-Indication
+; Section: 6.3.51
+; Page: 34
+Multiple-Registration-Indication ::= < Enumerated AVP header: 648 10415 >
+        NOT_MULTIPLE_REGISTRATION = 0
+        MULTIPLE_REGISTRATION     = 1
+
+
+; Type: Grouped AVP
+; Name: Restoration-Info
+; Section: 6.3.52
+; Page: 34
+Restoration-Info ::= < AVP header: 649 10415 >
+        { Path }
+        { Contact }
+        [ Initial-CSeq-Sequence-Number ]
+        [ Call-ID-SIP-Header ]
+        [ Subscription-Info ]
+        [ P-CSCF-Subscription-Info ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Session-Priority
+; Section: 6.3.56
+; Page: 35
+Session-Priority ::= < Enumerated AVP header: 650 10415 >
+        PRIORITY-0 = 0
+        PRIORITY-1 = 1
+        PRIORITY-2 = 2
+        PRIORITY-3 = 3
+        PRIORITY-4 = 4
+
+
+; Type: Grouped AVP
+; Name: Identity-with-Emergency-Registration
+; Section: 6.3.57
+; Page: 35
+Identity-with-Emergency-Registration ::= < AVP header: 651 10415 >
+        { User-Name }
+        { Public-Identity }
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Priviledged-Sender-Indication
+; Section: 6.3.58
+; Page: 36
+Priviledged-Sender-Indication ::= < Enumerated AVP header: 652 10415 >
+        NOT_PRIVILEDGED_SENDER = 0
+        PRIVILEDGED_SENDER     = 1
+
+
+; Type: Value Table
+; AVP: LIA-Flags
+; Kind: bits
+; Section: 6.3.59
+; Table: 6.3.59.1
+; Page: 36
+"PSI Direct Routing Indication" = 0
+
+
+; Type: Grouped AVP
+; Name: OC-OLR
+; Section: 6.3.61
+; Page: 36
+OC-OLR ::= < AVP header: 623 >
+        < OC-Sequence-Number >
+        < OC-Report-Type >
+        [ OC-Reduction-Percentage ]
+        [ OC-Validity-Duration ]
+        [ OC-Reg-Timer-Ext ]        ; bold
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: SAR-Flags
+; Kind: bits
+; Section: 6.3.63
+; Table: 6.3.63.1
+; Page: 36
+"P-CSCF Restoration Indication" = 0
+
+
+; Type: Grouped AVP
+; Name: Allowed-WAF-WWSF-Identities
+; Section: 6.3.64
+; Page: 37
+Allowed-WAF-WWSF-Identities ::= < AVP header: 656 10415 >
+      * [ WebRTC-Authentication-Function-Name ]
+      * [ WebRTC-Web-Server-Function-Name ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: RTR-Flags
+; Kind: bits
+; Section: 6.3.69
+; Table: 6.3.69.1
+; Page: 37
+"Reference Location Information change" = 0
+
+
+; Type: Grouped AVP
+; Name: P-CSCF-Subscription-Info
+; Section: 6.3.70
+; Page: 38
+P-CSCF-Subscription-Info ::= < AVP header: 660 10415 >
+        { Call-ID-SIP-Header }
+        { From-SIP-Header }
+        { To-SIP-Header }
+        { Contact }
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Failed-PCSCF
+; Section: 6.3.74
+; Page: 38
+Failed-PCSCF ::= < AVP header: 664 10415 >
+        [ PCSCF-FQDN ]
+      * [ PCSCF-IP-Address ]
+      * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Feature-List
+; Kind: features
+; Feature-List-ID: 1
+; Application: Cx
+; Section: 7.1.1
+; Table: 7.1.1
+; Page: 40
+SiFC                         = 0 ; O
+AliasInd                     = 1 ; M
+IMSRestorationInd            = 2 ; O
+P-CSCF-Restoration-mechanism = 3 ; O

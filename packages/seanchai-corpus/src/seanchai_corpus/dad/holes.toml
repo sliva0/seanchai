@@ -69,7 +69,7 @@ document = "TS29.061"
 name = "Delegated-IPv6-Prefix"
 missing = ["undefined"]
 reason = """
-    V18.1.0 clauses 16a.4.1 to 16a.4.3 list it in the AAR, AAA and ACR bodies
+    V19.1.0 clauses 16a.4.1 to 16a.4.3 list it in the AAR, AAA and ACR bodies
     and no table of the document holds it; clause 2 cites RFC 4818 [97], a
     RADIUS attribute with no Diameter type or flags, which the corpus does not
     hold (TS29.061.py#undefined-delegated-ipv6-prefix)
@@ -80,7 +80,7 @@ document = "TS29.061"
 name = "3GPP-Session-Stop-Indicator"
 missing = ["data_type", "flag_rules"]
 reason = """
-    V18.1.0 clause 16.4.7.2 codes sub-attribute 11 and gives no Diameter type or
+    V19.1.0 clause 16.4.7.2 codes sub-attribute 11 and gives no Diameter type or
     flags, and table 9a skips it (TS29.061.py#session-stop-indicator-row);
     V11.12.0 tabulates it in no table either (corpus.RELEASE_STAND_INS), and TS
     32.299 table 7.2.0.1 re-uses it from here
@@ -106,7 +106,7 @@ reason = """
     TS 29.210 V6.7.0 table 5.3 re-uses it from Release 6's TS 29.061, whose last
     version, V6.15.0, numbers it RADIUS sub-attribute 18 in clause 16.4.7, with
     no Diameter type or flags, and tabulates it nowhere: table 10, its only AVP
-    table, is Gmb's (TS29.061.py#3gpp-sgsn-mcc-mnc-row). Release 18's table 9a
+    table, is Gmb's (TS29.061.py#3gpp-sgsn-mcc-mnc-row). Release 19's table 9a
     types it, a release later than the citation means
     """
 
@@ -127,7 +127,7 @@ document = "TS29.229"
 name = "Wildcarded-IMPU"
 missing = ["code", "flag_rules"]
 reason = """
-    V18.1.0 clause 6.3.43 gives the name and UTF8String and states no code or
+    V19.1.0 clause 6.3.43 gives the name and UTF8String and states no code or
     flag rule, and table 6.3.0.1 omits the AVP
     (TS29.229.py#wildcarded-impu-row-missing); TS 29.230 table 7.1 allocates
     code 636 to it and TS 29.329 table 6.3.1 tabulates it with code and flags,
@@ -156,6 +156,18 @@ reason = """
     it and the TS 29.230 registry allocates no such name; Wireshark's dictionary
     carries RADIUS's number under no citation, which stays evidence
     (TS29.234.py#undefined-error-cause)
+    """
+
+[[hole]]
+document = "TS29.329"
+name = "Request-Current-Status"
+missing = ["undefined"]
+reason = """
+    a member of Event-List (clause 8.3.10) no clause defines and table 8.3.1
+    does not list, in V19.1.0, which adds the Sh-ee application; TS 29.230
+    V19.3.0 allocates no such name, and neither Wireshark's dictionary nor any
+    other document here defines it
+    (TS29.329.py#undefined-request-current-status)
     """
 
 [[hole]]

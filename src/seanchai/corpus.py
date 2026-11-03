@@ -121,7 +121,7 @@ FINAL_VERSIONS: dict[str, str] = {
 # `CITED_VERSIONS` records versions. It is a specific reference: that
 # revision answers it and no other, unless `STAND_INS` says one does.
 CITED_REVISIONS: dict[tuple[str, str], str] = {
-    # TS 29.212 V18.2.0 clause 2, [24] 3GPP2 X.S0057-B: "E-UTRAN - eHRPD
+    # TS 29.212 V19.1.0 clause 2, [24] 3GPP2 X.S0057-B: "E-UTRAN - eHRPD
     # Connectivity and Interworking: Core Network Aspects".
     ("TS29.212", "3GPP2-X.S0057"): "B",
 }
@@ -184,13 +184,16 @@ def _compared(date: str, release: int) -> str:
     )
 
 
+# The copies moved from Release 18 to Release 19 on 2026-11-03, when a comparison
+# of every name each citing copy reaches, grouped members included, found the two
+# releases define them alike; the older comparisons below carry over.
 _REL11 = _compared("2026-10-31", 11)
 RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
     # ETSI TS 183 033 V1.2.0 clause 2.1 [2] names V6.6.0, of which clause 6.3.13
     # reaches seven AVPs, printing SIP-Auth-Data-Item's body itself.
     ("ETSI-TS183.033", "1.2.0", "TS29.229"): ReleaseStandIn(
         "6.6.0",
-        "18.1.0",
+        "19.1.0",
         "SIP-Authentication-Scheme, SIP-Authenticate, SIP-Authorization,"
         " SIP-Authentication-Context, SIP-Item-Number, Confidentiality-Key and"
         " Integrity-Key compared 2026-11-03 with table 6.3.1 of V6.6.0 from the"
@@ -200,7 +203,7 @@ RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
     # TS 29.140 V7.0.0 clause 2 [12], reached only for 3GPP-IMSI (6.3.6).
     ("TS29.140", "7.0.0", "TS29.061"): ReleaseStandIn(
         "7.12.0",
-        "18.1.0",
+        "19.1.0",
         "compared 2026-11-02 with V7.12.0 extracted from the 3GPP archive,"
         " whose listing holds no later Release 7 version: both define"
         " 3GPP-IMSI as code 1, vendor 10415, UTF8String in clause 16.4.7;"
@@ -211,7 +214,7 @@ RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
     # TS 29.140 V7.0.0 clause 2 [11], reached only for MSISDN (6.3.2).
     ("TS29.140", "7.0.0", "TS29.329"): ReleaseStandIn(
         "7.8.0",
-        "18.0.0",
+        "19.1.0",
         "compared 2026-11-02 with V7.8.0 extracted from the 3GPP archive,"
         " whose listing holds no later Release 7 version: both table 6.3.1"
         " rows give MSISDN code 701, vendor 10415, OctetString, M and V in"
@@ -221,75 +224,75 @@ RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
     # TS 32.299 V11.20.0 clause 2 [207].
     ("TS32.299", "11.20.0", "TS29.061"): ReleaseStandIn(
         "11.12.0",
-        "18.1.0",
+        "19.1.0",
         "V11.12.0 tabulates the 22 AVPs TS 32.299 V11.20.0 re-uses from it"
-        " that either version tabulates with V18.1.0's codes, types and flag"
+        " that either version tabulates with V19.1.0's codes, types and flag"
         " rules on every row (3GPP-IMSI, 3GPP-MS-TimeZone, 3GPP-RAT-Type and"
         " 3GPP-User-Location-Info on both of their rows), and prints"
         " CN-IP-Multicast-Distribution's, MBMS-2G-3G-Indicator's and"
-        " MBMS-Service-Type's values as V18.1.0 does; neither tabulates"
-        " 3GPP-Session-Stop-Indicator, whose code-only row is V18.1.0's"
+        " MBMS-Service-Type's values as V19.1.0 does; neither tabulates"
+        " 3GPP-Session-Stop-Indicator, whose code-only row is V19.1.0's"
         " correction; " + _REL11,
     ),
     # [229].
     ("TS32.299", "11.20.0", "TS29.173"): ReleaseStandIn(
         "11.1.0",
-        "18.0.0",
+        "19.0.0",
         "V11.1.0 tabulates MME-Name (2402) and MME-Realm (2408) with"
-        " V18.0.0's types and flag rules; " + _REL11,
+        " V19.0.0's types and flag rules; " + _REL11,
     ),
     # [204].
     ("TS32.299", "11.20.0", "TS29.229"): ReleaseStandIn(
         "11.5.0",
-        "18.1.0",
+        "19.1.0",
         "V11.5.0 tabulates Server-Capabilities, Mandatory-Capability,"
         " Optional-Capability, Server-Name, Session-Priority and User-Data"
-        " with V18.1.0's codes, types and flag rules, and prints"
-        " Server-Capabilities' body and Session-Priority's values as V18.1.0"
+        " with V19.1.0's codes, types and flag rules, and prints"
+        " Server-Capabilities' body and Session-Priority's values as V19.1.0"
         " does; " + _REL11,
     ),
     # [219], [230].
     ("TS32.299", "11.20.0", "TS29.272"): ReleaseStandIn(
         "11.14.0",
-        "18.7.0",
+        "19.6.0",
         "V11.14.0 tabulates CSG-Id, MME-Number-for-MT-SMS, Terminal-Information"
-        " and its members IMEI, 3GPP2-MEID and Software-Version with V18.7.0's"
+        " and its members IMEI, 3GPP2-MEID and Software-Version with V19.6.0's"
         " codes, types and flag rules, and prints Terminal-Information's body"
-        " as V18.7.0 does; " + _REL11,
+        " as V19.6.0 does; " + _REL11,
     ),
     # [237].
     ("TS32.299", "11.20.0", "TS29.273"): ReleaseStandIn(
         "11.11.0",
-        "18.6.0",
-        "V11.11.0 tabulates SSID (1524) on both of V18.6.0's rows with its"
+        "19.2.0",
+        "V11.11.0 tabulates SSID (1524) on both of V19.2.0's rows with its"
         " type and flag rules; " + _REL11,
     ),
     # [221].
     ("TS32.299", "11.20.0", "TS29.329"): ReleaseStandIn(
         "11.7.0",
-        "18.0.0",
-        "V11.7.0 tabulates MSISDN (701) with V18.0.0's type and flag rules; " + _REL11,
+        "19.1.0",
+        "V11.7.0 tabulates MSISDN (701) with V19.1.0's type and flag rules; " + _REL11,
     ),
     # TS 29.210 V6.7.0 clause 2 [16].
     ("TS29.210", "6.7.0", "TS29.229"): ReleaseStandIn(
         "6.11.0",
-        "18.1.0",
+        "19.1.0",
         "V6.11.0 table 6.3.1 tabulates Charging-Information (618) and its members"
         " Primary-Event-Charging-Function-Name, Secondary-Event-Charging-Function-"
         "Name, Primary-Charging-Collection-Function-Name and Secondary-Charging-"
         "Collection-Function-Name (619-622) with the codes, types and flag rules"
-        " of V18.1.0's table 6.3.0.1, and clause 6.3.19 prints Charging-"
-        "Information's body as V18.1.0 does; " + _compared("2026-11-01", 6),
+        " of V19.1.0's table 6.3.0.1, and clause 6.3.19 prints Charging-"
+        "Information's body as V19.1.0 does; " + _compared("2026-11-01", 6),
     ),
     # TS 29.234 V11.2.0 clause 2 [6].
     ("TS29.234", "11.2.0", "TS29.229"): ReleaseStandIn(
         "11.5.0",
-        "18.1.0",
+        "19.1.0",
         "V11.5.0 table 6.3.1 tabulates the 14 AVPs TS 29.234 V11.2.0 re-uses from"
         " it, and Deregistration-Reason's members Reason-Code and Reason-Info, with"
-        " the codes, types and flag rules of V18.1.0's table 6.3.0.1, and prints"
+        " the codes, types and flag rules of V19.1.0's table 6.3.0.1, and prints"
         " Deregistration-Reason's body and Server-Assignment-Type's and"
-        " Reason-Code's values as V18.1.0 does. V18.1.0's SIP-Digest-Authenticate,"
+        " Reason-Code's values as V19.1.0 does. V19.1.0's SIP-Digest-Authenticate,"
         " a member of SIP-Auth-Data-Item, adds Alternate-Digest-Algorithm and"
         " Alternate-Digest-HA1 to V11.5.0's, which TS 29.234 does not reach: its"
         " clause 10.1.4 prints a SIP-Auth-Data-Item body of its own, without that"
