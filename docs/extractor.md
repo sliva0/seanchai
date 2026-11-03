@@ -558,12 +558,15 @@ Same definitions, different carrier:
   `2 HMAC-SHA-1` forms. Value names are all-caps unless a quirk says
   otherwise, which keeps prose out. A clause that says where its values are
   listed gets that citation as `; Values:`.
-- **Result codes**: a line of a clause titled `Result-Code AVP` or `Result Code
-  AVP Values`, or its subclauses, that is a name with an underscore and a
-  number: `DIAMETER_SUCCESS 2001` (RFC 6733, 4004, 4006, 8506), `DIAMETER_X
-  (5048)` (RFC 6942), `DIAMETER_X (Status Code 2009)` (RFC 5778). An RFC's are
-  all `Result-Code`'s. Its bit masks are prose (RFC 7683's `OC-Feature-Vector`,
-  RFC 5778's `MIP6-Feature-Vector`), and no table reads them.
+- **Result codes**: a line of a clause titled `Result-Code AVP`, `Result Code
+  AVP Values`, `Extension to the Result-Code AVP Values` or `Additional
+  Result-Code AVP Values`, or its subclauses, that is a name with an underscore
+  and a number: `DIAMETER_SUCCESS 2001` (RFC 6733, 4004, 4006, 8506), `o
+  DIAMETER_X 2003` (RFC 4740), `RESOURCE_FAILURE (4014)` (RFC 6736, 6942),
+  `DIAMETER_X (Status Code 2009)` (RFC 5778). RFC 7075 clause 3.4 gives its code
+  a clause of its own, headed `DIAMETER_X Protocol Error Code`. An RFC's are all
+  `Result-Code`'s. Its bit masks are prose (RFC 7683's `OC-Feature-Vector`, RFC
+  5778's `MIP6-Feature-Vector`), and no table reads them.
 - **Values printed outside a value list**, each behind its quirk: RFC
   4005's `Termination-Cause` values in a RADIUS-to-Diameter mapping table
   (`cause-mapping-table`), and RFC 5778's `MIP6-Auth-Mode` value numbered
