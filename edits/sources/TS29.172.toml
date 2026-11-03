@@ -13,7 +13,7 @@ reason = """
     VERTICAL_COORDINATE_IS_NOT_REQUESTED (0)
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "worded-enum-values"
@@ -21,7 +21,7 @@ reason = """
     clause 7.4.27 labels LCS-QoS-Class's value 1 in words, 'BEST EFFORT (1)'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "[ 1xRTT-RCID ] ]"
@@ -34,4 +34,4 @@ reason = """
     there, dropping the members after it.
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.0.0"

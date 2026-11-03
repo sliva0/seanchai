@@ -12,7 +12,7 @@ reason = """
     CC-Total-Octets and the BTA ABNF spells it so
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -22,7 +22,7 @@ reason = """
     in the present release is 16777348'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -33,4 +33,4 @@ reason = """
     described in clause 5.4.2'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

@@ -19,7 +19,7 @@ CORRECTIONS = [
         reason="the Serving-Node body (clause 5.3.3.6) uses IP-SM-GW-Realm"
         " but table 5.3.3.1/2 lists only IP-SM-GW-Name and IP-SM-GW-Number;"
         " TS 29.336 clause 6.4.18 defines it beside the two listed ones",
-        versions="18.2.0",
+        versions="18.2.0..19.3.0",
     ),
     Correction(
         id="msisdn-origin",
@@ -30,7 +30,7 @@ CORRECTIONS = [
         reason="table 5.3.3.1/2 cites MSISDN from '3GPP TS 23.329 [14]';"
         " clause 2 lists reference [14] as TS 29.329, whose clause 6.3.2"
         " defines MSISDN (code 701)",
-        versions="18.2.0",
+        versions="18.2.0..19.3.0",
     ),
     Correction(
         id="smsmi-correlation-id-name",
@@ -41,7 +41,7 @@ CORRECTIONS = [
         reason="clause 6.3.3.13's AVP format writes 'SMS-MI-Correlation-ID';"
         " the clause heading, the clause prose, table 6.3.3.1-1 and every"
         " command ABNF in the document spell it 'SMSMI-Correlation-ID'",
-        versions="18.2.0",
+        versions="18.2.0..19.3.0",
     ),
     Correction(
         id="smsmi-correlation-id-code",
@@ -52,7 +52,7 @@ CORRECTIONS = [
         reason="clause 6.3.3.13's AVP format re-prints SM-RP-MTI's code 3308"
         " (clause 5.3.3.2); table 6.3.3.1-1 gives SMSMI-Correlation-ID the"
         " code 3324",
-        versions="18.2.0",
+        versions="18.2.0..19.3.0",
     ),
 ]
 
@@ -69,6 +69,6 @@ CORRECTIONS += [
         reason="clause 5.3.3.7 says the AVP 'is originally defined in 3GPP TS 29.173 "
         "[10]' and lists the member combinations 'allowed', which name every member "
         "its body adds and none it leaves out",
-        versions="18.2.0",
+        versions="18.2.0..19.3.0",
     ),
 ]

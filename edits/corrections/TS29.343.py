@@ -20,7 +20,7 @@ CORRECTIONS = [
         reason=f"clause {section}'s AVP header omits the vendor-id; table"
         " 6.4.1-1 marks the V flag mandatory for it, as for every other AVP"
         " the specification defines",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name, section in _VENDORLESS
 ] + [
@@ -32,7 +32,7 @@ CORRECTIONS = [
         replace="Allowed-Suffixes-Number",
         reason="the PXR ABNF (clause 6.6.2) drops the plural; clause 6.4.8 and"
         " table 6.4.1-1 define Allowed-Suffixes-Number (code 3606)",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="prose-app-code-suffix-range-row-name",
@@ -42,7 +42,7 @@ CORRECTIONS = [
         replace="ProSe-App-Code-Suffix-Range",
         reason="table 6.5.1-1 cites TS 29.345 for the AVP, which defines it as"
         " ProSe-App-Code-Suffix-Range (clause 6.3.82, code 3867)",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="pxa-prose-app-code-suffix-range-name",
@@ -52,6 +52,6 @@ CORRECTIONS = [
         replace="ProSe-App-Code-Suffix-Range",
         reason="the PXA ABNF (clause 6.6.3) uses table 6.5.1-1's spelling;"
         " TS 29.345 clause 6.3.82 defines the AVP as ProSe-App-Code-Suffix-Range",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

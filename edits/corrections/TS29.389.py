@@ -11,7 +11,7 @@ CORRECTIONS = [
         "table 8.1.4 allocates the code to TS29.229",
         reason="clause 6.4.3.2 says 'This error code is defined in 3GPP TS 29.229 "
         "[6].': the document lists a code it re-uses",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Accept(
         id="unknown-v2x-subscription-result-code-reused",
@@ -23,7 +23,7 @@ CORRECTIONS = [
         "but TS29.230 table 8.1.4 allocates the code to TS29.388",
         reason="clause 6.4.3.3 says 'This error code is defined in 3GPP TS 29.388 "
         "[16].': the document lists a code it re-uses",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Accept(
         id="v2x-not-allowed-result-code-reused",
@@ -33,6 +33,6 @@ CORRECTIONS = [
         "TS29.230 table 8.1.4 allocates the code to TS29.388",
         reason="clause 6.4.3.4 says 'This error code is defined in 3GPP TS 29.388 "
         "[16].': the document lists a code it re-uses",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

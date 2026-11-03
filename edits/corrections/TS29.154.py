@@ -26,7 +26,7 @@ CORRECTIONS = [
         reason=f"clause {section}'s AVP header omits the vendor-id; the"
         " document gives every AVP it defines vendor 10415 and its AVP"
         " table marks the V flag mandatory",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name, section in _VENDORLESS
 ] + [
@@ -38,7 +38,7 @@ CORRECTIONS = [
         replace="Time-Window",
         reason="the clause 5.3.5 rule lower-cases the 'w'; its heading, table"
         " 5.3.1.1 and the Transfer-Policy and BTR bodies spell Time-Window",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 
@@ -69,6 +69,6 @@ CORRECTIONS += [
         " its ABNF and prose and uses External-Identifier per UE in the ERR,"
         " so reading one as the other is a guess at another document's"
         " intent",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

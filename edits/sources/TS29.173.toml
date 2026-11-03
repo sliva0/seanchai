@@ -16,4 +16,4 @@ a heading printed as a body paragraph reads with its keyword; the table of
 contents and the AVP table name clause 6.4.15 RIA-Flags
 """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

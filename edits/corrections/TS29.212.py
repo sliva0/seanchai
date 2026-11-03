@@ -86,7 +86,7 @@ CORRECTIONS = (
             reason=f"clause {section}'s AVP header omits the vendor-id; the AVP"
             " table marks the V flag mandatory for it, as for every other AVP"
             " the specification defines",
-            versions="18.2.0",
+            versions="18.2.0..19.1.0",
         )
         for name, section in _VENDORLESS
     ]
@@ -99,7 +99,7 @@ CORRECTIONS = (
             replace=right,
             reason=f"the clause {section} re-used table spells the AVP 'Ipv6';"
             " TS 29.061, which defines it, spells 'IPv6' throughout",
-            versions="18.2.0",
+            versions="18.2.0..19.1.0",
         )
         for wrong, right in _IPV6
         for section in ("5.4.0", "5b.4.0")
@@ -113,7 +113,7 @@ CORRECTIONS = (
             replace=dict(_IPV6)[wrong],
             reason=f"clause {section}'s ABNF repeats the document's 'Ipv6'"
             " spelling; TS 29.061, which defines the AVP, spells 'IPv6'",
-            versions="18.2.0",
+            versions="18.2.0..19.1.0",
         )
         for parent, section, wrong in _IPV6_RULES
     ]
@@ -128,7 +128,7 @@ CORRECTIONS += [
         replace="Framed-IPv6-Prefix",
         reason=f"the clause {section} re-used table lower-cases the 'v';"
         " RFC 4005, which defines the AVP, spells 'IPv6'",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     )
     for section in ("5.4.0", "5a.4.0", "5b.4.0", "5c.4.1")
 ]
@@ -142,7 +142,7 @@ CORRECTIONS += [
         replace="Framed-IPv6-Prefix",
         reason=f"clause {section}'s ABNF repeats the document's 'Ipv6'"
         " spelling; RFC 4005, which defines the AVP, spells 'IPv6'",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     )
     for parent, section in (
         ("CC-Request", "5.6.2"),
@@ -156,9 +156,9 @@ CORRECTIONS += [
 ]
 
 # Release 11, V11.19.0, which TS 32.299 V11.20.0 [215] cites
-# non-specifically within Release 11; Release 18's declarations above do
+# non-specifically within Release 11; Release 19's declarations above do
 # not reach it (src/seanchai/versions.py). Its thirty-one vendorless
-# grouped-AVP headers, and the same 'Ipv6' spellings, are Release 18's
+# grouped-AVP headers, and the same 'Ipv6' spellings, are Release 19's
 # defects as printed then.
 _VENDORLESS_REL11 = [
     ("Charging-Rule-Install", "5.3.2"),
@@ -306,10 +306,10 @@ CORRECTIONS += [
         ),
         reason="clause 5.3.120: 'The values defined in the Default-Access AVP"
         " are the same as the ones defined in IP-CAN-Type AVP'; clause 5.3.27"
-        " of V18.2.0 defines IP-CAN-Type's 0 to 9, copied here. The clause's"
+        " of V19.1.0 defines IP-CAN-Type's 0 to 9, copied here. The clause's"
         " NOTE makes only 3GPP-EPS and Non-3GPP-EPS applicable in this"
         " release, which limits their use, not the list",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
 ]
 
@@ -326,7 +326,7 @@ CORRECTIONS += [
         reason="clause 5.5.3 says 'Further as an addition the following "
         "Experimental-Result AVP values defined in 3GPP TS 29.273 [48] are "
         "applicable:': the document lists a code it re-uses",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     Accept(
         id="timed-out-request-result-code-reused",
@@ -339,6 +339,6 @@ CORRECTIONS += [
         reason="clause 5.5.3 says 'Further as an addition the following "
         "Experimental-Result AVP values defined in 3GPP TS 29.273 [48] are "
         "applicable:': the document lists a code it re-uses",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
 ]

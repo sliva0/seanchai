@@ -22,7 +22,7 @@ CORRECTIONS = [
         " table 7.4.1/1 and both message ABNFs spell it"
         " 'Periodic-LDR-Information' at the same code 2540; Wireshark's"
         " dictionary and mensonen/diameter both use the longer name",
-        versions="18.1.0",
+        versions="18.1.0..19.0.0",
     ),
     Correction(
         id="plr-supported-gad-shapes",
@@ -34,7 +34,7 @@ CORRECTIONS = [
         " prefix the name with LCS-; clause 7.4.12's heading and prose, table"
         " 7.4.1-1 and Wireshark's dictionary all define the AVP at code 2510"
         " as Supported-GAD-Shapes",
-        versions="18.1.0",
+        versions="18.1.0..19.0.0",
     ),
     Correction(
         id="area-identification-type",
@@ -46,7 +46,7 @@ CORRECTIONS = [
         " Area-Identification AVP as of type OctetString and lays out its"
         " octets; no grouped ABNF exists, and Wireshark's dictionary reads"
         " the clause the same way",
-        versions="18.1.0",
+        versions="18.1.0..19.0.0",
     ),
     Correction(
         id="lcs-requestor-id-string-reused-case",
@@ -56,7 +56,7 @@ CORRECTIONS = [
         replace="LCS-Requestor-ID-String",
         reason="the row cites TS 32.299, whose clause 7.2.92 and table 7.2.0.1"
         " spell the AVP LCS-Requestor-ID-String",
-        versions="18.1.0",
+        versions="18.1.0..19.0.0",
     ),
     Correction(
         id="lcs-requestor-id-string-member-case",
@@ -66,7 +66,7 @@ CORRECTIONS = [
         replace="LCS-Requestor-ID-String",
         reason="TS 32.299 clause 7.2.92 defines LCS-Requestor-ID-String; the"
         " body spells it as the re-used table does",
-        versions="18.1.0",
+        versions="18.1.0..19.0.0",
     ),
 ]
 
@@ -80,7 +80,7 @@ CORRECTIONS += [
         "table 8.1.4 allocates the code to TS29.229",
         reason="clause 7.5.3.1 says 'This error code is defined in 3GPP TS 29.229 "
         "[17]': the document lists a code it re-uses",
-        versions="18.1.0",
+        versions="18.1.0..19.0.0",
     ),
     Accept(
         id="unauthorized-requesting-network-result-code-reused",
@@ -92,6 +92,6 @@ CORRECTIONS += [
         "here, but TS29.230 table 8.1.4 allocates the code to TS29.173",
         reason="clause 7.5.3.2 says 'This error code is defined in 3GPP TS 29.173 "
         "[18]': the document lists a code it re-uses",
-        versions="18.1.0",
+        versions="18.1.0..19.0.0",
     ),
 ]

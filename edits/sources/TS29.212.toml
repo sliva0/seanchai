@@ -7,7 +7,7 @@ find = "Enumarated"
 replace = "Enumerated"
 reason = "one Value Type cell misspells 'Enumerated'"
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "Allocation- Retention-Priority"
@@ -18,7 +18,7 @@ reason = """
     other occurrence spells 'Allocation-Retention-Priority'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "Monitoring- Flags"
@@ -29,7 +29,7 @@ reason = """
     clause 5.3.115 and the ABNF spell 'Monitoring-Flags'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "Redirect- Address-Type"
@@ -40,7 +40,7 @@ reason = """
     and the rest of the document spell 'Redirect-Address-Type'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "Resource-Allocation- Notification"
@@ -51,7 +51,7 @@ reason = """
     defining clause 5.3.50 and the ABNF spell 'Resource-Allocation-Notification'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "NetLoc- "
@@ -63,7 +63,7 @@ reason = """
     first hyphen; the feature lists of clause 5.4.1 spell them unbroken
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "3GPP- EPS"
@@ -74,7 +74,7 @@ reason = """
     with a space after the hyphen
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "3GPP-GPRS. 3GPP-EPS"
@@ -85,7 +85,7 @@ reason = """
     with a full stop where the rest use a comma or a space
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "dotted-flags"
@@ -103,7 +103,7 @@ reason = """
     IP-CAN-Type AVP.'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -113,7 +113,7 @@ reason = """
     the Gx Application in the present release is 16777238'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "access-type-headings"
@@ -123,7 +123,7 @@ reason = """
     and 21 grouped definitions were missing
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "worded-enum-values"
@@ -132,7 +132,7 @@ reason = """
     INACTIVE (2)'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "is of type of Enumerated"
@@ -145,7 +145,7 @@ reason = """
     definitions; every other clause says 'is of type Enumerated'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "is type of Enumerated"
@@ -157,7 +157,7 @@ reason = """
     being read as definitions
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "USER_CSG_ HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE (36)"
@@ -170,7 +170,7 @@ reason = """
     USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "TRUSTED- N3GA (2)"
@@ -183,7 +183,7 @@ reason = """
     WIRELINE-CABLE)
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "access-type-column"
@@ -194,7 +194,7 @@ reason = """
     notes 4-8 and 11 of table 5.3.0.1 qualify some cells in prose
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -208,7 +208,7 @@ reason = """
     clause 5.4.1)
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "CS-Service-Qos-Request-Identifier"
@@ -221,7 +221,7 @@ reason = """
     as every sibling CS-Service-QoS-* row does
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "origins-by-reference"
@@ -231,11 +231,11 @@ reason = """
     clause 2's [37] is 'ETSI TS 283 034 v2.2.0'
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 # Release 11, V11.19.0: what TS 32.299 V11.20.0 [215] cites, non-specifically,
 # within Release 11. A release's template is its own, so these apply to it
-# alone and the Release 18 ones above do not (src/seanchai/versions.py).
+# alone and the Release 19 ones above do not (src/seanchai/versions.py).
 
 [[patch]]
 find = "Enumarated"
@@ -457,4 +457,4 @@ reason = """
     the Tunnel-Header-Length AVP' is what the optional brackets say.
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"

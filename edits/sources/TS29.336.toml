@@ -12,7 +12,7 @@ reason = """
     UE-Reachability-Configuration ABNF use the hyphenated AVP name
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "Maximum Response Time"
@@ -24,7 +24,7 @@ reason = """
     the UE-Reachability-Configuration ABNF use the hyphenated AVP name
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "Visited PLMN Id"
@@ -36,15 +36,4 @@ reason = """
     in this specification and TS 29.272 use the hyphenated AVP name
     """
 first_version = "18.2.0"
-last_version = "18.2.0"
-
-[[patch]]
-find = "<AVP header: xxxx 10415>"
-replace = "<AVP header: 3189 10415>"
-section = "8.4.85"
-reason = """
-    clause 8.4.85 prints a placeholder 'xxxx' as Include-Identifiers' code;
-    table 8.4.1-1 gives the AVP code 3189
-    """
-first_version = "18.2.0"
-last_version = "18.2.0"
+last_version = "19.1.0"

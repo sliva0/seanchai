@@ -12,7 +12,7 @@ reason = """
     defined in clause 6.4.2
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[patch]]
 find = "Feature-Supported-In-Final-Target AVP"
@@ -24,7 +24,7 @@ reason = """
     defines Feature-Supported-In-Final-Target
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "physical-reused-columns"
@@ -34,7 +34,7 @@ reason = """
     physical cells line up with the labels.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "worded-enum-values"
@@ -44,7 +44,7 @@ reason = """
     identifiers.
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -54,7 +54,7 @@ reason = """
     16777309.'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -65,7 +65,7 @@ reason = """
     as described in clause 6.4.12'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "worded-marks"
@@ -74,4 +74,4 @@ reason = """
     a space is no separator
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

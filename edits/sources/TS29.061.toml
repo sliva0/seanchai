@@ -54,7 +54,7 @@ reason = """
     'Multicast and Unicast (1)'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "external-enum-values"
@@ -63,7 +63,7 @@ reason = """
     enumeration values are defined in 3GPP TS 25.413 [92].'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "reference-points-column"
@@ -73,7 +73,7 @@ reason = """
     separated by commas ('Gi, Sgi')
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -84,7 +84,7 @@ reason = """
     20.7'
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[quirk]]
 name = "worded-marks"
@@ -94,7 +94,7 @@ reason = """
     ('Gi, Sgi')
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "3GPP-Charging-ID"
@@ -106,7 +106,7 @@ reason = """
     table 9a prints
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "Qos-Filter-Rule"
@@ -118,7 +118,7 @@ reason = """
     RFC 7155 print
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "MBMS-GGSN-Ipv6-Address"
@@ -131,7 +131,7 @@ reason = """
     rule and stays
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "MBMS-Session-Repetition-number"
@@ -142,7 +142,7 @@ reason = """
     the Gmb RAR body (clause 17.6.5) misspells in case the name table 10 prints
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "MBMS-Session-Repetition-number"
@@ -153,7 +153,7 @@ reason = """
     the SGmb RAR body (clause 20.4.1) misspells in case the name table 10 prints
     """
 first_version = "18.1.0"
-last_version = "18.1.0"
+last_version = "19.1.0"
 
 [[patch]]
 find = "MBMS-Session-Repetition-number"

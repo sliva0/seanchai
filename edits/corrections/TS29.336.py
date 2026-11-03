@@ -48,7 +48,7 @@ CORRECTIONS = [
         " the definition, which table 8.4.1-2's re-used row also cites; the"
         " S6t variant stays readable in the source behind that row's clause"
         " pointer",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     Correction(
         id="scheduled-communication-time-case",
@@ -59,7 +59,7 @@ CORRECTIONS = [
         reason="clause 8.4.30's heading and rule lowercase the name; table"
         " 8.4.1-1 and the Monitoring-Event-Configuration ABNF (clause 8.4.24)"
         " both spell the AVP at code 3118 'Scheduled-Communication-Time'",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     Correction(
         id="periodic-time-case",
@@ -75,7 +75,7 @@ CORRECTIONS = [
         " appears on Scheduled-Communication-Time and"
         " Periodic-communication-indicator, so it is this document's typo"
         " pattern, not a name",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     # The S6m Serving-Node and Additional-Serving-Node bodies (clauses
     # 6.4.12, 6.4.13) use six member AVPs that table 6.4.1/2 does not list,
@@ -91,7 +91,7 @@ CORRECTIONS = [
             reason="the Serving-Node and Additional-Serving-Node bodies"
             f" (clauses 6.4.12, 6.4.13) use {name} but table 6.4.1/2 omits"
             f" the row; {origin} defines the AVP",
-            versions="18.2.0",
+            versions="18.2.0..19.1.0",
         )
         for (name, origin), after in zip(
             (
@@ -134,7 +134,7 @@ CORRECTIONS += [
             replace=name,
             reason=f"the re-used row cites TS 29.217, which defines {name}"
             f" (clause {clause})",
-            versions="18.2.0",
+            versions="18.2.0..19.1.0",
         ),
         Correction(
             id=f"{name.lower()}-in-mme-location-information",
@@ -144,7 +144,7 @@ CORRECTIONS += [
             replace=name,
             reason="the MME-Location-Information body (clause 8.4.34) uses the"
             f" re-used row's spelling; TS 29.217 defines {name}",
-            versions="18.2.0",
+            versions="18.2.0..19.1.0",
         ),
     )
 ]
@@ -160,7 +160,7 @@ CORRECTIONS += [
         replace="Number-Of-UEs",
         reason="the re-used row cites TS 29.154, which defines Number-Of-UEs"
         " (clause 5.3.10)",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     Correction(
         id="cia-number-of-ues-spelling",
@@ -170,7 +170,7 @@ CORRECTIONS += [
         replace="Number-Of-UEs",
         reason="the CIA ABNF (clause 8.2.4) uses the re-used row's spelling;"
         " TS 29.154 clause 5.3.10 defines Number-Of-UEs",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
 ]
 
@@ -189,7 +189,7 @@ CORRECTIONS += [
         " 8.2.4's CIA; RFC 6733 section 3 makes that an answer, clause 8.2.6's"
         " RIA is the answer to command 8388719, and TS 29.128 clause 6.2.5"
         " prints the RIR header with REQ",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
 ]
 
@@ -206,7 +206,7 @@ CORRECTIONS += [
         reason="clause 6.4.12 says the AVP 'is originally defined in 3GPP TS 29.173 "
         "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
         "name every member its body adds and none it leaves out",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     Accept(
         id="additional-serving-node-t4-body",
@@ -218,7 +218,7 @@ CORRECTIONS += [
         reason="clause 6.4.13 says the AVP 'is originally defined in 3GPP TS 29.173 "
         "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
         "name every member its body adds and none it leaves out",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     Correction(
         id="configuration-event-storage-result-spelling",
@@ -231,7 +231,7 @@ CORRECTIONS += [
         replace="DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL",
         reason="clause 8.3.3.5's heading prints a space inside the name; TS 29.230 "
         "table 8.1.4 allocates 5513 under the name without it",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
 ]
 
@@ -248,7 +248,7 @@ CORRECTIONS += [
         "table 8.1.4 allocates the code to TS29.229",
         reason="clause 6.3.3.1 says 'This error code is defined in 3GPP TS 29.229 "
         "[7].': the document lists a code it re-uses",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
     Accept(
         id="user-unknown-result-code-reused-8-3",
@@ -261,6 +261,6 @@ CORRECTIONS += [
         "table 8.1.4 allocates the code to TS29.229",
         reason="clause 8.3.3.1 says 'This error code is defined in 3GPP TS 29.229 "
         "[7].': the document lists a code it re-uses",
-        versions="18.2.0",
+        versions="18.2.0..19.1.0",
     ),
 ]

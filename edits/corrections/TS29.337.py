@@ -38,7 +38,7 @@ CORRECTIONS = [
         f" 6.3.3, 6.3.4) use {name} but table 6.3.1/2 omits the row while"
         " listing every other member those bodies use;"
         f" {origin} defines the AVP",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for (name, origin), after in zip(
         _MISSING,
@@ -64,7 +64,7 @@ CORRECTIONS += [
         reason="table 6.3.1/2 cites TS 29.368 for SMS-Application-Port-ID;"
         " TS 29.368 defines the AVP as Application-Port-Identifier (clause"
         " 6.4.11, code 3010)",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="dtr-application-port-identifier",
@@ -75,7 +75,7 @@ CORRECTIONS += [
         reason="the DTR ABNF (clause 6.2.3) uses table 6.3.1/2's"
         " SMS-Application-Port-ID; TS 29.368 clause 6.4.11 defines the AVP as"
         " Application-Port-Identifier",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]
 
@@ -94,7 +94,7 @@ CORRECTIONS += [
         reason="clause 6.3.3 says the AVP 'is originally defined in 3GPP TS 29.173 "
         "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
         "name every member its body adds and none it leaves out",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Accept(
         id="additional-serving-node-t4-body",
@@ -107,7 +107,7 @@ CORRECTIONS += [
         reason="clause 6.3.4 says the AVP 'is originally defined in 3GPP TS 29.173 "
         "[8]' and lists the member combinations 'allowed' for T4-triggering, which "
         "name every member its body adds and none it leaves out",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
     Correction(
         id="feature-list-avp",
@@ -119,6 +119,6 @@ CORRECTIONS += [
         "lists and no body names; the document's Supported-Features is TS "
         "29.229's, holding Feature-List-ID and Feature-List, and the clause's "
         "table is captioned 'Features of Feature-List-ID 1'",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

@@ -27,7 +27,7 @@ CORRECTIONS = [
         reason=f"clause {section}'s AVP header omits the vendor-id; clause"
         " 5.3.1 gives every AVP the document defines vendor 10415 and table"
         " 5.3.1.1 marks the V flag mandatory",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name, section in _VENDORLESS
 ]
@@ -43,6 +43,6 @@ CORRECTIONS += [
         reason="clause 5.5.4 says 'As an addition the following "
         "Experimental-Result-Code value defined in 3GPP TS 29.212 [14] is "
         "applicable:': the document lists a code it re-uses",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

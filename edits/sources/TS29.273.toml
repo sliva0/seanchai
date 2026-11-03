@@ -5,7 +5,7 @@ reason = """
     command clauses; they print no definition.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "8.2.3.1.3"
@@ -17,7 +17,7 @@ reason = """
     clause that does not exist; its definition is in clause 8.2.3.13.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "Emergency- Services"
@@ -29,7 +29,7 @@ reason = """
     name defined in clause 7.2.3.4.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[quirk]]
 name = "physical-reused-columns"
@@ -38,7 +38,7 @@ reason = """
     Comments and M-bit partway through; read its physical cells.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[quirk]]
 name = "independent-avp-tables"
@@ -47,17 +47,7 @@ reason = """
     and 9.2.3.2.1 share 9.2.3.3, while 11.2.3.1 has only re-used AVPs.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
-
-[[quirk]]
-name = "conflicting-avp-codes"
-reason = """
-    Table 8.2.3.0/1 gives Access-Network-Info code 1524, while clause 5.2.3.24
-    and the other tables give 1526; retain every row for correction, and do not
-    derive enumerated definitions from ambiguous codes.
-    """
-first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[quirk]]
 name = "procedure-commands"
@@ -66,7 +56,7 @@ reason = """
     preceding command intros supply the names and abbreviations.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[quirk]]
 name = "prose-avp-origins"
@@ -76,7 +66,7 @@ reason = """
     5777, 5778 and 4004
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[quirk]]
 name = "elided-members"
@@ -86,7 +76,7 @@ reason = """
     before '*[ AVP ]'.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "* 2 [ Served-Party-IP-Address ]"
@@ -99,7 +89,7 @@ reason = """
     body ended there, dropping the members after it.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "* 2 [ TWAG-CP-Address ]"
@@ -112,7 +102,7 @@ reason = """
     dropping the members after it.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "*[ Redirect-Host ] ]"
@@ -125,7 +115,7 @@ reason = """
     members after it.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "[ Emergency- Services ]"
@@ -139,7 +129,7 @@ reason = """
     dropping the members after it.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"
 
 [[patch]]
 find = "[ OC-OLR ] ]"
@@ -152,4 +142,4 @@ reason = """
     PDF alike. Unread, each body ended there, dropping the members after it.
     """
 first_version = "18.6.0"
-last_version = "18.6.0"
+last_version = "19.2.0"

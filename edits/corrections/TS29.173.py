@@ -11,6 +11,6 @@ CORRECTIONS = [
         "table 8.1.4 allocates the code to TS29.229",
         reason="clause 6.3.3.1 says 'This error code is defined in 3GPP TS 29.229 "
         "[8]': the document lists a code it re-uses",
-        versions="18.0.0",
+        versions="18.0.0..19.0.0",
     ),
 ]

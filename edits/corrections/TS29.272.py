@@ -38,7 +38,7 @@ CORRECTIONS = [
             " identifier of the S7a/S7d interface application, allocated by"
             " IANA)'; their headers in clauses 7.2.21-7.2.24 print no id"
         ),
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
 ]
 
@@ -51,7 +51,7 @@ CORRECTIONS += [
         replace=1624,
         reason="clause 7.3.138's AVP header prints Job-Type's code; table"
         " 7.3.1/1 and the TS 29.230 registry both assign Area-Scope 1624",
-        versions="18.6.0..18.7.0",
+        versions="18.6.0..19.6.0",
     ),
     Correction(
         id="wlan-offloadability-vendor-id",
@@ -62,7 +62,7 @@ CORRECTIONS += [
         reason="clause 7.3.181's AVP header omits the vendor-id; table 7.3.1/1"
         " marks the V flag mandatory for it, as for every other AVP the"
         " specification defines",
-        versions="18.6.0..18.7.0",
+        versions="18.6.0..19.6.0",
     ),
     # Two AVPs the ABNF appears to reference without the document introducing
     # them turned out to be spelling mismatches against table 7.3.1/1 — the
@@ -77,7 +77,7 @@ CORRECTIONS += [
         reason="clause 7.3.206's heading and body, and the ABNF reference in"
         " clause 7.3.34, all spell it Additional-Context-Identifier; only the"
         " table row abbreviates it",
-        versions="18.6.0..18.7.0",
+        versions="18.6.0..19.6.0",
     ),
     Correction(
         id="re-synchronization-info-case",
@@ -89,7 +89,7 @@ CORRECTIONS += [
         replace="Re-Synchronization-Info",
         reason="clause 7.3.15's heading and table 7.3.1/1 both spell it"
         " Re-Synchronization-Info; clause 7.3.11's ABNF lower-cases the S",
-        versions="18.6.0..18.7.0",
+        versions="18.6.0..19.6.0",
     ),
     Correction(
         id="re-synchronization-info-utran-geran-case",
@@ -101,7 +101,7 @@ CORRECTIONS += [
         replace="Re-Synchronization-Info",
         reason="clause 7.3.15's heading and table 7.3.1/1 both spell it"
         " Re-Synchronization-Info; clause 7.3.12's ABNF lower-cases the S",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     # Three re-printed grouped bodies use member AVPs that table 7.3.1/2
     # omits while listing the grouped AVPs themselves and, for
@@ -115,7 +115,7 @@ CORRECTIONS += [
             after=after,
             reason=f"the {parent} body (clause {clause}) uses {name} but"
             f" table 7.3.1/2 omits the row; {origin} defines the AVP",
-            versions="18.6.0..18.7.0",
+            versions="18.6.0..19.6.0",
         )
         for name, origin, after, parent, clause in (
             (
@@ -190,7 +190,7 @@ CORRECTIONS += [
             replace=name,
             reason=f"the re-used row cites TS 29.217, which defines {name}"
             f" (clause {clause})",
-            versions="18.7.0",
+            versions="18.7.0..19.6.0",
         ),
         Correction(
             id=f"{name.lower()}-in-mme-location-information",
@@ -200,7 +200,7 @@ CORRECTIONS += [
             replace=name,
             reason="the MME-Location-Information body (clause 7.3.115) uses the"
             f" re-used row's spelling; TS 29.217 defines {name}",
-            versions="18.7.0",
+            versions="18.7.0..19.6.0",
         ),
     )
 ]
@@ -219,7 +219,7 @@ CORRECTIONS += [
         reason="clause 7.3.195: 'It is originally defined in TS 29.336 [54]. For "
         "S6a/S6d interface, the Monitoring-Event-Configuration AVP format is specified "
         "as following'",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Accept(
         id="monitoring-event-report-s6a-body",
@@ -232,7 +232,7 @@ CORRECTIONS += [
         reason="clause 7.3.196: 'It is originally defined in TS 29.336 [54]. For "
         "S6a/S6d interface, the Monitoring-Event-Report AVP format is specified as "
         "following'",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Accept(
         id="ue-reachability-configuration-s6a-body",
@@ -243,21 +243,21 @@ CORRECTIONS += [
         reason="clause 7.3.197: 'It is originally defined in TS 29.336 [54]. For "
         "S6a/S6d interface, the UE-Reachability-Configuration AVP format is specified "
         "as following'",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
 ]
 
 # Trace and MDT parameters whose values the clauses take from TS 32.422
 # ("those defined in TS 32.422 [23] for ..."), which numbers each value in
 # parentheses; a None is a code the list skips. Reference [23] is
-# non-specific, so Release 18's latest version answers, V18.7.0 (2025-12);
+# non-specific, so Release 19's latest version answers, V19.7.0 (2026-06);
 # the version matters, because Release
 # 16 renumbered codes incompatibly: Report Interval LTE went from 15-27 to
 # 0-12, Measurement Period UMTS from 0-14 (250 to 64000 ms) to 0-12 (1000 to
 # 64000 ms). Report-Interval (clause 7.3.141) stays a citation: clause
 # 5.10.5 numbers UMTS, LTE and NR intervals from 0 each, so one flat list
 # would give 0 to 11 three meanings.
-_TS32422 = "TS 32.422 V18.7.0 (2025-12), Release 18's latest,"
+_TS32422 = "TS 32.422 V19.7.0 (2026-06), Release 19's latest,"
 _TRACE_PARAMETERS = (
     (
         "Trace-Depth",
@@ -271,9 +271,11 @@ _TRACE_PARAMETERS = (
             "MinimumWithoutVendorSpecificExtension",
             "MediumWithoutVendorSpecificExtension",
             "MaximumWithoutVendorSpecificExtension",
+            "MinimumOnlyVendorSpecificTraceRecord",
+            "MediumOnlyVendorSpecificTraceRecord",
+            "MaximumOnlyVendorSpecificTraceRecord",
         ),
-        "; the names are its code list's, as the table above it misspells"
-        " MaximumWithoutVendorSpecifcExtension",
+        ", Release 19 adding the last three",
     ),
     (
         "Job-Type",
@@ -292,8 +294,12 @@ _TRACE_PARAMETERS = (
             "TRACE_AND_5GC_UE_LEVEL_MEASUREMENTS",
             "IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS",
             "TRACE_AND_IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS",
+            "RRC_REPORT",
+            "IMMEDIATE_MDT_AND_LOGGED_MDT",
         ),
-        "; its NOTEs 1 to 3 restrict where some apply, not the list",
+        ", Release 19 adding the last two; its NOTEs 1 to 5 restrict where some"
+        " apply, not the list, and it spaces the last name after AND_, which its"
+        " other names do not",
     ),
     (
         "Report-Amount",
@@ -445,7 +451,7 @@ CORRECTIONS += [
         f" for {parameter}'; {_TS32422} clause {cited} lists them with their"
         f" codes{remark}. The version matters: Release 16 renumbered Report"
         " Interval LTE's and Measurement Period UMTS's codes",
-        versions="18.7.0",
+        versions="19.6.0",
     )
     for avp, clause, parameter, cited, names, remark in _TRACE_PARAMETERS
 ]
@@ -462,7 +468,7 @@ CORRECTIONS += [
         reason="the cell prints a space after the hyphen, where the column wraps the "
         "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
         "feature bit 4)",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Correction(
         id="lcs-basic-self-location-feature-spelling",
@@ -475,7 +481,7 @@ CORRECTIONS += [
         reason="the cell prints a space after the hyphen, where the column wraps the "
         "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
         "feature bit 18)",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Correction(
         id="lcs-autonomous-self-location-feature-spelling",
@@ -489,7 +495,7 @@ CORRECTIONS += [
         reason="the cell prints a space after the hyphen, where the column wraps the "
         "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
         "feature bit 19)",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Correction(
         id="lcs-transfer-to-third-party-feature-spelling",
@@ -502,7 +508,7 @@ CORRECTIONS += [
         reason="the cell prints a space after the hyphen, where the column wraps the "
         "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, "
         "feature bit 20)",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Correction(
         id="dia-lcs-basic-self-location-feature-spelling",
@@ -515,7 +521,7 @@ CORRECTIONS += [
         reason="the cell prints a space after the hyphen, where the column wraps the "
         "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, "
         "feature bit 9)",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Correction(
         id="dia-lcs-autonomous-self-location-feature-spelling",
@@ -529,7 +535,7 @@ CORRECTIONS += [
         reason="the cell prints a space after the hyphen, where the column wraps the "
         "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, "
         "feature bit 10)",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Correction(
         id="dia-lcs-transfer-to-third-party-feature-spelling",
@@ -543,7 +549,7 @@ CORRECTIONS += [
         reason="the cell prints a space after the hyphen, where the column wraps the "
         "name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, "
         "feature bit 11)",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
     Correction(
         id="edrx-cycle-length-withdrawal-spelling",
@@ -553,6 +559,6 @@ CORRECTIONS += [
         replace="eDRX-Cycle-Length-Withdrawal",
         reason="table 7.3.25/1 bit 30 prints a space before the hyphen, where the "
         "column wraps the name, unlike the bit's every other Withdrawal",
-        versions="18.7.0",
+        versions="18.7.0..19.6.0",
     ),
 ]

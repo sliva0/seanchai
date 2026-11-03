@@ -12,7 +12,7 @@ reason = """
     row sets M in Must not, so V is the only must-set flag
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "prose-application-ids"
@@ -21,7 +21,7 @@ reason = """
     Application-ID for the Np Application in the present release is 16777342'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
 
 [[quirk]]
 name = "applicability-column"
@@ -31,4 +31,4 @@ reason = """
     supported feature ... are applicable as described in clause 5.4.2'
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"

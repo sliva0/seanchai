@@ -8,4 +8,4 @@ reason = """
     spell the reused AVP Old-Reference-Number
     """
 first_version = "18.0.0"
-last_version = "18.0.0"
+last_version = "19.0.0"
