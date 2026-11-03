@@ -4114,6 +4114,130 @@
    ],
    "version": "18.0.0"
   },
+  "es283026-010600": {
+   "edits": {
+    "ETSI-ES283.026.py#aa-answer-auth-application-id-case": {
+     "kind": "correction",
+     "reason": "the format of clause 6.2.2 upper-cases the 'D'; RFC 3588 [11] defines Auth-Application-Id, and clause 6.1.1 and the RAR format (6.2.3) spell it so"
+    },
+    "ETSI-ES283.026.py#aa-request-auth-application-id-case": {
+     "kind": "correction",
+     "reason": "the format of clause 6.2.1 upper-cases the 'D'; RFC 3588 [11] defines Auth-Application-Id, and clause 6.1.1 and the RAR format (6.2.3) spell it so"
+    },
+    "ETSI-ES283.026.py#as-request-auth-application-id-case": {
+     "kind": "correction",
+     "reason": "the format of clause 6.2.7 upper-cases the 'D'; RFC 3588 [11] defines Auth-Application-Id, and clause 6.1.1 and the RAR format (6.2.3) spell it so"
+    },
+    "ETSI-ES283.026.py#asa-redirected-host": {
+     "kind": "correction",
+     "reason": "the ASA format (clause 6.2.8) prints Redirected-Host, which nothing defines; the STA format (6.2.6) lists the same three members as RFC 3588's Redirect-Host"
+    },
+    "ETSI-ES283.026.py#asa-redirected-host-usage": {
+     "kind": "correction",
+     "reason": "the ASA format (clause 6.2.8) prints Redirected-Host-Usage, which nothing defines; the STA format (6.2.6) lists the same three members as RFC 3588's Redirect-Host-Usage"
+    },
+    "ETSI-ES283.026.py#asa-redirected-max-cache-time": {
+     "kind": "correction",
+     "reason": "the ASA format (clause 6.2.8) prints Redirected-Max-Cache-Time, which nothing defines; the STA format (6.2.6) lists the same three members as RFC 3588's Redirect-Max-Cache-Time"
+    },
+    "ETSI-ES283.026.py#framed-ip-address-reused": {
+     "kind": "insert",
+     "reason": "clause 6.4.21's format uses the AVP, as ES 283 034's does, and no table of the document lists it; ES 283 034 table 12, which clause 6.4.4 follows for Globally-Unique-Address, imports it from RFC 4005, which is clause 2.1's [12]"
+    },
+    "ETSI-ES283.026.py#framed-ipv6-prefix-reused": {
+     "kind": "insert",
+     "reason": "clause 6.4.21's format uses the AVP, as ES 283 034's does, and no table of the document lists it; ES 283 034 table 12, which clause 6.4.4 follows for Globally-Unique-Address, imports it from RFC 4005, which is clause 2.1's [12]"
+    },
+    "ETSI-ES283.026.py#globally-unique-address-frame-ip-address": {
+     "kind": "correction",
+     "reason": "clause 6.4.21's AVP format prints Frame-IP-Address, as ES 283 034 clause 7.3.1 does, which nothing defines; that document's table 12 imports Framed-IP-Address from RFC 4005 and corrects its own format the same way"
+    },
+    "ETSI-ES283.026.py#globally-unique-address-frame-ipv6-prefix": {
+     "kind": "correction",
+     "reason": "clause 6.4.21's AVP format prints Frame-IPv6-Prefix, as ES 283 034 clause 7.3.1 does, which nothing defines; that document's table 12 imports Framed-IPv6-Prefix from RFC 4005 and corrects its own format the same way"
+    },
+    "ETSI-ES283.026.py#rr-bandwidth-reused": {
+     "kind": "insert",
+     "reason": "clause 6.4.16's Media-Component-Description format lists it and table 6 omits it, and the document defines it nowhere; TS 29.209, the source of the AVPs clause 6.4.2 imports, defines it"
+    },
+    "ETSI-ES283.026.py#rs-bandwidth-reused": {
+     "kind": "insert",
+     "reason": "clause 6.4.16's Media-Component-Description format lists it and table 6 omits it, and the document defines it nowhere; TS 29.209, the source of the AVPs clause 6.4.2 imports, defines it"
+    },
+    "ETSI-ES283.026.py#specific-action-rq-events": {
+     "expect": "Specific-Action's body, against TS29.209's definition: adds INDICATION_OF_RESERVATION_EXPIRATION, INDICATION_OF_SUBSCRIBER_DETACHMENT, missing CHARGING_CORRELATION_EXCHANGE, INDICATION_OF_ESTABLISHMENT_OF_BEARER, INDICATION_OF_LOSS_OF_BEARER, INDICATION_OF_RECOVERY_OF_BEARER, SERVICE_INFORMATION_REQUEST",
+     "kind": "accept",
+     "reason": "clause 6.4.13 supports one event 'from TS 129 209 [7]', says 'the present document defines two new events', and of the rest that they 'are not relevant at the Rq interface and are not supported'",
+     "rule": "reused-body-differs",
+     "targets": [
+      [
+       "sections",
+       18
+      ]
+     ]
+    },
+    "ETSI-ES283.026.py#st-request-auth-application-id-case": {
+     "kind": "correction",
+     "reason": "the format of clause 6.2.5 upper-cases the 'D'; RFC 3588 [11] defines Auth-Application-Id, and clause 6.1.1 and the RAR format (6.2.3) spell it so"
+    },
+    "ETSI-ES283.026.py#vendor-id-flow-grouping": {
+     "kind": "correction",
+     "reason": "clause 6.4.8's AVP format omits the vendor-id; the paragraph before table 6, which lists the AVP, says 'The Vendor-Id header for these AVPs shall be set to 3GPP (10415)'"
+    },
+    "ETSI-ES283.026.py#vendor-id-flows": {
+     "kind": "correction",
+     "reason": "clause 6.4.10's AVP format omits the vendor-id; the paragraph before table 6, which lists the AVP, says 'The Vendor-Id header for these AVPs shall be set to 3GPP (10415)'"
+    },
+    "ETSI-ES283.026.py#vendor-id-media-component-description": {
+     "kind": "correction",
+     "reason": "clause 6.4.16's AVP format omits the vendor-id; the paragraph before table 6, which lists the AVP, says 'The Vendor-Id header for these AVPs shall be set to 3GPP (10415)'"
+    },
+    "ETSI-ES283.026.py#vendor-id-media-sub-component": {
+     "kind": "correction",
+     "reason": "clause 6.4.18's AVP format omits the vendor-id; the paragraph before table 6, which lists the AVP, says 'The Vendor-Id header for these AVPs shall be set to 3GPP (10415)'"
+    }
+   },
+   "reference": "ETSI-ES283.026",
+   "renames": [
+    {
+     "expect": "Auth-Application-ID",
+     "replace": "Auth-Application-Id"
+    },
+    {
+     "expect": "Auth-Application-ID",
+     "replace": "Auth-Application-Id"
+    },
+    {
+     "expect": "Auth-Application-ID",
+     "replace": "Auth-Application-Id"
+    },
+    {
+     "expect": "Auth-Application-ID",
+     "replace": "Auth-Application-Id"
+    },
+    {
+     "expect": "Redirected-Host",
+     "replace": "Redirect-Host"
+    },
+    {
+     "expect": "Redirected-Host-Usage",
+     "replace": "Redirect-Host-Usage"
+    },
+    {
+     "expect": "Redirected-Max-Cache-Time",
+     "replace": "Redirect-Max-Cache-Time"
+    },
+    {
+     "expect": "Frame-IP-Address",
+     "replace": "Framed-IP-Address"
+    },
+    {
+     "expect": "Frame-IPv6-Prefix",
+     "replace": "Framed-IPv6-Prefix"
+    }
+   ],
+   "version": "1.6.0"
+  },
   "es283034-020200": {
    "edits": {
     "ETSI-ES283.034.py#globally-unique-address-frame-ip-address": {

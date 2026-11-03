@@ -1,0 +1,384 @@
+; Specification: ETSI ES 283 026
+; Version: 1.6.0
+; Vendor-ID: 13019
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_es/283000_283099/283026/01.06.00_60/es_283026v010600p.pdf
+; Transcribed: by hand from https://www.etsi.org/deliver/etsi_es/283000_283099/283026/01.06.00_60/es_283026v010600p.pdf
+
+
+;; Clause 6.1 says the Gq application has "Application-ID 16777222"; clause
+;; 6.2 applies it to the Rq messages. The document defines the Rq interface
+;; between the SPDF and the A-RACF, and Ia appears only in its figure 1.
+; Type: Application Scope
+; Name: Rq
+; Section: 6.2
+; Page: 18
+; Application-ID: 16777222
+; Applies-To: 6.2.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 6.2.1
+; Page: 18
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-ID }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+      * [ Specific-Action ]               ; bold
+        [ AF-Charging-Identifier ]        ; bold
+      * [ Media-Component-Description ]   ; bold
+      * [ Flow-Grouping ]                 ; bold
+        [ Reservation-Priority ]          ; bold
+        [ User-Name ]                     ; bold
+        [ Globally-Unique-Address ]       ; bold
+        [ Service-Class ]                 ; bold
+        [ Authorization-Lifetime ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 6.2.2
+; Page: 18
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-ID }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Auth-Grace-Period ]
+      * [ Session-Bundle-Id ]      ; bold
+        [ Reservation-Priority ]   ; bold
+        [ Authorization-Lifetime ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 6.2.3
+; Page: 19
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+      * { Specific-Action }   ; bold
+      * [ Flows ]             ; bold
+        [ Abort-Cause ]       ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 6.2.4
+; Page: 19
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+      * [ Media-Component-Description ]   ; bold
+      * [ Flow-Grouping ]                 ; bold
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 6.2.5
+; Page: 19
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Application-ID }
+        { Termination-Cause }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 6.2.6
+; Page: 20
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Request, ASR
+; Section: 6.2.7
+; Page: 20
+<AS-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-ID }
+        { Abort-Cause }             ; bold
+      * [ Session-Bundle-Id ]       ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+        [ AVP ]
+
+
+; Type: Message
+; Name: AS-Answer, ASA
+; Section: 6.2.8
+; Page: 20
+<AS-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirected-Host ]
+        [ Redirected-Host-Usage ]
+        [ Redirected-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+;; Clause 6.3.2 lists the Experimental-Result-Code values under ETSI's vendor
+;; id (4041, 5041, 4043 to 4047) and prints no AVP of its own: it uses RFC
+;; 6733's Experimental-Result-Code (298), which the document does not tabulate.
+; Type: AVP Table
+; Section: 6.4.1
+; Table: 5
+; Page: 22
+; Columns: Name       Code   Section   Type         Must   May   S.not   M.not   Encrypt
+Session-Bundle-Id     400    6.4.24    Unsigned32   M,V    P     -       -       Y
+;; NOTE 1: The AVP header bit denoted as "M", indicates whether support of the AVP is required. The AVP header bit denoted as "V", indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see RFC 3588 [11].
+;; NOTE 2: The value types are defined in RFC 3588 [11].
+
+
+;; Table 6 prints the clause re-printing each AVP (6.4.5 to 6.4.25) and flag
+;; rules "in the context of the present document": M,V in Must (Flow-Grouping's
+;; printed "M.V"), P in May, "Y" under May Encr. The paragraph before it sets
+;; the Vendor-Id header to 3GPP (10415).
+; Type: Reused AVPs
+; Section: 6.4.2
+; Table: 6
+; Page: 22
+; Columns: Name               Code   From       Type
+Abort-Cause                   500    TS29.209   Enumerated
+AF-Application-Identifier     504    TS29.209   OctetString
+AF-Charging-Identifier        505    TS29.209   OctetString
+Flow-Description              507    TS29.209   IPFilterRule
+Flow-Grouping                 508    TS29.209   Grouped
+Flow-Number                   509    TS29.209   Unsigned32
+Flows                         510    TS29.209   Grouped
+Flow-Status                   511    TS29.209   Enumerated
+Flow-Usage                    512    TS29.209   Enumerated
+Specific-Action               513    TS29.209   Enumerated
+Max-Requested-Bandwidth-DL    515    TS29.209   Unsigned32
+Max-Requested-Bandwidth-UL    516    TS29.209   Unsigned32
+Media-Component-Description   517    TS29.209   Grouped
+Media-Component-Number        518    TS29.209   Unsigned32
+Media-Sub-Component AVP       519    TS29.209   Grouped
+Media-Type                    520    TS29.209   Enumerated
+
+
+;; Table 7 prints the clause re-printing each AVP and flag rules "in the context
+;; of the present document": Reservation-Class M,V in Must and P in May,
+;; Service-Class V in Must and M in Must not, "Y" under May Encr for both;
+;; Reservation-Priority's flag and encryption cells are blank.
+; Type: Reused AVPs
+; Section: 6.4.3
+; Table: 7
+; Page: 23
+; Columns: Name        Code   From             Type
+Reservation-Class      456    ETSI-TS183.017   Unsigned32
+Reservation-Priority   458    ETSI-TS183.017   Enumerated
+Service-Class          459    ETSI-TS183.017   UTF8String
+
+
+;; Table 8 prints the clause re-printing each AVP and flag rules "in the context
+;; of the present document": Globally-Unique-Address and Address-Realm "M, V"
+;; in Must, Transport-Class V in Must and M in May; "Y" under May Encr for all.
+; Type: Reused AVPs
+; Section: 6.4.4
+; Table: 8
+; Page: 23
+; Columns: Name           Code   From             Type
+Globally-Unique-Address   300    ETSI-ES283.034   Grouped
+Address-Realm             301    ETSI-ES283.034   OctetString
+Transport-Class           311    ETSI-ES283.034   Unsigned32
+
+
+;; Clause 6.4.5: "The following values defined in [7] are used".
+; Type: Enumerated AVP
+; Name: Abort-Cause
+; Section: 6.4.5
+; Page: 23
+Abort-Cause ::= < Enumerated AVP header: 500 10415 >
+        BEARER_RELEASED               = 0
+        INSUFFICIENT_SERVER_RESOURCES = 1
+        INSUFFICIENT_BEARER_RESOURCES = 2
+
+
+; Type: Grouped AVP
+; Name: Flow-Grouping
+; Section: 6.4.8
+; Page: 24
+Flow-Grouping ::= < AVP header: 508 >
+      * [ Flows ]
+
+
+; Type: Grouped AVP
+; Name: Flows
+; Section: 6.4.10
+; Page: 25
+Flows ::= < AVP header: x >
+        { Media-Component-Number }
+      * [ Flow-Number ]
+
+
+; Type: Enumerated AVP
+; Name: Flow-Status
+; Section: 6.4.11
+; Page: 25
+Flow-Status ::= < Enumerated AVP header: 511 10415 >
+        ENABLED-UPLINK   = 0
+        ENABLED-DOWNLINK = 1
+        ENABLED          = 2
+        DISABLED         = 3
+        REMOVED          = 4
+
+
+; Type: Enumerated AVP
+; Name: Flow-Usage
+; Section: 6.4.12
+; Page: 25
+Flow-Usage ::= < Enumerated AVP header: 512 10415 >
+        NO_INFORMATION = 0
+        RTCP           = 1
+
+
+;; Clause 6.4.13 supports value 4 "from TS 129 209 [7]", defines 6 and 7 as
+;; "two new events", and says the other events TS 129 209 defines "are not
+;; relevant at the Rq interface and are not supported".
+; Type: Enumerated AVP
+; Name: Specific-Action
+; Section: 6.4.13
+; Page: 25
+Specific-Action ::= < Enumerated AVP header: 513 10415 >
+        INDICATION_OF_RELEASE_OF_BEARER          = 4
+        INDICATION_OF_SUBSCRIBER_DETACHMENT      = 6
+        INDICATION_OF_RESERVATION_EXPIRATION     = 7
+
+
+; Type: Grouped AVP
+; Name: Media-Component-Description
+; Section: 6.4.16
+; Page: 27
+Media-Component-Description ::= < AVP header: 517 >
+        { Media-Component-Number }        ;; Ordinal number of the media comp.
+      * [ Media-Sub-Component ]           ;; Set of flows for one flow identifier
+        [ AF-Application-Identifier ]
+        [ Media-Type ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Flow-Status ]
+        [ RS-Bandwidth ]
+        [ RR-Bandwidth ]
+        [ Reservation-Priority ]
+        [ Reservation-Class ]
+        [ Transport-Class ]
+
+
+; Type: Grouped AVP
+; Name: Media-Sub-Component
+; Section: 6.4.18
+; Page: 27
+Media-Sub-Component ::= < AVP header: 519 >
+        { Flow-Number }                  ;; Ordinal number of the IP flow
+        [ Flow-Status ]
+   0*2  [ Flow-Description ]             ;; UL and/or DL
+        [ Flow-Usage ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+
+
+; Type: Enumerated AVP
+; Name: Media-Type
+; Section: 6.4.19
+; Page: 27
+Media-Type ::= < Enumerated AVP header: 520 10415 >
+        AUDIO       = 0
+        VIDEO       = 1
+        DATA        = 2
+        APPLICATION = 3
+        CONTROL     = 4
+        TEXT        = 5
+        MESSAGE     = 6
+        OTHER       = 0xFFFFFFFF
+
+
+; Type: Grouped AVP
+; Name: Globally-Unique-Address
+; Section: 6.4.21
+; Page: 28
+Globally-Unique-Address ::= < AVP header: 300 13019 >
+        [ Frame-IP-Address ]
+        [ Frame-IPv6-Prefix ]
+        [ Address-Realm ]
+
+
+; Type: Enumerated AVP
+; Name: Reservation-Priority
+; Section: 6.4.23
+; Page: 28
+Reservation-Priority ::= < Enumerated AVP header: 458 13019 >
+        DEFAULT        = 0
+        PRIORITY-ONE   = 1
+        PRIORITY-TWO   = 2
+        PRIORITY-THREE = 3
+        PRIORITY-FOUR  = 4
+        PRIORITY-FIVE  = 5
+        PRIORITY-SIX   = 6
+        PRIORITY-SEVEN = 7
