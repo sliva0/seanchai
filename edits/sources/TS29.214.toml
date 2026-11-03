@@ -331,3 +331,13 @@ reason = """
     """
 first_version = "11.16.0"
 last_version = "11.16.0"
+
+[[quirk]]
+name = "abnf-comments"
+reason = """
+    clauses 5.3.16 and 5.3.18 comment members of Media-Component-Description
+    and Media-Sub-Component, '{ Media-Component-Number } ; Ordinal number of
+    the media comp.'; unread, both bodies ended before their first member
+    """
+first_version = "18.4.0"
+last_version = "18.4.0"

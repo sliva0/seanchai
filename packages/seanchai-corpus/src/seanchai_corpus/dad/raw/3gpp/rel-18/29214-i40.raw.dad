@@ -506,6 +506,43 @@ Specific-Action ::= < Enumerated AVP header: 513 10415 >
 ; Section: 5.3.16
 ; Page: 44
 Media-Component-Description ::= < AVP header: 517 >
+        { Media-Component-Number }
+      * [ Media-Sub-Component ]
+        [ AF-Application-Identifier ]
+        [ FLUS-Identifier ]
+        [ Media-Type ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Max-Supported-Bandwidth-UL ]
+        [ Max-Supported-Bandwidth-DL ]
+        [ Min-Desired-Bandwidth-UL ]
+        [ Min-Desired-Bandwidth-DL ]
+        [ Min-Requested-Bandwidth-UL ]
+        [ Min-Requested-Bandwidth-DL ]
+        [ Extended-Max-Requested-BW-UL ]
+        [ Extended-Max-Requested-BW-DL ]
+        [ Extended-Max-Supported-BW-UL ]
+        [ Extended-Max-Supported-BW-DL ]
+        [ Extended-Min-Desired-BW-UL ]
+        [ Extended-Min-Desired-BW-DL ]
+        [ Extended-Min-Requested-BW-UL ]
+        [ Extended-Min-Requested-BW-DL ]
+        [ Flow-Status ]
+        [ Priority-Sharing-Indicator ]
+        [ Pre-emption-Capability ]
+        [ Pre-emption-Vulnerability ]
+        [ Reservation-Priority ]
+        [ RS-Bandwidth ]
+        [ RR-Bandwidth ]
+     *2 [ Codec-Data ]
+        [ Sharing-Key-DL ]
+        [ Sharing-Key-UL ]
+        [ Content-Version ]
+        [ Max-PLR-DL ]
+        [ Max-PLR-UL ]
+        [ Desired-Max-Latency ]
+        [ Desired-Max-Loss ]
+      * [ AVP ]
 
 
 ; Type: Grouped AVP
@@ -513,6 +550,17 @@ Media-Component-Description ::= < AVP header: 517 >
 ; Section: 5.3.18
 ; Page: 46
 Media-Sub-Component ::= < AVP header: 519 >
+        { Flow-Number }
+     *2 [ Flow-Description ]
+        [ Flow-Status ]
+        [ Flow-Usage ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Extended-Max-Requested-BW-UL ]
+        [ Extended-Max-Requested-BW-DL ]
+        [ AF-Signalling-Protocol ]
+        [ ToS-Traffic-Class ]
+      * [ AVP ]
 
 
 ; Type: Enumerated AVP
