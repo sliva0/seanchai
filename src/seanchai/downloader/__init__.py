@@ -13,25 +13,23 @@ the CLI downloads into the git-ignored ``specifications/`` directory by default.
 
 This package is a library: it returns records and raises `DownloadError`, and
 the `seanchai download` command owns the printing and the exit status. The
-implementation lives in `core`; what is re-exported here is what the boundary
-promises.
+catalog lives in `catalog` and the implementation in `core`; what is re-exported
+here is what the boundary promises. Only a 3GPP or oneM2M download needs the
+`seanchai[extract]` extra, to validate what it fetched.
 """
 
-from .core import (
+from .catalog import (
     CATALOG_PATH,
     Catalog,
-    Conversion,
     DownloadError,
-    DownloadRecord,
     OneM2MSpec,
     PinnedThreeGppSpec,
     RfcSpec,
     ThreeGppSpec,
     TranscribedDocument,
-    download_corpus,
-    download_version,
     load_catalog,
 )
+from .core import Conversion, DownloadRecord, download_corpus, download_version
 
 __all__ = [
     "CATALOG_PATH",

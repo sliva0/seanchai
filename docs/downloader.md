@@ -6,9 +6,9 @@ renderings, pinned older 3GPP versions, the plain-text RFCs, oneM2M's Word
 original at a pinned version, and Wireshark's Diameter dictionary. It
 converts every legacy `.doc` to `.docx` with headless LibreOffice and
 writes `specifications/manifest.json` with sha256 and size per artifact.
-Dependencies: pypdf with its crypto extra (ETSI's TS 129 234 V11.2.0 is
-AES-encrypted with an empty password), python-docx for validation, and the
-`soffice` executable unless `--no-convert`.
+Dependencies: the `seanchai[extract]` extra, which is pypdf with its crypto
+extra (ETSI's TS 129 234 V11.2.0 is AES-encrypted with an empty password) and
+python-docx for validation, and the `soffice` executable unless `--no-convert`.
 
 In `specs.toml`, `title` and `reason` are prose, read with their whitespace
 collapsed; every other field is exact.

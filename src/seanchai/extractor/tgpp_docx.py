@@ -45,19 +45,26 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import docx
-import docx.document
-import docx.table
-import docx.text.hyperlink
-import docx.text.paragraph
 import pydantic
-import pypdf
-from docx.oxml.ns import qn
 
 from ..dad import abnf, ast, formatter
+from ..errors import MissingExtraError
 from . import sources
 from .errors import ExtractionError, boundary
 from .sources import Patcher
+
+try:
+    import docx
+    import docx.document
+    import docx.table
+    import docx.text.hyperlink
+    import docx.text.paragraph
+    import pypdf
+    from docx.oxml.ns import qn
+except ImportError as error:
+    raise MissingExtraError(
+        "reading a 3GPP document needs python-docx and pypdf"
+    ) from error
 
 _HEADING_RE = re.compile(
     r"^(?P<number>(?:[A-Za-z]+|\d+[A-Za-z]*)(?:\.\d+[A-Za-z]*)*)\t(?P<title>.+)$"

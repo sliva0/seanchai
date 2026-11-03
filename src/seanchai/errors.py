@@ -9,3 +9,12 @@ library refused, and nothing else changes. This module imports nothing, so that
 
 class SeanchaiError(Exception):
     """A failure this library reports on purpose."""
+
+
+class MissingExtraError(SeanchaiError, ImportError):
+    """An operation needs `seanchai[extract]`, which is not installed: `python-docx`
+    and `pypdf`, what reading and validating source documents takes. The model,
+    the export and the lookup commands need neither."""
+
+    def __init__(self, what: str) -> None:
+        super().__init__(f'{what}: pip install "seanchai[extract]"')

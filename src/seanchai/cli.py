@@ -1,11 +1,15 @@
 """The `seanchai` command.
 
-Every library operation this drives promises exactly one exception type —
-`DadParseError`, `ExtractionError`, `CorrectionError`, `DownloadError` — so
-the whole of the CLI's error handling is `reported()`: turn those four into
-the styled `error: ...` line, and let anything else through as a traceback,
-because anything else is a bug in this program rather than a problem with the
-user's document.
+Every library operation this drives refuses with a `SeanchaiError`, so the whole
+of the CLI's error handling is `reported()`: turn that into the styled
+`error: ...` line, and let anything else through as a traceback, because
+anything else is a bug in this program rather than a problem with the user's
+document. Exit status 1 is an error or a finding, and 2 a usage error, as Click
+has it.
+
+`click` is a core dependency, since the entry point is installed with the
+library and the lookup commands need nothing more. Reading source documents is
+the `seanchai[extract]` extra: the commands that do it import it themselves.
 """
 
 import contextlib
@@ -15,6 +19,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
+
+from .errors import SeanchaiError
 
 if TYPE_CHECKING:
     # The `dad` modules are imported only by the commands that use them.
@@ -113,22 +119,19 @@ class _Group(click.Group):
 @contextlib.contextmanager
 def reported() -> Iterator[None]:
     """Present a library failure as a CLI error, not as a traceback."""
-    from .corpus import CorpusError
-    from .dad.corrections import CorrectionError
-    from .dad.parser import DadParseError
-    from .downloader import DownloadError
-    from .extractor.errors import ExtractionError
-
     try:
         yield
-    except (
-        CorpusError,
-        DadParseError,
-        ExtractionError,
-        CorrectionError,
-        DownloadError,
-    ) as error:
+    except SeanchaiError as error:
         raise click.ClickException(str(error)) from None
+
+
+def _require_extract() -> None:
+    """Refuse a command reading source documents without `seanchai[extract]`,
+    before it does anything else."""
+    from .downloader.core import require_extra
+
+    with reported():
+        require_extra()
 
 
 @click.group(cls=_Group)
@@ -212,7 +215,6 @@ def export_command(
     """
     from .corpus import Corpus
     from .export import export_corpus
-    from .model import ModelError
 
     with reported():
         try:
@@ -225,7 +227,7 @@ def export_command(
                 specifications=specifications,
                 include_pdfs=include_pdfs,
             )
-        except (ModelError, OSError) as error:
+        except OSError as error:
             raise click.ClickException(str(error)) from None
 
 
@@ -266,7 +268,11 @@ def extract(
     corrections: Path | None,
     output: Path | None,
 ) -> None:
-    """Extract a canonical `.dad` file from a 3GPP specification docx."""
+    """Extract a canonical `.dad` file from a 3GPP specification docx.
+
+    Needs the `seanchai[extract]` extra.
+    """
+    _require_extract()
     from .extractor import tgpp_docx
 
     if sources is None and _DEFAULT_SOURCES.is_dir():
@@ -354,14 +360,14 @@ def extract_rfc(
 @main.command()
 @click.option(
     "--manifest",
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    type=click.Path(dir_okay=False, path_type=Path),
     default=Path("specifications") / "manifest.json",
     show_default=True,
     help="The downloader's manifest; its files are the sources.",
 )
 @click.option(
     "--corpus",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORPUS,
     show_default=True,
     help="The committed corpus: decides which specifications to rebuild."
@@ -375,14 +381,14 @@ def extract_rfc(
 )
 @click.option(
     "--sources",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_SOURCES,
     show_default=True,
     help="Directory with source-declaration TOML files.",
 )
 @click.option(
     "--corrections",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORRECTIONS,
     show_default=True,
     help="Directory with per-spec correction modules. Defaulted here, unlike"
@@ -391,7 +397,7 @@ def extract_rfc(
 )
 @click.option(
     "--transcriptions",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_TRANSCRIPTIONS,
     show_default=True,
     help="Directory with hand transcriptions of documents no extractor reads.",
@@ -449,21 +455,42 @@ def regenerate(
     --version VERSION` is extracted for diffing with `--manifest
     specifications/versions/SPECREF/VERSION/manifest.json --spec SPECREF -o
     SCRATCH`; without -o it would replace the committed pair.
+
+    Needs the `seanchai[extract]` extra and a checkout: the defaults name its
+    corpus and edit layers.
     """
+    _require_extract()
     from . import regenerate as library
 
-    report = library.regenerate(
-        manifest,
-        corpus,
-        output if output is not None else corpus,
-        sources_dir=sources,
-        corrections_dir=corrections,
-        transcriptions_dir=transcriptions,
-        add=add,
-        only=only,
-        report=_echo_outcome,
-        expand_ranges=expand_ranges,
-    )
+    if not manifest.is_file():
+        raise click.ClickException(
+            f"{manifest} does not exist: run `seanchai download`, which writes it"
+        )
+    # Checked here and not by the options' types, so that an install with no
+    # checkout hears about the extra first.
+    for option, directory in (
+        ("--corpus", corpus),
+        ("--sources", sources),
+        ("--corrections", corrections),
+        ("--transcriptions", transcriptions),
+    ):
+        if not directory.is_dir():
+            raise click.BadParameter(
+                f"directory {str(directory)!r} does not exist", param_hint=f"'{option}'"
+            )
+    with reported():
+        report = library.regenerate(
+            manifest,
+            corpus,
+            output if output is not None else corpus,
+            sources_dir=sources,
+            corrections_dir=corrections,
+            transcriptions_dir=transcriptions,
+            add=add,
+            only=only,
+            report=_echo_outcome,
+            expand_ranges=expand_ranges,
+        )
     counts = {}
     for outcome in report.outcomes:
         counts[outcome.status] = counts.get(outcome.status, 0) + 1
@@ -903,6 +930,9 @@ def download(
     With --spec and --version, one older version is fetched into
     `versions/<SPECREF>/<VERSION>/` with a manifest of its own, for
     `seanchai regenerate --manifest ... --spec ... -o SCRATCH`.
+
+    A 3GPP or oneM2M download needs the `seanchai[extract]` extra, to validate
+    what it fetched.
     """
     from .downloader import download_corpus, download_version, load_catalog
 

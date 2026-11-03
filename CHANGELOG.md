@@ -15,3 +15,8 @@ Nothing has been published to PyPI yet.
 - `Avp.flag_rules` is always a `model.FlagRules`.
 - `SeanchaiError` is the base of every error the library raises on purpose.
 - `seanchai.__version__`, `seanchai --version` and `Corpus.version`.
+- `python-docx` and `pypdf` moved to the `seanchai[extract]` extra. `seanchai
+  extract`, `regenerate` and a 3GPP or oneM2M `download` need it and name it;
+  the model, the export and `lint` do not.
+- `extractor/__init__.py` no longer imports `tgpp_docx`, and the catalog moved
+  to `downloader/catalog.py`.

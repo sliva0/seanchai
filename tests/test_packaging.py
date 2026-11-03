@@ -25,6 +25,8 @@ _UV = os.environ.get("UV") or shutil.which("uv")
 _SMOKE = _ROOT / "tests" / "smoke_installed.py"
 _PACKAGE = _ROOT / "packages" / "seanchai-corpus"
 _LIBRARY = _ROOT / "src" / "seanchai"
+# What `seanchai[extract]` installs that nothing else asks for.
+_EXTRACT = frozenset({"docx", "pypdf", "lxml", "cryptography"})
 
 
 def _project(pyproject: Path) -> dict:
@@ -77,11 +79,11 @@ def _requirements(wheel: Path) -> list[str]:
     ]
 
 
-def _venv(root: Path, *wheels: Path) -> Path:
+def _venv(root: Path, *wheels: Path, without: frozenset[str] = frozenset()) -> Path:
     """A virtual environment holding `wheels`, then this environment's packages
-    for their dependencies. A path a `.pth` names goes after the environment's
-    own and has its own `.pth` files left unread, so this repository's editable
-    installs stay out of reach."""
+    for their dependencies, less the top-level modules `without` names. A path a
+    `.pth` names goes after the environment's own and has its own `.pth` files
+    left unread, so this repository's editable installs stay out of reach."""
     _uv("venv", "--python", sys.executable, root, cwd=root.parent)
     _uv(
         "pip",
@@ -94,7 +96,15 @@ def _venv(root: Path, *wheels: Path) -> Path:
         cwd=root.parent,
     )
     (site,) = root.glob("lib/python*/site-packages")
-    (site / "_dependencies.pth").write_text(sysconfig.get_path("purelib") + "\n")
+    dependencies = Path(sysconfig.get_path("purelib"))
+    if without:
+        kept = root / "dependencies"
+        kept.mkdir()
+        for entry in dependencies.iterdir():
+            if entry.name.partition(".")[0] not in without:
+                (kept / entry.name).symlink_to(entry)
+        dependencies = kept
+    (site / "_dependencies.pth").write_text(f"{dependencies}\n")
     return root / "bin"
 
 
@@ -205,6 +215,82 @@ def test_only_the_library_knows_of_the_other_package(dist):
     ]
     assert len(optional) == 1
     assert "extra == 'corpus'" in optional[0]
+
+
+def test_reading_source_documents_is_an_extra(dist):
+    requirements = _requirements(_wheel(dist, "seanchai"))
+
+    core = [each for each in requirements if "extra ==" not in each]
+    extra = [each for each in requirements if "extra == 'extract'" in each]
+    assert {each.split(">")[0] for each in core} == {"click", "pydantic"}
+    assert {each.split(">")[0] for each in extra} == {"pypdf[crypto]", "python-docx"}
+
+
+def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
+    bin_dir = _venv(
+        tmp_path / "plain",
+        _wheel(dist, "seanchai"),
+        _wheel(dist, "seanchai_corpus"),
+        without=_EXTRACT,
+    )
+
+    def run(*arguments: object) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [*map(str, arguments)],
+            cwd=tmp_path,
+            env=_clean_environment(),
+            capture_output=True,
+            text=True,
+        )
+
+    # The environment is what it claims, and what a consumer imports pulls in
+    # nothing of the extra's.
+    imports = run(
+        bin_dir / "python",
+        "-I",
+        "-c",
+        "import importlib.util, sys\n"
+        f"extra = {sorted(_EXTRACT)!r}\n"
+        "assert not [each for each in extra if importlib.util.find_spec(each)]\n"
+        "import seanchai.cli, seanchai.corpus, seanchai.export, seanchai.model\n"
+        "import seanchai.downloader, seanchai.extractor.rfc_text\n"
+        "assert not set(extra) & sys.modules.keys()\n",
+    )
+    assert imports.returncode == 0, imports.stderr
+
+    smoke = run(bin_dir / "python", "-I", _SMOKE)
+    assert smoke.returncode == 0, smoke.stderr
+
+    source = tmp_path / "spec.docx"
+    source.touch()
+    for command in (
+        ("extract", source),
+        ("download", "-o", tmp_path / "specifications"),
+        ("download", "--spec", "TS29.229", "--version", "18.1.0", "-o", tmp_path / "s"),
+        ("regenerate",),
+    ):
+        refused = run(bin_dir / "seanchai", *command)
+        assert refused.returncode == 1, (command, refused.stdout, refused.stderr)
+        assert 'pip install "seanchai[extract]"' in refused.stderr, command
+        assert "Traceback" not in refused.stderr, command
+
+    # Direct imports say the same as the commands.
+    library = run(
+        bin_dir / "python",
+        "-I",
+        "-c",
+        "from seanchai import SeanchaiError\n"
+        "try:\n"
+        "    from seanchai.extractor import tgpp_docx\n"
+        "except SeanchaiError as error:\n"
+        "    print(error)\n",
+    )
+    assert library.returncode == 0, library.stderr
+    assert "seanchai[extract]" in library.stdout
+
+    # Listing the catalog fetches and opens nothing.
+    listed = run(bin_dir / "seanchai", "download", "--list")
+    assert listed.returncode == 0, listed.stderr
 
 
 def test_the_wheels_work_installed(dist, tmp_path):

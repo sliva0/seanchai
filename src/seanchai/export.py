@@ -37,7 +37,7 @@ from .corpus import (
     installed_directory,
 )
 from .dad import ast, corrections, parser
-from .downloader import Catalog, load_catalog
+from .downloader.catalog import Catalog, load_catalog
 from .export_schema import (
     SCHEMA_VERSION,
     ApplicationIdentity,

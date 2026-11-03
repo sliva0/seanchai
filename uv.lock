@@ -432,13 +432,15 @@ source = { editable = "." }
 dependencies = [
     { name = "click" },
     { name = "pydantic" },
-    { name = "pypdf", extra = ["crypto"] },
-    { name = "python-docx" },
 ]
 
 [package.optional-dependencies]
 corpus = [
     { name = "seanchai-corpus" },
+]
+extract = [
+    { name = "pypdf", extra = ["crypto"] },
+    { name = "python-docx" },
 ]
 
 [package.dev-dependencies]
@@ -448,6 +450,7 @@ dev = [
     { name = "python-diameter" },
     { name = "ruff" },
     { name = "rumdl" },
+    { name = "seanchai", extra = ["extract"] },
     { name = "seanchai-corpus" },
     { name = "ty" },
 ]
@@ -456,11 +459,11 @@ dev = [
 requires-dist = [
     { name = "click", specifier = ">=8.4.2" },
     { name = "pydantic", specifier = ">=2.13.4" },
-    { name = "pypdf", extras = ["crypto"], specifier = ">=6.14.2" },
-    { name = "python-docx", specifier = ">=1.2.0" },
+    { name = "pypdf", extras = ["crypto"], marker = "extra == 'extract'", specifier = ">=6.14.2" },
+    { name = "python-docx", marker = "extra == 'extract'", specifier = ">=1.2.0" },
     { name = "seanchai-corpus", marker = "extra == 'corpus'", editable = "packages/seanchai-corpus" },
 ]
-provides-extras = ["corpus"]
+provides-extras = ["corpus", "extract"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -469,6 +472,7 @@ dev = [
     { name = "python-diameter", specifier = ">=0.9.0" },
     { name = "ruff", specifier = ">=0.16.0" },
     { name = "rumdl", specifier = ">=0.3.2" },
+    { name = "seanchai", extras = ["extract"] },
     { name = "seanchai-corpus", editable = "packages/seanchai-corpus" },
     { name = "ty", specifier = ">=0.0.63" },
 ]

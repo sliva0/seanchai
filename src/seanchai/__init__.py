@@ -10,8 +10,10 @@ shared error base and the version are here.
 - `seanchai.corpus`: a set of parsed `.dad` files, and the rules for resolving
   between them;
 - `seanchai.dad`: the `.dad` AST, parser, canonical formatter and corrections;
-- `seanchai.extractor`: 3GPP docx/PDF and RFC text to AST;
-- `seanchai.downloader`: fetches the source documents the corpus is built from.
+- `seanchai.extractor`: 3GPP docx/PDF and RFC text to AST, the former with the
+  `seanchai[extract]` extra;
+- `seanchai.downloader`: fetches the source documents the corpus is built from,
+  with that extra for whatever it has to open as docx or PDF.
 """
 
 from importlib.metadata import version
