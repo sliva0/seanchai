@@ -44,6 +44,17 @@ reason = """
     """
 
 [[hole]]
+document = "RFC5866"
+name = "Authorization-Session-Volume"
+missing = ["undefined"]
+reason = """
+    a member of the QIR and RAR bodies (clauses 5.3, 5.5) no clause defines;
+    clause 7.1's table of base AVPs omits it, the RFC has no errata, IANA's AVP
+    Codes registry assigns it nothing and Wireshark's dictionary has no such AVP
+    (RFC5866.py#undefined-authorization-session-volume)
+    """
+
+[[hole]]
 document = "TS29.061"
 name = "Delegated-IPv6-Prefix"
 missing = ["undefined"]

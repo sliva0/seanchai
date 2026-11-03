@@ -1,0 +1,36 @@
+# Source declarations for RFC 5866 (Diameter Quality-of-Service Application).
+
+[[patch]]
+find = "5.1.  QoS-Authorization Request (QAR)"
+replace = "5.1.  QoS-Authorization-Request (QAR)"
+exact = true
+section = "5.1"
+reason = """
+    the heading drops a hyphen of the name the clause's prose and rule spell
+    QoS-Authorization-Request
+    """
+
+[[patch]]
+find = "5.3.  QoS-Install Request (QIR)"
+replace = "5.3.  QoS-Install-Request (QIR)"
+exact = true
+section = "5.3"
+reason = """
+    the heading drops a hyphen of the name the rule spells QoS-Install-Request
+    """
+
+[[patch]]
+find = "5.4.  QoS-Install Answer (QIA)"
+replace = "5.4.  QoS-Install-Answer (QIA)"
+exact = true
+section = "5.4"
+reason = """
+    the heading drops a hyphen of the name the rule spells QoS-Install-Answer
+    """
+
+[[quirk]]
+name = "boxed-table-legend"
+reason = """
+    clause 7.2's table closes with a boxed legend of the M and V bits under its
+    last rule
+    """

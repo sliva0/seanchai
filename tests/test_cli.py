@@ -1152,7 +1152,7 @@ def test_a_finding_or_an_error_exits_1(tmp_path, monkeypatch):
         ["format", "--check", str(unformatted)],
         ["lint", "--no-corpus", str(conflicted)],
         ["show", "no-such-avp"],
-        ["commands", "--application", "9"],
+        ["commands", "--application", "99"],
     ):
         result = CliRunner().invoke(main, arguments)
         assert result.exit_code == 1, (arguments, result.output)

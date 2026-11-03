@@ -4842,6 +4842,94 @@
    "renames": [],
    "version": null
   },
+  "rfc5866": {
+   "edits": {
+    "RFC5866.py#application-id": {
+     "kind": "insert",
+     "reason": "clause 5 says 'The value of 9 MUST be used as the Application-Id in all QAR/QAA and QIR/QIA commands', and clause 10.2 records IANA's allocation"
+    },
+    "RFC5866.py#application-id-common": {
+     "kind": "insert",
+     "reason": "clause 5 says 'The value of zero (0) SHOULD be used as the Application-Id in all STR/STA, ASR/ASA, and RAR/RAA commands', and clauses 5.5 and 5.6 print RAR and RAA"
+    },
+    "RFC5866.py#bases-rfc5777": {
+     "kind": "correction",
+     "reason": "clause 7.2 says 'This document reuses the AVPs defined in Section 4 of [RFC5777]', and every command body lists its QoS-Resources"
+    },
+    "RFC5866.py#qaa-acct-multi-session-id": {
+     "kind": "correction",
+     "reason": "the QAA ABNF (clause 5.2) drops a hyphen of the base protocol's Acct-Multi-Session-Id (RFC 6733 clause 9.8.5, code 50); no document defines the printed spelling"
+    },
+    "RFC5866.py#qaa-auth-grace-period": {
+     "kind": "correction",
+     "reason": "the QAA ABNF (clause 5.2) writes Authorization-Grace-Period, which no document defines; clause 7.1's table of the base AVPs this application uses lists Auth-Grace-Period (code 276)"
+    },
+    "RFC5866.py#qaa-authorization-lifetime": {
+     "kind": "correction",
+     "reason": "the QAA ABNF (clause 5.2) writes Authorization-Session-Lifetime, which no document defines; clause 7.1's table of the base AVPs this application uses lists Authorization-Lifetime (code 291)"
+    },
+    "RFC5866.py#qir-auth-grace-period": {
+     "kind": "correction",
+     "reason": "the QIR ABNF (clause 5.3) writes Authorization-Grace-Period, which no document defines; clause 7.1's table of the base AVPs this application uses lists Auth-Grace-Period (code 276)"
+    },
+    "RFC5866.py#qir-authorization-lifetime": {
+     "kind": "correction",
+     "reason": "the QIR ABNF (clause 5.3) writes Authorization-Session-Lifetime, which no document defines; clause 7.1's table of the base AVPs this application uses lists Authorization-Lifetime (code 291)"
+    },
+    "RFC5866.py#raa-redirect-max-cache-time": {
+     "kind": "correction",
+     "reason": "the RAA ABNF (clause 5.6) writes Redirect-Host-Max-Cache-Time, which no document defines; the base protocol's RAA carries Redirect-Max-Cache-Time (RFC 6733 clause 6.14, code 262) after the Redirect-Host and Redirect-Host-Usage this body also lists"
+    },
+    "RFC5866.py#rar-auth-grace-period": {
+     "kind": "correction",
+     "reason": "the RAR ABNF (clause 5.5) writes Authorization-Grace-Period, which no document defines; clause 7.1's table of the base AVPs this application uses lists Auth-Grace-Period (code 276)"
+    },
+    "RFC5866.py#rar-authorization-lifetime": {
+     "kind": "correction",
+     "reason": "the RAR ABNF (clause 5.5) writes Authorization-Session-Lifetime, which no document defines; clause 7.1's table of the base AVPs this application uses lists Authorization-Lifetime (code 291)"
+    },
+    "RFC5866.py#undefined-authorization-session-volume": {
+     "kind": "insert",
+     "reason": "the QIR (clause 5.3) and RAR (clause 5.5) bodies list it and no clause or table defines it; clause 7.1's table of base AVPs omits it, RFC 5866 has no errata, IANA's AVP Codes registry assigns it nothing and Wireshark's dictionary has no such AVP"
+    }
+   },
+   "reference": "RFC5866",
+   "renames": [
+    {
+     "expect": "Acct-Multisession-Id",
+     "replace": "Acct-Multi-Session-Id"
+    },
+    {
+     "expect": "Authorization-Session-Lifetime",
+     "replace": "Authorization-Lifetime"
+    },
+    {
+     "expect": "Authorization-Session-Lifetime",
+     "replace": "Authorization-Lifetime"
+    },
+    {
+     "expect": "Authorization-Session-Lifetime",
+     "replace": "Authorization-Lifetime"
+    },
+    {
+     "expect": "Authorization-Grace-Period",
+     "replace": "Auth-Grace-Period"
+    },
+    {
+     "expect": "Authorization-Grace-Period",
+     "replace": "Auth-Grace-Period"
+    },
+    {
+     "expect": "Authorization-Grace-Period",
+     "replace": "Auth-Grace-Period"
+    },
+    {
+     "expect": "Redirect-Host-Max-Cache-Time",
+     "replace": "Redirect-Max-Cache-Time"
+    }
+   ],
+   "version": null
+  },
   "rfc6733": {
    "edits": {
     "RFC6733.py#application-id-accounting": {
