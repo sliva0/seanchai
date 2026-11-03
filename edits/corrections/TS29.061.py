@@ -100,7 +100,7 @@ CORRECTIONS += [
         into=header(),
         node=ast.ApplicationScope(
             name="NASREQ",
-            source=ast.SourceRef(section="16a.1"),
+            source=ast.SourceRef(section="16a.1", page=112),
             application_id=1,
             applies_to=("16a.*",),
         ),
@@ -121,45 +121,54 @@ _REDIRECTS = {
     "Redirected-Host-Usage": "Redirect-Host-Usage",
     "Redirected-Host-Cache-Time": "Redirect-Max-Cache-Time",
 }
-
-
-def _redirects(prefix, versions, *commands):
-    return [
-        Correction(
-            id=f"{prefix}{printed.lower()}-{section.replace('.', '-')}",
-            target=avp_rule(definition(command, section=section), printed),
-            field="name",
-            expect=printed,
-            replace=_REDIRECTS[printed],
-            reason=f"clause {section}'s body prints {printed}; RFC 6733 section"
-            f" 6 and the bodies of the other answers name the AVP"
-            f" {_REDIRECTS[printed]}, and no document defines the printed name",
-            versions=versions,
-        )
-        for command, section, printed_names in commands
-        for printed in printed_names
-    ]
-
-
 _SHORT = ("Redirected-Host", "Redirected-Host-Usage")
 _LONG = (*_SHORT, "Redirected-Host-Cache-Time")
 
+
+def _redirect_reason(section, printed):
+    return (
+        f"clause {section}'s body prints {printed}; RFC 6733 section 6 and the"
+        f" bodies of the other answers name the AVP {_REDIRECTS[printed]}, and no"
+        " document defines the printed name"
+    )
+
+
 CORRECTIONS += [
-    *_redirects(
-        "",
-        "18.1.0",
+    Correction(
+        id=f"{printed.lower()}-{section.replace('.', '-')}",
+        target=avp_rule(definition(command, section=section), printed),
+        field="name",
+        expect=printed,
+        replace=_REDIRECTS[printed],
+        reason=_redirect_reason(section, printed),
+        versions="18.1.0",
+    )
+    for command, section, printed_names in (
         ("Abort-Session-Answer", "16a.4.8", _SHORT),
         ("Re-Auth-Answer", "17.6.6", _LONG),
         ("Abort-Session-Answer", "17.6.8", _SHORT),
         ("Re-Auth-Answer", "20.4.2", _LONG),
         ("Abort-Session-Answer", "20.4.6", _SHORT),
-    ),
-    *_redirects(
-        "rel6-",
-        "6.15.0",
+    )
+    for printed in printed_names
+]
+CORRECTIONS += [
+    Correction(
+        id=f"rel6-{printed.lower()}-{section.replace('.', '-')}",
+        target=avp_rule(definition(command, section=section), printed),
+        field="name",
+        expect=printed,
+        replace=_REDIRECTS[printed],
+        reason=_redirect_reason(section, printed),
+        versions="6.15.0",
+    )
+    for command, section, printed_names in (
         ("Re-Auth-Answer", "17.6.6", _LONG),
         ("Abort-Session-Answer", "17.6.8", _SHORT),
-    ),
+    )
+    for printed in printed_names
+]
+CORRECTIONS += [
     Correction(
         id="acr-ms-timezone-spelling",
         target=avp_rule("AC-Request", "3GPP-MS-Time-Zone"),
@@ -186,7 +195,7 @@ CORRECTIONS += [
         into=header(),
         node=ast.UndefinedAvp(
             name="Delegated-IPv6-Prefix",
-            source=ast.SourceRef(section="16a.4.1"),
+            source=ast.SourceRef(section="16a.4.1", page=123),
             note='"clause 2: [97] IETF RFC 4818 (2007): RADIUS'
             ' Delegated-IPv6-Prefix Attribute"',
         ),

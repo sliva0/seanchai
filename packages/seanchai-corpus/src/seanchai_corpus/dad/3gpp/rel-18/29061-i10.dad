@@ -24,6 +24,7 @@
 ; Type: Application Scope ;; inserted: (TS29.061.py#application-id-nasreq)
 ; Name: NASREQ
 ; Section: 16a.1
+; Page: 112
 ; Application-ID: 1
 ; Applies-To: 16a.*
 
@@ -961,4 +962,5 @@ MBMS-GW-UDP-Port-Indicator ::= < Enumerated AVP header: 928 10415 >
 ; Type: Undefined AVP ;; inserted: (TS29.061.py#undefined-delegated-ipv6-prefix)
 ; Name: Delegated-IPv6-Prefix
 ; Section: 16a.4.1
+; Page: 123
 ; Note: "clause 2: [97] IETF RFC 4818 (2007): RADIUS Delegated-IPv6-Prefix Attribute"
