@@ -12,6 +12,7 @@ import pytest
 from conftest import _CORPUS_DIR
 
 from seanchai import correction_record, regenerate
+from seanchai.downloader import load_catalog
 
 
 def _manifest(root, stem):
@@ -830,3 +831,31 @@ def test_a_missing_manifest_fails_the_run(tmp_path):
     report = _run(tmp_path / "manifest.json", tmp_path, tmp_path)
 
     assert report.failed
+
+
+OUT_OF_SCOPE = ("TS29.201", "TS29.213", "TS29.228", "TS29.305", "TS29.328")
+
+
+def test_the_catalog_marks_what_the_extractor_has_nothing_to_read_in():
+    marked = load_catalog().out_of_scope()
+
+    assert tuple(sorted(marked)) == OUT_OF_SCOPE
+    # Read as prose, one line however the file wraps it.
+    assert all("\n" not in reason and reason for reason in marked.values())
+
+
+@pytest.mark.parametrize("reference", OUT_OF_SCOPE)
+def test_adding_an_out_of_scope_document_says_why(tmp_path, reference):
+    sources = tmp_path / "sources"
+    sources.mkdir()
+    manifest, _ = _manifest(sources, "29999-100")
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+
+    report = _run(manifest, corpus, corpus, add=[reference])
+
+    (refused,) = report.outcomes
+    assert report.failed
+    assert (refused.reference, refused.status) == (reference, "failed")
+    assert "out of scope: " in regenerate.describe(refused)
+    assert "no Diameter ABNF or AVP tables" in regenerate.describe(refused)

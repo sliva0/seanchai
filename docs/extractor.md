@@ -299,9 +299,10 @@ with its reason in `edits/sources/`.
 
 TS 29.228, 29.328, 29.213 and 29.305 hold procedure and IE mappings, not
 Diameter ABNF or AVP tables; TS 29.201 carries TS 29.214's Rx over REST as
-an XML schema. TS 32.296's Re interface prints `xxx` command codes and
-`TBD` AVP codes, never allocated. `regenerate --add` rejects each with
-`no AVP table found`, and nothing in the corpus cites them.
+an XML schema. The catalog marks each `out_of_scope`, and `regenerate --add`
+refuses it in that field's words. TS 32.296's Re interface prints `xxx` command
+codes and `TBD` AVP codes, never allocated, and it is not in the catalog.
+Nothing in the corpus cites any of them.
 
 ### The registry reading
 

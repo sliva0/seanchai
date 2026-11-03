@@ -13,8 +13,8 @@ otherwise rebuilt like any other (`extractor.transcription`).
 
 Which documents count is decided by the corpus, not the manifest: the catalog
 holds documents that define nothing the extractor reads (TS 29.201's XML
-mapping, 29.228's IE tables), so a run rebuilds what is committed plus
-whatever `add` names.
+mapping, 29.228's IE tables), marked `out_of_scope` there, so a run rebuilds
+what is committed plus whatever `add` names and the catalog does not refuse.
 Which *version* counts is decided by the manifest: the downloader already
 prefers the newest version with a published ETSI PDF, and a corpus that lags
 it is exactly what this module exists to expose, so a superseded pair is
@@ -35,6 +35,7 @@ from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
+from .downloader import load_catalog
 from .errors import SeanchaiError
 from .extractor import rfc_text, tgpp_docx, transcription
 from .extractor.errors import ExtractionError
@@ -149,7 +150,16 @@ def regenerate(
     # their ranges are widened; loaded once, and only then.
     books = Corpus.load([corpus]) if expand_ranges else None
     outcomes = []
-    for key in _selected(listed, committed, only, add):
+    out_of_scope = load_catalog().out_of_scope() if add else {}
+    for reference in add:
+        if reference in out_of_scope:
+            refused = Outcome(
+                reference, "failed", error=f"out of scope: {out_of_scope[reference]}"
+            )
+            outcomes.append(refused)
+            report(refused)
+    readable = [reference for reference in add if reference not in out_of_scope]
+    for key in _selected(listed, committed, only, readable):
         outcome = _one(
             key[0],
             listed.get(key),

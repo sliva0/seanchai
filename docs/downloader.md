@@ -102,6 +102,10 @@ experiments, not for refreshing the corpus.
   (`3gpp/Rel-11/TS_32.299/` beside `3gpp/Rel-18/TS_32.299/`). How the
   corpus resolves to the pinned copies is in
   [consumers.md](consumers.md#resolution-across-releases).
+- **A catalog entry can be downloaded and still be out of scope.** A `[[tgpp]]`
+  entry's `out_of_scope` says why the extractor has nothing to read in it; the
+  document is fetched for reference, and `regenerate --add` refuses it with
+  those words ([extractor.md](extractor.md#out-of-scope)).
 - **Hand transcriptions are in the catalog for their titles only.** A
   `[[transcribed]]` entry names a document under `edits/transcriptions/` and the
   title its cover prints. Nothing downloads it for the corpus; `seanchai export`

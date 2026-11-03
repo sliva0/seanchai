@@ -4,6 +4,9 @@
 # The 3GPP list is deliberately broader than a title search. Several protocols
 # (for example SLg, EPS AAA, ProSe, V2X, and MB2) are Diameter applications
 # without saying "Diameter" in their specification titles.
+#
+# An `out_of_scope` entry is fetched and never extracted: it says why, and
+# `seanchai regenerate --add` refuses the document in those words.
 
 [[tgpp]]
 number = "29.061"
@@ -43,6 +46,10 @@ reason = """
     Defines mappings between Diameter AVP base formats and XML/REST
     representations.
     """
+out_of_scope = """
+    Carries TS 29.214's Rx over REST as an XML schema: no Diameter ABNF or AVP
+    tables.
+    """
 
 [[tgpp]]
 number = "29.212"
@@ -54,6 +61,10 @@ title = "PCC signalling flows and QoS parameter mapping"
 reason = """
     Companion PCC specification containing Diameter AVP usage and parameter
     mappings.
+    """
+out_of_scope = """
+    Holds PCC signalling flows and QoS parameter mappings: no Diameter ABNF or
+    AVP tables.
     """
 
 [[tgpp]]
@@ -78,6 +89,10 @@ title = "Cx/Dx signalling flows and message contents"
 reason = """
     Defines application-level AVP presence rules that override the protocol
     ABNF.
+    """
+out_of_scope = """
+    Holds Cx procedures and IE mappings: no Diameter ABNF or AVP tables. TS
+    29.229 defines the protocol.
     """
 
 [[tgpp]]
@@ -107,6 +122,10 @@ title = "Diameter data-management applications"
 number = "29.305"
 title = "Interworking between MAP- and Diameter-based interfaces"
 reason = "Contains mappings between MAP parameters and Diameter AVPs."
+out_of_scope = """
+    Holds mappings between MAP parameters and Diameter AVPs: no Diameter ABNF
+    or AVP tables.
+    """
 
 [[tgpp]]
 number = "29.328"
@@ -114,6 +133,10 @@ title = "Sh signalling flows and message contents"
 reason = """
     Companion Sh specification containing Diameter message and AVP content
     rules.
+    """
+out_of_scope = """
+    Holds Sh procedures and IE mappings: no Diameter ABNF or AVP tables. TS
+    29.329 defines the protocol.
     """
 
 [[tgpp]]

@@ -91,6 +91,8 @@ class ThreeGppSpec:
     title: str
     reason: str = "Defines Diameter commands, command ABNF, AVPs, or AVP mappings."
     document_type: str = "TS"
+    # Why the extractor has nothing to read in it (docs/extractor.md#out-of-scope).
+    out_of_scope: str | None = None
 
     @property
     def series(self) -> int:
@@ -210,6 +212,15 @@ class Catalog(NamedTuple):
     pinned: tuple[PinnedThreeGppSpec, ...] = ()
     transcribed: tuple[TranscribedDocument, ...] = ()
 
+    def out_of_scope(self) -> dict[str, str]:
+        """Why each document the extractor has nothing to read in is so, by
+        `SpecRef`."""
+        return {
+            f"{spec.document_type}{spec.number}": spec.out_of_scope
+            for spec in self.tgpp
+            if spec.out_of_scope is not None
+        }
+
 
 CATALOG_PATH = Path(__file__).resolve().parent / "specs.toml"
 
@@ -219,9 +230,9 @@ class DownloadError(SeanchaiError, RuntimeError):
 
 
 def _prose(entry: dict) -> dict:
-    """A catalog entry with `title` and `reason` read as prose; its numbers,
-    versions and the Wireshark tag and path are exact."""
-    return collapse_fields(entry, {"title", "reason"})
+    """A catalog entry with `title`, `reason` and `out_of_scope` read as prose;
+    its numbers, versions and the Wireshark tag and path are exact."""
+    return collapse_fields(entry, {"title", "reason", "out_of_scope"})
 
 
 def load_catalog(path: Path | None = None) -> Catalog:
