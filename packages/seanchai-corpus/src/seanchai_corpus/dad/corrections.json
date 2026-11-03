@@ -5011,6 +5011,21 @@
    "renames": [],
    "version": null
   },
+  "rfc6738": {
+   "edits": {
+    "RFC6738.py#application-id": {
+     "kind": "insert",
+     "reason": "clause 3 defines 'Diameter IKE SK (IKESK) 11', and clause 5.1 sets the header's Application-Id to 'the Diameter IKE SK Application-Id (11)'; clause 5 prints IKESKR and IKESKA with no id in their headers"
+    },
+    "RFC6738.py#bases-nasreq": {
+     "kind": "correction",
+     "reason": "clause 5.1's IKESKR body lists NAS-Identifier, NAS-IP-Address, NAS-IPv6-Address and NAS-Port, which no table of this document holds; the document cites no origin for them and RFC 4005 defines all four"
+    }
+   },
+   "reference": "RFC6738",
+   "renames": [],
+   "version": null
+  },
   "rfc6942": {
    "edits": {
     "RFC6942.py#application-id": {
