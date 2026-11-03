@@ -33,7 +33,7 @@ section, each starting with `; Type:`.
 | `Application Scope` | an application id the document states in prose, and its clauses  |
 | `Message`           | a command-code ABNF rule with its Diameter header                |
 | `Grouped AVP`       | `Name ::= < AVP header: code vendor-id >` plus its body          |
-| `Reprinted AVP`     | another document's grouped rule as this one prints it; no definition |
+| `Reprinted AVP`     | another document's grouped rule, as this one prints it           |
 | `Enumerated AVP`    | the header rule plus values and value ranges, or their source    |
 | `AVP Table`         | the document's own AVP table, one AVP per row                    |
 | `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |

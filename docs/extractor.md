@@ -337,15 +337,16 @@ its category and a description, and no ABNF. The document states no command code
 for it, nor flags: clause 6.4.1.1 says only that RAR/RAA "are used according to"
 RFC 3588 [401]. TS 29.230 has no row for RFC 6733's 258 either, allocating 3GPP's
 commands alone. So an input patch supplies the header line, citing RFC 6733
-clause 8.3.1, and the extractor fails without it, rather than pass over a command
-the document prints. Clause 6.4.1.2's symbols read M as `{ }` and OC as `[ ]`; a
-dash, "Not used in 3GPP", reads as a strike, the member commented out; a row a tab
-sets off is the grouped AVP's above it, kept as a comment and no member.
+clause 8.3.1, and the extractor fails without it, rather than pass over a
+command the document prints. Clause 6.4.1.2's symbols read M as `{ }` and OC as
+`[ ]`; a dash, "Not used in 3GPP", reads as a strike, the member commented out;
+a row a tab sets off is the grouped AVP's above it, kept as a comment and no
+member.
 
-The category says neither a fixed position nor a repetition, which RFC 6733's rule
-states and V18.0.0's clause 6.4.4 prints. Those are corrections
-(`rel11-rar-session-id-position`, `rel11-rar-repeats-*`), so the file shows both the
-reading and the edit:
+The category says neither a fixed position nor a repetition, which RFC 6733's
+rule states and V18.0.0's clause 6.4.4 prints. Those are corrections
+(`rel11-rar-session-id-position`, `rel11-rar-repeats-*`), so the file shows both
+the reading and the edit:
 
 ```dad
 <Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >

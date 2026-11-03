@@ -176,6 +176,11 @@ def release_marker(release: int) -> str:
     raise DownloadError("3GPP release must be between 4 and 35")
 
 
+class NotPublishedError(DownloadError):
+    """The server says it holds no such file. Of every way a fetch fails, the
+    one that says something about what is published."""
+
+
 def request_bytes(url: str, retries: int = 4) -> bytes:
     request = urllib.request.Request(
         url,
@@ -186,6 +191,8 @@ def request_bytes(url: str, retries: int = 4) -> bytes:
             with urllib.request.urlopen(request, timeout=90) as response:
                 return response.read()
         except urllib.error.HTTPError as error:
+            if error.code == 404:
+                raise NotPublishedError(f"failed to fetch {url}: HTTP 404") from error
             if error.code not in {408, 429, 500, 502, 503, 504}:
                 raise DownloadError(
                     f"failed to fetch {url}: HTTP {error.code}"
@@ -845,7 +852,11 @@ def download_3gpp(
             atomic_download(exact_pdf_url, cached, validate=validate_pdf)
             pdf_url = exact_pdf_url
             pdf_version = source_version
-        except DownloadError as exact_error:
+        except NotPublishedError as exact_error:
+            # Only ETSI saying it has no such file reaches an earlier rendering.
+            # Any other failure is a failure: a refused or broken fetch of TS 129
+            # 329 V11.7.0's PDF, which ETSI publishes, once recorded V11.6.0's in
+            # its place, and the version then could not be regenerated.
             if editions is None:
                 editions = discover_etsi_editions(spec)
             fallback_versions = sorted(

@@ -476,9 +476,9 @@ section = "6.4.4"
 reason = """
     clause 6.4.4 prints RAR with no Diameter header anywhere, and a command
     needs its code. Clause 6.4.1.1 uses RAR/RAA 'according to' RFC 3588 [401],
-    whose
-    successor RFC 6733 clause 8.3.1 prints '<RAR> ::= < Diameter Header: 258,
-    REQ, PXY >'; clause 6.4.5 prints RAA's as 258, PXY, and V18.0.0 clause 6.4.4
+    whose successor RFC 6733 clause 8.3.1 prints '<RAR> ::= < Diameter Header:
+    258, REQ, PXY >'; clause 6.4.5 prints RAA's as 258, PXY, and V18.0.0 clause
+    6.4.4
     prints RAR's as here. TS 29.230 allocates 3GPP's commands and has no row for
     RFC 6733's 258. The application id stays out, as for the clause's other
     headers: clause 7.1.6's Ro scope applies to them
