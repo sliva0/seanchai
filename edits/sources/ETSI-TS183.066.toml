@@ -1,0 +1,16 @@
+# Source declarations for ETSI TS 183 066 (NASS a4 interface based on the
+# DIAMETER protocol). Applied to the lines of the hand transcription in
+# edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "< User-Data -Request >"
+replace = "<User-Data-Request>"
+section = "7.1.1"
+reason = """
+    clause 7.1.1's message format prints a space inside the rule name, '<
+    User-Data -Request >'; the clause's heading and sentence name the command
+    User-Data-Request, as TS 29.329 does
+    """
+first_version = "2.1.1"
+last_version = "2.1.1"

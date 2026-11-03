@@ -1,0 +1,169 @@
+; Specification: ETSI TS 183 066
+; Version: 2.1.1
+; Vendor-ID: 13019
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/183000_183099/183066/02.01.01_60/ts_183066v020101p.pdf
+; Transcribed: by hand from https://www.etsi.org/deliver/etsi_ts/183000_183099/183066/02.01.01_60/ts_183066v020101p.pdf
+
+
+;; Clause 7 and clause 7.4.4 say the same: "16777257 (allocated by IANA)".
+; Type: Application Scope
+; Name: a4
+; Section: 6.6
+; Page: 16
+; Application-ID: 16777257
+; Applies-To: 7.*
+
+
+; Type: Message
+; Name: User-Data-Request, UDR
+; Section: 7.1.1
+; Page: 17
+<User-Data-Request> ::= < Diameter Header: 306, REQ, PXY, 16777257 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ Globally-Unique-Address ]        ; bold
+        [ Logical-Access-Id ]              ; bold
+        [ User-Name ]                      ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: User-Data-Answer, UDA
+; Section: 7.1.2
+; Page: 17
+<User-Data-Answer> ::= < Diameter Header: 306, PXY, 16777257 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Globally-Unique-Address ]          ; bold
+        [ User-Name ]                        ; bold
+        [ Logical-Access-Id ]                ; bold
+        [ Physical-Access-Id ]               ; bold
+        [ CNGCF-Address ]                    ; bold
+        [ SIP-Outbound-Proxy ]               ; bold
+        [ Initial-Gate-Setting-Description ] ; bold
+      * [ QoS-Profile-Description ]          ; bold
+        [ QoS-Profile-ID ]                   ; bold
+        [ Initial-Gate-Setting-ID ]          ; bold
+      * [ Privacy-Indicator ]                ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Notification-Request, PNR
+; Section: 7.1.3
+; Page: 18
+<Push-Notification-Request> ::= < Diameter Header: 309, REQ, PXY, 16777257 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+        [ Globally-Unique-Address ]          ; bold
+        [ User-Name ]                        ; bold
+        [ Logical-Access-Id ]                ; bold
+        [ Physical-Access-Id ]               ; bold
+        [ CNGCF-Address ]                    ; bold
+        [ SIP-Outbound-Proxy ]               ; bold
+        [ Initial-Gate-Setting-Description ] ; bold
+      * [ QoS-Profile-Description ]          ; bold
+        [ QoS-Profile-ID ]                   ; bold
+        [ Initial-Gate-Setting-ID ]          ; bold
+      * [ Privacy-Indicator ]                ; bold
+        [ Data-Operation-Indicator ]         ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Notification-Answer, PNA
+; Section: 7.1.4
+; Page: 18
+<Push-Notification-Answer> ::= < Diameter Header: 309, PXY, 16777257 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 7.3
+; Table: 7.2
+; Page: 19
+; Columns: Name            Code   Section   Type         Must   May   S.not   M.not   Encrypt
+Data-Operation-Indicator   420    7.3.1     Enumerated   V      M     -       -       Yes
+;; NOTE: The AVP header bit denoted as "M", indicates whether support of the AVP is required. The AVP header bit denoted as "V", indicates whether the optional Vendor-ID field is present in the AVP header.
+
+
+;; Table 7.3 prints "See ES 283 034 [4]" in its Clause column and flag rules
+;; "in the context of the present document": Globally-Unique-Address M,V in
+;; Must, the others V in Must and M in May; May Encrypt Yes for all.
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.3
+; Page: 19
+; Columns: Name                    Code   From             Type
+Globally-Unique-Address            300    ETSI-ES283.034   Grouped
+Logical-Access-Id                  302    ETSI-ES283.034   OctetString
+Initial-Gate-Setting-Description   303    ETSI-ES283.034   Grouped
+QoS-Profile-Description            304    ETSI-ES283.034   Grouped
+Physical-Access-ID                 313    ETSI-ES283.034   UTF8String
+Initial-Gate-Setting-ID            314    ETSI-ES283.034   Unsigned32
+QoS-Profile-ID                     315    ETSI-ES283.034   Unsigned32
+
+
+;; Table 7.4 prints "See TS 183 020 [5]" in its Clause column and flag rules
+;; "in the context of the present document": V in Must, M in May; May Encrypt
+;; Yes.
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.4
+; Page: 20
+; Columns: Name     Code   From             Type
+Privacy-Indicator   440    ETSI-TS183.020   Grouped
+
+
+;; Table 7.5 prints "See TS 183 059-1 [10]" in its Clause column and flag
+;; rules "in the context of the present document": V in Must, M in May; May
+;; Encrypt Yes for both.
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7.5
+; Page: 20
+; Columns: Name      Code   From               Type
+SIP-Outbound-Proxy   601    ETSI-TS183.059-1   OctetString
+CNGCF-Address        600    ETSI-TS183.059-1   Grouped
+
+
+; Type: Enumerated AVP
+; Name: Data-Operation-Indicator
+; Section: 7.3.1
+; Page: 20
+Data-Operation-Indicator ::= < Enumerated AVP header: 420 13019 >
+        UPDATE = 0
+        REMOVE = 1
