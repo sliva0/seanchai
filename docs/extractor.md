@@ -189,7 +189,11 @@ misread.
 
 ## The 3GPP docx extractor
 
-Walks paragraphs and tables in document order under numbered headings:
+Walks paragraphs and tables in document order under numbered headings. A
+`w:smartTag` prints as the runs inside it, so the walk unwraps them first:
+python-docx reads a paragraph's direct runs alone, and through it TS 29.338
+clause 5.3.2.6's heading loses its `(ALA)` and TS 29.214's clause cells come out
+blank.
 
 - A sentence stating the application id the command headers omit becomes
   an `ApplicationScope` applying to the clause it sits in (`; Applies-To:

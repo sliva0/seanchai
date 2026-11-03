@@ -91,6 +91,26 @@
 
 
 ; Type: Message
+; Name: Alert-Service-Centre-Answer, ALA
+; Section: 5.3.2.6
+; Page: 26
+<Alert-Service-Centre-Answer> ::= < Diameter Header: 8388648, PXY, 16777312 >
+        < Session-Id >
+        [ DRMP ]
+        [ Vendor-Specific-Application-Id ]
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ Supported-Features ]
+      * [ AVP ]
+        [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
 ; Name: Report-SM-Delivery-Status-Request, RDR
 ; Section: 5.3.2.7
 ; Page: 26
