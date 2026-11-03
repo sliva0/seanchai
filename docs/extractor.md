@@ -181,13 +181,17 @@ numbering), `prose-enum-values` (`EVENT_RECORD (value 1)`, oneM2M) and
 `external-enum-values` (a clause saying where its values are defined).
 
 **RFC.** `prose-avp-codes` (RFC 7155), `clause-avp-table` (RFC 4072, 5447,
-6734, 6942), `radius-attribute-table` (RFC 4590), `type-short-forms`,
-`prose-catchall-row` (RFC 5778), `bare-name-continuation` (RFC 4004),
-`ragged-separator` (RFC 8583), `parenthesized-enum-values` (RFC 6734,
-7155), `parenthesized-value-first` (RFC 5777), `worded-enum-values`,
+5779, 6734, 6942, 7075), `radius-attribute-table` (RFC 4590),
+`type-short-forms`, `prose-catchall-row` (RFC 5778), `bare-name-continuation`
+(RFC 4004), `ragged-separator` (RFC 8583), `parenthesized-enum-values` (RFC
+6734, 6736, 7155), `parenthesized-value-first` (RFC 5777),
+`bulleted-enum-values` (RFC 4740), `worded-enum-values`,
 `external-enum-values`, `prose-cleared-flags` (RFC 6942),
 `mixed-table-borders` and `radius-avp-codes` (RFC 5580),
-`cause-mapping-table` (RFC 4005) and `registry-enum-values` (RFC 5778).
+`cause-mapping-table` (RFC 4005), `registry-enum-values` (RFC 5778),
+`boxed-table-legend` (RFC 5866), `split-avp-tables` (RFC 4740),
+`reused-avp-tables` (RFC 6736), `note-avp-origins` (RFC 6738),
+`prose-avp-origins` (RFC 5779, 8583) and `elided-members` (RFC 5778, 6738).
 
 Not gated: the "Y"/"N" Encrypt spellings, a dashed Encrypt cell, and
 "Must"/"Must not" M-bit short forms, closed vocabularies that cannot be
@@ -411,7 +415,24 @@ Same definitions, different carrier:
 - **More than one table.** A repeated header after a page break continues
   the table; a header after closing prose starts another.
 - **Border styles.** RFC 6733 boxes only the flag columns; RFC 7683, 7944
-  and 8581 to 8583 box the whole table.
+  and 8581 to 8583 box the whole table, and RFC 4740 and two of RFC 6736's
+  tables every column of it, where a wrapped name's continuation is the line
+  with its other cells blank. A row starts where the table's first row does,
+  which RFC 5866 and 6736 print one column left of the header's label.
+- **Headers naming no caption.** RFC 4740 captions its tables below them and
+  RFC 6736 stacks "AVP", "Flag", "rules", so a boxed `Attribute Name` followed
+  by `MUST` or `AVP` opens a table as "AVP Flag" does. Occurrence tables are
+  not read.
+- **Codes and flags apart.** RFC 4740 prints name, code, clause and type in
+  table 2 and the same names with flags in table 3. `split-avp-tables` joins
+  them into one table, and fails when their names differ. A table of names and
+  flags without the quirk is an error.
+- **Tables of re-used AVPs.** RFC 6736's clauses 8.1 and 8.3 to 8.6 tabulate
+  "the AVPs reused from" a document. `reused-avp-tables` reads each as a
+  `Reused AVPs` block citing it, keeping the printed code and type for the
+  linter to compare; the block has no column for the flags. `note-avp-origins`
+  does the same for rows RFC 6738's table sends to "Note 1". A document without
+  it drops such a row, as RFC 5778 does.
 - **Header labels are whole spellings**; an unrecognised header fails and
   earns an entry. Stacked flag labels (`MUST` over `NOT`) are read
   generically.
@@ -426,13 +447,23 @@ Same definitions, different carrier:
 - **Stated facts.** `; Vendor-ID: 0` always; no `; Version:` and no
   `; Table:`.
 - **Definitions anchor on section titles.** A bare-name title or `Name AVP`
-  is a candidate; a prose title is not. RFC 6733's base commands print no
+  is a candidate; a prose title is not, unless the local table's row typing the
+  name Grouped cites that clause (RFC 5777's `QoS-Capability`, under "QoS
+  Capability Indication"). RFC 6733's base commands print no
   application id and the file records its absence; no RFC states its ids
   in a wording a second one shares, so their application scopes come from
   corrections.
 - **Grouped AVPs** may write the rule name bracketed or bare. A body
   printed for another document's AVP is kept (RFC 8581 re-prints RFC 7683's
   `OC-OLR`) for the linter to compare.
+- **A body ends at a blank line, the next rule or a sentence.** Blank lines
+  a page break leaves inside a body are skipped when another member follows.
+  Any other line fails, naming its section and text, and so does a member
+  printed after the body ended and before the next rule. A typo is an input
+  patch, a reading a quirk. Under `elided-members` a `…` or `...` on a line of
+  its own stays a `;;` comment where it stood: RFC 5778 prints them in DER and
+  DEA, and RFC 6738 in IKESKR and IKESKA, leaving out what the rule does not
+  change.
 - **Enumerated AVPs**: a value list under a name-titled section, when the
   local table types the name Enumerated. Both layouts are read (value alone
   with description below; description on the value's line) plus older

@@ -70,8 +70,9 @@ section, each starting with `; Type:`.
   what its document says it means. TS 32.299's legend (clauses 6.2.1.2,
   6.4.1.2) reads it as "not used by 3GPP", so its struck members are
   commented out, marker kept, where they stood.
-- **A rule's elision stays where it stood.** TS 29.273 prints `…` or `...` on a
-  line of its own where a rule leaves out what it does not change. It names no
+- **A rule's elision stays where it stood.** TS 29.273, RFC 5778 and RFC 6738
+  print `…` or `...` on a line of its own where a rule leaves out what it does
+  not change. It names no
   member, so it is a `;;` comment there, as printed; the rule holds the members
   it prints and no more ([extractor.md](extractor.md#the-3gpp-docx-extractor)).
 - **A table declares its own columns.** `; Columns:` states which columns

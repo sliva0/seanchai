@@ -266,7 +266,7 @@ What still reports, and why each stays:
   TS 32.299.
 - **`registry-application-name`.** TS 29.272's VCSG scope names 16777308
   `S7a/S7d`; table 4.1 calls it "3GPP S7a".
-- **`undefined-avp`.** The ten names
+- **`undefined-avp`.** The eleven names
   ([consumers.md](consumers.md#undefined-names)), each declared by a block
   whose reason lists what was searched. Where the document itself names the
   AVP a member means, the member was corrected instead (TS 32.299's
