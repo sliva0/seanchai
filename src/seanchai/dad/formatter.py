@@ -84,7 +84,7 @@ _MIN_COLUMN_WIDTH = 3
 _COLUMN_GAP = 3
 
 
-def _avp_line(rule: ast.AvpRule) -> str:
+def avp_line(rule: ast.AvpRule) -> str:
     open_bracket, close_bracket = abnf.brackets_for(rule.presence)
     qualifier = abnf.qualifier(rule.min_occurs, rule.max_occurs)
     return f"{qualifier:>7} {open_bracket} {rule.name} {close_bracket}"
@@ -95,13 +95,13 @@ def _marker_column(avps: Sequence[ast.AvpRule]) -> int:
     *of this section*. A file-wide column would make one added AVP reflow
     every marker in the file, and the review workflow lives on raw-vs-raw
     diffs."""
-    return max((len(_avp_line(rule)) for rule in avps), default=0) + 1
+    return max((len(avp_line(rule)) for rule in avps), default=0) + 1
 
 
 def _marked(rule: ast.AvpRule, column: int) -> str:
     """A rule's line with its markers at `column`, `; bold` first when the
     source both bolds and strikes a member."""
-    line = _avp_line(rule)
+    line = avp_line(rule)
     markers = [
         f"; {marker}"
         for marker, present in (
@@ -119,7 +119,7 @@ def commented_avp_rule(rule: ast.AvpRule, avps: Sequence[ast.AvpRule]) -> str:
     `avps` would put them in, less the three columns `;; ` takes, so that its
     brackets line up with the members'. TS 32.299's struck members are
     written so (`struck-rules-unused`)."""
-    line = _marked(rule, max(_marker_column(avps), len(_avp_line(rule)) + 1))
+    line = _marked(rule, max(_marker_column(avps), len(avp_line(rule)) + 1))
     return line[3:] if line.startswith("   ") else line.lstrip()
 
 

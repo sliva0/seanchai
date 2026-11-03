@@ -388,7 +388,7 @@ def _check_citations(
         )
 
 
-def _cross_release(
+def cross_release_entry(
     crossing: CrossRelease | None,
 ) -> export_schema.CrossRelease | None:
     if crossing is None:
@@ -404,7 +404,8 @@ def _cross_release(
     )
 
 
-def _hole(hole: model.Hole) -> Hole:
+def hole_entry(hole: model.Hole) -> Hole:
+    """`hole` as an export or a dictionary writes it."""
     block = hole.undefined
     return Hole(
         name=hole.name,
@@ -421,7 +422,7 @@ def _hole(hole: model.Hole) -> Hole:
         origin=hole.origin,
         conflict=hole.conflict,
         wireshark_name=hole.wireshark_name,
-        across_releases=_cross_release(hole.across_releases),
+        across_releases=cross_release_entry(hole.across_releases),
         undefined=None
         if block is None
         else UndefinedBlock(
@@ -511,7 +512,7 @@ def _avps(
         hole = corpus.model.hole(entry.reference, name, version=spec.version)
         target = corpus.avp_target(entry, avp) if avp is not None else None
         if hole is not None:
-            holes.append(_hole(hole))
+            holes.append(hole_entry(hole))
         names[name] = target
         search.append(
             SearchEntry(
@@ -530,7 +531,9 @@ def _avps(
                 if avp
                 else (hole.wireshark_name if hole else None),
                 data_type=avp.data_type if avp else None,
-                across_releases=_cross_release(avp.across_releases if avp else None),
+                across_releases=cross_release_entry(
+                    avp.across_releases if avp else None
+                ),
             )
         )
     return names, holes, search

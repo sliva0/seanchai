@@ -89,6 +89,59 @@ for application in built.applications("TS 29.212"):
         print(" ", message.abbreviation, message.command_code, kind)
 ```
 
+## Without Python
+
+Most Diameter stacks are not Python. An installed `seanchai[corpus]` answers
+from the command line, with no checkout and no downloads:
+
+```sh
+seanchai show Session-Id          # the defining document's reading, and others
+seanchai show 10415:601 --json    # by VENDOR:CODE; --document REF for its reading
+seanchai commands TS29.229        # code, request or answer, id, document, section
+seanchai commands --application 16777216 --json
+seanchai dictionary -o cx.json --application 16777216
+```
+
+`seanchai dictionary` writes one JSON file to generate from, compact with sorted
+keys: the same corpus and options give the same bytes. `--document REF` and
+`--application ID` narrow it, each repeatable. `--application` leaves what its
+commands use; `--document` alone also keeps what the document's tables list.
+`--policy` is the [undefined-name policy](#undefined-names), `hole` by default:
+`drop`, `placeholder`, or `supply` with `--supply SIDECAR.dad`. Every field is
+always written, null or empty where it says nothing, and `seanchai.dictionary`
+holds the shape as pydantic models.
+
+```text
+format_version     1, changes when a reader would have to
+seanchai_version, corpus_version, undefined_policy
+documents, application_ids    what was selected; no ids is every application
+applications[]     reference, application_id, clause, name, stated_in
+  commands[]       name, abbreviation, command_code, is_request, flags,
+                   application_id (on the wire), header_application_id,
+                   defined_in, section, members[], dropped[], walk[]
+avps[]             id, defining, kind (plain, grouped, enumerated), name,
+                   vendor_id, code, data_type, flag_rules, defined_in, section,
+                   read_through, completed_by, across_releases, supplied,
+                   members[], dropped[], values[], values_source
+holes[]            id, name, reference, version, missing, what it does state,
+                   recorded (the reason)
+```
+
+- A member is `name`, `presence` (`fixed`, `required`, `optional`),
+  `min_occurs`, `max_occurs` (null is unbounded) and `kind`: `avp` names an
+  `avps[].id` in `avp`, `hole` a `holes[].id` in `hole`, `placeholder` holds its
+  block, and `wildcard` is the `* [ AVP ]` line. `alias` is set for a
+  `model.Alias`.
+- `walk` is `Message.walk`: every AVP `id` the command reaches, at any depth.
+- An AVP `id` is `vendor:code`. A citing table can read an identity otherwise,
+  and a command means its document's reading, so each further reading the
+  selection holds is `vendor:code#2` and on. `defining` marks the defining
+  document's. A generator wanting one entry per identity takes those with no
+  `#`, as [the recipe](#generate-a-dictionary) does.
+- `values[]` holds `kind` (`value`, `reserved`, `vendor-specific`), `name`,
+  `value`, `first`, `last`, `description`.
+- `dropped` is what `--policy drop` took out, each naming its hole.
+
 ## Installing the corpus
 
 The library and the corpus are two packages. `seanchai` holds no data, and
@@ -131,6 +184,7 @@ from seanchai import model
 # adds Avp.wireshark_name. `Model.build(books)` is the same over any corpus.
 built = model.Model.installed()
 built.references()  # every document, a tuple as every query returns
+built.canonical("ts 29.229")  # how it spells a reference: TS29.229
 built.messages("TS29.229")  # bodies resolved; no reference: the whole corpus
 built.applications("TS29.212")  # commands per application and interface
 built.applications(application_id=16777216)  # one id, across documents

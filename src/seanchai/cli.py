@@ -13,6 +13,8 @@ the `seanchai[extract]` extra: the commands that do it import it themselves.
 """
 
 import contextlib
+import difflib
+import json
 import sys
 from collections.abc import Iterator, Sequence
 from pathlib import Path
@@ -231,6 +233,325 @@ def export_command(
             )
         except OSError as error:
             raise click.ClickException(str(error)) from None
+
+
+def _as_json(value: object) -> None:
+    click.echo(json.dumps(value, ensure_ascii=False, indent=2))
+
+
+def _flags(rules) -> str:
+    """Flag rules as a table's columns place them, the empty columns left out."""
+    columns = (
+        ("must", rules.must),
+        ("may", rules.may),
+        ("should not", rules.should_not),
+        ("must not", rules.must_not),
+        ("application-defined", rules.application_defined),
+    )
+    return (
+        "; ".join(
+            f"{name} {','.join(sorted(flags))}" for name, flags in columns if flags
+        )
+        or "none stated"
+    )
+
+
+def _identity_of(query: str) -> tuple[int, int] | None:
+    """`(vendor-id, code)` from `10415:601`, None for anything an AVP's name
+    could be. No name holds a colon, so one that does not parse is a mistake."""
+    if ":" not in query:
+        return None
+    vendor_id, _, code = query.partition(":")
+    if not (vendor_id.isdecimal() and code.isdecimal()):
+        raise click.BadParameter(
+            f"{query!r}: an identity is VENDOR:CODE, as 10415:601",
+            param_hint="'NAME_OR_IDENTITY'",
+        )
+    return int(vendor_id), int(code)
+
+
+def _reading(built, query: str, document: str | None, version: str | None):
+    """What `seanchai show` shows, or an error saying why there is none."""
+    from .model import ModelError
+
+    identity = _identity_of(query)
+    if document is None:
+        found = built.definition(identity or query)
+        holes = [hole for hole in built.holes() if hole.name == query]
+    elif identity is None:
+        found = built.resolve(document, query, version=version)
+        hole = built.hole(document, query, version=version)
+        holes = [] if hole is None else [hole]
+    else:
+        names = {avp.name for avp in built.identified(*identity)}
+        readings = (built.resolve(document, name, version=version) for name in names)
+        found = next(
+            (avp for avp in readings if avp and avp.identity == identity), None
+        )
+        holes = []
+    if found is not None:
+        return found
+    if holes:
+        raise ModelError("\n".join(map(str, holes)))
+    where = "" if document is None else f" in {built.canonical(document)}"
+    names = sorted({avp.name for avp in built.avps()})
+    close = difflib.get_close_matches(query, names, n=3)
+    hint = f"; did you mean {', '.join(close)}?" if close else ""
+    raise ModelError(f"no AVP {query}{where}{hint}")
+
+
+def _difference(avp, other) -> str:
+    """How `other` reads what `avp` does, in the fields that differ."""
+    from .model import Enumerated
+
+    parts = []
+    if other.name != avp.name:
+        parts.append(f"named {other.name}")
+    if other.identity != avp.identity:
+        parts.append(f"identity {other.vendor_id}:{other.code}")
+    if other.data_type != avp.data_type:
+        parts.append(f"type {other.data_type}")
+    if other.defined_in != avp.defined_in:
+        parts.append(f"defined in {other.defined_in}")
+    if other.flag_rules != avp.flag_rules:
+        parts.append(f"flags {_flags(other.flag_rules)}")
+    if (
+        isinstance(avp, Enumerated)
+        and isinstance(other, Enumerated)
+        and other.values != avp.values
+    ):
+        parts.append("other values")
+    return ", ".join(parts) or "its members read otherwise"
+
+
+def _echo_avp(avp, others) -> None:
+    """One reading of an AVP, and how the others differ from it."""
+    from .dad import ast, formatter
+    from .model import Enumerated, Grouped
+
+    click.secho(f"{avp.name} {avp.vendor_id}:{avp.code}", bold=True)
+    click.echo(f"  type: {avp.data_type}")
+    click.echo(f"  flags: {_flags(avp.flag_rules)}")
+    clause = "" if avp.section is None else f", clause {avp.section}"
+    click.echo(f"  defined in: {avp.defined_in}{clause}")
+    if avp.read_through != avp.defined_in:
+        click.echo(f"  read through: {avp.read_through}")
+    for field_name, document in avp.completed_by:
+        click.echo(f"  {field_name} from: {document}")
+    if avp.supplied is not None:
+        click.echo(f"  supplied by: {avp.supplied}")
+    if isinstance(avp, Grouped):
+        click.echo("  members:")
+        for member in avp.members:
+            found = member.avp or member.hole
+            where = ""
+            if found is not None and found.vendor_id is not None:
+                where = f"  {found.vendor_id}:{found.code}"
+            click.echo(f"    {formatter.avp_line(member.rule).strip()}{where}")
+    if isinstance(avp, Enumerated):
+        if avp.values_source is not None:
+            click.echo(f"  values defined by: {avp.values_source}")
+        if avp.values:
+            click.echo("  values:")
+        for value in avp.values:
+            if isinstance(value, ast.EnumValue):
+                click.echo(f"    {value.name} = {value.value}")
+            elif isinstance(value, ast.ReservedValues):
+                click.echo(f"    reserved {value.first}-{value.last}")
+            else:
+                click.echo(f"    vendor-specific {value.first}-{value.last}")
+    if others:
+        click.echo("  other readings:")
+        for other in others:
+            click.echo(f"    {other.read_through}: {_difference(avp, other)}")
+
+
+@main.command()
+@click.argument("name_or_identity", metavar="NAME_OR_IDENTITY")
+@click.option(
+    "--document",
+    metavar="REF",
+    help="Read it as this document does, instead of as its defining document.",
+)
+@click.option(
+    "--version",
+    "version",
+    metavar="V",
+    help="With --document: an older copy of that document the corpus holds.",
+)
+@click.option("--json", "as_json", is_flag=True, help="Print `to_dict()` as JSON.")
+def show(
+    name_or_identity: str, document: str | None, version: str | None, as_json: bool
+) -> None:
+    """Show one AVP of the installed corpus.
+
+    NAME_OR_IDENTITY is a name or a VENDOR:CODE: `Session-Id`, `10415:601`. Prints
+    the defining document's reading (`Model.definition`) and how the others
+    differ, each a citing table's. A name two AVPs claim is refused, listing
+    them; a name the corpus cannot complete says why. --json adds the other
+    readings to `to_dict()` as `other_readings`.
+    """
+    from .model import Model
+
+    if version is not None and document is None:
+        raise click.UsageError("--version needs --document")
+    with reported():
+        built = Model.installed()
+        avp = _reading(built, name_or_identity, document, version)
+        others = [other for other in built.identified(*avp.identity) if other != avp]
+    if as_json:
+        _as_json({**avp.to_dict(), "other_readings": [o.to_dict() for o in others]})
+    else:
+        _echo_avp(avp, others)
+
+
+@main.command()
+@click.argument("reference", metavar="[REF]", required=False)
+@click.option(
+    "--application",
+    type=int,
+    metavar="ID",
+    help="Only the commands of this application id, in any document.",
+)
+@click.option("--json", "as_json", is_flag=True, help="Print the list as JSON.")
+def commands(reference: str | None, application: int | None, as_json: bool) -> None:
+    """List the installed corpus's commands.
+
+    REF is a document, spelled as `TS29.229` or "TS 29.229"; with neither it nor
+    --application, every command. Each line has the command code, whether it is
+    the request or the answer, the effective application id (`-` where nothing
+    states one), its name, and its defining document and section.
+    """
+    from .model import Model, ModelError
+
+    with reported():
+        applications = Model.installed().applications(
+            reference, application_id=application
+        )
+        if application is not None and not applications:
+            raise ModelError(
+                f"no application {application}"
+                f"{'' if reference is None else f' in {reference}'}:"
+                " `seanchai commands` lists them"
+            )
+    rows = [
+        {
+            "command_code": message.command_code,
+            "kind": "request" if message.is_request else "answer",
+            "application_id": message.application_id,
+            "application": each.name,
+            "name": message.name,
+            "abbreviation": message.abbreviation,
+            "defined_in": message.defined_in,
+            "section": message.section,
+        }
+        for each in applications
+        for message in each.messages
+    ]
+    if as_json:
+        _as_json(rows)
+        return
+    table = [("CODE", "KIND", "APPLICATION", "NAME", "DOCUMENT", "SECTION")] + [
+        (
+            str(row["command_code"]),
+            str(row["kind"]),
+            "-" if row["application_id"] is None else str(row["application_id"]),
+            f"{row['name']} ({row['abbreviation']})",
+            str(row["defined_in"]),
+            str(row["section"]),
+        )
+        for row in rows
+    ]
+    widths = [max(len(cells[i]) for cells in table) for i in range(len(table[0]))]
+    for cells in table:
+        line = "  ".join(
+            cell.ljust(width) for cell, width in zip(cells, widths, strict=True)
+        )
+        click.echo(line.rstrip())
+
+
+@main.command("dictionary")
+@click.option(
+    "-o",
+    "--output",
+    required=True,
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="The JSON file to write.",
+)
+@click.option(
+    "--document",
+    "documents",
+    multiple=True,
+    metavar="REF",
+    help="Only this document's applications and AVPs. Repeatable.",
+)
+@click.option(
+    "--application",
+    "application_ids",
+    multiple=True,
+    type=int,
+    metavar="ID",
+    help="Only this application id's commands, and the AVPs they use. Repeatable.",
+)
+@click.option(
+    "--policy",
+    type=click.Choice(["hole", "drop", "placeholder", "supply"]),
+    default="hole",
+    help="What becomes of the names the corpus declares undefined: left as holes,"
+    " dropped from their bodies, kept as untyped placeholders, or read from --supply.",
+)
+@click.option(
+    "--supply",
+    multiple=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="A hand-authored `.dad` sidecar stating undefined names, with --policy"
+    " supply. Repeatable.",
+)
+def dictionary_command(
+    output: Path,
+    documents: tuple[str, ...],
+    application_ids: tuple[int, ...],
+    policy: str,
+    supply: tuple[Path, ...],
+) -> None:
+    """Write the installed corpus as one JSON dictionary, for a stack not in Python.
+
+    Applications with their commands, each member naming its AVP, and the AVPs
+    with identity, type, flags, enumerated values and grouped members
+    (docs/consumers.md). It records both versions and the policy. The same corpus
+    and options give the same bytes.
+    """
+    from .corpus import Corpus
+    from .dictionary import build, dumps
+    from .model import Alias, Model, Supplied, SupplyKey, UndefinedPolicy, supplied_from
+
+    undefined = UndefinedPolicy(policy)
+    if (undefined is UndefinedPolicy.SUPPLY) != bool(supply):
+        raise click.UsageError("--policy supply and --supply go together")
+    with reported():
+        books = Corpus.installed()
+        answers: dict[SupplyKey, Supplied | Alias] = {
+            name: answer for name, answer in supplied_from(*supply).items()
+        }
+        built = Model.build(books, undefined=undefined, supply=answers or None)
+        written = build(
+            built,
+            corpus_version=books.version,
+            documents=documents,
+            application_ids=application_ids,
+        )
+    try:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(dumps(written), encoding="utf-8")
+    except OSError as error:
+        raise click.ClickException(str(error)) from None
+    commands = sum(len(each.commands) for each in written.applications)
+    click.echo(
+        f"wrote {click.style(str(output), bold=True)}"
+        f" ({len(written.applications)} applications, {commands} commands,"
+        f" {len(written.avps)} AVPs, {len(written.holes)} holes)",
+        err=True,
+    )
 
 
 @main.command()

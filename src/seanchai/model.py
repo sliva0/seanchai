@@ -954,7 +954,7 @@ def _identity(member: Member) -> tuple[int, int] | None:
     return (found.vendor_id, found.code)
 
 
-def _cut(member: Member) -> bool:
+def is_cut(member: Member) -> bool:
     """Whether a member is a body among its own descendants, which `_body`
     stops at: no reading, no hole and no placeholder, and not the
     wildcard."""
@@ -973,7 +973,7 @@ def _walk(
     what `seen` holds. A member keeps its own name in the key: an `Alias` reads
     two names as one AVP, and each is still a member."""
     for member in members:
-        if _cut(member):
+        if is_cut(member):
             continue
         key = (member.name, member.avp or member.hole or member.placeholder)
         if key in seen:
@@ -1501,9 +1501,9 @@ class Model:
         spelled: "TS 29.229", "ts29.229", "3GPP TS 29.229"."""
         return tuple(sorted(self._views))
 
-    def _canonical(self, reference: str) -> str:
-        """The reference `reference` spells, or `ModelError` suggesting the
-        close ones."""
+    def canonical(self, reference: str) -> str:
+        """The reference `reference` spells, `TS29.229` for "ts 29.229", or
+        `ModelError` suggesting the close ones."""
         if reference in self._views:
             return reference
         folded = _folded(str(reference))
@@ -1520,10 +1520,10 @@ class Model:
 
     def _chosen(self, reference: str | None) -> tuple[str, ...]:
         """The references a query over `reference`, or over the corpus, reads."""
-        return self.references() if reference is None else (self._canonical(reference),)
+        return self.references() if reference is None else (self.canonical(reference),)
 
     def _view(self, reference: str, version: str | None = None) -> _View:
-        reference = self._canonical(reference)
+        reference = self.canonical(reference)
         if version is None:
             return self._views[reference]
         for view in self._copies.values():
@@ -1689,7 +1689,7 @@ class Model:
             return tuple(
                 sorted(self._everything, key=lambda avp: (avp.defined_in, avp.name))
             )
-        return self._avps_of(self._canonical(reference))
+        return self._avps_of(self.canonical(reference))
 
     def _avps_of(self, reference: str) -> tuple[Avp, ...]:
         found = (self.resolve(reference, name) for name in self._names(reference))
@@ -2261,7 +2261,7 @@ class Model:
                 mine = self._member(view, member.rule, stack)
                 identity = (
                     self._settled.get((view.entry.path, member.name))
-                    if _cut(mine)
+                    if is_cut(mine)
                     else _identity(mine)
                 )
                 if identity is None or identity != _identity(member):

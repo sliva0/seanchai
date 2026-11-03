@@ -17,22 +17,23 @@ corpus is the committed one, and the tests live at the root for both.
 ## Dependencies
 
 The library's own are `pydantic` and `click`: `click` stays core because the
-`seanchai` entry point is installed with the library, and `export`, `lint` and
-`crosscheck` need nothing else. `python-docx` (and through it `lxml`) and
-`pypdf` are the `seanchai[extract]` extra, which the dev group installs. Only
-`extractor/tgpp_docx.py` and two validators in `downloader/core.py` touch them,
-and nothing imports either on the way to the model or the export: the catalog,
-which the export reads, is its own module, `downloader/catalog.py`. Without the
-extra, `MissingExtraError` names it, and `extract`, `regenerate` and a 3GPP or
-oneM2M `download` say so before doing anything. `extract-rfc` and `download
---only rfc`, `--only wireshark` need no extra.
+`seanchai` entry point is installed with the library, and `show`, `commands`,
+`dictionary`, `export`, `lint` and `crosscheck` need nothing else. `python-docx`
+(and through it `lxml`) and `pypdf` are the `seanchai[extract]` extra, which the
+dev group installs. Only `extractor/tgpp_docx.py` and two validators in
+`downloader/core.py` touch them, and nothing imports either on the way to the
+model or the export: the catalog, which the export reads, is its own module,
+`downloader/catalog.py`. Without the extra, `MissingExtraError` names it, and
+`extract`, `regenerate` and a 3GPP or oneM2M `download` say so before doing
+anything. `extract-rfc` and `download --only rfc`, `--only wireshark` need no
+extra.
 
 ## Repository layout
 
 - `src/seanchai/`: `dad/` (AST, parser, formatter, corrections), `extractor/`,
   `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`, `oracle.py`,
   `corpus.py`, `model.py`, `correction_record.py`, `export.py`,
-  `export_schema.py`, `errors.py`, `cli.py`.
+  `export_schema.py`, `dictionary.py`, `errors.py`, `cli.py`.
 - `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
   `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
   release plus `rfc/`, `etsi/`, `3gpp2/` and `onem2m/`, a raw mirror under
