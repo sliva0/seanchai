@@ -1,17 +1,7 @@
 """Corrections for 3GPP TS 29.329 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import (
-    Accept,
-    Correction,
-    Delete,
-    Insert,
-    avp_rule,
-    definition,
-    header,
-    table_row,
-    value_row,
-)
+from seanchai.dad.corrections import Accept, Delete, table_row, value_row
 
 CORRECTIONS = [
     Delete(
@@ -70,60 +60,5 @@ CORRECTIONS += [
         reason="clause 6.2.2.12 says 'See 3GPP TS 29.229 [6]': the document lists a "
         "code it re-uses",
         versions="18.0.0..19.1.0",
-    ),
-]
-
-# Sh-ee, clause 8, which Release 19 adds.
-CORRECTIONS += [
-    Correction(
-        id="ims-event-report-row-name",
-        target=table_row("Event-Report", table="8.3.1"),
-        field="name",
-        expect="Event-Report",
-        replace="Ims-Event-Report",
-        reason="table 8.3.1 prints code 735 as Event-Report, and TS 29.230 V19.3.0"
-        " table 7.1 allocates it so; the table's own clause 8.3.13 defines"
-        " Ims-Event-Report under that header code, and the ESA and ENR rules name"
-        " it; no other clause prints the shorter name",
-        versions="19.1.0",
-    ),
-    Correction(
-        id="notification-correlation-identity-spelling",
-        target=avp_rule(
-            "Event-Notification-Request", "Notification-Correction-Identity"
-        ),
-        field="name",
-        expect="Notification-Correction-Identity",
-        replace="Notification-Correlation-Identity",
-        reason="clause 8.1.3 misspells the AVP table 8.3.1 and clause 8.3.4 define"
-        " (726), which the ESR rule names and whose value the ENR returns",
-        versions="19.1.0",
-    ),
-    Correction(
-        id="enr-request-flag",
-        target=definition("Event-Notification-Request"),
-        field="flags",
-        expect=frozenset({ast.CommandFlag.PROXIABLE}),
-        replace=frozenset({ast.CommandFlag.REQUEST, ast.CommandFlag.PROXIABLE}),
-        reason="clause 8.1.3 says the command is 'indicated by the Command-Code"
-        " field set to 311 and the 'R' bit set in the Command Flags field', and"
-        " its rule prints '311, PXY', the answer's header, for the request",
-        versions="19.1.0",
-    ),
-    Insert(
-        id="undefined-request-current-status",
-        into=header(),
-        node=ast.UndefinedAvp(
-            name="Request-Current-Status",
-            source=ast.SourceRef(section="8.3.10"),
-            note='8.3.10 "This AVP shall contain Ims-Event AVP, Event Information'
-            ' AVP, Request Current Status AVP and Ims Event Filter AVP"',
-        ),
-        after=None,
-        reason="a member of Event-List (8.3.10) no clause defines and table 8.3.1"
-        " does not list, in V19.1.0, the document that adds it; the TS 29.230"
-        " V19.3.0 registry allocates no such name, none of the corpus's documents"
-        " defines it, and Wireshark's dictionary has no such AVP",
-        versions="19.1.0",
     ),
 ]

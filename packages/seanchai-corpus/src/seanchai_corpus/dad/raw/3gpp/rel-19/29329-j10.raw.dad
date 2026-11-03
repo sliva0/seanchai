@@ -5,6 +5,9 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129329/19.01.00_60/ts_129329v190100p.pdf
 
 
+;; excluded: clause 8 (Sh-ee), see TS29.329.toml
+
+
 ; Type: Message
 ; Name: User-Data-Request, UDR
 ; Section: 6.1.1
@@ -226,117 +229,6 @@
       * [ Route-Record ]
 
 
-; Type: Message
-; Name: Event-Subscribe-Request, ESR
-; Section: 8.1.1
-; Page: 27
-<Event-Subscribe-Request> ::= < Diameter Header: 310, REQ, PXY >
-        < Session-Id >
-        [ DRMP ]
-        { Vendor-Specific-Application-Id }
-        { Auth-Session-State }
-        { Origin-Host }
-        { Origin-Realm }
-        [ Destination-Host ]
-        { Destination-Realm }
-        [ User-Name ]
-        [ OC-Supported-Features ]
-      * [ Supported-Features ]                ; bold
-        [ Public-Identity ]                   ; bold
-        [ Any-User-Indication ]               ; bold
-        { Subs-Req-Type }                     ; bold
-        [ Send-Data-Indication ]              ; bold
-        [ Expiry-Time ]                       ; bold
-        { Event-Reporting-Options }           ; bold
-        { Event-List }                        ; bold
-        { Notification-Address }              ; bold
-        [ Notification-Correlation-Identity ] ; bold
-      * [ AVP ]
-      * [ Proxy-Info ]
-      * [ Route-Record ]
-
-
-; Type: Message
-; Name: Event-Subscribe-Answer, ESA
-; Section: 8.1.2
-; Page: 28
-<Event-Subscribe-Answer> ::= < Diameter Header: 310, PXY >
-        < Session-Id >
-        [ DRMP ]
-        { Vendor-Specific-Application-Id }
-        [ Result-Code ]
-        [ Experimental-Result ]
-        { Auth-Session-State }
-        { Origin-Host }
-        { Origin-Realm }
-        [ User-Name ]
-        [ OC-Supported-Features ]
-        [ OC-OLR ]
-      * [ Load ]
-      * [ Supported-Features ]             ; bold
-        [ Ims-Event-Report ]
-      * { Event-List }
-        { Subscription-Identity }
-        { Expiry-Time }
-      * [ AVP ]
-        [ Failed-AVP ]
-      * [ Proxy-Info ]
-      * [ Route-Record ]
-
-
-; Type: Message
-; Name: Event-Notification-Request, ENR
-; Section: 8.1.3
-; Page: 28
-<Event-Notification-Request> ::= < Diameter Header: 311, PXY >
-        < Session-Id >
-        [ DRMP ]
-        { Vendor-Specific-Application-Id }
-        [ Result-Code ]
-        [ Experimental-Result ]
-        { Auth-Session-State }
-        { Origin-Host }
-        { Origin-Realm }
-        [ User-Name ]
-        [ OC-Supported-Features ]
-        [ OC-OLR ]
-      * [ Load ]
-      * [ Supported-Features ]               ; bold
-        { Public-Identity }                  ; bold
-        { Ims-Event }                        ; bold
-        [ Ims-Event-Report ]                 ; bold
-        { Notification-Correction-Identity } ; bold
-        { Timestamp }                        ; bold
-      * [ AVP ]
-        [ Failed-AVP ]
-      * [ Proxy-Info ]
-      * [ Route-Record ]
-
-
-; Type: Message
-; Name: Event-Notification-Answer, ENA
-; Section: 8.1.4
-; Page: 29
-<Event-Notification-Answer> ::= < Diameter Header: 311, PXY >
-        < Session-Id >
-        [ DRMP ]
-        { Vendor-Specific-Application-Id }
-        [ Result-Code ]
-        [ Experimental-Result ]
-        { Auth-Session-State }
-        { Origin-Host }
-        { Origin-Realm }
-        [ User-Name ]
-        [ OC-Supported-Features ]
-        [ OC-OLR ]
-      * [ Load ]
-      * [ Supported-Features ]             ; bold
-      * [ AVP ]
-        [ Failed-AVP ]
-      * [ Proxy-Info ]
-      * [ Route-Record ]
-
-
 ; Type: AVP Table
 ; Section: 6.3
 ; Table: 6.3.1
@@ -382,9 +274,10 @@ Load                         -      6.3.35    Grouped       -      -     -      
 
 ; Type: Reused AVPs
 ; Section: 6.3
-; Table: 6.3.1
+; Table: 6.3/2
 ; Page: 18
 ; Columns: Name              From       M-bit
+External-Identifier          TS29.336   MUST
 OC-Supported-Features        RFC7683    -
 OC-OLR                       RFC7683    -
 DRMP                         RFC7944    -
@@ -398,55 +291,6 @@ Public-Identity              TS29.229   -
 Wildcarded-Public-Identity   TS29.229   -
 Wildcarded-IMPU              TS29.229   -
 Session-Priority             TS29.229   -
-
-
-; Type: AVP Table
-; Section: 8.3
-; Table: 8.3.1
-; Page: 31
-; Columns: Name                     Code   Section   Type         Must   May   S.not   M.not   Encrypt
-Public-Identity                     601    6.3.15    UTF8String   M,V    -     -       -       No
-Any-User-Indication                 723    8.3.1     Enumerated   M,V    -     -       -       No
-Subscription-Identity               724    8.3.2     UTF8String   M,V    -     -       -       No
-Notification-Address                725    8.3.3     UTF8String   M,V    -     -       -       No
-Notification-Correlation-Identity   726    8.3.4     UTF8String   M,V    -     -       -       No
-Event-Reporting-Options             727    8.3.5     Grouped      M,V    -     -       -       No
-Report-Mode                         728    8.3.6     Enumerated   M,V    -     -       -       No
-One-Time-Report                     729    8.3.7     Enumerated   M,V    -     -       -       No
-Max-Number-of-Reports               730    8.3.8     Unsigned32   M,V    -     -       -       No
-Report-Period                       731    8.3.9     Unsigned32   M,V    -     -       -       No
-Event-List                          732    8.3.10    Grouped      M,V    -     -       -       No
-Ims-Event                           733    8.3.11    Enumerated   M,V    -     -       -       No
-Ims-Event-Filter                    734    8.3.12    Grouped      M,V    -     -       -       No
-Event-Report                        735    8.3.13    Grouped      M,V    -     -       -       No
-Ims-Event-Report-Information        736    8.3.14    Grouped      M,V    -     -       -       No
-Adc-Report                          737    8.3.15    Enumerated   M,V    -     -       -       No
-Bdc-Report                          738    8.3.16    Enumerated   M,V    -     -       -       No
-Session-Identity                    739    8.3.17    UTF8String   M,V    -     -       -       No
-Timestamp                           740    8.3.18    Time         M,V    -     -       -       No
-App-Bind-Information                741    8.3.19    Grouped      M,V    -     -       -       No
-App-Dc-Information                  742    8.3.20    Grouped      M,V    -     -       -       No
-Application-Identity                743    8.3.21    UTF8String   M,V    -     -       -       No
-Stream-Identity                     744    8.3.22    UTF8String   M,V    -     -       -       No
-Adc-Endpoint-Type                   745    8.3.23    Enumerated   M,V    -     -       -       No
-Calling-Identity                    746    8.3.24    UTF8String   M,V    -     -       -       No
-Called-Identity                     747    8.3.25    UTF8String   M,V    -     -       -       No
-
-
-; Type: Reused AVPs
-; Section: 8.3
-; Table: 8.3.1
-; Page: 31
-; Columns: Name   From       M-bit
-Public-Identity   TS29.229   -
-
-
-; Type: Reused AVPs
-; Section: 6.3
-; Table: 6.3/2
-; Page: 18
-; Columns: Name       From       M-bit
-External-Identifier   TS29.336   MUST
 
 
 ; Type: Value Table
@@ -651,157 +495,3 @@ Notif-Eff          = 0 ; M
 Update-Eff         = 1 ; O
 Update-Eff-Enhance = 2 ; O
 Additional-MSISDN  = 3 ; O
-
-
-; Type: Value Table
-; AVP: Experimental-Result-Code
-; Kind: result-codes
-; Section: 8.2
-; Page: 30
-DIAMETER_INVALID_AVP_VALUE           = 5004 ; 8.2.2.1
-DIAMETER_ERROR_OPERATION_NOT_ALLOWED = 5101 ; 8.2.2.2
-
-
-; Type: Enumerated AVP
-; Name: Any-User-Indication
-; Section: 8.3.1
-; Page: 31
-Any-User-Indication ::= < Enumerated AVP header: 723 10415 >
-        ANY_UE_NOT_APPLICABLE = 0
-        ANY_UE_APPLICABLE     = 1
-
-
-; Type: Grouped AVP
-; Name: Event-Reporting-Options
-; Section: 8.3.5
-; Page: 32
-Event-Reporting-Options ::= < AVP header: 727 10415 >
-        [ Report-Mode ]
-        [ One-Time-Report ]
-        [ One-Time-Notification ]
-        [ Max-Number-of-Reports ]
-        [ Report-Period ]
-        [ Expiry-Time ]
-      * [ AVP ]
-
-
-; Type: Enumerated AVP
-; Name: Report-Mode
-; Section: 8.3.6
-; Page: 32
-Report-Mode ::= < Enumerated AVP header: 728 10415 >
-        ON_EVENT_DETECTION = 0
-        PERIODIC           = 1
-
-
-; Type: Enumerated AVP
-; Name: One-Time-Report
-; Section: 8.3.7
-; Page: 32
-One-Time-Report ::= < Enumerated AVP header: 729 10415 >
-        ONE_TIME_REPORT_NOT_REQUESTED = 0
-        ONE_TIME_REPORT_REQUESTED     = 1
-
-
-; Type: Grouped AVP
-; Name: Event-List
-; Section: 8.3.10
-; Page: 33
-Event-List ::= < AVP header: 732 10415 >
-        { Ims-Event }
-        [ Request-Current-Status ]
-      * [ Ims-Event-Filter ]
-      * [ AVP ]
-
-
-; Type: Enumerated AVP
-; Name: Ims-Event
-; Section: 8.3.11
-; Page: 33
-Ims-Event ::= < Enumerated AVP header: 733 10415 >
-        ADC_ESTABLISHMENT     = 0
-        ADC_RELEASE           = 1
-        BDC_ESTABLISHMENT     = 2
-        BDC_RELEASE           = 3
-        ADC_IWK_ESTABLISHMENT = 4
-
-
-; Type: Grouped AVP
-; Name: Ims-Event-Filter
-; Section: 8.3.12
-; Page: 33
-Ims-Event-Filter ::= < AVP header: 734 10415 >
-        [ Calling-Identity ]
-        [ Called-Identity ]
-        [ App-Bind-Information ]
-        [ Session-Identity ]
-      * [ AVP ]
-
-
-; Type: Grouped AVP
-; Name: Ims-Event-Report
-; Section: 8.3.13
-; Page: 34
-Ims-Event-Report ::= < AVP header: 735 10415 >
-        { Ims-Event }
-        [ Ims-Event-Report-Information ]
-        [ Session-Identity ]
-      * [ AVP ]
-
-
-; Type: Grouped AVP
-; Name: Ims-Event-Report-Information
-; Section: 8.3.14
-; Page: 34
-Ims-Event-Report-Information ::= < AVP header: 736 10415 >
-        [ Adc-Report ]
-        [ Bdc-Report ]
-      * [ AVP ]
-
-
-; Type: Enumerated AVP
-; Name: Adc-Report
-; Section: 8.3.15
-; Page: 34
-Adc-Report ::= < Enumerated AVP header: 737 10415 >
-        ADC_ESTABLISHMENT     = 0
-        ADC_RELEASE           = 1
-        ADC_IWK_ESTABLISHMENT = 2
-
-
-; Type: Enumerated AVP
-; Name: Bdc-Report
-; Section: 8.3.16
-; Page: 34
-Bdc-Report ::= < Enumerated AVP header: 738 10415 >
-        BDC_ESTABLISHMENT = 0
-        BDC_RELEASE       = 1
-
-
-; Type: Grouped AVP
-; Name: App-Bind-Information
-; Section: 8.3.19
-; Page: 35
-App-Bind-Information ::= < AVP header: 741 10415 >
-        { Application-Identity }
-      * [ App-Dc-Information ]
-      * [ AVP ]
-
-
-; Type: Grouped AVP
-; Name: App-Dc-Information
-; Section: 8.3.20
-; Page: 35
-App-Dc-Information ::= < AVP header: 742 10415 >
-        { Stream-Identity }
-        [ Adc-Endpoint-Type ]
-      * [ AVP ]
-
-
-; Type: Enumerated AVP
-; Name: Adc-Endpoint-Type
-; Section: 8.3.23
-; Page: 35
-Adc-Endpoint-Type ::= < Enumerated AVP header: 745 10415 >
-        UE     = 0
-        SERVER = 1
