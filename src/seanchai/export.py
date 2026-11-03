@@ -759,9 +759,15 @@ class _Sources:
         if self._include_pdfs and urlparse(link).path.lower().endswith(".pdf"):
             candidates = self._pdfs.get(unquote(urlparse(link).path.rsplit("/", 1)[-1]))
             if not candidates:
+                # No download fetches what a transcription was copied from.
+                remedy = (
+                    f"no download fetches a transcription's source, so put it"
+                    f" under {self._specifications}"
+                    if spec.transcribed
+                    else "run `seanchai download --only 3gpp`"
+                )
                 raise CorpusError(
-                    f"{identifier}: no downloaded PDF matches {link}: run"
-                    " `seanchai download --only 3gpp`"
+                    f"{identifier}: no downloaded PDF matches {link}: {remedy}"
                 )
             if len({hashlib.sha256(p.read_bytes()).digest() for p in candidates}) > 1:
                 raise CorpusError(f"{identifier}: conflicting PDF copies for {link}")

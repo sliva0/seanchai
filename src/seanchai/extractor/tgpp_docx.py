@@ -63,7 +63,7 @@ try:
     from docx.oxml.ns import qn
 except ImportError as error:
     raise MissingExtraError(
-        "reading a 3GPP document needs python-docx and pypdf"
+        "reading source documents needs python-docx and pypdf"
     ) from error
 
 _HEADING_RE = re.compile(
