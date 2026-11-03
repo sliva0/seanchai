@@ -40,10 +40,10 @@ extract = [
 seanchai = "seanchai.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/sliva0/senchai"
-Documentation = "https://github.com/sliva0/senchai/tree/main/docs"
-Issues = "https://github.com/sliva0/senchai/issues"
-Changelog = "https://github.com/sliva0/senchai/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/sliva0/seanchai"
+Documentation = "https://github.com/sliva0/seanchai/tree/main/docs"
+Issues = "https://github.com/sliva0/seanchai/issues"
+Changelog = "https://github.com/sliva0/seanchai/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["uv_build>=0.10.2,<0.14.0"]

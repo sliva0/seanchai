@@ -288,7 +288,7 @@ all of its jobs are skipped. It runs the tests without sources, builds both
 packages, checks that a tag names the version it built, and runs the smoke test
 over the wheels. It publishes only from a run on a package's tag with `publish`
 naming that package. Publishing uses PyPI trusted publishing, so no token is
-stored: each PyPI project trusts the repository `sliva0/senchai`, the workflow
+stored: each PyPI project trusts the repository `sliva0/seanchai`, the workflow
 `release.yml` and the environment `pypi`, which has to exist on GitHub.
 
 **A dry run** is every step but publishing, and is how to try a release before
