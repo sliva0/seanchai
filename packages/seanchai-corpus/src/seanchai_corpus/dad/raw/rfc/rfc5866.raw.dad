@@ -1,0 +1,130 @@
+; Specification: RFC 5866
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc5866.txt
+
+
+; Type: Message
+; Name: QoS-Authorization-Request, QAR
+; Section: 5.1
+; Page: 30
+<QoS-Authorization-Request> ::= < Diameter Header: 326, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+        [ User-Name ]
+      * [ QoS-Resources ]
+        [ QoS-Authorization-Data ]
+        [ Bound-Auth-Session-Id ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: QoS-Authorization-Answer, QAA
+; Section: 5.2
+; Page: 31
+<QoS-Authorization-Answer> ::= < Diameter Header: 326, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Auth-Request-Type }
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ QoS-Resources ]
+        [ Acct-Multisession-Id ]
+        [ Session-Timeout ]
+        [ Authorization-Session-Lifetime ]
+        [ Authorization-Grace-Period ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: QoS-Install-Request, QIR
+; Section: 5.3
+; Page: 32
+<QoS-Install-Request> ::= < Diameter Header: 327, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Auth-Request-Type }
+        [ Destination-Host ]
+      * [ QoS-Resources ]
+        [ Session-Timeout ]
+        [ Authorization-Session-Lifetime ]
+        [ Authorization-Grace-Period ]
+        [ Authorization-Session-Volume ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: QoS-Install-Answer, QIA
+; Section: 5.4
+; Page: 32
+<QoS-Install-Answer> ::= < Diameter Header: 327, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Result-Code }
+      * [ QoS-Resources ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Request, RAR
+; Section: 5.5
+; Page: 33
+<Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Re-Auth-Request-Type }
+        [ User-Name ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ QoS-Resources ]
+        [ Session-Timeout ]
+        [ Authorization-Session-Lifetime ]
+        [ Authorization-Grace-Period ]
+        [ Authorization-Session-Volume ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: Re-Auth-Answer, RAA
+; Section: 5.6
+; Page: 34
+<Re-Auth-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Result-Code }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Host-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ QoS-Resources ]
+      * [ AVP ]
+
+
+; Type: AVP Table
+; Section: 7.2
+; Page: 36
+; Columns: Name          Code   Section   Type          Must   S.not   M.not
+QoS-Authorization-Data   579    7.2       OctetString   M      -       V
+Bound-Auth-Session-Id    580    7.2       UTF8String    M      -       V

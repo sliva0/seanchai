@@ -166,7 +166,7 @@ def test_commands_with_nothing_named_lists_the_corpus():
 
 @pytest.mark.parametrize(
     "arguments",
-    [("--application", "9"), ("TS29.229", "--application", "4"), ("TS99.999",)],
+    [("--application", "99"), ("TS29.229", "--application", "4"), ("TS99.999",)],
 )
 def test_commands_refuses_what_the_corpus_lacks(arguments):
     result = _run("commands", *arguments)
@@ -490,7 +490,7 @@ def test_a_supplied_answer_is_an_avp_like_any_other(tmp_path):
 @pytest.mark.parametrize(
     ("arguments", "status", "says"),
     [
-        (("--application", "9"), 1, "no application 9"),
+        (("--application", "99"), 1, "no application 99"),
         (("--document", "TS99.999"), 1, "no copy of TS99.999"),
         (("--policy", "supply"), 2, "--policy supply and --supply"),
         (("--policy", "maybe"), 2, "maybe"),
