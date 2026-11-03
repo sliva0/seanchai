@@ -1599,7 +1599,22 @@ class TestOverTheCommittedCorpus:
         (radius,) = built.registry(ast.RegistryKind.AVP_CODES, 1)
         assert isinstance(radius.entry, ast.RegistryReservation)
         assert (radius.entry.first, radius.entry.last) == (1, 255)
-        assert len(built.registry(ast.RegistryKind.APPLICATION_IDS)) == 54
+        # Every row and range of TS 29.230's application id tables, no others.
+        spec = next(
+            entry.spec
+            for entry in corpus.Corpus.load(_CORPUS_DIR).newest()
+            if entry.reference == "TS29.230"
+        )
+        printed = [
+            row
+            for section in spec.sections
+            if isinstance(section, ast.Registry)
+            and section.registry is ast.RegistryKind.APPLICATION_IDS
+            for row in section.rows
+        ]
+        allocations = built.registry(ast.RegistryKind.APPLICATION_IDS)
+        assert printed
+        assert [allocation.entry for allocation in allocations] == printed
 
 
 def test_every_row_citing_an_etsi_tispan_origin_resolves_to_its_transcription():
@@ -1732,16 +1747,23 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("oneM2M-TS-0004", "TS32.299"),
     }
     # TS 29.212's and 32.299's 3GPP2-BSID are one Avp, revision 0 standing
-    # in for TS 29.212's revision B. Thirty-five of the seventy-nine are
-    # what oneM2M TS-0004's Service-Information reaches through TS 32.299
-    # V11.20.0's six release stand-ins, TS 29.061's
-    # 3GPP-Session-Stop-Indicator a hole among them; fifteen are TS 29.210's
-    # and TS 29.234's, and two are TS 29.140's definition citations.
-    assert len(built.across_releases()) == 79
-    # oneM2M's own two, those thirty-five, V11.20.0's VAS-ID and VASP-ID
-    # from TS 29.140 V7.0.0, and 3GPP2-BSID through TS 29.212 V11.19.0.
+    # in for TS 29.212's revision B. The audit list is sorted, and holds what
+    # each reference's own list does.
+    everything = built.across_releases()
+    order = [
+        (found.across_releases.citing, found.name)
+        for found in everything
+        if found.across_releases is not None
+    ]
+    assert len(order) == len(everything)
+    assert order == sorted(order)
+    # oneM2M's own two, the thirty-five its Service-Information reaches through
+    # TS 32.299 V11.20.0's six release stand-ins, TS 29.061's
+    # 3GPP-Session-Stop-Indicator a hole among them, V11.20.0's VAS-ID and
+    # VASP-ID from TS 29.140 V7.0.0, and 3GPP2-BSID through TS 29.212 V11.19.0.
     reached = built.across_releases("oneM2M-TS-0004")
     assert len(reached) == 40
+    assert set(reached) <= set(everything)
     rules = {
         (found.across_releases.cited, found.across_releases.rule)
         for found in reached
