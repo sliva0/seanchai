@@ -506,3 +506,67 @@ def test_a_model_build_over_an_unreadable_dictionary_raises_a_model_error(dictio
 
     with pytest.raises(model.ModelError, match="cannot read the dictionary"):
         model.Model.build(books, strict=False, dictionary=dictionary)
+
+
+def _value_table(*rows, avp="Result-Code", kind=ast.ValueKind.RESULT_CODES):
+    return ast.ValueTable(
+        avp=avp,
+        kind=kind,
+        source=ast.SourceRef(section="7.1"),
+        rows=tuple(ast.ValueRow(name=n, value=v, section=s) for n, v, s in rows),
+    )
+
+
+def test_a_value_table_is_compared_with_the_dictionary_s_values():
+    known = oracle.Oracle(
+        avps={
+            (0, 268): [
+                oracle.DictionaryAvp(
+                    name="Result-Code",
+                    code=268,
+                    vendor=0,
+                    type_name="Enumerated",
+                    grouped=False,
+                    enumerated=True,
+                    values=(
+                        (2001, "DIAMETER_SUCCESS"),
+                        (4003, "DIAMETER_ELECTION_LOST"),
+                    ),
+                )
+            ],
+            (10415, 700): [
+                oracle.DictionaryAvp(
+                    name="Some-Flags",
+                    code=700,
+                    vendor=10415,
+                    type_name="Unsigned32",
+                    grouped=False,
+                    enumerated=True,
+                    values=((1, "First"), (2, "Second")),
+                )
+            ],
+        }
+    )
+    spec = _spec(
+        _value_table(
+            ("DIAMETER_SUCCESS", 2001, "7.1.2"),
+            ("ELECTION_LOST", 4003, "7.1.4"),
+            ("DIAMETER_NEW", 5999, None),
+        ),
+        _value_table(
+            ("First", 0, None),
+            ("Other", 1, None),
+            avp="Some-Flags",
+            kind=ast.ValueKind.BITS,
+        ),
+        _value_table(("Mine", 0, None), avp="Unknown-To-It", kind=ast.ValueKind.BITS),
+    )
+
+    assert [str(finding) for finding in oracle.crosscheck(spec, known)] == [
+        "[value-disagrees] Result-Code 4003 is ELECTION_LOST (clause 7.1.4): the"
+        " dictionary calls it DIAMETER_ELECTION_LOST",
+        "[value-absent-from-dictionary] 1 values of Result-Code (clause 7.1) are not"
+        " in the dictionary: DIAMETER_NEW",
+        "[value-disagrees] Some-Flags 1 is Other (clause 7.1): the dictionary calls"
+        " it Second",
+    ]

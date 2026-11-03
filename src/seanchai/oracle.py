@@ -60,6 +60,8 @@ class DictionaryAvp:
     type_name: str | None  # None for a grouped AVP with no <type>
     grouped: bool
     enumerated: bool
+    # Its `<enum>` elements, by code: what the dictionary names the AVP's values.
+    values: tuple[tuple[int, str], ...] = ()
 
 
 # What each Wireshark type may stand for, in RFC 6733's vocabulary. The
@@ -186,6 +188,10 @@ class Oracle:
                 ),
                 grouped=avp.find("grouped") is not None,
                 enumerated=avp.find("enum") is not None,
+                values=tuple(
+                    (int(enum.attrib["code"]), enum.attrib["name"])
+                    for enum in avp.findall("enum")
+                ),
             )
             oracle.avps.setdefault((entry.vendor, entry.code), []).append(entry)
         if not oracle.avps:
@@ -364,6 +370,52 @@ def claims(spec: ast.Specification) -> list[Claim]:
     return unique
 
 
+def _value_findings(spec: ast.Specification, oracle: Oracle) -> list[Finding]:
+    """What a value table names otherwise than the dictionary's `<enum>`s for the
+    same AVP, and, for an AVP the dictionary enumerates, what it lacks. Wireshark
+    holds Result-Code's and Experimental-Result-Code's so, and few bits, as the
+    mask each sets."""
+    by_name: dict[str, dict[int, str]] = {}
+    for entries in oracle.avps.values():
+        for entry in entries:
+            if entry.values:
+                by_name.setdefault(entry.name, {}).update(entry.values)
+    findings = []
+    for table in spec.sections:
+        if not isinstance(table, ast.ValueTable) or table.avp not in by_name:
+            continue
+        known = by_name[table.avp]
+        absent = []
+        for row in table.rows:
+            number = (
+                row.value
+                if table.kind is ast.ValueKind.RESULT_CODES
+                else 1 << row.value
+            )
+            found = known.get(number)
+            if found is None:
+                absent.append(row.name)
+            elif found != row.name:
+                clause = row.section or table.source.section
+                findings.append(
+                    Finding(
+                        "value-disagrees",
+                        f"{table.avp} {row.value} is {row.name} (clause {clause}):"
+                        f" the dictionary calls it {found}",
+                    )
+                )
+        if absent:
+            findings.append(
+                Finding(
+                    "value-absent-from-dictionary",
+                    f"{len(absent)} values of {table.avp} (clause"
+                    f" {table.source.section}) are not in the dictionary:"
+                    f" {', '.join(absent)}",
+                )
+            )
+    return findings
+
+
 def crosscheck(
     spec: ast.Specification, oracle: Oracle, aliases: Iterable[Alias] = ()
 ) -> list[Finding]:
@@ -459,6 +511,7 @@ def crosscheck(
                 f" {', '.join(sorted(absent))}",
             )
         )
+    findings.extend(_value_findings(spec, oracle))
     return findings
 
 

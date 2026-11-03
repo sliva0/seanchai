@@ -1766,7 +1766,12 @@ _STANDING_CORPUS_NOTES = {
         ],
         "undefined-avp": ["Delegated-IPv6-Prefix"],
     },
-    "29128-i00.dad": {"reused-body-differs": ["Terminal-Information"]},
+    "29128-i00.dad": {
+        "registry-result-code-document": [
+            "DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN",
+        ],
+        "reused-body-differs": ["Terminal-Information"],
+    },
     "29172-i10.dad": {
         "reused-origin-indirect": ["Service-Selection"],
     },
@@ -1798,6 +1803,10 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29272-i70.dad": {
+        "registry-result-code-document": [
+            "DIAMETER_ERROR_USER_UNKNOWN",
+            "DIAMETER_ERROR_ROAMING_NOT_ALLOWED",
+        ],
         "registry-application-name": ["S7a/S7d"],
         "reused-body-differs": [
             "ProSe-Subscription-Data",
@@ -1812,11 +1821,17 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29273-i60.dad": {
+        "registry-result-code-document": [
+            "DIAMETER_ERROR_ILLEGAL_EQUIPMENT",
+        ],
         "registry-avp-document": ["3GPP-AAA-Server-Name"],
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
     },
     "29283-i00.dad": {
+        "registry-result-code-name": [
+            "DIAMETER_ERROR_DATA",
+        ],
         "registry-avp-name": ["Data", "MCVideo-ID"],
         "reused-body-differs": ["User-Identifier"],
     },
@@ -1826,6 +1841,9 @@ _STANDING_CORPUS_NOTES = {
     },
     "29330-i10.dad": {"reused-origin-indirect": ["Load"]},
     "29336-i20.dad": {
+        "registry-result-code-document": [
+            "DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION",
+        ],
         "registry-avp-name": ["Group-User-Identifier", "NIA-Flags"],
         "reused-body-differs": [
             "MME-Location-Information",
@@ -1835,10 +1853,17 @@ _STANDING_CORPUS_NOTES = {
         "reused-reprint": ["EPS-Location-Information"],
     },
     "29338-i20.dad": {
+        "registry-result-code-document": [
+            "DIAMETER_ERROR_USER_UNKNOWN",
+        ],
         "registry-avp-name": ["SGSN-Absent-User-Diagnostic-SM"],
         "reused-body-differs": ["Serving-Node"],
     },
     "29345-i00.dad": {
+        "registry-result-code-document": [
+            "DIAMETER_ERROR_USER_UNKNOWN",
+            "DIAMETER_ERROR_UNAUTHORIZED_SERVICE",
+        ],
         "undefined-avp": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
     "32299-i00.dad": {
@@ -1993,6 +2018,16 @@ _STANDING_CORPUS_NOTES = {
     "rfc5866.dad": {"undefined-avp": ["Authorization-Session-Volume"]},
     "rfc6736.dad": {"origin-not-in-corpus": ["RFC4675"]},
     "rfc6738.dad": {"reused-row-mismatch": ["Key-Lifetime"]},
+    "29109-i10.dad": {
+        "registry-result-code-name": [
+            "DIAMETER_ERROR_IDENTITY_UNKNOWN",
+        ],
+    },
+    "29337-i00.dad": {
+        "registry-result-code-document": [
+            "DIAMETER_ERROR_USER_UNKNOWN",
+        ],
+    },
 }
 
 
@@ -2009,6 +2044,15 @@ _ACCEPTED_CORPUS_NOTES = {
         "reused-extension": ["ETSI-TS183.017.py#media-component-description-extension"],
     },
     "29128-i00.dad": {
+        "registry-result-code-document": [
+            "TS29.128.py#unauthorized-requesting-entity-result-code-reused",
+            "TS29.128.py#unauthorized-service-result-code-reused",
+            "TS29.128.py#configuration-event-storage-not-successful-result-code-reused",
+            "TS29.128.py#configuration-event-non-existant-result-code-reused",
+            "TS29.128.py#user-unknown-result-code-reused",
+            "TS29.128.py#operation-not-allowed-result-code-reused",
+            "TS29.128.py#unreachable-user-result-code-reused",
+        ],
         "reused-body-differs": [
             "TS29.128.py#monitoring-event-configuration-t6a-body",
             "TS29.128.py#monitoring-event-report-t6a-body",
@@ -2022,9 +2066,19 @@ _ACCEPTED_CORPUS_NOTES = {
         ],
     },
     "29273-i60.dad": {
+        "registry-result-code-document": [
+            "TS29.273.py#user-unknown-result-code-reused",
+            "TS29.273.py#identity-not-registered-result-code-reused",
+            "TS29.273.py#roaming-not-allowed-result-code-reused",
+            "TS29.273.py#identity-already-registered-result-code-reused",
+        ],
         "reused-body-differs": ["TS29.273.py#sip-auth-data-item-swx-body"],
     },
     "29336-i20.dad": {
+        "registry-result-code-document": [
+            "TS29.336.py#user-unknown-result-code-reused-6-3",
+            "TS29.336.py#user-unknown-result-code-reused-8-3",
+        ],
         "reused-body-differs": [
             "TS29.336.py#additional-serving-node-t4-body",
             "TS29.336.py#serving-node-t4-body",
@@ -2040,15 +2094,94 @@ _ACCEPTED_CORPUS_NOTES = {
         "reused-body-differs": ["TS29.338.py#additional-serving-node-body"],
     },
     "29388-i10.dad": {
+        "registry-result-code-document": [
+            "TS29.388.py#user-unknown-result-code-reused",
+        ],
         "reused-body-differs": ["TS29.388.py#v2x-subscription-data-v4-body"],
     },
     "32299-i00.dad": {
+        "registry-result-code-document": [
+            "TS32.299.py#feature-unsupported-result-code-reused",
+        ],
         "reused-body-differs": [
             "TS32.299.py#multiple-services-credit-control-charging-body",
             "TS32.299.py#used-service-unit-charging-body",
         ],
         "reused-extension": ["TS32.299.py#oc-olr-extension"],
         "reused-row-mismatch": ["TS32.299.py#supported-features-charging-m"],
+    },
+    "29172-i10.dad": {
+        "registry-result-code-document": [
+            "TS29.172.py#user-unknown-result-code-reused",
+            "TS29.172.py#unauthorized-requesting-network-result-code-reused",
+        ],
+    },
+    "29173-i00.dad": {
+        "registry-result-code-document": [
+            "TS29.173.py#user-unknown-result-code-reused",
+        ],
+    },
+    "29212-i20.dad": {
+        "registry-result-code-document": [
+            "TS29.212.py#late-overlapping-request-result-code-reused",
+            "TS29.212.py#timed-out-request-result-code-reused",
+        ],
+    },
+    "29215-i00.dad": {
+        "registry-result-code-document": [
+            "TS29.215.py#pending-transaction-result-code-reused",
+        ],
+    },
+    "29217-i00.dad": {
+        "registry-result-code-document": [
+            "TS29.217.py#pending-transaction-result-code-reused",
+        ],
+    },
+    "29283-i00.dad": {
+        "registry-result-code-document": [
+            "TS29.283.py#user-unknown-result-code-reused",
+            "TS29.283.py#user-data-not-recognized-result-code-reused",
+            "TS29.283.py#operation-not-allowed-result-code-reused",
+            "TS29.283.py#user-data-cannot-be-read-result-code-reused",
+            "TS29.283.py#user-data-cannot-be-modified-result-code-reused",
+            "TS29.283.py#user-data-cannot-be-notified-result-code-reused",
+            "TS29.283.py#too-much-data-result-code-reused",
+            "TS29.283.py#data-out-of-sync-result-code-reused",
+            "TS29.283.py#feature-unsupported-result-code-reused",
+            "TS29.283.py#no-subscription-to-data-result-code-reused",
+            "TS29.283.py#user-data-not-available-result-code-reused",
+        ],
+    },
+    "29329-i00.dad": {
+        "registry-result-code-document": [
+            "TS29.329.py#too-much-data-result-code-reused",
+            "TS29.329.py#feature-unsupported-result-code-reused",
+            "TS29.329.py#identities-dont-match-result-code-reused",
+        ],
+    },
+    "29330-i10.dad": {
+        "registry-result-code-document": [
+            "TS29.330.py#user-unknown-result-code-reused",
+            "TS29.330.py#operation-not-allowed-result-code-reused",
+            "TS29.330.py#user-data-cannot-be-read-result-code-reused",
+            "TS29.330.py#user-data-cannot-be-modified-result-code-reused",
+            "TS29.330.py#too-much-data-result-code-reused",
+            "TS29.330.py#transparent-data-out-of-sync-result-code-reused",
+            "TS29.330.py#feature-unsupported-result-code-reused",
+            "TS29.330.py#user-data-not-available-result-code-reused",
+        ],
+    },
+    "29344-i10.dad": {
+        "registry-result-code-document": [
+            "TS29.344.py#user-unknown-result-code-reused",
+        ],
+    },
+    "29389-i00.dad": {
+        "registry-result-code-document": [
+            "TS29.389.py#user-unknown-result-code-reused",
+            "TS29.389.py#unknown-v2x-subscription-result-code-reused",
+            "TS29.389.py#v2x-not-allowed-result-code-reused",
+        ],
     },
 }
 
@@ -2322,3 +2455,150 @@ def test_every_scope_naming_an_application_id_is_compared_with_the_registry():
         for f in linter.lint_with_corpus(spec, _books(spec, registry))
         if f.rule.startswith("registry")
     ] == [("registry-application-name", "Wrong", "6")]
+
+
+def _value_spec(*tables, sections=()):
+    return ast.Specification(
+        specification="3GPP TS 29.999",
+        version="18.0.0",
+        vendor_id=10415,
+        sections=(*sections, *tables),
+    )
+
+
+def _bits(*rows, avp="Some-Flags", kind=ast.ValueKind.BITS):
+    return ast.ValueTable(
+        avp=avp,
+        kind=kind,
+        source=ast.SourceRef(section="6.3.1"),
+        rows=tuple(ast.ValueRow(name=name, value=value) for name, value in rows),
+    )
+
+
+def test_a_number_twice_in_one_value_table_is_an_error():
+    spec = _value_spec(_bits(("A", 0), ("B", 0), ("C", 1)), _bits(("A", 1)))
+
+    (finding,) = [f for f in linter.lint(spec) if f.rule == "duplicate-value"]
+
+    assert finding.severity is linter.Severity.ERROR
+    assert finding.message == "Some-Flags's bits table gives 0 to 'A', 'B', 2 rows"
+    assert finding.paths == (
+        ("sections", 0, "rows", 0),
+        ("sections", 0, "rows", 1),
+    )
+
+
+def test_a_bit_past_its_type_is_an_error():
+    table = ast.AvpTable(
+        source=ast.SourceRef(section="6.3"),
+        columns=(ast.AvpColumn.NAME, ast.AvpColumn.TYPE),
+        rows=(ast.AvpTableRow(name="Wide-Flags", data_type=ast.DataType.UNSIGNED64),),
+    )
+    spec = _value_spec(
+        _bits(("A", 31), ("B", 32)),
+        _bits(("A", 63), ("B", 64), avp="Wide-Flags"),
+        _bits(("A", 40), avp="Feature-List", kind=ast.ValueKind.FEATURES),
+        sections=(table,),
+    )
+
+    found = [f for f in linter.lint(spec) if f.rule == "value-bit-out-of-range"]
+
+    assert [f.message for f in found] == [
+        "Some-Flags's bits table numbers 'B' bit 32, past the 31 a Unsigned32 holds",
+        "Wide-Flags's bits table numbers 'B' bit 64, past the 63 a Unsigned64 holds",
+        "Feature-List's features table numbers 'A' bit 40, past the 31 a Unsigned32"
+        " holds",
+    ]
+    assert all(f.severity is linter.Severity.ERROR for f in found)
+
+
+def _result_registry():
+    return ast.Specification(
+        specification="3GPP TS 29.230",
+        version="18.0.0",
+        vendor_id=10415,
+        sections=(
+            ast.Registry(
+                registry=ast.RegistryKind.RESULT_CODES,
+                table="8.1.4",
+                source=ast.SourceRef(section="8.1.4"),
+                columns=(
+                    ast.RegistryColumn.CODE,
+                    ast.RegistryColumn.NAME,
+                    ast.RegistryColumn.DEFINED_IN,
+                ),
+                rows=(
+                    ast.RegistryRow(
+                        code=5001,
+                        name="DIAMETER_ERROR_USER_UNKNOWN",
+                        defined_in=("TS29.229",),
+                    ),
+                    ast.RegistryRow(
+                        code=5002, name="DIAMETER_MINE", defined_in=("TS29.999",)
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+def _result_codes(avp="Experimental-Result-Code"):
+    return _bits(
+        ("DIAMETER_ERROR_USER_UNKNOWN", 5001),
+        ("DIAMETER_MISSPELT", 5002),
+        ("DIAMETER_UNALLOCATED", 5003),
+        avp=avp,
+        kind=ast.ValueKind.RESULT_CODES,
+    )
+
+
+def test_an_experimental_result_code_is_compared_with_the_result_registry():
+    spec = _value_spec(_result_codes())
+    findings = linter.lint_with_corpus(spec, _books(spec, _result_registry()))
+
+    (other,) = [f for f in findings if f.rule == "registry-result-code-document"]
+    assert other.severity is linter.Severity.NOTE
+    assert other.message == (
+        "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table"
+        " 8.1.4 allocates the code to TS29.229"
+    )
+    assert other.paths == (("sections", 0, "rows", 0),)
+    (name,) = [f for f in findings if f.rule == "registry-result-code-name"]
+    assert name.message == (
+        "DIAMETER_MISSPELT has code 5002, which TS29.230 table 8.1.4 allocates to"
+        " DIAMETER_MINE"
+    )
+
+
+def test_a_plain_result_code_is_not_the_registry_s():
+    spec = _value_spec(_result_codes("Result-Code"))
+
+    assert not [
+        f
+        for f in linter.lint_with_corpus(spec, _books(spec, _result_registry()))
+        if f.rule.startswith("registry-result-code")
+    ]
+
+
+def test_a_clause_citing_a_code_s_document_can_accept_the_note():
+    spec = _value_spec(_result_codes())
+    message = (
+        "DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 table"
+        " 8.1.4 allocates the code to TS29.229"
+    )
+    acceptance = corrections.Accept(
+        id="user-unknown",
+        rule="registry-result-code-document",
+        target=corrections.value_row(
+            "Experimental-Result-Code", "DIAMETER_ERROR_USER_UNKNOWN"
+        ),
+        expect=message,
+        reason="clause 6.3.3.1 says it is defined in TS 29.229",
+    )
+
+    findings = linter.lint_with_corpus(
+        spec, _books(spec, _result_registry()), [acceptance]
+    )
+
+    (accepted,) = [f for f in findings if f.rule == "registry-result-code-document"]
+    assert accepted.severity is linter.Severity.ACCEPTED
