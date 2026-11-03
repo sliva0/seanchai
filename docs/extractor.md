@@ -27,13 +27,14 @@ Three consequences:
   reading stays on disk.
 
 A consumer can ignore anything the file carries; it can never recover what
-the extractor threw away.
+the extractor threw away. The one exception is declared by clause and says so in
+the file: an [exclusion](#exclusions).
 
 ## Source declarations
 
-One TOML file per document, `edits/sources/<SpecRef>.toml`, with two block
-kinds. Both require a `reason`, carry a version range scoping them to a
-release, and must fire exactly as declared: a declaration that stops
+One TOML file per document, `edits/sources/<SpecRef>.toml`, with three block
+kinds. Each requires a `reason`, carries a version range scoping it to a
+release, and must fire as declared: a declaration that stops
 matching fails the extraction, because a silently dropped fix is the rot
 the accounting exists to catch.
 
@@ -205,6 +206,45 @@ numbering), `prose-enum-values` (`EVENT_RECORD (value 1)`, oneM2M) and
 Not gated: the "Y"/"N" Encrypt spellings, a dashed Encrypt cell, and
 "Must"/"Must not" M-bit short forms, closed vocabularies that cannot be
 misread.
+
+### Exclusions
+
+An exclusion leaves a clause of a 3GPP docx unread, with everything under it,
+when the document has not finished it and no reading could state what it says:
+
+```toml
+[[exclude]]
+section = "8"              # the clause and every clause under it
+name = "Sh-ee"             # what the file's note calls it
+reason = "..."
+first_version = "19.1.0"
+```
+
+It belongs to the input-patch layer: the walk over the document stops at the
+heading, so nothing in the clause reaches a reading, a patch's accounting or
+either file. A patch or correction written for the clause fails once it is
+excluded, so a clause's edits go with it. The exclusion ends at the next
+heading outside it, numbered or not (TS 29.329's clause 8 ends at "Annex A
+(informative):").
+
+The raw and corrected files both say so, in a comment block after the header:
+
+```dad
+;; excluded: clause 8 (Sh-ee), see TS29.329.toml
+```
+
+An exclusion that leaves nothing out fails like a rotted patch, and so does one
+declared for an RFC or a transcription, whose readings do not ask. Nothing but
+the document being unfinished earns one: a clause that is wrong is read as
+printed and corrected. TS 29.329 V19.1.0's clause 8 names its application id
+`xx1`, "allocated by IANA"; gives its commands 310 and 311, which TS 29.230
+allocates to others; and lists `DIAMETER_INVALID_AVP_VALUE` at 5004 as an
+experimental result code, which is TS 29.229's.
+
+A range with no upper bound holds for later versions too, and no warning says
+that one of them has finished the clause. A version upgrade re-reads the
+document's exclusions against its clauses, as it does `RELEASE_STAND_INS`, and
+removes one the new version settles.
 
 ## The 3GPP docx extractor
 
