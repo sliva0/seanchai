@@ -37,7 +37,7 @@ from .corpus import (
     Entry,
     installed_directory,
 )
-from .dad import ast, corrections, parser
+from .dad import ast, corrections, formatter, parser
 from .downloader.catalog import Catalog, load_catalog
 from .export_schema import (
     GENERATOR,
@@ -63,6 +63,7 @@ from .export_schema import (
     Target,
     Token,
     UndefinedBlock,
+    ValueIdentity,
 )
 from .linter import lint_with_corpus
 
@@ -120,12 +121,21 @@ def _citations(spec: ast.Specification) -> dict[str, Citation]:
                         row.section,
                         Citation(section=row.section, page=section.source.page),
                     )
+        if isinstance(section, ast.ValueTable):
+            for row in section.rows:
+                if row.section:
+                    found.setdefault(
+                        row.section,
+                        Citation(section=row.section, page=section.source.page),
+                    )
     return found
 
 
 def _block_title(section: ast.Section) -> str:
-    """A block's `; Type:` and, for a definition, its `; Name:`."""
-    name = getattr(section, "name", None)
+    """A block's `; Type:` and, for a definition, its `; Name:`, for a value
+    table its `; AVP:`."""
+    name = section.avp if isinstance(section, ast.ValueTable) else None
+    name = getattr(section, "name", name)
     return section.type if name is None else f"{section.type} {name}"
 
 
@@ -144,13 +154,17 @@ def _sections(
         if isinstance(section, ast.AvpTable):
             for row in section.rows:
                 if row.section:
-                    rows.setdefault(row.section, []).append(row.name)
+                    rows.setdefault(row.section, []).append(f"AVP {row.name}")
+        if isinstance(section, ast.ValueTable):
+            for row in section.rows:
+                if row.section:
+                    rows.setdefault(row.section, []).append(f"Value {row.name}")
 
     def title(clause: str) -> str:
         if clause in blocks:
             return ", ".join(blocks[clause])
         first, *others = rows[clause]
-        return f"AVP {first}" + (f" and {len(others)} more" if others else "")
+        return first + (f" and {len(others)} more" if others else "")
 
     return tuple(
         Section(section=clause, page=citations[clause].page, title=title(clause))
@@ -209,6 +223,21 @@ def _table_row(
     return next((row for row in section.rows if line.startswith(row.name + " ")), None)
 
 
+def _value_row(section: ast.Section | None, line: str) -> ast.ValueRow | None:
+    """The value row `line` prints, if `section` is a value table and it prints
+    one."""
+    if not isinstance(section, ast.ValueTable) or line.startswith(";"):
+        return None
+    return next(
+        (
+            row
+            for row in section.rows
+            if line.startswith(f"{formatter.value_name(row.name)} ")
+        ),
+        None,
+    )
+
+
 def _lines(
     text: str,
     spec: ast.Specification,
@@ -225,25 +254,30 @@ def _lines(
     block = -1
     anchored: set[str] = set()
     defined_sections = {section.source.section for section in spec.sections}
-    avp_names = _avp_names(spec)
+    avp_names = _avp_names(spec) | {
+        section.avp for section in spec.sections if isinstance(section, ast.ValueTable)
+    }
     for index, line in enumerate(text.splitlines(keepends=True)):
         if line.startswith("; Type:"):
             block += 1
         section = spec.sections[block] if block >= 0 else None
         source = section.source if section is not None else None
         row = _table_row(section, line)
+        value = _value_row(section, line)
         anchor = None
         if source and line.startswith("; Type:"):
             anchor = source.section
         elif isinstance(row, ast.AvpTableRow) and row.section not in defined_sections:
             anchor = row.section
+        elif value is not None and value.section not in defined_sections:
+            anchor = value.section
         if anchor in anchored:
             anchor = None
         if anchor:
             anchored.add(anchor)
         lines.append(
             Line(
-                tokens=_tokens(line, section, row, avp_names, links),
+                tokens=_tokens(line, section, row, value, avp_names, links),
                 anchor=anchor,
                 section=source.section if source else None,
                 warning=index in changed,
@@ -256,6 +290,7 @@ def _tokens(
     line: str,
     section: ast.Section | None,
     row: ast.AvpTableRow | ast.ReusedAvpRow | None,
+    value_row: ast.ValueRow | None,
     avp_names: set[str],
     links: _Links,
 ) -> tuple[Token, ...]:
@@ -263,8 +298,8 @@ def _tokens(
     source = section.source if section is not None else None
     directive = _DIRECTIVE.match(line)
     key = directive[1] if directive else None
-    naming = key in (None, "Name") and not (
-        isinstance(section, ast.EnumeratedAvp) and " = " in line
+    naming = key in (None, "Name", "AVP") and not (
+        isinstance(section, ast.EnumeratedAvp | ast.ValueTable) and " = " in line
     )
     # A command or application names its own clause, whatever else in the file
     # shares its name: TS 29.212 defines CC-Request once per interface.
@@ -302,6 +337,15 @@ def _tokens(
                 )
         elif naming and (target := own.get(value) or links.names.get(value)):
             fields["target"] = target
+        if value_row is not None and source:
+            # A value's name is defined where it stands, in its own clause.
+            if match.start() == 0:
+                fields["target"] = Target(
+                    document=document_id(links.entry),
+                    section=value_row.section or source.section,
+                )
+            elif value == value_row.section:
+                fields["source"] = Citation(section=value, page=source.page)
         if row and source and match.start() == 0 and value == row.name:
             fields["source"] = Citation(
                 section=source.section, page=source.page, name=value, row=True
@@ -585,7 +629,8 @@ def _avps(
 
 
 def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
-    """`entry`'s commands, applications and registry rows, as search entries."""
+    """`entry`'s commands, applications, registry rows and value names, as search
+    entries."""
     spec = entry.spec
     identifier = document_id(entry)
     # The header's id is part of the key: TS 29.272 clause 7.2.9 prints
@@ -605,18 +650,24 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
 
     def named(
         name: str,
-        kind: Literal["command", "application", "registry"],
+        kind: Literal["command", "application", "registry", "value"],
         section: ast.Section,
-        identity: CommandIdentity | ApplicationIdentity | RegistryIdentity,
+        identity: CommandIdentity
+        | ApplicationIdentity
+        | RegistryIdentity
+        | ValueIdentity,
         defined_in: tuple[str, ...] = (entry.reference,),
         abbreviation: str | None = None,
         data_type: ast.DataType | None = None,
+        clause: str | None = None,
     ) -> SearchEntry:
         return SearchEntry(
             name=name,
             kind=kind,
             document=identifier,
-            target=Target(document=identifier, section=section.source.section),
+            target=Target(
+                document=identifier, section=clause or section.source.section
+            ),
             identity=identity,
             defined_in=defined_in,
             abbreviation=abbreviation,
@@ -676,6 +727,24 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
                 for row in section.rows
                 if isinstance(row, ast.RegistryRow) and row.name
             )
+        elif isinstance(section, ast.ValueTable):
+            search.extend(
+                named(
+                    row.name,
+                    "value",
+                    section,
+                    ValueIdentity(
+                        kind="value",
+                        value_kind=section.kind,
+                        avp=section.avp,
+                        value=row.value,
+                        application=section.application,
+                        feature_list_id=section.feature_list_id,
+                    ),
+                    clause=row.section,
+                )
+                for row in section.rows
+            )
     return search
 
 
@@ -692,6 +761,30 @@ def _clause_names(entry: Entry) -> dict[str, Target]:
         if len(places) == 1
         for clause in places
     }
+
+
+def _value_table_avps(
+    corpus: _Lookups, entry: Entry, names: dict[str, Target | None]
+) -> dict[str, Target | None]:
+    """Where a value table's `; AVP:` line links: the AVP as `entry` reads it, or
+    as its defining document does, since a table can number an AVP its document
+    takes for granted. TS 29.212 re-uses TS 29.229's `Supported-Features`, and
+    never names its member `Feature-List` but in its feature tables."""
+    found: dict[str, Target | None] = {}
+    for section in entry.spec.sections:
+        if not isinstance(section, ast.ValueTable) or names.get(section.avp):
+            continue
+        avp = corpus.model.resolve(
+            entry.reference, section.avp, version=entry.spec.version
+        )
+        if avp is None:
+            try:
+                avp = corpus.model.definition(section.avp)
+            except model.ModelError:
+                avp = None
+        if avp is not None:
+            found[section.avp] = corpus.avp_target(entry, avp)
+    return found
 
 
 def _titles(catalog: Catalog) -> dict[str, str]:
@@ -1022,6 +1115,7 @@ def _write_document(
     search.extend(_sections_search(corpus, entry))
     for name, target in _clause_names(entry).items():
         names.setdefault(name, target)
+    names.update(_value_table_avps(corpus, entry, names))
     links = _Links(entry, names, corpus.references(spec), corpus.row_references(spec))
     declared = declarations.of(entry)
     edits = dict(declared.edits) if declared else {}

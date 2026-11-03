@@ -488,6 +488,14 @@ def test_search_entries_name_their_identity_by_kind(exported):
         },
         "application": {"kind", "application_id"},
         "registry": {"kind", "registry", "code"},
+        "value": {
+            "kind",
+            "value_kind",
+            "avp",
+            "value",
+            "application",
+            "feature_list_id",
+        },
     }
     seen = set()
     for entry in exported.search["entries"]:
@@ -1163,3 +1171,64 @@ def test_an_empty_corpus_is_refused(tmp_path):
     assert result.exit_code == 1
     assert "no documents" in result.output
     assert not output.exists()
+
+
+def test_a_value_table_s_names_are_searchable_and_link_to_their_clauses(exported):
+    entries = [e for e in exported.search["entries"] if e["kind"] == "value"]
+    code = next(
+        e
+        for e in entries
+        if e["document"] == "29229-i10" and e["name"] == "DIAMETER_ERROR_USER_UNKNOWN"
+    )
+    assert code["target"] == {"document": "29229-i10", "section": "6.2.2.1"}
+    assert code["identity"] == {
+        "kind": "value",
+        "value_kind": "result-codes",
+        "avp": "Experimental-Result-Code",
+        "value": 5001,
+        "application": None,
+        "feature_list_id": None,
+    }
+    feature = next(
+        e
+        for e in entries
+        if e["document"] == "29272-i70" and e["name"] == "ODB-all-APN"
+    )
+    assert feature["identity"]["application"] == "S6a/S6d"
+    assert feature["identity"]["feature_list_id"] == 1
+
+    document = exported.docs["29272-i70"]
+    assert any(
+        section["section"] == "7.3.7" and "Value Table ULR-Flags" in section["title"]
+        for section in document["sections"]
+    )
+    tokens = [token for line in document["lines"] for token in line["tokens"]]
+    avp = next(
+        token
+        for line in document["lines"]
+        if "".join(t["text"] for t in line["tokens"]).startswith("; AVP: ULR-Flags")
+        for token in line["tokens"]
+        if token["text"] == "ULR-Flags"
+    )
+    assert avp["target"] == {"document": "29272-i70", "section": "7.3.7"}
+    assert any(
+        token["text"] == "Single-Registration-Indication"
+        and token.get("target") == {"document": "29272-i70", "section": "7.3.7"}
+        for token in tokens
+    )
+    cx = exported.docs["29229-i10"]
+    row = next(
+        line
+        for line in cx["lines"]
+        if line["tokens"][0]["text"] == "DIAMETER_ERROR_USER_UNKNOWN"
+    )
+    assert row["anchor"] == "6.2.2.1"
+    assert row["tokens"][0]["target"]["section"] == "6.2.2.1"
+    assert any(
+        token.get("source", {}).get("section") == "6.2.2.1" for token in row["tokens"]
+    )
+    assert any(
+        section["section"] == "6.2.2.1"
+        and section["title"] == "Value DIAMETER_ERROR_USER_UNKNOWN"
+        for section in cx["sections"]
+    )

@@ -20,7 +20,7 @@ from .export import cross_release_entry, hole_entry
 from .export_schema import CrossRelease, FlagRules, UndefinedBlock
 
 # Changes when a reader would have to.
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 
 
 class _Model(pydantic.BaseModel):
@@ -132,10 +132,41 @@ class Hole(export_schema.Hole):
     id: str
 
 
+class ValueRow(_Model):
+    """A number and the name a document gives it. `section` is a result code's
+    own clause, `mark` a feature's M/O column."""
+
+    name: str
+    value: int
+    section: str | None
+    mark: str | None
+
+
+class ValueTable(_Model):
+    """What one document names a numeric AVP's numbers (`model.ValueTable`).
+    `avp_id` is the `avps` entry the document's reading of `avp` is, null where
+    the selection holds none."""
+
+    kind: ast.ValueKind
+    avp: str
+    avp_id: str | None
+    reference: str
+    version: str | None
+    vendor_id: int
+    section: str
+    page: int | None
+    table: str | None
+    application: str | None
+    feature_list_id: int | None
+    rows: tuple[ValueRow, ...]
+
+
 class Dictionary(_Model):
     """The file. `documents` and `application_ids` are what was selected, the
     second empty for every application of those documents. `undefined_policy` is
-    what became of the names an `Undefined AVP` block declares."""
+    what became of the names an `Undefined AVP` block declares. `value_tables` are
+    the selected documents'; with `application_ids`, those of the documents
+    holding one."""
 
     format_version: Annotated[int, pydantic.Field(ge=FORMAT_VERSION, le=FORMAT_VERSION)]
     seanchai_version: str
@@ -146,6 +177,7 @@ class Dictionary(_Model):
     applications: tuple[Application, ...]
     avps: tuple[Avp, ...]
     holes: tuple[Hole, ...]
+    value_tables: tuple[ValueTable, ...]
 
 
 def _hole_id(hole: model.Hole) -> str:
@@ -298,6 +330,29 @@ class _Builder:
         )
 
 
+def _value_table(
+    built: model.Model, builder: _Builder, table: model.ValueTable
+) -> ValueTable:
+    reading = built.resolve(table.reference, table.avp, version=table.version)
+    return ValueTable(
+        kind=table.kind,
+        avp=table.avp,
+        avp_id=None if reading is None else builder.ids.get(reading),
+        reference=table.reference,
+        version=table.version,
+        vendor_id=table.vendor_id,
+        section=table.section,
+        page=table.page,
+        table=table.table,
+        application=table.application,
+        feature_list_id=table.feature_list_id,
+        rows=tuple(
+            ValueRow(name=row.name, value=row.value, section=row.section, mark=row.mark)
+            for row in table.rows
+        ),
+    )
+
+
 def _value(fields: dict[str, Any]) -> Value:
     """`Enumerated.to_dict`'s line, every field of `Value` present."""
     return Value.model_validate({name: fields.get(name) for name in Value.model_fields})
@@ -353,6 +408,11 @@ def build(
             int(builder.ids[avp].partition("#")[2] or 1),
         ),
     )
+    holding = (
+        sorted({application.reference for application in applications})
+        if application_ids
+        else references
+    )
     return Dictionary(
         format_version=FORMAT_VERSION,
         seanchai_version=__version__,
@@ -377,6 +437,11 @@ def build(
                 {**hole_entry(hole).model_dump(mode="json"), "id": identifier}
             )
             for identifier, hole in sorted(builder.holes.items())
+        ),
+        value_tables=tuple(
+            _value_table(built, builder, table)
+            for reference in holding
+            for table in built.value_tables(reference)
         ),
     )
 

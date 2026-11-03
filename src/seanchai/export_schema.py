@@ -19,7 +19,7 @@ from pydantic.json_schema import models_json_schema
 from .dad import ast
 from .linter import Severity
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # What `index.json` says wrote it, and so what an export may replace.
 GENERATOR: Literal["seanchai"] = "seanchai"
@@ -255,6 +255,19 @@ class RegistryIdentity(_Model):
     code: int
 
 
+class ValueIdentity(_Model):
+    """A name a value table gives a number: `value_kind` says of which sort, and
+    `avp` of which AVP; a feature's `application` and `feature_list_id` say which
+    list, as the table's caption does."""
+
+    kind: Literal["value"]
+    value_kind: ast.ValueKind
+    avp: str
+    value: int
+    application: str | None
+    feature_list_id: int | None
+
+
 class SearchEntry(_Model):
     """A name as one document means it. `target` is where the name is defined,
     null for a hole. `defined_in` is the documents defining it, several for a
@@ -262,11 +275,16 @@ class SearchEntry(_Model):
     `wireshark_name` Wireshark's name for an AVP."""
 
     name: str
-    kind: Literal["avp", "command", "application", "registry"]
+    kind: Literal["avp", "command", "application", "registry", "value"]
     document: str
     target: Target | None
     identity: (
-        AvpIdentity | CommandIdentity | ApplicationIdentity | RegistryIdentity | None
+        AvpIdentity
+        | CommandIdentity
+        | ApplicationIdentity
+        | RegistryIdentity
+        | ValueIdentity
+        | None
     )
     defined_in: tuple[str, ...]
     abbreviation: str | None
