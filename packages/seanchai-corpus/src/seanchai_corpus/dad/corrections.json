@@ -4186,6 +4186,98 @@
    ],
    "version": "2.2.0"
   },
+  "es283035-020501": {
+   "edits": {
+    "ETSI-ES283.035.py#access-network-type-changed-spelling": {
+     "kind": "correction",
+     "reason": "clause 7.3.6 and table 2e print a space inside the value's name; none of the ten other values holds one, and they are named TERMINAL-TYPE-CHANGED and so on"
+    },
+    "ETSI-ES283.035.py#initial-gate-setting-row-name": {
+     "kind": "correction",
+     "reason": "table 6 prints Initial-Gate-Setting; ES 283 034 V2.2.0 table 10 gives code 303, which table 6 cites, as Initial-Gate-Setting-Description, and clause 7.3.4 defines it so"
+    },
+    "ETSI-ES283.035.py#logical-access-id-row-name": {
+     "kind": "correction",
+     "reason": "table 6 prints Logical-Access-Id; ES 283 034 clause 7.3.3 heads and defines the AVP as Logical-Access-ID, the spelling every citing document uses"
+    },
+    "ETSI-ES283.035.py#pnr-access-network-type-repeated": {
+     "kind": "delete",
+     "reason": "clause 7.1.5's format prints '[Access-Network-Type]' twice, each at most one occurrence; table 2e lists the AVP once for its event, and ES 283 034's PNR (7.1.3) once"
+    },
+    "ETSI-ES283.035.py#push-notification-request-initial-gate-setting-name": {
+     "kind": "correction",
+     "reason": "the format of clause 7.1.5 prints Initial-Gate-Setting; ES 283 034 V2.2.0 table 10 gives code 303, which table 6 cites, as Initial-Gate-Setting-Description, and clause 7.3.4 defines it so"
+    },
+    "ETSI-ES283.035.py#push-notification-request-logical-access-id-name": {
+     "kind": "correction",
+     "reason": "the format of clause 7.1.5 prints Logical-Access-Id; ES 283 034 clause 7.3.3 heads and defines the AVP as Logical-Access-ID, the spelling every citing document uses"
+    },
+    "ETSI-ES283.035.py#push-notification-request-physical-access-id-name": {
+     "kind": "correction",
+     "reason": "the format of clause 7.1.5 prints Physical-Access-Id; table 6 and ES 283 034 clause 7.3.14 spell Physical-Access-ID"
+    },
+    "ETSI-ES283.035.py#push-notification-request-qos-profile-name": {
+     "kind": "correction",
+     "reason": "the format of clause 7.1.5 prints QoS-Profile; ES 283 034 V2.2.0 table 10 gives code 304, which table 6 cites, as QoS-Profile-Description, and clause 7.3.5 defines it so"
+    },
+    "ETSI-ES283.035.py#qos-profile-row-name": {
+     "kind": "correction",
+     "reason": "table 6 prints QoS-Profile; ES 283 034 V2.2.0 table 10 gives code 304, which table 6 cites, as QoS-Profile-Description, and clause 7.3.5 defines it so"
+    },
+    "ETSI-ES283.035.py#user-data-answer-logical-access-id-name": {
+     "kind": "correction",
+     "reason": "the format of clause 7.1.2 prints Logical-Access-Id; ES 283 034 clause 7.3.3 heads and defines the AVP as Logical-Access-ID, the spelling every citing document uses"
+    },
+    "ETSI-ES283.035.py#user-data-answer-physical-access-id-name": {
+     "kind": "correction",
+     "reason": "the format of clause 7.1.2 prints Physical-Access-Id; table 6 and ES 283 034 clause 7.3.14 spell Physical-Access-ID"
+    }
+   },
+   "reference": "ETSI-ES283.035",
+   "renames": [
+    {
+     "expect": "Logical-Access-Id",
+     "replace": "Logical-Access-ID"
+    },
+    {
+     "expect": "Initial-Gate-Setting",
+     "replace": "Initial-Gate-Setting-Description"
+    },
+    {
+     "expect": "QoS-Profile",
+     "replace": "QoS-Profile-Description"
+    },
+    {
+     "expect": "Logical-Access-Id",
+     "replace": "Logical-Access-ID"
+    },
+    {
+     "expect": "Physical-Access-Id",
+     "replace": "Physical-Access-ID"
+    },
+    {
+     "expect": "Logical-Access-Id",
+     "replace": "Logical-Access-ID"
+    },
+    {
+     "expect": "Physical-Access-Id",
+     "replace": "Physical-Access-ID"
+    },
+    {
+     "expect": "Initial-Gate-Setting",
+     "replace": "Initial-Gate-Setting-Description"
+    },
+    {
+     "expect": "QoS-Profile",
+     "replace": "QoS-Profile-Description"
+    },
+    {
+     "expect": "ACCESS-NETWORK-TYPE -CHANGED",
+     "replace": "ACCESS-NETWORK-TYPE-CHANGED"
+    }
+   ],
+   "version": "2.5.1"
+  },
   "rfc4004": {
    "edits": {
     "RFC4004.py#amr-session-id-case": {

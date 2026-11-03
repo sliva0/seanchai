@@ -1,0 +1,261 @@
+; Specification: ETSI ES 283 035
+; Version: 2.5.1
+; Vendor-ID: 13019
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_es/283000_283099/283035/02.05.01_60/es_283035v020501p.pdf
+; Transcribed: by hand from https://www.etsi.org/deliver/etsi_es/283000_283099/283035/02.05.01_60/es_283035v020501p.pdf
+
+
+;; Clause 7.4.4 says the same: "value 16777231, allocated by IANA for the e4
+;; interface in ES 283 034 [5]". Clause 1 applies the document to the e2
+;; interface, and clause 7: "The present document re-uses the Diameter
+;; application defined for the e4 interface in ES 283 034 [5]".
+; Type: Application Scope
+; Name: e2
+; Section: 6.6
+; Page: 17
+; Application-ID: 16777231
+; Applies-To: 7.*
+
+
+; Type: Message
+; Name: User-Data-Request, UDR
+; Section: 7.1.1
+; Page: 18
+<User-Data-Request> ::= < Diameter Header: 306, REQ, PXY, 16777231 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        [ Globally-Unique-Address ]        ; bold
+        [ User-Name ]                      ; bold
+        [ AF-Application-Identifier ]      ; bold
+        [ Requested-Information ]          ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: User-Data-Answer, UDA
+; Section: 7.1.2
+; Page: 18
+<User-Data-Answer> ::= < Diameter Header: 306, PXY, 16777231 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ User-Name ]                      ; bold
+        [ Logical-Access-ID ]              ; bold ;; corrected: (ETSI-ES283.035.py#user-data-answer-logical-access-id-name)
+        [ Physical-Access-ID ]             ; bold ;; corrected: (ETSI-ES283.035.py#user-data-answer-physical-access-id-name)
+        [ Access-Network-Type ]            ; bold
+        [ Location-Information ]           ; bold
+        [ RACS-Contact-Point ]             ; bold
+        [ Terminal-Type ]                  ; bold
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Subscribe-Notifications-Request, SNR
+; Section: 7.1.3
+; Page: 19
+<Subscribe-Notifications-Request> ::= < Diameter Header: 308, REQ, PXY, 16777231 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Destination-Host ]
+        { Destination-Realm }
+        { Subs-Req-Type }
+        [ Expiry-Time ]
+        [ Globally-Unique-Address ]        ; bold
+        [ User-Name ]                      ; bold
+        [ AF-Application-Identifier ]      ; bold
+      * [ Event-Type ]                     ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Subscribe-Notifications-Answer, SNA
+; Section: 7.1.4
+; Page: 19
+<Subscribe-Notifications-Answer> ::= < Diameter Header: 308, PXY, 16777231 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Origin-Host }
+        { Origin-Realm }
+        [ Expiry-Time ]
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Notification-Request, PNR
+; Section: 7.1.5
+; Page: 20
+<Push-Notification-Request> ::= < Diameter Header: 309, REQ, PXY, 16777231 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Host }
+        { Destination-Realm }
+      * [ Event-Type ]                       ; bold
+        [ Globally-Unique-Address ]          ; bold
+        [ User-Name ]                        ; bold
+        [ Access-Network-Type ]              ; bold
+        [ Location-Information ]             ; bold
+        [ RACS-Contact-Point ]               ; bold
+        [ Terminal-Type ]                    ; bold
+        [ Logical-Access-ID ]                ; bold ;; corrected: (ETSI-ES283.035.py#push-notification-request-logical-access-id-name)
+        [ Physical-Access-ID ]               ; bold ;; corrected: (ETSI-ES283.035.py#push-notification-request-physical-access-id-name)
+;; deleted: AVP rule 'Access-Network-Type' (occurrence 2) (ETSI-ES283.035.py#pnr-access-network-type-repeated)
+        [ Initial-Gate-Setting-Description ] ; bold ;; corrected: (ETSI-ES283.035.py#push-notification-request-initial-gate-setting-name)
+      * [ QoS-Profile-Description ]          ; bold ;; corrected: (ETSI-ES283.035.py#push-notification-request-qos-profile-name)
+        [ IP-Connectivity-Status ]           ; bold
+      * [ AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: Message
+; Name: Push-Notification-Answer, PNA
+; Section: 7.1.6
+; Page: 20
+<Push-Notification-Answer> ::= < Diameter Header: 309, PXY, 16777231 >
+        < Session-Id >
+        { Vendor-Specific-Application-Id }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+      * [ AVP ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+
+
+; Type: AVP Table
+; Section: 7.3
+; Table: 4
+; Page: 21
+; Columns: Name         Code   Section   Type               Must   May   S.not   M.not   Encrypt
+Location-Information    350    7.3.1     Grouped            V      M     -       -       Yes
+RACS-Contact-Point      351    7.3.2     DiameterIdentity   V      M     -       -       Yes
+Terminal-Type           352    7.3.3     OctetString        V      M     -       -       Yes
+Requested-Information   353    7.3.4     Enumerated         V      -     -       M       Yes
+Event-Type              354    7.3.6     Enumerated         V      M     -       -       Yes
+Line-Identifier         500    7.3.5     OctetString        V      -     -       M       Yes
+Civic-Location          355    7.3.1A    OctetString        V      -     -       M       Yes
+Geospatial-Location     356    7.3.1B    OctetString        V      -     -       M       Yes
+;; NOTE: The AVP header bit denoted as "M", indicates whether support of the AVP is required. The AVP header bit denoted as "V", indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see TS 129 229 [6].
+
+
+;; Table 5 prints "See TS 129 209 [8]" in its Clause column and flag rules
+;; "in the context of the present document": M,V in Must; May encrypt Yes.
+;; The paragraph before it sets the Vendor-Id header to 3GPP (10415).
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 5
+; Page: 22
+; Columns: Name             Code   From       Type
+AF-Application-Identifier   504    TS29.209   OctetString
+
+
+;; Table 6 prints "See ES 283 034 [5]" in its Clause column and flag rules
+;; "in the context of the present document": Globally-Unique-Address M,V in
+;; Must, the others V in Must and M in May; May encrypt Yes for all.
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 6
+; Page: 22
+; Columns: Name                    Code   From             Type
+Globally-Unique-Address            300    ETSI-ES283.034   Grouped
+Logical-Access-ID                  302    ETSI-ES283.034   OctetString ;; corrected: (ETSI-ES283.035.py#logical-access-id-row-name)
+Access-Network-Type                306    ETSI-ES283.034   Grouped
+Initial-Gate-Setting-Description   303    ETSI-ES283.034   Grouped ;; corrected: (ETSI-ES283.035.py#initial-gate-setting-row-name)
+QoS-Profile-Description            304    ETSI-ES283.034   Grouped ;; corrected: (ETSI-ES283.035.py#qos-profile-row-name)
+IP-Connectivity-Status             305    ETSI-ES283.034   Enumerated
+Physical-Access-ID                 313    ETSI-ES283.034   UTF8String
+
+
+;; Table 7a prints "See TS 129 329 [7]" in its Clause column and flag rules
+;; "in the context of the present document": Expiry-Time V in Must and M in
+;; Must not, Subs-Req-Type M,V in Must; May Encrypt Yes for both. The
+;; paragraph before it says "The Vendor-Id header of all these AVPs shall be
+;; set to ETSI (13019)", where the AVPs cited are TS 29.329's, in 3GPP's
+;; space (10415); the cited document's vendor stands.
+; Type: Reused AVPs
+; Section: 7.3
+; Table: 7a
+; Page: 22
+; Columns: Name   Code   From       Type
+Expiry-Time       709    TS29.329   Time
+Subs-Req-Type     705    TS29.329   Enumerated
+
+
+; Type: Grouped AVP
+; Name: Location-Information
+; Section: 7.3.1
+; Page: 22
+Location-Information ::= < AVP header: 350 13019 >
+        [ Line-Identifier ]
+        [ Civic-Location ]
+        [ Geospatial-Location ]
+      * [ AVP ]
+
+
+; Type: Enumerated AVP
+; Name: Requested-Information
+; Section: 7.3.4
+; Page: 23
+Requested-Information ::= < Enumerated AVP header: 353 13019 >
+        NASS-USER-ID         = 0
+        LOCATION-INFORMATION = 1
+        RACS-CONTACT-POINT   = 2
+        ACCESS-NETWORK-TYPE  = 3
+        TERMINAL-TYPE        = 4
+        LOGICAL-ACCESS-ID    = 5
+        PHYSICAL-ACCESS-ID   = 6
+        ;; The following values are reserved for future use. They are out of scope of this Release.
+      ; RESERVED             = 7 ;; ACCESS-NETWORK-TYPE
+      ; RESERVED             = 8 ;; INITIAL-GATE-SETTING
+      ; RESERVED             = 9 ;; QOS-PROFILE
+      ; RESERVED             = 10 ;; IP-CONNECTIVITY-STATUS
+
+
+; Type: Enumerated AVP
+; Name: Event-Type
+; Section: 7.3.6
+; Page: 24
+Event-Type ::= < Enumerated AVP header: 354 13019 >
+        USER-LOGON                   = 0
+        LOCATION-INFORMATION-CHANGED = 1
+        RACS-CONTACT-POINT-CHANGED   = 2
+        ACCESS-NETWORK-TYPE-CHANGED  = 3 ;; corrected: (ETSI-ES283.035.py#access-network-type-changed-spelling)
+        TERMINAL-TYPE-CHANGED        = 4
+        LOGICAL-ACCESS-ID-CHANGED    = 5
+        PHYSICAL-ACCESS-ID-CHANGED   = 6
+        IP-ADDRESS-CHANGED           = 7
+        INITIAL-GATE-SETTING-CHANGED = 8
+        QOS-PROFILE-CHANGED          = 9
+        USER-LOGOFF                  = 10

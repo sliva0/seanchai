@@ -1,0 +1,38 @@
+# Source declarations for ETSI ES 283 035 (NASS e2 interface based on the
+# DIAMETER protocol). Applied to the lines of the hand transcription in
+# edits/transcriptions/ before parsing; see
+# src/seanchai/extractor/transcription.py.
+
+[[patch]]
+find = "< User-Data -Request >"
+replace = "<User-Data-Request>"
+section = "7.1.1"
+reason = """
+    clause 7.1.1's message format prints a space inside the rule name, '<
+    User-Data -Request >'; the clause's heading and sentence name the command
+    User-Data-Request, as TS 29.329 does
+    """
+first_version = "2.5.1"
+last_version = "2.5.1"
+
+[[patch]]
+find = "7.3.1.A"
+replace = "7.3.1A"
+section = "7.3"
+reason = """
+    table 4 prints Civic-Location's clause as 7.3.1.A; the clause is numbered
+    7.3.1A
+    """
+first_version = "2.5.1"
+last_version = "2.5.1"
+
+[[patch]]
+find = "7.3.1.B"
+replace = "7.3.1B"
+section = "7.3"
+reason = """
+    table 4 prints Geospatial-Location's clause as 7.3.1.B; the clause is
+    numbered 7.3.1B
+    """
+first_version = "2.5.1"
+last_version = "2.5.1"

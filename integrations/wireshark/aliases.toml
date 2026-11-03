@@ -139,3 +139,21 @@ reason = """
     Service-Class names (Cisco-Service-Class)
     """
 
+[[alias]]
+specification = "ETSI-ES283.035"
+name = "Location-Information"
+wireshark = "ETSI-Location-Information"
+reason = "kept apart from RFC 5580's Location-Information (0, 127)"
+
+[[alias]]
+specification = "ETSI-ES283.035"
+name = "Requested-Information"
+wireshark = "Requested-Information-353"
+reason = "under its code, as the dictionary names ETSI's Event-Type-354"
+
+[[alias]]
+specification = "ETSI-ES283.035"
+name = "Event-Type"
+wireshark = "ETSI-Event-Type-354"
+reason = "kept apart from TS 32.299's Event-Type (10415, 823)"
+
