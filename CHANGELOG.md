@@ -37,3 +37,6 @@ Nothing has been published to PyPI yet.
   document's `sections` has a `title` and runs in document order;
   `SCHEMA_VERSION` is 3. The grammar's source moved to
   `src/seanchai/dad/syntax/`, with `editors/vscode/` holding a copy.
+- A failed `seanchai export` swap can no longer lose the previous export: it
+  waits in `<output>.previous-<pid>` until replaced or restored, and an error
+  names it if it cannot be restored.

@@ -918,6 +918,112 @@ def test_a_failed_export_leaves_the_previous_one_as_it_was(tmp_path):
     assert sorted(p.name for p in tmp_path.iterdir()) == ["out", "specifications"]
 
 
+def _fail_renames(
+    monkeypatch,
+    staged: BaseException | None = None,
+    backup: BaseException | None = None,
+) -> None:
+    """Make renaming the staged export, or the backup back, raise these."""
+    rename = Path.rename
+
+    def failing(self, target):
+        if staged and self.name == "new":
+            raise staged
+        if backup and ".previous-" in self.name:
+            raise backup
+        return rename(self, target)
+
+    monkeypatch.setattr(Path, "rename", failing)
+
+
+def test_replacing_an_export_leaves_no_backup(tmp_path):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    export_corpus(books, output)
+    assert [p.name for p in tmp_path.iterdir()] == ["out"]
+
+
+@pytest.mark.parametrize("error", [OSError("no room"), KeyboardInterrupt()])
+def test_a_failed_publish_restores_the_previous_export(tmp_path, monkeypatch, error):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    before = _tree(output)
+    _fail_renames(monkeypatch, staged=error)
+
+    with pytest.raises(type(error)):
+        export_corpus(books, output)
+
+    assert _tree(output) == before
+    assert [p.name for p in tmp_path.iterdir()] == ["out"]
+
+
+def test_an_interruption_after_the_backup_rename_restores_the_previous_export(
+    tmp_path, monkeypatch
+):
+    """The rename is done when the interruption arrives, so nothing but the
+    backup holds the previous export."""
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    before = _tree(output)
+    rename = Path.rename
+
+    def interrupted(self, target):
+        moved = rename(self, target)
+        if self == output:
+            raise KeyboardInterrupt
+        return moved
+
+    monkeypatch.setattr(Path, "rename", interrupted)
+
+    with pytest.raises(KeyboardInterrupt):
+        export_corpus(books, output)
+
+    assert _tree(output) == before
+    assert [p.name for p in tmp_path.iterdir()] == ["out"]
+
+
+@pytest.mark.parametrize("error", [OSError("no room"), KeyboardInterrupt()])
+def test_a_failed_restoration_keeps_the_backup_and_names_it(
+    tmp_path, monkeypatch, error
+):
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    before = _tree(output)
+    backup = tmp_path / f"out.previous-{os.getpid()}"
+    _fail_renames(monkeypatch, staged=error, backup=OSError("read-only"))
+
+    with pytest.raises(CorpusError) as refused:
+        export_corpus(books, output)
+
+    assert str(backup) in str(refused.value)
+    assert "read-only" in str(refused.value)
+    assert not output.exists()
+    assert _tree(backup) == before
+    assert [p.name for p in tmp_path.iterdir()] == [backup.name]
+
+
+def test_a_backup_already_there_is_not_overwritten(tmp_path):
+    """The name holds a pid, which comes round again: what an earlier run could
+    not restore stops this one rather than being replaced."""
+    books = Corpus.load([_ETSI])
+    output = tmp_path / "out"
+    export_corpus(books, output)
+    before = _tree(output)
+    backup = tmp_path / f"out.previous-{os.getpid()}"
+    backup.mkdir()
+    (backup / "index.json").write_text("earlier", "utf-8")
+
+    with pytest.raises(OSError):
+        export_corpus(books, output)
+
+    assert _tree(output) == before
+    assert (backup / "index.json").read_text("utf-8") == "earlier"
+
+
 def test_an_export_keeps_to_the_mode_of_a_new_or_replaced_directory(tmp_path):
     books = Corpus.load([_ETSI])
     output = tmp_path / "out"
