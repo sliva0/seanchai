@@ -1,0 +1,390 @@
+; Specification: 3GPP2 X.S0013-013
+; Version: 1.0
+; Vendor-ID: 5535
+; Bases: RFC6733
+; Link: http://www.3gpp2.org/Public_html/Specs/X.S0013-013-0_v1.0_080224.pdf
+; Transcribed: by hand from http://www.3gpp2.org/Public_html/Specs/X.S0013-013-0_v1.0_080224.pdf
+
+
+;; The cover prints "3GPP2 X.S0013-013-0 Version 1.0": part 013 of the series
+;; X.S0013, revision 0. Clause 5.1: "The present document re-uses the Diameter
+;; application defined for the 3GPP Rx interface", with application ID 16777236
+;; where the vendor is 3GPP, and clause 5.3: "A Tx specific Auth-Application id
+;; is used together with the command code to identify the Tx messages".
+; Type: Application Scope
+; Name: Rx
+; Section: 5.1
+; Page: 18
+; Application-ID: 16777236
+; Applies-To: 5.3.*
+
+
+; Type: Message
+; Name: AA-Request, AAR
+; Section: 5.3.1
+; Page: 19
+<AA-Request> ::= < Diameter Header: 265, REQ, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Destination-Host ]
+      * [ Media-Component-Description ]
+        [ AF-Charging-Identifier ]      ; bold
+        [ SIP-Forking-Indication ]      ; bold
+      * [ Specific-Action ]             ; bold
+      * [ Subscription-Id ]             ; bold ;; corrected: (3GPP2-X.S0013-013.py#aa-request-subscription-id-case)
+        [ Framed-IP-Address ]
+        [ Framed-IPv6-Prefix ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AA-Answer, AAA
+; Section: 5.3.2
+; Page: 19
+<AA-Answer> ::= < Diameter Header: 265, PXY >
+        < Session-Id >
+        { Auth-Application-Id }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+        [ Access-Network-Physical-Access-ID ]  ; bold
+        [ Origin-State-Id ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Request, RAR
+; Section: 5.3.3
+; Page: 20
+<RA-Request> ::= < Diameter Header: 258, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Specific-Action }                    ; bold
+      * [ Access-Network-Charging-Identifier ] ; bold
+        [ Access-Network-Charging-Address ]    ; bold
+      * [ Flows ]                              ; bold
+      * [ Subscription-Id ]                    ; bold ;; corrected: (3GPP2-X.S0013-013.py#ra-request-subscription-id-case)
+        [ Abort-Cause ]                        ; bold
+        [ Origin-State-Id ]
+      * [ Class ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: RA-Answer, RAA
+; Section: 5.3.4
+; Page: 20
+<RA-Answer> ::= < Diameter Header: 258, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+      * [ Media-Component-Description ] ; bold
+        [ Origin-State-Id ]
+      * [ Class ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Failed-AVP ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Request, STR
+; Section: 5.3.5
+; Page: 20
+<ST-Request> ::= < Diameter Header: 275, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Termination-Cause }
+        { Auth-Application-Id }
+        [ Destination-Host ]
+      * [ Class ]
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: ST-Answer, STA
+; Section: 5.3.6
+; Page: 21
+<ST-Answer> ::= < Diameter Header: 275, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+        [ Origin-State-Id ]
+      * [ Class ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AS-Request, ASR
+; Section: 5.3.7
+; Page: 21
+<AS-Request> ::= < Diameter Header: 274, REQ, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Destination-Host }
+        { Auth-Application-Id }
+        { Abort-Cause }         ; bold
+        [ Origin-State-Id ]
+      * [ Proxy-Info ]
+      * [ Route-Record ]
+      * [ AVP ]
+
+
+; Type: Message
+; Name: AS-Answer, ASA
+; Section: 5.3.8
+; Page: 21
+<AS-Answer> ::= < Diameter Header: 274, PXY >
+        < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Experimental-Result ]
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+      * [ Failed-AVP ]
+      * [ Redirect-Host ]
+        [ Redirect-Host-Usage ]
+        [ Redirect-Max-Cache-Time ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Experimental-Result
+; Section: 5.4.1
+; Page: 22
+Experimental-Result ::= < AVP header: 297 >
+        { Vendor-Id } ;; corrected: (3GPP2-X.S0013-013.py#experimental-result-vendor-id-case)
+        { Experimental-Result-Code }
+
+
+;; Clause 5.5: "The Vendor-Id header of all 3GPP Diameter AVPs defined in the
+;; present document shall be set to 10415 (3GPP)", table 5.1-1 being those, and
+;; "all 3GPP2 Diameter AVPs ... 5535 (3GPP2)", table 5.1-2. The file's
+;; vendor-id is the latter's.
+; Type: AVP Table
+; Section: 5.5
+; Table: 5.1-1
+; Page: 24
+; Columns: Name                            Vendor-ID   Code   Section   Type           Must   May   S.not   M.not   Encrypt ;; corrected: (3GPP2-X.S0013-013.py#vendor-id-column)
+Abort-Cause                                10415       500    5.5.1     Enumerated     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#abort-cause-row-vendor)
+Access-Network-Charging-Address            10415       501    5.5.2     Address        M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#access-network-charging-address-row-vendor)
+Access-Network-Charging-Identifier         10415       502    5.5.3     Grouped        M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#access-network-charging-identifier-row-vendor)
+Access-Network-Charging-Identifier-Value   10415       503    5.5.4     OctetString    M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#access-network-charging-identifier-value-row-vendor)
+AF-Application-Identifier                  10415       504    5.5.5     OctetString    M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#af-application-identifier-row-vendor)
+AF-Charging-Identifier                     10415       505    5.5.6     OctetString    M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#af-charging-identifier-row-vendor)
+Codec-Data                                 10415       524    5.5.7     OctetString    M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#codec-data-row-vendor)
+Flow-Description                           10415       507    5.5.8     IPFilterRule   M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#flow-description-row-vendor)
+Flow-Number                                10415       509    5.5.9     Unsigned32     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#flow-number-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#flow-number-row-clause)
+Flows                                      10415       510    5.5.10    Grouped        M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#flows-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#flows-row-clause)
+Flow-Status                                10415       511    5.5.11    Enumerated     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#flow-status-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#flow-status-row-clause)
+Flow-Usage                                 10415       512    5.5.12    Enumerated     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#flow-usage-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#flow-usage-row-clause)
+Specific-Action                            10415       513    5.5.13    Enumerated     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#specific-action-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#specific-action-row-clause)
+Max-Requested-Bandwidth-DL                 10415       515    5.5.14    Unsigned32     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#max-requested-bandwidth-dl-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#max-requested-bandwidth-dl-row-clause)
+Max-Requested-Bandwidth-UL                 10415       516    5.5.15    Unsigned32     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#max-requested-bandwidth-ul-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#max-requested-bandwidth-ul-row-clause)
+Media-Component-Description                10415       517    5.5.16    Grouped        M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#media-component-description-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#media-component-description-row-clause)
+Media-Component-Number                     10415       518    5.5.17    Unsigned32     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#media-component-number-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#media-component-number-row-clause)
+Media-Sub-Component                        10415       519    5.5.18    Grouped        M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#media-sub-component-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#media-sub-component-row-clause)
+Media-Type                                 10415       520    5.5.19    Enumerated     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#media-type-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#media-type-row-clause)
+RR-Bandwidth                               10415       521    5.5.20    Unsigned32     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#rr-bandwidth-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#rr-bandwidth-row-clause)
+RS-Bandwidth                               10415       522    5.5.21    Unsigned32     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#rs-bandwidth-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#rs-bandwidth-row-clause)
+SIP-Forking-Indication                     10415       523    5.5.22    Enumerated     M,V    P     -       -       Yes ;; corrected: (3GPP2-X.S0013-013.py#sip-forking-indication-row-vendor) ;; corrected: (3GPP2-X.S0013-013.py#sip-forking-indication-row-clause)
+;; NOTE 1: The AVP header bit denoted as 'M', indicates whether support of the AVP is required. The AVP header bit denoted as 'V', indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see [2].
+;; NOTE 2: The value types are defined in [2].
+
+
+; Type: AVP Table
+; Section: 5.5
+; Table: 5.1-2
+; Page: 25
+; Columns: Name                           Code   Section   Type          Must   May   S.not   M.not   Encrypt
+Access-Network-Physical-Access-ID         900    5.5.23    Grouped       V      P     -       M       Yes
+Access-Network-Physical-Access-ID-Value   899    5.5.24    OctetString   V      P     -       M       Yes
+Access-Network-Physical-Access-ID-Realm   898    5.5.25    OctetString   V      P     -       M       Yes
+;; NOTE 1: The AVP header bit denoted as 'M', indicates whether support of the AVP is required. The AVP header bit denoted as 'V', indicates whether the optional Vendor-ID field is present in the AVP header. For further details, see [2].
+;; NOTE 2: The value types are defined in [2].
+
+
+; Type: Enumerated AVP
+; Name: Abort-Cause
+; Section: 5.5.1
+; Page: 25
+Abort-Cause ::= < Enumerated AVP header: 500 10415 >
+        FLOW_RELEASED                 = 0
+        INSUFFICIENT_SERVER_RESOURCES = 1
+        INSUFFICIENT_BEARER_RESOURCES = 2
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Charging-Identifier
+; Section: 5.5.3
+; Page: 25
+Access-Network-Charging-Identifier ::= < AVP header: 502 10415 > ;; corrected: (3GPP2-X.S0013-013.py#access-network-charging-identifier-vendor)
+        { Access-Network-Charging-Identifier-Value }
+      * [ Flows ]
+
+
+; Type: Grouped AVP
+; Name: Flows
+; Section: 5.5.10
+; Page: 27
+Flows ::= < AVP header: 510 10415 > ;; corrected: (3GPP2-X.S0013-013.py#flows-vendor)
+        { Media-Component-Number }
+      * [ Flow-Number ]
+
+
+; Type: Enumerated AVP
+; Name: Flow-Status
+; Section: 5.5.11
+; Page: 27
+Flow-Status ::= < Enumerated AVP header: 511 10415 >
+        ENABLED-UPLINK   = 0
+        ENABLED-DOWNLINK = 1
+        ENABLED          = 2
+        DISABLED         = 3
+        REMOVED          = 4
+
+
+; Type: Enumerated AVP
+; Name: Flow-Usage
+; Section: 5.5.12
+; Page: 28
+Flow-Usage ::= < Enumerated AVP header: 512 10415 >
+        NO_INFORMATION = 0
+        RTCP           = 1
+        AF_SIGNALING   = 2
+
+
+; Type: Enumerated AVP
+; Name: Specific-Action
+; Section: 5.5.13
+; Page: 28
+Specific-Action ::= < Enumerated AVP header: 513 10415 >
+        SERVICE_INFORMATION_REQUEST         = 0
+        CHARGING_CORRELATION_EXCHANGE       = 1
+        INDICATION_OF_LOSS_OF_FLOW          = 2
+        INDICATION_OF_RECOVERY_OF_FLOW      = 3
+        INDICATION_OF_RELEASE_OF_FLOW       = 4
+        INDICATION_OF_ESTABLISHMENT_OF_FLOW = 5
+
+
+; Type: Grouped AVP
+; Name: Media-Component-Description
+; Section: 5.5.16
+; Page: 30
+Media-Component-Description ::= < AVP header: 517 10415 > ;; corrected: (3GPP2-X.S0013-013.py#media-component-description-vendor)
+        { Media-Component-Number } ;; Ordinal number of the media comp.
+      * [ Media-Sub-Component ] ;; Set of flows for one flow identifier
+        [ AF-Application-Identifier ]
+        [ Media-Type ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+        [ Flow-Status ]
+        [ RS-Bandwidth ]
+        [ RR-Bandwidth ]
+      * [ Codec-Data ]
+
+
+; Type: Grouped AVP
+; Name: Media-Sub-Component
+; Section: 5.5.18
+; Page: 30
+Media-Sub-Component ::= < AVP header: 519 10415 > ;; corrected: (3GPP2-X.S0013-013.py#media-sub-component-vendor)
+        { Flow-Number } ;; Ordinal number of the IP flow
+     *2 [ Flow-Description ] ;; UL and/or DL
+        [ Flow-Status ]
+        [ Flow-Usage ]
+        [ Max-Requested-Bandwidth-UL ]
+        [ Max-Requested-Bandwidth-DL ]
+
+
+; Type: Enumerated AVP
+; Name: Media-Type
+; Section: 5.5.19
+; Page: 31
+Media-Type ::= < Enumerated AVP header: 520 10415 >
+        AUDIO       = 0
+        VIDEO       = 1
+        DATA        = 2
+        APPLICATION = 3
+        CONTROL     = 4
+        TEXT        = 5
+        MESSAGE     = 6
+        OTHER       = 4294967295
+
+
+; Type: Enumerated AVP
+; Name: SIP-Forking-Indication
+; Section: 5.5.22
+; Page: 31
+SIP-Forking-Indication ::= < Enumerated AVP header: 523 10415 > ;; corrected: (3GPP2-X.S0013-013.py#sip-forking-indication-name)
+        SINGLE_DIALOGUE   = 0
+        SEVERAL_DIALOGUES = 1
+
+
+; Type: Grouped AVP
+; Name: Access-Network-Physical-Access-ID
+; Section: 5.5.23
+; Page: 31
+Access-Network-Physical-Access-ID ::= < AVP header: 900 5535 > ;; corrected: (3GPP2-X.S0013-013.py#access-network-physical-access-id-vendor)
+        { Access-Network-Physical-Access-ID-Value }
+        { Access-Network-Physical-Access-ID-Realm }
+      * [ AVP ]
+
+
+;; Table 5.6.1 prints a Reference and a Comments column, and no codes.
+; Type: Reused AVPs
+; Section: 5.6
+; Table: 5.6.1
+; Page: 32
+; Columns: Name      From
+Subscription-Id      RFC4006
+Framed-IP-Address    RFC4005
+Framed-IPv6-Prefix   RFC4005
