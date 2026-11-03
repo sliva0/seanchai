@@ -5,8 +5,10 @@ from seanchai.dad.corrections import (
     Correction,
     Insert,
     Supply,
+    avp_rule,
     avp_table,
     definition,
+    header,
     table_row,
 )
 
@@ -65,6 +67,137 @@ CORRECTIONS += [
         ("3GPP-GPRS-Negotiated-QoS-Profile", 5),
         ("3GPP-SGSN-MCC-MNC", 18),
     )
+]
+
+# The commands' bodies list NASREQ's AVPs, and no re-used table does.
+CORRECTIONS += [
+    Correction(
+        id="bases-nasreq",
+        target=header(),
+        field="bases",
+        expect=("RFC6733",),
+        replace=("RFC6733", "RFC7155", "RFC4005"),
+        reason="clauses 16a.4, 17.6 and 20.4 say the bodies' other AVPs are"
+        " 'Diameter NASREQ (IETF RFC 7155 [120]) AVPs' and print no re-used table"
+        " for them; the ACR and ACA of 16a.4.3 and 16a.4.4 also list"
+        " NAS-IP-Address, NAS-IPv6-Address and NAS-Identifier, which RFC 7155"
+        " takes from RFC 4005 (RFC7155.py#bases-nasreq)",
+        versions="18.1.0",
+    ),
+    Correction(
+        id="rel6-bases-nasreq",
+        target=header(),
+        field="bases",
+        expect=("RFC6733",),
+        replace=("RFC6733", "RFC4005"),
+        reason="clause 17.6 says the bodies' other AVPs are 'Diameter NASREQ (IETF"
+        " RFC 4005 [67]) AVPs' and prints no re-used table for them; the corpus"
+        " reads the base protocol as RFC 6733, which obsoletes RFC 3588 [66]",
+        versions="6.15.0",
+    ),
+    Insert(
+        id="application-id-nasreq",
+        into=header(),
+        node=ast.ApplicationScope(
+            name="NASREQ",
+            source=ast.SourceRef(section="16a.1"),
+            application_id=1,
+            applies_to=("16a.*",),
+        ),
+        after=None,
+        reason="clause 16a.1: 'shall advertise the support of the Diameter NASREQ"
+        " Application', used 'according to RFC 7155 [120]', and 16a.2 uses its"
+        " accounting the same way; RFC 7155 clauses 1.5 and 1.6 give one (1) for"
+        " every command clause 16a.4 prints. The command headers print none",
+        versions="18.1.0",
+    ),
+]
+
+# RFC 6733 sections 6.12 to 6.14 name the redirect AVPs Redirect-Host,
+# Redirect-Host-Usage and Redirect-Max-Cache-Time, as RFC 3588 did; these bodies
+# spell them otherwise in every Gi, Gmb and SGmb answer printing them.
+_REDIRECTS = {
+    "Redirected-Host": "Redirect-Host",
+    "Redirected-Host-Usage": "Redirect-Host-Usage",
+    "Redirected-Host-Cache-Time": "Redirect-Max-Cache-Time",
+}
+
+
+def _redirects(prefix, versions, *commands):
+    return [
+        Correction(
+            id=f"{prefix}{printed.lower()}-{section.replace('.', '-')}",
+            target=avp_rule(definition(command, section=section), printed),
+            field="name",
+            expect=printed,
+            replace=_REDIRECTS[printed],
+            reason=f"clause {section}'s body prints {printed}; RFC 6733 section"
+            f" 6 and the bodies of the other answers name the AVP"
+            f" {_REDIRECTS[printed]}, and no document defines the printed name",
+            versions=versions,
+        )
+        for command, section, printed_names in commands
+        for printed in printed_names
+    ]
+
+
+_SHORT = ("Redirected-Host", "Redirected-Host-Usage")
+_LONG = (*_SHORT, "Redirected-Host-Cache-Time")
+
+CORRECTIONS += [
+    *_redirects(
+        "",
+        "18.1.0",
+        ("Abort-Session-Answer", "16a.4.8", _SHORT),
+        ("Re-Auth-Answer", "17.6.6", _LONG),
+        ("Abort-Session-Answer", "17.6.8", _SHORT),
+        ("Re-Auth-Answer", "20.4.2", _LONG),
+        ("Abort-Session-Answer", "20.4.6", _SHORT),
+    ),
+    *_redirects(
+        "rel6-",
+        "6.15.0",
+        ("Re-Auth-Answer", "17.6.6", _LONG),
+        ("Abort-Session-Answer", "17.6.8", _SHORT),
+    ),
+    Correction(
+        id="acr-ms-timezone-spelling",
+        target=avp_rule("AC-Request", "3GPP-MS-Time-Zone"),
+        field="name",
+        expect="3GPP-MS-Time-Zone",
+        replace="3GPP-MS-TimeZone",
+        reason="clause 16a.4.3's body alone hyphenates the name; tables 9a and 10"
+        " and clause 16.4.7's sub-attribute name print 3GPP-MS-TimeZone",
+        versions="18.1.0",
+    ),
+    Correction(
+        id="acr-connect-info-spelling",
+        target=avp_rule("AC-Request", "Connection-Info"),
+        field="name",
+        expect="Connection-Info",
+        replace="Connect-Info",
+        reason="clause 16a.4.3's ACR body copies the typo of RFC 4005's and RFC"
+        " 7155's ACR (RFC 7155's verified erratum 5995); the AVP is Connect-Info,"
+        " code 77, and the AAR body of clause 16a.4.1 spells it so",
+        versions="18.1.0",
+    ),
+    Insert(
+        id="undefined-delegated-ipv6-prefix",
+        into=header(),
+        node=ast.UndefinedAvp(
+            name="Delegated-IPv6-Prefix",
+            source=ast.SourceRef(section="16a.4.1"),
+            note='"clause 2: [97] IETF RFC 4818 (2007): RADIUS'
+            ' Delegated-IPv6-Prefix Attribute"',
+        ),
+        after=None,
+        reason="a member of the AAR, AAA and ACR bodies (clauses 16a.4.1 to"
+        " 16a.4.3) in no table of this document; clause 2 cites RFC 4818 [97],"
+        " which defines the RADIUS attribute with no Diameter type or flags and"
+        " which the corpus does not hold. Wireshark's dictionary has code 123,"
+        " OctetString, with may-M",
+        versions="18.1.0",
+    ),
 ]
 
 # Values the document takes from another.

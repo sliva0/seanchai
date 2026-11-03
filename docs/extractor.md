@@ -106,7 +106,7 @@ The vocabulary, with the document that forced each:
 - `message-headings`: an `x.y.z Name message` heading over a rule spelled
   with the abbreviation, `<ACR> ::=` (TS 32.299, oneM2M TS-0004).
 - `rfc-command-rules`: RFC commands printed by rule alone under no intro
-  naming them, named from the RFC by command code (TS 29.234).
+  naming them, named from the RFC by command code (TS 29.234, 29.061).
 - `access-type-headings`: `Event-Trigger AVP (All access types)` (TS
   29.212, 29.214).
 - `spaced-rule-operator`: `:: =` (TS 32.299, 29.229, 29.234, oneM2M).
@@ -114,15 +114,16 @@ The vocabulary, with the document that forced each:
 - `body-clause-headings`: a clause heading printed as a body paragraph (TS
   32.299 clause 7.2.135C).
 - `struck-rules-unused`: TS 32.299's legend for struck members (below).
-- `abnf-comments`: a member line's trailing `; comment` (TS 29.209, 29.214
-  Release 7 and 11).
+- `abnf-comments`: a member line's trailing `; comment` (TS 29.209, 29.061,
+  29.214 Release 7 and 11).
 - `list-numbered-headings`: clause numbers that exist only in Word's list
   numbering (oneM2M TS-0004).
 - `message-only`: commands and re-used rows, no local AVPs (TS 29.330,
   29.211).
 - `command-reference-only`, `procedure-commands`: clauses holding only a
   pointer, and commands named in a procedure clause's intro (TS 29.273,
-  29.234).
+  29.234), or under a heading no other reading names them by (TS 29.061's
+  `AAR Command` over `<AA-Request> ::=`).
 - `clause-parenthetical`: a trailing parenthetical in a clause cell,
   `16.4.7 (see Note)`, stripped as prose (TS 29.061).
 
@@ -197,7 +198,7 @@ blank.
 
 - A sentence stating the application id the command headers omit becomes
   an `ApplicationScope` applying to the clause it sits in (`; Applies-To:
-  5.*` for TS 29.212's clause 5.1). Five wordings are recognised; the file
+  5.*` for TS 29.212's clause 5.1). Six wordings are recognised; the file
   lists the scopes first, before the commands.
 - `x.y.z Name (ABBR) Command` heading plus `::= < Diameter Header: … >`
   becomes a `Message`; per-run bold marks the document's own AVPs. Message

@@ -1064,6 +1064,14 @@ _APPLICATION_ID_RES = (
         r"The (?:Auth-Application-Id|Application Identifier) for the"
         r" (?P<name>.+?) [Aa]pplication is (?P<id>\d+) as allocated by IANA"
     ),
+    # TS 29.061 clauses 17 and 20.1: "The Gmb application is defined as an IETF
+    # vendor specific Diameter application, where the vendor is 3GPP. ... The
+    # Gmb application identifier value assigned by IANA is 16777223."
+    re.compile(
+        r"^The (?P<name>\S+) application is defined as an IETF vendor specific"
+        r" Diameter application,.* application identifier value assigned by IANA"
+        r" is (?P<id>\d+)\."
+    ),
     # TS 29.234 V11.2.0 clauses 6.2 and 11.2: "The Wx reference point shall be
     # Diameter based and shall have an application ID defined for it. ... The
     # application identifier is to 16777219."

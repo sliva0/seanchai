@@ -2177,7 +2177,7 @@ class TestTheRecord:
             model.Model.build(corpus.Corpus([_entry(spec)]))
 
 
-def test_the_committed_corpus_declares_its_nine_undefined_names():
+def test_the_committed_corpus_declares_its_ten_undefined_names():
     built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
     declared = {
         (each.reference, each.name, each.section, each.cited_in)
@@ -2187,6 +2187,12 @@ def test_the_committed_corpus_declares_its_nine_undefined_names():
         ("RFC4004", "MIP-HA-to-MN-SPI", "9.4", ("9.4",)),
         ("RFC4004", "MIP-MN-to-FA-SPI", "9.5", ("9.5",)),
         ("RFC4004", "MIP-MN-to-HA-SPI", "9.6", ("9.6",)),
+        (
+            "TS29.061",
+            "Delegated-IPv6-Prefix",
+            "16a.4.1",
+            ("16a.4.1", "16a.4.2", "16a.4.3"),
+        ),
         ("TS29.154", "External-Group-Identifier", "A.6.6.2", ("A.6.6.2",)),
         ("TS29.234", "Error-Cause", "4.4.2.1", ("4.4.2.1", "5.5.1")),
         ("TS29.345", "ProSe-Query-Code", "6.3.53", ("6.3.53", "6.3.54")),

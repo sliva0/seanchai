@@ -413,16 +413,18 @@ The fourteen, by cause:
   29.234's `Charging-Characteristics` is typed "Integer", no Diameter type. TS
   29.229's `Wildcarded-IMPU` states a type alone, though TS 29.329's reading of
   it is complete.
-- **The nine names that resolve nowhere**, the corpus's `Undefined AVP`
+- **The ten names that resolve nowhere**, the corpus's `Undefined AVP`
   blocks ([below](#undefined-names)), holes under the default policy and
   the consumer's to answer for under another.
 
 ### Undefined names
 
-Nine names the corpus's documents use as members are defined nowhere: RFC
+Ten names the corpus's documents use as members are defined nowhere: RFC
 4004's three SPIs, TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`,
 TS 29.154's `External-Group-Identifier`, TS 32.299's `Submission-Timestamp`
-and `Network-Element`, and TS 29.234's `Error-Cause`. Each has an
+and `Network-Element`, TS 29.234's `Error-Cause` and TS 29.061's
+`Delegated-IPv6-Prefix`, a RADIUS attribute of RFC 4818, which the corpus does
+not hold. Each has an
 `Undefined AVP` block in its document's file, inserted by a correction
 citing what was searched, and `undefined(reference)` returns them as
 `model.Undefined`: the name, the document, the clause, what the document
