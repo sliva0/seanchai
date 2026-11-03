@@ -202,3 +202,48 @@ specification = "3GPP2-X.S0013-014"
 name = "RAT-Type"
 wireshark = "3GPP2-RAT-Type"
 reason = "kept apart from TS 29.212's RAT-Type (10415, 1032)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-006"
+name = "User-Data"
+wireshark = "Cx-User-Data"
+reason = """
+    TS 29.229's AVP, under its name there, kept apart from TS 29.329's User-Data
+    (10415, 702)
+    """
+
+[[alias]]
+specification = "3GPP2-X.S0013-006"
+name = "SIP-Number-Auth-Items"
+wireshark = "3GPP-SIP-Number-Auth-Items"
+reason = "kept apart from RFC 4740's SIP-Number-Auth-Items (0, 382)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-006"
+name = "SIP-Authentication-Scheme"
+wireshark = "3GPP-SIP-Authentication-Scheme"
+reason = "kept apart from RFC 4740's SIP-Authentication-Scheme (0, 377)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-006"
+name = "SIP-Authenticate"
+wireshark = "3GPP-SIP-Authenticate"
+reason = "kept apart from RFC 4740's SIP-Authenticate (0, 379)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-006"
+name = "SIP-Authorization"
+wireshark = "3GPP-SIP-Authorization"
+reason = "kept apart from RFC 4740's SIP-Authorization (0, 380)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-006"
+name = "SIP-Auth-Data-Item"
+wireshark = "3GPP-SIP-Auth-Data-Item"
+reason = "kept apart from RFC 4740's SIP-Auth-Data-Item (0, 376)"
+
+[[alias]]
+specification = "3GPP2-X.S0013-006"
+name = "SIP-Item-Number"
+wireshark = "3GPP-SIP-Item-Number"
+reason = "kept apart from RFC 4740's SIP-Item-Number (0, 378)"

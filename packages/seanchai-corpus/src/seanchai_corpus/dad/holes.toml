@@ -207,17 +207,6 @@ reason = """
     """
 
 [[hole]]
-document = "3GPP2-X.S0013-014"
-name = "Charging-Information"
-missing = ["definition"]
-reason = """
-    V1.0 clause 5.2.1.2 lists it in the CCA body and table 5.3 cites 3GPP2 Cx
-    [X.S0013-006] for it, printing only the names of its four DiameterURI
-    members; 3GPP2 publishes that document (X.S0013-006-A v1.0, reachable
-    2026-11-03) and the corpus does not hold it
-    """
-
-[[hole]]
 document = "ETSI-TS183.020"
 name = "Privacy-Indicator"
 missing = ["flag_rules"]
