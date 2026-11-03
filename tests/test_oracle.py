@@ -350,9 +350,9 @@ def test_the_accepted_aliases_hold_against_the_pinned_dictionary():
     accepted = [finding for finding in findings if finding.accepted_by]
     assert len(accepted) == len(aliases) == 36
     assert not [finding for finding in findings if finding.rule == "stale-alias"]
-    assert len(findings) - len(accepted) == 103
+    assert len(findings) - len(accepted) == 102
     assert sum(finding.rule == "name-disagrees" for finding in findings) == 70
-    assert sum(finding.rule.startswith("value-") for finding in findings) == 16
+    assert sum(finding.rule.startswith("value-") for finding in findings) == 15
 
 
 def test_crosscheck_counts_accepted_renames_apart(tmp_path):

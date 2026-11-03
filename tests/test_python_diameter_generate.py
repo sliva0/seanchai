@@ -129,7 +129,7 @@ def test_every_module_imports_as_library_classes_and_registers_nothing(package):
         """,
     )
     modules, directions = map(int, output.split())
-    assert modules == 89
+    assert modules == 88
     assert directions > 300
 
 
@@ -523,7 +523,6 @@ def test_only_commands_no_document_gives_an_id_generate_none(package):
         "ts29_234_5",
         "ts29_234_8",
         "ts29_234_9",
-        "ts29_329_8",
     ]
     gx = _read(package, "ts29_212_5")
     assert (

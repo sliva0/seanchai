@@ -275,8 +275,7 @@ What still reports, and why each stays:
   defining clause's wherever the clause settles the spelling. What stays is
   no spelling the clause settles: TS 29.336's 3176 and 3177 swapped, TS
   29.283's 4513 to 4515 shifted, TS 29.338's 3315 printed with two names,
-  TS 29.329's 735, `Event-Report` where clause 8.3.13 and its commands print
-  `Ims-Event-Report`, and TS 32.299's 855, where case is all that tells
+  and TS 32.299's 855, where case is all that tells
   `Service-ID` from TS 29.336's `Service-Id`.
 - **`registry-avp-document`.** TS 29.329 lists nine of TS 29.229's AVPs
   among its own, each clause referring to TS 29.229; TS 29.273 defines
@@ -298,15 +297,10 @@ What still reports, and why each stays:
   against table 8.1.4's `DIAMETER_ERROR_IMPI_UNKNOWN`, and TS 29.283's
   `DIAMETER_ERROR_DATA OUT_OF_SYNC` against TS 29.329's
   `DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC`: no clause settles either. A
-  space misprinted in a heading is corrected. TS 29.329 V19.1.0 clause 8.2.2.1
-  lists base `DIAMETER_INVALID_AVP_VALUE` (5004) among Sh-ee's codes, which
-  table 8.1.4 allocates to `DIAMETER_ERROR_ROAMING_NOT_ALLOWED`.
-- **`registry-command-name`, for Sh-ee.** TS 29.329 V19.1.0 clause 8.1 gives its
-  four commands 310 and 311, which table 5.1/1 allocates to `Boostrapping-Info`
-  and `Message-Process`, while table 5.1/4 prints `xx1` and `xx2` for them.
+  space misprinted in a heading is corrected.
 - **`registry-application-name`.** TS 29.272's VCSG scope names 16777308
   `S7a/S7d`; table 4.1 calls it "3GPP S7a".
-- **`undefined-avp`.** The twelve names
+- **`undefined-avp`.** The eleven names
   ([consumers.md](consumers.md#undefined-names)), each declared by a block
   whose reason lists what was searched. Where the document itself names the
   AVP a member means, the member was corrected instead (TS 32.299's
