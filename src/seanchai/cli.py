@@ -422,6 +422,8 @@ def _echo_avp(avp, others) -> None:
                 click.echo(f"    {value.name} = {value.value}")
             elif isinstance(value, ast.ReservedValues):
                 click.echo(f"    reserved {value.first}-{value.last}")
+            elif isinstance(value, ast.VoidValues):
+                click.echo(f"    void {value.first}-{value.last}")
             else:
                 click.echo(f"    vendor-specific {value.first}-{value.last}")
     for table in avp.value_tables:

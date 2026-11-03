@@ -105,6 +105,39 @@ def _message(name, *members):
     )
 
 
+def test_an_enumeration_says_a_void_value_is_void():
+    """TS 29.214 clause 5.3.13: `Void (0)` is no value and no vendor's."""
+    values = (
+        ast.VoidValues(first=0, last=0),
+        ast.EnumValue(name="On", value=1),
+    )
+    built = _model(
+        _spec(
+            "3GPP TS 29.999",
+            [
+                ast.EnumeratedAvp(
+                    name="Mode",
+                    source=ast.SourceRef(section="6.3.2"),
+                    code=700,
+                    vendor_id=10415,
+                    values=values,
+                ),
+                _table(_row("Mode", 700, ast.DataType.ENUMERATED)),
+            ],
+        )
+    )
+
+    mode = built.resolve("TS29.999", "Mode")
+
+    assert isinstance(mode, model.Enumerated)
+    assert mode.values == values
+    assert mode.vendor_specific == ()
+    assert mode.to_dict()["values"] == [
+        {"kind": "void", "first": 0, "last": 0},
+        {"kind": "value", "name": "On", "value": 1, "description": None},
+    ]
+
+
 def test_an_enumeration_exposes_the_ranges_it_leaves_to_vendors():
     """TS 32.299 clause 7.2.213: values 0-10 named, 11-99 reserved, 100-199
     left to vendors; only the last are `vendor_specific`."""
