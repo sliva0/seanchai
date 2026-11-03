@@ -4846,6 +4846,17 @@
    "renames": [],
    "version": null
   },
+  "rfc6737": {
+   "edits": {
+    "RFC6737.py#application-id": {
+     "kind": "insert",
+     "reason": "clause 3 'specifies Diameter Application-Id 10' and clause 6.1 records IANA's allocation; clause 4.1 prints CUR and CUA with no id in their headers"
+    }
+   },
+   "reference": "RFC6737",
+   "renames": [],
+   "version": null
+  },
   "rfc6942": {
    "edits": {
     "RFC6942.py#application-id": {
