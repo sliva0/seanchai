@@ -308,7 +308,8 @@ TS 29.154's editors meant, though the corpus does not assume it.
 `model.supplied_from(*paths)` reads `Supplied`s from hand-authored `.dad`
 sidecars: each `Grouped AVP` or `Enumerated AVP` section with its table
 row, and each AVP-table row alone. A name two sidecars both supply is
-refused.
+refused, and so is a row contradicting its definition's code, type or vendor,
+or its V flag contradicting its vendor; the error lists every such fact.
 
 The build refuses, with `ModelError`: `SUPPLY` without `supply=` and
 `supply=` under another policy; a key naming no block, since it is a typo

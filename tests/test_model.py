@@ -2602,6 +2602,72 @@ class TestSuppliedFrom:
         with pytest.raises(model.ModelError, match="Missing-Req states no flag rules"):
             model.supplied_from(tmp_path / "bare.dad")
 
+    @pytest.mark.parametrize(
+        ("row", "message"),
+        [
+            (
+                "Missing-Req  999   Grouped     M,V   -    -      -",
+                "row gives code 999, definition 711",
+            ),
+            (
+                "Missing-Req  711   OctetString M,V   -    -      -",
+                "row gives type OctetString, definition Grouped",
+            ),
+            (
+                "Missing-Req  711   Grouped     M     -    -      V",
+                "row gives vendor 0, definition 10415",
+            ),
+        ],
+    )
+    def test_a_row_contradicting_its_definition_is_refused(
+        self, tmp_path, row, message
+    ):
+        printed = "Missing-Req  711   Grouped     M,V   -    -      -"
+        assert printed in _SIDECAR
+        (tmp_path / "acme.dad").write_text(_SIDECAR.replace(printed, row))
+
+        with pytest.raises(model.ModelError, match=f"Missing-Req: {message}"):
+            model.supplied_from(tmp_path / "acme.dad")
+
+    def test_every_contradiction_is_listed_together(self, tmp_path):
+        printed = "Missing-Req  711   Grouped     M,V   -    -      -"
+        row = "Missing-Req  999   OctetString M     -    -      V"
+        (tmp_path / "acme.dad").write_text(_SIDECAR.replace(printed, row))
+
+        with pytest.raises(model.ModelError) as raised:
+            model.supplied_from(tmp_path / "acme.dad")
+
+        assert str(raised.value).endswith(
+            "Missing-Req: row gives code 999, definition 711;"
+            " row gives type OctetString, definition Grouped;"
+            " row gives vendor 0, definition 10415"
+        )
+
+    def test_a_vendor_cell_contradicting_definition_and_flag_is_refused(self, tmp_path):
+        columns = "Name         Code  Type        Must  May  S.not  M.not"
+        text = _SIDECAR.replace(columns, columns.replace("Code", "Vendor-ID  Code"))
+        for row in ("Missing-Req  711", "Missing-Opt  710"):
+            text = text.replace(row, row.replace(" 7", " 0          7"))
+        (tmp_path / "acme.dad").write_text(text)
+
+        with pytest.raises(model.ModelError) as raised:
+            model.supplied_from(tmp_path / "acme.dad")
+
+        assert str(raised.value).endswith(
+            "Missing-Req: row gives vendor 0, definition 10415;"
+            " row gives vendor 0 with V under Must"
+        )
+
+    def test_a_row_alone_contradicting_its_v_flag_is_refused(self, tmp_path):
+        text = _SIDECAR.replace("; Vendor-ID: 10415", "; Vendor-ID: 0")
+        definition = text.index("; Type: Grouped")
+        (tmp_path / "acme.dad").write_text(text[:definition].rstrip() + "\n")
+
+        with pytest.raises(
+            model.ModelError, match="Missing-Req: row gives vendor 0 with V under Must"
+        ):
+            model.supplied_from(tmp_path / "acme.dad")
+
     def test_a_name_two_sidecars_supply_is_refused(self, tmp_path):
         (tmp_path / "one.dad").write_text(_SIDECAR)
         (tmp_path / "two.dad").write_text(_SIDECAR)
