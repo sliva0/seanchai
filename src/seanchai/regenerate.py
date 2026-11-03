@@ -602,7 +602,7 @@ def _tgpp2_stem(path: Path, text: str, number: str, version: str) -> str:
 _ETSI_STEM_RE = re.compile(
     r"^ETSI-(?P<kind>TS|ES)(?P<series>\d{3})\.(?P<number>\d{3})$"
 )
-_TGPP2_STEM_RE = re.compile(r"^3GPP2-(?P<number>[A-Z]\.[A-Z]\d{4})$")
+_TGPP2_STEM_RE = re.compile(r"^3GPP2-(?P<number>[A-Z]\.[A-Z]\d{4}(?:-\d{3})?)$")
 _VERSION_LINE_RE = re.compile(r"^; Version: (?P<value>[0-9.]+)$", re.MULTILINE)
 _TRANSCRIBED_LINE_RE = re.compile(
     r"^; Transcribed: by hand from (?P<value>\S+)$", re.MULTILINE

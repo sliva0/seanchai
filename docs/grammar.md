@@ -24,8 +24,10 @@ vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
 bases-line    = "; Bases: " spec-ref *(", " spec-ref)
 spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT) / external-ref
                 ; "TS29.272", "RFC6733"
-external-ref  = ("ETSI-" ("TS" / "ES") 3DIGIT "." 3DIGIT)  ; "ETSI-TS283.034"
-              / ("3GPP2-" ALPHA "." ALPHA 4DIGIT)         ; "3GPP2-X.S0057"
+external-ref  = ("ETSI-" ("TS" / "ES") 3DIGIT "." 3DIGIT ["-" 1*DIGIT])
+                                                          ; "ETSI-TS283.034"
+              / ("3GPP2-" ALPHA "." ALPHA 4DIGIT ["-" 3DIGIT])
+                                                          ; "3GPP2-X.S0057"
               / ("OMA" 1*("-" 1*(ALPHA / DIGIT / "_")))   ; "OMA-DDS-Charging_Data"
               / ("oneM2M-TS-" 4DIGIT)                     ; "oneM2M-TS-0004"
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
@@ -39,19 +41,21 @@ section       = application-scope / message / grouped-avp / enumerated-avp
 A `spec-ref` names a document without its version. A 3GPP or IETF document is
 its number; a document outside them leads with its publisher and keeps the
 publisher's numbering, written as one token: ETSI's "TS 183 017" dotted as a
-3GPP number is, 3GPP2's "X.S0057" without its revision letter (a citation's
-revision is recorded beside the corpus,
-[linter.md](linter.md#resolving-an-origin)), OMA's name as OMA prints it,
-oneM2M's "TS-0004". Every publisher has one spelling, since resolution compares
-references exactly. A From cell keeps the citing document's reference even where
-it misnames the publisher's: 3GPP cites ETSI ES 283 034 as "ETSI TS 283 034", so
+3GPP number is, with the part a document in parts names ("TS 183 059-1"),
+3GPP2's "X.S0057" without its revision letter (a citation's revision is recorded
+beside the corpus, [linter.md](linter.md#resolving-an-origin)) and with its part
+("X.S0013-014", part 014 being another document, not a revision), OMA's name as
+OMA prints it, oneM2M's "TS-0004". Every publisher has one spelling, since
+resolution compares references exactly. A From cell keeps the citing document's
+reference even where it misnames the publisher's: 3GPP cites ETSI ES 283 034 as
+"ETSI TS 283 034", so
 its cells read `ETSI-TS283.034`, which the corpus maps to the `ETSI-ES283.034`
 the transcription's title gives, one listed misnaming at a time
 ([linter.md](linter.md#resolving-an-origin)).
 
 `; Transcribed:` marks a file a person copied from a rendering, for a
-document no extractor reads (ETSI ES 283 034, TS 183 017 and 3GPP2 X.S0057
-exist only as PDF), and names that rendering. It is written in the
+document no extractor reads (ETSI's and 3GPP2's exist only as PDF), and names
+that rendering. It is written in the
 transcription ([extractor.md](extractor.md#transcriptions)), and the raw and
 corrected files carry it from there.
 
