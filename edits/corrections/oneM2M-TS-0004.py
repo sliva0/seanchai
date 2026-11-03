@@ -2,6 +2,7 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
+    Accept,
     Correction,
     Insert,
     Supply,
@@ -248,6 +249,21 @@ CORRECTIONS += [
         " defined'), originator error 4000-4143, receiver error 5000-5220"
         " and network system error 6003-6029; the names are the tables'"
         " descriptions, as printed",
+        versions="2.35.0",
+    ),
+]
+
+# Annex A holds the Diameter AVPs; the clause it cites for values is outside it.
+CORRECTIONS += [
+    Accept(
+        id="response-status-code-values-clause",
+        rule="section-unknown",
+        target=definition("Response-Status-Code"),
+        expect="Response-Status-Code's values are cited from clause 6.6.3, where the"
+        " file holds no block",
+        reason="clause A.5.25 says 'The values are defined in clause 6.6.3', which"
+        " exists, 'Definition of Response Status Codes', and is no Diameter clause,"
+        " so the file holds no block there",
         versions="2.35.0",
     ),
 ]

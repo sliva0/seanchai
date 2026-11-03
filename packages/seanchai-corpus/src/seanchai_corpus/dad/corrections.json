@@ -1435,6 +1435,20 @@
      "kind": "correction",
      "reason": "table 5.4.0.1 lower-cases the 'v'; RFC 4005, which defines the AVP, spells 'IPv6'"
     },
+    "TS29.214.py#pc-session-recovery-status-clause": {
+     "expect": "PC-Session-Recovery-Status is cited at clause 5.3.142 in table 5.3.0.1, but the file holds it at clause 5.3.81, and nothing at clause 5.3.142",
+     "kind": "accept",
+     "reason": "a misprint in table 5.3.0.1: the document has no clause 5.3.142, and clause 5.3.81 is headed 'PC-Session-Recovery-Status AVP' and defines it",
+     "rule": "section-mismatch",
+     "targets": [
+      [
+       "sections",
+       9,
+       "rows",
+       61
+      ]
+     ]
+    },
     "TS29.214.py#specific-action-void-0": {
      "kind": "delete",
      "reason": "clause 5.3.13 prints 'Void' as the label of values 0 and 5 — a 3GPP editorial placeholder for removed values, not an enumerated value a dictionary can carry, and one name cannot label two values"
@@ -2324,6 +2338,20 @@
     "TS29.273.py#mip6-agent-info-duplicate": {
      "kind": "delete",
      "reason": "Clauses 9.2.3.2.2 and 9.2.3.6.2 both explicitly cite RFC 5447 and print identical bodies for the same identity; keep the first copy in the corrected dictionary."
+    },
+    "TS29.273.py#mip6-agent-info-row-clause": {
+     "expect": "MIP6-Agent-Info is cited at clause 9.2.3.6.2 in table 9.2.3.6.1/1, but the file holds it at clause 9.2.3.2.2, and nothing at clause 9.2.3.6.2",
+     "kind": "accept",
+     "reason": "the row is right: clause 9.2.3.6.2 prints MIP6-Agent-Info again for its interface, and TS29.273.py#mip6-agent-info-duplicate deletes that copy, so the file holds only clause 9.2.3.2.2's",
+     "rule": "section-mismatch",
+     "targets": [
+      [
+       "sections",
+       64,
+       "rows",
+       0
+      ]
+     ]
     },
     "TS29.273.py#mip6-home-link-prefix-reused": {
      "kind": "insert",
@@ -5931,6 +5959,20 @@
      "kind": "supply",
      "reason": "RFC 4004 section 9.8 defines one value, '2 HMAC-SHA-1 [HMAC]', as the IANA MIP-Algorithm-Type registry (aaa-parameters-19) still lists; RFC 4285's authentication is HMAC-SHA-1 too, so its requirement removes nothing"
     },
+    "RFC5778.py#mip6-auth-mode-clause": {
+     "expect": "MIP6-Auth-Mode is cited at clause 6.20 in table (clause 6), but the file holds it at clause 9.5, and nothing at clause 6.20",
+     "kind": "accept",
+     "reason": "both are right: clause 6.20 is headed 'MIP6-Auth-Mode AVP' and defines it in prose, as the table says, and clause 9.5's IANA registry is the only place that prints its values, which is what the block holds",
+     "rule": "section-mismatch",
+     "targets": [
+      [
+       "sections",
+       7,
+       "rows",
+       11
+      ]
+     ]
+    },
     "RFC5778.py#mir-session-id-case": {
      "kind": "correction",
      "reason": "the MIR ABNF (clause 5.2.1) capitalizes the D; the AVP is RFC 6733's Session-Id (code 263), spelled Session-Id in this document's every other ABNF"
@@ -6117,6 +6159,30 @@
     "RFC6942.py#application-id": {
      "kind": "insert",
      "reason": "clause 7 defines 'Diameter ERP, with an Application Id value of 13' and clause 10.1 records IANA's allocation; clauses 5.2 and 6 send the ERP/DER and ERP/DEA that clause 2 says carry it"
+    },
+    "RFC6942.py#application-scope-clause-5-2": {
+     "expect": "Diameter ERP applies to clause 5.2.*, under which the file holds no block",
+     "kind": "accept",
+     "reason": "clause 5.2, 'Bootstrapping during the First Re-authentication', exists and sends ERP/DER and ERP/DEA in prose, leaving the file no block under it",
+     "rule": "section-unknown",
+     "targets": [
+      [
+       "sections",
+       0
+      ]
+     ]
+    },
+    "RFC6942.py#application-scope-clause-6": {
+     "expect": "Diameter ERP applies to clause 6.*, under which the file holds no block",
+     "kind": "accept",
+     "reason": "clause 6, 'Re-authentication', exists and sends ERP/DER and ERP/DEA in prose, leaving the file no block under it",
+     "rule": "section-unknown",
+     "targets": [
+      [
+       "sections",
+       0
+      ]
+     ]
     }
    },
    "reference": "RFC6942",
@@ -6488,6 +6554,18 @@
     "oneM2M-TS-0004.py#response-status-code-values": {
      "kind": "supply",
      "reason": "clauses 6.6.3.2 to 6.6.3.7 tabulate the response status codes by class: informational 1000-1002, successful 2000-2004, none for redirection (6.6.3.4: 'no values in this response class are defined'), originator error 4000-4143, receiver error 5000-5220 and network system error 6003-6029; the names are the tables' descriptions, as printed"
+    },
+    "oneM2M-TS-0004.py#response-status-code-values-clause": {
+     "expect": "Response-Status-Code's values are cited from clause 6.6.3, where the file holds no block",
+     "kind": "accept",
+     "reason": "clause A.5.25 says 'The values are defined in clause 6.6.3', which exists, 'Definition of Response Status Codes', and is no Diameter clause, so the file holds no block there",
+     "rule": "section-unknown",
+     "targets": [
+      [
+       "sections",
+       9
+      ]
+     ]
     },
     "oneM2M-TS-0004.py#service-context-id-type": {
      "kind": "correction",
