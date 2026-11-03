@@ -3221,24 +3221,10 @@ def _assemble(resolved: _Resolved) -> tuple[ast.Section, ...]:
     sections.extend(
         sorted(
             resolved.definitions,
-            key=lambda definition: _section_sort_key(definition.source.section),
+            key=lambda definition: ast.section_sort_key(definition.source.section),
         )
     )
     return tuple(sections)
-
-
-def _section_sort_key(section: str) -> list[tuple[int, int, str]]:
-    """Document order for section numbers: "6.3.10" sorts after "6.3.4",
-    "6.3.7A" after "6.3.7", and annex clauses ("E.6.3.6") after every
-    numbered clause, in annex-letter order."""
-    key = []
-    for part in section.split("."):
-        digits = re.match(r"\d+", part)
-        if digits is None:  # an annex letter — sorts after all numbers
-            key.append((1, 0, part))
-        else:
-            key.append((0, int(digits[0]), part))
-    return key
 
 
 # The quirk vocabulary this extractor defines: name → what declaring it

@@ -1620,11 +1620,6 @@ def _message_abbreviation(section: _DocSection, rule_name: str) -> str:
     )
 
 
-def _section_sort_key(section: str) -> list[int]:
-    """Document order for section numbers: "9.8.10" sorts after "9.8.4"."""
-    return [int(part) for part in section.split(".")]
-
-
 def _specification(raw: list[str]) -> str:
     """ "RFC 6733", from the "Request for Comments: 6733" line of the first
     page's header block."""
@@ -1787,7 +1782,7 @@ def extract(
         # File order matches the docx extractor's: messages in document order,
         # the AVP table, then every definition in document order.
         definitions.sort(
-            key=lambda definition: _section_sort_key(definition.source.section)
+            key=lambda definition: ast.section_sort_key(definition.source.section)
         )
         return ast.Specification(
             specification=specification,
