@@ -452,8 +452,9 @@ The nineteen, by cause:
   V6.15.0 numbers `3GPP-GPRS-Negotiated-QoS-Profile` and
   `3GPP-SGSN-MCC-MNC` as RADIUS sub-attributes without tabulating them. TS
   29.234's `Charging-Characteristics` is typed "Integer", no Diameter type. TS
-  29.229's `Wildcarded-IMPU` states a type alone, though TS 29.329's reading of
-  it is complete. ETSI TS 183 020's `Privacy-Indicator` states a code, a type
+  29.229's `Wildcarded-IMPU` states a type and a note that Sh uses it, with no
+  code or flag rule, though TS 29.329's reading of it is complete, from Sh's
+  table, and is the one Sh's commands hold. ETSI TS 183 020's `Privacy-Indicator` states a code, a type
   and members and no flag rule, TS 183 066's table 7.4 printing its own only
   for its own interface.
 - **An origin the corpus does not hold.** RFC 6736 table 3 re-uses

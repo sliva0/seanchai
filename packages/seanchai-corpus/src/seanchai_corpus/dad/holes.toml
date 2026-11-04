@@ -127,11 +127,22 @@ document = "TS29.229"
 name = "Wildcarded-IMPU"
 missing = ["code", "flag_rules"]
 reason = """
-    V19.1.0 clause 6.3.43 gives the name and UTF8String and states no code or
-    flag rule, and table 6.3.0.1 omits the AVP
-    (TS29.229.py#wildcarded-impu-row-missing); TS 29.230 table 7.1 allocates
-    code 636 to it and TS 29.329 table 6.3.1 tabulates it with code and flags,
-    so TS 29.329's reading is complete where this document's own is not
+    V19.1.0 clause 6.3.43 gives the name, UTF8String and a note, "This AVP is
+    used by Sh interface as specified in the 3GPP TS 29.328 [16] and 3GPP TS
+    29.329 [11]", and clause 6.3.0 sets the vendor of every AVP the document
+    defines to 10415. No clause states a code or a flag rule: table 6.3.0.1,
+    which clause 6.3.0 gives to Cx, omits the AVP
+    (TS29.229.py#wildcarded-impu-row-missing), as V11.5.0's table 6.3.1 does,
+    and no command or grouped body of the document names it. TS 29.230 table
+    7.1 allocates code 636 and UTF8String to it, citing this document, and
+    states no flags. TS 29.329 V19.1.0 clause 6.3.20 refers to clause 6.3.43 and
+    its table 6.3.1, of "the Diameter AVPs defined for the Sh interface
+    protocol", prints 636, V in Must, M in Must not and May Encrypt No, so TS
+    29.329's reading is complete (Avp.completed_by), and it is the one Sh's
+    commands hold. The flags are Sh's, RFC 6733 section 4.1 leaving M to the
+    application using an AVP; the note says who uses it and defers neither code
+    nor flags to anyone, so no correction copies them into this document's Cx
+    table
     """
 
 [[hole]]
