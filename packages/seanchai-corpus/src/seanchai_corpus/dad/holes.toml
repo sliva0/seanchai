@@ -234,8 +234,15 @@ name = "Privacy-Indicator"
 missing = ["flag_rules"]
 reason = """
     V1.1.1, the document's only version, gives code 440 13019 and type Grouped
-    in clause 5.5.1 and no flag rule: table 1 has no flag column and no other
-    table lists it. TS 183 066 table 7.4 prints V in Must and M in May only "in
-    the context of the present document"; Wireshark's dictionary has no such AVP
-    of ETSI's, its Privacy-Indicator being 3GPP's (10415, 3915)
+    in clause 5.5.1 and no flag rule: table 1 has no flag column, no other table
+    lists it and no clause speaks of AVP flags. TS 183 066 V2.1.1 clause 7.3
+    table 7.4 prints V in Must, M in May and May Encrypt Yes, and its paragraph
+    says "Flags values are described in the context of the present document
+    rather than in the context of the application where they are defined", so
+    it states its own interface's flags and disclaims being TS 183 020's. TS 183
+    020 does not cite TS 183 066, so no citation reaches that table from here.
+    Read through TS 183 066 it would answer for TS 183 066 alone, and its
+    transcription keeps the cells in a comment, so TS 183 066's bodies hold this
+    hole too; Wireshark's dictionary has no such AVP of ETSI's, its
+    Privacy-Indicator being 3GPP's (10415, 3915)
     """
