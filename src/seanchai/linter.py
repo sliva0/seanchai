@@ -1235,7 +1235,31 @@ def _resolve_origins(
         origins[origin] = _Origin.of(entry.spec)
         if across is not None:
             crossings.append(_cross_release(spec, entry, across))
+        if (later := books.release_fill(origin, like=spec)) is not None:
+            crossings.append(_release_fill(spec, later))
     return origins, crossings
+
+
+def _release_fill(
+    spec: ast.Specification,
+    later: tuple[corpus.Entry, corpus.ReleaseFill, corpus.CrossRelease],
+) -> Finding:
+    """A field a later release's copy states for a citation whose own copy leaves
+    it unstated (`corpus.RELEASE_FILLS`), so a reader can audit it: TS 29.210
+    V6.7.0's `3GPP-SGSN-MCC-MNC` is TS 29.061 V6.15.0's, typed by V19.1.0. A note,
+    since the citing document's editor meant the older copy."""
+    entry, fill, across = later
+    citing = spec.specification + (f" V{spec.version}" if spec.version else "")
+    return Finding(
+        Severity.NOTE,
+        "cross-release-origin",
+        f"{across.cited} is resolved across releases to {entry.path.name} for"
+        f" {', '.join(fill.fields)} of {', '.join(fill.names)}: {citing} is the"
+        f" citing file, and it cites the document non-specifically, meaning"
+        f" V{across.meant}, which answers for all else and leaves those unstated,"
+        f" and V{across.version} states them: {fill.evidence}"
+        " (corpus.RELEASE_FILLS)",
+    )
 
 
 def _cross_release(

@@ -19,7 +19,9 @@ then only that revision answers it, or a held one an explicit entry lets
 stand in for it (`STAND_INS`). A non-specific citation whose release's
 last version the corpus does not hold resolves to nothing, unless an entry
 in `RELEASE_STAND_INS` records the evidence that a held copy of a later
-release defines what the citing copy reaches the same way. The reasoning,
+release defines what the citing copy reaches the same way. Where the citation's
+own version answers but leaves a field unstated, an entry in `RELEASE_FILLS`
+lets a later release state that field alone, with the same evidence. The reasoning,
 and what a resolution across releases reports, is in
 docs/consumers.md#resolution-across-releases and
 docs/linter.md#resolving-an-origin.
@@ -302,6 +304,46 @@ RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
     ),
 }
 
+
+@dataclass(frozen=True)
+class ReleaseFill:
+    """Fields the version a citation means leaves unstated for named AVPs, which
+    a held copy of a later release states, and the evidence that nothing the
+    meant version or the citing document states disagrees."""
+
+    meant: str  # "6.15.0", the version the citation means, which still answers it
+    version: str  # "19.1.0", the copy stating the fields
+    names: tuple[str, ...]
+    fields: tuple[str, ...]  # `model.DATA_TYPE`, `model.FLAG_RULES`
+    evidence: str
+
+
+# Non-specific citations whose meant version the corpus holds and answers with,
+# except for the fields named here, by (citing reference, citing version, cited
+# reference). A release stand-in replaces the citation's copy; this keeps it, for
+# code, vendor, clause and every other AVP, and takes only what no held version of
+# the citation's release states, one entry per citation. `Avp.completed_by` names
+# the later copy for each field and `Avp.across_releases` carries the rule, and the
+# linter's `cross-release-origin` note quotes the evidence. TS 29.061 V6.15.0 stays
+# pinned for TS 29.210: this does not make Release 19 answer for it.
+RELEASE_FILLS: dict[tuple[str, str, str], ReleaseFill] = {
+    # TS 29.210 V6.7.0 clause 2 [11], table 5.3.
+    ("TS29.210", "6.7.0", "TS29.061"): ReleaseFill(
+        "6.15.0",
+        "19.1.0",
+        ("3GPP-GPRS-Negotiated-QoS-Profile", "3GPP-SGSN-MCC-MNC"),
+        ("data_type",),
+        "V6.15.0 clause 16.4.7 numbers both as RADIUS sub-attributes, 5 and 18,"
+        " UTF-8 encoded, with no Diameter type, and table 10, its only AVP table,"
+        " is Gmb's; table 9a of V7.12.0, V11.12.0 and V19.1.0 alike types both"
+        " UTF8String, compared 2026-11-04 with the copies extracted from the 3GPP"
+        " archive. The type alone is taken: table 9a also puts M in Must not, and"
+        " TS 29.210 clause 5.3 says the M flag of a re-used VSA shall be set, so"
+        " the flags are TS 29.210's own (TS29.210.py#3gpp-sgsn-mcc-mnc-flags,"
+        " TS29.210.py#3gpp-gprs-negotiated-qos-profile-flags)",
+    ),
+}
+
 # 3GPP2's name for a rendering, "X.S0057-0_v2.0_091215.pdf": number, part
 # where the document has parts ("X.S0013-014-0_v1.0_080224.pdf"), revision,
 # version and publication date.
@@ -312,11 +354,14 @@ TGPP2_RENDERING_RE = re.compile(
 
 # `CrossRelease.rule`'s values: the drafting rule a resolution followed, or
 # `STAND_IN`, the table entry that let another revision (`STAND_INS`) or a
-# later release's copy (`RELEASE_STAND_INS`) answer.
+# later release's copy (`RELEASE_STAND_INS`) answer, or `LATER_RELEASE`, the one
+# that let a later release's copy state a field the answer leaves unstated
+# (`RELEASE_FILLS`).
 SPECIFIC = "specific"
 NON_SPECIFIC = "non-specific"
 LATEST_EDITION = "latest-edition"
 STAND_IN = "stand-in"
+LATER_RELEASE = "later-release"
 
 
 @dataclass(frozen=True)
@@ -331,7 +376,10 @@ class CrossRelease:
     `STAND_IN` is a held copy answering a citation of one the corpus cannot
     hold: a 3GPP2 revision for another, a revision being 3GPP2's release
     (`STAND_INS`), or a later release's copy for the version a reference
-    means (`RELEASE_STAND_INS`, `meant` set)."""
+    means (`RELEASE_STAND_INS`, `meant` set). `LATER_RELEASE` is a later
+    release's copy stating a field of the version the reference means, which the
+    corpus holds and which answers for the rest (`RELEASE_FILLS`, `meant` set);
+    `Avp.completed_by` names the fields."""
 
     citing: str  # "TS32.299"
     cited: str  # "TS29.140"
@@ -343,11 +391,18 @@ class CrossRelease:
     revision: str | None = None
     # For a `RELEASE_STAND_INS` entry, the version the reference means
     # ("11.12.0"), which the corpus does not hold, and whether the citing
-    # document names it.
+    # document names it. For a `RELEASE_FILLS` entry, the version it means, which
+    # the corpus holds.
     meant: str | None = None
     specific: bool = False
 
     def __str__(self) -> str:
+        if self.rule == LATER_RELEASE:
+            return (
+                f"{self.citing} cites {self.cited} non-specifically, meaning"
+                f" V{self.meant}, which leaves a field unstated: V{self.version}"
+                " states it (corpus.RELEASE_FILLS)"
+            )
         if self.rule == STAND_IN and self.meant is not None:
             how = "naming" if self.specific else "non-specifically, meaning"
             return (
@@ -757,6 +812,30 @@ class Corpus:
         if entry is None:
             return None, None
         return entry, CrossRelease(citing, reference, final, NON_SPECIFIC)
+
+    def release_fill(
+        self, reference: str, *, like: ast.Specification
+    ) -> tuple[Entry, ReleaseFill, CrossRelease] | None:
+        """The `RELEASE_FILLS` entry for `like` citing `reference`, with the later
+        copy it names and the crossing it reports, or None without an entry or
+        that copy. `resolution` still answers the citation."""
+        citing = _reference(like)
+        fill = RELEASE_FILLS.get((citing, like.version or "", reference))
+        if fill is None:
+            return None
+        entry = next(
+            (e for e in self._candidates(reference) if e.spec.version == fill.version),
+            None,
+        )
+        if entry is None:
+            return None
+        return (
+            entry,
+            fill,
+            CrossRelease(
+                citing, reference, fill.version, LATER_RELEASE, meant=fill.meant
+            ),
+        )
 
     @staticmethod
     def _release_stand_in(

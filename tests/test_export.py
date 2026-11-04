@@ -274,6 +274,12 @@ def test_table_names_keep_row_locations_and_definition_targets(exported):
             "Wildcarded-IMPU",
             {"document": "29229-j10", "section": "6.3.43"},
         ),
+        # A later release's copy states its type; the citation's own defines it.
+        (
+            "29210-670",
+            "3GPP-SGSN-MCC-MNC",
+            {"document": "29061-6f0", "section": "16.4.7"},
+        ),
         ("rfc8583", "SourceID", {"document": "rfc8581", "section": "7.3"}),
         (
             "29283-j00",

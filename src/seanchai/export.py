@@ -30,6 +30,7 @@ import pydantic
 from . import correction_record, export_schema, model
 from .corpus import (
     CITED_AS,
+    LATER_RELEASE,
     Corpus,
     CorpusError,
     CorpusNotInstalledError,
@@ -575,7 +576,13 @@ class _Lookups:
             else self.books.resolve(avp.defined_in, like=spec)
         )
         crossing = avp.across_releases
-        if crossing and crossing.cited == avp.defined_in:
+        # A later release's copy stating a field defines nothing: the citation's
+        # own copy does.
+        if (
+            crossing
+            and crossing.cited == avp.defined_in
+            and crossing.rule != LATER_RELEASE
+        ):
             origin = self.by_copy.get((avp.defined_in, crossing.version), origin)
         if origin is None:
             return None

@@ -199,6 +199,42 @@ def test_a_later_release_stands_in_only_by_its_table_entry(monkeypatch):
     assert books.resolution("TS29.229", like=citing) == (None, None)
 
 
+def test_a_later_release_states_a_field_only_by_its_table_entry(monkeypatch):
+    """TS 29.210 V6.7.0's TS 29.061 is V6.15.0, which still answers the citation;
+    its `RELEASE_FILLS` entry lets V19.1.0 state the named field and says so.
+    Another copy of the citing document, or a corpus lacking V19.1.0, gets
+    nothing, and without the entry nor does V6.7.0."""
+    citing = _spec("3GPP TS 29.210", "6.7.0")
+    books = corpus.Corpus([_entry("3GPP TS 29.061", v) for v in ("6.15.0", "19.1.0")])
+
+    entry, across = books.resolution("TS29.061", like=citing)
+    assert entry is not None and entry.spec.version == "6.15.0"
+    assert across is None
+
+    found = books.release_fill("TS29.061", like=citing)
+    assert found is not None
+    later, fill, crossing = found
+    assert later.spec.version == "19.1.0"
+    assert fill.fields == ("data_type",)
+    assert crossing == corpus.CrossRelease(
+        "TS29.210", "TS29.061", "19.1.0", corpus.LATER_RELEASE, meant="6.15.0"
+    )
+    assert str(crossing) == (
+        "TS29.210 cites TS29.061 non-specifically, meaning V6.15.0, which leaves a"
+        " field unstated: V19.1.0 states it (corpus.RELEASE_FILLS)"
+    )
+    assert books.release_fill("TS29.061", like=_spec("3GPP TS 29.210", "6.6.0")) is None
+    assert (
+        corpus.Corpus([_entry("3GPP TS 29.061", "6.15.0")]).release_fill(
+            "TS29.061", like=citing
+        )
+        is None
+    )
+
+    monkeypatch.delitem(corpus.RELEASE_FILLS, ("TS29.210", "6.7.0", "TS29.061"))
+    assert books.release_fill("TS29.061", like=citing) is None
+
+
 def test_a_misnamed_citation_resolves_to_the_publishers_document():
     """3GPP cites the e4 document as "ETSI TS 283 034"; ETSI publishes it
     as ES 283 034, which is the title its transcription carries."""
