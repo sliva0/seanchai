@@ -1,0 +1,14 @@
+# The documents python-diameter's README claims, as of 0.9.0: its `Supported
+# diameter application commands`, one reference per line. Upstream's RFC 3588 is
+# left out, since the corpus holds RFC 6733, which replaced it.
+RFC6733
+RFC4004
+RFC4005
+RFC7155
+RFC4006
+TS32.299
+RFC4072
+TS29.219
+TS29.229
+TS29.272
+TS29.329
