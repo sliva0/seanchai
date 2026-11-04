@@ -271,6 +271,10 @@ class Library:
                 for key in node.value.keys:
                     if isinstance(key, python_ast.Name):
                         keyed[(vendor, getattr(constants, key.id))] = key.id
+                    elif isinstance(key, python_ast.Constant):
+                        # An entry keyed by its number has no constant to
+                        # reference, and the number serves as well.
+                        keyed[(vendor, key.value)] = str(key.value)
         by_name: dict[str, list[Identity]] = {}
         for identity, info in sorted(entries.items()):
             by_name.setdefault(info["name"], []).append(identity)

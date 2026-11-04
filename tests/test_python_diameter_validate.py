@@ -16,6 +16,7 @@ import pytest
 _SCRIPT = (
     Path(__file__).parent.parent / "integrations" / "python_diameter" / "validate.py"
 )
+_GENERATOR = _SCRIPT.with_name("generate.py")
 
 _FIRST = """\
 ; Specification: 3GPP TS 29.901
@@ -442,3 +443,27 @@ def test_the_claimed_list_is_in_the_corpus_and_the_real_library_loads():
         "TS29.329",
         "total",
     }
+
+
+def test_generate_reads_a_dictionary_entry_keyed_by_its_number(checkout):
+    """`2:` in the fake dictionary has no `AVP_*` constant; the generator names
+    such an entry by its number, or `Library.load` could not read the checkout."""
+    code = f"""
+        import importlib.util, sys
+        sys.path.insert(0, {str(checkout / "src")!r})
+        spec = importlib.util.spec_from_file_location("generate", {str(_GENERATOR)!r})
+        generate = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = generate
+        spec.loader.exec_module(generate)
+        library = generate.Library.load()
+        print(library.constants[(10415, 1)], library.constants[(10415, 2)])
+        """
+    result = subprocess.run(
+        [sys.executable, "-c", textwrap.dedent(code)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "AVP_TGPP_SHARED 2\n"
