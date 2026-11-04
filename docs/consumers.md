@@ -608,7 +608,11 @@ if no checked document mentions it in that command, `--enumerated-as-integer`
 accepts the `AvpInteger32` the library holds an Enumerated AVP in, and
 `--no-flags` compares no M bits. `--claimed` checks what the library's README
 claims and applies the first over exactly that set. `--grouped` also holds the
-grouped classes against the AVPs' bodies, at any depth.
+grouped classes against the AVPs' bodies, at any depth. The library's names
+follow Wireshark's dictionary on purpose, so one that is Wireshark's for the
+identity is only counted, in a closing `hidden:` line, while a dictionary is at
+hand (`--dictionary`, by default `specifications/wireshark`); `--names` reports
+them too.
 
 `generate.py` is the other direction: one module per application and
 interface, whose command classes carry that document's own members and are

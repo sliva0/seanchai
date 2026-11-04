@@ -28,6 +28,10 @@ What is checked, against each named specification:
   command reaches needs a `type_class`, whose `avp_def` is held against the
   AVP's body, at any depth.
 
+The library's AVP names follow Wireshark's dictionary on purpose, so a name
+that is Wireshark's for the identity is counted rather than reported, unless
+`--names` asks for it.
+
 Self-contained via inline script metadata — uv supplies seanchai and a
 library, and `--library` names another. A reference is the one re-used rows
 cite, with the bare number accepted as shorthand:
@@ -63,6 +67,8 @@ from seanchai.dad import ast
 _HERE = Path(__file__).parent
 # What the library's README claims, for `--claimed` with no path.
 CLAIMED = _HERE / "claimed.txt"
+# Where the downloader puts Wireshark's dictionary, for `--dictionary` not given.
+DICTIONARY = _HERE.parent.parent / "specifications" / "wireshark"
 
 # The specification's value type against the library's Avp classes that can
 # faithfully carry it. DiameterIdentity, DiameterURI and the filter rules are
@@ -116,6 +122,8 @@ class Kind(StrEnum):
 class Finding:
     kind: Kind
     text: str
+    # A name finding where the library's name is Wireshark's for the identity.
+    follows_wireshark: bool = False
 
 
 @dataclass(frozen=True)
@@ -128,6 +136,8 @@ class Options:
     enumerated_as_integer: bool = False
     flags: bool = True
     grouped: bool = False
+    # Report a name that is Wireshark's as well.
+    names: bool = False
 
 
 def command_holder(code: int, request: bool) -> Holder:
@@ -380,6 +390,16 @@ def check_message(
     return findings
 
 
+def same_name(first: str, second: str) -> bool:
+    """Whether two names differ in case and `-`/`_` at most, which the library
+    may normalise."""
+
+    def folded(name: str) -> str:
+        return name.replace("-", "").replace("_", "").casefold()
+
+    return folded(first) == folded(second)
+
+
 def check_dictionary(
     avp: model.Avp | model.Hole, dictionary, where: str, options: Options
 ) -> list[Finding]:
@@ -403,6 +423,8 @@ def check_dictionary(
                 f"{subject}: the library names it {info['name']!r},"
                 f" {f'clause {avp.section}' if avp.section else 'its table'} spells"
                 f" it {avp.name!r}",
+                follows_wireshark=avp.wireshark_name is not None
+                and same_name(info["name"], avp.wireshark_name),
             )
         )
     if info.get("vendor", 0) != avp.vendor_id:
@@ -483,6 +505,8 @@ class Report:
     commands: int
     avps: int
     findings: list[Finding]
+    # Name findings left out for following Wireshark's dictionary.
+    hidden_names: int = 0
 
 
 def check_document(
@@ -515,7 +539,8 @@ def check_document(
             dictionary = AVP_VENDOR_DICTIONARY.get(avp.vendor_id, {})
             where = f"AVP_VENDOR_DICTIONARY[{avp.vendor_id}]"
         findings += check_dictionary(avp, dictionary, where, options)
-    return Report(reference, len(messages), len(own), findings)
+    kept = [f for f in findings if options.names or not f.follows_wireshark]
+    return Report(reference, len(messages), len(own), kept, len(findings) - len(kept))
 
 
 def summary(reports: list[Report]) -> list[str]:
@@ -544,6 +569,12 @@ def summary(reports: list[Report]) -> list[str]:
         ).rstrip()
         for row in table
     ]
+
+
+def hidden_line(hidden: int) -> str:
+    """What the reports left out, for a line after the summary."""
+    names = "name" if hidden == 1 else "names"
+    return f"hidden: {hidden} {names} following Wireshark's dictionary (--names shows)"
 
 
 def reference_of(argument: str) -> str:
@@ -616,6 +647,19 @@ def parser() -> argparse.ArgumentParser:
         help="also hold the grouped classes against the AVPs' bodies",
     )
     parser.add_argument(
+        "--dictionary",
+        type=Path,
+        metavar="PATH",
+        help="a Wireshark dictionary directory, for the names the library takes"
+        " from it (default: this repository's specifications/wireshark,"
+        " when there is one)",
+    )
+    parser.add_argument(
+        "--names",
+        action="store_true",
+        help="also report a name that is Wireshark's for the identity",
+    )
+    parser.add_argument(
         "--summary-only",
         action="store_true",
         help="print the summary without the findings",
@@ -642,8 +686,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"library: {diameter.__file__}")
 
     books = corpus.Corpus.load([args.corpus or corpus.installed_directory()])
-    built = model.Model.build(books)
+    dictionary = args.dictionary
+    if dictionary is None and (DICTIONARY / "dictionary.xml").is_file():
+        dictionary = DICTIONARY
     try:
+        built = model.Model.build(books, dictionary=dictionary)
         claimed = None
         if args.claimed:
             claimed = [built.canonical(name) for name in read_claimed(args.claimed)]
@@ -674,6 +721,7 @@ def main(argv: list[str] | None = None) -> int:
         enumerated_as_integer=args.enumerated_as_integer,
         flags=not args.no_flags,
         grouped=args.grouped,
+        names=args.names,
     )
     bases = command_classes()
     reports = [check_document(built, r, bases, options) for r in references]
@@ -697,6 +745,9 @@ def main(argv: list[str] | None = None) -> int:
             f" {report.commands} commands and {report.avps}"
             f" {report.reference}-defined AVPs"
         )
+    hidden = sum(report.hidden_names for report in reports)
+    if hidden:
+        print(hidden_line(hidden))
     return 1 if any(report.findings for report in reports) else 0
 
 
