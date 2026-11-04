@@ -5,7 +5,9 @@ Two scripts over the [model](../../docs/consumers.md) for
 checks the library's merged command classes against one document at a
 time, and `generate.py` writes per-application command modules in the
 library's own shape, for the library to carry beside its merged classes.
-Both carry PEP 723 metadata, so uv supplies seanchai and the library.
+Both carry PEP 723 metadata, so uv supplies seanchai and the library. uv
+resolves the metadata's paths against the script, so either runs from any
+directory.
 
 ```sh
 uv run integrations/python_diameter/validate.py TS29.229
@@ -15,6 +17,61 @@ uv run integrations/python_diameter/generate.py --all -o out/protocols \
 uv run integrations/python_diameter/generate.py --all -o out/protocols \
     --undefined supply --supply acme.dad
 ```
+
+## Validating a checkout
+
+`validate.py` takes references (`TS29.229`, `29.229`, `RFC6733`), `--all`, or
+`--claimed`, and prints which `diameter/__init__.py` it imported first. One
+reference ends with a sentence counting its disagreements; several get a
+heading each, then a summary with a row per document, a column per kind of
+finding and a total. It exits 1 on any disagreement and 2 on a usage error.
+
+```sh
+# From a checkout of the library, against everything its README claims:
+uv run ~/seanchai/integrations/python_diameter/validate.py --library . --claimed \
+    --enumerated-as-integer --no-flags --grouped
+# One document, its extras read against the same set:
+uv run ~/seanchai/integrations/python_diameter/validate.py --library . --claimed \
+    --enumerated-as-integer --no-flags --grouped TS29.229
+```
+
+- **`--library PATH`** imports `diameter` from a checkout or its `src/`, ahead
+  of the package uv installed, refusing to go on if that is not what it
+  imported. It writes no bytecode there.
+- **`--ignore-extras`** reports an `avp_def` entry the document's ABNF does not
+  mention only if no checked document mentions it in that command and direction,
+  or in that grouped AVP. Over one document it hides nothing, and says so.
+- **`--claimed [FILE]`** checks the references a file lists, one per line, `#`
+  starting a comment, and implies `--ignore-extras` over exactly that set. With
+  no file, it reads [`claimed.txt`](claimed.txt), what the README of
+  python-diameter 0.9.0 claims. Named references narrow what is checked and
+  leave the set alone, as in the second command above.
+- **`--enumerated-as-integer`** accepts `AvpInteger32` for an Enumerated AVP.
+  The library's `AvpEnumerated` is an alias of `AvpInteger32`, whose name the
+  dictionary's entries report, so without this every Enumerated AVP disagrees.
+- **`--no-flags`** compares no M bits: neither the dictionary's defaults against
+  the AVP tables (`flag`) nor an explicit `is_mandatory` against the member's
+  reading (`override`). A default is the library's convention and is on the
+  wire, so a set M bit a table forbids can still draw a peer's
+  `DIAMETER_AVP_UNSUPPORTED`; this hides it, and does not excuse it.
+- **`--grouped`** holds each grouped class a checked command reaches against the
+  AVP's body, at any depth and once per document: its members, their
+  `is_required`, and a `type_class` where the AVP is Grouped. Without it a class
+  is checked at the top level alone, and TS 29.272's and TS 32.299's bodies are
+  most of what they say. `GenericSpec`, the library's class with no `avp_def`,
+  reports every member of the body as missing.
+- **`--corpus DIR`** reads a corpus other than the installed one, and
+  **`--summary-only`** leaves the findings out.
+
+What stays after the filters is still to be read: an `is_required` of False in
+a merged class may be right for another document (RFC 7155 requires
+`Acct-Application-Id` and RFC 6733 does not), and a member the document added
+after the release the library's docstring names is that release's truth.
+`--ignore-extras` reads only the checked documents, so an extra serving a
+document outside the set stays reported: run `--all --ignore-extras` to see
+those no document in the corpus mentions.
+
+## Generating modules
 
 `generate.py` takes references (`TS29.229`, `29.229`, `RFC6733`) or
 `--all`, `--corpus` for a corpus other than the installed one,

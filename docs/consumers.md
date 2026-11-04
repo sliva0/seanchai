@@ -584,7 +584,8 @@ uv run integrations/python_diameter/generate.py TS29.229 -o out/
 ```
 
 The scripts name `seanchai` and `seanchai-corpus` from this repository, so
-they read the committed corpus unless `--corpus` names another.
+they read the committed corpus unless `--corpus` names another. uv resolves
+those paths against the script, so a script runs from any directory.
 
 ### python-diameter
 
@@ -598,6 +599,16 @@ the library's global dictionary. An "extra AVP" may be another document's
 legitimate use of the same command class. A known hole is checked on what
 its document states, and one with no `(vendor-id, code)` is reported as
 unchecked.
+
+`--library PATH` checks a checkout instead of the package uv installs, from any
+directory. Several references, `--all` or `--claimed` report per document with a
+summary and a total. Over the whole corpus the report is mostly the library's
+design, and three options take that out: `--ignore-extras` keeps an extra only
+if no checked document mentions it in that command, `--enumerated-as-integer`
+accepts the `AvpInteger32` the library holds an Enumerated AVP in, and
+`--no-flags` compares no M bits. `--claimed` checks what the library's README
+claims and applies the first over exactly that set. `--grouped` also holds the
+grouped classes against the AVPs' bodies, at any depth.
 
 `generate.py` is the other direction: one module per application and
 interface, whose command classes carry that document's own members and are

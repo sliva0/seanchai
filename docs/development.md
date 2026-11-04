@@ -121,6 +121,9 @@ between runs; without it each run starts cold and still passes.
   modules from the corpus, imports them in a fresh interpreter against the
   real library and round-trips a Cx UAR through the library's codec. The
   library is in the dev group for that reason.
+  `tests/test_python_diameter_validate.py` runs the validator in subprocesses
+  against a fake library tree and a two-document corpus, since `--library` puts
+  another `diameter` first on the path.
 
 When you add handling for a new source-document shape, the real-source pin
 covers it; add a synthetic case only for a rejection path.
