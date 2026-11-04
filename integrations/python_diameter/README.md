@@ -60,6 +60,14 @@ uv run ~/seanchai/integrations/python_diameter/validate.py --library . --claimed
   is checked at the top level alone, and TS 29.272's and TS 32.299's bodies are
   most of what they say. `GenericSpec`, the library's class with no `avp_def`,
   reports every member of the body as missing.
+- **`--dictionary PATH`** reads Wireshark's dictionary for what the library's
+  names follow, by default `specifications/wireshark` in this repository when
+  `seanchai download --only wireshark` has put it there. A `name` finding whose
+  library name is Wireshark's for the `(vendor-id, code)`, ignoring case and
+  `-`/`_`, is then left out, does not count towards the exit status, and is
+  counted in a `hidden:` line closing the report. What stays departs from both
+  Wireshark and the document. With no dictionary every disagreement is reported.
+- **`--names`** reports the names that line counts as well.
 - **`--corpus DIR`** reads a corpus other than the installed one, and
   **`--summary-only`** leaves the findings out.
 

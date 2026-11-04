@@ -421,13 +421,204 @@ def test_a_clean_document_exits_zero(checkout, tmp_path):
     )
 
 
+_RENAMED = """\
+; Specification: 3GPP TS 29.904
+; Version: 19.0.0
+; Vendor-ID: 10415
+
+
+; Type: AVP Table
+; Section: 8.3
+; Columns: Name         Code  Type         Must  May  S.not  M.not
+           Doc-Shared   1     OctetString  V     -    -      M
+           Doc-Beta     4     OctetString  V     -    -      M
+           Doc-Inner    5     Unsigned32   V     -    -      M
+           Doc-Alpha    2     Enumerated   V     -    -      M
+"""
+
+# Wireshark takes the library's name for Shared, the library's with other case
+# and separators for Inner, neither's for Beta, and has no entry for Alpha.
+_WIRESHARK = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary>
+  <base>
+    <vendor vendor-id="TGPP" code="10415" name="3GPP"/>
+  </base>
+  <application id="16777000" name="Example">
+    <avp name="Shared" code="1" vendor-id="TGPP">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="Wireshark-Beta" code="4" vendor-id="TGPP">
+      <type type-name="OctetString"/>
+    </avp>
+    <avp name="IN_NER" code="5" vendor-id="TGPP">
+      <type type-name="Unsigned32"/>
+    </avp>
+  </application>
+</dictionary>
+"""
+
+_NAME_SHARED = "Doc-Shared (code 1): the library names it 'Shared'"
+_NAME_INNER = "Doc-Inner (code 5): the library names it 'Inner'"
+_NAME_BETA = "Doc-Beta (code 4): the library names it 'Beta'"
+_NAME_ALPHA = "Doc-Alpha (code 2): the library names it 'Alpha'"
+
+
+@pytest.fixture
+def renamed(checkout, tmp_path):
+    """The document's own spellings throughout, leaving only name findings; the
+    script runs from a copy so its default dictionary is whatever the test put
+    beside it."""
+    root = tmp_path / "repository"
+    script = root / "integrations" / "python_diameter" / "validate.py"
+    script.parent.mkdir(parents=True)
+    script.write_text(_SCRIPT.read_text(encoding="utf-8"), encoding="utf-8")
+    _write(tmp_path / "corpus", {"renamed.dad": _RENAMED})
+    _write(tmp_path / "wireshark", {"dictionary.xml": _WIRESHARK})
+
+    def run(*arguments):
+        return subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--library",
+                str(checkout),
+                "--corpus",
+                str(tmp_path / "corpus"),
+                "--enumerated-as-integer",
+                "--no-flags",
+                *map(str, arguments),
+                "TS29.904",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    return run
+
+
+def test_a_name_that_is_wiresharks_is_counted_not_reported(renamed, tmp_path):
+    result = renamed("--dictionary", tmp_path / "wireshark")
+
+    assert result.returncode == 1, result.stderr
+    assert _NAME_SHARED not in result.stdout
+    assert _NAME_INNER not in result.stdout
+    assert _NAME_BETA in result.stdout
+    assert _NAME_ALPHA in result.stdout
+    assert result.stdout.endswith(
+        "\n2 disagreements across 0 commands and 4 TS29.904-defined AVPs\n"
+        "hidden: 2 names following Wireshark's dictionary (--names shows)\n"
+    )
+
+
+def test_names_reports_them_all(renamed, tmp_path):
+    result = renamed("--dictionary", tmp_path / "wireshark", "--names")
+
+    for line in (_NAME_SHARED, _NAME_INNER, _NAME_BETA, _NAME_ALPHA):
+        assert line in result.stdout
+    assert "\n4 disagreements across" in result.stdout
+    assert "hidden:" not in result.stdout
+
+
+def test_without_a_dictionary_every_name_is_reported(renamed):
+    result = renamed()
+
+    for line in (_NAME_SHARED, _NAME_INNER, _NAME_BETA, _NAME_ALPHA):
+        assert line in result.stdout
+    assert "hidden:" not in result.stdout
+
+
+def test_the_dictionary_defaults_to_the_repositorys_specifications(renamed, tmp_path):
+    default = tmp_path / "repository" / "specifications" / "wireshark"
+    _write(default, {"dictionary.xml": _WIRESHARK})
+
+    result = renamed()
+
+    assert _NAME_SHARED not in result.stdout
+    assert "hidden: 2 names" in result.stdout
+
+
+def test_an_empty_default_dictionary_directory_is_no_dictionary(renamed, tmp_path):
+    (tmp_path / "repository" / "specifications" / "wireshark").mkdir(parents=True)
+
+    result = renamed()
+
+    assert result.returncode == 1, result.stderr
+    assert _NAME_SHARED in result.stdout
+
+
+def test_a_dictionary_named_but_unreadable_is_an_error(renamed, tmp_path):
+    result = renamed("--dictionary", tmp_path / "absent")
+
+    assert result.returncode == 2
+    assert "cannot read the dictionary" in result.stderr
+
+
+def test_only_hidden_names_exit_zero(checkout, tmp_path):
+    _write(
+        tmp_path / "corpus",
+        {
+            "only.dad": """\
+            ; Specification: 3GPP TS 29.905
+            ; Version: 19.0.0
+            ; Vendor-ID: 10415
+
+
+            ; Type: AVP Table
+            ; Section: 9.3
+            ; Columns: Name        Code  Type         Must  May  S.not  M.not
+                       Doc-Shared  1     OctetString  V     -    -      M
+            """
+        },
+    )
+    _write(tmp_path / "wireshark", {"dictionary.xml": _WIRESHARK})
+
+    result = _validate(
+        "--library",
+        checkout,
+        "--corpus",
+        tmp_path / "corpus",
+        "--dictionary",
+        tmp_path / "wireshark",
+        "TS29.905",
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "\n0 disagreements across" in result.stdout
+    assert result.stdout.endswith(
+        "hidden: 1 name following Wireshark's dictionary (--names shows)\n"
+    )
+
+
+def test_the_hidden_line_closes_a_summary_too(checkout, tmp_path):
+    _write(tmp_path / "corpus", {"renamed.dad": _RENAMED, "first.dad": _FIRST})
+    _write(tmp_path / "wireshark", {"dictionary.xml": _WIRESHARK})
+
+    result = _validate(
+        "--library",
+        checkout,
+        "--corpus",
+        tmp_path / "corpus",
+        "--dictionary",
+        tmp_path / "wireshark",
+        "--summary-only",
+        "--all",
+    )
+
+    lines = result.stdout.splitlines()
+    assert lines[-2].startswith("total")
+    assert lines[-1].startswith("hidden: 2 names")
+
+
 def test_the_claimed_list_is_in_the_corpus_and_the_real_library_loads():
     """`claimed.txt` is what README.md beside the script says, every line of it
     a document the corpus holds, against the library uv would install."""
     result = _validate("--claimed", "--summary-only", "--grouped")
 
     assert result.returncode == 1, result.stderr
-    rows = {line.split()[0] for line in result.stdout.splitlines()[2:]}
+    lines = result.stdout.splitlines()[2:]
+    rows = {line.split()[0] for line in lines if not line.startswith("hidden:")}
     assert rows == {
         "reference",
         "RFC6733",
