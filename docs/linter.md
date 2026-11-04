@@ -134,8 +134,9 @@ cites.
 - `origin-not-in-corpus`: one note per file listing the origins the corpus
   could not supply.
 - `cross-release-origin`: an origin resolved outside the citing file's
-  release ([below](#resolving-an-origin)), one note per cited document,
-  naming the rule and the evidence.
+  release ([below](#resolving-an-origin)), or a field a later release's copy
+  states for one resolved inside it, one note per cited document, naming the
+  rule, the fields and the evidence.
 - `external-origin-not-in-corpus`: the same for origins outside 3GPP and
   IETF, apart because no download closes the gap.
 - `unresolved-reference`: every AVP referenced in a message or grouped body
@@ -222,7 +223,9 @@ document that ended before the citing release resolves to its final
 version; and an older copy whose release's last version the corpus lacks
 resolves to a later release's copy only where `corpus.RELEASE_STAND_INS`
 states the evidence that both define alike what the citing copy re-uses.
-Each such resolution is a `cross-release-origin` note.
+Each such resolution is a `cross-release-origin` note, and so is each
+`corpus.RELEASE_FILLS` entry, where the citation's own copy answers and a later
+release's copy states named fields it leaves unstated for named AVPs.
 
 RFCs resolve to whatever the corpus holds, and so does a document outside
 3GPP and IETF, whose versions are its publisher's. A 3GPP2 revision letter
@@ -275,8 +278,9 @@ What still reports, and why each stays:
   answered by Release 19 copies standing in; ES 283 034, ES 283 035 and ES 283
   026 cite TS 29.209's final version; TS 183 017 and oneM2M TS-0004 name
   releases; TS 29.212 names 3GPP2 X.S0057-B, for which revision 0 stands in; TS
-  183 033 names TS 29.229 V6.6.0, for which V19.1.0 stands in; and ES 283 035's
-  TS 29.329 is the latest edition, as its clause 2.1 says.
+  183 033 names TS 29.229 V6.6.0, for which V19.1.0 stands in; ES 283 035's
+  TS 29.329 is the latest edition, as its clause 2.1 says; and TS 29.210's TS
+  29.061 is V6.15.0, whose two untyped AVPs V19.1.0 types.
 - **`origin-not-in-corpus`.** The older copies held for those citations
   cite in turn what the corpus holds at Release 19 only, and nothing
   stands in for them: TS 29.212 V11.19.0's `Trace-Data` has a body Release

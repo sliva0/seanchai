@@ -120,23 +120,25 @@
 ; Section: 5.2
 ; Table: 5.2
 ; Page: 11
-; Columns: Name                 Code   Section   Type           Must   May   S.not   M.not   Encrypt
-Bearer-Usage                    1000   5.2.1     Enumerated     M,V    P     -       -       Yes
-Charging-Rule-Install           1001   5.2.2     Grouped        M,V    P     -       -       Yes
-Charging-Rule-Remove            1002   5.2.3     Grouped        M,V    P     -       -       Yes
-Charging-Rule-Definition        1003   5.2.4     Grouped        M,V    P     -       -       Yes
-Charging-Rule-Base-Name         1004   5.2.5     UTF8String     M,V    P     -       -       Yes
-Charging-Rule-Name              1005   5.2.6     OctetString    M,V    P     -       -       Yes
-Event-Trigger                   1006   5.2.7     Enumerated     M,V    P     -       -       Yes
-Metering-Method                 1007   5.2.8     Enumerated     M,V    P     -       -       Yes
-Offline                         1008   5.2.9     Enumerated     M,V    P     -       -       Yes
-Online                          1009   5.2.10    Enumerated     M,V    P     -       -       Yes
-Precedence                      1010   5.2.11    Unsigned32     M,V    P     -       -       Yes
-Reporting-Level                 1011   5.2.15    Enumerated     M,V    P     -       -       Yes
-PDP-Session-Operation           1015   5.2.21    Enumerated     M,V    P     -       -       Yes
-TFT-Filter                      1012   5.2.18    IPFilterRule   M,V    P     -       -       Yes
-TFT-Packet-Filter-Information   1013   5.2.19    Grouped        M,V    P     -       -       Yes
-ToS-Traffic-Class               1014   5.2.20    OctetString    M,V    P     -       -       Yes
+; Columns: Name                    Code   Section   Type           Must   May   S.not   M.not   Encrypt
+Bearer-Usage                       1000   5.2.1     Enumerated     M,V    P     -       -       Yes
+Charging-Rule-Install              1001   5.2.2     Grouped        M,V    P     -       -       Yes
+Charging-Rule-Remove               1002   5.2.3     Grouped        M,V    P     -       -       Yes
+Charging-Rule-Definition           1003   5.2.4     Grouped        M,V    P     -       -       Yes
+Charging-Rule-Base-Name            1004   5.2.5     UTF8String     M,V    P     -       -       Yes
+Charging-Rule-Name                 1005   5.2.6     OctetString    M,V    P     -       -       Yes
+Event-Trigger                      1006   5.2.7     Enumerated     M,V    P     -       -       Yes
+Metering-Method                    1007   5.2.8     Enumerated     M,V    P     -       -       Yes
+Offline                            1008   5.2.9     Enumerated     M,V    P     -       -       Yes
+Online                             1009   5.2.10    Enumerated     M,V    P     -       -       Yes
+Precedence                         1010   5.2.11    Unsigned32     M,V    P     -       -       Yes
+Reporting-Level                    1011   5.2.15    Enumerated     M,V    P     -       -       Yes
+PDP-Session-Operation              1015   5.2.21    Enumerated     M,V    P     -       -       Yes
+TFT-Filter                         1012   5.2.18    IPFilterRule   M,V    P     -       -       Yes
+TFT-Packet-Filter-Information      1013   5.2.19    Grouped        M,V    P     -       -       Yes
+ToS-Traffic-Class                  1014   5.2.20    OctetString    M,V    P     -       -       Yes
+3GPP-GPRS-Negotiated-QoS-Profile   5      5.3       -              M,V    P     -       -       - ;; inserted: (TS29.210.py#3gpp-gprs-negotiated-qos-profile-flags)
+3GPP-SGSN-MCC-MNC                  18     5.3       -              M,V    P     -       -       - ;; inserted: (TS29.210.py#3gpp-sgsn-mcc-mnc-flags)
 
 
 ; Type: Reused AVPs

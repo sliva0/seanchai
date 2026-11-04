@@ -87,30 +87,6 @@ reason = """
     """
 
 [[hole]]
-document = "TS29.061 V6.15.0"
-name = "3GPP-GPRS-Negotiated-QoS-Profile"
-missing = ["data_type", "flag_rules"]
-reason = """
-    TS 29.210 V6.7.0 table 5.3 re-uses it from Release 6's TS 29.061, whose last
-    version, V6.15.0, numbers it RADIUS sub-attribute 5 in clause 16.4.7, with
-    no Diameter type or flags, and tabulates it nowhere: table 10, its only AVP
-    table, is Gmb's (TS29.061.py#3gpp-gprs-negotiated-qos-profile-row). Release
-    18's table 9a types it, a release later than the citation means
-    """
-
-[[hole]]
-document = "TS29.061 V6.15.0"
-name = "3GPP-SGSN-MCC-MNC"
-missing = ["data_type", "flag_rules"]
-reason = """
-    TS 29.210 V6.7.0 table 5.3 re-uses it from Release 6's TS 29.061, whose last
-    version, V6.15.0, numbers it RADIUS sub-attribute 18 in clause 16.4.7, with
-    no Diameter type or flags, and tabulates it nowhere: table 10, its only AVP
-    table, is Gmb's (TS29.061.py#3gpp-sgsn-mcc-mnc-row). Release 19's table 9a
-    types it, a release later than the citation means
-    """
-
-[[hole]]
 document = "TS29.154"
 name = "External-Group-Identifier"
 missing = ["undefined"]

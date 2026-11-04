@@ -40,7 +40,8 @@ and the policy is deliberately small:
   release, the version a specific reference names, or the final version of
   a document that ended before the citing release, or a 3GPP2 revision or
   later release's copy a table entry lets stand in for the one cited
-  (`corpus.STAND_INS`, `corpus.RELEASE_STAND_INS`). An AVP
+  (`corpus.STAND_INS`, `corpus.RELEASE_STAND_INS`), or state a named field of
+  it (`corpus.RELEASE_FILLS`). An AVP
   reached outside the citing document's release, or revision, says so in
   `across_releases`; an older
   copy answers only through such a citation, never a reference-level query.
@@ -2414,6 +2415,9 @@ class Model:
             yield draft if own_flags else replace(draft, flag_rules=None)
         if theirs is not None and (found := self._resolve(theirs, name, stack)):
             yield found if across is None else replace(found, across=across)
+            assert origin is not None
+            if (later := self._later_release(view, origin, name, stack)) is not None:
+                yield later
         if rows is not None and definition is None:
             draft = self._from_row(view, name, rows[0], unread)
             yield draft if own_flags else replace(draft, flag_rules=None)
@@ -2435,6 +2439,34 @@ class Model:
                 section=block.source.section,
                 undefined=self._undefined_of(view, block),
             )
+
+    def _later_release(
+        self, view: _View, origin: str, name: str, stack: tuple
+    ) -> _Draft | None:
+        """What a later release's copy states of `name` for a citation of
+        `origin` whose own copy leaves it unstated, by a `corpus.RELEASE_FILLS`
+        entry: the entry's fields and no other, each naming that copy in
+        `completed_by`. Its code still has to agree (`_Draft.fill`), and its
+        vendor is the citation's copy's to state. TS 29.210's
+        `3GPP-SGSN-MCC-MNC` takes its type from TS 29.061 V19.1.0 and not the
+        flags, whose M Release 19's table 9a puts in Must not."""
+        found = self._books.release_fill(origin, like=view.entry.spec)
+        if found is None or name not in found[1].names:
+            return None
+        entry, fill, crossing = found
+        later = self._resolve(self._copies[entry.path], name, stack)
+        if later is None:
+            return None
+        stating = f"{later.reference} V{entry.spec.version}"
+        return replace(
+            later,
+            vendor_stated=False,
+            data_type=later.data_type if DATA_TYPE in fill.fields else None,
+            flag_rules=later.flag_rules if FLAG_RULES in fill.fields else None,
+            across=crossing,
+            completed_by=tuple((each, stating) for each in fill.fields),
+            read_through=None,
+        )
 
     def _cited(
         self, view: _View, reference: str

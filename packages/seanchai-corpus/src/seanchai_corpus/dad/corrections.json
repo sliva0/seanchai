@@ -608,6 +608,14 @@
   },
   "29210-670": {
    "edits": {
+    "TS29.210.py#3gpp-gprs-negotiated-qos-profile-flags": {
+     "kind": "insert",
+     "reason": "clause 5.3 has a re-used 3GPP Radius VSA translated as RFC 4005 [12] describes, except that the M flag 'shall be set' and the P flag 'may be set'; RFC 4005 clause 9.6.2 gives V=1, and table 5.3 lists 3GPP-GPRS-Negotiated-QoS-Profile, which TS 29.061 V6.15.0 clause 16.4.7 numbers 5 among the VSAs and tabulates nowhere. The row states those flags and clause 16.4.7's code"
+    },
+    "TS29.210.py#3gpp-sgsn-mcc-mnc-flags": {
+     "kind": "insert",
+     "reason": "clause 5.3 has a re-used 3GPP Radius VSA translated as RFC 4005 [12] describes, except that the M flag 'shall be set' and the P flag 'may be set'; RFC 4005 clause 9.6.2 gives V=1, and table 5.3 lists 3GPP-SGSN-MCC-MNC, which TS 29.061 V6.15.0 clause 16.4.7 numbers 18 among the VSAs and tabulates nowhere. The row states those flags and clause 16.4.7's code"
+    },
     "TS29.210.py#applies-to-gx": {
      "kind": "correction",
      "reason": "clause 6.1 states 16777224 for 'the Gx Application' and says it 'shall be included in the Auth-Application-Id AVP for the CCR, CCA and RAR commands' it prints in 6.1.1-6.1.4; clause 6.2 states another id for the Gx over Gy Application"

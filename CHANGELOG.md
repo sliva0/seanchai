@@ -8,6 +8,13 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- `corpus.RELEASE_FILLS` lets a later release's copy state named fields of named
+  AVPs for a citation whose own copy leaves them unstated, reporting
+  `corpus.LATER_RELEASE` in `across_releases`, the copy in `completed_by` and a
+  `cross-release-origin` note with the evidence. TS 29.210's
+  `3GPP-GPRS-Negotiated-QoS-Profile` and `3GPP-SGSN-MCC-MNC` take their type from
+  TS 29.061 V19.1.0's table 9a and their flags from TS 29.210 clause 5.3, so both
+  stop being holes; TS 29.061 V6.15.0 stays pinned for everything else.
 - `; VOID = N` and `; VOID = N-M` are enumerated body lines (`ast.VoidValues`,
   kind `void`): a value the document assigned and withdrew, which no dictionary
   may assign. The docx extractor reads a `Void` label as one, so TS 29.214's

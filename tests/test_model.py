@@ -1816,6 +1816,7 @@ def test_citations_across_releases_resolve_and_say_by_which_rule():
         ("ETSI-TS183.017", "TS29.214"),
         ("TS29.140", "TS29.061"),
         ("TS29.140", "TS29.329"),
+        ("TS29.210", "TS29.061"),
         ("TS29.210", "TS29.229"),
         ("TS29.212", "3GPP2-X.S0057"),
         ("TS29.234", "TS29.229"),
@@ -1887,6 +1888,57 @@ def test_the_retired_documents_read_their_releases_re_uses():
     assert item.across_releases == corpus.CrossRelease(
         "TS29.234", "TS29.229", "19.1.0", corpus.STAND_IN, meant="11.5.0"
     )
+
+
+@pytest.mark.parametrize(
+    ("name", "code"),
+    [("3GPP-GPRS-Negotiated-QoS-Profile", 5), ("3GPP-SGSN-MCC-MNC", 18)],
+)
+def test_a_later_release_types_what_the_citations_version_leaves_untyped(name, code):
+    """TS 29.061 V6.15.0 numbers these among its RADIUS sub-attributes and
+    tabulates neither. Through TS 29.210 the code, vendor and clause stay
+    V6.15.0's, the flags are TS 29.210 clause 5.3's, and only the type is table
+    9a's of V19.1.0, whose M in Must not is no part of the reading. V6.15.0's own
+    reading and Release 19's are unchanged."""
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
+
+    avp = built.resolve("TS29.210", name)
+    assert avp is not None
+    assert avp.identity == (10415, code)
+    assert avp.data_type is ast.DataType.UTF8_STRING
+    assert avp.flag_rules == model.FlagRules(
+        must=frozenset({ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR}),
+        may=frozenset({ast.AvpFlag.PROTECTED}),
+    )
+    assert (avp.defined_in, avp.section) == ("TS29.061", "16.4.7")
+    assert avp.read_through == "TS29.210"
+    assert dict(avp.completed_by) == {
+        "data_type": "TS29.061 V19.1.0",
+        "flag_rules": "TS29.210",
+    }
+    assert avp.across_releases == corpus.CrossRelease(
+        "TS29.210", "TS29.061", "19.1.0", corpus.LATER_RELEASE, meant="6.15.0"
+    )
+    assert avp in built.across_releases("TS29.210")
+
+    older = built.hole("TS29.061", name, version="6.15.0")
+    assert older is not None and older.missing == ("data_type", "flag_rules")
+    assert older not in built.holes()
+    current = built.resolve("TS29.061", name)
+    assert current is not None and current.across_releases is None
+    assert ast.AvpFlag.MANDATORY in current.flag_rules.must_not
+
+
+def test_a_later_release_fills_nothing_without_its_table_entry(monkeypatch):
+    """Without its `RELEASE_FILLS` entry the name is the hole V6.15.0 leaves it,
+    short of the type alone now TS 29.210's clause 5.3 states the flags."""
+    monkeypatch.delitem(corpus.RELEASE_FILLS, ("TS29.210", "6.7.0", "TS29.061"))
+    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]), strict=False)
+
+    assert built.resolve("TS29.210", "3GPP-SGSN-MCC-MNC") is None
+    hole = built.hole("TS29.210", "3GPP-SGSN-MCC-MNC")
+    assert hole is not None
+    assert (hole.document, hole.missing) == ("TS29.061 V6.15.0", ("data_type",))
 
 
 def test_ts_32_299s_m2m_information_resolves_to_onem2m_ts_0004():
@@ -1994,8 +2046,6 @@ _FIELD_HOLES = {
     ("ETSI-TS183.020", "Privacy-Indicator"),
     ("RFC6736", "Egress-VLANID"),
     ("TS29.061", "3GPP-Session-Stop-Indicator"),
-    ("TS29.061 V6.15.0", "3GPP-GPRS-Negotiated-QoS-Profile"),
-    ("TS29.061 V6.15.0", "3GPP-SGSN-MCC-MNC"),
     ("TS29.229", "Wildcarded-IMPU"),
     ("TS29.234", "Charging-Characteristics"),
 }

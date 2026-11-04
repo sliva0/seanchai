@@ -45,7 +45,9 @@ CORRECTIONS = [
 # TS 29.210 V6.7.0 table 5.3 re-uses these two from here, meaning Release 6's
 # last version (its clause 2 [11] is non-specific). V6.15.0 tabulates neither:
 # table 10, its only AVP table, is Gmb's, and clause 16.4.7 lists them as RADIUS
-# sub-attributes, by number and with no Diameter type or flag rule.
+# sub-attributes, by number and with no Diameter type or flag rule. So through TS
+# 29.210 the flags are its own clause 5.3's (TS29.210.py) and the type table 9a's
+# of a later release (corpus.RELEASE_FILLS); this copy's own reading stays short.
 CORRECTIONS += [
     Insert(
         id=f"{name.lower()}-row",

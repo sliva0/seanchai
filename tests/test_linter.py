@@ -1472,6 +1472,38 @@ def test_a_later_release_standing_in_is_a_note_with_its_evidence():
     assert "origin-not-in-corpus" not in _rules(findings)
 
 
+def test_a_later_release_stating_a_field_is_a_note_with_its_evidence():
+    """TS 29.210 V6.7.0's TS 29.061 is V6.15.0, in its own release, so that
+    resolution is no crossing; the type V19.1.0 states by its
+    `corpus.RELEASE_FILLS` entry is, and the note names the fields and AVPs."""
+    spec = _spec(
+        _reused(ast.ReusedAvpRow(name="3GPP-SGSN-MCC-MNC", origin="TS29.061")),
+        specification="3GPP TS 29.210",
+        version="6.7.0",
+    )
+    origins = [
+        _origin_spec(
+            "3GPP TS 29.061",
+            version,
+            _table(_row("3GPP-SGSN-MCC-MNC", 18, ast.DataType.UTF8_STRING)),
+        )
+        for version in ("6.15.0", "19.1.0")
+    ]
+
+    findings = linter.lint_with_corpus(spec, _books(*origins))
+
+    (crossing,) = [f for f in findings if f.rule == "cross-release-origin"]
+    assert crossing.message == (
+        "TS29.061 is resolved across releases to 1.dad for data_type of"
+        " 3GPP-GPRS-Negotiated-QoS-Profile, 3GPP-SGSN-MCC-MNC: 3GPP TS 29.210"
+        " V6.7.0 is the citing file, and it cites the document non-specifically,"
+        " meaning V6.15.0, which answers for all else and leaves those unstated,"
+        " and V19.1.0 states them: "
+        + corpus.RELEASE_FILLS["TS29.210", "6.7.0", "TS29.061"].evidence
+        + " (corpus.RELEASE_FILLS)"
+    )
+
+
 def test_an_unresolvable_origin_is_one_note_and_keeps_the_single_file_answer():
     """A partial corpus must stay useful: the rules that needed the missing
     document are skipped, and the single-file note it would have superseded
@@ -2257,8 +2289,9 @@ _STANDING_CORPUS_NOTES = {
     # TS 29.210 V6.7.0 and TS 29.234 V11.2.0, held for TS 29.230's rows, cite
     # TS 29.229 in their releases; V18.1.0 stands in for both. TS 29.234's
     # clause 10.1.4 prints SIP-Auth-Data-Item's body with three members more and
-    # five fewer than TS 29.229's.
-    "29210-670.dad": {"cross-release-origin": ["TS29.229"]},
+    # five fewer than TS 29.229's. TS 29.210's TS 29.061 is the pinned V6.15.0,
+    # V19.1.0 typing the two AVPs it leaves untyped (corpus.RELEASE_FILLS).
+    "29210-670.dad": {"cross-release-origin": ["TS29.061", "TS29.229"]},
     "29234-b20.dad": {
         "cross-release-origin": ["TS29.229"],
         "reused-body-differs": ["SIP-Auth-Data-Item"],
