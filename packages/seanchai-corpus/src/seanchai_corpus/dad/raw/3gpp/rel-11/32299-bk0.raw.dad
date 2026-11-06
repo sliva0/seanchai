@@ -1052,9 +1052,18 @@ CSG-Access-Mode ::= < Enumerated AVP header: 2317 10415 >
         "Hybrid Mode" = 1
 
 
+; Type: Enumerated AVP
+; Name: CSG-Membership-Indication
+; Section: 7.2.46B
+; Page: 106
+CSG-Membership-Indication ::= < Enumerated AVP header: 2318 10415 >
+        "Not CSG member" = 0
+        "CSG Member"     = 1
+
+
 ; Type: Grouped AVP
 ; Name: Current-Tariff
-; Section: 7.2.46B
+; Section: 7.2.47
 ; Page: 106
 Current-Tariff ::= < AVP header: 2056 >
         [ Currency-Code ]
@@ -1707,6 +1716,18 @@ PoC-Change-Condition ::= < Enumerated AVP header: 1261 10415 >
         tariffTime                 = 5
 
 
+; Type: Enumerated AVP
+; Name: PoC-Event-Type
+; Section: 7.2.142
+; Page: 127
+PoC-Event-Type ::= < Enumerated AVP header: 2025 10415 >
+        Normal                            = 0
+        "Instant Ppersonal Aalert event"  = 1
+        "PoC Group Advertisement event"   = 2
+        "Early Ssession Setting-up event" = 3
+        "PoC Talk Burst"                  = 4
+
+
 ; Type: Grouped AVP
 ; Name: PoC-Information
 ; Section: 7.2.144
@@ -2197,6 +2218,15 @@ Supplementary-Service ::= < AVP header: 2048 >
         [ Participant-Action-Type ]
         [ CUG-Information ]
         [ AoC-Information ]
+
+
+; Type: Enumerated AVP
+; Name: TAD-Identifier
+; Section: 7.2.219A
+; Page: 143
+TAD-Identifier ::= < Enumerated AVP header: 2717 10415 >
+        CS = 0
+        PS = 1
 
 
 ; Type: Grouped AVP

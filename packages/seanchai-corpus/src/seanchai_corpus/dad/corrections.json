@@ -3249,6 +3249,14 @@
      "kind": "supply",
      "reason": "table 7.2 types Service-Generic-Information 'refer [223]', OMA-DDS-Charging_Data, and leaves its flag cells blank; clause 7.2.191 types it Grouped and prints no body, as V19.0.0's does; OMA's V1.0 table 11 (clause 8.4) gives code 1256 flags Must V,M and May P, and its clause 8.5.10 prints the body"
     },
+    "TS32.299.py#rel11-poc-event-type-1-label": {
+     "kind": "correction",
+     "reason": "clause 7.2.142 labels PoC-Event-Type's value 1 'Instant Ppersonal Aalert event', doubling the initials of 'Personal' and 'Alert'; the label is 'Instant Personal Alert event'"
+    },
+    "TS32.299.py#rel11-poc-event-type-3-label": {
+     "kind": "correction",
+     "reason": "clause 7.2.142 labels PoC-Event-Type's value 3 'Early Ssession Setting-up event', doubling the initial of 'Session'; the label is 'Early Session Setting-up event'"
+    },
     "TS32.299.py#rel11-rar-repeats-avp-max": {
      "kind": "correction",
      "reason": "clause 6.4.1.1 uses RAR 'according to' RFC 3588 [401], whose successor RFC 6733 clause 8.3.1 prints '* [ AVP ]', as V19.0.0 clause 6.4.4 does; table 6.4.4's category column has no way to say so"
@@ -3323,7 +3331,7 @@
     },
     "TS32.299.py#rel11-vendor-current-tariff": {
      "kind": "correction",
-     "reason": "clause 7.2 gives the 3GPP charging AVPs vendor 10415; the grouped header of clause 7.2.46B prints only the code"
+     "reason": "clause 7.2 gives the 3GPP charging AVPs vendor 10415; the grouped header of clause 7.2.47 prints only the code"
     },
     "TS32.299.py#rel11-vendor-destination-interface": {
      "kind": "correction",
@@ -3547,7 +3555,16 @@
     }
    },
    "reference": "TS32.299",
-   "renames": [],
+   "renames": [
+    {
+     "expect": "Instant Ppersonal Aalert event",
+     "replace": "Instant Personal Alert event"
+    },
+    {
+     "expect": "Early Ssession Setting-up event",
+     "replace": "Early Session Setting-up event"
+    }
+   ],
    "version": "11.20.0"
   },
   "32299-j00": {

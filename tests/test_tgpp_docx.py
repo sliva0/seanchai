@@ -2167,6 +2167,51 @@ def test_ts_32_299_release_11_reads_its_own_template():
     ]
 
 
+def test_ts_32_299_release_11_reads_its_spaced_headings():
+    """V11.20.0 heads clauses 7.2.47, 7.2.54, 7.2.142 and 7.2.219A with a space
+    before the tab; read, each clause's values are its own, PoC-Event-Type's two
+    doubled labels as printed in the raw file and corrected in the other."""
+    from seanchai.dad import parser
+
+    def enumerated(path):
+        spec = parser.parse(path.read_text(encoding="utf-8"))
+        return {
+            section.name: section
+            for section in spec.sections
+            if isinstance(section, ast.EnumeratedAvp | ast.GroupedAvp)
+        }
+
+    raw = enumerated(_RELEASE_11_TS_32_299)
+    corrected = enumerated(_CORPUS_DIR / "3gpp/rel-11/32299-bk0.dad")
+
+    def values(blocks, name):
+        return [
+            (value.name, value.value)
+            for value in blocks[name].values
+            if isinstance(value, ast.EnumValue)
+        ]
+
+    poc = [
+        ("Normal", 0),
+        ("Instant Ppersonal Aalert event", 1),
+        ("PoC Group Advertisement event", 2),
+        ("Early Ssession Setting-up event", 3),
+        ("PoC Talk Burst", 4),
+    ]
+    assert raw["PoC-Event-Type"].source.section == "7.2.142"
+    assert values(raw, "PoC-Event-Type") == poc
+    poc[1] = ("Instant Personal Alert event", 1)
+    poc[3] = ("Early Session Setting-up event", 3)
+    assert values(corrected, "PoC-Event-Type") == poc
+    for blocks in (raw, corrected):
+        assert values(blocks, "TAD-Identifier") == [("CS", 0), ("PS", 1)]
+        assert values(blocks, "CSG-Membership-Indication") == [
+            ("Not CSG member", 0),
+            ("CSG Member", 1),
+        ]
+        assert blocks["Current-Tariff"].source.section == "7.2.47"
+
+
 def _value_tables_docx(tmp_path, base, build):
     path = tmp_path / "values.docx"
     document = docx.Document(base)

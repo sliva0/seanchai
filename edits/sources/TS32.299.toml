@@ -548,6 +548,19 @@ first_version = "11.20.0"
 last_version = "11.20.0"
 
 [[quirk]]
+name = "spaced-heading-numbers"
+reason = """
+    the headings of clauses 7.2.47 (Current-Tariff AVP), 7.2.54 (Diagnostics
+    AVP), 7.2.142 (PoC-Event-Type AVP) and 7.2.219A (TAD-Identifier AVP) print
+    a space before the tab; unread, each clause reads as the one before it,
+    Current-Tariff's body taking 7.2.46B's place of CSG-Membership-Indication's
+    values, and PoC-Event-Type's and TAD-Identifier's values are in no
+    enumerated clause
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[quirk]]
 name = "dotted-flags"
 reason = """
     Table 7.2 writes some flag cells 'V.M' with a period for the comma
@@ -690,12 +703,10 @@ last_version = "11.20.0"
 find = "0 Normal;"
 replace = "0 Normal"
 exact = true
-count = 2
+section = "7.2.142"
 reason = """
-    clauses 7.2.142 (PoC-Event-Type) and 7.2.241 (User-Participating-Type) end
-    their value lines with list semicolons the labels do not carry; the PDF
-    bookmarks place no section at 7.2.142's heading, so the patch is not scoped
-    to it
+    clause 7.2.142 ends PoC-Event-Type's value lines with list semicolons the
+    labels do not carry
     """
 first_version = "11.20.0"
 last_version = "11.20.0"
@@ -704,10 +715,11 @@ last_version = "11.20.0"
 find = "1 Instant Ppersonal Aalert event;"
 replace = "1 Instant Ppersonal Aalert event"
 exact = true
+section = "7.2.142"
 reason = """
     PoC-Event-Type's value 1 (clause 7.2.142) ends in a semicolon, list
-    punctuation and no part of the label; its doubled initials are the
-    document's
+    punctuation and no part of the label. Its doubled initials are the
+    document's, corrected in TS32.299.py
     """
 first_version = "11.20.0"
 last_version = "11.20.0"
@@ -716,6 +728,7 @@ last_version = "11.20.0"
 find = "2 PoC Group Advertisement event;"
 replace = "2 PoC Group Advertisement event"
 exact = true
+section = "7.2.142"
 reason = """
     clause 7.2.142 ends PoC-Event-Type's value lines with list semicolons the
     labels do not carry
@@ -727,10 +740,23 @@ last_version = "11.20.0"
 find = "3 Early Ssession Setting-up event;"
 replace = "3 Early Ssession Setting-up event"
 exact = true
+section = "7.2.142"
 reason = """
     PoC-Event-Type's value 3 (clause 7.2.142) ends in a semicolon, list
-    punctuation and no part of the label; its doubled initial is the
-    document's
+    punctuation and no part of the label. Its doubled initial is the
+    document's, corrected in TS32.299.py
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "0 Normal;"
+replace = "0 Normal"
+exact = true
+section = "7.2.241"
+reason = """
+    clause 7.2.241 ends User-Participating-Type's value lines with ';' or '.',
+    list punctuation the labels do not carry
     """
 first_version = "11.20.0"
 last_version = "11.20.0"

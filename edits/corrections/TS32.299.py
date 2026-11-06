@@ -691,7 +691,7 @@ _VENDORLESS_REL11 = [
     ("AoC-Service", "7.2.17"),
     ("AoC-Subscription-Information", "7.2.20"),
     ("Application-Server-Information", "7.2.24"),
-    ("Current-Tariff", "7.2.46B"),
+    ("Current-Tariff", "7.2.47"),
     ("Destination-Interface", "7.2.53"),
     ("Early-Media-Description", "7.2.58"),
     ("Envelope", "7.2.59"),
@@ -1122,8 +1122,26 @@ CORRECTIONS += [
 
 # Clause 7.2.142 prints two of PoC-Event-Type's labels with doubled letters, in
 # the published PDF too: "Instant Ppersonal Aalert event", "Early Ssession
-# Setting-up event". V11.20.0 prints them so as well, but prints the clause's
-# heading as a body paragraph, so its values are in no block to correct.
+# Setting-up event". V11.20.0 prints them so as well, its own declarations
+# correcting them.
+_POC_EVENT_TYPE_LABELS = (
+    (
+        1,
+        "Instant Ppersonal Aalert event",
+        "Instant Personal Alert event",
+        "the initials of 'Personal' and 'Alert'",
+    ),
+    (
+        3,
+        "Early Ssession Setting-up event",
+        "Early Session Setting-up event",
+        "the initial of 'Session'",
+    ),
+)
+_POC_EVENT_TYPE_REASON = (
+    "clause 7.2.142 labels PoC-Event-Type's value {} '{}', doubling {}; the label"
+    " is '{}'"
+)
 CORRECTIONS += [
     Correction(
         id=f"poc-event-type-{value}-label",
@@ -1131,22 +1149,20 @@ CORRECTIONS += [
         field="name",
         expect=printed,
         replace=name,
-        reason=f"clause 7.2.142 labels PoC-Event-Type's value {value} '{printed}',"
-        f" doubling {doubled}; the label is '{name}'",
+        reason=_POC_EVENT_TYPE_REASON.format(value, printed, doubled, name),
         versions="18.0.0..19.0.0",
     )
-    for value, printed, name, doubled in (
-        (
-            1,
-            "Instant Ppersonal Aalert event",
-            "Instant Personal Alert event",
-            "the initials of 'Personal' and 'Alert'",
-        ),
-        (
-            3,
-            "Early Ssession Setting-up event",
-            "Early Session Setting-up event",
-            "the initial of 'Session'",
-        ),
+    for value, printed, name, doubled in _POC_EVENT_TYPE_LABELS
+]
+CORRECTIONS += [
+    Correction(
+        id=f"rel11-poc-event-type-{value}-label",
+        target=enum_value("PoC-Event-Type", printed, value=value),
+        field="name",
+        expect=printed,
+        replace=name,
+        reason=_POC_EVENT_TYPE_REASON.format(value, printed, doubled, name),
+        versions="11.20.0",
     )
+    for value, printed, name, doubled in _POC_EVENT_TYPE_LABELS
 ]
