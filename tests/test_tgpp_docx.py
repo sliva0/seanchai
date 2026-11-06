@@ -2402,6 +2402,45 @@ def test_a_result_code_takes_the_document_its_text_says_defines_it(
     assert codes.rows[2].origin == "TS29.229"
 
 
+_SEE_QUIRK = '[[quirk]]\nname = "see-result-code-origins"\nreason = "6.2.1"\n'
+
+
+def test_a_see_pointer_names_an_origin_only_as_printed_alone_or_last(
+    tmp_path, synthetic_spec_docx
+):
+    pointers = (
+        "See 3GPP TS 29.229 [6] clause 6.2.2.11.",
+        "See 3GPP TS 29.229 [6]",
+        "The user is unknown (see TS 29.229 [24]).",
+    )
+    references = (
+        "For retry handling see TS 29.229 [6] clause 5.",
+        "The user is unknown. For its encoding see TS 29.229 [6].",
+        "The user is unknown (see DIAMETER_ERROR_USER_UNKNOWN in TS 29.229 [6]).",
+        "The user is unknown (see TS 29.229 [6] for the encoding).",
+        "The user is unknown (see TS 29.229 [6]) and the request is rejected.",
+        "See TS 29.229 [6] for the retry procedure.",
+        "See clause 6.2.2.11 of TS 29.229 [6].",
+    )
+
+    def build(document):
+        _heading(document, "6.2\tExperimental-Result-Code AVP values")
+        for number, text in enumerate((*pointers, *references), start=1):
+            _heading(
+                document, f"6.2.{number}\tDIAMETER_CODE_{number} (50{number:02})", 2
+            )
+            document.add_paragraph(text)
+
+    path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
+    (tmp_path / "TS29.999.toml").write_text(_SEE_QUIRK, encoding="utf-8")
+
+    (codes,) = _value_tables(tgpp_docx.extract(path, sources_dir=tmp_path))
+    assert [row.origin for row in codes.rows] == [
+        *(["TS29.229"] * len(pointers)),
+        *([None] * len(references)),
+    ]
+
+
 def test_a_result_code_cited_from_two_documents_fails(tmp_path, synthetic_spec_docx):
     def build(document):
         _heading(document, "7.4\tExperimental-Result-Code AVP values")
