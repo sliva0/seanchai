@@ -199,6 +199,50 @@ def test_a_registry_reservation_is_corrected_by_its_range():
         )
 
 
+def test_a_registry_row_is_corrected_by_its_code_space_and_code():
+    """TS 29.230 table 7.1 names 402 'NAF-Hostname', which TS 29.109 clause
+    6.3.1.3 defines as NAF-Id, and allocates 318 twice."""
+    spec = parser.parse(
+        "; Specification: 3GPP TS 29.230\n; Version: 19.3.0\n; Vendor-ID: 10415\n"
+        "; Bases: RFC6733\n\n\n"
+        "; Type: Registry\n; Registry: AVP Codes\n; Section: 7\n; Table: 7.1\n"
+        "; Columns: Code Name Defined-In\n"
+        "318 3GPP-AAA-Server-Name TS29.234\n318 3GPP-AAA-Server-Name TS29.273\n"
+        "402 NAF-Hostname TS29.109\n\n\n"
+        "; Type: Registry\n; Registry: Result Codes\n; Section: 8\n"
+        "; Table: 8.1.4\n; Columns: Code Name Defined-In\n"
+        "402 DIAMETER_NOT_THIS TS29.999\n"
+    )
+    rename = corrections.Correction(
+        id="naf-id-registry-name",
+        target=corrections.registry_row(ast.RegistryKind.AVP_CODES, 402),
+        field="name",
+        expect="NAF-Hostname",
+        replace="NAF-Id",
+        reason="r",
+    )
+
+    corrected, results = corrections.apply(spec, [rename])
+
+    avps, codes = corrected.sections
+    assert isinstance(avps, ast.Registry) and isinstance(codes, ast.Registry)
+    assert avps.rows[2] == ast.RegistryRow(
+        code=402, name="NAF-Id", defined_in=("TS29.109",)
+    )
+    assert codes.rows[0] == ast.RegistryRow(
+        code=402, name="DIAMETER_NOT_THIS", defined_in=("TS29.999",)
+    )
+    assert results[0].path == ("sections", 0, "rows", 2)
+    twice = dataclasses.replace(
+        rename,
+        target=corrections.registry_row(ast.RegistryKind.AVP_CODES, 318),
+        expect="3GPP-AAA-Server-Name",
+        replace="AAA-Server-Name",
+    )
+    with pytest.raises(corrections.CorrectionError, match="2 matches"):
+        corrections.apply(spec, [twice])
+
+
 def test_a_correction_that_replaces_a_value_with_itself_is_rejected():
     with pytest.raises(corrections.CorrectionError, match="with itself"):
         _correction(corrections.table_row("Example-Mode"), "code", 1600, 1600)
@@ -1478,10 +1522,16 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     # matches on too: 29.338 fixes the name and the code of one misprinted
     # AVP-header line, and 32.299 the name and the origin of one re-used row;
     # in the corrected file both live under the new name.
+    def named(selector: corrections.Selector) -> bool:
+        # A registry row is selected by its code, which a rename leaves.
+        return "name" in {field.name for field in dataclasses.fields(selector)}
+
     renamed = {
         c.target: c.replace
         for c in declared
-        if isinstance(c, corrections.Correction) and c.field == "name"
+        if isinstance(c, corrections.Correction)
+        and c.field == "name"
+        and named(c.target)
     }
 
     for correction in declared:
@@ -1518,11 +1568,11 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             tail = supplied.values[len(supplied.values) - len(correction.values) :]
             assert tail == correction.values
             continue
-        if correction.field == "name":
+        if correction.field == "name" and named(target):
             # A correction that rewrites a name also rewrites what the selector
             # matches on, so in the corrected file the node answers to the
             # replacement. 29.172, 29.344 and 29.388 all fix a copied-in rule
-            # name this way.
+            # name this way; a registry row is selected by its code instead.
             target = dataclasses.replace(target, name=correction.replace)
         elif correction.field == "avp":
             # The same for the AVP a value table's selector matches on: TS

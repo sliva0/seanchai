@@ -313,9 +313,9 @@ What still reports, and why each stays:
   to the origin, the row was corrected instead.
 - **`registry-range-overlap`.** TS 29.230 as printed: 318 allocated twice,
   1..255 reserved over its own 100 to 102 and 110 to 134, and nested ranges.
-- **`registry-avp-name`.** Table 7.1's names are patched on input to the
-  defining clause's wherever the clause settles the spelling. What stays is
-  no spelling the clause settles: TS 29.336's 3176 and 3177 swapped, TS
+- **`registry-avp-name`.** Table 7.1's names are patched on input or corrected
+  to the defining clause's wherever the clause settles the spelling. What stays
+  is no spelling the clause settles: TS 29.336's 3176 and 3177 swapped, TS
   29.283's 4513 to 4515 shifted, TS 29.338's 3315 printed with two names,
   and TS 32.299's 855, where case is all that tells
   `Service-ID` from TS 29.336's `Service-Id`.
@@ -368,8 +368,9 @@ citing the clause that makes the override deliberate:
   events").
 - **`reused-row-mismatch`**: TS 32.299's `Supported-Features`, whose clause
   6.5.10.3 answers a server not supporting it "as per 'M' bit set rule".
-- **`section-mismatch`**: TS 29.214's `PC-Session-Recovery-Status`, a misprint
-  the corpus keeps as printed, whose acceptance cites the real clause, 5.3.81;
+- **`section-mismatch`**: TS 29.214's `PC-Session-Recovery-Status` and TS
+  29.273's `Trace-Info`, misprints the corpus keeps as printed, whose
+  acceptances cite the real clauses, 5.3.81 and 8.2.3.13;
   TS 29.273's `MIP6-Agent-Info`, whose row is right and whose clause 9.2.3.6.2
   copy `TS29.273.py#mip6-agent-info-duplicate` deletes; RFC 5778's
   `MIP6-Auth-Mode`, defined in clause 6.20 with its values in clause 9.5.

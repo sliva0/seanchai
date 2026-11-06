@@ -8,18 +8,6 @@ first_version = "18.6.0"
 last_version = "19.2.0"
 
 [[patch]]
-find = "8.2.3.1.3"
-replace = "8.2.3.13"
-exact = true
-section = "7.2.3.1"
-reason = """
-    Table 7.2.3.1/1 prints the Trace-Info clause reference as 8.2.3.1.3, a
-    clause that does not exist; its definition is in clause 8.2.3.13.
-    """
-first_version = "18.6.0"
-last_version = "19.2.0"
-
-[[patch]]
 find = "Emergency- Services"
 replace = "Emergency-Services"
 count = 2

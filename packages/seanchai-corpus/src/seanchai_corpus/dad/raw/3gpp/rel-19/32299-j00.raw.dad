@@ -2292,11 +2292,11 @@ PoC-Change-Condition ::= < Enumerated AVP header: 1261 10415 >
 ; Section: 7.2.142
 ; Page: 161
 PoC-Event-Type ::= < Enumerated AVP header: 2025 10415 >
-        Normal                           = 0
-        "Instant Personal Alert event"   = 1
-        "PoC Group Advertisement event"  = 2
-        "Early Session Setting-up event" = 3
-        "PoC Talk Burst"                 = 4
+        Normal                            = 0
+        "Instant Ppersonal Aalert event"  = 1
+        "PoC Group Advertisement event"   = 2
+        "Early Ssession Setting-up event" = 3
+        "PoC Talk Burst"                  = 4
 
 
 ; Type: Grouped AVP

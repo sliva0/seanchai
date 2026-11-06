@@ -478,6 +478,17 @@ CORRECTIONS += [
         " the file holds only clause 9.2.3.2.2's",
         versions="19.2.0",
     ),
+    Accept(
+        id="trace-info-clause",
+        rule="section-mismatch",
+        target=table_row("Trace-Info", table="7.2.3.1/1"),
+        expect="Trace-Info is cited at clause 8.2.3.1.3 in table 7.2.3.1/1, but the"
+        " file holds it at clause 8.2.3.13, and nothing at clause 8.2.3.1.3",
+        reason="a misprint in table 7.2.3.1/1: the document has no clause 8.2.3.1.3,"
+        " clause 8.2.3.13 is headed 'Trace-Info' and defines it, and tables"
+        " 8.2.3.0/1, 9.2.3.1.1/1 and 9.2.3.2.1/1 cite 8.2.3.13 for the same row",
+        versions="18.6.0..19.2.0",
+    ),
 ]
 
 CORRECTIONS += [

@@ -550,8 +550,11 @@ OctetString, freeDiameter Integer32). The row stays as printed and the
 model reads it as a hole.
 
 Input patches repair what fails these readings: broken reference cells, type
-typos and names broken beside a hyphen, plus forty-seven respellings of
-table 7.1's names to the defining clause's
+typos and names broken beside a hyphen, plus twenty-one respellings of table
+7.1's names that differ from the defining clause's in case alone. A name the
+registry prints otherwise, parseable as printed, stays in the raw file and is
+corrected to the defining clause's: twenty-six of table 7.1's (`NAF-Hostname`
+for TS 29.109's `NAF-Id`, code 402) and one of table 8.1.4's
 ([linter.md](linter.md#standing-findings)).
 
 ## oneM2M TS-0004
