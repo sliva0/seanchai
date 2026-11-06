@@ -181,7 +181,18 @@
         "2": { "name": "variable.other.enum.dad" },
         "4": { "name": "keyword.operator.assignment.dad" },
         "5": { "name": "constant.numeric.dad" },
-        "6": { "name": "string.unquoted.enum-note.dad" },
+        "6": {
+          "name": "string.unquoted.enum-note.dad",
+          "patterns": [
+            {
+              "match": "(?<=\\s)(from) (TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4})(?=\\s|$)",
+              "captures": {
+                "1": { "name": "keyword.other.from.dad" },
+                "2": { "name": "entity.name.tag.spec-ref.dad" }
+              }
+            }
+          ]
+        },
         "7": { "name": "comment.line.double-semicolon.dad" }
       }
     },

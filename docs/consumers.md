@@ -321,7 +321,8 @@ gives each its own tables, so a row's interface is its table's clause.
 numbers, as `model.ValueTable`s: `kind` (`ValueKind.RESULT_CODES`, `BITS` or
 `FEATURES`), the `avp`, the document, its clause and page, the table's label,
 and `rows`, each an `ast.ValueRow` with a `name`, a `value` and, for a result
-code in a subclause its `section`, for a feature its M/O `mark`. A plain
+code in a subclause its `section` and for one the document says another defines
+that document's `origin`, for a feature its M/O `mark`. A plain
 `Result-Code` table's `vendor_id` is 0 and any other's the file's `;
 Vendor-ID:`, the space an experimental code lives in. A plain AVP reads them
 through resolution: `Avp.value_tables` holds the tables the reading document

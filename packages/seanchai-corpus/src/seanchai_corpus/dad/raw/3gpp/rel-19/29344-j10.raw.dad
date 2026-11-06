@@ -370,7 +370,7 @@ ProSe-Initial-Location-Information ::= < AVP header: 3707 10415 >
 ; Kind: result-codes
 ; Section: 6.4
 ; Page: 28
-DIAMETER_ERROR_USER_UNKNOWN               = 5001 ; 6.4.3.2
+DIAMETER_ERROR_USER_UNKNOWN               = 5001 ; 6.4.3.2 from TS29.229
 DIAMETER_ERROR_UNKNOWN_PROSE_SUBSCRIPTION = 5610 ; 6.4.3.3
 "DIAMETER_ERROR_ PROSE_NOT_ALLOWED"       = 5611 ; 6.4.3.4
 "DIAMETER_ERROR_ UE_LOCATION_UNKNOWN"     = 5612 ; 6.4.3.5

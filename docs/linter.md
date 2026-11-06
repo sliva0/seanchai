@@ -128,6 +128,10 @@ cites.
 - `reused-row-vendor-mismatch`: such a row placing the AVP in another
   vendor space than the origin does. An error.
 - `reused-avp-not-in-origin`: the cited origin has never heard of it.
+- `result-code-not-in-origin` / `result-code-origin-name` /
+  `result-code-origin-indirect`: a result code listed `from` a document that
+  lists no such code for its AVP, an error; that names it otherwise, compared
+  exactly, a note; or that lists it `from` a third, a note.
 - `reused-origin-indirect`: the origin borrows it too. Not corrected:
   "where I got this" and "who defined this" are different claims the From
   column does not distinguish.
@@ -180,8 +184,9 @@ clause supports the registry.
   otherwise than the file's scope does.
 
 - `registry-result-code-document`: an experimental result code the file lists
-  in the registry's vendor space, where the rows allocating the code cite
-  documents and none is the file.
+  in the registry's vendor space as its own, where the rows allocating the code
+  cite documents and none is the file. A code the file lists `from` another
+  document claims no allocation, and is held to that document instead.
 - `registry-result-code-name`: such a code the registry allocates under another
   name, compared exactly. A plain `Result-Code` value is the IETF's, which TS
   29.230 does not hold, and a code no row allocates is left alone.
@@ -316,19 +321,20 @@ What still reports, and why each stays:
   `3GPP-AAA-Server-Name` (318), which the registry's first row still gives
   TS 29.234.
 - **`registry-result-code-document`.** A clause listing a code the registry
-  gives another document without saying so: TS 29.272's
+  gives another document without saying it is another's: TS 29.272's
   `DIAMETER_ERROR_USER_UNKNOWN` and `DIAMETER_ERROR_ROAMING_NOT_ALLOWED`, TS
   29.337, 29.338 and 29.345's `DIAMETER_ERROR_USER_UNKNOWN`, TS 29.345's
   `DIAMETER_ERROR_UNAUTHORIZED_SERVICE`, TS 29.128's
   `DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN`, TS 29.273's
   `DIAMETER_ERROR_ILLEGAL_EQUIPMENT` and TS 29.336's
-  `DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION`. A clause that does say so is
-  accepted.
+  `DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION`. A clause that does say so gives the
+  code its origin ([dad-format.md](dad-format.md#design)), and draws no note.
 - **`registry-result-code-name`.** TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`
   against table 8.1.4's `DIAMETER_ERROR_IMPI_UNKNOWN`, and TS 29.283's
   `DIAMETER_ERROR_DATA OUT_OF_SYNC` against TS 29.329's
   `DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC`: no clause settles either. A
-  space misprinted in a heading is corrected.
+  space misprinted in a heading is corrected. TS 29.283's code is listed from TS
+  29.329, so `result-code-origin-name` says the same against its origin.
 - **`registry-application-name`.** TS 29.272's VCSG scope names 16777308
   `S7a/S7d`; table 4.1 calls it "3GPP S7a".
 - **`undefined-avp`.** The twelve names
@@ -359,10 +365,6 @@ citing the clause that makes the override deliberate:
   events").
 - **`reused-row-mismatch`**: TS 32.299's `Supported-Features`, whose clause
   6.5.10.3 answers a server not supporting it "as per 'M' bit set rule".
-- **`registry-result-code-document`**: a result code whose clause says where it
-  is defined, "This error code is defined in 3GPP TS 29.229 [4]" (TS 29.128,
-  29.172, 29.173, 29.212, 29.215, 29.217, 29.273, 29.283, 29.329, 29.330,
-  29.336, 29.344, 29.388, 29.389, 32.299): the document lists a code it re-uses.
 - **`section-mismatch`**: TS 29.214's `PC-Session-Recovery-Status`, a misprint
   the corpus keeps as printed, whose acceptance cites the real clause, 5.3.81;
   TS 29.273's `MIP6-Agent-Info`, whose row is right and whose clause 9.2.3.6.2

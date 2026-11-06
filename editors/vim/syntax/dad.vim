@@ -64,7 +64,7 @@ endif
 " quote.
 syn match dadEnumLine #^\s*\%([A-Za-z0-9][A-Za-z0-9_-]*\|"\%([^"\\]\|\\["\\]\)*"\)\s*= \d\+\%(\s\+;.*\)\?$# contains=dadEnumName,dadNumber,dadEnumNote,dadComment
 syn match dadEnumName #^\s*\zs\%([A-Za-z0-9][A-Za-z0-9_-]*\|"\%([^"\\]\|\\["\\]\)*"\)# contained
-syn match dadEnumNote "; .*$" contained
+syn match dadEnumNote "; .*$" contained contains=dadSpecRef
 syn match dadReserved "^\s*; RESERVED\s*= \d\+\%(-\d\+\)\?\s*\%(;;.*\)\?$" contains=dadReservedKw,dadNumber,dadRange,dadComment
 " A registry's reserved range: `; RESERVED 320..399 TS29.234 "TS 29.234"`.
 syn match dadRegistryReserved #^; RESERVED \d\+\.\.\d\+\%( [^ "]\+\)\?\%( "\%([^"\\]\|\\["\\]\)*"\)\?\s*\%(;;.*\)\?$# contains=dadReservedKw,dadRange,dadSpecRef,dadQuotedCell,dadComment

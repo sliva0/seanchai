@@ -2,7 +2,6 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
-    Accept,
     Correction,
     Insert,
     avp_table,
@@ -80,20 +79,6 @@ CORRECTIONS += [
         replace="DIAMETER_ERROR_UE_LOCATION_UNKNOWN",
         reason="clause 6.4.3.5's heading prints a space inside the name; TS 29.230 "
         "table 8.1.4 allocates 5612 under the name without it",
-        versions="18.1.0..19.1.0",
-    ),
-]
-
-# The codes clauses say are defined elsewhere, as the registry allocates them.
-CORRECTIONS += [
-    Accept(
-        id="user-unknown-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row("Experimental-Result-Code", "DIAMETER_ERROR_USER_UNKNOWN"),
-        expect="DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 "
-        "table 8.1.4 allocates the code to TS29.229",
-        reason="clause 6.4.3.2 says 'This error code is defined in TS 29.229 [6].': "
-        "the document lists a code it re-uses",
         versions="18.1.0..19.1.0",
     ),
 ]

@@ -143,3 +143,12 @@ reason = """
     """
 first_version = "18.6.0"
 last_version = "19.2.0"
+
+[[quirk]]
+name = "see-result-code-origins"
+reason = """
+    clauses 10.3.2 to 10.3.5 end their one sentence '(see TS 29.229 [24]).' for
+    the four codes TS 29.229 defines and this document re-uses for SWx
+    """
+first_version = "19.2.0"
+last_version = "19.2.0"

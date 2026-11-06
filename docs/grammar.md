@@ -448,8 +448,9 @@ value-table   = "; Type: Value Table" NL
                 1*(value-row NL)
 value-kind    = "result-codes" / "bits" / "features"
 value-row     = enum-name *SP "= " 1*DIGIT [1*SP "; " value-tail]
-value-tail    = section-number / mark
-                ; a result code's own clause, a feature's M/O mark
+value-tail    = section-number [1*SP "from " spec-ref] / "from " spec-ref / mark
+                ; a result code's own clause and the document defining it,
+                ; a feature's M/O mark
 ```
 
 The numbers a document names for a numeric AVP that is no `Enumerated`:
@@ -484,13 +485,15 @@ ODB-all-APN = 0 ; O
 ```
 
 The `kind` says what a number is. `result-codes` are the values of the AVP
-named, with a tail only where a row sits in a subclause of `; Section:` and that
-subclause's number is the tail. `bits` number the bits of a bit mask, least
-significant first as every table does, with no tail. `features` number the bits
-of one feature list, which `; Application:` and `; Feature-List-ID:` name as the
-table's caption does, and the tail is the M/O cell, none where it is blank or
-the table has no such column; `; Application:` and `; Feature-List-ID:` appear
-only here, each only where the caption says it.
+named, with a tail only where a row sits in a subclause of `; Section:`, that
+subclause's number, or where the document says another defines the code, `from`
+that document (`DIAMETER_ERROR_USER_UNKNOWN = 5001 ; 7.4.3.2 from TS29.229`, `;
+from RFC8506` for a row in the block's own clause). `bits` number the bits of a
+bit mask, least significant first as every table does, with no tail. `features`
+number the bits of one feature list, which `; Application:` and `;
+Feature-List-ID:` name as the table's caption does, and the tail is the M/O
+cell, none where it is blank or the table has no such column; `; Application:`
+and `; Feature-List-ID:` appear only here, each only where the caption says it.
 
 A name is written as an enum value's is ([Enumerated AVP](#enumerated-avp)),
 quoted where it is no `avp-name`. A mark is written as a table's is, quoted
@@ -525,9 +528,9 @@ Checked by the AST after parsing:
 - `; Name:` equals the name in the block's header rule.
 - `; Applies-To:` names a clause at most once.
 - `; Name:` of an Undefined AVP block is not `AVP`.
-- A Value Table has at least one row; a row's clause is a result code's and its
-  mark a feature's; `; Application:` and `; Feature-List-ID:` are a features
-  table's.
+- A Value Table has at least one row; a row's clause and origin are a result
+  code's and its mark a feature's; `; Application:` and `; Feature-List-ID:` are
+  a features table's.
 - Command codes are 24-bit; codes, vendor ids, application ids, enum values
   and a value table's numbers and Feature-List-IDs are 32-bit; page numbers are
   32-bit and at least 1.

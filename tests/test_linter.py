@@ -2126,6 +2126,7 @@ _STANDING_CORPUS_NOTES = {
         "registry-result-code-name": [
             "DIAMETER_ERROR_DATA",
         ],
+        "result-code-origin-name": ["DIAMETER_ERROR_DATA"],
         "registry-avp-name": ["Data", "MCVideo-ID"],
         "reused-body-differs": ["User-Identifier"],
     },
@@ -2377,15 +2378,6 @@ _ACCEPTED_CORPUS_NOTES = {
         "reused-extension": ["ETSI-TS183.017.py#media-component-description-extension"],
     },
     "29128-j20.dad": {
-        "registry-result-code-document": [
-            "TS29.128.py#unauthorized-requesting-entity-result-code-reused",
-            "TS29.128.py#unauthorized-service-result-code-reused",
-            "TS29.128.py#configuration-event-storage-not-successful-result-code-reused",
-            "TS29.128.py#configuration-event-non-existant-result-code-reused",
-            "TS29.128.py#user-unknown-result-code-reused",
-            "TS29.128.py#operation-not-allowed-result-code-reused",
-            "TS29.128.py#unreachable-user-result-code-reused",
-        ],
         "reused-body-differs": [
             "TS29.128.py#monitoring-event-configuration-t6a-body",
             "TS29.128.py#monitoring-event-report-t6a-body",
@@ -2400,19 +2392,9 @@ _ACCEPTED_CORPUS_NOTES = {
     },
     "29273-j20.dad": {
         "section-mismatch": ["TS29.273.py#mip6-agent-info-row-clause"],
-        "registry-result-code-document": [
-            "TS29.273.py#user-unknown-result-code-reused",
-            "TS29.273.py#identity-not-registered-result-code-reused",
-            "TS29.273.py#roaming-not-allowed-result-code-reused",
-            "TS29.273.py#identity-already-registered-result-code-reused",
-        ],
         "reused-body-differs": ["TS29.273.py#sip-auth-data-item-swx-body"],
     },
     "29336-j10.dad": {
-        "registry-result-code-document": [
-            "TS29.336.py#user-unknown-result-code-reused-6-3",
-            "TS29.336.py#user-unknown-result-code-reused-8-3",
-        ],
         "reused-body-differs": [
             "TS29.336.py#additional-serving-node-t4-body",
             "TS29.336.py#serving-node-t4-body",
@@ -2428,94 +2410,15 @@ _ACCEPTED_CORPUS_NOTES = {
         "reused-body-differs": ["TS29.338.py#additional-serving-node-body"],
     },
     "29388-j10.dad": {
-        "registry-result-code-document": [
-            "TS29.388.py#user-unknown-result-code-reused",
-        ],
         "reused-body-differs": ["TS29.388.py#v2x-subscription-data-v4-body"],
     },
     "32299-j00.dad": {
-        "registry-result-code-document": [
-            "TS32.299.py#feature-unsupported-result-code-reused",
-        ],
         "reused-body-differs": [
             "TS32.299.py#multiple-services-credit-control-charging-body",
             "TS32.299.py#used-service-unit-charging-body",
         ],
         "reused-extension": ["TS32.299.py#oc-olr-extension"],
         "reused-row-mismatch": ["TS32.299.py#supported-features-charging-m"],
-    },
-    "29172-j00.dad": {
-        "registry-result-code-document": [
-            "TS29.172.py#user-unknown-result-code-reused",
-            "TS29.172.py#unauthorized-requesting-network-result-code-reused",
-        ],
-    },
-    "29173-j00.dad": {
-        "registry-result-code-document": [
-            "TS29.173.py#user-unknown-result-code-reused",
-        ],
-    },
-    "29212-j10.dad": {
-        "registry-result-code-document": [
-            "TS29.212.py#late-overlapping-request-result-code-reused",
-            "TS29.212.py#timed-out-request-result-code-reused",
-        ],
-    },
-    "29215-j00.dad": {
-        "registry-result-code-document": [
-            "TS29.215.py#pending-transaction-result-code-reused",
-        ],
-    },
-    "29217-j00.dad": {
-        "registry-result-code-document": [
-            "TS29.217.py#pending-transaction-result-code-reused",
-        ],
-    },
-    "29283-j00.dad": {
-        "registry-result-code-document": [
-            "TS29.283.py#user-unknown-result-code-reused",
-            "TS29.283.py#user-data-not-recognized-result-code-reused",
-            "TS29.283.py#operation-not-allowed-result-code-reused",
-            "TS29.283.py#user-data-cannot-be-read-result-code-reused",
-            "TS29.283.py#user-data-cannot-be-modified-result-code-reused",
-            "TS29.283.py#user-data-cannot-be-notified-result-code-reused",
-            "TS29.283.py#too-much-data-result-code-reused",
-            "TS29.283.py#data-out-of-sync-result-code-reused",
-            "TS29.283.py#feature-unsupported-result-code-reused",
-            "TS29.283.py#no-subscription-to-data-result-code-reused",
-            "TS29.283.py#user-data-not-available-result-code-reused",
-        ],
-    },
-    "29329-j10.dad": {
-        "registry-result-code-document": [
-            "TS29.329.py#too-much-data-result-code-reused",
-            "TS29.329.py#feature-unsupported-result-code-reused",
-            "TS29.329.py#identities-dont-match-result-code-reused",
-        ],
-    },
-    "29330-j00.dad": {
-        "registry-result-code-document": [
-            "TS29.330.py#user-unknown-result-code-reused",
-            "TS29.330.py#operation-not-allowed-result-code-reused",
-            "TS29.330.py#user-data-cannot-be-read-result-code-reused",
-            "TS29.330.py#user-data-cannot-be-modified-result-code-reused",
-            "TS29.330.py#too-much-data-result-code-reused",
-            "TS29.330.py#transparent-data-out-of-sync-result-code-reused",
-            "TS29.330.py#feature-unsupported-result-code-reused",
-            "TS29.330.py#user-data-not-available-result-code-reused",
-        ],
-    },
-    "29344-j10.dad": {
-        "registry-result-code-document": [
-            "TS29.344.py#user-unknown-result-code-reused",
-        ],
-    },
-    "29389-j00.dad": {
-        "registry-result-code-document": [
-            "TS29.389.py#user-unknown-result-code-reused",
-            "TS29.389.py#unknown-v2x-subscription-result-code-reused",
-            "TS29.389.py#v2x-not-allowed-result-code-reused",
-        ],
     },
 }
 
@@ -2912,6 +2815,94 @@ def test_a_plain_result_code_is_not_the_registry_s():
         for f in linter.lint_with_corpus(spec, _books(spec, _result_registry()))
         if f.rule.startswith("registry-result-code")
     ]
+
+
+def _cited_codes(*rows):
+    return ast.ValueTable(
+        avp="Experimental-Result-Code",
+        kind=ast.ValueKind.RESULT_CODES,
+        source=ast.SourceRef(section="6.2"),
+        rows=tuple(
+            ast.ValueRow(name=name, value=value, origin=origin)
+            for name, value, origin in rows
+        ),
+    )
+
+
+def test_a_code_cited_from_its_document_claims_no_allocation():
+    spec = _value_spec(
+        _cited_codes(
+            ("DIAMETER_ERROR_USER_UNKNOWN", 5001, "TS29.229"),
+            ("DIAMETER_MISSPELT", 5002, None),
+        )
+    )
+    origin = _origin_spec(
+        "3GPP TS 29.229",
+        "18.0.0",
+        _cited_codes(("DIAMETER_ERROR_USER_UNKNOWN", 5001, None)),
+    )
+
+    findings = linter.lint_with_corpus(spec, _books(spec, origin, _result_registry()))
+
+    assert not [f for f in findings if f.rule == "registry-result-code-document"]
+    assert not [f for f in findings if f.rule.startswith("result-code-")]
+    assert [f.rule for f in findings if f.rule.startswith("registry-")] == [
+        "registry-result-code-name"
+    ]
+
+
+def test_a_cited_code_is_held_to_its_origin():
+    spec = _value_spec(
+        _cited_codes(
+            ("DIAMETER_ERROR_USER_UNKNOWN", 5001, "TS29.229"),
+            ("DIAMETER_ERROR_RENAMED", 5002, "TS29.229"),
+            ("DIAMETER_ERROR_ABSENT", 5003, "TS29.229"),
+            ("DIAMETER_ERROR_PASSED_ON", 5004, "TS29.229"),
+        )
+    )
+    origin = _origin_spec(
+        "3GPP TS 29.229",
+        "18.0.0",
+        _cited_codes(
+            ("DIAMETER_ERROR_USER_UNKNOWN", 5001, None),
+            ("DIAMETER_ERROR_THEIRS", 5002, None),
+            ("DIAMETER_ERROR_PASSED_ON", 5004, "TS29.329"),
+        ),
+    )
+
+    findings = {
+        f.rule: f
+        for f in linter.lint_with_corpus(spec, _books(spec, origin))
+        if f.rule.startswith("result-code-")
+    }
+
+    assert findings["result-code-not-in-origin"].severity is linter.Severity.ERROR
+    assert findings["result-code-not-in-origin"].message == (
+        "DIAMETER_ERROR_ABSENT (code 5003) is cited from TS29.229, but 3GPP TS"
+        " 29.229 18.0.0 lists no Experimental-Result-Code 5003"
+    )
+    assert findings["result-code-origin-name"].severity is linter.Severity.NOTE
+    assert findings["result-code-origin-name"].message == (
+        "DIAMETER_ERROR_RENAMED (code 5002) is cited from TS29.229, which names it"
+        " DIAMETER_ERROR_THEIRS"
+    )
+    assert findings["result-code-origin-name"].paths == (("sections", 0, "rows", 1),)
+    assert findings["result-code-origin-indirect"].message == (
+        "DIAMETER_ERROR_PASSED_ON (code 5004) is cited from TS29.229, which re-uses"
+        " it from TS29.329 rather than defining it"
+    )
+    assert len(findings) == 3
+
+
+def test_a_cited_code_s_origin_missing_from_the_corpus_is_named():
+    spec = _value_spec(_cited_codes(("DIAMETER_ERROR_USER_UNKNOWN", 5001, "TS29.229")))
+
+    (missing,) = [
+        f
+        for f in linter.lint_with_corpus(spec, _books(spec))
+        if f.rule == "origin-not-in-corpus"
+    ]
+    assert missing.message.endswith(": TS29.229")
 
 
 def test_a_clause_citing_a_code_s_document_can_accept_the_note():

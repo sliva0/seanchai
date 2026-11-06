@@ -331,8 +331,10 @@ def _tokens(
             fields["source"] = Citation(section=source.section, page=source.page)
         elif value in links.references and key in ("Bases", "From", None):
             fields["target"] = links.references[value]
-            if isinstance(section, ast.ReusedAvps) and key is None:
-                row_name = line.split(maxsplit=1)[0]
+            if isinstance(section, ast.ReusedAvps | ast.ValueTable) and key is None:
+                row_name = (
+                    line.split(maxsplit=1)[0] if value_row is None else value_row.name
+                )
                 fields["target"] = links.row_references.get(
                     (value, row_name), fields["target"]
                 )
@@ -552,9 +554,31 @@ class _Lookups:
         return found
 
     def row_references(self, spec: ast.Specification) -> dict[tuple[str, str], Target]:
-        """Each re-used row's origin cell, at the AVP it names there."""
+        """Each re-used row's origin cell, at the AVP it names there, and each
+        result code's origin, at the clause listing the code there."""
         found = {}
         for section in spec.sections:
+            if isinstance(section, ast.ValueTable):
+                for value in section.rows:
+                    if value.origin is None:
+                        continue
+                    origin = self.books.resolve(value.origin, like=spec)
+                    if origin is None:
+                        continue
+                    found[value.origin, value.name] = Target(
+                        document=document_id(origin),
+                        section=next(
+                            (
+                                their.section or table.source.section
+                                for table in origin.spec.sections
+                                if isinstance(table, ast.ValueTable)
+                                and table.avp == section.avp
+                                for their in table.rows
+                                if their.value == value.value
+                            ),
+                            None,
+                        ),
+                    )
             if isinstance(section, ast.ReusedAvps):
                 for row in section.rows:
                     origin = self.books.resolve(row.origin, like=spec)
@@ -750,6 +774,7 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
                         application=section.application,
                         feature_list_id=section.feature_list_id,
                     ),
+                    defined_in=(row.origin or entry.reference,),
                     clause=row.section,
                 )
                 for row in section.rows

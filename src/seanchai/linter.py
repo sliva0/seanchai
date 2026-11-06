@@ -108,6 +108,11 @@ class _Index:
     reprints: list[ast.ReprintedAvp] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     value_tables: list[ast.ValueTable] = field(default_factory=list)
+    # Result codes whose text names the document defining them, with their
+    # table: TS 29.283's DIAMETER_ERROR_USER_UNKNOWN, "defined in 3GPP TS 29.229".
+    reused_values: list[tuple[ast.ValueTable, ast.ValueRow]] = field(
+        default_factory=list
+    )
     reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
     # Names a re-used table cites from this file itself. TS 29.212's Gxx, S9,
     # Sd and St tables list Gx's AVPs "from" TS 29.212: those are this file's
@@ -164,6 +169,11 @@ def _index(spec: ast.Specification) -> _Index:
             index.tables.append(section)
         elif isinstance(section, ast.ValueTable):
             index.value_tables.append(section)
+            index.reused_values += [
+                (section, row)
+                for row in section.rows
+                if row.origin is not None and row.origin != own
+            ]
         elif isinstance(section, ast.ReusedAvps):
             for row in section.rows:
                 index.reused_paths[row.name].append(index.path(row))
@@ -1202,6 +1212,7 @@ class _Origin:
     tabled: dict[str, ast.AvpTableRow]
     reused: dict[str, str]
     tables: list[ast.AvpTable]
+    value_tables: list[ast.ValueTable]
 
     @classmethod
     def of(cls, spec: ast.Specification) -> _Origin:
@@ -1212,13 +1223,20 @@ class _Origin:
             tabled={row.name: row for row in theirs.rows},
             reused=theirs.reused,
             tables=theirs.tables,
+            value_tables=theirs.value_tables,
         )
 
 
 def _cited(index: _Index) -> list[str]:
-    """Every document the file names as an origin, by a re-used row or a
-    re-print."""
-    return sorted({*index.reused.values(), *(r.origin for r in index.reprints)})
+    """Every document the file names as an origin, by a re-used row, a
+    re-print or a result code."""
+    return sorted(
+        {
+            *index.reused.values(),
+            *(r.origin for r in index.reprints),
+            *(row.origin for _, row in index.reused_values if row.origin),
+        }
+    )
 
 
 def _resolve_origins(
@@ -1716,6 +1734,78 @@ def _placement(
     return None
 
 
+def _result_codes_agree_with_origin(
+    index: _Index, origins: dict[str, _Origin]
+) -> list[Finding]:
+    """A result code whose text names the document defining it is that
+    document's: it lists the code under the same AVP, and gives it the same
+    name.
+
+    The counterpart of `reused-avp-not-in-origin` and `reused-origin-indirect`
+    for a code. An origin listing no such code is an error, as for an AVP. A
+    name compared exactly, since a dictionary keys on it, is a note:
+    TS 29.283 clause 7.4.3.9 prints `DIAMETER_ERROR_DATA OUT_OF_SYNC` for what
+    TS 29.329 calls `DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC`, and only the
+    origin's spelling is the code's. So is an origin re-using the code from a
+    third document."""
+    findings = []
+    for table, row in index.reused_values:
+        assert row.origin is not None
+        resolved = origins.get(row.origin)
+        if resolved is None:
+            continue
+        clause = row.section or table.source.section
+        theirs = [
+            their
+            for their_table in resolved.value_tables
+            if their_table.kind is ast.ValueKind.RESULT_CODES
+            and their_table.avp == table.avp
+            for their in their_table.rows
+            if their.value == row.value
+        ]
+        said = f"{row.name} (code {row.value}) is cited from {row.origin}"
+        if not theirs:
+            document = resolved.spec.specification
+            if resolved.spec.version is not None:
+                document += f" {resolved.spec.version}"
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "result-code-not-in-origin",
+                    f"{said}, but {document} lists no {table.avp} {row.value}",
+                    clause,
+                    row.origin,
+                    paths=(index.path(row),),
+                )
+            )
+            continue
+        names = list(dict.fromkeys(their.name for their in theirs))
+        if row.name not in names:
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "result-code-origin-name",
+                    f"{said}, which names it {' and '.join(names)}",
+                    clause,
+                    row.origin,
+                    paths=(index.path(row),),
+                )
+            )
+        if all(their.origin is not None for their in theirs):
+            via = ", ".join(dict.fromkeys(str(their.origin) for their in theirs))
+            findings.append(
+                Finding(
+                    Severity.NOTE,
+                    "result-code-origin-indirect",
+                    f"{said}, which re-uses it from {via} rather than defining it",
+                    clause,
+                    row.origin,
+                    paths=(index.path(row),),
+                )
+            )
+    return findings
+
+
 def _reprint_or_extension(index: _Index, origins: dict[str, _Origin]) -> list[Finding]:
     """Decide what a local-and-re-used AVP is actually doing.
 
@@ -2118,7 +2208,9 @@ def _registry_result_codes(
     space against the registry's rows: the name a row gives it and the documents
     it cites. A plain Result-Code is the IETF's, which table 8.1 does not hold,
     and a code no row allocates is left alone: TS 29.230 lists a document's code
-    from whichever version allocated it, so its absence says little."""
+    from whichever version allocated it, so its absence says little. A code
+    whose text names the document defining it claims no allocation: its origin
+    answers for it (`_result_codes_agree_with_origin`)."""
     if spec.vendor_id != registry.vendor_id:
         return []
     kind = ast.RegistryKind.RESULT_CODES
@@ -2146,7 +2238,7 @@ def _registry_result_codes(
                     )
                 )
             documents = _documents_of(found)
-            if documents and own_reference not in documents:
+            if documents and own_reference not in documents and row.origin is None:
                 findings.append(
                     Finding(
                         Severity.NOTE,
@@ -2344,6 +2436,7 @@ def lint_with_corpus(
         *_reused_rows_agree_with_origin(index, origins),
         *_reused_row_vendors_agree_with_origin(index, spec.vendor_id, origins),
         *_reused_cells_agree_with_origin(index, origins),
+        *_result_codes_agree_with_origin(index, origins),
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
         *_unresolved_references(index, bases, missing_bases),
         *_against_registry(spec, index, books),

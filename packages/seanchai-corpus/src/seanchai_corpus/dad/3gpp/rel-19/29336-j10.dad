@@ -397,7 +397,7 @@ MPS-Priority                          TS29.272   MUST-NOT
 ; Kind: result-codes
 ; Section: 6.3
 ; Page: 21
-DIAMETER_ERROR_USER_UNKNOWN                   = 5001 ; 6.3.3.1
+DIAMETER_ERROR_USER_UNKNOWN                   = 5001 ; 6.3.3.1 from TS29.229
 DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY = 5510 ; 6.3.3.2
 DIAMETER_ERROR_UNAUTHORIZED_SERVICE           = 5511 ; 6.3.3.3
 
@@ -521,7 +521,7 @@ Additional-Serving-Node ::= < AVP header: 2406 10415 >
 ; Kind: result-codes
 ; Section: 8.3
 ; Page: 47
-DIAMETER_ERROR_USER_UNKNOWN                               = 5001 ; 8.3.3.1
+DIAMETER_ERROR_USER_UNKNOWN                               = 5001 ; 8.3.3.1 from TS29.229
 DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY             = 5510 ; 8.3.3.2
 DIAMETER_ERROR_UNAUTHORIZED_SERVICE                       = 5511 ; 8.3.3.3
 "DIAMETER_ERROR_REQUESTED_RANGE_IS_NOT ALLOWED"           = 5512 ; 8.3.3.4

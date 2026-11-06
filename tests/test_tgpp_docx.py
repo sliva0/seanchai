@@ -2292,6 +2292,74 @@ def test_result_codes_are_read_from_headings_and_lines(tmp_path, synthetic_spec_
     assert parser.parse(text) == spec
 
 
+def _cited_result_codes(document):
+    _heading(document, "7.4\tResult-Code AVP values")
+    document.add_paragraph(
+        "The Result-Code AVP values defined in Diameter Base IETF RFC 6733 [1] are"
+        " applicable. When one of the result codes defined here is included in a"
+        " response, it shall be inside an Experimental-Result AVP."
+    )
+    _heading(document, "7.4.1\tDIAMETER_ERROR_USER_UNKNOWN (5001)", 2)
+    document.add_paragraph(
+        "The user is unknown. This error code is defined in 3GPP TS 29.229 [6]."
+    )
+    _heading(document, "7.4.2\tDIAMETER_ERROR_MINE (5002)", 2)
+    document.add_paragraph("This error code is defined in 3GPP TS 29.999 [7].")
+    _heading(document, "7.4.3\tDIAMETER_ERROR_POINTED (5003)", 2)
+    document.add_paragraph("The user is unknown (see TS 29.229 [6]).")
+    _heading(document, "7.4.4\tPermanent Failures", 2)
+    document.add_paragraph(
+        "Further as an addition the following Experimental-Result AVP values"
+        " defined in 3GPP TS 29.273 [48] are applicable:"
+    )
+    document.add_paragraph("DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST (5453)")
+    document.add_paragraph("This error shall be used by the PCRF.")
+    document.add_paragraph("Also the following specific values are defined:")
+    document.add_paragraph("DIAMETER_ERROR_LOCAL (5140)")
+    document.add_paragraph("5011 DIAMETER_ERROR_FEATURE_UNSUPPORTED")
+    document.add_paragraph(
+        "At least one feature ... This value is defined in TS 29.229 [6]"
+    )
+
+
+def test_a_result_code_takes_the_document_its_text_says_defines_it(
+    tmp_path, synthetic_spec_docx
+):
+    path = _value_tables_docx(tmp_path, synthetic_spec_docx, _cited_result_codes)
+
+    (codes,) = _value_tables(tgpp_docx.extract(path))
+
+    assert [(row.name, row.origin) for row in codes.rows] == [
+        ("DIAMETER_ERROR_USER_UNKNOWN", "TS29.229"),
+        ("DIAMETER_ERROR_MINE", None),
+        ("DIAMETER_ERROR_POINTED", None),
+        ("DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST", "TS29.273"),
+        ("DIAMETER_ERROR_LOCAL", None),
+        ("DIAMETER_ERROR_FEATURE_UNSUPPORTED", "TS29.229"),
+    ]
+    (tmp_path / "TS29.999.toml").write_text(
+        '[[quirk]]\nname = "see-result-code-origins"\nreason = "clause 7.4.3"\n',
+        encoding="utf-8",
+    )
+    (codes,) = _value_tables(tgpp_docx.extract(path, sources_dir=tmp_path))
+    assert codes.rows[2].origin == "TS29.229"
+
+
+def test_a_result_code_cited_from_two_documents_fails(tmp_path, synthetic_spec_docx):
+    def build(document):
+        _heading(document, "7.4\tExperimental-Result-Code AVP values")
+        document.add_paragraph(
+            "the following Experimental-Result-Code value defined in 3GPP TS 29.212"
+            " [3] is applicable:"
+        )
+        document.add_paragraph("DIAMETER_PENDING_TRANSACTION (4144)")
+        document.add_paragraph("This value is defined in TS 29.229 [6]")
+
+    path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
+    with pytest.raises(tgpp_docx.ExtractionError, match="TS29.212 and in TS29.229"):
+        tgpp_docx.extract(path)
+
+
 _EXCLUSION = """
 [[exclude]]
 section = "8"

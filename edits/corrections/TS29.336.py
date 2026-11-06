@@ -12,7 +12,6 @@ from seanchai.dad.corrections import (
     reused_row,
     table_row,
     value_row,
-    value_table,
 )
 
 CORRECTIONS = [
@@ -231,36 +230,6 @@ CORRECTIONS += [
         replace="DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL",
         reason="clause 8.3.3.5's heading prints a space inside the name; TS 29.230 "
         "table 8.1.4 allocates 5513 under the name without it",
-        versions="18.2.0..19.1.0",
-    ),
-]
-
-# The codes clauses say are defined elsewhere, as the registry allocates them.
-CORRECTIONS += [
-    Accept(
-        id="user-unknown-result-code-reused-6-3",
-        rule="registry-result-code-document",
-        target=value_row(
-            value_table("Experimental-Result-Code", section="6.3"),
-            "DIAMETER_ERROR_USER_UNKNOWN",
-        ),
-        expect="DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 "
-        "table 8.1.4 allocates the code to TS29.229",
-        reason="clause 6.3.3.1 says 'This error code is defined in 3GPP TS 29.229 "
-        "[7].': the document lists a code it re-uses",
-        versions="18.2.0..19.1.0",
-    ),
-    Accept(
-        id="user-unknown-result-code-reused-8-3",
-        rule="registry-result-code-document",
-        target=value_row(
-            value_table("Experimental-Result-Code", section="8.3"),
-            "DIAMETER_ERROR_USER_UNKNOWN",
-        ),
-        expect="DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 "
-        "table 8.1.4 allocates the code to TS29.229",
-        reason="clause 8.3.3.1 says 'This error code is defined in 3GPP TS 29.229 "
-        "[7].': the document lists a code it re-uses",
         versions="18.2.0..19.1.0",
     ),
 ]

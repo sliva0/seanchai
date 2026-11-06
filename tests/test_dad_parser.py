@@ -1251,12 +1251,51 @@ def test_value_tables_parse_with_their_directives_and_rows():
     assert [row.mark for row in features.rows] == ["M", "O (NOTE 1)", None]
 
 
+def test_a_result_code_names_the_document_defining_it():
+    text = """\
+; Specification: 3GPP TS 29.999
+; Version: 18.0.0
+; Vendor-ID: 10415
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 7.4
+DIAMETER_ERROR_USER_UNKNOWN = 5001 ; 7.4.3.2  from TS29.229
+DIAMETER_ERROR_LOCAL        = 5002 ; 7.4.3.10
+DIAMETER_USER_UNKNOWN       = 5030 ; from RFC8506
+"""
+    (codes,) = parser.parse(text).sections
+
+    assert isinstance(codes, ast.ValueTable)
+    assert [(row.section, row.origin) for row in codes.rows] == [
+        ("7.4.3.2", "TS29.229"),
+        ("7.4.3.10", None),
+        (None, "RFC8506"),
+    ]
+    assert formatter.format_spec(parser.parse(text)) == text
+
+
+def test_only_a_result_code_has_an_origin():
+    with pytest.raises(pydantic.ValidationError, match="origin"):
+        ast.ValueTable(
+            avp="Some-Flags",
+            kind=ast.ValueKind.BITS,
+            source=ast.SourceRef(section="6.3.1"),
+            rows=(ast.ValueRow(name="A", value=0, origin="TS29.229"),),
+        )
+
+
 @pytest.mark.parametrize(
     ("rows", "directives", "message"),
     [
         ("Name = x", "; AVP: A\n; Kind: bits", "malformed value row"),
         ("Name = 1 ; M", "; AVP: A\n; Kind: bits", "a bit takes no"),
         ("Name = 1 ; not a clause", "; AVP: A\n; Kind: result-codes", "section"),
+        ("Name = 1 ; from", "; AVP: A\n; Kind: result-codes", "section"),
+        ("Name = 1 ; 6.2 from TS 29.229", "; AVP: A\n; Kind: result-codes", "section"),
+        ("Name = 1 ; 6.2 from Nowhere", "; AVP: A\n; Kind: result-codes", "pattern"),
         ("Name = 1 ; -", "; AVP: A\n; Kind: features", "no mark"),
         ("Name = 1", "; AVP: A\n; Kind: enum", "unknown kind"),
         ("Name = 1", "; Kind: bits", "missing directive 'AVP'"),

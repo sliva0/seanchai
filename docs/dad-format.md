@@ -106,6 +106,11 @@ section, each starting with `; Type:`.
   a number, with a result code's own clause or a feature's M/O after it. The
   description is prose and is dropped. A plain Result-Code value is the IETF's;
   an experimental one lives in the file's `; Vendor-ID:`.
+- **A result code defined elsewhere says where.** TS 29.283 clause 7.4.3.2 lists
+  `DIAMETER_ERROR_USER_UNKNOWN` and says "This error code is defined in 3GPP TS
+  29.229 [6]", so its row ends `; 7.4.3.2 from TS29.229`, the document named as
+  a re-used row's From cell names it. That document answers for the code, as an
+  origin answers for a re-used AVP; the row stays where the document lists it.
 - **An enumeration defined elsewhere says where.** A clause that gives its
   values by reference (TS 29.272's `Trace-Depth`, "those defined in TS
   32.422 [23] for Trace Depth") prints `; Values:` with that citation. A
