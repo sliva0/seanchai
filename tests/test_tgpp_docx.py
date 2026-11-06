@@ -2417,6 +2417,46 @@ def test_a_result_code_cited_from_two_documents_fails(tmp_path, synthetic_spec_d
         tgpp_docx.extract(path)
 
 
+def test_a_code_saying_it_is_defined_here_overrides_its_intro(
+    tmp_path, synthetic_spec_docx
+):
+    def build(document):
+        _heading(document, "7.4\tExperimental-Result-Code AVP values")
+        document.add_paragraph(
+            "The following values defined in TS 29.229 [6] are applicable:"
+        )
+        document.add_paragraph("DIAMETER_ONE (5001)")
+        document.add_paragraph("DIAMETER_LOCAL (5002)")
+        document.add_paragraph("This value is defined in TS 29.999 [7].")
+        document.add_paragraph("DIAMETER_HERE (5003)")
+        document.add_paragraph("This value is defined in the present document.")
+        document.add_paragraph("DIAMETER_UNNAMED (5004)")
+        document.add_paragraph("This value is defined in the Diameter guide [9].")
+
+    path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
+
+    (codes,) = _value_tables(tgpp_docx.extract(path))
+    assert [(row.name, row.origin) for row in codes.rows] == [
+        ("DIAMETER_ONE", "TS29.229"),
+        ("DIAMETER_LOCAL", None),
+        ("DIAMETER_HERE", None),
+        # A citation naming no document says nothing against the intro.
+        ("DIAMETER_UNNAMED", "TS29.229"),
+    ]
+
+
+def test_a_code_its_own_text_says_is_defined_twice_fails(tmp_path, synthetic_spec_docx):
+    def build(document):
+        _heading(document, "7.4\tExperimental-Result-Code AVP values")
+        _heading(document, "7.4.1\tDIAMETER_LOCAL (5002)", 2)
+        document.add_paragraph("This value is defined in TS 29.999 [7].")
+        document.add_paragraph("This value is defined in TS 29.229 [6].")
+
+    path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
+    with pytest.raises(tgpp_docx.ExtractionError, match=r"TS29\.999 and in TS29\.229"):
+        tgpp_docx.extract(path)
+
+
 _EXCLUSION = """
 [[exclude]]
 section = "8"

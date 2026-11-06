@@ -3123,10 +3123,12 @@ _RESULT_CODE_INTRO = "following Result-Code AVP value"
 # What a code's own text says defines it: "This error code is defined in 3GPP TS
 # 29.229 [6]." (TS 29.283 clause 7.4.3.2), "The error code is defined in" (TS
 # 29.330 clause 6.4.3.7), "This value is defined in TS 29.229 [204]" on the line
-# after the code's (TS 32.299 clause 7.1.8A).
+# after the code's (TS 32.299 clause 7.1.8A). "This value is defined in the
+# present document" says it is the document's own.
 _RESULT_DEFINED_RE = re.compile(
-    r"\b(?:This|The) (?:error code|result code|value) is defined in (?:the )?"
-    r"((?:(?!\. )[^,;\[])+?)\s*\[\d+\]"
+    r"\b(?:This|The) (?:error code|result code|value) is defined in"
+    r" (?:(?P<here>the present document|this (?:document|specification))\b"
+    r"|(?:the )?(?P<document>(?:(?!\. )[^,;\[])+?)\s*\[\d+\])"
 )
 # What an intro says of the codes after it: "the following Experimental-Result
 # AVP values defined in 3GPP TS 29.273 [48] are applicable:" (TS 29.212 clause
@@ -3144,7 +3146,9 @@ _RESULT_FOLLOWING_RE = re.compile(
 # charging). DIAMETER_CREDIT_LIMIT_REACHED 4012" (TS 32.299 V11.20.0 clause
 # 7.1.11), which the PDF prints as an entry of its own.
 _TRAILING_RESULT_RE = re.compile(rf"\. (?P<code>{_RESULT_NAME} \d{{4}})$")
-_RESULT_SEE_RE = re.compile(r"\b[Ss]ee (?:the )?((?:(?!\. )[^,;:\[()])+?)\s*\[\d+\]")
+_RESULT_SEE_RE = re.compile(
+    r"\b[Ss]ee (?:the )?(?P<document>(?:(?!\. )[^,;:\[()])+?)\s*\[\d+\]"
+)
 
 
 def _result_row(text: str, section: str | None) -> ast.ValueRow | None:
@@ -3197,7 +3201,8 @@ def _result_tables(
     "see" is read only behind `see-result-code-origins`. Neither says the
     document defines a code it does not, so "The Result-Code AVP values defined
     in Diameter BASE IETF RFC 6733 [61] are applicable", naming no code, is no
-    origin of the ones after it.
+    origin of the ones after it. A code's own text naming this document makes
+    the code local whatever its intro said.
     """
     see = quirks is not None and quirks.enabled("see-result-code-origins")
     trailing = quirks is not None and quirks.enabled("trailing-result-codes")
@@ -3218,6 +3223,9 @@ def _result_tables(
         rows: list[ast.ValueRow] = []
         plain: list[ast.ValueRow] = []
         notes: list[tuple[int, str]] = []
+        # What each code's own text said defines it, by its list and position:
+        # a document, or None for this one.
+        asserted: dict[tuple[int, int], str | None] = {}
         for section in tree:
             clause = None if section is root else section.number
             # The row the text read now describes, as its list and position.
@@ -3266,17 +3274,33 @@ def _result_tables(
                 )
                 if (match := stated or pointer) is None:
                     continue
-                if (origin := _result_origin(match[1], own_reference)) is None:
+                # A citation naming no document a reading knows says nothing
+                # of where the code is defined. One naming this document says
+                # the code is defined here, which outweighs an intro's word on
+                # the codes it lists; another document against the intro's, or
+                # two the code's own text names, is two definitions.
+                if match.groupdict().get("here"):
+                    document = own_reference
+                elif (document := _named_document(match["document"])) is None:
                     continue
+                origin = None if document == own_reference else document
                 found, at = current
-                if found[at].origin not in (None, origin):
+                key = (id(found), at)
+                if key in asserted:
+                    said = asserted[key]
+                    conflict = said != origin
+                else:
+                    said = found[at].origin
+                    conflict = origin is not None and said not in (None, origin)
+                if conflict:
                     raise ExtractionError(
                         f"{section.number}: {found[at].name} is defined in"
-                        f" {found[at].origin} and in {origin}"
+                        f" {said or own_reference} and in {origin or own_reference}"
                     )
                 if pointer is not None:
                     assert quirks is not None
                     quirks.fire("see-result-code-origins")
+                asserted[key] = origin
                 found[at] = _with_origin(found[at], origin)
         experimental = _EXPERIMENTAL_RESULT in root.title or any(
             _EXPERIMENTAL_RESULT in line.text
