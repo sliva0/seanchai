@@ -2371,8 +2371,8 @@ CnHealthMonitor               = 15 ; O
 ; Kind: result-codes
 ; Section: 5.5
 ; Page: 196
-DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST      = 5453 ; 5.5.3
-DIAMETER_ERROR_TIMED_OUT_REQUEST             = 5454 ; 5.5.3
+DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST      = 5453 ; 5.5.3 from TS29.273
+DIAMETER_ERROR_TIMED_OUT_REQUEST             = 5454 ; 5.5.3 from TS29.273
 DIAMETER_ERROR_INITIAL_PARAMETERS            = 5140 ; 5.5.3
 DIAMETER_ERROR_TRIGGER_EVENT                 = 5141 ; 5.5.3
 DIAMETER_PCC_RULE_EVENT                      = 5142 ; 5.5.3
@@ -2392,7 +2392,7 @@ DIAMETER_UE_STATUS_SUSPEND                   = 4145 ; 5.5.4
 ; Kind: result-codes
 ; Section: 5.5
 ; Page: 196
-DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3
+DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3 from RFC8506
 
 
 ; Type: Grouped AVP

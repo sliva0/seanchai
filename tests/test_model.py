@@ -3313,6 +3313,7 @@ def test_a_bit_mask_avp_exposes_its_bits_through_its_definition(built):
         "value": 0,
         "section": None,
         "mark": None,
+        "origin": None,
     }
 
 

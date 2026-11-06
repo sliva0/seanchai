@@ -13,7 +13,6 @@ from seanchai.dad.corrections import (
     reused_avps,
     reused_row,
     table_row,
-    value_row,
 )
 
 CORRECTIONS = [
@@ -461,62 +460,6 @@ CORRECTIONS += [
         reason="clause 8.2.3.9: 'The SIP-Auth-Data-Item AVP is defined in 3GPP TS "
         "29.229 [24]. The optional AVPs that are needed in SWx reference point are "
         "included in the ABNF representation below.'",
-        versions="18.6.0..19.2.0",
-    ),
-]
-
-# The codes clauses say are defined elsewhere, as the registry allocates them.
-CORRECTIONS += [
-    Accept(
-        id="user-unknown-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row("Experimental-Result-Code", "DIAMETER_ERROR_USER_UNKNOWN"),
-        expect="DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 "
-        "table 8.1.4 allocates the code to TS29.229",
-        reason="clause 10.3.2 says 'This result code shall be sent by the HSS to "
-        "indicate that the user identified by the IMSI is unknown (see 3GPP TS "
-        "29.229 [24]).': the document lists a code it re-uses",
-        versions="18.6.0..19.2.0",
-    ),
-    Accept(
-        id="identity-not-registered-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row(
-            "Experimental-Result-Code", "DIAMETER_ERROR_IDENTITY_NOT_REGISTERED"
-        ),
-        expect="DIAMETER_ERROR_IDENTITY_NOT_REGISTERED (code 5003) is listed here, "
-        "but TS29.230 table 8.1.4 allocates the code to TS29.229",
-        reason="clause 10.3.3 says 'This result code shall be sent by the HSS to "
-        "indicate that there is currently no 3GPP AAA Server registered for the "
-        "user (see 3GPP TS 29.229 [24]).': the document lists a code it re-uses",
-        versions="18.6.0..19.2.0",
-    ),
-    Accept(
-        id="roaming-not-allowed-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row(
-            "Experimental-Result-Code", "DIAMETER_ERROR_ROAMING_NOT_ALLOWED"
-        ),
-        expect="DIAMETER_ERROR_ROAMING_NOT_ALLOWED (code 5004) is listed here, but "
-        "TS29.230 table 8.1.4 allocates the code to TS29.229",
-        reason="clause 10.3.4 says 'This result code shall be sent by the HSS to "
-        "indicate that the subscriber is not allowed to roam in a certain "
-        "non-3GPP V-PLMN (see 3GPP TS 29.229 [24]).': the document lists a code "
-        "it re-uses",
-        versions="18.6.0..19.2.0",
-    ),
-    Accept(
-        id="identity-already-registered-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row(
-            "Experimental-Result-Code", "DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED"
-        ),
-        expect="DIAMETER_ERROR_IDENTITY_ALREADY_REGISTERED (code 5005) is listed "
-        "here, but TS29.230 table 8.1.4 allocates the code to TS29.229",
-        reason="clause 10.3.5 says 'This result code shall be sent by the HSS to "
-        "indicate that the node identity trying to be registered by a 3GPP AAA "
-        "Server is already registered for a specific user (see 3GPP TS 29.229 "
-        "[24]).': the document lists a code it re-uses",
         versions="18.6.0..19.2.0",
     ),
 ]

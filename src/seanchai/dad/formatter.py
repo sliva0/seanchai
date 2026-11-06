@@ -553,10 +553,15 @@ def _format_value_table(
 ) -> list[str]:
     width = max(len(value_name(row.name)) for row in table.rows)
     value_width = max(len(str(row.value)) for row in table.rows)
+    # Origins line up, as a re-used table's From column does.
+    section_width = max(len(row.section or "") for row in table.rows)
     lines = _directives(table, None, path, notes)
     for index, row in enumerate(table.rows):
         line = f"{value_name(row.name):<{width}} = {row.value:<{value_width}}"
-        if row.section is not None:
+        if row.origin is not None:
+            clause = f"{row.section:<{section_width}} " if row.section else ""
+            line += f" ; {clause}from {row.origin}"
+        elif row.section is not None:
             line += f" ; {row.section}"
         elif row.mark is not None:
             line += f" ; {_mark(row.mark)}"

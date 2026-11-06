@@ -14,7 +14,6 @@ from seanchai.dad.corrections import (
     reused_avps,
     reused_row,
     table_row,
-    value_row,
     value_table,
 )
 
@@ -1126,22 +1125,6 @@ CORRECTIONS += [
         " DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE, where no line reads it; the"
         " description after it is the code's",
         versions="11.20.0",
-    ),
-]
-
-# The codes clauses say are defined elsewhere, as the registry allocates them.
-CORRECTIONS += [
-    Accept(
-        id="feature-unsupported-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row(
-            "Experimental-Result-Code", "DIAMETER_ERROR_FEATURE_UNSUPPORTED"
-        ),
-        expect="DIAMETER_ERROR_FEATURE_UNSUPPORTED (code 5011) is listed here, but "
-        "TS29.230 table 8.1.4 allocates the code to TS29.229",
-        reason="clause 7.1.8A says 'This value is defined in TS 29.229 [204]': the "
-        "document lists a code it re-uses",
-        versions="18.0.0..19.0.0",
     ),
 ]
 

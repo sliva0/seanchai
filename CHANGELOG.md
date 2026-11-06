@@ -8,6 +8,14 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- A result code a document lists from another names it: `ast.ValueRow.origin`,
+  written `; 7.4.3.2 from TS29.229`, read by the docx extractor where the code's
+  text or the intro over it says the code "is defined in" a document, and behind
+  `see-result-code-origins` where it only says "see" one (TS 29.273, 29.329).
+  `registry-result-code-document` leaves such a code to its origin, and `lint`
+  gains `result-code-not-in-origin`, `result-code-origin-name` and
+  `result-code-origin-indirect`; 48 acceptances go. The export links the origin
+  to the clause listing the code and gives it as the value's `defined_in`.
 - `corpus.RELEASE_FILLS` lets a later release's copy state named fields of named
   AVPs for a citation whose own copy leaves them unstated, reporting
   `corpus.LATER_RELEASE` in `across_releases`, the copy in `completed_by` and a

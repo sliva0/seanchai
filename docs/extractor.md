@@ -143,6 +143,9 @@ The vocabulary, with the document that forced each:
   (TS 29.109's "a Bootstrapping-Info-Request message (BIR)").
 - `clause-parenthetical`: a trailing parenthetical in a clause cell,
   `16.4.7 (see Note)`, stripped as prose (TS 29.061, 29.561).
+- `see-result-code-origins`: a result code's clause naming the document
+  defining it with "see" alone (TS 29.273, 29.329;
+  [below](#the-3gpp-docx-extractor)).
 
 **Docx, tables.**
 
@@ -327,6 +330,19 @@ blank.
   experimental ones again (TS 29.212 clause 5.5.3). A heading whose number is
   unallocated (TS 29.345 clause 6.4.3.15, `(56x1)`) is a `;;` comment.
   Exact-match structure: neither reading is behind a quirk.
+- A code is another document's where its text says that document defines it,
+  and only then: the code's own text ("This error code is defined in 3GPP TS
+  29.229 [6]", TS 29.283 clause 7.4.3.2; "This value is defined in TS 29.229
+  [204]" on the line after TS 32.299 clause 7.1.8A's code), or the intro over
+  the codes it lists ("the following Experimental-Result AVP values defined in
+  3GPP TS 29.273 [48] are applicable:", TS 29.212 clause 5.5.3, until "the
+  following specific Gx Experimental-Result-Codes values are defined:"). The row
+  takes it as its origin; a code two documents are said to define fails. "The
+  Result-Code AVP values defined in Diameter Base IETF RFC 6733 [61] are
+  applicable" names no code, and a document's own number is no origin. A code's
+  clause saying only "See 3GPP TS 29.229 [6] clause 6.2.2.11." (TS 29.329) or
+  ending "(see TS 29.229 [24])." (TS 29.273 clauses 10.3.2 to 10.3.5) is read
+  so only behind `see-result-code-origins`.
 - Mark columns' cells become the row's marks. A cell is split at commas and
   spaces (at commas only under `worded-marks`); a parenthetical stays with
   the mark it follows. A printed dash is no marks and a blank cell is none

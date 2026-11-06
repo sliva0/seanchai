@@ -3096,6 +3096,26 @@ _FEATURE_AVP_RE = re.compile(r"^(?P<name>[A-Za-z0-9-]*Feature[A-Za-z0-9-]*) AVP\
 _FEATURE_LIST = "Feature-List"
 _EXPERIMENTAL_RESULT = "Experimental-Result"
 _RESULT_CODE_INTRO = "following Result-Code AVP value"
+# What a code's own text says defines it: "This error code is defined in 3GPP TS
+# 29.229 [6]." (TS 29.283 clause 7.4.3.2), "The error code is defined in" (TS
+# 29.330 clause 6.4.3.7), "This value is defined in TS 29.229 [204]" on the line
+# after the code's (TS 32.299 clause 7.1.8A).
+_RESULT_DEFINED_RE = re.compile(
+    r"\b(?:This|The) (?:error code|result code|value) is defined in (?:the )?"
+    r"((?:(?!\. )[^,;\[])+?)\s*\[\d+\]"
+)
+# What an intro says of the codes after it: "the following Experimental-Result
+# AVP values defined in 3GPP TS 29.273 [48] are applicable:" (TS 29.212 clause
+# 5.5.3), and with no document "the following specific Gx Experimental-Result-
+# Codes values are defined:", the document's own again.
+_RESULT_FOLLOWING_RE = re.compile(
+    r"\bfollowing\b(?:[^:\[]*?\bdefined in (?:the )?((?:(?!\. )[^:\[])+?)\s*\[\d+\])?"
+)
+# Behind `see-result-code-origins`: a code's clause pointing at the document
+# that defines it and saying no more, "See 3GPP TS 29.229 [6] clause 6.2.2.11."
+# (TS 29.329 clause 6.2.2.8) or "... is unknown (see TS 29.229 [24])." (TS
+# 29.273 clause 10.3.2).
+_RESULT_SEE_RE = re.compile(r"\b[Ss]ee (?:the )?((?:(?!\. )[^,;:\[()])+?)\s*\[\d+\]")
 
 
 def _result_row(text: str, section: str | None) -> ast.ValueRow | None:
@@ -3114,8 +3134,20 @@ def _result_row(text: str, section: str | None) -> ast.ValueRow | None:
 type _ValueNotes = list[tuple[ast.ValueTable, list[tuple[int, str]]]]
 
 
+def _with_origin(row: ast.ValueRow, origin: str | None) -> ast.ValueRow:
+    return ast.ValueRow.model_validate({**row.model_dump(), "origin": origin})
+
+
+def _result_origin(text: str, own_reference: str) -> str | None:
+    """The document `text`, a citation, names, unless it is this one."""
+    origin = _named_document(text)
+    return None if origin == own_reference else origin
+
+
 def _result_tables(
     sections: list[_Section],
+    own_reference: str = "",
+    quirks: sources.Quirks | None = None,
 ) -> tuple[list[ast.ValueTable], _ValueNotes]:
     """A value table per result-code clause printing any code: its subclause
     headings and its lines. TS 29.229 heads each code's clause (6.2.2.1
@@ -3129,7 +3161,16 @@ def _result_tables(
     Result-Code AVP value defined in IETF RFC 8506" (TS 29.212 clause 5.5.3) lists
     what is no experimental code, in a table of its own, until a line names the
     experimental ones again.
+
+    A code is another document's where its text says so: the intro over it
+    names where the codes it lists are defined, or the code's own text says it
+    "is defined in" one (`_RESULT_DEFINED_RE`). A pointer saying no more than
+    "see" is read only behind `see-result-code-origins`. Neither says the
+    document defines a code it does not, so "The Result-Code AVP values defined
+    in Diameter BASE IETF RFC 6733 [61] are applicable", naming no code, is no
+    origin of the ones after it.
     """
+    see = quirks is not None and quirks.enabled("see-result-code-origins")
     tables = []
     commented: _ValueNotes = []
     position = 0
@@ -3149,18 +3190,54 @@ def _result_tables(
         notes: list[tuple[int, str]] = []
         for section in tree:
             clause = None if section is root else section.number
+            # The row the text read now describes, as its list and position.
+            current: tuple[list[ast.ValueRow], int] | None = None
+            headed = False
             if (row := _result_row(section.title, clause)) is not None:
                 rows.append(row)
+                current, headed = (rows, len(rows) - 1), True
             elif _UNNUMBERED_RESULT_RE.fullmatch(section.title):
                 notes.append((len(rows), f"{section.title} ; {section.number}"))
             of_result_code = False
+            following: str | None = None
             for line in section.lines:
                 if _RESULT_CODE_INTRO in line.text:
                     of_result_code = True
                 elif _EXPERIMENTAL_RESULT in line.text:
                     of_result_code = False
                 if (row := _result_row(line.text, clause)) is not None:
-                    (plain if of_result_code else rows).append(row)
+                    found = plain if of_result_code else rows
+                    found.append(_with_origin(row, following))
+                    current, headed = (found, len(found) - 1), False
+                    continue
+                # A code's own clause lists no codes: its "following reasons"
+                # are prose (TS 29.329 clause 6.2.3.2).
+                if not headed and (intro := _RESULT_FOLLOWING_RE.search(line.text)):
+                    following = intro[1] and _result_origin(intro[1], own_reference)
+                    current = None
+                    continue
+                if current is None:
+                    continue
+                stated = _RESULT_DEFINED_RE.search(line.text)
+                pointer = (
+                    _RESULT_SEE_RE.search(line.text)
+                    if see and headed and stated is None
+                    else None
+                )
+                if (match := stated or pointer) is None:
+                    continue
+                if (origin := _result_origin(match[1], own_reference)) is None:
+                    continue
+                found, at = current
+                if found[at].origin not in (None, origin):
+                    raise ExtractionError(
+                        f"{section.number}: {found[at].name} is defined in"
+                        f" {found[at].origin} and in {origin}"
+                    )
+                if pointer is not None:
+                    assert quirks is not None
+                    quirks.fire("see-result-code-origins")
+                found[at] = _with_origin(found[at], origin)
         experimental = _EXPERIMENTAL_RESULT in root.title or any(
             _EXPERIMENTAL_RESULT in line.text
             for section in tree
@@ -3231,11 +3308,14 @@ def _value_rows(
 
 
 def _value_tables(
-    sections: list[_Section], warnings: list[str], quirks: sources.Quirks
+    sections: list[_Section],
+    warnings: list[str],
+    quirks: sources.Quirks,
+    own_reference: str = "",
 ) -> tuple[list[ast.ValueTable], _ValueNotes]:
     """Every value table of the document, with the notes each prints beside its
     rows (`_value_rows`)."""
-    tables, commented = _result_tables(sections)
+    tables, commented = _result_tables(sections, own_reference, quirks)
     for section in sections:
         for table in section.tables:
             bits = _value_columns(table, _BIT_LABELS, _BIT_NAME_LABELS)
@@ -4023,6 +4103,11 @@ QUIRKS: dict[str, str] = {
         "read explicit AVP definition citations in prose as re-used origins,"
         " retaining the citing AVP table's own facts (TS 29.329 6.3.15)"
     ),
+    "see-result-code-origins": (
+        "read a result code's clause saying only 'See <doc> [n]' or ending"
+        " '(see <doc> [n]).' as naming the document defining the code (TS 29.329"
+        " 6.2.2.8, TS 29.273 10.3.2)"
+    ),
     "bare-avp-citations": (
         "under prose-avp-origins, read 'See <doc> clause N.' as the whole of an"
         " AVP's clause, and 'for further description of this AVP', as origins"
@@ -4336,7 +4421,9 @@ def extract_with_comments(
             quirks,
             _publisher_vendor(specification),
         )
-        value_tables, value_notes = _value_tables(read, warnings, quirks)
+        value_tables, value_notes = _value_tables(
+            read, warnings, quirks, ast.spec_ref(specification)
+        )
         patcher.finish()
         sections = _assemble(
             _resolve(collected, quirks, warnings), collected.reprints, value_tables

@@ -289,7 +289,7 @@ ReportRestriction = 0 ; O
 ; Kind: result-codes
 ; Section: 5.5
 ; Page: 20
-DIAMETER_PENDING_TRANSACTION = 4144 ; 5.5.4
+DIAMETER_PENDING_TRANSACTION = 4144 ; 5.5.4 from TS29.212
 
 
 ; Type: Value Table
@@ -297,4 +297,4 @@ DIAMETER_PENDING_TRANSACTION = 4144 ; 5.5.4
 ; Kind: result-codes
 ; Section: 5.5
 ; Page: 20
-DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3
+DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3 from RFC4006

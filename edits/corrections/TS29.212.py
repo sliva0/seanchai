@@ -2,13 +2,11 @@
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
-    Accept,
     Correction,
     Supply,
     avp_rule,
     definition,
     reused_row,
-    value_row,
 )
 
 # Thirty-nine grouped-AVP clauses print `<AVP header: nnn>` with no
@@ -309,36 +307,6 @@ CORRECTIONS += [
         " of V19.1.0 defines IP-CAN-Type's 0 to 9, copied here. The clause's"
         " NOTE makes only 3GPP-EPS and Non-3GPP-EPS applicable in this"
         " release, which limits their use, not the list",
-        versions="18.2.0..19.1.0",
-    ),
-]
-
-# The codes clauses say are defined elsewhere, as the registry allocates them.
-CORRECTIONS += [
-    Accept(
-        id="late-overlapping-request-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row(
-            "Experimental-Result-Code", "DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST"
-        ),
-        expect="DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST (code 5453) is listed here, "
-        "but TS29.230 table 8.1.4 allocates the code to TS29.273",
-        reason="clause 5.5.3 says 'Further as an addition the following "
-        "Experimental-Result AVP values defined in 3GPP TS 29.273 [48] are "
-        "applicable:': the document lists a code it re-uses",
-        versions="18.2.0..19.1.0",
-    ),
-    Accept(
-        id="timed-out-request-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row(
-            "Experimental-Result-Code", "DIAMETER_ERROR_TIMED_OUT_REQUEST"
-        ),
-        expect="DIAMETER_ERROR_TIMED_OUT_REQUEST (code 5454) is listed here, but "
-        "TS29.230 table 8.1.4 allocates the code to TS29.273",
-        reason="clause 5.5.3 says 'Further as an addition the following "
-        "Experimental-Result AVP values defined in 3GPP TS 29.273 [48] are "
-        "applicable:': the document lists a code it re-uses",
         versions="18.2.0..19.1.0",
     ),
 ]

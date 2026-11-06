@@ -94,9 +94,11 @@ prints. `abbreviation` is a command's own and `wireshark_name` Wireshark's name
 for an AVP, filled with `--dictionary specifications/wireshark`. A value table's
 name is an entry of its own, `kind` `value`: its target is its clause, and its
 `identity` holds `value_kind` (`result-codes`, `bits`, `features`), the `avp`,
-the `value` and a feature's `application` and `feature_list_id`. In the text the
-name's token targets the clause too, its `; AVP:` line the AVP, and a result
-code's clause a `source`; a row in a subclause is that clause's `anchor`, and a
+the `value` and a feature's `application` and `feature_list_id`; its
+`defined_in` is a result code's `from` document where the row names one. In the
+text the name's token targets the clause too, its `; AVP:` line the AVP, a
+result code's clause a `source` and its `from` document the clause listing the
+code there; a row in a subclause is that clause's `anchor`, and a
 clause only such rows name reads "Value DIAMETER_SUCCESS" in `sections`.
 
 Correction reasons come from the corpus's `corrections.json`, so a plain

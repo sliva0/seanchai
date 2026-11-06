@@ -280,6 +280,6 @@ PC5-RAT-Type ::= < Enumerated AVP header: 4604 10415 >
 ; Kind: result-codes
 ; Section: 6.4
 ; Page: 23
-DIAMETER_ERROR_USER_UNKNOWN             = 5001 ; 6.4.3.2
+DIAMETER_ERROR_USER_UNKNOWN             = 5001 ; 6.4.3.2 from TS29.229
 DIAMETER_ERROR_UNKNOWN_V2X_SUBSCRIPTION = 5690 ; 6.4.3.3
 DIAMETER_ERROR_V2X_NOT_ALLOWED          = 5691 ; 6.4.3.4

@@ -91,7 +91,7 @@ GMLC-Number            TS29.272
 ; Kind: result-codes
 ; Section: 6.3
 ; Page: 16
-DIAMETER_ERROR_USER_UNKNOWN                    = 5001 ; 6.3.3.1
+DIAMETER_ERROR_USER_UNKNOWN                    = 5001 ; 6.3.3.1 from TS29.229
 DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK = 5490 ; 6.3.3.2
 DIAMETER_ERROR_ABSENT_USER                     = 4201 ; 6.3.4.1
 

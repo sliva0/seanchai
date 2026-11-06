@@ -1,10 +1,8 @@
 """Corrections for 3GPP TS 29.217 — see docs/corrections.md."""
 
 from seanchai.dad.corrections import (
-    Accept,
     Correction,
     definition,
-    value_row,
 )
 
 # The four grouped-AVP clauses print `< AVP Header: nnn >` with no vendor-id,
@@ -30,19 +28,4 @@ CORRECTIONS = [
         versions="18.0.0..19.0.0",
     )
     for name, section in _VENDORLESS
-]
-
-# The codes clauses say are defined elsewhere, as the registry allocates them.
-CORRECTIONS += [
-    Accept(
-        id="pending-transaction-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row("Experimental-Result-Code", "DIAMETER_PENDING_TRANSACTION"),
-        expect="DIAMETER_PENDING_TRANSACTION (code 4144) is listed here, but TS29.230 "
-        "table 8.1.3 allocates the code to TS29.212",
-        reason="clause 5.5.4 says 'As an addition the following "
-        "Experimental-Result-Code value defined in 3GPP TS 29.212 [14] is "
-        "applicable:': the document lists a code it re-uses",
-        versions="18.0.0..19.0.0",
-    ),
 ]

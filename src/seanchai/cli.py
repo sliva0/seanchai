@@ -435,10 +435,15 @@ def _echo_avp(avp, others) -> None:
             f"  {table.kind}{which} ({table.reference}, clause {table.section}{label}):"
         )
         for row in table.rows:
-            tail = row.section or row.mark
-            click.echo(
-                f"    {row.value} {row.name}" + ("" if tail is None else f" ; {tail}")
+            tail = " ".join(
+                part
+                for part in (
+                    row.section or row.mark,
+                    row.origin and f"from {row.origin}",
+                )
+                if part
             )
+            click.echo(f"    {row.value} {row.name}" + (f" ; {tail}" if tail else ""))
     if others:
         click.echo("  other readings:")
         for other in others:

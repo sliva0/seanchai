@@ -1623,7 +1623,7 @@ DIAMETER_AN_GW_FAILED                        = 4143 ; 5.5.4
 ; Kind: result-codes
 ; Section: 5.5
 ; Page: 133
-DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3
+DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3 from RFC4006
 
 
 ; Type: Grouped AVP

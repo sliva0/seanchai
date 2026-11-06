@@ -1106,7 +1106,7 @@ M2M-Information   1011   X     -     -     -     oneM2M-TS-0004
 ; Kind: result-codes
 ; Section: 7.1.8A
 ; Page: 98
-DIAMETER_ERROR_FEATURE_UNSUPPORTED = 5011
+DIAMETER_ERROR_FEATURE_UNSUPPORTED = 5011 ; from TS29.229
 
 
 ; Type: Grouped AVP

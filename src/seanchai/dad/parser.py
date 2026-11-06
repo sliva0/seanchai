@@ -827,19 +827,33 @@ def _parse_registry(
         )
 
 
+# A result code's tail: its own clause, the document defining it, or both.
+_RESULT_TAIL_RE = re.compile(
+    r"^(?:(?P<section>\S+)(?: +|$))?(?:from (?P<origin>\S+))?$"
+)
+
+
 def _value_row(kind: ast.ValueKind, line: str, lineno: int) -> ast.ValueRow:
     """A value table's line, `name = number`, with what follows it by `kind`:
-    a result code's clause, a feature's M/O mark, and after a bit nothing."""
+    a result code's clause and the document it is defined in, a feature's M/O
+    mark, and after a bit nothing."""
     match = _ENUM_VALUE_RE.match(line)
     if match is None:
         raise DadParseError(lineno, f"malformed value row: {line.strip()!r}")
     tail = match["description"]
-    section = mark = None
+    section = mark = origin = None
     if tail is not None:
         if kind is ast.ValueKind.BITS:
             raise DadParseError(lineno, f"a bit takes no {tail!r}")
         if kind is ast.ValueKind.RESULT_CODES:
-            section = tail
+            parts = _RESULT_TAIL_RE.match(tail)
+            if parts is None or parts["section"] == "from":
+                raise DadParseError(
+                    lineno,
+                    "a result code's tail is its section and 'from' a document,"
+                    f" not {tail!r}",
+                )
+            section, origin = parts["section"], parts["origin"]
         else:
             # `_text_cell` reads a dash as a blank cell, which here is no tail.
             if tail == "-":
@@ -851,6 +865,7 @@ def _value_row(kind: ast.ValueKind, line: str, lineno: int) -> ast.ValueRow:
             value=int(match["value"]),
             section=section,
             mark=mark,
+            origin=origin,
         )
 
 

@@ -1031,12 +1031,18 @@ class ValueRow(Node):
     """`DIAMETER_ERROR_USER_UNKNOWN = 5001 ; 6.2.2.1`: a name the document gives
     a number, in its spelling, as an enum value's name. `section` is the clause
     of a result code printed in a subclause of the block's, and `mark` a
-    feature's M/O cell; what the row says of the value beyond that is prose."""
+    feature's M/O cell; what the row says of the value beyond that is prose.
+
+    `origin` is the document a result code's text says defines it, `; 7.4.3.2
+    from TS29.229` where TS 29.283 clause 7.4.3.2 says "This error code is
+    defined in 3GPP TS 29.229 [6]": the document lists a code it re-uses, as a
+    re-used AVP row does, and that document answers for it."""
 
     name: EnumValueName
     value: Unsigned32
     section: SectionNumber | None = None
     mark: Mark | None = None
+    origin: SpecRef | None = None
 
 
 class ValueTable(Node):
@@ -1071,10 +1077,11 @@ class ValueTable(Node):
                 f" table's, not a {self.kind.value} table's"
             )
         if self.kind is not ValueKind.RESULT_CODES and any(
-            row.section is not None for row in self.rows
+            row.section is not None or row.origin is not None for row in self.rows
         ):
             raise ValueError(
-                f"a row's own clause is a result code's, not a {self.kind.value} row's"
+                "a row's own clause and origin are a result code's, not a"
+                f" {self.kind.value} row's"
             )
         return self
 

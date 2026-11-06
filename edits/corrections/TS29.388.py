@@ -4,7 +4,6 @@ from seanchai.dad.corrections import (
     Accept,
     Correction,
     definition,
-    value_row,
 )
 
 CORRECTIONS = [
@@ -32,20 +31,6 @@ CORRECTIONS += [
         "V2X-PC5-Allowed-PLMN, missing UE-PC5-AMBR, V2X-Permission",
         reason="clause 6.3.2: 'The V2X-Subscription-Data is originally defined in TS "
         "29.272 [10]. AVP format when used over V4 interface'",
-        versions="18.1.0..19.1.0",
-    ),
-]
-
-# The codes clauses say are defined elsewhere, as the registry allocates them.
-CORRECTIONS += [
-    Accept(
-        id="user-unknown-result-code-reused",
-        rule="registry-result-code-document",
-        target=value_row("Experimental-Result-Code", "DIAMETER_ERROR_USER_UNKNOWN"),
-        expect="DIAMETER_ERROR_USER_UNKNOWN (code 5001) is listed here, but TS29.230 "
-        "table 8.1.4 allocates the code to TS29.229",
-        reason="clause 6.4.3.2 says 'This error code is defined in TS 29.229 [6].': "
-        "the document lists a code it re-uses",
         versions="18.1.0..19.1.0",
     ),
 ]

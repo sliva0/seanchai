@@ -57,3 +57,14 @@ reason = """
     it
     """
 first_version = "19.1.0"
+
+[[quirk]]
+name = "see-result-code-origins"
+reason = """
+    clauses 6.2.2.8 and 6.2.2.12 print only 'See 3GPP TS 29.229 [6] clause
+    6.2.2.11.' and 'See 3GPP TS 29.229 [6]' for
+    DIAMETER_ERROR_FEATURE_UNSUPPORTED and DIAMETER_ERROR_IDENTITIES_DONT_MATCH,
+    which TS 29.229 defines
+    """
+first_version = "19.1.0"
+last_version = "19.1.0"
