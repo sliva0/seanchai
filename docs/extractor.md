@@ -118,7 +118,8 @@ The vocabulary, with the document that forced each:
 - `spaced-rule-operator`: `:: =` (TS 32.299, 29.229, 29.234, oneM2M).
 - `placeholder-codes`: a registry row whose code cell prints a placeholder,
   quoted as printed (TS 29.230 V19.3.0's `zz`, `xx1`, `xx2`).
-- `spaced-heading-numbers`: a space before the heading's tab (TS 29.234).
+- `spaced-heading-numbers`: a space before the heading's tab (TS 29.234,
+  29.061; TS 32.299 V11.20.0 clauses 7.2.47, 7.2.54, 7.2.142 and 7.2.219A).
 - `body-clause-headings`: a clause heading printed as a body paragraph (TS
   32.299 clause 7.2.135C).
 - `struck-rules-unused`: TS 32.299's legend for struck members (below).
