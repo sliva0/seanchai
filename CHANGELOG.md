@@ -34,6 +34,8 @@ Nothing has been published to PyPI yet.
   written `; 7.4.3.2 from TS29.229`, read by the docx extractor where the code's
   text or the intro over it says the code "is defined in" a document, and behind
   `see-result-code-origins` where it only says "see" one (TS 29.273, 29.329).
+  A code's own text naming the document itself, or "the present document", makes
+  it local under an intro naming another.
   `registry-result-code-document` leaves such a code to its origin, and `lint`
   gains `result-code-not-in-origin`, `result-code-origin-name` and
   `result-code-origin-indirect`; 48 acceptances go. The export links the origin

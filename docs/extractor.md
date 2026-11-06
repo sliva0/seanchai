@@ -348,12 +348,16 @@ blank.
   the codes it lists ("the following Experimental-Result AVP values defined in
   3GPP TS 29.273 [48] are applicable:", TS 29.212 clause 5.5.3, until "the
   following specific Gx Experimental-Result-Codes values are defined:"). The row
-  takes it as its origin; a code two documents are said to define fails. "The
-  Result-Code AVP values defined in Diameter Base IETF RFC 6733 [61] are
-  applicable" names no code, and a document's own number is no origin. A code's
-  clause saying only "See 3GPP TS 29.229 [6] clause 6.2.2.11." (TS 29.329) or
-  ending "(see TS 29.229 [24])." (TS 29.273 clauses 10.3.2 to 10.3.5) is read
-  so only behind `see-result-code-origins`.
+  takes it as its origin. "The Result-Code AVP values defined in Diameter Base
+  IETF RFC 6733 [61] are applicable" names no code, and a document's own number
+  is no origin: a code whose own text names the document itself, or says it "is
+  defined in the present document", is local even under an intro naming
+  another. A code its own text says two documents define fails, and so does one
+  whose text names another document than its intro does; a citation naming no
+  document a reading knows says nothing either way. A code's clause saying only
+  "See 3GPP TS 29.229 [6] clause 6.2.2.11." (TS 29.329) or ending "(see TS
+  29.229 [24])." (TS 29.273 clauses 10.3.2 to 10.3.5) is read so only behind
+  `see-result-code-origins`.
 - Mark columns' cells become the row's marks. A cell is split at commas and
   spaces (at commas only under `worded-marks`); a parenthetical stays with
   the mark it follows. A printed dash is no marks and a blank cell is none
