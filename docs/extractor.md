@@ -357,7 +357,10 @@ blank.
   document a reading knows says nothing either way. A code's clause saying only
   "See 3GPP TS 29.229 [6] clause 6.2.2.11." (TS 29.329) or ending "(see TS
   29.229 [24])." (TS 29.273 clauses 10.3.2 to 10.3.5) is read so only behind
-  `see-result-code-origins`.
+  `see-result-code-origins`, and only in those two shapes, a line that is the
+  pointer alone or a parenthetical naming the document alone that ends the
+  line: "For retry handling see TS 29.229 [6] clause 5." points at a procedure,
+  and names no origin.
 - Mark columns' cells become the row's marks. A cell is split at commas and
   spaces (at commas only under `worded-marks`); a parenthetical stays with
   the mark it follows. A printed dash is no marks and a blank cell is none

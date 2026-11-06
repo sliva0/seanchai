@@ -3138,17 +3138,23 @@ _RESULT_FOLLOWING_RE = re.compile(
     r"\bfollowing\b(?:[^:\[]*?\bdefined in (?:the )?((?:(?!\. )[^:\[])+?)\s*\[\d+\])?"
 )
 # Behind `see-result-code-origins`: a code's clause pointing at the document
-# that defines it and saying no more, "See 3GPP TS 29.229 [6] clause 6.2.2.11."
-# (TS 29.329 clause 6.2.2.8) or "... is unknown (see TS 29.229 [24])." (TS
-# 29.273 clause 10.3.2).
+# that defines it and saying no more, in one of two shapes. A line that is the
+# pointer alone, "See 3GPP TS 29.229 [6] clause 6.2.2.11." (TS 29.329 clause
+# 6.2.2.8, and with no clause or full stop 6.2.2.12), and a parenthetical ending
+# the line describing the code, "... is unknown (see TS 29.229 [24])." (TS
+# 29.273 clauses 10.3.2 to 10.3.5). A "see" anywhere else, "For retry handling
+# see TS 29.229 [6] clause 5.", points at a procedure or an encoding and names
+# nothing defining the code.
+_SEE_DOCUMENT = r"(?P<document>(?:3GPP |IETF )?(?:TS \d{2}\.\d{3}|RFC ?\d{4}))"
+_RESULT_SEE_ALONE_RE = re.compile(
+    rf"See {_SEE_DOCUMENT} \[\d+\](?: clause \d+(?:\.\d+)*)?\.?"
+)
+_RESULT_SEE_TERMINAL_RE = re.compile(rf"\(see {_SEE_DOCUMENT} \[\d+\]\)\.?$")
 # Behind `trailing-result-codes`: a code printed as the last sentence of the
 # paragraph describing the one before it, "... or is treated for offline
 # charging). DIAMETER_CREDIT_LIMIT_REACHED 4012" (TS 32.299 V11.20.0 clause
 # 7.1.11), which the PDF prints as an entry of its own.
 _TRAILING_RESULT_RE = re.compile(rf"\. (?P<code>{_RESULT_NAME} \d{{4}})$")
-_RESULT_SEE_RE = re.compile(
-    r"\b[Ss]ee (?:the )?(?P<document>(?:(?!\. )[^,;:\[()])+?)\s*\[\d+\]"
-)
 
 
 def _result_row(text: str, section: str | None) -> ast.ValueRow | None:
@@ -3268,7 +3274,8 @@ def _result_tables(
                     continue
                 stated = _RESULT_DEFINED_RE.search(line.text)
                 pointer = (
-                    _RESULT_SEE_RE.search(line.text)
+                    _RESULT_SEE_ALONE_RE.fullmatch(line.text)
+                    or _RESULT_SEE_TERMINAL_RE.search(line.text)
                     if see and headed and stated is None
                     else None
                 )
@@ -4266,9 +4273,9 @@ QUIRKS: dict[str, str] = {
         " 7.1.11)"
     ),
     "see-result-code-origins": (
-        "read a result code's clause saying only 'See <doc> [n]' or ending"
-        " '(see <doc> [n]).' as naming the document defining the code (TS 29.329"
-        " 6.2.2.8, TS 29.273 10.3.2)"
+        "read a result code's line saying only 'See <doc> [n]', or ending"
+        " '(see <doc> [n]).', as naming the document defining the code (TS"
+        " 29.329 6.2.2.8, TS 29.273 10.3.2)"
     ),
     "bare-avp-citations": (
         "under prose-avp-origins, read 'See <doc> clause N.' as the whole of an"
