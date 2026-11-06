@@ -206,12 +206,13 @@ last_version = "19.0.0"
 
 [[patch]]
 find = "1 Instant Ppersonal Aalert event;"
-replace = "1 Instant Personal Alert event"
+replace = "1 Instant Ppersonal Aalert event"
 exact = true
 section = "7.2.142"
 reason = """
-    PoC-Event-Type's value 1 keeps tracked-change residue (doubled initials) and
-    a trailing semicolon.
+    PoC-Event-Type's value list ends every item but the last (4 PoC Talk Burst)
+    with a semicolon: list punctuation, not part of the label. The label's
+    doubled initials are the document's, corrected in TS32.299.py.
     """
 first_version = "18.0.0"
 last_version = "19.0.0"
@@ -230,12 +231,13 @@ last_version = "19.0.0"
 
 [[patch]]
 find = "3 Early Ssession Setting-up event;"
-replace = "3 Early Session Setting-up event"
+replace = "3 Early Ssession Setting-up event"
 exact = true
 section = "7.2.142"
 reason = """
-    PoC-Event-Type's value 3 keeps tracked-change residue (a doubled initial)
-    and a trailing semicolon.
+    PoC-Event-Type's value list ends every item but the last with a semicolon:
+    list punctuation, not part of the label. The label's doubled initial is the
+    document's, corrected in TS32.299.py.
     """
 first_version = "18.0.0"
 last_version = "19.0.0"
@@ -700,11 +702,12 @@ last_version = "11.20.0"
 
 [[patch]]
 find = "1 Instant Ppersonal Aalert event;"
-replace = "1 Instant Personal Alert event"
+replace = "1 Instant Ppersonal Aalert event"
 exact = true
 reason = """
-    PoC-Event-Type's value 1 (clause 7.2.142) keeps tracked-change residue
-    (doubled initials) and a trailing semicolon
+    PoC-Event-Type's value 1 (clause 7.2.142) ends in a semicolon, list
+    punctuation and no part of the label; its doubled initials are the
+    document's
     """
 first_version = "11.20.0"
 last_version = "11.20.0"
@@ -722,11 +725,12 @@ last_version = "11.20.0"
 
 [[patch]]
 find = "3 Early Ssession Setting-up event;"
-replace = "3 Early Session Setting-up event"
+replace = "3 Early Ssession Setting-up event"
 exact = true
 reason = """
-    PoC-Event-Type's value 3 (clause 7.2.142) keeps tracked-change residue (a
-    doubled initial) and a trailing semicolon
+    PoC-Event-Type's value 3 (clause 7.2.142) ends in a semicolon, list
+    punctuation and no part of the label; its doubled initial is the
+    document's
     """
 first_version = "11.20.0"
 last_version = "11.20.0"

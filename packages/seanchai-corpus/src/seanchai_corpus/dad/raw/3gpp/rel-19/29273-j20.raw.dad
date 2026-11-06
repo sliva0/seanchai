@@ -1276,7 +1276,7 @@ MIP6-Feature-Vector          124    5.2.3.3     Unsigned64    M      -     -    
 QoS-Capability               578    9.2.3.2.4   Grouped       M      -     -       V,P
 RAT-Type                     1032   5.2.3.6     Enumerated    M,V    -     -       P
 Visited-Network-Identifier   600    9.2.3.1.2   OctetString   M,V    -     -       P
-Trace-Info                   1505   8.2.3.13    Grouped       V      -     -       M,P
+Trace-Info                   1505   8.2.3.1.3   Grouped       V      -     -       M,P
 Service-Selection            493    5.2.3.5     UTF8String    M      -     -       V,P
 AAA-Failure-Indication       1518   8.2.3.21    Unsigned32    V      -     -       M,P
 Emergency-Services           1538   7.2.3.4     Unsigned32    V      -     -       M,P

@@ -2412,9 +2412,9 @@ PoC-Change-Condition ::= < Enumerated AVP header: 1261 10415 >
 ; Page: 161
 PoC-Event-Type ::= < Enumerated AVP header: 2025 10415 >
         Normal                           = 0
-        "Instant Personal Alert event"   = 1
+        "Instant Personal Alert event"   = 1 ;; corrected: (TS32.299.py#poc-event-type-1-label)
         "PoC Group Advertisement event"  = 2
-        "Early Session Setting-up event" = 3
+        "Early Session Setting-up event" = 3 ;; corrected: (TS32.299.py#poc-event-type-3-label)
         "PoC Talk Burst"                 = 4
 
 

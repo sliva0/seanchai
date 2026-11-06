@@ -699,10 +699,11 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         "29229-j10.raw": 1,
         "29229-j10": 2,
         "29272-j60": 9,
-        # Each with one row citing another clause than the block's: raw, table
-        # 9.2.3.2.1/1's Emergency-Services, a misprint corrected; corrected,
-        # MIP6-Agent-Info, whose second block a correction deletes.
-        "29273-j20": 6,
+        # Rows citing another clause than the block's: table 7.2.3.1/1's
+        # Trace-Info, a misprint accepted, and raw, table 9.2.3.2.1/1's
+        # Emergency-Services, a misprint corrected; corrected, MIP6-Agent-Info,
+        # whose second block a correction deletes.
+        "29273-j20": 7,
         "29283-j00": 1,
         "29336-j10": 5,
         "29337-j00": 2,
@@ -2444,7 +2445,10 @@ _ACCEPTED_CORPUS_NOTES = {
         ],
     },
     "29273-j20.dad": {
-        "section-mismatch": ["TS29.273.py#mip6-agent-info-row-clause"],
+        "section-mismatch": [
+            "TS29.273.py#trace-info-clause",
+            "TS29.273.py#mip6-agent-info-row-clause",
+        ],
         "reused-body-differs": ["TS29.273.py#sip-auth-data-item-swx-body"],
     },
     "29336-j10.dad": {

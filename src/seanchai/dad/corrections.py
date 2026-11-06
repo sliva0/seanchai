@@ -348,6 +348,31 @@ class reused_row(Selector):
 
 
 @dataclass(frozen=True)
+class registry_row(Selector):
+    """A registry's allocation, by the code space and the code: TS 29.230
+    table 7.1's 402, which the registry names `NAF-Hostname` and TS 29.109
+    clause 6.3.1.3 `NAF-Id`. A code a table allocates twice matches twice,
+    which fails as any ambiguous selector does (table 7.1's 318)."""
+
+    registry: ast.RegistryKind
+    code: int
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching allocation, at `("sections", i, "rows", j)`."""
+        for index, section in enumerate(spec.sections):
+            if not isinstance(section, ast.Registry) or section.registry is not (
+                self.registry
+            ):
+                continue
+            for row_index, row in enumerate(section.rows):
+                if isinstance(row, ast.RegistryRow) and row.code == self.code:
+                    yield ("sections", index, "rows", row_index), row
+
+    def describe(self) -> str:
+        return f"{self.registry.value} registry row {self.code}"
+
+
+@dataclass(frozen=True)
 class registry_reservation(Selector):
     """A range a registry table reserves, by its first and last code: TS
     29.230 table 7.1's `; RESERVED 1324..1399`."""

@@ -8,6 +8,10 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- `registry_row(registry, code)` selects a registry's allocation in a
+  correction: TS 29.230's twenty-seven names its tables print otherwise than the
+  defining clause, `NAF-Hostname` for TS 29.109's `NAF-Id`, stay in the raw file
+  and are corrected, where input patches respelled them before.
 - A re-used row stands where the document says it: an origin a clause's prose
   states is a `Reused AVPs` block at that clause with no `; Table:`
   (`ReusedAvps.table` is optional), once per clause, in the docx and RFC

@@ -36,8 +36,8 @@ CORRECTIONS = [
         expect="DIAMETER_ERROR_ UNKNOWN _DATA",
         replace="DIAMETER_ERROR_UNKNOWN_DATA",
         reason="clause 7.4.3.12's heading prints two spaces inside the name; TS "
-        "29.230 table 8.1.4 allocates 5670 to it, whose own misprint is patched "
-        "on input",
+        "29.230 table 8.1.4 allocates 5670 to it, whose own misprint is "
+        "corrected",
         versions="18.0.0..19.0.0",
     ),
 ]

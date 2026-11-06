@@ -9,6 +9,7 @@ from seanchai.dad.corrections import (
     Supply,
     avp_rule,
     definition,
+    enum_value,
     flag_rules,
     header,
     reused_avps,
@@ -1158,4 +1159,35 @@ CORRECTIONS += [
         for member in ("Proxy-Info", "Route-Record", "AVP")
         for bound, replace in (("min", 0), ("max", None))
     ),
+]
+
+# Clause 7.2.142 prints two of PoC-Event-Type's labels with doubled letters, in
+# the published PDF too: "Instant Ppersonal Aalert event", "Early Ssession
+# Setting-up event". V11.20.0 prints them so as well, but prints the clause's
+# heading as a body paragraph, so its values are in no block to correct.
+CORRECTIONS += [
+    Correction(
+        id=f"poc-event-type-{value}-label",
+        target=enum_value("PoC-Event-Type", printed, value=value),
+        field="name",
+        expect=printed,
+        replace=name,
+        reason=f"clause 7.2.142 labels PoC-Event-Type's value {value} '{printed}',"
+        f" doubling {doubled}; the label is '{name}'",
+        versions="18.0.0..19.0.0",
+    )
+    for value, printed, name, doubled in (
+        (
+            1,
+            "Instant Ppersonal Aalert event",
+            "Instant Personal Alert event",
+            "the initials of 'Personal' and 'Alert'",
+        ),
+        (
+            3,
+            "Early Ssession Setting-up event",
+            "Early Session Setting-up event",
+            "the initial of 'Session'",
+        ),
+    )
 ]
