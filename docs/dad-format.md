@@ -167,6 +167,13 @@ section, each starting with `; Type:`.
   ([extractor.md](extractor.md#exclusions)).
 - **Reused AVPs are listed by name.** Resolving a row against the origin's
   file yields the `(vendor-id, code)` that is the real identity.
+- **A re-used row stands where the document says it.** A printed table holds its
+  own rows. A row an AVP table's NOTE or cell derives is under that table's
+  label: TS 29.329's NOTE on table 6.3.1 sends four AVPs to RFCs, beside the one
+  row its table 6.3/2 prints. A row a clause's prose states is in a block of its
+  own at that clause, with no `; Table:`, once per clause stating it: TS 29.273
+  clauses 9.2.3.2.4 and 9.2.3.6.4 both say QoS-Capability "is defined in IETF
+  RFC 5777 [9]", and no table of the document prints the row.
 - **An origin names its publisher, unless it is 3GPP or IETF.** Their
   documents are bare numbers (`TS29.272`, `RFC6733`); anything else leads
   with its publisher and keeps the publisher's numbering (`ETSI-TS283.034`,

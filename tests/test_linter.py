@@ -1309,6 +1309,59 @@ def test_a_re_used_tables_code_and_type_cells_are_compared_with_the_origin():
     )
 
 
+def test_a_tabulated_code_for_a_re_used_avp_is_compared_with_the_origin():
+    """TS 29.283 clause 7.3.21 says its Sequence-Number is TS 29.329's, whose is
+    716, while table 7.3.1-1 gives 4512; TS 29.140 tabulates the codes of the
+    AVPs it re-uses, and they agree."""
+    origin = _origin_spec(
+        "3GPP TS 29.329",
+        "18.0.0",
+        ast.AvpTable(
+            table="6.3.1",
+            source=ast.SourceRef(section="6.3"),
+            columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE),
+            rows=(
+                ast.AvpTableRow(name="Sequence-Number", code=716),
+                ast.AvpTableRow(name="MSISDN", code=701),
+            ),
+        ),
+    )
+    spec = _spec(
+        ast.AvpTable(
+            table="7.3.1-1",
+            source=ast.SourceRef(section="7.3.1"),
+            columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE),
+            rows=(
+                ast.AvpTableRow(name="Sequence-Number", code=4512),
+                ast.AvpTableRow(name="MSISDN", code=701),
+            ),
+        ),
+        ast.ReusedAvps(
+            source=ast.SourceRef(section="7.3.21"),
+            columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+            rows=(
+                ast.ReusedAvpRow(name="Sequence-Number", origin="TS29.329"),
+                ast.ReusedAvpRow(name="MSISDN", origin="TS29.329"),
+            ),
+        ),
+        specification="3GPP TS 29.283",
+        version="18.0.0",
+    )
+
+    (conflict,) = [
+        f
+        for f in linter.lint_with_corpus(spec, _books(origin))
+        if f.rule == "reused-code-conflict"
+    ]
+
+    assert conflict.severity is linter.Severity.ERROR
+    assert conflict.message == (
+        "Sequence-Number is code 4512 in table 7.3.1-1 and 716 in TS29.329, which"
+        " it is listed as re-used from"
+    )
+    assert conflict.paths == (("sections", 0, "rows", 0),)
+
+
 def test_a_member_its_table_marks_unused_in_its_command_is_a_note():
     """TS 32.299 clause 7.1.0: "Those Diameter AVPs that are not used are
     marked '-'". A blank cell marks nothing, and another command's dash

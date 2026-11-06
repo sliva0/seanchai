@@ -8,6 +8,16 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- A re-used row stands where the document says it: an origin a clause's prose
+  states is a `Reused AVPs` block at that clause with no `; Table:`
+  (`ReusedAvps.table` is optional), once per clause, in the docx and RFC
+  extractors, and an AVP table's NOTE-derived rows stay under its label beside a
+  printed re-used table. `reused_avps(label, section=)` tells unlabelled blocks
+  apart, and `Insert(drawn_from=)` names what an inserted node comes from in its
+  note, `;; inserted: from clause 16.4.7 (...)`. `reused-code-conflict` also
+  reports an AVP-table code for a re-used AVP that its origin does not give.
+  TS 32.299 V11.20.0's patched RAR header names its declarations, `see
+  TS32.299.toml`.
 - A result code a document lists from another names it: `ast.ValueRow.origin`,
   written `; 7.4.3.2 from TS29.229`, read by the docx extractor where the code's
   text or the intro over it says the code "is defined in" a document, and behind

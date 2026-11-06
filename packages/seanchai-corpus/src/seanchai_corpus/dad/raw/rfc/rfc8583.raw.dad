@@ -14,14 +14,6 @@ Load-Value        652    7.3       Unsigned64         -      V
 SourceID          649    7.4       DiameterIdentity   -      V
 
 
-; Type: Reused AVPs
-; Section: 7.5
-; Table: 7.5
-; Page: 16
-; Columns: Name   From
-SourceID          RFC8581
-
-
 ; Type: Grouped AVP
 ; Name: Load
 ; Section: 7.1
@@ -40,3 +32,10 @@ Load ::= < AVP header: 650 >
 Load-Type ::= < Enumerated AVP header: 651 >
         HOST = 0
         PEER = 1
+
+
+; Type: Reused AVPs
+; Section: 7.4
+; Page: 15
+; Columns: Name   From
+SourceID          RFC8581

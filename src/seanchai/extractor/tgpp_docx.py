@@ -1359,13 +1359,15 @@ def _extract_category_message(
     title: re.Match,
     quirks: sources.Quirks,
     commented: _Commented,
+    declarations: str,
 ) -> ast.Message:
     """A command printed as a table of its members' categories and no rule: TS
     32.299 V11.20.0 clause 6.4.4 prints RAR so, where V19.0.0 prints the rule.
     Clause 6.4.1.2's symbols make M `{ }` and OC `[ ]`; a dash, "Not used in 3GPP",
     reads as a strike; a row set off by a tab is the grouped AVP above its own,
     kept as a comment. No Diameter header is printed anywhere, so a line an input
-    patch supplies states it, and the file says so."""
+    patch supplies states it, and the file says so, naming the `declarations`
+    file whose patch says where the header comes from."""
     header = next(
         (
             match
@@ -1422,7 +1424,10 @@ def _extract_category_message(
         (
             message,
             [
-                (0, "patched: the table prints no Diameter header"),
+                (
+                    0,
+                    f"patched: the table prints no Diameter header, see {declarations}",
+                ),
                 *(
                     (position, formatter.commented_avp_rule(rule, members))
                     for position, rule in notes
@@ -3432,11 +3437,12 @@ def _pdf_spec_and_version(reader: pypdf.PdfReader) -> tuple[str, str]:
 @dataclass(frozen=True)
 class _ReusedTable:
     """A re-used AVPs table with the provenance the output block needs: its own
-    caption and its own clause, which is not necessarily the AVP table's."""
+    caption and its own clause, which is not necessarily the AVP table's. No
+    caption for the origins a clause's prose states."""
 
     rows: list[ast.ReusedAvpRow]
     columns: tuple[ast.ReusedColumn, ...]
-    label: str
+    label: str | None
     section: str
 
 
@@ -3482,6 +3488,9 @@ class _Collected:
     vendor: int = TGPP_VENDOR
     avp_tables: list[_CollectedAvpTable] = field(default_factory=list)
     reused_tables: list[_ReusedTable] = field(default_factory=list)
+    # Behind `prose-avp-origins`: the origins each clause's prose states, a
+    # block per clause, in document order.
+    prose_reused: list[_ReusedTable] = field(default_factory=list)
     # Behind `registry-tables`: TS 29.230's allocation tables.
     registries: list[ast.Registry] = field(default_factory=list)
 
@@ -3498,6 +3507,10 @@ class _Resolved:
     pairs: list[tuple[ast.AvpTable, _ReusedTable]]
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp]
     independent_reused: list[_ReusedTable] = field(default_factory=list)
+    # A block per clause whose prose states origins, and per AVP table whose
+    # notes derive rows beside a printed re-used table: no printed table holds
+    # them.
+    derived_reused: list[_ReusedTable] = field(default_factory=list)
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     registries: list[ast.Registry] = field(default_factory=list)
 
@@ -3589,7 +3602,13 @@ def _collect(
                     )
                 collected.messages.append(
                     _extract_category_message(
-                        section, table, caption, title, quirks, collected.commented
+                        section,
+                        table,
+                        caption,
+                        title,
+                        quirks,
+                        collected.commented,
+                        f"{collected.own_reference}.toml",
                     )
                 )
                 continue
@@ -3781,17 +3800,22 @@ def _unnamed_citations(
 def _prose_avp_origins(
     collected: _Collected, sections: list[_Section], quirks: sources.Quirks
 ) -> None:
-    """Keep explicit definition citations alongside the citing AVP table.
+    """Keep explicit definition citations, each in a block at the clause
+    stating it.
 
     Like NOTE-derived origins, these supplement the table rather than erase
-    its local code, type or application flag rules. References to encodings,
-    value lists or another AVP do not define this AVP's origin, and neither
-    does a citation that could be any of a clause's several AVPs: that fails
-    rather than picks one.
+    its local code, type or application flag rules; unlike them, no table
+    prints them, so they stand at their sentence's clause and not under a
+    table's caption. A name two clauses cite is in both. References to
+    encodings, value lists or another AVP do not define this AVP's origin, and
+    neither does a citation that could be any of a clause's several AVPs: that
+    fails rather than picks one.
     """
     rows = [row for table in collected.avp_tables for row in table.table.rows]
     names = {row.name for row in rows}
     origins: dict[str, str] = {}
+    # The clauses stating each name's origin, in document order.
+    stated: dict[str, dict[str, None]] = {}
 
     def cited(citation: str) -> str | None:
         origin = _named_document(citation)
@@ -3803,6 +3827,7 @@ def _prose_avp_origins(
                 f"{section.number}: conflicting prose origins for {name}:"
                 f" {origins[name]} and {origin}"
             )
+        stated.setdefault(name, {})[section.number] = None
         quirks.fire(quirk)
 
     for section in sections:
@@ -3842,12 +3867,28 @@ def _prose_avp_origins(
         for row in table.rows
     }
     for entry in collected.avp_tables:
-        for row in entry.table.rows:
-            origin = origins.get(row.name)
-            if origin is not None and (row.name, origin) not in known:
-                inferred = ast.ReusedAvpRow(name=row.name, origin=origin)
-                if inferred not in entry.note_reused:
-                    entry.note_reused.append(inferred)
+        known |= {(row.name, row.origin) for row in entry.note_reused}
+    by_clause: dict[str, list[ast.ReusedAvpRow]] = {}
+    for name in dict.fromkeys(row.name for row in rows):
+        origin = origins.get(name)
+        if origin is None or (name, origin) in known:
+            continue
+        for clause in stated[name]:
+            by_clause.setdefault(clause, []).append(
+                ast.ReusedAvpRow(name=name, origin=origin)
+            )
+    collected.prose_reused = [
+        # A sentence states a name and a document, and no M-bit.
+        _ReusedTable(
+            rows=found,
+            columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+            label=None,
+            section=clause,
+        )
+        for clause, found in sorted(
+            by_clause.items(), key=lambda item: ast.section_sort_key(item[0])
+        )
+    ]
 
 
 def _resolve(
@@ -3918,7 +3959,7 @@ def _resolve(
         )
     ):
         avp_sections = ", ".join(entry.section for entry in collected.avp_tables)
-        reused_labels = ", ".join(table.label for table in collected.reused_tables)
+        reused_labels = ", ".join(str(table.label) for table in collected.reused_tables)
         raise ExtractionError(
             f"{len(collected.avp_tables)} AVP tables (sections {avp_sections}) with"
             f" {len(collected.reused_tables)} re-used tables"
@@ -3926,32 +3967,28 @@ def _resolve(
         )
 
     pairs = []
+    derived = list(collected.prose_reused)
     for index, entry in enumerate(collected.avp_tables):
         # `AvpTable.table` is optional only for label-less RFC tables; this
         # extractor rejects a docx AVP table without a caption before here.
         assert entry.table.table is not None
-        if not independent and index < len(collected.reused_tables):
-            reused = collected.reused_tables[index]
-        else:
-            # Only NOTE-derived rows: they come from the AVP table, so that
-            # is honestly where the block was found.
-            reused = _ReusedTable(
-                rows=[],
-                columns=ast.REUSED_COLUMNS,
-                label=entry.table.table,
-                section=entry.section,
-            )
-        pairs.append(
-            (
-                entry.table,
-                _ReusedTable(
-                    rows=[*reused.rows, *entry.note_reused],
-                    columns=reused.columns,
-                    label=reused.label,
-                    section=reused.section,
-                ),
-            )
+        # The rows the AVP table's own notes and cells derive come from it, so
+        # that is honestly where their block was found.
+        noted = _ReusedTable(
+            rows=entry.note_reused,
+            columns=ast.REUSED_COLUMNS,
+            label=entry.table.table,
+            section=entry.section,
         )
+        if not independent and index < len(collected.reused_tables):
+            # A printed table holds its own rows only: TS 29.329's table 6.3/2
+            # prints External-Identifier, and its AVP table's NOTE the four
+            # RFC AVPs beside it.
+            pairs.append((entry.table, collected.reused_tables[index]))
+            if noted.rows:
+                derived.append(noted)
+        else:
+            pairs.append((entry.table, noted))
 
     codes: dict[str, int | None] = {}
     for entry in collected.avp_tables:
@@ -3979,6 +4016,7 @@ def _resolve(
     # list Gx's AVPs as re-used from TS 29.212, and 29.061's SGmb table (20.5)
     # cites 29.061, while the clauses defining them are in the same document.
     reused_rows = [row for _, reused in pairs for row in reused.rows]
+    reused_rows += [row for reused in derived for row in reused.rows]
     if independent:
         reused_rows += [row for table in collected.reused_tables for row in table.rows]
     reused_rows += [row for table in collected.vendor_reused for row in table.rows]
@@ -4025,6 +4063,7 @@ def _resolve(
             *collected.vendor_reused,
         ],
         applications=collected.applications,
+        derived_reused=derived,
     )
 
 
@@ -4056,7 +4095,9 @@ def _assemble(
 ) -> tuple[ast.Section, ...]:
     """File order: applications, messages, what the document re-prints and
     registries, then each definition set's AVP table followed by its re-used
-    table, then every definition and value table in document order."""
+    table, then every definition, value table and block of derived re-used
+    rows in document order, each of these after the definitions of its
+    clause."""
     sections: list[ast.Section] = [
         *resolved.applications,
         *resolved.messages,
@@ -4083,9 +4124,18 @@ def _assemble(
                 rows=tuple(reused.rows),
             )
         )
+    derived = [
+        ast.ReusedAvps(
+            table=reused.label,
+            source=ast.SourceRef(section=reused.section),
+            columns=reused.columns,
+            rows=tuple(reused.rows),
+        )
+        for reused in resolved.derived_reused
+    ]
     sections.extend(
         sorted(
-            (*resolved.definitions, *value_tables),
+            (*resolved.definitions, *value_tables, *derived),
             key=lambda definition: ast.section_sort_key(definition.source.section),
         )
     )

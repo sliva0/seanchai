@@ -137,8 +137,8 @@ PDP-Session-Operation              1015   5.2.21    Enumerated     M,V    P     
 TFT-Filter                         1012   5.2.18    IPFilterRule   M,V    P     -       -       Yes
 TFT-Packet-Filter-Information      1013   5.2.19    Grouped        M,V    P     -       -       Yes
 ToS-Traffic-Class                  1014   5.2.20    OctetString    M,V    P     -       -       Yes
-3GPP-GPRS-Negotiated-QoS-Profile   5      5.3       -              M,V    P     -       -       - ;; inserted: (TS29.210.py#3gpp-gprs-negotiated-qos-profile-flags)
-3GPP-SGSN-MCC-MNC                  18     5.3       -              M,V    P     -       -       - ;; inserted: (TS29.210.py#3gpp-sgsn-mcc-mnc-flags)
+3GPP-GPRS-Negotiated-QoS-Profile   5      5.3       -              M,V    P     -       -       - ;; inserted: from clause 5.3, its code from TS 29.061 V6.15.0 clause 16.4.7 (TS29.210.py#3gpp-gprs-negotiated-qos-profile-flags)
+3GPP-SGSN-MCC-MNC                  18     5.3       -              M,V    P     -       -       - ;; inserted: from clause 5.3, its code from TS 29.061 V6.15.0 clause 16.4.7 (TS29.210.py#3gpp-sgsn-mcc-mnc-flags)
 
 
 ; Type: Reused AVPs

@@ -85,15 +85,6 @@ Status-Text                   1118   6.3.21    UTF8String    M,V    -     -     
 Routeing-Address-Resolution   1119   6.3.22    Enumerated    M,V    -     -       -       No
 
 
-; Type: Reused AVPs
-; Section: 6.3
-; Table: 6.3.1
-; Page: 14
-; Columns: Name   From       M-bit
-MSISDN            TS29.329   -
-3GPP-IMSI         TS29.061   -
-
-
 ; Type: Grouped AVP
 ; Name: Served-User-Identity
 ; Section: 6.3.1
@@ -103,6 +94,13 @@ Served-User-Identity ::= < AVP header: 1100 10415 >
         [ VASP-ID ]
         [ VAS-ID ]
       * [ AVP ]
+
+
+; Type: Reused AVPs
+; Section: 6.3.2
+; Page: 14
+; Columns: Name   From
+MSISDN            TS29.329
 
 
 ; Type: Enumerated AVP
@@ -115,6 +113,13 @@ Trigger-Event ::= < Enumerated AVP header: 1103 10415 >
         "MM1 Message Delivery"                  = 2
         "MM7 Message Submission, Profile based" = 3
         "MM7 Message Submission, Address based" = 4
+
+
+; Type: Reused AVPs
+; Section: 6.3.6
+; Page: 15
+; Columns: Name   From
+3GPP-IMSI         TS29.061
 
 
 ; Type: Grouped AVP

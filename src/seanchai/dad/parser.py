@@ -681,7 +681,8 @@ def _reused_row(
 def _parse_reused(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.ReusedAvps:
-    table = _pop(directives, "Table", lineno)
+    # Optional: a clause's prose states origins in no table.
+    table = directives.pop("Table", None)
     columns = _columns(_pop(directives, "Columns", lineno), ast.ReusedColumn)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
@@ -690,7 +691,10 @@ def _parse_reused(
         rows.append(_reused_row(columns, cells, row_lineno))
     with _validated(lineno):
         return ast.ReusedAvps(
-            table=table.value, source=source, columns=columns, rows=tuple(rows)
+            table=None if table is None else table.value,
+            source=source,
+            columns=columns,
+            rows=tuple(rows),
         )
 
 

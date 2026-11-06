@@ -17,9 +17,9 @@ CORRECTIONS = [
     ),
     Insert(
         id="calling-station-id-reused",
-        into=reused_avps("5.2"),
+        into=reused_avps(None, section="5.2"),
         node=ast.ReusedAvpRow(name="Calling-Station-Id", origin="RFC4005"),
-        after="Service-Selection",
+        after=None,
         reason=(
             "clause 5.7 gives Calling-Station-Id's code 31 and type without "
             "citing a document, but clause 9.1 lists only codes 504 to 507 as "
@@ -27,5 +27,6 @@ CORRECTIONS = [
             "[RFC4005] as the kind of application carrying them, and it defines "
             "the AVP"
         ),
+        drawn_from="clauses 4 and 5.7",
     ),
 ]

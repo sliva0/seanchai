@@ -342,7 +342,7 @@ cell the source left blank. Anything else is the cell's marks.
 ```abnf
 reused-avps   = "; Type: Reused AVPs" NL
                 "; Section: " section-number NL
-                "; Table: " inline-text NL
+                ["; Table: " inline-text NL]
                 ["; Page: " 1*DIGIT NL]
                 "; Columns: " *SP reused-columns NL
                 1*(table-row NL)
@@ -357,6 +357,12 @@ A From cell may name a document outside 3GPP and IETF: TS 29.212 re-uses
 `3GPP2-BSID` from `3GPP2-X.S0057` and `Logical-Access-ID` from
 `ETSI-ES283.034`, TS 32.299 types thirteen rows by `OMA-DDS-Charging_Data`
 and tabulates `M2M-Information` from `oneM2M-TS-0004`.
+
+A block with no `; Table:` is no table: it holds the origins one clause's prose
+states, and `; Section:` is that clause. TS 29.329 clause 6.3.9 says of
+Server-Name "See 3GPP TS 29.229 [6] for further description of this AVP", and
+the block at 6.3.9 lists it from `TS29.229` under the columns a sentence
+states, Name and From.
 
 Name and From are required; M-bit is not (TS 29.128, 29.173, 29.336 print no
 such column). Code and Type are the citing table's own statement of what

@@ -2076,10 +2076,11 @@ def _prose_avp_origins(
     tables: tuple[ast.AvpTable, ...],
     quirks: sources.Quirks,
 ) -> list[ast.ReusedAvps]:
-    """Explicit definition citations, retaining the citing table's facts."""
+    """Explicit definition citations, retaining the citing table's facts, each a
+    block at the clause stating it: no table prints these rows."""
     if not tables:
         return []
-    rows = []
+    blocks = []
     for section in sections:
         title = _TITLE_RE.match(section.title)
         if title is None:
@@ -2097,19 +2098,15 @@ def _prose_avp_origins(
             text,
         )
         if match is not None:
-            rows.append(ast.ReusedAvpRow(name=title["name"], origin=match[1]))
+            blocks.append(
+                ast.ReusedAvps(
+                    source=ast.SourceRef(section=section.number, page=section.page),
+                    columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+                    rows=(ast.ReusedAvpRow(name=title["name"], origin=match[1]),),
+                )
+            )
             quirks.fire("prose-avp-origins")
-    if not rows:
-        return []
-    table = tables[0]
-    return [
-        ast.ReusedAvps(
-            table=table.table or table.source.section,
-            source=table.source,
-            columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
-            rows=tuple(rows),
-        )
-    ]
+    return blocks
 
 
 # The clause holding an RFC's result codes: RFC 6733 clause 7.1 "Result-Code AVP",
@@ -2362,9 +2359,10 @@ def extract_with_comments(
         )
         quirks.finish()
         # File order matches the docx extractor's: messages in document order,
-        # the AVP table, then every definition and value table in document order.
+        # the AVP table, then every definition, value table and clause's
+        # re-used block in document order.
         ordered = sorted(
-            (*definitions, *_result_tables(document_sections)),
+            (*definitions, *_result_tables(document_sections), *reused),
             key=lambda definition: ast.section_sort_key(definition.source.section),
         )
         file_sections: tuple[ast.Section, ...] = (
@@ -2372,7 +2370,6 @@ def extract_with_comments(
             *tables,
             *moved,
             *noted,
-            *reused,
             *ordered,
         )
         spec = ast.Specification(

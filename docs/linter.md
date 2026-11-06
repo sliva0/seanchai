@@ -109,8 +109,11 @@ cites.
   local-and-reused AVP is doing, decided by comparing bodies. All notes:
   only the origin's editor knows which copy is current.
 - `reused-code-conflict`: two documents giving one AVP two codes, also
-  where a re-used table or a `Reprinted AVP` block prints a code of its own
-  that the origin does not give. An error: an AVP is its `(vendor-id, code)`.
+  where a re-used table, a `Reprinted AVP` block or the file's AVP table prints
+  a code of its own for an AVP it re-uses that the origin does not give. An
+  error: an AVP is its `(vendor-id, code)`, so the claim that it is the
+  origin's names another AVP. A tabulated code alone says nothing against the
+  claim: TS 29.140 and TS 29.329 tabulate the codes of AVPs they re-use.
 - `reprint-not-in-origin`: a `Reprinted AVP` block naming a document that does
   not define the AVP. An error.
 - `reprint-differs`: such a block listing other members than the document it

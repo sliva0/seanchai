@@ -89,6 +89,7 @@ CORRECTIONS += [
         " VSAs and tabulates nowhere. The row states those flags and clause"
         " 16.4.7's code",
         versions="6.7.0",
+        drawn_from="clause 5.3, its code from TS 29.061 V6.15.0 clause 16.4.7",
     )
     for name, code, after in (
         ("3GPP-GPRS-Negotiated-QoS-Profile", 5, "ToS-Traffic-Class"),

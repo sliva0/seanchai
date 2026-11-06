@@ -53,6 +53,7 @@ CORRECTIONS += [
         " it code 3708, but table 6.3.1-1 accidentally omits the row; its flag"
         " rules follow every locally defined PC4a AVP in the table",
         versions="18.1.0..19.1.0",
+        drawn_from="clause 6.3.13, its code from TS 29.230 table 7.1",
     )
 ]
 

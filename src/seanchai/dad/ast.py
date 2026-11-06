@@ -819,10 +819,14 @@ class ReusedAvps(Node):
     by more. TS 29.128, 29.173 and 29.336 print no M-bit column; TS 29.172
     prints AVP Code and Value Type ones; TS 29.212 and 29.214 add the same
     per-specification columns their AVP tables carry.
+
+    `table` is absent where no table prints the rows: the origins one clause's
+    prose states, "This AVP is defined in IETF RFC 5777 [9]" (TS 29.273 clause
+    9.2.3.2.4), are a block of their own at that clause.
     """
 
     type: Literal["Reused AVPs"] = "Reused AVPs"
-    table: TableLabel
+    table: TableLabel | None = None
     source: SourceRef
     columns: Annotated[tuple[ReusedColumn, ...], Field(min_length=1)] = REUSED_COLUMNS
     rows: Annotated[tuple[ReusedAvpRow, ...], Field(min_length=1)]

@@ -628,7 +628,10 @@ def test_a_command_printed_by_category_is_a_message(tmp_path, synthetic_spec_doc
         ("Proxy-Info", ast.Presence.OPTIONAL),
     ]
     printed = formatter.format_spec(spec, comments)
-    assert ";; patched: the table prints no Diameter header\n" in printed
+    assert (
+        ";; patched: the table prints no Diameter header, see TS29.999.toml\n"
+        in printed
+    )
     assert re.search(r"^;;.*\{ Proxy-Host \}$", printed, re.M)
     assert re.search(r"^;;.*\[ Old-Thing \] +; strikethrough$", printed, re.M)
 
@@ -2356,7 +2359,7 @@ def test_a_result_code_cited_from_two_documents_fails(tmp_path, synthetic_spec_d
         document.add_paragraph("This value is defined in TS 29.229 [6]")
 
     path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
-    with pytest.raises(tgpp_docx.ExtractionError, match="TS29.212 and in TS29.229"):
+    with pytest.raises(tgpp_docx.ExtractionError, match=r"TS29\.212 and in TS29\.229"):
         tgpp_docx.extract(path)
 
 

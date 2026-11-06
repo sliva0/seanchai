@@ -218,8 +218,8 @@ MBMS-Time-To-Data-Transfer          911    17.7.14   OctetString   M,V    P     
 MBMS-Session-Repetition-Number      912    17.7.15   OctetString   M,V    P     -       -       Yes
 MBMS-Required-QoS                   913    17.7.16   UTF8String    M,V    P     -       -       Yes
 MBMS-Counting-Information           914    17.7.17   Enumerated    M,V    P     -       -       Yes
-3GPP-SGSN-MCC-MNC                   18     16.4.7    -             -      -     -       -       - ;; inserted: (TS29.061.py#3gpp-sgsn-mcc-mnc-row)
-3GPP-GPRS-Negotiated-QoS-Profile    5      16.4.7    -             -      -     -       -       - ;; inserted: (TS29.061.py#3gpp-gprs-negotiated-qos-profile-row)
+3GPP-SGSN-MCC-MNC                   18     16.4.7    -             -      -     -       -       - ;; inserted: from clause 16.4.7 (TS29.061.py#3gpp-sgsn-mcc-mnc-row)
+3GPP-GPRS-Negotiated-QoS-Profile    5      16.4.7    -             -      -     -       -       - ;; inserted: from clause 16.4.7 (TS29.061.py#3gpp-gprs-negotiated-qos-profile-row)
 
 
 ; Type: Enumerated AVP

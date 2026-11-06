@@ -290,21 +290,34 @@ class reused_avps(Selector):
 
     What a re-used-row `Insert` targets: TS 29.337's table 6.3.1/2 lists
     every member its Serving-Node bodies use except six, and nothing but
-    adding the rows can make those references resolve.
+    adding the rows can make those references resolve. `section` narrows by
+    the block's clause, which tells apart blocks printing no label: RFC 5779's
+    AVP table at clause 5.2 has none, nor do the blocks of origins its clauses'
+    prose states.
     """
 
-    label: str
+    label: str | None
+    section: str | None = None
 
     def locate(self, spec: ast.Specification) -> _Located:
         """Each re-used block carrying the label, at `("sections", i)`."""
         yield from (
             (("sections", index), section)
             for index, section in enumerate(spec.sections)
-            if isinstance(section, ast.ReusedAvps) and section.table == self.label
+            if isinstance(section, ast.ReusedAvps)
+            and section.table == self.label
+            and (self.section is None or section.source.section == self.section)
         )
 
     def describe(self) -> str:
-        return f"re-used AVPs table {self.label!r}"
+        described = (
+            "unlabelled re-used AVPs table"
+            if self.label is None
+            else f"re-used AVPs table {self.label!r}"
+        )
+        if self.section is not None:
+            described += f" (clause {self.section})"
+        return described
 
 
 @dataclass(frozen=True)
@@ -670,6 +683,11 @@ class Insert:
 
     Into a `value_table()`, it inserts a `ValueRow` the document states where
     no reading finds it, as a row into a table.
+
+    `drawn_from` says what the node's fields come from where that is not the
+    block it goes into, as its note prints it: TS 29.061 V6.15.0's two
+    sub-attributes go into table 10 "from clause 16.4.7", which lists them and
+    which the table omits. A row inserted with none is the block's own.
     """
 
     id: str
@@ -686,10 +704,18 @@ class Insert:
     after: str | None
     reason: str
     versions: str | VersionRange = "*..*"
+    drawn_from: str | None = None
     origin: str = ""
 
     def __post_init__(self) -> None:
         _check_id(self.id)
+        if self.drawn_from is not None and (
+            not self.drawn_from or self.drawn_from != " ".join(self.drawn_from.split())
+        ):
+            raise CorrectionError(
+                f"{self.id}: drawn_from must be one line of text, not"
+                f" {self.drawn_from!r}"
+            )
         object.__setattr__(self, "versions", VersionRange.parse(self.versions))
 
     @property
@@ -1253,50 +1279,56 @@ def _check_undefined(spec: ast.Specification, node: ast.UndefinedAvp) -> None:
 
 def _created_blocks(
     spec: ast.Specification, corrections: Sequence[Edit]
-) -> tuple[ast.Specification, list[int], dict[str, ast.TreePath]]:
+) -> tuple[ast.Specification, list[int], dict[reused_avps, ast.TreePath]]:
     """Place an empty re-used block after each AVP table whose label an
     `Insert` targets while no re-used block carries it (see `Insert`).
 
     Returns the tree to rebuild, with the placeholders in it; the index each
     input section has in that tree, and past the last one the tree's end;
-    and the placeholders' paths by label. A
+    and the placeholders' paths by the selector creating each. A
     placeholder is built without validation, since a table may not be empty;
     the inserts targeting it fill it through the same `_inserted` as any
     other, and the rebuild validates the result. Selectors never see it: they
     resolve against the original tree.
     """
     labels = {
-        edit.into.label
+        edit.into
         for edit in corrections
         if isinstance(edit, Insert)
         and isinstance(edit.into, reused_avps)
         and not any(edit.into.find(spec))
     }
-    created: dict[int, ast.ReusedAvps] = {}
-    for label in labels:
+    created: dict[int, tuple[reused_avps, ast.ReusedAvps]] = {}
+    for selector in labels:
         tables = [
             (index, section)
             for index, section in enumerate(spec.sections)
-            if isinstance(section, ast.AvpTable) and section.table == label
+            if isinstance(section, ast.AvpTable)
+            and section.table == selector.label
+            and (selector.section is None or section.source.section == selector.section)
         ]
         if len(tables) != 1:
             # Not a creation: `_resolve` reports the selector's no-match.
             continue
         index, table = tables[0]
-        created[index] = ast.ReusedAvps.model_construct(
-            table=label,
-            source=table.source,
-            columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
-            rows=(),
+        created[index] = (
+            selector,
+            ast.ReusedAvps.model_construct(
+                table=selector.label,
+                source=table.source,
+                columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+                rows=(),
+            ),
         )
     positions: list[int] = []
     sections: list[ast.Section] = []
-    placeholders: dict[str, ast.TreePath] = {}
+    placeholders: dict[reused_avps, ast.TreePath] = {}
     for index, section in enumerate(spec.sections):
         positions.append(len(sections))
         sections.append(section)
-        if (placeholder := created.get(index)) is not None:
-            placeholders[placeholder.table] = ("sections", len(sections))
+        if (made := created.get(index)) is not None:
+            selector, placeholder = made
+            placeholders[selector] = ("sections", len(sections))
             sections.append(placeholder)
     # One past the last input section is one past the tree's last: where a
     # comment block ending the file stands.
@@ -1461,9 +1493,9 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
         if (
             isinstance(correction, Insert)
             and isinstance(correction.into, reused_avps)
-            and correction.into.label in placeholders
+            and correction.into in placeholders
         ):
-            path = placeholders[correction.into.label]
+            path = placeholders[correction.into]
         else:
             path = _in_tree(_resolve(spec, correction), positions)
         # Looked up in the tree rather than kept from the selector, so a
@@ -1849,7 +1881,8 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
                 if isinstance(edit.node, ast.ApplicationScope | ast.UndefinedAvp)
                 else result.path
             )
-            yield "trailing", line, f"inserted: ({edit.cited})", index
+            drawn = "" if edit.drawn_from is None else f"from {edit.drawn_from} "
+            yield "trailing", line, f"inserted: {drawn}({edit.cited})", index
             continue
         if isinstance(edit, Supply):
             if isinstance(edit.target, table_row):

@@ -748,7 +748,7 @@
 3GPP-IMSI-MCC-MNC                  8      16.4.7    UTF8String    V      P     -       M       Yes       Gi,Sgi
 3GPP-GGSN-MCC-MNC                  9      16.4.7    UTF8String    V      P     -       M       Yes       Gi,Sgi
 3GPP-NSAPI                         10     16.4.7    OctetString   V      P     -       M       Yes       Gi,Sgi
-3GPP-Session-Stop-Indicator        11     16.4.7    -             -      -     -       -       -         "" ;; inserted: (TS29.061.py#session-stop-indicator-row)
+3GPP-Session-Stop-Indicator        11     16.4.7    -             -      -     -       -       -         "" ;; inserted: from clause 16.4.7.2 (TS29.061.py#session-stop-indicator-row)
 3GPP-Selection-Mode                12     16.4.7    UTF8String    V      P     -       M       Yes       Gi,Sgi
 3GPP-Charging-Characteristics      13     16.4.7    UTF8String    V      P     -       M       Yes       Gi,Sgi
 3GPP-CG-IPv6-Address               14     16.4.7    OctetString   V      P     -       M       Yes       Gi,Sgi

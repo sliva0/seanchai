@@ -39,6 +39,7 @@ CORRECTIONS = [
         " table 7.2.0.1 re-uses it from here. Only the name, code and clause"
         " are stated: the clause gives no Diameter type or flags",
         versions="18.1.0..19.1.0",
+        drawn_from="clause 16.4.7.2",
     ),
 ]
 
@@ -64,6 +65,7 @@ CORRECTIONS += [
         " name, code and clause are stated: the clause gives no Diameter type or"
         " flags",
         versions="6.15.0",
+        drawn_from="clause 16.4.7",
     )
     for name, code in (
         ("3GPP-GPRS-Negotiated-QoS-Profile", 5),
