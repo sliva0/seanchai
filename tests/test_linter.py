@@ -573,9 +573,8 @@ _RAW_ERRORS = {
     "29214-7c0.raw.dad": ["vendor-id-mismatch"] * 5,
     "29209-680.raw.dad": ["vendor-id-mismatch"] * 5,
     # TS 29.210's four and TS 29.234's four grouped headers printing no vendor
-    # where clauses 5.2 and 10.1 set 3GPP's; clause 6.1's commands, which TS
-    # 29.210's two application statements (6.1, 6.2) both reach as clause 6's.
-    "29210-670.raw.dad": ["application-scope-overlap"] * 4 + ["vendor-id-mismatch"] * 4,
+    # where clauses 5.2 and 10.1 set 3GPP's.
+    "29210-670.raw.dad": ["vendor-id-mismatch"] * 4,
     "29234-b20.raw.dad": ["vendor-id-mismatch"] * 4,
     # Release 11, the copies TS 32.299 V11.20.0 cites: thirty-one and six
     # vendorless grouped headers, as their Release 19 successors print.
@@ -640,18 +639,14 @@ _RAW_ERRORS = {
     + ["duplicate-identity"] * 6
     + ["vendor-id-mismatch"] * 2,
     "rfc4004.raw.dad": ["table-definition-mismatch"],
-    # Clause 6.1 lists Service-Type's Callback Login (3) and Callback Framed
-    # (4), then repeats both among the values it qualifies.
-    "rfc4005.raw.dad": ["duplicate-enum-value"] * 4,
-    # The wildcard row of table 7.1.0.1; two Integer32 rows clauses 7.2.111AaA
-    # and 7.2.111AaB define as Enumerated; and every grouped header in clause
-    # 7.2 printing no vendor while table 7.2.0.1 sets V.
-    "32299-j00.raw.dad": ["row-without-code"]
-    + ["table-definition-mismatch"] * 2
+    # Two Integer32 rows clauses 7.2.111AaA and 7.2.111AaB define as
+    # Enumerated, and every grouped header in clause 7.2 printing no vendor
+    # while table 7.2.0.1 sets V.
+    "32299-j00.raw.dad": ["table-definition-mismatch"] * 2
     + ["vendor-id-mismatch"] * 96,
-    # Release 11: table 7.1's wildcard row, and the grouped headers of clause
-    # 7.2 printing no vendor while table 7.2 sets V.
-    "32299-bk0.raw.dad": ["row-without-code"] + ["vendor-id-mismatch"] * 66,
+    # Release 11: the grouped headers of clause 7.2 printing no vendor while
+    # table 7.2 sets V.
+    "32299-bk0.raw.dad": ["vendor-id-mismatch"] * 66,
     # Table A.4-1 puts V under Must not for its 45687 rows and 3GPP's
     # Service-Information, and clause A.5.14 prints M2M-Information's
     # header with no vendor-id.

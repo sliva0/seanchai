@@ -2214,12 +2214,18 @@ def _extract_avp_table(
     quirks: sources.Quirks,
     references: dict[str, str] | None = None,
     own_reference: str = "",
+    wildcards: list[tuple[int, str]] | None = None,
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
     """Column *order* has been identical in every 3GPP specification examined,
     but the set has not: TS 29.273's table has no Encrypt column, TS 29.212's
     has two the format does not model. Reading the labels rather than assuming
     nine positions is what lets those be extracted at all, and what keeps a
-    missing column distinguishable from an empty cell."""
+    missing column distinguishable from an empty cell.
+
+    Behind `wildcard-avp-row`, a row tabulating the `* [ AVP ]` wildcard (TS
+    32.299 tables 7.1 and 7.1.0.1, `AVP | *`) is no AVP and no row: it goes to
+    `wildcards` as the note standing where it was printed, with the number of
+    rows before it."""
     rows: list[ast.AvpTableRow] = []
     note_refs: list[tuple[str, str]] = []  # (avp name, note number)
     note_rfcs: dict[str, str] = {}  # note number -> RFC number
@@ -2251,7 +2257,31 @@ def _extract_avp_table(
     columns, positions, data_rows = _walk_table(
         table, known, "AVP table", warnings, skip
     )
+    name_at = positions[columns.index(ast.AvpColumn.NAME)]
+    code_at = (
+        positions[columns.index(ast.AvpColumn.CODE)]
+        if ast.AvpColumn.CODE in columns
+        else None
+    )
     for cells in data_rows:
+        if (
+            code_at is not None
+            and cells[name_at] == "AVP"
+            and _strip_note_ref(cells[code_at])[0] == "*"
+        ):
+            # Any AVP, ABNF grammar: TS 32.299 clause 7.1.0's table lists the
+            # members its commands may carry, and "* [ AVP ]" is one.
+            if not quirks.enabled("wildcard-avp-row"):
+                raise ExtractionError(
+                    "AVP table row 'AVP' with code '*', which this document's"
+                    " source declaration does not read (the `wildcard-avp-row`"
+                    " quirk)"
+                )
+            quirks.fire("wildcard-avp-row")
+            printed = " ".join(cells[position] or "-" for position in positions)
+            if wildcards is not None:
+                wildcards.append((len(rows), f"{printed} ; the * [ AVP ] wildcard"))
+            continue
         name = ""
         marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
         vendor_value: int | None = None
@@ -2281,17 +2311,6 @@ def _extract_avp_table(
                     vendor_value = int(text) if text else None
                 case ast.AvpColumn.CODE:
                     code, code_note = _strip_note_ref(text)
-                    if code == "*" and name == "AVP":
-                        # TS 32.299 table 7.1.0.1 tabulates the `* [ AVP ]`
-                        # wildcard as a row with code "*": any AVP, so no code.
-                        if not quirks.enabled("wildcard-avp-row"):
-                            raise ExtractionError(
-                                "AVP table row 'AVP' with code '*', which this"
-                                " document's source declaration does not read"
-                                " (the `wildcard-avp-row` quirk)"
-                            )
-                        quirks.fire("wildcard-avp-row")
-                        code = ""
                     if code and not code.isdigit():
                         raise ExtractionError(f"AVP table code cell {code!r}")
                     code_value = int(code) if code else None
@@ -3120,6 +3139,11 @@ _RESULT_FOLLOWING_RE = re.compile(
 # that defines it and saying no more, "See 3GPP TS 29.229 [6] clause 6.2.2.11."
 # (TS 29.329 clause 6.2.2.8) or "... is unknown (see TS 29.229 [24])." (TS
 # 29.273 clause 10.3.2).
+# Behind `trailing-result-codes`: a code printed as the last sentence of the
+# paragraph describing the one before it, "... or is treated for offline
+# charging). DIAMETER_CREDIT_LIMIT_REACHED 4012" (TS 32.299 V11.20.0 clause
+# 7.1.11), which the PDF prints as an entry of its own.
+_TRAILING_RESULT_RE = re.compile(rf"\. (?P<code>{_RESULT_NAME} \d{{4}})$")
 _RESULT_SEE_RE = re.compile(r"\b[Ss]ee (?:the )?((?:(?!\. )[^,;:\[()])+?)\s*\[\d+\]")
 
 
@@ -3136,7 +3160,7 @@ def _result_row(text: str, section: str | None) -> ast.ValueRow | None:
     return None
 
 
-type _ValueNotes = list[tuple[ast.ValueTable, list[tuple[int, str]]]]
+type _ValueNotes = list[tuple[ast.ValueTable | ast.AvpTable, list[tuple[int, str]]]]
 
 
 def _with_origin(row: ast.ValueRow, origin: str | None) -> ast.ValueRow:
@@ -3176,6 +3200,7 @@ def _result_tables(
     origin of the ones after it.
     """
     see = quirks is not None and quirks.enabled("see-result-code-origins")
+    trailing = quirks is not None and quirks.enabled("trailing-result-codes")
     tables = []
     commented: _ValueNotes = []
     position = 0
@@ -3210,7 +3235,17 @@ def _result_tables(
                     of_result_code = True
                 elif _EXPERIMENTAL_RESULT in line.text:
                     of_result_code = False
-                if (row := _result_row(line.text, clause)) is not None:
+                row = _result_row(line.text, clause)
+                if (
+                    row is None
+                    and trailing
+                    and (glued := _TRAILING_RESULT_RE.search(line.text))
+                ):
+                    assert quirks is not None
+                    row = _result_row(glued["code"], clause)
+                    if row is not None:
+                        quirks.fire("trailing-result-codes")
+                if row is not None:
                     found = plain if of_result_code else rows
                     found.append(_with_origin(row, following))
                     current, headed = (found, len(found) - 1), False
@@ -3470,6 +3505,9 @@ class _Collected:
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     grouped: list[ast.GroupedAvp] = field(default_factory=list)
     commented: _Commented = field(default_factory=list)
+    # The notes standing among an AVP table's rows: the `* [ AVP ]` wildcard
+    # TS 32.299 tabulates (`wildcard-avp-row`).
+    table_notes: _ValueNotes = field(default_factory=list)
     # Behind `reprinted-avps`: another document's rule, as printed here.
     reprints: list[ast.ReprintedAvp] = field(default_factory=list)
     glosses: _Glosses = field(default_factory=list)
@@ -3657,8 +3695,15 @@ def _collect(
                         " contains no definitions"
                     )
                     continue
+                wildcards: list[tuple[int, str]] = []
                 avp_table, note_reused = _extract_avp_table(
-                    table, section.number, warnings, quirks, references, own_reference
+                    table,
+                    section.number,
+                    warnings,
+                    quirks,
+                    references,
+                    own_reference,
+                    wildcards,
                 )
                 if quirks.enabled("referred-type-sentences"):
                     avp_table = _referred_type_sentences(
@@ -3666,6 +3711,8 @@ def _collect(
                     )
                 if quirks.enabled("vendor-id-sentence"):
                     avp_table = _vendor_id_sentence(avp_table, section, quirks)
+                if wildcards:
+                    collected.table_notes.append((avp_table, wildcards))
                 collected.avp_tables.append(
                     _CollectedAvpTable(
                         table=avp_table,
@@ -3731,7 +3778,43 @@ def _collect(
                 collected.pending_enums.append((section, title["name"]))
     if quirks.enabled("prose-avp-origins"):
         _prose_avp_origins(collected, sections, quirks)
+    collected.applications = _sibling_applications(collected.applications)
     return collected
+
+
+def _sibling_applications(
+    applications: list[ast.ApplicationScope],
+) -> list[ast.ApplicationScope]:
+    """Each stated application, scoped to its own clause where another states
+    a different one under the same interface clause: TS 29.210 V6.7.0's clause
+    6.1 states Gx's id and 6.2 Gx over Gy's, so neither speaks for clause 6,
+    and each for the commands of its own. Alone under its interface clause, a
+    statement speaks for all of it: TS 29.212 clause 5.1's Gx id is that of the
+    commands of 5.6. A statement at the shared clause itself, beside another's,
+    could speak for either, and fails."""
+    by_interface: dict[str, list[ast.ApplicationScope]] = {}
+    for application in applications:
+        interface = ast.interface_clause(application.source.section)
+        by_interface.setdefault(interface, []).append(application)
+    scoped = []
+    for application in applications:
+        interface = ast.interface_clause(application.source.section)
+        stated = by_interface[interface]
+        if len({(each.name, each.application_id) for each in stated}) == 1:
+            scoped.append(application)
+            continue
+        if any(each.source.section == interface for each in stated):
+            raise ExtractionError(
+                f"{interface}: {', '.join(each.name for each in stated)} are"
+                " stated under one interface clause, one of them at the clause"
+                " itself, so which commands each is for is ambiguous"
+            )
+        scoped.append(
+            application.model_copy(
+                update={"applies_to": (f"{application.source.section}.*",)}
+            )
+        )
+    return scoped
 
 
 def _avp_title(title: str, quirks: sources.Quirks) -> re.Match | None:
@@ -4153,6 +4236,11 @@ QUIRKS: dict[str, str] = {
         "read explicit AVP definition citations in prose as re-used origins,"
         " retaining the citing AVP table's own facts (TS 29.329 6.3.15)"
     ),
+    "trailing-result-codes": (
+        "read a result code printed as the last sentence of a paragraph, after"
+        " the description of the code before it (TS 32.299 V11.20.0 clause"
+        " 7.1.11)"
+    ),
     "see-result-code-origins": (
         "read a result code's clause saying only 'See <doc> [n]' or ending"
         " '(see <doc> [n]).' as naming the document defining the code (TS 29.329"
@@ -4220,7 +4308,8 @@ QUIRKS: dict[str, str] = {
         " table 7.1.0.1)"
     ),
     "wildcard-avp-row": (
-        "read the 'AVP' row's code '*' as no code (TS 32.299 table 7.1.0.1)"
+        "read the 'AVP' row with code '*' as the * [ AVP ] wildcard, a note where"
+        " it stood and no AVP (TS 32.299 tables 7.1 and 7.1.0.1)"
     ),
     "value-first-enums": (
         "read 'n Label' enumerated values, the label ending at the first"
@@ -4491,7 +4580,7 @@ def extract_with_comments(
             sections,
             collected.commented,
             collected.glosses,
-            value_notes,
+            [*value_notes, *collected.table_notes],
             []
             if declarations_path is None
             else patcher.exclusion_notes(declarations_path.name),
@@ -4512,7 +4601,11 @@ def _comments(
     file leaves out is a block of its own after the header."""
 
     def position_of(
-        body: ast.Message | ast.GroupedAvp | ast.ReprintedAvp | ast.ValueTable,
+        body: ast.Message
+        | ast.GroupedAvp
+        | ast.ReprintedAvp
+        | ast.ValueTable
+        | ast.AvpTable,
     ) -> int:
         for index, section in enumerate(sections):
             if section is body:

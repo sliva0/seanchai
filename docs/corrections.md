@@ -73,9 +73,9 @@ corrected file cites, so name what is corrected
 - **Position only where identity runs out.** `occurrence=n` picks the n-th
   rule of one name in one body, for a body that prints a rule twice
   identically (TS 29.229's RTA prints `< Session-Id >` on two lines), or
-  the n-th value of one name in a list (RFC 4005 repeats two Service-Type
-  values among those it qualifies). It matches only while the name still
-  repeats, so the declaration fails once upstream drops the copy.
+  the n-th value of one name in a list printing it twice. It matches only
+  while the name still repeats, so the declaration fails once upstream drops
+  the copy.
 - **One field of one node.** Replacing a structural field such as `avps` is
   rejected. Several fields of one node are replaced in declaration order,
   each through validation. Two corrections to the same field are rejected;
@@ -99,11 +99,10 @@ corrected file cites, so name what is corrected
   `definition(name)` for an `ast.AvpRule` or an `ast.EnumValue` (`after`
   naming the member or value it follows), or `header()` for an
   `Application Scope` or `Undefined AVP` block (`after` must be None), or
-  `value_table()` for an `ast.ValueRow` (TS 32.299 V11.20.0 prints
-  `DIAMETER_CREDIT_LIMIT_REACHED 4012` at the end of a paragraph, where no line
-  reads it). A
-  `reused_avps(label)` matching no block, where an AVP table carries that
-  label, creates the table's re-used block after it; with `section=`, the
+  `value_table()` for an `ast.ValueRow`, a code the document states where no
+  reading finds it. A `reused_avps(label)` matching no block, where an AVP
+  table carries that label, creates the table's re-used block after it; with
+  `section=`, the
   table at that clause, as `reused_avps(None, section="5.2")` creates the block
   of RFC 5779's unlabelled table. `drawn_from` says what the node's fields come
   from where that is not the block it goes into, and the note prints it: TS

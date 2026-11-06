@@ -3,12 +3,10 @@
 from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Correction,
-    Delete,
     Insert,
     Supply,
     avp_rule,
     definition,
-    enum_value,
     header,
     table_row,
 )
@@ -125,21 +123,6 @@ CORRECTIONS += [
             "document's successor, replaces with one (1)"
         ),
     ),
-]
-
-# Clause 6.1 lists Service-Type's values, then re-lists four of them as "The
-# following values are further qualified", each with its description. Two
-# of the four are labelled in words and read a second time; the clause
-# assigns nothing new by repeating them.
-CORRECTIONS += [
-    Delete(
-        id=f"service-type-{name.lower().replace(' ', '-')}-requalified",
-        target=enum_value("Service-Type", name, value=value, occurrence=2),
-        expect=ast.EnumValue(name=name, value=value),
-        reason=f"clause 6.1 lists {name} ({value}) among Service-Type's values"
-        " and repeats it under 'The following values are further qualified'",
-    )
-    for name, value in (("Callback Login", 3), ("Callback Framed", 4))
 ]
 
 # The RADIUS-derived AVPs' values IANA's "RADIUS Types" registry, which

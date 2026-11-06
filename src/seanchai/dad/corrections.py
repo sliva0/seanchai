@@ -404,9 +404,8 @@ class enum_value(Selector):
     correction has to name which one it means.
 
     `occurrence` picks the n-th (from 1) of several matching values in one
-    AVP, as `avp_rule`'s does, for a list printing the same value twice: RFC
-    4005 clause 6.1 lists Service-Type's `Callback Login (3)` and re-lists it
-    among the values it qualifies. It matches only while the value repeats.
+    AVP, as `avp_rule`'s does, for a list printing the same value twice. It
+    matches only while the value repeats.
     """
 
     avp: str

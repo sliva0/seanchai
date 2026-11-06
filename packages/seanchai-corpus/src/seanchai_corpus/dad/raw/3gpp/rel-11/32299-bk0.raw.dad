@@ -200,7 +200,7 @@ Acct-Interim-Interval              85     OC    OC    -     -     Unsigned32    
 Acct-Multi-Session-Id              50     -     -     -     -     Unsigned32         -      -     -       -       -
 Acct-Session-Id                    44     -     -     -     -     OctetString        -      -     -       -       -
 Auth-Application-Id                258    -     -     M     M     Unsigned32         M      P     -       V       No
-AVP                                -      -     -     -     -     Grouped            -      -     -       -       -
+;; AVP * - - - - Grouped - - - - - ; the * [ AVP ] wildcard
 Called-Station-Id                  30     OC    -     OC    -     UTF8String         M      P     -       V       No
 CC-Correlation-Id                  411    -     -     OC    -     OctetString        -      M,P   -       V       Yes
 CC-Input-Octets                    412    -     -     OC    OC    Unsigned64         M      P     -       V       Yes
@@ -778,6 +778,7 @@ Rating-Group      RFC4006
 ; Page: 86
 DIAMETER_END_USER_SERVICE_DENIED       = 4010
 DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE = 4011
+DIAMETER_CREDIT_LIMIT_REACHED          = 4012
 DIAMETER_AUTHORIZATION_REJECTED        = 5003
 DIAMETER_USER_UNKNOWN                  = 5030
 DIAMETER_RATING_FAILED                 = 5031
