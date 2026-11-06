@@ -1,10 +1,12 @@
-[[quirk]]
-name = "prose-avp-origins"
-reason = """
-    clause 7.3.21 states that Sequence-Number is defined in TS 29.329
-    """
-first_version = "18.0.0"
-last_version = "19.0.0"
+# Source declarations for 3GPP TS 29.283 (Diameter data management
+# applications). Applied to normalized source text before parsing; see
+# src/seanchai/extractor/sources.py for the format.
+#
+# No prose-avp-origins: its one product would be wrong. Clause 7.3.21 says
+# Sequence-Number "is defined in the 3GPP TS 29.329 [9]", but table 7.3.1-1
+# gives it code 4512, which TS 29.230 table 7.1 allocates to TS 29.283, and
+# TS 29.329's own Sequence-Number is 716: the citation names another AVP of
+# the same name, and read as an origin it would move this one's identity.
 
 [[patch]]
 find = "DRMP ]"
