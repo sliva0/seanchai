@@ -8,6 +8,14 @@ record.
 
 Nothing has been published to PyPI yet.
 
+- Readings that corrections used to undo: the docx extractor keeps TS 32.299's
+  `AVP | *` row as a `;;` note on the `* [ AVP ]` wildcard, where it admitted a
+  row two deletions removed; scopes each of two applications stated under one
+  interface clause to its own clause (TS 29.210's Gx `6.1.*`, Gx over Gy
+  `6.2.*`); and reads, behind `trailing-result-codes`, TS 32.299 V11.20.0's
+  `DIAMETER_CREDIT_LIMIT_REACHED 4012` at the end of a paragraph. The RFC
+  extractor no longer reads RFC 4005's "further qualified" restatements of
+  Service-Type values a second time.
 - `registry_row(registry, code)` selects a registry's allocation in a
   correction: TS 29.230's twenty-seven names its tables print otherwise than the
   defining clause, `NAF-Hostname` for TS 29.109's `NAF-Id`, stay in the raw file

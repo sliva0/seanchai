@@ -143,6 +143,8 @@ The vocabulary, with the document that forced each:
   (TS 29.109's "a Bootstrapping-Info-Request message (BIR)").
 - `clause-parenthetical`: a trailing parenthetical in a clause cell,
   `16.4.7 (see Note)`, stripped as prose (TS 29.061, 29.561).
+- `trailing-result-codes`: a result code printed as the last sentence of the
+  paragraph describing the code before it (TS 32.299 V11.20.0 clause 7.1.11).
 - `see-result-code-origins`: a result code's clause naming the document
   defining it with "see" alone (TS 29.273, 29.329;
   [below](#the-3gpp-docx-extractor)).
@@ -161,7 +163,9 @@ The vocabulary, with the document that forced each:
   gives it its type (TS 32.299).
 - `note-defined-in-rfc`: an AVP-table note naming a defining RFC becomes a
   re-used row (TS 29.229, 29.329).
-- `wildcard-avp-row`: an `AVP` row with code `*` (TS 32.299).
+- `wildcard-avp-row`: an `AVP` row with code `*`, the `* [ AVP ]` wildcard,
+  which defines no AVP and stays a `;;` comment where it stood (TS 32.299
+  tables 7.1 and 7.1.0.1).
 - `vendor-id-sentence`: V from the clause's "shall be set to 3GPP (10415)"
   where the table prints no flags (TS 29.389).
 - `dotted-flags`, `type-short-forms`, `unknown-type-tokens`: `M.` flag
@@ -261,9 +265,13 @@ clause 5.3.2.6's heading loses its `(ALA)` and TS 29.214's clause cells come out
 blank.
 
 - A sentence stating the application id the command headers omit becomes
-  an `ApplicationScope` applying to the clause it sits in (`; Applies-To:
-  5.*` for TS 29.212's clause 5.1). Six wordings are recognised; the file
-  lists the scopes first, before the commands.
+  an `ApplicationScope` applying to the interface clause it sits in (`;
+  Applies-To: 5.*` for TS 29.212's clause 5.1). Where another sentence under
+  the same interface clause states another application, each applies to its
+  own clause: TS 29.210 V6.7.0's 6.1 states Gx's id and 6.2 Gx over Gy's, so
+  Gx's is `6.1.*`, and one of them at the interface clause itself fails. Six
+  wordings are recognised; the file lists the scopes first, before the
+  commands.
 - `x.y.z Name (ABBR) Command` heading plus `::= < Diameter Header: … >`
   becomes a `Message`; per-run bold marks the document's own AVPs. Message
   headings without a rule (TS 32.299's pointers to RFC 6733) are not

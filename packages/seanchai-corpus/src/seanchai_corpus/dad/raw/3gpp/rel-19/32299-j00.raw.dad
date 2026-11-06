@@ -206,7 +206,7 @@ Acct-Interim-Interval              85     OC    OC    -     -     Unsigned32    
 Acct-Multi-Session-Id              50     -     -     -     -     Unsigned32         -      -     -       -
 Acct-Session-Id                    44     -     -     -     -     OctetString        -      -     -       -
 Auth-Application-Id                258    -     -     M     M     Unsigned32         M      -     -       V
-AVP                                -      -     -     -     -     Grouped            -      -     -       -
+;; AVP * - - - - Grouped - - - - ; the * [ AVP ] wildcard
 Called-Station-Id                  30     OC    -     OC    -     UTF8String         M      -     -       V
 CC-Correlation-Id                  411    -     -     OC    -     OctetString        -      M     -       V
 CC-Input-Octets                    412    -     -     OC    OC    Unsigned64         M      -     -       V

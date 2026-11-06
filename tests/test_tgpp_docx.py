@@ -2026,6 +2026,60 @@ def test_a_reference_column_is_unmodelled_without_its_quirk():
     assert "AVP table column 'Reference' is not modelled and was dropped" in warnings
 
 
+def _stated(name, application_id, section):
+    return ast.ApplicationScope(
+        name=name,
+        source=ast.SourceRef(section=section),
+        application_id=application_id,
+        applies_to=(f"{ast.interface_clause(section)}.*",),
+    )
+
+
+def test_sibling_applications_each_scope_their_own_clause():
+    """TS 29.210 V6.7.0 clause 6.1 states Gx's id, 6.2 Gx over Gy's; TS 29.212
+    clause 5.1 alone under clause 5 speaks for the commands of 5.6."""
+    scoped = tgpp_docx._sibling_applications(
+        [
+            _stated("Gx", 16777224, "6.1"),
+            _stated("Gx over Gy", 16777225, "6.2"),
+            _stated("Gx", 16777238, "5.1"),
+        ]
+    )
+
+    assert [scope.applies_to for scope in scoped] == [("6.1.*",), ("6.2.*",), ("5.*",)]
+    with pytest.raises(tgpp_docx.ExtractionError, match="ambiguous"):
+        tgpp_docx._sibling_applications(
+            [_stated("Gx", 16777224, "6"), _stated("Gx over Gy", 16777225, "6.2")]
+        )
+
+
+def test_the_wildcard_row_is_a_note_and_no_avp():
+    """TS 32.299 table 7.1.0.1 prints `AVP | *` for the `* [ AVP ]` member its
+    commands carry."""
+    table = _vendor_column_table(
+        _a4_row("Occupancy", "45687", "1012", "[A.5.16]"),
+        _a4_row("AVP", "", "*", "[A.5.16]"),
+    )
+    with pytest.raises(tgpp_docx.ExtractionError, match="`wildcard-avp-row`"):
+        tgpp_docx._extract_avp_table(
+            table, "A.4", [], _a4_quirks("reference-cells", "command-columns")
+        )
+
+    wildcards: list[tuple[int, str]] = []
+    read, _ = tgpp_docx._extract_avp_table(
+        table,
+        "A.4",
+        [],
+        _a4_quirks("reference-cells", "command-columns", "wildcard-avp-row"),
+        wildcards=wildcards,
+    )
+
+    assert [row.name for row in read.rows] == ["Occupancy"]
+    ((position, note),) = wildcards
+    assert position == 1
+    assert note.startswith("AVP - * ") and note.endswith(" ; the * [ AVP ] wildcard")
+
+
 def test_a_onem2m_cover_names_the_document_and_its_publishers_vendor(tmp_path):
     document = docx.Document()
     cover = document.add_table(rows=1, cols=2)

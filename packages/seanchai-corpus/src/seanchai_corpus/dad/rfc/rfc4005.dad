@@ -666,8 +666,6 @@ Service-Type ::= < Enumerated AVP header: 6 >
         IAPP-Register             = 15
         IAPP-AP-Check             = 16
         "Authorize Only"          = 17
-        ;; deleted: value 'Callback Login' (= 3) (occurrence 2) (RFC4005.py#service-type-callback-login-requalified)
-        ;; deleted: value 'Callback Framed' (= 4) (occurrence 2) (RFC4005.py#service-type-callback-framed-requalified)
         Framed-Management         = 18 ;; supplied: (RFC4005.py#service-type-values)
         Additional-Authorization  = 19 ;; supplied: (RFC4005.py#service-type-values)
 

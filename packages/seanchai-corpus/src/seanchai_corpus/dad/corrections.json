@@ -469,14 +469,6 @@
      "kind": "insert",
      "reason": "clause 5.3 has a re-used 3GPP Radius VSA translated as RFC 4005 [12] describes, except that the M flag 'shall be set' and the P flag 'may be set'; RFC 4005 clause 9.6.2 gives V=1, and table 5.3 lists 3GPP-SGSN-MCC-MNC, which TS 29.061 V6.15.0 clause 16.4.7 numbers 18 among the VSAs and tabulates nowhere. The row states those flags and clause 16.4.7's code"
     },
-    "TS29.210.py#applies-to-gx": {
-     "kind": "correction",
-     "reason": "clause 6.1 states 16777224 for 'the Gx Application' and says it 'shall be included in the Auth-Application-Id AVP for the CCR, CCA and RAR commands' it prints in 6.1.1-6.1.4; clause 6.2 states another id for the Gx over Gy Application"
-    },
-    "TS29.210.py#applies-to-gx-over-gy": {
-     "kind": "correction",
-     "reason": "clause 6.2 states 16777225 for 'the Gx over Gy Application', which clause 6.1's commands do not belong to"
-    },
     "TS29.210.py#vendor-id-charging-rule-definition": {
      "kind": "correction",
      "reason": "clause 5.2.4's AVP header omits the vendor-id; clause 5.2 sets the Vendor-Id header of every AVP the document defines to 3GPP (10415), and table 5.2 marks the V flag mandatory"
@@ -3233,10 +3225,6 @@
   },
   "32299-bk0": {
    "edits": {
-    "TS32.299.py#credit-limit-reached-result-code": {
-     "kind": "insert",
-     "reason": "clause 7.1.11 prints the code at the end of the paragraph describing DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE, where no line reads it; the description after it is the code's"
-    },
     "TS32.299.py#rel11-application-id-rf": {
      "kind": "insert",
      "reason": "clause 7.1.5: 'The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 3588 [401]'; clause 6.2.1.2 bases the offline charging messages of clause 6.2 on that application, and their headers print no id"
@@ -3556,10 +3544,6 @@
     "TS32.299.py#rel11-vendor-wlan-radio-container": {
      "kind": "correction",
      "reason": "clause 7.2 gives the 3GPP charging AVPs vendor 10415; the grouped header of clause 7.2.247 prints only the code"
-    },
-    "TS32.299.py#rel11-wildcard-row": {
-     "kind": "delete",
-     "reason": "table 7.1 tabulates the '* [ AVP ]' wildcard with code '*'; it is ABNF grammar, not an AVP"
     }
    },
    "reference": "TS32.299",
@@ -4573,10 +4557,6 @@
     "TS32.299.py#vendor-wlan-operator-id": {
      "kind": "correction",
      "reason": "clause 7.2.0 gives the 3GPP charging AVPs vendor 10415; the grouped header prints only the code"
-    },
-    "TS32.299.py#wildcard-row": {
-     "kind": "delete",
-     "reason": "table 7.1.0.1 tabulates the '* [ AVP ]' wildcard with code '*'; it is ABNF grammar, not an AVP"
     }
    },
    "reference": "TS32.299",
@@ -5289,14 +5269,6 @@
     "RFC4005.py#re-auth-answer-redirected-host-usage": {
      "kind": "correction",
      "reason": "the Re-Auth-Answer ABNF writes Redirected-Host-Usage; RFC 6733 (and RFC 3588, current when this was published) defines Redirect-Host-Usage and no Redirected-* AVP exists; the AAR/AAA ABNFs of this same document spell the family correctly"
-    },
-    "RFC4005.py#service-type-callback-framed-requalified": {
-     "kind": "delete",
-     "reason": "clause 6.1 lists Callback Framed (4) among Service-Type's values and repeats it under 'The following values are further qualified'"
-    },
-    "RFC4005.py#service-type-callback-login-requalified": {
-     "kind": "delete",
-     "reason": "clause 6.1 lists Callback Login (3) among Service-Type's values and repeats it under 'The following values are further qualified'"
     },
     "RFC4005.py#service-type-values": {
      "kind": "supply",

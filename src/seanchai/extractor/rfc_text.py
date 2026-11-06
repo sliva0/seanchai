@@ -1674,12 +1674,21 @@ def _extract_definitions(
         values = []
         unread: list[str] = []
         index = 0
+        qualifying = False
         while index < len(section.texts):
             text = section.texts[index]
             index += 1
+            if _QUALIFIED_RE.search(text):
+                qualifying = True
             value = _enum_value(text.strip()) or _quirk_enum_value(text.strip(), quirks)
             if value is None and _VALUE_FIRST_LINE_RE.match(text):
                 value, index = _worded_value_first(section.texts, index, quirks)
+            if value is not None and qualifying and value in values:
+                # The heading of a value's qualification, restating it exactly:
+                # RFC 4005 clause 6.1 lists `3  Callback Login`, then "The
+                # following values are further qualified:" over `Callback Login
+                # 3`. One restating otherwise is read, and the linter says so.
+                continue
             if value is not None:
                 values.append(value)
             elif _VALUE_FIRST_LINE_RE.match(text):
@@ -1893,6 +1902,9 @@ def _enum_value(text: str) -> ast.EnumValue | None:
 # then the label after two spaces or more. Only for reporting what
 # `_enum_value` left unread inside an enumerated clause.
 _VALUE_FIRST_LINE_RE = re.compile(r"^\s*\d+ {2,}\S")
+# What opens a clause's paragraphs on values it has listed: RFC 4005 clause
+# 6.1's "The following values are further qualified:".
+_QUALIFIED_RE = re.compile(r"\bfurther qualified\b")
 _WORDED_NAME = r"[A-Za-z][A-Za-z0-9_-]*(?: [A-Za-z0-9_-]+)+"
 
 

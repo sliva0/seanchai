@@ -640,8 +640,6 @@ Service-Type ::= < Enumerated AVP header: 6 >
         IAPP-Register             = 15
         IAPP-AP-Check             = 16
         "Authorize Only"          = 17
-        "Callback Login"          = 3
-        "Callback Framed"         = 4
 
 
 ; Type: Enumerated AVP

@@ -4,7 +4,6 @@ from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Correction,
     Insert,
-    application_scope,
     avp_table,
     definition,
 )
@@ -33,34 +32,6 @@ CORRECTIONS = [
         versions="6.7.0",
     )
     for name, section in _VENDORLESS
-]
-
-# Clause 6 holds two applications, each stating its id in its own subclause,
-# so the interface clause the extractor reads for a statement is too wide:
-# the commands of 6.1.1-6.1.4 are Gx's alone, clause 6.2 printing none.
-CORRECTIONS += [
-    Correction(
-        id="applies-to-gx",
-        target=application_scope("Gx"),
-        field="applies_to",
-        expect=("6.*",),
-        replace=("6.1.*",),
-        reason="clause 6.1 states 16777224 for 'the Gx Application' and says it"
-        " 'shall be included in the Auth-Application-Id AVP for the CCR, CCA"
-        " and RAR commands' it prints in 6.1.1-6.1.4; clause 6.2 states another"
-        " id for the Gx over Gy Application",
-        versions="6.7.0",
-    ),
-    Correction(
-        id="applies-to-gx-over-gy",
-        target=application_scope("Gx over Gy"),
-        field="applies_to",
-        expect=("6.*",),
-        replace=("6.2.*",),
-        reason="clause 6.2 states 16777225 for 'the Gx over Gy Application',"
-        " which clause 6.1's commands do not belong to",
-        versions="6.7.0",
-    ),
 ]
 
 # Table 5.3 prints no flag cells; the paragraph above it states them for every

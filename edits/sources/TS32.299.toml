@@ -1049,3 +1049,14 @@ reason = """
     """
 first_version = "11.20.0"
 last_version = "11.20.0"
+
+[[quirk]]
+name = "trailing-result-codes"
+reason = """
+    clause 7.1.11 ends the paragraph describing
+    DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE with '... or is treated for offline
+    charging). DIAMETER_CREDIT_LIMIT_REACHED 4012', the next code, whose
+    description follows; the ETSI PDF prints the code as an entry of its own
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"

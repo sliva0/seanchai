@@ -10,7 +10,7 @@
 ; Section: 6.1
 ; Page: 19
 ; Application-ID: 16777224
-; Applies-To: 6.1.* ;; corrected: (TS29.210.py#applies-to-gx)
+; Applies-To: 6.1.*
 
 
 ; Type: Application Scope
@@ -18,7 +18,7 @@
 ; Section: 6.2
 ; Page: 20
 ; Application-ID: 16777225
-; Applies-To: 6.2.* ;; corrected: (TS29.210.py#applies-to-gx-over-gy)
+; Applies-To: 6.2.*
 
 
 ; Type: Message

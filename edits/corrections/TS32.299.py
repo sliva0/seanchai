@@ -4,7 +4,6 @@ from seanchai.dad import ast
 from seanchai.dad.corrections import (
     Accept,
     Correction,
-    Delete,
     Insert,
     Supply,
     avp_rule,
@@ -15,7 +14,6 @@ from seanchai.dad.corrections import (
     reused_avps,
     reused_row,
     table_row,
-    value_table,
 )
 
 # Table 7.1.0.1 ("Use Of IETF Diameter AVPs") tabulates the IETF AVPs the
@@ -284,21 +282,6 @@ CORRECTIONS = [
         replace=("RFC6733", "RFC4006", "RFC4005"),
         reason="clause 7.1.0 names RFC 6733 [401], RFC 4006 [402] and RFC 4005"
         " [407] as where the IETF AVPs it uses are defined",
-        versions="18.0.0..19.0.0",
-    ),
-    Delete(
-        id="wildcard-row",
-        target=table_row("AVP", table="7.1.0.1"),
-        expect=ast.AvpTableRow(
-            name="AVP",
-            code=None,
-            data_type=ast.DataType.GROUPED,
-            flag_rules=ast.AvpFlagRules(),
-            # "-" under all four commands, which clause 7.1.0 reads as unused.
-            marks={ast.MarkColumn(each): () for each in ("ACR", "ACA", "CCR", "CCA")},
-        ),
-        reason="table 7.1.0.1 tabulates the '* [ AVP ]' wildcard with code '*';"
-        " it is ABNF grammar, not an AVP",
         versions="18.0.0..19.0.0",
     ),
     *(
@@ -778,20 +761,6 @@ CORRECTIONS += [
         " corpus reads the base protocol as RFC 6733, which obsoletes RFC 3588",
         versions="11.20.0",
     ),
-    Delete(
-        id="rel11-wildcard-row",
-        target=table_row("AVP", table="7.1"),
-        expect=ast.AvpTableRow(
-            name="AVP",
-            code=None,
-            data_type=ast.DataType.GROUPED,
-            flag_rules=ast.AvpFlagRules(),
-            marks={ast.MarkColumn(each): () for each in ("ACR", "ACA", "CCR", "CCA")},
-        ),
-        reason="table 7.1 tabulates the '* [ AVP ]' wildcard with code '*'; it"
-        " is ABNF grammar, not an AVP",
-        versions="11.20.0",
-    ),
     *(
         Correction(
             id=f"rel11-vendor-{name.lower()}",
@@ -1116,16 +1085,6 @@ CORRECTIONS += [
         " registry allocates no such name and Wireshark's dictionary has no"
         " such AVP",
         versions="18.0.0..19.0.0",
-    ),
-    Insert(
-        id="credit-limit-reached-result-code",
-        into=value_table("Result-Code", section="7.1.11"),
-        node=ast.ValueRow(name="DIAMETER_CREDIT_LIMIT_REACHED", value=4012),
-        after="DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE",
-        reason="clause 7.1.11 prints the code at the end of the paragraph describing"
-        " DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE, where no line reads it; the"
-        " description after it is the code's",
-        versions="11.20.0",
     ),
 ]
 
