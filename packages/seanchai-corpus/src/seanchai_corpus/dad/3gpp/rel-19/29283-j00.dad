@@ -186,7 +186,6 @@ User-Identifier         TS29.336   -
 OC-Supported-Features   RFC7683    MUST
 OC-OLR                  RFC7683    MUST
 Load                    RFC8583    MUST-NOT
-;; deleted: re-used AVPs row 'Sequence-Number' (TS29.283.py#sequence-number-origin-is-another-avp)
 
 
 ; Type: Grouped AVP

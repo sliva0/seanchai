@@ -29,12 +29,13 @@ last_version = "19.0.0"
 [[quirk]]
 name = "physical-reused-columns"
 reason = """
-    Table 6.5.1.1 has a 4-twip sliver grid column after the name column; the
-    header merges it into Reference, every data row into the name, so only the
-    physical cells line up with the labels.
+    V18.0.0's table 6.5.1.1 has a 4-twip sliver grid column after the name
+    column; the header merges it into Reference, every data row into the name,
+    so only the physical cells line up with the labels. V19.0.0's table reads
+    the same either way, so the declaration stops at Release 18.
     """
 first_version = "18.0.0"
-last_version = "19.0.0"
+last_version = "18.0.0"
 
 [[quirk]]
 name = "worded-enum-values"

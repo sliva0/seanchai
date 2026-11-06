@@ -296,7 +296,10 @@ blank.
   clause with several candidates fails, and a sentence after another AVP's name
   is skipped. RFC 8583 uses the same quirk for "The SourceID AVP is defined in
   [RFC8581]"; its re-used block takes the citing table's section as its label
-  when the table has no caption.
+  when the table has no caption. TS 29.283 does not declare it: its one
+  citation, clause 7.3.21's Sequence-Number "defined in the 3GPP TS 29.329",
+  names TS 29.329's AVP 716 for one table 7.3.1-1 gives 4512, which TS 29.230
+  allocates to TS 29.283.
 - `bare-avp-citations` adds TS 29.329's pointers, which say no "definition":
   "See 3GPP TS 29.229 [6] clause 6.3.56." where it is all a clause headed by
   the AVP holds, and "for further description of this AVP".
