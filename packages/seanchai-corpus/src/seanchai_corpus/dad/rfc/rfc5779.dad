@@ -18,14 +18,9 @@ Service-Configuration       507    5.9       Grouped
 
 ; Type: Reused AVPs
 ; Section: 5.2
-; Table: 5.2
 ; Page: 10
-; Columns: Name         From
-MIP6-Agent-Info         RFC5447
-MIP6-Home-Link-Prefix   RFC5447
-MIP6-Feature-Vector     RFC5447
-Service-Selection       RFC5778
-Calling-Station-Id      RFC4005 ;; inserted: (RFC5779.py#calling-station-id-reused)
+; Columns: Name      From
+Calling-Station-Id   RFC4005 ;; inserted: from clauses 4 and 5.7 (RFC5779.py#calling-station-id-reused)
 
 
 ; Type: Grouped AVP
@@ -38,6 +33,34 @@ MIP6-Agent-Info ::= < AVP header: 486 >
         [ MIP6-Home-Link-Prefix ]
         [ PMIP6-IPv4-Home-Address ]
       * [ AVP ]
+
+
+; Type: Reused AVPs
+; Section: 5.1
+; Page: 9
+; Columns: Name   From
+MIP6-Agent-Info   RFC5447
+
+
+; Type: Reused AVPs
+; Section: 5.3
+; Page: 10
+; Columns: Name         From
+MIP6-Home-Link-Prefix   RFC5447
+
+
+; Type: Reused AVPs
+; Section: 5.5
+; Page: 10
+; Columns: Name       From
+MIP6-Feature-Vector   RFC5447
+
+
+; Type: Reused AVPs
+; Section: 5.8
+; Page: 12
+; Columns: Name     From
+Service-Selection   RFC5778
 
 
 ; Type: Grouped AVP

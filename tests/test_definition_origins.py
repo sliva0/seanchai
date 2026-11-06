@@ -131,7 +131,46 @@ def _read_origins(*texts, rows=("Thing",), bare=False, title="Thing AVP"):
         [section],
         Quirks([Quirk(name=name, reason="rejection") for name in names], None),
     )
-    return collected.avp_tables[0].note_reused
+    assert collected.avp_tables[0].note_reused == []
+    assert all(block.label is None for block in collected.prose_reused)
+    return [row for block in collected.prose_reused for row in block.rows]
+
+
+def test_each_clause_stating_an_origin_is_a_block_of_its_own():
+    """TS 29.273 clauses 9.2.3.2.4 and 9.2.3.6.4 both say QoS-Capability "is
+    defined in IETF RFC 5777 [9]", and no table prints either row."""
+    table = ast.AvpTable(
+        table="9.2.3.1.1/1",
+        source=ast.SourceRef(section="9.2.3.1.1"),
+        columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE, ast.AvpColumn.SECTION),
+        rows=(ast.AvpTableRow(name="QoS-Capability", code=578, section="9.2.3.2.4"),),
+    )
+    collected = tgpp_docx._Collected(
+        own_reference="TS29.273",
+        avp_tables=[tgpp_docx._CollectedAvpTable(table, "9.2.3.1.1", [])],
+    )
+    sentence = "This AVP is defined in IETF RFC 5777 [9]."
+    sections = [
+        tgpp_docx._Section(
+            number=number,
+            title="QoS-Capability",
+            paragraphs=[tgpp_docx._Para(text=sentence, style="", lines=[])],
+        )
+        for number in ("9.2.3.6.4", "9.2.3.2.4")
+    ]
+    tgpp_docx._prose_avp_origins(
+        collected,
+        sections,
+        Quirks([Quirk(name="prose-avp-origins", reason="TS 29.273")], None),
+    )
+
+    assert [(block.section, block.label) for block in collected.prose_reused] == [
+        ("9.2.3.2.4", None),
+        ("9.2.3.6.4", None),
+    ]
+    for block in collected.prose_reused:
+        assert block.columns == (ast.ReusedColumn.NAME, ast.ReusedColumn.FROM)
+        assert block.rows == [ast.ReusedAvpRow(name="QoS-Capability", origin="RFC5777")]
 
 
 @pytest.mark.parametrize(

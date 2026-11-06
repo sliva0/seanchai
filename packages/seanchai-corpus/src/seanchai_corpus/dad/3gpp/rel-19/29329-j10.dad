@@ -276,21 +276,8 @@ DRMP                         301    6.3.34    Enumerated    -      -     -      
 ; Section: 6.3
 ; Table: 6.3/2
 ; Page: 18
-; Columns: Name              From       M-bit
-External-Identifier          TS29.336   MUST
-OC-Supported-Features        RFC7683    -
-OC-OLR                       RFC7683    -
-DRMP                         RFC7944    -
-Load                         RFC8583    -
-Server-Name                  TS29.229   -
-Supported-Features           TS29.229   -
-Feature-List-ID              TS29.229   -
-Feature-List                 TS29.229   -
-Supported-Applications       TS29.229   -
-Public-Identity              TS29.229   -
-Wildcarded-Public-Identity   TS29.229   -
-Wildcarded-IMPU              TS29.229   -
-Session-Priority             TS29.229   -
+; Columns: Name       From       M-bit
+External-Identifier   TS29.336   MUST
 
 
 ; Type: Value Table
@@ -312,6 +299,17 @@ DIAMETER_ERROR_DSAI_NOT_AVAILABLE             = 5108 ; 6.2.2.11
 DIAMETER_ERROR_IDENTITIES_DONT_MATCH          = 5002 ; 6.2.2.12 from TS29.229
 DIAMETER_USER_DATA_NOT_AVAILABLE              = 4100 ; 6.2.3.1
 DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
+
+
+; Type: Reused AVPs
+; Section: 6.3
+; Table: 6.3.1
+; Page: 18
+; Columns: Name         From      M-bit
+OC-Supported-Features   RFC7683   -
+OC-OLR                  RFC7683   -
+DRMP                    RFC7944   -
+Load                    RFC8583   -
 
 
 ; Type: Grouped AVP
@@ -399,6 +397,13 @@ Current-Location ::= < Enumerated AVP header: 707 10415 >
         InitiateActiveLocationRetrieval          = 1
 
 
+; Type: Reused AVPs
+; Section: 6.3.9
+; Page: 21
+; Columns: Name   From
+Server-Name       TS29.229
+
+
 ; Type: Enumerated AVP
 ; Name: Identity-Set
 ; Section: 6.3.10
@@ -410,6 +415,41 @@ Identity-Set ::= < Enumerated AVP header: 708 10415 >
         ALIAS_IDENTITIES      = 3
 
 
+; Type: Reused AVPs
+; Section: 6.3.11
+; Page: 22
+; Columns: Name      From
+Supported-Features   TS29.229
+
+
+; Type: Reused AVPs
+; Section: 6.3.12
+; Page: 22
+; Columns: Name   From
+Feature-List-ID   TS29.229
+
+
+; Type: Reused AVPs
+; Section: 6.3.13
+; Page: 22
+; Columns: Name   From
+Feature-List      TS29.229
+
+
+; Type: Reused AVPs
+; Section: 6.3.14
+; Page: 22
+; Columns: Name          From
+Supported-Applications   TS29.229
+
+
+; Type: Reused AVPs
+; Section: 6.3.15
+; Page: 22
+; Columns: Name   From
+Public-Identity   TS29.229
+
+
 ; Type: Enumerated AVP
 ; Name: Send-Data-Indication
 ; Section: 6.3.17
@@ -417,6 +457,27 @@ Identity-Set ::= < Enumerated AVP header: 708 10415 >
 Send-Data-Indication ::= < Enumerated AVP header: 710 10415 >
         USER_DATA_NOT_REQUESTED = 0
         USER_DATA_REQUESTED     = 1
+
+
+; Type: Reused AVPs
+; Section: 6.3.19
+; Page: 22
+; Columns: Name              From
+Wildcarded-Public-Identity   TS29.229
+
+
+; Type: Reused AVPs
+; Section: 6.3.20
+; Page: 22
+; Columns: Name   From
+Wildcarded-IMPU   TS29.229
+
+
+; Type: Reused AVPs
+; Section: 6.3.21
+; Page: 22
+; Columns: Name    From
+Session-Priority   TS29.229
 
 
 ; Type: Enumerated AVP

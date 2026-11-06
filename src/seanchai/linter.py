@@ -1598,6 +1598,55 @@ def _reused_row_vendors_agree_with_origin(
     return findings
 
 
+def _reused_codes_agree_with_origin(
+    index: _Index, origins: dict[str, _Origin]
+) -> list[Finding]:
+    """A code this file's AVP table prints for an AVP it lists as re-used is the
+    code the origin gives it.
+
+    The claim that an AVP is another document's, a re-used table's row or a
+    clause's "This AVP is defined in", is a claim about one identity: TS 29.283
+    clause 7.3.21 says its Sequence-Number "is defined in the 3GPP TS 29.329",
+    whose Sequence-Number is 716, while table 7.3.1-1 gives 4512. A code the
+    origin does not give is `reused-code-conflict`, an error like any second
+    code: one of the two statements names another AVP. A table printing a code
+    is no evidence against the claim alone, since TS 29.140 and TS 29.329
+    tabulate codes for the AVPs they re-use."""
+    findings = []
+    for table in index.tables:
+        for row in table.rows:
+            origin = index.reused.get(row.name)
+            if row.code is None or origin is None:
+                continue
+            resolved = origins.get(origin)
+            if resolved is None:
+                continue
+            definition = resolved.defined.get(row.name)
+            codes = {
+                their.code
+                for their_table in resolved.tables
+                for their in their_table.rows
+                if their.name == row.name and their.code is not None
+            }
+            if definition is not None:
+                codes.add(definition.code)
+            if codes and row.code not in codes:
+                label = table.table or f"(clause {table.source.section})"
+                findings.append(
+                    Finding(
+                        Severity.ERROR,
+                        "reused-code-conflict",
+                        f"{row.name} is code {row.code} in table {label} and"
+                        f" {', '.join(map(str, sorted(codes)))} in {origin},"
+                        " which it is listed as re-used from",
+                        table.source.section,
+                        origin,
+                        paths=(index.path(row),),
+                    )
+                )
+    return findings
+
+
 def _reused_cells_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
@@ -2436,6 +2485,7 @@ def lint_with_corpus(
         *_reused_rows_agree_with_origin(index, origins),
         *_reused_row_vendors_agree_with_origin(index, spec.vendor_id, origins),
         *_reused_cells_agree_with_origin(index, origins),
+        *_reused_codes_agree_with_origin(index, origins),
         *_result_codes_agree_with_origin(index, origins),
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
         *_unresolved_references(index, bases, missing_bases),

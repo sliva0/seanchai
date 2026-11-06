@@ -70,9 +70,10 @@ what it can open.
 An entry of `sections` holds `section`, `page` and `title`, in document order
 (6.3.4, 6.3.7A, 6.3.10, then annexes). The title is what the file places in the
 clause: its `; Type:` and `; Name:`, as "Message User-Data-Request", "AVP Table"
-or "Grouped AVP Server-Capabilities". Several blocks name each kind once, and a
-clause only table rows name reads "AVP PCSCF-FQDN" or "AVP 3GPP-IMSI and 37
-more".
+or "Grouped AVP Server-Capabilities", and a clause's block of the origins its
+prose states the names, "Reused AVPs Server-Name". Several blocks name each kind
+once, and a clause only table rows name reads "AVP PCSCF-FQDN" or "AVP 3GPP-IMSI
+and 37 more".
 
 A token holds its text, and every token joined gives the file, byte for byte. It
 holds what a link needs: `target` (document, section, and for a re-used row's

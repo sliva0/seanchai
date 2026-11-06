@@ -16,17 +16,6 @@ Service-Selection           493    5.8       UTF8String
 Service-Configuration       507    5.9       Grouped
 
 
-; Type: Reused AVPs
-; Section: 5.2
-; Table: 5.2
-; Page: 10
-; Columns: Name         From
-MIP6-Agent-Info         RFC5447
-MIP6-Home-Link-Prefix   RFC5447
-MIP6-Feature-Vector     RFC5447
-Service-Selection       RFC5778
-
-
 ; Type: Grouped AVP
 ; Name: MIP6-Agent-Info
 ; Section: 5.1
@@ -37,6 +26,34 @@ MIP6-Agent-Info ::= < AVP header: 486 >
         [ MIP6-Home-Link-Prefix ]
         [ PMIP6-IPv4-Home-Address ]
       * [ AVP ]
+
+
+; Type: Reused AVPs
+; Section: 5.1
+; Page: 9
+; Columns: Name   From
+MIP6-Agent-Info   RFC5447
+
+
+; Type: Reused AVPs
+; Section: 5.3
+; Page: 10
+; Columns: Name         From
+MIP6-Home-Link-Prefix   RFC5447
+
+
+; Type: Reused AVPs
+; Section: 5.5
+; Page: 10
+; Columns: Name       From
+MIP6-Feature-Vector   RFC5447
+
+
+; Type: Reused AVPs
+; Section: 5.8
+; Page: 12
+; Columns: Name     From
+Service-Selection   RFC5778
 
 
 ; Type: Grouped AVP

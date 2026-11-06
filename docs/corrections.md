@@ -63,7 +63,9 @@ corrected file cites, so name what is corrected
   correction: moving a flag from Must to Must not is two), `reused_row(name,
   section=)`, `enum_value(avp, name, value=, occurrence=)`, `avp_rule(parent,
   name, occurrence=)`, `avp_table(label)` (`None` for a table printing no
-  label), `reused_avps(label)`, `application_scope(name)`, `undefined(name)`,
+  label), `reused_avps(label, section=)` (`None` for a block printing none,
+  the clause telling such blocks apart), `application_scope(name)`,
+  `undefined(name)`,
   `value_table(avp, section=, feature_list_id=)`, `value_row(parent, name,
   value=)` (`parent` a `value_table` or the AVP's name),
   `registry_reservation(first, last)`, `header()`.
@@ -100,7 +102,14 @@ corrected file cites, so name what is corrected
   `DIAMETER_CREDIT_LIMIT_REACHED 4012` at the end of a paragraph, where no line
   reads it). A
   `reused_avps(label)` matching no block, where an AVP table carries that
-  label, creates the table's re-used block after it. An inserted
+  label, creates the table's re-used block after it; with `section=`, the
+  table at that clause, as `reused_avps(None, section="5.2")` creates the block
+  of RFC 5779's unlabelled table. `drawn_from` says what the node's fields come
+  from where that is not the block it goes into, and the note prints it: TS
+  29.061 V6.15.0's two sub-attributes go into table 10 `from clause 16.4.7`,
+  which numbers them, and TS 29.210's into table 5.2 `from clause 5.3, its
+  code from TS 29.061 V6.15.0 clause 16.4.7`, neither table having printed
+  them. An inserted
   `Undefined AVP` block expects, of the corrected tree, no definition,
   table row, re-used row or second block of that name, and a body in its
   clause naming it, so it fails the day upstream defines the name; its
@@ -216,8 +225,10 @@ removes that line.
 
 A deletion's note stands in the deleted line's place and names what is gone
 (`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
-inserted row is marked `;; inserted:`, an inserted block on its `; Type:`
-line, and every value or row a `Supply` fills `;; supplied:`. Notes are
+inserted row is marked `;; inserted:`, with what it is drawn from where the
+`Insert` says (`;; inserted: from clause 6.3.43
+(TS29.229.py#wildcarded-impu-row-missing)`), an inserted block on its `;
+Type:` line, and every value or row a `Supply` fills `;; supplied:`. Notes are
 `;;` comments, so an annotated file parses to exactly the corrected tree,
 and they are placed by the rules a hand-written comment follows
 ([dad-format.md](dad-format.md#comments)). Edits are resolved, and notes

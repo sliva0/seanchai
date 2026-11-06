@@ -140,7 +140,7 @@
 ; Section: 6.4.4
 ; Page: 74
 <Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
-;; patched: the table prints no Diameter header
+;; patched: the table prints no Diameter header, see TS32.299.toml
         { Session-Id }
         { Origin-Host }
         { Origin-Realm }
@@ -289,9 +289,6 @@ Vendor-Specific-Application-Id     260    -     -     -     -     Grouped       
 Location-Data          RFC5580   -
 Location-Information   RFC5580   -
 Operator-Name          RFC5580   -
-Rating-Group           RFC4006   -
-Service-Context-Id     RFC4006   -
-Service-Identifier     RFC4006   -
 
 
 ; Type: AVP Table
@@ -767,6 +764,13 @@ Multiple-Services-Credit-Control ::= < AVP header: 456 >
 ;;    * [ AVP ]                             ; strikethrough
 
 
+; Type: Reused AVPs
+; Section: 7.1.10
+; Page: 85
+; Columns: Name   From
+Rating-Group      RFC4006
+
+
 ; Type: Value Table
 ; AVP: Result-Code
 ; Kind: result-codes
@@ -777,6 +781,20 @@ DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE = 4011
 DIAMETER_AUTHORIZATION_REJECTED        = 5003
 DIAMETER_USER_UNKNOWN                  = 5030
 DIAMETER_RATING_FAILED                 = 5031
+
+
+; Type: Reused AVPs
+; Section: 7.1.12
+; Page: 87
+; Columns: Name      From
+Service-Context-Id   RFC4006
+
+
+; Type: Reused AVPs
+; Section: 7.1.13
+; Page: 87
+; Columns: Name      From
+Service-Identifier   RFC4006
 
 
 ; Type: Grouped AVP

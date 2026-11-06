@@ -1251,6 +1251,28 @@ def test_value_tables_parse_with_their_directives_and_rows():
     assert [row.mark for row in features.rows] == ["M", "O (NOTE 1)", None]
 
 
+def test_a_re_used_block_a_clause_s_prose_states_has_no_table():
+    text = """\
+; Specification: 3GPP TS 29.999
+; Version: 18.0.0
+; Vendor-ID: 10415
+
+
+; Type: Reused AVPs
+; Section: 6.3.9
+; Page: 21
+; Columns: Name   From
+Server-Name       TS29.229
+"""
+    spec = parser.parse(text)
+    (block,) = spec.sections
+
+    assert isinstance(block, ast.ReusedAvps)
+    assert block.table is None
+    assert block.source == ast.SourceRef(section="6.3.9", page=21)
+    assert formatter.format_spec(spec) == text
+
+
 def test_a_result_code_names_the_document_defining_it():
     text = """\
 ; Specification: 3GPP TS 29.999

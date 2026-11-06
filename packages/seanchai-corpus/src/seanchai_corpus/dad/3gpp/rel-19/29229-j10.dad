@@ -352,7 +352,7 @@ Supported-Applications                        -           631    6.3.32     Grou
 Associated-Identities                         -           632    6.3.33     Grouped            V      -     -       M       No
 Originating-Request                           -           633    6.3.34     Enumerated         M,V    -     -       -       No
 Wildcarded-Public-Identity                    -           634    6.3.35     UTF8String         V      -     -       M       No
-Wildcarded-IMPU                               -           -      6.3.43     UTF8String         -      -     -       -       - ;; inserted: (TS29.229.py#wildcarded-impu-row-missing)
+Wildcarded-IMPU                               -           -      6.3.43     UTF8String         -      -     -       -       - ;; inserted: from clause 6.3.43 (TS29.229.py#wildcarded-impu-row-missing)
 SIP-Digest-Authenticate                       -           635    6.3.36     Grouped            V      -     -       M       No
 Digest-Realm                                  -           104    6.3.37     UTF8String         M      -     -       V       No
 Digest-Algorithm                              -           111    6.3.39     UTF8String         M      -     -       V       No
@@ -408,10 +408,10 @@ Digest-HA1                RFC4590   -
 OC-Supported-Features     RFC7683   -
 OC-OLR                    RFC7683   -
 DRMP                      RFC7944   -
-Load                      RFC8583   - ;; inserted: (TS29.229.py#load-row-reused)
-Framed-IP-Address         RFC4005   - ;; inserted: (TS29.229.py#framed-ip-address-reused)
-Framed-IPv6-Prefix        RFC4005   - ;; inserted: (TS29.229.py#framed-ipv6-prefix-reused)
-Framed-Interface-Id       RFC4005   - ;; inserted: (TS29.229.py#framed-interface-id-reused)
+Load                      RFC8583   - ;; inserted: from clause 6.3.68 (TS29.229.py#load-row-reused)
+Framed-IP-Address         RFC4005   - ;; inserted: from clause 6.3.53 (TS29.229.py#framed-ip-address-reused)
+Framed-IPv6-Prefix        RFC4005   - ;; inserted: from clause 6.3.54 (TS29.229.py#framed-ipv6-prefix-reused)
+Framed-Interface-Id       RFC4005   - ;; inserted: from clause 6.3.55 (TS29.229.py#framed-interface-id-reused)
 OC-Sequence-Number        RFC7683   - ;; inserted: (TS29.229.py#oc-sequence-number-reused)
 OC-Report-Type            RFC7683   - ;; inserted: (TS29.229.py#oc-report-type-reused)
 OC-Reduction-Percentage   RFC7683   - ;; inserted: (TS29.229.py#oc-reduction-percentage-reused)

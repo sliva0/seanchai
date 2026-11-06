@@ -688,10 +688,15 @@ def test_prose_origins_read_every_wording_rfc_5779_uses(tmp_path):
         "   carries an identifier.  This AVP is re-used from [RFC5778].\n"
     )
     spec = _read(tmp_path, body, "clause-avp-table", "prose-avp-origins")
-    assert [(row.name, row.origin) for row in _of(spec, ast.ReusedAvps)[0].rows] == [
-        ("MIP6-Agent-Info", "RFC5447"),
-        ("MIP6-Feature-Vector", "RFC5447"),
-        ("Service-Selection", "RFC5778"),
+    # A block at each clause stating an origin, since no table prints the row.
+    assert [
+        (block.source.section, block.table, row.name, row.origin)
+        for block in _of(spec, ast.ReusedAvps)
+        for row in block.rows
+    ] == [
+        ("5.1", None, "MIP6-Agent-Info", "RFC5447"),
+        ("5.3", None, "MIP6-Feature-Vector", "RFC5447"),
+        ("5.8", None, "Service-Selection", "RFC5778"),
     ]
 
 

@@ -26,6 +26,7 @@ CORRECTIONS = [
         " 6.3.0.1 omits it; the clause states no code, flag rule or encryption,"
         " so the row leaves those cells blank",
         versions="18.1.0..19.1.0",
+        drawn_from="clause 6.3.43",
     ),
     Delete(
         id="load-row-not-local",
@@ -54,6 +55,7 @@ CORRECTIONS = [
         " same wording DRMP's clause uses for RFC 7944, but table 6.3.0.1"
         " lists DRMP as re-used and prints Load as a code-less local row",
         versions="18.1.0..19.1.0",
+        drawn_from="clause 6.3.68",
     ),
     Correction(
         id="digest-qop-case",
@@ -98,6 +100,7 @@ CORRECTIONS = [
         " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
         " 6.3.0.1 omits it",
         versions="18.1.0..19.1.0",
+        drawn_from="clause 6.3.53",
     ),
     Insert(
         id="framed-ipv6-prefix-reused",
@@ -108,6 +111,7 @@ CORRECTIONS = [
         " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
         " 6.3.0.1 omits it",
         versions="18.1.0..19.1.0",
+        drawn_from="clause 6.3.54",
     ),
     Insert(
         id="framed-interface-id-reused",
@@ -118,6 +122,7 @@ CORRECTIONS = [
         " IETF RFC 4005 [19]'; SIP-Auth-Data-Item (6.3.13) uses it, and table"
         " 6.3.0.1 omits it",
         versions="18.1.0..19.1.0",
+        drawn_from="clause 6.3.55",
     ),
     # Clause 6.3.42 defines Line-Identifier in ETSI's vendor space, and the
     # table, whose rows are all the file's vendor or IETF's by their V flag,

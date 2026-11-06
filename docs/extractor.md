@@ -292,17 +292,20 @@ blank.
 - The "re-used Diameter AVPs" table becomes `ReusedAvps` with M-bit
   overrides, and the code and type where the table prints them.
 - `prose-avp-origins` keeps definition citations ("The X AVP is defined in",
-  "See ... for the definition of this AVP") as re-used rows beside the citing
-  AVP table, like NOTE-derived origins. The local table's code, type and flag
-  rules remain intact. References to encodings or value meanings do not
-  establish an AVP's origin. An unnamed "this AVP" takes the clause's AVP: a
-  clause with several candidates fails, and a sentence after another AVP's name
-  is skipped. RFC 8583 uses the same quirk for "The SourceID AVP is defined in
-  [RFC8581]"; its re-used block takes the citing table's section as its label
-  when the table has no caption. TS 29.283 does not declare it: its one
-  citation, clause 7.3.21's Sequence-Number "defined in the 3GPP TS 29.329",
-  names TS 29.329's AVP 716 for one table 7.3.1-1 gives 4512, which TS 29.230
-  allocates to TS 29.283.
+  "See ... for the definition of this AVP") as re-used rows, each in a block at
+  the clause stating it, with no `; Table:` since no table prints it, and in
+  each clause stating it. A NOTE-derived origin is the AVP table's and stands
+  under its label, apart from any re-used table the document prints beside it.
+  The local table's code, type and flag rules remain intact, and a code the
+  origin does not give is `reused-code-conflict`. References to encodings or
+  value meanings do not establish an AVP's origin. An unnamed "this AVP" takes
+  the clause's AVP: a clause with several candidates fails, and a sentence
+  after another AVP's name is skipped. RFC 8583 uses the same quirk for "The
+  SourceID AVP is defined in [RFC8581]", in a block at its clause 7.4. TS
+  29.283 does not declare it: its one citation, clause 7.3.21's
+  Sequence-Number "defined in the 3GPP TS 29.329", names TS 29.329's AVP 716
+  for one table 7.3.1-1 gives 4512, which TS 29.230 allocates to TS 29.283,
+  and read it would be a `reused-code-conflict`.
 - `bare-avp-citations` adds TS 29.329's pointers, which say no "definition":
   "See 3GPP TS 29.229 [6] clause 6.3.56." where it is all a clause headed by
   the AVP holds, and "for further description of this AVP".
@@ -436,10 +439,11 @@ for it, nor flags: clause 6.4.1.1 says only that RAR/RAA "are used according to"
 RFC 3588 [401]. TS 29.230 has no row for RFC 6733's 258 either, allocating
 3GPP's commands alone. So an input patch supplies the header line, citing RFC
 6733 clause 8.3.1, and the extractor fails without it, rather than pass over a
-command the document prints. Clause 6.4.1.2's symbols read M as `{ }` and OC as
-`[ ]`; a dash, "Not used in 3GPP", reads as a strike, the member commented out;
-a row a tab sets off is the grouped AVP's above it, kept as a comment and no
-member.
+command the document prints. The file says so under the header, naming the
+declarations whose patch says where the header comes from. Clause 6.4.1.2's
+symbols read M as `{ }` and OC as `[ ]`; a dash, "Not used in 3GPP", reads as a
+strike, the member commented out; a row a tab sets off is the grouped AVP's
+above it, kept as a comment and no member.
 
 The category says neither a fixed position nor a repetition, which RFC 6733's
 rule states and V19.0.0's clause 6.4.4 prints. Those are corrections
@@ -448,7 +452,7 @@ the reading and the edit:
 
 ```dad
 <Re-Auth-Request> ::= < Diameter Header: 258, REQ, PXY >
-;; patched: the table prints no Diameter header
+;; patched: the table prints no Diameter header, see TS32.299.toml
         < Session-Id > ;; corrected: (TS32.299.py#rel11-rar-session-id-position)
         { Origin-Host }
 ```

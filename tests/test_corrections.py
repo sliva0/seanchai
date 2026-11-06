@@ -503,6 +503,59 @@ def test_a_created_reused_block_follows_its_table_and_carries_the_rows():
     assert results[0].path == ("sections", 2, "rows", 0)
 
 
+def test_an_unlabelled_table_s_block_is_created_by_its_clause():
+    """RFC 5779's AVP table prints no label, and neither do the blocks of
+    origins its clauses' prose states, so the clause tells them apart."""
+    spec = _spec()
+    table = _table(spec).model_copy(update={"table": None})
+    prose = ast.ReusedAvps(
+        source=ast.SourceRef(section="6.3.9"),
+        columns=(ast.ReusedColumn.NAME, ast.ReusedColumn.FROM),
+        rows=(ast.ReusedAvpRow(name="Server-Name", origin="TS29.229"),),
+    )
+    spec = spec.model_copy(
+        update={
+            "sections": (
+                *(
+                    table if isinstance(section, ast.AvpTable) else section
+                    for section in spec.sections
+                ),
+                prose,
+            )
+        }
+    )
+    insert = corrections.Insert(
+        id=next(_IDS),
+        into=corrections.reused_avps(None, section=table.source.section),
+        node=ast.ReusedAvpRow(name="Session-Id", origin="RFC6733"),
+        after=None,
+        reason="test",
+        drawn_from="clause 4",
+    )
+
+    corrected, results = corrections.apply(spec, [insert])
+
+    block = corrected.sections[2]
+    assert isinstance(block, ast.ReusedAvps)
+    assert (block.table, block.source) == (None, table.source)
+    assert [row.name for row in block.rows] == ["Session-Id"]
+    assert corrected.sections[-1] == prose
+    text = formatter.format_spec(corrected, corrections.notes(results))
+    assert f"RFC6733 ;; inserted: from clause 4 ({insert.id})\n" in text
+
+
+def test_an_insert_s_provenance_is_one_line():
+    with pytest.raises(corrections.CorrectionError, match="one line"):
+        corrections.Insert(
+            id="row",
+            into=corrections.avp_table("6.3.1"),
+            node=ast.AvpTableRow(name="Thing"),
+            after=None,
+            reason="test",
+            drawn_from="clause\n4",
+        )
+
+
 def test_a_delete_cannot_reach_a_block_only_an_insert_creates():
     # Selectors see the input: a block that exists only once the corrections
     # run cannot be deleted by them, before or after the insert that makes it.

@@ -134,8 +134,11 @@ def _citations(spec: ast.Specification) -> dict[str, Citation]:
 
 def _block_title(section: ast.Section) -> str:
     """A block's `; Type:` and, for a definition, its `; Name:`, for a value
-    table its `; AVP:`."""
+    table its `; AVP:`, and for the re-used rows a clause's prose states, the
+    names they re-use."""
     name = section.avp if isinstance(section, ast.ValueTable) else None
+    if isinstance(section, ast.ReusedAvps) and section.table is None:
+        name = ", ".join(row.name for row in section.rows)
     name = getattr(section, "name", name)
     return section.type if name is None else f"{section.type} {name}"
 
