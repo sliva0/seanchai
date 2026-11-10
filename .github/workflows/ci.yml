@@ -17,12 +17,13 @@ jobs:
     runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'node22' }}
     steps:
       - uses: actions/checkout@v7
-      # uv brings its own Python 3.14, from .python-version. The action caches
-      # the managed CPython and the uv cache, keyed by the lockfile. Pruning
-      # drops pre-built wheels before saving, since downloading them again is
-      # about as quick, so only wheels built from source are kept. A host without
-      # a cache server starts cold. Forgejo's job token means nothing to
-      # github.com, the action's fallback for downloading uv, so it is withheld.
+      # uv brings its own Python 3.14, from .python-version, and 3.12 for the
+      # floor's run below. The action caches the managed CPythons and the uv
+      # cache, keyed by the lockfile. Pruning drops pre-built wheels before
+      # saving, since downloading them again is about as quick, so only wheels
+      # built from source are kept. A host without a cache server starts cold.
+      # Forgejo's job token means nothing to github.com, the action's fallback
+      # for downloading uv, so it is withheld.
       - uses: astral-sh/setup-uv@v10.3.3
         with:
           github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
@@ -33,6 +34,9 @@ jobs:
       - run: uv sync --locked
       # No source documents in CI: the tests that need them are deselected.
       - run: uv run pytest -m "not sources"
+      # The oldest Python requires-python admits, in a throwaway environment
+      # from the same lockfile, so the synced 3.14 one stays for what follows.
+      - run: uv run --locked --isolated --python 3.12 pytest -m "not sources"
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run rumdl check .

@@ -10,6 +10,8 @@ and the grammar: no timestamps, no absolute paths, and the same bytes under any 
 seed. An export replaces its output directory whole.
 """
 
+from __future__ import annotations
+
 import contextlib
 import difflib
 import hashlib
@@ -982,7 +984,7 @@ def _refuse_foreign(output: Path) -> None:
         return
     try:
         index = json.loads((output / "index.json").read_bytes())
-    except OSError, ValueError:
+    except (OSError, ValueError):
         index = None
     if not _is_export_index(index):
         raise CorpusError(

@@ -12,6 +12,8 @@ library and the lookup commands need nothing more. Reading source documents is
 the `seanchai[extract]` extra: the commands that do it import it themselves.
 """
 
+from __future__ import annotations
+
 import contextlib
 import difflib
 import json
@@ -1045,7 +1047,7 @@ def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
         # and a file with "\r\n" endings is one to rewrite, not one that
         # reads as canonical because the newlines were translated away.
         with _naming(source):
-            text = source.read_text(encoding="utf-8", newline="")
+            text = source.read_bytes().decode("utf-8")
             spec, comments = parser.parse_with_comments(text)
         canonical = formatter.format_spec(spec, comments)
         if canonical != text:

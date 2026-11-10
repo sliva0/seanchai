@@ -189,7 +189,7 @@ def test_the_corpus_package_asks_for_no_recent_python():
     """It only reads files, so a generator on an older Python can hold the data
     without the library."""
     assert _project(_PACKAGE / "pyproject.toml")["requires-python"] == ">=3.10"
-    assert _project(_ROOT / "pyproject.toml")["requires-python"] == ">=3.14"
+    assert _project(_ROOT / "pyproject.toml")["requires-python"] == ">=3.12"
 
 
 def test_the_corpus_version_is_the_date_it_names():

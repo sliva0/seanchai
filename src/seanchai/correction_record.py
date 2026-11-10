@@ -12,6 +12,8 @@ The modules stay the source. A test holds the committed file to them, as the
 sources test holds the committed `.dad` files to the downloads.
 """
 
+from __future__ import annotations
+
 import json
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
@@ -144,7 +146,7 @@ class _Recorded(corrections.Selector):
         for path in self.paths:
             try:
                 yield path, ast.node_at(spec, path)
-            except AttributeError, IndexError, TypeError:
+            except (AttributeError, IndexError, TypeError):
                 continue
 
     def describe(self) -> str:

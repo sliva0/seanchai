@@ -14,6 +14,8 @@ gives downstream generator/validator scripts a serialized form for free.
 Not-yet-final corners of the format are marked with `TODO(format)`.
 """
 
+from __future__ import annotations
+
 import enum
 import re
 from collections.abc import Sequence

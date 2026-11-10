@@ -37,6 +37,8 @@ The vendor-id for locally defined AVPs is not printed by enumerated-AVP
 sections, so it is taken from the spec's grouped-AVP headers (3GPP: 10415).
 """
 
+from __future__ import annotations
+
 import contextlib
 import dataclasses
 import enum

@@ -51,6 +51,8 @@ A `reason` is prose and may wrap in a multi-line string, read back as one line
 (`prose.collapse`). Every other field is exact, `find` and `replace` above all.
 """
 
+from __future__ import annotations
+
 import tomllib
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field

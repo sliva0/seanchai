@@ -1,7 +1,7 @@
 # Consumers: the model and the integrations
 
-`seanchai` needs Python 3.14. Install it with the corpus and every snippet here
-runs as it stands:
+`seanchai` needs Python 3.12 or newer. Install it with the corpus and every
+snippet here runs as it stands:
 
 ```sh
 pip install "seanchai[corpus]"
@@ -408,12 +408,12 @@ needs live in `corpus.py`, each entry citing its source:
   read right after it and gives the named fields alone, and its code has to
   agree. TS 29.210's `3GPP-GPRS-Negotiated-QoS-Profile` and `3GPP-SGSN-MCC-MNC`
   take their code, vendor and clause from TS 29.061 V6.15.0 clause 16.4.7, and
-  their type, UTF8String, from V19.1.0's table 9a, which V7.12.0's and V11.12.0's
-  print alike. Their flags come from no copy of TS 29.061: TS 29.210 clause 5.3
-  says a re-used VSA's M flag "shall be set" and its P flag "may be set" in RFC
-  4005's translation, whose V flag is set, so they are M and V in Must, P in May.
-  Table 9a's own M in Must not is the disagreement that pins V6.15.0, and stays
-  out of the reading.
+  their type, UTF8String, from V19.1.0's table 9a, which V7.12.0's and
+  V11.12.0's print alike. Their flags come from no copy of TS 29.061: TS 29.210
+  clause 5.3 says a re-used VSA's M flag "shall be set" and its P flag "may be
+  set" in RFC 4005's translation, whose V flag is set, so they are M and V in
+  Must, P in May. Table 9a's own M in Must not is the disagreement that pins
+  V6.15.0, and stays out of the reading.
 
 Every version these name is a catalog pin the downloader checks against
 the 3GPP archive on each download ([downloader.md](downloader.md)). An
@@ -421,13 +421,14 @@ the 3GPP archive on each download ([downloader.md](downloader.md)). An
 `across_releases`, a `corpus.CrossRelease` naming the citing and cited
 documents, the version and the rule; `across_releases()` lists them for a
 reader to audit, and the linter's `cross-release-origin` note says the same
-per file. For a `RELEASE_FILLS` entry `Avp.completed_by` also names the copy per
-field, `TS29.061 V19.1.0`, and the rule is `corpus.LATER_RELEASE`. An older copy answers only through a citation: reference-level
-queries (`avps`, `holes`, `references`) read the newest copy of each
-document. Corpus-wide lookups (`find`, `definition`, `identified`, `avps()`)
-also know an identity only an older copy holds, where a citation reaches it, so
-`show` answers for every identity `seanchai dictionary` writes: TS 32.299
-V11.20.0's `WLAN-Information`, through oneM2M TS-0004's `Service-Information`.
+per file. For a `RELEASE_FILLS` entry `Avp.completed_by` also names the copy
+per field, `TS29.061 V19.1.0`, and the rule is `corpus.LATER_RELEASE`. An older
+copy answers only through a citation: reference-level queries (`avps`, `holes`,
+`references`) read the newest copy of each document. Corpus-wide lookups
+(`find`, `definition`, `identified`, `avps()`) also know an identity only an
+older copy holds, where a citation reaches it, so `show` answers for every
+identity `seanchai dictionary` writes: TS 32.299 V11.20.0's `WLAN-Information`,
+through oneM2M TS-0004's `Service-Information`.
 
 **Holes.** An `Avp` has every field: code, type and flag rules are facts
 some document states, or RFC 6733's rule for an IETF AVP's unplaced bits,
@@ -478,8 +479,9 @@ consumer loading a partial or foreign corpus. `unrecorded_holes()` and
 The seventeen, by cause:
 
 - **A field no source states**, under every policy. TS 29.061's
-  `3GPP-Session-Stop-Indicator` row states only a code. TS 29.234's `Charging-Characteristics` is typed "Integer", no Diameter type. TS
-  29.229's `Wildcarded-IMPU` states a type and a note that Sh uses it, with no
+  `3GPP-Session-Stop-Indicator` row states only a code. TS 29.234's
+  `Charging-Characteristics` is typed "Integer", no Diameter type. TS 29.229's
+  `Wildcarded-IMPU` states a type and a note that Sh uses it, with no
   code or flag rule, though TS 29.329's reading of it is complete, from Sh's
   table, and is the one Sh's commands hold. ETSI TS 183 020's
   `Privacy-Indicator` states a code, a type and members and no flag rule, TS 183

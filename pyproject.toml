@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "sliva0", email = "sliva0mk@gmail.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 license = "MIT"
 license-files = ["LICENSE"]
 keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
@@ -16,6 +16,8 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Telecommunications Industry",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Communications :: Telephony",
     "Topic :: Software Development :: Code Generators",
@@ -73,8 +75,10 @@ markers = [
     "sources: needs the downloaded source documents under specifications/",
 ]
 
+# The floor requires-python names, not the 3.14 the venv runs, so that ruff
+# and both type checkers flag syntax and standard-library calls newer than it.
 [tool.ruff]
-target-version = "py314"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
@@ -99,12 +103,14 @@ length-mode = "chars"
 
 [tool.ty.environment]
 python = ".venv"
+python-version = "3.12"
 
 [tool.ty.src]
 include = ["src", "packages/seanchai-corpus/src", "tests"]
 
 [tool.basedpyright]
 typeCheckingMode = "standard"
+pythonVersion = "3.12"
 include = ["src", "packages/seanchai-corpus/src", "tests"]
 venvPath = "."
 venv = ".venv"

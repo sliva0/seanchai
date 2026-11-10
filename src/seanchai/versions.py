@@ -1,6 +1,8 @@
 """Inclusive version ranges shared by all declaration layers: each scopes its
 declaration to the releases it spans, and is advisory within them."""
 
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass
 

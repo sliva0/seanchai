@@ -61,6 +61,7 @@ wireshark` need no extra.
 ```sh
 uv run pytest -m "not sources"   # tests that need no downloaded documents
 uv run pytest                    # all tests; needs `seanchai download` first
+uv run --isolated --python 3.12 pytest -m "not sources"  # the oldest Python
 uv run ruff check .              # lint; findings get fixed, not suppressed
 uv run ruff format .
 uv run rumdl check .             # Markdown, line length only
@@ -79,11 +80,12 @@ checker-specific form (`# pyright: ignore[...]`).
 
 ## CI
 
-`.github/workflows/ci.yml` runs the tests without sources, ruff, rumdl and both
-type checkers, then builds both packages and runs `tests/smoke_installed.py`
-over the wheels, installed with their dependencies from the index, without the
-`extract` extra and then with it, adding `tests/smoke_extract.py`. Run
-everything locally before committing; CI is a backstop.
+`.github/workflows/ci.yml` runs the tests without sources, on 3.14 and again on
+3.12 in an isolated environment, ruff, rumdl and both type checkers, then builds
+both packages and runs `tests/smoke_installed.py` over the wheels, installed
+with their dependencies from the index, without the `extract` extra and then
+with it, adding `tests/smoke_extract.py`. Run everything locally before
+committing; CI is a backstop.
 
 The one workflow runs on GitHub and on Forgejo, which reads `.github/workflows/`
 while `.forgejo/workflows/` does not exist. A Forgejo instance needs a runner
@@ -135,7 +137,9 @@ covers it; add a synthetic case only for a rejection path.
 
 ## Conventions
 
-- Python 3.14; the package is `src/seanchai/`.
+- Python 3.12 or newer, developed on 3.14, which `.python-version` names; the
+  package is `src/seanchai/`. Ruff and both type checkers target 3.12, so they
+  flag syntax and standard-library calls newer than that.
 - Comments explain why. Where code accommodates a real document's quirk,
   name the specification and clause, so the next reader does not simplify
   it back into a bug.

@@ -37,7 +37,7 @@ independent reading of the same documents.
 
 ## Installing
 
-Seanchaí needs Python 3.14 or newer. The library and the corpus are two
+Seanchaí needs Python 3.12 or newer. The library and the corpus are two
 packages, each versioned on its own: `seanchai` follows semantic versioning, and
 `seanchai-corpus`, which also installs alone on Python 3.10 or newer, is
 versioned by the date the corpus was regenerated.
