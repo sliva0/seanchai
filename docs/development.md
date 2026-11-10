@@ -22,7 +22,7 @@ The library's own are `pydantic` and `click`: `click` stays core because the
 `dictionary`, `export`, `lint`, `format` and `corpus crosscheck` need nothing
 else. `python-docx` (and through it `lxml`) and `pypdf` are the
 `seanchai[extract]` extra, which the dev group installs. Only
-`extractor/tgpp_docx.py` and two validators in `downloader/core.py` touch them,
+`extractor/tgpp_docx/` and two validators in `downloader/core.py` touch them,
 and nothing imports either on the way to the model or the export: the catalog,
 which the export reads, is its own module, `downloader/catalog.py`. Without the
 extra, `MissingExtraError` names it, and `corpus extract`, `corpus regenerate`
@@ -41,7 +41,8 @@ commands by audience, in the order `cli.py` defines them.
 
 - `src/seanchai/`: the public modules, `dad/` (AST, parser, formatter,
   corrections, ABNF, the TextMate grammar under `syntax/`), `extractor/`,
-  `downloader/`, `linter.py`, `oracle.py`, `corpus.py`, `model.py`,
+  `downloader/`, `linter/`, `oracle.py`, `corpus.py`, `model/` (whose
+  `__init__.py` re-exports what its underscored modules define),
   `export.py`, `export_schema.py`, `dictionary.py` and `errors.py`; `cli.py`;
   and the maintenance flow's internals, `_regenerate.py`, `_ranges.py`,
   `_versions.py`, `_correction_record.py` and `_prose.py`. The public surface

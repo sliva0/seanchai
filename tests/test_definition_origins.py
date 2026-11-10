@@ -4,9 +4,9 @@ import pytest
 
 from seanchai.corpus import Corpus
 from seanchai.dad import ast
-from seanchai.extractor import tgpp_docx
 from seanchai.extractor.errors import ExtractionError
 from seanchai.extractor.sources import Quirk, Quirks
+from seanchai.extractor.tgpp_docx import _base, _origins
 from seanchai.model import Enumerated, FlagRules, Grouped, HolePolicy, Model
 
 
@@ -116,17 +116,17 @@ def _read_origins(*texts, rows=("Thing",), bare=False, title="Thing AVP"):
             for code, name in enumerate(rows, 1)
         ),
     )
-    collected = tgpp_docx._Collected(
+    collected = _base._Collected(
         own_reference="TS29.999",
-        avp_tables=[tgpp_docx._CollectedAvpTable(table, "6.3", [])],
+        avp_tables=[_base._CollectedAvpTable(table, "6.3", [])],
     )
-    section = tgpp_docx._Section(
+    section = _base._Section(
         number="6.3.1",
         title=title,
-        paragraphs=[tgpp_docx._Para(text=t, style="", lines=[]) for t in texts],
+        paragraphs=[_base._Para(text=t, style="", lines=[]) for t in texts],
     )
     names = ["prose-avp-origins", *(["bare-avp-citations"] if bare else [])]
-    tgpp_docx._prose_avp_origins(
+    _origins._prose_avp_origins(
         collected,
         [section],
         Quirks([Quirk(name=name, reason="rejection") for name in names], None),
@@ -145,20 +145,20 @@ def test_each_clause_stating_an_origin_is_a_block_of_its_own():
         columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE, ast.AvpColumn.SECTION),
         rows=(ast.AvpTableRow(name="QoS-Capability", code=578, section="9.2.3.2.4"),),
     )
-    collected = tgpp_docx._Collected(
+    collected = _base._Collected(
         own_reference="TS29.273",
-        avp_tables=[tgpp_docx._CollectedAvpTable(table, "9.2.3.1.1", [])],
+        avp_tables=[_base._CollectedAvpTable(table, "9.2.3.1.1", [])],
     )
     sentence = "This AVP is defined in IETF RFC 5777 [9]."
     sections = [
-        tgpp_docx._Section(
+        _base._Section(
             number=number,
             title="QoS-Capability",
-            paragraphs=[tgpp_docx._Para(text=sentence, style="", lines=[])],
+            paragraphs=[_base._Para(text=sentence, style="", lines=[])],
         )
         for number in ("9.2.3.6.4", "9.2.3.2.4")
     ]
-    tgpp_docx._prose_avp_origins(
+    _origins._prose_avp_origins(
         collected,
         sections,
         Quirks([Quirk(name="prose-avp-origins", reason="TS 29.273")], None),

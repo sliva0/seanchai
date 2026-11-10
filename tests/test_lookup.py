@@ -304,19 +304,20 @@ def test_no_member_is_a_body_among_its_own_descendants():
     """What `Dictionary.members` leaves out, since it names nothing to read."""
     built = Model.installed()
     from seanchai import model
+    from seanchai.model._types import is_cut
 
     assert not [
         member
         for message in built.messages()
         for member in message.avps
-        if model.is_cut(member)
+        if is_cut(member)
     ]
     assert not [
         member
         for avp in built.avps()
         if isinstance(avp, model.Grouped)
         for member in avp.members
-        if model.is_cut(member)
+        if is_cut(member)
     ]
 
 

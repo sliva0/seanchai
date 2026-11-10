@@ -1,10 +1,12 @@
 # The extractors
 
-Two extractors produce the same `.dad` AST: `extractor/tgpp_docx.py` for
-3GPP `.docx` specifications (page numbers attached from the matching ETSI
+Two extractors produce the same `.dad` AST: the package `extractor/tgpp_docx/`
+for 3GPP `.docx` specifications (page numbers attached from the matching ETSI
 PDF) and for oneM2M's, which follow the same Word conventions, and
 `extractor/rfc_text.py` for RFC plain text. Both read per-document
-[source declarations](#source-declarations) from `edits/sources/`.
+[source declarations](#source-declarations) from `edits/sources/`. The
+package keeps a module per stage of the reading, named with a leading
+underscore; its `__init__.py` lists what it offers.
 
 ## What the extractor does not decide
 

@@ -10,7 +10,19 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
 from seanchai.dad import ast, formatter, parser
-from seanchai.extractor import tgpp_docx
+from seanchai.extractor import sources, tgpp_docx
+from seanchai.extractor.errors import ExtractionError
+from seanchai.extractor.tgpp_docx import (
+    _avp_tables,
+    _base,
+    _collect,
+    _commands,
+    _docx,
+    _enums,
+    _origins,
+    _registries,
+    _rules,
+)
 
 
 def _two_section_spec():
@@ -41,7 +53,7 @@ def test_extract_requires_cover_metadata_and_an_avp_table(tmp_path):
     missing_cover = tmp_path / "missing-cover.docx"
     docx.Document().save(missing_cover)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="cover page"):
+    with pytest.raises(ExtractionError, match="cover page"):
         tgpp_docx.extract(missing_cover)
 
     no_table = tmp_path / "no-table.docx"
@@ -49,13 +61,13 @@ def test_extract_requires_cover_metadata_and_an_avp_table(tmp_path):
     document.add_table(rows=1, cols=1).cell(0, 0).text = "3GPP TS 29.999 V1.0"
     document.save(no_table)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="no AVP table found"):
+    with pytest.raises(ExtractionError, match="no AVP table found"):
         tgpp_docx.extract(no_table)
 
 
 def test_origin_rejects_unknown_references():
-    with pytest.raises(tgpp_docx.ExtractionError, match="unrecognized origin"):
-        tgpp_docx._origin("some other document", "TS29.999")
+    with pytest.raises(ExtractionError, match="unrecognized origin"):
+        _origins._origin("some other document", "TS29.999")
 
 
 @pytest.mark.parametrize("cell", ["M. V", "M, v", "v", "M.V"])
@@ -65,7 +77,7 @@ def test_flags_cell_rejects_known_source_typos(tmp_path, synthetic_spec_docx, ce
     document.tables[1].cell(3, 4).text = cell
     document.save(malformed)
     message = "dotted-flags" if cell == "M.V" else f"malformed flags cell {cell!r}"
-    with pytest.raises(tgpp_docx.ExtractionError, match=re.escape(message)):
+    with pytest.raises(ExtractionError, match=re.escape(message)):
         tgpp_docx.extract(malformed, sources_dir=tmp_path)
 
 
@@ -76,7 +88,7 @@ def test_extract_rejects_spaces_in_avp_table_names(tmp_path, synthetic_spec_docx
     document.save(malformed)
 
     with pytest.raises(
-        tgpp_docx.ExtractionError,
+        ExtractionError,
         match="AVP table name cell 'Example Group' contains spaces",
     ):
         tgpp_docx.extract(malformed)
@@ -91,7 +103,7 @@ def test_extract_rejects_an_avp_table_clause_cell_that_is_no_clause_number(
     document.save(malformed)
 
     with pytest.raises(
-        tgpp_docx.ExtractionError,
+        ExtractionError,
         match=re.escape(
             "6.3: AVP table row 'Example-Group' has clause cell '6. 3.1',"
             " which is not a clause number"
@@ -107,7 +119,7 @@ def test_extract_rejects_spaces_in_reused_avp_names(tmp_path, synthetic_spec_doc
     document.save(malformed)
 
     with pytest.raises(
-        tgpp_docx.ExtractionError,
+        ExtractionError,
         match="re-used AVPs name cell 'Session- Id' contains spaces",
     ):
         tgpp_docx.extract(malformed)
@@ -125,7 +137,7 @@ def test_extract_rejects_spaces_in_grouped_avp_rule_names(
     document.save(malformed)
 
     with pytest.raises(
-        tgpp_docx.ExtractionError,
+        ExtractionError,
         match=re.escape("6.3.1: rule name 'Example Group' contains spaces"),
     ):
         tgpp_docx.extract(malformed)
@@ -185,14 +197,14 @@ def test_attach_pages_rejects_a_pdf_of_another_document(
     # the result would be wrong in a way nothing downstream can detect.
     pdf = make_outlined_pdf("other.pdf", specification=specification, version=version)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match=re.escape(expected)):
+    with pytest.raises(ExtractionError, match=re.escape(expected)):
         tgpp_docx.attach_pages(_two_section_spec(), pdf)
 
 
 def test_attach_pages_rejects_a_pdf_without_a_usable_outline(make_bare_pdf):
     pdf = make_bare_pdf("no-outline.pdf", "3GPP TS 29.999 version 1.2.3 Release 18")
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="no numbered sections"):
+    with pytest.raises(ExtractionError, match="no numbered sections"):
         tgpp_docx.attach_pages(_two_section_spec(), pdf)
 
 
@@ -216,12 +228,12 @@ def test_attach_pages_reads_the_document_title_when_the_cover_is_unreadable(
     with pdf.open("wb") as stream:
         writer.write(stream)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match=re.escape(expected)):
+    with pytest.raises(ExtractionError, match=re.escape(expected)):
         tgpp_docx.attach_pages(_two_section_spec(), pdf)
 
 
 def test_attach_pages_rejects_a_pdf_without_cover_metadata(make_bare_pdf):
-    with pytest.raises(tgpp_docx.ExtractionError, match="PDF cover page"):
+    with pytest.raises(ExtractionError, match="PDF cover page"):
         tgpp_docx.attach_pages(_two_section_spec(), make_bare_pdf("blank.pdf"))
 
 
@@ -277,7 +289,7 @@ def test_extract_distinguishes_an_absent_encrypt_column_from_an_empty_cell(tmp_p
 
 
 def _avp_table(*rows, section="6.3", table="6.3.1", note_reused=()):
-    return tgpp_docx._CollectedAvpTable(
+    return _base._CollectedAvpTable(
         table=ast.AvpTable(
             table=table,
             columns=tuple(ast.AvpColumn),
@@ -290,7 +302,7 @@ def _avp_table(*rows, section="6.3", table="6.3.1", note_reused=()):
 
 
 def _reused_table(*rows, label="6.3.2", section="6.3"):
-    return tgpp_docx._ReusedTable(
+    return _base._ReusedTable(
         rows=list(rows),
         columns=ast.REUSED_COLUMNS,
         label=label,
@@ -322,11 +334,11 @@ def _row(name, code):
 def _enum_section(number, name):
     """A section shaped like an enumerated-AVP clause."""
     paragraphs = [
-        tgpp_docx._Para(
+        _base._Para(
             text=text,
             style=style,
             lines=[
-                tgpp_docx._Line(
+                _base._Line(
                     text=text,
                     style=style,
                     bold=frozenset({False}),
@@ -339,42 +351,42 @@ def _enum_section(number, name):
             ("Off (0)", "B1"),
         ]
     ]
-    return tgpp_docx._Section(number=number, title=name, paragraphs=paragraphs)
+    return _base._Section(number=number, title=name, paragraphs=paragraphs)
 
 
 def test_resolve_rejects_an_enum_with_no_code_in_the_avp_table():
-    collected = tgpp_docx._Collected(
+    collected = _base._Collected(
         grouped=[_grouped()],
         pending_enums=[(_enum_section("6.3.2", "Mode"), "Mode")],
         avp_tables=[_avp_table(_row("Other", 1))],
     )
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="has no code in the AVP table"):
-        tgpp_docx._resolve(collected)
+    with pytest.raises(ExtractionError, match="has no code in the AVP table"):
+        _collect._resolve(collected)
 
 
 def test_resolve_rejects_avp_and_reused_table_counts_that_cannot_pair():
     # Adjacency in document order is the only thing that says which re-used
     # block belongs to which set, so unequal counts have no defensible pairing.
-    two_avp_one_reused = tgpp_docx._Collected(
+    two_avp_one_reused = _base._Collected(
         avp_tables=[
             _avp_table(_row("One", 1), section="6.3"),
             _avp_table(_row("Two", 2), section="7.3"),
         ],
         reused_tables=[_reused_table(label="6.3.2")],
     )
-    one_avp_two_reused = tgpp_docx._Collected(
+    one_avp_two_reused = _base._Collected(
         avp_tables=[_avp_table(_row("One", 1))],
         reused_tables=[_reused_table(label="6.3.2"), _reused_table(label="7.4.1")],
     )
 
     for collected in (two_avp_one_reused, one_avp_two_reused):
-        with pytest.raises(tgpp_docx.ExtractionError, match="cannot pair"):
-            tgpp_docx._resolve(collected)
+        with pytest.raises(ExtractionError, match="cannot pair"):
+            _collect._resolve(collected)
 
 
 def test_resolve_rejects_one_name_with_two_codes_across_avp_tables():
-    collected = tgpp_docx._Collected(
+    collected = _base._Collected(
         avp_tables=[
             _avp_table(_row("One", 1), section="6.3"),
             _avp_table(_row("One", 2), section="7.3"),
@@ -385,21 +397,21 @@ def test_resolve_rejects_one_name_with_two_codes_across_avp_tables():
         ],
     )
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="code conflict"):
-        tgpp_docx._resolve(collected)
+    with pytest.raises(ExtractionError, match="code conflict"):
+        _collect._resolve(collected)
 
 
 def test_resolve_refuses_conflicting_enumerated_vendor_ids():
     # Two different explicit vendor ids cannot both be this document's
     # implicit vendor for enumerated definitions.
-    collected = tgpp_docx._Collected(
+    collected = _base._Collected(
         grouped=[_grouped(10415), _grouped(vendor_id=13019)],
         pending_enums=[(_enum_section("6.3.2", "Mode"), "Mode")],
         avp_tables=[_avp_table(_row("Mode", 11))],
     )
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="cannot resolve the vendor id"):
-        tgpp_docx._resolve(collected)
+    with pytest.raises(ExtractionError, match="cannot resolve the vendor id"):
+        _collect._resolve(collected)
 
 
 def _paragraph(document, text):
@@ -418,7 +430,7 @@ def test_extract_rejects_an_abnf_line_with_mixed_bold(tmp_path, synthetic_spec_d
     tail.bold = False
     document.save(malformed)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="mixed bold in ABNF line"):
+    with pytest.raises(ExtractionError, match="mixed bold in ABNF line"):
         tgpp_docx.extract(malformed)
 
 
@@ -484,7 +496,7 @@ def test_extract_rejects_an_avp_table_whose_caption_it_cannot_read(
     _paragraph(document, "Table 6.3.1: AVP definitions").text = "Table  : definitions"
     document.save(uncaptioned)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="AVP table without a caption"):
+    with pytest.raises(ExtractionError, match="AVP table without a caption"):
         tgpp_docx.extract(uncaptioned)
 
 
@@ -508,7 +520,7 @@ def test_undeclared_docx_shapes_are_rejected(tmp_path, synthetic_spec_docx, quir
     else:
         table.cell(2, 2).text = "6.3.1 (see Note)"
     document.save(path)
-    with pytest.raises(tgpp_docx.ExtractionError, match=quirk):
+    with pytest.raises(ExtractionError, match=quirk):
         tgpp_docx.extract(path)
 
 
@@ -527,7 +539,7 @@ def test_reference_only_quirk_rejects_other_command_text(tmp_path, body):
     (tmp_path / "TS29.999.toml").write_text(
         '[[quirk]]\nname = "command-reference-only"\nreason = "test rejection"\n'
     )
-    with pytest.raises(tgpp_docx.ExtractionError, match="command section without ABNF"):
+    with pytest.raises(ExtractionError, match="command section without ABNF"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
@@ -638,13 +650,13 @@ def test_a_command_printed_by_category_is_a_message(tmp_path, synthetic_spec_doc
 
 def test_a_command_printed_by_category_needs_its_header(tmp_path, synthetic_spec_docx):
     path = _category_table_docx(tmp_path, synthetic_spec_docx, patch=False)
-    with pytest.raises(tgpp_docx.ExtractionError, match="no Diameter header"):
+    with pytest.raises(ExtractionError, match="no Diameter header"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
 def test_a_command_printed_by_another_category_fails(tmp_path, synthetic_spec_docx):
     path = _category_table_docx(tmp_path, synthetic_spec_docx, rows=[("Odd", "X")])
-    with pytest.raises(tgpp_docx.ExtractionError, match="category 'X'"):
+    with pytest.raises(ExtractionError, match="category 'X'"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
@@ -658,24 +670,24 @@ def test_a_captioned_command_over_an_unknown_table_fails(tmp_path, synthetic_spe
     (tmp_path / "TS29.999.toml").write_text(
         '[[quirk]]\nname = "message-tables"\nreason = "test"\n'
     )
-    with pytest.raises(tgpp_docx.ExtractionError, match="over no table"):
+    with pytest.raises(ExtractionError, match="over no table"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
 def test_a_command_table_with_another_mark_fails(tmp_path, synthetic_spec_docx):
     path = _message_table_docx(tmp_path, synthetic_spec_docx, ("yes", "maybe"))
-    with pytest.raises(tgpp_docx.ExtractionError, match="neither yes nor no"):
+    with pytest.raises(ExtractionError, match="neither yes nor no"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
 def _procedure_section(*lines):
     """A procedure clause printing the lines, as TS 29.234 clause 4.4.2.2 does."""
     para = [
-        tgpp_docx._Para(
+        _base._Para(
             text=text,
             style="",
             lines=[
-                tgpp_docx._Line(
+                _base._Line(
                     text=text,
                     style="",
                     bold=frozenset({False}),
@@ -685,7 +697,7 @@ def _procedure_section(*lines):
         )
         for text in lines
     ]
-    return tgpp_docx._Section(number="4.4.2.2", title="Procedures", paragraphs=para)
+    return _base._Section(number="4.4.2.2", title="Procedures", paragraphs=para)
 
 
 def _procedure_messages(section, *quirk_names):
@@ -695,7 +707,7 @@ def _procedure_messages(section, *quirk_names):
         [Quirk(name=name, reason="test") for name in quirk_names],
         None,
     )
-    return tgpp_docx._extract_messages(
+    return _commands._extract_messages(
         section, None, [], quirks, [], reprints=[], glosses=[]
     )
 
@@ -777,7 +789,7 @@ def test_a_reprinted_rule_keeps_its_clause_origin_and_glosses():
     from seanchai.extractor.sources import Quirk, Quirks
 
     reprints, glosses = [], []
-    tgpp_docx._extract_messages(
+    _commands._extract_messages(
         _procedure_section(
             "The NAF shall send a Example-Request message (EXR) to the BSF.",
             "<Example-Request> ::= < Diameter Header: 321, REQ >",
@@ -808,12 +820,12 @@ def test_a_reprinted_rule_keeps_its_clause_origin_and_glosses():
 
 
 def test_a_grouped_rule_in_a_procedure_clause_needs_the_quirk():
-    with pytest.raises(tgpp_docx.ExtractionError, match="`reprinted-avps` quirk"):
+    with pytest.raises(ExtractionError, match="`reprinted-avps` quirk"):
         _procedure_messages(_procedure_section(*_REPRINT_LINES), "abnf-comments")
 
 
 def test_a_reprinted_rule_needs_the_sentence_naming_its_origin():
-    with pytest.raises(tgpp_docx.ExtractionError, match="saying what it copies"):
+    with pytest.raises(ExtractionError, match="saying what it copies"):
         _procedure_messages(
             _procedure_section("Then:", *_REPRINT_LINES[1:]),
             "abnf-comments",
@@ -825,10 +837,10 @@ def test_a_grouped_rule_in_a_command_clause_stays_malformed():
     section = _procedure_section("<Group> ::= < AVP header: 260 >")
     from seanchai.extractor.sources import Quirks
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="malformed rule header"):
-        tgpp_docx._extract_messages(
+    with pytest.raises(ExtractionError, match="malformed rule header"):
+        _commands._extract_messages(
             section,
-            tgpp_docx._COMMAND_TITLE_RE.match("Example-Request (EXR) Command"),
+            _commands._COMMAND_TITLE_RE.match("Example-Request (EXR) Command"),
             [],
             Quirks([], None),
             [],
@@ -846,7 +858,7 @@ def test_application_id_stated_as_the_value_iana_assigned():
     from seanchai.extractor.sources import Quirk, Quirks
 
     quirks = Quirks([Quirk(name="prose-application-ids", reason="test")], None)
-    (scope,) = tgpp_docx._stated_applications(section, quirks)
+    (scope,) = _commands._stated_applications(section, quirks)
     assert (scope.name, scope.application_id) == ("Gmb", 16777223)
 
 
@@ -872,7 +884,7 @@ def test_application_id_stated_as_the_value_iana_assigned():
     ids=["undeclared", "unknown-code", "another-abbreviation"],
 )
 def test_rfc_command_rules_rejects_what_no_rfc_names(rule, quirk_names, message):
-    with pytest.raises(tgpp_docx.ExtractionError, match=message):
+    with pytest.raises(ExtractionError, match=message):
         _procedure_messages(_procedure_section(rule), *quirk_names)
 
 
@@ -890,7 +902,7 @@ def test_an_avp_table_cell_naming_no_type_fails_undeclared(
     cell.text = "Integer"
     path = tmp_path / "bad.docx"
     document.save(path)
-    with pytest.raises(tgpp_docx.ExtractionError, match="Integer"):
+    with pytest.raises(ExtractionError, match="Integer"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
@@ -898,8 +910,8 @@ def test_message_only_quirk_cannot_accept_a_document_without_commands():
     from seanchai.extractor.sources import Quirk, Quirks
 
     quirks = Quirks([Quirk(name="message-only", reason="rejection case")], None)
-    with pytest.raises(tgpp_docx.ExtractionError, match="no AVP table found"):
-        tgpp_docx._resolve(tgpp_docx._Collected(), quirks)
+    with pytest.raises(ExtractionError, match="no AVP table found"):
+        _collect._resolve(_base._Collected(), quirks)
 
 
 def test_an_enumerated_clause_naming_two_value_sources_is_rejected():
@@ -911,19 +923,19 @@ def test_an_enumerated_clause_naming_two_value_sources_is_rejected():
         "The values are taken from OMNA WSP Content Type Numbers [210].",
     ):
         section.paragraphs.append(
-            tgpp_docx._Para(text=text, style="", lines=section.paragraphs[0].lines)
+            _base._Para(text=text, style="", lines=section.paragraphs[0].lines)
         )
     quirks = Quirks([Quirk(name="external-enum-values", reason="rejection")], None)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="names 2 sources"):
-        tgpp_docx._extract_enumerated(section, "Trace-Depth", 1462, 10415, quirks, [])
+    with pytest.raises(ExtractionError, match="names 2 sources"):
+        _enums._extract_enumerated(section, "Trace-Depth", 1462, 10415, quirks, [])
 
 
 def _enum_with(text):
     section = _enum_section("6.3.1", "Example-Mode")
     del section.paragraphs[1:]
     section.paragraphs.append(
-        tgpp_docx._Para(text=text, style="B1", lines=section.paragraphs[0].lines)
+        _base._Para(text=text, style="B1", lines=section.paragraphs[0].lines)
     )
     return section
 
@@ -950,7 +962,7 @@ def test_an_undeclared_enum_value_shape_is_not_read(text, declared):
     quirks = Quirks([Quirk(name=name, reason="rejection") for name in declared], None)
     warnings = []
 
-    enum = tgpp_docx._extract_enumerated(
+    enum = _enums._extract_enumerated(
         _enum_with(text), "Example-Mode", 1, 10415, quirks, warnings
     )
 
@@ -963,8 +975,8 @@ def test_a_label_after_the_value_must_be_a_value_name():
 
     quirks = Quirks([Quirk(name="label-after-enum-value", reason="rejection")], None)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="is no value name"):
-        tgpp_docx._extract_enumerated(
+    with pytest.raises(ExtractionError, match="is no value name"):
+        _enums._extract_enumerated(
             _enum_with("(0) Off; see clause 2"), "Example-Mode", 1, 10415, quirks, []
         )
 
@@ -978,8 +990,8 @@ def test_a_label_before_the_value_must_be_a_value_name():
     section = _enum_with("3 Off; see clause 2")
     section.paragraphs[-1].lines = _abnf_lines("3 Off; see clause 2")
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="is not a value name"):
-        tgpp_docx._extract_enumerated(section, "Example-Mode", 1, 10415, quirks, [])
+    with pytest.raises(ExtractionError, match="is not a value name"):
+        _enums._extract_enumerated(section, "Example-Mode", 1, 10415, quirks, [])
 
 
 @pytest.mark.parametrize(("tabbed", "values"), [(True, 1), (False, 0)])
@@ -992,7 +1004,7 @@ def test_a_label_first_value_is_read_only_where_a_tab_sets_it_off(tabbed, values
     quirks = Quirks([Quirk(name="value-last-enums", reason="rejection")], None)
     section = _enum_with("MONETARY 0")
     section.paragraphs[-1].lines = [
-        tgpp_docx._Line(
+        _base._Line(
             text="MONETARY 0",
             style="B1",
             bold=frozenset({False}),
@@ -1001,7 +1013,7 @@ def test_a_label_first_value_is_read_only_where_a_tab_sets_it_off(tabbed, values
         )
     ]
 
-    enum = tgpp_docx._extract_enumerated(section, "Example-Mode", 1, 10415, quirks, [])
+    enum = _enums._extract_enumerated(section, "Example-Mode", 1, 10415, quirks, [])
 
     assert len(enum.values) == values
 
@@ -1076,12 +1088,12 @@ def test_a_value_first_range_is_read_by_its_words(text, found, warned):
 
     quirks = Quirks([Quirk(name="value-first-enums", reason="rejection")], None)
     section = _enum_with("0 Off")
-    section.paragraphs[-1] = tgpp_docx._Para(
+    section.paragraphs[-1] = _base._Para(
         text=f"0 Off\n{text}", style="B1", lines=_abnf_lines("0 Off", text)
     )
     warnings = []
 
-    enum = tgpp_docx._extract_enumerated(
+    enum = _enums._extract_enumerated(
         section, "Example-Mode", 1, 10415, quirks, warnings
     )
 
@@ -1092,7 +1104,7 @@ def test_a_value_first_range_is_read_by_its_words(text, found, warned):
 
 def _enum_lines(text, *, label=None):
     section = _enum_with(text)
-    section.paragraphs[-1] = tgpp_docx._Para(
+    section.paragraphs[-1] = _base._Para(
         text=text, style="B1", lines=_abnf_lines(text), label=label
     )
     return section
@@ -1121,7 +1133,7 @@ def test_a_value_labelled_void_is_a_void_value(text, declared, found):
 
     quirks = Quirks([Quirk(name=name, reason="rejection") for name in declared], None)
 
-    enum = tgpp_docx._extract_enumerated(
+    enum = _enums._extract_enumerated(
         _enum_lines(text), "Example-Mode", 1, 10415, quirks, []
     )
 
@@ -1133,11 +1145,11 @@ def test_void_values_keep_their_place_among_the_named_ones():
 
     section = _enum_with("Void (0)")
     section.paragraphs.extend(
-        tgpp_docx._Para(text=text, style="B1", lines=section.paragraphs[0].lines)
+        _base._Para(text=text, style="B1", lines=section.paragraphs[0].lines)
         for text in ("ON (1)", "Void (2)", "OFF (3)")
     )
 
-    enum = tgpp_docx._extract_enumerated(
+    enum = _enums._extract_enumerated(
         section, "Example-Mode", 1, 10415, Quirks([], None), []
     )
 
@@ -1190,11 +1202,11 @@ def test_a_declared_enum_value_shape_is_read_and_only_then(text, quirk, label, v
         [Quirk(name=name, reason="test") for name in needed if name != quirk], None
     )
 
-    read = tgpp_docx._extract_enumerated(
+    read = _enums._extract_enumerated(
         _enum_lines(text, label=label), "Example-Mode", 1, 10415, declared, []
     )
     warnings = []
-    unread = tgpp_docx._extract_enumerated(
+    unread = _enums._extract_enumerated(
         _enum_lines(text, label=label), "Example-Mode", 1, 10415, undeclared, warnings
     )
 
@@ -1212,14 +1224,14 @@ def test_a_list_level_without_a_start_counts_from_zero():
         "</w:lvl></w:abstractNum>"
         '<w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>'
     )
-    replay = tgpp_docx._ListNumbering(numbering, None)
+    replay = _docx._ListNumbering(numbering, None)
 
     assert [replay.advance(_numbered(1, 0)) for _ in range(2)] == ["0", "1"]
 
 
 def _abnf_lines(*texts):
     return [
-        tgpp_docx._Line(
+        _base._Line(
             text=text,
             style="PL",
             bold=frozenset({False}) if text else frozenset(),
@@ -1236,8 +1248,8 @@ def test_a_blank_line_before_a_line_of_several_members_does_not_end_the_body():
         "[ First ]", "", "[ Second ] [ Third ]", "[ Fourth ]", "A closing sentence."
     )
 
-    rules, end, _ = tgpp_docx._abnf_body(
-        lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
+    rules, end, _ = _rules._abnf_body(
+        lines, 0, "Example", "1.1", sources.Quirks([], None), []
     )
 
     assert [rule.name for rule in rules] == ["First", "Second", "Third", "Fourth"]
@@ -1253,12 +1265,12 @@ def _struck_lines():
 def test_a_struck_member_without_a_legend_stays_a_member_with_its_marker():
     warnings: list[str] = []
 
-    rules, _, commented = tgpp_docx._abnf_body(
+    rules, _, commented = _rules._abnf_body(
         _struck_lines(),
         0,
         "Example",
         "1.1",
-        tgpp_docx.sources.Quirks([], None),
+        sources.Quirks([], None),
         warnings,
     )
 
@@ -1278,7 +1290,7 @@ def test_behind_its_legend_a_struck_member_is_commented_out_in_place():
     quirks = Quirks([Quirk(name="struck-rules-unused", reason="legend")], None)
     warnings: list[str] = []
 
-    rules, _, commented = tgpp_docx._abnf_body(
+    rules, _, commented = _rules._abnf_body(
         _struck_lines(), 0, "Example", "1.1", quirks, warnings
     )
 
@@ -1291,10 +1303,8 @@ def test_a_partly_struck_line_still_fails():
     lines = _struck_lines()
     lines[1].struck = frozenset({True, False})
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="partly struck"):
-        tgpp_docx._abnf_body(
-            lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
-        )
+    with pytest.raises(ExtractionError, match="partly struck"):
+        _rules._abnf_body(lines, 0, "Example", "1.1", sources.Quirks([], None), [])
 
 
 def _with_body_lines(tmp_path, synthetic_spec_docx, *texts):
@@ -1346,7 +1356,7 @@ def test_a_line_that_is_no_member_inside_a_body_fails(
     path = _with_body_lines(tmp_path, synthetic_spec_docx, line, "[ Later ]")
 
     with pytest.raises(
-        tgpp_docx.ExtractionError,
+        ExtractionError,
         match=rf"6\.1: line {re.escape(repr(line))} inside Example-Request's body",
     ):
         tgpp_docx.extract(path)
@@ -1371,7 +1381,7 @@ def test_an_elided_line_undeclared_fails_naming_its_quirk(
 ):
     path = _with_body_lines(tmp_path, synthetic_spec_docx, elided, "* [ AVP ]")
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="`elided-members`"):
+    with pytest.raises(ExtractionError, match="`elided-members`"):
         tgpp_docx.extract(path)
 
 
@@ -1406,11 +1416,11 @@ def test_an_elided_line_declared_stays_a_comment_where_it_stood(
 
 
 def test_a_blank_line_before_an_elided_line_does_not_end_the_body():
-    quirks = tgpp_docx.sources.Quirks(
-        [tgpp_docx.sources.Quirk(name="elided-members", reason="printed")], None
+    quirks = sources.Quirks(
+        [sources.Quirk(name="elided-members", reason="printed")], None
     )
 
-    rules, _, commented = tgpp_docx._abnf_body(
+    rules, _, commented = _rules._abnf_body(
         _abnf_lines("[ First ]", "", "…", "[ Last ]"),
         0,
         "Example",
@@ -1435,12 +1445,12 @@ def test_a_blank_line_before_an_elided_line_does_not_end_the_body():
     ],
 )
 def test_a_sentence_after_a_body_ends_it(line):
-    rules, end, _ = tgpp_docx._abnf_body(
+    rules, end, _ = _rules._abnf_body(
         _abnf_lines("[ First ]", line),
         0,
         "Example",
         "1.1",
-        tgpp_docx.sources.Quirks([], None),
+        sources.Quirks([], None),
         [],
     )
 
@@ -1452,8 +1462,8 @@ def test_a_word_in_another_paragraph_style_ends_a_body():
     lines = _abnf_lines("[ First ]", "Definitions")
     lines[1].style = "Heading 8"
 
-    rules, end, _ = tgpp_docx._abnf_body(
-        lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
+    rules, end, _ = _rules._abnf_body(
+        lines, 0, "Example", "1.1", sources.Quirks([], None), []
     )
 
     assert [rule.name for rule in rules] == ["First"]
@@ -1465,10 +1475,8 @@ def test_a_broken_member_in_another_paragraph_style_still_fails():
     lines = _abnf_lines("[ First ]", "[ ProSe-Validity Timer ]", "[ Last ]")
     lines[1].style = "Normal"
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="ProSe-Validity Timer"):
-        tgpp_docx._abnf_body(
-            lines, 0, "Example", "1.1", tgpp_docx.sources.Quirks([], None), []
-        )
+    with pytest.raises(ExtractionError, match="ProSe-Validity Timer"):
+        _rules._abnf_body(lines, 0, "Example", "1.1", sources.Quirks([], None), [])
 
 
 @pytest.mark.parametrize(
@@ -1481,19 +1489,19 @@ def test_a_broken_member_in_another_paragraph_style_still_fails():
     ],
 )
 def test_a_member_printed_after_a_body_ended_fails(lines):
-    with pytest.raises(tgpp_docx.ExtractionError, match="follows the end of Example"):
-        tgpp_docx._abnf_body(
+    with pytest.raises(ExtractionError, match="follows the end of Example"):
+        _rules._abnf_body(
             _abnf_lines(*lines),
             0,
             "Example",
             "1.1",
-            tgpp_docx.sources.Quirks([], None),
+            sources.Quirks([], None),
             [],
         )
 
 
 def test_the_next_rule_ends_a_body_and_the_search_for_stray_members():
-    rules, end, _ = tgpp_docx._abnf_body(
+    rules, end, _ = _rules._abnf_body(
         _abnf_lines(
             "[ First ]",
             "The answer's rule is:",
@@ -1503,7 +1511,7 @@ def test_the_next_rule_ends_a_body_and_the_search_for_stray_members():
         0,
         "Example",
         "1.1",
-        tgpp_docx.sources.Quirks([], None),
+        sources.Quirks([], None),
         [],
     )
 
@@ -1526,11 +1534,9 @@ def _vendor_table(reference):
         ["AVP Name", "AVP Code", "ACR", "ACA", "CCR", "CCA", "Reference"],
         ["3GPP2-BSID", "9010", "X", "-", "X", "-", reference],
     ]
-    return tgpp_docx._Table(
+    return _base._Table(
         caption="7.3.1",
-        rows=[
-            tgpp_docx._Row(cells=cells, first_cell_lines=cells[:1]) for cells in rows
-        ],
+        rows=[_base._Row(cells=cells, first_cell_lines=cells[:1]) for cells in rows],
     )
 
 
@@ -1538,8 +1544,8 @@ def test_a_vendor_table_reference_cell_must_be_a_reference_number():
     from seanchai.extractor.sources import Quirk, Quirks
 
     quirks = Quirks([Quirk(name="vendor-avp-tables", reason="rejection")], None)
-    with pytest.raises(tgpp_docx.ExtractionError, match="no reference number"):
-        tgpp_docx._extract_vendor_table(
+    with pytest.raises(ExtractionError, match="no reference number"):
+        _avp_tables._extract_vendor_table(
             _vendor_table("TS 29.212"), "7.3", [], quirks, {}
         )
 
@@ -1549,7 +1555,7 @@ def test_a_vendor_table_row_citing_an_unnameable_reference_adds_no_row():
 
     quirks = Quirks([Quirk(name="vendor-avp-tables", reason="rejection")], None)
     warnings: list[str] = []
-    table = tgpp_docx._extract_vendor_table(
+    table = _avp_tables._extract_vendor_table(
         _vendor_table("[301]"),
         "7.5",
         warnings,
@@ -1577,7 +1583,7 @@ def test_a_vendor_table_row_citing_an_unnameable_reference_adds_no_row():
     ],
 )
 def test_a_clause_2_entry_names_its_document_with_its_publisher(entry, origin):
-    assert tgpp_docx._entry_document(entry) == origin
+    assert _origins._entry_document(entry) == origin
 
 
 def test_a_from_cell_printing_an_etsi_series_reads_clause_2():
@@ -1585,13 +1591,13 @@ def test_a_from_cell_printing_an_etsi_series_reads_clause_2():
 
     references = {"37": 'ETSI TS 283 034 v2.2.0: "..."', "15": 'ETSI TS 183 017: "..."'}
     cell = "3GPP\xa0TS 283 034\xa0[37]"
-    with pytest.raises(tgpp_docx.ExtractionError, match="origins-by-reference"):
-        tgpp_docx._origin(cell, "TS29.212", references, Quirks([], None))
+    with pytest.raises(ExtractionError, match="origins-by-reference"):
+        _origins._origin(cell, "TS29.212", references, Quirks([], None))
 
     quirks = Quirks([Quirk(name="origins-by-reference", reason="test")], None)
-    assert tgpp_docx._origin(cell, "TS29.212", references, quirks) == "ETSI-TS283.034"
-    with pytest.raises(tgpp_docx.ExtractionError, match=r"\[15\], which names"):
-        tgpp_docx._origin("3GPP TS 283 034 [15]", "TS29.212", references, quirks)
+    assert _origins._origin(cell, "TS29.212", references, quirks) == "ETSI-TS283.034"
+    with pytest.raises(ExtractionError, match=r"\[15\], which names"):
+        _origins._origin("3GPP TS 283 034 [15]", "TS29.212", references, quirks)
 
 
 _REGISTRY_HEADER = ("AVP Code", "Attribute Name", "Specified in the TS")
@@ -1599,10 +1605,10 @@ _REGISTRY_HEADER = ("AVP Code", "Attribute Name", "Specified in the TS")
 
 def _registry_table(*rows, header=_REGISTRY_HEADER):
     """TS 29.230 table 7.1's shape: a header, then rows of physical cells."""
-    return tgpp_docx._Table(
+    return _base._Table(
         caption="7.1",
         rows=[
-            tgpp_docx._Row(cells=list(cells), first_cell_lines=list(cells[:1]))
+            _base._Row(cells=list(cells), first_cell_lines=list(cells[:1]))
             for cells in (header, *rows)
         ],
     )
@@ -1647,8 +1653,8 @@ def _registry_quirks(*names):
     ],
 )
 def test_a_registry_table_rejects_what_it_cannot_read(table, message):
-    with pytest.raises(tgpp_docx.ExtractionError, match=message):
-        tgpp_docx._extract_registry(
+    with pytest.raises(ExtractionError, match=message):
+        _registries._extract_registry(
             table, "7.1", [], _registry_quirks("registry-tables"), {"2": "TS 29.229"}
         )
 
@@ -1656,7 +1662,7 @@ def test_a_registry_table_rejects_what_it_cannot_read(table, message):
 def test_a_declared_placeholder_code_is_kept_as_printed():
     quirks = _registry_quirks("registry-tables", "placeholder-codes")
 
-    registry = tgpp_docx._extract_registry(
+    registry = _registries._extract_registry(
         _registry_table(("zz", "A", "29.229 [2]")),
         "4.1",
         [],
@@ -1726,7 +1732,7 @@ def test_list_numbering_replays_counters_with_restarts_and_overrides():
         '<w:numId w:val="8"/></w:numPr></w:pPr></w:style>'
         '<w:style w:styleId="Heading2"><w:basedOn w:val="Heading1"/></w:style>'
     )
-    replay = tgpp_docx._ListNumbering(numbering, styles)
+    replay = _docx._ListNumbering(numbering, styles)
 
     labels = [
         replay.advance(paragraph)
@@ -1808,7 +1814,7 @@ def test_an_override_level_renders_with_its_own_text_format_and_start(override):
         '<w:lvlOverride w:ilvl="0"><w:lvl w:ilvl="0"><w:numFmt w:val="upperRoman"/>'
         "</w:lvl></w:lvlOverride></w:num>"
     )
-    replay = tgpp_docx._ListNumbering(numbering, None)
+    replay = _docx._ListNumbering(numbering, None)
 
     labels = [
         replay.advance(_numbered(num_id, ilvl))
@@ -1828,7 +1834,7 @@ def test_a_restarted_level_restarts_at_its_overridden_start():
         '<w:lvlOverride w:ilvl="1"><w:startOverride w:val="4"/></w:lvlOverride>'
         "</w:num>"
     )
-    replay = tgpp_docx._ListNumbering(numbering, None)
+    replay = _docx._ListNumbering(numbering, None)
 
     labels = [replay.advance(_numbered(1, ilvl)) for ilvl in (0, 1, 1, 0, 1)]
 
@@ -1849,7 +1855,7 @@ def test_a_paragraph_numpr_inherits_what_it_leaves_out_from_its_style():
         '<w:style w:styleId="Heading2"><w:basedOn w:val="Heading1"/><w:pPr>'
         '<w:numPr><w:ilvl w:val="1"/></w:numPr></w:pPr></w:style>'
     )
-    replay = tgpp_docx._ListNumbering(numbering, styles)
+    replay = _docx._ListNumbering(numbering, styles)
 
     labels = [
         replay.advance(paragraph)
@@ -1870,9 +1876,9 @@ def test_a_list_format_the_replay_cannot_render_fails():
         + _level(0, "%1", fmt="chineseCounting")
         + '</w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>'
     )
-    replay = tgpp_docx._ListNumbering(numbering, None)
+    replay = _docx._ListNumbering(numbering, None)
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="'chineseCounting'"):
+    with pytest.raises(ExtractionError, match="'chineseCounting'"):
         replay.advance(_numbered(1, 0))
 
 
@@ -1890,7 +1896,7 @@ def test_onem2m_ts_0004s_annex_a_headings_number_as_its_pdf_prints_them():
     exist only in its list numbering."""
     assert _ONEM2M_SOURCE.is_file(), "run `seanchai corpus download`"
     document = docx.Document(str(_ONEM2M_SOURCE))
-    replay = tgpp_docx._ListNumbering(
+    replay = _docx._ListNumbering(
         document.part.numbering_part.element, document.styles.element
     )
     annex = []
@@ -1947,10 +1953,10 @@ def _vendor_column_table(*data):
         "Must not",
         "May Encr.",
     ]
-    return tgpp_docx._Table(
+    return _base._Table(
         caption="A.4-1",
         rows=[
-            tgpp_docx._Row(cells=cells, first_cell_lines=cells[:1])
+            _base._Row(cells=cells, first_cell_lines=cells[:1])
             for cells in (upper, lower, *data)
         ],
     )
@@ -1969,7 +1975,7 @@ def _a4_quirks(*names):
 
 
 def test_a_reference_column_names_a_clause_or_the_document_re_used_from():
-    table, reused = tgpp_docx._extract_avp_table(
+    table, reused = _avp_tables._extract_avp_table(
         _vendor_column_table(
             _a4_row("Occupancy", "45687", "1012", "[A.5.16]"),
             _a4_row("Origin-State-Id", "0", "278", "IETF RFC 6733 [14]"),
@@ -2003,8 +2009,8 @@ def test_a_reference_column_names_a_clause_or_the_document_re_used_from():
 def test_a_table_a4_cell_it_cannot_read_fails(cell, column, message):
     row = _a4_row("Occupancy", "45687", "1012", "[A.5.16]")
     row[column] = cell
-    with pytest.raises(tgpp_docx.ExtractionError, match=message):
-        tgpp_docx._extract_avp_table(
+    with pytest.raises(ExtractionError, match=message):
+        _avp_tables._extract_avp_table(
             _vendor_column_table(row),
             "A.4",
             [],
@@ -2014,7 +2020,7 @@ def test_a_table_a4_cell_it_cannot_read_fails(cell, column, message):
 
 def test_a_reference_column_is_unmodelled_without_its_quirk():
     warnings: list[str] = []
-    table, reused = tgpp_docx._extract_avp_table(
+    table, reused = _avp_tables._extract_avp_table(
         _vendor_column_table(_a4_row("Occupancy", "45687", "1012", "[A.5.16]")),
         "A.4",
         warnings,
@@ -2038,7 +2044,7 @@ def _stated(name, application_id, section):
 def test_sibling_applications_each_scope_their_own_clause():
     """TS 29.210 V6.7.0 clause 6.1 states Gx's id, 6.2 Gx over Gy's; TS 29.212
     clause 5.1 alone under clause 5 speaks for the commands of 5.6."""
-    scoped = tgpp_docx._sibling_applications(
+    scoped = _commands._sibling_applications(
         [
             _stated("Gx", 16777224, "6.1"),
             _stated("Gx over Gy", 16777225, "6.2"),
@@ -2047,8 +2053,8 @@ def test_sibling_applications_each_scope_their_own_clause():
     )
 
     assert [scope.applies_to for scope in scoped] == [("6.1.*",), ("6.2.*",), ("5.*",)]
-    with pytest.raises(tgpp_docx.ExtractionError, match="ambiguous"):
-        tgpp_docx._sibling_applications(
+    with pytest.raises(ExtractionError, match="ambiguous"):
+        _commands._sibling_applications(
             [_stated("Gx", 16777224, "6"), _stated("Gx over Gy", 16777225, "6.2")]
         )
 
@@ -2060,13 +2066,13 @@ def test_the_wildcard_row_is_a_note_and_no_avp():
         _a4_row("Occupancy", "45687", "1012", "[A.5.16]"),
         _a4_row("AVP", "", "*", "[A.5.16]"),
     )
-    with pytest.raises(tgpp_docx.ExtractionError, match="`wildcard-avp-row`"):
-        tgpp_docx._extract_avp_table(
+    with pytest.raises(ExtractionError, match="`wildcard-avp-row`"):
+        _avp_tables._extract_avp_table(
             table, "A.4", [], _a4_quirks("reference-cells", "command-columns")
         )
 
     wildcards: list[tuple[int, str]] = []
-    read, _ = tgpp_docx._extract_avp_table(
+    read, _ = _avp_tables._extract_avp_table(
         table,
         "A.4",
         [],
@@ -2086,9 +2092,9 @@ def test_a_onem2m_cover_names_the_document_and_its_publishers_vendor(tmp_path):
     cover.cell(0, 0).text = "Document Number"
     cover.cell(0, 1).text = "oneM2M-TS-0004-V2.35.0"
 
-    assert tgpp_docx._spec_and_version(document) == ("oneM2M TS-0004", "2.35.0")
-    assert tgpp_docx._publisher_vendor("oneM2M TS-0004") == 45687
-    assert tgpp_docx._publisher_vendor("3GPP TS 29.272") == 10415
+    assert _docx._spec_and_version(document) == ("oneM2M TS-0004", "2.35.0")
+    assert _base._publisher_vendor("oneM2M TS-0004") == 45687
+    assert _base._publisher_vendor("3GPP TS 29.272") == 10415
 
 
 def test_a_value_named_in_a_sentence_is_read_behind_its_quirk():
@@ -2096,11 +2102,11 @@ def test_a_value_named_in_a_sentence_is_read_behind_its_quirk():
         "The following value is currently defined for the Accounting-Record-Type"
         " AVP: EVENT_RECORD (value 1) for an Event Based request."
     )
-    read = tgpp_docx._extract_enumerated(
+    read = _enums._extract_enumerated(
         _enum_with(text), "Accounting-Record-Type", 480, None,
         _a4_quirks("prose-enum-values"), [],
     )  # fmt: skip
-    unread = tgpp_docx._extract_enumerated(
+    unread = _enums._extract_enumerated(
         _enum_with(text), "Accounting-Record-Type", 480, None, _a4_quirks(), []
     )
 
@@ -2497,7 +2503,7 @@ def test_a_result_code_cited_from_two_documents_fails(tmp_path, synthetic_spec_d
         document.add_paragraph("This value is defined in TS 29.229 [6]")
 
     path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
-    with pytest.raises(tgpp_docx.ExtractionError, match=r"TS29\.212 and in TS29\.229"):
+    with pytest.raises(ExtractionError, match=r"TS29\.212 and in TS29\.229"):
         tgpp_docx.extract(path)
 
 
@@ -2537,7 +2543,7 @@ def test_a_code_its_own_text_says_is_defined_twice_fails(tmp_path, synthetic_spe
         document.add_paragraph("This value is defined in TS 29.229 [6].")
 
     path = _value_tables_docx(tmp_path, synthetic_spec_docx, build)
-    with pytest.raises(tgpp_docx.ExtractionError, match=r"TS29\.999 and in TS29\.229"):
+    with pytest.raises(ExtractionError, match=r"TS29\.999 and in TS29\.229"):
         tgpp_docx.extract(path)
 
 
@@ -2573,7 +2579,7 @@ def test_an_excluded_clause_is_read_by_nothing_and_named_in_the_file(
     tmp_path, synthetic_spec_docx
 ):
     path = _with_unfinished_clause(synthetic_spec_docx)
-    with pytest.raises(tgpp_docx.ExtractionError, match="xx1"):
+    with pytest.raises(ExtractionError, match="xx1"):
         tgpp_docx.extract(path)
     (tmp_path / "TS29.999.toml").write_text(_EXCLUSION, encoding="utf-8")
 
@@ -2601,7 +2607,7 @@ reason = "a patch written for the clause goes with it"
 """
     (tmp_path / "TS29.999.toml").write_text(_EXCLUSION + patch, encoding="utf-8")
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="applied 0 times"):
+    with pytest.raises(ExtractionError, match="applied 0 times"):
         tgpp_docx.extract(path, sources_dir=tmp_path)
 
 
@@ -2623,5 +2629,5 @@ reason = "the annex ends the exclusion"
 def test_an_exclusion_with_no_such_clause_fails(tmp_path, synthetic_spec_docx):
     (tmp_path / "TS29.999.toml").write_text(_EXCLUSION, encoding="utf-8")
 
-    with pytest.raises(tgpp_docx.ExtractionError, match="left nothing out"):
+    with pytest.raises(ExtractionError, match="left nothing out"):
         tgpp_docx.extract(synthetic_spec_docx, sources_dir=tmp_path)

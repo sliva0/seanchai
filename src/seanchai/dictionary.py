@@ -19,6 +19,7 @@ from . import __version__, export_schema, model
 from .dad import ast
 from .export import cross_release_entry, hole_entry
 from .export_schema import CrossRelease, FlagRules, UndefinedBlock
+from .model._types import is_cut
 
 __all__ = [
     "FORMAT_VERSION",
@@ -363,7 +364,7 @@ class _Builder:
             for member in members
             # A body among its own descendants, `Message.walk`'s cut: the corpus
             # holds none, and the entry it would name is the one being read.
-            if not model.is_cut(member)
+            if not is_cut(member)
         )
 
     def avp(self, avp: model.Avp) -> Avp:

@@ -1,8 +1,8 @@
 # The linter
 
-`src/seanchai/linter.py` reports what a `.dad` file says that cannot all be
-true. It is the counterpart to the extractor's rule: the extractor records
-contradictions, the linter says them out loud.
+The package `src/seanchai/linter/` reports what a `.dad` file says that cannot
+all be true. It is the counterpart to the extractor's rule: the extractor
+records contradictions, the linter says them out loud.
 
 ```sh
 uv run seanchai lint                              # the whole installed corpus
