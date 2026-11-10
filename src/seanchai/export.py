@@ -99,7 +99,10 @@ def _avp_names(spec: ast.Specification) -> set[str]:
             names.add(section.name)
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
             names.update(row.name for row in section.rows)
-        if isinstance(section, ast.GroupedAvp | ast.ReprintedAvp | ast.Message):
+        if isinstance(
+            section,
+            ast.GroupedAvp | ast.ReprintedAvp | ast.Message | ast.AnswerMessage,
+        ):
             names.update(rule.name for rule in section.avps if rule.name != "AVP")
     return names
 

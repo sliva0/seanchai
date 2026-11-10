@@ -282,6 +282,25 @@ def _parse_message(
         )
 
 
+def _parse_answer_message(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.AnswerMessage:
+    source = _source_ref(directives, lineno)
+    _no_leftovers(directives, lineno)
+    if not body:
+        raise DadParseError(lineno, "answer message has no body")
+    header_lineno, header = body[0]
+    if header != abnf.ANSWER_MESSAGE_RULE:
+        raise DadParseError(
+            header_lineno,
+            f"malformed answer-message rule: {header!r}"
+            f" (expected {abnf.ANSWER_MESSAGE_RULE!r})",
+        )
+    avps = _avp_rules(body[1:])
+    with _validated(lineno):
+        return ast.AnswerMessage(source=source, avps=avps)
+
+
 def _parse_application_scope(
     directives: _Directives, body: list[tuple[int, str]], lineno: int
 ) -> ast.ApplicationScope:
@@ -916,6 +935,7 @@ def _parse_value_table(
 _SECTION_PARSERS = {
     "Application Scope": _parse_application_scope,
     "Message": _parse_message,
+    "Answer Message": _parse_answer_message,
     "Grouped AVP": _parse_grouped,
     "Reprinted AVP": _parse_reprinted,
     "Enumerated AVP": _parse_enumerated,
@@ -964,6 +984,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
 _BODIES = {
     "Application Scope": ("", 0),
     "Message": ("avps", 1),
+    "Answer Message": ("avps", 1),
     "Grouped AVP": ("avps", 1),
     "Reprinted AVP": ("avps", 1),
     "Enumerated AVP": ("values", 1),

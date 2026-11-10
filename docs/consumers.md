@@ -112,13 +112,16 @@ always written, null or empty where it says nothing, and `seanchai.dictionary`
 holds the shape as pydantic models.
 
 ```text
-format_version     3, changes when a reader would have to
+format_version     4, changes when a reader would have to
 seanchai_version, corpus_version, undefined_policy
 documents, application_ids    what was selected; no ids is every application
 applications[]     reference, application_id, clause, name, stated_in
   commands[]       name, abbreviation, command_code, is_request, flags,
                    application_id (on the wire), header_application_id,
-                   defined_in, section, members[], dropped[], walk[]
+                   defined_in, section, members[], dropped[], walk[],
+                   answer_message
+answer_messages[]  id, defined_in, section, read_through, members[], dropped[],
+                   walk[]
 avps[]             id, defining, kind (plain, grouped, enumerated), name,
                    vendor_id, code, data_type, flag_rules, defined_in, section,
                    read_through, completed_by, across_releases, supplied,
@@ -145,6 +148,9 @@ value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
   `name`, `value`, `first`, `last`, `description`. `void` is a value the
   document withdrew; like `reserved`, no dictionary may assign it.
 - `dropped` is what `--policy drop` took out, each naming its hole.
+- An answer's `answer_message` names the `answer_messages[]` entry it takes
+  with the E bit set ([the model](#the-model)), null for a request. An entry's
+  `id` is `read_through/defined_in:section`, as `TS29.272/RFC6733:7.2`.
 - `value_tables[]` are the selected documents', and with `--application` those
   of the documents holding one. `avp_id` names the `avps[]` entry the document's
   reading of `avp` is, null where the selection holds none: TS 29.212 numbers
@@ -198,6 +204,7 @@ built.canonical("ts 29.229")  # how it spells a reference: TS29.229
 built.messages("TS29.229")  # bodies resolved; no reference: the whole corpus
 built.applications("TS29.212")  # commands per application and interface
 built.applications(application_id=16777216)  # one id, across documents
+built.answer_message("TS29.272")  # what its answers take with the E bit set
 built.avps("TS29.229")  # what a document's tables list; no reference: all
 built.resolve("TS29.229", "DRMP")  # one name in one document's reading
 built.definition("Public-Identity")  # the defining document's reading
@@ -299,6 +306,15 @@ disagree about it. `Avp.completed_by` names the document stating each field
 `defined_in`'s reading leaves unstated: through TS 29.329, `Wildcarded-IMPU` is
 TS 29.229's, whose clause states no code, vendor or flags, and those are TS
 29.329 table 6.3.1's.
+
+**Error answers.** With the E bit set an answer takes RFC 6733 section 7.2's
+`<answer-message>` in place of its command's body. `answer_message(reference)`
+returns the one `reference`'s answers take, as a `model.AnswerMessage`: the
+document's own, or failing one the first its `; Bases:` documents print, depth
+first. TS 29.229 prints its own in clause 7.3.1, with `[
+Supported-Applications ]`; TS 29.272 prints none and takes RFC 6733's. Either
+way the body is read through `reference`, as its commands' bodies are, and
+`read_through` says so.
 
 **Marks.** `marks` returns, per row of a table printing mark columns, the
 table's label and clause and the row's marks per column: a tuple of marks,

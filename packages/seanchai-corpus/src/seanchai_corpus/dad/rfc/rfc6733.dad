@@ -111,6 +111,23 @@
       * [ AVP ]
 
 
+; Type: Answer Message
+; Section: 7.2
+; Page: 95
+<answer-message> ::= < Diameter Header: code, ERR [, PXY] >
+     *1 < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Result-Code }
+        [ Origin-State-Id ]
+        [ Error-Message ]
+        [ Error-Reporting-Host ]
+        [ Failed-AVP ]
+        [ Experimental-Result ]
+      * [ Proxy-Info ]
+      * [ AVP ]
+
+
 ; Type: Message
 ; Name: Re-Auth-Request, RAR
 ; Section: 8.3.1

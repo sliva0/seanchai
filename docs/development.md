@@ -125,6 +125,11 @@ between runs; without it each run starts cold and still passes.
   against a fake library tree and a two-document corpus, since `--library` puts
   another `diameter` first on the path.
 
+- `tests/test_wireshark_validator.py` runs the Wireshark validator's
+  `core.lua` under each of `lua5.1` to `lua5.4` on PATH, and the generated
+  plugin under `tshark`, over messages it encodes; what is not installed is
+  skipped.
+
 When you add handling for a new source-document shape, the real-source pin
 covers it; add a synthetic case only for a rejection path.
 

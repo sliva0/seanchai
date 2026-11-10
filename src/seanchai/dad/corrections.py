@@ -1840,6 +1840,7 @@ def _prints(spec: ast.Specification, path: ast.TreePath) -> bool:
 _SECTION_TYPES = (
     ast.ApplicationScope,
     ast.Message,
+    ast.AnswerMessage,
     ast.GroupedAvp,
     ast.ReprintedAvp,
     ast.EnumeratedAvp,

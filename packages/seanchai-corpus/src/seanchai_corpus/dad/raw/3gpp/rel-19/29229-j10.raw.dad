@@ -313,6 +313,21 @@
       * [ Route-Record ]
 
 
+; Type: Answer Message
+; Section: 7.3.1
+; Page: 44
+<answer-message> ::= < Diameter Header: code, ERR [, PXY] >
+     *1 < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Result-Code }
+        [ Origin-State-Id ]
+        [ Error-Reporting-Host ]
+        [ Proxy-Info ]
+        [ Supported-Applications ]
+      * [ AVP ]
+
+
 ; Type: AVP Table
 ; Section: 6.3.0
 ; Table: 6.3.0.1

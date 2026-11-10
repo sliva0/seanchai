@@ -16,6 +16,7 @@ Not-yet-final corners of the format are marked with `TODO(format)`.
 
 import enum
 import re
+from collections.abc import Sequence
 from typing import Annotated, Any, Literal
 
 import pydantic
@@ -210,6 +211,24 @@ class Message(Node):
     # print "< Diameter Header: 8388638, REQ, PXY, >"); an `ApplicationScope`
     # block records an id the document states elsewhere.
     application_id: Unsigned32 | None
+    avps: tuple[AvpRule, ...]
+
+
+class AnswerMessage(Node):
+    """`; Type: Answer Message` — the format an answer with the E bit set
+    takes in place of its command's.
+
+    RFC 6733 section 7.2: when the E bit is set, "the answer message will not
+    conform to the CCF specification for the command; instead, it and will
+    conform to the following CCF", `<answer-message> ::= < Diameter Header:
+    code, ERR [, PXY] >` and its body. TS 29.229 clause 7.3.1 prints its own
+    for Cx and Dx, adding `[ Supported-Applications ]`. The header names no
+    command, flag or application of its own, so the block keeps only where the
+    document prints it and the body.
+    """
+
+    type: Literal["Answer Message"] = "Answer Message"
+    source: SourceRef
     avps: tuple[AvpRule, ...]
 
 
@@ -1101,6 +1120,7 @@ def node_at(root: Node, path: TreePath) -> Any:
 Section = Annotated[
     ApplicationScope
     | Message
+    | AnswerMessage
     | GroupedAvp
     | ReprintedAvp
     | EnumeratedAvp
@@ -1125,6 +1145,27 @@ def section_sort_key(section: str) -> list[tuple[int, int, str]]:
         else:
             key.append((0, int(digits[0]), part))
     return key
+
+
+def in_document_order(
+    messages: Sequence[Message], answers: Sequence[AnswerMessage]
+) -> list[Message | AnswerMessage]:
+    """`messages`, already in document order, with each of `answers` placed
+    before the first message whose clause sorts after its own, so the
+    commands keep the order they had."""
+    merged: list[Message | AnswerMessage] = list(messages)
+    for answer in answers:
+        key = section_sort_key(answer.source.section)
+        at = next(
+            (
+                index
+                for index, each in enumerate(merged)
+                if section_sort_key(each.source.section) > key
+            ),
+            len(merged),
+        )
+        merged.insert(at, answer)
+    return merged
 
 
 class SpecRefError(SeanchaiError, ValueError):

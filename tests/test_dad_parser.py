@@ -1343,3 +1343,68 @@ def test_malformed_value_tables_are_refused(rows, directives, message):
 
     with pytest.raises(parser.DadParseError, match=message):
         parser.parse(text)
+
+
+def test_an_answer_message_round_trips_with_its_comments():
+    # TS 29.229 clause 7.3.1, for the Cx and Dx answers with the E bit set.
+    text = "\n".join(
+        [
+            "; Specification: 3GPP TS 29.229",
+            "; Version: 19.1.0",
+            "; Vendor-ID: 10415",
+            "",
+            "",
+            "; Type: Answer Message",
+            "; Section: 7.3.1",
+            "; Page: 44",
+            "<answer-message> ::= < Diameter Header: code, ERR [, PXY] >",
+            "     *1 < Session-Id >",
+            "        { Origin-Host }",
+            "        [ Supported-Applications ] ;; adds",
+            "      * [ AVP ]",
+            "",
+        ]
+    )
+
+    spec, comments = parser.parse_with_comments(text)
+
+    (answer,) = spec.sections
+    assert isinstance(answer, ast.AnswerMessage)
+    assert answer.source == ast.SourceRef(section="7.3.1", page=44)
+    first = answer.avps[0]
+    assert (first.name, first.presence, first.min_occurs, first.max_occurs) == (
+        "Session-Id",
+        ast.Presence.FIXED,
+        0,
+        1,
+    )
+    assert comments.trailing[("sections", 0, "avps", 2)] == ["adds"]
+    assert formatter.format_spec(spec, comments) == text
+
+
+@pytest.mark.parametrize(
+    ("lines", "message"),
+    [
+        (["; Section: 7.2"], "no body"),
+        (
+            [
+                "; Section: 7.2",
+                "<answer-message> ::= < Diameter Header: code, ERR [PXY] >",
+            ],
+            "malformed answer-message rule",
+        ),
+        (
+            [
+                "; Section: 7.2",
+                "; Name: answer-message",
+                "<answer-message> ::= < Diameter Header: code, ERR [, PXY] >",
+            ],
+            "unexpected directives",
+        ),
+    ],
+    ids=["no-rule", "printed-spelling", "named"],
+)
+def test_an_answer_message_rejects_with_the_line(lines, message):
+    text = _dad("; Type: Answer Message", *lines)
+    with pytest.raises(parser.DadParseError, match=message):
+        parser.parse(text)

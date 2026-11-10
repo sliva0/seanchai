@@ -124,6 +124,7 @@ __all__ = [
     "VENDOR_ID",
     "Alias",
     "Allocation",
+    "AnswerMessage",
     "Application",
     "Avp",
     "AvpFlag",
@@ -897,6 +898,35 @@ class Message(_Plain):
 
 
 @dataclass(frozen=True)
+class AnswerMessage(_Plain):
+    """RFC 6733 section 7.2's `<answer-message>` as `defined_in` prints it, its
+    body read through `read_through`: the format an answer with the E bit set
+    takes in place of its command's, there being no other.
+
+    A document printing none takes its `; Bases:` documents', so a TS 29.272
+    error answer takes RFC 6733's, read through TS 29.272, whose reading is the
+    one its commands hold; a TS 29.229 one takes clause 7.3.1's own, which adds
+    `[ Supported-Applications ]`."""
+
+    defined_in: str
+    section: str
+    read_through: str
+    avps: tuple[Member, ...]
+    # As `Grouped.dropped`.
+    dropped: tuple[Member, ...] = ()
+
+    def walk(self) -> tuple[Member, ...]:
+        """The members at every depth, as `Message.walk` reads them."""
+        return tuple(_walk(self.avps, set()))
+
+    def __repr__(self) -> str:
+        return (
+            f"<AnswerMessage {self.defined_in} {self.section} through"
+            f" {self.read_through}, {len(self.avps)} members>"
+        )
+
+
+@dataclass(frozen=True)
 class Application(_Plain):
     """The commands one document defines for one application on one
     interface: what a protocol-specific consumer generates one unit from.
@@ -1325,6 +1355,8 @@ class _View:
     undefined: dict[str, ast.UndefinedAvp] = field(default_factory=dict)
     # Every value table, in file order.
     value_tables: list[ValueTable] = field(default_factory=list)
+    # `<answer-message>` rules, in file order.
+    answers: list[ast.AnswerMessage] = field(default_factory=list)
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
@@ -1363,6 +1395,8 @@ class _View:
                 view.undefined.setdefault(section.name, section)
             elif isinstance(section, ast.ValueTable):
                 view.value_tables.append(_value_table(entry, section))
+            elif isinstance(section, ast.AnswerMessage):
+                view.answers.append(section)
         return view
 
     def cited_in(self, name: str) -> tuple[str, ...]:
@@ -1372,7 +1406,7 @@ class _View:
             dict.fromkeys(
                 section.source.section
                 for section in self.entry.spec.sections
-                if isinstance(section, ast.Message | ast.GroupedAvp)
+                if isinstance(section, ast.Message | ast.AnswerMessage | ast.GroupedAvp)
                 and any(rule.name == name for rule in section.avps)
             )
         )
@@ -1649,6 +1683,44 @@ class Model:
             for avps, dropped in [self._split(self._body(view, message.avps))]
         )
 
+    def answer_message(
+        self, reference: str, *, version: str | None = None
+    ) -> AnswerMessage | None:
+        """The format the answers of `reference`'s commands take when the E bit
+        is set: the first `<answer-message>` the document prints, or failing
+        one, the first its `; Bases:` documents give, depth first in the order
+        they are listed. The body is read through `reference`, as its commands'
+        bodies are. None where no document along the way prints one; `version`
+        reads an older copy of `reference` the corpus holds."""
+        view = self._view(reference, version)
+        found = self._answering(view, ())
+        if found is None:
+            return None
+        printing, block = found
+        avps, dropped = self._split(self._body(view, block.avps))
+        return AnswerMessage(
+            defined_in=printing.entry.reference,
+            section=block.source.section,
+            read_through=view.entry.reference,
+            avps=avps,
+            dropped=dropped,
+        )
+
+    def _answering(
+        self, view: _View, seen: tuple[Path, ...]
+    ) -> tuple[_View, ast.AnswerMessage] | None:
+        """The document printing the `<answer-message>` `view` takes, and the
+        rule."""
+        if view.answers:
+            return view, view.answers[0]
+        for base in view.entry.spec.bases:
+            cited, _ = self._cited(view, base)
+            if cited is None or cited.entry.path in seen:
+                continue
+            if found := self._answering(cited, (*seen, view.entry.path)):
+                return found
+        return None
+
     def undefined(self, reference: str | None = None) -> tuple[Undefined, ...]:
         """Every `Undefined AVP` block in `reference`, or in the corpus,
         under any policy, in file order."""
@@ -1851,6 +1923,8 @@ class Model:
         without what the policy dropped."""
         view = self._view(reference)
         bodies = [message.avps for message in self.messages(reference)]
+        if view.answers and (answer := self.answer_message(reference)) is not None:
+            bodies.append(answer.avps)
         bodies += [
             avp.members
             for avp in self.avps(reference)

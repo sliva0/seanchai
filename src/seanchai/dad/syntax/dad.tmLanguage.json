@@ -78,7 +78,7 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application Scope|Message|Grouped AVP|Reprinted AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
+              "match": "\\b(Application Scope|Message|Answer Message|Grouped AVP|Reprinted AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
               "name": "storage.type.section.dad"
             },
             {

@@ -147,6 +147,20 @@ Flags appear in the order above, each at most once. The application id is
 optional only because some documents omit it (TS 29.272's VCSG commands);
 an `application-scope` block records an id the document states elsewhere.
 
+### Answer Message
+
+```abnf
+answer-message = "; Type: Answer Message" NL
+                 source-ref
+                 "<answer-message> ::= < Diameter Header: code, ERR [, PXY] >" NL
+                 *(avp-rule NL)
+```
+
+RFC 6733 section 7.2's rule: the format an answer with the E bit set takes in
+place of its command's. The rule line names no command code, flag or
+application, so it is printed as it stands, whatever spacing the document gave
+it (TS 29.229 clause 7.3.1 writes `ERR [PXY]`). The block has no `; Name:`.
+
 ### Grouped AVP
 
 ```abnf

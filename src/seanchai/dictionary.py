@@ -20,7 +20,7 @@ from .export import cross_release_entry, hole_entry
 from .export_schema import CrossRelease, FlagRules, UndefinedBlock
 
 # Changes when a reader would have to.
-FORMAT_VERSION = 3
+FORMAT_VERSION = 4
 
 
 class _Model(pydantic.BaseModel):
@@ -97,7 +97,9 @@ class Avp(_Model):
 class Command(_Model):
     """One command as `defined_in` prints it. `application_id` is the id on the
     wire and `header_application_id` the one its header prints. `members` is its
-    body; `walk` is `Message.walk`, each AVP at any depth, by `id`."""
+    body; `walk` is `Message.walk`, each AVP at any depth, by `id`. An answer's
+    `answer_message` names the `answer_messages` entry it takes with the E bit
+    set, null for a request and where no document gives one."""
 
     name: str
     abbreviation: str
@@ -108,6 +110,21 @@ class Command(_Model):
     header_application_id: int | None
     defined_in: str
     section: str
+    members: tuple[Member, ...]
+    dropped: tuple[Member, ...]
+    walk: tuple[str, ...]
+    answer_message: str | None
+
+
+class AnswerMessage(_Model):
+    """RFC 6733 section 7.2's `<answer-message>` as `defined_in` prints it, read
+    through `read_through`, whose commands' answers take it with the E bit set
+    (`model.AnswerMessage`). `id` is `read_through/defined_in:section`."""
+
+    id: str
+    defined_in: str
+    section: str
+    read_through: str
     members: tuple[Member, ...]
     dropped: tuple[Member, ...]
     walk: tuple[str, ...]
@@ -166,7 +183,7 @@ class Dictionary(_Model):
     second empty for every application of those documents. `undefined_policy` is
     what became of the names an `Undefined AVP` block declares. `value_tables` are
     the selected documents'; with `application_ids`, those of the documents
-    holding one."""
+    holding one. `answer_messages` are those the selected answers take."""
 
     format_version: Annotated[int, pydantic.Field(ge=FORMAT_VERSION, le=FORMAT_VERSION)]
     seanchai_version: str
@@ -175,6 +192,7 @@ class Dictionary(_Model):
     documents: tuple[str, ...]
     application_ids: tuple[int, ...]
     applications: tuple[Application, ...]
+    answer_messages: tuple[AnswerMessage, ...]
     avps: tuple[Avp, ...]
     holes: tuple[Hole, ...]
     value_tables: tuple[ValueTable, ...]
@@ -182,6 +200,10 @@ class Dictionary(_Model):
 
 def _hole_id(hole: model.Hole) -> str:
     return f"{hole.document}/{hole.name}"
+
+
+def _answer_id(answer: model.AnswerMessage) -> str:
+    return f"{answer.read_through}/{answer.defined_in}:{answer.section}"
 
 
 class _Builder:
@@ -309,7 +331,25 @@ class _Builder:
             values_source=values_source,
         )
 
-    def command(self, message: model.Message) -> Command:
+    def walk(self, members: Iterable[model.Member]) -> tuple[str, ...]:
+        return tuple(
+            self.ids[member.avp] for member in members if member.avp is not None
+        )
+
+    def answer(self, answer: model.AnswerMessage) -> AnswerMessage:
+        return AnswerMessage(
+            id=_answer_id(answer),
+            defined_in=answer.defined_in,
+            section=answer.section,
+            read_through=answer.read_through,
+            members=self.members(answer.avps),
+            dropped=self.members(answer.dropped),
+            walk=self.walk(answer.walk()),
+        )
+
+    def command(
+        self, message: model.Message, answer: model.AnswerMessage | None
+    ) -> Command:
         return Command(
             name=message.name,
             abbreviation=message.abbreviation,
@@ -322,11 +362,10 @@ class _Builder:
             section=message.section,
             members=self.members(message.avps),
             dropped=self.members(message.dropped),
-            walk=tuple(
-                self.ids[member.avp]
-                for member in message.walk()
-                if member.avp is not None
-            ),
+            walk=self.walk(message.walk()),
+            answer_message=None
+            if message.is_request or answer is None
+            else _answer_id(answer),
         )
 
 
@@ -390,9 +429,22 @@ def build(
             f" {', '.join(references)}: `seanchai commands` lists them"
         )
     builder = _Builder(built)
+    # What the answers of each document holding a selected command take.
+    answers = {
+        reference: built.answer_message(reference)
+        for reference in sorted({application.reference for application in applications})
+    }
+    taken = {
+        _answer_id(answer): answer
+        for application in applications
+        if any(not message.is_request for message in application.messages)
+        and (answer := answers[application.reference]) is not None
+    }
     for application in applications:
         for message in application.messages:
             builder.hold_members((*message.avps, *message.dropped))
+    for answer in taken.values():
+        builder.hold_members((*answer.avps, *answer.dropped))
     if not application_ids:
         for reference in references:
             builder.hold(built.avps(reference))
@@ -427,10 +479,14 @@ def build(
                 clause=application.clause,
                 name=application.name,
                 stated_in=application.stated_in,
-                commands=tuple(builder.command(each) for each in application.messages),
+                commands=tuple(
+                    builder.command(each, answers[application.reference])
+                    for each in application.messages
+                ),
             )
             for application in applications
         ),
+        answer_messages=tuple(builder.answer(taken[each]) for each in sorted(taken)),
         avps=tuple(builder.avp(avp) for avp in avps),
         holes=tuple(
             Hole.model_validate(

@@ -32,6 +32,7 @@ section, each starting with `; Type:`.
 |---------------------|------------------------------------------------------------------|
 | `Application Scope` | an application id the document states in prose, and its clauses  |
 | `Message`           | a command-code ABNF rule with its Diameter header                |
+| `Answer Message`    | the format an answer with the E bit set takes (RFC 6733 7.2)     |
 | `Grouped AVP`       | `Name ::= < AVP header: code vendor-id >` plus its body          |
 | `Reprinted AVP`     | another document's grouped rule, as this one prints it           |
 | `Enumerated AVP`    | the header rule plus values and value ranges, or their source    |
@@ -136,6 +137,14 @@ section, each starting with `; Type:`.
   `; RESERVED` line with the documents its note names and its purpose
   quoted as printed. Read as AVP definitions, the registry would become a
   second definer of every 3GPP AVP.
+- **An error answer has a rule of its own.** RFC 6733 section 7.2: with the E
+  bit set, "the answer message will not conform to the CCF specification for
+  the command; instead, it and will conform to the following CCF",
+  `<answer-message>`. An `Answer Message` block records it where a document
+  prints it: RFC 6733 section 7.2, and TS 29.229 and 3GPP2 X.S0013-006 clause
+  7.3.1, which add `[ Supported-Applications ]` for Cx. It names no command, so
+  no title anchors it; its rule line does. A document printing none takes its
+  bases' ([consumers.md](consumers.md#the-model)).
 - **A copy names what it copies.** TS 29.109 follows MAR, BIR and GPR with "The
   content of Vendor-Specific-Application-ID according IETF RFC 6733 [33] is:"
   and that rule, glossing what its members hold there (`; 3GPP is 10415`,

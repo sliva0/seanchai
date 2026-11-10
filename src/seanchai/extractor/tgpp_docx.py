@@ -1109,6 +1109,37 @@ def _procedure_intro(text: str) -> re.Match | None:
     return next(filter(None, (rule.search(text) for rule in _STEP_INTRO_RES)), None)
 
 
+def _answer_messages(
+    section: _Section, quirks: sources.Quirks, warnings: list[str]
+) -> list[ast.AnswerMessage]:
+    """RFC 6733 section 7.2's `<answer-message>`, the format an answer with the
+    E bit set takes, as a document prints its own: TS 29.229 clause 7.3.1, "based
+    on the RFC 3588, clause 7.2", for the Cx and Dx commands. Its heading names
+    no command, so its rule line is what anchors it, and a line naming
+    `<answer-message>` in any other shape fails rather than drop the block."""
+    found = []
+    lines = section.lines
+    for index, line in enumerate(lines):
+        if "answer-message" not in line.text or "::" not in line.text:
+            continue
+        if abnf.ANSWER_MESSAGE_RE.match(line.text) is None:
+            raise ExtractionError(
+                f"{section.number}: malformed answer-message rule {line.text!r}"
+            )
+        avps, _, struck = _abnf_body(
+            lines, index + 1, "answer-message", section.number, quirks, warnings
+        )
+        if struck:
+            raise ExtractionError(
+                f"{section.number}: answer-message body comments out members,"
+                " which no reading here keeps"
+            )
+        found.append(
+            ast.AnswerMessage(source=ast.SourceRef(section=section.number), avps=avps)
+        )
+    return found
+
+
 def _extract_messages(
     section: _Section,
     title: re.Match | None,
@@ -3533,6 +3564,8 @@ class _Collected:
     """
 
     messages: list[ast.Message] = field(default_factory=list)
+    # RFC 6733 section 7.2's `<answer-message>`, as the document prints its own.
+    answers: list[ast.AnswerMessage] = field(default_factory=list)
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     grouped: list[ast.GroupedAvp] = field(default_factory=list)
     commented: _Commented = field(default_factory=list)
@@ -3603,6 +3636,7 @@ def _collect(
         else {}
     )
     for section in sections:
+        collected.answers.extend(_answer_messages(section, quirks, warnings))
         if quirks.enabled("prose-application-ids"):
             collected.applications.extend(_stated_applications(section, quirks))
         if title := _COMMAND_TITLE_RE.match(section.title):
@@ -4206,15 +4240,16 @@ def _assemble(
     resolved: _Resolved,
     reprints: Sequence[ast.ReprintedAvp] = (),
     value_tables: Sequence[ast.ValueTable] = (),
+    answers: Sequence[ast.AnswerMessage] = (),
 ) -> tuple[ast.Section, ...]:
-    """File order: applications, messages, what the document re-prints and
-    registries, then each definition set's AVP table followed by its re-used
-    table, then every definition, value table and block of derived re-used
-    rows in document order, each of these after the definitions of its
-    clause."""
+    """File order: applications, messages and answer messages in document
+    order, what the document re-prints and registries, then each definition
+    set's AVP table followed by its re-used table, then every definition, value
+    table and block of derived re-used rows in document order, each of these
+    after the definitions of its clause."""
     sections: list[ast.Section] = [
         *resolved.applications,
-        *resolved.messages,
+        *ast.in_document_order(resolved.messages, answers),
         *reprints,
         *resolved.registries,
     ]
@@ -4596,7 +4631,10 @@ def extract_with_comments(
         )
         patcher.finish()
         sections = _assemble(
-            _resolve(collected, quirks, warnings), collected.reprints, value_tables
+            _resolve(collected, quirks, warnings),
+            collected.reprints,
+            value_tables,
+            collected.answers,
         )
         quirks.finish()
         spec = ast.Specification(

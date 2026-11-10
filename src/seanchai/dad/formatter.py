@@ -271,6 +271,16 @@ def _format_message(
     ]
 
 
+def _format_answer_message(
+    message: ast.AnswerMessage, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    return [
+        *_directives(message, None, path, notes),
+        *notes.line(abnf.ANSWER_MESSAGE_RULE, path),
+        *_abnf_body(message.avps, path, notes),
+    ]
+
+
 def _avp_header_items(code: int, vendor_id: int | None) -> str:
     return str(code) if vendor_id is None else f"{code} {vendor_id}"
 
@@ -576,6 +586,7 @@ def _format_value_table(
 _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.ApplicationScope: _format_application_scope,
     ast.Message: _format_message,
+    ast.AnswerMessage: _format_answer_message,
     ast.GroupedAvp: _format_grouped,
     ast.ReprintedAvp: _format_reprinted,
     ast.EnumeratedAvp: _format_enumerated,

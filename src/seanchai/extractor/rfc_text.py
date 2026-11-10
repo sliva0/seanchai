@@ -27,9 +27,11 @@ prose-embedded forms this module also reads:
   `; Section:` points at the clause that holds them undamaged.
 
 Anchoring every definition on its *section title* is what keeps the grammar
-specification's own illustrations out: `Example-Request`, `Example-AVP` and
-`<answer-message>` all sit in sections titled with prose ("Command Code
-Format Specification", "Error Bit"), which no definition heading is.
+specification's own illustrations out: `Example-Request` and `Example-AVP` sit
+in a section titled with prose ("Command Code Format Specification"), which no
+definition heading is. Section 7.2's `<answer-message>`, under "Error Bit", is
+no illustration: it is the format every answer with the E bit set takes, and
+its rule line, which names no command, is what anchors it (`AnswerMessage`).
 
 Bodies an RFC prints for another document's AVPs are kept, the same
 deliberate call as the docx extractor's: RFC 8581 and 8582 both reprint RFC
@@ -1557,6 +1559,33 @@ def _title_by_row(
     return None
 
 
+def _answer_messages(sections: list[_DocSection]) -> list[ast.AnswerMessage]:
+    """RFC 6733 section 7.2's `<answer-message>`, the format an answer with the
+    E bit set takes, wherever a document prints it. No title anchors it, since
+    "Error Bit" names no definition, but its rule line is its own: a line naming
+    `<answer-message>` in any other shape fails rather than drop the block."""
+    found = []
+    for section in sections:
+        for index, raw in enumerate(section.texts):
+            text = raw.strip()
+            if "<answer-message>" not in text or "::=" not in text:
+                continue
+            if abnf.ANSWER_MESSAGE_RE.match(text) is None:
+                raise ExtractionError(
+                    f"{section.number}: malformed answer-message rule {text!r}"
+                )
+            avps, _, _ = _abnf_body(
+                section.texts, index + 1, "answer-message", section.number, None
+            )
+            found.append(
+                ast.AnswerMessage(
+                    source=ast.SourceRef(section=section.number, page=section.page),
+                    avps=avps,
+                )
+            )
+    return found
+
+
 def _extract_definitions(
     sections: list[_DocSection],
     tables: tuple[ast.AvpTable, ...],
@@ -2370,15 +2399,15 @@ def extract_with_comments(
             else []
         )
         quirks.finish()
-        # File order matches the docx extractor's: messages in document order,
-        # the AVP table, then every definition, value table and clause's
-        # re-used block in document order.
+        # File order matches the docx extractor's: messages and answer messages
+        # in document order, the AVP table, then every definition, value table
+        # and clause's re-used block in document order.
         ordered = sorted(
             (*definitions, *_result_tables(document_sections), *reused),
             key=lambda definition: ast.section_sort_key(definition.source.section),
         )
         file_sections: tuple[ast.Section, ...] = (
-            *messages,
+            *ast.in_document_order(messages, _answer_messages(document_sections)),
             *tables,
             *moved,
             *noted,

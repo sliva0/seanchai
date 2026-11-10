@@ -114,6 +114,18 @@ def diameter_header(items: str) -> tuple[int, frozenset[ast.CommandFlag], int | 
     return int(parts[0]), frozenset(parsed), application_id
 
 
+# RFC 6733 section 7.2's rule line, which an `AnswerMessage` block prints as it
+# stands: it names no command code, flag or application of its own.
+ANSWER_MESSAGE_RULE = "<answer-message> ::= < Diameter Header: code, ERR [, PXY] >"
+# The rule as documents print it, for the extractors: TS 29.229 clause 7.3.1
+# writes `ERR [PXY]`, without RFC 6733's comma, and no space after `::=`.
+# Nothing else in the line varies, so nothing else is read.
+ANSWER_MESSAGE_RE = re.compile(
+    r"^<\s*answer-message\s*>\s*::=\s*<\s*Diameter Header:\s*code\s*,\s*ERR\s*"
+    r"\[\s*,?\s*PXY\s*\]\s*>$"
+)
+
+
 def diameter_header_items(
     command_code: int, flags: frozenset[ast.CommandFlag], application_id: int | None
 ) -> str:

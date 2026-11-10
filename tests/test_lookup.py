@@ -396,6 +396,12 @@ def test_an_application_keeps_what_its_commands_use(tmp_path):
     built = Model.installed()
     (cx,) = built.applications("TS29.229", application_id=16777216)
     used = {member.avp.identity for member in cx.avps() if member.avp is not None}
+    # And what their answers take with the E bit set: TS 29.229 clause 7.3.1's
+    # `<answer-message>`, and 3GPP2 X.S0013-006's, whose Cx shares the id.
+    for application in built.applications(application_id=16777216):
+        answer = built.answer_message(application.reference)
+        assert answer is not None
+        used |= {each.avp.identity for each in answer.walk() if each.avp is not None}
 
     data = _dictionary(tmp_path, "--application", "16777216")
 
@@ -563,3 +569,21 @@ def test_the_dictionary_holds_the_selected_documents_value_tables():
     by_application = build(built, application_ids=(16777216,))
     assert {table.reference for table in by_application.value_tables} == {"TS29.229"}
     assert Dictionary.model_validate(by_application.model_dump()) == by_application
+
+
+def test_an_answer_names_the_answer_message_it_takes_with_the_e_bit(tmp_path):
+    data = _dictionary(tmp_path, "--document", "TS29.272", "--document", "TS29.229")
+    answers = {entry["id"]: entry for entry in data["answer_messages"]}
+    readings = {avp["id"]: avp for avp in data["avps"]}
+
+    assert set(answers) == {"TS29.229/TS29.229:7.3.1", "TS29.272/RFC6733:7.2"}
+    for application in data["applications"]:
+        for command in application["commands"]:
+            if command["is_request"]:
+                assert command["answer_message"] is None
+            else:
+                taken = command["answer_message"]
+                assert answers[taken]["read_through"] == application["reference"]
+    names = [member["name"] for member in answers["TS29.229/TS29.229:7.3.1"]["members"]]
+    assert "Supported-Applications" in names
+    assert all(each in readings for entry in answers.values() for each in entry["walk"])

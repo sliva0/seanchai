@@ -10,9 +10,7 @@
 ;; 006 of the series X.S0013, revision B, which the rendering's name keeps. The
 ;; foreword: "This document contains portions of material copied from 3GPP
 ;; document number TS 29.229 6.a.0." Clause 6.1 prints the id in every command,
-;; and clause 6.4.4 repeats it. Clause 7.3.1 prints an <answer-message> "based
-;; on [6], section 7.2", for any command code, which is no command of this
-;; application; it adds [ Supported-Applications ] after [ Proxy-Info ].
+;; and clause 6.4.4 repeats it.
 ; Type: Application Scope
 ; Name: Cx
 ; Section: 6
@@ -276,6 +274,25 @@
       * [ Failed-AVP ]
       * [ Proxy-Info ]
       * [ Route-Record ]
+
+
+;; Clause 7.3.1 prints the rule "based on [6], section 7.2", RFC 3588's, for the
+;; answers of this application's commands, adding [ Supported-Applications ]
+;; after [ Proxy-Info ]; the rendering has two spaces after "::=" and no comma
+;; before PXY.
+; Type: Answer Message
+; Section: 7.3.1
+; Page: 26
+<answer-message> ::= < Diameter Header: code, ERR [, PXY] >
+     *1 < Session-Id >
+        { Origin-Host }
+        { Origin-Realm }
+        { Result-Code }
+        [ Origin-State-Id ]
+        [ Error-Reporting-Host ]
+        [ Proxy-Info ]
+        [ Supported-Applications ]
+      * [ AVP ]
 
 
 ; Type: AVP Table

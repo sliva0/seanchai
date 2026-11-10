@@ -1345,6 +1345,55 @@ def built() -> model.Model:
     return model.Model.build(corpus.Corpus.load([_CORPUS_DIR]))
 
 
+def _answer(section="7.2", *members):
+    return ast.AnswerMessage(source=ast.SourceRef(section=section), avps=tuple(members))
+
+
+def test_an_answer_message_comes_from_the_document_or_its_bases():
+    base = _spec(
+        "RFC 6733",
+        [
+            _answer("7.2", _rule("Origin-Host", ast.Presence.REQUIRED)),
+            ast.AvpTable(
+                source=ast.SourceRef(section="4.5"),
+                columns=(ast.AvpColumn.NAME, ast.AvpColumn.CODE, ast.AvpColumn.TYPE),
+                rows=(
+                    ast.AvpTableRow(
+                        name="Origin-Host", code=264, data_type=ast.DataType.UTF8_STRING
+                    ),
+                ),
+            ),
+        ],
+        vendor_id=0,
+        version=None,
+    )
+    plain = _spec("3GPP TS 29.272", [], bases=["RFC6733"])
+    own = _spec(
+        "3GPP TS 29.229",
+        [_answer("7.3.1", _rule("Origin-Host", ast.Presence.REQUIRED))],
+        bases=["RFC6733"],
+    )
+    built = _model(base, plain, own)
+
+    taken = built.answer_message("TS29.272")
+    assert taken is not None
+    assert (taken.defined_in, taken.section, taken.read_through) == (
+        "RFC6733",
+        "7.2",
+        "TS29.272",
+    )
+    (member,) = taken.avps
+    assert member.avp is not None and member.avp.code == 264
+    printed = built.answer_message("TS29.229")
+    assert printed is not None
+    assert (printed.defined_in, printed.section) == ("TS29.229", "7.3.1")
+
+
+def test_no_answer_message_where_no_document_prints_one():
+    built = _model(_spec("3GPP TS 29.272", []))
+    assert built.answer_message("TS29.272") is None
+
+
 class TestOverTheCommittedCorpus:
     def test_a_reprint_defines_nothing(self, built):
         # TS 29.109 prints RFC 6733's rule three times, and RFC 6733 answers.

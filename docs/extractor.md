@@ -277,6 +277,11 @@ blank.
   becomes a `Message`; per-run bold marks the document's own AVPs. Message
   headings without a rule (TS 32.299's pointers to RFC 6733) are not
   definitions.
+- An `<answer-message> ::= < Diameter Header: code, ERR [PXY] >` paragraph run
+  becomes an `AnswerMessage`, whatever its heading: TS 29.229 clause 7.3.1's,
+  the format of a Cx or Dx answer with the E bit set. A line naming
+  `<answer-message>` in any other shape fails. The file places it among the
+  commands, in document order.
 - `x.y.z Name AVP` heading plus `::= < AVP header: … >` becomes a
   `GroupedAvp`. The rule name may be bracketed and the keyword spaced.
 - `x.y.z Name AVP` heading whose intro says "is of type Enumerated", with
@@ -634,6 +639,9 @@ Same definitions, different carrier:
   linter to compare; the block has no column for the flags. `note-avp-origins`
   does the same for rows RFC 6738's table sends to "Note 1". A document without
   it drops such a row, as RFC 5778 does.
+- **The error answer.** RFC 6733 section 7.2's `<answer-message>` sits under
+  "Error Bit", which names no definition; its rule line anchors it, as the docx
+  extractor's does, and it becomes an `AnswerMessage` among the commands.
 - **Header labels are whole spellings**; an unrecognised header fails and
   earns an entry. Stacked flag labels (`MUST` over `NOT`) are read
   generically.
