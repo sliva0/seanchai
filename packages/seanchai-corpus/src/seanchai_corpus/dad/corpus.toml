@@ -1,8 +1,8 @@
 # The corpus's own description: the format its files are written in, and the
 # facts resolving a citation between its documents needs, which the `.dad`
-# grammar does not carry. Maintained by hand; `seanchai regenerate` does not
-# write it. `seanchai.corpus.Corpus.load` reads it for the directory holding it
-# directly, raw mirror included, and refuses an unknown key, an entry stated
+# grammar does not carry. Maintained by hand; `seanchai corpus regenerate` does
+# not write it. `seanchai.corpus.Corpus.load` reads it for the directory holding
+# it directly, raw mirror included, and refuses an unknown key, an entry stated
 # twice and one naming a document or copy the corpus lacks
 # (docs/consumers.md#resolution-across-releases).
 #
