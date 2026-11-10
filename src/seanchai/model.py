@@ -39,11 +39,10 @@ and the policy is deliberately small:
   (`corpus.Corpus.resolution`): the newest in the citing document's
   release, the version a specific reference names, or the final version of
   a document that ended before the citing release, or a 3GPP2 revision or
-  later release's copy a table entry lets stand in for the one cited
-  (`corpus.STAND_INS`, `corpus.RELEASE_STAND_INS`), or state a named field of
-  it (`corpus.RELEASE_FILLS`). An AVP
-  reached outside the citing document's release, or revision, says so in
-  `across_releases`; an older
+  later release's copy an entry of the corpus's `corpus.toml` lets stand in for
+  the one cited (`corpus.Rules.stand_ins`, `release_stand_ins`), or state a
+  named field of it (`release_fills`). An AVP reached outside the citing
+  document's release, or revision, says so in `across_releases`; an older
   copy answers only through such a citation, never a reference-level query.
 - The linter, not this module, is where the conflicts live: anything
   `reused-body-differs` or `table-definition-mismatch` would report is
@@ -2518,12 +2517,12 @@ class Model:
         self, view: _View, origin: str, name: str, stack: tuple
     ) -> _Draft | None:
         """What a later release's copy states of `name` for a citation of
-        `origin` whose own copy leaves it unstated, by a `corpus.RELEASE_FILLS`
-        entry: the entry's fields and no other, each naming that copy in
-        `completed_by`. Its code still has to agree (`_Draft.fill`), and its
-        vendor is the citation's copy's to state. TS 29.210's
-        `3GPP-SGSN-MCC-MNC` takes its type from TS 29.061 V19.1.0 and not the
-        flags, whose M Release 19's table 9a puts in Must not."""
+        `origin` whose own copy leaves it unstated, by a
+        `corpus.Rules.release_fills` entry: the entry's fields and no other,
+        each naming that copy in `completed_by`. Its code still has to agree
+        (`_Draft.fill`), and its vendor is the citation's copy's to state. TS
+        29.210's `3GPP-SGSN-MCC-MNC` takes its type from TS 29.061 V19.1.0 and
+        not the flags, whose M Release 19's table 9a puts in Must not."""
         found = self._books.release_fill(origin, like=view.entry.spec)
         if found is None or name not in found[1].names:
             return None

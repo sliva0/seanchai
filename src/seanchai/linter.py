@@ -1252,7 +1252,7 @@ def _resolve_origins(
             continue
         origins[origin] = _Origin.of(entry.spec)
         if across is not None:
-            crossings.append(_cross_release(spec, entry, across))
+            crossings.append(_cross_release(spec, entry, across, books.rules))
         if (later := books.release_fill(origin, like=spec)) is not None:
             crossings.append(_release_fill(spec, later))
     return origins, crossings
@@ -1263,9 +1263,9 @@ def _release_fill(
     later: tuple[corpus.Entry, corpus.ReleaseFill, corpus.CrossRelease],
 ) -> Finding:
     """A field a later release's copy states for a citation whose own copy leaves
-    it unstated (`corpus.RELEASE_FILLS`), so a reader can audit it: TS 29.210
-    V6.7.0's `3GPP-SGSN-MCC-MNC` is TS 29.061 V6.15.0's, typed by V19.1.0. A note,
-    since the citing document's editor meant the older copy."""
+    it unstated (`corpus.Rules.release_fills`), so a reader can audit it: TS
+    29.210 V6.7.0's `3GPP-SGSN-MCC-MNC` is TS 29.061 V6.15.0's, typed by V19.1.0.
+    A note, since the citing document's editor meant the older copy."""
     entry, fill, across = later
     citing = spec.specification + (f" V{spec.version}" if spec.version else "")
     return Finding(
@@ -1276,12 +1276,15 @@ def _release_fill(
         f" citing file, and it cites the document non-specifically, meaning"
         f" V{across.meant}, which answers for all else and leaves those unstated,"
         f" and V{across.version} states them: {fill.evidence}"
-        " (corpus.RELEASE_FILLS)",
+        " (corpus.toml, release_fill)",
     )
 
 
 def _cross_release(
-    spec: ast.Specification, entry: corpus.Entry, across: corpus.CrossRelease
+    spec: ast.Specification,
+    entry: corpus.Entry,
+    across: corpus.CrossRelease,
+    rules: corpus.Rules,
 ) -> Finding:
     """A re-used origin resolved outside the citing document's release, by
     the drafting rule `corpus.resolution` applied, so a reader can audit it:
@@ -1292,38 +1295,38 @@ def _cross_release(
     references, and only its editor knows whether it meant that."""
     citing = spec.specification + (f" V{spec.version}" if spec.version else "")
     if across.rule == corpus.STAND_IN and across.meant is not None:
-        release = corpus.RELEASE_STAND_INS[
+        release = rules.release_stand_ins[
             across.citing, spec.version or "", across.cited
         ]
         how = "by version, naming" if across.specific else "non-specifically, meaning"
         rule = (
             f"it cites the document {how} V{across.meant},"
             f" which the corpus lacks, and V{across.version} stands in:"
-            f" {release.evidence} (corpus.RELEASE_STAND_INS)"
+            f" {release.evidence} (corpus.toml, release_stand_in)"
         )
     elif across.rule == corpus.STAND_IN:
-        stand_in = corpus.STAND_INS[across.citing, across.cited]
+        stand_in = rules.stand_ins[across.citing, across.cited]
         rule = (
             f"its references name revision {across.cited_revision}, which the"
             f" corpus lacks, and revision {across.revision} V{across.version}"
-            f" stands in: {stand_in.evidence} (corpus.STAND_INS)"
+            f" stands in: {stand_in.evidence} (corpus.toml, stand_in)"
         )
     elif across.rule == corpus.SPECIFIC:
         rule = (
             f"its references name V{across.version} (a specific reference;"
-            " corpus.CITED_VERSIONS)"
+            " corpus.toml, cited_version)"
         )
     elif across.rule == corpus.LATEST_EDITION:
-        evidence = corpus.LATEST_EDITIONS[across.citing, across.cited]
+        evidence = rules.latest_editions[across.citing, across.cited]
         rule = (
             f"it cites the document non-specifically, which reads as its latest"
             f" edition, V{across.version} of the corpus's copies: {evidence}"
-            " (corpus.LATEST_EDITIONS)"
+            " (corpus.toml, latest_edition)"
         )
     else:
         rule = (
             f"it cites the document non-specifically, which reads as its"
-            f" final version, V{across.version} (corpus.FINAL_VERSIONS)"
+            f" final version, V{across.version} (corpus.toml, final_version)"
         )
     return Finding(
         Severity.NOTE,

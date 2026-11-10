@@ -38,7 +38,7 @@ CORRECTIONS = [
 # re-used 3GPP Radius VSA. TS 29.061 V6.15.0's table 10 states the same for the
 # other three table 5.3 lists, and nothing of these two, so they get rows here,
 # the document's only AVP table, for the citing table's flags to hold. Their type
-# stays blank: no document of Release 6 states one (corpus.RELEASE_FILLS).
+# stays blank: no document of Release 6 states one (corpus.toml, release_fill).
 CORRECTIONS += [
     Insert(
         id=f"{name.lower()}-flags",

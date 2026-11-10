@@ -258,6 +258,7 @@ dad/
   oma/           OMA documents transcribed by hand
   onem2m/        oneM2M documents
   raw/           unedited extractor output, mirroring the trees above
+  corpus.toml    the corpus's format and resolution rules, hand-maintained
   holes.toml     the record of known holes, hand-maintained
   corrections.json  each correction's reason, written by `seanchai regenerate`
 ```

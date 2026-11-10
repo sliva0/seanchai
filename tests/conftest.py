@@ -7,6 +7,8 @@ import pypdf
 import pytest
 from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
+from seanchai import corpus
+
 
 def _set_cells(row, values):
     for cell, value in zip(row.cells, values, strict=True):
@@ -236,6 +238,9 @@ def local_http_server():
 _ROOT = Path(__file__).parent.parent
 # The workspace copy. The tests pin this one, whatever else is installed.
 _CORPUS_DIR = _ROOT / "packages" / "seanchai-corpus" / "src" / "seanchai_corpus" / "dad"
+# The committed corpus's rules, for a fixture corpus to resolve by as the
+# committed one does.
+_RULES = corpus.Rules.load(_CORPUS_DIR / corpus.CORPUS_FILE)
 
 
 def _corpus(*, raw: bool):

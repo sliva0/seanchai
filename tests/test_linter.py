@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pydantic
 import pytest
-from conftest import _CORPUS_DIR, _corpus
+from conftest import _CORPUS_DIR, _RULES, _corpus
 
 from seanchai import corpus, linter
 from seanchai.dad import ast, corrections, parser
@@ -792,8 +792,13 @@ def _origin_spec(specification, version, *sections):
 
 
 def _books(*specs):
+    """A fixture corpus, resolving by the committed corpus's rules."""
     return corpus.Corpus(
-        corpus.Entry(path=Path(f"{i}.dad"), spec=spec) for i, spec in enumerate(specs)
+        (
+            corpus.Entry(path=Path(f"{i}.dad"), spec=spec)
+            for i, spec in enumerate(specs)
+        ),
+        rules=_RULES,
     )
 
 
@@ -1438,7 +1443,7 @@ def test_an_origin_that_borrows_the_avp_itself_is_a_note_not_an_error():
 
 def test_an_origin_resolved_across_releases_is_a_note_naming_the_rule():
     """TS 29.140 ends at V7.0.0; a Release 19 document's non-specific
-    reference reads as that final version (`corpus.FINAL_VERSIONS`), the
+    reference reads as that final version (a `final_version`), the
     cross-file rules run against it, and a note says so for audit."""
     spec = _spec(
         _reused(ast.ReusedAvpRow(name="Borrowed", origin="TS29.140")),
@@ -1454,7 +1459,7 @@ def test_an_origin_resolved_across_releases_is_a_note_naming_the_rule():
     assert crossing.message == (
         "TS29.140 is resolved across releases to 0.dad: 3GPP TS 32.299 V18.0.0"
         " is the citing file, and it cites the document non-specifically,"
-        " which reads as its final version, V7.0.0 (corpus.FINAL_VERSIONS)"
+        " which reads as its final version, V7.0.0 (corpus.toml, final_version)"
     )
     assert "origin-not-in-corpus" not in _rules(findings)
     assert "reused-avp-not-in-origin" in _rules(findings)
@@ -1474,7 +1479,7 @@ def _tgpp2_origin(revision):
 
 def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
     """TS 29.212 cites 3GPP2 X.S0057-B, which 3GPP2's library does not
-    publish; revision 0 V2.0 answers it only by its `corpus.STAND_INS`
+    publish; revision 0 V2.0 answers it only by its `stand_in`
     entry, and a note says so with the entry's evidence."""
     spec = _spec(
         _reused(ast.ReusedAvpRow(name="Borrowed", origin="3GPP2-X.S0057")),
@@ -1490,8 +1495,8 @@ def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
         "3GPP2-X.S0057 is resolved across releases to 0.dad: 3GPP TS 29.212"
         " V18.2.0 is the citing file, and its references name revision B,"
         " which the corpus lacks, and revision 0 V2.0 stands in: "
-        + corpus.STAND_INS["TS29.212", "3GPP2-X.S0057"].evidence
-        + " (corpus.STAND_INS)"
+        + _RULES.stand_ins["TS29.212", "3GPP2-X.S0057"].evidence
+        + " (corpus.toml, stand_in)"
     )
     assert "external-origin-not-in-corpus" not in _rules(findings)
 
@@ -1499,7 +1504,7 @@ def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
 def test_a_later_release_standing_in_is_a_note_with_its_evidence():
     """TS 32.299 V11.20.0 cites TS 29.329 non-specifically, meaning
     V11.7.0, which the corpus lacks; V19.1.0 answers by its
-    `corpus.RELEASE_STAND_INS` entry, and the note quotes the evidence."""
+    `release_stand_in` entry, and the note quotes the evidence."""
     spec = _spec(
         _reused(ast.ReusedAvpRow(name="Borrowed", origin="TS29.329")),
         specification="3GPP TS 32.299",
@@ -1515,8 +1520,8 @@ def test_a_later_release_standing_in_is_a_note_with_its_evidence():
         " V11.20.0 is the citing file, and it cites the document"
         " non-specifically, meaning V11.7.0, which the corpus lacks, and"
         " V19.1.0 stands in: "
-        + corpus.RELEASE_STAND_INS["TS32.299", "11.20.0", "TS29.329"].evidence
-        + " (corpus.RELEASE_STAND_INS)"
+        + _RULES.release_stand_ins["TS32.299", "11.20.0", "TS29.329"].evidence
+        + " (corpus.toml, release_stand_in)"
     )
     assert "origin-not-in-corpus" not in _rules(findings)
 
@@ -1524,7 +1529,7 @@ def test_a_later_release_standing_in_is_a_note_with_its_evidence():
 def test_a_later_release_stating_a_field_is_a_note_with_its_evidence():
     """TS 29.210 V6.7.0's TS 29.061 is V6.15.0, in its own release, so that
     resolution is no crossing; the type V19.1.0 states by its
-    `corpus.RELEASE_FILLS` entry is, and the note names the fields and AVPs."""
+    `release_fill` entry is, and the note names the fields and AVPs."""
     spec = _spec(
         _reused(ast.ReusedAvpRow(name="3GPP-SGSN-MCC-MNC", origin="TS29.061")),
         specification="3GPP TS 29.210",
@@ -1548,8 +1553,8 @@ def test_a_later_release_stating_a_field_is_a_note_with_its_evidence():
         " V6.7.0 is the citing file, and it cites the document non-specifically,"
         " meaning V6.15.0, which answers for all else and leaves those unstated,"
         " and V19.1.0 states them: "
-        + corpus.RELEASE_FILLS["TS29.210", "6.7.0", "TS29.061"].evidence
-        + " (corpus.RELEASE_FILLS)"
+        + _RULES.release_fills["TS29.210", "6.7.0", "TS29.061"].evidence
+        + " (corpus.toml, release_fill)"
     )
 
 
@@ -2121,7 +2126,7 @@ _STANDING_CORPUS_NOTES = {
         "undefined-avp": ["External-Group-Identifier"],
     },
     # Clause 2 [24] cites 3GPP2 X.S0057-B, which 3GPP2's library does not
-    # publish; revision 0 V2.0 stands in (corpus.STAND_INS).
+    # publish; revision 0 V2.0 stands in (corpus.toml, stand_in).
     "29212-j10.dad": {"cross-release-origin": ["3GPP2-X.S0057"]},
     # Table 6.3.0.1 sets M in Must for the four Digest AVPs it re-uses; RFC
     # 4590's stand-in flags, Wireshark's, put it in May; the model follows the table.
@@ -2331,7 +2336,7 @@ _STANDING_CORPUS_NOTES = {
     # documents it holds at Release 19 only: TS 29.214 V7.12.0 re-uses Gx's
     # and Gi's AVPs, and TS 29.140 non-specifically, which reads as V7.0.0
     # here too. TS 32.299 V11.20.0's six other Release 11 citations read
-    # Release 19 copies standing in (corpus.RELEASE_STAND_INS), and its TS
+    # Release 19 copies standing in (corpus.toml, release_stand_in), and its TS
     # 29.212 and 29.214 are the pinned Release 11 copies, whose own Release
     # 11 citations of TS 29.061, 29.229 and 29.272 nothing stands in for:
     # TS 29.212 V11.19.0's Trace-Data, from TS 29.272, differs from Release
@@ -2340,7 +2345,7 @@ _STANDING_CORPUS_NOTES = {
     # TS 29.229 in their releases; V18.1.0 stands in for both. TS 29.234's
     # clause 10.1.4 prints SIP-Auth-Data-Item's body with three members more and
     # five fewer than TS 29.229's. TS 29.210's TS 29.061 is the pinned V6.15.0,
-    # V19.1.0 typing the two AVPs it leaves untyped (corpus.RELEASE_FILLS).
+    # V19.1.0 typing the two AVPs it leaves untyped (corpus.toml, release_fill).
     "29210-670.dad": {"cross-release-origin": ["TS29.061", "TS29.229"]},
     "29234-b20.dad": {
         "cross-release-origin": ["TS29.229"],
@@ -2476,7 +2481,8 @@ _ACCEPTED_CORPUS_NOTES = {
 
 
 def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
-    books = corpus.Corpus.load(_corpus(raw=False))
+    # The directory, not its files, for the rules beside them.
+    books = corpus.Corpus.load([_CORPUS_DIR])
     actual = {}
     accepted = {}
     for entry in books:

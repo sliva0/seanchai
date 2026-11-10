@@ -48,7 +48,8 @@ CORRECTIONS = [
 # table 10, its only AVP table, is Gmb's, and clause 16.4.7 lists them as RADIUS
 # sub-attributes, by number and with no Diameter type or flag rule. So through TS
 # 29.210 the flags are its own clause 5.3's (TS29.210.py) and the type table 9a's
-# of a later release (corpus.RELEASE_FILLS); this copy's own reading stays short.
+# of a later release (corpus.toml, release_fill); this copy's own reading stays
+# short.
 CORRECTIONS += [
     Insert(
         id=f"{name.lower()}-row",

@@ -82,8 +82,8 @@ missing = ["data_type", "flag_rules"]
 reason = """
     V19.1.0 clause 16.4.7.2 codes sub-attribute 11 and gives no Diameter type or
     flags, and table 9a skips it (TS29.061.py#session-stop-indicator-row);
-    V11.12.0 tabulates it in no table either (corpus.RELEASE_STAND_INS), and TS
-    32.299 table 7.2.0.1 re-uses it from here
+    V11.12.0 tabulates it in no table either (corpus.toml, release_stand_in),
+    and TS 32.299 table 7.2.0.1 re-uses it from here
     """
 
 [[hole]]

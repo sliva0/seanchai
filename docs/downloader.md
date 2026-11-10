@@ -118,7 +118,10 @@ experiments, not for refreshing the corpus.
   The version is fetched into its own release's tree
   (`3gpp/Rel-11/TS_32.299/` beside `3gpp/Rel-19/TS_32.299/`). How the
   corpus resolves to the pinned copies is in
-  [consumers.md](consumers.md#resolution-across-releases).
+  [consumers.md](consumers.md#resolution-across-releases): every
+  `cited_version` and `final_version` the corpus's `corpus.toml` names is such
+  a pin, the latter with `final = "document"`, which `tests/test_corpus.py`
+  holds the two to.
 - **A catalog entry can be downloaded and still be out of scope.** A `[[tgpp]]`
   entry's `out_of_scope` says why the extractor has nothing to read in it; the
   document is fetched for reference, and `regenerate --add` refuses it with

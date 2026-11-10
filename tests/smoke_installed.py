@@ -22,6 +22,8 @@ for module in (seanchai, seanchai_corpus):
 
 books = corpus.Corpus.installed()
 assert books.record is not None, "the installed corpus lost its record of holes"
+assert books.rules.format in corpus.FORMATS, "the installed corpus lost its format"
+assert books.rules.release_stand_ins, "the installed corpus lost its rules"
 assert len(corpus.Corpus.installed(raw=True)) == len(books)
 assert books.version == seanchai_corpus.__version__
 assert seanchai.__version__

@@ -182,6 +182,17 @@ it, and None for any other corpus. `seanchai.__version__` is the library's. In
 this repository the package is installed from the workspace, so the installed
 corpus is the committed one.
 
+The two are released apart, so the corpus states its **format**: `format` in
+its `corpus.toml`, beside the `.dad` files, the generation of the `.dad` grammar
+and of the directory's layout and records it is written in. `corpus.FORMATS`
+lists the ones the library reads. `installed()`, and `load` of a directory
+holding the file, read it before any `.dad` file and refuse another with
+`corpus.CorpusFormatError`, naming both numbers and the package to upgrade:
+`seanchai` for a newer corpus, `seanchai-corpus` for an older one. The same
+file holds the corpus's resolution rules
+([below](#resolution-across-releases)). A directory without it, a subdirectory
+or a file list has no format to hold it to and no rules: it loads as it parses.
+
 Everything the library refuses derives from `seanchai.SeanchaiError`.
 
 ## The model
@@ -369,9 +380,9 @@ document's release (TR 21.801 clause 6.6.6.5.3, and every 3GPP document's
 clause 2), which is the match-major-take-newest rule; for a document
 outside 3GPP, the latest version there is. ETSI's clause 2.1 says the same of
 the documents it cites ("the latest edition of the referenced document"), and
-`LATEST_EDITIONS` reads that citation by citation. Neither rule says what a
-non-specific 3GPP reference means when the cited document ended before the
-citing document's release; the corpus reads it as the document's final
+a `latest_edition` entry reads that citation by citation. Neither rule says
+what a non-specific 3GPP reference means when the cited document ended before
+the citing document's release; the corpus reads it as the document's final
 version.
 
 So `corpus.Corpus.resolution` takes, in order: a specific reference's named
@@ -379,19 +390,30 @@ version and no other; the newest copy in the citing document's major
 version; and failing one, a later release's copy standing in by an
 evidenced entry, or the cited document's final version when it ended in an
 earlier release. The `.dad` grammar names no versions, so the facts this
-needs live in `corpus.py`, each entry citing its source:
+needs are the corpus's own: its `corpus.toml`, hand-maintained beside its
+`.dad` files, which `corpus.Corpus.load` reads into `Corpus.rules`, a
+`corpus.Rules`, for the directory holding it directly, raw mirror included,
+since a raw file's From cells need it most. A corpus release can so move a
+document's version, and the rules naming it, with no library release. Each
+entry is a table of the file and states its `evidence`, the clause or the
+comparison it rests on:
 
-- `CITED_VERSIONS`: the version a specific reference names, keyed by
+- `cited_as`: a document its citers number otherwise than its publisher, by the
+  reference a From cell carries: 3GPP cites "ETSI TS 283 034", which ETSI
+  publishes as ES 283 034.
+- `cited_version`: the version a specific reference names, keyed by
   (citing, cited) document and read from the citing document's references
   clause (TS 183 017's "3GPP TS 29.209 Release 6", oneM2M TS-0004's "3GPP
   TS 32.299 (Release 11)").
-- `FINAL_VERSIONS`: documents that ended before the citing release (TS
+- `latest_edition`: a document outside 3GPP whose references clause says a
+  non-specific reference means the latest edition, citation by citation.
+- `final_version`: documents that ended before the citing release (TS
   29.140 V7.0.0, TS 29.209 V6.8.0).
-- `CITED_REVISIONS` and `STAND_INS`: a 3GPP2 revision letter a citation
+- `cited_revision` and `stand_in`: a 3GPP2 revision letter a citation
   names, and the held revision answering for it with the evidence that the
   cited one is out of reach (TS 29.212 cites X.S0057-B; 3GPP2 publishes
   revision 0 alone, checked 2026-10-30).
-- `RELEASE_STAND_INS`: keyed by citing document, citing version and cited
+- `release_stand_in`: keyed by citing document, citing version and cited
   document, a later release's copy answering for a release version the
   corpus lacks, with the evidence that both define alike everything the
   citing copy re-uses. TS 32.299 V11.20.0's six Release 11 references, and
@@ -402,7 +424,7 @@ needs live in `corpus.py`, each entry citing its source:
   instead: TS 29.212 V11.19.0 and TS 29.214 V11.16.0 for TS 32.299
   V11.20.0, and TS 29.061 V6.15.0 for TS 29.210, whose table puts M in
   Must on three AVPs Release 19 forbids it on.
-- `RELEASE_FILLS`: keyed the same, fields the version a citation means leaves
+- `release_fill`: keyed the same, fields the version a citation means leaves
   unstated for named AVPs, which a later release's copy states. The meant copy
   still answers the citation and every other field and AVP; the later copy is
   read right after it and gives the named fields alone, and its code has to
@@ -415,20 +437,28 @@ needs live in `corpus.py`, each entry citing its source:
   Must, P in May. Table 9a's own M in Must not is the disagreement that pins
   V6.15.0, and stays out of the reading.
 
-Every version these name is a catalog pin the downloader checks against
-the 3GPP archive on each download ([downloader.md](downloader.md)). An
+`load` refuses with `corpus.CorpusError` an unknown table or field, an entry
+missing a field or stating one twice, and an entry naming a document or a copy
+the corpus does not hold, which would answer no citation. A corpus without the
+file resolves by no entry: the drafting rules alone, so a citation an entry
+would answer resolves to nothing. `corpus.Corpus(entries, rules=...)` takes
+rules as given, unchecked.
+
+Every version the version tables name is a catalog pin the downloader checks
+against the 3GPP archive on each download ([downloader.md](downloader.md)). An
 `Avp` or `Hole` that took a field from such a copy carries
 `across_releases`, a `corpus.CrossRelease` naming the citing and cited
 documents, the version and the rule; `across_releases()` lists them for a
 reader to audit, and the linter's `cross-release-origin` note says the same
-per file. For a `RELEASE_FILLS` entry `Avp.completed_by` also names the copy
-per field, `TS29.061 V19.1.0`, and the rule is `corpus.LATER_RELEASE`. An older
-copy answers only through a citation: reference-level queries (`avps`, `holes`,
-`references`) read the newest copy of each document. Corpus-wide lookups
-(`find`, `definition`, `identified`, `avps()`) also know an identity only an
-older copy holds, where a citation reaches it, so `show` answers for every
-identity `seanchai dictionary` writes: TS 32.299 V11.20.0's `WLAN-Information`,
-through oneM2M TS-0004's `Service-Information`.
+per file, naming the entry, `(corpus.toml, release_stand_in)`. For a
+`release_fill` entry `Avp.completed_by` also names the copy per field,
+`TS29.061 V19.1.0`, and the rule is `corpus.LATER_RELEASE`. An older copy
+answers only through a citation: reference-level
+queries (`avps`, `holes`, `references`) read the newest copy of each
+document. Corpus-wide lookups (`find`, `definition`, `identified`, `avps()`)
+also know an identity only an older copy holds, where a citation reaches it, so
+`show` answers for every identity `seanchai dictionary` writes: TS 32.299
+V11.20.0's `WLAN-Information`, through oneM2M TS-0004's `Service-Information`.
 
 **Holes.** An `Avp` has every field: code, type and flag rules are facts
 some document states, or RFC 6733's rule for an IETF AVP's unplaced bits,
@@ -481,8 +511,8 @@ The seventeen, by cause:
 - **A field no source states**, under every policy. TS 29.061's
   `3GPP-Session-Stop-Indicator` row states only a code. TS 29.234's
   `Charging-Characteristics` is typed "Integer", no Diameter type. TS 29.229's
-  `Wildcarded-IMPU` states a type and a note that Sh uses it, with no
-  code or flag rule, though TS 29.329's reading of it is complete, from Sh's
+  `Wildcarded-IMPU` states a type and a note that Sh uses it, with no code or
+  flag rule, though TS 29.329's reading of it is complete, from Sh's
   table, and is the one Sh's commands hold. ETSI TS 183 020's
   `Privacy-Indicator` states a code, a type and members and no flag rule, TS 183
   066's table 7.4 printing its own only for its own interface, "rather than in

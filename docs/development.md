@@ -7,7 +7,8 @@ The repository is a uv workspace of the two packages published to PyPI:
 
 - `seanchai`, the library, at the root: `pyproject.toml` and `src/seanchai/`.
 - `seanchai-corpus`, the data, at `packages/seanchai-corpus/`. The `.dad` files,
-  the record of known holes and the corrections record sit under
+  the corpus's description of itself (`corpus.toml`: its format and resolution
+  rules), the record of known holes and the corrections record sit under
   `src/seanchai_corpus/dad/`, inside the module, since the wheel ships what is
   in the module. The module itself only says where they are and their version.
 
@@ -38,8 +39,8 @@ wireshark` need no extra.
 - `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
   `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
   release plus `rfc/`, `etsi/`, `3gpp2/`, `oma/` and `onem2m/`, a raw mirror
-  under `raw/`, the record of known holes and the record of corrections
-  ([dad-format.md](dad-format.md#the-corpus)).
+  under `raw/`, `corpus.toml`, the record of known holes and the record of
+  corrections ([dad-format.md](dad-format.md#the-corpus)).
 - `edits/sources/<SpecRef>.toml`: input patches, quirks and exclusions per
   document.
 - `edits/corrections/<SpecRef>.py`: corrections per document.
@@ -107,7 +108,9 @@ between runs; without it each run starts cold and still passes.
   (`tests/conftest.py`): every committed `.dad` round-trips, every committed
   correction re-applies to the committed raw output, the linter's findings
   over the corpus are pinned, the corpus's `holes.toml` pins the known holes,
-  and its `corrections.json` must be what `edits/corrections` says.
+  its `corpus.toml` must name only copies the corpus holds and versions the
+  catalog pins, and its `corrections.json` must be what `edits/corrections`
+  says.
 - `tests/test_export.py` runs `seanchai export` over the committed corpus in
   subprocesses, from a directory holding nothing of the repository and under two
   hash seeds, which must agree byte for byte. `tests/export.sha256` pins a
@@ -185,7 +188,8 @@ even only its reason, without regenerating fails `uv run pytest`. A changed
 corpus usually moves the export's pin too ([above](#tests)).
 
 `regenerate` leaves the corpus's version alone; cutting a release sets it
-([below](#releases)).
+([below](#releases)). Nor does it write `corpus.toml` or `holes.toml`, which are
+maintained by hand: it writes `.dad` files and `corrections.json` only.
 
 ## Adding a document
 
@@ -210,12 +214,14 @@ corpus usually moves the export's pin too ([above](#tests)).
    ([consumers.md](consumers.md#known-holes)).
 5. Review what moved in the export and rewrite its pin:
    `uv run pytest tests/test_export.py --update-export-pin`.
-6. Run `uv run pytest`. A document citing another across releases adds to the
-   citation pairs `tests/test_model.py` lists, and the corpus's findings are
-   pinned in `tests/test_linter.py`; read what each failure says before moving
-   its pin.
+6. Run `uv run pytest`. A document citing another across releases needs the
+   entry of the corpus's `corpus.toml` its references clause gives it, with the
+   evidence ([consumers.md](consumers.md#resolution-across-releases)), and adds
+   to the citation pairs `tests/test_model.py` lists, and the corpus's findings
+   are pinned in `tests/test_linter.py`; read what each failure says before
+   moving its pin.
 7. Commit the raw and corrected pair with the edit files, the catalog entry, the
-   corrections record and the export pin.
+   corrections record, any `corpus.toml` entry and the export pin.
 
 | Layer | Fixes | Where |
 |---|---|---|
@@ -284,9 +290,14 @@ declarations is the corpus's own reading of it:
 - An `[[exclude]]` stays silent while its clause exists, so re-read each
   excluded clause in the new copy, and remove the declaration if the version
   settles it ([extractor.md](extractor.md#exclusions)).
-- `corpus.RELEASE_STAND_INS` names held versions: each is a comparison to redo
-  against the new copy of the document it answers for. Where the two differ for
-  what the citing copy reaches, pin the older version it means.
+- The corpus's `corpus.toml` names held versions: each `release_stand_in` and
+  `release_fill` is a comparison to redo against the new copy of the document
+  it answers for, and its `version` moves to that copy. Where the two differ for
+  what the citing copy reaches, pin the older version it means. An entry naming
+  a copy the corpus no longer holds fails every load of the corpus, the
+  rewrite of `corrections.json` by `regenerate` included, naming the entry, so
+  the file is brought along in the same change. Moving a document's version this
+  way is a corpus release alone; the library does not change.
 - A `Supply` cites another document's values, and a non-specific reference moves
   to that document's latest version of the new release (TS 29.272's TS 32.422
   gained values in Release 19). Re-read those clauses.
@@ -304,8 +315,10 @@ Each version lives once, in its package's `pyproject.toml`, and `uv version`
 sets it and the lockfile together. `tests/test_packaging.py` holds the corpus's
 to a real date with no leading zeros, as PEP 440 normalizes them away. PyPI
 takes a version once, so a second corpus release waits for the next date. The
-`corpus` extra of the library names the oldest corpus it reads; raise it when
-the library stops reading an older one.
+`corpus` extra of the library names the oldest corpus it reads: the first
+release of the oldest format in `corpus.FORMATS`
+([below](#the-corpus-format)). Raise it when the library stops reading a
+format.
 
 To cut a corpus release, from a commit holding the regenerated corpus:
 
@@ -342,3 +355,32 @@ project that does not exist yet takes a *pending* trusted publisher, added under
 "Publishing" in the PyPI account with the names above; it becomes an ordinary
 trusted publisher on the first upload. Publish `seanchai-corpus` first: the
 library's `corpus` extra cannot install until the package it names exists.
+
+## The corpus format
+
+The corpus states its format in `corpus.toml`, `format = 1`, and the library
+lists the ones it reads in `corpus.FORMATS`. Loading a corpus of another format
+raises `corpus.CorpusFormatError` before any `.dad` file is parsed, naming both
+numbers and the package to upgrade, so a library meeting a grammar it predates
+says so rather than failing on the first block it cannot read. A directory with
+no `corpus.toml` has no format to hold it to, as it has no record of holes: it
+is a partial or a foreign corpus, loaded as it parses, with no resolution
+rules.
+
+Bump the number when a library that reads the old one would misread or refuse
+the corpus: a new block type or any other change to the `.dad` grammar the
+parser does not accept, a change to the layout of the directory (where the
+trees, the raw mirror or the records are), or to the schema of `corpus.toml`,
+`holes.toml` or `corrections.json`. A new document, a new version of one, a new
+entry in `corpus.toml` or `holes.toml` and a correction are not format changes.
+A bump is a library change first: a release whose `FORMATS` holds the new
+number, ideally beside the old, is published before the corpus that states it,
+and the extra's lower bound moves only when the old number leaves `FORMATS`.
+
+The extra has no upper bound, and the format check is why it needs none. A
+date-versioned corpus cannot say in advance which release will change the
+format, and a bound guessed at release time would hold back every compatible
+corpus after it. An older library installed beside a newer-format corpus
+fails at load with the message saying to upgrade `seanchai`; a consumer
+wanting neither to happen pins both packages, as the recipes in
+[consumers.md](consumers.md#installing-the-corpus) advise.

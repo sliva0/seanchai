@@ -213,7 +213,7 @@ CORRECTIONS += [
 ]
 
 # Resolved to TS 29.209 V6.8.0, the version clause 2's [4] names
-# ("3GPP TS 29.209 Release 6"; corpus.CITED_VERSIONS), the re-printed Gq
+# ("3GPP TS 29.209 Release 6"; corpus.toml, cited_version), the re-printed Gq
 # AVPs are compared with it.
 CORRECTIONS += [
     Accept(

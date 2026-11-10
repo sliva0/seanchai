@@ -2,7 +2,8 @@
 
 The package holds data and depends on nothing, the library included. `CORPUS_DIR`
 is the directory `seanchai.corpus.Corpus.load` takes, the one holding the
-corrected trees, the `raw/` mirror, `holes.toml` and `corrections.json`.
+corrected trees, the `raw/` mirror, `corpus.toml` (the corpus's format and
+resolution rules), `holes.toml` and `corrections.json`.
 """
 
 from importlib.metadata import version

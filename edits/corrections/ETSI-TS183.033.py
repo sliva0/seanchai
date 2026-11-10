@@ -3,7 +3,7 @@
 The input is the transcription (`raw/etsi/ts183033-010200.raw.dad`), which
 records what the PDF prints. The document endorses TS 29.229 and prints what it
 changes, so it uses TS 29.229's AVPs without tabulating them; clause 2.1 [2]
-names V6.6.0 (`corpus.RELEASE_STAND_INS`)."""
+names V6.6.0 (the corpus's `corpus.toml`, `release_stand_in`)."""
 
 from seanchai.dad import ast
 from seanchai.dad.corrections import (

@@ -125,11 +125,13 @@ def test_the_corpus_wheel_holds_the_corpus_and_nothing_else(dist):
     }
 
     assert "holes.toml" in corpus_files
+    assert "corpus.toml" in corpus_files
     assert "corrections.json" in corpus_files
     assert "rfc/rfc6733.dad" in corpus_files
     assert "raw/rfc/rfc6733.raw.dad" in corpus_files
     assert all(
-        name in ("holes.toml", "corrections.json") or name.endswith(".dad")
+        name in ("corpus.toml", "holes.toml", "corrections.json")
+        or name.endswith(".dad")
         for name in corpus_files
     )
     assert _files(_wheel(dist, "seanchai_corpus")) == {

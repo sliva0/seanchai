@@ -1,0 +1,363 @@
+# The corpus's own description: the format its files are written in, and the
+# facts resolving a citation between its documents needs, which the `.dad`
+# grammar does not carry. Maintained by hand; `seanchai regenerate` does not
+# write it. `seanchai.corpus.Corpus.load` reads it for the directory holding it
+# directly, raw mirror included, and refuses an unknown key, an entry stated
+# twice and one naming a document or copy the corpus lacks
+# (docs/consumers.md#resolution-across-releases).
+#
+# Every entry states its `evidence`: the clause or the comparison it rests on,
+# read as one line of prose. A key a table's entries share is a reference as a
+# re-used row's From cell spells it, `TS29.272`; a version is the copy's own.
+
+# Which generation of the `.dad` grammar and of this directory's layout the
+# corpus is; a library refuses a corpus of a format it does not read
+# (docs/development.md#the-corpus-format).
+format = 1
+
+# A document its citers number otherwise than its publisher does, by the
+# reference a From cell carries. Corrections name the publisher's document in
+# each corrected file, so this answers a raw file's From cell, which keeps what
+# is printed. One entry per misnaming, never a fuzzy match.
+
+[[cited_as]]
+cited = "ETSI-TS283.034"
+document = "ETSI-ES283.034"
+evidence = """
+    TS 29.212 (clause 2, [37]: 'ETSI TS 283 034 v2.2.0'), 29.219, 29.273 and
+    32.299 cite the e4 document as a Technical Specification; ETSI publishes
+    V2.2.0 as an ETSI Standard, ES 283 034, the title its transcription carries,
+    and has no TS 283 034
+    """
+
+# The version a specific reference names, by citing and cited reference, read
+# from the citing document's references clause: "For a specific reference,
+# subsequent revisions do not apply" (TS 183 017 V3.2.1 clause 2, oneM2M TS-0004
+# V2.35.0 clause 2: "only the cited version applies"). A reference naming a
+# release means that release's last version, which the downloader's catalog pins
+# with `final = "release"` and checks against the 3GPP archive. A citation
+# absent here is non-specific.
+
+[[cited_version]]
+citing = "ETSI-TS183.017"
+cited = "TS29.209"
+version = "6.8.0"
+evidence = """
+    ETSI TS 183 017 V3.2.1 clause 2.1, [4] ETSI TS 129 209: 'Universal Mobile
+    Telecommunications System (UMTS); Policy control over Gq interface (3GPP TS
+    29.209 Release 6)'. V6.8.0 is Release 6's last
+    """
+
+[[cited_version]]
+citing = "ETSI-TS183.017"
+cited = "TS29.214"
+version = "7.12.0"
+evidence = """
+    ETSI TS 183 017 V3.2.1 clause 2.1, [19] ETSI TS 129 214: 'Universal Mobile
+    Telecommunications System (UMTS); LTE; Policy and charging control over Rx
+    reference point (3GPP TS 29.214 Release 7)'. V7.12.0 is Release 7's last
+    """
+
+[[cited_version]]
+citing = "oneM2M-TS-0004"
+cited = "TS32.299"
+version = "11.20.0"
+evidence = """
+    oneM2M TS-0004 V2.35.0 clause 2.1, [31] 3GPP TS 32.299: 'Telecommunication
+    management; Charging management; Diameter charging applications (Release
+    11)'. V11.20.0 is Release 11's last
+    """
+
+# A non-specific citation by a document outside 3GPP whose own references clause
+# says what one means: the latest edition, which is the newest copy the corpus
+# holds. One entry per citation, quoting the clause; a citation without one
+# means the document's final version or nothing.
+
+[[latest_edition]]
+citing = "ETSI-ES283.035"
+cited = "TS29.329"
+evidence = """
+    clause 2.1: 'For non-specific references, the latest edition of the
+    referenced document (including any amendments) applies', and [7] ETSI TS 129
+    329 names no version
+    """
+
+# A document's final version: the last 3GPP published, in any release. A
+# non-specific reference from a release after it means it, there being no
+# version in the citing document's release to mean (the extension of TR 21.801
+# clause 6.6.6.5.3, "the latest version of the referenced TS or TR in the
+# Release in question", this corpus makes; docs/consumers.md). The downloader's
+# catalog pins each with `final = "document"` and fails a download whose archive
+# listing holds a later version.
+
+[[final_version]]
+document = "TS29.140"
+version = "7.0.0"
+evidence = """
+    TS 29.140 (MM10) ends at Release 7; TS 32.299 clause 2 [213] cites it
+    non-specifically
+    """
+
+[[final_version]]
+document = "TS29.209"
+version = "6.8.0"
+evidence = """
+    TS 29.209 (Gq) ends at Release 6, superseded by TS 29.214; ETSI ES 283 034
+    V2.2.0 clause 2 [5] cites it non-specifically, 'ETSI TS 129 209: ... (3GPP
+    TS 29.209)'
+    """
+
+# The revision a citation of a 3GPP2 document names, by citing and cited
+# reference, read from the citing document's references clause. 3GPP2 numbers
+# revisions of a document (X.S0057-0, -A, -B) as 3GPP numbers releases, each
+# with versions of its own, and a spec-ref keeps no revision letter, so the
+# revision a reference names is recorded here, as `cited_version` records
+# versions. It is a specific reference: that revision answers it and no other,
+# unless a `stand_in` says one does.
+
+[[cited_revision]]
+citing = "TS29.212"
+cited = "3GPP2-X.S0057"
+revision = "B"
+evidence = """
+    TS 29.212 V19.1.0 clause 2, [24] 3GPP2 X.S0057-B: 'E-UTRAN - eHRPD
+    Connectivity and Interworking: Core Network Aspects'
+    """
+
+# Citations of a revision (`cited_revision`) that a held copy of another
+# revision answers. One entry per citation, each with the evidence the cited
+# revision is out of reach; a citation without one resolves to nothing while the
+# corpus lacks its revision.
+
+[[stand_in]]
+citing = "TS29.212"
+cited = "3GPP2-X.S0057"
+revision = "0"
+version = "2.0"
+evidence = """
+    3GPP2's library publishes X.S0057-0 v1.0 and v2.0 only (checked 2026-10-30
+    at http://www.3gpp2.org/Public_html/Specs/index.cfm, X series)
+    """
+
+# Non-specific citations from an older copy (TS 32.299 V11.20.0, which oneM2M
+# TS-0004 [31] names) that mean their release's last version of a document the
+# corpus holds only at a later release, by citing reference, citing version and
+# cited reference. `meant` is the version the citation means, `version` the held
+# copy answering it, and `specific` says the citing document names `meant`
+# itself, where the corpus cannot pin it: TS 183 033's V6.6.0 is no release's
+# last, which is what the catalog pins. One entry per citation, each with the
+# evidence that the cited version and the held copy define alike everything the
+# citing copy re-uses from it, members its grouped AVPs reach in the cited
+# document included: code, vendor, type, every table row's flag rules, grouped
+# bodies and enumerated values. A citation without one resolves to nothing while
+# the corpus lacks its version. Where the two versions differ the meant version
+# is pinned instead (TS 29.212 V11.19.0, TS 29.214 V11.16.0, TS 29.061 V6.15.0,
+# src/seanchai/downloader/specs.toml).
+#
+# The copies moved from Release 18 to Release 19 on 2026-11-03, when a
+# comparison of every name each citing copy reaches, grouped members included,
+# found the two releases define them alike; the older comparisons carry over.
+
+# ETSI TS 183 033 V1.2.0 clause 2.1 [2] names V6.6.0, of which clause 6.3.13
+# reaches seven AVPs, printing SIP-Auth-Data-Item's body itself.
+[[release_stand_in]]
+citing = "ETSI-TS183.033"
+citing_version = "1.2.0"
+cited = "TS29.229"
+meant = "6.6.0"
+version = "19.1.0"
+specific = true
+evidence = """
+    SIP-Authentication-Scheme, SIP-Authenticate, SIP-Authorization,
+    SIP-Authentication-Context, SIP-Item-Number, Confidentiality-Key and
+    Integrity-Key compared 2026-11-03 with table 6.3.1 of V6.6.0 from the 3GPP
+    archive: the same codes, types, flag rules and May Encr.
+    """
+
+# TS 29.140 V7.0.0 clause 2 [12], reached only for 3GPP-IMSI (6.3.6).
+[[release_stand_in]]
+citing = "TS29.140"
+citing_version = "7.0.0"
+cited = "TS29.061"
+meant = "7.12.0"
+version = "19.1.0"
+evidence = """
+    compared 2026-11-02 with V7.12.0 extracted from the 3GPP archive, whose
+    listing holds no later Release 7 version: both define 3GPP-IMSI as code 1,
+    vendor 10415, UTF8String in clause 16.4.7; both tables 9a and 10 give
+    identical flag rules and encryption cells (including their disagreement on
+    M); the AVP is scalar, with no grouped body or enumerated values
+    """
+
+# TS 29.140 V7.0.0 clause 2 [11], reached only for MSISDN (6.3.2).
+[[release_stand_in]]
+citing = "TS29.140"
+citing_version = "7.0.0"
+cited = "TS29.329"
+meant = "7.8.0"
+version = "19.1.0"
+evidence = """
+    compared 2026-11-02 with V7.8.0 extracted from the 3GPP archive, whose
+    listing holds no later Release 7 version: both table 6.3.1 rows give MSISDN
+    code 701, vendor 10415, OctetString, M and V in Must, no other flag rules
+    and No encryption; both clauses 6.3.2 define that scalar AVP, with no
+    grouped body or enumerated values
+    """
+
+# TS 32.299 V11.20.0 clause 2 [207].
+[[release_stand_in]]
+citing = "TS32.299"
+citing_version = "11.20.0"
+cited = "TS29.061"
+meant = "11.12.0"
+version = "19.1.0"
+evidence = """
+    V11.12.0 tabulates the 22 AVPs TS 32.299 V11.20.0 re-uses from it that
+    either version tabulates with V19.1.0's codes, types and flag rules on every
+    row (3GPP-IMSI, 3GPP-MS-TimeZone, 3GPP-RAT-Type and 3GPP-User-Location-Info
+    on both of their rows), and prints CN-IP-Multicast-Distribution's,
+    MBMS-2G-3G-Indicator's and MBMS-Service-Type's values as V19.1.0 does;
+    neither tabulates 3GPP-Session-Stop-Indicator, whose code-only row is
+    V19.1.0's correction; compared 2026-10-31 with the Release 11 copy extracted
+    from the 3GPP archive, whose listing holds no later Release 11 version
+    """
+
+# TS 32.299 V11.20.0 clause 2 [229].
+[[release_stand_in]]
+citing = "TS32.299"
+citing_version = "11.20.0"
+cited = "TS29.173"
+meant = "11.1.0"
+version = "19.0.0"
+evidence = """
+    V11.1.0 tabulates MME-Name (2402) and MME-Realm (2408) with V19.0.0's types
+    and flag rules; compared 2026-10-31 with the Release 11 copy extracted from
+    the 3GPP archive, whose listing holds no later Release 11 version
+    """
+
+# TS 32.299 V11.20.0 clause 2 [204].
+[[release_stand_in]]
+citing = "TS32.299"
+citing_version = "11.20.0"
+cited = "TS29.229"
+meant = "11.5.0"
+version = "19.1.0"
+evidence = """
+    V11.5.0 tabulates Server-Capabilities, Mandatory-Capability,
+    Optional-Capability, Server-Name, Session-Priority and User-Data with
+    V19.1.0's codes, types and flag rules, and prints Server-Capabilities' body
+    and Session-Priority's values as V19.1.0 does; compared 2026-10-31 with the
+    Release 11 copy extracted from the 3GPP archive, whose listing holds no
+    later Release 11 version
+    """
+
+# TS 32.299 V11.20.0 clause 2 [219], [230].
+[[release_stand_in]]
+citing = "TS32.299"
+citing_version = "11.20.0"
+cited = "TS29.272"
+meant = "11.14.0"
+version = "19.6.0"
+evidence = """
+    V11.14.0 tabulates CSG-Id, MME-Number-for-MT-SMS, Terminal-Information and
+    its members IMEI, 3GPP2-MEID and Software-Version with V19.6.0's codes,
+    types and flag rules, and prints Terminal-Information's body as V19.6.0
+    does; compared 2026-10-31 with the Release 11 copy extracted from the 3GPP
+    archive, whose listing holds no later Release 11 version
+    """
+
+# TS 32.299 V11.20.0 clause 2 [237].
+[[release_stand_in]]
+citing = "TS32.299"
+citing_version = "11.20.0"
+cited = "TS29.273"
+meant = "11.11.0"
+version = "19.2.0"
+evidence = """
+    V11.11.0 tabulates SSID (1524) on both of V19.2.0's rows with its type and
+    flag rules; compared 2026-10-31 with the Release 11 copy extracted from the
+    3GPP archive, whose listing holds no later Release 11 version
+    """
+
+# TS 32.299 V11.20.0 clause 2 [221].
+[[release_stand_in]]
+citing = "TS32.299"
+citing_version = "11.20.0"
+cited = "TS29.329"
+meant = "11.7.0"
+version = "19.1.0"
+evidence = """
+    V11.7.0 tabulates MSISDN (701) with V19.1.0's type and flag rules; compared
+    2026-10-31 with the Release 11 copy extracted from the 3GPP archive, whose
+    listing holds no later Release 11 version
+    """
+
+# TS 29.210 V6.7.0 clause 2 [16].
+[[release_stand_in]]
+citing = "TS29.210"
+citing_version = "6.7.0"
+cited = "TS29.229"
+meant = "6.11.0"
+version = "19.1.0"
+evidence = """
+    V6.11.0 table 6.3.1 tabulates Charging-Information (618) and its members
+    Primary-Event-Charging-Function-Name,
+    Secondary-Event-Charging-Function-Name,
+    Primary-Charging-Collection-Function-Name and
+    Secondary-Charging-Collection-Function-Name (619-622) with the codes, types
+    and flag rules of V19.1.0's table 6.3.0.1, and clause 6.3.19 prints
+    Charging-Information's body as V19.1.0 does; compared 2026-11-01 with the
+    Release 6 copy extracted from the 3GPP archive, whose listing holds no later
+    Release 6 version
+    """
+
+# TS 29.234 V11.2.0 clause 2 [6].
+[[release_stand_in]]
+citing = "TS29.234"
+citing_version = "11.2.0"
+cited = "TS29.229"
+meant = "11.5.0"
+version = "19.1.0"
+evidence = """
+    V11.5.0 table 6.3.1 tabulates the 14 AVPs TS 29.234 V11.2.0 re-uses from it,
+    and Deregistration-Reason's members Reason-Code and Reason-Info, with the
+    codes, types and flag rules of V19.1.0's table 6.3.0.1, and prints
+    Deregistration-Reason's body and Server-Assignment-Type's and Reason-Code's
+    values as V19.1.0 does. V19.1.0's SIP-Digest-Authenticate, a member of
+    SIP-Auth-Data-Item, adds Alternate-Digest-Algorithm and Alternate-Digest-HA1
+    to V11.5.0's, which TS 29.234 does not reach: its clause 10.1.4 prints a
+    SIP-Auth-Data-Item body of its own, without that member; compared 2026-11-01
+    with the Release 11 copy extracted from the 3GPP archive, whose listing
+    holds no later Release 11 version
+    """
+
+# Non-specific citations whose meant version the corpus holds and answers with,
+# except for the fields named here, by citing reference, citing version and
+# cited reference. A release stand-in replaces the citation's copy; this keeps
+# it, for code, vendor, clause and every other AVP, and takes only what no held
+# version of the citation's release states, one entry per citation: `fields`
+# (`data_type`, `flag_rules`) of the AVPs `names` lists, from the copy at
+# `version`. `Avp.completed_by` names the later copy for each field and
+# `Avp.across_releases` carries the rule, and the linter's
+# `cross-release-origin` note quotes the evidence. TS 29.061 V6.15.0 stays
+# pinned for TS 29.210: this does not make Release 19 answer for it.
+
+# TS 29.210 V6.7.0 clause 2 [11], table 5.3.
+[[release_fill]]
+citing = "TS29.210"
+citing_version = "6.7.0"
+cited = "TS29.061"
+meant = "6.15.0"
+version = "19.1.0"
+names = ["3GPP-GPRS-Negotiated-QoS-Profile", "3GPP-SGSN-MCC-MNC"]
+fields = ["data_type"]
+evidence = """
+    V6.15.0 clause 16.4.7 numbers both as RADIUS sub-attributes, 5 and 18, UTF-8
+    encoded, with no Diameter type, and table 10, its only AVP table, is Gmb's;
+    table 9a of V7.12.0, V11.12.0 and V19.1.0 alike types both UTF8String,
+    compared 2026-11-04 with the copies extracted from the 3GPP archive. The
+    type alone is taken: table 9a also puts M in Must not, and TS 29.210 clause
+    5.3 says the M flag of a re-used VSA shall be set, so the flags are TS
+    29.210's own (TS29.210.py#3gpp-sgsn-mcc-mnc-flags,
+    TS29.210.py#3gpp-gprs-negotiated-qos-profile-flags)
+    """

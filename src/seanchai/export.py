@@ -31,7 +31,6 @@ import pydantic
 
 from . import correction_record, export_schema, model
 from .corpus import (
-    CITED_AS,
     LATER_RELEASE,
     Corpus,
     CorpusError,
@@ -555,7 +554,9 @@ class _Lookups:
     def references(self, spec: ast.Specification) -> dict[str, Target]:
         """Each document `spec` can cite, as `spec`'s release reads it."""
         found = {}
-        for reference in sorted({e.reference for e in self.entries} | set(CITED_AS)):
+        for reference in sorted(
+            {e.reference for e in self.entries} | set(self.books.rules.cited_as)
+        ):
             resolved = self.books.resolve(reference, like=spec)
             if resolved is not None:
                 found[reference] = Target(document=document_id(resolved))

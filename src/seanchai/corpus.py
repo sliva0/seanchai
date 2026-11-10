@@ -7,28 +7,29 @@ clauses 6.6.6.5.2-6.6.6.5.3, ETSI SR 001 262 clauses 12.3-12.4, and each
 citing document's clause 2): **a specific reference means the version it
 names; a non-specific one the latest version in the citing document's
 release, the newest copy of that major**; and where the cited document
-ended before that release, its final version. The version a specific
-reference names is not in the `.dad` file but in the citing document's
-references clause, so it is recorded here (`CITED_VERSIONS`), as are the
-final versions (`FINAL_VERSIONS`, which the downloader verifies). RFC
-numbers name immutable documents and resolve to whatever the corpus holds,
-as does a document outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M), whose
-versions are its publisher's and share no release axis with the citing
-document's, unless the citation names a 3GPP2 revision (`CITED_REVISIONS`):
-then only that revision answers it, or a held one an explicit entry lets
-stand in for it (`STAND_INS`). A non-specific citation whose release's
-last version the corpus does not hold resolves to nothing, unless an entry
-in `RELEASE_STAND_INS` records the evidence that a held copy of a later
-release defines what the citing copy reaches the same way. Where the citation's
-own version answers but leaves a field unstated, an entry in `RELEASE_FILLS`
-lets a later release state that field alone, with the same evidence. The reasoning,
-and what a resolution across releases reports, is in
+ended before that release, its final version. RFC numbers name immutable
+documents and resolve to whatever the corpus holds, as does a document
+outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M), whose versions are its
+publisher's and share no release axis with the citing document's, unless
+the citation names a 3GPP2 revision: then only that revision answers it, or
+a held one an explicit entry lets stand in for it. A non-specific citation
+whose release's last version the corpus does not hold resolves to nothing,
+unless an entry records the evidence that a held copy of a later release
+defines what the citing copy reaches the same way. Where the citation's own
+version answers but leaves a field unstated, an entry lets a later release
+state that field alone, with the same evidence. The reasoning, and what a
+resolution across releases reports, is in
 docs/consumers.md#resolution-across-releases and
 docs/linter.md#resolving-an-origin.
 
-A directory holding a corpus may hold its record of known holes too
-(`HOLE_RECORD`): what the corpus cannot complete, each with its evidence,
-which the model builds strictly against (docs/consumers.md#known-holes).
+The facts this needs are the corpus's, not the library's: the version a
+specific reference names is in the citing document's references clause, not
+in its `.dad` file, and a stand-in is a comparison of two copies. A corpus
+directory records them in its `CORPUS_FILE` (`Rules`), beside its `.dad`
+files, with the corpus's format (`FORMATS`), and may hold its record of known
+holes too (`HOLE_RECORD`): what the corpus cannot complete, each with its
+evidence, which the model builds strictly against
+(docs/consumers.md#known-holes).
 """
 
 from __future__ import annotations
@@ -36,11 +37,12 @@ from __future__ import annotations
 import os
 import re
 import tomllib
-from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .dad import ast, parser
 from .errors import SeanchaiError
 from .prose import collapse
@@ -54,81 +56,26 @@ class CorpusNotInstalledError(CorpusError):
     """No path was given and the `seanchai-corpus` package is not installed."""
 
 
-# A document its citers number otherwise than its publisher does, by the
-# reference a From cell carries. TS 29.212 (clause 2, [37]: "ETSI TS 283 034
-# v2.2.0"), 29.219, 29.273 and 32.299 cite the e4 document as a Technical
-# Specification; ETSI publishes V2.2.0 as an ETSI Standard, ES 283 034, the
-# title its transcription carries, and has no TS 283 034. Corrections name the
-# publisher's document in each corrected file, so this answers a raw file's
-# From cell, which keeps what is printed. One entry per misnaming, never a fuzzy
-# match.
-CITED_AS = {"ETSI-TS283.034": "ETSI-ES283.034"}
+# The corpus formats this library reads: the generation of the `.dad` grammar
+# and of the corpus directory's layout and records a corpus's `CORPUS_FILE`
+# states (docs/development.md#the-corpus-format).
+FORMATS: tuple[int, ...] = (1,)
 
 
-# The version a *specific* reference names, by (citing, cited) reference,
-# read from the citing document's references clause: "For a specific
-# reference, subsequent revisions do not apply" (TS 183 017 V3.2.1 clause 2,
-# oneM2M TS-0004 V2.35.0 clause 2: "only the cited version applies"). A
-# reference naming a release means that release's last version, which the
-# downloader's catalog pins with `final = "release"` and checks against the
-# 3GPP archive. A citation absent here is non-specific.
-CITED_VERSIONS: dict[tuple[str, str], str] = {
-    # ETSI TS 183 017 V3.2.1 clause 2.1, [4] ETSI TS 129 209: "Universal
-    # Mobile Telecommunications System (UMTS); Policy control over Gq
-    # interface (3GPP TS 29.209 Release 6)". V6.8.0 is Release 6's last.
-    ("ETSI-TS183.017", "TS29.209"): "6.8.0",
-    # The same clause, [19] ETSI TS 129 214: "Universal Mobile
-    # Telecommunications System (UMTS); LTE; Policy and charging control
-    # over Rx reference point (3GPP TS 29.214 Release 7)". V7.12.0 is
-    # Release 7's last.
-    ("ETSI-TS183.017", "TS29.214"): "7.12.0",
-    # oneM2M TS-0004 V2.35.0 clause 2.1, [31] 3GPP TS 32.299:
-    # "Telecommunication management; Charging management; Diameter charging
-    # applications (Release 11)". V11.20.0 is Release 11's last.
-    ("oneM2M-TS-0004", "TS32.299"): "11.20.0",
-}
+class CorpusFormatError(CorpusError):
+    """A corpus states a format this library does not read: the library is
+    older than the corpus, or the corpus older than any format it reads."""
 
-# A non-specific citation by a document outside 3GPP whose own references clause
-# says what one means, by (citing, cited) reference: the latest edition, which
-# is the newest copy the corpus holds. One entry per citation, quoting the
-# clause; a citation without one means the document's final version or nothing.
-LATEST_EDITIONS: dict[tuple[str, str], str] = {
-    ("ETSI-ES283.035", "TS29.329"): (
-        "clause 2.1: 'For non-specific references, the latest edition of the"
-        " referenced document (including any amendments) applies', and [7] ETSI TS"
-        " 129 329 names no version"
-    ),
-}
-
-# A document's final version: the last 3GPP published, in any release. A
-# non-specific reference from a release after it means it, there being no
-# version in the citing document's release to mean (the extension of TR
-# 21.801 clause 6.6.6.5.3, "the latest version of the referenced TS or TR
-# in the Release in question", this corpus makes; docs/consumers.md). The
-# downloader's catalog pins each with `final = "document"` and fails a
-# download whose archive listing holds a later version.
-FINAL_VERSIONS: dict[str, str] = {
-    # TS 29.140 (MM10) ends at Release 7; TS 32.299 clause 2 [213] cites it
-    # non-specifically.
-    "TS29.140": "7.0.0",
-    # TS 29.209 (Gq) ends at Release 6, superseded by TS 29.214; ETSI ES
-    # 283 034 V2.2.0 clause 2 [5] cites it non-specifically, "ETSI TS 129
-    # 209: ... (3GPP TS 29.209)".
-    "TS29.209": "6.8.0",
-}
-
-# The revision a citation of a 3GPP2 document names, by (citing, cited)
-# reference, read from the citing document's references clause. 3GPP2
-# numbers revisions of a document (X.S0057-0, -A, -B) as 3GPP numbers
-# releases, each with versions of its own, and a spec-ref keeps no revision
-# letter, so the revision a reference names is recorded here, as
-# `CITED_VERSIONS` records versions. It is a specific reference: that
-# revision answers it and no other, unless `STAND_INS` says one does.
-CITED_REVISIONS: dict[tuple[str, str], str] = {
-    # TS 29.212 V19.1.0 clause 2, [24] 3GPP2 X.S0057-B: "E-UTRAN - eHRPD
-    # Connectivity and Interworking: Core Network Aspects".
-    ("TS29.212", "3GPP2-X.S0057"): "B",
-}
+    def __init__(self, path: Path, found: int) -> None:
+        self.path = path
+        self.found = found
+        self.reads = FORMATS
+        upgrade = "seanchai" if found > max(FORMATS) else "seanchai-corpus"
+        reads = ", ".join(map(str, FORMATS))
+        super().__init__(
+            f"{path}: the corpus is format {found}, and seanchai {__version__}"
+            f" reads format {reads}: upgrade {upgrade}"
+        )
 
 
 @dataclass(frozen=True)
@@ -139,21 +86,6 @@ class StandIn:
     revision: str  # "0"
     version: str  # "2.0"
     evidence: str
-
-
-# Citations of a revision (`CITED_REVISIONS`) that a held copy of another
-# revision answers, by (citing, cited) reference. One entry per citation,
-# each with the evidence the cited revision is out of reach; a citation
-# without one resolves to nothing while the corpus lacks its revision.
-STAND_INS: dict[tuple[str, str], StandIn] = {
-    ("TS29.212", "3GPP2-X.S0057"): StandIn(
-        "0",
-        "2.0",
-        "3GPP2's library publishes X.S0057-0 v1.0 and v2.0 only (checked"
-        " 2026-10-30 at http://www.3gpp2.org/Public_html/Specs/index.cfm,"
-        " X series)",
-    ),
-}
 
 
 @dataclass(frozen=True)
@@ -170,141 +102,6 @@ class ReleaseStandIn:
     specific: bool = False
 
 
-# Non-specific citations from an older copy (TS 32.299 V11.20.0, which
-# oneM2M TS-0004 [31] names) that mean their release's last version of a
-# document the corpus holds only at a later release, by (citing reference,
-# citing version, cited reference). One entry per citation, each with the
-# evidence that the cited version and the held copy define alike everything
-# the citing copy re-uses from it, members its grouped AVPs reach in the
-# cited document included: code, vendor, type, every table row's flag
-# rules, grouped bodies and enumerated values. A citation without one
-# resolves to nothing while the corpus lacks its version. Where the two
-# versions differ the meant version is pinned instead (TS 29.212 V11.19.0,
-# TS 29.214 V11.16.0, TS 29.061 V6.15.0, src/seanchai/downloader/specs.toml).
-def _compared(date: str, release: int) -> str:
-    return (
-        f"compared {date} with the Release {release} copy extracted from the 3GPP"
-        f" archive, whose listing holds no later Release {release} version"
-    )
-
-
-# The copies moved from Release 18 to Release 19 on 2026-11-03, when a comparison
-# of every name each citing copy reaches, grouped members included, found the two
-# releases define them alike; the older comparisons below carry over.
-_REL11 = _compared("2026-10-31", 11)
-RELEASE_STAND_INS: dict[tuple[str, str, str], ReleaseStandIn] = {
-    # ETSI TS 183 033 V1.2.0 clause 2.1 [2] names V6.6.0, of which clause 6.3.13
-    # reaches seven AVPs, printing SIP-Auth-Data-Item's body itself.
-    ("ETSI-TS183.033", "1.2.0", "TS29.229"): ReleaseStandIn(
-        "6.6.0",
-        "19.1.0",
-        "SIP-Authentication-Scheme, SIP-Authenticate, SIP-Authorization,"
-        " SIP-Authentication-Context, SIP-Item-Number, Confidentiality-Key and"
-        " Integrity-Key compared 2026-11-03 with table 6.3.1 of V6.6.0 from the"
-        " 3GPP archive: the same codes, types, flag rules and May Encr.",
-        specific=True,
-    ),
-    # TS 29.140 V7.0.0 clause 2 [12], reached only for 3GPP-IMSI (6.3.6).
-    ("TS29.140", "7.0.0", "TS29.061"): ReleaseStandIn(
-        "7.12.0",
-        "19.1.0",
-        "compared 2026-11-02 with V7.12.0 extracted from the 3GPP archive,"
-        " whose listing holds no later Release 7 version: both define"
-        " 3GPP-IMSI as code 1, vendor 10415, UTF8String in clause 16.4.7;"
-        " both tables 9a and 10 give identical flag rules and encryption"
-        " cells (including their disagreement on M); the AVP is scalar,"
-        " with no grouped body or enumerated values",
-    ),
-    # TS 29.140 V7.0.0 clause 2 [11], reached only for MSISDN (6.3.2).
-    ("TS29.140", "7.0.0", "TS29.329"): ReleaseStandIn(
-        "7.8.0",
-        "19.1.0",
-        "compared 2026-11-02 with V7.8.0 extracted from the 3GPP archive,"
-        " whose listing holds no later Release 7 version: both table 6.3.1"
-        " rows give MSISDN code 701, vendor 10415, OctetString, M and V in"
-        " Must, no other flag rules and No encryption; both clauses 6.3.2"
-        " define that scalar AVP, with no grouped body or enumerated values",
-    ),
-    # TS 32.299 V11.20.0 clause 2 [207].
-    ("TS32.299", "11.20.0", "TS29.061"): ReleaseStandIn(
-        "11.12.0",
-        "19.1.0",
-        "V11.12.0 tabulates the 22 AVPs TS 32.299 V11.20.0 re-uses from it"
-        " that either version tabulates with V19.1.0's codes, types and flag"
-        " rules on every row (3GPP-IMSI, 3GPP-MS-TimeZone, 3GPP-RAT-Type and"
-        " 3GPP-User-Location-Info on both of their rows), and prints"
-        " CN-IP-Multicast-Distribution's, MBMS-2G-3G-Indicator's and"
-        " MBMS-Service-Type's values as V19.1.0 does; neither tabulates"
-        " 3GPP-Session-Stop-Indicator, whose code-only row is V19.1.0's"
-        " correction; " + _REL11,
-    ),
-    # [229].
-    ("TS32.299", "11.20.0", "TS29.173"): ReleaseStandIn(
-        "11.1.0",
-        "19.0.0",
-        "V11.1.0 tabulates MME-Name (2402) and MME-Realm (2408) with"
-        " V19.0.0's types and flag rules; " + _REL11,
-    ),
-    # [204].
-    ("TS32.299", "11.20.0", "TS29.229"): ReleaseStandIn(
-        "11.5.0",
-        "19.1.0",
-        "V11.5.0 tabulates Server-Capabilities, Mandatory-Capability,"
-        " Optional-Capability, Server-Name, Session-Priority and User-Data"
-        " with V19.1.0's codes, types and flag rules, and prints"
-        " Server-Capabilities' body and Session-Priority's values as V19.1.0"
-        " does; " + _REL11,
-    ),
-    # [219], [230].
-    ("TS32.299", "11.20.0", "TS29.272"): ReleaseStandIn(
-        "11.14.0",
-        "19.6.0",
-        "V11.14.0 tabulates CSG-Id, MME-Number-for-MT-SMS, Terminal-Information"
-        " and its members IMEI, 3GPP2-MEID and Software-Version with V19.6.0's"
-        " codes, types and flag rules, and prints Terminal-Information's body"
-        " as V19.6.0 does; " + _REL11,
-    ),
-    # [237].
-    ("TS32.299", "11.20.0", "TS29.273"): ReleaseStandIn(
-        "11.11.0",
-        "19.2.0",
-        "V11.11.0 tabulates SSID (1524) on both of V19.2.0's rows with its"
-        " type and flag rules; " + _REL11,
-    ),
-    # [221].
-    ("TS32.299", "11.20.0", "TS29.329"): ReleaseStandIn(
-        "11.7.0",
-        "19.1.0",
-        "V11.7.0 tabulates MSISDN (701) with V19.1.0's type and flag rules; " + _REL11,
-    ),
-    # TS 29.210 V6.7.0 clause 2 [16].
-    ("TS29.210", "6.7.0", "TS29.229"): ReleaseStandIn(
-        "6.11.0",
-        "19.1.0",
-        "V6.11.0 table 6.3.1 tabulates Charging-Information (618) and its members"
-        " Primary-Event-Charging-Function-Name, Secondary-Event-Charging-Function-"
-        "Name, Primary-Charging-Collection-Function-Name and Secondary-Charging-"
-        "Collection-Function-Name (619-622) with the codes, types and flag rules"
-        " of V19.1.0's table 6.3.0.1, and clause 6.3.19 prints Charging-"
-        "Information's body as V19.1.0 does; " + _compared("2026-11-01", 6),
-    ),
-    # TS 29.234 V11.2.0 clause 2 [6].
-    ("TS29.234", "11.2.0", "TS29.229"): ReleaseStandIn(
-        "11.5.0",
-        "19.1.0",
-        "V11.5.0 table 6.3.1 tabulates the 14 AVPs TS 29.234 V11.2.0 re-uses from"
-        " it, and Deregistration-Reason's members Reason-Code and Reason-Info, with"
-        " the codes, types and flag rules of V19.1.0's table 6.3.0.1, and prints"
-        " Deregistration-Reason's body and Server-Assignment-Type's and"
-        " Reason-Code's values as V19.1.0 does. V19.1.0's SIP-Digest-Authenticate,"
-        " a member of SIP-Auth-Data-Item, adds Alternate-Digest-Algorithm and"
-        " Alternate-Digest-HA1 to V11.5.0's, which TS 29.234 does not reach: its"
-        " clause 10.1.4 prints a SIP-Auth-Data-Item body of its own, without that"
-        " member; " + _compared("2026-11-01", 11),
-    ),
-}
-
-
 @dataclass(frozen=True)
 class ReleaseFill:
     """Fields the version a citation means leaves unstated for named AVPs, which
@@ -318,31 +115,286 @@ class ReleaseFill:
     evidence: str
 
 
-# Non-specific citations whose meant version the corpus holds and answers with,
-# except for the fields named here, by (citing reference, citing version, cited
-# reference). A release stand-in replaces the citation's copy; this keeps it, for
-# code, vendor, clause and every other AVP, and takes only what no held version of
-# the citation's release states, one entry per citation. `Avp.completed_by` names
-# the later copy for each field and `Avp.across_releases` carries the rule, and the
-# linter's `cross-release-origin` note quotes the evidence. TS 29.061 V6.15.0 stays
-# pinned for TS 29.210: this does not make Release 19 answer for it.
-RELEASE_FILLS: dict[tuple[str, str, str], ReleaseFill] = {
-    # TS 29.210 V6.7.0 clause 2 [11], table 5.3.
-    ("TS29.210", "6.7.0", "TS29.061"): ReleaseFill(
-        "6.15.0",
-        "19.1.0",
-        ("3GPP-GPRS-Negotiated-QoS-Profile", "3GPP-SGSN-MCC-MNC"),
-        ("data_type",),
-        "V6.15.0 clause 16.4.7 numbers both as RADIUS sub-attributes, 5 and 18,"
-        " UTF-8 encoded, with no Diameter type, and table 10, its only AVP table,"
-        " is Gmb's; table 9a of V7.12.0, V11.12.0 and V19.1.0 alike types both"
-        " UTF8String, compared 2026-11-04 with the copies extracted from the 3GPP"
-        " archive. The type alone is taken: table 9a also puts M in Must not, and"
-        " TS 29.210 clause 5.3 says the M flag of a re-used VSA shall be set, so"
-        " the flags are TS 29.210's own (TS29.210.py#3gpp-sgsn-mcc-mnc-flags,"
-        " TS29.210.py#3gpp-gprs-negotiated-qos-profile-flags)",
-    ),
+# A corpus directory's description of itself, beside its `.dad` files: its
+# format and the facts resolution needs (`Rules`).
+CORPUS_FILE = "corpus.toml"
+
+# What `ReleaseFill.fields` may name: `model.DATA_TYPE` and `model.FLAG_RULES`.
+# A code is never taken, since the later copy's has to agree.
+FILLABLE = ("data_type", "flag_rules")
+
+# Each table of `CORPUS_FILE`, by its key, with the fields an entry of it
+# states: True for a required one. Every entry states its evidence.
+_TABLES: dict[str, dict[str, bool]] = {
+    "cited_as": {"cited": True, "document": True},
+    "cited_version": {"citing": True, "cited": True, "version": True},
+    "latest_edition": {"citing": True, "cited": True},
+    "final_version": {"document": True, "version": True},
+    "cited_revision": {"citing": True, "cited": True, "revision": True},
+    "stand_in": {"citing": True, "cited": True, "revision": True, "version": True},
+    "release_stand_in": {
+        "citing": True,
+        "citing_version": True,
+        "cited": True,
+        "meant": True,
+        "version": True,
+        "specific": False,
+    },
+    "release_fill": {
+        "citing": True,
+        "citing_version": True,
+        "cited": True,
+        "meant": True,
+        "version": True,
+        "names": True,
+        "fields": True,
+    },
 }
+# The fields that are not text.
+_LISTS = {"names", "fields"}
+_FLAGS = {"specific"}
+
+
+@dataclass(frozen=True)
+class Rules:
+    """A corpus's format and the facts resolving between its documents needs,
+    each entry citing its evidence: what its `CORPUS_FILE` states, by hand,
+    since `regenerate` writes `.dad` files only. Every key is a reference as a
+    re-used row's From cell spells it. The empty `Rules()` is a corpus without
+    the file: no format to hold it to, and no entries.
+
+    - `cited_as`: a document its citers number otherwise than its publisher,
+      the cited reference to the publisher's (ETSI-TS283.034 is ETSI's
+      ES 283 034), which answers a raw file's From cell.
+    - `cited_versions`: the version a specific reference names, by (citing,
+      cited) reference, read from the citing document's references clause.
+    - `latest_editions`: the evidence, by (citing, cited) reference, that a
+      document outside 3GPP means the latest edition by a non-specific one.
+    - `final_versions`: a document's final version, by reference.
+    - `cited_revisions`: the 3GPP2 revision a citation names, by (citing,
+      cited) reference; `stand_ins`, a held revision answering one of them.
+    - `release_stand_ins`: by (citing reference, citing version, cited
+      reference), a later release's copy answering for the version a
+      citation means; `release_fills`, keyed the same, one stating fields of
+      named AVPs the meant version leaves unstated.
+    """
+
+    path: Path | None = None
+    format: int | None = None
+    cited_as: Mapping[str, str] = field(default_factory=dict)
+    cited_versions: Mapping[tuple[str, str], str] = field(default_factory=dict)
+    latest_editions: Mapping[tuple[str, str], str] = field(default_factory=dict)
+    final_versions: Mapping[str, str] = field(default_factory=dict)
+    cited_revisions: Mapping[tuple[str, str], str] = field(default_factory=dict)
+    stand_ins: Mapping[tuple[str, str], StandIn] = field(default_factory=dict)
+    release_stand_ins: Mapping[tuple[str, str, str], ReleaseStandIn] = field(
+        default_factory=dict
+    )
+    release_fills: Mapping[tuple[str, str, str], ReleaseFill] = field(
+        default_factory=dict
+    )
+
+    @classmethod
+    def load(cls, path: Path) -> Rules:
+        """Read `path`, refusing a format this library does not read with
+        `CorpusFormatError`, before anything else of it, and with `CorpusError`
+        an unknown table or field, a missing or empty one, an entry stated
+        twice, and a stand-in for a revision no citation names. Whether the
+        documents it names are held is `check`'s."""
+        try:
+            data = tomllib.loads(path.read_text(encoding="utf-8"))
+        except tomllib.TOMLDecodeError as error:
+            raise CorpusError(f"{path}: {error}") from error
+        found = data.get("format")
+        if not isinstance(found, int) or isinstance(found, bool):
+            raise CorpusError(
+                f"{path}: states no corpus format: a top-level `format = 1`"
+            )
+        if found not in FORMATS:
+            raise CorpusFormatError(path, found)
+        unknown = set(data) - {"format", *_TABLES}
+        if unknown:
+            raise CorpusError(
+                f"{path}: {', '.join(sorted(unknown))}: not a table of a corpus"
+                f" file, which holds format and [[{']], [['.join(_TABLES)}]]"
+            )
+        tables = {name: _entries(path, data, name) for name in _TABLES}
+
+        def keyed[K, V](
+            name: str, key: Callable[[dict[str, Any]], K], value: Callable[..., V]
+        ) -> dict[K, V]:
+            out: dict[K, V] = {}
+            for entry in tables[name]:
+                each = key(entry)
+                if each in out:
+                    shown = (
+                        " ".join(map(str, each)) if isinstance(each, tuple) else each
+                    )
+                    raise CorpusError(f"{path}: [[{name}]] {shown} is stated twice")
+                out[each] = value(entry)
+            return out
+
+        def pair(entry: dict[str, Any]) -> tuple[str, str]:
+            return entry["citing"], entry["cited"]
+
+        def triple(entry: dict[str, Any]) -> tuple[str, str, str]:
+            return entry["citing"], entry["citing_version"], entry["cited"]
+
+        rules = cls(
+            path=path,
+            format=found,
+            cited_as=keyed("cited_as", lambda e: e["cited"], lambda e: e["document"]),
+            cited_versions=keyed("cited_version", pair, lambda e: e["version"]),
+            latest_editions=keyed("latest_edition", pair, lambda e: e["evidence"]),
+            final_versions=keyed(
+                "final_version", lambda e: e["document"], lambda e: e["version"]
+            ),
+            cited_revisions=keyed("cited_revision", pair, lambda e: e["revision"]),
+            stand_ins=keyed(
+                "stand_in",
+                pair,
+                lambda e: StandIn(e["revision"], e["version"], e["evidence"]),
+            ),
+            release_stand_ins=keyed(
+                "release_stand_in",
+                triple,
+                lambda e: ReleaseStandIn(
+                    e["meant"], e["version"], e["evidence"], e.get("specific", False)
+                ),
+            ),
+            release_fills=keyed(
+                "release_fill",
+                triple,
+                lambda e: ReleaseFill(
+                    e["meant"],
+                    e["version"],
+                    tuple(e["names"]),
+                    tuple(e["fields"]),
+                    e["evidence"],
+                ),
+            ),
+        )
+        for citing, cited in rules.stand_ins:
+            if (citing, cited) not in rules.cited_revisions:
+                raise CorpusError(
+                    f"{path}: [[stand_in]] {citing} {cited}: no [[cited_revision]]"
+                    " names the revision it stands in for"
+                )
+        return rules
+
+    def check(self, books: Corpus) -> None:
+        """Refuse with `CorpusError` an entry naming a document or a copy
+        `books` lacks, which would answer no citation: the rules describe the
+        corpus beside them, raw mirror alike."""
+
+        def held(
+            reference: str, version: str | None = None, letter: str | None = None
+        ) -> bool:
+            return any(
+                (version is None or entry.spec.version == version)
+                and (letter is None or revision(entry.spec) == letter)
+                for entry in books._candidates(reference)
+            )
+
+        def lacks(table: str, what: str) -> CorpusError:
+            return CorpusError(
+                f"{self.path}: [[{table}]] names {what}, which the corpus lacks"
+            )
+
+        for cited, document in self.cited_as.items():
+            if books._by_reference.get(cited):
+                raise CorpusError(
+                    f"{self.path}: [[cited_as]] {cited} is a document the corpus"
+                    " holds, not a misnaming"
+                )
+            if not held(document):
+                raise lacks("cited_as", document)
+        for (citing, cited), version in self.cited_versions.items():
+            if not held(citing):
+                raise lacks("cited_version", citing)
+            if not held(cited, version):
+                raise lacks("cited_version", f"{cited} V{version}")
+        for table, pairs in (
+            ("latest_edition", self.latest_editions),
+            ("cited_revision", self.cited_revisions),
+        ):
+            for citing, cited in pairs:
+                for reference in (citing, cited):
+                    if not held(reference):
+                        raise lacks(table, reference)
+        for document, version in self.final_versions.items():
+            if not held(document, version):
+                raise lacks("final_version", f"{document} V{version}")
+        for (_, cited), stand_in in self.stand_ins.items():
+            if not held(cited, stand_in.version, stand_in.revision):
+                raise lacks(
+                    "stand_in",
+                    f"{cited} revision {stand_in.revision} V{stand_in.version}",
+                )
+        for table, entries in (
+            ("release_stand_in", self.release_stand_ins),
+            ("release_fill", self.release_fills),
+        ):
+            for (citing, citing_version, cited), entry in entries.items():
+                if not held(citing, citing_version):
+                    raise lacks(table, f"{citing} V{citing_version}")
+                versions = [entry.version]
+                if isinstance(entry, ReleaseFill):
+                    versions.insert(0, entry.meant)
+                for version in versions:
+                    if not held(cited, version):
+                        raise lacks(table, f"{cited} V{version}")
+
+
+def _entries(path: Path, data: dict[str, Any], table: str) -> list[dict[str, Any]]:
+    """`table`'s entries in `data`, each checked against `_TABLES` and its
+    evidence collapsed (`seanchai.prose`)."""
+    entries = data.get(table, [])
+    if not isinstance(entries, list):
+        raise CorpusError(f"{path}: {table} must be [[{table}]] tables")
+    fields = {**_TABLES[table], "evidence": True}
+    required = {name for name, needed in fields.items() if needed}
+    checked = []
+    for entry in entries:
+        if (
+            not isinstance(entry, dict)
+            or not required <= set(entry)
+            or not set(entry) <= set(fields)
+        ):
+            raise CorpusError(
+                f"{path}: a [[{table}]] states {', '.join(sorted(required))}"
+                + (
+                    f" and may state {', '.join(sorted(set(fields) - required))}"
+                    if set(fields) - required
+                    else ""
+                )
+                + f"; this one is {entry!r}"
+            )
+        for name, value in entry.items():
+            if name in _FLAGS:
+                good = isinstance(value, bool)
+                kind = "true or false"
+            elif name in _LISTS:
+                good = (
+                    isinstance(value, list)
+                    and bool(value)
+                    and all(isinstance(v, str) and v.strip() for v in value)
+                    and len(set(value)) == len(value)
+                    and (name != "fields" or set(value) <= set(FILLABLE))
+                )
+                kind = "a non-empty list of distinct names" + (
+                    f" of {', '.join(FILLABLE)}" if name == "fields" else ""
+                )
+            else:
+                good = isinstance(value, str) and bool(value.strip())
+                kind = "non-empty text"
+            if not good:
+                raise CorpusError(
+                    f"{path}: a [[{table}]]'s {name} must be {kind}, not {value!r}"
+                )
+        checked.append({**entry, "evidence": collapse(entry["evidence"])})
+    return checked
+
 
 # 3GPP2's name for a rendering, "X.S0057-0_v2.0_091215.pdf": number, part
 # where the document has parts ("X.S0013-014-0_v1.0_080224.pdf"), revision,
@@ -353,10 +405,10 @@ TGPP2_RENDERING_RE = re.compile(
 )
 
 # `CrossRelease.rule`'s values: the drafting rule a resolution followed, or
-# `STAND_IN`, the table entry that let another revision (`STAND_INS`) or a
-# later release's copy (`RELEASE_STAND_INS`) answer, or `LATER_RELEASE`, the one
+# `STAND_IN`, the `Rules` entry that let another revision (`stand_in`) or a
+# later release's copy (`release_stand_in`) answer, or `LATER_RELEASE`, the one
 # that let a later release's copy state a field the answer leaves unstated
-# (`RELEASE_FILLS`).
+# (`release_fill`).
 SPECIFIC = "specific"
 NON_SPECIFIC = "non-specific"
 LATEST_EDITION = "latest-edition"
@@ -367,19 +419,19 @@ LATER_RELEASE = "later-release"
 @dataclass(frozen=True)
 class CrossRelease:
     """A citation resolved outside the citing document's release, and the
-    rule that allowed it: `SPECIFIC`, the version the citing document's
-    references name (`CITED_VERSIONS`), `NON_SPECIFIC`, the cited
-    document's final version (`FINAL_VERSIONS`), or `LATEST_EDITION`, the
-    newest copy, where the citing document's clause 2 says a non-specific
-    reference means it (`LATEST_EDITIONS`). A document outside 3GPP
-    has no release, so each of its 3GPP citations that resolves is one.
-    `STAND_IN` is a held copy answering a citation of one the corpus cannot
-    hold: a 3GPP2 revision for another, a revision being 3GPP2's release
-    (`STAND_INS`), or a later release's copy for the version a reference
-    means (`RELEASE_STAND_INS`, `meant` set). `LATER_RELEASE` is a later
-    release's copy stating a field of the version the reference means, which the
-    corpus holds and which answers for the rest (`RELEASE_FILLS`, `meant` set);
-    `Avp.completed_by` names the fields."""
+    rule that allowed it, by an entry of the corpus's `Rules`: `SPECIFIC`,
+    the version the citing document's references name (`cited_version`),
+    `NON_SPECIFIC`, the cited document's final version (`final_version`), or
+    `LATEST_EDITION`, the newest copy, where the citing document's clause 2
+    says a non-specific reference means it (`latest_edition`). A document
+    outside 3GPP has no release, so each of its 3GPP citations that resolves
+    is one. `STAND_IN` is a held copy answering a citation of one the corpus
+    cannot hold: a 3GPP2 revision for another, a revision being 3GPP2's
+    release (`stand_in`), or a later release's copy for the version a
+    reference means (`release_stand_in`, `meant` set). `LATER_RELEASE` is a
+    later release's copy stating a field of the version the reference means,
+    which the corpus holds and which answers for the rest (`release_fill`,
+    `meant` set); `Avp.completed_by` names the fields."""
 
     citing: str  # "TS32.299"
     cited: str  # "TS29.140"
@@ -389,9 +441,9 @@ class CrossRelease:
     # the reference names ("B") and the one resolved to ("0").
     cited_revision: str | None = None
     revision: str | None = None
-    # For a `RELEASE_STAND_INS` entry, the version the reference means
+    # For a `release_stand_in` entry, the version the reference means
     # ("11.12.0"), which the corpus does not hold, and whether the citing
-    # document names it. For a `RELEASE_FILLS` entry, the version it means, which
+    # document names it. For a `release_fill` entry, the version it means, which
     # the corpus holds.
     meant: str | None = None
     specific: bool = False
@@ -401,32 +453,32 @@ class CrossRelease:
             return (
                 f"{self.citing} cites {self.cited} non-specifically, meaning"
                 f" V{self.meant}, which leaves a field unstated: V{self.version}"
-                " states it (corpus.RELEASE_FILLS)"
+                " states it (corpus.toml, release_fill)"
             )
         if self.rule == STAND_IN and self.meant is not None:
             how = "naming" if self.specific else "non-specifically, meaning"
             return (
                 f"{self.citing} cites {self.cited} {how}"
                 f" V{self.meant}, which the corpus lacks: V{self.version} stands"
-                " in (corpus.RELEASE_STAND_INS)"
+                " in (corpus.toml, release_stand_in)"
             )
         if self.rule == STAND_IN:
             return (
                 f"{self.citing} cites {self.cited} revision {self.cited_revision},"
                 f" which the corpus lacks: revision {self.revision}"
-                f" V{self.version} stands in (corpus.STAND_INS)"
+                f" V{self.version} stands in (corpus.toml, stand_in)"
             )
         if self.rule == SPECIFIC:
-            why = f"the reference names V{self.version} (corpus.CITED_VERSIONS)"
+            why = f"the reference names V{self.version} (corpus.toml, cited_version)"
         elif self.rule == LATEST_EDITION:
             why = (
                 f"the reference is non-specific and V{self.version} is the latest"
-                " edition the corpus holds (corpus.LATEST_EDITIONS)"
+                " edition the corpus holds (corpus.toml, latest_edition)"
             )
         else:
             why = (
                 f"the reference is non-specific and V{self.version} is the"
-                " document's final version (corpus.FINAL_VERSIONS)"
+                " document's final version (corpus.toml, final_version)"
             )
         return f"{self.citing} cites {self.cited}: {why}"
 
@@ -594,7 +646,9 @@ class Corpus:
     A file named twice counts once. Two files claiming one reference, version
     and revision raise `CorpusError`. `version` is the installed package's
     version when `installed` loaded it, and None for any other corpus, which
-    has no one version to name.
+    has no one version to name. `rules` is what resolution reads, the empty
+    `Rules()` by default; given here, it is taken as it is, and only `load`
+    checks it against the files.
     """
 
     def __init__(
@@ -602,10 +656,12 @@ class Corpus:
         entries: Iterable[Entry],
         record: HoleRecord | None = None,
         version: str | None = None,
+        rules: Rules | None = None,
     ) -> None:
         # None for a corpus with no record: a partial or foreign one, or raw.
         self.record = record
         self.version = version
+        self.rules = Rules() if rules is None else rules
         self._by_reference: dict[str, list[Entry]] = {}
         # A file reached twice is one copy; two files claiming one copy would
         # leave `newest` and `resolve` to the order they were named in.
@@ -647,6 +703,14 @@ class Corpus:
         whole corpus it sits beside, and neither has a raw corpus, which the
         record does not describe. Two directories holding one are refused; one
         directory named twice is one directory.
+
+        `CORPUS_FILE` is found the same way and gives the corpus its `rules`,
+        raw corpus included, whose From cells need them most: it is read before
+        any `.dad` file, so a format this library does not read raises
+        `CorpusFormatError` rather than a parse error, and checked against the
+        files once they are read. A corpus without one, a file list or a
+        subdirectory, has the empty `Rules()`: no format to hold it to, and no
+        entries, so a citation they would answer resolves to nothing.
         """
         unique: dict[Path, Path] = {}
         for path in _as_paths(paths):
@@ -663,6 +727,16 @@ class Corpus:
             raise CorpusError(
                 f"two hole records in one corpus: {', '.join(map(str, records))}"
             )
+        described = [
+            path / CORPUS_FILE
+            for path in given
+            if path.is_dir() and (path / CORPUS_FILE).is_file()
+        ]
+        if len(described) > 1:
+            raise CorpusError(
+                f"two corpus files in one corpus: {', '.join(map(str, described))}"
+            )
+        rules = Rules.load(described[0]) if described else Rules()
         entries = []
         for path in cls._files(given):
             if path.name.endswith(".raw.dad") != raw:
@@ -672,12 +746,18 @@ class Corpus:
             except (OSError, ValueError) as error:  # DadParseError, pydantic alike
                 raise CorpusError(f"{path}: {error}") from error
             entries.append(Entry(path=path, spec=spec))
-        return cls(entries, HoleRecord.load(records[0]) if records else None)
+        books = cls(
+            entries, HoleRecord.load(records[0]) if records else None, rules=rules
+        )
+        rules.check(books)
+        return books
 
     @classmethod
     def installed(cls, *, raw: bool = False) -> Corpus:
         """Load the corpus the `seanchai-corpus` package installed, record and
-        all, as `load` loads a directory. `CorpusNotInstalledError` without it.
+        rules and all, as `load` loads a directory. `CorpusNotInstalledError`
+        without it, and `CorpusFormatError` for a corpus of a format this
+        library does not read.
         """
         package = _installed_package()
         books = cls.load([package.CORPUS_DIR], raw=raw)
@@ -715,8 +795,8 @@ class Corpus:
         ]
 
     def _candidates(self, reference: str) -> list[Entry]:
-        """The copies `reference` names, newest first, through `CITED_AS`."""
-        return self._by_reference.get(CITED_AS.get(reference, reference), [])
+        """The copies `reference` names, newest first, through `cited_as`."""
+        return self._by_reference.get(self.rules.cited_as.get(reference, reference), [])
 
     def resolve(self, reference: str, *, like: ast.Specification) -> Entry | None:
         """The file `reference` names, read as the specification `like` would
@@ -732,27 +812,27 @@ class Corpus:
         """The file `reference` names when `like` cites it, and, when that
         file is outside `like`'s release, how the citation got there.
 
-        In order: a reference its citers spell otherwise than the publisher
-        (`CITED_AS`) is the publisher's document. A citation naming a 3GPP2
-        revision (`CITED_REVISIONS`) is a copy of that revision, or failing
-        one, the copy an explicit `STAND_INS` entry names, or nothing. An
-        RFC, or another document outside 3GPP, is whatever copy the corpus
-        holds. A specific
-        reference (`CITED_VERSIONS`) is the version it names and no other.
-        A 3GPP document's non-specific one is the newest copy in its own
-        major version, and failing one, the cited document's final version
-        when that ended in an earlier release (`FINAL_VERSIONS`), or the
-        later release's copy a `RELEASE_STAND_INS` entry names; the corpus
-        may lack the version of a release the document still had.
-        A document outside 3GPP has no release, so its non-specific
-        reference is the newest copy where its references clause says so
-        (`LATEST_EDITIONS`), the final version, or nothing, and a version it
-        names that the corpus lacks is answered only by a `RELEASE_STAND_INS`
-        entry.
+        In order, by the corpus's `rules`: a reference its citers spell
+        otherwise than the publisher (`cited_as`) is the publisher's document.
+        A citation naming a 3GPP2 revision (`cited_revisions`) is a copy of
+        that revision, or failing one, the copy an explicit `stand_ins` entry
+        names, or nothing. An RFC, or another document outside 3GPP, is
+        whatever copy the corpus holds. A specific reference
+        (`cited_versions`) is the version it names and no other. A 3GPP
+        document's non-specific one is the newest copy in its own major
+        version, and failing one, the cited document's final version when
+        that ended in an earlier release (`final_versions`), or the later
+        release's copy a `release_stand_ins` entry names; the corpus may lack
+        the version of a release the document still had. A document outside
+        3GPP has no release, so its non-specific reference is the newest copy
+        where its references clause says so (`latest_editions`), the final
+        version, or nothing, and a version it names that the corpus lacks is
+        answered only by a `release_stand_ins` entry.
         """
         candidates = self._candidates(reference)
         citing = _reference(like)
-        cited_revision = CITED_REVISIONS.get((citing, reference))
+        rules = self.rules
+        cited_revision = rules.cited_revisions.get((citing, reference))
         if cited_revision is not None:
             return self._revision(citing, reference, cited_revision, candidates)
         if reference.startswith("RFC") or ast.is_external(reference):
@@ -764,7 +844,7 @@ class Corpus:
             return (candidates[0] if candidates else None), None
         version = like.version
         external = _external(like)
-        named = CITED_VERSIONS.get((citing, reference))
+        named = rules.cited_versions.get((citing, reference))
         if named is not None:
             entry = next((e for e in candidates if e.spec.version == named), None)
             if entry is None:
@@ -793,14 +873,14 @@ class Corpus:
                     and _major(entry.spec.version) == wanted
                 ):
                     return entry, None
-        if (citing, version or "", reference) in RELEASE_STAND_INS:
+        if (citing, version or "", reference) in rules.release_stand_ins:
             return self._release_stand_in(citing, version, reference, candidates)
-        if external and (citing, reference) in LATEST_EDITIONS and candidates:
+        if external and (citing, reference) in rules.latest_editions and candidates:
             newest = candidates[0]
             return newest, CrossRelease(
                 citing, reference, newest.spec.version or "", LATEST_EDITION
             )
-        final = FINAL_VERSIONS.get(reference)
+        final = rules.final_versions.get(reference)
         if final is None or (not external and _major(final) >= _major(version or "0")):
             # An ETSI version is no 3GPP release, so it says nothing about
             # which release a non-specific citation means; only a document
@@ -816,11 +896,11 @@ class Corpus:
     def release_fill(
         self, reference: str, *, like: ast.Specification
     ) -> tuple[Entry, ReleaseFill, CrossRelease] | None:
-        """The `RELEASE_FILLS` entry for `like` citing `reference`, with the later
+        """The `release_fills` entry for `like` citing `reference`, with the later
         copy it names and the crossing it reports, or None without an entry or
         that copy. `resolution` still answers the citation."""
         citing = _reference(like)
-        fill = RELEASE_FILLS.get((citing, like.version or "", reference))
+        fill = self.rules.release_fills.get((citing, like.version or "", reference))
         if fill is None:
             return None
         entry = next(
@@ -837,12 +917,11 @@ class Corpus:
             ),
         )
 
-    @staticmethod
     def _release_stand_in(
-        citing: str, version: str | None, reference: str, candidates: list[Entry]
+        self, citing: str, version: str | None, reference: str, candidates: list[Entry]
     ) -> tuple[Entry | None, CrossRelease | None]:
-        """The copy a `RELEASE_STAND_INS` entry names, or nothing."""
-        stand_in = RELEASE_STAND_INS.get((citing, version or "", reference))
+        """The copy a `release_stand_ins` entry names, or nothing."""
+        stand_in = self.rules.release_stand_ins.get((citing, version or "", reference))
         if stand_in is None:
             return None, None
         entry = next(
@@ -859,16 +938,15 @@ class Corpus:
             specific=stand_in.specific,
         )
 
-    @staticmethod
     def _revision(
-        citing: str, reference: str, cited: str, candidates: list[Entry]
+        self, citing: str, reference: str, cited: str, candidates: list[Entry]
     ) -> tuple[Entry | None, CrossRelease | None]:
         """A citation of revision `cited`: its newest copy, or the copy a
-        `STAND_INS` entry lets stand in for it, reported as such."""
+        `stand_ins` entry lets stand in for it, reported as such."""
         entry = next((e for e in candidates if revision(e.spec) == cited), None)
         if entry is not None:
             return entry, None
-        stand_in = STAND_INS.get((citing, reference))
+        stand_in = self.rules.stand_ins.get((citing, reference))
         if stand_in is None:
             return None, None
         entry = next(

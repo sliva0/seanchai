@@ -229,22 +229,26 @@ the drafting rules say which version it means
 reference resolves to the version it names; a non-specific reference to a
 document that ended before the citing release resolves to its final
 version; and an older copy whose release's last version the corpus lacks
-resolves to a later release's copy only where `corpus.RELEASE_STAND_INS`
-states the evidence that both define alike what the citing copy re-uses.
-Each such resolution is a `cross-release-origin` note, and so is each
-`corpus.RELEASE_FILLS` entry, where the citation's own copy answers and a later
-release's copy states named fields it leaves unstated for named AVPs.
+resolves to a later release's copy only where a `release_stand_in` entry of
+the corpus's `corpus.toml` states the evidence that both define alike what the
+citing copy re-uses. Each such resolution is a `cross-release-origin` note,
+naming the entry it rests on, `(corpus.toml, release_stand_in)`, and so is
+each `release_fill` entry, where the citation's own copy answers and a later
+release's copy states named fields it leaves unstated for named AVPs. The
+corpus being linted is the one whose rules apply: a directory holding its
+`corpus.toml`, which a file list or a subdirectory does not
+([consumers.md](consumers.md#resolution-across-releases)).
 
 RFCs resolve to whatever the corpus holds, and so does a document outside
 3GPP and IETF, whose versions are its publisher's. A 3GPP2 revision letter
 is 3GPP2's release: a citation naming one means that revision only, and a
-held copy of another answers it only where `corpus.STAND_INS` says so. TS
+held copy of another answers it only where a `stand_in` entry says so. TS
 29.212 cites X.S0057-B, which 3GPP2 does not publish, and revision 0 V2.0
 stands in. A reference the citing documents spell otherwise than the
-publisher resolves through a table in `corpus.py` with one entry per
-misnaming: 3GPP cites "ETSI TS 283 034", which ETSI publishes as ES 283
-034, so a raw file's cell still resolves, and corrections name ES 283 034 in the
-corrected files. Raw files are excluded from a corpus by default.
+publisher resolves through a `cited_as` entry, one per misnaming: 3GPP cites
+"ETSI TS 283 034", which ETSI publishes as ES 283 034, so a raw file's cell
+still resolves, and corrections name ES 283 034 in the corrected files. Raw
+files are excluded from a corpus by default.
 
 ## Vendor spaces
 

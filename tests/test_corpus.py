@@ -2,11 +2,12 @@
 
 import sys
 import tomllib
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 import seanchai_corpus
-from conftest import _CORPUS_DIR, _ROOT
+from conftest import _CORPUS_DIR, _ROOT, _RULES
 
 import seanchai
 from seanchai import corpus, model, oracle
@@ -34,6 +35,19 @@ def _spec(specification, version, *sections):
     )
 
 
+def _books(entries, rules=_RULES):
+    """A fixture corpus, resolving by the committed corpus's rules."""
+    return corpus.Corpus(entries, rules=rules)
+
+
+def _without(table, key):
+    """The committed rules lacking one entry of `table`."""
+    rules = _RULES
+    return replace(
+        rules, **{table: {k: v for k, v in getattr(rules, table).items() if k != key}}
+    )
+
+
 def _entry(specification, version):
     return corpus.Entry(
         path=Path(f"{specification}-{version}.dad"), spec=_spec(specification, version)
@@ -41,7 +55,7 @@ def _entry(specification, version):
 
 
 def test_the_newest_matching_version_wins():
-    books = corpus.Corpus(
+    books = _books(
         [
             _entry("3GPP TS 29.272", v)
             for v in ("17.9.0", "18.1.0", "18.10.0", "18.2.0", "19.0.0")
@@ -60,7 +74,7 @@ def test_nothing_resolves_across_a_major_version():
     """A release boundary is where 3GPP may change what an AVP means, so
     checking a Rel-18 document against a Rel-19 definition would report
     differences that are not errors."""
-    books = corpus.Corpus([_entry("3GPP TS 29.272", "19.0.0")])
+    books = _books([_entry("3GPP TS 29.272", "19.0.0")])
 
     assert books.resolve("TS29.272", like=_spec("3GPP TS 29.388", "18.1.0")) is None
 
@@ -68,7 +82,7 @@ def test_nothing_resolves_across_a_major_version():
 def test_an_external_origin_resolves_to_any_copy():
     """ETSI's versions are not 3GPP's releases: a hand-written V3.2.1 of
     ETSI TS 183 017 is what a Release 18 citation means."""
-    books = corpus.Corpus([_entry("ETSI TS 183 017", "3.2.1")])
+    books = _books([_entry("ETSI TS 183 017", "3.2.1")])
 
     resolved = books.resolve("ETSI-TS183.017", like=_spec("3GPP TS 29.214", "18.4.0"))
 
@@ -118,9 +132,9 @@ def _tgpp2_entry(revision, version="2.0"):
 
 
 def test_a_cited_3gpp2_revision_resolves_to_that_revision_and_no_other():
-    """TS 29.212 [24] names revision B of 3GPP2 X.S0057 (`CITED_REVISIONS`):
+    """TS 29.212 [24] names revision B of 3GPP2 X.S0057 (a `cited_revision`):
     a copy of revision B answers it, unreported, ahead of a newer one."""
-    books = corpus.Corpus([_tgpp2_entry("0"), _tgpp2_entry("B", "1.0")])
+    books = _books([_tgpp2_entry("0"), _tgpp2_entry("B", "1.0")])
 
     entry, across = books.resolution(
         "3GPP2-X.S0057", like=_spec("3GPP TS 29.212", "18.2.0")
@@ -130,12 +144,12 @@ def test_a_cited_3gpp2_revision_resolves_to_that_revision_and_no_other():
     assert across is None
 
 
-def test_another_revision_stands_in_only_by_its_table_entry(monkeypatch):
+def test_another_revision_stands_in_only_by_its_table_entry():
     """Revision 0 V2.0 answers the citation of revision B because
-    `STAND_INS` says so, and says so in turn; without the entry, the
+    a `stand_in` says so, and says so in turn; without the entry, the
     citation of an absent revision resolves to nothing, whatever the
     corpus holds of other revisions."""
-    books = corpus.Corpus([_tgpp2_entry("0")])
+    books = _books([_tgpp2_entry("0")])
     citing = _spec("3GPP TS 29.212", "18.2.0")
 
     entry, across = books.resolution("3GPP2-X.S0057", like=citing)
@@ -151,28 +165,28 @@ def test_another_revision_stands_in_only_by_its_table_entry(monkeypatch):
     )
     assert str(across) == (
         "TS29.212 cites 3GPP2-X.S0057 revision B, which the corpus lacks:"
-        " revision 0 V2.0 stands in (corpus.STAND_INS)"
+        " revision 0 V2.0 stands in (corpus.toml, stand_in)"
     )
     # Only the version the entry names stands in.
-    assert corpus.Corpus([_tgpp2_entry("0", "1.0")]).resolution(
+    assert _books([_tgpp2_entry("0", "1.0")]).resolution(
         "3GPP2-X.S0057", like=citing
     ) == (None, None)
 
-    monkeypatch.delitem(corpus.STAND_INS, ("TS29.212", "3GPP2-X.S0057"))
+    books.rules = _without("stand_ins", ("TS29.212", "3GPP2-X.S0057"))
     assert books.resolution("3GPP2-X.S0057", like=citing) == (None, None)
     # A citation naming no revision takes whatever copy the corpus holds.
     other = _spec("3GPP TS 29.999", "18.0.0")
     assert books.resolve("3GPP2-X.S0057", like=other) is not None
 
 
-def test_a_later_release_stands_in_only_by_its_table_entry(monkeypatch):
+def test_a_later_release_stands_in_only_by_its_table_entry():
     """TS 32.299 V11.20.0 cites TS 29.229 non-specifically, meaning V11.5.0,
     Release 11's last, which the corpus lacks; V19.1.0 answers by its
-    `RELEASE_STAND_INS` entry and says so. Another release's copy of the
+    `release_stand_in` entry and says so. Another release's copy of the
     citing document, or the held copy at another version, gets nothing,
     and without the entry nor does V11.20.0."""
     citing = _spec("3GPP TS 32.299", "11.20.0")
-    books = corpus.Corpus([_entry("3GPP TS 29.229", "19.1.0")])
+    books = _books([_entry("3GPP TS 29.229", "19.1.0")])
 
     entry, across = books.resolution("TS29.229", like=citing)
 
@@ -182,12 +196,12 @@ def test_a_later_release_stands_in_only_by_its_table_entry(monkeypatch):
     )
     assert str(across) == (
         "TS32.299 cites TS29.229 non-specifically, meaning V11.5.0, which the"
-        " corpus lacks: V19.1.0 stands in (corpus.RELEASE_STAND_INS)"
+        " corpus lacks: V19.1.0 stands in (corpus.toml, release_stand_in)"
     )
     # A Release 11 copy, were the corpus to hold one, is the answer itself.
-    held = corpus.Corpus([_entry("3GPP TS 29.229", v) for v in ("11.5.0", "19.1.0")])
+    held = _books([_entry("3GPP TS 29.229", v) for v in ("11.5.0", "19.1.0")])
     assert held.resolution("TS29.229", like=citing)[1] is None
-    assert corpus.Corpus([_entry("3GPP TS 29.229", "18.2.0")]).resolution(
+    assert _books([_entry("3GPP TS 29.229", "18.2.0")]).resolution(
         "TS29.229", like=citing
     ) == (None, None)
     assert books.resolution("TS29.229", like=_spec("3GPP TS 32.299", "11.19.0")) == (
@@ -195,17 +209,17 @@ def test_a_later_release_stands_in_only_by_its_table_entry(monkeypatch):
         None,
     )
 
-    monkeypatch.delitem(corpus.RELEASE_STAND_INS, ("TS32.299", "11.20.0", "TS29.229"))
+    books.rules = _without("release_stand_ins", ("TS32.299", "11.20.0", "TS29.229"))
     assert books.resolution("TS29.229", like=citing) == (None, None)
 
 
-def test_a_later_release_states_a_field_only_by_its_table_entry(monkeypatch):
+def test_a_later_release_states_a_field_only_by_its_table_entry():
     """TS 29.210 V6.7.0's TS 29.061 is V6.15.0, which still answers the citation;
-    its `RELEASE_FILLS` entry lets V19.1.0 state the named field and says so.
+    its `release_fill` entry lets V19.1.0 state the named field and says so.
     Another copy of the citing document, or a corpus lacking V19.1.0, gets
     nothing, and without the entry nor does V6.7.0."""
     citing = _spec("3GPP TS 29.210", "6.7.0")
-    books = corpus.Corpus([_entry("3GPP TS 29.061", v) for v in ("6.15.0", "19.1.0")])
+    books = _books([_entry("3GPP TS 29.061", v) for v in ("6.15.0", "19.1.0")])
 
     entry, across = books.resolution("TS29.061", like=citing)
     assert entry is not None and entry.spec.version == "6.15.0"
@@ -221,24 +235,24 @@ def test_a_later_release_states_a_field_only_by_its_table_entry(monkeypatch):
     )
     assert str(crossing) == (
         "TS29.210 cites TS29.061 non-specifically, meaning V6.15.0, which leaves a"
-        " field unstated: V19.1.0 states it (corpus.RELEASE_FILLS)"
+        " field unstated: V19.1.0 states it (corpus.toml, release_fill)"
     )
     assert books.release_fill("TS29.061", like=_spec("3GPP TS 29.210", "6.6.0")) is None
     assert (
-        corpus.Corpus([_entry("3GPP TS 29.061", "6.15.0")]).release_fill(
+        _books([_entry("3GPP TS 29.061", "6.15.0")]).release_fill(
             "TS29.061", like=citing
         )
         is None
     )
 
-    monkeypatch.delitem(corpus.RELEASE_FILLS, ("TS29.210", "6.7.0", "TS29.061"))
+    books.rules = _without("release_fills", ("TS29.210", "6.7.0", "TS29.061"))
     assert books.release_fill("TS29.061", like=citing) is None
 
 
 def test_a_misnamed_citation_resolves_to_the_publishers_document():
     """3GPP cites the e4 document as "ETSI TS 283 034"; ETSI publishes it
     as ES 283 034, which is the title its transcription carries."""
-    books = corpus.Corpus([_entry("ETSI ES 283 034", "2.2.0")])
+    books = _books([_entry("ETSI ES 283 034", "2.2.0")])
 
     resolved = books.resolve("ETSI-TS283.034", like=_spec("3GPP TS 29.212", "18.2.0"))
 
@@ -250,9 +264,7 @@ def test_a_misnamed_citation_resolves_to_the_publishers_document():
 def test_another_publishers_document_resolves_no_3gpp_citation_by_its_version():
     """ETSI TS 183 017 V3.2.1 cites TS 29.214 Release 7 (its clause 2); its
     own version names no 3GPP release, so a Release 18 copy is no answer."""
-    books = corpus.Corpus(
-        [_entry("3GPP TS 29.214", "18.4.0"), _entry("RFC 4005", None)]
-    )
+    books = _books([_entry("3GPP TS 29.214", "18.4.0"), _entry("RFC 4005", None)])
     citing = _spec("ETSI TS 183 017", "3.2.1")
 
     assert books.resolve("TS29.214", like=citing) is None
@@ -261,10 +273,10 @@ def test_another_publishers_document_resolves_no_3gpp_citation_by_its_version():
 
 def test_a_specific_reference_resolves_to_the_version_it_names_and_no_other():
     """TS 183 017 V3.2.1 clause 2 [19] names "3GPP TS 29.214 Release 7",
-    whose last version is V7.12.0 (`corpus.CITED_VERSIONS`): the Release 18
+    whose last version is V7.12.0 (a `cited_version`): the Release 18
     copy is no answer, nor is another Release 7 version."""
     citing = _spec("ETSI TS 183 017", "3.2.1")
-    books = corpus.Corpus(
+    books = _books(
         [_entry("3GPP TS 29.214", v) for v in ("7.11.0", "7.12.0", "18.4.0")]
     )
 
@@ -274,16 +286,16 @@ def test_a_specific_reference_resolves_to_the_version_it_names_and_no_other():
     assert across == corpus.CrossRelease(
         "ETSI-TS183.017", "TS29.214", "7.12.0", corpus.SPECIFIC
     )
-    lacking = corpus.Corpus([_entry("3GPP TS 29.214", "7.11.0")])
+    lacking = _books([_entry("3GPP TS 29.214", "7.11.0")])
     assert lacking.resolution("TS29.214", like=citing) == (None, None)
 
 
 def test_a_non_specific_reference_past_the_documents_end_means_its_final_version():
     """TS 32.299 V18.0.0 cites TS 29.140 non-specifically, which TR 21.801
     clause 6.6.6.5.3 reads as the latest version in Release 18; TS 29.140
-    ended at V7.0.0 (`corpus.FINAL_VERSIONS`), which the corpus reads it as,
+    ended at V7.0.0 (a `final_version`), which the corpus reads it as,
     and not an earlier Release 7 copy."""
-    books = corpus.Corpus([_entry("3GPP TS 29.140", v) for v in ("6.4.0", "7.0.0")])
+    books = _books([_entry("3GPP TS 29.140", v) for v in ("6.4.0", "7.0.0")])
 
     entry, across = books.resolution("TS29.140", like=_spec("3GPP TS 32.299", "18.0.0"))
 
@@ -291,7 +303,7 @@ def test_a_non_specific_reference_past_the_documents_end_means_its_final_version
     assert across is not None and across.rule == corpus.NON_SPECIFIC
     assert str(across) == (
         "TS32.299 cites TS29.140: the reference is non-specific and V7.0.0 is"
-        " the document's final version (corpus.FINAL_VERSIONS)"
+        " the document's final version (corpus.toml, final_version)"
     )
     # An ETSI document has no release; its non-specific reference is the
     # latest version, which for an ended document is the final one.
@@ -302,20 +314,20 @@ def test_the_final_version_answers_no_citation_from_its_own_release_or_earlier()
     """A Release 6 document citing TS 29.140 means Release 6's latest, which
     the corpus lacks; Release 7's own citation is today's rule, with no
     crossing; and a document with no final version is never read so."""
-    books = corpus.Corpus([_entry("3GPP TS 29.140", "7.0.0")])
+    books = _books([_entry("3GPP TS 29.140", "7.0.0")])
 
     assert books.resolve("TS29.140", like=_spec("3GPP TS 32.299", "6.12.0")) is None
     assert (
         books.resolution("TS29.140", like=_spec("3GPP TS 32.299", "7.9.0"))[1] is None
     )
-    alive = corpus.Corpus([_entry("3GPP TS 29.229", "18.1.0")])
+    alive = _books([_entry("3GPP TS 29.229", "18.1.0")])
     assert alive.resolve("TS29.229", like=_spec("ETSI ES 283 034", "2.2.0")) is None
 
 
 def test_a_clause_saying_the_latest_edition_applies_reads_the_newest_copy():
     """ES 283 035 clause 2.1: 'For non-specific references, the latest edition
     of the referenced document (including any amendments) applies'."""
-    books = corpus.Corpus(
+    books = _books(
         [_entry("3GPP TS 29.329", "18.0.0"), _entry("3GPP TS 29.329", "11.0.0")]
     )
 
@@ -338,7 +350,7 @@ def test_a_version_an_etsi_document_names_is_answered_by_its_stand_in_alone():
     pin, being no release's last, and V19.1.0 stands in on the entry's evidence."""
     citing = _spec("ETSI TS 183 033", "1.2.0")
 
-    entry, across = corpus.Corpus([_entry("3GPP TS 29.229", "19.1.0")]).resolution(
+    entry, across = _books([_entry("3GPP TS 29.229", "19.1.0")]).resolution(
         "TS29.229", like=citing
     )
 
@@ -353,7 +365,7 @@ def test_a_version_an_etsi_document_names_is_answered_by_its_stand_in_alone():
     )
     assert "naming V6.6.0" in str(across)
     # The evidence is about that copy, so no other answers.
-    assert corpus.Corpus([_entry("3GPP TS 29.229", "17.0.0")]).resolution(
+    assert _books([_entry("3GPP TS 29.229", "17.0.0")]).resolution(
         "TS29.229", like=citing
     ) == (None, None)
 
@@ -370,16 +382,16 @@ def test_the_tables_name_only_versions_the_catalog_pins_and_verifies():
 
     assert {
         (reference, version): "document"
-        for reference, version in corpus.FINAL_VERSIONS.items()
+        for reference, version in _RULES.final_versions.items()
     }.items() <= pinned.items()
-    for (_, cited), version in corpus.CITED_VERSIONS.items():
+    for (_, cited), version in _RULES.cited_versions.items():
         assert (cited, version) in pinned
 
 
 def test_an_absent_origin_resolves_to_nothing_rather_than_raising():
     """A partial corpus is the normal state, and callers report the gap as a
     note rather than failing the run."""
-    books = corpus.Corpus([])
+    books = _books([])
 
     assert books.resolve("TS29.272", like=_spec("3GPP TS 29.388", "18.1.0")) is None
     assert books.versions("TS29.272") == []
@@ -511,24 +523,24 @@ def test_a_file_reached_through_a_symlink_is_one_copy(tmp_path):
 def test_one_entry_given_twice_is_one_copy():
     entry = _entry("3GPP TS 29.229", "18.1.0")
 
-    assert len(corpus.Corpus([entry, entry])) == 1
+    assert len(_books([entry, entry])) == 1
 
 
 def test_3gpp2_revisions_of_one_version_are_two_documents():
     """A spec-ref keeps no revision letter, so version alone does not identify
     a 3GPP2 copy: X.S0057-0 and -B may both print V2.0."""
-    books = corpus.Corpus([_tgpp2_entry("0"), _tgpp2_entry("B")])
+    books = _books([_tgpp2_entry("0"), _tgpp2_entry("B")])
     assert len(books) == 2
 
     twin = corpus.Entry(Path("twin.dad"), _tgpp2_entry("0").spec)
     with pytest.raises(corpus.CorpusError, match=r"xs0057-0\.dad and twin\.dad"):
-        corpus.Corpus([_tgpp2_entry("0"), twin])
+        _books([_tgpp2_entry("0"), twin])
 
 
 def test_rfc_copies_conflict_without_a_version():
     rfc = _spec("RFC 6733", None)
     with pytest.raises(corpus.CorpusError, match="are both RFC6733; give one copy"):
-        corpus.Corpus([corpus.Entry(Path(n), rfc) for n in ("a.dad", "b.dad")])
+        _books([corpus.Entry(Path(n), rfc) for n in ("a.dad", "b.dad")])
 
 
 @pytest.mark.parametrize(
@@ -585,6 +597,271 @@ def test_a_hole_reads_its_reason_as_prose_and_the_rest_exactly(tmp_path):
     assert hole == corpus.KnownHole(
         "TS29.900", "Thing", ("data_type", "flag_rules"), "clause 6.3.1 states no type"
     )
+
+
+# A corpus file the fixture corpus of `_corpus_directory` satisfies: TS 29.900
+# V18.0.0 is all it holds.
+_DESCRIBED = '''format = 1
+
+[[final_version]]
+document = "TS29.900"
+version = "18.0.0"
+evidence = """
+    clause 1
+    says   so
+    """
+'''
+
+
+def _described(tmp_path, text: str = _DESCRIBED) -> Path:
+    directory = _corpus_directory(tmp_path)
+    (directory / corpus.CORPUS_FILE).write_text(text, encoding="utf-8")
+    return directory
+
+
+def test_a_corpus_directory_brings_its_rules_raw_mirror_included(tmp_path):
+    """Unlike the record of holes, the rules answer raw files too: a raw From
+    cell is what `cited_as` exists for."""
+    directory = _described(tmp_path)
+    (directory / "3gpp" / "29900.raw.dad").write_text(
+        formatter.format_spec(_spec("3GPP TS 29.900", "18.0.0")), encoding="utf-8"
+    )
+
+    for raw in (False, True):
+        rules = corpus.Corpus.load([directory], raw=raw).rules
+        assert rules == corpus.Rules(
+            path=directory / "corpus.toml",
+            format=1,
+            final_versions={"TS29.900": "18.0.0"},
+        )
+
+
+def test_a_corpus_without_its_file_has_empty_rules_and_no_format(tmp_path):
+    """No file, no marker: nothing to hold the corpus to, and nothing a
+    citation could resolve by. A subdirectory or a file list is partial, and
+    has none either."""
+    bare = _corpus_directory(tmp_path / "bare")
+    assert corpus.Corpus.load([bare]).rules == corpus.Rules()
+    assert corpus.Corpus.load([bare]).rules.format is None
+
+    directory = _described(tmp_path / "described")
+    assert corpus.Corpus.load([directory / "3gpp"]).rules == corpus.Rules()
+    assert corpus.Corpus.load([directory / "3gpp" / "29900.dad"]).rules == (
+        corpus.Rules()
+    )
+    assert corpus.Corpus([]).rules == corpus.Rules()
+
+
+def test_the_committed_corpus_states_the_format_this_library_reads():
+    assert corpus.Corpus.load([_CORPUS_DIR]).rules.format in corpus.FORMATS
+    assert _RULES.format == 1
+
+
+@pytest.mark.parametrize(
+    ("found", "upgrade"), [(2, "upgrade seanchai$"), (0, "upgrade seanchai-corpus$")]
+)
+def test_a_corpus_of_another_format_names_both_and_the_package_to_upgrade(
+    tmp_path, found, upgrade
+):
+    """The format is read before any `.dad` file, so a newer grammar the
+    library cannot parse is refused as a format, not as a parse error."""
+    directory = _described(
+        tmp_path, _DESCRIBED.replace("format = 1", f"format = {found}")
+    )
+    (directory / "newer.dad").write_text("; Specification: nonsense\n", "utf-8")
+
+    for raw in (False, True):
+        with pytest.raises(corpus.CorpusFormatError, match=upgrade) as raised:
+            corpus.Corpus.load([directory], raw=raw)
+        assert raised.value.found == found
+        assert raised.value.reads == corpus.FORMATS
+        message = str(raised.value)
+        assert f"the corpus is format {found}" in message
+        assert f"seanchai {seanchai.__version__} reads format 1" in message
+        assert str(directory / "corpus.toml") in message
+    assert issubclass(corpus.CorpusFormatError, corpus.CorpusError)
+
+
+def test_installed_refuses_a_corpus_of_a_format_the_library_does_not_read(
+    monkeypatch,
+):
+    monkeypatch.setattr(corpus, "FORMATS", (2,))
+
+    with pytest.raises(corpus.CorpusFormatError) as raised:
+        corpus.Corpus.installed()
+    assert str(raised.value).endswith(
+        "the corpus is format 1, and seanchai"
+        f" {seanchai.__version__} reads format 2: upgrade seanchai-corpus"
+    )
+    with pytest.raises(corpus.CorpusFormatError):
+        corpus.Corpus.installed(raw=True)
+
+
+def test_two_corpus_files_in_one_corpus_are_refused(tmp_path):
+    one = _described(tmp_path / "one")
+    two = _described(tmp_path / "two")
+
+    # Raw, which has no record of holes to be refused for first.
+    with pytest.raises(corpus.CorpusError, match="two corpus files"):
+        corpus.Corpus.load([one, two], raw=True)
+
+
+_ENTRY = """
+evidence = "clause 2"
+"""
+_F = "format = 1\n"
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        ("format = [\n", "corpus.toml"),
+        ('[[final_version]]\ndocument = "TS29.900"\n', "states no corpus format"),
+        ('format = "1"\n', "states no corpus format"),
+        ("format = true\n", "states no corpus format"),
+        ("format = 1\n[[stand_ins]]\n", "stand_ins: not a table"),
+        ("format = 1\nfinal_version = 1\n", r"must be \[\[final_version\]\]"),
+        ("format = 1\n[final_version]\n", r"must be \[\[final_version\]\]"),
+        ("format = 1\nfinal_version = [1]\n", "states document, evidence, version"),
+        (
+            _F + '[[final_version]]\ndocument = "TS29.900"\nversion = "18.0.0"\n',
+            "states document, evidence, version",
+        ),
+        (
+            _F + '[[final_version]]\ndocument = "TS29.900"\nversion = "18.0.0"\n'
+            'evidence = "x"\nreason = "y"\n',
+            "states document, evidence, version",
+        ),
+        (
+            _F + '[[final_version]]\ndocument = "TS29.900"\nversion = "18.0.0"\n'
+            'evidence = "  "\n',
+            "evidence must be non-empty text",
+        ),
+        (
+            _F + '[[final_version]]\ndocument = "TS29.900"\nversion = 18\n'
+            'evidence = "x"\n',
+            "version must be non-empty text",
+        ),
+        (
+            _F + '[[final_version]]\ndocument = "TS29.900"\nversion = "18.0.0"\n'
+            'evidence = "x"\n' * 2,
+            r"\[\[final_version\]\] TS29.900 is stated twice",
+        ),
+        (
+            _F + '[[stand_in]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
+            'revision = "0"\nversion = "18.0.0"\nevidence = "x"\n',
+            "no \\[\\[cited_revision\\]\\] names the revision",
+        ),
+        (
+            _F + '[[release_stand_in]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
+            'citing_version = "18.0.0"\nmeant = "17.0.0"\nversion = "18.0.0"\n'
+            'specific = "yes"\nevidence = "x"\n',
+            "specific must be true or false",
+        ),
+        (
+            _F + '[[release_fill]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
+            'citing_version = "18.0.0"\nmeant = "17.0.0"\nversion = "18.0.0"\n'
+            'names = ["Thing"]\nfields = ["code"]\nevidence = "x"\n',
+            "fields must be a non-empty list of distinct names of data_type",
+        ),
+        (
+            _F + '[[release_fill]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
+            'citing_version = "18.0.0"\nmeant = "17.0.0"\nversion = "18.0.0"\n'
+            'names = []\nfields = ["data_type"]\nevidence = "x"\n',
+            "names must be a non-empty list",
+        ),
+    ],
+    ids=[
+        "toml",
+        "no-format",
+        "format-text",
+        "format-bool",
+        "unknown-table",
+        "table-number",
+        "table-not-array",
+        "entry-number",
+        "no-evidence",
+        "unknown-field",
+        "blank-evidence",
+        "version-number",
+        "twice",
+        "stand-in-for-nothing",
+        "specific-text",
+        "fill-code",
+        "no-names",
+    ],
+)
+def test_a_malformed_corpus_file_fails_the_load(tmp_path, text, message):
+    directory = _described(tmp_path, text)
+
+    with pytest.raises(corpus.CorpusError, match=message):
+        corpus.Corpus.load([directory])
+
+
+@pytest.mark.parametrize(
+    ("entry", "message"),
+    [
+        (
+            '[[final_version]]\ndocument = "TS29.900"\nversion = "17.0.0"\n',
+            r"\[\[final_version\]\] names TS29.900 V17.0.0, which the corpus lacks",
+        ),
+        (
+            '[[cited_version]]\nciting = "TS29.999"\ncited = "TS29.900"\n'
+            'version = "18.0.0"\n',
+            "names TS29.999, which the corpus lacks",
+        ),
+        (
+            '[[cited_as]]\ncited = "TS29.900"\ndocument = "TS29.900"\n',
+            "TS29.900 is a document the corpus holds, not a misnaming",
+        ),
+        (
+            '[[cited_as]]\ncited = "ETSI-TS283.034"\ndocument = "ETSI-ES283.034"\n',
+            "names ETSI-ES283.034, which the corpus lacks",
+        ),
+        (
+            '[[latest_edition]]\nciting = "TS29.900"\ncited = "TS29.329"\n',
+            r"\[\[latest_edition\]\] names TS29.329",
+        ),
+        (
+            '[[release_stand_in]]\nciting = "TS29.900"\nciting_version = "18.0.0"\n'
+            'cited = "TS29.900"\nmeant = "17.0.0"\nversion = "19.0.0"\n',
+            r"\[\[release_stand_in\]\] names TS29.900 V19.0.0",
+        ),
+        (
+            '[[release_fill]]\nciting = "TS29.900"\nciting_version = "18.0.0"\n'
+            'cited = "TS29.900"\nmeant = "17.0.0"\nversion = "18.0.0"\n'
+            'names = ["Thing"]\nfields = ["data_type"]\n',
+            r"\[\[release_fill\]\] names TS29.900 V17.0.0",
+        ),
+        (
+            '[[cited_revision]]\nciting = "TS29.900"\ncited = "TS29.900"\n'
+            'revision = "B"\n[[stand_in]]\nciting = "TS29.900"\n'
+            'cited = "TS29.900"\nrevision = "0"\nversion = "18.0.0"\n',
+            r"\[\[stand_in\]\] names TS29.900 revision 0 V18.0.0",
+        ),
+    ],
+    ids=[
+        "final-version",
+        "citing",
+        "cited-as-held",
+        "cited-as-target",
+        "latest-edition",
+        "release-stand-in",
+        "release-fill-meant",
+        "stand-in-revision",
+    ],
+)
+def test_an_entry_naming_what_the_corpus_lacks_fails_the_load(tmp_path, entry, message):
+    """An entry answering no citation is stale, as a hole record's entry is:
+    the rules describe the corpus beside them."""
+    text = "format = 1\n" + entry.replace("\n[[", '\nevidence = "x"\n[[') + _ENTRY
+    directory = _described(tmp_path, text)
+
+    with pytest.raises(corpus.CorpusError, match=message):
+        corpus.Corpus.load([directory])
+    # Taken as given, the same rules are not checked.
+    rules = corpus.Rules.load(directory / corpus.CORPUS_FILE)
+    assert corpus.Corpus([], rules=rules).rules is rules
 
 
 def test_the_installed_corpus_is_the_workspace_copy_here():

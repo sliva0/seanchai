@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 import pytest
-from conftest import _CORPUS_DIR
+from conftest import _CORPUS_DIR, _RULES
 
 from seanchai import corpus, model
 from seanchai.dad import ast
@@ -44,8 +44,15 @@ def _model(*specs: ast.Specification) -> model.Model:
     """A fixture's model; these corpora have no record, and many hold a hole on
     purpose."""
     return model.Model.build(
-        corpus.Corpus(_entry(spec) for spec in specs), strict=False
+        corpus.Corpus((_entry(spec) for spec in specs), rules=_RULES), strict=False
     )
+
+
+def _without(rules: corpus.Rules, table: str, key: tuple) -> corpus.Rules:
+    """`rules` lacking one entry of `table`."""
+    kept = {k: v for k, v in getattr(rules, table).items() if k != key}
+    assert len(kept) < len(getattr(rules, table))
+    return dataclasses.replace(rules, **{table: kept})
 
 
 def _rule(name, presence=ast.Presence.OPTIONAL):
@@ -1799,12 +1806,13 @@ def test_3gpp2_bsid_resolves_to_the_3gpp2_transcription():
         )
 
 
-def test_without_its_stand_in_entry_3gpp2_bsid_is_a_hole(monkeypatch):
+def test_without_its_stand_in_entry_3gpp2_bsid_is_a_hole():
     """TS 29.212 [24] names revision B, which the corpus lacks; with no
-    `corpus.STAND_INS` entry letting revision 0 answer, the AVP resolves
-    nowhere, as it did before the transcription."""
-    monkeypatch.delitem(corpus.STAND_INS, ("TS29.212", "3GPP2-X.S0057"))
-    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]), strict=False)
+    `stand_in` entry letting revision 0 answer, the AVP resolves nowhere, as
+    it did before the transcription."""
+    books = corpus.Corpus.load([_CORPUS_DIR])
+    books.rules = _without(books.rules, "stand_ins", ("TS29.212", "3GPP2-X.S0057"))
+    built = model.Model.build(books, strict=False)
 
     assert built.resolve("TS29.212", "3GPP2-BSID") is None
     assert (
@@ -1978,11 +1986,14 @@ def test_a_later_release_types_what_the_citations_version_leaves_untyped(name, c
     assert ast.AvpFlag.MANDATORY in current.flag_rules.must_not
 
 
-def test_a_later_release_fills_nothing_without_its_table_entry(monkeypatch):
-    """Without its `RELEASE_FILLS` entry the name is the hole V6.15.0 leaves it,
+def test_a_later_release_fills_nothing_without_its_table_entry():
+    """Without its `release_fill` entry the name is the hole V6.15.0 leaves it,
     short of the type alone now TS 29.210's clause 5.3 states the flags."""
-    monkeypatch.delitem(corpus.RELEASE_FILLS, ("TS29.210", "6.7.0", "TS29.061"))
-    built = model.Model.build(corpus.Corpus.load([_CORPUS_DIR]), strict=False)
+    books = corpus.Corpus.load([_CORPUS_DIR])
+    books.rules = _without(
+        books.rules, "release_fills", ("TS29.210", "6.7.0", "TS29.061")
+    )
+    built = model.Model.build(books, strict=False)
 
     assert built.resolve("TS29.210", "3GPP-SGSN-MCC-MNC") is None
     hole = built.hole("TS29.210", "3GPP-SGSN-MCC-MNC")
@@ -2792,7 +2803,7 @@ class TestUndefinedNames:
             "3GPP TS 29.140", [_declared("Missing-Opt", "6.1.1")], version="7.0.0"
         )
         citing = _spec("3GPP TS 32.299", [_reused("Missing-Opt", "TS29.140")])
-        books = corpus.Corpus(_entry(spec) for spec in (origin, citing))
+        books = corpus.Corpus((_entry(spec) for spec in (origin, citing)), rules=_RULES)
         across = corpus.CrossRelease(
             "TS32.299", "TS29.140", "7.0.0", corpus.NON_SPECIFIC
         )
