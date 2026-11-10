@@ -6,7 +6,7 @@ rebuild succeeded anyway, every declaration fired exactly as declared — the
 patches' and quirks' must-fire accounting and the corrections' `expect`
 checks all passed — so the range is merely stale, and widening it to the
 parsed version is a mechanical edit (TS 29.272's 18.6.0 → 18.7.0 upgrade
-widened twenty-odd by hand). `seanchai regenerate --expand-ranges` makes it.
+widened twenty-odd by hand). `seanchai corpus regenerate --expand-ranges` makes it.
 
 Both rewrites replace the text of one bound or one literal and nothing else:
 no re-serialisation, so comments, block order and layout stay byte for byte.

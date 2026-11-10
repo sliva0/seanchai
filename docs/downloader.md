@@ -15,12 +15,12 @@ In `specs.toml`, `title` and `reason` are prose, read with their whitespace
 collapsed; every other field is exact.
 
 ```sh
-uv run seanchai download --list     # show the catalog
-uv run seanchai download            # fetch it, ETSI PDFs included
-uv run seanchai download --no-convert   # without LibreOffice
-uv run seanchai download --spec TS29.272 --version 18.6.0   # one older version
-uv run seanchai download --only wireshark --only rfc   # the small sources alone
-uv run seanchai download --only transcribed   # the transcriptions' PDFs alone
+uv run seanchai corpus download --list          # show the catalog
+uv run seanchai corpus download                 # fetch it, ETSI PDFs included
+uv run seanchai corpus download --no-convert    # without LibreOffice
+uv run seanchai corpus download --spec TS29.272 --version 18.6.0  # one older
+uv run seanchai corpus download --only wireshark --only rfc  # the small ones
+uv run seanchai corpus download --only transcribed  # the transcriptions' PDFs
 ```
 
 ## Layout

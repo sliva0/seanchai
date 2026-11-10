@@ -102,6 +102,11 @@ seanchai commands --application 16777216 --json
 seanchai dictionary -o cx.json --application 16777216
 ```
 
+With `--json`, `show` and `commands` print the shapes `dictionary` writes, all
+of them models of `seanchai.dictionary` under one `format_version`.
+
+### The dictionary
+
 `seanchai dictionary` writes one JSON file to generate from, compact with sorted
 keys: the same corpus and options give the same bytes. `--document REF` and
 `--application ID` narrow it, each repeatable. `--application` leaves what its
@@ -112,7 +117,7 @@ always written, null or empty where it says nothing, and `seanchai.dictionary`
 holds the shape as pydantic models.
 
 ```text
-format_version     4, changes when a reader would have to
+format_version     1, changes when a reader would have to
 seanchai_version, corpus_version, undefined_policy
 documents, application_ids    what was selected; no ids is every application
 applications[]     reference, application_id, clause, name, stated_in
@@ -157,6 +162,55 @@ value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
   the bits of a `Feature-List` it never names otherwise. A row of `rows[]` holds
   `name`, `value`, a result code's own `section`, and a feature's `mark`, the
   M/O column.
+
+### One AVP
+
+`seanchai show NAME --json` prints one AVP as the dictionary has it, indented,
+in a `dictionary.Lookup`:
+
+```text
+format_version, seanchai_version, corpus_version, undefined_policy
+avp                the id of the reading asked for
+avps[]             that reading first; then the identity's other readings, by
+                   id; then every AVP their bodies name, at any depth
+holes[]            what their bodies name and the corpus cannot complete
+value_tables[]     those of the identity's readings, each its avp_id
+```
+
+Every entry is the dictionary's `avps[]`, `holes[]` or `value_tables[]` entry,
+so a member names an `avps[].id` or `holes[].id` of the same output, as it does
+in the file. Ids are numbered as the dictionary numbers them, over what this
+output holds: `defining` marks the defining document's reading, which has no
+`#`, and `avp` says which reading was asked for, the defining one unless
+`--document` named another. A `#2` here need not be the dictionary's `#2`. The
+AVPs a body names are there whole, which for a body as deep as TS 32.299's
+`Service-Information` is most of a charging dictionary, so that the output
+reads on its own.
+
+```json
+{
+  "format_version": 1,
+  "corpus_version": "2026.11.2",
+  "undefined_policy": "hole",
+  "avp": "0:110#2",
+  "avps": [
+    {"id": "0:110#2", "defining": false, "name": "Digest-Qop",
+     "read_through": "TS29.229", "...": "..."},
+    {"id": "0:110", "defining": true, "name": "Digest-Qop",
+     "read_through": "RFC4590", "...": "..."}
+  ],
+  "holes": [],
+  "value_tables": [],
+  "...": "..."
+}
+```
+
+### Commands
+
+`seanchai commands --json` prints a `dictionary.Listing`: `format_version`,
+`seanchai_version`, `corpus_version`, and `applications[]` as the dictionary
+writes them, each command without its body (`members`, `dropped`, `walk`,
+`answer_message`), since a list of commands holds no AVPs for them to name.
 
 ## Installing the corpus
 

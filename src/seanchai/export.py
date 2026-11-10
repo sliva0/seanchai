@@ -461,7 +461,7 @@ class _Declarations:
         if found is not None and found.version != spec.version:
             raise CorpusError(
                 f"{path} records {document_id(entry)} at V{found.version}, the"
-                f" file is V{spec.version}: run `seanchai regenerate`"
+                f" file is V{spec.version}: run `seanchai corpus regenerate`"
             )
         return found
 
@@ -483,7 +483,7 @@ def _check_citations(
     if unknown:
         raise CorpusError(
             f"{entry.path} cites {', '.join(unknown)}, which the corrections"
-            " record does not hold: run `seanchai regenerate`"
+            " record does not hold: run `seanchai corpus regenerate`"
         )
 
 
@@ -864,7 +864,7 @@ def _source_kind(entry: Entry, link: str) -> Literal["etsi-pdf", "rfc-text", "ot
 
 
 class _Sources:
-    """The source documents an export copies in, from a `seanchai download`."""
+    """The source documents an export copies in, from a `seanchai corpus download`."""
 
     def __init__(
         self, output: Path, specifications: Path | None, include_pdfs: bool
@@ -872,7 +872,7 @@ class _Sources:
         if include_pdfs and (specifications is None or not specifications.is_dir()):
             raise CorpusError(
                 "including PDFs needs a specifications directory: run"
-                " `seanchai download --only 3gpp --only transcribed`"
+                " `seanchai corpus download --only 3gpp --only transcribed`"
             )
         self._output = output
         self._specifications = specifications
@@ -904,9 +904,9 @@ class _Sources:
             candidates = self._pdfs.get(unquote(urlparse(link).path.rsplit("/", 1)[-1]))
             if not candidates:
                 remedy = (
-                    "run `seanchai download --only transcribed`"
+                    "run `seanchai corpus download --only transcribed`"
                     if spec.transcribed
-                    else "run `seanchai download --only 3gpp`"
+                    else "run `seanchai corpus download --only 3gpp`"
                 )
                 raise CorpusError(
                     f"{identifier}: no downloaded PDF matches {link}: {remedy}"
@@ -950,28 +950,10 @@ def _corpus_version(books: Corpus) -> str | None:
     return None
 
 
-# The keys of `index.json` in the versions from before it said `generator`.
-_UNMARKED_INDEX_KEYS = {
-    1: {"schema_version", "mode", "documents", "search", "mentions"},
-    2: {"schema_version", "seanchai_version", "corpus_version", "mode", "documents"},
-    3: {"schema_version", "seanchai_version", "corpus_version", "mode", "documents"},
-}
-
-
 def _is_export_index(index: Any) -> bool:
-    """Whether a parsed `index.json` is an export's: it says so, or it has exactly
-    the shape of a version from before it did."""
-    if not isinstance(index, dict):
-        return False
-    if "generator" in index:
-        return index["generator"] == GENERATOR
-    version = index.get("schema_version")
-    return (
-        type(version) is int
-        and index.keys() == _UNMARKED_INDEX_KEYS.get(version)
-        and index["mode"] in ("public", "self-hosted")
-        and isinstance(index["documents"], list)
-    )
+    """Whether a parsed `index.json` is an export's, of any version: it says
+    so in `generator`."""
+    return isinstance(index, dict) and index.get("generator") == GENERATOR
 
 
 def _refuse_foreign(output: Path) -> None:
@@ -1062,7 +1044,7 @@ def export_corpus(
 
     `dictionary` fills in Wireshark's names. `corrections_directory` reads the
     corrections from modules there, which executes them, instead of from the
-    corpus's record. `specifications` is a `seanchai download`, from which RFC
+    corpus's record. `specifications` is a `seanchai corpus download`, from which RFC
     texts are copied, and with `include_pdfs` the source PDFs, for a self-hosted
     site. Nothing of `output` changes until the export has succeeded. A directory
     holding anything but a previous export is refused, and so is an empty corpus.

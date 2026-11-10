@@ -1888,7 +1888,7 @@ def test_onem2m_ts_0004s_annex_a_headings_number_as_its_pdf_prints_them():
     """ETSI TS 118 104 V2.7.1 (the same Release 2 line, PDF only) and
     TS-0004 V5.2.0's Word file print annex A's numbers as text; V2.35.0's
     exist only in its list numbering."""
-    assert _ONEM2M_SOURCE.is_file(), "run `seanchai download`"
+    assert _ONEM2M_SOURCE.is_file(), "run `seanchai corpus download`"
     document = docx.Document(str(_ONEM2M_SOURCE))
     replay = tgpp_docx._ListNumbering(
         document.part.numbering_part.element, document.styles.element

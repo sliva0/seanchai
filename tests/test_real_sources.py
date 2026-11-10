@@ -1,6 +1,6 @@
 """Regression pin of the whole pipeline against the real source documents.
 
-`seanchai regenerate` is run over the downloaded corpus into a scratch
+`seanchai corpus regenerate` is run over the downloaded corpus into a scratch
 directory, and every committed pair must come out unchanged. This is the test
 that catches an extractor or correction change which is fine on the synthetic
 fixture and wrong on the real documents, and it uses the same code path a
@@ -10,7 +10,7 @@ A missing manifest is a failure, not a skip: a suite that silently skipped its
 strongest check would look green for the wrong reason. Run
 `pytest -m "not sources"` to leave these out deliberately. For the same
 reason a committed pair whose legacy `.doc` the manifest holds unconverted
-(`seanchai download --no-convert`) fails, rather than pass as skipped.
+(`seanchai corpus download --no-convert`) fails, rather than pass as skipped.
 """
 
 from pathlib import Path
@@ -38,7 +38,7 @@ _COPIES = sorted(
 @pytest.fixture(scope="module")
 def report(tmp_path_factory):
     assert _MANIFEST.is_file(), (
-        f"{_MANIFEST} not present — run `seanchai download`"
+        f"{_MANIFEST} not present — run `seanchai corpus download`"
         ' or deselect with `pytest -m "not sources"`'
     )
     return regenerate.regenerate(
@@ -64,7 +64,7 @@ def regenerated(report):
 
 
 _RECONVERT = (
-    "the manifest holds the legacy .doc unconverted: run `seanchai download`"
+    "the manifest holds the legacy .doc unconverted: run `seanchai corpus download`"
     " with LibreOffice installed, without --no-convert"
 )
 
@@ -91,7 +91,7 @@ def test_the_real_sources_still_produce_the_committed_output(
     if outcome.status == "new":
         pytest.fail(
             f"the manifest holds {outcome.version}, the corpus"
-            f" {outcome.replaced_version}: run `seanchai regenerate` and commit"
+            f" {outcome.replaced_version}: run `seanchai corpus regenerate` and commit"
         )
     if outcome.status == "changed":
         diff = " and ".join(
@@ -102,7 +102,7 @@ def test_the_real_sources_still_produce_the_committed_output(
             and committed.read_text(encoding="utf-8")
             != path.read_text(encoding="utf-8")
         )
-        pytest.fail(f"{diff}: run `seanchai regenerate` and review the diff")
+        pytest.fail(f"{diff}: run `seanchai corpus regenerate` and review the diff")
     assert outcome.status == "unchanged"
 
 

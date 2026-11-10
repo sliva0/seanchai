@@ -168,7 +168,7 @@ deliberate; where no clause says so, the note stays open. A misprinted clause
 citation (`section-mismatch`) is accepted too, its reason citing the real
 clause, since the corpus records what is printed. An acceptance
 changes no data: `apply` skips it, and a module declaring only acceptances
-is one `seanchai correct` refuses. `regenerate --expand-ranges` widens an
+is one `seanchai corpus correct` refuses. `regenerate --expand-ranges` widens an
 acceptance's range only while it still matches its finding. The linter
 checks it against a corpus ([linter.md](linter.md#acceptances)).
 
@@ -185,19 +185,19 @@ matches fails the default build.
 ## The corrections record
 
 A module is Python, and nothing that reads a corpus should have to run it, or
-can: no wheel ships `edits/`. So `seanchai regenerate` also writes the corpus's
-`corrections.json`, next to `holes.toml`, from the modules and the corrected
-files. Per document file stem it holds the document's reference and version,
-each declaration by citation with its kind and reason, what each acceptance
-accepts (rule, message, and the tree paths its target reaches), and the name
-corrections, in declaration order, that `seanchai export` links a raw file's
-spellings through. A document whose module declares nothing for its release has
-no entry. It is generated: sorted JSON with one field per line, so a changed
-reason is a one-line diff.
+can: no wheel ships `edits/`. So `seanchai corpus regenerate` also writes the
+corpus's `corrections.json`, next to `holes.toml`, from the modules and the
+corrected files. Per document file stem it holds the document's reference and
+version, each declaration by citation with its kind and reason, what each
+acceptance accepts (rule, message, and the tree paths its target reaches), and
+the name corrections, in declaration order, that `seanchai export` links a raw
+file's spellings through. A document whose module declares nothing for its
+release has no entry. It is generated: sorted JSON with one field per line, so a
+changed reason is a one-line diff.
 
 `tests/test_correction_record.py` fails when the committed record is not what
-the modules say, so a changed correction needs `seanchai regenerate`, as a
-changed `.dad` file does. A run where anything failed leaves the record alone.
+the modules say, so a changed correction needs `seanchai corpus regenerate`, as
+a changed `.dad` file does. A run where anything failed leaves the record alone.
 
 ## Output
 
@@ -243,12 +243,11 @@ them merged with the notes.
 
 ## CLI
 
-`seanchai regenerate` rebuilds the corpus and its record with
+`seanchai corpus regenerate` rebuilds the corpus and its record with
 `edits/corrections`, and `seanchai lint` reads its acceptances from there. For
-one file:
-`seanchai extract … --corrections DIR` and `seanchai correct RAW.dad
---corrections DIR -o OUT.dad`, where the directory is explicit because
-loading it executes Python. `extract` tolerates a document with no module;
-`correct` requires a module with at least one correction, since a mistyped
-path producing an uncorrected file would look like success. The module name
-is derived from `; Specification:` through `ast.spec_ref`.
+one file: `seanchai corpus extract … --corrections DIR` and `seanchai corpus
+correct RAW.dad --corrections DIR -o OUT.dad`, where the directory is explicit
+because loading it executes Python. `extract` tolerates a document with no
+module; `correct` requires a module with at least one correction, since a
+mistyped path producing an uncorrected file would look like success. The module
+name is derived from `; Specification:` through `ast.spec_ref`.

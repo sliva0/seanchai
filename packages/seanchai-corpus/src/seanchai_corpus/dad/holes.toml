@@ -1,8 +1,8 @@
 # The corpus's record of known holes: every name `model.Model.build` cannot
 # complete and the corpus cannot complete either, with the evidence. Maintained
-# by hand; `seanchai regenerate` does not write it. A default build refuses a
-# hole this does not list and an entry naming no hole, and so does `seanchai
-# lint --corpus dad`, so working a hole off means removing its entry
+# by hand; `seanchai corpus regenerate` does not write it. A default build
+# refuses a hole this does not list and an entry naming no hole, and so does
+# `seanchai lint --corpus dad`, so working a hole off means removing its entry
 # (docs/consumers.md#known-holes).
 #
 # `document` is `Hole.document`, the version only for an older copy; `missing`

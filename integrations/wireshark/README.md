@@ -155,6 +155,6 @@ field (`diameter.<name>`), which each rename's description says.
 
 ## Checking
 
-`seanchai crosscheck --dictionary <checkout>/resources/protocols/diameter dad`
-over the corpus no longer reports a patched AVP. The accepted renames hold
+`seanchai corpus crosscheck --dictionary <checkout>/resources/protocols/diameter
+dad` over the corpus no longer reports a patched AVP. The accepted renames hold
 against the patched dictionary too.

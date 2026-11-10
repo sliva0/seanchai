@@ -10,8 +10,6 @@ regenerates cosmetic lines such as table column headers).
 All nodes are frozen pydantic models: extractor output and hand patches are
 exactly the kind of data worth validating eagerly, and `model_dump_json()`
 gives downstream generator/validator scripts a serialized form for free.
-
-Not-yet-final corners of the format are marked with `TODO(format)`.
 """
 
 from __future__ import annotations

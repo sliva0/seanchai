@@ -12,7 +12,7 @@ import seanchai
 from seanchai.cli import main
 from seanchai.corpus import Corpus
 from seanchai.dad import ast
-from seanchai.dictionary import FORMAT_VERSION, Dictionary, build
+from seanchai.dictionary import FORMAT_VERSION, Dictionary, Listing, Lookup, build
 from seanchai.model import Model, UndefinedPolicy
 
 
@@ -60,30 +60,72 @@ def test_show_takes_an_identity_and_gives_what_the_name_gives():
     assert _run("show", "0:263").stdout == _run("show", "Session-Id").stdout
 
 
-def test_show_as_json_is_to_dict_and_the_other_readings():
-    built = Model.installed()
-    avp = built.definition("Session-Id")
-    assert avp is not None
+def _shown(*arguments: str) -> dict:
+    result = _run("show", *arguments, "--json")
+    assert result.exit_code == 0, result.output
+    data = json.loads(result.stdout)
+    Lookup.model_validate(data)
+    return data
 
-    printed = json.loads(_run("show", "Session-Id", "--json").stdout)
 
-    others = printed.pop("other_readings")
-    assert printed == avp.to_dict()
-    assert [each["read_through"] for each in others] == ["OMA-DDS-Charging_Data"]
+def _asked(data: dict) -> dict:
+    (asked,) = (avp for avp in data["avps"] if avp["id"] == data["avp"])
+    return asked
+
+
+def test_show_as_json_is_the_dictionarys_reading_and_the_other_readings(tmp_path):
+    data = _shown("Session-Id")
+
+    assert data["format_version"] == FORMAT_VERSION
+    assert data["seanchai_version"] == seanchai.__version__
+    assert data["corpus_version"] == Corpus.installed().version
+    assert data["undefined_policy"] == "hole"
+    assert data["avp"] == "0:263"
+    first, *others = data["avps"]
+    assert first["id"] == data["avp"]
+    assert first["defining"]
+    assert [(each["id"], each["read_through"]) for each in others] == [
+        ("0:263#2", "OMA-DDS-Charging_Data")
+    ]
+    # The defining reading as the whole dictionary writes it.
+    dictionary = {avp["id"]: avp for avp in _dictionary(tmp_path)["avps"]}
+    assert dictionary["0:263"] == first
+
+
+def test_show_as_json_holds_everything_a_body_names():
+    data = _shown("Server-Capabilities")
+
+    assert _asked(data)["kind"] == "grouped"
+    assert data["avps"][0]["id"] == data["avp"]
+    names = {avp["name"] for avp in data["avps"]}
+    assert {"Mandatory-Capability", "Optional-Capability", "Server-Name"} <= names
+    _assert_resolves(data)
+
+    held = _shown("SIP-Auth-Data-Item", "--document", "TS29.229")
+    _assert_resolves(held)
+
+    tables = _shown("ULR-Flags")["value_tables"]
+    assert [(table["kind"], table["table"]) for table in tables] == [
+        ("bits", "7.3.7/1")
+    ]
+    assert tables[0]["avp_id"] == "10415:1405"
 
 
 def test_show_reads_it_as_a_document_does_and_at_an_older_copy():
-    defining = json.loads(_run("show", "Digest-Qop", "--json").stdout)
-    cited = json.loads(
-        _run("show", "Digest-Qop", "--document", "TS 29.229", "--json").stdout
-    )
+    defining = _asked(_shown("Digest-Qop"))
+    cited_data = _shown("Digest-Qop", "--document", "TS 29.229")
+    cited = _asked(cited_data)
     assert defining["flag_rules"]["must"] == []
+    assert defining["defining"]
     assert cited["flag_rules"]["must"] == ["M"]
+    assert not cited["defining"]
+    assert cited_data["avps"][0] == cited
+    assert [avp["read_through"] for avp in cited_data["avps"]] == [
+        "TS29.229",
+        "RFC4590",
+    ]
 
-    by_identity = json.loads(
-        _run("show", "0:110", "--document", "TS29.229", "--json").stdout
-    )
-    assert by_identity == cited
+    assert _shown("0:110", "--document", "TS29.229") == cited_data
 
     older = _run("show", "VAS-ID", "--document", "TS32.299", "--version", "11.20.0")
     assert older.exit_code == 0, older.output
@@ -135,13 +177,45 @@ def test_commands_lists_one_document():
     assert rows[1].split()[:2] == ["300", "answer"]
 
 
+def _listed(*arguments: str) -> list[dict]:
+    """The commands `seanchai commands --json` lists, each with its
+    application's `reference`."""
+    result = _run("commands", *arguments, "--json")
+    assert result.exit_code == 0, result.output
+    data = json.loads(result.stdout)
+    Listing.model_validate(data)
+    assert data["format_version"] == FORMAT_VERSION
+    return [
+        {**command, "reference": application["reference"]}
+        for application in data["applications"]
+        for command in application["commands"]
+    ]
+
+
 def test_commands_shows_the_effective_application_id():
     """TS 29.212 prints its CCR with a bare header: the id on the wire comes
     from the Application Scope covering the clause."""
-    rows = json.loads(_run("commands", "TS29.212", "--json").stdout)
+    rows = _listed("TS29.212")
 
     assert {row["application_id"] for row in rows} >= {16777238}
-    assert all(set(row) >= {"command_code", "kind", "section"} for row in rows)
+    assert all(set(row) >= {"command_code", "is_request", "section"} for row in rows)
+
+
+def test_commands_as_json_are_the_dictionarys_without_their_bodies(tmp_path):
+    listed = json.loads(_run("commands", "TS29.229", "--json").stdout)
+    written = _dictionary(tmp_path, "--document", "TS29.229")
+
+    bodies = {"members", "dropped", "walk", "answer_message"}
+    assert listed["applications"] == [
+        {
+            **application,
+            "commands": [
+                {key: value for key, value in command.items() if key not in bodies}
+                for command in application["commands"]
+            ],
+        }
+        for application in written["applications"]
+    ]
 
 
 def test_commands_takes_an_application_across_documents():
@@ -152,14 +226,14 @@ def test_commands_takes_an_application_across_documents():
         for message in application.messages
     ]
 
-    rows = json.loads(_run("commands", "--application", "16777216", "--json").stdout)
+    rows = _listed("--application", "16777216")
 
     assert [row["name"] for row in rows] == expected
     assert {row["application_id"] for row in rows} == {16777216}
 
 
 def test_commands_with_nothing_named_lists_the_corpus():
-    rows = json.loads(_run("commands", "--json").stdout)
+    rows = _listed()
 
     assert len(rows) == len(Model.installed().messages())
 
@@ -186,7 +260,7 @@ def _dictionary(tmp_path, *arguments: str) -> dict:
 
 def _bodies(data: dict):
     """Every member the file holds, with what it sits in."""
-    for application in data["applications"]:
+    for application in data.get("applications", ()):
         for command in application["commands"]:
             for member in (*command["members"], *command["dropped"]):
                 yield command["name"], member
@@ -213,7 +287,7 @@ def _assert_resolves(data: dict) -> None:
         else:
             assert kind == "wildcard", (owner, member)
             assert member["name"] == "AVP", (owner, member)
-    for application in data["applications"]:
+    for application in data.get("applications", ()):
         for command in application["commands"]:
             assert set(command["walk"]) <= ids, command["name"]
 

@@ -369,6 +369,7 @@ def test_crosscheck_counts_accepted_renames_apart(tmp_path):
         'wireshark = "Vendor-AVP"\nreason = "kept apart"\n'
     )
     arguments = [
+        "corpus",
         "crosscheck",
         "--dictionary",
         str(tmp_path / "dictionary"),
@@ -428,7 +429,14 @@ def test_crosscheck_reads_the_newest_copy_of_each_document_only(tmp_path):
     )
 
     result = CliRunner().invoke(
-        main, ["crosscheck", "--dictionary", str(tmp_path / "dictionary"), str(corpus)]
+        main,
+        [
+            "corpus",
+            "crosscheck",
+            "--dictionary",
+            str(tmp_path / "dictionary"),
+            str(corpus),
+        ],
     )
 
     assert result.exit_code == 0, result.output
@@ -441,6 +449,7 @@ def test_crosscheck_reads_the_newest_copy_of_each_document_only(tmp_path):
     twice = CliRunner().invoke(
         main,
         [
+            "corpus",
             "crosscheck",
             "--dictionary",
             str(tmp_path / "dictionary"),
@@ -478,7 +487,7 @@ def test_crosscheck_without_sources_checks_the_installed_corpus(tmp_path, monkey
     monkeypatch.setattr(corpus, "installed_directory", lambda: installed)
 
     result = CliRunner().invoke(
-        main, ["crosscheck", "--dictionary", str(tmp_path / "dictionary")]
+        main, ["corpus", "crosscheck", "--dictionary", str(tmp_path / "dictionary")]
     )
 
     assert result.exit_code == 0, result.output
@@ -495,7 +504,7 @@ def test_crosscheck_without_sources_or_the_package_names_it(tmp_path, monkeypatc
     monkeypatch.setitem(sys.modules, "seanchai_corpus", None)
 
     result = CliRunner().invoke(
-        main, ["crosscheck", "--dictionary", str(tmp_path / "dictionary")]
+        main, ["corpus", "crosscheck", "--dictionary", str(tmp_path / "dictionary")]
     )
 
     assert result.exit_code == 1

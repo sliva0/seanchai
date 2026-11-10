@@ -13,5 +13,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Downloaded specification sources (recreate with `seanchai download`)
+# Downloaded specification sources (recreate with `seanchai corpus download`)
 specifications/

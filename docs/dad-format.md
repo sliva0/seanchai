@@ -260,7 +260,7 @@ dad/
   raw/           unedited extractor output, mirroring the trees above
   corpus.toml    the corpus's format and resolution rules, hand-maintained
   holes.toml     the record of known holes, hand-maintained
-  corrections.json  each correction's reason, written by `seanchai regenerate`
+  corrections.json  each correction's reason, written by `seanchai corpus regenerate`
 ```
 
 The corrected trees are what tools and consumers read. `raw/` mirrors them
@@ -286,6 +286,6 @@ Each document is committed twice:
 
 Every line a correction touched carries a `;;` note citing the declaration
 by module and id. A document with no corrections still gets both files,
-byte-identical. Nothing here is edited by hand: `seanchai regenerate`
+byte-identical. Nothing here is edited by hand: `seanchai corpus regenerate`
 rebuilds the whole tree
 ([development.md](development.md#rebuilding-the-corpus)).

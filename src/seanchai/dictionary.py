@@ -1,5 +1,6 @@
 """`seanchai dictionary`: the resolved corpus as one JSON file, for a Diameter
-stack that is not Python to generate its own dictionary from.
+stack that is not Python to generate its own dictionary from; and the JSON
+`seanchai show` and `seanchai commands` print, in the same shapes.
 
 The shape is these models; docs/consumers.md#without-python says how to read it.
 Every field is always written, null or empty where it says nothing. Commands
@@ -20,7 +21,7 @@ from .export import cross_release_entry, hole_entry
 from .export_schema import CrossRelease, FlagRules, UndefinedBlock
 
 # Changes when a reader would have to.
-FORMAT_VERSION = 4
+FORMAT_VERSION = 1
 
 
 class _Model(pydantic.BaseModel):
@@ -94,12 +95,10 @@ class Avp(_Model):
     values_source: str | None
 
 
-class Command(_Model):
-    """One command as `defined_in` prints it. `application_id` is the id on the
-    wire and `header_application_id` the one its header prints. `members` is its
-    body; `walk` is `Message.walk`, each AVP at any depth, by `id`. An answer's
-    `answer_message` names the `answer_messages` entry it takes with the E bit
-    set, null for a request and where no document gives one."""
+class CommandHeading(_Model):
+    """One command as `defined_in` prints it, without its body: what `seanchai
+    commands` lists. `application_id` is the id on the wire and
+    `header_application_id` the one its header prints."""
 
     name: str
     abbreviation: str
@@ -110,6 +109,14 @@ class Command(_Model):
     header_application_id: int | None
     defined_in: str
     section: str
+
+
+class Command(CommandHeading):
+    """One command with its body. `members` is the body; `walk` is
+    `Message.walk`, each AVP at any depth, by `id`. An answer's `answer_message`
+    names the `answer_messages` entry it takes with the E bit set, null for a
+    request and where no document gives one."""
+
     members: tuple[Member, ...]
     dropped: tuple[Member, ...]
     walk: tuple[str, ...]
@@ -130,16 +137,26 @@ class AnswerMessage(_Model):
     walk: tuple[str, ...]
 
 
-class Application(_Model):
-    """A document's commands for one application id on one interface
-    (`model.Application`)."""
-
+class _ApplicationFields(_Model):
     reference: str
     application_id: int | None
     clause: str
     name: str | None
     stated_in: str | None
+
+
+class Application(_ApplicationFields):
+    """A document's commands for one application id on one interface
+    (`model.Application`)."""
+
     commands: tuple[Command, ...]
+
+
+class ListedApplication(_ApplicationFields):
+    """An `Application` whose commands are headings, as `seanchai commands`
+    lists them."""
+
+    commands: tuple[CommandHeading, ...]
 
 
 class Hole(export_schema.Hole):
@@ -178,16 +195,21 @@ class ValueTable(_Model):
     rows: tuple[ValueRow, ...]
 
 
-class Dictionary(_Model):
+class _Versions(_Model):
+    """What produced a document: this format, the library and the corpus."""
+
+    format_version: Annotated[int, pydantic.Field(ge=FORMAT_VERSION, le=FORMAT_VERSION)]
+    seanchai_version: str
+    corpus_version: str | None
+
+
+class Dictionary(_Versions):
     """The file. `documents` and `application_ids` are what was selected, the
     second empty for every application of those documents. `undefined_policy` is
     what became of the names an `Undefined AVP` block declares. `value_tables` are
     the selected documents'; with `application_ids`, those of the documents
     holding one. `answer_messages` are those the selected answers take."""
 
-    format_version: Annotated[int, pydantic.Field(ge=FORMAT_VERSION, le=FORMAT_VERSION)]
-    seanchai_version: str
-    corpus_version: str | None
     undefined_policy: model.UndefinedPolicy
     documents: tuple[str, ...]
     application_ids: tuple[int, ...]
@@ -196,6 +218,27 @@ class Dictionary(_Model):
     avps: tuple[Avp, ...]
     holes: tuple[Hole, ...]
     value_tables: tuple[ValueTable, ...]
+
+
+class Lookup(_Versions):
+    """What `seanchai show --json` prints: one AVP, in the dictionary's shapes.
+    `avp` is the `id` of the reading asked for, the first of `avps`; the
+    identity's other readings follow it, then every AVP their bodies name at
+    any depth, so that each member's `avp` and `hole` name an entry here, as in
+    the dictionary. `value_tables` are those of the identity's readings."""
+
+    undefined_policy: model.UndefinedPolicy
+    avp: str
+    avps: tuple[Avp, ...]
+    holes: tuple[Hole, ...]
+    value_tables: tuple[ValueTable, ...]
+
+
+class Listing(_Versions):
+    """What `seanchai commands --json` prints: the applications selected, each
+    command a heading, without the bodies the dictionary gives."""
+
+    applications: tuple[ListedApplication, ...]
 
 
 def _hole_id(hole: model.Hole) -> str:
@@ -351,15 +394,7 @@ class _Builder:
         self, message: model.Message, answer: model.AnswerMessage | None
     ) -> Command:
         return Command(
-            name=message.name,
-            abbreviation=message.abbreviation,
-            command_code=message.command_code,
-            is_request=message.is_request,
-            flags=tuple(sorted(message.flags)),
-            application_id=message.application_id,
-            header_application_id=message.header_application_id,
-            defined_in=message.defined_in,
-            section=message.section,
+            **dict(_heading(message)),
             members=self.members(message.avps),
             dropped=self.members(message.dropped),
             walk=self.walk(message.walk()),
@@ -367,6 +402,20 @@ class _Builder:
             if message.is_request or answer is None
             else _answer_id(answer),
         )
+
+
+def _heading(message: model.Message) -> CommandHeading:
+    return CommandHeading(
+        name=message.name,
+        abbreviation=message.abbreviation,
+        command_code=message.command_code,
+        is_request=message.is_request,
+        flags=tuple(sorted(message.flags)),
+        application_id=message.application_id,
+        header_application_id=message.header_application_id,
+        defined_in=message.defined_in,
+        section=message.section,
+    )
 
 
 def _value_table(
@@ -451,15 +500,7 @@ def build(
             for hole in built.holes(reference):
                 builder.holes.setdefault(_hole_id(hole), hole)
     builder.number()
-    avps = sorted(
-        builder.readings,
-        key=lambda avp: (
-            avp.vendor_id,
-            avp.code,
-            # `10415:601#10` after `10415:601#9`, and no `#` first.
-            int(builder.ids[avp].partition("#")[2] or 1),
-        ),
-    )
+    avps = _in_order(builder)
     holding = (
         sorted({application.reference for application in applications})
         if application_ids
@@ -488,16 +529,83 @@ def build(
         ),
         answer_messages=tuple(builder.answer(taken[each]) for each in sorted(taken)),
         avps=tuple(builder.avp(avp) for avp in avps),
-        holes=tuple(
-            Hole.model_validate(
-                {**hole_entry(hole).model_dump(mode="json"), "id": identifier}
-            )
-            for identifier, hole in sorted(builder.holes.items())
-        ),
+        holes=_holes(builder),
         value_tables=tuple(
             _value_table(built, builder, table)
             for reference in holding
             for table in built.value_tables(reference)
+        ),
+    )
+
+
+def _in_order(builder: _Builder) -> list[model.Avp]:
+    """The readings by identity, each identity's by `id`."""
+    return sorted(
+        builder.readings,
+        key=lambda avp: (
+            avp.vendor_id,
+            avp.code,
+            # `10415:601#10` after `10415:601#9`, and no `#` first.
+            int(builder.ids[avp].partition("#")[2] or 1),
+        ),
+    )
+
+
+def _holes(builder: _Builder) -> tuple[Hole, ...]:
+    return tuple(
+        Hole.model_validate(
+            {**hole_entry(hole).model_dump(mode="json"), "id": identifier}
+        )
+        for identifier, hole in sorted(builder.holes.items())
+    )
+
+
+def lookup(
+    built: model.Model, avp: model.Avp, *, corpus_version: str | None = None
+) -> Lookup:
+    """`avp`, one of `built`'s readings, with the other readings of its
+    identity and everything their bodies name at any depth."""
+    builder = _Builder(built)
+    others = [each for each in built.identified(*avp.identity) if each != avp]
+    builder.hold((avp, *others))
+    builder.number()
+    readings = [avp, *sorted(others, key=lambda each: builder.ids[each])]
+    named = [each for each in _in_order(builder) if each.identity != avp.identity]
+    tables = {
+        _value_table(built, builder, table): None
+        for reading in readings
+        for table in reading.value_tables
+    }
+    return Lookup(
+        format_version=FORMAT_VERSION,
+        seanchai_version=__version__,
+        corpus_version=corpus_version,
+        undefined_policy=built.undefined_policy,
+        avp=builder.ids[avp],
+        avps=tuple(builder.avp(each) for each in (*readings, *named)),
+        holes=_holes(builder),
+        value_tables=tuple(tables),
+    )
+
+
+def listing(
+    applications: Iterable[model.Application], *, corpus_version: str | None = None
+) -> Listing:
+    """`applications`, each command a heading."""
+    return Listing(
+        format_version=FORMAT_VERSION,
+        seanchai_version=__version__,
+        corpus_version=corpus_version,
+        applications=tuple(
+            ListedApplication(
+                reference=application.reference,
+                application_id=application.application_id,
+                clause=application.clause,
+                name=application.name,
+                stated_in=application.stated_in,
+                commands=tuple(_heading(each) for each in application.messages),
+            )
+            for application in applications
         ),
     )
 

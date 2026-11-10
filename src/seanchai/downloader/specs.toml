@@ -1,12 +1,13 @@
 # Curated corpus of Diameter-related specifications.
-# Read by `seanchai download`; add entries here, not in the downloader code.
+# Read by `seanchai corpus download`; add entries here, not in the downloader
+# code.
 
 # The 3GPP list is deliberately broader than a title search. Several protocols
 # (for example SLg, EPS AAA, ProSe, V2X, and MB2) are Diameter applications
 # without saying "Diameter" in their specification titles.
 #
 # An `out_of_scope` entry is fetched and never extracted: it says why, and
-# `seanchai regenerate --add` refuses the document in those words.
+# `seanchai corpus regenerate --add` refuses the document in those words.
 
 [[tgpp]]
 number = "29.061"
@@ -522,8 +523,9 @@ reason = """
 
 # Documents no extractor reads, copied by hand into `edits/transcriptions/`.
 # Each is here for its title, as the document's cover prints it, and for the
-# PDF it was copied from, the file's `; Transcribed:`, which `seanchai download`
-# fetches for the self-hosted export; `regenerate` reads only the transcription.
+# PDF it was copied from, the file's `; Transcribed:`, which `seanchai corpus
+# download` fetches for the self-hosted export; `regenerate` reads only the
+# transcription.
 [[transcribed]]
 reference = "OMA-DDS-Charging_Data"
 title = "Charging Data"

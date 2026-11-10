@@ -20,7 +20,7 @@ prefers the newest version with a published ETSI PDF, and a corpus that lags
 it is exactly what this module exists to expose, so a superseded pair is
 replaced and reported rather than kept.
 
-The library returns a `Report`; `seanchai regenerate` prints it.
+The library returns a `Report`; `seanchai corpus regenerate` prints it.
 """
 
 import json
@@ -71,7 +71,7 @@ class Report:
     # corrections directory, or when a failure left the corpus part rebuilt.
     record: Path | None = None
     # The sources a partial download left out that this run needed, as
-    # `seanchai download --only` names them.
+    # `seanchai corpus download --only` names them.
     missing_sources: tuple[str, ...] = ()
 
     @property
@@ -125,7 +125,7 @@ def regenerate(
     is what the sources produce without touching it.
 
     `only` rebuilds those specifications instead of every committed one. With
-    the manifest of an older version (`seanchai download --spec --version`)
+    the manifest of an older version (`seanchai corpus download --spec --version`)
     and a scratch `output`, that re-extracts the older version for a
     raw-vs-raw diff against the corpus.
 
@@ -204,7 +204,7 @@ def regenerate(
 
 
 class ManifestError(SeanchaiError):
-    """A `manifest.json` that is missing or is not what `seanchai download`
+    """A `manifest.json` that is missing or is not what `seanchai corpus download`
     writes."""
 
 
@@ -291,7 +291,8 @@ def _one(
         return Outcome(
             reference,
             "not-in-manifest",
-            error=f"{name} is not downloaded (`seanchai download --only {name}`);"
+            error=f"{name} is not downloaded"
+            f" (`seanchai corpus download --only {name}`);"
             " the committed files were left alone",
         )
     if source is None:
@@ -309,7 +310,7 @@ def _one(
             reference,
             "not-converted",
             error=f"{source.document.name} was downloaded without conversion"
-            " (`seanchai download --no-convert`); the committed files were"
+            " (`seanchai corpus download --no-convert`); the committed files were"
             " left alone",
         )
     outcome = Outcome(reference, "unchanged")
@@ -481,12 +482,12 @@ def _sources(manifest_path: Path) -> dict[_Key, _Source]:
         # JSON that is no manifest fails wherever the walk first trips on it.
         raise ManifestError(
             f"{manifest_path} is no download manifest"
-            f" ({type(error).__name__}: {error}); run `seanchai download`"
+            f" ({type(error).__name__}: {error}); run `seanchai corpus download`"
         ) from error
 
 
 def _source_of(reference: str) -> str:
-    """The `seanchai download --only` source a document comes from. The hand
+    """The `seanchai corpus download --only` source a document comes from. The hand
     transcriptions come from none, and are always listed."""
     if reference.startswith("RFC"):
         return "rfc"
@@ -688,7 +689,7 @@ def _read(path: Path) -> str | None:
 
 
 def describe(outcome: Outcome) -> str:
-    """One line per specification, as `seanchai regenerate` prints it."""
+    """One line per specification, as `seanchai corpus regenerate` prints it."""
     version = f" {outcome.version}" if outcome.version else ""
     if outcome.status == "new" and outcome.replaced:
         return (

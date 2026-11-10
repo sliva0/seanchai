@@ -200,7 +200,7 @@ def test_a_stale_record_is_refused(tmp_path):
     source = _CORPUS_DIR / "rfc" / "rfc4004.dad"
     (corpus / "rfc" / source.name).write_bytes(source.read_bytes())
     (corpus / "corrections.json").write_text('{"documents": {}}', "utf-8")
-    with pytest.raises(CorpusError, match="seanchai regenerate"):
+    with pytest.raises(CorpusError, match="seanchai corpus regenerate"):
         export_corpus(Corpus.load([corpus]), tmp_path / "out")
 
 
@@ -827,7 +827,9 @@ def test_a_transcriptions_missing_pdf_names_its_download(tmp_path):
     empty = tmp_path / "specifications"
     empty.mkdir()
 
-    with pytest.raises(CorpusError, match=r"seanchai download --only transcribed"):
+    with pytest.raises(
+        CorpusError, match=r"seanchai corpus download --only transcribed"
+    ):
         export_corpus(
             Corpus.load([_ETSI]),
             tmp_path / "out",
@@ -1090,30 +1092,23 @@ def test_a_directory_holding_anything_else_is_refused(tmp_path, name):
     assert _tree(output) == before
 
 
-_V2_INDEX = {
-    "schema_version": 2,
-    "seanchai_version": None,
-    "corpus_version": None,
-    "mode": "public",
-    "documents": [],
-}
-
-
 @pytest.mark.parametrize(
     "index",
     [
         {"schema_version": None},
-        {"schema_version": 3},
+        {"schema_version": 1},
         {"name": "my-package", "version": "1.0.0"},
-        ["schema_version"],
-        {"generator": "someone-else", "schema_version": 4},
-        {**_V2_INDEX, "schema_version": 4},
-        {**_V2_INDEX, "schema_version": None},
-        {**_V2_INDEX, "schema_version": True},
-        {**_V2_INDEX, "schema_version": [2]},
-        {**_V2_INDEX, "mode": "other"},
-        {**_V2_INDEX, "documents": {}},
-        {**_V2_INDEX, "extra": 1},
+        ["generator"],
+        "seanchai",
+        {"generator": "someone-else", "schema_version": 1},
+        # Shaped as an export's but not saying so.
+        {
+            "schema_version": 1,
+            "seanchai_version": None,
+            "corpus_version": None,
+            "mode": "public",
+            "documents": [],
+        },
     ],
 )
 def test_an_unrelated_index_is_refused(tmp_path, index):
@@ -1130,16 +1125,9 @@ def test_an_unrelated_index_is_refused(tmp_path, index):
 @pytest.mark.parametrize(
     "index",
     [
-        {
-            "schema_version": 1,
-            "mode": "self-hosted",
-            "documents": [],
-            "search": [],
-            "mentions": [],
-        },
-        _V2_INDEX,
-        {**_V2_INDEX, "schema_version": 3},
+        {"schema_version": 1, "generator": "seanchai", "mode": "public"},
         {"schema_version": 99, "generator": "seanchai"},
+        {"generator": "seanchai"},
     ],
 )
 def test_an_export_of_any_version_is_replaced(tmp_path, index):

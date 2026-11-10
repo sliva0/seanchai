@@ -2,7 +2,7 @@
 
 A corrected `.dad` file cites `TS29.272.py#area-scope-code`, and what that
 citation means lives in `edits/corrections/`: executable Python, which no wheel
-ships and nothing should have to run to read a corpus. So `seanchai regenerate`
+ships and nothing should have to run to read a corpus. So `seanchai corpus regenerate`
 writes what a reader needs from those modules into the corpus, next to
 `holes.toml`: `corrections.json`, per document, each declaration's kind and
 reason, what an acceptance accepts, and the renames a raw file's spellings link
@@ -27,7 +27,7 @@ from .dad import ast, corrections
 
 RECORD_NAME = "corrections.json"
 
-_NOTE = "Written by `seanchai regenerate` from edits/corrections; do not edit."
+_NOTE = "Written by `seanchai corpus regenerate` from edits/corrections; do not edit."
 
 
 class _Model(pydantic.BaseModel):

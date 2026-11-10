@@ -91,17 +91,25 @@ class _Command(click.Command):
 
 
 class _Group(click.Group):
-    """The `seanchai` group: its help through `_HelpFormatter`, its failures
-    through `_show_error`, and nobody else's.
+    """`seanchai` and its `corpus` group: their help through `_HelpFormatter`,
+    their failures through `_show_error`, and nobody else's.
 
     Click renders a failure with the exception's own `show`, offering no hook
     for it, and only in standalone mode. So this runs Click's non-standalone
     `main`, which raises the failure instead, and does what standalone mode
-    would around it.
+    would around it. A subgroup is dispatched by its parent's `main`, so only
+    the outermost one's runs.
+
+    Help lists the commands in the order they are defined, which is by
+    audience, not alphabetically.
     """
 
     context_class = _Context
     command_class = _Command
+    group_class = type
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        return list(self.commands)
 
     def main(self, *args: Any, standalone_mode: bool = True, **extra: Any) -> Any:
         if not standalone_mode:
@@ -180,7 +188,7 @@ def _need_dictionary(directory: Path) -> None:
     if not (directory / "dictionary.xml").is_file():
         raise click.ClickException(
             f"{directory} holds no Wireshark dictionary: run"
-            " `seanchai download --only wireshark`"
+            " `seanchai corpus download --only wireshark`"
         )
 
 
@@ -196,109 +204,12 @@ def _require_extract() -> None:
 @click.group(cls=_Group, context_settings={"show_default": True})
 @click.version_option(package_name="seanchai")
 def main() -> None:
-    """Seanchaí: Diameter specifications as reviewable `.dad` files."""
+    """Seanchaí: Diameter specifications as reviewable `.dad` files.
 
-
-@main.command("export")
-@click.option(
-    "-o",
-    "--output",
-    required=True,
-    type=click.Path(file_okay=False, path_type=Path),
-    help="Directory to write, replaced whole. It must be absent, empty or a"
-    " previous export.",
-)
-@click.option(
-    "--corpus",
-    "corpus_paths",
-    multiple=True,
-    type=click.Path(exists=True, path_type=Path),
-    help="Directory or file to export instead of the installed seanchai-corpus"
-    " package. Repeatable.",
-)
-@click.option(
-    "--dictionary",
-    type=click.Path(file_okay=False, path_type=Path),
-    help="Wireshark's Diameter dictionary, for its AVP names in the search index:"
-    " specifications/wireshark after `seanchai download --only wireshark`. Without"
-    " it the names are left out.",
-)
-@click.option(
-    "--corrections",
-    type=click.Path(exists=True, file_okay=False, path_type=Path),
-    help="Read correction reasons and acceptances from the modules in this"
-    " directory (<SpecRef>.py) instead of the corpus's corrections.json. Loading"
-    " one executes Python from that directory, as `correct` does.",
-)
-@click.option(
-    "--specifications",
-    type=click.Path(file_okay=False, path_type=Path),
-    help="A `seanchai download` directory. RFC texts found there are copied into"
-    " the export; --include-pdfs reads it too.",
-)
-@click.option(
-    "--include-pdfs",
-    is_flag=True,
-    help="Self-hosted mode: copy every source PDF into the export. Needs"
-    " --specifications. ETSI's renderings are not for public redistribution.",
-)
-def export_command(
-    output: Path,
-    corpus_paths: tuple[Path, ...],
-    dictionary: Path | None,
-    corrections: Path | None,
-    specifications: Path | None,
-    include_pdfs: bool,
-) -> None:
-    """Export the corpus as JSON for the static site.
-
-    Writes index.json, search.json, schema.json, syntax/dad.tmLanguage.json and,
-    per document, documents/<id>.json and documents/<id>.raw.json
-    (docs/website.md). The same corpus gives the same bytes.
-
-    \b
-    Public site, no source PDFs:
-        seanchai export -o site/data
-    Self-hosted, source PDFs beside it:
-        seanchai export -o site/data \\
-            --include-pdfs --specifications specifications
-
-    The export is built beside the output directory and replaces it whole, once
-    it has succeeded: files of an earlier export do not linger, and a failed
-    run leaves the earlier one as it was. A directory holding anything else is
-    refused, and so is a corpus with no documents.
-
-    Correction reasons come from the corpus's corrections.json, which needs no
-    checkout. --corrections reads edits/corrections while working inside one,
-    before `seanchai regenerate` has recorded them.
+    `show`, `commands`, `dictionary` and `export` read the installed corpus;
+    `lint` and `format` check and rewrite `.dad` files, sidecars included; the
+    `corpus` group maintains the corpus in a checkout of the repository.
     """
-    from .corpus import Corpus
-    from .export import export_corpus
-
-    if include_pdfs and specifications is None:
-        raise click.UsageError(
-            "--include-pdfs needs --specifications, a `seanchai download` directory"
-        )
-    if dictionary is not None:
-        _need_dictionary(dictionary)
-    if specifications is not None and not specifications.is_dir():
-        fetch = "--only 3gpp" if include_pdfs else "--only rfc"
-        raise click.ClickException(
-            f"{specifications} does not exist: run `seanchai download {fetch}`"
-        )
-    with reported():
-        try:
-            books = Corpus.load(corpus_paths) if corpus_paths else Corpus.installed()
-            export_corpus(
-                books,
-                output,
-                dictionary=dictionary,
-                corrections_directory=corrections,
-                specifications=specifications,
-                include_pdfs=include_pdfs,
-            )
-        except OSError as error:
-            raise click.ClickException(str(error)) from None
 
 
 def _as_json(value: object) -> None:
@@ -465,7 +376,12 @@ def _echo_avp(avp, others) -> None:
     metavar="V",
     help="With --document: an older copy of that document the corpus holds.",
 )
-@click.option("--json", "as_json", is_flag=True, help="Print `to_dict()` as JSON.")
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Print it, its other readings and what they name, in the dictionary's shapes.",
+)
 def show(
     name_or_identity: str, document: str | None, version: str | None, as_json: bool
 ) -> None:
@@ -474,19 +390,26 @@ def show(
     NAME_OR_IDENTITY is a name or a VENDOR:CODE: `Session-Id`, `10415:601`. Prints
     the defining document's reading (`Model.definition`) and how the others
     differ, each a citing table's. A name two AVPs claim is refused, listing
-    them; a name the corpus cannot complete says why. --json adds the other
-    readings to `to_dict()` as `other_readings`.
+    them; a name the corpus cannot complete says why.
+
+    --json prints a `seanchai.dictionary.Lookup`: `avps` holds the reading asked
+    for first, named by `avp`, then the identity's other readings, then every AVP
+    their bodies name, as `seanchai dictionary` writes them (docs/consumers.md).
     """
+    from .corpus import Corpus
+    from .dictionary import lookup
     from .model import Model
 
     if version is not None and document is None:
         raise click.UsageError("--version needs --document")
     with reported():
-        built = Model.installed()
+        books = Corpus.installed()
+        built = Model.build(books)
         avp = _reading(built, name_or_identity, document, version)
+        found = lookup(built, avp, corpus_version=books.version) if as_json else None
         others = [other for other in built.identified(*avp.identity) if other != avp]
-    if as_json:
-        _as_json({**avp.to_dict(), "other_readings": [o.to_dict() for o in others]})
+    if found is not None:
+        _as_json(found.model_dump(mode="json"))
     else:
         _echo_avp(avp, others)
 
@@ -499,7 +422,12 @@ def show(
     metavar="ID",
     help="Only the commands of this application id, in any document.",
 )
-@click.option("--json", "as_json", is_flag=True, help="Print the list as JSON.")
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Print the applications and their commands in the dictionary's shapes.",
+)
 def commands(reference: str | None, application: int | None, as_json: bool) -> None:
     """List the installed corpus's commands.
 
@@ -507,11 +435,17 @@ def commands(reference: str | None, application: int | None, as_json: bool) -> N
     --application, every command. Each line has the command code, whether it is
     the request or the answer, the effective application id (`-` where nothing
     states one), its name, and its defining document and section.
+
+    --json prints a `seanchai.dictionary.Listing`: each application as
+    `seanchai dictionary` writes it, each command without its body.
     """
+    from .corpus import Corpus
+    from .dictionary import listing
     from .model import Model, ModelError
 
     with reported():
-        applications = Model.installed().applications(
+        books = Corpus.installed()
+        applications = Model.build(books).applications(
             reference, application_id=application
         )
         if application is not None and not applications:
@@ -520,33 +454,21 @@ def commands(reference: str | None, application: int | None, as_json: bool) -> N
                 f"{'' if reference is None else f' in {reference}'}:"
                 " `seanchai commands` lists them"
             )
-    rows = [
-        {
-            "command_code": message.command_code,
-            "kind": "request" if message.is_request else "answer",
-            "application_id": message.application_id,
-            "application": each.name,
-            "name": message.name,
-            "abbreviation": message.abbreviation,
-            "defined_in": message.defined_in,
-            "section": message.section,
-        }
-        for each in applications
-        for message in each.messages
-    ]
     if as_json:
-        _as_json(rows)
+        found = listing(applications, corpus_version=books.version)
+        _as_json(found.model_dump(mode="json"))
         return
     table = [("CODE", "KIND", "APPLICATION", "NAME", "DOCUMENT", "SECTION")] + [
         (
-            str(row["command_code"]),
-            str(row["kind"]),
-            "-" if row["application_id"] is None else str(row["application_id"]),
-            f"{row['name']} ({row['abbreviation']})",
-            str(row["defined_in"]),
-            str(row["section"]),
+            str(message.command_code),
+            "request" if message.is_request else "answer",
+            "-" if message.application_id is None else str(message.application_id),
+            f"{message.name} ({message.abbreviation})",
+            message.defined_in,
+            message.section,
         )
-        for row in rows
+        for each in applications
+        for message in each.messages
     ]
     widths = [max(len(cells[i]) for cells in table) for i in range(len(table[0]))]
     for cells in table:
@@ -640,440 +562,107 @@ def dictionary_command(
     )
 
 
-@main.command()
-@click.argument("docx", type=click.Path(exists=True, dir_okay=False, path_type=Path))
-@click.option(
-    "--pdf",
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="Matching ETSI PDF rendering; attaches `; Page:` directives"
-    " from its bookmark outline. Must be the exact same version"
-    " as the docx.",
-)
-@click.option("--link", help="ETSI PDF URL for the file's `; Link:` header.")
-@click.option(
-    "--sources",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
-    show_default="./edits/sources, if present",
-    help="Directory with source-declaration TOML files — input patches and quirks.",
-)
-@click.option(
-    "--corrections",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with per-spec correction modules (<SpecRef>.py)."
-    " Loading one executes Python from that directory, so it is never"
-    " discovered automatically.",
-)
+@main.command("export")
 @click.option(
     "-o",
     "--output",
-    type=click.Path(dir_okay=False, path_type=Path),
-    show_default="stdout",
-    help="Output .dad path.",
-)
-def extract(
-    docx: Path,
-    pdf: Path | None,
-    link: str | None,
-    sources: Path | None,
-    corrections: Path | None,
-    output: Path | None,
-) -> None:
-    """Extract a canonical `.dad` file from a 3GPP specification docx.
-
-    Needs the `seanchai[extract]` extra.
-    """
-    _require_extract()
-    from .extractor import tgpp_docx
-
-    if sources is None and _DEFAULT_SOURCES.is_dir():
-        sources = _DEFAULT_SOURCES
-    warnings: list[str] = []
-    with reported():
-        try:
-            spec, comments = tgpp_docx.extract_with_comments(
-                docx, link=link, warnings=warnings, sources_dir=sources
-            )
-            if pdf is not None:
-                spec = tgpp_docx.attach_pages(spec, pdf, warnings=warnings)
-        finally:
-            # Report what the source document did even when a later stage fails —
-            # a mismatched PDF aborts the run, and that is exactly when the
-            # extraction warnings are worth reading.
-            for warning in warnings:
-                prefix = click.style("warning", fg="yellow")
-                click.echo(f"{prefix}: {warning}", err=True)
-        if corrections is not None:
-            # A corpus run may pass a directory holding modules for only some
-            # of its specifications, so a spec without one is not an error.
-            spec, comments = _correct(spec, comments, corrections, required=False)
-    _write(spec, output, comments)
-
-
-@main.command(name="extract-rfc")
-@click.argument("text", type=click.Path(exists=True, dir_okay=False, path_type=Path))
-@click.option("--link", help="Canonical URL for the file's `; Link:` header.")
-@click.option(
-    "--sources",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
-    show_default="./edits/sources, if present",
-    help="Directory with source-declaration TOML files — input patches and quirks.",
-)
-@click.option(
-    "--corrections",
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with per-spec correction modules (<SpecRef>.py)."
-    " Loading one executes Python from that directory, so it is never"
-    " discovered automatically.",
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(dir_okay=False, path_type=Path),
-    show_default="stdout",
-    help="Output .dad path.",
-)
-def extract_rfc(
-    text: Path,
-    link: str | None,
-    sources: Path | None,
-    corrections: Path | None,
-    output: Path | None,
-) -> None:
-    """Extract a canonical `.dad` file from an RFC's plain-text rendering.
-
-    `; Page:` directives come from the text's own printed page numbers — the
-    text is the RFC's sole rendering, so there is no separate PDF step.
-    """
-    from .extractor import rfc_text
-
-    if sources is None and _DEFAULT_SOURCES.is_dir():
-        sources = _DEFAULT_SOURCES
-    warnings: list[str] = []
-    with reported():
-        try:
-            spec, comments = rfc_text.extract_with_comments(
-                text, link=link, warnings=warnings, sources_dir=sources
-            )
-        finally:
-            for warning in warnings:
-                prefix = click.style("warning", fg="yellow")
-                click.echo(f"{prefix}: {warning}", err=True)
-        if corrections is not None:
-            spec, comments = _correct(spec, comments, corrections, required=False)
-    _write(spec, output, comments)
-
-
-@main.command()
-@click.option(
-    "--manifest",
-    type=click.Path(dir_okay=False, path_type=Path),
-    default=Path("specifications") / "manifest.json",
-    help="The downloader's manifest; its files are the sources.",
+    required=True,
+    type=click.Path(file_okay=False, path_type=Path),
+    help="Directory to write, replaced whole. It must be absent, empty or a"
+    " previous export.",
 )
 @click.option(
     "--corpus",
-    type=click.Path(file_okay=False, path_type=Path),
-    default=_DEFAULT_CORPUS,
-    help="The committed corpus: decides which specifications to rebuild."
-    " Defaulted for the repository's own workspace copy, never an installed one.",
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(file_okay=False, path_type=Path),
-    show_default="the corpus itself",
-    help="Where to write.",
-)
-@click.option(
-    "--sources",
-    type=click.Path(file_okay=False, path_type=Path),
-    default=_DEFAULT_SOURCES,
-    help="Directory with source-declaration TOML files.",
-)
-@click.option(
-    "--corrections",
-    type=click.Path(file_okay=False, path_type=Path),
-    default=_DEFAULT_CORRECTIONS,
-    help="Directory with per-spec correction modules. Defaulted here, unlike"
-    " extract's and correct's, because this one exists to rebuild the repository's"
-    " own corpus from its own edit layers.",
-)
-@click.option(
-    "--transcriptions",
-    type=click.Path(file_okay=False, path_type=Path),
-    default=_DEFAULT_TRANSCRIPTIONS,
-    help="Directory with hand transcriptions of documents no extractor reads.",
-)
-@click.option(
-    "--add",
+    "corpus_paths",
     multiple=True,
-    metavar="SPECREF",
-    help="Also build a specification the corpus does not hold yet"
-    " (e.g. TS29.273). Repeatable.",
-)
-@click.option(
-    "--spec",
-    "only",
-    multiple=True,
-    metavar="SPECREF",
-    help="Rebuild only this specification instead of the whole corpus. Repeatable.",
-)
-@click.option(
-    "--expand-ranges",
-    is_flag=True,
-    help="Widen, in --sources and --corrections, every declaration range a"
-    " cleanly rebuilt specification's version falls outside.",
-)
-def regenerate(
-    manifest: Path,
-    corpus: Path,
-    output: Path | None,
-    sources: Path,
-    corrections: Path,
-    transcriptions: Path,
-    add: tuple[str, ...],
-    only: tuple[str, ...],
-    expand_ranges: bool,
-) -> None:
-    """Rebuild the committed corpus from the downloaded sources.
-
-    Every specification the corpus holds is re-extracted, paged and corrected
-    from the manifest's files and written back, raw mirror included. The
-    manifest decides the version: a newer download replaces the committed
-    pair, and the replacement is reported. A specification the extractor
-    cannot read fails on its own and the run continues; the exit status is
-    non-zero if anything failed.
-
-    Beside the documents it rewrites `corrections.json`, the record of every
-    correction's reason an installed corpus is read with, unless something
-    failed.
-
-    With --expand-ranges, a declaration whose advisory version range does not
-    cover the version it just applied cleanly to has the range rewritten in
-    its edit file, comments and layout kept; the widened ranges print under
-    the specification.
-
-    An older version fetched with `seanchai download --spec SPECREF
-    --version VERSION` is extracted for diffing with `--manifest
-    specifications/versions/SPECREF/VERSION/manifest.json --spec SPECREF -o
-    SCRATCH`; without -o it would replace the committed pair.
-
-    Needs the `seanchai[extract]` extra and a checkout: the defaults name its
-    corpus and edit layers.
-    """
-    _require_extract()
-    from . import regenerate as library
-
-    if not manifest.is_file():
-        raise click.ClickException(
-            f"{manifest} does not exist: run `seanchai download`, which writes it"
-        )
-    # Checked here and not by the options' types, so that an install with no
-    # checkout hears about the extra first.
-    for option, directory in (
-        ("--corpus", corpus),
-        ("--sources", sources),
-        ("--corrections", corrections),
-        ("--transcriptions", transcriptions),
-    ):
-        if not directory.is_dir():
-            raise click.BadParameter(
-                f"directory {str(directory)!r} does not exist", param_hint=f"'{option}'"
-            )
-    with reported():
-        report = library.regenerate(
-            manifest,
-            corpus,
-            output if output is not None else corpus,
-            sources_dir=sources,
-            corrections_dir=corrections,
-            transcriptions_dir=transcriptions,
-            add=add,
-            only=only,
-            report=_echo_outcome,
-            expand_ranges=expand_ranges,
-        )
-    counts = {}
-    for outcome in report.outcomes:
-        counts[outcome.status] = counts.get(outcome.status, 0) + 1
-    summary = ", ".join(f"{n} {status}" for status, n in sorted(counts.items()))
-    click.echo(f"{len(report.outcomes)} specifications: {summary}", err=True)
-    if report.missing_sources:
-        fetch = " ".join(f"--only {name}" for name in report.missing_sources)
-        raise click.ClickException(
-            f"{manifest} holds no {', '.join(report.missing_sources)}: run"
-            f" `seanchai download {fetch}`, or name what it holds with --spec"
-        )
-    if report.failed:
-        raise click.exceptions.Exit(1)
-
-
-def _echo_outcome(outcome) -> None:
-    from .regenerate import describe
-
-    status, _, rest = describe(outcome).partition(" ")
-    colour = {
-        "unchanged": "green",
-        "changed": "yellow",
-        "new": "cyan",
-        "replaced": "magenta",
-        "not-converted": "yellow",
-    }.get(status, "red")
-    click.echo(f"{click.style(status, fg=colour)} {rest}")
-    # The extractor's warnings, under the specification they belong to: they
-    # are the document doing something unusual, and worth a glance on every
-    # rebuild, not only the first.
-    for warning in outcome.warnings:
-        click.echo(click.style(f"    warning: {warning}", dim=True), err=True)
-    for widened in outcome.expanded:
-        click.echo(f"    expanded: {widened}")
-
-
-@main.command()
-@click.argument("source", type=click.Path(exists=True, dir_okay=False, path_type=Path))
-@click.option(
-    "--corrections",
-    required=True,
-    type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with per-spec correction modules (<SpecRef>.py)."
-    " Loading one executes Python from that directory.",
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(dir_okay=False, path_type=Path),
-    show_default="stdout",
-    help="Output .dad path.",
-)
-def correct(source: Path, corrections: Path, output: Path | None) -> None:
-    """Apply a specification's corrections to a raw `.dad` file.
-
-    Input is raw extractor output. Correcting a corrected file fails, by
-    design: every `expect` would already hold its replacement, and that is
-    indistinguishable from the specification having been fixed upstream.
-
-    Unlike `extract --corrections`, this requires the specification's module to
-    exist and to declare at least one correction: correction is what was asked
-    for here, and a mistyped path that quietly produced an uncorrected file
-    would be indistinguishable from success.
-    """
-    from .dad import parser
-
-    if output is not None and output.resolve() == source.resolve():
-        raise click.ClickException("refusing to correct a file in place")
-    with reported():
-        # Explicit encoding both ways: `.dad` files are UTF-8 wherever they were
-        # written, and the platform default would otherwise decide whether a
-        # spec title with a non-ASCII character survives the round trip.
-        # The raw file's own comments — struck members commented out — move
-        # with their lines.
-        with _naming(source):
-            text = source.read_text(encoding="utf-8")
-            spec, comments = parser.parse_with_comments(text)
-        corrected, notes = _correct(spec, comments, corrections, required=True)
-    _write(corrected, output, notes)
-
-
-def _correct(spec, comments: Comments, directory: Path, required: bool):
-    """Returns the corrected tree, and `comments` moved with their lines
-    beside the notes marking what was touched."""
-    from .dad import corrections as corrections_module
-
-    declared = corrections_module.in_release(
-        corrections_module.load(directory, spec.specification, required=required),
-        spec.version,
-    )
-    corrected, results, notes = corrections_module.apply_with_comments(
-        spec, comments, declared
-    )
-    for result in results:
-        edit = result.correction
-        reason = click.style(f"({edit.reason})", dim=True)
-        if isinstance(edit, corrections_module.Delete):
-            verb = click.style("deleted", fg="red")
-            click.echo(f"{verb}: {result.node} {reason}", err=True)
-        elif isinstance(edit, corrections_module.Insert):
-            verb = click.style("inserted", fg="green")
-            click.echo(f"{verb}: {result.node} {reason}", err=True)
-        elif isinstance(edit, corrections_module.Supply):
-            verb = click.style("supplied", fg="green")
-            click.echo(f"{verb}: {result.node} {reason}", err=True)
-        else:
-            verb = click.style("corrected", fg="green")
-            click.echo(
-                f"{verb}: {result.node} {edit.field}"
-                f" {result.old!r} -> {result.new!r} {reason}",
-                err=True,
-            )
-    return corrected, notes
-
-
-@main.command(name="format")
-@click.argument(
-    "sources",
-    nargs=-1,
-    required=True,
     type=click.Path(exists=True, path_type=Path),
+    help="Directory or file to export instead of the installed seanchai-corpus"
+    " package. Repeatable.",
 )
 @click.option(
-    "--check",
-    is_flag=True,
-    help="Print a diff for each file not in canonical form instead of"
-    " rewriting it, and exit non-zero if there is one.",
+    "--dictionary",
+    type=click.Path(file_okay=False, path_type=Path),
+    help="Wireshark's Diameter dictionary, for its AVP names in the search index:"
+    " specifications/wireshark after `seanchai corpus download --only wireshark`."
+    " Without it the names are left out.",
 )
 @click.option(
-    "--raw",
-    is_flag=True,
-    help="Also read the raw files under a directory named in SOURCES.",
+    "--corrections",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Read correction reasons and acceptances from the modules in this"
+    " directory (<SpecRef>.py) instead of the corpus's corrections.json. Loading"
+    " one executes Python from that directory, as `corpus correct` does.",
 )
-def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
-    """Rewrite `.dad` files in canonical form, keeping their `;;` comments.
+@click.option(
+    "--specifications",
+    type=click.Path(file_okay=False, path_type=Path),
+    help="A `seanchai corpus download` directory. RFC texts found there are copied into"
+    " the export; --include-pdfs reads it too.",
+)
+@click.option(
+    "--include-pdfs",
+    is_flag=True,
+    help="Self-hosted mode: copy every source PDF into the export. Needs"
+    " --specifications. ETSI's renderings are not for public redistribution.",
+)
+def export_command(
+    output: Path,
+    corpus_paths: tuple[Path, ...],
+    dictionary: Path | None,
+    corrections: Path | None,
+    specifications: Path | None,
+    include_pdfs: bool,
+) -> None:
+    """Export the corpus as JSON for the static site.
 
-    SOURCES are files or directories, a directory standing for the `.dad` files
-    under it, less its raw mirror unless --raw. Every file is parsed before any
-    is written, so one that does not parse leaves all of them as they were. A
-    trailing comment stays on its line,
-    a whole-line comment stays before the line that followed it, and a
-    block of comments stays before the section that followed it.
+    Writes index.json, search.json, schema.json, syntax/dad.tmLanguage.json and,
+    per document, documents/<id>.json and documents/<id>.raw.json
+    (docs/website.md). The same corpus gives the same bytes.
+
+    \b
+    Public site, no source PDFs:
+        seanchai export -o site/data
+    Self-hosted, source PDFs beside it:
+        seanchai export -o site/data \\
+            --include-pdfs --specifications specifications
+
+    The export is built beside the output directory and replaces it whole, once
+    it has succeeded: files of an earlier export do not linger, and a failed
+    run leaves the earlier one as it was. A directory holding anything else is
+    refused, and so is a corpus with no documents.
+
+    Correction reasons come from the corpus's corrections.json, which needs no
+    checkout. --corrections reads edits/corrections while working inside one,
+    before `seanchai corpus regenerate` has recorded them.
     """
-    import difflib
+    from .corpus import Corpus
+    from .export import export_corpus
 
-    from .dad import formatter, parser
-
-    files = _dad_files(sources, raw=raw)
-    changed: list[tuple[Path, str, str]] = []
-    for source in files:
-        # Untranslated both ways: canonical form ends lines with "\n" alone,
-        # and a file with "\r\n" endings is one to rewrite, not one that
-        # reads as canonical because the newlines were translated away.
-        with _naming(source):
-            text = source.read_bytes().decode("utf-8")
-            spec, comments = parser.parse_with_comments(text)
-        canonical = formatter.format_spec(spec, comments)
-        if canonical != text:
-            changed.append((source, text, canonical))
-    for source, text, canonical in changed:
-        if check:
-            click.echo(
-                "".join(
-                    difflib.unified_diff(
-                        text.splitlines(keepends=True),
-                        canonical.splitlines(keepends=True),
-                        fromfile=str(source),
-                        tofile=str(source),
-                    )
-                ),
-                nl=False,
+    if include_pdfs and specifications is None:
+        raise click.UsageError(
+            "--include-pdfs needs --specifications,"
+            " a `seanchai corpus download` directory"
+        )
+    if dictionary is not None:
+        _need_dictionary(dictionary)
+    if specifications is not None and not specifications.is_dir():
+        fetch = "--only 3gpp" if include_pdfs else "--only rfc"
+        raise click.ClickException(
+            f"{specifications} does not exist: run `seanchai corpus download {fetch}`"
+        )
+    with reported():
+        try:
+            books = Corpus.load(corpus_paths) if corpus_paths else Corpus.installed()
+            export_corpus(
+                books,
+                output,
+                dictionary=dictionary,
+                corrections_directory=corrections,
+                specifications=specifications,
+                include_pdfs=include_pdfs,
             )
-        else:
-            source.write_text(canonical, encoding="utf-8", newline="")
-    verb = "would reformat" if check else "reformatted"
-    click.echo(
-        f"{verb} {len(changed)} of {len(files)} files",
-        err=True,
-    )
-    if check and changed:
-        raise SystemExit(1)
+        except OSError as error:
+            raise click.ClickException(str(error)) from None
 
 
 @main.command()
@@ -1120,7 +709,7 @@ def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
     default=_DEFAULT_CORRECTIONS,
     help="Directory with per-spec correction modules, whose acceptances mark"
     " deliberate overrides among a corrected file's findings; read with a"
-    " corpus only. Defaulted, like regenerate's, for the repository's own"
+    " corpus only. Defaulted, like `corpus regenerate`'s, for the repository's own"
     " corpus; a missing default directory is no acceptances, and an installed"
     " corpus read outside the repository leaves the default unread.",
 )
@@ -1285,7 +874,86 @@ def _summary(counts, checked: int) -> str:
     return f"found {found} in {plural(checked, 'file')}"
 
 
-@main.command()
+@main.command(name="format")
+@click.argument(
+    "sources",
+    nargs=-1,
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+)
+@click.option(
+    "--check",
+    is_flag=True,
+    help="Print a diff for each file not in canonical form instead of"
+    " rewriting it, and exit non-zero if there is one.",
+)
+@click.option(
+    "--raw",
+    is_flag=True,
+    help="Also read the raw files under a directory named in SOURCES.",
+)
+def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
+    """Rewrite `.dad` files in canonical form, keeping their `;;` comments.
+
+    SOURCES are files or directories, a directory standing for the `.dad` files
+    under it, less its raw mirror unless --raw. Every file is parsed before any
+    is written, so one that does not parse leaves all of them as they were. A
+    trailing comment stays on its line,
+    a whole-line comment stays before the line that followed it, and a
+    block of comments stays before the section that followed it.
+    """
+    import difflib
+
+    from .dad import formatter, parser
+
+    files = _dad_files(sources, raw=raw)
+    changed: list[tuple[Path, str, str]] = []
+    for source in files:
+        # Untranslated both ways: canonical form ends lines with "\n" alone,
+        # and a file with "\r\n" endings is one to rewrite, not one that
+        # reads as canonical because the newlines were translated away.
+        with _naming(source):
+            text = source.read_bytes().decode("utf-8")
+            spec, comments = parser.parse_with_comments(text)
+        canonical = formatter.format_spec(spec, comments)
+        if canonical != text:
+            changed.append((source, text, canonical))
+    for source, text, canonical in changed:
+        if check:
+            click.echo(
+                "".join(
+                    difflib.unified_diff(
+                        text.splitlines(keepends=True),
+                        canonical.splitlines(keepends=True),
+                        fromfile=str(source),
+                        tofile=str(source),
+                    )
+                ),
+                nl=False,
+            )
+        else:
+            source.write_text(canonical, encoding="utf-8", newline="")
+    verb = "would reformat" if check else "reformatted"
+    click.echo(
+        f"{verb} {len(changed)} of {len(files)} files",
+        err=True,
+    )
+    if check and changed:
+        raise SystemExit(1)
+
+
+@main.group()
+def corpus() -> None:
+    """Download, extract and rebuild the corpus; needs a checkout.
+
+    The maintainers' commands. Their defaults name the repository's own
+    directories: specifications/ for the downloads, edits/ for the edit layers,
+    the seanchai-corpus package's data for the corpus and
+    integrations/wireshark/aliases.toml, so they are run from its root.
+    """
+
+
+@corpus.command()
 @click.option("--release", type=int, default=RELEASE, help="3GPP release.")
 @click.option(
     "-o",
@@ -1364,7 +1032,7 @@ def download(
 
     With --spec and --version, one older version is fetched into
     `versions/<SPECREF>/<VERSION>/` with a manifest of its own, for
-    `seanchai regenerate --manifest ... --spec ... -o SCRATCH`.
+    `seanchai corpus regenerate --manifest ... --spec ... -o SCRATCH`.
 
     With --only, one source is fetched and the manifest keeps what it holds of
     the others. What the download cache holds is not fetched again, by this run
@@ -1451,7 +1119,376 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
         )
 
 
-@main.command()
+@corpus.command()
+@click.option(
+    "--manifest",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=Path("specifications") / "manifest.json",
+    help="The downloader's manifest; its files are the sources.",
+)
+@click.option(
+    "--corpus",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=_DEFAULT_CORPUS,
+    help="The committed corpus: decides which specifications to rebuild."
+    " Defaulted for the repository's own workspace copy, never an installed one.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(file_okay=False, path_type=Path),
+    show_default="the corpus itself",
+    help="Where to write.",
+)
+@click.option(
+    "--sources",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=_DEFAULT_SOURCES,
+    help="Directory with source-declaration TOML files.",
+)
+@click.option(
+    "--corrections",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=_DEFAULT_CORRECTIONS,
+    help="Directory with per-spec correction modules. Defaulted here, unlike"
+    " extract's and correct's, because this one exists to rebuild the repository's"
+    " own corpus from its own edit layers.",
+)
+@click.option(
+    "--transcriptions",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=_DEFAULT_TRANSCRIPTIONS,
+    help="Directory with hand transcriptions of documents no extractor reads.",
+)
+@click.option(
+    "--add",
+    multiple=True,
+    metavar="SPECREF",
+    help="Also build a specification the corpus does not hold yet"
+    " (e.g. TS29.273). Repeatable.",
+)
+@click.option(
+    "--spec",
+    "only",
+    multiple=True,
+    metavar="SPECREF",
+    help="Rebuild only this specification instead of the whole corpus. Repeatable.",
+)
+@click.option(
+    "--expand-ranges",
+    is_flag=True,
+    help="Widen, in --sources and --corrections, every declaration range a"
+    " cleanly rebuilt specification's version falls outside.",
+)
+def regenerate(
+    manifest: Path,
+    corpus: Path,
+    output: Path | None,
+    sources: Path,
+    corrections: Path,
+    transcriptions: Path,
+    add: tuple[str, ...],
+    only: tuple[str, ...],
+    expand_ranges: bool,
+) -> None:
+    """Rebuild the committed corpus from the downloaded sources.
+
+    Every specification the corpus holds is re-extracted, paged and corrected
+    from the manifest's files and written back, raw mirror included. The
+    manifest decides the version: a newer download replaces the committed
+    pair, and the replacement is reported. A specification the extractor
+    cannot read fails on its own and the run continues; the exit status is
+    non-zero if anything failed.
+
+    Beside the documents it rewrites `corrections.json`, the record of every
+    correction's reason an installed corpus is read with, unless something
+    failed.
+
+    With --expand-ranges, a declaration whose advisory version range does not
+    cover the version it just applied cleanly to has the range rewritten in
+    its edit file, comments and layout kept; the widened ranges print under
+    the specification.
+
+    An older version fetched with `seanchai corpus download --spec SPECREF
+    --version VERSION` is extracted for diffing with `--manifest
+    specifications/versions/SPECREF/VERSION/manifest.json --spec SPECREF -o
+    SCRATCH`; without -o it would replace the committed pair.
+
+    Needs the `seanchai[extract]` extra and a checkout: the defaults name its
+    corpus and edit layers.
+    """
+    _require_extract()
+    from . import regenerate as library
+
+    if not manifest.is_file():
+        raise click.ClickException(
+            f"{manifest} does not exist: run `seanchai corpus download`,"
+            " which writes it"
+        )
+    # Checked here and not by the options' types, so that an install with no
+    # checkout hears about the extra first.
+    for option, directory in (
+        ("--corpus", corpus),
+        ("--sources", sources),
+        ("--corrections", corrections),
+        ("--transcriptions", transcriptions),
+    ):
+        if not directory.is_dir():
+            raise click.BadParameter(
+                f"directory {str(directory)!r} does not exist", param_hint=f"'{option}'"
+            )
+    with reported():
+        report = library.regenerate(
+            manifest,
+            corpus,
+            output if output is not None else corpus,
+            sources_dir=sources,
+            corrections_dir=corrections,
+            transcriptions_dir=transcriptions,
+            add=add,
+            only=only,
+            report=_echo_outcome,
+            expand_ranges=expand_ranges,
+        )
+    counts = {}
+    for outcome in report.outcomes:
+        counts[outcome.status] = counts.get(outcome.status, 0) + 1
+    summary = ", ".join(f"{n} {status}" for status, n in sorted(counts.items()))
+    click.echo(f"{len(report.outcomes)} specifications: {summary}", err=True)
+    if report.missing_sources:
+        fetch = " ".join(f"--only {name}" for name in report.missing_sources)
+        raise click.ClickException(
+            f"{manifest} holds no {', '.join(report.missing_sources)}: run"
+            f" `seanchai corpus download {fetch}`, or name what it holds with --spec"
+        )
+    if report.failed:
+        raise click.exceptions.Exit(1)
+
+
+def _echo_outcome(outcome) -> None:
+    from .regenerate import describe
+
+    status, _, rest = describe(outcome).partition(" ")
+    colour = {
+        "unchanged": "green",
+        "changed": "yellow",
+        "new": "cyan",
+        "replaced": "magenta",
+        "not-converted": "yellow",
+    }.get(status, "red")
+    click.echo(f"{click.style(status, fg=colour)} {rest}")
+    # The extractor's warnings, under the specification they belong to: they
+    # are the document doing something unusual, and worth a glance on every
+    # rebuild, not only the first.
+    for warning in outcome.warnings:
+        click.echo(click.style(f"    warning: {warning}", dim=True), err=True)
+    for widened in outcome.expanded:
+        click.echo(f"    expanded: {widened}")
+
+
+@corpus.command()
+@click.argument("docx", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--pdf",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Matching ETSI PDF rendering; attaches `; Page:` directives"
+    " from its bookmark outline. Must be the exact same version"
+    " as the docx.",
+)
+@click.option("--link", help="ETSI PDF URL for the file's `; Link:` header.")
+@click.option(
+    "--sources",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    show_default="./edits/sources, if present",
+    help="Directory with source-declaration TOML files — input patches and quirks.",
+)
+@click.option(
+    "--corrections",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with per-spec correction modules (<SpecRef>.py)."
+    " Loading one executes Python from that directory, so it is never"
+    " discovered automatically.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(dir_okay=False, path_type=Path),
+    show_default="stdout",
+    help="Output .dad path.",
+)
+def extract(
+    docx: Path,
+    pdf: Path | None,
+    link: str | None,
+    sources: Path | None,
+    corrections: Path | None,
+    output: Path | None,
+) -> None:
+    """Extract a canonical `.dad` file from a 3GPP specification docx.
+
+    Needs the `seanchai[extract]` extra.
+    """
+    _require_extract()
+    from .extractor import tgpp_docx
+
+    if sources is None and _DEFAULT_SOURCES.is_dir():
+        sources = _DEFAULT_SOURCES
+    warnings: list[str] = []
+    with reported():
+        try:
+            spec, comments = tgpp_docx.extract_with_comments(
+                docx, link=link, warnings=warnings, sources_dir=sources
+            )
+            if pdf is not None:
+                spec = tgpp_docx.attach_pages(spec, pdf, warnings=warnings)
+        finally:
+            # Report what the source document did even when a later stage fails —
+            # a mismatched PDF aborts the run, and that is exactly when the
+            # extraction warnings are worth reading.
+            for warning in warnings:
+                prefix = click.style("warning", fg="yellow")
+                click.echo(f"{prefix}: {warning}", err=True)
+        if corrections is not None:
+            # A corpus run may pass a directory holding modules for only some
+            # of its specifications, so a spec without one is not an error.
+            spec, comments = _correct(spec, comments, corrections, required=False)
+    _write(spec, output, comments)
+
+
+@corpus.command(name="extract-rfc")
+@click.argument("text", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--link", help="Canonical URL for the file's `; Link:` header.")
+@click.option(
+    "--sources",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    show_default="./edits/sources, if present",
+    help="Directory with source-declaration TOML files — input patches and quirks.",
+)
+@click.option(
+    "--corrections",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with per-spec correction modules (<SpecRef>.py)."
+    " Loading one executes Python from that directory, so it is never"
+    " discovered automatically.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(dir_okay=False, path_type=Path),
+    show_default="stdout",
+    help="Output .dad path.",
+)
+def extract_rfc(
+    text: Path,
+    link: str | None,
+    sources: Path | None,
+    corrections: Path | None,
+    output: Path | None,
+) -> None:
+    """Extract a canonical `.dad` file from an RFC's plain-text rendering.
+
+    `; Page:` directives come from the text's own printed page numbers — the
+    text is the RFC's sole rendering, so there is no separate PDF step.
+    """
+    from .extractor import rfc_text
+
+    if sources is None and _DEFAULT_SOURCES.is_dir():
+        sources = _DEFAULT_SOURCES
+    warnings: list[str] = []
+    with reported():
+        try:
+            spec, comments = rfc_text.extract_with_comments(
+                text, link=link, warnings=warnings, sources_dir=sources
+            )
+        finally:
+            for warning in warnings:
+                prefix = click.style("warning", fg="yellow")
+                click.echo(f"{prefix}: {warning}", err=True)
+        if corrections is not None:
+            spec, comments = _correct(spec, comments, corrections, required=False)
+    _write(spec, output, comments)
+
+
+@corpus.command()
+@click.argument("source", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--corrections",
+    required=True,
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with per-spec correction modules (<SpecRef>.py)."
+    " Loading one executes Python from that directory.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(dir_okay=False, path_type=Path),
+    show_default="stdout",
+    help="Output .dad path.",
+)
+def correct(source: Path, corrections: Path, output: Path | None) -> None:
+    """Apply a specification's corrections to a raw `.dad` file.
+
+    Input is raw extractor output. Correcting a corrected file fails, by
+    design: every `expect` would already hold its replacement, and that is
+    indistinguishable from the specification having been fixed upstream.
+
+    Unlike `extract --corrections`, this requires the specification's module to
+    exist and to declare at least one correction: correction is what was asked
+    for here, and a mistyped path that quietly produced an uncorrected file
+    would be indistinguishable from success.
+    """
+    from .dad import parser
+
+    if output is not None and output.resolve() == source.resolve():
+        raise click.ClickException("refusing to correct a file in place")
+    with reported():
+        # Explicit encoding both ways: `.dad` files are UTF-8 wherever they were
+        # written, and the platform default would otherwise decide whether a
+        # spec title with a non-ASCII character survives the round trip.
+        # The raw file's own comments — struck members commented out — move
+        # with their lines.
+        with _naming(source):
+            text = source.read_text(encoding="utf-8")
+            spec, comments = parser.parse_with_comments(text)
+        corrected, notes = _correct(spec, comments, corrections, required=True)
+    _write(corrected, output, notes)
+
+
+def _correct(spec, comments: Comments, directory: Path, required: bool):
+    """Returns the corrected tree, and `comments` moved with their lines
+    beside the notes marking what was touched."""
+    from .dad import corrections as corrections_module
+
+    declared = corrections_module.in_release(
+        corrections_module.load(directory, spec.specification, required=required),
+        spec.version,
+    )
+    corrected, results, notes = corrections_module.apply_with_comments(
+        spec, comments, declared
+    )
+    for result in results:
+        edit = result.correction
+        reason = click.style(f"({edit.reason})", dim=True)
+        if isinstance(edit, corrections_module.Delete):
+            verb = click.style("deleted", fg="red")
+            click.echo(f"{verb}: {result.node} {reason}", err=True)
+        elif isinstance(edit, corrections_module.Insert):
+            verb = click.style("inserted", fg="green")
+            click.echo(f"{verb}: {result.node} {reason}", err=True)
+        elif isinstance(edit, corrections_module.Supply):
+            verb = click.style("supplied", fg="green")
+            click.echo(f"{verb}: {result.node} {reason}", err=True)
+        else:
+            verb = click.style("corrected", fg="green")
+            click.echo(
+                f"{verb}: {result.node} {edit.field}"
+                f" {result.old!r} -> {result.new!r} {reason}",
+                err=True,
+            )
+    return corrected, notes
+
+
+@corpus.command()
 @click.argument(
     "sources",
     nargs=-1,
@@ -1462,7 +1499,7 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
     type=click.Path(file_okay=False, path_type=Path),
     default=Path("specifications") / "wireshark",
     help="Directory holding Wireshark's Diameter dictionary files, which"
-    " `seanchai download --only wireshark` fetches.",
+    " `seanchai corpus download --only wireshark` fetches.",
 )
 @click.option(
     "--aliases",

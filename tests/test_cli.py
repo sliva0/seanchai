@@ -24,6 +24,7 @@ def test_extract_command_runs_docx_pdf_formatter_and_parser_end_to_end(
     result = CliRunner().invoke(
         main,
         [
+            "corpus",
             "extract",
             str(synthetic_spec_docx),
             "--pdf",
@@ -65,7 +66,7 @@ def test_extract_command_reports_source_warnings_even_when_the_pdf_is_rejected(
     other_version = make_outlined_pdf("other.pdf", version="9.9.9")
 
     result = CliRunner().invoke(
-        main, ["extract", str(malformed), "--pdf", str(other_version)]
+        main, ["corpus", "extract", str(malformed), "--pdf", str(other_version)]
     )
 
     assert result.exit_code == 1
@@ -96,6 +97,7 @@ def test_correct_command_refuses_to_overwrite_its_input(tmp_path, synthetic_spec
     result = CliRunner().invoke(
         main,
         [
+            "corpus",
             "correct",
             str(raw),
             "--corrections",
@@ -121,6 +123,7 @@ def test_correct_command_reports_a_malformed_dad_as_an_error_not_a_traceback(
             "; Version: not a version\n; Vendor-ID: 10415\n"
         )
         arguments = [
+            "corpus",
             "correct",
             str(broken),
             "--corrections",
@@ -130,7 +133,7 @@ def test_correct_command_reports_a_malformed_dad_as_an_error_not_a_traceback(
     else:
         broken = tmp_path / "not-really.docx"
         broken.write_bytes(b"this is not a Word document")
-        arguments = ["extract", str(broken)]
+        arguments = ["corpus", "extract", str(broken)]
         message = "error: extracting"
     result = CliRunner().invoke(main, arguments)
     assert result.exit_code == 1
@@ -151,7 +154,7 @@ def test_correct_command_fails_when_the_specification_has_no_corrections_module(
     empty.mkdir()
 
     result = CliRunner().invoke(
-        main, ["correct", str(raw), "--corrections", str(empty)]
+        main, ["corpus", "correct", str(raw), "--corrections", str(empty)]
     )
 
     assert result.exit_code == 1
@@ -167,7 +170,8 @@ def test_extract_command_tolerates_a_corrections_directory_without_this_spec(
     empty.mkdir()
 
     result = CliRunner().invoke(
-        main, ["extract", str(synthetic_spec_docx), "--corrections", str(empty)]
+        main,
+        ["corpus", "extract", str(synthetic_spec_docx), "--corrections", str(empty)],
     )
 
     assert result.exit_code == 0
@@ -528,7 +532,16 @@ def test_correct_command_marks_the_lines_it_changed(tmp_path):
     output = tmp_path / "corrected.dad"
 
     result = CliRunner().invoke(
-        main, ["correct", str(raw), "--corrections", str(directory), "-o", str(output)]
+        main,
+        [
+            "corpus",
+            "correct",
+            str(raw),
+            "--corrections",
+            str(directory),
+            "-o",
+            str(output),
+        ],
     )
 
     assert result.exit_code == 0
@@ -631,7 +644,9 @@ def test_format_command_writes_nothing_when_any_file_fails_to_parse(tmp_path):
     ids=["spec-only", "version-only"],
 )
 def test_download_takes_spec_and_version_together(tmp_path, arguments):
-    result = CliRunner().invoke(main, ["download", "-o", str(tmp_path), *arguments])
+    result = CliRunner().invoke(
+        main, ["corpus", "download", "-o", str(tmp_path), *arguments]
+    )
 
     assert result.exit_code == 2
     assert "--spec and --version go together" in result.output
@@ -643,12 +658,12 @@ def test_download_refuses_only_beside_spec_and_a_source_it_does_not_know():
         ["--only", "rfc", "--spec", "TS29.272", "--version", "18.6.0"],
         ["--only", "pdfs"],
     ):
-        result = CliRunner().invoke(main, ["download", *arguments])
+        result = CliRunner().invoke(main, ["corpus", "download", *arguments])
         assert result.exit_code == 2, result.output
 
 
 def test_download_lists_what_only_names():
-    result = CliRunner().invoke(main, ["download", "--list", "--only", "rfc"])
+    result = CliRunner().invoke(main, ["corpus", "download", "--list", "--only", "rfc"])
 
     assert result.exit_code == 0
     assert "RFC 6733" in result.stdout
@@ -657,7 +672,9 @@ def test_download_lists_what_only_names():
 
 
 def test_download_lists_the_transcriptions_pdfs_under_their_source():
-    result = CliRunner().invoke(main, ["download", "--list", "--only", "transcribed"])
+    result = CliRunner().invoke(
+        main, ["corpus", "download", "--list", "--only", "transcribed"]
+    )
 
     assert result.exit_code == 0
     assert "ETSI-ES283.034" in result.stdout
@@ -679,6 +696,7 @@ def test_regenerate_names_the_source_a_partial_download_lacks(tmp_path):
     result = CliRunner().invoke(
         main,
         [
+            "corpus",
             "regenerate",
             "--manifest",
             str(manifest),
@@ -695,7 +713,7 @@ def test_regenerate_names_the_source_a_partial_download_lacks(tmp_path):
 
     assert result.exit_code == 1
     assert "not-in-manifest" in result.stdout
-    assert "holds no rfc: run `seanchai download --only rfc`" in result.stderr
+    assert "holds no rfc: run `seanchai corpus download --only rfc`" in result.stderr
 
 
 def test_correct_command_keeps_the_raw_files_commented_out_members(tmp_path):
@@ -729,7 +747,16 @@ def test_correct_command_keeps_the_raw_files_commented_out_members(tmp_path):
     output = tmp_path / "corrected.dad"
 
     result = CliRunner().invoke(
-        main, ["correct", str(raw), "--corrections", str(directory), "-o", str(output)]
+        main,
+        [
+            "corpus",
+            "correct",
+            str(raw),
+            "--corrections",
+            str(directory),
+            "-o",
+            str(output),
+        ],
     )
 
     assert result.exit_code == 0
@@ -770,7 +797,16 @@ def test_correct_command_keeps_a_comment_block_ending_the_file(tmp_path):
     output = tmp_path / "corrected.dad"
 
     result = CliRunner().invoke(
-        main, ["correct", str(raw), "--corrections", str(directory), "-o", str(output)]
+        main,
+        [
+            "corpus",
+            "correct",
+            str(raw),
+            "--corrections",
+            str(directory),
+            "-o",
+            str(output),
+        ],
     )
 
     assert result.exit_code == 0, result.output
@@ -842,6 +878,78 @@ def test_the_cli_renders_its_own_failures_and_help():
     assert main.commands["format"].context_class is not click.Context
 
 
+def test_the_corpus_group_renders_its_failures_and_help_as_the_cli_does():
+    runner = CliRunner()
+
+    failed = runner.invoke(main, ["corpus", "correct"], color=True)
+    assert failed.exit_code == 2
+    assert "\x1b[" in failed.stderr
+    plain = click.unstyle(failed.stderr)
+    assert plain.startswith("Usage: main corpus correct")
+    assert "Try 'main corpus correct --help' for help." in plain
+    assert "\nerror: Missing argument 'SOURCE'." in plain
+
+    unknown = runner.invoke(main, ["corpus", "no-such-command"])
+    assert unknown.exit_code == 2
+    assert unknown.stderr.startswith("Usage: main corpus [OPTIONS]")
+    assert "error: No such command 'no-such-command'." in unknown.stderr
+
+    for arguments in (["corpus", "--help"], ["corpus", "download", "--help"]):
+        assert runner.invoke(main, arguments, color=True).output.startswith(
+            click.style("Usage", fg="green", bold=True)
+        )
+    group = main.commands["corpus"]
+    assert isinstance(group, click.Group)
+    assert type(group) is type(main)
+    for command in group.commands.values():
+        assert command.context_class is not click.Context
+
+
+def _listed(help_text: str) -> list[str]:
+    """The command names a help text lists, in order."""
+    _, _, listed = help_text.partition("Commands:\n")
+    return [line.split()[0] for line in listed.splitlines() if line.strip()]
+
+
+def test_help_lists_the_commands_by_audience():
+    runner = CliRunner()
+
+    top = runner.invoke(main, ["--help"])
+    assert top.exit_code == 0
+    assert _listed(top.stdout) == [
+        "show",
+        "commands",
+        "dictionary",
+        "export",
+        "lint",
+        "format",
+        "corpus",
+    ]
+    assert "needs a checkout" in top.stdout
+
+    group = runner.invoke(main, ["corpus", "--help"])
+    assert group.exit_code == 0
+    assert _listed(group.stdout) == [
+        "download",
+        "regenerate",
+        "extract",
+        "extract-rfc",
+        "correct",
+        "crosscheck",
+    ]
+
+
+@pytest.mark.parametrize(
+    "command",
+    ["download", "regenerate", "extract", "extract-rfc", "correct", "crosscheck"],
+)
+def test_a_maintainers_command_is_only_in_the_corpus_group(command):
+    result = CliRunner().invoke(main, [command, "--help"])
+
+    assert result.exit_code == 2
+    assert f"No such command '{command}'" in result.stderr
+
+
 def test_an_exit_keeps_its_status_and_a_clean_run_exits_zero(tmp_path):
     source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
     copied = tmp_path / "file.dad"
@@ -852,12 +960,14 @@ def test_an_exit_keeps_its_status_and_a_clean_run_exits_zero(tmp_path):
     assert runner.invoke(main, ["format", str(copied)]).exit_code == 0
 
 
-def _options_and_commands():
-    for name, command in main.commands.items():
-        yield name, command
+def _options_and_commands(group: click.Group = main, prefix: str = ""):
+    for name, command in group.commands.items():
+        yield f"{prefix}{name}", command
         for parameter in command.params:
             if isinstance(parameter, click.Option):
-                yield f"{name} {parameter.opts[0]}", parameter
+                yield f"{prefix}{name} {parameter.opts[0]}", parameter
+        if isinstance(command, click.Group):
+            yield from _options_and_commands(command, f"{prefix}{name} ")
 
 
 def test_every_command_and_option_says_what_it_is_for():
@@ -883,12 +993,12 @@ def test_no_help_text_spells_its_own_default():
 @pytest.mark.parametrize(
     ("arguments", "shown"),
     [
-        (["download", "--help"], "[default: specifications]"),
-        (["download", "--help"], "[default: 19]"),
-        (["download", "--help"], "[default: pdfs]"),
-        (["extract", "--help"], "[default: (stdout)]"),
+        (["corpus", "download", "--help"], "[default: specifications]"),
+        (["corpus", "download", "--help"], "[default: 19]"),
+        (["corpus", "download", "--help"], "[default: pdfs]"),
+        (["corpus", "extract", "--help"], "[default: (stdout)]"),
         (["lint", "--help"], "[default: full]"),
-        (["crosscheck", "--help"], "specifications/wireshark]"),
+        (["corpus", "crosscheck", "--help"], "specifications/wireshark]"),
     ],
 )
 def test_help_shows_the_defaults(arguments, shown):
@@ -915,11 +1025,11 @@ def _corpus_directory(tmp_path) -> Path:
     return root
 
 
-@pytest.mark.parametrize("command", ["lint", "format", "correct"])
+@pytest.mark.parametrize("command", [["lint"], ["format"], ["corpus", "correct"]])
 def test_a_file_that_does_not_parse_is_named(tmp_path, command):
     bad = _malformed(tmp_path)
-    arguments = [command, str(bad)]
-    if command == "correct":
+    arguments = [*command, str(bad)]
+    if "correct" in command:
         arguments += ["--corrections", str(tmp_path)]
 
     result = CliRunner().invoke(main, arguments)
@@ -1038,8 +1148,8 @@ def test_lint_with_nothing_named_reads_the_installed_corpus(monkeypatch):
 @pytest.mark.parametrize(
     "arguments",
     [
-        ["regenerate", "--manifest", "absent/manifest.json"],
-        ["regenerate"],
+        ["corpus", "regenerate", "--manifest", "absent/manifest.json"],
+        ["corpus", "regenerate"],
     ],
 )
 def test_regenerate_says_to_download_what_it_lacks(tmp_path, monkeypatch, arguments):
@@ -1048,16 +1158,16 @@ def test_regenerate_says_to_download_what_it_lacks(tmp_path, monkeypatch, argume
     result = CliRunner().invoke(main, arguments)
 
     assert result.exit_code == 1, result.output
-    assert "does not exist: run `seanchai download`" in result.stderr
+    assert "does not exist: run `seanchai corpus download`" in result.stderr
 
 
 def test_crosscheck_says_a_dictionary_is_all_it_needs(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
-    result = CliRunner().invoke(main, ["crosscheck"])
+    result = CliRunner().invoke(main, ["corpus", "crosscheck"])
 
     assert result.exit_code == 1, result.output
-    assert "run `seanchai download --only wireshark`" in result.stderr
+    assert "run `seanchai corpus download --only wireshark`" in result.stderr
     assert "Traceback" not in result.stderr
 
 
@@ -1068,10 +1178,18 @@ def test_crosscheck_says_a_dictionary_is_all_it_needs(tmp_path, monkeypatch):
         (
             ["--include-pdfs", "--specifications", "absent"],
             1,
-            "run `seanchai download --only 3gpp`",
+            "run `seanchai corpus download --only 3gpp`",
         ),
-        (["--specifications", "absent"], 1, "run `seanchai download --only rfc`"),
-        (["--dictionary", "absent"], 1, "run `seanchai download --only wireshark`"),
+        (
+            ["--specifications", "absent"],
+            1,
+            "run `seanchai corpus download --only rfc`",
+        ),
+        (
+            ["--dictionary", "absent"],
+            1,
+            "run `seanchai corpus download --only wireshark`",
+        ),
     ],
 )
 def test_export_says_to_download_what_it_lacks(
@@ -1096,7 +1214,7 @@ def test_export_with_pdfs_says_to_download_the_ones_it_lacks(tmp_path, monkeypat
     )
 
     assert result.exit_code == 1, result.output
-    assert "run `seanchai download --only 3gpp`" in result.stderr
+    assert "run `seanchai corpus download --only 3gpp`" in result.stderr
 
 
 @pytest.mark.parametrize(
@@ -1109,9 +1227,11 @@ def test_export_with_pdfs_says_to_download_the_ones_it_lacks(tmp_path, monkeypat
         ["lint", "/no/such/file.dad"],
         ["format"],
         ["lint", "--corpus", ".", "--no-corpus"],
-        ["correct", "/no/such/file.dad", "--corrections", "."],
-        ["download", "--spec", "TS29.272"],
-        ["download", "--only", "pdfs"],
+        ["corpus"],
+        ["corpus", "no-such-command"],
+        ["corpus", "correct", "/no/such/file.dad", "--corrections", "."],
+        ["corpus", "download", "--spec", "TS29.272"],
+        ["corpus", "download", "--only", "pdfs"],
         ["export"],
         ["show"],
         ["show", "1:x"],
@@ -1182,6 +1302,7 @@ def test_notes_and_crosscheck_findings_are_no_failure(tmp_path, monkeypatch):
     result = CliRunner().invoke(
         main,
         [
+            "corpus",
             "crosscheck",
             "--dictionary",
             str(dictionary),

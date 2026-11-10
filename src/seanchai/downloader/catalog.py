@@ -15,7 +15,7 @@ from urllib.parse import unquote, urlparse
 from ..errors import SeanchaiError
 from ..prose import collapse_fields
 
-# What `seanchai download --only` selects, and a manifest says it holds.
+# What `seanchai corpus download --only` selects, and a manifest says it holds.
 SOURCES = ("3gpp", "onem2m", "rfc", "transcribed", "wireshark")
 
 # The 3GPP release the catalog's `[[tgpp]]` entries are fetched at, unless a run

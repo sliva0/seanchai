@@ -9,7 +9,7 @@
 # ///
 """Stage Wireshark dictionary patches adding the AVPs the oracle finds absent.
 
-`seanchai crosscheck` reports, per file, the AVPs Wireshark's dictionary has
+`seanchai corpus crosscheck` reports, per file, the AVPs Wireshark's dictionary has
 no entry for at their `(vendor-id, code)`. This writes one `git format-patch`
 file per defining document, each adding that document's absent AVPs to the
 pinned dictionary in its own XML shape: name, code, vendor, the type (an

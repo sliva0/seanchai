@@ -1987,7 +1987,7 @@ def load(
 
     `required` distinguishes the two callers. Extraction over a corpus may pass
     a directory that holds modules for some of its specifications, so a missing
-    module is an ordinary empty result. `seanchai correct` was asked for exactly
+    module is an ordinary empty result. `seanchai corpus correct` was asked for exactly
     one specification's corrections, so a missing module, or one declaring no
     edit, means a typo silently produced an uncorrected file, and it fails
     instead.

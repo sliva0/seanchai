@@ -54,7 +54,7 @@ def test_a_transcription_holds_what_the_document_prints(path):
 
 
 def test_the_catalog_fetches_what_each_transcription_was_copied_from():
-    """`seanchai download` reads the catalog's URL and the export looks the
+    """`seanchai corpus download` reads the catalog's URL and the export looks the
     file up by the name in the transcription's header, so the two are one."""
     catalog = {document.reference: document for document in load_catalog().transcribed}
 

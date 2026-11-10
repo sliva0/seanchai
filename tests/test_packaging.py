@@ -281,10 +281,22 @@ def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
     source = tmp_path / "spec.docx"
     source.touch()
     for command in (
-        ("extract", source),
-        ("download", "-o", tmp_path / "specifications"),
-        ("download", "--spec", "TS29.229", "--version", "18.1.0", "-o", tmp_path / "s"),
-        ("regenerate",),
+        ("corpus", "extract", source),
+        ("corpus", "download", "-o", tmp_path / "specifications"),
+        (
+            "corpus",
+            "download",
+            "--spec",
+            "TS29.229",
+            "--version",
+            "18.1.0",
+            "-o",
+            tmp_path / "s",
+        ),
+        (
+            "corpus",
+            "regenerate",
+        ),
     ):
         refused = run(bin_dir / "seanchai", *command)
         assert refused.returncode == 1, (command, refused.stdout, refused.stderr)
@@ -306,7 +318,7 @@ def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
     assert "seanchai[extract]" in library.stdout
 
     # Listing the catalog fetches and opens nothing.
-    listed = run(bin_dir / "seanchai", "download", "--list")
+    listed = run(bin_dir / "seanchai", "corpus", "download", "--list")
     assert listed.returncode == 0, listed.stderr
 
 

@@ -9,8 +9,8 @@ disagreement informative. A row's vendor is read as the model reads it
 ([linter.md](linter.md#vendor-spaces)).
 
 ```sh
-uv run seanchai download --only wireshark   # all this needs of a download
-uv run seanchai crosscheck        # the installed corpus, or name files
+uv run seanchai corpus download --only wireshark  # all it needs of a download
+uv run seanchai corpus crosscheck   # the installed corpus, or name files
 ```
 
 The check reads the newest copy of each document and no other: the

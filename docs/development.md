@@ -19,15 +19,23 @@ corpus is the committed one, and the tests live at the root for both.
 
 The library's own are `pydantic` and `click`: `click` stays core because the
 `seanchai` entry point is installed with the library, and `show`, `commands`,
-`dictionary`, `export`, `lint` and `crosscheck` need nothing else. `python-docx`
-(and through it `lxml`) and `pypdf` are the `seanchai[extract]` extra, which the
-dev group installs. Only `extractor/tgpp_docx.py` and two validators in
-`downloader/core.py` touch them, and nothing imports either on the way to the
-model or the export: the catalog, which the export reads, is its own module,
-`downloader/catalog.py`. Without the extra, `MissingExtraError` names it, and
-`extract`, `regenerate` and a 3GPP, oneM2M or `transcribed` `download` say so
-before doing anything. `extract-rfc` and `download --only rfc`, `--only
+`dictionary`, `export`, `lint`, `format` and `corpus crosscheck` need nothing
+else. `python-docx` (and through it `lxml`) and `pypdf` are the
+`seanchai[extract]` extra, which the dev group installs. Only
+`extractor/tgpp_docx.py` and two validators in `downloader/core.py` touch them,
+and nothing imports either on the way to the model or the export: the catalog,
+which the export reads, is its own module, `downloader/catalog.py`. Without the
+extra, `MissingExtraError` names it, and `corpus extract`, `corpus regenerate`
+and a 3GPP, oneM2M or `transcribed` `corpus download` say so before doing
+anything. `corpus extract-rfc` and `corpus download --only rfc`, `--only
 wireshark` need no extra.
+
+The command line keeps a consumer's commands at the top level and puts the
+maintainers' under `seanchai corpus`: `download`, `regenerate`, `extract`,
+`extract-rfc`, `correct` and `crosscheck`, whose defaults name this repository's
+directories (`specifications/`, `edits/`, the corpus package's data,
+`integrations/wireshark/aliases.toml`) and so run from its root. Help lists
+commands by audience, in the order `cli.py` defines them.
 
 ## Repository layout
 
@@ -61,7 +69,7 @@ wireshark` need no extra.
 
 ```sh
 uv run pytest -m "not sources"   # tests that need no downloaded documents
-uv run pytest                    # all tests; needs `seanchai download` first
+uv run pytest                    # all tests; needs `seanchai corpus download`
 uv run --isolated --python 3.12 pytest -m "not sources"  # the oldest Python
 uv run ruff check .              # lint; findings get fixed, not suppressed
 uv run ruff format .
@@ -70,7 +78,7 @@ uv run ty check
 uv run basedpyright
 ```
 
-`seanchai download` needs LibreOffice's `soffice` on PATH to convert the
+`seanchai corpus download` needs LibreOffice's `soffice` on PATH to convert the
 catalog's legacy `.doc` files, unless run with `--no-convert`. The full
 `sources` test needs the conversions and fails, naming them, on a
 `--no-convert` manifest.
@@ -99,11 +107,11 @@ between runs; without it each run starts cold and still passes.
 
 ## Tests
 
-- Tests marked `sources` run `seanchai regenerate` over the real documents
-  under `specifications/` into a scratch directory and require every
-  committed pair to come out unchanged. They fail, rather than skip, when
-  the sources are absent or a legacy `.doc` is unconverted, so a green run
-  without `-m "not sources"` means the strong check ran.
+- Tests marked `sources` run `seanchai corpus regenerate` over the real
+  documents under `specifications/` into a scratch directory and require every
+  committed pair to come out unchanged. They fail, rather than skip, when the
+  sources are absent or a legacy `.doc` is unconverted, so a green run without
+  `-m "not sources"` means the strong check ran.
 - Everything else runs on committed files and small synthetic fixtures
   (`tests/conftest.py`): every committed `.dad` round-trips, every committed
   correction re-applies to the committed raw output, the linter's findings
@@ -167,9 +175,9 @@ derived output. One command rebuilds all of it
 from the downloaded sources and the two edit layers:
 
 ```sh
-uv run seanchai download      # the catalog into specifications/
-uv run seanchai regenerate    # every document, raw mirror and record included
-git diff --stat packages/seanchai-corpus   # what changed, if anything
+uv run seanchai corpus download     # the catalog into specifications/
+uv run seanchai corpus regenerate   # every document, raw mirror, record
+git diff --stat packages/seanchai-corpus  # what changed, if anything
 ```
 
 `regenerate` prints one line per document: `unchanged`, `changed`,
@@ -198,19 +206,19 @@ maintained by hand: it writes `.dad` files and `corrections.json` only.
 1. Give it an entry in the downloader's catalog,
    `src/seanchai/downloader/specs.toml`: a `[[tgpp]]` or `[[rfc]]` table with
    its number and title, and a `reason` unless the default says it. Then
-   `uv run seanchai download`.
-2. `uv run seanchai regenerate --add <SpecRef>`. The extractor has to be able to
-   read it: a shape it rejects fails with the reason, and an entry the catalog
-   marks `out_of_scope` (TS 29.305, say) is refused with that field's words
-   ([extractor.md](extractor.md#out-of-scope)).
+   `uv run seanchai corpus download`.
+2. `uv run seanchai corpus regenerate --add <SpecRef>`. The extractor has to be
+   able to read it: a shape it rejects fails with the reason, and an entry the
+   catalog marks `out_of_scope` (TS 29.305, say) is refused with that field's
+   words ([extractor.md](extractor.md#out-of-scope)).
 3. Lint the raw file, under the corpus's `raw/`, with `uv run seanchai lint`,
    which reads the committed corpus for the cross-file rules. Every error is a
    source typo (input patch), a reading the extractor should not make
    undeclared (quirk) or wrong data (correction).
-4. Declare the fixes in `edits/` and run `uv run seanchai regenerate` again,
-   which also rewrites the corrections record. A hole the new document brings
-   fails the default `Model.build` and `seanchai lint`: fix it, or record it in
-   the corpus's `holes.toml` with its evidence
+4. Declare the fixes in `edits/` and run `uv run seanchai corpus regenerate`
+   again, which also rewrites the corrections record. A hole the new document
+   brings fails the default `Model.build` and `seanchai lint`: fix it, or record
+   it in the corpus's `holes.toml` with its evidence
    ([consumers.md](consumers.md#known-holes)).
 5. Review what moved in the export and rewrite its pin:
    `uv run pytest tests/test_export.py --update-export-pin`.
@@ -235,20 +243,20 @@ maintained by hand: it writes `.dad` files and `corrections.json` only.
 
 ## Version upgrades
 
-`seanchai download` follows 3GPP's newest version with a published ETSI PDF,
-so a newer version shows up as `replaced` on the next regenerate. Diff
-raw against raw first: that is what changed in the specification with the
-correction layer held still. A correction whose `expect` no longer matches
-fails the rebuild, which is the signal that a fix was adopted upstream and
-the declaration should go. Then diff the corrected files.
+`seanchai corpus download` follows 3GPP's newest version with a published ETSI
+PDF, so a newer version shows up as `replaced` on the next regenerate. Diff raw
+against raw first: that is what changed in the specification with the correction
+layer held still. A correction whose `expect` no longer matches fails the
+rebuild, which is the signal that a fix was adopted upstream and the declaration
+should go. Then diff the corrected files.
 
 When the extractor has changed since the old raw file was committed,
 re-extract the old version with today's code, so the diff shows the
 specification's changes and not the extractor's:
 
 ```sh
-uv run seanchai download --spec TS29.272 --version 19.5.0
-uv run seanchai regenerate --spec TS29.272 -o /tmp/old \
+uv run seanchai corpus download --spec TS29.272 --version 19.5.0
+uv run seanchai corpus regenerate --spec TS29.272 -o /tmp/old \
     --manifest specifications/versions/TS29.272/19.5.0/manifest.json
 diff -u /tmp/old/raw/3gpp/rel-19/29272-j50.raw.dad \
     packages/seanchai-corpus/src/seanchai_corpus/dad/raw/3gpp/rel-19/29272-j60.raw.dad
@@ -261,7 +269,7 @@ each rebuilt in its own tree.
 Once the diffs are reviewed,
 
 ```sh
-uv run seanchai regenerate --expand-ranges
+uv run seanchai corpus regenerate --expand-ranges
 ```
 
 widens the version ranges of every declaration that applied cleanly:
@@ -276,10 +284,10 @@ comprehension, split by comments, or built by an expression, is printed as
 `not widened` for a person to handle.
 
 **A new release** is an upgrade of every document at once. `RELEASE` in
-`downloader/catalog.py` names the one `seanchai download` fetches the catalog
-at. A plain `regenerate` then follows each committed copy into the new tree,
-reporting it `replaced` and removing the old pair and any tree left empty, and
-reads each document with the declarations of the release below it
+`downloader/catalog.py` names the one `seanchai corpus download` fetches the
+catalog at. A plain `regenerate` then follows each committed copy into the new
+tree, reporting it `replaced` and removing the old pair and any tree left empty,
+and reads each document with the declarations of the release below it
 ([extractor.md](extractor.md#releases)). What a release moves beyond the
 declarations is the corpus's own reading of it:
 

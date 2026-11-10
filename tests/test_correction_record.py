@@ -25,7 +25,7 @@ def test_the_committed_record_is_what_the_modules_say(books):
     built = correction_record.build(books, _CORRECTIONS)
     committed = _COMMITTED.read_text("utf-8")
     assert built.render() == committed, (
-        f"{_COMMITTED} is stale: run `seanchai regenerate` and commit it"
+        f"{_COMMITTED} is stale: run `seanchai corpus regenerate` and commit it"
     )
     assert correction_record.load(_COMMITTED) == built
 

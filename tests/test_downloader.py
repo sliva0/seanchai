@@ -1352,7 +1352,7 @@ def test_an_archive_with_its_own_docx_is_not_converted(tmp_path, monkeypatch):
         (
             "absent",
             r"TS 29\.999 ships a legacy \.doc; .*LibreOffice \(`.*soffice`\)"
-            r".*; `seanchai download --no-convert` downloads without converting",
+            r".*; `seanchai corpus download --no-convert` downloads without converting",
         ),
         ("failing", r"TS 29\.999: `.*` exited 1: Error: source file could not be"),
         ("silent", r"TS 29\.999: LibreOffice wrote no 29999-j00\.docx"),

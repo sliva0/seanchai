@@ -127,7 +127,7 @@ def test_a_rebuild_follows_a_document_into_a_later_releases_tree(
 def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
     tmp_path, synthetic_spec_docx
 ):
-    # The route `seanchai download --spec --version` leads to: a one-record
+    # The route `seanchai corpus download --spec --version` leads to: a one-record
     # manifest, `only` so the corpus's other specifications are not reported
     # missing from it, and an output that is not the corpus.
     corpus = tmp_path / "dad"
@@ -164,7 +164,7 @@ def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
 def test_two_releases_of_one_document_are_two_copies_in_two_trees(
     tmp_path, synthetic_spec_docx
 ):
-    """A pinned version (`seanchai download`'s `[[tgpp_pinned]]`) shares
+    """A pinned version (`seanchai corpus download`'s `[[tgpp_pinned]]`) shares
     its reference with the catalog's release of the document: each is
     rebuilt in its own release's tree, and neither replaces the other."""
     sources = tmp_path / "specifications"
@@ -236,7 +236,8 @@ def test_a_legacy_doc_is_read_through_the_manifest_conversion(
     assert not list(corpus.rglob("*.dad"))
     assert regenerate.describe(skipped) == (
         "not-converted TS29.999: 29999-100.doc was downloaded without conversion"
-        " (`seanchai download --no-convert`); the committed files were left alone"
+        " (`seanchai corpus download --no-convert`);"
+        " the committed files were left alone"
     )
 
     tgpp["conversions"] = [conversion]
@@ -346,6 +347,7 @@ def test_ranges_warn_for_all_layers_without_gating_application(
     result = CliRunner().invoke(
         main,
         [
+            "corpus",
             "regenerate",
             "--manifest",
             str(manifest),
@@ -543,6 +545,7 @@ def test_expanding_ranges_rewrites_the_edit_files_and_retires_the_warnings(
     corpus = tmp_path / "dad"
     corpus.mkdir()
     arguments = [
+        "corpus",
         "regenerate",
         "--manifest",
         str(manifest),
@@ -619,6 +622,7 @@ def test_expanding_ranges_widens_only_the_acceptances_still_matching(
     result = CliRunner().invoke(
         main,
         [
+            "corpus",
             "regenerate",
             "--manifest",
             str(manifest),
@@ -944,7 +948,7 @@ _ORPHAN = "; Specification: 3GPP TS 29.999\n; Version: 1.0.0\n; Vendor-ID: 10415
 
 
 def _rfc_only_manifest(root):
-    """What `seanchai download --only rfc` leaves, of an RFC the corpus lacks."""
+    """What `seanchai corpus download --only rfc` leaves, of an RFC the corpus lacks."""
     (root / "rfc").mkdir(parents=True)
     (root / "manifest.json").write_text(
         json.dumps({"artifacts": [], "sources": ["rfc", "wireshark"]})
@@ -963,7 +967,7 @@ def test_a_partial_manifest_names_the_source_it_lacks(tmp_path):
     assert report.missing_sources == ("3gpp",)
     (outcome,) = report.failed
     assert outcome.status == "not-in-manifest"
-    assert "seanchai download --only 3gpp" in (outcome.error or "")
+    assert "seanchai corpus download --only 3gpp" in (outcome.error or "")
 
 
 def test_a_whole_manifest_lacking_a_document_names_no_source(tmp_path):

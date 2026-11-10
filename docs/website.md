@@ -45,7 +45,7 @@ DIR/
 
 `<id>` is the file's stem, `29272-j60`. The files are compact JSON with sorted
 keys, the grammar aside, which is copied as it stands. `seanchai.export_schema`
-holds their shape as pydantic models and `SCHEMA_VERSION`, now 6, written into
+holds their shape as pydantic models and `SCHEMA_VERSION`, now 1, written into
 every file but `schema.json` and the grammar; it changes when a reader would
 have to. A fixture can be validated against `schema.json`, whose root is one of
 the four file shapes. A field with no default is always written, null where it
@@ -58,8 +58,7 @@ the installed one. There are no timestamps: the same inputs give the same bytes
 under any hash seed.
 
 An export replaces its whole output directory, so it refuses one that is not
-empty unless its `index.json` says that `generator`, or has exactly the shape of
-schema version 1, 2 or 3, which came before the marker.
+empty unless its `index.json` says that `generator`.
 
 A document carries the file's text split into tokens, its `sections` for a table
 of contents, its holes with their recorded reasons, the linter's findings and
@@ -146,16 +145,16 @@ preferred once it is cheap.
 
 ## Build and deployment
 
-- Public: a GitHub Actions job in the site repository installs
-  `seanchai` and `seanchai-corpus` from PyPI, runs the export, builds the
-  site and deploys with the Pages actions. No source documents are needed;
-  `seanchai download --only rfc --only wireshark` adds RFC texts and Wireshark's
-  names, with no `seanchai[extract]`.
+- Public: a GitHub Actions job in the site repository installs `seanchai` and
+  `seanchai-corpus` from PyPI, runs the export, builds the site and deploys with
+  the Pages actions. No source documents are needed; `seanchai corpus download
+  --only rfc --only wireshark` adds RFC texts and Wireshark's names, with no
+  `seanchai[extract]`.
 - Self-hosted: the same build with `--include-pdfs --specifications
   specifications`, copying the PDFs (about 24 MB for the current corpus), and
-  the PDF.js viewer into the output. `seanchai download --only 3gpp` fetches the
-  3GPP ones and `--only transcribed` what the hand transcriptions were copied
-  from, into `specifications/transcriptions/`.
+  the PDF.js viewer into the output. `seanchai corpus download --only 3gpp`
+  fetches the 3GPP ones and `--only transcribed` what the hand transcriptions
+  were copied from, into `specifications/transcriptions/`.
 
 ## Order of work
 

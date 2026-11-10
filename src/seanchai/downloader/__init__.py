@@ -13,7 +13,7 @@ The curated specification catalog lives in ``specs.toml`` next to this package;
 the CLI downloads into the git-ignored ``specifications/`` directory by default.
 
 This package is a library: it returns records and raises `DownloadError`, and
-the `seanchai download` command owns the printing and the exit status. The
+the `seanchai corpus download` command owns the printing and the exit status. The
 catalog lives in `catalog` and the implementation in `core`; what is re-exported
 here is what the boundary promises. Only a 3GPP, oneM2M or `transcribed` download
 needs the `seanchai[extract]` extra, to validate what it fetched.

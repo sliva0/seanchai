@@ -1790,7 +1790,7 @@ def test_a_specification_header_cannot_name_a_module_outside_the_directory(
 
 
 def test_a_required_load_fails_when_the_module_is_missing_or_empty(tmp_path):
-    # `seanchai correct` asked for this specification's corrections; producing
+    # `seanchai corpus correct` asked for this specification's corrections; producing
     # an uncorrected file and calling it a success is the failure mode.
     with pytest.raises(corrections.CorrectionError, match="no corrections module"):
         corrections.load(tmp_path, "3GPP TS 29.999", required=True)
@@ -1839,7 +1839,7 @@ def test_an_acceptance_is_declared_beside_corrections_and_changes_nothing(
     assert isinstance(accept, corrections.Accept)
     assert accept.cited == "TS29.999.py#mode-body"
     assert corrections.apply(spec, [accept]) == (spec, [])
-    # Nothing to correct is what `seanchai correct` refuses.
+    # Nothing to correct is what `seanchai corpus correct` refuses.
     with pytest.raises(corrections.CorrectionError, match="declares no corrections"):
         corrections.load(tmp_path, "3GPP TS 29.999", required=True)
 

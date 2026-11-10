@@ -47,9 +47,9 @@ pip install "seanchai[corpus]"   # or seanchai and seanchai-corpus, pinned apart
 pip install "seanchai[extract]"  # to rebuild a corpus from source documents
 ```
 
-The `extract` extra is `python-docx` and `pypdf`, which `seanchai extract`,
-`regenerate` and a 3GPP, oneM2M or `transcribed` `download` need and a consumer
-does not.
+The `extract` extra is `python-docx` and `pypdf`, which `seanchai corpus
+extract`, `corpus regenerate` and a 3GPP, oneM2M or `transcribed` `corpus
+download` need and a consumer does not.
 
 ```python
 from seanchai import model
@@ -60,29 +60,42 @@ built.resolve("TS29.229", "Public-Identity")
 
 ## Commands
 
+Reading the installed corpus, with no checkout and no downloads:
+
 ```sh
-seanchai show NAME_OR_IDENTITY [--json] # one AVP, from the installed corpus
+seanchai show NAME_OR_IDENTITY [--json] # one AVP and its other readings
 seanchai commands [REF | --application ID] [--json]
 seanchai dictionary -o OUT.json         # the corpus as JSON, to generate from
-seanchai download                       # fetch the catalog into specifications/
-seanchai download --no-convert          # without LibreOffice; legacy .doc unread
-seanchai download --only wireshark      # one source, keeping the others
-seanchai download --only transcribed    # the hand transcriptions' PDFs
-seanchai download --spec SPECREF --version X.Y.Z   # one older version, for diffs
-seanchai regenerate [--add SPECREF]     # rebuild the corpus from the downloads
-seanchai regenerate --expand-ranges     # also widen stale declaration ranges
-seanchai extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
-seanchai extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
-seanchai correct RAW.dad --corrections DIR -o OUT.dad
-seanchai format [--check] [FILE.dad | DIR]...  # canonical form, ;; comments kept
-seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] [FILE.dad | DIR]...
-seanchai crosscheck [FILE.dad | DIR]... # against Wireshark's dictionary
 seanchai export -o DIR                  # the corpus as JSON for the static site
 seanchai export -o DIR --include-pdfs --specifications specifications
 ```
 
-A command exits 1 on an error or a finding and 2 on a usage error. `crosscheck`
-reports disagreement for a reader to judge, so its findings exit 0.
+Checking and rewriting `.dad` files, the corpus's or your own sidecars:
+
+```sh
+seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] [FILE.dad | DIR]...
+seanchai format [--check] [FILE.dad | DIR]...  # canonical form, ;; comments kept
+```
+
+Maintaining the corpus, from the root of a checkout, whose directories the
+defaults name:
+
+```sh
+seanchai corpus download                    # fetch the catalog into specifications/
+seanchai corpus download --no-convert       # without LibreOffice; .doc unread
+seanchai corpus download --only wireshark   # one source, keeping the others
+seanchai corpus download --only transcribed # the hand transcriptions' PDFs
+seanchai corpus download --spec SPECREF --version X.Y.Z   # an older version
+seanchai corpus regenerate [--add SPECREF]  # rebuild the corpus from the downloads
+seanchai corpus regenerate --expand-ranges  # also widen stale declaration ranges
+seanchai corpus extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
+seanchai corpus extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
+seanchai corpus correct RAW.dad --corrections DIR -o OUT.dad
+seanchai corpus crosscheck [FILE.dad | DIR]...  # against Wireshark's dictionary
+```
+
+A command exits 1 on an error or a finding and 2 on a usage error. `corpus
+crosscheck` reports disagreement for a reader to judge, so its findings exit 0.
 
 ## Checking traffic
 

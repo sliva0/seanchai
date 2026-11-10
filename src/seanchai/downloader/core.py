@@ -537,7 +537,7 @@ def run_soffice(identifier: str, arguments: list[str]) -> str:
         raise DownloadError(
             f"{identifier} ships a legacy .doc; converting it needs LibreOffice"
             f" (`{SOFFICE}`), which is not installed or not on PATH: {error};"
-            " `seanchai download --no-convert` downloads without converting"
+            " `seanchai corpus download --no-convert` downloads without converting"
         ) from error
     except (OSError, subprocess.SubprocessError) as error:
         raise DownloadError(
@@ -1265,7 +1265,7 @@ def _kept(destination: Path, selected: frozenset[str]) -> _Kept:
     except (OSError, ValueError, LookupError, TypeError, AttributeError) as error:
         raise DownloadError(
             f"cannot read {path} to keep what it holds: {error}; a full"
-            " `seanchai download` replaces it"
+            " `seanchai corpus download` replaces it"
         ) from error
     for record in records:
         source = SOURCE_OF_FAMILY[record.family]
@@ -1274,7 +1274,7 @@ def _kept(destination: Path, selected: frozenset[str]) -> _Kept:
             if not (destination / name).is_file():
                 raise DownloadError(
                     f"{path} lists {name}, which is gone: run"
-                    f" `seanchai download --only {source}`"
+                    f" `seanchai corpus download --only {source}`"
                 )
     keeps_3gpp = "3gpp" in held and "3gpp" not in selected
     return _Kept(
@@ -1489,7 +1489,7 @@ def download_version(
     For diffing against what the corpus holds: the tree is
     `versions/<SpecRef>/<version>/` (`versions/TS29.272/18.6.0/`), shaped
     like the published one and with a one-record `manifest.json` of its own,
-    so `seanchai regenerate --manifest` reads it the way it reads the corpus.
+    so `seanchai corpus regenerate --manifest` reads it the way it reads the corpus.
     The release is the version's major. The archive comes from the cache
     when an earlier run fetched it; nothing else under `output` changes.
     Returns the manifest path.
@@ -1511,7 +1511,7 @@ def download_version(
     if spec is None:
         raise DownloadError(
             f"{reference} is not a catalogued 3GPP specification"
-            " (`seanchai download --list` shows the catalog)"
+            " (`seanchai corpus download --list` shows the catalog)"
         )
     selected = parse_version(version)
     release = selected[0]
