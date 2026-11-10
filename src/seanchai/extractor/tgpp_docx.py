@@ -4739,10 +4739,10 @@ def attach_pages(
                 match = re.match(r"^(\d+[A-Za-z]*(?:\.\d+[A-Za-z]*)*)\s", entry.title)
                 if match is None:
                     continue
-                # pypdf types an outline destination as `IndirectObject` and
-                # `get_page_number` as optional; both resolve for a real outline.
+                # pypdf types `get_page_number` as optional; it resolves for a real
+                # outline.
                 destination = entry.page or reader.pages[0]
-                number = reader.get_page_number(destination)  # pyright: ignore[reportArgumentType]
+                number = reader.get_page_number(destination)
                 if number is not None:
                     # `setdefault`, not assignment: a section number bookmarked
                     # twice (a "6.3.1" continued after a page break) should keep

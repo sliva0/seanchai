@@ -16,7 +16,7 @@ jobs:
     # with node in it, which the actions below need.
     runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'node22' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # uv brings its own Python 3.14, from .python-version. The action caches
       # the managed CPython and the uv cache, keyed by the lockfile. Pruning
       # drops pre-built wheels before saving, since downloading them again is

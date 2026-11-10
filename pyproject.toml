@@ -23,8 +23,8 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "click>=8.4.2",
-    "pydantic>=2.13.4",
+    "click>=8.5.1",
+    "pydantic>=2.14.3",
 ]
 
 [project.optional-dependencies]
@@ -32,7 +32,7 @@ corpus = ["seanchai-corpus>=2026.11.2"]
 # What reading and validating source documents takes (and lxml, through
 # python-docx). The model, the export and the lookup commands import neither.
 extract = [
-    "pypdf[crypto]>=6.14.2",
+    "pypdf[crypto]>=7.0.1",
     "python-docx>=1.2.0",
 ]
 
@@ -50,14 +50,14 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "basedpyright>=1.39.9",
-    "pytest>=9.1.1",
+    "basedpyright>=1.40.2",
+    "pytest>=9.2.0",
     "python-diameter>=0.9.0",
-    "ruff>=0.16.0",
+    "ruff>=0.17.4",
     "rumdl>=0.3.2",
     "seanchai-corpus",
     "seanchai[extract]",
-    "ty>=0.0.63",
+    "ty>=0.0.100",
 ]
 
 [tool.uv.workspace]

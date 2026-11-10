@@ -11,7 +11,7 @@ import pypdf
 from seanchai.downloader import core
 from seanchai.extractor import tgpp_docx
 
-assert tgpp_docx.extract_with_comments
+assert callable(tgpp_docx.extract_with_comments)
 
 with tempfile.TemporaryDirectory() as scratch:
     document = Path(scratch) / "file.docx"

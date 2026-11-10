@@ -19,7 +19,7 @@ import os
 import re
 import shutil
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -992,7 +992,7 @@ def _refuse_foreign(output: Path) -> None:
 
 
 @contextlib.contextmanager
-def _replacing(output: Path) -> Iterator[Path]:
+def _replacing(output: Path) -> Generator[Path]:
     """A directory to build the export in, which replaces `output` when the
     block ends and is removed if it raises.
 

@@ -14,7 +14,7 @@ next one uncovered, so the public entry points close the set instead.
 """
 
 import contextlib
-from collections.abc import Iterator
+from collections.abc import Generator
 
 from ..errors import SeanchaiError
 
@@ -24,7 +24,7 @@ class ExtractionError(SeanchaiError, ValueError):
 
 
 @contextlib.contextmanager
-def boundary(operation: str) -> Iterator[None]:
+def boundary(operation: str) -> Generator[None]:
     """Re-raise anything that is not already an `ExtractionError` as one."""
     try:
         yield

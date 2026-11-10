@@ -34,7 +34,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -1296,7 +1296,7 @@ def _link_kept(destination: Path, tree: Path, sources: Iterable[str]) -> None:
 
 
 @contextlib.contextmanager
-def staged(directory: Path) -> Iterator[Path]:
+def staged(directory: Path) -> Generator[Path]:
     """A fresh staging directory, removed afterwards whatever happened.
 
     One left by an interrupted run was never published, so nothing reads it.

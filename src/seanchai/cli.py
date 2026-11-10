@@ -16,7 +16,7 @@ import contextlib
 import difflib
 import json
 import sys
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Generator, Iterable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -125,7 +125,7 @@ class _Group(click.Group):
 
 
 @contextlib.contextmanager
-def reported() -> Iterator[None]:
+def reported() -> Generator[None]:
     """Present a library failure as a CLI error, not as a traceback."""
     try:
         yield
@@ -134,7 +134,7 @@ def reported() -> Iterator[None]:
 
 
 @contextlib.contextmanager
-def _naming(source: Path) -> Iterator[None]:
+def _naming(source: Path) -> Generator[None]:
     """A `.dad` file that does not parse, or is no text, as an error naming it."""
     from .dad.parser import DadParseError
 
