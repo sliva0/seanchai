@@ -84,6 +84,13 @@ seanchai export -o DIR --include-pdfs --specifications specifications
 A command exits 1 on an error or a finding and 2 on a usage error. `crosscheck`
 reports disagreement for a reader to judge, so its findings exit 0.
 
+## Checking traffic
+
+A Wireshark plugin generated from the corpus checks every Diameter message in a
+capture against its document: required and fixed AVPs, occurrences, flags, data
+formats and values, in Wireshark 4.2 and later and in tshark. See
+[integrations/wireshark/validator][validator].
+
 ## Development
 
 The repository layout and how to work on Seanchaí itself are in
@@ -102,3 +109,4 @@ publishers' terms.
 [license]: https://github.com/sliva0/seanchai/blob/main/LICENSE
 [linter]: https://github.com/sliva0/seanchai/blob/main/docs/linter.md
 [oracle]: https://github.com/sliva0/seanchai/blob/main/docs/oracle.md
+[validator]: https://github.com/sliva0/seanchai/blob/main/integrations/wireshark/validator/README.md

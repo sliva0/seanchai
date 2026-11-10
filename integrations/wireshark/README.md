@@ -1,5 +1,8 @@
 # Wireshark dictionary patches
 
+The plugin checking Diameter traffic against the corpus is under
+[`validator/`](validator/README.md).
+
 Merge requests for Wireshark's Diameter dictionary, staged from the
 [oracle](../../docs/oracle.md)'s findings, in two series. None has been
 submitted.
