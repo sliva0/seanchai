@@ -132,12 +132,13 @@ def _tgpp2_entry(revision, version="2.0"):
 
 
 def test_a_cited_3gpp2_revision_resolves_to_that_revision_and_no_other():
-    """TS 29.212 [24] names revision B of 3GPP2 X.S0057 (a `cited_revision`):
-    a copy of revision B answers it, unreported, ahead of a newer one."""
+    """TS 29.212 V19.1.0 [24] names revision B of 3GPP2 X.S0057 (a
+    `cited_revision`): a copy of revision B answers it, unreported, ahead of
+    a newer one."""
     books = _books([_tgpp2_entry("0"), _tgpp2_entry("B", "1.0")])
 
     entry, across = books.resolution(
-        "3GPP2-X.S0057", like=_spec("3GPP TS 29.212", "18.2.0")
+        "3GPP2-X.S0057", like=_spec("3GPP TS 29.212", "19.1.0")
     )
 
     assert entry is not None and corpus.revision(entry.spec) == "B"
@@ -150,7 +151,7 @@ def test_another_revision_stands_in_only_by_its_table_entry():
     citation of an absent revision resolves to nothing, whatever the
     corpus holds of other revisions."""
     books = _books([_tgpp2_entry("0")])
-    citing = _spec("3GPP TS 29.212", "18.2.0")
+    citing = _spec("3GPP TS 29.212", "19.1.0")
 
     entry, across = books.resolution("3GPP2-X.S0057", like=citing)
 
@@ -172,7 +173,7 @@ def test_another_revision_stands_in_only_by_its_table_entry():
         "3GPP2-X.S0057", like=citing
     ) == (None, None)
 
-    books.rules = _without("stand_ins", ("TS29.212", "3GPP2-X.S0057"))
+    books.rules = _without("stand_ins", ("TS29.212", "19.1.0", "3GPP2-X.S0057"))
     assert books.resolution("3GPP2-X.S0057", like=citing) == (None, None)
     # A citation naming no revision takes whatever copy the corpus holds.
     other = _spec("3GPP TS 29.999", "18.0.0")
@@ -273,6 +274,41 @@ def test_another_publishers_document_resolves_no_3gpp_citation_by_its_version():
 
     assert books.resolve("TS29.214", like=citing) is None
     assert books.resolve("RFC4005", like=citing) is not None
+
+
+def test_an_entry_answers_only_for_the_citing_copy_it_names():
+    """A references clause changes between versions, so an entry read from one
+    copy's says nothing of another copy's: TS 29.212 V18.2.0 has no
+    `cited_revision`, and reads X.S0057 as naming no revision, ETSI TS 183
+    017 V3.1.1 no `cited_version` and ES 283 035 V2.4.1 no `latest_edition`.
+    Two copies may name different versions, each answered by its own."""
+    tgpp2 = _books([_tgpp2_entry("0")])
+    assert tgpp2.resolution(
+        "3GPP2-X.S0057", like=_spec("3GPP TS 29.212", "18.2.0")
+    ) == (tgpp2.resolve("3GPP2-X.S0057", like=_spec("3GPP TS 29.999", "18.0.0")), None)
+    specific = _books([_entry("3GPP TS 29.214", "7.12.0")])
+    assert specific.resolution("TS29.214", like=_spec("ETSI TS 183 017", "3.1.1")) == (
+        None,
+        None,
+    )
+    latest = _books([_entry("3GPP TS 29.329", "18.0.0")])
+    assert latest.resolution("TS29.329", like=_spec("ETSI ES 283 035", "2.4.1")) == (
+        None,
+        None,
+    )
+
+    rules = corpus.Rules(
+        cited_versions={
+            ("ETSI-TS183.017", "3.1.1", "TS29.214"): "6.11.0",
+            ("ETSI-TS183.017", "3.2.1", "TS29.214"): "7.12.0",
+        }
+    )
+    books = _books(
+        [_entry("3GPP TS 29.214", v) for v in ("6.11.0", "7.12.0")], rules=rules
+    )
+    for version, named in (("3.1.1", "6.11.0"), ("3.2.1", "7.12.0")):
+        entry = books.resolve("TS29.214", like=_spec("ETSI TS 183 017", version))
+        assert entry is not None and entry.spec.version == named
 
 
 def test_a_specific_reference_resolves_to_the_version_it_names_and_no_other():
@@ -388,7 +424,7 @@ def test_the_tables_name_only_versions_the_catalog_pins_and_verifies():
         (reference, version): "document"
         for reference, version in _RULES.final_versions.items()
     }.items() <= pinned.items()
-    for (_, cited), version in _RULES.cited_versions.items():
+    for (_, _, cited), version in _RULES.cited_versions.items():
         assert (cited, version) in pinned
 
 
@@ -587,6 +623,25 @@ def test_a_malformed_record_fails_the_load(tmp_path, record, message):
         corpus.Corpus.load([directory])
 
 
+@pytest.mark.parametrize("name", [corpus.CORPUS_FILE, corpus.HOLE_RECORD])
+def test_an_unreadable_corpus_file_or_record_fails_the_load(tmp_path, name):
+    """A file that is not UTF-8, or that cannot be read at all, is refused as
+    a `CorpusError` naming it, as a file that is not TOML is."""
+    directory = _corpus_directory(tmp_path)
+    path = directory / name
+    path.write_bytes(b"\xff")
+    load = corpus.Rules.load if name == corpus.CORPUS_FILE else corpus.HoleRecord.load
+
+    with pytest.raises(corpus.CorpusError, match=f"{name}: 'utf-8' codec"):
+        corpus.Corpus.load([directory])
+    with pytest.raises(corpus.CorpusError, match=f"{name}: 'utf-8' codec"):
+        load(path)
+    path.unlink()
+    path.mkdir()
+    with pytest.raises(corpus.CorpusError, match=f"{name}: .*Is a directory"):
+        load(path)
+
+
 def test_a_hole_reads_its_reason_as_prose_and_the_rest_exactly(tmp_path):
     path = tmp_path / "holes.toml"
     path.write_text(
@@ -764,8 +819,38 @@ _F = "format = 1\n"
         ),
         (
             _F + '[[stand_in]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
-            'revision = "0"\nversion = "18.0.0"\nevidence = "x"\n',
-            "no \\[\\[cited_revision\\]\\] names the revision",
+            'citing_version = "18.0.0"\nrevision = "0"\nversion = "18.0.0"\n'
+            'evidence = "x"\n',
+            "no \\[\\[cited_revision\\]\\] of that citing copy names the revision",
+        ),
+        (
+            _F + '[[cited_revision]]\nciting = "TS29.900"\n'
+            'citing_version = "17.0.0"\ncited = "TS29.900"\nrevision = "B"\n'
+            'evidence = "x"\n[[stand_in]]\ncited = "TS29.900"\n'
+            'citing = "TS29.900"\nciting_version = "18.0.0"\nrevision = "0"\n'
+            'version = "18.0.0"\nevidence = "x"\n',
+            "no \\[\\[cited_revision\\]\\] of that citing copy names the revision",
+        ),
+        *(
+            (
+                _F
+                + f'[[{table}]]\nciting = "TS29.900"\ncited = "TS29.900"\n'
+                + extra
+                + 'evidence = "x"\n',
+                f"a \\[\\[{table}\\]\\] states cited, citing, citing_version, evidence",
+            )
+            for table, extra in (
+                ("cited_version", 'version = "18.0.0"\n'),
+                ("latest_edition", ""),
+                ("cited_revision", 'revision = "B"\n'),
+                ("stand_in", 'revision = "0"\nversion = "18.0.0"\n'),
+            )
+        ),
+        (
+            _F + '[[cited_version]]\nciting = "TS29.900"\n'
+            'citing_version = "18.0.0"\ncited = "TS29.901"\nversion = "18.0.0"\n'
+            'evidence = "x"\n' * 2,
+            r"\[\[cited_version\]\] TS29.900 18.0.0 TS29.901 is stated twice",
         ),
         (
             _F + '[[release_stand_in]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
@@ -801,6 +886,12 @@ _F = "format = 1\n"
         "version-number",
         "twice",
         "stand-in-for-nothing",
+        "stand-in-for-another-copy",
+        "cited-version-no-citing-version",
+        "latest-edition-no-citing-version",
+        "cited-revision-no-citing-version",
+        "stand-in-no-citing-version",
+        "twice-per-copy",
         "specific-text",
         "fill-code",
         "no-names",
@@ -821,9 +912,26 @@ def test_a_malformed_corpus_file_fails_the_load(tmp_path, text, message):
             r"\[\[final_version\]\] names TS29.900 V17.0.0, which the corpus lacks",
         ),
         (
-            '[[cited_version]]\nciting = "TS29.999"\ncited = "TS29.900"\n'
-            'version = "18.0.0"\n',
-            "names TS29.999, which the corpus lacks",
+            '[[cited_version]]\nciting = "TS29.999"\nciting_version = "18.0.0"\n'
+            'cited = "TS29.900"\nversion = "18.0.0"\n',
+            "names TS29.999 V18.0.0, which the corpus lacks",
+        ),
+        *(
+            (
+                f'[[{table}]]\nciting = "TS29.900"\nciting_version = "17.0.0"\n'
+                f'cited = "TS29.900"\n{extra}',
+                f"\\[\\[{table}\\]\\] names TS29.900 V17.0.0, which the corpus lacks",
+            )
+            for table, extra in (
+                ("cited_version", 'version = "18.0.0"\n'),
+                ("latest_edition", ""),
+                ("cited_revision", 'revision = "B"\n'),
+            )
+        ),
+        (
+            '[[cited_version]]\nciting = "TS29.900"\nciting_version = "18.0.0"\n'
+            'cited = "TS29.900"\nversion = "17.0.0"\n',
+            r"\[\[cited_version\]\] names TS29.900 V17.0.0",
         ),
         (
             '[[cited_as]]\ncited = "TS29.900"\ndocument = "TS29.900"\n',
@@ -834,7 +942,8 @@ def test_a_malformed_corpus_file_fails_the_load(tmp_path, text, message):
             "names ETSI-ES283.034, which the corpus lacks",
         ),
         (
-            '[[latest_edition]]\nciting = "TS29.900"\ncited = "TS29.329"\n',
+            '[[latest_edition]]\nciting = "TS29.900"\nciting_version = "18.0.0"\n'
+            'cited = "TS29.329"\n',
             r"\[\[latest_edition\]\] names TS29.329",
         ),
         (
@@ -849,15 +958,20 @@ def test_a_malformed_corpus_file_fails_the_load(tmp_path, text, message):
             r"\[\[release_fill\]\] names TS29.900 V17.0.0",
         ),
         (
-            '[[cited_revision]]\nciting = "TS29.900"\ncited = "TS29.900"\n'
-            'revision = "B"\n[[stand_in]]\nciting = "TS29.900"\n'
-            'cited = "TS29.900"\nrevision = "0"\nversion = "18.0.0"\n',
+            '[[cited_revision]]\nciting = "TS29.900"\nciting_version = "18.0.0"\n'
+            'cited = "TS29.900"\nrevision = "B"\n[[stand_in]]\n'
+            'citing = "TS29.900"\nciting_version = "18.0.0"\ncited = "TS29.900"\n'
+            'revision = "0"\nversion = "18.0.0"\n',
             r"\[\[stand_in\]\] names TS29.900 revision 0 V18.0.0",
         ),
     ],
     ids=[
         "final-version",
         "citing",
+        "cited-version-citing-copy",
+        "latest-edition-citing-copy",
+        "cited-revision-citing-copy",
+        "cited-version-version",
         "cited-as-held",
         "cited-as-target",
         "latest-edition",

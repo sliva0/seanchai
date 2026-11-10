@@ -1315,7 +1315,7 @@ def _cross_release(
             f" {release.evidence} (corpus.toml, release_stand_in)"
         )
     elif across.rule is corpus.CitationRule.STAND_IN:
-        stand_in = rules.stand_ins[across.citing, across.cited]
+        stand_in = rules.stand_ins[across.citing, spec.version or "", across.cited]
         rule = (
             f"its references name revision {across.cited_revision}, which the"
             f" corpus lacks, and revision {across.revision} V{across.version}"
@@ -1327,7 +1327,9 @@ def _cross_release(
             " corpus.toml, cited_version)"
         )
     elif across.rule is corpus.CitationRule.LATEST_EDITION:
-        evidence = rules.latest_editions[across.citing, across.cited]
+        evidence = rules.latest_editions[
+            across.citing, spec.version or "", across.cited
+        ]
         rule = (
             f"it cites the document non-specifically, which reads as its latest"
             f" edition, V{across.version} of the corpus's copies: {evidence}"

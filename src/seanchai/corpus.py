@@ -53,6 +53,7 @@ __all__ = [
     "FILLABLE",
     "FORMATS",
     "HOLE_RECORD",
+    "Citation",
     "CitationRule",
     "Corpus",
     "CorpusError",
@@ -168,11 +169,27 @@ FILLABLE = (Missing.DATA_TYPE, Missing.FLAG_RULES)
 # states: True for a required one. Every entry states its evidence.
 _TABLES: dict[str, dict[str, bool]] = {
     "cited_as": {"cited": True, "document": True},
-    "cited_version": {"citing": True, "cited": True, "version": True},
-    "latest_edition": {"citing": True, "cited": True},
+    "cited_version": {
+        "citing": True,
+        "citing_version": True,
+        "cited": True,
+        "version": True,
+    },
+    "latest_edition": {"citing": True, "citing_version": True, "cited": True},
     "final_version": {"document": True, "version": True},
-    "cited_revision": {"citing": True, "cited": True, "revision": True},
-    "stand_in": {"citing": True, "cited": True, "revision": True, "version": True},
+    "cited_revision": {
+        "citing": True,
+        "citing_version": True,
+        "cited": True,
+        "revision": True,
+    },
+    "stand_in": {
+        "citing": True,
+        "citing_version": True,
+        "cited": True,
+        "revision": True,
+        "version": True,
+    },
     "release_stand_in": {
         "citing": True,
         "citing_version": True,
@@ -191,6 +208,12 @@ _TABLES: dict[str, dict[str, bool]] = {
         "fields": True,
     },
 }
+# A citation as the citing copy makes it, which a table read from a references
+# clause is keyed by: citing reference, citing version and cited reference,
+# ("TS29.212", "19.1.0", "3GPP2-X.S0057"). The version of a version-less
+# citing document is "".
+type Citation = tuple[str, str, str]
+
 # The fields that are not text.
 _LISTS = {"names", "fields"}
 _FLAGS = {"specific"}
@@ -204,36 +227,39 @@ class Rules:
     re-used row's From cell spells it. The empty `Rules()` is a corpus without
     the file: no format to hold it to, and no entries.
 
+    A table read from a citing document's references clause is keyed by the
+    citing copy, (citing reference, citing version, cited reference), and
+    answers for that copy alone: a references clause changes between
+    versions, and the corpus may hold several copies of one document.
+
     - `cited_as`: a document its citers number otherwise than its publisher,
       the cited reference to the publisher's (ETSI-TS283.034 is ETSI's
       ES 283 034), which answers a raw file's From cell.
-    - `cited_versions`: the version a specific reference names, by (citing,
-      cited) reference, read from the citing document's references clause.
-    - `latest_editions`: the evidence, by (citing, cited) reference, that a
-      document outside 3GPP means the latest edition by a non-specific one.
+    - `cited_versions`: the version a specific reference names, by citing
+      copy and cited reference, read from that copy's references clause.
+    - `latest_editions`: the evidence, by citing copy and cited reference,
+      that a document outside 3GPP means the latest edition by a
+      non-specific one.
     - `final_versions`: a document's final version, by reference.
-    - `cited_revisions`: the 3GPP2 revision a citation names, by (citing,
-      cited) reference; `stand_ins`, a held revision answering one of them.
-    - `release_stand_ins`: by (citing reference, citing version, cited
-      reference), a later release's copy answering for the version a
-      citation means; `release_fills`, keyed the same, one stating fields of
-      named AVPs the meant version leaves unstated.
+    - `cited_revisions`: the 3GPP2 revision a citation names, by citing copy
+      and cited reference; `stand_ins`, keyed the same, a held revision
+      answering one of them.
+    - `release_stand_ins`: by citing copy and cited reference, a later
+      release's copy answering for the version a citation means;
+      `release_fills`, keyed the same, one stating fields of named AVPs the
+      meant version leaves unstated.
     """
 
     path: Path | None = None
     format: int | None = None
     cited_as: Mapping[str, str] = field(default_factory=dict)
-    cited_versions: Mapping[tuple[str, str], str] = field(default_factory=dict)
-    latest_editions: Mapping[tuple[str, str], str] = field(default_factory=dict)
+    cited_versions: Mapping[Citation, str] = field(default_factory=dict)
+    latest_editions: Mapping[Citation, str] = field(default_factory=dict)
     final_versions: Mapping[str, str] = field(default_factory=dict)
-    cited_revisions: Mapping[tuple[str, str], str] = field(default_factory=dict)
-    stand_ins: Mapping[tuple[str, str], StandIn] = field(default_factory=dict)
-    release_stand_ins: Mapping[tuple[str, str, str], ReleaseStandIn] = field(
-        default_factory=dict
-    )
-    release_fills: Mapping[tuple[str, str, str], ReleaseFill] = field(
-        default_factory=dict
-    )
+    cited_revisions: Mapping[Citation, str] = field(default_factory=dict)
+    stand_ins: Mapping[Citation, StandIn] = field(default_factory=dict)
+    release_stand_ins: Mapping[Citation, ReleaseStandIn] = field(default_factory=dict)
+    release_fills: Mapping[Citation, ReleaseFill] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: Path) -> Rules:
@@ -242,10 +268,7 @@ class Rules:
         an unknown table or field, a missing or empty one, an entry stated
         twice, and a stand-in for a revision no citation names. Whether the
         documents it names are held is `check`'s."""
-        try:
-            data = tomllib.loads(path.read_text(encoding="utf-8"))
-        except tomllib.TOMLDecodeError as error:
-            raise CorpusError(f"{path}: {error}") from error
+        data = _read_toml(path)
         found = data.get("format")
         if not isinstance(found, int) or isinstance(found, bool):
             raise CorpusError(
@@ -275,25 +298,22 @@ class Rules:
                 out[each] = value(entry)
             return out
 
-        def pair(entry: dict[str, Any]) -> tuple[str, str]:
-            return entry["citing"], entry["cited"]
-
-        def triple(entry: dict[str, Any]) -> tuple[str, str, str]:
+        def triple(entry: dict[str, Any]) -> Citation:
             return entry["citing"], entry["citing_version"], entry["cited"]
 
         rules = cls(
             path=path,
             format=found,
             cited_as=keyed("cited_as", lambda e: e["cited"], lambda e: e["document"]),
-            cited_versions=keyed("cited_version", pair, lambda e: e["version"]),
-            latest_editions=keyed("latest_edition", pair, lambda e: e["evidence"]),
+            cited_versions=keyed("cited_version", triple, lambda e: e["version"]),
+            latest_editions=keyed("latest_edition", triple, lambda e: e["evidence"]),
             final_versions=keyed(
                 "final_version", lambda e: e["document"], lambda e: e["version"]
             ),
-            cited_revisions=keyed("cited_revision", pair, lambda e: e["revision"]),
+            cited_revisions=keyed("cited_revision", triple, lambda e: e["revision"]),
             stand_ins=keyed(
                 "stand_in",
-                pair,
+                triple,
                 lambda e: StandIn(e["revision"], e["version"], e["evidence"]),
             ),
             release_stand_ins=keyed(
@@ -315,11 +335,11 @@ class Rules:
                 ),
             ),
         )
-        for citing, cited in rules.stand_ins:
-            if (citing, cited) not in rules.cited_revisions:
+        for key in rules.stand_ins:
+            if key not in rules.cited_revisions:
                 raise CorpusError(
-                    f"{path}: [[stand_in]] {citing} {cited}: no [[cited_revision]]"
-                    " names the revision it stands in for"
+                    f"{path}: [[stand_in]] {' '.join(key)}: no [[cited_revision]]"
+                    " of that citing copy names the revision it stands in for"
                 )
         return rules
 
@@ -350,41 +370,50 @@ class Rules:
                 )
             if not held(document):
                 raise lacks("cited_as", document)
-        for (citing, cited), version in self.cited_versions.items():
-            if not held(citing):
-                raise lacks("cited_version", citing)
-            if not held(cited, version):
-                raise lacks("cited_version", f"{cited} V{version}")
-        for table, pairs in (
-            ("latest_edition", self.latest_editions),
-            ("cited_revision", self.cited_revisions),
-        ):
-            for citing, cited in pairs:
-                for reference in (citing, cited):
-                    if not held(reference):
-                        raise lacks(table, reference)
         for document, version in self.final_versions.items():
             if not held(document, version):
                 raise lacks("final_version", f"{document} V{version}")
-        for (_, cited), stand_in in self.stand_ins.items():
-            if not held(cited, stand_in.version, stand_in.revision):
-                raise lacks(
-                    "stand_in",
-                    f"{cited} revision {stand_in.revision} V{stand_in.version}",
-                )
-        for table, entries in (
+        tables: tuple[tuple[str, Mapping[Citation, object]], ...] = (
+            ("cited_version", self.cited_versions),
+            ("latest_edition", self.latest_editions),
+            ("cited_revision", self.cited_revisions),
+            ("stand_in", self.stand_ins),
             ("release_stand_in", self.release_stand_ins),
             ("release_fill", self.release_fills),
-        ):
+        )
+        for table, entries in tables:
             for (citing, citing_version, cited), entry in entries.items():
                 if not held(citing, citing_version):
                     raise lacks(table, f"{citing} V{citing_version}")
-                versions = [entry.version]
-                if isinstance(entry, ReleaseFill):
-                    versions.insert(0, entry.meant)
+                if isinstance(entry, StandIn):
+                    if not held(cited, entry.version, entry.revision):
+                        raise lacks(
+                            table,
+                            f"{cited} revision {entry.revision} V{entry.version}",
+                        )
+                    continue
+                versions: list[str | None] = [None]
+                if isinstance(entry, ReleaseStandIn):
+                    versions = [entry.version]
+                elif isinstance(entry, ReleaseFill):
+                    versions = [entry.meant, entry.version]
+                elif table == "cited_version":
+                    assert isinstance(entry, str)
+                    versions = [entry]
                 for version in versions:
                     if not held(cited, version):
-                        raise lacks(table, f"{cited} V{version}")
+                        raise lacks(
+                            table, cited if version is None else f"{cited} V{version}"
+                        )
+
+
+def _read_toml(path: Path) -> dict[str, Any]:
+    """`path` parsed, refusing with `CorpusError` a file that cannot be read,
+    is not UTF-8 or is not TOML."""
+    try:
+        return tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+        raise CorpusError(f"{path}: {error}") from error
 
 
 def _entries(path: Path, data: dict[str, Any], table: str) -> list[dict[str, Any]]:
@@ -598,10 +627,7 @@ class HoleRecord:
     def load(cls, path: Path) -> HoleRecord:
         """Read `path`, refusing what the model could not hold a build to: an
         unknown key, a missing or empty field, a hole listed twice."""
-        try:
-            data = tomllib.loads(path.read_text(encoding="utf-8"))
-        except tomllib.TOMLDecodeError as error:
-            raise CorpusError(f"{path}: {error}") from error
+        data = _read_toml(path)
         tables = data.get("hole", [])
         if set(data) - {"hole"} or not isinstance(tables, list):
             raise CorpusError(f"{path}: only [[hole]] tables belong in a hole record")
@@ -869,8 +895,10 @@ class Corpus:
         """The file `reference` names when `like` cites it, and, when that
         file is outside `like`'s release, how the citation got there.
 
-        In order, by the corpus's `rules`: a reference its citers spell
-        otherwise than the publisher (`cited_as`) is the publisher's document.
+        Every entry of `rules` keyed by the citing document answers for the
+        copy of it `like` is, by its version, and for no other copy. In order:
+        a reference its citers spell otherwise than the publisher (`cited_as`)
+        is the publisher's document.
         A citation naming a 3GPP2 revision (`cited_revisions`) is a copy of
         that revision, or failing one, the copy an explicit `stand_ins` entry
         names, or nothing. An RFC, or another document outside 3GPP, is
@@ -889,9 +917,10 @@ class Corpus:
         candidates = self._candidates(reference)
         citing = _reference(like)
         rules = self.rules
-        cited_revision = rules.cited_revisions.get((citing, reference))
+        key = (citing, like.version or "", reference)
+        cited_revision = rules.cited_revisions.get(key)
         if cited_revision is not None:
-            return self._revision(citing, reference, cited_revision, candidates)
+            return self._revision(key, cited_revision, candidates)
         if reference.startswith("RFC") or ast.is_external(reference):
             # An RFC number names one immutable document; there is no release
             # axis to match against. Nor is there for another publisher's
@@ -901,7 +930,7 @@ class Corpus:
             return (candidates[0] if candidates else None), None
         version = like.version
         external = _external(like)
-        named = rules.cited_versions.get((citing, reference))
+        named = rules.cited_versions.get(key)
         if named is not None:
             entry = next((e for e in candidates if e.spec.version == named), None)
             if entry is None:
@@ -930,9 +959,9 @@ class Corpus:
                     and _major(entry.spec.version) == wanted
                 ):
                     return entry, None
-        if (citing, version or "", reference) in rules.release_stand_ins:
-            return self._release_stand_in(citing, version, reference, candidates)
-        if external and (citing, reference) in rules.latest_editions and candidates:
+        if key in rules.release_stand_ins:
+            return self._release_stand_in(key, candidates)
+        if external and key in rules.latest_editions and candidates:
             newest = candidates[0]
             return newest, CrossRelease(
                 citing,
@@ -982,10 +1011,11 @@ class Corpus:
         )
 
     def _release_stand_in(
-        self, citing: str, version: str | None, reference: str, candidates: list[Entry]
+        self, key: Citation, candidates: list[Entry]
     ) -> tuple[Entry | None, CrossRelease | None]:
         """The copy a `release_stand_ins` entry names, or nothing."""
-        stand_in = self.rules.release_stand_ins.get((citing, version or "", reference))
+        citing, _, reference = key
+        stand_in = self.rules.release_stand_ins.get(key)
         if stand_in is None:
             return None, None
         entry = next(
@@ -1003,14 +1033,15 @@ class Corpus:
         )
 
     def _revision(
-        self, citing: str, reference: str, cited: str, candidates: list[Entry]
+        self, key: Citation, cited: str, candidates: list[Entry]
     ) -> tuple[Entry | None, CrossRelease | None]:
         """A citation of revision `cited`: its newest copy, or the copy a
         `stand_ins` entry lets stand in for it, reported as such."""
+        citing, _, reference = key
         entry = next((e for e in candidates if revision(e.spec) == cited), None)
         if entry is not None:
             return entry, None
-        stand_in = self.rules.stand_ins.get((citing, reference))
+        stand_in = self.rules.stand_ins.get(key)
         if stand_in is None:
             return None, None
         entry = next(

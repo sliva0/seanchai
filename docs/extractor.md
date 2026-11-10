@@ -254,8 +254,10 @@ experimental result code, which is TS 29.229's.
 
 A range with no upper bound holds for later versions too, and no warning says
 that one of them has finished the clause. A version upgrade re-reads the
-document's exclusions against its clauses, as it does the corpus's release
-stand-ins (`corpus.toml`), and removes one the new version settles.
+document's exclusions against its clauses, as it does its references clause
+for the corpus's entries keyed by it (`corpus.toml`,
+[development.md](development.md#version-upgrades)), and removes one the new
+version settles.
 
 ## The 3GPP docx extractor
 

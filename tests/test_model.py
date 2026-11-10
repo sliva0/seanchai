@@ -1818,11 +1818,13 @@ def test_3gpp2_bsid_resolves_to_the_3gpp2_transcription():
 
 
 def test_without_its_stand_in_entry_3gpp2_bsid_is_a_hole():
-    """TS 29.212 [24] names revision B, which the corpus lacks; with no
+    """TS 29.212 V19.1.0 [24] names revision B, which the corpus lacks; with no
     `stand_in` entry letting revision 0 answer, the AVP resolves nowhere, as
     it did before the transcription."""
     books = corpus.Corpus.load([_CORPUS_DIR])
-    books.rules = _without(books.rules, "stand_ins", ("TS29.212", "3GPP2-X.S0057"))
+    books.rules = _without(
+        books.rules, "stand_ins", ("TS29.212", "19.1.0", "3GPP2-X.S0057")
+    )
     built = model.Model.build(books, holes=model.HolePolicy.ANY)
 
     assert built.resolve("TS29.212", "3GPP2-BSID") is None

@@ -227,8 +227,9 @@ maintained by hand: it writes `.dad` files and `corrections.json` only.
 5. Review what moved in the export and rewrite its pin:
    `uv run pytest tests/test_export.py --update-export-pin`.
 6. Run `uv run pytest`. A document citing another across releases needs the
-   entry of the corpus's `corpus.toml` its references clause gives it, with the
-   evidence ([consumers.md](consumers.md#resolution-across-releases)), and adds
+   entry of the corpus's `corpus.toml` its references clause gives it, naming
+   the copy whose clause it read in `citing_version`, with the evidence
+   ([consumers.md](consumers.md#resolution-across-releases)), and adds
    to the citation pairs `tests/test_model.py` lists, and the corpus's findings
    are pinned in `tests/test_linter.py`; read what each failure says before
    moving its pin.
@@ -270,6 +271,16 @@ diff -u /tmp/old/raw/3gpp/rel-19/29272-j50.raw.dad \
 out of the corpus. A document the corpus holds in two releases is two copies,
 each rebuilt in its own tree.
 
+An upgraded document that cites others has a new references clause. Every entry
+of the corpus's `corpus.toml` keyed by it, a `cited_version`, `latest_edition`,
+`cited_revision`, `stand_in`, `release_stand_in` or `release_fill`, names the
+copy whose clause it read in `citing_version` and answers for that copy alone.
+Re-read the new copy's clause for each, move `citing_version` to the new version
+where the clause still says the same, and update the entry and its evidence
+where it does not. An entry left at the old version fails every load of the
+corpus once the old copy is gone, naming the entry; one the new clause no longer
+needs is removed. A document held in two releases states an entry per copy.
+
 Once the diffs are reviewed,
 
 ```sh
@@ -304,7 +315,10 @@ declarations is the corpus's own reading of it:
   settles it ([extractor.md](extractor.md#exclusions)).
 - The corpus's `corpus.toml` names held versions: each `release_stand_in` and
   `release_fill` is a comparison to redo against the new copy of the document
-  it answers for, and its `version` moves to that copy. Where the two differ for
+  it answers for, and its `version` moves to that copy. Each upgraded citing
+  document's references clause is re-read too, and the `citing_version` of
+  every entry keyed by it moves to the new copy
+  ([above](#version-upgrades)). Where the two differ for
   what the citing copy reaches, pin the older version it means. An entry naming
   a copy the corpus no longer holds fails every load of the corpus, the
   rewrite of `corrections.json` by `regenerate` included, naming the entry, so
@@ -375,9 +389,10 @@ lists the ones it reads in `corpus.FORMATS`. Loading a corpus of another format
 raises `corpus.CorpusFormatError` before any `.dad` file is parsed, naming both
 numbers and the package to upgrade, so a library meeting a grammar it predates
 says so rather than failing on the first block it cannot read. A directory with
-no `corpus.toml` has no format to hold it to, as it has no record of holes: it
-is a partial or a foreign corpus, loaded as it parses, with no resolution
-rules.
+no `corpus.toml` has no format to hold it to and no resolution rules: it is a
+partial or a foreign corpus, loaded as it parses. A `holes.toml` beside its
+`.dad` files is still its record of holes, which `corpus.Corpus.load` finds on
+its own ([consumers.md](consumers.md#known-holes)).
 
 Bump the number when a library that reads the old one would misread or refuse
 the corpus: a new block type or any other change to the `.dad` grammar the

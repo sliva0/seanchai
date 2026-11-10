@@ -1484,7 +1484,7 @@ def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
     spec = _spec(
         _reused(ast.ReusedAvpRow(name="Borrowed", origin="3GPP2-X.S0057")),
         specification="3GPP TS 29.212",
-        version="18.2.0",
+        version="19.1.0",
     )
 
     findings = linter.lint_with_corpus(spec, _books(_tgpp2_origin("0")))
@@ -1493,9 +1493,9 @@ def test_a_revision_standing_in_for_the_cited_one_is_a_note_with_its_evidence():
     assert crossing.severity is linter.Severity.NOTE
     assert crossing.message == (
         "3GPP2-X.S0057 is resolved across releases to 0.dad: 3GPP TS 29.212"
-        " V18.2.0 is the citing file, and its references name revision B,"
+        " V19.1.0 is the citing file, and its references name revision B,"
         " which the corpus lacks, and revision 0 V2.0 stands in: "
-        + _RULES.stand_ins["TS29.212", "3GPP2-X.S0057"].evidence
+        + _RULES.stand_ins["TS29.212", "19.1.0", "3GPP2-X.S0057"].evidence
         + " (corpus.toml, stand_in)"
     )
     assert "external-origin-not-in-corpus" not in _rules(findings)

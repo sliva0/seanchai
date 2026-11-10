@@ -234,8 +234,10 @@ the corpus's `corpus.toml` states the evidence that both define alike what the
 citing copy re-uses. Each such resolution is a `cross-release-origin` note,
 naming the entry it rests on, `(corpus.toml, release_stand_in)`, and so is
 each `release_fill` entry, where the citation's own copy answers and a later
-release's copy states named fields it leaves unstated for named AVPs. The
-corpus being linted is the one whose rules apply: a directory holding its
+release's copy states named fields it leaves unstated for named AVPs. Every
+entry keyed by a citing document names the copy whose references clause it
+read, `citing_version`, and answers for that copy alone. The corpus being
+linted is the one whose rules apply: a directory holding its
 `corpus.toml`, which a file list or a subdirectory does not
 ([consumers.md](consumers.md#resolution-across-releases)).
 
@@ -243,9 +245,10 @@ RFCs resolve to whatever the corpus holds, and so does a document outside
 3GPP and IETF, whose versions are its publisher's. A 3GPP2 revision letter
 is 3GPP2's release: a citation naming one means that revision only, and a
 held copy of another answers it only where a `stand_in` entry says so. TS
-29.212 cites X.S0057-B, which 3GPP2 does not publish, and revision 0 V2.0
-stands in. A reference the citing documents spell otherwise than the
-publisher resolves through a `cited_as` entry, one per misnaming: 3GPP cites
+29.212 V11.19.0 and V19.1.0 each cite X.S0057-B, which 3GPP2 does not
+publish, and revision 0 V2.0 stands in, by an entry per copy. A reference
+the citing documents spell otherwise than the publisher resolves through a
+`cited_as` entry, one per misnaming: 3GPP cites
 "ETSI TS 283 034", which ETSI publishes as ES 283 034, so a raw file's cell
 still resolves, and corrections name ES 283 034 in the corrected files. Raw
 files are excluded from a corpus by default.

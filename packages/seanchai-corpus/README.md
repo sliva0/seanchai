@@ -5,7 +5,7 @@ ABNFs and AVP definitions from 3GPP specifications, RFCs and a few other
 documents, as `.dad` files, corrected and raw, with the record of known holes
 and of each correction's reason, and `corpus.toml`: the corpus's format and the
 rules, each with its evidence, for which version of a document a citation
-means.
+means, most read from the references clause of the citing copy they name.
 It holds the data and nothing else, depends on nothing, and needs Python 3.10 or
 newer. The `seanchai` library that reads it needs Python 3.12 or newer.
 

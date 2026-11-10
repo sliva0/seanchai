@@ -141,3 +141,10 @@ def test_a_malformed_record_is_refused(tmp_path: Path):
     path.write_text("not json", "utf-8")
     with pytest.raises(CorpusError, match=r"corrections\.json"):
         _correction_record.load(path)
+    path.write_bytes(b"\xff")
+    with pytest.raises(CorpusError, match=r"corrections\.json"):
+        _correction_record.load(path)
+    path.unlink()
+    path.mkdir()
+    with pytest.raises(CorpusError, match=r"corrections\.json"):
+        _correction_record.load(path)

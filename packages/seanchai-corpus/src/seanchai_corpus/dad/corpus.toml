@@ -9,6 +9,10 @@
 # Every entry states its `evidence`: the clause or the comparison it rests on,
 # read as one line of prose. A key a table's entries share is a reference as a
 # re-used row's From cell spells it, `TS29.272`; a version is the copy's own.
+# An entry read from a citing document's references clause names the copy
+# whose clause it read, `citing_version`, and answers for that copy alone: the
+# clause changes between versions, and the corpus holds several copies of some
+# documents. Each copy citing alike states its own entry.
 
 # Which generation of the `.dad` grammar and of this directory's layout the
 # corpus is; a library refuses a corpus of a format it does not read
@@ -30,16 +34,17 @@ evidence = """
     and has no TS 283 034
     """
 
-# The version a specific reference names, by citing and cited reference, read
-# from the citing document's references clause: "For a specific reference,
-# subsequent revisions do not apply" (TS 183 017 V3.2.1 clause 2, oneM2M TS-0004
-# V2.35.0 clause 2: "only the cited version applies"). A reference naming a
-# release means that release's last version, which the downloader's catalog pins
-# with `final = "release"` and checks against the 3GPP archive. A citation
-# absent here is non-specific.
+# The version a specific reference names, by citing reference, citing version
+# and cited reference, read from that copy's references clause: "For a specific
+# reference, subsequent revisions do not apply" (TS 183 017 V3.2.1 clause 2,
+# oneM2M TS-0004 V2.35.0 clause 2: "only the cited version applies"). A
+# reference naming a release means that release's last version, which the
+# downloader's catalog pins with `final = "release"` and checks against the 3GPP
+# archive. A citation absent here is non-specific.
 
 [[cited_version]]
 citing = "ETSI-TS183.017"
+citing_version = "3.2.1"
 cited = "TS29.209"
 version = "6.8.0"
 evidence = """
@@ -50,6 +55,7 @@ evidence = """
 
 [[cited_version]]
 citing = "ETSI-TS183.017"
+citing_version = "3.2.1"
 cited = "TS29.214"
 version = "7.12.0"
 evidence = """
@@ -60,6 +66,7 @@ evidence = """
 
 [[cited_version]]
 citing = "oneM2M-TS-0004"
+citing_version = "2.35.0"
 cited = "TS32.299"
 version = "11.20.0"
 evidence = """
@@ -68,13 +75,16 @@ evidence = """
     11)'. V11.20.0 is Release 11's last
     """
 
-# A non-specific citation by a document outside 3GPP whose own references clause
-# says what one means: the latest edition, which is the newest copy the corpus
-# holds. One entry per citation, quoting the clause; a citation without one
-# means the document's final version or nothing.
+# A non-specific citation by a copy of a document outside 3GPP whose own
+# references clause says what one means: the latest edition, which is the
+# newest copy the corpus holds. One entry per citation, by citing reference,
+# citing version and cited reference, quoting the clause; a citation without
+# one means the document's final version or nothing.
 
+# ETSI ES 283 035 V2.5.1 clause 2.1 [7].
 [[latest_edition]]
 citing = "ETSI-ES283.035"
+citing_version = "2.5.1"
 cited = "TS29.329"
 evidence = """
     clause 2.1: 'For non-specific references, the latest edition of the
@@ -107,16 +117,27 @@ evidence = """
     TS 29.209)'
     """
 
-# The revision a citation of a 3GPP2 document names, by citing and cited
-# reference, read from the citing document's references clause. 3GPP2 numbers
-# revisions of a document (X.S0057-0, -A, -B) as 3GPP numbers releases, each
-# with versions of its own, and a spec-ref keeps no revision letter, so the
+# The revision a citation of a 3GPP2 document names, by citing reference, citing
+# version and cited reference, read from that copy's references clause. 3GPP2
+# numbers revisions of a document (X.S0057-0, -A, -B) as 3GPP numbers releases,
+# each with versions of its own, and a spec-ref keeps no revision letter, so the
 # revision a reference names is recorded here, as `cited_version` records
 # versions. It is a specific reference: that revision answers it and no other,
 # unless a `stand_in` says one does.
 
 [[cited_revision]]
 citing = "TS29.212"
+citing_version = "11.19.0"
+cited = "3GPP2-X.S0057"
+revision = "B"
+evidence = """
+    TS 29.212 V11.19.0 clause 2, [24] 3GPP2 X.S0057-B: 'E-UTRAN - eHRPD
+    Connectivity and Interworking: Core Network Aspects'
+    """
+
+[[cited_revision]]
+citing = "TS29.212"
+citing_version = "19.1.0"
 cited = "3GPP2-X.S0057"
 revision = "B"
 evidence = """
@@ -125,12 +146,24 @@ evidence = """
     """
 
 # Citations of a revision (`cited_revision`) that a held copy of another
-# revision answers. One entry per citation, each with the evidence the cited
-# revision is out of reach; a citation without one resolves to nothing while the
-# corpus lacks its revision.
+# revision answers, keyed as the `cited_revision` they answer. One entry per
+# citation, each with the evidence the cited revision is out of reach; a
+# citation without one resolves to nothing while the corpus lacks its revision.
 
 [[stand_in]]
 citing = "TS29.212"
+citing_version = "11.19.0"
+cited = "3GPP2-X.S0057"
+revision = "0"
+version = "2.0"
+evidence = """
+    3GPP2's library publishes X.S0057-0 v1.0 and v2.0 only (checked 2026-10-30
+    at http://www.3gpp2.org/Public_html/Specs/index.cfm, X series)
+    """
+
+[[stand_in]]
+citing = "TS29.212"
+citing_version = "19.1.0"
 cited = "3GPP2-X.S0057"
 revision = "0"
 version = "2.0"

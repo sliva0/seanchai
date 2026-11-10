@@ -476,26 +476,32 @@ needs are the corpus's own: its `corpus.toml`, hand-maintained beside its
 since a raw file's From cells need it most. A corpus release can so move a
 document's version, and the rules naming it, with no library release. Each
 entry is a table of the file and states its `evidence`, the clause or the
-comparison it rests on:
+comparison it rests on.
+
+An entry read from a citing document's references clause, every table below
+but `cited_as` and `final_version`, is keyed by the citing copy: citing
+document, `citing_version` and cited document. It answers for that copy
+alone, since a references clause changes between versions and the corpus holds
+several copies of some documents, and two copies citing alike state an entry
+each: TS 29.212 V11.19.0 and V19.1.0 both cite X.S0057-B in clause 2 [24].
 
 - `cited_as`: a document its citers number otherwise than its publisher, by the
   reference a From cell carries: 3GPP cites "ETSI TS 283 034", which ETSI
   publishes as ES 283 034.
-- `cited_version`: the version a specific reference names, keyed by
-  (citing, cited) document and read from the citing document's references
-  clause (TS 183 017's "3GPP TS 29.209 Release 6", oneM2M TS-0004's "3GPP
-  TS 32.299 (Release 11)").
-- `latest_edition`: a document outside 3GPP whose references clause says a
-  non-specific reference means the latest edition, citation by citation.
+- `cited_version`: the version a specific reference names, read from the
+  citing copy's references clause (TS 183 017 V3.2.1's "3GPP TS 29.209
+  Release 6", oneM2M TS-0004 V2.35.0's "3GPP TS 32.299 (Release 11)").
+- `latest_edition`: a copy of a document outside 3GPP whose references clause
+  says a non-specific reference means the latest edition, citation by
+  citation.
 - `final_version`: documents that ended before the citing release (TS
   29.140 V7.0.0, TS 29.209 V6.8.0).
 - `cited_revision` and `stand_in`: a 3GPP2 revision letter a citation
   names, and the held revision answering for it with the evidence that the
   cited one is out of reach (TS 29.212 cites X.S0057-B; 3GPP2 publishes
   revision 0 alone, checked 2026-10-30).
-- `release_stand_in`: keyed by citing document, citing version and cited
-  document, a later release's copy answering for a release version the
-  corpus lacks, with the evidence that both define alike everything the
+- `release_stand_in`: a later release's copy answering for a release version
+  the corpus lacks, with the evidence that both define alike everything the
   citing copy re-uses. TS 32.299 V11.20.0's six Release 11 references, and
   TS 29.210's and TS 29.234's of TS 29.229, are answered by Release 19
   copies so, as is ETSI TS 183 033's of TS 29.229 V6.6.0, a version it names
@@ -504,9 +510,9 @@ comparison it rests on:
   instead: TS 29.212 V11.19.0 and TS 29.214 V11.16.0 for TS 32.299
   V11.20.0, and TS 29.061 V6.15.0 for TS 29.210, whose table puts M in
   Must on three AVPs Release 19 forbids it on.
-- `release_fill`: keyed the same, fields the version a citation means leaves
-  unstated for named AVPs, which a later release's copy states. The meant copy
-  still answers the citation and every other field and AVP; the later copy is
+- `release_fill`: fields the version a citation means leaves unstated for
+  named AVPs, which a later release's copy states. The meant copy still
+  answers the citation and every other field and AVP; the later copy is
   read right after it and gives the named fields alone, and its code has to
   agree. TS 29.210's `3GPP-GPRS-Negotiated-QoS-Profile` and `3GPP-SGSN-MCC-MNC`
   take their code, vendor and clause from TS 29.061 V6.15.0 clause 16.4.7, and
@@ -519,9 +525,12 @@ comparison it rests on:
 
 `load` refuses with `corpus.CorpusError` an unknown table or field, an entry
 missing a field or stating one twice, and an entry naming a document or a copy
-the corpus does not hold, which would answer no citation. A corpus without the
-file resolves by no entry: the drafting rules alone, so a citation an entry
-would answer resolves to nothing. `corpus.Corpus(entries, rules=...,
+the corpus does not hold, which would answer no citation: a citing copy
+included, so an entry left at a version an upgrade replaced fails the load. A
+corpus without the file resolves by no entry: the drafting rules alone, so a
+citation an entry would answer resolves to nothing. It has no format to hold
+it to either, but its record of holes, `holes.toml`, is found on its own
+([Known holes](#known-holes)). `corpus.Corpus(entries, rules=...,
 record=...)`, for a partial corpus a caller parsed, checks only that no two
 entries claim one copy: it reads no `corpus.toml`, so holds no format, and
 takes the rules and the record as given, without checking that they name
