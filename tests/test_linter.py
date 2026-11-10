@@ -2551,7 +2551,9 @@ def test_a_hole_the_record_does_not_list_is_an_error():
 
 
 def test_a_hole_the_record_lists_otherwise_is_an_error():
-    wrong = corpus.KnownHole("TS29.900", "Thing", ("data_type",), "clause 6.3.1")
+    wrong = corpus.KnownHole(
+        "TS29.900", "Thing", (corpus.Missing.DATA_TYPE,), "clause 6.3.1"
+    )
 
     (finding,) = linter.lint_record(_recorded_books(wrong))
 
@@ -2561,9 +2563,14 @@ def test_a_hole_the_record_lists_otherwise_is_an_error():
 
 def test_an_entry_naming_no_hole_is_an_error():
     right = corpus.KnownHole(
-        "TS29.900", "Thing", ("data_type", "flag_rules"), "clause 6.3.1"
+        "TS29.900",
+        "Thing",
+        (corpus.Missing.DATA_TYPE, corpus.Missing.FLAG_RULES),
+        "clause 6.3.1",
     )
-    stale = corpus.KnownHole("TS29.900", "Worked-Off", ("definition",), "clause 6.3.2")
+    stale = corpus.KnownHole(
+        "TS29.900", "Worked-Off", (corpus.Missing.DEFINITION,), "clause 6.3.2"
+    )
 
     (finding,) = linter.lint_record(_recorded_books(right, stale))
 

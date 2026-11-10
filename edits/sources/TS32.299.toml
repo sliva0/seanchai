@@ -425,7 +425,7 @@ last_version = "19.0.0"
 
 # Release 11, V11.20.0: what oneM2M TS-0004 [31] cites as "3GPP TS 32.299
 # ... (Release 11)". A release's template is its own, so these apply to it
-# alone and the Release 19 ones above do not (src/seanchai/versions.py).
+# alone and the Release 19 ones above do not (src/seanchai/_versions.py).
 
 [[patch]]
 find = "Content-Provider-ID"

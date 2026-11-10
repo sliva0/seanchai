@@ -336,11 +336,11 @@ evidence = """
 # cited reference. A release stand-in replaces the citation's copy; this keeps
 # it, for code, vendor, clause and every other AVP, and takes only what no held
 # version of the citation's release states, one entry per citation: `fields`
-# (`data_type`, `flag_rules`) of the AVPs `names` lists, from the copy at
-# `version`. `Avp.completed_by` names the later copy for each field and
-# `Avp.across_releases` carries the rule, and the linter's
-# `cross-release-origin` note quotes the evidence. TS 29.061 V6.15.0 stays
-# pinned for TS 29.210: this does not make Release 19 answer for it.
+# (`corpus.FILLABLE`: `data_type`, `flag_rules`) of the AVPs `names` lists,
+# from the copy at `version`. `Avp.completed_by` names the later copy for each
+# field and `Avp.across_releases` carries the rule, `later-release`, and the
+# linter's `cross-release-origin` note quotes the evidence. TS 29.061 V6.15.0
+# stays pinned for TS 29.210: this does not make Release 19 answer for it.
 
 # TS 29.210 V6.7.0 clause 2 [11], table 5.3.
 [[release_fill]]

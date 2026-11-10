@@ -18,8 +18,8 @@ from pathlib import Path
 import pytest
 from conftest import _CORPUS_DIR, _corpus
 
-from seanchai import regenerate
-from seanchai.correction_record import RECORD_NAME
+from seanchai import _regenerate
+from seanchai._correction_record import RECORD_NAME
 from seanchai.dad import ast, parser
 
 _ROOT = Path(__file__).parent.parent
@@ -41,7 +41,7 @@ def report(tmp_path_factory):
         f"{_MANIFEST} not present — run `seanchai corpus download`"
         ' or deselect with `pytest -m "not sources"`'
     )
-    return regenerate.regenerate(
+    return _regenerate.regenerate(
         _MANIFEST,
         _CORPUS_DIR,
         tmp_path_factory.mktemp("dad"),

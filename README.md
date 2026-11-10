@@ -52,10 +52,10 @@ extract`, `corpus regenerate` and a 3GPP, oneM2M or `transcribed` `corpus
 download` need and a consumer does not.
 
 ```python
-from seanchai import model
+from seanchai.model import Model
 
-built = model.Model.installed()
-built.resolve("TS29.229", "Public-Identity")
+model = Model.installed()
+model.resolve("TS29.229", "Public-Identity")
 ```
 
 ## Commands

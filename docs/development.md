@@ -39,11 +39,15 @@ commands by audience, in the order `cli.py` defines them.
 
 ## Repository layout
 
-- `src/seanchai/`: `dad/` (AST, parser, formatter, corrections, the TextMate
-  grammar under `syntax/`), `extractor/`,
-  `downloader/`, `regenerate.py`, `ranges.py`, `linter.py`, `oracle.py`,
-  `corpus.py`, `model.py`, `correction_record.py`, `export.py`,
-  `export_schema.py`, `dictionary.py`, `errors.py`, `cli.py`.
+- `src/seanchai/`: the public modules, `dad/` (AST, parser, formatter,
+  corrections, ABNF, the TextMate grammar under `syntax/`), `extractor/`,
+  `downloader/`, `linter.py`, `oracle.py`, `corpus.py`, `model.py`,
+  `export.py`, `export_schema.py`, `dictionary.py` and `errors.py`; `cli.py`;
+  and the maintenance flow's internals, `_regenerate.py`, `_ranges.py`,
+  `_versions.py`, `_correction_record.py` and `_prose.py`. The public surface
+  is each public module's `__all__`
+  ([consumers.md](consumers.md#what-the-version-covers)); a module the command
+  line alone needs and no consumer imports takes a leading underscore.
 - `packages/seanchai-corpus/`: the corpus package, a uv workspace member. Its
   `src/seanchai_corpus/dad/` holds the committed corpus, one directory per 3GPP
   release plus `rfc/`, `etsi/`, `3gpp2/`, `oma/` and `onem2m/`, a raw mirror
@@ -155,13 +159,13 @@ covers it; add a synthetic case only for a rejection path.
   name the specification and clause, so the next reader does not simplify
   it back into a bug.
 - Public functions carry docstrings; module docstrings say the module's
-  role.
+  role. A public module lists what it offers in `__all__`.
 - Docs describe what exists. No status tables, ticket IDs or acceptance
   criteria.
 - TOML files keep to 80 columns, comments included. A long prose field (a
   `reason`, a `title`) is a multi-line basic string with no backslash
   continuations, and every reader collapses its whitespace to single spaces
-  (`seanchai.prose`). An exact field (`find`, `replace`, a catalog's `url`)
+  (`seanchai._prose`). An exact field (`find`, `replace`, a catalog's `url`)
   cannot wrap, since its whitespace is significant, so it stays on one line;
   those are the only lines `tests/test_toml_files.py` lets run long.
 - Markdown prose keeps to 80 columns, and `rumdl` holds it there. Tables,

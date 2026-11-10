@@ -34,9 +34,21 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
+from ._prose import collapse_fields
 from .dad import ast
 from .errors import SeanchaiError
-from .prose import collapse_fields
+
+__all__ = [
+    "Alias",
+    "Claim",
+    "DictionaryAvp",
+    "Finding",
+    "Oracle",
+    "OracleError",
+    "claims",
+    "crosscheck",
+    "load_aliases",
+]
 
 _ENTITY_RE = re.compile(
     r'<!ENTITY\s+(?P<name>[A-Za-z0-9_]+)\s+SYSTEM\s+"(?P<file>[^"]+)"\s*>'

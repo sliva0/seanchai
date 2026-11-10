@@ -11,7 +11,7 @@ import shutil
 import pytest
 from conftest import _CORPUS_DIR
 
-from seanchai import correction_record, regenerate
+from seanchai import _correction_record, _regenerate
 from seanchai.downloader import load_catalog
 
 
@@ -44,7 +44,7 @@ def _manifest(root, stem, release=18):
 
 
 def _run(manifest, corpus, output, add=()):
-    return regenerate.regenerate(
+    return _regenerate.regenerate(
         manifest, corpus, output, sources_dir=None, corrections_dir=None, add=add
     )
 
@@ -84,7 +84,7 @@ def test_a_rebuild_follows_the_manifest_version_and_reports_what_it_did(
         "29999-110.dad",
         "29999-110.raw.dad",
     ]
-    assert "replaced" in regenerate.describe(replaced)
+    assert "replaced" in _regenerate.describe(replaced)
 
     # A committed document the manifest no longer lists is reported and left.
     manifest.write_text(json.dumps({"artifacts": []}))
@@ -143,7 +143,7 @@ def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
     shutil.copy(synthetic_spec_docx, document)
     scratch = tmp_path / "scratch"
 
-    (outcome,) = regenerate.regenerate(
+    (outcome,) = _regenerate.regenerate(
         older,
         corpus,
         scratch,
@@ -194,7 +194,7 @@ def test_two_releases_of_one_document_are_two_copies_in_two_trees(
     # A one-release manifest rebuilds that release's copy only.
     data["artifacts"].pop(0)
     manifest.write_text(json.dumps(data))
-    (outcome,) = regenerate.regenerate(
+    (outcome,) = _regenerate.regenerate(
         manifest,
         corpus,
         tmp_path / "scratch",
@@ -234,7 +234,7 @@ def test_a_legacy_doc_is_read_through_the_manifest_conversion(
     assert skipped.status == "not-converted"
     assert report.failed == []
     assert not list(corpus.rglob("*.dad"))
-    assert regenerate.describe(skipped) == (
+    assert _regenerate.describe(skipped) == (
         "not-converted TS29.999: 29999-100.doc was downloaded without conversion"
         " (`seanchai corpus download --no-convert`);"
         " the committed files were left alone"
@@ -283,7 +283,7 @@ def test_a_onem2m_document_is_read_through_its_conversion_into_its_own_tree(
         )
     )
 
-    found = regenerate._sources(manifest)["oneM2M-TS-0004", "onem2m"]
+    found = _regenerate._sources(manifest)["oneM2M-TS-0004", "onem2m"]
 
     assert found.document == tmp_path / (conversion["file"] if converted else source)
     assert (found.pdf, found.link) == (
@@ -336,8 +336,7 @@ def test_ranges_warn_for_all_layers_without_gating_application(
         + bounds
     )
     (declarations / "TS29.999.py").write_text(
-        "from seanchai.dad.corrections import Correction, definition\n"
-        "from seanchai.versions import VersionRange\n"
+        "from seanchai.dad.corrections import Correction, VersionRange, definition\n"
         'CORRECTIONS = [Correction(id="code", target=definition("Example-Group"), '
         'field="code", expect=10, replace=12, reason="out-of-range correction", '
         f"versions=VersionRange({first!r}, {last!r}))]\n"
@@ -407,7 +406,7 @@ def test_a_rebuild_records_its_corrections_beside_the_documents(
     corpus = tmp_path / "dad"
     corpus.mkdir()
 
-    report = regenerate.regenerate(
+    report = _regenerate.regenerate(
         manifest,
         corpus,
         corpus,
@@ -417,8 +416,8 @@ def test_a_rebuild_records_its_corrections_beside_the_documents(
     )
 
     assert report.record is not None
-    assert report.record == corpus / correction_record.RECORD_NAME
-    record = correction_record.load(report.record)
+    assert report.record == corpus / _correction_record.RECORD_NAME
+    record = _correction_record.load(report.record)
     edit = record.documents["29999-123"].edits["TS29.999.py#mode-code"]
     assert (edit.kind, edit.reason) == ("correction", "the reason")
 
@@ -433,7 +432,7 @@ def test_a_failed_rebuild_leaves_the_corrections_record_alone(
     (modules / "TS29.999.py").write_text(_MODULE)
     corpus = tmp_path / "dad"
     corpus.mkdir()
-    kept = regenerate.regenerate(
+    kept = _regenerate.regenerate(
         manifest,
         corpus,
         corpus,
@@ -446,7 +445,7 @@ def test_a_failed_rebuild_leaves_the_corrections_record_alone(
     (modules / "TS29.999.py").write_text(_MODULE.replace("the reason", "another"))
     document.write_bytes(b"not a docx")
 
-    report = regenerate.regenerate(
+    report = _regenerate.regenerate(
         manifest, corpus, corpus, sources_dir=None, corrections_dir=modules
     )
 
@@ -468,7 +467,7 @@ def test_a_corrections_record_that_cannot_be_built_fails_the_run(
     shutil.copy(_CORPUS_DIR / "rfc" / "rfc4004.dad", corpus / "rfc4004.dad")
     (modules / "RFC4004.py").write_text("raise ValueError('broken')\n")
 
-    report = regenerate.regenerate(
+    report = _regenerate.regenerate(
         manifest,
         corpus,
         corpus,
@@ -480,7 +479,7 @@ def test_a_corrections_record_that_cannot_be_built_fails_the_run(
 
     assert report.record is None
     (failed,) = report.failed
-    assert failed.reference == correction_record.RECORD_NAME
+    assert failed.reference == _correction_record.RECORD_NAME
 
 
 def test_declarations_for_another_release_do_not_apply(tmp_path, synthetic_spec_docx):
@@ -503,7 +502,7 @@ def test_declarations_for_another_release_do_not_apply(tmp_path, synthetic_spec_
     corpus = tmp_path / "dad"
     corpus.mkdir()
 
-    (outcome,) = regenerate.regenerate(
+    (outcome,) = _regenerate.regenerate(
         manifest,
         corpus,
         corpus,
@@ -712,7 +711,7 @@ def _transcribed(tmp_path, version="3.2.1", declared="3.2.1"):
     manifest, _ = _manifest(tmp_path / "specifications", "29999-100")
 
     def run(**options):
-        return regenerate.regenerate(
+        return _regenerate.regenerate(
             manifest,
             corpus,
             corpus,
@@ -799,7 +798,7 @@ def _run_transcriptions(tmp_path, text):
     return (
         corpus,
         lambda: (
-            regenerate.regenerate(
+            _regenerate.regenerate(
                 manifest,
                 corpus,
                 corpus,
@@ -833,7 +832,7 @@ def test_a_3gpp2_document_in_parts_keeps_its_part_in_its_name(tmp_path):
         _TGPP2_TRANSCRIPTION.replace("X.S0057", "X.S0013-014"), encoding="utf-8"
     )
 
-    (source,) = regenerate._transcriptions(transcriptions).values()
+    (source,) = _regenerate._transcriptions(transcriptions).values()
 
     assert (source.stem, source.tree) == ("xs0013-014-0_v2.0", "3gpp2")
 
@@ -851,13 +850,13 @@ def test_an_oma_transcription_is_named_for_its_rendering(tmp_path):
     )
     path.write_text(text, encoding="utf-8")
 
-    (source,) = regenerate._transcriptions(transcriptions).values()
+    (source,) = _regenerate._transcriptions(transcriptions).values()
 
     assert (source.stem, source.tree) == ("dds-charging_data-v1_0-20110201-a", "oma")
 
     path.write_text(text.replace("; Version: 1.0", "; Version: 1.1"), encoding="utf-8")
     with pytest.raises(ValueError, match="OMA's rendering of its name and version"):
-        regenerate._transcriptions(transcriptions)
+        _regenerate._transcriptions(transcriptions)
 
 
 def test_an_etsi_document_in_parts_keeps_its_part_in_its_name(tmp_path):
@@ -868,7 +867,7 @@ def test_an_etsi_document_in_parts_keeps_its_part_in_its_name(tmp_path):
         "; Specification: ETSI TS 183 059-1\n; Version: 2.1.1\n", encoding="utf-8"
     )
 
-    (source,) = regenerate._transcriptions(transcriptions).values()
+    (source,) = _regenerate._transcriptions(transcriptions).values()
 
     assert (source.stem, source.tree) == ("ts18305901-020101", "etsi")
 
@@ -907,7 +906,7 @@ def test_a_malformed_manifest_fails_the_run_and_names_the_file(tmp_path, text):
     assert report.failed
     assert failed.status == "failed"
     assert failed.reference == "manifest.json"
-    assert "no download manifest" in regenerate.describe(failed)
+    assert "no download manifest" in _regenerate.describe(failed)
 
 
 def test_a_missing_manifest_fails_the_run(tmp_path):
@@ -940,8 +939,8 @@ def test_adding_an_out_of_scope_document_says_why(tmp_path, reference):
     (refused,) = report.outcomes
     assert report.failed
     assert (refused.reference, refused.status) == (reference, "failed")
-    assert "out of scope: " in regenerate.describe(refused)
-    assert "no Diameter ABNF or AVP tables" in regenerate.describe(refused)
+    assert "out of scope: " in _regenerate.describe(refused)
+    assert "no Diameter ABNF or AVP tables" in _regenerate.describe(refused)
 
 
 _ORPHAN = "; Specification: 3GPP TS 29.999\n; Version: 1.0.0\n; Vendor-ID: 10415\n"

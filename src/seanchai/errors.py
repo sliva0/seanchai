@@ -6,6 +6,8 @@ library refused, and nothing else changes. This module imports nothing, so that
 `seanchai` itself can re-export the base without pulling in any machinery.
 """
 
+__all__ = ["MissingExtraError", "SeanchaiError"]
+
 
 class SeanchaiError(Exception):
     """A failure this library reports on purpose."""

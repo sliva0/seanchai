@@ -7,13 +7,13 @@ from pathlib import Path
 import pytest
 from conftest import _CORPUS_DIR, _ROOT
 
-from seanchai import correction_record, linter
+from seanchai import _correction_record, linter
 from seanchai.corpus import Corpus, CorpusError
 from seanchai.dad import ast, corrections
 from seanchai.dad.corrections import Accept, Correction, definition
 
 _CORRECTIONS = _ROOT / "edits" / "corrections"
-_COMMITTED = _CORPUS_DIR / correction_record.RECORD_NAME
+_COMMITTED = _CORPUS_DIR / _correction_record.RECORD_NAME
 
 
 @pytest.fixture(scope="module")
@@ -22,16 +22,16 @@ def books():
 
 
 def test_the_committed_record_is_what_the_modules_say(books):
-    built = correction_record.build(books, _CORRECTIONS)
+    built = _correction_record.build(books, _CORRECTIONS)
     committed = _COMMITTED.read_text("utf-8")
     assert built.render() == committed, (
         f"{_COMMITTED} is stale: run `seanchai corpus regenerate` and commit it"
     )
-    assert correction_record.load(_COMMITTED) == built
+    assert _correction_record.load(_COMMITTED) == built
 
 
 def test_the_record_replays_every_acceptance_as_its_module_does(books):
-    record = correction_record.load(_COMMITTED)
+    record = _correction_record.load(_COMMITTED)
     accepted = 0
     for entry in books:
         declared = corrections.in_release(
@@ -50,11 +50,11 @@ def test_the_record_replays_every_acceptance_as_its_module_does(books):
 
 def test_a_stale_recorded_acceptance_reads_as_a_stale_acceptance(books):
     entry = next(e for e in books if e.path.stem == "29229-j10")
-    stale = correction_record.RecordedDocument(
+    stale = _correction_record.RecordedDocument(
         reference="TS29.229",
         version=entry.spec.version,
         edits={
-            "TS29.229.py#gone": correction_record.RecordedAcceptance(
+            "TS29.229.py#gone": _correction_record.RecordedAcceptance(
                 kind="accept",
                 reason="r",
                 rule="reused-body-differs",
@@ -109,7 +109,7 @@ def test_a_record_holds_kinds_reasons_and_renames_in_declared_order():
         origin="RFC9999.py",
     )
 
-    record = correction_record.RecordedDocument.of(spec, [first, second, third, note])
+    record = _correction_record.RecordedDocument.of(spec, [first, second, third, note])
 
     assert [(r.expect, r.replace) for r in record.renames] == [("A", "B"), ("C", "D")]
     assert {cited: edit.kind for cited, edit in record.edits.items()} == {
@@ -134,10 +134,10 @@ def test_a_rendered_record_is_sorted_with_one_field_per_line():
 
 
 def test_a_malformed_record_is_refused(tmp_path: Path):
-    path = tmp_path / correction_record.RECORD_NAME
+    path = tmp_path / _correction_record.RECORD_NAME
     path.write_text('{"documents": {"x": {"reference": 1}}}', "utf-8")
     with pytest.raises(CorpusError, match=r"corrections\.json"):
-        correction_record.load(path)
+        _correction_record.load(path)
     path.write_text("not json", "utf-8")
     with pytest.raises(CorpusError, match=r"corrections\.json"):
-        correction_record.load(path)
+        _correction_record.load(path)

@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from conftest import _CORPUS_DIR
 
-from seanchai import ranges
-from seanchai.prose import collapse, collapse_fields
+from seanchai import _ranges
+from seanchai._prose import collapse, collapse_fields
 
 _ROOT = Path(__file__).parent.parent
 _COLUMNS = 80
@@ -52,7 +52,7 @@ def _long_lines(path: Path, root: Path) -> list[str]:
     # `\n` only: `str.splitlines` also breaks at characters TOML keeps in text.
     lines = zip(
         text.split("\n"),
-        ranges.without_multiline_strings(text).split("\n"),
+        _ranges.without_multiline_strings(text).split("\n"),
         strict=True,
     )
     return [

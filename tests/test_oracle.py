@@ -371,7 +371,7 @@ def test_crosscheck_counts_accepted_renames_apart(tmp_path):
     arguments = [
         "corpus",
         "crosscheck",
-        "--dictionary",
+        "--wireshark",
         str(tmp_path / "dictionary"),
         "--aliases",
         str(aliases),
@@ -433,7 +433,7 @@ def test_crosscheck_reads_the_newest_copy_of_each_document_only(tmp_path):
         [
             "corpus",
             "crosscheck",
-            "--dictionary",
+            "--wireshark",
             str(tmp_path / "dictionary"),
             str(corpus),
         ],
@@ -451,7 +451,7 @@ def test_crosscheck_reads_the_newest_copy_of_each_document_only(tmp_path):
         [
             "corpus",
             "crosscheck",
-            "--dictionary",
+            "--wireshark",
             str(tmp_path / "dictionary"),
             str(corpus / "3gpp/rel-18/29999-i00.dad"),
             str(corpus / "raw/3gpp/rel-18/29999-i00.raw.dad"),
@@ -487,7 +487,7 @@ def test_crosscheck_without_sources_checks_the_installed_corpus(tmp_path, monkey
     monkeypatch.setattr(corpus, "installed_directory", lambda: installed)
 
     result = CliRunner().invoke(
-        main, ["corpus", "crosscheck", "--dictionary", str(tmp_path / "dictionary")]
+        main, ["corpus", "crosscheck", "--wireshark", str(tmp_path / "dictionary")]
     )
 
     assert result.exit_code == 0, result.output
@@ -504,7 +504,7 @@ def test_crosscheck_without_sources_or_the_package_names_it(tmp_path, monkeypatc
     monkeypatch.setitem(sys.modules, "seanchai_corpus", None)
 
     result = CliRunner().invoke(
-        main, ["corpus", "crosscheck", "--dictionary", str(tmp_path / "dictionary")]
+        main, ["corpus", "crosscheck", "--wireshark", str(tmp_path / "dictionary")]
     )
 
     assert result.exit_code == 1
@@ -515,8 +515,8 @@ def test_crosscheck_without_sources_or_the_package_names_it(tmp_path, monkeypatc
 def test_a_model_build_over_an_unreadable_dictionary_raises_a_model_error(dictionary):
     books = corpus.Corpus.load(_CORPUS_DIR / "rfc" / "rfc6733.dad")
 
-    with pytest.raises(model.ModelError, match="cannot read the dictionary"):
-        model.Model.build(books, strict=False, dictionary=dictionary)
+    with pytest.raises(model.ModelError, match="cannot read the Wireshark dictionary"):
+        model.Model.build(books, holes=model.HolePolicy.ANY, wireshark=dictionary)
 
 
 def _value_table(*rows, avp="Result-Code", kind=ast.ValueKind.RESULT_CODES):

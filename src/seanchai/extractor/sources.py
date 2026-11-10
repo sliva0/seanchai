@@ -38,7 +38,7 @@ unread, which is the only way a file says less than its document.
 All block kinds carry the same declaration contract: a required `reason`
 (a declaration asserts something about the source document, and without the
 reason the next reader cannot check that claim), a version range scoping it
-to the releases it spans and advisory within them (`versions.reviewed_release`),
+to the releases it spans and advisory within them (`_versions.reviewed_release`),
 and must-fire accounting — a patch that applies more or fewer times than
 `count`, a declared quirk that never changed anything, or an exclusion that
 left nothing out fails the extraction rather than rotting silently when the
@@ -48,7 +48,7 @@ a named boolean with a reason, and the behavior it names lives in extractor code
 declaration unreviewable.
 
 A `reason` is prose and may wrap in a multi-line string, read back as one line
-(`prose.collapse`). Every other field is exact, `find` and `replace` above all.
+(`_prose.collapse`). Every other field is exact, `find` and `replace` above all.
 """
 
 from __future__ import annotations
@@ -58,9 +58,20 @@ from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from pathlib import Path
 
-from ..prose import collapse_fields
-from ..versions import VersionRange, applies, reviewed_release
+from .._prose import collapse_fields
+from .._versions import VersionRange, applies, reviewed_release
 from .errors import ExtractionError
+
+__all__ = [
+    "Exclusion",
+    "Patch",
+    "PatchError",
+    "Patcher",
+    "Quirk",
+    "QuirkError",
+    "Quirks",
+    "load",
+]
 
 
 class PatchError(ExtractionError):

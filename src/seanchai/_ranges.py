@@ -34,8 +34,8 @@ from collections.abc import Collection, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
+from ._versions import VersionRange, applies, reviewed_release
 from .dad import corrections
-from .versions import VersionRange, applies, reviewed_release
 
 
 @dataclass

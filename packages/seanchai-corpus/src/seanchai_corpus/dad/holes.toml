@@ -6,9 +6,9 @@
 # (docs/consumers.md#known-holes).
 #
 # `document` is `Hole.document`, the version only for an older copy; `missing`
-# is `Hole.missing`, compared exactly; `reason` follows a correction's: spec
-# version and clause, and what was searched. An undefined name's block says the
-# rest, in the correction its reason cites.
+# is `Hole.missing`, `model.Missing`'s values, compared exactly; `reason`
+# follows a correction's: spec version and clause, and what was searched. An
+# undefined name's block says the rest, in the correction its reason cites.
 
 [[hole]]
 document = "RFC4004"

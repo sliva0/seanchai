@@ -24,10 +24,10 @@ The [`seanchai`](https://pypi.org/project/seanchai/) library reads it with no
 path:
 
 ```python
-from seanchai import model
+from seanchai.model import Model
 
-built = model.Model.installed()
-built.resolve("TS29.229", "Public-Identity")
+model = Model.installed()
+model.resolve("TS29.229", "Public-Identity")
 ```
 
 The version is the date the corpus was regenerated, as `YEAR.MONTH.DAY` with no

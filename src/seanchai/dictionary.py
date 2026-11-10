@@ -20,6 +20,32 @@ from .dad import ast
 from .export import cross_release_entry, hole_entry
 from .export_schema import CrossRelease, FlagRules, UndefinedBlock
 
+__all__ = [
+    "FORMAT_VERSION",
+    "Alias",
+    "AnswerMessage",
+    "Application",
+    "Avp",
+    "Command",
+    "CommandHeading",
+    "CrossRelease",
+    "Dictionary",
+    "FlagRules",
+    "Hole",
+    "ListedApplication",
+    "Listing",
+    "Lookup",
+    "Member",
+    "UndefinedBlock",
+    "Value",
+    "ValueRow",
+    "ValueTable",
+    "build",
+    "dumps",
+    "listing",
+    "lookup",
+]
+
 # Changes when a reader would have to.
 FORMAT_VERSION = 1
 
@@ -566,7 +592,7 @@ def lookup(
     """`avp`, one of `built`'s readings, with the other readings of its
     identity and everything their bodies name at any depth."""
     builder = _Builder(built)
-    others = [each for each in built.identified(*avp.identity) if each != avp]
+    others = [each for each in built.readings(avp.identity) if each != avp]
     builder.hold((avp, *others))
     builder.number()
     readings = [avp, *sorted(others, key=lambda each: builder.ids[each])]

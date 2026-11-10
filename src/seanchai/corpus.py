@@ -34,6 +34,7 @@ evidence, which the model builds strictly against
 
 from __future__ import annotations
 
+import enum
 import os
 import re
 import tomllib
@@ -43,9 +44,32 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
+from ._prose import collapse
 from .dad import ast, parser
 from .errors import SeanchaiError
-from .prose import collapse
+
+__all__ = [
+    "CORPUS_FILE",
+    "FILLABLE",
+    "FORMATS",
+    "HOLE_RECORD",
+    "CitationRule",
+    "Corpus",
+    "CorpusError",
+    "CorpusFormatError",
+    "CorpusNotInstalledError",
+    "CrossRelease",
+    "Entry",
+    "HoleRecord",
+    "KnownHole",
+    "Missing",
+    "ReleaseFill",
+    "ReleaseStandIn",
+    "Rules",
+    "StandIn",
+    "installed_directory",
+    "revision",
+]
 
 
 class CorpusError(SeanchaiError, ValueError):
@@ -76,6 +100,23 @@ class CorpusFormatError(CorpusError):
             f"{path}: the corpus is format {found}, and seanchai {__version__}"
             f" reads format {reads}: upgrade {upgrade}"
         )
+
+
+class Missing(enum.StrEnum):
+    """What a hole leaves unstated (`model.Hole.missing`, `KnownHole.missing`):
+    an `Avp` field, by its name, or the definition itself. `Avp.completed_by`
+    and `ReleaseFill.fields` name fields the same way. Every serialized form
+    (`to_dict`, the dictionary, the export, `holes.toml`, `corpus.toml`) writes
+    the value."""
+
+    VENDOR_ID = "vendor_id"
+    CODE = "code"
+    DATA_TYPE = "data_type"
+    FLAG_RULES = "flag_rules"
+    # A name nothing in the corpus defines, tabulates or can be followed to.
+    DEFINITION = "definition"
+    # A name an `Undefined AVP` block declares defined nowhere.
+    UNDEFINED = "undefined"
 
 
 @dataclass(frozen=True)
@@ -111,7 +152,7 @@ class ReleaseFill:
     meant: str  # "6.15.0", the version the citation means, which still answers it
     version: str  # "19.1.0", the copy stating the fields
     names: tuple[str, ...]
-    fields: tuple[str, ...]  # `model.DATA_TYPE`, `model.FLAG_RULES`
+    fields: tuple[Missing, ...]  # of `FILLABLE`
     evidence: str
 
 
@@ -119,9 +160,9 @@ class ReleaseFill:
 # format and the facts resolution needs (`Rules`).
 CORPUS_FILE = "corpus.toml"
 
-# What `ReleaseFill.fields` may name: `model.DATA_TYPE` and `model.FLAG_RULES`.
-# A code is never taken, since the later copy's has to agree.
-FILLABLE = ("data_type", "flag_rules")
+# What `ReleaseFill.fields` may name. A code is never taken, since the later
+# copy's has to agree.
+FILLABLE = (Missing.DATA_TYPE, Missing.FLAG_RULES)
 
 # Each table of `CORPUS_FILE`, by its key, with the fields an entry of it
 # states: True for a required one. Every entry states its evidence.
@@ -269,7 +310,7 @@ class Rules:
                     e["meant"],
                     e["version"],
                     tuple(e["names"]),
-                    tuple(e["fields"]),
+                    tuple(map(Missing, e["fields"])),
                     e["evidence"],
                 ),
             ),
@@ -348,7 +389,7 @@ class Rules:
 
 def _entries(path: Path, data: dict[str, Any], table: str) -> list[dict[str, Any]]:
     """`table`'s entries in `data`, each checked against `_TABLES` and its
-    evidence collapsed (`seanchai.prose`)."""
+    evidence collapsed (`seanchai._prose`)."""
     entries = data.get(table, [])
     if not isinstance(entries, list):
         raise CorpusError(f"{path}: {table} must be [[{table}]] tables")
@@ -404,23 +445,28 @@ TGPP2_RENDERING_RE = re.compile(
     r"_v(?P<version>\d+\.\d+)_\d{6}\.pdf$"
 )
 
-# `CrossRelease.rule`'s values: the drafting rule a resolution followed, or
-# `STAND_IN`, the `Rules` entry that let another revision (`stand_in`) or a
-# later release's copy (`release_stand_in`) answer, or `LATER_RELEASE`, the one
-# that let a later release's copy state a field the answer leaves unstated
-# (`release_fill`).
-SPECIFIC = "specific"
-NON_SPECIFIC = "non-specific"
-LATEST_EDITION = "latest-edition"
-STAND_IN = "stand-in"
-LATER_RELEASE = "later-release"
+
+class CitationRule(enum.StrEnum):
+    """`CrossRelease.rule`: the drafting rule a resolution followed, or
+    `STAND_IN`, the `Rules` entry that let another revision (`stand_in`) or a
+    later release's copy (`release_stand_in`) answer, or `LATER_RELEASE`, the
+    one that let a later release's copy state a field the answer leaves
+    unstated (`release_fill`). The dictionary and the export write the
+    value."""
+
+    SPECIFIC = "specific"
+    NON_SPECIFIC = "non-specific"
+    LATEST_EDITION = "latest-edition"
+    STAND_IN = "stand-in"
+    LATER_RELEASE = "later-release"
 
 
 @dataclass(frozen=True)
 class CrossRelease:
     """A citation resolved outside the citing document's release, and the
-    rule that allowed it, by an entry of the corpus's `Rules`: `SPECIFIC`,
-    the version the citing document's references name (`cited_version`),
+    rule that allowed it (`CitationRule`), by an entry of the corpus's
+    `Rules`: `SPECIFIC`, the version the citing document's references name
+    (`cited_version`),
     `NON_SPECIFIC`, the cited document's final version (`final_version`), or
     `LATEST_EDITION`, the newest copy, where the citing document's clause 2
     says a non-specific reference means it (`latest_edition`). A document
@@ -436,7 +482,7 @@ class CrossRelease:
     citing: str  # "TS32.299"
     cited: str  # "TS29.140"
     version: str  # "7.0.0", the copy resolved to
-    rule: str
+    rule: CitationRule
     # For `STAND_IN`, a 3GPP2 revision being 3GPP2's release: the revision
     # the reference names ("B") and the one resolved to ("0").
     cited_revision: str | None = None
@@ -449,28 +495,28 @@ class CrossRelease:
     specific: bool = False
 
     def __str__(self) -> str:
-        if self.rule == LATER_RELEASE:
+        if self.rule is CitationRule.LATER_RELEASE:
             return (
                 f"{self.citing} cites {self.cited} non-specifically, meaning"
                 f" V{self.meant}, which leaves a field unstated: V{self.version}"
                 " states it (corpus.toml, release_fill)"
             )
-        if self.rule == STAND_IN and self.meant is not None:
+        if self.rule is CitationRule.STAND_IN and self.meant is not None:
             how = "naming" if self.specific else "non-specifically, meaning"
             return (
                 f"{self.citing} cites {self.cited} {how}"
                 f" V{self.meant}, which the corpus lacks: V{self.version} stands"
                 " in (corpus.toml, release_stand_in)"
             )
-        if self.rule == STAND_IN:
+        if self.rule is CitationRule.STAND_IN:
             return (
                 f"{self.citing} cites {self.cited} revision {self.cited_revision},"
                 f" which the corpus lacks: revision {self.revision}"
                 f" V{self.version} stands in (corpus.toml, stand_in)"
             )
-        if self.rule == SPECIFIC:
+        if self.rule is CitationRule.SPECIFIC:
             why = f"the reference names V{self.version} (corpus.toml, cited_version)"
-        elif self.rule == LATEST_EDITION:
+        elif self.rule is CitationRule.LATEST_EDITION:
             why = (
                 f"the reference is non-specific and V{self.version} is the latest"
                 " edition the corpus holds (corpus.toml, latest_edition)"
@@ -534,7 +580,7 @@ class KnownHole:
     document: str
     name: str
     # `Hole.missing`, compared exactly.
-    missing: tuple[str, ...]
+    missing: tuple[Missing, ...]
     # The evidence, as a correction's reason states it: spec version and
     # clause, and what was searched.
     reason: str
@@ -599,7 +645,13 @@ class HoleRecord:
                 f"{path}: {document} {name}: document, name and reason must be"
                 " non-empty text, and missing a non-empty list of it"
             )
-        return KnownHole(document, name, tuple(missing), collapse(reason))
+        unknown = sorted(set(missing) - set(Missing))
+        if unknown:
+            raise CorpusError(
+                f"{path}: {document} {name}: missing holds {', '.join(unknown)},"
+                f" which is not one of {', '.join(Missing)}"
+            )
+        return KnownHole(document, name, tuple(map(Missing, missing)), collapse(reason))
 
 
 def installed_directory() -> Path:
@@ -647,8 +699,13 @@ class Corpus:
     and revision raise `CorpusError`. `version` is the installed package's
     version when `installed` loaded it, and None for any other corpus, which
     has no one version to name. `rules` is what resolution reads, the empty
-    `Rules()` by default; given here, it is taken as it is, and only `load`
-    checks it against the files.
+    `Rules()` by default.
+
+    `load` and `installed` are the checked ways in. Constructed directly, from
+    entries a caller parsed, a corpus checks only the copies it is given: it
+    reads no `CORPUS_FILE`, so no format is held, and takes `rules` and
+    `record` as they are, without checking that what they name is held. A
+    `model.Model` built over it still holds the build to `record`.
     """
 
     def __init__(
@@ -855,7 +912,7 @@ class Corpus:
                 and _major(version) == _major(named)
             )
             return entry, None if same else CrossRelease(
-                citing, reference, named, SPECIFIC
+                citing, reference, named, CitationRule.SPECIFIC
             )
         if not external and version is None:
             # A version-less document (an RFC) citing a versioned one has no
@@ -878,7 +935,10 @@ class Corpus:
         if external and (citing, reference) in rules.latest_editions and candidates:
             newest = candidates[0]
             return newest, CrossRelease(
-                citing, reference, newest.spec.version or "", LATEST_EDITION
+                citing,
+                reference,
+                newest.spec.version or "",
+                CitationRule.LATEST_EDITION,
             )
         final = rules.final_versions.get(reference)
         if final is None or (not external and _major(final) >= _major(version or "0")):
@@ -891,7 +951,7 @@ class Corpus:
         entry = next((e for e in candidates if e.spec.version == final), None)
         if entry is None:
             return None, None
-        return entry, CrossRelease(citing, reference, final, NON_SPECIFIC)
+        return entry, CrossRelease(citing, reference, final, CitationRule.NON_SPECIFIC)
 
     def release_fill(
         self, reference: str, *, like: ast.Specification
@@ -913,7 +973,11 @@ class Corpus:
             entry,
             fill,
             CrossRelease(
-                citing, reference, fill.version, LATER_RELEASE, meant=fill.meant
+                citing,
+                reference,
+                fill.version,
+                CitationRule.LATER_RELEASE,
+                meant=fill.meant,
             ),
         )
 
@@ -933,7 +997,7 @@ class Corpus:
             citing,
             reference,
             stand_in.version,
-            STAND_IN,
+            CitationRule.STAND_IN,
             meant=stand_in.meant,
             specific=stand_in.specific,
         )
@@ -964,7 +1028,7 @@ class Corpus:
             citing,
             reference,
             stand_in.version,
-            STAND_IN,
+            CitationRule.STAND_IN,
             cited_revision=cited,
             revision=stand_in.revision,
         )

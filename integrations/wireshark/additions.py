@@ -17,7 +17,7 @@ pinned dictionary in its own XML shape: name, code, vendor, the type (an
 one) and the M and V bits from the flag rules.
 
     uv run integrations/wireshark/additions.py
-    uv run integrations/wireshark/additions.py --dictionary DIR --corpus DIR \\
+    uv run integrations/wireshark/additions.py --wireshark DIR --corpus DIR \\
         -o integrations/wireshark/additions
 
 An entry goes after the dictionary entry of its vendor with the nearest
@@ -171,7 +171,7 @@ def _first_row(spec: ast.Specification, name: str) -> ast.AvpTableRow | None:
 
 
 def _owners(
-    books: corpus.Corpus, dictionary: oracle.Oracle
+    books: corpus.Corpus, wireshark: oracle.Oracle
 ) -> dict[tuple[int, int], tuple[corpus.Entry, oracle.Claim]]:
     """Each absent identity, with the file whose claim defines it: the one
     in the identity's own vendor space where several claim it (TS 29.273
@@ -183,7 +183,7 @@ def _owners(
     for entry in sorted(books.newest(), key=lambda e: e.path.as_posix()):
         for claim in oracle.claims(entry.spec):
             identity = (claim.vendor, claim.code)
-            if identity in dictionary.avps:
+            if identity in wireshark.avps:
                 continue
             held = owners.get(identity)
             if held is None or (
@@ -483,7 +483,7 @@ def _ordered(reference: str) -> tuple[int, str]:
 
 def stage(
     corpus_dir: Path,
-    dictionary: Path,
+    wireshark: Path,
     output: Path,
     author: str,
     date: str,
@@ -492,8 +492,8 @@ def stage(
     """Write the patches into `output`, returning what each adds and what
     could not be added."""
     books = corpus.Corpus.load([corpus_dir])
-    loaded = oracle.Oracle.load(dictionary)
-    built = model.Model.build(books, dictionary=dictionary)
+    loaded = oracle.Oracle.load(wireshark)
+    built = model.Model.build(books, wireshark=wireshark)
     documents: dict[str, Document] = {}
     skipped: list[Skipped] = []
     books_by_reference = {entry.reference: entry.spec for entry in books.newest()}
@@ -503,7 +503,7 @@ def stage(
         for each in entries:
             holders.setdefault(each.name, set()).add(identity)
     made: list[Addition] = []
-    _, declared = _vendors(dictionary)
+    _, declared = _vendors(wireshark)
     for (_, _), (entry, claim) in sorted(
         _owners(books, loaded).items(),
         key=lambda item: (item[1][0].reference, item[0][1]),
@@ -562,7 +562,7 @@ def stage(
 
     with tempfile.TemporaryDirectory() as scratch:
         tree = Path(scratch)
-        shutil.copytree(dictionary, tree / _TREE)
+        shutil.copytree(wireshark, tree / _TREE)
         env = {
             **os.environ,
             # The user's configuration would change what format-patch prints.
@@ -708,7 +708,7 @@ def main(argv: list[str] | None = None) -> int:
         help="the corpus directory (default: the installed seanchai-corpus)",
     )
     parser.add_argument(
-        "--dictionary", type=Path, default=_ROOT / "specifications" / "wireshark"
+        "--wireshark", type=Path, default=_ROOT / "specifications" / "wireshark"
     )
     parser.add_argument(
         "-o",
@@ -728,7 +728,7 @@ def main(argv: list[str] | None = None) -> int:
     arguments = parser.parse_args(argv)
     documents, skipped = stage(
         arguments.corpus or corpus.installed_directory(),
-        arguments.dictionary,
+        arguments.wireshark,
         arguments.output,
         arguments.author,
         arguments.date,

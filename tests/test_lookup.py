@@ -441,7 +441,7 @@ def test_a_v11_table_row_reads_its_definition_under_the_clauses_spelling():
     LCS-Client-ID, the body read as an IETF AVP, (0, 1232)."""
     built = Model.installed()
 
-    assert built.identified(0, 1232) == ()
+    assert built.readings((0, 1232)) == ()
     avp = built.resolve("TS32.299", "LCS-Client-ID", version="11.20.0")
     assert avp is not None
     assert avp.identity == (10415, 1232)
@@ -469,7 +469,7 @@ def test_a_cited_reading_is_what_the_citing_documents_commands_name(tmp_path):
 def test_an_application_keeps_what_its_commands_use(tmp_path):
     built = Model.installed()
     (cx,) = built.applications("TS29.229", application_id=16777216)
-    used = {member.avp.identity for member in cx.avps() if member.avp is not None}
+    used = {member.avp.identity for member in cx.walk() if member.avp is not None}
     # And what their answers take with the E bit set: TS 29.229 clause 7.3.1's
     # `<answer-message>`, and 3GPP2 X.S0013-006's, whose Cx shares the id.
     for application in built.applications(application_id=16777216):

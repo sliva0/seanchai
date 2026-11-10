@@ -62,6 +62,14 @@ from ..dad import abnf, ast, formatter
 from . import sources
 from .errors import ExtractionError, boundary
 
+__all__ = [
+    "IETF_VENDOR",
+    "QUIRKS",
+    "extract",
+    "extract_with_comments",
+    "sources_file_name",
+]
+
 # Page furniture of the classic RFC rendering: a footer line ending in
 # "[Page N]", a form feed, then a running header repeating the RFC number and
 # title. Everything else is content.

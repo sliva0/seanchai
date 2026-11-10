@@ -577,7 +577,7 @@ def test_a_dictionary_adds_wireshark_names_as_comments(generator, tmp_path):
     plain = tmp_path / "plain"
     named = tmp_path / "named"
     assert generator.main(["TS29.229", "-o", str(plain)]) == 0
-    arguments = ["TS29.229", "-o", str(named), "--dictionary", str(dictionary)]
+    arguments = ["TS29.229", "-o", str(named), "--wireshark", str(dictionary)]
     assert generator.main(arguments) == 0
 
     cx = (named / "ts29_229.py").read_text(encoding="utf-8")
@@ -596,7 +596,7 @@ def test_a_dictionary_adds_wireshark_names_as_comments(generator, tmp_path):
 def test_the_pinned_dictionary_names_import_cleanly(generator, tmp_path):
     output = tmp_path / "aliased"
     dictionary = _ROOT / "specifications" / "wireshark"
-    arguments = ["--all", "-o", str(output), "--dictionary", str(dictionary)]
+    arguments = ["--all", "-o", str(output), "--wireshark", str(dictionary)]
     assert generator.main(arguments) == 0
     additions = (output / "additions.py").read_text(encoding="utf-8")
     assert "type_class=CallBarringInfo),  # Wireshark: Call-Barring-Infor-List\n" in (

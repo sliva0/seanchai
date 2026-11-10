@@ -18,6 +18,8 @@ from collections.abc import Generator
 
 from ..errors import SeanchaiError
 
+__all__ = ["ExtractionError", "boundary"]
+
 
 class ExtractionError(SeanchaiError, ValueError):
     pass

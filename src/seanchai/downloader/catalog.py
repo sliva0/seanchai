@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import unquote, urlparse
 
+from .._prose import collapse_fields
 from ..errors import SeanchaiError
-from ..prose import collapse_fields
 
 # What `seanchai corpus download --only` selects, and a manifest says it holds.
 SOURCES = ("3gpp", "onem2m", "rfc", "transcribed", "wireshark")

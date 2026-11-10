@@ -29,9 +29,9 @@ from urllib.parse import unquote, urlparse
 
 import pydantic
 
-from . import correction_record, export_schema, model
+from . import _correction_record, export_schema, model
 from .corpus import (
-    LATER_RELEASE,
+    CitationRule,
     Corpus,
     CorpusError,
     CorpusNotInstalledError,
@@ -68,6 +68,8 @@ from .export_schema import (
     ValueIdentity,
 )
 from .linter import lint_with_corpus
+
+__all__ = ["export_corpus"]
 
 # What a line is split on to find the spans worth marking. A comment, a URL and
 # a quoted string come first, so that nothing inside them is taken for a name.
@@ -206,7 +208,7 @@ class _Links:
     # A re-used row's origin cell, by (origin, row name): the AVP there.
     row_references: dict[tuple[str, str], Target]
 
-    def spelled_as_raw(self, renames: tuple[correction_record.Rename, ...]) -> _Links:
+    def spelled_as_raw(self, renames: tuple[_correction_record.Rename, ...]) -> _Links:
         """These links for the raw file, whose names a correction later renames
         link through it."""
         names = dict(self.names)
@@ -405,7 +407,7 @@ def _corpus_root(entry: Entry) -> Path | None:
             parent
             for parent in entry.path.parents
             if (parent / "raw").is_dir()
-            or (parent / correction_record.RECORD_NAME).is_file()
+            or (parent / _correction_record.RECORD_NAME).is_file()
         ),
         None,
     )
@@ -426,11 +428,11 @@ class _Declarations:
 
     def __init__(self, directory: Path | None) -> None:
         self._directory = directory
-        self._records: dict[Path, correction_record.CorrectionRecord] = {}
+        self._records: dict[Path, _correction_record.CorrectionRecord] = {}
 
     def _record_path(self, entry: Entry) -> Path | None:
         root = _corpus_root(entry)
-        path = root / correction_record.RECORD_NAME if root is not None else None
+        path = root / _correction_record.RECORD_NAME if root is not None else None
         return path if path is not None and path.is_file() else None
 
     def answers(self, entry: Entry) -> bool:
@@ -438,7 +440,7 @@ class _Declarations:
         no record, and no directory given, says nothing."""
         return self._directory is not None or self._record_path(entry) is not None
 
-    def of(self, entry: Entry) -> correction_record.RecordedDocument | None:
+    def of(self, entry: Entry) -> _correction_record.RecordedDocument | None:
         """`entry`'s record, None when its module declares nothing or nothing
         says what it declares."""
         spec = entry.spec
@@ -447,7 +449,7 @@ class _Declarations:
                 corrections.load(self._directory, spec.specification), spec.version
             )
             return (
-                correction_record.RecordedDocument.of(spec, declared)
+                _correction_record.RecordedDocument.of(spec, declared)
                 if declared
                 else None
             )
@@ -456,7 +458,7 @@ class _Declarations:
             return None
         record = self._records.get(path)
         if record is None:
-            record = self._records[path] = correction_record.load(path)
+            record = self._records[path] = _correction_record.load(path)
         found = record.documents.get(document_id(entry))
         if found is not None and found.version != spec.version:
             raise CorpusError(
@@ -614,7 +616,7 @@ class _Lookups:
         if (
             crossing
             and crossing.cited == avp.defined_in
-            and crossing.rule != LATER_RELEASE
+            and crossing.rule is not CitationRule.LATER_RELEASE
         ):
             origin = self.by_copy.get((avp.defined_in, crossing.version), origin)
         if origin is None:
@@ -1035,19 +1037,20 @@ def export_corpus(
     books: Corpus,
     output: Path,
     *,
-    dictionary: Path | None = None,
+    wireshark: Path | None = None,
     corrections_directory: Path | None = None,
     specifications: Path | None = None,
     include_pdfs: bool = False,
 ) -> Index:
     """Write `books` as the JSON a static site reads, replacing `output` whole.
 
-    `dictionary` fills in Wireshark's names. `corrections_directory` reads the
-    corrections from modules there, which executes them, instead of from the
-    corpus's record. `specifications` is a `seanchai corpus download`, from which RFC
-    texts are copied, and with `include_pdfs` the source PDFs, for a self-hosted
-    site. Nothing of `output` changes until the export has succeeded. A directory
-    holding anything but a previous export is refused, and so is an empty corpus.
+    `wireshark`, a Wireshark Diameter dictionary directory, fills in its names.
+    `corrections_directory` reads the corrections from modules there, which
+    executes them, instead of from the corpus's record. `specifications` is a
+    `seanchai corpus download`, from which RFC texts are copied, and with
+    `include_pdfs` the source PDFs, for a self-hosted site. Nothing of `output`
+    changes until the export has succeeded. A directory holding anything but a
+    previous export is refused, and so is an empty corpus.
     """
     if not len(books):
         raise CorpusError("nothing to export: the corpus holds no documents")
@@ -1056,7 +1059,7 @@ def export_corpus(
         return _write_export(
             books,
             staged,
-            dictionary,
+            wireshark,
             _Declarations(corrections_directory),
             specifications,
             include_pdfs,
@@ -1066,13 +1069,14 @@ def export_corpus(
 def _write_export(
     books: Corpus,
     output: Path,
-    dictionary: Path | None,
+    wireshark: Path | None,
     declarations: _Declarations,
     specifications: Path | None,
     include_pdfs: bool,
 ) -> Index:
     corpus = _Lookups(
-        books, model.Model.build(books, strict=False, dictionary=dictionary)
+        books,
+        model.Model.build(books, holes=model.HolePolicy.ANY, wireshark=wireshark),
     )
     ids = [document_id(entry) for entry in corpus.entries]
     if len(set(ids)) != len(ids):

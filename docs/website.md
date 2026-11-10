@@ -91,7 +91,7 @@ naming its fields per kind (`vendor_id` and `code` for an AVP). A command's
 `application_id` is the effective one, from its header or from the Application
 Scope block covering its clause, and `header_application_id` what its header
 prints. `abbreviation` is a command's own and `wireshark_name` Wireshark's name
-for an AVP, filled with `--dictionary specifications/wireshark`. A value table's
+for an AVP, filled with `--wireshark specifications/wireshark`. A value table's
 name is an entry of its own, `kind` `value`: its target is its clause, and its
 `identity` holds `value_kind` (`result-codes`, `bits`, `features`), the `avp`,
 the `value` and a feature's `application` and `feature_list_id`; its

@@ -499,7 +499,7 @@ def renamed(checkout, tmp_path):
 
 
 def test_a_name_that_is_wiresharks_is_counted_not_reported(renamed, tmp_path):
-    result = renamed("--dictionary", tmp_path / "wireshark")
+    result = renamed("--wireshark", tmp_path / "wireshark")
 
     assert result.returncode == 1, result.stderr
     assert _NAME_SHARED not in result.stdout
@@ -513,7 +513,7 @@ def test_a_name_that_is_wiresharks_is_counted_not_reported(renamed, tmp_path):
 
 
 def test_names_reports_them_all(renamed, tmp_path):
-    result = renamed("--dictionary", tmp_path / "wireshark", "--names")
+    result = renamed("--wireshark", tmp_path / "wireshark", "--names")
 
     for line in (_NAME_SHARED, _NAME_INNER, _NAME_BETA, _NAME_ALPHA):
         assert line in result.stdout
@@ -549,10 +549,10 @@ def test_an_empty_default_dictionary_directory_is_no_dictionary(renamed, tmp_pat
 
 
 def test_a_dictionary_named_but_unreadable_is_an_error(renamed, tmp_path):
-    result = renamed("--dictionary", tmp_path / "absent")
+    result = renamed("--wireshark", tmp_path / "absent")
 
     assert result.returncode == 2
-    assert "cannot read the dictionary" in result.stderr
+    assert "cannot read the Wireshark dictionary" in result.stderr
 
 
 def test_only_hidden_names_exit_zero(checkout, tmp_path):
@@ -579,7 +579,7 @@ def test_only_hidden_names_exit_zero(checkout, tmp_path):
         checkout,
         "--corpus",
         tmp_path / "corpus",
-        "--dictionary",
+        "--wireshark",
         tmp_path / "wireshark",
         "TS29.905",
     )
@@ -600,7 +600,7 @@ def test_the_hidden_line_closes_a_summary_too(checkout, tmp_path):
         checkout,
         "--corpus",
         tmp_path / "corpus",
-        "--dictionary",
+        "--wireshark",
         tmp_path / "wireshark",
         "--summary-only",
         "--all",

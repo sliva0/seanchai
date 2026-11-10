@@ -155,7 +155,7 @@ CORRECTIONS += [
 
 # Release 11, V11.19.0, which TS 32.299 V11.20.0 [215] cites
 # non-specifically within Release 11; Release 19's declarations above do
-# not reach it (src/seanchai/versions.py). Its thirty-one vendorless
+# not reach it (src/seanchai/_versions.py). Its thirty-one vendorless
 # grouped-AVP headers, and the same 'Ipv6' spellings, are Release 19's
 # defects as printed then.
 _VENDORLESS_REL11 = [

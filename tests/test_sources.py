@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
+from seanchai._versions import VersionRange
 from seanchai.extractor import rfc_text, tgpp_docx
 from seanchai.extractor.sources import Patch, Patcher, PatchError, load
-from seanchai.versions import VersionRange
 
 _PATCHES = Path(__file__).parent.parent / "edits" / "sources"
 

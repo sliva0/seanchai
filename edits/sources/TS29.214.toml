@@ -117,7 +117,7 @@ last_version = "19.3.0"
 
 # Release 7, V7.12.0: what ETSI TS 183 017 [19] cites as "3GPP TS 29.214
 # Release 7". A release's template is its own, so these apply to it alone
-# and the Release 19 ones above do not (src/seanchai/versions.py).
+# and the Release 19 ones above do not (src/seanchai/_versions.py).
 
 [[patch]]
 find = "Media-Sub-Component AVP"

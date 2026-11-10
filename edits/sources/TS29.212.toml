@@ -235,7 +235,7 @@ last_version = "19.1.0"
 
 # Release 11, V11.19.0: what TS 32.299 V11.20.0 [215] cites, non-specifically,
 # within Release 11. A release's template is its own, so these apply to it
-# alone and the Release 19 ones above do not (src/seanchai/versions.py).
+# alone and the Release 19 ones above do not (src/seanchai/_versions.py).
 
 [[patch]]
 find = "Enumarated"

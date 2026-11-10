@@ -9,11 +9,28 @@ shared error base and the version are here.
   to start (docs/consumers.md);
 - `seanchai.corpus`: a set of parsed `.dad` files, and the rules for resolving
   between them;
-- `seanchai.dad`: the `.dad` AST, parser, canonical formatter and corrections;
+- `seanchai.dictionary`: the JSON `seanchai dictionary` writes, as pydantic
+  models, and its builder;
+- `seanchai.export` and `seanchai.export_schema`: the JSON `seanchai export`
+  writes for the static site, and its shape;
+- `seanchai.dad`: the `.dad` AST, parser, canonical formatter, corrections and
+  the ABNF syntax they share;
+- `seanchai.linter`: the rules reporting what a file or the corpus contradicts;
+- `seanchai.oracle`: the cross-check against Wireshark's Diameter dictionary;
+- `seanchai.errors`: the error base, and the error naming a missing extra;
 - `seanchai.extractor`: 3GPP docx/PDF and RFC text to AST, the former with the
   `seanchai[extract]` extra;
 - `seanchai.downloader`: fetches the source documents the corpus is built from,
   with that extra for whatever it has to open as docx or PDF.
+
+Semantic versioning covers the names in the `__all__` of this package and of
+each module listed above (for `seanchai.downloader`, the package's own; for
+`seanchai.extractor`, its modules'), the command line's commands, options and
+exit statuses, the format versions of the two JSON outputs
+(`dictionary.FORMAT_VERSION`, `export_schema.SCHEMA_VERSION`) and the corpus
+formats the library reads (`corpus.FORMATS`). A module whose name starts with
+an underscore is implementation, and so is any name outside an `__all__`,
+the Python of `seanchai.cli` included: either may change in any release.
 """
 
 from importlib.metadata import version

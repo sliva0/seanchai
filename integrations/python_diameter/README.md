@@ -13,7 +13,7 @@ directory.
 uv run integrations/python_diameter/validate.py TS29.229
 uv run integrations/python_diameter/generate.py TS29.229 TS29.272 -o out/cx_s6a
 uv run integrations/python_diameter/generate.py --all -o out/protocols \
-    --dictionary specifications/wireshark
+    --wireshark specifications/wireshark
 uv run integrations/python_diameter/generate.py --all -o out/protocols \
     --undefined supply --supply acme.dad
 ```
@@ -60,7 +60,7 @@ uv run ~/seanchai/integrations/python_diameter/validate.py --library . --claimed
   is checked at the top level alone, and TS 29.272's and TS 32.299's bodies are
   most of what they say. `GenericSpec`, the library's class with no `avp_def`,
   reports every member of the body as missing.
-- **`--dictionary PATH`** reads Wireshark's dictionary for what the library's
+- **`--wireshark PATH`** reads Wireshark's dictionary for what the library's
   names follow, by default `specifications/wireshark` in this repository when
   `seanchai corpus download --only wireshark` has put it there. A `name` finding
   whose library name is Wireshark's for the `(vendor-id, code)`, ignoring case
@@ -83,7 +83,7 @@ those no document in the corpus mentions.
 
 `generate.py` takes references (`TS29.229`, `29.229`, `RFC6733`) or
 `--all`, `--corpus` for a corpus other than the installed one,
-`--dictionary` for Wireshark's AVP names, and `--undefined` with `--supply`
+`--wireshark` for Wireshark's AVP names, and `--undefined` with `--supply`
 for the names the corpus declares defined nowhere
 ([below](#undefined-names)). It reads the installed library for the names
 it references, replaces the output directory only if every file in it is
@@ -208,7 +208,7 @@ is imported. A maintainer would:
   and nothing enforces it.
 - **A member printed twice.** The library decodes by identity, so a member
   printed twice gets one list attribute with a comment naming both lines.
-- **Wireshark's names.** With `--dictionary`, Wireshark's name is a
+- **Wireshark's names.** With `--wireshark`, Wireshark's name is a
   trailing comment where it differs (`# Wireshark: Cx-User-Data`).
 - **Enumerated values** of AVPs the library already holds: `additions`
   writes `E_` constants only for the AVPs it adds.

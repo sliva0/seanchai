@@ -23,7 +23,7 @@ are. README.md beside this script describes the layout and how to adopt it.
     uv run integrations/python_diameter/generate.py 29.272 RFC6733 -o out/
     uv run integrations/python_diameter/generate.py --all -o out/
     uv run integrations/python_diameter/generate.py --all -o out/ \
-        --dictionary specifications/wireshark
+        --wireshark specifications/wireshark
     uv run integrations/python_diameter/generate.py --all -o out/ \
         --undefined supply --supply acme.dad
 
@@ -556,7 +556,7 @@ class Definitions:
             return None
         # A grouped AVP among its own descendants: the model stops there
         # rather than recurse, and the name stays a hole here.
-        return self.add(model.Hole("", member.name, (model.DEFINITION,)))
+        return self.add(model.Hole("", member.name, (model.Missing.DEFINITION,)))
 
     @staticmethod
     def _signature(
@@ -1884,9 +1884,9 @@ def main(argv: list[str] | None = None) -> int:
         help="the corpus directory (default: the installed seanchai-corpus)",
     )
     parser.add_argument(
-        "--dictionary",
+        "--wireshark",
         type=Path,
-        help="a Wireshark dictionary directory, for Wireshark's AVP names",
+        help="a Wireshark Diameter dictionary directory, for Wireshark's AVP names",
     )
     parser.add_argument(
         "--undefined",
@@ -1915,7 +1915,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         supply = model.supplied_from(*args.supply) if args.supply else None
         built = model.Model.build(
-            books, dictionary=args.dictionary, undefined=policy, supply=supply
+            books, wireshark=args.wireshark, undefined=policy, supply=supply
         )
     except model.ModelError as error:
         print(f"error: {error}", file=sys.stderr)

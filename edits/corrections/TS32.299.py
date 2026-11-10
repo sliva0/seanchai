@@ -674,7 +674,7 @@ CORRECTIONS += [
 
 # Release 11, V11.20.0: the copy oneM2M TS-0004 [31] cites as "3GPP TS
 # 32.299 ... (Release 11)" for Node-Id and Service-Information. The Release
-# 18 declarations above do not reach it (src/seanchai/versions.py); these
+# 18 declarations above do not reach it (src/seanchai/_versions.py); these
 # are what resolution through it needs.
 
 # Grouped clauses printing `< AVP Header: nnn >` with no vendor-id, where

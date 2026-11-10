@@ -56,9 +56,47 @@ from typing import Any
 
 import pydantic
 
+from .._versions import VersionRange, applies, reviewed_release
 from ..errors import SeanchaiError
-from ..versions import VersionRange, applies, reviewed_release
 from . import ast, formatter
+
+__all__ = [
+    "UNSPECIFIED",
+    "Accept",
+    "Correction",
+    "CorrectionError",
+    "Declaration",
+    "Delete",
+    "Edit",
+    "Insert",
+    "Result",
+    "Selector",
+    "Supply",
+    "VersionRange",
+    "acceptances",
+    "application_scope",
+    "apply",
+    "apply_with_comments",
+    "avp_rule",
+    "avp_table",
+    "definition",
+    "edits",
+    "enum_value",
+    "flag_rules",
+    "header",
+    "in_release",
+    "load",
+    "module_path",
+    "notes",
+    "registry_reservation",
+    "registry_row",
+    "reused_avps",
+    "reused_row",
+    "table_row",
+    "undefined",
+    "value_row",
+    "value_table",
+]
 
 
 class CorrectionError(SeanchaiError, ValueError):
@@ -1470,7 +1508,7 @@ def in_release(
     declarations: Sequence[Declaration], version: str | None
 ) -> list[Declaration]:
     """The declarations that apply to `version`: those of its release
-    (`versions.reviewed_release`), each range advisory within it. A module
+    (`_versions.reviewed_release`), each range advisory within it. A module
     holding TS 32.299's Release 19 corrections says nothing about the
     Release 11 copy the corpus holds beside it."""
     release = reviewed_release(

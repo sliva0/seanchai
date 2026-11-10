@@ -2,7 +2,7 @@
 
 import pytest
 
-from seanchai.versions import VersionRange, applies, reviewed_release
+from seanchai._versions import VersionRange, applies, reviewed_release
 
 
 @pytest.mark.parametrize(

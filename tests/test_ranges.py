@@ -11,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from seanchai import ranges
+from seanchai import _ranges
+from seanchai._versions import VersionRange
 from seanchai.dad import corrections
-from seanchai.versions import VersionRange
 
 _EDITS = Path(__file__).parent.parent / "edits"
 
@@ -44,7 +44,7 @@ def test_a_source_declaration_keeps_everything_but_the_moved_bound(tmp_path):
     path = tmp_path / "TS29.999.toml"
     path.write_text(_TOML, encoding="utf-8")
 
-    expansion = ranges.expand_sources(path, "18.7.0")
+    expansion = _ranges.expand_sources(path, "18.7.0")
 
     assert path.read_text(encoding="utf-8") == _TOML.replace(
         'last_version = "18.6.0"', 'last_version = "18.7.0"'
@@ -65,7 +65,7 @@ def test_an_exclusion_widens_as_the_other_declarations_do(tmp_path):
         encoding="utf-8",
     )
 
-    expansion = ranges.expand_sources(path, "18.5.0")
+    expansion = _ranges.expand_sources(path, "18.5.0")
 
     assert path.read_text(encoding="utf-8").count('first_version = "18.5.0"') == 2
     assert "TS29.999.toml: exclusion '8' 18.6.0..* -> 18.5.0..*" in expansion.widened
@@ -75,7 +75,7 @@ def test_an_older_version_moves_the_first_bound(tmp_path):
     path = tmp_path / "TS29.999.toml"
     path.write_text(_TOML, encoding="utf-8")
 
-    expansion = ranges.expand_sources(path, "18.5.0")
+    expansion = _ranges.expand_sources(path, "18.5.0")
 
     text = path.read_text(encoding="utf-8")
     assert text.count('first_version = "18.5.0"') == 1
@@ -90,7 +90,7 @@ def test_another_releases_declarations_are_not_widened(tmp_path):
     path = tmp_path / "TS29.999.toml"
     path.write_text(_TOML, encoding="utf-8")
 
-    assert ranges.expand_sources(path, "17.9.0") == ranges.Expansion([], [])
+    assert _ranges.expand_sources(path, "17.9.0") == _ranges.Expansion([], [])
     assert path.read_text(encoding="utf-8") == _TOML
 
 
@@ -99,7 +99,7 @@ def test_a_covered_version_leaves_the_file_untouched(tmp_path):
     path.write_text(_TOML, encoding="utf-8")
     before = path.stat().st_mtime_ns
 
-    assert ranges.expand_sources(path, "18.6.0") == ranges.Expansion([], [])
+    assert _ranges.expand_sources(path, "18.6.0") == _ranges.Expansion([], [])
     assert path.stat().st_mtime_ns == before
 
 
@@ -107,7 +107,7 @@ _PYTHON = """\
 \"\"\"Corrections for 3GPP TS 29.999.\"\"\"
 
 from seanchai.dad.corrections import Correction, definition, table_row
-from seanchai.versions import VersionRange
+from seanchai._versions import VersionRange
 
 CORRECTIONS = [
     # Comments and layout survive: only the literal changes.
@@ -148,7 +148,7 @@ def test_a_corrections_literal_is_replaced_in_place(tmp_path):
     path = tmp_path / "TS29.999.py"
     path.write_text(_PYTHON, encoding="utf-8")
 
-    expansion = ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
+    expansion = _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
 
     assert path.read_text(encoding="utf-8") == _PYTHON.replace(
         "versions='18.6.0'", "versions='18.6.0..18.7.0'"
@@ -171,7 +171,7 @@ def test_a_matching_acceptance_literal_is_widened_like_a_correction(tmp_path):
     path = tmp_path / "TS29.999.py"
     path.write_text(_ACCEPTANCE, encoding="utf-8")
 
-    expansion = ranges.expand_corrections(
+    expansion = _ranges.expand_corrections(
         tmp_path, "3GPP TS 29.999", "18.7.0", accepted={"TS29.999.py#a"}
     )
 
@@ -187,7 +187,7 @@ def test_an_acceptance_matching_no_finding_is_reported_stale_not_widened(tmp_pat
     path = tmp_path / "TS29.999.py"
     path.write_text(_ACCEPTANCE, encoding="utf-8")
 
-    expansion = ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
+    expansion = _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
 
     assert path.read_text(encoding="utf-8") == _ACCEPTANCE
     assert expansion.widened == expansion.remaining == []
@@ -201,7 +201,7 @@ def test_a_range_built_by_an_expression_is_left_for_a_person(tmp_path):
     text = _PYTHON.replace("versions='18.6.0'", 'versions=VersionRange.exact("18.6.0")')
     path.write_text(text, encoding="utf-8")
 
-    expansion = ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
+    expansion = _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
 
     assert len(expansion.widened) == 1
     assert expansion.remaining == [
@@ -211,9 +211,9 @@ def test_a_range_built_by_an_expression_is_left_for_a_person(tmp_path):
 
 
 def test_a_specification_without_edit_files_expands_nothing(tmp_path):
-    empty = ranges.Expansion([], [])
-    assert ranges.expand_sources(tmp_path / "TS29.999.toml", "18.7.0") == empty
-    assert ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0") == empty
+    empty = _ranges.Expansion([], [])
+    assert _ranges.expand_sources(tmp_path / "TS29.999.toml", "18.7.0") == empty
+    assert _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0") == empty
 
 
 def test_a_module_in_another_encoding_is_rewritten_in_that_encoding(tmp_path):
@@ -228,7 +228,7 @@ def test_a_module_in_another_encoding_is_rewritten_in_that_encoding(tmp_path):
     path = tmp_path / "TS29.999.py"
     path.write_bytes(text.encode("latin-1"))
 
-    expansion = ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
+    expansion = _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
 
     assert path.read_bytes() == text.replace(
         "versions='18.6.0'", "versions='18.6.0..18.7.0'"
@@ -245,7 +245,7 @@ def test_a_declaration_the_loader_never_applies_is_reported_not_widened(tmp_path
     path = tmp_path / "TS29.999.py"
     path.write_text(text, encoding="utf-8")
 
-    expansion = ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
+    expansion = _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
 
     rewritten = path.read_text(encoding="utf-8")
     assert "versions='18.5.0'" in rewritten
@@ -263,7 +263,7 @@ def test_a_literal_split_by_comments_is_reported_not_widened(tmp_path):
     path = tmp_path / "TS29.999.py"
     path.write_text(text, encoding="utf-8")
 
-    expansion = ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
+    expansion = _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
 
     rewritten = path.read_text(encoding="utf-8")
     assert "'18.6.0'  # reviewed" in rewritten
@@ -306,9 +306,9 @@ def test_a_covered_version_leaves_every_source_file_byte_identical(tmp_path, pat
     data = tomllib.loads(path.read_text(encoding="utf-8"))
     entries = [*data.get("patch", ()), *data.get("quirk", ())]
     for version in _inside_each_release(entries):
-        expansion = ranges.expand_sources(copy, version)
+        expansion = _ranges.expand_sources(copy, version)
 
-        assert expansion == ranges.Expansion([], [])
+        assert expansion == _ranges.Expansion([], [])
         assert copy.read_bytes() == path.read_bytes()
 
 
@@ -319,7 +319,7 @@ def test_widening_a_source_file_changes_only_its_bound_lines(tmp_path, path):
     copy = tmp_path / path.name
     copy.write_bytes(path.read_bytes())
 
-    expansion = ranges.expand_sources(copy, "99.0.0")
+    expansion = _ranges.expand_sources(copy, "99.0.0")
 
     before = path.read_bytes().splitlines()
     after = copy.read_bytes().splitlines()
@@ -342,7 +342,7 @@ def test_every_committed_range_is_one_the_rewrite_can_reach(tmp_path, path):
         acceptance.cited
         for acceptance in corrections.acceptances(corrections.load(tmp_path, path.stem))
     }
-    expansion = ranges.expand_corrections(tmp_path, path.stem, "99.0.0", accepted)
+    expansion = _ranges.expand_corrections(tmp_path, path.stem, "99.0.0", accepted)
 
     assert expansion.remaining == expansion.stale == []
     before = path.read_bytes().splitlines()
@@ -363,7 +363,7 @@ def test_a_wrapped_reason_hides_no_bound_and_opens_no_table(tmp_path):
     path = tmp_path / "TS29.999.toml"
     path.write_text(wrapped, encoding="utf-8")
 
-    expansion = ranges.expand_sources(path, "18.7.0")
+    expansion = _ranges.expand_sources(path, "18.7.0")
 
     assert path.read_text(encoding="utf-8") == wrapped.replace(
         'last_version = "18.6.0"', 'last_version = "18.7.0"'

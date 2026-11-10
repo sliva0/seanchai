@@ -19,6 +19,8 @@ import pydantic
 from ..errors import SeanchaiError
 from . import abnf, ast, formatter
 
+__all__ = ["DadParseError", "parse", "parse_with_comments"]
+
 # Keys carry hyphens (`; Vendor-ID:`), so the charset is wider than letters.
 # `; RESERVED = n`, `; VOID = n` and `; VENDOR-SPECIFIC = n` use `=` rather than
 # `:` and so are not a match either way.

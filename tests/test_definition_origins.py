@@ -7,7 +7,7 @@ from seanchai.dad import ast
 from seanchai.extractor import tgpp_docx
 from seanchai.extractor.errors import ExtractionError
 from seanchai.extractor.sources import Quirk, Quirks
-from seanchai.model import Enumerated, FlagRules, Grouped, Model
+from seanchai.model import Enumerated, FlagRules, Grouped, HolePolicy, Model
 
 
 @pytest.fixture(scope="module")
@@ -49,7 +49,7 @@ def test_prose_citations_resolve_to_the_defining_clause(
                 for e in Corpus.installed()
                 if e.reference != reference or e.spec.version == version
             ),
-            strict=False,
+            holes=HolePolicy.ANY,
         )
     avp = built.resolve(reference, name)
     assert avp is not None

@@ -11,26 +11,26 @@ pip install "seanchai[corpus]"
 
 ### Generate a dictionary
 
-`Application.avps()` is the closure of what an application's commands use, at
-any depth, whichever document defines it. `Model.avps(reference)` is something
-else: what a document's own tables list. Cx's commands use 104 AVPs and TS
-29.229's tables list 82: RFC 6733's `Destination-Host` is in no table of TS
-29.229's. Generate a dictionary from `Application.avps()`, or from
-`Message.walk()` for one command.
+Generate a dictionary from what the commands reach: `Application.walk()` is
+every member an application's commands hold, at any depth, whichever document
+defines it, as `Message.walk()` is for one command. Cx's commands reach 104
+AVPs, RFC 6733's `Destination-Host` among them, which no table of TS 29.229's
+lists.
 
 ```python
 import seanchai
-from seanchai import corpus, model
+from seanchai.corpus import Corpus
+from seanchai.model import AvpFlag, Enumerated, Grouped, Model
 
-books = corpus.Corpus.installed()
-built = model.Model.build(books)
-(cx,) = built.applications("TS 29.229", application_id=16777216)
+corpus = Corpus.installed()
+model = Model.build(corpus)
+(cx,) = model.applications("TS 29.229", application_id=16777216)
 
 # Record both versions: the generated output depends on both.
-print(f"# seanchai {seanchai.__version__}, corpus {books.version}")
+print(f"# seanchai {seanchai.__version__}, corpus {corpus.version}")
 
 dictionary = {}
-for member in cx.avps():
+for member in cx.walk():
     if member.avp is not None:
         # A citing table can read one AVP two ways: keep one per identity.
         dictionary.setdefault(member.avp.identity, member.avp)
@@ -42,47 +42,49 @@ for member in cx.avps():
 for (vendor_id, code), avp in sorted(dictionary.items()):
     rules = avp.flag_rules
     # M is in Must, May or Must not; or RFC 6733 leaves it to the application.
-    open_m = model.AvpFlag.MANDATORY in rules.application_defined
-    mandatory = "app" if open_m else model.AvpFlag.MANDATORY in rules.must
+    open_m = AvpFlag.MANDATORY in rules.application_defined
+    mandatory = "app" if open_m else AvpFlag.MANDATORY in rules.must
     print(vendor_id, code, avp.name, avp.data_type, mandatory)
-    if isinstance(avp, model.Grouped):
+    if isinstance(avp, Grouped):
         print("  holds", [member.name for member in avp.members])
-    elif isinstance(avp, model.Enumerated):
+    elif isinstance(avp, Enumerated):
         print("  values", len(avp.values))
 ```
 
 ### Look up one AVP
 
-`definition` takes a name or a `(vendor-id, code)` and returns the defining
-document's reading. `find` returns every reading, since a citing document's
-table can change the flags; `Avp.read_through` names the table that did.
+`definition` and `readings` take a name or a `(vendor-id, code)`. `definition`
+returns the defining document's reading, and `readings` every reading, since a
+citing document's table can change the flags; `Avp.read_through` names the
+table that did.
 
 ```python
-from seanchai import model
+from seanchai.model import Model
 
-built = model.Model.installed()
+model = Model.installed()
 
-avp = built.definition("Session-Id")
+avp = model.definition("Session-Id")
 print(avp.identity, avp.data_type, avp.defined_in, avp.flag_rules.to_dict())
 
-for reading in built.find("Session-Id"):
+for reading in model.readings("Session-Id"):
     print(reading.read_through, reading.flag_rules.to_dict())
 
 # As one document means it, which is the reading its commands hold:
-print(built.resolve("TS29.229", "Session-Id"))
+print(model.resolve("TS29.229", "Session-Id"))
 
 # A name two AVPs claim raises `ModelError`; ask by identity instead.
-print(built.definition((45687, 1008)))
+print(model.definition((45687, 1008)))
+print(len(model.readings((0, 110))))  # RFC 4590's Digest-Qop, read two ways
 ```
 
 ### List an application's commands
 
 ```python
-from seanchai import model
+from seanchai.model import Model
 
-built = model.Model.installed()
+model = Model.installed()
 
-for application in built.applications("TS 29.212"):
+for application in model.applications("TS 29.212"):
     print(application.name, application.application_id, application.clause)
     for message in application.messages:
         kind = "request" if message.is_request else "answer"
@@ -249,6 +251,26 @@ or a file list has no format to hold it to and no rules: it loads as it parses.
 
 Everything the library refuses derives from `seanchai.SeanchaiError`.
 
+## What the version covers
+
+`seanchai` follows semantic versioning over what it publishes:
+
+- the names in the `__all__` of `seanchai`, `seanchai.model`,
+  `seanchai.corpus`, `seanchai.dictionary`, `seanchai.export`,
+  `seanchai.export_schema`, `seanchai.dad` and its modules (`ast`, `parser`,
+  `formatter`, `corrections`, `abnf`), `seanchai.linter`, `seanchai.oracle`,
+  `seanchai.errors`, the `seanchai.downloader` package and the modules of
+  `seanchai.extractor`;
+- the command line's commands, options and exit statuses;
+- the format version of each JSON output, the dictionary's `format_version` and
+  the export's `schema_version`, which change when a reader would have to;
+- the corpus formats it reads, `corpus.FORMATS`
+  ([above](#installing-the-corpus)).
+
+A module whose name starts with an underscore is implementation, and so is a
+name outside every `__all__` and the Python of `seanchai.cli`: any of them may
+change in any release.
+
 ## The model
 
 The AST mirrors a file one-to-one and may contradict itself. `model.Model`
@@ -259,33 +281,37 @@ every AVP knowing its `(vendor-id, code)`, type, flag rules and defining
 document.
 
 ```python
-from seanchai import model
+from seanchai.model import Model, RegistryKind, ValueKind
 
-# Strict against the corpus's holes.toml; dictionary="specifications/wireshark"
-# adds Avp.wireshark_name. `Model.build(books)` is the same over any corpus.
-built = model.Model.installed()
-built.references()  # every document, a tuple as every query returns
-built.canonical("ts 29.229")  # how it spells a reference: TS29.229
-built.messages("TS29.229")  # bodies resolved; no reference: the whole corpus
-built.applications("TS29.212")  # commands per application and interface
-built.applications(application_id=16777216)  # one id, across documents
-built.answer_message("TS29.272")  # what its answers take with the E bit set
-built.avps("TS29.229")  # what a document's tables list; no reference: all
-built.resolve("TS29.229", "DRMP")  # one name in one document's reading
-built.definition("Public-Identity")  # the defining document's reading
-built.find("Public-Identity")  # every reading under a name
-built.identified(10415, 601)  # every reading claiming an identity
-built.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
-built.marks("TS29.212", "AN-GW-Address")  # what each table marks about it
-built.holes("TS32.299")  # what the corpus cannot complete; no reference: all
-built.undefined("TS29.345")  # the names its Undefined AVP blocks declare
-built.across_releases()  # what citations resolved across releases
-built.registry(model.RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
-built.value_tables("TS29.272", avp="ULR-Flags")  # the numbers a document names
-built.value_tables(kind=model.ValueKind.FEATURES)  # one kind, the whole corpus
-built.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list id
-built.definition("ULR-Flags").value_table  # the bits, read through resolution
+# Held to the corpus's holes.toml; wireshark="specifications/wireshark" adds
+# Avp.wireshark_name. `Model.build(corpus)` is the same over any corpus.
+model = Model.installed()
+model.references()  # every document, a tuple as every query returns
+model.canonical("ts 29.229")  # how it spells a reference: TS29.229
+model.messages("TS29.229")  # bodies resolved; no reference: the whole corpus
+model.applications("TS29.212")  # commands per application and interface
+model.applications(application_id=16777216)  # one id, across documents
+model.answer_message("TS29.272")  # what its answers take with the E bit set
+model.avps("TS29.229")  # what a document's tables list; no reference: all
+model.resolve("TS29.229", "DRMP")  # one name in one document's reading
+model.definition("Public-Identity")  # the defining document's reading
+model.readings("Public-Identity")  # every reading under a name
+model.readings((10415, 601))  # every reading claiming an identity
+model.table_rows("TS29.061", "3GPP-IMSI")  # every table's row for a name
+model.marks("TS29.212", "AN-GW-Address")  # what each table marks about it
+model.holes("TS32.299")  # what the corpus cannot complete; no reference: all
+model.undefined("TS29.345")  # the names its Undefined AVP blocks declare
+model.across_releases()  # what citations resolved across releases
+model.registry(RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
+model.value_tables("TS29.272", avp="ULR-Flags")  # the numbers a document names
+model.value_tables(kind=ValueKind.FEATURES)  # one kind, the whole corpus
+model.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list id
+model.definition("ULR-Flags").value_table  # the bits, read through resolution
 ```
+
+`Model.build` and `Model.installed` are the only ways to a model: each checks
+the build against the corpus's record and the consumer's answers, and
+`Model(...)` raises `TypeError`.
 
 The query set is small on purpose. A reference may be spelled "TS 29.229",
 "ts29.229" or "3GPP TS 29.229"; one the corpus lacks raises `ModelError`
@@ -340,7 +366,7 @@ takes the M bit as application-defined and V as Must not (RFC 6733 sections
 empty everywhere else. A table row's rules stay the AST's and compare equal only
 through `model.FlagRules.printed(row.flag_rules)`. A vendor reading stating
 none stays a hole. Resolution
-through the origin is unchanged, so `identified` returns both readings of
+through the origin is unchanged, so `readings` returns both readings of
 such an identity. Examples: TS 29.229 table 6.3.0.1 puts M in Must for four
 `Digest-*` AVPs RFC 4590 states no rule for; TS 29.272 table 7.3.1/2 marks
 21 of TS 29.336's AVPs `MUST-NOT`.
@@ -495,8 +521,11 @@ comparison it rests on:
 missing a field or stating one twice, and an entry naming a document or a copy
 the corpus does not hold, which would answer no citation. A corpus without the
 file resolves by no entry: the drafting rules alone, so a citation an entry
-would answer resolves to nothing. `corpus.Corpus(entries, rules=...)` takes
-rules as given, unchecked.
+would answer resolves to nothing. `corpus.Corpus(entries, rules=...,
+record=...)`, for a partial corpus a caller parsed, checks only that no two
+entries claim one copy: it reads no `corpus.toml`, so holds no format, and
+takes the rules and the record as given, without checking that they name
+documents it holds. A model built over it is still held to the record.
 
 Every version the version tables name is a catalog pin the downloader checks
 against the 3GPP archive on each download ([downloader.md](downloader.md)). An
@@ -506,20 +535,23 @@ documents, the version and the rule; `across_releases()` lists them for a
 reader to audit, and the linter's `cross-release-origin` note says the same
 per file, naming the entry, `(corpus.toml, release_stand_in)`. For a
 `release_fill` entry `Avp.completed_by` also names the copy per field,
-`TS29.061 V19.1.0`, and the rule is `corpus.LATER_RELEASE`. An older copy
+`TS29.061 V19.1.0`, and the rule is `corpus.CitationRule.LATER_RELEASE`. An
+older copy
 answers only through a citation: reference-level
 queries (`avps`, `holes`, `references`) read the newest copy of each
-document. Corpus-wide lookups (`find`, `definition`, `identified`, `avps()`)
-also know an identity only an older copy holds, where a citation reaches it, so
+document. Corpus-wide lookups (`readings`, `definition`, `avps()`) also
+know an identity only an older copy holds, where a citation reaches it, so
 `show` answers for every identity `seanchai dictionary` writes: TS 32.299
 V11.20.0's `WLAN-Information`, through oneM2M TS-0004's `Service-Information`.
 
 **Holes.** An `Avp` has every field: code, type and flag rules are facts
 some document states, or RFC 6733's rule for an IETF AVP's unplaced bits,
 never `None`. A name the corpus cannot complete is a `model.Hole` instead,
-naming the document that falls short and the fields it leaves unstated
-(`code`, `data_type`, `flag_rules`), `definition` when the name resolves
-nowhere, or `undefined` when an `Undefined AVP` block declares it so, plus
+naming the document that falls short and, in `Hole.missing`, the
+`model.Missing` fields it leaves unstated (`CODE`, `DATA_TYPE`, `FLAG_RULES`),
+`DEFINITION` when the name resolves nowhere, or `UNDEFINED` when an `Undefined
+AVP` block declares it so, written `code`, `definition` and so on wherever it
+is serialized, plus
 the re-used origin the corpus lacks or the disagreeing reading, if either
 applies. `Member.avp` is `None` for a hole and `Member.hole` says which;
 the `* [ AVP ]` wildcard, and a placeholder under that policy, are the
@@ -528,7 +560,8 @@ vendor, code, type and flag rules its document states, but not a grouped
 AVP's members or an enumerated AVP's values; a consumer that wants those
 reads the AST through `table_rows` or `corpus.Entry.spec`.
 
-**Wireshark's names.** Built with `dictionary=`, the model fills
+**Wireshark's names.** Built with `wireshark=`, a Wireshark Diameter
+dictionary directory, the model fills
 `Avp.wireshark_name` and `Hole.wireshark_name` with Wireshark's name for
 the identity. `name` is always the document's spelling
 ([oracle.md](oracle.md#in-the-model)).
@@ -545,18 +578,21 @@ layers: `corpus.Corpus.load` reads it into `Corpus.record` for the directory
 holding it directly. A file list or a subdirectory has no record, and neither
 has a raw corpus.
 
-| `strict` | A hole the record lists | A hole it does not | An entry naming no hole |
+Which holes a build allows is `Model.build(corpus,
+holes=model.HolePolicy.…)`:
+
+| `holes` | A hole the record lists | A hole it does not | An entry naming no hole |
 |---|---|---|---|
-| `None` (default) | builds; `Hole.recorded` its reason | `IncompleteCorpusError` | `StaleHoleRecordError` |
-| `True` | `IncompleteCorpusError` | `IncompleteCorpusError` | not read |
-| `False` | builds; `Hole.recorded` its reason | builds | not read |
+| `RECORDED` (default) | builds; `Hole.recorded` its reason | `IncompleteCorpusError` | `StaleHoleRecordError` |
+| `NONE` | `IncompleteCorpusError` | `IncompleteCorpusError` | not read |
+| `ANY` | builds; `Hole.recorded` its reason | builds | not read |
 
 A recorded hole stays a hole: `holes()` reports it, `resolve` returns None,
 and `Hole.recorded` holds the entry's reason. The default fails on a stale
 entry so that working a hole off forces the record to shrink. An entry
 going unused only because the build's `undefined` policy answered for its
-name is not stale. `strict=True` is absolute, and `strict=False` is for a
-consumer loading a partial or foreign corpus. `unrecorded_holes()` and
+name is not stale. `NONE` is absolute, and `ANY` is for a consumer loading a
+partial or foreign corpus. `unrecorded_holes()` and
 `stale_record_entries()` return what the default would refuse; the linter's
 `unrecorded-hole` and `stale-hole-record` report the same.
 
@@ -595,9 +631,9 @@ without it, and the linter's `undefined-avp-defined` reports the stale
 block.
 
 What the model makes of such a name is the consumer's choice,
-`Model.build(books, undefined=model.UndefinedPolicy.…)`:
+`Model.build(corpus, undefined=model.UndefinedPolicy.…)`:
 
-| Policy | `resolve` | `hole` | Body member | `holes()` | `strict=True` |
+| Policy | `resolve` | `hole` | Body member | `holes()` | `HolePolicy.NONE` |
 |---|---|---|---|---|---|
 | `HOLE` (default) | None | missing `undefined` | `Member.hole` | lists it | refuses |
 | `DROP` | None | None | removed; `Grouped.dropped`, `Message.dropped` keep it | no | builds |
@@ -610,7 +646,7 @@ Only a name a block declares is open to the choice. A name resolving
 nowhere without one is a corpus defect (the linter's
 `unresolved-reference`), and a field no reading states stays a hole under
 every policy. A non-default policy is an explicit answer, so the answered
-names are no holes, and `strict=True, undefined=PLACEHOLDER` builds
+names are no holes, and `holes=NONE, undefined=PLACEHOLDER` builds
 wherever nothing but such names is a hole.
 
 `DROP` removes required members too: RFC 4004's SPIs and TS 29.154's
@@ -632,25 +668,33 @@ most likely what TS 29.154's editors meant, though the corpus does not assume
 it.
 
 ```python
-from seanchai import model
+from seanchai.model import (
+    Alias,
+    AvpFlag,
+    DataType,
+    FlagRules,
+    Model,
+    Supplied,
+    UndefinedPolicy,
+)
 
-built = model.Model.installed(
-    undefined=model.UndefinedPolicy.SUPPLY,
+model = Model.installed(
+    undefined=UndefinedPolicy.SUPPLY,
     supply={
-        "External-Group-Identifier": model.Alias(
+        "External-Group-Identifier": Alias(
             "TS29.336", "External-Identifier", source="our reading of TS 29.154"
         ),
-        ("TS29.345", "ProSe-Query-Code"): model.Supplied(
+        ("TS29.345", "ProSe-Query-Code"): Supplied(
             vendor_id=10415,
             code=59999,
-            data_type=model.DataType.OCTET_STRING,
-            flag_rules=model.FlagRules(must=frozenset({model.AvpFlag.VENDOR})),
+            data_type=DataType.OCTET_STRING,
+            flag_rules=FlagRules(must=frozenset({AvpFlag.VENDOR})),
             source="ACME HSS 4.2 dictionary",
         ),
     },
 )
-print(built.resolve("TS29.154", "External-Group-Identifier"))
-print(built.resolve("TS29.345", "ProSe-Query-Code").supplied)
+print(model.resolve("TS29.154", "External-Group-Identifier"))
+print(model.resolve("TS29.345", "ProSe-Query-Code").supplied)
 ```
 
 `model.supplied_from(*paths)` reads `Supplied`s from hand-authored `.dad`
@@ -672,7 +716,7 @@ generator records in its output.
 
 `seanchai export -o DIR` writes the resolved corpus as JSON for a consumer with
 no Python, the static site first. Run from an installed `seanchai[corpus]`, it
-needs no checkout and no downloads. `seanchai.export.export_corpus(books,
+needs no checkout and no downloads. `seanchai.export.export_corpus(corpus,
 output)` is the same from Python, and `seanchai.export_schema` holds the shape.
 The file layout and fields are in [website.md](website.md#data-boundary).
 
@@ -714,7 +758,7 @@ claims and applies the first over exactly that set. `--grouped` also holds the
 grouped classes against the AVPs' bodies, at any depth. The library's names
 follow Wireshark's dictionary on purpose, so one that is Wireshark's for the
 identity is only counted, in a closing `hidden:` line, while a dictionary is at
-hand (`--dictionary`, by default `specifications/wireshark`); `--names` reports
+hand (`--wireshark`, by default `specifications/wireshark`); `--names` reports
 them too.
 
 `generate.py` is the other direction: one module per application and

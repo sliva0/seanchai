@@ -26,6 +26,8 @@ from ..dad import ast, formatter, parser
 from . import sources
 from .errors import ExtractionError, boundary
 
+__all__ = ["QUIRKS", "patched", "read"]
+
 # A transcription has no extractor readings to enable.
 QUIRKS: dict[str, str] = {}
 

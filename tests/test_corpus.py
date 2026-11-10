@@ -11,10 +11,10 @@ from conftest import _CORPUS_DIR, _ROOT, _RULES
 
 import seanchai
 from seanchai import corpus, model, oracle
+from seanchai._regenerate import ManifestError
 from seanchai.dad import abnf, ast, corrections, formatter, parser
 from seanchai.downloader import DownloadError
 from seanchai.extractor import errors, sources
-from seanchai.regenerate import ManifestError
 
 
 def _spec(specification, version, *sections):
@@ -159,7 +159,7 @@ def test_another_revision_stands_in_only_by_its_table_entry():
         "TS29.212",
         "3GPP2-X.S0057",
         "2.0",
-        corpus.STAND_IN,
+        corpus.CitationRule.STAND_IN,
         cited_revision="B",
         revision="0",
     )
@@ -192,7 +192,7 @@ def test_a_later_release_stands_in_only_by_its_table_entry():
 
     assert entry is not None and entry.spec.version == "19.1.0"
     assert across == corpus.CrossRelease(
-        "TS32.299", "TS29.229", "19.1.0", corpus.STAND_IN, meant="11.5.0"
+        "TS32.299", "TS29.229", "19.1.0", corpus.CitationRule.STAND_IN, meant="11.5.0"
     )
     assert str(across) == (
         "TS32.299 cites TS29.229 non-specifically, meaning V11.5.0, which the"
@@ -231,7 +231,11 @@ def test_a_later_release_states_a_field_only_by_its_table_entry():
     assert later.spec.version == "19.1.0"
     assert fill.fields == ("data_type",)
     assert crossing == corpus.CrossRelease(
-        "TS29.210", "TS29.061", "19.1.0", corpus.LATER_RELEASE, meant="6.15.0"
+        "TS29.210",
+        "TS29.061",
+        "19.1.0",
+        corpus.CitationRule.LATER_RELEASE,
+        meant="6.15.0",
     )
     assert str(crossing) == (
         "TS29.210 cites TS29.061 non-specifically, meaning V6.15.0, which leaves a"
@@ -284,7 +288,7 @@ def test_a_specific_reference_resolves_to_the_version_it_names_and_no_other():
 
     assert entry is not None and entry.spec.version == "7.12.0"
     assert across == corpus.CrossRelease(
-        "ETSI-TS183.017", "TS29.214", "7.12.0", corpus.SPECIFIC
+        "ETSI-TS183.017", "TS29.214", "7.12.0", corpus.CitationRule.SPECIFIC
     )
     lacking = _books([_entry("3GPP TS 29.214", "7.11.0")])
     assert lacking.resolution("TS29.214", like=citing) == (None, None)
@@ -300,7 +304,7 @@ def test_a_non_specific_reference_past_the_documents_end_means_its_final_version
     entry, across = books.resolution("TS29.140", like=_spec("3GPP TS 32.299", "18.0.0"))
 
     assert entry is not None and entry.spec.version == "7.0.0"
-    assert across is not None and across.rule == corpus.NON_SPECIFIC
+    assert across is not None and across.rule == corpus.CitationRule.NON_SPECIFIC
     assert str(across) == (
         "TS32.299 cites TS29.140: the reference is non-specific and V7.0.0 is"
         " the document's final version (corpus.toml, final_version)"
@@ -335,7 +339,7 @@ def test_a_clause_saying_the_latest_edition_applies_reads_the_newest_copy():
 
     assert entry is not None and entry.spec.version == "18.0.0"
     assert across == corpus.CrossRelease(
-        "ETSI-ES283.035", "TS29.329", "18.0.0", corpus.LATEST_EDITION
+        "ETSI-ES283.035", "TS29.329", "18.0.0", corpus.CitationRule.LATEST_EDITION
     )
     assert "latest edition" in str(across)
     # Nothing says so for another document, whose citation stays unanswered.
@@ -359,7 +363,7 @@ def test_a_version_an_etsi_document_names_is_answered_by_its_stand_in_alone():
         "ETSI-TS183.033",
         "TS29.229",
         "19.1.0",
-        corpus.STAND_IN,
+        corpus.CitationRule.STAND_IN,
         meant="6.6.0",
         specific=True,
     )
@@ -453,7 +457,7 @@ def test_a_corpus_directory_brings_its_record_of_known_holes(tmp_path):
             corpus.KnownHole(
                 "TS29.900",
                 "Thing",
-                ("data_type", "flag_rules"),
+                (corpus.Missing.DATA_TYPE, corpus.Missing.FLAG_RULES),
                 "clause 6.3.1 states no type",
             ),
         ),
@@ -595,8 +599,19 @@ def test_a_hole_reads_its_reason_as_prose_and_the_rest_exactly(tmp_path):
     (hole,) = corpus.HoleRecord.load(path).holes
 
     assert hole == corpus.KnownHole(
-        "TS29.900", "Thing", ("data_type", "flag_rules"), "clause 6.3.1 states no type"
+        "TS29.900",
+        "Thing",
+        (corpus.Missing.DATA_TYPE, corpus.Missing.FLAG_RULES),
+        "clause 6.3.1 states no type",
     )
+
+
+def test_a_hole_missing_what_no_hole_can_miss_is_refused(tmp_path):
+    path = tmp_path / "holes.toml"
+    path.write_text(_RECORDED.replace('"data_type"', '"type"'))
+
+    with pytest.raises(corpus.CorpusError, match="missing holds type, which is not"):
+        corpus.HoleRecord.load(path)
 
 
 # A corpus file the fixture corpus of `_corpus_directory` satisfies: TS 29.900

@@ -1186,7 +1186,7 @@ def test_crosscheck_says_a_dictionary_is_all_it_needs(tmp_path, monkeypatch):
             "run `seanchai corpus download --only rfc`",
         ),
         (
-            ["--dictionary", "absent"],
+            ["--wireshark", "absent"],
             1,
             "run `seanchai corpus download --only wireshark`",
         ),
@@ -1304,7 +1304,7 @@ def test_notes_and_crosscheck_findings_are_no_failure(tmp_path, monkeypatch):
         [
             "corpus",
             "crosscheck",
-            "--dictionary",
+            "--wireshark",
             str(dictionary),
             str(_CORPUS_DIR / "rfc" / "rfc6733.dad"),
         ],

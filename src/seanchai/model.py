@@ -72,23 +72,23 @@ and the policy is deliberately small:
 
 An `Avp` has every field; a name the corpus cannot complete is a `Hole`
 instead, whether a field is unstated everywhere along the order or the name
-resolves nowhere at all. `Model.build` refuses any hole the corpus's record
-of known holes does not list (`corpus.HoleRecord`), and any entry naming a
-hole that no longer exists; `strict=True` refuses recorded holes too, and
-`strict=False` builds anything. `Model.holes` lists them and `Member.avp` is
-`None` with `Member.hole` saying why. `Member.avp` is also `None`, with no
-hole, for RFC 6733's `* [ AVP ]` wildcard, which is grammar rather than a
-reference.
+resolves nowhere at all. `Model.build` allows the holes its `holes` policy
+does (`HolePolicy`): by default those the corpus's record of known holes
+lists (`corpus.HoleRecord`), refusing any other and any entry naming a hole
+that no longer exists; `NONE` refuses recorded holes too, and `ANY` builds
+anything. `Model.holes` lists them and `Member.avp` is `None` with
+`Member.hole` saying why. `Member.avp` is also `None`, with no hole, for RFC
+6733's `* [ AVP ]` wildcard, which is grammar rather than a reference.
 
 A name an `Undefined AVP` block declares is the last reading along the
 order, after the bases: it explains the failure and defines nothing, so a
 definition that appears upstream or in a base wins without it. By default
-it is a `Hole` missing `UNDEFINED`; `Model.build(..., undefined=...)` takes
-the consumer's answer instead (`UndefinedPolicy`): drop the member, keep it
-as an untyped `Placeholder`, or read a definition the consumer `Supplied`
-(or an `Alias` for an AVP the corpus does define). Only a block's name is
-open to that choice: a name resolving nowhere without one, and a field no
-reading states, stay holes under every policy.
+it is a `Hole` missing `Missing.UNDEFINED`; `Model.build(...,
+undefined=...)` takes the consumer's answer instead (`UndefinedPolicy`):
+drop the member, keep it as an untyped `Placeholder`, or read a definition
+the consumer `Supplied` (or an `Alias` for an AVP the corpus does define).
+Only a block's name is open to that choice: a name resolving nowhere without
+one, and a field no reading states, stay holes under every policy.
 """
 
 from __future__ import annotations
@@ -107,6 +107,7 @@ from typing import TYPE_CHECKING, Any, cast
 import pydantic
 
 from . import corpus, oracle
+from .corpus import Missing
 from .dad import ast, parser
 from .dad.ast import AvpFlag, CommandFlag, DataType, RegistryKind, ValueKind
 from .errors import SeanchaiError
@@ -115,12 +116,6 @@ if TYPE_CHECKING:
     from _typeshed import DataclassInstance
 
 __all__ = [
-    "CODE",
-    "DATA_TYPE",
-    "DEFINITION",
-    "FLAG_RULES",
-    "UNDEFINED",
-    "VENDOR_ID",
     "Alias",
     "Allocation",
     "AnswerMessage",
@@ -133,10 +128,12 @@ __all__ = [
     "FlagRules",
     "Grouped",
     "Hole",
+    "HolePolicy",
     "IncompleteCorpusError",
     "Marks",
     "Member",
     "Message",
+    "Missing",
     "Model",
     "ModelError",
     "Placeholder",
@@ -158,7 +155,7 @@ class ModelError(SeanchaiError, ValueError):
 
 class IncompleteCorpusError(ModelError):
     """A build over a corpus with holes it refuses: every hole under
-    `strict=True`, and by default those its record does not list. `holes`
+    `HolePolicy.NONE`, and by default those its record does not list. `holes`
     lists every one."""
 
     def __init__(self, holes: tuple[Hole, ...], *, unrecorded: bool = False) -> None:
@@ -174,7 +171,7 @@ class IncompleteCorpusError(ModelError):
         what = f"{count} its record does not list" if unrecorded else count
         super().__init__(
             f"the corpus has {what}"
-            f" (Model.build(..., strict=False) builds the rest{answer}):"
+            f" (Model.build(..., holes=HolePolicy.ANY) builds the rest{answer}):"
             f"{listing}"
         )
 
@@ -424,7 +421,7 @@ class Avp(_Plain):
     # `Wildcarded-IMPU` no code, vendor or flags, so through TS 29.329 they
     # are its table 6.3.1's. Provenance only: two readings stating the same
     # facts are one AVP.
-    completed_by: tuple[tuple[str, str], ...] = field(default=(), compare=False)
+    completed_by: tuple[tuple[Missing, str], ...] = field(default=(), compare=False)
     # The document whose table produced this reading, spelled as
     # `Hole.document` for an older copy: `defined_in`, unless a table elsewhere
     # changed the flag rules or a grouped member. TS 29.229 reads RFC 6733's
@@ -563,15 +560,6 @@ def _refuse_conflicts(source: str, name: str, conflicts: list[str]) -> None:
         raise ModelError(f"{source}: {name}: {'; '.join(conflicts)}")
 
 
-# `Avp` field names, as `Hole.missing` and `Avp.completed_by` spell them.
-VENDOR_ID = "vendor_id"
-CODE = "code"
-DATA_TYPE = "data_type"
-FLAG_RULES = "flag_rules"
-# A name nothing in the corpus defines, tabulates or can be followed to.
-DEFINITION = "definition"
-# A name an `Undefined AVP` block declares defined nowhere.
-UNDEFINED = "undefined"
 # Marks a resolution stack entry as an `Alias` being followed, beside the
 # `(path, name)` entries of the names being resolved.
 _ALIASED = object()
@@ -663,6 +651,20 @@ class UndefinedPolicy(enum.StrEnum):
     SUPPLY = "supply"
 
 
+class HolePolicy(enum.StrEnum):
+    """Which holes `Model.build` allows (docs/consumers.md#known-holes)."""
+
+    # Those the corpus's record of known holes lists, and only while every
+    # entry still names one: an unlisted hole raises `IncompleteCorpusError`,
+    # an entry naming none `StaleHoleRecordError`.
+    RECORDED = "recorded"
+    # No hole at all, recorded or not: every member is an `Avp`, the
+    # wildcard, or what `undefined` asked for.
+    NONE = "none"
+    # Any hole; the record is not read. For a partial or foreign corpus.
+    ANY = "any"
+
+
 type SupplyKey = str | tuple[str, str]
 
 
@@ -680,9 +682,9 @@ class Hole(_Plain):
 
     reference: str
     name: str
-    # `CODE`, `DATA_TYPE`, `FLAG_RULES`, or `DEFINITION` or `UNDEFINED`
-    # alone.
-    missing: tuple[str, ...]
+    # `Missing.CODE`, `DATA_TYPE`, `FLAG_RULES`, or `DEFINITION` or
+    # `UNDEFINED` alone.
+    missing: tuple[Missing, ...]
     vendor_id: int | None = None
     code: int | None = None
     data_type: ast.DataType | None = None
@@ -711,7 +713,7 @@ class Hole(_Plain):
     def __str__(self) -> str:
         if self.undefined is not None:
             return f"{self.document} {self.name}: undefined (clause {self.section})"
-        if self.missing == (DEFINITION,):
+        if self.missing == (Missing.DEFINITION,):
             what = "resolves nowhere"
         else:
             what = "no " + ", no ".join(self.missing)
@@ -952,11 +954,12 @@ class Application(_Plain):
     name: str | None = None
     stated_in: str | None = None
 
-    def avps(self) -> tuple[Member, ...]:
-        """Every AVP this application's commands use at any depth, as
+    def walk(self) -> tuple[Member, ...]:
+        """The members this application's commands reach at any depth, as
         `Message.walk` reads them, each reading once, in definition order.
-        What a dictionary generator wants: unlike `Model.avps`, it holds what
-        the commands take from documents the tables do not list."""
+        What a dictionary generator wants: unlike `Model.avps`, which is what
+        a document's tables list, it holds what the commands take from
+        documents the tables do not list."""
         seen: set[tuple[str, object]] = set()
         return tuple(
             member for message in self.messages for member in _walk(message.avps, seen)
@@ -1148,7 +1151,7 @@ class _Draft:
     # explains the failure.
     undefined: Undefined | None = None
     supplied: str | None = None
-    completed_by: tuple[tuple[str, str], ...] = ()
+    completed_by: tuple[tuple[Missing, str], ...] = ()
     # `Avp.read_through`, where it is no longer `reference`.
     read_through: str | None = None
     value_tables: tuple[ValueTable, ...] = ()
@@ -1158,7 +1161,7 @@ class _Draft:
         """As `Hole.document`."""
         return self.reference + ("" if self.version is None else f" V{self.version}")
 
-    def stating(self, name: str) -> str:
+    def stating(self, name: Missing) -> str:
         """The document stating this reading's field `name`."""
         return dict(self.completed_by).get(name, self.reference)
 
@@ -1206,13 +1209,13 @@ class _Draft:
             kind, members, dropped = other.kind, other.members, other.dropped
             values, values_source = other.values, other.values_source
         completed = dict(self.completed_by)
-        for each in (CODE, DATA_TYPE, FLAG_RULES):
+        for each in (Missing.CODE, Missing.DATA_TYPE, Missing.FLAG_RULES):
             if getattr(self, each) is None and getattr(other, each) is not None:
                 completed[each] = other.stating(each)
         vendor_id, vendor_stated = self.vendor_id, self.vendor_stated
         if not vendor_stated and other.vendor_stated:
             vendor_id, vendor_stated = other.vendor_id, True
-            completed[VENDOR_ID] = other.stating(VENDOR_ID)
+            completed[Missing.VENDOR_ID] = other.stating(Missing.VENDOR_ID)
         return replace(
             self,
             across=self.across or other.across,
@@ -1264,14 +1267,18 @@ class _Draft:
             or flag_rules is None
         ):
             missing = (
-                ((DEFINITION,) if self.undefined is None else (UNDEFINED,))
+                (
+                    (Missing.DEFINITION,)
+                    if self.undefined is None
+                    else (Missing.UNDEFINED,)
+                )
                 if self.kind is None
                 else tuple(
                     name
                     for name, value in (
-                        (CODE, self.code),
-                        (DATA_TYPE, self.data_type),
-                        (FLAG_RULES, flag_rules),
+                        (Missing.CODE, self.code),
+                        (Missing.DATA_TYPE, self.data_type),
+                        (Missing.FLAG_RULES, flag_rules),
                     )
                     if value is None
                 )
@@ -1412,18 +1419,38 @@ class _View:
 
 
 class Model:
-    """The resolved corpus. Build it once with `Model.build`."""
+    """The resolved corpus. Build it once with `Model.build`, or
+    `Model.installed` over the installed corpus: they are its only
+    constructors, since they hold the build to the corpus's record of known
+    holes and check the consumer's answers, and `Model(...)` raises
+    `TypeError`."""
 
-    def __init__(
-        self,
+    def __init__(self) -> None:
+        raise TypeError("build a Model with Model.build(corpus) or Model.installed()")
+
+    @classmethod
+    def _unchecked(
+        cls,
         books: corpus.Corpus,
-        dictionary: oracle.Oracle | None = None,
+        wireshark: oracle.Oracle | None = None,
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
+    ) -> Model:
+        """The model over `books` with none of `build`'s checks."""
+        built = cls.__new__(cls)
+        built._index(books, wireshark, UndefinedPolicy(undefined), supply)
+        return built
+
+    def _index(
+        self,
+        books: corpus.Corpus,
+        wireshark: oracle.Oracle | None,
+        undefined: UndefinedPolicy,
+        supply: Mapping[SupplyKey, Supplied | Alias] | None,
     ) -> None:
         self._books = books
-        self._dictionary = dictionary
-        self._policy = UndefinedPolicy(undefined)
+        self._wireshark = wireshark
+        self._policy = undefined
         self._supply: dict[SupplyKey, Supplied | Alias] = dict(supply or {})
         self._known: dict[tuple[str, str], corpus.KnownHole] = {
             (entry.document, entry.name): entry
@@ -1454,14 +1481,15 @@ class Model:
         cls,
         books: corpus.Corpus,
         *,
-        strict: bool | None = None,
-        dictionary: str | os.PathLike[str] | None = None,
+        holes: HolePolicy = HolePolicy.RECORDED,
+        wireshark: str | os.PathLike[str] | None = None,
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> Model:
         """The model over `books`.
 
-        By default the build holds the corpus to its record of known holes
+        `holes` says which holes the build allows (`HolePolicy`). By default,
+        `RECORDED`, it holds the corpus to its record of known holes
         (`corpus.Corpus.record`, docs/consumers.md): a hole the record does
         not list raises `IncompleteCorpusError` with all such, and an entry
         naming no hole raises `StaleHoleRecordError`, unless the entry is an
@@ -1469,15 +1497,15 @@ class Model:
         no known holes. A recorded hole stays one: the name resolves to no
         `Avp`, `holes` reports it and `Hole.recorded` says why it stands.
 
-        `strict=True` refuses every hole, recorded or not, so a consumer that
-        needs every AVP complete learns at build time rather than from a
-        missing member later; what it guarantees is that every member is an
-        `Avp`, the wildcard, or what `undefined` asked for. `strict=False`
-        holds the corpus to nothing, for a partial or foreign one.
+        `NONE` refuses every hole, recorded or not, so a consumer that needs
+        every AVP complete learns at build time rather than from a missing
+        member later; what it guarantees is that every member is an `Avp`,
+        the wildcard, or what `undefined` asked for. `ANY` holds the corpus
+        to nothing, for a partial or foreign one.
 
-        `dictionary` is a Wireshark dictionary directory (the downloader's
-        `specifications/wireshark`); with one, every AVP and hole with an
-        identity carries Wireshark's name for it in `wireshark_name`.
+        `wireshark` is a Wireshark Diameter dictionary directory (the
+        downloader's `specifications/wireshark`); with one, every AVP and hole
+        with an identity carries Wireshark's name for it in `wireshark_name`.
         Without one that field is None and nothing else changes. One that
         cannot be read raises `ModelError`.
 
@@ -1492,6 +1520,7 @@ class Model:
         corpus defines, which an `Alias` says instead, or of another name's
         `Supplied`, and a cycle of `Alias`es.
         """
+        allowed = HolePolicy(holes)
         policy = UndefinedPolicy(undefined)
         if policy is UndefinedPolicy.SUPPLY and supply is None:
             raise ModelError("undefined=SUPPLY needs supply=")
@@ -1500,30 +1529,30 @@ class Model:
                 f"supply= is read only with undefined=SUPPLY, not {policy}"
             )
         try:
-            loaded = None if dictionary is None else oracle.Oracle.load(dictionary)
+            loaded = None if wireshark is None else oracle.Oracle.load(wireshark)
         except (ValueError, LookupError) as error:
             # An `OracleError`, or a dictionary whose XML parses but lacks an
             # attribute or holds no number where the wire format needs one.
             raise ModelError(
-                f"cannot read the dictionary at {dictionary}: {error!r}"
+                f"cannot read the Wireshark dictionary at {wireshark}: {error!r}"
             ) from error
-        built = cls(books, loaded, policy, supply)
+        built = cls._unchecked(books, loaded, policy, supply)
         built._check_supply()
-        if strict is None:
+        if allowed is HolePolicy.RECORDED:
             if unrecorded := built.unrecorded_holes():
                 raise IncompleteCorpusError(unrecorded, unrecorded=True)
             if stale := built.stale_record_entries():
                 raise StaleHoleRecordError(stale)
-        elif strict and (holes := built.holes()):
-            raise IncompleteCorpusError(holes)
+        elif allowed is HolePolicy.NONE and (found := built.holes()):
+            raise IncompleteCorpusError(found)
         return built
 
     @classmethod
     def installed(
         cls,
         *,
-        strict: bool | None = None,
-        dictionary: str | os.PathLike[str] | None = None,
+        holes: HolePolicy = HolePolicy.RECORDED,
+        wireshark: str | os.PathLike[str] | None = None,
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> Model:
@@ -1531,8 +1560,8 @@ class Model:
         `build` builds one."""
         return cls.build(
             corpus.Corpus.installed(),
-            strict=strict,
-            dictionary=dictionary,
+            holes=holes,
+            wireshark=wireshark,
             undefined=undefined,
             supply=supply,
         )
@@ -1575,7 +1604,7 @@ class Model:
                 continue
             claimed = [
                 avp
-                for avp in self.identified(answer.vendor_id, answer.code)
+                for avp in self.readings((answer.vendor_id, answer.code))
                 if avp.supplied is None
             ]
             if claimed:
@@ -1830,7 +1859,7 @@ class Model:
 
         This is what a document's tables say, not what its commands use: an
         AVP a body names that no table lists, as most of RFC 6733's in TS
-        29.229's commands, is missing here. `Application.avps` and
+        29.229's commands, is missing here. `Application.walk` and
         `Message.walk` are what a dictionary generator wants.
         """
         if reference is None:
@@ -1908,7 +1937,9 @@ class Model:
         not stale; one no such reading has is, under every policy."""
         present = {(hole.document, hole.name) for hole in self.holes()}
         unanswered = (
-            self if self._policy is UndefinedPolicy.HOLE else Model(self._books)
+            self
+            if self._policy is UndefinedPolicy.HOLE
+            else Model._unchecked(self._books)
         ).holes()
         listed = {(hole.document, hole.name, hole.missing) for hole in unanswered}
         return tuple(
@@ -2074,12 +2105,23 @@ class Model:
                 found.setdefault((table.application, table.feature_list_id), table)
         return found
 
-    def find(self, name: str) -> tuple[Avp, ...]:
-        """Every distinct reading the corpus holds under `name`: a citing
-        document's table may read another's AVP differently, and
-        `Avp.read_through` says whose table gives which. `definition` is the
-        one reading to take for a name."""
-        return self._by_name.get(name, ())
+    def readings(self, name_or_identity: str | tuple[int, int]) -> tuple[Avp, ...]:
+        """Every distinct reading the corpus holds under a name or claiming a
+        `(vendor-id, code)`: a citing document's table may read another's AVP
+        differently, and `Avp.read_through` says whose table gives which.
+        `definition` is the one reading to take.
+
+        More than one identity under a name, or more than one name on an
+        identity, is the corpus disagreeing with itself (the linter's
+        `duplicate-identity`), or two documents' differing copies of one AVP
+        surviving deduplication because their bodies differ, or because a
+        citing document's table sets its own flag rules: RFC 4590's code 110
+        is `Digest-Qop` M in May and, through TS 29.229, M in Must.
+        """
+        if isinstance(name_or_identity, str):
+            return self._by_name.get(name_or_identity, ())
+        vendor_id, code = name_or_identity
+        return self._by_identity.get((vendor_id, code), ())
 
     def definition(self, name_or_identity: str | tuple[int, int]) -> Avp | None:
         """The defining document's reading of a name or a `(vendor-id, code)`,
@@ -2094,17 +2136,14 @@ class Model:
         (`Originator` is TS 32.299's and oneM2M's) raises `ModelError` listing
         them: the identity is the way to ask.
         """
+        readings = self.readings(name_or_identity)
         if isinstance(name_or_identity, str):
-            readings = self.find(name_or_identity)
             identities = sorted({avp.identity for avp in readings})
             if len(identities) > 1:
                 raise ModelError(
                     f"{name_or_identity} names {len(identities)} AVPs,"
                     f" {', '.join(map(str, identities))}: ask for one of them"
                 )
-        else:
-            vendor_id, code = name_or_identity
-            readings = self.identified(vendor_id, code)
         if not readings:
             return None
         identity = readings[0].identity
@@ -2126,18 +2165,6 @@ class Model:
         # An older copy's definition, or a name the newest copy reads otherwise.
         return next((avp for avp in ours if avp.read_through == document), ours[0])
 
-    def identified(self, vendor_id: int, code: int) -> tuple[Avp, ...]:
-        """Every distinct AVP claiming `(vendor-id, code)`.
-
-        More than one entry is the corpus disagreeing with itself — the
-        linter's `duplicate-identity` — or two documents' differing copies of
-        one AVP surviving deduplication because their bodies differ, or
-        because a citing document's table sets its own flag rules: RFC
-        4590's code 110 is `Digest-Qop` M in May and, through TS 29.229, M
-        in Must.
-        """
-        return self._by_identity.get((vendor_id, code), ())
-
     # --- resolution ---------------------------------------------------------
 
     def _names(self, reference: str) -> dict[str, None]:
@@ -2151,7 +2178,10 @@ class Model:
         if draft is None:
             return self._on_record(
                 Hole(
-                    view.entry.reference, name, (DEFINITION,), version=self._older(view)
+                    view.entry.reference,
+                    name,
+                    (Missing.DEFINITION,),
+                    version=self._older(view),
                 )
             )
         found = draft.final
@@ -2254,8 +2284,8 @@ class Model:
             # policy, and the name among its own members is cut.
             members = self._body(view, answer.members, (*stack, key))
             draft.members, draft.dropped = self._split(members)
-        if self._dictionary is not None:
-            draft.wireshark_name = self._dictionary.name_for(
+        if self._wireshark is not None:
+            draft.wireshark_name = self._wireshark.name_for(
                 answer.vendor_id, answer.code, undefined.name, answer.data_type
             )
         found = draft.final
@@ -2337,7 +2367,7 @@ class Model:
                 and found.flag_rules is None
                 and found.reference != view.entry.reference
             ):
-                completed += ((FLAG_RULES, view.entry.reference),)
+                completed += ((Missing.FLAG_RULES, view.entry.reference),)
             found = replace(
                 found,
                 flag_rules=rules,
@@ -2363,13 +2393,13 @@ class Model:
             found = replace(found, value_tables=tables or found.value_tables)
         if (
             found is not None
-            and self._dictionary is not None
+            and self._wireshark is not None
             and found.vendor_id is not None
             and found.code is not None
         ):
             # Looked up once the identity is final: a reading filled through
             # may take its code from the next document.
-            wireshark_name = self._dictionary.name_for(
+            wireshark_name = self._wireshark.name_for(
                 found.vendor_id, found.code, found.name, found.data_type
             )
             found = replace(found, wireshark_name=wireshark_name)
@@ -2534,8 +2564,8 @@ class Model:
         return replace(
             later,
             vendor_stated=False,
-            data_type=later.data_type if DATA_TYPE in fill.fields else None,
-            flag_rules=later.flag_rules if FLAG_RULES in fill.fields else None,
+            data_type=later.data_type if Missing.DATA_TYPE in fill.fields else None,
+            flag_rules=later.flag_rules if Missing.FLAG_RULES in fill.fields else None,
             across=crossing,
             completed_by=tuple((each, stating) for each in fill.fields),
             read_through=None,

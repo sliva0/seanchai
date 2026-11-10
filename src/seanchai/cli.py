@@ -182,7 +182,7 @@ def _dad_files(sources: Iterable[Path], *, raw: bool = False) -> list[Path]:
     return list(files)
 
 
-def _need_dictionary(directory: Path) -> None:
+def _need_wireshark(directory: Path) -> None:
     """Refuse a Wireshark dictionary directory that holds none, saying where one
     comes from: all `crosscheck` and the export's names need of a download."""
     if not (directory / "dictionary.xml").is_file():
@@ -260,7 +260,7 @@ def _reading(built, query: str, document: str | None, version: str | None):
         hole = built.hole(document, query, version=version)
         holes = [] if hole is None else [hole]
     else:
-        names = {avp.name for avp in built.identified(*identity)}
+        names = {avp.name for avp in built.readings(identity)}
         readings = (built.resolve(document, name, version=version) for name in names)
         found = next(
             (avp for avp in readings if avp and avp.identity == identity), None
@@ -407,7 +407,7 @@ def show(
         built = Model.build(books)
         avp = _reading(built, name_or_identity, document, version)
         found = lookup(built, avp, corpus_version=books.version) if as_json else None
-        others = [other for other in built.identified(*avp.identity) if other != avp]
+        others = [other for other in built.readings(avp.identity) if other != avp]
     if found is not None:
         _as_json(found.model_dump(mode="json"))
     else:
@@ -580,7 +580,7 @@ def dictionary_command(
     " package. Repeatable.",
 )
 @click.option(
-    "--dictionary",
+    "--wireshark",
     type=click.Path(file_okay=False, path_type=Path),
     help="Wireshark's Diameter dictionary, for its AVP names in the search index:"
     " specifications/wireshark after `seanchai corpus download --only wireshark`."
@@ -608,7 +608,7 @@ def dictionary_command(
 def export_command(
     output: Path,
     corpus_paths: tuple[Path, ...],
-    dictionary: Path | None,
+    wireshark: Path | None,
     corrections: Path | None,
     specifications: Path | None,
     include_pdfs: bool,
@@ -643,8 +643,8 @@ def export_command(
             "--include-pdfs needs --specifications,"
             " a `seanchai corpus download` directory"
         )
-    if dictionary is not None:
-        _need_dictionary(dictionary)
+    if wireshark is not None:
+        _need_wireshark(wireshark)
     if specifications is not None and not specifications.is_dir():
         fetch = "--only 3gpp" if include_pdfs else "--only rfc"
         raise click.ClickException(
@@ -656,7 +656,7 @@ def export_command(
             export_corpus(
                 books,
                 output,
-                dictionary=dictionary,
+                wireshark=wireshark,
                 corrections_directory=corrections,
                 specifications=specifications,
                 include_pdfs=include_pdfs,
@@ -1218,7 +1218,7 @@ def regenerate(
     corpus and edit layers.
     """
     _require_extract()
-    from . import regenerate as library
+    from . import _regenerate as library
 
     if not manifest.is_file():
         raise click.ClickException(
@@ -1266,7 +1266,7 @@ def regenerate(
 
 
 def _echo_outcome(outcome) -> None:
-    from .regenerate import describe
+    from ._regenerate import describe
 
     status, _, rest = describe(outcome).partition(" ")
     colour = {
@@ -1495,7 +1495,7 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
     type=click.Path(exists=True, path_type=Path),
 )
 @click.option(
-    "--dictionary",
+    "--wireshark",
     type=click.Path(file_okay=False, path_type=Path),
     default=Path("specifications") / "wireshark",
     help="Directory holding Wireshark's Diameter dictionary files, which"
@@ -1515,7 +1515,7 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
     help="Also print the renames an alias accepts (always counted).",
 )
 def crosscheck(
-    sources: tuple[Path, ...], dictionary: Path, aliases: Path, show_accepted: bool
+    sources: tuple[Path, ...], wireshark: Path, aliases: Path, show_accepted: bool
 ) -> None:
     """Cross-check `.dad` files against Wireshark's Diameter dictionary.
 
@@ -1553,9 +1553,9 @@ def crosscheck(
         raise click.BadParameter(
             f"file {str(aliases)!r} does not exist", param_hint="'--aliases'"
         )
-    _need_dictionary(dictionary)
+    _need_wireshark(wireshark)
     try:
-        oracle = Oracle.load(dictionary)
+        oracle = Oracle.load(wireshark)
         accepted = load_aliases(aliases) if aliases.is_file() else ()
     except OracleError as error:
         raise click.ClickException(str(error)) from None

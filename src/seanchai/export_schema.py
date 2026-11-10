@@ -19,6 +19,37 @@ from pydantic.json_schema import models_json_schema
 from .dad import ast
 from .linter import Severity
 
+__all__ = [
+    "GENERATOR",
+    "SCHEMA_VERSION",
+    "ApplicationIdentity",
+    "AvpIdentity",
+    "Citation",
+    "CommandIdentity",
+    "Correction",
+    "CrossRelease",
+    "Document",
+    "DocumentSummary",
+    "Finding",
+    "FlagRules",
+    "Hole",
+    "Index",
+    "Line",
+    "Mention",
+    "RawDocument",
+    "RegistryIdentity",
+    "Search",
+    "SearchEntry",
+    "Section",
+    "Source",
+    "Target",
+    "Token",
+    "UndefinedBlock",
+    "ValueIdentity",
+    "dumps",
+    "json_schema",
+]
+
 SCHEMA_VERSION = 1
 
 # What `index.json` says wrote it, and so what an export may replace.

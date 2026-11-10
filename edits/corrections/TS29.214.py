@@ -80,7 +80,7 @@ CORRECTIONS += [
 
 # Release 7, V7.12.0, the copy ETSI TS 183 017 [19] cites as "3GPP TS 29.214
 # Release 7"; the Release 19 declarations above do not reach it
-# (src/seanchai/versions.py). Five grouped-AVP clauses print no vendor-id
+# (src/seanchai/_versions.py). Five grouped-AVP clauses print no vendor-id
 # where clause 5.3 says "The Vendor-Id header of all AVPs defined in the
 # present document shall be set to 3GPP (10415)" and table 5.3.1 marks V
 # mandatory.
@@ -131,7 +131,7 @@ CORRECTIONS += [
 
 # Release 11, V11.16.0, which TS 32.299 V11.20.0 [214] cites
 # non-specifically within Release 11; neither Release 7's declarations nor
-# Release 19's reach it (src/seanchai/versions.py). Six grouped-AVP clauses
+# Release 19's reach it (src/seanchai/_versions.py). Six grouped-AVP clauses
 # print no vendor-id where clause 5.3 says "The Vendor-Id header of all AVPs
 # defined in the present document shall be set to 3GPP (10415)" and table
 # 5.3.1 marks V mandatory.

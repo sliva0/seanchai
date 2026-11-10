@@ -49,6 +49,16 @@ from dataclasses import dataclass, field
 from . import corpus, model
 from .dad import ast, corrections, formatter
 
+__all__ = [
+    "AvpIdentity",
+    "Finding",
+    "Severity",
+    "accept",
+    "lint",
+    "lint_record",
+    "lint_with_corpus",
+]
+
 
 @dataclass(frozen=True)
 class AvpIdentity:
@@ -1294,7 +1304,7 @@ def _cross_release(
     note: the rule is the corpus's reading of the citing document's
     references, and only its editor knows whether it meant that."""
     citing = spec.specification + (f" V{spec.version}" if spec.version else "")
-    if across.rule == corpus.STAND_IN and across.meant is not None:
+    if across.rule is corpus.CitationRule.STAND_IN and across.meant is not None:
         release = rules.release_stand_ins[
             across.citing, spec.version or "", across.cited
         ]
@@ -1304,19 +1314,19 @@ def _cross_release(
             f" which the corpus lacks, and V{across.version} stands in:"
             f" {release.evidence} (corpus.toml, release_stand_in)"
         )
-    elif across.rule == corpus.STAND_IN:
+    elif across.rule is corpus.CitationRule.STAND_IN:
         stand_in = rules.stand_ins[across.citing, across.cited]
         rule = (
             f"its references name revision {across.cited_revision}, which the"
             f" corpus lacks, and revision {across.revision} V{across.version}"
             f" stands in: {stand_in.evidence} (corpus.toml, stand_in)"
         )
-    elif across.rule == corpus.SPECIFIC:
+    elif across.rule is corpus.CitationRule.SPECIFIC:
         rule = (
             f"its references name V{across.version} (a specific reference;"
             " corpus.toml, cited_version)"
         )
-    elif across.rule == corpus.LATEST_EDITION:
+    elif across.rule is corpus.CitationRule.LATEST_EDITION:
         evidence = rules.latest_editions[across.citing, across.cited]
         rule = (
             f"it cites the document non-specifically, which reads as its latest"
@@ -2506,7 +2516,7 @@ def lint_record(books: corpus.Corpus) -> list[Finding]:
     itself."""
     if books.record is None:
         return []
-    built = model.Model.build(books, strict=False)
+    built = model.Model.build(books, holes=model.HolePolicy.ANY)
     known = {(entry.document, entry.name): entry for entry in books.record.holes}
     findings = []
     for hole in built.unrecorded_holes():

@@ -56,6 +56,16 @@ from . import sources
 from .errors import ExtractionError, boundary
 from .sources import Patcher
 
+__all__ = [
+    "ONEM2M_VENDOR",
+    "QUIRKS",
+    "TGPP_VENDOR",
+    "attach_pages",
+    "extract",
+    "extract_with_comments",
+    "sources_file_name",
+]
+
 try:
     import docx
     import docx.document

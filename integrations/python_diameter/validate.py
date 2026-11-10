@@ -67,8 +67,8 @@ from seanchai.dad import ast
 _HERE = Path(__file__).parent
 # What the library's README claims, for `--claimed` with no path.
 CLAIMED = _HERE / "claimed.txt"
-# Where the downloader puts Wireshark's dictionary, for `--dictionary` not given.
-DICTIONARY = _HERE.parent.parent / "specifications" / "wireshark"
+# Where the downloader puts Wireshark's dictionary, for `--wireshark` not given.
+WIRESHARK = _HERE.parent.parent / "specifications" / "wireshark"
 
 # The specification's value type against the library's Avp classes that can
 # faithfully carry it. DiameterIdentity, DiameterURI and the filter rules are
@@ -647,11 +647,11 @@ def parser() -> argparse.ArgumentParser:
         help="also hold the grouped classes against the AVPs' bodies",
     )
     parser.add_argument(
-        "--dictionary",
+        "--wireshark",
         type=Path,
         metavar="PATH",
-        help="a Wireshark dictionary directory, for the names the library takes"
-        " from it (default: this repository's specifications/wireshark,"
+        help="a Wireshark Diameter dictionary directory, for the names the library"
+        " takes from it (default: this repository's specifications/wireshark,"
         " when there is one)",
     )
     parser.add_argument(
@@ -686,11 +686,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"library: {diameter.__file__}")
 
     books = corpus.Corpus.load([args.corpus or corpus.installed_directory()])
-    dictionary = args.dictionary
-    if dictionary is None and (DICTIONARY / "dictionary.xml").is_file():
-        dictionary = DICTIONARY
+    wireshark = args.wireshark
+    if wireshark is None and (WIRESHARK / "dictionary.xml").is_file():
+        wireshark = WIRESHARK
     try:
-        built = model.Model.build(books, dictionary=dictionary)
+        built = model.Model.build(books, wireshark=wireshark)
         claimed = None
         if args.claimed:
             claimed = [built.canonical(name) for name in read_claimed(args.claimed)]

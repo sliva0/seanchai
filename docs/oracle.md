@@ -87,7 +87,7 @@ keeps the registry's `IMPI`; and bit 0 of TS 29.212's
 
 ## In the model
 
-`model.Model.build(books, dictionary=Path("specifications/wireshark"))`
+`model.Model.build(corpus, wireshark=Path("specifications/wireshark"))`
 gives every AVP, and every hole with an identity, Wireshark's name for its
 `(vendor-id, code)` in `wireshark_name`. `name` stays the document's. Where
 the identity collides in the dictionary, an entry spelled like the corpus

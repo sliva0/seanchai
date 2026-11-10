@@ -30,7 +30,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from . import correction_record, linter, ranges
+from . import _correction_record, _ranges, linter
+from ._versions import RangeWarning, VersionRange
 from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
 from .dad import ast, corrections, formatter, parser
 from .dad.corrections import CorrectionError
@@ -39,7 +40,6 @@ from .downloader.catalog import SOURCES, load_catalog
 from .errors import SeanchaiError
 from .extractor import rfc_text, transcription
 from .extractor.errors import ExtractionError
-from .versions import RangeWarning, VersionRange
 
 Status = Literal[
     "unchanged", "changed", "new", "failed", "not-in-manifest", "not-converted"
@@ -131,14 +131,14 @@ def regenerate(
 
     `expand_ranges` widens, in the edit files themselves, every declaration
     range a successfully rebuilt specification's version falls outside; see
-    `seanchai.ranges`.
+    `seanchai._ranges`.
 
     `transcriptions_dir` holds the hand transcriptions of documents no
     extractor reads, each a source like a manifest record.
 
     With `corrections_dir`, a run nothing failed in also rewrites `output`'s
     corrections record, over whatever corrected files `output` then holds
-    (`seanchai.correction_record`).
+    (`seanchai._correction_record`).
     """
     try:
         sources = _sources(manifest)
@@ -193,10 +193,10 @@ def regenerate(
     )
     if corrections_dir is not None and not result.failed:
         try:
-            result.record = correction_record.write(output, corrections_dir)
+            result.record = _correction_record.write(output, corrections_dir)
         except (CorrectionError, CorpusError, OSError) as error:
             failed = Outcome(
-                correction_record.RECORD_NAME, "failed", error=f"writing: {error}"
+                _correction_record.RECORD_NAME, "failed", error=f"writing: {error}"
             )
             outcomes.append(failed)
             report(failed)
@@ -381,7 +381,7 @@ def _expand(
     expansions = []
     if sources_dir is not None:
         path = sources_dir / f"{outcome.reference}.toml"
-        expansions.append(ranges.expand_sources(path, spec.version))
+        expansions.append(_ranges.expand_sources(path, spec.version))
     if corrections_dir is not None:
         acceptances = corrections.acceptances(
             corrections.in_release(
@@ -398,7 +398,7 @@ def _expand(
             else set()
         )
         expansions.append(
-            ranges.expand_corrections(
+            _ranges.expand_corrections(
                 corrections_dir, spec.specification, spec.version, accepted
             )
         )
