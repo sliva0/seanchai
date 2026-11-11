@@ -113,8 +113,8 @@ Transcriptions are rebuilt from `edits/transcriptions/`. `corrections.json` is
 written only when nothing failed.
 
 `regenerate` writes `.dad` files and `corrections.json` only. It does not set
-the corpus's version ([Releases](#releases)) and does not touch `corpus.toml`
-or `holes.toml`, which are edited by hand.
+the corpus's version ([Releases](#releases)) and does not touch `corpus.toml`,
+`holes.toml` or `interfaces.toml`, which are edited by hand.
 
 ## Adding a document
 
@@ -137,12 +137,25 @@ or `holes.toml`, which are edited by hand.
 5. If the document cites others across releases, add the `corpus.toml` entry
    its references clause needs, with `citing_version` and evidence
    ([consumers.md](consumers.md#resolution-across-releases)).
-6. Review the export diff and run
+6. Give the document its entry in `interfaces.toml`: the Diameter interfaces
+   or reference points it specifies, or for an RFC its application, read from
+   its scope clause and table of contents. See below.
+7. Review the export diff and run
    `uv run pytest tests/test_export.py --update-export-pin`.
-7. Run `uv run pytest`. Update the linter pins in `tests/test_linter.py` only
+8. Run `uv run pytest`. Update the linter pins in `tests/test_linter.py` only
    after reading what each failure says.
-8. Commit the raw and corrected files, the edit files, the catalog entry,
-   `corrections.json`, any `corpus.toml` entry and `tests/export.sha256`.
+9. Commit the raw and corrected files, the edit files, the catalog entry,
+   `corrections.json`, any `corpus.toml` entry, the `interfaces.toml` entry
+   and `tests/export.sha256`.
+
+An `interfaces.toml` entry lists names as the specification spells them,
+comma-separated in a TOML list: the Diameter ones, not every interface the
+document mentions. Key it by reference under `[references]`, or by file stem
+under `[documents]` where one edition's names differ from the others' (TS
+29.212's St is not in its Release 11 edition, `29212-bj0`). A document with
+none gets an empty list, so that it reads as decided; a document with no entry
+fails `tests/test_corpus.py`. The export writes the names as each document's
+`interfaces` in `index.json`.
 
 ## Version upgrades
 
@@ -291,8 +304,11 @@ refuse the corpus:
 - a change to the schema of `corpus.toml`, `holes.toml` or
   `corrections.json`.
 
-A new document, version, `corpus.toml` or `holes.toml` entry, or correction is
-not a format change.
+A new document, version, `corpus.toml`, `holes.toml` or `interfaces.toml`
+entry, or correction is not a format change. Nor is a new file beside them,
+which an older library does not read: `interfaces.toml` is a file of its own
+because `Rules.load` refuses a table of `corpus.toml` it does not know, so a
+table there would have needed a format bump.
 
 To bump it:
 

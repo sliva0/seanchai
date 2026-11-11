@@ -48,12 +48,12 @@ sorted keys; the grammar is copied as it stands. The same inputs give the
 same bytes: there are no timestamps.
 
 `seanchai.export_schema` holds the shapes as pydantic models.
-`SCHEMA_VERSION`, now 1, is written into every file except `schema.json` and
+`SCHEMA_VERSION`, now 2, is written into every file except `schema.json` and
 the grammar, and changes when a reader would have to. `schema.json`'s root is
 one of the four file shapes, so a fixture can be validated against it. A field
-with no default is always written, null where it says nothing. The mostly
-empty `Token`, `Line`, `Target` and `Citation` fields are left out while they
-hold their default.
+with no default is always written, null where it says nothing. A field with
+one, as most of a token's, a line's and a block's are, is left out while it
+holds it: a member with no `bold` is not bold, a block with no `rows` has none.
 
 ### The output directory
 
@@ -67,13 +67,16 @@ with no documents.
 `generator` (always `"seanchai"`), `seanchai_version`, `corpus_version`,
 `mode` (`public` or `self-hosted`), and a summary of every document.
 `corpus_version` is null when `--corpus PATH` exported a corpus other than
-the installed one.
+the installed one. A summary's `interfaces` lists the Diameter interfaces or
+reference points the document specifies, or an RFC's application, from the
+corpus's `interfaces.toml`: `[]` for none, null where the corpus does not say.
 
 ### `documents/<id>.json`
 
 A document holds:
 
 - the file's text as tokens;
+- `blocks`, its `; Type:` blocks as structure (below);
 - `sections`, for a table of contents;
 - its holes with their recorded reasons;
 - the linter's findings and accepted notes;
@@ -111,6 +114,45 @@ Correction reasons come from the corpus's `corrections.json`
 correction modules instead. A note citing a correction the record lacks is
 refused as a stale record.
 
+### Blocks
+
+`blocks` holds one entry per `; Type:` block in file order, in the document
+and in its raw mirror alike, each describing its own file's lines. Every
+`line` is an index into that file's `lines`. A block has `type`, `line` (its
+`; Type:` line), `last` (its last line, a trailing comment included),
+`section`, `page`, `fields` (its other directives as printed, `Name` to
+`Applies-To`) and the `name` its `; Name:` or `; AVP:` gives. By type:
+
+- Message, Answer Message, Grouped AVP, Reprinted AVP: `rule`, with the
+  `::=` line and `members`. A member has `name`, `presence` (`fixed`,
+  `required`, `optional`), `qualifier` as printed, `min` and `max` by RFC 6733
+  clause 3.2 (`max` null for no bound), `bold`, and `struck` for a line the
+  extractor comments out with its `; strikethrough`, which is no member of
+  the rule the corpus reads. A Message has `abbreviation` and `command`:
+  `code`, `request`, `flags`, `header_application_id`, the effective
+  `application_id`, and `application`, `stated_in` and `scope` as the search
+  entry reads them. A Grouped or Reprinted AVP has `avp`, its header's `code`
+  and `vendor_id`.
+- Enumerated AVP: `avp` and `values`, each a `value` with its `name` or a
+  `reserved`, `void` or `vendor-specific` range `first` to `last`.
+- AVP Table, Reused AVPs: `columns` and `rows`. A row has `name`, `cells` as
+  printed (`""` blank, `-` a dash, quotes kept), `marks` per mark column,
+  unquoted, and an AVP table row's `vendor`, the vendor space it places the
+  AVP in.
+- Registry: `columns`, `allocations` (`cells`, `code`, `name`,
+  `abbreviation`, `documents` its Defined-In cell resolves to, and an AVP
+  Codes row's `vendor`) and `reservations`.
+- Value Table: `value_rows`, each `name`, `value`, a result code's own
+  `section`, a feature's `mark`, and a result code's `origin` with the
+  `origin_target` its token links to.
+
+`commands` gives where a block's lines name a command, as `line`, `start` and
+`end` character offsets: a Message's name, abbreviation and rule head, the
+request and answer halves of a Command Codes row's name and abbreviation
+cells, and a table's column named by one of the file's commands (TS 32.299's
+ACR to CCA). Each has `code`, `request`, `name`, `abbreviation`, and `block`,
+the index of the Message block it names, null for a registry's half.
+
 ### `search.json`
 
 A search entry is one name as one document means it: an AVP, command,
@@ -130,6 +172,6 @@ the text:
 - the name's token targets the clause;
 - the `; AVP:` line targets the AVP;
 - a result code's clause has a `source`, and its `from` document targets the
-  clause listing the code there;
+  clause listing the code there, with the code's `name`;
 - a row in a subclause is that clause's `anchor`, and a clause only such rows
   name reads "Value DIAMETER_SUCCESS" in `sections`.

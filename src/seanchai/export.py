@@ -38,33 +38,44 @@ from .corpus import (
     Entry,
     installed_directory,
 )
-from .dad import ast, corrections, formatter, parser
+from .dad import abnf, ast, corrections, formatter, parser
 from .downloader.catalog import Catalog, load_catalog
 from .export_schema import (
     GENERATOR,
     SCHEMA_VERSION,
+    Allocation,
     ApplicationIdentity,
+    AvpHeader,
     AvpIdentity,
+    Block,
     Citation,
+    Command,
     CommandIdentity,
+    CommandSpan,
     Document,
     DocumentSummary,
+    EnumEntry,
     Finding,
     FlagRules,
     Hole,
     Index,
     Line,
+    Member,
     Mention,
     RawDocument,
     RegistryIdentity,
+    Reservation,
+    Rule,
     Search,
     SearchEntry,
     Section,
     Source,
+    TableRow,
     Target,
     Token,
     UndefinedBlock,
     ValueIdentity,
+    ValueRow,
 )
 from .linter import lint_with_corpus
 
@@ -204,6 +215,14 @@ class _Links:
     # A re-used row's origin cell, by (origin, row name): the AVP there.
     row_references: dict[tuple[str, str], Target]
 
+    def value_origin(self, origin: str, name: str) -> Target | None:
+        """Where a result code's `from` document links: the clause listing
+        the code there, else the document, at the row named `name`."""
+        found = self.row_references.get((origin, name))
+        if found is None and origin in self.references:
+            found = self.references[origin].model_copy(update={"name": name})
+        return found
+
     def spelled_as_raw(self, renames: tuple[_correction_record.Rename, ...]) -> _Links:
         """These links for the raw file, with renamed names linked through the
         rename."""
@@ -335,13 +354,12 @@ def _tokens(
             fields["source"] = Citation(section=source.section, page=source.page)
         elif value in links.references and key in ("Bases", "From", None):
             fields["target"] = links.references[value]
-            if isinstance(section, ast.ReusedAvps | ast.ValueTable) and key is None:
-                row_name = (
-                    line.split(maxsplit=1)[0] if value_row is None else value_row.name
-                )
+            if isinstance(section, ast.ReusedAvps) and key is None:
                 fields["target"] = links.row_references.get(
-                    (value, row_name), fields["target"]
+                    (value, line.split(maxsplit=1)[0]), fields["target"]
                 )
+            elif value_row is not None and key is None:
+                fields["target"] = links.value_origin(value, value_row.name)
         elif naming and (target := own.get(value) or links.names.get(value)):
             fields["target"] = target
         if value_row is not None and source:
@@ -372,6 +390,480 @@ def _tokens(
     if end < len(line):
         tokens.append(Token(text=line[end:]))
     return tuple(tokens)
+
+
+# The sections whose block holds an ABNF rule.
+_RULED = (ast.Message, ast.AnswerMessage, ast.GroupedAvp, ast.ReprintedAvp)
+
+
+def _content(line: str) -> str:
+    """`line` without its comment, as the parser reads it."""
+    return line.split(";;", 1)[0].rstrip()
+
+
+def _member(
+    rule: ast.AvpRule, qualifier: str, index: int, struck: bool = False
+) -> Member:
+    """`rule` as a member, with RFC 6733 clause 3.2's bounds: no qualifier is
+    exactly one of a fixed or required member and at most one of an optional
+    one; a qualifier's missing min is 0, but a required member is there at
+    least once, and its missing max is no bound."""
+    if qualifier:
+        least, most = rule.min_occurs, rule.max_occurs
+        if rule.presence is ast.Presence.REQUIRED:
+            least = max(1, least)
+    else:
+        least = 0 if rule.presence is ast.Presence.OPTIONAL else 1
+        most = 1
+    return Member(
+        name=rule.name,
+        presence=rule.presence,
+        qualifier=qualifier,
+        min=least,
+        max=most,
+        bold=rule.bold,
+        struck=struck,
+        line=index,
+    )
+
+
+def _commands_of(spec: ast.Specification) -> dict[int, Command]:
+    """Each Message section's header, by section index, its application as
+    `Model.applications` names it: the effective id from the first scope
+    covering its clause, named by the first scope stating that id among the
+    commands of its interface's clause."""
+    scopes = [s for s in spec.sections if isinstance(s, ast.ApplicationScope)]
+    covering: dict[int, ast.ApplicationScope | None] = {}
+    effective: dict[int, int | None] = {}
+    stating: dict[tuple[int | None, str], ast.ApplicationScope] = {}
+    for index, section in enumerate(spec.sections):
+        if not isinstance(section, ast.Message):
+            continue
+        scope = next((s for s in scopes if s.covers(section.source.section)), None)
+        covering[index] = scope
+        found = section.application_id
+        if found is None and scope is not None:
+            found = scope.application_id
+        effective[index] = found
+        if scope is not None and scope.application_id == found:
+            key = (found, ast.interface_clause(section.source.section))
+            stating.setdefault(key, scope)
+    commands = {}
+    for index, found in effective.items():
+        section = spec.sections[index]
+        assert isinstance(section, ast.Message)
+        named = stating.get((found, ast.interface_clause(section.source.section)))
+        scope = covering[index]
+        commands[index] = Command(
+            code=section.command_code,
+            request=ast.CommandFlag.REQUEST in section.flags,
+            flags=tuple(flag for flag in ast.CommandFlag if flag in section.flags),
+            header_application_id=section.application_id,
+            application_id=found,
+            application=None if named is None else named.name,
+            stated_in=None if named is None else named.source.section,
+            scope=None if scope is None else scope.source.section,
+        )
+    return commands
+
+
+def _halves(
+    name: str, start: int, abbreviation: str | None
+) -> list[tuple[int, int, str, bool, str | None]]:
+    """A Command Codes name cell's halves, `User-Authorization-Request/-Answer`
+    or `Insert Subscriber Data-Request/Answer`, as spans from `start` and the
+    names they stand for, request first, each with its abbreviation where the
+    cell's `UAR/UAA` gives one per half. A name with no slash is one half,
+    whichever its name ends in."""
+    slash = name.find("/")
+    if slash < 0:
+        request = (
+            True
+            if name.endswith("-Request")
+            else False
+            if name.endswith("-Answer")
+            else None
+        )
+        if request is None:
+            return []
+        short = None if abbreviation is None or "/" in abbreviation else abbreviation
+        return [(start, start + len(name), name, request, short)]
+    first = name[:slash]
+    second = name[slash + 1 :].removeprefix("-")
+    answer = (
+        first.removesuffix("Request") + second if first.endswith("Request") else second
+    )
+    shorts = (abbreviation or "").split("/")
+    pair = shorts if len(shorts) == 2 else [None, None]
+    return [
+        (start, start + slash, first, True, pair[0]),
+        (start + len(name) - len(second), start + len(name), answer, False, pair[1]),
+    ]
+
+
+@dataclass(frozen=True)
+class _Placed:
+    """One file's text, tree and layout, as `_blocks` reads them: 0-based line
+    indexes throughout."""
+
+    lines: list[str]
+    spec: ast.Specification
+    layout: parser.Layout
+    links: _Links
+    # A body item's line, by section index, field and item index.
+    items: dict[tuple[int, str, int], int]
+    # A section's header rule line, by section index.
+    heads: dict[int, int]
+
+    @classmethod
+    def of(
+        cls, text: str, spec: ast.Specification, layout: parser.Layout, links: _Links
+    ) -> _Placed:
+        items: dict[tuple[int, str, int], int] = {}
+        heads: dict[int, int] = {}
+        for lineno, path in layout.paths.items():
+            match path:
+                case ("sections", int(section)):
+                    heads[section] = lineno - 1
+                case ("sections", int(section), str(field), int(item)):
+                    items[section, field, item] = lineno - 1
+        return cls(text.splitlines(), spec, layout, links, items, heads)
+
+    def cells(self, line: int) -> tuple[str, ...]:
+        """The cells table row `line` prints, as printed."""
+        return tuple(self.lines[line][a:b] for a, b in self.layout.cells[line + 1])
+
+
+def _blocks(
+    text: str, spec: ast.Specification, layout: parser.Layout, links: _Links
+) -> tuple[Block, ...]:
+    """`spec`'s sections as blocks of `text`'s lines, which `layout` places."""
+    placed = _Placed.of(text, spec, layout, links)
+    commands = _commands_of(spec)
+    # A table's column names one of the file's commands by its abbreviation:
+    # the first Message block of that abbreviation.
+    abbreviations: dict[str, int] = {}
+    for index, section in enumerate(spec.sections):
+        if isinstance(section, ast.Message):
+            abbreviations.setdefault(section.abbreviation, index)
+    blocks = []
+    for index, (section, placement) in enumerate(
+        zip(spec.sections, layout.sections, strict=True)
+    ):
+        fields: dict[str, Any] = {
+            "type": section.type,
+            "line": placement.first - 1,
+            "last": placement.last - 1,
+            "section": section.source.section,
+            "page": section.source.page,
+            "fields": {
+                key: value
+                for key, (_, value) in placement.directives.items()
+                if key != "Type"
+            },
+        }
+        spans: list[CommandSpan] = []
+        if isinstance(section, ast.ValueTable):
+            fields["name"] = section.avp
+            fields["value_rows"] = _value_rows(placed, index, section)
+        elif not isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
+            fields["name"] = getattr(section, "name", None)
+        if isinstance(section, _RULED):
+            fields["rule"] = _rule(placed, index, placement, section)
+        if isinstance(section, ast.GroupedAvp | ast.ReprintedAvp | ast.EnumeratedAvp):
+            fields["avp"] = AvpHeader(code=section.code, vendor_id=section.vendor_id)
+        if isinstance(section, ast.EnumeratedAvp):
+            fields["values"] = _enum_entries(placed, index, section)
+        if isinstance(section, ast.Message):
+            fields["abbreviation"] = section.abbreviation
+            fields["command"] = commands[index]
+            spans += _message_spans(placed, index, placement, section, commands[index])
+        if isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
+            fields["columns"] = tuple(column.value for column in section.columns)
+        if isinstance(section, ast.AvpTable | ast.ReusedAvps):
+            fields["rows"] = _table_rows(placed, index, section)
+            spans += _column_spans(spec, placement, abbreviations)
+        if isinstance(section, ast.Registry):
+            fields["allocations"], fields["reservations"], registry_spans = _registry(
+                placed, index, section
+            )
+            spans += registry_spans
+        fields["commands"] = tuple(spans)
+        blocks.append(Block(**fields))
+    return tuple(blocks)
+
+
+def _rule(
+    placed: _Placed,
+    index: int,
+    placement: parser.Placement,
+    section: ast.Message | ast.AnswerMessage | ast.GroupedAvp | ast.ReprintedAvp,
+) -> Rule:
+    """A block's rule: its members as their lines print them, the struck
+    ones the extractor comments out (TS 32.299 clause 6.2.2) included."""
+    head = placed.heads[index]
+    live = {
+        placed.items[index, "avps", item]: rule
+        for item, rule in enumerate(section.avps)
+    }
+    members = []
+    for line in range(head + 1, placement.last):
+        content = _content(placed.lines[line])
+        rule = live.get(line)
+        if rule is not None:
+            read = parser.avp_rule_line(content)
+            qualifier = (
+                abnf.qualifier(rule.min_occurs, rule.max_occurs)
+                if read is None
+                else read[1]
+            )
+            members.append(_member(rule, qualifier, line))
+        elif not content:
+            struck = parser.avp_rule_line(
+                _content(placed.lines[line].lstrip().removeprefix(";;"))
+            )
+            if struck is not None and struck[0].strikethrough:
+                members.append(_member(*struck, line, struck=True))
+    return Rule(
+        name=getattr(section, "name", "answer-message"),
+        line=head,
+        members=tuple(members),
+    )
+
+
+def _enum_entries(
+    placed: _Placed, index: int, section: ast.EnumeratedAvp
+) -> tuple[EnumEntry, ...]:
+    entries = []
+    for item, entry in enumerate(section.values):
+        line = placed.items[index, "values", item]
+        if isinstance(entry, ast.EnumValue):
+            entries.append(
+                EnumEntry(
+                    line=line,
+                    kind="value",
+                    name=entry.name,
+                    first=entry.value,
+                    last=entry.value,
+                    description=entry.description,
+                )
+            )
+            continue
+        kind: Literal["reserved", "void", "vendor-specific"] = (
+            "reserved"
+            if isinstance(entry, ast.ReservedValues)
+            else "void"
+            if isinstance(entry, ast.VoidValues)
+            else "vendor-specific"
+        )
+        entries.append(
+            EnumEntry(
+                line=line,
+                kind=kind,
+                first=entry.first,
+                last=entry.last,
+                description=getattr(entry, "description", None),
+            )
+        )
+    return tuple(entries)
+
+
+def _message_spans(
+    placed: _Placed,
+    index: int,
+    placement: parser.Placement,
+    section: ast.Message,
+    command: Command,
+) -> list[CommandSpan]:
+    """Where a Message block names its command: its `; Name:` name and
+    abbreviation, and its rule's head."""
+    name_line, value = placement.directives["Name"]
+    start = len("; Name: ")
+    places = (
+        (name_line - 1, start, section.name),
+        (
+            name_line - 1,
+            start + value.rindex(section.abbreviation),
+            section.abbreviation,
+        ),
+        (placed.heads[index], 1, section.name),
+    )
+    return [
+        CommandSpan(
+            line=line,
+            start=at,
+            end=at + len(spelled),
+            code=command.code,
+            request=command.request,
+            name=section.name,
+            abbreviation=section.abbreviation,
+            block=index,
+        )
+        for line, at, spelled in places
+    ]
+
+
+def _column_spans(
+    spec: ast.Specification,
+    placement: parser.Placement,
+    abbreviations: dict[str, int],
+) -> list[CommandSpan]:
+    """Where a table's `; Columns:` names a command of the file, as TS
+    32.299's ACR to CCA columns do."""
+    line, value = placement.directives["Columns"]
+    start = len("; Columns: ")
+    spans = []
+    for match in re.finditer(r"\S+", value):
+        found = abbreviations.get(match[0])
+        if found is None:
+            continue
+        message = spec.sections[found]
+        assert isinstance(message, ast.Message)
+        spans.append(
+            CommandSpan(
+                line=line - 1,
+                start=start + match.start(),
+                end=start + match.end(),
+                code=message.command_code,
+                request=ast.CommandFlag.REQUEST in message.flags,
+                name=message.name,
+                abbreviation=message.abbreviation,
+                block=found,
+            )
+        )
+    return spans
+
+
+def _table_rows(
+    placed: _Placed, index: int, section: ast.AvpTable | ast.ReusedAvps
+) -> tuple[TableRow, ...]:
+    return tuple(
+        TableRow(
+            line=placed.items[index, "rows", item],
+            name=row.name,
+            cells=placed.cells(placed.items[index, "rows", item]),
+            vendor=row.stated_vendor(placed.spec.vendor_id)
+            if isinstance(row, ast.AvpTableRow)
+            else None,
+            marks=row.marks,
+        )
+        for item, row in enumerate(section.rows)
+    )
+
+
+def _registry(
+    placed: _Placed, index: int, section: ast.Registry
+) -> tuple[tuple[Allocation, ...], tuple[Reservation, ...], list[CommandSpan]]:
+    """A registry's rows and reservations, and where a Command Codes row
+    names its commands."""
+    allocations = []
+    reservations = []
+    spans = []
+    references = placed.links.references
+    for item, row in enumerate(section.rows):
+        line = placed.items[index, "rows", item]
+        if isinstance(row, ast.RegistryReservation):
+            reservations.append(
+                Reservation(
+                    line=line,
+                    first=row.first,
+                    last=row.last,
+                    defined_in=row.defined_in,
+                    purpose=row.purpose,
+                )
+            )
+            continue
+        allocations.append(
+            Allocation(
+                line=line,
+                cells=placed.cells(line),
+                code=row.code,
+                name=row.name,
+                abbreviation=row.abbreviation,
+                documents=tuple(
+                    dict.fromkeys(
+                        references[reference].document
+                        for reference in row.defined_in
+                        if reference in references
+                    )
+                ),
+                vendor=placed.spec.vendor_id
+                if section.registry is ast.RegistryKind.AVP_CODES
+                else None,
+            )
+        )
+        if section.registry is ast.RegistryKind.COMMAND_CODES:
+            spans += _registry_spans(placed, section, row, line)
+    return tuple(allocations), tuple(reservations), spans
+
+
+def _registry_spans(
+    placed: _Placed, section: ast.Registry, row: ast.RegistryRow, line: int
+) -> list[CommandSpan]:
+    """Where a Command Codes row's name and abbreviation cells name its
+    request and answer (TS 29.230 table 5.1/1's `UAR/UAA`)."""
+    if row.code is None or row.name is None:
+        return []
+    columns = [column.value for column in section.columns]
+    cells = placed.layout.cells[line + 1]
+    name_at = cells[columns.index(ast.RegistryColumn.NAME.value)]
+    printed = placed.lines[line][slice(*name_at)]
+    quoted = int(printed.startswith('"'))
+    if printed[quoted : len(printed) - quoted] != row.name:
+        return []  # an escape inside the quotes would move every offset
+    abbreviation = (
+        placed.lines[line][
+            slice(*cells[columns.index(ast.RegistryColumn.ABBREVIATION.value)])
+        ]
+        if ast.RegistryColumn.ABBREVIATION in section.columns
+        else None
+    )
+    abbreviation_at = (
+        cells[columns.index(ast.RegistryColumn.ABBREVIATION.value)][0]
+        if abbreviation is not None
+        else 0
+    )
+    places = []
+    for position, (start, end, name, request, short) in enumerate(
+        _halves(row.name, name_at[0] + quoted, row.abbreviation)
+    ):
+        places.append((start, end, name, request, short))
+        if short and abbreviation is not None:
+            offset = abbreviation.find(short, abbreviation.find("/") if position else 0)
+            if offset >= 0:
+                at = abbreviation_at + offset
+                places.append((at, at + len(short), name, request, short))
+    return [
+        CommandSpan(
+            line=line,
+            start=start,
+            end=end,
+            code=row.code,
+            request=request,
+            name=name,
+            abbreviation=short,
+        )
+        for start, end, name, request, short in places
+    ]
+
+
+def _value_rows(
+    placed: _Placed, index: int, section: ast.ValueTable
+) -> tuple[ValueRow, ...]:
+    return tuple(
+        ValueRow(
+            line=placed.items[index, "rows", item],
+            name=row.name,
+            value=row.value,
+            section=row.section,
+            mark=row.mark,
+            origin=row.origin,
+            origin_target=None
+            if row.origin is None
+            else placed.links.value_origin(row.origin, row.name),
+        )
+        for item, row in enumerate(section.rows)
+    )
 
 
 def _changed_lines(raw: str, corrected: str) -> frozenset[int]:
@@ -571,6 +1063,7 @@ class _Lookups:
                         continue
                     found[value.origin, value.name] = Target(
                         document=document_id(origin),
+                        name=value.name,
                         section=next(
                             (
                                 their.section or table.source.section
@@ -1137,23 +1630,28 @@ def _write_document(
     declared = declarations.of(entry)
     edits = dict(declared.edits) if declared else {}
     text = entry.path.read_text(encoding="utf-8")
+    _, layout = parser.parse_with_layout(text)
     lines = _lines(text, spec, links)
     raw_path = _raw_path(entry)
     raw = None
     if raw_path is not None:
         raw_text = raw_path.read_text(encoding="utf-8")
         raw = f"documents/{identifier}.raw.json"
+        raw_spec, raw_layout = parser.parse_with_layout(raw_text)
+        raw_links = links.spelled_as_raw(declared.renames if declared else ())
         raw_lines = _lines(
-            raw_text,
-            parser.parse(raw_text),
-            links.spelled_as_raw(declared.renames if declared else ()),
-            _changed_lines(raw_text, text),
+            raw_text, raw_spec, raw_links, _changed_lines(raw_text, text)
         )
         if declarations.answers(entry):
             _check_citations(entry, raw_lines, edits)
         _write(
             output / raw,
-            RawDocument(schema_version=SCHEMA_VERSION, id=identifier, lines=raw_lines),
+            RawDocument(
+                schema_version=SCHEMA_VERSION,
+                id=identifier,
+                lines=raw_lines,
+                blocks=_blocks(raw_text, raw_spec, raw_layout, raw_links),
+            ),
         )
     if declarations.answers(entry):
         _check_citations(entry, lines, edits)
@@ -1172,9 +1670,11 @@ def _write_document(
         else None,
         title=titles.get(entry.reference, spec.specification),
         pinned=pinned.get((entry.reference, spec.version)) if spec.version else None,
+        interfaces=corpus.books.interfaces.of(entry),
         source=sources.source(entry),
         sections=_sections(spec, corpus.citations[identifier]),
         lines=lines,
+        blocks=_blocks(text, spec, layout, links),
         corrections={
             cited: export_schema.Correction(kind=edit.kind, reason=edit.reason)
             for cited, edit in edits.items()

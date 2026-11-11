@@ -335,3 +335,43 @@ def test_a_file_may_be_its_header_alone():
     text = "; Specification: RFC 9999\n; Vendor-ID: 0\n"
 
     assert formatter.format_spec(parser.parse(text)) == text
+
+
+def test_the_layout_places_each_section_on_its_lines():
+    """`parse_with_layout` ties the tree to the file: each section's lines,
+    its directives as printed, each body line's item and each row's cells."""
+    text = (
+        "; Specification: 3GPP TS 29.900\n; Vendor-ID: 10415\n\n\n"
+        "; Type: Message\n; Name: Thing-Request, TR ;; a note\n; Section: 6.1\n"
+        "<Thing-Request> ::= < Diameter Header: 9, REQ >\n"
+        "      1* { Thing }\n"
+        ";;      [ Gone ] ; strikethrough\n\n\n"
+        "; Type: Reused AVPs\n; Section: 6.3\n; Columns: Name   From   Applicability\n"
+        'Thing   TS29.229   "All (NOTE 1)"\n'
+    )
+
+    spec, layout = parser.parse_with_layout(text)
+
+    message, reused = layout.sections
+    assert (message.first, message.last) == (5, 10)
+    assert message.directives["Name"] == (6, "Thing-Request, TR")
+    assert layout.paths[8] == ("sections", 0)
+    assert layout.paths[9] == ("sections", 0, "avps", 0)
+    assert 10 not in layout.paths
+    assert (reused.first, reused.last) == (13, 16)
+    line = text.splitlines()[15]
+    assert [line[a:b] for a, b in layout.cells[16]] == [
+        "Thing",
+        "TS29.229",
+        '"All (NOTE 1)"',
+    ]
+    assert parser.parse(text) == spec
+
+    rule, qualifier = parser.avp_rule_line("      1* { Thing }") or (None, None)
+    assert rule == ast.AvpRule(
+        name="Thing", presence=ast.Presence.REQUIRED, max_occurs=None
+    )
+    assert qualifier == "1*"
+    struck = parser.avp_rule_line("      [ Gone ] ; strikethrough")
+    assert struck is not None and struck[0].strikethrough and struck[1] == ""
+    assert parser.avp_rule_line("not a rule") is None

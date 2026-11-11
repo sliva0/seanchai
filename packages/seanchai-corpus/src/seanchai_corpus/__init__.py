@@ -2,8 +2,8 @@
 
 A data-only package with no dependencies. `CORPUS_DIR` is the directory to
 pass to `seanchai.corpus.Corpus.load`. It holds the corrected trees, the
-`raw/` mirror, `corpus.toml` (format and resolution rules), `holes.toml`
-and `corrections.json`.
+`raw/` mirror, `corpus.toml` (format and resolution rules), `holes.toml`,
+`interfaces.toml` and `corrections.json`.
 """
 
 from importlib.metadata import version

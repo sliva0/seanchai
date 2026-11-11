@@ -66,6 +66,7 @@ def test_every_toml_file_keeps_to_80_columns():
         _ROOT / "pyproject.toml",
         _CORPUS_DIR / "holes.toml",
         _CORPUS_DIR / "corpus.toml",
+        _CORPUS_DIR / "interfaces.toml",
         _ROOT / "edits" / "sources" / "TS29.272.toml",
         _ROOT / "integrations" / "wireshark" / "aliases.toml",
         _ROOT / "src" / "seanchai" / "downloader" / "specs.toml",

@@ -21,35 +21,46 @@ from .linter import Severity
 __all__ = [
     "GENERATOR",
     "SCHEMA_VERSION",
+    "Allocation",
     "ApplicationIdentity",
+    "AvpHeader",
     "AvpIdentity",
+    "Block",
     "Citation",
+    "Command",
     "CommandIdentity",
+    "CommandSpan",
     "Correction",
     "CrossRelease",
     "Document",
     "DocumentSummary",
+    "EnumEntry",
     "Finding",
     "FlagRules",
     "Hole",
     "Index",
     "Line",
+    "Member",
     "Mention",
     "RawDocument",
     "RegistryIdentity",
+    "Reservation",
+    "Rule",
     "Search",
     "SearchEntry",
     "Section",
     "Source",
+    "TableRow",
     "Target",
     "Token",
     "UndefinedBlock",
     "ValueIdentity",
+    "ValueRow",
     "dumps",
     "json_schema",
 ]
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 # What `index.json` says wrote it, and so what an export may replace.
 GENERATOR: Literal["seanchai"] = "seanchai"
@@ -63,7 +74,8 @@ class _Model(pydantic.BaseModel):
 
 class Target(_Model):
     """Where a link goes: a document's page, at a clause when `section` is set.
-    `name` is the AVP a re-used row's origin cell links to there."""
+    `name` is the AVP a re-used row's origin cell links to there, or the value
+    a result code's origin links to."""
 
     document: str
     section: str | None = None
@@ -198,10 +210,184 @@ class Correction(_Model):
     reason: str
 
 
+class Member(_Model):
+    """A member of a rule, at its `line`. `qualifier` is as printed (`1*`,
+    `*2`, or empty); `min` and `max` are RFC 6733 clause 3.2's bounds, `max`
+    null for none. A `struck` member is a commented-out line keeping its `;
+    strikethrough`, as the document strikes it, and no member of the rule the
+    corpus reads."""
+
+    name: str
+    presence: ast.Presence
+    qualifier: str = ""
+    min: int
+    max: int | None
+    bold: bool = False
+    struck: bool = False
+    line: int
+
+
+class Rule(_Model):
+    """A block's ABNF rule: the name its `::=` line at `line` defines
+    (`answer-message` for an Answer Message block) and its members in file
+    order, struck ones included."""
+
+    name: str
+    line: int
+    members: tuple[Member, ...]
+
+
+class AvpHeader(_Model):
+    """What an AVP's `< AVP header: code vendor-id >` says; `vendor_id` is
+    null where it prints none."""
+
+    code: int
+    vendor_id: int | None
+
+
+class Command(_Model):
+    """A Message block's header. `flags` in printed order; `application_id`
+    is the effective id, the header's or for a bare header the one the first
+    Application Scope block covering its clause states (`scope`, that block's
+    clause). `application` names the application, and `stated_in` is the
+    clause of the scope block naming it, as `CommandIdentity` reads them."""
+
+    code: int
+    request: bool
+    flags: tuple[ast.CommandFlag, ...]
+    header_application_id: int | None
+    application_id: int | None
+    application: str | None = None
+    stated_in: str | None = None
+    scope: str | None = None
+
+
+class CommandSpan(_Model):
+    """Characters `start` to `end` of line `line` name a command: a Message
+    block's name, abbreviation or rule head, a half of a Command Codes row's
+    name or abbreviation, or a table's column for it. `block` indexes the
+    document's Message block for it; a registry half has none."""
+
+    line: int
+    start: int
+    end: int
+    code: int
+    request: bool
+    name: str
+    abbreviation: str | None = None
+    block: int | None = None
+
+
+class TableRow(_Model):
+    """A row of an AVP Table or Reused AVPs block at `line`. `cells` are as
+    printed, one per column, quotes kept: `""` is a blank cell, `-` a dash.
+    The rest is what needs more than a cell to read: `name` unquoted, `vendor`
+    the vendor space the row places the AVP in (its Vendor-ID cell, else its V
+    flag read with the file's `; Vendor-ID:`), and `marks` each mark column's
+    marks, unquoted, with no marks for a dash and no entry for a blank cell."""
+
+    line: int
+    name: str
+    cells: tuple[str, ...]
+    vendor: int | None = None
+    marks: dict[ast.MarkColumn, tuple[str, ...]] = pydantic.Field(default_factory=dict)
+
+
+class Allocation(_Model):
+    """A row of a Registry block at `line`, `cells` as a `TableRow`'s. `code`
+    is null where the row prints a placeholder; `name` and `abbreviation` are
+    unquoted, null for a dash. `documents` are the exported documents its
+    Defined-In cell resolves to; `vendor` is an AVP Codes row's, the file's
+    `; Vendor-ID:`."""
+
+    line: int
+    cells: tuple[str, ...]
+    code: int | None
+    name: str | None = None
+    abbreviation: str | None = None
+    documents: tuple[str, ...] = ()
+    vendor: int | None = None
+
+
+class Reservation(_Model):
+    """A registry's `; RESERVED first..last` line at `line`."""
+
+    line: int
+    first: int
+    last: int
+    defined_in: tuple[str, ...] = ()
+    purpose: str | None = None
+
+
+class ValueRow(_Model):
+    """A Value Table row at `line`. `section` is a result code's own clause,
+    `mark` a feature's M/O, `origin` the document a result code's row says
+    defines it, and `origin_target` where its token links."""
+
+    line: int
+    name: str
+    value: int
+    section: str | None = None
+    mark: str | None = None
+    origin: str | None = None
+    origin_target: Target | None = None
+
+
+class EnumEntry(_Model):
+    """A line of an Enumerated AVP's body at `line`: a `value` with its
+    `name`, or a `reserved`, `void` or `vendor-specific` range `first` to
+    `last`. `description` is what the line says of it."""
+
+    line: int
+    kind: Literal["value", "reserved", "void", "vendor-specific"]
+    name: str | None = None
+    first: int
+    last: int
+    description: str | None = None
+
+
+class Block(_Model):
+    """A `; Type:` block of a file: lines `line` (its `; Type:` line) to
+    `last`, comments included. `fields` holds its other directives as printed,
+    `Name` to `Applies-To`; `name` and `abbreviation` are what its `; Name:`
+    or `; AVP:` names. What else it holds depends on `type`:
+
+    - `rule` for a Message, Answer Message, Grouped AVP or Reprinted AVP, with
+      `command` for a Message and `avp` for a Grouped or Reprinted AVP;
+    - `avp` and `values` for an Enumerated AVP;
+    - `columns` and `rows` for an AVP Table or Reused AVPs block;
+    - `columns`, `allocations` and `reservations` for a Registry;
+    - `value_rows` for a Value Table.
+
+    `commands` marks where its lines name a command.
+    """
+
+    type: str
+    line: int
+    last: int
+    section: str
+    page: int | None
+    fields: dict[str, str]
+    name: str | None = None
+    abbreviation: str | None = None
+    rule: Rule | None = None
+    command: Command | None = None
+    avp: AvpHeader | None = None
+    values: tuple[EnumEntry, ...] = ()
+    columns: tuple[str, ...] = ()
+    rows: tuple[TableRow, ...] = ()
+    allocations: tuple[Allocation, ...] = ()
+    reservations: tuple[Reservation, ...] = ()
+    value_rows: tuple[ValueRow, ...] = ()
+    commands: tuple[CommandSpan, ...] = ()
+
+
 class DocumentSummary(_Model):
     """A document as the index lists it. `path` and `raw` are its files in the
     export; `raw` is null for a corpus with no raw mirror. `pinned` says why an
-    older release is held."""
+    older release is held. `interfaces` are the Diameter interfaces or
+    reference points it specifies, or an RFC's application, from the corpus's
+    `interfaces.toml`: empty for none, null where the corpus does not say."""
 
     id: str
     path: str
@@ -213,27 +399,32 @@ class DocumentSummary(_Model):
     release: int | None
     title: str
     pinned: str | None
+    interfaces: tuple[str, ...] | None
     source: Source
 
 
 class Document(DocumentSummary):
     """`documents/<id>.json`: one corrected file, with what the page shows of
-    it. `corrections` is keyed by citation, `TS29.272.py#area-scope-code`."""
+    it. `corrections` is keyed by citation, `TS29.272.py#area-scope-code`.
+    `blocks` are its `; Type:` blocks in file order, by index into `lines`."""
 
     schema_version: _Version
     sections: tuple[Section, ...]
     lines: tuple[Line, ...]
+    blocks: tuple[Block, ...]
     corrections: dict[str, Correction]
     holes: tuple[Hole, ...]
     findings: tuple[Finding, ...]
 
 
 class RawDocument(_Model):
-    """`documents/<id>.raw.json`: the raw mirror of a file, for the raw view."""
+    """`documents/<id>.raw.json`: the raw mirror of a file, for the raw view,
+    with its own `blocks`, by index into its own `lines`."""
 
     schema_version: _Version
     id: str
     lines: tuple[Line, ...]
+    blocks: tuple[Block, ...]
 
 
 class Index(_Model):

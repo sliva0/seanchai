@@ -13,7 +13,8 @@ named.
 Facts the `.dad` files do not hold, such as cited versions and stand-ins,
 come from the corpus directory's `CORPUS_FILE` (`Rules`), which also states
 the corpus format (`FORMATS`). `HOLE_RECORD` lists the known holes the model
-builds against. See docs/consumers.md and docs/linter.md.
+builds against, and `INTERFACE_RECORD` the interfaces each document
+specifies (`InterfaceNames`). See docs/consumers.md and docs/linter.md.
 """
 
 from __future__ import annotations
@@ -37,6 +38,7 @@ __all__ = [
     "FILLABLE",
     "FORMATS",
     "HOLE_RECORD",
+    "INTERFACE_RECORD",
     "Citation",
     "CitationRule",
     "Corpus",
@@ -46,6 +48,7 @@ __all__ = [
     "CrossRelease",
     "Entry",
     "HoleRecord",
+    "InterfaceNames",
     "KnownHole",
     "Missing",
     "ReleaseFill",
@@ -655,6 +658,87 @@ class HoleRecord:
         return KnownHole(document, name, tuple(map(Missing, missing)), collapse(reason))
 
 
+# A corpus directory's record of the interfaces each document specifies. It is
+# a file of its own, not a table of `CORPUS_FILE`, which refuses a table it
+# does not know: a library predating it loads the corpus all the same.
+INTERFACE_RECORD = "interfaces.toml"
+
+
+@dataclass(frozen=True)
+class InterfaceNames:
+    """The Diameter interfaces and reference points each document specifies,
+    or for an RFC its application, in the names a reader skims for: `("Gx",
+    "Gxx", "Sd", "St", "S15")` for TS 29.212. Curated by hand from each
+    document's scope clause and table of contents.
+
+    `references` keys a document by reference; `documents` keys one copy by
+    its file's stem (`29212-bj0`) where its names differ from the other
+    copies'. An empty tuple says the document has none. `InterfaceNames()`
+    means no record."""
+
+    path: Path | None = None
+    references: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
+    documents: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
+
+    @classmethod
+    def load(cls, path: Path) -> InterfaceNames:
+        """Read `path`. Raises `CorpusError` for a table other than
+        `[references]` and `[documents]`, or a value that is not a list of
+        distinct names."""
+        data = _read_toml(path)
+        if set(data) - {"references", "documents"}:
+            raise CorpusError(
+                f"{path}: only [references] and [documents] belong in an"
+                " interface record"
+            )
+        tables: dict[str, dict[str, tuple[str, ...]]] = {}
+        for table in ("references", "documents"):
+            entries = data.get(table, {})
+            if not isinstance(entries, dict):
+                raise CorpusError(f"{path}: {table} must be a [{table}] table")
+            tables[table] = {}
+            for key, names in entries.items():
+                if (
+                    not isinstance(names, list)
+                    or not all(isinstance(n, str) and n.strip() for n in names)
+                    or len(set(names)) != len(names)
+                ):
+                    raise CorpusError(
+                        f"{path}: [{table}] {key} must be a list of distinct"
+                        f" names, not {names!r}"
+                    )
+                tables[table][key] = tuple(names)
+        return cls(path, tables["references"], tables["documents"])
+
+    def of(self, entry: Entry) -> tuple[str, ...] | None:
+        """`entry`'s names: its copy's own entry, else its reference's, or
+        None if the record has neither."""
+        found = self.documents.get(_stem(entry))
+        return self.references.get(entry.reference) if found is None else found
+
+    def check(self, books: Corpus) -> None:
+        """Raise `CorpusError` for an entry naming a document or copy `books`
+        lacks."""
+        stems = {_stem(entry) for entry in books}
+        for reference in self.references:
+            if not books._by_reference.get(reference):
+                raise CorpusError(
+                    f"{self.path}: [references] names {reference}, which the"
+                    " corpus lacks"
+                )
+        for stem in self.documents:
+            if stem not in stems:
+                raise CorpusError(
+                    f"{self.path}: [documents] names {stem}, which the corpus lacks"
+                )
+
+
+def _stem(entry: Entry) -> str:
+    """`entry`'s file name without `.dad`, a raw mirror's without `.raw.dad`:
+    the document id the export names it by."""
+    return entry.path.stem.removesuffix(".raw")
+
+
 def installed_directory() -> Path:
     """The corpus directory of the installed `seanchai-corpus` package (the
     optional `seanchai[corpus]` dependency). In this repository it is the
@@ -697,7 +781,8 @@ class Corpus:
 
     A file named twice counts once; two files with one reference, version
     and revision raise `CorpusError`. `version` is the package version when
-    loaded by `installed`, else None. `rules` defaults to `Rules()`.
+    loaded by `installed`, else None. `rules` defaults to `Rules()` and
+    `interfaces` to `InterfaceNames()`.
 
     Use `load` or `installed`. Constructed directly, a corpus checks only
     its copies, not `rules` or `record`; a `model.Model` built over it still
@@ -710,11 +795,13 @@ class Corpus:
         record: HoleRecord | None = None,
         version: str | None = None,
         rules: Rules | None = None,
+        interfaces: InterfaceNames | None = None,
     ) -> None:
         # None for a corpus with no record: a partial or foreign one, or raw.
         self.record = record
         self.version = version
         self.rules = Rules() if rules is None else rules
+        self.interfaces = InterfaceNames() if interfaces is None else interfaces
         self._by_reference: dict[str, list[Entry]] = {}
         # A file reached twice is one copy; two files claiming one copy would
         # leave `newest` and `resolve` to the order they were named in.
@@ -754,6 +841,8 @@ class Corpus:
         included, and gives `rules`. It is read before any `.dad` file, so
         an unreadable format raises `CorpusFormatError`, and is checked
         against the files afterwards. Without it, `rules` is `Rules()`.
+        `INTERFACE_RECORD` is found the same way and gives `interfaces`,
+        else `InterfaceNames()`.
         """
         unique: dict[Path, Path] = {}
         for path in _as_paths(paths):
@@ -780,6 +869,16 @@ class Corpus:
                 f"two corpus files in one corpus: {', '.join(map(str, described))}"
             )
         rules = Rules.load(described[0]) if described else Rules()
+        named = [
+            path / INTERFACE_RECORD
+            for path in given
+            if path.is_dir() and (path / INTERFACE_RECORD).is_file()
+        ]
+        if len(named) > 1:
+            raise CorpusError(
+                f"two interface records in one corpus: {', '.join(map(str, named))}"
+            )
+        interfaces = InterfaceNames.load(named[0]) if named else InterfaceNames()
         entries = []
         for path in cls._files(given):
             if path.name.endswith(".raw.dad") != raw:
@@ -790,9 +889,13 @@ class Corpus:
                 raise CorpusError(f"{path}: {error}") from error
             entries.append(Entry(path=path, spec=spec))
         books = cls(
-            entries, HoleRecord.load(records[0]) if records else None, rules=rules
+            entries,
+            HoleRecord.load(records[0]) if records else None,
+            rules=rules,
+            interfaces=interfaces,
         )
         rules.check(books)
+        interfaces.check(books)
         return books
 
     @classmethod

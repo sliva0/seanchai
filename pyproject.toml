@@ -1,6 +1,6 @@
 [project]
 name = "seanchai"
-version = "0.1.0"
+version = "0.2.0"
 description = "Machine-readable Diameter schemas from 3GPP documents and RFCs"
 readme = "README.md"
 authors = [

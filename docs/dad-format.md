@@ -132,6 +132,7 @@ The corpus is the data of the `seanchai-corpus` package, at
 | `raw/` | unedited output, mirroring the trees above |
 | `corpus.toml` | the format and resolution rules, edited by hand |
 | `holes.toml` | the record of known holes, edited by hand |
+| `interfaces.toml` | the interfaces each document specifies, edited by hand |
 | `corrections.json` | the corrections record, written by `seanchai corpus regenerate` |
 
 Each document is committed twice:
@@ -157,6 +158,6 @@ Files are named as their publishers name them:
 | `ts-0004-v2_35_0` | oneM2M TS-0004 V2.35.0 |
 | `dds-charging_data-v1_0-20110201-a` | OMA-DDS-Charging_Data V1.0, approved 1 February 2011 |
 
-Nothing here is edited by hand except `corpus.toml` and `holes.toml`;
+Nothing here is edited by hand except the three TOML files;
 `seanchai corpus regenerate` rebuilds the rest
 ([development.md](development.md#rebuilding-the-corpus)).

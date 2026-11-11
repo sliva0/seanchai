@@ -7,7 +7,8 @@ documents, as `.dad` files. It holds:
 - the corrected files and their raw mirror;
 - the record of known holes and of each correction's reason;
 - `corpus.toml`: the corpus's format, and the rules for which version of a
-  document a citation means, each with its evidence.
+  document a citation means, each with its evidence;
+- `interfaces.toml`: the Diameter interfaces each document specifies.
 
 It has no dependencies and needs Python 3.10 or newer. The
 [`seanchai`](https://pypi.org/project/seanchai/) library that reads it needs

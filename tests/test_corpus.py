@@ -823,3 +823,64 @@ def test_every_error_the_library_defines_derives_from_seanchai_error():
 
     assert seanchai.SeanchaiError in errors and len(errors) > 10
     assert {e for e in errors if not issubclass(e, seanchai.SeanchaiError)} == set()
+
+
+# --- interface names ------------------------------------------------------------
+
+
+def test_every_corpus_document_has_its_interface_names():
+    """`interfaces.toml` holds an entry for each document, an empty list
+    where it specifies none; a document added without one fails here."""
+    for raw in (False, True):
+        books = corpus.Corpus.installed(raw=raw)
+        missing = [
+            entry.path.name for entry in books if books.interfaces.of(entry) is None
+        ]
+        assert not missing, f"add {missing} to interfaces.toml"
+    books = corpus.Corpus.installed()
+    names = {entry.path.stem: books.interfaces.of(entry) for entry in books}
+    # Keyed by reference, or by the copy where one edition's names differ.
+    assert names["29212-j10"] == ("Gx", "Gxx", "Sd", "St", "S15")
+    assert names["29212-bj0"] == ("Gx", "Gxx", "Sd", "S15")
+    assert names["29230-j30"] == ()
+
+
+def test_a_corpus_directory_brings_its_interface_names(tmp_path):
+    directory = _corpus_directory(tmp_path)
+    (directory / corpus.INTERFACE_RECORD).write_text(
+        '[references]\n"TS29.900" = ["Zz"]\n\n[documents]\n"29900" = ["Zz", "Zy"]\n',
+        encoding="utf-8",
+    )
+
+    for raw in (False, True):
+        if raw:
+            (directory / "3gpp" / "29900.raw.dad").write_text(
+                formatter.format_spec(_spec("3GPP TS 29.900", "18.0.0")),
+                encoding="utf-8",
+            )
+        books = corpus.Corpus.load([directory], raw=raw)
+        (entry,) = books
+        assert books.interfaces.of(entry) == ("Zz", "Zy")
+    assert corpus.Corpus.load([directory / "3gpp"]).interfaces == (
+        corpus.InterfaceNames()
+    )
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        ('[interfaces]\n"TS29.900" = []\n', "only .references. and .documents."),
+        ('references = ["TS29.900"]\n', "must be a .references. table"),
+        ('[references]\n"TS29.900" = "Zz"\n', "list of distinct names"),
+        ('[references]\n"TS29.900" = ["Zz", "Zz"]\n', "list of distinct names"),
+        ('[references]\n"TS29.999" = []\n', "TS29.999, which the corpus lacks"),
+        ('[documents]\n"29999" = []\n', "29999, which the corpus lacks"),
+    ],
+    ids=["another-table", "not-a-table", "not-a-list", "twice", "no-such", "no-copy"],
+)
+def test_a_malformed_interface_record_fails_the_load(tmp_path, text, message):
+    directory = _corpus_directory(tmp_path)
+    (directory / corpus.INTERFACE_RECORD).write_text(text, encoding="utf-8")
+
+    with pytest.raises(corpus.CorpusError, match=message):
+        corpus.Corpus.load([directory])

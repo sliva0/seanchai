@@ -10,6 +10,7 @@ then one per section); a parser per `; Type:` reads each body. A malformed
 import contextlib
 import enum
 import re
+from collections.abc import Mapping
 from typing import NamedTuple
 
 import pydantic
@@ -17,7 +18,15 @@ import pydantic
 from ..errors import SeanchaiError
 from . import abnf, ast, formatter
 
-__all__ = ["DadParseError", "parse", "parse_with_comments"]
+__all__ = [
+    "DadParseError",
+    "Layout",
+    "Placement",
+    "avp_rule_line",
+    "parse",
+    "parse_with_comments",
+    "parse_with_layout",
+]
 
 # Keys carry hyphens (`; Vendor-ID:`), so the charset is wider than letters.
 # `; RESERVED = n`, `; VOID = n` and `; VENDOR-SPECIFIC = n` use `=` rather than
@@ -990,15 +999,89 @@ _BODIES = {
 class _Layout(NamedTuple):
     """Which path each line printed, and where a whole-line comment after a
     block's last line stands: one past its body's last item, or `()` for
-    the file header."""
+    the file header. `directives` holds each section's directives."""
 
     paths: dict[int, ast.TreePath]
     ends: list[ast.TreePath]
+    directives: list[dict[str, tuple[int, str]]]
+
+
+class Placement(NamedTuple):
+    """Where one section of a file is printed, by 1-based line number.
+    `first` is its `; Type:` line and `last` the last line of its run of
+    lines, a whole-line comment included. `directives` holds each directive's
+    line and value as printed, without a trailing comment, `Type` included."""
+
+    first: int
+    last: int
+    directives: Mapping[str, tuple[int, str]]
+
+
+class Layout(NamedTuple):
+    """Where a file prints what its tree holds, by 1-based line number.
+
+    `paths` gives the `TreePath` each line states, as comments attach to it:
+    a directive its field, a header rule its section, a body line its item.
+    A line that is all comment has none. `sections` places each section, and
+    `cells` holds each table row's cells as `(start, end)` offsets into its
+    line, a quoted cell with its quotes.
+    """
+
+    paths: Mapping[int, ast.TreePath]
+    sections: tuple[Placement, ...]
+    cells: Mapping[int, tuple[tuple[int, int], ...]]
 
 
 def parse(text: str) -> ast.Specification:
     """Parse a `.dad` file, discarding its `;;` comments."""
     return _parse(_blocks(_runs(text)))[0]
+
+
+def parse_with_layout(text: str) -> tuple[ast.Specification, Layout]:
+    """Parse a `.dad` file and return where each part of the tree is printed
+    (`Layout`), for a reader that ties the tree to the file's lines."""
+    runs = _runs(text)
+    spec, layout = _parse(_blocks(runs))
+    # A block is a run holding content; the first is the file header.
+    lasts = [run[-1].lineno for run in runs if any(line.content for line in run)]
+    sections = tuple(
+        Placement(directives["Type"][0], last, directives)
+        for directives, last in zip(layout.directives, lasts[1:], strict=True)
+    )
+    lines = text.splitlines()
+    cells = {
+        lineno: tuple(
+            match.span()
+            for match in _CELL_RE.finditer(lines[lineno - 1].split(";;")[0])
+        )
+        for lineno, path in layout.paths.items()
+        if len(path) == 4
+        and isinstance(
+            ast.node_at(spec, path),
+            ast.AvpTableRow | ast.ReusedAvpRow | ast.RegistryRow,
+        )
+    }
+    return spec, Layout(layout.paths, sections, cells)
+
+
+def avp_rule_line(line: str) -> tuple[ast.AvpRule, str] | None:
+    """The AVP rule a message or grouped body line prints, with its qualifier
+    as printed (`1*`, `*2`, or empty), or None for a line printing none.
+    `line` is without its comment; a struck member's whole-line comment, `;;
+    [ Name ] ; strikethrough`, reads as the rule once `;;` is cut off."""
+    match = _AVP_RULE_RE.match(line)
+    if match is None:
+        return None
+    try:
+        rule = abnf.avp_rule(
+            match,
+            bold=match["bold"] is not None,
+            strikethrough=match["strikethrough"] is not None,
+        )
+    except (abnf.AbnfError, pydantic.ValidationError):
+        return None
+    qualifier = "" if match["min"] is None else f"{match['min']}*{match['max']}"
+    return rule, qualifier
 
 
 type _NoteMap = dict[ast.TreePath, list[str]]
@@ -1049,7 +1132,7 @@ def parse_with_comments(text: str) -> tuple[ast.Specification, formatter.Comment
 def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
     if not blocks:
         raise DadParseError(1, "empty file")
-    layout = _Layout({}, [()])
+    layout = _Layout({}, [()], [])
 
     header = blocks[0]
     directives, body = _split_directives(header)
@@ -1075,6 +1158,12 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
     for index, block in enumerate(blocks[1:]):
         directives, body = _split_directives(block)
         path: ast.TreePath = ("sections", index)
+        layout.directives.append(
+            {
+                key: (directive.lineno, directive.value)
+                for key, directive in directives.items()
+            }
+        )
         for key, directive in directives.items():
             if key in _DIRECTIVE_PATHS:
                 layout.paths[directive.lineno] = (*path, *_DIRECTIVE_PATHS[key])

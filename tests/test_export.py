@@ -24,6 +24,7 @@ from conftest import _CORPUS_DIR
 from seanchai import export_schema
 from seanchai.cli import main
 from seanchai.corpus import Corpus, CorpusError
+from seanchai.dad import ast
 from seanchai.dad.ast import section_sort_key
 from seanchai.downloader.catalog import load_catalog
 from seanchai.export import SYNTAX_FILE, export_corpus
@@ -464,6 +465,314 @@ def test_sections_sort_in_document_order():
         "A.1",
         "E.6.3.6",
     ]
+
+
+# --- the blocks ---------------------------------------------------------------------
+
+
+def _block(doc: dict, kind: str, section: str, name: str | None = None) -> dict:
+    (found,) = [
+        b
+        for b in doc["blocks"]
+        if b["type"] == kind
+        and b["section"] == section
+        and (name is None or b.get("name") == name)
+    ]
+    return found
+
+
+def _span_text(doc: dict, span: dict) -> str:
+    return _text([doc["lines"][span["line"]]])[span["start"] : span["end"]]
+
+
+def test_each_file_s_blocks_place_its_sections_on_its_own_lines(exported):
+    for key, doc in exported.docs.items():
+        for file in (doc, exported.raws[key]):
+            texts = [_text([line]) for line in file["lines"]]
+            starts = [i for i, text in enumerate(texts) if text.startswith("; Type:")]
+            assert [b["line"] for b in file["blocks"]] == starts, key
+            for block, after in zip(
+                file["blocks"], [*starts[1:], len(texts)], strict=True
+            ):
+                assert texts[block["line"]].startswith(f"; Type: {block['type']}")
+                assert block["line"] < block["last"] < after
+                assert texts[block["last"]].strip()
+                # A blank line ends a block, comments and all.
+                assert not "".join(texts[block["last"] + 1 : block["last"] + 2]).strip()
+                inside = range(block["line"], block["last"] + 1)
+                rule = block.get("rule")
+                for member in rule["members"] if rule else ():
+                    assert member["line"] in inside
+                    assert f" {member['name']} " in texts[member["line"]]
+                for row in [
+                    *block.get("rows", ()),
+                    *block.get("allocations", ()),
+                    *block.get("value_rows", ()),
+                    *block.get("values", ()),
+                ]:
+                    assert row["line"] in inside
+                for row in [*block.get("rows", ()), *block.get("allocations", ())]:
+                    assert len(row["cells"]) == len(block["columns"])
+                    printed = texts[row["line"]].split(";;")[0]
+                    assert all(cell in printed for cell in row["cells"])
+                for span in block.get("commands", ()):
+                    assert span["line"] in inside
+                    text = texts[span["line"]][span["start"] : span["end"]]
+                    assert text in (span["name"], span.get("abbreviation")) or (
+                        span["name"].endswith(text)
+                    )
+
+
+def test_a_message_block_holds_its_rule_and_command(exported):
+    """TS 29.329 clause 6.1.1 prints the User-Data-Request."""
+    sh = exported.docs["29329-j10"]
+    udr = _block(sh, "Message", "6.1.1", "User-Data-Request")
+    assert udr["abbreviation"] == "UDR"
+    assert udr["fields"] == {
+        "Name": "User-Data-Request, UDR",
+        "Section": "6.1.1",
+        "Page": "11",
+    }
+    assert udr["command"] == {
+        "code": 306,
+        "request": True,
+        "flags": ["REQ", "PXY"],
+        "header_application_id": 16777217,
+        "application_id": 16777217,
+    }
+    rule = udr["rule"]
+    assert rule["name"] == "User-Data-Request"
+    assert _text([sh["lines"][rule["line"]]]).startswith("<User-Data-Request> ::=")
+    members = {m["name"]: m for m in rule["members"]}
+    assert len(members) == len(rule["members"]) == 31
+    # RFC 6733 clause 3.2: no qualifier is exactly once, or at most once of
+    # an optional member; `*` on a required member still means at least one.
+    assert members["Session-Id"] == {
+        "name": "Session-Id",
+        "presence": "fixed",
+        "min": 1,
+        "max": 1,
+        "line": rule["line"] + 1,
+    }
+    assert {k: members["DRMP"][k] for k in ("presence", "min", "max")} == {
+        "presence": "optional",
+        "min": 0,
+        "max": 1,
+    }
+    assert members["Data-Reference"] | {"line": 0} == {
+        "name": "Data-Reference",
+        "presence": "required",
+        "qualifier": "*",
+        "min": 1,
+        "max": None,
+        "bold": True,
+        "line": 0,
+    }
+    assert members["Supported-Features"]["qualifier"] == "*"
+    assert members["Supported-Features"]["min"] == 0
+    assert "bold" not in members["User-Name"]
+    assert [_span_text(sh, span) for span in udr["commands"]] == [
+        "User-Data-Request",
+        "UDR",
+        "User-Data-Request",
+    ]
+    assert {span["block"] for span in udr["commands"]} == {sh["blocks"].index(udr)}
+
+
+def test_a_message_block_names_its_application_as_the_search_entry_does(exported):
+    # The header's id is part of the key: TS 29.272 clause 7.2.9 prints
+    # Insert-Subscriber-Data-Request once per application.
+    commands = {
+        (
+            e["document"],
+            e["name"],
+            e["target"]["section"],
+            e["identity"]["header_application_id"],
+        ): e["identity"]
+        for e in exported.search["entries"]
+        if e["kind"] == "command"
+    }
+    blocks = [
+        (key, block)
+        for key, doc in exported.docs.items()
+        for block in doc["blocks"]
+        if block["type"] == "Message"
+    ]
+    assert len(blocks) > 500
+    for key, block in blocks:
+        command = block["command"]
+        identity = commands[
+            key, block["name"], block["section"], command["header_application_id"]
+        ]
+        assert identity["command_code"] == command["code"]
+        assert (command["application_id"], command.get("application")) == (
+            identity["application_id"],
+            identity["application"],
+        )
+
+
+def test_a_struck_member_is_kept_and_flagged(exported):
+    """TS 32.299 V11.20.0 clause 6.2.2 strikes Vendor-Specific-Application-Id
+    through in the Accounting-Request, and the extractor comments it out."""
+    doc = exported.docs["32299-bk0"]
+    acr = _block(doc, "Message", "6.2.2", "Accounting-Request")
+    struck = [m for m in acr["rule"]["members"] if m.get("struck")]
+    assert [m["name"] for m in struck] == [
+        "Vendor-Specific-Application-Id",
+        "Accounting-Sub-Session-Id",
+        "Acct-Session-Id",
+        "Acct-Multi-Session-Id",
+        "Accounting-Realtime-Required",
+    ]
+    line = _text([doc["lines"][struck[0]["line"]]])
+    assert line.startswith(";;") and line.rstrip().endswith("; strikethrough")
+    assert struck[0]["presence"] == "optional"
+    (entry,) = [e for e in Corpus.installed() if e.path.stem == "32299-bk0"]
+    (message,) = [
+        s
+        for s in entry.spec.sections
+        if isinstance(s, ast.Message) and s.name == "Accounting-Request"
+    ]
+    effective = [m["name"] for m in acr["rule"]["members"] if not m.get("struck")]
+    assert effective == [rule.name for rule in message.avps]
+    # TS 32.299's "Used in" columns are its commands.
+    table = _block(doc, "AVP Table", "7.1")
+    assert [_span_text(doc, s) for s in table["commands"]] == [
+        "ACR",
+        "ACA",
+        "CCR",
+        "CCA",
+    ]
+    assert doc["blocks"][table["commands"][0]["block"]]["name"] == (
+        "Accounting-Request"
+    )
+
+
+def test_a_table_row_holds_its_cells_as_printed(exported):
+    """TS 29.212 table 5.4.0.1 re-uses 3GPP-GGSN-Address with a quoted mark,
+    and table 5a.4.0.1 prints a blank Applicability cell."""
+    gx = exported.docs["29212-j10"]
+    reused = _block(gx, "Reused AVPs", "5.4.0")
+    assert reused["columns"] == ["Name", "From", "Acc-Type", "Applicability"]
+    assert reused["fields"]["Table"] == "5.4.0.1"
+    rows = {row["name"]: row for row in reused["rows"]}
+    assert rows["3GPP-GGSN-Address"]["cells"] == [
+        "3GPP-GGSN-Address",
+        "TS29.061",
+        '"All (NOTE 8)"',
+        "Both,EPC-routed,ABC",
+    ]
+    assert rows["3GPP-GGSN-Address"]["marks"] == {
+        "Acc-Type": ["All (NOTE 8)"],
+        "Applicability": ["Both", "EPC-routed", "ABC"],
+    }
+    # A corrected row's note is no cell.
+    assert rows["3GPP-GGSN-IPv6-Address"]["cells"][-1] == "Both,EPC-routed,ABC"
+    blank = _block(gx, "Reused AVPs", "5a.4.0")
+    (timezone,) = [r for r in blank["rows"] if r["name"] == "3GPP-MS-TimeZone"]
+    assert timezone["cells"][-1] == '""'
+    assert timezone["marks"] == {"Acc-Type": ["All"]}
+    # An AVP table's row places its AVP: V under Must is the file's vendor.
+    table = _block(exported.docs["29329-j10"], "AVP Table", "6.3")
+    (user_data,) = [r for r in table["rows"] if r["name"] == "User-Data"]
+    assert user_data["vendor"] == 10415
+    assert user_data["cells"][:5] == ["User-Data", "702", "6.3.3", "OctetString", "M,V"]
+
+
+def test_a_command_codes_row_names_its_request_and_answer(exported):
+    """TS 29.230 table 5.1/1 allocates 300 to User-Authorization-Request/-Answer,
+    UAR/UAA, defined in TS 29.229."""
+    doc = exported.docs["29230-j30"]
+    registry = next(
+        b
+        for b in doc["blocks"]
+        if b["type"] == "Registry" and b["fields"]["Table"] == "5.1/1"
+    )
+    assert registry["columns"] == ["Code", "Name", "Abbreviation", "Defined-In"]
+    (row,) = [a for a in registry["allocations"] if a["code"] == 300]
+    assert row == {
+        "line": row["line"],
+        "cells": ["300", "User-Authorization-Request/-Answer", "UAR/UAA", "TS29.229"],
+        "code": 300,
+        "name": "User-Authorization-Request/-Answer",
+        "abbreviation": "UAR/UAA",
+        "documents": ["29229-j10"],
+    }
+    spans = [s for s in registry["commands"] if s["line"] == row["line"]]
+    assert [
+        (_span_text(doc, s), s["name"], s["request"], s["abbreviation"]) for s in spans
+    ] == [
+        ("User-Authorization-Request", "User-Authorization-Request", True, "UAR"),
+        ("UAR", "User-Authorization-Request", True, "UAR"),
+        ("Answer", "User-Authorization-Answer", False, "UAA"),
+        ("UAA", "User-Authorization-Answer", False, "UAA"),
+    ]
+    assert all(s["code"] == 300 and "block" not in s for s in spans)
+    avp_codes = next(
+        b
+        for b in doc["blocks"]
+        if b["type"] == "Registry" and b["fields"]["Registry"] == "AVP Codes"
+    )
+    assert {a.get("vendor") for a in avp_codes["allocations"]} == {10415}
+
+
+def test_a_result_code_row_names_its_origin(exported):
+    """TS 29.283 clause 7.4.3.2 lists DIAMETER_ERROR_USER_UNKNOWN "defined in
+    3GPP TS 29.229", whose clause 6.2.2.1 defines it."""
+    doc = exported.docs["29283-j00"]
+    (table,) = [
+        b
+        for b in doc["blocks"]
+        if b["type"] == "Value Table"
+        and any(r["name"] == "DIAMETER_ERROR_USER_UNKNOWN" for r in b["value_rows"])
+    ]
+    assert table["name"] == "Experimental-Result-Code"
+    assert table["fields"]["Kind"] == "result-codes"
+    (row,) = [r for r in table["value_rows"] if r["value"] == 5001]
+    assert row == {
+        "line": row["line"],
+        "name": "DIAMETER_ERROR_USER_UNKNOWN",
+        "value": 5001,
+        "section": "7.4.3.2",
+        "origin": "TS29.229",
+        "origin_target": {
+            "document": "29229-j10",
+            "section": "6.2.2.1",
+            "name": "DIAMETER_ERROR_USER_UNKNOWN",
+        },
+    }
+    # The origin's token links where the row does.
+    (token,) = _tokens([doc["lines"][row["line"]]], "TS29.229")
+    assert token["target"] == row["origin_target"]
+
+
+def test_a_raw_file_s_blocks_describe_its_own_lines(exported):
+    """TS 29.061 V6.15.0 clause 17.6.6 prints `Redirected-Host` in the
+    Re-Auth-Answer, which the corrected file reads as Redirect-Host."""
+    names = {}
+    for kind, file in (
+        ("raw", exported.raws["29061-6f0"]),
+        ("corrected", exported.docs["29061-6f0"]),
+    ):
+        raa = _block(file, "Message", "17.6.6", "Re-Auth-Answer")
+        names[kind] = [m["name"] for m in raa["rule"]["members"]]
+        for member in raa["rule"]["members"]:
+            assert f" {member['name']} " in _text([file["lines"][member["line"]]])
+    assert "Redirected-Host" in names["raw"]
+    assert "Redirected-Host" not in names["corrected"]
+    assert "Redirect-Host" in names["corrected"]
+
+
+def test_the_index_names_each_document_s_interfaces(exported):
+    summaries = {d["id"]: d for d in exported.index["documents"]}
+    assert all(d["interfaces"] is not None for d in summaries.values())
+    assert summaries["29329-j10"]["interfaces"] == ["Sh"]
+    # One edition differs: TS 29.212's Release 11 has no St.
+    assert "St" in summaries["29212-j10"]["interfaces"]
+    assert "St" not in summaries["29212-bj0"]["interfaces"]
+    # The registry specifies none, and says so.
+    assert summaries["29230-j30"]["interfaces"] == []
+    assert summaries["rfc6733"]["interfaces"] == ["Base"]
 
 
 # --- where the corrections and the sources come from ------------------------------

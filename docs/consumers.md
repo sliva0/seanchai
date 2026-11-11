@@ -240,6 +240,12 @@ corpus, `seanchai-corpus` for an older one. `corpus.toml` also holds the
 [resolution rules](#resolution-across-releases). A directory without it, a
 subdirectory or a list of files loads with no format check and no rules.
 
+`Corpus.interfaces`, read from the directory's `interfaces.toml`, names the
+Diameter interfaces or reference points each document specifies, or an RFC's
+application: `books.interfaces.of(entry)` gives `("Gx", "Gxx", "Sd", "St",
+"S15")` for TS 29.212, `()` for one with none, and None for a document the
+record does not list or a corpus without one.
+
 Every error the library raises derives from `seanchai.SeanchaiError`.
 
 ## What the version covers
@@ -326,6 +332,9 @@ model.definition("ULR-Flags").value_table  # the bits, read through resolution
 The AST stays public underneath. `parser.parse(text)` reads one file and drops
 `;;` comments; `parser.parse_with_comments(text)` returns them too, for
 `formatter.format_spec(spec, comments)` to write back.
+`parser.parse_with_layout(text)` returns a `parser.Layout` beside the tree:
+each section's lines and directives, the tree path each line states and each
+table row's cells, for a reader tying the tree to the file's lines.
 
 ### Holes
 
