@@ -61,7 +61,8 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   section 4.3.1's syntax.
 - Values: an Enumerated value the reading defines or leaves to vendors, and not
   one it reserves or voids; a Result-Code some document defines; bits some
-  document names; a protocol error (3xxx) only with the E bit set.
+  document names; the E bit set on a protocol error (3xxx) and on no other
+  answer.
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
 

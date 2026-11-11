@@ -290,8 +290,8 @@ class Model(_Resolver):
     def _answering(
         self, view: _View, seen: tuple[Path, ...]
     ) -> tuple[_View, ast.AnswerMessage] | None:
-        """The `<answer-message>` `view` takes, and the document printing
-        it."""
+        """The document printing the `<answer-message>` `view` takes, and
+        the rule."""
         if view.answers:
             return view, view.answers[0]
         for base in view.entry.spec.bases:

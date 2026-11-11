@@ -61,6 +61,9 @@ Reading the results:
   document: RFC 7155 requires `Acct-Application-Id` and RFC 6733 does not.
 - A member the document added after the release the library's docstring names
   is correct for that release.
+- A known hole is checked on the fields its document states. One with no
+  `(vendor-id, code)` is reported as `unchecked`, which counts as a finding:
+  it marks a gap in the corpus, not a defect in the library.
 - `--ignore-extras` reads only the checked documents. Run `--all
   --ignore-extras` to see the extras no document in the corpus mentions.
 

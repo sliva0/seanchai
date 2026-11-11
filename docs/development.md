@@ -130,8 +130,7 @@ or `holes.toml`, which are edited by hand.
    ([corrections.md](corrections.md#the-record-of-known-holes)).
 5. If the document cites others across releases, add the `corpus.toml` entry
    its references clause needs, with `citing_version` and evidence
-   ([consumers.md](consumers.md#resolution-across-releases)), and add the
-   pair to the citation pairs in `tests/test_model.py`.
+   ([consumers.md](consumers.md#resolution-across-releases)).
 6. Review the export diff and run
    `uv run pytest tests/test_export.py --update-export-pin`.
 7. Run `uv run pytest`. Update the linter pins in `tests/test_linter.py` only

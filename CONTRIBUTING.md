@@ -11,6 +11,7 @@ runs on 3.14 (`.python-version`).
 Run what CI runs, in the order `.github/workflows/ci.yml` runs it:
 
 ```sh
+uv sync --locked
 uv run pytest -m "not sources"
 uv run --locked --isolated --python 3.12 pytest -m "not sources"
 uv run ruff check .
