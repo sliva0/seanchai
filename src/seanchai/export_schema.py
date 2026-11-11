@@ -213,7 +213,8 @@ class Correction(_Model):
 class Member(_Model):
     """A member of a rule, at its `line`. `qualifier` is as printed (`1*`,
     `*2`, or empty); `min` and `max` are RFC 6733 clause 3.2's bounds, `max`
-    null for none. A `struck` member is a commented-out line keeping its `;
+    null for none. A `strikethrough` member is one the document prints struck
+    through and the rule keeps. A `struck` member is a commented-out line keeping its `;
     strikethrough`, as the document strikes it, and no member of the rule the
     corpus reads."""
 
@@ -223,6 +224,7 @@ class Member(_Model):
     min: int
     max: int | None
     bold: bool = False
+    strikethrough: bool = False
     struck: bool = False
     line: int
 

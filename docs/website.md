@@ -126,7 +126,8 @@ and in its raw mirror alike, each describing its own file's lines. Every
 - Message, Answer Message, Grouped AVP, Reprinted AVP: `rule`, with the
   `::=` line and `members`. A member has `name`, `presence` (`fixed`,
   `required`, `optional`), `qualifier` as printed, `min` and `max` by RFC 6733
-  clause 3.2 (`max` null for no bound), `bold`, and `struck` for a line the
+  clause 3.2 (`max` null for no bound), `bold`, `strikethrough` for a member
+  printed struck through and kept, and `struck` for a line the
   extractor comments out with its `; strikethrough`, which is no member of
   the rule the corpus reads. A Message has `abbreviation` and `command`:
   `code`, `request`, `flags`, `header_application_id`, the effective

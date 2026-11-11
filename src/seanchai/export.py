@@ -422,6 +422,7 @@ def _member(
         min=least,
         max=most,
         bold=rule.bold,
+        strikethrough=rule.strikethrough and not struck,
         struck=struck,
         line=index,
     )
@@ -582,7 +583,7 @@ def _blocks(
             fields["columns"] = tuple(column.value for column in section.columns)
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
             fields["rows"] = _table_rows(placed, index, section)
-            spans += _column_spans(spec, placement, abbreviations)
+            spans += _column_spans(placed.lines, spec, placement, abbreviations)
         if isinstance(section, ast.Registry):
             fields["allocations"], fields["reservations"], registry_spans = _registry(
                 placed, index, section
@@ -678,15 +679,17 @@ def _message_spans(
     """Where a Message block names its command: its `; Name:` name and
     abbreviation, and its rule's head."""
     name_line, value = placement.directives["Name"]
-    start = len("; Name: ")
+    # The value is found on its line: any run of spaces may precede it.
+    start = placed.lines[name_line - 1].index(value)
+    head = placed.heads[index]
     places = (
-        (name_line - 1, start, section.name),
+        (name_line - 1, start + value.index(section.name), section.name),
         (
             name_line - 1,
             start + value.rindex(section.abbreviation),
             section.abbreviation,
         ),
-        (placed.heads[index], 1, section.name),
+        (head, placed.lines[head].index(section.name), section.name),
     )
     return [
         CommandSpan(
@@ -704,6 +707,7 @@ def _message_spans(
 
 
 def _column_spans(
+    lines: list[str],
     spec: ast.Specification,
     placement: parser.Placement,
     abbreviations: dict[str, int],
@@ -711,7 +715,7 @@ def _column_spans(
     """Where a table's `; Columns:` names a command of the file, as TS
     32.299's ACR to CCA columns do."""
     line, value = placement.directives["Columns"]
-    start = len("; Columns: ")
+    start = lines[line - 1].index(value)
     spans = []
     for match in re.finditer(r"\S+", value):
         found = abbreviations.get(match[0])

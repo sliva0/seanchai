@@ -1052,3 +1052,38 @@ def test_a_backup_already_there_is_not_overwritten(tmp_path):
 
     assert _tree(output) == before
     assert (backup / "index.json").read_text("utf-8") == "earlier"
+
+
+def test_a_name_set_off_by_spaces_is_spanned_and_a_kept_struck_member_is_said(
+    tmp_path,
+):
+    """A hand-written corpus may space a directive's value out, and print a
+    member struck through without commenting it out."""
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    text = (_CORPUS_DIR / "rfc" / "rfc4004.dad").read_text("utf-8")
+    name = "; Name: AA-Mobile-Node-Request, AMR"
+    member = (
+        "    { Session-Id }" if "    { Session-Id }" in text else "    < Session-Id >"
+    )
+    assert name in text and member in text
+    text = text.replace(name, name.replace("Name: ", "Name:    "), 1)
+    text = text.replace(member, f"{member} ; strikethrough", 1)
+    (corpus / "rfc4004.dad").write_text(text, "utf-8")
+
+    export_corpus(Corpus.load([corpus]), tmp_path / "out")
+
+    doc = json.loads((tmp_path / "out/documents/rfc4004.json").read_text("utf-8"))
+    lines = [
+        "".join(token["text"] for token in line["tokens"]) for line in doc["lines"]
+    ]
+    block = next(b for b in doc["blocks"] if b.get("abbreviation") == "AMR")
+    assert sorted(
+        lines[span["line"]][span["start"] : span["end"]] for span in block["commands"]
+    ) == ["AA-Mobile-Node-Request", "AA-Mobile-Node-Request", "AMR"]
+    first = block["rule"]["members"][0]
+    assert (first["name"], first.get("strikethrough"), first.get("struck")) == (
+        "Session-Id",
+        True,
+        None,
+    )
