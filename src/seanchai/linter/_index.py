@@ -26,7 +26,8 @@ class _Index:
     reused_values: list[tuple[ast.ValueTable, ast.ValueRow]] = field(
         default_factory=list
     )
-    reused: dict[str, str] = field(default_factory=dict)  # AVP name -> origin
+    # AVP name -> origin, the first the file gives: the model reads the same.
+    reused: dict[str, str] = field(default_factory=dict)
     # Names a re-used table cites from this file itself. TS 29.212's Gxx, S9,
     # Sd and St tables list Gx's AVPs "from" TS 29.212: those are this file's
     # own definitions, so no rule treats them as belonging elsewhere.
@@ -93,7 +94,7 @@ def _index(spec: ast.Specification) -> _Index:
                 if row.origin == own:
                     index.self_cited.append(row.name)
                 else:
-                    index.reused[row.name] = row.origin
+                    index.reused.setdefault(row.name, row.origin)
                     if row.code is not None or row.data_type is not None:
                         index.reused_cells.append((section, row))
     return index

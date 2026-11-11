@@ -283,7 +283,7 @@ def _value_columns(
     header = [
         _COLUMN_NOTE_RE.sub("", cell).strip().casefold() for cell in table.rows[0].cells
     ]
-    if header[0] not in labels or len(header) < 2:
+    if len(header) < 2 or header[0] not in labels:
         return None
     # The first label other than the number's: a merged cell repeats.
     name = next((i for i, label in enumerate(header) if label in names), None)
