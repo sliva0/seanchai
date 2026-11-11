@@ -16,7 +16,6 @@ import pytest
 _SCRIPT = (
     Path(__file__).parent.parent / "integrations" / "python_diameter" / "validate.py"
 )
-_GENERATOR = _SCRIPT.with_name("generate.py")
 
 _FIRST = """\
 ; Specification: 3GPP TS 29.901
@@ -194,9 +193,23 @@ def books(tmp_path_factory) -> Path:
     return root
 
 
-def _validate(*arguments, cwd: Path | None = None):
+@pytest.fixture(scope="module")
+def claims(tmp_path_factory) -> Path:
+    root = tmp_path_factory.mktemp("claims")
+    _write(
+        root,
+        {
+            "both.txt": "# what it claims\nTS29.901  # first\n\n29.902\n",
+            "first.txt": "TS29.901\n",
+            "unknown.txt": "TS29.999\n",
+        },
+    )
+    return root
+
+
+def _validate(*arguments, cwd: Path | None = None, script: Path = _SCRIPT):
     return subprocess.run(
-        [sys.executable, str(_SCRIPT), *map(str, arguments)],
+        [sys.executable, str(script), *map(str, arguments)],
         capture_output=True,
         text=True,
         check=False,
@@ -204,88 +217,82 @@ def _validate(*arguments, cwd: Path | None = None):
     )
 
 
-@pytest.fixture
-def fake(checkout, books):
-    def run(*arguments):
-        return _validate("--library", checkout, "--corpus", books, *arguments)
+_ONE = "\n8 disagreements across 1 commands and 6 TS29.901-defined AVPs\n"
+_REPORTED = [_MISSING, _REQUIRED, _OVERRIDE, _EXTRA_BETA, _EXTRA_STRAY, _ABSENT]
+_REPORTED += [_TYPE, _FLAG]
+_DEEP = [_GROUPED_MISSING, _GROUPED_EXTRA, _NO_CLASS]
 
-    return run
-
-
-def test_one_reference_reports_as_it_always_has(fake):
-    result = fake("TS29.901")
-
-    assert result.returncode == 1, result.stderr
-    for line in (_MISSING, _REQUIRED, _EXTRA_BETA, _EXTRA_STRAY, _ABSENT, _TYPE, _FLAG):
-        assert line in result.stdout
-    assert result.stdout.endswith(
-        "\n8 disagreements across 1 commands and 6 TS29.901-defined AVPs\n"
-    )
-    assert "== " not in result.stdout
-    assert "reference" not in result.stdout
-
-
-def test_an_explicit_m_flag_is_held_against_the_reading(fake):
-    assert _OVERRIDE in fake("TS29.901").stdout
-
-
-def test_the_bare_number_names_the_document(fake):
-    assert fake("29.901").stdout == fake("TS29.901").stdout
-
-
-def test_a_reference_the_corpus_lacks_is_an_error(fake):
-    result = fake("TS29.999")
-
-    assert result.returncode == 2
-    assert "TS29.999" in result.stderr
-
-
-@pytest.mark.parametrize("given", ["checkout", "src"])
-def test_library_takes_a_checkout_or_its_src(checkout, books, given):
-    path = checkout if given == "checkout" else checkout / "src"
-
-    result = _validate("--library", path, "--corpus", books, "TS29.901")
-
-    first = result.stdout.splitlines()[0]
-    assert first == f"library: {checkout / 'src' / 'diameter' / '__init__.py'}"
-    assert _EXTRA_STRAY in result.stdout
+# (arguments, exit status, lines reported, lines not reported, on stderr).
+_CASES = [
+    (["TS29.901"], 1, [*_REPORTED, _ONE], ["== ", "reference", *_DEEP], None),
+    (["29.901"], 1, [*_REPORTED, _ONE], [], None),
+    (["TS29.999"], 2, [], [], "TS29.999"),
+    (["--all", "TS29.901"], 2, [], [], None),
+    ([], 2, [], [], None),
+    (["--all", "--summary-only"], 1, ["total"], [_EXTRA_STRAY], None),
+    # An extra a checked document mentions is hidden; one none does stays.
+    (
+        ["--ignore-extras", "TS29.901", "TS29.902"],
+        1,
+        [_EXTRA_STRAY],
+        [_EXTRA_BETA],
+        None,
+    ),
+    (["--ignore-extras", "TS29.901"], 1, [_EXTRA_BETA], [], "hides nothing"),
+    (
+        ["--claimed", "{claims}/both.txt"],
+        1,
+        ["== TS29.902", _EXTRA_STRAY],
+        [_EXTRA_BETA],
+        None,
+    ),
+    (
+        ["--claimed", "{claims}/both.txt", "TS29.901"],
+        1,
+        ["TS29.901-defined"],
+        [_EXTRA_BETA],
+        None,
+    ),
+    (["--claimed", "{claims}/first.txt"], 1, [_EXTRA_BETA], [], None),
+    (["--claimed", "{claims}/unknown.txt"], 2, [], [], None),
+    (["--claimed", "{claims}/absent.txt"], 2, [], [], None),
+    (["--enumerated-as-integer", "TS29.901"], 1, [_FLAG], [_TYPE], None),
+    (["--no-flags", "TS29.901"], 1, [_TYPE], [_FLAG, _OVERRIDE], None),
+    (["--grouped", "TS29.901"], 1, _DEEP, [], None),
+]
 
 
-def test_library_runs_from_another_directory(checkout, books, tmp_path):
-    result = _validate(
-        "--library", checkout, "--corpus", books, "TS29.901", cwd=tmp_path
-    )
+@pytest.mark.parametrize(
+    ("arguments", "status", "reported", "unreported", "stderr"),
+    _CASES,
+    ids=[" ".join(case[0]) or "none" for case in _CASES],
+)
+def test_each_option_reports_or_hides_its_findings(
+    checkout, books, claims, arguments, status, reported, unreported, stderr
+):
+    arguments = [each.format(claims=claims) for each in arguments]
 
-    assert result.returncode == 1, result.stderr
-    assert str(checkout) in result.stdout.splitlines()[0]
+    result = _validate("--library", checkout, "--corpus", books, *arguments)
 
-
-def test_library_leaves_no_bytecode_in_the_checkout(checkout, books):
-    _validate("--library", checkout, "--corpus", books, "TS29.901")
-
-    assert not list(checkout.rglob("__pycache__"))
-
-
-def test_library_refuses_a_directory_holding_no_library(books, tmp_path):
-    result = _validate("--library", tmp_path, "--corpus", books, "TS29.901")
-
-    assert result.returncode == 2
-    assert "holds neither" in result.stderr
+    assert result.returncode == status, result.stdout + result.stderr
+    assert not [line for line in reported if line not in result.stdout]
+    assert not [line for line in unreported if line in result.stdout]
+    if stderr:
+        assert stderr in result.stderr
 
 
-def test_without_library_the_installed_one_answers(books):
-    result = _validate("--corpus", books, "TS29.901")
-
-    assert "site-packages" in result.stdout.splitlines()[0]
-
-
-def test_several_references_get_headings_a_summary_and_a_total(fake):
-    result = fake("TS29.901", "TS29.902")
+def test_several_references_get_headings_and_a_summary_that_adds_up(checkout, books):
+    result = _validate("--library", checkout, "--corpus", books, "--all")
 
     assert result.returncode == 1
+    assert (
+        result.stdout
+        == _validate(
+            "--library", checkout, "--corpus", books, "TS29.901", "TS29.902"
+        ).stdout
+    )
     lines = result.stdout.splitlines()
-    assert "== TS29.901" in lines
-    assert "== TS29.902" in lines
+    assert {"== TS29.901", "== TS29.902"} <= set(lines)
     rows = {line.split()[0]: line.split() for line in lines[-3:]}
     assert set(rows) == {"TS29.901", "TS29.902", "total"}
     heading = lines[-4].split()
@@ -296,109 +303,37 @@ def test_several_references_get_headings_a_summary_and_a_total(fake):
         )
 
 
-def test_all_is_every_document_named(fake):
-    assert fake("--all").stdout == fake("TS29.901", "TS29.902").stdout
+@pytest.mark.parametrize("given", ["checkout", "src"])
+def test_library_imports_a_checkout_or_its_src_from_anywhere(
+    checkout, books, tmp_path, given
+):
+    path = checkout if given == "checkout" else checkout / "src"
 
+    result = _validate("--library", path, "--corpus", books, "TS29.901", cwd=tmp_path)
 
-def test_all_and_named_references_refuse_each_other(fake):
-    assert fake("--all", "TS29.901").returncode == 2
-
-
-def test_no_reference_is_refused(fake):
-    assert fake().returncode == 2
-
-
-def test_summary_only_prints_no_findings(fake):
-    result = fake("--all", "--summary-only")
-
-    assert _EXTRA_STRAY not in result.stdout
-    assert "total" in result.stdout
-    assert result.returncode == 1
-
-
-def test_ignore_extras_keeps_what_no_checked_document_mentions(fake):
-    plain = fake("TS29.901", "TS29.902").stdout
-    filtered = fake("--ignore-extras", "TS29.901", "TS29.902").stdout
-
-    assert _EXTRA_BETA in plain
-    assert _EXTRA_BETA not in filtered
-    assert _EXTRA_STRAY in filtered
-
-
-def test_ignore_extras_over_one_document_says_it_hides_nothing(fake):
-    result = fake("--ignore-extras", "TS29.901")
-
-    assert _EXTRA_BETA in result.stdout
-    assert "hides nothing" in result.stderr
-
-
-def test_claimed_checks_the_listed_set_and_suppresses_over_it(fake, tmp_path):
-    claimed = tmp_path / "claimed.txt"
-    claimed.write_text("# what it claims\nTS29.901  # first\n\n29.902\n", "utf-8")
-
-    result = fake("--claimed", claimed)
-
-    assert "== TS29.902" in result.stdout
-    assert _EXTRA_BETA not in result.stdout
+    assert result.returncode == 1, result.stderr
+    first = result.stdout.splitlines()[0]
+    assert first == f"library: {checkout / 'src' / 'diameter' / '__init__.py'}"
     assert _EXTRA_STRAY in result.stdout
+    assert not list(checkout.rglob("__pycache__"))
 
 
-def test_claimed_with_a_reference_checks_it_alone_over_the_set(fake, tmp_path):
-    claimed = tmp_path / "claimed.txt"
-    claimed.write_text("TS29.901\nTS29.902\n", "utf-8")
+def test_library_refuses_a_directory_holding_none_and_defaults_to_the_installed(
+    books, tmp_path
+):
+    refused = _validate("--library", tmp_path, "--corpus", books, "TS29.901")
+    installed = _validate("--corpus", books, "TS29.901")
 
-    result = fake("--claimed", claimed, "TS29.901")
-
-    assert "TS29.901-defined" in result.stdout
-    assert _EXTRA_BETA not in result.stdout
-
-
-def test_claimed_narrower_than_the_checked_document_keeps_the_extra(fake, tmp_path):
-    claimed = tmp_path / "claimed.txt"
-    claimed.write_text("TS29.901\n", "utf-8")
-
-    assert _EXTRA_BETA in fake("--claimed", claimed).stdout
-
-
-def test_claimed_naming_a_document_the_corpus_lacks_is_an_error(fake, tmp_path):
-    claimed = tmp_path / "claimed.txt"
-    claimed.write_text("TS29.999\n", "utf-8")
-
-    assert fake("--claimed", claimed).returncode == 2
-
-
-def test_claimed_file_missing_is_an_error(fake, tmp_path):
-    assert fake("--claimed", tmp_path / "absent.txt").returncode == 2
-
-
-def test_enumerated_as_integer_accepts_the_class_the_library_holds_it_in(fake):
-    result = fake("--enumerated-as-integer", "TS29.901")
-
-    assert _TYPE not in result.stdout
-    assert _FLAG in result.stdout
-
-
-def test_no_flags_drops_both_m_bit_comparisons(fake):
-    result = fake("--no-flags", "TS29.901")
-
-    assert _FLAG not in result.stdout
-    assert _OVERRIDE not in result.stdout
-    assert _TYPE in result.stdout
-
-
-def test_grouped_holds_classes_against_bodies_only_when_asked(fake):
-    plain = fake("TS29.901").stdout
-    deep = fake("--grouped", "TS29.901").stdout
-
-    for line in (_GROUPED_MISSING, _GROUPED_EXTRA, _NO_CLASS):
-        assert line not in plain
-        assert line in deep
+    assert refused.returncode == 2
+    assert "holds neither" in refused.stderr
+    assert "site-packages" in installed.stdout.splitlines()[0]
 
 
 def test_a_clean_document_exits_zero(checkout, tmp_path):
-    (tmp_path / "clean.dad").write_text(
-        textwrap.dedent(
-            """\
+    _write(
+        tmp_path,
+        {
+            "clean.dad": """\
             ; Specification: 3GPP TS 29.903
             ; Version: 19.0.0
             ; Vendor-ID: 10415
@@ -409,8 +344,7 @@ def test_a_clean_document_exits_zero(checkout, tmp_path):
             ; Columns: Name    Code  Type         Must  May  S.not  M.not
                        Shared  1     OctetString  V     -    -      M
             """
-        ),
-        "utf-8",
+        },
     )
 
     result = _validate("--library", checkout, "--corpus", tmp_path, "TS29.903")
@@ -464,100 +398,69 @@ _NAME_BETA = "Doc-Beta (code 4): the library names it 'Beta'"
 _NAME_ALPHA = "Doc-Alpha (code 2): the library names it 'Alpha'"
 
 
-@pytest.fixture
-def renamed(checkout, tmp_path):
-    """The document's own spellings throughout, leaving only name findings; the
-    script runs from a copy so its default dictionary is whatever the test put
+_NAMES = [_NAME_SHARED, _NAME_INNER, _NAME_BETA, _NAME_ALPHA]
+_HIDDEN = "hidden: 2 names following Wireshark's dictionary (--names shows)\n"
+
+
+@pytest.mark.parametrize(
+    ("default", "arguments", "status", "reported", "tail"),
+    [
+        (None, ["--wireshark", "{wireshark}"], 1, [_NAME_BETA, _NAME_ALPHA], _HIDDEN),
+        (None, ["--wireshark", "{wireshark}", "--names"], 1, _NAMES, "AVPs\n"),
+        (None, [], 1, _NAMES, "AVPs\n"),
+        # The repository's `specifications/wireshark`, beside the script.
+        ("dictionary", [], 1, [_NAME_BETA, _NAME_ALPHA], _HIDDEN),
+        ("empty", [], 1, _NAMES, "AVPs\n"),
+        (None, ["--wireshark", "{absent}"], 2, [], ""),
+    ],
+    ids=["named", "names", "none", "default", "empty-default", "unreadable"],
+)
+def test_a_name_that_is_wiresharks_is_counted_not_reported(
+    checkout, tmp_path, default, arguments, status, reported, tail
+):
+    """The document's own spellings throughout, leaving only name findings.
+    Wireshark takes the library's name for Shared, the library's with other
+    case and separators for Inner, neither's for Beta, and has no Alpha. The
+    script runs from a copy, so its default dictionary is what the test puts
     beside it."""
-    root = tmp_path / "repository"
-    script = root / "integrations" / "python_diameter" / "validate.py"
+    script = tmp_path / "repository" / "integrations" / "python_diameter" / _SCRIPT.name
     script.parent.mkdir(parents=True)
     script.write_text(_SCRIPT.read_text(encoding="utf-8"), encoding="utf-8")
     _write(tmp_path / "corpus", {"renamed.dad": _RENAMED})
     _write(tmp_path / "wireshark", {"dictionary.xml": _WIRESHARK})
+    beside = tmp_path / "repository" / "specifications" / "wireshark"
+    if default == "dictionary":
+        _write(beside, {"dictionary.xml": _WIRESHARK})
+    elif default == "empty":
+        beside.mkdir(parents=True)
+    places = {"wireshark": tmp_path / "wireshark", "absent": tmp_path / "absent"}
 
-    def run(*arguments):
-        return subprocess.run(
-            [
-                sys.executable,
-                str(script),
-                "--library",
-                str(checkout),
-                "--corpus",
-                str(tmp_path / "corpus"),
-                "--enumerated-as-integer",
-                "--no-flags",
-                *map(str, arguments),
-                "TS29.904",
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-
-    return run
-
-
-def test_a_name_that_is_wiresharks_is_counted_not_reported(renamed, tmp_path):
-    result = renamed("--wireshark", tmp_path / "wireshark")
-
-    assert result.returncode == 1, result.stderr
-    assert _NAME_SHARED not in result.stdout
-    assert _NAME_INNER not in result.stdout
-    assert _NAME_BETA in result.stdout
-    assert _NAME_ALPHA in result.stdout
-    assert result.stdout.endswith(
-        "\n2 disagreements across 0 commands and 4 TS29.904-defined AVPs\n"
-        "hidden: 2 names following Wireshark's dictionary (--names shows)\n"
+    result = _validate(
+        "--library",
+        checkout,
+        "--corpus",
+        tmp_path / "corpus",
+        "--enumerated-as-integer",
+        "--no-flags",
+        *(each.format(**places) for each in arguments),
+        "TS29.904",
+        script=script,
     )
 
-
-def test_names_reports_them_all(renamed, tmp_path):
-    result = renamed("--wireshark", tmp_path / "wireshark", "--names")
-
-    for line in (_NAME_SHARED, _NAME_INNER, _NAME_BETA, _NAME_ALPHA):
-        assert line in result.stdout
-    assert "\n4 disagreements across" in result.stdout
-    assert "hidden:" not in result.stdout
-
-
-def test_without_a_dictionary_every_name_is_reported(renamed):
-    result = renamed()
-
-    for line in (_NAME_SHARED, _NAME_INNER, _NAME_BETA, _NAME_ALPHA):
-        assert line in result.stdout
-    assert "hidden:" not in result.stdout
+    assert result.returncode == status, result.stdout + result.stderr
+    if status == 2:
+        assert "cannot read the Wireshark dictionary" in result.stderr
+        return
+    assert [line for line in _NAMES if line in result.stdout] == reported
+    assert result.stdout.endswith(tail)
+    disagreements = f"\n{len(reported)} disagreements across 0 commands and 4"
+    assert disagreements in result.stdout
 
 
-def test_the_dictionary_defaults_to_the_repositorys_specifications(renamed, tmp_path):
-    default = tmp_path / "repository" / "specifications" / "wireshark"
-    _write(default, {"dictionary.xml": _WIRESHARK})
-
-    result = renamed()
-
-    assert _NAME_SHARED not in result.stdout
-    assert "hidden: 2 names" in result.stdout
-
-
-def test_an_empty_default_dictionary_directory_is_no_dictionary(renamed, tmp_path):
-    (tmp_path / "repository" / "specifications" / "wireshark").mkdir(parents=True)
-
-    result = renamed()
-
-    assert result.returncode == 1, result.stderr
-    assert _NAME_SHARED in result.stdout
-
-
-def test_a_dictionary_named_but_unreadable_is_an_error(renamed, tmp_path):
-    result = renamed("--wireshark", tmp_path / "absent")
-
-    assert result.returncode == 2
-    assert "cannot read the Wireshark dictionary" in result.stderr
-
-
-def test_only_hidden_names_exit_zero(checkout, tmp_path):
+def test_hidden_names_alone_exit_zero_and_close_a_summary(checkout, tmp_path):
+    _write(tmp_path / "wireshark", {"dictionary.xml": _WIRESHARK})
     _write(
-        tmp_path / "corpus",
+        tmp_path / "only",
         {
             "only.dad": """\
             ; Specification: 3GPP TS 29.905
@@ -572,41 +475,28 @@ def test_only_hidden_names_exit_zero(checkout, tmp_path):
             """
         },
     )
-    _write(tmp_path / "wireshark", {"dictionary.xml": _WIRESHARK})
+    _write(tmp_path / "both", {"renamed.dad": _RENAMED, "first.dad": _FIRST})
+    wireshark = ["--wireshark", tmp_path / "wireshark"]
 
-    result = _validate(
+    alone = _validate(
+        "--library", checkout, "--corpus", tmp_path / "only", *wireshark, "TS29.905"
+    )
+    summary = _validate(
         "--library",
         checkout,
         "--corpus",
-        tmp_path / "corpus",
-        "--wireshark",
-        tmp_path / "wireshark",
-        "TS29.905",
-    )
-
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert "\n0 disagreements across" in result.stdout
-    assert result.stdout.endswith(
-        "hidden: 1 name following Wireshark's dictionary (--names shows)\n"
-    )
-
-
-def test_the_hidden_line_closes_a_summary_too(checkout, tmp_path):
-    _write(tmp_path / "corpus", {"renamed.dad": _RENAMED, "first.dad": _FIRST})
-    _write(tmp_path / "wireshark", {"dictionary.xml": _WIRESHARK})
-
-    result = _validate(
-        "--library",
-        checkout,
-        "--corpus",
-        tmp_path / "corpus",
-        "--wireshark",
-        tmp_path / "wireshark",
+        tmp_path / "both",
+        *wireshark,
         "--summary-only",
         "--all",
     )
 
-    lines = result.stdout.splitlines()
+    assert alone.returncode == 0, alone.stdout + alone.stderr
+    assert "\n0 disagreements across" in alone.stdout
+    assert alone.stdout.endswith(
+        "hidden: 1 name following Wireshark's dictionary (--names shows)\n"
+    )
+    lines = summary.stdout.splitlines()
     assert lines[-2].startswith("total")
     assert lines[-1].startswith("hidden: 2 names")
 
@@ -634,27 +524,3 @@ def test_the_claimed_list_is_in_the_corpus_and_the_real_library_loads():
         "TS29.329",
         "total",
     }
-
-
-def test_generate_reads_a_dictionary_entry_keyed_by_its_number(checkout):
-    """`2:` in the fake dictionary has no `AVP_*` constant; the generator names
-    such an entry by its number, or `Library.load` could not read the checkout."""
-    code = f"""
-        import importlib.util, sys
-        sys.path.insert(0, {str(checkout / "src")!r})
-        spec = importlib.util.spec_from_file_location("generate", {str(_GENERATOR)!r})
-        generate = importlib.util.module_from_spec(spec)
-        sys.modules[spec.name] = generate
-        spec.loader.exec_module(generate)
-        library = generate.Library.load()
-        print(library.constants[(10415, 1)], library.constants[(10415, 2)])
-        """
-    result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert result.returncode == 0, result.stderr
-    assert result.stdout == "AVP_TGPP_SHARED 2\n"

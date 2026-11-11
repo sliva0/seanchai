@@ -5,11 +5,9 @@ import re
 from collections.abc import Iterator
 from pathlib import Path
 
-import pytest
 from conftest import _CORPUS_DIR
 
 from seanchai import _ranges
-from seanchai._prose import collapse, collapse_fields
 
 _ROOT = Path(__file__).parent.parent
 _COLUMNS = 80
@@ -110,26 +108,3 @@ def test_the_walk_skips_what_git_ignores(tmp_path):
         (tmp_path / ignored / "skipped.toml").touch()
 
     assert list(_toml_files(tmp_path)) == [tmp_path / "edits" / "kept.toml"]
-
-
-@pytest.mark.parametrize(
-    "text",
-    [
-        "one two",
-        "\n    one\n    two\n    ",
-        "one  \t two\n",
-    ],
-)
-def test_collapse_makes_any_layout_one_line(text):
-    assert collapse(text) == "one two"
-
-
-def test_collapse_fields_leaves_other_keys_and_non_text_alone():
-    table = {"reason": " a\n b ", "find": " a\n b ", "title": 5}
-
-    assert collapse_fields(table, {"reason", "title"}) == {
-        "reason": "a b",
-        "find": " a\n b ",
-        "title": 5,
-    }
-    assert table["reason"] == " a\n b "

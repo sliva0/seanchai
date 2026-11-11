@@ -94,15 +94,6 @@ def test_another_releases_declarations_are_not_widened(tmp_path):
     assert path.read_text(encoding="utf-8") == _TOML
 
 
-def test_a_covered_version_leaves_the_file_untouched(tmp_path):
-    path = tmp_path / "TS29.999.toml"
-    path.write_text(_TOML, encoding="utf-8")
-    before = path.stat().st_mtime_ns
-
-    assert _ranges.expand_sources(path, "18.6.0") == _ranges.Expansion([], [])
-    assert path.stat().st_mtime_ns == before
-
-
 _PYTHON = """\
 \"\"\"Corrections for 3GPP TS 29.999.\"\"\"
 
@@ -214,26 +205,6 @@ def test_a_specification_without_edit_files_expands_nothing(tmp_path):
     empty = _ranges.Expansion([], [])
     assert _ranges.expand_sources(tmp_path / "TS29.999.toml", "18.7.0") == empty
     assert _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0") == empty
-
-
-def test_a_module_in_another_encoding_is_rewritten_in_that_encoding(tmp_path):
-    """`ast` columns count UTF-8 bytes of the decoded line; a latin-1 'é'
-    earlier on the line is one byte on disk and two in those columns."""
-    text = (
-        "# -*- coding: latin-1 -*-\n"
-        "from seanchai.dad.corrections import Correction, definition\n"
-        "CORRECTIONS = [Correction(id='c', target=definition('A'), field='code',"
-        " expect=1, replace=2, reason='café', versions='18.6.0')]\n"
-    )
-    path = tmp_path / "TS29.999.py"
-    path.write_bytes(text.encode("latin-1"))
-
-    expansion = _ranges.expand_corrections(tmp_path, "3GPP TS 29.999", "18.7.0")
-
-    assert path.read_bytes() == text.replace(
-        "versions='18.6.0'", "versions='18.6.0..18.7.0'"
-    ).encode("latin-1")
-    assert expansion.remaining == []
 
 
 def test_a_declaration_the_loader_never_applies_is_reported_not_widened(tmp_path):

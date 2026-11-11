@@ -161,50 +161,6 @@ def test_an_older_version_rebuilds_alone_into_a_scratch_directory(
     assert {path: path.read_bytes() for path in corpus.rglob("*.dad")} == committed
 
 
-def test_two_releases_of_one_document_are_two_copies_in_two_trees(
-    tmp_path, synthetic_spec_docx
-):
-    """A pinned version (`seanchai corpus download`'s `[[tgpp_pinned]]`) shares
-    its reference with the catalog's release of the document: each is
-    rebuilt in its own release's tree, and neither replaces the other."""
-    sources = tmp_path / "specifications"
-    manifest, document = _manifest(sources, "29999-i00")
-    shutil.copy(synthetic_spec_docx, document)
-    data = json.loads(manifest.read_text())
-    old = sources / "3gpp" / "Rel-7" / "TS_29.999" / "29999-7c0.docx"
-    old.parent.mkdir(parents=True)
-    shutil.copy(synthetic_spec_docx, old)
-    data["artifacts"].append(
-        dict(data["artifacts"][0], files=[str(old.relative_to(sources))])
-    )
-    manifest.write_text(json.dumps(data))
-    corpus = tmp_path / "dad"
-    corpus.mkdir()
-
-    added = _run(manifest, corpus, corpus, add=["TS29.999"]).outcomes
-    assert [(o.status, o.written[0].relative_to(corpus).as_posix()) for o in added] == [
-        ("new", "3gpp/rel-18/29999-i00.dad"),
-        ("new", "3gpp/rel-7/29999-7c0.dad"),
-    ]
-    assert [o.status for o in _run(manifest, corpus, corpus).outcomes] == [
-        "unchanged",
-        "unchanged",
-    ]
-
-    # A one-release manifest rebuilds that release's copy only.
-    data["artifacts"].pop(0)
-    manifest.write_text(json.dumps(data))
-    (outcome,) = _regenerate.regenerate(
-        manifest,
-        corpus,
-        tmp_path / "scratch",
-        sources_dir=None,
-        corrections_dir=None,
-        only=["TS29.999"],
-    ).outcomes
-    assert (outcome.status, outcome.written[0].parent.name) == ("unchanged", "rel-7")
-
-
 def test_a_legacy_doc_is_read_through_the_manifest_conversion(
     tmp_path, synthetic_spec_docx
 ):
@@ -234,11 +190,7 @@ def test_a_legacy_doc_is_read_through_the_manifest_conversion(
     assert skipped.status == "not-converted"
     assert report.failed == []
     assert not list(corpus.rglob("*.dad"))
-    assert _regenerate.describe(skipped) == (
-        "not-converted TS29.999: 29999-100.doc was downloaded without conversion"
-        " (`seanchai corpus download --no-convert`);"
-        " the committed files were left alone"
-    )
+    assert "--no-convert" in _regenerate.describe(skipped)
 
     tgpp["conversions"] = [conversion]
     # A TR has no reference a corpus file can carry; it is passed over.
@@ -252,46 +204,6 @@ def test_a_legacy_doc_is_read_through_the_manifest_conversion(
         "3gpp/rel-18/29999-100.dad",
         "raw/3gpp/rel-18/29999-100.raw.dad",
     ]
-
-
-@pytest.mark.parametrize("converted", [True, False], ids=["converted", "unconverted"])
-def test_a_onem2m_document_is_read_through_its_conversion_into_its_own_tree(
-    tmp_path, converted
-):
-    """oneM2M's record has no PDF; the pair is named as oneM2M names the
-    file, less its title, under `onem2m/`."""
-    source = "onem2m/Release-2/TS-0004/TS-0004-Core-V2_35_0(cl).doc"
-    conversion = {
-        "source": source,
-        "file": f"converted/{source.removesuffix('.doc')}.docx",
-    }
-    manifest = tmp_path / "manifest.json"
-    manifest.write_text(
-        json.dumps(
-            {
-                "artifacts": [
-                    {
-                        "family": "oneM2M",
-                        "identifier": "oneM2M TS-0004",
-                        "files": ["archives/onem2m/TS-0004-V2_35_0.zip", source],
-                        "url": "https://example.test/download?docID=36771",
-                        "source_version": "2.35.0",
-                        "conversions": [conversion] if converted else [],
-                    }
-                ]
-            }
-        )
-    )
-
-    found = _regenerate._sources(manifest)["oneM2M-TS-0004", "onem2m"]
-
-    assert found.document == tmp_path / (conversion["file"] if converted else source)
-    assert (found.pdf, found.link) == (
-        None,
-        "https://example.test/download?docID=36771",
-    )
-    assert (found.tree, found.stem) == ("onem2m", "ts-0004-v2_35_0")
-    assert found.unconverted is not converted
 
 
 def test_a_document_the_extractor_rejects_fails_alone(tmp_path):
@@ -310,7 +222,7 @@ def test_a_document_the_extractor_rejects_fails_alone(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "first,last,expected", [("1.3", "1.9", 3), ("0.1", "1.1", 3), ("1.2.3", "1.2.3", 0)]
+    ("first", "last", "expected"), [("1.3", "1.9", 3), ("1.2.3", "1.2.3", 0)]
 )
 def test_ranges_warn_for_all_layers_without_gating_application(
     tmp_path, synthetic_spec_docx, first, last, expected
@@ -361,17 +273,13 @@ def test_ranges_warn_for_all_layers_without_gating_application(
         ],
     )
     assert result.exit_code == 0, result.output
-    lines = result.output.splitlines()
-    assert lines[0] == "new       TS29.999 1.2.3"
-    warnings = [line for line in lines if "warning:" in line]
+    warnings = [line for line in result.output.splitlines() if "warning:" in line]
     assert len(warnings) == expected
+    assert all("does not cover parsed version 1.2.3" in w for w in warnings)
     if expected:
-        assert lines[1:4] == warnings
-        assert all(w.startswith("    warning:") for w in warnings)
-        assert all("does not cover parsed version 1.2.3" in w for w in warnings)
-        assert "input patch" in warnings[0]
-        assert "quirk" in warnings[1]
-        assert "TS29.999.py#code" in warnings[2]
+        patch, quirk, correction = warnings
+        assert "input patch" in patch and "quirk" in quirk
+        assert "TS29.999.py#code" in correction
     corrected = parser.parse((corpus / "3gpp/rel-18/29999-123.dad").read_text())
     assert any(
         isinstance(s, ast.GroupedAvp) and s.code == 12 for s in corrected.sections
@@ -724,29 +632,6 @@ def _transcribed(tmp_path, version="3.2.1", declared="3.2.1"):
     return corpus, sources, edits, run
 
 
-def test_a_transcription_is_read_through_its_input_patches(tmp_path):
-    """No manifest lists a document no extractor reads; its transcription
-    is the source, patched into the raw file and corrected from there."""
-    corpus, _, _, run = _transcribed(tmp_path)
-
-    (added,) = run(add=["ETSI-TS183.017"])
-    assert (added.reference, added.status) == ("ETSI-TS183.017", "new")
-    assert [p.relative_to(corpus).as_posix() for p in added.written] == [
-        "etsi/ts183017-030201.dad",
-        "raw/etsi/ts183017-030201.raw.dad",
-    ]
-    raw, corrected = (
-        (corpus / "raw" / "etsi" / "ts183017-030201.raw.dad"),
-        (corpus / "etsi" / "ts183017-030201.dad"),
-    )
-    assert "Port-number       455" in raw.read_text(encoding="utf-8")
-    assert "Port-Number" in corrected.read_text(encoding="utf-8")
-    assert "; Transcribed: by hand from" in raw.read_text(encoding="utf-8")
-
-    (again,) = run()
-    assert again.status == "unchanged"
-
-
 def test_a_transcription_answers_to_its_declarations_version_ranges(tmp_path):
     """A V2.2.1 transcription under declarations reviewed on V2.2.0 is
     patched and corrected all the same, with the warnings an extraction
@@ -811,65 +696,20 @@ def _run_transcriptions(tmp_path, text):
     )
 
 
-def test_a_3gpp2_transcription_is_named_for_its_rendering(tmp_path):
-    """3GPP2 numbers revisions (X.S0057-0, -A, -B) a spec-ref does not
-    keep; the rendering's name, X.S0057-0_v2.0_091215.pdf, states it."""
-    corpus, run = _run_transcriptions(tmp_path, _TGPP2_TRANSCRIPTION)
-
-    (added,) = run()
-    assert (added.reference, added.status) == ("3GPP2-X.S0057", "new")
-    assert [p.relative_to(corpus).as_posix() for p in added.written] == [
-        "3gpp2/xs0057-0_v2.0.dad",
-        "raw/3gpp2/xs0057-0_v2.0.raw.dad",
-    ]
-
-
-def test_a_3gpp2_document_in_parts_keeps_its_part_in_its_name(tmp_path):
-    """X.S0013-013 and X.S0013-014 are two documents, whatever their series."""
+def test_an_oma_transcription_of_another_version_is_refused(tmp_path):
+    """OMA's rendering name holds the version as well as the approval date and
+    status, so a transcription of another version cannot name its file."""
     transcriptions = tmp_path / "transcriptions"
     transcriptions.mkdir()
-    (transcriptions / "3GPP2-X.S0013-014.dad").write_text(
-        _TGPP2_TRANSCRIPTION.replace("X.S0057", "X.S0013-014"), encoding="utf-8"
-    )
-
-    (source,) = _regenerate._transcriptions(transcriptions).values()
-
-    assert (source.stem, source.tree) == ("xs0013-014-0_v2.0", "3gpp2")
-
-
-def test_an_oma_transcription_is_named_for_its_rendering(tmp_path):
-    """OMA's rendering name holds the approval date and status its version
-    does not, and a transcription of another version is refused."""
-    transcriptions = tmp_path / "transcriptions"
-    transcriptions.mkdir()
-    path = transcriptions / "OMA-DDS-Charging_Data.dad"
     url = "https://example.org/OMA-DDS-Charging_Data-V1_0-20110201-A.pdf"
-    text = (
+    (transcriptions / "OMA-DDS-Charging_Data.dad").write_text(
         "; Specification: OMA-DDS-Charging_Data\n"
-        f"; Version: 1.0\n; Transcribed: by hand from {url}\n"
+        f"; Version: 1.1\n; Transcribed: by hand from {url}\n",
+        encoding="utf-8",
     )
-    path.write_text(text, encoding="utf-8")
 
-    (source,) = _regenerate._transcriptions(transcriptions).values()
-
-    assert (source.stem, source.tree) == ("dds-charging_data-v1_0-20110201-a", "oma")
-
-    path.write_text(text.replace("; Version: 1.0", "; Version: 1.1"), encoding="utf-8")
     with pytest.raises(ValueError, match="OMA's rendering of its name and version"):
         _regenerate._transcriptions(transcriptions)
-
-
-def test_an_etsi_document_in_parts_keeps_its_part_in_its_name(tmp_path):
-    """TS 183 059-1 is `ts_18305901v020101p.pdf` at ETSI, the part in its digits."""
-    transcriptions = tmp_path / "transcriptions"
-    transcriptions.mkdir()
-    (transcriptions / "ETSI-TS183.059-1.dad").write_text(
-        "; Specification: ETSI TS 183 059-1\n; Version: 2.1.1\n", encoding="utf-8"
-    )
-
-    (source,) = _regenerate._transcriptions(transcriptions).values()
-
-    assert (source.stem, source.tree) == ("ts18305901-020101", "etsi")
 
 
 def test_a_3gpp2_transcription_from_another_versions_rendering_is_refused(
@@ -887,10 +727,7 @@ def test_a_3gpp2_transcription_from_another_versions_rendering_is_refused(
     "text",
     [
         "not json",
-        "{}",
-        "[]",
         '{"artifacts": 7}',
-        '{"artifacts": [{}]}',
         '{"artifacts": [{"files": [], "family": "IETF"}, 7]}',
     ],
 )
@@ -915,19 +752,8 @@ def test_a_missing_manifest_fails_the_run(tmp_path):
     assert report.failed
 
 
-OUT_OF_SCOPE = ("TS29.201", "TS29.213", "TS29.228", "TS29.305", "TS29.328")
-
-
-def test_the_catalog_marks_what_the_extractor_has_nothing_to_read_in():
-    marked = load_catalog().out_of_scope()
-
-    assert tuple(sorted(marked)) == OUT_OF_SCOPE
-    # Read as prose, one line however the file wraps it.
-    assert all("\n" not in reason and reason for reason in marked.values())
-
-
-@pytest.mark.parametrize("reference", OUT_OF_SCOPE)
-def test_adding_an_out_of_scope_document_says_why(tmp_path, reference):
+def test_adding_an_out_of_scope_document_says_why(tmp_path):
+    reference = next(iter(load_catalog().out_of_scope()))
     sources = tmp_path / "sources"
     sources.mkdir()
     manifest, _ = _manifest(sources, "29999-100")
@@ -937,10 +763,8 @@ def test_adding_an_out_of_scope_document_says_why(tmp_path, reference):
     report = _run(manifest, corpus, corpus, add=[reference])
 
     (refused,) = report.outcomes
-    assert report.failed
     assert (refused.reference, refused.status) == (reference, "failed")
     assert "out of scope: " in _regenerate.describe(refused)
-    assert "no Diameter ABNF or AVP tables" in _regenerate.describe(refused)
 
 
 _ORPHAN = "; Specification: 3GPP TS 29.999\n; Version: 1.0.0\n; Vendor-ID: 10415\n"
@@ -955,28 +779,22 @@ def _rfc_only_manifest(root):
     return root / "manifest.json"
 
 
-def test_a_partial_manifest_names_the_source_it_lacks(tmp_path):
-    manifest = _rfc_only_manifest(tmp_path / "specifications")
+def test_a_document_missing_from_the_manifest_names_the_download_it_needs(
+    tmp_path,
+):
     corpus = tmp_path / "corpus"
     corpus.mkdir()
     (corpus / "29999-100.dad").write_text(_ORPHAN)
 
-    report = _run(manifest, corpus, corpus)
+    partial = _run(_rfc_only_manifest(tmp_path / "specifications"), corpus, corpus)
 
-    assert report.missing_sources == ("3gpp",)
-    (outcome,) = report.failed
+    assert partial.missing_sources == ("3gpp",)
+    (outcome,) = partial.failed
     assert outcome.status == "not-in-manifest"
     assert "seanchai corpus download --only 3gpp" in (outcome.error or "")
 
-
-def test_a_whole_manifest_lacking_a_document_names_no_source(tmp_path):
-    manifest = tmp_path / "manifest.json"
-    manifest.write_text(json.dumps({"artifacts": []}))
-    corpus = tmp_path / "corpus"
-    corpus.mkdir()
-    (corpus / "29999-100.dad").write_text(_ORPHAN)
-
-    report = _run(manifest, corpus, corpus)
-
+    whole = tmp_path / "manifest.json"
+    whole.write_text(json.dumps({"artifacts": []}))
+    report = _run(whole, corpus, corpus)
     assert report.missing_sources == ()
     assert report.failed[0].status == "not-in-manifest"

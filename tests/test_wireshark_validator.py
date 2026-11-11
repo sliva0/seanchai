@@ -197,53 +197,48 @@ def _rules_of(result: dict, severity: str = "error") -> set[str]:
 
 @pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
 @pytest.mark.parametrize("lua", LUAS)
-def test_well_formed_messages_draw_no_error(lua, rules, tmp_path):
-    uar, dwr = _validate(lua, rules, tmp_path, good_uar(), good_dwr())
+def test_the_core_judges_each_message_by_its_command_and_form(lua, rules, tmp_path):
+    truncated = good_dwr()[:-3]
+    overrun = bytearray(good_uar())
+    overrun[23] = 0xFF  # inside Session-Id's length, now past the message
+    copied = avp(264, b"bad host!") + avp(268, u32(2001))
+
+    uar, dwr, bad, answer, short, long, held, empty = _validate(
+        lua,
+        rules,
+        tmp_path,
+        good_uar(),
+        good_dwr(),
+        bad_uar(),
+        error_uaa(),
+        truncated,
+        bytes(overrun),
+        failed_uaa(copied),
+        failed_uaa(b""),
+    )
 
     assert uar["form"] == "command"
     assert uar["document"] in {"TS29.229", "3GPP2-X.S0013-006"}
-    assert _rules_of(uar) == set()
     assert dwr["document"] == "RFC6733"
-    assert _rules_of(dwr) == set()
-
-
-@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
-@pytest.mark.parametrize("lua", LUAS)
-def test_a_broken_request_draws_each_finding(lua, rules, tmp_path):
-    (uar,) = _validate(lua, rules, tmp_path, bad_uar())
-
-    assert _rules_of(uar) >= {
+    for clean in (uar, dwr, answer, held):
+        assert _rules_of(clean) == set(), clean
+    # With the E bit, the answer-message, not UAA's body.
+    assert answer["form"] == "answer-message"
+    assert _rules_of(answer, "warn") == _rules_of(held, "warn") == set()
+    assert _rules_of(bad) >= {
         "avp-missing",
         "avp-position",
         "flag-must",
         "diameter-identity",
     }
-    assert "enum-value" in _rules_of(uar, "warn")
-    missing = [text for _, rule, text in uar["findings"] if rule == "avp-missing"]
+    assert "enum-value" in _rules_of(bad, "warn")
+    missing = [text for _, rule, text in bad["findings"] if rule == "avp-missing"]
     assert any("Public-Identity" in text for text in missing)
-
-
-@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
-@pytest.mark.parametrize("lua", LUAS)
-def test_an_error_answer_is_held_to_the_answer_message(lua, rules, tmp_path):
-    (uaa,) = _validate(lua, rules, tmp_path, error_uaa())
-
-    assert uaa["form"] == "answer-message"
-    assert _rules_of(uaa) == set()
-    assert _rules_of(uaa, "warn") == set()
-
-
-@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
-@pytest.mark.parametrize("lua", LUAS)
-def test_malformed_octets_are_reported_not_raised(lua, rules, tmp_path):
-    truncated = good_dwr()[:-3]
-    padded = bytearray(good_uar())
-    padded[23] = 0xFF  # inside Session-Id's length, now past the message
-
-    short, overrun = _validate(lua, rules, tmp_path, truncated, bytes(padded))
-
+    # Malformed octets are reported, not raised.
     assert "header-length" in _rules_of(short)
-    assert "avp-length" in _rules_of(overrun)
+    assert "avp-length" in _rules_of(long)
+    # Failed-AVP holds what was received, and at least one AVP.
+    assert _rules_of(empty) == {"avp-missing"}
 
 
 def _pcap(messages: list[bytes]) -> bytes:
@@ -326,17 +321,6 @@ def test_tshark_reports_through_the_plugin(tmp_path):
     assert "avp-missing" in frames[2]["seanchai.rule"]
     assert frames[3]["seanchai.errors"] == ["0"]
     assert frames[4]["seanchai.document"] == ["RFC6733"]
-
-
-@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
-@pytest.mark.parametrize("lua", LUAS)
-def test_failed_avp_holds_what_was_received_and_at_least_one_avp(lua, rules, tmp_path):
-    copied = avp(264, b"bad host!") + avp(268, u32(2001))
-    held, empty = _validate(lua, rules, tmp_path, failed_uaa(copied), failed_uaa(b""))
-
-    assert _rules_of(held) == set()
-    assert _rules_of(held, "warn") == set()
-    assert _rules_of(empty) == {"avp-missing"}
 
 
 @pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")

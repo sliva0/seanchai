@@ -12,7 +12,6 @@ import os
 import shutil
 import subprocess
 import sys
-import sysconfig
 import tarfile
 import tomllib
 import zipfile
@@ -24,6 +23,7 @@ from conftest import _CORPUS_DIR, _ROOT
 
 _UV = os.environ.get("UV") or shutil.which("uv")
 _SMOKE = _ROOT / "tests" / "smoke_installed.py"
+_SMOKE_EXTRACT = _ROOT / "tests" / "smoke_extract.py"
 _PACKAGE = _ROOT / "packages" / "seanchai-corpus"
 _LIBRARY = _ROOT / "src" / "seanchai"
 # What `seanchai[extract]` installs that nothing else asks for.
@@ -81,10 +81,12 @@ def _requirements(wheel: Path) -> list[str]:
 
 
 def _venv(root: Path, *wheels: Path, without: frozenset[str] = frozenset()) -> Path:
-    """A virtual environment holding `wheels`, then this environment's packages
-    for their dependencies, less the top-level modules `without` names. A path a
-    `.pth` names goes after the environment's own and has its own `.pth` files
-    left unread, so this repository's editable installs stay out of reach."""
+    """A virtual environment holding `wheels`, then this interpreter's
+    site-packages for their dependencies, less the top-level modules `without`
+    names. A path a `.pth` names goes after the environment's own and has its
+    own `.pth` files left unread, so this repository's editable installs stay
+    out of reach. Every site-packages directory on `sys.path` is named, so an
+    overlay such as `uv run --with` keeps the environment beneath it."""
     _uv("venv", "--python", sys.executable, root, cwd=root.parent)
     _uv(
         "pip",
@@ -97,15 +99,22 @@ def _venv(root: Path, *wheels: Path, without: frozenset[str] = frozenset()) -> P
         cwd=root.parent,
     )
     (site,) = root.glob("lib/python*/site-packages")
-    dependencies = Path(sysconfig.get_path("purelib"))
+    dependencies = [
+        Path(entry)
+        for entry in sys.path
+        if Path(entry).name == "site-packages" and Path(entry).is_dir()
+    ]
     if without:
-        kept = root / "dependencies"
-        kept.mkdir()
-        for entry in dependencies.iterdir():
-            if entry.name.partition(".")[0] not in without:
-                (kept / entry.name).symlink_to(entry)
-        dependencies = kept
-    (site / "_dependencies.pth").write_text(f"{dependencies}\n")
+        farms = []
+        for number, directory in enumerate(dependencies):
+            kept = root / "dependencies" / str(number)
+            kept.mkdir(parents=True)
+            for entry in directory.iterdir():
+                if entry.name.partition(".")[0] not in without:
+                    (kept / entry.name).symlink_to(entry)
+            farms.append(kept)
+        dependencies = farms
+    (site / "_dependencies.pth").write_text("".join(f"{d}\n" for d in dependencies))
     return root / "bin"
 
 
@@ -187,48 +196,33 @@ def test_the_corpus_wheel_carries_its_notice(dist):
     assert "publishers'" in notice
 
 
-def test_the_corpus_package_asks_for_no_recent_python():
+def test_the_corpus_version_is_the_date_it_names_stored_once():
     """It only reads files, so a generator on an older Python can hold the data
     without the library."""
     assert _project(_PACKAGE / "pyproject.toml")["requires-python"] == ">=3.10"
     assert _project(_ROOT / "pyproject.toml")["requires-python"] == ">=3.12"
-
-
-def test_the_corpus_version_is_the_date_it_names():
     version = _project(_PACKAGE / "pyproject.toml")["version"]
 
     year, month, day = map(int, version.split("."))
     datetime.date(year, month, day)  # refuses what names no day
     # PEP 440 normalizes 2026.11.02 away, so the file keeps the published form.
     assert version == f"{year}.{month}.{day}"
-
-
-def test_the_corpus_version_is_stored_once():
-    version = _project(_PACKAGE / "pyproject.toml")["version"]
-
     assert seanchai_corpus.__version__ == version
     assert version not in (_PACKAGE / "src/seanchai_corpus/__init__.py").read_text()
 
 
-def test_only_the_library_knows_of_the_other_package(dist):
+def test_only_the_library_knows_of_the_other_package_and_the_extras(dist):
     assert _requirements(_wheel(dist, "seanchai_corpus")) == []
 
-    optional = [
-        requirement
-        for requirement in _requirements(_wheel(dist, "seanchai"))
-        if requirement.startswith("seanchai-corpus")
-    ]
-    assert len(optional) == 1
-    assert "extra == 'corpus'" in optional[0]
-
-
-def test_reading_source_documents_is_an_extra(dist):
     requirements = _requirements(_wheel(dist, "seanchai"))
-
     core = [each for each in requirements if "extra ==" not in each]
-    extra = [each for each in requirements if "extra == 'extract'" in each]
+    extract = [each for each in requirements if "extra == 'extract'" in each]
+    corpus = [each for each in requirements if "extra == 'corpus'" in each]
     assert {each.split(">")[0] for each in core} == {"click", "pydantic"}
-    assert {each.split(">")[0] for each in extra} == {"pypdf[crypto]", "python-docx"}
+    assert {each.split(">")[0] for each in extract} == {"pypdf[crypto]", "python-docx"}
+    assert [each.split(";")[0].split(">")[0].split("=")[0] for each in corpus] == [
+        "seanchai-corpus"
+    ]
 
 
 def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
@@ -322,20 +316,20 @@ def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
     assert listed.returncode == 0, listed.stderr
 
 
-def test_the_wheels_work_installed(dist, tmp_path):
+def test_the_wheels_work_with_the_extract_extra(dist, tmp_path):
+    """The consumer's smoke test ran without the extra; this is the extra's."""
     bin_dir = _venv(
         tmp_path / "both", _wheel(dist, "seanchai"), _wheel(dist, "seanchai_corpus")
     )
 
     smoke = subprocess.run(
-        [bin_dir / "python", "-I", _SMOKE],
+        [bin_dir / "python", "-I", _SMOKE_EXTRACT],
         cwd=tmp_path,
         env=_clean_environment(),
         capture_output=True,
         text=True,
     )
     assert smoke.returncode == 0, smoke.stderr
-    assert seanchai_corpus.__version__ in smoke.stdout
 
     source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
     lint = subprocess.run(

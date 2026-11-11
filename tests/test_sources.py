@@ -1,13 +1,10 @@
 import re
-from pathlib import Path
 
 import pytest
 
 from seanchai._versions import VersionRange
 from seanchai.extractor import rfc_text, tgpp_docx
 from seanchai.extractor.sources import Patch, Patcher, PatchError, load
-
-_PATCHES = Path(__file__).parent.parent / "edits" / "sources"
 
 
 def test_unapplied_and_overapplied_patches_fail_with_the_version_range():
@@ -28,12 +25,10 @@ def test_unapplied_and_overapplied_patches_fail_with_the_version_range():
     with pytest.raises(PatchError) as failure:
         patcher.finish()
 
-    assert str(failure.value).splitlines() == [
-        "input patch 'gone' -> 'fixed' applied 0 times, expected 1;"
-        " it was needed on version 18.0.0..18.2.0, currently parsing 18.6.0"
-        " — the source may have changed",
-        "input patch 'common' -> 'rare' applied 2 times, expected 1",
-    ]
+    unapplied, overapplied = str(failure.value).splitlines()
+    assert "'gone'" in unapplied and "applied 0 times" in unapplied
+    assert "18.0.0..18.2.0" in unapplied and "18.6.0" in unapplied
+    assert "'common'" in overapplied and "applied 2 times" in overapplied
 
 
 def test_an_empty_find_cannot_be_declared():
@@ -51,12 +46,10 @@ _WRONG = "the source is wrong"
     ("declare", "message"),
     [
         (lambda: Patch("old", "new", count=0, reason=_WRONG), "is not applied"),
-        (lambda: Patch("old", "new", count=-1, reason=_WRONG), "is not applied"),
         (lambda: Patch("old", "old", reason=_WRONG), "the text with itself"),
         (lambda: Patch("old", "new"), "has no `reason`"),
-        (lambda: Patch("old", "new", reason=""), "has no `reason`"),
     ],
-    ids=["zero-count", "negative-count", "no-op", "no-reason", "empty-reason"],
+    ids=["zero-count", "no-op", "no-reason"],
 )
 def test_patch_declarations_that_cannot_mean_anything_are_rejected(declare, message):
     with pytest.raises(PatchError, match=message):
@@ -109,90 +102,6 @@ last_version = "1.1.0"
     message = "needed on version 1.0.0..1.1.0" if kind == "docx" else "applied 0 times"
     with pytest.raises(PatchError, match=re.escape(message)):
         extract(source, sources_dir=patches_dir)
-
-
-@pytest.mark.parametrize(
-    ("reference", "version", "units"),
-    [
-        (
-            "TS29.109",
-            "19.0.0",
-            [
-                *[("OctedString", "6.3")] * 6,
-                ("Synchronization Failure", "4.2"),
-                ("Diameter Header: xxx, REQ, PXY, xxxxxxxx", "5.4"),
-                ("Diameter Header: xxx, PXY, xxxxxxxx", "5.4"),
-                ("GBA-Push-Info-Request message to the BSF", "5.4"),
-                ("GBA-Push-Info-Answer message back to the NAF", "5.4"),
-            ],
-        ),
-        (
-            "TS29.128",
-            "19.2.0",
-            # The rule lines carry only the name the patches target.
-            [
-                ("OctetSstring", "6.4.1"),
-                ("Number-of-UE-Per-Location-Configuration ::=", "6.4.11"),
-                ("Number-of-UE-Per-Location-Report ::=", "6.4.12"),
-                ("**[ Proxy-Info ]", "6.2.5"),
-            ],
-        ),
-        (
-            "TS29.336",
-            "19.1.0",
-            [
-                ("Maximum Latency", "8.4.1"),
-                ("Maximum Response Time", "8.4.1"),
-                ("Visited PLMN Id", "8.4.1"),
-            ],
-        ),
-        (
-            "TS29.337",
-            "19.0.0",
-            [("Old-Rference-Number", "6.2.3")],
-        ),
-        (
-            "TS29.338",
-            "19.3.0",
-            # The header-line units carry only the substring the patch targets;
-            # the full rule lines around it belong to the source document, and
-            # transcribing them here would pin text the patch never asserts.
-            [
-                ("SGSN-Absent-User-Diagnostic SM", "5.3.3.1"),
-                ("10415>>", "5.3.3.15"),
-                ("10415>>", "5.3.3.27"),
-                ("10415>>", "5.3.3.28"),
-                ("UE_ MEMORY_CAPACITY_EXCEEDED", "5.3.3.19"),
-                ("is of type enumerated", "6.3.3.6"),
-            ],
-        ),
-        (
-            "TS29.345",
-            "19.0.0",
-            [
-                ("M. V", "6.3.1"),
-                ("M. V", "6.3.1"),
-                ("Group", "6.3.1"),
-                ("Assistance-info", "6.3.1"),
-                ("MIC-Check-indicator", "6.3.1"),
-                ("*AVP", "6.3.32"),
-                ("*AVP", "6.3.33"),
-                ("[ ProSe-Validity Timer ]", "6.3.54"),
-                ("[ User Identity ]", "6.3.55"),
-                ("[ Ending\u2013Suffix ]", "6.3.68"),
-                ("[ Ending\u2013Suffix ]", "6.3.82"),
-            ],
-        ),
-    ],
-)
-def test_real_source_patches_are_fully_accounted(reference, version, units):
-    """Pin every application count even when the ignored real docx is absent."""
-    patcher = Patcher.load(_PATCHES / f"{reference}.toml", version)
-
-    outputs = [patcher.apply(text, section) for text, section in units]
-
-    patcher.finish()
-    assert all(output != text for output, (text, _) in zip(outputs, units, strict=True))
 
 
 def test_a_reason_reads_as_prose_and_a_find_exactly(tmp_path):

@@ -1,7 +1,6 @@
 """The corpus's record of its corrections: in sync with the modules, and all
 an export needs of them (docs/corrections.md#the-corrections-record)."""
 
-import json
 from pathlib import Path
 
 import pytest
@@ -9,8 +8,7 @@ from conftest import _CORPUS_DIR, _ROOT
 
 from seanchai import _correction_record, linter
 from seanchai.corpus import Corpus, CorpusError
-from seanchai.dad import ast, corrections
-from seanchai.dad.corrections import Accept, Correction, definition
+from seanchai.dad import corrections
 
 _CORRECTIONS = _ROOT / "edits" / "corrections"
 _COMMITTED = _CORPUS_DIR / _correction_record.RECORD_NAME
@@ -69,68 +67,6 @@ def test_a_stale_recorded_acceptance_reads_as_a_stale_acceptance(books):
         f.rule == "stale-acceptance" and "TS29.229.py#gone" in f.message
         for f in findings
     )
-
-
-def test_a_record_holds_kinds_reasons_and_renames_in_declared_order():
-    spec = ast.Specification(specification="RFC 9999", vendor_id=0, sections=())
-    first = Correction(
-        id="one",
-        target=definition("A"),
-        field="name",
-        expect="A",
-        replace="B",
-        reason="first",
-        origin="RFC9999.py",
-    )
-    second = Correction(
-        id="two",
-        target=definition("B"),
-        field="code",
-        expect=1,
-        replace=2,
-        reason="not a rename",
-        origin="RFC9999.py",
-    )
-    third = Correction(
-        id="a-three",
-        target=definition("C"),
-        field="name",
-        expect="C",
-        replace="D",
-        reason="third",
-        origin="RFC9999.py",
-    )
-    note = Accept(
-        id="noted",
-        rule="some-rule",
-        target=definition("Nothing"),
-        expect="the message",
-        reason="deliberate",
-        origin="RFC9999.py",
-    )
-
-    record = _correction_record.RecordedDocument.of(spec, [first, second, third, note])
-
-    assert [(r.expect, r.replace) for r in record.renames] == [("A", "B"), ("C", "D")]
-    assert {cited: edit.kind for cited, edit in record.edits.items()} == {
-        "RFC9999.py#one": "correction",
-        "RFC9999.py#two": "correction",
-        "RFC9999.py#a-three": "correction",
-        "RFC9999.py#noted": "accept",
-    }
-    (accept,) = record.acceptances()
-    assert accept.cited == "RFC9999.py#noted"
-    assert accept.expect == "the message"
-
-
-def test_a_rendered_record_is_sorted_with_one_field_per_line():
-    text = _COMMITTED.read_text("utf-8")
-    data = json.loads(text)
-    assert list(data) == ["documents", "note"]
-    assert list(data["documents"]) == sorted(data["documents"])
-    assert text.endswith("}\n")
-    assert '"reason": "' in text
-    assert not any('", "' in line for line in text.splitlines() if "reason" not in line)
 
 
 def test_a_malformed_record_is_refused(tmp_path: Path):

@@ -1,181 +1,26 @@
-import re
-import subprocess
+"""The `seanchai` command: its exit statuses and error reporting, and what each
+command does with the files it is given."""
+
 import sys
 from pathlib import Path
 
 import click
 import docx
 import pytest
+import seanchai_corpus
 from click.testing import CliRunner
 from conftest import _CORPUS_DIR, _corpus
 
 import seanchai
 from seanchai.cli import main
 from seanchai.dad import ast, formatter, parser
-from seanchai.extractor.errors import ExtractionError
+
+_REPO = Path(__file__).parent.parent
+_RFC6733 = _CORPUS_DIR / "rfc" / "rfc6733.dad"
 
 
-@pytest.mark.parametrize("to_stdout", [False, True], ids=["file", "stdout"])
-def test_extract_command_runs_docx_pdf_formatter_and_parser_end_to_end(
-    tmp_path, synthetic_spec_docx, outlined_pdf, to_stdout
-):
-    output_path = tmp_path / "result.dad"
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "corpus",
-            "extract",
-            str(synthetic_spec_docx),
-            "--pdf",
-            str(outlined_pdf),
-            "--link",
-            "https://example.com/spec.pdf",
-            *([] if to_stdout else ["--output", str(output_path)]),
-        ],
-    )
-
-    assert result.exit_code == 0
-    spec = parser.parse(result.stdout if to_stdout else output_path.read_text())
-    assert spec.specification == "3GPP TS 29.999"
-    assert str(spec.link) == "https://example.com/spec.pdf"
-    assert len(spec.sections) == 5
-    assert spec.sections[0].source.page == 2
-    assert spec.sections[1].source.page == 3
-    assert spec.sections[3].source.page == 4
-    assert spec.sections[4].source.page == 5
-    assert "warning:" not in result.stderr
-    if to_stdout:
-        assert result.stderr == ""
-    else:
-        assert f"wrote {output_path} (5 sections)" in result.stderr
-
-
-def test_extract_command_reports_source_warnings_even_when_the_pdf_is_rejected(
-    tmp_path, synthetic_spec_docx, make_outlined_pdf
-):
-    # A mismatched PDF aborts the run — which is exactly when the warnings
-    # collected while reading the docx are worth seeing.
-    malformed = tmp_path / "heading-mismatch.docx"
-    document = docx.Document(synthetic_spec_docx)
-    for paragraph in document.paragraphs:
-        if paragraph.text.startswith("6.1\t"):
-            paragraph.text = "6.1\tExample-Requests (EXR) Command"
-            break
-    document.save(malformed)
-    other_version = make_outlined_pdf("other.pdf", version="9.9.9")
-
-    result = CliRunner().invoke(
-        main, ["corpus", "extract", str(malformed), "--pdf", str(other_version)]
-    )
-
-    assert result.exit_code == 1
-    assert "warning: 6.1: heading name 'Example-Requests'" in result.stderr
-
-
-def _corrections_dir(tmp_path):
-    directory = tmp_path / "corrections"
-    directory.mkdir()
-    (directory / "TS29.999.py").write_text(
-        "from seanchai.dad.corrections import Correction, definition\n"
-        "CORRECTIONS = [Correction(id='application',"
-        " target=definition('Example-Request'),"
-        " field='application_id', expect=42, replace=16777308,"
-        " reason='the header prints the wrong application')]\n"
-    )
-    return directory
-
-
-def test_correct_command_refuses_to_overwrite_its_input(tmp_path, synthetic_spec_docx):
-    # Correcting in place would produce a file whose corrections can never be
-    # re-applied or reviewed against the raw output.
-    from seanchai.extractor import tgpp_docx
-
-    raw = tmp_path / "raw.dad"
-    raw.write_text(formatter.format_spec(tgpp_docx.extract(synthetic_spec_docx)))
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "corpus",
-            "correct",
-            str(raw),
-            "--corrections",
-            str(_corrections_dir(tmp_path)),
-            "-o",
-            str(raw),
-        ],
-    )
-
-    assert result.exit_code == 1
-    assert "refusing to correct a file in place" in result.stderr
-
-
-@pytest.mark.parametrize("exception_class", [parser.DadParseError, ExtractionError])
-def test_correct_command_reports_a_malformed_dad_as_an_error_not_a_traceback(
-    tmp_path,
-    exception_class,
-):
-    if exception_class is parser.DadParseError:
-        broken = tmp_path / "broken.dad"
-        broken.write_text(
-            "; Specification: 3GPP TS 29.999\n"
-            "; Version: not a version\n; Vendor-ID: 10415\n"
-        )
-        arguments = [
-            "corpus",
-            "correct",
-            str(broken),
-            "--corrections",
-            str(_corrections_dir(tmp_path)),
-        ]
-        message = f"error: {broken}: line 2:"
-    else:
-        broken = tmp_path / "not-really.docx"
-        broken.write_bytes(b"this is not a Word document")
-        arguments = ["corpus", "extract", str(broken)]
-        message = "error: extracting"
-    result = CliRunner().invoke(main, arguments)
-    assert result.exit_code == 1
-    assert isinstance(result.exception, SystemExit)
-    assert message in result.stderr
-
-
-def test_correct_command_fails_when_the_specification_has_no_corrections_module(
-    tmp_path, synthetic_spec_docx
-):
-    # Correction is what was asked for here, so a directory without this
-    # specification's module must not produce a cheerful uncorrected file.
-    from seanchai.extractor import tgpp_docx
-
-    raw = tmp_path / "raw.dad"
-    raw.write_text(formatter.format_spec(tgpp_docx.extract(synthetic_spec_docx)))
-    empty = tmp_path / "empty"
-    empty.mkdir()
-
-    result = CliRunner().invoke(
-        main, ["corpus", "correct", str(raw), "--corrections", str(empty)]
-    )
-
-    assert result.exit_code == 1
-    assert "error: no corrections module for '3GPP TS 29.999'" in result.stderr
-
-
-def test_extract_command_tolerates_a_corrections_directory_without_this_spec(
-    tmp_path, synthetic_spec_docx
-):
-    # The other side of the same choice: a corpus run passes one directory for
-    # every specification, and most of them have no module.
-    empty = tmp_path / "empty"
-    empty.mkdir()
-
-    result = CliRunner().invoke(
-        main,
-        ["corpus", "extract", str(synthetic_spec_docx), "--corrections", str(empty)],
-    )
-
-    assert result.exit_code == 0
-    assert parser.parse(result.stdout).specification == "3GPP TS 29.999"
+def _invoke(*arguments: object):
+    return CliRunner().invoke(main, [str(each) for each in arguments])
 
 
 def _dad_with(*lines: str) -> str:
@@ -183,9 +28,339 @@ def _dad_with(*lines: str) -> str:
     return header + "\n\n" + "\n".join(lines) + "\n"
 
 
-def test_lint_command_is_quiet_and_succeeds_on_a_clean_file(tmp_path):
-    source = tmp_path / "clean.dad"
-    source.write_text(
+_CLASH = _dad_with(
+    "; Type: Grouped AVP",
+    "; Name: First",
+    "; Section: 6.3.1",
+    "First ::= < AVP header: 700 10415 >",
+    "",
+    "",
+    "; Type: Grouped AVP",
+    "; Name: Second",
+    "; Section: 6.3.2",
+    "Second ::= < AVP header: 700 10415 >",
+)
+# A file only a corpus can judge: it re-uses a name its origin lacks.
+_BORROWING = _dad_with(
+    "; Type: Reused AVPs",
+    "; Section: 6.3",
+    "; Table: 6.3/2",
+    "; Columns: Name From",
+    "No-Such-Avp TS29.229",
+)
+
+
+# --- exit status and error reporting ---------------------------------------------
+
+
+@pytest.fixture
+def workspace(tmp_path, monkeypatch) -> Path:
+    """A working directory holding a file of each kind the commands refuse."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "bad.dad").write_text("not a dad file\n", "utf-8")
+    (tmp_path / "binary.dad").write_bytes(b"\xff\xfe\x00")
+    (tmp_path / "unformatted.dad").write_text(_RFC6733.read_text("utf-8") + "\n\n")
+    (tmp_path / "clash.dad").write_text(_CLASH, "utf-8")
+    for directory in ("empty", "specifications", "corrections", "rawonly"):
+        (tmp_path / directory).mkdir()
+    (tmp_path / "rawonly" / "rfc6733.raw.dad").write_text("", "utf-8")
+    (tmp_path / "dictionary").mkdir()
+    (tmp_path / "dictionary" / "dictionary.xml").write_text(
+        '<?xml version="1.0"?><dictionary><base name="base">'
+        '<avp name="Renamed" code="263"><type type-name="UTF8String"/></avp>'
+        "</base></dictionary>",
+        "utf-8",
+    )
+    return tmp_path
+
+
+_MOVED = ["download", "regenerate", "extract", "extract-rfc", "correct", "crosscheck"]
+
+# (arguments, exit status, the stream the phrase is on, the phrase). Status 2 is
+# a usage error, 1 an error or a finding that fails the run.
+_OUTCOMES = [
+    # Usage errors.
+    ([], 2, "err", "Commands:"),
+    (["corpus"], 2, "err", "Commands:"),
+    (["no-such-command"], 2, "err", "error: No such command 'no-such-command'"),
+    *(([name], 2, "err", f"error: No such command '{name}'") for name in _MOVED),
+    (["corpus", "no-such-command"], 2, "err", "error: No such command"),
+    (["--no-such-option"], 2, "err", "error: No such option '--no-such-option'"),
+    (["format"], 2, "err", "error: Missing argument 'SOURCES...'"),
+    (["lint", "/no/such/file.dad"], 2, "err", "does not exist"),
+    (["lint", "--no-corpus", "--corpus", ".", "clash.dad"], 2, "err", "--no-corpus"),
+    (["lint", "--corrections", "missing", "clash.dad"], 2, "err", "does not exist"),
+    (["corpus", "correct"], 2, "err", "error: Missing argument 'SOURCE'"),
+    (["corpus", "download", "--spec", "TS29.272"], 2, "err", "go together"),
+    (["corpus", "download", "--version", "18.6.0"], 2, "err", "go together"),
+    (["corpus", "download", "--only", "pdfs"], 2, "err", "'pdfs' is not one of"),
+    (
+        ["corpus", "download", "--only", "rfc", "--spec", "TS29.272", "--version", "1"],
+        2,
+        "err",
+        "--only and --spec exclude each other",
+    ),
+    (["export"], 2, "err", "error: Missing option '-o'"),
+    (["export", "-o", "out", "--include-pdfs"], 2, "err", "needs --specifications"),
+    (["show"], 2, "err", "error: Missing argument"),
+    (["show", "1:x"], 2, "err", "an identity is VENDOR:CODE"),
+    (["show", "Session-Id", "--version", "1"], 2, "err", "--version needs --document"),
+    (["commands", "--application", "cx"], 2, "err", "is not a valid integer"),
+    (["dictionary"], 2, "err", "error: Missing option '-o'"),
+    # Errors, which name the file or the download that would fix them.
+    (["lint", "bad.dad"], 1, "err", "error: bad.dad: "),
+    (["lint", "binary.dad"], 1, "err", "error: binary.dad: "),
+    (["format", "bad.dad"], 1, "err", "error: bad.dad: "),
+    (
+        ["corpus", "correct", "bad.dad", "--corrections", "corrections"],
+        1,
+        "err",
+        "error: bad.dad: ",
+    ),
+    (["corpus", "extract", "bad.dad"], 1, "err", "error: extracting"),
+    (["lint", "empty"], 1, "err", "holds no .dad files"),
+    (["lint", "--raw", "empty"], 1, "err", "holds no .dad files"),
+    (["format", "empty"], 1, "err", "holds no .dad files"),
+    (["lint", "--no-corpus", "rawonly"], 1, "err", "--raw reads its raw files"),
+    (["show", "no-such-avp"], 1, "err", "error: no AVP no-such-avp"),
+    (["commands", "--application", "99"], 1, "err", "error: no application 99"),
+    (["export", "--corpus", "empty", "-o", "out"], 1, "err", "no documents"),
+    (
+        ["export", "-o", "out", "--include-pdfs", "--specifications", "absent"],
+        1,
+        "err",
+        "run `seanchai corpus download --only 3gpp`",
+    ),
+    (
+        ["export", "-o", "out", "--include-pdfs", "--specifications", "specifications"],
+        1,
+        "err",
+        "run `seanchai corpus download --only 3gpp`",
+    ),
+    (
+        ["export", "-o", "out", "--specifications", "absent"],
+        1,
+        "err",
+        "run `seanchai corpus download --only rfc`",
+    ),
+    (
+        ["export", "-o", "out", "--wireshark", "absent"],
+        1,
+        "err",
+        "run `seanchai corpus download --only wireshark`",
+    ),
+    (
+        ["corpus", "regenerate"],
+        1,
+        "err",
+        "does not exist: run `seanchai corpus download`",
+    ),
+    (
+        ["corpus", "regenerate", "--manifest", "absent/manifest.json"],
+        1,
+        "err",
+        "does not exist: run `seanchai corpus download`",
+    ),
+    (
+        ["corpus", "crosscheck"],
+        1,
+        "err",
+        "run `seanchai corpus download --only wireshark`",
+    ),
+    # Findings that fail the run, and reports that do not.
+    (["format", "--check", "unformatted.dad"], 1, "out", "+++ unformatted.dad"),
+    (["lint", "--no-corpus", "clash.dad"], 1, "out", "error[duplicate-identity]"),
+    (
+        ["corpus", "crosscheck", "--wireshark", "dictionary", _RFC6733],
+        0,
+        "out",
+        "Session-Id",
+    ),
+    (["--version"], 0, "out", seanchai.__version__),
+]
+
+
+@pytest.mark.parametrize(
+    ("arguments", "status", "stream", "phrase"),
+    _OUTCOMES,
+    ids=[" ".join(map(str, row[0])) or "bare" for row in _OUTCOMES],
+)
+def test_each_outcome_has_its_exit_status_and_says_why(
+    workspace, arguments, status, stream, phrase
+):
+    result = _invoke(*arguments)
+
+    assert result.exit_code == status, result.output
+    assert phrase in (result.stdout if stream == "out" else result.stderr)
+    assert "Traceback" not in result.output
+    if status == 1 and stream == "err":
+        assert result.stderr.startswith("error: ") or "\nerror: " in result.stderr
+        assert not result.stdout
+    if status == 2 and phrase != "Commands:":
+        assert click.unstyle(result.stderr).startswith("Usage: ")
+        assert "\nerror: " in result.stderr
+    if status:
+        assert not (workspace / "out").exists()
+
+
+def test_the_commands_are_the_documented_ones():
+    """The consumer commands at the top, the maintainers' under `corpus`."""
+    corpus = main.commands["corpus"]
+    assert isinstance(corpus, click.Group)
+
+    assert set(main.commands) == {
+        "show",
+        "commands",
+        "dictionary",
+        "export",
+        "lint",
+        "format",
+        "corpus",
+    }
+    assert set(corpus.commands) == set(_MOVED)
+
+
+def test_every_command_and_option_says_what_it_is_for():
+    def described(group: click.Group, prefix: str = ""):
+        for name, command in group.commands.items():
+            yield f"{prefix}{name}", command.help
+            for parameter in command.params:
+                if isinstance(parameter, click.Option):
+                    yield f"{prefix}{name} {parameter.opts[0]}", parameter.help
+            if isinstance(command, click.Group):
+                yield from described(command, f"{prefix}{name} ")
+
+    assert not [name for name, text in described(main) if not (text or "").strip()]
+
+
+# --- extract and correct ---------------------------------------------------------
+
+
+def test_extract_reads_a_docx_and_attaches_the_pdfs_pages(
+    tmp_path, synthetic_spec_docx, outlined_pdf
+):
+    output = tmp_path / "result.dad"
+
+    result = _invoke(
+        "corpus",
+        "extract",
+        synthetic_spec_docx,
+        "--pdf",
+        outlined_pdf,
+        "--link",
+        "https://example.com/spec.pdf",
+        "--output",
+        output,
+    )
+
+    assert result.exit_code == 0, result.output
+    spec = parser.parse(output.read_text())
+    assert spec.specification == "3GPP TS 29.999"
+    assert str(spec.link) == "https://example.com/spec.pdf"
+    assert [section.source.page for section in spec.sections] == [2, 3, 3, 4, 5]
+    assert "warning:" not in result.stderr
+
+
+def test_extract_reports_the_docx_s_warnings_even_when_the_pdf_is_refused(
+    tmp_path, synthetic_spec_docx, make_outlined_pdf
+):
+    """The run aborts on a PDF of another version, which is when the warnings
+    collected while reading the docx are worth seeing."""
+    malformed = tmp_path / "heading-mismatch.docx"
+    document = docx.Document(synthetic_spec_docx)
+    for paragraph in document.paragraphs:
+        if paragraph.text.startswith("6.1\t"):
+            paragraph.text = "6.1\tExample-Requests (EXR) Command"
+            break
+    document.save(malformed)
+
+    result = _invoke(
+        "corpus", "extract", malformed, "--pdf", make_outlined_pdf("o.pdf", version="9")
+    )
+
+    assert result.exit_code == 1
+    assert "warning: 6.1: heading name 'Example-Requests'" in result.stderr
+
+
+def _corrections(tmp_path: Path, module: str, text: str) -> Path:
+    directory = tmp_path / "corrections"
+    directory.mkdir(exist_ok=True)
+    (directory / module).write_text(text, "utf-8")
+    return directory
+
+
+def test_a_corrections_module_is_optional_to_extract_and_required_to_correct(
+    tmp_path, synthetic_spec_docx
+):
+    """A corpus run passes one directory for every document, and most have no
+    module; asking to correct one that has none is an error."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+
+    extracted = _invoke(
+        "corpus", "extract", synthetic_spec_docx, "--corrections", empty
+    )
+    assert extracted.exit_code == 0, extracted.output
+    raw = tmp_path / "raw.dad"
+    raw.write_text(extracted.stdout, "utf-8")
+
+    corrected = _invoke("corpus", "correct", raw, "--corrections", empty)
+    assert corrected.exit_code == 1
+    assert "error: no corrections module for '3GPP TS 29.999'" in corrected.stderr
+
+
+def test_correct_marks_the_lines_it_changed_and_keeps_the_raw_comments(tmp_path):
+    raw = tmp_path / "raw.dad"
+    raw.write_text(
+        _dad_with(
+            "; Type: Grouped AVP",
+            "; Name: Example",
+            "; Section: 6.3.1",
+            "Example ::= < AVP header: 700 10415 >",
+            # TS 32.299's struck members are commented out in its raw file.
+            ";;      [ Struck ] ; strikethrough",
+            "        [ Kept ]",
+            "",
+            "",
+            ";; end of file",
+        )
+    )
+    directory = _corrections(
+        tmp_path,
+        "TS29.329.py",
+        "from seanchai.dad.corrections import Correction, definition\n"
+        "CORRECTIONS = [Correction(id='example-code', target=definition('Example'),"
+        " field='code', expect=700, replace=701,"
+        " reason='clause 6.3.1 misprints the code')]\n",
+    )
+    output = tmp_path / "corrected.dad"
+
+    refused = _invoke("corpus", "correct", raw, "--corrections", directory, "-o", raw)
+    result = _invoke("corpus", "correct", raw, "--corrections", directory, "-o", output)
+
+    assert refused.exit_code == 1
+    assert "refusing to correct a file in place" in refused.stderr
+    assert result.exit_code == 0, result.output
+    text = output.read_text()
+    # The note names the declaration; the reason lives there, the old value in
+    # the raw file.
+    assert text.endswith(
+        "Example ::= < AVP header: 701 10415 > ;; corrected:"
+        " (TS29.329.py#example-code)\n"
+        ";;      [ Struck ] ; strikethrough\n"
+        "        [ Kept ]\n\n\n;; end of file\n"
+    )
+    (grouped,) = parser.parse(text).sections
+    assert isinstance(grouped, ast.GroupedAvp)
+    assert grouped.code == 701
+
+
+# --- lint ---------------------------------------------------------------------
+
+
+def test_lint_fails_on_errors_and_reports_notes_without_failing(tmp_path):
+    clean = tmp_path / "clean.dad"
+    clean.write_text(
         _dad_with(
             "; Type: Grouped AVP",
             "; Name: Only",
@@ -193,16 +368,8 @@ def test_lint_command_is_quiet_and_succeeds_on_a_clean_file(tmp_path):
             "Only ::= < AVP header: 700 10415 >",
         )
     )
-
-    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
-
-    assert result.exit_code == 0
-    assert result.output == ""
-
-
-def test_lint_notes_do_not_fail_the_run_and_can_be_silenced(tmp_path):
-    source = tmp_path / "note.dad"
-    source.write_text(
+    noted = tmp_path / "note.dad"
+    noted.write_text(
         _dad_with(
             "; Type: Grouped AVP",
             "; Name: Borrowed",
@@ -217,45 +384,26 @@ def test_lint_notes_do_not_fail_the_run_and_can_be_silenced(tmp_path):
             "Borrowed TS29.212",
         )
     )
+    clash = tmp_path / "clash.dad"
+    clash.write_text(_CLASH)
 
-    reported = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
-    silenced = CliRunner().invoke(
-        main, ["lint", "--no-corpus", "--no-notes", str(source)]
-    )
+    def lint(*arguments):
+        return _invoke("lint", "--no-corpus", *arguments)
 
-    assert reported.exit_code == 0
-    assert "local-and-reused" in reported.output
-    assert silenced.exit_code == 0
-    assert silenced.output == ""
-
-
-def test_lint_default_output_groups_findings_under_the_file_with_a_summary(tmp_path):
-    source = tmp_path / "clash.dad"
-    source.write_text(
-        _dad_with(
-            "; Type: Grouped AVP",
-            "; Name: First",
-            "; Section: 6.3.1",
-            "First ::= < AVP header: 700 10415 >",
-            "",
-            "",
-            "; Type: Grouped AVP",
-            "; Name: Second",
-            "; Section: 6.3.2",
-            "Second ::= < AVP header: 700 10415 >",
-        )
-    )
-
-    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
-
-    assert result.exit_code == 1
-    lines = result.output.splitlines()
-    assert lines[0] == str(source)
-    assert lines[1].startswith("  error[duplicate-identity]")
-    assert lines[-1] == "found 1 error in 1 file"
+    assert (lint(clean).exit_code, lint(clean).output) == (0, "")
+    assert lint(noted).exit_code == 0
+    assert "local-and-reused" in lint(noted).output
+    assert lint("--no-notes", noted).output == ""
+    full = lint(clash)
+    assert full.exit_code == 1
+    assert full.output.splitlines()[-1] == "found 1 error in 1 file"
+    # One line per finding and no summary, for a parser to read.
+    concise = lint("--output-format", "concise", clash)
+    assert concise.exit_code == 1
+    (line,) = concise.output.splitlines()
+    assert line.startswith(f"{clash}: error: [duplicate-identity]")
 
 
-_REPO = Path(__file__).parent.parent
 _V2X = "V2X-Subscription-Data's body, against TS29.272's definition"
 
 
@@ -263,124 +411,48 @@ def _lint_v2x(*options, corrections=_REPO / "edits" / "corrections", raw=False):
     """TS 29.388 against the committed corpus, whose module accepts clause
     6.3.2's V4 body for V2X-Subscription-Data, its one cross-file note."""
     source = (
-        _CORPUS_DIR / "raw" / "3gpp" / "rel-19" / "29388-j10.raw.dad"
+        _CORPUS_DIR / "raw/3gpp/rel-19/29388-j10.raw.dad"
         if raw
-        else _CORPUS_DIR / "3gpp" / "rel-19" / "29388-j10.dad"
+        else _CORPUS_DIR / "3gpp/rel-19/29388-j10.dad"
     )
-    return CliRunner().invoke(
-        main,
-        [
-            "lint",
-            "--corpus",
-            str(_CORPUS_DIR),
-            "--corrections",
-            str(corrections),
-            *options,
-            str(source),
-        ],
+    return _invoke(
+        "lint", "--corpus", _CORPUS_DIR, "--corrections", corrections, *options, source
     )
 
 
-def test_lint_counts_accepted_findings_apart_and_prints_them_on_request():
+def test_an_accepted_finding_is_counted_apart_and_a_stale_acceptance_fails(tmp_path):
     hidden = _lint_v2x()
     shown = _lint_v2x("--show-accepted")
+    raw = _lint_v2x("--output-format", "concise", raw=True)
+    (tmp_path / "TS29.388.py").write_text(
+        "from seanchai.dad.corrections import Accept, definition\n"
+        "CORRECTIONS = [Accept(id='v2x-body', rule='reused-body-differs',"
+        " target=definition('V2X-Subscription-Data'), expect='an older message',"
+        " reason='clause 6.3.2')]\n"
+    )
+    stale = _lint_v2x("--output-format", "concise", corrections=tmp_path)
 
-    assert hidden.exit_code == 0
-    assert hidden.output == "found 1 accepted in 1 file\n"
-    assert shown.exit_code == 0
+    assert (hidden.exit_code, hidden.output) == (0, "found 1 accepted in 1 file\n")
     (line,) = [line for line in shown.output.splitlines() if _V2X in line]
     assert line.startswith("  accepted[reused-body-differs]")
     assert line.endswith("(TS29.388.py#v2x-subscription-data-v4-body)")
+    # A raw file is linted without acceptances.
+    assert f"note: [reused-body-differs] {_V2X}" in raw.output
+    assert stale.exit_code == 1
+    assert "error: [stale-acceptance] TS29.388.py#v2x-body accepts" in stale.output
 
 
-def test_lint_reports_the_corpus_record_once_as_a_file_of_its_own(tmp_path):
-    """A corpus directory's record is part of what `--corpus` lints: an entry
-    naming no hole fails the run, however many files are linted, and the record
-    counts as no linted file."""
-    corpus_dir = tmp_path / "dad"
-    corpus_dir.mkdir()
-    source = corpus_dir / "rfc6733.dad"
-    source.write_bytes((_CORPUS_DIR / "rfc" / "rfc6733.dad").read_bytes())
-    record = corpus_dir / "holes.toml"
-    record.write_text(
-        '[[hole]]\ndocument = "RFC6733"\nname = "Worked-Off"\n'
-        'missing = ["definition"]\nreason = "clause 1"\n',
-        encoding="utf-8",
-    )
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "lint",
-            "--no-notes",
-            "--output-format",
-            "concise",
-            "--corpus",
-            str(corpus_dir),
-            str(source),
-            str(source),
-        ],
-    )
-
-    assert result.exit_code == 1
-    assert result.output.count("stale-hole-record") == 1
-    assert result.output.startswith(f"{record}: error: [stale-hole-record]")
-
-
-def _borrowing(tmp_path):
-    """A file only a corpus can judge: it re-uses a name its origin lacks."""
+@pytest.mark.parametrize(
+    ("setup", "runs"),
+    [("plain", False), ("symlinked-corpus", False), ("named", True)],
+)
+def test_lint_executes_a_corrections_module_only_when_asked(
+    tmp_path, monkeypatch, setup, runs
+):
+    """A plain `lint` in a directory holding `edits/corrections/` runs none of
+    it, even beside a symlink posing as the repository's corpus."""
     source = tmp_path / "borrowing.dad"
-    source.write_text(
-        _dad_with(
-            "; Type: Reused AVPs",
-            "; Section: 6.3",
-            "; Table: 6.3/2",
-            "; Columns: Name From",
-            "No-Such-Avp TS29.229",
-        )
-    )
-    return source
-
-
-def test_lint_without_a_corpus_uses_the_installed_one(tmp_path):
-    source = _borrowing(tmp_path)
-
-    defaulted = CliRunner().invoke(main, ["lint", str(source)])
-    named = CliRunner().invoke(
-        main, ["lint", "--corpus", str(_CORPUS_DIR), str(source)]
-    )
-    alone = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
-
-    assert defaulted.output == named.output
-    assert defaulted.output != alone.output
-
-
-def test_lint_without_the_package_lints_each_file_alone(tmp_path, monkeypatch):
-    source = _borrowing(tmp_path)
-    alone = CliRunner().invoke(main, ["lint", "--no-corpus", str(source)])
-
-    monkeypatch.setitem(sys.modules, "seanchai_corpus", None)
-    result = CliRunner().invoke(main, ["lint", str(source)])
-
-    assert result.exit_code == alone.exit_code
-    assert result.output == alone.output
-
-
-def test_lint_refuses_a_corpus_and_no_corpus_together(tmp_path):
-    source = _borrowing(tmp_path)
-
-    result = CliRunner().invoke(
-        main, ["lint", "--no-corpus", "--corpus", str(_CORPUS_DIR), str(source)]
-    )
-
-    assert result.exit_code != 0
-    assert "--no-corpus" in result.output
-
-
-def _untrusted_checkout(tmp_path, monkeypatch):
-    """A working directory holding a corrections module for the linted file,
-    which leaves a mark when it runs."""
-    source = _borrowing(tmp_path)
+    source.write_text(_BORROWING)
     modules = tmp_path / "edits" / "corrections"
     modules.mkdir(parents=True)
     ran = tmp_path / "ran"
@@ -388,189 +460,86 @@ def _untrusted_checkout(tmp_path, monkeypatch):
         f"from pathlib import Path\nPath({str(ran)!r}).touch()\nCORRECTIONS = []\n"
     )
     monkeypatch.chdir(tmp_path)
-    return source, modules, ran
+    if setup == "symlinked-corpus":
+        link = tmp_path / "packages/seanchai-corpus/src/seanchai_corpus/dad"
+        link.parent.mkdir(parents=True)
+        link.symlink_to(_CORPUS_DIR)
 
+    _invoke("lint", *(["--corrections", modules] if setup == "named" else []), source)
 
-def test_plain_lint_runs_no_module_from_the_working_directory(tmp_path, monkeypatch):
-    source, _, ran = _untrusted_checkout(tmp_path, monkeypatch)
-
-    CliRunner().invoke(main, ["lint", str(source)])
-
-    assert not ran.exists()
-
-
-def test_a_symlink_to_the_installed_corpus_is_not_the_repository(tmp_path, monkeypatch):
-    source, _, ran = _untrusted_checkout(tmp_path, monkeypatch)
-    link = tmp_path / "packages" / "seanchai-corpus" / "src" / "seanchai_corpus" / "dad"
-    link.parent.mkdir(parents=True)
-    link.symlink_to(_CORPUS_DIR)
-
-    CliRunner().invoke(main, ["lint", str(source)])
-
-    assert not ran.exists()
-
-
-def test_lint_runs_the_module_a_named_directory_holds(tmp_path, monkeypatch):
-    source, modules, ran = _untrusted_checkout(tmp_path, monkeypatch)
-
-    CliRunner().invoke(main, ["lint", "--corrections", str(modules), str(source)])
-
-    assert ran.exists()
+    assert ran.exists() == runs
 
 
 def test_plain_lint_in_the_repository_reads_its_acceptances(monkeypatch):
     monkeypatch.chdir(_REPO)
-    source = _CORPUS_DIR / "3gpp" / "rel-19" / "29388-j10.dad"
 
-    result = CliRunner().invoke(main, ["lint", str(source)])
+    result = _invoke("lint", _CORPUS_DIR / "3gpp/rel-19/29388-j10.dad")
 
-    assert result.exit_code == 0
-    assert result.output == "found 1 accepted in 1 file\n"
+    assert (result.exit_code, result.output) == (0, "found 1 accepted in 1 file\n")
 
 
-def test_lint_reports_a_malformed_record_as_a_usage_error(tmp_path):
+def test_lint_defaults_to_the_installed_corpus_and_lints_alone_without_it(
+    tmp_path, monkeypatch
+):
+    installed = tmp_path / "installed"
+    installed.mkdir()
+    (installed / "rfc6733.dad").write_bytes(_RFC6733.read_bytes())
+    (installed / "clash.dad").write_text(_CLASH)
+    monkeypatch.setattr(seanchai_corpus, "CORPUS_DIR", installed)
+    source = tmp_path / "borrowing.dad"
+    source.write_text(_BORROWING)
+
+    defaulted = _invoke("lint", source)
+    named = _invoke("lint", "--corpus", installed, source)
+    alone = _invoke("lint", "--no-corpus", source)
+    everything = _invoke("lint", "--output-format", "concise")
+
+    assert defaulted.output == named.output != alone.output
+    assert everything.exit_code == 1
+    assert str(installed / "clash.dad") in everything.output
+
+    monkeypatch.setitem(sys.modules, "seanchai_corpus", None)
+    missing = _invoke("lint", source)
+    assert (missing.exit_code, missing.output) == (alone.exit_code, alone.output)
+
+
+def test_lint_reports_the_corpus_record_once_as_a_file_of_its_own(tmp_path):
+    """An entry naming no hole fails the run however many files are linted, and
+    an unreadable record is an error naming it."""
     corpus_dir = tmp_path / "dad"
     corpus_dir.mkdir()
     source = corpus_dir / "rfc6733.dad"
-    source.write_bytes((_CORPUS_DIR / "rfc" / "rfc6733.dad").read_bytes())
+    source.write_bytes(_RFC6733.read_bytes())
     record = corpus_dir / "holes.toml"
+    record.write_text(
+        '[[hole]]\ndocument = "RFC6733"\nname = "Worked-Off"\n'
+        'missing = ["definition"]\nreason = "clause 1"\n',
+        encoding="utf-8",
+    )
+    arguments = ["lint", "--no-notes", "--output-format", "concise"]
+
+    stale = _invoke(*arguments, "--corpus", corpus_dir, source, source)
     record.write_text("[[hole]]\n", encoding="utf-8")
+    malformed = _invoke(*arguments, "--corpus", corpus_dir, source)
 
-    result = CliRunner().invoke(
-        main, ["lint", "--corpus", str(corpus_dir), str(source)]
-    )
-
-    assert result.exit_code != 0
-    assert isinstance(result.exception, SystemExit)
-    assert str(record) in result.output
-
-
-def test_lint_reads_no_acceptances_for_a_raw_file():
-    result = _lint_v2x("--output-format", "concise", raw=True)
-
-    assert f"note: [reused-body-differs] {_V2X}" in result.output
+    assert stale.exit_code == 1
+    assert stale.output.count("stale-hole-record") == 1
+    assert stale.output.startswith(f"{record}: error: [stale-hole-record]")
+    assert malformed.exit_code == 1
+    assert str(record) in malformed.output
 
 
-def test_lint_fails_on_an_acceptance_that_matches_no_finding(tmp_path):
-    (tmp_path / "TS29.388.py").write_text(
-        "from seanchai.dad.corrections import Accept, definition\n"
-        "CORRECTIONS = [Accept(id='v2x-body', rule='reused-body-differs',"
-        " target=definition('V2X-Subscription-Data'), expect='an older message',"
-        " reason='clause 6.3.2')]\n"
-    )
-
-    result = _lint_v2x("--output-format", "concise", corrections=tmp_path)
-
-    assert result.exit_code == 1
-    assert "error: [stale-acceptance] TS29.388.py#v2x-body accepts" in result.output
-
-
-def test_lint_rejects_a_corrections_directory_given_that_does_not_exist(tmp_path):
-    result = _lint_v2x(corrections=tmp_path / "missing")
-
-    assert result.exit_code == 2
-    assert "does not exist" in result.output
-
-
-def test_lint_concise_output_keeps_the_one_line_per_finding_shape(tmp_path):
-    source = tmp_path / "clash.dad"
-    source.write_text(
-        _dad_with(
-            "; Type: Grouped AVP",
-            "; Name: First",
-            "; Section: 6.3.1",
-            "First ::= < AVP header: 700 10415 >",
-            "",
-            "",
-            "; Type: Grouped AVP",
-            "; Name: Second",
-            "; Section: 6.3.2",
-            "Second ::= < AVP header: 700 10415 >",
-        )
-    )
-
-    result = CliRunner().invoke(
-        main, ["lint", "--no-corpus", "--output-format", "concise", str(source)]
-    )
-
-    (line,) = result.output.splitlines()
-    assert line.startswith(f"{source}: error: [duplicate-identity]")
-    assert "found" not in result.output  # no summary line to trip a parser
-
-
-def test_correct_command_marks_the_lines_it_changed(tmp_path):
-    """A corrected file is the one anyone actually uses, so it has to say which
-    of its values a human overrode and where to read why.
-
-    Self-contained rather than reading the corpus: the committed corpus is
-    already corrected, and `correct` takes raw input by design.
-    """
-    raw = tmp_path / "raw.dad"
-    raw.write_text(
-        _dad_with(
-            "; Type: Grouped AVP",
-            "; Name: Example",
-            "; Section: 6.3.1",
-            "Example ::= < AVP header: 700 10415 >",
-        )
-    )
-    directory = tmp_path / "corrections"
-    directory.mkdir()
-    (directory / "TS29.329.py").write_text(
-        "from seanchai.dad.corrections import Correction, definition\n"
-        "CORRECTIONS = [\n"
-        "    Correction(\n"
-        "        id='example-code',\n"
-        "        target=definition('Example'),\n"
-        "        field='code',\n"
-        "        expect=700,\n"
-        "        replace=701,\n"
-        "        reason='clause 6.3.1 misprints the code',\n"
-        "    )\n"
-        "]\n"
-    )
-    output = tmp_path / "corrected.dad"
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "corpus",
-            "correct",
-            str(raw),
-            "--corrections",
-            str(directory),
-            "-o",
-            str(output),
-        ],
-    )
-
-    assert result.exit_code == 0
-    text = output.read_text()
-    # The note trails the corrected line itself.
-    (noted,) = [line for line in text.splitlines() if ";;" in line]
-    header, _, note = noted.partition(" ;; ")
-    assert header == "Example ::= < AVP header: 701 10415 >"
-    # Only the declaration's module and id: the change and its reason live at
-    # the declaration, and the old value in the raw file.
-    assert note == "corrected: (TS29.329.py#example-code)"
-    # Still a `.dad` file, and still exactly the canonical text plus the note.
-    stripped = "\n".join(line.split(" ;; ")[0] for line in text.splitlines())
-    assert formatter.format_spec(parser.parse(text)) == stripped + "\n"
-
-    (grouped,) = parser.parse(text).sections
-    assert isinstance(grouped, ast.GroupedAvp)
-    assert grouped.code == 701
+# --- format and the files a directory names ------------------------------------------
 
 
 def test_every_committed_dad_file_is_a_format_fixed_point():
-    """`format` keeps comments, so a committed file — corrected files and the
-    notes citing their corrections included — is already what it writes."""
+    """`format` keeps comments, so a committed file, corrected files and the
+    notes citing their corrections included, is already what it writes."""
     paths = _corpus(raw=True) + _corpus(raw=False)
 
-    result = CliRunner().invoke(main, ["format", "--check", *map(str, paths)])
+    result = _invoke("format", "--check", *paths)
 
     assert result.exit_code == 0, result.stdout
-    assert result.stdout == ""
     assert f"would reformat 0 of {len(paths)} files" in result.stderr
 
 
@@ -588,97 +557,84 @@ G ::= < AVP header: 5 >
 """
 
 
-def test_format_command_rewrites_in_place_and_keeps_comments(tmp_path):
+def test_format_checks_with_a_diff_and_rewrites_keeping_comments(tmp_path):
     source = tmp_path / "edited.dad"
     source.write_text(_HAND_EDITED)
+    windows = tmp_path / "windows.dad"
+    canonical = formatter.format_spec(parser.parse(_HAND_EDITED))
+    windows.write_bytes(canonical.replace("\n", "\r\n").encode())
 
-    result = CliRunner().invoke(main, ["format", str(source)])
+    checked = _invoke("format", "--check", source, windows)
+    assert checked.exit_code == 1
+    assert "-  [ X ] ;;see clause 1\n+        [ X ] ;; see clause 1\n" in checked.stdout
+    assert source.read_text() == _HAND_EDITED
 
-    assert result.exit_code == 0
+    rewritten = _invoke("format", source, windows)
+    assert rewritten.exit_code == 0
     assert source.read_text() == _HAND_EDITED.replace(
         "  [ X ] ;;see clause 1", "        [ X ] ;; see clause 1"
     )
-    assert "reformatted 1 of 1 files" in result.stderr
+    assert windows.read_bytes() == canonical.encode()
+    assert "reformatted 2 of 2 files" in rewritten.stderr
 
 
-def test_format_check_reports_a_diff_and_leaves_the_file_alone(tmp_path):
-    source = tmp_path / "edited.dad"
-    source.write_text(_HAND_EDITED)
-
-    result = CliRunner().invoke(main, ["format", "--check", str(source)])
-
-    assert result.exit_code == 1
-    assert "-  [ X ] ;;see clause 1\n+        [ X ] ;; see clause 1\n" in result.stdout
-    assert source.read_text() == _HAND_EDITED
-
-
-def test_format_command_rewrites_crlf_line_endings(tmp_path):
-    source = tmp_path / "windows.dad"
-    canonical = formatter.format_spec(parser.parse(_HAND_EDITED))
-    source.write_bytes(canonical.replace("\n", "\r\n").encode())
-
-    checked = CliRunner().invoke(main, ["format", "--check", str(source)])
-    rewritten = CliRunner().invoke(main, ["format", str(source)])
-
-    assert checked.exit_code == 1
-    assert rewritten.exit_code == 0
-    assert source.read_bytes() == canonical.encode()
-
-
-def test_format_command_writes_nothing_when_any_file_fails_to_parse(tmp_path):
+def test_format_writes_nothing_when_any_file_fails_to_parse(tmp_path):
     edited = tmp_path / "edited.dad"
     edited.write_text(_HAND_EDITED)
     broken = tmp_path / "broken.dad"
     broken.write_text("; Specification: X\n; Vendor-ID: ten\n")
 
-    result = CliRunner().invoke(main, ["format", str(edited), str(broken)])
+    result = _invoke("format", edited, broken)
 
     assert result.exit_code == 1
     assert f"error: {broken}: line 2:" in result.stderr
     assert edited.read_text() == _HAND_EDITED
 
 
+def test_a_directory_means_its_files_once_each_and_its_raw_mirror_on_request(
+    tmp_path,
+):
+    root = tmp_path / "corpus"
+    corrected = root / "rfc" / "rfc6733.dad"
+    mirror = root / "raw" / "rfc" / "rfc6733.raw.dad"
+    for path in (corrected, mirror):
+        path.parent.mkdir(parents=True)
+        path.write_text(_RFC6733.read_text("utf-8") + "\n\n", "utf-8")
+    (root / "rfc" / "stray.raw.dad").write_text("nope\n", "utf-8")
+
+    named_twice = _invoke("format", "--check", root, corrected)
+    assert "would reformat 1 of 1 files" in named_twice.stderr
+    assert _invoke("lint", "--no-corpus", root).exit_code == 0
+    (root / "rfc" / "stray.raw.dad").unlink()
+
+    assert "reformatted 1 of 1 files" in _invoke("format", root).stderr
+    assert mirror.read_text("utf-8").endswith("\n\n")
+    assert "reformatted 1 of 2 files" in _invoke("format", "--raw", root).stderr
+    assert not mirror.read_text("utf-8").endswith("\n\n")
+
+    (root / "raw" / "rfc" / "broken.raw.dad").write_text("nope\n", "utf-8")
+    for arguments in (["--raw", root], [root / "raw"]):
+        asked = _invoke("lint", "--no-corpus", *arguments)
+        assert asked.exit_code == 1, arguments
+        assert "broken.raw.dad" in asked.stderr
+
+
+# --- download and regenerate -------------------------------------------------------
+
+
 @pytest.mark.parametrize(
-    "arguments",
-    [["--spec", "TS29.272"], ["--version", "18.6.0"]],
-    ids=["spec-only", "version-only"],
+    ("only", "listed", "unlisted"),
+    [
+        ("rfc", "RFC 6733", ["3GPP specifications", "Wireshark"]),
+        ("transcribed", "ETSI-ES283.034", ["RFC 6733"]),
+    ],
 )
-def test_download_takes_spec_and_version_together(tmp_path, arguments):
-    result = CliRunner().invoke(
-        main, ["corpus", "download", "-o", str(tmp_path), *arguments]
-    )
+def test_download_lists_the_sources_only_names(only, listed, unlisted):
+    result = _invoke("corpus", "download", "--list", "--only", only)
 
-    assert result.exit_code == 2
-    assert "--spec and --version go together" in result.output
-    assert not list(tmp_path.iterdir())
-
-
-def test_download_refuses_only_beside_spec_and_a_source_it_does_not_know():
-    for arguments in (
-        ["--only", "rfc", "--spec", "TS29.272", "--version", "18.6.0"],
-        ["--only", "pdfs"],
-    ):
-        result = CliRunner().invoke(main, ["corpus", "download", *arguments])
-        assert result.exit_code == 2, result.output
-
-
-def test_download_lists_what_only_names():
-    result = CliRunner().invoke(main, ["corpus", "download", "--list", "--only", "rfc"])
-
-    assert result.exit_code == 0
-    assert "RFC 6733" in result.stdout
-    assert "3GPP specifications" not in result.stdout
-    assert "Wireshark" not in result.stdout
-
-
-def test_download_lists_the_transcriptions_pdfs_under_their_source():
-    result = CliRunner().invoke(
-        main, ["corpus", "download", "--list", "--only", "transcribed"]
-    )
-
-    assert result.exit_code == 0
-    assert "ETSI-ES283.034" in result.stdout
-    assert "RFC 6733" not in result.stdout
+    assert result.exit_code == 0, result.output
+    assert listed in result.stdout
+    assert not [each for each in unlisted if each in result.stdout]
 
 
 def test_regenerate_names_the_source_a_partial_download_lacks(tmp_path):
@@ -688,634 +644,16 @@ def test_regenerate_names_the_source_a_partial_download_lacks(tmp_path):
     manifest.write_text('{"artifacts": [], "sources": ["wireshark"]}')
     corpus = tmp_path / "corpus"
     (corpus / "rfc").mkdir(parents=True)
-    source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
-    (corpus / "rfc" / "rfc6733.dad").write_text(source.read_text("utf-8"), "utf-8")
+    (corpus / "rfc" / "rfc6733.dad").write_bytes(_RFC6733.read_bytes())
+    options = []
     for option in ("sources", "corrections", "transcriptions"):
         (tmp_path / option).mkdir()
+        options += [f"--{option}", tmp_path / option]
 
-    result = CliRunner().invoke(
-        main,
-        [
-            "corpus",
-            "regenerate",
-            "--manifest",
-            str(manifest),
-            "--corpus",
-            str(corpus),
-            "--sources",
-            str(tmp_path / "sources"),
-            "--corrections",
-            str(tmp_path / "corrections"),
-            "--transcriptions",
-            str(tmp_path / "transcriptions"),
-        ],
+    result = _invoke(
+        "corpus", "regenerate", "--manifest", manifest, "--corpus", corpus, *options
     )
 
     assert result.exit_code == 1
     assert "not-in-manifest" in result.stdout
     assert "holds no rfc: run `seanchai corpus download --only rfc`" in result.stderr
-
-
-def test_correct_command_keeps_the_raw_files_commented_out_members(tmp_path):
-    # TS 32.299's struck members are commented out in its raw file.
-    raw = tmp_path / "raw.dad"
-    raw.write_text(
-        _dad_with(
-            "; Type: Grouped AVP",
-            "; Name: Example",
-            "; Section: 6.3.1",
-            "Example ::= < AVP header: 700 10415 >",
-            ";;      [ Struck ] ; strikethrough",
-            "        [ Kept ]",
-        )
-    )
-    directory = tmp_path / "corrections"
-    directory.mkdir()
-    (directory / "TS29.329.py").write_text(
-        "from seanchai.dad.corrections import Correction, definition\n"
-        "CORRECTIONS = [\n"
-        "    Correction(\n"
-        "        id='example-code',\n"
-        "        target=definition('Example'),\n"
-        "        field='code',\n"
-        "        expect=700,\n"
-        "        replace=701,\n"
-        "        reason='clause 6.3.1 misprints the code',\n"
-        "    )\n"
-        "]\n"
-    )
-    output = tmp_path / "corrected.dad"
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "corpus",
-            "correct",
-            str(raw),
-            "--corrections",
-            str(directory),
-            "-o",
-            str(output),
-        ],
-    )
-
-    assert result.exit_code == 0
-    assert output.read_text().splitlines()[-2:] == [
-        ";;      [ Struck ] ; strikethrough",
-        "        [ Kept ]",
-    ]
-
-
-def test_correct_command_keeps_a_comment_block_ending_the_file(tmp_path):
-    raw = tmp_path / "raw.dad"
-    raw.write_text(
-        _dad_with(
-            "; Type: Grouped AVP",
-            "; Name: Example",
-            "; Section: 6.3.1",
-            "Example ::= < AVP header: 700 10415 >",
-            "",
-            "",
-            ";; end of file",
-        )
-    )
-    directory = tmp_path / "corrections"
-    directory.mkdir()
-    (directory / "TS29.329.py").write_text(
-        "from seanchai.dad.corrections import Correction, definition\n"
-        "CORRECTIONS = [\n"
-        "    Correction(\n"
-        "        id='example-code',\n"
-        "        target=definition('Example'),\n"
-        "        field='code',\n"
-        "        expect=700,\n"
-        "        replace=701,\n"
-        "        reason='clause 6.3.1 misprints the code',\n"
-        "    )\n"
-        "]\n"
-    )
-    output = tmp_path / "corrected.dad"
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "corpus",
-            "correct",
-            str(raw),
-            "--corrections",
-            str(directory),
-            "-o",
-            str(output),
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    assert output.read_text().endswith(
-        "Example ::= < AVP header: 701 10415 > ;; corrected:"
-        " (TS29.329.py#example-code)\n\n\n;; end of file\n"
-    )
-
-
-def test_importing_the_cli_leaves_other_click_apps_alone():
-    """Run apart, since this process has imported `seanchai.cli` already."""
-    script = """
-import click
-from click.testing import CliRunner
-
-before = (
-    click.Context.formatter_class,
-    click.ClickException.show,
-    click.UsageError.show,
-)
-import seanchai.cli
-
-assert before == (
-    click.Context.formatter_class,
-    click.ClickException.show,
-    click.UsageError.show,
-)
-
-
-@click.command()
-def other():
-    "Help."
-    raise click.ClickException("broken")
-
-
-@click.command()
-def plain():
-    "Help."
-
-
-context = click.Context(plain)
-assert type(context.make_formatter()) is click.HelpFormatter
-assert context.command.context_class is click.Context
-result = CliRunner().invoke(other, color=True)
-assert result.exit_code == 1
-assert result.stderr == "Error: broken\\n", result.stderr
-help_text = CliRunner().invoke(plain, ["--help"], color=True).output
-assert help_text.startswith("Usage: "), help_text
-"""
-    run = subprocess.run(
-        [sys.executable, "-c", script], capture_output=True, text=True, check=False
-    )
-    assert run.returncode == 0, run.stderr
-
-
-def test_the_cli_renders_its_own_failures_and_help():
-    runner = CliRunner()
-
-    failed = runner.invoke(main, ["lint", "/nonexistent.dad"], color=True)
-    assert failed.exit_code == 2
-    assert "\x1b[" in failed.stderr
-    assert "for help." in failed.stderr
-    assert "\nerror: " in click.unstyle(failed.stderr)
-    assert click.unstyle(failed.stderr).startswith("Usage: main lint")
-
-    assert runner.invoke(main, ["format", "--help"], color=True).output.startswith(
-        click.style("Usage", fg="green", bold=True)
-    )
-    assert main.commands["format"].context_class is not click.Context
-
-
-def test_the_corpus_group_renders_its_failures_and_help_as_the_cli_does():
-    runner = CliRunner()
-
-    failed = runner.invoke(main, ["corpus", "correct"], color=True)
-    assert failed.exit_code == 2
-    assert "\x1b[" in failed.stderr
-    plain = click.unstyle(failed.stderr)
-    assert plain.startswith("Usage: main corpus correct")
-    assert "Try 'main corpus correct --help' for help." in plain
-    assert "\nerror: Missing argument 'SOURCE'." in plain
-
-    unknown = runner.invoke(main, ["corpus", "no-such-command"])
-    assert unknown.exit_code == 2
-    assert unknown.stderr.startswith("Usage: main corpus [OPTIONS]")
-    assert "error: No such command 'no-such-command'." in unknown.stderr
-
-    for arguments in (["corpus", "--help"], ["corpus", "download", "--help"]):
-        assert runner.invoke(main, arguments, color=True).output.startswith(
-            click.style("Usage", fg="green", bold=True)
-        )
-    group = main.commands["corpus"]
-    assert isinstance(group, click.Group)
-    assert type(group) is type(main)
-    for command in group.commands.values():
-        assert command.context_class is not click.Context
-
-
-def _listed(help_text: str) -> list[str]:
-    """The command names a help text lists, in order."""
-    _, _, listed = help_text.partition("Commands:\n")
-    return [line.split()[0] for line in listed.splitlines() if line.strip()]
-
-
-def test_help_lists_the_commands_by_audience():
-    runner = CliRunner()
-
-    top = runner.invoke(main, ["--help"])
-    assert top.exit_code == 0
-    assert _listed(top.stdout) == [
-        "show",
-        "commands",
-        "dictionary",
-        "export",
-        "lint",
-        "format",
-        "corpus",
-    ]
-    assert "needs a checkout" in top.stdout
-
-    group = runner.invoke(main, ["corpus", "--help"])
-    assert group.exit_code == 0
-    assert _listed(group.stdout) == [
-        "download",
-        "regenerate",
-        "extract",
-        "extract-rfc",
-        "correct",
-        "crosscheck",
-    ]
-
-
-@pytest.mark.parametrize(
-    "command",
-    ["download", "regenerate", "extract", "extract-rfc", "correct", "crosscheck"],
-)
-def test_a_maintainers_command_is_only_in_the_corpus_group(command):
-    result = CliRunner().invoke(main, [command, "--help"])
-
-    assert result.exit_code == 2
-    assert f"No such command '{command}'" in result.stderr
-
-
-def test_an_exit_keeps_its_status_and_a_clean_run_exits_zero(tmp_path):
-    source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
-    copied = tmp_path / "file.dad"
-    copied.write_text(source.read_text("utf-8") + "\n\n", "utf-8")
-
-    runner = CliRunner()
-    assert runner.invoke(main, ["format", "--check", str(copied)]).exit_code == 1
-    assert runner.invoke(main, ["format", str(copied)]).exit_code == 0
-
-
-def _options_and_commands(group: click.Group = main, prefix: str = ""):
-    for name, command in group.commands.items():
-        yield f"{prefix}{name}", command
-        for parameter in command.params:
-            if isinstance(parameter, click.Option):
-                yield f"{prefix}{name} {parameter.opts[0]}", parameter
-        if isinstance(command, click.Group):
-            yield from _options_and_commands(command, f"{prefix}{name} ")
-
-
-def test_every_command_and_option_says_what_it_is_for():
-    missing = [
-        name for name, each in _options_and_commands() if not (each.help or "").strip()
-    ]
-
-    assert not missing
-
-
-def test_no_help_text_spells_its_own_default():
-    """`show_default` on the group shows them, one way."""
-    spelled = [
-        name
-        for name, each in _options_and_commands()
-        if isinstance(each, click.Option)
-        and re.search(r"[(\[]default\b|\bdefault:", each.help or "", re.IGNORECASE)
-    ]
-
-    assert not spelled
-
-
-@pytest.mark.parametrize(
-    ("arguments", "shown"),
-    [
-        (["corpus", "download", "--help"], "[default: specifications]"),
-        (["corpus", "download", "--help"], "[default: 19]"),
-        (["corpus", "download", "--help"], "[default: pdfs]"),
-        (["corpus", "extract", "--help"], "[default: (stdout)]"),
-        (["lint", "--help"], "[default: full]"),
-        (["corpus", "crosscheck", "--help"], "specifications/wireshark]"),
-    ],
-)
-def test_help_shows_the_defaults(arguments, shown):
-    result = CliRunner().invoke(main, arguments, terminal_width=200)
-
-    assert result.exit_code == 0
-    assert shown in result.stdout
-
-
-def _malformed(tmp_path) -> Path:
-    path = tmp_path / "bad.dad"
-    path.write_text("not a dad file\n", encoding="utf-8")
-    return path
-
-
-def _corpus_directory(tmp_path) -> Path:
-    """A directory shaped as the corpus is: a file, and its raw mirror."""
-    root = tmp_path / "corpus"
-    (root / "rfc").mkdir(parents=True)
-    (root / "raw" / "rfc").mkdir(parents=True)
-    text = (_CORPUS_DIR / "rfc" / "rfc6733.dad").read_text("utf-8")
-    (root / "rfc" / "rfc6733.dad").write_text(text, "utf-8")
-    (root / "raw" / "rfc" / "rfc6733.raw.dad").write_text(text, "utf-8")
-    return root
-
-
-@pytest.mark.parametrize("command", [["lint"], ["format"], ["corpus", "correct"]])
-def test_a_file_that_does_not_parse_is_named(tmp_path, command):
-    bad = _malformed(tmp_path)
-    arguments = [*command, str(bad)]
-    if "correct" in command:
-        arguments += ["--corrections", str(tmp_path)]
-
-    result = CliRunner().invoke(main, arguments)
-
-    assert result.exit_code == 1, result.output
-    assert result.stderr.startswith(f"error: {bad}: ")
-    assert not result.stdout
-
-
-def test_a_file_that_is_no_text_is_named(tmp_path):
-    binary = tmp_path / "binary.dad"
-    binary.write_bytes(b"\xff\xfe\x00")
-
-    result = CliRunner().invoke(main, ["lint", str(binary)])
-
-    assert result.exit_code == 1, result.output
-    assert result.stderr.startswith(f"error: {binary}: ")
-
-
-def test_lint_recurses_into_a_directory_leaving_the_raw_mirror_out(tmp_path):
-    root = _corpus_directory(tmp_path)
-    (root / "rfc" / "broken.raw.dad").write_text("nope\n", "utf-8")
-
-    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(root)])
-    assert result.exit_code == 0, result.output
-
-    (root / "raw" / "rfc" / "broken.raw.dad").write_text("nope\n", "utf-8")
-    asked = CliRunner().invoke(main, ["lint", "--no-corpus", "--raw", str(root)])
-    assert asked.exit_code == 1, asked.output
-    assert "broken.raw.dad" in asked.stderr
-
-
-def test_naming_the_raw_mirror_is_asking_for_it(tmp_path):
-    root = _corpus_directory(tmp_path)
-    (root / "raw" / "rfc" / "broken.raw.dad").write_text("nope\n", "utf-8")
-
-    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(root / "raw")])
-
-    assert result.exit_code == 1, result.output
-    assert "broken.raw.dad" in result.stderr
-
-
-@pytest.mark.parametrize(
-    ("arguments", "status", "says"),
-    [
-        (["lint"], 1, "holds no .dad files"),
-        (["format"], 1, "holds no .dad files"),
-        (["lint", "--raw"], 1, "holds no .dad files"),
-    ],
-)
-def test_a_directory_with_nothing_to_read_is_refused(tmp_path, arguments, status, says):
-    (tmp_path / "empty").mkdir()
-
-    result = CliRunner().invoke(main, [*arguments, str(tmp_path / "empty")])
-
-    assert result.exit_code == status, result.output
-    assert says in result.stderr
-
-
-def test_a_directory_holding_only_raw_files_says_how_to_read_them(tmp_path):
-    root = tmp_path / "rfc"
-    root.mkdir()
-    (root / "rfc6733.raw.dad").write_text("", "utf-8")
-
-    result = CliRunner().invoke(main, ["lint", "--no-corpus", str(root)])
-
-    assert result.exit_code == 1
-    assert "--raw reads its raw files" in result.stderr
-
-
-def test_a_file_named_twice_counts_once(tmp_path):
-    root = _corpus_directory(tmp_path)
-    source = root / "rfc" / "rfc6733.dad"
-
-    result = CliRunner().invoke(main, ["format", "--check", str(root), str(source)])
-
-    assert result.exit_code == 0, result.output
-    assert "would reformat 0 of 1 files" in result.stderr
-
-
-def test_format_rewrites_a_directory_and_leaves_its_raw_mirror_alone(tmp_path):
-    root = _corpus_directory(tmp_path)
-    corrected = root / "rfc" / "rfc6733.dad"
-    mirror = root / "raw" / "rfc" / "rfc6733.raw.dad"
-    corrected.write_text(corrected.read_text("utf-8") + "\n\n", "utf-8")
-    mirror.write_text(mirror.read_text("utf-8") + "\n\n", "utf-8")
-    before = mirror.read_text("utf-8")
-
-    result = CliRunner().invoke(main, ["format", str(root)])
-
-    assert result.exit_code == 0, result.output
-    assert "reformatted 1 of 1 files" in result.stderr
-    assert mirror.read_text("utf-8") == before
-    assert not corrected.read_text("utf-8").endswith("\n\n")
-
-    asked = CliRunner().invoke(main, ["format", "--raw", str(root)])
-    assert "reformatted 1 of 2 files" in asked.stderr
-    assert not mirror.read_text("utf-8").endswith("\n\n")
-
-
-def test_lint_with_nothing_named_reads_the_installed_corpus(monkeypatch):
-    monkeypatch.chdir(Path(__file__).parent.parent)
-
-    named = CliRunner().invoke(
-        main, ["lint", "--output-format", "concise", "--no-notes"]
-    )
-    whole = CliRunner().invoke(
-        main,
-        ["lint", "--output-format", "concise", "--no-notes", str(_CORPUS_DIR)],
-    )
-
-    assert named.exit_code == whole.exit_code == 0, named.output
-    assert named.stdout == whole.stdout
-
-
-@pytest.mark.parametrize(
-    "arguments",
-    [
-        ["corpus", "regenerate", "--manifest", "absent/manifest.json"],
-        ["corpus", "regenerate"],
-    ],
-)
-def test_regenerate_says_to_download_what_it_lacks(tmp_path, monkeypatch, arguments):
-    monkeypatch.chdir(tmp_path)
-
-    result = CliRunner().invoke(main, arguments)
-
-    assert result.exit_code == 1, result.output
-    assert "does not exist: run `seanchai corpus download`" in result.stderr
-
-
-def test_crosscheck_says_a_dictionary_is_all_it_needs(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-
-    result = CliRunner().invoke(main, ["corpus", "crosscheck"])
-
-    assert result.exit_code == 1, result.output
-    assert "run `seanchai corpus download --only wireshark`" in result.stderr
-    assert "Traceback" not in result.stderr
-
-
-@pytest.mark.parametrize(
-    ("arguments", "status", "says"),
-    [
-        (["--include-pdfs"], 2, "--include-pdfs needs --specifications"),
-        (
-            ["--include-pdfs", "--specifications", "absent"],
-            1,
-            "run `seanchai corpus download --only 3gpp`",
-        ),
-        (
-            ["--specifications", "absent"],
-            1,
-            "run `seanchai corpus download --only rfc`",
-        ),
-        (
-            ["--wireshark", "absent"],
-            1,
-            "run `seanchai corpus download --only wireshark`",
-        ),
-    ],
-)
-def test_export_says_to_download_what_it_lacks(
-    tmp_path, monkeypatch, arguments, status, says
-):
-    monkeypatch.chdir(tmp_path)
-
-    result = CliRunner().invoke(main, ["export", "-o", "out", *arguments])
-
-    assert result.exit_code == status, result.output
-    assert says in result.stderr
-    assert not (tmp_path / "out").exists()
-
-
-def test_export_with_pdfs_says_to_download_the_ones_it_lacks(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    (tmp_path / "specifications").mkdir()
-
-    result = CliRunner().invoke(
-        main,
-        ["export", "-o", "out", "--include-pdfs", "--specifications", "specifications"],
-    )
-
-    assert result.exit_code == 1, result.output
-    assert "run `seanchai corpus download --only 3gpp`" in result.stderr
-
-
-@pytest.mark.parametrize(
-    "arguments",
-    [
-        [],
-        ["no-such-command"],
-        ["--no-such-option"],
-        ["lint", "--no-such-option"],
-        ["lint", "/no/such/file.dad"],
-        ["format"],
-        ["lint", "--corpus", ".", "--no-corpus"],
-        ["corpus"],
-        ["corpus", "no-such-command"],
-        ["corpus", "correct", "/no/such/file.dad", "--corrections", "."],
-        ["corpus", "download", "--spec", "TS29.272"],
-        ["corpus", "download", "--only", "pdfs"],
-        ["export"],
-        ["show"],
-        ["show", "1:x"],
-        ["show", "Session-Id", "--version", "1"],
-        ["commands", "--application", "cx"],
-        ["dictionary"],
-    ],
-    ids=" ".join,
-)
-def test_a_usage_error_exits_2(arguments):
-    result = CliRunner().invoke(main, arguments)
-
-    assert result.exit_code == 2, result.output
-    assert "Traceback" not in result.output
-
-
-def test_a_bare_command_prints_its_help_and_no_error():
-    result = CliRunner().invoke(main, [])
-
-    assert result.exit_code == 2
-    assert "Commands" in result.stderr
-    assert "error:" not in result.stderr
-
-
-def test_a_finding_or_an_error_exits_1(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    unformatted = tmp_path / "unformatted.dad"
-    unformatted.write_text(
-        (_CORPUS_DIR / "rfc" / "rfc6733.dad").read_text("utf-8") + "\n\n", "utf-8"
-    )
-    conflicted = tmp_path / "conflicted.dad"
-    conflicted.write_text(
-        "; Specification: RFC 9999\n"
-        "; Vendor-ID: 0\n"
-        "\n"
-        "\n"
-        "; Type: AVP Table\n"
-        "; Section: 1\n"
-        "; Columns: Name  Code  Type    Must  May  S.not  M.not\n"
-        "           One   1     Float32 M     -    -      V\n"
-        "           Two   1     Float32 M     -    -      V\n",
-        "utf-8",
-    )
-
-    for arguments in (
-        ["format", "--check", str(unformatted)],
-        ["lint", "--no-corpus", str(conflicted)],
-        ["show", "no-such-avp"],
-        ["commands", "--application", "99"],
-    ):
-        result = CliRunner().invoke(main, arguments)
-        assert result.exit_code == 1, (arguments, result.output)
-
-
-def test_notes_and_crosscheck_findings_are_no_failure(tmp_path, monkeypatch):
-    """A report for a reader with the documents open, not a verdict
-    (docs/oracle.md), so the one kind of finding exiting 0."""
-    monkeypatch.chdir(tmp_path)
-    dictionary = tmp_path / "dictionary"
-    dictionary.mkdir()
-    (dictionary / "dictionary.xml").write_text(
-        '<?xml version="1.0"?><dictionary><base name="base">'
-        '<avp name="Renamed" code="263"><type type-name="UTF8String"/></avp>'
-        "</base></dictionary>",
-        "utf-8",
-    )
-
-    result = CliRunner().invoke(
-        main,
-        [
-            "corpus",
-            "crosscheck",
-            "--wireshark",
-            str(dictionary),
-            str(_CORPUS_DIR / "rfc" / "rfc6733.dad"),
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    assert "Session-Id" in result.stdout
-
-
-def test_version_names_the_installed_library():
-    result = CliRunner().invoke(main, ["--version"])
-
-    assert result.exit_code == 0
-    assert seanchai.__version__ in result.output
