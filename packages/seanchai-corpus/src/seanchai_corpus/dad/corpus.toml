@@ -12,7 +12,8 @@
 # An entry read from a citing document's references clause names the copy
 # whose clause it read, `citing_version`, and answers for that copy alone: the
 # clause changes between versions, and the corpus holds several copies of some
-# documents. Each copy citing alike states its own entry.
+# documents. Each copy citing alike states its own entry, and a citing document
+# without a version, an RFC, states `citing_version = ""`.
 
 # Which generation of the `.dad` grammar and of this directory's layout the
 # corpus is; a library refuses a corpus of a format it does not read

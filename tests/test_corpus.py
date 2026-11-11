@@ -993,6 +993,24 @@ def test_an_entry_naming_what_the_corpus_lacks_fails_the_load(tmp_path, entry, m
     assert corpus.Corpus([], rules=rules).rules is rules
 
 
+def test_a_rule_names_a_citing_document_without_a_version(tmp_path):
+    """An RFC has no version, and its citations are keyed by "", matched
+    exactly: the entry answers the version-less copy and no versioned one."""
+    directory = _described(
+        tmp_path,
+        'format = 1\n[[cited_version]]\nciting = "RFC9999"\nciting_version = ""\n'
+        'cited = "TS29.900"\nversion = "18.0.0"' + _ENTRY,
+    )
+    with pytest.raises(corpus.CorpusError, match="names RFC9999, which the corpus"):
+        corpus.Corpus.load([directory])
+
+    (directory / "rfc9999.dad").write_text(
+        formatter.format_spec(_spec("RFC 9999", None)), encoding="utf-8"
+    )
+    books = corpus.Corpus.load([directory])
+    assert books.rules.cited_versions == {("RFC9999", "", "TS29.900"): "18.0.0"}
+
+
 def test_the_installed_corpus_is_the_workspace_copy_here():
     assert corpus.installed_directory() == _CORPUS_DIR
     assert seanchai_corpus.CORPUS_DIR == _CORPUS_DIR

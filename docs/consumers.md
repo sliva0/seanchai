@@ -483,7 +483,8 @@ but `cited_as` and `final_version`, is keyed by the citing copy: citing
 document, `citing_version` and cited document. It answers for that copy
 alone, since a references clause changes between versions and the corpus holds
 several copies of some documents, and two copies citing alike state an entry
-each: TS 29.212 V11.19.0 and V19.1.0 both cite X.S0057-B in clause 2 [24].
+each: TS 29.212 V11.19.0 and V19.1.0 both cite X.S0057-B in clause 2 [24]. A
+citing document without a version, an RFC, is keyed by `citing_version = ""`.
 
 - `cited_as`: a document its citers number otherwise than its publisher, by the
   reference a From cell carries: 3GPP cites "ETSI TS 283 034", which ETSI

@@ -383,8 +383,13 @@ class Rules:
         )
         for table, entries in tables:
             for (citing, citing_version, cited), entry in entries.items():
-                if not held(citing, citing_version):
-                    raise lacks(table, f"{citing} V{citing_version}")
+                # Exact, a version-less copy's being "": no entry is a wildcard.
+                if not any(
+                    (each.spec.version or "") == citing_version
+                    for each in books._candidates(citing)
+                ):
+                    shown = f" V{citing_version}" if citing_version else ""
+                    raise lacks(table, f"{citing}{shown}")
                 if isinstance(entry, StandIn):
                     if not held(cited, entry.version, entry.revision):
                         raise lacks(
@@ -455,6 +460,10 @@ def _entries(path: Path, data: dict[str, Any], table: str) -> list[dict[str, Any
                 kind = "a non-empty list of distinct names" + (
                     f" of {', '.join(FILLABLE)}" if name == "fields" else ""
                 )
+            elif name == "citing_version":
+                # "" is the version of a citing document that has none, an RFC.
+                good = isinstance(value, str) and (not value or bool(value.strip()))
+                kind = 'a version, or "" for a document without one'
             else:
                 good = isinstance(value, str) and bool(value.strip())
                 kind = "non-empty text"
