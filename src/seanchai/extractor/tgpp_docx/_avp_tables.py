@@ -44,10 +44,8 @@ _M_BIT_OVERRIDES = {
 
 
 # Clause cells in 29.061's tables annotate the number: "16.4.7 (see Note)",
-# 37 times across two clauses in both spellings. A clause number has no
-# syntax for parentheses, so a trailing parenthetical is almost certainly
-# prose — but dropping text is a declared reading, the `clause-parenthetical`
-# quirk, not an assumption.
+# 37 times across two clauses in both spellings. Dropping the trailing
+# parenthetical is a declared reading, the `clause-parenthetical` quirk.
 _CLAUSE_PARENTHETICAL_RE = re.compile(r"\s*\([^)]*\)\s*$")
 
 
@@ -64,10 +62,9 @@ def _clause_cell(text: str, quirks: sources.Quirks) -> str:
     return text
 
 
-# Both spellings of the Encrypt column, normalized to one on the way in. This
-# is a document convention rather than a typo — TS 29.061, 29.212 and 29.214
-# write "Y"/"N" throughout, the rest write "Yes"/"No" — and a convention is
-# extractor code, not several hundred input patches. A dash states nothing,
+# Both spellings of the Encrypt column, normalized to one on the way in:
+# TS 29.061, 29.212 and 29.214 write "Y"/"N" throughout, the rest write
+# "Yes"/"No". A dash states nothing,
 # as in the flag cells beside it: TS 32.299 V11.20.0's table 7.1 dashes
 # every cell of the fifteen rows it does not use (CC-Sub-Session-Id,
 # Vendor-Id), Encrypt included.
@@ -106,9 +103,8 @@ def _flags_cell(text: str, quirks: sources.Quirks) -> frozenset[ast.AvpFlag]:
 
 
 # The nine columns 3GPP AVP tables share, keyed by the label they print. The
-# same column is spelled differently across specifications — "Clause defined"
-# and "Section defined", "May Encr." and "May Encrypt" — and the differences
-# are typographic, not semantic.
+# same column is spelled differently across specifications ("Clause defined"
+# and "Section defined", "May Encr." and "May Encrypt").
 _AVP_TABLE_COLUMNS = {
     "Attribute Name": ast.AvpColumn.NAME,
     "AVP Name": ast.AvpColumn.NAME,  # TS 32.299 tables 7.1.0.1 and 7.2.0.1
@@ -137,11 +133,10 @@ def _extract_avp_table(
     own_reference: str = "",
     wildcards: list[tuple[int, str]] | None = None,
 ) -> tuple[ast.AvpTable, list[ast.ReusedAvpRow]]:
-    """Column *order* has been identical in every 3GPP specification examined,
-    but the set has not: TS 29.273's table has no Encrypt column, TS 29.212's
-    has two the format does not model. Reading the labels rather than assuming
-    nine positions is what lets those be extracted at all, and what keeps a
-    missing column distinguishable from an empty cell.
+    """Read an AVP-flags table by its column labels. The set of columns varies
+    (TS 29.273's table has no Encrypt column, TS 29.212's has two the format
+    does not model), and the labels keep a missing column apart from an empty
+    cell.
 
     Behind `wildcard-avp-row`, a row tabulating the `* [ AVP ]` wildcard (TS
     32.299 tables 7.1 and 7.1.0.1, `AVP | *`) is no AVP and no row: it goes to

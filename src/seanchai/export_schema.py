@@ -1,13 +1,12 @@
-"""What `seanchai export` writes: the export's data contract, as frozen models.
+"""The data contract of `seanchai export`, as frozen models.
 
-The site reads these files and nothing else of Seanchaí, so they are typed in
-one place, written from these models, and described by the `schema.json` an
-export carries (`json_schema`). `SCHEMA_VERSION` changes when a reader would
+The export is written from these models and described by the `schema.json`
+it carries (`json_schema`). `SCHEMA_VERSION` changes when a reader would
 have to. See docs/website.md.
 
-A field with no default is always written, null where it says nothing. A field
-with a default is left out while it holds it, which keeps the per-token and
-per-line fields that are mostly empty out of a large file.
+A field with no default is always written, null when unstated. A field with
+a default is omitted while it holds the default, which keeps mostly-empty
+per-token and per-line fields out of large files.
 """
 
 import json
@@ -343,7 +342,8 @@ class Search(_Model):
 
 
 def dumps(model: pydantic.BaseModel) -> str:
-    """A model as the export writes it: compact, keys sorted, one final newline."""
+    """Serialise a model as the export writes it: compact, keys sorted, one
+    final newline."""
     return (
         json.dumps(
             model.model_dump(mode="json", exclude_defaults=True),
@@ -356,8 +356,8 @@ def dumps(model: pydantic.BaseModel) -> str:
 
 
 def json_schema() -> dict[str, Any]:
-    """The JSON Schema `schema.json` holds: one of the four files an export
-    writes, in the form they take after `dumps`."""
+    """Return the JSON Schema in `schema.json`: one of the export's four
+    file kinds, as `dumps` writes them."""
     roots = (Index, Search, Document, RawDocument)
     _, schema = models_json_schema(
         [(root, "validation") for root in roots], title="Seanchaí export"

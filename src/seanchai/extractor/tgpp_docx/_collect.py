@@ -479,11 +479,9 @@ def _resolve(
 def _enum_vendor_id(grouped: list[ast.GroupedAvp], publisher: int) -> int:
     """The vendor id shared by this spec's locally defined AVPs.
 
-    Enumerated-AVP sections never print it, so it is read off the grouped-AVP
-    headers, which normally do — one value per 3GPP spec (10415). TS 29.109
-    defines enumerated AVPs but no grouped ones, so no header supplies the
-    otherwise implicit value; in that case the publisher's vendor space is the
-    only candidate. Several distinct header values remain a resolution error.
+    Read off the grouped-AVP headers (3GPP: 10415), since enumerated-AVP
+    sections never print it. With no grouped AVP (TS 29.109), it is the
+    publisher's vendor space. Several distinct header values are an error.
     """
     vendors = sorted({avp.vendor_id for avp in grouped if avp.vendor_id is not None})
     if not vendors:

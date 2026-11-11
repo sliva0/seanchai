@@ -1,12 +1,10 @@
-"""`seanchai dictionary`: the resolved corpus as one JSON file, for a Diameter
-stack that is not Python to generate its own dictionary from; and the JSON
-`seanchai show` and `seanchai commands` print, in the same shapes.
+"""`seanchai dictionary`: the resolved corpus as one JSON file, for non-Python
+Diameter stacks; also the JSON `seanchai show` and `seanchai commands` print.
 
-The shape is these models; docs/consumers.md#without-python says how to read it.
-Every field is always written, null or empty where it says nothing. Commands
-hold their applications' place and AVPs a list of their own, each reading once,
-which members name by `id`, so a body shared by a hundred commands is one entry.
-The same corpus and the same choices give the same bytes.
+These models are the shape; docs/consumers.md explains it. Every field is
+always written, null or empty when unstated. AVPs are a separate list, each
+reading once, and members refer to them by `id`. The same corpus and the
+same options give the same bytes.
 """
 
 import json
@@ -302,9 +300,9 @@ class _Builder:
                 self.hold((member.avp,))
 
     def number(self) -> None:
-        """Give each reading its `id`: the identity, with the defining
-        document's reading first and the rest in the order of their contents,
-        which no hash seed or selection order moves."""
+        """Give each reading its `id`: the defining document's reading first,
+        then the rest ordered by content, independent of hash seed or
+        selection order."""
         identities: dict[tuple[int, int], list[model.Avp]] = {}
         for avp in self.readings:
             identities.setdefault(avp.identity, []).append(avp)
@@ -480,14 +478,12 @@ def build(
     documents: Sequence[str] = (),
     application_ids: Sequence[int] = (),
 ) -> Dictionary:
-    """`built`'s applications, commands and AVPs, of `documents` (every document)
-    and `application_ids` (every application).
+    """Build the dictionary of `built`, limited to `documents` and
+    `application_ids` (all when not given).
 
-    The AVPs are what the selected commands use at any depth. Without
-    `application_ids`, they are also what the selected documents' tables list,
-    since a document can define AVPs no command of its own uses (TS 29.061). An id
-    no selected document uses is refused, as `model.ModelError`, like a reference
-    the corpus lacks: an empty file is no answer to it.
+    AVPs are those the selected commands use at any depth; without
+    `application_ids`, also those the selected documents' tables list. An id
+    no selected document uses raises `model.ModelError`.
     """
     references = tuple(
         sorted({built.canonical(each) for each in documents}) or built.references()
@@ -590,8 +586,8 @@ def _holes(builder: _Builder) -> tuple[Hole, ...]:
 def lookup(
     built: model.Model, avp: model.Avp, *, corpus_version: str | None = None
 ) -> Lookup:
-    """`avp`, one of `built`'s readings, with the other readings of its
-    identity and everything their bodies name at any depth."""
+    """Return `avp` (one of `built`'s readings) with the other readings of
+    its identity and everything their bodies name at any depth."""
     builder = _Builder(built)
     others = [each for each in built.readings(avp.identity) if each != avp]
     builder.hold((avp, *others))
@@ -638,5 +634,5 @@ def listing(
 
 
 def dumps(dictionary: Dictionary) -> str:
-    """The file's text: `export_schema.dumps`, compact with its keys sorted."""
+    """Return the file's text via `export_schema.dumps`."""
     return export_schema.dumps(dictionary)

@@ -1,6 +1,5 @@
-"""Flag rules as the model reads them: `FlagRules`, RFC 6733's rule for an
-IETF-space AVP's unplaced M and V bits, and the two helpers resolution reads
-a table row's flag cells with."""
+"""`FlagRules`, RFC 6733's default for an IETF-space AVP's unplaced M and V
+bits, and helpers for reading a table row's flag cells."""
 
 from __future__ import annotations
 
@@ -10,30 +9,23 @@ from ..dad import ast
 
 
 class FlagRules(ast.AvpFlagRules):
-    """Flag rules holding the one setting no table cell prints: a bit RFC
-    6733 leaves to whichever application uses the AVP.
+    """AVP flag rules plus `application_defined`: the bits RFC 6733 leaves
+    to the application that uses the AVP.
 
-    RFC 6733 section 4.1: "The 'M' bit MUST be set according to the rules
-    defined in the application specification that introduces or reuses this
-    AVP", and RFC 7423 section 4.4.1 has a re-using application "specify
-    the setting of the M-bit". An IETF AVP whose defining RFC states no M
-    rule (RFC 4072, 5447, 5777 and 6734 print no flag columns) therefore has
-    none of its own, by rule rather than by omission, and Must or May would
-    each be a guess. Its V bit is no guess: section 4.1.1 forbids a Vendor-ID
-    of zero, so an IETF-space AVP carries none and its V bit is Must-not.
+    RFC 6733 section 4.1 has the using application set the M bit, so an IETF
+    AVP whose RFC states no M rule has none of its own. Section 4.1.1 makes
+    an IETF-space AVP's V bit Must-not.
 
-    Every `Avp.flag_rules` and `Hole.flag_rules` is one of these, so a consumer
-    reads one type. `application_defined` is set only on vendor 0's
-    (`_ietf_rules`); everywhere else it is empty and the columns are the
-    document's as printed.
+    Every `Avp.flag_rules` and `Hole.flag_rules` is one of these.
+    `application_defined` is set only for vendor 0 (`_ietf_rules`); elsewhere
+    it is empty and the columns are as the document prints them.
     """
 
     application_defined: frozenset[ast.AvpFlag] = frozenset()
 
     @classmethod
     def printed(cls, rules: ast.AvpFlagRules) -> FlagRules:
-        """A table's four columns as the model's type; rules already of it are
-        returned as they are."""
+        """`rules` as a `FlagRules`, returned unchanged if it already is one."""
         if isinstance(rules, cls):
             return rules
         return cls(
@@ -69,13 +61,9 @@ class FlagRules(ast.AvpFlagRules):
 
 
 def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> FlagRules:
-    """An IETF-space AVP's flag rules with RFC 6733's rule for each of M and
-    V that no reading places: V under Must-not (section 4.1.1), M
-    application-defined (section 4.1). Rules placing both are returned as
-    they are; so are a document's own rules for the P bit, which RFC 6733
-    reserves. RFC 7683 and 8583 place V only, and say in prose that "the
-    M-bit usage for a given AVP in a given command may be defined by the
-    application"."""
+    """An IETF-space AVP's flag rules, with an unplaced V put under Must-not
+    (RFC 6733 section 4.1.1) and an unplaced M made application-defined
+    (section 4.1). Other placements, the P bit included, are kept."""
     rules = ast.AvpFlagRules() if flag_rules is None else flag_rules
     placed = rules.must | rules.may | rules.should_not | rules.must_not
     if {ast.AvpFlag.MANDATORY, ast.AvpFlag.VENDOR} <= placed:
@@ -90,10 +78,9 @@ def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> FlagRules:
 
 
 def _stated(flag_rules: ast.AvpFlagRules) -> bool:
-    """Whether a row's flag cells say anything. A table with no flag columns
-    (RFC 4072, 5447, 5777 and 6734 print none) and a row with every
-    flag cell blank (TS 32.299 table 7.2.0.1 for most re-printed rows) both
-    parse to empty rules, and neither is a claim that no flag applies."""
+    """Whether a row's flag cells state anything. Empty rules come from a
+    table with no flag columns or a row with blank cells, and do not mean
+    that no flag applies."""
     return bool(
         flag_rules.must
         or flag_rules.may
@@ -105,9 +92,8 @@ def _stated(flag_rules: ast.AvpFlagRules) -> bool:
 def _overlay(
     own: ast.AvpFlagRules, theirs: ast.AvpFlagRules | None
 ) -> ast.AvpFlagRules:
-    """`own`'s placements, with each flag `own` places in no column placed
-    where `theirs` places it: TS 29.229's `Digest-Qop` row puts M in Must
-    and V in Must not, and RFC 4590's stand-in rules add P under May."""
+    """`own`'s placements, plus `theirs` for each flag `own` leaves
+    unplaced."""
     if theirs is None:
         return own
     placed = own.must | own.may | own.should_not | own.must_not

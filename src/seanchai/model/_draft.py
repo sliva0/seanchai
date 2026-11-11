@@ -1,6 +1,5 @@
-"""`_Draft`: one reading of a name while resolution assembles it, how one
-reading fills what it leaves unstated from the next (`_Draft.fill`), and how
-a finished reading becomes an `Avp` or a `Hole` (`_Draft.final`)."""
+"""`_Draft`: one reading of a name during resolution. `fill` completes it
+from the next reading; `final` turns it into an `Avp` or a `Hole`."""
 
 from __future__ import annotations
 
@@ -24,9 +23,8 @@ from ._types import (
 
 @dataclass
 class _Draft:
-    """One reading of a name while resolution assembles it: `Avp`'s fields,
-    any of them possibly unknown, until `final` turns it into an `Avp` or a
-    `Hole`."""
+    """`Avp`'s fields for one reading of a name, any of them possibly
+    unknown."""
 
     # Avp, Grouped or Enumerated; None when nothing defines the name, and the
     # draft carries only the unreadable `origin` that would have.
@@ -71,19 +69,14 @@ class _Draft:
         return dict(self.completed_by).get(name, self.reference)
 
     def fill(self, other: _Draft) -> _Draft:
-        """This reading with what it leaves unstated taken from `other`, the
-        next document along the resolution order, when the two are the same
-        AVP saying the same thing.
+        """This reading with its unstated fields taken from `other`, the next
+        reading in resolution order.
 
-        Every field both readings state must be equal: code, type, flag
-        rules, and vendor where both state one. A table row states its
-        vendor through its V flag (`AvpTableRow.stated_vendor`); one whose
-        V flag says neither is inferred from its file, and agrees with any:
-        TS 29.229's row for RFC 4590's `Digest-Realm` sits in vendor 10415's
-        file, the origin's row in vendor 0's. A reading that disagrees fills
-        nothing, and neither does any after it; the hole names it instead, since taking
-        a `Time` row's missing flags from an `Unsigned32` reading would make
-        one complete AVP out of two documents that disagree about it.
+        Every field both state must be equal: code, type, flag rules, and
+        vendor where both state one. A table row whose V flag states no
+        vendor (`AvpTableRow.stated_vendor`) agrees with any vendor. On a
+        disagreement nothing is filled, now or by later readings, and the
+        hole names `other` in `conflict`.
         """
         if self.kind is None:
             # Nothing here yet: any definition wins, and failing one, the
@@ -146,10 +139,9 @@ class _Draft:
 
     @property
     def complete(self) -> bool:
-        """Whether this reading states every field itself, so that no later
-        reading has anything to fill. RFC 6733's rule for an IETF AVP's
-        unplaced bits is no statement: TS 29.273's row setting M for RFC
-        5777's `QoS-Capability` still fills the origin's reading."""
+        """Whether this reading states every field, leaving nothing to fill.
+        RFC 6733's default for unplaced IETF bits does not count as
+        stated."""
         return self.kind is not None and None not in (
             self.vendor_id,
             self.code,

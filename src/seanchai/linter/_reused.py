@@ -1,5 +1,5 @@
-"""Cross-file rules comparing what a file re-uses, re-prints or cites a
-result code from against the origin document it names.
+"""Cross-file rules comparing re-used AVPs, re-prints and cited result
+codes against the origin document they name.
 """
 
 from __future__ import annotations
@@ -13,14 +13,11 @@ from ._origins import _Origin
 
 
 def _reused_avp_exists(index: _Index, origins: dict[str, _Origin]) -> list[Finding]:
-    """Every re-used AVP is something the origin actually has.
+    """Every re-used AVP is one the origin has.
 
-    Two outcomes, because "the origin never heard of this AVP" and "the origin
-    borrows it too" are different sizes of wrong. TS 29.283 cites `Feature-Id`
-    from TS 29.229, which has no such AVP — 29.229 defines `Feature-List-ID`,
-    and no dictionary anywhere carries a `Feature-Id`. TS 29.172 cites
-    `Service-Selection` from TS 29.272, which does carry it but as a re-used
-    AVP of RFC 5778's; the AVP is real and the citation names a middleman.
+    An origin that lacks the AVP is an error (`reused-avp-not-in-origin`);
+    one that re-uses it from a third document is a note
+    (`reused-origin-indirect`).
     """
     findings = []
     for name, origin in sorted(index.reused.items()):
@@ -60,31 +57,16 @@ def _reused_avp_exists(index: _Index, origins: dict[str, _Origin]) -> list[Findi
 def _reused_rows_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
-    """A row this file tabulates for an AVP it re-uses reads the origin's way.
+    """A note where this file's table row for a re-used AVP disagrees with
+    every one of the origin's rows.
 
-    The cross-file counterpart of `table-row-mismatch`, with the same
-    discipline: only what both rows state is compared. Type and encrypt are
-    compared where both tables declare the column and both cells say
-    something; with no origin row typing the AVP, an origin definition types it
-    Grouped or Enumerated. A flag is compared where both rows place it in a
-    column: RFC 7683's table puts M in neither Must nor Must-not, which leaves
-    a citing interface free to forbid it. A row agreeing with any of the
-    origin's rows agrees, since the origin's own disagreements are its
-    `table-row-mismatch`. A note, because a citing interface may set its own
-    flag rule on purpose, and evidence either way: the message says which
-    side the model follows, for the disputed flag the first of the citing
-    file's rows placing it (`_followed_for_flag`; RFC 6733 sections 4.1 and
-    4.5 leave flag rules to the application), the origin for the type
-    unless this file defines the AVP itself. A
-    re-used table's M-bit column is not compared: it states this
-    interface's setting, which is what the column is for, and the model
-    reads it so (`model.Model._own_m_bit`), below the citing file's rows.
-    Codes are `reused-code-conflict`'s.
-
-    Only M and V are compared. RFC 6733 clause 4.1 reserves the P bit ("the
-    'P' bit SHOULD be set to 0"), so documents written since drop it while
-    their origins (RFC 4005, 4006, 5778; TS 29.212) still print it: across two
-    documents a P cell records which side of RFC 6733 each was written on.
+    Only what both sides state is compared: type and encrypt where both
+    tables have the column, and the M and V flags where both rows place them
+    (the P bit is obsolete since RFC 6733). An origin definition types the
+    AVP when no origin row does. The message names the side the model
+    follows (`_followed_for_flag`). A re-used table's M-bit column is not
+    compared; it states this interface's own setting. Codes are
+    `reused-code-conflict`'s.
     """
     ours: dict[str, list[tuple[ast.AvpTable, ast.AvpTableRow]]] = defaultdict(list)
     for table in index.tables:
@@ -138,13 +120,10 @@ def _followed_for_flag(
     row: ast.AvpTableRow,
     flag: ast.AvpFlag,
 ) -> str:
-    """The row the model reads `flag` of a re-used AVP from, as a
-    `reused-row-mismatch` message names it, `row` being the reported one:
-    the first of this file's rows placing the flag
-    (`model.Model._own_flags`). `row` places it, being compared on it, so
-    that is `row` or an earlier row, never a re-used row's M-bit or the
-    origin, which rank below. A first row placing V alone says nothing of
-    M, so a second row's M is what the model follows."""
+    """Name the row the model reads `flag` from, for a `reused-row-mismatch`
+    message about `row`: the first of this file's rows that places the flag
+    (`model._resolution._Resolver._own_flags`). That is `row` or an earlier
+    row."""
     for table, each in ours:
         if each is row:
             return f"this row for {flag.value}"
@@ -156,19 +135,12 @@ def _followed_for_flag(
 def _reused_row_vendors_agree_with_origin(
     index: _Index, own_vendor: int, origins: dict[str, _Origin]
 ) -> list[Finding]:
-    """A row this file tabulates for an AVP it re-uses places it in the
-    origin's vendor space.
+    """An error where this file's row for a re-used AVP states a vendor no
+    origin reading gives; two vendors mean two AVPs.
 
-    The row's vendor is the model's reading (`ast.AvpTableRow.stated_vendor`):
-    its Vendor-ID cell where its table prints one, else IETF space for V
-    under Must-not and the file's `; Vendor-ID:` for V under Must; a row
-    stating none agrees with any. The origin's is its definition's header,
-    no vendor-id being IETF space, or what its own rows state the same way
-    in its file. TS 29.229's rows for RFC 4590's `Digest-*` AVPs put V under
-    Must-not and agree with RFC 4590's vendor 0. Agreeing with any one origin
-    reading agrees, as for `reused-row-mismatch`. An error, unlike that
-    rule's notes: two vendors are two identities, so the row and its origin
-    name two AVPs, as two codes do (`reused-code-conflict`).
+    Vendors are read by `ast.AvpTableRow.stated_vendor`; a row stating none
+    agrees with any. The origin's readings are its definition (no vendor-id
+    is IETF space) and its own rows.
     """
     findings = []
     for name, origin in sorted(index.reused.items()):
@@ -221,17 +193,8 @@ def _reused_row_vendors_agree_with_origin(
 def _reused_codes_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
-    """A code this file's AVP table prints for an AVP it lists as re-used is the
-    code the origin gives it.
-
-    The claim that an AVP is another document's, a re-used table's row or a
-    clause's "This AVP is defined in", is a claim about one identity: TS 29.283
-    clause 7.3.21 says its Sequence-Number "is defined in the 3GPP TS 29.329",
-    whose Sequence-Number is 716, while table 7.3.1-1 gives 4512. A code the
-    origin does not give is `reused-code-conflict`, an error like any second
-    code: one of the two statements names another AVP. A table printing a code
-    is no evidence against the claim alone, since TS 29.140 and TS 29.329
-    tabulate codes for the AVPs they re-use."""
+    """An error (`reused-code-conflict`) where this file's AVP table prints a
+    code for a re-used AVP that the origin does not give it."""
     findings = []
     for table in index.tables:
         for row in table.rows:
@@ -270,14 +233,10 @@ def _reused_codes_agree_with_origin(
 def _reused_cells_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
-    """A re-used table's own Code and Type cells read the origin's way.
+    """A re-used table's own Code and Type cells agree with the origin.
 
-    TS 29.172 table 7.4.1-2 and TS 32.299's tables 7.3.1-7.5.1 print the
-    code, 29.172 the type too, of the AVPs they take from elsewhere. The
-    origin states both, in its definition or its table rows; a code it does
-    not give is `reused-code-conflict`, an error like any second code, and a
-    type it does not give is `reused-row-mismatch`. Only what the origin
-    states is compared, and agreeing with any of its readings agrees.
+    A code the origin does not give is a `reused-code-conflict` error; a
+    type is a `reused-row-mismatch` note. Matching any origin reading agrees.
     """
     findings = []
     for block, row in index.reused_cells:
@@ -346,8 +305,8 @@ def _row_comparisons(
     theirs: list[tuple[ast.AvpTable, ast.AvpTableRow]],
     definition: ast.GroupedAvp | ast.EnumeratedAvp | None,
 ) -> list[tuple[str, ast.AvpFlag | None, list[tuple[str, str, str]]]]:
-    """Per reading, the (this row, origin row, where) pairs that both state,
-    with the flag a flag rule's reading compares."""
+    """Return, per compared field, its label, its flag (for flag rules) and
+    the `(this row, origin row, where)` values both sides state."""
     out = []
     for label, column in (
         ("type", ast.AvpColumn.TYPE),
@@ -396,7 +355,7 @@ def _row_comparisons(
 def _placement(
     table: ast.AvpTable, row: ast.AvpTableRow, flag: ast.AvpFlag
 ) -> str | None:
-    """The flag-rule column a row puts `flag` in, or None if it states none."""
+    """Return the flag-rule column a row puts `flag` in, or None."""
     for column, field_name in _FLAG_COLUMNS.items():
         if column in table.columns and flag in getattr(row.flag_rules, field_name):
             return column.value
@@ -406,17 +365,11 @@ def _placement(
 def _result_codes_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
-    """A result code whose text names the document defining it is that
-    document's: it lists the code under the same AVP, and gives it the same
-    name.
+    """A result code whose text names its defining document is listed there,
+    under the same AVP and name.
 
-    The counterpart of `reused-avp-not-in-origin` and `reused-origin-indirect`
-    for a code. An origin listing no such code is an error, as for an AVP. A
-    name compared exactly, since a dictionary keys on it, is a note:
-    TS 29.283 clause 7.4.3.9 prints `DIAMETER_ERROR_DATA OUT_OF_SYNC` for what
-    TS 29.329 calls `DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC`, and only the
-    origin's spelling is the code's. So is an origin re-using the code from a
-    third document."""
+    A missing code is an error. A different name (compared exactly) and an
+    origin that re-uses the code from a third document are notes."""
     findings = []
     for table, row in index.reused_values:
         assert row.origin is not None
@@ -476,15 +429,11 @@ def _result_codes_agree_with_origin(
 
 
 def _reprint_or_extension(index: _Index, origins: dict[str, _Origin]) -> list[Finding]:
-    """Decide what a local-and-re-used AVP is actually doing.
+    """Classify an AVP both defined here and re-used, against the origin.
 
-    This is the answer the single-file `local-and-reused` note declines to
-    give. The one thing that is unambiguously wrong is disagreeing on the
-    *code*: an AVP is its `(vendor-id, code)`, so two codes are two AVPs and
-    one of the documents is mistaken. Everything else is reported as what it
-    is — identical, a superset, or neither — and left to a reader, because a
-    body that differs is a fact about two documents rather than a defect in
-    this one, and only the origin's editor knows which is current.
+    A different code is an error. Otherwise a note says whether the body is
+    identical (`reused-reprint`), a superset (`reused-extension`) or neither
+    (`reused-body-differs`).
     """
     findings = []
     for definition in sorted(index.definitions, key=lambda d: d.name):
@@ -523,16 +472,11 @@ def _reprint_or_extension(index: _Index, origins: dict[str, _Origin]) -> list[Fi
 def _reprints_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
-    """What a `Reprinted AVP` block says against the document it names.
+    """Check a `Reprinted AVP` block against the document it names.
 
-    A re-print defines nothing, so it never meets the duplicate rules: TS 29.109
-    prints RFC 6733's `Vendor-Specific-Application-Id` three times. Its claim is
-    that it copies the origin, and that is what is checked. An origin that has
-    never heard of the name, or two codes for one AVP, is an error, as for a
-    re-used row. A body naming other members is a note: only the origin's editor
-    knows which copy is current. Occurrence qualifiers are not compared, since TS
-    29.109 prints `0*1 { Auth-Application-Id }`, the form RFC 3588 used, for what
-    RFC 6733 writes `[ Auth-Application-Id ]`.
+    An origin lacking the name, or a different code, is an error. Different
+    member names are a note. Occurrence qualifiers are not compared, since
+    older documents print RFC 3588's forms.
     """
     findings = []
     for reprint in index.reprints:
@@ -590,8 +534,7 @@ def _reprints_agree_with_origin(
 
 
 def _members(definition: ast.GroupedAvp | ast.EnumeratedAvp) -> frozenset[str]:
-    """What a definition's body lists: member AVPs, or enumerated value names.
-    Comparing these compares the two documents' idea of the AVP's contents."""
+    """Return a definition's member AVP names, or its enumerated value names."""
     if isinstance(definition, ast.GroupedAvp):
         return frozenset(rule.name for rule in definition.avps)
     return frozenset(
@@ -600,7 +543,7 @@ def _members(definition: ast.GroupedAvp | ast.EnumeratedAvp) -> frozenset[str]:
 
 
 def _compare(mine, theirs, origin: str) -> tuple[str, str]:
-    """The rule name and the finished message, as a pair."""
+    """Return the rule name and message for a body comparison."""
     subject = f"{mine.name}'s body, against {origin}'s definition:"
     if type(mine) is not type(theirs):
         return "reused-body-differs", f"{subject} a different kind of AVP entirely"

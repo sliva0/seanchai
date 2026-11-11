@@ -1,35 +1,19 @@
-"""A set of parsed `.dad` files, and the rules for resolving between them.
+"""A set of parsed `.dad` files, and the rules for resolving citations
+between them.
 
-A single file names the documents it borrows from but not the versions:
-`ReusedAvpRow.origin` is `TS29.272`, never `TS29.272 V18.6.0`. The rule this
-module implements is the drafting rules' on references (3GPP TR 21.801
-clauses 6.6.6.5.2-6.6.6.5.3, ETSI SR 001 262 clauses 12.3-12.4, and each
-citing document's clause 2): **a specific reference means the version it
-names; a non-specific one the latest version in the citing document's
-release, the newest copy of that major**; and where the cited document
-ended before that release, its final version. RFC numbers name immutable
-documents and resolve to whatever the corpus holds, as does a document
-outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M), whose versions are its
-publisher's and share no release axis with the citing document's, unless
-the citation names a 3GPP2 revision: then only that revision answers it, or
-a held one an explicit entry lets stand in for it. A non-specific citation
-whose release's last version the corpus does not hold resolves to nothing,
-unless an entry records the evidence that a held copy of a later release
-defines what the citing copy reaches the same way. Where the citation's own
-version answers but leaves a field unstated, an entry lets a later release
-state that field alone, with the same evidence. The reasoning, and what a
-resolution across releases reports, is in
-docs/consumers.md#resolution-across-releases and
-docs/linter.md#resolving-an-origin.
+A file names the documents it cites but not their versions
+(`ReusedAvpRow.origin` is `TS29.272`). `Corpus.resolution` picks the copy
+following the drafting rules on references (3GPP TR 21.801, ETSI SR 001
+262): a specific reference means the version it names; a non-specific one
+means the newest copy in the citing document's release, or the cited
+document's final version if it ended earlier. RFCs and other non-3GPP
+documents resolve to whatever copy is held, unless a 3GPP2 revision is
+named.
 
-The facts this needs are the corpus's, not the library's: the version a
-specific reference names is in the citing document's references clause, not
-in its `.dad` file, and a stand-in is a comparison of two copies. A corpus
-directory records them in its `CORPUS_FILE` (`Rules`), beside its `.dad`
-files, with the corpus's format (`FORMATS`), and may hold its record of known
-holes too (`HOLE_RECORD`): what the corpus cannot complete, each with its
-evidence, which the model builds strictly against
-(docs/consumers.md#known-holes).
+Facts the `.dad` files do not hold, such as cited versions and stand-ins,
+come from the corpus directory's `CORPUS_FILE` (`Rules`), which also states
+the corpus format (`FORMATS`). `HOLE_RECORD` lists the known holes the model
+builds against. See docs/consumers.md and docs/linter.md.
 """
 
 from __future__ import annotations
@@ -81,15 +65,14 @@ class CorpusNotInstalledError(CorpusError):
     """No path was given and the `seanchai-corpus` package is not installed."""
 
 
-# The corpus formats this library reads: the generation of the `.dad` grammar
-# and of the corpus directory's layout and records a corpus's `CORPUS_FILE`
-# states (docs/development.md#the-corpus-format).
+# The corpus formats this library reads. A format is the generation of the
+# `.dad` grammar and of the corpus directory's layout and records, as the
+# corpus's `CORPUS_FILE` states it (docs/development.md).
 FORMATS: tuple[int, ...] = (1,)
 
 
 class CorpusFormatError(CorpusError):
-    """A corpus states a format this library does not read: the library is
-    older than the corpus, or the corpus older than any format it reads."""
+    """The corpus states a format this library does not read."""
 
     def __init__(self, path: Path, found: int) -> None:
         self.path = path
@@ -122,8 +105,8 @@ class Missing(enum.StrEnum):
 
 @dataclass(frozen=True)
 class StandIn:
-    """A held revision answering a citation of one the corpus cannot hold,
-    and the evidence that it cannot."""
+    """A held revision standing in for a cited one the corpus cannot hold,
+    with the evidence."""
 
     revision: str  # "0"
     version: str  # "2.0"
@@ -132,9 +115,9 @@ class StandIn:
 
 @dataclass(frozen=True)
 class ReleaseStandIn:
-    """A held copy of a later release answering a non-specific citation of
-    the version the corpus does not hold, and the evidence that what the
-    citing copy reaches is defined alike in both."""
+    """A held later-release copy standing in for a cited version the corpus
+    lacks, with evidence that both define what the citing copy reaches
+    alike."""
 
     meant: str  # "11.12.0", the version the citation means
     version: str  # "19.1.0", the copy answering it
@@ -146,9 +129,8 @@ class ReleaseStandIn:
 
 @dataclass(frozen=True)
 class ReleaseFill:
-    """Fields the version a citation means leaves unstated for named AVPs, which
-    a held copy of a later release states, and the evidence that nothing the
-    meant version or the citing document states disagrees."""
+    """Fields of named AVPs that the cited version leaves unstated and a held
+    later-release copy states, with evidence that nothing disagrees."""
 
     meant: str  # "6.15.0", the version the citation means, which still answers it
     version: str  # "19.1.0", the copy stating the fields
@@ -221,16 +203,13 @@ _FLAGS = {"specific"}
 
 @dataclass(frozen=True)
 class Rules:
-    """A corpus's format and the facts resolving between its documents needs,
-    each entry citing its evidence: what its `CORPUS_FILE` states, by hand,
-    since `regenerate` writes `.dad` files only. Every key is a reference as a
-    re-used row's From cell spells it. The empty `Rules()` is a corpus without
-    the file: no format to hold it to, and no entries.
+    """The hand-written contents of `CORPUS_FILE`: the corpus format and the
+    facts resolution needs, each entry with its evidence. Keys are
+    references as a re-used row's From cell spells them. `Rules()` means no
+    file: no format and no entries.
 
-    A table read from a citing document's references clause is keyed by the
-    citing copy, (citing reference, citing version, cited reference), and
-    answers for that copy alone: a references clause changes between
-    versions, and the corpus may hold several copies of one document.
+    Tables read from a references clause are keyed by (citing reference,
+    citing version, cited reference) and apply to that copy only.
 
     - `cited_as`: a document its citers number otherwise than its publisher,
       the cited reference to the publisher's (ETSI-TS283.034 is ETSI's
@@ -263,11 +242,10 @@ class Rules:
 
     @classmethod
     def load(cls, path: Path) -> Rules:
-        """Read `path`, refusing a format this library does not read with
-        `CorpusFormatError`, before anything else of it, and with `CorpusError`
-        an unknown table or field, a missing or empty one, an entry stated
-        twice, and a stand-in for a revision no citation names. Whether the
-        documents it names are held is `check`'s."""
+        """Read `path`. Raises `CorpusFormatError` for an unreadable format,
+        checked first, and `CorpusError` for an unknown, missing or empty
+        table or field, a duplicate entry, or a stand-in for a revision no
+        citation names. `check` checks the named documents are held."""
         data = _read_toml(path)
         found = data.get("format")
         if not isinstance(found, int) or isinstance(found, bool):
@@ -344,9 +322,8 @@ class Rules:
         return rules
 
     def check(self, books: Corpus) -> None:
-        """Refuse with `CorpusError` an entry naming a document or a copy
-        `books` lacks, which would answer no citation: the rules describe the
-        corpus beside them, raw mirror alike."""
+        """Raise `CorpusError` for an entry naming a document or copy `books`
+        lacks."""
 
         def held(
             reference: str, version: str | None = None, letter: str | None = None
@@ -413,8 +390,8 @@ class Rules:
 
 
 def _read_toml(path: Path) -> dict[str, Any]:
-    """`path` parsed, refusing with `CorpusError` a file that cannot be read,
-    is not UTF-8 or is not TOML."""
+    """`path` parsed as TOML. Raises `CorpusError` if it cannot be read, is
+    not UTF-8 or is not TOML."""
     try:
         return tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
@@ -422,8 +399,8 @@ def _read_toml(path: Path) -> dict[str, Any]:
 
 
 def _entries(path: Path, data: dict[str, Any], table: str) -> list[dict[str, Any]]:
-    """`table`'s entries in `data`, each checked against `_TABLES` and its
-    evidence collapsed (`seanchai._prose`)."""
+    """`table`'s entries in `data`, checked against `_TABLES`, evidence
+    collapsed (`seanchai._prose`)."""
     entries = data.get(table, [])
     if not isinstance(entries, list):
         raise CorpusError(f"{path}: {table} must be [[{table}]] tables")
@@ -501,21 +478,15 @@ class CitationRule(enum.StrEnum):
 
 @dataclass(frozen=True)
 class CrossRelease:
-    """A citation resolved outside the citing document's release, and the
-    rule that allowed it (`CitationRule`), by an entry of the corpus's
-    `Rules`: `SPECIFIC`, the version the citing document's references name
-    (`cited_version`),
-    `NON_SPECIFIC`, the cited document's final version (`final_version`), or
-    `LATEST_EDITION`, the newest copy, where the citing document's clause 2
-    says a non-specific reference means it (`latest_edition`). A document
-    outside 3GPP has no release, so each of its 3GPP citations that resolves
-    is one. `STAND_IN` is a held copy answering a citation of one the corpus
-    cannot hold: a 3GPP2 revision for another, a revision being 3GPP2's
-    release (`stand_in`), or a later release's copy for the version a
-    reference means (`release_stand_in`, `meant` set). `LATER_RELEASE` is a
-    later release's copy stating a field of the version the reference means,
-    which the corpus holds and which answers for the rest (`release_fill`,
-    `meant` set); `Avp.completed_by` names the fields."""
+    """A citation resolved outside the citing document's release, with the
+    `CitationRule` and the `Rules` entry that allowed it.
+
+    `SPECIFIC` sets `cited_version`, `NON_SPECIFIC` `final_version`,
+    `LATEST_EDITION` `latest_edition`. `STAND_IN` sets `stand_in` (another
+    3GPP2 revision) or `release_stand_in` and `meant` (a later release's
+    copy). `LATER_RELEASE` sets `release_fill` and `meant`; the filled fields
+    are in `Avp.completed_by`. Every 3GPP citation from a non-3GPP document
+    counts as across releases."""
 
     citing: str  # "TS32.299"
     cited: str  # "TS29.140"
@@ -568,11 +539,8 @@ class CrossRelease:
 
 
 def _version_key(version: str | None) -> tuple[int, ...]:
-    """`"18.6.0"` → `(18, 6, 0)`, for ordering. Non-numeric parts sort as 0
-    rather than raising: the grammar already restricts a version to digits and
-    dots, so this only ever softens a hand-edited file. A version-less file
-    (an RFC) sorts as the empty key; RFC resolution never compares versions
-    anyway, because one number names one immutable document."""
+    """`"18.6.0"` as `(18, 6, 0)`, for ordering. Non-numeric parts sort as
+    0; None (an RFC) is the empty key."""
     if version is None:
         return ()
     parts = []
@@ -586,9 +554,8 @@ def _major(version: str) -> int:
 
 
 def revision(spec: ast.Specification) -> str | None:
-    """The 3GPP2 revision `spec` is a copy of, which its spec-ref does not
-    keep: the one its rendering's name states (`X.S0057-0_v2.0_091215.pdf`
-    is revision 0), or None for a document of no such naming."""
+    """The 3GPP2 revision `spec` is a copy of, from its rendering's file
+    name (`X.S0057-0_v2.0_091215.pdf` is revision 0), or None."""
     for url in (spec.transcribed, spec.link):
         name = str(url).rsplit("/", 1)[-1] if url is not None else ""
         if match := TGPP2_RENDERING_RE.match(name):
@@ -597,8 +564,8 @@ def revision(spec: ast.Specification) -> str | None:
 
 
 def _external(spec: ast.Specification) -> bool:
-    """Whether `spec` is another publisher's document. A title naming no
-    supported document (a hand-authored vendor extension) is not."""
+    """Whether `spec` is neither 3GPP nor IETF. A title naming no supported
+    document (a vendor extension) is not."""
     try:
         return ast.is_external(ast.spec_ref(spec.specification))
     except ast.SpecRefError:
@@ -611,8 +578,7 @@ HOLE_RECORD = "holes.toml"
 
 @dataclass(frozen=True)
 class KnownHole:
-    """A hole the record lists: what `model.Hole` will say of it, and why it
-    stands."""
+    """A hole the record lists: what `model.Hole` will say, and why."""
 
     # `Hole.document`: "TS29.234", or "TS29.061 V6.15.0" for an older copy.
     document: str
@@ -626,16 +592,16 @@ class KnownHole:
 
 @dataclass(frozen=True)
 class HoleRecord:
-    """A corpus's known holes, hand-maintained: `regenerate` writes `.dad`
-    files only, and nothing but the model and the linter reads this."""
+    """A corpus's hand-maintained record of known holes, read by the model
+    and the linter."""
 
     path: Path
     holes: tuple[KnownHole, ...]
 
     @classmethod
     def load(cls, path: Path) -> HoleRecord:
-        """Read `path`, refusing what the model could not hold a build to: an
-        unknown key, a missing or empty field, a hole listed twice."""
+        """Read `path`. Raises `CorpusError` for an unknown key, a missing or
+        empty field, or a hole listed twice."""
         data = _read_toml(path)
         tables = data.get("hole", [])
         if set(data) - {"hole"} or not isinstance(tables, list):
@@ -690,10 +656,9 @@ class HoleRecord:
 
 
 def installed_directory() -> Path:
-    """The directory the `seanchai-corpus` package put the corpus in.
-
-    The package is an optional dependency (`seanchai[corpus]`), so it is looked
-    for only when asked for. Inside this repository it is the workspace copy.
+    """The corpus directory of the installed `seanchai-corpus` package (the
+    optional `seanchai[corpus]` dependency). In this repository it is the
+    workspace copy.
     """
     return _installed_package().CORPUS_DIR
 
@@ -718,7 +683,7 @@ class Entry:
 
     @property
     def reference(self) -> str:
-        """`TS29.272` — the spelling a re-used row uses."""
+        """The reference as a re-used row spells it: `TS29.272`."""
         return ast.spec_ref(self.spec.specification)
 
 
@@ -730,17 +695,13 @@ type _CopyKey = tuple[str, str | None, str | None]
 class Corpus:
     """Parsed `.dad` files, indexed by the reference re-used rows cite.
 
-    A file named twice counts once. Two files claiming one reference, version
-    and revision raise `CorpusError`. `version` is the installed package's
-    version when `installed` loaded it, and None for any other corpus, which
-    has no one version to name. `rules` is what resolution reads, the empty
-    `Rules()` by default.
+    A file named twice counts once; two files with one reference, version
+    and revision raise `CorpusError`. `version` is the package version when
+    loaded by `installed`, else None. `rules` defaults to `Rules()`.
 
-    `load` and `installed` are the checked ways in. Constructed directly, from
-    entries a caller parsed, a corpus checks only the copies it is given: it
-    reads no `CORPUS_FILE`, so no format is held, and takes `rules` and
-    `record` as they are, without checking that what they name is held. A
-    `model.Model` built over it still holds the build to `record`.
+    Use `load` or `installed`. Constructed directly, a corpus checks only
+    its copies, not `rules` or `record`; a `model.Model` built over it still
+    checks `record`.
     """
 
     def __init__(
@@ -780,29 +741,19 @@ class Corpus:
         *,
         raw: bool = False,
     ) -> Corpus:
-        """Parse every `.dad` file in `paths`, one path or several, recursing
-        into directories. A path that does not exist, or that is no path,
-        raises `CorpusError`, as a file that does not parse does.
+        """Parse every `.dad` file in `paths`, recursing into directories.
+        A missing path, a non-path or an unparsable file raises
+        `CorpusError`.
 
-        Raw files are skipped by default. A corpus mixing raw and corrected
-        copies of one specification would hold two versions of the same
-        document that disagree on purpose, and resolution would pick between
-        them by version number — which they share.
+        Raw files are skipped by default, since raw and corrected copies
+        share a version and resolution could not choose between them.
 
-        A directory in `paths` holding `HOLE_RECORD` directly gives the corpus
-        its record, so a consumer loading the corpus gets it with no argument; a
-        file list or a subdirectory has none, since a record describes the
-        whole corpus it sits beside, and neither has a raw corpus, which the
-        record does not describe. Two directories holding one are refused; one
-        directory named twice is one directory.
-
-        `CORPUS_FILE` is found the same way and gives the corpus its `rules`,
-        raw corpus included, whose From cells need them most: it is read before
-        any `.dad` file, so a format this library does not read raises
-        `CorpusFormatError` rather than a parse error, and checked against the
-        files once they are read. A corpus without one, a file list or a
-        subdirectory, has the empty `Rules()`: no format to hold it to, and no
-        entries, so a citation they would answer resolves to nothing.
+        A directory in `paths` that directly holds `HOLE_RECORD` gives the
+        corpus its record; a raw corpus gets none. Two directories holding
+        one are refused. `CORPUS_FILE` is found the same way, raw corpus
+        included, and gives `rules`. It is read before any `.dad` file, so
+        an unreadable format raises `CorpusFormatError`, and is checked
+        against the files afterwards. Without it, `rules` is `Rules()`.
         """
         unique: dict[Path, Path] = {}
         for path in _as_paths(paths):
@@ -846,10 +797,9 @@ class Corpus:
 
     @classmethod
     def installed(cls, *, raw: bool = False) -> Corpus:
-        """Load the corpus the `seanchai-corpus` package installed, record and
-        rules and all, as `load` loads a directory. `CorpusNotInstalledError`
-        without it, and `CorpusFormatError` for a corpus of a format this
-        library does not read.
+        """`load` the installed `seanchai-corpus` directory. Raises
+        `CorpusNotInstalledError` if it is not installed and
+        `CorpusFormatError` for an unreadable format.
         """
         package = _installed_package()
         books = cls.load([package.CORPUS_DIR], raw=raw)
@@ -869,10 +819,8 @@ class Corpus:
             yield from candidates
 
     def newest(self) -> Iterator[Entry]:
-        """The newest copy of each reference: what the corpus answers for a
-        document when no citation asks for an older release. TS 32.299
-        V11.20.0, held for oneM2M TS-0004's "Release 11" citation, is
-        reached through `resolve` only."""
+        """The newest copy of each reference. Older copies are reached only
+        through `resolve`."""
         for candidates in self._by_reference.values():
             yield candidates[0]
 
@@ -891,37 +839,29 @@ class Corpus:
         return self._by_reference.get(self.rules.cited_as.get(reference, reference), [])
 
     def resolve(self, reference: str, *, like: ast.Specification) -> Entry | None:
-        """The file `reference` names, read as the specification `like` would
-        (`resolution`). Returns `None` when the corpus holds no copy the
-        rules allow — which is a gap in the corpus, not a defect in the
-        document, and callers report it that way.
+        """The copy `reference` means when `like` cites it (`resolution`), or
+        None if the corpus holds no allowed copy. Callers report None as a
+        gap in the corpus.
         """
         return self.resolution(reference, like=like)[0]
 
     def resolution(
         self, reference: str, *, like: ast.Specification
     ) -> tuple[Entry | None, CrossRelease | None]:
-        """The file `reference` names when `like` cites it, and, when that
-        file is outside `like`'s release, how the citation got there.
+        """The copy `reference` means when `like` cites it, and a
+        `CrossRelease` if that copy is outside `like`'s release.
 
-        Every entry of `rules` keyed by the citing document answers for the
-        copy of it `like` is, by its version, and for no other copy. In order:
-        a reference its citers spell otherwise than the publisher (`cited_as`)
-        is the publisher's document.
-        A citation naming a 3GPP2 revision (`cited_revisions`) is a copy of
-        that revision, or failing one, the copy an explicit `stand_ins` entry
-        names, or nothing. An RFC, or another document outside 3GPP, is
-        whatever copy the corpus holds. A specific reference
-        (`cited_versions`) is the version it names and no other. A 3GPP
-        document's non-specific one is the newest copy in its own major
-        version, and failing one, the cited document's final version when
-        that ended in an earlier release (`final_versions`), or the later
-        release's copy a `release_stand_ins` entry names; the corpus may lack
-        the version of a release the document still had. A document outside
-        3GPP has no release, so its non-specific reference is the newest copy
-        where its references clause says so (`latest_editions`), the final
-        version, or nothing, and a version it names that the corpus lacks is
-        answered only by a `release_stand_ins` entry.
+        `rules` entries apply only to `like`'s own version. In order:
+        `cited_as` maps the citers' spelling to the publisher's. A named 3GPP2
+        revision (`cited_revisions`) resolves to that revision or a
+        `stand_ins` entry. A non-3GPP cited document resolves to any held
+        copy. A specific reference (`cited_versions`) resolves to that
+        version only. A 3GPP non-specific reference resolves to the newest
+        copy in the citing major version, else `final_versions`, else a
+        `release_stand_ins` entry. A citing document outside 3GPP has no
+        release: its non-specific reference resolves to the newest copy if
+        `latest_editions` says so, else the final version, and a named
+        version the corpus lacks only through `release_stand_ins`.
         """
         candidates = self._candidates(reference)
         citing = _reference(like)
@@ -994,9 +934,9 @@ class Corpus:
     def release_fill(
         self, reference: str, *, like: ast.Specification
     ) -> tuple[Entry, ReleaseFill, CrossRelease] | None:
-        """The `release_fills` entry for `like` citing `reference`, with the later
-        copy it names and the crossing it reports, or None without an entry or
-        that copy. `resolution` still answers the citation."""
+        """The `release_fills` entry for `like` citing `reference`, with the
+        later copy and its `CrossRelease`, or None. `resolution` still
+        answers the citation itself."""
         citing = _reference(like)
         fill = self.rules.release_fills.get((citing, like.version or "", reference))
         if fill is None:
@@ -1044,8 +984,8 @@ class Corpus:
     def _revision(
         self, key: Citation, cited: str, candidates: list[Entry]
     ) -> tuple[Entry | None, CrossRelease | None]:
-        """A citation of revision `cited`: its newest copy, or the copy a
-        `stand_ins` entry lets stand in for it, reported as such."""
+        """A citation of revision `cited`: its newest copy, or a `stand_ins`
+        copy reported as such."""
         citing, _, reference = key
         entry = next((e for e in candidates if revision(e.spec) == cited), None)
         if entry is not None:
@@ -1075,8 +1015,7 @@ class Corpus:
 
 
 def _as_paths(paths: Any) -> list[Path]:
-    """What `Corpus.load` was given, as a list: a lone string is one path, not
-    an iterable of characters."""
+    """`Corpus.load`'s argument as a list; a lone string is one path."""
     if isinstance(paths, str | os.PathLike):
         paths = [paths]
     try:
@@ -1088,8 +1027,8 @@ def _as_paths(paths: Any) -> list[Path]:
 
 
 def _reference(spec: ast.Specification) -> str:
-    """`spec`'s reference, or its title where it names no supported
-    document (a hand-authored vendor extension)."""
+    """`spec`'s reference, or its title for a document that names no
+    supported one (a vendor extension)."""
     try:
         return ast.spec_ref(spec.specification)
     except ast.SpecRefError:

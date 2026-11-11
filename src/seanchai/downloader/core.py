@@ -1,17 +1,10 @@
-"""Corpus downloader implementation. See the package docstring for what it is.
+"""Corpus downloader implementation; the package docstring says what it is.
 
-Two rules hold throughout this module.
+Every failure is a `DownloadError`, whichever layer noticed it.
 
-Every failure is a `DownloadError`. An HTTP error, an unreadable catalog, a
-truncated ZIP and a PDF that is only the first few bytes of one are all the
-same answer to "did the corpus download?", and a caller should not have to
-know which layer noticed.
-
-Nothing is trusted because it exists. A file left by an interrupted run is a
-plausible-looking, wrong artifact; so is a proxy's error page saved under a
-`.zip` name. Both fresh downloads and cached files are therefore opened and
-checked by the format they claim to be, and a replacement is validated in a
-temporary file *before* it is put in place.
+Nothing is trusted because it exists. Fresh downloads and cached files are
+both checked as the format they claim to be, and a replacement is validated
+in a temporary file before it is put in place.
 """
 
 from __future__ import annotations
@@ -60,9 +53,8 @@ ETSI_DELIVER = "https://www.etsi.org/deliver"
 RFC_TEXT_URL = "https://www.rfc-editor.org/rfc/rfc{number}.txt"
 # Wireshark's repository, via GitLab's API: the tree listing enumerates the
 # dictionary directory at the pinned tag, and the raw endpoint serves each
-# file. The API is what makes "fetch that directory" expressible at all —
-# git offers no shallow single-directory fetch, and the repository is 1.2 GB
-# for the 824 KB that matter.
+# file. Git has no shallow single-directory fetch, and the repository is
+# 1.2 GB for the 824 KB that matter.
 WIRESHARK_TREE_URL = (
     "https://gitlab.com/api/v4/projects/wireshark%2Fwireshark/repository/tree"
     "?path={path}&ref={tag}&per_page=100"
@@ -121,12 +113,10 @@ SOURCE_OF_FAMILY = {
 class Conversion:
     """A `.docx` LibreOffice made from an archived legacy `.doc`.
 
-    The converted file is not reproducible byte for byte: two runs over the
-    same `.doc` with the same LibreOffice differ in the zip timestamps and in
-    the random OLE `ObjectID`s Writer assigns (TS 32.299's embedded
-    figures). Its `sha256` therefore identifies this run's file and nothing
-    more; what says whether a conversion should read the same is the pair
-    `source_sha256` and `converter`, and `command` is how to repeat it.
+    Conversion is not reproducible byte for byte (zip timestamps, random OLE
+    `ObjectID`s), so `sha256` identifies only this run's file. `source_sha256`
+    and `converter` say whether a conversion should read the same, and `command`
+    is how to repeat it.
     """
 
     file: str
@@ -215,11 +205,8 @@ def discover_3gpp_archive_urls(
     """Every archived version of `spec` in `release`, from `Specs/archive/`;
     with None, in every release.
 
-    The archive, not `Specs/latest/Rel-N/`, because `latest` lists one zip per
-    specification and drops it when the next version lands: a manifest
-    recording a `latest` URL names a file that stops existing, and choosing
-    any version but the newest (an unpublished ETSI PDF, `--version`) needs
-    the list of all of them anyway.
+    `Specs/latest/` lists only the newest version and drops it when the next one
+    lands, so a manifest URL from there stops existing.
     """
     marker = "[0-9a-z]" if release is None else re.escape(release_marker(release))
     index_url = THREE_GPP_ARCHIVE.format(series=spec.series, number=spec.number)
@@ -245,9 +232,7 @@ def check_final(
     """Check `pin`'s `final` claim against its archive listing in every
     release, and return the listing of the pinned version's release.
 
-    The listing is the archive's, which keeps every version, so a version
-    published after the pin was made shows up here and fails the download,
-    naming it: the catalog then states what the corpus should hold.
+    A version published after the pin fails the download, naming it.
     """
     identifier = f"{pin.document_type} {pin.number}"
     selected = parse_version(pin.version)
@@ -305,9 +290,8 @@ def require_extra() -> None:
 def validate_zip(path: Path) -> None:
     """Open the archive and check every member's CRC.
 
-    A nonempty file is not an archive: an interrupted download and a proxy
-    error page both leave one, and both survive to the extraction step as a
-    confusing failure somewhere else.
+    An interrupted download or a proxy error page leaves a nonempty file that is
+    not an archive.
     """
     try:
         with zipfile.ZipFile(path) as zipped:
@@ -321,8 +305,7 @@ def validate_zip(path: Path) -> None:
 def validate_pdf(path: Path) -> None:
     """Open the PDF and require at least one page.
 
-    A `%PDF-` prefix says only that the first five bytes arrived, which is
-    exactly what a truncated download has.
+    A truncated download still has the `%PDF-` prefix.
     """
     pypdf = _extra("pypdf")
     try:
@@ -334,10 +317,8 @@ def validate_pdf(path: Path) -> None:
 
 
 def validate_rfc_text(path: Path) -> None:
-    """Check that the file is the RFC Editor's plain text, not an error page.
-
-    Every RFC's text rendering carries the "Request for Comments:" header line,
-    which no HTML error body does.
+    """Check that the file is the RFC Editor's plain text, not an error page,
+    by its "Request for Comments:" header line.
     """
     try:
         head = path.read_bytes()[:4096].decode("utf-8", errors="replace")
@@ -352,11 +333,9 @@ def atomic_download(
 ) -> None:
     """Fetch `url` to `destination` unless a valid file is already there.
 
-    The replacement is written to a temporary file and validated there, so a
-    bad download never becomes the cached artifact. A cached file that fails
-    validation is removed even when its replacement also fails: leaving it
-    would mean the next run finds the same broken file and reports the same
-    error, having quietly rejected it twice.
+    The replacement is written to a temporary file and validated there, so a bad
+    download never becomes the cached file. A cached file that fails validation
+    is removed even when its replacement also fails.
     """
     destination.parent.mkdir(parents=True, exist_ok=True)
     stale = False
@@ -417,10 +396,9 @@ def safe_extract(archive: Path, destination: Path) -> list[Path]:
 
 
 def link_file(source: Path, target: Path) -> None:
-    """Put the cached file `source` at `target` in a tree being staged.
-
-    A hard link, since the cache is never modified in place; a copy where the
-    filesystem refuses one.
+    """Put the cached file `source` at `target` in a tree being staged: a hard
+    link, or a copy where the filesystem refuses one. The cache is never modified
+    in place.
     """
     target.parent.mkdir(parents=True, exist_ok=True)
     target.unlink(missing_ok=True)
@@ -433,17 +411,14 @@ def link_file(source: Path, target: Path) -> None:
 def publish(staging: Path, destination: Path, names: Iterable[str]) -> None:
     """Swap the entries `names` and the manifest from `staging` into `destination`.
 
-    All of them or none: a run that published entry by entry would leave a
-    mix of two corpus versions whenever it failed partway, which is the state
-    staging exists to rule out. The current entries are renamed aside into
-    `.previous/` first and moved back if any rename fails. The manifest is
-    the first entry taken aside and the last put in, so an interruption
-    mid-swap leaves no manifest rather than one describing a half-swapped
-    tree. An entry `destination` has and `staging` lacks is removed: the tree
-    holds what the manifest lists and nothing else.
+    All of them or none. The current entries are renamed aside into `.previous/`
+    first and moved back if any rename fails. The manifest is the first entry
+    taken aside and the last put in, so an interrupted swap leaves no manifest
+    rather than a wrong one. An entry `destination` has and `staging` lacks is
+    removed.
 
-    A `.previous/` already present is a rollback that failed and holds the
-    last published tree; it is refused rather than deleted.
+    A `.previous/` already present is a failed rollback holding the last
+    published tree; it is refused, not deleted.
     """
     refuse_failed_swap(destination)
     previous = destination / PREVIOUS
@@ -497,10 +472,8 @@ def publish(staging: Path, destination: Path, names: Iterable[str]) -> None:
 def validate_docx(path: Path) -> None:
     """Open the file with python-docx, as the extractor will.
 
-    A conversion LibreOffice reports as successful can still leave a package
-    with an unparsable part; checking only that the archive holds
-    `word/document.xml` would put it in the manifest and fail in
-    `regenerate` instead.
+    A conversion LibreOffice reports as successful can still leave an unparsable
+    part.
     """
     validate_zip(path)
     docx = _extra("docx")
@@ -513,10 +486,9 @@ def validate_docx(path: Path) -> None:
 def run_soffice(identifier: str, arguments: list[str]) -> str:
     """Run LibreOffice and return its standard output.
 
-    The `.doc` belongs to a catalogued entry, so an absent LibreOffice is a
-    failed download rather than a skipped one: whether a run's manifest can
-    rebuild the whole corpus depends on what it was asked, never on what
-    happens to be installed. Skipping is `convert=False`, which records it.
+    An absent LibreOffice fails the download rather than skipping the document,
+    so what a manifest holds never depends on what is installed. Skipping is
+    `convert=False`, which records it.
     """
     command = [SOFFICE, *arguments]
     try:
@@ -576,12 +548,11 @@ def convert_legacy_documents(
 ) -> list[Conversion]:
     """Convert an archive's legacy `.doc` files to `.docx` with LibreOffice.
 
-    Only an archive with no `.docx` of its own is converted. The results go
-    to `converted/` beside the extracted archive in the staged `tree`
-    (`converted/3gpp/Rel-19/TS_32.299/32299-j00.docx`), not into it, so the
-    extracted directory holds the archive's contents and nothing else. They
-    are rebuilt on every run, like the extraction they derive from, and the
-    manifest is the only way `regenerate` finds them; a run that fails here
+    Only an archive with no `.docx` of its own is converted. The results go to
+    `converted/` beside the extracted archive in the staged `tree`
+    (`converted/3gpp/Rel-19/TS_32.299/32299-j00.docx`), so the extracted
+    directory holds only the archive's contents. They are rebuilt on every run,
+    `regenerate` finds them only through the manifest, and a run that fails here
     publishes nothing.
     """
     legacy = legacy_documents(extracted)
@@ -683,9 +654,9 @@ def etsi_pdf_location(spec: ThreeGppSpec) -> tuple[str, str, str]:
 def etsi_pdf_url(spec: ThreeGppSpec, version: tuple[int, int, int]) -> str:
     """The ETSI PDF URL for `version`, derived without listing anything.
 
-    Assumes the `_60` edition, which every catalogued TS has today. The
-    fallback for when the deliver directory cannot be listed;
-    `etsi_listed_pdf_url` is the one to call.
+    Assumes the `_60` edition, which every catalogued TS has today. This is the
+    fallback when the deliver directory cannot be listed; call
+    `etsi_listed_pdf_url`.
     """
     major, minor, patch = version
     kind, etsi_number, base_url = etsi_pdf_location(spec)
@@ -697,10 +668,9 @@ def etsi_pdf_url(spec: ThreeGppSpec, version: tuple[int, int, int]) -> str:
 def discover_etsi_editions(spec: ThreeGppSpec) -> dict[tuple[int, int, int], str]:
     """Every version ETSI has published for `spec`, with its directory's URL.
 
-    A version directory carries an edition suffix (`18.07.00_60`) that the
-    version does not determine, so it is read off the deliver listing rather
-    than assumed. Where one version has several editions the highest is
-    taken, as the latest publication of it.
+    The edition suffix (`18.07.00_60`) is read off the deliver listing, since the
+    version does not determine it. Of several editions of one version, the
+    highest is taken.
     """
     _, _, base_url = etsi_pdf_location(spec)
     page = request_bytes(f"{base_url}/").decode("utf-8", errors="replace")
@@ -726,9 +696,9 @@ def etsi_listed_pdf_url(
     """The ETSI PDF URL for `version`: the PDF its edition directory lists.
 
     `editions` is `discover_etsi_editions`'s answer, None when the listing was
-    unreachable. A version it lacks gets `etsi_pdf_url`'s derivation; an
-    edition directory that cannot be listed, or lists no PDF of this version,
-    gets the derived file name inside it.
+    unreachable. A version it lacks gets `etsi_pdf_url`'s derivation; an edition
+    directory that cannot be listed, or lists no PDF of this version, gets the
+    derived file name inside it.
     """
     if editions is None or version not in editions:
         return etsi_pdf_url(spec, version)
@@ -756,9 +726,8 @@ def url_name(url: str) -> str:
 
 def etsi_cache_path(output: Path, url: str) -> Path:
     """Where the ETSI PDF at `url` is cached: under its edition directory
-    (`etsi/18.07.00_60/ts_129272v180700p.pdf`). The file name alone repeats
-    across editions, so a cache keyed by it would serve the `_60` bytes once
-    `_61` is the edition the manifest records."""
+    (`etsi/18.07.00_60/ts_129272v180700p.pdf`), since the file name alone
+    repeats across editions."""
     path = PurePosixPath(urllib.parse.urlparse(url).path)
     return output / CACHE / "etsi" / path.parent.name / path.name
 
@@ -778,12 +747,11 @@ def download_3gpp(
     """Fetch one specification into the cache under `output`, staged in `tree`.
 
     `archived` is the specification's `discover_3gpp_archive_urls` listing.
-    Without `version` the newest archived version is taken, or with `pdfs`
-    the newest whose ETSI PDF is published; with it, exactly that one. The
-    record's paths are relative to `tree`. Its archive path names the cache
-    entry, which is where it is once `tree` is published into `output`;
+    Without `version` the newest archived version is taken, or with `pdfs` the
+    newest whose ETSI PDF is published; with it, exactly that one. The record's
+    paths are relative to `tree`, and its archive path names the cache entry;
     `link_archive` puts a link to it in `tree` instead, for a tree published
-    anywhere else. Without `convert`, a legacy `.doc` is extracted but not
+    outside `output`. Without `convert`, a legacy `.doc` is extracted but not
     converted, and the record's `conversions` is empty rather than None.
     """
     identifier = f"{spec.document_type} {spec.number}"
@@ -909,8 +877,7 @@ def download_pinned(
     convert: bool = True,
 ) -> DownloadRecord:
     """Fetch a pinned version into its release's tree, as `download_3gpp`
-    fetches an asked-for `version`: never walked back, its PDF the exact
-    rendering when published. `archived` is `check_final`'s answer."""
+    fetches an asked-for `version`. `archived` is `check_final`'s answer."""
     record = download_3gpp(
         pin.spec,
         archived,
@@ -929,11 +896,10 @@ def download_pinned(
 def check_onem2m_archive(spec: OneM2MSpec, path: Path) -> str:
     """Validate a oneM2M zip and return the name of its clean `.doc`.
 
-    The zip holds `TS-0004-Service_Layer_Core_Protocol-V2_35_0(cl).doc`, its
-    revision-marked `(rm)` twin and macOS `__MACOSX/` metadata; the `(cl)`
-    file at the top level is the document. Its version must be the one
-    catalogued: the endpoint serves the latest revision, and one that moved
-    on is a decision to make in `specs.toml`, not a silent upgrade.
+    The zip holds the clean `(cl)` document at the top level, a revision-marked
+    `(rm)` twin and `__MACOSX/` metadata. Its version must be the catalogued one:
+    the endpoint serves the latest revision, and moving on is a change to
+    `specs.toml`.
     """
     validate_zip(path)
     with zipfile.ZipFile(path) as zipped:
@@ -967,10 +933,10 @@ def download_onem2m(
     """Fetch one pinned oneM2M specification into the cache, staged in `tree`.
 
     Cached by the version-bearing name (`archives/onem2m/TS-0004-V2_35_0.zip`),
-    so once fetched the pinned version is read from disk even after oneM2M
-    publishes the next. Only the clean `(cl)` document is extracted, to
-    `onem2m/Release-2/TS-0004/`, and converted like a 3GPP legacy `.doc`;
-    without `convert` its `conversions` is empty, as there.
+    so the pinned version is read from disk after oneM2M publishes the next. Only
+    the `(cl)` document is extracted, to `onem2m/Release-2/TS-0004/`, and
+    converted like a 3GPP legacy `.doc`; without `convert` its `conversions` is
+    empty.
     """
 
     def validate(path: Path) -> None:
@@ -1040,11 +1006,8 @@ def download_rfc(spec: RfcSpec, output: Path, tree: Path) -> DownloadRecord:
 def download_transcribed(
     document: TranscribedDocument, output: Path, tree: Path
 ) -> DownloadRecord:
-    """Fetch the PDF a hand transcription was copied from.
-
-    Its URL is the catalog's rather than one read off a listing, since the
-    transcription names that exact rendering: ETSI's deliver directory lists
-    later versions of these documents, and 3GPP2's archive no listing at all.
+    """Fetch the PDF a hand transcription was copied from, at the catalog's URL,
+    since the transcription names that exact rendering.
     """
     relative = Path(TRANSCRIPTIONS) / document.file_name
     cached = output / CACHE / relative
@@ -1062,9 +1025,8 @@ def download_transcribed(
 
 
 def validate_wireshark_file(path: Path) -> None:
-    """The dictionary files are XML documents and XML entity fragments; an
-    entity fragment has no prolog, so well-formedness cannot be required.
-    What every one of them has is markup."""
+    """Check that a dictionary file holds markup. An XML entity fragment has no
+    prolog, so well-formedness cannot be required."""
     try:
         text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as error:
@@ -1094,12 +1056,11 @@ def download_wireshark(
 ) -> DownloadRecord:
     """Fetch every file of the pinned dictionary directory.
 
-    One record for the whole directory: the files only mean anything
-    together (dictionary.xml includes the vendor files as XML entities), so
-    the manifest treats them as one artifact whose hash is the hash of the
-    per-file hashes in name order. The cache keeps one directory per tag, the
-    listing included since a tag does not move, and the published `wireshark/`
-    holds the pinned tag's files and no other's.
+    The files only mean something together (dictionary.xml includes the vendor
+    files as XML entities), so the directory is one record, hashed as the hash of
+    the per-file hashes in name order. The cache keeps one directory per tag,
+    listing included; the published `wireshark/` holds only the pinned tag's
+    files.
     """
     tree_url = WIRESHARK_TREE_URL.format(
         path=urllib.parse.quote(dictionary.path, safe=""), tag=dictionary.tag
@@ -1174,10 +1135,10 @@ def write_manifest(
     records: list[DownloadRecord],
     sources: Iterable[str] = SOURCES,
 ) -> Path:
-    """Write `tree`'s manifest.json. `tree` is staged, so no temporary file:
-    a half-written manifest is never published.
+    """Write `tree`'s manifest.json, with no temporary file since `tree` is
+    staged.
 
-    `sources` is what the tree holds, and `release` and `pdfs` describe its 3GPP
+    `sources` is what the tree holds; `release` and `pdfs` describe its 3GPP
     documents, None without any."""
     # A pinned version shares its identifier with the catalog's release of
     # the same document; the version keeps the order stable.
@@ -1211,9 +1172,7 @@ def write_manifest(
 
 def refuse_failed_swap(destination: Path) -> None:
     """Refuse a `destination` whose `.previous/` a failed `publish` left.
-
-    Checked before downloading too, so the refusal does not come only after
-    the whole catalog has been fetched.
+    Also checked before downloading, so the refusal comes first.
     """
     if (destination / PREVIOUS).exists():
         raise DownloadError(
@@ -1242,8 +1201,7 @@ def _record(artifact: dict) -> DownloadRecord:
 def _kept(destination: Path, selected: frozenset[str]) -> _Kept:
     """What `destination`'s manifest holds beyond the sources `selected`.
 
-    Read before anything is fetched: a record whose files have gone would
-    publish a manifest describing what is not there, so it stops the run.
+    A record whose files have gone stops the run.
     """
     path = destination / MANIFEST
     # A full run replaces the manifest whatever it holds, readable or not.
@@ -1297,10 +1255,7 @@ def _link_kept(destination: Path, tree: Path, sources: Iterable[str]) -> None:
 
 @contextlib.contextmanager
 def staged(directory: Path) -> Generator[Path]:
-    """A fresh staging directory, removed afterwards whatever happened.
-
-    One left by an interrupted run was never published, so nothing reads it.
-    """
+    """A fresh staging directory, removed afterwards whatever happened."""
     staging = directory / STAGING
     try:
         shutil.rmtree(staging, ignore_errors=True)
@@ -1326,23 +1281,20 @@ def download_corpus(
 ) -> Path:
     """Download the catalog into `output` and publish it with `manifest.json`.
 
-    Every entry is staged in `output/.staging/`, and the staged tree replaces
-    the published one only once every entry succeeded: a run that fails
-    anywhere leaves the previous tree and the manifest describing it exactly
-    as they were, rather than a mix of old and new specifications. Returns
-    the manifest path. Progress goes to `report`, so the caller decides what
-    printing means; anything that stops the download raises `DownloadError`.
-    `convert=False` leaves legacy `.doc` archives unconverted, so LibreOffice
-    is not needed; see `download_3gpp`.
+    Returns the manifest path. Every entry is staged in `output/.staging/`, and
+    the staged tree replaces the published one only once every entry succeeded,
+    so a failed run leaves the previous tree and manifest as they were. Progress
+    goes to `report`; anything that stops the download raises `DownloadError`.
+    `convert=False` leaves legacy `.doc` archives unconverted, so LibreOffice is
+    not needed.
 
-    `only` limits the run to those of `SOURCES`. What the manifest already holds
-    of the others is kept in it and in the tree, and its `sources` says what the
-    two hold. The cache makes a later run cheap: a file fetched by a partial run
-    is not fetched again by a full one. Without `seanchai[extract]`, only `rfc`
-    and `wireshark` can run.
+    `only` limits the run to those of `SOURCES`; what the manifest holds of the
+    others stays in it and in the tree, and its `sources` says what they hold. A
+    file already in the cache is not fetched again. Without `seanchai[extract]`,
+    only `rfc` and `wireshark` can run.
 
-    A `transcriptions/` from before this source existed, its PDFs placed by hand
-    and in no manifest, stays where it is until a run fetches `transcribed`.
+    A `transcriptions/` placed by hand before that source existed stays until a
+    run fetches `transcribed`.
     """
     if workers < 1:
         raise DownloadError("workers must be at least 1")
@@ -1486,13 +1438,11 @@ def download_version(
 ) -> Path:
     """Fetch one catalogued 3GPP specification at `version` into `output/versions/`.
 
-    For diffing against what the corpus holds: the tree is
-    `versions/<SpecRef>/<version>/` (`versions/TS29.272/18.6.0/`), shaped
-    like the published one and with a one-record `manifest.json` of its own,
-    so `seanchai corpus regenerate --manifest` reads it the way it reads the corpus.
-    The release is the version's major. The archive comes from the cache
-    when an earlier run fetched it; nothing else under `output` changes.
-    Returns the manifest path.
+    The tree is `versions/<SpecRef>/<version>/` (`versions/TS29.272/18.6.0/`),
+    shaped like the published one with a one-record `manifest.json`, so
+    `seanchai corpus regenerate --manifest` reads it. The release is the
+    version's major. The archive comes from the cache when an earlier run
+    fetched it; nothing else under `output` changes. Returns the manifest path.
     """
     require_extra()
     catalog = catalog if catalog is not None else load_catalog()

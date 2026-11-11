@@ -538,8 +538,7 @@ def _unwrap_smart_tags(document: docx.document.Document) -> None:
     and prints as that run. python-docx reads only a paragraph's direct runs
     and hyperlinks, so through it the tagged text does not exist: TS 29.338
     clause 5.3.2.6's heading reads "Alert-Service-Centre-Answer () Command",
-    and TS 29.214's clause cells come out blank. Every reading here goes
-    through python-docx, so this is done once, on the tree."""
+    and TS 29.214's clause cells come out blank. Done once, on the tree."""
     for tag in list(document.element.body.iter(qn("w:smartTag"))):
         parent = tag.getparent()
         index = parent.index(tag)

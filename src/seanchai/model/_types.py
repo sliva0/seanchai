@@ -1,7 +1,6 @@
-"""The model's value types: what a consumer holds once the corpus is
-resolved, from `Avp` and `Hole` to `Message` and `Application`, the
-undefined-name policies and answers, and the walks over a body's members.
-Each is a frozen dataclass with `to_dict`; none resolves anything."""
+"""The model's value types, from `Avp` and `Hole` to `Message` and
+`Application`, plus the undefined-name policies and member walks. Each is a
+frozen dataclass with `to_dict`; none resolves anything."""
 
 from __future__ import annotations
 
@@ -22,8 +21,8 @@ if TYPE_CHECKING:
 
 
 def _plain(value: Any) -> Any:
-    """`value` as JSON holds it: an enum its value, a set a sorted list, and a
-    model or dataclass a dict of its fields."""
+    """`value` as JSON: an enum as its value, a set as a sorted list, a model
+    or dataclass as a dict of its fields."""
     if isinstance(value, _Plain | FlagRules):
         return value.to_dict()
     if isinstance(value, enum.Enum):
@@ -47,8 +46,7 @@ class _Plain:
     """What the model's dataclasses share: `to_dict`."""
 
     def to_dict(self) -> dict[str, Any]:
-        """This object's fields as JSON holds them, sorted flags and nested
-        objects included, for `json.dumps`."""
+        """This object's fields as JSON-ready values, for `json.dumps`."""
         return {
             each.name: _plain(getattr(self, each.name))
             for each in fields(cast("DataclassInstance", self))
@@ -57,15 +55,12 @@ class _Plain:
 
 @dataclass(frozen=True)
 class ValueTable(_Plain):
-    """The numbers one document names for a numeric AVP: result codes, the bits
-    of a bit mask, the features of a feature list (`ast.ValueKind`).
+    """The named numbers one document gives a numeric AVP: result codes, bit
+    mask bits or feature-list features (`ast.ValueKind`).
 
-    `rows` are the document's, each a name and a number (`ast.ValueRow`): a
-    result code's `section` where it has a clause of its own, a feature's `mark`
-    the M/O column. `vendor_id` is the space an experimental result code or a
-    vendor AVP's bit lives in, the file's; a plain Result-Code value is the
-    IETF's whichever document prints it. `application` and `feature_list_id`
-    say which list a feature table is, as its caption does."""
+    `rows` are `ast.ValueRow`s. `vendor_id` is the file's vendor, except that
+    plain Result-Code values are always IETF. `application` and
+    `feature_list_id` identify a feature table's list, as its caption does."""
 
     kind: ast.ValueKind
     avp: str
@@ -111,10 +106,9 @@ def _value_table(entry: corpus.Entry, table: ast.ValueTable) -> ValueTable:
 class Avp(_Plain):
     """One resolved AVP, as the specification `defined_in` states it.
 
-    Every field is a fact some document in the corpus states, or for an
-    IETF-space AVP's unplaced M and V bits, RFC 6733's rule (`FlagRules`),
-    or, where `supplied` is set, the consumer's; an AVP missing one is a
-    `Hole` instead, never an `Avp` with a gap in it.
+    Every field is stated by some corpus document, by RFC 6733's default
+    for unplaced IETF bits (`FlagRules`), or by the consumer when `supplied`
+    is set. An AVP missing a field is a `Hole`, never an `Avp`.
     """
 
     name: str
@@ -167,9 +161,7 @@ class Avp(_Plain):
 
     @property
     def value_table(self) -> ValueTable | None:
-        """The first of `value_tables`, the only one but for a document printing
-        several: one feature list per Feature-List-ID, or a code list per
-        interface."""
+        """The first of `value_tables`, or None."""
         return self.value_tables[0] if self.value_tables else None
 
     def _repr_tail(self) -> str:
@@ -184,9 +176,9 @@ class Avp(_Plain):
 
 @dataclass(frozen=True)
 class Undefined(_Plain):
-    """An `Undefined AVP` block, resolved: the name, the document using it,
-    the clause its block cites, what the document says of it, and every
-    clause whose body names it, in file order."""
+    """A resolved `Undefined AVP` block: the name, the document using it,
+    the cited clause, the document's note, and the clauses whose bodies name
+    it."""
 
     reference: str
     name: str
@@ -203,9 +195,8 @@ class Undefined(_Plain):
 
 @dataclass(frozen=True)
 class Placeholder(_Plain):
-    """An undefined name kept in its place untyped, by the consumer's
-    choice (`UndefinedPolicy.PLACEHOLDER`): no identity, type or flags, only
-    what the block says."""
+    """An undefined name kept untyped in its body
+    (`UndefinedPolicy.PLACEHOLDER`)."""
 
     undefined: Undefined
 
@@ -219,11 +210,10 @@ class Placeholder(_Plain):
 
 @dataclass(frozen=True)
 class Supplied(_Plain):
-    """A definition the consumer supplies for an undefined name
-    (`UndefinedPolicy.SUPPLY`). `source` is mandatory provenance: "ACME HSS
-    4.2 dictionary", a sidecar path. `members` only for a Grouped AVP,
-    resolved in the document using the name; `values` only for an
-    Enumerated one."""
+    """A consumer's definition for an undefined name
+    (`UndefinedPolicy.SUPPLY`). `source` names where it came from.
+    `members` are for a Grouped AVP and resolve in the document using the
+    name; `values` are for an Enumerated one."""
 
     vendor_id: int
     code: int
@@ -240,10 +230,8 @@ class Supplied(_Plain):
 
 @dataclass(frozen=True)
 class Alias(_Plain):
-    """An undefined name read as an AVP the corpus does define: TS 29.154's
-    `External-Group-Identifier` as TS 29.336's `External-Identifier`. The
-    member resolves to `reference`'s `name`, unchanged, under its own name;
-    `source` says on whose word."""
+    """Reads an undefined name as `reference`'s AVP `name`, which the corpus
+    defines. The member keeps its own name; `source` says on whose word."""
 
     reference: str
     name: str
@@ -269,7 +257,7 @@ class UndefinedPolicy(enum.StrEnum):
 
 
 class HolePolicy(enum.StrEnum):
-    """Which holes `Model.build` allows (docs/consumers.md#known-holes)."""
+    """Which holes `Model.build` allows (docs/consumers.md)."""
 
     # Those the corpus's record of known holes lists, and only while every
     # entry still names one: an unlisted hole raises `IncompleteCorpusError`,
@@ -289,12 +277,10 @@ type SupplyKey = str | tuple[str, str]
 class Hole(_Plain):
     """A name the corpus cannot turn into a complete `Avp`.
 
-    `reference` is the document whose statement falls short: the one that
-    defines or tabulates the AVP without stating every field, or, when the
-    name resolves to nothing, the one that names it. Its code, type, vendor
-    and flag rules, where stated, are kept for a consumer that takes partial
-    data. A grouped AVP's members and an enumerated AVP's values are not; the
-    AST (`table_rows`, `corpus.Entry.spec`) has those.
+    `reference` is the document that falls short: the one defining or
+    tabulating the AVP incompletely, or the one naming a name that resolves
+    nowhere. Stated code, type, vendor and flag rules are kept; members and
+    values are not (read them from the AST).
     """
 
     reference: str
@@ -345,7 +331,7 @@ class Hole(_Plain):
 
     @property
     def document(self) -> str:
-        """`reference`, with the version when it is an older copy's:
+        """`reference`, plus the version for an older copy:
         "TS32.299 V11.20.0"."""
         return self.reference + ("" if self.version is None else f" V{self.version}")
 
@@ -371,11 +357,9 @@ class Member(_Plain):
 
     @property
     def min_occurs(self) -> int:
-        """The fewest times the member may appear, by RFC 6733 §3.2's rules
-        for a qualifier: an optional rule may always be absent, whatever its
-        qualifier says, and a required rule's minimum defaults to one, so
-        `* { X }` means one or more. `rule.min_occurs` keeps what the bracket
-        and qualifier spell, which reads `[ X ]` as exactly once."""
+        """The fewest times the member may appear, per RFC 6733 section 3.2:
+        0 for an optional rule, at least 1 for a required one. Unlike
+        `rule.min_occurs`, which keeps what the brackets spell."""
         if self.rule.presence is ast.Presence.OPTIONAL:
             return 0
         if self.rule.presence is ast.Presence.REQUIRED:
@@ -434,10 +418,8 @@ class Enumerated(Avp):
 
     @property
     def vendor_specific(self) -> tuple[ast.VendorSpecificValues, ...]:
-        """The ranges the document leaves to vendors or operators, in body
-        order: TS 32.299's SM-Service-Type 100-199, "Vendor specific SM
-        services". A value in one is legal under a name the document does
-        not give, so a consumer validating values allows it."""
+        """The value ranges the document leaves to vendors or operators, in
+        body order. A validator should accept values in them."""
         return tuple(
             value
             for value in self.values
@@ -486,19 +468,16 @@ class Message(_Plain):
 
     @property
     def is_request(self) -> bool:
-        """Whether the header's R bit is set: the request of a command code,
-        and not its answer."""
+        """Whether the header's R bit is set."""
         return ast.CommandFlag.REQUEST in self.flags
 
     def walk(self) -> tuple[Member, ...]:
-        """The members of this command at every depth, each reading once, in
-        definition order: a grouped member comes before its own members.
+        """The command's members at every depth, each reading once, a grouped
+        member before its own members.
 
-        `Member.avp`, `hole` and `placeholder` mean what they do in `avps`,
-        and the `* [ AVP ]` wildcard appears once. A body among its own
-        descendants is not walked twice, and what the policy dropped stays in
-        `dropped`. Two readings of one name are two entries: a grouped AVP
-        read through another document may hold another reading of a member.
+        The `* [ AVP ]` wildcard appears once, a recursive body is not walked
+        twice, and dropped members stay in `dropped`. Two readings of one
+        name are two entries.
         """
         return tuple(_walk(self.avps, set()))
 
@@ -517,14 +496,10 @@ class Message(_Plain):
 
 @dataclass(frozen=True)
 class AnswerMessage(_Plain):
-    """RFC 6733 section 7.2's `<answer-message>` as `defined_in` prints it, its
-    body read through `read_through`: the format an answer with the E bit set
-    takes in place of its command's, there being no other.
-
-    A document printing none takes its `; Bases:` documents', so a TS 29.272
-    error answer takes RFC 6733's, read through TS 29.272, whose reading is the
-    one its commands hold; a TS 29.229 one takes clause 7.3.1's own, which adds
-    `[ Supported-Applications ]`."""
+    """RFC 6733 section 7.2's `<answer-message>`, the body of any answer with
+    the E bit set, as `defined_in` prints it and read through
+    `read_through`. A document printing none takes its `; Bases:`
+    documents'."""
 
     defined_in: str
     section: str
@@ -547,15 +522,11 @@ class AnswerMessage(_Plain):
 @dataclass(frozen=True)
 class Application(_Plain):
     """The commands one document defines for one application on one
-    interface: what a protocol-specific consumer generates one unit from.
+    interface.
 
-    The wire tells applications apart by the header's application id, but
-    documents share one between interfaces (TS 29.273's SWa, STa and SWd
-    all use 16777250) or print none in their headers (TS 29.212 defines its
-    Gx, Gxx, Sd and St commands with bare `272, REQ, PXY` headers and states
-    each id in prose), so the clause a command sits under is the other half
-    of the key. A 3GPP document gives each interface its own top-level
-    clause (29.212's 5, 5a, 5b, 5c) or annex clause (29.215's A.7 and A.8).
+    Documents share an application id across interfaces or print none, so
+    an application is identified by its id and clause. Each interface has
+    its own top-level or annex clause.
     """
 
     reference: str
@@ -572,11 +543,9 @@ class Application(_Plain):
     stated_in: str | None = None
 
     def walk(self) -> tuple[Member, ...]:
-        """The members this application's commands reach at any depth, as
-        `Message.walk` reads them, each reading once, in definition order.
-        What a dictionary generator wants: unlike `Model.avps`, which is what
-        a document's tables list, it holds what the commands take from
-        documents the tables do not list."""
+        """The members the application's commands reach at any depth, as
+        `Message.walk` reads them. Unlike `Model.avps`, this includes AVPs
+        the document's tables do not list."""
         seen: set[tuple[str, object]] = set()
         return tuple(
             member for message in self.messages for member in _walk(message.avps, seen)
@@ -592,12 +561,11 @@ class Application(_Plain):
 
 @dataclass(frozen=True)
 class Allocation(_Plain):
-    """What a registry says of a code: a row allocating it, or a range
-    reserving it, with the registry table it sits in.
+    """A registry row allocating a code, or a range reserving it, with its
+    table.
 
-    TS 29.230 allocates rather than defines, so this is evidence beside the
-    model, never a reading of it: an AVP is what its defining document says,
-    and the linter's `registry-*` rules report where the two differ.
+    This is evidence beside the model and never changes an AVP's reading;
+    the linter's `registry-*` rules report disagreements.
     """
 
     reference: str  # "TS29.230"
@@ -611,17 +579,11 @@ class Allocation(_Plain):
 
 @dataclass(frozen=True)
 class Marks(_Plain):
-    """What one table row marks about where its AVP applies: per mark
-    column its table prints, the row's marks in the document's spelling,
-    `()` where the cell prints a dash and None where it is blank.
+    """One table row's marks of where its AVP applies, per mark column, in
+    the document's spelling: `()` for a dash, None for a blank cell.
 
-    The labels mean what their legends say (`ast.MarkColumn`): TS 29.212's
-    `Acc-Type` names IP-CAN access types and its `Applicability` functions
-    and supported features, neither of them an interface, since each
-    interface clause has tables of its own; TS 32.299's `ACR` to `CCA` say
-    whether the AVP is used in that command, `()` for the dash clause 7.1.0
-    reads as "not used". A blank cell states nothing: TS 32.299 leaves
-    four, and a feature column is blank for a row of the base functionality.
+    Each column means what its table's legend says (`ast.MarkColumn`). A
+    blank cell states nothing.
     """
 
     # The table's label and the clause it sits in: "5a.4.0.1" and "5a.4.0".
@@ -643,9 +605,8 @@ def _identity(member: Member) -> tuple[int, int] | None:
 
 
 def is_cut(member: Member) -> bool:
-    """Whether a member is a body among its own descendants, which `_body`
-    stops at: no reading, no hole and no placeholder, and not the
-    wildcard."""
+    """Whether a member is where `_body` cut a recursive body: no reading,
+    hole or placeholder, and not the wildcard."""
     return (
         member.avp is None
         and member.hole is None
@@ -657,9 +618,9 @@ def is_cut(member: Member) -> bool:
 def _walk(
     members: tuple[Member, ...], seen: set[tuple[str, object]]
 ) -> Iterator[Member]:
-    """`members` and those of their grouped AVPs, depth first, passing over
-    what `seen` holds. A member keeps its own name in the key: an `Alias` reads
-    two names as one AVP, and each is still a member."""
+    """`members` and their grouped AVPs' members, depth first, skipping what
+    `seen` holds. The key includes the member's name, so two aliased names
+    of one AVP are both yielded."""
     for member in members:
         if is_cut(member):
             continue

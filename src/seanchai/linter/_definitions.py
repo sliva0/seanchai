@@ -1,5 +1,5 @@
 """Single-file rules over definitions, enumerated values, value tables,
-commands and their application scopes.
+commands and application scopes.
 """
 
 from __future__ import annotations
@@ -33,13 +33,9 @@ def _duplicate_definitions(index: _Index) -> list[Finding]:
 def _one_name_two_commands(index: _Index) -> list[Finding]:
     """One command name used for two command codes.
 
-    Not folded into `_duplicate_definitions`, because a repeated *message* name
-    is normal: TS 29.272 defines IDR/DSR/RSR once for S6a and once for S7a,
-    same name, same code, two application ids. What cannot be true is one name
-    naming two codes, and TS 29.344 does exactly that — clauses 6.2.11/6.2.12
-    print clauses 6.2.3/6.2.4's rule names above command 8388713, so
-    `ProSe-Subscriber-Information-Request` appeared to be both 8388664 and
-    8388713.
+    A repeated message name with one code is normal (TS 29.272 defines IDR
+    for both S6a and S7a), so this is separate from `_duplicate_definitions`.
+    Case: TS 29.344 clauses 6.2.11/6.2.12.
     """
     by_name: dict[str, dict[int, list[str]]] = defaultdict(lambda: defaultdict(list))
     for message in index.messages:
@@ -84,8 +80,8 @@ def _duplicate_enum_values(index: _Index) -> list[Finding]:
 
 
 def _duplicate_values(index: _Index) -> list[Finding]:
-    """One value table giving one number twice: a number means one thing in
-    one table, whether the names agree or not."""
+    """One value table giving one number twice, whether the names agree or
+    not."""
     findings = []
     for table in index.value_tables:
         by_value: dict[int, list[ast.ValueRow]] = defaultdict(list)
@@ -108,9 +104,8 @@ def _duplicate_values(index: _Index) -> list[Finding]:
 
 
 def _values_out_of_range(index: _Index) -> list[Finding]:
-    """A bit past what its AVP holds: 31 for an Unsigned32, the type every bit
-    mask but a few has, and 63 for one the file's own table types Unsigned64
-    (TS 29.272's `Broadcast-Location-Assistance-Data-Types`)."""
+    """A bit number past what its AVP holds: 31 for Unsigned32 (the default),
+    63 for an AVP the file's own table types Unsigned64."""
     typed = {row.name: row.data_type for row in index.rows if row.data_type}
     findings = []
     for table in index.value_tables:
@@ -147,13 +142,7 @@ def _enum_entry_label(entry: ast.EnumEntry) -> str:
 
 def _vendor_specific_overlaps(index: _Index) -> list[Finding]:
     """A `; VENDOR-SPECIFIC` range covering a value the AVP names, a range it
-    reserves or voids, or another vendor-specific range.
-
-    A vendor-specific value is legal under a name the document does not
-    give, a named value means what its name says, and a reserved one is
-    illegal, so one value cannot be two of them. No corpus case: TS 32.299's
-    SM-Service-Type and oneM2M TS-0004's Protocol-Type leave 100-199 to
-    vendors above the ranges they name and reserve.
+    reserves or voids, or another vendor-specific range. No corpus case.
     """
     findings = []
     for definition in index.definitions:
@@ -189,10 +178,8 @@ def _vendor_specific_overlaps(index: _Index) -> list[Finding]:
 
 def _void_overlaps(index: _Index) -> list[Finding]:
     """A `; VOID` value the AVP also names or reserves, or a second `; VOID`
-    over it. A withdrawn value is no longer assigned, so a name on it says the
-    opposite, and it was assigned once, so a reservation does too. A
-    vendor-specific range over one is `vendor-specific-overlap`'s. No corpus
-    case: TS 29.214's Specific-Action names neither 0 nor 5 beside its voids.
+    over it. A vendor-specific range over one is `vendor-specific-overlap`'s.
+    No corpus case.
     """
     findings = []
     for definition in index.definitions:
@@ -230,11 +217,7 @@ def _void_overlaps(index: _Index) -> list[Finding]:
 
 def _applications_agree_with_headers(index: _Index) -> list[Finding]:
     """A command sits in at most one application scope, and a header that
-    prints an id prints the scope's.
-
-    Both are what the model's grouping would decide quietly — the first
-    block in file order, the header over the block — so a document stating
-    two ids for one command is said out loud here instead.
+    prints an id prints the scope's. The model settles both silently.
     """
     findings = []
     for message in index.messages:

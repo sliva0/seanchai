@@ -1,8 +1,12 @@
-"""How a name resolves: `_Resolver`, `Model`'s base, which indexes the corpus
-per copy and reads a name through the resolution order (the package
-docstring), from the local definition to an `Undefined AVP` block, filling,
-overlaying flag rules and reading grouped bodies through the citing
-document."""
+"""`_Resolver`, `Model`'s base: indexes the corpus per copy and resolves
+names.
+
+A name's readings are tried in order: the local definition, the re-used
+origin, the local AVP-table row, the `; Bases:` documents, and last an
+`Undefined AVP` block. The first reading wins and later ones fill only
+what it leaves unstated. docs/consumers.md describes the order for
+consumers.
+"""
 
 from __future__ import annotations
 
@@ -40,9 +44,8 @@ _ALIASED = object()
 
 
 class _Resolver:
-    """The corpus indexed per copy, and every name resolved in it, by the
-    order the package docstring states: the machinery `Model` answers its
-    queries from, and the state `Model.build` sets up."""
+    """The corpus indexed per copy, with memoised resolution of every name.
+    `Model.build` sets up the state; `Model`'s queries read it."""
 
     def _index(
         self,
@@ -80,14 +83,14 @@ class _Resolver:
         self._settled: dict[tuple[Path, str], tuple[int, int]] = {}
 
     def references(self) -> tuple[str, ...]:
-        """Every specification the model answers for, `TS29.229`-spelled, in
-        sort order. Every query taking a reference reads it however it is
-        spelled: "TS 29.229", "ts29.229", "3GPP TS 29.229"."""
+        """Every specification the model holds, spelled `TS29.229`, sorted.
+        Queries accept any spelling: "TS 29.229", "ts29.229", "3GPP TS
+        29.229"."""
         return tuple(sorted(self._views))
 
     def canonical(self, reference: str) -> str:
-        """The reference `reference` spells, `TS29.229` for "ts 29.229", or
-        `ModelError` suggesting the close ones."""
+        """`reference` in canonical spelling (`TS29.229` for "ts 29.229").
+        Raises `ModelError`, suggesting close matches, if none is held."""
         if reference in self._views:
             return reference
         folded = _folded(str(reference))
@@ -151,8 +154,7 @@ class _Resolver:
         return self._on_record(found) if isinstance(found, Hole) else found
 
     def _on_record(self, hole: Hole) -> Hole:
-        """`hole` with the reason the record states for it, when an entry
-        lists it as it is."""
+        """`hole` with its recorded reason, if the record lists it exactly."""
         entry = self._known.get((hole.document, hole.name))
         if entry is None or entry.missing != hole.missing:
             return hole
@@ -184,9 +186,8 @@ class _Resolver:
         return self._supply.get(undefined.name) if answer is None else answer
 
     def _answered(self, undefined: Undefined, stack: tuple) -> Avp | None:
-        """What `supply` answers for a declared name: the `Supplied`
-        definition read in the declaring document, or the AVP an `Alias`
-        names; None where it says nothing of it."""
+        """`supply`'s answer for a declared name: the `Supplied` definition
+        read in the declaring document, the AVP an `Alias` names, or None."""
         answer = self._answer(undefined)
         if answer is None:
             return None
@@ -243,9 +244,8 @@ class _Resolver:
         return found
 
     def _older(self, view: _View) -> str | None:
-        """`view`'s version when it is an older copy the corpus holds for a
-        citation, not the one reference-level queries answer from: the
-        version a hole falling short there names (TS 32.299 V11.20.0)."""
+        """`view`'s version if it is an older copy, held only for citations;
+        None for the newest copy."""
         if view is self._views[view.entry.reference]:
             return None
         return view.entry.spec.version
@@ -268,29 +268,14 @@ class _Resolver:
         return result
 
     def _resolve_here(self, view: _View, name: str, stack: tuple) -> _Draft | None:
-        """The first reading along the resolution order, with whatever it
-        leaves unstated filled from the readings after it.
+        """The first reading in resolution order, filled from the later ones.
 
-        A re-print that tabulates no flag rules (TS 29.272's
-        `Allocation-Retention-Priority`, re-used from TS 29.212) takes them
-        from its origin, and an origin that states no Diameter type (RFC
-        4590's RADIUS-derived `Digest-*` rows, uncorrected) takes it from
-        the citing document's table. The first reading still names the defining
-        document.
-
-        A re-used name whose row in the citing document's own AVP table
-        states flag cells takes those cells over every other reading's
-        (`_own_flags`), the others supplying only the flags the row places
-        in no column: TS 29.229's `Digest-Qop` is M in Must through TS
-        29.229 and M in May through RFC 4590. Below those cells and above
-        the origin ranks the M-bit cell of the citing document's re-used
-        row (`_own_m_bit`): TS 29.272's `RAT-Type` is M in Must, TS 29.212's
-        M in Must not.
-
-        A grouped AVP defined elsewhere keeps its defining document's body,
-        but each member this document says anything of is read through it
-        (`_through`): TS 32.299's `Supported-Features` is TS 29.229's, and
-        its `Feature-List` member TS 32.299's, M in Must.
+        For a re-used name, flag rules rank: the citing document's AVP-table
+        cells (`_own_flags`), then the M-bit cell of its re-used row
+        (`_own_m_bit`), then the other readings, which supply only flags left
+        unplaced. A grouped AVP defined elsewhere keeps its defining body,
+        but members this document describes are read through it
+        (`_through`).
         """
         own = self._own_flags(view, name)
         m_bit = self._own_m_bit(view, name)
@@ -356,18 +341,13 @@ class _Resolver:
 
     def _own_flags(self, view: _View, name: str) -> ast.AvpFlagRules | None:
         """The flag rules `view`'s AVP-table rows state for a name it
-        re-uses, each flag where the first row placing it puts it, or None
-        when it re-uses no such name or no row places any flag.
+        re-uses, or None if it re-uses no such name or the rows place no
+        flag.
 
-        RFC 6733 section 4.1 leaves the M bit to "the application
-        specification that introduces or reuses this AVP" and section 4.5
-        has each application state its AVPs' flag rules, so where the citing
-        table states them they are its application's, and resolution through
-        the citing document reads them rather than the origin's. Per flag,
-        since a row leaving a flag in no column says nothing of it: a later
-        row is read only for a flag no earlier row places. A file citing
-        itself (TS 29.212's Gxx tables, "from" TS 29.212) re-uses
-        nothing, and its rows are read as any other."""
+        RFC 6733 sections 4.1 and 4.5 leave flag rules to the using
+        application, so the citing table's rules win over the origin's. Each
+        flag is taken from the first row that places it. A file citing
+        itself re-uses nothing."""
         rows = view.tabled.get(name)
         origin = view.reused.get(name)
         if origin is None or rows is None:
@@ -380,18 +360,11 @@ class _Resolver:
         return rules if _stated(rules) else None
 
     def _own_m_bit(self, view: _View, name: str) -> ast.AvpFlagRules | None:
-        """The M rule the first of `view`'s re-used rows for a name whose
-        M-bit cell states one gives, as flag rules placing M alone, or None
-        when no row's cell does (a dash, a blank, no M-bit column) or the
-        rows cite `view` itself.
+        """The M rule from the first of `view`'s re-used rows for `name` whose
+        M-bit cell states one, as flag rules placing M alone, or None.
 
-        The column is the citing interface's own M setting (TS 29.272 table
-        7.3.1/2 marks TS 29.212's `RAT-Type` `MUST`), so it outranks the
-        origin's rule as `_own_flags` does, and ranks below the citing
-        document's AVP-table cells, the fuller statement. A row whose cell
-        says nothing is passed over: TS 29.336's `DRMP` rows read `-` for
-        its first interface and `MUST-NOT` for its second, so M is in Must
-        not."""
+        It outranks the origin's rule and ranks below `_own_flags`. Rows with
+        a dash or blank cell, and rows citing `view` itself, are skipped."""
         for row in view.reused_rows.get(name, ()):
             if row.m_bit is None or self._cited(view, row.origin)[0] is view:
                 continue
@@ -403,25 +376,16 @@ class _Resolver:
     def _through(
         self, view: _View, members: tuple[Member, ...], stack: tuple
     ) -> tuple[Member, ...]:
-        """A body another document resolved, with each member `view`
-        defines, tabulates or re-uses read through `view` instead, so that
-        its own rules for the member (`_own_flags`, `_own_m_bit`) hold
-        inside the grouped AVP as they do at top level. A member `view` says
-        nothing of keeps the other document's reading, and so does one
-        `view` reads as another AVP: the body names its members in the
-        defining document's sense, and a name is no identity. TS 32.299's
-        own `Originator` is (10415, 864) Enumerated, but the re-used
-        `M2M-Information` it reads through oneM2M TS-0004 holds oneM2M's,
-        (45687, 1008) UTF8String. Only a reading whose vendor and code are
-        both known and both the member's is read through `view`: two holes
-        stating no code are no evidence of one AVP. A grouped member read
-        through `view` has
-        its own members read the same way; one already being resolved
-        through `view` (a body among its own descendants) is cut as `_body`
-        cuts it, but only where the identity that reading has settled
-        (`_settled`) is known and the member's: a citing document's own
-        `Feature` holding a re-used `Bundle` whose `Feature` is the
-        origin's, another AVP, keeps the origin's member."""
+        """A body another document resolved, with each member `view` defines,
+        tabulates or re-uses read through `view` instead, so `view`'s flag
+        rules apply inside the grouped AVP too.
+
+        A member is replaced only when `view`'s reading has the same known
+        `(vendor-id, code)`; otherwise the defining document's reading stays,
+        since a name alone is no identity. Nested grouped members are read
+        the same way. A member already being resolved through `view` is cut
+        as `_body` cuts it, but only if its settled identity (`_settled`)
+        matches."""
         says = view.defined.keys() | view.tabled.keys() | view.reused.keys()
         read = []
         for member in members:
@@ -441,22 +405,19 @@ class _Resolver:
     def _settle(
         self, key: tuple[Path, str], vendor_id: int | None, code: int | None
     ) -> None:
-        """Record the identity the reading under `key`, still being
-        resolved, has settled before its members are read, if it is
-        known."""
+        """Record the identity of the reading under `key`, if known, before
+        its members are read."""
         if vendor_id is not None and code is not None:
             self._settled[key] = (vendor_id, code)
 
     def _readings(
         self, view: _View, name: str, stack: tuple, own_flags: bool = True
     ) -> Iterator[_Draft]:
-        """Every document's reading of `name`, in resolution order, lazily:
-        the local definition, the re-used origin, the local table row, the
-        `; Bases:` documents.
+        """Every reading of `name`, lazily, in resolution order.
 
-        Without `own_flags` the local readings carry no flag rules, so that
-        flags the caller lays over the result (`_own_flags`) neither fill nor
-        disagree with another document's."""
+        Without `own_flags` the local readings carry no flag rules, so the
+        flags the caller overlays (`_own_flags`) neither fill nor conflict
+        with another document's."""
         rows = view.tabled.get(name)
         origin = view.reused.get(name)
         theirs, across = (None, None) if origin is None else self._cited(view, origin)
@@ -495,13 +456,10 @@ class _Resolver:
     def _later_release(
         self, view: _View, origin: str, name: str, stack: tuple
     ) -> _Draft | None:
-        """What a later release's copy states of `name` for a citation of
-        `origin` whose own copy leaves it unstated, by a
-        `corpus.Rules.release_fills` entry: the entry's fields and no other,
-        each naming that copy in `completed_by`. Its code still has to agree
-        (`_Draft.fill`), and its vendor is the citation's copy's to state. TS
-        29.210's `3GPP-SGSN-MCC-MNC` takes its type from TS 29.061 V19.1.0 and
-        not the flags, whose M Release 19's table 9a puts in Must not."""
+        """A later release's reading of `name` for a citation of `origin`, per
+        a `corpus.Rules.release_fills` entry. It carries only the entry's
+        fields, each credited to that copy in `completed_by`; its code must
+        still agree (`_Draft.fill`) and it states no vendor."""
         found = self._books.release_fill(origin, like=view.entry.spec)
         if found is None or name not in found[1].names:
             return None
@@ -523,9 +481,9 @@ class _Resolver:
     def _cited(
         self, view: _View, reference: str
     ) -> tuple[_View | None, corpus.CrossRelease | None]:
-        """The copy `reference` names when cited from `view`, if the corpus
-        holds the one the drafting rules mean, and how it was reached when
-        that is outside `view`'s release (`corpus.Corpus.resolution`)."""
+        """The copy `reference` means when cited from `view`, or None, and
+        the `CrossRelease` if it lies outside `view`'s release
+        (`corpus.Corpus.resolution`)."""
         entry, across = self._books.resolution(reference, like=view.entry.spec)
         return (None, None) if entry is None else (self._copies[entry.path], across)
 
@@ -620,8 +578,8 @@ class _Resolver:
     def _split(
         self, members: tuple[Member, ...]
     ) -> tuple[tuple[Member, ...], tuple[Member, ...]]:
-        """A body's members, and those `UndefinedPolicy.DROP` takes out of
-        it: the undefined ones, required or not."""
+        """A body's members split into kept and, under
+        `UndefinedPolicy.DROP`, dropped undefined ones."""
         if self._policy is not UndefinedPolicy.DROP:
             return members, ()
         kept: list[Member] = []

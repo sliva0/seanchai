@@ -1,10 +1,10 @@
 """Reading the prose fields of the committed TOML files.
 
-TOML files keep to 80 columns, so a long `reason` is a multi-line basic string
-and its line breaks and indentation are layout, not text. Every reader passes
-such a field through here, so the value is the same one line of prose however
-the file wraps it. A field whose whitespace means something (a patch's `find`,
-a name) never comes here (docs/development.md#conventions).
+TOML files keep to 80 columns, so a long `reason` wraps in a multi-line string
+whose line breaks and indentation are layout. Every reader passes such a field
+through here, so it reads as the same one line however the file wraps it. A
+field whose whitespace matters (a patch's `find`, a name) never comes here
+(docs/development.md).
 """
 
 from collections.abc import Collection, Mapping

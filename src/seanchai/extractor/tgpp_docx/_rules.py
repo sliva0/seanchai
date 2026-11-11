@@ -247,9 +247,8 @@ def _abnf_member(
 def _rule_text(text: str, quirks: sources.Quirks) -> str:
     """TS 32.299 spells the rule operator ":: =" in about ninety grouped
     rules (clause 7.2.0A onwards), TS 29.229 in four (6.3.13, 6.3.16, 6.3.19,
-    6.3.64). A document convention rather than a typo, and per-document like
-    `dotted-flags`, so the reading is declared; undeclared it fails, where it
-    used to drop the definition silently."""
+    6.3.64). It is a per-document convention, like `dotted-flags`, so the
+    reading is declared; undeclared, it fails."""
     if ":: =" not in text:
         return text
     if not quirks.enabled("spaced-rule-operator"):

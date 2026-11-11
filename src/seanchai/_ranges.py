@@ -1,26 +1,18 @@
-"""Widening declared version ranges in the edit files, in place.
+"""Widen stale version ranges in the edit files, in place, for
+`seanchai corpus regenerate --expand-ranges`.
 
-Every input patch, quirk and correction carries an advisory version range,
-and `regenerate` warns when the parsed version falls outside it. When the
-rebuild succeeded anyway, every declaration fired exactly as declared — the
-patches' and quirks' must-fire accounting and the corrections' `expect`
-checks all passed — so the range is merely stale, and widening it to the
-parsed version is a mechanical edit (TS 29.272's 18.6.0 → 18.7.0 upgrade
-widened twenty-odd by hand). `seanchai corpus regenerate --expand-ranges` makes it.
+A range is stale when the rebuild succeeded with every declaration firing
+as declared, yet the parsed version lies outside it.
 
-Both rewrites replace the text of one bound or one literal and nothing else:
-no re-serialisation, so comments, block order and layout stay byte for byte.
-A source declaration's bound is located in the TOML text and the result is
-checked against what `tomllib` reads back. A corrections module's
-`versions=` literal is located with `ast`, and only where the loader is
-known to apply it: inside the top-level `CORRECTIONS` assignments, outside
-lambdas, conditionals and filtered comprehensions. Anything this cannot
-rewrite safely — a literal elsewhere, one split by comments, a range built
-by an expression — is reported for a person to widen instead.
+Each rewrite replaces only the text of one bound or literal, so comments
+and layout stay byte for byte. TOML bounds are checked against what
+`tomllib` reads back. A corrections module's `versions=` literal is found
+with `ast`, only inside the top-level `CORRECTIONS` assignments and outside
+lambdas, conditionals and filtered comprehensions. Anything else is
+reported for a person to widen.
 
-An `Accept` is no edit, so a clean rebuild says nothing about it: its range
-is widened only when the caller found it still matching its finding on the
-rebuilt file (`accepted`), and is reported stale otherwise.
+An `Accept`'s range is widened only if the caller found it still matching
+on the rebuilt file (`accepted`); otherwise it is reported stale.
 """
 
 import ast
@@ -135,9 +127,8 @@ def expand_sources(path: Path, version: str) -> Expansion:
 
 
 def without_multiline_strings(text: str) -> str:
-    """`text` with each multi-line string blanked, offsets and lines kept: a
-    wrapped `reason` may put TS 29.214's "[15]" or a key-like word at the start
-    of a line, and that is no table header or bound."""
+    """`text` with multi-line strings blanked, offsets and lines kept, so
+    their contents are not mistaken for headers or bounds."""
 
     def blanked(match: re.Match[str]) -> str:
         found = match[0]
@@ -149,8 +140,8 @@ def without_multiline_strings(text: str) -> str:
 
 
 def _block_regions(text: str) -> dict[str, list[tuple[int, int]]]:
-    """Each `[[patch]]`/`[[quirk]]`/`[[exclude]]` block's text span, per kind in
-    file order — the order `tomllib` lists them in."""
+    """Each `[[patch]]`/`[[quirk]]`/`[[exclude]]` block's text span, per kind,
+    in file order (as `tomllib` lists them)."""
     regions: dict[str, list[tuple[int, int]]] = {kind: [] for kind in _KINDS}
     for header in _BLOCK.finditer(text):
         following = _ANY_TABLE.search(text, header.end())
@@ -209,14 +200,12 @@ def expand_corrections(
     version: str,
     accepted: Collection[str] = (),
 ) -> Expansion:
-    """Widen the `versions=` literals in `specification`'s corrections module
-    that the loader applies and that do not cover `version`.
+    """Widen the applied `versions=` literals in `specification`'s
+    corrections module that do not cover `version`.
 
-    An `Accept`'s literal is widened only when its id, cited as
-    `<module>#<id>`, is in `accepted`: the acceptances the caller checked
-    against the rebuilt file and found matching. One that is not is
-    reported in `stale`; one whose id is not a string literal cannot be
-    told apart and is left for a person."""
+    An `Accept` is widened only if `<module>#<id>` is in `accepted`;
+    otherwise it is reported in `stale`. One whose id is not a string
+    literal is left for a person."""
     path = corrections.module_path(directory, specification)
     if not path.is_file():
         return Expansion([], [])
@@ -302,8 +291,8 @@ def _checked_rewrite(
     specification: str,
     declared: list[corrections.Declaration],
 ) -> list[corrections.Declaration]:
-    """Load the rewritten module from a scratch copy and require it to declare
-    exactly what the original did, ranges aside, before anything is replaced."""
+    """Load the rewritten module from a scratch copy and require it to
+    declare what the original did, ranges aside."""
     with tempfile.TemporaryDirectory() as scratch:
         (Path(scratch) / path.name).write_bytes(rewritten)
         loaded = corrections.load(Path(scratch), specification)
@@ -320,17 +309,16 @@ def _checked_rewrite(
 
 
 def _line_starts(text: str) -> list[int]:
-    """Offsets of each line as the tokenizer counts them (`\\r\\n`, `\\r` or
-    `\\n`; `str.splitlines` also splits on form feeds and the like)."""
+    """Line start offsets as the tokenizer counts lines (`\\r\\n`, `\\r`
+    or `\\n`, unlike `str.splitlines`)."""
     return [0] + [match.end() for match in re.finditer(r"\r\n|\r|\n", text)]
 
 
 def _range_literals(
     tree: ast.Module,
 ) -> Iterator[tuple[ast.Constant, str, str | None]]:
-    """The `versions=` string literals of every declaration call in the
-    module, in source order, each with the declaring `Accept`'s id: None for
-    an edit, "" for an acceptance whose id is no string literal."""
+    """Every declaration's `versions=` literal, in source order, with its
+    `Accept` id: None for an edit, "" if the id is not a string literal."""
     calls = sorted(
         (node for node in ast.walk(tree) if isinstance(node, ast.Call)),
         key=lambda node: (node.lineno, node.col_offset),
@@ -363,12 +351,10 @@ def _range_literals(
 
 
 def _applied_literals(tree: ast.Module) -> set[int]:
-    """Identities of the nodes the loader's `CORRECTIONS` is built from:
-    the last top-level `CORRECTIONS = ...` and every top-level
-    `CORRECTIONS += ...` after it; any other shape is reported, not guessed.
-    Code that runs only sometimes (a lambda, either arm of a conditional, a
-    comprehension with a filter) is left out, since a literal there may
-    belong to a declaration that never applied."""
+    """Ids of the nodes the loader builds `CORRECTIONS` from: the last
+    top-level `CORRECTIONS = ...` and each later `CORRECTIONS += ...`. Other
+    shapes are reported. Lambdas, conditionals and filtered comprehensions
+    are skipped, since their declarations may never apply."""
     values: list[ast.expr] = []
     for statement in tree.body:
         if isinstance(statement, ast.Assign) and any(
@@ -402,8 +388,8 @@ def _unconditional(node: ast.AST) -> Iterator[ast.AST]:
 
 
 def _has_comments(literal: str) -> bool:
-    """Whether an implicitly concatenated literal carries comments between
-    its parts, which replacing the whole span would delete."""
+    """Whether an implicitly concatenated literal has comments between its
+    parts, which a rewrite would delete."""
     # Parenthesised so a literal continued over lines tokenizes on its own.
     tokens = tokenize.generate_tokens(io.StringIO(f"({literal})").readline)
     return any(token.type == tokenize.COMMENT for token in tokens)

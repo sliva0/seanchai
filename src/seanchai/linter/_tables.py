@@ -1,6 +1,6 @@
-"""Single-file rules over AVP identities and the AVP tables: a
-`(vendor-id, code)` claimed twice, rows against definitions and against
-each other, and vendors against headers and V flags.
+"""Single-file rules over AVP identities and AVP tables: duplicate
+`(vendor-id, code)`, rows against definitions and each other, and vendors
+against headers and V flags.
 """
 
 from __future__ import annotations
@@ -14,8 +14,7 @@ from ._index import _Index, _table_labels
 
 
 def _identity(code: int, vendor_id: int | None) -> AvpIdentity:
-    """`.dad` writes an IETF-space AVP with no vendor; the wire format calls
-    that vendor 0."""
+    """Return the identity, reading no vendor as IETF space (vendor 0)."""
     return AvpIdentity(ast.IETF_VENDOR if vendor_id is None else vendor_id, code)
 
 
@@ -26,17 +25,9 @@ def _duplicate_identities(
 ) -> list[Finding]:
     """No two AVPs share a `(vendor-id, code)`.
 
-    Not the same rule as "no duplicate names": TS 29.272's `Area-Scope` was
-    printed with `Job-Type`'s code, so two differently-named AVPs had one
-    identity while every name in the file stayed unique.
-
-    A re-used AVP belongs to the origin's vendor space, which is that
-    document's `; Vendor-ID:` to state — not this file's to guess. Two AVPs
-    numbered 621 in TS 29.229 are 3GPP's and RFC 7683's, and a comparison that
-    assumed one space would call them a collision. `reused_vendor` is the
-    cross-document rules supplying that answer, origin reference → vendor-id;
-    without it (single-file mode), and for any origin it cannot resolve, the
-    row is skipped rather than guessed at.
+    A re-used row is in its origin's vendor space, which `reused_vendor`
+    maps from the origin reference. Without it, or when it returns None,
+    the row is skipped.
     """
     holders: dict[AvpIdentity, list[tuple[str, str]]] = defaultdict(list)
     for definition in index.definitions:
@@ -79,21 +70,11 @@ def _duplicate_identities(
 
 
 def _rows_without_codes(index: _Index) -> list[Finding]:
-    """A table that declares a Code column fills it in every row.
+    """Every row of a table with a Code column has a code.
 
-    An AVP is its `(vendor-id, code)`, so a row printing `-` for its code
-    describes nothing a message could carry. Both real cases are the same
-    editorial slip: TS 29.229 and TS 29.329 tabulate `Load` code-less among
-    their own AVPs while their prose defines it only by reference to
-    RFC 8583 — a re-used AVP printed in the wrong table. Only tables that
-    declare a Code column are checked: RFC 7155's tables carry no such
-    column at all, which is a statement about the document's layout rather
-    than about any one AVP.
-
-    A row with a clause and no code, flag or Encrypt cell is no such slip but
-    the whole of what its clause states, inserted for a table omitting the
-    AVP: TS 29.229's `Wildcarded-IMPU`, clause 6.3.43. The file cannot give
-    the code it does not state, so that is a note, and the model's hole.
+    A code-less row is an error, usually a re-used AVP in the wrong table. A
+    row with a clause and no code, flag or Encrypt cell is a note: it records
+    a clause that states no code, and the model reports it as a hole.
     """
     findings = []
     for table in index.tables:
@@ -184,21 +165,12 @@ _ROW_READINGS = (
 
 
 def _tables_agree_with_each_other(index: _Index) -> list[Finding]:
-    """Rows naming one AVP in two of a file's AVP tables say the same thing.
+    """Rows naming one AVP in several of a file's AVP tables agree.
 
-    Per-interface tables re-print shared AVPs, and nothing keeps the copies in
-    step: TS 29.061 tabulates `3GPP-IMSI` and six more with M in M.not in
-    table 9a (clause 16a.5, Gi/SGi) and with M in Must in table 10 (clause
-    17.7.0, Gmb). A note, because the per-interface flag rule may be
-    deliberate and only the document's editor knows which; the model resolves
-    a name to its first row (see `docs/consumers.md`).
-
-    Compared only on columns every table carrying the row declares, and only
-    where the cells say something, so a table without an Encrypt column (TS
-    29.273's) or a blank type cell makes no claim to disagree with. A code
-    or vendor disagreement is an error, since two identities are two AVPs; a
-    code's is left to `table-definition-mismatch` when a clause defines the
-    AVP, because that rule names which row is wrong.
+    Only columns every such table declares, and only non-blank cells, are
+    compared. A code or vendor disagreement is an error; others are notes.
+    A code disagreement is left to `table-definition-mismatch` when a clause
+    defines the AVP.
     """
     placed: dict[str, list[tuple[ast.AvpTable, ast.AvpTableRow]]] = defaultdict(list)
     for table in index.tables:
@@ -236,8 +208,8 @@ def _disagreement(
     copies: list[tuple[ast.AvpTable, ast.AvpTableRow]],
     columns: list[ast.AvpColumn],
 ) -> str | None:
-    """The rows' readings of `columns` grouped by value and spelled for a
-    message, or None when every row that says something agrees."""
+    """Spell the rows' differing readings of `columns` for a message, or
+    return None when every non-blank row agrees."""
     readings: dict[str, list[ast.AvpTable]] = defaultdict(list)
     for table, row in copies:
         cells = [formatter.avp_table_cell(row, column) for column in columns]
@@ -260,19 +232,11 @@ def _disagreement(
 
 
 def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Finding]:
-    """A definition's vendor-id agrees with the file's `; Vendor-ID:`, or
-    with its row's Vendor-ID cell where the table prints one.
+    """A definition's vendor-id agrees with its row's Vendor-ID cell where
+    the table prints one, else with the file's `; Vendor-ID:`.
 
-    A clause header writes no vendor-id for an IETF-space AVP, and writes no
-    vendor-id when the document simply forgot — the two look identical. What
-    tells them apart is the rest of the file. TS 29.272 defines
-    `WLAN-offloadability` (clause 7.3.181) with a bare `< AVP header: 1667 >`
-    while its own AVP table marks the `V` flag mandatory for that row: the
-    document says in one place that the AVP carries a vendor-id and in another
-    that it has none. `MIP6-Agent-Info` in the same file is equally vendor-less
-    and entirely correct, because it is RFC 5447's and listed as re-used.
-    oneM2M TS-0004 prints `M2M-Information`'s header with no vendor-id
-    (clause A.5.14) and its row in table A.4-1 with vendor 45687.
+    A header with no vendor-id is an error only when the AVP's row requires
+    the V flag. Re-used names are skipped.
     """
     rows = {row.name: row for row in index.rows}
     findings = []
@@ -328,13 +292,8 @@ def _vendor_id_agrees_with_header(index: _Index, own_vendor: int) -> list[Findin
 
 
 def _vendors_agree_with_flags(index: _Index) -> list[Finding]:
-    """A row's Vendor-ID cell and its V flag say the same thing.
+    """A row's Vendor-ID cell and its V flag agree (RFC 6733 section 4.1.1).
 
-    RFC 6733 section 4.1.1 sets the V bit exactly when the header carries a
-    Vendor-ID, which is never zero. oneM2M TS-0004 table A.4-1 prints
-    vendor 45687 for its own AVPs, as clause A.4 assigns them ("AVPs defined
-    for oneM2M specific usage are assigned Vendor-Id of 45687"), and puts V
-    under Must-not in every one of those rows, as it does for its IETF rows.
     The model takes the vendor from the cell (`AvpTableRow.stated_vendor`).
     """
     return [

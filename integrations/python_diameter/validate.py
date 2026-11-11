@@ -1,40 +1,29 @@
 """Validate the python-diameter library against specifications' `.dad` files.
 
-This is the *validate* consumer direction over the model: the
-[python-diameter](https://github.com/mensonen/diameter) library holds one
-class per command that tries to serve every specification using that command
-at once, plus global AVP dictionaries keyed by code. Validating the whole of
-such a class against any one document would mis-report every AVP the class
-carries for the *other* documents — but each specification's claims are still
-checkable one at a time: its commands must exist under the right codes with
-the right members, and its own AVPs must be right in the global dictionary.
-
-What is checked, against each named specification:
+[python-diameter](https://github.com/mensonen/diameter) has one class per
+command, serving every specification that uses it, and global AVP
+dictionaries keyed by code. A class is therefore checked against one
+specification's claims at a time, not as a whole:
 
 - Every command the specification defines has a library class with that
   command code, with a Request/Answer subclass for the message's direction.
 - Every AVP in the command's ABNF body appears in that subclass's `avp_def`,
-  identified by `(vendor-id, code)` — names differ freely between the
-  library's attribute spelling and the specification's. The reverse
-  direction reports library entries the body never mentions (which may be
-  another specification's use of the command — read them against the scope),
-  `is_required` is compared against the ABNF's `{ }` / `[ ]` brackets, and an
-  explicit `is_mandatory` against the reading's M bit.
-- Every AVP the specification itself defines is looked up in the library's
-  dictionary for the file's own `; Vendor-ID:` — present, same name, a value
-  type consistent with the specification's, and a mandatory default matching
-  the AVP-table flag rules.
-- With `--grouped`, the same over the grouped classes: every Grouped AVP a
-  command reaches needs a `type_class`, whose `avp_def` is held against the
-  AVP's body, at any depth.
+  matched by `(vendor-id, code)`, not by name. Library entries the body
+  never mentions are reported too (they may belong to another
+  specification). `is_required` is compared with the ABNF's `{ }` / `[ ]`
+  brackets, and an explicit `is_mandatory` with the reading's M bit.
+- Every AVP the specification defines is in the library's dictionary under
+  the file's `; Vendor-ID:`, with the same name, a consistent value type and
+  a mandatory default matching the AVP-table flag rules.
+- With `--grouped`, every Grouped AVP a command reaches has a `type_class`
+  whose `avp_def` matches the AVP's body, at any depth.
 
-The library's AVP names follow Wireshark's dictionary on purpose, so a name
-that is Wireshark's for the identity is counted rather than reported, unless
-`--names` asks for it.
+The library's AVP names follow Wireshark's dictionary, so a name that is
+Wireshark's for the identity is counted, not reported, unless `--names` is
+given.
 
-Self-contained via inline script metadata — uv supplies seanchai and a
-library, and `--library` names another. A reference is the one re-used rows
-cite, with the bare number accepted as shorthand:
+uv supplies seanchai and a library from the inline script metadata;
+`--library` names another. A reference is a SpecRef, or just its number:
 
     uv run integrations/python_diameter/validate.py TS29.229
     uv run integrations/python_diameter/validate.py 29.229 RFC7155
@@ -42,11 +31,9 @@ cite, with the bare number accepted as shorthand:
     uv run integrations/python_diameter/validate.py --claimed \
         --library ~/src/diameter --enumerated-as-integer --no-flags --grouped
 
-Exits 1 when anything disagrees. The report is a statement about two
-artifacts: a "missing" finding against a library pinned to an older release
-of the document may simply be that release's truth, and reading the findings
-against their clauses is the reader's part of the job. README.md beside this
-script describes the options.
+Exits 1 when anything disagrees. A "missing" finding against a library that
+follows an older release of the document may be correct for that release.
+README.md beside this script describes the options.
 """
 
 from __future__ import annotations
@@ -181,8 +168,8 @@ def command_classes() -> dict[int, type]:
 
     A base class (`UserAuthorization`) carries the code; its Request/Answer
     subclasses carry the per-direction `avp_def`. The bases are found by
-    scanning the commands module rather than by naming them, so a command the
-    library adds is picked up without touching this script.
+    scanning the commands module, so new library commands need no change
+    here.
     """
     import diameter.message.commands as commands
     from diameter.message._base import DefinedMessage

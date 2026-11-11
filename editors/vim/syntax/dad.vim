@@ -5,13 +5,13 @@ if exists('b:current_syntax')
   finish
 endif
 
-" Table-row tokens (token-based: which vocabulary a cell uses depends on the
-" `; Columns:` declaration, which a regex highlighter cannot track; these
-" vocabularies barely collide in practice).
-" Integers must stand alone as a token (delimited by whitespace, comma or
-" line edge) — the 256 in SHA-256-Indication is part of a name, not a number.
-" Dotted identifiers (section numbers like 6.3.7A or E.6.3.6, versions like
-" 18.6.0) are references, not floats, and get their own group.
+" Table-row tokens are matched one by one: a cell's vocabulary depends on the
+" `; Columns:` line, which a regex highlighter cannot track, and the
+" vocabularies rarely collide.
+" An integer must be a whole token (bounded by whitespace, a comma or the line
+" edge), so the 256 in SHA-256-Indication stays part of the name.
+" Dotted identifiers (sections like 6.3.7A or E.6.3.6, versions like 18.6.0)
+" are references and get their own group.
 syn match dadNumber "\%(^\|[ ,]\)\@<=\d\+\%([ ,]\|$\)\@="
 syn match dadSection "\%(^\|\s\)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\)\%(\.\d\+[A-Za-z]*\)\+\%(\s\|$\)\@="
 " Cell keywords must stand alone as a whole cell (delimited by whitespace, or

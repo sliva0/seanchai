@@ -223,13 +223,11 @@ def _prose_avp_origins(
     """Keep explicit definition citations, each in a block at the clause
     stating it.
 
-    Like NOTE-derived origins, these supplement the table rather than erase
-    its local code, type or application flag rules; unlike them, no table
-    prints them, so they stand at their sentence's clause and not under a
-    table's caption. A name two clauses cite is in both. References to
-    encodings, value lists or another AVP do not define this AVP's origin, and
-    neither does a citation that could be any of a clause's several AVPs: that
-    fails rather than picks one.
+    Like NOTE-derived origins, these supplement the table and keep its local
+    code, type and flag rules; they stand at their sentence's clause, not
+    under a table's caption. A name two clauses cite is in both. References
+    to encodings, value lists or another AVP are not origins. A citation that
+    could be any of a clause's several AVPs fails.
     """
     rows = [row for table in collected.avp_tables for row in table.table.rows]
     names = {row.name for row in rows}

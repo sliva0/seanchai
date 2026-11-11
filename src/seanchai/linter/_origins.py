@@ -1,10 +1,8 @@
-"""Resolving the documents a file cites and builds on, and the cross-file
-rules about resolution itself: an origin resolved across releases, one
-the corpus lacks, and references no base document resolves.
+"""Resolution of the documents a file cites and builds on, and the
+cross-file rules about it: origins resolved across releases, origins the
+corpus lacks, and references no base document resolves.
 
-Everything here and in `_reused` needs a second document. The
-single-file rules decline to guess where a name or a vendor space
-belongs to another specification; these are what actually go and look.
+The rules here and in `_reused` read a second document.
 """
 
 from __future__ import annotations
@@ -19,12 +17,7 @@ from ._index import _clauses, _Index, _index, _references
 
 @dataclass(frozen=True)
 class _Origin:
-    """One resolved origin document, indexed once.
-
-    Every cross-file rule looks origins up per re-used row, so resolving and
-    re-indexing inside the rules would walk each origin document once per
-    citation — 29.272 alone cites eighteen origins across a hundred rows.
-    """
+    """One resolved origin document, indexed once for all the rules."""
 
     spec: ast.Specification
     defined: dict[str, ast.GroupedAvp | ast.EnumeratedAvp]
@@ -47,8 +40,8 @@ class _Origin:
 
 
 def _cited(index: _Index) -> list[str]:
-    """Every document the file names as an origin, by a re-used row, a
-    re-print or a result code."""
+    """Return every document the file names as an origin, by a re-used row,
+    a re-print or a result code."""
     return sorted(
         {
             *index.reused.values(),
@@ -61,8 +54,8 @@ def _cited(index: _Index) -> list[str]:
 def _resolve_origins(
     spec: ast.Specification, index: _Index, books: corpus.Corpus
 ) -> tuple[dict[str, _Origin], list[Finding]]:
-    """The origins the corpus resolves, and a `cross-release-origin` note
-    for each it resolved outside `spec`'s release."""
+    """Return the origins the corpus resolves, and a `cross-release-origin`
+    note for each one resolved outside `spec`'s release."""
     origins = {}
     crossings = []
     for origin in _cited(index):
@@ -81,10 +74,8 @@ def _release_fill(
     spec: ast.Specification,
     later: tuple[corpus.Entry, corpus.ReleaseFill, corpus.CrossRelease],
 ) -> Finding:
-    """A field a later release's copy states for a citation whose own copy leaves
-    it unstated (`corpus.Rules.release_fills`), so a reader can audit it: TS
-    29.210 V6.7.0's `3GPP-SGSN-MCC-MNC` is TS 29.061 V6.15.0's, typed by V19.1.0.
-    A note, since the citing document's editor meant the older copy."""
+    """A note for a field a later release's copy fills for a citation whose
+    own copy leaves it unstated (`corpus.Rules.release_fills`)."""
     entry, fill, across = later
     citing = spec.specification + (f" V{spec.version}" if spec.version else "")
     return Finding(
@@ -105,13 +96,8 @@ def _cross_release(
     across: corpus.CrossRelease,
     rules: corpus.Rules,
 ) -> Finding:
-    """A re-used origin resolved outside the citing document's release, by
-    the drafting rule `corpus.resolution` applied, so a reader can audit it:
-    TS 32.299 V19.0.0's TS 29.140 is V7.0.0, the document's final version,
-    TS 29.212's 3GPP2 X.S0057-B is revision 0 V2.0, standing in, and TS
-    32.299 V11.20.0's TS 29.061 is V19.1.0, standing in for V11.12.0. A
-    note: the rule is the corpus's reading of the citing document's
-    references, and only its editor knows whether it meant that."""
+    """A note for an origin resolved outside the citing document's release,
+    naming the citation rule `corpus.Corpus.resolution` applied."""
     citing = spec.specification + (f" V{spec.version}" if spec.version else "")
     if across.rule is corpus.CitationRule.STAND_IN and across.meant is not None:
         release = rules.release_stand_ins[
@@ -163,22 +149,12 @@ def _unresolved_origins(
     origins: dict[str, _Origin],
     books: corpus.Corpus,
 ) -> list[Finding]:
-    """A re-used row citing a document the corpus does not hold.
+    """Notes for cited origins the corpus does not hold.
 
-    A note, not an error: the document is fine, the corpus is incomplete. It is
-    still worth saying, because every other cross-file rule silently does
-    nothing for such a row, and a rule that is quiet because it had nothing to
-    read looks exactly like a rule that found nothing wrong.
-
-    One note per file rather than per origin. A Rel-19 corpus without an RFC
-    extractor cannot resolve a single RFC, and 29.272 alone cites eighteen
-    origins — reported individually they would bury every real finding, and
-    they all say the same thing.
-
-    An origin outside 3GPP and IETF (ETSI, 3GPP2, OMA, oneM2M) gets a note of
-    its own, `external-origin-not-in-corpus`: no 3GPP or IETF download
-    closes the gap, only a hand-written file or a catalogued document an
-    extractor reads (oneM2M TS-0004).
+    The other cross-file rules skip such rows silently, so this says so: one
+    note per file, listing every missing origin. Origins outside 3GPP and
+    IETF get a separate `external-origin-not-in-corpus` note, since no
+    download supplies them.
     """
     cited = _cited(index)
     missing: list[str] = []
@@ -219,12 +195,8 @@ def _unresolved_origins(
 def _resolve_bases(
     spec: ast.Specification, books: corpus.Corpus
 ) -> tuple[dict[str, _Origin], list[str]]:
-    """Resolve `; Bases:` the way re-used origins resolve, keeping the misses.
-
-    Bases are the documents a file builds on without citing them anywhere —
-    RFC 6733 for every Diameter application — so they share the origin
-    machinery but not the origin rules: a base supplies names for reference
-    resolution rather than rows to compare against.
+    """Resolve `; Bases:` as re-used origins resolve; return them and the
+    misses. A base only supplies names for reference resolution.
     """
     resolved, missing = {}, []
     for base in spec.bases:
@@ -239,27 +211,12 @@ def _resolve_bases(
 def _unresolved_references(
     index: _Index, bases: dict[str, _Origin], missing_bases: list[str]
 ) -> list[Finding]:
-    """Every AVP referenced in a message or grouped body resolves somewhere:
-    a local definition, an AVP-table row, a re-used entry, or a base document.
+    """Every AVP a message or grouped body names resolves to a local
+    definition, an AVP-table row, a re-used entry or a base document.
 
-    This is phase two's rule, enforceable now that `; Bases:` names the
-    document that supplies `Session-Id`, `Origin-Host` and the rest. The
-    trailing `* [ AVP ]` is RFC 6733's any-AVP wildcard — grammar, not a
-    reference — and is skipped rather than resolved to the name `AVP`.
-
-    A base missing from the corpus turns the rule off with a note instead of
-    reporting every base-protocol AVP as unresolved: the document is fine, the
-    corpus is incomplete, and a hundred spurious errors would bury the real
-    findings.
-
-    A name an `Undefined AVP` block declares is no unresolved reference:
-    `undefined-avp` reports it, and here `undefined-avp-defined` reports a
-    block whose name a base document resolves after all, the stale claim's
-    cross-file form.
-
-    An error: the corrected corpus resolves every reference or declares it
-    undefined, so one that does neither is a defect wanting a correction (a
-    block, a renamed member, a row or a `; Bases:` entry).
+    `* [ AVP ]` is skipped. A base missing from the corpus turns the rule off
+    with one note. A name an `Undefined AVP` block declares is not reported
+    here; a block whose name a base resolves is `undefined-avp-defined`.
     """
     if missing_bases:
         return [

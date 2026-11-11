@@ -1,12 +1,10 @@
 """Line-oriented parser for the `.dad` format, producing the `ast` tree.
 
-The format is deliberately line-based, so this is hand-rolled: one pass
-splitting the file into contiguous-line blocks (file header first, then one
-block per section), then per-`; Type:` body parsers. Directives are grammar:
-a malformed `; ...` line is a parse error, never silently skipped. `;;`
-free-text comments — whole lines or the tail of a line — are discarded by
-`parse`; `parse_with_comments` returns them keyed by where they attach, for
-`formatter.format_spec` to print back in place.
+One pass splits the file into blocks of contiguous lines (the file header,
+then one per section); a parser per `; Type:` reads each body. A malformed
+`; ...` directive is a parse error. `parse` drops `;;` comments;
+`parse_with_comments` returns them keyed by where they attach, for
+`formatter.format_spec` to print back.
 """
 
 import contextlib
@@ -132,12 +130,7 @@ def _blocks(runs: list[list[_Line]]) -> list[_Block]:
 
 
 class _Directive(NamedTuple):
-    """A directive's value with the line it was written on.
-
-    The line travels with the value rather than being reduced away, so a value
-    the AST rejects is reported at the line holding it: strict errors are only
-    useful when they point at what has to be edited.
-    """
+    """A directive's value with its line number, so an error can point at it."""
 
     lineno: int
     value: str
@@ -179,12 +172,8 @@ def _no_leftovers(directives: _Directives, lineno: int) -> None:
 
 @contextlib.contextmanager
 def _validated(lineno: int):
-    """Turn the AST's own validation failures into parse errors.
-
-    The models carry the field-level rules — section-number shape, AVP name
-    charset, unsigned ranges — so a bad value surfaces as a pydantic error
-    from deep inside a constructor. Every malformed `.dad` file should report
-    as `DadParseError` with a line, not as whatever the last layer raised.
+    """Re-raise the AST's pydantic validation errors as `DadParseError`
+    with a line number.
     """
     try:
         yield
@@ -1017,17 +1006,14 @@ type _NoteMap = dict[ast.TreePath, list[str]]
 
 def parse_with_comments(text: str) -> tuple[ast.Specification, formatter.Comments]:
     """Parse a `.dad` file and return its `;;` comments as the
-    `formatter.Comments` `format_spec` takes, so formatting the pair writes
-    each comment back where it stood.
+    `formatter.Comments` that `format_spec` takes.
 
-    A trailing comment belongs to the line it ends. A whole-line comment
-    belongs to the next line of its block, and prints before it; one after
-    the block's last line stands at the block's end. A run of whole-line
-    comments between blank lines is a block of its own, detached, and
-    belongs to the section that follows it (to the position past the last
-    section at the end of the file, to `()` before the file header).
-    Consecutive comment blocks merge into one, and a comment's indentation
-    and the blank lines around it are the formatter's to choose.
+    A trailing comment belongs to its line. A whole-line comment belongs to
+    the next line of its block, or to the block's end after its last line.
+    A run of comment lines on its own belongs to the following section (or
+    past the last section at the end of the file, or `()` before the file
+    header). Adjacent comment blocks merge; the formatter chooses
+    indentation and blank lines.
     """
     runs = _runs(text)
     spec, layout = _parse(_blocks(runs))

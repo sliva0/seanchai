@@ -1,9 +1,7 @@
 """Seanchaí: Diameter specifications as reviewable `.dad` files.
 
-The package itself stays nearly empty on purpose. Importing `seanchai` should
-not pull in docx, PDF and HTTP machinery, and the command-line interface is one
-consumer of the library rather than its front door; it lives in `cli`. Only the
-shared error base and the version are here.
+This package holds only the shared error base and the version, so importing
+`seanchai` pulls in no docx, PDF or HTTP code. The command line lives in `cli`.
 
 - `seanchai.model`: the corpus resolved into objects a consumer uses, the place
   to start (docs/consumers.md);
@@ -28,9 +26,9 @@ each module listed above (for `seanchai.downloader`, the package's own; for
 `seanchai.extractor`, its modules'), the command line's commands, options and
 exit statuses, the format versions of the two JSON outputs
 (`dictionary.FORMAT_VERSION`, `export_schema.SCHEMA_VERSION`) and the corpus
-formats the library reads (`corpus.FORMATS`). A module whose name starts with
-an underscore is implementation, and so is any name outside an `__all__`,
-the Python of `seanchai.cli` included: either may change in any release.
+formats the library reads (`corpus.FORMATS`). Modules whose names start with an
+underscore, names outside an `__all__`, and the Python of `seanchai.cli` may
+change in any release.
 """
 
 from importlib.metadata import version

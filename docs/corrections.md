@@ -1,14 +1,29 @@
 # Corrections
 
-`src/seanchai/dad/corrections.py` is the second edit layer, for data that
-extracts and parses fine but is wrong: a misprinted AVP code, a clause
-reference to the wrong section, an application id no reading states. Input
-patches are find and replace on text; corrections are find and replace on
-typed fields, with the same declare, expect and fail-loudly contract.
+Every fix to a document is declared in an edit layer, states what it expects
+to find, and fails once that is gone, so a fix made upstream shows up as a
+failure.
+
+## The edit layers
+
+| Layer | Fixes | Where |
+|---|---|---|
+| transcriptions | documents no extractor reads, copied by hand as printed | `edits/transcriptions/<SpecRef>.dad` |
+| input patches | source typos that break extraction, and case-only misspellings of a name | `edits/sources/<SpecRef>.toml`, `[[patch]]` |
+| quirks | readings too heuristic to run undeclared | same file, `[[quirk]]` |
+| exclusions | clauses the document has not finished, left out of both files | same file, `[[exclude]]` |
+| extractor code | exact-match structure that fails loudly on its own | `src/seanchai/extractor/` |
+| corrections | data that parses but is wrong | `edits/corrections/<SpecRef>.py` |
+| acceptances | linter notes a clause makes deliberate; no data changes | same file, `Accept` |
+
+[extractor.md](extractor.md#source-declarations) covers input patches,
+quirks and exclusions, and [transcriptions](extractor.md#transcriptions).
+This file covers corrections and acceptances
+(`src/seanchai/dad/corrections.py`).
 
 ## The file
 
-`edits/corrections/TS29.272.py`, a module-level list of declarative data:
+A correction module holds a module-level `CORRECTIONS` list:
 
 ```python
 from seanchai.dad.corrections import Correction, definition
@@ -27,125 +42,102 @@ CORRECTIONS = [
 ]
 ```
 
-Python is the notation (imports of real enums, loops for twenty rows), not
-the validation: a `field` string is checked against the matched node and
-the node is rebuilt through pydantic.
-
-`id` is a short kebab-case name, unique within the module. It is what the
-corrected file cites, so name what is corrected
-(`bearer-identifier-spelling`, `bases-nasreq`), not where.
+The node is rebuilt through pydantic, so a wrong `field` or value fails.
+`id` is kebab-case, unique in the module, and names what is corrected
+(`bearer-identifier-spelling`), not where.
 
 ## Semantics
 
-- **`expect` is mandatory and checked.** A mismatch is an error. If the typo
-  gets fixed upstream, the next extraction fails and the correction gets
-  deleted, which is exactly the event worth being told about.
-- **Zero matches is an error; more than one is an error.** Narrow with a
-  discriminator: `definition("Update-Location-Request",
-  application_id=16777251)`. `application_id=None` is a real filter;
-  omitting the argument means "do not filter".
-- **`versions` is advisory within its release**: `"18.6.0"` or
-  `"18.0.0..18.2.0"`, inclusive, `*` for an open bound, the same range type
-  patches and quirks declare. A declaration applies to the releases its
-  range spans, and to a newer undeclared release as a release upgrade
-  ([extractor.md](extractor.md#releases)).
-  Within a release `regenerate` warns when the parsed version falls outside
-  the range and never gates application; `regenerate --expand-ranges`
-  rewrites the string literal in place
-  ([development.md](development.md#version-upgrades)), which is why a range
-  is best written as a literal.
-- **Deterministic, not idempotent.** Correcting already-corrected input
-  fails every `expect`, which keeps "already corrected" distinguishable from
-  "fixed upstream". The layer consumes raw files only, a transcription's
-  included.
-- **Selectors address identity, never position**: `definition(name)`,
-  `table_row(name, table=)`, `flag_rules(table_row(...))` (one field per
-  correction: moving a flag from Must to Must not is two), `reused_row(name,
-  section=)`, `enum_value(avp, name, value=, occurrence=)`, `avp_rule(parent,
-  name, occurrence=)`, `avp_table(label)` (`None` for a table printing no
-  label), `reused_avps(label, section=)` (`None` for a block printing none,
-  the clause telling such blocks apart), `application_scope(name)`,
-  `undefined(name)`,
-  `value_table(avp, section=, feature_list_id=)`, `value_row(parent, name,
-  value=)` (`parent` a `value_table` or the AVP's name),
-  `registry_row(registry, code)`, `registry_reservation(first, last)`,
-  `header()`.
-- **Position only where identity runs out.** `occurrence=n` picks the n-th
-  rule of one name in one body, for a body that prints a rule twice
-  identically (TS 29.229's RTA prints `< Session-Id >` on two lines), or
-  the n-th value of one name in a list printing it twice. It matches only
-  while the name still repeats, so the declaration fails once upstream drops
-  the copy.
-- **One field of one node.** Replacing a structural field such as `avps` is
-  rejected. Several fields of one node are replaced in declaration order,
-  each through validation. Two corrections to the same field are rejected;
-  replacing a value with itself is rejected.
-- **All or nothing.** Every correction is resolved against the original tree
-  before anything is rebuilt, so a failure leaves no half-corrected file.
+- `expect` is required and checked. A mismatch is an error.
+- A target must match exactly one node. Narrow it with a discriminator:
+  `definition("Update-Location-Request", application_id=16777251)`.
+  `application_id=None` filters for no id; omitting the argument does not
+  filter.
+- `versions` is `"18.6.0"` or `"18.0.0..18.2.0"`, inclusive, with `*` for an
+  open bound; patches and quirks use the same type. A declaration applies to
+  the releases its range spans and to a newer undeclared release
+  ([extractor.md](extractor.md#releases)). Within a release the range only
+  warns: `regenerate` reports a parsed version outside it but still applies
+  the declaration. Write it as a string literal so `--expand-ranges` can
+  rewrite it ([development.md](development.md#version-upgrades)).
+- Corrections apply to raw files only, transcriptions included. Correcting a
+  corrected file fails every `expect`, which keeps "already corrected"
+  distinct from "fixed upstream".
+- Selectors address identity:
+  - `definition(name)`, `undefined(name)`, `application_scope(name)`,
+    `header()`
+  - `table_row(name, table=)`, `flag_rules(table_row(...))` (one field per
+    correction, so moving a flag from Must to Must not is two),
+    `reused_row(name, section=)`
+  - `avp_table(label)` and `reused_avps(label, section=)`, with `None` for a
+    table or block printing no label
+  - `enum_value(avp, name, value=, occurrence=)`,
+    `avp_rule(parent, name, occurrence=)`
+  - `value_table(avp, section=, feature_list_id=)`,
+    `value_row(parent, name, value=)`, `parent` being a `value_table` or the
+    AVP's name
+  - `registry_row(registry, code)`, `registry_reservation(first, last)`
+- `occurrence=n` picks the n-th of several identical rules or values of one
+  name in one body, as in TS 29.229's RTA, which prints `< Session-Id >`
+  twice. It fails once the name stops repeating.
+- A correction replaces one field of one node. Structural fields such as
+  `avps` cannot be replaced. Several corrections to one node apply in
+  declaration order. Two corrections to the same field, or replacing a value
+  with itself, are rejected.
+- All corrections resolve against the original tree before anything is
+  rebuilt, so a failure leaves no half-corrected file.
 
 ## Operations
 
-- **`Correction`**: replace one field; expects the old value. A blank field
-  is replaced like any other, with `expect=None`: RFC 4590, a RADIUS
-  document, states no Diameter type or flag rule for the twenty attributes
-  RFC 4740 imports as AVPs, and its module types them for Diameter citing TS
-  29.229 and Wireshark's dictionary.
-- **`Delete(id, target, expect=<the full node>, reason)`**: expects the node
-  to equal `expect` in every field, so it fails when upstream removes or
-  changes it. Deleting a node while correcting anything inside it is
-  refused, as is emptying a table.
-- **`Insert(id, into, node, after, reason)`**: expects no node of that name
-  to exist. `into` is `avp_table(label)` or `reused_avps(label)` for a row,
-  `definition(name)` for an `ast.AvpRule` or an `ast.EnumValue` (`after`
-  naming the member or value it follows), or `header()` for an
-  `Application Scope` or `Undefined AVP` block (`after` must be None), or
-  `value_table()` for an `ast.ValueRow`, a code the document states where no
-  reading finds it. A `reused_avps(label)` matching no block, where an AVP
-  table carries that label, creates the table's re-used block after it; with
-  `section=`, the
-  table at that clause, as `reused_avps(None, section="5.2")` creates the block
-  of RFC 5779's unlabelled table. `drawn_from` says what the node's fields come
-  from where that is not the block it goes into, and the note prints it: TS
-  29.061 V6.15.0's two sub-attributes go into table 10 `from clause 16.4.7`,
-  which numbers them, and TS 29.210's into table 5.2 `from clause 5.3, its
-  code from TS 29.061 V6.15.0 clause 16.4.7`, neither table having printed
-  them. An inserted
-  `Undefined AVP` block expects, of the corrected tree, no definition,
-  table row, re-used row or second block of that name, and a body in its
-  clause naming it, so it fails the day upstream defines the name; its
-  `reason` cites what was searched. A row stating a vendor its table prints
-  no column for needs the column first, a `Correction` to the table's
-  `columns` adding `Vendor-ID` with every printed row's cell blank (TS
-  29.229's `Line-Identifier`, ETSI's vendor 13019).
-- **`Supply(id, target=definition(name), expect=<the ; Values: text>,
-  values=(...), reason)`**: fills the value list of an enumerated AVP whose
-  clause names another document for its values. It expects the `; Values:`
-  citation exactly and no values, so it fails when upstream re-words the
-  citation or starts printing the list. The reason cites the clause of the
-  external document, or, for a registry, its name and the date it was last
-  updated, since an open registry makes the list a snapshot. With
-  `extend=True`, for a section printing part of the list it cites, the
-  supplied values follow the printed ones, and a supplied name or number the
-  section already holds is refused (RFC 4005's NAS-Port-Type prints 0 to 25
-  and the registry has added 26 to 43 since).
-- **`Supply(id, target=table_row(name, table=), expect=<the row>, data_type=,
-  flag_rules=, reason)`**: fills the blank Type cell, flag cells or both of
-  an AVP-table row whose document types it by reference to another
-  document. It expects the whole row, blank where it supplies, and requires
-  the file to list the AVP as re-used (TS 32.299 table 7.2.0.1 types
-  thirteen rows `refer [223]`, OMA-DDS-Charging_Data, whose table 11 states
-  type and flags).
+`Correction(id, target, field, expect, replace, reason, versions)` replaces
+one field. A blank field takes `expect=None`: RFC 4590 states no Diameter type
+for the attributes RFC 4740 imports as AVPs, and its module supplies them
+citing TS 29.229 and Wireshark's dictionary.
 
-No arbitrary `edit=lambda` escape hatch and no `move` or `split`: a
-correction that cannot be described cannot be reviewed. A structural case
-that appears gets a named operation with its own `expect` contract.
+`Delete(id, target, expect, reason)` removes a node. `expect` is the whole
+node, so the deletion fails when upstream changes or removes it. Deleting a
+node while correcting something inside it, or emptying a table, is refused.
+
+`Insert(id, into, node, after, reason)` adds a node and expects no node of
+that name to exist.
+
+| `into` | `node` | `after` |
+|---|---|---|
+| `avp_table(label)`, `reused_avps(label)`, `value_table()` | a row | the row it follows, or `None` to append |
+| `definition(name)` | an `ast.AvpRule` or `ast.EnumValue` | the member or value it follows |
+| `header()` | an `Application Scope` or `Undefined AVP` block | `None` |
+
+- `reused_avps(label)` matching no block creates the re-used block after
+  the AVP table with that label; `reused_avps(None, section="5.2")` does so
+  for RFC 5779's unlabelled table.
+- `drawn_from` names the source of the node's fields, for the note to print:
+  `from clause 16.4.7`.
+- An inserted `Undefined AVP` block expects no definition, row or block of
+  that name in the corrected tree, and a body in its clause that uses it.
+- A row with a vendor its table has no column for needs a `Correction`
+  adding `Vendor-ID` to the table's `columns` first (TS 29.229's
+  `Line-Identifier`, in ETSI's vendor 13019).
+
+`Supply(id, target=definition(name), expect, values, reason)` fills the
+values of an enumerated AVP whose clause cites another document for them.
+`expect` is the `; Values:` text and the AVP must have no values. `reason`
+cites the external clause, or a registry's name and last-updated date. With
+`extend=True` the values follow a partial printed list, and a name or number
+already printed is refused (RFC 4005's NAS-Port-Type prints 0 to 25).
+
+`Supply(id, target=table_row(name, table=), expect, data_type=, flag_rules=,
+reason)` fills the blank Type or flag cells of an AVP-table row typed by
+reference (TS 32.299 table 7.2.0.1's `refer [223]`). `expect` is the whole
+row, and the file must list the AVP as re-used.
+
+There is no free-form edit, `move` or `split`. A new structural case gets a
+named operation with its own `expect`.
 
 ## Acceptances
 
-Some linter notes are a document saying on purpose what another says
-otherwise: an interface printing its own body for an AVP it re-uses, or its
-own flag rule. `Accept` acknowledges one such note, so it stops reading as
-an open finding while staying recorded:
+`Accept` marks a linter note as deliberate on a clause's word, such as an
+interface printing its own body for an AVP it re-uses. The linter then
+reports it as accepted.
 
 ```python
 Accept(
@@ -161,93 +153,78 @@ Accept(
 )
 ```
 
-`rule` is the linter rule, `target` the node the finding is about, and
-`expect` the finding's message exactly, so a document that changes what it
-says fails the acceptance. `reason` cites the clause that makes the override
-deliberate; where no clause says so, the note stays open. A misprinted clause
-citation (`section-mismatch`) is accepted too, its reason citing the real
-clause, since the corpus records what is printed. An acceptance
-changes no data: `apply` skips it, and a module declaring only acceptances
-is one `seanchai corpus correct` refuses. `regenerate --expand-ranges` widens an
-acceptance's range only while it still matches its finding. The linter
-checks it against a corpus ([linter.md](linter.md#acceptances)).
+- `rule` is the linter rule, `target` the node the finding is about, and
+  `expect` the finding's exact message.
+- `reason` cites the clause that makes it deliberate; without one, the note
+  stays open. A misprinted clause citation (`section-mismatch`) is accepted
+  citing the real clause.
+- An acceptance changes no data; `seanchai corpus correct` refuses a module
+  with only acceptances. The linter checks them against a corpus
+  ([linter.md](linter.md#acceptances)).
 
 ## The record of known holes
 
-A correction changes a file; the corpus's `holes.toml` changes none, and
-records what no correction can state: a name the corpus cannot complete
-([consumers.md](consumers.md#known-holes)). Its entries follow this layer's
-contract. `reason` cites the version and clause and what was searched,
-naming the correction involved as `module#id` where one inserted the block
-or row, and `missing` is checked as `expect` is: an entry that no longer
-matches fails the default build.
+The corpus's `holes.toml` records names the corpus cannot complete
+([consumers.md](consumers.md#known-holes)). It changes no file. Each entry's
+`reason` cites the version, clause and what was searched, naming the
+correction involved as `module#id` where one inserted the block or row.
+`missing` is checked like `expect`: an entry that no longer matches fails the
+default build.
 
 ## The corrections record
 
-A module is Python, and nothing that reads a corpus should have to run it, or
-can: no wheel ships `edits/`. So `seanchai corpus regenerate` also writes the
-corpus's `corrections.json`, next to `holes.toml`, from the modules and the
-corrected files. Per document file stem it holds the document's reference and
-version, each declaration by citation with its kind and reason, what each
-acceptance accepts (rule, message, and the tree paths its target reaches), and
-the name corrections, in declaration order, that `seanchai export` links a raw
-file's spellings through. A document whose module declares nothing for its
-release has no entry. It is generated: sorted JSON with one field per line, so a
-changed reason is a one-line diff.
+No wheel ships `edits/`, so `seanchai corpus regenerate` also writes the
+corpus's `corrections.json` next to `holes.toml`. Per document file stem it
+holds:
 
-`tests/test_correction_record.py` fails when the committed record is not what
-the modules say, so a changed correction needs `seanchai corpus regenerate`, as
-a changed `.dad` file does. A run where anything failed leaves the record alone.
+- the document's reference and version;
+- each declaration's citation, kind and reason;
+- what each acceptance accepts: rule, message and the tree paths its target
+  reaches;
+- the name corrections, in declaration order, that `seanchai export` uses to
+  link a raw file's spellings.
+
+A document with no declarations for its release has no entry. The file is
+sorted JSON, one field per line. `tests/test_correction_record.py` fails when
+it does not match the modules.
 
 ## Output
 
-```text
-docx ──input patches──► extract ──► 29272-j60.raw.dad  (committed)
-                                              │
-                                 edits/corrections/TS29.272.py  (committed)
-                                              ▼
-                                     29272-j60.dad  (committed)
-```
-
-Every corrected line carries a trailing `;;` note citing the declaration as
-`module#id`, so grepping the id finds it:
+The raw file `29272-j60.raw.dad` and `edits/corrections/TS29.272.py` produce
+the corrected `29272-j60.dad`; all three are committed. Every corrected line
+carries a `;;` note citing the declaration as `module#id`:
 
 ```dad
-Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-vendor)
+Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-code)
 ```
 
-A correction to a definition is cited on its header rule, one to a row's
-flag rules on the row. The file header, a table and an application scope
-have no such line, so a correction to one of their fields is cited on the
-directive line that field prints (`; Bases:`, `; Table:`, `; Columns:`,
-`; Application-ID:`, `; Note:`), and on the block's first line when it
-removes that line.
+- A correction to a definition is cited on its header rule; one to a row's
+  flag rules, on the row.
+- A correction to a field of the file header, a table or an application
+  scope is cited on the directive line that prints the field (`; Bases:`,
+  `; Table:`, `; Columns:`, `; Application-ID:`, `; Note:`), or on the
+  block's first line when it removes that line.
+- A deletion's note replaces the deleted line:
+  `;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`.
+- An inserted row is marked `;; inserted:`, with its source where the
+  `Insert` gives one:
+  `;; inserted: from clause 6.3.43 (TS29.229.py#wildcarded-impu-row-missing)`.
+  An inserted block is marked on its `; Type:` line.
+- Every value or cell a `Supply` fills is marked `;; supplied:`.
 
-A deletion's note stands in the deleted line's place and names what is gone
-(`;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`); an
-inserted row is marked `;; inserted:`, with what it is drawn from where the
-`Insert` says (`;; inserted: from clause 6.3.43
-(TS29.229.py#wildcarded-impu-row-missing)`), an inserted block on its `;
-Type:` line, and every value or row a `Supply` fills `;; supplied:`. Notes are
-`;;` comments, so an annotated file parses to exactly the corrected tree,
-and they are placed by the rules a hand-written comment follows
-([dad-format.md](dad-format.md#comments)). Edits are resolved, and notes
-keyed, by `ast.TreePath`, so a note marks the same line in a re-parse of
-the tree. The citation is a name rather than a line number so that editing
-a module does not change every corrected file.
-
-A raw file can carry comments of its own (TS 32.299's struck members).
-`corrections.apply_with_comments(spec, comments, edits)` carries them into
-the corrected file, each moving with the line it attaches to, and returns
-them merged with the notes.
+Notes are `;;` comments keyed by `ast.TreePath` and placed by the rules in
+[dad-format.md](dad-format.md#comments), so the annotated file parses to the
+corrected tree. `corrections.apply_with_comments(spec, comments, edits)`
+carries a raw file's own comments along (TS 32.299's struck members) and
+returns them merged with the notes.
 
 ## CLI
 
-`seanchai corpus regenerate` rebuilds the corpus and its record with
-`edits/corrections`, and `seanchai lint` reads its acceptances from there. For
-one file: `seanchai corpus extract … --corrections DIR` and `seanchai corpus
-correct RAW.dad --corrections DIR -o OUT.dad`, where the directory is explicit
-because loading it executes Python. `extract` tolerates a document with no
-module; `correct` requires a module with at least one correction, since a
-mistyped path producing an uncorrected file would look like success. The module
-name is derived from `; Specification:` through `ast.spec_ref`.
+- `seanchai corpus regenerate` and `seanchai lint` read `edits/corrections/`.
+- `seanchai corpus extract … --corrections DIR` corrects one extraction; a
+  document without a module is fine.
+- `seanchai corpus correct RAW.dad --corrections DIR -o OUT.dad` corrects one
+  raw file and requires a module with at least one correction.
+
+For one file the directory must be given, since loading it runs Python. The
+module name comes from `; Specification:` through `ast.spec_ref`.

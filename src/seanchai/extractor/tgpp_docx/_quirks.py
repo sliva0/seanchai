@@ -1,11 +1,10 @@
 """The quirk vocabulary of the docx extractor."""
 
-# The quirk vocabulary this extractor defines: name → what declaring it
-# enables. The same criterion as the RFC extractor's (see `sources.py`):
-# readings that would succeed silently on a document they were not written
-# for. Closed vocabularies whose misreading is impossible stay global —
-# "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit short forms
-# cannot mean anything else, where a dotted flags cell or a prose note can.
+# The quirk vocabulary this extractor defines, by name, with what declaring it
+# enables: readings that would succeed silently on a document they were not
+# written for (`sources.py`). Closed vocabularies that cannot be misread stay
+# global, such as "Y"/"N" Encrypt cells and 29.338's "Must"/"Must not" M-bit
+# short forms.
 QUIRKS: dict[str, str] = {
     "prose-avp-origins": (
         "read explicit AVP definition citations in prose as re-used origins,"

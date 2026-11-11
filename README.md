@@ -2,54 +2,26 @@
 
 Seanchaí extracts Diameter command ABNFs and AVP definitions from 3GPP
 specifications, RFCs and a few other documents into one plain-text format,
-`.dad`, and gives you a parser and a resolved model over the result. From
-there, generating your implementation's dictionary format, or checking an
-existing dictionary against the specifications, is a short script.
+`.dad`. It gives you a parser and a resolved model over the result, so
+generating your stack's dictionary, or checking it against the
+specifications, takes a short script.
 
-5G protocols ship OpenAPI. Diameter ships ABNF blocks and tables inside Word
-documents and RFC text, and every implementation transcribes them by hand.
-Seanchaí does that transcription once, with every edit declared and reviewed.
-
-## How it works
-
-1. **Extract.** Source documents become raw `.dad` files. 3GPP specifications
-   are read from their `.docx` (legacy `.doc` files are converted with
-   LibreOffice), with page numbers from the matching ETSI PDF; RFCs are read
-   from their plain text. See [docs/extractor.md][extractor].
-2. **Correct.** Three things are committed per document: the raw output, the
-   corrections declared against it, and the corrected file they produce.
-   Every corrected line carries a `;;` note naming its correction. See
-   [docs/corrections.md][corrections].
-3. **Consume.** The parser turns `.dad` back into an AST, and `seanchai.model`
-   resolves the corpus into messages whose members point at real AVP
-   objects. See [docs/consumers.md][consumers].
-
-The rule everything rests on: **a `.dad` file records everything its source
-document says about a definition**, including where the document is
-redundant, self-contradictory or wrong. The extractor translates and never
-curates. The only edits are the two declared layers, input patches for
-source typos and corrections for wrong data, and both are reviewable. The one
-thing left out is a clause the document has not finished, declared with its
-reason and named in the file. The
-[linter][linter] reports the contradictions, and the
-[Wireshark oracle][oracle] cross-checks values against an
-independent reading of the same documents.
+Each `.dad` file records what its source document says, mistakes included.
+The only edits are declared patches and corrections, each with its reason.
+The [linter][linter] reports contradictions, and the
+[Wireshark oracle][oracle] compares the corpus with Wireshark's dictionary.
 
 ## Installing
 
-Seanchaí needs Python 3.12 or newer. The library and the corpus are two
-packages, each versioned on its own: `seanchai` follows semantic versioning, and
-`seanchai-corpus`, which also installs alone on Python 3.10 or newer, is
-versioned by the date the corpus was regenerated.
+Seanchaí needs Python 3.12 or newer.
 
 ```sh
-pip install "seanchai[corpus]"   # or seanchai and seanchai-corpus, pinned apart
-pip install "seanchai[extract]"  # to rebuild a corpus from source documents
+pip install "seanchai[corpus]"   # the library and the corpus
+pip install "seanchai[extract]"  # also rebuild the corpus from source documents
 ```
 
-The `extract` extra is `python-docx` and `pypdf`, which `seanchai corpus
-extract`, `corpus regenerate` and a 3GPP, oneM2M or `transcribed` `corpus
-download` need and a consumer does not.
+The library (`seanchai`) and the data (`seanchai-corpus`) are separate
+packages with separate versions ([what the version covers][versions]).
 
 ```python
 from seanchai.model import Model
@@ -60,7 +32,7 @@ model.resolve("TS29.229", "Public-Identity")
 
 ## Commands
 
-Reading the installed corpus, with no checkout and no downloads:
+Read the installed corpus, with no checkout and no downloads:
 
 ```sh
 seanchai show NAME_OR_IDENTITY [--json] # one AVP and its other readings
@@ -70,15 +42,14 @@ seanchai export -o DIR                  # the corpus as JSON for the static site
 seanchai export -o DIR --include-pdfs --specifications specifications
 ```
 
-Checking and rewriting `.dad` files, the corpus's or your own sidecars:
+Check and rewrite `.dad` files, the corpus's or your own sidecars:
 
 ```sh
 seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] [FILE.dad | DIR]...
 seanchai format [--check] [FILE.dad | DIR]...  # canonical form, ;; comments kept
 ```
 
-Maintaining the corpus, from the root of a checkout, whose directories the
-defaults name:
+Maintain the corpus, from the root of a checkout:
 
 ```sh
 seanchai corpus download                    # fetch the catalog into specifications/
@@ -94,32 +65,31 @@ seanchai corpus correct RAW.dad --corrections DIR -o OUT.dad
 seanchai corpus crosscheck [FILE.dad | DIR]...  # against Wireshark's dictionary
 ```
 
-A command exits 1 on an error or a finding and 2 on a usage error. `corpus
-crosscheck` reports disagreement for a reader to judge, so its findings exit 0.
+Commands exit 1 on an error or a finding and 2 on a usage error.
+`corpus crosscheck` exits 0 on findings.
 
-## Checking traffic
+## Documentation
 
-A Wireshark plugin generated from the corpus checks every Diameter message in a
-capture against its document: required and fixed AVPs, occurrences, flags, data
-formats and values, in Wireshark 4.2 and later and in tshark. See
-[integrations/wireshark/validator][validator].
-
-## Development
-
-The repository layout and how to work on Seanchaí itself are in
-[docs/development.md][development].
+- [Using the model, the CLI's JSON and the corpus][consumers]
+- [The site export][website]
+- [The `.dad` format][format]
+- [Extraction][extractor] and [corrections][corrections]
+- [Checking traffic with a Wireshark plugin][validator]
+- [Development][development]
 
 ## License
 
-MIT, see [LICENSE][license]. The corpus packages text taken from 3GPP, ETSI,
-3GPP2, OMA, oneM2M and IETF documents; those documents stay under their
-publishers' terms.
+MIT, see [LICENSE][license]. The corpus contains text from 3GPP, ETSI, 3GPP2,
+OMA, oneM2M and IETF documents, which stay under their publishers' terms.
 
 [consumers]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md
 [corrections]: https://github.com/sliva0/seanchai/blob/main/docs/corrections.md
 [development]: https://github.com/sliva0/seanchai/blob/main/docs/development.md
 [extractor]: https://github.com/sliva0/seanchai/blob/main/docs/extractor.md
+[format]: https://github.com/sliva0/seanchai/blob/main/docs/dad-format.md
 [license]: https://github.com/sliva0/seanchai/blob/main/LICENSE
 [linter]: https://github.com/sliva0/seanchai/blob/main/docs/linter.md
 [oracle]: https://github.com/sliva0/seanchai/blob/main/docs/oracle.md
 [validator]: https://github.com/sliva0/seanchai/blob/main/integrations/wireshark/validator/README.md
+[versions]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md#what-the-version-covers
+[website]: https://github.com/sliva0/seanchai/blob/main/docs/website.md

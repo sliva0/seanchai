@@ -1,11 +1,8 @@
-"""The registry rules, single-file and against the corpus's TS 29.230.
+"""Registry rules: within a registry file, and against the corpus's TS 29.230.
 
-TS 29.230 allocates the 3GPP vendor's AVP codes, the command codes and the
-application ids, each to the documents defining it. The registry is
-evidence, not a definer: where a document and the registry disagree, the
-document's clause is the primary source, so these are notes, and a
-disagreement is corrected only where the defining clause itself supports
-the registry.
+TS 29.230 allocates 3GPP AVP codes, command codes and application ids to
+the documents that define them. A defining document outranks the registry,
+so every finding here is a note.
 """
 
 from __future__ import annotations
@@ -28,15 +25,8 @@ def _reservation_label(reservation: ast.RegistryReservation) -> str:
 
 
 def _registry_overlaps(spec: ast.Specification) -> list[Finding]:
-    """Within one registry table, a code it allocates twice, two reserved
-    ranges that overlap, or a reservation covering a code a row allocates.
-
-    TS 29.230 records each as printed: table 7.1 allocates 318 to
-    3GPP-AAA-Server-Name in TS 29.234's block and again in TS 29.273's, and
-    reserves 4703-4799 for TS 29.389 inside 4605-4799 for TS 29.388; table
-    8.1.3 reserves 4182-4200 for TS 29.272 after allocating it 4182. A note:
-    a range reserved for a document may well hold that document's codes,
-    and which statement is meant is the registry's editor's to say.
+    """Within one registry table: a code allocated twice, two overlapping
+    reserved ranges, or a reservation covering an allocated code.
     """
     findings = []
     for section in spec.sections:
@@ -140,9 +130,8 @@ def _documents_of(found: list[tuple[ast.Registry, ast.RegistryRow]]) -> list[str
 def _own_avps(
     spec: ast.Specification, index: _Index
 ) -> dict[tuple[str, int], tuple[int, str]]:
-    """The AVPs a file defines or tabulates as its own, by name and code,
-    with their vendor and the clause first stating them. A name the file
-    lists as re-used is its origin's to answer for."""
+    """Map `(name, code)` of each AVP the file defines or tabulates as its
+    own to its vendor and first clause. Re-used names are left out."""
     own: dict[tuple[str, int], tuple[int, str]] = {}
     for definition in index.definitions:
         if definition.name not in index.reused:
@@ -169,18 +158,13 @@ def _own_avps(
 def _registry_avps(
     spec: ast.Specification, index: _Index, registry: _Registered, own_reference: str
 ) -> list[Finding]:
-    """Every AVP the file defines in the registry's vendor space against the
-    registry's AVP codes: the name a row allocates its code to, the documents
-    it cites, and, for a code no row allocates, the range reserving it.
+    """Check the file's own AVPs in the registry's vendor space against the
+    registry's AVP codes: the allocated name, the cited documents, and for an
+    unallocated code, the reservation covering it.
 
-    A name compared exactly, since a dictionary keys on it: TS 29.230 table
-    7.1 allocates 829 to `Role-of-Node`, which TS 32.299 defines as
-    `Role-Of-Node`. A row citing no document (table 7.1's 1530-1542 in TS
-    29.273's block) claims none. A code inside a reservation is reported
-    only where no reservation covering it names the file's document, so TS
-    29.061's RADIUS-compatible 1-33 sit in "backwards compatibility with
-    3GPP RADIUS Vendor Specific Attributes (See 3GPP TS 29.061 [13], ...)"
-    silently.
+    Names compare exactly, case included. A row citing no document claims
+    none. A reserved code is reported only if no covering reservation names
+    the file's document.
     """
     kind = ast.RegistryKind.AVP_CODES
     findings = []
@@ -246,13 +230,9 @@ def _registry_avps(
 def _registry_result_codes(
     spec: ast.Specification, index: _Index, registry: _Registered, own_reference: str
 ) -> list[Finding]:
-    """Every experimental result code the file lists in the registry's vendor
-    space against the registry's rows: the name a row gives it and the documents
-    it cites. A plain Result-Code is the IETF's, which table 8.1 does not hold,
-    and a code no row allocates is left alone: TS 29.230 lists a document's code
-    from whichever version allocated it, so its absence says little. A code
-    whose text names the document defining it claims no allocation: its origin
-    answers for it (`_result_codes_agree_with_origin`)."""
+    """Check the file's experimental result codes against the registry's
+    names and documents. Plain Result-Codes, codes no row allocates, and
+    codes whose text names another defining document are skipped."""
     if spec.vendor_id != registry.vendor_id:
         return []
     kind = ast.RegistryKind.RESULT_CODES
@@ -297,9 +277,8 @@ def _registry_result_codes(
 
 
 def _command_names(name: str | None) -> set[str]:
-    """The two names a registry's command row gives: table 5.1/1 writes
-    `User-Authorization-Request/-Answer`, table 5.1/4
-    `Provide-Location-Request/Answer`."""
+    """Return the request and answer names of a registry command row, written
+    `X-Request/-Answer` or `X-Request/Answer`."""
     if name is None:
         return set()
     request, _, answer = name.partition("/")
@@ -312,12 +291,8 @@ def _command_names(name: str | None) -> set[str]:
 def _registry_commands(index: _Index, registry: _Registered) -> list[Finding]:
     """A command whose code the registry allocates under another name.
 
-    The registry's row names the request and answer pair and both
-    abbreviations; agreeing with either name or either abbreviation agrees.
-    TS 29.215 names command 8388656 `TE-Request`, which table 5.1/4 calls
-    `Trigger-Establishment-Request/Answer`, `TER/TEA`. The defining documents
-    are not compared: a command code is the application's to re-use, and TS
-    29.273's SWx commands are TS 29.229's Cx codes.
+    Matching either name or either abbreviation of the row agrees. Defining
+    documents are not compared, since applications re-use command codes.
     """
     kind = ast.RegistryKind.COMMAND_CODES
     findings = []
@@ -362,12 +337,10 @@ def _registry_applications(
     index: _Index, registry: _Registered, own_reference: str
 ) -> list[Finding]:
     """An application id the file uses that the registry allocates to other
-    documents, or, where an application scope names it, under another name.
+    documents, or, where a scope names it, under another name.
 
-    Table 4.1 names every application "3GPP" and its interface ("3GPP Gx"),
-    so a scope's name is compared with the registry's less that prefix. An
-    id the registry does not allocate is not reported: the IETF's are
-    IANA's, and TS 29.230 lists only 3GPP's.
+    Registry names are compared without their "3GPP " prefix. Ids the
+    registry does not allocate are skipped.
     """
     kind = ast.RegistryKind.APPLICATION_IDS
     # Per id, where the file uses it: each scope naming it, then the first
@@ -420,8 +393,8 @@ def _registry_applications(
 def _against_registry(
     spec: ast.Specification, index: _Index, books: corpus.Corpus
 ) -> list[Finding]:
-    """The registry rules, against the TS 29.230 the corpus resolves for
-    `spec`; none when it holds no copy, or when `spec` is the registry."""
+    """Run the registry rules against the TS 29.230 the corpus resolves for
+    `spec`. Returns nothing if there is none or `spec` is the registry."""
     try:
         own = ast.spec_ref(spec.specification)
     except ast.SpecRefError:

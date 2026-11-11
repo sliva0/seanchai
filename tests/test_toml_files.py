@@ -1,4 +1,4 @@
-"""Every tracked TOML file keeps to 80 columns (docs/development.md)."""
+"""Every tracked TOML file keeps to 80 columns (CONTRIBUTING.md)."""
 
 import os
 import re

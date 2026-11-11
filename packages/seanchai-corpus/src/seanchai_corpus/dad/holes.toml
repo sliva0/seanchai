@@ -1,14 +1,11 @@
-# The corpus's record of known holes: every name `model.Model.build` cannot
-# complete and the corpus cannot complete either, with the evidence. Maintained
-# by hand; `seanchai corpus regenerate` does not write it. A default build
-# refuses a hole this does not list and an entry naming no hole, and so does
-# `seanchai lint --corpus dad`, so working a hole off means removing its entry
-# (docs/consumers.md#known-holes).
+# The record of known holes: names the corpus cannot complete, with evidence.
+# Maintained by hand. A default `model.Model.build` and `seanchai lint --corpus
+# dad` refuse a hole not listed here and an entry naming no hole, so remove an
+# entry when its hole is fixed (docs/consumers.md).
 #
-# `document` is `Hole.document`, the version only for an older copy; `missing`
-# is `Hole.missing`, `model.Missing`'s values, compared exactly; `reason`
-# follows a correction's: spec version and clause, and what was searched. An
-# undefined name's block says the rest, in the correction its reason cites.
+# `document` is `Hole.document` (with a version only for an older copy).
+# `missing` is `Hole.missing`, compared exactly. `reason` is written like a
+# correction's: spec version, clause, and what was searched.
 
 [[hole]]
 document = "RFC4004"

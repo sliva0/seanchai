@@ -1,8 +1,7 @@
 """What the downloader fetches: `specs.toml`, read.
 
-Apart from `core` so that reading it asks for nothing a download needs:
-`seanchai export` reads the catalog's titles on an install with no download
-machinery in use. Stdlib only.
+Kept apart from `core` so that `seanchai export` can read the catalog's
+titles without the download machinery. Stdlib only.
 """
 
 import re
@@ -19,8 +18,7 @@ from ..errors import SeanchaiError
 SOURCES = ("3gpp", "onem2m", "rfc", "transcribed", "wireshark")
 
 # The 3GPP release the catalog's `[[tgpp]]` entries are fetched at, unless a run
-# asks for another. Moving it is a version upgrade
-# (docs/development.md#version-upgrades).
+# asks for another. Moving it is a version upgrade (docs/development.md).
 RELEASE = 19
 
 
@@ -47,7 +45,7 @@ class ThreeGppSpec:
     title: str
     reason: str = "Defines Diameter commands, command ABNF, AVPs, or AVP mappings."
     document_type: str = "TS"
-    # Why the extractor has nothing to read in it (docs/extractor.md#out-of-scope).
+    # Why the extractor has nothing to read in it (docs/extractor.md).
     out_of_scope: str | None = None
 
     @property
@@ -77,13 +75,11 @@ class WiresharkDictionary:
 class OneM2MSpec:
     """A oneM2M Technical Specification, pinned to one version of one release.
 
-    oneM2M publishes the Word original, which ETSI's TS 118 1xx mirror does
-    not (PDF only), as a zip of a clean `(cl)` and a revision-marked `(rm)`
-    legacy `.doc`. Its download endpoint serves whatever revision is latest
-    for the document id, with no archive of earlier ones to select from, so
-    the version is the catalog's and the downloaded file must carry it
-    (`check_onem2m_archive`): a newer upload fails the run rather than
-    replacing the document under a committed corpus.
+    oneM2M publishes the Word original (ETSI's TS 118 1xx mirror is PDF only) as
+    a zip of a clean `(cl)` and a revision-marked `(rm)` legacy `.doc`. Its
+    endpoint serves only the latest revision, so the version is the catalog's and
+    the downloaded file must carry it (`check_onem2m_archive`); a newer upload
+    fails the run.
     """
 
     number: str  # "0004"
@@ -113,16 +109,13 @@ FINAL_SCOPES = ("document", "release")
 class PinnedThreeGppSpec:
     """A 3GPP specification at one version, beside the catalog's release.
 
-    A citing document may mean another release than the corpus's: TS 32.299
-    cites TS 29.140, whose last version is V7.0.0, and ETSI TS 183 017 cites
-    "3GPP TS 29.214 Release 7". Each such version is pinned here and
-    fetched into its own release's tree (`3gpp/Rel-7/TS_29.140/`), and
-    `final` says what the pin claims about it, checked against the archive
-    listing on every download (`check_final`): `"document"`, the
-    document's final version, no later one archived in any release, or
-    `"release"`, its release's last, no later one archived in that release.
-    A version archived later breaks the claim, and the download fails
-    rather than leave a resolution resting on it (docs/consumers.md).
+    A citing document may mean another release: TS 32.299 cites TS 29.140,
+    whose last version is V7.0.0. Each such version is pinned here and fetched
+    into its own release's tree (`3gpp/Rel-7/TS_29.140/`). `final` is what the
+    pin claims, checked against the archive listing on every download
+    (`check_final`): `"document"`, no later version archived in any release, or
+    `"release"`, none later in that release. A version archived later fails the
+    download (docs/consumers.md).
     """
 
     number: str
@@ -154,9 +147,8 @@ class TranscribedDocument:
     """A document the corpus holds as a hand transcription (`edits/
     transcriptions/`), and the PDF it was copied from.
 
-    No extractor reads the PDF, so `regenerate` never asks for it; the
-    self-hosted export carries it. `url` is the `; Transcribed:` of the file,
-    which `tests/test_transcription.py` holds them to.
+    `regenerate` never reads the PDF; the self-hosted export carries it. `url` is
+    the file's `; Transcribed:`, which `tests/test_transcription.py` checks.
     """
 
     reference: str  # "ETSI-ES283.034"
@@ -204,10 +196,8 @@ def _prose(entry: dict) -> dict:
 
 
 def load_catalog(path: Path | None = None) -> Catalog:
-    """Read the curated specification catalog from specs.toml.
-
-    Called on demand rather than at import: reading a file as a side effect of
-    importing makes the module hard to use from anything but the CLI.
+    """Read the curated specification catalog from specs.toml, on demand rather
+    than at import.
     """
     path = path or CATALOG_PATH
     try:

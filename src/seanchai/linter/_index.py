@@ -1,6 +1,4 @@
-"""The one pass over a file that every rule reads from, and the spellings
-of its parts that rules of several modules share.
-"""
+"""The per-file index every rule reads, and helpers several rule modules share."""
 
 from __future__ import annotations
 
@@ -12,7 +10,7 @@ from ..dad import ast
 
 @dataclass
 class _Index:
-    """The one pass over the file that every rule reads from."""
+    """A file's sections and tree paths, collected in one pass."""
 
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = field(default_factory=list)
     messages: list[ast.Message] = field(default_factory=list)
@@ -115,8 +113,8 @@ def _table_labels(tables: list[ast.AvpTable]) -> str:
 
 
 def _references(index: _Index) -> dict[str, list[str]]:
-    """The clauses of the message and grouped bodies naming each member,
-    in file order, `* [ AVP ]` aside."""
+    """Map each member name to the clauses of the bodies that name it, in
+    file order, ignoring `* [ AVP ]`."""
     cited_by: dict[str, list[str]] = defaultdict(list)
     for section in (*index.messages, *index.definitions):
         if not isinstance(section, ast.Message | ast.GroupedAvp):

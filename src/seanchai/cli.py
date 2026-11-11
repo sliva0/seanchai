@@ -1,15 +1,11 @@
 """The `seanchai` command.
 
-Every library operation this drives refuses with a `SeanchaiError`, so the whole
-of the CLI's error handling is `reported()`: turn that into the styled
-`error: ...` line, and let anything else through as a traceback, because
-anything else is a bug in this program rather than a problem with the user's
-document. Exit status 1 is an error or a finding, and 2 a usage error, as Click
-has it.
+Library failures are `SeanchaiError`s; `reported()` prints them as an
+`error: ...` line. Any other exception is a bug and is left as a traceback.
+Exit status 1 means an error or a finding, 2 a usage error.
 
-`click` is a core dependency, since the entry point is installed with the
-library and the lookup commands need nothing more. Reading source documents is
-the `seanchai[extract]` extra: the commands that do it import it themselves.
+Commands that read source documents need the `seanchai[extract]` extra and
+import it themselves.
 """
 
 from __future__ import annotations
@@ -46,11 +42,10 @@ _DEFAULT_ALIASES = Path("integrations") / "wireshark" / "aliases.toml"
 
 
 class _HelpFormatter(click.HelpFormatter):
-    """Cargo-style help: `Usage:` and section headings in bold green.
+    """Help with `Usage:` and section headings in bold green.
 
-    `term_len` strips ANSI codes before measuring, so the styled prefix does
-    not disturb wrapping or alignment, and `click.echo` strips the codes
-    themselves whenever output is not a terminal.
+    Wrapping ignores the ANSI codes, and `click.echo` strips them when output
+    is not a terminal.
     """
 
     def write_usage(self, prog: str, args: str = "", prefix: str | None = None) -> None:
@@ -91,17 +86,12 @@ class _Command(click.Command):
 
 
 class _Group(click.Group):
-    """`seanchai` and its `corpus` group: their help through `_HelpFormatter`,
-    their failures through `_show_error`, and nobody else's.
+    """A group whose help uses `_HelpFormatter` and whose failures print
+    through `_show_error`.
 
-    Click renders a failure with the exception's own `show`, offering no hook
-    for it, and only in standalone mode. So this runs Click's non-standalone
-    `main`, which raises the failure instead, and does what standalone mode
-    would around it. A subgroup is dispatched by its parent's `main`, so only
-    the outermost one's runs.
-
-    Help lists the commands in the order they are defined, which is by
-    audience, not alphabetically.
+    Click has no hook for how it prints a failure, so `main` runs Click in
+    non-standalone mode and handles the raised failure itself. Only the
+    outermost group's `main` runs. Help lists commands in definition order.
     """
 
     context_class = _Context
@@ -136,7 +126,7 @@ class _Group(click.Group):
 
 @contextlib.contextmanager
 def reported() -> Generator[None]:
-    """Present a library failure as a CLI error, not as a traceback."""
+    """Turn a `SeanchaiError` into a CLI error."""
     try:
         yield
     except SeanchaiError as error:
@@ -145,7 +135,7 @@ def reported() -> Generator[None]:
 
 @contextlib.contextmanager
 def _naming(source: Path) -> Generator[None]:
-    """A `.dad` file that does not parse, or is no text, as an error naming it."""
+    """Report a `.dad` file that fails to parse or decode as an error naming it."""
     from .dad.parser import DadParseError
 
     try:
@@ -155,10 +145,9 @@ def _naming(source: Path) -> Generator[None]:
 
 
 def _dad_files(sources: Iterable[Path], *, raw: bool = False) -> list[Path]:
-    """The files `sources` name, a directory standing for the `.dad` files under
-    it, and a file named twice counting once. A directory's raw mirror is left
-    out unless `raw`, as the corpus loader leaves it out; naming the mirror
-    itself is asking for it."""
+    """The files `sources` name, each once, a directory expanded to its `.dad`
+    files. A directory's raw mirror is skipped unless `raw` or the directory is
+    the mirror itself."""
     files: dict[Path, None] = {}
     for source in sources:
         if not source.is_dir():
@@ -183,8 +172,7 @@ def _dad_files(sources: Iterable[Path], *, raw: bool = False) -> list[Path]:
 
 
 def _need_wireshark(directory: Path) -> None:
-    """Refuse a Wireshark dictionary directory that holds none, saying where one
-    comes from: all `crosscheck` and the export's names need of a download."""
+    """Refuse a directory with no Wireshark dictionary, saying how to fetch one."""
     if not (directory / "dictionary.xml").is_file():
         raise click.ClickException(
             f"{directory} holds no Wireshark dictionary: run"
@@ -193,8 +181,7 @@ def _need_wireshark(directory: Path) -> None:
 
 
 def _require_extract() -> None:
-    """Refuse a command reading source documents without `seanchai[extract]`,
-    before it does anything else."""
+    """Refuse to run without the `seanchai[extract]` extra."""
     from .downloader.core import require_extra
 
     with reported():
@@ -206,9 +193,9 @@ def _require_extract() -> None:
 def main() -> None:
     """Seanchaí: Diameter specifications as reviewable `.dad` files.
 
-    `show`, `commands`, `dictionary` and `export` read the installed corpus;
-    `lint` and `format` check and rewrite `.dad` files, sidecars included; the
-    `corpus` group maintains the corpus in a checkout of the repository.
+    `show`, `commands`, `dictionary` and `export` read the installed corpus.
+    `lint` and `format` check and rewrite `.dad` files. The `corpus` group
+    maintains the corpus in a checkout of the repository.
     """
 
 
@@ -217,7 +204,7 @@ def _as_json(value: object) -> None:
 
 
 def _flags(rules) -> str:
-    """Flag rules as a table's columns place them, the empty columns left out."""
+    """Flag rules by column, empty columns left out."""
     columns = (
         ("must", rules.must),
         ("may", rules.may),
@@ -234,8 +221,8 @@ def _flags(rules) -> str:
 
 
 def _identity_of(query: str) -> tuple[int, int] | None:
-    """`(vendor-id, code)` from `10415:601`, None for anything an AVP's name
-    could be. No name holds a colon, so one that does not parse is a mistake."""
+    """`(vendor-id, code)` from `10415:601`, or None for a name. AVP names hold
+    no colon, so a malformed identity is an error."""
     if ":" not in query:
         return None
     vendor_id, _, code = query.partition(":")
@@ -248,7 +235,7 @@ def _identity_of(query: str) -> tuple[int, int] | None:
 
 
 def _reading(built, query: str, document: str | None, version: str | None):
-    """What `seanchai show` shows, or an error saying why there is none."""
+    """The AVP `seanchai show` shows; raises `ModelError` if there is none."""
     from .model import ModelError
 
     identity = _identity_of(query)
@@ -278,7 +265,7 @@ def _reading(built, query: str, document: str | None, version: str | None):
 
 
 def _difference(avp, other) -> str:
-    """How `other` reads what `avp` does, in the fields that differ."""
+    """The fields in which `other` differs from `avp`."""
     from .model import Enumerated
 
     parts = []
@@ -302,7 +289,7 @@ def _difference(avp, other) -> str:
 
 
 def _echo_avp(avp, others) -> None:
-    """One reading of an AVP, and how the others differ from it."""
+    """Print one reading of an AVP and how the others differ from it."""
     from .dad import ast, formatter
     from .model import Enumerated, Grouped
 
@@ -368,33 +355,33 @@ def _echo_avp(avp, others) -> None:
 @click.option(
     "--document",
     metavar="REF",
-    help="Read it as this document does, instead of as its defining document.",
+    help="Read the AVP as this document does.",
 )
 @click.option(
     "--version",
     "version",
     metavar="V",
-    help="With --document: an older copy of that document the corpus holds.",
+    help="With --document: read an older copy of that document.",
 )
 @click.option(
     "--json",
     "as_json",
     is_flag=True,
-    help="Print it, its other readings and what they name, in the dictionary's shapes.",
+    help="Print JSON in the dictionary's shapes.",
 )
 def show(
     name_or_identity: str, document: str | None, version: str | None, as_json: bool
 ) -> None:
     """Show one AVP of the installed corpus.
 
-    NAME_OR_IDENTITY is a name or a VENDOR:CODE: `Session-Id`, `10415:601`. Prints
-    the defining document's reading (`Model.definition`) and how the others
-    differ, each a citing table's. A name two AVPs claim is refused, listing
-    them; a name the corpus cannot complete says why.
+    NAME_OR_IDENTITY is a name or VENDOR:CODE, such as `Session-Id` or
+    `10415:601`. Prints the defining document's reading and how other
+    documents' readings differ. A name two AVPs claim is refused, and a name
+    the corpus cannot complete is reported with the reason.
 
-    --json prints a `seanchai.dictionary.Lookup`: `avps` holds the reading asked
-    for first, named by `avp`, then the identity's other readings, then every AVP
-    their bodies name, as `seanchai dictionary` writes them (docs/consumers.md).
+    --json prints a `seanchai.dictionary.Lookup`: the requested reading first,
+    then the other readings, then every AVP their bodies name
+    (docs/consumers.md).
     """
     from .corpus import Corpus
     from .dictionary import lookup
@@ -420,24 +407,23 @@ def show(
     "--application",
     type=int,
     metavar="ID",
-    help="Only the commands of this application id, in any document.",
+    help="Only commands of this application id.",
 )
 @click.option(
     "--json",
     "as_json",
     is_flag=True,
-    help="Print the applications and their commands in the dictionary's shapes.",
+    help="Print JSON in the dictionary's shapes.",
 )
 def commands(reference: str | None, application: int | None, as_json: bool) -> None:
     """List the installed corpus's commands.
 
-    REF is a document, spelled as `TS29.229` or "TS 29.229"; with neither it nor
-    --application, every command. Each line has the command code, whether it is
-    the request or the answer, the effective application id (`-` where nothing
-    states one), its name, and its defining document and section.
+    REF is a document, as `TS29.229` or "TS 29.229". With neither REF nor
+    --application, lists every command. Each line has the command code,
+    request or answer, the application id (`-` if none is stated), the name,
+    and the defining document and section.
 
-    --json prints a `seanchai.dictionary.Listing`: each application as
-    `seanchai dictionary` writes it, each command without its body.
+    --json prints a `seanchai.dictionary.Listing`, commands without bodies.
     """
     from .corpus import Corpus
     from .dictionary import listing
@@ -499,21 +485,20 @@ def commands(reference: str | None, application: int | None, as_json: bool) -> N
     multiple=True,
     type=int,
     metavar="ID",
-    help="Only this application id's commands, and the AVPs they use. Repeatable.",
+    help="Only this application id's commands and their AVPs. Repeatable.",
 )
 @click.option(
     "--policy",
     type=click.Choice(["hole", "drop", "placeholder", "supply"]),
     default="hole",
-    help="What becomes of the names the corpus declares undefined: left as holes,"
-    " dropped from their bodies, kept as untyped placeholders, or read from --supply.",
+    help="How to handle names the corpus declares undefined: keep as holes,"
+    " drop, keep as untyped placeholders, or read from --supply.",
 )
 @click.option(
     "--supply",
     multiple=True,
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="A hand-authored `.dad` sidecar stating undefined names, with --policy"
-    " supply. Repeatable.",
+    help="A `.dad` sidecar defining undefined names, for --policy supply. Repeatable.",
 )
 def dictionary_command(
     output: Path,
@@ -522,12 +507,11 @@ def dictionary_command(
     policy: str,
     supply: tuple[Path, ...],
 ) -> None:
-    """Write the installed corpus as one JSON dictionary, for a stack not in Python.
+    """Write the installed corpus as one JSON dictionary.
 
-    Applications with their commands, each member naming its AVP, and the AVPs
-    with identity, type, flags, enumerated values and grouped members
-    (docs/consumers.md). It records both versions and the policy. The same corpus
-    and options give the same bytes.
+    The file holds applications with their commands, and AVPs with identity,
+    type, flags, values and members (docs/consumers.md). The same corpus and
+    options give the same bytes.
     """
     from .corpus import Corpus
     from .dictionary import build, dumps
@@ -568,42 +552,37 @@ def dictionary_command(
     "--output",
     required=True,
     type=click.Path(file_okay=False, path_type=Path),
-    help="Directory to write, replaced whole. It must be absent, empty or a"
-    " previous export.",
+    help="Directory to replace. It must be absent, empty or a previous export.",
 )
 @click.option(
     "--corpus",
     "corpus_paths",
     multiple=True,
     type=click.Path(exists=True, path_type=Path),
-    help="Directory or file to export instead of the installed seanchai-corpus"
-    " package. Repeatable.",
+    help="Directory or file to export instead of the installed corpus. Repeatable.",
 )
 @click.option(
     "--wireshark",
     type=click.Path(file_okay=False, path_type=Path),
-    help="Wireshark's Diameter dictionary, for its AVP names in the search index:"
-    " specifications/wireshark after `seanchai corpus download --only wireshark`."
-    " Without it the names are left out.",
+    help="Wireshark's Diameter dictionary (specifications/wireshark), to add its"
+    " AVP names to the search index.",
 )
 @click.option(
     "--corrections",
     type=click.Path(exists=True, file_okay=False, path_type=Path),
-    help="Read correction reasons and acceptances from the modules in this"
-    " directory (<SpecRef>.py) instead of the corpus's corrections.json. Loading"
-    " one executes Python from that directory, as `corpus correct` does.",
+    help="Read correction reasons from the <SpecRef>.py modules here instead of"
+    " corrections.json. This executes Python from the directory.",
 )
 @click.option(
     "--specifications",
     type=click.Path(file_okay=False, path_type=Path),
-    help="A `seanchai corpus download` directory. RFC texts found there are copied into"
-    " the export; --include-pdfs reads it too.",
+    help="A `seanchai corpus download` directory to copy RFC texts from.",
 )
 @click.option(
     "--include-pdfs",
     is_flag=True,
-    help="Self-hosted mode: copy every source PDF into the export. Needs"
-    " --specifications. ETSI's renderings are not for public redistribution.",
+    help="Copy every source PDF into the export, for self-hosting. Needs"
+    " --specifications.",
 )
 def export_command(
     output: Path,
@@ -615,9 +594,11 @@ def export_command(
 ) -> None:
     """Export the corpus as JSON for the static site.
 
-    Writes index.json, search.json, schema.json, syntax/dad.tmLanguage.json and,
-    per document, documents/<id>.json and documents/<id>.raw.json
-    (docs/website.md). The same corpus gives the same bytes.
+    Writes index.json, search.json, schema.json, syntax/dad.tmLanguage.json
+    and, per document, documents/<id>.json and documents/<id>.raw.json
+    (docs/website.md). The export replaces the output directory only once it
+    succeeds. ETSI's PDFs are not for public redistribution, so a public site
+    leaves out --include-pdfs.
 
     \b
     Public site, no source PDFs:
@@ -625,15 +606,6 @@ def export_command(
     Self-hosted, source PDFs beside it:
         seanchai export -o site/data \\
             --include-pdfs --specifications specifications
-
-    The export is built beside the output directory and replaces it whole, once
-    it has succeeded: files of an earlier export do not linger, and a failed
-    run leaves the earlier one as it was. A directory holding anything else is
-    refused, and so is a corpus with no documents.
-
-    Correction reasons come from the corpus's corrections.json, which needs no
-    checkout. --corrections reads edits/corrections while working inside one,
-    before `seanchai corpus regenerate` has recorded them.
     """
     from .corpus import Corpus
     from .export import export_corpus
@@ -687,8 +659,8 @@ def export_command(
     multiple=True,
     type=click.Path(exists=True, path_type=Path),
     show_default="the installed seanchai-corpus, if any",
-    help="Directory or file to resolve re-used AVPs against. Enables the"
-    " cross-file rules; repeatable.",
+    help="Directory or file to resolve re-used AVPs against, enabling the"
+    " cross-file rules. Repeatable.",
 )
 @click.option(
     "--no-corpus",
@@ -699,19 +671,16 @@ def export_command(
     "--output-format",
     type=click.Choice(["full", "concise"]),
     default="full",
-    help="`full` groups findings under their file with a summary;"
-    " `concise` prints one greppable `file: severity: [rule] ...` line per"
-    " finding.",
+    help="`full` groups findings by file with a summary; `concise` prints one"
+    " `file: severity: [rule] ...` line per finding.",
 )
 @click.option(
     "--corrections",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORRECTIONS,
-    help="Directory with per-spec correction modules, whose acceptances mark"
-    " deliberate overrides among a corrected file's findings; read with a"
-    " corpus only. Defaulted, like `corpus regenerate`'s, for the repository's own"
-    " corpus; a missing default directory is no acceptances, and an installed"
-    " corpus read outside the repository leaves the default unread.",
+    help="Directory with correction modules whose acceptances mark deliberate"
+    " overrides; used only with a corpus. Executes Python from it. The default"
+    " is read only inside the repository and may be missing.",
 )
 @click.option(
     "--show-accepted",
@@ -730,24 +699,17 @@ def lint(
 ) -> None:
     """Report structural inconsistencies in `.dad` files.
 
-    SOURCES are files or directories, a directory standing for the `.dad` files
-    under it, less its raw mirror unless --raw; none means the corpus the
-    seanchai-corpus package installed. Exits non-zero when any error is found;
-    notes alone do not fail, because they are things a single file cannot decide
-    rather than defects.
+    SOURCES are files or directories; a directory means its `.dad` files,
+    without the raw mirror unless --raw. With no SOURCES, lints the installed
+    corpus. Exits 1 if any error is found; notes alone do not fail.
 
-    With `--corpus`, re-used AVPs are resolved against the other files it names
-    and the cross-file rules run too. Without it the installed seanchai-corpus
-    package is the corpus; with no such package, or with `--no-corpus`, each
-    file is linted alone. An origin the corpus does not hold is reported as a
-    note and its rules are skipped, so a partial corpus is useful rather than
-    an error. The specification's corrections module is
-    read too: a note one of its acceptances acknowledges is reported as
-    `accepted`, hidden unless `--show-accepted`, and an acceptance matching
-    no finding is an error. A raw (`.raw.dad`) file is linted without them,
-    since they describe the corrected one. A corpus directory's record of known
-    holes is linted once, as a file of its own: a hole it does not list and an
-    entry naming no hole are errors.
+    Re-used AVPs resolve against --corpus, else the installed corpus; with
+    neither, or with --no-corpus, each file is linted alone. An origin missing
+    from the corpus is a note. A finding a correction module accepts is
+    `accepted` and hidden unless --show-accepted; an acceptance matching no
+    finding is an error. Raw (`.raw.dad`) files are linted without
+    acceptances. The corpus's record of known holes is linted too: an unlisted
+    hole and an entry naming no hole are errors.
     """
     from .corpus import Corpus, CorpusNotInstalledError, installed_directory
     from .dad import corrections as corrections_module
@@ -830,7 +792,7 @@ def lint(
 
 
 def _echo_findings(source: Path, findings) -> None:
-    """One file's findings, grouped under its path, errors first."""
+    """Print one file's findings under its path, errors first."""
     from .linter import Severity
 
     click.secho(str(source), bold=True)
@@ -884,8 +846,7 @@ def _summary(counts, checked: int) -> str:
 @click.option(
     "--check",
     is_flag=True,
-    help="Print a diff for each file not in canonical form instead of"
-    " rewriting it, and exit non-zero if there is one.",
+    help="Print diffs instead of rewriting, and exit 1 if any file would change.",
 )
 @click.option(
     "--raw",
@@ -895,12 +856,10 @@ def _summary(counts, checked: int) -> str:
 def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
     """Rewrite `.dad` files in canonical form, keeping their `;;` comments.
 
-    SOURCES are files or directories, a directory standing for the `.dad` files
-    under it, less its raw mirror unless --raw. Every file is parsed before any
-    is written, so one that does not parse leaves all of them as they were. A
-    trailing comment stays on its line,
-    a whole-line comment stays before the line that followed it, and a
-    block of comments stays before the section that followed it.
+    SOURCES are files or directories; a directory means its `.dad` files,
+    without the raw mirror unless --raw. Every file is parsed before any is
+    written, so a parse error leaves all files unchanged. Comments stay with
+    the line or section they precede, or on their line if trailing.
     """
     import difflib
 
@@ -946,10 +905,9 @@ def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
 def corpus() -> None:
     """Download, extract and rebuild the corpus; needs a checkout.
 
-    The maintainers' commands. Their defaults name the repository's own
-    directories: specifications/ for the downloads, edits/ for the edit layers,
-    the seanchai-corpus package's data for the corpus and
-    integrations/wireshark/aliases.toml, so they are run from its root.
+    Maintainer commands. Their defaults are paths in the repository
+    (specifications/, edits/, the seanchai-corpus data, and
+    integrations/wireshark/aliases.toml), so run them from its root.
     """
 
 
@@ -966,46 +924,38 @@ def corpus() -> None:
 @click.option(
     "--no-extract",
     is_flag=True,
-    help="Keep 3GPP ZIPs without extracting their DOC/DOCX files (and so"
-    " without converting a legacy DOC).",
+    help="Keep 3GPP ZIPs without extracting or converting their documents.",
 )
 @click.option(
     "--no-convert",
     is_flag=True,
-    help="Extract a legacy DOC without converting it to DOCX, so LibreOffice"
-    " is not needed; the manifest records it unconverted and `regenerate`"
-    " skips its specification.",
+    help="Do not convert legacy DOC files to DOCX, so LibreOffice is not"
+    " needed; `regenerate` skips those specifications.",
 )
 @click.option(
     "--pdfs/--no-pdfs",
     default=True,
-    help="Download the ETSI PDF renderings and prefer the newest version"
-    " whose PDF is published. --no-pdfs is for catalog"
-    " experiments only: it strips pdf_url from the manifest and lets"
-    " the newest archive replace a committed spec's docx with a version whose"
-    " PDF is unpublished.",
+    help="Download the ETSI PDFs and prefer the newest version with a"
+    " published PDF. --no-pdfs is for catalog experiments only.",
 )
 @click.option("--list", "list_only", is_flag=True, help="Print the catalog and exit.")
 @click.option(
     "--only",
     multiple=True,
     type=click.Choice(SOURCES),
-    help="Fetch only this source, keeping what the manifest holds of the others;"
-    " `wireshark` and `rfc` are small and need no extra, and `transcribed` is"
-    " the PDFs the hand transcriptions were copied from. Repeatable.",
+    help="Fetch only this source, keeping the manifest's entries for the others."
+    " Repeatable.",
 )
 @click.option(
     "--spec",
     metavar="SPECREF",
-    help="With --version: fetch one catalogued 3GPP specification"
-    " (e.g. TS29.272) into versions/ instead of the whole catalog.",
+    help="With --version: fetch one 3GPP specification (e.g. TS29.272) into versions/.",
 )
 @click.option(
     "--version",
     "spec_version",
     metavar="VERSION",
-    help="With --spec: the archived version to fetch (e.g. 18.6.0); its"
-    " major is the release.",
+    help="With --spec: the archived version to fetch (e.g. 18.6.0).",
 )
 def download(
     release: int,
@@ -1019,27 +969,20 @@ def download(
     spec: str | None,
     spec_version: str | None,
 ) -> None:
-    """Download the curated specification corpus: 3GPP, RFC, oneM2M, and the
-    PDFs the hand transcriptions were copied from.
+    """Download the source documents: 3GPP, RFC, oneM2M, Wireshark, and the
+    PDFs behind the hand transcriptions (`transcribed`).
 
-    Every entry is staged and the whole set replaces the previous download
-    only when all of it succeeded; a failed run leaves the previous one and
-    its manifest as they were. A 3GPP archive holding only a legacy `.doc`,
-    and a oneM2M document, is converted to `.docx` with headless LibreOffice
-    (`soffice` on PATH), and the conversion is recorded in the manifest;
-    without LibreOffice the run fails unless --no-convert says to skip the
-    conversions.
+    The new download replaces the previous one only if every entry succeeds.
+    Legacy `.doc` files and oneM2M documents are converted to `.docx` with
+    LibreOffice (`soffice` on PATH); without it the run fails unless
+    --no-convert. Cached files are not fetched again.
 
-    With --spec and --version, one older version is fetched into
-    `versions/<SPECREF>/<VERSION>/` with a manifest of its own, for
+    With --spec and --version, one older version goes to
+    `versions/<SPECREF>/<VERSION>/` with its own manifest, for
     `seanchai corpus regenerate --manifest ... --spec ... -o SCRATCH`.
 
-    With --only, one source is fetched and the manifest keeps what it holds of
-    the others. What the download cache holds is not fetched again, by this run
-    or a later full one.
-
-    A 3GPP, oneM2M or `transcribed` download needs the `seanchai[extract]`
-    extra, to validate what it fetched.
+    3GPP, oneM2M and `transcribed` downloads need the `seanchai[extract]`
+    extra; `wireshark` and `rfc` do not.
     """
     from .downloader import download_corpus, download_version, load_catalog
 
@@ -1081,7 +1024,7 @@ def download(
 
 
 def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
-    """What `sources` of the catalog hold."""
+    """Print the catalog entries of `sources`."""
     if "3gpp" in sources:
         click.echo(f"3GPP specifications ({len(catalog.tgpp)}):")
         for entry in catalog.tgpp:
@@ -1130,8 +1073,7 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
     "--corpus",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORPUS,
-    help="The committed corpus: decides which specifications to rebuild."
-    " Defaulted for the repository's own workspace copy, never an installed one.",
+    help="The committed corpus, which decides what to rebuild.",
 )
 @click.option(
     "-o",
@@ -1150,35 +1092,32 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
     "--corrections",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_CORRECTIONS,
-    help="Directory with per-spec correction modules. Defaulted here, unlike"
-    " extract's and correct's, because this one exists to rebuild the repository's"
-    " own corpus from its own edit layers.",
+    help="Directory with per-spec correction modules. Executes Python from it.",
 )
 @click.option(
     "--transcriptions",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_TRANSCRIPTIONS,
-    help="Directory with hand transcriptions of documents no extractor reads.",
+    help="Directory with hand transcriptions.",
 )
 @click.option(
     "--add",
     multiple=True,
     metavar="SPECREF",
-    help="Also build a specification the corpus does not hold yet"
-    " (e.g. TS29.273). Repeatable.",
+    help="Also build a specification new to the corpus (e.g. TS29.273). Repeatable.",
 )
 @click.option(
     "--spec",
     "only",
     multiple=True,
     metavar="SPECREF",
-    help="Rebuild only this specification instead of the whole corpus. Repeatable.",
+    help="Rebuild only this specification. Repeatable.",
 )
 @click.option(
     "--expand-ranges",
     is_flag=True,
-    help="Widen, in --sources and --corrections, every declaration range a"
-    " cleanly rebuilt specification's version falls outside.",
+    help="Widen edit declaration version ranges to cover versions they applied"
+    " to cleanly.",
 )
 def regenerate(
     manifest: Path,
@@ -1193,29 +1132,21 @@ def regenerate(
 ) -> None:
     """Rebuild the committed corpus from the downloaded sources.
 
-    Every specification the corpus holds is re-extracted, paged and corrected
-    from the manifest's files and written back, raw mirror included. The
-    manifest decides the version: a newer download replaces the committed
-    pair, and the replacement is reported. A specification the extractor
-    cannot read fails on its own and the run continues; the exit status is
-    non-zero if anything failed.
+    Re-extracts, pages and corrects every specification in the corpus from the
+    manifest's files and writes it back with its raw mirror. A newer download
+    replaces the committed version. Also rewrites `corrections.json` unless
+    something failed. A failing specification does not stop the run; the exit
+    status is 1 if any failed.
 
-    Beside the documents it rewrites `corrections.json`, the record of every
-    correction's reason an installed corpus is read with, unless something
-    failed.
+    To extract an older version fetched with `corpus download --spec --version`:
 
-    With --expand-ranges, a declaration whose advisory version range does not
-    cover the version it just applied cleanly to has the range rewritten in
-    its edit file, comments and layout kept; the widened ranges print under
-    the specification.
+    \b
+        seanchai corpus regenerate --spec SPECREF -o SCRATCH \\
+            --manifest specifications/versions/SPECREF/VERSION/manifest.json
 
-    An older version fetched with `seanchai corpus download --spec SPECREF
-    --version VERSION` is extracted for diffing with `--manifest
-    specifications/versions/SPECREF/VERSION/manifest.json --spec SPECREF -o
-    SCRATCH`; without -o it would replace the committed pair.
-
-    Needs the `seanchai[extract]` extra and a checkout: the defaults name its
-    corpus and edit layers.
+    Without -o it would replace the committed version. Needs the
+    `seanchai[extract]` extra and a checkout. Executes Python from
+    --corrections.
     """
     _require_extract()
     from . import _regenerate as library
@@ -1291,23 +1222,20 @@ def _echo_outcome(outcome) -> None:
 @click.option(
     "--pdf",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="Matching ETSI PDF rendering; attaches `; Page:` directives"
-    " from its bookmark outline. Must be the exact same version"
-    " as the docx.",
+    help="The ETSI PDF of the same version, to add `; Page:` directives.",
 )
 @click.option("--link", help="ETSI PDF URL for the file's `; Link:` header.")
 @click.option(
     "--sources",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
     show_default="./edits/sources, if present",
-    help="Directory with source-declaration TOML files — input patches and quirks.",
+    help="Directory with source-declaration TOML files.",
 )
 @click.option(
     "--corrections",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with per-spec correction modules (<SpecRef>.py)."
-    " Loading one executes Python from that directory, so it is never"
-    " discovered automatically.",
+    help="Directory with correction modules (<SpecRef>.py). Executes Python"
+    " from it, so it has no default.",
 )
 @click.option(
     "-o",
@@ -1362,14 +1290,13 @@ def extract(
     "--sources",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
     show_default="./edits/sources, if present",
-    help="Directory with source-declaration TOML files — input patches and quirks.",
+    help="Directory with source-declaration TOML files.",
 )
 @click.option(
     "--corrections",
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with per-spec correction modules (<SpecRef>.py)."
-    " Loading one executes Python from that directory, so it is never"
-    " discovered automatically.",
+    help="Directory with correction modules (<SpecRef>.py). Executes Python"
+    " from it, so it has no default.",
 )
 @click.option(
     "-o",
@@ -1387,8 +1314,7 @@ def extract_rfc(
 ) -> None:
     """Extract a canonical `.dad` file from an RFC's plain-text rendering.
 
-    `; Page:` directives come from the text's own printed page numbers — the
-    text is the RFC's sole rendering, so there is no separate PDF step.
+    `; Page:` directives come from the text's printed page numbers.
     """
     from .extractor import rfc_text
 
@@ -1415,8 +1341,7 @@ def extract_rfc(
     "--corrections",
     required=True,
     type=click.Path(file_okay=False, exists=True, path_type=Path),
-    help="Directory with per-spec correction modules (<SpecRef>.py)."
-    " Loading one executes Python from that directory.",
+    help="Directory with correction modules (<SpecRef>.py). Executes Python from it.",
 )
 @click.option(
     "-o",
@@ -1428,14 +1353,10 @@ def extract_rfc(
 def correct(source: Path, corrections: Path, output: Path | None) -> None:
     """Apply a specification's corrections to a raw `.dad` file.
 
-    Input is raw extractor output. Correcting a corrected file fails, by
-    design: every `expect` would already hold its replacement, and that is
-    indistinguishable from the specification having been fixed upstream.
-
-    Unlike `extract --corrections`, this requires the specification's module to
-    exist and to declare at least one correction: correction is what was asked
-    for here, and a mistyped path that quietly produced an uncorrected file
-    would be indistinguishable from success.
+    SOURCE must be raw extractor output; an already corrected file fails,
+    because its `expect` values no longer match. Unlike `extract
+    --corrections`, the specification's module must exist and declare at
+    least one correction.
     """
     from .dad import parser
 
@@ -1455,8 +1376,8 @@ def correct(source: Path, corrections: Path, output: Path | None) -> None:
 
 
 def _correct(spec, comments: Comments, directory: Path, required: bool):
-    """Returns the corrected tree, and `comments` moved with their lines
-    beside the notes marking what was touched."""
+    """The corrected tree, and `comments` moved with their lines plus notes
+    marking what changed."""
     from .dad import corrections as corrections_module
 
     declared = corrections_module.in_release(
@@ -1498,16 +1419,15 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
     "--wireshark",
     type=click.Path(file_okay=False, path_type=Path),
     default=Path("specifications") / "wireshark",
-    help="Directory holding Wireshark's Diameter dictionary files, which"
-    " `seanchai corpus download --only wireshark` fetches.",
+    help="Wireshark's Diameter dictionary directory, from"
+    " `seanchai corpus download --only wireshark`.",
 )
 @click.option(
     "--aliases",
     type=click.Path(dir_okay=False, path_type=Path),
     default=_DEFAULT_ALIASES,
-    help="Accepted-aliases file listing Wireshark's deliberate renames, which"
-    " are agreement while vendor, code and type agree. Defaulted for the"
-    " repository's own corpus; a missing default file is no aliases.",
+    help="File of Wireshark's deliberate renames to accept. The default may be"
+    " missing.",
 )
 @click.option(
     "--show-accepted",
@@ -1519,26 +1439,18 @@ def crosscheck(
 ) -> None:
     """Cross-check `.dad` files against Wireshark's Diameter dictionary.
 
-    Reports where the two projects read the specifications differently:
-    an AVP's code resolving to a different name, a type that disagrees
-    after Wireshark's dissector conveniences are mapped onto RFC 6733's
-    vocabulary, and AVPs the pinned dictionary does not carry at all.
-    Disagreement is a report for a reader with the documents open, not a
-    verdict — so findings never fail the run.
+    Reports AVP codes with a different name, types that disagree after
+    mapping Wireshark's types onto RFC 6733's, and AVPs the dictionary
+    lacks. Findings never fail the run.
 
-    SOURCES are files or directories, a directory's raw files skipped as
-    the corpus loader skips them; none means the corpus the seanchai-corpus
-    package installed. Only the
-    newest copy of each document is checked: an older one the corpus holds
-    for a citation (TS 32.299 V11.20.0) is no reading of the document the
-    dictionary describes, and is listed as skipped. Two files of one
-    document and version are refused.
+    SOURCES are files or directories, raw files skipped; with none, checks
+    the installed corpus. Only the newest copy of each document is checked;
+    older copies are listed as skipped. Two files of one document and
+    version are refused.
 
-    A name disagreement the accepted-aliases file lists for the document is
-    agreement while the dictionary's entry carries the listed name and
-    agrees in type: it is counted as an accepted rename, printed only with
-    `--show-accepted`. A listed alias that no longer holds is a
-    `stale-alias` finding.
+    A rename listed in --aliases counts as accepted while the type agrees,
+    and prints only with --show-accepted. A listed alias that no longer
+    holds is a `stale-alias` finding.
     """
     from .corpus import Corpus, CorpusError, Entry, installed_directory
     from .dad import parser

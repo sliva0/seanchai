@@ -1,8 +1,7 @@
--- Zebra-stripes table rows (the lines after a `; Columns:` directive) with
--- extmarks so wide rows are easier to follow, and renders `; bold` rule
--- lines in bold and `; strikethrough` ones struck through (additively —
--- syntax colors stay). Neovim-only; classic Vim
--- uses the fallbacks in dad.vim and syntax/dad.vim.
+-- Neovim only. Zebra-stripes table rows (the lines after a `; Columns:`
+-- directive) with extmarks, and draws `; bold` rule lines bold and
+-- `; strikethrough` ones struck through, on top of the syntax colours.
+-- Classic Vim uses the fallbacks in dad.vim and syntax/dad.vim.
 
 if vim.b.did_dad_stripes then
   return

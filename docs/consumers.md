@@ -1,6 +1,6 @@
 # Consumers: the model and the integrations
 
-`seanchai` needs Python 3.12 or newer. Install it with the corpus and every
+`seanchai` needs Python 3.12 or newer. With the corpus installed, every
 snippet here runs as it stands:
 
 ```sh
@@ -11,11 +11,10 @@ pip install "seanchai[corpus]"
 
 ### Generate a dictionary
 
-Generate a dictionary from what the commands reach: `Application.walk()` is
-every member an application's commands hold, at any depth, whichever document
-defines it, as `Message.walk()` is for one command. Cx's commands reach 104
-AVPs, RFC 6733's `Destination-Host` among them, which no table of TS 29.229's
-lists.
+`Application.walk()` yields every member an application's commands hold, at
+any depth, whichever document defines it. `Message.walk()` does the same for
+one command. Cx's commands reach 104 AVPs, among them RFC 6733's
+`Destination-Host`, which no table of TS 29.229 lists.
 
 ```python
 import seanchai
@@ -53,10 +52,10 @@ for (vendor_id, code), avp in sorted(dictionary.items()):
 
 ### Look up one AVP
 
-`definition` and `readings` take a name or a `(vendor-id, code)`. `definition`
-returns the defining document's reading, and `readings` every reading, since a
-citing document's table can change the flags; `Avp.read_through` names the
-table that did.
+`definition` returns the defining document's reading of a name or a
+`(vendor-id, code)`. `readings` returns every reading, because a citing
+document's table can change the flags. `Avp.read_through` names the document
+whose table did.
 
 ```python
 from seanchai.model import Model
@@ -93,30 +92,37 @@ for application in model.applications("TS 29.212"):
 
 ## Without Python
 
-Most Diameter stacks are not Python. An installed `seanchai[corpus]` answers
-from the command line, with no checkout and no downloads:
+An installed `seanchai[corpus]` answers from the command line, with no
+checkout and no downloads:
 
 ```sh
 seanchai show Session-Id          # the defining document's reading, and others
-seanchai show 10415:601 --json    # by VENDOR:CODE; --document REF for its reading
+seanchai show 10415:601 --json    # by VENDOR:CODE
+seanchai show Session-Id --document TS29.229   # as one document reads it
 seanchai commands TS29.229        # code, request or answer, id, document, section
 seanchai commands --application 16777216 --json
 seanchai dictionary -o cx.json --application 16777216
 ```
 
-With `--json`, `show` and `commands` print the shapes `dictionary` writes, all
-of them models of `seanchai.dictionary` under one `format_version`.
+`show --document REF --version V` reads an older copy of that document the
+corpus holds. With `--json`, `show` and `commands` print the shapes
+`dictionary` writes. All three are pydantic models in `seanchai.dictionary`,
+under one `format_version`.
 
 ### The dictionary
 
-`seanchai dictionary` writes one JSON file to generate from, compact with sorted
-keys: the same corpus and options give the same bytes. `--document REF` and
-`--application ID` narrow it, each repeatable. `--application` leaves what its
-commands use; `--document` alone also keeps what the document's tables list.
-`--policy` is the [undefined-name policy](#undefined-names), `hole` by default:
-`drop`, `placeholder`, or `supply` with `--supply SIDECAR.dad`. Every field is
-always written, null or empty where it says nothing, and `seanchai.dictionary`
-holds the shape as pydantic models.
+`seanchai dictionary -o FILE` writes one compact JSON file with sorted keys.
+The same corpus and options give the same bytes.
+
+| Option | Keeps |
+|---|---|
+| `--document REF` | that document's applications; alone, also every AVP its tables list |
+| `--application ID` | that application's commands and the AVPs they use |
+| `--policy` | what becomes of [undefined names](#undefined-names): `hole` (default), `drop`, `placeholder` or `supply` |
+| `--supply SIDECAR.dad` | the sidecar `--policy supply` reads |
+
+`--document`, `--application` and `--supply` repeat. Every field is always
+written, null or empty where it says nothing.
 
 ```text
 format_version     1, changes when a reader would have to
@@ -140,35 +146,33 @@ value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
                    feature_list_id, rows[]
 ```
 
-- A member is `name`, `presence` (`fixed`, `required`, `optional`),
-  `min_occurs`, `max_occurs` (null is unbounded) and `kind`: `avp` names an
-  `avps[].id` in `avp`, `hole` a `holes[].id` in `hole`, `placeholder` holds its
-  block, and `wildcard` is the `* [ AVP ]` line. `alias` is set for a
-  `model.Alias`.
-- `walk` is `Message.walk`: every AVP `id` the command reaches, at any depth.
-- An AVP `id` is `vendor:code`. A citing table can read an identity otherwise,
-  and a command means its document's reading, so each further reading the
-  selection holds is `vendor:code#2` and on. `defining` marks the defining
-  document's. A generator wanting one entry per identity takes those with no
-  `#`, as [the recipe](#generate-a-dictionary) does.
-- `values[]` holds `kind` (`value`, `reserved`, `void`, `vendor-specific`),
-  `name`, `value`, `first`, `last`, `description`. `void` is a value the
-  document withdrew; like `reserved`, no dictionary may assign it.
-- `dropped` is what `--policy drop` took out, each naming its hole.
-- An answer's `answer_message` names the `answer_messages[]` entry it takes
-  with the E bit set ([the model](#the-model)), null for a request. An entry's
-  `id` is `read_through/defined_in:section`, as `TS29.272/RFC6733:7.2`.
-- `value_tables[]` are the selected documents', and with `--application` those
-  of the documents holding one. `avp_id` names the `avps[]` entry the document's
-  reading of `avp` is, null where the selection holds none: TS 29.212 numbers
-  the bits of a `Feature-List` it never names otherwise. A row of `rows[]` holds
-  `name`, `value`, a result code's own `section`, and a feature's `mark`, the
-  M/O column.
+- A member has `name`, `presence` (`fixed`, `required`, `optional`),
+  `min_occurs`, `max_occurs` (null is unbounded) and `kind`. Kind `avp` names
+  an `avps[].id` in `avp`; `hole` names a `holes[].id` in `hole`;
+  `placeholder` holds its block; `wildcard` is the `* [ AVP ]` line. `alias`
+  is set for a `model.Alias`.
+- `walk` lists every AVP `id` the command reaches, at any depth.
+- An AVP `id` is `vendor:code`. A citing table can read an identity
+  differently, so each further reading in the selection is `vendor:code#2`,
+  `#3` and so on. `defining` marks the defining document's reading. For one
+  entry per identity, take the ids without `#`.
+- `values[]` entries have `kind` (`value`, `reserved`, `void`,
+  `vendor-specific`), `name`, `value`, `first`, `last` and `description`. No
+  dictionary may assign a `reserved` or `void` value.
+- `dropped` lists what `--policy drop` removed, each naming its hole.
+- `answer_message` names the `answer_messages[]` entry an answer takes with
+  the E bit set ([error answers](#error-answers)); it is null for a request.
+  That entry's `id` is `read_through/defined_in:section`, as
+  `TS29.272/RFC6733:7.2`.
+- `value_tables[]` holds the selected documents' tables; with
+  `--application`, those of the documents defining the application. `avp_id`
+  names the `avps[]` entry for the document's reading of `avp`, or is null
+  where the selection holds none. A row has `name`, `value`, a result code's
+  own `section`, and a feature's `mark` (the M/O column).
 
 ### One AVP
 
-`seanchai show NAME --json` prints one AVP as the dictionary has it, indented,
-in a `dictionary.Lookup`:
+`seanchai show NAME --json` prints a `dictionary.Lookup`, indented:
 
 ```text
 format_version, seanchai_version, corpus_version, undefined_policy
@@ -179,15 +183,9 @@ holes[]            what their bodies name and the corpus cannot complete
 value_tables[]     those of the identity's readings, each its avp_id
 ```
 
-Every entry is the dictionary's `avps[]`, `holes[]` or `value_tables[]` entry,
-so a member names an `avps[].id` or `holes[].id` of the same output, as it does
-in the file. Ids are numbered as the dictionary numbers them, over what this
-output holds: `defining` marks the defining document's reading, which has no
-`#`, and `avp` says which reading was asked for, the defining one unless
-`--document` named another. A `#2` here need not be the dictionary's `#2`. The
-AVPs a body names are there whole, which for a body as deep as TS 32.299's
-`Service-Information` is most of a charging dictionary, so that the output
-reads on its own.
+Entries have the dictionary's shapes, and every id a member names is in the
+output. Ids are numbered over this output only, so a `#2` here need not be
+the dictionary's `#2`.
 
 ```json
 {
@@ -210,50 +208,43 @@ reads on its own.
 ### Commands
 
 `seanchai commands --json` prints a `dictionary.Listing`: `format_version`,
-`seanchai_version`, `corpus_version`, and `applications[]` as the dictionary
-writes them, each command without its body (`members`, `dropped`, `walk`,
-`answer_message`), since a list of commands holds no AVPs for them to name.
+`seanchai_version`, `corpus_version` and `applications[]` as the dictionary
+writes them, each command without `members`, `dropped`, `walk` and
+`answer_message`.
 
 ## Installing the corpus
 
-The library and the corpus are two packages. `seanchai` holds no data, and
-`seanchai-corpus` holds nothing else and depends on nothing, so a consumer's
-CI pins each on its own:
+The library and the corpus are separate packages, released separately, so pin
+each on its own:
 
 ```sh
 pip install seanchai seanchai-corpus   # or "seanchai[corpus]"
 ```
 
-`corpus.Corpus.installed()` loads the installed corpus with no path, record
-of known holes included, and `installed(raw=True)` its raw mirror. Without the
-package it raises `corpus.CorpusNotInstalledError`, naming the package.
-`corpus.Corpus.load(path)` loads any other directory or file, or a list of them.
-A file named twice counts once, and two files claiming one document, version and
-3GPP2 revision raise `corpus.CorpusError` naming both, since which one answers
-would depend on the order they were given in.
+- `corpus.Corpus.installed()` loads the installed corpus with its record of
+  known holes; `installed(raw=True)` loads its raw mirror. Without the package
+  it raises `corpus.CorpusNotInstalledError`.
+- `corpus.Corpus.load(path)` loads another directory, file, or list of them.
+  A file named twice counts once. Two files of the same document, version and
+  3GPP2 revision raise `corpus.CorpusError`.
+- `seanchai_corpus.CORPUS_DIR` is the data directory.
+- `Corpus.version` is the corpus package's version, the date it was
+  regenerated, when `installed()` loaded it, and None otherwise.
+  `seanchai.__version__` is the library's.
 
-`seanchai_corpus.CORPUS_DIR` is the directory itself. `Corpus.version` is the
-corpus package's version, the date it was regenerated, when `installed()` loaded
-it, and None for any other corpus. `seanchai.__version__` is the library's. In
-this repository the package is installed from the workspace, so the installed
-corpus is the committed one.
+The corpus states its format as `format` in its `corpus.toml`, and
+`corpus.FORMATS` lists the formats the library reads. `installed()`, and
+`load` of a directory holding `corpus.toml`, raise `corpus.CorpusFormatError`
+for any other. The error names the package to upgrade: `seanchai` for a newer
+corpus, `seanchai-corpus` for an older one. `corpus.toml` also holds the
+[resolution rules](#resolution-across-releases). A directory without it, a
+subdirectory or a list of files loads with no format check and no rules.
 
-The two are released apart, so the corpus states its **format**: `format` in
-its `corpus.toml`, beside the `.dad` files, the generation of the `.dad` grammar
-and of the directory's layout and records it is written in. `corpus.FORMATS`
-lists the ones the library reads. `installed()`, and `load` of a directory
-holding the file, read it before any `.dad` file and refuse another with
-`corpus.CorpusFormatError`, naming both numbers and the package to upgrade:
-`seanchai` for a newer corpus, `seanchai-corpus` for an older one. The same
-file holds the corpus's resolution rules
-([below](#resolution-across-releases)). A directory without it, a subdirectory
-or a file list has no format to hold it to and no rules: it loads as it parses.
-
-Everything the library refuses derives from `seanchai.SeanchaiError`.
+Every error the library raises derives from `seanchai.SeanchaiError`.
 
 ## What the version covers
 
-`seanchai` follows semantic versioning over what it publishes:
+`seanchai` follows semantic versioning over:
 
 - the names in the `__all__` of `seanchai`, `seanchai.model`,
   `seanchai.corpus`, `seanchai.dictionary`, `seanchai.export`,
@@ -262,29 +253,26 @@ Everything the library refuses derives from `seanchai.SeanchaiError`.
   `seanchai.errors`, the `seanchai.downloader` package and the modules of
   `seanchai.extractor`;
 - the command line's commands, options and exit statuses;
-- the format version of each JSON output, the dictionary's `format_version` and
-  the export's `schema_version`, which change when a reader would have to;
-- the corpus formats it reads, `corpus.FORMATS`
-  ([above](#installing-the-corpus)).
+- the format version of each JSON output: the dictionary's `format_version`
+  and the export's `schema_version`;
+- the corpus formats it reads, `corpus.FORMATS`.
 
-A module whose name starts with an underscore is implementation, and so is a
-name outside every `__all__` and the Python of `seanchai.cli`: any of them may
-change in any release.
+Modules whose names start with an underscore, names outside every `__all__`,
+and the Python of `seanchai.cli` may change in any release. `seanchai-corpus`
+is versioned by the date it was regenerated.
 
 ## The model
 
-The AST mirrors a file one-to-one and may contradict itself. `model.Model`
-is the opposite contract: built once from a `corpus.Corpus`, it hands a
-consumer a `Message` whose members point at real `Avp` objects, a
-`Grouped` that enumerates its members, an `Enumerated` with its values, and
-every AVP knowing its `(vendor-id, code)`, type, flag rules and defining
-document.
+`model.Model` resolves a corpus. A `Message`'s members point at `Avp` objects,
+a `Grouped` lists its members, an `Enumerated` its values, and every AVP has
+its `(vendor-id, code)`, type, flag rules and defining document. Unlike the
+AST, the model never contradicts itself.
 
 ```python
 from seanchai.model import Model, RegistryKind, ValueKind
 
-# Held to the corpus's holes.toml; wireshark="specifications/wireshark" adds
-# Avp.wireshark_name. `Model.build(corpus)` is the same over any corpus.
+# wireshark="specifications/wireshark" adds Avp.wireshark_name.
+# `Model.build(corpus)` is the same over any corpus.
 model = Model.installed()
 model.references()  # every document, a tuple as every query returns
 model.canonical("ts 29.229")  # how it spells a reference: TS29.229
@@ -309,287 +297,70 @@ model.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list i
 model.definition("ULR-Flags").value_table  # the bits, read through resolution
 ```
 
-`Model.build` and `Model.installed` are the only ways to a model: each checks
-the build against the corpus's record and the consumer's answers, and
-`Model(...)` raises `TypeError`.
+- `Model.build` and `Model.installed` are the only constructors; `Model(...)`
+  raises `TypeError`. Both check the build against the corpus's
+  [record of holes](#known-holes).
+- A reference may be spelled "TS 29.229", "ts29.229" or "3GPP TS 29.229". One
+  the corpus lacks raises `ModelError`, suggesting close ones.
+- `applications` groups a document's commands by application id and clause,
+  because documents share one id between interfaces (TS 29.273's SWa, STa and
+  SWd).
+- `Message.application_id` is the id on the wire: the header's, or, where the
+  header prints none, the one the `Application Scope` block covering the
+  command's clause states. `header_application_id` is what the header prints.
+  `is_request` reads the R bit.
+- A `Member` carries the ABNF `rule` as spelled, and `min_occurs` and
+  `max_occurs` as RFC 6733 section 3.2 reads them.
+- `Enumerated.values` also holds `ast.ReservedValues` and `ast.VoidValues`,
+  which a validator must refuse: a void value was assigned and withdrawn, a
+  reserved one never assigned. `vendor_specific` holds the ranges a validator
+  must allow without names. Where the clause defines its values elsewhere,
+  `values_source` holds the citation and `values` only what a correction
+  supplied.
+- Built with `wireshark=`, a Wireshark Diameter dictionary directory, the
+  model fills `Avp.wireshark_name` and `Hole.wireshark_name`
+  ([oracle.md](oracle.md#in-the-model)). `name` is always the document's
+  spelling.
+- Every model type has a one-line `repr` and a `to_dict()` for `json.dumps`.
 
-The query set is small on purpose. A reference may be spelled "TS 29.229",
-"ts29.229" or "3GPP TS 29.229"; one the corpus lacks raises `ModelError`
-suggesting close ones. `applications` groups a document's commands
-by application id and the clause they sit under, since documents share one id
-between interfaces (TS 29.273's SWa, STa and SWd). `Message.application_id` is
-the id on the wire: the header's, or, for commands whose headers print none, the
-one an `Application Scope` block covering their clause states.
-`header_application_id` keeps what the header prints, and `is_request` reads its
-R bit. A `Member` carries the ABNF rule as spelled,
-markers included, and `min_occurs`/`max_occurs` as RFC 6733 section 3.2 reads
-them. An `Enumerated` whose clause defines its values elsewhere carries the
-citation in `values_source` and whatever values a correction supplied;
-`vendor_specific` picks out the ranges a validator must allow under names the
-document does not give, and `values` holds `ast.ReservedValues` and
-`ast.VoidValues` beside them, which it must refuse: a void value is one the
-document assigned and withdrew, a reserved one was never assigned. Every model
-type has a one-line `repr` and a `to_dict()` for `json.dumps`, with its flags
-sorted.
+The AST stays public underneath. `parser.parse(text)` reads one file and drops
+`;;` comments; `parser.parse_with_comments(text)` returns them too, for
+`formatter.format_spec(spec, comments)` to write back.
 
-The AST stays public underneath: `parser.parse(text)` reads one file,
-discarding `;;` comments, and `parser.parse_with_comments(text)` returns the
-comments too, for `formatter.format_spec(spec, comments)` to write back.
+### Holes
 
-**Resolution.** A name resolves, in order, to the document's own
-definition, then to the origin its re-used table cites (recursively, so an
-indirect citation lands on the real definition), then to an AVP-table row,
-then to a `; Bases:` document. Local over re-used makes an extension mean
-what the extending document says, while a plain re-print resolves through
-the origin. A name tabulated in several of one file's AVP tables takes its
-table facts from the first row in file order; `table_rows` returns every
-copy. The model never reports the conflicts this order papers over; run
-the linter for those. Origins resolve by the rules in
-[linter.md](linter.md#resolving-an-origin) and
-[below](#resolution-across-releases).
+An `Avp` has every field set: code, type and flag rules are never `None`. A
+name the corpus cannot complete is a `model.Hole` instead. Where one appears
+in a body, `Member.avp` is `None` and `Member.hole` is the hole. The
+`* [ AVP ]` wildcard, and a placeholder under the `PLACEHOLDER` policy, are
+the only members with neither.
 
-**The citing table's flag rules.** Flag rules are the application's: RFC
-6733 section 4.1 has the M bit set "according to the rules defined in the
-application specification that introduces or reuses this AVP". So where a
-document re-uses an AVP and its own AVP tables state flag cells for it,
-those cells outrank every other reading when the name resolves through
-that document. They count per flag: each flag is where the first of the
-document's rows placing it puts it. A re-used table's M-bit column ranks
-below the document's AVP-table cells and above the origin: `MUST` puts M in
-Must, `MUST-NOT` in Must not, and `-` says nothing. The origin still
-supplies the code, type and vendor, names the defining document, and
-supplies each flag no citing row places. An IETF reading stating no flags
-takes the M bit as application-defined and V as Must not (RFC 6733 sections
-4.1 and 4.1.1). `Avp.flag_rules` and `Hole.flag_rules` are always a
-`model.FlagRules`: an `ast.AvpFlagRules` with a fifth column,
-`application_defined`, holding M there rather than guessing Must or May and
-empty everywhere else. A table row's rules stay the AST's and compare equal only
-through `model.FlagRules.printed(row.flag_rules)`. A vendor reading stating
-none stays a hole. Resolution
-through the origin is unchanged, so `readings` returns both readings of
-such an identity. Examples: TS 29.229 table 6.3.0.1 puts M in Must for four
-`Digest-*` AVPs RFC 4590 states no rule for; TS 29.272 table 7.3.1/2 marks
-21 of TS 29.336's AVPs `MUST-NOT`.
+A `Hole` has:
 
-A grouped AVP defined elsewhere keeps the defining document's body, but
-each member the citing document defines, tabulates or re-uses is read
-through it, with the precedence above, where that reading is the same
-`(vendor-id, code)`; a member it says nothing of keeps the origin's
-reading. The body names its members in the defining document's sense: TS
-32.299's own `Originator` is (10415, 864), but its re-used
-`M2M-Information`, oneM2M TS-0004's, holds oneM2M's `Originator`, (45687,
-1008). A grouped member read through the citing document has its own
-members read the same way. The linter's `reused-row-mismatch` reports each
-disagreement, saying which side the model follows.
+- `reference`, the document that falls short;
+- `missing`, the `model.Missing` fields it leaves unstated (`VENDOR_ID`,
+  `CODE`, `DATA_TYPE`, `FLAG_RULES`), or `DEFINITION` when the name resolves
+  nowhere, or `UNDEFINED` when an `Undefined AVP` block declares it so;
+  serialized as `code`, `definition` and so on;
+- `origin`, the re-used origin the corpus lacks, or `conflict`, the
+  disagreeing reading, where either applies;
+- the vendor, code, type and flag rules its document does state;
+- `recorded`, the reason from the record of known holes.
 
-**Filling through.** A field the first reading leaves unstated comes from
-the next reading along the order, if the two are the same AVP saying the
-same thing: every field both state must be equal. The citing table's own
-flag cells and its re-used row's M-bit take no part in this: they are laid
-over the result afterwards, so they neither fill another reading nor
-disagree with one. A table row's vendor is
-its Vendor-ID cell where the table prints one, else its V flag: V under
-Must not is IETF space, V under Must the file's `; Vendor-ID:`, and a row
-stating neither agrees with any. A reading that disagrees fills nothing,
-nor does any after it: the name stays a hole naming the disagreeing
-document, rather than become one AVP assembled from two documents that
-disagree about it. `Avp.completed_by` names the document stating each field
-`defined_in`'s reading leaves unstated: through TS 29.329, `Wildcarded-IMPU` is
-TS 29.229's, whose clause states no code, vendor or flags, and those are TS
-29.329 table 6.3.1's.
-
-**Error answers.** With the E bit set an answer takes RFC 6733 section 7.2's
-`<answer-message>` in place of its command's body. `answer_message(reference)`
-returns the one `reference`'s answers take, as a `model.AnswerMessage`: the
-document's own, or failing one the first its `; Bases:` documents print, depth
-first. TS 29.229 prints its own in clause 7.3.1, with `[
-Supported-Applications ]`; TS 29.272 prints none and takes RFC 6733's. Either
-way the body is read through `reference`, as its commands' bodies are, and
-`read_through` says so.
-
-**Marks.** `marks` returns, per row of a table printing mark columns, the
-table's label and clause and the row's marks per column: a tuple of marks,
-`()` where the cell prints a dash, None where it is blank. What they mean
-is the document's legend, per label:
-
-- `Acc-Type` (TS 29.212, 29.215): the IP-CAN access types the AVP applies
-  to, `All` or a list.
-- `Applicability`: the supported features the AVP belongs to, and in TS
-  29.212 and 29.215 the function too (`CC`, `PC`, `Both`, `ADC`, `ABC`).
-  Blank is the base functionality.
-- `Reference-Points` (TS 29.061 table 9a): `Gi`, `Sgi`.
-- `ACR`, `ACA`, `CCR`, `CCA` (TS 32.299): whether the AVP is used in that
-  command; `()` for the dash clause 7.1.0 reads as "not used".
-
-None of these names an interface. A document tabulating several interfaces
-gives each its own tables, so a row's interface is its table's clause.
-
-**Value tables.** `value_tables` returns what a document names a numeric AVP's
-numbers, as `model.ValueTable`s: `kind` (`ValueKind.RESULT_CODES`, `BITS` or
-`FEATURES`), the `avp`, the document, its clause and page, the table's label,
-and `rows`, each an `ast.ValueRow` with a `name`, a `value` and, for a result
-code in a subclause its `section` and for one the document says another defines
-that document's `origin`, for a feature its M/O `mark`. A plain
-`Result-Code` table's `vendor_id` is 0 and any other's the file's `;
-Vendor-ID:`, the space an experimental code lives in. A plain AVP reads them
-through resolution: `Avp.value_tables` holds the tables the reading document
-prints for the name, or failing any its origin's, and `Avp.value_table` the
-first. `definition("ULR-Flags")` exposes its bits, `definition("Result-Code")`
-RFC 6733's codes, and `resolve("TS29.229", "Experimental-Result-Code")` TS
-29.229's, though RFC 6733's AVP is the one it reads. A document's table is no
-part of the AVP's identity, and makes no second reading of it. `feature_lists`
-keys the feature tables naming an application by `(application,
-feature_list_id)`, spelled as the caption does, and of two documents printing
-one list the first in reference order answers.
-
-**The registry.** `registry(kind, code)` returns what the corpus's
-registries say of a code, as `model.Allocation`s naming the registry
-document, table and clause. It is evidence beside the model, not a reading
-of it: no `Avp`, `Message` or `Application` takes anything from it, and
-the linter's `registry-*` rules report where documents and registry differ.
-
-### Resolution across releases
-
-The corpus holds one copy of each document per release tree, and a citation
-means the copy the drafting rules on references say it means. A *specific*
-reference, whose entry in the citing document's references clause names a
-version or a release, means that version (3GPP TR 21.801 clause 6.6.6.5.2;
-ETSI SR 001 262 clause 12). A reference naming a release means its last
-version. A *non-specific* reference means the latest version in the citing
-document's release (TR 21.801 clause 6.6.6.5.3, and every 3GPP document's
-clause 2), which is the match-major-take-newest rule; for a document
-outside 3GPP, the latest version there is. ETSI's clause 2.1 says the same of
-the documents it cites ("the latest edition of the referenced document"), and
-a `latest_edition` entry reads that citation by citation. Neither rule says
-what a non-specific 3GPP reference means when the cited document ended before
-the citing document's release; the corpus reads it as the document's final
-version.
-
-So `corpus.Corpus.resolution` takes, in order: a specific reference's named
-version and no other; the newest copy in the citing document's major
-version; and failing one, a later release's copy standing in by an
-evidenced entry, or the cited document's final version when it ended in an
-earlier release. The `.dad` grammar names no versions, so the facts this
-needs are the corpus's own: its `corpus.toml`, hand-maintained beside its
-`.dad` files, which `corpus.Corpus.load` reads into `Corpus.rules`, a
-`corpus.Rules`, for the directory holding it directly, raw mirror included,
-since a raw file's From cells need it most. A corpus release can so move a
-document's version, and the rules naming it, with no library release. Each
-entry is a table of the file and states its `evidence`, the clause or the
-comparison it rests on.
-
-An entry read from a citing document's references clause, every table below
-but `cited_as` and `final_version`, is keyed by the citing copy: citing
-document, `citing_version` and cited document. It answers for that copy
-alone, since a references clause changes between versions and the corpus holds
-several copies of some documents, and two copies citing alike state an entry
-each: TS 29.212 V11.19.0 and V19.1.0 both cite X.S0057-B in clause 2 [24]. A
-citing document without a version, an RFC, is keyed by `citing_version = ""`.
-
-- `cited_as`: a document its citers number otherwise than its publisher, by the
-  reference a From cell carries: 3GPP cites "ETSI TS 283 034", which ETSI
-  publishes as ES 283 034.
-- `cited_version`: the version a specific reference names, read from the
-  citing copy's references clause (TS 183 017 V3.2.1's "3GPP TS 29.209
-  Release 6", oneM2M TS-0004 V2.35.0's "3GPP TS 32.299 (Release 11)").
-- `latest_edition`: a copy of a document outside 3GPP whose references clause
-  says a non-specific reference means the latest edition, citation by
-  citation.
-- `final_version`: documents that ended before the citing release (TS
-  29.140 V7.0.0, TS 29.209 V6.8.0).
-- `cited_revision` and `stand_in`: a 3GPP2 revision letter a citation
-  names, and the held revision answering for it with the evidence that the
-  cited one is out of reach (TS 29.212 cites X.S0057-B; 3GPP2 publishes
-  revision 0 alone, checked 2026-10-30).
-- `release_stand_in`: a later release's copy answering for a release version
-  the corpus lacks, with the evidence that both define alike everything the
-  citing copy re-uses. TS 32.299 V11.20.0's six Release 11 references, and
-  TS 29.210's and TS 29.234's of TS 29.229, are answered by Release 19
-  copies so, as is ETSI TS 183 033's of TS 29.229 V6.6.0, a version it names
-  that the catalog cannot pin, being no release's last. Where the releases
-  differ, the older version is pinned
-  instead: TS 29.212 V11.19.0 and TS 29.214 V11.16.0 for TS 32.299
-  V11.20.0, and TS 29.061 V6.15.0 for TS 29.210, whose table puts M in
-  Must on three AVPs Release 19 forbids it on.
-- `release_fill`: fields the version a citation means leaves unstated for
-  named AVPs, which a later release's copy states. The meant copy still
-  answers the citation and every other field and AVP; the later copy is
-  read right after it and gives the named fields alone, and its code has to
-  agree. TS 29.210's `3GPP-GPRS-Negotiated-QoS-Profile` and `3GPP-SGSN-MCC-MNC`
-  take their code, vendor and clause from TS 29.061 V6.15.0 clause 16.4.7, and
-  their type, UTF8String, from V19.1.0's table 9a, which V7.12.0's and
-  V11.12.0's print alike. Their flags come from no copy of TS 29.061: TS 29.210
-  clause 5.3 says a re-used VSA's M flag "shall be set" and its P flag "may be
-  set" in RFC 4005's translation, whose V flag is set, so they are M and V in
-  Must, P in May. Table 9a's own M in Must not is the disagreement that pins
-  V6.15.0, and stays out of the reading.
-
-`load` refuses with `corpus.CorpusError` an unknown table or field, an entry
-missing a field or stating one twice, and an entry naming a document or a copy
-the corpus does not hold, which would answer no citation: a citing copy
-included, so an entry left at a version an upgrade replaced fails the load. A
-corpus without the file resolves by no entry: the drafting rules alone, so a
-citation an entry would answer resolves to nothing. It has no format to hold
-it to either, but its record of holes, `holes.toml`, is found on its own
-([Known holes](#known-holes)). `corpus.Corpus(entries, rules=...,
-record=...)`, for a partial corpus a caller parsed, checks only that no two
-entries claim one copy: it reads no `corpus.toml`, so holds no format, and
-takes the rules and the record as given, without checking that they name
-documents it holds. A model built over it is still held to the record.
-
-Every version the version tables name is a catalog pin the downloader checks
-against the 3GPP archive on each download ([downloader.md](downloader.md)). An
-`Avp` or `Hole` that took a field from such a copy carries
-`across_releases`, a `corpus.CrossRelease` naming the citing and cited
-documents, the version and the rule; `across_releases()` lists them for a
-reader to audit, and the linter's `cross-release-origin` note says the same
-per file, naming the entry, `(corpus.toml, release_stand_in)`. For a
-`release_fill` entry `Avp.completed_by` also names the copy per field,
-`TS29.061 V19.1.0`, and the rule is `corpus.CitationRule.LATER_RELEASE`. An
-older copy
-answers only through a citation: reference-level
-queries (`avps`, `holes`, `references`) read the newest copy of each
-document. Corpus-wide lookups (`readings`, `definition`, `avps()`) also
-know an identity only an older copy holds, where a citation reaches it, so
-`show` answers for every identity `seanchai dictionary` writes: TS 32.299
-V11.20.0's `WLAN-Information`, through oneM2M TS-0004's `Service-Information`.
-
-**Holes.** An `Avp` has every field: code, type and flag rules are facts
-some document states, or RFC 6733's rule for an IETF AVP's unplaced bits,
-never `None`. A name the corpus cannot complete is a `model.Hole` instead,
-naming the document that falls short and, in `Hole.missing`, the
-`model.Missing` fields it leaves unstated (`CODE`, `DATA_TYPE`, `FLAG_RULES`),
-`DEFINITION` when the name resolves nowhere, or `UNDEFINED` when an `Undefined
-AVP` block declares it so, written `code`, `definition` and so on wherever it
-is serialized, plus
-the re-used origin the corpus lacks or the disagreeing reading, if either
-applies. `Member.avp` is `None` for a hole and `Member.hole` says which;
-the `* [ AVP ]` wildcard, and a placeholder under that policy, are the
-only `None`s without a hole. A hole keeps the
-vendor, code, type and flag rules its document states, but not a grouped
-AVP's members or an enumerated AVP's values; a consumer that wants those
-reads the AST through `table_rows` or `corpus.Entry.spec`.
-
-**Wireshark's names.** Built with `wireshark=`, a Wireshark Diameter
-dictionary directory, the model fills
-`Avp.wireshark_name` and `Hole.wireshark_name` with Wireshark's name for
-the identity. `name` is always the document's spelling
-([oracle.md](oracle.md#in-the-model)).
+A hole has no members or values. For those, read the AST through
+`table_rows` or `corpus.Entry.spec`.
 
 ### Known holes
 
-Seventeen names stand as holes, each a statement its source does not make.
-The committed record, the corpus's `holes.toml`, lists them by
-`Hole.document`, name, `Hole.missing` and a reason citing the version and
-clause and what was searched
-([corrections.md](corrections.md#the-record-of-known-holes)). The file sits
-beside the `.dad` files because a consumer loads the corpus, not the edit
-layers: `corpus.Corpus.load` reads it into `Corpus.record` for the directory
-holding it directly. A file list or a subdirectory has no record, and neither
-has a raw corpus.
+Seventeen names are holes, each a fact its source does not state. The
+corpus's `holes.toml` records each by document, name, missing fields and a
+reason citing the version, the clause and what was searched
+([corrections.md](corrections.md#the-record-of-known-holes)).
+`corpus.Corpus.load` reads it into `Corpus.record` for the directory holding
+it directly; a file list, a subdirectory and a raw corpus have no record.
 
-Which holes a build allows is `Model.build(corpus,
-holes=model.HolePolicy.…)`:
+`Model.build(corpus, holes=model.HolePolicy.…)` sets which holes a build
+allows:
 
 | `holes` | A hole the record lists | A hole it does not | An entry naming no hole |
 |---|---|---|---|
@@ -597,51 +368,44 @@ holes=model.HolePolicy.…)`:
 | `NONE` | `IncompleteCorpusError` | `IncompleteCorpusError` | not read |
 | `ANY` | builds; `Hole.recorded` its reason | builds | not read |
 
-A recorded hole stays a hole: `holes()` reports it, `resolve` returns None,
-and `Hole.recorded` holds the entry's reason. The default fails on a stale
-entry so that working a hole off forces the record to shrink. An entry
-going unused only because the build's `undefined` policy answered for its
-name is not stale. `NONE` is absolute, and `ANY` is for a consumer loading a
-partial or foreign corpus. `unrecorded_holes()` and
-`stale_record_entries()` return what the default would refuse; the linter's
-`unrecorded-hole` and `stale-hole-record` report the same.
+A recorded hole is still a hole: `holes()` lists it and `resolve` returns
+None. Use `ANY` for a partial or foreign corpus. `unrecorded_holes()` and
+`stale_record_entries()` return what the default would refuse.
 
 The seventeen, by cause:
 
-- **A field no source states**, under every policy. TS 29.061's
-  `3GPP-Session-Stop-Indicator` row states only a code. TS 29.234's
-  `Charging-Characteristics` is typed "Integer", no Diameter type. TS 29.229's
-  `Wildcarded-IMPU` states a type and a note that Sh uses it, with no code or
-  flag rule, though TS 29.329's reading of it is complete, from Sh's
-  table, and is the one Sh's commands hold. ETSI TS 183 020's
-  `Privacy-Indicator` states a code, a type and members and no flag rule, TS 183
-  066's table 7.4 printing its own only for its own interface, "rather than in
-  the context of the application where they are defined".
-- **An origin the corpus does not hold.** RFC 6736 table 3 re-uses
+- A field no source states, under every policy:
+  - TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code.
+  - TS 29.234's `Charging-Characteristics` is typed "Integer", which is no
+    Diameter type.
+  - TS 29.229's `Wildcarded-IMPU` states no code or flag rule. TS 29.329's
+    reading is complete, and Sh's commands hold that one.
+  - ETSI TS 183 020's `Privacy-Indicator` states no flag rule.
+- An origin the corpus does not hold: RFC 6736 table 3 re-uses
   `Egress-VLANID` from RFC 4675, a RADIUS document.
-- **The twelve names that resolve nowhere**, the corpus's `Undefined AVP`
-  blocks ([below](#undefined-names)), holes under the default policy and
-  the consumer's to answer for under another.
+- The twelve [undefined names](#undefined-names), holes under the default
+  policy.
 
 ### Undefined names
 
-Twelve names the corpus's documents use as members are defined nowhere: RFC
-4004's three SPIs, RFC 5866's `Authorization-Session-Volume`, TS 29.345's
-`ProSe-Query-Code` and `ProSe-Response-Code`, TS 29.154's
-`External-Group-Identifier`, TS 32.299's
-`Submission-Timestamp` and `Network-Element`, TS 29.234's `Error-Cause`, and TS
-29.061's and TS 29.561's `Delegated-IPv6-Prefix`, a RADIUS attribute of RFC
-4818, which the corpus does not hold. Each has an
-`Undefined AVP` block in its document's file, inserted by a correction
-citing what was searched, and `undefined(reference)` returns them as
-`model.Undefined`: the name, the document, the clause, what the document
-says of the name, and every clause whose body names it. A block is the last
-reading of its name, after the bases: a definition appearing upstream wins
-without it, and the linter's `undefined-avp-defined` reports the stale
-block.
+Twelve names the documents use as members are defined nowhere:
 
-What the model makes of such a name is the consumer's choice,
-`Model.build(corpus, undefined=model.UndefinedPolicy.…)`:
+- RFC 4004's three SPIs;
+- RFC 5866's `Authorization-Session-Volume`;
+- TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`;
+- TS 29.154's `External-Group-Identifier`;
+- TS 32.299's `Submission-Timestamp` and `Network-Element`;
+- TS 29.234's `Error-Cause`;
+- TS 29.061's and TS 29.561's `Delegated-IPv6-Prefix`, a RADIUS attribute of
+  RFC 4818, which the corpus does not hold.
+
+Each has an `Undefined AVP` block in its document's file, added by a
+correction. `undefined(reference)` returns them as `model.Undefined`: the
+name, document, clause, what the document says of the name, and every clause
+whose body names it.
+
+`Model.build(corpus, undefined=model.UndefinedPolicy.…)` chooses what the
+model makes of these names:
 
 | Policy | `resolve` | `hole` | Body member | `holes()` | `HolePolicy.NONE` |
 |---|---|---|---|---|---|
@@ -652,30 +416,22 @@ What the model makes of such a name is the consumer's choice,
 | `SUPPLY`, `Alias` | the named AVP, unchanged | None | `Member.avp`, `Member.alias` the `Alias` | no | builds |
 | `SUPPLY`, neither | as `HOLE` | | | | |
 
-Only a name a block declares is open to the choice. A name resolving
-nowhere without one is a corpus defect (the linter's
-`unresolved-reference`), and a field no reading states stays a hole under
-every policy. A non-default policy is an explicit answer, so the answered
-names are no holes, and `holes=NONE, undefined=PLACEHOLDER` builds
-wherever nothing but such names is a hole.
+The policy applies only to names a block declares. `undefined_policy`
+reports it; record it in generated output. `DROP` also removes required
+members, such as RFC 4004's SPIs; `dropped` keeps each member's `rule`. For
+a required member, use `SUPPLY`.
 
-`DROP` removes required members too: RFC 4004's SPIs and TS 29.154's
-`External-Group-Identifier` are required, so a command built so no longer
-carries what its ABNF requires. `dropped` keeps each member's `rule` for a
-consumer that checks; where a dropped member is required, `SUPPLY` is the
-better answer.
+`SUPPLY` takes `supply=`, a mapping from a name, or from a more specific
+`(reference, name)`, to one of:
 
-`SUPPLY` takes `supply=`, a mapping from a name, or `(reference, name)`,
-which wins over it, to a `model.Supplied` or a `model.Alias`. A `Supplied`
-states vendor, code, type, flag rules and `source`, mandatory provenance
-("ACME HSS 4.2 dictionary"), with members for a Grouped AVP and values for
-an Enumerated one. Its `Avp` names the block's document in `defined_in`,
-carries the source in `supplied`, and resolves its members in the block's
-document. An `Alias` reads the name as an AVP the corpus completes, with its
-`source` too: TS 29.154's `External-Group-Identifier` as TS 29.336's
-`External-Identifier`, which carries an external group identifier on S6t and is
-most likely what TS 29.154's editors meant, though the corpus does not assume
-it.
+- `model.Supplied`: vendor, code, type, flag rules, members for a Grouped AVP,
+  values for an Enumerated one, and a required `source`. Its `Avp` names the
+  block's document in `defined_in`, carries `source` in `supplied`, and
+  resolves its members in the block's document.
+- `model.Alias`: reads the name as an AVP the corpus completes, with a
+  `source`. TS 29.336's `External-Identifier` carries an external group
+  identifier on S6t and is most likely what TS 29.154 means by
+  `External-Group-Identifier`; the corpus does not assume it.
 
 ```python
 from seanchai.model import (
@@ -708,77 +464,186 @@ print(model.resolve("TS29.345", "ProSe-Query-Code").supplied)
 ```
 
 `model.supplied_from(*paths)` reads `Supplied`s from hand-authored `.dad`
-sidecars: each `Grouped AVP` or `Enumerated AVP` section with its table
-row, and each AVP-table row alone. A name two sidecars both supply is
-refused, and so is a row contradicting its definition's code, type or vendor,
-or its V flag contradicting its vendor; the error lists every such fact.
+sidecars: each `Grouped AVP` or `Enumerated AVP` section with its table row,
+and each AVP-table row alone. It refuses, listing every such fact, a name two
+sidecars supply, a row contradicting its definition's code, type or vendor,
+and a V flag contradicting the vendor.
 
-The build refuses, with `ModelError`: `SUPPLY` without `supply=` and
-`supply=` under another policy; a key naming no block, since it is a typo
-or upstream has since defined the name; an `Alias` to a name the corpus
-does not complete; a `Supplied` claiming the `(vendor-id, code)` of an AVP
-the corpus defines, or two names' `Supplied`s claiming one, since a
-dictionary with two names on one identity is worse than a hole; and a cycle
-of aliases. `undefined_policy` reports the build's policy, which a
-generator records in its output.
+The build raises `ModelError` for:
+
+- `SUPPLY` without `supply=`, or `supply=` under another policy;
+- a key naming no block (a typo, or upstream has since defined the name);
+- an `Alias` to a name the corpus does not complete, or a cycle of aliases;
+- a `Supplied` claiming the `(vendor-id, code)` of an AVP the corpus defines,
+  or two names' `Supplied`s claiming one identity.
+
+### How a name resolves
+
+In one document, a name resolves to the first of:
+
+1. the document's own definition;
+2. the origin its re-used table cites, followed recursively to the real
+   definition;
+3. an AVP-table row;
+4. a `; Bases:` document.
+
+Where several of one file's AVP tables list a name, the first row in file
+order wins; `table_rows` returns every row. The [linter](linter.md) reports
+the conflicts this order hides. Which copy of an origin answers is in
+[linter.md](linter.md#resolving-an-origin) and
+[below](#resolution-across-releases).
+
+Flag rules belong to the application that uses the AVP (RFC 6733 section
+4.1). When a document re-uses an AVP, flags in its own AVP tables win, each
+from the first row placing it. A re-used table's M-bit column comes next
+(`MUST`, `MUST-NOT`, or `-` for nothing). The origin supplies everything
+else. For example, TS 29.229 table 6.3.0.1 puts M in Must for four
+`Digest-*` AVPs for which RFC 4590 states no rule, and `readings` returns
+both readings.
+
+`Avp.flag_rules` and `Hole.flag_rules` are a `model.FlagRules`: the AST's
+four columns plus `application_defined`. An IETF reading stating no flags has
+M there (application-defined) and V in Must not (RFC 6733 sections 4.1 and
+4.1.1); a vendor reading stating none stays a hole. A table row keeps the
+AST's rules; compare it through `model.FlagRules.printed(row.flag_rules)`.
+
+A grouped AVP defined elsewhere keeps the defining document's body, in that
+document's sense: TS 32.299's own `Originator` is (10415, 864), but its
+re-used `M2M-Information`, from oneM2M TS-0004, holds oneM2M's `Originator`,
+(45687, 1008). A member the citing document also describes, with the same
+`(vendor-id, code)`, is read through the citing document.
+
+A field the first reading leaves unstated comes from the next reading in the
+order, if the two agree on every field both state. If they disagree, the name
+becomes a hole naming the disagreeing document. `Avp.completed_by` names the
+document that filled each field: through TS 29.329, `Wildcarded-IMPU` is TS
+29.229's, with code, vendor and flags from TS 29.329 table 6.3.1. A table
+row's vendor is its Vendor-ID cell, or else its V flag
+([linter.md](linter.md#vendor-spaces)).
+
+### Resolution across releases
+
+The corpus can hold several copies of a document, one per release tree.
+`corpus.Corpus.resolution` picks the copy a citation means, following 3GPP TR
+21.801 clauses 6.6.6.5.2–6.6.6.5.3 and ETSI SR 001 262 clause 12:
+
+1. A specific reference, one whose entry in the citing document's references
+   clause names a version or release, means that version (a release: its
+   last version).
+2. A non-specific reference means the newest copy in the citing document's
+   major version. Outside 3GPP, it means the latest version held.
+3. Failing that, a later release's copy can answer if `corpus.toml` has an
+   entry with evidence that it defines the cited AVPs alike. A document that
+   ended before the citing release resolves to its final version.
+
+The `.dad` files name no versions, so the corpus's `corpus.toml` states
+these facts. `Corpus.load` reads it into `Corpus.rules`, a `corpus.Rules`.
+Its tables:
+
+| Table | Says |
+|---|---|
+| `cited_as` | a document its citers number otherwise than its publisher ("ETSI TS 283 034" for ES 283 034) |
+| `cited_version` | the version a specific reference names |
+| `latest_edition` | a non-3GPP copy whose references mean the latest edition |
+| `final_version` | a document that ended before the citing release |
+| `cited_revision`, `stand_in` | a 3GPP2 revision a citation names, and the held revision answering for it |
+| `release_stand_in` | a later release's copy answering for a release version the corpus lacks |
+| `release_fill` | named fields of named AVPs that a later release states and the meant copy leaves unstated |
+
+Maintaining entries is covered in [development.md](development.md). `load`
+raises `corpus.CorpusError` for a malformed entry or one naming a copy the
+corpus does not hold. Without `corpus.toml`, only the drafting rules apply.
+`corpus.Corpus(entries, rules=..., record=...)` takes parsed entries, rules
+and record as given.
+
+What you get back:
+
+- An `Avp` or `Hole` that took a field from another release's copy carries
+  `across_releases`, a `corpus.CrossRelease` naming the citing and cited
+  documents, the version and the `corpus.CitationRule`.
+  `across_releases()` lists them all; the linter's `cross-release-origin`
+  note reports them per file.
+- For a `release_fill`, `Avp.completed_by` names the copy per field
+  (`TS29.061 V19.1.0`) and the rule is `CitationRule.LATER_RELEASE`.
+- Reference-level queries (`avps`, `holes`, `references`) read the newest
+  copy of each document. An older copy answers only through a citation.
+- Corpus-wide lookups (`readings`, `definition`, `avps()`) also find an
+  identity only an older copy holds, where a citation reaches it, such as TS
+  32.299 V11.20.0's `WLAN-Information`.
+
+### Error answers
+
+With the E bit set, an answer takes RFC 6733 section 7.2's
+`<answer-message>` in place of its command's body.
+`answer_message(reference)` returns the one `reference`'s answers take, as a
+`model.AnswerMessage`: the document's own, or else the first its `; Bases:`
+documents print, depth first. TS 29.229 prints its own in clause 7.3.1; TS
+29.272 prints none and takes RFC 6733's. The body is read through
+`reference`, and `read_through` says so.
+
+### Marks
+
+`marks` returns, for each row of a table with mark columns, the table's label
+and clause and the row's marks per column. Each cell is a tuple of marks,
+`()` for a dash, or None when blank. The document's legend gives their
+meaning:
+
+| Column | Documents | Means |
+|---|---|---|
+| `Acc-Type` | TS 29.212, 29.215 | the IP-CAN access types the AVP applies to, `All` or a list |
+| `Applicability` | several | the supported features the AVP belongs to (blank: base functionality); in TS 29.212 and 29.215 also the function (`CC`, `PC`, `Both`, `ADC`, `ABC`) |
+| `Reference-Points` | TS 29.061 table 9a | `Gi`, `Sgi` |
+| `ACR`, `ACA`, `CCR`, `CCA` | TS 32.299 | whether the command uses the AVP; `()` is "not used" |
+
+None of them names an interface. A row's interface is its table's clause.
+
+### Value tables
+
+`value_tables` returns the tables a document prints for a numeric AVP's
+values, as `model.ValueTable`s: `kind` (`ValueKind.RESULT_CODES`, `BITS` or
+`FEATURES`), `avp`, the document, clause, page, table label and `rows`. A row
+is an `ast.ValueRow` with `name` and `value`, plus a result code's `section`
+and `origin` where they apply and a feature's M/O `mark`. A plain
+`Result-Code` table has `vendor_id` 0; any other has the file's
+`; Vendor-ID:`.
+
+`Avp.value_tables` holds the tables the reading document prints for the
+name, or else its origin's; `Avp.value_table` is the first.
+`resolve("TS29.229", "Experimental-Result-Code").value_tables` gives TS
+29.229's codes, though the AVP is RFC 6733's. A value table is not part of
+the AVP's identity and does not make a second reading.
+
+`feature_lists()` keys feature tables by `(application, feature_list_id)`,
+spelled as the caption does. Where two documents print one list, the first
+in reference order answers.
+
+### The registry
+
+`registry(kind, code)` returns what the corpus's registries say of a code,
+as `model.Allocation`s naming the registry document, table and clause. No
+`Avp`, `Message` or `Application` takes anything from it. The linter's
+`registry-*` rules report where documents and registry differ.
 
 ## The export
 
-`seanchai export -o DIR` writes the resolved corpus as JSON for a consumer with
-no Python, the static site first. Run from an installed `seanchai[corpus]`, it
-needs no checkout and no downloads. `seanchai.export.export_corpus(corpus,
-output)` is the same from Python, and `seanchai.export_schema` holds the shape.
-The file layout and fields are in [website.md](website.md#data-boundary).
+`seanchai export -o DIR` writes the resolved corpus as JSON for the static
+site and other consumers without Python. It needs no checkout or downloads.
+From Python, call `seanchai.export.export_corpus(corpus, output)`;
+`seanchai.export_schema` holds the shape. The layout and fields are in
+[website.md](website.md#data-boundary).
 
 ## The integrations
 
-Each target gets a directory under `integrations/`; scripts carry PEP 723
-inline metadata naming their dependencies, so uv supplies everything:
+Each target has a directory under `integrations/`. Its scripts declare their
+dependencies as PEP 723 inline metadata, so `uv run` works from any
+directory:
 
 ```sh
 uv run integrations/python_diameter/validate.py TS29.229
 uv run integrations/python_diameter/generate.py TS29.229 -o out/
 ```
 
-The scripts name `seanchai` and `seanchai-corpus` from this repository, so
-they read the committed corpus unless `--corpus` names another. uv resolves
-those paths against the script, so a script runs from any directory.
-
-### python-diameter
-
-[python-diameter](https://github.com/mensonen/diameter) folds every use of
-a command into one class, so "is this class right?" has no single answer;
-`validate.py` checks one document's claims at a time. That document's
-commands must exist under the right codes, each direction's `avp_def` must
-cover the ABNF's members matched by `(vendor-id, code)`, `is_required`
-must agree with the brackets, and the document's own AVPs must be right in
-the library's global dictionary. An "extra AVP" may be another document's
-legitimate use of the same command class. A known hole is checked on what
-its document states, and one with no `(vendor-id, code)` is reported as
-unchecked.
-
-`--library PATH` checks a checkout instead of the package uv installs, from any
-directory. Several references, `--all` or `--claimed` report per document with a
-summary and a total. Over the whole corpus the report is mostly the library's
-design, and three options take that out: `--ignore-extras` keeps an extra only
-if no checked document mentions it in that command, `--enumerated-as-integer`
-accepts the `AvpInteger32` the library holds an Enumerated AVP in, and
-`--no-flags` compares no M bits. `--claimed` checks what the library's README
-claims and applies the first over exactly that set. `--grouped` also holds the
-grouped classes against the AVPs' bodies, at any depth. The library's names
-follow Wireshark's dictionary on purpose, so one that is Wireshark's for the
-identity is only counted, in a closing `hidden:` line, while a dictionary is at
-hand (`--wireshark`, by default `specifications/wireshark`); `--names` reports
-them too.
-
-`generate.py` is the other direction: one module per application and
-interface, whose command classes carry that document's own members and are
-written the way the library writes its own, so the library can carry them
-beside its merged classes. What its dictionary lacks, or types otherwise
-than the document, goes to an `additions.py` in the dictionary's shape.
-Holes stay in the tables with their reason, and `--undefined` (with
-`--supply` sidecars) passes the model's policy for undefined names. The
-ABNF decides a class's members, and the tables' marks are comments on
-them. The [README](../integrations/python_diameter/README.md) covers the
-layout, the additions, how the library would adopt the modules, and what
-its shape cannot carry.
+They read the committed corpus unless `--corpus` names another.
+`validate.py` checks [python-diameter](https://github.com/mensonen/diameter)
+against a document; `generate.py` writes modules for it. See its
+[README](../integrations/python_diameter/README.md).

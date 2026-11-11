@@ -1,5 +1,5 @@
-"""The entry points: the single-file rules and the corpus rules in the
-order they run, and the record of known holes against the corpus.
+"""Entry points: the single-file and corpus rules in run order, and the
+check of the hole record against the corpus.
 """
 
 from __future__ import annotations
@@ -55,7 +55,7 @@ from ._tables import (
 
 
 def lint(spec: ast.Specification) -> list[Finding]:
-    """Every single-file finding, errors before notes."""
+    """Return every single-file finding, errors before notes."""
     index = _index(spec)
     findings = [
         *_duplicate_definitions(index),
@@ -87,16 +87,13 @@ def lint_with_corpus(
     books: corpus.Corpus,
     acceptances: Sequence[corrections.Accept] = (),
 ) -> list[Finding]:
-    """Every finding for `spec`, single-file and cross-file together, with
-    the notes `acceptances` acknowledge reported as accepted (`accept`).
+    """Return every single-file and cross-file finding for `spec`, with the
+    notes `acceptances` acknowledge marked accepted (`accept`).
 
-    The single-file rules that a second document supersedes are dropped rather
-    than reported alongside their own answers: `local-and-reused` becomes
+    Where an origin resolves, `local-and-reused` gives way to
     `reused-reprint` or `reused-body-differs`, and `duplicate-identity` is
-    re-run with re-used rows resolved into their origins' vendor spaces. A row
-    whose origin is missing from the corpus keeps the single-file behaviour,
-    which is why the superseded findings are filtered by what actually
-    resolved.
+    re-run with re-used rows in their origins' vendor spaces. A row whose
+    origin is missing from the corpus keeps the single-file finding.
     """
     index = _index(spec)
     origins, crossings = _resolve_origins(spec, index, books)
@@ -132,12 +129,11 @@ def lint_with_corpus(
 
 
 def lint_record(books: corpus.Corpus) -> list[Finding]:
-    """What the corpus's record of known holes says against the corpus, read as
-    a default `model.Model.build` holds it to the record, policy aside: a hole
-    no entry lists as it is, and an entry naming no hole. One finding per
-    corpus, not per file. Silent for a corpus with no record, as the registry
-    rules are for one with no registry; the model refuses that corpus's holes
-    itself."""
+    """Check the corpus's hole record as a default `model.Model.build` does.
+
+    Reports each hole no entry lists as it is, and each entry naming no hole.
+    The findings are per corpus, not per file. A corpus with no record gives
+    no findings."""
     if books.record is None:
         return []
     built = model.Model.build(books, holes=model.HolePolicy.ANY)

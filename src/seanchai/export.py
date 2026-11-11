@@ -1,13 +1,12 @@
 """`seanchai export`: the resolved corpus as JSON for the static site.
 
-The site holds no Python, so this is its whole view of Seanchaí: every file's
-text in token spans, each name's resolution target, the holes, the linter's
-findings, each correction's reason, and a search index. The shape is
-`export_schema`'s; docs/website.md says what it is for.
+The export holds every file's text as token spans, each name's resolution
+target, the holes, the linter's findings, each correction's reason and a
+search index. `export_schema` defines the shape; see docs/website.md.
 
-The output is a pure function of the corpus, its corrections record, the catalog
-and the grammar: no timestamps, no absolute paths, and the same bytes under any hash
-seed. An export replaces its output directory whole.
+The output depends only on the corpus, its corrections record, the catalog
+and the grammar: no timestamps, no absolute paths, the same bytes under any
+hash seed. An export replaces its output directory whole.
 """
 
 from __future__ import annotations
@@ -111,9 +110,8 @@ def _avp_names(spec: ast.Specification) -> set[str]:
 
 
 def _citations(spec: ast.Specification) -> dict[str, Citation]:
-    """Every clause `spec` places something in, with its page. A clause only a
-    table row names takes its table's page, and never overrides the page of a
-    clause with a section of its own."""
+    """Return every clause `spec` places something in, with its page. A clause
+    only a table row names takes its table's page."""
     found: dict[str, Citation] = {}
     for section in spec.sections:
         source = section.source
@@ -139,9 +137,8 @@ def _citations(spec: ast.Specification) -> dict[str, Citation]:
 
 
 def _block_title(section: ast.Section) -> str:
-    """A block's `; Type:` and, for a definition, its `; Name:`, for a value
-    table its `; AVP:`, and for the re-used rows a clause's prose states, the
-    names they re-use."""
+    """A block's `; Type:` plus its `; Name:` (definition), `; AVP:` (value
+    table) or re-used names (re-used rows from prose)."""
     name = section.avp if isinstance(section, ast.ValueTable) else None
     if isinstance(section, ast.ReusedAvps) and section.table is None:
         name = ", ".join(row.name for row in section.rows)
@@ -152,10 +149,9 @@ def _block_title(section: ast.Section) -> str:
 def _sections(
     spec: ast.Specification, citations: dict[str, Citation]
 ) -> tuple[Section, ...]:
-    """`citations` in document order, each saying what the file places there. A
-    clause holding several blocks names each kind once: TS 29.272 clause 7.2.9
-    prints one message twice, and TS 29.230 clause 5.1 four registries. A clause
-    only table rows name has no block to name, so it takes its first row's."""
+    """Return `citations` in document order, each with what the file places
+    there. A clause with several blocks names each kind once; a clause only
+    table rows name takes its first row's."""
     blocks: dict[str, dict[str, None]] = {}
     for section in spec.sections:
         blocks.setdefault(section.source.section, {})[_block_title(section)] = None
@@ -209,8 +205,8 @@ class _Links:
     row_references: dict[tuple[str, str], Target]
 
     def spelled_as_raw(self, renames: tuple[_correction_record.Rename, ...]) -> _Links:
-        """These links for the raw file, whose names a correction later renames
-        link through it."""
+        """These links for the raw file, with renamed names linked through the
+        rename."""
         names = dict(self.names)
         row_references = dict(self.row_references)
         for rename in reversed(renames):
@@ -254,11 +250,10 @@ def _lines(
     links: _Links,
     changed: frozenset[int] = frozenset(),
 ) -> tuple[Line, ...]:
-    """`text`, which `spec` is the parse of, line by line in token spans.
+    """Return `text` (parsed as `spec`) line by line in token spans.
 
-    Each `; Type:` line starts the next section of `spec`, so every line knows
-    its section without reading the grammar again. `changed` is the raw lines
-    the corrected file changes, by index.
+    Each `; Type:` line starts the next section of `spec`. `changed` holds
+    the indexes of raw lines the corrected file changes.
     """
     lines = []
     block = -1
@@ -400,8 +395,8 @@ def _changed_lines(raw: str, corrected: str) -> frozenset[int]:
 
 
 def _corpus_root(entry: Entry) -> Path | None:
-    """The corpus directory a file sits in, the one holding the raw mirror or
-    the corrections record, however deep below it `entry` was loaded from."""
+    """Return the corpus directory above `entry`: the one holding the raw
+    mirror or the corrections record."""
     return next(
         (
             parent
@@ -423,8 +418,8 @@ def _raw_path(entry: Entry) -> Path | None:
 
 
 class _Declarations:
-    """What an export knows of the corrections: the corpus's record, or with
-    a directory the modules there, which it executes."""
+    """The corrections an export reads: the corpus's record, or the modules
+    in a given directory, which it executes."""
 
     def __init__(self, directory: Path | None) -> None:
         self._directory = directory
@@ -436,13 +431,11 @@ class _Declarations:
         return path if path is not None and path.is_file() else None
 
     def answers(self, entry: Entry) -> bool:
-        """Whether anything says what `entry`'s citations mean. A corpus with
-        no record, and no directory given, says nothing."""
+        """Whether a record or a directory explains `entry`'s citations."""
         return self._directory is not None or self._record_path(entry) is not None
 
     def of(self, entry: Entry) -> _correction_record.RecordedDocument | None:
-        """`entry`'s record, None when its module declares nothing or nothing
-        says what it declares."""
+        """Return `entry`'s record, or None if there is none."""
         spec = entry.spec
         if self._directory is not None:
             declared = corrections.in_release(
@@ -471,8 +464,8 @@ class _Declarations:
 def _check_citations(
     entry: Entry, lines: tuple[Line, ...], known: dict[str, Any]
 ) -> None:
-    """Refuse a note citing what the record does not hold: the page would show a
-    correction with no reason, and the record is stale."""
+    """Refuse a note citing a declaration the record lacks; the record is
+    stale."""
     unknown = sorted(
         {
             token.correction
@@ -794,8 +787,8 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
 
 
 def _clause_names(entry: Entry) -> dict[str, Target]:
-    """The commands and applications named in one clause only, which a mention
-    outside it can link to. A name with several means nothing there."""
+    """Return the command and application names defined in one clause only,
+    which a mention elsewhere can link to."""
     clauses: dict[str, set[str]] = {}
     for section in entry.spec.sections:
         if isinstance(section, ast.Message | ast.ApplicationScope):
@@ -811,10 +804,8 @@ def _clause_names(entry: Entry) -> dict[str, Target]:
 def _value_table_avps(
     corpus: _Lookups, entry: Entry, names: dict[str, Target | None]
 ) -> dict[str, Target | None]:
-    """Where a value table's `; AVP:` line links: the AVP as `entry` reads it, or
-    as its defining document does, since a table can number an AVP its document
-    takes for granted. TS 29.212 re-uses TS 29.229's `Supported-Features`, and
-    never names its member `Feature-List` but in its feature tables."""
+    """Return where a value table's `; AVP:` line links: the AVP as `entry`
+    reads it, or else as its defining document does."""
     found: dict[str, Target | None] = {}
     for section in entry.spec.sections:
         if not isinstance(section, ast.ValueTable) or names.get(section.avp):
@@ -927,8 +918,7 @@ def _write(path: Path, value: pydantic.BaseModel) -> None:
 
 
 def _write_grammar(output: Path) -> None:
-    """The editors' TextMate grammar, for the site to highlight with, so that the
-    two cannot disagree."""
+    """Copy the editors' TextMate grammar for the site's highlighting."""
     path = output / SYNTAX_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(_GRAMMAR, path)
@@ -953,14 +943,12 @@ def _corpus_version(books: Corpus) -> str | None:
 
 
 def _is_export_index(index: Any) -> bool:
-    """Whether a parsed `index.json` is an export's, of any version: it says
-    so in `generator`."""
+    """Whether a parsed `index.json` names this generator, of any version."""
     return isinstance(index, dict) and index.get("generator") == GENERATOR
 
 
 def _refuse_foreign(output: Path) -> None:
-    """Refuse to replace what is not a previous export: `output` has to be
-    absent, empty, or hold the `index.json` an export writes."""
+    """Refuse an `output` that is not absent, empty or a previous export."""
     if not output.exists():
         return
     if not output.is_dir():
@@ -980,14 +968,12 @@ def _refuse_foreign(output: Path) -> None:
 
 @contextlib.contextmanager
 def _replacing(output: Path) -> Generator[Path]:
-    """A directory to build the export in, which replaces `output` when the
-    block ends and is removed if it raises.
+    """Yield a directory to build the export in. It replaces `output` when
+    the block ends, and is removed if the block raises.
 
-    It sits beside `output`, on the same file system, so the swap is two
-    renames: a reader sees the old export or the new one, except in the moment
-    between them, and never a mix. A directory `mkdtemp` makes is private, so
-    the export is a directory inside it, with the mode a plain `mkdir` gives,
-    or the old export's.
+    It sits beside `output` so the swap is two renames and a reader never
+    sees a mix. It is created inside a private `mkdtemp` directory, with the
+    old export's mode or a plain `mkdir`'s.
     """
     output = output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1001,12 +987,11 @@ def _replacing(output: Path) -> Generator[Path]:
 
 
 def _publish(staged: Path, output: Path) -> None:
-    """Put `staged` where `output` is.
+    """Move `staged` to `output`.
 
-    The previous export waits in `<output>.previous-<pid>`, outside anything
-    removed automatically, until the new one is in place or it is back: however
-    the swap ends, one of the two is whole on disk. An error from a failed
-    restoration names where it is.
+    The previous export waits in `<output>.previous-<pid>` until the swap
+    completes or is undone, so one of the two is always whole on disk. A
+    failed restore reports where it is.
     """
     if not output.exists():
         staged.rename(output)
@@ -1042,15 +1027,15 @@ def export_corpus(
     specifications: Path | None = None,
     include_pdfs: bool = False,
 ) -> Index:
-    """Write `books` as the JSON a static site reads, replacing `output` whole.
+    """Write `books` as the site's JSON, replacing `output` whole.
 
-    `wireshark`, a Wireshark Diameter dictionary directory, fills in its names.
-    `corrections_directory` reads the corrections from modules there, which
-    executes them, instead of from the corpus's record. `specifications` is a
-    `seanchai corpus download`, from which RFC texts are copied, and with
-    `include_pdfs` the source PDFs, for a self-hosted site. Nothing of `output`
-    changes until the export has succeeded. A directory holding anything but a
-    previous export is refused, and so is an empty corpus.
+    `wireshark` is a Wireshark Diameter dictionary directory whose names the
+    export adds. `corrections_directory` reads corrections from the modules
+    there (executing them) instead of the corpus's record. `specifications`
+    is a `seanchai corpus download` to copy RFC texts from, and with
+    `include_pdfs` the source PDFs. `output` is untouched until the export
+    succeeds. An `output` holding anything but a previous export, and an
+    empty corpus, are refused.
     """
     if not len(books):
         raise CorpusError("nothing to export: the corpus holds no documents")

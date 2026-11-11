@@ -1,19 +1,14 @@
-"""Source declarations: everything declared about reading one source document.
+"""Source declarations: what is declared about reading one source document.
 
 One TOML file per specification, named by its reference ("TS29.272.toml"),
-holding three kinds of block. `[[patch]]` fixes a genuine typo in the source
-*text* before parsing — a 3GPP docx's "M. V" flag cell, "Monitoring Event
-Report" with spaces for hyphens — by patching the normalized
-paragraph/cell/title text, not the raw docx XML, which has arbitrary run
-splits and is hopeless as a patch target. `[[quirk]]` enables, by name, an
-extractor reading that is heuristic enough to misfire on a document it was
-not written for — harvesting AVP codes out of defining prose, indexing a
-document that prints no AVP table at all — and that therefore stays off
-unless the document declares it. Exact-match structural vocabulary (table
-header spellings, rule grammars) stays in extractor code, where unrecognized
-input fails loudly on its own; semantic corrections to data that parses fine
-stay in `edits/corrections/`. `[[exclude]]` leaves a whole clause of a 3GPP docx
-unread, which is the only way a file says less than its document.
+with three kinds of block:
+
+- `[[patch]]` fixes a typo in the normalized source text (paragraph, cell or
+  title text, never the raw docx XML) before parsing.
+- `[[quirk]]` turns on, by name, a heuristic reading that stays off unless the
+  document declares it. A quirk takes no parameters; its behaviour lives in
+  extractor code.
+- `[[exclude]]` leaves a whole clause of a 3GPP docx unread.
 
     [[patch]]
     find = "M. V"
@@ -35,20 +30,13 @@ unread, which is the only way a file says less than its document.
     reason = "the document leaves the application id to be allocated"
     first_version = "19.1.0"
 
-All block kinds carry the same declaration contract: a required `reason`
-(a declaration asserts something about the source document, and without the
-reason the next reader cannot check that claim), a version range scoping it
-to the releases it spans and advisory within them (`_versions.reviewed_release`),
-and must-fire accounting — a patch that applies more or fewer times than
-`count`, a declared quirk that never changed anything, or an exclusion that
-left nothing out fails the extraction rather than rotting silently when the
-source changes between versions. A quirk carries no parameters by design: it is
-a named boolean with a reason, and the behavior it names lives in extractor code
-— TOML that carried logic would make the extractor an interpreter and the
-declaration unreviewable.
-
-A `reason` is prose and may wrap in a multi-line string, read back as one line
-(`_prose.collapse`). Every other field is exact, `find` and `replace` above all.
+Every block needs a `reason` and may carry a version range, which selects a
+release's declarations and is advisory within it
+(`_versions.reviewed_release`). Every block must fire: a patch applied other
+than `count` times, a quirk that changed nothing, or an exclusion that left
+nothing out fails the extraction. A `reason` may wrap across lines and is read
+back as one line (`_prose.collapse`); every other field is exact. Semantic
+corrections belong in `edits/corrections/`. See docs/extractor.md.
 """
 
 from __future__ import annotations
@@ -103,11 +91,8 @@ class Patch:
     def __post_init__(self) -> None:
         """Reject declarations that cannot mean what a patch means.
 
-        An empty `find` is the dangerous one: `str.count("")` and
-        `str.replace("", x)` both work on the gaps between characters, so
-        `find = ""` rewrites "abc" into "XaXbXcX" and can still satisfy its
-        `count`. The accounting that is supposed to catch a rotten patch would
-        confirm it instead.
+        An empty `find` matches the gaps between characters, so it would rewrite
+        "abc" into "XaXbXcX" and could still satisfy its `count`.
         """
         if not self.find:
             raise PatchError("input patch has an empty `find`")
@@ -151,9 +136,9 @@ class Patch:
 class Exclusion:
     """A clause of the document no reading looks at, and whatever is under it.
 
-    It says more than a patch does: the file will not hold what the clause
-    states, so `reason` has to say why the document cannot be read there, and
-    the file says that it left the clause out (`Patcher.exclusion_notes`).
+    The file will not hold what the clause states, so `reason` says why the
+    document cannot be read there, and the file notes the omission
+    (`Patcher.exclusion_notes`).
     """
 
     section: str
@@ -230,8 +215,8 @@ class Patcher:
 
     def apply(self, text: str, section: str | None = None, record: bool = True) -> str:
         """Apply all patches to one text unit. `record=False` applies without
-        counting — for text views that duplicate an already-counted unit
-        (per-line views of a cell, merged-cell repeats)."""
+        counting, for views that repeat an already-counted unit (per-line views of a
+        cell, merged-cell repeats)."""
         for patch in self.patches:
             text = patch.apply(text, section, record)
         return text
@@ -239,14 +224,11 @@ class Patcher:
     def finish(self) -> None:
         """Fail if any patch did not apply exactly `count` times.
 
-        A patch that silently stops matching is a fix quietly dropped from the
-        output, which is precisely what this accounting exists to prevent — so
-        it aborts the extraction rather than adding to the warning list nobody
-        has to act on. `first_version`/`last_version` only sharpen the message:
-        they say where the patch is known to be needed, and never gate whether
-        it is applied. An exclusion that left nothing out fails the same way,
-        which also refuses one declared for a document whose reading does not
-        ask (`excludes`): only the docx extractor does.
+        This aborts the extraction instead of warning. `first_version` and
+        `last_version` only sharpen the message; they never gate whether a patch is
+        applied. An exclusion that left nothing out fails the same way, which also
+        refuses one declared for an extractor that does not read exclusions
+        (`excludes`): only the docx extractor does.
         """
         problems = []
         for patch in self.patches:
@@ -299,11 +281,9 @@ class Quirk:
 class Quirks:
     """One spec's declared quirks, with the Patcher's accounting contract.
 
-    Each extractor owns a vocabulary of quirk names (its `QUIRKS` mapping);
-    declaring a name outside it fails at load, so a typo cannot silently
-    leave a quirk off. A declared quirk that never fires fails `finish()`,
-    so a reading the source stopped needing is loud, exactly like a patch
-    whose `find` stopped matching.
+    A name outside the extractor's `QUIRKS` fails at load. A declared quirk
+    that never fires fails `finish()`, as a patch whose `find` stopped matching
+    does.
     """
 
     def __init__(self, quirks: list[Quirk], version: str | None):
@@ -348,9 +328,8 @@ def load(
 ) -> tuple[Patcher, Quirks]:
     """Load one specification's source declarations.
 
-    `known_quirks` is the calling extractor's vocabulary: name → one-line
-    description, used to reject an unknown declaration with the list of what
-    this extractor can be told.
+    `known_quirks` is the calling extractor's vocabulary (name to one-line
+    description); an unknown declaration is rejected with that list.
     """
     patcher = Patcher.load(path, version)
     if path is None or not path.is_file():
@@ -400,10 +379,8 @@ def load(
 
 
 def _ranged(entry: dict) -> dict:
-    """Translate the TOML bounds into the same type corrections declare, and
-    read `reason` as prose. Nothing else collapses: `find` and `replace` are
-    matched and written character for character, `section` and `name` compared
-    exactly."""
+    """Translate the TOML bounds into the type corrections declare, and read
+    `reason` as prose. Every other field stays exact."""
     fields = collapse_fields(entry, {"reason"})
     if "versions" in fields:
         raise ValueError("TOML ranges use first_version and last_version")

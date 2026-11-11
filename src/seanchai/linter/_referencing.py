@@ -1,6 +1,6 @@
-"""Single-file rules over what a file says about names and clauses: a
-name both defined and re-used or cited from the file itself, a member
-its tables mark unused, `Undefined AVP` blocks, and cited clauses.
+"""Single-file rules about names and clauses: names both defined and
+re-used, self-citations, members marked unused, `Undefined AVP` blocks and
+cited clauses.
 """
 
 from __future__ import annotations
@@ -31,14 +31,10 @@ def _self_cited_exists(index: _Index) -> list[Finding]:
 
 
 def _local_and_reused(index: _Index) -> list[Finding]:
-    """An AVP both defined here and listed as re-used from elsewhere.
+    """A note for an AVP both defined here and listed as re-used.
 
-    A note, not an error. TS 29.272 does this nine times, and it is not
-    necessarily a mistake: a specification may re-print another's AVP so a
-    reader need not fetch the other document, or *extend* it with fields of its
-    own. Which of those it is cannot be decided from this file — it needs the
-    origin's definition to compare against, so the comparison belongs to the
-    cross-document rules.
+    It may be a re-print or an extension; telling which needs the origin, so
+    the cross-file rules decide.
     """
     findings = []
     for definition in sorted(index.definitions, key=lambda d: d.name):
@@ -60,15 +56,9 @@ def _local_and_reused(index: _Index) -> list[Finding]:
 
 
 def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
-    """A command's ABNF member its tables mark unused in that command.
-
-    TS 32.299 tabulates per command whether an AVP is used in it, a column
-    each for ACR, ACA, CCR and CCA, and clause 7.1.0 reads the dash: "Those
-    Diameter AVPs that are not used are marked '-'". Table 7.1.0.1 marks
-    `Error-Message` and `Failed-AVP` so under ACA, whose clause 6.2.3 ABNF
-    lists both. A note: the ABNF is the wire format, and only the document's
-    editor knows which statement is meant. A blank cell marks nothing, and
-    the `* [ AVP ]` wildcard is grammar, not a member.
+    """A note for a command's ABNF member that its tables mark '-' (unused)
+    in that command's column (TS 32.299 clause 7.1.0). A blank cell marks
+    nothing; `* [ AVP ]` is skipped.
     """
     unused: dict[tuple[str, ast.MarkColumn], list[str]] = defaultdict(list)
     for section in spec.sections:
@@ -106,15 +96,12 @@ def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
 
 
 def _undefined_avps(index: _Index) -> list[Finding]:
-    """What each `Undefined AVP` block declares, checked against the file.
+    """Check each `Undefined AVP` block against the file.
 
-    `undefined-avp`, a note per block a body references: the name is a
-    corpus finding a consumer has to decide about (docs/consumers.md).
-    `undefined-avp-unused`, an error: a block whose name no body
-    references, or whose clause holds no body naming it. And
-    `undefined-avp-defined`, an error: a block for a name the file defines,
-    tabulates, lists as re-used or declares twice, a stale claim the model
-    would quietly read past."""
+    `undefined-avp` (note): a body references the name. `undefined-avp-unused`
+    (error): no body references it, or none in the block's clause.
+    `undefined-avp-defined` (error): the file defines, tabulates or re-uses
+    the name, or declares it twice."""
     referenced = _references(index)
     known = (
         {definition.name for definition in index.definitions}
@@ -198,27 +185,15 @@ _OWN_CLAUSE = re.compile(r"^(?:clause|section) (\S+)$", re.IGNORECASE)
 
 
 def _section_references(spec: ast.Specification, index: _Index) -> list[Finding]:
-    """A clause the file cites against the clauses the file holds.
+    """Notes for clauses the file cites but does not hold.
 
-    `section-mismatch`: a row citing a clause for an AVP a block here holds
-    elsewhere. TS 29.214 V19.3.0's table 5.3.0.1 cites 5.3.142 for
-    `PC-Session-Recovery-Status`, which clause 5.3.81 defines and no 5.3.142
-    exists. A definition, a re-print and a bit table are what hold an AVP, and
-    a row may cite any of them or a clause above one, as a table may. A result
-    code or feature table is not: TS 29.229 tabulates `Feature-List` at its
-    clause 6.3.31 and lists the features in clause 7.1.1, both as they should.
+    `section-mismatch`: a table row cites a clause for an AVP that a
+    definition, re-print or bit table here holds elsewhere (citing a parent
+    clause is fine). `section-unknown`: an `; Applies-To:` or `; Values:`
+    names a clause no block sits at or under.
 
-    `section-unknown`: an `; Applies-To:` or a `; Values:` naming a clause no
-    block sits at or under, each a sentence about a clause in particular.
-
-    A row whose AVP no block holds is not checked. A simple-typed AVP has no
-    block, so its clause is absent from any file: against the documents' own
-    headings, the 1249 of 2257 citations such a check reports held one wrong,
-    `PC-Session-Recovery-Status`, which the first rule finds anyway. A re-used
-    row, a registry row and `; From:` cite documents and no clause.
-
-    Notes: a file holds what its document prints, so a misprint stays, and a
-    clause may exist that the file has no block for.
+    A row whose AVP no block holds is not checked: simple-typed AVPs have no
+    block, so the check would mostly report noise.
     """
     known: set[str] = set()
     holding: dict[str, list[str]] = defaultdict(list)

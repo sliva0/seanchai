@@ -1,9 +1,9 @@
-"""The base every error this library raises on purpose derives from.
+"""The base of every error this library raises on purpose.
 
-Each module keeps its own error, and each error stays what it was (most are a
-`ValueError`), so `except seanchai.SeanchaiError` is one way to ask whether the
-library refused, and nothing else changes. This module imports nothing, so that
-`seanchai` itself can re-export the base without pulling in any machinery.
+Each module keeps its own error, and each stays what it was (most are a
+`ValueError`), so `except seanchai.SeanchaiError` catches any refusal and
+nothing else changes. This module imports nothing, so `seanchai` can re-export
+the base without pulling in any machinery.
 """
 
 __all__ = ["MissingExtraError", "SeanchaiError"]

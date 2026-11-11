@@ -1,9 +1,9 @@
-"""The Seanchaí corpus: `.dad` files, and where they are installed.
+"""The Seanchaí corpus: `.dad` files and where they are installed.
 
-The package holds data and depends on nothing, the library included. `CORPUS_DIR`
-is the directory `seanchai.corpus.Corpus.load` takes, the one holding the
-corrected trees, the `raw/` mirror, `corpus.toml` (the corpus's format and
-resolution rules), `holes.toml` and `corrections.json`.
+A data-only package with no dependencies. `CORPUS_DIR` is the directory to
+pass to `seanchai.corpus.Corpus.load`. It holds the corrected trees, the
+`raw/` mirror, `corpus.toml` (format and resolution rules), `holes.toml`
+and `corrections.json`.
 """
 
 from importlib.metadata import version

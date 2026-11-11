@@ -1,5 +1,6 @@
-"""Inclusive version ranges shared by all declaration layers: each scopes its
-declaration to the releases it spans, and is advisory within them."""
+"""Inclusive version ranges for patches, quirks and corrections. A range
+scopes its declaration to the releases it spans and is advisory within
+them."""
 
 from __future__ import annotations
 
@@ -20,8 +21,8 @@ def _parts(version: str) -> tuple[int, ...]:
 
 
 class RangeWarning(str):
-    """A warning about a stale range, told apart from the extractor's own
-    warnings so `regenerate --expand-ranges` can retire it once widened."""
+    """A stale-range warning, kept apart from the extractor's warnings so
+    `regenerate --expand-ranges` can drop it once the range is widened."""
 
 
 @dataclass(frozen=True)
@@ -44,8 +45,8 @@ class VersionRange:
 
     @classmethod
     def parse(cls, text: str | VersionRange) -> VersionRange:
-        """`"18.6.0"` for one version, `"18.0.0..18.2.0"` for a range, either
-        bound `*` for open — the spelling `__str__` produces."""
+        """Parse `"18.6.0"` or `"18.0.0..18.2.0"`, `*` for an open bound, as
+        `__str__` writes them."""
         if isinstance(text, VersionRange):
             return text
         first, dots, last = text.partition("..")
@@ -98,22 +99,15 @@ def _releases(versions: VersionRange) -> tuple[int | None, int | None]:
 def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | None:
     """The release whose declarations apply to `version`, or None for all.
 
-    A document's declarations are reviewed per release: a 3GPP release is
-    where a template, and with it every quirk and typo, may change, so a
-    declaration made for Release 18 says nothing about Release 7 (TS 29.214
-    V7.12.0 beside V18.4.0). Within a release a range is advisory, so the
-    next version of a release still gets every declaration and a warning
-    (docs/development.md#version-upgrades). The release is `version`'s own
-    when some range spans it, else the newest declared release below it,
-    which is a release upgrade: Release 19 is first read with Release 18's
-    declarations, as within a release. A version below every declared
-    release gets none. An open upper bound says nothing about the releases
-    past its lower one, so a declaration in force from V18.1.0 on (TS 29.229's
-    RTR patch) does not make V19.1.0 reviewed, and a wholly open range takes no
-    part in choosing: TS 29.061 declares some quirks without a range and the
-    rest for V18.1.0, and V19.1.0 gets both. None, meaning every declaration,
-    for a version-less document (an RFC) and for a file whose ranges are all
-    open.
+    Declarations are reviewed per 3GPP release, since a release may change
+    the template. Within a release a range is advisory: a new version gets
+    every declaration plus a warning (docs/development.md).
+
+    The release is `version`'s own if some range spans it, else the newest
+    declared release below it; below every declared release, nothing
+    applies. An open upper bound does not mark later releases as reviewed,
+    and a fully open range takes no part in the choice. Returns None for a
+    version-less document (an RFC) or when every range is open.
     """
     if version is None:
         return None
@@ -135,8 +129,8 @@ def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | N
 
 
 def applies(versions: VersionRange, release: int | None) -> bool:
-    """Whether a declaration ranged `versions` applies in `release`, which
-    `reviewed_release` chose; None applies everything."""
+    """Whether a declaration ranged `versions` applies in `release` (from
+    `reviewed_release`; None applies everything)."""
     if release is None:
         return True
     first, last = _releases(versions)

@@ -1,6 +1,5 @@
-"""One copy of a specification indexed the way resolution reads it
-(`_View`), with the helpers that read a copy's references, lateness and
-application scopes."""
+"""`_View`: one specification copy indexed for resolution, and helpers for
+its references, lateness and application scopes."""
 
 from __future__ import annotations
 
@@ -13,23 +12,21 @@ from ._types import Marks, ValueTable, _value_table
 
 
 def _folded(reference: str) -> str:
-    """A reference however it is spelled, for comparing: "3GPP TS 29.229",
-    "ts29229" and `TS29.229` fold alike."""
+    """A reference folded for comparison: "3GPP TS 29.229", "ts29229" and
+    `TS29.229` fold alike."""
     folded = re.sub(r"[\s.\-_]", "", reference).casefold()
     return re.sub(r"^3gpp(?=t[rs])", "", folded)
 
 
 def _generation(spec: ast.Specification) -> int:
-    """How late a document is, for telling a successor from what it succeeds:
-    its major version, its 3GPP release, or for an RFC, its number."""
+    """How late a document is: its major version, or an RFC's number."""
     if spec.version is not None:
         return int(spec.version.split(".")[0])
     return int(re.sub(r"\D", "", spec.specification) or 0)
 
 
 def _scope(view: _View, message: ast.Message) -> ast.ApplicationScope | None:
-    """The application scope covering `message`'s clause: the first, where
-    they overlap."""
+    """The first application scope covering `message`'s clause."""
     return next(
         (each for each in view.applications if each.covers(message.source.section)),
         None,

@@ -1,60 +1,54 @@
 # Editor support for `.dad` files
 
-Syntax highlighting for the format in [docs/grammar.md](../docs/grammar.md),
-plus zebra striping of table rows (every second row after a `; Columns:`
-directive gets a faint background).
+Syntax highlighting for the format in [docs/grammar.md](../docs/grammar.md).
+Table rows are zebra-striped: every second row after a `; Columns:` directive
+gets a faint background.
 
 Table cells are highlighted token by token (data types, `MUST`/`MUST-NOT`,
-spec-refs, flag cells, numbers, `-` empty cells) rather than by column:
-which vocabulary a cell uses depends on the `; Columns:` declaration,
-which regex-based highlighters cannot track. In practice the vocabularies
-barely collide.
+spec-refs, flag cells, numbers, `-` for an empty cell). A regex highlighter
+cannot track which column a cell is in, but the vocabularies rarely collide.
 
 The TextMate grammar's source is `src/seanchai/dad/syntax/dad.tmLanguage.json`,
-package data that `seanchai export` copies out for the site.
-`editors/vscode/syntaxes/dad.tmLanguage.json` is a byte-identical copy: edit the
-source, copy it over, and `tests/test_export.py` holds the two together.
+which `seanchai export` copies out for the site.
+`editors/vscode/syntaxes/dad.tmLanguage.json` is an identical copy. Edit the
+source and copy it over; `tests/test_export.py` checks that the two match.
 
 ## VS Code
 
-VS Code only loads grammars from installed extensions, so symlink the
-extension in once:
+VS Code loads grammars only from installed extensions, so link the extension
+in once:
 
 ```sh
 ln -s "$(pwd)/editors/vscode" ~/.vscode/extensions/seanchai.dad-syntax
 ```
 
-After that the repo copy is the live extension; reload the window to pick
-up grammar changes.
+Reload the window to pick up grammar changes.
 
 ## Neovim
 
 `editors/vim/` is a plugin: `ftdetect/` sets the filetype for `*.dad`, and
-`ftplugin/` and `syntax/` do the rest. Load it as a local plugin from a
-checkout, with lazy.nvim:
+`ftplugin/` and `syntax/` do the rest. Load it from a checkout with lazy.nvim:
 
 ```lua
 { dir = "/path/to/seanchai/editors/vim", name = "seanchai-dad", lazy = false }
 ```
 
-or add it to the runtimepath before startup finishes, so `ftdetect/` is
-read:
+or add it to the runtimepath before startup finishes, so `ftdetect/` is read:
 
 ```lua
 vim.opt.runtimepath:prepend("/path/to/seanchai/editors/vim")
 ```
 
-With `exrc` enabled (`vim.o.exrc = true`; off by default), `.nvim.lua` at the
-repo root does the same when Neovim starts from the repo root; you will be
-prompted once to trust the file.
+With `vim.o.exrc = true`, the repository's `.nvim.lua` does the same when
+Neovim starts from the repository root, after you trust the file once.
 
-Striping uses the `DadTableStripe` highlight group (defaults to
-`CursorLine`); override it with `vim.api.nvim_set_hl`.
+Striping uses the `DadTableStripe` highlight group, by default a background
+slightly off the normal one; override it with `vim.api.nvim_set_hl`.
 
 ## Vim
 
-Vim's own `exrc` is the legacy insecure kind, so add one line to your vimrc
-instead, or point your plugin manager at the directory:
+Vim's `exrc` is not safe to enable, so add this line to your vimrc, or point
+your plugin manager at the directory:
 
 ```vim
 set runtimepath+=/path/to/seanchai/editors/vim

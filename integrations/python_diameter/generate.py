@@ -9,15 +9,13 @@
 # ///
 """Generate python-diameter command modules, in the library's own shape.
 
-This is the *generate* consumer direction over the model, for
-[python-diameter](https://github.com/mensonen/diameter): where the library
-folds every use of a command into one class, this writes one module per
-application and interface, whose classes carry that document's own members.
-The classes are written the way the library writes `diameter.message.commands`
-— `DefinedMessage` subclasses with `AvpGenDef` tables over the library's
-`AVP_*` and `VENDOR_*` constants and grouped classes — so a maintainer can put
-them in a package of their own beside the merged classes, which stay as they
-are. README.md beside this script describes the layout and how to adopt it.
+[python-diameter](https://github.com/mensonen/diameter) folds every use of a
+command into one class. This script writes one module per application and
+interface instead, whose classes carry that document's own members. They have
+the shape of `diameter.message.commands` (`DefinedMessage` subclasses with
+`AvpGenDef` tables over the library's `AVP_*` and `VENDOR_*` constants, plus
+grouped classes), so they can live in a package beside the library's merged
+classes. README.md beside this script describes the layout.
 
     uv run integrations/python_diameter/generate.py TS29.229 -o out/
     uv run integrations/python_diameter/generate.py 29.272 RFC6733 -o out/
@@ -27,15 +25,13 @@ are. README.md beside this script describes the layout and how to adopt it.
     uv run integrations/python_diameter/generate.py --all -o out/ \
         --undefined supply --supply acme.dad
 
-What the library's dictionary lacks, or holds with a value type the document
-does not give, is not papered over: it goes to `additions.py`, in the shape of
-the library's `dictionary.py` and `grouped.py`, and the command modules import
-it from there. The script prints how many additions each specification needs.
-The output is a function of the corpus, the Wireshark dictionary, the
-installed library and the options alone, byte for byte, so a regenerated
-package diffs cleanly. `--undefined` is the model's policy for the names the
-corpus declares defined nowhere (`model.UndefinedPolicy`), and `__init__.py`
-records it.
+An AVP the library's dictionary lacks, or types differently from the
+document, goes to `additions.py` (shaped like the library's `dictionary.py`
+and `grouped.py`), which the command modules import. The script prints how
+many additions each specification needs. The output depends only on the
+corpus, the Wireshark dictionary, the installed library and the options.
+`--undefined` sets the model's policy for names the corpus declares defined
+nowhere (`model.UndefinedPolicy`); `__init__.py` records it.
 """
 
 from __future__ import annotations
@@ -143,10 +139,9 @@ type Identity = tuple[int, int]
 
 
 def attribute_name(avp_name: str) -> str:
-    """The instance attribute an AVP's value lives in, where the library
-    does not already spell one: `Session-Id` is `session_id`. A leading
-    `3GPP` reads `tgpp`, as the library writes `tgpp_imsi`, and any other
-    leading digit gets an `avp_` prefix."""
+    """The instance attribute for an AVP the library has no spelling for:
+    `Session-Id` is `session_id`. A leading `3GPP` becomes `tgpp` (as in the
+    library's `tgpp_imsi`); any other leading digit gets an `avp_` prefix."""
     name = re.sub(r"[^0-9a-z]+", "_", avp_name.lower()).strip("_")
     if name.startswith("3gpp"):
         name = "tgpp" + name.removeprefix("3gpp")
@@ -161,10 +156,9 @@ def constant_case(text: str) -> str:
 
 
 def class_name(name: str) -> str:
-    """`User-Authorization-Request` → `UserAuthorizationRequest`: one
-    capitalised word per hyphenated part, the way the library writes `OcOlr`
-    and `Mip6AgentInfo`. A leading `3GPP` reads `Tgpp`, as attributes read
-    `tgpp`, and any other leading digit gets an `Avp` prefix."""
+    """`User-Authorization-Request` → `UserAuthorizationRequest`, one
+    capitalised word per part, as the library writes `OcOlr`. A leading `3GPP`
+    becomes `Tgpp`; any other leading digit gets an `Avp` prefix."""
     spelled = "".join(part.capitalize() for part in re.split(r"[^0-9A-Za-z]+", name))
     if spelled.startswith("3gpp"):
         return "Tgpp" + spelled.removeprefix("3gpp")
@@ -491,11 +485,11 @@ def _body_signature(members: list[tuple[model.Member, Definition | None]]) -> tu
 class Definitions:
     """Every distinct reading, deduplicated on what goes on the wire.
 
-    Every reading of one identity references the same `AVP_*` constant; the
-    readings stay apart because a grouped AVP's members decide which grouped
-    class its rules name (TS 29.273's `SIP-Auth-Data-Item` body differs
-    from TS 29.229's), and a reading whose type the library's entry does not
-    carry is what `additions.py` corrects.
+    Every reading of one identity uses the same `AVP_*` constant. Readings
+    stay separate because a grouped AVP's members decide which grouped class
+    it names (TS 29.273's `SIP-Auth-Data-Item` body differs from TS 29.229's),
+    and because `additions.py` corrects a reading whose type the library's
+    entry lacks.
     """
 
     def __init__(self) -> None:
@@ -625,15 +619,13 @@ def member_note(
 ) -> str | None:
     """What the tables mark about `member` of `message`, for a comment.
 
-    The ABNF decides membership, being what goes on the wire; the marks are
-    comments. A command column (TS 32.299's ACR, ACA, CCR, CCA) is read from
-    any of the document's tables, which tabulate per command rather than
-    per clause: table 7.1.0.1 marks ACA's `Error-Message` "-", "not used"
-    by clause 7.1.0, though clause 6.2.3's ABNF lists it. Every other mark
-    column is read from the tables in the command's own interface clause:
-    TS 29.212's Gxx re-used table re-marks Gx's AVPs for Gxx. The first row
-    printing a column with a mark or a dash speaks for it; a blank cell
-    says nothing.
+    The ABNF decides membership; the marks are only comments. A command
+    column (TS 32.299's ACR, ACA, CCR, CCA) is read from any of the
+    document's tables: table 7.1.0.1 marks ACA's `Error-Message` "-", though
+    clause 6.2.3's ABNF lists it. Other mark columns are read from the tables
+    in the command's own interface clause (TS 29.212's Gxx table re-marks
+    Gx's AVPs). The first row with a mark or a dash in a column decides it;
+    a blank cell says nothing.
     """
     if member.avp is None and member.hole is None:
         return None  # the `* [ AVP ]` wildcard
@@ -954,16 +946,13 @@ class Resolver:
         return not self.gaps(definition)
 
     def gaps(self, definition: Definition) -> list[str]:
-        """What keeps the library's grouped class for the reading from
-        carrying all of it: no class at all, a member the class does not
-        hold, a member the class holds in a class that does not cover the
-        reading's own member, or a member it encodes with an M bit the
-        reading's flag rules forbid or require. Empty where the library's
-        class serves: identities, nesting and M bits all agree.
+        """Why the library's grouped class cannot carry the reading, or empty
+        where it can.
 
-        The M bit is the one flag an `AvpGenDef` decides; V follows the
-        vendor-id the identity already compares. A member whose flag rules
-        leave M open accepts either."""
+        A gap is a missing class, a missing member, a member held in a class
+        that does not cover the reading's member, or a member whose M bit the
+        reading's flag rules forbid or require. Only M is compared: V follows
+        the vendor-id, and a member whose rules leave M open accepts either."""
         known = self._gaps.get(id(definition))
         if known is not None:
             return known
@@ -1012,18 +1001,16 @@ class Resolver:
         return gaps
 
     def _name_grouped(self, taken: set[str]) -> None:
-        """Name a grouped class for every grouped reading the library's does
-        not cover: the AVP's name in the library's spelling, with the
-        reading's first document as a suffix where the library already binds
-        the name or an earlier reading took it (`SipAuthDataItem_TS29_273`),
-        so an addition never shadows a name the star imports bring in.
+        """Name a grouped class for every grouped reading the library does not
+        cover.
 
-        Readings of one identity with one body share a class: a citing
-        document's reading differs from the defining document's only in its
-        own flag rules (TS 29.272's `User-CSG-Information`, M in Must not
-        where TS 32.299's own sets it), and the M bit is the `AvpGenDef`'s
-        naming the class, not the class's. Its rules for the members are
-        the members' own readings, so a body of their own."""
+        The name is the AVP's in the library's spelling, suffixed with the
+        reading's first document where the library or an earlier reading has
+        it (`SipAuthDataItem_TS29_273`), so an addition never shadows a name
+        the star imports bring in. Readings of one identity with one body
+        share a class, since they differ only in their own flag rules (TS
+        29.272's `User-CSG-Information`) and the M bit belongs to the
+        `AvpGenDef` naming the class."""
         sharing: dict[str, list[Definition]] = {}
         for definition in self.definitions:
             if not definition.is_grouped or definition.identity is None:
@@ -1119,11 +1106,10 @@ def gen_defs(
     resolver: Resolver,
     notes: list[str | None] | None = None,
 ) -> list[Entry]:
-    """One `AvpGenDef` per member, in the document's order, as the library
-    writes them: attribute, constant, vendor, then `is_required` from the
-    brackets, `is_mandatory` from the flag rules where they fix the M bit,
-    and the grouped class. What `AvpGenDef` has no slot for is a trailing
-    comment: occurrence bounds the brackets and a list attribute do not
+    """One `AvpGenDef` per member, in the document's order: attribute,
+    constant, vendor, `is_required` from the brackets, `is_mandatory` where
+    the flag rules fix the M bit, and the grouped class. Anything else goes in
+    a trailing comment: occurrence bounds the brackets and a list attribute do not
     convey, a hole's reason, the tables' marks, Wireshark's spelling. A
     member with no identity (a hole, `* [ AVP ]`) is a comment in its
     place; the library keeps such AVPs in the additional AVPs.
@@ -1488,10 +1474,9 @@ def render_grouped(added: GroupedAddition, resolver: Resolver) -> list[str]:
 
 
 def _enum_constants(addition: Addition, taken: set[str]) -> list[str]:
-    """`E_` constants for a new enumerated AVP's values, as `constants.py`
-    spells them; the comment naming where a document defines them instead,
-    and one per range it leaves to vendors, whose values the library takes
-    as any other integer and a dictionary may name as it likes."""
+    """`E_` constants for a new enumerated AVP's values, spelled as in
+    `constants.py`. A comment stands in for values defined elsewhere, and one
+    for each range left to vendors."""
     lines = []
     for definition in addition.readings:
         sample = definition.sample

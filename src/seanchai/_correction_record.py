@@ -1,15 +1,13 @@
 """The corpus's record of its corrections, as data.
 
-A corrected `.dad` file cites `TS29.272.py#area-scope-code`, and what that
-citation means lives in `edits/corrections/`: executable Python, which no wheel
-ships and nothing should have to run to read a corpus. So `seanchai corpus regenerate`
-writes what a reader needs from those modules into the corpus, next to
-`holes.toml`: `corrections.json`, per document, each declaration's kind and
-reason, what an acceptance accepts, and the renames a raw file's spellings link
-through (docs/corrections.md#the-corrections-record).
+A corrected `.dad` file cites declarations such as
+`TS29.272.py#area-scope-code` in `edits/corrections/`, which is Python and
+not shipped. `seanchai corpus regenerate` writes `corrections.json` next to
+`holes.toml` so a reader need not run it: per document, each declaration's
+kind and reason, what each acceptance accepts, and the renames. See
+docs/corrections.md.
 
-The modules stay the source. A test holds the committed file to them, as the
-sources test holds the committed `.dad` files to the downloads.
+The modules stay the source; a test holds the committed file to them.
 """
 
 from __future__ import annotations
@@ -42,9 +40,8 @@ class RecordedEdit(_Model):
 
 
 class RecordedAcceptance(_Model):
-    """An acceptance: the linter finding it acknowledges, with the tree paths
-    its selector reached in the corrected file, so that matching it against a
-    finding needs no module."""
+    """An acceptance, with the tree paths its selector reached in the
+    corrected file, so matching it needs no module."""
 
     kind: Literal["accept"]
     reason: str
@@ -135,8 +132,7 @@ class RecordedDocument(_Model):
 @dataclass(frozen=True)
 class _Recorded(corrections.Selector):
     """The nodes an acceptance's selector reached when the record was written.
-    A path the tree no longer has matches nothing, so the acceptance reads as
-    stale, as a selector matching nothing does."""
+    A path no longer in the tree matches nothing, so the acceptance is stale."""
 
     paths: tuple[ast.TreePath, ...]
 
@@ -161,8 +157,7 @@ class CorrectionRecord(_Model):
     documents: dict[str, RecordedDocument]
 
     def render(self) -> str:
-        """The file's text: sorted, one field per line, so that a changed
-        reason is a one-line diff."""
+        """Return the file's text, sorted and one field per line."""
         return (
             json.dumps(
                 self.model_dump(mode="json"),
@@ -175,8 +170,8 @@ class CorrectionRecord(_Model):
 
 
 def build(books: Corpus, corrections_directory: Path) -> CorrectionRecord:
-    """The record of every file in `books`, from the modules in
-    `corrections_directory`, which loading executes."""
+    """Build the record for every file in `books` from the modules in
+    `corrections_directory`, executing them."""
     documents = {}
     for entry in books:
         declarations = corrections.in_release(

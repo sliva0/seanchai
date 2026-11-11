@@ -1,7 +1,5 @@
-"""`Model`, the resolved corpus: its constructors, which hold a build to
-the corpus's record of known holes and check the consumer's answers, and the
-queries a consumer asks of it. How a name resolves is `_Resolver`'s, its
-base."""
+"""`Model`: the resolved corpus, its constructors and its queries.
+Resolution itself lives in `_Resolver`, its base."""
 
 from __future__ import annotations
 
@@ -39,7 +37,7 @@ from ._view import _effective_id, _generation, _scope, _View
 
 def _reached_across(avp: Avp | Hole) -> Iterator[Avp | Hole]:
     """The members, at any depth, of a grouped AVP reached across releases
-    that took a field from a document resolved across releases in turn."""
+    that themselves took a field across releases."""
     pending = [avp]
     seen: set[int] = set()
     while pending:
@@ -62,11 +60,9 @@ def _by_citing_document(found: Avp | Hole) -> tuple[str, str]:
 
 
 class Model(_Resolver):
-    """The resolved corpus. Build it once with `Model.build`, or
-    `Model.installed` over the installed corpus: they are its only
-    constructors, since they hold the build to the corpus's record of known
-    holes and check the consumer's answers, and `Model(...)` raises
-    `TypeError`."""
+    """The resolved corpus. Build it with `Model.build` or
+    `Model.installed`, which run the hole and supply checks; `Model(...)`
+    raises `TypeError`."""
 
     def __init__(self) -> None:
         raise TypeError("build a Model with Model.build(corpus) or Model.installed()")
@@ -94,39 +90,28 @@ class Model(_Resolver):
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> Model:
-        """The model over `books`.
+        """Build the model over `books`.
 
-        `holes` says which holes the build allows (`HolePolicy`). By default,
-        `RECORDED`, it holds the corpus to its record of known holes
-        (`corpus.Corpus.record`, docs/consumers.md): a hole the record does
-        not list raises `IncompleteCorpusError` with all such, and an entry
-        naming no hole raises `StaleHoleRecordError`, unless the entry is an
-        undefined name `undefined` answered for. A corpus with no record has
-        no known holes. A recorded hole stays one: the name resolves to no
-        `Avp`, `holes` reports it and `Hole.recorded` says why it stands.
+        `holes` (`HolePolicy`) sets which holes are allowed. `RECORDED`, the
+        default, checks the corpus's record of known holes
+        (`corpus.Corpus.record`): an unlisted hole raises
+        `IncompleteCorpusError`, and an entry naming no hole raises
+        `StaleHoleRecordError` unless `undefined` answered for it. A corpus
+        with no record has no known holes. `NONE` refuses every hole; `ANY`
+        allows all.
 
-        `NONE` refuses every hole, recorded or not, so a consumer that needs
-        every AVP complete learns at build time rather than from a missing
-        member later; what it guarantees is that every member is an `Avp`,
-        the wildcard, or what `undefined` asked for. `ANY` holds the corpus
-        to nothing, for a partial or foreign one.
+        `wireshark` is a Wireshark Diameter dictionary directory; with it,
+        AVPs and holes with an identity get `wireshark_name`. An unreadable
+        one raises `ModelError`.
 
-        `wireshark` is a Wireshark Diameter dictionary directory (the
-        downloader's `specifications/wireshark`); with one, every AVP and hole
-        with an identity carries Wireshark's name for it in `wireshark_name`.
-        Without one that field is None and nothing else changes. One that
-        cannot be read raises `ModelError`.
+        `undefined` (`UndefinedPolicy`) says what to do with names `Undefined
+        AVP` blocks declare. `supply` holds `SUPPLY`'s answers, `Supplied` or
+        `Alias`, keyed by name or by `(reference, name)`, which wins. It is
+        required with `SUPPLY` and refused otherwise. `ModelError` is raised
+        for a key naming no block, a `Supplied` claiming an identity the
+        corpus or another `Supplied` holds, and a cycle of `Alias`es.
 
-        `undefined` is the consumer's answer for the names `Undefined AVP`
-        blocks declare (`UndefinedPolicy`), and `supply` what `SUPPLY`
-        reads, keyed by name or, winning over it, by `(reference, name)`:
-        a `Supplied` definition (`supplied_from` reads them from a `.dad`
-        sidecar) or an `Alias`. `supply` is required with `SUPPLY` and
-        refused otherwise; a key naming no block is refused as a stale
-        correction is, since either it is a typo or upstream has defined
-        the name; so is a `Supplied` claiming the identity of an AVP the
-        corpus defines, which an `Alias` says instead, or of another name's
-        `Supplied`, and a cycle of `Alias`es.
+        See docs/consumers.md.
         """
         allowed = HolePolicy(holes)
         policy = UndefinedPolicy(undefined)
@@ -164,8 +149,7 @@ class Model(_Resolver):
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
     ) -> Model:
-        """The model over the installed corpus (`corpus.Corpus.installed`), as
-        `build` builds one."""
+        """`build` over the installed corpus (`corpus.Corpus.installed`)."""
         return cls.build(
             corpus.Corpus.installed(),
             holes=holes,
@@ -176,14 +160,13 @@ class Model(_Resolver):
 
     @property
     def undefined_policy(self) -> UndefinedPolicy:
-        """What the model makes of the names `Undefined AVP` blocks
-        declare."""
+        """The policy for names `Undefined AVP` blocks declare."""
         return self._policy
 
     def _check_supply(self) -> None:
-        """Every key names a block, every `Supplied` is shaped for its
-        type and claims no identity the corpus defines, and every `Alias`
-        names an AVP the corpus completes."""
+        """Check that every key names a block, every `Supplied` fits its type
+        and claims no defined identity, and every `Alias` names a complete
+        AVP."""
         declared = {
             (view.entry.reference, name)
             for view in self._copies.values()
@@ -247,9 +230,8 @@ class Model(_Resolver):
     def messages(
         self, reference: str | None = None, *, version: str | None = None
     ) -> tuple[Message, ...]:
-        """Every command `reference` defines, or the whole corpus does, bodies
-        resolved; `version` reads an older copy of `reference` the corpus
-        holds."""
+        """Every command `reference` (or the corpus) defines, bodies resolved.
+        `version` selects an older held copy of `reference`."""
         return tuple(
             message
             for view in self._selected_views(reference, version)
@@ -287,12 +269,10 @@ class Model(_Resolver):
     def answer_message(
         self, reference: str, *, version: str | None = None
     ) -> AnswerMessage | None:
-        """The format the answers of `reference`'s commands take when the E bit
-        is set: the first `<answer-message>` the document prints, or failing
-        one, the first its `; Bases:` documents give, depth first in the order
-        they are listed. The body is read through `reference`, as its commands'
-        bodies are. None where no document along the way prints one; `version`
-        reads an older copy of `reference` the corpus holds."""
+        """The `<answer-message>` that `reference`'s answers with the E bit set
+        take: the document's first, else the first from its `; Bases:`
+        documents, depth first. The body is read through `reference`. None if
+        no document prints one. `version` selects an older held copy."""
         view = self._view(reference, version)
         found = self._answering(view, ())
         if found is None:
@@ -310,8 +290,8 @@ class Model(_Resolver):
     def _answering(
         self, view: _View, seen: tuple[Path, ...]
     ) -> tuple[_View, ast.AnswerMessage] | None:
-        """The document printing the `<answer-message>` `view` takes, and the
-        rule."""
+        """The `<answer-message>` `view` takes, and the document printing
+        it."""
         if view.answers:
             return view, view.answers[0]
         for base in view.entry.spec.bases:
@@ -323,8 +303,8 @@ class Model(_Resolver):
         return None
 
     def undefined(self, reference: str | None = None) -> tuple[Undefined, ...]:
-        """Every `Undefined AVP` block in `reference`, or in the corpus,
-        under any policy, in file order."""
+        """Every `Undefined AVP` block in `reference` (or the corpus), in file
+        order, under any policy."""
         references = self._chosen(reference)
         return tuple(
             self._undefined_of(view, block)
@@ -334,9 +314,9 @@ class Model(_Resolver):
         )
 
     def placeholders(self, reference: str | None = None) -> tuple[Placeholder, ...]:
-        """Every placeholder in `reference`'s reading, or in the whole
-        corpus's, as `holes` finds holes; none unless the model was built
-        with `UndefinedPolicy.PLACEHOLDER`. Sorted by document and name."""
+        """Every placeholder in `reference`'s reading (or the corpus's), found
+        as `holes` finds holes, sorted by document and name. Empty unless
+        built with `UndefinedPolicy.PLACEHOLDER`."""
         if self._policy is not UndefinedPolicy.PLACEHOLDER:
             return ()
         references = self._chosen(reference)
@@ -371,22 +351,13 @@ class Model(_Resolver):
         application_id: int | None = None,
         version: str | None = None,
     ) -> tuple[Application, ...]:
-        """`reference`'s commands, or the whole corpus's, grouped by
-        application id and the clause they sit under, in file order;
-        `application_id` keeps the groups of that id.
+        """`reference`'s (or the corpus's) commands grouped by application id
+        and clause, in file order. `application_id` keeps only that id's
+        groups; `version` selects an older held copy.
 
-        A command whose header prints no id takes the one an `Application
-        Scope` block covering its clause states (the first, where scopes
-        overlap): TS 29.212's clause 5.1 gives the Gx commands of `5.*`
-        16777238, and RFC 5778's two blocks split its clause 5 between 7 and
-        8. A header that prints an id keeps it; the linter reports one that
-        disagrees with its block.
-
-        One group can still define a command twice: TS 29.273 prints the
-        STa Session-Termination-Request in clauses 5.2.2.2.3 and 5.2.2.4.1,
-        once per procedure. Which copy a consumer keeps is its business.
-
-        `version` reads an older copy of `reference` the corpus holds.
+        A command whose header prints no id takes it from the first
+        `Application Scope` block covering its clause. A group may hold the
+        same command twice, as the document prints it.
         """
         return tuple(
             application
@@ -421,19 +392,15 @@ class Model(_Resolver):
 
     def avps(self, reference: str | None = None) -> tuple[Avp, ...]:
         """Every AVP `reference` defines, tabulates or re-uses, resolved, or
-        with no `reference` every distinct reading in the corpus, sorted by
-        defining document and name.
+        every distinct reading in the corpus; sorted by defining document and
+        name.
 
-        A re-printed or re-used AVP appears with the origin's `defined_in`, so
-        a consumer that wants only the document's own AVPs filters on that
-        field. A name with a hole is left out; `holes` lists it. With no
-        `reference`, an identity only an older copy holds counts too, where a
-        citation reaches it.
+        Re-used AVPs keep the origin's `defined_in`. Names with a hole are
+        left out (see `holes`). Without `reference`, AVPs only an older copy
+        holds are included where a citation reaches them.
 
-        This is what a document's tables say, not what its commands use: an
-        AVP a body names that no table lists, as most of RFC 6733's in TS
-        29.229's commands, is missing here. `Application.walk` and
-        `Message.walk` are what a dictionary generator wants.
+        This lists what the tables say, not what the commands use; for a
+        dictionary generator use `Application.walk` or `Message.walk`.
         """
         if reference is None:
             return tuple(
@@ -448,40 +415,34 @@ class Model(_Resolver):
     def resolve(
         self, reference: str, name: str, *, version: str | None = None
     ) -> Avp | None:
-        """`name` as `reference` means it, or None when the corpus cannot
-        complete it — `hole` says why — or the consumer chose to drop or
-        keep it untyped (`undefined` says what was declared)."""
+        """`name` as `reference` means it. None if it is a hole (see `hole`)
+        or an undefined name the policy drops or keeps untyped."""
         found = self._final(self._view(reference, version), name)
         return found if isinstance(found, Avp) else None
 
     def hole(
         self, reference: str, name: str, *, version: str | None = None
     ) -> Hole | None:
-        """What `reference`'s reading of `name` lacks, or None when it
-        resolves completely or is an undefined name the policy answers
-        for."""
+        """The hole in `reference`'s reading of `name`, or None if it resolves
+        or the policy answers for it."""
         found = self._final(self._view(reference, version), name)
         return found if isinstance(found, Hole) and self._open(found) else None
 
     def _open(self, hole: Hole) -> bool:
-        """Whether a hole stays one under the policy: every hole but an
-        undefined name the consumer drops or keeps as a placeholder."""
+        """Whether a hole stays one under the policy, i.e. is not an undefined
+        name the policy drops or keeps as a placeholder."""
         return hole.undefined is None or self._policy in (
             UndefinedPolicy.HOLE,
             UndefinedPolicy.SUPPLY,
         )
 
     def holes(self, reference: str | None = None) -> tuple[Hole, ...]:
-        """Every hole in `reference`'s reading, or in the whole corpus.
+        """Every hole in `reference`'s reading (or the corpus's), sorted by
+        document and name.
 
-        A reading's holes are the names its dictionary view and its command
-        and grouped bodies cannot complete, and those of the grouped AVPs it
-        reaches in an older copy through a citation across releases, which
-        carry that copy's `version`. A hole belongs to the document that
-        falls short, so a citing reading reports an origin's untyped rows
-        only where its own table does not type them (TS 29.229's did RFC
-        4590's `Digest-*` rows before RFC 4590's corrections typed them).
-        Sorted by document and name.
+        This covers names its tables and bodies cannot complete, plus holes
+        in older copies reached across releases, which carry that copy's
+        `version`. A hole belongs to the document that falls short.
         """
         references = self._chosen(reference)
         found: dict[Hole, None] = {}
@@ -498,16 +459,14 @@ class Model(_Resolver):
         return tuple(sorted(found, key=lambda hole: (hole.document, hole.name)))
 
     def unrecorded_holes(self) -> tuple[Hole, ...]:
-        """Every hole the corpus's record of known holes does not list as it
-        is: no entry names it, or the entry names other missing fields."""
+        """Every hole the record of known holes does not list with the same
+        missing fields."""
         return tuple(hole for hole in self.holes() if hole.recorded is None)
 
     def stale_record_entries(self) -> tuple[corpus.KnownHole, ...]:
-        """Every entry of the record naming no hole: its document is gone, the
-        name is defined upstream, or a stand-in resolved it. An entry that
-        lists a hole of the corpus's own, the reading with no consumer's
-        answer, and goes unused only because `undefined` answered for it is
-        not stale; one no such reading has is, under every policy."""
+        """Every record entry that names no hole in the corpus's own reading.
+        An entry unused only because `undefined` answered for it is not
+        stale."""
         present = {(hole.document, hole.name) for hole in self.holes()}
         unanswered = (
             self
@@ -522,8 +481,8 @@ class Model(_Resolver):
         )
 
     def _bodies(self, reference: str) -> list[tuple[Member, ...]]:
-        """The command and grouped bodies `reference` defines, resolved,
-        without what the policy dropped."""
+        """`reference`'s resolved command and grouped bodies, minus dropped
+        members."""
         view = self._view(reference)
         bodies = [message.avps for message in self.messages(reference)]
         if view.answers and (answer := self.answer_message(reference)) is not None:
@@ -544,15 +503,10 @@ class Model(_Resolver):
         return bodies
 
     def _holes_across(self, reference: str) -> Iterator[Hole]:
-        """The holes of older copies in the grouped AVPs `reference`'s
-        reading reaches through a citation across releases, at any depth:
-        oneM2M TS-0004's `Service-Information` is TS 32.299 V11.20.0's, a
-        hole of whose would carry its version. No reading of that older
-        copy's own reports them, since reference-level queries answer from
-        the newest. A hole in a newest copy, reached through a later
-        release's copy standing in (TS 29.061's
-        `3GPP-Session-Stop-Indicator` from V11.20.0's `PS-Information`), is
-        that copy's own reading's to report."""
+        """Holes of older copies inside grouped AVPs `reference` reaches
+        across releases, at any depth. Reference-level queries read only the
+        newest copies, so nothing else reports these. Holes in a newest copy
+        are left to that copy's own reading."""
         pending = [*self.avps(reference)]
         pending += [
             member.avp
@@ -573,18 +527,12 @@ class Model(_Resolver):
                     pending.append(member.avp)
 
     def across_releases(self, reference: str | None = None) -> tuple[Avp | Hole, ...]:
-        """Every name in `reference`'s reading, or in the whole corpus's,
-        that took a field from a document resolved outside the citing
-        document's release, each carrying the `corpus.CrossRelease` that
-        says by which drafting rule: TS 32.299's `VAS-ID` from TS 29.140
-        V7.0.0, ETSI TS 183 017's `Codec-Data` from TS 29.214 V7.12.0. The
-        audit list for a reader who wants to check the corpus's reading of
-        the citing documents' references (docs/consumers.md). It includes
-        what an older copy reached across releases cites across releases in
-        turn, at any depth, which no reading of that copy's own lists:
-        oneM2M TS-0004's `Service-Information` is TS 32.299 V11.20.0's,
-        whose `Server-Capabilities` is TS 29.229 V19.1.0's, standing in.
-        Sorted by citing document and name."""
+        """Every name in `reference`'s reading (or the corpus's) that took a
+        field from outside the citing document's release, each with its
+        `corpus.CrossRelease`, sorted by citing document and name.
+
+        Includes, at any depth, what older copies reached this way cite
+        across releases in turn. See docs/consumers.md."""
         references = self._chosen(reference)
         found: dict[Avp | Hole, None] = {}
         for each in references:
@@ -598,38 +546,23 @@ class Model(_Resolver):
 
     def table_rows(self, reference: str, name: str) -> tuple[ast.AvpTableRow, ...]:
         """Every AVP-table row `reference` prints for `name`, in file order.
-
-        `resolve` takes its table facts from the first; a document that
-        tabulates one AVP per interface may print the others differently
-        (TS 29.061's `3GPP-IMSI` in tables 9a and 10), and this is where a
-        consumer sees the alternatives the linter's `table-row-mismatch`
-        reports.
+        `resolve` reads the first; later rows may differ
+        (`table-row-mismatch`).
         """
         return tuple(self._view(reference).tabled.get(name, ()))
 
     def marks(self, reference: str, name: str) -> tuple[Marks, ...]:
-        """What `reference`'s tables mark about `name`, one entry per row of
-        a table printing mark columns, AVP and re-used tables alike, in file
-        order.
-
-        A document tabulating per interface marks per interface: TS 29.212
-        lists Gx's AVPs again in Gxx's re-used table 5a.4.0.1 with Gxx's
-        access types and features, so a consumer generating one interface
-        reads the rows whose `section` lies in its clause.
+        """`name`'s marks in `reference`, one per row of an AVP or re-used
+        table with mark columns, in file order. For one interface, keep the
+        rows whose `section` lies in its clause.
         """
         return tuple(self._view(reference).marked.get(name, ()))
 
     def registry(
         self, kind: ast.RegistryKind, code: int | None = None
     ) -> tuple[Allocation, ...]:
-        """What the corpus's registries say of `kind`'s codes, in file
-        order: every row and reserved range, or with `code`, the rows
-        allocating it and the ranges reserving it.
-
-        TS 29.230's table 4.1 allocates 16777216 to "3GPP Cx/Px" in TS
-        29.228 and 29.229; table 7.1 allocates 318 twice and reserves 1-255
-        for RADIUS compatibility. Read-only evidence: nothing else the model
-        answers takes from it.
+        """The registry rows and reserved ranges for `kind`, in file order;
+        with `code`, only those covering it. No other query reads them.
         """
         return tuple(
             Allocation(view.entry.reference, table.table, table.source.section, row)
@@ -651,10 +584,9 @@ class Model(_Resolver):
         kind: ast.ValueKind | None = None,
         version: str | None = None,
     ) -> tuple[ValueTable, ...]:
-        """The value tables `reference` prints, or the whole corpus does, in
-        file order, of one AVP or one kind; `version` reads an older copy of
-        `reference` the corpus holds. TS 29.336 prints its result codes once per
-        interface, and each is a table."""
+        """The value tables `reference` (or the corpus) prints, in file order,
+        optionally of one AVP or kind. `version` selects an older held
+        copy."""
         return tuple(
             table
             for view in self._selected_views(reference, version)
@@ -666,12 +598,10 @@ class Model(_Resolver):
     def feature_lists(
         self, reference: str | None = None
     ) -> dict[tuple[str, int | None], ValueTable]:
-        """The feature tables naming an application, by that application as the
-        caption spells it and the Feature-List-ID: `("S6a/S6d", 1)`,
-        `("S6t", None)` for TS 29.336's, which numbers none. A table naming no
-        application is left to `value_tables` (TS 29.368's
-        `Feature-Supported-In-Final-Target`), and of two documents printing one
-        list the first in reference order answers."""
+        """Feature tables keyed by (application as captioned, Feature-List-ID),
+        e.g. `("S6a/S6d", 1)` or `("S6t", None)`. Tables naming no application
+        are only in `value_tables`. If two documents print one list, the
+        first in reference order wins."""
         found: dict[tuple[str, int | None], ValueTable] = {}
         for table in self.value_tables(reference, kind=ast.ValueKind.FEATURES):
             if table.application is not None:
@@ -679,17 +609,13 @@ class Model(_Resolver):
         return found
 
     def readings(self, name_or_identity: str | tuple[int, int]) -> tuple[Avp, ...]:
-        """Every distinct reading the corpus holds under a name or claiming a
-        `(vendor-id, code)`: a citing document's table may read another's AVP
-        differently, and `Avp.read_through` says whose table gives which.
-        `definition` is the one reading to take.
+        """Every distinct reading under a name or `(vendor-id, code)`.
+        `Avp.read_through` says which table gives each; `definition` picks
+        one.
 
-        More than one identity under a name, or more than one name on an
-        identity, is the corpus disagreeing with itself (the linter's
-        `duplicate-identity`), or two documents' differing copies of one AVP
-        surviving deduplication because their bodies differ, or because a
-        citing document's table sets its own flag rules: RFC 4590's code 110
-        is `Digest-Qop` M in May and, through TS 29.229, M in Must.
+        Several readings mean the corpus disagrees with itself
+        (`duplicate-identity`), or copies differ in body or in flag rules a
+        citing table sets.
         """
         if isinstance(name_or_identity, str):
             return self._by_name.get(name_or_identity, ())
@@ -697,17 +623,13 @@ class Model(_Resolver):
         return self._by_identity.get((vendor_id, code), ())
 
     def definition(self, name_or_identity: str | tuple[int, int]) -> Avp | None:
-        """The defining document's reading of a name or a `(vendor-id, code)`,
-        None when the corpus completes no reading of it.
+        """The defining document's reading of a name or `(vendor-id, code)`,
+        or None if no reading is complete.
 
-        Documents print each other's AVPs and succeed each other: TS 29.272
-        extends TS 29.212's `Allocation-Retention-Priority`, TS 29.212 succeeds
-        TS 29.210, RFC 8506 RFC 4006. So the defining document is, among those
-        readings say `defined_in`, one that does not itself re-use the name
-        from elsewhere, then the newest (latest release, or higher RFC number),
-        then the one most documents' readings name. A name two AVPs claim
-        (`Originator` is TS 32.299's and oneM2M's) raises `ModelError` listing
-        them: the identity is the way to ask.
+        Among the readings' `defined_in` documents it prefers one that does
+        not itself re-use the name, then the newest, then the one most
+        readings name. A name two AVPs claim raises `ModelError`; ask by
+        identity instead.
         """
         readings = self.readings(name_or_identity)
         if isinstance(name_or_identity, str):
@@ -752,10 +674,8 @@ class Model(_Resolver):
         return list(found)
 
     def _reached(self, avps: Iterable[Avp]) -> dict[Avp, None]:
-        """Every reading `avps` and the newest copies' commands hold at any
-        depth. A citation can reach an AVP only an older copy defines: oneM2M
-        TS-0004's Service-Information is TS 32.299 V11.20.0's, whose
-        WLAN-Information later releases removed."""
+        """Every reading `avps` and the newest copies' commands hold, at any
+        depth, including AVPs only an older copy defines."""
         reached: dict[Avp, None] = {}
         pending = [
             *avps,

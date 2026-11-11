@@ -202,10 +202,9 @@ def attach_pages(
     outline (section number → 1-based page of the first outline entry that
     starts with it).
 
-    The PDF must render the same specification and version as `spec`: page
-    numbers from a neighbouring version are wrong in a way nothing downstream
-    can detect, and the downloader will happily fetch an earlier ETSI rendering
-    when the exact one is not published yet.
+    The PDF must render the same specification and version as `spec`, since
+    the downloader may fetch an earlier ETSI rendering when the exact one is
+    not published, and its page numbers would be silently wrong.
     """
     warnings = warnings if warnings is not None else []
     with boundary(f"attaching pages from {pdf_path}"):

@@ -1,13 +1,11 @@
-# Curated corpus of Diameter-related specifications.
-# Read by `seanchai corpus download`; add entries here, not in the downloader
-# code.
+# Curated corpus of Diameter-related specifications, read by
+# `seanchai corpus download`. Add entries here, not in the downloader code.
 
-# The 3GPP list is deliberately broader than a title search. Several protocols
-# (for example SLg, EPS AAA, ProSe, V2X, and MB2) are Diameter applications
-# without saying "Diameter" in their specification titles.
+# The 3GPP list is broader than a title search: several Diameter applications
+# (SLg, EPS AAA, ProSe, V2X, MB2) do not say "Diameter" in their titles.
 #
-# An `out_of_scope` entry is fetched and never extracted: it says why, and
-# `seanchai corpus regenerate --add` refuses the document in those words.
+# An `out_of_scope` entry is fetched and never extracted. Its reason is how
+# `seanchai corpus regenerate --add` refuses the document.
 
 [[tgpp]]
 number = "29.061"

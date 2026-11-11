@@ -9,24 +9,21 @@
 # ///
 """Stage Wireshark dictionary patches adding the AVPs the oracle finds absent.
 
-`seanchai corpus crosscheck` reports, per file, the AVPs Wireshark's dictionary has
-no entry for at their `(vendor-id, code)`. This writes one `git format-patch`
-file per defining document, each adding that document's absent AVPs to the
-pinned dictionary in its own XML shape: name, code, vendor, the type (an
-`<enum>` per value of an enumerated AVP, a `<gavp>` per member of a grouped
-one) and the M and V bits from the flag rules.
+`seanchai corpus crosscheck` reports the AVPs that Wireshark's dictionary has
+no entry for at their `(vendor-id, code)`. This script writes one
+`git format-patch` file per defining document, adding that document's absent
+AVPs to the pinned dictionary in its XML shape: name, code, vendor, type (an
+`<enum>` per value, a `<gavp>` per grouped member) and the M and V bits.
 
     uv run integrations/wireshark/additions.py
     uv run integrations/wireshark/additions.py --wireshark DIR --corpus DIR \\
         -o integrations/wireshark/additions
 
-An entry goes after the dictionary entry of its vendor with the nearest
-lower code, preferring an entry its own document defines, so it lands
-beside its siblings in whichever file holds them, and before the nearest
-higher one when there is no lower. Every patch applies on its own to the
-pinned tree and all of them in order. The output is a function of the
-corpus and the pinned dictionary alone, byte for byte; the author and date
-are fixed arguments.
+An entry goes after the entry of its vendor with the nearest lower code
+(preferring one from its own document), or before the nearest higher code
+when there is no lower one. Each patch applies to the pinned tree on its own,
+and all of them apply in order. The output depends only on the corpus and the
+pinned dictionary; the author and date are fixed.
 """
 
 from __future__ import annotations
@@ -173,10 +170,11 @@ def _first_row(spec: ast.Specification, name: str) -> ast.AvpTableRow | None:
 def _owners(
     books: corpus.Corpus, wireshark: oracle.Oracle
 ) -> dict[tuple[int, int], tuple[corpus.Entry, oracle.Claim]]:
-    """Each absent identity, with the file whose claim defines it: the one
-    in the identity's own vendor space where several claim it (TS 29.273
-    tabulates RFC 5777's `QoS-Capability`), else the first in corpus
-    order."""
+    """Each absent identity with the file whose claim defines it.
+
+    Where several files claim it, the one in the identity's own vendor space
+    wins (TS 29.273 tabulates RFC 5777's `QoS-Capability`), else the first in
+    corpus order."""
     owners: dict[tuple[int, int], tuple[corpus.Entry, oracle.Claim]] = {}
     # The newest copies: an older release held for a citation (TS 32.299
     # V11.20.0) is not what the corpus adds to a dictionary.

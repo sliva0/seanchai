@@ -1,7 +1,6 @@
-"""The `.dad` format: `ast`, the tree a file parses into; `parser`, which reads
-one; `formatter`, which writes the canonical form back; `corrections`, the
-typed edits declared against a parsed file; and `abnf`, the command-ABNF
-syntax the other four share."""
+"""The `.dad` format: `ast` (the tree), `parser`, `formatter` (canonical
+output), `corrections` (typed edits to a parsed file) and `abnf` (ABNF
+meaning the others share)."""
 
 from . import abnf, ast, corrections, formatter, parser
 

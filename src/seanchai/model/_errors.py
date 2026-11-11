@@ -1,5 +1,4 @@
-"""The errors a build or a query raises: `ModelError`, and the two a build
-over a corpus with holes it refuses raises."""
+"""The errors a model build or query raises."""
 
 from __future__ import annotations
 
@@ -17,9 +16,7 @@ class ModelError(SeanchaiError, ValueError):
 
 
 class IncompleteCorpusError(ModelError):
-    """A build over a corpus with holes it refuses: every hole under
-    `HolePolicy.NONE`, and by default those its record does not list. `holes`
-    lists every one."""
+    """A build met holes its `HolePolicy` refuses; `holes` lists them."""
 
     def __init__(self, holes: tuple[Hole, ...], *, unrecorded: bool = False) -> None:
         self.holes = holes
@@ -40,8 +37,8 @@ class IncompleteCorpusError(ModelError):
 
 
 class StaleHoleRecordError(ModelError):
-    """A record of known holes listing what no longer is one, so that working
-    a hole off shrinks the record; `entries` lists every stale one."""
+    """The record of known holes lists entries that are no longer holes;
+    `entries` lists them."""
 
     def __init__(self, entries: tuple[corpus.KnownHole, ...]) -> None:
         self.entries = entries

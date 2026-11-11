@@ -1,27 +1,13 @@
-"""Cross-check extracted values against Wireshark's Diameter dictionary.
+"""Cross-check extracted AVPs against Wireshark's Diameter dictionary.
 
-The corpus's corrections so far are justified by internal consistency — a
-clause checked against the same document's own table. Wireshark's dictionary
-is maintained independently, from the same specifications, which makes it an
-oracle for the facts both record: an AVP's code, its vendor space and its
-type. Only 29.329 has been verified by hand; this is what lets the other
-extracted values be checked at scale.
+Wireshark's dictionary is an independent reading of the same
+specifications, so it can check each AVP's code, vendor and type. Its
+dissector-specific types (`IPAddress`, `VendorId`, `AppId`, ...) are mapped
+onto RFC 6733 types through a closed table; an unmapped type is reported.
 
-It is an oracle for *values*, not for the type vocabulary. Wireshark's
-`typedefn`s include `IPAddress`, `VendorId`, `AppId`, `OctetStringOrUTF8` and
-`MIPRegistrationRequest` — dissector conveniences, not Diameter types — so
-the comparison maps each onto the RFC 6733 types it stands for before it may
-call anything a disagreement. The mapping is a closed vocabulary like the
-extractor's column labels: an unmapped dictionary type is reported, never
-guessed at.
-
-Disagreement is a report, not a verdict — Wireshark is a second independent
-reading of the same specifications, not a primary source. It can lag a
-release, carry its own typos, or deliberately disambiguate a name the
-specifications share; each finding names both sides and leaves the judgement
-to a reader with the primary specification open. The fix goes wherever the
-mistake turns out to be: a corpus correction, or a merge request into
-Wireshark.
+A finding names both sides and decides nothing: Wireshark can lag a
+release or carry its own errors. The fix goes into a corpus correction or
+into Wireshark.
 """
 
 from __future__ import annotations
@@ -112,22 +98,18 @@ _ACCEPTABLE: dict[str, frozenset[ast.DataType]] = {
 class Oracle:
     """The parsed dictionary: every AVP by `(vendor, code)` identity.
 
-    A list per identity rather than a single entry: Wireshark's own TGPP file
-    warns that some 3GPP AVP codes collide across applications, and both
-    claimants have to stay visible for the comparison to say which one the
-    corpus agrees with.
+    Each identity holds a list, since some 3GPP codes collide across
+    applications.
     """
 
     avps: dict[tuple[int, int], list[DictionaryAvp]] = field(default_factory=dict)
 
     @classmethod
     def load(cls, directory: str | os.PathLike[str]) -> Oracle:
-        """Parse `dictionary.xml` with its vendor entity files inlined.
+        """Parse `dictionary.xml` with its entity files inlined as text.
 
-        The dictionary splits itself across files with XML entities, which
-        `ElementTree` does not resolve for security reasons — and these files
-        are fetched pinned and validated, so inlining them textually keeps
-        the stdlib parser and drops nothing.
+        `ElementTree` does not resolve XML entities; the files are pinned
+        downloads, so inlining them is safe.
         """
         try:
             directory = Path(directory)
@@ -213,13 +195,11 @@ class Oracle:
     def name_for(
         self, vendor_id: int, code: int, name: str, data_type: ast.DataType | None
     ) -> str | None:
-        """Wireshark's name for the AVP the corpus calls `name`, or None when
-        the dictionary has no entry under `(vendor-id, code)` or cannot say
-        which of several is meant.
+        """Wireshark's name for the AVP the corpus calls `name`, or None if
+        no entry, or no single entry, matches `(vendor-id, code)`.
 
-        Where the identity collides (Wireshark's TGPP file warns some 3GPP
-        codes do), an entry spelled like the corpus is the answer, then the
-        one name among the entries whose type agrees with `data_type`.
+        On a colliding identity, an entry spelled like `name` wins, then the
+        only name among entries whose type agrees with `data_type`.
         """
         entries = self.avps.get((vendor_id, code), [])
         if any(entry.name == name for entry in entries):
@@ -250,12 +230,9 @@ class Finding:
 
 @dataclass(frozen=True)
 class Alias:
-    """One of Wireshark's deliberate renames, accepted as agreement: the
-    dictionary names the AVP a document calls `name` otherwise, to keep it
-    apart from another document's AVP of that name (TS 29.229's
-    `User-Data` is `Cx-User-Data`) or because an XML ID cannot start with a
-    digit. It holds only while the document's AVP and the dictionary's
-    entry agree in vendor, code and type."""
+    """A deliberate Wireshark rename accepted as agreement (TS 29.229's
+    `User-Data` is `Cx-User-Data`). It holds only while vendor, code and type
+    agree."""
 
     specification: str  # the `SpecRef` of the document, `TS29.229`
     name: str
@@ -267,9 +244,9 @@ _ALIAS_KEYS = frozenset({"specification", "name", "wireshark", "reason"})
 
 
 def load_aliases(path: Path) -> tuple[Alias, ...]:
-    """The `[[alias]]` entries of an accepted-aliases file
-    (`integrations/wireshark/aliases.toml`), each with every key and no
-    other, at most one per document and name."""
+    """The `[[alias]]` entries of an aliases file
+    (`integrations/wireshark/aliases.toml`). Each must have exactly the
+    expected keys, at most one per document and name."""
     try:
         data = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, tomllib.TOMLDecodeError) as error:
@@ -299,8 +276,8 @@ def load_aliases(path: Path) -> tuple[Alias, ...]:
 
 
 def _acceptable(entry: DictionaryAvp) -> frozenset[ast.DataType] | None:
-    """The corpus types this dictionary entry agrees with, or None when the
-    dictionary type is outside the mapped vocabulary."""
+    """The corpus types this entry agrees with, or None for an unmapped
+    dictionary type."""
     if entry.grouped:
         return frozenset({ast.DataType.GROUPED})
     if entry.enumerated:
@@ -318,8 +295,7 @@ def _acceptable(entry: DictionaryAvp) -> frozenset[ast.DataType] | None:
 
 @dataclass(frozen=True)
 class Claim:
-    """One (name, identity, type) fact the corpus asserts and the oracle can
-    check. Definitions and table rows both reduce to this."""
+    """One (name, identity, type) fact a definition or table row asserts."""
 
     name: str
     vendor: int
@@ -329,8 +305,8 @@ class Claim:
 
 
 def claims(spec: ast.Specification) -> list[Claim]:
-    """What one file asserts of its own AVPs, once per name and identity:
-    its definitions and AVP-table rows, less the names it re-uses."""
+    """One file's claims about its own AVPs, once per name and identity,
+    excluding re-used names."""
     reused = {
         row.name
         for section in spec.sections
@@ -383,10 +359,9 @@ def claims(spec: ast.Specification) -> list[Claim]:
 
 
 def _value_findings(spec: ast.Specification, oracle: Oracle) -> list[Finding]:
-    """What a value table names otherwise than the dictionary's `<enum>`s for the
-    same AVP, and, for an AVP the dictionary enumerates, what it lacks. Wireshark
-    holds Result-Code's and Experimental-Result-Code's so, and few bits, as the
-    mask each sets."""
+    """Value-table names that differ from the dictionary's `<enum>`s for the
+    same AVP, and, where the dictionary enumerates the AVP, values it
+    lacks."""
     by_name: dict[str, dict[int, str]] = {}
     for entries in oracle.avps.values():
         for entry in entries:
@@ -433,20 +408,14 @@ def crosscheck(
 ) -> list[Finding]:
     """Every disagreement between one file and the dictionary.
 
-    Absence is reported apart from disagreement: an AVP the dictionary lacks
-    may simply postdate the pinned Wireshark release, while an AVP whose code
-    resolves to a differently-named or differently-typed entry means one of
-    the two projects read the specification wrong.
+    Absence is reported separately from disagreement, since the pinned
+    Wireshark release may predate an AVP.
 
-    A name disagreement an alias of `aliases` for this document accepts is
-    returned as accepted (`Finding.accepted_by`) when the entry under the
-    claim's vendor and code carries the alias's name and agrees in type:
-    the claim's type known and among those the entry's maps to. An alias
-    that does not hold, the dictionary naming the identity otherwise or
-    typing it differently, or the file claiming no AVP by its name, is a
-    `stale-alias` finding. A claim stating no type confirms no rename, and
-    stales none, the listing being right for all the file says: its name
-    disagreement stays a `name-disagrees` finding, unaccepted.
+    A name disagreement is accepted (`Finding.accepted_by`) when an alias in
+    `aliases` names the dictionary entry and the claim's known type matches
+    it. An alias that no longer holds is a `stale-alias` finding. A claim
+    with no type neither confirms nor stales an alias; it stays a
+    `name-disagrees` finding.
     """
     mine: dict[str, Alias] = {}
     for alias in aliases:
@@ -536,9 +505,9 @@ def _stale(claim: Claim, alias: Alias, why: str) -> Finding:
 
 
 def _type_problem(claim: Claim, named: list[DictionaryAvp]) -> Finding | None:
-    """How the type of the entries `named` disagrees with the claim's, as a
-    finding whose message lacks the claim's name, or None where they agree
-    or the claim states no type."""
+    """A finding (message without the claim's name) if the entries `named`
+    disagree with the claim's type, else None, also when the claim has no
+    type."""
     if claim.data_type is None:
         return None
     acceptable = frozenset[ast.DataType]()

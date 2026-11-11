@@ -1,7 +1,7 @@
-"""Canonical formatter: AST → `.dad` text.
+"""Canonical formatter from the AST to `.dad` text.
 
-`format_spec(parse(text))` must be idempotent — the patch-based review workflow
-depends on stable diffs. Canonical rules:
+`format_spec(parse(text))` must be idempotent, so diffs stay stable. The
+canonical rules:
 
 - sections separated by two blank lines; file ends with one newline;
 - ABNF bodies: 8-space indent with the repetition qualifier right-aligned in
@@ -54,17 +54,14 @@ def _comment(note: str) -> str:
 
 
 class Comments(NamedTuple):
-    """The `;;` lines to print with a tree, by placement: a file's own
-    comments from `parser.parse_with_comments`, or the notes
-    `corrections.notes` marks edits with.
+    """The `;;` lines to print with a tree, keyed by `ast.TreePath`: a file's
+    own comments from `parser.parse_with_comments`, or the notes
+    `corrections.notes` adds.
 
-    Each is keyed by an `ast.TreePath`, and every line a tree produces has a
-    path of its own — a directive line the path of the field it states
-    (`("sections", 3, "source", "page")`), a header rule its section's path,
-    a body line its item's — so every line can carry notes and none can take
-    another's. `trailing` notes are appended to the line, `standing` ones
-    printed as whole lines before it, and `detached` ones as a block of
-    their own; `format_spec` says where each lands.
+    Every printed line has its own path (a directive line the path of its
+    field, e.g. `("sections", 3, "source", "page")`). `trailing` notes are
+    appended to the line, `standing` ones printed as whole lines before it,
+    `detached` ones as a separate block; see `format_spec`.
     """
 
     trailing: Notes = _NO_NOTES
@@ -78,12 +75,8 @@ class Comments(NamedTuple):
         return [*self.standing_at(path, indent), text + trailing]
 
     def standing_at(self, path: ast.TreePath, indent: str = "") -> list[str]:
-        """Whole-line notes before the line at `path`, indented like the
-        lines of the block they stand in: a whole-line comment, or the note
-        of an edit that left no line to append to. A deletion's note prints
-        in the deleted line's place — before the sibling that moved up into
-        it, or after the last sibling when the path is one past the end,
-        because the end is where that line stood."""
+        """Whole-line notes before the line at `path`, indented like their
+        block. A path one past the end prints after the last sibling."""
         return [indent + _comment(note) for note in self.standing.get(path, ())]
 
     def detached_at(self, path: ast.TreePath) -> list[str]:
@@ -105,16 +98,13 @@ def avp_line(rule: ast.AvpRule) -> str:
 
 
 def _marker_column(avps: Sequence[ast.AvpRule]) -> int:
-    """`; bold` and `; strikethrough` sit one column past the longest rule
-    *of this section*. A file-wide column would make one added AVP reflow
-    every marker in the file, and the review workflow lives on raw-vs-raw
-    diffs."""
+    """Return the marker column: one past the longest rule of this section.
+    Per-section, so one added AVP does not reflow the whole file."""
     return max((len(avp_line(rule)) for rule in avps), default=0) + 1
 
 
 def _marked(rule: ast.AvpRule, column: int) -> str:
-    """A rule's line with its markers at `column`, `; bold` first when the
-    source both bolds and strikes a member."""
+    """A rule's line with its markers at `column`, `; bold` first."""
     line = avp_line(rule)
     markers = [
         f"; {marker}"
@@ -128,11 +118,8 @@ def _marked(rule: ast.AvpRule, column: int) -> str:
 
 
 def commented_avp_rule(rule: ast.AvpRule, avps: Sequence[ast.AvpRule]) -> str:
-    """The note that stands, as a `;;` line, for `rule` commented out of an
-    ABNF body: the line it would print there, its markers at the column
-    `avps` would put them in, less the three columns `;; ` takes, so that its
-    brackets line up with the members'. TS 32.299's struck members are
-    written so (`struck-rules-unused`)."""
+    """The `;;` line for `rule` commented out of an ABNF body, indented so
+    its brackets line up with the other members' (`struck-rules-unused`)."""
     line = _marked(rule, max(_marker_column(avps), len(avp_line(rule)) + 1))
     return line[3:] if line.startswith("   ") else line.lstrip()
 
@@ -204,10 +191,9 @@ def _table(
     notes: Comments,
 ) -> list[str]:
     """`rows` are the cells of the rows at `path` + `("rows", i)`, or a line
-    printed as it is (a registry's reserved range), which no column is
-    widened for. Notes are appended *after* the column widths are computed,
-    so annotating a row cannot reflow the table; standing notes print as
-    whole lines above their row — where a deleted row used to be."""
+    printed as is (a registry's reserved range) that widens no column.
+    Notes are added after column widths are computed, so they never reflow
+    the table."""
     cells = [row for row in rows if not isinstance(row, str)]
     # A label counts toward its column's width, so every label sits at its
     # column's start; the first follows the directive, which it overruns.
@@ -330,9 +316,8 @@ _IDENTIFIER_RE = re.compile(ast.AVP_NAME_PATTERN)
 
 
 def value_name(name: str) -> str:
-    """A value name as a file spells it: quoted exactly when it is not an
-    identifier, so each name has one spelling, and inside the quotes a
-    backslash and `"` escaped, the only two characters that are."""
+    """Spell a value name: quoted only when it is not an identifier, with
+    backslash and `"` escaped inside the quotes."""
     if _IDENTIFIER_RE.fullmatch(name):
         return name
     escaped = name.replace("\\", "\\\\").replace('"', '\\"')
@@ -402,8 +387,8 @@ def _format_enumerated(
 
 
 def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
-    """One modelled cell, with `-` as the canonical empty. Meaningful only for
-    columns the row's table declares, where a None is an empty source cell."""
+    """Spell one modelled cell, `-` for empty. Only meaningful for columns
+    the row's table declares."""
     match column:
         case ast.AvpColumn.NAME:
             return row.name
@@ -620,29 +605,17 @@ def _format_section(
 
 
 def format_spec(spec: ast.Specification, comments: Comments = _NO_COMMENTS) -> str:
-    """Canonical text, optionally with `;;` comments on particular lines.
+    """Return canonical text, optionally with `;;` comments (see `Comments`).
 
-    Every comment is keyed by an `ast.TreePath`, and every line has a path of
-    its own (see `Comments`). A `trailing` comment trails the line its path
-    printed. A `standing` one is a whole line printed *before* that line —
-    the shape a deletion needs, keyed by the position the deleted node stood
-    in, so the note reads in the deleted line's place. A position one past a
-    body's last item prints after it, and the root path `()` after the file
-    header's lines. A `detached` one is a block of its own, spaced from its
-    neighbours like the section it replaces — the shape a deleted
-    *section's* note needs, keyed by the section position that follows the
-    gap (one past the last section when the last one went): glued to the
-    next section's lines it would read as being about that section. A
-    `detached` comment at `()` is a block before the file header.
-
-    `parse(text)` discards comments, so `format_spec(parse(text))` gives the
-    file without them, while `parse_with_comments` keeps them:
+    A `trailing` comment ends the line its path printed. A `standing` one is
+    a whole line before that line, so a deleted node's note sits in its
+    place; a position one past a body's last item prints after it, and `()`
+    after the file header. A `detached` one is a separate block before the
+    section at its position (one past the last section at the end; `()`
+    before the file header), for a deleted section's note.
 
         spec, comments = parse_with_comments(text)
         format_spec(spec, comments)  # the file back, comments in place
-
-    Comments are a caller's choice rather than part of the canonical form,
-    because the canonical form is what the parser reads.
     """
     header = [
         *comments.line(f"; Specification: {spec.specification}", ("specification",))

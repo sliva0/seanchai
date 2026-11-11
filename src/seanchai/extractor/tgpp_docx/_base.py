@@ -28,10 +28,9 @@ _ACCESS_TYPE_TITLE_RE = re.compile(
 )
 
 
-# Every AVP a 3GPP specification defines is in 3GPP's vendor space. That is a
-# fact about the publisher, not about any one document, so this extractor
-# states it rather than reading it out of the text — the same way an RFC
-# extractor will state the IETF's 0.
+# Every AVP a 3GPP specification defines is in 3GPP's vendor space, a fact
+# about the publisher, so it is stated rather than read, as the RFC extractor
+# states the IETF's 0.
 TGPP_VENDOR = 10415
 # oneM2M TS-0004 clause A.4: "AVPs defined for oneM2M specific usage are
 # assigned Vendor-Id of 45687."
@@ -153,9 +152,8 @@ class _CollectedAvpTable:
 class _Collected:
     """What one pass over the document found, before anything is cross-checked.
 
-    Tables are kept as lists rather than as a single winner: 29.336 (S6m/S6n
-    and S6t) and 29.338 (S6c and S6d) each carry a definition set per
-    interface, and quietly keeping the last table would hide the rest.
+    Tables are kept as lists: 29.336 (S6m/S6n and S6t) and 29.338 (S6c and
+    S6d) each carry a definition set per interface.
     """
 
     messages: list[ast.Message] = field(default_factory=list)

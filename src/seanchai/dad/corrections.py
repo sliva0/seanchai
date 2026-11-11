@@ -1,11 +1,9 @@
 """Output corrections: typed find/replace on a parsed `.dad` tree.
 
-The second of the two patch layers — input patches fix source typos that would
-break extraction, corrections fix data that extracts and parses fine but is
-*wrong*. The framing and full semantics live in docs/corrections.md; the short
-version is that `expect` is mandatory, because a correction that no longer
-matches has either been fixed upstream or been broken by a re-extraction, and
-both are events worth failing on rather than silently skipping.
+Input patches fix source typos that break extraction; corrections fix data
+that parses but is wrong. docs/corrections.md describes both. Every edit
+carries an `expect`, and a correction that no longer matches fails, since
+upstream fixed it or a re-extraction broke it.
 
 Corrections are declared per specification, as data:
 
@@ -21,29 +19,14 @@ Corrections are declared per specification, as data:
         ),
     ]
 
-Applying is deterministic but deliberately not idempotent: feeding corrected
-output back in makes every `expect` fail, because treating an already-applied
-correction as a no-op would make "already corrected" indistinguishable from
-"fixed upstream".
+Applying is deterministic and not idempotent: applying to corrected output
+fails every `expect`, so "already corrected" never looks like "fixed
+upstream".
 
-A module may also declare `Accept`s, which change nothing: each
-acknowledges one linter finding on the corrected file as a deliberate
-override its document states, so `seanchai lint --corpus` reports it apart
-from the open findings. Applying a module skips them.
-
-Beside field replacement there are three narrow structural operations:
-`Delete` for a node that should not exist at all, `Insert` for an AVP-table row
-the source defines but omits from the table (or a body member a verified
-erratum restores, an enumerated value a later document adds, or the block
-declaring a name the corpus finds defined nowhere), and
-`Supply` for what a document defines in another: the value list of an
-enumerated AVP, or the type and flag rules of a table row typed by
-reference. All fail loudly when upstream changes
-the state that justified them: `Delete` expects the doomed node
-field-for-field, `Insert` expects the row to be absent, so it fails the day
-upstream adds it, and `Supply` expects the clause's `; Values:` citation and
-no values (or, extending a printed list, none of the supplied names and
-numbers), or the blank row.
+Besides `Correction` (one field) there are `Delete`, `Insert` and `Supply`,
+each failing when upstream changes the state it expects. `Accept` changes
+nothing; it marks one linter finding as a deliberate override, and `apply`
+skips it.
 """
 
 import dataclasses
@@ -105,11 +88,8 @@ class CorrectionError(SeanchaiError, ValueError):
 
 @dataclass(frozen=True)
 class _Unspecified:
-    """Sentinel for "this selector field does not filter".
-
-    `None` cannot serve: it is a real `application_id` value — precisely the
-    one the TS 29.272 VCSG headers carry — so overloading it would make the
-    omitted-id definition unselectable.
+    """Sentinel for "this selector field does not filter". `None` is a real
+    `application_id` value, so it cannot serve.
     """
 
     def __repr__(self) -> str:
@@ -126,12 +106,9 @@ type _Located = Iterator[tuple[ast.TreePath, ast.Node]]
 @dataclass(frozen=True)
 class Selector:
     """Base for the ways a correction names its target. Subclasses yield the
-    nodes they match with their paths, in document order, from a whole
-    specification.
+    nodes they match, with paths, in document order.
 
-    The subclasses are deliberately lower-case: a corrections file is data, and
-    `table_row("MME-Location-Information")` reads as such where
-    `TableRow(...)` would read as machinery.
+    Subclasses are lower-case so corrections files read as data.
     """
 
     def locate(self, spec: ast.Specification) -> _Located:
@@ -146,9 +123,8 @@ class Selector:
         raise NotImplementedError
 
     def describe_in_place(self) -> str:
-        """The description a note printed *inside* the target's own block can
-        use: context the surrounding lines already state is dropped there,
-        while `describe` keeps it for errors and logs read on their own."""
+        """`describe` without the context the target's own block already
+        states, for a note printed inside that block."""
         return self.describe()
 
 
@@ -156,17 +132,9 @@ class Selector:
 class definition(Selector):
     """A message, grouped AVP or enumerated AVP, by name.
 
-    `application_id` narrows the TS 29.272 case of one command defined for two
-    applications. Left out it does not filter at all; given explicitly — including
-    as `None` — it selects only messages carrying exactly that id.
-
-    `section` narrows by the clause a definition was read from, which is what a
-    name alone cannot do when the name itself is the error. TS 29.388 clause
-    6.3.10 heads `PLMN-Allowed-PC5-RATs` and then prints 6.3.3's rule name, so
-    two clauses claim one name and the correction that fixes it has to say
-    which. A clause is also the stable way to point at a definition here: it is
-    what the heading says and what `; Section:` records, and unlike the name it
-    is not the thing under repair.
+    `application_id`, when given (`None` included), selects only messages
+    with exactly that id. `section` selects by clause, for when the name
+    itself is what the correction repairs.
     """
 
     name: str
@@ -202,15 +170,8 @@ class definition(Selector):
 
 @dataclass(frozen=True)
 class header(Selector):
-    """The file-level directive header — the `Specification` node itself.
-
-    What a `bases` correction targets. The extractor stamps `; Bases:
-    RFC6733` because that dependency is a fact about Diameter; a document
-    that additionally builds on another application's AVPs without citing
-    them anywhere — RFC 4072's command ABNFs use NASREQ's AVPs the way every
-    ABNF uses `Session-Id` — states that nowhere the extractor can read, so
-    the stamped default is corrected rather than a fabricated source line
-    patched in.
+    """The file header: the `Specification` node itself, e.g. for a `bases`
+    correction.
     """
 
     def locate(self, spec: ast.Specification) -> _Located:
@@ -279,13 +240,9 @@ class table_row(Selector):
 
 @dataclass(frozen=True)
 class flag_rules(Selector):
-    """The flag rules of one AVP-table row, whose `must`, `may`,
-    `should_not` and `must_not` a correction replaces one at a time.
-
-    The rules are a node of their own, so the row's `flag_rules` field cannot
-    be replaced whole. TS 29.273's three RAT-Type rows set M in Must where TS
-    29.212, which the document defers to, sets it in Must not: moving one flag
-    is two field corrections, each with its own `expect`.
+    """The flag rules of one AVP-table row. A correction replaces `must`,
+    `may`, `should_not` or `must_not` one at a time; the row's `flag_rules`
+    field cannot be replaced whole.
     """
 
     row: table_row
@@ -324,14 +281,8 @@ class avp_table(Selector):
 
 @dataclass(frozen=True)
 class reused_avps(Selector):
-    """A re-used AVPs section, by its printed label.
-
-    What a re-used-row `Insert` targets: TS 29.337's table 6.3.1/2 lists
-    every member its Serving-Node bodies use except six, and nothing but
-    adding the rows can make those references resolve. `section` narrows by
-    the block's clause, which tells apart blocks printing no label: RFC 5779's
-    AVP table at clause 5.2 has none, nor do the blocks of origins its clauses'
-    prose states.
+    """A re-used AVPs section, by its printed label; the target of a re-used
+    row `Insert`. `section` selects by clause, for blocks with no label.
     """
 
     label: str | None
@@ -360,11 +311,8 @@ class reused_avps(Selector):
 
 @dataclass(frozen=True)
 class reused_row(Selector):
-    """One row of a re-used AVPs table, by AVP name.
-
-    `section` names the table's own clause when a document holds several
-    re-used tables listing the same AVP — 29.212's Gx (5.4.0) and Sd (5b.4.0)
-    tables both carry `3GPP-SGSN-Ipv6-Address`.
+    """One row of a re-used AVPs table, by AVP name. `section` names the
+    table's clause when several re-used tables list the AVP.
     """
 
     name: str
@@ -387,10 +335,8 @@ class reused_row(Selector):
 
 @dataclass(frozen=True)
 class registry_row(Selector):
-    """A registry's allocation, by the code space and the code: TS 29.230
-    table 7.1's 402, which the registry names `NAF-Hostname` and TS 29.109
-    clause 6.3.1.3 `NAF-Id`. A code a table allocates twice matches twice,
-    which fails as any ambiguous selector does (table 7.1's 318)."""
+    """A registry allocation, by code space and code. A code allocated twice
+    matches twice and fails as an ambiguous selector."""
 
     registry: ast.RegistryKind
     code: int
@@ -438,12 +384,9 @@ class registry_reservation(Selector):
 class enum_value(Selector):
     """One named value of an enumerated AVP.
 
-    `value` disambiguates when one name labels several values, and a
-    correction has to name which one it means.
-
-    `occurrence` picks the n-th (from 1) of several matching values in one
-    AVP, as `avp_rule`'s does, for a list printing the same value twice. It
-    matches only while the value repeats.
+    `value` picks one of several values sharing a name. `occurrence` picks
+    the n-th (from 1) of identical values, and matches only while the value
+    repeats.
     """
 
     avp: str
@@ -490,9 +433,8 @@ class enum_value(Selector):
 
 @dataclass(frozen=True)
 class value_table(Selector):
-    """A value table, by its AVP and clause, and for a features table its
-    application and Feature-List-ID, which tell apart one AVP's tables in one
-    clause: TS 29.272 clause 7.3.10.1 prints Feature-List-ID 1 and 2."""
+    """A value table, by AVP and clause; for a features table also by
+    application and Feature-List-ID."""
 
     avp: str
     section: str | None = None
@@ -523,9 +465,8 @@ class value_table(Selector):
 
 @dataclass(frozen=True)
 class value_row(Selector):
-    """One row of a value table, by name, and by number where one name is
-    printed for two. `parent` is a whole `value_table` selector, or as a bare
-    string the AVP's."""
+    """One row of a value table, by name, and by number when a name repeats.
+    `parent` is a `value_table` selector, or an AVP name."""
 
     parent: str | value_table
     name: str
@@ -561,16 +502,9 @@ class value_row(Selector):
 class avp_rule(Selector):
     """One AVP reference inside a message or grouped-AVP body.
 
-    `parent` is a whole `definition` selector rather than a duplicated name, so
-    a rule inside one of two same-named commands is reachable by the same
-    discriminator that reaches the command itself. A bare string is shorthand
-    for `definition(name)`.
-
-    `occurrence` picks the n-th (from 1) rule of that name in one body, for
-    the one case identity cannot narrow: a body printing the same rule twice.
-    TS 29.229 clause 6.1.10 prints RTA's `< Session-Id >` on two consecutive
-    lines, identical in every field. It matches only while the body still
-    repeats the name, so the declaration fails once upstream drops the copy.
+    `parent` is a `definition` selector, or a name as shorthand for
+    `definition(name)`. `occurrence` picks the n-th (from 1) rule of that
+    name in a body that repeats it, and matches only while it repeats.
     """
 
     parent: str | definition
@@ -628,12 +562,10 @@ def _rows(index: int, table: ast.AvpTable | ast.ReusedAvps, name: str) -> _Locat
 
 @dataclass(frozen=True)
 class Correction:
-    """One field of one node, with the value it is expected to hold.
+    """Replace one field of one node, given the value it is expected to hold.
 
-    `versions` is advisory, exactly as for input patches: it records where the
-    correction is known to be needed and sharpens the message, and never gates
-    whether the correction is applied. Gating would silently ship an
-    uncorrected file the first time a version moved.
+    `versions` is advisory: it improves the error message and never gates
+    whether the correction applies.
     """
 
     # A short kebab-case name, unique within its module. A corrected `.dad`
@@ -669,16 +601,10 @@ class Correction:
 
 @dataclass(frozen=True)
 class Delete:
-    """Remove one node — a table row, an enum value, an AVP rule — entirely.
+    """Remove one node (a table row, an enum value, an AVP rule).
 
-    TS 29.283's re-used table cites `Feature-Id` from TS 29.229, which has no
-    such AVP and never did, and no field replacement can make that row true.
-
-    `expect` is the full node, checked field-for-field, not merely "the
-    selector matched". A row that upstream has since changed may no longer
-    deserve deletion, and a row upstream has removed makes the declaration
-    stale; both fail loudly, which is the same contract `Correction.expect`
-    carries for a single field.
+    `expect` is the full node, checked field by field, so the deletion fails
+    if upstream changes or removes it.
     """
 
     id: str
@@ -699,57 +625,27 @@ class Delete:
 
 @dataclass(frozen=True)
 class Insert:
-    """Insert one table row the source omits: an AVP-table row the document
-    defines but does not tabulate, or a re-used row for an AVP its ABNFs use
-    without citing.
+    """Insert one node the source omits.
 
-    `into` names which table, and the node's type must match it — an
-    `AvpTableRow` into an `avp_table`, a `ReusedAvpRow` into `reused_avps`.
-    `after` addresses an existing row by name, never position; `None` appends.
-    The operation expects no row with the inserted node's name, so it fails
-    the day upstream adds the missing row itself.
+    `into` and the node's type must match:
 
-    A `reused_avps(label)` that matches no block, while an AVP table carries
-    the same label, creates that table's re-used block right after it, with
-    the table's clause and page — the block the extractor synthesises when a
-    table's NOTEs name a defining RFC. TS 32.299 table 7.1.0.1 lists IETF
-    AVPs without naming an origin per row, so its block exists only once
-    the corrections supply the origins.
+    - `AvpTableRow` into `avp_table`, `ReusedAvpRow` into `reused_avps`. A
+      `reused_avps(label)` matching no block, where an AVP table has that
+      label, creates the re-used block right after the table.
+    - `ApplicationScope` into `header()`, placed after the existing scopes;
+      no other scope may have its name.
+    - `UndefinedAvp` into `header()`, placed after the last section. Checked
+      on the corrected tree: nothing in the file may define, tabulate or
+      re-use the name, and a body in clause `source.section` must name it.
+    - `AvpRule` into a message or grouped `definition()`.
+    - `EnumValue` into an enumerated `definition()`; neither its name nor
+      its number may be in the list.
+    - `ValueRow` into a `value_table()`.
 
-    Into `header()` it inserts an `ApplicationScope`, for an application
-    id the document states in a form the extractor does not read: RFC 4006
-    assigns 4 in its IANA considerations. The block goes after the file's
-    other application scopes, which lead the file, so `after` must be None;
-    no other scope may carry its name.
-
-    Into `header()` it also inserts an `UndefinedAvp`, declaring a name the
-    document uses as a member that nothing in the corpus defines, its
-    `reason` citing what was searched: RFC 4004's `MIP-HA-to-MN-SPI`. The
-    block goes after the file's last section, after any inserted before it,
-    so `after` must be None. Checked against the corrected tree, so that a
-    member a correction renames is the name it declares: the file must
-    hold no definition, table row, re-used row or other block of that
-    name, and some message or grouped body in clause `source.section` must
-    name it. Once upstream defines the name, the first fails.
-
-    Into a `definition()`, a message or grouped AVP, it inserts an
-    `AvpRule`, a member the body omits and a verified erratum restores:
-    RFC 5777's erratum 2333 adds three to `Time-Of-Day-Condition`. `after`
-    names the member it follows, as a row's does.
-
-    Into an enumerated AVP's `definition()`, it inserts an `EnumValue` a
-    later document adds to the list: RFC 8581 clause 7.2.1 defines
-    `PEER_REPORT` for RFC 7683's `OC-Report-Type`, in a clause of its own
-    that the defining file has no place for. `after` names the value it
-    follows; it expects neither the name nor the number to be in the list.
-
-    Into a `value_table()`, it inserts a `ValueRow` the document states where
-    no reading finds it, as a row into a table.
-
-    `drawn_from` says what the node's fields come from where that is not the
-    block it goes into, as its note prints it: TS 29.061 V6.15.0's two
-    sub-attributes go into table 10 "from clause 16.4.7", which lists them and
-    which the table omits. A row inserted with none is the block's own.
+    `after` names the sibling to follow, never a position; `None` appends
+    (and is required for header inserts). The insert fails once upstream
+    adds a node of that name. `drawn_from` names the clause the fields come
+    from, when it is not the target block's.
     """
 
     id: str
@@ -787,34 +683,18 @@ class Insert:
 
 @dataclass(frozen=True, kw_only=True)
 class Supply:
-    """Fill in what a document defines in another document, as a hand-notated
-    statement citing that document's clause.
+    """Fill in what a document defines elsewhere, citing the other clause.
 
-    Two forms. Into an enumerated AVP (`target=definition(name)`), the values
-    its clause takes from elsewhere: the clause states its values' source in
-    a `; Values:` line and prints none, as TS 32.299 clause 7.2.238 takes
-    `Type-Number`'s from the OMNA WSP registry. `expect` is that line's text,
-    and the section must hold no values, so the declaration fails both when
-    upstream re-words the citation and when it starts printing the list
-    itself. The `; Values:` line stays, since the document still says it.
+    Into an enumerated AVP (`target=definition(name)`): the values its
+    `; Values:` line cites. `expect` is that line's text and the section must
+    print no values. With `extend=True` the section must print values, and
+    every supplied name and number must be new to it.
 
-    With `extend=True` the section must instead print some values, and the
-    supplied ones follow them: RFC 4005 clause 4.4 prints NAS-Port-Type's
-    values 0-25 as informational and cites the IANA registry, which has
-    added 26-43 since. Every supplied name and number must be new to the
-    list, so the declaration fails the day upstream prints one of them.
+    Into an AVP-table row (`target=table_row(name, table=)`): `data_type`
+    and/or `flag_rules` its cells leave blank. `expect` is the whole row,
+    and the file must list the AVP as re-used.
 
-    Into an AVP-table row (`target=table_row(name, table=)`), the type and
-    flag rules its cells leave blank because the document types the AVP by
-    reference: TS 32.299 table 7.2.0.1 prints `refer [223]` for thirteen
-    rows, OMA-DDS-Charging_Data's. `expect` is the whole row, as for a
-    `Delete`, with no type and no flag rules where they are supplied, and
-    the file must list the AVP as re-used, the citation that says where its
-    definition lives; the re-used row stays. `data_type`, `flag_rules` or
-    both are what the cited document states.
-
-    Every supplied line is marked `;; supplied:`, because none of it is the
-    document's own.
+    Every supplied line is marked `;; supplied:`.
     """
 
     id: str
@@ -891,21 +771,12 @@ class Supply:
 
 @dataclass(frozen=True)
 class Accept:
-    """Acknowledge one linter finding on the corrected file as deliberate.
+    """Acknowledge one linter note on the corrected file as deliberate.
 
-    Some findings are a document saying on purpose what another says
-    otherwise: TS 29.336 clause 6.4.12 prints its own `Serving-Node` body
-    for T4-triggering, with the combinations its interface allows, and the
-    linter's `reused-body-differs` note is then no open question. An
-    acceptance changes no data; `seanchai lint --corpus` reports the
-    finding as `accepted` instead of as a note, and `reason` cites the
-    clause that makes the override deliberate.
-
-    `rule` names the linter rule, `target` the node the finding is about,
-    by the selectors corrections use, and `expect` is the finding's message,
-    exactly. All three must match one finding, a note, so an acceptance
-    stops matching when its document changes what it says, and a stale one
-    is an error (`linter.accept`).
+    Changes no data; `seanchai lint --corpus` reports the note as
+    `accepted`. `rule`, `target` and `expect` (the exact message) must match
+    one note, else the linter reports a stale acceptance (`linter.accept`).
+    `reason` cites the clause that makes the override deliberate.
     """
 
     id: str
@@ -985,10 +856,8 @@ def _holds_nodes(value: Any) -> bool:
 
 
 def _corrected(node: ast.Node, correction: Correction) -> ast.Node:
-    """Rebuild one node with the field replaced, through validation.
-
-    `model_copy(update=...)` would not validate the new value, so a correction
-    could write a code of `"oops"` into a tree that only fails much later.
+    """Rebuild one node with the field replaced, validating it
+    (`model_copy(update=...)` would not).
     """
     if correction.field not in type(node).model_fields:
         raise CorrectionError(
@@ -1036,9 +905,8 @@ def _resolve(spec: ast.Specification, edit: Edit) -> ast.TreePath:
 def _checked_supply(
     spec: ast.Specification, node: ast.Node, supply: Supply
 ) -> ast.AvpTableRow | None:
-    """What `Supply` fills must be an enumerated AVP that cites the expected
-    source for its values and prints none of them, or the expected row of
-    an AVP the file re-uses; for a row, the row filled in."""
+    """Check a `Supply` target (see `Supply`); for a row, return it filled
+    in."""
     described = supply.target.describe()
     if isinstance(supply.target, table_row):
         assert isinstance(supply.expect, ast.AvpTableRow)
@@ -1099,9 +967,8 @@ def _check_new_values(
     printed: Sequence[ast.EnumEntry],
     supplied: Sequence[ast.EnumEntry],
 ) -> None:
-    """What `Supply(extend=True)` appends must share no name and no number
-    with what the section prints, reserved, void and vendor-specific ranges
-    included."""
+    """Check that `Supply(extend=True)` values share no name or number with
+    the section's entries, ranges included."""
     names = {entry.name for entry in printed if isinstance(entry, ast.EnumValue)}
     for entry in supplied:
         if isinstance(entry, ast.EnumValue) and entry.name in names:
@@ -1159,10 +1026,9 @@ def _inserted(
     origin: _Added,
     path: ast.TreePath,
 ) -> list[tuple[_Origin, Any]]:
-    """The rows of the table at `path`, or the members of the body, with the
-    declared one inserted, each with its origin, checked by validating the
-    node they make. `rows` holds what earlier inserts made of them, None
-    before the first."""
+    """Return the rows of the table at `path` (or the body's members) with
+    the declared one inserted, each with its origin, validated. `rows` holds
+    earlier inserts' result, None before the first."""
     described = insert.into.describe()
     field = _inserted_field(insert)
     row_type: type[ast.Node] = (
@@ -1256,10 +1122,9 @@ def _inserted_application_scope(
     insert: Insert,
     origin: _Added,
 ) -> list[tuple[_Origin, Any]]:
-    """The file's sections with the declared application scope placed after
-    the last one already there, or the declared undefined AVP after the last
-    section, each with its origin. `sections` holds what earlier inserts
-    made of them, None before the first."""
+    """Return the file's sections with the declared application scope or
+    undefined AVP placed (see `Insert`), each with its origin. `sections`
+    holds earlier inserts' result, None before the first."""
     described = insert.into.describe()
     node = insert.node
     if not isinstance(node, ast.ApplicationScope | ast.UndefinedAvp):
@@ -1302,9 +1167,8 @@ def _inserted_application_scope(
 
 
 def _check_undefined(spec: ast.Specification, node: ast.UndefinedAvp) -> None:
-    """What an inserted `UndefinedAvp` expects of the corrected file: no
-    definition, table row, re-used row or second block of its name, and a
-    message or grouped body in its clause naming it."""
+    """Check an inserted `UndefinedAvp` against the corrected file (see
+    `Insert`)."""
     described = f"undefined AVP {node.name!r}"
     for section in spec.sections:
         if (
@@ -1343,15 +1207,12 @@ def _created_blocks(
     spec: ast.Specification, corrections: Sequence[Edit]
 ) -> tuple[ast.Specification, list[int], dict[reused_avps, ast.TreePath]]:
     """Place an empty re-used block after each AVP table whose label an
-    `Insert` targets while no re-used block carries it (see `Insert`).
+    `Insert` targets and no re-used block has (see `Insert`).
 
-    Returns the tree to rebuild, with the placeholders in it; the index each
-    input section has in that tree, and past the last one the tree's end;
-    and the placeholders' paths by the selector creating each. A
-    placeholder is built without validation, since a table may not be empty;
-    the inserts targeting it fill it through the same `_inserted` as any
-    other, and the rebuild validates the result. Selectors never see it: they
-    resolve against the original tree.
+    Returns the tree to rebuild, each input section's index in it (plus the
+    end), and the placeholders' paths by selector. Placeholders skip
+    validation (a table may not be empty); the rebuild validates them once
+    filled. Selectors resolve against the original tree.
     """
     labels = {
         edit.into
@@ -1432,22 +1293,14 @@ class _Plan:
 
 
 def _rebuilt(node: Any, path: ast.TreePath, out: ast.TreePath, plan: _Plan) -> Any:
-    """Rebuild the tree, swapping in corrected nodes, adding inserted rows and
-    dropping deleted nodes, by path. `path` is where `node` sits in the tree
-    being rebuilt and `out` where it lands in the result; the two differ once
-    an insertion or deletion has moved a node's earlier siblings.
+    """Rebuild the tree by path: swap in corrected nodes, add inserted ones,
+    drop deleted ones. `path` is where `node` sits in the input tree, `out`
+    where it lands in the result.
 
-    A corrected replacement is descended into rather than returned whole: a
-    correction to a message and a correction to one of its AVP rules are both
-    legal, and stopping at the message would silently drop the second.
-    Corrections never replace a field holding child nodes, so the
-    replacement's children sit at the paths the original's did.
-
-    The rebuild goes through validation for the same reason `_corrected` does:
-    a correction that satisfies its own field's rules can still break a
-    cross-field invariant of an ancestor, and that has to fail here rather than
-    downstream. Deleting a table's last row fails the same way, on the table's
-    own non-empty invariant.
+    A corrected node is descended into, so corrections to its children still
+    apply; corrections never replace a field holding child nodes. Every
+    rebuilt node is validated, so a correction breaking an ancestor's
+    invariant (or deleting a table's last row) fails here.
     """
     if not isinstance(node, ast.Node):
         return node
@@ -1489,11 +1342,10 @@ def _rebuilt(node: Any, path: ast.TreePath, out: ast.TreePath, plan: _Plan) -> A
 def apply(
     spec: ast.Specification, corrections: Sequence[Declaration]
 ) -> tuple[ast.Specification, list[Result]]:
-    """Apply every edit, or none of them; acceptances are skipped.
+    """Apply every edit, or none; acceptances are skipped.
 
-    Each edit is resolved and checked against the original tree before
-    anything is rebuilt, so a failing one cannot leave a half-corrected
-    file behind.
+    Every edit is checked against the original tree before anything is
+    rebuilt.
     """
     applied = _applied(spec, edits(corrections))
     return applied.rebuilt, applied.results
@@ -1507,10 +1359,8 @@ def edits(declarations: Sequence[Declaration]) -> list[Edit]:
 def in_release(
     declarations: Sequence[Declaration], version: str | None
 ) -> list[Declaration]:
-    """The declarations that apply to `version`: those of its release
-    (`_versions.reviewed_release`), each range advisory within it. A module
-    holding TS 32.299's Release 19 corrections says nothing about the
-    Release 11 copy the corpus holds beside it."""
+    """Return the declarations for `version`'s release
+    (`_versions.reviewed_release`); version ranges within it are advisory."""
     release = reviewed_release(
         [VersionRange.parse(item.versions) for item in declarations], version
     )
@@ -1528,10 +1378,8 @@ def acceptances(declarations: Sequence[Declaration]) -> list[Accept]:
 
 @dataclass
 class _Applied:
-    """What `apply` did, with what `apply_with_comments` needs to follow
-    lines from the input tree to the output: the tree the rebuild walked,
-    where each input section sits in it, the plan, and per result the path
-    `plan.placed` knows it by."""
+    """What `apply` did, plus what `apply_with_comments` needs to map input
+    lines to output lines."""
 
     rebuilt: ast.Specification
     results: list[Result]
@@ -1734,20 +1582,14 @@ def apply_with_comments(
     comments: formatter.Comments,
     corrections: Sequence[Declaration],
 ) -> tuple[ast.Specification, list[Result], formatter.Comments]:
-    """`apply` for a tree with `;;` comments of its own, as
-    `parser.parse_with_comments` returns them: the comments come back keyed
-    by where their lines landed, merged with `notes(results)`.
+    """`apply` for a tree with `;;` comments (from
+    `parser.parse_with_comments`); returns the comments re-keyed to where
+    their lines landed, merged with `notes(results)`.
 
-    A comment moves with the line it attaches to, so one standing before a
-    member stays before it when an insert or a deletion shifts the body;
-    TS 32.299's commented-out struck members depend on it. A deleted line
-    takes nothing with it: what stood before it, or trailed it, stands where
-    it stood, before the deletion's note, and what stood after it stays
-    after the note; inside a deleted section, it becomes a block of its own
-    there. A directive line a correction removes (`; Bases:` emptied) has
-    its comments go where the correction's note goes, to the block's first
-    line, ahead of the note. Where a comment and a note trail one line, the
-    comment comes first.
+    A comment moves with its line. Comments on a deleted line stay in its
+    place, before the deletion's note; inside a deleted section they become
+    a block of their own. Comments on a removed directive line go to the
+    block's first line, ahead of the note. A comment trails before a note.
     """
     applied = _applied(spec, edits(corrections))
     # Per place, in print order: each note or comment with the input
@@ -1828,9 +1670,8 @@ def _print_order(
 def _landing(
     kind: str, path: ast.TreePath, applied: _Applied
 ) -> tuple[str, ast.TreePath, int]:
-    """Where a comment keyed `path` in the input (in the coordinates of the
-    tree the rebuild walked) lands in the output: its placement, path, and
-    the input position it orders by among a deletion's notes."""
+    """Return where a comment at input `path` lands: its placement, output
+    path, and input position for ordering among a deletion's notes."""
     plan = applied.plan
     for depth in range(1, len(path) + 1):
         gone = path[:depth]
@@ -1894,25 +1735,13 @@ type _NoteMap = dict[ast.TreePath, list[str]]
 
 
 def notes(results: list[Result]) -> formatter.Comments:
-    """`;;` note lines marking what `apply` touched, keyed by path in the
-    rebuilt tree, as the `formatter.Comments` `format_spec` takes.
+    """Return `;;` notes marking what `apply` touched, keyed by path in the
+    rebuilt tree, as the `formatter.Comments` that `format_spec` takes.
 
-    A trailing note says only that an edit reached the line, and where the
-    declaration is: the declaration carries the change and its `reason`, and
-    the raw file carries the old value, so repeating either here would only
-    lengthen every corrected file. It trails the line the corrected field
-    prints (`_cited_line`). A deleted node produces no line for a note
-    to trail, so its note *stands* — printed in the deleted line's place,
-    before the sibling that moved up into it — and names what is gone,
-    because unlike a trailing note it has no line saying that for it.
-
-    Each value a `Supply` adds trails a `supplied:` note, as an inserted
-    row trails `inserted:`.
-
-    A deleted *section* gets a `detached` note instead: its place is between
-    two sections, so gluing the note to the top of the following section
-    would read as being about that section. The formatter prints detached
-    notes as a block of their own, spaced like the section they replace.
+    A trailing note on the corrected line (`_cited_line`) names only the
+    declaration. A deleted node gets a standing note in its place naming
+    what is gone; a deleted section gets a detached one. Inserted rows trail
+    `inserted:` and supplied values `supplied:`.
     """
     placed: dict[str, _NoteMap] = {"trailing": {}, "standing": {}, "detached": {}}
     for kind, path, note, _ in _noted(results):
@@ -1964,17 +1793,11 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
 
 
 def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
-    """The path of the line a correction's note trails.
+    """Return the path of the line a correction's note trails.
 
-    A definition is cited on its header rule, the line that states it,
-    whichever field was corrected. The file header, a table, an
-    application scope and an undefined AVP have no such line: each field
-    they let a correction replace prints on a directive line of its own
-    (`; Bases:`, `; Table:`, `; Application-ID:`, `; Note:`), so the note
-    trails that line.
-    A correction that removes the field's line altogether — a `; Table:`
-    caption or the `; Bases:` dropped — is cited on the block's first line,
-    the one left that names the block.
+    A definition's note trails its header rule. For the file header, a
+    table, an application scope or an undefined AVP it trails the field's
+    directive line, or the block's first line if the correction removed it.
     """
     if isinstance(correction.target, flag_rules):
         # The rules print as cells of their row's line.
@@ -1990,14 +1813,12 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
 
 
 def module_path(directory: Path, specification: str) -> Path:
-    """The corrections module for `specification`, inside `directory`.
+    """Return the corrections module path for `specification` in
+    `directory`.
 
-    Two independent boundaries, because loading this path executes its Python:
-    `ast.spec_ref` accepts only canonical document references, so no cover-page
-    title can spell a separator or a `..`; and the resolved candidate must sit
-    directly in the resolved corrections directory, so neither a symlink nor a
-    future spelling of the first rule can reach outside the directory the user
-    named.
+    Loading it executes Python, so two checks hold: `ast.spec_ref` accepts
+    only canonical names, and the resolved path must sit directly in the
+    resolved directory, so no symlink reaches outside it.
     """
     try:
         reference = ast.spec_ref(specification)
@@ -2015,20 +1836,12 @@ def module_path(directory: Path, specification: str) -> Path:
 def load(
     directory: Path | None, specification: str, required: bool = False
 ) -> list[Declaration]:
-    """Read `<directory>/<SpecRef>.py` and return its `CORRECTIONS` list,
+    """Import `<directory>/<SpecRef>.py` and return its `CORRECTIONS` list,
     acceptances included.
 
-    The file name is derived from the specification, so a corrections file
-    cannot be applied to the wrong document. Importing it executes Python from
-    `directory`, which is why the CLI requires the path to be given explicitly
-    rather than discovering it.
-
-    `required` distinguishes the two callers. Extraction over a corpus may pass
-    a directory that holds modules for some of its specifications, so a missing
-    module is an ordinary empty result. `seanchai corpus correct` was asked for exactly
-    one specification's corrections, so a missing module, or one declaring no
-    edit, means a typo silently produced an uncorrected file, and it fails
-    instead.
+    This executes Python from `directory`, so the CLI requires the path to
+    be given explicitly. With `required`, a missing module or one with no
+    edit is an error; otherwise a missing module gives an empty list.
     """
     if directory is None:
         if required:

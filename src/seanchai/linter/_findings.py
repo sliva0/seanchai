@@ -1,6 +1,4 @@
-"""What a finding is, the order findings are reported in, and how an
-acceptance turns a note into an accepted one.
-"""
+"""Findings, their report order, and acceptances."""
 
 from __future__ import annotations
 
@@ -14,7 +12,7 @@ from ..dad import ast, corrections
 
 @dataclass(frozen=True)
 class AvpIdentity:
-    """What actually distinguishes one AVP from another."""
+    """The `(vendor-id, code)` pair that identifies an AVP."""
 
     vendor_id: int
     code: int
@@ -38,17 +36,15 @@ class Finding:
     # Clause the finding sits in, when it belongs to one place. A finding about
     # two clauses disagreeing names both in `message` instead.
     section: str | None = None
-    # The origin document a finding is about, for the rules that have one —
-    # carried structurally so `lint_with_corpus` can decide what a resolved
-    # origin supersedes without parsing it back out of `message`.
+    # The origin document the finding is about, if any. `lint_with_corpus`
+    # reads it to decide what a resolved origin supersedes.
     origin: str | None = None
     # The acceptance a note was accepted by, as a corrected file cites it
     # (`TS29.336.py#serving-node-t4-body`).
     accepted_by: str | None = None
-    # Where in the tree the nodes the finding is about sit, as correction
-    # selectors locate them: the definition whose body differs, every row
-    # of a name the tables disagree on. What an acceptance's target must
-    # select; a rule that sets none cannot be accepted.
+    # Tree paths of the nodes the finding is about, as correction selectors
+    # locate them. An acceptance's target must select one of them; a finding
+    # with none cannot be accepted.
     paths: tuple[ast.TreePath, ...] = ()
 
     def __str__(self) -> str:
@@ -70,19 +66,13 @@ def accept(
     findings: list[Finding],
     acceptances: Sequence[corrections.Accept],
 ) -> list[Finding]:
-    """`findings` with each note an acceptance matches reported as accepted.
+    """Return `findings` with each note an acceptance matches marked accepted.
 
-    An acceptance names a rule, the node the finding is about and the
-    finding's message, exactly; it matches when its target selects one node
-    in `spec` and one finding of that rule about that node, its tree path
-    among the finding's `paths`, reads `expect`. Two definitions of one name
-    are two nodes: accepting clause 6.3.1's body says nothing of 6.3.2's. A
-    note so matched becomes `ACCEPTED`, citing the acceptance; a second
-    acceptance of it finds it accepted. Anything else is a
-    `stale-acceptance` error: the document has changed what it says,
-    and the acknowledgement no longer describes it. An error is never
-    accepted, since it is the file asserting two things that cannot both be
-    true.
+    An acceptance matches when its target selects exactly one node in `spec`
+    and exactly one finding of its rule, with that node's path in the
+    finding's `paths`, has the message `expect`. Two definitions of one name
+    are two nodes. Any acceptance that does not match a note adds a
+    `stale-acceptance` error.
     """
     out = list(findings)
     for acceptance in acceptances:

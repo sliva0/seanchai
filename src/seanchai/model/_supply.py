@@ -1,5 +1,5 @@
-"""`supplied_from`: the definitions a consumer's hand-authored `.dad`
-sidecars supply for undefined names (`UndefinedPolicy.SUPPLY`)."""
+"""`supplied_from`: read a consumer's `.dad` sidecars into definitions for
+undefined names (`UndefinedPolicy.SUPPLY`)."""
 
 from __future__ import annotations
 
@@ -12,20 +12,18 @@ from ._types import Supplied
 
 
 def supplied_from(*paths: Path) -> dict[str, Supplied]:
-    """The definitions hand-authored `.dad` sidecars supply, by name, for
+    """Return the definitions in `.dad` sidecar files, by name, for
     `Model.build(..., undefined=UndefinedPolicy.SUPPLY, supply=...)`.
 
-    A sidecar is an ordinary `.dad` file, the format's hand-authored
-    input, but no corpus document: nothing cites it, and only its own
-    statements count, so each entry must be complete in its file. Every
-    `Grouped AVP` and `Enumerated AVP` section and every AVP-table row is
-    one `Supplied`: a definition's code and vendor from its header rule (no
-    vendor-id is IETF space), its flag rules from the table row of its
-    name; a row alone gives code, type and flag rules, its vendor read as
-    `AvpTableRow.stated_vendor` reads it. The source is the file's `;
-    Specification:` and name. A missing field, a row contradicting its
-    definition or its own V flag, and a name given twice, defined or tabled
-    twice in one sidecar or supplied by two, raise `ModelError`.
+    A sidecar is a plain `.dad` file that nothing cites, so each entry must
+    be complete within it. Each `Grouped AVP` or `Enumerated AVP` section
+    takes code and vendor from its header (no vendor-id means IETF space)
+    and flag rules from its AVP-table row. A row alone gives code, type and
+    flag rules, with the vendor read by `AvpTableRow.stated_vendor`.
+
+    Raises `ModelError` for a missing field, a row that contradicts its
+    definition or its own V flag, and a name given twice in one sidecar or
+    across sidecars.
     """
     found: dict[str, Supplied] = {}
     for path in paths:
@@ -101,8 +99,8 @@ def _supplied(
 
 
 def _flag_conflict(row: ast.AvpTableRow, vendor_id: int) -> list[str]:
-    """How `row`'s V flag contradicts the vendor it is read in: RFC 6733
-    section 4.1.1, as `AvpTableRow.vendor_flag_conflict` reads it."""
+    """How `row`'s V flag contradicts `vendor_id`, per
+    `AvpTableRow.vendor_flag_conflict`."""
     conflict = row.model_copy(update={"vendor_id": vendor_id}).vendor_flag_conflict()
     return [] if conflict is None else [f"row gives {conflict}"]
 

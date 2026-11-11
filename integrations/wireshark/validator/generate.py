@@ -9,13 +9,13 @@
 # ///
 """Write the Wireshark plugin that validates Diameter traffic against the corpus.
 
-The rules are `seanchai dictionary`'s, as a Lua table: every reading of every
-AVP the selected commands reach, with its type, flag rules, members and values,
-the commands keyed by application id, command code and direction, the
-`<answer-message>` each answer takes with the E bit set, and the result codes
-and bits the documents name. `core.lua` checks a PDU against them and
-`plugin.lua` draws the result; the output is one file holding all three, for
-Wireshark's plugin directory.
+The rules are `seanchai dictionary`'s output as a Lua table: every reading of
+every AVP the selected commands reach (type, flag rules, members, values), the
+commands keyed by application id, command code and direction, the
+`<answer-message>` used with the E bit, and the result codes the documents
+name. `core.lua` checks a PDU against the rules and `plugin.lua` shows the
+result. The output is one file holding all three, for Wireshark's plugin
+directory.
 
     uv run integrations/wireshark/validator/generate.py \\
         -o ~/.local/lib/wireshark/plugins/seanchai_diameter.lua
@@ -23,10 +23,10 @@ Wireshark's plugin directory.
         --application 16777251 -o seanchai_diameter.lua
     uv run integrations/wireshark/validator/generate.py --rules-only -o rules.lua
 
-Where several documents define one command under one application id, every one
-is a candidate and the plugin reports against the best match, except a document
-a newer one in the corpus obsoletes (`OBSOLETED_BY`), which the corpus holds
-only because others cite it. README.md beside this script says what is checked.
+Where several documents define one command under one application id, each is
+a candidate and the plugin reports against the best match. A document that a
+newer one in the corpus obsoletes (`OBSOLETED_BY`) is not a candidate. README.md
+beside this script says what is checked.
 """
 
 from __future__ import annotations
@@ -75,11 +75,11 @@ def _flag_letters(values: Iterable[str]) -> str:
 
 
 def _body(members: Iterable[dictionary.Member]) -> str:
-    """A body as `b(wildcard, m(...), ...)`: members by reading id, with the
-    holes and placeholders the corpus cannot complete named for what they are.
+    """A body as `b(wildcard, m(...), ...)`, with members by reading id and
+    holes and placeholders marked as such.
+
     `wildcard` is the `* [ AVP ]` line's `{min, max}`, or `false` where the body
-    has none: RFC 6733's `Failed-AVP` is `1* { AVP }`, which admits any AVP and
-    requires one."""
+    has none. RFC 6733's `Failed-AVP` is `1* { AVP }`: any AVP, at least one."""
     wildcard = "false"
     entries = []
     for member in members:
@@ -150,11 +150,13 @@ def _allocated(built: model.Model, application_id: int | None) -> set[str]:
 
 
 def _candidates(applications: Iterable[dictionary.Application], built: model.Model):
-    """The commands per `app:code:R` key, without an obsoleted document's where
-    the document obsoleting it defines commands of its own. Those of a document
-    the registry allocates the id to come first, which the plugin keeps where
-    candidates fit a message equally: 3GPP2 X.S0013-006 prints Cx's commands as
-    TS 29.229 does, and the registry gives 16777216 to TS 29.229."""
+    """The candidate commands per `app:code:R` key.
+
+    An obsoleted document's commands are dropped where the obsoleting document
+    defines commands of its own. Commands of the document the registry gives
+    the id to come first; the plugin prefers them when candidates fit equally
+    (3GPP2 X.S0013-006 prints Cx's commands as TS 29.229 does, and 16777216 is
+    TS 29.229's)."""
     defining = {application.reference for application in applications}
     keyed: dict[str, list[tuple[dictionary.Application, dictionary.Command]]] = (
         defaultdict(list)

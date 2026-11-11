@@ -1,29 +1,26 @@
 # Wireshark dictionary patches
 
-The plugin checking Diameter traffic against the corpus is under
+Merge requests for Wireshark's Diameter dictionary, staged from the
+[oracle](../../docs/oracle.md)'s findings. None has been submitted. The plugin
+that checks Diameter traffic against the corpus is in
 [`validator/`](validator/README.md).
 
-Merge requests for Wireshark's Diameter dictionary, staged from the
-[oracle](../../docs/oracle.md)'s findings, in two series. None has been
-submitted.
+- Defects, `0001` to `0026` in this directory: entries the dictionary holds
+  wrongly, one per patch. Each was checked by hand against the defining clause
+  or a verified erratum, which its commit message cites.
+- [Additions](#additions), in [`additions/`](additions/): AVPs the dictionary
+  has no entry for, one patch per defining document, written from the corpus.
 
-- **Defects**, `0001` to `0026` here: entries the dictionary holds wrongly,
-  a misspelt name, a wrong type or a member list short of the document's,
-  each checked by hand against the clause that defines the AVP, or the
-  verified erratum correcting it, which its commit message cites. One
-  defect per patch.
-- **Additions**, under [`additions/`](additions/): AVPs the dictionary has
-  no entry for, one patch per defining document, written by `additions.py`
-  from the corpus. Nothing the dictionary holds changes.
+All are `git format-patch` output against Wireshark `v4.7.2`, the tag
+`src/seanchai/downloader/specs.toml` pins. They touch only
+`resources/protocols/diameter/`, and each commit message is the merge
+request's title and description.
 
-Both are `git format-patch` output against the release `specs.toml` pins
-(`v4.7.2`), touching only `resources/protocols/diameter/`, and each patch's
-commit message is the merge request's title and description.
-
-[`aliases.toml`](aliases.toml) lists the renames that are no defect: names
-the dictionary gives an AVP on purpose, mostly to keep it apart from another
-document's AVP of the same name. The oracle counts them as accepted renames
-([oracle.md](../../docs/oracle.md#accepted-renames)); no patch touches them.
+[`aliases.toml`](aliases.toml) lists names the dictionary gives an AVP on
+purpose, mostly to keep it apart from another document's AVP of the same name.
+The oracle counts them as accepted renames
+([oracle.md](../../docs/oracle.md#accepted-renames)), and no patch touches
+them.
 
 ## Defects
 
@@ -62,24 +59,20 @@ document's AVP of the same name. The oracle counts them as accepted renames
 uv run integrations/wireshark/additions.py   # rewrites additions/
 ```
 
-Each entry is written in the shape of the entries around it: name, code,
-`vendor-id`, a `<type>` with an `<enum>` per value of an enumerated AVP or
-a `<grouped>` with a `<gavp>` per member, `mandatory` and `vendor-bit`
-from the document's flag rules, and `may-encrypt` where its AVP table has
-the column. Values a correction supplies from a cited document are
-included, and the description says which. Corpus types map to the
-dictionary's typedefns one to one, except `Address`, written `IPAddress`.
-A member is named as the dictionary names it (`Cx-User-Data`), or as the
-ABNF does where no entry carries it. Where a document states no M bit,
-`mandatory` is left at the DTD's default and the description says so.
+Each entry follows the entries around it: name, code, `vendor-id`, a `<type>`
+with an `<enum>` per value or a `<grouped>` with a `<gavp>` per member,
+`mandatory` and `vendor-bit` from the flag rules, and `may-encrypt` where the
+AVP table has the column. Corpus types map to the dictionary's one to one,
+except `Address`, written `IPAddress`. A member takes the dictionary's name
+where it has one (`Cx-User-Data`). The description notes values a correction
+supplied and an M bit the document leaves unstated, which stays at the DTD's
+default.
 
-An entry goes after the dictionary entry of its vendor with the nearest
-lower code, its own document's entries first. A place within three lines
-of another patch's, or of a line a defect patch changes, is passed over,
-so every addition applies to `v4.7.2` on its own, all apply in order, and
-all apply after the defects; the script checks this before it writes, and
-its output is the same byte for byte on every run
-(`tests/test_wireshark_additions.py` pins it).
+An entry goes after its vendor's entry with the nearest lower code. The script
+keeps every entry more than three lines from another patch's changes, so each
+addition applies to `v4.7.2` on its own, all apply in order, and all apply
+after the defects. It checks this before writing, and its output is the same
+on every run (`tests/test_wireshark_additions.py` pins it).
 
 | Patch | Document | Entries | File |
 |---|---|---|---|
@@ -120,20 +113,17 @@ its output is the same byte for byte on every run
 | 0035 | RFC 8506 | 11 | `dictionary.xml` |
 | 0036 | RFC 8582 | 1 | `dictionary.xml` |
 
-Some absences stay out, named in their document's description:
+Left out, and named in their document's description:
 
-- **Named like another entry.** Wireshark names each display filter field
-  after its AVP, so a second entry named alike collides, and which of the
-  two is renamed is a maintainer's call: TS 29.345's `Filter-Id` and
-  `MAC-Address`, TS 29.283's `Sequence-Number`, TS 29.468's
-  `MBMS-GW-SSM-IP-Address` and `-IPv6-Address`, TS 32.299's
-  `Radio-Frequency`, and `Time-Window`.
-- **Grouped with no members to list**, which the DTD's `<grouped>` cannot
-  hold: RFC 5777's `QoS-Capability` and TS 29.128's
-  `APN-Rate-Control-Status`.
-- **A vendor the dictionary does not declare**: oneM2M TS-0004's AVPs in
-  vendor 45687. Adding the vendor, its file and its entity is a merge
-  request of another shape.
+- AVPs named like an existing entry. Wireshark names each display filter field
+  after its AVP, so two entries of one name collide, and which to rename is the
+  maintainers' call: TS 29.345's `Filter-Id` and `MAC-Address`, TS 29.283's
+  `Sequence-Number`, TS 29.468's `MBMS-GW-SSM-IP-Address` and
+  `-IPv6-Address`, TS 32.299's `Radio-Frequency`, and `Time-Window`.
+- Grouped AVPs with no members to list, which `<grouped>` cannot hold: RFC
+  5777's `QoS-Capability` and TS 29.128's `APN-Rate-Control-Status`.
+- AVPs of a vendor the dictionary does not declare: oneM2M TS-0004's, vendor
+  45687.
 
 ## Applying
 
@@ -142,19 +132,21 @@ In a Wireshark checkout, one branch per merge request:
 ```sh
 git switch -c diameter-call-barring-info origin/master
 git am -3 /path/to/seanchai/integrations/wireshark/0001-call-barring-info.patch
+git commit --amend --reset-author   # to submit under your own name
 ```
 
-Every defect patch applies on its own to `v4.7.2`, and all apply in order
-as one series; `-3` lets `git am` merge through context that has moved on
-master. `git am` keeps the patch's author; use `git commit --amend
---reset-author` to submit under your own.
+Every defect patch applies to `v4.7.2` on its own, and all apply in order.
+`-3` lets `git am` merge through context that has moved on master.
 
-Before pushing a rename, grep the checkout for the old name: a dissector
-or a test may refer to it. A renamed AVP also renames its display filter
-field (`diameter.<name>`), which each rename's description says.
+Before pushing a rename, grep the checkout for the old name, since a dissector
+or test may use it. A rename also renames the display filter field
+(`diameter.<name>`), as its description says.
 
 ## Checking
 
-`seanchai corpus crosscheck --wireshark <checkout>/resources/protocols/diameter
-dad` over the corpus no longer reports a patched AVP. The accepted renames hold
-against the patched dictionary too.
+After applying, this no longer reports a patched AVP, and the accepted renames
+still hold:
+
+```sh
+uv run seanchai corpus crosscheck --wireshark <checkout>/resources/protocols/diameter
+```

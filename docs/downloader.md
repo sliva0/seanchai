@@ -1,18 +1,22 @@
 # The downloader
 
-`src/seanchai/downloader/` fetches the catalog in its `specs.toml` into the
-git-ignored `specifications/`: 3GPP archives with their ETSI PDF
-renderings, pinned older 3GPP versions, the plain-text RFCs, oneM2M's Word
-original at a pinned version, the PDFs the hand transcriptions were copied
-from, and Wireshark's Diameter dictionary. It converts every legacy `.doc` to
-`.docx` with headless LibreOffice and writes `specifications/manifest.json` with
-sha256 and size per artifact.
-Dependencies: the `seanchai[extract]` extra, which is pypdf with its crypto
-extra (ETSI's TS 129 234 V11.2.0 is AES-encrypted with an empty password) and
-python-docx for validation, and the `soffice` executable unless `--no-convert`.
+`src/seanchai/downloader/` fetches the catalog in `specs.toml` into the
+git-ignored `specifications/`:
 
-In `specs.toml`, `title` and `reason` are prose, read with their whitespace
-collapsed; every other field is exact.
+- 3GPP archives with their ETSI PDF renderings, and pinned older 3GPP
+  versions;
+- RFC plain texts;
+- oneM2M's Word original, at a pinned version;
+- the PDFs the hand transcriptions were copied from;
+- Wireshark's Diameter dictionary.
+
+It converts each legacy `.doc` to `.docx` with headless LibreOffice and
+writes `specifications/manifest.json`, with the sha256 and size of every
+artifact.
+
+It needs the `seanchai[extract]` extra (pypdf with its crypto extra, since
+ETSI's TS 129 234 V11.2.0 is AES-encrypted with an empty password, and
+python-docx to validate) and `soffice` unless `--no-convert`.
 
 ```sh
 uv run seanchai corpus download --list          # show the catalog
@@ -23,129 +27,111 @@ uv run seanchai corpus download --only wireshark --only rfc  # the small ones
 uv run seanchai corpus download --only transcribed  # the transcriptions' PDFs
 ```
 
+## The catalog
+
+`specs.toml` has one table per entry. `title` and `reason` are prose, read
+with whitespace collapsed; every other field is exact.
+
+- `[[tgpp]]`: a 3GPP document in the release `RELEASE` in
+  `downloader/catalog.py` names. An `out_of_scope` entry is fetched for
+  reference and refused by `regenerate --add`
+  ([extractor.md](extractor.md#out-of-scope)).
+- `[[tgpp_pinned]]`: one older version, with a claim each run checks
+  against the archive before downloading: `final = "document"` (its last
+  version in any release) or `final = "release"` (its release's last). It
+  goes into its own release's tree (`3gpp/Rel-11/TS_32.299/`). Every
+  `cited_version` and `final_version` in `corpus.toml` must be such a pin,
+  the latter with `final = "document"` (`tests/test_corpus.py`,
+  [consumers.md](consumers.md#resolution-across-releases)).
+- `[[rfc]]`: an RFC.
+- `[[onem2m]]`: a oneM2M document at a pinned `version`, since oneM2M's
+  library serves only a document's latest revision. A zip carrying another
+  version fails the run. Only the clean `(cl)` file is extracted and
+  converted, and there is no PDF.
+- `[[transcribed]]`: the PDF a file in `edits/transcriptions/` was copied
+  from. `title` is its cover's title, which `seanchai export` reads; `url`
+  must equal the file's `; Transcribed:` URL. The URL is fixed in the
+  catalog because ETSI's listing shows later versions and 3GPP2's shows
+  nothing.
+- `[wireshark]`: the release `tag` and `path` of Wireshark's Diameter
+  dictionary directory.
+
 ## Layout
 
-```
-specifications/
-  manifest.json            what the published tree below holds
-  3gpp/Rel-19/TS_29.272/   extracted archives          ┐
-  3gpp/Rel-19/PDF/         ETSI renderings             │ published tree,
-  3gpp/Rel-7/TS_29.140/    a pinned version, its release's │
-  converted/               LibreOffice conversions     │ swapped in whole
-  onem2m/Release-2/TS-0004/  the oneM2M document       │
-  transcriptions/          the transcriptions' PDFs    │
-  rfc/  wireshark/         RFC texts, the dictionary   ┘
-  archives/                download cache: every file fetched, never pruned
-  versions/TS29.272/18.6.0/   an older version, on request
-  .staging/                a run in progress
-```
+The published tree, which a run swaps in whole:
 
-The cache keys every file by its version-bearing name, so nothing in it is
-ever replaced, and a version fetched once is read from disk afterwards. An
-older version fetched with `--spec`/`--version` gets a tree of the
-published shape under `versions/` with a one-record `manifest.json`, which
-`regenerate --manifest` reads
+| Path | Holds |
+|---|---|
+| `manifest.json` | what the published tree holds |
+| `3gpp/Rel-19/TS_29.272/` | extracted archives |
+| `3gpp/Rel-19/PDF/` | ETSI renderings |
+| `3gpp/Rel-7/TS_29.140/` | a pinned version, in its own release |
+| `converted/` | LibreOffice conversions |
+| `onem2m/Release-2/TS-0004/` | the oneM2M document |
+| `transcriptions/` | the transcriptions' PDFs |
+| `rfc/`, `wireshark/` | RFC texts and the dictionary |
+
+Beside it:
+
+| Path | Holds |
+|---|---|
+| `archives/` | the download cache: every file fetched, never pruned |
+| `versions/TS29.272/18.6.0/` | an older version fetched on request |
+| `.staging/` | a run in progress |
+
+The cache keys files by their version-bearing names, so nothing in it is
+replaced and a version is downloaded once. An older version fetched with
+`--spec` and `--version` gets a tree of the published shape under
+`versions/`, with a one-record `manifest.json` for `regenerate --manifest`
 ([development.md](development.md#version-upgrades)).
-
-PDFs are on by default because version selection depends on them:
-`--no-pdfs` lets the newest archive replace a committed document's docx
-with a version whose ETSI PDF is unpublished. It exists for catalog
-experiments, not for refreshing the corpus.
 
 ## Behaviour
 
-- **`--only` fetches some of the sources and keeps the rest.** The sources are
-  `3gpp`, with its pinned versions, `onem2m`, `rfc`, `transcribed` and
-  `wireshark`; `rfc` and `wireshark` need no `seanchai[extract]`. What the
-  manifest holds of the others is
-  linked into the staged tree and swapped back with it, and its `sources` says
-  what the manifest and the tree hold. `3gpp_release` and `include_pdfs`
-  describe its 3GPP documents, null with none. A record whose files have gone
-  refuses the run. A later full download fetches nothing the cache holds, the
-  dictionary's listing included. `regenerate` over a partial manifest reports
-  each document it lacks as `not-in-manifest` and fails naming what to download;
-  with `--spec` it rebuilds what the manifest holds.
-- **Every artifact is validated by opening it**, fresh or cached: ZIP
-  member CRCs, the PDF page tree, the "Request for Comments:" header. A
-  cached file that fails validation is deleted.
-- **A run publishes all of it or nothing.** Every entry is extracted,
-  converted and linked from the cache into `.staging/`, and the staged tree
-  and manifest are swapped in only once every entry succeeded. A failed
-  run leaves the previous tree and manifest as they were, unless the swap
-  itself fails halfway: then the rollback restores what it can, writes no
-  manifest, and the error names what `.previous/` still holds. The next
-  run refuses to start until someone moves it back or deletes it.
-- **3GPP versions come from `Specs/archive/`**, which keeps every version.
-  The manifest's `url` is the archive's.
-- **Version selection prefers page attachment over newness.** When the
-  newest archive's ETSI rendering is unpublished, the downloader walks back
-  to the highest version whose PDF exists and records the skipped version
-  in `newer_source_version`. Only when no version of the release has a PDF
-  does it take the newest archive with an earlier-version PDF, recorded in
-  `pdf_version`; `attach_pages` checks the cover and refuses such a PDF. A
-  `--version` is never walked back. An earlier rendering answers only ETSI's
-  404 for the exact one: any other failure to fetch it fails the run, since a
-  mismatched PDF is a document that cannot be regenerated.
-- **The ETSI URL is read off the deliver listing**, since a version
-  directory carries an edition suffix (`18.07.00_60`) the version does not
-  determine. That URL is the manifest's `pdf_url` and the `.dad` file's
-  `; Link:`.
-- **Selection does not depend on listing order**: the highest decoded
-  version wins. Archive versions are base-36 (`i00` is 18.0.0); ETSI PDF
-  names use two digits per component (`v180100`).
-- **Legacy `.doc` archives are converted, not skipped.** Each run converts
-  them into `converted/`, mirroring the extracted path, with `soffice
-  --headless --infilter='MS Word 97' --convert-to 'docx:Office Open XML
-  Text'` in a private temporary profile. The record's `conversions` list
-  names the derived file, its source and the source's sha256, the
-  converter version and the command. The converted file differs byte for
-  byte between runs (zip timestamps, OLE object ids), so `source_sha256`
-  and `converter` say whether the content changed. An absent LibreOffice, a
-  non-zero exit or a conversion python-docx cannot open fails the download.
-  A conversion still running after ten minutes is killed with its whole
-  process group.
-- **`--no-convert` skips the conversions.** The `.doc` is still extracted;
-  the record's `conversions` is `[]`, and `regenerate` reports each such
-  document as `not-converted` and leaves its committed pair alone. Whether
-  a manifest can rebuild the whole corpus depends on what the run was
-  asked, never on what happens to be installed.
-- **Older 3GPP versions are pinned, and their claim is checked.** A
-  `[[tgpp_pinned]]` entry names a document, one version and what it claims
-  that version is: `final = "document"`, the document's last version in
-  any release, or `final = "release"`, its release's last. Every run lists
-  the document's archive and checks the claim before downloading anything,
-  so a resolution never rests on a claim the archive stopped supporting.
-  The version is fetched into its own release's tree
-  (`3gpp/Rel-11/TS_32.299/` beside `3gpp/Rel-19/TS_32.299/`). How the
-  corpus resolves to the pinned copies is in
-  [consumers.md](consumers.md#resolution-across-releases): every
-  `cited_version` (the version a citing copy's references clause names) and
-  `final_version` the corpus's `corpus.toml` names is such a pin, the latter
-  with `final = "document"`, which `tests/test_corpus.py` holds the two to.
-- **A catalog entry can be downloaded and still be out of scope.** A `[[tgpp]]`
-  entry's `out_of_scope` says why the extractor has nothing to read in it; the
-  document is fetched for reference, and `regenerate --add` refuses it with
-  those words ([extractor.md](extractor.md#out-of-scope)).
-- **A hand transcription's PDF is a source of its own.** A `[[transcribed]]`
-  entry names a document under `edits/transcriptions/`, the title its cover
-  prints, which `seanchai export` reads, and `url`, the exact rendering its
-  `; Transcribed:` names, a test holding the two together. The URL is the
-  catalog's and not one read off a listing: ETSI's deliver directory lists later
-  versions, and 3GPP2's archive lists nothing. The PDF goes to
-  `specifications/transcriptions/` under its own name and into the manifest with
-  the publisher as `family` (`ETSI`, `3GPP2`, `OMA`), and is validated like any
-  other.
-  `seanchai export --include-pdfs` finds it there by name. `regenerate` reads
-  the transcription, never the PDF, so a manifest without this source rebuilds
-  the whole corpus. A `transcriptions/` placed by hand, in no manifest, stays
-  until a run fetches this source.
-- **oneM2M documents are pinned by the catalog, not discovered.** The
-  document library serves a document id's latest revision with no archive,
-  so the version is the catalog's to state and the download's to check: a
-  zip carrying another version fails the run rather than replace the
-  document under a committed corpus. Only the clean `(cl)` file is
-  extracted and converted; the record has no PDF, since no rendering of
-  V2.35.0 exists.
+- A run publishes all or nothing: entries are staged in `.staging/` and
+  swapped in only when all succeeded. If the swap fails halfway, the rollback
+  restores what it can, writes no manifest and names what `.previous/` holds;
+  the next run refuses to start until `.previous/` is moved back or deleted.
 - A failed download cancels the remaining jobs; running ones finish.
-- 3GPP and ETSI index pages are scraped with regexes over raw HTML, which
-  is fine for the listing formats and brittle if the markup changes.
+- Every artifact is validated by opening it, fresh or cached: ZIP member
+  CRCs, the PDF page tree, an RFC's "Request for Comments:" header. A cached
+  file that fails is deleted.
+- `--only` fetches the named sources (`3gpp` with its pins, `onem2m`, `rfc`,
+  `transcribed`, `wireshark`) and keeps what the manifest holds of the
+  others. The manifest's `sources` lists what it holds; `3gpp_release` and
+  `include_pdfs` are null without 3GPP documents. A kept record whose files
+  are gone refuses the run. `regenerate` over a partial manifest fails with
+  `not-in-manifest` unless `--spec` names only documents it holds.
+- 3GPP versions come from `Specs/archive/`, which keeps every version; the
+  manifest's `url` is the archive's.
+- The downloader takes the highest version with a published ETSI PDF and
+  records a newer, skipped one in `newer_source_version`. If no version of
+  the release has a PDF, it takes the newest archive with an earlier
+  version's PDF, recorded in `pdf_version`, which `attach_pages` refuses. An
+  explicit `--version` is never walked back. Only ETSI's 404 for the exact
+  PDF leads to an earlier one; any other fetch failure fails the run.
+- `--no-pdfs` skips this, letting the newest archive replace a committed
+  document. It is for catalog experiments only.
+- The ETSI URL comes from the deliver listing, since the directory carries an
+  edition suffix (`18.07.00_60`). It is the manifest's `pdf_url` and the
+  `.dad` file's `; Link:`.
+- The highest decoded version wins regardless of listing order. Archive
+  versions are base-36 (`i00` is 18.0.0); ETSI PDF names use two digits per
+  component (`v180100`).
+- A legacy `.doc` is converted into `converted/`, mirroring its path, with
+  `soffice --headless --infilter='MS Word 97' --convert-to 'docx:Office Open
+  XML Text'` in a temporary profile. The record's `conversions` names the
+  output, the source and its sha256, the converter version and the command;
+  `source_sha256` and `converter` show whether content changed, since output
+  bytes vary between runs. A missing LibreOffice, a non-zero exit or an
+  output python-docx cannot open fails the run. A conversion is killed with
+  its process group after ten minutes.
+- `--no-convert` still extracts the `.doc` but records `conversions` as `[]`.
+  `regenerate` reports such a document as `not-converted` and leaves its
+  committed pair alone. What a manifest can rebuild depends on the options
+  used, never on what is installed.
+- A transcription's PDF goes to `transcriptions/` under its own name, with
+  the publisher as `family` (`ETSI`, `3GPP2`, `OMA`), for
+  `seanchai export --include-pdfs`. `regenerate` reads only the
+  transcription, so it does not need this source.
+- 3GPP and ETSI index pages are scraped with regular expressions over raw
+  HTML, which breaks if their markup changes.

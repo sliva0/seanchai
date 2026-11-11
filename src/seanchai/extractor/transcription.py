@@ -1,22 +1,14 @@
 """Reader for a transcription: a document no extractor reads, copied by hand.
 
-The ETSI, 3GPP2 and OMA documents the corpus holds exist only as PDF. A person
-writes each in `.dad` notation under `edits/transcriptions/<SpecRef>.dad`,
-copying what the document prints, misprints included, even where the
-grammar cannot hold it (TS 183 017's `< AVP Header: x >`, X.S0057's
-`5535/9010` code cell). This module is the extractor's place in the
-pipeline for it: the input patches of `edits/sources/<SpecRef>.toml` apply
-to the transcription's text, and the patched text must parse. The result
-is the raw file; corrections take it from there, as for any other.
+The ETSI, 3GPP2 and OMA documents the corpus holds exist only as PDF. Each is
+written in `.dad` notation under `edits/transcriptions/<SpecRef>.dad`,
+misprints included. The input patches of `edits/sources/<SpecRef>.toml` apply
+to its text, the patched text must parse, and the result is the raw file that
+corrections then take.
 
-    transcription → input patches → raw → corrections → corrected
-
-A patch's text unit is one line of the transcription, a `;;` comment's
-included, so a note quoting what a patch repairs counts as a match; its
-`section` scope is the `; Section:` of the block the line sits in, so a
-patch can be narrowed to one clause as a 3GPP patch is. The transcription
-carries its `; Transcribed:` header itself; nothing here adds or checks
-it.
+A patch's text unit is one line, `;;` comments included. Its `section` scope
+is the `; Section:` of the block the line sits in. The transcription carries
+its own `; Transcribed:` header; nothing here adds or checks it.
 """
 
 import re
@@ -44,9 +36,8 @@ def patched(
 ) -> str:
     """The transcription's text with its input patches applied.
 
-    The header is read before patching, to name the declarations file and
-    the version their ranges are compared with; a transcription whose header
-    the patches would have to repair is not one this reads.
+    The header is read before patching, for the declarations file and the
+    version their ranges are compared with, so patches cannot repair it.
     """
     with boundary(f"reading transcription {path}"):
         text = path.read_text(encoding="utf-8")

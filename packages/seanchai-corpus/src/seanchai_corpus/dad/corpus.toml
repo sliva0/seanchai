@@ -1,23 +1,17 @@
-# The corpus's own description: the format its files are written in, and the
-# facts resolving a citation between its documents needs, which the `.dad`
-# grammar does not carry. Maintained by hand; `seanchai corpus regenerate` does
-# not write it. `seanchai.corpus.Corpus.load` reads it for the directory holding
-# it directly, raw mirror included, and refuses an unknown key, an entry stated
-# twice and one naming a document or copy the corpus lacks
-# (docs/consumers.md#resolution-across-releases).
+# The corpus format, and the facts citation resolution needs that `.dad` files
+# do not carry. Maintained by hand. `seanchai.corpus.Corpus.load` reads it for
+# the directory holding it (raw mirror included) and refuses unknown keys,
+# duplicate entries and entries naming a document or copy the corpus lacks
+# (docs/consumers.md).
 #
-# Every entry states its `evidence`: the clause or the comparison it rests on,
-# read as one line of prose. A key a table's entries share is a reference as a
-# re-used row's From cell spells it, `TS29.272`; a version is the copy's own.
-# An entry read from a citing document's references clause names the copy
-# whose clause it read, `citing_version`, and answers for that copy alone: the
-# clause changes between versions, and the corpus holds several copies of some
-# documents. Each copy citing alike states its own entry, and a citing document
-# without a version, an RFC, states `citing_version = ""`.
+# Every entry states its `evidence`, read as one line of prose. References are
+# spelled as a re-used row's From cell spells them (`TS29.272`). An entry read
+# from a references clause applies only to the copy in `citing_version`, since
+# that clause changes between versions; a citing RFC has `citing_version = ""`.
 
 # Which generation of the `.dad` grammar and of this directory's layout the
 # corpus is; a library refuses a corpus of a format it does not read
-# (docs/development.md#the-corpus-format).
+# (docs/development.md).
 format = 1
 
 # A document its citers number otherwise than its publisher does, by the

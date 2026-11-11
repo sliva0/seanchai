@@ -1,25 +1,14 @@
 """Rebuild the committed corpus from the downloaded sources.
 
-The corpus is derived output: every file in it is one extraction, one page
-attachment and one correction pass over a document the downloader fetched.
-This module does that for every specification the corpus holds, in one call,
-driven by `specifications/manifest.json`, so that the corpus can never quietly
-drift from what the sources and the edit layers would produce today.
+Each corpus file is one extraction, page attachment and correction pass over a
+document in `specifications/manifest.json`. `regenerate` redoes this for every
+specification the corpus holds, so the corpus cannot drift from its sources
+and edits. A transcription (`extractor.transcription`) has no manifest record
+and is rebuilt from its own text.
 
-A transcription — a document no extractor reads, copied by hand into
-`edits/transcriptions/` — has no manifest record: the transcription is its
-source, read through its input patches into the raw file, and it is
-otherwise rebuilt like any other (`extractor.transcription`).
-
-Which documents count is decided by the corpus, not the manifest: the catalog
-holds documents that define nothing the extractor reads (TS 29.201's XML
-mapping, 29.228's IE tables), marked `out_of_scope` there, so a run rebuilds
-what is committed plus whatever `add` names and the catalog does not refuse.
-Which *version* counts is decided by the manifest: the downloader already
-prefers the newest version with a published ETSI PDF, and a corpus that lags
-it is exactly what this module exists to expose, so a superseded pair is
-replaced and reported rather than kept.
-
+The corpus decides which documents count: what is committed, plus whatever
+`add` names that the catalog does not mark `out_of_scope`. The manifest
+decides which version counts, so a superseded copy is replaced and reported.
 The library returns a `Report`; `seanchai corpus regenerate` prints it.
 """
 
@@ -120,25 +109,23 @@ def regenerate(
 ) -> Report:
     """Rebuild every committed specification (plus `add`) into `output`.
 
-    `output` may be `corpus` itself, which is the normal run, or an empty
-    directory, which is how the test suite checks that the committed corpus
-    is what the sources produce without touching it.
+    `output` is normally `corpus` itself; the test suite passes an empty
+    directory to check the committed corpus without touching it.
 
     `only` rebuilds those specifications instead of every committed one. With
-    the manifest of an older version (`seanchai corpus download --spec --version`)
-    and a scratch `output`, that re-extracts the older version for a
-    raw-vs-raw diff against the corpus.
+    the manifest of an older version (`seanchai corpus download --spec
+    --version`) and a scratch `output`, that re-extracts the older version for a
+    raw-vs-raw diff.
 
     `expand_ranges` widens, in the edit files themselves, every declaration
-    range a successfully rebuilt specification's version falls outside; see
-    `seanchai._ranges`.
+    range a cleanly rebuilt specification's version falls outside
+    (`seanchai._ranges`).
 
-    `transcriptions_dir` holds the hand transcriptions of documents no
-    extractor reads, each a source like a manifest record.
+    `transcriptions_dir` holds the hand transcriptions, each a source like a
+    manifest record.
 
-    With `corrections_dir`, a run nothing failed in also rewrites `output`'s
-    corrections record, over whatever corrected files `output` then holds
-    (`seanchai._correction_record`).
+    With `corrections_dir`, a run with no failure also rewrites `output`'s
+    corrections record (`seanchai._correction_record`).
     """
     try:
         sources = _sources(manifest)
@@ -221,12 +208,10 @@ def _selected(
     only: Sequence[str],
     add: Sequence[str],
 ) -> list[_Key]:
-    """The copies a run rebuilds: every committed one, or with `only` those
-    of the references it names that the manifest lists (an older version's
-    one-record manifest lists one release of a document the corpus may hold
-    in two), and with `add` every listed copy of a reference not committed.
-    A named reference neither lists nor commits is kept, as `(reference,
-    None)`, to be reported."""
+    """The copies a run rebuilds: every committed one, or with `only` those of
+    the references it names that the manifest lists, and with `add` every listed
+    copy of a reference not committed. A named reference neither listed nor
+    committed is kept as `(reference, None)`, to be reported."""
 
     def of(reference: str, keys) -> list[_Key]:
         return [key for key in keys if key[0] == reference]
@@ -252,10 +237,8 @@ def _followed(
     """Where a committed copy goes: its own place, unless the manifest no longer
     lists it and lists its document in one later release's tree, with nothing
     committed there. That is a release upgrade (TS 29.214 V18.4.0 in
-    `3gpp/rel-18`, V19.3.0 in `3gpp/rel-19`), which replaces the copy as a new
-    version in its own tree does, and `_one` is handed the old pair to take out.
-    An older version's one-record manifest, whose tree is an earlier release's,
-    moves nothing."""
+    `3gpp/rel-18`, V19.3.0 in `3gpp/rel-19`), and `_one` is handed the old pair to
+    take out. An older version's one-record manifest moves nothing."""
     if key in listed or (own := _release(key[1])) is None:
         return key
     later = [
@@ -371,11 +354,10 @@ def _expand(
 ) -> None:
     """Widen the stale ranges of a specification that just rebuilt cleanly.
 
-    A clean rebuild is what makes this safe: every patch and quirk fired as
-    declared and every correction's `expect` held, on this version. An
-    acceptance changes nothing the rebuild checks, so the rebuilt file is
-    linted against `books` with the module's acceptances, and only those
-    that matched their finding are widened; the rest are reported stale.
+    The clean rebuild means every patch, quirk and correction `expect` held on
+    this version. Acceptances are checked by linting the rebuilt file against
+    `books`: only those that matched their finding are widened, and the rest are
+    reported stale.
     """
     assert spec.version is not None
     expansions = []
@@ -468,13 +450,10 @@ def _produce(
 def _sources(manifest_path: Path) -> dict[_Key, _Source]:
     """The manifest's records the extractor can read, by spec reference.
 
-    A 3GPP record whose archive held a legacy `.doc` is readable through the
-    `.docx` the downloader converted it to, listed under `conversions`. One
-    whose `.doc` was extracted with no conversion (`--no-convert`) is listed
-    as unconverted, so asking for it reports "not converted"; a record with
-    no document at all (`--no-extract`) is left out, so asking for it reports
-    "not in manifest" — which is what it is, as far as regeneration is
-    concerned.
+    A legacy `.doc` record is read through its converted `.docx`
+    (`conversions`). One extracted without conversion (`--no-convert`) is listed
+    as unconverted, so asking for it reports "not converted". A record with no
+    document (`--no-extract`) is left out and reports "not in manifest".
     """
     try:
         return _read_sources(manifest_path)
@@ -578,12 +557,10 @@ def _read_sources(manifest_path: Path) -> dict[_Key, _Source]:
 
 
 def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
-    """Every hand transcription in `directory`, by the reference its file
-    is named for, as a source, named as its publisher names the version:
-    `ETSI-ES283.034.dad` is written to `etsi/es283034-020200.dad`, ETSI's
-    code for V2.2.0, as a 3GPP pair is named for its archive, and
-    `3GPP2-X.S0057.dad` to `3gpp2/xs0057-0_v2.0.dad`, 3GPP2's file name
-    for revision 0 V2.0 less its date (`_tgpp2_stem`)."""
+    """Every hand transcription in `directory` as a source, by the reference its
+    file is named for, written under its publisher's name for the version:
+    `ETSI-ES283.034.dad` to `etsi/es283034-020200.dad` (ETSI's code for V2.2.0),
+    `3GPP2-X.S0057.dad` to `3gpp2/xs0057-0_v2.0.dad` (`_tgpp2_stem`)."""
     found: dict[_Key, _Source] = {}
     for path in sorted(directory.glob("*.dad")) if directory is not None else ():
         text = path.read_text(encoding="utf-8")
@@ -617,10 +594,9 @@ def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
 
 def _tgpp2_stem(path: Path, text: str, number: str, version: str) -> str:
     """`xs0057-0_v2.0` for 3GPP2 X.S0057 V2.0, from the rendering's name,
-    `X.S0057-0_v2.0_091215.pdf`. 3GPP2 numbers revisions of a document
-    (X.S0057-0, -A, -B), each with its own versions; a spec-ref keeps no
-    revision letter, so the rendering's name is the one place a
-    transcription states it, and where `corpus.revision` reads it."""
+    `X.S0057-0_v2.0_091215.pdf`. A spec-ref has no revision letter (X.S0057-0,
+    -A, -B), so this stem is where a transcription states it and where
+    `corpus.revision` reads it."""
     transcribed = _TRANSCRIBED_LINE_RE.search(text)
     rendering = (
         TGPP2_RENDERING_RE.match(transcribed["value"].rsplit("/", 1)[-1])
@@ -643,8 +619,7 @@ def _tgpp2_stem(path: Path, text: str, number: str, version: str) -> str:
 def _oma_stem(path: Path, text: str, version: str) -> str:
     """`dds-charging_data-v1_0-20110201-a` for OMA-DDS-Charging_Data V1.0, from
     the rendering's name, `OMA-DDS-Charging_Data-V1_0-20110201-A.pdf`, less the
-    publisher as a oneM2M stem is. The name holds the approval date and status
-    the version does not."""
+    publisher. The name holds the approval date and status the version does not."""
     transcribed = _TRANSCRIBED_LINE_RE.search(text)
     name = transcribed["value"].rsplit("/", 1)[-1] if transcribed is not None else ""
     expected = f"{path.stem}-V{version.replace('.', '_')}-"

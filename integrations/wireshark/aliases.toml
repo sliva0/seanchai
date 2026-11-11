@@ -1,18 +1,15 @@
-# Wireshark's deliberate renames, accepted as agreement by `seanchai
-# crosscheck` (docs/oracle.md). Each entry is a document's AVP that the
-# dictionary names otherwise on purpose: to keep it apart from another
-# document's AVP of that name, the dictionary's `name` being an XML ID,
-# unique and starting with no digit; or under a prefix or abbreviation of
-# its own. An entry holds only while the dictionary's entry under the
-# AVP's vendor and code carries `wireshark` and agrees in type; otherwise
-# the crosscheck reports it as `stale-alias`.
+# Wireshark's deliberate renames, which `seanchai corpus crosscheck` counts
+# as agreement (docs/oracle.md). Wireshark renames an AVP to keep it apart
+# from another document's AVP of the same name (its `name` is a unique XML ID
+# that cannot start with a digit), or to give it a prefix or abbreviation.
+# An entry holds only while the dictionary's entry at the AVP's vendor and
+# code has the `wireshark` name and the same type; otherwise the crosscheck
+# reports `stale-alias`.
 #
-# A misspelling is no rename: those are defects, patched in 0001-0025
-# beside this file. Nor is a name the document has since replaced
-# (`Wildcarded-PSI`, `NAF-Hostname`), which still reports, and neither is
-# a rename typed otherwise than the document (RFC 5778's
-# `Chargeable-User-Identity`, OctetString, which the dictionary calls `CUI`
-# and types UTF8String).
+# Not renames, so not listed: misspellings (patched by 0001-0025 beside this
+# file), names the document has since replaced (`Wildcarded-PSI`,
+# `NAF-Hostname`), and renames with a different type (RFC 5778's
+# `Chargeable-User-Identity` is OctetString; Wireshark's `CUI` is UTF8String).
 #
 # `specification` is the document's SpecRef, `name` its spelling in the
 # corpus, `wireshark` the dictionary's.

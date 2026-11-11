@@ -1,55 +1,20 @@
-"""Extractor: IETF RFC plain text → `.dad` AST.
+"""Extractor: IETF RFC plain text to `.dad` AST.
 
-A new input path into the same format: RFC 6733 §4.5 is the same kind of
-table as a 3GPP AVP table, and its Attribute Name / AVP Code / Section
-Defined / Data Type columns map onto `AvpTableRow` as it already stands. What
-is different is the carrier — fixed-width text paginated with footers and
-running headers, where a long name wraps across physical lines
-(`Acct-` / `Interim-Interval`) and, once, the wrap carries the *data* cells
-on the continuation line instead (`Inband-Security` / `-Id  299 …`).
+Reads an RFC's AVP table (RFC 6733 section 4.5 and its kind), command rules,
+grouped AVP rules and enumerated value lists from fixed-width text, past page
+footers, running headers and names wrapped across lines.
 
-Beyond the table, an RFC prints the same definitions a 3GPP spec does, in
-prose-embedded forms this module also reads:
+A definition is anchored on its section title, which keeps the grammar
+specification's illustrations (`Example-Request`) out. A body an RFC prints
+for another document's AVP is kept as printed. A value list for an AVP the
+local table does not type as Enumerated is dropped with a warning, since
+`.dad` cannot extend another document's enum. Every AVP is in vendor space 0,
+and the file has no `; Version:` line, because an RFC number names one
+immutable document.
 
-- a section titled with the command's long name whose body holds
-  `<CER> ::= < Diameter Header: 257, REQ >` → `Message` — the heading carries
-  the long name, the rule carries the abbreviation, the reverse of a 3GPP
-  heading, which prints both;
-- a section titled `Name AVP` holding `Name ::= < AVP Header: 284 >` (the
-  name is sometimes itself angle-bracketed: `<Failed-AVP> ::=`) →
-  `GroupedAvp`;
-- a section titled `Name AVP` where the AVP table types `Name` as Enumerated,
-  holding `VALUE_NAME  n` lines → `EnumeratedAvp`. Both printed layouts are
-  read: the value alone on its line with the description indented below it
-  (RFC 6733), and the description starting on the value's own line and
-  wrapping (RFC 7944, 8583). Descriptions are dropped either way, for the
-  docx extractor's reason: they are wrapped prose, not a one-line gloss, and
-  `; Section:` points at the clause that holds them undamaged.
-
-Anchoring every definition on its *section title* is what keeps the grammar
-specification's own illustrations out: `Example-Request` and `Example-AVP` sit
-in a section titled with prose ("Command Code Format Specification"), which no
-definition heading is. Section 7.2's `<answer-message>`, under "Error Bit", is
-no illustration: it is the format every answer with the E bit set takes, and
-its rule line, which names no command, is what anchors it (`AnswerMessage`).
-
-Bodies an RFC prints for another document's AVPs are kept, the same
-deliberate call as the docx extractor's: RFC 8581 and 8582 both reprint RFC
-7683's `OC-OLR` with their own extension member added, and the file records
-what the document printed — cross-file divergence is the linter's to report.
-The one shape that is dropped, with a warning, is a value list for an AVP the
-local table does not type as Enumerated (RFC 8581 §7.2.1 adds `PEER_REPORT 2`
-to 7683's `OC-Report-Type`): `.dad` has no way to extend another document's
-enum, so the warning is the honest form.
-
-Two facts this extractor states rather than reads, both facts about the
-publisher: every AVP an RFC defines is in the IETF's vendor space (0), and an
-RFC number names one immutable document, so the specification has no version
-and the emitted file carries no `; Version:` line.
-
-Input patches are applied to every content line — after page furniture is
-stripped, before anything is parsed — so a patch sees the physical line as
-printed, scoped by the section the line falls under.
+Input patches apply to each content line after page furniture is stripped and
+before parsing, scoped by the section the line falls under. docs/extractor.md
+lists the forms read.
 """
 
 import re
@@ -131,8 +96,7 @@ _ENUM_VALUE_PIPE_RE = re.compile(r"^(?P<value>\d+)\s*\|\s*(?P<label>\S.*)$")
 # so only knowing the vocabulary tells them apart. Each entry maps the
 # header's label lines — the text left of the first pipe, whitespace
 # collapsed, top to bottom — onto the columns that header declares. A header
-# spelled some other way fails loudly and earns its own entry, the same
-# collected-cases discipline as the docx extractor's column maps.
+# spelled any other way fails and needs its own entry.
 _LEFT_HEADERS: dict[tuple[str, ...], tuple[ast.AvpColumn, ...]] = {
     # RFC 5580 clause 6 omits both the code and defining-clause columns.
     ("Attribute Name Value Type",): (ast.AvpColumn.NAME, ast.AvpColumn.TYPE),
@@ -216,10 +180,9 @@ _FLAG_COLUMNS = {
 
 def _is_separator(text: str, quirks: sources.Quirks) -> bool:
     """The dashed rule closing the column labels and each page's chunk of
-    rows: dashes filling the fixed-width area up to the first pipe. Judged on
-    that area alone, because the boxed caption's own `|----+-----|` line is
-    all dashes too once the pipes are ignored — but prints nothing left of
-    its first pipe."""
+    rows: dashes filling the fixed-width area up to the first pipe. Only that
+    area counts, because the boxed caption's `|----+-----|` line is all dashes
+    once the pipes are ignored but prints nothing left of its first pipe."""
     left = text.split("|", 1)[0].strip()
     if len(left) >= 3 and set(left) == {"-"}:
         return True
@@ -241,12 +204,10 @@ def _is_separator(text: str, quirks: sources.Quirks) -> bool:
 def _table_text(text: str) -> str:
     """Normalize the two fixed-width table border styles used by RFCs.
 
-    RFC 6733 leaves the name/code/type area open and boxes only the flag
-    columns.  Later Diameter RFCs box the complete table, adding a leading
-    ``|`` to label and data rows and using ``+`` at every separator
-    intersection.  Replacing only that structural leading border, and the
-    intersections on separator lines, presents both styles to the same row
-    reader without changing any cell text or indentation.
+    RFC 6733 boxes only the flag columns; later Diameter RFCs box the whole
+    table, with a leading ``|`` on label and data rows and ``+`` at separator
+    intersections. Replacing only that leading border and those intersections
+    lets one row reader read both, with cell text and indentation unchanged.
     """
     indent = len(text) - len(text.lstrip())
     stripped = text[indent:]
@@ -258,10 +219,9 @@ def _table_text(text: str) -> str:
 
 
 # "Due to space constraints, the short form DiamIdent is used to represent
-# DiameterIdentity" — RFC 6733 §4.5, which then also writes DiamURI. The
-# vocabulary lives here; *accepting* it is per-document, behind the
-# `type-short-forms` quirk, so a new document's typo cannot ride in on
-# another document's declared convention.
+# DiameterIdentity" — RFC 6733 §4.5, which then also writes DiamURI. A
+# document accepts these only behind the `type-short-forms` quirk, so a typo
+# in another document is not read as one.
 _TYPE_SHORT_FORMS = {
     "DiamIdent": ast.DataType.DIAMETER_IDENTITY,
     "DiamURI": ast.DataType.DIAMETER_URI,
@@ -277,16 +237,14 @@ _TYPE_SHORT_FORMS = {
     "U32": ast.DataType.UNSIGNED32,
 }
 
-# Every AVP an RFC defines is in the IETF's vendor space. Like the docx
-# extractor's 10415, a fact about the publisher, stated rather than read.
+# Every AVP an RFC defines is in the IETF's vendor space, stated rather than
+# read, like the docx extractor's 10415.
 IETF_VENDOR = ast.IETF_VENDOR
 
-# The quirk vocabulary this extractor defines: readings heuristic enough to
-# misfire on a document they were not written for, so each stays off unless
-# the document's source declaration names it (see `sources.py`). What gates a
-# behavior here is misfire risk, not rarity: the header-spelling maps above
-# are also per-document knowledge, but an unrecognized spelling fails loudly
-# on its own, where an unwanted prose harvest would succeed silently.
+# The quirk vocabulary this extractor defines: readings that could misfire on
+# another document, so each stays off unless the document's source declaration
+# names it (`sources.py`). The header-spelling maps above need no quirk, since
+# an unrecognized spelling fails on its own.
 QUIRKS: dict[str, str] = {
     "prose-avp-origins": (
         "read explicit AVP definition citations as re-used origins"
@@ -408,16 +366,13 @@ def _content_lines(
 ) -> tuple[list[_Line], dict[str, _Line]]:
     """Strip page furniture, attach page numbers and sections, apply patches.
 
-    A line's page is the number of the next footer below it — that is the
-    page the line is printed on. The running header is recognised as the
-    first non-blank line after a page break, not by its text, so a content
-    line that happens to start with "RFC" is never eaten.
+    A line's page is the number of the next footer below it. The running header
+    is the first non-blank line after a page break, recognised by position, so
+    a content line starting with "RFC" is kept.
 
-    Also returned: each section's heading line, because `; Page:` is where
-    the *section* starts — the same convention as the docx extractor, where a
-    table section can begin one page before the table itself. The heading
-    lines are shared objects, so their pages are filled in as the footers
-    arrive even though the mapping is built first.
+    Also returns each section's heading line, since `; Page:` is where the
+    section starts, as in the docx extractor. The heading lines are shared
+    objects, so their pages fill in as the footers arrive.
     """
     lines: list[_Line] = []
     headings: dict[str, _Line] = {}
@@ -481,11 +436,8 @@ def _flag_labels(label_lines: list[str]) -> list[str]:
 
 
 def _read_header(label_lines: list[str]) -> _Columns:
-    """The columns a boxed header declares, in source order.
-
-    Strict on both sides: an unrecognised header is a table shape no
-    collected RFC prints, and unlike the docx tables there are no known
-    prose columns to drop.
+    """The columns a boxed header declares, in source order. An unrecognised
+    header fails.
     """
     if not label_lines:
         raise ExtractionError("AVP table header with no column labels")
@@ -559,11 +511,10 @@ def _flags_cell(text: str) -> frozenset[ast.AvpFlag]:
 class _PendingRow:
     """One logical row while its physical lines are still arriving.
 
-    A wrapped name contributes fragments that concatenate back into the
-    printed name ("Acct-" + "Interim-Interval"); the data cells and each
-    flag cell must arrive on exactly one of the row's physical lines,
-    whichever one that is — RFC 6733's Inband-Security-Id puts the name
-    first and the data on the continuation.
+    Name fragments concatenate back into the printed name ("Acct-" +
+    "Interim-Interval"). The data cells and each flag cell must arrive on
+    exactly one of the row's physical lines, whichever it is: RFC 6733's
+    Inband-Security-Id puts the name first and the data on the continuation.
     """
 
     quirks: sources.Quirks
@@ -914,12 +865,9 @@ class _TableReader:
     def result_optional(self) -> ast.AvpTable | None:
         """Return the table when this RFC prints one.
 
-        Not every document in the Diameter RFC corpus defines AVPs.  Command
-        allocations, applicability statements, and design guidance are still
-        useful corpus nodes (and some table-less application RFCs contain
-        command or grouped-AVP ABNF), so absence of a table is not itself an
-        extraction error.  Once a header has been seen, however, ``result``
-        remains strict about its shape and contents.
+        Some Diameter RFCs define no AVPs (command allocations, applicability
+        statements, design guidance), so a missing table is not an error. Once a
+        header has been seen, ``result`` is strict about its shape and contents.
         """
         if self.shape is None and self.header_lines is None and self.source is None:
             return None
@@ -973,8 +921,7 @@ def _simple_avp_tables(
     """Read IANA-style AVP allocation tables that have no flag columns.
 
     RFC 5777 and RFC 5624 print one wide pipe-delimited table with Name, Code,
-    Section, and Data Type.  It is every bit as authoritative as an application AVP
-    flag table; it simply has fewer columns.
+    Section, and Data Type.
     """
     tables: list[ast.AvpTable] = []
     for index, line in enumerate(lines):
@@ -1062,9 +1009,8 @@ def _clause_facts(
 ) -> list[_ClauseFact]:
     """The Name/Code/Type facts stated by name-titled defining clauses.
 
-    Strictly anchored: the sentence must sit under a clause titled with the
-    same name it defines. A code annotated with another RFC is an imported
-    AVP and is deliberately excluded.
+    The sentence must sit under a clause titled with the name it defines. A code
+    annotated with another RFC is an imported AVP and is excluded.
     """
     # RFC 6734 clause 3.1.5 titles Key-SPI without the optional AVP suffix.
     facts = []
@@ -1094,12 +1040,9 @@ def _clause_avp_table(
 ) -> ast.AvpTable | None:
     """Build the AVP index for RFCs that define AVPs clause-by-clause.
 
-    RFCs 4072 and 5447 have no summary table.  Their definition sentences are
-    regular and carry the same Name/Code/Section/Type facts, so collect those
-    facts into the format's AVP index.  Gated by the `clause-avp-table`
-    quirk: which sentences are definitions rather than discussion is exactly
-    the judgement a prose reading can get wrong on a document it was not
-    written for.
+    RFCs 4072 and 5447 have no summary table; their definition sentences carry
+    the same Name/Code/Section/Type facts. Gated by the `clause-avp-table` quirk,
+    since telling definitions from discussion can misfire on other documents.
     """
     facts = _clause_facts(sections, quirks)
     if not facts:
@@ -1150,13 +1093,11 @@ def _complete_rows_from_prose(
     """Fill code and type into the rows of tables that print no Code column,
     from each row's own defining clause. The `prose-avp-codes` quirk.
 
-    RFC 7155 inherits its AVP codes from RADIUS attribute numbers, so its
+    RFC 7155 takes its AVP codes from RADIUS attribute numbers, so its
     per-category tables print only Name, Section and flag rules; the code and
-    type appear once, in the defining sentence of the clause the row's
-    Section cell already points at. Following that citation completes the
-    row without inventing anything: the columns added to `; Columns:` record
-    that this file's Code and Type cells were read from the clauses rather
-    than from the printed table.
+    type appear in the defining sentence of the clause the Section cell points
+    at. The columns added to `; Columns:` record that this file's Code and Type
+    cells came from the clauses.
     """
     facts = {fact.name: fact for fact in _clause_facts(sections, quirks)}
     used: set[str] = set()
@@ -1395,9 +1336,8 @@ _RADIUS_ATTRIBUTE_TITLE_RE = re.compile(
 def _radius_attribute_table(sections: list[_DocSection]) -> ast.AvpTable | None:
     """Index RADIUS attributes cited as Diameter-compatible AVPs.
 
-    RFC 4590 assigns the compatible code in each attribute's ``Type`` field
-    but does not assign a Diameter data type, so the resulting source-shaped
-    index deliberately carries only Name, Code, and Section.
+    RFC 4590 assigns the code in each attribute's ``Type`` field but no Diameter
+    data type, so the index carries only Name, Code, and Section.
     """
     rows: list[ast.AvpTableRow] = []
     first_source: ast.SourceRef | None = None
@@ -1475,11 +1415,10 @@ def _abnf_body(
     the members, where reading stopped and the lines commented out behind
     `elided-members`.
 
-    Blank lines inside the body are page-break residue and are skipped when
-    another member follows. A body ends at a blank line, the next rule or a
-    sentence. Any other line is a member this reading cannot hold, and fails
-    rather than taking the members after it out of the file, as RFC 5778 clause
-    5.1.1's `...` once took nine of DER's."""
+    Blank lines inside the body are page-break residue, skipped when another
+    member follows. A body ends at a blank line, the next rule or a sentence. Any
+    other line fails, rather than dropping the members after it (RFC 5778 clause
+    5.1.1's `...` once dropped nine of DER's)."""
     rules = []
     notes: _BodyNotes = []
     after_blank = False
@@ -1603,12 +1542,11 @@ def _extract_definitions(
 ) -> tuple[list[ast.Message], list[ast.GroupedAvp | ast.EnumeratedAvp]]:
     """Messages, grouped and enumerated AVPs from the definition sections.
 
-    Enumerated codes come from the AVP table, as in the docx extractor — a
-    value list is only a definition when the table types its section's AVP as
-    Enumerated. A value list under any other ` AVP`-titled section is dropped
-    with a warning (RFC 8581 extending RFC 7683's `OC-Report-Type`); one
-    under a plain prose-named section is not even that (RFC 6733 §7.1.x list
-    Result-Code's values, and Result-Code is Unsigned32 by design).
+    A value list is a definition only when the AVP table types its section's AVP
+    as Enumerated, as in the docx extractor. A value list under another ` AVP`
+    section is dropped with a warning (RFC 8581 extending RFC 7683's
+    `OC-Report-Type`); one under a prose-named section is dropped silently (RFC
+    6733 §7.1.x lists Result-Code's values, and Result-Code is Unsigned32).
     """
     messages: list[ast.Message] = []
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = []
@@ -2281,12 +2219,11 @@ def extract_with_comments(
     """Extract a `Specification` from an RFC's plain-text rendering, with the
     `;;` lines the file prints beside the tree, as `format_spec` takes them.
 
-    `; Page:` numbers are the RFC's own printed pages — the text is its sole
-    rendering, so there is no separate PDF step. When `sources_dir` is given,
-    source declarations from `<sources_dir>/<SpecRef>.toml` (if present)
-    apply: input patches to every content line before parsing, and quirks
-    (see `QUIRKS`) to the readings this extractor uses. Non-fatal source
-    inconsistencies are appended to `warnings` when a list is given.
+    `; Page:` numbers are the RFC's own printed pages. With `sources_dir`, the
+    declarations in `<sources_dir>/<SpecRef>.toml` (if present) apply: input
+    patches to every content line before parsing, quirks (`QUIRKS`) to the
+    readings. Non-fatal source inconsistencies are appended to `warnings` when a
+    list is given.
     """
     warnings = warnings if warnings is not None else []
     with boundary(f"extracting {text_path}"):

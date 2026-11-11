@@ -55,22 +55,19 @@ def _data_type(text: str | None) -> ast.DataType | None:
 _COLUMN_NOTE_RE = re.compile(r"\s*\((?:NOTE|Note|note)S?s?[^)]*\)$")
 
 
-# Source columns the format has no counterpart for and does not want one for:
-# they hold prose about how an AVP is used, which `.dad` does not carry.
-# Dropping them silently is the point; anything *else* unmodelled gets a
-# warning, because a column with machine-readable values is a reason to model
-# it (see `ast._check_columns`).
+# Source columns of prose about how an AVP is used, which `.dad` does not
+# carry. They are dropped silently; any other unmodelled column gets a warning
+# (`ast._check_columns`).
 _PROSE_COLUMNS = frozenset({"Comments", "Comment", "Description"})
 
 
 # Columns marking where a row applies (`ast.MarkColumn`), keyed by the label
 # they print. A cell lists the document's marks, and what separates them is
-# the document's convention rather than a closed vocabulary: TS 29.212
-# writes "Both Rel8" and "3GPP-EPS, Non-3GPP-EPS", where TS 29.468 names a
-# feature "V2X Localized User Plane" (`worded-marks`). Reading a column at a
-# space is right for one document and wrong for the next, so each column is
-# read only where its quirk is declared, the declaration naming the legend;
-# elsewhere it is dropped with the unmodelled columns' warning.
+# the document's convention: TS 29.212 writes "Both Rel8" and "3GPP-EPS,
+# Non-3GPP-EPS", where TS 29.468 names a feature "V2X Localized User Plane"
+# (`worded-marks`). So each column is read only where its quirk is declared,
+# the declaration naming the legend; elsewhere it is dropped with the
+# unmodelled columns' warning.
 _MARK_COLUMNS = {
     "Acc. Type": ast.MarkColumn.ACCESS_TYPES,
     "Acc. type": ast.MarkColumn.ACCESS_TYPES,  # TS 29.215
@@ -170,8 +167,8 @@ def _map_columns[T](
 ) -> tuple[tuple[T, ...], list[int]]:
     """Modelled columns in source order, plus the cell indices they sit at.
 
-    A row is read positionally against the *source* table, so the indices are
-    what lets unmodelled columns be skipped without disturbing the rest.
+    Rows are read by position in the source table; the indices let
+    unmodelled columns be skipped.
     """
     columns: list[T] = []
     positions: list[int] = []
@@ -208,9 +205,8 @@ def _walk_table[T](
     """The row walk both table kinds share: the `Attribute Name` label row
     defines the columns, every later data row is width-checked against it.
     Returns the modelled columns, the cell indices they sit at, and every
-    data row's cells. `skip` is the caller's row filter — spanning headers,
-    NOTE rows — and never sees the label row, so a filter cannot silently
-    leave the walk without columns.
+    data row's cells. `skip` is the caller's row filter (spanning headers,
+    NOTE rows); it never sees the label row.
     """
     columns: tuple[T, ...] | None = None
     positions: list[int] = []

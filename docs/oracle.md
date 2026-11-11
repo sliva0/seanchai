@@ -1,140 +1,145 @@
 # The Wireshark oracle
 
-`src/seanchai/oracle.py` cross-checks every AVP a file defines, its
-definitions and own AVP-table rows, skipping any name the file also lists
-as re-used, against Wireshark's Diameter dictionary
-by `(vendor-id, code)`, comparing name and type. The dictionary is an
-independent reading of the same specifications, which is what makes
-disagreement informative. A row's vendor is read as the model reads it
-([linter.md](linter.md#vendor-spaces)).
+`seanchai corpus crosscheck` compares the corpus with Wireshark's Diameter
+dictionary, an independent reading of the same documents. For each AVP a file
+defines, in a definition or its own AVP-table row, it looks up the
+`(vendor-id, code)` in the dictionary and compares name and type. Names the
+file lists as re-used are skipped. A row's vendor is read as the model reads
+it ([linter.md](linter.md#vendor-spaces)).
 
 ```sh
-uv run seanchai corpus download --only wireshark  # all it needs of a download
-uv run seanchai corpus crosscheck   # the installed corpus, or name files
+seanchai corpus download --only wireshark   # all it needs downloaded
+seanchai corpus crosscheck                  # the installed corpus, or name files
 ```
 
-The check reads the newest copy of each document and no other: the
-dictionary describes a document, and an older copy the corpus holds for a
-citation across releases is no reading of it. `crosscheck` lists each older
-copy it skips and refuses two files of one document and version.
-
-The `[wireshark]` entry in `specs.toml` pins a release tag; the downloader
-fetches the whole `resources/protocols/diameter/` directory through
-GitLab's tree and raw endpoints.
+- It checks only the newest copy of each document, since the dictionary
+  describes that one. It lists each older copy it skips, and refuses two
+  files of one document and version.
+- Findings are reports for a reader to judge, so they never fail the run.
+- The `[wireshark]` entry in `specs.toml` pins a Wireshark release tag. The
+  downloader fetches its `resources/protocols/diameter/` directory.
 
 ## Tolerated type conventions
 
-Wireshark's `typedefn`s include dissector conveniences, mapped before
-anything is called a disagreement: `IPAddress` agrees with `Address` and
-`OctetString`; `Enumerated` agrees with `Enumerated`, `Unsigned32` and
-`Integer32`; `VendorId` and `AppId` stand for `Unsigned32`,
-`OctetStringOrUTF8` for either reading, `MIPRegistrationRequest` for
-`OctetString`. An unmapped dictionary type is reported, never guessed at.
+Some of Wireshark's types are dissector conveniences. These count as
+agreement:
+
+| Wireshark | Agrees with |
+|---|---|
+| `IPAddress` | `Address`, `OctetString` |
+| `Enumerated` | `Enumerated`, `Unsigned32`, `Integer32` |
+| `VendorId`, `AppId` | `Unsigned32` |
+| `OctetStringOrUTF8` | `OctetString`, `UTF8String` |
+| `MIPRegistrationRequest` | `OctetString` |
+
+Any other dictionary type that does not match is reported.
 
 ## Accepted renames
 
-Wireshark names some AVPs otherwise on purpose: its dictionary's `name` is
-an XML ID, unique across the dictionary and starting with no digit, and
-doubles as the display filter field, so of two documents' AVPs of one name
-one is renamed (TS 29.229's `User-Data` is `Cx-User-Data`, TS 29.329's
-`Sh-User-Data`). Such a rename is agreement when
+Wireshark renames some AVPs on purpose. Its `name` is an XML ID, so it must
+be unique and must not start with a digit, and it doubles as the display
+filter field. Of two documents' AVPs with one name, one gets renamed: TS
+29.229's `User-Data` is `Cx-User-Data`, TS 29.329's is `Sh-User-Data`.
+
 [`integrations/wireshark/aliases.toml`](../integrations/wireshark/aliases.toml)
-lists it: each `[[alias]]` gives the document, the corpus's name, the
-dictionary's and a reason. `crosscheck` reads the file (`--aliases`, by
-default that path), counts accepted renames in its summary line, and prints
-them only with `--show-accepted`. An entry accepts only while the
-dictionary's entry under the AVP's vendor and code carries the listed name
-and agrees in type; otherwise it is reported as `stale-alias`. A corpus AVP
-stating no type confirms no rename: its name disagreement stays a finding.
+lists these renames. Each `[[alias]]` gives the document, the corpus's name,
+the dictionary's name and a reason. `crosscheck` reads it (`--aliases`,
+defaulting to that path), counts accepted renames in its summary line, and
+prints them with `--show-accepted`. An alias holds only while the dictionary's
+entry for the AVP's vendor and code has the listed name and agrees in type;
+otherwise `crosscheck` reports `stale-alias`. A corpus AVP with no type cannot
+confirm a rename, so its name disagreement stays a finding.
 
-The list holds the `3GPP-SIP-*` prefixes TS 29.229's, 3GPP2 X.S0013-006's and
-TS 32.299's SIP AVPs take to stay apart from RFC 4740's, `Cx-` and
-`Sh-User-Data`, `OnexRTT-RCID` for an ID starting with a digit,
-`ETSI-Service-Class`, the `3GPP2-` prefixes that keep X.S0013-014's AVPs apart
-from TS 29.212's, and a dozen more of the same kind. A misspelling is no rename
-and is not listed: those are defects, patched. Nor is a name the document has
-since replaced.
+The list holds, among others:
 
-## Findings are leads, not verdicts
+- the `3GPP-SIP-*` prefixes that keep TS 29.229's, X.S0013-006's and TS
+  32.299's SIP AVPs apart from RFC 4740's;
+- `Cx-User-Data` and `Sh-User-Data`;
+- `OnexRTT-RCID`, for an ID that would start with a digit;
+- `ETSI-Service-Class`;
+- the `3GPP2-` prefixes that keep X.S0013-014's AVPs apart from TS 29.212's.
 
-Wireshark is not a primary source. It lags releases, carries its own typos,
-and deliberately disambiguates names the specifications share. Every
-finding is evaluated against the clause both projects read, and the fix
-goes where the mistake is: a corpus correction when the document's own
-table or the extractor was wrong, a merge request into Wireshark when the
-dictionary is. The corpus always keeps the specification's own spelling.
+A misspelling is a defect and gets a patch, so it is not listed. Neither is a
+name the document has since replaced.
+
+## Findings are leads
+
+Wireshark is not a primary source: it lags releases, has its own typos and
+renames shared names. Check each finding against the clause both projects
+read. Fix the corpus with a correction when the document's table or the
+extractor was wrong, and send Wireshark a merge request when the dictionary
+is. The corpus always keeps the document's spelling.
 
 ## Value tables
 
-The dictionary holds `<enum>`s for `Result-Code` and `Experimental-Result-Code`,
-and for a few bit masks, as the mask each bit sets. `value-disagrees` reports a
-value table's row the dictionary names otherwise, and
-`value-absent-from-dictionary`, one finding per table, the numbers it lacks for
-an AVP it enumerates. An AVP it enumerates none of draws neither. They are read
-as the rest are: a report, and the corpus keeps the document's spelling.
+The dictionary has `<enum>`s for `Result-Code`, `Experimental-Result-Code`
+and a few bit masks. `value-disagrees` reports a value-table row the
+dictionary names differently. `value-absent-from-dictionary` reports, once
+per table, the numbers the dictionary lacks for an AVP it enumerates. An AVP
+the dictionary enumerates none of is not reported.
 
-What these report on the committed corpus is the dictionary's or the document's
-to settle: TS 29.283's `DIAMETER_ERROR_UNKNOWN_DATA` against the dictionary's
-`UNKNKOWN`, which copies TS 29.230's misprint; its `_` in
-`DIAMETER_ERROR_TRANSPARENT_DATA_OUT_OF_SYNC` where TS 29.283, 29.329, 29.330
-and TS 29.230 print a space; its `LCS_CLIENT` tail on TS 29.219's
-`DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS`; `DIAMETER_ELECTION_LOST` for RFC
-6733's `ELECTION_LOST`; `PROSE_NOT_ALLOWED` for TS 29.344's name; a mangled
-`DIAMETER_ERROR_W-DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION` for TS
-29.234's; TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`, where the dictionary
-keeps the registry's `IMPI`; and bit 0 of TS 29.212's
-`Presence-Reporting-Area-Node`, `OCS`, which the dictionary calls `PCRF`.
+On the committed corpus these report:
+
+| Corpus | Dictionary |
+|---|---|
+| TS 29.283's `DIAMETER_ERROR_UNKNOWN_DATA` | `UNKNKOWN`, copying TS 29.230's misprint |
+| `DIAMETER_ERROR_TRANSPARENT_DATA_OUT_OF_SYNC` with a space (TS 29.283, 29.329, 29.330, 29.230) | an `_` |
+| TS 29.219's `DIAMETER_ERROR_NO_AVAILABLE_POLICY_COUNTERS` | an `LCS_CLIENT` tail |
+| RFC 6733's `ELECTION_LOST` | `DIAMETER_ELECTION_LOST` |
+| TS 29.344's name | `PROSE_NOT_ALLOWED` |
+| TS 29.234's code | `DIAMETER_ERROR_W-DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION` |
+| TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN` | the registry's `IMPI` |
+| bit 0 of TS 29.212's `Presence-Reporting-Area-Node`, `OCS` | `PCRF` |
 
 ## In the model
 
-`model.Model.build(corpus, wireshark=Path("specifications/wireshark"))`
-gives every AVP, and every hole with an identity, Wireshark's name for its
-`(vendor-id, code)` in `wireshark_name`. `name` stays the document's. Where
-the identity collides in the dictionary, an entry spelled like the corpus
-wins, then the one whose type agrees; an identity the dictionary lacks,
-or cannot settle between several names, is None. `Oracle.name_for` is the
-lookup.
+`model.Model.build(corpus, wireshark=Path("specifications/wireshark"))` sets
+`wireshark_name` on every AVP, and every hole with an identity, to
+Wireshark's name for its `(vendor-id, code)`. `name` stays the document's.
+Where several dictionary entries share the identity, one spelled like the
+corpus wins, then one whose type agrees. An identity the dictionary lacks or
+cannot settle gets None. `Oracle.name_for` does the lookup.
 
 ## What still reports
 
-- **A name no document gives**: the dictionary calls ETSI TS 183 066's
-  `Data-Operation-Indicator` (13019, 420) `ETSI-Event-Type-420`, though the
-  dictionary cites that document for it. Neither a rename to keep it apart nor a
-  name the document replaced, so it is a merge request's to fix.
-- **What a document types otherwise than the dictionary**: 3GPP2 X.S0013-014's
-  `Flow-Identifier`, OctetString in its table and its clause, UTF8String in the
-  dictionary; OMA-DDS-Charging_Data's `Application-Server-ID`, UTF8String in its
-  table 11, Unsigned32 in the dictionary.
-- **Names the documents have replaced**, which the dictionary keeps:
-  `Wildcarded-PSI` for TS 29.229's `Wildcarded-Public-Identity` and
-  `NAF-Hostname` for TS 29.109's `NAF-Id`. Not accepted renames; a merge
-  request could bring either up to date.
-- **`CUI`** for RFC 5778's `Chargeable-User-Identity`, RFC 4372's own
-  abbreviation, which would be an accepted rename but for its type.
-- **Wireshark-side defects**, each with a merge request staged under
+- A name no document gives: the dictionary calls ETSI TS 183 066's
+  `Data-Operation-Indicator` (13019, 420) `ETSI-Event-Type-420`, though it
+  cites that document. A merge request should fix it.
+- Types the dictionary reads differently: 3GPP2 X.S0013-014's
+  `Flow-Identifier` (OctetString, dictionary UTF8String);
+  OMA-DDS-Charging_Data's `Application-Server-ID` (UTF8String in table 11,
+  dictionary Unsigned32).
+- Names the documents have replaced: `Wildcarded-PSI` for TS 29.229's
+  `Wildcarded-Public-Identity`, `NAF-Hostname` for TS 29.109's `NAF-Id`. A
+  merge request could update either.
+- `CUI` for RFC 5778's `Chargeable-User-Identity`, RFC 4372's abbreviation. It
+  would be an accepted rename if its type agreed.
+- Wireshark defects with a merge request staged under
   [`integrations/wireshark/`](../integrations/wireshark/README.md): misspelt
-  names, wrong types and member lists short of the document's. Two the
-  oracle cannot see, since the defect is a member list:
-  `UWAN-User-Location-Info` missing four members, and
-  `Time-Of-Day-Condition` missing the three members erratum 2333 restores.
-- **Leads not staged**, resting on a reading the corpus makes rather than a
-  document's statement: `Monitoring-Event-Information` listing TS 29.336's
+  names, wrong types, and short member lists. Two of these the oracle cannot
+  see, because the defect is a member list: `UWAN-User-Location-Info` lacks
+  four members, and `Time-Of-Day-Condition` lacks the three that erratum 2333
+  restores.
+- Leads not staged, because they rest on the corpus's reading and not on a
+  document's statement: `Monitoring-Event-Information` lists TS 29.336's
   `Monitoring-Event-Report` where the corpus corrects the member to TS
-  32.299's own `Monitoring-Event-Report-Data`; `Charging-Characteristics`
-  typed OctetString where no document settles the type; and
-  `mobileipv4.xml`'s MSA members, which no source gives.
-- **Display conveniences the mapping does not tolerate**: `3GPP-NSAPI`,
+  32.299's `Monitoring-Event-Report-Data`; `Charging-Characteristics` is typed
+  OctetString where no document settles the type; `mobileipv4.xml`'s MSA
+  members appear in no source.
+- Display conveniences the mapping does not tolerate: `3GPP-NSAPI`,
   `Codec-Data`, `Framed-Pool`, `EAP-Key-Name` and `Access-Network-Information`
-  typed UTF8String where the specifications say OctetString.
-- **Absences**: AVPs newer than the pinned dictionary, one grouped note per
-  file. Most have an addition staged under
+  typed UTF8String where the documents say OctetString.
+- Absences: AVPs newer than the pinned dictionary, one grouped note per file.
+  Most have an addition staged under
   [`integrations/wireshark/additions/`](../integrations/wireshark/README.md#additions).
-  oneM2M's are not among them: the dictionary declares no vendor 45687, and
-  adding one is a merge request of another shape.
-- **Untriaged**: RFC 7155's `Framed-IPX-Network` typed Unsigned32 against
-  Wireshark's UTF8String, where RFC 4005 disagrees with itself; RFC 7155's
-  `Framed-Appletalk-*` against everyone else's `AppleTalk`;
-  `Tunnel-Connection-ID` for RFC 4005's `Acct-Tunnel-Connection`, intent
-  unverified; and TS 32.299 AVPs where the document disagrees with itself
-  and Wireshark took the other reading (`EPDG-Address`, `Service-ID`,
-  `MMTel-SService-Type`).
+  oneM2M's do not: the dictionary declares no vendor 45687, and adding one
+  needs a different kind of merge request.
+- Untriaged:
+  - RFC 7155's `Framed-IPX-Network`, Unsigned32 against Wireshark's
+    UTF8String, where RFC 4005 disagrees with itself;
+  - RFC 7155's `Framed-Appletalk-*` against everyone else's `AppleTalk`;
+  - `Tunnel-Connection-ID` for RFC 4005's `Acct-Tunnel-Connection`, intent
+    unverified;
+  - TS 32.299 AVPs where the document disagrees with itself and Wireshark
+    took the other reading (`EPDG-Address`, `Service-ID`,
+    `MMTel-SService-Type`).
