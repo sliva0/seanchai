@@ -11,7 +11,6 @@ license = "MIT"
 license-files = ["LICENSE"]
 keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Telecommunications Industry",
@@ -30,7 +29,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-corpus = ["seanchai-corpus>=2026.11.2"]
+corpus = ["seanchai-corpus>=2026.11.11"]
 # What reading and validating source documents takes (and lxml, through
 # python-docx). The model, the export and the lookup commands import neither.
 extract = [

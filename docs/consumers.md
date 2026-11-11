@@ -190,7 +190,7 @@ the dictionary's `#2`.
 ```json
 {
   "format_version": 1,
-  "corpus_version": "2026.11.2",
+  "corpus_version": "2026.11.11",
   "undefined_policy": "hole",
   "avp": "0:110#2",
   "avps": [

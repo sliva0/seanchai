@@ -1,6 +1,6 @@
 [project]
 name = "seanchai-corpus"
-version = "2026.11.2"
+version = "2026.11.11"
 description = "Diameter command ABNFs and AVP definitions as .dad files"
 readme = "README.md"
 authors = [
@@ -11,7 +11,6 @@ license = "MIT"
 license-files = ["LICENSE", "NOTICE"]
 keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Telecommunications Industry",
     "Programming Language :: Python :: 3 :: Only",

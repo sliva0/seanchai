@@ -223,7 +223,7 @@ The two packages are released separately, each from its own tag:
 | Package | Version | Tag |
 |---|---|---|
 | `seanchai` | semantic, `0.1.0` | `seanchai-v0.1.0` |
-| `seanchai-corpus` | the date the corpus was regenerated, `2026.11.2` | `corpus-2026.11.2` |
+| `seanchai-corpus` | the date the corpus was regenerated, `2026.11.11` | `corpus-2026.11.11` |
 
 Each version is set once, in the package's `pyproject.toml`, by `uv version`,
 which updates the lockfile too. `tests/test_packaging.py` requires the corpus
