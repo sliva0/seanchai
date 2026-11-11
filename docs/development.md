@@ -254,8 +254,10 @@ jobs are skipped. It runs the tests without sources, builds both packages,
 checks that the tag names the built version, and smoke-tests the wheels. It
 publishes only when run on a package's tag with `publish` naming that
 package, through PyPI trusted publishing: each PyPI project trusts the
-repository `sliva0/seanchai`, the workflow `release.yml` and the GitHub
-environment `pypi`, which must exist.
+repository `sliva0/seanchai`, the workflow `release.yml` and a GitHub
+environment, `pypi` for `seanchai` and `pypi-corpus` for `seanchai-corpus`.
+Both environments must exist. They differ because PyPI accepts one pending
+publisher per repository, workflow and environment.
 
 To try a release without publishing, run it anywhere but a tag, or with the
 default `publish=none`. The built distributions are kept as artifacts of the

@@ -88,7 +88,9 @@ jobs:
       && startsWith(github.ref, 'refs/tags/corpus-')
       && (github.event_name == 'push' || inputs.publish == 'seanchai-corpus')
     runs-on: ${{ github.server_url == 'https://github.com' && 'ubuntu-latest' || 'node22' }}
-    environment: pypi
+    # Its own environment: PyPI takes one pending publisher per repository,
+    # workflow and environment, so the two packages cannot share one.
+    environment: pypi-corpus
     permissions:
       id-token: write
     steps:
