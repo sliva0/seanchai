@@ -108,6 +108,38 @@ def test_every_model_type_has_a_one_line_repr_and_a_json_dict(built):
         assert json.loads(json.dumps(plain)) == plain
 
 
+def test_a_serialized_message_carries_what_a_consumer_reads_off_the_object(built):
+    """TS 29.229 clause 6.1.1's UAR: `< Session-Id >`, `[ DRMP ]`,
+    `{ Vendor-Specific-Application-Id }` first, `* [ Supported-Features ]`
+    later, as RFC 6733 section 3.2 reads their occurrences."""
+    plain = _message(built, "TS29.229", "UAR").to_dict()
+    members = {member["name"]: member for member in plain["avps"]}
+
+    assert plain["is_request"] is True
+    assert [member["name"] for member in plain["avps"][:3]] == [
+        "Session-Id",
+        "DRMP",
+        "Vendor-Specific-Application-Id",
+    ]
+    assert [
+        (members[name]["min_occurs"], members[name]["max_occurs"])
+        for name in (
+            "Session-Id",
+            "DRMP",
+            "Vendor-Specific-Application-Id",
+            "Supported-Features",
+        )
+    ] == [(1, 1), (0, 1), (1, 1), (0, None)]
+    assert [
+        {key: members[name]["avp"][key] for key in ("vendor_id", "code", "defined_in")}
+        for name in ("Session-Id", "DRMP", "Supported-Features")
+    ] == [
+        {"vendor_id": 0, "code": 263, "defined_in": "RFC6733"},
+        {"vendor_id": 0, "code": 301, "defined_in": "RFC7944"},
+        {"vendor_id": 10415, "code": 628, "defined_in": "TS29.229"},
+    ]
+
+
 # --- references --------------------------------------------------------------
 
 

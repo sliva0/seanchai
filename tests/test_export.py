@@ -47,20 +47,30 @@ def exports(tmp_path_factory) -> list[Path]:
     """The committed corpus exported twice at once, under hash seeds 1 and 2."""
     cwd = tmp_path_factory.mktemp("elsewhere")
     runs = []
-    for seed in ("1", "2"):
-        output = tmp_path_factory.mktemp(f"seed-{seed}") / "out"
-        command = [sys.executable, "-c", "from seanchai.cli import main; main()"]
-        process = subprocess.Popen(
-            [*command, "export", "-o", str(output)],
-            cwd=cwd,
-            env={**os.environ, "PYTHONHASHSEED": seed},
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
-        )
-        runs.append((output, process))
-    for _, process in runs:
-        _, stderr = process.communicate()
-        assert process.returncode == 0, stderr.decode()
+    errors = []
+    try:
+        for seed in ("1", "2"):
+            output = tmp_path_factory.mktemp(f"seed-{seed}") / "out"
+            command = [sys.executable, "-c", "from seanchai.cli import main; main()"]
+            process = subprocess.Popen(
+                [*command, "export", "-o", str(output)],
+                cwd=cwd,
+                env={**os.environ, "PYTHONHASHSEED": seed},
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+            )
+            runs.append((output, process))
+        for _, process in runs:
+            _, stderr = process.communicate()
+            errors.append((process.returncode, stderr.decode()))
+    finally:
+        # A failure or an interrupt above leaves no child running.
+        for _, process in runs:
+            if process.returncode is None:
+                process.kill()
+                process.communicate()
+    for returncode, stderr in errors:
+        assert returncode == 0, stderr
     return [output for output, _ in runs]
 
 

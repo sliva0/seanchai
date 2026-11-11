@@ -324,103 +324,249 @@ _SAT_CODE = _fix(table_row(_SAT), "code", 614, 615)
 _LOAD_GONE = _drop(reused_row("Load"), _LOAD)
 
 
-@pytest.mark.parametrize(
-    ("spec", "edits", "message"),
-    [
-        # What a declaration expects is gone: the document moved on. An
-        # occurrence fails once its name stops repeating, even the first.
-        (_TS29229, [_fix(table_row(_SAT), "code", 613, 615)], "expected code=613"),
-        (_TS29229, [_fix(table_row("Missing"), "code", 1, 2)], "no match"),
-        (_TS29229, [_drop(avp_rule(_RTA, "Session-Id"), _SESSION_ID)], "2 matches"),
-        (
-            _TS29229,
-            [_drop(avp_rule(_RTA, "Origin-Host", occurrence=1), _SESSION_ID)],
-            "no match",
-        ),
-        (
-            _TS29229,
-            [_drop(reused_row("Load"), _LOAD.model_copy(update={"origin": "X"}))],
-            "has changed",
-        ),
-        (_TS29229, [_add(avp_table("6.3.1"), _ROW)], "already present"),
-        (_TS29229, [_add(definition(_RTA), _member("X"), "Gone")], "is not present"),
-        (
-            _TS29229,
-            [_add(definition(_SAT), ast.EnumValue(name="X", value=1))],
-            "value 1 is already present",
-        ),
-        (_TS29229, [_add(reused_avps("9.9"), _LOAD)], "no match"),
-        (_TS29229, [_add(header(), _undefined(_SAT))], "defines it"),
-        (_TS29229, [_add(header(), _undefined("Load"))], "the table of clause"),
-        (_TS29229, [_add(header(), _undefined("Absent"))], "no message or grouped"),
-        (_CITED, [_values(expect="TS 32.422 [24]")], "expected values_source="),
-        (_CITED, [_values("Job-Type")], "already holds 1 values"),
-        (_CITED, [_values("Job-Type", extend=True)], "'Immediate_MDT_only' is already"),
-        (_CITED, [_values(extend=True)], "prints no values"),
-        (_CITED, [_typed(_BLANK.model_copy(update={"code": 1}))], "expected AvpTable"),
-        (_UNCITED, [_typed()], "no re-used"),
-        # What a declaration asks for cannot be done.
-        (_TS29229, [_fix(table_row(_SAT), "colour", None, "red")], "has no field"),
-        (_TS29229, [_fix(table_row(_SAT), "code", 614, -1)], "is not valid"),
-        (_TS29229, [_fix(definition(_RTA), "avps", None, ())], "holds child nodes"),
-        (
-            _TS29229,
-            [
-                _fix(avp_rule(_RTA, "Origin-Host"), "min_occurs", 1, 5),
-                _fix(avp_rule(_RTA, "Origin-Host"), "max_occurs", 1, 2),
-            ],
-            "not valid",
-        ),
-        (_TS29229, [_drop(table_row(_SAT), _ROW)], "not valid"),
-        (_TS29229, [_drop(header(), _TS29229)], "can be deleted"),
-        (_TS29229, [_add(definition(_SAT), _member("X"))], "message or grouped"),
-        (_TS29229, [_add(definition(_RTA), _LOAD)], "must be a AvpRule"),
-        (_TS29229, [_add(header(), _scope(), after="Cx")], "after must be None"),
-        (_TS29229, [_add(header(), _LOAD)], "only an ApplicationScope or an"),
-        (
-            _TS29229,
-            [
-                Supply(
-                    id="s", target=definition(_RTA), expect="x", values=_MDT, reason="r"
-                )
-            ],
-            "matched a Message",
-        ),
-        # Two declarations that cannot both hold.
-        (_TS29229, [_SAT_CODE, _SAT_CODE], "corrected more than once"),
-        (_TS29229, [_LOAD_GONE, _LOAD_GONE], "deleted more than once"),
-        (
-            _TS29229,
-            [_fix(reused_row("Load"), "origin", "RFC8583", "RFC7683"), _LOAD_GONE],
-            "both corrected and deleted",
-        ),
-        (
-            _TS29229,
-            [
-                _drop(definition(_SAT), _found(definition(_SAT), ast.EnumeratedAvp)),
-                _fix(enum_value(_SAT, "NO_ASSIGNMENT"), "value", 0, 2),
-            ],
-            "another edit deleted",
-        ),
-        (
-            _TS29229,
-            [
-                _add(reused_avps("6.3.1"), _LOAD.model_copy(update={"name": "X"})),
-                _drop(
-                    reused_avps("6.3.1"), _found(reused_avps("6.3.1"), ast.ReusedAvps)
-                ),
-            ],
-            "corrected and deleted",
-        ),
-        (_CITED, [_values(), _values()], "supplied more than once"),
-        (
-            _CITED,
-            [_typed(), _fix(table_row("DCD-Information"), "code", 2115, 2116)],
-            "corrected and supplied",
-        ),
-    ],
-)
-def test_a_correction_the_file_contradicts_fails(spec, edits, message):
+def _case(spec, edits, message, id):
+    return pytest.param(spec, edits, message, id=id)
+
+
+# What a declaration expects is gone: the document moved on.
+_STALE = [
+    _case(
+        _TS29229,
+        [_fix(table_row(_SAT), "code", 613, 615)],
+        "expected code=613",
+        "corrected-code-moved",
+    ),
+    _case(
+        _TS29229,
+        [_drop(reused_row("Load"), _LOAD.model_copy(update={"origin": "X"}))],
+        "has changed",
+        "deleted-row-changed",
+    ),
+    _case(
+        _TS29229,
+        [_add(avp_table("6.3.1"), _ROW)],
+        "already present",
+        "inserted-row-now-printed",
+    ),
+    _case(
+        _TS29229,
+        [_add(definition(_RTA), _member("X"), "Gone")],
+        "is not present",
+        "inserted-after-a-member-gone",
+    ),
+    _case(
+        _TS29229,
+        [_add(definition(_SAT), ast.EnumValue(name="X", value=1))],
+        "value 1 is already present",
+        "inserted-value-number-taken",
+    ),
+    _case(
+        _TS29229,
+        [_add(header(), _undefined(_SAT))],
+        "defines it",
+        "undefined-avp-now-defined",
+    ),
+    _case(
+        _TS29229,
+        [_add(header(), _undefined("Load"))],
+        "the table of clause",
+        "undefined-avp-now-re-used",
+    ),
+    _case(
+        _TS29229,
+        [_add(header(), _undefined("Absent"))],
+        "no message or grouped",
+        "undefined-avp-used-nowhere",
+    ),
+    _case(
+        _CITED,
+        [_values(expect="TS 32.422 [24]")],
+        "expected values_source=",
+        "supplied-values-citation-changed",
+    ),
+    _case(
+        _CITED,
+        [_values("Job-Type")],
+        "already holds 1 values",
+        "supplied-values-now-printed",
+    ),
+    _case(
+        _CITED,
+        [_values("Job-Type", extend=True)],
+        "'Immediate_MDT_only' is already",
+        "extending-value-now-printed",
+    ),
+    _case(_CITED, [_values(extend=True)], "prints no values", "extending-none-printed"),
+    _case(
+        _CITED,
+        [_typed(_BLANK.model_copy(update={"code": 1}))],
+        "expected AvpTable",
+        "supplied-row-changed",
+    ),
+    _case(_UNCITED, [_typed()], "no re-used", "supplied-row-no-longer-re-used"),
+]
+
+# A selector matches nothing or more than one node. An occurrence fails once
+# its name stops repeating, even the first.
+_UNMATCHED = [
+    _case(
+        _TS29229,
+        [_fix(table_row("Missing"), "code", 1, 2)],
+        "no match",
+        "row-of-no-such-name",
+    ),
+    _case(
+        _TS29229,
+        [_drop(avp_rule(_RTA, "Session-Id"), _SESSION_ID)],
+        "2 matches",
+        "rule-printed-twice",
+    ),
+    _case(
+        _TS29229,
+        [_drop(avp_rule(_RTA, "Origin-Host", occurrence=1), _SESSION_ID)],
+        "no match",
+        "occurrence-of-an-unrepeated-rule",
+    ),
+    _case(
+        _TS29229,
+        [_add(reused_avps("9.9"), _LOAD)],
+        "no match",
+        "table-of-no-such-clause",
+    ),
+]
+
+# What a declaration asks for cannot be done.
+_IMPOSSIBLE = [
+    _case(
+        _TS29229,
+        [_fix(table_row(_SAT), "colour", None, "red")],
+        "has no field",
+        "no-such-field",
+    ),
+    _case(
+        _TS29229,
+        [_fix(table_row(_SAT), "code", 614, -1)],
+        "is not valid",
+        "invalid-value",
+    ),
+    _case(
+        _TS29229,
+        [_fix(definition(_RTA), "avps", None, ())],
+        "holds child nodes",
+        "field-of-child-nodes",
+    ),
+    _case(
+        _TS29229,
+        [
+            _fix(avp_rule(_RTA, "Origin-Host"), "min_occurs", 1, 5),
+            _fix(avp_rule(_RTA, "Origin-Host"), "max_occurs", 1, 2),
+        ],
+        "not valid",
+        "inverted-occurrence-range",
+    ),
+    _case(
+        _TS29229,
+        [_drop(table_row(_SAT), _ROW)],
+        "not valid",
+        "table-left-with-no-rows",
+    ),
+    _case(
+        _TS29229, [_drop(header(), _TS29229)], "can be deleted", "deleting-the-header"
+    ),
+    _case(
+        _TS29229,
+        [_add(definition(_SAT), _member("X"))],
+        "message or grouped",
+        "member-into-an-enumerated-avp",
+    ),
+    _case(
+        _TS29229,
+        [_add(definition(_RTA), _LOAD)],
+        "must be a AvpRule",
+        "re-used-row-into-a-message",
+    ),
+    _case(
+        _TS29229,
+        [_add(header(), _scope(), after="Cx")],
+        "after must be None",
+        "scope-after-another",
+    ),
+    _case(
+        _TS29229,
+        [_add(header(), _LOAD)],
+        "only an ApplicationScope or an",
+        "re-used-row-into-the-header",
+    ),
+    _case(
+        _TS29229,
+        [Supply(id="s", target=definition(_RTA), expect="x", values=_MDT, reason="r")],
+        "matched a Message",
+        "values-for-a-message",
+    ),
+]
+
+# Two declarations that cannot both hold.
+_CONFLICTING = [
+    _case(
+        _TS29229, [_SAT_CODE, _SAT_CODE], "corrected more than once", "corrected-twice"
+    ),
+    _case(
+        _TS29229, [_LOAD_GONE, _LOAD_GONE], "deleted more than once", "deleted-twice"
+    ),
+    _case(
+        _TS29229,
+        [_fix(reused_row("Load"), "origin", "RFC8583", "RFC7683"), _LOAD_GONE],
+        "both corrected and deleted",
+        "corrected-and-deleted",
+    ),
+    _case(
+        _TS29229,
+        [
+            _drop(definition(_SAT), _found(definition(_SAT), ast.EnumeratedAvp)),
+            _fix(enum_value(_SAT, "NO_ASSIGNMENT"), "value", 0, 2),
+        ],
+        "another edit deleted",
+        "corrected-inside-a-deleted-definition",
+    ),
+    _case(
+        _TS29229,
+        [
+            _add(reused_avps("6.3.1"), _LOAD.model_copy(update={"name": "X"})),
+            _drop(reused_avps("6.3.1"), _found(reused_avps("6.3.1"), ast.ReusedAvps)),
+        ],
+        "corrected and deleted",
+        "inserted-into-a-deleted-table",
+    ),
+    _case(_CITED, [_values(), _values()], "supplied more than once", "supplied-twice"),
+    _case(
+        _CITED,
+        [_typed(), _fix(table_row("DCD-Information"), "code", 2115, 2116)],
+        "corrected and supplied",
+        "corrected-and-supplied",
+    ),
+]
+
+
+@pytest.mark.parametrize(("spec", "edits", "message"), _STALE)
+def test_a_declaration_whose_expectation_is_gone_fails(spec, edits, message):
+    with pytest.raises(CorrectionError, match=message):
+        corrections.apply(spec, edits)
+
+
+@pytest.mark.parametrize(("spec", "edits", "message"), _UNMATCHED)
+def test_a_selector_matching_none_or_several_nodes_fails(spec, edits, message):
+    with pytest.raises(CorrectionError, match=message):
+        corrections.apply(spec, edits)
+
+
+@pytest.mark.parametrize(("spec", "edits", "message"), _IMPOSSIBLE)
+def test_a_declaration_asking_the_impossible_fails(spec, edits, message):
+    with pytest.raises(CorrectionError, match=message):
+        corrections.apply(spec, edits)
+
+
+@pytest.mark.parametrize(("spec", "edits", "message"), _CONFLICTING)
+def test_declarations_that_cannot_both_hold_fail(spec, edits, message):
     with pytest.raises(CorrectionError, match=message):
         corrections.apply(spec, edits)
 
@@ -467,26 +613,39 @@ _NOTE = "used in clause 4b.5.2 only"
 _GXX = 16777266
 
 
+_GX = 16777238
+# Gx's CC-Request alone, by the id its header prints.
+_GX_CCR = definition("CC-Request", application_id=_GX)
+
+
 @pytest.mark.parametrize(
     ("edit", "corrected", "message"),
     [
-        (
+        pytest.param(
             _fix(undefined(_ERI), "note", None, _NOTE),
             lambda spec: spec.sections[3].note == _NOTE,
             None,
+            id="undefined",
         ),
-        (_fix(undefined("Session-Id"), "note", None, _NOTE), None, "no match"),
-        (
+        pytest.param(
+            _fix(undefined("Session-Id"), "note", None, _NOTE),
+            None,
+            "no match",
+            id="undefined-of-a-defined-name",
+        ),
+        pytest.param(
             _fix(enum_value(_BCM, "UE_ONLY", occurrence=2), "value", 0, 1),
             lambda spec: [value.value for value in spec.sections[2].values] == [0, 1],
             None,
+            id="occurrence",
         ),
-        (
+        pytest.param(
             _fix(enum_value(_BCM, "UE_ONLY", occurrence=3), "value", 0, 1),
             None,
             "no match",
+            id="occurrence-past-the-last",
         ),
-        (
+        pytest.param(
             _fix(
                 definition("CC-Request", application_id=None),
                 "application_id",
@@ -495,26 +654,69 @@ _GXX = 16777266
             ),
             lambda spec: spec.sections[1].application_id == _GXX,
             None,
+            id="no-application-id",
         ),
-        (
+        pytest.param(
             _fix(definition("CC-Request"), "application_id", None, _GXX),
             None,
             "2 matches",
+            id="omitted-application-id",
         ),
-        (
+        pytest.param(
+            _fix(_GX_CCR, "name", "CC-Request", "Credit-Control-Request"),
+            lambda spec: (
+                [s.name for s in spec.sections[:2]]
+                == ["Credit-Control-Request", "CC-Request"]
+            ),
+            None,
+            id="numeric-application-id",
+        ),
+        pytest.param(
+            _fix(
+                definition("CC-Request", application_id=_GXX),
+                "name",
+                "CC-Request",
+                "Credit-Control-Request",
+            ),
+            None,
+            "no match",
+            id="numeric-application-id-no-header-prints",
+        ),
+        pytest.param(
             _fix(definition(_BCM, application_id=None), "name", _BCM, "X"),
             None,
             "no match",
+            id="no-application-id-of-an-avp",
         ),
-    ],
-    ids=[
-        "undefined",
-        "undefined-of-a-defined-name",
-        "occurrence",
-        "occurrence-past-the-last",
-        "no-application-id",
-        "omitted-application-id",
-        "no-application-id-of-an-avp",
+        pytest.param(
+            _fix(avp_rule(_GX_CCR, "Session-Id"), "bold", False, True),
+            lambda spec: [s.avps[0].bold for s in spec.sections[:2]] == [True, False],
+            None,
+            id="rule-of-the-numbered-application",
+        ),
+        pytest.param(
+            _fix(
+                avp_rule(definition("CC-Request", application_id=None), "Session-Id"),
+                "bold",
+                False,
+                True,
+            ),
+            lambda spec: [s.avps[0].bold for s in spec.sections[:2]] == [False, True],
+            None,
+            id="rule-of-the-unnumbered-application",
+        ),
+        pytest.param(
+            _fix(avp_rule("CC-Request", "Session-Id"), "bold", False, True),
+            None,
+            "2 matches",
+            id="rule-of-either-application",
+        ),
+        pytest.param(
+            _fix(avp_rule(_GX_CCR, _ERI), "bold", False, True),
+            None,
+            "no match",
+            id="rule-only-the-other-application-prints",
+        ),
     ],
 )
 def test_a_selector_no_committed_correction_uses_finds_its_one_node(

@@ -257,7 +257,7 @@ def test_extract_reads_a_docx_and_attaches_the_pdfs_pages(
     spec = parser.parse(output.read_text())
     assert spec.specification == "3GPP TS 29.999"
     assert str(spec.link) == "https://example.com/spec.pdf"
-    assert [section.source.page for section in spec.sections] == [2, 3, 3, 4, 5]
+    assert [section.source.page for section in spec.sections] == [2, 3, 3, 4, 5, 6]
     assert "warning:" not in result.stderr
 
 
@@ -465,8 +465,14 @@ def test_lint_executes_a_corrections_module_only_when_asked(
         link.parent.mkdir(parents=True)
         link.symlink_to(_CORPUS_DIR)
 
-    _invoke("lint", *(["--corrections", modules] if setup == "named" else []), source)
+    result = _invoke(
+        "lint", *(["--corrections", modules] if setup == "named" else []), source
+    )
 
+    # Linted in every case: the cited TS 29.229 is another version's.
+    assert result.exit_code == 0, result.output
+    assert "note[origin-not-in-corpus]" in result.output
+    assert result.output.endswith("found 1 note in 1 file\n")
     assert ran.exists() == runs
 
 

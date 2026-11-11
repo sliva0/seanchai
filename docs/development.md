@@ -56,6 +56,12 @@ runs on GitHub and on Forgejo, which reads `.github/workflows/` while
   corpus are pinned. `holes.toml` pins the known holes, `corpus.toml` may
   name only copies the corpus holds and versions the catalog pins, and
   `corrections.json` must match `edits/corrections/`.
+- Two offline pins check extractor output. RFC 5778, 6942 and 7944, copied
+  into `tests/fixtures/rfc/`, must rebuild to their committed pair; the
+  `sources` tests hold the copies to the downloads, so after a download
+  changes one, copy it over. The synthetic document's whole raw output is
+  `tests/fixtures/tgpp_docx/synthetic.raw.dad`: after a deliberate extractor
+  change, replace it with the new output and review the diff.
 - `tests/test_export.py` runs `seanchai export` over the corpus in
   subprocesses, outside the repository and under two hash seeds that must
   agree byte for byte. `tests/export.sha256` pins a digest per file and leaves

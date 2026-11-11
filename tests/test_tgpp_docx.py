@@ -1,13 +1,16 @@
 """The 3GPP Word extractor: its public contract and the shapes it refuses.
 
-Every shape a corpus document prints is pinned by `test_real_sources.py`.
-The cases here are the ones no committed document reaches: each starts from
-the `synthetic_spec_docx` fixture, changes one thing the way a real document
-went wrong, and requires the extraction to fail or to say what it left out.
+Every shape a corpus document prints is pinned by `test_real_sources.py`,
+which needs the downloads; without them the whole raw output of the
+`synthetic_spec_docx` fixture is pinned in `fixtures/tgpp_docx/`. The other
+cases are the ones no committed document reaches: each starts from the
+fixture, changes one thing the way a real document went wrong, and requires
+the extraction to fail or to say what it left out.
 """
 
 import copy
 import re
+from pathlib import Path
 
 import docx
 import pypdf
@@ -17,6 +20,8 @@ from conftest import _declare
 from seanchai.dad import ast, formatter, parser
 from seanchai.extractor import tgpp_docx
 from seanchai.extractor.errors import ExtractionError
+
+_EXPECTED_RAW = Path(__file__).parent / "fixtures" / "tgpp_docx" / "synthetic.raw.dad"
 
 
 class _H(str):
@@ -128,6 +133,51 @@ def test_extract_writes_a_tree_the_formatter_and_parser_keep(synthetic_spec_docx
     assert tgpp_docx.extract_with_comments(synthetic_spec_docx)[0] == spec
     assert parser.parse(text) == spec
     assert formatter.format_spec(parser.parse(text)) == text
+
+
+def _list_numbered_role(document):
+    """Example-Role, whose values' numbers exist only as Word's list numbering:
+    TS 32.299 V11.20.0 clause 7.2.151, PoC-User-Role-info-Units, which the PDF
+    prints "1. Moderator". Added here, not to the fixture, since it reads only
+    behind `list-numbered-enum-values`."""
+    _add_avp_row(
+        document, "Example-Role", "12", "6.3.3", "Enumerated", "M, V", "", "", "",
+        "No",
+    )  # fmt: skip
+    following = _paragraph(document, "6.4\tResult-Code AVP values")
+    for text, style in (
+        ("6.3.3\tExample-Role AVP", "Heading 2"),
+        ("The Example-Role AVP (AVP code 12) is of type Enumerated.", None),
+        ("Moderator", "List Number"),
+        ("Participant", "List Number"),
+    ):
+        following._p.addprevious(document.add_paragraph(text, style=style)._p)
+
+
+def test_the_synthetic_document_still_produces_the_committed_output(
+    tmp_path, synthetic_spec_docx
+):
+    """The whole raw output, so a reader dropping any construct the fixture
+    holds fails here without the downloads. After a deliberate change, write
+    the new output over the expected file and review the diff."""
+    document = docx.Document(str(synthetic_spec_docx))
+    _list_numbered_role(document)
+    path = tmp_path / "synthetic.docx"
+    document.save(path)
+    sources = _declare(tmp_path, _quirks("list-numbered-enum-values"), "TS29.999")
+    warnings: list[str] = []
+
+    spec, comments = tgpp_docx.extract_with_comments(
+        path,
+        link="https://example.com/spec.pdf",
+        warnings=warnings,
+        sources_dir=sources,
+    )
+
+    assert formatter.format_spec(spec, comments) == _EXPECTED_RAW.read_text(
+        encoding="utf-8"
+    )
+    assert warnings == []
 
 
 def test_a_document_without_a_cover_or_an_avp_table_is_refused(tmp_path):

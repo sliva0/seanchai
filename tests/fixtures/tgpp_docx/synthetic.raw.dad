@@ -1,0 +1,58 @@
+; Specification: 3GPP TS 29.999
+; Version: 1.2.3
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://example.com/spec.pdf
+
+
+; Type: Message
+; Name: Example-Request, EXR
+; Section: 6.1
+<Example-Request> ::= < Diameter Header: 321, REQ, PXY, 42 >
+        < Session-Id >
+      * [ Local-AVP ]  ; bold
+
+
+; Type: AVP Table
+; Section: 6.3
+; Table: 6.3.1
+; Columns: Name   Code   Section   Type         Must   May   S.not   M.not   Encrypt
+Example-Group     10     6.3.1     Grouped      M,V    -     -       -       No
+Example-Mode      11     6.3.2     Enumerated   V      -     -       M       Yes
+Example-Role      12     6.3.3     Enumerated   M,V    -     -       -       No
+
+
+; Type: Reused AVPs
+; Section: 6.3
+; Table: 6.3.2
+; Columns: Name   From      M-bit
+Other-AVP         RFC6733   MUST-NOT
+
+
+; Type: Grouped AVP
+; Name: Example-Group
+; Section: 6.3.1
+Example-Group ::= < AVP header: 10 10415 >
+        { Example-Mode }
+
+
+; Type: Enumerated AVP
+; Name: Example-Mode
+; Section: 6.3.2
+Example-Mode ::= < Enumerated AVP header: 11 10415 >
+        Disabled = 0
+
+
+; Type: Enumerated AVP
+; Name: Example-Role
+; Section: 6.3.3
+Example-Role ::= < Enumerated AVP header: 12 10415 >
+        Moderator   = 1
+        Participant = 2
+
+
+; Type: Value Table
+; AVP: Experimental-Result-Code
+; Kind: result-codes
+; Section: 6.4
+DIAMETER_ERROR_EXAMPLE_UNKNOWN = 5999 ; 6.4.1.1

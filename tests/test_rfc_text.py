@@ -1,16 +1,79 @@
 """The RFC text extractor: the shapes it refuses and the declarations it checks.
 
-Every shape a corpus RFC prints is pinned by `test_real_sources.py`; these
-are the failures no committed RFC reaches, each a small text modelled on the
-RFC named beside it.
+Every shape a corpus RFC prints is pinned by `test_real_sources.py`, which
+needs the downloads. Three real RFCs committed under `fixtures/rfc/` pin the
+output without them; the rest are the failures no committed RFC reaches, each
+a small text modelled on the RFC named beside it.
 """
 
-import pytest
-from conftest import _declare
+import json
+from pathlib import Path
 
+import pytest
+from conftest import _CORPUS_DIR, _ROOT, _declare
+
+from seanchai import _regenerate
 from seanchai.dad import ast
 from seanchai.extractor import rfc_text
 from seanchai.extractor.errors import ExtractionError
+
+_FIXTURES = Path(__file__).parent / "fixtures" / "rfc"
+# Between them: RFC 5778 commands, an AVP table, a grouped and an enumerated
+# AVP, result codes, quirks and corrections; RFC 6942 result codes in their
+# own clauses; RFC 7944 an enumerated AVP read with no edit at all.
+_PINNED = ("RFC5778", "RFC6942", "RFC7944")
+
+
+def test_committed_rfcs_still_produce_the_committed_output(tmp_path):
+    """The `seanchai corpus regenerate` path over the fixture texts, offline."""
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "sources": ["rfc"],
+                "artifacts": [
+                    {
+                        "family": "IETF",
+                        "identifier": reference.replace("RFC", "RFC "),
+                        "files": [str(_FIXTURES / f"{reference.lower()}.txt")],
+                        "url": "https://www.rfc-editor.org/rfc/"
+                        f"{reference.lower()}.txt",
+                    }
+                    for reference in _PINNED
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output = tmp_path / "dad"
+
+    report = _regenerate.regenerate(
+        manifest,
+        _CORPUS_DIR,
+        output,
+        sources_dir=_ROOT / "edits" / "sources",
+        corrections_dir=_ROOT / "edits" / "corrections",
+        only=_PINNED,
+    )
+
+    assert [(o.reference, o.error) for o in report.outcomes] == [
+        (reference, None) for reference in _PINNED
+    ]
+    for reference in _PINNED:
+        stem = reference.lower()
+        for path in (f"rfc/{stem}.dad", f"raw/rfc/{stem}.raw.dad"):
+            assert (output / path).read_text(encoding="utf-8") == (
+                _CORPUS_DIR / path
+            ).read_text(encoding="utf-8"), f"{path} differs from the committed copy"
+
+
+@pytest.mark.sources
+@pytest.mark.parametrize("reference", _PINNED)
+def test_the_rfc_fixtures_are_the_downloaded_texts(reference):
+    downloaded = _ROOT / "specifications" / "rfc" / f"{reference.lower()}.txt"
+    assert downloaded.is_file(), f"{downloaded} not present: run the download"
+    assert (_FIXTURES / downloaded.name).read_bytes() == downloaded.read_bytes()
+
 
 _HEADER_BOX = """\
                                             +----------+

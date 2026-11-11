@@ -106,6 +106,20 @@ def synthetic_spec_docx(tmp_path):
     heading.add_run("6.3.2\tExample-Mode AVP")
     document.add_paragraph("The Example-Mode AVP is of type Enumerated.")
     document.add_paragraph("Disabled (0)")
+
+    # TS 29.229 clause 6.2: experimental codes under subclause headings.
+    heading = document.add_paragraph(style="Heading 1")
+    heading.add_run("6.4\tResult-Code AVP values")
+    document.add_paragraph(
+        "When one of the result codes defined here is included in a response, it"
+        " shall be inside an Experimental-Result AVP and the Result-Code AVP shall"
+        " be absent."
+    )
+    heading = document.add_paragraph(style="Heading 2")
+    heading.add_run("6.4.1\tPermanent Failures")
+    heading = document.add_paragraph(style="Heading 3")
+    heading.add_run("6.4.1.1\tDIAMETER_ERROR_EXAMPLE_UNKNOWN (5999)")
+    document.add_paragraph("A message was received for an unknown example.")
     document.save(path)
     return path
 
@@ -140,13 +154,14 @@ def _write_cover(writer, text):
 
 def _outlined_pdf(path, cover):
     writer = pypdf.PdfWriter()
-    for _ in range(5):
+    for _ in range(6):
         writer.add_blank_page(width=612, height=792)
     _write_cover(writer, cover)
     writer.add_outline_item("6.1 Messages", 1)
     parent = writer.add_outline_item("6.3 AVP definitions", 2)
     writer.add_outline_item("6.3.1 Example-Group", 3, parent=parent)
     writer.add_outline_item("6.3.2 Example-Mode", 4, parent=parent)
+    writer.add_outline_item("6.4 Result-Code AVP values", 5)
     with path.open("wb") as stream:
         writer.write(stream)
     return path
