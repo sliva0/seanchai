@@ -23,6 +23,7 @@ from seanchai.dad.corrections import (
     reused_avps,
     reused_row,
     table_row,
+    undefined,
 )
 
 _CORRECTIONS = _ROOT / "edits" / "corrections"
@@ -422,6 +423,108 @@ _LOAD_GONE = _drop(reused_row("Load"), _LOAD)
 def test_a_correction_the_file_contradicts_fails(spec, edits, message):
     with pytest.raises(CorrectionError, match=message):
         corrections.apply(spec, edits)
+
+
+# For the selectors no committed correction uses yet: TS 29.212's CC-Request
+# printed per reference point, only Gx's header stating an id, and a value
+# printed twice as TS 29.229's RTA prints `< Session-Id >` twice.
+_AUTHORING = parser.parse("""\
+; Specification: 3GPP TS 29.212
+; Version: 19.3.0
+; Vendor-ID: 10415
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 5.6.2
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY, 16777238 >
+        < Session-Id >
+
+
+; Type: Message
+; Name: CC-Request, CCR
+; Section: 4b.5.2
+<CC-Request> ::= < Diameter Header: 272, REQ, PXY >
+        < Session-Id >
+        [ Event-Report-Indication ]
+
+
+; Type: Enumerated AVP
+; Name: Bearer-Control-Mode
+; Section: 5.3.23
+Bearer-Control-Mode ::= < Enumerated AVP header: 1023 10415 >
+        UE_ONLY = 0
+        UE_ONLY = 0
+
+
+; Type: Undefined AVP
+; Name: Event-Report-Indication
+; Section: 4b.5.2
+""")
+_BCM = "Bearer-Control-Mode"
+_ERI = "Event-Report-Indication"
+_NOTE = "used in clause 4b.5.2 only"
+_GXX = 16777266
+
+
+@pytest.mark.parametrize(
+    ("edit", "corrected", "message"),
+    [
+        (
+            _fix(undefined(_ERI), "note", None, _NOTE),
+            lambda spec: spec.sections[3].note == _NOTE,
+            None,
+        ),
+        (_fix(undefined("Session-Id"), "note", None, _NOTE), None, "no match"),
+        (
+            _fix(enum_value(_BCM, "UE_ONLY", occurrence=2), "value", 0, 1),
+            lambda spec: [value.value for value in spec.sections[2].values] == [0, 1],
+            None,
+        ),
+        (
+            _fix(enum_value(_BCM, "UE_ONLY", occurrence=3), "value", 0, 1),
+            None,
+            "no match",
+        ),
+        (
+            _fix(
+                definition("CC-Request", application_id=None),
+                "application_id",
+                None,
+                _GXX,
+            ),
+            lambda spec: spec.sections[1].application_id == _GXX,
+            None,
+        ),
+        (
+            _fix(definition("CC-Request"), "application_id", None, _GXX),
+            None,
+            "2 matches",
+        ),
+        (
+            _fix(definition(_BCM, application_id=None), "name", _BCM, "X"),
+            None,
+            "no match",
+        ),
+    ],
+    ids=[
+        "undefined",
+        "undefined-of-a-defined-name",
+        "occurrence",
+        "occurrence-past-the-last",
+        "no-application-id",
+        "omitted-application-id",
+        "no-application-id-of-an-avp",
+    ],
+)
+def test_a_selector_no_committed_correction_uses_finds_its_one_node(
+    edit, corrected, message
+):
+    if message is not None:
+        with pytest.raises(CorrectionError, match=message):
+            corrections.apply(_AUTHORING, [edit])
+    else:
+        assert corrected(corrections.apply(_AUTHORING, [edit])[0])
 
 
 @pytest.mark.parametrize(

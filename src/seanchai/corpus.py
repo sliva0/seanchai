@@ -964,9 +964,7 @@ class Corpus:
     ) -> tuple[Entry | None, CrossRelease | None]:
         """The copy a `release_stand_ins` entry names, or nothing."""
         citing, _, reference = key
-        stand_in = self.rules.release_stand_ins.get(key)
-        if stand_in is None:
-            return None, None
+        stand_in = self.rules.release_stand_ins[key]
         entry = next(
             (e for e in candidates if e.spec.version == stand_in.version), None
         )

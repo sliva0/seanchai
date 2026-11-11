@@ -325,6 +325,11 @@ def _extract_avp_table(
         )
     if table.caption is None:
         raise ExtractionError("AVP table without a caption")
+    if not rows:
+        # Notes, spanning rows and the `* [ AVP ]` row are no AVP's.
+        raise ExtractionError(
+            f"{section_number}: AVP table {table.caption} has no row naming an AVP"
+        )
     reused = [
         ast.ReusedAvpRow(name=name, origin=f"RFC{note_rfcs[note]}")
         for name, note in note_refs

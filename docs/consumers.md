@@ -611,7 +611,9 @@ and `origin` where they apply and a feature's M/O `mark`. A plain
 name, or else its origin's; `Avp.value_table` is the first.
 `resolve("TS29.229", "Experimental-Result-Code").value_tables` gives TS
 29.229's codes, though the AVP is RFC 6733's. A value table is not part of
-the AVP's identity and does not make a second reading.
+the AVP's identity and does not make a second reading: a reading from
+`readings` or `avps()` carries the tables of its `read_through` document, as
+`resolve` there gives them.
 
 `feature_lists()` keys feature tables by `(application, feature_list_id)`,
 spelled as the caption does. Where two documents print one list, the first

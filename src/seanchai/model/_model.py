@@ -6,6 +6,7 @@ from __future__ import annotations
 import os
 from collections import Counter
 from collections.abc import Iterable, Iterator, Mapping
+from dataclasses import replace
 from functools import cached_property
 from pathlib import Path
 
@@ -671,7 +672,26 @@ class Model(_Resolver):
         found.update(
             (avp, None) for avp in self._reached(found) if avp.identity not in known
         )
-        return list(found)
+        return [self._as_read_through(avp) for avp in found]
+
+    def _as_read_through(self, avp: Avp) -> Avp:
+        """`avp` with the value tables of the document it is read through.
+
+        Equal readings are one, and the first met stands for them; its
+        tables are those of whichever document resolved it first. TS 32.299
+        reads RFC 6733's `Result-Code` with its own codes; the reading names
+        RFC 6733, so it carries RFC 6733's.
+        """
+        view = self._by_document.get(avp.read_through)
+        own = None if view is None else self._final(view, avp.name)
+        if not isinstance(own, Avp) or own.value_tables == avp.value_tables:
+            return avp
+        return replace(avp, value_tables=own.value_tables)
+
+    @cached_property
+    def _by_document(self) -> dict[str, _View]:
+        """Every copy by its document spelling, as `Avp.read_through`."""
+        return {self._document(view): view for view in self._copies.values()}
 
     def _reached(self, avps: Iterable[Avp]) -> dict[Avp, None]:
         """Every reading `avps` and the newest copies' commands hold, at any

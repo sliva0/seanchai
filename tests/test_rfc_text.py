@@ -222,6 +222,14 @@ _REFUSED = [
         "does not name Key-Lifetime",
         id="note-names-another-avp",
     ),
+    pytest.param(
+        _NOTED_TABLE.split("   |Ni ")[0]
+        + "\n   Note 1: The Key-Lifetime AVP is defined in [RFC6734].\n",
+        ("note-avp-origins",),
+        "8: the AVP table has no rows: every row cites a note",
+        id="every-row-noted",
+    ),
+    pytest.param(_table(), (), "has no rows under it", id="header-without-rows"),
     # Enumerated values.
     pytest.param(
         _enumerated(

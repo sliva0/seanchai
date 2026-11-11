@@ -175,6 +175,11 @@ def _extract_registry(
             )
         except (ValueError, pydantic.ValidationError) as error:
             raise ExtractionError(f"{label}: {error}") from None
+    if not rows:
+        raise ExtractionError(
+            f"{section}: registry table {table.caption} allocates no code"
+            " and reserves no range"
+        )
     return ast.Registry(
         registry=_REGISTRY_KINDS[header[0]],
         table=table.caption,

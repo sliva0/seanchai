@@ -704,6 +704,26 @@ def test_a_value_table_is_the_reading_documents_or_else_its_origins(built):
     assert (oma.value_table.reference, oma.value_table.vendor_id) == ("RFC6733", 0)
 
 
+def test_a_corpus_wide_reading_carries_its_read_through_documents_tables(built):
+    """TS 32.299 reads RFC 6733's Result-Code and Experimental-Result-Code
+    with its own codes; the corpus-wide readings, read through RFC 6733,
+    carry RFC 6733's codes and none, whichever document is met first."""
+    (result_code, _oma) = built.readings("Result-Code")
+    (experimental,) = built.readings("Experimental-Result-Code")
+
+    assert result_code.read_through == "RFC6733"
+    assert [t.reference for t in result_code.value_tables] == ["RFC6733"]
+    assert result_code.value_tables == built.definition("Result-Code").value_tables
+    assert experimental.value_tables == ()
+    assert built.definition("Experimental-Result-Code").value_tables == ()
+    for avp in built.avps():
+        # An older copy's reading is read through "TS29.061 V6.15.0".
+        reference, _, version = avp.read_through.partition(" V")
+        own = built.resolve(reference, avp.name, version=version or None)
+        assert own is not None, avp
+        assert own.value_tables == avp.value_tables, avp
+
+
 def test_value_tables_filter_by_document_avp_and_kind(built):
     assert {table.kind for table in built.value_tables()} == set(model.ValueKind)
     assert {t.reference for t in built.value_tables("ts 29.272")} == {"TS29.272"}

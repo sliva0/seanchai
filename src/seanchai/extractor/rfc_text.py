@@ -856,6 +856,13 @@ class _TableReader:
         section, page = self.source
         if section is None:
             raise ExtractionError("AVP table before any numbered section")
+        if not self.rows:
+            why = (
+                "every row cites a note for its origin and moves to a re-used block"
+                if self.noted
+                else "its header has no rows under it"
+            )
+            raise ExtractionError(f"{section}: the AVP table has no rows: {why}")
         return ast.AvpTable(
             source=ast.SourceRef(section=section, page=page),
             columns=self.shape.columns,

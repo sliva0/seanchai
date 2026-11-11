@@ -548,7 +548,8 @@ def convert_legacy_documents(
 ) -> list[Conversion]:
     """Convert an archive's legacy `.doc` files to `.docx` with LibreOffice.
 
-    Only an archive with no `.docx` of its own is converted. The results go to
+    The callers pass only an archive with no `.docx` of its own, whose
+    `legacy_documents` are then all there is to read. The results go to
     `converted/` beside the extracted archive in the staged `tree`
     (`converted/3gpp/Rel-19/TS_32.299/32299-j00.docx`), so the extracted
     directory holds only the archive's contents. They are rebuilt on every run,
@@ -556,8 +557,6 @@ def convert_legacy_documents(
     publishes nothing.
     """
     legacy = legacy_documents(extracted)
-    if not legacy:
-        return []
     converter = run_soffice(identifier, ["--version"]).strip()
     if not converter:
         raise DownloadError(f"{identifier}: `{SOFFICE} --version` printed nothing")

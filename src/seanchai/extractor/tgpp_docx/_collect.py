@@ -468,7 +468,8 @@ def _resolve(
         pairs=pairs,
         definitions=[*collected.grouped, *enumerated],
         independent_reused=[
-            *(collected.reused_tables if independent else []),
+            # A printed re-used table with no rows is no block, as when paired.
+            *(table for table in collected.reused_tables if independent and table.rows),
             *collected.vendor_reused,
         ],
         applications=collected.applications,

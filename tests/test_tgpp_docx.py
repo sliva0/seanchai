@@ -273,6 +273,16 @@ def _wildcard_row(document):
     _add_avp_row(document, "AVP", "*", "", "Grouped", "M", "", "", "", "No")
 
 
+def _rows_removed(table, keep):
+    """An edit leaving table `table` only its first `keep` rows."""
+
+    def edit(document):
+        for row in list(document.tables[table].rows)[keep:]:
+            row._tr.getparent().remove(row._tr)
+
+    return edit
+
+
 def _second_vendor_group(document):
     """A grouped AVP whose header gives another vendor than Example-Group's,
     which leaves the enumerated AVPs, whose clauses print none, without one."""
@@ -460,6 +470,12 @@ _REFUSED = [
         _note_defined_in_rfc, "", "`note-defined-in-rfc`", id="note-defined-in-rfc"
     ),
     pytest.param(_wildcard_row, "", "`wildcard-avp-row`", id="wildcard-row"),
+    pytest.param(
+        _both(_rows_removed(1, 2), _wildcard_row),
+        _quirks("wildcard-avp-row"),
+        "6.3: AVP table 6.3.1 has no row naming an AVP",
+        id="wildcard-row-alone",
+    ),
     pytest.param(
         _retext("Table 6.3.1: AVP definitions", "Table  : definitions"),
         "",
@@ -689,6 +705,13 @@ _REFUSED = [
         "code cell 'zz'",
         id="registry-placeholder",
     ),
+    pytest.param(
+        # Table 7.1's row naming a document alone, ahead of its range.
+        _registry(("", "", "29.229 [2]")),
+        _quirks("registry-tables"),
+        "registry table 7.1 allocates no code and reserves no range",
+        id="registry-without-codes",
+    ),
     # TS 29.210 V6.7.0 states Gx's id in clause 6.1 and Gx over Gy's in 6.2; an
     # id stated at the interface clause itself could be for either's commands.
     pytest.param(
@@ -898,6 +921,16 @@ def test_a_vendor_table_row_citing_no_nameable_document_adds_no_row(
         for row in section.rows
     )
     assert any("[301], which names no document" in w for w in warnings)
+
+
+@pytest.mark.parametrize("toml", ["", _quirks("independent-avp-tables")])
+def test_a_reused_table_with_no_rows_makes_no_block(
+    tmp_path, synthetic_spec_docx, toml
+):
+    """Paired with the AVP table or, behind `independent-avp-tables`, not."""
+    spec = _extract(tmp_path, synthetic_spec_docx, _rows_removed(2, 1), toml)
+
+    assert not any(isinstance(section, ast.ReusedAvps) for section in spec.sections)
 
 
 # --- declarations ------------------------------------------------------------------
