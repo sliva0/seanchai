@@ -43,6 +43,7 @@ seanchai = "seanchai.cli:main"
 [project.urls]
 Homepage = "https://github.com/sliva0/seanchai"
 Documentation = "https://github.com/sliva0/seanchai/tree/main/docs"
+Explorer = "https://sliva0.github.io/seanchai-explorer/"
 Issues = "https://github.com/sliva0/seanchai/issues"
 
 [build-system]

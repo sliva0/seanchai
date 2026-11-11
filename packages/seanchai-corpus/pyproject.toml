@@ -28,6 +28,7 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/sliva0/seanchai"
 Docs = "https://github.com/sliva0/seanchai/blob/main/docs/dad-format.md"
+Explorer = "https://sliva0.github.io/seanchai-explorer/"
 Issues = "https://github.com/sliva0/seanchai/issues"
 
 [build-system]

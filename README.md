@@ -11,6 +11,9 @@ The only edits are declared patches and corrections, each with its reason.
 The [linter][linter] reports contradictions, and the
 [Wireshark oracle][oracle] compares the corpus with Wireshark's dictionary.
 
+Browse the corpus online at
+[seanchai-explorer](https://sliva0.github.io/seanchai-explorer/).
+
 ## Installing
 
 Seanchaí needs Python 3.12 or newer.
