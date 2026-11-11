@@ -250,9 +250,11 @@ class AvpHeader(_Model):
 class Command(_Model):
     """A Message block's header. `flags` in printed order; `application_id`
     is the effective id, the header's or for a bare header the one the first
-    Application Scope block covering its clause states (`scope`, that block's
-    clause). `application` names the application, and `stated_in` is the
-    clause of the scope block naming it, as `CommandIdentity` reads them."""
+    Application Scope block covering its clause states. `application` names
+    the application, as `CommandIdentity` reads it, and `application_clause`
+    is the clause to cite for it: for a bare header that covering block's,
+    which states the id, else the clause of the scope block naming it. Both
+    are null where no scope block names the application."""
 
     code: int
     request: bool
@@ -260,15 +262,15 @@ class Command(_Model):
     header_application_id: int | None
     application_id: int | None
     application: str | None = None
-    stated_in: str | None = None
-    scope: str | None = None
+    application_clause: str | None = None
 
 
 class CommandSpan(_Model):
     """Characters `start` to `end` of line `line` name a command: a Message
     block's name, abbreviation or rule head, a half of a Command Codes row's
     name or abbreviation, or a table's column for it. `block` indexes the
-    document's Message block for it; a registry half has none."""
+    document's Message block for it; a registry half has none, and
+    `allocation` indexes its row in its own block's `allocations` instead."""
 
     line: int
     start: int
@@ -278,19 +280,24 @@ class CommandSpan(_Model):
     name: str
     abbreviation: str | None = None
     block: int | None = None
+    allocation: int | None = None
 
 
 class TableRow(_Model):
     """A row of an AVP Table or Reused AVPs block at `line`. `cells` are as
     printed, one per column, quotes kept: `""` is a blank cell, `-` a dash.
-    The rest is what needs more than a cell to read: `name` unquoted, `vendor`
-    the vendor space the row places the AVP in (its Vendor-ID cell, else its V
-    flag read with the file's `; Vendor-ID:`), and `marks` each mark column's
-    marks, unquoted, with no marks for a dash and no entry for a blank cell."""
+    The rest is what needs more than a cell to read: `name` unquoted, `code`
+    and `type` where the row prints a code and a Diameter data type,
+    `vendor` the vendor space the row places the AVP in (its Vendor-ID cell,
+    else its V flag read with the file's `; Vendor-ID:`), and `marks` each
+    mark column's marks, unquoted, with no marks for a dash and no entry for a
+    blank cell."""
 
     line: int
     name: str
     cells: tuple[str, ...]
+    code: int | None = None
+    type: ast.DataType | None = None
     vendor: int | None = None
     marks: dict[ast.MarkColumn, tuple[str, ...]] = pydantic.Field(default_factory=dict)
 
@@ -298,15 +305,16 @@ class TableRow(_Model):
 class Allocation(_Model):
     """A row of a Registry block at `line`, `cells` as a `TableRow`'s. `code`
     is null where the row prints a placeholder; `name` and `abbreviation` are
-    unquoted, null for a dash. `documents` are the exported documents its
-    Defined-In cell resolves to; `vendor` is an AVP Codes row's, the file's
-    `; Vendor-ID:`."""
+    unquoted, null for a dash. `type` is the Diameter data type its Type
+    cell prints. `documents` are the exported documents its Defined-In cell
+    resolves to; `vendor` is an AVP Codes row's, the file's `; Vendor-ID:`."""
 
     line: int
     cells: tuple[str, ...]
     code: int | None
     name: str | None = None
     abbreviation: str | None = None
+    type: ast.DataType | None = None
     documents: tuple[str, ...] = ()
     vendor: int | None = None
 
@@ -359,7 +367,9 @@ class Block(_Model):
     - `avp` and `values` for an Enumerated AVP;
     - `columns` and `rows` for an AVP Table or Reused AVPs block;
     - `columns`, `allocations` and `reservations` for a Registry;
-    - `value_rows` for a Value Table.
+    - `value_kind`, `feature_list_id`, `application`, `avp_target` and
+      `value_rows` for a Value Table, `avp_target` being where its `; AVP:`
+      line links.
 
     `commands` marks where its lines name a command.
     """
@@ -380,6 +390,10 @@ class Block(_Model):
     rows: tuple[TableRow, ...] = ()
     allocations: tuple[Allocation, ...] = ()
     reservations: tuple[Reservation, ...] = ()
+    value_kind: ast.ValueKind | None = None
+    feature_list_id: int | None = None
+    application: str | None = None
+    avp_target: Target | None = None
     value_rows: tuple[ValueRow, ...] = ()
     commands: tuple[CommandSpan, ...] = ()
 

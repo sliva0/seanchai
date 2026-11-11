@@ -131,28 +131,36 @@ and in its raw mirror alike, each describing its own file's lines. Every
   extractor comments out with its `; strikethrough`, which is no member of
   the rule the corpus reads. A Message has `abbreviation` and `command`:
   `code`, `request`, `flags`, `header_application_id`, the effective
-  `application_id`, and `application`, `stated_in` and `scope` as the search
-  entry reads them. A Grouped or Reprinted AVP has `avp`, its header's `code`
-  and `vendor_id`.
+  `application_id`, the `application` the search entry names, and
+  `application_clause`, the Application Scope clause to cite for it: for a
+  bare header the one covering the command's clause, which states the id,
+  else the one naming the application. Both are left out where no scope names
+  it. An Answer Message has no `name`, as its `<answer-message>` names no
+  command: its rule's `name`, `answer-message`, is what labels it. A Grouped
+  or Reprinted AVP has `avp`, its header's `code` and `vendor_id`.
 - Enumerated AVP: `avp` and `values`, each a `value` with its `name` or a
   `reserved`, `void` or `vendor-specific` range `first` to `last`.
 - AVP Table, Reused AVPs: `columns` and `rows`. A row has `name`, `cells` as
   printed (`""` blank, `-` a dash, quotes kept), `marks` per mark column,
-  unquoted, and an AVP table row's `vendor`, the vendor space it places the
-  AVP in.
+  unquoted, the `code` its Code cell prints, the `type` its Type cell prints
+  where that is a Diameter data type (`DataType` in the schema), and an AVP
+  table row's `vendor`, the vendor space it places the AVP in.
 - Registry: `columns`, `allocations` (`cells`, `code`, `name`,
-  `abbreviation`, `documents` its Defined-In cell resolves to, and an AVP
-  Codes row's `vendor`) and `reservations`.
-- Value Table: `value_rows`, each `name`, `value`, a result code's own
-  `section`, a feature's `mark`, and a result code's `origin` with the
-  `origin_target` its token links to.
+  `abbreviation`, a data `type` as a row's, `documents` its Defined-In cell
+  resolves to, and an AVP Codes row's `vendor`) and `reservations`.
+- Value Table: `value_kind` (`result-codes`, `bits`, `features`), a
+  feature list's `feature_list_id` and `application`, the `avp_target` its
+  `; AVP:` line links to, and `value_rows`, each `name`, `value`, a result
+  code's own `section`, a feature's `mark`, and a result code's `origin` with
+  the `origin_target` its token links to.
 
 `commands` gives where a block's lines name a command, as `line`, `start` and
 `end` character offsets: a Message's name, abbreviation and rule head, the
 request and answer halves of a Command Codes row's name and abbreviation
 cells, and a table's column named by one of the file's commands (TS 32.299's
 ACR to CCA). Each has `code`, `request`, `name`, `abbreviation`, and `block`,
-the index of the Message block it names, null for a registry's half.
+the index of the Message block it names, null for a registry's half, which
+has `allocation` instead, its row's index in the block's `allocations`.
 
 ### `search.json`
 

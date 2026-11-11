@@ -609,6 +609,37 @@ def test_a_message_block_names_its_application_as_the_search_entry_does(exported
             identity["application_id"],
             identity["application"],
         )
+        assert ("application" in command) == ("application_clause" in command)
+
+
+def test_a_message_block_cites_one_clause_for_its_application(exported):
+    """TS 29.061 V6.15.0 clause 17.6.1's AA-Request prints no Application-ID,
+    which clause 17's Gmb scope states; TS 29.272 clause 7.2.9 prints S7a's
+    id, which no scope covering it states, and clause 7.2.2 names."""
+    aar = _block(exported.docs["29061-6f0"], "Message", "17.6.1", "AA-Request")
+    assert aar["command"]["header_application_id"] is None
+    assert (aar["command"]["application"], aar["command"]["application_clause"]) == (
+        "Gmb",
+        "17",
+    )
+    # The clause prints it once per application, S6a/S6d's first.
+    idr = [
+        b
+        for b in exported.docs["29272-j60"]["blocks"]
+        if b["type"] == "Message" and b["section"] == "7.2.9"
+    ][1]
+    assert idr["command"]["header_application_id"] == 16777308
+    assert (idr["command"]["application"], idr["command"]["application_clause"]) == (
+        "S7a/S7d",
+        "7.2.2",
+    )
+
+
+def test_an_answer_message_block_has_no_name_but_its_rule_s(exported):
+    """RFC 6733 clause 7.2 prints `<answer-message>`, which names no command."""
+    block = _block(exported.docs["rfc6733"], "Answer Message", "7.2")
+    assert "name" not in block
+    assert block["rule"]["name"] == "answer-message"
 
 
 def test_a_struck_member_is_kept_and_flagged(exported):
@@ -677,6 +708,30 @@ def test_a_table_row_holds_its_cells_as_printed(exported):
     (user_data,) = [r for r in table["rows"] if r["name"] == "User-Data"]
     assert user_data["vendor"] == 10415
     assert user_data["cells"][:5] == ["User-Data", "702", "6.3.3", "OctetString", "M,V"]
+    assert (user_data["code"], user_data["type"]) == (702, "OctetString")
+
+
+def test_a_row_reads_the_code_and_data_type_it_prints(exported):
+    """A row's `code` is its Code cell's number and its `type` its Type cell's
+    Diameter type; TS 29.230 table 7.1 types 314 "Integer", which is none."""
+    types = {member.value for member in ast.DataType}
+    for key, doc in exported.docs.items():
+        for file in (doc, exported.raws[key]):
+            for block in file["blocks"]:
+                for row in [*block.get("rows", ()), *block.get("allocations", ())]:
+                    cells = dict(zip(block["columns"], row["cells"], strict=True))
+                    code = cells.get("Code", "")
+                    assert row.get("code") == (int(code) if code.isdigit() else None)
+                    printed = cells.get("Type")
+                    assert row.get("type") == (printed if printed in types else None)
+    registry = next(
+        b
+        for b in exported.docs["29230-j30"]["blocks"]
+        if b["type"] == "Registry" and b["fields"]["Registry"] == "AVP Codes"
+    )
+    (integer,) = [a for a in registry["allocations"] if a["code"] == 314]
+    assert integer["cells"][2] == '"Integer"'
+    assert "type" not in integer
 
 
 def test_a_command_codes_row_names_its_request_and_answer(exported):
@@ -708,6 +763,14 @@ def test_a_command_codes_row_names_its_request_and_answer(exported):
         ("UAA", "User-Authorization-Answer", False, "UAA"),
     ]
     assert all(s["code"] == 300 and "block" not in s for s in spans)
+    index = registry["allocations"].index(row)
+    assert {s["allocation"] for s in spans} == {index}
+    assert all(
+        span["allocation"] == registry["allocations"].index(allocation)
+        for span in registry["commands"]
+        for allocation in registry["allocations"]
+        if allocation["line"] == span["line"]
+    )
     avp_codes = next(
         b
         for b in doc["blocks"]
@@ -727,7 +790,12 @@ def test_a_result_code_row_names_its_origin(exported):
         and any(r["name"] == "DIAMETER_ERROR_USER_UNKNOWN" for r in b["value_rows"])
     ]
     assert table["name"] == "Experimental-Result-Code"
-    assert table["fields"]["Kind"] == "result-codes"
+    assert table["fields"]["Kind"] == table["value_kind"] == "result-codes"
+    assert "feature_list_id" not in table and "application" not in table
+    # Its `; AVP:` line links where `avp_target` says.
+    (avp,) = _tokens([doc["lines"][table["line"] + 1]], "Experimental-Result-Code")
+    assert avp["target"] == table["avp_target"]
+    assert table["avp_target"] == {"document": "rfc6733", "section": "7.7"}
     (row,) = [r for r in table["value_rows"] if r["value"] == 5001]
     assert row == {
         "line": row["line"],
@@ -744,6 +812,40 @@ def test_a_result_code_row_names_its_origin(exported):
     # The origin's token links where the row does.
     (token,) = _tokens([doc["lines"][row["line"]]], "TS29.229")
     assert token["target"] == row["origin_target"]
+
+
+def test_a_value_table_types_what_its_directives_say(exported):
+    """TS 29.217 clause 5.4.1 lists feature list 1 of the Np application."""
+    (features,) = [
+        b
+        for b in exported.docs["29217-j00"]["blocks"]
+        if b["type"] == "Value Table" and b["name"] == "Feature-List"
+    ]
+    assert (
+        features["value_kind"],
+        features["feature_list_id"],
+        features["application"],
+    ) == ("features", 1, "Np")
+    for key, doc in exported.docs.items():
+        for file in (doc, exported.raws[key]):
+            for block in file["blocks"]:
+                if block["type"] != "Value Table":
+                    continue
+                fields = block["fields"]
+                assert block["value_kind"] == fields["Kind"]
+                listed = fields.get("Feature-List-ID")
+                assert block.get("feature_list_id") == (
+                    None if listed is None else int(listed)
+                )
+                assert block.get("application") == fields.get("Application")
+                head = file["lines"][block["line"] : block["value_rows"][0]["line"]]
+                links = [
+                    t.get("target")
+                    for line in head
+                    for t in line["tokens"]
+                    if t.get("avp") == block["name"]
+                ]
+                assert block.get("avp_target") == (links[0] if links else None)
 
 
 def test_a_raw_file_s_blocks_describe_its_own_lines(exported):

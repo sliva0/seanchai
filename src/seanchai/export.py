@@ -454,7 +454,9 @@ def _commands_of(spec: ast.Specification) -> dict[int, Command]:
         section = spec.sections[index]
         assert isinstance(section, ast.Message)
         named = stating.get((found, ast.interface_clause(section.source.section)))
-        scope = covering[index]
+        # A bare header's id is the covering block's statement, so that block's
+        # clause is the one to cite; a printed id's is the clause naming it.
+        cited = named if section.application_id is not None else covering[index]
         commands[index] = Command(
             code=section.command_code,
             request=ast.CommandFlag.REQUEST in section.flags,
@@ -462,8 +464,9 @@ def _commands_of(spec: ast.Specification) -> dict[int, Command]:
             header_application_id=section.application_id,
             application_id=found,
             application=None if named is None else named.name,
-            stated_in=None if named is None else named.source.section,
-            scope=None if scope is None else scope.source.section,
+            application_clause=None
+            if named is None or cited is None
+            else cited.source.section,
         )
     return commands
 
@@ -566,6 +569,11 @@ def _blocks(
         spans: list[CommandSpan] = []
         if isinstance(section, ast.ValueTable):
             fields["name"] = section.avp
+            fields["value_kind"] = section.kind
+            fields["feature_list_id"] = section.feature_list_id
+            fields["application"] = section.application
+            # What the `; AVP:` line's name links to, as `_tokens` links it.
+            fields["avp_target"] = links.names.get(section.avp)
             fields["value_rows"] = _value_rows(placed, index, section)
         elif not isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
             fields["name"] = getattr(section, "name", None)
@@ -746,6 +754,8 @@ def _table_rows(
             line=placed.items[index, "rows", item],
             name=row.name,
             cells=placed.cells(placed.items[index, "rows", item]),
+            code=row.code,
+            type=row.data_type,
             vendor=row.stated_vendor(placed.spec.vendor_id)
             if isinstance(row, ast.AvpTableRow)
             else None,
@@ -765,6 +775,7 @@ def _registry(
     spans = []
     references = placed.links.references
     for item, row in enumerate(section.rows):
+        allocation = len(allocations)
         line = placed.items[index, "rows", item]
         if isinstance(row, ast.RegistryReservation):
             reservations.append(
@@ -784,6 +795,7 @@ def _registry(
                 code=row.code,
                 name=row.name,
                 abbreviation=row.abbreviation,
+                type=row.data_type,
                 documents=tuple(
                     dict.fromkeys(
                         references[reference].document
@@ -797,15 +809,20 @@ def _registry(
             )
         )
         if section.registry is ast.RegistryKind.COMMAND_CODES:
-            spans += _registry_spans(placed, section, row, line)
+            spans += _registry_spans(placed, section, row, line, allocation)
     return tuple(allocations), tuple(reservations), spans
 
 
 def _registry_spans(
-    placed: _Placed, section: ast.Registry, row: ast.RegistryRow, line: int
+    placed: _Placed,
+    section: ast.Registry,
+    row: ast.RegistryRow,
+    line: int,
+    allocation: int,
 ) -> list[CommandSpan]:
     """Where a Command Codes row's name and abbreviation cells name its
-    request and answer (TS 29.230 table 5.1/1's `UAR/UAA`)."""
+    request and answer (TS 29.230 table 5.1/1's `UAR/UAA`); `allocation` is
+    the row's index among the block's allocations."""
     if row.code is None or row.name is None:
         return []
     columns = [column.value for column in section.columns]
@@ -846,6 +863,7 @@ def _registry_spans(
             request=request,
             name=name,
             abbreviation=short,
+            allocation=allocation,
         )
         for start, end, name, request, short in places
     ]
