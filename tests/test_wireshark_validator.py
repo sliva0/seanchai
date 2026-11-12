@@ -1,24 +1,28 @@
-"""The Wireshark validator: its core under every Lua found here, and the whole
-plugin under tshark, over messages encoded below.
+"""The Wireshark plugin `seanchai wireshark-plugin` writes: its core under
+every Lua found here, and the whole plugin under tshark, over messages encoded
+below.
 
 The core is plain Lua for Wireshark 4.2's Lua 5.2 and 4.4's 5.4 alike; each
 interpreter on PATH runs it (5.1 standing in for the oldest), and a test is
-skipped where none is. The tshark test runs the generated plugin over a pcap
+skipped where none is. The tshark tests run the generated plugin over a pcap
 of the same messages, skipped without tshark.
 """
 
-import importlib.util
 import json
+import re
 import shutil
 import struct
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
+from click.testing import CliRunner
 
-ROOT = Path(__file__).parent.parent
-VALIDATOR = ROOT / "integrations" / "wireshark" / "validator"
+from seanchai import corpus, dictionary, model, wireshark
+from seanchai.cli import main
+from seanchai.wireshark import _rules as generator
+
+CORE = Path(wireshark.__file__).parent / "core.lua"
 LUAS = [name for name in ("lua5.1", "lua5.2", "lua5.3", "lua5.4") if shutil.which(name)]
 CX = 16777216
 RX = 16777236
@@ -136,11 +140,9 @@ def good_dwr() -> bytes:
 
 
 def _rules(out: Path, *options: str) -> Path:
-    subprocess.run(
-        [sys.executable, str(VALIDATOR / "generate.py"), *options, "-o", str(out)],
-        check=True,
-        capture_output=True,
-    )
+    """`seanchai wireshark-plugin` with `options`, written to `out`."""
+    done = CliRunner().invoke(main, ["wireshark-plugin", *options, "-o", str(out)])
+    assert done.exit_code == 0, done.output
     return out
 
 
@@ -209,8 +211,7 @@ def _validate(lua: str, rules: Path, tmp_path: Path, *messages: bytes) -> list[d
     runner = tmp_path / "runner.lua"
     runner.write_text(_RUNNER, "utf-8")
     done = subprocess.run(
-        [lua, str(runner), str(VALIDATOR / "core.lua"), str(rules)]
-        + [each.hex() for each in messages],
+        [lua, str(runner), str(CORE), str(rules)] + [each.hex() for each in messages],
         check=True,
         capture_output=True,
         text=True,
@@ -310,60 +311,54 @@ def _pcap(messages: list[bytes]) -> bytes:
     return out
 
 
-@pytest.mark.skipif(shutil.which("tshark") is None, reason="no tshark on PATH")
-def test_tshark_reports_through_the_plugin(tmp_path):
-    plugin = tmp_path / "seanchai_diameter.lua"
-    subprocess.run(
-        [
-            sys.executable,
-            str(VALIDATOR / "generate.py"),
-            "--application",
-            "0",
-            "--application",
-            str(CX),
-            "-o",
-            str(plugin),
-        ],
-        check=True,
-        capture_output=True,
-    )
-    capture = tmp_path / "cx.pcap"
-    capture.write_bytes(_pcap([good_uar(), bad_uar(), error_uaa(), good_dwr()]))
+_TSHARK_FIELDS = (
+    "frame.number",
+    "seanchai.errors",
+    "seanchai.rule",
+    "seanchai.document",
+    "seanchai.reference",
+    "seanchai.url",
+    "seanchai.explorer",
+    "seanchai.corpus",
+)
 
+
+def _tshark(plugin: Path, capture: Path, *options: str) -> dict[int, dict]:
+    """Each frame's seanchai fields, as tshark shows them through `plugin`."""
+    fields = [arg for each in _TSHARK_FIELDS for arg in ("-e", each)]
+    command = ["tshark", "-n", "-r", str(capture), "-X", f"lua_script:{plugin}"]
     done = subprocess.run(
-        [
-            "tshark",
-            "-n",
-            "-r",
-            str(capture),
-            "-X",
-            f"lua_script:{plugin}",
-            "-T",
-            "json",
-            "-e",
-            "frame.number",
-            "-e",
-            "seanchai.errors",
-            "-e",
-            "seanchai.rule",
-            "-e",
-            "seanchai.document",
-            "-e",
-            "seanchai.reference",
-            "-e",
-            "seanchai.url",
-            "-e",
-            "seanchai.explorer",
-        ],
+        [*command, *options, "-T", "json", *fields],
         check=True,
         capture_output=True,
         text=True,
     )
     assert "Lua" not in done.stderr, done.stderr
-    frames = {
+    return {
         int(each["_source"]["layers"]["frame.number"][0]): each["_source"]["layers"]
         for each in json.loads(done.stdout)
     }
+
+
+@pytest.fixture(scope="module")
+def plugin(tmp_path_factory) -> Path:
+    out = tmp_path_factory.mktemp("plugin") / "seanchai_diameter.lua"
+    return _rules(out, "--application", "0", "--application", str(CX))
+
+
+@pytest.fixture(scope="module")
+def capture(tmp_path_factory) -> Path:
+    out = tmp_path_factory.mktemp("capture") / "cx.pcap"
+    out.write_bytes(_pcap([good_uar(), bad_uar(), error_uaa(), good_dwr()]))
+    return out
+
+
+_DWR_AT = "#rfc6733/5.5.1?name=Device-Watchdog-Request"
+
+
+@pytest.mark.skipif(shutil.which("tshark") is None, reason="no tshark on PATH")
+def test_tshark_reports_through_the_plugin(plugin, capture):
+    frames = _tshark(plugin, capture)
 
     assert frames[1]["seanchai.errors"] == ["0"]
     assert int(frames[2]["seanchai.errors"][0]) >= 4
@@ -378,17 +373,90 @@ def test_tshark_reports_through_the_plugin(tmp_path):
         "https://www.rfc-editor.org/rfc/rfc6733.html#section-4.3.1"
         in frames[2]["seanchai.url"]
     )
-    assert frames[4]["seanchai.explorer"] == [
-        "https://sliva0.github.io/seanchai-explorer/#rfc6733/5.5.1"
-        "?name=Device-Watchdog-Request"
+    assert frames[4]["seanchai.explorer"] == [wireshark.EXPLORER + _DWR_AT]
+
+
+@pytest.mark.skipif(shutil.which("tshark") is None, reason="no tshark on PATH")
+def test_the_explorer_preference_moves_or_drops_the_site_links(plugin, capture):
+    moved = _tshark(
+        plugin, capture, "-o", "seanchai.explorer_url:http://example.test/x/"
+    )
+    dropped = _tshark(plugin, capture, "-o", "seanchai.explorer_url:")
+
+    assert moved[4]["seanchai.explorer"] == ["http://example.test/x/" + _DWR_AT]
+    assert all(
+        each.startswith("http://example.test/x/#")
+        for frame in moved.values()
+        for each in frame.get("seanchai.explorer", [])
+    )
+    assert not any("seanchai.explorer" in frame for frame in dropped.values())
+    assert dropped[2]["seanchai.url"] == moved[2]["seanchai.url"]
+
+
+_EXPLORER_LINE = re.compile(r'^local EXPLORER = "[^"\\]*" -- seanchai:explorer$')
+
+
+def _marked(text: str) -> list[str]:
+    return [line for line in text.splitlines() if _EXPLORER_LINE.match(line)]
+
+
+def test_the_plugin_holds_one_explorer_line_and_one_versions_line(plugin):
+    text = plugin.read_text("utf-8")
+    unlinked = wireshark.generate(application_ids=[0], explorer="").text
+
+    assert _marked(text) == [
+        f'local EXPLORER = "{wireshark.EXPLORER}" -- seanchai:explorer'
     ]
+    assert _marked(unlinked) == ['local EXPLORER = "" -- seanchai:explorer']
+    # Near the top, and nowhere else: the rules leave the address to it.
+    head = text.splitlines()[:8]
+    assert _marked("\n".join(head))
+    assert text.count(wireshark.EXPLORER) == 1
+    (versions,) = [line for line in head if line.startswith("-- seanchai:versions ")]
+    built = dictionary.build(
+        model.Model.installed(), corpus_version=corpus.Corpus.installed().version
+    )
+    said = f"seanchai {built.seanchai_version}, corpus {built.corpus_version}"
+    assert versions == f"-- seanchai:versions {said}"
+    assert f"corpus={generator.lua_string(said)}" in text
+    assert wireshark.VERSIONS_LINE.findall(text) == [said]
+    assert wireshark.EXPLORER_LINE.findall(text) == [wireshark.EXPLORER]
+
+
+@pytest.mark.parametrize("address", ['https://x/"', "https://x/\\", "https://x/\n"])
+def test_an_explorer_address_the_marked_line_cannot_hold_is_refused(address):
+    with pytest.raises(wireshark.PluginError):
+        wireshark.generate(application_ids=[0], explorer=address)
+
+    done = CliRunner().invoke(
+        main, ["wireshark-plugin", "--explorer", address, "-o", "out.lua"]
+    )
+    assert done.exit_code == 2
+    assert "--explorer" in done.output
+
+
+@pytest.mark.skipif(shutil.which("tshark") is None, reason="no tshark on PATH")
+def test_rewriting_the_explorer_line_moves_the_links(plugin, capture, tmp_path):
+    rewritten = tmp_path / "seanchai_diameter.lua"
+    # What a download page does: replace the one line, reading no Lua.
+    lines = plugin.read_text("utf-8").splitlines(keepends=True)
+    (index,) = [n for n, line in enumerate(lines) if _EXPLORER_LINE.match(line)]
+    lines[index] = 'local EXPLORER = "https://mirror.test/e/" -- seanchai:explorer\n'
+    rewritten.write_text("".join(lines), "utf-8")
+
+    frames = _tshark(rewritten, capture)
+
+    assert frames[4]["seanchai.explorer"] == ["https://mirror.test/e/" + _DWR_AT]
+    assert (
+        frames[4]["seanchai.corpus"] == _tshark(plugin, capture)[4]["seanchai.corpus"]
+    )
 
 
 @pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
 @pytest.mark.parametrize("lua", LUAS)
 def test_a_diameter_uri_is_read_case_insensitively(lua):
     script = (
-        f"local core = dofile({json.dumps(str(VALIDATOR / 'core.lua'))})\n"
+        f"local core = dofile({json.dumps(str(CORE))})\n"
         "for _, uri in ipairs({'AAA://Peer.Example.com:3868;transport=TCP',"
         " 'aaas://peer.example.com;protocol=diameter', 'http://peer'}) do\n"
         "  print(core.uri_problem(uri) or 'ok')\n"
@@ -516,20 +584,7 @@ def test_an_empty_explorer_leaves_its_links_out(unlinked_rules, tmp_path):
     assert all(each["url"] for each in references)
 
 
-@pytest.fixture(scope="module")
-def generator():
-    spec = importlib.util.spec_from_file_location(
-        "wireshark_generate", VALIDATOR / "generate.py"
-    )
-    assert spec is not None and spec.loader is not None
-    loaded = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(loaded)
-    return loaded
-
-
-def test_every_reference_has_a_document_url_and_a_real_page(generator):
-    from seanchai import corpus, dictionary, model
-
+def test_every_reference_has_a_document_url_and_a_real_page():
     books = corpus.Corpus.installed()
     built_model = model.Model.build(books)
     places = generator.Places(books)

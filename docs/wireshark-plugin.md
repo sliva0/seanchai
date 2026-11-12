@@ -1,4 +1,4 @@
-# Wireshark validator
+# Wireshark plugin
 
 A Wireshark plugin that checks every Diameter message in a capture against the
 documents in the corpus. It reports each breach in a subtree under the PDU, as
@@ -8,20 +8,27 @@ and later, and in tshark.
 ## Generating and running
 
 ```sh
-uv run integrations/wireshark/validator/generate.py \
-    -o ~/.local/lib/wireshark/plugins/seanchai_diameter.lua
+seanchai wireshark-plugin -o ~/.local/lib/wireshark/plugins/seanchai_diameter.lua
 ```
 
-`generate.py` writes one Lua file: the rules, read from `seanchai dictionary`,
-together with `core.lua` (the checks) and `plugin.lua` (the Wireshark side).
+With nothing installed, uv fetches the library and the corpus for the one run:
+
+```sh
+uvx --from 'seanchai[corpus]' seanchai wireshark-plugin -o ~/.local/lib/wireshark/plugins/seanchai_diameter.lua
+```
+
+`seanchai wireshark-plugin` writes one Lua file: the rules, read from the
+corpus as `seanchai dictionary` reads it, together with `core.lua` (the
+checks) and `plugin.lua` (the Wireshark side), which come with the library in
+`seanchai.wireshark`. Its `generate` does the same from Python.
 
 | Option | Effect |
 |---|---|
-| `-o PATH` | the file to write |
+| `-o FILE` | the file to write |
 | `--application ID` | only this application id's commands; repeatable |
 | `--document REF` | only this document's commands; repeatable |
-| `--corpus DIR` | read another corpus than the installed one |
-| `--explorer URL` | the explorer site references link to, `https://sliva0.github.io/seanchai-explorer/` by default; `''` for none |
+| `--corpus DIR` | read another corpus than the installed one; repeatable |
+| `--explorer URL` | the default of the `seanchai.explorer_url` preference, `https://sliva0.github.io/seanchai-explorer/` by default; `''` for none |
 | `--rules-only` | write the rules alone, as a Lua chunk returning them, for running `core.lua` outside Wireshark |
 
 Regenerate after upgrading the corpus. The plugin's `seanchai.corpus` field
@@ -91,13 +98,14 @@ candidate. The message is reported against the one it breaks least, chosen by:
 The other candidates follow with their counts. RFC 4005 and RFC 4006 are never
 candidates, since RFC 7155 and RFC 8506 obsolete them.
 
-Two preferences, under Protocols, Seanchaí in Wireshark, or with `-o` in
+Three preferences, under Protocols, Seanchaí in Wireshark, or with `-o` in
 tshark (`-o seanchai.pin:TS32.299`):
 
 | Preference | Effect |
 |---|---|
 | Pinned documents (`seanchai.pin`) | comma-separated references; where one defines the command, only it is a candidate |
 | Note AVPs only `* [ AVP ]` admits (`seanchai.wildcard_notes`) | a note for each AVP the rule does not list; off by default |
+| Explorer address (`seanchai.explorer_url`) | the explorer site the references link to (see [References](#references)); empty for no such links |
 
 ## References
 
@@ -105,6 +113,9 @@ Each finding says where the rule it reports is written, beneath its line: the
 document, clause, table and page, as `TS 29.061 clause 16a.5, table 9a, page
 129`, with a link to the publisher's copy there and one to the explorer site
 at that clause. The command line has the same for the command's definition.
+The explorer link starts at the `seanchai.explorer_url` preference, read as
+each packet is dissected, so a mirror of the site needs no new plugin; the
+publisher's link does not depend on it.
 
 | Finding | Cites |
 |---|---|
@@ -132,6 +143,30 @@ Wireshark's Lua API cannot mark a field as a URL, as a C dissector's
 `proto_item_set_url` does (up to 4.7 at least), so the links are plain string
 fields: copy one with Copy, Value.
 
+## The marked lines
+
+Two lines near the top of the plugin are a stable contract, for a tool that
+reads or edits the file as text without parsing Lua, such as a page offering
+it for download:
+
+```lua
+-- seanchai:versions seanchai 0.2.0, corpus 2026.11.11
+local EXPLORER = "https://sliva0.github.io/seanchai-explorer/" -- seanchai:explorer
+```
+
+The file holds exactly one line matching
+`^local EXPLORER = "[^"\\]*" -- seanchai:explorer$`, and the plugin takes the
+`seanchai.explorer_url` preference's default from it. A tool may rewrite this
+one line, keeping its form, to set another default address or `""` for none;
+the address may not hold a double quote, a backslash or a line break, which
+`--explorer` refuses. Everything else in the file is generated: do not edit
+it.
+
+The versions line names the library and corpus versions the rules came from,
+as the `seanchai.corpus` field does; a corpus read with `--corpus` is
+`unversioned`. `seanchai.wireshark.EXPLORER_LINE` and `VERSIONS_LINE` match
+the two lines.
+
 ## Fields
 
 | Field                | Holds                                                 |
@@ -157,4 +192,5 @@ Protocol group.
 
 `tests/test_wireshark_validator.py` runs `core.lua` under each of `lua5.1` to
 `lua5.4` found on PATH, over messages it encodes, and the generated plugin
-under `tshark` over a capture of them. It skips what is not installed.
+under `tshark` over a capture of them, with the preference set and the marked
+line rewritten. It skips what is not installed.

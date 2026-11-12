@@ -5,7 +5,7 @@
 -- Wireshark 4.2 (Ubuntu 24.04) embeds Lua 5.2 and 4.4 onwards 5.4. The plugin
 -- glue hands `validate` a PDU as a string and draws what comes back.
 --
--- `rules` is the table generate.py writes from `seanchai dictionary`:
+-- `rules` is the table `seanchai wireshark-plugin` writes from the corpus:
 --   avps[id]        one reading: name, type, flags, members, values
 --   commands[key]   candidates for "app:code:R", "*:code:R" for id-less ones
 --   answers[id]     an `<answer-message>` body
@@ -15,6 +15,8 @@
 --                   the table's label or false, and true for a clause the
 --                   corpus places nothing in, which the explorer cannot show
 --   base[kind]      the RFC 6733 sections the header and format checks cite
+--   explorer        the explorer site's address, or nil (`--rules-only`
+--                   writes it; the plugin passes its preference instead)
 -- A member is {id, name, presence, min, max}, max -1 for unbounded, and a
 -- body carries `wildcard`, the `* [ AVP ]` line's {min, max}, where it has one.
 -- A reading's `at` and `flags_at`, a command's and an answer's `at`, and
@@ -110,9 +112,9 @@ end
 --   clause, page, table
 --   url       the publisher's copy at the place: a PDF's `#page=N`, an RFC's
 --             `#section-X.Y`; the document alone where neither reaches it
---   explorer  the explorer site at the clause, nil where the rules were
---             generated without one or the corpus places nothing there
-function M.reference(rules, cite, name)
+--   explorer  the explorer site at the clause, nil where `explorer`, the
+--             site's address, is nil or the corpus places nothing there
+function M.reference(rules, cite, name, explorer)
   local at = cite and rules.cites and rules.cites[cite]
   if not at then
     return nil
@@ -137,16 +139,16 @@ function M.reference(rules, cite, name)
   elseif link and kind == "pdf" and page then
     link = link .. "#page=" .. page
   end
-  local explorer
-  if rules.explorer and not at[5] then
-    explorer = rules.explorer .. "#" .. uri_component(id) .. "/" .. uri_component(clause)
+  local site
+  if explorer and not at[5] then
+    site = explorer .. "#" .. uri_component(id) .. "/" .. uri_component(clause)
     if name then
-      explorer = explorer .. "?name=" .. form_value(name)
+      site = site .. "?name=" .. form_value(name)
     end
   end
   return {
     document = doc[1], text = text, short = short, clause = clause, page = page,
-    table = table_label, url = link, explorer = explorer,
+    table = table_label, url = link, explorer = site,
   }
 end
 
@@ -825,7 +827,7 @@ function M.validate(rules, pdu, prefs)
   if #pdu < 20 then
     finding(header_findings, ERROR, "header-truncated",
       string.format("%d octets, too few for a Diameter header", #pdu), 0, #pdu)
-    return M.cited(rules, result)
+    return M.cited(rules, result, prefs)
   end
   local version = u8(pdu, 1)
   local length = u24(pdu, 2)
@@ -915,7 +917,7 @@ function M.validate(rules, pdu, prefs)
       string.format("no document in the corpus defines command %d %s in"
         .. " application %d", code, request and "request" or "answer", looked_up),
       5, 3)
-    return M.cited(rules, result)
+    return M.cited(rules, result, prefs)
   end
 
   local best, best_ctx, best_errors, best_warnings
@@ -926,7 +928,7 @@ function M.validate(rules, pdu, prefs)
     runs[#runs + 1] = { form = form, ctx = ctx, errors = errors, warnings = warnings }
     -- Fewest errors, then fewest warnings, then the body listing the most of
     -- the message's AVPs rather than leaving them to * [ AVP ]; on a tie the
-    -- first, which generate.py orders by what the registry allocates.
+    -- first, which the generator orders by what the registry allocates.
     if best == nil or errors < best_errors
       or (errors == best_errors and (warnings < best_warnings
         or (warnings == best_warnings and ctx.listed > best_ctx.listed))) then
@@ -984,21 +986,31 @@ function M.validate(rules, pdu, prefs)
       }
     end
   end
-  return M.cited(rules, result)
+  return M.cited(rules, result, prefs)
 end
 
 -- Gives each finding its `reference` (`M.reference`), a base check RFC 6733's
--- section, and the result the `reference` of its command's definition.
-function M.cited(rules, result)
+-- section, and the result the `reference` of its command's definition. The
+-- explorer links start at `prefs.explorer`, else `rules.explorer`; an empty
+-- address leaves them out.
+function M.cited(rules, result, prefs)
   local base = rules.base or {}
+  local explorer = prefs and prefs.explorer
+  if explorer == nil then
+    explorer = rules.explorer
+  end
+  if explorer == "" then
+    explorer = nil
+  end
   for _, each in ipairs(result.findings) do
     if each.cite == nil and BASE_RULES[each.rule] then
       each.cite = base[BASE_RULES[each.rule]]
     end
-    each.reference = M.reference(rules, each.cite, each.cite_name)
+    each.reference = M.reference(rules, each.cite, each.cite_name, explorer)
   end
   if result.command then
-    result.reference = M.reference(rules, result.command.at, result.command.name)
+    result.reference = M.reference(rules, result.command.at, result.command.name,
+      explorer)
   end
   return result
 end

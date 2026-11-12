@@ -163,6 +163,7 @@ def test_the_library_wheel_holds_the_library_and_no_data(dist):
     assert files == expected
     assert "seanchai/downloader/specs.toml" in files
     assert "seanchai/dad/syntax/dad.tmLanguage.json" in files
+    assert {"seanchai/wireshark/core.lua", "seanchai/wireshark/plugin.lua"} <= files
     assert not any(name.endswith(".dad") for name in files)
 
 
@@ -253,6 +254,7 @@ def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
         f"extra = {sorted(_EXTRACT)!r}\n"
         "assert not [each for each in extra if importlib.util.find_spec(each)]\n"
         "import seanchai.cli, seanchai.corpus, seanchai.export, seanchai.model\n"
+        "import seanchai.wireshark\n"
         "import seanchai.downloader, seanchai.extractor.rfc_text\n"
         "assert not set(extra) & sys.modules.keys()\n",
     )
@@ -272,6 +274,10 @@ def test_the_wheels_work_without_the_extract_extra(dist, tmp_path):
     assert written.returncode == 0, written.stderr
     dictionary = json.loads((tmp_path / "out.json").read_text("utf-8"))
     assert dictionary["corpus_version"] == seanchai_corpus.__version__
+    plugin = tmp_path / "plugins" / "seanchai_diameter.lua"
+    written = run(bin_dir / "seanchai", "wireshark-plugin", "-o", plugin)
+    assert written.returncode == 0, written.stderr
+    assert "register_postdissector(proto)" in plugin.read_text("utf-8")
 
     source = tmp_path / "spec.docx"
     source.touch()

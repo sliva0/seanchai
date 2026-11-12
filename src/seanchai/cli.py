@@ -39,6 +39,8 @@ _DEFAULT_TRANSCRIPTIONS = Path("edits") / "transcriptions"
 _DEFAULT_CORPUS = Path("packages/seanchai-corpus/src/seanchai_corpus/dad")
 # Wireshark's deliberate renames, which `crosscheck` accepts as agreement.
 _DEFAULT_ALIASES = Path("integrations") / "wireshark" / "aliases.toml"
+# `wireshark.EXPLORER`, spelt here so that help imports no corpus code.
+_EXPLORER = "https://sliva0.github.io/seanchai-explorer/"
 
 
 class _HelpFormatter(click.HelpFormatter):
@@ -193,7 +195,8 @@ def _require_extract() -> None:
 def main() -> None:
     """Seanchaí: Diameter specifications as reviewable `.dad` files.
 
-    `show`, `commands`, `dictionary` and `export` read the installed corpus.
+    `show`, `commands`, `dictionary`, `export` and `wireshark-plugin` read the
+    installed corpus.
     `lint` and `format` check and rewrite `.dad` files. The `corpus` group
     maintains the corpus in a checkout of the repository.
     """
@@ -635,6 +638,98 @@ def export_command(
             )
         except OSError as error:
             raise click.ClickException(str(error)) from None
+
+
+@main.command("wireshark-plugin")
+@click.option(
+    "-o",
+    "--output",
+    required=True,
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="The Lua file to write.",
+)
+@click.option(
+    "--application",
+    "application_ids",
+    multiple=True,
+    type=int,
+    metavar="ID",
+    help="Only this application id's commands and their AVPs. Repeatable.",
+)
+@click.option(
+    "--document",
+    "documents",
+    multiple=True,
+    metavar="REF",
+    help="Only this document's applications and AVPs. Repeatable.",
+)
+@click.option(
+    "--corpus",
+    "corpus_paths",
+    multiple=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="Directory or file to read instead of the installed corpus. Repeatable.",
+)
+@click.option(
+    "--explorer",
+    default=_EXPLORER,
+    metavar="URL",
+    help="The explorer site references link to, the plugin's default for its"
+    " seanchai.explorer_url preference; '' for none.",
+)
+@click.option(
+    "--rules-only",
+    is_flag=True,
+    help="Write the rules alone, as a Lua chunk returning them, for running"
+    " core.lua outside Wireshark.",
+)
+def wireshark_plugin_command(
+    output: Path,
+    application_ids: tuple[int, ...],
+    documents: tuple[str, ...],
+    corpus_paths: tuple[Path, ...],
+    explorer: str,
+    rules_only: bool,
+) -> None:
+    """Write a Wireshark plugin that checks Diameter traffic against the corpus.
+
+    One Lua file for Wireshark's plugin directory, which reports each message's
+    breaches of its documents as a subtree, expert info and seanchai.* fields,
+    each citing the clause its rule is written at (docs/wireshark-plugin.md).
+    Regenerate it after upgrading the corpus.
+
+    \b
+    Installed for Wireshark:
+        seanchai wireshark-plugin \\
+            -o ~/.local/lib/wireshark/plugins/seanchai_diameter.lua
+    Cx and Rx only:
+        seanchai wireshark-plugin --application 16777216 \\
+            --application 16777236 -o seanchai_diameter.lua
+    """
+    from .corpus import Corpus
+    from .wireshark import PluginError, generate
+
+    with reported():
+        books = Corpus.load(corpus_paths) if corpus_paths else Corpus.installed()
+        try:
+            plugin = generate(
+                books,
+                documents=documents,
+                application_ids=application_ids,
+                explorer=explorer,
+                rules_only=rules_only,
+            )
+        except PluginError as error:
+            raise click.BadParameter(str(error), param_hint="'--explorer'") from None
+    try:
+        plugin.write(output)
+    except OSError as error:
+        raise click.ClickException(str(error)) from None
+    click.echo(
+        f"wrote {click.style(str(output), bold=True)} ({plugin.versions},"
+        f" {plugin.applications} applications, {plugin.avps} AVPs)",
+        err=True,
+    )
 
 
 @main.command()

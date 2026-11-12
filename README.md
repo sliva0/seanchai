@@ -43,6 +43,7 @@ seanchai commands [REF | --application ID] [--json]
 seanchai dictionary -o OUT.json         # the corpus as JSON, to generate from
 seanchai export -o DIR                  # the corpus as JSON for the static site
 seanchai export -o DIR --include-pdfs --specifications specifications
+seanchai wireshark-plugin -o FILE.lua   # a Wireshark plugin checking traffic
 ```
 
 Check and rewrite `.dad` files, the corpus's or your own sidecars:
@@ -93,6 +94,6 @@ OMA, oneM2M and IETF documents, which stay under their publishers' terms.
 [license]: https://github.com/sliva0/seanchai/blob/main/LICENSE
 [linter]: https://github.com/sliva0/seanchai/blob/main/docs/linter.md
 [oracle]: https://github.com/sliva0/seanchai/blob/main/docs/oracle.md
-[validator]: https://github.com/sliva0/seanchai/blob/main/integrations/wireshark/validator/README.md
+[validator]: https://github.com/sliva0/seanchai/blob/main/docs/wireshark-plugin.md
 [versions]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md#what-the-version-covers
 [website]: https://github.com/sliva0/seanchai/blob/main/docs/website.md

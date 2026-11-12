@@ -15,6 +15,8 @@ This package holds only the shared error base and the version, so importing
   the ABNF syntax they share;
 - `seanchai.linter`: the rules reporting what a file or the corpus contradicts;
 - `seanchai.oracle`: the cross-check against Wireshark's Diameter dictionary;
+- `seanchai.wireshark`: the Wireshark plugin validating Diameter traffic
+  against the corpus;
 - `seanchai.errors`: the error base, and the error naming a missing extra;
 - `seanchai.extractor`: 3GPP docx/PDF and RFC text to AST, the former with the
   `seanchai[extract]` extra;

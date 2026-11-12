@@ -74,9 +74,10 @@ runs on GitHub and on Forgejo, which reads `.github/workflows/` while
   from the corpus and round-trips a Cx UAR through the real library, which is
   why the dev group holds it. `tests/test_python_diameter_validate.py` runs
   the validator against a fake library tree.
-- `tests/test_wireshark_validator.py` runs the Wireshark validator's
-  `core.lua` under each of `lua5.1` to `lua5.4` and the generated plugin
-  under `tshark`. Interpreters not on PATH are skipped.
+- `tests/test_wireshark_validator.py` runs the Wireshark plugin's
+  `core.lua` (`src/seanchai/wireshark/`) under each of `lua5.1` to `lua5.4`
+  and the plugin `seanchai wireshark-plugin` writes under `tshark`.
+  Interpreters not on PATH are skipped.
 
 Support for a new source-document shape is covered by the `sources` tests.
 Add a synthetic test only for a rejection path.

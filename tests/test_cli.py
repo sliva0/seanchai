@@ -107,6 +107,7 @@ _OUTCOMES = [
     (["show", "Session-Id", "--version", "1"], 2, "err", "--version needs --document"),
     (["commands", "--application", "cx"], 2, "err", "is not a valid integer"),
     (["dictionary"], 2, "err", "error: Missing option '-o'"),
+    (["wireshark-plugin"], 2, "err", "error: Missing option '-o'"),
     # Errors, which name the file or the download that would fix them.
     (["lint", "bad.dad"], 1, "err", "error: bad.dad: "),
     (["lint", "binary.dad"], 1, "err", "error: binary.dad: "),
@@ -213,6 +214,7 @@ def test_the_commands_are_the_documented_ones():
         "commands",
         "dictionary",
         "export",
+        "wireshark-plugin",
         "lint",
         "format",
         "corpus",

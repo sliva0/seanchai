@@ -643,6 +643,15 @@ From Python, call `seanchai.export.export_corpus(corpus, output)`;
 `seanchai.export_schema` holds the shape. The layout and fields are in
 [website.md](website.md#data-boundary).
 
+## The Wireshark plugin
+
+`seanchai wireshark-plugin -o FILE.lua` writes a Wireshark plugin that checks
+every Diameter message in a capture against the corpus and cites the clause
+each finding's rule is written at. It needs no checkout or downloads. From
+Python, `seanchai.wireshark.generate(corpus)` returns the same text. What it
+checks, its fields and preferences, and the two lines of the file a tool may
+read or rewrite are in [wireshark-plugin.md](wireshark-plugin.md).
+
 ## The integrations
 
 Each target has a directory under `integrations/`. Its scripts declare their

@@ -12,7 +12,7 @@ from pathlib import Path
 import seanchai_corpus
 
 import seanchai
-from seanchai import corpus, export, model
+from seanchai import corpus, export, model, wireshark
 
 prefix = Path(sys.prefix).resolve()
 for module in (seanchai, seanchai_corpus):
@@ -42,5 +42,14 @@ with tempfile.TemporaryDirectory() as scratch:
 reasons = document["corrections"]
 assert reasons, "the installed corpus lost its corrections record"
 assert all(item["reason"] for item in reasons.values()), reasons
+
+# The plugin's Lua comes with the library: its checks and its Wireshark side.
+plugin = wireshark.generate(books, application_ids=[0]).text
+assert "function M.validate(rules, pdu, prefs)" in plugin, "core.lua is missing"
+assert "register_postdissector(proto)" in plugin, "plugin.lua is missing"
+assert wireshark.EXPLORER_LINE.findall(plugin) == [wireshark.EXPLORER]
+assert wireshark.VERSIONS_LINE.findall(plugin) == [
+    f"seanchai {seanchai.__version__}, corpus {seanchai_corpus.__version__}"
+]
 
 print(f"seanchai-corpus {seanchai_corpus.__version__}: {len(books)} documents")

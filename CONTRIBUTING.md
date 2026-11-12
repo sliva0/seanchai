@@ -63,7 +63,7 @@ the `sources` tests, which need `uv run seanchai corpus download`.
 
 | Path | Holds |
 |---|---|
-| `src/seanchai/` | the library and the `seanchai` command (`cli.py`) |
+| `src/seanchai/` | the library and the `seanchai` command (`cli.py`); `wireshark/` the Wireshark plugin's generator and Lua |
 | `packages/seanchai-corpus/` | the corpus package; the `.dad` files are under `src/seanchai_corpus/dad/` |
 | `edits/` | per-document `sources/` (input patches, quirks, exclusions), `corrections/` and `transcriptions/` |
 | `tests/` | tests for both packages |
@@ -76,4 +76,4 @@ Everything else is in [docs/](docs/): [development](docs/development.md),
 [corrections](docs/corrections.md), [extractor](docs/extractor.md),
 [linter](docs/linter.md), [downloader](docs/downloader.md),
 [oracle](docs/oracle.md), [consumers](docs/consumers.md),
-[website](docs/website.md).
+[website](docs/website.md), [Wireshark plugin](docs/wireshark-plugin.md).

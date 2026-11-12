@@ -2,8 +2,8 @@
 
 Merge requests for Wireshark's Diameter dictionary, staged from the
 [oracle](../../docs/oracle.md)'s findings. None has been submitted. The plugin
-that checks Diameter traffic against the corpus is in
-[`validator/`](validator/README.md).
+that checks Diameter traffic against the corpus is `seanchai wireshark-plugin`
+([its documentation](../../docs/wireshark-plugin.md)).
 
 - Defects, `0001` to `0026` in this directory: entries the dictionary holds
   wrongly, one per patch. Each was checked by hand against the defining clause

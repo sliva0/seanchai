@@ -18,7 +18,9 @@
 -- dissectors' proto_item_set_url), so they are copied (Copy, Value) rather
 -- than clicked.
 --
--- generate.py puts `RULES` and `core` in scope ahead of this file.
+-- `seanchai wireshark-plugin` puts `EXPLORER`, `RULES` and `core` in scope
+-- ahead of this file. `EXPLORER` is the explorer preference's default, on the
+-- file's one line marked seanchai:explorer.
 
 local proto = Proto("seanchai", "Seanchaí Diameter validation")
 
@@ -62,6 +64,9 @@ proto.prefs.pin = Pref.string("Pinned documents", "",
 proto.prefs.wildcard_notes = Pref.bool("Note AVPs only * [ AVP ] admits", false,
   "Add a note for every AVP the command's ABNF does not list and its"
   .. " * [ AVP ] admits")
+proto.prefs.explorer_url = Pref.string("Explorer address", EXPLORER,
+  "The explorer site each reference links to at its clause; empty for no"
+  .. " such links")
 
 local diameter = Field.new("diameter")
 
@@ -107,6 +112,7 @@ function proto.dissector(tvb, pinfo, tree)
   local prefs = {
     pin = proto.prefs.pin,
     wildcard_notes = proto.prefs.wildcard_notes,
+    explorer = proto.prefs.explorer_url,
   }
   local total_errors = 0
   for _, info in ipairs(pdus) do
