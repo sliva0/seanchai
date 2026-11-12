@@ -13,7 +13,8 @@ without parsing Lua (`EXPLORER_LINE`, `VERSIONS_LINE`):
     local EXPLORER = "https://sliva0.github.io/seanchai-explorer/" -- seanchai:explorer
 
 The second is the `seanchai.explorer_url` preference's default, and the one
-line such a tool may rewrite.
+line such a tool may rewrite. `Plugin.write` writes the file as UTF-8 with LF
+line endings on every platform, so that a line ends in no CR.
 """
 
 from __future__ import annotations
@@ -61,9 +62,11 @@ class Plugin:
     avps: int
 
     def write(self, path: Path) -> None:
-        """Write `text` to `path`, creating its directory."""
+        """Write `text` to `path` as UTF-8 with LF line endings on every
+        platform, Windows too, creating its directory. A CR before a line's
+        end would keep a tool from matching the marked lines."""
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(self.text, "utf-8")
+        path.write_text(self.text, "utf-8", newline="\n")
 
 
 def generate(

@@ -47,6 +47,20 @@ OBSOLETED_BY = {"RFC4005": "RFC7155", "RFC4006": "RFC8506"}
 # defines.
 BASE_ANSWER = "RFC6733/RFC6733:7.2"
 
+# The flag rules a finding reports (core.lua's `check_flags`): a bit clear
+# under Must, set under Must not or Should not. May and the application's M
+# report nothing.
+_REPORTED = ("must", "must_not", "should_not")
+
+# A re-used row's M-bit cell stating each rule.
+_M_BIT = {"must": ast.MBitOverride.MUST, "must_not": ast.MBitOverride.MUST_NOT}
+
+# RFC 6733 section 4.1.1, where the model's V rule for an IETF reading no row
+# places is written: "A Vendor-ID value of zero (0) corresponds to the
+# IETF-adopted AVP values", and the V bit says whether one is present. Its
+# page is as the table of contents prints it.
+IETF_VENDOR_BIT = ("4.1.1", 42)
+
 
 def lua_string(text: str) -> str:
     """`text` as a Lua string literal that every Lua from 5.1 reads alike."""
@@ -173,8 +187,8 @@ class Places:
     def table_row(self, document: str, name: str) -> int | None:
         """The AVP-table row `document` prints for `name`, as its table's
         clause, page and label, or failing one, its re-used row stating an M
-        bit: the cells the flag rules come from. None where it prints
-        neither."""
+        bit: what places a reading whose table prints no clause column. None
+        where it prints neither."""
         for entry in self._copies_of(document):
             reused = None
             for section in entry.spec.sections:
@@ -196,6 +210,37 @@ class Places:
                 source = reused.source
                 return self._cite(entry, source.section, source.page, reused.table)
         return None
+
+    def flag_row(
+        self, document: str, name: str, flag: ast.AvpFlag, rule: str
+    ) -> int | None:
+        """The table in `document` whose row for `name` puts `flag` under
+        `rule` (`must`, `must_not`, `should_not`): an AVP-table row's flag
+        cells, else, for M, a re-used row's M-bit cell (`MUST` for must,
+        `MUST-NOT` for must not). None where no row of that copy says so."""
+        entry = self.entry(document)
+        if entry is None:
+            return None
+        m_bit = _M_BIT.get(rule) if flag is ast.AvpFlag.MANDATORY else None
+        reused = None
+        for section in entry.spec.sections:
+            if isinstance(section, ast.AvpTable) and any(
+                row.name == name and flag in getattr(row.flag_rules, rule)
+                for row in section.rows
+            ):
+                source = section.source
+                return self._cite(entry, source.section, source.page, section.table)
+            if (
+                reused is None
+                and m_bit is not None
+                and isinstance(section, ast.ReusedAvps)
+                and any(row.name == name and row.m_bit is m_bit for row in section.rows)
+            ):
+                reused = section
+        if reused is None:
+            return None
+        source = reused.source
+        return self._cite(entry, source.section, source.page, reused.table)
 
     def table(self, table: dictionary.ValueTable) -> int | None:
         """A value table, as its block's clause, page and label."""
@@ -249,13 +294,22 @@ def _cited(field: str, number: int | None) -> list[str]:
     return [] if number is None else [f"{field}={number}"]
 
 
-def _flag_document(avp: dictionary.Avp) -> str:
-    """The document whose table states `avp`'s flag rules: the one that
-    completed them, else the one the reading is read through."""
-    for missing, document in avp.completed_by:
-        if missing == corpus.Missing.FLAG_RULES:
-            return document
-    return avp.read_through or avp.defined_in
+def _flag_documents(avp: dictionary.Avp) -> list[str]:
+    """The documents whose rows may state `avp`'s flag rules, in the order the
+    model ranks them (docs/consumers.md): the one the reading is read through
+    (its AVP-table rows, then its re-used rows' M-bit cells), the one that
+    completed them, then the defining document."""
+    documents = [avp.read_through]
+    documents += [
+        document
+        for missing, document in avp.completed_by
+        if missing == corpus.Missing.FLAG_RULES
+    ]
+    defined = avp.defined_in
+    if avp.read_through.partition(" V")[0] == defined:
+        defined = avp.read_through  # the copy, where an older one is read
+    documents.append(defined)
+    return list(dict.fromkeys(documents))
 
 
 def _flag_letters(values: Iterable[str]) -> str:
@@ -290,18 +344,58 @@ def _body(members: Iterable[dictionary.Member]) -> str:
     return f"b({wildcard},{{{','.join(entries)}}})"
 
 
+def _flag_places(avp: dictionary.Avp, places: Places) -> dict[str, int | None]:
+    """Where each flag rule of `avp` a finding can report (Must, Must not,
+    Should not) is written, by letter: the first of `_flag_documents` whose
+    row states that rule for that bit (`Places.flag_row`), so that no cited
+    cell says otherwise. Where none does, the rule is a default the model
+    applies: an IETF reading's V under Must not cites RFC 6733 section 4.1.1
+    (`_flags._ietf_rules`), anything else the reading's own clause, with no
+    table. None where nothing places even that."""
+    documents = _flag_documents(avp)
+    found: dict[str, int | None] = {}
+    for flag in ast.AvpFlag:
+        for rule in _REPORTED:
+            if flag not in getattr(avp.flag_rules, rule):
+                continue
+            for document in documents:
+                if (at := places.flag_row(document, avp.name, flag, rule)) is not None:
+                    break
+            else:
+                if (
+                    flag is ast.AvpFlag.VENDOR
+                    and rule == "must_not"
+                    and avp.vendor_id == ast.IETF_VENDOR
+                ):
+                    at = places.base(*IETF_VENDOR_BIT)
+                else:
+                    at = places.clause(documents[-1], avp.section, avp.name)
+            found[flag.value] = at
+    return found
+
+
 def _avp_citations(avp: dictionary.Avp, places: Places) -> list[str]:
     """`at`, the clause defining the reading (its Grouped AVP rule, its
     Enumerated values, or the clause its table row names), and `flags_at`,
-    the AVP-table row its flag rules are read from."""
+    where its reported flag rules are written (`_flag_places`): one number
+    where every bit cites one place, else a number per letter."""
     document = avp.defined_in
     if avp.read_through.partition(" V")[0] == avp.defined_in:
         document = avp.read_through  # the copy, where an older one is read
-    row = places.table_row(document, avp.name)
     # A table printing no clause column (TS 32.299's) is all that places it.
-    at = places.clause(document, avp.section, avp.name) or row
-    flags_at = places.table_row(_flag_document(avp), avp.name) or row or at
-    return [*_cited("at", at), *_cited("flags_at", flags_at)]
+    at = places.clause(document, avp.section, avp.name) or places.table_row(
+        document, avp.name
+    )
+    cited = {
+        letter: each
+        for letter, each in _flag_places(avp, places).items()
+        if each is not None
+    }
+    numbers = set(cited.values())
+    if len(numbers) == 1:
+        return [*_cited("at", at), f"flags_at={numbers.pop()}"]
+    letters = ",".join(f"{letter}={number}" for letter, number in cited.items())
+    return [*_cited("at", at), *([f"flags_at={{{letters}}}"] if cited else [])]
 
 
 def _avp(avp: dictionary.Avp, places: Places) -> str:

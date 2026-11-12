@@ -19,8 +19,10 @@
 --                   writes it; the plugin passes its preference instead)
 -- A member is {id, name, presence, min, max}, max -1 for unbounded, and a
 -- body carries `wildcard`, the `* [ AVP ]` line's {min, max}, where it has one.
--- A reading's `at` and `flags_at`, a command's and an answer's `at`, and
--- `bits_at[identity]` are numbers into `cites`: where the rule is written.
+-- A reading's `at`, a command's and an answer's `at`, and
+-- `bits_at[identity]` are numbers into `cites`: where the rule is written. A
+-- reading's `flags_at` is one, where every flag rule a finding can report is
+-- written at one place, or else one per letter, as {M=n, V=n}.
 
 local M = {}
 
@@ -59,9 +61,10 @@ local AVP_V, AVP_M, AVP_P = 128, 64, 32
 local CMD_R, CMD_P, CMD_E, CMD_T = 128, 64, 32, 16
 
 -- `cite` is a number into `rules.cites`, the place the rule broken is
--- written, and `name` what the explorer looks for there.
+-- written, and `name` what the explorer looks for there. Returns the finding,
+-- for `about`.
 local function finding(list, severity, rule, message, offset, length, path, cite, name)
-  list[#list + 1] = {
+  local found = {
     severity = severity,
     rule = rule,
     message = message,
@@ -71,6 +74,19 @@ local function finding(list, severity, rule, message, offset, length, path, cite
     cite = cite,
     cite_name = name,
   }
+  list[#list + 1] = found
+  return found
+end
+
+-- Marks a finding citing a general section of RFC 6733 as about one AVP:
+-- `reading`, or the AVP whose identity is "vendor:code". The explorer link
+-- goes to where that AVP is defined, since the cited section is no clause
+-- the corpus places anything in (`M.cited`).
+local function about(found, reading, identity)
+  if reading then
+    found.explore, found.explore_name = reading.at, reading.name
+  end
+  found.identity = identity
 end
 
 -- What the checks that read RFC 6733 alone cite, by rule: `rules.base`'s
@@ -87,6 +103,15 @@ local BASE_RULES = {
   ["diameter-uri"] = "derived", ["ip-filter-rule"] = "derived",
   address = "derived",
   ["e-bit-missing"] = "protocol_errors", ["e-bit-unexpected"] = "error_bit",
+}
+
+-- The rules about the message header or its E bit, whose explorer link goes to
+-- the command's definition.
+local HEADER_RULES = {
+  ["header-truncated"] = true, ["header-version"] = true,
+  ["header-length"] = true, ["header-reserved-flags"] = true,
+  ["header-e-bit"] = true, ["header-t-bit"] = true,
+  ["e-bit-missing"] = true, ["e-bit-unexpected"] = true,
 }
 
 -- References: a citation as text and links.
@@ -114,6 +139,8 @@ end
 --             `#section-X.Y`; the document alone where neither reaches it
 --   explorer  the explorer site at the clause, nil where `explorer`, the
 --             site's address, is nil or the corpus places nothing there
+--   place     "TS 29.061 clause 16a.5", label the document's, as "TS 29.061"
+--   top       the explorer site at the document, nil without `explorer`
 function M.reference(rules, cite, name, explorer)
   local at = cite and rules.cites and rules.cites[cite]
   if not at then
@@ -139,9 +166,12 @@ function M.reference(rules, cite, name, explorer)
   elseif link and kind == "pdf" and page then
     link = link .. "#page=" .. page
   end
-  local site
+  local site, top
+  if explorer then
+    top = explorer .. "#" .. uri_component(id)
+  end
   if explorer and not at[5] then
-    site = explorer .. "#" .. uri_component(id) .. "/" .. uri_component(clause)
+    site = top .. "/" .. uri_component(clause)
     if name then
       site = site .. "?name=" .. form_value(name)
     end
@@ -149,6 +179,7 @@ function M.reference(rules, cite, name, explorer)
   return {
     document = doc[1], text = text, short = short, clause = clause, page = page,
     table = table_label, url = link, explorer = site,
+    place = label .. " " .. word .. " " .. clause, label = label, top = top,
   }
 end
 
@@ -176,18 +207,19 @@ local function parse_avps(pdu, first, last, findings, path)
         vendor = u32(pdu, at + 9)
       end
     end
+    local identity = vendor .. ":" .. code
     if length < header then
-      finding(findings, ERROR, "avp-length",
+      about(finding(findings, ERROR, "avp-length",
         string.format("AVP %d declares length %d, below its %d-octet header",
           code, length, header),
-        at, math.min(8, last - at), path)
+        at, math.min(8, last - at), path), nil, identity)
       break
     end
     if at + length > last then
-      finding(findings, ERROR, "avp-length",
+      about(finding(findings, ERROR, "avp-length",
         string.format("AVP %d declares length %d, past the end of what holds it",
           code, length),
-        at, last - at, path)
+        at, last - at, path), nil, identity)
       break
     end
     local padded = length + (4 - length % 4) % 4
@@ -202,22 +234,22 @@ local function parse_avps(pdu, first, last, findings, path)
     }
     avps[#avps + 1] = avp
     if flags % 32 ~= 0 then
-      finding(findings, WARN, "avp-reserved-flags",
+      about(finding(findings, WARN, "avp-reserved-flags",
         string.format("reserved AVP flag bits set (0x%02x)", flags % 32),
-        at + 4, 1, path)
+        at + 4, 1, path), nil, identity)
     end
     if at + padded > last then
       if padded ~= length then
-        finding(findings, ERROR, "avp-padding",
+        about(finding(findings, ERROR, "avp-padding",
           "the AVP's padding runs past the end of what holds it",
-          at, last - at, path)
+          at, last - at, path), nil, identity)
       end
       break
     end
     for i = at + length, at + padded - 1 do
       if u8(pdu, i + 1) ~= 0 then
-        finding(findings, WARN, "avp-padding", "nonzero padding octets",
-          at + length, padded - length, path)
+        about(finding(findings, WARN, "avp-padding", "nonzero padding octets",
+          at + length, padded - length, path), nil, identity)
         break
       end
     end
@@ -422,13 +454,17 @@ local function check_flags(ctx, avp, reading, path)
     return nil
   end
   local bits = { M = AVP_M, V = AVP_V, P = AVP_P }
-  -- The table row the flag rules are read from, which each finding names.
-  local cite = reading.flags_at
-  local where = M.reference(ctx.rules, cite)
-  where = where and where.short or reading.read_through
   for _, letter in ipairs({ "M", "V", "P" }) do
     local set = has(avp.flags, bits[letter])
     local rule = rule_for(letter)
+    -- Where this bit's rule is written, which its finding names: one place
+    -- for every bit, or one per letter.
+    local cite = reading.flags_at
+    if type(cite) == "table" then
+      cite = cite[letter]
+    end
+    local where = M.reference(ctx.rules, cite)
+    where = where and where.short or reading.read_through
     if rule == "must" and not set then
       finding(ctx.findings, ERROR, "flag-must",
         string.format("%s: the %s bit must be set (%s)", reading.name, letter, where),
@@ -446,10 +482,10 @@ local function check_flags(ctx, avp, reading, path)
     elseif rule == nil and letter == "P" and set then
       -- RFC 6733 section 4.1: no end-to-end security is specified, "therefore,
       -- the P bit SHOULD be set to 0".
-      finding(ctx.findings, WARN, "flag-p",
+      about(finding(ctx.findings, WARN, "flag-p",
         string.format("%s: the P bit is set, which RFC 6733 section 4.1 says"
           .. " should be 0", reading.name),
-        avp.offset + 4, 1, path)
+        avp.offset + 4, 1, path), reading)
     end
   end
 end
@@ -462,13 +498,13 @@ local function check_data(ctx, avp, reading, path, inner, depth)
   local size = FIXED_SIZE[kind]
   if size then
     if avp.size ~= size then
-      finding(findings, ERROR, "data-length",
+      about(finding(findings, ERROR, "data-length",
         string.format("%s is %s, %d octets, but holds %d", reading.name, kind, size,
           avp.size),
         avp.offset, avp.length, path,
         -- Time and Enumerated are section 4.3.1's, the rest section 4.2's.
         ctx.rules.base and ctx.rules.base[(kind == "Time" or kind == "Enumerated")
-          and "derived" or "basic"])
+          and "derived" or "basic"]), reading)
       return
     end
     if kind == "Enumerated" then
@@ -517,42 +553,42 @@ local function check_data(ctx, avp, reading, path, inner, depth)
   if kind == "UTF8String" then
     local ok, at = valid_utf8(pdu, avp.data + 1, avp.data + avp.size)
     if not ok then
-      finding(findings, ERROR, "utf8",
+      about(finding(findings, ERROR, "utf8",
         string.format("%s is not valid UTF-8 at octet %d", reading.name, at),
-        avp.data + at, 1, path)
+        avp.data + at, 1, path), reading)
     end
   elseif kind == "DiameterIdentity" then
     local problem = identity_problem(data_text(pdu, avp))
     if problem then
-      finding(findings, ERROR, "diameter-identity",
-        reading.name .. " " .. problem, avp.data, avp.size, path)
+      about(finding(findings, ERROR, "diameter-identity",
+        reading.name .. " " .. problem, avp.data, avp.size, path), reading)
     end
   elseif kind == "DiameterURI" then
     local problem = uri_problem(data_text(pdu, avp))
     if problem then
-      finding(findings, ERROR, "diameter-uri", reading.name .. " " .. problem,
-        avp.data, avp.size, path)
+      about(finding(findings, ERROR, "diameter-uri", reading.name .. " " .. problem,
+        avp.data, avp.size, path), reading)
     end
   elseif kind == "IPFilterRule" then
     local problem = filter_problem(data_text(pdu, avp))
     if problem then
-      finding(findings, ERROR, "ip-filter-rule", reading.name .. " " .. problem,
-        avp.data, avp.size, path)
+      about(finding(findings, ERROR, "ip-filter-rule", reading.name .. " " .. problem,
+        avp.data, avp.size, path), reading)
     end
   elseif kind == "Address" then
     if avp.size < 2 then
-      finding(findings, ERROR, "address",
+      about(finding(findings, ERROR, "address",
         reading.name .. " is shorter than its 2-octet address family",
-        avp.offset, avp.length, path)
+        avp.offset, avp.length, path), reading)
       return
     end
     local family = string.byte(pdu, avp.data + 1) * 256 + string.byte(pdu, avp.data + 2)
     local expected = ({ [1] = 4, [2] = 16 })[family]
     if expected and avp.size - 2 ~= expected then
-      finding(findings, ERROR, "address",
+      about(finding(findings, ERROR, "address",
         string.format("%s is an IPv%d address of %d octets, not %d", reading.name,
           family == 1 and 4 or 6, avp.size - 2, expected),
-        avp.data, avp.size, path)
+        avp.data, avp.size, path), reading)
     end
   elseif kind == "Grouped" then
     if depth >= MAX_DEPTH then
@@ -633,11 +669,11 @@ validate_body = function(ctx, body, avps, path, depth, owner)
       check_flags(ctx, avp, reading, path)
       check_data(ctx, avp, reading, path, inner_path, depth)
     elseif has(avp.flags, AVP_M) then
-      finding(findings, WARN, "unknown-mandatory",
+      about(finding(findings, WARN, "unknown-mandatory",
         string.format("%s is defined by no document in the corpus and has the M"
           .. " bit set: a receiver that does not know it answers"
           .. " DIAMETER_AVP_UNSUPPORTED", name),
-        avp.offset, avp.length, path)
+        avp.offset, avp.length, path), nil, identity)
     else
       finding(findings, NOTE, "unknown-avp",
         string.format("%s is defined by no document in the corpus", name),
@@ -989,10 +1025,36 @@ function M.validate(rules, pdu, prefs)
   return M.cited(rules, result, prefs)
 end
 
+-- Where the explorer shows a finding whose cited clause it cannot: the AVP the
+-- finding is about, at its defining clause, for a check of RFC 6733's data
+-- formats or AVP framing; the command's definition for one of the header or
+-- the E bit; else the cited document. Gives `reference` its `explorer` and,
+-- as `explorer_place`, what that link shows, as "Destination-Host, RFC 6733
+-- section 6.5".
+local function explore_instead(rules, each, result, reference, explorer)
+  local cite, name = each.explore, each.explore_name
+  if not cite and each.identity and rules.avps[each.identity] then
+    local reading = rules.avps[each.identity]
+    cite, name = reading.at, reading.name
+  end
+  if not cite and HEADER_RULES[each.rule] and result.command then
+    cite, name = result.command.at, result.command.name
+  end
+  local instead = M.reference(rules, cite, name, explorer)
+  if instead and instead.explorer then
+    reference.explorer = instead.explorer
+    reference.explorer_place = (name and name .. ", " or "") .. instead.place
+  else
+    reference.explorer, reference.explorer_place = reference.top, reference.label
+  end
+end
+
 -- Gives each finding its `reference` (`M.reference`), a base check RFC 6733's
 -- section, and the result the `reference` of its command's definition. The
 -- explorer links start at `prefs.explorer`, else `rules.explorer`; an empty
--- address leaves them out.
+-- address leaves them out. A finding with a reference has an explorer link
+-- whenever there is an address: where its cited clause holds nothing the
+-- explorer can show, `explore_instead`'s.
 function M.cited(rules, result, prefs)
   local base = rules.base or {}
   local explorer = prefs and prefs.explorer
@@ -1007,10 +1069,16 @@ function M.cited(rules, result, prefs)
       each.cite = base[BASE_RULES[each.rule]]
     end
     each.reference = M.reference(rules, each.cite, each.cite_name, explorer)
+    if explorer and each.reference and not each.reference.explorer then
+      explore_instead(rules, each, result, each.reference, explorer)
+    end
   end
   if result.command then
     result.reference = M.reference(rules, result.command.at, result.command.name,
       explorer)
+    if result.reference and not result.reference.explorer then
+      result.reference.explorer = result.reference.top
+    end
   end
   return result
 end

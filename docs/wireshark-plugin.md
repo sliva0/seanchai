@@ -119,7 +119,7 @@ publisher's link does not depend on it.
 
 | Finding | Cites |
 |---|---|
-| a flag rule (`flag-must`, `flag-must-not`, `flag-should-not`) | the AVP-table row the reading's flag rules come from: its table's clause; the line ends in the document and table |
+| a flag rule (`flag-must`, `flag-must-not`, `flag-should-not`) | a row whose cell states that rule for that bit, from the reading's document (its AVP table, then its re-used table's M-bit column), the document completing the flags, or the defining one: its table's clause; the line ends in the document and table. RFC 6733 section 4.1.1 for V under Must not on an IETF AVP no row places, and the reading's clause for any other rule no row states |
 | an AVP missing, too often, out of place or not allowed; a note on `* [ AVP ]` or a name the corpus cannot complete | the command's ABNF, or the answer-message's; inside a Grouped AVP, its rule |
 | an Enumerated value undefined, reserved or void | the Enumerated AVP's clause |
 | a Result-Code or Experimental-Result-Code no document defines | that AVP's clause, RFC 6733 section 7.1 or 7.7 |
@@ -137,7 +137,28 @@ pages are its printed page numbers, which no fragment reaches, so its link is
 the PDF alone and the reference says `printed page`; oneM2M's document is a
 member download, linked as it is. The explorer link is
 `#<file>/<clause>?name=<name>`, the `.dad` file's stem as the explorer names
-it; a section of RFC 6733 the corpus places nothing in gets none.
+it.
+
+Every reference has an explorer link while the preference is set. Where the
+cited clause is a section of RFC 6733 the corpus places nothing in, the link
+goes where the explorer has something to show, and the Reference and
+Specification lines still cite the rule's section:
+
+| Finding | Explorer link |
+|---|---|
+| a data format, the AVP's framing or P bit | the AVP's defining clause, with its name, where its type is stated |
+| the header, the E bit | the command's definition, as the command line's |
+| anything else, or a case above with nowhere to go | the cited document (`#<file>`) |
+
+The tree then says where the link goes, the field's value staying the URL:
+
+```text
+[Reference: RFC 6733 section 4.3.1, page 44]
+[Explorer: Destination-Host, RFC 6733 section 6.5: https://sliva0.github.io/seanchai-explorer/#rfc6733/6.5?name=Destination-Host]
+```
+
+An unknown AVP with the M bit, which no document defines, links to
+RFC 6733 itself; an unknown command or AVP has no reference and no link.
 
 Wireshark's Lua API cannot mark a field as a URL, as a C dissector's
 `proto_item_set_url` does (up to 4.7 at least), so the links are plain string
@@ -154,7 +175,8 @@ it for download:
 local EXPLORER = "https://sliva0.github.io/seanchai-explorer/" -- seanchai:explorer
 ```
 
-The file holds exactly one line matching
+The file is UTF-8 with LF line endings on every platform, Windows included:
+no line ends in a CR. It holds exactly one line matching
 `^local EXPLORER = "[^"\\]*" -- seanchai:explorer$`, and the plugin takes the
 `seanchai.explorer_url` preference's default from it. A tool may rewrite this
 one line, keeping its form, to set another default address or `""` for none;

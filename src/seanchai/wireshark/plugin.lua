@@ -95,7 +95,17 @@ local function cite(item, range, reference)
     item:add(fields.url, range, reference.url):set_generated()
   end
   if reference.explorer then
-    item:add(fields.explorer, range, reference.explorer):set_generated()
+    -- The link may go elsewhere than the reference, to where the AVP or the
+    -- command is defined: the label says where, the value stays the URL.
+    local link
+    if reference.explorer_place then
+      link = item:add(fields.explorer, range, reference.explorer,
+        string.format("Explorer: %s: %s", reference.explorer_place,
+          reference.explorer))
+    else
+      link = item:add(fields.explorer, range, reference.explorer)
+    end
+    link:set_generated()
   end
 end
 

@@ -20,6 +20,7 @@ from click.testing import CliRunner
 
 from seanchai import corpus, dictionary, model, wireshark
 from seanchai.cli import main
+from seanchai.dad import ast
 from seanchai.wireshark import _rules as generator
 
 CORE = Path(wireshark.__file__).parent / "core.lua"
@@ -27,6 +28,7 @@ LUAS = [name for name in ("lua5.1", "lua5.2", "lua5.3", "lua5.4") if shutil.whic
 CX = 16777216
 RX = 16777236
 GX = 16777238
+STA = 16777250
 TGPP = 10415
 
 R, P, E = 0x80, 0x40, 0x20
@@ -152,8 +154,9 @@ def rules(tmp_path_factory) -> Path:
     return _rules(out, "--application", "0", "--application", str(CX), "--rules-only")
 
 
-# Gx and Rx too, for references into TS 29.061, TS 29.212 and TS 29.214.
-_CITED = ("0", str(CX), str(RX), str(GX))
+# Gx, Rx and STa too, for references into TS 29.061, TS 29.212, TS 29.214 and
+# TS 29.273.
+_CITED = ("0", str(CX), str(RX), str(GX), str(STA))
 
 
 @pytest.fixture(scope="module")
@@ -181,7 +184,8 @@ local function reference(ref)
     return "-"
   end
   return table.concat({ ref.document, ref.clause, tostring(ref.page),
-    tostring(ref.table), ref.url or "-", ref.explorer or "-", ref.text }, "\\t")
+    tostring(ref.table), ref.url or "-", ref.explorer or "-",
+    ref.explorer_place or "-", ref.text }, "\\t")
 end
 for index = 3, #arg do
   local result = core.validate(rules, unhex(arg[index]), {})
@@ -195,7 +199,16 @@ for index = 3, #arg do
 end
 """
 
-_REFERENCE = ("document", "clause", "page", "table", "url", "explorer", "text")
+_REFERENCE = (
+    "document",
+    "clause",
+    "page",
+    "table",
+    "url",
+    "explorer",
+    "shows",
+    "text",
+)
 
 
 def _reference(text: str) -> dict | None:
@@ -423,6 +436,16 @@ def test_the_plugin_holds_one_explorer_line_and_one_versions_line(plugin):
     assert wireshark.EXPLORER_LINE.findall(text) == [wireshark.EXPLORER]
 
 
+def test_the_plugin_is_written_as_utf8_with_lf_line_endings(plugin):
+    # `seanchai wireshark-plugin -o` writes through `Plugin.write`. A CR would
+    # keep a tool matching the marked line from finding it.
+    data = plugin.read_bytes()
+
+    assert b"\r" not in data
+    assert data.decode("utf-8") == plugin.read_text("utf-8")
+    assert re.search(rb'^local EXPLORER = "[^"\\]*" -- seanchai:explorer\n', data, re.M)
+
+
 @pytest.mark.parametrize("address", ['https://x/"', "https://x/\\", "https://x/\n"])
 def test_an_explorer_address_the_marked_line_cannot_hold_is_refused(address):
     with pytest.raises(wireshark.PluginError):
@@ -491,7 +514,7 @@ def gx_ccr() -> bytes:
     )
 
 
-def rx_asr() -> bytes:
+def rx_asr(destination: bytes = b"af.example.com") -> bytes:
     # No Abort-Cause, which TS 29.214 clause 5.6.7's ASR requires.
     return message(
         274,
@@ -501,8 +524,28 @@ def rx_asr() -> bytes:
         avp(264, b"pcrf.example.com"),
         avp(296, b"example.com"),
         avp(283, b"example.com"),
-        avp(293, b"af.example.com"),
+        avp(293, destination),
         avp(258, u32(RX)),
+    )
+
+
+def sta_aaa() -> bytes:
+    # TS 29.273 clause 5.2.2.3.4's AAA with Subscription-Id under the M bit,
+    # which TS 29.273 re-uses from RFC 4006 with "Must not" in table
+    # 5.2.3.1/2's M-bit column, where RFC 4006 section 8's AVP table puts M in
+    # Must.
+    subscription = avp(450, u32(1)) + avp(444, b"user@example.com")
+    return message(
+        265,
+        P,
+        STA,
+        avp(263, b"aaa.example.com;1;2"),
+        avp(258, u32(STA)),
+        avp(268, u32(2001)),
+        avp(264, b"aaa.example.com"),
+        avp(296, b"example.com"),
+        avp(274, u32(1)),
+        avp(443, subscription),
     )
 
 
@@ -522,8 +565,16 @@ def test_each_finding_cites_where_its_rule_is_written(lua, cited_rules, tmp_path
     long_dwr = bytearray(good_dwr())
     long_dwr[3] += 4  # the header claims 4 octets the message lacks
 
-    ccr, asr, dwr = _validate(
-        lua, cited_rules, tmp_path, gx_ccr(), rx_asr(), bytes(long_dwr)
+    ccr, asr, dwr, aaa, empty, short = _validate(
+        lua,
+        cited_rules,
+        tmp_path,
+        gx_ccr(),
+        rx_asr(),
+        bytes(long_dwr),
+        sta_aaa(),
+        rx_asr(destination=b""),
+        good_dwr()[:12],
     )
 
     # A flag rule: the AVP-table row of the reading used.
@@ -537,9 +588,28 @@ def test_each_finding_cites_where_its_rule_is_written(lua, cited_rules, tmp_path
         "/19.01.00_60/ts_129061v190100p.pdf#page=129",
         "explorer": "https://sliva0.github.io/seanchai-explorer/#29061-j10/16a.5"
         "?name=3GPP-User-Location-Info",
+        "shows": None,
         "text": "TS 29.061 clause 16a.5, table 9a, page 129",
     }
     assert any("(TS 29.061 table 9a)" in text for _, _, text in ccr["findings"])
+    # A flag rule a re-used row's M-bit cell states: that row, not the
+    # origin's AVP table, which says the opposite.
+    assert aaa["document"] == "TS29.273"
+    (m_bit,) = [
+        reference
+        for (_, rule, text), reference in zip(
+            aaa["findings"], aaa["cited"], strict=True
+        )
+        if rule == "flag-must-not" and text.startswith("Subscription-Id: the M bit")
+    ]
+    assert m_bit is not None
+    assert m_bit["document"] == "TS29.273" != "RFC4006"
+    assert (m_bit["clause"], m_bit["table"], m_bit["page"]) == (
+        "5.2.3.1",
+        "5.2.3.1/2",
+        "71",
+    )
+    assert m_bit["text"] == "TS 29.273 clause 5.2.3.1, table 5.2.3.1/2, page 71"
     # A body's rule: the command's ABNF, which the command line cites too.
     assert asr["document"] == "TS29.214"
     missing = _cited(asr, "avp-missing")
@@ -553,10 +623,11 @@ def test_each_finding_cites_where_its_rule_is_written(lua, cited_rules, tmp_path
         "/19.03.00_60/ts_129214v190300p.pdf#page=76",
         "explorer": "https://sliva0.github.io/seanchai-explorer/#29214-j30/5.6.7"
         "?name=AS-Request",
+        "shows": None,
         "text": "TS 29.214 clause 5.6.7, page 76",
     }
     # Framing: RFC 6733's section, at its anchor. The corpus places nothing
-    # in section 3, so the explorer has nowhere to go.
+    # in section 3, so the explorer shows the command's definition instead.
     (length,) = _cited(dwr, "header-length")
     assert length == {
         "document": "RFC6733",
@@ -564,8 +635,26 @@ def test_each_finding_cites_where_its_rule_is_written(lua, cited_rules, tmp_path
         "page": "34",
         "table": None,
         "url": "https://www.rfc-editor.org/rfc/rfc6733.html#section-3",
-        "explorer": None,
+        "explorer": wireshark.EXPLORER + _DWR_AT,
+        "shows": "Device-Watchdog-Request, RFC 6733 section 5.5.1",
         "text": "RFC 6733 section 3, page 34",
+    }
+    # With no command to show, the document.
+    (truncated,) = _cited(short, "header-truncated")
+    assert truncated["explorer"] == wireshark.EXPLORER + "#rfc6733"
+    assert truncated["shows"] == "RFC 6733"
+    # A data format: RFC 6733 section 4.3.1, which the explorer cannot show,
+    # so it shows where the AVP's type is stated.
+    (identity,) = _cited(empty, "diameter-identity")
+    assert identity == {
+        "document": "RFC6733",
+        "clause": "4.3.1",
+        "page": "44",
+        "table": None,
+        "url": "https://www.rfc-editor.org/rfc/rfc6733.html#section-4.3.1",
+        "explorer": wireshark.EXPLORER + "#rfc6733/6.5?name=Destination-Host",
+        "shows": "Destination-Host, RFC 6733 section 6.5",
+        "text": "RFC 6733 section 4.3.1, page 44",
     }
 
 
@@ -584,11 +673,18 @@ def test_an_empty_explorer_leaves_its_links_out(unlinked_rules, tmp_path):
     assert all(each["url"] for each in references)
 
 
-def test_every_reference_has_a_document_url_and_a_real_page():
+@pytest.fixture(scope="module")
+def whole() -> tuple[corpus.Corpus, generator.Places, str]:
+    """The rules for the whole corpus, with the places they cite."""
     books = corpus.Corpus.installed()
     built_model = model.Model.build(books)
     places = generator.Places(books)
     rules = generator.rules_chunk(dictionary.build(built_model), built_model, places)
+    return books, places, rules
+
+
+def test_every_reference_has_a_document_url_and_a_real_page(whole):
+    _, places, rules = whole
 
     assert places.citations and places.documents
     for entry, _ in places.documents.values():
@@ -602,3 +698,225 @@ def test_every_reference_has_a_document_url_and_a_real_page():
             assert ",at=" in line, line[:120]
         if line.startswith("commands["):
             assert line.count(",at=") == line.count("abbreviation="), line[:120]
+
+
+_LUA_STRING = r'"((?:[^"\\]|\\.)*)"'
+_READING = re.compile(
+    r'^avps\["([^"]*)"\]=\{name="([^"]*)",.*?,flags=\{must="([MVP]*)",may="[MVP]*",'
+    r'should_not="([MVP]*)",must_not="([MVP]*)",application="[MVP]*"\}'
+    r"(?:,at=\d+)?(?:,flags_at=(\d+|\{[^}]*\}))?"
+)
+_DOC = re.compile(rf"^docs\[(\d+)\]=\{{{_LUA_STRING},{_LUA_STRING},{_LUA_STRING},")
+_CITE = re.compile(
+    rf"^cites\[(\d+)\]=\{{(\d+),{_LUA_STRING},(\d+|false)(?:,(?:false|{_LUA_STRING}))?"
+)
+_M_BIT = {"must": "MUST", "must_not": "MUST-NOT"}
+_COLUMN = {"must": "must", "must_not": "must_not", "should_not": "should_not"}
+
+
+def _says(section, name: str, letter: str, rule: str) -> list[bool]:
+    """Whether each row of `section` for `name` that places `letter` puts it
+    under `rule`, as the `.dad` file prints it."""
+    said = []
+    for row in section.rows:
+        if row.name != name:
+            continue
+        if isinstance(section, ast.AvpTable):
+            columns = [
+                column
+                for column in ("must", "may", "should_not", "must_not")
+                if letter in {flag.value for flag in getattr(row.flag_rules, column)}
+            ]
+            said += [column == rule for column in columns]
+        elif letter == "M" and row.m_bit is not None:
+            said.append(row.m_bit.value == _M_BIT.get(rule))
+    return said
+
+
+def test_each_flag_rule_cites_a_place_that_states_it(whole):
+    # Read back from the rules' text and checked against the parsed `.dad`
+    # files: a cited table's rows for the name agree with every reported
+    # rule, an IETF V under Must not no row places cites RFC 6733 section
+    # 4.1.1, and anything else cites a clause with no table.
+    books, _, rules = whole
+    by_stem = {entry.path.stem: entry for entry in books}
+    docs: dict[str, corpus.Entry] = {}
+    cites: dict[str, tuple[corpus.Entry, str, int | None, str | None]] = {}
+    readings = []
+    for line in rules.splitlines():
+        if found := _DOC.match(line):
+            docs[found[1]] = by_stem[found[4]]
+        elif found := _CITE.match(line):
+            page = None if found[4] == "false" else int(found[4])
+            cites[found[1]] = (docs[found[2]], found[3], page, found[5])
+        elif line.startswith("avps["):
+            found = _READING.match(line)
+            assert found, line[:160]
+            readings.append(found.groups())
+    counts = {"row": 0, "default": 0, "clause": 0}
+    for identity, name, must, should_not, must_not, flags_at in readings:
+        reported = [
+            (letter, rule)
+            for rule, letters in (
+                ("must", must),
+                ("must_not", must_not),
+                ("should_not", should_not),
+            )
+            for letter in letters
+        ]
+        if not reported:
+            continue
+        assert flags_at, identity
+        if flags_at.startswith("{"):
+            numbers = dict(each.split("=") for each in flags_at[1:-1].split(","))
+        else:
+            numbers = {letter: flags_at for letter, _ in reported}
+        for letter, rule in reported:
+            entry, clause, page, table = cites[numbers[letter]]
+            said = [
+                agrees
+                for section in entry.spec.sections
+                if isinstance(section, ast.AvpTable | ast.ReusedAvps)
+                and (section.source.section, section.source.page, section.table)
+                == (clause, page, table)
+                for agrees in _says(section, name, letter, _COLUMN[rule])
+            ]
+            where = (identity, letter, rule, entry.reference, clause, table)
+            if said:
+                assert all(said), where
+                counts["row"] += 1
+            elif (entry.reference, clause) == ("RFC6733", "4.1.1"):
+                assert (letter, rule) == ("V", "must_not"), where
+                assert identity.startswith("0:"), where
+                counts["default"] += 1
+            else:
+                assert table is None, where
+                counts["clause"] += 1
+    assert counts["row"] > 0
+    print(f"flag rules cited: {counts}")
+
+
+def _odd_messages() -> list[bytes]:
+    """Messages breaking, between them, most rules the core checks."""
+    padded = bytearray(avp(264, b"peer.example.co"))
+    padded[-1] = 1  # a nonzero padding octet
+    reserved = avp(296, b"example.com", flags=M | 0x01)
+    # An answer with the T bit, and the E bit with a Result-Code of success.
+    answer_t = message(
+        280, E | 0x10, 0, avp(264, b"p.example.com"), avp(268, u32(2001))
+    )
+    return [
+        good_dwr()[:12],
+        message(280, R, 0, bytes(padded), reserved, avp(9999, b"", flags=M)),
+        message(280, R, 0, avp(9998, b"", flags=0), avp(1, b"\xff")),
+        message(999, R, 0),
+        answer_t,
+        error_uaa()[:-1],
+        bad_uar(),
+        failed_uaa(b""),
+        gx_ccr(),
+        rx_asr(destination=b""),
+        sta_aaa(),
+    ]
+
+
+# No document defines what these report, so they cite nothing.
+_UNCITED = {"unknown-command", "unknown-avp"}
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+def test_every_finding_has_an_explorer_link(cited_rules, tmp_path):
+    results = _validate(LUAS[-1], cited_rules, tmp_path, *_odd_messages())
+
+    seen = set()
+    for result in results:
+        for (_, rule, text), reference in zip(
+            result["findings"], result["cited"], strict=True
+        ):
+            seen.add(rule)
+            if rule in _UNCITED:
+                assert reference is None, text
+                continue
+            assert reference and reference["explorer"], (rule, text)
+            assert reference["explorer"].startswith(wireshark.EXPLORER + "#")
+    assert (
+        seen
+        >= {
+            "header-truncated",
+            "header-length",
+            "header-t-bit",
+            "avp-padding",
+            "avp-reserved-flags",
+            "avp-missing",
+            "unknown-mandatory",
+            "utf8",
+            "diameter-identity",
+            "flag-must",
+            "flag-must-not",
+            "e-bit-unexpected",
+        }
+        | _UNCITED
+    )
+
+
+_EVERY_CITE = """
+local core = dofile(arg[1])
+local rules = dofile(arg[2])
+local explorer = arg[3]
+local missing = 0
+local command = { at = nil, name = "X" }
+for index = 4, #arg do
+  local rule = arg[index]
+  local cites = { false }
+  for number in pairs(rules.cites) do
+    cites[#cites + 1] = number
+  end
+  for _, cite in ipairs(cites) do
+    for _, known in ipairs({ false, true }) do
+      local found = { rule = rule, cite = cite or nil, cite_name = "X" }
+      local result = { findings = { found } }
+      if known then
+        command.at = cite or nil
+        result.command = command
+      end
+      core.cited(rules, result, { explorer = explorer })
+      if found.reference and not found.reference.explorer then
+        missing = missing + 1
+        io.write(rule, " ", tostring(cite), "\\n")
+      elseif not found.reference and cite then
+        io.write("unread ", rule, " ", tostring(cite), "\\n")
+      end
+    end
+  end
+end
+io.write("missing ", missing, "\\n")
+"""
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+def test_no_finding_citing_any_place_lacks_an_explorer_link(whole, tmp_path):
+    # Every rule core.lua can report, citing each place the whole corpus's
+    # rules hold, or none (a base check fills in its RFC 6733 section), with
+    # and without a command: wherever a reference is given, so is an
+    # explorer link.
+    _, _, chunk = whole
+    kinds = sorted(
+        set(
+            re.findall(
+                r'(?:ERROR|WARN|NOTE|severity), "([a-z0-9-]+)"', CORE.read_text()
+            )
+        )
+    )
+    assert len(kinds) > 30
+    rules = tmp_path / "rules.lua"
+    rules.write_text(chunk, "utf-8")
+    script = tmp_path / "every.lua"
+    script.write_text(_EVERY_CITE, "utf-8")
+    done = subprocess.run(
+        [LUAS[-1], str(script), str(CORE), str(rules), wireshark.EXPLORER, *kinds],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert done.stdout.splitlines() == ["missing 0"]
