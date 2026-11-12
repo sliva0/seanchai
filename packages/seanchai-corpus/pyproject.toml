@@ -1,6 +1,6 @@
 [project]
 name = "seanchai-corpus"
-version = "2026.11.11"
+version = "2026.11.12"
 description = "Diameter command ABNFs and AVP definitions as .dad files"
 readme = "README.md"
 authors = [
