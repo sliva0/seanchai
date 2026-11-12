@@ -10,8 +10,15 @@
 --   commands[key]   candidates for "app:code:R", "*:code:R" for id-less ones
 --   answers[id]     an `<answer-message>` body
 --   result_codes[vendor][code], bits[identity][bit]
+--   docs[n]         a document: reference, label, explorer id, URL, link kind
+--   cites[n]        a place in one: document number, clause, page or false,
+--                   the table's label or false, and true for a clause the
+--                   corpus places nothing in, which the explorer cannot show
+--   base[kind]      the RFC 6733 sections the header and format checks cite
 -- A member is {id, name, presence, min, max}, max -1 for unbounded, and a
 -- body carries `wildcard`, the `* [ AVP ]` line's {min, max}, where it has one.
+-- A reading's `at` and `flags_at`, a command's and an answer's `at`, and
+-- `bits_at[identity]` are numbers into `cites`: where the rule is written.
 
 local M = {}
 
@@ -49,7 +56,9 @@ local AVP_V, AVP_M, AVP_P = 128, 64, 32
 -- Section 3: R 0x80, P 0x40, E 0x20, T 0x10; the rest are reserved.
 local CMD_R, CMD_P, CMD_E, CMD_T = 128, 64, 32, 16
 
-local function finding(list, severity, rule, message, offset, length, path)
+-- `cite` is a number into `rules.cites`, the place the rule broken is
+-- written, and `name` what the explorer looks for there.
+local function finding(list, severity, rule, message, offset, length, path, cite, name)
   list[#list + 1] = {
     severity = severity,
     rule = rule,
@@ -57,6 +66,87 @@ local function finding(list, severity, rule, message, offset, length, path)
     offset = offset,
     length = length,
     path = path,
+    cite = cite,
+    cite_name = name,
+  }
+end
+
+-- What the checks that read RFC 6733 alone cite, by rule: `rules.base`'s
+-- sections 3 (the header), 4.1 (the AVP header), 4.3.1 (the derived data
+-- formats), 7.1.3 (protocol errors) and 7.2 (the E bit).
+local BASE_RULES = {
+  ["header-truncated"] = "header", ["header-version"] = "header",
+  ["header-length"] = "header", ["header-reserved-flags"] = "header",
+  ["header-e-bit"] = "header", ["header-t-bit"] = "header",
+  ["avp-truncated"] = "avp", ["avp-length"] = "avp",
+  ["avp-reserved-flags"] = "avp", ["avp-padding"] = "avp", ["flag-p"] = "avp",
+  ["unknown-mandatory"] = "avp",
+  utf8 = "derived", ["diameter-identity"] = "derived",
+  ["diameter-uri"] = "derived", ["ip-filter-rule"] = "derived",
+  address = "derived",
+  ["e-bit-missing"] = "protocol_errors", ["e-bit-unexpected"] = "error_bit",
+}
+
+-- References: a citation as text and links.
+
+-- JavaScript's encodeURIComponent, which the explorer's routes decode.
+local function uri_component(text)
+  return (text:gsub("[^%w%-_%.!~%*'%(%)]", function(char)
+    return string.format("%%%02X", string.byte(char))
+  end))
+end
+
+-- A query value as URLSearchParams writes it: a space as "+".
+local function form_value(text)
+  return (text:gsub("[^%w%-_%.%* ]", function(char)
+    return string.format("%%%02X", string.byte(char))
+  end):gsub(" ", "+"))
+end
+
+-- What `cite` (a number into `rules.cites`) says, or nil:
+--   document  the reference, as TS29.061
+--   text      "TS 29.061 clause 16a.5, table 9a, page 129"
+--   short     "TS 29.061 table 9a", for a finding's own line
+--   clause, page, table
+--   url       the publisher's copy at the place: a PDF's `#page=N`, an RFC's
+--             `#section-X.Y`; the document alone where neither reaches it
+--   explorer  the explorer site at the clause, nil where the rules were
+--             generated without one or the corpus places nothing there
+function M.reference(rules, cite, name)
+  local at = cite and rules.cites and rules.cites[cite]
+  if not at then
+    return nil
+  end
+  local doc = rules.docs[at[1]]
+  local label, id, url, kind = doc[2], doc[3], doc[4], doc[5]
+  local clause, page, table_label = at[2], at[3] or nil, at[4] or nil
+  local word = kind == "rfc" and "section" or "clause"
+  local text = label .. " " .. word .. " " .. clause
+  local short = text
+  if table_label then
+    text = text .. ", table " .. table_label
+    short = label .. " table " .. table_label
+  end
+  if page then
+    text = text .. (kind == "printed" and ", printed page " or ", page ") .. page
+  end
+  local link = url ~= "" and url or nil
+  if link and kind == "rfc" then
+    -- rfc-editor.org anchors an appendix as `#appendix-A.1`.
+    link = link .. (clause:find("^%u") and "#appendix-" or "#section-") .. clause
+  elseif link and kind == "pdf" and page then
+    link = link .. "#page=" .. page
+  end
+  local explorer
+  if rules.explorer and not at[5] then
+    explorer = rules.explorer .. "#" .. uri_component(id) .. "/" .. uri_component(clause)
+    if name then
+      explorer = explorer .. "?name=" .. form_value(name)
+    end
+  end
+  return {
+    document = doc[1], text = text, short = short, clause = clause, page = page,
+    table = table_label, url = link, explorer = explorer,
   }
 end
 
@@ -330,27 +420,27 @@ local function check_flags(ctx, avp, reading, path)
     return nil
   end
   local bits = { M = AVP_M, V = AVP_V, P = AVP_P }
+  -- The table row the flag rules are read from, which each finding names.
+  local cite = reading.flags_at
+  local where = M.reference(ctx.rules, cite)
+  where = where and where.short or reading.read_through
   for _, letter in ipairs({ "M", "V", "P" }) do
     local set = has(avp.flags, bits[letter])
     local rule = rule_for(letter)
-    local where = reading.defined_in
-    if reading.read_through ~= reading.defined_in then
-      where = reading.read_through
-    end
     if rule == "must" and not set then
       finding(ctx.findings, ERROR, "flag-must",
         string.format("%s: the %s bit must be set (%s)", reading.name, letter, where),
-        avp.offset + 4, 1, path)
+        avp.offset + 4, 1, path, cite, reading.name)
     elseif rule == "must_not" and set then
       finding(ctx.findings, ERROR, "flag-must-not",
         string.format("%s: the %s bit must not be set (%s)", reading.name, letter,
           where),
-        avp.offset + 4, 1, path)
+        avp.offset + 4, 1, path, cite, reading.name)
     elseif rule == "should_not" and set then
       finding(ctx.findings, WARN, "flag-should-not",
         string.format("%s: the %s bit should not be set (%s)", reading.name, letter,
           where),
-        avp.offset + 4, 1, path)
+        avp.offset + 4, 1, path, cite, reading.name)
     elseif rule == nil and letter == "P" and set then
       -- RFC 6733 section 4.1: no end-to-end security is specified, "therefore,
       -- the P bit SHOULD be set to 0".
@@ -373,7 +463,10 @@ local function check_data(ctx, avp, reading, path, inner, depth)
       finding(findings, ERROR, "data-length",
         string.format("%s is %s, %d octets, but holds %d", reading.name, kind, size,
           avp.size),
-        avp.offset, avp.length, path)
+        avp.offset, avp.length, path,
+        -- Time and Enumerated are section 4.3.1's, the rest section 4.2's.
+        ctx.rules.base and ctx.rules.base[(kind == "Time" or kind == "Enumerated")
+          and "derived" or "basic"])
       return
     end
     if kind == "Enumerated" then
@@ -382,7 +475,7 @@ local function check_data(ctx, avp, reading, path, inner, depth)
       if severity then
         finding(findings, severity, "enum-value",
           string.format("%s: %d %s", reading.name, value, problem),
-          avp.data, 4, path)
+          avp.data, 4, path, reading.at, reading.name)
       end
     elseif kind == "Unsigned32" then
       local value = u32(pdu, avp.data + 1)
@@ -393,11 +486,11 @@ local function check_data(ctx, avp, reading, path, inner, depth)
         if not names[value] then
           finding(findings, WARN, "result-code",
             string.format("Result-Code %d is not one any document defines", value),
-            avp.data, 4, path)
+            avp.data, 4, path, reading.at, reading.name)
         end
       elseif reading.name == "Experimental-Result-Code" then
         ctx.experimental_codes[#ctx.experimental_codes + 1] = {
-          value = value, offset = avp.data, path = path,
+          value = value, offset = avp.data, path = path, cite = reading.at,
         }
       elseif ctx.rules.bits[identity] then
         local known = ctx.rules.bits[identity]
@@ -413,7 +506,7 @@ local function check_data(ctx, avp, reading, path, inner, depth)
           finding(findings, NOTE, "bits",
             string.format("%s sets bit %s, which no document names", reading.name,
               table.concat(unknown, ", ")),
-            avp.data, 4, path)
+            avp.data, 4, path, ctx.rules.bits_at[identity] or reading.at, reading.name)
         end
       end
     end
@@ -471,7 +564,7 @@ local function check_data(ctx, avp, reading, path, inner, depth)
       if avp.size < 8 then
         finding(findings, ERROR, "avp-missing",
           "Failed-AVP holds no AVP, and its rule requires at least one",
-          avp.offset, avp.length, path)
+          avp.offset, avp.length, path, reading.at, reading.name)
       end
       return
     end
@@ -489,6 +582,11 @@ end
 validate_body = function(ctx, body, avps, path, depth, owner)
   local rules = ctx.rules
   local findings = ctx.findings
+  -- The rule the body is: the Grouped AVP's, else the command's ABNF.
+  local cite, cite_name = ctx.cite, ctx.cite_name
+  if owner then
+    cite, cite_name = owner.at, owner.name
+  end
   local by_identity = {}
   for index, member in ipairs(body) do
     if member.id then
@@ -521,11 +619,11 @@ validate_body = function(ctx, body, avps, path, depth, owner)
         finding(findings, ERROR, "avp-not-allowed",
           string.format("%s is not allowed in %s, whose ABNF has no * [ AVP ]",
             name, where),
-          avp.offset, avp.length, path)
+          avp.offset, avp.length, path, cite, cite_name)
       elseif ctx.prefs.wildcard_notes then
         finding(findings, NOTE, "avp-by-wildcard",
           string.format("%s is not in the ABNF; * [ AVP ] admits it", name),
-          avp.offset, avp.length, path)
+          avp.offset, avp.length, path, cite, cite_name)
       end
     end
     local inner_path = path and (path .. " > " .. name) or name
@@ -551,12 +649,12 @@ validate_body = function(ctx, body, avps, path, depth, owner)
     finding(findings, ERROR, "avp-missing",
       string.format("%s requires %d AVP%s beyond those it lists, it holds %d",
         where, wildcard.min, wildcard.min == 1 and "" or "s", unlisted),
-      ctx.anchor_offset, ctx.anchor_length, path)
+      ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
   elseif wildcard and wildcard.max >= 0 and unlisted > wildcard.max then
     finding(findings, ERROR, "avp-occurrences",
       string.format("%s allows %d AVP%s beyond those it lists, it holds %d",
         where, wildcard.max, wildcard.max == 1 and "" or "s", unlisted),
-      ctx.anchor_offset, ctx.anchor_length, path)
+      ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
   end
   for _, member in ipairs(body) do
     if member.id then
@@ -566,18 +664,18 @@ validate_body = function(ctx, body, avps, path, depth, owner)
         finding(findings, ERROR, "avp-missing",
           string.format("%s requires %s%s, which is missing", where,
             member.min > 1 and (member.min .. " of ") or "", member_label(member)),
-          ctx.anchor_offset, ctx.anchor_length, path)
+          ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
       elseif member.max >= 0 and count > member.max then
         finding(findings, ERROR, "avp-occurrences",
           string.format("%s allows %s at most %d time%s, it occurs %d", where,
             member_label(member), member.max, member.max == 1 and "" or "s", count),
-          ctx.anchor_offset, ctx.anchor_length, path)
+          ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
       end
     elseif member.hole or member.placeholder then
       finding(findings, NOTE, "unverifiable",
         string.format("%s names %s, which the corpus cannot complete (%s)", where,
           member.name, member.hole or "undefined"),
-        ctx.anchor_offset, ctx.anchor_length, path)
+        ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
     end
   end
   -- Fixed positions: the fixed members the body lists before any other must
@@ -599,7 +697,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
         finding(findings, ERROR, "avp-position",
           string.format("%s must be AVP %d of %s, it is AVP %d", member.name,
             expected, where, at),
-          avp.offset, avp.length, path)
+          avp.offset, avp.length, path, cite, cite_name)
       end
       expected = expected + 1
     end
@@ -620,20 +718,22 @@ validate_body = function(ctx, body, avps, path, depth, owner)
       local avp = avps[at]
       finding(findings, ERROR, "avp-position",
         string.format("%s must be among the last AVPs of %s", member.name, where),
-        avp.offset, avp.length, path)
+        avp.offset, avp.length, path, cite, cite_name)
     end
     expected = expected + 1
   end
 end
 
 -- One candidate: validates the message's AVPs against `body`.
-local function run(rules, prefs, pdu, avps, header_findings, body, where, anchor)
+local function run(rules, prefs, pdu, avps, header_findings, form, anchor)
   local ctx = {
     rules = rules,
     prefs = prefs,
     pdu = pdu,
     findings = {},
-    where = where,
+    where = form.where,
+    cite = form.cite,
+    cite_name = form.cite_name,
     anchor_offset = anchor[1],
     anchor_length = anchor[2],
     experimental_codes = {},
@@ -642,7 +742,7 @@ local function run(rules, prefs, pdu, avps, header_findings, body, where, anchor
   for _, each in ipairs(header_findings) do
     ctx.findings[#ctx.findings + 1] = each
   end
-  validate_body(ctx, body, avps, nil, 0, nil)
+  validate_body(ctx, form.body, avps, nil, 0, nil)
   return ctx
 end
 
@@ -712,8 +812,10 @@ end
 
 -- Validates one Diameter PDU, a string of its octets. Returns a table:
 --   command     the chosen candidate {name, abbreviation, document, section}
+--   reference   where the command is defined (`M.reference`), or nil
 --   form        "command", "answer-message" or nil when nothing matched
---   findings    {severity, rule, message, offset, length, path}
+--   findings    {severity, rule, message, offset, length, path, reference},
+--               `reference` where the rule broken is written, or nil
 --   others      the other candidates, each {candidate, errors, warnings}
 --   header      code, flags, application, length
 function M.validate(rules, pdu, prefs)
@@ -723,7 +825,7 @@ function M.validate(rules, pdu, prefs)
   if #pdu < 20 then
     finding(header_findings, ERROR, "header-truncated",
       string.format("%d octets, too few for a Diameter header", #pdu), 0, #pdu)
-    return result
+    return M.cited(rules, result)
   end
   local version = u8(pdu, 1)
   local length = u24(pdu, 2)
@@ -784,6 +886,7 @@ function M.validate(rules, pdu, prefs)
             form = "answer-message",
             where = "the answer-message of " .. answer.defined_in .. " section "
               .. answer.section,
+            cite = answer.at,
           }
         end
       else
@@ -792,6 +895,8 @@ function M.validate(rules, pdu, prefs)
           body = candidate.members,
           form = "command",
           where = candidate.abbreviation,
+          cite = candidate.at,
+          cite_name = candidate.name,
         }
       end
     end
@@ -802,6 +907,7 @@ function M.validate(rules, pdu, prefs)
       form = "answer-message",
       where = "the answer-message of " .. answer.defined_in .. " section "
         .. answer.section,
+      cite = answer.at,
     }
   end
   if #forms == 0 then
@@ -809,14 +915,13 @@ function M.validate(rules, pdu, prefs)
       string.format("no document in the corpus defines command %d %s in"
         .. " application %d", code, request and "request" or "answer", looked_up),
       5, 3)
-    return result
+    return M.cited(rules, result)
   end
 
   local best, best_ctx, best_errors, best_warnings
   local runs = {}
   for _, form in ipairs(forms) do
-    local ctx = run(rules, prefs, pdu, avps, header_findings, form.body, form.where,
-      { 5, 3 })
+    local ctx = run(rules, prefs, pdu, avps, header_findings, form, { 5, 3 })
     local errors, warnings = score(ctx.findings)
     runs[#runs + 1] = { form = form, ctx = ctx, errors = errors, warnings = warnings }
     -- Fewest errors, then fewest warnings, then the body listing the most of
@@ -841,7 +946,7 @@ function M.validate(rules, pdu, prefs)
       finding(best_ctx.findings, NOTE, "experimental-result-code",
         string.format("Experimental-Result-Code %d is not one any document defines",
           each.value),
-        each.offset, 4, each.path)
+        each.offset, 4, each.path, each.cite, "Experimental-Result-Code")
     end
   end
   local result_code = best_ctx.result_code
@@ -863,7 +968,8 @@ function M.validate(rules, pdu, prefs)
       finding(best_ctx.findings, ERROR, "header-p-bit",
         string.format("the P bit is %s, but %s's header %s PXY",
           has(flags, CMD_P) and "set" or "clear", best.candidate.abbreviation,
-          best.candidate.proxiable and "prints" or "does not print"), 4, 1)
+          best.candidate.proxiable and "prints" or "does not print"), 4, 1, nil,
+        best.candidate.at, best.candidate.name)
     end
   end
 
@@ -877,6 +983,22 @@ function M.validate(rules, pdu, prefs)
         candidate = each.form.candidate, errors = each.errors, warnings = each.warnings,
       }
     end
+  end
+  return M.cited(rules, result)
+end
+
+-- Gives each finding its `reference` (`M.reference`), a base check RFC 6733's
+-- section, and the result the `reference` of its command's definition.
+function M.cited(rules, result)
+  local base = rules.base or {}
+  for _, each in ipairs(result.findings) do
+    if each.cite == nil and BASE_RULES[each.rule] then
+      each.cite = base[BASE_RULES[each.rule]]
+    end
+    each.reference = M.reference(rules, each.cite, each.cite_name)
+  end
+  if result.command then
+    result.reference = M.reference(rules, result.command.at, result.command.name)
   end
   return result
 end

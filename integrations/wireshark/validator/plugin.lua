@@ -9,6 +9,14 @@
 --   seanchai.errors > 0          messages breaking a rule of their document
 --   seanchai.rule == "avp-missing"
 --   seanchai.document == "TS29.272"
+--   seanchai.cited == "TS29.061"  findings citing a document
+--
+-- Each finding, and the command it was held to, has the place its rule is
+-- written beneath it: a reference ("TS 29.061 clause 16a.5, table 9a, page
+-- 129"), the publisher's copy at that place and the explorer site's. They are
+-- string fields: Wireshark's Lua API has no way to mark a field as a URL (C
+-- dissectors' proto_item_set_url), so they are copied (Copy, Value) rather
+-- than clicked.
 --
 -- generate.py puts `RULES` and `core` in scope ahead of this file.
 
@@ -26,11 +34,15 @@ local fields = {
   rule = ProtoField.string("seanchai.rule", "Rule"),
   candidate = ProtoField.string("seanchai.candidate", "Other definition"),
   corpus = ProtoField.string("seanchai.corpus", "Corpus"),
+  reference = ProtoField.string("seanchai.reference", "Reference"),
+  cited = ProtoField.string("seanchai.cited", "Cited document"),
+  url = ProtoField.string("seanchai.url", "Specification"),
+  explorer = ProtoField.string("seanchai.explorer", "Explorer"),
 }
 proto.fields = {
   fields.command, fields.document, fields.section, fields.form, fields.errors,
   fields.warnings, fields.notes, fields.finding, fields.rule, fields.candidate,
-  fields.corpus,
+  fields.corpus, fields.reference, fields.cited, fields.url, fields.explorer,
 }
 
 local experts = {
@@ -66,6 +78,22 @@ local function clamp(range, offset, length)
   return range:range(offset, length)
 end
 
+-- The reference beneath `item`: its text, with the document, and both links.
+local function cite(item, range, reference)
+  if not reference then
+    return
+  end
+  local text = item:add(fields.reference, range, reference.text)
+  text:set_generated()
+  text:add(fields.cited, range, reference.document):set_generated()
+  if reference.url then
+    item:add(fields.url, range, reference.url):set_generated()
+  end
+  if reference.explorer then
+    item:add(fields.explorer, range, reference.explorer):set_generated()
+  end
+end
+
 local function describe(candidate)
   return string.format("%s (%s) in %s section %s", candidate.name,
     candidate.abbreviation, candidate.document, candidate.section)
@@ -95,7 +123,8 @@ function proto.dissector(tvb, pinfo, tree)
       subtree:append_text(string.format(": %s, %d error%s, %d warning%s",
         candidate.abbreviation, counts.error, counts.error == 1 and "" or "s",
         counts.warn, counts.warn == 1 and "" or "s"))
-      subtree:add(fields.command, clamp(range, 5, 3), describe(candidate))
+      local command = subtree:add(fields.command, clamp(range, 5, 3), describe(candidate))
+      cite(command, clamp(range, 5, 3), result.reference)
       subtree:add(fields.document, clamp(range, 5, 3), candidate.document)
       subtree:add(fields.section, clamp(range, 5, 3), candidate.section)
     else
@@ -117,6 +146,7 @@ function proto.dissector(tvb, pinfo, tree)
       local item = subtree:add(fields.finding, clamp(range, each.offset, each.length),
         LABELS[each.severity] .. ": " .. text)
       item:add(fields.rule, clamp(range, each.offset, each.length), each.rule)
+      cite(item, clamp(range, each.offset, each.length), each.reference)
       item:add_proto_expert_info(experts[each.severity], text)
     end
     for _, other in ipairs(result.others) do

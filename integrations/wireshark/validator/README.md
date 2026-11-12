@@ -21,6 +21,7 @@ together with `core.lua` (the checks) and `plugin.lua` (the Wireshark side).
 | `--application ID` | only this application id's commands; repeatable |
 | `--document REF` | only this document's commands; repeatable |
 | `--corpus DIR` | read another corpus than the installed one |
+| `--explorer URL` | the explorer site references link to, `https://sliva0.github.io/seanchai-explorer/` by default; `''` for none |
 | `--rules-only` | write the rules alone, as a Lua chunk returning them, for running `core.lua` outside Wireshark |
 
 Regenerate after upgrading the corpus. The plugin's `seanchai.corpus` field
@@ -98,6 +99,39 @@ tshark (`-o seanchai.pin:TS32.299`):
 | Pinned documents (`seanchai.pin`) | comma-separated references; where one defines the command, only it is a candidate |
 | Note AVPs only `* [ AVP ]` admits (`seanchai.wildcard_notes`) | a note for each AVP the rule does not list; off by default |
 
+## References
+
+Each finding says where the rule it reports is written, beneath its line: the
+document, clause, table and page, as `TS 29.061 clause 16a.5, table 9a, page
+129`, with a link to the publisher's copy there and one to the explorer site
+at that clause. The command line has the same for the command's definition.
+
+| Finding | Cites |
+|---|---|
+| a flag rule (`flag-must`, `flag-must-not`, `flag-should-not`) | the AVP-table row the reading's flag rules come from: its table's clause; the line ends in the document and table |
+| an AVP missing, too often, out of place or not allowed; a note on `* [ AVP ]` or a name the corpus cannot complete | the command's ABNF, or the answer-message's; inside a Grouped AVP, its rule |
+| an Enumerated value undefined, reserved or void | the Enumerated AVP's clause |
+| a Result-Code or Experimental-Result-Code no document defines | that AVP's clause, RFC 6733 section 7.1 or 7.7 |
+| bits no document names | the AVP's first bit table |
+| the header's P bit | the command's ABNF, whose header prints PXY or not |
+| the header, the AVP framing, the P bit of an AVP, an unknown AVP with the M bit | RFC 6733 section 3, or 4.1 |
+| data formats | RFC 6733 section 4.2 (the integer and float types) or 4.3.1 |
+| the E bit | RFC 6733 section 7.1.3 for a protocol error without it, 7.2 for another answer with it |
+
+An unknown command or AVP cites nothing: no document defines it.
+
+The publisher's link opens a PDF at the page (`#page=N`) and an RFC at its
+section in rfc-editor.org's HTML rendering (`#section-7.2`). A 3GPP2 document's
+pages are its printed page numbers, which no fragment reaches, so its link is
+the PDF alone and the reference says `printed page`; oneM2M's document is a
+member download, linked as it is. The explorer link is
+`#<file>/<clause>?name=<name>`, the `.dad` file's stem as the explorer names
+it; a section of RFC 6733 the corpus places nothing in gets none.
+
+Wireshark's Lua API cannot mark a field as a URL, as a C dissector's
+`proto_item_set_url` does (up to 4.7 at least), so the links are plain string
+fields: copy one with Copy, Value.
+
 ## Fields
 
 | Field                | Holds                                                 |
@@ -111,6 +145,10 @@ tshark (`-o seanchai.pin:TS32.299`):
 | `seanchai.rule`      | the finding's kind, as `avp-missing` or `flag-must`   |
 | `seanchai.candidate` | another definition, with its counts                   |
 | `seanchai.corpus`    | the seanchai and corpus versions the rules came from  |
+| `seanchai.reference` | where a finding's rule, or the command, is written    |
+| `seanchai.cited`     | that document, as `TS29.061`                          |
+| `seanchai.url`       | the publisher's copy at that place                    |
+| `seanchai.explorer`  | the explorer site at that clause                      |
 
 Errors are expert info in the Malformed group; warnings and notes are in the
 Protocol group.

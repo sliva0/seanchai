@@ -7,6 +7,7 @@ skipped where none is. The tshark test runs the generated plugin over a pcap
 of the same messages, skipped without tshark.
 """
 
+import importlib.util
 import json
 import shutil
 import struct
@@ -20,6 +21,9 @@ ROOT = Path(__file__).parent.parent
 VALIDATOR = ROOT / "integrations" / "wireshark" / "validator"
 LUAS = [name for name in ("lua5.1", "lua5.2", "lua5.3", "lua5.4") if shutil.which(name)]
 CX = 16777216
+RX = 16777236
+GX = 16777238
+TGPP = 10415
 
 R, P, E = 0x80, 0x40, 0x20
 V, M = 0x80, 0x40
@@ -131,25 +135,37 @@ def good_dwr() -> bytes:
     return message(280, R, 0, avp(264, b"peer.example.com"), avp(296, b"example.com"))
 
 
-@pytest.fixture(scope="module")
-def rules(tmp_path_factory) -> Path:
-    out = tmp_path_factory.mktemp("rules") / "rules.lua"
+def _rules(out: Path, *options: str) -> Path:
     subprocess.run(
-        [
-            sys.executable,
-            str(VALIDATOR / "generate.py"),
-            "--application",
-            "0",
-            "--application",
-            str(CX),
-            "--rules-only",
-            "-o",
-            str(out),
-        ],
+        [sys.executable, str(VALIDATOR / "generate.py"), *options, "-o", str(out)],
         check=True,
         capture_output=True,
     )
     return out
+
+
+@pytest.fixture(scope="module")
+def rules(tmp_path_factory) -> Path:
+    out = tmp_path_factory.mktemp("rules") / "rules.lua"
+    return _rules(out, "--application", "0", "--application", str(CX), "--rules-only")
+
+
+# Gx and Rx too, for references into TS 29.061, TS 29.212 and TS 29.214.
+_CITED = ("0", str(CX), str(RX), str(GX))
+
+
+@pytest.fixture(scope="module")
+def cited_rules(tmp_path_factory) -> Path:
+    out = tmp_path_factory.mktemp("rules") / "rules.lua"
+    options = [arg for each in _CITED for arg in ("--application", each)]
+    return _rules(out, *options, "--rules-only")
+
+
+@pytest.fixture(scope="module")
+def unlinked_rules(tmp_path_factory) -> Path:
+    out = tmp_path_factory.mktemp("rules") / "rules.lua"
+    options = [arg for each in _CITED for arg in ("--application", each)]
+    return _rules(out, *options, "--rules-only", "--explorer", "")
 
 
 _RUNNER = """
@@ -158,15 +174,35 @@ local rules = dofile(arg[2])
 local function unhex(text)
   return (text:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end))
 end
+local function reference(ref)
+  if not ref then
+    return "-"
+  end
+  return table.concat({ ref.document, ref.clause, tostring(ref.page),
+    tostring(ref.table), ref.url or "-", ref.explorer or "-", ref.text }, "\\t")
+end
 for index = 3, #arg do
   local result = core.validate(rules, unhex(arg[index]), {})
   local command = result.command and result.command.document or "-"
   io.write("message ", command, " ", tostring(result.form), "\\n")
+  io.write("ref ", reference(result.reference), "\\n")
   for _, each in ipairs(result.findings) do
     io.write(each.severity, " ", each.rule, " ", each.message, "\\n")
+    io.write("ref ", reference(each.reference), "\\n")
   end
 end
 """
+
+_REFERENCE = ("document", "clause", "page", "table", "url", "explorer", "text")
+
+
+def _reference(text: str) -> dict | None:
+    if text == "-":
+        return None
+    fields = dict(zip(_REFERENCE, text.split("\t"), strict=True))
+    return {
+        key: None if value in {"nil", "-"} else value for key, value in fields.items()
+    }
 
 
 def _validate(lua: str, rules: Path, tmp_path: Path, *messages: bytes) -> list[dict]:
@@ -184,7 +220,14 @@ def _validate(lua: str, rules: Path, tmp_path: Path, *messages: bytes) -> list[d
         kind, _, rest = line.partition(" ")
         if kind == "message":
             document, form = rest.split(" ")
-            results.append({"document": document, "form": form, "findings": []})
+            results.append(
+                {"document": document, "form": form, "findings": [], "cited": []}
+            )
+        elif kind == "ref":
+            if results[-1]["findings"]:
+                results[-1]["cited"].append(_reference(rest))
+            else:
+                results[-1]["reference"] = _reference(rest)
         else:
             rule, _, text = rest.partition(" ")
             results[-1]["findings"].append((kind, rule, text))
@@ -305,6 +348,12 @@ def test_tshark_reports_through_the_plugin(tmp_path):
             "seanchai.rule",
             "-e",
             "seanchai.document",
+            "-e",
+            "seanchai.reference",
+            "-e",
+            "seanchai.url",
+            "-e",
+            "seanchai.explorer",
         ],
         check=True,
         capture_output=True,
@@ -321,6 +370,18 @@ def test_tshark_reports_through_the_plugin(tmp_path):
     assert "avp-missing" in frames[2]["seanchai.rule"]
     assert frames[3]["seanchai.errors"] == ["0"]
     assert frames[4]["seanchai.document"] == ["RFC6733"]
+    # The command's definition, then each finding's rule, beneath it.
+    assert frames[2]["seanchai.reference"][0].startswith("TS 29.229 clause 6.1.1,")
+    assert "RFC 6733 section 4.3.1, page 44" in frames[2]["seanchai.reference"]
+    assert frames[2]["seanchai.url"][0].startswith("https://www.etsi.org/")
+    assert (
+        "https://www.rfc-editor.org/rfc/rfc6733.html#section-4.3.1"
+        in frames[2]["seanchai.url"]
+    )
+    assert frames[4]["seanchai.explorer"] == [
+        "https://sliva0.github.io/seanchai-explorer/#rfc6733/5.5.1"
+        "?name=Device-Watchdog-Request"
+    ]
 
 
 @pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
@@ -342,3 +403,147 @@ def test_a_diameter_uri_is_read_case_insensitively(lua):
         "ok",
         "does not start with aaa:// or aaas://",
     ]
+
+
+def gx_ccr() -> bytes:
+    # 3GPP-User-Location-Info with the M bit, which TS 29.061 table 9a puts
+    # under Must not.
+    return message(
+        272,
+        R | P,
+        GX,
+        avp(263, b"pcef.example.com;1;2"),
+        avp(258, u32(GX)),
+        avp(264, b"pcef.example.com"),
+        avp(296, b"example.com"),
+        avp(283, b"example.com"),
+        avp(416, u32(1)),
+        avp(415, u32(0)),
+        avp(22, b"\x82\x02\xf8\x10\x00\x01\x02\xf8\x10\x00\x00\x00\x01", vendor=TGPP),
+    )
+
+
+def rx_asr() -> bytes:
+    # No Abort-Cause, which TS 29.214 clause 5.6.7's ASR requires.
+    return message(
+        274,
+        R | P,
+        RX,
+        avp(263, b"pcrf.example.com;1;2"),
+        avp(264, b"pcrf.example.com"),
+        avp(296, b"example.com"),
+        avp(283, b"example.com"),
+        avp(293, b"af.example.com"),
+        avp(258, u32(RX)),
+    )
+
+
+def _cited(result: dict, rule: str) -> list[dict]:
+    return [
+        reference
+        for (_, each, _), reference in zip(
+            result["findings"], result["cited"], strict=True
+        )
+        if each == rule
+    ]
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_each_finding_cites_where_its_rule_is_written(lua, cited_rules, tmp_path):
+    long_dwr = bytearray(good_dwr())
+    long_dwr[3] += 4  # the header claims 4 octets the message lacks
+
+    ccr, asr, dwr = _validate(
+        lua, cited_rules, tmp_path, gx_ccr(), rx_asr(), bytes(long_dwr)
+    )
+
+    # A flag rule: the AVP-table row of the reading used.
+    (flag,) = _cited(ccr, "flag-must-not")
+    assert flag == {
+        "document": "TS29.061",
+        "clause": "16a.5",
+        "page": "129",
+        "table": "9a",
+        "url": "https://www.etsi.org/deliver/etsi_ts/129000_129099/129061"
+        "/19.01.00_60/ts_129061v190100p.pdf#page=129",
+        "explorer": "https://sliva0.github.io/seanchai-explorer/#29061-j10/16a.5"
+        "?name=3GPP-User-Location-Info",
+        "text": "TS 29.061 clause 16a.5, table 9a, page 129",
+    }
+    assert any("(TS 29.061 table 9a)" in text for _, _, text in ccr["findings"])
+    # A body's rule: the command's ABNF, which the command line cites too.
+    assert asr["document"] == "TS29.214"
+    missing = _cited(asr, "avp-missing")
+    assert missing and all(each == asr["reference"] for each in missing)
+    assert asr["reference"] == {
+        "document": "TS29.214",
+        "clause": "5.6.7",
+        "page": "76",
+        "table": None,
+        "url": "https://www.etsi.org/deliver/etsi_ts/129200_129299/129214"
+        "/19.03.00_60/ts_129214v190300p.pdf#page=76",
+        "explorer": "https://sliva0.github.io/seanchai-explorer/#29214-j30/5.6.7"
+        "?name=AS-Request",
+        "text": "TS 29.214 clause 5.6.7, page 76",
+    }
+    # Framing: RFC 6733's section, at its anchor. The corpus places nothing
+    # in section 3, so the explorer has nowhere to go.
+    (length,) = _cited(dwr, "header-length")
+    assert length == {
+        "document": "RFC6733",
+        "clause": "3",
+        "page": "34",
+        "table": None,
+        "url": "https://www.rfc-editor.org/rfc/rfc6733.html#section-3",
+        "explorer": None,
+        "text": "RFC 6733 section 3, page 34",
+    }
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+def test_an_empty_explorer_leaves_its_links_out(unlinked_rules, tmp_path):
+    results = _validate(LUAS[-1], unlinked_rules, tmp_path, gx_ccr(), rx_asr())
+
+    references = [
+        each
+        for result in results
+        for each in (result["reference"], *result["cited"])
+        if each is not None
+    ]
+    assert references
+    assert all(each["explorer"] is None for each in references)
+    assert all(each["url"] for each in references)
+
+
+@pytest.fixture(scope="module")
+def generator():
+    spec = importlib.util.spec_from_file_location(
+        "wireshark_generate", VALIDATOR / "generate.py"
+    )
+    assert spec is not None and spec.loader is not None
+    loaded = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(loaded)
+    return loaded
+
+
+def test_every_reference_has_a_document_url_and_a_real_page(generator):
+    from seanchai import corpus, dictionary, model
+
+    books = corpus.Corpus.installed()
+    built_model = model.Model.build(books)
+    places = generator.Places(books)
+    rules = generator.rules_chunk(dictionary.build(built_model), built_model, places)
+
+    assert places.citations and places.documents
+    for entry, _ in places.documents.values():
+        assert entry.spec.link or entry.spec.transcribed, entry.path
+    for _, clause, page, _, _ in places.citations:
+        assert clause
+        assert page is None or (isinstance(page, int) and page > 0)
+    # Every reading, command and answer-message the rules hold cites a place.
+    for line in rules.splitlines():
+        if line.startswith(("avps[", "answers[")):
+            assert ",at=" in line, line[:120]
+        if line.startswith("commands["):
+            assert line.count(",at=") == line.count("abbreviation="), line[:120]
